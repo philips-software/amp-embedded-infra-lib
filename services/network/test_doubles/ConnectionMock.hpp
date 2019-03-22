@@ -1,0 +1,85 @@
+#ifndef NETWORK_CONNECTION_MOCK_HPP
+#define NETWORK_CONNECTION_MOCK_HPP
+
+#include "gmock/gmock.h"
+#include "services/network/Connection.hpp"
+#include "services/network/ConnectionFactoryWithNameResolver.hpp"
+
+#include <vector>
+
+namespace services
+{
+    //TICS -INT#002: A mock or stub may have public data
+    //TICS -INT#027: MOCK_METHOD can't add 'virtual' to its signature
+    class ConnectionMock
+        : public services::Connection
+    {
+    public:
+        MOCK_METHOD1(RequestSendStream, void(std::size_t sendSize));
+        MOCK_CONST_METHOD0(MaxSendStreamSize, std::size_t());
+        MOCK_METHOD0(ReceiveStream, infra::SharedPtr<infra::StreamReaderWithRewinding>());
+        MOCK_METHOD0(AckReceived, void());
+        MOCK_METHOD0(CloseAndDestroy, void());
+        MOCK_METHOD0(AbortAndDestroy, void());
+        MOCK_CONST_METHOD0(Ipv4Address, IPv4Address());
+    };
+
+    class ConnectionObserverMock
+        : public services::ConnectionObserver
+    {
+    public:
+        ConnectionObserverMock() = default;
+        explicit ConnectionObserverMock(services::Connection& connection);
+
+        using services::ConnectionObserver::Subject;
+
+        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override { SendStreamAvailableMock(std::move(writer)); }
+        MOCK_METHOD1(SendStreamAvailableMock, void(infra::SharedPtr<infra::StreamWriter> writer));
+        MOCK_METHOD0(DataReceived, void());
+    };
+
+    class ConnectionFactoryMock
+        : public services::ConnectionFactory
+    {
+    public:
+        virtual infra::SharedPtr<void> Listen(uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions) override;
+        MOCK_METHOD1(Connect, void(ClientConnectionObserverFactory& factory));
+        MOCK_METHOD1(CancelConnect, void(ClientConnectionObserverFactory& factory));
+
+        MOCK_METHOD2(ListenMock, infra::SharedPtr<void>(uint16_t, IPVersions));
+
+        void NewConnection(Connection& connection, services::IPAddress address);
+
+    private:
+        ServerConnectionObserverFactory* serverConnectionObserverFactory = nullptr;
+    };
+
+    class ServerConnectionObserverFactoryMock
+        : public services::ServerConnectionObserverFactory
+    {
+    public:
+        void ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, services::IPAddress address) { ConnectionAcceptedMock(createdObserver.Clone(), address); }
+        MOCK_METHOD2(ConnectionAcceptedMock, void(infra::Function<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver, services::IPAddress address));
+    };
+
+    class ClientConnectionObserverFactoryMock
+        : public services::ClientConnectionObserverFactory
+    {
+    public:
+        void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) { ConnectionEstablishedMock(createdObserver.Clone()); }
+        MOCK_CONST_METHOD0(Address, services::IPAddress());
+        MOCK_CONST_METHOD0(Port, uint16_t());
+        MOCK_METHOD1(ConnectionEstablishedMock, void(infra::Function<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver));
+        MOCK_METHOD1(ConnectionFailed, void(ConnectFailReason reason));
+    };
+
+    class ConnectionFactoryWithNameLookupMock
+        : public ConnectionFactoryWithNameResolver
+    {
+    public:
+        MOCK_METHOD1(Connect, void(ClientConnectionObserverFactoryWithNameResolver& factory));
+        MOCK_METHOD1(CancelConnect, void(ClientConnectionObserverFactoryWithNameResolver& factory));
+    };
+}
+
+#endif

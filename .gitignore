@@ -1,0 +1,13 @@
+.vs
+Debug/
+Release/
+RelWithDebInfo/
+[Bb]uild
+[Ii]nstall
+*.suo
+*.sdf
+*.opensdf
+*.vcxproj.user
+CMakeSettings.json
+scripts/__pycache__/
+/packs/embedded_rpc/**/Generated

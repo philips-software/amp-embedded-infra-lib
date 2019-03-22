@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+import "EchoAttributes.proto";
+
+package test_messages;
+option java_package = "com.philips.cococo.protobufEcho";
+option java_outer_classname = "TestMessagesProto";
+
+message TestInt32 {
+  int32 value = 1;
+}
+
+message TestFixed32 {
+  fixed32 value = 1;
+}
+
+message TestBool {
+  bool value = 1;
+}
+
+message TestString {
+  string value = 1 [(string_size) = 20];
+}
+
+message TestRepeatedString {
+  repeated string value = 1 [(string_size) = 20, (array_size) = 10];
+}
+
+message TestBytes {
+  bytes value = 1 [(bytes_size) = 10];
+}
+
+message TestUint32 {
+  uint32 value = 1;
+}
+
+message TestRepeatedUint32 {
+  repeated uint32 value = 1 [(array_size) = 10];
+}
+
+message TestMessageWithMessageField {
+  TestUint32 message = 1;
+}
+
+message TestNestedMessage
+{
+    message NestedMessage
+    {
+        uint32 value = 1;
+    }
+
+    NestedMessage message = 1;
+}
+
+message TestMoreNestedMessage
+{
+    message NestedMessage1
+    {
+        uint32 value = 1;
+    }
+
+    message NestedMessage2
+    {
+        uint32 value = 2;
+    }
+
+    NestedMessage1 message1 = 1;
+    NestedMessage2 message2 = 2;
+}
+
+message TestNestedRepeatedMessage
+{
+    message NestedMessage
+    {
+        uint32 value = 1;
+    }
+
+    repeated NestedMessage message = 1 [(array_size) = 10];
+}
+
+message TestEmptyMessage
+{
+}
+
+service TestService1
+{
+  option (service_id) = 1;
+
+  rpc Method(TestUint32) returns (Nothing) { option (method_id) = 1; }
+}
+
+service TestService2
+{
+  option (service_id) = 2;
+
+  rpc Search (TestString) returns (Nothing) { option (method_id) = 1; }
+}

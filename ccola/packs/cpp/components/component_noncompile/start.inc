@@ -1,0 +1,7 @@
+if(${CCOLA_ARCH} STREQUAL "win")
+	include("${CCOLA_PACK_DIR_cpp}/components/generic_cpp/start.inc")
+	ccola_make_absolute(CCOLA_COMPONENT_GENERIC_CPP_INFO "${CCOLA_PACK_DIR_cpp}/components/component_noncompile/noncompile.inc.conf")
+	ccola_make_absolute(CCOLA_COMPONENT_GENERIC_CPP_PUBLIC_INFO "${CCOLA_PACK_DIR_cpp}/components/component_noncompile/noncompile_public.inc.conf")
+else()
+	include("${CCOLA_PACK_DIR_cpp}/components/component_skip/start.inc")
+endif()

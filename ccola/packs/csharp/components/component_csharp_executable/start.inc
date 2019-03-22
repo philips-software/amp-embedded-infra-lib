@@ -1,0 +1,1 @@
+ccola_make_absolute(CCOLA_COMPONENT_CSHARP_EXECUTABLE_INFO "${CCOLA_PACK_DIR_csharp}/components/component_csharp_executable/csharp_executable.inc.conf")

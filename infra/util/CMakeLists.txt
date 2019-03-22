@@ -1,0 +1,70 @@
+ccola_component(util static_library)
+
+    ccola_sources(
+        CrcCcittCalculator.cpp
+        Optional.cpp
+        Sequencer.cpp
+        SharedPtr.cpp
+        Tokenizer.cpp
+        Allocator.hpp
+        AllocatorFixedSpace.hpp
+        AllocatorHeap.hpp
+        AutoResetFunction.hpp
+        BitLogic.hpp
+        BoundedDeque.hpp
+        BoundedForwardList.hpp
+        BoundedList.hpp
+        BoundedPriorityQueue.hpp
+        BoundedString.hpp
+        BoundedString.cpp
+        BoundedVector.hpp
+        ByteRange.hpp
+        CompareMembers.hpp
+        CrcCcittCalculator.hpp
+        CyclicBuffer.hpp
+        Endian.hpp
+        FixedPoint.hpp
+        Function.cpp
+        Function.hpp
+        InterfaceConnector.hpp
+        IntrusiveBinarySearchTree.hpp
+        IntrusiveForwardList.hpp
+        IntrusiveList.hpp
+        IntrusivePriorityQueue.hpp
+        IntrusiveSet.hpp
+        MemoryRange.hpp
+        Observer.hpp
+        Optional.hpp
+        PolymorphicVariant.hpp
+        ProxyCreator.hpp
+        ReallyAssert.hpp
+        ReferenceCountedSingleton.hpp
+        ReverseRange.hpp
+        Sequencer.hpp
+        SharedObjectAllocator.hpp
+        SharedObjectAllocatorFixedSize.hpp
+        SharedObjectAllocatorHeap.hpp
+        SharedOptional.hpp
+        SharedPtr.hpp
+        StaticStorage.hpp
+        Tokenizer.hpp
+        Unit.hpp
+        VariadicTemplates.hpp
+        Variant.hpp
+        VariantDetail.hpp
+        WithStorage.hpp
+    win:
+        infra.util.natvis
+    )
+
+    ccola_inheritable_definitions(
+        x86_64:
+            UTIL_FUNCTION_ALIGNMENT=uint64_t
+    )
+
+ccola_end_component()
+
+ccola_subdirectories(
+    test_helper
+    test
+)

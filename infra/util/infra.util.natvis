@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+  <Type Name="infra::BoundedStringBase&lt;*&gt;">
+    <DisplayString>{range.beginElement, [length]s}</DisplayString>
+    <StringView Condition="length &gt; 0">range.beginElement, [length]s</StringView>
+    <Expand>
+      <Item Name="[size]" ExcludeView="simple">length</Item>
+      <Item Name="[capacity]" ExcludeView ="simple">range.endElement - range.beginElement</Item>
+      <ArrayItems Condition="range.endElement - range.beginElement &gt; 0">
+        <Size>length</Size>
+        <ValuePointer>range.beginElement</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <Type Name="infra::BoundedVector&lt;*&gt;">
+    <DisplayString>{{ size={numAllocated} }</DisplayString>
+    <Expand>
+      <Item Name="[size]">numAllocated</Item>
+      <Item Name="[capacity]">storage.endElement - storage.beginElement</Item>
+      <ArrayItems>
+        <Size>numAllocated</Size>
+        <ValuePointer>storage.beginElement</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <Type Name="infra::Function&lt;*&gt;">
+    <DisplayString Condition="invokerFunctions.virtualMethodTable == nullptr">empty</DisplayString>
+    <DisplayString>{invokerFunctions.data}</DisplayString>
+    <Expand>
+      <Item Name="[extra_size]">$T2</Item>
+      <Item Name="[functor]" Condition="invokerFunctions.virtualMethodTable != nullptr">invokerFunctions.data</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="infra::StaticStorage&lt;*&gt;">
+    <DisplayString>{*(($T1*)&amp;data)}</DisplayString>
+    <Expand>
+      <Item Name="[data]">*(($T1*)&amp;data)</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="infra::Optional&lt;*&gt;">
+    <DisplayString Condition="initialized == false">empty</DisplayString>
+    <DisplayString>{*(($T1*)&amp;data)}</DisplayString>
+    <Expand>
+      <Item Condition="initialized" Name="[data]">*(($T1*)&amp;data)</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="infra::Variant&lt;*&gt;">
+    <DisplayString Condition="dataIndex == 0">{*($T1*)&amp;data}</DisplayString>
+    <DisplayString Condition="dataIndex == 1" Optional="true">{*($T2*)&amp;data}</DisplayString>
+    <DisplayString Condition="dataIndex == 2" Optional="true">{*($T3*)&amp;data}</DisplayString>
+    <DisplayString Condition="dataIndex == 3" Optional="true">{*($T4*)&amp;data}</DisplayString>
+    <DisplayString Condition="dataIndex == 4" Optional="true">{*($T5*)&amp;data}</DisplayString>
+    <DisplayString Condition="dataIndex == 5" Optional="true">{*($T6*)&amp;data}</DisplayString>
+    <DisplayString Condition="dataIndex == 6" Optional="true">{*($T7*)&amp;data}</DisplayString>
+    <DisplayString Condition="dataIndex == 7" Optional="true">{*($T8*)&amp;data}</DisplayString>
+    <Expand>
+      <Item Name="which">dataIndex</Item>
+      <Item Name="data" Condition="dataIndex == 0">*($T1*)&amp;data</Item>
+      <Item Name="data" Condition="dataIndex == 1" Optional="true">*($T2*)&amp;data</Item>
+      <Item Name="data" Condition="dataIndex == 2" Optional="true">*($T3*)&amp;data</Item>
+      <Item Name="data" Condition="dataIndex == 3" Optional="true">*($T4*)&amp;data</Item>
+      <Item Name="data" Condition="dataIndex == 4" Optional="true">*($T5*)&amp;data</Item>
+      <Item Name="data" Condition="dataIndex == 5" Optional="true">*($T6*)&amp;data</Item>
+      <Item Name="data" Condition="dataIndex == 6" Optional="true">*($T7*)&amp;data</Item>
+      <Item Name="data" Condition="dataIndex == 7" Optional="true">*($T8*)&amp;data</Item>
+    </Expand>
+  </Type>
+</AutoVisualizer>
