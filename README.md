@@ -1,6 +1,6 @@
 # EmbeddedInfraLib (EmIL)
 
-**Description**: EmbeddedInfraLib is a set of C++ libraries and headers that provide heap-less, STL like, infrastructure for embedded sofware development.
+**Description**: EmbeddedInfraLib is a set of C++ libraries and headers that provide heap-less, STL like, infrastructure for embedded software development.
 
 ## Dependencies
 
@@ -8,7 +8,7 @@ EmIL requires:
 - A recent c++ compiler that supports C++11 at minimum.
 - CMake 3.6 or higher.
 
-## How to build the sofware
+## How to build the software
 
 EmIL can be built by-itself, for example to execute the included micro-tests, or it can be built as part of a larger project. This paragraph describes how to build EmIL by-itself.
 
@@ -58,13 +58,4 @@ Please refer to our [Contributing] guide when you want to contribute to this pro
 
 ## License
 
-Please refer to our [License File] for license information.
-
-[examples]: examples
-[CMakeCcolaUserManual]: documents/CMakeCcolaUserManual.docx
-[Coding Standard C++ Embedded Projects]: documents/Coding%20Standard%20C++%20Embedded%20Projects.docx
-[Containers]: documents/Containers.md
-[Echo (Embedded CHOmmunication)]: documents/Echo.md
-[MemoryRange]: documents/MemoryRange.md
-[Contributing]: CONTRIBUTING.md
-[License File]: LICENSE.md
+License is MIT. See [LICENSE file](LICENSE.md)
