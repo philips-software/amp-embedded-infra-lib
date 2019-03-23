@@ -59,3 +59,14 @@ Please refer to our [Contributing] guide when you want to contribute to this pro
 ## License
 
 License is MIT. See [LICENSE file](LICENSE.md)
+
+## Links
+
+[examples]: examples
+[CMakeCcolaUserManual]: documents/CMakeCcolaUserManual.docx
+[Coding Standard C++ Embedded Projects]: documents/Coding%20Standard%20C++%20Embedded%20Projects.docx
+[Containers]: documents/Containers.md
+[Echo (Embedded CHOmmunication)]: documents/Echo.md
+[MemoryRange]: documents/MemoryRange.md
+[Contributing]: CONTRIBUTING.md
+[License File]: LICENSE.md
