@@ -1,11 +1,59 @@
 #include "services/network/Http.hpp"
 
-namespace {
-    static const char* separator = ":";
-}
-
 namespace services
 {
+	namespace
+	{
+		static const char* separator = ":";
+
+		infra::BoundedConstString HttpStatusCodeToString(services::HttpStatusCode statusCode)
+		{
+			switch (statusCode)
+			{
+			case services::HttpStatusCode::Continue: return "Continue";
+			case services::HttpStatusCode::SwitchingProtocols: return "SwitchingProtocols";
+			case services::HttpStatusCode::OK: return "OK";
+			case services::HttpStatusCode::Created: return "Created";
+			case services::HttpStatusCode::Accepted: return "Accepted";
+			case services::HttpStatusCode::NonAuthorativeInformation: return "NonAuthorativeInformation";
+			case services::HttpStatusCode::NoContent: return "NoContent";
+			case services::HttpStatusCode::ResetContent: return "ResetContent";
+			case services::HttpStatusCode::PartialContent: return "PartialContent";
+			case services::HttpStatusCode::MultipleChoices: return "MultipleChoices";
+			case services::HttpStatusCode::MovedPermanently: return "MovedPermanently";
+			case services::HttpStatusCode::Found: return "Found";
+			case services::HttpStatusCode::SeeOther: return "SeeOther";
+			case services::HttpStatusCode::NotModified: return "NotModified";
+			case services::HttpStatusCode::UseProxy: return "UseProxy";
+			case services::HttpStatusCode::TemporaryRedirect: return "TemporaryRedirect";
+			case services::HttpStatusCode::BadRequest: return "BadRequest";
+			case services::HttpStatusCode::Unauthorized: return "Unauthorized";
+			case services::HttpStatusCode::PaymentRequired: return "PaymentRequired";
+			case services::HttpStatusCode::Forbidden: return "Forbidden";
+			case services::HttpStatusCode::NotFound: return "NotFound";
+			case services::HttpStatusCode::MethodNotAllowed: return "MethodNotAllowed";
+			case services::HttpStatusCode::NotAcceptable: return "NotAcceptable";
+			case services::HttpStatusCode::ProxyAuthenticationRequired: return "ProxyAuthenticationRequired";
+			case services::HttpStatusCode::RequestTimeOut: return "RequestTimeOut";
+			case services::HttpStatusCode::Conflict: return "Conflict";
+			case services::HttpStatusCode::Gone: return "Gone";
+			case services::HttpStatusCode::LengthRequired: return "LengthRequired";
+			case services::HttpStatusCode::PreconditionFailed: return "PreconditionFailed";
+			case services::HttpStatusCode::RequestEntityTooLarge: return "RequestEntityTooLarge";
+			case services::HttpStatusCode::RequestUriTooLarge: return "RequestUriTooLarge";
+			case services::HttpStatusCode::UnsupportedMediaType: return "UnsupportedMediaType";
+			case services::HttpStatusCode::RequestRangeNotSatisfiable: return "RequestRangeNotSatisfiable";
+			case services::HttpStatusCode::ExpectationFailed: return "ExpectationFailed";
+			case services::HttpStatusCode::InternalServerError: return "InternalServerError";
+			case services::HttpStatusCode::NotImplemented: return "NotImplemented";
+			case services::HttpStatusCode::BadGateway: return "BadGateway";
+			case services::HttpStatusCode::ServiceUnavailable: return "ServiceUnavailable";
+			case services::HttpStatusCode::GatewayTimeOut: return "GatewayTimeOut";
+			case services::HttpStatusCode::HttpVersionNotSupported: return "HttpVersionNotSupported";
+			}
+		}
+	}
+
     HttpHeader::HttpHeader(infra::BoundedConstString field, infra::BoundedConstString value)
         : field(field)
         , value(value)
@@ -63,8 +111,15 @@ namespace infra
 {
     TextOutputStream& operator<<(TextOutputStream& stream, const services::HttpHeader& header)
     {
-        stream << header.Field() << separator << header.Value();
+        stream << header.Field() << services::separator << header.Value();
 
         return stream;
     }
+
+	TextOutputStream& operator<<(TextOutputStream& stream, services::HttpStatusCode statusCode)
+	{
+		stream << services::HttpStatusCodeToString(statusCode);
+
+		return stream;
+	}
 }

@@ -1,6 +1,7 @@
 #include "gmock/gmock.h"
 #include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
 #include "infra/stream/ByteInputStream.hpp"
+#include "infra/stream/StdStringOutputStream.hpp"
 #include "infra/stream/test/StreamMock.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/network/HttpClientImpl.hpp"
@@ -13,6 +14,80 @@ TEST(HttpTest, url_parsing)
     EXPECT_EQ("host", services::HostFromUrl("http://host/path"));
     EXPECT_EQ("/path", services::PathFromUrl("http://host/path"));
 }
+
+TEST(HttpTest, HttpHeader_formatting)
+{
+	services::HttpHeader header{ "Key", "Value" };
+	infra::StdStringOutputStream::WithStorage stream;
+
+	stream << header;
+
+	EXPECT_EQ("Key:Value", stream.Storage());
+}
+
+struct HttpStatusCodeWithString
+{
+	services::HttpStatusCode code;
+	std::string string;
+};
+
+class HttpStatusMessageFormattingTest
+	: public testing::TestWithParam<HttpStatusCodeWithString>
+{
+public:
+	infra::StdStringOutputStream::WithStorage stream;
+};
+
+TEST_P(HttpStatusMessageFormattingTest, StatusMessage_formatting)
+{
+	auto parameter = GetParam();
+	stream << parameter.code;
+	EXPECT_EQ(parameter.string, stream.Storage());
+}
+
+INSTANTIATE_TEST_CASE_P(HttpStatusMessageTest, HttpStatusMessageFormattingTest,
+	testing::Values(
+		HttpStatusCodeWithString{ services::HttpStatusCode::Continue, "Continue" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::SwitchingProtocols, "SwitchingProtocols" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::OK, "OK" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::Created, "Created" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::Accepted, "Accepted" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::NonAuthorativeInformation, "NonAuthorativeInformation" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::NoContent, "NoContent" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::ResetContent, "ResetContent" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::PartialContent, "PartialContent" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::MultipleChoices, "MultipleChoices" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::MovedPermanently, "MovedPermanently" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::Found, "Found" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::SeeOther, "SeeOther" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::NotModified, "NotModified" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::UseProxy, "UseProxy" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::TemporaryRedirect, "TemporaryRedirect" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::BadRequest, "BadRequest" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::Unauthorized, "Unauthorized" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::PaymentRequired, "PaymentRequired" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::Forbidden, "Forbidden" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::NotFound, "NotFound" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::MethodNotAllowed, "MethodNotAllowed" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::NotAcceptable, "NotAcceptable" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::ProxyAuthenticationRequired, "ProxyAuthenticationRequired" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::RequestTimeOut, "RequestTimeOut" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::Conflict, "Conflict" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::Gone, "Gone" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::LengthRequired, "LengthRequired" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::PreconditionFailed, "PreconditionFailed" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::RequestEntityTooLarge, "RequestEntityTooLarge" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::RequestUriTooLarge, "RequestUriTooLarge" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::UnsupportedMediaType, "UnsupportedMediaType" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::RequestRangeNotSatisfiable, "RequestRangeNotSatisfiable" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::ExpectationFailed, "ExpectationFailed" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::InternalServerError, "InternalServerError" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::NotImplemented, "NotImplemented" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::BadGateway, "BadGateway" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::ServiceUnavailable, "ServiceUnavailable" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::GatewayTimeOut, "GatewayTimeOut" },
+		HttpStatusCodeWithString{ services::HttpStatusCode::HttpVersionNotSupported, "HttpVersionNotSupported" }
+	));
 
 class HttpClientTest
     : public testing::Test

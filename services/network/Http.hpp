@@ -146,6 +146,7 @@ namespace services
 namespace infra
 {
     TextOutputStream& operator<<(TextOutputStream& stream, const services::HttpHeader& header);
+	TextOutputStream& operator<<(TextOutputStream& stream, services::HttpStatusCode statusCode);
 }
 
 #endif
