@@ -36,17 +36,17 @@ cmake --build Build --target test
 
 ## Code examples
 
-Code examples can be found under the [examples] folder.
+Code examples can be found under the [examples](examples) folder.
 
 ## Documentation
 
 Documentation is available under the documents folder.
 
-* [CMakeCcolaUserManual] describes the CMake Component Layer (Ccola) from a user perspective.
-* [Coding Standard C++ Embedded Projects] describes to coding standards adhered to for this project.
-* [Containers] describes the basic heap-less containers provided by EmIL.
-* [Echo (Embedded CHOmmunication)] describes the RPC (Remote Procedure Call) framework built on top of Google Protobuf.
-* [MemoryRange] describes the basic building block for most of EmIL's heap-less memory management.
+* [CMakeCcolaUserManual](documents/CMakeCcolaUserManual.docx) describes the CMake Component Layer (Ccola) from a user perspective.
+* [Coding Standard C++ Embedded Projects](documents/Coding%20Standard%20C++%20Embedded%20Projects.docx) describes to coding standards adhered to for this project.
+* [Containers](documents/Containers.md) describes the basic heap-less containers provided by EmIL.
+* [Echo (Embedded CHOmmunication)](documents/Echo.md) describes the RPC (Remote Procedure Call) framework built on top of Google Protobuf.
+* [MemoryRange](documents/MemoryRange.md) describes the basic building block for most of EmIL's heap-less memory management.
 
 ## Known issues
 
@@ -54,19 +54,8 @@ At the moment only Windows is supported as the host platform.
 
 ## Contributing
 
-Please refer to our [Contributing] guide when you want to contribute to this project.
+Please refer to our [Contributing](CONTRIBUTING.md) guide when you want to contribute to this project.
 
 ## License
 
 License is MIT. See [LICENSE file](LICENSE.md)
-
-## Links
-
-[examples]: examples
-[CMakeCcolaUserManual]: documents/CMakeCcolaUserManual.docx
-[Coding Standard C++ Embedded Projects]: documents/Coding%20Standard%20C++%20Embedded%20Projects.docx
-[Containers]: documents/Containers.md
-[Echo (Embedded CHOmmunication)]: documents/Echo.md
-[MemoryRange]: documents/MemoryRange.md
-[Contributing]: CONTRIBUTING.md
-[License File]: LICENSE.md
