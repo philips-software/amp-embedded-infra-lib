@@ -40,7 +40,7 @@ Code examples can be found under the [examples](examples) folder.
 
 ## Documentation
 
-Documentation is available under the documents folder.
+Documentation is available under the [documents](documents) folder.
 
 * [CMakeCcolaUserManual](documents/CMakeCcolaUserManual.docx) describes the CMake Component Layer (Ccola) from a user perspective.
 * [Coding Standard C++ Embedded Projects](documents/Coding%20Standard%20C++%20Embedded%20Projects.docx) describes to coding standards adhered to for this project.
@@ -58,4 +58,4 @@ Please refer to our [Contributing](CONTRIBUTING.md) guide when you want to contr
 
 ## License
 
-License is MIT. See [LICENSE file](LICENSE.md)
+License is MIT. See [LICENSE file](LICENSE.md).
