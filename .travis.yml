@@ -1,0 +1,12 @@
+os: windows
+
+language: cpp 
+
+script:
+  - cmake -E make_directory Build
+  - cd Build
+  - cmake .. -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install
+  - cd ..
+  - cmake --build Build
+  - cmake --build Build --target RUN_TESTS
+
