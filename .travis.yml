@@ -9,4 +9,3 @@ script:
   - cd ..
   - cmake --build Build
   - cmake --build Build --target RUN_TESTS
-
