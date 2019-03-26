@@ -1,6 +1,6 @@
 # EmbeddedInfraLib (EmIL)
 
-[![Build Status](https://travis-ci.com/philips-software/embeddedinfralib.svg?branch=master)](https://travis-ci.com/philips-software/sembeddedinfralib)
+[![Build Status](https://travis-ci.com/philips-software/embeddedinfralib.svg?branch=master)](https://travis-ci.com/philips-software/embeddedinfralib)
 
 **Description**: EmbeddedInfraLib is a set of C++ libraries and headers that provide heap-less, STL like, infrastructure for embedded software development.
 
