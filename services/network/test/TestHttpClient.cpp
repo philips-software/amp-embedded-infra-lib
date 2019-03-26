@@ -9,13 +9,15 @@
 #include "services/network/test_doubles/ConnectionStub.hpp"
 #include "services/network/test_doubles/HttpMock.hpp"
 
-TEST(HttpTest, url_parsing)
+TEST(HttpTest, parse_components_from_url)
 {
+	EXPECT_EQ("http", services::SchemeFromUrl("http://host/path"));
     EXPECT_EQ("host", services::HostFromUrl("http://host/path"));
     EXPECT_EQ("/path", services::PathFromUrl("http://host/path"));
+	EXPECT_EQ("/path/more", services::PathFromUrl("http://host/path/more"));
 }
 
-TEST(HttpTest, HttpHeader_formatting)
+TEST(HttpTest, write_formatted_HttpHeader_to_stream)
 {
 	services::HttpHeader header{ "Key", "Value" };
 	infra::StdStringOutputStream::WithStorage stream;
@@ -38,7 +40,7 @@ public:
 	infra::StdStringOutputStream::WithStorage stream;
 };
 
-TEST_P(HttpStatusMessageFormattingTest, StatusMessage_formatting)
+TEST_P(HttpStatusMessageFormattingTest, write_formatted_HttpStatusCode_to_stream)
 {
 	auto parameter = GetParam();
 	stream << parameter.code;

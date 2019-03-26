@@ -52,6 +52,17 @@ namespace services
 			case services::HttpStatusCode::HttpVersionNotSupported: return "HttpVersionNotSupported";
 			}
 		}
+
+		std::size_t SchemeEndPositionFromUrl(infra::BoundedConstString url)
+		{
+			auto schemeEnd = url.find("//");
+			if (schemeEnd == infra::BoundedString::npos)
+				schemeEnd = 0;
+			else
+				schemeEnd += 2;
+
+			return schemeEnd;
+		}
 	}
 
     HttpHeader::HttpHeader(infra::BoundedConstString field, infra::BoundedConstString value)
@@ -80,26 +91,24 @@ namespace services
             rhs.value == value;
     }
 
+	infra::BoundedConstString SchemeFromUrl(infra::BoundedConstString url)
+	{
+		auto schemeEnd = url.find("://");
+		if (schemeEnd == infra::BoundedString::npos)
+			return infra::BoundedConstString();
+		else
+			return url.substr(0, schemeEnd);
+	}
+
     infra::BoundedConstString HostFromUrl(infra::BoundedConstString url)
     {
-        auto schemeEnd = url.find("//");
-        if (schemeEnd == infra::BoundedString::npos)
-            schemeEnd = 0;
-        else
-            schemeEnd += 2;
-
+		auto schemeEnd = SchemeEndPositionFromUrl(url);
         return url.substr(schemeEnd, url.find('/', schemeEnd) - schemeEnd);
     }
 
     infra::BoundedConstString PathFromUrl(infra::BoundedConstString url)
     {
-        auto schemeEnd = url.find("//");
-        if (schemeEnd == infra::BoundedString::npos)
-            schemeEnd = 0;
-        else
-            schemeEnd += 2;
-
-        auto separator = url.find('/', schemeEnd);
+        auto separator = url.find('/', SchemeEndPositionFromUrl(url));
         if (separator == infra::BoundedString::npos)
             return infra::BoundedConstString();
         else

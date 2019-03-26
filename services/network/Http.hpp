@@ -139,6 +139,7 @@ namespace services
         virtual void CancelConnect(HttpClientObserverFactory& factory) = 0;
     };
 
+	infra::BoundedConstString SchemeFromUrl(infra::BoundedConstString url);
     infra::BoundedConstString HostFromUrl(infra::BoundedConstString url);
     infra::BoundedConstString PathFromUrl(infra::BoundedConstString url);
 }
