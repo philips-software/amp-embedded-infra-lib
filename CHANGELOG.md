@@ -7,7 +7,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
-- Ignore external vendor packages in language analyse on github
+### Added
+
+- Ignore external vendor packages in language analysis on github
 
 ## [1.2.0]
 
