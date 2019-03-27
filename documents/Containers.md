@@ -81,7 +81,7 @@ protected:
     infra::BoundedVector<PageServer>& pageServers;
 };
 
-UrlRouter::WithMaxSize<10> router(storage);
+UrlRouter::WithMaxSize<10> router;
 ```
 
 ## 3. Intrusive Containers
