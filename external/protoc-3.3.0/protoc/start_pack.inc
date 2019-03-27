@@ -29,9 +29,17 @@ macro(protocol_buffer_cpp input)
             set(error_format "gcc")
         endif()
 
+        if (${CCOLA_SYSTEM_CONFIGURATION} STREQUAL "Darwin")
+            set(protoc_compiler_binary ${CCOLA_PACK_DIR_protoc}/../bin/protoc-osx-${CCOLA_PROCESSOR})
+        elif(${CCOLA_SYSTEM_CONFIGURATION} STREQUAL "Linux")
+            set(protoc_compiler_binary ${CCOLA_PACK_DIR_protoc}/../bin/protoc-linux-${CCOLA_PROCESSOR})
+        else()
+            set(protoc_compiler_binary ${CCOLA_PACK_DIR_protoc}/../bin/protoc.exe)
+        endif()
+
         add_custom_command(
             OUTPUT "${generated_dir_cpp}/${source_base}.pb.cc" "${generated_dir_cpp}/${source_base}.pb.h"
-            COMMAND ${CCOLA_PACK_DIR_protoc}/../bin/protoc.exe ${protopath} --error_format=${error_format} --cpp_out="${generated_dir_cpp}" ${absolute_input}
+            COMMAND ${protoc_compiler_binary} ${protopath} --error_format=${error_format} --cpp_out="${generated_dir_cpp}" ${absolute_input}
             DEPENDS "${absolute_input}"
             DEPENDS "${generated_dir_cpp}"
         )
@@ -78,9 +86,17 @@ macro(protocol_buffer_csharp input)
             set(error_format "gcc")
         endif()
 
+        if (${CCOLA_SYSTEM_CONFIGURATION} STREQUAL "Darwin")
+            set(protoc_compiler_binary ${CCOLA_PACK_DIR_protoc}/../bin/protoc-osx-${CCOLA_PROCESSOR})
+        elif(${CCOLA_SYSTEM_CONFIGURATION} STREQUAL "Linux")
+            set(protoc_compiler_binary ${CCOLA_PACK_DIR_protoc}/../bin/protoc-linux-${CCOLA_PROCESSOR})
+        else()
+            set(protoc_compiler_binary ${CCOLA_PACK_DIR_protoc}/../bin/protoc.exe)
+        endif()
+
         add_custom_command(
             OUTPUT "${generated_dir}/${source_base}.cs"
-            COMMAND ${CCOLA_PACK_DIR_protoc}/../bin/protoc.exe ${protopath} --error_format=${error_format} --csharp_out="${generated_dir}" ${absolute_input}
+            COMMAND ${protoc_compiler_binary} ${protopath} --error_format=${error_format} --csharp_out="${generated_dir}" ${absolute_input}
             DEPENDS "${absolute_input}"
             DEPENDS "${generated_dir}"
         )
@@ -123,9 +139,17 @@ macro(protocol_buffer_java input)
             set(error_format "gcc")
         endif()
 
+        if (${CCOLA_SYSTEM_CONFIGURATION} STREQUAL "Darwin")
+            set(protoc_compiler_binary ${CCOLA_PACK_DIR_protoc}/../bin/protoc-osx-${CCOLA_PROCESSOR})
+        elif(${CCOLA_SYSTEM_CONFIGURATION} STREQUAL "Linux")
+            set(protoc_compiler_binary ${CCOLA_PACK_DIR_protoc}/../bin/protoc-linux-${CCOLA_PROCESSOR})
+        else()
+            set(protoc_compiler_binary ${CCOLA_PACK_DIR_protoc}/../bin/protoc.exe)
+        endif()
+
         add_custom_command(
             OUTPUT "${generated_dir}/${source_base}Proto.java"
-            COMMAND ${CCOLA_PACK_DIR_protoc}/../bin/protoc.exe ${protopath} --error_format=${error_format} --java_out="${java_dir}" ${absolute_input}
+            COMMAND ${protoc_compiler_binary} ${protopath} --error_format=${error_format} --java_out="${java_dir}" ${absolute_input}
             DEPENDS "${absolute_input}"
             DEPENDS "${generated_dir}"
         )

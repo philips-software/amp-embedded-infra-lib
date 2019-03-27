@@ -36,10 +36,18 @@ macro(protocol_buffer_echo input)
             set(error_format "gcc")
         endif()
 
+        if (${CCOLA_SYSTEM_CONFIGURATION} STREQUAL "Darwin")
+            set(protoc_compiler_binary ${CCOLA_PACK_DIR_protoc}/../bin/protoc-osx-${CCOLA_PROCESSOR})
+        elif(${CCOLA_SYSTEM_CONFIGURATION} STREQUAL "Linux")
+            set(protoc_compiler_binary ${CCOLA_PACK_DIR_protoc}/../bin/protoc-linux-${CCOLA_PROCESSOR})
+        else()
+            set(protoc_compiler_binary ${CCOLA_PACK_DIR_protoc}/../bin/protoc.exe)
+        endif()
+
         add_custom_command(
             OUTPUT "${generated_dir_echo}/${source_base}.pb.cpp" "${generated_dir_echo}/${source_base}.pb.hpp" "${generated_dir_echo}/${source_base}.pb"
-            COMMAND ${CMAKE_COMMAND} -E env "\"PATH=${extra_path};${old_path};\"" ${CCOLA_PACK_DIR_protoc}/../bin/protoc.exe ${protopath} --error_format=${error_format} --plugin=protoc-gen-cpp-infra=${protoc_echo_plugin_path} --cpp-infra_out="${generated_dir_echo}" ${absolute_input}
-            COMMAND ${CMAKE_COMMAND} -E env "\"PATH=${extra_path};${old_path};\"" ${CCOLA_PACK_DIR_protoc}/../bin/protoc.exe ${protopath} --error_format=${error_format} --descriptor_set_out="${generated_dir_echo}/${source_base}.pb" --include_imports ${absolute_input}
+            COMMAND ${CMAKE_COMMAND} -E env "\"PATH=${extra_path};${old_path};\"" ${protoc_compiler_binary} ${protopath} --error_format=${error_format} --plugin=protoc-gen-cpp-infra=${protoc_echo_plugin_path} --cpp-infra_out="${generated_dir_echo}" ${absolute_input}
+            COMMAND ${CMAKE_COMMAND} -E env "\"PATH=${extra_path};${old_path};\"" ${protoc_compiler_binary} ${protopath} --error_format=${error_format} --descriptor_set_out="${generated_dir_echo}/${source_base}.pb" --include_imports ${absolute_input}
             DEPENDS "${absolute_input}"
             DEPENDS "${generated_dir_echo}"
             DEPENDS "${protoc_echo_plugin_path}"
@@ -95,9 +103,17 @@ macro(protocol_buffer_echo_csharp input)
             set(error_format "gcc")
         endif()
 
+        if (${CCOLA_SYSTEM_CONFIGURATION} STREQUAL "Darwin")
+            set(protoc_compiler_binary ${CCOLA_PACK_DIR_protoc}/../bin/protoc-osx-${CCOLA_PROCESSOR})
+        elif(${CCOLA_SYSTEM_CONFIGURATION} STREQUAL "Linux")
+            set(protoc_compiler_binary ${CCOLA_PACK_DIR_protoc}/../bin/protoc-linux-${CCOLA_PROCESSOR})
+        else()
+            set(protoc_compiler_binary ${CCOLA_PACK_DIR_protoc}/../bin/protoc.exe)
+        endif()
+
         add_custom_command(
             OUTPUT "${generated_dir_echo}/${source_base}.pb.cs"
-            COMMAND ${CMAKE_COMMAND} -E env "\"PATH=${extra_path};${old_path};\"" ${CCOLA_PACK_DIR_protoc}/../bin/protoc.exe ${protopath} --error_format=${error_format} --plugin=protoc-gen-csharp-echo=${protoc_echo_plugin_path} --csharp-echo_out="${generated_dir_echo}" ${absolute_input}
+            COMMAND ${CMAKE_COMMAND} -E env "\"PATH=${extra_path};${old_path};\"" ${protoc_compiler_binary} ${protopath} --error_format=${error_format} --plugin=protoc-gen-csharp-echo=${protoc_echo_plugin_path} --csharp-echo_out="${generated_dir_echo}" ${absolute_input}
             DEPENDS "${absolute_input}"
             DEPENDS "${generated_dir_echo}"
             DEPENDS "${protoc_echo_plugin_path}"
@@ -149,9 +165,17 @@ macro(protocol_buffer_echo_java input)
             set(error_format "gcc")
         endif()
 
+        if (${CCOLA_SYSTEM_CONFIGURATION} STREQUAL "Darwin")
+            set(protoc_compiler_binary ${CCOLA_PACK_DIR_protoc}/../bin/protoc-osx-${CCOLA_PROCESSOR})
+        elif(${CCOLA_SYSTEM_CONFIGURATION} STREQUAL "Linux")
+            set(protoc_compiler_binary ${CCOLA_PACK_DIR_protoc}/../bin/protoc-linux-${CCOLA_PROCESSOR})
+        else()
+            set(protoc_compiler_binary ${CCOLA_PACK_DIR_protoc}/../bin/protoc.exe)
+        endif()
+
         add_custom_command(
             OUTPUT "${generated_dir_echo}/${source_base}Services.java"
-            COMMAND ${CMAKE_COMMAND} -E env "\"PATH=${extra_path};${old_path};\"" ${CCOLA_PACK_DIR_protoc}/../bin/protoc.exe ${protopath} --error_format=${error_format} --plugin=protoc-gen-java-echo=${protoc_echo_plugin_path} --java-echo_out="${java_dir}" ${absolute_input}
+            COMMAND ${CMAKE_COMMAND} -E env "\"PATH=${extra_path};${old_path};\"" ${protoc_compiler_binary} ${protopath} --error_format=${error_format} --plugin=protoc-gen-java-echo=${protoc_echo_plugin_path} --java-echo_out="${java_dir}" ${absolute_input}
             DEPENDS "${absolute_input}"
             DEPENDS "${generated_dir_echo}"
             DEPENDS "${protoc_echo_plugin_path}"
