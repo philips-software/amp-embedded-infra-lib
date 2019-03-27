@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.6.2)
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED true)
+
 if(NOT CCOLA_DIR)
     set(CCOLA_DIR "${CMAKE_SOURCE_DIR}/ccola")
 endif()
