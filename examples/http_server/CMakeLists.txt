@@ -9,7 +9,7 @@ ccola_component(http_server win: executable other: skip)
     ccola_dependencies(
         infra.util
         services.network_win
-        hal.windows
+        hal.generic
     )
 
 ccola_end_component()
@@ -25,7 +25,7 @@ ccola_component(http_server bsd: executable other: skip)
     ccola_dependencies(
         infra.util
         services.network_bsd
-        hal.bsd
+        hal.generic
     )
 
 ccola_end_component()

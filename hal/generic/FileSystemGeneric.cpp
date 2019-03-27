@@ -1,10 +1,10 @@
-#include "hal/windows/FileSystemWin.hpp"
+#include "hal/generic/FileSystemGeneric.hpp"
 #include <fstream>
 #include <iterator>
 
 namespace hal
 {
-    std::vector<std::string> FileSystemWin::ReadFile(const hal::filesystem::path& path)
+    std::vector<std::string> FileSystemGeneric::ReadFile(const hal::filesystem::path& path)
     {
         std::ifstream input(path);
         if (!input)
@@ -24,7 +24,7 @@ namespace hal
         return result;
     }
 
-    void FileSystemWin::WriteFile(const hal::filesystem::path& path, const std::vector<std::string>& contents)
+    void FileSystemGeneric::WriteFile(const hal::filesystem::path& path, const std::vector<std::string>& contents)
     {
         std::ofstream output(path);
         if (!output)
@@ -34,7 +34,7 @@ namespace hal
             output << line << std::endl;
     }
 
-    std::vector<uint8_t> FileSystemWin::ReadBinaryFile(const hal::filesystem::path& path)
+    std::vector<uint8_t> FileSystemGeneric::ReadBinaryFile(const hal::filesystem::path& path)
     {
         std::ifstream input(path, std::ios::binary);
         if (!input)
@@ -44,7 +44,7 @@ namespace hal
         return std::vector<uint8_t>(reinterpret_cast<const uint8_t*>(data.data()), reinterpret_cast<const uint8_t*>(data.data() + data.size()));
     }
 
-    void FileSystemWin::WriteBinaryFile(const hal::filesystem::path& path, const std::vector<uint8_t>& contents)
+    void FileSystemGeneric::WriteBinaryFile(const hal::filesystem::path& path, const std::vector<uint8_t>& contents)
     {
         std::ofstream output(path, std::ios::binary);
         if (!output)

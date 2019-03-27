@@ -1,5 +1,5 @@
-#ifndef HAL_TIMER_SERVICE_WIN_HPP
-#define HAL_TIMER_SERVICE_WIN_HPP
+#ifndef HAL_TIMER_SERVICE_GENERIC_HPP
+#define HAL_TIMER_SERVICE_GENERIC_HPP
 
 #include "infra/timer/TimerService.hpp"
 #include <condition_variable>
@@ -8,12 +8,12 @@
 
 namespace hal
 {
-    class TimerServiceWin
+    class TimerServiceGeneric
         : public infra::TimerService
     {
     public:
-        TimerServiceWin(uint32_t id = infra::systemTimerServiceId);
-        ~TimerServiceWin();
+        TimerServiceGeneric(uint32_t id = infra::systemTimerServiceId);
+        ~TimerServiceGeneric();
 
         virtual void NextTriggerChanged() override;
         virtual infra::TimePoint Now() const override;

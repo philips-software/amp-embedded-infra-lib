@@ -7,7 +7,7 @@ ccola_component(https_client win: executable other: skip)
     ccola_dependencies(
         infra.util
         services.network_win
-        hal.windows
+        hal.generic
     )
 
 ccola_end_component()

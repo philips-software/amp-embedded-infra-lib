@@ -1,41 +1,40 @@
-#include "hal/bsd/TimerServiceBsd.hpp"
+#include "hal/generic/TimerServiceGeneric.hpp"
 #include "infra/event/EventDispatcher.hpp"
-#include <cassert>
 
 namespace hal
 {
-    TimerServiceBsd::TimerServiceBsd(uint32_t id)
-        : TimerService(id)
+    TimerServiceGeneric::TimerServiceGeneric(uint32_t id)
+        : infra::TimerService(id)
         , triggerThread([this]() { WaitForTrigger(); })
     {
         nextTrigger = NextTrigger();
     }
 
-    TimerServiceBsd::~TimerServiceBsd()
+    TimerServiceGeneric::~TimerServiceGeneric()
     {
         quit = true;
         condition.notify_one();
         triggerThread.join();
     }
 
-    void TimerServiceBsd::NextTriggerChanged()
+    void TimerServiceGeneric::NextTriggerChanged()
     {
         std::unique_lock<std::recursive_mutex> lock(mutex);
         nextTrigger = NextTrigger();
         condition.notify_one();
     }
 
-    infra::TimePoint TimerServiceBsd::Now() const
+    infra::TimePoint TimerServiceGeneric::Now() const
     {
         return std::chrono::system_clock::now();
     }
 
-    infra::Duration TimerServiceBsd::Resolution() const
+    infra::Duration TimerServiceGeneric::Resolution() const
     {
         return std::chrono::duration<long long, std::chrono::system_clock::period>(1);
     }
 
-    void TimerServiceBsd::WaitForTrigger()
+    void TimerServiceGeneric::WaitForTrigger()
     {
         std::unique_lock<std::recursive_mutex> lock(mutex);
 

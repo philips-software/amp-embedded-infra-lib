@@ -1,5 +1,5 @@
 #include "gmock/gmock.h"
-#include "hal/windows/SynchronousRandomDataGeneratorWin.hpp"
+#include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "mbedtls/config.h"
 #include "mbedtls/certs.h"
 #include "services/network/CertificatesMbedTls.hpp"
@@ -77,7 +77,7 @@ public:
     }
 
     CertificatesMbedTlsWithVerify certificates;
-    hal::SynchronousRandomDataGeneratorWin randomDataGenerator;
+    hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
 };
 
 TEST_F(CertificatesMbedTlsTest, write_private_key)

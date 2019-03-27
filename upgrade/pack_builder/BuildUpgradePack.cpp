@@ -1,5 +1,5 @@
 #include "mbedtls/memory_buffer_alloc.h"
-#include "hal/windows/FileSystemWin.hpp"
+#include "hal/generic/FileSystemGeneric.hpp"
 #include "upgrade/pack_builder/BinaryObject.hpp"
 #include "upgrade/pack_builder/BuildUpgradePack.hpp"
 #include "upgrade/pack_builder/ImageEncryptorAes.hpp"
@@ -113,7 +113,7 @@ namespace application
         infra::ConstByteRange ecDsa224PrivateKey, const std::vector<NoFileInputFactory*>& otherTargets)
     {
         application::SecureRandomNumberGenerator randomNumberGenerator;
-        hal::FileSystemWin fileSystem;
+        hal::FileSystemGeneric fileSystem;
         application::ImageEncryptorAes imageEncryptorAes(randomNumberGenerator, aesKey);
         application::UpgradePackInputFactory inputFactory(supportedHexTargets, supportedBinaryTargets, fileSystem, imageEncryptorAes, otherTargets);
         application::ImageSignerEcDsa signer(randomNumberGenerator, ecDsa224PublicKey, ecDsa224PrivateKey);
