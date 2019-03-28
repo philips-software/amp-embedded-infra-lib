@@ -10,7 +10,7 @@ namespace infra
 {
     template<class T>
     class IntrusiveList;
-        
+
     namespace detail
     {
         template<class T>
@@ -21,11 +21,11 @@ namespace infra
         {
         protected:
             IntrusiveListNode();
-            ~IntrusiveListNode() = default;
 
         public:
             IntrusiveListNode(const IntrusiveListNode& other);
             IntrusiveListNode& operator=(const IntrusiveListNode& other);
+            ~IntrusiveListNode() = default;
 
         private:
             template<class U>
@@ -591,7 +591,6 @@ namespace infra
             return !(*this == other);
         }
     }
-
 }
 
 #endif
