@@ -28,9 +28,9 @@ namespace infra
             ~IntrusiveListNode() = default;
 
         private:
-            template<class U>
+            template<class>
                 friend class IntrusiveList;
-            template<class U>
+            template<class>
                 friend class IntrusiveListIterator;
             IntrusiveListNode<T>* next;
             IntrusiveListNode<T>* previous;
