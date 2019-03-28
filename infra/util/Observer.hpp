@@ -17,13 +17,13 @@ namespace infra
         using SubjectType = SubjectType_;
         using SingleHelper = void;
 
-    protected:
+    public:
         Observer() = default;
         Observer(SubjectType& subject);                                                                                 //TICS !INT#001
 
+    protected:
         Observer(const Observer& other) = delete;
         Observer& operator=(const Observer& other) = delete;
-
         ~Observer();
 
         SubjectType& Subject() const;
@@ -43,13 +43,13 @@ namespace infra
         using SubjectType = SubjectType_;
         using SingleHelper = SubjectType_;
 
-    protected:
+    public:
         SingleObserver() = default;
         SingleObserver(SubjectType& subject);                                                                           //TICS !INT#001
 
+    protected:
         SingleObserver(const SingleObserver& other) = delete;
         SingleObserver& operator=(const SingleObserver& other) = delete;
-
         ~SingleObserver();
 
     public:
