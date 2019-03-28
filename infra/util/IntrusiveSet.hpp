@@ -171,7 +171,7 @@ namespace infra
         assert(!value.right);
 
         T* node = const_cast<pointer>(&value);
-        insert_in_tree(*node);
+        this->insert_in_tree(*node);
         node->colour = Colour::red;
 
         while (node != this->RootNode() && node->parent->colour == Colour::red)
@@ -191,12 +191,12 @@ namespace infra
                     if (node == node->parent->right)
                     {
                         node = node->parent;
-                        left_rotate(*node);
+                        this->left_rotate(*node);
                     }
 
                     node->parent->colour = Colour::black;
                     node->parent->parent->colour = Colour::red;
-                    right_rotate(*node->parent->parent);
+                    this->right_rotate(*node->parent->parent);
                 }
             }
             else
@@ -214,12 +214,12 @@ namespace infra
                     if (node == node->parent->left)
                     {
                         node = node->parent;
-                        right_rotate(*node);
+                        this->right_rotate(*node);
                     }
 
                     node->parent->colour = Colour::black;
                     node->parent->parent->colour = Colour::red;
-                    left_rotate(*node->parent->parent);
+                    this->left_rotate(*node->parent->parent);
                 }
             }
         }
@@ -245,7 +245,7 @@ namespace infra
             T* replacement;
             T* oldReplacementParent;
             T** oldReplacement;
-            std::tie(replacement, oldReplacementParent, oldReplacement) = remove_from_tree(const_cast<T&>(value));
+            std::tie(replacement, oldReplacementParent, oldReplacement) = this->remove_from_tree(const_cast<T&>(value));
 
             if (oldReplacementParent != nullptr)
             {
@@ -301,7 +301,7 @@ namespace infra
                 if (doubleBlackSibling == doubleBlackParent->left && redNephew == &doubleBlackSibling->left)
                 {
                     // Step 3.2 a i
-                    right_rotate(*doubleBlackParent);
+                    this->right_rotate(*doubleBlackParent);
                     doubleBlackSibling->colour = doubleBlackParent->colour;
                     doubleBlackParent->colour = Colour::black;
                 }
@@ -312,13 +312,13 @@ namespace infra
                     doubleBlackParent->colour = Colour::black;
                     doubleBlackSibling->colour = Colour::black;
 
-                    left_rotate(*doubleBlackSibling);
-                    right_rotate(*doubleBlackParent);
+                    this->left_rotate(*doubleBlackSibling);
+                    this->right_rotate(*doubleBlackParent);
                 }
                 else if (doubleBlackSibling == doubleBlackParent->right && redNephew == &doubleBlackSibling->right)
                 {
                     // Step 3.2 a iii
-                    left_rotate(*doubleBlackParent);
+                    this->left_rotate(*doubleBlackParent);
                     doubleBlackSibling->colour = doubleBlackParent->colour;
                     doubleBlackParent->colour = Colour::black;
                 }
@@ -329,8 +329,8 @@ namespace infra
                     doubleBlackParent->colour = Colour::black;
                     doubleBlackSibling->colour = Colour::black;
 
-                    right_rotate(*doubleBlackSibling);
-                    left_rotate(*doubleBlackParent);
+                    this->right_rotate(*doubleBlackSibling);
+                    this->left_rotate(*doubleBlackParent);
                 }
                 else
                     abort();
@@ -366,13 +366,13 @@ namespace infra
                 if (doubleBlackSibling == doubleBlackParent->left)
                 {
                     // Step 3.2 c i
-                    right_rotate(*doubleBlackParent);
+                    this->right_rotate(*doubleBlackParent);
                     doubleBlack = &doubleBlackParent->right;
                 }
                 else
                 {
                     // Step 3.2 c ii
-                    left_rotate(*doubleBlackParent);
+                    this->left_rotate(*doubleBlackParent);
                     doubleBlack = &doubleBlackParent->left;
                 }
             }
