@@ -6,8 +6,11 @@ namespace services
         : tracer(tracer)
     {}
 
-    void TracerAdapterPrintf::Print(const char* format, va_list args)
+    void TracerAdapterPrintf::Print(const char* format, va_list* args)
     {
+        assert(format != nullptr);
+        assert(args != nullptr);
+
         for (; *format != 0; ++format)
         {
             if (*format == '%')
@@ -19,7 +22,7 @@ namespace services
         }
     }
 
-    void TracerAdapterPrintf::HandleFormat(const char*& format, va_list args)
+    void TracerAdapterPrintf::HandleFormat(const char*& format, va_list* args)
     {
         ++format;
 
@@ -65,7 +68,7 @@ namespace services
         return w;
     }
 
-    void TracerAdapterPrintf::ParseFormat(char format, int lengthSpecifier, const infra::Width& width, va_list args)
+    void TracerAdapterPrintf::ParseFormat(char format, int lengthSpecifier, const infra::Width& width, va_list* args)
     {
         switch (format)
         {
@@ -74,38 +77,38 @@ namespace services
                 tracer.Continue() << format;
                 break;
             case 'c':
-                tracer.Continue() << static_cast<const char>(va_arg(args, int32_t));
+                tracer.Continue() << static_cast<const char>(va_arg(*args, int32_t));
                 break;
             case 's':
             {
-                auto* s = reinterpret_cast<const char*>(va_arg(args, int32_t));
+                auto* s = reinterpret_cast<const char*>(va_arg(*args, int32_t));
                 tracer.Continue() << (s != nullptr ? s : "(null)");
                 break;
             }
             case 'd':
             case 'i':
                 if (lengthSpecifier >= 2)
-                    tracer.Continue() << va_arg(args, int64_t);
+                    tracer.Continue() << va_arg(*args, int64_t);
                 else
-                    tracer.Continue() << va_arg(args, int32_t);
+                    tracer.Continue() << va_arg(*args, int32_t);
                 break;
             case 'u':
                 if (lengthSpecifier >= 2)
-                    tracer.Continue() << va_arg(args, uint64_t);
+                    tracer.Continue() << va_arg(*args, uint64_t);
                 else
-                    tracer.Continue() << va_arg(args, uint32_t);
+                    tracer.Continue() << va_arg(*args, uint32_t);
                 break;
             case 'p':                                                                                               //TICS !CFL#001
                 tracer.Continue() << "0x";
             case 'X':
             case 'x':
                 if (lengthSpecifier >= 2)
-                    tracer.Continue() << infra::hex << width << va_arg(args, uint64_t);
+                    tracer.Continue() << infra::hex << width << va_arg(*args, uint64_t);
                 else
-                    tracer.Continue() << infra::hex << width << va_arg(args, uint32_t);
+                    tracer.Continue() << infra::hex << width << va_arg(*args, uint32_t);
                 break;
             case 'f':
-                tracer.Continue() << static_cast<float>(va_arg(args, double));
+                tracer.Continue() << static_cast<float>(va_arg(*args, double));
                 break;
             default:
                 while (lengthSpecifier-- > 0)
