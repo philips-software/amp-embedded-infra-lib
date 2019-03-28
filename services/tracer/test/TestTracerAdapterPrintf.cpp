@@ -11,7 +11,7 @@ void Print(const char* format, ...)
     va_list args;
 
     va_start(args, format);
-    printfAdapter->Print(format, args);
+    printfAdapter->Print(format, &args);
     va_end(args);
 }
 
@@ -119,4 +119,10 @@ TEST_F(TracerAdapterPrintfTest, print_int_in_hex_with_X_to_tracer)
 {
     Print("%X", 0x123A);
     EXPECT_EQ("123a", stream.Storage());
+}
+
+TEST_F(TracerAdapterPrintfTest, print_multiple_values)
+{
+    Print("%u%u%u", 100, 200, 300);
+    EXPECT_EQ("100200300", stream.Storage());
 }
