@@ -1,5 +1,4 @@
 #include "services/network/HttpClientImpl.hpp"
-#include "infra/stream/LimitedInputStream.hpp"
 #include "infra/stream/StringInputStream.hpp"
 #include "infra/util/Tokenizer.hpp"
 
@@ -11,92 +10,6 @@ namespace services
         const infra::BoundedConstString httpVersion = "HTTP/1.1";
         const infra::BoundedConstString sp = " ";
         const infra::BoundedConstString crlf = "\r\n";
-
-        class CountingStreamReader
-            : public infra::StreamReader
-            , private infra::StreamErrorPolicy
-        {
-        public:
-            CountingStreamReader(infra::StreamReader& reader);
-
-            uint32_t TotalRead() const;
-
-            // Implementation of StreamReader
-            virtual void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
-            virtual uint8_t Peek(infra::StreamErrorPolicy& errorPolicy) override;
-            virtual infra::ConstByteRange ExtractContiguousRange(std::size_t max) override;
-            virtual infra::ConstByteRange PeekContiguousRange(std::size_t start) override;
-            virtual bool Empty() const override;
-            virtual std::size_t Available() const override;
-
-            // Implementation of StreamErrorPolicy
-            virtual bool Failed() const override;
-            virtual void ReportResult(bool ok) override;
-
-        private:
-            infra::StreamReader& reader;
-            infra::StreamErrorPolicy* otherErrorPolicy = nullptr;
-            bool ok = true;
-            uint32_t totalRead = 0;
-        };
-
-        CountingStreamReader::CountingStreamReader(infra::StreamReader& reader)
-            : reader(reader)
-        {}
-
-        uint32_t CountingStreamReader::TotalRead() const
-        {
-            return totalRead;
-        }
-
-        void CountingStreamReader::Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy)
-        {
-            otherErrorPolicy = &errorPolicy;
-            ok = true;
-            reader.Extract(range, *this);
-
-            if (ok)
-                totalRead += range.size();
-            otherErrorPolicy = nullptr;
-        }
-
-        uint8_t CountingStreamReader::Peek(infra::StreamErrorPolicy& errorPolicy)
-        {
-            return reader.Peek(errorPolicy);
-        }
-
-        infra::ConstByteRange CountingStreamReader::ExtractContiguousRange(std::size_t max)
-        {
-            auto result = reader.ExtractContiguousRange(max);
-            totalRead += result.size();
-            return result;
-        }
-
-        infra::ConstByteRange CountingStreamReader::PeekContiguousRange(std::size_t start)
-        {
-            return reader.PeekContiguousRange(start);
-        }
-
-        bool CountingStreamReader::Empty() const
-        {
-            return reader.Empty();
-        }
-
-        std::size_t CountingStreamReader::Available() const
-        {
-            return reader.Available();
-        }
-
-        bool CountingStreamReader::Failed() const
-        {
-            return otherErrorPolicy->Failed();
-        }
-
-        void CountingStreamReader::ReportResult(bool ok)
-        {
-            otherErrorPolicy->ReportResult(ok);
-            this->ok = this->ok && ok;
-        }
     }
 
     HttpRequestFormatter::HttpRequestFormatter(infra::BoundedConstString hostname, infra::BoundedConstString method, infra::BoundedConstString requestTarget, const HttpHeaders headers)
@@ -269,7 +182,7 @@ namespace services
     void HttpResponseParser::ParseHeaders(infra::StreamReaderWithRewinding& reader)
     {
         infra::TextInputStream::WithErrorPolicy stream(reader);
-        while (!stream.Empty())
+        while (!done && !stream.Empty())
         {
             auto start = reader.ConstructSaveMarker();
 
@@ -300,7 +213,7 @@ namespace services
                     observer->HeaderAvailable(header);
             }
             else if (headerBuffer.full())
-                error = true;
+                SetError();
         }
     }
 
@@ -391,62 +304,26 @@ namespace services
 
     void HttpClientImpl::DataReceived()
     {
-        auto reader = ConnectionObserver::Subject().ReceiveStream();
-
-        if (response)
-        {
-            if (!response->Done())
-            {
-                infra::WeakPtr<services::ConnectionObserver> self = services::ConnectionObserver::Subject().Observer();
-
-                response->DataReceived(*reader);
-
-                if (!self.lock())   // DataReceived may close the connection
-                    return;
-
-                ConnectionObserver::Subject().AckReceived();
-            }
-
-            if (response->Done())
-            {
-                if (!response->Error())
-                {
-                    if (!contentLength)
-                        contentLength = response->ContentLength();
-
-                    if (!reader->Empty())
-                    {
-                        infra::LimitedStreamReader limitedReader(*reader, *contentLength);
-                        CountingStreamReader countingReader(limitedReader);
-
-                        infra::WeakPtr<services::ConnectionObserver> self = services::ConnectionObserver::Subject().Observer();
-
-                        observer->BodyAvailable(countingReader);
-
-                        if (!self.lock())   // BodyAvailable may close the connection
-                            return;
-
-                        ConnectionObserver::Subject().AckReceived();
-
-                        *contentLength -= countingReader.TotalRead();
-                    }
-
-                    if (*contentLength == 0)
-                    {
-                        contentLength = infra::none;
-                        observer->BodyComplete();
-                    }
-                }
-                else
-                    ConnectionObserver::Subject().AbortAndDestroy();
-            }
-        }
+        if (bodyReader != infra::none)
+            observer->BodyAvailable(infra::MakeContainedSharedObject(bodyReader->countingReader, bodyReaderAccess.MakeShared(bodyReader)));
         else
-            ConnectionObserver::Subject().AbortAndDestroy();
+        {
+            if (response)
+                HandleData();
+            else
+                ConnectionObserver::Subject().AbortAndDestroy();
+        }
     }
 
     void HttpClientImpl::Connected()
     {
+        infra::WeakPtr<services::HttpClientImpl> self = infra::StaticPointerCast<HttpClientImpl>(services::ConnectionObserver::Subject().Observer());
+        bodyReaderAccess.SetAction([self]()
+        {
+            if (auto sharedSelf = self.lock())
+                sharedSelf->BodyReaderDestroyed();
+        });
+
         GetObserver().Connected();
     }
 
@@ -454,6 +331,63 @@ namespace services
     {
         GetObserver().ClosingConnection();
         observer->Detach();
+    }
+
+    void HttpClientImpl::HandleData()
+    {
+        if (!response->Done())
+        {
+            auto reader = ConnectionObserver::Subject().ReceiveStream();
+
+            infra::WeakPtr<services::ConnectionObserver> self = services::ConnectionObserver::Subject().Observer();
+
+            response->DataReceived(*reader);
+
+            if (!self.lock())   // DataReceived may close the connection
+                return;
+
+            ConnectionObserver::Subject().AckReceived();
+        }
+
+        if (response->Done())
+        {
+            if (!response->Error())
+                BodyReceived();
+            else
+                ConnectionObserver::Subject().AbortAndDestroy();
+        }
+    }
+
+    void HttpClientImpl::BodyReceived()
+    {
+        if (!contentLength)
+            contentLength = response->ContentLength();
+
+        if (contentLength == 0)
+            BodyComplete();
+        else
+        {
+            bodyReader.Emplace(ConnectionObserver::Subject().ReceiveStream(), *contentLength);
+
+            observer->BodyAvailable(infra::MakeContainedSharedObject(bodyReader->countingReader, bodyReaderAccess.MakeShared(bodyReader)));
+        }
+    }
+
+    void HttpClientImpl::BodyReaderDestroyed()
+    {
+        ConnectionObserver::Subject().AckReceived();
+        *contentLength -= bodyReader->countingReader.TotalRead();
+        bodyReader = infra::none;
+
+        if (*contentLength == 0)
+            BodyComplete();
+    }
+
+    void HttpClientImpl::BodyComplete()
+    {
+        contentLength = infra::none;
+        response = infra::none;
+        observer->BodyComplete();
     }
 
     void HttpClientImpl::ExecuteRequest(infra::BoundedConstString method, infra::BoundedConstString requestTarget, const HttpHeaders headers)
@@ -467,6 +401,11 @@ namespace services
         request.Emplace(hostname, method, requestTarget, content, headers);
         ConnectionObserver::Subject().RequestSendStream(request->Size());
     }
+
+    HttpClientImpl::BodyReader::BodyReader(const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader, uint32_t contentLength)
+        : reader(reader)
+        , limitedReader(*reader, contentLength)
+    {}
 
     HttpClientConnectorImpl::HttpClientConnectorImpl(infra::BoundedString& headerBuffer, services::ConnectionFactoryWithNameResolver& connectionFactory)
         : headerBuffer(headerBuffer)

@@ -68,9 +68,9 @@ namespace application
             tracer.Trace() << "Header: " << header;
         }
 
-        virtual void BodyAvailable(infra::StreamReader& reader) override
+        virtual void BodyAvailable(infra::SharedPtr<infra::StreamReader>&& reader) override
         {
-            infra::DataInputStream::WithErrorPolicy stream(reader, infra::noFail);
+            infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
 
             while (!stream.Empty())
                 tracer.Trace() << infra::ByteRangeAsString(stream.ContiguousRange());

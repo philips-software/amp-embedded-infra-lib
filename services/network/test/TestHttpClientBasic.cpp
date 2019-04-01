@@ -14,13 +14,12 @@ public:
     using services::HttpClientBasic::HttpClientBasic;
 
     MOCK_METHOD0(Established, void());
-    MOCK_METHOD0(Failed, void());
-    MOCK_METHOD0(TimedOut, void());
-    MOCK_METHOD0(Expired, void());
+    MOCK_METHOD0(Done, void());
+    MOCK_METHOD1(Error, void(bool intermittentFailure));
 
     MOCK_METHOD1(StatusAvailable, void(services::HttpStatusCode));
     MOCK_METHOD1(HeaderAvailable, void(services::HttpHeader));
-    MOCK_METHOD1(BodyAvailable, void(infra::StreamReader&));
+    MOCK_METHOD1(BodyAvailable, void(infra::SharedPtr<infra::StreamReader>&& reader));
 };
 
 class HttpClientBasicTest
@@ -48,9 +47,9 @@ public:
     testing::StrictMock<infra::MockCallback<void()>> onStopped;
 };
 
-TEST_F(HttpClientBasicTest, Failed_is_reported_on_ConnectionFailed)
+TEST_F(HttpClientBasicTest, intermittent_error_is_reported_on_ConnectionFailed)
 {
-    EXPECT_CALL(controller, Failed());
+    EXPECT_CALL(controller, Error(true));
     httpClientObserverFactory->ConnectionFailed(services::HttpClientObserverFactory::ConnectFailReason::nameLookupFailed);
 }
 
@@ -100,7 +99,7 @@ TEST_F(HttpClientBasicTest, Stop_while_done)
     EXPECT_CALL(controller, Established());
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.AttachObserver(client); client->Connected(); });
 
-    EXPECT_CALL(controller, Expired());
+    EXPECT_CALL(controller, Done());
     EXPECT_CALL(httpClient, Close());
     httpClient.observer->BodyComplete();
     httpClient.observer->ClosingConnection();
@@ -115,7 +114,7 @@ TEST_F(HttpClientBasicTest, connection_times_out)
     EXPECT_CALL(controller, Established());
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.AttachObserver(client); client->Connected(); });
 
-    EXPECT_CALL(controller, TimedOut());
+    EXPECT_CALL(controller, Error(true));
     EXPECT_CALL(httpClient, Close());
     ForwardTime(std::chrono::minutes(1));
 }
@@ -125,7 +124,7 @@ TEST_F(HttpClientBasicTest, timer_resets_after_BodyComplete)
     EXPECT_CALL(controller, Established());
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.AttachObserver(client); client->Connected(); });
 
-    EXPECT_CALL(controller, Expired());
+    EXPECT_CALL(controller, Done());
     EXPECT_CALL(httpClient, Close());
     httpClient.observer->BodyComplete();
 
