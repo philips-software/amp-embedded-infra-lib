@@ -78,6 +78,12 @@ namespace infra
         , subObjects(reinterpret_cast<infra::BoundedVector<infra::PolymorphicVariant<JsonSubParser, JsonSubObjectParser, JsonSubArrayParser>>&>(subObjects))
     {}
 
+    JsonSubParser::~JsonSubParser()
+    {
+        if (destructedIndication != nullptr)
+            *destructedIndication = true;
+    }
+
     void JsonSubParser::FeedToken(infra::MemoryRange<const char>& data, bool saveValue)
     {
         while (!data.empty() && tokenState != TokenState::done)
@@ -256,18 +262,32 @@ namespace infra
 
     void JsonSubParser::ReportParseError()
     {
-        for (auto subObject = subObjects.rbegin(); subObject != subObjects.rend(); ++subObject)
+        bool destructed = false;
+        destructedIndication = &destructed;
+
+        for (auto subObject = subObjects.rbegin(); !destructed && subObject != subObjects.rend(); ++subObject)
             (*subObject)->Visitor().ParseError();
 
-        subObjects.clear();
+        if (!destructed)
+        {
+            subObjects.clear();
+            destructedIndication = nullptr;
+        }
     }
 
     void JsonSubParser::ReportSemanticError()
     {
-        for (auto subObject = std::next(subObjects.rbegin()); subObject != subObjects.rend(); ++subObject)
+        bool destructed = false;
+        destructedIndication = &destructed;
+
+        for (auto subObject = std::next(subObjects.rbegin()); !destructed && subObject != subObjects.rend(); ++subObject)
             (*subObject)->Visitor().SemanticError();
 
-        subObjects.clear();
+        if (!destructed)
+        {
+            subObjects.clear();
+            destructedIndication = nullptr;
+        }
     }
 
     void JsonSubParser::FoundToken(Token found)
@@ -464,10 +484,16 @@ namespace infra
         }
 
         if (state == State::parseError)
+        {
+            data.clear();
             ReportParseError();
+        }
 
         if (state == State::semanticError)
+        {
+            data.clear();
             ReportSemanticError();
+        }
     }
 
     JsonVisitor& JsonSubObjectParser::Visitor()
@@ -613,10 +639,16 @@ namespace infra
         }
 
         if (state == State::parseError)
+        {
+            data.clear();
             ReportParseError();
+        }
 
         if (state == State::semanticError)
+        {
+            data.clear();
             ReportSemanticError();
+        }
     }
 
     JsonVisitor& JsonSubArrayParser::Visitor()
