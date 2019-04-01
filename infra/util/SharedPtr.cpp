@@ -60,8 +60,7 @@ namespace infra
     }
 
     AccessedBySharedPtr::AccessedBySharedPtr(const infra::Function<void()>& onUnReferenced)
-        : control(this, this)
-        , onUnReferenced(onUnReferenced)
+        : onUnReferenced(onUnReferenced)
     {}
 
     AccessedBySharedPtr::~AccessedBySharedPtr()
