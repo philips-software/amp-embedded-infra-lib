@@ -4,6 +4,7 @@
 #include "infra/util/MemoryRange.hpp"
 #include <cstdint>
 #include <cstring>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -26,6 +27,37 @@ namespace infra
         ConstByteRange MakeByteRange(const T& v);
     ConstByteRange MakeStringByteRange(const char* string);
     ConstByteRange MakeStringByteRange(const std::string& string);
+
+#ifdef CCOLA_HOST_BUILD //TICS !POR#021
+    // gtest uses PrintTo to display the contents of ByteRange
+    inline void PrintTo(ByteRange range, std::ostream* os)
+    {
+        *os << "ByteRange size " << range.size() << " contents [";
+        for (uint8_t& e : infra::Head(range, 8))
+        {
+            *os << static_cast<int>(e);
+            if (std::distance(range.begin(), &e) != range.size() - 1)
+                *os << ", ";
+        }
+        if (range.size() > 8)
+            *os << "...";
+        *os << "]";
+    }
+
+    inline void PrintTo(ConstByteRange range, std::ostream* os)
+    {
+        *os << "ConstByteRange size " << range.size() << " contents [";
+        for (const uint8_t& e : infra::Head(range, 8))
+        {
+            *os << static_cast<int>(e);
+            if (std::distance(range.begin(), &e) != range.size() - 1)
+                *os << ", ";
+        }
+        if (range.size() > 8)
+            *os << "...";
+        *os << "]";
+    }
+#endif
 
     ////    Implementation    ////
 

@@ -27,6 +27,7 @@
 #include <cstddef>
 #include <cstring>
 #include <functional>
+#include <ostream>
 #include <tuple>
 #include <type_traits>
 
@@ -166,6 +167,49 @@ namespace infra
         bool operator!=(const Function<Result(Args...), ExtraSize>& f, std::nullptr_t);
     template<std::size_t ExtraSize, class Result, class... Args>
         bool operator!=(std::nullptr_t, const Function<Result(Args...), ExtraSize>& f);
+
+#ifdef CCOLA_HOST_BUILD //TICS !POR#021
+    // gtest uses PrintTo to display the contents of Function
+    template<class... Args>
+    struct PrintParameterNames;
+
+    template<>
+    struct PrintParameterNames<>
+    {
+        PrintParameterNames(std::ostream* os)
+        {}
+    };
+
+    template<class Arg>
+    struct PrintParameterNames<Arg>
+    {
+        PrintParameterNames(std::ostream* os)
+        {
+            *os << typeid(Arg).name();
+        }
+    };
+
+    template<class Arg, class Arg2, class... Args>
+    struct PrintParameterNames<Arg, Arg2, Args...>
+    {
+        PrintParameterNames(std::ostream* os)
+        {
+            *os << typeid(Arg).name() << ", ";
+
+            PrintParameterNames<Arg2, Args...> print(os);
+        }
+    };
+
+    template<class R, class... Args>
+    void PrintTo(Function<R(Args...)>, std::ostream* os)
+    {
+        *os << "Function<" << typeid(R).name() << "(";
+
+        PrintParameterNames<Args...> print(os);
+
+        *os << ")>";
+    }
+#endif
 
     //// Implementation ////
 

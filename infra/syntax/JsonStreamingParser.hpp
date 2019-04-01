@@ -82,7 +82,7 @@ namespace infra
         JsonSubParser(infra::BoundedString tagBuffer, infra::BoundedString valueBuffer, char& subObjects);
         JsonSubParser(const JsonSubParser& other) = delete;
         JsonSubParser& operator=(const JsonSubParser& other) = delete;
-        virtual ~JsonSubParser() = default;
+        virtual ~JsonSubParser();
 
     public:
         virtual void Feed(infra::MemoryRange<const char>& data) = 0;
@@ -144,6 +144,7 @@ namespace infra
     private:
         uint8_t unicodeIndex = 0;
         uint16_t unicode = 0;
+        bool* destructedIndication = nullptr;
     };
 
     class JsonSubObjectParser

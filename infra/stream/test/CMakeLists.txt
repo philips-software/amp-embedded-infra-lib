@@ -5,6 +5,7 @@ ccola_component(stream_test gmock_test)
         TestBoundedDequeInputStream.cpp
         TestByteInputStream.cpp
         TestByteOutputStream.cpp
+        TestCountingInputStream.cpp
         TestLimitedInputStream.cpp
         TestLimitedOutputStream.cpp
         TestOutputStreamSwitch.cpp

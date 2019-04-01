@@ -423,6 +423,23 @@ TEST_F(SharedPtrTest, construct_AccessedBySharedPtr)
     }
 }
 
+TEST_F(SharedPtrTest, construct_AccessedBySharedPtr_and_set_action_later)
+{
+    struct Object
+    {
+    } object;
+
+    infra::MockCallback<void()> cb;
+    infra::AccessedBySharedPtr sharedObject;
+
+    sharedObject.SetAction([&cb]() { cb.callback(); });
+
+    {
+        infra::WeakPtr<Object> weakObject(sharedObject.MakeShared(object));
+        EXPECT_CALL(cb, callback());
+    }
+}
+
 TEST_F(SharedPtrTest, construct_non_owning_SharedPtr)
 {
     struct Object

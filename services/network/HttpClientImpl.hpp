@@ -3,6 +3,8 @@
 
 #include "infra/util/Optional.hpp"
 #include "infra/util/SharedOptional.hpp"
+#include "infra/stream/CountingInputStream.hpp"
+#include "infra/stream/LimitedInputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "services/network/Http.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
@@ -92,8 +94,23 @@ namespace services
         virtual void ClosingConnection() override;
 
     private:
+        void HandleData();
+        void BodyReceived();
+        void BodyReaderDestroyed();
+        void BodyComplete();
         void ExecuteRequest(infra::BoundedConstString method, infra::BoundedConstString requestTarget, const HttpHeaders headers);
         void ExecuteRequestWithContent(infra::BoundedConstString method, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers);
+
+    private:
+        class BodyReader
+        {
+        public:
+            BodyReader(const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader, uint32_t contentLength);
+
+            infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
+            infra::LimitedStreamReader limitedReader;
+            infra::CountingStreamReader countingReader{ limitedReader };
+        };
 
     protected:
         infra::SharedPtr<HttpClientObserver> observer;
@@ -104,6 +121,8 @@ namespace services
         infra::BoundedString& headerBuffer;
         infra::BoundedConstString hostname;
         infra::Optional<uint32_t> contentLength;
+        infra::Optional<BodyReader> bodyReader;
+        infra::AccessedBySharedPtr bodyReaderAccess;
     };
 
     class HttpClientConnectorImpl

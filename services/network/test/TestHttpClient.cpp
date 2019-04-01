@@ -128,7 +128,7 @@ public:
     testing::StrictMock<services::ConnectionFactoryWithNameLookupMock> connectionFactory;
     testing::StrictMock<services::HttpClientObserverFactoryMock> factory;
     testing::StrictMock<services::HttpClientObserverFactoryMock> factory2;
-    services::HttpClientConnectorImpl::WithMaxHeaderSize<512> connector;
+    services::HttpClientConnectorImpl::WithMaxHeaderSize<50> connector;
     testing::StrictMock<services::ConnectionStubWithAckReceivedMock> connection;
     infra::SharedPtr<services::Connection> connectionPtr;
     testing::StrictMock<services::HttpClientObserverMock> client;
@@ -401,6 +401,20 @@ TEST_F(HttpClientTest, ResponseAvailable_contains_response_headers)
     ExecuteAllActions();
 }
 
+TEST_F(HttpClientTest, too_long_header_is_rejected)
+{
+    Connect();
+
+    EXPECT_CALL(client, StatusAvailable(testing::_));
+
+    EXPECT_CALL(connection, AckReceivedMock());
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+    EXPECT_CALL(client, ClosingConnection());
+    client.Subject().Get("/");
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.0 200 Success\r\n012345678901234567890123456789012345678901234567890123456789\r\n")));
+    ExecuteAllActions();
+}
+
 TEST_F(HttpClientTest, leading_spaces_are_stripped_from_header)
 {
     Connect();
@@ -440,8 +454,8 @@ TEST_F(HttpClientTest, ResponseAvailable_forwards_response_body_to_client)
     EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
     EXPECT_CALL(client, HeaderAvailable(services::HttpHeader("Date", "Sat, 28 Nov 2009 04:36:25 GMT")));
     EXPECT_CALL(client, HeaderAvailable(services::HttpHeader("Expires", "-1")));
-    EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(infra::Lambda([this](infra::StreamReader& reader) {
-        infra::DataInputStream::WithErrorPolicy stream(reader, infra::noFail);
+    EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(infra::Lambda([this](infra::SharedPtr<infra::StreamReader>& reader) {
+        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
         EXPECT_EQ("body\r\ndata", infra::ByteRangeAsString(stream.ContiguousRange()));
     }));
     EXPECT_CALL(client, BodyComplete());
@@ -485,15 +499,15 @@ TEST_F(HttpClientTest, response_in_parts_is_handled)
     ExecuteAllActions();
 
     EXPECT_CALL(client, HeaderAvailable(services::HttpHeader("Expires", "-1")));
-    EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(infra::Lambda([this](infra::StreamReader& reader) {
-        infra::DataInputStream::WithErrorPolicy stream(reader, infra::noFail);
+    EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(infra::Lambda([this](infra::SharedPtr<infra::StreamReader>& reader) {
+        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
         EXPECT_EQ("body\r\ndat", infra::ByteRangeAsString(stream.ContiguousRange()));
     }));
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("Expires:-1\r\nContent-Length:10\r\n\r\nbody\r\ndat")));
     ExecuteAllActions();
 
-    EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(infra::Lambda([this](infra::StreamReader& reader) {
-        infra::DataInputStream::WithErrorPolicy stream(reader, infra::noFail);
+    EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(infra::Lambda([this](infra::SharedPtr<infra::StreamReader>& reader) {
+        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
         EXPECT_EQ("a", infra::ByteRangeAsString(stream.ContiguousRange()));
     }));
     EXPECT_CALL(client, BodyComplete());
@@ -511,8 +525,8 @@ TEST_F(HttpClientTest, data_up_to_ContentLength_is_handled)
     EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
     EXPECT_CALL(client, HeaderAvailable(services::HttpHeader("Date", "Sat, 28 Nov 2009 04:36:25 GMT")));
     EXPECT_CALL(client, HeaderAvailable(services::HttpHeader("Expires", "-1")));
-    EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(infra::Lambda([this](infra::StreamReader& reader) {
-        infra::DataInputStream::WithErrorPolicy stream(reader, infra::noFail);
+    EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(infra::Lambda([this](infra::SharedPtr<infra::StreamReader>& reader) {
+        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
         EXPECT_EQ("body\r\nda", infra::ByteRangeAsString(stream.ContiguousRange()));
     }));
     EXPECT_CALL(client, BodyComplete());
@@ -520,6 +534,30 @@ TEST_F(HttpClientTest, data_up_to_ContentLength_is_handled)
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\n")));
     ExecuteAllActions();
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("Date:Sat, 28 Nov 2009 04:36:25 GMT\r\nExpires:-1\r\nContent-Length:8\r\n\r\nbody\r\ndata")));
+    ExecuteAllActions();
+}
+
+TEST_F(HttpClientTest, data_in_excess_of_ContentLength_is_ignored)
+{
+    Connect();
+
+    EXPECT_CALL(connection, AckReceivedMock()).Times(2);
+    EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
+    EXPECT_CALL(client, HeaderAvailable(services::HttpHeader("Date", "Sat, 28 Nov 2009 04:36:25 GMT")));
+    EXPECT_CALL(client, HeaderAvailable(services::HttpHeader("Expires", "-1")));
+    EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(infra::Lambda([this](infra::SharedPtr<infra::StreamReader>& reader) {
+        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+        EXPECT_EQ("body\r\ndata", infra::ByteRangeAsString(stream.ContiguousRange()));
+    }));
+    EXPECT_CALL(client, BodyComplete());
+
+    client.Subject().Get("/");
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\nDate:Sat, 28 Nov 2009 04:36:25 GMT\r\nExpires:-1\r\nContent-Length:10\r\n\r\nbody\r\ndata")));
+    ExecuteAllActions();
+
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+    EXPECT_CALL(client, ClosingConnection());
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("extradata")));
     ExecuteAllActions();
 }
 
@@ -546,10 +584,11 @@ TEST_F(HttpClientTest, Close_while_BodyAvailable_is_handled)
 
     client.Subject().Get("/");
 
-    EXPECT_CALL(connection, AckReceivedMock()).Times(2);
+    EXPECT_CALL(connection, AckReceivedMock()).Times(3);
     EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
-    EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(infra::Lambda([this](infra::StreamReader& reader)
+    EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(infra::Lambda([this](infra::SharedPtr<infra::StreamReader>& reader)
     {
+        reader = nullptr;
         EXPECT_CALL(connection, CloseAndDestroyMock());
         EXPECT_CALL(client, ClosingConnection());
         client.Subject().Close();
@@ -561,3 +600,40 @@ TEST_F(HttpClientTest, Close_while_BodyAvailable_is_handled)
     ExecuteAllActions();
 }
 
+TEST_F(HttpClientTest, when_reader_is_stored_body_available_sends_same_pointer)
+{
+    Connect();
+
+    client.Subject().Get("/");
+
+    EXPECT_CALL(connection, AckReceivedMock()).Times(5);
+    EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\n")));
+    ExecuteAllActions();
+
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("Date:Sat, 28 Nov 2009 04:36:25 GMT\r")));
+
+    EXPECT_CALL(client, HeaderAvailable(services::HttpHeader("Date", "Sat, 28 Nov 2009 04:36:25 GMT")));
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("\n")));
+    ExecuteAllActions();
+
+    infra::SharedPtr<infra::StreamReader> readerPtr;
+    EXPECT_CALL(client, HeaderAvailable(services::HttpHeader("Expires", "-1")));
+    EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(infra::Lambda([this, &readerPtr](infra::SharedPtr<infra::StreamReader>& reader)
+    {
+        readerPtr = reader;
+        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+        EXPECT_EQ("body\r\ndat", infra::ByteRangeAsString(stream.ContiguousRange()));
+    }));
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("Expires:-1\r\nContent-Length:10\r\n\r\nbody\r\ndat")));
+    ExecuteAllActions();
+
+    EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(infra::Lambda([this](infra::SharedPtr<infra::StreamReader>& reader)
+    {
+        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+        EXPECT_EQ("a", infra::ByteRangeAsString(stream.ContiguousRange()));
+    }));
+    EXPECT_CALL(client, BodyComplete());
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("a")));
+    ExecuteAllActions();
+}
