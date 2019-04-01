@@ -340,22 +340,18 @@ namespace infra
     template<class T>
     void PrintTo(const BoundedStringBase<T>& string, std::ostream* os)
     {
-        *os << '\"';
         *os << '"';
         for (char c : string)
             *os << c;
-        *os << '\"';
         *os << '"';
     }
 
     template<class T, std::size_t Max>
     void PrintTo(const typename BoundedStringBase<T>::template WithStorage<Max>& string, std::ostream* os)
     {
-        *os << '\"';
         *os << '"';
         for (char c : string)
             *os << c;
-        *os << '\"';
         *os << '"';
     }
 #endif
