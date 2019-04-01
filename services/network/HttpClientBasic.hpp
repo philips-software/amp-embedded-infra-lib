@@ -18,18 +18,16 @@ namespace services
 
     protected:
         void Connect();
+        void Close();
+        void ContentError();
 
-        const infra::BoundedString& Url() const;
+        infra::BoundedString Url() const;
         virtual infra::BoundedString Path() const;
         virtual services::HttpHeaders Headers() const;
 
-    protected:
-        void Close();
-
         virtual void Established();
-        virtual void Failed();
-        virtual void TimedOut();
-        virtual void Expired();
+        virtual void Done() = 0;
+        virtual void Error(bool intermittentFailure) = 0;
 
     protected:
         // Implementation of HttpClientObserver
@@ -37,15 +35,15 @@ namespace services
         virtual void BodyComplete() override;
 
     private:
-        void Timeout();
-        void Expire();
-
-    private:
         // Implementation of HttpClientObserverFactory
         virtual infra::BoundedConstString Hostname() const final;
         virtual uint16_t Port() const final;
         virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::HttpClientObserver> client)>&& createdClientObserver) final;
         virtual void ConnectionFailed(ConnectFailReason reason) final;
+
+    private:
+        void Timeout();
+        void Expire();
 
     private:
         enum class State
@@ -65,6 +63,7 @@ namespace services
         infra::Duration timeoutDuration;
         infra::TimerSingleShot timeoutTimer;
         State state;
+        bool contentError = false;
     };
 }
 
