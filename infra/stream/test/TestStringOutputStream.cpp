@@ -121,6 +121,15 @@ TEST(StringOutputStreamTest, stream_int8_with_smaller_width)
     EXPECT_EQ("127", stream.Storage());
 }
 
+TEST(StringOutputStreamTest, stream_negative_int8_with_width)
+{
+    infra::StringOutputStream::WithStorage<10> stream;
+
+    stream << infra::Width(7) << int8_t(-127);
+
+    EXPECT_EQ("   -127", stream.Storage());
+}
+
 TEST(StringOutputStreamTest, stream_uint64_max)
 {
     infra::StringOutputStream::WithStorage<20> stream;
