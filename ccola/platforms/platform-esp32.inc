@@ -14,5 +14,3 @@ set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${combined_flags}" CACHE STRING CMAKE_AS
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -nostdlib -u call_user_start_cpu0 -Wl,--gc-sections -Wl,-static -Wl,--start-group -lgcc -lstdc++ -lgcov -Wl,--end-group -Wl,-EL")
 
 set(CMAKE_EXECUTABLE_SUFFIX .elf)
-
-add_definitions(-DESP_PLATFORM)
