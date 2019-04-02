@@ -15,7 +15,7 @@ TEST(Asn1ObjectFormatter, construction_results_in_empty_object)
 
     infra::Asn1Formatter formatter(stream);
 
-    EXPECT_EQ(false, formatter.Failed());
+    EXPECT_FALSE(formatter.Failed());
     EXPECT_EQ(0, stream.ProcessedBytesSince(marker));
 }
 
