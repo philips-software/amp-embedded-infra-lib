@@ -66,8 +66,27 @@ TEST_F(HttpClientBasicTest, Stop_while_connected_results_in_Close)
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.AttachObserver(client); client->Connected(); });
 
     EXPECT_CALL(httpClient, Close());
-    EXPECT_CALL(onStopped, callback());
     controller.Cancel([this]() { onStopped.callback(); });
+
+    EXPECT_CALL(onStopped, callback());
+    httpClient.observer = nullptr;
+    testing::Mock::VerifyAndClearExpectations(&onStopped);
+}
+
+TEST_F(HttpClientBasicTest, second_Stop_while_connected_does_not_result_in_second_Close_but_adapts_callback)
+{
+    EXPECT_CALL(controller, Established());
+    httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.AttachObserver(client); client->Connected(); });
+
+    EXPECT_CALL(httpClient, Close());
+    controller.Cancel([this]() { onStopped.callback(); });
+
+    testing::StrictMock<infra::MockCallback<void()>> onStopped2;
+    controller.Cancel([&onStopped2]() { onStopped2.callback(); });
+
+    EXPECT_CALL(onStopped2, callback());
+    httpClient.observer = nullptr;
+    testing::Mock::VerifyAndClearExpectations(&onStopped2);
 }
 
 TEST_F(HttpClientBasicTest, Stop_while_connected_stops_timeout_timer)
@@ -90,8 +109,11 @@ TEST_F(HttpClientBasicTest, Stop_while_almost_done)
     EXPECT_CALL(httpClient, Close());
     httpClient.observer->BodyComplete();
 
-    EXPECT_CALL(onStopped, callback());
     controller.Cancel([this]() { onStopped.callback(); });
+
+    EXPECT_CALL(onStopped, callback());
+    httpClient.observer = nullptr;
+    testing::Mock::VerifyAndClearExpectations(&onStopped);
 }
 
 TEST_F(HttpClientBasicTest, Stop_while_done)
@@ -107,6 +129,7 @@ TEST_F(HttpClientBasicTest, Stop_while_done)
 
     EXPECT_CALL(onStopped, callback());
     controller.Cancel([this]() { onStopped.callback(); });
+    testing::Mock::VerifyAndClearExpectations(&onStopped);
 }
 
 TEST_F(HttpClientBasicTest, connection_times_out)
