@@ -30,8 +30,6 @@ ccola_component(pack_builder x86: static_library other: noncompile)
         InputFactory.hpp
         InputHex.cpp
         InputHex.hpp
-        RandomNumberGenerator.cpp
-        RandomNumberGenerator.hpp
         SparseVector.hpp
         UpgradePackBuilder.cpp
         UpgradePackBuilder.hpp

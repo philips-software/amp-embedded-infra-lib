@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+#include "hal/synchronous_interfaces/test_doubles/SynchronousFixedRandomDataGenerator.hpp"
 #include "upgrade/pack_builder/ImageSecurityXteaHmac.hpp"
 
 class TestImageSecurityXteaHmac
@@ -6,11 +7,11 @@ class TestImageSecurityXteaHmac
 {
 public:
     TestImageSecurityXteaHmac()
-        : randomNumberGenerator(std::vector<uint8_t>{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 })
-        , encrypter(randomNumberGenerator, xteaKey, hmacKey)
+        : randomDataGenerator(std::vector<uint8_t>{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 })
+        , encrypter(randomDataGenerator, xteaKey, hmacKey)
     {}
 
-    application::FixedRandomNumberGenerator randomNumberGenerator;
+    hal::SynchronousFixedRandomDataGenerator randomDataGenerator;
     application::ImageSecurityXteaHmac encrypter;
 
     const std::array<uint8_t, 16> xteaKey = std::array<uint8_t, 16>{ {

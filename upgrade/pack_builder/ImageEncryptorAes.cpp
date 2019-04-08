@@ -11,8 +11,8 @@ extern "C"
 
 namespace application
 {
-    ImageEncryptorAes::ImageEncryptorAes(RandomNumberGenerator& randomNumberGenerator, infra::ConstByteRange key)
-        : randomNumberGenerator(randomNumberGenerator)
+    ImageEncryptorAes::ImageEncryptorAes(hal::SynchronousRandomDataGenerator& randomDataGenerator, infra::ConstByteRange key)
+        : randomDataGenerator(randomDataGenerator)
         , key(key)
     {}
 
@@ -23,7 +23,8 @@ namespace application
 
     std::vector<uint8_t> ImageEncryptorAes::Secure(const std::vector<uint8_t>& data) const
     {
-        std::vector<uint8_t> counter = randomNumberGenerator.Generate(blockLength);
+        std::vector<uint8_t> counter(blockLength, 0);
+        randomDataGenerator.GenerateRandomData(counter);
 
         mbedtls_aes_context ctx;
         mbedtls_aes_init(&ctx);

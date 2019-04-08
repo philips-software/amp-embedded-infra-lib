@@ -1,23 +1,27 @@
+#include "upgrade/security_key_generator/MaterialGenerator.hpp"
+#include "crypto/micro-ecc/uECC.h"
 #include "mbedtls/ctr_drbg.h"
 #include "mbedtls/entropy.h"
 #include "mbedtls/pk_internal.h"
-#include "crypto/micro-ecc/uECC.h"
-#include "upgrade/security_key_generator/MaterialGenerator.hpp"
 #include <fstream>
 #include <iomanip>
 #include <string>
 
 namespace application
 {
-    RandomNumberGenerator* MaterialGenerator::randomNumberGenerator = nullptr;
-
-    MaterialGenerator::MaterialGenerator(RandomNumberGenerator& randomNumberGenerator)
+    namespace
     {
-        MaterialGenerator::randomNumberGenerator = &randomNumberGenerator;
+        MaterialGenerator* materialGenerator = nullptr;
+    }
 
-        aesKey = randomNumberGenerator.Generate(aesKeyLength / 8);
-        xteaKey = randomNumberGenerator.Generate(xteaKeyLength / 8);
-        hmacKey = randomNumberGenerator.Generate(hmacKeyLength / 8);
+    MaterialGenerator::MaterialGenerator(hal::SynchronousRandomDataGenerator& randomDataGenerator)
+        : randomDataGenerator(randomDataGenerator)
+    {
+        materialGenerator = this;
+
+        randomDataGenerator.GenerateRandomData(infra::MakeRange(aesKey));
+        randomDataGenerator.GenerateRandomData(infra::MakeRange(xteaKey));
+        randomDataGenerator.GenerateRandomData(infra::MakeRange(hmacKey));
 
         int ret;
 
@@ -31,7 +35,7 @@ namespace application
         mbedtls_entropy_context entropy;
         mbedtls_entropy_init(&entropy);
 
-        ret = mbedtls_entropy_add_source(&entropy, RandomEntropy, NULL, 32, MBEDTLS_ENTROPY_SOURCE_STRONG);
+        ret = mbedtls_entropy_add_source(&entropy, RandomEntropy, this, 32, MBEDTLS_ENTROPY_SOURCE_STRONG);
         if (ret != 0)
             throw std::exception("mbedtls_entropy_add_source returned an error");
 
@@ -111,16 +115,17 @@ namespace application
 
     int MaterialGenerator::RandomEntropy(void* data, unsigned char* output, size_t length, size_t* outputLength)
     {
-        std::vector<uint8_t> entropy = randomNumberGenerator->Generate(length);
+        std::vector<uint8_t> entropy(length);
+        reinterpret_cast<MaterialGenerator*>(data)->randomDataGenerator.GenerateRandomData(entropy);
         std::copy(entropy.begin(), entropy.end(), output);
-
         *outputLength = length;
         return 0;
     }
 
     int MaterialGenerator::UccRandom(uint8_t* dest, unsigned size)
     {
-        std::vector<uint8_t> entropy = randomNumberGenerator->Generate(size);
+        std::vector<uint8_t> entropy(size);
+        materialGenerator->randomDataGenerator.GenerateRandomData(infra::MakeRange(entropy));
         std::copy(entropy.begin(), entropy.end(), dest);
         return 1;
     }
@@ -129,7 +134,7 @@ namespace application
     {
         std::vector<uint32_t> n(number.p, number.p + number.n);
         std::vector<uint8_t> m;
-        for (uint32_t word: n)
+        for (uint32_t word : n)
         {
             m.push_back(static_cast<uint8_t>(word));
             m.push_back(static_cast<uint8_t>(word >> 8));
@@ -152,7 +157,7 @@ namespace application
             if (i % 8 == 0)
                 output << "\n    ";
             output << "0x" << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(vector[i]) << std::dec;
-            
+
             if (i != vector.size() - 1)
                 output << ", ";
         }
@@ -160,5 +165,5 @@ namespace application
         output << "\n} };\n\n";
 
         output.copyfmt(oldState);
-    }                                                                                                                   //TICS !COV_CPP_STREAM_FORMAT_STATE_01
+    } //TICS !COV_CPP_STREAM_FORMAT_STATE_01
 }

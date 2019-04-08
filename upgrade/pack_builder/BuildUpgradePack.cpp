@@ -1,5 +1,6 @@
 #include "mbedtls/memory_buffer_alloc.h"
 #include "hal/generic/FileSystemGeneric.hpp"
+#include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "upgrade/pack_builder/BinaryObject.hpp"
 #include "upgrade/pack_builder/BuildUpgradePack.hpp"
 #include "upgrade/pack_builder/ImageEncryptorAes.hpp"
@@ -9,7 +10,6 @@
 #include <cctype>
 #include <iomanip>
 #include <iostream>
-#include <windows.h>
 
 namespace application
 {
@@ -112,11 +112,11 @@ namespace application
         std::string outputFilename, TargetAndFiles& targetAndFiles, BuildOptions& buildOptions, infra::JsonObject& configuration, infra::ConstByteRange aesKey, infra::ConstByteRange ecDsa224PublicKey,
         infra::ConstByteRange ecDsa224PrivateKey, const std::vector<NoFileInputFactory*>& otherTargets)
     {
-        application::SecureRandomNumberGenerator randomNumberGenerator;
+        hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
         hal::FileSystemGeneric fileSystem;
-        application::ImageEncryptorAes imageEncryptorAes(randomNumberGenerator, aesKey);
+        application::ImageEncryptorAes imageEncryptorAes(randomDataGenerator, aesKey);
         application::UpgradePackInputFactory inputFactory(supportedHexTargets, supportedBinaryTargets, fileSystem, imageEncryptorAes, otherTargets);
-        application::ImageSignerEcDsa signer(randomNumberGenerator, ecDsa224PublicKey, ecDsa224PrivateKey);
+        application::ImageSignerEcDsa signer(randomDataGenerator, ecDsa224PublicKey, ecDsa224PrivateKey);
 
         PreBuilder(targetAndFiles, buildOptions, configuration);
 

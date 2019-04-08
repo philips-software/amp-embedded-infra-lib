@@ -4,14 +4,14 @@
 
 namespace application
 {
-    RandomNumberGenerator* ImageSignerEcDsa::randomNumberGenerator = nullptr;
+    hal::SynchronousRandomDataGenerator* ImageSignerEcDsa::randomDataGenerator = nullptr;
 
-    ImageSignerEcDsa::ImageSignerEcDsa(RandomNumberGenerator& randomNumberGenerator, infra::ConstByteRange publicKey, infra::ConstByteRange privateKey)
+    ImageSignerEcDsa::ImageSignerEcDsa(hal::SynchronousRandomDataGenerator& randomDataGenerator, infra::ConstByteRange publicKey, infra::ConstByteRange privateKey)
         : publicKey(publicKey)
         , privateKey(privateKey)
     {
-        ImageSignerEcDsa::randomNumberGenerator = &randomNumberGenerator;
-        uECC_set_rng(MyRandom);
+        ImageSignerEcDsa::randomDataGenerator = &randomDataGenerator;
+        uECC_set_rng(RandomNumberGenerator);
     }
 
     uint16_t ImageSignerEcDsa::SignatureMethod() const
@@ -71,9 +71,10 @@ namespace application
             throw std::exception("Failed to calculate signature");
     }
 
-    int ImageSignerEcDsa::MyRandom(uint8_t* dest, unsigned size)
+    int ImageSignerEcDsa::RandomNumberGenerator(uint8_t* dest, unsigned size)
     {
-        std::vector<uint8_t> entropy = randomNumberGenerator->Generate(size);
+        std::vector<uint8_t> entropy(size, 0);
+        randomDataGenerator->GenerateRandomData(entropy);
         std::copy(entropy.begin(), entropy.end(), dest);
         return 1;
     }

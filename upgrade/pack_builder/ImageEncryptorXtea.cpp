@@ -6,8 +6,8 @@
 
 namespace application
 {
-    ImageEncryptorXtea::ImageEncryptorXtea(RandomNumberGenerator& randomNumberGenerator, infra::ConstByteRange key)
-        : randomNumberGenerator(randomNumberGenerator)
+    ImageEncryptorXtea::ImageEncryptorXtea(hal::SynchronousRandomDataGenerator& randomDataGenerator, infra::ConstByteRange key)
+        : randomDataGenerator(randomDataGenerator)
         , key(key)
     {}
 
@@ -15,7 +15,8 @@ namespace application
     {
         std::vector<uint8_t> data = unalignedData;
         data.resize(data.size() + blockLength - (data.size() - 1 + blockLength) % blockLength - 1, 0);
-        std::vector<uint8_t> iv = randomNumberGenerator.Generate(blockLength);
+        std::vector<uint8_t> iv(blockLength, 0);
+        randomDataGenerator.GenerateRandomData(iv);
 
         mbedtls_xtea_context ctx;
         mbedtls_xtea_init(&ctx);
