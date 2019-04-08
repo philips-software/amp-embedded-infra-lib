@@ -76,9 +76,9 @@ namespace infra
 
         private:
             template<class>
-                friend class IntrusivePriorityQueueIterator;
+                friend class infra::detail::IntrusivePriorityQueueIterator;
             template<class, class>
-                friend class IntrusivePriorityQueue;
+                friend class infra::IntrusivePriorityQueue;
 
             T* up;
             T* left;
