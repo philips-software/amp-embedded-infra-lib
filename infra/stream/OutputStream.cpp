@@ -201,7 +201,7 @@ namespace infra
         return *this;
     }
 
-#if (__GNUC__ && __GNUC__ <= 4 && __GNUC_MINOR__ <= 9)
+#if (!__clang__ && __GNUC__ && __GNUC__ <= 4 && __GNUC_MINOR__ <= 9)
     TextOutputStream& TextOutputStream::operator<<(int v)
     {
         return *this << static_cast<int64_t>(v);
