@@ -350,10 +350,12 @@ namespace infra
                 else
                 {
                     if (doubleBlackParent->parent != nullptr)
+                    {
                         if (doubleBlackParent->parent->left == doubleBlackParent)
                             doubleBlack = &doubleBlackParent->parent->left;
                         else
                             doubleBlack = &doubleBlackParent->parent->right;
+                    }
 
                     doubleBlackParent = doubleBlackParent->parent;
                 }
