@@ -75,8 +75,6 @@ namespace infra
             IntrusivePriorityQueueNode& operator=(const IntrusivePriorityQueueNode& other);
 
         private:
-            template<class>
-                friend class infra::detail::IntrusivePriorityQueueIterator;
             template<class, class>
                 friend class infra::IntrusivePriorityQueue;
 
