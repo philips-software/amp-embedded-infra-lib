@@ -19,11 +19,16 @@ namespace services
     void HttpClientBasic::Cancel(const infra::Function<void()>& onDone)
     {
         if (state == State::connecting)
+        {
             httpClientConnector.CancelConnect(*this);
+            onDone();
+        }
         else if (state == State::connected)
+        {
+            sharedAccess.SetAction(onDone);
             Close();
-
-        if (state == State::closing)
+        }
+        else if (state == State::closing)
             sharedAccess.SetAction(onDone);
         else
             onDone();
