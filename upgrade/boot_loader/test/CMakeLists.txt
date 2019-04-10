@@ -1,8 +1,6 @@
 ccola_component(boot_loader_test gmock_test)
 
     ccola_sources(
-        MockDecryptor.cpp
-        MockDecryptor.hpp
         TestDecryptorAes.cpp
         TestImageUpgraderEraseSectors.cpp
         TestImageUpgraderInternalFlash.cpp
@@ -13,6 +11,7 @@ ccola_component(boot_loader_test gmock_test)
 
     ccola_dependencies(
         boot_loader
+        boot_loader_test_doubles
         infra.stream
         hal.synchronous_test_doubles
     )
