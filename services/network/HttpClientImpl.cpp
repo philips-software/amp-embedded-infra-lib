@@ -1,5 +1,6 @@
 #include "services/network/HttpClientImpl.hpp"
 #include "infra/stream/StringInputStream.hpp"
+#include "infra/stream/StringOutputStream.hpp"
 #include "infra/util/Tokenizer.hpp"
 
 namespace services
@@ -25,8 +26,9 @@ namespace services
     {
         if (!content.empty())
         {
-            contentLength << content.size();
-            contentLengthHeader.Emplace("content-length", contentLength.Storage());
+            infra::StringOutputStream contentLengthStream(contentLength);
+            contentLengthStream << content.size();
+            contentLengthHeader.Emplace("content-length", contentLength);
         }
     }
 

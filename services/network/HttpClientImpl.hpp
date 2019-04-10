@@ -5,7 +5,6 @@
 #include "infra/util/SharedOptional.hpp"
 #include "infra/stream/CountingInputStream.hpp"
 #include "infra/stream/LimitedInputStream.hpp"
-#include "infra/stream/StringOutputStream.hpp"
 #include "services/network/HttpClient.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 
@@ -27,7 +26,7 @@ namespace services
         HttpVerb verb;
         infra::BoundedConstString requestTarget;
         infra::BoundedConstString content;
-        infra::StringOutputStream::WithStorage<8> contentLength;
+        infra::BoundedString::WithStorage<8> contentLength;
         infra::Optional<HttpHeader> contentLengthHeader;
         HttpHeader hostHeader;
         const HttpHeaders headers;
