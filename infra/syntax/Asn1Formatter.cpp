@@ -92,12 +92,12 @@ namespace infra
 
     void Asn1Formatter::AddUtcTime(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t min, uint8_t sec)
     {
+        assert(year >= 1950 && year < 2050);
+
         const uint8_t utcTimeSize = 13; // "YYMMDDhhmmssZ"
         AddTagLength(Tag::UtcTime, utcTimeSize);
 
-        year -= 1900;
-        if (year >= 50)
-            year -= 100;
+        year -= (year >= 2000) ? 2000 : 1900;
 
         stream << infra::text << infra::Width(2, '0') << static_cast<uint8_t>(year);
         stream << infra::text << infra::Width(2, '0') << month;
