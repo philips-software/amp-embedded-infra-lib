@@ -34,5 +34,5 @@ macro(ccola_generate_version_header)
     endif()
 
     string(TIMESTAMP GENERATOR_TIMESTAMP)
-    configure_file("${PROJECT_SOURCE_DIR}/ccola/Version.h.in" "${PROJECT_BINARY_DIR}/Version.h")
+    configure_file("${CCOLA_DIR}/Version.h.in" "${PROJECT_BINARY_DIR}/Version.h")
 endmacro()
