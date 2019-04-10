@@ -1,4 +1,4 @@
-#include "upgrade/boot_loader/test/MockDecryptor.hpp"
+#include "upgrade/boot_loader/test_doubles/MockDecryptor.hpp"
 
 namespace application
 {
