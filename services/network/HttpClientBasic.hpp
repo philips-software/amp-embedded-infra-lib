@@ -2,7 +2,7 @@
 #define SERVICES_HTTP_CLIENT_BASIC_HPP
 
 #include "infra/timer/Timer.hpp"
-#include "services/network/Http.hpp"
+#include "services/network/HttpClient.hpp"
 
 namespace services
 {

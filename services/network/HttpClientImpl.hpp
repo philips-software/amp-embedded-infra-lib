@@ -6,7 +6,7 @@
 #include "infra/stream/CountingInputStream.hpp"
 #include "infra/stream/LimitedInputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
-#include "services/network/Http.hpp"
+#include "services/network/HttpClient.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 
 namespace services
@@ -14,8 +14,8 @@ namespace services
     class HttpRequestFormatter
     {
     public:
-        HttpRequestFormatter(infra::BoundedConstString hostname, infra::BoundedConstString method, infra::BoundedConstString requestTarget, const HttpHeaders headers);
-        HttpRequestFormatter(infra::BoundedConstString hostname, infra::BoundedConstString method, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers);
+        HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, const HttpHeaders headers);
+        HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers);
 
         std::size_t Size() const;
         void Write(infra::TextOutputStream stream) const;
@@ -24,7 +24,7 @@ namespace services
         std::size_t HeadersSize() const;
 
     private:
-        infra::BoundedConstString method;
+        HttpVerb verb;
         infra::BoundedConstString requestTarget;
         infra::BoundedConstString content;
         infra::StringOutputStream::WithStorage<8> contentLength;
@@ -46,7 +46,6 @@ namespace services
     private:
         void ParseStatusLine(infra::StreamReaderWithRewinding& reader);
         bool HttpVersionValid(infra::BoundedConstString httpVersion);
-        infra::Optional<HttpStatusCode> StatusCodeFromString(infra::BoundedConstString statusCode);
 
         void ParseHeaders(infra::StreamReaderWithRewinding& reader);
         HttpHeader HeaderFromString(infra::BoundedConstString header);
@@ -98,8 +97,8 @@ namespace services
         void BodyReceived();
         void BodyReaderDestroyed();
         void BodyComplete();
-        void ExecuteRequest(infra::BoundedConstString method, infra::BoundedConstString requestTarget, const HttpHeaders headers);
-        void ExecuteRequestWithContent(infra::BoundedConstString method, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers);
+        void ExecuteRequest(HttpVerb verb, infra::BoundedConstString requestTarget, const HttpHeaders headers);
+        void ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers);
 
     private:
         class BodyReader

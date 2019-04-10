@@ -12,12 +12,12 @@ namespace services
         const infra::BoundedConstString crlf = "\r\n";
     }
 
-    HttpRequestFormatter::HttpRequestFormatter(infra::BoundedConstString hostname, infra::BoundedConstString method, infra::BoundedConstString requestTarget, const HttpHeaders headers)
-        : HttpRequestFormatter(hostname, method, requestTarget, {}, headers)
+    HttpRequestFormatter::HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, const HttpHeaders headers)
+        : HttpRequestFormatter(verb, hostname, requestTarget, {}, headers)
     {}
 
-    HttpRequestFormatter::HttpRequestFormatter(infra::BoundedConstString hostname, infra::BoundedConstString method, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers)
-        : method(method)
+    HttpRequestFormatter::HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers)
+        : verb(verb)
         , requestTarget(requestTarget)
         , content(content)
         , hostHeader("host", hostname)
@@ -32,12 +32,12 @@ namespace services
 
     std::size_t HttpRequestFormatter::Size() const
     {
-        return method.size() + requestTarget.size() + httpVersion.size() + HeadersSize() + (2 * crlf.size()) + (2 * sp.size()) + content.size();
+        return HttpVerbToString(verb).size() + requestTarget.size() + httpVersion.size() + HeadersSize() + (2 * crlf.size()) + (2 * sp.size()) + content.size();
     }
 
     void HttpRequestFormatter::Write(infra::TextOutputStream stream) const
     {
-        stream << method << sp << requestTarget << sp << httpVersion << crlf;
+        stream << verb << sp << requestTarget << sp << httpVersion << crlf;
 
         for (auto&& header : headers)
             stream << header << crlf;
@@ -109,7 +109,7 @@ namespace services
             infra::Tokenizer tokenizer(statusLine, ' ');
 
             auto versionValid = HttpVersionValid(tokenizer.Token(0));
-            auto statusCode = StatusCodeFromString(tokenizer.Token(1));
+            auto statusCode = HttpStatusCodeFromString(tokenizer.Token(1));
             if (versionValid && statusCode)
                 observer->StatusAvailable(*statusCode);
             else
@@ -123,60 +123,6 @@ namespace services
     {
         static const std::array<infra::BoundedConstString, 2> validVersions{ "HTTP/1.0",  "HTTP/1.1" };
         return std::any_of(validVersions.begin(), validVersions.end(), [&](infra::BoundedConstString validVersion) { return httpVersion == validVersion; });
-    }
-
-    infra::Optional<HttpStatusCode> HttpResponseParser::StatusCodeFromString(infra::BoundedConstString statusCode)
-    {
-        std::underlying_type<services::HttpStatusCode>::type value = 0;
-
-        for (std::size_t index = 0; index < statusCode.size(); ++index)
-            value = value * 10 + statusCode[index] - '0';
-
-        switch (value)
-        {
-            case 100: return infra::MakeOptional(HttpStatusCode::Continue);
-            case 101: return infra::MakeOptional(HttpStatusCode::SwitchingProtocols);
-            case 200: return infra::MakeOptional(HttpStatusCode::OK);
-            case 201: return infra::MakeOptional(HttpStatusCode::Created);
-            case 202: return infra::MakeOptional(HttpStatusCode::Accepted);
-            case 203: return infra::MakeOptional(HttpStatusCode::NonAuthorativeInformation);
-            case 204: return infra::MakeOptional(HttpStatusCode::NoContent);
-            case 205: return infra::MakeOptional(HttpStatusCode::ResetContent);
-            case 206: return infra::MakeOptional(HttpStatusCode::PartialContent);
-            case 300: return infra::MakeOptional(HttpStatusCode::MultipleChoices);
-            case 301: return infra::MakeOptional(HttpStatusCode::MovedPermanently);
-            case 302: return infra::MakeOptional(HttpStatusCode::Found);
-            case 303: return infra::MakeOptional(HttpStatusCode::SeeOther);
-            case 304: return infra::MakeOptional(HttpStatusCode::NotModified);
-            case 305: return infra::MakeOptional(HttpStatusCode::UseProxy);
-            case 307: return infra::MakeOptional(HttpStatusCode::TemporaryRedirect);
-            case 400: return infra::MakeOptional(HttpStatusCode::BadRequest);
-            case 401: return infra::MakeOptional(HttpStatusCode::Unauthorized);
-            case 402: return infra::MakeOptional(HttpStatusCode::PaymentRequired);
-            case 403: return infra::MakeOptional(HttpStatusCode::Forbidden);
-            case 404: return infra::MakeOptional(HttpStatusCode::NotFound);
-            case 405: return infra::MakeOptional(HttpStatusCode::MethodNotAllowed);
-            case 406: return infra::MakeOptional(HttpStatusCode::NotAcceptable);
-            case 407: return infra::MakeOptional(HttpStatusCode::ProxyAuthenticationRequired);
-            case 408: return infra::MakeOptional(HttpStatusCode::RequestTimeOut);
-            case 409: return infra::MakeOptional(HttpStatusCode::Conflict);
-            case 410: return infra::MakeOptional(HttpStatusCode::Gone);
-            case 411: return infra::MakeOptional(HttpStatusCode::LengthRequired);
-            case 412: return infra::MakeOptional(HttpStatusCode::PreconditionFailed);
-            case 413: return infra::MakeOptional(HttpStatusCode::RequestEntityTooLarge);
-            case 414: return infra::MakeOptional(HttpStatusCode::RequestUriTooLarge);
-            case 415: return infra::MakeOptional(HttpStatusCode::UnsupportedMediaType);
-            case 416: return infra::MakeOptional(HttpStatusCode::RequestRangeNotSatisfiable);
-            case 417: return infra::MakeOptional(HttpStatusCode::ExpectationFailed);
-            case 500: return infra::MakeOptional(HttpStatusCode::InternalServerError);
-            case 501: return infra::MakeOptional(HttpStatusCode::NotImplemented);
-            case 502: return infra::MakeOptional(HttpStatusCode::BadGateway);
-            case 503: return infra::MakeOptional(HttpStatusCode::ServiceUnavailable);
-            case 504: return infra::MakeOptional(HttpStatusCode::GatewayTimeOut);
-            case 505: return infra::MakeOptional(HttpStatusCode::HttpVersionNotSupported);
-        }
-
-        return infra::none;
     }
 
     void HttpResponseParser::ParseHeaders(infra::StreamReaderWithRewinding& reader)
@@ -245,42 +191,42 @@ namespace services
 
     void HttpClientImpl::Get(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
-        ExecuteRequest("GET", requestTarget, headers);
+        ExecuteRequest(HttpVerb::get, requestTarget, headers);
     }
 
     void HttpClientImpl::Head(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
-        ExecuteRequest("HEAD", requestTarget, headers);
+        ExecuteRequest(HttpVerb::head, requestTarget, headers);
     }
 
     void HttpClientImpl::Connect(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
-        ExecuteRequest("CONNECT", requestTarget, headers);
+        ExecuteRequest(HttpVerb::connect, requestTarget, headers);
     }
 
     void HttpClientImpl::Options(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
-        ExecuteRequest("OPTIONS", requestTarget, headers);
+        ExecuteRequest(HttpVerb::options, requestTarget, headers);
     }
 
     void HttpClientImpl::Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
     {
-        ExecuteRequestWithContent("POST", requestTarget, content, headers);
+        ExecuteRequestWithContent(HttpVerb::post, requestTarget, content, headers);
     }
 
     void HttpClientImpl::Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
     {
-        ExecuteRequestWithContent("PUT", requestTarget, content, headers);
+        ExecuteRequestWithContent(HttpVerb::put, requestTarget, content, headers);
     }
 
     void HttpClientImpl::Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
     {
-        ExecuteRequestWithContent("PATCH", requestTarget, content, headers);
+        ExecuteRequestWithContent(HttpVerb::patch, requestTarget, content, headers);
     }
 
     void HttpClientImpl::Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
     {
-        ExecuteRequestWithContent("DELETE", requestTarget, content, headers);
+        ExecuteRequestWithContent(HttpVerb::delete_, requestTarget, content, headers);
     }
 
     void HttpClientImpl::AckReceived()
@@ -390,15 +336,15 @@ namespace services
         observer->BodyComplete();
     }
 
-    void HttpClientImpl::ExecuteRequest(infra::BoundedConstString method, infra::BoundedConstString requestTarget, const HttpHeaders headers)
+    void HttpClientImpl::ExecuteRequest(HttpVerb verb, infra::BoundedConstString requestTarget, const HttpHeaders headers)
     {
-        request.Emplace(hostname, method, requestTarget, headers);
+        request.Emplace(verb, hostname, requestTarget, headers);
         ConnectionObserver::Subject().RequestSendStream(request->Size());
     }
 
-    void HttpClientImpl::ExecuteRequestWithContent(infra::BoundedConstString method, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers)
+    void HttpClientImpl::ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers)
     {
-        request.Emplace(hostname, method, requestTarget, content, headers);
+        request.Emplace(verb, hostname, requestTarget, content, headers);
         ConnectionObserver::Subject().RequestSendStream(request->Size());
     }
 
