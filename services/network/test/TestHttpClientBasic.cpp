@@ -5,7 +5,7 @@
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/network/HttpClientBasic.hpp"
-#include "services/network/test_doubles/HttpMock.hpp"
+#include "services/network/test_doubles/HttpClientMock.hpp"
 
 class HttpClientBasicMock
     : public services::HttpClientBasic

@@ -26,7 +26,7 @@ public:
         httpServer.Stop(infra::emptyFunction);
     }
 
-    void ExpectPageServerRequest(services::HttpRequestParser::HttpVerb verb, const std::string& request)
+    void ExpectPageServerRequest(services::HttpVerb verb, const std::string& request)
     {
         EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(true));
         EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(infra::Lambda([this, verb](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
@@ -128,7 +128,7 @@ TEST_F(HttpServerTest, request_results_in_get)
 {
     connectionFactoryMock.NewConnection(connection, services::IPv4AddressLocalHost());
 
-    ExpectPageServerRequest(services::HttpRequestParser::HttpVerb::get, "GET /path HTTP/1.1 \r\n\r\n");
+    ExpectPageServerRequest(services::HttpVerb::get, "GET /path HTTP/1.1 \r\n\r\n");
     EXPECT_CALL(connection, CloseAndDestroyMock());
 }
 
@@ -136,7 +136,7 @@ TEST_F(HttpServerTest, double_request_results_in_closed_connection)
 {
     connectionFactoryMock.NewConnection(connection, services::IPv4AddressLocalHost());
 
-    ExpectPageServerRequest(services::HttpRequestParser::HttpVerb::get, "GET /path HTTP/1.1 \r\n\r\n");
+    ExpectPageServerRequest(services::HttpVerb::get, "GET /path HTTP/1.1 \r\n\r\n");
 
     EXPECT_CALL(connection, CloseAndDestroyMock());
     infra::ConstByteRange data = infra::MakeStringByteRange("GET /path HTTP/1.1 \r\n\r\n");
@@ -151,7 +151,7 @@ TEST_F(HttpServerTest, split_message_is_accepted)
 
     std::string rest = R"({"other":"param"})";
 
-    ExpectPageServerRequest(services::HttpRequestParser::HttpVerb::get, std::string("GET /path") +
+    ExpectPageServerRequest(services::HttpVerb::get, std::string("GET /path") +
         " HTTP/1.1\r\nAccept-Encoding: identity\r\nHost: 192.168.1.56\r\nContent-Length: " + std::to_string(rest.size()) + "\r\nContent-Type: application-json\r\n\r\n");
 
     connection.SimulateDataReceived(infra::MakeStringByteRange(rest));
@@ -163,7 +163,7 @@ TEST_F(HttpServerTest, send_100_response_when_expect_100_in_header)
 {
     connectionFactoryMock.NewConnection(connection, services::IPv4AddressLocalHost());
 
-    ExpectPageServerRequest(services::HttpRequestParser::HttpVerb::get, "GET /path HTTP/1.1 \r\nExpect: 100-continue\r\n\r\n");
+    ExpectPageServerRequest(services::HttpVerb::get, "GET /path HTTP/1.1 \r\nExpect: 100-continue\r\n\r\n");
     SendResponse("", "", "");
 
     ExecuteAllActions();
@@ -201,7 +201,7 @@ TEST_F(HttpServerTest, non_idle_connection_is_not_closed_by_second_connection)
 {
     connectionFactoryMock.NewConnection(connection, services::IPv4AddressLocalHost());
 
-    ExpectPageServerRequest(services::HttpRequestParser::HttpVerb::get, "GET /path HTTP/1.1 \r\nExpect: 100-continue\r\n\r\n");
+    ExpectPageServerRequest(services::HttpVerb::get, "GET /path HTTP/1.1 \r\nExpect: 100-continue\r\n\r\n");
 
     testing::StrictMock<services::ConnectionStub> connectionSecond;
     infra::SharedPtr<services::ConnectionStub> connectionSecondPtr(infra::UnOwnedSharedPtr(connectionSecond));
@@ -219,7 +219,7 @@ TEST_F(HttpServerTest, choose_correct_url)
     httpServer.AddPage(secondHttpPage);
 
     EXPECT_CALL(secondHttpPage, ServesRequest(testing::_)).WillOnce(testing::Return(false));
-    ExpectPageServerRequest(services::HttpRequestParser::HttpVerb::get, "GET /path HTTP/1.1 \r\nExpect: 100-continue\r\n\r\n");
+    ExpectPageServerRequest(services::HttpVerb::get, "GET /path HTTP/1.1 \r\nExpect: 100-continue\r\n\r\n");
 
     EXPECT_CALL(connection, CloseAndDestroyMock());
 }
