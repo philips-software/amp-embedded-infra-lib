@@ -7,6 +7,11 @@ namespace services
         , jsonParserCreator(connectionInfo.jsonParserCreator)
     {}
 
+    void HttpClientJson::Cancel(const infra::Function<void()>& onDone)
+    {
+        HttpClientBasic::Cancel(onDone);
+    }
+
     void HttpClientJson::Connected()
     {
         HttpClientObserver::Subject().Get(Path(), Headers());

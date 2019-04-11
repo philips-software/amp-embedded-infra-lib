@@ -26,6 +26,8 @@ namespace services
 
         HttpClientJson(infra::BoundedString url, const ConnectionInfo& connectionInfo);
 
+        void Cancel(const infra::Function<void()>& onDone);
+
     protected:
         virtual infra::JsonObjectVisitor& TopJsonObjectVisitor() = 0;
 
