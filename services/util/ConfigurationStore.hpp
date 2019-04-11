@@ -175,6 +175,9 @@ namespace services
 
         void Write();
 
+        template<class U>
+            ConfigurationStoreAccess<U> Configuration(U& member) const;
+
     private:
         ConfigurationStoreInterface& configurationStore;
         T& configuration;
@@ -327,6 +330,13 @@ namespace services
     void ConfigurationStoreAccess<T>::Write()
     {
         configurationStore.Write();
+    }
+
+    template<class T>
+    template<class U>
+    ConfigurationStoreAccess<U> ConfigurationStoreAccess<T>::Configuration(U& member) const
+    {
+        return ConfigurationStoreAccess<U>(configurationStore, member);
     }
 
     template<class T>

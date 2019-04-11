@@ -373,6 +373,8 @@ TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_accesses_part_of_a_confi
     access->x = 6;
     EXPECT_EQ(6, data.x);
     EXPECT_EQ(6, const_cast<const services::ConfigurationStoreAccess<Data>&>(access)->x);
+
+    EXPECT_EQ(6, *access.Configuration(access->x));
 }
 
 TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_writes_ConfigurationStore)
