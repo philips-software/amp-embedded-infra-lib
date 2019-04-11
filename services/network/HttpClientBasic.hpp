@@ -44,6 +44,7 @@ namespace services
     private:
         void Timeout();
         void Expire();
+        void ReportError(bool intermittentFailure);
 
     private:
         enum class State

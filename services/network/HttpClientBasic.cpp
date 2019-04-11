@@ -42,6 +42,7 @@ namespace services
 
     void HttpClientBasic::Close()
     {
+        assert(HttpClientObserver::Attached());
         state = State::closing;
         timeoutTimer.Cancel();
         HttpClientObserver::Subject().Close();
@@ -75,6 +76,12 @@ namespace services
 
     void HttpClientBasic::ClosingConnection()
     {
+        if (state == State::connected)
+        {
+            state = State::closing;
+            sharedAccess.SetAction([this]() { ReportError(true); });
+        }
+
         Detach();
     }
 
@@ -104,22 +111,30 @@ namespace services
 
     void HttpClientBasic::ConnectionFailed(services::HttpClientObserverFactory::ConnectFailReason reason)
     {
-        state = State::idle;
-        Error(true);
+        ReportError(true);
     }
 
     void HttpClientBasic::Timeout()
     {
-        sharedAccess.SetAction([this]() { Error(true); });
+        sharedAccess.SetAction([this]() { ReportError(true); });
         Close();
     }
 
     void HttpClientBasic::Expire()
     {
-        state = State::idle;
         if (contentError)
-            Error(false);
+            ReportError(false);
         else
+        {
+            state = State::idle;
             Done();
+        }
+    }
+
+    void HttpClientBasic::ReportError(bool intermittentFailure)
+    {
+        state = State::idle;
+        timeoutTimer.Cancel();
+        Error(intermittentFailure);
     }
 }

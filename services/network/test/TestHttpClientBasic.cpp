@@ -169,3 +169,17 @@ TEST_F(HttpClientBasicTest, timer_resets_after_BodyComplete)
 
     ForwardTime(std::chrono::minutes(1));
 }
+
+TEST_F(HttpClientBasicTest, Stop_after_ClosingConnection)
+{
+    EXPECT_CALL(*controller, Established());
+    httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.AttachObserver(client); client->Connected(); });
+
+    EXPECT_CALL(*controller, Error(true));
+    httpClient.observer->ClosingConnection();
+    httpClient.observer = nullptr;
+
+    EXPECT_CALL(onStopped, callback());
+    controller->Cancel([this]() { onStopped.callback(); });
+    testing::Mock::VerifyAndClearExpectations(&onStopped);
+}
