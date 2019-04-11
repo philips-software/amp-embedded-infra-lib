@@ -12,7 +12,7 @@ include("${CCOLA_DIR}/ccola.inc")
 
 ccola_project(emil VERSION 1.2.0)
 
-    ccola_generate_version_header()
+    ccola_add_version_header()
 
     ccola_subdirectories(
         external/googletest
