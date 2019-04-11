@@ -58,5 +58,6 @@ ccola_component(util static_library)
 ccola_end_component()
 
 ccola_subdirectories(
+    test_doubles
     test
 )
