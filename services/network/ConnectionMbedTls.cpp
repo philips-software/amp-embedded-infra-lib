@@ -48,8 +48,11 @@ namespace services
 
         if (!server)
         {
-            result = mbedtls_ssl_set_session(&sslContext, clientSession);
-            assert(result == 0);
+            if (clientSession->id_len != 0) // Workaround for what seems to be a problem in mbedTLS: When id_len = 0, then mbedTLS still thinks it can resume the session presented by the server
+            {
+                result = mbedtls_ssl_set_session(&sslContext, clientSession);
+                assert(result == 0);
+            }
         }
 
         mbedtls_ssl_set_bio(&sslContext, this, &ConnectionMbedTls::StaticSslSend, &ConnectionMbedTls::StaticSslReceive, nullptr);
