@@ -4,6 +4,7 @@
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/Tokenizer.hpp"
+#include "services/network/Http.hpp"
 
 namespace services
 {
@@ -16,14 +17,6 @@ namespace services
         ~HttpRequestParser() = default;
 
     public:
-        enum class HttpVerb
-        {
-            get,
-            put,
-            post,
-            delete_
-        };
-
         virtual bool Complete() const = 0;
         virtual bool Valid() const = 0;
         virtual HttpVerb Verb() const = 0;

@@ -1,4 +1,4 @@
-#include "services/network/test_doubles/HttpMock.hpp"
+#include "services/network/test_doubles/HttpClientMock.hpp"
 
 namespace services
 {

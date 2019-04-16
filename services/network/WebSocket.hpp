@@ -3,6 +3,7 @@
 
 #include "infra/stream/InputStream.hpp"
 #include "infra/stream/OutputStream.hpp"
+#include "infra/util/BoundedVector.hpp"
 #include "services/network/Http.hpp"
 
 namespace services

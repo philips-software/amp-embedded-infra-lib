@@ -3,7 +3,7 @@
 
 #include "gmock/gmock.h"
 #include "infra/util/test_helper/BoundedStringMatcher.hpp"
-#include "services/network/Http.hpp"
+#include "services/network/HttpClient.hpp"
 
 namespace services
 {

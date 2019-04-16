@@ -16,10 +16,13 @@ ccola_component(network static_library)
         Datagram.hpp
         Http.cpp
         Http.hpp
+        HttpClient.hpp
         HttpClientBasic.cpp
         HttpClientBasic.hpp
         HttpClientImpl.cpp
         HttpClientImpl.hpp
+        HttpClientJson.cpp
+        HttpClientJson.hpp
         HttpErrors.cpp
         HttpErrors.hpp
         HttpRequestParser.cpp

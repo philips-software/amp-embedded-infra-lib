@@ -46,5 +46,6 @@ ccola_component(boot_loader static_library)
 ccola_end_component()
 
 ccola_subdirectories(
+    test_doubles
     test
 )

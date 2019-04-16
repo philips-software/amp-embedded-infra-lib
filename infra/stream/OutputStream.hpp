@@ -150,9 +150,9 @@ namespace infra
             Formatter<T> MakeFormatter(T&& argument);
 
     private:
-        void OutputAsDecimal(uint64_t v);
-        void OutputAsBinary(uint64_t v);
-        void OutputAsHexadecimal(uint64_t v);
+        void OutputAsDecimal(uint64_t v, bool negative);
+        void OutputAsBinary(uint64_t v, bool negative);
+        void OutputAsHexadecimal(uint64_t v, bool negative);
 
         template<class... Formatters>
             void FormatHelper(const char* format, Formatters&&... formatters);
