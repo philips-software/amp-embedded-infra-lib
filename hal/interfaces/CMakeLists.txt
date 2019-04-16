@@ -39,6 +39,11 @@ ccola_component(interfaces static_library)
         infra.event
     )
 
+    ccola_external_libraries(
+    linux:
+        stdc++fs
+    )
+
 ccola_end_component()
 
 ccola_subdirectories(
