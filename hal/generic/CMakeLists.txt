@@ -14,4 +14,9 @@ ccola_component(generic x86: static_library other: skip)
         synchronous_interfaces
     )
 
+    ccola_external_libraries(
+    linux:
+        pthread
+    )
+
 ccola_end_component()
