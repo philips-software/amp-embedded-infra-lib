@@ -64,7 +64,7 @@ namespace services
         , timeWithLocalization(timeWithLocalization)
     {}
 
-    void SntpClient::RequestTime(services::IPv4Address& address)
+    void SntpClient::RequestTime(const services::IPv4Address& address)
     {
         datagramExchange = factory.Connect(*this, Udpv4Socket{ address, ntpPort });
         datagramExchange->RequestSendStream(sizeof(NtpMessage));
