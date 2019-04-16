@@ -18,7 +18,7 @@ namespace application
         std::string ToLower(const std::string& str)
         {
             std::string result;
-            std::transform(str.begin(), str.end(), std::back_inserter(result), std::tolower);
+            std::transform(str.begin(), str.end(), std::back_inserter(result), [](unsigned char c) { return std::tolower(c); });
             return result;
         }
 
