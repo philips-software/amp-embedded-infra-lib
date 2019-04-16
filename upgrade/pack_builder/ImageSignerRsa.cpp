@@ -109,15 +109,15 @@ namespace application
         mbedtls_rsa_set_padding(&rsaCtx, MBEDTLS_RSA_PKCS_V21, MBEDTLS_MD_SHA256);
 
         if (rsaCtx.len != signature.size())
-            throw std::exception("Key length wrong");
+            throw std::runtime_error("Key length wrong");
 
         ret = mbedtls_rsa_check_privkey(&rsaCtx);
         if (ret != 0)
-            throw std::exception("Public key is invalid");
+            throw std::runtime_error("Public key is invalid");
 
         ret = mbedtls_rsa_rsassa_pss_sign(&rsaCtx, RandomNumberGenerator, this, MBEDTLS_RSA_PRIVATE, MBEDTLS_MD_SHA256, hash.size(), hash.data(), signature.data());
         if (ret != 0)
-            throw std::exception("Failed to calculate signature");
+            throw std::runtime_error("Failed to calculate signature");
 
         rsaCtx.N.p = nullptr;
         rsaCtx.E.p = nullptr;

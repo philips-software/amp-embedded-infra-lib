@@ -37,10 +37,10 @@ namespace application
         std::array<uint8_t, blockLength> stream_block = {};
         int ret = mbedtls_aes_crypt_ctr(&ctx, data.size(), &offset, counter.data(), stream_block.data(), data.data(), result.data() + blockLength);     //TICS !INT#030
         if (ret != 0)
-            throw std::exception("AES encryption failed");
+            throw std::runtime_error("AES encryption failed");
 
         if (!CheckDecryption(data, result))
-            throw std::exception("AES decryption check failed");
+            throw std::runtime_error("AES decryption check failed");
 
         return result;
     }

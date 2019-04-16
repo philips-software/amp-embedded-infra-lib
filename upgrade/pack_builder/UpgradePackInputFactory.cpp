@@ -57,6 +57,6 @@ namespace application
             if (target->TargetName() == targetName)
                 return target->CreateInput();
 
-        throw std::exception((std::string("Unknown target: ") + targetName).c_str());
+        throw std::runtime_error((std::string("Unknown target: ") + targetName).c_str());
     }
 }

@@ -28,10 +28,10 @@ namespace application
 
         int ret = mbedtls_xtea_crypt_cbc(&ctx, MBEDTLS_XTEA_ENCRYPT, data.size(), iv.data(), data.data(), result.data() + blockLength);                 //TICS !INT#030
         if (ret != 0)
-            throw std::exception("XTEA encryption failed");
+            throw std::runtime_error("XTEA encryption failed");
 
         if (!CheckDecryption(data, result))
-            throw std::exception("XTEA decryption check failed");
+            throw std::runtime_error("XTEA decryption check failed");
 
         return result;
     }

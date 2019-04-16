@@ -56,19 +56,19 @@ namespace application
     void ImageSignerEcDsa::CalculateSignature(const std::vector<uint8_t>& image)
     {
         if (privateKey.size() != signature.size())
-            throw std::exception("Key length wrong");
+            throw std::runtime_error("Key length wrong");
 
         std::array<uint8_t, keyLength / 8 * 2> publicKeyForVerification;
         int result = uECC_compute_public_key(privateKey.begin(), publicKeyForVerification.data(), uECC_secp224r1());
         if (result != 1)
-            throw std::exception("Failed to compute public key");
+            throw std::runtime_error("Failed to compute public key");
 
         if (!std::equal(publicKey.begin(), publicKey.end(), publicKeyForVerification.begin()))
-            throw std::exception("Inconsistent private key pair");
+            throw std::runtime_error("Inconsistent private key pair");
 
         int ret = uECC_sign(privateKey.begin(), hash.data(), hash.size(), signature.data(), uECC_secp224r1());
         if (ret != 1)
-            throw std::exception("Failed to calculate signature");
+            throw std::runtime_error("Failed to calculate signature");
     }
 
     int ImageSignerEcDsa::RandomNumberGenerator(uint8_t* dest, unsigned size)
