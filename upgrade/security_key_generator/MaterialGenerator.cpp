@@ -30,39 +30,39 @@ namespace application
         uECC_set_rng(UccRandom);
         ret = uECC_make_key(ecDsa224PublicKey.data(), ecDsa224PrivateKey.data(), uECC_secp224r1());
         if (ret != 1)
-            throw std::exception("uECC_make_key returned an error");
+            throw std::runtime_error("uECC_make_key returned an error");
 
         mbedtls_entropy_context entropy;
         mbedtls_entropy_init(&entropy);
 
         ret = mbedtls_entropy_add_source(&entropy, RandomEntropy, this, 32, MBEDTLS_ENTROPY_SOURCE_STRONG);
         if (ret != 0)
-            throw std::exception("mbedtls_entropy_add_source returned an error");
+            throw std::runtime_error("mbedtls_entropy_add_source returned an error");
 
         mbedtls_ctr_drbg_context ctr_drbg;
         mbedtls_ctr_drbg_init(&ctr_drbg);
 
         ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, nullptr, 0);
         if (ret != 0)
-            throw std::exception("mbedtls_ctr_drbg_seed returned an error");
+            throw std::runtime_error("mbedtls_ctr_drbg_seed returned an error");
 
         mbedtls_pk_init(&pk);
 
         ret = mbedtls_pk_setup(&pk, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
         if (ret != 0)
-            throw std::exception("mbedtls_pk_setup returned an error");
+            throw std::runtime_error("mbedtls_pk_setup returned an error");
 
         ret = mbedtls_rsa_gen_key(mbedtls_pk_rsa(pk), mbedtls_ctr_drbg_random, &ctr_drbg,
             rsaKeyLength, 65537);
         if (ret != 0)
-            throw std::exception("mbedtls_rsa_gen_key returned an error");
+            throw std::runtime_error("mbedtls_rsa_gen_key returned an error");
 
         mbedtls_rsa_context* rsaContext = static_cast<mbedtls_rsa_context*>(pk.pk_ctx);
         mbedtls_rsa_set_padding(rsaContext, MBEDTLS_RSA_PKCS_V21, MBEDTLS_MD_SHA256);
 
         ret = mbedtls_rsa_check_privkey(rsaContext);
         if (ret != 0)
-            throw std::exception("Public key is invalid");
+            throw std::runtime_error("Public key is invalid");
 
         mbedtls_ctr_drbg_free(&ctr_drbg);
         mbedtls_entropy_free(&entropy);
@@ -78,7 +78,7 @@ namespace application
         std::ofstream file(fileName.c_str());
 
         if (!file)
-            throw std::exception((std::string("Cannot open/create: ") + fileName).c_str());
+            throw std::runtime_error((std::string("Cannot open/create: ") + fileName).c_str());
 
         mbedtls_rsa_context* rsaContext = static_cast<mbedtls_rsa_context*>(pk.pk_ctx);
 
