@@ -26,39 +26,6 @@ namespace services
         
         Tracer& tracer;
     };
-
-    class TracingHttpClientConnectorImpl
-        : public HttpClientConnector
-        , public ClientConnectionObserverFactoryWithNameResolver
-    {
-    public:
-        template<std::size_t MaxHeaderSize>
-            using WithMaxHeaderSize = infra::WithStorage<TracingHttpClientConnectorImpl, infra::BoundedString::WithStorage<MaxHeaderSize>>;
-
-        TracingHttpClientConnectorImpl(infra::BoundedString& headerBuffer, ConnectionFactoryWithNameResolver& connectionFactory, Tracer& tracer);
-
-        // Implementation of ClientConnectionObserverFactoryWithNameResolver
-        virtual infra::BoundedConstString Hostname() const override;
-        virtual uint16_t Port() const override;
-        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver) override;
-        virtual void ConnectionFailed(ConnectFailReason reason) override;
-
-        // Implementation of HttpClientConnector
-        virtual void Connect(HttpClientObserverFactory& factory) override;
-        virtual void CancelConnect(HttpClientObserverFactory& factory) override;
-
-    private:
-        void TryConnectWaiting();
-
-    private:
-        infra::BoundedString& headerBuffer;
-        ConnectionFactoryWithNameResolver& connectionFactory;
-        infra::NotifyingSharedOptional<TracingHttpClientImpl> client;
-        Tracer& tracer;
-
-        HttpClientObserverFactory* clientObserverFactory = nullptr;
-        infra::IntrusiveList<HttpClientObserverFactory> waitingClientObserverFactories;
-    };
 }
 
 #endif

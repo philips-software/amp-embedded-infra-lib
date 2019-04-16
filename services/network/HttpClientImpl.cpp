@@ -67,119 +67,6 @@ namespace services
         return headerSize;
     }
 
-    HttpResponseParser::HttpResponseParser(infra::SharedPtr<HttpClientObserver> observer, infra::BoundedString& headerBuffer)
-        : observer(observer)
-        , headerBuffer(headerBuffer)
-    {}
-
-    void HttpResponseParser::DataReceived(infra::StreamReaderWithRewinding& reader)
-    {
-        if (!statusParsed)
-            ParseStatusLine(reader);
-
-        if (!Error())
-            ParseHeaders(reader);
-    }
-
-    bool HttpResponseParser::Done() const
-    {
-        return done;
-    }
-
-    bool HttpResponseParser::Error() const
-    {
-        return error;
-    }
-
-    uint32_t HttpResponseParser::ContentLength() const
-    {
-        return *contentLength;
-    }
-
-    void HttpResponseParser::ParseStatusLine(infra::StreamReaderWithRewinding& reader)
-    {
-        infra::TextInputStream::WithErrorPolicy stream(reader);
-        headerBuffer.resize(std::min(headerBuffer.max_size(), stream.Available()));
-        stream >> headerBuffer;
-
-        auto crlfPos = headerBuffer.find_first_of(crlf);
-        if (crlfPos != infra::BoundedString::npos)
-        {
-            auto statusLine = headerBuffer.substr(0, crlfPos + crlf.size());
-            reader.Rewind(statusLine.size());
-
-            infra::Tokenizer tokenizer(statusLine, ' ');
-
-            auto versionValid = HttpVersionValid(tokenizer.Token(0));
-            auto statusCode = HttpStatusCodeFromString(tokenizer.Token(1));
-            if (versionValid && statusCode)
-                observer->StatusAvailable(*statusCode);
-            else
-                SetError();
-
-            statusParsed = true;
-        }
-    }
-
-    bool HttpResponseParser::HttpVersionValid(infra::BoundedConstString httpVersion)
-    {
-        static const std::array<infra::BoundedConstString, 2> validVersions{ "HTTP/1.0",  "HTTP/1.1" };
-        return std::any_of(validVersions.begin(), validVersions.end(), [&](infra::BoundedConstString validVersion) { return httpVersion == validVersion; });
-    }
-
-    void HttpResponseParser::ParseHeaders(infra::StreamReaderWithRewinding& reader)
-    {
-        infra::TextInputStream::WithErrorPolicy stream(reader);
-        while (!done && !stream.Empty())
-        {
-            auto start = reader.ConstructSaveMarker();
-
-            headerBuffer.resize(std::min(headerBuffer.max_size(), stream.Available()));
-            stream >> headerBuffer;
-
-            auto crlfPos = headerBuffer.find_first_of(crlf);
-            if (crlfPos != infra::BoundedString::npos)
-            {
-                auto headerLine = headerBuffer.substr(0, crlfPos);
-                reader.Rewind(start + headerLine.size() + crlf.size());
-
-                if (headerLine.empty() && headerBuffer.size() > crlfPos)
-                {
-                    error = contentLength == infra::none;
-                    done = true;
-                    return;
-                }
-
-                auto header = HeaderFromString(headerLine);
-                if (header.Field() == "Content-Length")
-                {
-                    contentLength = 0;
-                    infra::StringInputStream contentLengthStream(header.Value());
-                    contentLengthStream >> *contentLength;
-                }
-                else
-                    observer->HeaderAvailable(header);
-            }
-            else if (headerBuffer.full())
-                SetError();
-        }
-    }
-
-    HttpHeader HttpResponseParser::HeaderFromString(infra::BoundedConstString header)
-    {
-        infra::Tokenizer tokenizer(header, ':');
-        auto value = tokenizer.TokenAndRest(1);
-        auto headerBegin = value.find_first_not_of(' ');
-
-        return{ tokenizer.Token(0), headerBegin != infra::BoundedString::npos ? value.substr(headerBegin) : "" };
-    }
-
-    void HttpResponseParser::SetError()
-    {
-        done = true;
-        error = true;
-    }
-
     HttpClientImpl::HttpClientImpl(infra::BoundedString& headerBuffer, infra::BoundedConstString hostname)
         : headerBuffer(headerBuffer)
         , hostname(hostname)
@@ -246,7 +133,7 @@ namespace services
         infra::TextOutputStream::WithErrorPolicy stream(*writer);
         request->Write(stream);
         request = infra::none;
-        response.Emplace(observer, headerBuffer);
+        response.Emplace(*this, headerBuffer);
         writer = nullptr;
     }
 
@@ -279,6 +166,11 @@ namespace services
     {
         GetObserver().ClosingConnection();
         observer->Detach();
+    }
+
+    void HttpClientImpl::StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine)
+    {
+        observer->StatusAvailable(code);
     }
 
     void HttpClientImpl::HandleData()
@@ -350,93 +242,121 @@ namespace services
         ConnectionObserver::Subject().RequestSendStream(request->Size());
     }
 
+    HttpClientImpl::HttpResponseParser::HttpResponseParser(HttpClientImpl& httpClient, infra::BoundedString& headerBuffer)
+        : httpClient(httpClient)
+        , headerBuffer(headerBuffer)
+    {}
+
+    void HttpClientImpl::HttpResponseParser::DataReceived(infra::StreamReaderWithRewinding& reader)
+    {
+        if (!statusParsed)
+            ParseStatusLine(reader);
+
+        if (!Error())
+            ParseHeaders(reader);
+    }
+
+    bool HttpClientImpl::HttpResponseParser::Done() const
+    {
+        return done;
+    }
+
+    bool HttpClientImpl::HttpResponseParser::Error() const
+    {
+        return error;
+    }
+
+    uint32_t HttpClientImpl::HttpResponseParser::ContentLength() const
+    {
+        return *contentLength;
+    }
+
+    void HttpClientImpl::HttpResponseParser::ParseStatusLine(infra::StreamReaderWithRewinding& reader)
+    {
+        infra::TextInputStream::WithErrorPolicy stream(reader);
+        headerBuffer.resize(std::min(headerBuffer.max_size(), stream.Available()));
+        stream >> headerBuffer;
+
+        auto crlfPos = headerBuffer.find_first_of(crlf);
+        if (crlfPos != infra::BoundedString::npos)
+        {
+            auto statusLine = headerBuffer.substr(0, crlfPos + crlf.size());
+            reader.Rewind(statusLine.size());
+
+            infra::Tokenizer tokenizer(statusLine, ' ');
+
+            auto versionValid = HttpVersionValid(tokenizer.Token(0));
+            auto statusCode = HttpStatusCodeFromString(tokenizer.Token(1));
+            if (versionValid && statusCode)
+                httpClient.StatusAvailable(*statusCode, statusLine);
+            else
+                SetError();
+
+            statusParsed = true;
+        }
+    }
+
+    bool HttpClientImpl::HttpResponseParser::HttpVersionValid(infra::BoundedConstString httpVersion)
+    {
+        static const std::array<infra::BoundedConstString, 2> validVersions{ "HTTP/1.0",  "HTTP/1.1" };
+        return std::any_of(validVersions.begin(), validVersions.end(), [&](infra::BoundedConstString validVersion) { return httpVersion == validVersion; });
+    }
+
+    void HttpClientImpl::HttpResponseParser::ParseHeaders(infra::StreamReaderWithRewinding& reader)
+    {
+        infra::TextInputStream::WithErrorPolicy stream(reader);
+        while (!done && !stream.Empty())
+        {
+            auto start = reader.ConstructSaveMarker();
+
+            headerBuffer.resize(std::min(headerBuffer.max_size(), stream.Available()));
+            stream >> headerBuffer;
+
+            auto crlfPos = headerBuffer.find_first_of(crlf);
+            if (crlfPos != infra::BoundedString::npos)
+            {
+                auto headerLine = headerBuffer.substr(0, crlfPos);
+                reader.Rewind(start + headerLine.size() + crlf.size());
+
+                if (headerLine.empty() && headerBuffer.size() > crlfPos)
+                {
+                    error = contentLength == infra::none;
+                    done = true;
+                    return;
+                }
+
+                auto header = HeaderFromString(headerLine);
+                if (header.Field() == "Content-Length")
+                {
+                    contentLength = 0;
+                    infra::StringInputStream contentLengthStream(header.Value());
+                    contentLengthStream >> *contentLength;
+                }
+                else
+                    httpClient.observer->HeaderAvailable(header);
+            }
+            else if (headerBuffer.full())
+                SetError();
+        }
+    }
+
+    HttpHeader HttpClientImpl::HttpResponseParser::HeaderFromString(infra::BoundedConstString header)
+    {
+        infra::Tokenizer tokenizer(header, ':');
+        auto value = tokenizer.TokenAndRest(1);
+        auto headerBegin = value.find_first_not_of(' ');
+
+        return{ tokenizer.Token(0), headerBegin != infra::BoundedString::npos ? value.substr(headerBegin) : "" };
+    }
+
+    void HttpClientImpl::HttpResponseParser::SetError()
+    {
+        done = true;
+        error = true;
+    }
+
     HttpClientImpl::BodyReader::BodyReader(const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader, uint32_t contentLength)
         : reader(reader)
         , limitedReader(*reader, contentLength)
     {}
-
-    HttpClientConnectorImpl::HttpClientConnectorImpl(infra::BoundedString& headerBuffer, services::ConnectionFactoryWithNameResolver& connectionFactory)
-        : headerBuffer(headerBuffer)
-        , connectionFactory(connectionFactory)
-        , client([this]() { TryConnectWaiting(); })
-    {}
-
-    infra::BoundedConstString HttpClientConnectorImpl::Hostname() const
-    {
-        return clientObserverFactory->Hostname();
-    }
-
-    uint16_t HttpClientConnectorImpl::Port() const
-    {
-        return clientObserverFactory->Port();
-    }
-
-    void HttpClientConnectorImpl::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
-    {
-        assert(clientObserverFactory);
-        auto clientPtr = client.Emplace(headerBuffer, Hostname());
-
-        clientObserverFactory->ConnectionEstablished([&clientPtr, &createdObserver](infra::SharedPtr<HttpClientObserver> observer)
-        {
-            if (observer)
-            {
-                clientPtr->AttachObserver(observer);
-                createdObserver(clientPtr);
-            }
-        });
-
-        clientObserverFactory = nullptr;
-    }
-
-    void HttpClientConnectorImpl::ConnectionFailed(ConnectFailReason reason)
-    {
-        assert(clientObserverFactory);
-
-        switch (reason)
-        {
-            case ConnectFailReason::refused:
-                clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::refused);
-                break;
-            case ConnectFailReason::connectionAllocationFailed:
-                clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::connectionAllocationFailed);
-                break;
-            case ConnectFailReason::nameLookupFailed:
-                clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::nameLookupFailed);
-                break;
-            default:
-                std::abort();
-        }
-
-        clientObserverFactory = nullptr;
-        TryConnectWaiting();
-    }
-
-    void HttpClientConnectorImpl::Connect(HttpClientObserverFactory& factory)
-    {
-        waitingClientObserverFactories.push_back(factory);
-        TryConnectWaiting();
-    }
-
-    void HttpClientConnectorImpl::CancelConnect(HttpClientObserverFactory& factory)
-    {
-        if (clientObserverFactory == &factory)
-        {
-            connectionFactory.CancelConnect(*this);
-            clientObserverFactory = nullptr;
-        }
-        else
-            waitingClientObserverFactories.erase(factory);
-
-        TryConnectWaiting();
-    }
-
-    void HttpClientConnectorImpl::TryConnectWaiting()
-    {
-        if (clientObserverFactory == nullptr && client.Allocatable() && !waitingClientObserverFactories.empty())
-        {
-            clientObserverFactory = &waitingClientObserverFactories.front();
-            waitingClientObserverFactories.pop_front();
-            connectionFactory.Connect(*this);
-        }
-    }
 }

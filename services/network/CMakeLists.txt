@@ -44,6 +44,8 @@ ccola_component(network static_library)
         TracingConnectionMbedTls.hpp
         TracingHttpClientImpl.cpp
         TracingHttpClientImpl.hpp
+        TracingStatusHttpClientImpl.cpp
+        TracingStatusHttpClientImpl.hpp
         WebSocket.cpp
         WebSocket.hpp
         WiFiNetwork.cpp

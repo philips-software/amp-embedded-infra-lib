@@ -20,9 +20,23 @@ namespace services
 
         auto reader = ConnectionObserver::Subject().ReceiveStream();
         infra::DataInputStream::WithErrorPolicy stream(*reader);
+        tracer.Trace();
 
         while (!stream.Empty())
-            tracer.Trace() << infra::ByteRangeAsString(stream.ContiguousRange());
+        {
+            auto range = stream.ContiguousRange();
+
+            while (!range.empty())
+            {
+                infra::BoundedString::WithStorage<256> dummy(256, 'x');
+                if (dummy.size() > range.size())
+                    dummy.resize(range.size());
+
+                range.pop_back(dummy.size());
+
+                tracer.Continue() << dummy;
+            }
+        }
 
         reader = nullptr;
 
@@ -39,91 +53,5 @@ namespace services
     {
         tracer.Trace() << "HttpClientImpl::ClosingConnection";
         HttpClientImpl::ClosingConnection();
-    }
-
-    TracingHttpClientConnectorImpl::TracingHttpClientConnectorImpl(infra::BoundedString& headerBuffer, services::ConnectionFactoryWithNameResolver& connectionFactory, Tracer& tracer)
-        : headerBuffer(headerBuffer)
-        , connectionFactory(connectionFactory)
-        , client([this]() { TryConnectWaiting(); })
-        , tracer(tracer)
-    {}
-
-    infra::BoundedConstString TracingHttpClientConnectorImpl::Hostname() const
-    {
-        return clientObserverFactory->Hostname();
-    }
-
-    uint16_t TracingHttpClientConnectorImpl::Port() const
-    {
-        return clientObserverFactory->Port();
-    }
-
-    void TracingHttpClientConnectorImpl::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
-    {
-        assert(clientObserverFactory != nullptr);
-        auto clientPtr = client.Emplace(headerBuffer, Hostname(), tracer);
-
-        clientObserverFactory->ConnectionEstablished([&clientPtr, &createdObserver](infra::SharedPtr<HttpClientObserver> observer)
-        {
-            if (observer)
-            {
-                clientPtr->observer = observer;
-                observer->Attach(*clientPtr);
-                createdObserver(clientPtr);
-            }
-        });
-
-        clientObserverFactory = nullptr;
-    }
-
-    void TracingHttpClientConnectorImpl::ConnectionFailed(ConnectFailReason reason)
-    {
-        assert(clientObserverFactory != nullptr);
-
-        switch (reason)
-        {
-            case ConnectFailReason::refused:
-                clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::refused);
-                break;
-            case ConnectFailReason::connectionAllocationFailed:
-                clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::connectionAllocationFailed);
-                break;
-            case ConnectFailReason::nameLookupFailed:
-                clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::nameLookupFailed);
-                break;
-            default:
-                std::abort();
-        }
-
-        clientObserverFactory = nullptr;
-    }
-
-    void TracingHttpClientConnectorImpl::Connect(HttpClientObserverFactory& factory)
-    {
-        waitingClientObserverFactories.push_back(factory);
-        TryConnectWaiting();
-    }
-
-    void TracingHttpClientConnectorImpl::CancelConnect(HttpClientObserverFactory& factory)
-    {
-        if (clientObserverFactory == &factory)
-        {
-            connectionFactory.CancelConnect(*this);
-            clientObserverFactory = nullptr;
-        }
-        else
-            waitingClientObserverFactories.erase(factory);
-
-        TryConnectWaiting();
-    }
-
-    void TracingHttpClientConnectorImpl::TryConnectWaiting()
-    {
-        if (client.Allocatable() && !waitingClientObserverFactories.empty())
-        {
-            clientObserverFactory = &waitingClientObserverFactories.front();
-            waitingClientObserverFactories.pop_front();
-            connectionFactory.Connect(*this);
-        }
     }
 }

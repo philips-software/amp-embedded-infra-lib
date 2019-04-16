@@ -32,34 +32,6 @@ namespace services
         const HttpHeaders headers;
     };
 
-    class HttpResponseParser
-    {
-    public:
-        HttpResponseParser(infra::SharedPtr<HttpClientObserver> observer, infra::BoundedString& headerBuffer);
-
-        void DataReceived(infra::StreamReaderWithRewinding& reader);
-        bool Done() const;
-        bool Error() const;
-        uint32_t ContentLength() const;
-
-    private:
-        void ParseStatusLine(infra::StreamReaderWithRewinding& reader);
-        bool HttpVersionValid(infra::BoundedConstString httpVersion);
-
-        void ParseHeaders(infra::StreamReaderWithRewinding& reader);
-        HttpHeader HeaderFromString(infra::BoundedConstString header);
-
-        void SetError();
-
-    private:
-        infra::SharedPtr<HttpClientObserver> observer;
-        infra::BoundedString& headerBuffer;
-        bool done = false;
-        bool error = false;
-        bool statusParsed = false;
-        infra::Optional<uint32_t> contentLength;
-    };
-
     class HttpClientImpl
         : public ConnectionObserver
         , public HttpClient
@@ -91,6 +63,9 @@ namespace services
         virtual void Connected() override;
         virtual void ClosingConnection() override;
 
+    protected:
+        virtual void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine);
+
     private:
         void HandleData();
         void BodyReceived();
@@ -100,6 +75,34 @@ namespace services
         void ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers);
 
     private:
+        class HttpResponseParser
+        {
+        public:
+            HttpResponseParser(HttpClientImpl& httpClient, infra::BoundedString& headerBuffer);
+
+            void DataReceived(infra::StreamReaderWithRewinding& reader);
+            bool Done() const;
+            bool Error() const;
+            uint32_t ContentLength() const;
+
+        private:
+            void ParseStatusLine(infra::StreamReaderWithRewinding& reader);
+            bool HttpVersionValid(infra::BoundedConstString httpVersion);
+
+            void ParseHeaders(infra::StreamReaderWithRewinding& reader);
+            HttpHeader HeaderFromString(infra::BoundedConstString header);
+
+            void SetError();
+
+        private:
+            HttpClientImpl& httpClient;
+            infra::BoundedString& headerBuffer;
+            bool done = false;
+            bool error = false;
+            bool statusParsed = false;
+            infra::Optional<uint32_t> contentLength;
+        };
+
         class BodyReader
         {
         public:
@@ -123,6 +126,7 @@ namespace services
         infra::AccessedBySharedPtr bodyReaderAccess;
     };
 
+    template<class HttpClient = HttpClientImpl, class... Args>
     class HttpClientConnectorImpl
         : public HttpClientConnector
         , public ClientConnectionObserverFactoryWithNameResolver
@@ -131,7 +135,7 @@ namespace services
         template<std::size_t MaxHeaderSize>
             using WithMaxHeaderSize = infra::WithStorage<HttpClientConnectorImpl, infra::BoundedString::WithStorage<MaxHeaderSize>>;
 
-        HttpClientConnectorImpl(infra::BoundedString& headerBuffer, ConnectionFactoryWithNameResolver& connectionFactory);
+        HttpClientConnectorImpl(infra::BoundedString& headerBuffer, ConnectionFactoryWithNameResolver& connectionFactory, Args&&... args);
 
         // Implementation of ClientConnectionObserverFactoryWithNameResolver
         virtual infra::BoundedConstString Hostname() const override;
@@ -147,13 +151,121 @@ namespace services
         void TryConnectWaiting();
 
     private:
+        template<std::size_t... I>
+            infra::SharedPtr<HttpClient> InvokeEmplace(std::index_sequence<I...>);
+
+    private:
         infra::BoundedString& headerBuffer;
         ConnectionFactoryWithNameResolver& connectionFactory;
-        infra::NotifyingSharedOptional<HttpClientImpl> client;
+        infra::NotifyingSharedOptional<HttpClient> client;
+        std::tuple<Args...> args;
 
         HttpClientObserverFactory* clientObserverFactory = nullptr;
         infra::IntrusiveList<HttpClientObserverFactory> waitingClientObserverFactories;
     };
+
+    ////    Implementation    ////
+
+    template<class HttpClient, class... Args>
+    HttpClientConnectorImpl<HttpClient, Args...>::HttpClientConnectorImpl(infra::BoundedString& headerBuffer, services::ConnectionFactoryWithNameResolver& connectionFactory, Args&&... args)
+        : headerBuffer(headerBuffer)
+        , connectionFactory(connectionFactory)
+        , client([this]() { TryConnectWaiting(); })
+        , args(std::forward<Args>(args)...)
+    {}
+
+    template<class HttpClient, class... Args>
+    infra::BoundedConstString HttpClientConnectorImpl<HttpClient, Args...>::Hostname() const
+    {
+        return clientObserverFactory->Hostname();
+    }
+
+    template<class HttpClient, class... Args>
+    uint16_t HttpClientConnectorImpl<HttpClient, Args...>::Port() const
+    {
+        return clientObserverFactory->Port();
+    }
+
+    template<class HttpClient, class... Args>
+    template<std::size_t... I>
+    infra::SharedPtr<HttpClient> HttpClientConnectorImpl<HttpClient, Args...>::InvokeEmplace(std::index_sequence<I...>)
+    {
+        return client.Emplace(headerBuffer, Hostname(), std::get<I>(args)...);
+    }
+
+    template<class HttpClient, class... Args>
+    void HttpClientConnectorImpl<HttpClient, Args...>::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
+    {
+        assert(clientObserverFactory);
+        auto clientPtr = InvokeEmplace(std::make_index_sequence<sizeof...(Args)>{});
+
+        clientObserverFactory->ConnectionEstablished([&clientPtr, &createdObserver](infra::SharedPtr<HttpClientObserver> observer)
+        {
+            if (observer)
+            {
+                clientPtr->AttachObserver(observer);
+                createdObserver(clientPtr);
+            }
+        });
+
+        clientObserverFactory = nullptr;
+    }
+
+    template<class HttpClient, class... Args>
+    void HttpClientConnectorImpl<HttpClient, Args...>::ConnectionFailed(ConnectFailReason reason)
+    {
+        assert(clientObserverFactory);
+
+        switch (reason)
+        {
+            case ConnectFailReason::refused:
+                clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::refused);
+                break;
+            case ConnectFailReason::connectionAllocationFailed:
+                clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::connectionAllocationFailed);
+                break;
+            case ConnectFailReason::nameLookupFailed:
+                clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::nameLookupFailed);
+                break;
+            default:
+                std::abort();
+        }
+
+        clientObserverFactory = nullptr;
+        TryConnectWaiting();
+    }
+
+    template<class HttpClient, class... Args>
+    void HttpClientConnectorImpl<HttpClient, Args...>::Connect(HttpClientObserverFactory& factory)
+    {
+        waitingClientObserverFactories.push_back(factory);
+        TryConnectWaiting();
+    }
+
+    template<class HttpClient, class... Args>
+    void HttpClientConnectorImpl<HttpClient, Args...>::CancelConnect(HttpClientObserverFactory& factory)
+    {
+        if (clientObserverFactory == &factory)
+        {
+            connectionFactory.CancelConnect(*this);
+            clientObserverFactory = nullptr;
+        }
+        else
+            waitingClientObserverFactories.erase(factory);
+
+        TryConnectWaiting();
+    }
+
+    template<class HttpClient, class... Args>
+    void HttpClientConnectorImpl<HttpClient, Args...>::TryConnectWaiting()
+    {
+        if (clientObserverFactory == nullptr && client.Allocatable() && !waitingClientObserverFactories.empty())
+        {
+            clientObserverFactory = &waitingClientObserverFactories.front();
+            waitingClientObserverFactories.pop_front();
+            connectionFactory.Connect(*this);
+        }
+    }
 }
 
 #endif
