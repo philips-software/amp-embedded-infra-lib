@@ -151,8 +151,36 @@ namespace services
         void TryConnectWaiting();
 
     private:
+        template<class T, T... Ints>
+        class integer_sequence
+        {};
+
         template<std::size_t... I>
-            infra::SharedPtr<HttpClient> InvokeEmplace(std::index_sequence<I...>);
+            using index_sequence = integer_sequence<std::size_t, I...>;
+
+        template<std::size_t... Ns>
+        struct make_integer_sequence_helper;
+
+        template<std::size_t I, std::size_t... Ns>
+        struct make_integer_sequence_helper<I, Ns...>
+        {
+            using type = typename make_integer_sequence_helper<I - 1, I - 1, Ns...>::type;
+        };
+
+        template<std::size_t... Ns>
+        struct make_integer_sequence_helper<0, Ns...>
+        {
+            using type = integer_sequence<std::size_t, Ns...>;
+        };
+
+        template<std::size_t N>
+            using make_integer_sequence = typename make_integer_sequence_helper<N>::type;
+
+        template<std::size_t N>
+            using make_index_sequence = make_integer_sequence<N>;
+
+        template<std::size_t... I>
+            infra::SharedPtr<HttpClient> InvokeEmplace(index_sequence<I...>);
 
     private:
         infra::BoundedString& headerBuffer;
@@ -188,7 +216,7 @@ namespace services
 
     template<class HttpClient, class... Args>
     template<std::size_t... I>
-    infra::SharedPtr<HttpClient> HttpClientConnectorImpl<HttpClient, Args...>::InvokeEmplace(std::index_sequence<I...>)
+    infra::SharedPtr<HttpClient> HttpClientConnectorImpl<HttpClient, Args...>::InvokeEmplace(index_sequence<I...>)
     {
         return client.Emplace(headerBuffer, Hostname(), std::get<I>(args)...);
     }
@@ -197,7 +225,7 @@ namespace services
     void HttpClientConnectorImpl<HttpClient, Args...>::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
     {
         assert(clientObserverFactory);
-        auto clientPtr = InvokeEmplace(std::make_index_sequence<sizeof...(Args)>{});
+        auto clientPtr = InvokeEmplace(make_index_sequence<sizeof...(Args)>{});
 
         clientObserverFactory->ConnectionEstablished([&clientPtr, &createdObserver](infra::SharedPtr<HttpClientObserver> observer)
         {
