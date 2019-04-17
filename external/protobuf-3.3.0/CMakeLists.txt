@@ -5,11 +5,17 @@ ccola_package(protobuf)
         ccola_inheritable_include_directories(src)
 
         ccola_inheritable_definitions(PROTOBUF_USE_DLLS)
-        ccola_definitions(LIBPROTOBUF_EXPORTS)
+        ccola_definitions(
+            LIBPROTOBUF_EXPORTS
+        linux:
+            HAVE_PTHREAD
+        )
 
         ccola_compile_options(
         win:
             /wd4018 /wd4065 /wd4244 /wd4251 /wd4267 /wd4305 /wd4309 /wd4506 /wd4661 /wd4800 /wd4838 /wd4996
+        linux:
+            -fPIC
         )
         
         ccola_sources(
@@ -31,10 +37,13 @@ ccola_package(protobuf)
             src/google/protobuf/message_lite.h
             src/google/protobuf/repeated_field.cc
             src/google/protobuf/repeated_field.h
-            #src/google/protobuf/stubs/atomicops_internals_x86_gcc.cc
-            #src/google/protobuf/stubs/atomicops_internals_x86_gcc.h
+        linux:
+            src/google/protobuf/stubs/atomicops_internals_x86_gcc.cc
+            src/google/protobuf/stubs/atomicops_internals_x86_gcc.h
+        win:
             src/google/protobuf/stubs/atomicops_internals_x86_msvc.cc
             src/google/protobuf/stubs/atomicops_internals_x86_msvc.h
+        all:
             src/google/protobuf/stubs/bytestream.cc
             src/google/protobuf/stubs/bytestream.h
             src/google/protobuf/stubs/common.cc
@@ -58,6 +67,11 @@ ccola_package(protobuf)
             src/google/protobuf/stubs/time.h
             src/google/protobuf/wire_format_lite.cc
             src/google/protobuf/wire_format_lite.h
+        )
+
+        ccola_external_libraries(
+        linux:
+            pthread
         )
 
     ccola_end_component()
