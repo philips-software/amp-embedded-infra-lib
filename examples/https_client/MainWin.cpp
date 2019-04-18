@@ -112,7 +112,7 @@ int main(int argc, const char* argv[], const char* env[])
     services::NameLookupWin nameLookup;
     services::ConnectionFactoryWithNameResolverImpl::WithStorage<1> connectionFactory(networkTls, nameLookup);
     services::ConnectionFactoryWithNameResolverForTls connectionFactoryTls(connectionFactory);
-    services::HttpClientConnectorImpl::WithMaxHeaderSize<512> connector(connectionFactoryTls);
+    services::HttpClientConnectorImpl<>::WithMaxHeaderSize<512> connector(connectionFactoryTls);
 
     application::TracingHttpClient httpClient("httpbin.org/get", 443, connector, tracer);
 

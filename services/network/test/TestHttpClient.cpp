@@ -128,7 +128,7 @@ public:
     testing::StrictMock<services::ConnectionFactoryWithNameLookupMock> connectionFactory;
     testing::StrictMock<services::HttpClientObserverFactoryMock> factory;
     testing::StrictMock<services::HttpClientObserverFactoryMock> factory2;
-    services::HttpClientConnectorImpl::WithMaxHeaderSize<50> connector;
+    services::HttpClientConnectorImpl<>::WithMaxHeaderSize<50> connector;
     testing::StrictMock<services::ConnectionStubWithAckReceivedMock> connection;
     infra::SharedPtr<services::Connection> connectionPtr;
     testing::StrictMock<services::HttpClientObserverMock> client;
