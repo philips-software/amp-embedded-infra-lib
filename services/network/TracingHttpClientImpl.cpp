@@ -20,23 +20,9 @@ namespace services
 
         auto reader = ConnectionObserver::Subject().ReceiveStream();
         infra::DataInputStream::WithErrorPolicy stream(*reader);
-        tracer.Trace();
 
         while (!stream.Empty())
-        {
-            auto range = stream.ContiguousRange();
-
-            while (!range.empty())
-            {
-                infra::BoundedString::WithStorage<256> dummy(256, 'x');
-                if (dummy.size() > range.size())
-                    dummy.resize(range.size());
-
-                range.pop_back(dummy.size());
-
-                tracer.Continue() << dummy;
-            }
-        }
+            tracer.Trace() << infra::ByteRangeAsString(stream.ContiguousRange());
 
         reader = nullptr;
 
