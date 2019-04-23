@@ -319,7 +319,7 @@ namespace services
         infra::ByteRange contentReadyForSend;
         infra::SharedOptional<StreamWriterWithCyclicBuffer> sendStream;
         hal::SerialCommunication& serialCommunication;
-        infra::QueueForOneReaderOneIrqWriter receiveQueue;
+        infra::QueueForOneReaderOneIrqWriter<uint8_t> receiveQueue;
         infra::Optional<SerialConnectionStreamReader> receivedDataReader;
         infra::ClaimableResource serialCommunicationResource;
         infra::PolymorphicVariant<State, StateInitSizeRequest, StateInitSizeResponseRequest, StateInitSizeResponse, StateConnectedIdle, StateConnectedSendingContent, StateSendingUpdate> state;
