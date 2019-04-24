@@ -4,6 +4,15 @@
 #include "infra/util/test_helper/BoundedStringMatcher.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 
+namespace
+{
+    template<class T>
+    void DeleteValue(T& value)
+    {
+        value.~T();
+    }
+}
+
 class JsonStreamingObjectParserTest
     : public testing::Test
 {
@@ -139,6 +148,17 @@ TEST_F(JsonStreamingObjectParserTest, VisitString_twice)
 
     EXPECT_CALL(visitor, VisitString("a", "b"));
     parser.Feed(R"(, "a" : "b")");
+}
+
+TEST_F(JsonStreamingObjectParserTest, destruct_parser_during_callback)
+{
+    EXPECT_CALL(visitor, VisitString("a", "b")).WillOnce(testing::Invoke([this](infra::BoundedConstString, infra::BoundedConstString)
+    {
+        DeleteValue(parser);
+    }));
+    parser.Feed(R"({ "a" : "b", "a" : "b")");
+
+    new (&parser) decltype(parser){ visitor };
 }
 
 TEST_F(JsonStreamingObjectParserTest, VisitObject)

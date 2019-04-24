@@ -147,6 +147,16 @@ namespace infra
     class ExecuteOnDestruction
     {
     public:
+        template<std::size_t ExtraSize>
+        struct WithExtraSize
+        {
+            explicit WithExtraSize(Function<void(), ExtraSize> f);
+            ~WithExtraSize();
+
+        private:
+            Function<void(), ExtraSize> f;
+        };
+
         explicit ExecuteOnDestruction(Function<void()> f);
         ~ExecuteOnDestruction();
 
@@ -474,6 +484,17 @@ namespace infra
 
     template<std::size_t ExtraSize>
     Execute::WithExtraSize<ExtraSize>::WithExtraSize(Function<void(), ExtraSize> f)
+    {
+        f();
+    }
+
+    template<std::size_t ExtraSize>
+    ExecuteOnDestruction::WithExtraSize<ExtraSize>::WithExtraSize(Function<void(), ExtraSize> f)
+        : f(f)
+    {}
+
+    template<std::size_t ExtraSize>
+    ExecuteOnDestruction::WithExtraSize<ExtraSize>::~WithExtraSize()
     {
         f();
     }

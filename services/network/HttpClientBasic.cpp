@@ -43,6 +43,8 @@ namespace services
     void HttpClientBasic::Close()
     {
         assert(HttpClientObserver::Attached());
+        assert(state == State::connected);
+
         state = State::closing;
         timeoutTimer.Cancel();
         HttpClientObserver::Subject().Close();

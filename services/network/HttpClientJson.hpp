@@ -25,6 +25,7 @@ namespace services
         };
 
         HttpClientJson(infra::BoundedString url, const ConnectionInfo& connectionInfo);
+        ~HttpClientJson();
 
         void Cancel(const infra::Function<void()>& onDone);
 
@@ -46,6 +47,7 @@ namespace services
         infra::Optional<infra::ProxyCreator<infra::JsonStreamingObjectParser, infra::JsonObjectVisitor&>> jsonParser;
 
         infra::SharedPtr<infra::StreamReader> readerPtr;
+        bool* destructedIndication = nullptr;
     };
 }
 
