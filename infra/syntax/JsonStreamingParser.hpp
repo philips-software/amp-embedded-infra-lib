@@ -125,6 +125,7 @@ namespace infra
         void FeedToken(infra::MemoryRange<const char>& data, bool saveValue);
         void ReportParseError();
         void ReportSemanticError();
+        infra::BoundedString CopyAndClear(infra::BoundedString& value) const;
 
     private:
         void FoundToken(Token found);
