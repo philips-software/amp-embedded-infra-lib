@@ -1,3 +1,4 @@
+#include "infra/util/Function.hpp"
 #include "infra/syntax/JsonStreamingParser.hpp"
 #include <cctype>
 
@@ -340,9 +341,23 @@ namespace infra
         this->tagBuffer.clear();
     }
 
+    JsonSubObjectParser::~JsonSubObjectParser()
+    {
+        if (destructedIndication != nullptr)
+            *destructedIndication = true;
+    }
+
     void JsonSubObjectParser::Feed(infra::MemoryRange<const char>& data)
     {
-        while (!data.empty() && state != State::parseError && state != State::semanticError)
+        bool destructed = false;
+        destructedIndication = &destructed;
+        infra::ExecuteOnDestruction::WithExtraSize<3 * sizeof(void*)> execute([this, &destructed, &data]()
+        {
+            if (!destructed)
+                destructedIndication = nullptr;
+        });
+
+        while (!destructed && !data.empty() && state != State::parseError && state != State::semanticError)
         {
             FeedToken(data, state != State::skipNestedObject && state != State::skipNestedArray);
             if (tokenState != TokenState::done)
@@ -449,7 +464,8 @@ namespace infra
             else if ((state == State::initialOpen || state == State::closed) && token == Token::rightBrace)
             {
                 visitor->Close();
-                subObjects.pop_back();
+                if (!destructed)
+                    subObjects.pop_back();
                 return;
             }
             else if (state == State::skipNestedObject)
@@ -515,9 +531,23 @@ namespace infra
         : JsonSubParser(tagBuffer, valueBuffer, subObjects)
     {}
 
+    JsonSubArrayParser::~JsonSubArrayParser()
+    {
+        if (destructedIndication != nullptr)
+            *destructedIndication = true;
+    }
+
     void JsonSubArrayParser::Feed(infra::MemoryRange<const char>& data)
     {
-        while (!data.empty() && state != State::parseError && state != State::semanticError)
+        bool destructed = false;
+        destructedIndication = &destructed;
+        infra::ExecuteOnDestruction::WithExtraSize<3 * sizeof(void*)> execute([this, &destructed, &data]()
+        {
+            if (!destructed)
+                destructedIndication = nullptr;
+        });
+
+        while (!destructed && !data.empty() && state != State::parseError && state != State::semanticError)
         {
             FeedToken(data, state != State::skipNestedObject && state != State::skipNestedArray);
             if (tokenState != TokenState::done)
