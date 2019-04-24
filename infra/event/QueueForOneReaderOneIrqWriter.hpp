@@ -57,6 +57,7 @@ namespace infra
         , contentsEnd(buffer.begin())
         , onDataAvailable(onDataAvailable)
     {
+        static_assert(std::is_trivial<T>::value, "Trivial type required");
         notificationScheduled = false;
     }
 
@@ -135,7 +136,7 @@ namespace infra
     }
 
     template<class T>
-    T QueueForOneReaderOneIrqWriter<T>::operator [] (size_t position) const
+    T QueueForOneReaderOneIrqWriter<T>::operator[](size_t position) const
     {
         size_t size = Size();
         assert(size > 0);
