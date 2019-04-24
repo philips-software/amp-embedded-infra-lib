@@ -73,6 +73,7 @@ namespace services
         void BodyComplete();
         void ExecuteRequest(HttpVerb verb, infra::BoundedConstString requestTarget, const HttpHeaders headers);
         void ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers);
+        void AbortAndDestroy();
 
     private:
         class HttpResponseParser

@@ -637,3 +637,27 @@ TEST_F(HttpClientTest, when_reader_is_stored_body_available_sends_same_pointer)
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("a")));
     ExecuteAllActions();
 }
+
+TEST_F(HttpClientTest, closed_before_reader_is_reset)
+{
+    Connect();
+
+    client.Subject().Get("/");
+
+    auto clientConnection = connection.Observer();  // Keep the client alive so that reader may be kept alive a little longer
+
+    EXPECT_CALL(connection, AckReceivedMock()).Times(2);
+    EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
+    EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(infra::Lambda([this](infra::SharedPtr<infra::StreamReader>& reader)
+    {
+        EXPECT_CALL(connection, CloseAndDestroyMock());
+        EXPECT_CALL(client, ClosingConnection());
+        client.Subject().Close();
+        reader = nullptr;
+    }));
+
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\n")));
+    ExecuteAllActions();
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("Content-Length:8\r\n\r\nbody\r\ndata")));
+    ExecuteAllActions();
+}
