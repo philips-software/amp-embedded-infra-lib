@@ -7,7 +7,6 @@
 #include <atomic>
 #include <cstdint>
 #include <cassert>
-#include "infra/util/BoundedVector.hpp"
 #include "infra/event/EventDispatcher.hpp"
 
 namespace infra
@@ -17,7 +16,7 @@ namespace infra
     {
     public:
         template<std::size_t Size>
-            using WithStorage = infra::WithStorage<QueueForOneReaderOneIrqWriter<T>, std::array<T, Size+1>>;
+            using WithStorage = infra::WithStorage<QueueForOneReaderOneIrqWriter<T>, std::array<T, Size + 1>>;
 
         QueueForOneReaderOneIrqWriter(const infra::MemoryRange<T> buffer, const infra::Function<void()>& onDataAvailable);
 

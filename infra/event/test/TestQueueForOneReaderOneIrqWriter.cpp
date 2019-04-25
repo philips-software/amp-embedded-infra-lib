@@ -11,7 +11,7 @@ class QueueForOneReaderOneIrqWriterTest
 public:
     infra::MockCallback<void()> callback;
     std::array<uint8_t, 5> buffer;
-    infra::Optional <infra::QueueForOneReaderOneIrqWriter<uint8_t>> queue;
+    infra::Optional<infra::QueueForOneReaderOneIrqWriter<uint8_t>> queue;
 };
 
 TEST_F(QueueForOneReaderOneIrqWriterTest, add_element)
@@ -74,7 +74,7 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, get_ContiguousRange)
     std::array<uint8_t, 2> data = {{ 0, 1 }};
     queue->AddFromInterrupt(data);
     
-    infra::MemoryRange<const uint8_t> range = queue->ContiguousRange();
+    auto range = queue->ContiguousRange();
     EXPECT_EQ((std::vector<uint8_t>(data.begin(), data.end())), (std::vector<uint8_t>{ range.begin(), range.end() }));
 }
 
