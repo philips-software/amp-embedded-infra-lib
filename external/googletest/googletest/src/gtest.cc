@@ -2474,7 +2474,7 @@ Result HandleExceptionsInMethodIfSupported(
   // the check early, sacrificing the ability to affect Google Test's
   // exception handling in the method where the exception is thrown.
   if (internal::GetUnitTestImpl()->catch_exceptions()) {
-#if GTEST_HAS_EXCEPTIONS
+#if 0//GTEST_HAS_EXCEPTIONS
     try {
       return HandleSehExceptionsInMethodIfSupported(object, method, location);
     } catch (const AssertionException&) {  // NOLINT
