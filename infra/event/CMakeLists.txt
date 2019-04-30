@@ -9,7 +9,6 @@ ccola_component(event static_library)
         EventDispatcherWithWeakPtr.hpp
         LowPowerEventDispatcher.cpp
         LowPowerEventDispatcher.hpp
-        QueueForOneReaderOneIrqWriter.cpp
         QueueForOneReaderOneIrqWriter.hpp
         SystemStateManager.cpp
         SystemStateManager.hpp
