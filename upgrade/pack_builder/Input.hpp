@@ -6,6 +6,15 @@
 
 namespace application
 {
+    struct TargetNameTooLongException
+        : std::exception
+    {
+        explicit TargetNameTooLongException(const std::string& name, int maxSize);
+
+        std::string name;
+        int maxSize;
+    };
+
     class Input
     {
     public:
@@ -14,6 +23,9 @@ namespace application
 
         std::string TargetName() const;
         virtual std::vector<uint8_t> Image() const = 0;
+
+    public:
+        const int maxNameSize = 8;
 
     private:
         std::string targetName;

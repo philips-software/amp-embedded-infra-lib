@@ -4,6 +4,7 @@
 #include "upgrade/pack_builder/BuildUpgradePack.hpp"
 #include "upgrade/pack_builder/ImageEncryptorAes.hpp"
 #include "upgrade/pack_builder/ImageSignerEcDsa.hpp"
+#include "upgrade/pack_builder/Input.hpp"
 #include "upgrade/pack_builder/UpgradePackBuilder.hpp"
 #include "upgrade/pack_builder/UpgradePackInputFactory.hpp"
 #include <cctype>
@@ -100,6 +101,10 @@ namespace application
         catch (application::SignatureDoesNotVerifyException&)
         {
             std::cout << "Signature does not verify" << std::endl;
+        }
+        catch (application::TargetNameTooLongException& exception)
+        {
+            std::cout << "Target name '"<< exception.name << "' is too long, max is " << exception.maxSize << std::endl;
         }
         catch (std::exception& e)
         {
