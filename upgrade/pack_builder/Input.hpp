@@ -6,13 +6,11 @@
 
 namespace application
 {
-    struct TargetNameTooLongException
-        : std::exception
+    class TargetNameTooLongException
+        : public std::runtime_error
     {
-        explicit TargetNameTooLongException(const std::string& name, int maxSize);
-
-        std::string name;
-        int maxSize;
+    public:
+        TargetNameTooLongException(const std::string& name, int maxSize);
     };
 
     class Input

@@ -1,10 +1,10 @@
 #include "upgrade/pack_builder/Input.hpp"
+#include <string>
 
 namespace application
 {
     TargetNameTooLongException::TargetNameTooLongException(const std::string& name, int maxSize)
-        : name(name)
-        , maxSize(maxSize)
+        : runtime_error("Target name '" + name + "' is too long, max is " + std::to_string(maxSize))
     {}
 
     Input::Input(const std::string& targetName)

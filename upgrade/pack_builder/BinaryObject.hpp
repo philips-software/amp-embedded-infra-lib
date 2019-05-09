@@ -6,47 +6,52 @@
 
 namespace application
 {
-    struct LineException
+    class LineException
+        : public std::runtime_error
     {
-        LineException(const std::string& file, int line);
-
-        std::string file;
-        int line;
+    public:
+        LineException(const std::string& prependMessage, const std::string& file, int line);
     };
 
-    struct IncorrectCrcException
-        : LineException
+    class IncorrectCrcException
+        : public LineException
     {
+    public:
         IncorrectCrcException(const std::string& file, int line);
     };
 
-    struct NoEndOfFileException
-        : LineException
+    class NoEndOfFileException
+        : public LineException
     {
+    public:
         NoEndOfFileException(const std::string& file, int line);
     };
 
-    struct DataAfterEndOfFileException
-        : LineException
+    class DataAfterEndOfFileException
+        : public LineException
     {
+    public:
         DataAfterEndOfFileException(const std::string& file, int line);
     };
 
-    struct UnknownRecordException
-        : LineException
+    class UnknownRecordException
+        : public LineException
     {
+    public:
         UnknownRecordException(const std::string& file, int line);
     };
 
-    struct RecordTooShortException
-        : LineException
+    class RecordTooShortException
+        : public LineException
     {
+    public:
         RecordTooShortException(const std::string& file, int line);
     };
 
-    struct RecordTooLongException
-        : LineException
+    class RecordTooLongException
+        : public LineException
     {
+    public:
         RecordTooLongException(const std::string& file, int line);
     };
 
