@@ -156,3 +156,20 @@ TEST(StringInputStreamTest, FromBase64_with_insufficient_input_reports_error)
 
     EXPECT_TRUE(stream.ErrorPolicy().Failed());
 }
+
+TEST(StringInputStreamTest, Rewind)
+{
+    infra::BoundedString::WithStorage<10> string("abcd");
+    infra::StringInputStream stream(string);
+
+    auto marker = stream.Reader().ConstructSaveMarker();
+
+    uint8_t value;
+    stream >> infra::hex >> infra::Width(2) >> value;
+    EXPECT_EQ(0xab, value);
+
+    stream.Reader().Rewind(marker);
+
+    stream >> infra::hex >> infra::Width(2) >> value;
+    EXPECT_EQ(0xab, value);
+}
