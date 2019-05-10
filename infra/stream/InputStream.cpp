@@ -30,10 +30,18 @@ namespace infra
 
     void infra::InputStream::Consume(std::size_t amount)
     {   
-        while(amount > 0)
+        while (amount > 0)
         {
-            amount -= reader.ExtractContiguousRange(amount).size();
+            auto reduced = reader.ExtractContiguousRange(amount).size();
+            amount -= reduced;
+            if (reduced == 0)
+            {
+                errorPolicy.ReportResult(false);
+                return;
+            }
         }
+
+        errorPolicy.ReportResult(true);
     }
     
     bool InputStream::Failed() const
@@ -413,7 +421,7 @@ namespace infra
 
     DataInputStream::WithErrorPolicy::WithErrorPolicy(StreamReader& reader, NoFail)
         : DataInputStream(reader, errorPolicy)
-        , errorPolicy(softFail)
+        , errorPolicy(noFail)
     {}
 
     DataInputStream::WithErrorPolicy::WithErrorPolicy(const WithErrorPolicy& other)

@@ -3,6 +3,14 @@
 
 namespace services
 {
+    UdpSocket MakeUdpSocket(IPAddress address, uint16_t port)
+    {
+        if (address.Is<services::IPv4Address>())
+            return Udpv4Socket{ address.Get<services::IPv4Address>(), port };
+        else
+            return Udpv6Socket{ address.Get<services::IPv6Address>(), port };
+    }
+
     IPAddress GetAddress(UdpSocket socket)
     {
         if (socket.Is<Udpv4Socket>())

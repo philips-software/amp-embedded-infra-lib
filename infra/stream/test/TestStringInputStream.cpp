@@ -107,7 +107,7 @@ TEST(StringInputStreamTest, ExtractHexWithoutGoodCharacters)
 TEST(StringInputStreamTest, Consume)
 {
     infra::BoundedConstString string("abcd");
-    infra::StringInputStream stream(string, infra::softFail);
+    infra::StringInputStream stream(string, infra::noFail);
 
     EXPECT_EQ(string, infra::ByteRangeAsString(stream.PeekContiguousRange(0)));
     stream.Consume(stream.PeekContiguousRange().size());
