@@ -47,7 +47,7 @@ namespace services
         multicast.LeaveMulticastGroup(llmnpMulticastAddress);
     }
 
-    void LlmnrResponder::DataReceived(infra::StreamReader& reader, services::UdpSocket from)
+    void LlmnrResponder::DataReceived(infra::StreamReaderWithRewinding& reader, services::UdpSocket from)
     {
         if (replying)
             return;

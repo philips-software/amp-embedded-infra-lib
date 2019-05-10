@@ -53,6 +53,16 @@ namespace infra
         return vector.size() - offset;
     }
 
+    std::size_t StdVectorInputStreamReader::ConstructSaveMarker() const
+    {
+        return offset;
+    }
+
+    void StdVectorInputStreamReader::Rewind(std::size_t marker)
+    {
+        offset = marker;
+    }
+
     StdVectorInputStream::StdVectorInputStream(std::vector<uint8_t>& storage)
         : DataInputStream::WithReader<StdVectorInputStreamReader>(storage)
     {}

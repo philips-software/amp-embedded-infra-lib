@@ -32,7 +32,7 @@ namespace services
             NameLookupCancelled();
     }
 
-    void DnsResolver::DataReceived(infra::StreamReader& reader, UdpSocket from)
+    void DnsResolver::DataReceived(infra::StreamReaderWithRewinding& reader, UdpSocket from)
     {
         infra::DataInputStream::WithErrorPolicy stream(reader, infra::noFail);
 

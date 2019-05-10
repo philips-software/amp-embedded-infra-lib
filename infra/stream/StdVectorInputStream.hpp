@@ -9,7 +9,7 @@
 namespace infra
 {
     class StdVectorInputStreamReader
-        : public StreamReader
+        : public StreamReaderWithRewinding
     {
     public:
         explicit StdVectorInputStreamReader(const std::vector<uint8_t>& vector);
@@ -21,6 +21,8 @@ namespace infra
         virtual ConstByteRange PeekContiguousRange(std::size_t start) override;
         virtual bool Empty() const override;
         virtual std::size_t Available() const override;
+        virtual std::size_t ConstructSaveMarker() const override;
+        virtual void Rewind(std::size_t marker) override;
 
     private:
         uint32_t offset = 0;
