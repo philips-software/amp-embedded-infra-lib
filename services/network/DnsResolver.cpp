@@ -1,11 +1,12 @@
 #include "infra/event/EventDispatcher.hpp"
 #include "services/network/DnsResolver.hpp"
+#include <cctype>
 
 namespace services
 {
     const infra::Duration DnsResolver::responseTimeout = std::chrono::seconds(5);
 
-    DnsResolver::DnsResolver(DatagramFactory& datagramFactory, infra::MemoryRange<const services::IPAddress> dnsServers, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    DnsResolver::DnsResolver(DatagramFactory& datagramFactory, infra::MemoryRange<const IPAddress> dnsServers, hal::SynchronousRandomDataGenerator& randomDataGenerator)
         : datagramFactory(datagramFactory)
         , randomDataGenerator(randomDataGenerator)
         , dnsServers(dnsServers)
@@ -38,7 +39,7 @@ namespace services
 
         QueryHeader header{};
         stream >> header;
-        bool hostnameMatches = ReadAndMatchHostname(stream);
+        bool hostnameMatches = ReadAndMatchHostname(reader);
         QuestionFooter footer{};
         stream >> footer;
 
@@ -51,21 +52,27 @@ namespace services
             return;
         }
 
-        for (uint16_t answer = 0; answer != header.answersCount; ++answer)
+        bool obtainedCName = false;
+        for (uint16_t answerIndex = 0; answerIndex != header.answersCount; ++answerIndex)
         {
-            auto address = ReadAnswer(stream);
+            auto answer = ReadAnswer(stream, reader);
 
             if (stream.Failed())
                 break;
 
-            if (address != infra::none)
+            if (answer.Is<Answer>())
             {
-                NameLookupSuccess(*address);
+                NameLookupSuccess(answer.Get<Answer>().address);
                 return;
             }
+            else if (answer.Is<CName>())
+                obtainedCName = true;
         }
 
-        ResolveNextAttempt();
+        if (obtainedCName)
+            ResolveAttempt();
+        else
+            ResolveNextAttempt();
     }
 
     void DnsResolver::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -107,8 +114,14 @@ namespace services
         {
             ++resolveAttempts;
             SelectNextDnsServer();
-            datagramExchange->RequestSendStream(QuerySize(), DnsUpdSocket());
+            hostname = resolving->Hostname();
+            ResolveAttempt();
         }
+    }
+
+    void DnsResolver::ResolveAttempt()
+    {
+        datagramExchange->RequestSendStream(QuerySize(), DnsUpdSocket());
     }
 
     void DnsResolver::SelectNextDnsServer()
@@ -118,22 +131,22 @@ namespace services
             currentDnsServer = dnsServers.begin();
     }
 
-    void DnsResolver::NameLookupSuccess(services::IPv4Address address)
+    void DnsResolver::NameLookupSuccess(IPAddress address)
     {
-        NameLookupDone([address](services::NameResolverResult& observer) { observer.NameLookupDone(address); });
+        NameLookupDone([address](NameResolverResult& observer) { observer.NameLookupDone(address); });
     }
 
     void DnsResolver::NameLookupFailed()
     {
-        NameLookupDone([](services::NameResolverResult& observer) { observer.NameLookupFailed(); });
+        NameLookupDone([](NameResolverResult& observer) { observer.NameLookupFailed(); });
     }
 
     void DnsResolver::NameLookupCancelled()
     {
-        NameLookupDone([](services::NameResolverResult& observer) {});
+        NameLookupDone([](NameResolverResult& observer) {});
     }
 
-    void DnsResolver::NameLookupDone(const infra::Function<void(services::NameResolverResult& observer)>& observerCallback)
+    void DnsResolver::NameLookupDone(const infra::Function<void(NameResolverResult& observer), sizeof(IPAddress)>& observerCallback)
     {
         auto resolvingCopy = resolving;
         resolving = nullptr;
@@ -143,47 +156,118 @@ namespace services
         TryResolveNext();
     }
 
-    services::UdpSocket DnsResolver::DnsUpdSocket() const
+    UdpSocket DnsResolver::DnsUpdSocket() const
     {
-        return services::MakeUdpSocket(*currentDnsServer, 53);
+        return MakeUdpSocket(*currentDnsServer, 53);
     }
 
     std::size_t DnsResolver::QuerySize() const
     {
-        infra::BoundedConstString hostname = resolving->Hostname();
-
+        infra::BoundedConstString hostnameCopy = hostname;
         std::size_t hostnameSize = 1;
 
-        while (!hostname.empty())
+        while (!hostnameCopy.empty())
         {
-            auto dot = hostname.find('.');
+            auto dot = hostnameCopy.find('.');
             if (dot == infra::BoundedConstString::npos)
                 break;
 
             hostnameSize += dot + 1;
-            hostname = hostname.substr(dot + 1);
+            hostnameCopy = hostnameCopy.substr(dot + 1);
         }
 
-        return sizeof(QueryHeader) + hostnameSize + hostname.size() + 1 + sizeof(QuestionFooter);
+        return sizeof(QueryHeader) + hostnameSize + hostnameCopy.size() + 1 + sizeof(QuestionFooter);
     }
 
-    infra::Optional<services::IPv4Address> DnsResolver::ReadAnswer(infra::DataInputStream& stream) const
+    infra::Variant<DnsResolver::Answer, DnsResolver::CName, DnsResolver::NoAnswer> DnsResolver::ReadAnswer(infra::DataInputStream& stream, infra::StreamReaderWithRewinding& reader)
     {
-        SkipName(stream);
+        bool hostnameMatches = ReadAndMatchHostname(reader);
         ResourceInner resourceInner{};
         stream >> resourceInner;
 
-        if (resourceInner.class_ != QuestionFooter::classIn || resourceInner.type != QuestionFooter::typeA)
-            stream.Consume(resourceInner.resourceDataLength);
-        else if (resourceInner.resourceDataLength == static_cast<uint16_t>(sizeof(services::IPv4Address)))
+        if (hostnameMatches)
         {
-            services::IPv4Address address;
-            stream >> address;
+            if (IsCName(resourceInner))
+            {
+                hostname.clear();
+                ReadCName(stream, reader, resourceInner.resourceDataLength);
+                return CName{};
+            }
+            else if (IsIPv4Answer(resourceInner))
+            {
+                IPv4Address address;
+                stream >> address;
 
-            return infra::MakeOptional(address);
+                return Answer{ address };
+            }
         }
 
-        return infra::none;
+        stream.Consume(resourceInner.resourceDataLength);
+        return NoAnswer{};
+    }
+
+    bool DnsResolver::IsCName(const ResourceInner& resourceInner) const
+    {
+        return resourceInner.class_ == QuestionFooter::classIn && resourceInner.type == QuestionFooter::typeCName;
+    }
+
+    bool DnsResolver::IsIPv4Answer(const ResourceInner& resourceInner) const
+    {
+        return resourceInner.class_ == QuestionFooter::classIn && resourceInner.type == QuestionFooter::typeA && resourceInner.resourceDataLength == static_cast<uint16_t>(sizeof(IPv4Address));
+    }
+
+    void DnsResolver::ReadCName(infra::DataInputStream& stream, infra::StreamReaderWithRewinding& reader, uint16_t resourceSize)
+    {
+        uint8_t partSize = 0;
+
+        for (; resourceSize != 0 && !hostname.full(); --resourceSize)
+        {
+            if (partSize == 0)
+            {
+                stream >> partSize;
+
+                if (partSize == 0)
+                {
+                    stream.Consume(resourceSize - 1);
+                    if (!hostname.empty())
+                        hostname.pop_back();
+                    return;
+                }
+
+                if ((partSize & 0xc0) == 0xc0)
+                {
+                    ReadCNameReference(stream, reader, partSize & 0x3f);
+                    return;
+                }
+            }
+            else
+            {
+                uint8_t c = ' ';
+                stream >> c;
+                hostname.push_back(c);
+                --partSize;
+
+                if (partSize == 0)
+                    hostname.push_back('.');
+            }
+        }
+    }
+
+    void DnsResolver::ReadCNameReference(infra::DataInputStream& stream, infra::StreamReaderWithRewinding& reader, uint8_t offsetHigh)
+    {
+        uint8_t offsetLow = 0;
+        stream >> offsetLow;
+        uint16_t offset = offsetLow + (offsetHigh << 8);
+
+        auto currentPosition = reader.ConstructSaveMarker();
+        if (currentPosition <= offset)
+            return;
+
+        reader.Rewind(offset);
+
+        ReadCName(stream, reader, static_cast<uint16_t>(currentPosition) - offset);
+
+        reader.Rewind(currentPosition);
     }
 
     bool DnsResolver::AnswerIsForCurrentQuery(const QueryHeader& header, const QuestionFooter& footer, UdpSocket from, bool hostnameMatches) const
@@ -209,68 +293,100 @@ namespace services
 
     void DnsResolver::WriteHostname(infra::DataOutputStream& stream) const
     {
-        infra::BoundedConstString hostname = resolving->Hostname();
+        infra::BoundedConstString hostnameCopy = hostname;
 
-        while (!hostname.empty())
+        while (!hostnameCopy.empty())
         {
-            auto dot = hostname.find('.');
+            auto dot = hostnameCopy.find('.');
             if (dot == infra::BoundedConstString::npos)
                 break;
              
-            stream << static_cast<uint8_t>(dot) << infra::text << hostname.substr(0, dot);
-            hostname = hostname.substr(dot + 1);
+            stream << static_cast<uint8_t>(dot) << infra::text << hostnameCopy.substr(0, dot);
+            hostnameCopy = hostnameCopy.substr(dot + 1);
         }
 
-        stream << static_cast<uint8_t>(hostname.size()) << infra::text << hostname << infra::data << static_cast<uint8_t>(0);
+        stream << static_cast<uint8_t>(hostnameCopy.size()) << infra::text << hostnameCopy << infra::data << static_cast<uint8_t>(0);
     }
 
-    bool DnsResolver::ReadAndMatchHostname(infra::DataInputStream& stream) const
+    bool DnsResolver::ReadAndMatchHostname(infra::StreamReaderWithRewinding& reader) const
     {
-        infra::BoundedConstString hostname = resolving->Hostname();
+        infra::BoundedConstString hostnameCopy = hostname;
 
-        uint8_t size(0);
-        stream >> size;
+        infra::DataInputStream::WithErrorPolicy stream(reader, infra::noFail);
 
-        while (size != 0 && !hostname.empty())
-        {
-            for (; size != 0 && !hostname.empty(); --size)
-            {
-                char c;
-                stream >> c;
-                if (hostname.front() != c)
-                    return false;
-                hostname = hostname.substr(1);
-            }
-
-            if (hostname.empty())
-                break;
-
-            if (hostname.front() != '.')
-                break;
-            hostname = hostname.substr(1);
-            size = 0;
-            stream >> size;
-        }
-
-        stream >> size;
-
-        return !stream.Failed() && size == 0 && hostname.empty();
-    }
-
-    void DnsResolver::SkipName(infra::DataInputStream& stream) const
-    {
         uint8_t size(0);
         stream >> size;
 
         if ((size & 0xc0) == 0xc0)
-            stream >> size;
+            return ReadAndMatchReferenceHostname(stream, reader, size & 0x3f, hostnameCopy);
         else
-            while (size != 0)
-            {
-                stream.Consume(size);
+            return ReadAndMatchHostnameWithoutReference(stream, reader, size, hostnameCopy);
+    }
 
-                size = 0;
-                stream >> size;
+    bool DnsResolver::ReadAndMatchReferenceHostname(infra::DataInputStream& stream, infra::StreamReaderWithRewinding& reader, uint8_t offsetHigh, infra::BoundedConstString hostnameCopy) const
+    {
+        uint8_t offsetLow = 0;
+        stream >> offsetLow;
+        uint16_t offset = offsetLow + (offsetHigh << 8);
+
+        auto currentPosition = reader.ConstructSaveMarker();
+        if (currentPosition <= offset)
+            return false;
+
+        reader.Rewind(offset);
+
+        uint8_t size = 0;
+        stream >> size;
+        bool result = ReadAndMatchHostnameWithoutReference(stream, reader, size, hostnameCopy);
+
+        reader.Rewind(currentPosition);
+        return result;
+    }
+
+    bool DnsResolver::ReadAndMatchHostnameWithoutReference(infra::DataInputStream& stream, infra::StreamReaderWithRewinding& reader, uint8_t size, infra::BoundedConstString hostnameCopy) const
+    {
+        bool result = true;
+        while (size != 0 && !hostnameCopy.empty())
+        {
+            if (!ReadAndMatchHostnamePart(stream, size, hostnameCopy))
+                result = false;
+
+            if (!result || hostnameCopy.size() == size)
+                hostnameCopy.clear();
+            else if (hostnameCopy[size] != '.')
+                result = false;
+            else
+                hostnameCopy = hostnameCopy.substr(size + 1);
+
+            size = 0;
+            stream >> size;
+            if ((size & 0xc0) == 0xc0)
+                return result && ReadAndMatchReferenceHostname(stream, reader, size & 0x3f, hostnameCopy);
+        }
+
+        stream.Consume(size);
+        return result && size == 0 && hostnameCopy.empty() && !stream.Failed();
+    }
+
+    bool DnsResolver::ReadAndMatchHostnamePart(infra::DataInputStream& stream, uint8_t size, infra::BoundedConstString hostnameCopy) const
+    {
+        if (hostnameCopy.size() < size)
+        {
+            stream.Consume(size);
+            return false;
+        }
+
+        for (uint8_t i = 0; i != size; ++i)
+        {
+            char c;
+            stream >> c;
+            if (std::tolower(hostnameCopy[i]) != std::tolower(c))
+            {
+                stream.Consume(size - i - 1);
+                return false;
             }
+        }
+
+        return true;
     }
 }
