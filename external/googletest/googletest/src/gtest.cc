@@ -3181,7 +3181,9 @@ void PrettyUnitTestResultPrinter::OnTestCaseStart(const TestCase& test_case) {
 }
 
 void PrettyUnitTestResultPrinter::OnTestStart(const TestInfo& test_info) {
-  ColoredPrintf(hasFailure ? COLOR_RED : COLOR_GREEN, "[ RUN      ] ");
+    ColoredPrintf(hasFailure ? COLOR_RED : COLOR_GREEN, "[");
+    ColoredPrintf(COLOR_GREEN, " RUN      ");
+    ColoredPrintf(hasFailure ? COLOR_RED : COLOR_GREEN, "] ");
   PrintTestName(test_info.test_case_name(), test_info.name());
   printf("\n");
   fflush(stdout);
@@ -3201,7 +3203,9 @@ void PrettyUnitTestResultPrinter::OnTestPartResult(
 
 void PrettyUnitTestResultPrinter::OnTestEnd(const TestInfo& test_info) {
   if (test_info.result()->Passed()) {
-    ColoredPrintf(hasFailure ? COLOR_RED : COLOR_GREEN, "[       OK ] ");
+      ColoredPrintf(hasFailure ? COLOR_RED : COLOR_GREEN, "[");
+      ColoredPrintf(COLOR_GREEN, "       OK ");
+      ColoredPrintf(hasFailure ? COLOR_RED : COLOR_GREEN, "] ");
   } else {
     hasFailure = true;
     ColoredPrintf(COLOR_RED, "[  FAILED  ] ");
