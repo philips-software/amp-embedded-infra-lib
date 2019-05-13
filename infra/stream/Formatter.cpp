@@ -68,18 +68,18 @@ namespace infra
             type = *format++;
     }
 
-    void FormatterBase::RawFormat(TextOutputStream& stream, const char* text, std::size_t length, const FormatSpec& spec) const
+    void FormatterBase::RawFormat(TextOutputStream& stream, const BoundedConstString& text, const FormatSpec& spec) const
     {
-        auto width = std::max(spec.width, length);
+        auto width = std::max(spec.width, text.size());
 
         std::size_t count = 0;
         switch (spec.align)
         {
         case FormatAlign::right:
-            count = width - length;
+            count = width - text.size();
             break;
         case FormatAlign::center:
-            count = (width - length) / 2;
+            count = (width - text.size()) / 2;
             break;
         default:
             break;
@@ -88,20 +88,19 @@ namespace infra
         for (; count > 0; --count)
             stream << spec.fill;
 
-        width -= length;
-        for (; length > 0; --length)
-            stream << *text++;
+        stream << text;
 
+        width -= text.size();
         for (; width > 0; --width)
             stream << spec.fill;
     }
 
-    void FormatterBase::RawInteger(uint64_t value, bool negative, uint8_t dotPos, TextOutputStream& stream, FormatSpec& spec) const
+    void FormatterBase::RawInteger(TextOutputStream& stream, uint64_t value, bool negative, FormatSpec& spec) const
     {
-        const std::size_t dotAndSignSize = 2;
-        const auto size = std::numeric_limits<uint64_t>::digits + dotAndSignSize;
-        char buffer[size];
-        auto ptr = &buffer[size - 1];
+        const std::size_t SignSize = 1;
+        const auto size = std::numeric_limits<uint64_t>::digits + SignSize;
+        BoundedString::WithStorage<size> buffer;
+        auto index(size-1);
 
         decltype(value) divider = 10;
         switch (spec.type)
@@ -123,92 +122,88 @@ namespace infra
         const auto digits = isupper(spec.type) ? "0123456789ABCDEF" : "0123456789abcdef";
 
         for (; value >= divider; value /= divider)
-        {
-            *ptr-- = digits[value % divider];
-            if (--dotPos == 0)
-                *ptr-- = '.';
-        }
-        *ptr = digits[value];
+            buffer[index--] = digits[value % divider];
+        buffer[index] = digits[value];
 
         if (negative)
-            *--ptr = '-';
+            buffer[--index] = '-';
 
         if (spec.align == FormatAlign::nothing)
             spec.align = FormatAlign::right;
 
-        RawFormat(stream, ptr, &buffer[size - 1] - ptr + 1, spec);
+        RawFormat(stream, BoundedConstString(&buffer[index], size-index), spec);
     }
 
-    void FormatterBase::SignedInteger(int64_t value, TextOutputStream& stream, FormatSpec& spec) const
+    void FormatterBase::SignedInteger(TextOutputStream& stream, int64_t value, FormatSpec& spec) const
     {
         const auto negative = value < 0;
-        RawInteger(negative ? -value : value, negative, 0, stream, spec);
+        RawInteger(stream, negative ? -value : value, negative, spec);
     }
 
-    void FormatterBase::UnsignedInteger(uint64_t value, TextOutputStream& stream, FormatSpec& spec) const
+    void FormatterBase::UnsignedInteger(TextOutputStream& stream, uint64_t value, FormatSpec& spec) const
     {
-        RawInteger(value, false, 0, stream, spec);
+        RawInteger(stream, value, false, spec);
     }
 
     template<>
     void Formatter<int64_t>::Format(TextOutputStream& stream, FormatSpec& spec)
     {
-        SignedInteger(value, stream, spec);
+        SignedInteger(stream, value, spec);
     }
 
     template<>
     void Formatter<int32_t>::Format(TextOutputStream& stream, FormatSpec& spec)
     {
-        SignedInteger(value, stream, spec);
+        SignedInteger(stream, value, spec);
     }
 
     template<>
     void Formatter<int16_t>::Format(TextOutputStream& stream, FormatSpec& spec)
     {
-        SignedInteger(value, stream, spec);
+        SignedInteger(stream, value, spec);
     }
 
     template<>
     void Formatter<int8_t>::Format(TextOutputStream& stream, FormatSpec& spec)
     {
-        SignedInteger(value, stream, spec);
+        SignedInteger(stream, value, spec);
     }
 
     template<>
     void Formatter<uint64_t>::Format(TextOutputStream& stream, FormatSpec& spec)
     {
-        UnsignedInteger(value, stream, spec);
+        UnsignedInteger(stream, value, spec);
     }
 
     template<>
     void Formatter<uint32_t>::Format(TextOutputStream& stream, FormatSpec& spec)
     {
-        UnsignedInteger(value, stream, spec);
+        UnsignedInteger(stream, value, spec);
     }
 
     template<>
     void Formatter<uint16_t>::Format(TextOutputStream& stream, FormatSpec& spec)
     {
-        UnsignedInteger(value, stream, spec);
+        UnsignedInteger(stream, value, spec);
     }
 
     template<>
     void Formatter<uint8_t>::Format(TextOutputStream& stream, FormatSpec& spec)
     {
-        UnsignedInteger(value, stream, spec);
+        UnsignedInteger(stream, value, spec);
     }
 
     template<>
     void Formatter<char const*>::Format(TextOutputStream& stream, FormatSpec& spec)
     {
-        RawFormat(stream, value, std::strlen(value), spec);
+        RawFormat(stream, value, spec);
     }
 
     template<>
     void Formatter<bool>::Format(TextOutputStream& stream, FormatSpec& spec)
     {
         const auto str = value ? "true" : "false";
-        RawFormat(stream, str, std::strlen(str), spec);
+        RawFormat(stream, str, spec);
     }
 
     FormatWorker::FormatWorker(TextOutputStream& writer, const char* formatStr, std::vector<FormatterBase*>& formatters)

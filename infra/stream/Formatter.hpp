@@ -39,12 +39,12 @@ namespace infra
         virtual void Format(TextOutputStream& stream, FormatSpec& spec) = 0;
 
     protected:
-        void RawFormat(TextOutputStream& stream, const char* text, std::size_t length, const FormatSpec& spec) const;
-        void SignedInteger(int64_t value, TextOutputStream& stream, FormatSpec& spec) const;
-        void UnsignedInteger(uint64_t value, TextOutputStream& stream, FormatSpec& spec) const;
+        void RawFormat(TextOutputStream& stream, const BoundedConstString& text, const FormatSpec& spec) const;
+        void SignedInteger(TextOutputStream& stream, int64_t value, FormatSpec& spec) const;
+        void UnsignedInteger(TextOutputStream& stream, uint64_t value, FormatSpec& spec) const;
 
     private:
-        void RawInteger(uint64_t value, bool negative, uint8_t dotPos, TextOutputStream& stream, FormatSpec& spec) const;
+        void RawInteger(TextOutputStream& stream, uint64_t value, bool negative, FormatSpec& spec) const;
     };
 
     template<typename T>
@@ -74,7 +74,7 @@ namespace infra
     class FormatWorker
     {
     public:
-        explicit FormatWorker(TextOutputStream& writer, const char* formatStr, std::vector<FormatterBase*>& formatters);
+        explicit FormatWorker(TextOutputStream& stream, const char* formatStr, std::vector<FormatterBase*>& formatters);
 
     private:
         bool IsEndFormat() const;
@@ -94,10 +94,10 @@ namespace infra
             T>::type;
     };
 
-    template<class T, std::size_t N>
-    struct DecayArray<T(&)[N]>
+    template<std::size_t N>
+    struct DecayArray<const char(&)[N]>
     {
-        using type = T*;
+        using type = const char*;
     };
 
     template<class T>
@@ -141,12 +141,12 @@ namespace infra
     {
     public:
         template<std::size_t... Is>
-        std::vector<infra::FormatterBase*> Make(std::index_sequence<Is...>)
+        std::vector<FormatterBase*> Make(std::index_sequence<Is...>)
         {
             return{ &std::get<Is>(args)... };
         }
 
-        std::vector<infra::FormatterBase*> MakeFormatter()
+        std::vector<FormatterBase*> MakeFormatter()
         {
             return Make(std::index_sequence_for<Args...>{});
         };
@@ -173,7 +173,7 @@ namespace infra
     private:
         const char* format;
         std::tuple<Args ...> args;
-        std::vector<infra::FormatterBase*> formatters{ sizeof...(Args), nullptr };
+        std::vector<FormatterBase*> formatters{ sizeof...(Args), nullptr };
         uint32_t autoIndex{};
     };
 
