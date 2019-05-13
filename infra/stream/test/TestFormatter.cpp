@@ -158,9 +158,14 @@ TEST_F(FormatTest, integer12no_index)
     CheckFormatArguments("12", "{}", 12);
 }
 
-TEST_F(FormatTest, multino_index)
+TEST_F(FormatTest, multi_no_index)
 {
     CheckFormatArguments("Twelve=12", "{}={}", "Twelve", 12);
+}
+
+TEST_F(FormatTest, integer_wrong_type)
+{
+    FailedFormatArguments("{0:t}", 0);
 }
 
 TEST_F(FormatTest, integer_oct)
