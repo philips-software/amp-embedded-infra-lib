@@ -206,7 +206,7 @@ namespace infra
         RawFormat(stream, str, spec);
     }
 
-    FormatWorker::FormatWorker(TextOutputStream& writer, const char* formatStr, std::vector<FormatterBase*>& formatters)
+    FormatWorker::FormatWorker(TextOutputStream& stream, const char* formatStr, std::vector<FormatterBase*>& formatters)
         : format(formatStr)
     {
         for (;;)
@@ -217,18 +217,20 @@ namespace infra
             const auto ch = *format++;
             if (ch != '{')
             {
-                writer << ch;
+                stream << ch;
                 continue;
             }
 
             const auto index = ParseIndex();
             auto spec = FormatSpec(format);
 
-            if (*format == '}' && index < formatters.size())
+            if (*format != '}' || index >= formatters.size())
             {
-                formatters[index]->Format(writer, spec);
-                ++format;
+                stream.ErrorPolicy().ReportResult(false);
+                break;
             }
+            formatters[index]->Format(stream, spec);
+            ++format;
         }
     }
 
