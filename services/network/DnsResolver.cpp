@@ -6,13 +6,13 @@ namespace services
 {
     const infra::Duration DnsResolver::responseTimeout = std::chrono::seconds(5);
 
-    DnsResolver::DnsResolver(DatagramFactory& datagramFactory, infra::MemoryRange<const IPAddress> dnsServers, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    DnsResolver::DnsResolver(DatagramFactory& datagramFactory, const DnsServers& dnsServers, hal::SynchronousRandomDataGenerator& randomDataGenerator)
         : datagramFactory(datagramFactory)
         , randomDataGenerator(randomDataGenerator)
-        , dnsServers(dnsServers)
-        , currentDnsServer(dnsServers.begin())
+        , dnsServers(dnsServers.dnsServers)
+        , currentDnsServer(this->dnsServers.begin())
     {
-        assert(!dnsServers.empty());
+        assert(!this->dnsServers.empty());
     }
 
     void DnsResolver::Lookup(NameResolverResult& result)

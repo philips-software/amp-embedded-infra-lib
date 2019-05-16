@@ -16,7 +16,12 @@ namespace services
         , public DatagramExchangeObserver
     {
     public:
-        DnsResolver(DatagramFactory& datagramFactory, infra::MemoryRange<const IPAddress> dnsServers, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        struct DnsServers
+        {
+            infra::MemoryRange<const IPAddress> dnsServers;
+        };
+
+        DnsResolver(DatagramFactory& datagramFactory, const DnsServers& dnsServers, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
         // Implementation of NameResolver
         virtual void Lookup(NameResolverResult& result) override;

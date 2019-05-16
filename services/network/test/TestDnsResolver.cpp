@@ -281,7 +281,7 @@ public:
     testing::StrictMock<services::DatagramFactoryMock> datagramFactory;
     const std::array<services::IPAddress, 2> dnsServers{ dnsServer1, dnsServer2 };
     testing::StrictMock<hal::SynchronousRandomDataGeneratorMock> randomDataGenerator;
-    services::DnsResolver resolver{ datagramFactory, dnsServers, randomDataGenerator };
+    services::DnsResolver resolver{ datagramFactory, { dnsServers }, randomDataGenerator };
     testing::StrictMock<NameResolverResultMock> result1;
     testing::StrictMock<NameResolverResultMock> result2;
     testing::StrictMock<services::DatagramExchangeMock> datagram;
