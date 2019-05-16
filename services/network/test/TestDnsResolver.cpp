@@ -501,6 +501,20 @@ TEST_F(DnsResolverTest, cname_with_reference_in_answer_results_in_retry)
     DataReceived(MakeDnsResponseWithCNameWithReferenceInAnswer("hostname.com", "cname.com"), services::Udpv4Socket{ dnsServer2, 53 });
 }
 
+TEST_F(DnsResolverTest, cname_with_reference_loop_stops_after_5_attempts)
+{
+    LookupAndGiveSendStream(result1, "hostname.com", dnsServer2);
+
+    for (int i = 0; i != 4; ++i)
+    {
+        ExpectAndRespondToRequestSendStream(result1, "hostname.com", dnsServer2);
+        DataReceived(MakeDnsResponseWithCNameWithReferenceInAnswer("hostname.com", "hostname.com"), services::Udpv4Socket{ dnsServer2, 53 });
+    }
+
+    EXPECT_CALL(result1, NameLookupFailed());
+    DataReceived(MakeDnsResponseWithCNameWithReferenceInAnswer("hostname.com", "hostname.com"), services::Udpv4Socket{ dnsServer2, 53 });
+}
+
 class DnsResolverTestTooShort
     : public DnsResolverTest
 {};

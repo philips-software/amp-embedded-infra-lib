@@ -70,7 +70,7 @@ namespace services
         }
 
         if (obtainedCName)
-            ResolveAttempt();
+            ResolveRecursion();
         else
             ResolveNextAttempt();
     }
@@ -103,6 +103,7 @@ namespace services
         randomDataGenerator.GenerateRandomData(infra::MakeByteRange(queryId));
         resolving = &waiting.front();
         resolveAttempts = 0;
+        recursions = 0;
         ResolveNextAttempt();
     }
 
@@ -113,10 +114,21 @@ namespace services
         else
         {
             ++resolveAttempts;
+            recursions = 0;
             SelectNextDnsServer();
             hostname = resolving->Hostname();
             ResolveAttempt();
         }
+    }
+
+    void DnsResolver::ResolveRecursion()
+    {
+        ++recursions;
+
+        if (recursions == maxRecursions)
+            NameLookupFailed();
+        else
+            ResolveAttempt();
     }
 
     void DnsResolver::ResolveAttempt()

@@ -81,6 +81,7 @@ namespace services
         void TryResolveNext();
         void Resolve(NameResolverResult& nameLookup);
         void ResolveNextAttempt();
+        void ResolveRecursion();
         void ResolveAttempt();
         void SelectNextDnsServer();
         void NameLookupSuccess(IPAddress address);
@@ -111,12 +112,14 @@ namespace services
         NameResolverResult* resolving = nullptr;
         infra::TimerSingleShot timeoutTimer;
         uint8_t resolveAttempts;
+        uint8_t recursions;
         uint16_t queryId;
 
         infra::BoundedString::WithStorage<253> hostname;
 
         static const infra::Duration responseTimeout;
         static const uint8_t maxAttempts = 3;
+        static const uint8_t maxRecursions = 5;
     };
 }
 
