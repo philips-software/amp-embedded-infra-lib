@@ -107,9 +107,9 @@ public:
         return std::vector<uint8_t>(address.begin(), address.end());
     }
 
-    std::vector<uint8_t> MakeHeader(uint8_t answers)
+    std::vector<uint8_t> MakeHeader(uint8_t answers, uint8_t authorativeNameServers = 0, uint8_t additionRecords = 0)
     {
-        return std::vector<uint8_t>{ { 9, 9, 0x80, 0, 0, 1, 0, answers, 0, 0, 0, 0 } };
+        return std::vector<uint8_t>{ { 9, 9, 0x80, 0, 0, 1, 0, answers, 0, authorativeNameServers, 0, additionRecords } };
     }
 
     std::vector<uint8_t> MakeQuestion(infra::BoundedConstString hostname)
@@ -130,21 +130,33 @@ public:
         return Concatenate({ name, resourceInner, ConvertDns(answer) });
     }
 
-    std::vector<uint8_t> MakeReferenceAnswer(services::IPv4Address address, uint8_t start = 0x0c)
+    std::vector<uint8_t> MakeAnswerNS(const std::vector<uint8_t>& name, infra::BoundedConstString answer)
+    {
+        std::vector<uint8_t> resourceInner{ { 0, 2, 0, 1, 0, 0, 0, 30, 0, static_cast<uint8_t>(answer.size() + 2) } };
+        return Concatenate({ name, resourceInner, ConvertDns(answer) });
+    }
+
+    std::vector<uint8_t> MakeReferenceAnswerA(services::IPv4Address address, uint8_t start = 0x0c)
     {
         std::vector<uint8_t> nameReference{ { 0xc0, start } };
         return MakeAnswerA(nameReference, address);
     }
 
-    std::vector<uint8_t> MakeReferenceAnswer(infra::BoundedConstString answer, uint8_t start = 0x0c)
+    std::vector<uint8_t> MakeReferenceAnswerCName(infra::BoundedConstString answer, uint8_t start = 0x0c)
     {
         std::vector<uint8_t> nameReference{ { 0xc0, start } };
         return MakeAnswerCName(nameReference, answer);
     }
 
+    std::vector<uint8_t> MakeReferenceAnswerNS(infra::BoundedConstString answer, uint8_t start = 0x0c)
+    {
+        std::vector<uint8_t> nameReference{ { 0xc0, start } };
+        return MakeAnswerNS(nameReference, answer);
+    }
+
     std::vector<uint8_t> MakeDnsResponse(infra::BoundedConstString hostname, services::IPv4Address address)
     {
-        return Concatenate({ MakeHeader(1), MakeQuestion(hostname), MakeReferenceAnswer(address) });
+        return Concatenate({ MakeHeader(1), MakeQuestion(hostname), MakeReferenceAnswerA(address) });
     }
 
     std::vector<uint8_t> MakeDnsResponseWithUncompressedHost(infra::BoundedConstString hostname, services::IPv4Address address)
@@ -154,12 +166,12 @@ public:
 
     std::vector<uint8_t> MakeDnsResponseWithCName(infra::BoundedConstString hostname, infra::BoundedConstString alias)
     {
-        return Concatenate({ MakeHeader(1), MakeQuestion(hostname), MakeReferenceAnswer(alias) });
+        return Concatenate({ MakeHeader(1), MakeQuestion(hostname), MakeReferenceAnswerCName(alias) });
     }
 
     std::vector<uint8_t> MakeDnsResponseWithCNameAndAnswer(infra::BoundedConstString hostname, infra::BoundedConstString alias, services::IPv4Address address)
     {
-        return Concatenate({ MakeHeader(2), MakeQuestion(hostname), MakeReferenceAnswer(alias), MakeReferenceAnswer(address, 42) });
+        return Concatenate({ MakeHeader(2), MakeQuestion(hostname), MakeReferenceAnswerCName(alias), MakeReferenceAnswerA(address, 42) });
     }
 
     std::vector<uint8_t> MakeDnsResponseWithCNameAndAnswerForDifferentHost(infra::BoundedConstString hostname, infra::BoundedConstString alias, services::IPv4Address address)
@@ -179,6 +191,14 @@ public:
         return Concatenate({ MakeHeader(1), MakeQuestion(hostname), MakeAnswerCName(nameWithInnerReference, alias) });
     }
 
+    std::vector<uint8_t> MakeDnsResponseWithSecondCNameWithInnerReference(infra::BoundedConstString hostname, infra::BoundedConstString alias)
+    {
+        std::vector<uint8_t>  nameStart(ConvertDns("other"));
+        nameStart.pop_back();
+        std::vector<uint8_t> nameWithInnerReference(Concatenate({ nameStart,{ 0xc0, 22 } }));
+        return Concatenate({ MakeHeader(2), MakeQuestion(hostname), MakeAnswerCName(nameWithInnerReference, alias), MakeReferenceAnswerCName(alias) });
+    }
+
     std::vector<uint8_t> MakeDnsResponseWithCNameWithReferenceInAnswer(infra::BoundedConstString hostname, infra::BoundedConstString alias)
     {
         std::vector<uint8_t> header(MakeHeader(1));
@@ -193,6 +213,16 @@ public:
         aliasData.push_back(static_cast<uint8_t>(13 + hostname.rfind('.')));
 
         return Concatenate({ header, question, nameReference, resourceInner, aliasData });
+    }
+
+    std::vector<uint8_t> MakeDnsResponseWithNS(infra::BoundedConstString hostname, infra::BoundedConstString ns, services::IPv4Address address)
+    {
+        return Concatenate({ MakeHeader(0, 1, 1), MakeQuestion(hostname), MakeReferenceAnswerNS(ns), MakeReferenceAnswerA(address, 42) });
+    }
+
+    std::vector<uint8_t> MakeDnsResponseWithAdditional(infra::BoundedConstString hostname, infra::BoundedConstString ns, services::IPv4Address address)
+    {
+        return Concatenate({ MakeHeader(0, 0, 1), MakeQuestion(hostname), MakeAnswerA(ConvertDns(ns), address) });
     }
 
     std::vector<uint8_t> MakeShortenedDnsResponse(infra::BoundedConstString hostname, services::IPv4Address address, uint32_t amountToShort)
@@ -286,6 +316,7 @@ public:
     const services::IPv4Address dnsServer1{ 1, 2, 3, 4 };
     const services::IPv4Address dnsServer2{ 2, 3, 4, 5 };
     const services::IPv4Address hostAddress1{ 3, 4, 5, 6 };
+    const services::IPv4Address nsServer1{ 4, 5, 6, 7 };
 
     testing::StrictMock<services::DatagramFactoryMock> datagramFactory;
     const std::array<services::IPAddress, 2> dnsServers{ dnsServer1, dnsServer2 };
@@ -494,6 +525,14 @@ TEST_F(DnsResolverTest, cname_with_inner_reference_results_in_retry)
     DataReceived(MakeDnsResponseWithCNameWithInnerReference("hostname.com", "cname.com"), services::Udpv4Socket{ dnsServer2, 53 });
 }
 
+TEST_F(DnsResolverTest, second_cname_with_inner_reference_results_in_retry)
+{
+    LookupAndGiveSendStream(result1, "hostname.com", dnsServer2);
+
+    ExpectAndRespondToRequestSendStream(result1, "cname.com", dnsServer2);
+    DataReceived(MakeDnsResponseWithSecondCNameWithInnerReference("hostname.com", "cname.com"), services::Udpv4Socket{ dnsServer2, 53 });
+}
+
 TEST_F(DnsResolverTest, cname_with_answer_for_different_host_results_in_retry)
 {
     LookupAndGiveSendStream(result1, "hostname.com", dnsServer2);
@@ -522,6 +561,22 @@ TEST_F(DnsResolverTest, cname_with_reference_loop_stops_after_5_attempts)
 
     EXPECT_CALL(result1, NameLookupFailed());
     DataReceived(MakeDnsResponseWithCNameWithReferenceInAnswer("hostname.com", "hostname.com"), services::Udpv4Socket{ dnsServer2, 53 });
+}
+
+TEST_F(DnsResolverTest, ns_results_in_recursion)
+{
+    LookupAndGiveSendStream(result1, "hostname.com", dnsServer2);
+
+    ExpectAndRespondToRequestSendStream(result1, "hostname.com", nsServer1);
+    DataReceived(MakeDnsResponseWithNS("hostname.com", "ns.com", nsServer1), services::Udpv4Socket{ dnsServer2, 53 });
+}
+
+TEST_F(DnsResolverTest, additional_record_which_is_not_ns_results_in_retry)
+{
+    LookupAndGiveSendStream(result1, "hostname.com", dnsServer2);
+
+    ExpectAndRespondToRequestSendStream(result1, "hostname.com", dnsServer1);
+    DataReceived(MakeDnsResponseWithAdditional("hostname.com", "ns.com", nsServer1), services::Udpv4Socket{ dnsServer2, 53 });
 }
 
 class DnsResolverTestTooShort
