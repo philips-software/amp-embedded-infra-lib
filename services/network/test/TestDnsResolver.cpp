@@ -107,43 +107,59 @@ public:
         return std::vector<uint8_t>(address.begin(), address.end());
     }
 
+    std::vector<uint8_t> MakeHeader(uint8_t answers)
+    {
+        return std::vector<uint8_t>{ { 9, 9, 0x80, 0, 0, 1, 0, answers, 0, 0, 0, 0 } };
+    }
+
+    std::vector<uint8_t> MakeQuestion(infra::BoundedConstString hostname)
+    {
+        std::vector<uint8_t> footer{ { 0, 1, 0, 1 } };
+        return Concatenate({ ConvertDns(hostname), footer });
+    }
+
+    std::vector<uint8_t> MakeAnswerA(const std::vector<uint8_t>& name, services::IPv4Address answer)
+    {
+        std::vector<uint8_t> resourceInner{ { 0, 1, 0, 1, 0, 0, 0, 30, 0, 4 } };
+        return Concatenate({ name, resourceInner, ConvertDns(answer) });
+    }
+
+    std::vector<uint8_t> MakeAnswerCName(const std::vector<uint8_t>& name, infra::BoundedConstString answer)
+    {
+        std::vector<uint8_t> resourceInner{ { 0, 5, 0, 1, 0, 0, 0, 30, 0, static_cast<uint8_t>(answer.size() + 2) } };
+        return Concatenate({ name, resourceInner, ConvertDns(answer) });
+    }
+
+    std::vector<uint8_t> MakeReferenceAnswer(services::IPv4Address address, uint8_t start = 0x0c)
+    {
+        std::vector<uint8_t> nameReference{ { 0xc0, start } };
+        return MakeAnswerA(nameReference, address);
+    }
+
+    std::vector<uint8_t> MakeReferenceAnswer(infra::BoundedConstString answer, uint8_t start = 0x0c)
+    {
+        std::vector<uint8_t> nameReference{ { 0xc0, start } };
+        return MakeAnswerCName(nameReference, answer);
+    }
+
     std::vector<uint8_t> MakeDnsResponse(infra::BoundedConstString hostname, services::IPv4Address address)
     {
-        std::vector<uint8_t> header{ { 9, 9, 0x80, 0, 0, 1, 0, 1, 0, 0, 0, 0 } };
-        std::vector<uint8_t> footer{ { 0, 1, 0, 1 } };
-        std::vector<uint8_t> nameReference{ { 0xc0, 0x0c } };
-        std::vector<uint8_t> resourceInner{ { 0, 1, 0, 1, 0, 0, 0, 30, 0, 4 } };
-
-        return Concatenate({ header, ConvertDns(hostname), footer, nameReference, resourceInner, ConvertDns(address) });
+        return Concatenate({ MakeHeader(1), MakeQuestion(hostname), MakeReferenceAnswer(address) });
     }
 
     std::vector<uint8_t> MakeDnsResponseWithUncompressedHost(infra::BoundedConstString hostname, services::IPv4Address address)
     {
-        std::vector<uint8_t> header{ { 9, 9, 0x80, 0, 0, 1, 0, 1, 0, 0, 0, 0 } };
-        std::vector<uint8_t> footer{ { 0, 1, 0, 1 } };
-        std::vector<uint8_t> resourceInner{ { 0, 1, 0, 1, 0, 0, 0, 30, 0, 4 } };
-
-        return Concatenate({ header, ConvertDns(hostname), footer, ConvertDns(hostname), resourceInner, ConvertDns(address) });
+        return Concatenate({ MakeHeader(1), MakeQuestion(hostname), MakeAnswerA(ConvertDns(hostname), address) });
     }
 
     std::vector<uint8_t> MakeDnsResponseWithCName(infra::BoundedConstString hostname, infra::BoundedConstString alias)
     {
-        std::vector<uint8_t> header{ { 9, 9, 0x80, 0, 0, 1, 0, 1, 0, 0, 0, 0 } };
-        std::vector<uint8_t> footer{ { 0, 1, 0, 1 } };
-        std::vector<uint8_t> nameReference{ { 0xc0, 0x0c } };
-        std::vector<uint8_t> resourceInner{ { 0, 5, 0, 1, 0, 0, 0, 30, 0, static_cast<uint8_t>(alias.size() + 2) } };
-
-        return Concatenate({ header, ConvertDns(hostname), footer, nameReference, resourceInner, ConvertDns(alias) });
+        return Concatenate({ MakeHeader(1), MakeQuestion(hostname), MakeReferenceAnswer(alias) });
     }
 
     std::vector<uint8_t> MakeDnsResponseWithCNameAndAnswer(infra::BoundedConstString hostname, infra::BoundedConstString alias, services::IPv4Address address)
     {
-        auto responseWithCName(MakeDnsResponseWithCName(hostname, alias));
-        responseWithCName[7] = 2; // 2 answers
-        std::vector<uint8_t> nameReference{ { 0xc0, 42 } };
-        std::vector<uint8_t> resourceInner{ { 0, 1, 0, 1, 0, 0, 0, 30, 0, 4 } };
-
-        return Concatenate({ responseWithCName, nameReference, resourceInner, ConvertDns(address) });
+        return Concatenate({ MakeHeader(2), MakeQuestion(hostname), MakeReferenceAnswer(alias), MakeReferenceAnswer(address, 42) });
     }
 
     std::vector<uint8_t> MakeDnsResponseWithCNameAndAnswerForDifferentHost(infra::BoundedConstString hostname, infra::BoundedConstString alias, services::IPv4Address address)
@@ -157,23 +173,16 @@ public:
 
     std::vector<uint8_t> MakeDnsResponseWithCNameWithInnerReference(infra::BoundedConstString hostname, infra::BoundedConstString alias)
     {
-        std::vector<uint8_t> header{ { 9, 9, 0x80, 0, 0, 1, 0, 1, 0, 0, 0, 0 } };
-        std::vector<uint8_t> footer{ { 0, 1, 0, 1 } };
-        std::vector<uint8_t> nameStart(ConvertDns(hostname));
-        std::vector<uint8_t> nameWithInnerReference{ { 0xc0, 0x0c } };
-        std::vector<uint8_t> resourceInner{ { 0, 5, 0, 1, 0, 0, 0, 30, 0, static_cast<uint8_t>(alias.size() + 2) } };
-
-        nameStart.erase(nameStart.begin() + hostname.find('.') + 1, nameStart.end());
-        nameWithInnerReference[1] += static_cast<uint8_t>(hostname.find('.') + 1);
-
-        return Concatenate({ header, ConvertDns(hostname), footer, nameStart, nameWithInnerReference, resourceInner, ConvertDns(alias) });
+        std::vector<uint8_t>  nameStart(ConvertDns(hostname.substr(0, hostname.find('.'))));
+        nameStart.pop_back();
+        std::vector<uint8_t> nameWithInnerReference(Concatenate({ nameStart, { 0xc0, 21 } }));
+        return Concatenate({ MakeHeader(1), MakeQuestion(hostname), MakeAnswerCName(nameWithInnerReference, alias) });
     }
 
     std::vector<uint8_t> MakeDnsResponseWithCNameWithReferenceInAnswer(infra::BoundedConstString hostname, infra::BoundedConstString alias)
     {
-        std::vector<uint8_t> header{ { 9, 9, 0x80, 0, 0, 1, 0, 1, 0, 0, 0, 0 } };
-        std::vector<uint8_t> hostnameData(ConvertDns(hostname));
-        std::vector<uint8_t> footer{ { 0, 1, 0, 1 } };
+        std::vector<uint8_t> header(MakeHeader(1));
+        std::vector<uint8_t> question(MakeQuestion(hostname));
         std::vector<uint8_t> nameReference{ { 0xc0, 0x0c } };
         std::vector<uint8_t> resourceInner{ { 0, 5, 0, 1, 0, 0, 0, 30, 0, static_cast<uint8_t>(alias.size() + 2) } };
 
@@ -181,9 +190,9 @@ public:
         std::vector<uint8_t> aliasData(ConvertDns(alias));
         aliasData.erase(aliasData.begin() + alias.rfind('.') + 1, aliasData.end());
         aliasData.push_back(0xc0);
-        aliasData.push_back(static_cast<uint8_t>(header.size() + hostnameData.size() - (hostname.size() - hostname.rfind('.')) - 1));
+        aliasData.push_back(static_cast<uint8_t>(13 + hostname.rfind('.')));
 
-        return Concatenate({ header, hostnameData, footer, nameReference, resourceInner, aliasData });
+        return Concatenate({ header, question, nameReference, resourceInner, aliasData });
     }
 
     std::vector<uint8_t> MakeShortenedDnsResponse(infra::BoundedConstString hostname, services::IPv4Address address, uint32_t amountToShort)
