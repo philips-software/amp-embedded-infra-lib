@@ -243,6 +243,16 @@ namespace services
         return buffer->tot_len - bufferOffset;
     }
 
+    std::size_t DatagramExchangeLwIP::UdpReader::ConstructSaveMarker() const
+    {
+        return bufferOffset;
+    }
+
+    void DatagramExchangeLwIP::UdpReader::Rewind(std::size_t marker)
+    {
+        bufferOffset = static_cast<uint16_t>(marker);
+    }
+
     DatagramExchangeLwIP::UdpWriter::UdpWriter(udp_pcb* control, pbuf* buffer, infra::Optional<UdpSocket> remote)
         : control(control)
         , buffer(buffer)

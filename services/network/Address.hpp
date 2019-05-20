@@ -23,6 +23,8 @@ namespace services
     using Udpv6Socket = std::pair<IPv6Address, uint16_t>;
     using UdpSocket = infra::Variant<Udpv4Socket, Udpv6Socket>;
 
+    UdpSocket MakeUdpSocket(IPAddress address, uint16_t port);
+
     IPAddress GetAddress(UdpSocket socket);
     uint16_t GetPort(UdpSocket socket);
 

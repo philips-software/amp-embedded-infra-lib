@@ -1,3 +1,4 @@
+#include "infra/util/Function.hpp"
 #include "infra/syntax/JsonStreamingParser.hpp"
 #include <cctype>
 
@@ -290,6 +291,13 @@ namespace infra
         }
     }
 
+    infra::BoundedString JsonSubParser::CopyAndClear(infra::BoundedString& value) const
+    {
+        infra::BoundedString result(value);
+        value.clear();
+        return result;
+    }
+
     void JsonSubParser::FoundToken(Token found)
     {
         token = found;
@@ -340,9 +348,23 @@ namespace infra
         this->tagBuffer.clear();
     }
 
+    JsonSubObjectParser::~JsonSubObjectParser()
+    {
+        if (destructedIndication != nullptr)
+            *destructedIndication = true;
+    }
+
     void JsonSubObjectParser::Feed(infra::MemoryRange<const char>& data)
     {
-        while (!data.empty() && state != State::parseError && state != State::semanticError)
+        bool destructed = false;
+        destructedIndication = &destructed;
+        infra::ExecuteOnDestruction::WithExtraSize<3 * sizeof(void*)> execute([this, &destructed, &data]()
+        {
+            if (!destructed)
+                destructedIndication = nullptr;
+        });
+
+        while (!destructed && !data.empty() && state != State::parseError && state != State::semanticError)
         {
             FeedToken(data, state != State::skipNestedObject && state != State::skipNestedArray);
             if (tokenState != TokenState::done)
@@ -358,14 +380,13 @@ namespace infra
             else if (state == State::valueExpected && token == Token::string)
             {
                 state = State::closed;
-                visitor->VisitString(tagBuffer, valueBuffer);
-                tagBuffer.clear();
+                visitor->VisitString(CopyAndClear(tagBuffer), valueBuffer);
             }
             else if (state == State::valueExpected && token == Token::stringOverflow)
             {
                 state = State::closed;
-                visitor->StringOverflow();
                 tagBuffer.clear();
+                visitor->StringOverflow();
             }
             else if (state == State::closed && token == Token::comma)
                 state = State::open;
@@ -387,6 +408,9 @@ namespace infra
                 {
                     subObjects.emplace_back(infra::InPlaceType<JsonSubObjectParser>(), tagBuffer, valueBuffer, reinterpret_cast<char&>(subObjects));
                     auto nestedVisitor = visitor->VisitObject(tagBuffer, static_cast<JsonSubObjectParser&>(*subObjects.back()));
+                    if (destructed)
+                        return;
+
                     if (nestedVisitor != nullptr)
                         subObjects.back()->SetVisitor(*nestedVisitor);
                     else
@@ -410,6 +434,9 @@ namespace infra
                 {
                     subObjects.emplace_back(infra::InPlaceType<JsonSubArrayParser>(), tagBuffer, valueBuffer, reinterpret_cast<char&>(subObjects));
                     auto nestedVisitor = visitor->VisitArray(tagBuffer, static_cast<JsonSubArrayParser&>(*subObjects.back()));
+                    if (destructed)
+                        return;
+
                     if (nestedVisitor != nullptr)
                         subObjects.back()->SetVisitor(*nestedVisitor);
                     else
@@ -425,31 +452,28 @@ namespace infra
             else if (state == State::valueExpected && token == Token::number)
             {
                 state = State::closed;
-                visitor->VisitNumber(tagBuffer, tokenSign * tokenNumber);
-                tagBuffer.clear();
+                visitor->VisitNumber(CopyAndClear(tagBuffer), tokenSign * tokenNumber);
             }
             else if (state == State::valueExpected && token == Token::false_)
             {
                 state = State::closed;
-                visitor->VisitBoolean(tagBuffer, false);
-                tagBuffer.clear();
+                visitor->VisitBoolean(CopyAndClear(tagBuffer), false);
             }
             else if (state == State::valueExpected && token == Token::true_)
             {
                 state = State::closed;
-                visitor->VisitBoolean(tagBuffer, true);
-                tagBuffer.clear();
+                visitor->VisitBoolean(CopyAndClear(tagBuffer), true);
             }
             else if (state == State::valueExpected && token == Token::null)
             {
                 state = State::closed;
-                visitor->VisitNull(tagBuffer);
-                tagBuffer.clear();
+                visitor->VisitNull(CopyAndClear(tagBuffer));
             }
             else if ((state == State::initialOpen || state == State::closed) && token == Token::rightBrace)
             {
                 visitor->Close();
-                subObjects.pop_back();
+                if (!destructed)
+                    subObjects.pop_back();
                 return;
             }
             else if (state == State::skipNestedObject)
@@ -515,9 +539,23 @@ namespace infra
         : JsonSubParser(tagBuffer, valueBuffer, subObjects)
     {}
 
+    JsonSubArrayParser::~JsonSubArrayParser()
+    {
+        if (destructedIndication != nullptr)
+            *destructedIndication = true;
+    }
+
     void JsonSubArrayParser::Feed(infra::MemoryRange<const char>& data)
     {
-        while (!data.empty() && state != State::parseError && state != State::semanticError)
+        bool destructed = false;
+        destructedIndication = &destructed;
+        infra::ExecuteOnDestruction::WithExtraSize<3 * sizeof(void*)> execute([this, &destructed, &data]()
+        {
+            if (!destructed)
+                destructedIndication = nullptr;
+        });
+
+        while (!destructed && !data.empty() && state != State::parseError && state != State::semanticError)
         {
             FeedToken(data, state != State::skipNestedObject && state != State::skipNestedArray);
             if (tokenState != TokenState::done)
@@ -551,14 +589,15 @@ namespace infra
             else if ((state == State::initialOpen || state == State::open) && token == Token::number)
             {
                 state = State::closed;
-                visitor->VisitNumber(tokenSign * tokenNumber);
                 tagBuffer.clear();
+                visitor->VisitNumber(tokenSign * tokenNumber);
             }
             else if ((state == State::initialOpen || state == State::closed) && token == Token::rightBracket)
             {
                 state = State::closed;
                 visitor->Close();
-                subObjects.pop_back();
+                if (!destructed)
+                    subObjects.pop_back();
                 return;
             }
             else if ((state == State::initialOpen || state == State::open) && token == Token::leftBrace)
@@ -572,6 +611,9 @@ namespace infra
                 {
                     subObjects.emplace_back(infra::InPlaceType<JsonSubObjectParser>(), tagBuffer, valueBuffer, reinterpret_cast<char&>(subObjects));
                     auto nestedVisitor = visitor->VisitObject(static_cast<JsonSubObjectParser&>(*subObjects.back()));
+                    if (destructed)
+                        return;
+
                     if (nestedVisitor != nullptr)
                         subObjects.back()->SetVisitor(*nestedVisitor);
                     else
@@ -594,6 +636,9 @@ namespace infra
                 {
                     subObjects.emplace_back(infra::InPlaceType<JsonSubArrayParser>(), tagBuffer, valueBuffer, reinterpret_cast<char&>(subObjects));
                     auto nestedVisitor = visitor->VisitArray(static_cast<JsonSubArrayParser&>(*subObjects.back()));
+                    if (destructed)
+                        return;
+
                     if (nestedVisitor != nullptr)
                         subObjects.back()->SetVisitor(*nestedVisitor);
                     else

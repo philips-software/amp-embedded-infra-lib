@@ -4,6 +4,15 @@
 #include "infra/util/test_helper/BoundedStringMatcher.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 
+namespace
+{
+    template<class T>
+    void DeleteValue(T& value)
+    {
+        value.~T();
+    }
+}
+
 class JsonStreamingObjectParserTest
     : public testing::Test
 {
@@ -26,6 +35,17 @@ TEST_F(JsonStreamingObjectParserTest, feed_empty_object)
 {
     EXPECT_CALL(visitor, Close());
     parser.Feed(" {}");
+}
+
+TEST_F(JsonStreamingObjectParserTest, delete_on_Close)
+{
+    EXPECT_CALL(visitor, Close()).WillOnce(testing::Invoke([this]()
+    {
+        DeleteValue(parser);
+    }));
+    parser.Feed("{}");
+
+    new (&parser) decltype(parser){ visitor };
 }
 
 TEST_F(JsonStreamingObjectParserTest, non_open_object_results_in_ParseError)
@@ -141,6 +161,17 @@ TEST_F(JsonStreamingObjectParserTest, VisitString_twice)
     parser.Feed(R"(, "a" : "b")");
 }
 
+TEST_F(JsonStreamingObjectParserTest, destruct_parser_during_callback)
+{
+    EXPECT_CALL(visitor, VisitString("a", "b")).WillOnce(testing::Invoke([this](infra::BoundedConstString, infra::BoundedConstString)
+    {
+        DeleteValue(parser);
+    }));
+    parser.Feed(R"({ "a" : "b", "a" : "b")");
+
+    new (&parser) decltype(parser){ visitor };
+}
+
 TEST_F(JsonStreamingObjectParserTest, VisitObject)
 {
     EXPECT_CALL(visitor, VisitObject("a", testing::_)).WillOnce(testing::Return(&nestedVisitor));
@@ -152,6 +183,18 @@ TEST_F(JsonStreamingObjectParserTest, VisitObject)
     EXPECT_CALL(nestedVisitor, Close());
     EXPECT_CALL(visitor, VisitString("a", "b"));
     parser.Feed(R"(}, "a" : "b")");
+}
+
+TEST_F(JsonStreamingObjectParserTest, delete_on_VisitObject)
+{
+    EXPECT_CALL(visitor, VisitObject("a", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString tag, infra::JsonSubObjectParser& parser)
+    {
+        DeleteValue(this->parser);
+        return nullptr;
+    }));
+    parser.Feed(R"({ "a" : {)");
+
+    new (&parser) decltype(parser){ visitor };
 }
 
 TEST_F(JsonStreamingObjectParserTest, nested_objects_above_limit_are_skipped)
@@ -286,6 +329,18 @@ TEST_F(JsonStreamingObjectParserTest, when_nested_visitor_is_null_subarray_is_sk
     parser.Feed(R"(], "a" : "b")");
 }
 
+TEST_F(JsonStreamingObjectParserTest, delete_on_VisitArray)
+{
+    EXPECT_CALL(visitor, VisitArray("a", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString tag, infra::JsonSubArrayParser& parser)
+    {
+        DeleteValue(this->parser);
+        return nullptr;
+    }));
+    parser.Feed(R"({ "a" : [)");
+
+    new (&parser) decltype(parser){ visitor };
+}
+
 TEST_F(JsonStreamingObjectParserTest, when_nested_visitor_is_null_all_subarrays_are_skipped)
 {
     EXPECT_CALL(visitor, VisitArray("a", testing::_)).WillOnce(testing::Return(nullptr));
@@ -402,6 +457,17 @@ TEST_F(JsonStreamingObjectParserArrayTest, close_array)
     parser.Feed(R"(])");
 }
 
+TEST_F(JsonStreamingObjectParserArrayTest, delete_on_Close)
+{
+    EXPECT_CALL(arrayVisitor, Close()).WillOnce(testing::Invoke([this]()
+    {
+        DeleteValue(parser);
+    }));
+    parser.Feed(R"(])");
+
+    new (&parser) decltype(parser){ visitor };
+}
+
 TEST_F(JsonStreamingObjectParserArrayTest, array_cannot_be_closed_after_comma)
 {
     EXPECT_CALL(arrayVisitor, VisitBoolean(false));
@@ -431,6 +497,18 @@ TEST_F(JsonStreamingObjectParserArrayTest, VisitObject)
     parser.Feed(R"(}, "a")");
 }
 
+TEST_F(JsonStreamingObjectParserArrayTest, delete_on_VisitObject)
+{
+    EXPECT_CALL(arrayVisitor, VisitObject(testing::_)).WillOnce(testing::Invoke([this](infra::JsonSubObjectParser&)
+    {
+        DeleteValue(parser);
+        return nullptr;
+    }));
+    parser.Feed(R"({)");
+
+    new (&parser) decltype(parser){ visitor };
+}
+
 TEST_F(JsonStreamingObjectParserArrayTest, VisitArray)
 {
     EXPECT_CALL(arrayVisitor, VisitArray(testing::_)).WillOnce(testing::Return(&nestedArrayVisitor));
@@ -439,6 +517,18 @@ TEST_F(JsonStreamingObjectParserArrayTest, VisitArray)
     EXPECT_CALL(nestedArrayVisitor, Close());
     EXPECT_CALL(arrayVisitor, VisitString("a"));
     parser.Feed(R"(], "a")");
+}
+
+TEST_F(JsonStreamingObjectParserArrayTest, delete_on_VisitArray)
+{
+    EXPECT_CALL(arrayVisitor, VisitArray(testing::_)).WillOnce(testing::Invoke([this](infra::JsonSubArrayParser&)
+    {
+        DeleteValue(parser);
+        return nullptr;
+    }));
+    parser.Feed(R"([)");
+
+    new (&parser) decltype(parser){ visitor };
 }
 
 TEST_F(JsonStreamingObjectParserArrayTest, VisitAllTypes)

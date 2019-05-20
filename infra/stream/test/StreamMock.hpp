@@ -21,6 +21,22 @@ namespace infra
         MOCK_CONST_METHOD0(Available, std::size_t());
     };
 
+    class StreamReaderWithRewindingMock
+        : public infra::StreamReaderWithRewinding
+    {
+    public:
+        using infra::StreamReaderWithRewinding::StreamReaderWithRewinding;
+
+        MOCK_METHOD2(Extract, void(ByteRange range, StreamErrorPolicy& errorPolicy));
+        MOCK_METHOD1(Peek, uint8_t(StreamErrorPolicy& errorPolicy));
+        MOCK_METHOD1(ExtractContiguousRange, infra::ConstByteRange(std::size_t max));
+        MOCK_METHOD1(PeekContiguousRange, infra::ConstByteRange(std::size_t start));
+        MOCK_CONST_METHOD0(Empty, bool());
+        MOCK_CONST_METHOD0(Available, std::size_t());
+        MOCK_CONST_METHOD0(ConstructSaveMarker, std::size_t());
+        MOCK_METHOD1(Rewind, void(std::size_t marker));
+    };
+
     class StreamWriterMock
         : public infra::StreamWriter
     {

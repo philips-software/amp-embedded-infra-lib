@@ -125,6 +125,7 @@ namespace services
 
     void HttpClientImpl::Close()
     {
+        bodyReaderAccess.SetAction([]() {});
         ConnectionObserver::Subject().CloseAndDestroy();
     }
 
@@ -146,7 +147,7 @@ namespace services
             if (response)
                 HandleData();
             else
-                ConnectionObserver::Subject().AbortAndDestroy();
+                AbortAndDestroy();
         }
     }
 
@@ -194,7 +195,7 @@ namespace services
             if (!response->Error())
                 BodyReceived();
             else
-                ConnectionObserver::Subject().AbortAndDestroy();
+                AbortAndDestroy();
         }
     }
 
@@ -240,6 +241,12 @@ namespace services
     {
         request.Emplace(verb, hostname, requestTarget, content, headers);
         ConnectionObserver::Subject().RequestSendStream(request->Size());
+    }
+
+    void HttpClientImpl::AbortAndDestroy()
+    {
+        bodyReaderAccess.SetAction([]() {});
+        ConnectionObserver::Subject().AbortAndDestroy();
     }
 
     HttpClientImpl::HttpResponseParser::HttpResponseParser(HttpClientImpl& httpClient, infra::BoundedString& headerBuffer)

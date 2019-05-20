@@ -125,6 +125,7 @@ namespace infra
         void FeedToken(infra::MemoryRange<const char>& data, bool saveValue);
         void ReportParseError();
         void ReportSemanticError();
+        infra::BoundedString CopyAndClear(infra::BoundedString& value) const;
 
     private:
         void FoundToken(Token found);
@@ -153,6 +154,7 @@ namespace infra
     public:
         JsonSubObjectParser(infra::BoundedString tagBuffer, infra::BoundedString valueBuffer, char& subObjects, JsonObjectVisitor& visitor);
         JsonSubObjectParser(infra::BoundedString tagBuffer, infra::BoundedString valueBuffer, char& subObjects);
+        ~JsonSubObjectParser();
 
         virtual void Feed(infra::MemoryRange<const char>& data) override;
         virtual JsonVisitor& Visitor() override;
@@ -179,6 +181,7 @@ namespace infra
         JsonObjectVisitor* visitor;
         State state;
         uint32_t skipSubObjects = 0;
+        bool* destructedIndication = nullptr;
     };
 
     class JsonSubArrayParser
@@ -186,6 +189,7 @@ namespace infra
     {
     public:
         JsonSubArrayParser(infra::BoundedString tagBuffer, infra::BoundedString valueBuffer, char& subObjects);
+        ~JsonSubArrayParser();
 
         virtual void Feed(infra::MemoryRange<const char>& data) override;
         virtual JsonVisitor& Visitor() override;
@@ -209,6 +213,7 @@ namespace infra
 
         State state = State::initialOpen;
         uint32_t skipSubObjects = 0;
+        bool* destructedIndication = nullptr;
     };
 
     class JsonStreamingObjectParser

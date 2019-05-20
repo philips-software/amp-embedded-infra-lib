@@ -70,7 +70,7 @@ namespace services
         datagramExchange->RequestSendStream(sizeof(NtpMessage));
     }
 
-    void SntpClient::DataReceived(infra::StreamReader& reader, services::UdpSocket from)
+    void SntpClient::DataReceived(infra::StreamReaderWithRewinding& reader, services::UdpSocket from)
     {
         if (reader.Empty())
         {

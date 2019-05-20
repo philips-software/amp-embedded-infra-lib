@@ -52,7 +52,7 @@ namespace services
     private:
         TerminalState state;
         hal::SerialCommunication& communication;
-        infra::QueueForOneReaderOneIrqWriter::WithStorage<32> queue;
+        infra::QueueForOneReaderOneIrqWriter<uint8_t>::WithStorage<32> queue;
         infra::BoundedString::WithStorage<256> buffer;
         infra::BoundedDeque<decltype(buffer)>::WithMaxSize<4> history;
         bool sendDone = true;

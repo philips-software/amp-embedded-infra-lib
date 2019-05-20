@@ -7,6 +7,12 @@ namespace services
         , jsonParserCreator(connectionInfo.jsonParserCreator)
     {}
 
+    HttpClientJson::~HttpClientJson()
+    {
+        if (destructedIndication != nullptr)
+            *destructedIndication = true;
+    }
+
     void HttpClientJson::Cancel(const infra::Function<void()>& onDone)
     {
         HttpClientBasic::Cancel(onDone);
@@ -38,14 +44,21 @@ namespace services
 
     void HttpClientJson::BodyAvailable(infra::SharedPtr<infra::StreamReader>&& reader)
     {
+        bool destructed = false;
+        destructedIndication = &destructed;
+
         readerPtr = std::move(reader);
 
         infra::DataInputStream::WithErrorPolicy stream(*readerPtr, infra::noFail);
 
-        while (jsonParser != infra::none && !stream.Empty())
+        while (!destructed && jsonParser != infra::none && !stream.Empty())
             (*jsonParser)->Feed(infra::ByteRangeAsString(stream.ContiguousRange()));
 
-        readerPtr = nullptr;
+        if (!destructed)
+        {
+            readerPtr = nullptr;
+            destructedIndication = nullptr;
+        }
     }
 
     void HttpClientJson::Established()
