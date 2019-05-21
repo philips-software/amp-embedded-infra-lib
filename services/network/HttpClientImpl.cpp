@@ -287,8 +287,8 @@ namespace services
         auto crlfPos = headerBuffer.find_first_of(crlf);
         if (crlfPos != infra::BoundedString::npos)
         {
-            auto statusLine = headerBuffer.substr(0, crlfPos + crlf.size());
-            reader.Rewind(statusLine.size());
+            auto statusLine = headerBuffer.substr(0, crlfPos);
+            reader.Rewind(statusLine.size() + crlf.size());
 
             infra::Tokenizer tokenizer(statusLine, ' ');
 
