@@ -95,8 +95,8 @@ namespace infra
     };
 
     template<std::size_t N>
-    struct DecayFormatType<const char(&)[N]>
-    {
+   struct DecayFormatType<const char(&)[N]>
+   {
         using type = const char*;
     };
 
@@ -140,18 +140,7 @@ namespace infra
     class FormatHelper
     {
     public:
-        template<std::size_t... Is>
-        std::vector<FormatterBase*> Make(std::index_sequence<Is...>)
-        {
-            return{ &std::get<Is>(args)... };
-        }
-
-        std::vector<FormatterBase*> MakeFormatter()
-        {
-            return Make(std::index_sequence_for<Args...>{});
-        };
-
-        explicit FormatHelper(const char* format, Args&&... args)
+       explicit FormatHelper(const char* format, Args&&... args)
             : format(format)
             , args(std::forward<Args>(args)...)
             , formatters{ MakeFormatter() }
@@ -171,6 +160,17 @@ namespace infra
         }
 
     private:
+        template<std::size_t... Is>
+        std::vector<FormatterBase*> Make(std::index_sequence<Is...>)
+        {
+            return{ &std::get<Is>(args)... };
+        }
+
+        std::vector<FormatterBase*> MakeFormatter()
+        {
+            return Make(std::index_sequence_for<Args...>{});
+        };
+
         const char* format;
         std::tuple<Args ...> args;
         std::vector<FormatterBase*> formatters{ sizeof...(Args), nullptr };

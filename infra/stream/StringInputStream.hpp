@@ -3,7 +3,6 @@
 
 #include "infra/stream/InputStream.hpp"
 #include "infra/util/BoundedString.hpp"
-#include <cstdint>
 
 namespace infra
 {

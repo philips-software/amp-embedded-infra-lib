@@ -5,7 +5,7 @@ class FormatTest : public testing::Test
 {
 protected:
     template<typename... Args>
-    void CheckFormatArguments(const char* expected, const char* format, Args&&... args)
+    static void CheckFormatArguments(const char* expected, const char* format, Args&&... args)
     {
         infra::StringOutputStream::WithStorage<60> stream(infra::softFail);
         stream << infra::Format(format, args...);
@@ -14,7 +14,7 @@ protected:
     }
 
     template<class T>
-    void CheckLimits(const char* expected, T value)
+    static void CheckLimits(const char* expected)
     {
         CheckFormatArguments(expected, "{}..{}", std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
     }
@@ -55,7 +55,7 @@ TEST_F(FormatTest, string_width)
 
 TEST_F(FormatTest, boolean)
 {
-    CheckLimits("false..true", bool());
+    CheckLimits<bool>("false..true");
 }
 
 TEST_F(FormatTest, boolean_center)
@@ -70,42 +70,42 @@ TEST_F(FormatTest, integer0)
 
 TEST_F(FormatTest, int_uint8)
 {
-    CheckLimits("0..255", uint8_t());
+    CheckLimits<uint8_t>("0..255");
 }
 
 TEST_F(FormatTest, int_int8)
 {
-    CheckLimits("-128..127", int8_t());
+    CheckLimits<int8_t>("-128..127");
 }
 
 TEST_F(FormatTest, int_uint16)
 {
-    CheckLimits("0..65535", uint16_t());
+    CheckLimits<uint16_t>("0..65535");
 }
 
 TEST_F(FormatTest, int_int16)
 {
-    CheckLimits("-32768..32767", int16_t());
+    CheckLimits<int16_t>("-32768..32767");
 }
 
 TEST_F(FormatTest, int_uint32)
 {
-    CheckLimits("0..4294967295", uint32_t());
+    CheckLimits<uint32_t>("0..4294967295");
 }
 
 TEST_F(FormatTest, int_int32)
 {
-    CheckLimits("-2147483648..2147483647", int32_t());
+    CheckLimits<int32_t>("-2147483648..2147483647");
 }
 
 TEST_F(FormatTest, int_uint64)
 {
-    CheckLimits("0..18446744073709551615", uint64_t());
+    CheckLimits<uint64_t>("0..18446744073709551615");
 }
 
 TEST_F(FormatTest, int_int64)
 {
-    CheckLimits("-9223372036854775808..9223372036854775807", int64_t());
+    CheckLimits<int64_t>("-9223372036854775808..9223372036854775807");
 }
 
 TEST_F(FormatTest, integer12)

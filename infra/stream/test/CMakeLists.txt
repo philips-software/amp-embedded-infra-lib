@@ -10,6 +10,7 @@ ccola_component(stream_test gmock_test)
         TestLimitedInputStream.cpp
         TestLimitedOutputStream.cpp
         TestOutputStreamSwitch.cpp
+        TestScanner.cpp
         TestStdStringInputStream.cpp
         TestStdStringOutputStream.cpp
         TestStringInputStream.cpp

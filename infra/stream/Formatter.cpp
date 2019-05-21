@@ -102,7 +102,7 @@ namespace infra
         BoundedString::WithStorage<size> buffer;
         auto index(size-1);
 
-        decltype(value) divider;
+        decltype(value) divider{};
         switch (spec.type)
         {
         case 'x':
@@ -120,9 +120,12 @@ namespace infra
             divider = 10;
             break;
         default:
-            stream.ErrorPolicy().ReportResult(false);
-            return;
+            break;
         }
+        const auto isValid = divider != 0;
+        stream.ErrorPolicy().ReportResult(isValid);
+        if (!isValid)
+            return;
 
         const auto digits = isupper(spec.type) ? "0123456789ABCDEF" : "0123456789abcdef";
 
@@ -229,10 +232,10 @@ namespace infra
             const auto index = ParseIndex();
             auto spec = FormatSpec(format);
 
-            if (*format++ == '}' && index < formatters.size())
+            const auto isValid = *format++ == '}' && index < formatters.size();
+            stream.ErrorPolicy().ReportResult(isValid);
+            if (isValid)
                 formatters[index]->Format(stream, spec);
-            else
-                stream.ErrorPolicy().ReportResult(false);
         } while (!stream.Failed());
     }
 
