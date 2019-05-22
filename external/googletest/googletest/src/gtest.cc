@@ -5245,10 +5245,10 @@ int UnitTest::Run() {
     // this dialog or it will pop up for every EXPECT/ASSERT_DEATH statement
     // executed. Google Test will notify the user of any unexpected
     // failure via stderr.
-    if (!GTEST_FLAG(break_on_failure))
-      _set_abort_behavior(
-          0x0,                                    // Clear the following flags:
-          _WRITE_ABORT_MSG | _CALL_REPORTFAULT);  // pop-up window, core dump.
+    //if (!GTEST_FLAG(break_on_failure))
+    //  _set_abort_behavior(
+    //      0x0,                                    // Clear the following flags:
+    //      _WRITE_ABORT_MSG | _CALL_REPORTFAULT);  // pop-up window, core dump.
 
     // In debug mode, the Windows CRT can crash with an assertion over invalid
     // input (e.g. passing an invalid file descriptor).  The default handling
