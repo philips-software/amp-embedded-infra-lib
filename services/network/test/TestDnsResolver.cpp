@@ -195,7 +195,7 @@ public:
     {
         std::vector<uint8_t>  nameStart(ConvertDns("other"));
         nameStart.pop_back();
-        std::vector<uint8_t> nameWithInnerReference(Concatenate({ nameStart,{ 0xc0, 22 } }));
+        std::vector<uint8_t> nameWithInnerReference(Concatenate({ nameStart, { 0xc0, 21 } }));
         return Concatenate({ MakeHeader(2), MakeQuestion(hostname), MakeAnswerCName(nameWithInnerReference, alias), MakeReferenceAnswerCName(alias) });
     }
 
@@ -218,6 +218,13 @@ public:
     std::vector<uint8_t> MakeDnsResponseWithNS(infra::BoundedConstString hostname, infra::BoundedConstString ns, services::IPv4Address address)
     {
         return Concatenate({ MakeHeader(0, 1, 1), MakeQuestion(hostname), MakeReferenceAnswerNS(ns), MakeReferenceAnswerA(address, 42) });
+    }
+
+    std::vector<uint8_t> MakeDnsResponseWithNSTooShort(infra::BoundedConstString hostname, infra::BoundedConstString ns, services::IPv4Address address)
+    {
+        auto result = MakeDnsResponseWithNS(hostname, ns, address);
+        result.pop_back();
+        return result;
     }
 
     std::vector<uint8_t> MakeDnsResponseWithAdditional(infra::BoundedConstString hostname, infra::BoundedConstString ns, services::IPv4Address address)
@@ -577,6 +584,14 @@ TEST_F(DnsResolverTest, additional_record_which_is_not_ns_results_in_retry)
 
     ExpectAndRespondToRequestSendStream(result1, "hostname.com", dnsServer1);
     DataReceived(MakeDnsResponseWithAdditional("hostname.com", "ns.com", nsServer1), services::Udpv4Socket{ dnsServer2, 53 });
+}
+
+TEST_F(DnsResolverTest, too_short_ns_results_in_retry)
+{
+    LookupAndGiveSendStream(result1, "hostname.com", dnsServer2);
+
+    ExpectAndRespondToRequestSendStream(result1, "hostname.com", dnsServer1);
+    DataReceived(MakeDnsResponseWithNSTooShort("hostname.com", "ns.com", nsServer1), services::Udpv4Socket{ dnsServer2, 53 });
 }
 
 class DnsResolverTestTooShort

@@ -67,6 +67,10 @@ namespace services
             infra::BigEndian<uint16_t> ttl1;
             infra::BigEndian<uint16_t> ttl2;
             infra::BigEndian<uint16_t> resourceDataLength;
+
+            bool IsCName() const;
+            bool IsIPv4Answer() const;
+            bool IsNameServer() const;
         };
 
         struct Answer
@@ -129,7 +133,45 @@ namespace services
             infra::BoundedString::WithStorage<63> label;
         };
 
+        class ReplyParser
+        {
+        public:
+            ReplyParser(infra::StreamReaderWithRewinding& reader, infra::BoundedString& hostname);
+
+            bool AnswerIsForCurrentQuery(UdpSocket from, const IPAddress& currentDnsServer, uint16_t queryId) const;
+            bool Error() const;
+            bool Recurse() const;
+            infra::Optional<IPAddress> ReadAnswerRecords();
+            void ReadNameServers(infra::BoundedVector<IPAddress>& recursiveDnsServers);
+
+        private:
+            void DiscardNameServerRecords();
+            void ReadAdditionalRecords(infra::BoundedVector<IPAddress>& recursiveDnsServers, uint32_t nameServerPosition);
+            infra::Variant<Answer, CName, NoAnswer> ReadAnswer();
+            void DiscardAnswer();
+            infra::Optional<IPAddress> ReadNameServer(std::size_t nameServerPosition, std::size_t numNameServers);
+            bool ReadAndMatchHostname();
+            bool ReadAndMatchHostnameParts(HostnameParts& hostnameParts);
+            bool ReadAndMatchReferenceHostname(uint8_t offsetHigh, HostnameParts& hostnameParts);
+            bool ReadAndMatchHostnameWithoutReference(uint8_t size, HostnameParts& hostnameParts);
+            bool ReadAndMatchHostnamePart(uint8_t size, const HostnameParts& hostnameParts);
+            void ReadCName(uint16_t resourceSize);
+            void ReadCNameReference(uint8_t offsetHigh);
+            bool ReadAndMatchNameServer(std::size_t nameServerPosition, std::size_t numNameServers);
+
+        private:
+            infra::StreamReaderWithRewinding& reader;
+            infra::DataInputStream::WithErrorPolicy stream{ reader, infra::noFail };
+            infra::BoundedString& hostname;
+            bool recurse = false;
+            QueryHeader header{};
+            QuestionFooter footer{};
+            bool hostnameMatches;
+        };
+
     private:
+        void TryFindAnswer(ReplyParser& replyParser);
+        void TryFindRecursiveNameServer(ReplyParser& replyParser);
         void TryResolveNext();
         void Resolve(NameResolverResult& nameLookup);
         void ResolveNextAttempt();
@@ -142,22 +184,7 @@ namespace services
         void NameLookupDone(const infra::Function<void(NameResolverResult& observer), sizeof(IPAddress)>& observerCallback);
         UdpSocket DnsUpdSocket() const;
         std::size_t QuerySize() const;
-        bool AnswerIsForCurrentQuery(const QueryHeader& header, const QuestionFooter& footer, UdpSocket from, bool hostnameMatches) const;
-        infra::Variant<Answer, CName, NoAnswer> ReadAnswer(infra::DataInputStream& stream, infra::StreamReaderWithRewinding& reader);
-        void DiscardAnswer(infra::DataInputStream& stream, infra::StreamReaderWithRewinding& reader) const;
-        infra::Optional<IPAddress> ReadNameServer(infra::DataInputStream& stream, infra::StreamReaderWithRewinding& reader, std::size_t nameServerPosition, std::size_t numNameServers) const;
-        bool IsCName(const ResourceInner& resourceInner) const;
-        bool IsNameServer(const ResourceInner& resourceInner) const;
-        bool IsIPv4Answer(const ResourceInner& resourceInner) const;
-        void ReadCName(infra::DataInputStream& stream, infra::StreamReaderWithRewinding& reader, uint16_t resourceSize);
-        void ReadCNameReference(infra::DataInputStream& stream, infra::StreamReaderWithRewinding& reader, uint8_t offsetHigh);
         void WriteHostname(infra::DataOutputStream& stream) const;
-        bool ReadAndMatchHostnameParts(infra::StreamReaderWithRewinding& reader, HostnameParts& hostnameParts) const;
-        bool ReadAndMatchHostname(infra::StreamReaderWithRewinding& reader) const;
-        bool ReadAndMatchReferenceHostname(infra::DataInputStream& stream, infra::StreamReaderWithRewinding& reader, uint8_t offsetHigh, HostnameParts& hostnameParts) const;
-        bool ReadAndMatchHostnameWithoutReference(infra::DataInputStream& stream, infra::StreamReaderWithRewinding& reader, uint8_t size, HostnameParts& hostnameParts) const;
-        bool ReadAndMatchHostnamePart(infra::DataInputStream& stream, uint8_t size, const HostnameParts& hostnameParts) const;
-        bool ReadAndMatchNameServer(infra::DataInputStream& stream, infra::StreamReaderWithRewinding& reader, std::size_t nameServerPosition, std::size_t numNameServers) const;;
 
     private:
         static const infra::Duration responseTimeout;
