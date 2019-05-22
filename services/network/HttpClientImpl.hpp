@@ -15,11 +15,13 @@ namespace services
     public:
         HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, const HttpHeaders headers);
         HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers);
+        HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, std::size_t contentSize, const HttpHeaders headers);
 
         std::size_t Size() const;
         void Write(infra::TextOutputStream stream) const;
 
     private:
+        void AddContentLength(std::size_t size);
         std::size_t HeadersSize() const;
 
     private:
@@ -51,6 +53,7 @@ namespace services
         virtual void Options(infra::BoundedConstString requestTarget, HttpHeaders headers) override;
         virtual void Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers) override;
         virtual void Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        virtual void Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) override;
         virtual void Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
         virtual void Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
 
@@ -67,12 +70,16 @@ namespace services
         virtual void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine);
 
     private:
+        void ForwardStream(infra::SharedPtr<infra::StreamWriter>&& writer);
+        void WriteRequest(infra::SharedPtr<infra::StreamWriter>&& writer);
+        void RequestForwardStreamOrExpectResponse();
         void HandleData();
         void BodyReceived();
         void BodyReaderDestroyed();
         void BodyComplete();
         void ExecuteRequest(HttpVerb verb, infra::BoundedConstString requestTarget, const HttpHeaders headers);
         void ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers);
+        void ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, std::size_t contentSize, const HttpHeaders headers);
         void AbortAndDestroy();
 
     private:
@@ -125,6 +132,10 @@ namespace services
         infra::Optional<uint32_t> contentLength;
         infra::Optional<BodyReader> bodyReader;
         infra::AccessedBySharedPtr bodyReaderAccess;
+        std::size_t streamingContentSize = 0;
+        bool forwardingStream = false;
+        infra::AccessedBySharedPtr forwardStreamAccess;
+        infra::SharedPtr<infra::StreamWriter> forwardStreamPtr;
     };
 
     template<class HttpClient = HttpClientImpl, class... Args>
