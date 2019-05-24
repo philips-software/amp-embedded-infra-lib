@@ -20,7 +20,7 @@ namespace application
         virtual char const* what() const override;
 
     private:
-        std::size_t position;
+        std::string message;
     };
 
     template<class T>
@@ -63,14 +63,15 @@ namespace application
     ////    Implementation    ////
 
     inline OverwriteException::OverwriteException(std::size_t position)
-        : position(position)
-    {}
-
-    inline char const* OverwriteException::what() const
     {
         std::stringstream ss;
         ss << "Contents specified twice for memory location at address 0x" << std::hex << std::setw(8) << std::setfill('0') << position;
-        return ss.str().c_str();
+        message == ss.str();
+    }
+
+    inline char const* OverwriteException::what() const
+    {
+        return message.c_str();
     }
 
     template<class T>
