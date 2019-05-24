@@ -12,6 +12,7 @@ namespace infra
     std::size_t JsonEscapedStringSize(infra::BoundedConstString string);
 
     class JsonArrayFormatter;
+    class JsonStringStream;
 
     class JsonObjectFormatter
     {
@@ -41,6 +42,7 @@ namespace infra
         void AddSubObject(const char* tagName, infra::BoundedConstString json);
         JsonObjectFormatter SubObject(infra::BoundedConstString tagName);
         JsonArrayFormatter SubArray(infra::BoundedConstString tagName);
+        JsonStringStream AddString(const char* tagName);
 
         bool Failed() const;
 
@@ -81,6 +83,21 @@ namespace infra
     private:
         infra::Optional<infra::TextOutputStream::WithErrorPolicy> stream;
         bool empty = true;
+    };
+
+    class JsonStringStream
+        : public infra::TextOutputStream
+    {
+    public:
+        explicit JsonStringStream(infra::TextOutputStream& stream);
+        JsonStringStream(const JsonStringStream& other) = delete;
+        JsonStringStream(JsonStringStream&& other);
+        JsonStringStream& operator=(const JsonStringStream& other) = delete;
+        JsonStringStream& operator=(JsonStringStream&& other);
+        ~JsonStringStream();
+
+    private:
+        bool owned = true;
     };
 }
 
