@@ -25,8 +25,6 @@ ccola_component(stream static_library)
         OverwriteStream.hpp
         SavedMarkerStream.cpp
         SavedMarkerStream.hpp
-        Scanner.cpp
-        Scanner.hpp
         StdStringInputStream.cpp
         StdStringInputStream.hpp
         StdStringOutputStream.cpp
