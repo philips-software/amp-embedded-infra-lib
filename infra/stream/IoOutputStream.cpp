@@ -1,13 +1,16 @@
 #include "infra/stream/IoOutputStream.hpp"
 #include <cstdlib>
-#include <iostream>
 #include <limits>
 
 namespace infra
 {
+    IoOutputStreamWriter::IoOutputStreamWriter(std::ostream& stream)
+        : stream(stream)
+    {}
+
     void IoOutputStreamWriter::Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy)
     {
-        std::cout << std::string(range.begin(), range.end()) << std::flush;
+        stream << std::string(range.begin(), range.end()) << std::flush;
     }
 
     std::size_t IoOutputStreamWriter::Available() const
@@ -15,4 +18,3 @@ namespace infra
         return std::numeric_limits<std::size_t>::max();
     }
 }
-

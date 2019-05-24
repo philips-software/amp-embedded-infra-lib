@@ -353,7 +353,7 @@ namespace services
 
     std::size_t ConnectionMbedTls::StreamWriterMbedTls::Available() const
     {
-        return connection.sendBuffer.size() - sent;
+        return connection.sendBuffer.max_size() - sent;
     }
 
     ConnectionMbedTls::StreamReaderMbedTls::StreamReaderMbedTls(ConnectionMbedTls& connection)

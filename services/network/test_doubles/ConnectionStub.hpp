@@ -37,7 +37,7 @@ namespace services
             : public infra::StreamWriter
         {
         public:
-            explicit StreamWriterStub(ConnectionStub& connection);
+            explicit StreamWriterStub(ConnectionStub& connection, std::size_t size);
 
         private:
             virtual void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
@@ -45,6 +45,8 @@ namespace services
 
         private:
             ConnectionStub& connection;
+            std::size_t size;
+            std::size_t offset = 0;
         };
 
         class StreamReaderStub

@@ -41,7 +41,7 @@ namespace services
         void RequestTime(services::IPv4Address& address);
 
         // From DatagramExchangeObserver
-        virtual void DataReceived(infra::StreamReader& reader, services::UdpSocket from) override;
+        virtual void DataReceived(infra::StreamReaderWithRewinding& reader, services::UdpSocket from) override;
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
     private:

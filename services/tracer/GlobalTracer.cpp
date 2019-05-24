@@ -1,4 +1,6 @@
+#ifdef CCOLA_HOST_BUILD
 #include "infra/stream/IoOutputStream.hpp"
+#endif
 #include "services/tracer/Tracer.hpp"
 
 namespace services

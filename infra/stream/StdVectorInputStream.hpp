@@ -1,19 +1,20 @@
-#ifndef INFRA_STRING_INPUT_STREAM_HPP
-#define INFRA_STRING_INPUT_STREAM_HPP
+#ifndef INFRA_STD_VECTOR_INPUT_STREAM_HPP
+#define INFRA_STD_VECTOR_INPUT_STREAM_HPP
 
 #include "infra/stream/InputStream.hpp"
-#include "infra/util/BoundedString.hpp"
+#include "infra/util/WithStorage.hpp"
 #include <cstdint>
+#include <vector>
 
 namespace infra
 {
-    class StringInputStreamReader
+    class StdVectorInputStreamReader
         : public StreamReaderWithRewinding
     {
     public:
-        explicit StringInputStreamReader(BoundedConstString string);
+        explicit StdVectorInputStreamReader(const std::vector<uint8_t>& vector);
 
-    public:
+    private:
         virtual void Extract(ByteRange range, StreamErrorPolicy& errorPolicy) override;
         virtual uint8_t Peek(StreamErrorPolicy& errorPolicy) override;
         virtual ConstByteRange ExtractContiguousRange(std::size_t max) override;
@@ -23,22 +24,20 @@ namespace infra
         virtual std::size_t ConstructSaveMarker() const override;
         virtual void Rewind(std::size_t marker) override;
 
-
     private:
         uint32_t offset = 0;
-        BoundedConstString string;
+        const std::vector<uint8_t>& vector;
     };
 
-    class StringInputStream
-        : public TextInputStream::WithReader<StringInputStreamReader>
+    class StdVectorInputStream
+        : public DataInputStream::WithReader<StdVectorInputStreamReader>
     {
     public:
-        template<std::size_t Max>
-            using WithStorage = infra::WithStorage<TextInputStream::WithReader<StringInputStreamReader>, infra::BoundedString::WithStorage<Max>>;
+        using WithStorage = infra::WithStorage<DataInputStream::WithReader<StdVectorInputStreamReader>, std::vector<uint8_t>>;
 
-        StringInputStream(BoundedConstString storage);
-        StringInputStream(BoundedConstString storage, const SoftFail&);
-        StringInputStream(BoundedConstString storage, const NoFail&);
+        StdVectorInputStream(std::vector<uint8_t>& storage);
+        StdVectorInputStream(std::vector<uint8_t>& storage, const SoftFail&);
+        StdVectorInputStream(std::vector<uint8_t>& storage, const NoFail&);
     };
 }
 

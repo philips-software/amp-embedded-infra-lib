@@ -11,6 +11,7 @@ ccola_component(stream_test gmock_test)
         TestOutputStreamSwitch.cpp
         TestStdStringInputStream.cpp
         TestStdStringOutputStream.cpp
+        TestStdVectorInputStream.cpp
         TestStringInputStream.cpp
         TestStringOutputStream.cpp
     )

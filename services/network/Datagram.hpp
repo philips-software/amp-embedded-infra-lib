@@ -15,7 +15,7 @@ namespace services
         : public infra::SingleObserver<DatagramExchangeObserver, DatagramExchange>
     {
     public:
-        virtual void DataReceived(infra::StreamReader& reader, UdpSocket from) = 0;
+        virtual void DataReceived(infra::StreamReaderWithRewinding& reader, UdpSocket from) = 0;
 
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) = 0;
     };

@@ -19,6 +19,7 @@ namespace services
         virtual void HeaderAvailable(HttpHeader header) = 0;
         virtual void BodyAvailable(infra::SharedPtr<infra::StreamReader>&& reader) = 0;
         virtual void BodyComplete() = 0;
+        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) {}
     };
 
     class HttpClientObserverFactory
@@ -55,6 +56,7 @@ namespace services
         virtual void Options(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) = 0;
         virtual void Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) = 0;
         virtual void Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) = 0;
+        virtual void Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) = 0;
         virtual void Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) = 0;
         virtual void Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) = 0;
 
