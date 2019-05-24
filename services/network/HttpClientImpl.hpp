@@ -68,10 +68,10 @@ namespace services
 
     protected:
         virtual void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine);
+        virtual void WriteRequest(infra::SharedPtr<infra::StreamWriter>&& writer);
 
     private:
         void ForwardStream(infra::SharedPtr<infra::StreamWriter>&& writer);
-        void WriteRequest(infra::SharedPtr<infra::StreamWriter>&& writer);
         void RequestForwardStreamOrExpectResponse();
         void HandleData();
         void BodyReceived();

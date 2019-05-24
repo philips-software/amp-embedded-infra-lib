@@ -7,11 +7,11 @@ namespace services
         , tracer(tracer)
     {}
 
-    void TracingHttpClientImpl::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+    void TracingHttpClientImpl::WriteRequest(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        tracer.Trace() << "HttpClientImpl::SendStreamAvailable; sending request:" << infra::endl;
+        tracer.Trace() << "HttpClientImpl::WriteRequest; sending request:" << infra::endl;
         request->Write(tracer.Trace());
-        HttpClientImpl::SendStreamAvailable(std::move(writer));
+        HttpClientImpl::WriteRequest(std::move(writer));
     }
 
     void TracingHttpClientImpl::DataReceived()

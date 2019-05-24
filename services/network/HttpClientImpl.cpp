@@ -190,6 +190,16 @@ namespace services
         observer->StatusAvailable(code);
     }
 
+    void HttpClientImpl::WriteRequest(infra::SharedPtr<infra::StreamWriter>&& writer)
+    {
+        infra::TextOutputStream::WithErrorPolicy stream(*writer);
+        request->Write(stream);
+        request = infra::none;
+        writer = nullptr;
+
+        RequestForwardStreamOrExpectResponse();
+    }
+
     void HttpClientImpl::ForwardStream(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         forwardStreamPtr = std::move(writer);
@@ -204,16 +214,6 @@ namespace services
         });
 
         observer->SendStreamAvailable(forwardStreamAccess.MakeShared(*forwardStreamPtr));
-    }
-
-    void HttpClientImpl::WriteRequest(infra::SharedPtr<infra::StreamWriter>&& writer)
-    {
-        infra::TextOutputStream::WithErrorPolicy stream(*writer);
-        request->Write(stream);
-        request = infra::none;
-        writer = nullptr;
-
-        RequestForwardStreamOrExpectResponse();
     }
 
     void HttpClientImpl::RequestForwardStreamOrExpectResponse()
