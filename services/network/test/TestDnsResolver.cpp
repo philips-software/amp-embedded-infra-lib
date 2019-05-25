@@ -52,7 +52,7 @@ public:
 
             EXPECT_CALL(writer, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 0 } }), testing::_));
             EXPECT_CALL(writer, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 0, 1, 0, 1 } }), testing::_));
-            resolver.SendStreamAvailable(infra::UnOwnedSharedPtr(writer));
+            datagramExchangeObserver->SendStreamAvailable(infra::UnOwnedSharedPtr(writer));
         }));
     }
 
@@ -64,7 +64,11 @@ public:
     void GiveSendStream(NameResolverResultMock& result, infra::BoundedConstString hostname, services::IPAddress dnsServer)
     {
         currentHostname = hostname;
-        EXPECT_CALL(datagramFactory, Listen(testing::Ref(resolver), services::IPVersions::both)).WillOnce(testing::Return(infra::UnOwnedSharedPtr(datagram)));
+        EXPECT_CALL(datagramFactory, Listen(testing::_, services::IPVersions::both)).WillOnce(testing::Invoke([this](services::DatagramExchangeObserver& observer, services::IPVersions versions)
+        {
+            datagramExchangeObserver = &observer;
+            return infra::UnOwnedSharedPtr(datagram);
+        }));
         ExpectAndRespondToRequestSendStream(result, hostname, dnsServer);
     }
 
@@ -317,7 +321,7 @@ public:
     void DataReceived(const std::vector<uint8_t>& response, services::UdpSocket from)
     {
         infra::StdVectorInputStream::WithStorage stream(infra::inPlace, response);
-        resolver.DataReceived(stream.Reader(), from);
+        datagramExchangeObserver->DataReceived(stream.Reader(), from);
     }
 
     const services::IPv4Address dnsServer1{ 1, 2, 3, 4 };
@@ -332,6 +336,7 @@ public:
     testing::StrictMock<NameResolverResultMock> result1;
     testing::StrictMock<NameResolverResultMock> result2;
     testing::StrictMock<services::DatagramExchangeMock> datagram;
+    services::DatagramExchangeObserver* datagramExchangeObserver = nullptr;
     testing::StrictMock<infra::StreamWriterMock> writer;
     infra::BoundedConstString currentHostname;
 };

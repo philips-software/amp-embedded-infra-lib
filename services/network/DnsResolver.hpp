@@ -15,23 +15,23 @@ namespace services
 {
     class DnsResolver
         : public NameResolver
-        , public DatagramExchangeObserver
     {
     public:
         struct DnsServers
         {
-            infra::MemoryRange<const IPAddress> dnsServers;
+            infra::MemoryRange<const IPAddress> nameServers;
         };
 
-        DnsResolver(DatagramFactory& datagramFactory, const DnsServers& dnsServers, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        DnsResolver(DatagramFactory& datagramFactory, const DnsServers& nameServers, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
         // Implementation of NameResolver
         virtual void Lookup(NameResolverResult& result) override;
         virtual void CancelLookup(NameResolverResult& result) override;
 
-        // Implementation of DatagramExchangeObserver
-        virtual void DataReceived(infra::StreamReaderWithRewinding& reader, UdpSocket from) override;
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+    private:
+        static const infra::Duration responseTimeout;
+        static const uint8_t maxAttempts = 3;
+        static const uint8_t maxRecursions = 5;
 
     private:
         struct QueryHeader
@@ -138,7 +138,7 @@ namespace services
         public:
             ReplyParser(infra::StreamReaderWithRewinding& reader, infra::BoundedString& hostname);
 
-            bool AnswerIsForCurrentQuery(UdpSocket from, const IPAddress& currentDnsServer, uint16_t queryId) const;
+            bool AnswerIsForCurrentQuery(UdpSocket from, const IPAddress& currentNameServer, uint16_t queryId) const;
             bool Error() const;
             bool Recurse() const;
             infra::Optional<IPAddress> ReadAnswerRecords();
@@ -158,6 +158,7 @@ namespace services
             void ReadCName(uint16_t resourceSize);
             void ReadCNameReference(uint8_t offsetHigh);
             bool ReadAndMatchNameServer(std::size_t nameServerPosition, std::size_t numNameServers);
+            bool IsNameServerForAdditionalRecord(std::size_t additionalRecordNameStart);
 
         private:
             infra::StreamReaderWithRewinding& reader;
@@ -169,44 +170,57 @@ namespace services
             bool hostnameMatches;
         };
 
+        class ActiveLookup
+            : private DatagramExchangeObserver
+        {
+        public:
+            ActiveLookup(DnsResolver& resolver, NameResolverResult& resolving);
+
+        private:
+            // Implementation of DatagramExchangeObserver
+            virtual void DataReceived(infra::StreamReaderWithRewinding& reader, UdpSocket from) override;
+            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+
+            void ResolveNextAttempt();
+            void ResolveRecursion();
+            void ResolveAttempt();
+            void SelectNextNameServer();
+            void TryFindAnswer(ReplyParser& replyParser);
+            void TryFindRecursiveNameServer(ReplyParser& replyParser);
+            void TryNewNameServers(ReplyParser& replyParser);
+            UdpSocket DnsUpdSocket() const;
+            std::size_t QuerySize() const;
+            void WriteHostname(infra::DataOutputStream& stream) const;
+
+        public:
+            DnsResolver& resolver;
+            infra::SharedPtr<DatagramExchange> datagramExchange;
+            uint16_t queryId;
+            NameResolverResult& resolving;
+            infra::TimerSingleShot timeoutTimer;
+            uint8_t resolveAttempts = 0;
+            uint8_t recursions = 0;
+
+            infra::BoundedString::WithStorage<253> hostname;
+            infra::BoundedVector<IPAddress>::WithMaxSize<maxAttempts> nameServers;
+            const IPAddress* currentNameServer;
+        };
+
     private:
-        void TryFindAnswer(ReplyParser& replyParser);
-        void TryFindRecursiveNameServer(ReplyParser& replyParser);
         void TryResolveNext();
         void Resolve(NameResolverResult& nameLookup);
-        void ResolveNextAttempt();
-        void ResolveRecursion();
-        void ResolveAttempt();
-        void SelectNextDnsServer();
         void NameLookupSuccess(IPAddress address);
         void NameLookupFailed();
         void NameLookupCancelled();
         void NameLookupDone(const infra::Function<void(NameResolverResult& observer), sizeof(IPAddress)>& observerCallback);
-        UdpSocket DnsUpdSocket() const;
-        std::size_t QuerySize() const;
-        void WriteHostname(infra::DataOutputStream& stream) const;
 
     private:
-        static const infra::Duration responseTimeout;
-        static const uint8_t maxAttempts = 3;
-        static const uint8_t maxRecursions = 5;
-
         DatagramFactory& datagramFactory;
         hal::SynchronousRandomDataGenerator& randomDataGenerator;
-        infra::MemoryRange<const IPAddress> dnsServers;
-        infra::BoundedVector<IPAddress>::WithMaxSize<maxAttempts> recursiveDnsServers;
-
-        const IPAddress* currentDnsServer;
-        const IPAddress* currentRecursiveDnsServer = nullptr;
+        infra::MemoryRange<const IPAddress> nameServers;
+        std::size_t currentNameServer = 0;
         infra::IntrusiveList<NameResolverResult> waiting;
-        infra::SharedPtr<DatagramExchange> datagramExchange;
-        NameResolverResult* resolving = nullptr;
-        infra::TimerSingleShot timeoutTimer;
-        uint8_t resolveAttempts;
-        uint8_t recursions;
-        uint16_t queryId;
-
-        infra::BoundedString::WithStorage<253> hostname;
+        infra::Optional<ActiveLookup> activeLookup;
     };
 }
 
