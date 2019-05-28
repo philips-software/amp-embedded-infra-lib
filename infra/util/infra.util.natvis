@@ -26,6 +26,17 @@
     </Expand>
   </Type>
 
+  <Type Name="infra::MemoryRange&lt;*&gt;">
+    <DisplayString>{{ size={endElement - beginElement} }</DisplayString>
+    <Expand>
+      <Item Name="[size]">endElement - beginElement</Item>
+      <ArrayItems>
+        <Size>endElement - beginElement</Size>
+        <ValuePointer>beginElement</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
   <Type Name="infra::Function&lt;*&gt;">
     <DisplayString Condition="invokerFunctions.virtualMethodTable == nullptr">empty</DisplayString>
     <DisplayString>{invokerFunctions.data}</DisplayString>
