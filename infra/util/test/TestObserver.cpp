@@ -107,7 +107,7 @@ TEST(ObserverTest, notify_two_observers_with_shortcut_call)
     MyObserver observer2(subject);
 
     EXPECT_CALL(observer1, Callback());
-    subject.NotifyObservers([](MyObserver& o) { o.Callback(); return true; });
+    EXPECT_TRUE(subject.NotifyObservers([](MyObserver& o) { o.Callback(); return true; }));
 }
 
 TEST(ObserverTest, notify_two_observers_without_shortcut_call)
@@ -119,7 +119,7 @@ TEST(ObserverTest, notify_two_observers_without_shortcut_call)
 
     EXPECT_CALL(observer1, Callback());
     EXPECT_CALL(observer2, Callback());
-    subject.NotifyObservers([](MyObserver& o) { o.Callback(); return false; });
+    EXPECT_FALSE(subject.NotifyObservers([](MyObserver& o) { o.Callback(); return false; }));
 }
 
 TEST(ObserverTest, RegisterAfterConstruction)
