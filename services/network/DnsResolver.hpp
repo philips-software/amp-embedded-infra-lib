@@ -76,6 +76,7 @@ namespace services
         struct Answer
         {
             IPAddress address;
+            infra::TimePoint validUntil;
         };
 
         struct CName
@@ -141,7 +142,7 @@ namespace services
             bool AnswerIsForCurrentQuery(UdpSocket from, const IPAddress& currentNameServer, uint16_t queryId) const;
             bool Error() const;
             bool Recurse() const;
-            infra::Optional<IPAddress> ReadAnswerRecords();
+            infra::Optional<std::pair<IPAddress, infra::TimePoint>> ReadAnswerRecords();
             void ReadNameServers(infra::BoundedVector<IPAddress>& recursiveDnsServers);
 
         private:
@@ -211,10 +212,10 @@ namespace services
     private:
         void TryResolveNext();
         void Resolve(NameResolverResult& nameLookup);
-        void NameLookupSuccess(NameResolverResult& nameLookup, IPAddress address);
+        void NameLookupSuccess(NameResolverResult& nameLookup, IPAddress address, infra::TimePoint validUntil);
         void NameLookupFailed(NameResolverResult& nameLookup);
         void NameLookupCancelled();
-        void NameLookupDone(const infra::Function<void(), sizeof(IPAddress) + sizeof(void*)>& observerCallback);
+        void NameLookupDone(const infra::Function<void(), 3 * sizeof(void*)>& observerCallback);
 
     private:
         DatagramFactory& datagramFactory;

@@ -17,7 +17,7 @@ namespace
     public:
         MOCK_CONST_METHOD0(Hostname, infra::BoundedConstString());
         MOCK_CONST_METHOD0(Versions, services::IPVersions());
-        MOCK_METHOD1(NameLookupDone, void(services::IPAddress address));
+        MOCK_METHOD2(NameLookupDone, void(services::IPAddress address, infra::TimePoint validUntil));
         MOCK_METHOD0(NameLookupFailed, void());
     };
 }
@@ -124,19 +124,19 @@ public:
 
     std::vector<uint8_t> MakeAnswerA(const std::vector<uint8_t>& name, services::IPv4Address answer)
     {
-        std::vector<uint8_t> resourceInner{ { 0, 1, 0, 1, 0, 0, 0, 30, 0, 4 } };
+        std::vector<uint8_t> resourceInner{ { 0, 1, 0, 1, 0, 1, 0, 30, 0, 4 } };
         return Concatenate({ name, resourceInner, ConvertDns(answer) });
     }
 
     std::vector<uint8_t> MakeAnswerCName(const std::vector<uint8_t>& name, infra::BoundedConstString answer)
     {
-        std::vector<uint8_t> resourceInner{ { 0, 5, 0, 1, 0, 0, 0, 30, 0, static_cast<uint8_t>(answer.size() + 2) } };
+        std::vector<uint8_t> resourceInner{ { 0, 5, 0, 1, 0, 1, 0, 30, 0, static_cast<uint8_t>(answer.size() + 2) } };
         return Concatenate({ name, resourceInner, ConvertDns(answer) });
     }
 
     std::vector<uint8_t> MakeAnswerNS(const std::vector<uint8_t>& name, infra::BoundedConstString answer)
     {
-        std::vector<uint8_t> resourceInner{ { 0, 2, 0, 1, 0, 0, 0, 30, 0, static_cast<uint8_t>(answer.size() + 2) } };
+        std::vector<uint8_t> resourceInner{ { 0, 2, 0, 1, 0, 1, 0, 30, 0, static_cast<uint8_t>(answer.size() + 2) } };
         return Concatenate({ name, resourceInner, ConvertDns(answer) });
     }
 
@@ -208,7 +208,7 @@ public:
         std::vector<uint8_t> header(MakeHeader(1));
         std::vector<uint8_t> question(MakeQuestion(hostname));
         std::vector<uint8_t> nameReference{ { 0xc0, 0x0c } };
-        std::vector<uint8_t> resourceInner{ { 0, 5, 0, 1, 0, 0, 0, 30, 0, static_cast<uint8_t>(alias.size() + 2) } };
+        std::vector<uint8_t> resourceInner{ { 0, 5, 0, 1, 0, 1, 0, 30, 0, static_cast<uint8_t>(alias.size() + 2) } };
 
         resourceInner.back() -= static_cast<uint8_t>(alias.size() - alias.rfind('.') - 1);
         std::vector<uint8_t> aliasData(ConvertDns(alias));
@@ -313,7 +313,7 @@ public:
         result[7] = 2;  // 2 answers
 
         std::vector<uint8_t> nameReference{ { 0xc0, 0x0c } };
-        std::vector<uint8_t> resourceInner{ { 0, 1, 0, 1, 0, 0, 0, 30, 0, 4 } };
+        std::vector<uint8_t> resourceInner{ { 0, 1, 0, 1, 0, 1, 0, 30, 0, 4 } };
 
         return Concatenate({ result, nameReference, resourceInner, ConvertDns(address) });
     }
@@ -339,6 +339,7 @@ public:
     services::DatagramExchangeObserver* datagramExchangeObserver = nullptr;
     testing::StrictMock<infra::StreamWriterMock> writer;
     infra::BoundedConstString currentHostname;
+    infra::TimePoint expiration = infra::Now() + std::chrono::seconds(0x10000) + std::chrono::seconds(30);
 };
 
 TEST_F(DnsResolverTest, Lookup_starts_dns_lookup)
@@ -413,7 +414,7 @@ TEST_F(DnsResolverTest, response_results_in_Successful)
 {
     LookupAndGiveSendStream(result1, "hostname.com", dnsServer2);
 
-    EXPECT_CALL(result1, NameLookupDone(services::IPAddress(hostAddress1)));
+    EXPECT_CALL(result1, NameLookupDone(services::IPAddress(hostAddress1), expiration));
     DataReceived(MakeDnsResponse("hostname.com", hostAddress1), services::Udpv4Socket{ dnsServer2, 53 });
 }
 
@@ -421,7 +422,7 @@ TEST_F(DnsResolverTest, response_with_uncompressed_host_in_answer_results_in_Suc
 {
     LookupAndGiveSendStream(result1, "hostname.com", dnsServer2);
 
-    EXPECT_CALL(result1, NameLookupDone(services::IPAddress(hostAddress1)));
+    EXPECT_CALL(result1, NameLookupDone(services::IPAddress(hostAddress1), expiration));
     DataReceived(MakeDnsResponseWithUncompressedHost("hostname.com", hostAddress1), services::Udpv4Socket{ dnsServer2, 53 });
 }
 
@@ -467,7 +468,7 @@ TEST_F(DnsResolverTest, response_in_second_answer_results_in_Successful)
 {
     LookupAndGiveSendStream(result1, "hostname.com", dnsServer2);
 
-    EXPECT_CALL(result1, NameLookupDone(services::IPAddress(hostAddress1)));
+    EXPECT_CALL(result1, NameLookupDone(services::IPAddress(hostAddress1), expiration));
     DataReceived(MakeDnsResponseWithSecondAnswer("hostname.com", hostAddress1), services::Udpv4Socket{ dnsServer2, 53 });
 }
 
@@ -525,7 +526,7 @@ TEST_F(DnsResolverTest, cname_with_answer_results_in_success)
 {
     LookupAndGiveSendStream(result1, "hostname.com", dnsServer2);
 
-    EXPECT_CALL(result1, NameLookupDone(services::IPAddress(hostAddress1)));
+    EXPECT_CALL(result1, NameLookupDone(services::IPAddress(hostAddress1), expiration));
     DataReceived(MakeDnsResponseWithCNameAndAnswer("hostname.com", "cname.com", hostAddress1), services::Udpv4Socket{ dnsServer2, 53 });
 }
 

@@ -59,7 +59,7 @@ namespace services
 
             // Implementation of NameResolverResult
             virtual infra::BoundedConstString Hostname() const override;
-            virtual void NameLookupDone(IPAddress address) override;
+            virtual void NameLookupDone(IPAddress address, infra::TimePoint validUntil) override;
             virtual void NameLookupFailed() override;
 
             // Implementation of ClientConnectionObserverFactory

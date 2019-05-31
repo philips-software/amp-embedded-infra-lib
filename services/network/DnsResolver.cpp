@@ -24,7 +24,7 @@ namespace services
 
     void DnsResolver::CancelLookup(NameResolverResult& result)
     {
-        if (activeLookup->IsResolving(result))
+        if (!activeLookup->IsResolving(result))
         {
             assert(waiting.has_element(result));
             waiting.erase(result);
@@ -50,9 +50,9 @@ namespace services
             currentNameServer = 0;
     }
 
-    void DnsResolver::NameLookupSuccess(NameResolverResult& nameLookup, IPAddress address)
+    void DnsResolver::NameLookupSuccess(NameResolverResult& nameLookup, IPAddress address, infra::TimePoint validUntil)
     {
-        NameLookupDone([&nameLookup, address]() { nameLookup.NameLookupDone(address); });
+        NameLookupDone([&nameLookup, &address, &validUntil]() { nameLookup.NameLookupDone(address, validUntil); });
     }
 
     void DnsResolver::NameLookupFailed(NameResolverResult& nameLookup)
@@ -65,7 +65,7 @@ namespace services
         NameLookupDone([]() {});
     }
 
-    void DnsResolver::NameLookupDone(const infra::Function<void(), sizeof(IPAddress) + sizeof(void*)>& observerCallback)
+    void DnsResolver::NameLookupDone(const infra::Function<void(), 3 * sizeof(void*)>& observerCallback)
     {
         activeLookup = infra::none;
         observerCallback();
@@ -127,14 +127,14 @@ namespace services
         return recurse;
     }
 
-    infra::Optional<IPAddress> DnsResolver::ReplyParser::ReadAnswerRecords()
+    infra::Optional<std::pair<IPAddress, infra::TimePoint>> DnsResolver::ReplyParser::ReadAnswerRecords()
     {
         for (uint16_t answerIndex = 0; answerIndex != header.answersCount; ++answerIndex)
         {
             auto answer = ReadAnswer();
 
             if (answer.Is<Answer>())
-                return infra::MakeOptional(answer.Get<Answer>().address);
+                return infra::MakeOptional(std::make_pair(answer.Get<Answer>().address, answer.Get<Answer>().validUntil));
             else if (answer.Is<CName>())
                 recurse = true;
         }
@@ -191,7 +191,7 @@ namespace services
                 auto address = stream.Extract<IPv4Address>();
 
                 if (!stream.Failed())
-                    return Answer{ address };
+                    return Answer{ address, infra::Now() + std::chrono::seconds((resourceInner.ttl1 << 16) + resourceInner.ttl2) };
                 return NoAnswer{};
             }
         }
@@ -469,7 +469,7 @@ namespace services
     {
         auto answer = replyParser.ReadAnswerRecords();
         if (answer != infra::none)
-            resolver.NameLookupSuccess(resolving, *answer);
+            resolver.NameLookupSuccess(resolving, answer->first, answer->second);
         else
             TryFindRecursiveNameServer(replyParser);
     }
