@@ -8,19 +8,7 @@
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "services/network/DnsResolver.hpp"
 #include "services/network/test_doubles/DatagramMock.hpp"
-
-namespace
-{
-    class NameResolverResultMock
-        : public services::NameResolverResult
-    {
-    public:
-        MOCK_CONST_METHOD0(Hostname, infra::BoundedConstString());
-        MOCK_CONST_METHOD0(Versions, services::IPVersions());
-        MOCK_METHOD2(NameLookupDone, void(services::IPAddress address, infra::TimePoint validUntil));
-        MOCK_METHOD0(NameLookupFailed, void());
-    };
-}
+#include "services/network/test_doubles/NameResolverMock.hpp"
 
 class DnsResolverTest
     : public testing::TestWithParam<int>
@@ -32,13 +20,13 @@ public:
         EXPECT_CALL(randomDataGenerator, GenerateRandomData(testing::_)).WillRepeatedly(testing::Invoke([](infra::ByteRange result) { std::fill(result.begin(), result.end(), 9); }));
     }
 
-    auto&& ExpectRequestSendStream(NameResolverResultMock& result, infra::BoundedConstString hostname, services::IPAddress dnsServer)
+    auto&& ExpectRequestSendStream(services::NameResolverResultMock& result, infra::BoundedConstString hostname, services::IPAddress dnsServer)
     {
         EXPECT_CALL(result, Hostname()).Times(testing::AnyNumber()).WillRepeatedly(testing::Return(hostname));
         return EXPECT_CALL(datagram, RequestSendStream(18 + hostname.size(), services::MakeUdpSocket(dnsServer, 53)));
     }
 
-    void ExpectAndRespondToRequestSendStream(NameResolverResultMock& result, infra::BoundedConstString hostname, services::IPAddress dnsServer)
+    void ExpectAndRespondToRequestSendStream(services::NameResolverResultMock& result, infra::BoundedConstString hostname, services::IPAddress dnsServer)
     {
         ExpectRequestSendStream(result, hostname, dnsServer).WillOnce(testing::Invoke([this, &result, hostname](std::size_t sendSize, services::UdpSocket remote) {
             EXPECT_CALL(writer, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 9, 9, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0 } }), testing::_));
@@ -56,12 +44,12 @@ public:
         }));
     }
 
-    void Lookup(NameResolverResultMock& result)
+    void Lookup(services::NameResolverResultMock& result)
     {
         resolver.Lookup(result);
     }
 
-    void GiveSendStream(NameResolverResultMock& result, infra::BoundedConstString hostname, services::IPAddress dnsServer)
+    void GiveSendStream(services::NameResolverResultMock& result, infra::BoundedConstString hostname, services::IPAddress dnsServer)
     {
         currentHostname = hostname;
         EXPECT_CALL(datagramFactory, Listen(testing::_, services::IPVersions::both)).WillOnce(testing::Invoke([this](services::DatagramExchangeObserver& observer, services::IPVersions versions)
@@ -72,13 +60,13 @@ public:
         ExpectAndRespondToRequestSendStream(result, hostname, dnsServer);
     }
 
-    void LookupAndGiveSendStream(NameResolverResultMock& result, infra::BoundedConstString hostname, services::IPAddress dnsServer)
+    void LookupAndGiveSendStream(services::NameResolverResultMock& result, infra::BoundedConstString hostname, services::IPAddress dnsServer)
     {
         GiveSendStream(result, hostname, dnsServer);
         Lookup(result);
     }
 
-    void LookupIsRetried(NameResolverResultMock& result, infra::BoundedConstString hostname, services::IPAddress dnsServer)
+    void LookupIsRetried(services::NameResolverResultMock& result, infra::BoundedConstString hostname, services::IPAddress dnsServer)
     {
         ExpectAndRespondToRequestSendStream(result, currentHostname, dnsServer);
         ForwardTime(std::chrono::seconds(5));
@@ -333,8 +321,8 @@ public:
     const std::array<services::IPAddress, 2> dnsServers{ dnsServer1, dnsServer2 };
     testing::StrictMock<hal::SynchronousRandomDataGeneratorMock> randomDataGenerator;
     services::DnsResolver resolver{ datagramFactory, { dnsServers }, randomDataGenerator };
-    testing::StrictMock<NameResolverResultMock> result1;
-    testing::StrictMock<NameResolverResultMock> result2;
+    testing::StrictMock<services::NameResolverResultMock> result1;
+    testing::StrictMock<services::NameResolverResultMock> result2;
     testing::StrictMock<services::DatagramExchangeMock> datagram;
     services::DatagramExchangeObserver* datagramExchangeObserver = nullptr;
     testing::StrictMock<infra::StreamWriterMock> writer;
