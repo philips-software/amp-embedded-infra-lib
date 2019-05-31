@@ -38,6 +38,8 @@ ccola_component(network static_library)
         MqttClientImpl.cpp
         Multicast.hpp
         NameResolver.hpp
+        NameResolverCache.cpp
+        NameResolverCache.hpp
         SntpClient.cpp
         SntpClient.hpp
         StreamEcho.cpp
