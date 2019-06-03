@@ -284,6 +284,7 @@ macro(ccola_external_libraries)
 		ccola_assert(CCOLA_COMPONENT_NAME "This command may only be used in a component")
 
 		list(APPEND CCOLA_COMPONENT_EXTERNAL_LIBRARIES ${ARGV})
+		ccola_list_remove_duplicates(CCOLA_COMPONENT_EXTERNAL_LIBRARIES)
 	endif()
 
 endmacro()
