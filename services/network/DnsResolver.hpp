@@ -1,5 +1,5 @@
-#ifndef SERVICES_DNS_NAME_LOOKUP_HPP
-#define SERVICES_DNS_NAME_LOOKUP_HPP
+#ifndef SERVICES_DNS_NAME_RESOLVER_HPP
+#define SERVICES_DNS_NAME_RESOLVER_HPP
 
 #include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
 #include "infra/timer/Timer.hpp"
@@ -76,6 +76,7 @@ namespace services
         struct Answer
         {
             IPAddress address;
+            infra::TimePoint validUntil;
         };
 
         struct CName
@@ -141,7 +142,7 @@ namespace services
             bool AnswerIsForCurrentQuery(UdpSocket from, const IPAddress& currentNameServer, uint16_t queryId) const;
             bool Error() const;
             bool Recurse() const;
-            infra::Optional<IPAddress> ReadAnswerRecords();
+            infra::Optional<std::pair<IPAddress, infra::TimePoint>> ReadAnswerRecords();
             void ReadNameServers(infra::BoundedVector<IPAddress>& recursiveDnsServers);
 
         private:
@@ -176,6 +177,8 @@ namespace services
         public:
             ActiveLookup(DnsResolver& resolver, NameResolverResult& resolving);
 
+            bool IsResolving(NameResolverResult& resolving) const;
+
         private:
             // Implementation of DatagramExchangeObserver
             virtual void DataReceived(infra::StreamReaderWithRewinding& reader, UdpSocket from) override;
@@ -192,7 +195,7 @@ namespace services
             std::size_t QuerySize() const;
             void WriteHostname(infra::DataOutputStream& stream) const;
 
-        public:
+        private:
             DnsResolver& resolver;
             infra::SharedPtr<DatagramExchange> datagramExchange;
             uint16_t queryId;
@@ -209,10 +212,10 @@ namespace services
     private:
         void TryResolveNext();
         void Resolve(NameResolverResult& nameLookup);
-        void NameLookupSuccess(IPAddress address);
-        void NameLookupFailed();
+        void NameLookupSuccess(NameResolverResult& nameLookup, IPAddress address, infra::TimePoint validUntil);
+        void NameLookupFailed(NameResolverResult& nameLookup);
         void NameLookupCancelled();
-        void NameLookupDone(const infra::Function<void(NameResolverResult& observer), sizeof(IPAddress)>& observerCallback);
+        void NameLookupDone(const infra::Function<void(), 3 * sizeof(void*)>& observerCallback);
 
     private:
         DatagramFactory& datagramFactory;

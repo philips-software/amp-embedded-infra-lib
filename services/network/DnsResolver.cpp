@@ -24,7 +24,7 @@ namespace services
 
     void DnsResolver::CancelLookup(NameResolverResult& result)
     {
-        if (&activeLookup->resolving != &result)
+        if (!activeLookup->IsResolving(result))
         {
             assert(waiting.has_element(result));
             waiting.erase(result);
@@ -50,26 +50,25 @@ namespace services
             currentNameServer = 0;
     }
 
-    void DnsResolver::NameLookupSuccess(IPAddress address)
+    void DnsResolver::NameLookupSuccess(NameResolverResult& nameLookup, IPAddress address, infra::TimePoint validUntil)
     {
-        NameLookupDone([address](NameResolverResult& observer) { observer.NameLookupDone(address); });
+        NameLookupDone([&nameLookup, &address, &validUntil]() { nameLookup.NameLookupDone(address, validUntil); });
     }
 
-    void DnsResolver::NameLookupFailed()
+    void DnsResolver::NameLookupFailed(NameResolverResult& nameLookup)
     {
-        NameLookupDone([](NameResolverResult& observer) { observer.NameLookupFailed(); });
+        NameLookupDone([&nameLookup]() { nameLookup.NameLookupFailed(); });
     }
 
     void DnsResolver::NameLookupCancelled()
     {
-        NameLookupDone([](NameResolverResult& observer) {});
+        NameLookupDone([]() {});
     }
 
-    void DnsResolver::NameLookupDone(const infra::Function<void(NameResolverResult& observer), sizeof(IPAddress)>& observerCallback)
+    void DnsResolver::NameLookupDone(const infra::Function<void(), 3 * sizeof(void*)>& observerCallback)
     {
-        auto& resolvingCopy = activeLookup->resolving;
         activeLookup = infra::none;
-        observerCallback(resolvingCopy);
+        observerCallback();
         TryResolveNext();
     }
 
@@ -128,14 +127,14 @@ namespace services
         return recurse;
     }
 
-    infra::Optional<IPAddress> DnsResolver::ReplyParser::ReadAnswerRecords()
+    infra::Optional<std::pair<IPAddress, infra::TimePoint>> DnsResolver::ReplyParser::ReadAnswerRecords()
     {
         for (uint16_t answerIndex = 0; answerIndex != header.answersCount; ++answerIndex)
         {
             auto answer = ReadAnswer();
 
             if (answer.Is<Answer>())
-                return infra::MakeOptional(answer.Get<Answer>().address);
+                return infra::MakeOptional(std::make_pair(answer.Get<Answer>().address, answer.Get<Answer>().validUntil));
             else if (answer.Is<CName>())
                 recurse = true;
         }
@@ -192,7 +191,7 @@ namespace services
                 auto address = stream.Extract<IPv4Address>();
 
                 if (!stream.Failed())
-                    return Answer{ address };
+                    return Answer{ address, infra::Now() + std::chrono::seconds((resourceInner.ttl1 << 16) + resourceInner.ttl2) };
                 return NoAnswer{};
             }
         }
@@ -399,6 +398,11 @@ namespace services
         ResolveNextAttempt();
     }
 
+    bool DnsResolver::ActiveLookup::IsResolving(NameResolverResult& resolving) const
+    {
+        return &resolving == &this->resolving;
+    }
+
     void DnsResolver::ActiveLookup::DataReceived(infra::StreamReaderWithRewinding& reader, UdpSocket from)
     {
         ReplyParser replyParser(reader, hostname);
@@ -429,7 +433,7 @@ namespace services
     void DnsResolver::ActiveLookup::ResolveNextAttempt()
     {
         if (resolveAttempts == maxAttempts)
-            resolver.NameLookupFailed();
+            resolver.NameLookupFailed(resolving);
         else
         {
             ++resolveAttempts;
@@ -444,7 +448,7 @@ namespace services
         ++recursions;
 
         if (recursions == maxRecursions)
-            resolver.NameLookupFailed();
+            resolver.NameLookupFailed(resolving);
         else
             ResolveAttempt();
     }
@@ -465,7 +469,7 @@ namespace services
     {
         auto answer = replyParser.ReadAnswerRecords();
         if (answer != infra::none)
-            resolver.NameLookupSuccess(*answer);
+            resolver.NameLookupSuccess(resolving, answer->first, answer->second);
         else
             TryFindRecursiveNameServer(replyParser);
     }
