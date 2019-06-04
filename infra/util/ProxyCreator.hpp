@@ -6,14 +6,26 @@
 
 namespace infra
 {
-    template<class T, class... ConstructionArgs>
+    template<class T, class ConstructionArgs>
     class CreatorBase;
 
     template<class T, class... ConstructionArgs>
-    class ProxyCreator
+    class ProxyCreator;
+
+    template<class T, class ConstructionArgs>
+    class DelayedProxyCreator;
+
+    template<class T, class U, class ConstructionArgs>
+    class Creator;
+
+    template<class T, class ConstructionArgs>
+    class CreatorExternal;
+
+    template<class T, class... ConstructionArgs>
+    class ProxyCreator<T, void(ConstructionArgs...)>
     {
     public:
-        ProxyCreator(CreatorBase<T, ConstructionArgs...>& creator, ConstructionArgs... args);
+        ProxyCreator(CreatorBase<T, void(ConstructionArgs...)>& creator, ConstructionArgs... args);
         ~ProxyCreator();
 
         T& operator*();
@@ -22,33 +34,33 @@ namespace infra
         const T* operator->() const;
 
     private:
-        CreatorBase<T, ConstructionArgs...>& creator;
+        CreatorBase<T, void(ConstructionArgs...)>& creator;
     };
 
     template<class T, class... ConstructionArgs>
-    class ProxyCreator<CreatorBase<T, ConstructionArgs...>&>
-        : public ProxyCreator<T, ConstructionArgs...>
+    class ProxyCreator<CreatorBase<T, void(ConstructionArgs...)>&>
+        : public ProxyCreator<T, void(ConstructionArgs...)>
     {
     public:
-        using ProxyCreator<T, ConstructionArgs...>::ProxyCreator;
+        using ProxyCreator<T, void(ConstructionArgs...)>::ProxyCreator;
     };
 
     template<class... ConstructionArgs>
-    class ProxyCreator<void, ConstructionArgs...>
+    class ProxyCreator<void, void(ConstructionArgs...)>
     {
     public:
-        ProxyCreator(CreatorBase<void, ConstructionArgs...>& creator, ConstructionArgs... args);
+        ProxyCreator(CreatorBase<void, void(ConstructionArgs...)>& creator, ConstructionArgs... args);
         ~ProxyCreator();
 
     private:
-        CreatorBase<void, ConstructionArgs...>& creator;
+        CreatorBase<void, void(ConstructionArgs...)>& creator;
     };
 
     template<class T, class... ConstructionArgs>
-    class DelayedProxyCreator
+    class DelayedProxyCreator<T, void(ConstructionArgs...)>
     {
     public:
-        explicit DelayedProxyCreator(CreatorBase<T, ConstructionArgs...>& creator);
+        explicit DelayedProxyCreator(CreatorBase<T, void(ConstructionArgs...)>& creator);
         ~DelayedProxyCreator();
 
         void Emplace(ConstructionArgs... args);
@@ -60,20 +72,17 @@ namespace infra
         const T* operator->() const;
 
     private:
-        CreatorBase<T, ConstructionArgs...>& creator;
+        CreatorBase<T, void(ConstructionArgs...)>& creator;
     };
 
-    template<class T, class U, class... ConstructionArgs>
-    class Creator;
-
     template<class T, class... ConstructionArgs>
-    class CreatorBase
+    class CreatorBase<T, void(ConstructionArgs...)>
     {
     public:
         template<class Concrete>
-            using WithCreator = Creator<T, Concrete, ConstructionArgs...>;
+            using WithCreator = Creator<T, Concrete, void(ConstructionArgs...)>;
 
-        using ProxyCreator = infra::ProxyCreator<T, ConstructionArgs...>;
+        using ProxyCreator = infra::ProxyCreator<T, void(ConstructionArgs...)>;
 
     protected:
         CreatorBase() = default;
@@ -90,12 +99,12 @@ namespace infra
         template<class T2, class... ConstructionArgs2>
         friend class infra::ProxyCreator;
 
-        template<class T2, class... ConstructionArgs2>
+        template<class T2, class ConstructionArgs2>
         friend class DelayedProxyCreator;
     };
 
     template<class... ConstructionArgs>
-    class CreatorBase<void, ConstructionArgs...>
+    class CreatorBase<void, void(ConstructionArgs...)>
     {
     protected:
         CreatorBase() = default;
@@ -109,13 +118,13 @@ namespace infra
         template<class T2, class... ConstructionArgs2>
         friend class ProxyCreator;
 
-        template<class T2, class... ConstructionArgs2>
+        template<class T2, class ConstructionArgs2>
         friend class DelayedProxyCreator;
     };
 
     template<class T, class U, class... ConstructionArgs>
-    class Creator
-        : public CreatorBase<T, ConstructionArgs...>
+    class Creator<T, U, void(ConstructionArgs...)>
+        : public CreatorBase<T, void(ConstructionArgs...)>
     {
     public:
         Creator();
@@ -141,8 +150,8 @@ namespace infra
     };
 
     template<class U, class... ConstructionArgs>
-    class Creator<void, U, ConstructionArgs...>
-        : public CreatorBase<void, ConstructionArgs...>
+    class Creator<void, U, void(ConstructionArgs...)>
+        : public CreatorBase<void, void(ConstructionArgs...)>
     {
     public:
         Creator();
@@ -166,8 +175,8 @@ namespace infra
     };
 
     template<class T, class... ConstructionArgs>
-    class CreatorExternal
-        : public CreatorBase<T, ConstructionArgs...>
+    class CreatorExternal<T, void(ConstructionArgs...)>
+        : public CreatorBase<T, void(ConstructionArgs...)>
     {
     public:
         explicit CreatorExternal(const infra::Function<T&(ConstructionArgs...)>& emplaceFunction, const infra::Function<void()>& destroyFunction);
@@ -188,249 +197,249 @@ namespace infra
     ////    Implementation    ////
 
     template<class T, class... ConstructionArgs>
-    ProxyCreator<T, ConstructionArgs...>::ProxyCreator(CreatorBase<T, ConstructionArgs...>& creator, ConstructionArgs... args)
+    ProxyCreator<T, void(ConstructionArgs...)>::ProxyCreator(CreatorBase<T, void(ConstructionArgs...)>& creator, ConstructionArgs... args)
         : creator(creator)
     {
         creator.Emplace(args...);
     }
 
     template<class T, class... ConstructionArgs>
-    ProxyCreator<T, ConstructionArgs...>::~ProxyCreator()
+    ProxyCreator<T, void(ConstructionArgs...)>::~ProxyCreator()
     {
         creator.Destroy();
     }
 
     template<class T, class... ConstructionArgs>
-    T& ProxyCreator<T, ConstructionArgs...>::operator*()
+    T& ProxyCreator<T, void(ConstructionArgs...)>::operator*()
     {
         return creator.Get();
     }
 
     template<class T, class... ConstructionArgs>
-    const T& ProxyCreator<T, ConstructionArgs...>::operator*() const
+    const T& ProxyCreator<T, void(ConstructionArgs...)>::operator*() const
     {
         return creator.Get();
     }
 
     template<class T, class... ConstructionArgs>
-    T* ProxyCreator<T, ConstructionArgs...>::operator->()
+    T* ProxyCreator<T, void(ConstructionArgs...)>::operator->()
     {
         return &creator.Get();
     }
 
     template<class T, class... ConstructionArgs>
-    const T* ProxyCreator<T, ConstructionArgs...>::operator->() const
+    const T* ProxyCreator<T, void(ConstructionArgs...)>::operator->() const
     {
         return &creator.Get();
     }
 
     template<class... ConstructionArgs>
-    ProxyCreator<void, ConstructionArgs...>::ProxyCreator(CreatorBase<void, ConstructionArgs...>& creator, ConstructionArgs... args)
+    ProxyCreator<void, void(ConstructionArgs...)>::ProxyCreator(CreatorBase<void, void(ConstructionArgs...)>& creator, ConstructionArgs... args)
         : creator(creator)
     {
         creator.Emplace(args...);
     }
 
     template<class... ConstructionArgs>
-    ProxyCreator<void, ConstructionArgs...>::~ProxyCreator()
+    ProxyCreator<void, void(ConstructionArgs...)>::~ProxyCreator()
     {
         creator.Destroy();
     }
 
     template<class T, class... ConstructionArgs>
-    DelayedProxyCreator<T, ConstructionArgs...>::DelayedProxyCreator(CreatorBase<T, ConstructionArgs...>& creator)
+    DelayedProxyCreator<T, void(ConstructionArgs...)>::DelayedProxyCreator(CreatorBase<T, void(ConstructionArgs...)>& creator)
         : creator(creator)
     {}
 
     template<class T, class... ConstructionArgs>
-    DelayedProxyCreator<T, ConstructionArgs...>::~DelayedProxyCreator()
+    DelayedProxyCreator<T, void(ConstructionArgs...)>::~DelayedProxyCreator()
     {
         creator.Destroy();
     }
 
     template<class T, class... ConstructionArgs>
-    void DelayedProxyCreator<T, ConstructionArgs...>::Emplace(ConstructionArgs... args)
+    void DelayedProxyCreator<T, void(ConstructionArgs...)>::Emplace(ConstructionArgs... args)
     {
         creator.Emplace(args...);
     }
 
     template<class T, class... ConstructionArgs>
-    void DelayedProxyCreator<T, ConstructionArgs...>::Destroy()
+    void DelayedProxyCreator<T, void(ConstructionArgs...)>::Destroy()
     {
         creator.Destroy();
     }
 
     template<class T, class... ConstructionArgs>
-    T& DelayedProxyCreator<T, ConstructionArgs...>::operator*()
+    T& DelayedProxyCreator<T, void(ConstructionArgs...)>::operator*()
     {
         return creator.Get();
     }
 
     template<class T, class... ConstructionArgs>
-    const T& DelayedProxyCreator<T, ConstructionArgs...>::operator*() const
+    const T& DelayedProxyCreator<T, void(ConstructionArgs...)>::operator*() const
     {
         return creator.Get();
     }
 
     template<class T, class... ConstructionArgs>
-    T* DelayedProxyCreator<T, ConstructionArgs...>::operator->()
+    T* DelayedProxyCreator<T, void(ConstructionArgs...)>::operator->()
     {
         return &creator.Get();
     }
 
     template<class T, class... ConstructionArgs>
-    const T* DelayedProxyCreator<T, ConstructionArgs...>::operator->() const
+    const T* DelayedProxyCreator<T, void(ConstructionArgs...)>::operator->() const
     {
         return &creator.Get();
     }
 
     template<class T, class U, class... ConstructionArgs>
-    Creator<T, U, ConstructionArgs...>::Creator()
+    Creator<T, U, void(ConstructionArgs...)>::Creator()
     {
         emplaceFunction = [](infra::Optional<U>& object, ConstructionArgs... args) { object.Emplace(args...); };
     }
 
     template<class T, class U, class... ConstructionArgs>
-    Creator<T, U, ConstructionArgs...>::Creator(infra::Function<void(infra::Optional<U>&, ConstructionArgs...)> emplaceFunction)
+    Creator<T, U, void(ConstructionArgs...)>::Creator(infra::Function<void(infra::Optional<U>&, ConstructionArgs...)> emplaceFunction)
         : emplaceFunction(emplaceFunction)
     {}
 
     template<class T, class U, class... ConstructionArgs>
-    void Creator<T, U, ConstructionArgs...>::Emplace(ConstructionArgs... args)
+    void Creator<T, U, void(ConstructionArgs...)>::Emplace(ConstructionArgs... args)
     {
         assert(!object);
         emplaceFunction(object, args...);
     }
 
     template<class T, class U, class... ConstructionArgs>
-    void Creator<T, U, ConstructionArgs...>::Destroy()
+    void Creator<T, U, void(ConstructionArgs...)>::Destroy()
     {
         object = none;
     }
 
     template<class T, class U, class... ConstructionArgs>
-    U& Creator<T, U, ConstructionArgs...>::operator*()
+    U& Creator<T, U, void(ConstructionArgs...)>::operator*()
     {
         return GetObject();
     }
 
     template<class T, class U, class... ConstructionArgs>
-    const U& Creator<T, U, ConstructionArgs...>::operator*() const
+    const U& Creator<T, U, void(ConstructionArgs...)>::operator*() const
     {
         return GetObject();
     }
 
     template<class T, class U, class... ConstructionArgs>
-    U* Creator<T, U, ConstructionArgs...>::operator->()
+    U* Creator<T, U, void(ConstructionArgs...)>::operator->()
     {
         return &GetObject();
     }
 
     template<class T, class U, class... ConstructionArgs>
-    const U* Creator<T, U, ConstructionArgs...>::operator->() const
+    const U* Creator<T, U, void(ConstructionArgs...)>::operator->() const
     {
         return &GetObject();
     }
 
     template<class T, class U, class... ConstructionArgs>
-    T& Creator<T, U, ConstructionArgs...>::Get()
+    T& Creator<T, U, void(ConstructionArgs...)>::Get()
     {
         return *object;
     }
 
     template<class T, class U, class... ConstructionArgs>
-    const T& Creator<T, U, ConstructionArgs...>::Get() const
+    const T& Creator<T, U, void(ConstructionArgs...)>::Get() const
     {
         return *object;
     }
 
     template<class T, class U, class... ConstructionArgs>
-    U& Creator<T, U, ConstructionArgs...>::GetObject()
+    U& Creator<T, U, void(ConstructionArgs...)>::GetObject()
     {
         return *object;
     }
 
     template<class T, class U, class... ConstructionArgs>
-    const U& Creator<T, U, ConstructionArgs...>::GetObject() const
+    const U& Creator<T, U, void(ConstructionArgs...)>::GetObject() const
     {
         return *object;
     }
 
     template<class U, class... ConstructionArgs>
-    Creator<void, U, ConstructionArgs...>::Creator()
+    Creator<void, U, void(ConstructionArgs...)>::Creator()
     {
         emplaceFunction = [](infra::Optional<U>& object, ConstructionArgs... args) { object.Emplace(args...); };
     }
 
     template<class U, class... ConstructionArgs>
-    Creator<void, U, ConstructionArgs...>::Creator(infra::Function<void(infra::Optional<U>&, ConstructionArgs...)> emplaceFunction)
+    Creator<void, U, void(ConstructionArgs...)>::Creator(infra::Function<void(infra::Optional<U>&, ConstructionArgs...)> emplaceFunction)
         : emplaceFunction(emplaceFunction)
     {}
 
     template<class U, class... ConstructionArgs>
-    void Creator<void, U, ConstructionArgs...>::Emplace(ConstructionArgs... args)
+    void Creator<void, U, void(ConstructionArgs...)>::Emplace(ConstructionArgs... args)
     {
         assert(!object);
         emplaceFunction(object, args...);
     }
 
     template<class U, class... ConstructionArgs>
-    void Creator<void, U, ConstructionArgs...>::Destroy()
+    void Creator<void, U, void(ConstructionArgs...)>::Destroy()
     {
         object = none;
     }
 
     template<class U, class... ConstructionArgs>
-    U& Creator<void, U, ConstructionArgs...>::operator*()
+    U& Creator<void, U, void(ConstructionArgs...)>::operator*()
     {
         return GetObject();
     }
 
     template<class U, class... ConstructionArgs>
-    const U& Creator<void, U, ConstructionArgs...>::operator*() const
+    const U& Creator<void, U, void(ConstructionArgs...)>::operator*() const
     {
         return GetObject();
     }
 
     template<class U, class... ConstructionArgs>
-    U* Creator<void, U, ConstructionArgs...>::operator->()
+    U* Creator<void, U, void(ConstructionArgs...)>::operator->()
     {
         return &GetObject();
     }
 
     template<class U, class... ConstructionArgs>
-    const U* Creator<void, U, ConstructionArgs...>::operator->() const
+    const U* Creator<void, U, void(ConstructionArgs...)>::operator->() const
     {
         return &GetObject();
     }
 
     template<class U, class... ConstructionArgs>
-    U& Creator<void, U, ConstructionArgs...>::GetObject()
+    U& Creator<void, U, void(ConstructionArgs...)>::GetObject()
     {
         return *object;
     }
 
     template<class U, class... ConstructionArgs>
-    const U& Creator<void, U, ConstructionArgs...>::GetObject() const
+    const U& Creator<void, U, void(ConstructionArgs...)>::GetObject() const
     {
         return *object;
     }
 
     template<class T, class... ConstructionArgs>
-    CreatorExternal<T, ConstructionArgs...>::CreatorExternal(const infra::Function<T&(ConstructionArgs...)>& emplaceFunction, const infra::Function<void()>& destroyFunction)
+    CreatorExternal<T, void(ConstructionArgs...)>::CreatorExternal(const infra::Function<T&(ConstructionArgs...)>& emplaceFunction, const infra::Function<void()>& destroyFunction)
         : emplaceFunction(emplaceFunction)
         , destroyFunction(destroyFunction)
     {}
 
     template<class T, class... ConstructionArgs>
-    void CreatorExternal<T, ConstructionArgs...>::Emplace(ConstructionArgs... args)
+    void CreatorExternal<T, void(ConstructionArgs...)>::Emplace(ConstructionArgs... args)
     {
         assert(object == nullptr);
         object = &emplaceFunction(args...);
     }
 
     template<class T, class... ConstructionArgs>
-    void CreatorExternal<T, ConstructionArgs...>::Destroy()
+    void CreatorExternal<T, void(ConstructionArgs...)>::Destroy()
     {
         assert(object != nullptr);
         object = nullptr;
@@ -438,13 +447,13 @@ namespace infra
     }
 
     template<class T, class... ConstructionArgs>
-    T& CreatorExternal<T, ConstructionArgs...>::Get()
+    T& CreatorExternal<T, void(ConstructionArgs...)>::Get()
     {
         return *object;
     }
 
     template<class T, class... ConstructionArgs>
-    const T& CreatorExternal<T, ConstructionArgs...>::Get() const
+    const T& CreatorExternal<T, void(ConstructionArgs...)>::Get() const
     {
         return *object;
     }
