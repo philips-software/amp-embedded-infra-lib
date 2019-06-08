@@ -52,6 +52,16 @@ namespace infra
         return string.size() - offset;
     }
 
+    std::size_t StringInputStreamReader::ConstructSaveMarker() const
+    {
+        return offset;
+    }
+
+    void StringInputStreamReader::Rewind(std::size_t marker)
+    {
+        offset = marker;
+    }
+
     StringInputStream::StringInputStream(BoundedConstString storage)
         : TextInputStream::WithReader<StringInputStreamReader>(storage)
     {}

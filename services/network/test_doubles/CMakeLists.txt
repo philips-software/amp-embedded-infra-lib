@@ -17,6 +17,7 @@ ccola_component(network_test_doubles x86: static_library other: noncompile)
         HttpServerMock.hpp
         MqttMock.hpp
         MulticastMock.hpp
+        NameResolverMock.hpp
         SntpMock.hpp
         WiFiNetworkMock.hpp
     )

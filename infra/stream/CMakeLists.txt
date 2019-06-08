@@ -31,6 +31,8 @@ ccola_component(stream static_library)
         StdStringInputStream.hpp
         StdStringOutputStream.cpp
         StdStringOutputStream.hpp
+        StdVectorInputStream.cpp
+        StdVectorInputStream.hpp
         StreamErrorPolicy.cpp
         StreamErrorPolicy.hpp
         StreamManipulators.cpp

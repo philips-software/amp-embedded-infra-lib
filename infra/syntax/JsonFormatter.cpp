@@ -231,6 +231,14 @@ namespace infra
         return JsonArrayFormatter(*stream);
     }
 
+    JsonStringStream JsonObjectFormatter::AddString(const char* tagName)
+    {
+        InsertSeparation();
+        *stream << '"' << tagName << R"(":")";
+
+        return JsonStringStream(*stream);
+    }
+
     bool JsonObjectFormatter::Failed() const
     {
         return stream->Failed();
@@ -335,5 +343,28 @@ namespace infra
             *stream << ", ";
 
         empty = false;
+    }
+
+    JsonStringStream::JsonStringStream(infra::TextOutputStream& stream)
+        : TextOutputStream(stream)
+    {}
+
+    JsonStringStream::JsonStringStream(JsonStringStream&& other)
+        : TextOutputStream(std::move(other))
+    {
+        other.owned = false;
+    }
+
+    JsonStringStream& JsonStringStream::operator=(JsonStringStream&& other)
+    {
+        owned = other.owned;
+        other.owned = false;
+        return *this;
+    }
+
+    JsonStringStream::~JsonStringStream()
+    {
+        if (owned)
+            *this << '"';
     }
 }

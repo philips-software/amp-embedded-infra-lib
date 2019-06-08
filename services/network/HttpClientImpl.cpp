@@ -14,7 +14,7 @@ namespace services
     }
 
     HttpRequestFormatter::HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, const HttpHeaders headers)
-        : HttpRequestFormatter(verb, hostname, requestTarget, {}, headers)
+        : HttpRequestFormatter(verb, hostname, requestTarget, infra::BoundedConstString(), headers)
     {}
 
     HttpRequestFormatter::HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers)
@@ -25,11 +25,16 @@ namespace services
         , headers(headers)
     {
         if (!content.empty())
-        {
-            infra::StringOutputStream contentLengthStream(contentLength);
-            contentLengthStream << content.size();
-            contentLengthHeader.Emplace("content-length", contentLength);
-        }
+            AddContentLength(content.size());
+    }
+
+    HttpRequestFormatter::HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, std::size_t contentSize, const HttpHeaders headers)
+        : verb(verb)
+        , requestTarget(requestTarget)
+        , hostHeader("host", hostname)
+        , headers(headers)
+    {
+        AddContentLength(contentSize);
     }
 
     std::size_t HttpRequestFormatter::Size() const
@@ -53,6 +58,13 @@ namespace services
         stream << content;
     }
 
+    void HttpRequestFormatter::AddContentLength(std::size_t size)
+    {
+        infra::StringOutputStream contentLengthStream(contentLength);
+        contentLengthStream << size;
+        contentLengthHeader.Emplace("content-length", contentLength);
+    }
+
     std::size_t HttpRequestFormatter::HeadersSize() const
     {
         std::size_t headerSize = 0;
@@ -60,9 +72,9 @@ namespace services
             headerSize += (header.Size() + crlf.size());
 
         if (contentLengthHeader)
-            headerSize += contentLengthHeader->Size();
+            headerSize += contentLengthHeader->Size() + crlf.size();
 
-        headerSize += hostHeader.Size();
+        headerSize += hostHeader.Size() + crlf.size();
 
         return headerSize;
     }
@@ -108,6 +120,11 @@ namespace services
         ExecuteRequestWithContent(HttpVerb::put, requestTarget, content, headers);
     }
 
+    void HttpClientImpl::Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers)
+    {
+        ExecuteRequestWithContent(HttpVerb::put, requestTarget, contentSize, headers);
+    }
+
     void HttpClientImpl::Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
     {
         ExecuteRequestWithContent(HttpVerb::patch, requestTarget, content, headers);
@@ -131,11 +148,10 @@ namespace services
 
     void HttpClientImpl::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        infra::TextOutputStream::WithErrorPolicy stream(*writer);
-        request->Write(stream);
-        request = infra::none;
-        response.Emplace(*this, headerBuffer);
-        writer = nullptr;
+        if (forwardingStream)
+            ForwardStream(std::move(writer));
+        else
+            WriteRequest(std::move(writer));
     }
 
     void HttpClientImpl::DataReceived()
@@ -172,6 +188,42 @@ namespace services
     void HttpClientImpl::StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine)
     {
         observer->StatusAvailable(code);
+    }
+
+    void HttpClientImpl::WriteRequest(infra::SharedPtr<infra::StreamWriter>&& writer)
+    {
+        infra::TextOutputStream::WithErrorPolicy stream(*writer);
+        request->Write(stream);
+        request = infra::none;
+        writer = nullptr;
+
+        RequestForwardStreamOrExpectResponse();
+    }
+
+    void HttpClientImpl::ForwardStream(infra::SharedPtr<infra::StreamWriter>&& writer)
+    {
+        forwardStreamPtr = std::move(writer);
+        auto available = forwardStreamPtr->Available();
+        forwardStreamAccess.SetAction([this, available]()
+        {
+            streamingContentSize -= available - forwardStreamPtr->Available();
+
+            forwardStreamPtr = nullptr;
+
+            RequestForwardStreamOrExpectResponse();
+        });
+
+        observer->SendStreamAvailable(forwardStreamAccess.MakeShared(*forwardStreamPtr));
+    }
+
+    void HttpClientImpl::RequestForwardStreamOrExpectResponse()
+    {
+        forwardingStream = streamingContentSize != 0;
+
+        if (forwardingStream)
+            ConnectionObserver::Subject().RequestSendStream(std::min(streamingContentSize, ConnectionObserver::Subject().MaxSendStreamSize()));
+        else
+            response.Emplace(*this, headerBuffer);
     }
 
     void HttpClientImpl::HandleData()
@@ -243,6 +295,13 @@ namespace services
         ConnectionObserver::Subject().RequestSendStream(request->Size());
     }
 
+    void HttpClientImpl::ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, std::size_t contentSize, const HttpHeaders headers)
+    {
+        request.Emplace(verb, hostname, requestTarget, contentSize, headers);
+        streamingContentSize = contentSize;
+        ConnectionObserver::Subject().RequestSendStream(request->Size());
+    }
+
     void HttpClientImpl::AbortAndDestroy()
     {
         bodyReaderAccess.SetAction([]() {});
@@ -287,8 +346,8 @@ namespace services
         auto crlfPos = headerBuffer.find_first_of(crlf);
         if (crlfPos != infra::BoundedString::npos)
         {
-            auto statusLine = headerBuffer.substr(0, crlfPos + crlf.size());
-            reader.Rewind(statusLine.size());
+            auto statusLine = headerBuffer.substr(0, crlfPos);
+            reader.Rewind(statusLine.size() + crlf.size());
 
             infra::Tokenizer tokenizer(statusLine, ' ');
 

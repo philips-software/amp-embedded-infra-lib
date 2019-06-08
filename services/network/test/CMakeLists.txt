@@ -4,12 +4,14 @@ ccola_component(network_test gmock_test)
         TestCertificatesMbedTls.cpp
         TestConnectionMbedTls.cpp
         TestConnectionSerial.cpp
+        TestDnsResolver.cpp
         TestHttpClient.cpp
         TestHttpClientBasic.cpp
         TestHttpClientJson.cpp
         TestHttpServer.cpp
         TestLlmnrResponder.cpp
         TestMqttClient.cpp
+        TestNameResolverCache.cpp
         TestSntpClient.cpp
         TestWebSocketClient.cpp
     )

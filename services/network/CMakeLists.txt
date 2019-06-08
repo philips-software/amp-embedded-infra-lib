@@ -14,6 +14,8 @@ ccola_component(network static_library)
         ConnectionSerial.cpp
         ConnectionSerial.hpp
         Datagram.hpp
+        DnsResolver.cpp
+        DnsResolver.hpp
         Http.cpp
         Http.hpp
         HttpClient.hpp
@@ -36,6 +38,8 @@ ccola_component(network static_library)
         MqttClientImpl.cpp
         Multicast.hpp
         NameResolver.hpp
+        NameResolverCache.cpp
+        NameResolverCache.hpp
         SntpClient.cpp
         SntpClient.hpp
         StreamEcho.cpp

@@ -107,7 +107,7 @@ TEST(StringInputStreamTest, ExtractHexWithoutGoodCharacters)
 TEST(StringInputStreamTest, Consume)
 {
     infra::BoundedConstString string("abcd");
-    infra::StringInputStream stream(string, infra::softFail);
+    infra::StringInputStream stream(string, infra::noFail);
 
     EXPECT_EQ(string, infra::ByteRangeAsString(stream.PeekContiguousRange(0)));
     stream.Consume(stream.PeekContiguousRange().size());
@@ -155,4 +155,21 @@ TEST(StringInputStreamTest, FromBase64_with_insufficient_input_reports_error)
     stream >> infra::FromBase64(output);
 
     EXPECT_TRUE(stream.ErrorPolicy().Failed());
+}
+
+TEST(StringInputStreamTest, Rewind)
+{
+    infra::BoundedString::WithStorage<10> string("abcd");
+    infra::StringInputStream stream(string);
+
+    auto marker = stream.Reader().ConstructSaveMarker();
+
+    uint8_t value;
+    stream >> infra::hex >> infra::Width(2) >> value;
+    EXPECT_EQ(0xab, value);
+
+    stream.Reader().Rewind(marker);
+
+    stream >> infra::hex >> infra::Width(2) >> value;
+    EXPECT_EQ(0xab, value);
 }

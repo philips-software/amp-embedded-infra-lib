@@ -15,7 +15,18 @@ namespace hal
 
     public:
         virtual void GenerateRandomData(infra::ByteRange result) = 0;
+
+        template<class T>
+            T GenerateRandomData();
     };
+
+    template<class T>
+    T SynchronousRandomDataGenerator::GenerateRandomData()
+    {
+        T result;
+        GenerateRandomData(infra::MakeByteRange(result));
+        return result;
+    }
 }
 
 #endif

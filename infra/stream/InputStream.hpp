@@ -77,6 +77,9 @@ namespace infra
         DataInputStream& operator>>(ByteRange range);
         template<class Data>
             DataInputStream& operator>>(Data& data);
+
+        template<class Data>
+            Data Extract();
     };
 
     class TextInputStream
@@ -214,6 +217,14 @@ namespace infra
         MemoryRange<typename std::remove_const<uint8_t>::type> dataRange(ReinterpretCastMemoryRange<typename std::remove_const<uint8_t>::type>(MakeRange(&data, &data + 1)));
         Reader().Extract(dataRange, ErrorPolicy());
         return *this;
+    }
+
+    template<class Data>
+    Data DataInputStream::Extract()
+    {
+        Data result{};
+        *this >> result;
+        return result;
     }
 
     template<class TheReader>

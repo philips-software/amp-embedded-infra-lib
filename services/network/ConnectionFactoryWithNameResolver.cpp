@@ -78,7 +78,7 @@ namespace services
         return clientConnectionFactory.Hostname();
     }
 
-    void ConnectionFactoryWithNameResolverImpl::Action::NameLookupDone(IPAddress address)
+    void ConnectionFactoryWithNameResolverImpl::Action::NameLookupDone(IPAddress address, infra::TimePoint validUntil)
     {
         this->address = address;
         connectionFactory.connectionFactory.Connect(*this);
