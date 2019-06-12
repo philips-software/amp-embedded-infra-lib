@@ -95,6 +95,27 @@ namespace services
         virtual void Write() = 0;
     };
 
+    template<class T>
+    class ConfigurationStoreAccess
+    {
+    public:
+        ConfigurationStoreAccess(ConfigurationStoreInterface& configurationStore, T& configuration);
+
+        T& operator*();
+        const T& operator*() const;
+        T* operator->();
+        const T* operator->() const;
+
+        void Write();
+
+        template<class U>
+        ConfigurationStoreAccess<U> Configuration(U& member) const;
+
+    private:
+        ConfigurationStoreInterface& configurationStore;
+        T& configuration;
+    };
+
     class ConfigurationStoreBase
         : public ConfigurationStoreInterface
     {
@@ -123,6 +144,9 @@ namespace services
         };
 
         LockGuard Lock();
+
+        template<class T>
+            ConfigurationStoreAccess<T> Access(T& configuration);
 
     private:
         void OnBlobLoaded(bool success);
@@ -184,27 +208,6 @@ namespace services
         ConfigurationBlobFlash blob2;
     };
 
-    template<class T>
-    class ConfigurationStoreAccess
-    {
-    public:
-        ConfigurationStoreAccess(ConfigurationStoreInterface& configurationStore, T& configuration);
-
-        T& operator*();
-        const T& operator*() const;
-        T* operator->();
-        const T* operator->() const;
-
-        void Write();
-
-        template<class U>
-            ConfigurationStoreAccess<U> Configuration(U& member) const;
-
-    private:
-        ConfigurationStoreInterface& configurationStore;
-        T& configuration;
-    };
-
     class FactoryDefaultConfigurationStoreBase
         : public ConfigurationStoreInterface
     {
@@ -214,6 +217,9 @@ namespace services
         void Recover(const infra::Function<void()>& onLoadFactoryDefault, const infra::Function<void(bool isFactoryDefault)>& onRecovered);
         void Write(infra::Function<void()> onDone);
         virtual void Write() override;
+
+        template<class T>
+            ConfigurationStoreAccess<T> Access(T& configuration);
 
     private:
         ConfigurationStoreBase& configurationStore;
@@ -374,6 +380,18 @@ namespace services
     ConfigurationStoreAccess<U> ConfigurationStoreAccess<T>::Configuration(U& member) const
     {
         return ConfigurationStoreAccess<U>(configurationStore, member);
+    }
+
+    template<class T>
+    ConfigurationStoreAccess<T> ConfigurationStoreBase::Access(T& configuration)
+    {
+        return ConfigurationStoreAccess<T>(*this, configuration);
+    }
+
+    template<class T>
+    ConfigurationStoreAccess<T> FactoryDefaultConfigurationStoreBase::Access(T& configuration)
+    {
+        return ConfigurationStoreAccess<T>(*this, configuration);
     }
 
     template<class T>
