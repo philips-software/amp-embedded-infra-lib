@@ -40,6 +40,7 @@ ccola_component(network static_library)
         NameResolver.hpp
         NameResolverCache.cpp
         NameResolverCache.hpp
+        Network.hpp
         SntpClient.cpp
         SntpClient.hpp
         StreamEcho.cpp
