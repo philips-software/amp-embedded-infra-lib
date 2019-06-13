@@ -100,6 +100,8 @@ namespace services
     {
     public:
         ConfigurationStoreAccess(ConfigurationStoreInterface& configurationStore, T& configuration);
+        template<class U>
+            ConfigurationStoreAccess(const ConfigurationStoreAccess<U>& other);
 
         T& operator*();
         const T& operator*() const;
@@ -109,9 +111,12 @@ namespace services
         void Write();
 
         template<class U>
-        ConfigurationStoreAccess<U> Configuration(U& member) const;
+            ConfigurationStoreAccess<U> Configuration(U& member) const;
 
     private:
+        template<class U>
+            friend class ConfigurationStoreAccess;
+
         ConfigurationStoreInterface& configurationStore;
         T& configuration;
     };
@@ -343,6 +348,13 @@ namespace services
     ConfigurationStoreAccess<T>::ConfigurationStoreAccess(ConfigurationStoreInterface& configurationStore, T& configuration)
         : configurationStore(configurationStore)
         , configuration(configuration)
+    {}
+
+    template<class T>
+    template<class U>
+    ConfigurationStoreAccess<T>::ConfigurationStoreAccess(const ConfigurationStoreAccess<U>& other)
+        : configurationStore(other.configurationStore)
+        , configuration(other.configuration)
     {}
 
     template<class T>
