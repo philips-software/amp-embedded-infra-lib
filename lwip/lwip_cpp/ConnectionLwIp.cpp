@@ -205,7 +205,7 @@ namespace services
 
     ConnectionLwIp::StreamWriterLwIp::~StreamWriterLwIp()
     {
-        if (!Processed().empty())
+        if (!Processed().empty() && connection.control != nullptr)
             connection.SendBuffer(Processed());
         else
             connection.sendMemoryPool.pop_back();
