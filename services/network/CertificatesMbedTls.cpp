@@ -1,5 +1,6 @@
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include "services/network/CertificatesMbedTls.hpp"
 #include "mbedtls/pk.h"
 #include "mbedtls/oid.h"
@@ -42,28 +43,28 @@ namespace services
     void CertificatesMbedTls::AddCertificateAuthority(infra::ConstByteRange certificate)
     {
         int result = mbedtls_x509_crt_parse(&caCertificates, reinterpret_cast<const unsigned char*>(certificate.begin()), certificate.size());
-        assert(result == 0);
+        really_assert(result == 0);
     }
 
     void CertificatesMbedTls::AddCertificateAuthority(const infra::BoundedConstString& certificate)
     {
         int result = mbedtls_x509_crt_parse(&caCertificates, reinterpret_cast<const unsigned char*>(certificate.data()), certificate.size());
-        assert(result == 0);
+        really_assert(result == 0);
     }
 
     void CertificatesMbedTls::AddOwnCertificate(const infra::BoundedConstString& certificate, const infra::BoundedConstString& key)
     {
         int result = mbedtls_x509_crt_parse(&ownCertificate, reinterpret_cast<const unsigned char*>(certificate.data()), certificate.size());
-        assert(result == 0);
+        really_assert(result == 0);
         result = mbedtls_pk_parse_key(&privateKey, reinterpret_cast<const unsigned char*>(key.data()), key.size(), NULL, 0);
-        assert(result == 0);
+        really_assert(result == 0);
     }
 
     void CertificatesMbedTls::Config(mbedtls_ssl_config& sslConfig)
     {
         mbedtls_ssl_conf_ca_chain(&sslConfig, &caCertificates, nullptr);
         int result = mbedtls_ssl_conf_own_cert(&sslConfig, &ownCertificate, &privateKey);
-        assert(result == 0);
+        really_assert(result == 0);
     }
 
     void CertificatesMbedTls::GenerateNewKey(hal::SynchronousRandomDataGenerator& randomDataGenerator)
@@ -72,7 +73,7 @@ namespace services
             return;
 
         mbedtls_rsa_context* rsaContext = mbedtls_pk_rsa(privateKey);
-        assert(rsaContext != nullptr);
+        really_assert(rsaContext != nullptr);
 
         size_t keySizeInBits = mbedtls_pk_get_bitlen(&privateKey);
         int32_t exponent = ExtractExponent(*rsaContext);
@@ -168,7 +169,7 @@ namespace services
                             {
                                 auto rsaPublicKeySequence = publicKeyBitString.StartSequence();
                                 mbedtls_rsa_context* rsaContext = mbedtls_pk_rsa(privateKey);
-                                assert(rsaContext != nullptr);
+                                really_assert(rsaContext != nullptr);
 
                                 rsaPublicKeySequence.AddBigNumber(MakeByteRange(rsaContext->N));
                                 rsaPublicKeySequence.AddBigNumber(MakeByteRange(rsaContext->E));
