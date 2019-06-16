@@ -52,13 +52,22 @@ namespace infra
         : public FormatterBase
     {
     public:
+        using FormatT = typename std::conditional<
+            std::is_pointer<T>::value,
+            typename std::remove_reference<T>::type,
+            typename std::conditional<
+                std::is_integral<T>::value,
+                T,
+                T&
+            >::type
+        >::type;
         explicit Formatter(const T& value);
         explicit Formatter(typename std::remove_reference<T>::type&& value);
 
         void Format(TextOutputStream& stream, FormatSpec& spec) override;
 
     private:
-        T value;
+        const FormatT value;
     };
 
     template<typename T>
@@ -86,24 +95,9 @@ namespace infra
     };
 
     template<class T>
-    struct DecayFormatType
+    Formatter<typename std::decay<T>::type> MakeFormatter(T&& v)
     {
-        using type = typename std::conditional <
-            std::is_integral<typename std::remove_reference<T>::type>::value,
-            typename std::remove_reference<T>::type,
-            T>::type;
-    };
-
-    template<std::size_t N>
-   struct DecayFormatType<const char(&)[N]>
-   {
-        using type = const char*;
-    };
-
-    template<class T>
-    Formatter<typename DecayFormatType<T>::type> MakeFormatter(T&& v)
-    {
-        return Formatter<typename DecayFormatType<T>::type>(std::forward<T>(v));
+        return Formatter<typename std::decay<T>::type>(std::forward<T>(v));
     }
 
     template<>
@@ -131,10 +125,16 @@ namespace infra
     void Formatter<uint8_t>::Format(TextOutputStream& stream, FormatSpec& spec);
 
     template<>
+    void Formatter<char>::Format(TextOutputStream& stream, FormatSpec& spec);
+
+    template<>
     void Formatter<bool>::Format(TextOutputStream& stream, FormatSpec& spec);
 
     template<>
-    void Formatter<char const*>::Format(TextOutputStream& stream, FormatSpec& spec);
+    Formatter<const char*>::Formatter(const char* const& v);
+
+    template<>
+    void Formatter<const char*>::Format(TextOutputStream& stream, FormatSpec& spec);
 
     template<class... Args>
     class FormatHelper
@@ -174,13 +174,12 @@ namespace infra
         const char* format;
         std::tuple<Args ...> args;
         std::vector<FormatterBase*> formatters{ sizeof...(Args), nullptr };
-        uint32_t autoIndex{};
     };
 
     template<class... Args>
     auto Format(const char* format, Args&&... args)
     {
-        return FormatHelper<Formatter<typename DecayFormatType<Args>::type>...>(format, MakeFormatter(std::forward<Args>(args))...);
+        return FormatHelper<Formatter<typename std::decay<Args>::type>...>(format, MakeFormatter(std::forward<Args>(args))...);
     }
 }
 #endif

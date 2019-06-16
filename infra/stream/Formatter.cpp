@@ -154,6 +154,11 @@ namespace infra
     }
 
     template<>
+    Formatter<const char*>::Formatter(const char* const & value)
+        : value(value)
+    {}
+
+    template<>
     void Formatter<int64_t>::Format(TextOutputStream& stream, FormatSpec& spec)
     {
         SignedInteger(stream, value, spec);
@@ -208,10 +213,15 @@ namespace infra
     }
 
     template<>
+    void Formatter<char>::Format(TextOutputStream& stream, FormatSpec& spec)
+    {
+        RawFormat(stream, infra::BoundedConstString(&value, sizeof(value)), spec);
+    }
+
+    template<>
     void Formatter<bool>::Format(TextOutputStream& stream, FormatSpec& spec)
     {
-        const auto str = value ? "true" : "false";
-        RawFormat(stream, str, spec);
+        RawFormat(stream, value ? "true" : "false", spec);
     }
 
     FormatWorker::FormatWorker(TextOutputStream& stream, const char* formatStr, std::vector<FormatterBase*>& formatters)
