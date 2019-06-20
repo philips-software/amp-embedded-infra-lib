@@ -220,7 +220,7 @@ namespace services
             currentBuffer = currentBuffer->next;
         }
 
-        infra::ConstByteRange result = infra::Head(infra::ConstByteRange(reinterpret_cast<const uint8_t*>(currentBuffer->payload),
+        infra::ConstByteRange result = infra::Head(infra::ConstByteRange(reinterpret_cast<const uint8_t*>(currentBuffer->payload) + offset,
             reinterpret_cast<const uint8_t*>(currentBuffer->payload) + currentBuffer->len), max);
         bufferOffset += static_cast<uint16_t>(result.size());
         return result;
@@ -235,7 +235,7 @@ namespace services
 
     bool DatagramExchangeLwIP::UdpReader::Empty() const
     {
-        return Available() != 0;
+        return Available() == 0;
     }
 
     std::size_t DatagramExchangeLwIP::UdpReader::Available() const
