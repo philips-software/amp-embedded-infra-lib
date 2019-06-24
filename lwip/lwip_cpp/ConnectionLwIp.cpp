@@ -315,9 +315,11 @@ namespace services
 
     ConnectorLwIp::~ConnectorLwIp()
     {
-        control->errf = nullptr;    // Avoid tcp_abort triggering callback Err
         if (control != nullptr)
+        {
+            control->errf = nullptr;    // Avoid tcp_abort triggering callback Err
             tcp_abort(control);
+        }
     }
 
     err_t ConnectorLwIp::StaticConnected(void* arg, tcp_pcb* tpcb, err_t err)
