@@ -1,5 +1,7 @@
 #include "gmock/gmock.h"
 #include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
+#include "infra/stream/ByteOutputStream.hpp"
+#include "infra/stream/StringInputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
@@ -179,6 +181,34 @@ TEST_F(HttpServerTest, send_100_response_when_expect_100_in_header)
     EXPECT_EQ(std::vector<uint8_t>(expectedResponseFirstPart.begin(), expectedResponseFirstPart.end()), responseFirstPart);
 
     EXPECT_CALL(connection, CloseAndDestroyMock());
+}
+
+TEST_F(HttpServerTest, split_response_when_not_enough_available_in_stream)
+{
+    testing::StrictMock<services::ConnectionMock> connection;
+    EXPECT_CALL(connection, MaxSendStreamSize()).WillRepeatedly(testing::Return(555));
+    EXPECT_CALL(connection, RequestSendStream(555)).Times(testing::AnyNumber());
+    connectionFactoryMock.NewConnection(connection, services::IPv4AddressLocalHost());
+
+    infra::BoundedConstString request = "GET /path HTTP/1.1 \r\n\r\n";
+    infra::StringInputStreamReader reader(request);
+    auto readerPtr = infra::UnOwnedSharedPtr(reader);
+    EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
+    EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(true));
+    EXPECT_CALL(connection, AckReceived());
+    EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(infra::Lambda([this](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
+    {
+        httpConnection = &connection;
+        SendResponse("200 OK", "application/text", "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789");
+    }));
+
+    infra::StringOutputStream::WithStorage<80> stream1;
+    connection.GetObserver().SendStreamAvailable(infra::UnOwnedSharedPtr(stream1.Writer()));
+    EXPECT_EQ("HTTP/1.1 200 OK\r\nContent-Length: 100\r\nContent-Type: application/text\r\n\r\n01234567", stream1.Storage());
+
+    infra::StringOutputStream::WithStorage<80> stream2;
+    connection.GetObserver().SendStreamAvailable(infra::UnOwnedSharedPtr(stream2.Writer()));
+    EXPECT_EQ("89012345678901234567890123456789012345678901234567890123456789012345678901234567", stream2.Storage());
 }
 
 TEST_F(HttpServerTest, second_connection_forces_idle_connection_to_close)

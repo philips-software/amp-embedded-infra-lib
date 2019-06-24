@@ -137,6 +137,7 @@ namespace services
         void RequestSendStream();
         void PrepareForNextRequest();
         bool Expect100(HttpRequestParser& request) const;
+        void SendBuffer();
 
     protected:
         infra::SharedPtr<infra::StreamWriter> streamWriter;
@@ -149,6 +150,7 @@ namespace services
         bool closeWhenIdle = false;
         bool idle = false;
         bool requestInProgress = false;
+        bool sendingResponse = false;
         infra::TimerSingleShot initialIdle;
     };
 

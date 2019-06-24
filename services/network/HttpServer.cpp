@@ -108,7 +108,11 @@ namespace services
     void HttpServerConnectionObserver::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         streamWriter = std::move(writer);
-        DataReceived();
+
+        if (sendingResponse)
+            SendBuffer();
+        else
+            DataReceived();
     }
 
     void HttpServerConnectionObserver::DataReceived()
@@ -158,9 +162,7 @@ namespace services
         if (send100Response)
             stream << "HTTP/1.1 100 Continue\r\nContent-Length: 0\r\nContent-Type: application/json\r\nStrict-Transport-Security: max-age=31536000\r\n\r\n";
 
-        stream << buffer;
-
-        PrepareForNextRequest();
+        SendBuffer();
     }
 
     void HttpServerConnectionObserver::TakeOverConnection(ConnectionObserver& newObserver)
@@ -260,6 +262,21 @@ namespace services
     bool HttpServerConnectionObserver::Expect100(HttpRequestParser& request) const
     {
         return request.Header("Expect") == "100-continue";
+    }
+
+    void HttpServerConnectionObserver::SendBuffer()
+    {
+        infra::TextOutputStream::WithErrorPolicy stream(*streamWriter);
+
+        auto available = stream.Available();
+        stream << buffer.substr(0, available);
+        buffer.erase(0, available);
+
+        sendingResponse = !buffer.empty();
+        if (sendingResponse)
+            RequestSendStream();
+        else
+            PrepareForNextRequest();
     }
 
     DefaultHttpServer::DefaultHttpServer(infra::BoundedString& buffer, ConnectionFactory& connectionFactory, uint16_t port)
