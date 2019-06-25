@@ -142,7 +142,11 @@ namespace services
             case IPVersions::ipv6:
                 return udp_new_ip_type(IPADDR_TYPE_V6);
             case IPVersions::both:
+#ifdef ESP_PLATFORM
+                return udp_new_ip_type(IPADDR_TYPE_V4);
+#else
                 return udp_new_ip_type(IPADDR_TYPE_ANY);
+#endif
             default:
                 std::abort();
         }
@@ -154,7 +158,7 @@ namespace services
         {
             case IPVersions::ipv4:
 #ifdef ESP_PLATFORM
-				return IP_ADDR_ANY;
+                return IP_ADDR_ANY;
 #else
                 return IP4_ADDR_ANY;
 #endif
