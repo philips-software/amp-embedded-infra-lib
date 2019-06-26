@@ -17,6 +17,17 @@ namespace application
 
             return namespaceString + descriptor.name();
         }
+
+        std::string QualifiedReferenceName(const google::protobuf::Descriptor& descriptor)
+        {
+            std::string namespaceString;
+
+            namespaceString = descriptor.file()->package() + "::";
+            for (auto containingType = descriptor.containing_type(); containingType != nullptr; containingType = containingType->containing_type())
+                namespaceString += containingType->name() + "Reference::";
+
+            return namespaceString + descriptor.name() + "Reference";
+        }
     }
 
     EchoField::EchoField(const google::protobuf::FieldDescriptor& descriptor)
@@ -29,6 +40,7 @@ namespace application
         : descriptor(descriptor)
         , name(descriptor.name())
         , qualifiedName(QualifiedName(descriptor))
+        , qualifiedReferenceName(QualifiedReferenceName(descriptor))
     {
         for (int i = 0; i != descriptor.nested_type_count(); ++i)
             nestedMessages.push_back(root.AddMessage(*descriptor.nested_type(i)));
