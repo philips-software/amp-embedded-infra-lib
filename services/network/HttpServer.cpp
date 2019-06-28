@@ -95,10 +95,6 @@ namespace services
             })
     {}
 
-    HttpServerConnectionObserver::HttpServerConnectionObserver(const DefaultConnectionCreationContext& creationContext)
-        : HttpServerConnectionObserver(creationContext.buffer, creationContext.httpServer)
-    {}
-
     void HttpServerConnectionObserver::Connected()
     {
         connection = &Subject();
@@ -279,8 +275,86 @@ namespace services
             PrepareForNextRequest();
     }
 
+    HttpServerConnectionObserverFactoryImpl::HttpServerConnectionObserverFactoryImpl(const HttpServerConnectionObserverFactoryImpl::Creators& creators)
+        : observerCreator(creators.observerCreator)
+        , connectionObserver([this]() { this->onAllocatable(); })
+    {}
+
+    infra::SharedPtr<HttpServerConnectionObserver> HttpServerConnectionObserverFactoryImpl::Emplace()
+    {
+        auto pointer = connectionObserver.Emplace(observerCreator);
+        return infra::MakeContainedSharedObject(**connectionObserver, pointer);
+    }
+
+    void HttpServerConnectionObserverFactoryImpl::OnAllocatable(infra::Function<void()> onAllocatable)
+    {
+        this->onAllocatable = onAllocatable;
+    }
+
+    bool HttpServerConnectionObserverFactoryImpl::Allocatable() const
+    {
+        return connectionObserver.Allocatable();
+    }
+
+    bool HttpServerConnectionObserverFactoryImpl::Allocated() const
+    {
+        return static_cast<bool>(connectionObserver);
+    }
+
+    HttpServerConnectionObserver& HttpServerConnectionObserverFactoryImpl::Get()
+    {
+        return **connectionObserver;
+    }
+
+    SingleConnectionHttpServer::SingleConnectionHttpServer(const HttpServerConnectionObserverFactoryImpl::Creators& creators, ConnectionFactory& connectionFactory, uint16_t port)
+        : factory(creators)
+    {
+        factory.OnAllocatable([this]() { ObserverAllocatable(); });
+        listener = connectionFactory.Listen(port, *this);
+    }
+
+    SingleConnectionHttpServer::~SingleConnectionHttpServer()
+    {
+        really_assert(factory.Allocatable());
+    }
+
+    void SingleConnectionHttpServer::Stop(const infra::Function<void()>& onDone)
+    {
+        onStopped = onDone;
+        if (!factory.Allocatable())
+        {
+            factory.OnAllocatable([this]() { onStopped(); });
+
+            if (factory.Allocated())
+                factory.Get().Close();
+        }
+        else
+            onStopped();
+    }
+
+    void SingleConnectionHttpServer::ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address)
+    {
+        this->address = address;
+        this->createdObserver = std::move(createdObserver);
+
+        if (factory.Allocatable())
+            ObserverAllocatable();
+        else if (factory.Allocated())
+            factory.Get().CloseWhenIdle();
+    }
+
+    void SingleConnectionHttpServer::ObserverAllocatable()
+    {
+        if (createdObserver)
+            createdObserver(factory.Emplace());
+    }
+
     DefaultHttpServer::DefaultHttpServer(infra::BoundedString& buffer, ConnectionFactory& connectionFactory, uint16_t port)
-        : SingleConnectionHttpServer<DefaultConnectionCreationContext>::WithFactoryFor<HttpServerConnectionObserver>(creationContext, connectionFactory, port)
-        , creationContext{ buffer, *this }
+        : SingleConnectionHttpServer({ connectionCreator }, connectionFactory, port)
+        , buffer(buffer)
+        , connectionCreator([this](infra::Optional<HttpServerConnectionObserver>& value)
+            {
+                value.Emplace(this->buffer, *this);
+            })
     {}
 }

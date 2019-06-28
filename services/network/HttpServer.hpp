@@ -3,6 +3,7 @@
 
 #include "infra/timer/Timer.hpp"
 #include "infra/util/IntrusiveForwardList.hpp"
+#include "infra/util/ProxyCreator.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "infra/util/WithStorage.hpp"
 #include "services/network/Connection.hpp"
@@ -91,12 +92,6 @@ namespace services
         virtual void RespondToRequest(HttpRequestParser& parser, HttpServerConnection& connection) = 0;
     };
 
-    struct DefaultConnectionCreationContext
-    {
-        infra::BoundedString& buffer;
-        HttpPageServer& httpServer;
-    };
-
     class HttpServerConnectionObserver
         : public ConnectionObserver
         , public HttpServerConnection
@@ -107,7 +102,6 @@ namespace services
             using WithBuffer = infra::WithStorage<HttpServerConnectionObserver, infra::BoundedString::WithStorage<BufferSize>>;
 
         HttpServerConnectionObserver(infra::BoundedString& buffer, HttpPageServer& httpServer);
-        HttpServerConnectionObserver(const DefaultConnectionCreationContext& creationContext);
 
         // Implementation of ConnectionObserver
         virtual void Connected() override;
@@ -154,7 +148,6 @@ namespace services
         infra::TimerSingleShot initialIdle;
     };
 
-    template<class ConnectionCreationContext>
     class HttpServerConnectionObserverFactory
     {
     protected:
@@ -164,41 +157,42 @@ namespace services
         ~HttpServerConnectionObserverFactory() = default;
 
     public:
-        virtual infra::SharedPtr<HttpServerConnectionObserver> Emplace(const ConnectionCreationContext& context) = 0;
+        virtual infra::SharedPtr<HttpServerConnectionObserver> Emplace() = 0;
         virtual void OnAllocatable(infra::Function<void()> onAllocatable) = 0;
         virtual bool Allocatable() const = 0;
         virtual bool Allocated() const = 0;
         virtual HttpServerConnectionObserver& Get() = 0;
     };
 
-    template<class ConnectionCreationContext, class Connection>
     class HttpServerConnectionObserverFactoryImpl
-        : public HttpServerConnectionObserverFactory<ConnectionCreationContext>
+        : public HttpServerConnectionObserverFactory
     {
     public:
-        HttpServerConnectionObserverFactoryImpl();
+        struct Creators
+        {
+            infra::CreatorBase<HttpServerConnectionObserver, void()>& observerCreator;
+        };
 
-        virtual infra::SharedPtr<HttpServerConnectionObserver> Emplace(const ConnectionCreationContext& context) override;
+        HttpServerConnectionObserverFactoryImpl(const Creators& creators);
+
+        virtual infra::SharedPtr<HttpServerConnectionObserver> Emplace() override;
         virtual void OnAllocatable(infra::Function<void()> onAllocatable) override;
         virtual bool Allocatable() const override;
         virtual bool Allocated() const override;
         virtual HttpServerConnectionObserver& Get() override;
 
     private:
-        infra::NotifyingSharedOptional<Connection> connectionObserver;
+        infra::CreatorBase<HttpServerConnectionObserver, void()>& observerCreator;
+        infra::NotifyingSharedOptional<infra::ProxyCreator<decltype(observerCreator)>> connectionObserver;
         infra::Function<void()> onAllocatable;
     };
 
-    template<class ConnectionCreationContext>
     class SingleConnectionHttpServer
         : public ServerConnectionObserverFactory
         , public HttpPageServer
     {
     public:
-        template<class Connection>
-            using WithFactoryFor = infra::WithStorage<SingleConnectionHttpServer, HttpServerConnectionObserverFactoryImpl<ConnectionCreationContext, Connection>>;
-
-        SingleConnectionHttpServer(HttpServerConnectionObserverFactory<ConnectionCreationContext>& factory, ConnectionCreationContext& creationContext, ConnectionFactory& connectionFactory, uint16_t port);
+        SingleConnectionHttpServer(const HttpServerConnectionObserverFactoryImpl::Creators& creators, ConnectionFactory& connectionFactory, uint16_t port);
         ~SingleConnectionHttpServer();
 
         virtual void Stop(const infra::Function<void()>& onDone);
@@ -210,8 +204,7 @@ namespace services
         void ObserverAllocatable();
 
     private:
-        HttpServerConnectionObserverFactory<ConnectionCreationContext>& factory;
-        ConnectionCreationContext& creationContext;
+        HttpServerConnectionObserverFactoryImpl factory;
         infra::SharedPtr<void> listener;
 
         infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)> createdObserver;
@@ -220,7 +213,7 @@ namespace services
     };
 
     class DefaultHttpServer
-        : public SingleConnectionHttpServer<DefaultConnectionCreationContext>::WithFactoryFor<HttpServerConnectionObserver>
+        : public SingleConnectionHttpServer
     {
     public:
         template<::size_t BufferSize>
@@ -229,94 +222,9 @@ namespace services
         DefaultHttpServer(infra::BoundedString& buffer, ConnectionFactory& connectionFactory, uint16_t port);
 
     private:
-        DefaultConnectionCreationContext creationContext;
+        infra::BoundedString& buffer;
+        infra::Creator<services::HttpServerConnectionObserver, HttpServerConnectionObserver, void()> connectionCreator;
     };
-
-    ////   Implementation    ////
-
-    template<class ConnectionCreationContext, class Connection>
-    HttpServerConnectionObserverFactoryImpl<ConnectionCreationContext, Connection>::HttpServerConnectionObserverFactoryImpl()
-        : connectionObserver([this]() { this->onAllocatable(); })
-    {}
-
-    template<class ConnectionCreationContext, class Connection>
-    infra::SharedPtr<HttpServerConnectionObserver> HttpServerConnectionObserverFactoryImpl<ConnectionCreationContext, Connection>::Emplace(const ConnectionCreationContext& creationContext)
-    {
-        return connectionObserver.Emplace(creationContext);
-    }
-
-    template<class ConnectionCreationContext, class Connection>
-    void HttpServerConnectionObserverFactoryImpl<ConnectionCreationContext, Connection>::OnAllocatable(infra::Function<void()> onAllocatable)
-    {
-        this->onAllocatable = onAllocatable;
-    }
-
-    template<class ConnectionCreationContext, class Connection>
-    bool HttpServerConnectionObserverFactoryImpl<ConnectionCreationContext, Connection>::Allocatable() const
-    {
-        return connectionObserver.Allocatable();
-    }
-
-    template<class ConnectionCreationContext, class Connection>
-    bool HttpServerConnectionObserverFactoryImpl<ConnectionCreationContext, Connection>::Allocated() const
-    {
-        return static_cast<bool>(connectionObserver);
-    }
-
-    template<class ConnectionCreationContext, class Connection>
-    HttpServerConnectionObserver& HttpServerConnectionObserverFactoryImpl<ConnectionCreationContext, Connection>::Get()
-    {
-        return *connectionObserver;
-    }
-
-    template<class ConnectionCreationContext>
-    SingleConnectionHttpServer<ConnectionCreationContext>::SingleConnectionHttpServer(HttpServerConnectionObserverFactory<ConnectionCreationContext>& factory, ConnectionCreationContext& creationContext, ConnectionFactory& connectionFactory, uint16_t port)
-        : factory(factory)
-        , creationContext(creationContext)
-    {
-        factory.OnAllocatable([this]() { ObserverAllocatable(); });
-        listener = connectionFactory.Listen(port, *this);
-    }
-
-    template<class ConnectionCreationContext>
-    SingleConnectionHttpServer<ConnectionCreationContext>::~SingleConnectionHttpServer()
-    {
-        really_assert(factory.Allocatable());
-    }
-
-    template<class ConnectionCreationContext>
-    void SingleConnectionHttpServer<ConnectionCreationContext>::Stop(const infra::Function<void()>& onDone)
-    {
-        onStopped = onDone;
-        if (!factory.Allocatable())
-        {
-            factory.OnAllocatable([this]() { onStopped(); });
-
-            if (factory.Allocated())
-                factory.Get().Close();
-        }
-        else
-            onStopped();
-    }
-
-    template<class ConnectionCreationContext>
-    void SingleConnectionHttpServer<ConnectionCreationContext>::ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address)
-    {
-        this->address = address;
-        this->createdObserver = std::move(createdObserver);
-
-        if (factory.Allocatable())
-            ObserverAllocatable();
-        else if (factory.Allocated())
-            factory.Get().CloseWhenIdle();
-    }
-
-    template<class ConnectionCreationContext>
-    void SingleConnectionHttpServer<ConnectionCreationContext>::ObserverAllocatable()
-    {
-        if (createdObserver)
-            createdObserver(factory.Emplace(creationContext));
-    }
 }
 
 #endif
