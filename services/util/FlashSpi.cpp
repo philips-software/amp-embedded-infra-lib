@@ -13,7 +13,7 @@ namespace services
     const uint8_t FlashSpi::commandEraseBulk = 0xc7;
     const uint8_t FlashSpi::commandReadId = 0x9f;
 
-    FlashSpi::FlashSpi(hal::SpiMaster& spi, uint32_t numberOfSubSectors, uint8_t timerId)
+    FlashSpi::FlashSpi(hal::SpiMaster& spi, uint32_t numberOfSubSectors, uint32_t timerId)
         : hal::FlashHomogeneous(numberOfSubSectors, sizeSubSector)
         , spi(spi)
         , delayTimer(timerId)
