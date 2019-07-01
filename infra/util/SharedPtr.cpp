@@ -58,26 +58,4 @@ namespace infra
         void NullAllocator::Deallocate(void* control)
         {}
     }
-
-    AccessedBySharedPtr::AccessedBySharedPtr(const infra::Function<void()>& onUnReferenced)
-        : onUnReferenced(onUnReferenced)
-    {}
-
-    AccessedBySharedPtr::~AccessedBySharedPtr()
-    {
-        assert(control.UnReferenced());
-    }
-
-    void AccessedBySharedPtr::SetAction(const infra::Function<void()>& newOnUnReferenced)
-    {
-        onUnReferenced = newOnUnReferenced;
-    }
-
-    void AccessedBySharedPtr::Destruct(const void* object)
-    {}
-
-    void AccessedBySharedPtr::Deallocate(void* control)
-    {
-        onUnReferenced();
-    }
 }

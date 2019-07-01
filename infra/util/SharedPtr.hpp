@@ -198,18 +198,22 @@ namespace infra
         T* object = nullptr;
     };
 
-    class AccessedBySharedPtr
+    template<std::size_t ExtraSize>
+    class AccessedBySharedPtrWithExtraSize
         : private SharedObjectDeleter
     {
     public:
-        AccessedBySharedPtr() = default;
-            AccessedBySharedPtr(const infra::Function<void()>& onUnReferenced);
-        ~AccessedBySharedPtr();
+        template<std::size_t OtherExtraSize>
+            using WithExtraSize = AccessedBySharedPtrWithExtraSize<OtherExtraSize>;
+
+        AccessedBySharedPtrWithExtraSize() = default;
+        AccessedBySharedPtrWithExtraSize(const infra::Function<void(), ExtraSize>& onUnReferenced);
+        ~AccessedBySharedPtrWithExtraSize();
 
         template<class T>
         SharedPtr<T> MakeShared(T& value);
 
-        void SetAction(const infra::Function<void()>& newOnUnReferenced);
+        void SetAction(const infra::Function<void(), ExtraSize>& newOnUnReferenced);
 
     private:
         virtual void Destruct(const void* object) override;
@@ -217,8 +221,10 @@ namespace infra
 
     private:
         detail::SharedPtrControl control{ this, this };
-        infra::Function<void()> onUnReferenced;
+        infra::Function<void(), ExtraSize> onUnReferenced;
     };
+
+    using AccessedBySharedPtr = AccessedBySharedPtrWithExtraSize<INFRA_DEFAULT_FUNCTION_EXTRA_SIZE>;
 
     template<class T>
     SharedPtr<T> UnOwnedSharedPtr(T& object);
@@ -583,10 +589,38 @@ namespace infra
         };
     }
 
+    template<std::size_t ExtraSize>
+    AccessedBySharedPtrWithExtraSize<ExtraSize>::AccessedBySharedPtrWithExtraSize(const infra::Function<void(), ExtraSize>& onUnReferenced)
+        : onUnReferenced(onUnReferenced)
+    {}
+
+    template<std::size_t ExtraSize>
+    AccessedBySharedPtrWithExtraSize<ExtraSize>::~AccessedBySharedPtrWithExtraSize()
+    {
+        assert(control.UnReferenced());
+    }
+
+    template<std::size_t ExtraSize>
     template<class T>
-    SharedPtr<T> AccessedBySharedPtr::MakeShared(T& value)
+    SharedPtr<T> AccessedBySharedPtrWithExtraSize<ExtraSize>::MakeShared(T& value)
     {
         return SharedPtr<T>(&control, &value);
+    }
+
+    template<std::size_t ExtraSize>
+    void AccessedBySharedPtrWithExtraSize<ExtraSize>::SetAction(const infra::Function<void(), ExtraSize>& newOnUnReferenced)
+    {
+        onUnReferenced = newOnUnReferenced;
+    }
+
+    template<std::size_t ExtraSize>
+    void AccessedBySharedPtrWithExtraSize<ExtraSize>::Destruct(const void* object)
+    {}
+
+    template<std::size_t ExtraSize>
+    void AccessedBySharedPtrWithExtraSize<ExtraSize>::Deallocate(void* control)
+    {
+        onUnReferenced();
     }
 
     template<class T>
