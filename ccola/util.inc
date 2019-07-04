@@ -74,7 +74,7 @@ macro(ccola_register_file_parameter parameter)
     endif()
 
 	get_filename_component(${parameter} ${${parameter}} ABSOLUTE)
-    set(${parameter} "${${parameter}}" CACHE path "${parameter}" FORCE)
+    set(${parameter} "${${parameter}}" CACHE PATH "${parameter}" FORCE)
 
 endmacro()
 
