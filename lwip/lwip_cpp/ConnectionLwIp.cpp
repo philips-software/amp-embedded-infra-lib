@@ -162,12 +162,7 @@ namespace services
             }
         }
         else
-        {
-            infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionLwIp>& self)
-            {
-                self->ResetOwnership();
-            }, SharedFromThis());
-        }
+            ResetOwnership();
 
         return ERR_OK;
     }
@@ -176,10 +171,7 @@ namespace services
     {
         assert(err == ERR_RST || err == ERR_CLSD || err == ERR_ABRT);
         ResetControl();
-        infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionLwIp>& self)
-        {
-            self->ResetOwnership();
-        }, SharedFromThis());
+        ResetOwnership();
     }
 
     err_t ConnectionLwIp::Sent(std::uint16_t len)
