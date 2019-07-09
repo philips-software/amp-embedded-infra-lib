@@ -4,6 +4,7 @@
 #include "upgrade/pack_builder/BuildUpgradePack.hpp"
 #include "upgrade/pack_builder/ImageEncryptorAes.hpp"
 #include "upgrade/pack_builder/ImageSignerEcDsa.hpp"
+#include "upgrade/pack_builder/Input.hpp"
 #include "upgrade/pack_builder/UpgradePackBuilder.hpp"
 #include "upgrade/pack_builder/UpgradePackInputFactory.hpp"
 #include <cctype>
@@ -56,50 +57,6 @@ namespace application
         {
             ShowUsage(targetAndFiles, buildOptions, supportedHexTargets, supportedBinaryTargets, otherTargets);
             result = 1;
-        }
-        catch (application::IncorrectCrcException& exception)
-        {
-            std::cout << "Incorrect CRC in file " << exception.file << " at line " << exception.line << std::endl;
-            result = 1;
-        }
-        catch (application::NoEndOfFileException& exception)
-        {
-            std::cout << "No end of file found in file " << exception.file << " at line " << exception.line << std::endl;
-            result = 1;
-        }
-        catch (application::DataAfterEndOfFileException& exception)
-        {
-            std::cout << "Data found after end of file in file " << exception.file << " at line " << exception.line << std::endl;
-            result = 1;
-        }
-        catch (application::UnknownRecordException& exception)
-        {
-            std::cout << "Unknown record in file " << exception.file << " at line " << exception.line << std::endl;
-            result = 1;
-        }
-        catch (application::RecordTooShortException& exception)
-        {
-            std::cout << "Record too short in file " << exception.file << " at line " << exception.line << std::endl;
-            result = 1;
-        }
-        catch (application::RecordTooLongException& exception)
-        {
-            std::cout << "Record too long in file " << exception.file << " at line " << exception.line << std::endl;
-            result = 1;
-        }
-        catch (application::OverwriteException& exception)
-        {
-            std::cout << "Contents specified twice for memory location at address 0x" << std::hex << std::setw(8) << std::setfill('0') << exception.position << std::endl;
-            result = 1;
-        }
-        catch (hal::CannotOpenFileException& exception)
-        {
-            std::cout << exception.what() << std::endl;
-            result = 1;
-        }
-        catch (application::SignatureDoesNotVerifyException&)
-        {
-            std::cout << "Signature does not verify" << std::endl;
         }
         catch (std::exception& e)
         {
