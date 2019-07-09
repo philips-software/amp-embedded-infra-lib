@@ -133,6 +133,20 @@ TEST(JsonObjectFormatter, add_sub_array)
     EXPECT_EQ(R"({ "tag":[ "value" ] })", string);
 }
 
+TEST(JsonObjectFormatter, add_string_via_stream)
+{
+    infra::BoundedString::WithStorage<64> string;
+
+    {
+        infra::BoundedConstString s("test");
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        auto stream = formatter.AddString("tag");
+        stream << s;
+    }
+
+    EXPECT_EQ(R"({ "tag":"test" })", string);
+}
+
 TEST(JsonObjectFormatter, add_json_value_bool)
 {
     infra::BoundedString::WithStorage<64> string;

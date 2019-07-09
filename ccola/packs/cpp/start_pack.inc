@@ -289,6 +289,8 @@ macro(ccola_external_libraries)
 		foreach(item ${libs})
 			list(APPEND CCOLA_COMPONENT_EXTERNAL_LIBRARIES ${item})
 		endforeach()
+
+		ccola_list_remove_duplicates(CCOLA_COMPONENT_EXTERNAL_LIBRARIES)
 	endif()
 
 endmacro()

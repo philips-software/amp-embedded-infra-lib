@@ -15,8 +15,10 @@ namespace services
 
         TracingHttpClientImpl(infra::BoundedString& headerBuffer, infra::BoundedConstString hostname, Tracer& tracer);
 
+        // Implementation of HttpClientImpl
+        virtual void WriteRequest(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+
         // Implementation of ConnectionObserver
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void DataReceived() override;
         virtual void Connected() override;
         virtual void ClosingConnection() override;

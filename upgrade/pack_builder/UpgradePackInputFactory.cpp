@@ -15,7 +15,7 @@ namespace application
 
         std::vector<uint8_t> result;
         result.insert(result.end(), reinterpret_cast<const uint8_t*>(targetName.data()), reinterpret_cast<const uint8_t*>(targetName.data() + targetName.size()));
-        result.insert(result.end(), 8 - targetName.size(), 0);
+        result.insert(result.end(), Input::maxNameSize - targetName.size(), 0);
 
         uint32_t encryptionAndMacMethod = 0;
         result.insert(result.end(), reinterpret_cast<const uint8_t*>(&encryptionAndMacMethod), reinterpret_cast<const uint8_t*>(&encryptionAndMacMethod + 1));

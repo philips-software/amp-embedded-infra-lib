@@ -333,6 +333,15 @@ namespace infra
         return Optional<typename std::decay<T>::type>(inPlace, std::forward<T>(value));
     }
 
+    template<class T, class F>
+    auto TransformOptional(const infra::Optional<T>& value, F transformation) -> infra::Optional<decltype(transformation(*value))>
+    {
+        if (value != infra::none)
+            return infra::MakeOptional(transformation(*value));
+        else
+            return infra::none;
+    }
+
     template<class T, std::size_t ExtraSize>
     template<class Derived, std::size_t OtherExtraSize>
     OptionalForPolymorphicObjects<T, ExtraSize>::OptionalForPolymorphicObjects(const OptionalForPolymorphicObjects<Derived, OtherExtraSize>& other

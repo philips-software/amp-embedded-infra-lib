@@ -18,6 +18,7 @@ namespace services
 
     protected:
         void Connect();
+        void Connect(infra::BoundedString url);
         void Close();
         void ContentError();
 
@@ -63,7 +64,7 @@ namespace services
 
         infra::Duration timeoutDuration;
         infra::TimerSingleShot timeoutTimer;
-        State state;
+        State state = State::idle;
         bool contentError = false;
     };
 }

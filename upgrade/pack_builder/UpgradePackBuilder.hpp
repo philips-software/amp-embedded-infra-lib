@@ -11,7 +11,11 @@
 namespace application
 {
     class SignatureDoesNotVerifyException
-    {};
+        : public std::runtime_error
+    {
+    public:
+        SignatureDoesNotVerifyException();
+    };
 
     class UpgradePackBuilder
     {
