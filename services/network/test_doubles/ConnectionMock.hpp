@@ -42,16 +42,11 @@ namespace services
         : public services::ConnectionFactory
     {
     public:
-        virtual infra::SharedPtr<void> Listen(uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions) override;
+        MOCK_METHOD3(Listen, infra::SharedPtr<void>(uint16_t, ServerConnectionObserverFactory& factory, IPVersions));
         MOCK_METHOD1(Connect, void(ClientConnectionObserverFactory& factory));
         MOCK_METHOD1(CancelConnect, void(ClientConnectionObserverFactory& factory));
 
-        MOCK_METHOD2(ListenMock, infra::SharedPtr<void>(uint16_t, IPVersions));
-
-        void NewConnection(Connection& connection, services::IPAddress address);
-
-    private:
-        ServerConnectionObserverFactory* serverConnectionObserverFactory = nullptr;
+        void NewConnection(ServerConnectionObserverFactory& serverConnectionObserverFactory, Connection& connection, services::IPAddress address);
     };
 
     class ServerConnectionObserverFactoryMock
