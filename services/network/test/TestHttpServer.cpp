@@ -189,7 +189,7 @@ TEST_F(HttpServerTest, split_response_when_not_enough_available_in_stream)
     testing::StrictMock<services::ConnectionMock> connection;
     EXPECT_CALL(connection, MaxSendStreamSize()).WillRepeatedly(testing::Return(555));
     EXPECT_CALL(connection, RequestSendStream(555)).Times(testing::AnyNumber());
-    connectionFactoryMock.NewConnection(connection, services::IPv4AddressLocalHost());
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     infra::BoundedConstString request = "GET /path HTTP/1.1 \r\n\r\n";
     infra::StringInputStreamReader reader(request);
