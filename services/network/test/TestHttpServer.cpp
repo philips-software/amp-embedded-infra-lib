@@ -17,7 +17,7 @@ class HttpServerTest
 public:
     HttpServerTest()
         : connectionPtr(infra::UnOwnedSharedPtr(connection))
-        , execute([this]() { EXPECT_CALL(connectionFactoryMock, ListenMock(80, services::IPVersions::both)).WillOnce(testing::Return(nullptr)); })
+        , execute([this]() { EXPECT_CALL(connectionFactoryMock, Listen(80, testing::_, services::IPVersions::both)).WillOnce(testing::DoAll(infra::SaveRef<1>(&serverConnectionObserverFactory), testing::Return(nullptr))); })
         , httpServer(connectionFactoryMock, 80)
     {
         httpServer.AddPage(httpPage);
@@ -66,6 +66,7 @@ public:
     testing::StrictMock<services::ConnectionStub> connection;
     infra::SharedPtr<services::ConnectionStub> connectionPtr;
     testing::StrictMock<services::ConnectionFactoryMock> connectionFactoryMock;
+    services::ServerConnectionObserverFactory* serverConnectionObserverFactory;
     infra::Execute execute;
     testing::StrictMock<services::HttpPageMock> httpPage;
     services::DefaultHttpServer::WithBuffer<256> httpServer;
@@ -79,19 +80,19 @@ class HttpServerErrorTest
 
 TEST_F(HttpServerTest, accept_connection)
 {
-    connectionFactoryMock.NewConnection(connection, services::IPv4AddressLocalHost());
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     EXPECT_CALL(connection, CloseAndDestroyMock());
 }
 
 TEST_F(HttpServerTest, accept_ipv6_connection)
 {
-    connectionFactoryMock.NewConnection(connection, services::IPv6AddressLocalHost());
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv6AddressLocalHost());
     EXPECT_CALL(connection, CloseAndDestroyMock());
 }
 
 TEST_F(HttpServerTest, wrong_start_url_results_in_error)
 {
-    connectionFactoryMock.NewConnection(connection, services::IPv4AddressLocalHost());
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     infra::ConstByteRange data = infra::MakeStringByteRange("PUT /path HTTP/1.1 \r\n\r\n {}");
 
@@ -104,7 +105,7 @@ TEST_F(HttpServerTest, wrong_start_url_results_in_error)
 
 TEST_F(HttpServerTest, too_long_http_request_results_in_error)
 {
-    connectionFactoryMock.NewConnection(connection, services::IPv4AddressLocalHost());
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     infra::ConstByteRange data = infra::MakeStringByteRange("PUT /path/subpath/subpath/subpath/subpath/subpath/subpath/subpath HTTP/1.1 \r\n Content-Type: application/json \r\n Host: 192.168.0.98 \r\n Connection: Close \r\n\r\n { \"data\":\"1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\" }");
 
@@ -116,7 +117,7 @@ TEST_F(HttpServerTest, too_long_http_request_results_in_error)
 
 TEST_F(HttpServerTest, unsupported_verb_results_in_error)
 {
-    connectionFactoryMock.NewConnection(connection, services::IPv4AddressLocalHost());
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     infra::ConstByteRange data = infra::MakeStringByteRange("UPDATE /path HTTP/1.1 \r\n\r\n {}");
 
@@ -128,7 +129,7 @@ TEST_F(HttpServerTest, unsupported_verb_results_in_error)
 
 TEST_F(HttpServerTest, request_results_in_get)
 {
-    connectionFactoryMock.NewConnection(connection, services::IPv4AddressLocalHost());
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     ExpectPageServerRequest(services::HttpVerb::get, "GET /path HTTP/1.1 \r\n\r\n");
     EXPECT_CALL(connection, CloseAndDestroyMock());
@@ -136,7 +137,7 @@ TEST_F(HttpServerTest, request_results_in_get)
 
 TEST_F(HttpServerTest, double_request_results_in_closed_connection)
 {
-    connectionFactoryMock.NewConnection(connection, services::IPv4AddressLocalHost());
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     ExpectPageServerRequest(services::HttpVerb::get, "GET /path HTTP/1.1 \r\n\r\n");
 
@@ -149,7 +150,7 @@ TEST_F(HttpServerTest, double_request_results_in_closed_connection)
 
 TEST_F(HttpServerTest, split_message_is_accepted)
 {
-    connectionFactoryMock.NewConnection(connection, services::IPv4AddressLocalHost());
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     std::string rest = R"({"other":"param"})";
 
@@ -163,7 +164,7 @@ TEST_F(HttpServerTest, split_message_is_accepted)
 
 TEST_F(HttpServerTest, send_100_response_when_expect_100_in_header)
 {
-    connectionFactoryMock.NewConnection(connection, services::IPv4AddressLocalHost());
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     ExpectPageServerRequest(services::HttpVerb::get, "GET /path HTTP/1.1 \r\nExpect: 100-continue\r\n\r\n");
     SendResponse("", "", "");
@@ -216,9 +217,9 @@ TEST_F(HttpServerTest, second_connection_forces_idle_connection_to_close)
     testing::StrictMock<services::ConnectionMock> connectionFirst;
     EXPECT_CALL(connectionFirst, MaxSendStreamSize()).WillOnce(testing::Return(555));
     EXPECT_CALL(connectionFirst, RequestSendStream(555));
-    connectionFactoryMock.NewConnection(connectionFirst, services::IPv4AddressLocalHost());
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connectionFirst, services::IPv4AddressLocalHost());
 
-    connectionFactoryMock.NewConnection(connection, services::IPv4AddressLocalHost());
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     EXPECT_CALL(connectionFirst, CloseAndDestroy());
     ForwardTime(std::chrono::seconds(1));
@@ -229,13 +230,13 @@ TEST_F(HttpServerTest, second_connection_forces_idle_connection_to_close)
 
 TEST_F(HttpServerTest, non_idle_connection_is_not_closed_by_second_connection)
 {
-    connectionFactoryMock.NewConnection(connection, services::IPv4AddressLocalHost());
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     ExpectPageServerRequest(services::HttpVerb::get, "GET /path HTTP/1.1 \r\nExpect: 100-continue\r\n\r\n");
 
     testing::StrictMock<services::ConnectionStub> connectionSecond;
     infra::SharedPtr<services::ConnectionStub> connectionSecondPtr(infra::UnOwnedSharedPtr(connectionSecond));
-    connectionFactoryMock.NewConnection(connectionSecond, services::IPv4AddressLocalHost());
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connectionSecond, services::IPv4AddressLocalHost());
 
     EXPECT_CALL(connection, CloseAndDestroyMock());
     SendResponse("", "", "");
@@ -243,7 +244,7 @@ TEST_F(HttpServerTest, non_idle_connection_is_not_closed_by_second_connection)
 
 TEST_F(HttpServerTest, choose_correct_url)
 {
-    connectionFactoryMock.NewConnection(connection, services::IPv4AddressLocalHost());
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     testing::StrictMock<services::HttpPageMock> secondHttpPage;
     httpServer.AddPage(secondHttpPage);
