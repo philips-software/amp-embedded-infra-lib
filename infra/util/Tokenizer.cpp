@@ -66,6 +66,9 @@ namespace infra
         while (index < string.size() && string[index] == separator)
             ++index;
 
-        return index;
+        if (index == string.size())
+            return infra::BoundedConstString::npos;
+        else
+            return index;
     }
 }
