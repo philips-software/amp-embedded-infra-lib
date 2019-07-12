@@ -7,21 +7,26 @@ namespace services
         , listener(connectionFactory.Listen(port, *this))
     {}
 
+    void SingleConnectionListener::Stop(const infra::Function<void()>& onDone)
+    {
+        if (connection.Allocatable())
+            onDone();
+        else
+        {
+            connection.OnAllocatable(onDone);
+
+            if (connection)
+                (*connection)->Subject().AbortAndDestroy();
+        }
+    }
+
     void SingleConnectionListener::ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address)
     {
         if (this->createdObserver != nullptr)
             this->createdObserver(nullptr);
         this->createdObserver = std::move(createdObserver);
 
-        if (connection.Allocatable())
-            CreateObserver();
-        else
-        {
-            connection.OnAllocatable([this]() { CreateObserver(); });
-
-            if (connection)
-                (*connection)->Subject().AbortAndDestroy();
-        }
+        Stop([this]() { CreateObserver(); });
     }
 
     void SingleConnectionListener::CreateObserver()

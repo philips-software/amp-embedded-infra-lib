@@ -4,11 +4,14 @@
 #include "infra/util/ProxyCreator.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "services/network/Connection.hpp"
+#include "services/util/Stoppable.hpp"
 
 namespace services
 {
     class SingleConnectionListener
-        : private ServerConnectionObserverFactory
+        : public Stoppable
+        , private ServerConnectionObserverFactory
+
     {
     public:
         struct Creators
@@ -17,6 +20,9 @@ namespace services
         };
 
         SingleConnectionListener(ConnectionFactory& connectionFactory, uint16_t port, const Creators& creators);
+
+        // Implementation of Stoppable
+        virtual void Stop(const infra::Function<void()>& onDone) override;
 
     private:
         // Implementation of ServerConnectionObserverFactory
