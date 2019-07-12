@@ -91,7 +91,7 @@ namespace services
             {
                 idle = true;
                 if (closeWhenIdle)
-                    Close();
+                    Abort();
             })
     {}
 
@@ -133,17 +133,17 @@ namespace services
 
     void HttpServerConnectionObserver::Close()
     {
+        closeWhenIdle = true;
+        if (idle)
+            Abort();
+    }
+
+    void HttpServerConnectionObserver::Abort()
+    {
         // TakeOverConnection may have been invoked, which leads to Subject() not being available. However, TakeOverConnection may have been invoked by a page
         // which is about to upgrade to a web connection, but which is not yet upgraded since it is waiting for storage. In that case, if the HttpServer
         // must close down, then we still need to invoke CloseAndDestroy on the connection. Therefore, connection is used instead of Subject()
         connection->CloseAndDestroy();
-    }
-
-    void HttpServerConnectionObserver::CloseWhenIdle()
-    {
-        closeWhenIdle = true;
-        if (idle)
-            Close();
     }
 
     void HttpServerConnectionObserver::SendResponse(const HttpResponse& response)
@@ -206,7 +206,7 @@ namespace services
         if (!request.Valid())
             SendResponse(HttpResponseBadRequest::Instance());
         else if (requestInProgress)
-            Close();
+            Abort();
         else
             HandleRequest(request);
     }
@@ -252,7 +252,7 @@ namespace services
         send100Response = false;
         buffer.clear();
         if (closeWhenIdle)
-            Close();
+            Abort();
     }
 
     bool HttpServerConnectionObserver::Expect100(HttpRequestParser& request) const
@@ -275,84 +275,10 @@ namespace services
             PrepareForNextRequest();
     }
 
-    HttpServerConnectionObserverFactoryImpl::HttpServerConnectionObserverFactoryImpl(const HttpServerConnectionObserverFactoryImpl::Creators& creators)
-        : observerCreator(creators.observerCreator)
-        , connectionObserver([this]() { this->onAllocatable(); })
-    {}
-
-    infra::SharedPtr<HttpServerConnectionObserver> HttpServerConnectionObserverFactoryImpl::Emplace()
-    {
-        auto pointer = connectionObserver.Emplace(observerCreator);
-        return infra::MakeContainedSharedObject(**connectionObserver, pointer);
-    }
-
-    void HttpServerConnectionObserverFactoryImpl::OnAllocatable(infra::Function<void()> onAllocatable)
-    {
-        this->onAllocatable = onAllocatable;
-    }
-
-    bool HttpServerConnectionObserverFactoryImpl::Allocatable() const
-    {
-        return connectionObserver.Allocatable();
-    }
-
-    bool HttpServerConnectionObserverFactoryImpl::Allocated() const
-    {
-        return static_cast<bool>(connectionObserver);
-    }
-
-    HttpServerConnectionObserver& HttpServerConnectionObserverFactoryImpl::Get()
-    {
-        return **connectionObserver;
-    }
-
-    SingleConnectionHttpServer::SingleConnectionHttpServer(const HttpServerConnectionObserverFactoryImpl::Creators& creators, ConnectionFactory& connectionFactory, uint16_t port)
-        : factory(creators)
-    {
-        factory.OnAllocatable([this]() { ObserverAllocatable(); });
-        listener = connectionFactory.Listen(port, *this);
-    }
-
-    SingleConnectionHttpServer::~SingleConnectionHttpServer()
-    {
-        really_assert(factory.Allocatable());
-    }
-
-    void SingleConnectionHttpServer::Stop(const infra::Function<void()>& onDone)
-    {
-        onStopped = onDone;
-        if (!factory.Allocatable())
-        {
-            factory.OnAllocatable([this]() { onStopped(); });
-
-            if (factory.Allocated())
-                factory.Get().Close();
-        }
-        else
-            onStopped();
-    }
-
-    void SingleConnectionHttpServer::ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address)
-    {
-        this->address = address;
-        this->createdObserver = std::move(createdObserver);
-
-        if (factory.Allocatable())
-            ObserverAllocatable();
-        else if (factory.Allocated())
-            factory.Get().CloseWhenIdle();
-    }
-
-    void SingleConnectionHttpServer::ObserverAllocatable()
-    {
-        if (createdObserver)
-            createdObserver(factory.Emplace());
-    }
-
     DefaultHttpServer::DefaultHttpServer(infra::BoundedString& buffer, ConnectionFactory& connectionFactory, uint16_t port)
-        : SingleConnectionHttpServer({ connectionCreator }, connectionFactory, port)
+        : SingleConnectionListener(connectionFactory, port, { connectionCreator })
         , buffer(buffer)
-        , connectionCreator([this](infra::Optional<HttpServerConnectionObserver>& value)
+        , connectionCreator([this](infra::Optional<HttpServerConnectionObserver>& value, IPAddress address)
             {
                 value.Emplace(this->buffer, *this);
             })

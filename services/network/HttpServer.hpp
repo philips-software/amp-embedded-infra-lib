@@ -8,6 +8,7 @@
 #include "infra/util/WithStorage.hpp"
 #include "services/network/Connection.hpp"
 #include "services/network/HttpRequestParser.hpp"
+#include "services/network/SingleConnectionListener.hpp"
 
 namespace services
 {
@@ -108,9 +109,8 @@ namespace services
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void DataReceived() override;
         virtual void ClosingConnection() override;
-
-        void Close();
-        void CloseWhenIdle();
+        virtual void Close() override;
+        virtual void Abort() override;
 
         // Implementation of HttpServerConnection
         virtual void SendResponse(const HttpResponse& response) override;
@@ -148,72 +148,9 @@ namespace services
         infra::TimerSingleShot initialIdle;
     };
 
-    class HttpServerConnectionObserverFactory
-    {
-    protected:
-        HttpServerConnectionObserverFactory() = default;
-        HttpServerConnectionObserverFactory(const HttpServerConnectionObserverFactory& other) = delete;
-        HttpServerConnectionObserverFactory& operator=(const HttpServerConnectionObserverFactory& other) = delete;
-        ~HttpServerConnectionObserverFactory() = default;
-
-    public:
-        virtual infra::SharedPtr<HttpServerConnectionObserver> Emplace() = 0;
-        virtual void OnAllocatable(infra::Function<void()> onAllocatable) = 0;
-        virtual bool Allocatable() const = 0;
-        virtual bool Allocated() const = 0;
-        virtual HttpServerConnectionObserver& Get() = 0;
-    };
-
-    class HttpServerConnectionObserverFactoryImpl
-        : public HttpServerConnectionObserverFactory
-    {
-    public:
-        struct Creators
-        {
-            infra::CreatorBase<HttpServerConnectionObserver, void()>& observerCreator;
-        };
-
-        HttpServerConnectionObserverFactoryImpl(const Creators& creators);
-
-        virtual infra::SharedPtr<HttpServerConnectionObserver> Emplace() override;
-        virtual void OnAllocatable(infra::Function<void()> onAllocatable) override;
-        virtual bool Allocatable() const override;
-        virtual bool Allocated() const override;
-        virtual HttpServerConnectionObserver& Get() override;
-
-    private:
-        infra::CreatorBase<HttpServerConnectionObserver, void()>& observerCreator;
-        infra::NotifyingSharedOptional<infra::ProxyCreator<decltype(observerCreator)>> connectionObserver;
-        infra::Function<void()> onAllocatable;
-    };
-
-    class SingleConnectionHttpServer
-        : public ServerConnectionObserverFactory
-        , public HttpPageServer
-    {
-    public:
-        SingleConnectionHttpServer(const HttpServerConnectionObserverFactoryImpl::Creators& creators, ConnectionFactory& connectionFactory, uint16_t port);
-        ~SingleConnectionHttpServer();
-
-        virtual void Stop(const infra::Function<void()>& onDone);
-
-    public:
-        virtual void ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address) override;
-
-    private:
-        void ObserverAllocatable();
-
-    private:
-        HttpServerConnectionObserverFactoryImpl factory;
-        infra::SharedPtr<void> listener;
-
-        infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)> createdObserver;
-        IPAddress address;
-        infra::Function<void()> onStopped;
-    };
-
     class DefaultHttpServer
-        : public SingleConnectionHttpServer
+        : public services::SingleConnectionListener
+        , public services::HttpPageServer
     {
     public:
         template<::size_t BufferSize>
@@ -223,7 +160,7 @@ namespace services
 
     private:
         infra::BoundedString& buffer;
-        infra::Creator<services::HttpServerConnectionObserver, HttpServerConnectionObserver, void()> connectionCreator;
+        infra::Creator<services::ConnectionObserver, HttpServerConnectionObserver, void(IPAddress address)> connectionCreator;
     };
 }
 

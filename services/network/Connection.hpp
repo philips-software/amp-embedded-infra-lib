@@ -23,6 +23,8 @@ namespace services
         virtual void DataReceived() = 0;
         virtual void Connected() {}
         virtual void ClosingConnection() {}
+        virtual void Close();
+        virtual void Abort();
 
     private:
         friend class Connection;

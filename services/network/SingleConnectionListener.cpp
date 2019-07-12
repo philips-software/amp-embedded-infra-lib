@@ -9,15 +9,7 @@ namespace services
 
     void SingleConnectionListener::Stop(const infra::Function<void()>& onDone)
     {
-        if (connection.Allocatable())
-            onDone();
-        else
-        {
-            connection.OnAllocatable(onDone);
-
-            if (connection)
-                (*connection)->Subject().AbortAndDestroy();
-        }
+        Stop(onDone, true);
     }
 
     void SingleConnectionListener::ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address)
@@ -25,14 +17,33 @@ namespace services
         if (this->createdObserver != nullptr)
             this->createdObserver(nullptr);
         this->createdObserver = std::move(createdObserver);
+        this->address = address;
 
-        Stop([this]() { CreateObserver(); });
+        Stop([this]() { CreateObserver(); }, false);
+    }
+
+    void SingleConnectionListener::Stop(const infra::Function<void()>& onDone, bool force)
+    {
+        if (connection.Allocatable())
+            onDone();
+        else
+        {
+            connection.OnAllocatable(onDone);
+
+            if (connection)
+            {
+                if (force)
+                    (*connection)->Abort();
+                else
+                    (*connection)->Close();
+            }
+        }
     }
 
     void SingleConnectionListener::CreateObserver()
     {
         connection.OnAllocatable(infra::emptyFunction);
-        auto proxyPtr = connection.Emplace(connectionCreator);
+        auto proxyPtr = connection.Emplace(connectionCreator, address);
         this->createdObserver(infra::MakeContainedSharedObject(**proxyPtr, proxyPtr));
     }
 }
