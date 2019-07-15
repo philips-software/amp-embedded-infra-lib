@@ -1,6 +1,6 @@
-#include "WebSocket.hpp"
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/Endian.hpp"
+#include "services/network/WebSocket.hpp"
 
 namespace
 {
@@ -97,6 +97,49 @@ namespace services
         headers.push_back(services::HttpHeader("Sec-Websocket-Key", "AQIDBAUGBbgJCgsMDQ4PEC=="));
         headers.push_back(services::HttpHeader("Sec-Websocket-Protocol", protocol));
         headers.push_back(services::HttpHeader("Sec-Websocket-Version", "13"));
+    }
+
+    WebSocketObserverFactory::WebSocketObserverFactory(const Creators& creators)
+        : connectionCreator(creators.connectionCreator)
+    {}
+
+    void WebSocketObserverFactory::CreateWebSocketObserver(services::Connection& connection, infra::BoundedConstString handshakeKey, services::IPAddress address)
+    {
+        this->handshakeKey = handshakeKey.substr(0, this->handshakeKey.max_size());
+
+        if (webSocketConnectionObserver.Allocatable())
+            OnAllocatable(connection);
+        else
+        {
+            webSocketConnectionObserver.OnAllocatable([this, &connection]() { OnAllocatable(connection); });
+            if (webSocketConnectionObserver)
+                (*webSocketConnectionObserver)->Close();
+        }
+    }
+
+    void WebSocketObserverFactory::CancelCreation()
+    {
+        webSocketConnectionObserver.OnAllocatable(nullptr);
+    }
+
+    void WebSocketObserverFactory::Stop(const infra::Function<void()>& onDone)
+    {
+        if (!webSocketConnectionObserver.Allocatable())
+        {
+            webSocketConnectionObserver.OnAllocatable(onDone);
+
+            if (webSocketConnectionObserver)
+                (*webSocketConnectionObserver)->Close();
+        }
+        else
+            onDone();
+    }
+
+    void WebSocketObserverFactory::OnAllocatable(services::Connection& connection)
+    {
+        auto observer = webSocketConnectionObserver.Emplace(connectionCreator, connection, handshakeKey);
+        connection.SwitchObserver(infra::MakeContainedSharedObject(**observer, observer));
+        webSocketConnectionObserver.OnAllocatable(nullptr);
     }
 }
 

@@ -4,6 +4,9 @@
 #include "infra/stream/InputStream.hpp"
 #include "infra/stream/OutputStream.hpp"
 #include "infra/util/BoundedVector.hpp"
+#include "infra/util/ProxyCreator.hpp"
+#include "infra/util/SharedOptional.hpp"
+#include "services/network/Connection.hpp"
 #include "services/network/Http.hpp"
 
 namespace services
@@ -57,6 +60,29 @@ namespace services
     {
     public:
         static void UpgradeHeaders(infra::BoundedVector<const services::HttpHeader>& headers, infra::BoundedConstString protocol);
+    };
+
+    class WebSocketObserverFactory
+    {
+    public:
+        struct Creators
+        {
+            infra::CreatorBase<services::ConnectionObserver, void(services::Connection& connection, infra::BoundedConstString handshakeKey)>& connectionCreator;
+        };
+
+        WebSocketObserverFactory(const Creators& creators);
+
+        virtual void CreateWebSocketObserver(services::Connection& connection, infra::BoundedConstString handshakeKey, services::IPAddress address);
+        void CancelCreation();
+        void Stop(const infra::Function<void()>& onDone);
+
+    private:
+        void OnAllocatable(services::Connection& connection);
+
+    private:
+        decltype(Creators::connectionCreator) connectionCreator;
+        infra::NotifyingSharedOptional<infra::ProxyCreator<decltype(Creators::connectionCreator)>> webSocketConnectionObserver;
+        infra::BoundedString::WithStorage<64> handshakeKey;
     };
 }
 
