@@ -3,6 +3,7 @@
 
 #include <string>
 #include "upgrade/pack_builder/SparseVector.hpp"
+#include "upgrade/pack_builder/Elf.hpp"
 
 namespace application
 {
@@ -54,6 +55,7 @@ namespace application
     {
     public:
         void AddHex(const std::vector<std::string>& data, uint32_t offset, const std::string& fileName);
+        void AddElf(const std::vector<uint8_t>& data, uint32_t offset, const std::string& fileName);
         void AddBinary(const std::vector<uint8_t>& data, uint32_t offset, const std::string& fileName);
 
         const SparseVector<uint8_t>& Memory() const;
@@ -69,6 +71,7 @@ namespace application
         };
 
     private:
+        std::string SectionName(const std::vector<uint8_t>& data, const uint32_t sectionNameOffset);
         void AddLine(const std::string& line, const std::string& fileName, int lineNumber);
         void VerifyNotEndOfFile(const std::string& fileName, int lineNumber) const;
         void InsertLineContents(const LineContents& lineContents);
