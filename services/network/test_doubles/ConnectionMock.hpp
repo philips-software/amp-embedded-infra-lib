@@ -38,6 +38,23 @@ namespace services
         MOCK_METHOD0(DataReceived, void());
     };
 
+    class ConnectionObserverFullMock
+        : public ConnectionObserver
+    {
+    public:
+        using ConnectionObserver::ConnectionObserver;
+
+        using services::ConnectionObserver::Subject;
+
+        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override { SendStreamAvailableMock(std::move(writer)); }
+        MOCK_METHOD1(SendStreamAvailableMock, void(infra::SharedPtr<infra::StreamWriter> writer));
+        MOCK_METHOD0(DataReceived, void());
+        MOCK_METHOD0(Connected, void());
+        MOCK_METHOD0(ClosingConnection, void());
+        MOCK_METHOD0(Close, void());
+        MOCK_METHOD0(Abort, void());
+    };
+
     class ConnectionFactoryMock
         : public services::ConnectionFactory
     {
