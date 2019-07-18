@@ -6,6 +6,12 @@ namespace infra
         : range(range)
     {}
 
+    void ByteInputStreamReader::ResetRange(ConstByteRange newRange)
+    {
+        range = newRange;
+        offset = 0;
+    }
+
     ConstByteRange ByteInputStreamReader::Processed() const
     {
         return MakeRange(range.begin(), range.begin() + offset);

@@ -15,6 +15,8 @@ namespace infra
 
         explicit ByteInputStreamReader(ConstByteRange range);
 
+        void ResetRange(ConstByteRange newRange);
+
         ConstByteRange Processed() const;   // Invariant: Processed() ++ Remaining() == range
         ConstByteRange Remaining() const;
 
