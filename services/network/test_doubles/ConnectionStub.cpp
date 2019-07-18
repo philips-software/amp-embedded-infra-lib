@@ -47,11 +47,8 @@ namespace services
     void ConnectionStub::SimulateDataReceived(infra::ConstByteRange data)
     {
         receivingData.insert(receivingData.end(), data.begin(), data.end());
-        infra::EventDispatcherWithWeakPtr::Instance().Schedule([this](const infra::SharedPtr<ConnectionStub>& object)
-        {
-            if (object->HasObserver())
-                object->GetObserver().DataReceived();
-        }, SharedFromThis());
+        if (HasObserver())
+            GetObserver().DataReceived();
     }
 
     std::string ConnectionStub::SentDataAsString() const

@@ -19,7 +19,7 @@ namespace services
         using infra::SingleObserver<ConnectionObserver, Connection>::SingleObserver;
 
     public:
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& stream) = 0;
+        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& streamWriter) = 0;
         virtual void DataReceived() = 0;
         virtual void Connected() {}
         virtual void ClosingConnection() {}
