@@ -35,10 +35,10 @@ namespace services
     class WebSocketFrameHeader
     {
     public:
-        explicit WebSocketFrameHeader(infra::StreamReader& reader);
+        WebSocketFrameHeader() = default;
+        explicit WebSocketFrameHeader(infra::DataInputStream& stream);
 
     public:
-        bool IsComplete() const;
         bool IsValid() const;
         bool IsFinalFrame() const;
 
@@ -47,7 +47,6 @@ namespace services
         const WebSocketMaskingKey& MaskingKey() const;
 
     private:
-        bool complete = false;
         bool finalFrame = false;
         bool masked = false;
         uint8_t rsv = 0;
@@ -88,6 +87,7 @@ namespace services
 
 namespace infra
 {
+    DataInputStream& operator>>(DataInputStream& stream, services::WebSocketFrameHeader& header);
     DataOutputStream& operator<<(DataOutputStream& stream, services::WebSocketOpCode opcode);
 }
 

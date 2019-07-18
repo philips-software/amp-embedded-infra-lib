@@ -16,13 +16,11 @@ constexpr auto enum_cast(T t) -> typename std::underlying_type<T>::type
 
 namespace services
 {
-    WebSocketFrameHeader::WebSocketFrameHeader(infra::StreamReader& reader)
+    WebSocketFrameHeader::WebSocketFrameHeader(infra::DataInputStream& stream)
     {
-        infra::DataInputStream::WithErrorPolicy data(reader, infra::softFail);
-
         uint8_t first(0);
         uint8_t second(0);
-        data >> first >> second;
+        stream >> first >> second;
         finalFrame = (first & enum_cast(WebSocketMask::finMask)) != 0;
         rsv = (first & enum_cast(WebSocketMask::rsvMask)) >> 4;
         opCode = static_cast<WebSocketOpCode>(first & enum_cast(WebSocketMask::opCodeMask));
@@ -32,31 +30,21 @@ namespace services
         if (payloadLength == extendedPayloadLength16)
         {
             infra::BigEndian<uint16_t> extractedPayloadLength = 0;
-            data >> extractedPayloadLength;
+            stream >> extractedPayloadLength;
             payloadLength = extractedPayloadLength;
         }
         else if (payloadLength == extendedPayloadLength64)
         {
             infra::BigEndian<uint64_t> extractedPayloadLength = 0;
-            data >> extractedPayloadLength;
+            stream >> extractedPayloadLength;
             payloadLength = extractedPayloadLength;
         }
 
-        data >> maskingKey;
-
-        if (!data.Failed())
-            complete = true;
-    }
-
-    bool WebSocketFrameHeader::IsComplete() const
-    {
-        return complete;
+        stream >> maskingKey;
     }
 
     bool WebSocketFrameHeader::IsValid() const
     {
-        if (!IsComplete())
-            return false;
         if (rsv != 0)
             return false;
         if (opCode > WebSocketOpCode::opCodePong ||
@@ -145,6 +133,12 @@ namespace services
 
 namespace infra
 {
+    DataInputStream& operator>>(DataInputStream& stream, services::WebSocketFrameHeader& header)
+    {
+        header = services::WebSocketFrameHeader(stream);
+        return stream;
+    }
+
     DataOutputStream& operator<<(DataOutputStream& stream, services::WebSocketOpCode opcode)
     {
         stream << static_cast<uint8_t>(enum_cast(services::WebSocketMask::finMask) | (enum_cast(opcode) & enum_cast(services::WebSocketMask::opCodeMask)));
