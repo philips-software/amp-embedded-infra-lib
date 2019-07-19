@@ -26,6 +26,7 @@ ccola_component(util static_library)
         FixedPoint.hpp
         Function.cpp
         Function.hpp
+        IntegerSequence.hpp
         InterfaceConnector.hpp
         IntrusiveBinarySearchTree.hpp
         IntrusiveForwardList.hpp
