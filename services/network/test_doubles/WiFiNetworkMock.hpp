@@ -12,7 +12,7 @@ namespace services
         : public services::WiFiNetwork
     {
     public:
-        MOCK_METHOD4(StartAccessPoint, void(infra::BoundedConstString ssid, const services::WiFiSecurity& security, uint8_t channel, services::IPAddresses ipSettings));
+        MOCK_METHOD5(StartAccessPoint, void(infra::BoundedConstString ssid, const services::WiFiSecurity& security, uint8_t channel, services::IPAddresses ipSettings, const infra::Function<void()>& onDone));
         MOCK_METHOD4(JoinNetwork, void(infra::BoundedConstString, const services::WiFiSecurity&, const services::IpConfig&, services::WiFiNetworkJoinResultObserver& joinResultObserver));
         MOCK_METHOD6(JoinNetwork, void(infra::BoundedConstString, hal::MacAddress, uint8_t, const services::WiFiSecurity&, const services::IpConfig&, services::WiFiNetworkJoinResultObserver& joinResultObserver));
         MOCK_METHOD0(Stop, void());
