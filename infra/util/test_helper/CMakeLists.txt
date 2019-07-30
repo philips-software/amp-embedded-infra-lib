@@ -8,6 +8,7 @@ ccola_component(util_test_helper x86: source other: skip)
         MockHelpers.hpp
         MonitoredConstructionObject.hpp
         MoveConstructible.hpp
+        ProxyCreatorMock.hpp
         VariantPrintTo.hpp
     )
 

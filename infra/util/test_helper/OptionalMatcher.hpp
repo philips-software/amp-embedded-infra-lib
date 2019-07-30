@@ -1,5 +1,5 @@
-#ifndef INFRA_UTIL_MATCHERS_HPP
-#define INFRA_UTIL_MATCHERS_HPP
+#ifndef INFRA_OPTIONAL_MATCHER_HPP
+#define INFRA_OPTIONAL_MATCHER_HPP
 
 #include "gmock/gmock.h"
 #include "infra/util/BoundedString.hpp"
