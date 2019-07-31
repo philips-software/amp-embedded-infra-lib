@@ -18,7 +18,11 @@ namespace testing
             : internal::MatcherBase<infra::JsonString>(impl)
         {}
 
-        //Matcher(infra::JsonString s) { *this = Eq(std::string(s.data(), s.size())); }
+        explicit Matcher(const MatcherInterface<const infra::JsonString&>* impl)
+            : internal::MatcherBase<infra::JsonString>(impl)
+        {}
+
+        Matcher(infra::JsonString s) { *this = Eq(s.ToStdString()); }
         Matcher(const char* s) { *this = Eq(infra::BoundedConstString(s)); }
     };
 }
