@@ -49,6 +49,8 @@ ccola_component(network static_library)
         SntpClient.hpp
         StreamEcho.cpp
         StreamEcho.hpp
+        TracingConnectionFactoryWithNameResolver.cpp
+        TracingConnectionFactoryWithNameResolver.hpp
         TracingConnectionMbedTls.cpp
         TracingConnectionMbedTls.hpp
         TracingHttpClientImpl.cpp
