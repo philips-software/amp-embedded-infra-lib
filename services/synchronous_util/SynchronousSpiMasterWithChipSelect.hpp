@@ -3,6 +3,7 @@
 
 #include "hal/synchronous_interfaces/SynchronousSpi.hpp"
 #include "hal/interfaces/Gpio.hpp"
+#include "hal/synchronous_interfaces/SynchronousGpio.hpp"
 
 namespace services
 {
@@ -17,6 +18,19 @@ namespace services
     private:
         hal::SynchronousSpi& spi;
         hal::OutputPin chipSelect;
+    };
+
+    class SynchronousSpiMasterWithSynchronousChipSelect
+        : public hal::SynchronousSpi
+    {
+    public:
+        SynchronousSpiMasterWithSynchronousChipSelect(hal::SynchronousSpi& spi, hal::SynchronousOutputPin& chipSelect);
+
+        virtual void SendAndReceive(infra::ConstByteRange sendData, infra::ByteRange receiveData, Action nextAction) override;
+
+    private:
+        hal::SynchronousSpi& spi;
+        hal::SynchronousOutputPin& chipSelect;
     };
 }
 

@@ -26,7 +26,7 @@ namespace hal
         SynchronousInputPin() = default;
         SynchronousInputPin(const SynchronousInputPin& other) = delete;
 
-        virtual bool Get() = 0;
+        virtual bool Get() const = 0;
 
     protected:
         ~SynchronousInputPin() = default;
