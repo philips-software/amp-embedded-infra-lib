@@ -109,10 +109,10 @@ namespace services
         {
             sendMemoryPool.emplace_back();
             infra::ByteRange sendBuffer = infra::Head(infra::ByteRange(sendMemoryPool.back()), requestedSendSize);
-            infra::EventDispatcherWithWeakPtr::Instance().Schedule([sendBuffer](const infra::SharedPtr<ConnectionLwIp>& object)
+            infra::EventDispatcherWithWeakPtr::Instance().Schedule([sendBuffer](const infra::SharedPtr<ConnectionLwIp>& self)
             {
-                infra::SharedPtr<infra::StreamWriter> stream = object->streamWriter.Emplace(*object, sendBuffer);
-                object->GetObserver().SendStreamAvailable(std::move(stream));
+                infra::SharedPtr<infra::StreamWriter> stream = self->streamWriter.Emplace(*self, sendBuffer);
+                self->GetObserver().SendStreamAvailable(std::move(stream));
             }, SharedFromThis());
 
             requestedSendSize = 0;
@@ -154,10 +154,10 @@ namespace services
             if (!dataReceivedScheduled && HasObserver())
             {
                 dataReceivedScheduled = true;
-                infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionLwIp>& object)
+                infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionLwIp>& self)
                 {
-                    object->dataReceivedScheduled = false;
-                    object->GetObserver().DataReceived();
+                    self->dataReceivedScheduled = false;
+                    self->GetObserver().DataReceived();
                 }, SharedFromThis());
             }
         }
@@ -169,7 +169,7 @@ namespace services
 
     void ConnectionLwIp::Err(err_t err)
     {
-        assert(err == ERR_RST || err == ERR_CLSD);
+        assert(err == ERR_RST || err == ERR_CLSD || err == ERR_ABRT);
         ResetControl();
         ResetOwnership();
     }
@@ -205,7 +205,7 @@ namespace services
 
     ConnectionLwIp::StreamWriterLwIp::~StreamWriterLwIp()
     {
-        if (!Processed().empty())
+        if (!Processed().empty() && connection.control != nullptr)
             connection.SendBuffer(Processed());
         else
             connection.sendMemoryPool.pop_back();
@@ -315,9 +315,11 @@ namespace services
 
     ConnectorLwIp::~ConnectorLwIp()
     {
-        control->errf = nullptr;    // Avoid tcp_abort triggering callback Err
         if (control != nullptr)
+        {
+            control->errf = nullptr;    // Avoid tcp_abort triggering callback Err
             tcp_abort(control);
+        }
     }
 
     err_t ConnectorLwIp::StaticConnected(void* arg, tcp_pcb* tpcb, err_t err)

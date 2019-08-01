@@ -21,7 +21,7 @@ ccola_component(boot_loader static_library)
         PackUpgrader.cpp
         PackUpgrader.hpp
         SecondStageToRamLoader.cpp
-        PackUpgrader.hpp
+        SecondStageToRamLoader.hpp
         Verifier.hpp
         VerifierEcDsa.cpp
         VerifierEcDsa.hpp

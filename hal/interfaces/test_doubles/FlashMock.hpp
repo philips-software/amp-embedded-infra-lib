@@ -3,6 +3,7 @@
 
 #include "gmock/gmock.h"
 #include "hal/interfaces/Flash.hpp"
+#include "infra/util/AutoResetFunction.hpp"
 
 namespace hal
 {
@@ -30,7 +31,7 @@ namespace hal
         MOCK_METHOD1(readBufferMock, std::vector<uint8_t>(uint32_t));
         MOCK_METHOD2(eraseSectorsMock, void(uint32_t, uint32_t));
 
-        infra::Function<void()> done;
+        infra::AutoResetFunction<void()> done;
     };
 
     class CleanFlashMock
