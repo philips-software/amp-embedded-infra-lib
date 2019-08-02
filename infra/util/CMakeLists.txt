@@ -1,11 +1,6 @@
 ccola_component(util static_library)
 
     ccola_sources(
-        CrcCcittCalculator.cpp
-        Optional.cpp
-        Sequencer.cpp
-        SharedPtr.cpp
-        Tokenizer.cpp
         Allocator.hpp
         AllocatorFixedSpace.hpp
         AllocatorHeap.hpp
@@ -20,6 +15,7 @@ ccola_component(util static_library)
         BoundedVector.hpp
         ByteRange.hpp
         CompareMembers.hpp
+        CrcCcittCalculator.cpp
         CrcCcittCalculator.hpp
         CyclicBuffer.hpp
         Endian.hpp
@@ -35,19 +31,24 @@ ccola_component(util static_library)
         IntrusiveSet.hpp
         MemoryRange.hpp
         Observer.hpp
+        Optional.cpp
         Optional.hpp
         PolymorphicVariant.hpp
+        PostAssign.hpp
         ProxyCreator.hpp
         ReallyAssert.hpp
         ReferenceCountedSingleton.hpp
         ReverseRange.hpp
+        Sequencer.cpp
         Sequencer.hpp
         SharedObjectAllocator.hpp
         SharedObjectAllocatorFixedSize.hpp
         SharedObjectAllocatorHeap.hpp
         SharedOptional.hpp
+        SharedPtr.cpp
         SharedPtr.hpp
         StaticStorage.hpp
+        Tokenizer.cpp
         Tokenizer.hpp
         Unit.hpp
         VariadicTemplates.hpp

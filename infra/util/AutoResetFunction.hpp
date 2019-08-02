@@ -2,6 +2,7 @@
 #define INFRA_AUTO_RESET_FUNCTION_HPP
 
 #include "infra/util/Function.hpp"
+#include "infra/util/PostAssign.hpp"
 
 namespace infra
 {
@@ -96,9 +97,7 @@ namespace infra
     template<std::size_t ExtraSize, class Result, class... Args>
     Result AutoResetFunction<Result(Args...), ExtraSize>::operator()(Args... args)
     {
-        Function<Result(Args...), ExtraSize> temporary = function;
-        function = nullptr;
-        return temporary(std::forward<Args>(args)...);
+        return infra::PostAssign(function, nullptr)(std::forward<Args>(args)...);
     }
 
     template<std::size_t ExtraSize, class Result, class... Args>
