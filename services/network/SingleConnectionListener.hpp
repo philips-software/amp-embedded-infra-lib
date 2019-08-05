@@ -4,24 +4,31 @@
 #include "infra/util/ProxyCreator.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "services/network/Connection.hpp"
+#include "services/util/Stoppable.hpp"
 
 namespace services
 {
     class SingleConnectionListener
-        : private ServerConnectionObserverFactory
+        : public Stoppable
+        , private ServerConnectionObserverFactory
+
     {
     public:
         struct Creators
         {
-            infra::CreatorBase<services::ConnectionObserver, void()>& connectionCreator;
+            infra::CreatorBase<services::ConnectionObserver, void(IPAddress address)>& connectionCreator;
         };
 
         SingleConnectionListener(ConnectionFactory& connectionFactory, uint16_t port, const Creators& creators);
+
+        // Implementation of Stoppable
+        virtual void Stop(const infra::Function<void()>& onDone) override;
 
     private:
         // Implementation of ServerConnectionObserverFactory
         virtual void ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address) override;
 
+        void Stop(const infra::Function<void()>& onDone, bool force);
         void CreateObserver();
 
     private:
@@ -30,6 +37,7 @@ namespace services
         infra::SharedPtr<void> listener;
 
         infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver;
+        IPAddress address;
     };
 }
 

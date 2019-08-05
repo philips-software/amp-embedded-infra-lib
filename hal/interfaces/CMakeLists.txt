@@ -15,6 +15,8 @@ ccola_component(interfaces static_library)
         FlashHomogeneous.cpp
         FlashHomogeneous.hpp
         FlashId.hpp
+        FlashStatelessStub.cpp
+        FlashStatelessStub.hpp
         Gpio.cpp
         Gpio.hpp
         I2c.cpp

@@ -75,13 +75,13 @@ namespace application
         }
     }
 
-    MessageGenerator::MessageGenerator(const std::shared_ptr<const EchoMessage>& message, Entities& formatter)
+    MessageGenerator::MessageGenerator(const std::shared_ptr<const EchoMessage>& message)
         : message(message)
-    {
-        auto class_ = std::make_shared<Class>(message->name);
-        classFormatter = class_.get();
-        formatter.Add(class_);
+    {}
 
+    void MessageGenerator::Run(Entities& formatter)
+    {
+        GenerateClass(formatter);
         GenerateNestedMessageForwardDeclarations();
         GenerateConstructors();
         GenerateFunctions();
@@ -89,6 +89,13 @@ namespace application
         GenerateFieldDeclarations();
         GenerateFieldConstants();
         GenerateMaxMessageSize();
+    }
+
+    void MessageGenerator::GenerateClass(Entities& formatter)
+    {
+        auto class_ = std::make_shared<Class>(message->name);
+        classFormatter = class_.get();
+        formatter.Add(class_);
     }
 
     void MessageGenerator::GenerateConstructors()
@@ -226,7 +233,7 @@ namespace application
             auto nestedMessages = std::make_shared<Access>("public");
 
             for (auto& nestedMessage : message->nestedMessages)
-                MessageGenerator(nestedMessage, *nestedMessages);
+                MessageGenerator(nestedMessage).Run(*nestedMessages);
 
             classFormatter->Add(nestedMessages);
         }
@@ -708,6 +715,402 @@ namespace application
         return result.str();
     }
 
+    void MessageReferenceGenerator::GenerateClass(Entities& formatter)
+    {
+        auto class_ = std::make_shared<Class>(message->name + "Reference");
+        classFormatter = class_.get();
+        formatter.Add(class_);
+    }
+
+    void MessageReferenceGenerator::GenerateConstructors()
+    {
+        class GenerateConstructorsVisitor
+            : public EchoFieldVisitor
+        {
+        public:
+            GenerateConstructorsVisitor(Constructor& constructor)
+                : constructor(constructor)
+            {}
+
+            virtual void VisitInt32(const EchoFieldInt32& field) override
+            {
+                constructor.Parameter("int32_t " + field.name);
+                constructor.Initializer(field.name + "(" + field.name + ")");
+            }
+
+            virtual void VisitFixed32(const EchoFieldFixed32& field) override
+            {
+                constructor.Parameter("uint32_t " + field.name);
+                constructor.Initializer(field.name + "(" + field.name + ")");
+            }
+
+            virtual void VisitBool(const EchoFieldBool& field) override
+            {
+                constructor.Parameter("bool " + field.name);
+                constructor.Initializer(field.name + "(" + field.name + ")");
+            }
+
+            virtual void VisitString(const EchoFieldString& field) override
+            {
+                constructor.Parameter("infra::BoundedConstString " + field.name);
+                constructor.Initializer(field.name + "(" + field.name + ")");
+            }
+
+            virtual void VisitMessage(const EchoFieldMessage& field) override
+            {
+                constructor.Parameter("const " + field.message->qualifiedReferenceName + "& " + field.name);
+                constructor.Initializer(field.name + "(" + field.name + ")");
+            }
+
+            virtual void VisitBytes(const EchoFieldBytes& field) override
+            {
+                constructor.Parameter("infra::ConstByteRange " + field.name);
+                constructor.Initializer(field.name + "(" + field.name + ")");
+            }
+
+            virtual void VisitUint32(const EchoFieldUint32& field) override
+            {
+                constructor.Parameter("uint32_t " + field.name);
+                constructor.Initializer(field.name + "(" + field.name + ")");
+            }
+
+            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
+            {
+                constructor.Parameter("const infra::BoundedVector<infra::BoundedConstString>& " + field.name);
+                constructor.Initializer(field.name + "(" + field.name + ")");
+            }
+
+            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
+            {
+                constructor.Parameter("const infra::BoundedVector<" + field.message->qualifiedReferenceName + ">& " + field.name);
+                constructor.Initializer(field.name + "(" + field.name + ")");
+            }
+
+            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
+            {
+                constructor.Parameter("const infra::BoundedVector<uint32_t>& " + field.name);
+                constructor.Initializer(field.name + "(" + field.name + ")");
+            }
+
+        private:
+            Constructor& constructor;
+        };
+
+        auto constructors = std::make_shared<Access>("public");
+        constructors->Add(std::make_shared<Constructor>(message->name + "Reference", "", Constructor::cDefault));
+
+        if (!message->fields.empty())
+        {
+            auto constructByMembers = std::make_shared<Constructor>(message->name + "Reference", "", 0);
+            GenerateConstructorsVisitor visitor(*constructByMembers);
+            for (auto& field : message->fields)
+                field->Accept(visitor);
+            constructors->Add(constructByMembers);
+        }
+
+        auto constructByProtoParser = std::make_shared<Constructor>(message->name + "Reference", "Deserialize(parser);\n", 0);
+        constructByProtoParser->Parameter("infra::ProtoParser& parser");
+        constructors->Add(constructByProtoParser);
+        classFormatter->Add(constructors);
+    }
+
+    void MessageReferenceGenerator::GenerateFunctions()
+    {
+        auto functions = std::make_shared<Access>("public");
+
+        auto serialize = std::make_shared<Function>("Serialize", SerializerBody(), "void", Function::fConst);
+        serialize->Parameter("infra::ProtoFormatter& formatter");
+        functions->Add(serialize);
+
+        auto deserialize = std::make_shared<Function>("Deserialize", DeserializerBody(), "void", 0);
+        deserialize->Parameter("infra::ProtoParser& parser");
+        functions->Add(deserialize);
+
+        auto compareEqual = std::make_shared<Function>("operator==", CompareEqualBody(), "bool", Function::fConst);
+        compareEqual->Parameter("const " + message->name + "Reference& other");
+        functions->Add(compareEqual);
+
+        auto compareUnEqual = std::make_shared<Function>("operator!=", CompareUnEqualBody(), "bool", Function::fConst);
+        compareUnEqual->Parameter("const " + message->name + "Reference& other");
+        functions->Add(compareUnEqual);
+
+        classFormatter->Add(functions);
+    }
+
+    void MessageReferenceGenerator::GenerateNestedMessageForwardDeclarations()
+    {
+        if (!message->nestedMessages.empty())
+        {
+            auto forwardDeclarations = std::make_shared<Access>("public");
+
+            for (auto& nestedMessage : message->nestedMessages)
+                forwardDeclarations->Add(std::make_shared<ClassForwardDeclaration>(nestedMessage->name + "Reference"));
+
+            classFormatter->Add(forwardDeclarations);
+        }
+    }
+
+    void MessageReferenceGenerator::GenerateNestedMessages()
+    {
+        if (!message->nestedMessages.empty())
+        {
+            auto nestedMessages = std::make_shared<Access>("public");
+
+            for (auto& nestedMessage : message->nestedMessages)
+                MessageReferenceGenerator(nestedMessage).Run(*nestedMessages);
+
+            classFormatter->Add(nestedMessages);
+        }
+    }
+
+    void MessageReferenceGenerator::GenerateFieldDeclarations()
+    {
+        class GenerateFieldDeclarationVisitor
+            : public EchoFieldVisitor
+        {
+        public:
+            GenerateFieldDeclarationVisitor(Entities& entities)
+                : entities(entities)
+            {}
+
+            virtual void VisitInt32(const EchoFieldInt32& field) override
+            {
+                entities.Add(std::make_shared<DataMember>(field.name, "int32_t", "0"));
+            }
+
+            virtual void VisitFixed32(const EchoFieldFixed32& field) override
+            {
+                entities.Add(std::make_shared<DataMember>(field.name, "uint32_t", "0"));
+            }
+
+            virtual void VisitBool(const EchoFieldBool& field) override
+            {
+                entities.Add(std::make_shared<DataMember>(field.name, "bool", "false"));
+            }
+
+            virtual void VisitString(const EchoFieldString& field) override
+            {
+                entities.Add(std::make_shared<DataMember>(field.name, "infra::BoundedConstString"));
+            }
+
+            virtual void VisitMessage(const EchoFieldMessage& field) override
+            {
+                entities.Add(std::make_shared<DataMember>(field.name, field.message->qualifiedReferenceName));
+            }
+
+            virtual void VisitBytes(const EchoFieldBytes& field) override
+            {
+                entities.Add(std::make_shared<DataMember>(field.name, "infra::ConstByteRange"));
+            }
+
+            virtual void VisitUint32(const EchoFieldUint32& field) override
+            {
+                entities.Add(std::make_shared<DataMember>(field.name, "uint32_t", "0"));
+            }
+
+            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
+            {
+                entities.Add(std::make_shared<DataMember>(field.name
+                    , "infra::BoundedVector<infra::BoundedConstString>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
+            }
+
+            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
+            {
+                entities.Add(std::make_shared<DataMember>(field.name
+                    , "infra::BoundedVector<" + field.message->qualifiedReferenceName + ">::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
+            }
+
+            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
+            {
+                entities.Add(std::make_shared<DataMember>(field.name
+                    , "infra::BoundedVector<uint32_t>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
+            }
+
+        private:
+            Entities& entities;
+        };
+
+        if (!message->fields.empty())
+        {
+            auto fields = std::make_shared<Access>("public");
+
+            GenerateFieldDeclarationVisitor visitor(*fields);
+            for (auto& field : message->fields)
+                field->Accept(visitor);
+
+            classFormatter->Add(fields);
+        }
+    }
+
+    void MessageReferenceGenerator::GenerateMaxMessageSize()
+    {}
+
+    std::string MessageReferenceGenerator::SerializerBody()
+    {
+        return "std::abort();\n";
+    }
+
+    std::string MessageReferenceGenerator::DeserializerBody()
+    {
+        class GenerateDeserializerBodyVisitor
+            : public EchoFieldVisitor
+        {
+        public:
+            GenerateDeserializerBodyVisitor(google::protobuf::io::Printer& printer)
+                : printer(printer)
+            {}
+
+            virtual void VisitInt32(const EchoFieldInt32& field) override
+            {
+                printer.Print(R"(case $constant$:
+    $name$ = static_cast<int32_t>(field.first.Get<uint64_t>());
+    break;
+)"
+, "name", field.name
+, "constant", field.constantName);
+            }
+
+            virtual void VisitFixed32(const EchoFieldFixed32& field) override
+            {
+                printer.Print(R"(case $constant$:
+    $name$ = field.first.Get<uint32_t>();
+    break;
+)"
+, "name", field.name
+, "constant", field.constantName);
+            }
+
+            virtual void VisitBool(const EchoFieldBool& field) override
+            {
+                printer.Print(R"(case $constant$:
+    $name$ = field.first.Get<uint64_t>() != 0;
+    break;
+)"
+, "name", field.name
+, "constant", field.constantName);
+            }
+
+            virtual void VisitString(const EchoFieldString& field) override
+            {
+                printer.Print(R"(case $constant$:
+    field.first.Get<infra::ProtoLengthDelimited>().GetStringReference($name$);
+    break;
+)"
+, "name", field.name
+, "constant", field.constantName);
+            }
+
+            virtual void VisitMessage(const EchoFieldMessage& field) override
+            {
+                printer.Print(R"(case $constant$:
+{
+    infra::ProtoParser nestedParser = field.first.Get<infra::ProtoLengthDelimited>().Parser();
+    $name$.Deserialize(nestedParser);
+    break;
+}
+)"
+, "name", field.name
+, "constant", field.constantName);
+            }
+
+            virtual void VisitBytes(const EchoFieldBytes& field) override
+            {
+                printer.Print(R"(case $constant$:
+    field.first.Get<infra::ProtoLengthDelimited>().GetBytesReference($name$);
+    break;
+)"
+, "name", field.name
+, "constant", field.constantName);
+            }
+
+            virtual void VisitUint32(const EchoFieldUint32& field) override
+            {
+                printer.Print(R"(case $constant$:
+    $name$ = static_cast<uint32_t>(field.first.Get<uint64_t>());
+    break;
+)"
+, "name", field.name
+, "constant", field.constantName);
+            }
+
+            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
+            {
+                printer.Print(R"(case $constant$:
+    $name$.emplace_back();
+    field.first.Get<infra::ProtoLengthDelimited>().GetStringReference($name$.back());
+    break;
+)"
+, "name", field.name
+, "constant", field.constantName);
+            }
+
+            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
+            {
+                printer.Print(R"(case $constant$:
+{
+    infra::ProtoParser parser = field.first.Get<infra::ProtoLengthDelimited>().Parser();
+    $name$.emplace_back(parser);
+    break;
+}
+)"
+, "name", field.name
+, "constant", field.constantName);
+            }
+
+            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
+            {
+                printer.Print(R"(case $constant$:
+    $name$.push_back(static_cast<uint32_t>(field.first.Get<uint64_t>()));
+    break;
+)"
+, "name", field.name
+, "constant", field.constantName);
+            }
+
+        private:
+            google::protobuf::io::Printer& printer;
+        };
+
+        std::ostringstream result;
+        {
+            google::protobuf::io::OstreamOutputStream stream(&result);
+            google::protobuf::io::Printer printer(&stream, '$', nullptr);
+
+            printer.Print(R"(while (!parser.Empty())
+{
+    infra::ProtoParser::Field field = parser.GetField();
+
+)");
+            if (!message->fields.empty())
+            {
+                printer.Print(R"(    switch (field.second)
+    {
+)");
+
+                printer.Indent(); printer.Indent();
+                GenerateDeserializerBodyVisitor visitor(printer);
+                for (auto& field : message->fields)
+                    field->Accept(visitor);
+                printer.Outdent(); printer.Outdent();
+
+                printer.Print(R"(        default:
+            if (field.first.Is<infra::ProtoLengthDelimited>())
+                field.first.Get<infra::ProtoLengthDelimited>().SkipEverything();
+            break;
+    }
+}
+)");
+            }
+            else
+                printer.Print(R"(    if (field.first.Is<infra::ProtoLengthDelimited>())
+        field.first.Get<infra::ProtoLengthDelimited>().SkipEverything();
+}
+)");
+        }
+
+        return result.str();
+    }
+
     ServiceGenerator::ServiceGenerator(const std::shared_ptr<const EchoService>& service, Entities& formatter)
         : service(service)
     {
@@ -905,8 +1308,17 @@ Rpc().Send();
             currentEntity = newEntity;
         }
 
-        for (auto& message: root.GetFile(*file)->messages)
-            messageGenerators.emplace_back(std::make_shared<MessageGenerator>(message, *currentEntity));
+        for (auto& message : root.GetFile(*file)->messages)
+        {
+            messageReferenceGenerators.emplace_back(std::make_shared<MessageReferenceGenerator>(message));
+            messageReferenceGenerators.back()->Run(*currentEntity);
+        }
+
+        for (auto& message : root.GetFile(*file)->messages)
+        {
+            messageGenerators.emplace_back(std::make_shared<MessageGenerator>(message));
+            messageGenerators.back()->Run(*currentEntity);
+        }
 
         for (auto& service: root.GetFile(*file)->services)
             serviceGenerators.emplace_back(std::make_shared<ServiceGenerator>(service, *currentEntity));

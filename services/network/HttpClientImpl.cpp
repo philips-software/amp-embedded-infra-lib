@@ -343,7 +343,7 @@ namespace services
         headerBuffer.resize(std::min(headerBuffer.max_size(), stream.Available()));
         stream >> headerBuffer;
 
-        auto crlfPos = headerBuffer.find_first_of(crlf);
+        auto crlfPos = headerBuffer.find(crlf);
         if (crlfPos != infra::BoundedString::npos)
         {
             auto statusLine = headerBuffer.substr(0, crlfPos);
@@ -378,7 +378,7 @@ namespace services
             headerBuffer.resize(std::min(headerBuffer.max_size(), stream.Available()));
             stream >> headerBuffer;
 
-            auto crlfPos = headerBuffer.find_first_of(crlf);
+            auto crlfPos = headerBuffer.find(crlf);
             if (crlfPos != infra::BoundedString::npos)
             {
                 auto headerLine = headerBuffer.substr(0, crlfPos);
@@ -403,6 +403,11 @@ namespace services
             }
             else if (headerBuffer.full())
                 SetError();
+            else
+            {
+                reader.Rewind(start);
+                break;
+            }
         }
     }
 

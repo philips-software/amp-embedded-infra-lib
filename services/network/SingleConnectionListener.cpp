@@ -7,27 +7,43 @@ namespace services
         , listener(connectionFactory.Listen(port, *this))
     {}
 
+    void SingleConnectionListener::Stop(const infra::Function<void()>& onDone)
+    {
+        Stop(onDone, true);
+    }
+
     void SingleConnectionListener::ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address)
     {
         if (this->createdObserver != nullptr)
             this->createdObserver(nullptr);
         this->createdObserver = std::move(createdObserver);
+        this->address = address;
 
+        Stop([this]() { CreateObserver(); }, false);
+    }
+
+    void SingleConnectionListener::Stop(const infra::Function<void()>& onDone, bool force)
+    {
         if (connection.Allocatable())
-            CreateObserver();
+            onDone();
         else
         {
-            connection.OnAllocatable([this]() { CreateObserver(); });
+            connection.OnAllocatable(onDone);
 
             if (connection)
-                (*connection)->Subject().AbortAndDestroy();
+            {
+                if (force)
+                    (*connection)->Abort();
+                else
+                    (*connection)->Close();
+            }
         }
     }
 
     void SingleConnectionListener::CreateObserver()
     {
         connection.OnAllocatable(infra::emptyFunction);
-        auto proxyPtr = connection.Emplace(connectionCreator);
+        auto proxyPtr = connection.Emplace(connectionCreator, address);
         this->createdObserver(infra::MakeContainedSharedObject(**proxyPtr, proxyPtr));
     }
 }

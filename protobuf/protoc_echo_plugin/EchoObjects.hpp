@@ -34,6 +34,7 @@ namespace application
         const google::protobuf::Descriptor& descriptor;
         std::string name;
         std::string qualifiedName;
+        std::string qualifiedReferenceName;
         std::vector<std::shared_ptr<EchoField>> fields;
         std::vector<std::shared_ptr<EchoMessage>> nestedMessages;
 

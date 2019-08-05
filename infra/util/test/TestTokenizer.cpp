@@ -33,6 +33,14 @@ TEST(TokenizerTest, get_number_of_tokens)
     EXPECT_EQ(3, tokenizer.Size());
 }
 
+TEST(TokenizerTest, get_number_of_tokens_of_empty_string)
+{
+    infra::BoundedConstString string = " ";
+    infra::Tokenizer tokenizer(string, ' ');
+
+    EXPECT_EQ(0, tokenizer.Size());
+}
+
 TEST(TokenizerTest, nonexisting_token_is_empty)
 {
     infra::BoundedConstString string = "abcd defg hijk";

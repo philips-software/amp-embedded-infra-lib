@@ -7,6 +7,11 @@ namespace services
         , jsonParserCreator(connectionInfo.jsonParserCreator)
     {}
 
+    HttpClientJson::HttpClientJson(infra::BoundedString url, const ConnectionInfo& connectionInfo, infra::Duration timeoutDuration)
+        : services::HttpClientBasic(url, connectionInfo.port, connectionInfo.httpClientConnector, timeoutDuration)
+        , jsonParserCreator(connectionInfo.jsonParserCreator)
+    {}
+
     HttpClientJson::~HttpClientJson()
     {
         if (destructedIndication != nullptr)

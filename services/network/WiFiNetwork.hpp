@@ -144,7 +144,7 @@ namespace services
         , public infra::Subject<WiFiNetworkAccessPointObserver>
     {
     public:
-        virtual void StartAccessPoint(infra::BoundedConstString ssid, const WiFiSecurity& security, uint8_t channel, services::IPAddresses ipSettings) = 0;
+        virtual void StartAccessPoint(infra::BoundedConstString ssid, const WiFiSecurity& security, uint8_t channel, services::IPAddresses ipSettings, const infra::Function<void()>& onDone) = 0;
         // JoinNetwork eventually results in either JoinedNetwork or JoinNetworkFailed to be called on its observer.
         // Before receiving those callbacks a different state may not be entered.
         virtual void JoinNetwork(infra::BoundedConstString ssid, const WiFiSecurity& security, const IpConfig& ipConfig, WiFiNetworkJoinResultObserver& joinResultObserver) = 0;

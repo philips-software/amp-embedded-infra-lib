@@ -32,7 +32,7 @@ namespace services
 
         static const uint8_t statusFlagWriteInProgress = 1;
 
-        explicit FlashSpi(hal::SpiMaster& spi, uint32_t numberOfSubSectors = nrOfSubSectors, uint8_t timerId = infra::systemTimerServiceId);
+        explicit FlashSpi(hal::SpiMaster& spi, uint32_t numberOfSubSectors = nrOfSubSectors, uint32_t timerId = infra::systemTimerServiceId);
 
     public:
         // implement Flash

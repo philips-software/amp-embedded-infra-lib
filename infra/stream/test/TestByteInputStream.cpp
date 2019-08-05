@@ -60,6 +60,19 @@ TEST_F(ByteInputStreamReaderTest, Rewind)
     EXPECT_EQ((std::array<uint8_t, 2>{ {3, 4}}), reader.ExtractContiguousRange(2));
 }
 
+TEST_F(ByteInputStreamReaderTest, ResetRange)
+{
+    std::array<uint8_t, 2> result;
+    reader.Extract(result, errorPolicy);
+    ASSERT_EQ((std::array<uint8_t, 2>{ {1 , 2 }}), result);
+
+    std::array<uint8_t, 4> newData{ { 5, 6, 7, 8 } };
+    reader.ResetRange(newData);
+
+    reader.Extract(result, errorPolicy);
+    EXPECT_EQ((std::array<uint8_t, 2>{ { 5, 6 }}), result);
+}
+
 TEST(ByteInputStreamTest, construct_with_range)
 {
     std::array<uint8_t, 4> data{{1, 2, 3, 4}};
