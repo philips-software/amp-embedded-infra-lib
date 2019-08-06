@@ -676,3 +676,37 @@ TEST_F(HttpClientTest, Put_request_with_large_body_is_executed)
     ExecuteAllActions();
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n")));
 }
+
+TEST_F(HttpClientTest, Post_request_with_large_body_is_executed)
+{
+    Connect();
+    client.Subject().Post("/api/thing", 1024);
+
+    EXPECT_CALL(client, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamWriter>& writer)
+    {
+        EXPECT_EQ("POST /api/thing HTTP/1.1\r\nhost:localhost\r\ncontent-length:1024\r\n\r\n", connection.SentDataAsString());
+        connection.sentData.clear();
+
+        infra::TextOutputStream::WithErrorPolicy stream(*writer);
+        stream << "data";
+
+        EXPECT_CALL(client, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamWriter>& writer)
+        {
+            EXPECT_EQ("data", connection.SentDataAsString());
+            connection.sentData.clear();
+
+            infra::TextOutputStream::WithErrorPolicy stream(*writer);
+            stream << std::string(stream.Available(), ' ');
+
+            writer = nullptr;
+        }));
+    }));
+    ExecuteAllActions();
+
+    EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
+    EXPECT_CALL(connection, AckReceivedMock());
+    EXPECT_CALL(client, BodyComplete());
+    client.Subject().Get("/");
+    ExecuteAllActions();
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n")));
+}

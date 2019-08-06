@@ -36,6 +36,7 @@ namespace application
     {
     public:
         UpgradePackInputFactory(const std::vector<std::string>& supportedHexTargets,
+            const std::vector<std::pair<std::string, uint32_t>>& supportedElfTargets,
             const std::vector<std::pair<std::string, uint32_t>>& supportedBinaryTargets,
             hal::FileSystem& fileSystem, const ImageSecurity& imageSecurity, const std::vector<NoFileInputFactory*>& otherTargets);
 
@@ -43,6 +44,7 @@ namespace application
 
     private:
         std::vector<std::string> supportedHexTargets;
+        std::vector<std::pair<std::string, uint32_t>> supportedElfTargets;
         std::vector<std::pair<std::string, uint32_t>> supportedBinaryTargets;
         hal::FileSystem& fileSystem;
         const ImageSecurity& imageSecurity;

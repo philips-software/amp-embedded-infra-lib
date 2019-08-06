@@ -1,4 +1,5 @@
 #include "upgrade/pack_builder/InputBinary.hpp"
+#include "upgrade/pack_builder/InputElf.hpp"
 #include "upgrade/pack_builder/InputHex.hpp"
 #include "upgrade/pack_builder/UpgradePackInputFactory.hpp"
 
@@ -35,9 +36,11 @@ namespace application
     }
 
     UpgradePackInputFactory::UpgradePackInputFactory(const std::vector<std::string>& supportedHexTargets,
+        const std::vector<std::pair<std::string, uint32_t>>& supportedElfTargets,
         const std::vector<std::pair<std::string, uint32_t>>& supportedBinaryTargets,
         hal::FileSystem& fileSystem, const ImageSecurity& imageSecurity, const std::vector<NoFileInputFactory*>& otherTargets)
         : supportedHexTargets(supportedHexTargets)
+        , supportedElfTargets(supportedElfTargets)
         , supportedBinaryTargets(supportedBinaryTargets)
         , fileSystem(fileSystem)
         , imageSecurity(imageSecurity)
@@ -48,6 +51,10 @@ namespace application
     {
         if (std::find(supportedHexTargets.begin(), supportedHexTargets.end(), targetName) != supportedHexTargets.end())
             return std::make_unique<InputHex>(targetName, fileName, fileSystem, imageSecurity);
+
+        for (auto elfTarget : supportedElfTargets)
+            if (elfTarget.first == targetName)
+                return std::make_unique<InputElf>(targetName, fileName, elfTarget.second, fileSystem, imageSecurity);
 
         for (auto targetAndAddress : supportedBinaryTargets)
             if (targetAndAddress.first == targetName)

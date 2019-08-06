@@ -1,5 +1,6 @@
 #include "upgrade/pack_builder/BinaryObject.hpp"
 #include "infra/stream/StdStringInputStream.hpp"
+#include <algorithm>
 
 namespace application
 {
@@ -50,6 +51,40 @@ namespace application
             throw NoEndOfFileException(fileName, lineNumber);
     }
 
+    void BinaryObject::AddElf(const std::vector<uint8_t>& data, uint32_t offset, const std::string& fileName)
+    {
+        const elf_header_t* header = reinterpret_cast<const elf_header_t*>(&data[0]);
+
+        for (uint32_t i = 0; i != header->program_header_entry_count; ++i)
+        {
+			const elf_program_header_t* programHeader = reinterpret_cast<const elf_program_header_t*>(&data[header->program_header_offset + header->program_header_entry_size * i]);
+
+            if (programHeader->data_size_in_file == 0
+                || programHeader->type != 0x1)
+                continue;
+
+            std::vector<uint8_t> programData(std::next(std::begin(data), programHeader->data_offset), std::next(std::begin(data), programHeader->data_offset + programHeader->data_size_in_file));
+            
+            //quick and dirty fix to solve segment offset miscommunication in elf file
+            if (programHeader->data_offset == 0x0 
+                && (programHeader->flags & 0x1) == 1)
+            {
+                for (uint32_t j = 0; j != header->section_header_entry_count; ++j)
+                {
+                    const elf_section_header_t* sectionHeader = reinterpret_cast<const elf_section_header_t*>(&data[header->section_header_offset + header->section_header_entry_size * j]);
+                    if (SectionName(data, sectionHeader->name) == ".isr_vector")
+                        programData.assign(std::next(std::begin(data), sectionHeader->data_offset), std::next(std::begin(data), programHeader->data_size_in_file));
+                }
+            }
+
+            for (auto byte: programData)
+            {
+                memory.Insert(byte, offset);
+                ++offset;
+            }
+        }
+    }
+
     void BinaryObject::AddBinary(const std::vector<uint8_t>& data, uint32_t offset, const std::string& fileName)
     {
         for (auto byte: data)
@@ -62,6 +97,15 @@ namespace application
     const SparseVector<uint8_t>& BinaryObject::Memory() const
     {
         return memory;
+    }
+
+    std::string BinaryObject::SectionName(const std::vector<uint8_t>& data, const uint32_t sectionNameOffset)
+    {
+        const elf_header_t* header = reinterpret_cast<const elf_header_t*>(&data[0]);
+        const elf_section_header_t* stringSectionHeader = reinterpret_cast<const elf_section_header_t*>(&data[header->section_header_offset + header->section_header_entry_size * header->string_table_index]);
+        uint32_t stringOffset = stringSectionHeader->data_offset + sectionNameOffset;
+
+        return reinterpret_cast<const char *>(&data[stringOffset]);
     }
 
     void BinaryObject::AddLine(const std::string& line, const std::string& fileName, int lineNumber)

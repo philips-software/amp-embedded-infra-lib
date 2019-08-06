@@ -13,6 +13,7 @@ ccola_component(pack_builder x86: static_library other: noncompile)
         ImageSignerRsa.cpp
         Input.cpp
         InputBinary.cpp
+        InputElf.cpp
         InputHex.cpp
         RandomNumberGenerator.cpp
         UpgradePackBuilder.cpp
@@ -20,6 +21,7 @@ ccola_component(pack_builder x86: static_library other: noncompile)
         BinaryObject.hpp
         BuildReferenceUpgradePack.hpp
         BuildUpgradePack.hpp
+        Elf.hpp
         ImageAUthenticatorHmac.hpp
         ImageEncryptorAes.hpp
         ImageEncryptorNone.hpp
@@ -31,6 +33,7 @@ ccola_component(pack_builder x86: static_library other: noncompile)
         ImageSignerRsa.hpp
         Input.hpp
         InputBinary.hpp
+        InputElf.hpp
         InputFactory.hpp
         InputHex.hpp
         RandomNumberGenerator.hpp
