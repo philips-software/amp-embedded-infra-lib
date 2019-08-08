@@ -249,6 +249,13 @@ TEST(MemoryRangeTest, DiscardTail)
     EXPECT_EQ(infra::ByteRange(), infra::DiscardTail(infra::ByteRange(range), 14));
 }
 
+TEST(MemoryRangeTest, Convert)
+{
+    std::array<uint8_t, 4> range{ 1, 2, 3, 4 };
+
+    EXPECT_EQ(0x04030201, infra::Convert<uint32_t>(infra::MakeRange(range)));
+}
+
 TEST(MemoryRangeTest, TestCompare)
 {
     std::array<uint8_t, 3> range = { 1, 2, 3 };
