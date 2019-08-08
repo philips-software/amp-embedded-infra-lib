@@ -40,6 +40,27 @@ TEST(ByteOutputStreamTest, WithStorage)
     EXPECT_EQ((std::array<uint8_t, 3>{{ 1, 2, 3 }}), stream.Writer().Processed());
 }
 
+TEST(ByteOutputStreamTest, Reset)
+{
+    infra::ByteOutputStream::WithStorage<5> stream;
+    stream << uint8_t(1) << uint8_t(2);
+    stream.Writer().Reset();
+    stream << uint8_t(3);
+
+    EXPECT_EQ((std::array<uint8_t, 1>{ { 3 }}), stream.Writer().Processed());
+}
+
+TEST(ByteOutputStreamTest, Reset_with_new_range)
+{
+    infra::ByteOutputStream::WithStorage<5> stream;
+    stream << uint8_t(1) << uint8_t(2);
+    std::array<uint8_t, 4> newRange{};
+    stream.Writer().Reset(newRange);
+    stream << uint8_t(3);
+
+    EXPECT_EQ(3, newRange[0]);
+}
+
 TEST(ByteOutputStreamTest, reserve_type)
 {
     infra::ByteOutputStream::WithStorage<5> stream;
