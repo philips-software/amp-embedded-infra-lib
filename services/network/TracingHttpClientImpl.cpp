@@ -7,13 +7,6 @@ namespace services
         , tracer(tracer)
     {}
 
-    void TracingHttpClientImpl::WriteRequest(infra::SharedPtr<infra::StreamWriter>&& writer)
-    {
-        tracer.Trace() << "HttpClientImpl::WriteRequest; sending request:" << infra::endl;
-        request->Write(tracer.Trace());
-        HttpClientImpl::WriteRequest(std::move(writer));
-    }
-
     void TracingHttpClientImpl::DataReceived()
     {
         tracer.Trace() << "HttpClientImpl::DataReceived; received response:" << infra::endl;
@@ -39,5 +32,21 @@ namespace services
     {
         tracer.Trace() << "HttpClientImpl::ClosingConnection";
         HttpClientImpl::ClosingConnection();
+    }
+
+    void TracingHttpClientImpl::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+    {
+        auto tracingWriterPtr = tracingWriter.Emplace(std::move(writer), tracer);
+        HttpClientImpl::SendStreamAvailable(infra::MakeContainedSharedObject(tracingWriterPtr->Writer(), std::move(tracingWriterPtr)));
+    }
+
+    TracingHttpClientImpl::TracingWriter::TracingWriter(infra::SharedPtr<infra::StreamWriter>&& writer, services::Tracer& tracer)
+        : writer(std::move(writer))
+        , tracingWriter(*this->writer, tracer)
+    {}
+
+    infra::StreamWriter& TracingHttpClientImpl::TracingWriter::Writer()
+    {
+        return tracingWriter;
     }
 }
