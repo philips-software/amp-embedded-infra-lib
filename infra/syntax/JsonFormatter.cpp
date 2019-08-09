@@ -92,7 +92,7 @@ namespace infra
     }
 
     JsonObjectFormatter::JsonObjectFormatter(infra::TextOutputStream& stream)
-        : stream(infra::inPlace, stream.Writer(), infra::noFail)
+        : stream(&stream)
     {
         *this->stream << "{ ";
     }
@@ -100,20 +100,20 @@ namespace infra
     JsonObjectFormatter::JsonObjectFormatter(JsonObjectFormatter&& other)
         : stream(other.stream)
     {
-        other.stream = infra::none;
+        other.stream = nullptr;
     }
 
     JsonObjectFormatter& JsonObjectFormatter::operator=(JsonObjectFormatter&& other)
     {
         stream = other.stream;
-        other.stream = infra::none;
+        other.stream = nullptr;
 
         return *this;
     }
 
     JsonObjectFormatter::~JsonObjectFormatter()
     {
-        if (stream != infra::none)
+        if (stream != nullptr)
             *stream << " }";
     }
 
@@ -253,7 +253,7 @@ namespace infra
     }
 
     JsonArrayFormatter::JsonArrayFormatter(infra::TextOutputStream& stream)
-        : stream(infra::inPlace, stream.Writer(), infra::noFail)
+        : stream(&stream)
     {
         *this->stream << "[ ";
     }
@@ -261,20 +261,20 @@ namespace infra
     JsonArrayFormatter::JsonArrayFormatter(JsonArrayFormatter&& other)
         : stream(other.stream)
     {
-        other.stream = infra::none;
+        other.stream = nullptr;
     }
 
     JsonArrayFormatter& JsonArrayFormatter::operator=(JsonArrayFormatter&& other)
     {
         stream = other.stream;
-        other.stream = infra::none;
+        other.stream = nullptr;
 
         return *this;
     }
 
     JsonArrayFormatter::~JsonArrayFormatter()
     {
-        if (stream != infra::none)
+        if (stream != nullptr)
             *stream << " ]";
     }
 
