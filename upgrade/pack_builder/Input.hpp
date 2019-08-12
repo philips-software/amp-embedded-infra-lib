@@ -23,7 +23,7 @@ namespace application
         virtual std::vector<uint8_t> Image() const = 0;
 
     public:
-        const int maxNameSize = 8;
+        const std::size_t maxNameSize = 8;
 
     private:
         std::string targetName;
