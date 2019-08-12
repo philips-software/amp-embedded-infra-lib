@@ -169,11 +169,6 @@ namespace infra
         return stream.Failed();
     }
 
-    infra::DataOutputStream& Asn1Formatter::Stream()
-    {
-        return stream;
-    }
-
     void Asn1Formatter::AddTagLength(uint8_t tag, uint32_t length)
     {
         stream << tag;
@@ -186,7 +181,7 @@ namespace infra
     {}
 
     Asn1ContainerFormatter::Asn1ContainerFormatter(Asn1ContainerFormatter&& other)
-        : Asn1Formatter(Stream())
+        : Asn1Formatter(other.stream)
         , sizeMarker(other.sizeMarker)
     {
         other.sizeMarker = std::numeric_limits<std::size_t>::max();
@@ -204,8 +199,8 @@ namespace infra
     {
         if (sizeMarker != std::numeric_limits<std::size_t>::max())
         {
-            infra::SavedMarkerDataStream sizeStream(Stream(), sizeMarker);
-            AddLength(sizeStream, Stream().ProcessedBytesSince(sizeMarker));
+            infra::SavedMarkerDataStream sizeStream(stream, sizeMarker);
+            AddLength(sizeStream, stream.ProcessedBytesSince(sizeMarker));
         }
     }
 }

@@ -38,9 +38,6 @@ namespace infra
 
         bool Failed() const;
 
-    protected:
-        infra::DataOutputStream& Stream();
-
     private:
         enum Tag : uint8_t
         {
@@ -62,7 +59,7 @@ namespace infra
         void AddTagLengthValue(uint8_t tag, uint32_t length, T value);
         void AddTagLength(uint8_t tag, uint32_t length);
 
-    private:
+    protected:
         infra::DataOutputStream stream;
     };
 

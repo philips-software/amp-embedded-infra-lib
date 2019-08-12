@@ -1,9 +1,9 @@
 #ifndef SECURITY_KEY_GENERATOR_MATERIAL_GENERATOR_HPP
 #define SECURITY_KEY_GENERATOR_MATERIAL_GENERATOR_HPP
 
+#include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
 #include "mbedtls/pk.h"
 #include "mbedtls/rsa.h"
-#include "upgrade/pack_builder/RandomNumberGenerator.hpp"
 #include <array>
 #include <cstdint>
 #include <string>
@@ -13,7 +13,7 @@ namespace application
     class MaterialGenerator
     {
     public:
-        explicit MaterialGenerator(RandomNumberGenerator& randomNumberGenerator);
+        explicit MaterialGenerator(hal::SynchronousRandomDataGenerator& randomDataGenerator);
         ~MaterialGenerator();
 
         static const std::size_t rsaKeyLength = 1024;
@@ -32,12 +32,12 @@ namespace application
         static int UccRandom(uint8_t* dest, unsigned size);
 
     private:
-        static RandomNumberGenerator* randomNumberGenerator;
+        hal::SynchronousRandomDataGenerator& randomDataGenerator;
         mbedtls_pk_context pk;
 
-        std::vector<uint8_t> aesKey;
-        std::vector<uint8_t> xteaKey;
-        std::vector<uint8_t> hmacKey;
+        std::vector<uint8_t> aesKey{ aesKeyLength / 8, 0 };
+        std::vector<uint8_t> xteaKey{ xteaKeyLength / 8, 0 };
+        std::vector<uint8_t> hmacKey{ hmacKeyLength / 8, 0 };
         std::vector<uint8_t> ecDsa224PublicKey;
         std::vector<uint8_t> ecDsa224PrivateKey;
     };

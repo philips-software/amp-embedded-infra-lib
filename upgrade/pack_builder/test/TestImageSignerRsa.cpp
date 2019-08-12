@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+#include "hal/synchronous_interfaces/test_doubles/SynchronousFixedRandomDataGenerator.hpp"
 #include "upgrade/pack_builder/ImageSignerRsa.hpp"
 
 class TestImageSignerRsa
@@ -6,13 +7,13 @@ class TestImageSignerRsa
 {
 public:
     TestImageSignerRsa()
-        : randomNumberGenerator(std::vector<uint8_t>(1000, 5))
+        : randomDataGenerator(std::vector<uint8_t>(1000, 5))
         , rsaPublicKey(N, E)
         , rsaPrivateKey(D, P, Q, DP, DQ, QP)
-        , signer(randomNumberGenerator, rsaPublicKey, rsaPrivateKey)
+        , signer(randomDataGenerator, rsaPublicKey, rsaPrivateKey)
     {}
 
-    application::FixedRandomNumberGenerator randomNumberGenerator;
+    hal::SynchronousFixedRandomDataGenerator randomDataGenerator;
     RsaPublicKey rsaPublicKey;
     application::ImageSignerRsa signer;
 

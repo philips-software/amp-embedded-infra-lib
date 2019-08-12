@@ -58,7 +58,7 @@ if(${CCOLA_PROCESSOR_FAMILY} STREQUAL "x86")
 	endif()
 endif()
 
-if(${CCOLA_ARCH_FAMILY} STREQUAL cortex OR ${CCOLA_ARCH_FAMILY} STREQUAL xtensa)
+if(${CCOLA_ARCH_FAMILY} STREQUAL cortex OR ${CCOLA_ARCH_FAMILY} STREQUAL xtensa OR ${CCOLA_ARCH} STREQUAL linux)
 	ccola_set_component_properties_with_generator_expression(${CCOLA_COMPONENT_NAME} LINK_LIBRARIES "-Wl,-(" ${CCOLA_COMPONENT_LINK_LIBRARIES} ${CCOLA_COMPONENT_EXTERNAL_LIBRARIES} -lgcc -lc -lg -lsupc++ "-Wl,-)" )
 else()
 	ccola_set_component_properties_with_generator_expression(${CCOLA_COMPONENT_NAME} LINK_LIBRARIES ${CCOLA_COMPONENT_LINK_LIBRARIES})

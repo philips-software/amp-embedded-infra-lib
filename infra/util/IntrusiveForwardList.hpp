@@ -114,9 +114,9 @@ namespace infra
 
         private:
             template<class>
-                friend class IntrusiveForwardListIterator;
+                friend class infra::detail::IntrusiveForwardListIterator;
             template<class>
-                friend class IntrusiveForwardList;
+                friend class infra::IntrusiveForwardList;
 
             IntrusiveForwardListNode<T>* next;
         };
@@ -147,9 +147,9 @@ namespace infra
 
         private:
             template<class>
-                friend class IntrusiveForwardListIterator;
+                friend class infra::detail::IntrusiveForwardListIterator;
             template<class>
-                friend class IntrusiveForwardList;
+                friend class infra::IntrusiveForwardList;
 
             const IntrusiveForwardListNode<typename std::remove_const<T>::type>* mNode;
         };

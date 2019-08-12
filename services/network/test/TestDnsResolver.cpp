@@ -312,13 +312,13 @@ public:
         datagramExchangeObserver->DataReceived(stream.Reader(), from);
     }
 
-    const services::IPv4Address dnsServer1{ 1, 2, 3, 4 };
-    const services::IPv4Address dnsServer2{ 2, 3, 4, 5 };
-    const services::IPv4Address hostAddress1{ 3, 4, 5, 6 };
-    const services::IPv4Address nsServer1{ 4, 5, 6, 7 };
+    const services::IPv4Address dnsServer1{ { 1, 2, 3, 4 } };
+    const services::IPv4Address dnsServer2{ { 2, 3, 4, 5 } };
+    const services::IPv4Address hostAddress1{ { 3, 4, 5, 6 } };
+    const services::IPv4Address nsServer1{ { 4, 5, 6, 7 } };
 
     testing::StrictMock<services::DatagramFactoryMock> datagramFactory;
-    const std::array<services::IPAddress, 2> dnsServers{ dnsServer1, dnsServer2 };
+    const std::array<services::IPAddress, 2> dnsServers{ { dnsServer1, dnsServer2 } };
     testing::StrictMock<hal::SynchronousRandomDataGeneratorMock> randomDataGenerator;
     services::DnsResolver resolver{ datagramFactory, { dnsServers }, randomDataGenerator };
     testing::StrictMock<services::NameResolverResultMock> result1;

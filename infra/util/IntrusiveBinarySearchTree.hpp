@@ -169,9 +169,9 @@ namespace infra
 
         private:
             template<class, class>
-            friend class IntrusiveBinarySearchTreeIterator;
+            friend class infra::detail::IntrusiveBinarySearchTreeIterator;
             template<class, class>
-            friend class IntrusiveBinarySearchTree;
+            friend class infra::IntrusiveBinarySearchTree;
 
             const T* node = nullptr;
             const TreeType* tree = nullptr;

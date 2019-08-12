@@ -37,7 +37,7 @@ namespace infra
         do
         {
             if (value > 127)
-                output << static_cast<uint8_t>(value & 0x7f | 0x80);
+                output << static_cast<uint8_t>((value & 0x7f) | 0x80);
             else
                 output << static_cast<uint8_t>(value);
 

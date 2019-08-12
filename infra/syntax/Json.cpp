@@ -86,6 +86,7 @@ namespace infra
             ++position;
 
             if (position != end)
+            {
                 if (*position == 'u')
                 {
                     ++position;
@@ -95,6 +96,7 @@ namespace infra
                 }
                 else
                     ++position;
+            }
         }
         else
             ++position;

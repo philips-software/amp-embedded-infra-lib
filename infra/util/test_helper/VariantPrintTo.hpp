@@ -29,7 +29,8 @@ namespace infra {
     void PrintTo(const Variant<T...>& variant, std::ostream* os)
     {
         *os << "Variant[";
-        ApplyVisitor(PrintToVisitor(os), variant);
+        PrintToVisitor visitor(os);
+        ApplyVisitor(visitor, variant);
         *os << ']';
     }
 }

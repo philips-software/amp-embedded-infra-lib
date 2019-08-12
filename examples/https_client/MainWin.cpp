@@ -1,8 +1,9 @@
 // clang-format off
 #include "services/network_win/ConnectionWin.hpp"
 // clang-format on
-#include "hal/windows/SynchronousRandomDataGeneratorWin.hpp"
-#include "hal/windows/TimerServiceWin.hpp"
+#include "hal/generic/TimerServiceGeneric.hpp"
+#include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
+#include "services/network/HttpClientBasic.hpp"
 #include "infra/stream/IoOutputStream.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/network/ConnectionMbedTls.hpp"
@@ -43,7 +44,8 @@ namespace
 
 namespace application
 {
-    class TracingHttpClient : private services::HttpClientBasic
+    class TracingHttpClient
+        : private services::HttpClientBasic
     {
     public:
         TracingHttpClient(infra::BoundedString url, uint16_t port, services::HttpClientConnector& connector,
@@ -96,12 +98,12 @@ namespace application
 int main(int argc, const char* argv[], const char* env[])
 {
     services::EventDispatcherWithNetwork eventDispatcherWithNetwork;
-    hal::TimerServiceWin timerService;
+    hal::TimerServiceGeneric timerService;
     infra::IoOutputStream ioOutputStream;
     services::Tracer tracer(ioOutputStream);
     services::SetGlobalTracerInstance(tracer);
 
-    hal::SynchronousRandomDataGeneratorWin randomDataGenerator;
+    hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
     services::CertificatesMbedTls certificates;
     certificates.AddCertificateAuthority(infra::BoundedConstString(starfieldClass2Ca, sizeof(starfieldClass2Ca)));
     services::ConnectionFactoryMbedTls::WithMaxConnectionsListenersAndConnectors<10, 2, 2> networkTls(

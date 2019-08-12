@@ -24,7 +24,7 @@ namespace infra
             explicit Node(SharedObjectDeleter* allocator);
 
             Node* next = nullptr;
-            infra::StaticStorage<T> object;
+            infra::StaticStorage<T> object{};
         };
 
     public:
