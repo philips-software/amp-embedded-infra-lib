@@ -1,4 +1,4 @@
-ccola_component(network_bsd bsd: static_library other: skip)
+ccola_component(network_bsd unix: static_library other: skip)
 
     ccola_sources(
         ConnectionBsd.cpp

@@ -22,10 +22,9 @@ ccola_component(network_test gmock_test)
         network_test_doubles
         infra.timer_test_helper
         infra.util_test_helper
+        hal.generic
         hal.test_doubles
         services.util
-    win:
-        hal.windows
     )
 
 ccola_end_component()

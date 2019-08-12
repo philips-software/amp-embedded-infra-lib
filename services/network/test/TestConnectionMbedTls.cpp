@@ -1,5 +1,5 @@
 #include "gmock/gmock.h"
-#include "hal/windows/SynchronousRandomDataGeneratorWin.hpp"
+#include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "mbedtls/config.h"
@@ -30,7 +30,7 @@ public:
     services::ServerConnectionObserverFactory* serverConnectionObserverFactory;
     testing::StrictMock<services::ConnectionFactoryMock> network;
     services::ConnectionLoopBackFactory loopBackNetwork;
-    hal::SynchronousRandomDataGeneratorWin randomDataGenerator;
+    hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
     infra::SharedPtr<void> thisListener;
     services::CertificatesMbedTls serverCertificates;
     services::CertificatesMbedTls clientCertificates;

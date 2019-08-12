@@ -6,6 +6,7 @@ ccola_component(stream_test gmock_test)
         TestByteInputStream.cpp
         TestByteOutputStream.cpp
         TestCountingInputStream.cpp
+        TestFormatter.cpp
         TestLimitedInputStream.cpp
         TestLimitedOutputStream.cpp
         TestOutputStreamSwitch.cpp

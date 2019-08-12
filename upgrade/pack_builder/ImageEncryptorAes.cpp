@@ -11,8 +11,8 @@ extern "C"
 
 namespace application
 {
-    ImageEncryptorAes::ImageEncryptorAes(RandomNumberGenerator& randomNumberGenerator, infra::ConstByteRange key)
-        : randomNumberGenerator(randomNumberGenerator)
+    ImageEncryptorAes::ImageEncryptorAes(hal::SynchronousRandomDataGenerator& randomDataGenerator, infra::ConstByteRange key)
+        : randomDataGenerator(randomDataGenerator)
         , key(key)
     {}
 
@@ -23,7 +23,8 @@ namespace application
 
     std::vector<uint8_t> ImageEncryptorAes::Secure(const std::vector<uint8_t>& data) const
     {
-        std::vector<uint8_t> counter = randomNumberGenerator.Generate(blockLength);
+        std::vector<uint8_t> counter(blockLength, 0);
+        randomDataGenerator.GenerateRandomData(counter);
 
         mbedtls_aes_context ctx;
         mbedtls_aes_init(&ctx);
@@ -36,10 +37,10 @@ namespace application
         std::array<uint8_t, blockLength> stream_block = {};
         int ret = mbedtls_aes_crypt_ctr(&ctx, data.size(), &offset, counter.data(), stream_block.data(), data.data(), result.data() + blockLength);     //TICS !INT#030
         if (ret != 0)
-            throw std::exception("AES encryption failed");
+            throw std::runtime_error("AES encryption failed");
 
         if (!CheckDecryption(data, result))
-            throw std::exception("AES decryption check failed");
+            throw std::runtime_error("AES decryption check failed");
 
         return result;
     }

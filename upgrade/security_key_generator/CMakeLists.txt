@@ -8,6 +8,7 @@ ccola_component(security_key_generator win: executable other: noncompile)
 
     ccola_dependencies(
         crypto.mbed_tls
+        hal.generic
         pack_builder
     )
 

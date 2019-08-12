@@ -5,6 +5,10 @@
 
 namespace application
 {
+    SignatureDoesNotVerifyException::SignatureDoesNotVerifyException()
+        : runtime_error("Signature does not verify")
+    {}
+
     UpgradePackBuilder::UpgradePackBuilder(const HeaderInfo& headerInfo, std::vector<std::unique_ptr<Input>>&& inputs, ImageSigner& signer)
         : headerInfo(headerInfo)
         , inputs(std::move(inputs))

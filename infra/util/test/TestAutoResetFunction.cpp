@@ -90,7 +90,7 @@ TEST(AutoResetFunctionTest, TestClone)
     infra::AutoResetFunction<void(int)> f([&m](int x) { m.callback(x); });
 
     EXPECT_CALL(m, callback(1));
-    f.Clone().Invoke(1);
+    f.Clone().Invoke(std::make_tuple(1));
     EXPECT_TRUE(static_cast<bool>(f));
 }
 

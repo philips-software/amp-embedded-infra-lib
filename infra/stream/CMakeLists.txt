@@ -9,6 +9,8 @@ ccola_component(stream static_library)
         ByteOutputStream.hpp
         CountingInputStream.cpp
         CountingInputStream.hpp
+        Formatter.cpp
+        Formatter.hpp
         InputStream.cpp
         InputStream.hpp
         IoOutputStream.cpp

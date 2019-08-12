@@ -175,6 +175,11 @@ namespace application
         return EntitiesHaveSourceCode();
     }
 
+    const uint32_t Function::fConst;
+    const uint32_t Function::fVirtual;
+    const uint32_t Function::fAbstract;
+    const uint32_t Function::fOverride;
+
     Function::Function(const std::string& name, const std::string& body, const std::string& result, uint32_t flags)
         : name(name)
         , body(body)
@@ -226,6 +231,9 @@ namespace application
         ForEach(parameters, [&res](const std::string& parameter) { res += parameter; }, [&res]() { res += ", "; });
         return res;
     }
+
+    const uint32_t Constructor::cDefault;
+    const uint32_t Constructor::cDelete;
 
     Constructor::Constructor(const std::string& name, const std::string& body, uint32_t flags)
         : name(name)

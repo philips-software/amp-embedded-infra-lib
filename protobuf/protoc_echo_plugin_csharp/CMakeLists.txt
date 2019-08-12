@@ -1,6 +1,9 @@
-ccola_component(protoc_echo_plugin_csharp win: executable other: skip)
+ccola_component(protoc_echo_plugin_csharp x86: executable other: skip)
 
-    ccola_compile_options(/wd4018 /wd4251 /wd4273 /wd4800)
+    ccola_compile_options(
+    win:
+        /wd4018 /wd4251 /wd4273 /wd4800
+    )
 
     ccola_inheritable_definitions(LIBPROTOC_EXPORTS)
 

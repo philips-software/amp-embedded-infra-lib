@@ -226,7 +226,7 @@ TEST(JsonObjectFormatter, move_object_formatter)
     infra::BoundedString::WithStorage<100> string;
 
     {
-        auto formatter = infra::JsonObjectFormatter::WithStringStream(infra::inPlace, string);
+        auto&& formatter = infra::JsonObjectFormatter::WithStringStream(infra::inPlace, string);
         auto subObject = std::move(formatter.SubObject("tag"));
     }
 
@@ -238,7 +238,7 @@ TEST(JsonObjectFormatter, move_array_formatter)
     infra::BoundedString::WithStorage<100> string;
 
     {
-        auto formatter = infra::JsonObjectFormatter::WithStringStream(infra::inPlace, string);
+        auto&& formatter = infra::JsonObjectFormatter::WithStringStream(infra::inPlace, string);
         auto subArray = std::move(formatter.SubArray("tag"));
     }
 

@@ -4,33 +4,32 @@
 
 namespace application
 {
-    LineException::LineException(const std::string& file, int line)
-        : file(file)
-        , line(line)
+    LineException::LineException(const std::string& prependMessage, const std::string& file, int line)
+        : runtime_error(prependMessage + " in file " + file + " at line " + std::to_string(line))
     {}
 
     IncorrectCrcException::IncorrectCrcException(const std::string& file, int line)
-        : LineException(file, line)
+        : LineException("Incorrect CRC", file, line)
     {}
 
     NoEndOfFileException::NoEndOfFileException(const std::string& file, int line)
-        : LineException(file, line)
+        : LineException("No end of file found", file, line)
     {}
 
     DataAfterEndOfFileException::DataAfterEndOfFileException(const std::string& file, int line)
-        : LineException(file, line)
+        : LineException("Data found after end of file", file, line)
     {}
 
     UnknownRecordException::UnknownRecordException(const std::string& file, int line)
-        : LineException(file, line)
+        : LineException("Unknown record", file, line)
     {}
 
     RecordTooShortException::RecordTooShortException(const std::string& file, int line)
-        : LineException(file, line)
+        : LineException("Record too short", file, line)
     {}
 
     RecordTooLongException::RecordTooLongException(const std::string& file, int line)
-        : LineException(file, line)
+        : LineException("Record too long", file, line)
     {}
 
     void BinaryObject::AddHex(const std::vector<std::string>& data, uint32_t offset, const std::string& fileName)

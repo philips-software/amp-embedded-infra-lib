@@ -53,9 +53,9 @@ namespace infra
         void swap(IntrusivePriorityQueue& x);
 
     private:
-        void swapChildAndParentNodes(T& child, T& parent);
-        void insertAsLast(T& value);
-        T& lastNode() const;
+        void SwapChildAndParentNodes(T& child, T& parent);
+        void InsertAsLast(T& value);
+        T& LastNode() const;
 
     private:
         T* topNode = nullptr;
@@ -75,10 +75,8 @@ namespace infra
             IntrusivePriorityQueueNode& operator=(const IntrusivePriorityQueueNode& other);
 
         private:
-            template<class>
-                friend class IntrusivePriorityQueueIterator;
             template<class, class>
-                friend class IntrusivePriorityQueue;
+                friend class infra::IntrusivePriorityQueue;
 
             T* up;
             T* left;
@@ -149,7 +147,7 @@ namespace infra
     }
 
     template<class T, class Compare>
-    void IntrusivePriorityQueue<T, Compare>::swapChildAndParentNodes(T& child, T& parent)
+    void IntrusivePriorityQueue<T, Compare>::SwapChildAndParentNodes(T& child, T& parent)
     {
         T* parentUp = parent.up;
         if (parentUp != nullptr)
@@ -189,10 +187,10 @@ namespace infra
     void IntrusivePriorityQueue<T, Compare>::push(const T& value)
     {
         T& node = const_cast<T&>(value);
-        insertAsLast(node);
+        InsertAsLast(node);
 
         while (node.up && compare(*node.up, node))
-            swapChildAndParentNodes(node, *node.up);
+            SwapChildAndParentNodes(node, *node.up);
     }
 
     template<class T, class Compare>
@@ -231,13 +229,13 @@ namespace infra
                 shiftUpNode = erasingNode.right;
 
             if (shiftUpNode != nullptr)
-                swapChildAndParentNodes(*shiftUpNode, erasingNode);
+                SwapChildAndParentNodes(*shiftUpNode, erasingNode);
             else
                 break;
         }
 
         // Then, replace erasingNode by lastNode
-        T& last = lastNode();
+        T& last = LastNode();
         if (&last != &erasingNode)
         {
             assert(last.up);        // if last.up does not exist, then the tree holds only one element, and &last == &erasingNode
@@ -269,7 +267,7 @@ namespace infra
                 if (compare(last, *last.up))
                     break;
 
-                swapChildAndParentNodes(last, *last.up);
+                SwapChildAndParentNodes(last, *last.up);
             }
         }
         else
@@ -297,7 +295,7 @@ namespace infra
     }
 
     template<class T, class Compare>
-    void IntrusivePriorityQueue<T, Compare>::insertAsLast(T& value)
+    void IntrusivePriorityQueue<T, Compare>::InsertAsLast(T& value)
     {
         value.right = nullptr;
         value.left = nullptr;
@@ -338,7 +336,7 @@ namespace infra
     }
 
     template<class T, class Compare>
-    T& IntrusivePriorityQueue<T, Compare>::lastNode() const
+    T& IntrusivePriorityQueue<T, Compare>::LastNode() const
     {
         T* node = topNode;
 

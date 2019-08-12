@@ -6,8 +6,8 @@
 
 namespace application
 {
-    ImageSecurityXteaHmac::ImageSecurityXteaHmac(RandomNumberGenerator& randomNumberGenerator, infra::ConstByteRange xteaKey, infra::ConstByteRange hmacKey)
-        : encryptor(randomNumberGenerator, xteaKey)
+    ImageSecurityXteaHmac::ImageSecurityXteaHmac(hal::SynchronousRandomDataGenerator& randomDataGenerator, infra::ConstByteRange xteaKey, infra::ConstByteRange hmacKey)
+        : encryptor(randomDataGenerator, xteaKey)
         , authenticator(hmacKey)
     {}
 

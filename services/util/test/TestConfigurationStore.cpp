@@ -198,7 +198,7 @@ namespace
         MOCK_METHOD0(CurrentBlob, infra::ConstByteRange());
         MOCK_METHOD0(MaxBlob, infra::ByteRange());
         MOCK_METHOD1(Recover, void(const infra::Function<void(bool success)>& onLoaded));
-        MOCK_METHOD2(Write, void(std::size_t size, const infra::Function<void()>& onDone));
+        MOCK_METHOD2(Write, void(uint32_t size, const infra::Function<void()>& onDone));
         MOCK_METHOD1(Erase, void(const infra::Function<void()>& onDone));
     };
 }
@@ -633,7 +633,7 @@ public:
     public:
         static const uint32_t maxMessageSize = 10;
 
-        std::array<uint8_t, 8> data = { 0, 1, 2, 3, 4, 5, 6, 7 };
+        std::array<uint8_t, 8> data{ { 0, 1, 2, 3, 4, 5, 6, 7 } };
     };
 
 public:

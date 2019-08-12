@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "upgrade/pack_builder/InputBinary.hpp"
 #include "upgrade/pack_builder/InputElf.hpp"
 #include "upgrade/pack_builder/InputHex.hpp"
@@ -15,7 +16,7 @@ namespace application
 
         std::vector<uint8_t> result;
         result.insert(result.end(), reinterpret_cast<const uint8_t*>(targetName.data()), reinterpret_cast<const uint8_t*>(targetName.data() + targetName.size()));
-        result.insert(result.end(), 8 - targetName.size(), 0);
+        result.insert(result.end(), Input::maxNameSize - targetName.size(), 0);
 
         uint32_t encryptionAndMacMethod = 0;
         result.insert(result.end(), reinterpret_cast<const uint8_t*>(&encryptionAndMacMethod), reinterpret_cast<const uint8_t*>(&encryptionAndMacMethod + 1));
@@ -49,7 +50,7 @@ namespace application
 
     std::unique_ptr<Input> UpgradePackInputFactory::CreateInput(const std::string& targetName, const std::string& fileName)
     {
-        if (std::find(supportedHexTargets.begin(), supportedHexTargets.end(), targetName) != supportedHexTargets.end())
+        if (std::any_of(supportedHexTargets.begin(), supportedHexTargets.end(), [targetName](auto& string) { return string == targetName; }))
             return std::make_unique<InputHex>(targetName, fileName, fileSystem, imageSecurity);
 
         for (auto elfTarget : supportedElfTargets)
@@ -64,6 +65,6 @@ namespace application
             if (target->TargetName() == targetName)
                 return target->CreateInput();
 
-        throw std::exception((std::string("Unknown target: ") + targetName).c_str());
+        throw std::runtime_error((std::string("Unknown target: ") + targetName).c_str());
     }
 }
