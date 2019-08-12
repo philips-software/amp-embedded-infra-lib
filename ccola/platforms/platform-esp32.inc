@@ -15,4 +15,4 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -nostdlib -u call_user_sta
 
 set(CMAKE_EXECUTABLE_SUFFIX .elf)
 
-add_definition(-DESP_PLATFORM)
+add_definitions(-DESP_PLATFORM)
