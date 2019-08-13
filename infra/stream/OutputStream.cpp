@@ -202,7 +202,7 @@ namespace infra
         return *this;
     }
 
-#if (!__clang__ && __GNUC__)
+#if !defined(_MSC_VER) && !defined(ESP_PLATFORM) && !defined(__clang__)
     TextOutputStream& TextOutputStream::operator<<(int v)
     {
         return *this << static_cast<int64_t>(v);
