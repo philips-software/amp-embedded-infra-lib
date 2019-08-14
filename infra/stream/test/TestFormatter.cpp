@@ -208,7 +208,8 @@ TEST_F(FormatTest, ten_plus_arguments)
     CheckFormatArguments("0 1 2 3 4 5 6 7 8 9 10 11 12", "{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12}", 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
 }
 
-namespace testFormat {
+namespace
+{
     class TestFormatObject
     {
     public:
@@ -223,19 +224,22 @@ namespace testFormat {
         bool b{ true };
     };
 }
-template<>
-void infra::Formatter<testFormat::TestFormatObject&>::Format(TextOutputStream& stream, FormatSpec& spec)
+
+namespace infra
 {
-    stream << infra::Format("v:{},b:{}", value.v, value.b);
+    template<>
+    void Formatter<TestFormatObject&>::Format(TextOutputStream& stream, FormatSpec& spec)
+    {
+        stream << infra::Format("v:{},b:{}", value.v, value.b);
+    }
 }
 
 TEST_F(FormatTest, FormatObjectSimple)
 {
-    CheckFormatArguments("v:9,b:true", "{}", testFormat::TestFormatObject());
+    CheckFormatArguments("v:9,b:true", "{}", TestFormatObject());
 }
-
 
 TEST_F(FormatTest, FormatObjectCombined)
 {
-    CheckFormatArguments("Hello ..1.. 2 1 v:9,b:true",  "Hello {0:.^5} {1} {0} {2}", 1, 2, testFormat::TestFormatObject());
+    CheckFormatArguments("Hello ..1.. 2 1 v:9,b:true", "Hello {0:.^5} {1} {0} {2}", 1, 2, TestFormatObject());
 }
