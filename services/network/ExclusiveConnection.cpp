@@ -13,7 +13,7 @@ namespace services
         this->cancelConnectionOnNewRequest = cancelConnectionOnNewRequest;
         really_assert(exclusiveConnection.Allocatable());
         currentClaimer = std::move(claimer);
-        auto result = exclusiveConnection.Emplace();
+        auto result = exclusiveConnection.Emplace(*this);
 
         connectionObserver->Attach(*result);
         result->SetOwnership(nullptr, connectionObserver);
@@ -26,6 +26,10 @@ namespace services
         if (exclusiveConnection && cancelConnectionOnNewRequest)
             exclusiveConnection->Close();
     }
+
+    ExclusiveConnectionFactoryMutex::ExclusiveConnection::ExclusiveConnection(ExclusiveConnectionFactoryMutex& mutex)
+        : mutex(mutex)
+    {}
 
     ExclusiveConnectionFactoryMutex::ExclusiveConnection::~ExclusiveConnection()
     {
@@ -80,6 +84,8 @@ namespace services
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::Connected()
     {
         Connection::GetObserver().Connected();
+        if (mutex.resource.ClaimsPending() && mutex.cancelConnectionOnNewRequest)
+            Connection::GetObserver().Close();
     }
 
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::ClosingConnection()

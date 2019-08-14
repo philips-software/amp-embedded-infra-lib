@@ -24,6 +24,7 @@ namespace services
             , public ConnectionObserver
         {
         public:
+            ExclusiveConnection(ExclusiveConnectionFactoryMutex& mutex);
             ~ExclusiveConnection();
 
             // Implementation of Connection
@@ -42,6 +43,9 @@ namespace services
             virtual void ClosingConnection() override;
             virtual void Close() override;
             virtual void Abort() override;
+
+        private:
+            ExclusiveConnectionFactoryMutex& mutex;
         };
 
         infra::ClaimableResource resource;
