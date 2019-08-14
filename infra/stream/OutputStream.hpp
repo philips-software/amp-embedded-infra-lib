@@ -106,7 +106,7 @@ namespace infra
         TextOutputStream& operator<<(uint32_t v);
         TextOutputStream& operator<<(int64_t v);
         TextOutputStream& operator<<(uint64_t v);
-#if defined(__GNUC__) && __GNUC__ <= 4 && __GNUC_MINOR__ <= 9 && __GNUC_PATCHLEVEL__ < 4
+#if !defined(__clang__) && defined(__GNUC__) && __GNUC__ <= 4 && __GNUC_MINOR__ <= 9 && __GNUC_PATCHLEVEL__ < 4
         TextOutputStream& operator<<(int v);
         TextOutputStream& operator<<(unsigned int v);
 #endif
