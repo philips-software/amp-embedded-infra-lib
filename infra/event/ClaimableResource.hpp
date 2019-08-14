@@ -25,6 +25,8 @@ namespace infra
         ClaimableResource& operator=(const ClaimableResource& other) = delete;
         ~ClaimableResource();
 
+        bool ClaimsPending() const;
+
     private:
         void ReEvaluateClaim();
         void AddClaim(ClaimerBase& claimer);

@@ -38,7 +38,9 @@ public:
 TEST_F(TestClaimableResource, ClaimIsGranted)
 {
     claimerA.Claim([this]() { claimerA.GrantedClaim(); });
+    EXPECT_TRUE(resource.ClaimsPending());
     ExecuteAllActions();
+    EXPECT_FALSE(resource.ClaimsPending());
     EXPECT_EQ(1, claimerA.claimsGranted);
 }
 
@@ -48,10 +50,12 @@ TEST_F(TestClaimableResource, ClaimWhileAlreadyClaimedIsGrantedAfterRelease)
     ExecuteAllActions();
     EXPECT_EQ(1, claimerA.claimsGranted);
     claimerA.Claim([this]() { claimerA.GrantedClaim(); });
+    EXPECT_TRUE(resource.ClaimsPending());
     ExecuteAllActions();
     EXPECT_EQ(1, claimerA.claimsGranted);
     claimerA.Release();
     ExecuteAllActions();
+    EXPECT_FALSE(resource.ClaimsPending());
     EXPECT_EQ(2, claimerA.claimsGranted);
 }
 

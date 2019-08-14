@@ -10,6 +10,11 @@ namespace infra
         assert(pendingClaims.empty());
     }
 
+    bool ClaimableResource::ClaimsPending() const
+    {
+        return !pendingClaims.empty();
+    }
+
     void ClaimableResource::ReEvaluateClaim()
     {
         if (currentClaim == nullptr && !pendingClaims.empty())
