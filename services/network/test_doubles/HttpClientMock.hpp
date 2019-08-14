@@ -43,6 +43,7 @@ namespace services
         MOCK_METHOD2(Connect, void(infra::BoundedConstString, HttpHeaders));
         MOCK_METHOD2(Options, void(infra::BoundedConstString, HttpHeaders));
         MOCK_METHOD3(Post, void(infra::BoundedConstString, infra::BoundedConstString, HttpHeaders));
+        MOCK_METHOD3(Post, void(infra::BoundedConstString, std::size_t, HttpHeaders));
         MOCK_METHOD3(Put, void(infra::BoundedConstString, infra::BoundedConstString, HttpHeaders));
         MOCK_METHOD3(Put, void(infra::BoundedConstString, std::size_t, HttpHeaders));
         MOCK_METHOD3(Patch, void(infra::BoundedConstString, infra::BoundedConstString, HttpHeaders));

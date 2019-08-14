@@ -50,7 +50,7 @@ namespace infra
         void InsertSeparation();
 
     private:
-        infra::Optional<infra::TextOutputStream::WithErrorPolicy> stream;
+        infra::TextOutputStream* stream;
         bool empty = true;
     };
 
@@ -81,7 +81,7 @@ namespace infra
         void InsertSeparation();
 
     private:
-        infra::Optional<infra::TextOutputStream::WithErrorPolicy> stream;
+        infra::TextOutputStream* stream;
         bool empty = true;
     };
 

@@ -115,6 +115,11 @@ namespace services
         ExecuteRequestWithContent(HttpVerb::post, requestTarget, content, headers);
     }
 
+    void HttpClientImpl::Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers)
+    {
+        ExecuteRequestWithContent(HttpVerb::post, requestTarget, contentSize, headers);
+    }
+
     void HttpClientImpl::Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
     {
         ExecuteRequestWithContent(HttpVerb::put, requestTarget, content, headers);
@@ -343,7 +348,7 @@ namespace services
         headerBuffer.resize(std::min(headerBuffer.max_size(), stream.Available()));
         stream >> headerBuffer;
 
-        auto crlfPos = headerBuffer.find_first_of(crlf);
+        auto crlfPos = headerBuffer.find(crlf);
         if (crlfPos != infra::BoundedString::npos)
         {
             auto statusLine = headerBuffer.substr(0, crlfPos);
@@ -378,7 +383,7 @@ namespace services
             headerBuffer.resize(std::min(headerBuffer.max_size(), stream.Available()));
             stream >> headerBuffer;
 
-            auto crlfPos = headerBuffer.find_first_of(crlf);
+            auto crlfPos = headerBuffer.find(crlf);
             if (crlfPos != infra::BoundedString::npos)
             {
                 auto headerLine = headerBuffer.substr(0, crlfPos);
@@ -403,6 +408,11 @@ namespace services
             }
             else if (headerBuffer.full())
                 SetError();
+            else
+            {
+                reader.Rewind(start);
+                break;
+            }
         }
     }
 

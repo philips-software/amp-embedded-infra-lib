@@ -30,12 +30,14 @@ namespace hal
 
     void FlashMock::WriteBuffer(infra::ConstByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
+        assert(done == nullptr);
         done = onDone;
         writeBufferMock(std::vector<uint8_t>(buffer.begin(), buffer.end()), address);
     }
 
     void FlashMock::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
+        assert(done == nullptr);
         done = onDone;
         std::vector<uint8_t> result = readBufferMock(address);
         assert(result.size() == buffer.size());
@@ -44,6 +46,7 @@ namespace hal
 
     void FlashMock::EraseSectors(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone)
     {
+        assert(done == nullptr);
         done = onDone;
         eraseSectorsMock(beginIndex, endIndex);
     }

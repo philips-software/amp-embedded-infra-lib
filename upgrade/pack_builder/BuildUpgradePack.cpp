@@ -28,12 +28,12 @@ namespace application
     }
 
     int BuildUpgradePack(const application::UpgradePackBuilder::HeaderInfo& headerInfo, const std::vector<std::string>& supportedHexTargets,
-        const std::vector<std::pair<std::string, uint32_t>>& supportedBinaryTargets, std::string outputFilename,
+        const std::vector<std::pair<std::string, uint32_t>>& supportedElfTargets, const std::vector<std::pair<std::string, uint32_t>>& supportedBinaryTargets, std::string outputFilename,
         TargetAndFiles targetAndFiles, BuildOptions buildOptions, infra::JsonObject& configuration, infra::ConstByteRange aesKey,
         infra::ConstByteRange ecDsa224PublicKey, infra::ConstByteRange ecDsa224PrivateKey, const std::vector<NoFileInputFactory*>& otherTargets)
     {
         UpgradePackBuilderFacade builderFacade(headerInfo);
-        builderFacade.Build(supportedHexTargets, supportedBinaryTargets, outputFilename, targetAndFiles, buildOptions, configuration, aesKey, ecDsa224PublicKey, ecDsa224PrivateKey, otherTargets);
+        builderFacade.Build(supportedHexTargets, supportedElfTargets, supportedBinaryTargets, outputFilename, targetAndFiles, buildOptions, configuration, aesKey, ecDsa224PublicKey, ecDsa224PrivateKey, otherTargets);
         return builderFacade.Result();
     }
 
@@ -45,17 +45,17 @@ namespace application
         mbedtls_memory_buffer_alloc_init(memory_buf, sizeof(memory_buf));
     }
 
-    void UpgradePackBuilderFacade::Build(const std::vector<std::string>& supportedHexTargets, const std::vector<std::pair<std::string, uint32_t>>& supportedBinaryTargets,
+    void UpgradePackBuilderFacade::Build(const std::vector<std::string>& supportedHexTargets, const std::vector<std::pair<std::string, uint32_t>>& supportedElfTargets, const std::vector<std::pair<std::string, uint32_t>>& supportedBinaryTargets,
         std::string outputFilename, TargetAndFiles& targetAndFiles, BuildOptions& buildOptions, infra::JsonObject& configuration, infra::ConstByteRange aesKey, infra::ConstByteRange ecDsa224PublicKey,
         infra::ConstByteRange ecDsa224PrivateKey, const std::vector<NoFileInputFactory*>& otherTargets)
     {
         try
         {
-            TryBuild(supportedHexTargets, supportedBinaryTargets, outputFilename, targetAndFiles, buildOptions, configuration, aesKey, ecDsa224PublicKey, ecDsa224PrivateKey, otherTargets);
+            TryBuild(supportedHexTargets, supportedElfTargets, supportedBinaryTargets, outputFilename, targetAndFiles, buildOptions, configuration, aesKey, ecDsa224PublicKey, ecDsa224PrivateKey, otherTargets);
         }
         catch (UsageException&)
         {
-            ShowUsage(targetAndFiles, buildOptions, supportedHexTargets, supportedBinaryTargets, otherTargets);
+            ShowUsage(targetAndFiles, buildOptions, supportedHexTargets, supportedElfTargets, supportedBinaryTargets, otherTargets);
             result = 1;
         }
         catch (std::exception& e)
@@ -65,14 +65,14 @@ namespace application
         }
     }
 
-    void UpgradePackBuilderFacade::TryBuild(const std::vector<std::string>& supportedHexTargets, const std::vector<std::pair<std::string, uint32_t>>& supportedBinaryTargets,
+    void UpgradePackBuilderFacade::TryBuild(const std::vector<std::string>& supportedHexTargets, const std::vector<std::pair<std::string, uint32_t>>& supportedElfTargets, const std::vector<std::pair<std::string, uint32_t>>& supportedBinaryTargets,
         std::string outputFilename, TargetAndFiles& targetAndFiles, BuildOptions& buildOptions, infra::JsonObject& configuration, infra::ConstByteRange aesKey, infra::ConstByteRange ecDsa224PublicKey,
         infra::ConstByteRange ecDsa224PrivateKey, const std::vector<NoFileInputFactory*>& otherTargets)
     {
         hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
         hal::FileSystemGeneric fileSystem;
         application::ImageEncryptorAes imageEncryptorAes(randomDataGenerator, aesKey);
-        application::UpgradePackInputFactory inputFactory(supportedHexTargets, supportedBinaryTargets, fileSystem, imageEncryptorAes, otherTargets);
+        application::UpgradePackInputFactory inputFactory(supportedHexTargets, supportedElfTargets, supportedBinaryTargets, fileSystem, imageEncryptorAes, otherTargets);
         application::ImageSignerEcDsa signer(randomDataGenerator, ecDsa224PublicKey, ecDsa224PrivateKey);
 
         PreBuilder(targetAndFiles, buildOptions, configuration);
@@ -87,7 +87,7 @@ namespace application
         builder.WriteUpgradePack(outputFilename, fileSystem);
     }
 
-    void UpgradePackBuilderFacade::ShowUsage(int argc, const char* argv[], const std::vector<std::string>& supportedHexTargets,
+    void UpgradePackBuilderFacade::ShowUsage(int argc, const char* argv[], const std::vector<std::string>& supportedHexTargets, const std::vector<std::pair<std::string, uint32_t>>& supportedElfTargets,
         const std::vector<std::pair<std::string, uint32_t>>& supportedBinaryTargets, const std::vector<NoFileInputFactory*>& otherTargets) const
     {
         std::cout << "Arguments: ";
@@ -100,6 +100,8 @@ namespace application
 
         for (auto target : supportedHexTargets)
             std::cout << target << " ";
+        for (auto target : supportedElfTargets)
+            std::cout << target.first << " ";
         for (auto targetAndAddress : supportedBinaryTargets)
             std::cout << targetAndAddress.first << " ";
         for (auto target : otherTargets)
@@ -108,7 +110,8 @@ namespace application
     }
 
     void UpgradePackBuilderFacade::ShowUsage(TargetAndFiles& targetAndFiles, BuildOptions& buildOptions,
-        const std::vector<std::string>& supportedHexTargets, const std::vector<std::pair<std::string, uint32_t>>& supportedBinaryTargets,
+        const std::vector<std::string>& supportedHexTargets, const std::vector<std::pair<std::string, uint32_t>>& supportedElfTargets, 
+        const std::vector<std::pair<std::string, uint32_t>>& supportedBinaryTargets,
         const std::vector<NoFileInputFactory*>& otherTargets) const
     {
         std::cout << "Wrong usage" << std::endl;
@@ -127,6 +130,8 @@ namespace application
         std::cout << "Available Targets: ";
         for (auto target : supportedHexTargets)
             std::cout << target << " ";
+        for (auto target : supportedElfTargets)
+            std::cout << target.first << " ";
         for (auto targetAndAddress : supportedBinaryTargets)
             std::cout << targetAndAddress.first << " ";
         for (auto target : otherTargets)

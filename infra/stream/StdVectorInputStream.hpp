@@ -12,6 +12,8 @@ namespace infra
         : public StreamReaderWithRewinding
     {
     public:
+        using WithStorage = infra::WithStorage<StdVectorInputStreamReader, std::vector<uint8_t>>;
+
         explicit StdVectorInputStreamReader(const std::vector<uint8_t>& vector);
 
     private:

@@ -95,8 +95,8 @@ namespace infra
     };
 
     template<std::size_t N>
-   struct DecayFormatType<const char(&)[N]>
-   {
+    struct DecayFormatType<const char(&)[N]>
+    {
         using type = const char*;
     };
 
@@ -183,4 +183,5 @@ namespace infra
         return FormatHelper<Formatter<typename DecayFormatType<Args>::type>...>(format, MakeFormatter(std::forward<Args>(args))...);
     }
 }
+
 #endif

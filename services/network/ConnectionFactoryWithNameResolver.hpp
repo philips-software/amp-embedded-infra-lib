@@ -47,7 +47,7 @@ namespace services
     class ConnectionFactoryWithNameResolverImpl
         : public ConnectionFactoryWithNameResolver
     {
-    private:
+    protected:
         class Action
             : public NameResolverResult
             , public ClientConnectionObserverFactory
@@ -85,6 +85,10 @@ namespace services
         // Implementation of ConnectionFactoryWithNameResolver
         virtual void Connect(ClientConnectionObserverFactoryWithNameResolver& factory) override;
         virtual void CancelConnect(ClientConnectionObserverFactoryWithNameResolver& factory) override;
+
+    protected:
+        virtual void NameLookupFailed();
+        virtual void NameLookupSuccessful(IPAddress address);
 
     private:
         void CheckNameLookup();

@@ -24,13 +24,15 @@ namespace services
         static const uint8_t commandEraseBulk;
         static const uint8_t commandReadId;
 
+        static const uint32_t nrOfSubSectors = 512;
+
         static const uint32_t sizeSector = 65536;
         static const uint32_t sizeSubSector = 4096;
         static const uint32_t sizePage = 256;
 
         static const uint8_t statusFlagWriteInProgress = 1;
 
-        explicit FlashSpi(hal::SpiMaster& spi, uint32_t numberOfSubSectors = 512);
+        explicit FlashSpi(hal::SpiMaster& spi, uint32_t numberOfSubSectors = nrOfSubSectors, uint32_t timerId = infra::systemTimerServiceId);
 
     public:
         // implement Flash

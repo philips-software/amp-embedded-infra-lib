@@ -25,6 +25,28 @@ namespace infra
         uint32_t length;
     };
 
+    class LimitedStreamReaderWithRewinding
+        : public StreamReaderWithRewinding
+    {
+    public:
+        LimitedStreamReaderWithRewinding(StreamReaderWithRewinding& input, uint32_t length);
+        LimitedStreamReaderWithRewinding(const LimitedStreamReaderWithRewinding& other);
+
+    public:
+        virtual void Extract(ByteRange range, StreamErrorPolicy& errorPolicy) override;
+        virtual uint8_t Peek(StreamErrorPolicy& errorPolicy) override;
+        virtual ConstByteRange ExtractContiguousRange(std::size_t max) override;
+        virtual ConstByteRange PeekContiguousRange(std::size_t start) override;
+        virtual bool Empty() const override;
+        virtual std::size_t Available() const override;
+        virtual std::size_t ConstructSaveMarker() const override;
+        virtual void Rewind(std::size_t marker) override;
+
+    private:
+        StreamReaderWithRewinding& input;
+        uint32_t length;
+    };
+
     class LimitedTextInputStream
         : public TextInputStream::WithReader<LimitedStreamReader>
     {

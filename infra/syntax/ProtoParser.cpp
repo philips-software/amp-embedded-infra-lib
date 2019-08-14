@@ -34,11 +34,21 @@ namespace infra
         input >> infra::StringAsByteRange(string);
     }
 
+    void ProtoLengthDelimited::GetStringReference(infra::BoundedConstString& string)
+    {
+        string = infra::ByteRangeAsString(input.ContiguousRange());
+    }
+
     void ProtoLengthDelimited::GetBytes(infra::BoundedVector<uint8_t>& bytes)
     {
         bytes.resize(std::min(input.Available(), bytes.max_size()));
         assert(bytes.size() == input.Available());
         input >> infra::MakeRange(bytes);
+    }
+
+    void ProtoLengthDelimited::GetBytesReference(infra::ConstByteRange& bytes)
+    {
+        bytes = input.ContiguousRange();
     }
 
     ProtoParser::ProtoParser(infra::DataInputStream inputStream)

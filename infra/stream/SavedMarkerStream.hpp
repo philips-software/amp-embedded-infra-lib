@@ -12,6 +12,9 @@ namespace infra
         SavedMarkerStreamWriter(OutputStream& stream, std::size_t marker);
         ~SavedMarkerStreamWriter();
 
+        void Commit();
+        void Undo();
+
     private:
         OutputStream& stream;
     };
@@ -20,14 +23,18 @@ namespace infra
         : public TextOutputStream::WithWriter<SavedMarkerStreamWriter>
     {
     public:
-        using TextOutputStream::WithWriter<SavedMarkerStreamWriter>::WithWriter;
+        SavedMarkerTextStream(OutputStream& stream, std::size_t marker);
+        SavedMarkerTextStream(OutputStream& stream, std::size_t marker, const SoftFail&);
+        SavedMarkerTextStream(OutputStream& stream, std::size_t marker, const NoFail&);
     };
 
     class SavedMarkerDataStream
         : public DataOutputStream::WithWriter<SavedMarkerStreamWriter>
     {
     public:
-        using DataOutputStream::WithWriter<SavedMarkerStreamWriter>::WithWriter;
+        SavedMarkerDataStream(OutputStream& stream, std::size_t marker);
+        SavedMarkerDataStream(OutputStream& stream, std::size_t marker, const SoftFail&);
+        SavedMarkerDataStream(OutputStream& stream, std::size_t marker, const NoFail&);
     };
 }
 

@@ -13,7 +13,7 @@ namespace services
     public:
         explicit Terminal(hal::SerialCommunication& communication);
 
-        void Print(const char* message);
+        virtual void Print(const char* message);
         virtual void OnData(infra::BoundedString data) {}
 
     private:
