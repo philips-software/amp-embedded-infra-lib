@@ -41,4 +41,4 @@ script:
   - cd Build
   - cmake .. -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
   - cmake --build . --config ${BUILD_TYPE}
-  - ctest -C ${BUILD_TYPE} -T test --no-compress-output
+  - ctest -D Experimental -C ${BUILD_TYPE} --output-on-failure
