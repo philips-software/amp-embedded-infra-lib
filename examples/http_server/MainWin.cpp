@@ -1,16 +1,15 @@
 #include "examples/http_server/TimeHttpPage.hpp"
-#include "services/network_win/ConnectionWin.hpp"
 #include "hal/generic/TimerServiceGeneric.hpp"
 #include "services/network/HttpServer.hpp"
 #include "services/network_win/EventDispatcherWithNetwork.hpp"
 
 int main(int argc, const char* argv[], const char* env[])
 {
-    services::EventDispatcherWithNetwork eventDispatcherWithNetwork;
-    hal::TimerServiceGeneric timerService;
+    static services::EventDispatcherWithNetwork eventDispatcherWithNetwork;
+    static hal::TimerServiceGeneric timerService;
 
-    services::DefaultHttpServer::WithBuffer<2048> httpServer(eventDispatcherWithNetwork, 80);
-    application::TimeHttpPage timePage;
+    static services::DefaultHttpServer::WithBuffer<2048> httpServer(eventDispatcherWithNetwork, 80);
+    static application::TimeHttpPage timePage;
     httpServer.AddPage(timePage);
 
     eventDispatcherWithNetwork.Run();
