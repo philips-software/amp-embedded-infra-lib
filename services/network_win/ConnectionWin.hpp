@@ -121,7 +121,6 @@ namespace services
         SOCKET connectSocket;
         WSAEVENT event = WSACreateEvent();
     };
-
 }
 
 #endif
