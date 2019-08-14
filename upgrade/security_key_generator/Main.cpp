@@ -1,5 +1,5 @@
-#include "upgrade/security_key_generator/MaterialGenerator.hpp"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
+#include "upgrade/security_key_generator/MaterialGenerator.hpp"
 #include <iostream>
 
 int main(int argc, char* argv[])
