@@ -36,7 +36,7 @@
     #error Could not find system header "<filesystem>" or "<experimental/filesystem>"
 #endif
 
-// We priously determined that we need the exprimental version
+// We previously determined that we need the exprimental version
 #if INCLUDE_STD_FILESYSTEM_EXPERIMENTAL
     #include <experimental/filesystem>
 
@@ -49,7 +49,12 @@
 
     namespace hal
     {
+#ifdef __APPLE__
+        // Work around for XCode 11 with target version 10.15 where the namespace is not std::filesystem
+        namespace filesystem = std::__fs::filesystem;
+#else
         namespace filesystem = std::filesystem;
+#endif
     }
 #endif
 
