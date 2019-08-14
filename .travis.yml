@@ -4,18 +4,18 @@ matrix:
   include:
     - os: windows
 
-    # - os: linux
-    #   addons:
-    #     apt:
-    #       sources:
-    #         - ubuntu-toolchain-r-test
-    #       packages:
-    #         - g++-5
-    #   env:
-    #     - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+      env:
+        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
 
-    # - os: osx
-    #   osx_image: xcode10.1
+    - os: osx
+      osx_image: xcode10.1
 
 before_install:
   - eval "${MATRIX_EVAL}"
