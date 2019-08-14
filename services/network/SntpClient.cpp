@@ -35,10 +35,10 @@ namespace services
         if (stratum > 15)
             return false;
 
-        if (transmit.seconds == uint32_t{0})
+        if (timestamps.transmit.seconds == uint32_t{0})
             return false;
 
-        if (std::chrono::duration_cast<std::chrono::seconds>(originate.Convert()) != std::chrono::duration_cast<std::chrono::seconds>(requestTime))
+        if (std::chrono::duration_cast<std::chrono::seconds>(timestamps.originate.Convert()) != std::chrono::duration_cast<std::chrono::seconds>(requestTime))
             return false;
 
         return true;
@@ -100,7 +100,7 @@ namespace services
 
         originRequestTime = timeWithLocalization.Utc().Now().time_since_epoch();
         message.header = CreateNtpHeader(NtpLeapIndicator::noWarning, ntpRequestVersion, NtpMode::client);
-        message.transmit = Convert(originRequestTime);
+        message.timestamps.transmit = Convert(originRequestTime);
 
         stream << message;
     }
@@ -127,9 +127,9 @@ namespace services
     void SntpClient::NotifyOffsetAndDelay(NtpMessage& message)
     {
         // 'Algorithm' according to section 5 of RFC5905
-        auto t1 = message.originate.Convert();
-        auto t2 = message.receive.Convert();
-        auto t3 = message.transmit.Convert();
+        auto t1 = message.timestamps.originate.Convert();
+        auto t2 = message.timestamps.receive.Convert();
+        auto t3 = message.timestamps.transmit.Convert();
         auto t4 = timeWithLocalization.Utc().Now().time_since_epoch();
 
         auto roundTripDelay = (t4 - t1) - (t3 - t2);
