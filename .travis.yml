@@ -14,8 +14,18 @@ matrix:
       env:
         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
 
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.9
+      env:
+        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+
     - os: osx
-      osx_image: xcode10.1
+      osx_image: xcode11
 
 before_install:
   - eval "${MATRIX_EVAL}"
