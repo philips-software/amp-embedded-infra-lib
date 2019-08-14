@@ -17,7 +17,7 @@ namespace application
     public:
         explicit OverwriteException(std::size_t position);
 
-        virtual char const* what() const override;
+        virtual char const* what() const noexcept override;
 
     private:
         std::string message;
@@ -69,7 +69,7 @@ namespace application
         message == ss.str();
     }
 
-    inline char const* OverwriteException::what() const
+    inline char const* OverwriteException::what() const noexcept
     {
         return message.c_str();
     }
