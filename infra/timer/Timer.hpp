@@ -115,9 +115,9 @@ namespace std
     {
         std::time_t now_c = std::chrono::system_clock::to_time_t(p);
         std::tm tm = *gmtime(&now_c);
-#if defined(__GNUC__) && __GNUC__ <= 4
+#if !defined(__clang__) && defined(__GNUC__) && __GNUC__ <= 4
         char formattedTime[24];
-        if (strftime(formattedTime, sizeof(formattedTime), "%F %T.] ", now_c) > 0)
+        if (strftime(formattedTime, sizeof(formattedTime), "%F %T.] ", &tm) > 0)
             *os << formattedTime;
 #else
         uint64_t fractional = std::chrono::duration_cast<std::chrono::nanoseconds>(p - std::chrono::time_point_cast<std::chrono::seconds>(p)).count();
