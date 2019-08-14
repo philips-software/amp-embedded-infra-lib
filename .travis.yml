@@ -30,6 +30,8 @@ matrix:
 
     - os: osx
       osx_image: xcode11
+      env:
+        - MACOSX_DEPLOYMENT_TARGET=10.15
 
 before_install:
   - eval "${MATRIX_EVAL}"
