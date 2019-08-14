@@ -1,5 +1,9 @@
 language: cpp
 
+env:
+  global:
+    - BUILD_TYPE=Debug
+
 matrix:
   include:
     - os: windows
@@ -33,6 +37,6 @@ before_install:
 script:
   - cmake -E make_directory Build
   - cd Build
-  - cmake .. -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install
-  - cmake --build .
-  - ctest -T test --no-compress-output
+  - cmake .. -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+  - cmake --build . --config ${BUILD_TYPE}
+  - ctest -C ${BUILD_TYPE} -T test --no-compress-output
