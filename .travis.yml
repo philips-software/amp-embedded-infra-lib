@@ -3,6 +3,7 @@ language: cpp
 env:
   global:
     - BUILD_TYPE=Debug
+    - GTEST_COLOR=1
 
 matrix:
   include:
