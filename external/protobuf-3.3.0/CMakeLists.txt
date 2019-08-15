@@ -7,14 +7,14 @@ ccola_package(protobuf)
         ccola_inheritable_definitions(PROTOBUF_USE_DLLS)
         ccola_definitions(
             LIBPROTOBUF_EXPORTS
-        linux:
+        unix:
             HAVE_PTHREAD
         )
 
         ccola_compile_options(
         win:
             /wd4018 /wd4065 /wd4244 /wd4251 /wd4267 /wd4305 /wd4309 /wd4506 /wd4661 /wd4800 /wd4838 /wd4996
-        linux:
+        unix:
             -fPIC
         )
         
@@ -37,7 +37,7 @@ ccola_package(protobuf)
             src/google/protobuf/message_lite.h
             src/google/protobuf/repeated_field.cc
             src/google/protobuf/repeated_field.h
-        linux:
+        unix:
             src/google/protobuf/stubs/atomicops_internals_x86_gcc.cc
             src/google/protobuf/stubs/atomicops_internals_x86_gcc.h
         win:
@@ -70,7 +70,7 @@ ccola_package(protobuf)
         )
 
         ccola_external_libraries(
-        linux:
+        unix:
             pthread
         )
 
