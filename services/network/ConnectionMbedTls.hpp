@@ -16,7 +16,7 @@
 namespace services
 {
     class ConnectionMbedTls
-        : public Connection
+        : public ConnectionWithHostname
         , public ConnectionObserver
         , public infra::EnableSharedFromThis<ConnectionMbedTls>
     {
@@ -45,22 +45,20 @@ namespace services
 
         void CreatedObserver(infra::SharedPtr<services::ConnectionObserver> connectionObserver);
 
-        void SetHostname(infra::BoundedConstString hostname);
-
         // ConnectionObserver
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void DataReceived() override;
         virtual void Connected() override;
         virtual void ClosingConnection() override;
 
-        // Connection
+        // ConnectionWithHostname
         virtual void RequestSendStream(std::size_t sendSize) override;
         virtual std::size_t MaxSendStreamSize() const override;
         virtual infra::SharedPtr<infra::StreamReaderWithRewinding> ReceiveStream() override;
         virtual void AckReceived() override;
-
         virtual void CloseAndDestroy() override;
         virtual void AbortAndDestroy() override;
+        virtual void SetHostname(infra::BoundedConstString hostname) override;
 
         virtual void TlsInitFailure(int reason);
         virtual void TlsReadFailure(int reason);

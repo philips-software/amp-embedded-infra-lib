@@ -28,9 +28,13 @@ namespace services
     void TracingConnectionMbedTls::TlsLog(int level, const char* file, int line, const char* message)
     {
         infra::BoundedConstString fileCopy(file);
+        infra::BoundedConstString messageCopy(message);
+
+        if (messageCopy.find('\n') != infra::BoundedConstString::npos)
+            messageCopy = messageCopy.substr(0, messageCopy.find('\n'));
 
         tracer.Trace() << "[" << fileCopy.substr(fileCopy.find_last_of('\\') + 1) << ":" << line
-                       << "] (" << level << "): " << message;
+                       << "] (" << level << "): " << messageCopy;
     }
 
     void TracingConnectionMbedTls::LogFailure(const char* what, int reason)

@@ -25,7 +25,7 @@ namespace hal
         ~AnalogToDigitalPinImplBase() = default;
 
     public:
-        virtual void Measure(const infra::Function<void(uint16_t value)>& onDone) = 0;
+        virtual void Measure(const infra::Function<void(int32_t value)>& onDone) = 0;
     };
 
     template<class Conversion, class Unit, class Storage, class Impl>
@@ -55,7 +55,7 @@ namespace hal
     void AnalogToDigitalPinConverter<Conversion, Unit, Storage, Impl>::Measure(const infra::Function<void(infra::Quantity<Unit, Storage> value)>& onDone)
     {
         this->onDone = onDone;
-        Impl::Measure([this](uint16_t value)
+        Impl::Measure([this](int32_t value)
         {
             this->onDone(infra::Quantity<Conversion, Storage>(value));
         });

@@ -83,15 +83,6 @@ namespace services
             createdObserver(nullptr);
     }
 
-    void ConnectionMbedTls::SetHostname(infra::BoundedConstString hostname)
-    {
-        infra::BoundedString::WithStorage<MBEDTLS_SSL_MAX_HOST_NAME_LEN + 1> terminatedHostname(hostname);
-        terminatedHostname.push_back(0);
-
-        int result = mbedtls_ssl_set_hostname(&sslContext, terminatedHostname.data());
-        assert(result == 0);
-    }
-
     void ConnectionMbedTls::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         encryptedSendWriter = writer;
@@ -187,6 +178,15 @@ namespace services
     {
         encryptedSendWriter = nullptr;
         ConnectionObserver::Subject().AbortAndDestroy();
+    }
+
+    void ConnectionMbedTls::SetHostname(infra::BoundedConstString hostname)
+    {
+        infra::BoundedString::WithStorage<MBEDTLS_SSL_MAX_HOST_NAME_LEN + 1> terminatedHostname(hostname);
+        terminatedHostname.push_back(0);
+
+        int result = mbedtls_ssl_set_hostname(&sslContext, terminatedHostname.data());
+        assert(result == 0);
     }
 
     void ConnectionMbedTls::TlsInitFailure(int reason)
@@ -563,7 +563,7 @@ namespace services
         clientConnectionFactory->ConnectionEstablished([this, &createdObserver](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
         {
             createdObserver(connectionObserver);
-            static_cast<ConnectionMbedTls&>(connectionObserver->Subject()).SetHostname(Hostname());
+            static_cast<ConnectionWithHostname&>(connectionObserver->Subject()).SetHostname(Hostname());
         });
     }
 

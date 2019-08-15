@@ -25,10 +25,13 @@ namespace infra
         ClaimableResource& operator=(const ClaimableResource& other) = delete;
         ~ClaimableResource();
 
+        bool ClaimsPending() const;
+
     private:
         void ReEvaluateClaim();
         void AddClaim(ClaimerBase& claimer);
         void RemoveClaim(ClaimerBase& claimer);
+        void ReplaceClaim(ClaimerBase& claimerOld, ClaimerBase& claimerNew);
         void EnqueueClaimer(ClaimerBase& claimer);
         void DequeueClaimer(ClaimerBase& claimer);
 
@@ -44,6 +47,8 @@ namespace infra
         explicit ClaimerBase(ClaimableResource& resource);
         ClaimerBase(const ClaimerBase& other) = delete;
         ClaimerBase& operator=(const ClaimerBase& other) = delete;
+        ClaimerBase(ClaimerBase&& other);
+        ClaimerBase& operator=(ClaimerBase&& other);
 
     protected:
         ~ClaimerBase();
@@ -56,6 +61,8 @@ namespace infra
         friend class ClaimableResource;
 
         virtual void ClaimGranted() = 0;
+
+        void ReleaseAllClaims();
 
     private:
         ClaimableResource& resource;
@@ -71,7 +78,7 @@ namespace infra
         template<std::size_t NewExtraSize>
             using WithSize = ClaimerWithSize<NewExtraSize>;
 
-        explicit ClaimerWithSize(ClaimableResource& resource);
+        using ClaimerBase::ClaimerBase;
 
         void Claim(const infra::Function<void(), ExtraSize>& claimedFunc);
         virtual void Release() override;
@@ -84,11 +91,6 @@ namespace infra
     };
 
     ////    Implementation    ////
-
-    template<std::size_t ExtraSize>
-    ClaimableResource::ClaimerWithSize<ExtraSize>::ClaimerWithSize(ClaimableResource& resource)
-        : ClaimerBase(resource)
-    {}
 
     template<std::size_t ExtraSize>
     void ClaimableResource::ClaimerWithSize<ExtraSize>::Claim(const infra::Function<void(), ExtraSize>& onGranted)

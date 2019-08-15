@@ -57,6 +57,13 @@ namespace services
         infra::SharedPtr<ConnectionObserver> observer;
     };
 
+    class ConnectionWithHostname
+        : public Connection
+    {
+    public:
+        virtual void SetHostname(infra::BoundedConstString hostname) = 0;
+    };
+
     class ServerConnectionObserverFactory
     {
     protected:
