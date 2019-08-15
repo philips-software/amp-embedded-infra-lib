@@ -61,7 +61,7 @@ namespace services
     void HttpRequestFormatter::AddContentLength(std::size_t size)
     {
         infra::StringOutputStream contentLengthStream(contentLength);
-        contentLengthStream << size;
+        contentLengthStream << static_cast<uint64_t>(size);
         contentLengthHeader.Emplace("content-length", contentLength);
     }
 
