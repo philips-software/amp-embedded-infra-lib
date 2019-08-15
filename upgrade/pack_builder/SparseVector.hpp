@@ -66,7 +66,7 @@ namespace application
     {
         std::stringstream ss;
         ss << "Contents specified twice for memory location at address 0x" << std::hex << std::setw(8) << std::setfill('0') << position;
-        message == ss.str();
+        message = ss.str();
     }
 
     inline char const* OverwriteException::what() const noexcept
