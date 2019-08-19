@@ -1,4 +1,4 @@
-#include "hal/windows/FileSystemWin.hpp"
+#include "hal/generic/FileSystemGeneric.hpp"
 #include "infra/stream/IoOutputStream.hpp"
 #include "infra/syntax/Json.hpp"
 #include "infra/util/Tokenizer.hpp"
@@ -257,7 +257,7 @@ int main(int argc, char* argv[], const char* env[])
             std::cout << "Loaded " << argv[i] << std::endl;
         }
 
-        hal::FileSystemWin filesystem;
+        hal::FileSystemGeneric filesystem;
         static ConfigParser config(filesystem);
 
         for (const char** var = env; *var != nullptr; ++var)

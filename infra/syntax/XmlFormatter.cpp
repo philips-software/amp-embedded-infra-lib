@@ -77,11 +77,13 @@ namespace infra
 
     XmlTagFormatter::~XmlTagFormatter()
     {
-        if (stream != infra::none)
-            if (empty)
-                *stream << " />";
-            else
-                *stream << "</" << tagName << ">";
+        if (stream == infra::none)
+            return;
+
+        if (empty)
+            *stream << " />";
+        else
+            *stream << "</" << tagName << ">";
     }
 
     XmlTagFormatter::XmlTagFormatter(XmlTagFormatter&& other)

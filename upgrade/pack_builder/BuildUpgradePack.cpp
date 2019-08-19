@@ -1,15 +1,16 @@
 #include "mbedtls/memory_buffer_alloc.h"
-#include "hal/windows/FileSystemWin.hpp"
+#include "hal/generic/FileSystemGeneric.hpp"
+#include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "upgrade/pack_builder/BinaryObject.hpp"
 #include "upgrade/pack_builder/BuildUpgradePack.hpp"
 #include "upgrade/pack_builder/ImageEncryptorAes.hpp"
 #include "upgrade/pack_builder/ImageSignerEcDsa.hpp"
+#include "upgrade/pack_builder/Input.hpp"
 #include "upgrade/pack_builder/UpgradePackBuilder.hpp"
 #include "upgrade/pack_builder/UpgradePackInputFactory.hpp"
 #include <cctype>
 #include <iomanip>
 #include <iostream>
-#include <windows.h>
 
 namespace application
 {
@@ -18,7 +19,7 @@ namespace application
         std::string ToLower(const std::string& str)
         {
             std::string result;
-            std::transform(str.begin(), str.end(), std::back_inserter(result), std::tolower);
+            std::transform(str.begin(), str.end(), std::back_inserter(result), [](unsigned char c) { return std::tolower(c); });
             return result;
         }
 
@@ -57,50 +58,6 @@ namespace application
             ShowUsage(targetAndFiles, buildOptions, supportedHexTargets, supportedElfTargets, supportedBinaryTargets, otherTargets);
             result = 1;
         }
-        catch (application::IncorrectCrcException& exception)
-        {
-            std::cout << "Incorrect CRC in file " << exception.file << " at line " << exception.line << std::endl;
-            result = 1;
-        }
-        catch (application::NoEndOfFileException& exception)
-        {
-            std::cout << "No end of file found in file " << exception.file << " at line " << exception.line << std::endl;
-            result = 1;
-        }
-        catch (application::DataAfterEndOfFileException& exception)
-        {
-            std::cout << "Data found after end of file in file " << exception.file << " at line " << exception.line << std::endl;
-            result = 1;
-        }
-        catch (application::UnknownRecordException& exception)
-        {
-            std::cout << "Unknown record in file " << exception.file << " at line " << exception.line << std::endl;
-            result = 1;
-        }
-        catch (application::RecordTooShortException& exception)
-        {
-            std::cout << "Record too short in file " << exception.file << " at line " << exception.line << std::endl;
-            result = 1;
-        }
-        catch (application::RecordTooLongException& exception)
-        {
-            std::cout << "Record too long in file " << exception.file << " at line " << exception.line << std::endl;
-            result = 1;
-        }
-        catch (application::OverwriteException& exception)
-        {
-            std::cout << "Contents specified twice for memory location at address 0x" << std::hex << std::setw(8) << std::setfill('0') << exception.position << std::endl;
-            result = 1;
-        }
-        catch (hal::CannotOpenFileException& exception)
-        {
-            std::cout << exception.what() << std::endl;
-            result = 1;
-        }
-        catch (application::SignatureDoesNotVerifyException&)
-        {
-            std::cout << "Signature does not verify" << std::endl;
-        }
         catch (std::exception& e)
         {
             std::cout << e.what() << std::endl;
@@ -112,11 +69,11 @@ namespace application
         std::string outputFilename, TargetAndFiles& targetAndFiles, BuildOptions& buildOptions, infra::JsonObject& configuration, infra::ConstByteRange aesKey, infra::ConstByteRange ecDsa224PublicKey,
         infra::ConstByteRange ecDsa224PrivateKey, const std::vector<NoFileInputFactory*>& otherTargets)
     {
-        application::SecureRandomNumberGenerator randomNumberGenerator;
-        hal::FileSystemWin fileSystem;
-        application::ImageEncryptorAes imageEncryptorAes(randomNumberGenerator, aesKey);
+        hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
+        hal::FileSystemGeneric fileSystem;
+        application::ImageEncryptorAes imageEncryptorAes(randomDataGenerator, aesKey);
         application::UpgradePackInputFactory inputFactory(supportedHexTargets, supportedElfTargets, supportedBinaryTargets, fileSystem, imageEncryptorAes, otherTargets);
-        application::ImageSignerEcDsa signer(randomNumberGenerator, ecDsa224PublicKey, ecDsa224PrivateKey);
+        application::ImageSignerEcDsa signer(randomDataGenerator, ecDsa224PublicKey, ecDsa224PrivateKey);
 
         PreBuilder(targetAndFiles, buildOptions, configuration);
 

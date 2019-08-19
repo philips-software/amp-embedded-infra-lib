@@ -1,15 +1,15 @@
 ccola_component(interfaces static_library)
 
     ccola_sources(
+    x86:
+        FileSystem.cpp
+        FileSystem.hpp
+    all:
         AnalogToDigitalPin.hpp
         CommunicationConfigurator.hpp
         DigitalToAnalogPin.hpp
         Ethernet.cpp
         Ethernet.hpp
-    win:
-        FileSystem.cpp
-        FileSystem.hpp
-    all:
         Flash.cpp
         Flash.hpp
         FlashHomogeneous.cpp
@@ -37,6 +37,11 @@ ccola_component(interfaces static_library)
     ccola_dependencies(
         infra.util
         infra.event
+    )
+
+    ccola_external_libraries(
+    linux:
+        stdc++fs
     )
 
 ccola_end_component()

@@ -2,46 +2,44 @@ ccola_component(pack_builder x86: static_library other: noncompile)
 
     ccola_sources(
         BinaryObject.cpp
-        BuildReferenceUpgradePack.cpp
-        BuildUpgradePack.cpp
-        ImageAuthenticatorHmac.cpp
-        ImageEncryptorAes.cpp
-        ImageEncryptorNone.cpp
-        ImageEncryptorXtea.cpp
-        ImageSecurityXteaHmac.cpp
-        ImageSignerEcDsa.cpp
-        ImageSignerRsa.cpp
-        Input.cpp
-        InputBinary.cpp
-        InputElf.cpp
-        InputHex.cpp
-        RandomNumberGenerator.cpp
-        UpgradePackBuilder.cpp
-        UpgradePackInputFactory.cpp
         BinaryObject.hpp
+        BuildReferenceUpgradePack.cpp
         BuildReferenceUpgradePack.hpp
+        BuildUpgradePack.cpp
         BuildUpgradePack.hpp
         Elf.hpp
-        ImageAUthenticatorHmac.hpp
+        ImageAuthenticatorHmac.hpp
+        ImageAuthenticatorHmac.cpp
+        ImageEncryptorAes.cpp
         ImageEncryptorAes.hpp
+        ImageEncryptorNone.cpp
         ImageEncryptorNone.hpp
+        ImageEncryptorXtea.cpp
         ImageEncryptorXtea.hpp
         ImageSecurity.hpp
+        ImageSecurityXteaHmac.cpp
         ImageSecurityXteaHmac.hpp
         ImageSigner.hpp
+        ImageSignerEcDsa.cpp
         ImageSignerEcDsa.hpp
+        ImageSignerRsa.cpp
         ImageSignerRsa.hpp
+        Input.cpp
         Input.hpp
+        InputBinary.cpp
         InputBinary.hpp
+        InputElf.cpp
         InputElf.hpp
         InputFactory.hpp
+        InputHex.cpp
         InputHex.hpp
-        RandomNumberGenerator.hpp
         SparseVector.hpp
+        UpgradePackBuilder.cpp
         UpgradePackBuilder.hpp
-        UpgradePackInputFactory.hpp
         UpgradePackConfigParser.cpp
         UpgradePackConfigParser.hpp
+        UpgradePackInputFactory.cpp
+        UpgradePackInputFactory.hpp
     )
 
     ccola_dependencies(

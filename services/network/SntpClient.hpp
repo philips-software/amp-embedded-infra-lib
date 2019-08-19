@@ -38,7 +38,7 @@ namespace services
         SntpClient(services::DatagramFactory& factory, services::TimeWithLocalization& timeWithLocalization);
         ~SntpClient() = default;
 
-        void RequestTime(services::IPv4Address& address);
+        void RequestTime(const services::IPv4Address& address);
 
         // From DatagramExchangeObserver
         virtual void DataReceived(infra::StreamReaderWithRewinding& reader, services::UdpSocket from) override;

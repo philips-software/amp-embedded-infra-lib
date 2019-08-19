@@ -1,7 +1,7 @@
 #ifndef PROTOBUF_CONSOLE_HPP
 #define PROTOBUF_CONSOLE_HPP
 
-#include "hal/windows/TimerServiceWin.hpp"
+#include "hal/generic/TimerServiceGeneric.hpp"
 #include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/syntax/ProtoParser.hpp"
 #include "protobuf/protoc_echo_plugin/EchoObjects.hpp"
@@ -232,7 +232,7 @@ namespace application
     private:
         EchoRoot& root;
         services::EventDispatcherWithNetwork eventDispatcherWithNetwork;
-        hal::TimerServiceWin timerService{ infra::systemTimerServiceId };
+        hal::TimerServiceGeneric timerService{ infra::systemTimerServiceId };
         std::thread eventDispatcherThread;
         bool quit = false;
         std::mutex mutex;

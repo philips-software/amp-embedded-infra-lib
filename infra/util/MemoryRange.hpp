@@ -98,6 +98,9 @@ namespace infra
     template<class T>
         MemoryRange<T> DiscardTail(MemoryRange<T> range, std::size_t size);
 
+    template<class T, class U>
+        T Convert(MemoryRange<U> range);
+
     template<class T, class U, std::size_t N>
         bool operator==(MemoryRange<T> x, const std::array<U, N>& y);
     template<class T, class U, std::size_t N>
@@ -408,6 +411,14 @@ namespace infra
 
         range.pop_back(size);
         return range;
+    }
+
+    template<class T, class U>
+    T Convert(MemoryRange<U> range)
+    {
+        T result{};
+        Copy(range, infra::ReinterpretCastMemoryRange<typename std::remove_const<U>::type>(infra::MemoryRange<T>(&result, &result + 1)));
+        return result;
     }
 
     template<class T, class U, std::size_t N>

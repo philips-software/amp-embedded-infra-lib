@@ -34,6 +34,7 @@ namespace infra
         ByteRange Remaining() const;
 
         void Reset();
+        void Reset(ByteRange range);
 
         template<class T>
             ReservedProxy<T> Reserve(StreamErrorPolicy& errorPolicy);

@@ -10,6 +10,11 @@ namespace infra
         assert(pendingClaims.empty());
     }
 
+    bool ClaimableResource::ClaimsPending() const
+    {
+        return !pendingClaims.empty();
+    }
+
     void ClaimableResource::ReEvaluateClaim()
     {
         if (currentClaim == nullptr && !pendingClaims.empty())
@@ -39,6 +44,20 @@ namespace infra
             DequeueClaimer(claimer);
     }
 
+    void ClaimableResource::ReplaceClaim(ClaimerBase& claimerOld, ClaimerBase& claimerNew)
+    {
+        if (currentClaim == &claimerOld)
+            currentClaim = &claimerNew;
+
+        for (auto index = pendingClaims.begin(); index != pendingClaims.end(); ++index)
+            if (&*index == &claimerOld)
+            {
+                pendingClaims.insert(index, claimerNew);
+                pendingClaims.erase(claimerOld);
+                return;
+            }
+    }
+
     void ClaimableResource::EnqueueClaimer(ClaimerBase& claimer)
     {
         pendingClaims.push_back(claimer);
@@ -53,13 +72,38 @@ namespace infra
         : resource(resource)
     {}
 
+    ClaimableResource::ClaimerBase::ClaimerBase(ClaimerBase&& other)
+        : resource(other.resource)
+        , isGranted(other.isGranted)
+        , isQueued(other.isQueued)
+    {
+        other.isGranted = false;
+        other.isQueued = false;
+
+        if (isQueued || isGranted)
+            resource.ReplaceClaim(other, *this);
+    }
+
+    ClaimableResource::ClaimerBase& ClaimableResource::ClaimerBase::operator=(ClaimerBase&& other)
+    {
+        assert(&resource == &other.resource);
+        ReleaseAllClaims();
+
+        isGranted = other.isGranted;
+        isQueued = other.isQueued;
+
+        other.isGranted = false;
+        other.isQueued = false;
+
+        if (isQueued || isGranted)
+            resource.ReplaceClaim(other, *this);
+
+        return *this;
+    }
+
     ClaimableResource::ClaimerBase::~ClaimerBase()
     {
-        if (isGranted)
-            ClaimerBase::Release();
-
-        if (isQueued)
-            ClaimerBase::Release();
+        ReleaseAllClaims();
     }
 
     void ClaimableResource::ClaimerBase::Release()
@@ -74,5 +118,14 @@ namespace infra
     bool ClaimableResource::ClaimerBase::IsClaimed() const
     {
         return isGranted;
+    }
+
+    void ClaimableResource::ClaimerBase::ReleaseAllClaims()
+    {
+        if (isGranted)
+            ClaimerBase::Release();
+
+        if (isQueued)
+            ClaimerBase::Release();
     }
 }

@@ -2,6 +2,8 @@ ccola_component(synchronous_test_doubles x86: static_library other: noncompile)
 
     ccola_sources(
         SynchronousEncryptorMock.hpp
+        SynchronousFixedRandomDataGenerator.cpp
+        SynchronousFixedRandomDataGenerator.hpp
         SynchronousFlashStub.cpp
         SynchronousFlashStub.hpp
         SynchronousRandomDataGeneratorMock.hpp
@@ -15,3 +17,7 @@ ccola_component(synchronous_test_doubles x86: static_library other: noncompile)
     )
 
 ccola_end_component()
+
+ccola_subdirectories(
+    test
+)

@@ -1144,7 +1144,7 @@
  *
  * Enable the checkup functions (*_self_test).
  */
-#ifdef _MSC_VER
+#ifdef CCOLA_HOST_BUILD
 #define MBEDTLS_SELF_TEST
 #endif
 

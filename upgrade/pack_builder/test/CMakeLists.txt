@@ -19,6 +19,7 @@ ccola_component(pack_builder_test gmock_test)
     ccola_dependencies(
         pack_builder
         infra.timer_test_helper
+        hal.synchronous_test_doubles
         hal.test_doubles
         infra.syntax
     )

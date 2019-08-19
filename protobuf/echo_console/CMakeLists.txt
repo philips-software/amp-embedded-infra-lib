@@ -11,7 +11,7 @@ ccola_component(echo_console win: executable other: skip)
     ccola_dependencies(
         protoc_echo_plugin_lib
         echo
-        hal.windows
+        hal.generic
         services.network_win
     )
 

@@ -6,8 +6,8 @@
 
 namespace application
 {
-    ImageEncryptorXtea::ImageEncryptorXtea(RandomNumberGenerator& randomNumberGenerator, infra::ConstByteRange key)
-        : randomNumberGenerator(randomNumberGenerator)
+    ImageEncryptorXtea::ImageEncryptorXtea(hal::SynchronousRandomDataGenerator& randomDataGenerator, infra::ConstByteRange key)
+        : randomDataGenerator(randomDataGenerator)
         , key(key)
     {}
 
@@ -15,7 +15,8 @@ namespace application
     {
         std::vector<uint8_t> data = unalignedData;
         data.resize(data.size() + blockLength - (data.size() - 1 + blockLength) % blockLength - 1, 0);
-        std::vector<uint8_t> iv = randomNumberGenerator.Generate(blockLength);
+        std::vector<uint8_t> iv(blockLength, 0);
+        randomDataGenerator.GenerateRandomData(iv);
 
         mbedtls_xtea_context ctx;
         mbedtls_xtea_init(&ctx);
@@ -27,10 +28,10 @@ namespace application
 
         int ret = mbedtls_xtea_crypt_cbc(&ctx, MBEDTLS_XTEA_ENCRYPT, data.size(), iv.data(), data.data(), result.data() + blockLength);                 //TICS !INT#030
         if (ret != 0)
-            throw std::exception("XTEA encryption failed");
+            throw std::runtime_error("XTEA encryption failed");
 
         if (!CheckDecryption(data, result))
-            throw std::exception("XTEA decryption check failed");
+            throw std::runtime_error("XTEA decryption check failed");
 
         return result;
     }

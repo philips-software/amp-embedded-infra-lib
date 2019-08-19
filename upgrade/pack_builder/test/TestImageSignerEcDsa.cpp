@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+#include "hal/synchronous_interfaces/test_doubles/SynchronousFixedRandomDataGenerator.hpp"
 #include "upgrade/pack_builder/ImageSignerEcDsa.hpp"
 
 class TestImageSignerEcDsa
@@ -6,11 +7,11 @@ class TestImageSignerEcDsa
 {
 public:
     TestImageSignerEcDsa()
-        : randomNumberGenerator(std::vector<uint8_t>(1000, 5))
-        , signer(randomNumberGenerator, ecDsa224PublicKey, ecDsa224PrivateKey)
+        : randomDataGenerator(std::vector<uint8_t>(1000, 5))
+        , signer(randomDataGenerator, ecDsa224PublicKey, ecDsa224PrivateKey)
     {}
 
-    application::FixedRandomNumberGenerator randomNumberGenerator;
+    hal::SynchronousFixedRandomDataGenerator randomDataGenerator;
     application::ImageSignerEcDsa signer;
 
     const std::array<uint8_t, 56> ecDsa224PublicKey = std::array<uint8_t, 56>{ {

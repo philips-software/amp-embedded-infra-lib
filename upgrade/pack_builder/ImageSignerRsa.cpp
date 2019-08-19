@@ -6,14 +6,11 @@
 
 namespace application
 {
-    RandomNumberGenerator* ImageSignerRsa::randomNumberGenerator = nullptr;
-
-    ImageSignerRsa::ImageSignerRsa(RandomNumberGenerator& randomNumberGenerator, const RsaPublicKey& publicKey, const RsaPrivateKey& privateKey)
+    ImageSignerRsa::ImageSignerRsa(hal::SynchronousRandomDataGenerator& randomDataGenerator, const RsaPublicKey& publicKey, const RsaPrivateKey& privateKey)
         : publicKey(publicKey)
         , privateKey(privateKey)
-    {
-        ImageSignerRsa::randomNumberGenerator = &randomNumberGenerator;
-    }
+        , randomDataGenerator(randomDataGenerator)
+    {}
 
     uint16_t ImageSignerRsa::SignatureMethod() const
     {
@@ -112,15 +109,15 @@ namespace application
         mbedtls_rsa_set_padding(&rsaCtx, MBEDTLS_RSA_PKCS_V21, MBEDTLS_MD_SHA256);
 
         if (rsaCtx.len != signature.size())
-            throw std::exception("Key length wrong");
+            throw std::runtime_error("Key length wrong");
 
         ret = mbedtls_rsa_check_privkey(&rsaCtx);
         if (ret != 0)
-            throw std::exception("Public key is invalid");
+            throw std::runtime_error("Public key is invalid");
 
-        ret = mbedtls_rsa_rsassa_pss_sign(&rsaCtx, MyRandom, NULL, MBEDTLS_RSA_PRIVATE, MBEDTLS_MD_SHA256, hash.size(), hash.data(), signature.data());
+        ret = mbedtls_rsa_rsassa_pss_sign(&rsaCtx, RandomNumberGenerator, this, MBEDTLS_RSA_PRIVATE, MBEDTLS_MD_SHA256, hash.size(), hash.data(), signature.data());
         if (ret != 0)
-            throw std::exception("Failed to calculate signature");
+            throw std::runtime_error("Failed to calculate signature");
 
         rsaCtx.N.p = nullptr;
         rsaCtx.E.p = nullptr;
@@ -133,9 +130,10 @@ namespace application
         mbedtls_rsa_free(&rsaCtx);
     }
 
-    int ImageSignerRsa::MyRandom(void *rng_state, unsigned char *output, size_t len)
+    int ImageSignerRsa::RandomNumberGenerator(void* rng_state, unsigned char* output, size_t len)
     {
-        std::vector<uint8_t> data = randomNumberGenerator->Generate(len);
+        std::vector<uint8_t> data(len, 0);
+        reinterpret_cast<ImageSignerRsa*>(rng_state)->randomDataGenerator.GenerateRandomData(data);
         std::copy(data.begin(), data.end(), output);
         return 0;
     }

@@ -7,7 +7,7 @@ class HeapAllocatorTest
 public:
     struct TestObject
     {
-        void* operator new(size_t size, std::nothrow_t)
+        void* operator new(size_t size, std::nothrow_t) noexcept
         {
             if (allocated)
                 return nullptr;
