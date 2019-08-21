@@ -466,3 +466,26 @@ TEST(StringOutputStreamTest, available_retuns_remaining_space)
     sos << 1234;
     EXPECT_EQ(0, sos.Available());
 }
+
+TEST(StringOutputStreamTest, Reset)
+{
+    infra::StringOutputStream::WithStorage<2> stream;
+
+    stream << uint8_t(12);
+    stream.Writer().Reset();
+    stream << uint8_t(14);
+
+    EXPECT_EQ("14", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, Reset_with_new_storage)
+{
+    infra::StringOutputStream::WithStorage<2> stream;
+
+    stream << uint8_t(12);
+    infra::BoundedString::WithStorage<4> newString;
+    stream.Writer().Reset(newString);
+    stream << uint8_t(14);
+
+    EXPECT_EQ("14", newString);
+}

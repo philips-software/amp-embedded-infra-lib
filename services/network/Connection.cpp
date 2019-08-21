@@ -2,6 +2,16 @@
 
 namespace services
 {
+    void ConnectionObserver::Close()
+    {
+        Subject().CloseAndDestroy();
+    }
+
+    void ConnectionObserver::Abort()
+    {
+        Subject().AbortAndDestroy();
+    }
+
     void Connection::SwitchObserver(const infra::SharedPtr<ConnectionObserver>& newObserver)
     {
         this->observer = newObserver;

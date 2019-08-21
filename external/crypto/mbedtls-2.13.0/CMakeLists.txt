@@ -178,3 +178,15 @@ ccola_component(mbed_tls source)
     endif()
 ccola_end_component()
 
+ccola_component(mbed_tls_minimal source)
+ if(MBEDTLS_MINIMAL_ALTERNATIVE_DEPEND)
+        ccola_dependencies(
+            ${MBEDTLS_MINIMAL_ALTERNATIVE_DEPEND}
+        )
+    else()
+        ccola_dependencies(
+            mbedtls_emil
+        )
+    endif()
+ccola_end_component()
+

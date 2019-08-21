@@ -213,7 +213,8 @@ TEST(JsonObjectFormatter, output_is_truncated_on_small_output_string)
 
     {
         infra::BoundedConstString s("test");
-        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        infra::StringOutputStream stream(string, infra::noFail);
+        infra::JsonObjectFormatter formatter(stream);
         formatter.Add("tag", s);
     }
 
@@ -365,7 +366,8 @@ TEST(JsonArrayFormatter, output_is_truncated_on_small_output_string)
 
     {
         infra::BoundedConstString s("test");
-        infra::JsonArrayFormatter::WithStringStream formatter(infra::inPlace, string);
+        infra::StringOutputStream stream(string, infra::noFail);
+        infra::JsonArrayFormatter formatter(stream);
         formatter.Add(s);
     }
 

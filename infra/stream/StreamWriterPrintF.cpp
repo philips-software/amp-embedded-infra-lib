@@ -17,6 +17,7 @@ namespace infra
             printBuffer[to.size()] = 0;
             printf("%s", printBuffer.data());
         }
+        fflush(stdout);
     }
 
     std::size_t StreamWriterPrintF::Available() const

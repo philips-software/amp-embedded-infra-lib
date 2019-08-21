@@ -27,6 +27,8 @@ ccola_component(network static_library)
         HttpClientJson.hpp
         HttpErrors.cpp
         HttpErrors.hpp
+        HttpPageWebSocket.cpp
+        HttpPageWebSocket.hpp
         HttpRequestParser.cpp
         HttpRequestParser.hpp
         HttpServer.cpp
@@ -40,10 +42,15 @@ ccola_component(network static_library)
         NameResolver.hpp
         NameResolverCache.cpp
         NameResolverCache.hpp
+        Network.hpp
+        SingleConnectionListener.cpp
+        SingleConnectionListener.hpp
         SntpClient.cpp
         SntpClient.hpp
         StreamEcho.cpp
         StreamEcho.hpp
+        TracingConnectionFactoryWithNameResolver.cpp
+        TracingConnectionFactoryWithNameResolver.hpp
         TracingConnectionMbedTls.cpp
         TracingConnectionMbedTls.hpp
         TracingHttpClientImpl.cpp

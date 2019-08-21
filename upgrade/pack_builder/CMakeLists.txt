@@ -7,6 +7,7 @@ ccola_component(pack_builder x86: static_library other: noncompile)
         BuildReferenceUpgradePack.hpp
         BuildUpgradePack.cpp
         BuildUpgradePack.hpp
+        Elf.hpp
         ImageAuthenticatorHmac.hpp
         ImageAuthenticatorHmac.cpp
         ImageEncryptorAes.cpp
@@ -27,6 +28,8 @@ ccola_component(pack_builder x86: static_library other: noncompile)
         Input.hpp
         InputBinary.cpp
         InputBinary.hpp
+        InputElf.cpp
+        InputElf.hpp
         InputFactory.hpp
         InputHex.cpp
         InputHex.hpp

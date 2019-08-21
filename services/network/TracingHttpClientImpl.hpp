@@ -3,6 +3,7 @@
 
 #include "services/network/HttpClientImpl.hpp"
 #include "services/tracer/Tracer.hpp"
+#include "services/tracer/TracingOutputStream.hpp"
 
 namespace services
 {
@@ -15,18 +16,31 @@ namespace services
 
         TracingHttpClientImpl(infra::BoundedString& headerBuffer, infra::BoundedConstString hostname, Tracer& tracer);
 
-        // Implementation of HttpClientImpl
-        virtual void WriteRequest(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-
         // Implementation of ConnectionObserver
         virtual void DataReceived() override;
         virtual void Connected() override;
         virtual void ClosingConnection() override;
+        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+
+    private:
+        class TracingWriter
+        {
+        public:
+            TracingWriter(infra::SharedPtr<infra::StreamWriter>&& writer, services::Tracer& tracer);
+
+            infra::StreamWriter& Writer();
+
+        private:
+            infra::SharedPtr<infra::StreamWriter> writer;
+            TracingStreamWriter tracingWriter;
+        };
 
     private:
         friend class TracingHttpClientConnectorImpl;
         
         Tracer& tracer;
+
+        infra::SharedOptional<TracingWriter> tracingWriter;
     };
 }
 

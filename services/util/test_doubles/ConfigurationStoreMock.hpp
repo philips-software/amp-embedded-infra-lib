@@ -7,7 +7,7 @@
 namespace services
 {
     class ConfigurationStoreInterfaceMock
-        : public services::ConfigurationStoreInterface
+        : public ConfigurationStoreInterface
     {
     public:
         MOCK_METHOD0(Write, void());
