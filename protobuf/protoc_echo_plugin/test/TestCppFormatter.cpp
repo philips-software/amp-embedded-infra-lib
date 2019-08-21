@@ -521,7 +521,7 @@ TEST_F(CppFormatterTest, EnumDeclaration_prints_header)
 {
     application::EnumDeclaration declaration("name", { { "m1", 0 }, { "m2", 1 } });
     declaration.PrintHeader(*printer);
-    ExpectPrinted(R"(enum name
+    ExpectPrinted(R"(enum class name
 {
     m1 = 0,
     m2 = 1
