@@ -4,24 +4,14 @@
 namespace services
 {
     WiFiSecurity::WiFiSecurity(const WiFiSecurity& other, infra::BoundedConstString key)
-        : wep(other.wep)
-        , wpa(other.wpa)
-        , wpa2(other.wpa2)
-        , enterprise(other.enterprise)
-        , aes(other.aes)
-        , tkip(other.tkip)
+        : securityMode(other.securityMode)
         , key(key)
     {}
 
     bool WiFiSecurity::operator==(const WiFiSecurity& other) const
     {
         return infra::Equals()
-            (wep, other.wep)
-            (wpa, other.wpa)
-            (wpa2, other.wpa2)
-            (enterprise, other.enterprise)
-            (aes, other.aes)
-            (tkip, other.tkip)
+            (securityMode, other.securityMode)
             (key, other.key);
     }
 
@@ -33,7 +23,7 @@ namespace services
     WiFiSecurity WiFiSecurity::WepSecurity(infra::BoundedConstString key)
     {
         WiFiSecurity result;
-        result.wep = true;
+        result.securityMode = SecurityMode::wepShared;
         result.key = key;
         return result;
     }
@@ -41,8 +31,7 @@ namespace services
     WiFiSecurity WiFiSecurity::WpaSecurity(infra::BoundedConstString key)
     {
         WiFiSecurity result;
-        result.wpa = true;
-        result.aes = true;
+        result.securityMode = SecurityMode::wpaMixedPsk;
         result.key = key;
         return result;
     }
@@ -50,8 +39,7 @@ namespace services
     WiFiSecurity WiFiSecurity::Wpa2Security(infra::BoundedConstString key)
     {
         WiFiSecurity result;
-        result.wpa2 = true;
-        result.aes = true;
+        result.securityMode = SecurityMode::wpa2MixedPsk;
         result.key = key;
         return result;
     }
