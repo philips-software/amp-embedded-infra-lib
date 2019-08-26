@@ -6,6 +6,7 @@
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/Observer.hpp"
 #include "services/network/Address.hpp" 
+#include "services/tracer/Tracer.hpp"
 
 namespace services
 {
@@ -14,16 +15,14 @@ namespace services
         WiFiSecurity() = default;
         WiFiSecurity(const WiFiSecurity& other, infra::BoundedConstString key);
 
-        enum class SecurityMode
-        {
-            unknown = -1,
-            open = 0,
-            wepShared,
-            wpaMixedPsk,
-            wpa2MixedPsk,
-        };
+        bool wep = false;
+        bool wpa = false;
+        bool wpa2 = false;
 
-        SecurityMode securityMode = SecurityMode::open;
+        bool enterprise = false;
+
+        bool aes = false;
+        bool tkip = false;
 
         static const std::size_t minimumSecurityKeySize = 8;
         static const std::size_t securityKeySize = 64;
