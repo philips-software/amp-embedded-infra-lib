@@ -31,6 +31,7 @@ namespace application
         virtual void GenerateConstructors();
         virtual void GenerateFunctions();
         virtual void GenerateNestedMessageForwardDeclarations();
+        virtual void GenerateEnums();
         virtual void GenerateNestedMessages();
         virtual void GenerateFieldDeclarations();
         virtual void GenerateFieldConstants();

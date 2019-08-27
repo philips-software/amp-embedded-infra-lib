@@ -37,7 +37,17 @@ message WiFiStation
     string ssid = 3 [(string_size) = 32];
     bytes bssid = 4 [(bytes_size) = 6];
     uint32 channel = 5;
-    uint32 security = 6;
+
+    enum Security
+    {
+        open = 0x0;
+        wepShared = 0x8001;
+        wpaMixedPsk = 0x200006;
+        wpa2MixedPsk = 0x400006;
+        unknown = -1;
+    }
+
+    Security security = 6;
 }
 
 message WiFiAccessPoint

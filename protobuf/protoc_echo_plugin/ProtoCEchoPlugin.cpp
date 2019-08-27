@@ -83,6 +83,7 @@ namespace application
     {
         GenerateClass(formatter);
         GenerateNestedMessageForwardDeclarations();
+        GenerateEnums();
         GenerateConstructors();
         GenerateFunctions();
         GenerateNestedMessages();
@@ -147,6 +148,12 @@ namespace application
             virtual void VisitUint32(const EchoFieldUint32& field) override
             {
                 constructor.Parameter("uint32_t " + field.name);
+                constructor.Initializer(field.name + "(" + field.name + ")");
+            }
+
+            virtual void VisitEnum(const EchoFieldEnum& field) override
+            {
+                constructor.Parameter(field.typeName + " " + field.name);
                 constructor.Initializer(field.name + "(" + field.name + ")");
             }
 
@@ -226,6 +233,19 @@ namespace application
         }
     }
 
+    void MessageGenerator::GenerateEnums()
+    {
+        if (!message->nestedEnums.empty())
+        {
+            auto forwardDeclarations = std::make_shared<Access>("public");
+
+            for (auto& nestedEnum : message->nestedEnums)
+                forwardDeclarations->Add(std::make_shared<EnumDeclaration>(nestedEnum->name, nestedEnum->members));
+
+            classFormatter->Add(forwardDeclarations);
+        }
+    }
+
     void MessageGenerator::GenerateNestedMessages()
     {
         if (!message->nestedMessages.empty())
@@ -267,6 +287,11 @@ namespace application
             virtual void VisitString(const EchoFieldString& field) override
             {
                 entities.Add(std::make_shared<DataMember>(field.name, "infra::BoundedString::WithStorage<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">"));
+            }
+
+            virtual void VisitEnum(const EchoFieldEnum& field) override
+            {
+                entities.Add(std::make_shared<DataMember>(field.name, field.typeName, "{}"));
             }
 
             virtual void VisitMessage(const EchoFieldMessage& field) override
@@ -376,6 +401,11 @@ namespace application
                 maxMessageSize += " + " + google::protobuf::SimpleItoa(MaxVarIntSize(std::numeric_limits<uint32_t>::max()) + MaxVarIntSize((field.number << 3) | 2));
             }
 
+            virtual void VisitEnum(const EchoFieldEnum& field) override
+            {
+                maxMessageSize += " + " + google::protobuf::SimpleItoa(MaxVarIntSize(std::numeric_limits<uint32_t>::max()) + MaxVarIntSize((field.number << 3) | 2));
+            }
+
             virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
             {
                 maxMessageSize += " + " + google::protobuf::SimpleItoa(field.maxArraySize * (field.maxStringSize + MaxVarIntSize(field.maxStringSize) + MaxVarIntSize((field.number << 3) | 2)));
@@ -442,6 +472,13 @@ namespace application
             virtual void VisitString(const EchoFieldString& field) override
             {
                 printer.Print("formatter.PutStringField($name$, $constant$);\n"
+                    , "name", field.name
+                    , "constant", field.constantName);
+            }
+
+            virtual void VisitEnum(const EchoFieldEnum& field) override
+            {
+                printer.Print("formatter.PutVarIntField(static_cast<uint64_t>($name$), $constant$);\n"
                     , "name", field.name
                     , "constant", field.constantName);
             }
@@ -568,6 +605,17 @@ namespace application
     break;
 )"
                 , "name", field.name
+                , "constant", field.constantName);
+            }
+
+            virtual void VisitEnum(const EchoFieldEnum& field) override
+            {
+                printer.Print(R"(case $constant$:
+    $name$ = static_cast<$type$>(field.first.Get<uint64_t>());
+    break;
+)"
+                , "name", field.name
+                , "type", field.typeName
                 , "constant", field.constantName);
             }
 
@@ -756,6 +804,12 @@ namespace application
                 constructor.Initializer(field.name + "(" + field.name + ")");
             }
 
+            virtual void VisitEnum(const EchoFieldEnum& field) override
+            {
+                constructor.Parameter(field.typeName + " " + field.name);
+                constructor.Initializer(field.name + "(" + field.name + ")");
+            }
+
             virtual void VisitMessage(const EchoFieldMessage& field) override
             {
                 constructor.Parameter("const " + field.message->qualifiedReferenceName + "& " + field.name);
@@ -908,6 +962,11 @@ namespace application
                 entities.Add(std::make_shared<DataMember>(field.name, "uint32_t", "0"));
             }
 
+            virtual void VisitEnum(const EchoFieldEnum& field) override
+            {
+                entities.Add(std::make_shared<DataMember>(field.name, field.typeName, "{}"));
+            }
+
             virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
             {
                 entities.Add(std::make_shared<DataMember>(field.name
@@ -1031,6 +1090,17 @@ namespace application
 )"
 , "name", field.name
 , "constant", field.constantName);
+            }
+
+            virtual void VisitEnum(const EchoFieldEnum& field) override
+            {
+                printer.Print(R"(case $constant$:
+    $name$ = static_cast<$type$>(field.first.Get<uint64_t>());
+    break;
+)"
+                , "name", field.name
+                , "type", field.typeName
+                , "constant", field.constantName);
             }
 
             virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override

@@ -16,6 +16,8 @@ ccola_component(network static_library)
         Datagram.hpp
         DnsResolver.cpp
         DnsResolver.hpp
+        ExclusiveConnection.cpp
+        ExclusiveConnection.hpp
         Http.cpp
         Http.hpp
         HttpClient.hpp

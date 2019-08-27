@@ -2,9 +2,9 @@
 #define NETWORK_CONNECTION_MOCK_HPP
 
 #include "gmock/gmock.h"
+#include "infra/util/test_helper/BoundedStringMatcher.hpp"
 #include "services/network/Connection.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
-
 #include <vector>
 
 namespace services
@@ -22,6 +22,20 @@ namespace services
         MOCK_METHOD0(CloseAndDestroy, void());
         MOCK_METHOD0(AbortAndDestroy, void());
         MOCK_CONST_METHOD0(Ipv4Address, IPv4Address());
+    };
+
+    class ConnectionWithHostnameMock
+        : public services::ConnectionWithHostname
+    {
+    public:
+        MOCK_METHOD1(RequestSendStream, void(std::size_t sendSize));
+        MOCK_CONST_METHOD0(MaxSendStreamSize, std::size_t());
+        MOCK_METHOD0(ReceiveStream, infra::SharedPtr<infra::StreamReaderWithRewinding>());
+        MOCK_METHOD0(AckReceived, void());
+        MOCK_METHOD0(CloseAndDestroy, void());
+        MOCK_METHOD0(AbortAndDestroy, void());
+        MOCK_CONST_METHOD0(Ipv4Address, IPv4Address());
+        MOCK_METHOD1(SetHostname, void(infra::BoundedConstString hostname));
     };
 
     class ConnectionObserverMock

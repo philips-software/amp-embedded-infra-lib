@@ -36,12 +36,22 @@ namespace application
         , constantName(google::protobuf::compiler::cpp::FieldConstantName(&descriptor))
     {}
 
+    EchoEnum::EchoEnum(const google::protobuf::EnumDescriptor& descriptor)
+        : name(descriptor.name())
+    {
+        for (int i = 0; i != descriptor.value_count(); ++i)
+            members.push_back(std::make_pair(descriptor.value(i)->name(), descriptor.value(i)->number()));
+    }
+
     EchoMessage::EchoMessage(const google::protobuf::Descriptor& descriptor, EchoRoot& root)
         : descriptor(descriptor)
         , name(descriptor.name())
         , qualifiedName(QualifiedName(descriptor))
         , qualifiedReferenceName(QualifiedReferenceName(descriptor))
     {
+        for (int i = 0; i != descriptor.enum_type_count(); ++i)
+            nestedEnums.push_back(std::make_shared<EchoEnum>(*descriptor.enum_type(i)));
+
         for (int i = 0; i != descriptor.nested_type_count(); ++i)
             nestedMessages.push_back(root.AddMessage(*descriptor.nested_type(i)));
 
@@ -68,6 +78,8 @@ namespace application
                     return std::make_shared<EchoFieldBytes>(fieldDescriptor);
                 case google::protobuf::FieldDescriptor::TYPE_UINT32:
                     return std::make_shared<EchoFieldUint32>(fieldDescriptor);
+                case google::protobuf::FieldDescriptor::TYPE_ENUM:
+                    return std::make_shared<EchoFieldEnum>(fieldDescriptor);
                 default:
                     throw UnsupportedFieldType{ fieldDescriptor.name(), fieldDescriptor.type() };
             }
@@ -141,13 +153,22 @@ namespace application
         visitor.VisitUint32(*this);
     }
 
+    EchoFieldEnum::EchoFieldEnum(const google::protobuf::FieldDescriptor& descriptor)
+        : EchoField(descriptor)
+        , typeName(descriptor.enum_type()->name())
+    {}
+
+    void EchoFieldEnum::Accept(EchoFieldVisitor& visitor) const
+    {
+        visitor.VisitEnum(*this);
+    }
+
     EchoFieldRepeated::EchoFieldRepeated(const google::protobuf::FieldDescriptor& descriptor)
         : EchoField(descriptor)
         , maxArraySize(descriptor.options().GetExtension(array_size))
     {
         if (maxArraySize == 0)
-            std::abort();
-            //throw UnspecifiedArraySize{ name };
+            throw UnspecifiedArraySize{ name };
     }
 
     EchoFieldRepeatedString::EchoFieldRepeatedString(const google::protobuf::FieldDescriptor& descriptor)
