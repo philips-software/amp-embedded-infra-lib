@@ -23,6 +23,7 @@ ccola_component(util_test gmock_test)
     )
 
     ccola_dependencies(
+        tracer
         util
         hal.test_doubles
         infra.timer_test_helper

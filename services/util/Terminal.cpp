@@ -2,8 +2,9 @@
 
 namespace services
 {
-    Terminal::Terminal(hal::SerialCommunication& communication)
+    Terminal::Terminal(hal::SerialCommunication& communication, services::Tracer& tracer)
         : communication(communication)
+        , tracer(tracer)
         , queue([this] { HandleInput(); })
     {
         communication.ReceiveData([this](infra::ConstByteRange data) { for (uint8_t element : data) queue.AddFromInterrupt(element); });
@@ -12,12 +13,7 @@ namespace services
 
     void Terminal::Print(const char* message)
     {
-        if (sendDone)
-        {
-            sendDone = false;
-            infra::ConstByteRange data = infra::ReinterpretCastByteRange(infra::MakeRange(message, message + strlen(message)));
-            communication.SendData(data, [this]() { sendDone = true; });
-        }
+        tracer.Continue() << message;
     }
 
     void Terminal::HandleInput()
@@ -153,27 +149,26 @@ namespace services
         {
             std::rotate(std::next(buffer.begin(), state.cursorPosition), std::next(buffer.begin(), state.cursorPosition + 1), buffer.end());
             buffer = buffer.substr(0, buffer.size() - 1);
-
-            communication.SendData(infra::MakeRange(reinterpret_cast<const uint8_t*>(std::next(buffer.begin(), state.cursorPosition)), reinterpret_cast<const uint8_t*>(buffer.end())), infra::emptyFunction);
+            tracer.Continue() << ByteRangeAsString(infra::MakeRange(reinterpret_cast<const uint8_t*>(std::next(buffer.begin(), state.cursorPosition)), reinterpret_cast<const uint8_t*>(buffer.end())));
         }
 
         Print(" \b");
 
         for (uint32_t i = buffer.size(); i > state.cursorPosition; --i)
-            communication.SendData(infra::MakeByteRange('\b'), infra::emptyFunction);
+            tracer.Continue() << '\b';
     }
 
     void Terminal::MoveCursorHome()
     {
         state.cursorPosition = 0;
-        communication.SendData(infra::MakeByteRange('\r'), infra::emptyFunction);
+        tracer.Continue() << '\r';
         Print(state.prompt);
     }
 
     void Terminal::MoveCursorEnd()
     {
         if (buffer.size() > 0 && state.cursorPosition < buffer.size())
-            communication.SendData(infra::MakeRange(reinterpret_cast<const uint8_t*>(std::next(buffer.begin(), state.cursorPosition)), reinterpret_cast<const uint8_t*>(buffer.end())), infra::emptyFunction);
+            tracer.Continue() << ByteRangeAsString(infra::MakeRange(reinterpret_cast<const uint8_t*>(std::next(buffer.begin(), state.cursorPosition)), reinterpret_cast<const uint8_t*>(buffer.end())));
         state.cursorPosition = buffer.size();
     }
 
@@ -181,7 +176,7 @@ namespace services
     {
         if (state.cursorPosition > 0)
         {
-            communication.SendData(infra::MakeByteRange('\b'), infra::emptyFunction);
+            tracer.Continue() << '\b';
             --state.cursorPosition;
         }
         else
@@ -192,7 +187,7 @@ namespace services
     {
         if (state.cursorPosition < buffer.size())
         {
-            communication.SendData(infra::MakeByteRange(buffer[state.cursorPosition]), infra::emptyFunction);
+            tracer.Continue() << buffer[state.cursorPosition];
             ++state.cursorPosition;
         }
         else
@@ -213,17 +208,17 @@ namespace services
         std::size_t previousSize = buffer.size();
         buffer = element;
 
-        communication.SendData(infra::MakeByteRange('\r'), infra::emptyFunction);
+        tracer.Continue() << '\r';
         Print(state.prompt);
 
         if (buffer.size() > 0)
-            communication.SendData(infra::MakeRange(reinterpret_cast<const uint8_t*>(buffer.begin()), reinterpret_cast<const uint8_t*>(buffer.end())), infra::emptyFunction);
+            tracer.Continue() << buffer;
 
         for (std::size_t size = buffer.size(); size < previousSize; ++size)
-            communication.SendData(infra::MakeByteRange(' '), infra::emptyFunction);
+            tracer.Continue() << ' ';
 
         for (std::size_t size = buffer.size(); size < previousSize; ++size)
-            communication.SendData(infra::MakeByteRange('\b'), infra::emptyFunction);
+            tracer.Continue() << '\b';
 
         state.cursorPosition = buffer.size();
     }
@@ -248,7 +243,7 @@ namespace services
     {
         if (c > 31 && c < 127)
         {
-            communication.SendData(infra::MakeByteRange(c), infra::emptyFunction);
+            tracer.Continue() << c;
             buffer.push_back(c);
             state.cursorPosition++;
         }
@@ -258,6 +253,6 @@ namespace services
 
     void Terminal::SendBell()
     {
-        communication.SendData(infra::MakeByteRange('\a'), infra::emptyFunction);
+        tracer.Continue() << '\a';
     }
 }
