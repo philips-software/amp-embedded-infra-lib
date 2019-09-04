@@ -1,14 +1,11 @@
-// clang-format off
-#include "services/network_win/ConnectionWin.hpp"
-// clang-format on
 #include "hal/generic/TimerServiceGeneric.hpp"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
-#include "services/network/HttpClientBasic.hpp"
 #include "infra/stream/IoOutputStream.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/network/ConnectionMbedTls.hpp"
 #include "services/network/HttpClientBasic.hpp"
 #include "services/network/HttpClientImpl.hpp"
+#include "services/network_win/ConnectionWin.hpp"
 #include "services/network_win/EventDispatcherWithNetwork.hpp"
 #include "services/network_win/NameLookupWin.hpp"
 #include "services/tracer/GlobalTracer.hpp"
@@ -97,24 +94,24 @@ namespace application
 
 int main(int argc, const char* argv[], const char* env[])
 {
-    services::EventDispatcherWithNetwork eventDispatcherWithNetwork;
-    hal::TimerServiceGeneric timerService;
-    infra::IoOutputStream ioOutputStream;
-    services::Tracer tracer(ioOutputStream);
+    static services::EventDispatcherWithNetwork eventDispatcherWithNetwork;
+    static hal::TimerServiceGeneric timerService;
+    static infra::IoOutputStream ioOutputStream;
+    static services::Tracer tracer(ioOutputStream);
     services::SetGlobalTracerInstance(tracer);
 
-    hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
-    services::CertificatesMbedTls certificates;
+    static hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
+    static services::CertificatesMbedTls certificates;
     certificates.AddCertificateAuthority(infra::BoundedConstString(starfieldClass2Ca, sizeof(starfieldClass2Ca)));
-    services::ConnectionFactoryMbedTls::WithMaxConnectionsListenersAndConnectors<10, 2, 2> networkTls(
+    static services::ConnectionFactoryMbedTls::WithMaxConnectionsListenersAndConnectors<10, 2, 2> networkTls(
         eventDispatcherWithNetwork, certificates, randomDataGenerator);
 
-    services::NameLookupWin nameLookup;
-    services::ConnectionFactoryWithNameResolverImpl::WithStorage<1> connectionFactory(networkTls, nameLookup);
-    services::ConnectionFactoryWithNameResolverForTls connectionFactoryTls(connectionFactory);
-    services::HttpClientConnectorImpl<>::WithMaxHeaderSize<512> connector(connectionFactoryTls);
+    static services::NameLookupWin nameLookup;
+    static services::ConnectionFactoryWithNameResolverImpl::WithStorage<1> connectionFactory(networkTls, nameLookup);
+    static services::ConnectionFactoryWithNameResolverForTls connectionFactoryTls(connectionFactory);
+    static services::HttpClientConnectorImpl<>::WithMaxHeaderSize<512> connector(connectionFactoryTls);
 
-    application::TracingHttpClient httpClient("httpbin.org/get", 443, connector, tracer);
+    static application::TracingHttpClient httpClient("httpbin.org/get", 443, connector, tracer);
 
     eventDispatcherWithNetwork.Run();
 }

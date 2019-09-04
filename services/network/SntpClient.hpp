@@ -73,6 +73,14 @@ namespace services
             infra::Duration Convert();
         };
 
+        struct NtpTimestamps
+        {
+            NtpTimestamp reference;
+            NtpTimestamp originate;
+            NtpTimestamp receive;
+            NtpTimestamp transmit;
+        };
+
         struct NtpMessage
         {
             NtpHeader header;
@@ -82,15 +90,12 @@ namespace services
             infra::BigEndian<uint32_t> rootDelay;
             infra::BigEndian<uint32_t> rootDispersion;
             infra::BigEndian<uint32_t> referenceIdentifier;
-            NtpTimestamp reference;
-            NtpTimestamp originate;
-            NtpTimestamp receive;
-            NtpTimestamp transmit;
+            NtpTimestamps timestamps;
 
             bool Valid(infra::Duration& requestTime);
             NtpLeapIndicator LeapIndicator();
             uint8_t Version();
-            SntpClient::NtpMode Mode();
+            NtpMode Mode();
         };
 
     private:
@@ -99,7 +104,7 @@ namespace services
         void NotifyOffsetAndDelay(NtpMessage& message);
 
         static NtpHeader CreateNtpHeader(NtpLeapIndicator leapIndicator, uint8_t versionNumber, NtpMode mode);
-        static SntpClient::NtpTimestamp Convert(infra::Duration time);
+        static NtpTimestamp Convert(infra::Duration time);
 
     private:
         services::DatagramFactory& factory;

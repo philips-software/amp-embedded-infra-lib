@@ -1,10 +1,26 @@
 #include "gmock/gmock.h"
 #include "hal/interfaces/test_doubles/SerialCommunicationMock.hpp"
 #include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
+#include "infra/stream/OutputStream.hpp"
 #include "infra/util/Optional.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/util/Terminal.hpp"
 #include <vector>
+
+class StreamWriterMock
+    : public infra::StreamWriter
+{
+public:
+    using StreamWriter::StreamWriter;
+
+    MOCK_METHOD2(Insert, void(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy));
+    MOCK_CONST_METHOD0(Available, std::size_t());
+    MOCK_CONST_METHOD0(ConstructSaveMarker, std::size_t());
+    MOCK_CONST_METHOD1(GetProcessedBytesSince, std::size_t(std::size_t marker));
+    MOCK_METHOD1(SaveState, infra::ByteRange(std::size_t marker));
+    MOCK_METHOD1(RestoreState, void(infra::ByteRange range));
+    MOCK_METHOD1(Overwrite, infra::ByteRange(std::size_t marker));
+};
 
 class TerminalTest
     : public testing::Test
@@ -12,13 +28,17 @@ class TerminalTest
 {
 public:
     TerminalTest()
+        : stream(streamWriterMock)
+        , tracer(stream)
     {
-        EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '>', ' ' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-
-        terminal.Emplace(communication);
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
+        terminal.Emplace(communication, tracer);
     }
 
 protected:
+    StreamWriterMock streamWriterMock;
+    infra::TextOutputStream::WithErrorPolicy stream;
+    services::Tracer tracer;
     testing::StrictMock<hal::SerialCommunicationMock> communication;
     infra::Optional<services::Terminal> terminal;
     testing::InSequence s;
@@ -30,10 +50,10 @@ class TerminalNavigationTest
 public:
     TerminalNavigationTest()
     {
-        EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 'a' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-        EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 'b' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-        EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 'c' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-        EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 'd' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'a' } }), testing::_));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'b' } }), testing::_));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'c' } }), testing::_));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'd' } }), testing::_));
 
         communication.dataReceived(std::vector<uint8_t>{ 'a', 'b', 'c', 'd' });
     }
@@ -45,20 +65,20 @@ class TerminalHistoryTest
 public:
     TerminalHistoryTest()
     {
-        EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 'a' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-        EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 'b' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-        EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 'c' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-        EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 'd' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-        EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\r', '\n' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-        EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '>', ' ' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'a' } }), testing::_));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'b' } }), testing::_));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'c' } }), testing::_));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'd' } }), testing::_));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r', '\n' } }), testing::_));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
 
         communication.dataReceived(std::vector<uint8_t>{ 'a', 'b', 'c', 'd', '\r' });
 
-        EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 'e' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-        EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 'f' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-        EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 'g' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-        EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\r', '\n' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-        EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '>', ' ' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'e' } }), testing::_));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'f' } }), testing::_));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'g' } }), testing::_));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r', '\n' } }), testing::_));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
 
         communication.dataReceived(std::vector<uint8_t>{ 'e', 'f', 'g', '\r' });
     }
@@ -66,20 +86,20 @@ public:
 
 TEST_F(TerminalTest, echo_printable_characters)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ ' ' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 'A' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 'Z' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '~' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { ' ' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'A' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'Z' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '~' } }), testing::_));
+    
     communication.dataReceived(std::vector<uint8_t>{ ' ', 'A', 'Z', '~' });
-
+    
     ExecuteAllActions();
 }
 
 TEST_F(TerminalTest, echo_bell_for_nonprintable_characters)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\a' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\a' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\a' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\a' } }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ 31, 128 });
 
@@ -95,8 +115,9 @@ TEST_F(TerminalTest, ignore_newline_character)
 
 TEST_F(TerminalTest, echo_carriage_return_line_feed_and_prompt_on_carriage_return)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\r', '\n' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '>', ' ' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r', '\n' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ '\r' });
 
@@ -112,7 +133,7 @@ TEST_F(TerminalTest, ignore_unparsed_escaped_data)
 
 TEST_F(TerminalTest, bell_on_invalid_escape_sequence)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\a' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\a' } }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ 27, 'Z' });
 
@@ -121,10 +142,10 @@ TEST_F(TerminalTest, bell_on_invalid_escape_sequence)
 
 TEST_F(TerminalTest, navigation_with_empty_buffer)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\r' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '>', ' ' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\r' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '>', ' ' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ 1, 1, 5, 5 });
 
@@ -133,8 +154,8 @@ TEST_F(TerminalTest, navigation_with_empty_buffer)
 
 TEST_F(TerminalTest, clear_buffer_prints_prompt)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\r' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '>', ' ' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ 3 });
 
@@ -143,10 +164,10 @@ TEST_F(TerminalTest, clear_buffer_prints_prompt)
 
 TEST_F(TerminalNavigationTest, move_cursor_home)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\r' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '>', ' ' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\r' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '>', ' ' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ 1, 1 });
 
@@ -155,8 +176,8 @@ TEST_F(TerminalNavigationTest, move_cursor_home)
 
 TEST_F(TerminalNavigationTest, move_cursor_home_escape)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\r' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '>', ' ' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ 27, 'H' });
 
@@ -165,9 +186,9 @@ TEST_F(TerminalNavigationTest, move_cursor_home_escape)
 
 TEST_F(TerminalNavigationTest, move_cursor_end)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\r' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '>', ' ' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 'a', 'b', 'c', 'd' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'a', 'b', 'c', 'd' } }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ 1, 5, 5 });
 
@@ -176,9 +197,9 @@ TEST_F(TerminalNavigationTest, move_cursor_end)
 
 TEST_F(TerminalNavigationTest, move_cursor_end_escape)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\r' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '>', ' ' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 'a', 'b', 'c', 'd' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'a', 'b', 'c', 'd' } }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ 1, 27, 'F' });
 
@@ -187,7 +208,7 @@ TEST_F(TerminalNavigationTest, move_cursor_end_escape)
 
 TEST_F(TerminalNavigationTest, move_cursor_left)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\b' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\b' } }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ 2 });
 
@@ -196,7 +217,7 @@ TEST_F(TerminalNavigationTest, move_cursor_left)
 
 TEST_F(TerminalNavigationTest, move_cursor_left_escape)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\b' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\b' } }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ 27, 'D' });
 
@@ -205,8 +226,8 @@ TEST_F(TerminalNavigationTest, move_cursor_left_escape)
 
 TEST_F(TerminalNavigationTest, bell_on_move_past_beginning)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\b' })).Times(4).WillRepeatedly(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\a' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\b' } }), testing::_)).Times(4);
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\a' } }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ 2, 2, 2, 2, 2 });
 
@@ -215,8 +236,8 @@ TEST_F(TerminalNavigationTest, bell_on_move_past_beginning)
 
 TEST_F(TerminalNavigationTest, move_cursor_right)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\b' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 'd' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\b' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'd' } }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ 2, 6 });
 
@@ -225,8 +246,8 @@ TEST_F(TerminalNavigationTest, move_cursor_right)
 
 TEST_F(TerminalNavigationTest, move_cursor_right_escape)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\b' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 'd' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\b' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'd' } }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ 2, 27, 'C' });
 
@@ -235,7 +256,7 @@ TEST_F(TerminalNavigationTest, move_cursor_right_escape)
 
 TEST_F(TerminalNavigationTest, bell_on_move_past_end)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\a' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\a' } }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ 6 });
 
@@ -244,8 +265,8 @@ TEST_F(TerminalNavigationTest, bell_on_move_past_end)
 
 TEST_F(TerminalNavigationTest, remove_last_character_on_backspace)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\b' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ ' ', '\b' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\b' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { ' ', '\b' } }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ '\b' });
 
@@ -254,10 +275,10 @@ TEST_F(TerminalNavigationTest, remove_last_character_on_backspace)
 
 TEST_F(TerminalNavigationTest, remove_first_character_on_backspace)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\b' })).Times(4).WillRepeatedly(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 'b', 'c', 'd' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ ' ', '\b' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\b' })).Times(3).WillRepeatedly(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\b' } }), testing::_)).Times(4);
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'b', 'c', 'd' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { ' ', '\b' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\b' } }), testing::_)).Times(3);
 
     communication.dataReceived(std::vector<uint8_t>{ 2, 2, 2, '\b' });
 
@@ -266,10 +287,10 @@ TEST_F(TerminalNavigationTest, remove_first_character_on_backspace)
 
 TEST_F(TerminalNavigationTest, remove_character_with_delete)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\b' })).Times(3).WillRepeatedly(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 'c', 'd' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ ' ', '\b' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\b' })).Times(2).WillRepeatedly(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\b' } }), testing::_)).Times(3);
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'c', 'd' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { ' ', '\b' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\b' } }), testing::_)).Times(2);
 
     communication.dataReceived(std::vector<uint8_t>{ 2, 2, 2, 4 });
 
@@ -278,8 +299,8 @@ TEST_F(TerminalNavigationTest, remove_character_with_delete)
 
 TEST_F(TerminalTest, move_backward_in_history_with_empty_history)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\r' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '>', ' ' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ 14 });
 
@@ -288,7 +309,7 @@ TEST_F(TerminalTest, move_backward_in_history_with_empty_history)
 
 TEST_F(TerminalTest, move_forward_in_history_with_empty_history)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\a' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\a' } }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ 16 });
 
@@ -297,15 +318,15 @@ TEST_F(TerminalTest, move_forward_in_history_with_empty_history)
 
 TEST_F(TerminalHistoryTest, move_backward_in_history)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\r' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '>', ' ' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 'e', 'f', 'g' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'e', 'f', 'g'} }), testing::_));
 
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\r' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '>', ' ' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 'a', 'b', 'c', 'd' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'a', 'b', 'c', 'd'} }), testing::_));
 
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\a' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\a' } }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ 16, 16, 16 });
 
@@ -314,11 +335,11 @@ TEST_F(TerminalHistoryTest, move_backward_in_history)
 
 TEST_F(TerminalHistoryTest, move_forward_past_end_prints_prompt)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\r' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '>', ' ' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
 
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '\r' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ '>', ' ' })).WillOnce(infra::Lambda([this](std::vector<uint8_t>) { communication.actionOnCompletion(); }));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ 14, 14 });
 

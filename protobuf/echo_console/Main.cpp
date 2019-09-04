@@ -8,8 +8,6 @@
 #include "services/tracer/GlobalTracer.hpp"
 #include <fstream>
 #include <iostream>
-#include <winsock2.h>
-#include <ws2tcpip.h>
 
 #undef GetObject
 
@@ -39,7 +37,7 @@ private:
 
 private:
     hal::FileSystem& filesystem;
-    infra::BoundedString::WithStorage<4096> fileContents;
+    std::string fileContents;
     infra::Optional<infra::JsonObject> json;
 };
 
