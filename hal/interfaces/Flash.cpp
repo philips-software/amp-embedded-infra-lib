@@ -57,4 +57,9 @@ namespace hal
     {
         EraseSectors(0, NumberOfSectors(), onDone);
     }
+
+    void Flash::ReadUniqueId(infra::ByteRange buffer, infra::Function<void()> onDone)
+    {
+        onDone();
+    }
 }

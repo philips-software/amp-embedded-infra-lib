@@ -13,6 +13,7 @@ namespace services
     const uint8_t FlashQuadSpiCypressFll::commandEraseChip = 0x60;
     const uint8_t FlashQuadSpiCypressFll::commandEnterQpi = 0x38;
     const uint8_t FlashQuadSpiCypressFll::commandExitQpi = 0xf5;
+    const uint8_t FlashQuadSpiCypressFll::commandReadUniqueId = 0x4b;
 
     FlashQuadSpiCypressFll::FlashQuadSpiCypressFll(hal::QuadSpi& spi, infra::Function<void()> onInitialized, uint32_t numberOfSectors)
         : FlashQuadSpi(spi, numberOfSectors, commandPageProgram)
@@ -29,7 +30,6 @@ namespace services
     void FlashQuadSpiCypressFll::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
         const hal::QuadSpi::Header header{ infra::MakeOptional(commandReadData), hal::QuadSpi::AddressToVector(address << 8, 4), {}, 8 };
-
         spi.ReceiveData(header, buffer, hal::QuadSpi::Lines::QuadSpeed(), onDone);
     }
 
@@ -103,5 +103,11 @@ namespace services
     {
         static const hal::QuadSpi::Header pollWriteInProgressHeader{ infra::MakeOptional(commandReadStatusRegister), {}, {}, 0 };
         spi.PollStatus(pollWriteInProgressHeader, 1, 0, statusFlagWriteInProgress, hal::QuadSpi::Lines::QuadSpeed(), [this]() { sequencer.Continue(); });
+    }
+
+    void FlashQuadSpiCypressFll::ReadUniqueId(infra::ByteRange buffer, infra::Function<void()> onDone)
+    {
+        static const hal::QuadSpi::Header readUniqueIdHeader{ infra::MakeOptional(commandReadUniqueId), {}, {}, 16};
+        spi.ReceiveData(readUniqueIdHeader, buffer, hal::QuadSpi::Lines::QuadSpeed(), onDone);
     }
 }
