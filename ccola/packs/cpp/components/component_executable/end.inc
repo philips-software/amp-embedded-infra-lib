@@ -90,7 +90,7 @@ if(${CCOLA_ARCH_FAMILY} STREQUAL cortex OR ${CCOLA_ARCH_FAMILY} STREQUAL xtensa)
 	add_custom_command(
 		TARGET ${CCOLA_COMPONENT_NAME}
 		POST_BUILD
-		COMMAND ${CCOLA_OBJ_DUMP_TOOL} --source --all-headers --demangle --line-numbers --wide "${exe_path}" > "${list_path}"
+	#	COMMAND ${CCOLA_OBJ_DUMP_TOOL} --source --all-headers --demangle --line-numbers --wide "${exe_path}" > "${list_path}"
 		COMMAND ${CCOLA_APP_SIZE_TOOL} "${exe_path}"
 		COMMAND ${CCOLA_OBJ_COPY_TOOL} -O binary "${exe_path}" "${bin_path}"
 		COMMAND ${CCOLA_OBJ_COPY_TOOL} -O ihex "${exe_path}" "${hex_path}"
