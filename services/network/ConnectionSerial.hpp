@@ -27,7 +27,7 @@ namespace services
                 , std::array<uint8_t, Max>>
                 , infra::BoundedDeque<uint8_t>::WithMaxSize<Max>>;
 
-        ConnectionSerial(infra::ByteRange sendBuffer, infra::ByteRange parseBuffer, infra::BoundedDeque<uint8_t>& receivedDataQueue, hal::SerialCommunication& serialCommunication, size_t minUpdateSize = MessageHeader::HeaderSize + 1);
+        ConnectionSerial(infra::ByteRange sendBuffer, infra::ByteRange parseBuffer, infra::BoundedDeque<uint8_t>& receivedDataQueue, hal::SerialCommunication& serialCommunication, infra::Function<void()> onConnected, infra::Function<void()> onDisconnected, size_t minUpdateSize = MessageHeader::HeaderSize + 1);
         ConnectionSerial(const ConnectionSerial& other) = delete;
         ConnectionSerial& operator=(const ConnectionSerial& other) = delete;
 
@@ -332,6 +332,9 @@ namespace services
         bool updateInProgress = false;
         bool isEscapeSeen = false;
         size_t totalContentSizeToSend = 0;
+
+        infra::Function<void()> onConnected;
+        infra::Function<void()> onDisconnected;
     };
 }
 #endif
