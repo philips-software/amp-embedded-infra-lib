@@ -15,7 +15,7 @@ set(CMAKE_CXX_COMPILER "${tools_path}/arm-none-eabi-g++.exe")
 set(CMAKE_ASM_COMPILER "${tools_path}/arm-none-eabi-as.exe" CACHE FILEPATH as)
 set(CMAKE_AR "${tools_path}/arm-none-eabi-gcc-ar.exe" CACHE FILEPATH ar)
 set(CMAKE_RANLIB "${tools_path}/arm-none-eabi-gcc-ranlib.exe" CACHE FILEPATH ranlib)
-set(CMAKE_NM "${tools_path}/arm-none-eabi-gcc-rm.exe" CACHE FILEPATH nm)
+set(CMAKE_NM "${tools_path}/arm-none-eabi-gcc-nm.exe" CACHE FILEPATH nm)
 
 set(CCOLA_LD_TOOL "${tools_path}/arm-none-eabi-ld.exe")
 set(CCOLA_APP_SIZE_TOOL "${tools_path}/arm-none-eabi-size.exe")
