@@ -191,7 +191,6 @@ namespace services
 
     void ConnectionSerial::GoStateInitSizeResponseRequest()
     {
-        onConnected();
         state.Emplace<StateInitSizeResponseRequest>(*this);
     }
 
