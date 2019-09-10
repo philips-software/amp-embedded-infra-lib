@@ -1,8 +1,5 @@
 #include "lwip/lwip_cpp/LightweightIp.hpp"
 #include "lwip/init.h"
-#ifndef ESP_PLATFORM
-	#include "lwip/timeouts.h"
-#endif
 
 extern "C" uint32_t StaticLwIpRand()
 {

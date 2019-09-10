@@ -15,10 +15,8 @@ namespace services
     {
         netif_set_link_up(&netInterface);
 
-#ifndef ESP_PLATFORM
         for (auto group = netif_igmp_data(&netInterface); group != nullptr; group = group->next)
             SetIgmpMacFilter(&group->group_address, NETIF_ADD_MAC_FILTER);
-#endif
     }
 
     LightweightIpOverEthernet::~LightweightIpOverEthernet()
@@ -26,10 +24,8 @@ namespace services
         if (currentReceiveBufferFirst)
             pbuf_free(currentReceiveBufferFirst);
 
-#ifndef ESP_PLATFORM
         for (auto group = netif_igmp_data(&netInterface); group != nullptr; group = group->next)
             SetIgmpMacFilter(&group->group_address, NETIF_DEL_MAC_FILTER);
-#endif
 
         netif_set_link_down(&netInterface);
     }
@@ -188,12 +184,7 @@ namespace services
         netif_set_default(&netInterface);
 
         netif_set_hostname(&netInterface, config.hostName.Storage().data());
-
-#ifdef ESP_PLATFORM
-        netInterface.ip6_autoconfig_enabled = 1;
-#else
         netif_set_ip6_autoconfig_enabled(&netInterface, 1);
-#endif
 
         netif_create_ip6_linklocal_address(&netInterface, 1);
         netif_ip6_addr_set_state(&netInterface, 0, IP6_ADDR_TENTATIVE);
