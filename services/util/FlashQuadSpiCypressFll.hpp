@@ -19,6 +19,7 @@ namespace services
         static const uint8_t commandEraseChip;
         static const uint8_t commandEnterQpi;
         static const uint8_t commandExitQpi;
+        static const uint8_t commandReadUniqueId;
 
         static const uint32_t sizeHalfBlock = 32768;
 
@@ -30,6 +31,8 @@ namespace services
         virtual void ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone) override;
 
         void SwitchToSingleSpeed(infra::Function<void()> onDone);
+
+        virtual void ReadUniqueId(infra::ByteRange buffer, infra::Function<void()> onDone) override;
 
     private:
         void SwitchToQuadSpeed();
