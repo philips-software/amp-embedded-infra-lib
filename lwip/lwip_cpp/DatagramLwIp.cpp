@@ -100,11 +100,7 @@ namespace services
             IP4_ADDR(&ipAddress.u_addr.ip4, ipv4Address[0], ipv4Address[1], ipv4Address[2], ipv4Address[3]);
             err_t result = udp_connect(control, &ipAddress, remote.Get<Udpv4Socket>().second);
             assert(result == ERR_OK);
-#ifdef ESP_PLATFORM
-            result = udp_bind(control, IP_ADDR_ANY, localPort);
-#else
             result = udp_bind(control, IP4_ADDR_ANY, localPort);
-#endif
             assert(result == ERR_OK);
         }
         else
@@ -142,11 +138,7 @@ namespace services
             case IPVersions::ipv6:
                 return udp_new_ip_type(IPADDR_TYPE_V6);
             case IPVersions::both:
-#ifdef ESP_PLATFORM
-                return udp_new_ip_type(IPADDR_TYPE_V4);
-#else
                 return udp_new_ip_type(IPADDR_TYPE_ANY);
-#endif
             default:
                 std::abort();
         }
@@ -157,11 +149,7 @@ namespace services
         switch (versions)
         {
             case IPVersions::ipv4:
-#ifdef ESP_PLATFORM
-                return IP_ADDR_ANY;
-#else
                 return IP4_ADDR_ANY;
-#endif
             case IPVersions::ipv6:
                 return IP6_ADDR_ANY;
             case IPVersions::both:
