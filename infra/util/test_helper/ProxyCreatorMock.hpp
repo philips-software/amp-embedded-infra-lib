@@ -116,6 +116,26 @@ namespace infra
     private:
         T& createdObject;
     };
+
+    template<class T, class ConstructionArg0, class ConstructionArg1, class ConstructionArg2, class ConstructionArg3, class ConstructionArg4>
+    class CreatorMock<T, void(ConstructionArg0, ConstructionArg1, ConstructionArg2, ConstructionArg3, ConstructionArg4)>
+        : public CreatorBase<T, void(ConstructionArg0, ConstructionArg1, ConstructionArg2, ConstructionArg3, ConstructionArg4)>
+    {
+    public:
+        CreatorMock(T& createdObject) : createdObject(createdObject) {}
+
+        MOCK_METHOD5_T(Constructed, void(ConstructionArg0, ConstructionArg1, ConstructionArg2, ConstructionArg3, ConstructionArg4));
+        MOCK_METHOD0(Destructed, void());
+
+    protected:
+        virtual T& Get() override { return createdObject; }
+        virtual const T& Get() const override { return createdObject; }
+        virtual void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3, ConstructionArg4 arg4) override { Constructed(arg0, arg1, arg2, arg3, arg4); }
+        virtual void Destroy() override { Destructed(); }
+
+    private:
+        T& createdObject;
+    };
 }
 
 #endif
