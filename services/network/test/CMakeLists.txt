@@ -16,6 +16,7 @@ ccola_component(network_test gmock_test)
         TestSingleConnectionListener.cpp
         TestSntpClient.cpp
         TestWebSocketClient.cpp
+        TestWebSocketServerConnectionObserver.cpp
     )
 
     ccola_dependencies(

@@ -61,6 +61,8 @@ ccola_component(network static_library)
         TracingStatusHttpClientImpl.hpp
         WebSocket.cpp
         WebSocket.hpp
+        WebSocketServerConnectionObserver.cpp
+        WebSocketServerConnectionObserver.hpp
         WiFiNetwork.cpp
         WiFiNetwork.hpp
     )

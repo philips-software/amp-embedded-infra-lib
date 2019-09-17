@@ -84,3 +84,14 @@ TEST(LimitedInputStreamTest, Empty)
     EXPECT_CALL(reader, Empty()).WillOnce(testing::Return(true));
     EXPECT_TRUE(limitedReader.Empty());
 }
+
+TEST(LimitedInputStreamTest, ResetLength)
+{
+    testing::StrictMock<infra::StreamReaderMock> reader;
+    infra::LimitedStreamReader limitedReader(reader, 2);
+
+    limitedReader.ResetLength(3);
+
+    EXPECT_CALL(reader, Available()).WillOnce(testing::Return(4));
+    EXPECT_EQ(3, limitedReader.Available());
+}
