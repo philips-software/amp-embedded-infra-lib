@@ -2,6 +2,7 @@
 #define INFRA_LIMITED_INPUT_STREAM_HPP
 
 #include "infra/stream/InputStream.hpp"
+#include "infra/util/WithStorage.hpp"
 
 namespace infra
 {
@@ -9,8 +10,13 @@ namespace infra
         : public StreamReader
     {
     public:
+        template<class T>
+            using WithInput = infra::WithStorage<LimitedStreamReader, T>;
+
         LimitedStreamReader(StreamReader& input, uint32_t length);
         LimitedStreamReader(const LimitedStreamReader& other);
+
+        void ResetLength(uint32_t newLength);
 
     public:
         virtual void Extract(ByteRange range, StreamErrorPolicy& errorPolicy) override;
@@ -29,8 +35,13 @@ namespace infra
         : public StreamReaderWithRewinding
     {
     public:
+        template<class T>
+            using WithInput = infra::WithStorage<LimitedStreamReaderWithRewinding, T>;
+
         LimitedStreamReaderWithRewinding(StreamReaderWithRewinding& input, uint32_t length);
         LimitedStreamReaderWithRewinding(const LimitedStreamReaderWithRewinding& other);
+
+        void ResetLength(uint32_t newLength);
 
     public:
         virtual void Extract(ByteRange range, StreamErrorPolicy& errorPolicy) override;
