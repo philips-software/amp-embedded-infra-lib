@@ -6,6 +6,11 @@ namespace infra
         : container(container)
     {}
 
+    std::size_t BoundedDequeInputStreamReader::Processed() const
+    {
+        return offset;
+    }
+
     void BoundedDequeInputStreamReader::Extract(ByteRange dataRange, StreamErrorPolicy& errorPolicy)
     {
         errorPolicy.ReportResult(dataRange.size() <= container.size() - offset);
