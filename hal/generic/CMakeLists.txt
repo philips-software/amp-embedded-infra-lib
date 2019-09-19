@@ -7,9 +7,6 @@ ccola_component(generic x86: static_library other: skip)
         SynchronousRandomDataGeneratorGeneric.hpp
         TimerServiceGeneric.cpp
         TimerServiceGeneric.hpp
-    win:
-        UartWindows.cpp
-        UartWindows.hpp
     )
 
     ccola_dependencies(

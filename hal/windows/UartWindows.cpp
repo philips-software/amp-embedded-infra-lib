@@ -1,11 +1,10 @@
-#include "hal/generic/UartWindows.hpp"
-
+#include "hal/windows/UartWindows.hpp"
 #include <windows.h>
 
 namespace hal
-{  
+{
     UartWindows::UartWindows(std::string portName)
-    : readThread([this]() { ReadThread(); })
+        : readThread([this]() { ReadThread(); })
     {
         std::string port = "\\\\.\\" + portName;
         handle = CreateFile(port.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
@@ -31,7 +30,7 @@ namespace hal
 
     UartWindows::~UartWindows()
     {
-        stop = true;
+        running = false;
         readThread.join();
         CloseHandle(handle);
     }
@@ -41,21 +40,22 @@ namespace hal
         uint8_t buffer[1];
         unsigned long bytesRead;
 
-        while (!stop)
+        while (running)
         {
-            if (executeRead)
+            std::lock_guard<std::mutex> lock(mutex);
+            if (onReceivedData)
             {
                 ReadFile(handle, buffer, sizeof(buffer), &bytesRead, nullptr);
                 if (bytesRead)
-                    onReceivedData(infra::ConstByteRange(buffer, buffer+bytesRead));
+                    onReceivedData(infra::ConstByteRange(buffer, buffer + bytesRead));
             }
         }
     }
 
     void UartWindows::ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived)
     {
+        std::lock_guard<std::mutex> lock(mutex);
         onReceivedData = dataReceived;
-        executeRead = true;
     }
 
     void UartWindows::SendData(infra::MemoryRange<const uint8_t> data, infra::Function<void()> actionOnCompletion)

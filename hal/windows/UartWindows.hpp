@@ -2,7 +2,7 @@
 #define HAL_UART_WINDOWS_HPP
 
 #include "hal/interfaces/SerialCommunication.hpp"
-
+#include <mutex>
 #include <thread>
 
 namespace hal
@@ -21,11 +21,10 @@ namespace hal
         void ReadThread();
 
         infra::Function<void(infra::ConstByteRange data)> onReceivedData;        
-        
-        volatile bool executeRead = false;
-        volatile bool stop = false;
-        void* handle;
 
+        void* handle = nullptr;
+        bool running = true;
+        std::mutex mutex;
         std::thread readThread;
     };
 }
