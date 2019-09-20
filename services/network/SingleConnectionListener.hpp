@@ -11,7 +11,6 @@ namespace services
     class SingleConnectionListener
         : public Stoppable
         , private ServerConnectionObserverFactory
-
     {
     public:
         struct Creators

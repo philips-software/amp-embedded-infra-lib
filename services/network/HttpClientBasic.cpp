@@ -59,8 +59,8 @@ namespace services
 
     void HttpClientBasic::ContentError()
     {
-        contentError = true;
-        Close();
+        if (!infra::PostAssign(contentError, true))
+            Close();
     }
 
     infra::BoundedString HttpClientBasic::Url() const

@@ -12,7 +12,7 @@ namespace hal
         : public Reset
     {
     public:
-        MOCK_METHOD1(Reset, void(infra::BoundedConstString));
+        MOCK_METHOD1(ResetModule, void(const char* resetReason));
     };
 }
 

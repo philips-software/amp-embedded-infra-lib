@@ -4,13 +4,15 @@
 
 namespace services
 {
-    ConnectionSerial::ConnectionSerial(infra::ByteRange sendBuffer, infra::ByteRange parseBuffer, infra::BoundedDeque<uint8_t>& receivedDataQueue, hal::SerialCommunication& serialCommunication, size_t minUpdateSize)
-        : serialCommunication(serialCommunication)
+    ConnectionSerial::ConnectionSerial(infra::ByteRange sendBuffer, infra::ByteRange parseBuffer, infra::BoundedDeque<uint8_t>& receivedDataQueue, hal::SerialCommunication& serialCommunication, infra::Function<void()> onConnected, infra::Function<void()> onDisconnected, size_t minUpdateSize)
+        : receivedDataQueue(receivedDataQueue)
         , sendBuffer(sendBuffer)
+        , serialCommunication(serialCommunication)
         , receiveQueue(parseBuffer, [this]() { DataReceived(); })
-        , receivedDataQueue(receivedDataQueue)
         , state(infra::InPlaceType<StateInitSizeRequest>(), *this)
         , minUpdateSize(std::max(minUpdateSize, MessageHeader::HeaderSize + 1))
+        , onConnected(onConnected)
+        , onDisconnected(onDisconnected)
     {
         assert(minUpdateSize <= receiveQueue.EmptySize() - MessageHeader::HeaderSize);
 
@@ -133,35 +135,37 @@ namespace services
     {
         switch (messageHeader->Type())
         {
-        case MessageType::SizeRequest:
-            state->SizeRequestReceived();
-            break;
+            case MessageType::SizeRequest:
+                state->SizeRequestReceived();
+                break;
 
-        case MessageType::SizeResponseRequest:
-            state->SizeResponseRequestReceived(messageHeader->Size());
-            break;
+            case MessageType::SizeResponseRequest:
+                state->SizeResponseRequestReceived(messageHeader->Size());
+                break;
 
-        case MessageType::SizeResponse:
-            state->SizeResponseReceived(messageHeader->Size());
-            break;
+            case MessageType::SizeResponse:
+                state->SizeResponseReceived(messageHeader->Size());
+                break;
 
-        case MessageType::Content:
-            contentToReceive = messageHeader->Size();
-            break;
+            case MessageType::Content:
+                contentToReceive = messageHeader->Size();
+                break;
 
-        case MessageType::SizeUpdate:
-            state->SizeUpdateReceived(messageHeader->Size());
-            break;
+            case MessageType::SizeUpdate:
+                state->SizeUpdateReceived(messageHeader->Size());
+                break;
         }
     }
 
     void ConnectionSerial::InitCompleted()
     {
-        GoStateConnectedIdle();
+        GoStateConnectedIdle();    
+        onConnected();
     }
 
     void ConnectionSerial::ResetConnection()
     {
+        onDisconnected();
         sendStreamAvailable = true;
         GoStateInitSizeRequest();
     }
@@ -212,7 +216,7 @@ namespace services
 
     ConnectionSerial::MessageHeader::MessageHeader()
     {}
-
+    
     ConnectionSerial::MessageHeader::MessageHeader(MessageType type)
     {
         headerContent[0] = static_cast<uint8_t>(type);
@@ -412,7 +416,7 @@ namespace services
     void ConnectionSerial::StateInitSizeResponseRequest::SizeResponseReceived(size_t size)
     {
         connection.peerBufferSize = size;
-        connection.GoStateConnectedIdle();
+        connection.InitCompleted();
     }
 
     void ConnectionSerial::StateInitSizeResponseRequest::SizeRequestReceived()
@@ -437,7 +441,7 @@ namespace services
             if (responseRequestAfterSend)
                 connection.GoStateInitSizeResponseRequest();
             else
-                connection.GoStateConnectedIdle();
+                connection.InitCompleted();
         });
     }
 

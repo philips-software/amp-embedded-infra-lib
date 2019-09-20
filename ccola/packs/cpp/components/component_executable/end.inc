@@ -58,8 +58,10 @@ if(${CCOLA_PROCESSOR_FAMILY} STREQUAL "x86")
 	endif()
 endif()
 
-if(${CCOLA_ARCH_FAMILY} STREQUAL cortex OR ${CCOLA_ARCH_FAMILY} STREQUAL xtensa OR ${CCOLA_ARCH} STREQUAL linux)
+if(${CCOLA_ARCH_FAMILY} STREQUAL cortex OR ${CCOLA_ARCH} STREQUAL linux)
 	ccola_set_component_properties_with_generator_expression(${CCOLA_COMPONENT_NAME} LINK_LIBRARIES "-Wl,-(" ${CCOLA_COMPONENT_LINK_LIBRARIES} ${CCOLA_COMPONENT_EXTERNAL_LIBRARIES} -lgcc -lc -lg -lsupc++ "-Wl,-)" )
+elseif(${CCOLA_ARCH_FAMILY} STREQUAL xtensa)
+	ccola_set_component_properties_with_generator_expression(${CCOLA_COMPONENT_NAME} LINK_LIBRARIES "-Wl,-(" ${CCOLA_COMPONENT_LINK_LIBRARIES} ${CCOLA_COMPONENT_EXTERNAL_LIBRARIES} -lgcc -lc -lsupc++ "-Wl,-)" )
 else()
 	ccola_set_component_properties_with_generator_expression(${CCOLA_COMPONENT_NAME} LINK_LIBRARIES ${CCOLA_COMPONENT_LINK_LIBRARIES})
 endif()
@@ -88,7 +90,7 @@ if(${CCOLA_ARCH_FAMILY} STREQUAL cortex OR ${CCOLA_ARCH_FAMILY} STREQUAL xtensa)
 	add_custom_command(
 		TARGET ${CCOLA_COMPONENT_NAME}
 		POST_BUILD
-		COMMAND ${CCOLA_OBJ_DUMP_TOOL} --source --all-headers --demangle --line-numbers --wide "${exe_path}" > "${list_path}"
+	#	COMMAND ${CCOLA_OBJ_DUMP_TOOL} --source --all-headers --demangle --line-numbers --wide "${exe_path}" > "${list_path}"
 		COMMAND ${CCOLA_APP_SIZE_TOOL} "${exe_path}"
 		COMMAND ${CCOLA_OBJ_COPY_TOOL} -O binary "${exe_path}" "${bin_path}"
 		COMMAND ${CCOLA_OBJ_COPY_TOOL} -O ihex "${exe_path}" "${hex_path}"

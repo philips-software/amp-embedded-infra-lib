@@ -12,6 +12,11 @@ namespace infra
         , length(other.length)
     {}
 
+    void LimitedStreamReader::ResetLength(uint32_t newLength)
+    {
+        length = newLength;
+    }
+
     void LimitedStreamReader::Extract(ByteRange range, StreamErrorPolicy& errorPolicy)
     {
         errorPolicy.ReportResult(length >= range.size());
@@ -61,6 +66,11 @@ namespace infra
         : input(other.input)
         , length(other.length)
     {}
+
+    void LimitedStreamReaderWithRewinding::ResetLength(uint32_t newLength)
+    {
+        length = newLength;
+    }
 
     void LimitedStreamReaderWithRewinding::Extract(ByteRange range, StreamErrorPolicy& errorPolicy)
     {

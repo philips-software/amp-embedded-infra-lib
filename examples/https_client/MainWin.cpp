@@ -5,7 +5,6 @@
 #include "services/network/ConnectionMbedTls.hpp"
 #include "services/network/HttpClientBasic.hpp"
 #include "services/network/HttpClientImpl.hpp"
-#include "services/network_win/ConnectionWin.hpp"
 #include "services/network_win/EventDispatcherWithNetwork.hpp"
 #include "services/network_win/NameLookupWin.hpp"
 #include "services/tracer/GlobalTracer.hpp"

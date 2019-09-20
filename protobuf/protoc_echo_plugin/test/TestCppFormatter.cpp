@@ -516,3 +516,22 @@ TEST_F(CppFormatterTest, ClassForwardDeclaration_prints_no_source)
     declaration.PrintSource(*printer, "scope");
     ExpectPrinted("");
 }
+
+TEST_F(CppFormatterTest, EnumDeclaration_prints_header)
+{
+    application::EnumDeclaration declaration("name", { { "m1", 0 }, { "m2", 1 } });
+    declaration.PrintHeader(*printer);
+    ExpectPrinted(R"(enum class name
+{
+    m1 = 0,
+    m2 = 1
+};
+)");
+}
+
+TEST_F(CppFormatterTest, EnumDeclaration_prints_no_source)
+{
+    application::EnumDeclaration declaration("name", { {"m1", 0}, {"m2", 1} });
+    declaration.PrintSource(*printer, "scope");
+    ExpectPrinted("");
+}

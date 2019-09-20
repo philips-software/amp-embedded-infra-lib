@@ -13,6 +13,11 @@ class HttpClientBasicMock
 public:
     using services::HttpClientBasic::HttpClientBasic;
 
+    void GenerateContentError()
+    {
+        ContentError();
+    }
+
     MOCK_METHOD0(Established, void());
     MOCK_METHOD0(Done, void());
     MOCK_METHOD1(Error, void(bool intermittentFailure));
@@ -182,4 +187,15 @@ TEST_F(HttpClientBasicTest, Stop_after_ClosingConnection)
     EXPECT_CALL(onStopped, callback());
     controller->Cancel([this]() { onStopped.callback(); });
     testing::Mock::VerifyAndClearExpectations(&onStopped);
+}
+
+TEST_F(HttpClientBasicTest, ContentError_calls_stop_only_once)
+{
+    EXPECT_CALL(*controller, Established());
+    httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.AttachObserver(client); client->Connected(); });
+
+    EXPECT_CALL(*controller, Error(false));
+    EXPECT_CALL(httpClient, Close());
+    controller->GenerateContentError();
+    controller->GenerateContentError();
 }

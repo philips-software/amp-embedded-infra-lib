@@ -14,7 +14,7 @@ public:
         : firstRequest1([this]() { ExpectWindowSizeRequest([this]() { serialCommunication.actionOnCompletion(); }); })
         , receiveBuffer(2048)
         , receivedDataQueue(infra::inPlace, storage)
-        , connection(infra::inPlace, infra::MakeByteRange(sendBuffer), infra::MemoryRange<uint8_t>(receiveBuffer), *receivedDataQueue,  serialCommunication)
+        , connection(infra::inPlace, infra::MakeByteRange(sendBuffer), infra::MemoryRange<uint8_t>(receiveBuffer), *receivedDataQueue,  serialCommunication, infra::emptyFunction, infra::emptyFunction)
         , observer(*connection)
         , firstRequest2([this]() { ExecuteAllActions(); })
     {}
@@ -219,7 +219,7 @@ public:
     void ReconstructConnection()
     {
         observer.Detach();
-        connection.Emplace(infra::MakeByteRange(sendBuffer), infra::MemoryRange<uint8_t>(receiveBuffer), *receivedDataQueue, serialCommunication);
+        connection.Emplace(infra::MakeByteRange(sendBuffer), infra::MemoryRange<uint8_t>(receiveBuffer), *receivedDataQueue, serialCommunication, infra::emptyFunction, infra::emptyFunction);
         observer.Attach(*connection);
     }
 
@@ -227,7 +227,7 @@ public:
     {
         ExpectWindowSizeRequest([this]() { serialCommunication.actionOnCompletion(); });
         observer.Detach();
-        connection.Emplace(infra::MakeByteRange(sendBuffer), infra::MemoryRange<uint8_t>(receiveBuffer), *receivedDataQueue, serialCommunication, minUpdateSize);
+        connection.Emplace(infra::MakeByteRange(sendBuffer), infra::MemoryRange<uint8_t>(receiveBuffer), *receivedDataQueue, serialCommunication, infra::emptyFunction, infra::emptyFunction, minUpdateSize);
         observer.Attach(*connection);
         ExecuteAllActions();
     }

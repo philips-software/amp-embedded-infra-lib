@@ -233,11 +233,7 @@ namespace services
         if (versions == IPVersions::both)
             err_t err = tcp_bind(pcb, IP_ADDR_ANY, port);
         else if (versions == IPVersions::ipv4)
-#ifdef ESP_PLATFORM
-            err_t err = tcp_bind(pcb, IP_ADDR_ANY, port);
-#else
             err_t err = tcp_bind(pcb, IP4_ADDR_ANY, port);
-#endif
         else
             err_t err = tcp_bind(pcb, IP6_ADDR_ANY, port);
         listenPort = tcp_listen(pcb);

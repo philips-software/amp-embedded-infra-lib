@@ -167,7 +167,7 @@ ccola_component(mbedtls_emil static_library)
 ccola_end_component()
 
 ccola_component(mbed_tls source)
- if(MBEDTLS_ALTERNATIVE_DEPEND)
+    if(MBEDTLS_ALTERNATIVE_DEPEND)
         ccola_dependencies(
             ${MBEDTLS_ALTERNATIVE_DEPEND}
         )
@@ -179,7 +179,7 @@ ccola_component(mbed_tls source)
 ccola_end_component()
 
 ccola_component(mbed_tls_minimal source)
- if(MBEDTLS_MINIMAL_ALTERNATIVE_DEPEND)
+    if(MBEDTLS_MINIMAL_ALTERNATIVE_DEPEND)
         ccola_dependencies(
             ${MBEDTLS_MINIMAL_ALTERNATIVE_DEPEND}
         )

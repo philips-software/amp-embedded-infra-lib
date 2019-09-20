@@ -4,6 +4,8 @@ ccola_package(hal)
 		interfaces
 		synchronous_interfaces
 		generic
+    win:
+        windows
 	)
 
 ccola_end_package()
