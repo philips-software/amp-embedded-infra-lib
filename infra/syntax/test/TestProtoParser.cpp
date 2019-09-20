@@ -100,7 +100,6 @@ TEST(ProtoParserTest, GetField_returns_nested_object)
     infra::ProtoParser parser(stream);
 
     infra::ProtoParser::Field field = parser.GetField();
-    infra::BoundedString::WithStorage<10> string;
     infra::ProtoParser nestedParser = field.first.Get<infra::ProtoLengthDelimited>().Parser();
     infra::ProtoParser::Field nestedField = nestedParser.GetField();
     EXPECT_EQ(5, nestedField.first.Get<uint64_t>());
@@ -113,7 +112,6 @@ TEST(ProtoParserTest, SkipEverything_skips_LengthDelimited)
     infra::ProtoParser parser(stream);
 
     infra::ProtoParser::Field field = parser.GetField();
-    infra::BoundedString::WithStorage<10> string;
 
     field.first.Get<infra::ProtoLengthDelimited>().SkipEverything();
     
