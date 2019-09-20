@@ -16,7 +16,7 @@ struct SerialBridge
     {}
 
     hal::UartWindows serialPort;
-    services::SerialServer::WithAsymmetricBuffer<128, 512> serialServer;
+    services::SerialServer::WithBuffer<512> serialServer;
 };
 
 void ShowUsage(services::Tracer& tracer, const std::string& program)

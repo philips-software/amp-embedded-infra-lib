@@ -12,7 +12,7 @@ namespace services
         : public services::ConnectionObserver
     {
     public:
-        SerialServerConnectionObserver(const infra::ByteRange sendBuffer, const infra::ByteRange receiveBuffer, hal::SerialCommunication& serialCommunication);
+        SerialServerConnectionObserver(const infra::ByteRange receiveBuffer, hal::SerialCommunication& serialCommunication);
 
         // Implementation of ConnectionObserver
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
@@ -20,16 +20,11 @@ namespace services
 
     protected:
         virtual void SerialDataReceived();
-        virtual void SocketDataReceived();
 
     private:
-        void EvaluatePendingSerialData();
-
-    private:
-        const infra::ByteRange sendBuffer;
         const infra::ByteRange receiveBuffer;
         infra::QueueForOneReaderOneIrqWriter<uint8_t> receiveQueue;
-        infra::Optional<infra::ByteRange> pendingData;
+        bool pendingSend = false;
         hal::SerialCommunication& serialCommunication;
         infra::SharedPtr<infra::StreamReader> streamReader = nullptr;
     };
@@ -39,19 +34,11 @@ namespace services
     {
     public:
         template<size_t BufferSize>
-        using WithSymmetricBuffer = infra::WithStorage<infra::WithStorage<SerialServer,
-            std::array<uint8_t, BufferSize>>,
-            std::array<uint8_t, BufferSize>>;
+            using WithBuffer = infra::WithStorage<SerialServer, std::array<uint8_t, BufferSize>>;
 
-        template<size_t SendBufferSize, size_t ReceiveBufferSize>
-        using WithAsymmetricBuffer = infra::WithStorage<infra::WithStorage<SerialServer,
-            std::array<uint8_t, SendBufferSize>>,
-            std::array<uint8_t, ReceiveBufferSize>>;
-
-        SerialServer(const infra::ByteRange sendBuffer, const infra::ByteRange receiveBuffer, hal::SerialCommunication& serialCommunication, services::ConnectionFactory& connectionFactory, uint16_t port);
+        SerialServer(const infra::ByteRange receiveBuffer, hal::SerialCommunication& serialCommunication, services::ConnectionFactory& connectionFactory, uint16_t port);
 
     private:
-        const infra::ByteRange sendBuffer;
         const infra::ByteRange receiveBuffer;
         hal::SerialCommunication& serialCommunication;
         infra::Creator<services::ConnectionObserver, SerialServerConnectionObserver, void(services::IPAddress address)> connectionCreator;

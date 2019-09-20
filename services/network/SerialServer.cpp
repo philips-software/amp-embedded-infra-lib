@@ -2,9 +2,8 @@
 
 namespace services
 {
-    SerialServerConnectionObserver::SerialServerConnectionObserver(infra::ByteRange sendBuffer, infra::ByteRange receiveBuffer, hal::SerialCommunication& serialCommunication)
-        : sendBuffer(sendBuffer)
-        , receiveBuffer(receiveBuffer)
+    SerialServerConnectionObserver::SerialServerConnectionObserver(const infra::ByteRange receiveBuffer, hal::SerialCommunication& serialCommunication)
+        : receiveBuffer(receiveBuffer)
         , receiveQueue(receiveBuffer, [this] { SerialDataReceived(); })
         , serialCommunication(serialCommunication)
     {
@@ -15,26 +14,18 @@ namespace services
     {
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
 
-        stream << *pendingData;
-        receiveQueue.Consume(pendingData->size());
-        pendingData = infra::none;
-        writer = nullptr;
+        while (!receiveQueue.Empty())
+        {
+            auto data = receiveQueue.ContiguousRange();
+            stream << data;
+            receiveQueue.Consume(data.size());
+        }
 
-        if (!receiveQueue.Empty())
-            EvaluatePendingSerialData();
+        writer = nullptr;
+        pendingSend = false;
     }
 
     void SerialServerConnectionObserver::DataReceived()
-    {
-        SocketDataReceived();
-    }
-
-    void SerialServerConnectionObserver::SerialDataReceived()
-    {
-        EvaluatePendingSerialData();
-    }
-
-    void SerialServerConnectionObserver::SocketDataReceived()
     {
         streamReader = ConnectionObserver::Subject().ReceiveStream();
         infra::DataInputStream::WithErrorPolicy stream(*streamReader);
@@ -46,26 +37,22 @@ namespace services
         });
     }
 
-    void SerialServerConnectionObserver::EvaluatePendingSerialData()
+    void SerialServerConnectionObserver::SerialDataReceived()
     {
-        if (!pendingData)
+        if (!receiveQueue.Empty() && !pendingSend)
         {
-            auto receivedData = receiveQueue.ContiguousRange();
-            pendingData.Emplace(infra::Head(sendBuffer, receivedData.size()));
-            infra::Copy(receivedData, *pendingData);
-
-            ConnectionObserver::Subject().RequestSendStream(pendingData->size());
+            pendingSend = true;
+            ConnectionObserver::Subject().RequestSendStream(ConnectionObserver::Subject().MaxSendStreamSize());
         }
     }
 
-    SerialServer::SerialServer(infra::ByteRange sendBuffer, infra::ByteRange receiveBuffer, hal::SerialCommunication& serialCommunication, services::ConnectionFactory& connectionFactory, uint16_t port)
+    SerialServer::SerialServer(const infra::ByteRange receiveBuffer, hal::SerialCommunication& serialCommunication, services::ConnectionFactory& connectionFactory, uint16_t port)
         : SingleConnectionListener(connectionFactory, port, { connectionCreator })
-        , sendBuffer(sendBuffer)
         , receiveBuffer(receiveBuffer)
         , serialCommunication(serialCommunication)
         , connectionCreator([this](infra::Optional<SerialServerConnectionObserver>& value, services::IPAddress address)
           {
-              value.Emplace(this->sendBuffer, this->receiveBuffer, this->serialCommunication);
+              value.Emplace(this->receiveBuffer, this->serialCommunication);
           })
     {}
 }
