@@ -3,7 +3,7 @@
 
 namespace hal
 {
-    UartWindows::UartWindows(std::string portName)
+    UartWindows::UartWindows(const std::string& portName)
         : readThread([this]() { ReadThread(); })
     {
         std::string port = "\\\\.\\" + portName;
@@ -20,9 +20,9 @@ namespace hal
         PurgeComm(handle, PURGE_TXCLEAR | PURGE_RXCLEAR);
 
         COMMTIMEOUTS commTimeOuts;
-        commTimeOuts.ReadIntervalTimeout = 3;
-        commTimeOuts.ReadTotalTimeoutMultiplier = 3;
-        commTimeOuts.ReadTotalTimeoutConstant = 2;
+        commTimeOuts.ReadIntervalTimeout = MAXDWORD;
+        commTimeOuts.ReadTotalTimeoutMultiplier = MAXDWORD;
+        commTimeOuts.ReadTotalTimeoutConstant = 25;
         commTimeOuts.WriteTotalTimeoutMultiplier = 0;
         commTimeOuts.WriteTotalTimeoutConstant = 0;
         SetCommTimeouts(handle, &commTimeOuts);
@@ -42,20 +42,21 @@ namespace hal
 
         while (running)
         {
-            std::lock_guard<std::mutex> lock(mutex);
-            if (onReceivedData)
-            {
-                ReadFile(handle, buffer, sizeof(buffer), &bytesRead, nullptr);
-                if (bytesRead)
-                    onReceivedData(infra::ConstByteRange(buffer, buffer + bytesRead));
-            }
+            std::unique_lock<std::mutex> lock(mutex);
+            if (!onReceivedData)
+                receivedDataSet.wait(lock);
+
+            ReadFile(handle, buffer, sizeof(buffer), &bytesRead, nullptr);
+            if (bytesRead)
+                onReceivedData(infra::ConstByteRange(buffer, buffer + bytesRead));
         }
     }
 
     void UartWindows::ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived)
     {
-        std::lock_guard<std::mutex> lock(mutex);
+        std::unique_lock<std::mutex> lock(mutex);
         onReceivedData = dataReceived;
+        receivedDataSet.notify_all();
     }
 
     void UartWindows::SendData(infra::MemoryRange<const uint8_t> data, infra::Function<void()> actionOnCompletion)
