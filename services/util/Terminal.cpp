@@ -7,7 +7,7 @@ namespace services
         , tracer(tracer)
         , queue([this] { HandleInput(); })
     {
-        communication.ReceiveData([this](infra::ConstByteRange data) { for (uint8_t element : data) queue.AddFromInterrupt(element); });
+        communication.ReceiveData([this](infra::ConstByteRange data) { queue.AddFromInterrupt(data); });
         Print(state.prompt);
     }
 
