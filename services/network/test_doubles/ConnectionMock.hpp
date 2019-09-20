@@ -78,6 +78,7 @@ namespace services
         MOCK_METHOD1(CancelConnect, void(ClientConnectionObserverFactory& factory));
 
         void NewConnection(ServerConnectionObserverFactory& serverConnectionObserverFactory, Connection& connection, services::IPAddress address);
+        void NewConnection(ServerConnectionObserverFactory& serverConnectionObserverFactory, infra::SharedPtr<Connection> connection, services::IPAddress address);
     };
 
     class ServerConnectionObserverFactoryMock

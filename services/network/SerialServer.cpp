@@ -14,9 +14,9 @@ namespace services
     {
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
 
-        while (!receiveQueue.Empty())
+        while (!receiveQueue.Empty() && stream.Available() > 0)
         {
-            auto data = receiveQueue.ContiguousRange();
+            auto data = infra::Head(receiveQueue.ContiguousRange(), stream.Available());
             stream << data;
             receiveQueue.Consume(data.size());
         }
