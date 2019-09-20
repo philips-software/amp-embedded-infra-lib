@@ -45,6 +45,8 @@ ccola_component(network static_library)
         NameResolverCache.cpp
         NameResolverCache.hpp
         Network.hpp
+		SerialServer.cpp
+		SerialServer.hpp
         SingleConnectionListener.cpp
         SingleConnectionListener.hpp
         SntpClient.cpp
