@@ -31,8 +31,7 @@ namespace infra
     {
         string.resize(std::min(input.Available(), string.max_size()));
         assert(string.size() == input.Available());
-        auto byteRange = infra::StringAsByteRange(string);
-        input >> byteRange;
+        input >> infra::StringAsByteRange(string);
     }
 
     void ProtoLengthDelimited::GetStringReference(infra::BoundedConstString& string)
@@ -44,8 +43,7 @@ namespace infra
     {
         bytes.resize(std::min(input.Available(), bytes.max_size()));
         assert(bytes.size() == input.Available());
-        auto byteRange = infra::MakeRange(bytes);
-        input >> byteRange;
+        input >> infra::MakeRange(bytes);
     }
 
     void ProtoLengthDelimited::GetBytesReference(infra::ConstByteRange& bytes)
