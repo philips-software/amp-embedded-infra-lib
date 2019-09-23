@@ -224,7 +224,7 @@ namespace testFormat {
     };
 }
 template<>
-void infra::Formatter<testFormat::TestFormatObject&>::Format(TextOutputStream& stream, FormatSpec& spec)
+void infra::Formatter<testFormat::TestFormatObject const&>::Format(TextOutputStream& stream, FormatSpec& spec)
 {
     stream << infra::Format("v:{},b:{}", value.v, value.b);
 }
@@ -234,6 +234,11 @@ TEST_F(FormatTest, FormatObjectSimple)
     CheckFormatArguments("v:9,b:true", "{}", testFormat::TestFormatObject());
 }
 
+TEST_F(FormatTest, FormatConstObject)
+{
+    const auto object = testFormat::TestFormatObject();
+    CheckFormatArguments("v:9,b:true", "{}", object);
+}
 
 TEST_F(FormatTest, FormatObjectCombined)
 {

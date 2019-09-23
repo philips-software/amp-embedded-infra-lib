@@ -154,49 +154,49 @@ namespace infra
     }
 
     template<>
-    void Formatter<int64_t>::Format(TextOutputStream& stream, FormatSpec& spec)
+    void Formatter<int64_t const>::Format(TextOutputStream& stream, FormatSpec& spec)
     {
         SignedInteger(stream, value, spec);
     }
 
     template<>
-    void Formatter<int32_t>::Format(TextOutputStream& stream, FormatSpec& spec)
+    void Formatter<int32_t const>::Format(TextOutputStream& stream, FormatSpec& spec)
     {
         SignedInteger(stream, value, spec);
     }
 
     template<>
-    void Formatter<int16_t>::Format(TextOutputStream& stream, FormatSpec& spec)
+    void Formatter<int16_t const>::Format(TextOutputStream& stream, FormatSpec& spec)
     {
         SignedInteger(stream, value, spec);
     }
 
     template<>
-    void Formatter<int8_t>::Format(TextOutputStream& stream, FormatSpec& spec)
+    void Formatter<int8_t const>::Format(TextOutputStream& stream, FormatSpec& spec)
     {
         SignedInteger(stream, value, spec);
     }
 
     template<>
-    void Formatter<uint64_t>::Format(TextOutputStream& stream, FormatSpec& spec)
+    void Formatter<uint64_t const>::Format(TextOutputStream& stream, FormatSpec& spec)
     {
         UnsignedInteger(stream, value, spec);
     }
 
     template<>
-    void Formatter<uint32_t>::Format(TextOutputStream& stream, FormatSpec& spec)
+    void Formatter<uint32_t const>::Format(TextOutputStream& stream, FormatSpec& spec)
     {
         UnsignedInteger(stream, value, spec);
     }
 
     template<>
-    void Formatter<uint16_t>::Format(TextOutputStream& stream, FormatSpec& spec)
+    void Formatter<uint16_t const>::Format(TextOutputStream& stream, FormatSpec& spec)
     {
         UnsignedInteger(stream, value, spec);
     }
 
     template<>
-    void Formatter<uint8_t>::Format(TextOutputStream& stream, FormatSpec& spec)
+    void Formatter<uint8_t const>::Format(TextOutputStream& stream, FormatSpec& spec)
     {
         UnsignedInteger(stream, value, spec);
     }
@@ -208,7 +208,7 @@ namespace infra
     }
 
     template<>
-    void Formatter<bool>::Format(TextOutputStream& stream, FormatSpec& spec)
+    void Formatter<bool const>::Format(TextOutputStream& stream, FormatSpec& spec)
     {
         const auto str = value ? "true" : "false";
         RawFormat(stream, str, spec);
