@@ -14,7 +14,7 @@ public:
     hal::SynchronousFixedRandomDataGenerator randomDataGenerator;
     application::ImageEncryptorAes encryptor;
 
-    const std::array<uint8_t, 16> aesKey = std::array<uint8_t, 16>{ {
+    const std::array<uint8_t, 16> aesKey { {
         0x50, 0x8b, 0xa9, 0xd4, 0x81, 0x50, 0x64, 0xcb,
         0xf2, 0x9b, 0xde, 0xf3, 0x7f, 0x6a, 0x54, 0x3e
     } };
