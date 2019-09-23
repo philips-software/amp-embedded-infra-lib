@@ -9,6 +9,9 @@ namespace infra
         : public StreamWriter
     {
     public:
+        template<class T>
+            using WithOutput = infra::WithStorage<LimitedStreamWriter, T>;
+
         LimitedStreamWriter(StreamWriter& output, uint32_t length);
         LimitedStreamWriter(const LimitedStreamWriter& other);
 
