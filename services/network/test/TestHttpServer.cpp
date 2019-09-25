@@ -222,7 +222,7 @@ TEST_F(HttpServerTest, second_connection_forces_idle_connection_to_close)
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     EXPECT_CALL(connectionFirst, CloseAndDestroy());
-    ForwardTime(std::chrono::seconds(1));
+    ForwardTime(std::chrono::seconds(10));
     testing::Mock::VerifyAndClearExpectations(&connectionFirst);
 
     EXPECT_CALL(connection, CloseAndDestroyMock());
