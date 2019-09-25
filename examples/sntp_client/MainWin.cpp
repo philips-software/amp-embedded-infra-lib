@@ -6,7 +6,6 @@
 #include "services/network_win/ConnectionWin.hpp"
 #include "services/network_win/EventDispatcherWithNetwork.hpp"
 #include "services/network_win/NameLookupWin.hpp"
-#include "services/tracer/GlobalTracer.hpp"
 #include "services/tracer/Tracer.hpp"
 
 struct TimeWithSynchronization
@@ -69,7 +68,6 @@ int main(int argc, const char* argv[], const char* env[])
     static hal::TimerServiceGeneric timerService;
     static infra::IoOutputStream ioOutputStream;
     static services::Tracer tracer(ioOutputStream);
-    services::SetGlobalTracerInstance(tracer);
 
     static services::NameLookupWin nameLookup;
     static TimeWithSynchronization time(eventDispatcherWithNetwork, nameLookup, tracer);

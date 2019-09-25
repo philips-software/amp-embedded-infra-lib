@@ -5,7 +5,6 @@
 #include "infra/util/Tokenizer.hpp"
 #include "services/network/SerialServer.hpp"
 #include "services/network_win/EventDispatcherWithNetwork.hpp"
-#include "services/tracer/GlobalTracer.hpp"
 #include "services/tracer/Tracer.hpp"
 
 struct SerialBridge
@@ -35,7 +34,6 @@ int main(int argc, const char* argv[], const char* env[])
     static hal::TimerServiceGeneric timerService;
     static infra::IoOutputStream ioOutputStream;
     static services::Tracer tracer(ioOutputStream);
-    services::SetGlobalTracerInstance(tracer);
 
     static infra::BoundedVector<SerialBridge>::WithMaxSize<8> serialBridges;
 
