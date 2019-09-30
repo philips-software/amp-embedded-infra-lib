@@ -36,8 +36,6 @@ namespace services
         };
 
     private:
-        friend class TracingHttpClientConnectorImpl;
-        
         Tracer& tracer;
 
         infra::SharedOptional<TracingWriter> tracingWriter;
