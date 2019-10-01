@@ -76,7 +76,7 @@ namespace infra
     template<class... ConstructionArgs>
     EventDispatcherConnector<T>::EventDispatcherConnector(MemoryRange<std::pair<infra::Function<void()>, std::atomic<bool>>> scheduledActionsStorage, ConstructionArgs&&... args)
         : infra::InterfaceConnector<EventDispatcherWorker>(this)
-        , T(scheduledActionsStorage, std::forward(args)...)
+        , T(scheduledActionsStorage, std::forward<ConstructionArgs>(args)...)
     {}
 }
 
