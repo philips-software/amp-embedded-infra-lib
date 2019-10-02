@@ -106,7 +106,7 @@ int main(int argc, const char* argv[], const char* env[])
     static services::NameLookupWin nameLookup;
     static services::ConnectionFactoryWithNameResolverImpl::WithStorage<1> connectionFactory(networkTls, nameLookup);
     static services::ConnectionFactoryWithNameResolverForTls connectionFactoryTls(connectionFactory);
-    static services::HttpClientConnectorImpl<>::WithMaxHeaderSize<512> connector(connectionFactoryTls);
+    static services::HttpClientConnectorImpl<> connector(connectionFactoryTls);
 
     static application::TracingHttpClient httpClient("httpbin.org/get", 443, connector, tracer);
 
