@@ -427,10 +427,7 @@ namespace services
     HttpHeader HttpClientImpl::HttpResponseParser::HeaderFromString(infra::BoundedConstString header)
     {
         infra::Tokenizer tokenizer(header, ':');
-        auto value = tokenizer.TokenAndRest(1);
-        auto headerBegin = value.find_first_not_of(' ');
-
-        return{ tokenizer.Token(0), headerBegin != infra::BoundedString::npos ? value.substr(headerBegin) : "" };
+        return{ tokenizer.Token(0), infra::TrimLeft(tokenizer.TokenAndRest(1)) };
     }
 
     void HttpClientImpl::HttpResponseParser::SetError()
