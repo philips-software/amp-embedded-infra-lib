@@ -290,7 +290,7 @@ TEST_F(ConfigurationStoreTest, Write_writes_to_blob)
     infra::Function<void()> onWriteDone;
     std::array<uint8_t, 32> data;
     EXPECT_CALL(configurationBlob1, MaxBlob()).WillOnce(testing::Return(infra::MakeRange(data)));
-    EXPECT_CALL(dataInstance, Serialize(testing::_)).WillOnce(infra::Lambda([](infra::ProtoFormatter& formatter) { formatter.PutFixed32(1); }));
+    EXPECT_CALL(dataInstance, Serialize(testing::_)).WillOnce(testing::Invoke([](infra::ProtoFormatter& formatter) { formatter.PutFixed32(1); }));
     EXPECT_CALL(configurationBlob1, Write(4, testing::_)).WillOnce(testing::SaveArg<1>(&onWriteDone));
     configurationStore.Write();
 
@@ -316,7 +316,7 @@ TEST_F(ConfigurationStoreTest, Write_writes_to_other_blob_than_recovered)
     infra::Function<void()> onWriteDone;
     std::array<uint8_t, 32> data;
     EXPECT_CALL(configurationBlob2, MaxBlob()).WillOnce(testing::Return(infra::MakeRange(data)));
-    EXPECT_CALL(dataInstance, Serialize(testing::_)).WillOnce(infra::Lambda([](infra::ProtoFormatter& formatter) { formatter.PutFixed32(1); }));
+    EXPECT_CALL(dataInstance, Serialize(testing::_)).WillOnce(testing::Invoke([](infra::ProtoFormatter& formatter) { formatter.PutFixed32(1); }));
     EXPECT_CALL(configurationBlob2, Write(4, testing::_)).WillOnce(testing::SaveArg<1>(&onWriteDone));
     configurationStore.Write();
 
@@ -333,7 +333,7 @@ TEST_F(ConfigurationStoreTest, double_Write_is_held)
     infra::Function<void()> onWriteDone;
     std::array<uint8_t, 32> data;
     EXPECT_CALL(configurationBlob1, MaxBlob()).WillOnce(testing::Return(infra::MakeRange(data)));
-    EXPECT_CALL(dataInstance, Serialize(testing::_)).WillOnce(infra::Lambda([](infra::ProtoFormatter& formatter) { formatter.PutFixed32(1); }));
+    EXPECT_CALL(dataInstance, Serialize(testing::_)).WillOnce(testing::Invoke([](infra::ProtoFormatter& formatter) { formatter.PutFixed32(1); }));
     EXPECT_CALL(configurationBlob1, Write(4, testing::_)).WillOnce(testing::SaveArg<1>(&onWriteDone));
     configurationStore.Write();
     configurationStore.Write();
@@ -342,7 +342,7 @@ TEST_F(ConfigurationStoreTest, double_Write_is_held)
     onWriteDone();
 
     EXPECT_CALL(configurationBlob2, MaxBlob()).WillOnce(testing::Return(infra::MakeRange(data)));
-    EXPECT_CALL(dataInstance, Serialize(testing::_)).WillOnce(infra::Lambda([](infra::ProtoFormatter& formatter) { formatter.PutFixed32(1); }));
+    EXPECT_CALL(dataInstance, Serialize(testing::_)).WillOnce(testing::Invoke([](infra::ProtoFormatter& formatter) { formatter.PutFixed32(1); }));
     EXPECT_CALL(configurationBlob2, Write(4, testing::_)).WillOnce(testing::SaveArg<1>(&onWriteDone));
     onEraseDone();
 
@@ -361,7 +361,7 @@ TEST_F(ConfigurationStoreTest, during_Lock_Write_is_held)
     infra::Function<void()> onWriteDone;
     std::array<uint8_t, 32> data;
     EXPECT_CALL(configurationBlob1, MaxBlob()).WillOnce(testing::Return(infra::MakeRange(data)));
-    EXPECT_CALL(dataInstance, Serialize(testing::_)).WillOnce(infra::Lambda([](infra::ProtoFormatter& formatter) { formatter.PutFixed32(1); }));
+    EXPECT_CALL(dataInstance, Serialize(testing::_)).WillOnce(testing::Invoke([](infra::ProtoFormatter& formatter) { formatter.PutFixed32(1); }));
     EXPECT_CALL(configurationBlob1, Write(4, testing::_)).WillOnce(testing::SaveArg<1>(&onWriteDone));
     lock = infra::none;
 }
@@ -373,7 +373,7 @@ TEST_F(ConfigurationStoreTest, onDone_is_called_when_done)
     infra::Function<void()> onWriteDone;
     std::array<uint8_t, 32> data;
     EXPECT_CALL(configurationBlob1, MaxBlob()).WillOnce(testing::Return(infra::MakeRange(data)));
-    EXPECT_CALL(dataInstance, Serialize(testing::_)).WillOnce(infra::Lambda([](infra::ProtoFormatter& formatter) { formatter.PutFixed32(1); }));
+    EXPECT_CALL(dataInstance, Serialize(testing::_)).WillOnce(testing::Invoke([](infra::ProtoFormatter& formatter) { formatter.PutFixed32(1); }));
     EXPECT_CALL(configurationBlob1, Write(4, testing::_)).WillOnce(testing::SaveArg<1>(&onWriteDone));
 
     infra::VerifyingFunctionMock<void()> onDone;
@@ -423,7 +423,7 @@ TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_writes_ConfigurationStor
     infra::Function<void()> onWriteDone;
     std::array<uint8_t, 32> data2;
     EXPECT_CALL(configurationBlob1, MaxBlob()).WillOnce(testing::Return(infra::MakeRange(data2)));
-    EXPECT_CALL(dataInstance, Serialize(testing::_)).WillOnce(infra::Lambda([](infra::ProtoFormatter& formatter) { formatter.PutFixed32(1); }));
+    EXPECT_CALL(dataInstance, Serialize(testing::_)).WillOnce(testing::Invoke([](infra::ProtoFormatter& formatter) { formatter.PutFixed32(1); }));
     EXPECT_CALL(configurationBlob1, Write(4, testing::_)).WillOnce(testing::SaveArg<1>(&onWriteDone));
     access.Write();
 }
@@ -474,7 +474,7 @@ TEST_F(FactoryDefaultConfigurationStoreTest, failed_factory_default_results_in_O
     EXPECT_CALL(configurationBlobFactoryDefault, Recover(testing::_)).WillOnce(testing::SaveArg<0>(&onRecoverDone));
     configurationStore.Recover([this]() { OnLoadFactoryDefault(); }, [this](bool isFactoryDefault) { OnRecovered(isFactoryDefault); });
 
-    EXPECT_CALL(*this, OnLoadFactoryDefault()).WillOnce(infra::Lambda([this]() { configurationStore.Configuration().data = 5; }));
+    EXPECT_CALL(*this, OnLoadFactoryDefault()).WillOnce(testing::Invoke([this]() { configurationStore.Configuration().data = 5; }));
     EXPECT_CALL(configurationBlobFactoryDefault, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
     onRecoverDone(false);
 
@@ -514,7 +514,7 @@ TEST_F(FactoryDefaultConfigurationStoreTest, failed_factory_default_but_successf
     EXPECT_CALL(configurationBlobFactoryDefault, Recover(testing::_)).WillOnce(testing::SaveArg<0>(&onRecoverDone));
     configurationStore.Recover([this]() { OnLoadFactoryDefault(); }, [this](bool isFactoryDefault) { OnRecovered(isFactoryDefault); });
 
-    EXPECT_CALL(*this, OnLoadFactoryDefault()).WillOnce(infra::Lambda([this]() { configurationStore.Configuration().data = 5; }));
+    EXPECT_CALL(*this, OnLoadFactoryDefault()).WillOnce(testing::Invoke([this]() { configurationStore.Configuration().data = 5; }));
     EXPECT_CALL(configurationBlobFactoryDefault, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
     onRecoverDone(false);
 
@@ -652,7 +652,7 @@ TEST_F(FactoryDefaultConfigurationStoreIntegrationTest, start_with_empty_flash_r
         0x00, 0x00, 0xaa, 0xaa, 0xaa, 0x51, 0x1f, 0xfe, 0x0a, 0x00, 0x00, 0x00, 0x0a, 0x08, 0x04, 0x03,
         0x00, 0x00, 0x08, 0x07, 0x06, 0x05, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 
-    EXPECT_CALL(*this, OnLoadFactoryDefault()).WillOnce(infra::Lambda([&]()
+    EXPECT_CALL(*this, OnLoadFactoryDefault()).WillOnce(testing::Invoke([&]()
     {
         configurationStore->Configuration().data = std::array<uint8_t, 8>{ 4, 3, 2, 1, 8, 7, 6, 5 };
     }));
@@ -680,7 +680,7 @@ TEST_F(FactoryDefaultConfigurationStoreIntegrationTest, start_with_corrupt_facto
         0x00, 0x00, 0xaa, 0xaa, 0xaa, 0x51, 0x1f, 0xfe, 0x0a, 0x00, 0x00, 0x00, 0x0a, 0x08, 0x04, 0x03,
         0x02, 0x01, 0x08, 0x07, 0x06, 0x05, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 
-    EXPECT_CALL(*this, OnLoadFactoryDefault()).WillOnce(infra::Lambda([&]()
+    EXPECT_CALL(*this, OnLoadFactoryDefault()).WillOnce(testing::Invoke([&]()
     {
         configurationStore->Configuration().data = std::array<uint8_t, 8>{ 4, 3, 2, 1, 8, 7, 6, 5 };
     }));

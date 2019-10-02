@@ -31,7 +31,7 @@ public:
     void ExpectPageServerRequest(services::HttpVerb verb, const std::string& request)
     {
         EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(true));
-        EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(infra::Lambda([this, verb](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
+        EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(testing::Invoke([this, verb](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
         {
             EXPECT_EQ(verb, parser.Verb());
             httpConnection = &connection;
@@ -46,7 +46,7 @@ public:
         testing::StrictMock<services::HttpResponseMock> response(1024);
         EXPECT_CALL(response, ContentType()).WillOnce(testing::Return(contentType));
         EXPECT_CALL(response, AddHeaders(testing::_));
-        EXPECT_CALL(response, WriteBody(testing::_)).WillOnce(infra::Lambda([body](infra::TextOutputStream& stream) { stream << body; }));
+        EXPECT_CALL(response, WriteBody(testing::_)).WillOnce(testing::Invoke([body](infra::TextOutputStream& stream) { stream << body; }));
         EXPECT_CALL(response, Status()).WillOnce(testing::Return(status));
         httpConnection->SendResponse(response);
     }
@@ -197,7 +197,7 @@ TEST_F(HttpServerTest, split_response_when_not_enough_available_in_stream)
     EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
     EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(true));
     EXPECT_CALL(connection, AckReceived());
-    EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(infra::Lambda([this](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
+    EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(testing::Invoke([this](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
     {
         httpConnection = &connection;
         SendResponse("200 OK", "application/text", "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789");

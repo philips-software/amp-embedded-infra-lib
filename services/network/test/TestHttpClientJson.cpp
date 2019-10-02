@@ -118,11 +118,11 @@ TEST_F(HttpClientJsonTest, ParseError_reports_Error)
     auto readerPtr(infra::UnOwnedSharedPtr(reader));
     EXPECT_CALL(reader, Empty()).WillOnce(testing::Return(false));
     EXPECT_CALL(reader, ExtractContiguousRange(testing::_)).WillOnce(testing::Return(infra::MakeStringByteRange(R"({ ] })")));
-    EXPECT_CALL(jsonObjectVisitor, ParseError()).WillOnce(infra::Lambda([this]()
+    EXPECT_CALL(jsonObjectVisitor, ParseError()).WillOnce(testing::Invoke([this]()
     {
         controller.ContentError();
     }));
-    EXPECT_CALL(httpClient, Close()).WillOnce(infra::Lambda([this, &readerPtr]()
+    EXPECT_CALL(httpClient, Close()).WillOnce(testing::Invoke([this, &readerPtr]()
     {
         controller.ClosingConnection();
         EXPECT_TRUE(readerPtr == nullptr);

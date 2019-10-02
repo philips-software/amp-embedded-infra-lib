@@ -226,7 +226,7 @@ TEST_F(JsonStreamingObjectParserTest, ParseError_propagates_in_object_hierarchy)
 TEST_F(JsonStreamingObjectParserTest, nested_visitor_invokes_SemanticError)
 {
     infra::JsonSubObjectParser* nestedParser = nullptr;
-    EXPECT_CALL(visitor, VisitObject("a", testing::_)).WillOnce(infra::Lambda([&nestedParser, this](infra::BoundedConstString tag, infra::JsonSubObjectParser& subObjectParser)
+    EXPECT_CALL(visitor, VisitObject("a", testing::_)).WillOnce(testing::Invoke([&nestedParser, this](infra::BoundedConstString tag, infra::JsonSubObjectParser& subObjectParser)
     {
         nestedParser = &subObjectParser;
         return &nestedVisitor;
@@ -234,7 +234,7 @@ TEST_F(JsonStreamingObjectParserTest, nested_visitor_invokes_SemanticError)
     parser.Feed(R"({ "a" : {)");
 
     EXPECT_CALL(visitor, SemanticError());
-    EXPECT_CALL(nestedVisitor, VisitString("a", "b")).WillOnce(infra::Lambda([nestedParser](infra::BoundedConstString tag, infra::BoundedConstString value)
+    EXPECT_CALL(nestedVisitor, VisitString("a", "b")).WillOnce(testing::Invoke([nestedParser](infra::BoundedConstString tag, infra::BoundedConstString value)
     {
         nestedParser->SemanticError();
     }));
@@ -257,7 +257,7 @@ TEST_F(JsonStreamingObjectParserTest, propagation_stops_when_parser_is_deleted_i
 TEST_F(JsonStreamingObjectParserWith3LevelsTest, propagation_stops_when_parser_is_deleted_in_SemanticError)
 {
     infra::JsonSubObjectParser* nestedParser = nullptr;
-    EXPECT_CALL(visitor, VisitObject("a", testing::_)).WillOnce(infra::Lambda([&nestedParser, this](infra::BoundedConstString tag, infra::JsonSubObjectParser& subObjectParser)
+    EXPECT_CALL(visitor, VisitObject("a", testing::_)).WillOnce(testing::Invoke([&nestedParser, this](infra::BoundedConstString tag, infra::JsonSubObjectParser& subObjectParser)
     {
         nestedParser = &subObjectParser;
         return &nestedVisitor;
@@ -265,7 +265,7 @@ TEST_F(JsonStreamingObjectParserWith3LevelsTest, propagation_stops_when_parser_i
     parser.Feed(R"({ "a" : {)");
 
     testing::StrictMock<infra::JsonObjectVisitorMock> nestedVisitor2;
-    EXPECT_CALL(nestedVisitor, VisitObject("a", testing::_)).WillOnce(infra::Lambda([&nestedParser, this, &nestedVisitor2](infra::BoundedConstString tag, infra::JsonSubObjectParser& subObjectParser)
+    EXPECT_CALL(nestedVisitor, VisitObject("a", testing::_)).WillOnce(testing::Invoke([&nestedParser, this, &nestedVisitor2](infra::BoundedConstString tag, infra::JsonSubObjectParser& subObjectParser)
     {
         nestedParser = &subObjectParser;
         return &nestedVisitor2;
@@ -277,7 +277,7 @@ TEST_F(JsonStreamingObjectParserWith3LevelsTest, propagation_stops_when_parser_i
         parser.~WithBuffers<8, 12, 3>();
         new (&parser) infra::JsonStreamingObjectParser::WithBuffers<8, 12, 3>{ visitor };
     }));
-    EXPECT_CALL(nestedVisitor2, VisitString("a", "b")).WillOnce(infra::Lambda([nestedParser](infra::BoundedConstString tag, infra::BoundedConstString value)
+    EXPECT_CALL(nestedVisitor2, VisitString("a", "b")).WillOnce(testing::Invoke([nestedParser](infra::BoundedConstString tag, infra::BoundedConstString value)
     {
         nestedParser->SemanticError();
     }));
@@ -388,7 +388,7 @@ class JsonStreamingObjectParserArrayTest
 public:
     JsonStreamingObjectParserArrayTest()
     {
-        EXPECT_CALL(visitor, VisitArray("a", testing::_)).WillOnce(infra::Lambda([this](infra::BoundedConstString tag, infra::JsonSubArrayParser& subArrayParser)
+        EXPECT_CALL(visitor, VisitArray("a", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString tag, infra::JsonSubArrayParser& subArrayParser)
         {
             nestedParser = &subArrayParser;
             return &arrayVisitor;
@@ -423,7 +423,7 @@ TEST_F(JsonStreamingObjectParserArrayTest, VisitString)
 TEST_F(JsonStreamingObjectParserArrayTest, nested_array_visitor_invokes_SemanticError)
 {
     EXPECT_CALL(visitor, SemanticError());
-    EXPECT_CALL(arrayVisitor, VisitString("a")).WillOnce(infra::Lambda([this](infra::BoundedConstString value)
+    EXPECT_CALL(arrayVisitor, VisitString("a")).WillOnce(testing::Invoke([this](infra::BoundedConstString value)
     {
         nestedParser->SemanticError();
     }));
