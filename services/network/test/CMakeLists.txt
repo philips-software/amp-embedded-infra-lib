@@ -13,10 +13,12 @@ ccola_component(network_test gmock_test)
         TestLlmnrResponder.cpp
         TestMqttClient.cpp
         TestNameResolverCache.cpp
-		TestSerialServer.cpp
+        TestSerialServer.cpp
         TestSingleConnectionListener.cpp
         TestSntpClient.cpp
         TestWebSocketClient.cpp
+        TestWebSocketClientConnectionObserver.cpp
+        TestWebSocketIntegration.cpp
         TestWebSocketServerConnectionObserver.cpp
     )
 
@@ -27,6 +29,7 @@ ccola_component(network_test gmock_test)
         infra.util_test_helper
         hal.generic
         hal.test_doubles
+        hal.synchronous_test_doubles
         services.util
     )
 
