@@ -35,7 +35,7 @@ public:
 
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& stream) override
         {
-            base.SendStreamAvailable(std::move(stream));
+            base.SendStreamAvailable(stream);
         }
 
         virtual void DataReceived() override

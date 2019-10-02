@@ -39,11 +39,11 @@ public:
         }
     }
 
-    infra::SharedPtr<infra::StreamWriter> SendData(const std::vector<uint8_t>& dataToSend)
+    infra::SharedPtr<infra::StreamWriter> SendData(const std::vector<uint8_t>& dataToSend, std::size_t requestSize = 2)
     {
         infra::SharedPtr<infra::StreamWriter> streamWriter;
-        EXPECT_CALL(connectionObserver, SendStreamAvailableMock(testing::_)).WillOnce(testing::SaveArg<0>(&streamWriter));
-        webSocket->RequestSendStream(2);
+        EXPECT_CALL(connectionObserver, SendStreamAvailable(testing::_)).WillOnce(testing::SaveArg<0>(&streamWriter));
+        webSocket->RequestSendStream(requestSize);
         infra::DataOutputStream::WithErrorPolicy stream(*streamWriter);
         stream << infra::MakeRange(dataToSend);
         return streamWriter;
@@ -295,7 +295,7 @@ TEST_F(WebSocketServerConnectionObserverTest, send_data_after_first_frame)
 
     webSocket->RequestSendStream(2);
 
-    EXPECT_CALL(connectionObserver, SendStreamAvailableMock(testing::_)).WillOnce(testing::Invoke(
+    EXPECT_CALL(connectionObserver, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke(
         [this](infra::SharedPtr<infra::StreamWriter> writer)
         {
             infra::DataOutputStream::WithErrorPolicy stream(*writer);
@@ -306,4 +306,13 @@ TEST_F(WebSocketServerConnectionObserverTest, send_data_after_first_frame)
     ExecuteAllActions();
 
     EXPECT_EQ((std::vector<uint8_t>{ 0x82, 0x02, 0x91, 0x91, 0x82, 0x02, 0x91, 0x91 }), connection->sentData);
+}
+
+TEST_F(WebSocketServerConnectionObserverTest, dont_use_whole_buffer)
+{
+    std::vector<uint8_t> sendFrame = { 0x82, 0x02, 0x91, 0x91 };
+
+    SendData({ 0x91, 0x91 }, 128);
+    ExecuteAllActions();
+    EXPECT_EQ(sendFrame, connection->sentData);
 }

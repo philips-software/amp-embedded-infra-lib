@@ -2,8 +2,8 @@
 
 namespace services
 {
-    TracingHttpClientImpl::TracingHttpClientImpl(infra::BoundedString& headerBuffer, infra::BoundedConstString hostname, services::Tracer& tracer)
-        : HttpClientImpl(headerBuffer, hostname)
+    TracingHttpClientImpl::TracingHttpClientImpl(infra::BoundedConstString hostname, services::Tracer& tracer)
+        : HttpClientImpl(hostname)
         , tracer(tracer)
     {}
 

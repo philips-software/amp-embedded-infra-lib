@@ -15,10 +15,12 @@ namespace infra
     class QueueForOneReaderOneIrqWriter
     {
     public:
+        static_assert(std::is_trivial<T>::value, "Trivial type required");
+
         template<std::size_t Size>
             using WithStorage = infra::WithStorage<QueueForOneReaderOneIrqWriter<T>, std::array<T, Size + 1>>;
 
-        QueueForOneReaderOneIrqWriter(const infra::MemoryRange<T> buffer, const infra::Function<void()>& onDataAvailable);
+        QueueForOneReaderOneIrqWriter(infra::MemoryRange<T> buffer, const infra::Function<void()>& onDataAvailable);
 
         void AddFromInterrupt(T element);
         void AddFromInterrupt(infra::MemoryRange<const T> data);
@@ -50,13 +52,12 @@ namespace infra
     //// Implementation ////
 
     template<class T>
-    QueueForOneReaderOneIrqWriter<T>::QueueForOneReaderOneIrqWriter(const infra::MemoryRange<T> buffer, const infra::Function<void()>& onDataAvailable)
+    QueueForOneReaderOneIrqWriter<T>::QueueForOneReaderOneIrqWriter(infra::MemoryRange<T> buffer, const infra::Function<void()>& onDataAvailable)
         : buffer(buffer)
         , contentsBegin(buffer.begin())
         , contentsEnd(buffer.begin())
         , onDataAvailable(onDataAvailable)
     {
-        static_assert(std::is_trivial<T>::value, "Trivial type required");
         notificationScheduled = false;
     }
 

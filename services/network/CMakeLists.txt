@@ -45,8 +45,8 @@ ccola_component(network static_library)
         NameResolverCache.cpp
         NameResolverCache.hpp
         Network.hpp
-		SerialServer.cpp
-		SerialServer.hpp
+        SerialServer.cpp
+        SerialServer.hpp
         SingleConnectionListener.cpp
         SingleConnectionListener.hpp
         SntpClient.cpp
@@ -63,6 +63,8 @@ ccola_component(network static_library)
         TracingStatusHttpClientImpl.hpp
         WebSocket.cpp
         WebSocket.hpp
+        WebSocketClientConnectionObserver.cpp
+        WebSocketClientConnectionObserver.hpp
         WebSocketServerConnectionObserver.cpp
         WebSocketServerConnectionObserver.hpp
         WiFiNetwork.cpp

@@ -87,7 +87,7 @@ namespace services
     HttpServerConnectionObserver::HttpServerConnectionObserver(infra::BoundedString& buffer, HttpPageServer& httpServer)
         : buffer(buffer)
         , httpServer(httpServer)
-        , initialIdle(std::chrono::seconds(1), [this]()
+        , initialIdle(std::chrono::seconds(10), [this]()
             {
                 idle = true;
                 if (closeWhenIdle)

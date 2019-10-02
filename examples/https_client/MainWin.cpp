@@ -7,7 +7,6 @@
 #include "services/network/HttpClientImpl.hpp"
 #include "services/network_win/EventDispatcherWithNetwork.hpp"
 #include "services/network_win/NameLookupWin.hpp"
-#include "services/tracer/GlobalTracer.hpp"
 #include "services/tracer/Tracer.hpp"
 
 namespace
@@ -97,7 +96,6 @@ int main(int argc, const char* argv[], const char* env[])
     static hal::TimerServiceGeneric timerService;
     static infra::IoOutputStream ioOutputStream;
     static services::Tracer tracer(ioOutputStream);
-    services::SetGlobalTracerInstance(tracer);
 
     static hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
     static services::CertificatesMbedTls certificates;

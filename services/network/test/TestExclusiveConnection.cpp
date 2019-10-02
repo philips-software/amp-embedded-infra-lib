@@ -121,7 +121,7 @@ TEST_F(ExclusiveConnectionTest, construct_one_connection_via_Connect)
     connectionObserver->Subject().AbortAndDestroy();
     EXPECT_CALL(*connection, SetHostname("hostname"));
     static_cast<services::ConnectionWithHostname&>(connectionObserver->Subject()).SetHostname("hostname");
-    EXPECT_CALL(*connectionObserver, SendStreamAvailableMock(testing::_));
+    EXPECT_CALL(*connectionObserver, SendStreamAvailable(testing::_));
     connection->GetObserver().SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>());
     EXPECT_CALL(*connectionObserver, DataReceived());
     connection->GetObserver().DataReceived();

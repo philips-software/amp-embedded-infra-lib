@@ -86,7 +86,7 @@ namespace services
 
     void WebSocketServerConnectionObserver::SendStreamAllocatable()
     {
-        sendBufferReadyForSending = true;
+        sendBufferReadyForSending = !sendBuffer.empty();
         sendingState->CheckForSomethingToDo();
     }
 
@@ -134,12 +134,10 @@ namespace services
 
     void WebSocketServerConnectionObserver::TryAllocateSendStream()
     {
-        if (sendBuffer.empty() && requestedSendSize != 0)
+        if (streamWriter.Allocatable() && sendBuffer.empty() && requestedSendSize != 0)
         {
-            sendBuffer.resize(requestedSendSize);
+            services::Connection::GetObserver().SendStreamAvailable(streamWriter.Emplace(infra::inPlace, sendBuffer, requestedSendSize));
             requestedSendSize = 0;
-
-            services::Connection::GetObserver().SendStreamAvailable(streamWriter.Emplace(infra::MakeRange(sendBuffer)));
         }
     }
 

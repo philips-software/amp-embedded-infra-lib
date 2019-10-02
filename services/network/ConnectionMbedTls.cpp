@@ -171,6 +171,7 @@ namespace services
 
     void ConnectionMbedTls::CloseAndDestroy()
     {
+        encryptedSendWriter = nullptr;
         ConnectionObserver::Subject().CloseAndDestroy();
     }
 

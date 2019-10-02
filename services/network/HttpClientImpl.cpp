@@ -79,9 +79,8 @@ namespace services
         return headerSize;
     }
 
-    HttpClientImpl::HttpClientImpl(infra::BoundedString& headerBuffer, infra::BoundedConstString hostname)
-        : headerBuffer(headerBuffer)
-        , hostname(hostname)
+    HttpClientImpl::HttpClientImpl(infra::BoundedConstString hostname)
+        : hostname(hostname)
     {}
 
     void HttpClientImpl::AttachObserver(const infra::SharedPtr<HttpClientObserver>& observer)
@@ -228,7 +227,7 @@ namespace services
         if (forwardingStream)
             ConnectionObserver::Subject().RequestSendStream(std::min(streamingContentSize, ConnectionObserver::Subject().MaxSendStreamSize()));
         else
-            response.Emplace(*this, headerBuffer);
+            response.Emplace(*this);
     }
 
     void HttpClientImpl::HandleData()
@@ -313,9 +312,8 @@ namespace services
         ConnectionObserver::Subject().AbortAndDestroy();
     }
 
-    HttpClientImpl::HttpResponseParser::HttpResponseParser(HttpClientImpl& httpClient, infra::BoundedString& headerBuffer)
+    HttpClientImpl::HttpResponseParser::HttpResponseParser(HttpClientImpl& httpClient)
         : httpClient(httpClient)
-        , headerBuffer(headerBuffer)
     {}
 
     void HttpClientImpl::HttpResponseParser::DataReceived(infra::StreamReaderWithRewinding& reader)
@@ -345,6 +343,7 @@ namespace services
     void HttpClientImpl::HttpResponseParser::ParseStatusLine(infra::StreamReaderWithRewinding& reader)
     {
         infra::TextInputStream::WithErrorPolicy stream(reader);
+        infra::BoundedString::WithStorage<512> headerBuffer;
         headerBuffer.resize(std::min(headerBuffer.max_size(), stream.Available()));
         stream >> headerBuffer;
 
@@ -357,9 +356,12 @@ namespace services
             infra::Tokenizer tokenizer(statusLine, ' ');
 
             auto versionValid = HttpVersionValid(tokenizer.Token(0));
-            auto statusCode = HttpStatusCodeFromString(tokenizer.Token(1));
-            if (versionValid && statusCode)
-                httpClient.StatusAvailable(*statusCode, statusLine);
+            auto optionalStatusCode = HttpStatusCodeFromString(tokenizer.Token(1));
+            if (versionValid && optionalStatusCode)
+            {
+                statusCode = *optionalStatusCode;
+                httpClient.StatusAvailable(statusCode, statusLine);
+            }
             else
                 SetError();
 
@@ -376,6 +378,7 @@ namespace services
     void HttpClientImpl::HttpResponseParser::ParseHeaders(infra::StreamReaderWithRewinding& reader)
     {
         infra::TextInputStream::WithErrorPolicy stream(reader);
+        infra::BoundedString::WithStorage<512> headerBuffer;
         while (!done && !stream.Empty())
         {
             auto start = reader.ConstructSaveMarker();
@@ -391,6 +394,11 @@ namespace services
 
                 if (headerLine.empty() && headerBuffer.size() > crlfPos)
                 {
+                    if (statusCode == HttpStatusCode::Continue
+                        || statusCode == HttpStatusCode::SwitchingProtocols
+                        || statusCode == HttpStatusCode::NoContent
+                        || statusCode == HttpStatusCode::NotModified)
+                        contentLength = 0;
                     error = contentLength == infra::none;
                     done = true;
                     return;

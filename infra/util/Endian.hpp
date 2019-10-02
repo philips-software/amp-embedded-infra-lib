@@ -7,6 +7,8 @@
 
 namespace infra
 {
+    // For now, we assume host endianness is little endian
+
     namespace detail
     {
         // System Workbench's GCC does not yet support std::make_reverse_iterator
@@ -26,6 +28,30 @@ namespace infra
         auto valueRange = infra::MakeByteRange(value);
         std::copy(valueRange.begin(), valueRange.end(), detail::make_reverse_iterator(infra::MakeByteRange(result).end()));
         return result;
+    }
+
+    template<class T>
+    T FromBigEndian(T value)
+    {
+        return SwapEndian(value);
+    }
+
+    template<class T>
+    T ToBigEndian(T value)
+    {
+        return SwapEndian(value);
+    }
+
+    template<class T>
+    T FromLittleEndian(T value)
+    {
+        return value;
+    }
+
+    template<class T>
+    T ToLittleEndian(T value)
+    {
+        return value;
     }
 
     template<class T>

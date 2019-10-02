@@ -335,6 +335,9 @@ namespace infra
     BoundedString ByteRangeAsString(infra::MemoryRange<uint8_t> range);
     BoundedConstString ByteRangeAsString(infra::MemoryRange<const uint8_t> range);
 
+    template<class T>
+        std::string AsStdString(const infra::BoundedStringBase<T>& s);
+
 #ifdef CCOLA_HOST_BUILD //TICS !POR#021
     // gtest uses PrintTo to display the contents of BoundedStringBase<T>
     template<class T>
@@ -1681,6 +1684,12 @@ namespace infra
     MemoryRange<const uint8_t> StringAsByteRange(const infra::BoundedStringBase<const U>& string)
     {
         return StringAsMemoryRange<uint8_t>(string);
+    }
+
+    template<class T>
+    std::string AsStdString(const infra::BoundedStringBase<T>& s)
+    {
+        return std::string(s.begin(), s.end());
     }
 }
 

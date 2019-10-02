@@ -88,10 +88,11 @@ namespace infra
     template<class T>
     struct DecayFormatType
     {
-        using type = typename std::conditional <
-            std::is_integral<typename std::remove_reference<T>::type>::value,
-            typename std::remove_reference<T>::type,
-            T>::type;
+        typedef typename std::remove_reference<T>::type PlainType;
+        using type = typename std::conditional<
+            std::is_integral<PlainType>::value,
+            PlainType const,
+            PlainType const &>::type;
     };
 
     template<std::size_t N>
@@ -107,31 +108,31 @@ namespace infra
     }
 
     template<>
-    void Formatter<int64_t>::Format(TextOutputStream& stream, FormatSpec& spec);
+    void Formatter<int64_t const>::Format(TextOutputStream& stream, FormatSpec& spec);
 
     template<>
-    void Formatter<int32_t>::Format(TextOutputStream& stream, FormatSpec& spec);
+    void Formatter<int32_t const>::Format(TextOutputStream& stream, FormatSpec& spec);
 
     template<>
-    void Formatter<int16_t>::Format(TextOutputStream& stream, FormatSpec& spec);
+    void Formatter<int16_t const>::Format(TextOutputStream& stream, FormatSpec& spec);
 
     template<>
-    void Formatter<int8_t>::Format(TextOutputStream& stream, FormatSpec& spec);
+    void Formatter<int8_t const>::Format(TextOutputStream& stream, FormatSpec& spec);
 
     template<>
-    void Formatter<uint64_t>::Format(TextOutputStream& stream, FormatSpec& spec);
+    void Formatter<uint64_t const>::Format(TextOutputStream& stream, FormatSpec& spec);
 
     template<>
-    void Formatter<uint32_t>::Format(TextOutputStream& stream, FormatSpec& spec);
+    void Formatter<uint32_t const>::Format(TextOutputStream& stream, FormatSpec& spec);
 
     template<>
-    void Formatter<uint16_t>::Format(TextOutputStream& stream, FormatSpec& spec);
+    void Formatter<uint16_t const>::Format(TextOutputStream& stream, FormatSpec& spec);
 
     template<>
-    void Formatter<uint8_t>::Format(TextOutputStream& stream, FormatSpec& spec);
+    void Formatter<uint8_t const>::Format(TextOutputStream& stream, FormatSpec& spec);
 
     template<>
-    void Formatter<bool>::Format(TextOutputStream& stream, FormatSpec& spec);
+    void Formatter<bool const>::Format(TextOutputStream& stream, FormatSpec& spec);
 
     template<>
     void Formatter<char const*>::Format(TextOutputStream& stream, FormatSpec& spec);
