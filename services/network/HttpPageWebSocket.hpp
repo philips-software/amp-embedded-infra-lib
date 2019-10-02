@@ -11,9 +11,12 @@ namespace services
         , public services::ConnectionObserver
     {
     public:
-        HttpPageWebSocket(infra::BoundedConstString path, WebSocketObserverFactory& webSocketObserverFactory, services::Connection& connection);
+        struct Address
+        {
+            services::IPAddress address;
+        };
 
-        void SetAddress(services::IPAddress address);
+        HttpPageWebSocket(infra::BoundedConstString path, WebSocketObserverFactory& webSocketObserverFactory, Address address);
 
     public:
         // Implementation of HttpPage
@@ -29,7 +32,6 @@ namespace services
         infra::BoundedConstString path;
         WebSocketObserverFactory& webSocketObserverFactory;
         services::IPAddress address;
-        services::Connection& connection;
     };
 }
 

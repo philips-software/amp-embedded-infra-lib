@@ -3,16 +3,11 @@
 
 namespace services
 {
-    HttpPageWebSocket::HttpPageWebSocket(infra::BoundedConstString path, WebSocketObserverFactory& webSocketObserverFactory, services::Connection& connection)
+    HttpPageWebSocket::HttpPageWebSocket(infra::BoundedConstString path, WebSocketObserverFactory& webSocketObserverFactory, Address address)
         : path(path)
         , webSocketObserverFactory(webSocketObserverFactory)
-        , connection(connection)
+        , address(address.address)
     {}
-
-    void HttpPageWebSocket::SetAddress(services::IPAddress address)
-    {
-        this->address = address;
-    }
 
     bool HttpPageWebSocket::ServesRequest(const infra::Tokenizer& pathTokens) const
     {

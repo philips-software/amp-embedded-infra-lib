@@ -1,10 +1,12 @@
-#ifndef SERVICES_WEB_SOCKET_CONNECTION_OBSERVER_HPP
-#define SERVICES_WEB_SOCKET_CONNECTION_OBSERVER_HPP
+#ifndef SERVICES_WEB_SOCKET_SERVER_CONNECTION_OBSERVER_HPP
+#define SERVICES_WEB_SOCKET_SERVER_CONNECTION_OBSERVER_HPP
 
 #include "infra/stream/BoundedDequeInputStream.hpp"
+#include "infra/stream/BoundedVectorOutputStream.hpp"
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/LimitedInputStream.hpp"
+#include "infra/stream/LimitedOutputStream.hpp"
 #include "infra/util/BoundedDeque.hpp"
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/PolymorphicVariant.hpp"
@@ -204,7 +206,7 @@ namespace services
         infra::BoundedVector<uint8_t>& sendBuffer;
         std::size_t requestedSendSize = 0;
         infra::NotifyingSharedOptional<infra::LimitedStreamReaderWithRewinding::WithInput<infra::BoundedDequeInputStreamReader>> streamReader;
-        infra::NotifyingSharedOptional<infra::ByteOutputStreamWriter> streamWriter;
+        infra::NotifyingSharedOptional<infra::LimitedStreamWriter::WithOutput<infra::BoundedVectorStreamWriter>> streamWriter;
         bool sendBufferReadyForSending = false;
         infra::BoundedVector<uint8_t>::WithMaxSize<8> pongBuffer;
     };

@@ -11,10 +11,7 @@ namespace services
         : public HttpClientImpl
     {
     public:
-        template<std::size_t MaxHeaderSize>
-            using WithMaxHeaderSize = infra::WithStorage<TracingHttpClientImpl, infra::BoundedString::WithStorage<MaxHeaderSize>>;
-
-        TracingHttpClientImpl(infra::BoundedString& headerBuffer, infra::BoundedConstString hostname, Tracer& tracer);
+        TracingHttpClientImpl(infra::BoundedConstString hostname, Tracer& tracer);
 
         // Implementation of ConnectionObserver
         virtual void DataReceived() override;

@@ -128,7 +128,7 @@ public:
     testing::StrictMock<services::ConnectionFactoryWithNameLookupMock> connectionFactory;
     testing::StrictMock<services::HttpClientObserverFactoryMock> factory;
     testing::StrictMock<services::HttpClientObserverFactoryMock> factory2;
-    services::HttpClientConnectorImpl<>::WithMaxHeaderSize<50> connector;
+    services::HttpClientConnectorImpl<> connector;
     testing::StrictMock<services::ConnectionStubWithAckReceivedMock> connection;
     infra::SharedPtr<services::Connection> connectionPtr;
     testing::StrictMock<services::HttpClientObserverMock> client;
@@ -411,7 +411,7 @@ TEST_F(HttpClientTest, too_long_header_is_rejected)
     EXPECT_CALL(client, ClosingConnection());
     client.Subject().Get("/");
     ExecuteAllActions();
-    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.0 200 Success\r\n012345678901234567890123456789012345678901234567890123456789\r\n")));
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.0 200 Success\r\n012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789\r\n")));
 }
 
 TEST_F(HttpClientTest, leading_spaces_are_stripped_from_header)

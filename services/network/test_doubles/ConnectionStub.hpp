@@ -3,6 +3,8 @@
 
 #include "gmock/gmock.h"
 #include "infra/stream/BoundedDequeInputStream.hpp"
+#include "infra/stream/StdVectorOutputStream.hpp"
+#include "infra/stream/LimitedOutputStream.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "services/network/Connection.hpp"
 #include <vector>
@@ -65,7 +67,7 @@ namespace services
         infra::BoundedDeque<uint8_t>::WithMaxSize<4096> receivingData;
 
         infra::SharedOptional<StreamReaderStub> streamReader;
-        infra::SharedOptional<StreamWriterStub> streamWriter;
+        infra::SharedOptional<infra::LimitedStreamWriter::WithOutput<infra::StdVectorOutputStreamWriter>> streamWriter;
         infra::SharedPtr<infra::StreamWriter> streamWriterPtr;
     };
 

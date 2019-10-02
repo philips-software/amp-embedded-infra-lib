@@ -39,10 +39,7 @@ namespace services
         , public HttpClient
     {
     public:
-        template<std::size_t MaxHeaderSize>
-            using WithMaxHeaderSize = infra::WithStorage<HttpClientImpl, infra::BoundedString::WithStorage<MaxHeaderSize>>;
-
-        HttpClientImpl(infra::BoundedString& headerBuffer, infra::BoundedConstString hostname);
+        HttpClientImpl(infra::BoundedConstString hostname);
 
         void AttachObserver(const infra::SharedPtr<HttpClientObserver>& observer);
 
@@ -87,7 +84,7 @@ namespace services
         class HttpResponseParser
         {
         public:
-            HttpResponseParser(HttpClientImpl& httpClient, infra::BoundedString& headerBuffer);
+            HttpResponseParser(HttpClientImpl& httpClient);
 
             void DataReceived(infra::StreamReaderWithRewinding& reader);
             bool Done() const;
@@ -105,10 +102,10 @@ namespace services
 
         private:
             HttpClientImpl& httpClient;
-            infra::BoundedString& headerBuffer;
             bool done = false;
             bool error = false;
             bool statusParsed = false;
+            HttpStatusCode statusCode;
             infra::Optional<uint32_t> contentLength;
         };
 
@@ -128,7 +125,6 @@ namespace services
         infra::Optional<HttpResponseParser> response;
 
     private:
-        infra::BoundedString& headerBuffer;
         infra::BoundedConstString hostname;
         infra::Optional<uint32_t> contentLength;
         infra::Optional<BodyReader> bodyReader;
@@ -145,10 +141,7 @@ namespace services
         , public ClientConnectionObserverFactoryWithNameResolver
     {
     public:
-        template<std::size_t MaxHeaderSize>
-            using WithMaxHeaderSize = infra::WithStorage<HttpClientConnectorImpl, infra::BoundedString::WithStorage<MaxHeaderSize>>;
-
-        HttpClientConnectorImpl(infra::BoundedString& headerBuffer, ConnectionFactoryWithNameResolver& connectionFactory, Args&&... args);
+        HttpClientConnectorImpl(ConnectionFactoryWithNameResolver& connectionFactory, Args&&... args);
 
         // Implementation of ClientConnectionObserverFactoryWithNameResolver
         virtual infra::BoundedConstString Hostname() const override;
@@ -168,7 +161,6 @@ namespace services
             infra::SharedPtr<HttpClient> InvokeEmplace(infra::IndexSequence<I...>);
 
     private:
-        infra::BoundedString& headerBuffer;
         ConnectionFactoryWithNameResolver& connectionFactory;
         infra::NotifyingSharedOptional<HttpClient> client;
         std::tuple<Args...> args;
@@ -180,9 +172,8 @@ namespace services
     ////    Implementation    ////
 
     template<class HttpClient, class... Args>
-    HttpClientConnectorImpl<HttpClient, Args...>::HttpClientConnectorImpl(infra::BoundedString& headerBuffer, services::ConnectionFactoryWithNameResolver& connectionFactory, Args&&... args)
-        : headerBuffer(headerBuffer)
-        , connectionFactory(connectionFactory)
+    HttpClientConnectorImpl<HttpClient, Args...>::HttpClientConnectorImpl(services::ConnectionFactoryWithNameResolver& connectionFactory, Args&&... args)
+        : connectionFactory(connectionFactory)
         , client([this]() { TryConnectWaiting(); })
         , args(std::forward<Args>(args)...)
     {}
@@ -203,13 +194,13 @@ namespace services
     template<std::size_t... I>
     infra::SharedPtr<HttpClient> HttpClientConnectorImpl<HttpClient, Args...>::InvokeEmplace(infra::IndexSequence<I...>)
     {
-        return client.Emplace(headerBuffer, Hostname(), std::get<I>(args)...);
+        return client.Emplace(Hostname(), std::get<I>(args)...);
     }
 
     template<class HttpClient, class... Args>
     void HttpClientConnectorImpl<HttpClient, Args...>::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
     {
-        assert(clientObserverFactory);
+        assert(clientObserverFactory != nullptr);
         auto clientPtr = InvokeEmplace(infra::MakeIndexSequence<sizeof...(Args)>{});
 
         clientObserverFactory->ConnectionEstablished([&clientPtr, &createdObserver](infra::SharedPtr<HttpClientObserver> observer)
@@ -227,7 +218,7 @@ namespace services
     template<class HttpClient, class... Args>
     void HttpClientConnectorImpl<HttpClient, Args...>::ConnectionFailed(ConnectFailReason reason)
     {
-        assert(clientObserverFactory);
+        assert(clientObserverFactory != nullptr);
 
         switch (reason)
         {

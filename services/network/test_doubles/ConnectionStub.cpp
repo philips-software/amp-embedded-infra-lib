@@ -7,7 +7,7 @@ namespace services
     {
         assert(streamWriter.Allocatable());
         assert(sendSize <= MaxSendStreamSize());
-        streamWriterPtr = streamWriter.Emplace(*this, sendSize);
+        streamWriterPtr = streamWriter.Emplace(infra::inPlace, sentData, sendSize);
         infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionStub>& object)
         {
             infra::SharedPtr<infra::StreamWriter> stream = std::move(object->streamWriterPtr);

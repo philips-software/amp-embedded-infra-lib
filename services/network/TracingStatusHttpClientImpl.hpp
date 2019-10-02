@@ -10,10 +10,7 @@ namespace services
         : public HttpClientImpl
     {
     public:
-        template<std::size_t MaxHeaderSize>
-            using WithMaxHeaderSize = infra::WithStorage<TracingStatusHttpClientImpl, infra::BoundedString::WithStorage<MaxHeaderSize>>;
-
-        TracingStatusHttpClientImpl(infra::BoundedString& headerBuffer, infra::BoundedConstString hostname, Tracer& tracer);
+        TracingStatusHttpClientImpl(infra::BoundedConstString hostname, Tracer& tracer);
 
     protected:
         virtual void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine) override;
