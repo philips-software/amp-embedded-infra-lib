@@ -33,3 +33,11 @@ TEST(EndianTest, array_in_BigEndian)
     infra::BigEndian<std::array<uint8_t, 5>> x{ { 1, 2, 3, 4, 5} };
     EXPECT_EQ((std::array<uint8_t, 5>{ { 5, 4, 3, 2, 1 }}), (reinterpret_cast<std::array<uint8_t, 5>&>(x)));
 }
+
+TEST(EndianTest, conversion_functions)
+{
+    EXPECT_EQ(0x3412, infra::FromBigEndian(static_cast<uint16_t>(0x1234)));
+    EXPECT_EQ(0x3412, infra::ToBigEndian(static_cast<uint16_t>(0x1234)));
+    EXPECT_EQ(0x1234, infra::FromLittleEndian(static_cast<uint16_t>(0x1234)));
+    EXPECT_EQ(0x1234, infra::ToLittleEndian(static_cast<uint16_t>(0x1234)));
+}
