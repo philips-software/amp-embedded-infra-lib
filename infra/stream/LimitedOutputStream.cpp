@@ -24,4 +24,30 @@ namespace infra
     {
         return std::min<std::size_t>(length, output.Available());
     }
+
+    std::size_t LimitedStreamWriter::ConstructSaveMarker() const
+    {
+        return output.ConstructSaveMarker();
+    }
+
+    std::size_t LimitedStreamWriter::GetProcessedBytesSince(std::size_t marker) const
+    {
+        return output.GetProcessedBytesSince(marker);
+    }
+
+    infra::ByteRange LimitedStreamWriter::SaveState(std::size_t marker)
+    {
+        return output.SaveState(marker);
+    }
+
+    void LimitedStreamWriter::RestoreState(infra::ByteRange range)
+    {
+        output.RestoreState(range);
+    }
+
+    infra::ByteRange LimitedStreamWriter::Overwrite(std::size_t marker)
+    {
+        length += output.ConstructSaveMarker() - marker;
+        return output.Overwrite(marker);
+    }
 }
