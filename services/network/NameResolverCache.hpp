@@ -22,7 +22,7 @@ namespace services
         template<std::size_t Size>
             using WithCacheSize = infra::WithStorage<NameResolverCache, infra::BoundedVector<CacheEntry>::WithMaxSize<Size>>;
 
-        NameResolverCache(infra::BoundedVector<CacheEntry>& cache, NameResolver& resolver);
+        NameResolverCache(infra::BoundedVector<CacheEntry>& cache, NameResolver& resolver, infra::Duration minimumTtl = std::chrono::minutes(10));
 
         // Implementation of NameResolver
         virtual void Lookup(NameResolverResult& result) override;
@@ -67,6 +67,7 @@ namespace services
     private:
         infra::BoundedVector<CacheEntry>& cache;
         NameResolver& resolver;
+        infra::Duration minimumTtl;
 
         infra::IntrusiveList<NameResolverResult> waiting;
         infra::Optional<ActiveLookup> activeLookup;

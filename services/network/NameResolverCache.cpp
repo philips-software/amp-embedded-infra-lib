@@ -3,9 +3,10 @@
 
 namespace services
 {
-    NameResolverCache::NameResolverCache(infra::BoundedVector<CacheEntry>& cache, NameResolver& resolver)
+    NameResolverCache::NameResolverCache(infra::BoundedVector<CacheEntry>& cache, NameResolver& resolver, infra::Duration minimumTtl)
         : cache(cache)
         , resolver(resolver)
+        , minimumTtl(minimumTtl)
     {}
 
     void NameResolverCache::Lookup(NameResolverResult& result)
@@ -82,6 +83,7 @@ namespace services
 
     void NameResolverCache::NameLookupSuccess(NameResolverResult& result, IPAddress address, infra::TimePoint validUntil)
     {
+        validUntil = std::max(infra::Now() + minimumTtl, validUntil);
         TryAddToCache(result.Hostname(), address, validUntil);
         NameLookupDone([&result, &address, &validUntil]() { result.NameLookupDone(address, validUntil); });
     }
@@ -108,8 +110,7 @@ namespace services
         if (cache.full())
             RemoveOneCacheEntry(cache);
 
-        if (!cache.full())
-            AddToCache(name, address, validUntil);
+        AddToCache(name, address, validUntil);
     }
 
     void NameResolverCache::AddToCache(infra::BoundedConstString name, IPAddress address, infra::TimePoint validUntil)
