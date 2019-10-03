@@ -200,7 +200,7 @@ namespace services
         virtual void Connect(ClientConnectionObserverFactory& connectionObserverFactory) override;
         virtual void CancelConnect(ClientConnectionObserverFactory& connectionObserverFactory) override;
 
-        infra::SharedPtr<ConnectionMbedTls> Allocate(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver);
+        infra::SharedPtr<ConnectionMbedTls> Allocate(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address);
         void Remove(ConnectionMbedTlsConnector& connector);
 
     protected:
@@ -219,6 +219,7 @@ namespace services
         hal::SynchronousRandomDataGenerator& randomDataGenerator;
         mbedtls_ssl_cache_context serverCache;
         mbedtls_ssl_session clientSession = {};
+        IPAddress previousAddress;
         bool needsAuthenticationDefault;
     };
 

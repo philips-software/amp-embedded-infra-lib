@@ -48,11 +48,8 @@ namespace services
 
         if (!server)
         {
-            if (clientSession->id_len != 0) // Workaround for what seems to be a problem in mbedTLS: When id_len = 0, then mbedTLS still thinks it can resume the session presented by the server
-            {
-                result = mbedtls_ssl_set_session(&sslContext, clientSession);
-                assert(result == 0);
-            }
+            result = mbedtls_ssl_set_session(&sslContext, clientSession);
+            assert(result == 0);
         }
 
         mbedtls_ssl_set_bio(&sslContext, this, &ConnectionMbedTls::StaticSslSend, &ConnectionMbedTls::StaticSslReceive, nullptr);
@@ -417,7 +414,7 @@ namespace services
     void ConnectionMbedTlsConnector::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
     {
         infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> creationFailed = createdObserver.Clone();
-        infra::SharedPtr<ConnectionMbedTls> connection = factory.Allocate(std::move(createdObserver));
+        infra::SharedPtr<ConnectionMbedTls> connection = factory.Allocate(std::move(createdObserver), clientFactory.Address());
         if (connection)
         {
             clientFactory.ConnectionEstablished([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
@@ -463,7 +460,8 @@ namespace services
 
     infra::SharedPtr<void> ConnectionFactoryMbedTls::Listen(uint16_t port, ServerConnectionObserverFactory& connectionObserverFactory, IPVersions versions)
     {
-        infra::SharedPtr<ConnectionMbedTlsListener> listener = listenerAllocator.Allocate(connectionAllocator, connectionObserverFactory, certificates, randomDataGenerator, serverCache, NeedsAuthentication(port));
+        infra::SharedPtr<ConnectionMbedTlsListener> listener = listenerAllocator.Allocate(connectionAllocator, connectionObserverFactory, certificates,
+            randomDataGenerator, serverCache, NeedsAuthentication(port));
 
         if (listener)
         {
@@ -502,8 +500,16 @@ namespace services
         }
     }
 
-    infra::SharedPtr<ConnectionMbedTls> ConnectionFactoryMbedTls::Allocate(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
+    infra::SharedPtr<ConnectionMbedTls> ConnectionFactoryMbedTls::Allocate(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address)
     {
+        if (address != previousAddress)
+        {
+            mbedtls_ssl_session_free(&clientSession);
+            mbedtls_ssl_session_init(&clientSession);
+        }
+
+        previousAddress = address;
+
         return connectionAllocator.Allocate(std::move(createdObserver), certificates, randomDataGenerator, { ConnectionMbedTls::ClientParameters{ clientSession } });
     }
 
