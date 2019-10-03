@@ -106,7 +106,7 @@ namespace infra
         TextOutputStream& operator<<(uint32_t v);
         TextOutputStream& operator<<(int64_t v);
         TextOutputStream& operator<<(uint64_t v);
-#if !defined(_MSC_VER) && !defined(ESP_PLATFORM)                                                        //TICS !POR#021
+#if !defined(__clang__) && defined(__GNUC__) && __GNUC__ <= 4 && __GNUC_MINOR__ <= 9 && __GNUC_PATCHLEVEL__ < 4
         TextOutputStream& operator<<(int v);
         TextOutputStream& operator<<(unsigned int v);
 #endif
@@ -150,9 +150,9 @@ namespace infra
             Formatter<T> MakeFormatter(T&& argument);
 
     private:
-        void OutputAsDecimal(uint64_t v);
-        void OutputAsBinary(uint64_t v);
-        void OutputAsHexadecimal(uint64_t v);
+        void OutputAsDecimal(uint64_t v, bool negative);
+        void OutputAsBinary(uint64_t v, bool negative);
+        void OutputAsHexadecimal(uint64_t v, bool negative);
 
         template<class... Formatters>
             void FormatHelper(const char* format, Formatters&&... formatters);

@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+#include "hal/synchronous_interfaces/test_doubles/SynchronousFixedRandomDataGenerator.hpp"
 #include "upgrade/pack_builder/ImageSecurityXteaHmac.hpp"
 
 class TestImageSecurityXteaHmac
@@ -6,19 +7,19 @@ class TestImageSecurityXteaHmac
 {
 public:
     TestImageSecurityXteaHmac()
-        : randomNumberGenerator(std::vector<uint8_t>{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 })
-        , encrypter(randomNumberGenerator, xteaKey, hmacKey)
+        : randomDataGenerator(std::vector<uint8_t>{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 })
+        , encrypter(randomDataGenerator, xteaKey, hmacKey)
     {}
 
-    application::FixedRandomNumberGenerator randomNumberGenerator;
+    hal::SynchronousFixedRandomDataGenerator randomDataGenerator;
     application::ImageSecurityXteaHmac encrypter;
 
-    const std::array<uint8_t, 16> xteaKey = std::array<uint8_t, 16>{ {
+    const std::array<uint8_t, 16> xteaKey { {
         0xeb, 0x16, 0xab, 0x4f, 0xff, 0x4f, 0xa6, 0xdc,
         0x2a, 0x36, 0x00, 0x74, 0xa7, 0xc0, 0x62, 0x3a
     } };
 
-    const std::array<uint8_t, 32> hmacKey = std::array<uint8_t, 32>{ {
+    const std::array<uint8_t, 32> hmacKey { {
         0xeb, 0x57, 0xed, 0x0c, 0x74, 0xbb, 0xba, 0x99,
         0x79, 0xca, 0x80, 0x9e, 0x5d, 0x08, 0xfb, 0x6f,
         0x91, 0xc3, 0x2e, 0x32, 0x27, 0x14, 0x6a, 0x83,

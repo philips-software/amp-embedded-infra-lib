@@ -14,14 +14,23 @@ ccola_component(network static_library)
         ConnectionSerial.cpp
         ConnectionSerial.hpp
         Datagram.hpp
+        DnsResolver.cpp
+        DnsResolver.hpp
+        ExclusiveConnection.cpp
+        ExclusiveConnection.hpp
         Http.cpp
         Http.hpp
+        HttpClient.hpp
         HttpClientBasic.cpp
         HttpClientBasic.hpp
         HttpClientImpl.cpp
         HttpClientImpl.hpp
+        HttpClientJson.cpp
+        HttpClientJson.hpp
         HttpErrors.cpp
         HttpErrors.hpp
+        HttpPageWebSocket.cpp
+        HttpPageWebSocket.hpp
         HttpRequestParser.cpp
         HttpRequestParser.hpp
         HttpServer.cpp
@@ -33,16 +42,31 @@ ccola_component(network static_library)
         MqttClientImpl.cpp
         Multicast.hpp
         NameResolver.hpp
+        NameResolverCache.cpp
+        NameResolverCache.hpp
+        Network.hpp
+        SerialServer.cpp
+        SerialServer.hpp
+        SingleConnectionListener.cpp
+        SingleConnectionListener.hpp
         SntpClient.cpp
         SntpClient.hpp
         StreamEcho.cpp
         StreamEcho.hpp
+        TracingConnectionFactoryWithNameResolver.cpp
+        TracingConnectionFactoryWithNameResolver.hpp
         TracingConnectionMbedTls.cpp
         TracingConnectionMbedTls.hpp
         TracingHttpClientImpl.cpp
         TracingHttpClientImpl.hpp
+        TracingStatusHttpClientImpl.cpp
+        TracingStatusHttpClientImpl.hpp
         WebSocket.cpp
         WebSocket.hpp
+        WebSocketClientConnectionObserver.cpp
+        WebSocketClientConnectionObserver.hpp
+        WebSocketServerConnectionObserver.cpp
+        WebSocketServerConnectionObserver.hpp
         WiFiNetwork.cpp
         WiFiNetwork.hpp
     )

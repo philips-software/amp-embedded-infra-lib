@@ -15,6 +15,8 @@ namespace infra
 
         explicit BoundedDequeInputStreamReader(infra::BoundedDeque<uint8_t>& container);
 
+        std::size_t Processed() const;
+
     public:
         virtual void Extract(ByteRange range, StreamErrorPolicy& errorPolicy) override;
         virtual uint8_t Peek(StreamErrorPolicy& errorPolicy) override;

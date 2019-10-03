@@ -2,6 +2,8 @@
 #define NETWORK_CONNECTION_LOOP_BACK_HPP
 
 #include "infra/stream/BoundedDequeInputStream.hpp"
+#include "infra/stream/LimitedOutputStream.hpp"
+#include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "services/network/Connection.hpp"
 #include <map>
@@ -29,19 +31,16 @@ namespace services
 
     private:
         class StreamWriterLoopBack
-            : public infra::StreamWriter
+            : public infra::LimitedStreamWriter
         {
         public:
-            explicit StreamWriterLoopBack(ConnectionLoopBackPeer& connection);
+            explicit StreamWriterLoopBack(ConnectionLoopBackPeer& connection, std::size_t size);
             ~StreamWriterLoopBack();
-
-        private:
-            virtual void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
-            virtual std::size_t Available() const override;
 
         private:
             ConnectionLoopBackPeer& connection;
             std::size_t sent = 0;
+            infra::StdVectorOutputStreamWriter::WithStorage vectorStreamWriter;
         };
 
         class StreamReaderLoopBack

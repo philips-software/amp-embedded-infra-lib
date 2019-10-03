@@ -247,3 +247,15 @@ TEST(FunctionTest, ExecuteOnDestruction)
         EXPECT_CALL(m, callback());
     }
 }
+
+TEST(FunctionTest, ExecuteOnDestructionWithSize)
+{
+    infra::MockCallback<void()> m;
+    int a, b, c;
+
+    {
+        infra::ExecuteOnDestruction::WithExtraSize<4 * sizeof(void*)> execute([&m, a, b, c]() { m.callback(); });
+
+        EXPECT_CALL(m, callback());
+    }
+}

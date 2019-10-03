@@ -38,10 +38,10 @@ namespace services
         SntpClient(services::DatagramFactory& factory, services::TimeWithLocalization& timeWithLocalization);
         ~SntpClient() = default;
 
-        void RequestTime(services::IPv4Address& address);
+        void RequestTime(const services::IPv4Address& address);
 
         // From DatagramExchangeObserver
-        virtual void DataReceived(infra::StreamReader& reader, services::UdpSocket from) override;
+        virtual void DataReceived(infra::StreamReaderWithRewinding& reader, services::UdpSocket from) override;
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
     private:
@@ -73,6 +73,14 @@ namespace services
             infra::Duration Convert();
         };
 
+        struct NtpTimestamps
+        {
+            NtpTimestamp reference;
+            NtpTimestamp originate;
+            NtpTimestamp receive;
+            NtpTimestamp transmit;
+        };
+
         struct NtpMessage
         {
             NtpHeader header;
@@ -82,15 +90,12 @@ namespace services
             infra::BigEndian<uint32_t> rootDelay;
             infra::BigEndian<uint32_t> rootDispersion;
             infra::BigEndian<uint32_t> referenceIdentifier;
-            NtpTimestamp reference;
-            NtpTimestamp originate;
-            NtpTimestamp receive;
-            NtpTimestamp transmit;
+            NtpTimestamps timestamps;
 
             bool Valid(infra::Duration& requestTime);
             NtpLeapIndicator LeapIndicator();
             uint8_t Version();
-            SntpClient::NtpMode Mode();
+            NtpMode Mode();
         };
 
     private:
@@ -99,7 +104,7 @@ namespace services
         void NotifyOffsetAndDelay(NtpMessage& message);
 
         static NtpHeader CreateNtpHeader(NtpLeapIndicator leapIndicator, uint8_t versionNumber, NtpMode mode);
-        static SntpClient::NtpTimestamp Convert(infra::Duration time);
+        static NtpTimestamp Convert(infra::Duration time);
 
     private:
         services::DatagramFactory& factory;

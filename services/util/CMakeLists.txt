@@ -41,6 +41,7 @@ ccola_component(util static_library)
         SpiMasterWithChipSelect.hpp
         SpiMultipleAccess.cpp
         SpiMultipleAccess.hpp
+        Stoppable.hpp
         Terminal.cpp
         Terminal.hpp
         TimeWithLocalization.cpp
@@ -58,5 +59,6 @@ ccola_component(util static_library)
 ccola_end_component()
 
 ccola_subdirectories(
+    test_doubles
     test
 )

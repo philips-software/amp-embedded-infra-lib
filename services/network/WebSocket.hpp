@@ -3,6 +3,10 @@
 
 #include "infra/stream/InputStream.hpp"
 #include "infra/stream/OutputStream.hpp"
+#include "infra/util/BoundedVector.hpp"
+#include "infra/util/ProxyCreator.hpp"
+#include "infra/util/SharedOptional.hpp"
+#include "services/network/Connection.hpp"
 #include "services/network/Http.hpp"
 
 namespace services
@@ -31,10 +35,10 @@ namespace services
     class WebSocketFrameHeader
     {
     public:
-        explicit WebSocketFrameHeader(infra::StreamReader& reader);
+        WebSocketFrameHeader() = default;
+        explicit WebSocketFrameHeader(infra::DataInputStream& stream);
 
     public:
-        bool IsComplete() const;
         bool IsValid() const;
         bool IsFinalFrame() const;
 
@@ -43,7 +47,6 @@ namespace services
         const WebSocketMaskingKey& MaskingKey() const;
 
     private:
-        bool complete = false;
         bool finalFrame = false;
         bool masked = false;
         uint8_t rsv = 0;
@@ -57,10 +60,34 @@ namespace services
     public:
         static void UpgradeHeaders(infra::BoundedVector<const services::HttpHeader>& headers, infra::BoundedConstString protocol);
     };
+
+    class WebSocketObserverFactory
+    {
+    public:
+        struct Creators
+        {
+            infra::CreatorBase<services::ConnectionObserver, void(services::Connection& connection, infra::BoundedConstString handshakeKey)>& connectionCreator;
+        };
+
+        WebSocketObserverFactory(const Creators& creators);
+
+        virtual void CreateWebSocketObserver(services::Connection& connection, infra::BoundedConstString handshakeKey, services::IPAddress address);
+        void CancelCreation();
+        void Stop(const infra::Function<void()>& onDone);
+
+    private:
+        void OnAllocatable(services::Connection& connection);
+
+    private:
+        decltype(Creators::connectionCreator) connectionCreator;
+        infra::NotifyingSharedOptional<infra::ProxyCreator<decltype(Creators::connectionCreator)>> webSocketConnectionObserver;
+        infra::BoundedString::WithStorage<64> handshakeKey;
+    };
 }
 
 namespace infra
 {
+    DataInputStream& operator>>(DataInputStream& stream, services::WebSocketFrameHeader& header);
     DataOutputStream& operator<<(DataOutputStream& stream, services::WebSocketOpCode opcode);
 }
 

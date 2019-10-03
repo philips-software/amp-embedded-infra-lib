@@ -1,6 +1,7 @@
 #ifndef SERVICES_NAME_RESOLVER_HPP
 #define SERVICES_NAME_RESOLVER_HPP
 
+#include "infra/timer/Timer.hpp"
 #include "infra/util/IntrusiveList.hpp"
 #include "services/network/Address.hpp"
 
@@ -17,8 +18,8 @@ namespace services
 
     public:
         virtual infra::BoundedConstString Hostname() const = 0;
-        virtual IPVersions Versions() { return IPVersions::both; }
-        virtual void NameLookupDone(IPAddress address) = 0;
+        virtual IPVersions Versions() const { return IPVersions::ipv4; }
+        virtual void NameLookupDone(IPAddress address, infra::TimePoint validUntil) = 0;
         virtual void NameLookupFailed() = 0;
     };
 

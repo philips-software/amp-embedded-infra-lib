@@ -15,7 +15,7 @@ TEST(Asn1ObjectFormatter, construction_results_in_empty_object)
 
     infra::Asn1Formatter formatter(stream);
 
-    EXPECT_EQ(false, formatter.Failed());
+    EXPECT_FALSE(formatter.Failed());
     EXPECT_EQ(0, stream.ProcessedBytesSince(marker));
 }
 
@@ -149,6 +149,18 @@ TEST(Asn1ObjectFormatter, add_printable_string)
     formatter.AddPrintableString(shortData);
 
     ASSERT_THAT(stream.Storage(), testing::ElementsAre(0x13, 0x02, 0xAB, 0xBA));
+}
+
+TEST(Asn1ObjectFormatter, add_utc_time_1950)
+{
+    infra::ByteOutputStream::WithStorage<15> stream;
+    infra::Asn1Formatter formatter(stream);
+
+    formatter.AddUtcTime(1950, 1, 1, 12, 15, 00);
+
+    std::array<uint8_t, 15> expected = {0x17, 0x0D, '5', '0', '0', '1', '0', '1', '1', '2', '1', '5', '0', '0', 'Z'};
+
+    EXPECT_EQ(expected, stream.Storage());
 }
 
 TEST(Asn1ObjectFormatter, add_utc_time)

@@ -18,7 +18,7 @@ public:
         , sntpObserver(sntpClient)
     {}
 
-    void DataReceived(std::vector<uint8_t>& data)
+    void DataReceived(const std::vector<uint8_t>& data)
     {
         infra::ByteInputStreamReader requestReader(infra::MakeRange(data));
         sntpClient.DataReceived(requestReader, services::Udpv4Socket{ { 1, 2, 3, 4 }, 123 });

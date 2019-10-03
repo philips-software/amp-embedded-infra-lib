@@ -2474,7 +2474,7 @@ Result HandleExceptionsInMethodIfSupported(
   // the check early, sacrificing the ability to affect Google Test's
   // exception handling in the method where the exception is thrown.
   if (internal::GetUnitTestImpl()->catch_exceptions()) {
-#if GTEST_HAS_EXCEPTIONS
+#if 0//GTEST_HAS_EXCEPTIONS
     try {
       return HandleSehExceptionsInMethodIfSupported(object, method, location);
     } catch (const AssertionException&) {  // NOLINT
@@ -3119,6 +3119,9 @@ class PrettyUnitTestResultPrinter : public TestEventListener {
 
  private:
   static void PrintFailedTests(const UnitTest& unit_test);
+
+private:
+    bool hasFailure = false;
 };
 
   // Fired before each iteration of tests starts.
@@ -3159,7 +3162,7 @@ void PrettyUnitTestResultPrinter::OnTestIterationStart(
 
 void PrettyUnitTestResultPrinter::OnEnvironmentsSetUpStart(
     const UnitTest& /*unit_test*/) {
-  ColoredPrintf(COLOR_GREEN,  "[----------] ");
+  ColoredPrintf(hasFailure ? COLOR_RED : COLOR_GREEN,  "[----------] ");
   printf("Global test environment set-up.\n");
   fflush(stdout);
 }
@@ -3167,7 +3170,7 @@ void PrettyUnitTestResultPrinter::OnEnvironmentsSetUpStart(
 void PrettyUnitTestResultPrinter::OnTestCaseStart(const TestCase& test_case) {
   const std::string counts =
       FormatCountableNoun(test_case.test_to_run_count(), "test", "tests");
-  ColoredPrintf(COLOR_GREEN, "[----------] ");
+  ColoredPrintf(hasFailure ? COLOR_RED : COLOR_GREEN, "[----------] ");
   printf("%s from %s", counts.c_str(), test_case.name());
   if (test_case.type_param() == NULL) {
     printf("\n");
@@ -3178,7 +3181,9 @@ void PrettyUnitTestResultPrinter::OnTestCaseStart(const TestCase& test_case) {
 }
 
 void PrettyUnitTestResultPrinter::OnTestStart(const TestInfo& test_info) {
-  ColoredPrintf(COLOR_GREEN,  "[ RUN      ] ");
+    ColoredPrintf(hasFailure ? COLOR_RED : COLOR_GREEN, "[");
+    ColoredPrintf(COLOR_GREEN, " RUN      ");
+    ColoredPrintf(hasFailure ? COLOR_RED : COLOR_GREEN, "] ");
   PrintTestName(test_info.test_case_name(), test_info.name());
   printf("\n");
   fflush(stdout);
@@ -3198,8 +3203,11 @@ void PrettyUnitTestResultPrinter::OnTestPartResult(
 
 void PrettyUnitTestResultPrinter::OnTestEnd(const TestInfo& test_info) {
   if (test_info.result()->Passed()) {
-    ColoredPrintf(COLOR_GREEN, "[       OK ] ");
+      ColoredPrintf(hasFailure ? COLOR_RED : COLOR_GREEN, "[");
+      ColoredPrintf(COLOR_GREEN, "       OK ");
+      ColoredPrintf(hasFailure ? COLOR_RED : COLOR_GREEN, "] ");
   } else {
+    hasFailure = true;
     ColoredPrintf(COLOR_RED, "[  FAILED  ] ");
   }
   PrintTestName(test_info.test_case_name(), test_info.name());
@@ -3220,7 +3228,7 @@ void PrettyUnitTestResultPrinter::OnTestCaseEnd(const TestCase& test_case) {
 
   const std::string counts =
       FormatCountableNoun(test_case.test_to_run_count(), "test", "tests");
-  ColoredPrintf(COLOR_GREEN, "[----------] ");
+  ColoredPrintf(hasFailure ? COLOR_RED : COLOR_GREEN, "[----------] ");
   printf("%s from %s (%s ms total)\n\n",
          counts.c_str(), test_case.name(),
          internal::StreamableToString(test_case.elapsed_time()).c_str());
@@ -3229,7 +3237,7 @@ void PrettyUnitTestResultPrinter::OnTestCaseEnd(const TestCase& test_case) {
 
 void PrettyUnitTestResultPrinter::OnEnvironmentsTearDownStart(
     const UnitTest& /*unit_test*/) {
-  ColoredPrintf(COLOR_GREEN,  "[----------] ");
+  ColoredPrintf(hasFailure ? COLOR_RED : COLOR_GREEN,  "[----------] ");
   printf("Global test environment tear-down\n");
   fflush(stdout);
 }
@@ -3261,7 +3269,7 @@ void PrettyUnitTestResultPrinter::PrintFailedTests(const UnitTest& unit_test) {
 
 void PrettyUnitTestResultPrinter::OnTestIterationEnd(const UnitTest& unit_test,
                                                      int /*iteration*/) {
-  ColoredPrintf(COLOR_GREEN,  "[==========] ");
+  ColoredPrintf(hasFailure ? COLOR_RED : COLOR_GREEN,  "[==========] ");
   printf("%s from %s ran.",
          FormatTestCount(unit_test.test_to_run_count()).c_str(),
          FormatTestCaseCount(unit_test.test_case_to_run_count()).c_str());
@@ -3270,7 +3278,7 @@ void PrettyUnitTestResultPrinter::OnTestIterationEnd(const UnitTest& unit_test,
            internal::StreamableToString(unit_test.elapsed_time()).c_str());
   }
   printf("\n");
-  ColoredPrintf(COLOR_GREEN,  "[  PASSED  ] ");
+  ColoredPrintf(hasFailure ? COLOR_RED : COLOR_GREEN,  "[  PASSED  ] ");
   printf("%s.\n", FormatTestCount(unit_test.successful_test_count()).c_str());
 
   int num_failures = unit_test.failed_test_count();
@@ -4788,10 +4796,10 @@ int UnitTest::Run() {
     // clicking through the countless debug dialogs.
     // FIXME: find a way to suppress the abort dialog() in the
     // debug mode when compiled with VC 7.1 or lower.
-    if (!GTEST_FLAG(break_on_failure))
-      _set_abort_behavior(
-          0x0,                                    // Clear the following flags:
-          _WRITE_ABORT_MSG | _CALL_REPORTFAULT);  // pop-up window, core dump.
+    //if (!GTEST_FLAG(break_on_failure))
+    //  _set_abort_behavior(
+    //      0x0,                                    // Clear the following flags:
+    //      _WRITE_ABORT_MSG | _CALL_REPORTFAULT);  // pop-up window, core dump.
 # endif
   }
 #endif  // GTEST_OS_WINDOWS

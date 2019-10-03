@@ -87,16 +87,12 @@ namespace services
     HttpServerConnectionObserver::HttpServerConnectionObserver(infra::BoundedString& buffer, HttpPageServer& httpServer)
         : buffer(buffer)
         , httpServer(httpServer)
-        , initialIdle(std::chrono::seconds(1), [this]()
+        , initialIdle(std::chrono::seconds(10), [this]()
             {
                 idle = true;
                 if (closeWhenIdle)
-                    Close();
+                    Abort();
             })
-    {}
-
-    HttpServerConnectionObserver::HttpServerConnectionObserver(const DefaultConnectionCreationContext& creationContext)
-        : HttpServerConnectionObserver(creationContext.buffer, creationContext.httpServer)
     {}
 
     void HttpServerConnectionObserver::Connected()
@@ -108,7 +104,11 @@ namespace services
     void HttpServerConnectionObserver::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         streamWriter = std::move(writer);
-        DataReceived();
+
+        if (sendingResponse)
+            SendBuffer();
+        else
+            DataReceived();
     }
 
     void HttpServerConnectionObserver::DataReceived()
@@ -133,17 +133,17 @@ namespace services
 
     void HttpServerConnectionObserver::Close()
     {
+        closeWhenIdle = true;
+        if (idle)
+            Abort();
+    }
+
+    void HttpServerConnectionObserver::Abort()
+    {
         // TakeOverConnection may have been invoked, which leads to Subject() not being available. However, TakeOverConnection may have been invoked by a page
         // which is about to upgrade to a web connection, but which is not yet upgraded since it is waiting for storage. In that case, if the HttpServer
         // must close down, then we still need to invoke CloseAndDestroy on the connection. Therefore, connection is used instead of Subject()
         connection->CloseAndDestroy();
-    }
-
-    void HttpServerConnectionObserver::CloseWhenIdle()
-    {
-        closeWhenIdle = true;
-        if (idle)
-            Close();
     }
 
     void HttpServerConnectionObserver::SendResponse(const HttpResponse& response)
@@ -158,9 +158,7 @@ namespace services
         if (send100Response)
             stream << "HTTP/1.1 100 Continue\r\nContent-Length: 0\r\nContent-Type: application/json\r\nStrict-Transport-Security: max-age=31536000\r\n\r\n";
 
-        stream << buffer;
-
-        PrepareForNextRequest();
+        SendBuffer();
     }
 
     void HttpServerConnectionObserver::TakeOverConnection(ConnectionObserver& newObserver)
@@ -208,7 +206,7 @@ namespace services
         if (!request.Valid())
             SendResponse(HttpResponseBadRequest::Instance());
         else if (requestInProgress)
-            Close();
+            Abort();
         else
             HandleRequest(request);
     }
@@ -254,7 +252,7 @@ namespace services
         send100Response = false;
         buffer.clear();
         if (closeWhenIdle)
-            Close();
+            Abort();
     }
 
     bool HttpServerConnectionObserver::Expect100(HttpRequestParser& request) const
@@ -262,8 +260,27 @@ namespace services
         return request.Header("Expect") == "100-continue";
     }
 
+    void HttpServerConnectionObserver::SendBuffer()
+    {
+        infra::TextOutputStream::WithErrorPolicy stream(*streamWriter);
+
+        auto available = stream.Available();
+        stream << buffer.substr(0, available);
+        buffer.erase(0, available);
+
+        sendingResponse = !buffer.empty();
+        if (sendingResponse)
+            RequestSendStream();
+        else
+            PrepareForNextRequest();
+    }
+
     DefaultHttpServer::DefaultHttpServer(infra::BoundedString& buffer, ConnectionFactory& connectionFactory, uint16_t port)
-        : SingleConnectionHttpServer<DefaultConnectionCreationContext>::WithFactoryFor<HttpServerConnectionObserver>(creationContext, connectionFactory, port)
-        , creationContext{ buffer, *this }
+        : SingleConnectionListener(connectionFactory, port, { connectionCreator })
+        , buffer(buffer)
+        , connectionCreator([this](infra::Optional<HttpServerConnectionObserver>& value, IPAddress address)
+            {
+                value.Emplace(this->buffer, *this);
+            })
     {}
 }

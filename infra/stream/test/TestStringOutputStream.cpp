@@ -121,6 +121,15 @@ TEST(StringOutputStreamTest, stream_int8_with_smaller_width)
     EXPECT_EQ("127", stream.Storage());
 }
 
+TEST(StringOutputStreamTest, stream_negative_int8_with_width)
+{
+    infra::StringOutputStream::WithStorage<10> stream;
+
+    stream << infra::Width(7) << int8_t(-127);
+
+    EXPECT_EQ("   -127", stream.Storage());
+}
+
 TEST(StringOutputStreamTest, stream_uint64_max)
 {
     infra::StringOutputStream::WithStorage<20> stream;
@@ -456,4 +465,27 @@ TEST(StringOutputStreamTest, available_retuns_remaining_space)
 
     sos << 1234;
     EXPECT_EQ(0, sos.Available());
+}
+
+TEST(StringOutputStreamTest, Reset)
+{
+    infra::StringOutputStream::WithStorage<2> stream;
+
+    stream << uint8_t(12);
+    stream.Writer().Reset();
+    stream << uint8_t(14);
+
+    EXPECT_EQ("14", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, Reset_with_new_storage)
+{
+    infra::StringOutputStream::WithStorage<2> stream;
+
+    stream << uint8_t(12);
+    infra::BoundedString::WithStorage<4> newString;
+    stream.Writer().Reset(newString);
+    stream << uint8_t(14);
+
+    EXPECT_EQ("14", newString);
 }

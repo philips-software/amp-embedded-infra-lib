@@ -1,8 +1,6 @@
-macro(ccola_generate_version_header)
-    set(${CMAKE_PROJECT_NAME}_VERSION_STRING "")
-    set(${CMAKE_PROJECT_NAME}_VERSION_STRING_FULL "")
-    set(${CMAKE_PROJECT_NAME}_VERSION_GIT_SHA)
+set(CCOLA_VERSION_HEADER_TARGET generated.version_header)
 
+macro(ccola_add_version_header)
     if (NOT ${CMAKE_PROJECT_NAME}_VERSION_MAJOR)
         set(${CMAKE_PROJECT_NAME}_VERSION_MAJOR 0)
     endif()
@@ -15,24 +13,22 @@ macro(ccola_generate_version_header)
         set(${CMAKE_PROJECT_NAME}_VERSION_PATCH 0)
     endif()
 
-    find_package(Git QUIET)
+    add_custom_target(${CCOLA_VERSION_HEADER_TARGET}
+        COMMAND ${CMAKE_COMMAND} -D CCOLA_VERSION_INPUT_FILE=${CCOLA_DIR}/Version.h.in
+                                 -D CCOLA_VERSION_OUTPUT_FILE=${CMAKE_BINARY_DIR}/Version.h
+                                 -D CMAKE_PROJECT_NAME=${CMAKE_PROJECT_NAME}
+                                 -D PROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+                                 -D VERSION_MAJOR=${${CMAKE_PROJECT_NAME}_VERSION_MAJOR}
+                                 -D VERSION_MINOR=${${CMAKE_PROJECT_NAME}_VERSION_MINOR}
+                                 -D VERSION_PATCH=${${CMAKE_PROJECT_NAME}_VERSION_PATCH}
+                                 -P ${CCOLA_DIR}/version_file_generator.inc
+        BYPRODUCTS ${CMAKE_BINARY_DIR}/Version.h
+        COMMENT "Generating version header for ${CMAKE_PROJECT_NAME}"
+        VERBATIM
+        SOURCES ${CMAKE_BINARY_DIR}/Version.h)
+endmacro()
 
-    if (GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
-        execute_process(COMMAND ${GIT_EXECUTABLE} -C ${PROJECT_SOURCE_DIR} rev-parse --short @{0}
-            OUTPUT_VARIABLE ${CMAKE_PROJECT_NAME}_VERSION_GIT_SHA
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-            ERROR_QUIET)
-    endif()
-
-    set(${CMAKE_PROJECT_NAME}_VERSION_STRING ${${CMAKE_PROJECT_NAME}_VERSION_MAJOR}.${${CMAKE_PROJECT_NAME}_VERSION_MINOR}.${${CMAKE_PROJECT_NAME}_VERSION_PATCH})
-
-    if (${CMAKE_PROJECT_NAME}_VERSION_GIT_SHA)
-        set(${CMAKE_PROJECT_NAME}_VERSION_STRING_FULL
-            ${${CMAKE_PROJECT_NAME}_VERSION_STRING}+${${CMAKE_PROJECT_NAME}_VERSION_GIT_SHA})
-    else()
-        set(${CMAKE_PROJECT_NAME}_VERSION_STRING_FULL ${CMAKE_PROJECT_NAME}_VERSION_STRING)
-    endif()
-
-    string(TIMESTAMP GENERATOR_TIMESTAMP)
-    configure_file("${PROJECT_SOURCE_DIR}/ccola/Version.h.in" "${PROJECT_BINARY_DIR}/Version.h")
+macro(ccola_add_version_header_dependency)
+    ccola_include_directories("${CMAKE_BINARY_DIR}")
+    list(APPEND CCOLA_COMPONENT_DEPENDENCIES ${CCOLA_VERSION_HEADER_TARGET})
 endmacro()

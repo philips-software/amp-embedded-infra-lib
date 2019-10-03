@@ -21,7 +21,9 @@ namespace infra
         void SkipEverything();
         ProtoParser Parser();
         void GetString(infra::BoundedString& string);
+        void GetStringReference(infra::BoundedConstString& string);
         void GetBytes(infra::BoundedVector<uint8_t>& bytes);
+        void GetBytesReference(infra::ConstByteRange& bytes);
 
     private:
         infra::LimitedStreamReader limitedReader;

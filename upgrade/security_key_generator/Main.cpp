@@ -1,13 +1,13 @@
+#include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "upgrade/security_key_generator/MaterialGenerator.hpp"
-#include "upgrade/pack_builder/RandomNumberGenerator.hpp"
 #include <iostream>
 
 int main(int argc, char* argv[])
 {
     try
     {
-        application::SecureRandomNumberGenerator randomNumberGenerator;
-        application::MaterialGenerator generator(randomNumberGenerator);
+        hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
+        application::MaterialGenerator generator(randomDataGenerator);
         generator.WriteKeys("Keys.cpp");
     }
     catch (std::exception& e)

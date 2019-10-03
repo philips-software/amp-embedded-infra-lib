@@ -4,13 +4,22 @@ ccola_component(network_test gmock_test)
         TestCertificatesMbedTls.cpp
         TestConnectionMbedTls.cpp
         TestConnectionSerial.cpp
+        TestDnsResolver.cpp
+        TestExclusiveConnection.cpp
         TestHttpClient.cpp
         TestHttpClientBasic.cpp
+        TestHttpClientJson.cpp
         TestHttpServer.cpp
         TestLlmnrResponder.cpp
         TestMqttClient.cpp
+        TestNameResolverCache.cpp
+        TestSerialServer.cpp
+        TestSingleConnectionListener.cpp
         TestSntpClient.cpp
         TestWebSocketClient.cpp
+        TestWebSocketClientConnectionObserver.cpp
+        TestWebSocketIntegration.cpp
+        TestWebSocketServerConnectionObserver.cpp
     )
 
     ccola_dependencies(
@@ -18,10 +27,10 @@ ccola_component(network_test gmock_test)
         network_test_doubles
         infra.timer_test_helper
         infra.util_test_helper
+        hal.generic
         hal.test_doubles
+        hal.synchronous_test_doubles
         services.util
-    win:
-        hal.windows
     )
 
 ccola_end_component()

@@ -427,7 +427,7 @@ namespace application
 
             virtual void VisitInt32(const EchoFieldInt32& field) override
             {
-                std::cout << fieldData.Get<uint32_t>();
+                std::cout << static_cast<int32_t>(fieldData.Get<uint64_t>());
             }
 
             virtual void VisitFixed32(const EchoFieldFixed32& field) override
@@ -469,6 +469,11 @@ namespace application
             virtual void VisitUint32(const EchoFieldUint32& field) override
             {
                 std::cout << fieldData.Get<uint64_t>();
+            }
+
+            virtual void VisitEnum(const EchoFieldEnum& field) override
+            {
+                std::cout << fieldData.Get<uint32_t>();
             }
 
             virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
@@ -581,6 +586,11 @@ namespace application
             virtual void VisitUint32(const EchoFieldUint32& field) override
             {
                 services::GlobalTracer().Continue() << "uint32";
+            }
+
+            virtual void VisitEnum(const EchoFieldEnum& field) override
+            {
+                services::GlobalTracer().Continue() << field.typeName;
             }
 
             virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
@@ -890,6 +900,14 @@ namespace application
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
 
                 formatter.PutStringField(infra::BoundedConstString(value.Get<std::string>().data(), value.Get<std::string>().size()), field.number);
+            }
+
+            virtual void VisitEnum(const EchoFieldEnum& field) override
+            {
+                if (!value.Is<int64_t>())
+                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+
+                formatter.PutVarIntField(value.Get<int64_t>(), field.number);
             }
 
             virtual void VisitMessage(const EchoFieldMessage& field) override

@@ -1,0 +1,35 @@
+language: cpp
+
+env:
+  global:
+    - BUILD_TYPE=Debug
+    - GTEST_COLOR=1
+
+matrix:
+  include:
+    - os: windows
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+      env:
+        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+
+    # - os: osx
+    #   osx_image: xcode11
+    #   env:
+    #     - MACOSX_DEPLOYMENT_TARGET=10.15
+
+before_install:
+  - eval "${MATRIX_EVAL}"
+
+script:
+  - cmake -E make_directory Build
+  - cd Build
+  - cmake .. -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+  - cmake --build . --config ${BUILD_TYPE}
+  - ctest -C ${BUILD_TYPE} -T Test --output-on-failure

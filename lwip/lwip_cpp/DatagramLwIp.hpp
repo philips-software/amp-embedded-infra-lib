@@ -36,7 +36,7 @@ namespace services
 
     private:
         class UdpReader
-            : public infra::StreamReader
+            : public infra::StreamReaderWithRewinding
         {
         public:
             UdpReader(pbuf* buffer);
@@ -48,6 +48,8 @@ namespace services
             virtual infra::ConstByteRange PeekContiguousRange(std::size_t start) override;
             virtual bool Empty() const override;
             virtual std::size_t Available() const override;
+            virtual std::size_t ConstructSaveMarker() const override;
+            virtual void Rewind(std::size_t marker) override;
 
         private:
             pbuf* buffer;

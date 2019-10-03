@@ -19,6 +19,8 @@ ccola_component(tracer static_library)
         TracingFlash.hpp
         TracingInputStream.cpp
         TracingInputStream.hpp
+        TracingOutputStream.cpp
+        TracingOutputStream.hpp
     )
 
     ccola_dependencies(

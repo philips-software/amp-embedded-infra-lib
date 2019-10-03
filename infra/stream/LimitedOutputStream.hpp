@@ -9,12 +9,20 @@ namespace infra
         : public StreamWriter
     {
     public:
+        template<class T>
+            using WithOutput = infra::WithStorage<LimitedStreamWriter, T>;
+
         LimitedStreamWriter(StreamWriter& output, uint32_t length);
         LimitedStreamWriter(const LimitedStreamWriter& other);
 
     public:
         virtual void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy) override;
         virtual std::size_t Available() const override;
+        virtual std::size_t ConstructSaveMarker() const override;
+        virtual std::size_t GetProcessedBytesSince(std::size_t marker) const override;
+        virtual infra::ByteRange SaveState(std::size_t marker) override;
+        virtual void RestoreState(infra::ByteRange range) override;
+        virtual infra::ByteRange Overwrite(std::size_t marker) override;
 
     private:
         StreamWriter& output;

@@ -30,9 +30,11 @@ TEST_F(BoundedDequeInputStreamReaderTest, Extract)
     std::array<uint8_t, 4> result;
     reader.Extract(result, errorPolicy);
     EXPECT_EQ((std::array<uint8_t, 4>{ {1, 2, 3, 4} }), result);
+    EXPECT_EQ(4, reader.Processed());
 
     reader.Extract(result, errorPolicy);
     EXPECT_EQ((std::array<uint8_t, 4>{ {5, 6, 7, 8} }), result);
+    EXPECT_EQ(8, reader.Processed());
 }
 
 TEST_F(BoundedDequeInputStreamReaderTest, Peek)

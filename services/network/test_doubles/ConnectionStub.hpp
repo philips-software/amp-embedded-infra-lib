@@ -3,6 +3,8 @@
 
 #include "gmock/gmock.h"
 #include "infra/stream/BoundedDequeInputStream.hpp"
+#include "infra/stream/StdVectorOutputStream.hpp"
+#include "infra/stream/LimitedOutputStream.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "services/network/Connection.hpp"
 #include <vector>
@@ -37,7 +39,7 @@ namespace services
             : public infra::StreamWriter
         {
         public:
-            explicit StreamWriterStub(ConnectionStub& connection);
+            explicit StreamWriterStub(ConnectionStub& connection, std::size_t size);
 
         private:
             virtual void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
@@ -45,6 +47,8 @@ namespace services
 
         private:
             ConnectionStub& connection;
+            std::size_t size;
+            std::size_t offset = 0;
         };
 
         class StreamReaderStub
@@ -63,7 +67,7 @@ namespace services
         infra::BoundedDeque<uint8_t>::WithMaxSize<4096> receivingData;
 
         infra::SharedOptional<StreamReaderStub> streamReader;
-        infra::SharedOptional<StreamWriterStub> streamWriter;
+        infra::SharedOptional<infra::LimitedStreamWriter::WithOutput<infra::StdVectorOutputStreamWriter>> streamWriter;
         infra::SharedPtr<infra::StreamWriter> streamWriterPtr;
     };
 

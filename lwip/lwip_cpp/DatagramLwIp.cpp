@@ -100,11 +100,7 @@ namespace services
             IP4_ADDR(&ipAddress.u_addr.ip4, ipv4Address[0], ipv4Address[1], ipv4Address[2], ipv4Address[3]);
             err_t result = udp_connect(control, &ipAddress, remote.Get<Udpv4Socket>().second);
             assert(result == ERR_OK);
-#ifdef ESP_PLATFORM
-            result = udp_bind(control, IP_ADDR_ANY, localPort);
-#else
             result = udp_bind(control, IP4_ADDR_ANY, localPort);
-#endif
             assert(result == ERR_OK);
         }
         else
@@ -153,11 +149,7 @@ namespace services
         switch (versions)
         {
             case IPVersions::ipv4:
-#ifdef ESP_PLATFORM
-				return IP_ADDR_ANY;
-#else
                 return IP4_ADDR_ANY;
-#endif
             case IPVersions::ipv6:
                 return IP6_ADDR_ANY;
             case IPVersions::both:
@@ -220,7 +212,7 @@ namespace services
             currentBuffer = currentBuffer->next;
         }
 
-        infra::ConstByteRange result = infra::Head(infra::ConstByteRange(reinterpret_cast<const uint8_t*>(currentBuffer->payload),
+        infra::ConstByteRange result = infra::Head(infra::ConstByteRange(reinterpret_cast<const uint8_t*>(currentBuffer->payload) + offset,
             reinterpret_cast<const uint8_t*>(currentBuffer->payload) + currentBuffer->len), max);
         bufferOffset += static_cast<uint16_t>(result.size());
         return result;
@@ -235,12 +227,22 @@ namespace services
 
     bool DatagramExchangeLwIP::UdpReader::Empty() const
     {
-        return Available() != 0;
+        return Available() == 0;
     }
 
     std::size_t DatagramExchangeLwIP::UdpReader::Available() const
     {
         return buffer->tot_len - bufferOffset;
+    }
+
+    std::size_t DatagramExchangeLwIP::UdpReader::ConstructSaveMarker() const
+    {
+        return bufferOffset;
+    }
+
+    void DatagramExchangeLwIP::UdpReader::Rewind(std::size_t marker)
+    {
+        bufferOffset = static_cast<uint16_t>(marker);
     }
 
     DatagramExchangeLwIP::UdpWriter::UdpWriter(udp_pcb* control, pbuf* buffer, infra::Optional<UdpSocket> remote)

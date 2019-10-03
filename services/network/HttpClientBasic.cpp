@@ -16,26 +16,54 @@ namespace services
         Connect();
     }
 
-    void HttpClientBasic::Connect()
-    {
-        state = State::connecting;
-        httpClientConnector.Connect(*this);
-    }
-
     void HttpClientBasic::Cancel(const infra::Function<void()>& onDone)
     {
         if (state == State::connecting)
+        {
             httpClientConnector.CancelConnect(*this);
+            onDone();
+        }
         else if (state == State::connected)
+        {
+            sharedAccess.SetAction(onDone);
             Close();
-
-        if (state == State::closing)
+        }
+        else if (state == State::closing)
             sharedAccess.SetAction(onDone);
         else
             onDone();
     }
 
-    const infra::BoundedString& HttpClientBasic::Url() const
+    void HttpClientBasic::Connect()
+    {
+        assert(state == State::idle);
+        state = State::connecting;
+        httpClientConnector.Connect(*this);
+    }
+
+    void HttpClientBasic::Connect(infra::BoundedString url)
+    {
+        this->url = url;
+        Connect();
+    }
+
+    void HttpClientBasic::Close()
+    {
+        assert(HttpClientObserver::Attached());
+        assert(state == State::connected);
+
+        state = State::closing;
+        timeoutTimer.Cancel();
+        HttpClientObserver::Subject().Close();
+    }
+
+    void HttpClientBasic::ContentError()
+    {
+        if (!infra::PostAssign(contentError, true))
+            Close();
+    }
+
+    infra::BoundedString HttpClientBasic::Url() const
     {
         return url;
     }
@@ -55,17 +83,14 @@ namespace services
     void HttpClientBasic::Established()
     {}
 
-    void HttpClientBasic::Failed()
-    {}
-
-    void HttpClientBasic::TimedOut()
-    {}
-
-    void HttpClientBasic::Expired()
-    {}
-
     void HttpClientBasic::ClosingConnection()
     {
+        if (state == State::connected)
+        {
+            state = State::closing;
+            sharedAccess.SetAction([this]() { ReportError(true); });
+        }
+
         Detach();
     }
 
@@ -95,26 +120,30 @@ namespace services
 
     void HttpClientBasic::ConnectionFailed(services::HttpClientObserverFactory::ConnectFailReason reason)
     {
-        state = State::idle;
-        Failed();
-    }
-
-    void HttpClientBasic::Close()
-    {
-        state = State::closing;
-        timeoutTimer.Cancel();
-        HttpClientObserver::Subject().Close();
+        ReportError(true);
     }
 
     void HttpClientBasic::Timeout()
     {
-        sharedAccess.SetAction([this]() { TimedOut(); });
+        sharedAccess.SetAction([this]() { ReportError(true); });
         Close();
     }
 
     void HttpClientBasic::Expire()
     {
+        if (contentError)
+            ReportError(false);
+        else
+        {
+            state = State::idle;
+            Done();
+        }
+    }
+
+    void HttpClientBasic::ReportError(bool intermittentFailure)
+    {
         state = State::idle;
-        Expired();
+        timeoutTimer.Cancel();
+        Error(intermittentFailure);
     }
 }

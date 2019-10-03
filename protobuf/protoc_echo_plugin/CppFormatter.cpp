@@ -175,6 +175,11 @@ namespace application
         return EntitiesHaveSourceCode();
     }
 
+    const uint32_t Function::fConst;
+    const uint32_t Function::fVirtual;
+    const uint32_t Function::fAbstract;
+    const uint32_t Function::fOverride;
+
     Function::Function(const std::string& name, const std::string& body, const std::string& result, uint32_t flags)
         : name(name)
         , body(body)
@@ -226,6 +231,9 @@ namespace application
         ForEach(parameters, [&res](const std::string& parameter) { res += parameter; }, [&res]() { res += ", "; });
         return res;
     }
+
+    const uint32_t Constructor::cDefault;
+    const uint32_t Constructor::cDelete;
 
     Constructor::Constructor(const std::string& name, const std::string& body, uint32_t flags)
         : name(name)
@@ -370,4 +378,32 @@ namespace application
 
     void ClassForwardDeclaration::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
     {}
+
+    EnumDeclaration::EnumDeclaration(const std::string& name, const std::vector<std::pair<std::string, int>>& members)
+        : Entity(true, false)
+        , name(name)
+        , members(members)
+    {}
+
+    void EnumDeclaration::PrintHeader(google::protobuf::io::Printer& printer) const
+    {
+        printer.Print("enum class $name$\n{\n", "name", name);
+        printer.Indent();
+
+        for (auto& member : members)
+        {
+            printer.Print("$name$ = $initializer$", "name", member.first, "initializer", std::to_string(member.second));
+
+            if (&member != &members.back())
+                printer.Print(",");
+            printer.Print("\n");
+        }
+
+        printer.Outdent();
+        printer.Print("};\n", "name", name);
+    }
+
+    void EnumDeclaration::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
+    {
+    }
 }

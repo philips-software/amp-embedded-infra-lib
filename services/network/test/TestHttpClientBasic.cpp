@@ -5,7 +5,7 @@
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/network/HttpClientBasic.hpp"
-#include "services/network/test_doubles/HttpMock.hpp"
+#include "services/network/test_doubles/HttpClientMock.hpp"
 
 class HttpClientBasicMock
     : public services::HttpClientBasic
@@ -13,14 +13,18 @@ class HttpClientBasicMock
 public:
     using services::HttpClientBasic::HttpClientBasic;
 
+    void GenerateContentError()
+    {
+        ContentError();
+    }
+
     MOCK_METHOD0(Established, void());
-    MOCK_METHOD0(Failed, void());
-    MOCK_METHOD0(TimedOut, void());
-    MOCK_METHOD0(Expired, void());
+    MOCK_METHOD0(Done, void());
+    MOCK_METHOD1(Error, void(bool intermittentFailure));
 
     MOCK_METHOD1(StatusAvailable, void(services::HttpStatusCode));
     MOCK_METHOD1(HeaderAvailable, void(services::HttpHeader));
-    MOCK_METHOD1(BodyAvailable, void(infra::StreamReader&));
+    MOCK_METHOD1(BodyAvailable, void(infra::SharedPtr<infra::StreamReader>&& reader));
 };
 
 class HttpClientBasicTest
@@ -44,13 +48,13 @@ public:
     services::HttpClientObserverFactory* httpClientObserverFactory = nullptr;
     infra::Execute execute{ [this]() { EXPECT_CALL(httpClientConnector, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&httpClientObserverFactory)); } };
     infra::BoundedString::WithStorage<64> url{ "https://hostname/path" };
-    testing::StrictMock<HttpClientBasicMock> controller{ url, 443, httpClientConnector };
+    infra::Optional<testing::StrictMock<HttpClientBasicMock>> controller{ infra::inPlace, url, 443, httpClientConnector };
     testing::StrictMock<infra::MockCallback<void()>> onStopped;
 };
 
-TEST_F(HttpClientBasicTest, Failed_is_reported_on_ConnectionFailed)
+TEST_F(HttpClientBasicTest, intermittent_error_is_reported_on_ConnectionFailed)
 {
-    EXPECT_CALL(controller, Failed());
+    EXPECT_CALL(*controller, Error(true));
     httpClientObserverFactory->ConnectionFailed(services::HttpClientObserverFactory::ConnectFailReason::nameLookupFailed);
 }
 
@@ -58,76 +62,140 @@ TEST_F(HttpClientBasicTest, Cancel_while_connecting_results_in_CancelConnect)
 {
     EXPECT_CALL(httpClientConnector, CancelConnect(testing::Ref(*httpClientObserverFactory)));
     EXPECT_CALL(onStopped, callback());
-    controller.Cancel([this]() { onStopped.callback(); });
+    controller->Cancel([this]() { onStopped.callback(); });
 }
 
 TEST_F(HttpClientBasicTest, Stop_while_connected_results_in_Close)
 {
-    EXPECT_CALL(controller, Established());
+    EXPECT_CALL(*controller, Established());
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.AttachObserver(client); client->Connected(); });
 
     EXPECT_CALL(httpClient, Close());
+    controller->Cancel([this]() { onStopped.callback(); });
+
     EXPECT_CALL(onStopped, callback());
-    controller.Cancel([this]() { onStopped.callback(); });
+    httpClient.observer = nullptr;
+    testing::Mock::VerifyAndClearExpectations(&onStopped);
+}
+
+TEST_F(HttpClientBasicTest, Stop_while_connected_does_not_invoke_Done)
+{
+    EXPECT_CALL(*controller, Established());
+    httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.AttachObserver(client); client->Connected(); });
+
+    EXPECT_CALL(httpClient, Close()).WillOnce(testing::Invoke([this]()
+    {
+        EXPECT_CALL(onStopped, callback());
+        httpClient.observer = nullptr;
+        controller = infra::none;
+    }));
+    controller->Cancel([this]() { onStopped.callback(); });
+
+    testing::Mock::VerifyAndClearExpectations(&onStopped);
+}
+
+TEST_F(HttpClientBasicTest, second_Stop_while_connected_does_not_result_in_second_Close_but_adapts_callback)
+{
+    EXPECT_CALL(*controller, Established());
+    httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.AttachObserver(client); client->Connected(); });
+
+    EXPECT_CALL(httpClient, Close());
+    controller->Cancel([this]() { onStopped.callback(); });
+
+    testing::StrictMock<infra::MockCallback<void()>> onStopped2;
+    controller->Cancel([&onStopped2]() { onStopped2.callback(); });
+
+    EXPECT_CALL(onStopped2, callback());
+    httpClient.observer = nullptr;
+    testing::Mock::VerifyAndClearExpectations(&onStopped2);
 }
 
 TEST_F(HttpClientBasicTest, Stop_while_connected_stops_timeout_timer)
 {
-    EXPECT_CALL(controller, Established());
+    EXPECT_CALL(*controller, Established());
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.AttachObserver(client); client->Connected(); });
 
     EXPECT_CALL(httpClient, Close());
     EXPECT_CALL(onStopped, callback());
-    controller.Cancel([this]() { onStopped.callback(); });
+    controller->Cancel([this]() { onStopped.callback(); });
 
     ForwardTime(std::chrono::minutes(2));
 }
 
 TEST_F(HttpClientBasicTest, Stop_while_almost_done)
 {
-    EXPECT_CALL(controller, Established());
+    EXPECT_CALL(*controller, Established());
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.AttachObserver(client); client->Connected(); });
 
     EXPECT_CALL(httpClient, Close());
     httpClient.observer->BodyComplete();
 
+    controller->Cancel([this]() { onStopped.callback(); });
+
     EXPECT_CALL(onStopped, callback());
-    controller.Cancel([this]() { onStopped.callback(); });
+    httpClient.observer = nullptr;
+    testing::Mock::VerifyAndClearExpectations(&onStopped);
 }
 
 TEST_F(HttpClientBasicTest, Stop_while_done)
 {
-    EXPECT_CALL(controller, Established());
+    EXPECT_CALL(*controller, Established());
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.AttachObserver(client); client->Connected(); });
 
-    EXPECT_CALL(controller, Expired());
+    EXPECT_CALL(*controller, Done());
     EXPECT_CALL(httpClient, Close());
     httpClient.observer->BodyComplete();
     httpClient.observer->ClosingConnection();
     httpClient.observer = nullptr;
 
     EXPECT_CALL(onStopped, callback());
-    controller.Cancel([this]() { onStopped.callback(); });
+    controller->Cancel([this]() { onStopped.callback(); });
+    testing::Mock::VerifyAndClearExpectations(&onStopped);
 }
 
 TEST_F(HttpClientBasicTest, connection_times_out)
 {
-    EXPECT_CALL(controller, Established());
+    EXPECT_CALL(*controller, Established());
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.AttachObserver(client); client->Connected(); });
 
-    EXPECT_CALL(controller, TimedOut());
+    EXPECT_CALL(*controller, Error(true));
     EXPECT_CALL(httpClient, Close());
     ForwardTime(std::chrono::minutes(1));
 }
 
 TEST_F(HttpClientBasicTest, timer_resets_after_BodyComplete)
 {
-    EXPECT_CALL(controller, Established());
+    EXPECT_CALL(*controller, Established());
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.AttachObserver(client); client->Connected(); });
 
-    EXPECT_CALL(controller, Expired());
+    EXPECT_CALL(*controller, Done());
     EXPECT_CALL(httpClient, Close());
     httpClient.observer->BodyComplete();
 
     ForwardTime(std::chrono::minutes(1));
+}
+
+TEST_F(HttpClientBasicTest, Stop_after_ClosingConnection)
+{
+    EXPECT_CALL(*controller, Established());
+    httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.AttachObserver(client); client->Connected(); });
+
+    EXPECT_CALL(*controller, Error(true));
+    httpClient.observer->ClosingConnection();
+    httpClient.observer = nullptr;
+
+    EXPECT_CALL(onStopped, callback());
+    controller->Cancel([this]() { onStopped.callback(); });
+    testing::Mock::VerifyAndClearExpectations(&onStopped);
+}
+
+TEST_F(HttpClientBasicTest, ContentError_calls_stop_only_once)
+{
+    EXPECT_CALL(*controller, Established());
+    httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.AttachObserver(client); client->Connected(); });
+
+    EXPECT_CALL(*controller, Error(false));
+    EXPECT_CALL(httpClient, Close());
+    controller->GenerateContentError();
+    controller->GenerateContentError();
 }

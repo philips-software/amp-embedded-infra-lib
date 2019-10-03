@@ -16,7 +16,7 @@
 namespace services
 {
     class ConnectionMbedTls
-        : public Connection
+        : public ConnectionWithHostname
         , public ConnectionObserver
         , public infra::EnableSharedFromThis<ConnectionMbedTls>
     {
@@ -45,22 +45,20 @@ namespace services
 
         void CreatedObserver(infra::SharedPtr<services::ConnectionObserver> connectionObserver);
 
-        void SetHostname(infra::BoundedConstString hostname);
-
         // ConnectionObserver
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void DataReceived() override;
         virtual void Connected() override;
         virtual void ClosingConnection() override;
 
-        // Connection
+        // ConnectionWithHostname
         virtual void RequestSendStream(std::size_t sendSize) override;
         virtual std::size_t MaxSendStreamSize() const override;
         virtual infra::SharedPtr<infra::StreamReaderWithRewinding> ReceiveStream() override;
         virtual void AckReceived() override;
-
         virtual void CloseAndDestroy() override;
         virtual void AbortAndDestroy() override;
+        virtual void SetHostname(infra::BoundedConstString hostname) override;
 
         virtual void TlsInitFailure(int reason);
         virtual void TlsReadFailure(int reason);
@@ -202,7 +200,7 @@ namespace services
         virtual void Connect(ClientConnectionObserverFactory& connectionObserverFactory) override;
         virtual void CancelConnect(ClientConnectionObserverFactory& connectionObserverFactory) override;
 
-        infra::SharedPtr<ConnectionMbedTls> Allocate(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver);
+        infra::SharedPtr<ConnectionMbedTls> Allocate(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address);
         void Remove(ConnectionMbedTlsConnector& connector);
 
     protected:
@@ -221,6 +219,7 @@ namespace services
         hal::SynchronousRandomDataGenerator& randomDataGenerator;
         mbedtls_ssl_cache_context serverCache;
         mbedtls_ssl_session clientSession = {};
+        IPAddress previousAddress;
         bool needsAuthenticationDefault;
     };
 

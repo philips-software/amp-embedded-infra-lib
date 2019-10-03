@@ -26,6 +26,15 @@ namespace application
         std::string constantName;
     };
 
+    class EchoEnum
+    {
+    public:
+        EchoEnum(const google::protobuf::EnumDescriptor& descriptor);
+
+        std::string name;
+        std::vector<std::pair<std::string, int>> members;
+    };
+
     class EchoMessage
     {
     public:
@@ -34,8 +43,10 @@ namespace application
         const google::protobuf::Descriptor& descriptor;
         std::string name;
         std::string qualifiedName;
+        std::string qualifiedReferenceName;
         std::vector<std::shared_ptr<EchoField>> fields;
         std::vector<std::shared_ptr<EchoMessage>> nestedMessages;
+        std::vector<std::shared_ptr<EchoEnum>> nestedEnums;
 
     private:
         std::shared_ptr<EchoField> GenerateField(const google::protobuf::FieldDescriptor& fieldDescriptor, EchoRoot& root);
@@ -108,6 +119,17 @@ namespace application
         using EchoField::EchoField;
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
+    };
+
+    class EchoFieldEnum
+        : public EchoField
+    {
+    public:
+        EchoFieldEnum(const google::protobuf::FieldDescriptor& descriptor);
+
+        virtual void Accept(EchoFieldVisitor& visitor) const override;
+
+        std::string typeName;
     };
 
     class EchoFieldRepeated
@@ -218,6 +240,7 @@ namespace application
         virtual void VisitMessage(const EchoFieldMessage& field) = 0;
         virtual void VisitBytes(const EchoFieldBytes& field) = 0;
         virtual void VisitUint32(const EchoFieldUint32& field) = 0;
+        virtual void VisitEnum(const EchoFieldEnum& field) = 0;
         virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) = 0;
         virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) = 0;
         virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) = 0;

@@ -1,9 +1,9 @@
 #ifndef UPGRADE_PACK_BUILD_LIBRARY_IMAGE_SIGNER_RSA_HPP
 #define UPGRADE_PACK_BUILD_LIBRARY_IMAGE_SIGNER_RSA_HPP
 
+#include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
 #include "upgrade/pack/KeyDefinitions.hpp"
 #include "upgrade/pack_builder/ImageSigner.hpp"
-#include "upgrade/pack_builder/RandomNumberGenerator.hpp"
 #include <array>
 #include <cstdint>
 #include <vector>
@@ -14,7 +14,7 @@ namespace application
         : public ImageSigner
     {
     public:
-        ImageSignerRsa(RandomNumberGenerator& randomNumberGenerator, const RsaPublicKey& publicKey, const RsaPrivateKey& privateKey);
+        ImageSignerRsa(hal::SynchronousRandomDataGenerator& randomDataGenerator, const RsaPublicKey& publicKey, const RsaPrivateKey& privateKey);
 
         virtual uint16_t SignatureMethod() const override;
         virtual uint16_t SignatureLength() const override;
@@ -28,12 +28,12 @@ namespace application
         void CalculateSha256(const std::vector<uint8_t>& image);
         void CalculateSignature(const std::vector<uint8_t>& image);
 
-        static int MyRandom(void *rng_state, unsigned char *output, size_t len);
+        static int RandomNumberGenerator(void* rng_state, unsigned char* output, size_t len);
 
     private:
         const RsaPublicKey& publicKey;
         const RsaPrivateKey& privateKey;
-        static RandomNumberGenerator* randomNumberGenerator;
+        hal::SynchronousRandomDataGenerator& randomDataGenerator;
         std::string keyFileName;
         std::array<uint8_t, 32> hash;
         std::array<uint8_t, keyLength / 8> signature;

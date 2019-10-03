@@ -22,11 +22,13 @@
 //  Function<void(), 8> g = [this, &x]() { DoSomething(x); }; // Ok.
 
 #include "infra/util/ByteRange.hpp"
+#include "infra/util/IntegerSequence.hpp"
 #include "infra/util/ReallyAssert.hpp"
 #include "infra/util/StaticStorage.hpp"
 #include <cstddef>
 #include <cstring>
 #include <functional>
+#include <ostream>
 #include <tuple>
 #include <type_traits>
 
@@ -146,6 +148,16 @@ namespace infra
     class ExecuteOnDestruction
     {
     public:
+        template<std::size_t ExtraSize>
+        struct WithExtraSize
+        {
+            explicit WithExtraSize(Function<void(), ExtraSize> f);
+            ~WithExtraSize();
+
+        private:
+            Function<void(), ExtraSize> f;
+        };
+
         explicit ExecuteOnDestruction(Function<void()> f);
         ~ExecuteOnDestruction();
 
@@ -166,6 +178,49 @@ namespace infra
         bool operator!=(const Function<Result(Args...), ExtraSize>& f, std::nullptr_t);
     template<std::size_t ExtraSize, class Result, class... Args>
         bool operator!=(std::nullptr_t, const Function<Result(Args...), ExtraSize>& f);
+
+#ifdef CCOLA_HOST_BUILD //TICS !POR#021
+    // gtest uses PrintTo to display the contents of Function
+    template<class... Args>
+    struct PrintParameterNames;
+
+    template<>
+    struct PrintParameterNames<>
+    {
+        PrintParameterNames(std::ostream* os)
+        {}
+    };
+
+    template<class Arg>
+    struct PrintParameterNames<Arg>
+    {
+        PrintParameterNames(std::ostream* os)
+        {
+            *os << typeid(Arg).name();
+        }
+    };
+
+    template<class Arg, class Arg2, class... Args>
+    struct PrintParameterNames<Arg, Arg2, Args...>
+    {
+        PrintParameterNames(std::ostream* os)
+        {
+            *os << typeid(Arg).name() << ", ";
+
+            PrintParameterNames<Arg2, Args...> print(os);
+        }
+    };
+
+    template<class R, class... Args>
+    void PrintTo(Function<R(Args...)>, std::ostream* os)
+    {
+        *os << "Function<" << typeid(R).name() << "(";
+
+        PrintParameterNames<Args...> print(os);
+
+        *os << ")>";
+    }
+#endif
 
     //// Implementation ////
 
@@ -333,53 +388,23 @@ namespace infra
         return invokerFunctions.virtualMethodTable->invoke(invokerFunctions, args...);
     }
 
-    template<std::size_t N, class ResultType, class... Args>
-    struct TupleInvokeHelper;
-
-    template<class ResultType, class... Args>
-    struct TupleInvokeHelper<0, ResultType, Args...>
+    namespace detail
     {
-        template<class InvokerFunctions, class FunctionPointer>
-        static ResultType Invoke(const InvokerFunctions& invokerFunctions, FunctionPointer invoke, const std::tuple<Args...>& args)
+        template<class ResultType, class... Args>
+        struct TupleInvokeHelper
         {
-            return invoke(invokerFunctions);
-        }
-    };
-
-    template<class ResultType, class... Args>
-    struct TupleInvokeHelper<1, ResultType, Args...>
-    {
-        template<class InvokerFunctions, class FunctionPointer>
-        static ResultType Invoke(const InvokerFunctions& invokerFunctions, FunctionPointer invoke, const std::tuple<Args...>& args)
-        {
-            return invoke(invokerFunctions, std::get<0>(args));
-        }
-    };
-
-    template<class ResultType, class... Args>
-    struct TupleInvokeHelper<2, ResultType, Args...>
-    {
-        template<class InvokerFunctions, class FunctionPointer>
-        static ResultType Invoke(const InvokerFunctions& invokerFunctions, FunctionPointer invoke, const std::tuple<Args...>& args)
-        {
-            return invoke(invokerFunctions, std::get<0>(args), std::get<1>(args));
-        }
-    };
-
-    template<class ResultType, class... Args>
-    struct TupleInvokeHelper<3, ResultType, Args...>
-    {
-        template<class InvokerFunctions, class FunctionPointer>
-        static ResultType Invoke(const InvokerFunctions& invokerFunctions, FunctionPointer invoke, const std::tuple<Args...>& args)
-        {
-            return invoke(invokerFunctions, std::get<0>(args), std::get<1>(args), std::get<2>(args));
-        }
-    };
+            template<class InvokerFunctions, class FunctionPointer, std::size_t... I>
+            static ResultType Invoke(const InvokerFunctions& invokerFunctions, FunctionPointer invoke, const std::tuple<Args...>& args, IndexSequence<I...>)
+            {
+                return invoke(invokerFunctions, std::get<I>(args)...);
+            }
+        };
+    }
 
     template<std::size_t ExtraSize, class Result, class... Args>
     typename Function<Result(Args...), ExtraSize>::ResultType Function<Result(Args...), ExtraSize>::Invoke(const std::tuple<Args...>& args) const
     {
-        return TupleInvokeHelper<sizeof...(Args), ResultType, Args...>::Invoke(invokerFunctions, invokerFunctions.virtualMethodTable->invoke, args);
+        return detail::TupleInvokeHelper<ResultType, Args...>::Invoke(invokerFunctions, invokerFunctions.virtualMethodTable->invoke, args, MakeIndexSequence<sizeof...(Args)>{});
     }
 
     template<std::size_t ExtraSize, class Result, class... Args>
@@ -430,6 +455,17 @@ namespace infra
 
     template<std::size_t ExtraSize>
     Execute::WithExtraSize<ExtraSize>::WithExtraSize(Function<void(), ExtraSize> f)
+    {
+        f();
+    }
+
+    template<std::size_t ExtraSize>
+    ExecuteOnDestruction::WithExtraSize<ExtraSize>::WithExtraSize(Function<void(), ExtraSize> f)
+        : f(f)
+    {}
+
+    template<std::size_t ExtraSize>
+    ExecuteOnDestruction::WithExtraSize<ExtraSize>::~WithExtraSize()
     {
         f();
     }

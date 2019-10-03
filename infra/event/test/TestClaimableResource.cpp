@@ -1,17 +1,15 @@
 #include "infra/event/ClaimableResource.hpp"
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
+#include "infra/util/test_helper/MockCallback.hpp"
 #include <gtest/gtest.h>
 
 class TestClaimer
     : public infra::ClaimableResource::Claimer
 {
 public:
-    TestClaimer(infra::ClaimableResource& resource)
-        : infra::ClaimableResource::Claimer(resource)
-        , claimsGranted(0)
-    {}
+    using infra::ClaimableResource::Claimer::Claimer;
 
-    uint32_t claimsGranted;
+    uint32_t claimsGranted = 0;
 
     void GrantedClaim()
     {
@@ -40,7 +38,9 @@ public:
 TEST_F(TestClaimableResource, ClaimIsGranted)
 {
     claimerA.Claim([this]() { claimerA.GrantedClaim(); });
+    EXPECT_TRUE(resource.ClaimsPending());
     ExecuteAllActions();
+    EXPECT_FALSE(resource.ClaimsPending());
     EXPECT_EQ(1, claimerA.claimsGranted);
 }
 
@@ -50,10 +50,12 @@ TEST_F(TestClaimableResource, ClaimWhileAlreadyClaimedIsGrantedAfterRelease)
     ExecuteAllActions();
     EXPECT_EQ(1, claimerA.claimsGranted);
     claimerA.Claim([this]() { claimerA.GrantedClaim(); });
+    EXPECT_TRUE(resource.ClaimsPending());
     ExecuteAllActions();
     EXPECT_EQ(1, claimerA.claimsGranted);
     claimerA.Release();
     ExecuteAllActions();
+    EXPECT_FALSE(resource.ClaimsPending());
     EXPECT_EQ(2, claimerA.claimsGranted);
 }
 
@@ -121,4 +123,68 @@ TEST_F(TestClaimableResource, TwoConsecutiveReleasesBeforeReleaseOfClaimIsProces
     EXPECT_EQ(1, claimerA.claimsGranted);
     EXPECT_EQ(0, claimerB.claimsGranted);
     EXPECT_EQ(0, claimerC.claimsGranted);
+}
+
+TEST_F(TestClaimableResource, MoveClaimerBeforeGranted)
+{
+    infra::Optional<TestClaimer> oldClaimer(infra::inPlace, resource);
+    infra::MockCallback<void()> granted;
+    oldClaimer->Claim([this, &granted]() { granted.callback(); });
+    TestClaimer newClaimer(std::move(*oldClaimer));
+    oldClaimer = infra::none;
+
+    EXPECT_CALL(granted, callback());
+    ExecuteAllActions();
+}
+
+TEST_F(TestClaimableResource, MoveClaimerAfterGranted)
+{
+    infra::Optional<TestClaimer> oldClaimer(infra::inPlace, resource);
+    oldClaimer->Claim([]() {});
+    ExecuteAllActions();
+
+    TestClaimer newClaimer(std::move(*oldClaimer));
+    oldClaimer = infra::none;
+
+    newClaimer.Release();
+}
+
+TEST_F(TestClaimableResource, MoveClaimerAfterGrantedAndClaimedAgain)
+{
+    infra::Optional<TestClaimer> oldClaimer(infra::inPlace, resource);
+    oldClaimer->Claim([]() {});
+    ExecuteAllActions();
+    oldClaimer->Claim([]() {});
+
+    TestClaimer newClaimer(std::move(*oldClaimer));
+    oldClaimer = infra::none;
+
+    newClaimer.Release();
+    newClaimer.Release();
+}
+
+TEST_F(TestClaimableResource, CopyMoveClaimerBeforeGranted)
+{
+    infra::Optional<TestClaimer> oldClaimer(infra::inPlace, resource);
+    infra::MockCallback<void()> granted;
+    oldClaimer->Claim([this, &granted]() { granted.callback(); });
+    TestClaimer newClaimer(resource);
+    newClaimer = std::move(*oldClaimer);
+    oldClaimer = infra::none;
+
+    EXPECT_CALL(granted, callback());
+    ExecuteAllActions();
+}
+
+TEST_F(TestClaimableResource, CopyMoveClaimerAfterGranted)
+{
+    infra::Optional<TestClaimer> oldClaimer(infra::inPlace, resource);
+    oldClaimer->Claim([]() {});
+    ExecuteAllActions();
+
+    TestClaimer newClaimer(resource);
+    newClaimer = std::move(*oldClaimer);
+    oldClaimer = infra::none;
+
+    newClaimer.Release();
 }

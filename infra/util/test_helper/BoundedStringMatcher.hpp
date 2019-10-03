@@ -1,5 +1,5 @@
-#ifndef INFRA_UTIL_MATCHERS_HPP
-#define INFRA_UTIL_MATCHERS_HPP
+#ifndef INFRA_BOUNDED_STRING_MATCHER_HPP
+#define INFRA_BOUNDED_STRING_MATCHER_HPP
 
 #include "gmock/gmock.h"
 #include "infra/util/BoundedString.hpp"
@@ -25,23 +25,52 @@ namespace testing
         Matcher(const char* s) { *this = Eq(std::string(s)); }
     };
 
-    template<class T, std::size_t Size>
-    class Matcher<const infra::BoundedStringBase<T>::WithStorage<Size>&>
-        : public internal::MatcherBase<infra::BoundedStringBase<T>::WithStorage<Size>>
+    template<std::size_t Size>
+    class Matcher<const infra::BoundedStringBase<char>::WithStorage<Size>&>
+        : public internal::MatcherBase<infra::BoundedStringBase<char>::WithStorage<Size>>
     {
     public:
         Matcher() = default;
 
-        explicit Matcher(const MatcherInterface<const infra::BoundedStringBase<T>::WithStorage<Size>&>* impl)
-            : internal::MatcherBase<infra::BoundedStringBase<T>::WithStorage<Size>>(impl)
+        explicit Matcher(const MatcherInterface<const infra::BoundedStringBase<char>::WithStorage<Size>&>* impl)
+            : internal::MatcherBase<infra::BoundedStringBase<char>::WithStorage<Size>>(impl)
         {}
 
-        explicit Matcher(const MatcherInterface<infra::BoundedStringBase<T>::WithStorage<Size>>* impl)
-            : internal::MatcherBase<infra::BoundedStringBase<T>::WithStorage<Size>>(impl)
+        explicit Matcher(const MatcherInterface<infra::BoundedStringBase<char>::WithStorage<Size>>* impl)
+            : internal::MatcherBase<infra::BoundedStringBase<char>::WithStorage<Size>>(impl)
         {}
 
-        Matcher(infra::BoundedStringBase<T>::WithStorage<Size> s) { *this = Eq(std::string(s.data(), s.size())); }
+        Matcher(infra::BoundedStringBase<char>::WithStorage<Size> s) { *this = Eq(std::string(s.data(), s.size())); }
+
         Matcher(const char* s) { *this = Eq(std::string(s)); }
+    };
+
+    template<std::size_t Size>
+    class Matcher<const infra::BoundedStringBase<const char>::WithStorage<Size>&>
+        : public internal::MatcherBase<infra::BoundedStringBase<const char>::WithStorage<Size>>
+    {
+    public:
+        Matcher() = default;
+
+        explicit Matcher(const MatcherInterface<const infra::BoundedStringBase<const char>::WithStorage<Size>&>* impl)
+            : internal::MatcherBase<infra::BoundedStringBase<const char>::WithStorage<Size>>(impl)
+        {
+        }
+
+        explicit Matcher(const MatcherInterface<infra::BoundedStringBase<const char>::WithStorage<Size>>* impl)
+            : internal::MatcherBase<infra::BoundedStringBase<const char>::WithStorage<Size>>(impl)
+        {
+        }
+
+        Matcher(infra::BoundedStringBase<const char>::WithStorage<Size> s)
+        {
+            *this = Eq(std::string(s.data(), s.size()));
+        }
+
+        Matcher(const char* s)
+        {
+            *this = Eq(std::string(s));
+        }
     };
 }
 

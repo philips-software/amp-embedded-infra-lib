@@ -19,29 +19,50 @@ namespace application
     class MessageGenerator
     {
     public:
-        MessageGenerator(const std::shared_ptr<const EchoMessage>& message, Entities& formatter);
+        MessageGenerator(const std::shared_ptr<const EchoMessage>& message);
         MessageGenerator(const MessageGenerator& other) = delete;
         MessageGenerator& operator=(const MessageGenerator& other) = delete;
         ~MessageGenerator() = default;
 
-    private:
-        void GenerateConstructors();
-        void GenerateFunctions();
-        void GenerateNestedMessageForwardDeclarations();
-        void GenerateNestedMessages();
-        void GenerateFieldDeclarations();
-        void GenerateFieldConstants();
-        void GenerateMaxMessageSize();
-        std::string SerializerBody();
-        std::string DeserializerBody();
-        std::string CompareEqualBody() const;
-        std::string CompareUnEqualBody() const;
+        void Run(Entities& formatter);
 
-    private:
+    protected:
+        virtual void GenerateClass(Entities& formatter);
+        virtual void GenerateConstructors();
+        virtual void GenerateFunctions();
+        virtual void GenerateNestedMessageForwardDeclarations();
+        virtual void GenerateEnums();
+        virtual void GenerateNestedMessages();
+        virtual void GenerateFieldDeclarations();
+        virtual void GenerateFieldConstants();
+        virtual void GenerateMaxMessageSize();
+        virtual std::string SerializerBody();
+        virtual std::string DeserializerBody();
+        virtual std::string CompareEqualBody() const;
+        virtual std::string CompareUnEqualBody() const;
+
+    protected:
         std::shared_ptr<const EchoMessage> message;
         Class* classFormatter;
-        std::vector<std::shared_ptr<MessageGenerator>> messageGenerators;
     };
+
+    class MessageReferenceGenerator
+        : public MessageGenerator
+    {
+    public:
+        using MessageGenerator::MessageGenerator;
+
+    protected:
+        virtual void GenerateClass(Entities& formatter) override;
+        virtual void GenerateConstructors() override;
+        virtual void GenerateFunctions() override;
+        virtual void GenerateNestedMessageForwardDeclarations();
+        virtual void GenerateNestedMessages();
+        virtual void GenerateFieldDeclarations() override;
+        virtual void GenerateMaxMessageSize() override;
+        virtual std::string SerializerBody() override;
+        virtual std::string DeserializerBody() override;
+   };
 
     class ServiceGenerator
     {
@@ -91,6 +112,7 @@ namespace application
         const google::protobuf::FileDescriptor* file;
 
         std::vector<std::shared_ptr<MessageGenerator>> messageGenerators;
+        std::vector<std::shared_ptr<MessageReferenceGenerator>> messageReferenceGenerators;
         std::vector<std::shared_ptr<ServiceGenerator>> serviceGenerators;
     };
 }

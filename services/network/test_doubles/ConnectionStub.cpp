@@ -7,7 +7,7 @@ namespace services
     {
         assert(streamWriter.Allocatable());
         assert(sendSize <= MaxSendStreamSize());
-        streamWriterPtr = streamWriter.Emplace(*this);
+        streamWriterPtr = streamWriter.Emplace(infra::inPlace, sentData, sendSize);
         infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionStub>& object)
         {
             infra::SharedPtr<infra::StreamWriter> stream = std::move(object->streamWriterPtr);
@@ -47,11 +47,8 @@ namespace services
     void ConnectionStub::SimulateDataReceived(infra::ConstByteRange data)
     {
         receivingData.insert(receivingData.end(), data.begin(), data.end());
-        infra::EventDispatcherWithWeakPtr::Instance().Schedule([this](const infra::SharedPtr<ConnectionStub>& object)
-        {
-            if (object->HasObserver())
-                object->GetObserver().DataReceived();
-        }, SharedFromThis());
+        if (HasObserver())
+            GetObserver().DataReceived();
     }
 
     std::string ConnectionStub::SentDataAsString() const
@@ -59,18 +56,21 @@ namespace services
         return{ sentData.begin(), sentData.end() };
     }
 
-    ConnectionStub::StreamWriterStub::StreamWriterStub(ConnectionStub& connection)
+    ConnectionStub::StreamWriterStub::StreamWriterStub(ConnectionStub& connection, std::size_t size)
         : connection(connection)
+        , size(size)
     {}
 
     void ConnectionStub::StreamWriterStub::Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy)
     {
+        assert(range.size() + offset <= size);
+        offset += range.size();
         connection.sentData.insert(connection.sentData.end(), range.begin(), range.end());
     }
 
     std::size_t ConnectionStub::StreamWriterStub::Available() const
     {
-        return connection.MaxSendStreamSize();
+        return size - offset;
     }
 
     ConnectionStub::StreamReaderStub::StreamReaderStub(ConnectionStub& connection)

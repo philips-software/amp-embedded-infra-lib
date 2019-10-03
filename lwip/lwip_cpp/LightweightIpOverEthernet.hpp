@@ -13,12 +13,6 @@
 
 namespace services
 {
-#ifdef ESP_PLATFORM
-using netif_mac_filter_action = u8_t;
-#define NETIF_DEL_MAC_FILTER IGMP_DEL_MAC_FILTER
-#define NETIF_ADD_MAC_FILTER IGMP_ADD_MAC_FILTER
-#endif
-
     class LightweightIpOverEthernet
         : hal::EthernetMacObserver
     {

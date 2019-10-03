@@ -6,6 +6,12 @@ namespace infra
         : range(range)
     {}
 
+    void ByteInputStreamReader::ResetRange(ConstByteRange newRange)
+    {
+        range = newRange;
+        offset = 0;
+    }
+
     ConstByteRange ByteInputStreamReader::Processed() const
     {
         return MakeRange(range.begin(), range.begin() + offset);
@@ -18,7 +24,9 @@ namespace infra
 
     void ByteInputStreamReader::Extract(ByteRange dataRange, StreamErrorPolicy& errorPolicy)
     {
-        errorPolicy.ReportResult(dataRange.size() <= range.size() - offset);
+        auto remaining = range.size() - offset;
+        errorPolicy.ReportResult(dataRange.size() <= remaining);
+        dataRange.shrink_from_back_to(remaining);
         std::copy(range.begin() + offset, range.begin() + offset + dataRange.size(), dataRange.begin());
         offset += dataRange.size();
     }

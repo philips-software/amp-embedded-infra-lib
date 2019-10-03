@@ -17,6 +17,9 @@ namespace infra
         template<class T>
             ReservedProxy<T> Reserve(StreamErrorPolicy& errorPolicy);
 
+        void Reset();
+        void Reset(BoundedString& newString);
+
     private:
         virtual void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy) override;
         virtual std::size_t Available() const override;
@@ -28,7 +31,7 @@ namespace infra
         virtual infra::ByteRange Overwrite(std::size_t marker) override;
 
     private:
-        BoundedString& string;
+        BoundedString* string;
     };
 
     class StringOutputStream
@@ -48,14 +51,14 @@ namespace infra
     template<class T>
     ReservedProxy<T> StringOutputStreamWriter::Reserve(StreamErrorPolicy& errorPolicy)
     {
-        ByteRange range(ReinterpretCastByteRange(MemoryRange<char>(string.end(), string.end() + sizeof(T))));
-        std::size_t spaceLeft = string.max_size() - string.size();
+        ByteRange range(ReinterpretCastByteRange(MemoryRange<char>(string->end(), string->end() + sizeof(T))));
+        std::size_t spaceLeft = string->max_size() - string->size();
         bool spaceOk = range.size() <= spaceLeft;
         errorPolicy.ReportResult(spaceOk);
         if (!spaceOk)
             range.shrink_from_back_to(spaceLeft);
 
-        string.append(range.size(), 0);
+        string->append(range.size(), 0);
 
         return ReservedProxy<T>(range);
     }

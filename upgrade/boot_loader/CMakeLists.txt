@@ -21,7 +21,7 @@ ccola_component(boot_loader static_library)
         PackUpgrader.cpp
         PackUpgrader.hpp
         SecondStageToRamLoader.cpp
-        PackUpgrader.hpp
+        SecondStageToRamLoader.hpp
         Verifier.hpp
         VerifierEcDsa.cpp
         VerifierEcDsa.hpp
@@ -36,7 +36,7 @@ ccola_component(boot_loader static_library)
         infra.util
         infra.stream
         infra.syntax
-        crypto.mbed_tls
+        crypto.mbed_tls_minimal
         crypto.micro_ecc
         crypto.tiny_aes128
         hal.synchronous_interfaces
@@ -46,5 +46,6 @@ ccola_component(boot_loader static_library)
 ccola_end_component()
 
 ccola_subdirectories(
+    test_doubles
     test
 )

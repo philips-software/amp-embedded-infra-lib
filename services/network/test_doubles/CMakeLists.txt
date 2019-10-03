@@ -11,12 +11,13 @@ ccola_component(network_test_doubles x86: static_library other: noncompile)
         ConnectionStub.cpp
         ConnectionStub.hpp
         DatagramMock.hpp
-        HttpMock.hpp
-        HttpMock.cpp
+        HttpClientMock.hpp
+        HttpClientMock.cpp
         HttpRequestParserStub.hpp
         HttpServerMock.hpp
         MqttMock.hpp
         MulticastMock.hpp
+        NameResolverMock.hpp
         SntpMock.hpp
         WiFiNetworkMock.hpp
     )

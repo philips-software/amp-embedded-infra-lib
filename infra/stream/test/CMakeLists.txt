@@ -3,13 +3,17 @@ ccola_component(stream_test gmock_test)
     ccola_sources(
         StreamMock.hpp
         TestBoundedDequeInputStream.cpp
+        TestBoundedVectorOutputStream.cpp
         TestByteInputStream.cpp
         TestByteOutputStream.cpp
+        TestCountingInputStream.cpp
+        TestFormatter.cpp
         TestLimitedInputStream.cpp
         TestLimitedOutputStream.cpp
         TestOutputStreamSwitch.cpp
         TestStdStringInputStream.cpp
         TestStdStringOutputStream.cpp
+        TestStdVectorInputStream.cpp
         TestStringInputStream.cpp
         TestStringOutputStream.cpp
     )

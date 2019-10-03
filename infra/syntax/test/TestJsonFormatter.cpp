@@ -133,6 +133,20 @@ TEST(JsonObjectFormatter, add_sub_array)
     EXPECT_EQ(R"({ "tag":[ "value" ] })", string);
 }
 
+TEST(JsonObjectFormatter, add_string_via_stream)
+{
+    infra::BoundedString::WithStorage<64> string;
+
+    {
+        infra::BoundedConstString s("test");
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        auto stream = formatter.AddString("tag");
+        stream << s;
+    }
+
+    EXPECT_EQ(R"({ "tag":"test" })", string);
+}
+
 TEST(JsonObjectFormatter, add_json_value_bool)
 {
     infra::BoundedString::WithStorage<64> string;
@@ -199,7 +213,8 @@ TEST(JsonObjectFormatter, output_is_truncated_on_small_output_string)
 
     {
         infra::BoundedConstString s("test");
-        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        infra::StringOutputStream stream(string, infra::noFail);
+        infra::JsonObjectFormatter formatter(stream);
         formatter.Add("tag", s);
     }
 
@@ -211,7 +226,7 @@ TEST(JsonObjectFormatter, move_object_formatter)
     infra::BoundedString::WithStorage<100> string;
 
     {
-        auto formatter = infra::JsonObjectFormatter::WithStringStream(infra::inPlace, string);
+        auto&& formatter = infra::JsonObjectFormatter::WithStringStream(infra::inPlace, string);
         auto subObject = std::move(formatter.SubObject("tag"));
     }
 
@@ -223,7 +238,7 @@ TEST(JsonObjectFormatter, move_array_formatter)
     infra::BoundedString::WithStorage<100> string;
 
     {
-        auto formatter = infra::JsonObjectFormatter::WithStringStream(infra::inPlace, string);
+        auto&& formatter = infra::JsonObjectFormatter::WithStringStream(infra::inPlace, string);
         auto subArray = std::move(formatter.SubArray("tag"));
     }
 
@@ -351,7 +366,8 @@ TEST(JsonArrayFormatter, output_is_truncated_on_small_output_string)
 
     {
         infra::BoundedConstString s("test");
-        infra::JsonArrayFormatter::WithStringStream formatter(infra::inPlace, string);
+        infra::StringOutputStream stream(string, infra::noFail);
+        infra::JsonArrayFormatter formatter(stream);
         formatter.Add(s);
     }
 

@@ -3,10 +3,16 @@ ccola_component(stream static_library)
     ccola_sources(
         BoundedDequeInputStream.cpp
         BoundedDequeInputStream.hpp
+        BoundedVectorOutputStream.cpp
+        BoundedVectorOutputStream.hpp
         ByteInputStream.cpp
         ByteInputStream.hpp
         ByteOutputStream.cpp
         ByteOutputStream.hpp
+        CountingInputStream.cpp
+        CountingInputStream.hpp
+        Formatter.cpp
+        Formatter.hpp
         InputStream.cpp
         InputStream.hpp
         IoOutputStream.cpp
@@ -25,6 +31,10 @@ ccola_component(stream static_library)
         StdStringInputStream.hpp
         StdStringOutputStream.cpp
         StdStringOutputStream.hpp
+        StdVectorInputStream.cpp
+        StdVectorInputStream.hpp
+        StdVectorOutputStream.cpp
+        StdVectorOutputStream.hpp
         StreamErrorPolicy.cpp
         StreamErrorPolicy.hpp
         StreamManipulators.cpp

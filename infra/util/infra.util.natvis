@@ -26,6 +26,17 @@
     </Expand>
   </Type>
 
+  <Type Name="infra::MemoryRange&lt;*&gt;">
+    <DisplayString>{{ size={endElement - beginElement} }</DisplayString>
+    <Expand>
+      <Item Name="[size]">endElement - beginElement</Item>
+      <ArrayItems>
+        <Size>endElement - beginElement</Size>
+        <ValuePointer>beginElement</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
   <Type Name="infra::Function&lt;*&gt;">
     <DisplayString Condition="invokerFunctions.virtualMethodTable == nullptr">empty</DisplayString>
     <DisplayString>{invokerFunctions.data}</DisplayString>
@@ -69,6 +80,28 @@
       <Item Name="data" Condition="dataIndex == 5" Optional="true">*($T6*)&amp;data</Item>
       <Item Name="data" Condition="dataIndex == 6" Optional="true">*($T7*)&amp;data</Item>
       <Item Name="data" Condition="dataIndex == 7" Optional="true">*($T8*)&amp;data</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="infra::PolymorphicVariant&lt;*&gt;">
+    <DisplayString Condition="dataIndex == 0">{*($T2*)storage.dataPtr}</DisplayString>
+    <DisplayString Condition="dataIndex == 1" Optional="true">{*($T3*)storage.dataPtr}</DisplayString>
+    <DisplayString Condition="dataIndex == 2" Optional="true">{*($T4*)storage.dataPtr}</DisplayString>
+    <DisplayString Condition="dataIndex == 3" Optional="true">{*($T5*)storage.dataPtr}</DisplayString>
+    <DisplayString Condition="dataIndex == 4" Optional="true">{*($T6*)storage.dataPtr}</DisplayString>
+    <DisplayString Condition="dataIndex == 5" Optional="true">{*($T7*)storage.dataPtr}</DisplayString>
+    <DisplayString Condition="dataIndex == 6" Optional="true">{*($T8*)storage.dataPtr}</DisplayString>
+    <DisplayString Condition="dataIndex == 7" Optional="true">{*($T9*)storage.dataPtr}</DisplayString>
+    <Expand>
+      <Item Name="which">dataIndex</Item>
+      <Item Name="data" Condition="dataIndex == 0">*($T2*)storage.dataPtr</Item>
+      <Item Name="data" Condition="dataIndex == 1" Optional="true">*($T3*)storage.dataPtr</Item>
+      <Item Name="data" Condition="dataIndex == 2" Optional="true">*($T4*)storage.dataPtr</Item>
+      <Item Name="data" Condition="dataIndex == 3" Optional="true">*($T5*)storage.dataPtr</Item>
+      <Item Name="data" Condition="dataIndex == 4" Optional="true">*($T6*)storage.dataPtr</Item>
+      <Item Name="data" Condition="dataIndex == 5" Optional="true">*($T7*)storage.dataPtr</Item>
+      <Item Name="data" Condition="dataIndex == 6" Optional="true">*($T8*)storage.dataPtr</Item>
+      <Item Name="data" Condition="dataIndex == 7" Optional="true">*($T9*)storage.dataPtr</Item>
     </Expand>
   </Type>
 </AutoVisualizer>

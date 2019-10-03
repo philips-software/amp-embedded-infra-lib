@@ -283,7 +283,14 @@ macro(ccola_external_libraries)
 	if(NOT CCOLA_COMPONENT_SKIP)
 		ccola_assert(CCOLA_COMPONENT_NAME "This command may only be used in a component")
 
-		list(APPEND CCOLA_COMPONENT_EXTERNAL_LIBRARIES ${ARGV})
+		set(libs ${ARGV})
+		ccola_parse_selection_list(libs)
+
+		foreach(item ${libs})
+			list(APPEND CCOLA_COMPONENT_EXTERNAL_LIBRARIES ${item})
+		endforeach()
+
+		ccola_list_remove_duplicates(CCOLA_COMPONENT_EXTERNAL_LIBRARIES)
 	endif()
 
 endmacro()

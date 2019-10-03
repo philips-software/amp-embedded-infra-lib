@@ -3,50 +3,56 @@
 
 #include <string>
 #include "upgrade/pack_builder/SparseVector.hpp"
+#include "upgrade/pack_builder/Elf.hpp"
 
 namespace application
 {
-    struct LineException
+    class LineException
+        : public std::runtime_error
     {
-        LineException(const std::string& file, int line);
-
-        std::string file;
-        int line;
+    public:
+        LineException(const std::string& prependMessage, const std::string& file, int line);
     };
 
-    struct IncorrectCrcException
-        : LineException
+    class IncorrectCrcException
+        : public LineException
     {
+    public:
         IncorrectCrcException(const std::string& file, int line);
     };
 
-    struct NoEndOfFileException
-        : LineException
+    class NoEndOfFileException
+        : public LineException
     {
+    public:
         NoEndOfFileException(const std::string& file, int line);
     };
 
-    struct DataAfterEndOfFileException
-        : LineException
+    class DataAfterEndOfFileException
+        : public LineException
     {
+    public:
         DataAfterEndOfFileException(const std::string& file, int line);
     };
 
-    struct UnknownRecordException
-        : LineException
+    class UnknownRecordException
+        : public LineException
     {
+    public:
         UnknownRecordException(const std::string& file, int line);
     };
 
-    struct RecordTooShortException
-        : LineException
+    class RecordTooShortException
+        : public LineException
     {
+    public:
         RecordTooShortException(const std::string& file, int line);
     };
 
-    struct RecordTooLongException
-        : LineException
+    class RecordTooLongException
+        : public LineException
     {
+    public:
         RecordTooLongException(const std::string& file, int line);
     };
 
@@ -54,6 +60,7 @@ namespace application
     {
     public:
         void AddHex(const std::vector<std::string>& data, uint32_t offset, const std::string& fileName);
+        void AddElf(const std::vector<uint8_t>& data, uint32_t offset, const std::string& fileName);
         void AddBinary(const std::vector<uint8_t>& data, uint32_t offset, const std::string& fileName);
 
         const SparseVector<uint8_t>& Memory() const;
@@ -69,6 +76,7 @@ namespace application
         };
 
     private:
+        std::string SectionName(const std::vector<uint8_t>& data, const uint32_t sectionNameOffset);
         void AddLine(const std::string& line, const std::string& fileName, int lineNumber);
         void VerifyNotEndOfFile(const std::string& fileName, int lineNumber) const;
         void InsertLineContents(const LineContents& lineContents);

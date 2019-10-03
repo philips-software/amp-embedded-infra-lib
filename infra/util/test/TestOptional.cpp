@@ -219,6 +219,14 @@ TEST(OptionalTest, TestMakeOptional)
     EXPECT_TRUE(*o);
 }
 
+TEST(OptionalTest, TestTransformOptional)
+{
+    infra::Optional<bool> o = infra::MakeOptional(true);
+    infra::Optional<bool> empty;
+    EXPECT_EQ(infra::MakeOptional(5), infra::TransformOptional(infra::MakeOptional(true), [](bool value) { return 5; }));
+    EXPECT_EQ(infra::none, infra::TransformOptional(empty, [](bool value) { return 5; }));
+}
+
 TEST(OptionalTest, ValueOrGivesStoredWhenAvailable)
 {
     infra::Optional<int> i(infra::inPlace, 5);

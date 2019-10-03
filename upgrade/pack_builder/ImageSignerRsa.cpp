@@ -4,16 +4,35 @@
 
 //TICS -CON#002
 
+namespace
+{
+    // System Workbench's GCC does not yet support std::make_reverse_iterator
+    namespace polyfill
+    {
+        template<class Iterator>
+        std::reverse_iterator<Iterator> make_reverse_iterator(Iterator i)
+        {
+            return std::reverse_iterator<Iterator>(i);
+        }
+    }
+
+    std::vector<uint8_t> SwapBytes(infra::ConstByteRange range)
+    {
+        std::vector<uint8_t> swapped(range.size());
+
+        std::copy(range.begin(), range.end(), polyfill::make_reverse_iterator(swapped.end()));
+
+        return swapped;
+    }
+}
+
 namespace application
 {
-    RandomNumberGenerator* ImageSignerRsa::randomNumberGenerator = nullptr;
-
-    ImageSignerRsa::ImageSignerRsa(RandomNumberGenerator& randomNumberGenerator, const RsaPublicKey& publicKey, const RsaPrivateKey& privateKey)
+    ImageSignerRsa::ImageSignerRsa(hal::SynchronousRandomDataGenerator& randomDataGenerator, const RsaPublicKey& publicKey, const RsaPrivateKey& privateKey)
         : publicKey(publicKey)
         , privateKey(privateKey)
-    {
-        ImageSignerRsa::randomNumberGenerator = &randomNumberGenerator;
-    }
+        , randomDataGenerator(randomDataGenerator)
+    {}
 
     uint16_t ImageSignerRsa::SignatureMethod() const
     {
@@ -40,14 +59,16 @@ namespace application
 
         mbedtls_rsa_context rsaCtx;
         mbedtls_rsa_init(&rsaCtx, MBEDTLS_RSA_PKCS_V21, MBEDTLS_MD_SHA256);
-        rsaCtx.len = publicKey.N.size();
-        rsaCtx.N.s = 1;
-        rsaCtx.N.n = publicKey.N.size();
-        rsaCtx.N.p = reinterpret_cast<mbedtls_mpi_uint*>(const_cast<uint8_t*>(publicKey.N.begin()));
-        rsaCtx.E.s = 1;
-        rsaCtx.E.n = publicKey.E.size();
-        rsaCtx.E.p = reinterpret_cast<mbedtls_mpi_uint*>(const_cast<uint8_t*>(publicKey.E.begin()));
         mbedtls_rsa_set_padding(&rsaCtx, MBEDTLS_RSA_PKCS_V21, MBEDTLS_MD_SHA256);
+        mbedtls_rsa_import_raw(&rsaCtx,
+            SwapBytes(publicKey.N).data(), publicKey.N.size(),
+            nullptr, 0,
+            nullptr, 0,
+            nullptr, 0,
+            SwapBytes(publicKey.E).data(), publicKey.E.size());
+
+        if (mbedtls_rsa_complete(&rsaCtx) != 0)
+            return false;
 
         if (mbedtls_rsa_check_pubkey(&rsaCtx) != 0)
             return false;
@@ -55,14 +76,6 @@ namespace application
         bool success = mbedtls_rsa_rsassa_pss_verify(&rsaCtx, NULL, NULL, MBEDTLS_RSA_PUBLIC, MBEDTLS_MD_SHA256, hash.size(), hash.data(), signature.data()) == 0
             && mbedtls_rsa_self_test(0) == 0;
 
-        rsaCtx.N.p = nullptr;
-        rsaCtx.E.p = nullptr;
-        rsaCtx.D.p = nullptr;
-        rsaCtx.P.p = nullptr;
-        rsaCtx.Q.p = nullptr;
-        rsaCtx.DP.p = nullptr;
-        rsaCtx.DQ.p = nullptr;
-        rsaCtx.QP.p = nullptr;
         mbedtls_rsa_free(&rsaCtx);
 
         return success;
@@ -84,58 +97,36 @@ namespace application
 
         mbedtls_rsa_context rsaCtx;
         mbedtls_rsa_init(&rsaCtx, MBEDTLS_RSA_PKCS_V21, MBEDTLS_MD_SHA256);
-        rsaCtx.len = publicKey.N.size();
-        rsaCtx.N.s = 1;
-        rsaCtx.N.n = publicKey.N.size() / 4;
-        rsaCtx.N.p = reinterpret_cast<mbedtls_mpi_uint*>(const_cast<uint8_t*>(publicKey.N.begin()));
-        rsaCtx.E.s = 1;
-        rsaCtx.E.n = publicKey.E.size() / 4;
-        rsaCtx.E.p = reinterpret_cast<mbedtls_mpi_uint*>(const_cast<uint8_t*>(publicKey.E.begin()));
-        rsaCtx.D.s = 1;
-        rsaCtx.D.n = privateKey.D.size() / 4;
-        rsaCtx.D.p = reinterpret_cast<mbedtls_mpi_uint*>(const_cast<uint8_t*>(privateKey.D.begin()));
-        rsaCtx.P.s = 1;
-        rsaCtx.P.n = privateKey.P.size() / 4;
-        rsaCtx.P.p = reinterpret_cast<mbedtls_mpi_uint*>(const_cast<uint8_t*>(privateKey.P.begin()));
-        rsaCtx.Q.s = 1;
-        rsaCtx.Q.n = privateKey.Q.size() / 4;
-        rsaCtx.Q.p = reinterpret_cast<mbedtls_mpi_uint*>(const_cast<uint8_t*>(privateKey.Q.begin()));
-        rsaCtx.DP.s = 1;
-        rsaCtx.DP.n = privateKey.DP.size() / 4;
-        rsaCtx.DP.p = reinterpret_cast<mbedtls_mpi_uint*>(const_cast<uint8_t*>(privateKey.DP.begin()));
-        rsaCtx.DQ.s = 1;
-        rsaCtx.DQ.n = privateKey.DQ.size() / 4;
-        rsaCtx.DQ.p = reinterpret_cast<mbedtls_mpi_uint*>(const_cast<uint8_t*>(privateKey.DQ.begin()));
-        rsaCtx.QP.s = 1;
-        rsaCtx.QP.n = privateKey.QP.size() / 4;
-        rsaCtx.QP.p = reinterpret_cast<mbedtls_mpi_uint*>(const_cast<uint8_t*>(privateKey.QP.begin()));
         mbedtls_rsa_set_padding(&rsaCtx, MBEDTLS_RSA_PKCS_V21, MBEDTLS_MD_SHA256);
 
+        mbedtls_rsa_import_raw(&rsaCtx,
+            SwapBytes(publicKey.N).data(), publicKey.N.size(),
+            SwapBytes(privateKey.P).data(), privateKey.P.size(),
+            SwapBytes(privateKey.Q).data(), privateKey.Q.size(),
+            SwapBytes(privateKey.D).data(), privateKey.D.size(),
+            SwapBytes(publicKey.E).data(), publicKey.E.size());
+
+        if (mbedtls_rsa_complete(&rsaCtx) != 0)
+            throw std::runtime_error("Invalid public or private key parameters");
+
         if (rsaCtx.len != signature.size())
-            throw std::exception("Key length wrong");
+            throw std::runtime_error("Key length wrong");
 
         ret = mbedtls_rsa_check_privkey(&rsaCtx);
         if (ret != 0)
-            throw std::exception("Public key is invalid");
+            throw std::runtime_error("Public or private key is invalid");
 
-        ret = mbedtls_rsa_rsassa_pss_sign(&rsaCtx, MyRandom, NULL, MBEDTLS_RSA_PRIVATE, MBEDTLS_MD_SHA256, hash.size(), hash.data(), signature.data());
+        ret = mbedtls_rsa_rsassa_pss_sign(&rsaCtx, RandomNumberGenerator, this, MBEDTLS_RSA_PRIVATE, MBEDTLS_MD_SHA256, hash.size(), hash.data(), signature.data());
         if (ret != 0)
-            throw std::exception("Failed to calculate signature");
+            throw std::runtime_error("Failed to calculate signature");
 
-        rsaCtx.N.p = nullptr;
-        rsaCtx.E.p = nullptr;
-        rsaCtx.D.p = nullptr;
-        rsaCtx.P.p = nullptr;
-        rsaCtx.Q.p = nullptr;
-        rsaCtx.DP.p = nullptr;
-        rsaCtx.DQ.p = nullptr;
-        rsaCtx.QP.p = nullptr;
         mbedtls_rsa_free(&rsaCtx);
     }
 
-    int ImageSignerRsa::MyRandom(void *rng_state, unsigned char *output, size_t len)
+    int ImageSignerRsa::RandomNumberGenerator(void* rng_state, unsigned char* output, size_t len)
     {
-        std::vector<uint8_t> data = randomNumberGenerator->Generate(len);
+        std::vector<uint8_t> data(len, 0);
+        reinterpret_cast<ImageSignerRsa*>(rng_state)->randomDataGenerator.GenerateRandomData(data);
         std::copy(data.begin(), data.end(), output);
         return 0;
     }

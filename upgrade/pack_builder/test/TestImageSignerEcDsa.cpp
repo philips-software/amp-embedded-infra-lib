@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+#include "hal/synchronous_interfaces/test_doubles/SynchronousFixedRandomDataGenerator.hpp"
 #include "upgrade/pack_builder/ImageSignerEcDsa.hpp"
 
 class TestImageSignerEcDsa
@@ -6,14 +7,14 @@ class TestImageSignerEcDsa
 {
 public:
     TestImageSignerEcDsa()
-        : randomNumberGenerator(std::vector<uint8_t>(1000, 5))
-        , signer(randomNumberGenerator, ecDsa224PublicKey, ecDsa224PrivateKey)
+        : randomDataGenerator(std::vector<uint8_t>(1000, 5))
+        , signer(randomDataGenerator, ecDsa224PublicKey, ecDsa224PrivateKey)
     {}
 
-    application::FixedRandomNumberGenerator randomNumberGenerator;
+    hal::SynchronousFixedRandomDataGenerator randomDataGenerator;
     application::ImageSignerEcDsa signer;
 
-    const std::array<uint8_t, 56> ecDsa224PublicKey = std::array<uint8_t, 56>{ {
+    const std::array<uint8_t, 56> ecDsa224PublicKey { {
         0x86, 0x9b, 0xa2, 0x7d, 0x39, 0x56, 0x43, 0x16,
         0x1c, 0xfd, 0x34, 0x7f, 0x9e, 0x21, 0x44, 0x88,
         0x21, 0x7e, 0xc5, 0x26, 0xfe, 0x5f, 0x1e, 0xca,
@@ -23,7 +24,7 @@ public:
         0x7b, 0xb6, 0xbf, 0xe7, 0x3b, 0x16, 0x2a, 0x8e
     } };
 
-    const std::array<uint8_t, 56> ecDsa224PrivateKey = std::array<uint8_t, 56>{ {
+    const std::array<uint8_t, 56> ecDsa224PrivateKey { {
         0xc9, 0x50, 0x62, 0x5a, 0xbe, 0x84, 0x03, 0x8a,
         0xc9, 0x1d, 0x0c, 0x2b, 0x27, 0xc0, 0xc0, 0xe5,
         0xd2, 0xa1, 0xe3, 0xb8, 0x0a, 0x66, 0x0e, 0xde,

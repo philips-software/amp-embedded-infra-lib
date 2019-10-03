@@ -3,6 +3,7 @@
 
 #include "services/network/HttpClientImpl.hpp"
 #include "services/tracer/Tracer.hpp"
+#include "services/tracer/TracingOutputStream.hpp"
 
 namespace services
 {
@@ -10,54 +11,31 @@ namespace services
         : public HttpClientImpl
     {
     public:
-        template<std::size_t MaxHeaderSize>
-            using WithMaxHeaderSize = infra::WithStorage<TracingHttpClientImpl, infra::BoundedString::WithStorage<MaxHeaderSize>>;
-
-        TracingHttpClientImpl(infra::BoundedString& headerBuffer, infra::BoundedConstString hostname, Tracer& tracer);
+        TracingHttpClientImpl(infra::BoundedConstString hostname, Tracer& tracer);
 
         // Implementation of ConnectionObserver
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void DataReceived() override;
         virtual void Connected() override;
         virtual void ClosingConnection() override;
+        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
     private:
-        friend class TracingHttpClientConnectorImpl;
-        
-        Tracer& tracer;
-    };
+        class TracingWriter
+        {
+        public:
+            TracingWriter(infra::SharedPtr<infra::StreamWriter>&& writer, services::Tracer& tracer);
 
-    class TracingHttpClientConnectorImpl
-        : public HttpClientConnector
-        , public ClientConnectionObserverFactoryWithNameResolver
-    {
-    public:
-        template<std::size_t MaxHeaderSize>
-            using WithMaxHeaderSize = infra::WithStorage<TracingHttpClientConnectorImpl, infra::BoundedString::WithStorage<MaxHeaderSize>>;
+            infra::StreamWriter& Writer();
 
-        TracingHttpClientConnectorImpl(infra::BoundedString& headerBuffer, ConnectionFactoryWithNameResolver& connectionFactory, Tracer& tracer);
-
-        // Implementation of ClientConnectionObserverFactoryWithNameResolver
-        virtual infra::BoundedConstString Hostname() const override;
-        virtual uint16_t Port() const override;
-        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver) override;
-        virtual void ConnectionFailed(ConnectFailReason reason) override;
-
-        // Implementation of HttpClientConnector
-        virtual void Connect(HttpClientObserverFactory& factory) override;
-        virtual void CancelConnect(HttpClientObserverFactory& factory) override;
+        private:
+            infra::SharedPtr<infra::StreamWriter> writer;
+            TracingStreamWriter tracingWriter;
+        };
 
     private:
-        void TryConnectWaiting();
-
-    private:
-        infra::BoundedString& headerBuffer;
-        ConnectionFactoryWithNameResolver& connectionFactory;
-        infra::NotifyingSharedOptional<TracingHttpClientImpl> client;
         Tracer& tracer;
 
-        HttpClientObserverFactory* clientObserverFactory = nullptr;
-        infra::IntrusiveList<HttpClientObserverFactory> waitingClientObserverFactories;
+        infra::SharedOptional<TracingWriter> tracingWriter;
     };
 }
 

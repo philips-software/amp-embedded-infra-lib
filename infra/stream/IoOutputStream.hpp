@@ -5,15 +5,22 @@
 #include "infra/stream/OutputStream.hpp"
 #include "infra/util/BoundedString.hpp"
 #include <cstdint>
+#include <iostream>
 
 namespace infra
 {
     class IoOutputStreamWriter
         : public StreamWriter
     {
-    private:
+    public:
+        IoOutputStreamWriter() = default;
+        IoOutputStreamWriter(std::ostream& stream);
+
         virtual void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy) override;
         virtual std::size_t Available() const override;
+
+    private:
+        std::ostream& stream{ std::cout };
     };
 
     class IoOutputStream

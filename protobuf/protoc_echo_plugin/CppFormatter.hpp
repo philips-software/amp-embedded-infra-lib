@@ -213,6 +213,20 @@ namespace application
     private:
         std::string name;
     };
+
+    class EnumDeclaration
+        : public Entity
+    {
+    public:
+        explicit EnumDeclaration(const std::string& name, const std::vector<std::pair<std::string, int>>& members);
+
+        virtual void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        virtual void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+
+    private:
+        std::string name;
+        std::vector<std::pair<std::string, int>> members;
+    };
 }
 
 #endif

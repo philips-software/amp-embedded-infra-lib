@@ -161,18 +161,19 @@ namespace infra
 
     TextOutputStream& TextOutputStream::operator<<(int64_t v)
     {
-        if (v < 0)
-            Writer().Insert(MakeByteRange('-'), ErrorPolicy());
+        const auto negative = v < 0;
+        if (negative)
+            v = -v;
         switch (radix)
         {
             case Radix::dec:
-                OutputAsDecimal(std::abs(v));
+                OutputAsDecimal(v, negative);
                 break;
             case Radix::bin:
-                OutputAsBinary(std::abs(v));
+                OutputAsBinary(v, negative);
                 break;
             case Radix::hex:
-                OutputAsHexadecimal(std::abs(v));
+                OutputAsHexadecimal(v, negative);
                 break;
             default:
                 std::abort();
@@ -184,15 +185,15 @@ namespace infra
     TextOutputStream& TextOutputStream::operator<<(uint64_t v)
     {
         switch (radix)
-        {
+            {
             case Radix::dec:
-                OutputAsDecimal(v);
+                OutputAsDecimal(v, false);
                 break;
             case Radix::bin:
-                OutputAsBinary(v);
+                OutputAsBinary(v, false);
                 break;
             case Radix::hex:
-                OutputAsHexadecimal(v);
+                OutputAsHexadecimal(v, false);
                 break;
             default:
                 std::abort();
@@ -201,7 +202,7 @@ namespace infra
         return *this;
     }
 
-#if !defined(_MSC_VER) && !defined(ESP_PLATFORM)                                                                    //TICS !POR#021
+#if !defined(__clang__) && defined(__GNUC__) && __GNUC__ <= 4 && __GNUC_MINOR__ <= 9 && __GNUC_PATCHLEVEL__ < 4
     TextOutputStream& TextOutputStream::operator<<(int v)
     {
         return *this << static_cast<int64_t>(v);
@@ -227,9 +228,9 @@ namespace infra
         return *this;
     }
 
-    void TextOutputStream::OutputAsDecimal(uint64_t v)
+    void TextOutputStream::OutputAsDecimal(uint64_t v, bool negative)
     {
-        size_t nofDigits = 1;
+        size_t nofDigits = negative ? 2 : 1;
         uint64_t mask = 1;
 
         while (v / mask >= 10)
@@ -238,6 +239,8 @@ namespace infra
             ++nofDigits;
         }
         OutputOptionalPadding(nofDigits);
+        if (negative)
+            Writer().Insert(MakeByteRange('-'), ErrorPolicy());
 
         while (mask != 0)
         {
@@ -246,9 +249,9 @@ namespace infra
         }
     }
 
-    void TextOutputStream::OutputAsBinary(uint64_t v)
+    void TextOutputStream::OutputAsBinary(uint64_t v, bool negative)
     {
-        size_t nofDigits = 1;
+        size_t nofDigits = negative ? 2 : 1;
         uint64_t mask = 1;
 
         while (v / mask >= 2)
@@ -257,6 +260,8 @@ namespace infra
             ++nofDigits;
         }
         OutputOptionalPadding(nofDigits);
+        if (negative)
+            Writer().Insert(MakeByteRange('-'), ErrorPolicy());
 
         while (mask != 0)
         {
@@ -265,11 +270,11 @@ namespace infra
         }
     }
 
-    void TextOutputStream::OutputAsHexadecimal(uint64_t v)
+    void TextOutputStream::OutputAsHexadecimal(uint64_t v, bool negative)
     {
         static const char hexChars[] = "0123456789abcdef";
 
-        size_t nofDigits = 1;
+        size_t nofDigits = negative ? 2 : 1;
         uint64_t mask = 1;
 
         while (v / mask >= 16)
@@ -278,6 +283,8 @@ namespace infra
             ++nofDigits;
         }
         OutputOptionalPadding(nofDigits);
+        if (negative)
+            Writer().Insert(MakeByteRange('-'), ErrorPolicy());
 
         while (mask != 0)
         {

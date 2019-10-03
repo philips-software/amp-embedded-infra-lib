@@ -51,11 +51,12 @@ namespace services
         assert(streamWriter.Allocatable());
         if (sendBuffer.max_size() - sendBuffer.size() >= requestedSendSize)
         {
-            infra::EventDispatcherWithWeakPtr::Instance().Schedule([this](const infra::SharedPtr<ConnectionLoopBack>& loopBack)
+            auto size = requestedSendSize;
+            infra::EventDispatcherWithWeakPtr::Instance().Schedule([this, size](const infra::SharedPtr<ConnectionLoopBack>& loopBack)
             {
                 if (HasObserver())
                 {
-                    infra::SharedPtr<infra::StreamWriter> writer = streamWriter.Emplace(*this);
+                    infra::SharedPtr<infra::StreamWriter> writer = streamWriter.Emplace(*this, size);
                     GetObserver().SendStreamAvailable(std::move(writer));
                 }
             }, loopBack.SharedFromThis());
@@ -64,14 +65,17 @@ namespace services
         }
     }
 
-    ConnectionLoopBackPeer::StreamWriterLoopBack::StreamWriterLoopBack(ConnectionLoopBackPeer& connection)
-        : connection(connection)
+    ConnectionLoopBackPeer::StreamWriterLoopBack::StreamWriterLoopBack(ConnectionLoopBackPeer& connection, std::size_t size)
+        : infra::LimitedStreamWriter(vectorStreamWriter, size)
+        , connection(connection)
     {}
 
     ConnectionLoopBackPeer::StreamWriterLoopBack::~StreamWriterLoopBack()
     {
-        if (sent != 0)
+        if (!vectorStreamWriter.Storage().empty())
         {
+            connection.sendBuffer.insert(connection.sendBuffer.end(), vectorStreamWriter.Storage().begin(), vectorStreamWriter.Storage().end());
+
             ConnectionLoopBackPeer& connection = this->connection;
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([&connection](const infra::SharedPtr<ConnectionLoopBack>& loopBack)
             {
@@ -79,17 +83,6 @@ namespace services
                     connection.peer.GetObserver().DataReceived();
             }, connection.loopBack.SharedFromThis());
         }
-    }
-
-    void ConnectionLoopBackPeer::StreamWriterLoopBack::Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy)
-    {
-        connection.sendBuffer.insert(connection.sendBuffer.end(), range.begin(), range.end());
-        sent += range.size();
-    }
-
-    std::size_t ConnectionLoopBackPeer::StreamWriterLoopBack::Available() const
-    {
-        return connection.sendBuffer.size() - sent;
     }
 
     ConnectionLoopBackPeer::StreamReaderLoopBack::StreamReaderLoopBack(ConnectionLoopBackPeer& connection)

@@ -1,13 +1,21 @@
-ccola_component(http_server win: executable other: skip)
+ccola_component(http_server x86: executable other: skip)
 
     ccola_sources(
-        Main.cpp
+        TimeHttpPage.cpp
+        TimeHttpPage.hpp
+	win:
+        MainWin.cpp
+	unix:
+		MainUnix.cpp
     )
 
     ccola_dependencies(
         infra.util
-        services.network_win
-        hal.windows
+        hal.generic
+	win:
+		services.network_win
+	unix:
+		services.network_bsd
     )
 
 ccola_end_component()

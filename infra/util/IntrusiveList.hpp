@@ -10,7 +10,7 @@ namespace infra
 {
     template<class T>
     class IntrusiveList;
-        
+
     namespace detail
     {
         template<class T>
@@ -21,17 +21,18 @@ namespace infra
         {
         protected:
             IntrusiveListNode();
-            ~IntrusiveListNode() = default;
 
         public:
             IntrusiveListNode(const IntrusiveListNode& other);
             IntrusiveListNode& operator=(const IntrusiveListNode& other);
+            ~IntrusiveListNode() = default;
 
         private:
-            template<class U>
-                friend class IntrusiveList;
-            template<class U>
-                friend class IntrusiveListIterator;
+            template<class>
+                friend class infra::detail::IntrusiveListIterator;
+            template<class>
+                friend class infra::IntrusiveList;
+
             IntrusiveListNode<T>* next;
             IntrusiveListNode<T>* previous;
         };
@@ -156,9 +157,9 @@ namespace infra
 
         private:
             template<class>
-                friend class IntrusiveListIterator;
+                friend class infra::detail::IntrusiveListIterator;
             template<class>
-                friend class IntrusiveList;
+                friend class infra::IntrusiveList;
 
             const IntrusiveListNode<typename std::remove_const<T>::type>* node;
         };
@@ -591,7 +592,6 @@ namespace infra
             return !(*this == other);
         }
     }
-
 }
 
 #endif

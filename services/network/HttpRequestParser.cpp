@@ -16,15 +16,10 @@ namespace services
     void HttpRequestParserImpl::FindVerb(infra::Tokenizer& tokenizer)
     {
         auto verbToken = tokenizer.Token(0);
+        auto receivedVerb = HttpVerbFromString(verbToken);
 
-        if (verbToken == "PUT")
-            verb = HttpVerb::put;
-        else if (verbToken == "GET")
-            verb = HttpVerb::get;
-        else if (verbToken == "DELETE")
-            verb = HttpVerb::delete_;
-        else if (verbToken == "POST")
-            verb = HttpVerb::post;
+        if (receivedVerb)
+            verb = *receivedVerb;
         else
             valid = false;
     }
@@ -45,7 +40,7 @@ namespace services
         return valid;
     }
 
-    HttpRequestParserImpl::HttpVerb HttpRequestParserImpl::Verb() const
+    HttpVerb HttpRequestParserImpl::Verb() const
     {
         return verb;
     }

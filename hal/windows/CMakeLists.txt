@@ -1,17 +1,12 @@
-ccola_component(windows win: static_library other: noncompile)
+ccola_component(windows win: static_library other: skip)
 
     ccola_sources(
-        FileSystemWin.cpp
-        FileSystemWin.hpp
-        SynchronousRandomDataGeneratorWin.hpp
-        SynchronousRandomDataGeneratorWin.cpp
-        TimerServiceWin.cpp
-        TimerServiceWin.hpp
+        UartWindows.cpp
+        UartWindows.hpp
     )
 
     ccola_dependencies(
         interfaces
-        synchronous_interfaces
     )
 
 ccola_end_component()

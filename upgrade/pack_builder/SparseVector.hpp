@@ -6,15 +6,21 @@
 #include <exception>
 #include <map>
 #include <vector>
+#include <sstream>
+#include <iomanip>
 
 namespace application
 {
-    struct OverwriteException
+    class OverwriteException
         : std::exception
     {
+    public:
         explicit OverwriteException(std::size_t position);
 
-        std::size_t position;
+        virtual char const* what() const noexcept override;
+
+    private:
+        std::string message;
     };
 
     template<class T>
@@ -57,8 +63,16 @@ namespace application
     ////    Implementation    ////
 
     inline OverwriteException::OverwriteException(std::size_t position)
-        : position(position)
-    {}
+    {
+        std::stringstream ss;
+        ss << "Contents specified twice for memory location at address 0x" << std::hex << std::setw(8) << std::setfill('0') << position;
+        message = ss.str();
+    }
+
+    inline char const* OverwriteException::what() const noexcept
+    {
+        return message.c_str();
+    }
 
     template<class T>
     SparseVector<T>::Iterator::Iterator(const SparseVector<T>& vector, std::size_t position)

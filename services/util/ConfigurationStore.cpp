@@ -3,24 +3,24 @@
 
 namespace services
 {
-    ConfigurationBlobImpl::ConfigurationBlobImpl(infra::ByteRange blob, hal::Flash& flash)
+    ConfigurationBlobFlash::ConfigurationBlobFlash(infra::ByteRange blob, hal::Flash& flash)
         : blob(blob)
         , flash(flash)
     {
         really_assert(blob.size() <= flash.TotalSize());
     }
 
-    infra::ByteRange ConfigurationBlobImpl::CurrentBlob()
+    infra::ConstByteRange ConfigurationBlobFlash::CurrentBlob()
     {
         return infra::Head(infra::DiscardHead(blob, sizeof(Header)), currentSize);
     }
 
-    infra::ByteRange ConfigurationBlobImpl::MaxBlob()
+    infra::ByteRange ConfigurationBlobFlash::MaxBlob()
     {
         return infra::DiscardHead(blob, sizeof(Header));
     }
 
-    void ConfigurationBlobImpl::Recover(const infra::Function<void(bool success)>& onRecovered)
+    void ConfigurationBlobFlash::Recover(const infra::Function<void(bool success)>& onRecovered)
     {
         this->onRecovered = onRecovered;
         flash.ReadBuffer(blob, 0, [this]()
@@ -35,19 +35,19 @@ namespace services
         });
     }
 
-    void ConfigurationBlobImpl::Erase(const infra::Function<void()>& onDone)
+    void ConfigurationBlobFlash::Erase(const infra::Function<void()>& onDone)
     {
         flash.EraseAll(onDone);
     }
 
-    void ConfigurationBlobImpl::Write(uint32_t size, const infra::Function<void()>& onDone)
+    void ConfigurationBlobFlash::Write(uint32_t size, const infra::Function<void()>& onDone)
     {
         currentSize = size;
         PrepareBlobForWriting();
         flash.WriteBuffer(blob, 0, onDone);
     }
 
-    void ConfigurationBlobImpl::RecoverCurrentSize()
+    void ConfigurationBlobFlash::RecoverCurrentSize()
     {
         Header header;
         infra::Copy(infra::Head(blob, sizeof(header)), infra::MakeByteRange(header));
@@ -55,7 +55,7 @@ namespace services
         currentSize = header.size;
     }
 
-    bool ConfigurationBlobImpl::BlobIsValid() const
+    bool ConfigurationBlobFlash::BlobIsValid() const
     {
         Header header;
         infra::Copy(infra::Head(blob, sizeof(header)), infra::MakeByteRange(header));
@@ -69,7 +69,7 @@ namespace services
         return infra::Head(infra::MakeRange(messageHash), sizeof(header.hash)) == header.hash;
     }
 
-    void ConfigurationBlobImpl::PrepareBlobForWriting()
+    void ConfigurationBlobFlash::PrepareBlobForWriting()
     {
         Header header;
         header.size = currentSize;
@@ -80,6 +80,38 @@ namespace services
 
         infra::Copy(infra::Head(infra::MakeRange(messageHash), sizeof(header.hash)), infra::MakeRange(header.hash));
         infra::Copy(infra::MakeByteRange(header), infra::Head(blob, sizeof(header)));
+    }
+
+    ConfigurationBlobReadOnlyMemory::ConfigurationBlobReadOnlyMemory(infra::ConstByteRange data)
+        : data(data)
+    {}
+
+    infra::ConstByteRange ConfigurationBlobReadOnlyMemory::CurrentBlob()
+    {
+        Header header;
+        infra::Copy(infra::Head(data, sizeof(Header)), infra::MakeByteRange(header));
+
+        return infra::Head(infra::DiscardHead(data, sizeof(Header)), header.size);
+    }
+
+    infra::ByteRange ConfigurationBlobReadOnlyMemory::MaxBlob()
+    {
+        std::abort();
+    }
+
+    void ConfigurationBlobReadOnlyMemory::Recover(const infra::Function<void(bool success)>& onRecovered)
+    {
+        onRecovered(true);
+    }
+
+    void ConfigurationBlobReadOnlyMemory::Write(uint32_t size, const infra::Function<void()>& onDone)
+    {
+        std::abort();
+    }
+
+    void ConfigurationBlobReadOnlyMemory::Erase(const infra::Function<void()>& onDone)
+    {
+        std::abort();
     }
 
     ConfigurationStoreBase::ConfigurationStoreBase(ConfigurationBlob& blob1, ConfigurationBlob& blob2)

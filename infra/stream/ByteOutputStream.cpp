@@ -21,6 +21,12 @@ namespace infra
         offset = 0;
     }
 
+    void ByteOutputStreamWriter::Reset(ByteRange range)
+    {
+        offset = 0;
+        streamRange = range;
+    }
+
     void ByteOutputStreamWriter::Insert(ConstByteRange dataRange, StreamErrorPolicy& errorPolicy)
     {
         errorPolicy.ReportResult(dataRange.size() <= streamRange.size() - offset);

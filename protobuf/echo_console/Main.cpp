@@ -1,4 +1,4 @@
-#include "hal/windows/FileSystemWin.hpp"
+#include "hal/generic/FileSystemGeneric.hpp"
 #include "infra/stream/IoOutputStream.hpp"
 #include "infra/syntax/Json.hpp"
 #include "infra/util/Tokenizer.hpp"
@@ -8,8 +8,6 @@
 #include "services/tracer/GlobalTracer.hpp"
 #include <fstream>
 #include <iostream>
-#include <winsock2.h>
-#include <ws2tcpip.h>
 
 #undef GetObject
 
@@ -39,7 +37,7 @@ private:
 
 private:
     hal::FileSystem& filesystem;
-    infra::BoundedString::WithStorage<4096> fileContents;
+    std::string fileContents;
     infra::Optional<infra::JsonObject> json;
 };
 
@@ -257,7 +255,7 @@ int main(int argc, char* argv[], const char* env[])
             std::cout << "Loaded " << argv[i] << std::endl;
         }
 
-        hal::FileSystemWin filesystem;
+        hal::FileSystemGeneric filesystem;
         static ConfigParser config(filesystem);
 
         for (const char** var = env; *var != nullptr; ++var)

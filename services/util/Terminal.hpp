@@ -3,6 +3,7 @@
 
 #include "hal/interfaces/SerialCommunication.hpp"
 #include "infra/event/QueueForOneReaderOneIrqWriter.hpp"
+#include "services/tracer/Tracer.hpp"
 #include "infra/util/BoundedDeque.hpp"
 #include "infra/util/BoundedString.hpp"
 
@@ -11,7 +12,7 @@ namespace services
     class Terminal
     {
     public:
-        explicit Terminal(hal::SerialCommunication& communication);
+        explicit Terminal(hal::SerialCommunication& communication, services::Tracer& tracer);
 
         void Print(const char* message);
         virtual void OnData(infra::BoundedString data) {}
@@ -52,10 +53,10 @@ namespace services
     private:
         TerminalState state;
         hal::SerialCommunication& communication;
-        infra::QueueForOneReaderOneIrqWriter::WithStorage<32> queue;
+        services::Tracer& tracer;
+        infra::QueueForOneReaderOneIrqWriter<uint8_t>::WithStorage<32> queue;
         infra::BoundedString::WithStorage<256> buffer;
         infra::BoundedDeque<decltype(buffer)>::WithMaxSize<4> history;
-        bool sendDone = true;
     };
 }
 

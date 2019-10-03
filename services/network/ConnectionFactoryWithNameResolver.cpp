@@ -37,6 +37,12 @@ namespace services
                     break;
     }
 
+    void ConnectionFactoryWithNameResolverImpl::NameLookupFailed()
+    {}
+
+    void ConnectionFactoryWithNameResolverImpl::NameLookupSuccessful(IPAddress address)
+    {}
+
     void ConnectionFactoryWithNameResolverImpl::CheckNameLookup()
     {
         if (!waitingActions.empty() && !actions.full())
@@ -78,9 +84,10 @@ namespace services
         return clientConnectionFactory.Hostname();
     }
 
-    void ConnectionFactoryWithNameResolverImpl::Action::NameLookupDone(IPAddress address)
+    void ConnectionFactoryWithNameResolverImpl::Action::NameLookupDone(IPAddress address, infra::TimePoint validUntil)
     {
         this->address = address;
+        connectionFactory.NameLookupSuccessful(address);
         connectionFactory.connectionFactory.Connect(*this);
         connecting = true;
     }
@@ -88,6 +95,7 @@ namespace services
     void ConnectionFactoryWithNameResolverImpl::Action::NameLookupFailed()
     {
         auto& clientConnectionFactory = this->clientConnectionFactory;
+        connectionFactory.NameLookupFailed();
         connectionFactory.ActionIsDone(*this);
         clientConnectionFactory.ConnectionFailed(ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason::nameLookupFailed);
     }

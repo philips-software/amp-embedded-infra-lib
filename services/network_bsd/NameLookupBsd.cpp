@@ -75,7 +75,7 @@ namespace services
                         if (&nameLookup.front() == currentLookup)
                         {
                             nameLookup.pop_front();
-                            currentLookup->NameLookupDone(ipv4Address);
+                            currentLookup->NameLookupDone(ipv4Address, infra::Now() + std::chrono::minutes(5));
                         }
                         condition.notify_one();
                     });
