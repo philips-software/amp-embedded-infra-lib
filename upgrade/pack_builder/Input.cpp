@@ -1,5 +1,4 @@
 #include "upgrade/pack_builder/Input.hpp"
-#include <string>
 
 namespace application
 {
@@ -14,7 +13,7 @@ namespace application
             throw TargetNameTooLongException(targetName, maxNameSize);
     }
 
-    std::string Input::TargetName() const
+    const std::string& Input::TargetName() const
     {
         return targetName;
     }

@@ -2,6 +2,7 @@
 #define UPGRADE_PACK_BUILDER_LIBRARY_INPUT_HPP
 
 #include "upgrade/pack/UpgradePackHeader.hpp"
+#include <string>
 #include <vector>
 
 namespace application
@@ -19,7 +20,7 @@ namespace application
         explicit Input(const std::string& targetName);
         virtual ~Input() = default;
 
-        std::string TargetName() const;
+        const std::string& TargetName() const;
         virtual std::vector<uint8_t> Image() const = 0;
 
     public:

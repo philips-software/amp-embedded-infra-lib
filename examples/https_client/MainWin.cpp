@@ -99,6 +99,7 @@ int main(int argc, const char* argv[], const char* env[])
 
     static hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
     static services::CertificatesMbedTls certificates;
+
     certificates.AddCertificateAuthority(infra::BoundedConstString(starfieldClass2Ca, sizeof(starfieldClass2Ca)));
     static services::ConnectionFactoryMbedTls::WithMaxConnectionsListenersAndConnectors<10, 2, 2> networkTls(
         eventDispatcherWithNetwork, certificates, randomDataGenerator);

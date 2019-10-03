@@ -14,7 +14,9 @@
 
 #if defined (__GNUC__)
 
+#ifndef BYTE_ORDER
 #define BYTE_ORDER LITTLE_ENDIAN
+#endif
 
 #define PACK_STRUCT_BEGIN
 #define PACK_STRUCT_STRUCT __attribute__ ((__packed__))
@@ -23,7 +25,9 @@
 
 #elif defined (_MSC_VER)
 
+#ifndef BYTE_ORDER
 #define BYTE_ORDER LITTLE_ENDIAN
+#endif
 
 #define PACK_STRUCT_BEGIN
 #define PACK_STRUCT_STRUCT
