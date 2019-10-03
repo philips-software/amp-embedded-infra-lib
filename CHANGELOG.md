@@ -7,12 +7,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Changed
+
+- hal/interfaces/AnalogToDigitalPin; increased ADC results to int32_t
+
+### Fixed
+
+- services/network/ConnectionMbedTls; On CloseAndDestroy, empty buffers before forwarding close request
+- services/util/Terminal; fixed crash by using services::Tracer to write data to the console, synchronously
+
 ### Added
 
-- Travis-ci build pipeline
-- Ignore external vendor packages in language analysis on github
+- .travis-ci.yml; Travis-CI build pipeline
+- .gitattributes; Ignore external vendor packages in language analysis on GitHub
 - https_client example
 - services::HttpClientJson; base class to easily interact with REST services exposing large payloads. Uses infra::JsonStreamingObjectParser
+- services/network/ExclusiveConnection; only allow one active connection at a time
+- protobuf/protoc_echo_plugin: Support enums
+- hal::UartWindows; hal::SerialCommunication implementation for Windows serial port
+- services::SerialServer; TCP/IP <--> UART bridge, see [serial_net](examples/serial_net) example
+- services::WebSocketClientConnectionObserver; WebSocket client support
+- services::WebSocketServerConnectionObserver; WebSocket server support
+- Support for Linux host builds with GCC
 
 ## [1.2.0]
 
