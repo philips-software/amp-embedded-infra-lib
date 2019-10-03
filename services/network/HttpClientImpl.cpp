@@ -81,6 +81,7 @@ namespace services
 
     HttpClientImpl::HttpClientImpl(infra::BoundedConstString hostname)
         : hostname(hostname)
+        , bodyReaderAccess(infra::emptyFunction)
     {}
 
     void HttpClientImpl::AttachObserver(const infra::SharedPtr<HttpClientObserver>& observer)
@@ -146,7 +147,6 @@ namespace services
 
     void HttpClientImpl::Close()
     {
-        bodyReaderAccess.SetAction([]() {});
         ConnectionObserver::Subject().CloseAndDestroy();
     }
 
@@ -185,8 +185,10 @@ namespace services
 
     void HttpClientImpl::ClosingConnection()
     {
+        bodyReaderAccess.SetAction(infra::emptyFunction);
         GetObserver().ClosingConnection();
         observer->Detach();
+        observer = nullptr;
     }
 
     void HttpClientImpl::StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine)
@@ -308,7 +310,6 @@ namespace services
 
     void HttpClientImpl::AbortAndDestroy()
     {
-        bodyReaderAccess.SetAction([]() {});
         ConnectionObserver::Subject().AbortAndDestroy();
     }
 

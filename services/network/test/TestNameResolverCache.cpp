@@ -29,15 +29,15 @@ public:
         resolverCache.CancelLookup(result);
     }
 
-    void ExpectNameLookupDone(services::NameResolverResultMock& result, services::IPAddress address)
+    void ExpectNameLookupDone(services::NameResolverResultMock& result, services::IPAddress address, infra::Duration ttl = std::chrono::hours(1))
     {
-        EXPECT_CALL(result, NameLookupDone(address, infra::Now() + std::chrono::hours(1)));
+        EXPECT_CALL(result, NameLookupDone(address, infra::Now() + ttl));
     }
 
-    void NameLookupDone(services::NameResolverResultMock& result, services::IPAddress address)
+    void NameLookupDone(services::NameResolverResultMock& result, services::IPAddress address, infra::Duration ttl = std::chrono::hours(1))
     {
-        ExpectNameLookupDone(result, address);
-        lookupResult->NameLookupDone(address, infra::Now() + std::chrono::hours(1));
+        ExpectNameLookupDone(result, address, ttl);
+        lookupResult->NameLookupDone(address, infra::Now() + ttl);
     }
 
     void NameLookupFailed(services::NameResolverResultMock& result)
@@ -46,7 +46,7 @@ public:
         lookupResult->NameLookupFailed();
     }
 
-    void AddToCache(infra::BoundedConstString hostname, services::IPAddress address)
+    void AddToCache(infra::BoundedConstString hostname, services::IPAddress address, infra::Duration ttl = std::chrono::hours(1))
     {
         testing::StrictMock<services::NameResolverResultMock> result;
 
@@ -54,7 +54,7 @@ public:
         EXPECT_CALL(result, Versions()).Times(testing::AnyNumber()).WillRepeatedly(testing::Return(services::IPVersions::both));
 
         Lookup(result);
-        NameLookupDone(result, address);
+        NameLookupDone(result, address, ttl);
     }
 
     infra::BoundedConstString hostname1 = "hostname1";
@@ -168,4 +168,11 @@ TEST_F(NameResolverCacheTest, no_lookup_from_cache_if_expired)
     ForwardTime(std::chrono::hours(2));
 
     Lookup(result1);
+}
+
+TEST_F(NameResolverCacheTest, minimum_ttl_is_applied)
+{
+    Lookup(result1);
+    ExpectNameLookupDone(result1, address1, std::chrono::minutes(10));
+    lookupResult->NameLookupDone(address1, infra::Now() + std::chrono::minutes(5));
 }
