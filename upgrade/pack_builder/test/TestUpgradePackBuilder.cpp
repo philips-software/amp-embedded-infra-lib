@@ -1,5 +1,4 @@
 #include "gtest/gtest.h"
-#include "infra/util/Optional.hpp"
 #include "upgrade/pack_builder/UpgradePackBuilder.hpp"
 
 class ImageSignerNone
@@ -191,6 +190,5 @@ TEST_F(TestUpgradePackBuilder, ImageContents)
 TEST_F(TestUpgradePackBuilder, SignatureDoesNotVerify)
 {
     signer.checkSignature = false;
-    infra::Optional<application::UpgradePackBuilder> upgradePackBuilder;
-    EXPECT_THROW(upgradePackBuilder.Emplace(headerInfo, std::move(inputs), signer), application::SignatureDoesNotVerifyException);
+    EXPECT_THROW(([this] { application::UpgradePackBuilder upgradePackBuilder(headerInfo, std::move(inputs), signer); }()), application::SignatureDoesNotVerifyException);
 }
