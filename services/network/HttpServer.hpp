@@ -123,6 +123,8 @@ namespace services
     protected:
         virtual void SendingHttpResponse(infra::BoundedConstString response) {}
         virtual void ReceivedHttpRequest(infra::BoundedConstString request) {}
+
+        // Implementation of HttpPageServer
         virtual HttpPage* PageForRequest(const HttpRequestParser& request) override;
 
     private:

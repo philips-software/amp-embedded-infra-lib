@@ -87,11 +87,11 @@ namespace services
         headers.push_back(services::HttpHeader("Sec-Websocket-Version", "13"));
     }
 
-    WebSocketObserverFactory::WebSocketObserverFactory(const Creators& creators)
+    WebSocketObserverFactoryImpl::WebSocketObserverFactoryImpl(const Creators& creators)
         : connectionCreator(creators.connectionCreator)
     {}
 
-    void WebSocketObserverFactory::CreateWebSocketObserver(services::Connection& connection, services::IPAddress address)
+    void WebSocketObserverFactoryImpl::CreateWebSocketObserver(services::Connection& connection)
     {
         if (webSocketConnectionObserver.Allocatable())
             OnAllocatable(connection);
@@ -103,12 +103,12 @@ namespace services
         }
     }
 
-    void WebSocketObserverFactory::CancelCreation()
+    void WebSocketObserverFactoryImpl::CancelCreation()
     {
         webSocketConnectionObserver.OnAllocatable(nullptr);
     }
 
-    void WebSocketObserverFactory::Stop(const infra::Function<void()>& onDone)
+    void WebSocketObserverFactoryImpl::Stop(const infra::Function<void()>& onDone)
     {
         if (!webSocketConnectionObserver.Allocatable())
         {
@@ -121,7 +121,7 @@ namespace services
             onDone();
     }
 
-    void WebSocketObserverFactory::OnAllocatable(services::Connection& connection)
+    void WebSocketObserverFactoryImpl::OnAllocatable(services::Connection& connection)
     {
         auto observer = webSocketConnectionObserver.Emplace(connectionCreator, connection);
         connection.SwitchObserver(infra::MakeContainedSharedObject(**observer, observer));

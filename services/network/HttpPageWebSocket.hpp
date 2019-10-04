@@ -12,12 +12,7 @@ namespace services
         , private services::HttpResponse
     {
     public:
-        struct Address
-        {
-            services::IPAddress address;
-        };
-
-        HttpPageWebSocket(infra::BoundedConstString path, WebSocketObserverFactory& webSocketObserverFactory, Address address);
+        HttpPageWebSocket(infra::BoundedConstString path, WebSocketObserverFactory& webSocketObserverFactory);
 
     public:
         // Implementation of HttpPage
@@ -38,7 +33,6 @@ namespace services
     private:
         infra::BoundedConstString path;
         WebSocketObserverFactory& webSocketObserverFactory;
-        services::IPAddress address;
         static const uint8_t MaxWebSocketKeySize = 64;
         infra::BoundedString::WithStorage<MaxWebSocketKeySize> webSocketKey;
     };

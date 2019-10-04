@@ -4,11 +4,10 @@
 
 namespace services
 {
-    HttpPageWebSocket::HttpPageWebSocket(infra::BoundedConstString path, WebSocketObserverFactory& webSocketObserverFactory, Address address)
+    HttpPageWebSocket::HttpPageWebSocket(infra::BoundedConstString path, WebSocketObserverFactory& webSocketObserverFactory)
         : services::HttpResponse(0)
         , path(path)
         , webSocketObserverFactory(webSocketObserverFactory)
-        , address(address.address)
     {}
 
     bool HttpPageWebSocket::ServesRequest(const infra::Tokenizer& pathTokens) const
@@ -27,7 +26,7 @@ namespace services
             connection.SendResponseWithoutNextRequest(*this);
             connection.TakeOverConnection(*this);
 
-            webSocketObserverFactory.CreateWebSocketObserver(Subject(), address);
+            webSocketObserverFactory.CreateWebSocketObserver(Subject());
         }
         else
             connection.SendResponse(services::HttpResponseNotFound::Instance());

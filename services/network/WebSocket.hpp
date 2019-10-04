@@ -63,16 +63,30 @@ namespace services
 
     class WebSocketObserverFactory
     {
+    protected:
+        WebSocketObserverFactory() = default;
+        WebSocketObserverFactory(const WebSocketObserverFactory& other) = delete;
+        WebSocketObserverFactory& operator=(const WebSocketObserverFactory& other) = delete;
+        ~WebSocketObserverFactory() = default;
+
+    public:
+        virtual void CreateWebSocketObserver(services::Connection& connection) = 0;
+        virtual void CancelCreation() = 0;
+    };
+
+    class WebSocketObserverFactoryImpl
+        : public WebSocketObserverFactory
+    {
     public:
         struct Creators
         {
             infra::CreatorBase<services::ConnectionObserver, void(services::Connection& connection)>& connectionCreator;
         };
 
-        WebSocketObserverFactory(const Creators& creators);
+        WebSocketObserverFactoryImpl(const Creators& creators);
 
-        virtual void CreateWebSocketObserver(services::Connection& connection, services::IPAddress address);
-        void CancelCreation();
+        virtual void CreateWebSocketObserver(services::Connection& connection) override;
+        virtual void CancelCreation() override;
         void Stop(const infra::Function<void()>& onDone);
 
     private:
