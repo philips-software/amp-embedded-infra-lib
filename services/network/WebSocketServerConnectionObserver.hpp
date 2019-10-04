@@ -25,7 +25,7 @@ namespace services
             using WithBufferSizes = infra::WithStorage<infra::WithStorage<WebSocketServerConnectionObserver, infra::BoundedVector<uint8_t>::WithMaxSize<SendBufferSize>>,
                 infra::BoundedDeque<uint8_t>::WithMaxSize<ReceiveBufferSize>>;
 
-        WebSocketServerConnectionObserver(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedDeque<uint8_t>& receiveBuffer, services::Connection& connection, infra::BoundedConstString handshakeKey);
+        WebSocketServerConnectionObserver(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedDeque<uint8_t>& receiveBuffer, services::Connection& connection);
 
     public:
         // Implementation of ConnectionObserver
@@ -72,20 +72,6 @@ namespace services
             explicit ReceivingStateThatSendsData(WebSocketServerConnectionObserver& connection);
 
             virtual void Send(infra::SharedPtr<infra::StreamWriter>&& writer) = 0;
-        };
-
-        class ReceivingStateInitial
-            : public ReceivingStateThatSendsData
-        {
-        public:
-            ReceivingStateInitial(WebSocketServerConnectionObserver& connection, infra::BoundedConstString handshakeKey);
-
-            virtual void Send(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-
-        private:
-            WebSocketServerConnectionObserver& connection;
-            static const uint8_t MaxWebSocketKeySize = 64;
-            infra::BoundedConstString::WithStorage<MaxWebSocketKeySize> handshakeKey;
         };
 
         class ReceivingStateReceiveHeader
@@ -199,7 +185,7 @@ namespace services
 
     private:
         ReceivingStateThatSendsData* receivingStateThatWantsToSendData = nullptr;
-        infra::PolymorphicVariant<ReceivingState, ReceivingStateInitial, ReceivingStateReceiveHeader, ReceivingStateReceiveData,
+        infra::PolymorphicVariant<ReceivingState, ReceivingStateReceiveHeader, ReceivingStateReceiveData,
             ReceivingStateClose, ReceivingStatePong> receivingState;
         infra::PolymorphicVariant<SendingState, SendingStateIdle, SendingStateInternalData, SendingStateExternalData> sendingState;
         infra::BoundedDeque<uint8_t>& receiveBuffer;

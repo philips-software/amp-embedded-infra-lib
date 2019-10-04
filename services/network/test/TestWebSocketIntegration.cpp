@@ -32,7 +32,7 @@ class WebSocketIntegrationTest
 TEST_F(WebSocketIntegrationTest, integration)
 {
     services::HttpPageServer httpServer;
-    infra::Creator<services::ConnectionObserver, services::WebSocketServerConnectionObserver::WithBufferSizes<512, 512>, void(services::Connection& connection, infra::BoundedConstString handshakeKey)> webSocketServerConnectionCreator;
+    infra::Creator<services::ConnectionObserver, services::WebSocketServerConnectionObserver::WithBufferSizes<512, 512>, void(services::Connection& connection)> webSocketServerConnectionCreator;
     services::WebSocketObserverFactory websocketObserverFactory({ webSocketServerConnectionCreator });
     services::HttpPageWebSocket webSocketPage("path", websocketObserverFactory, { services::IPv4AddressLocalHost() });
     httpServer.AddPage(webSocketPage);

@@ -66,12 +66,12 @@ namespace services
     public:
         struct Creators
         {
-            infra::CreatorBase<services::ConnectionObserver, void(services::Connection& connection, infra::BoundedConstString handshakeKey)>& connectionCreator;
+            infra::CreatorBase<services::ConnectionObserver, void(services::Connection& connection)>& connectionCreator;
         };
 
         WebSocketObserverFactory(const Creators& creators);
 
-        virtual void CreateWebSocketObserver(services::Connection& connection, infra::BoundedConstString handshakeKey, services::IPAddress address);
+        virtual void CreateWebSocketObserver(services::Connection& connection, services::IPAddress address);
         void CancelCreation();
         void Stop(const infra::Function<void()>& onDone);
 
@@ -81,7 +81,6 @@ namespace services
     private:
         decltype(Creators::connectionCreator) connectionCreator;
         infra::NotifyingSharedOptional<infra::ProxyCreator<decltype(Creators::connectionCreator)>> webSocketConnectionObserver;
-        infra::BoundedString::WithStorage<64> handshakeKey;
     };
 }
 

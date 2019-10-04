@@ -91,10 +91,8 @@ namespace services
         : connectionCreator(creators.connectionCreator)
     {}
 
-    void WebSocketObserverFactory::CreateWebSocketObserver(services::Connection& connection, infra::BoundedConstString handshakeKey, services::IPAddress address)
+    void WebSocketObserverFactory::CreateWebSocketObserver(services::Connection& connection, services::IPAddress address)
     {
-        this->handshakeKey = handshakeKey.substr(0, this->handshakeKey.max_size());
-
         if (webSocketConnectionObserver.Allocatable())
             OnAllocatable(connection);
         else
@@ -125,7 +123,7 @@ namespace services
 
     void WebSocketObserverFactory::OnAllocatable(services::Connection& connection)
     {
-        auto observer = webSocketConnectionObserver.Emplace(connectionCreator, connection, handshakeKey);
+        auto observer = webSocketConnectionObserver.Emplace(connectionCreator, connection);
         connection.SwitchObserver(infra::MakeContainedSharedObject(**observer, observer));
         webSocketConnectionObserver.OnAllocatable(nullptr);
     }

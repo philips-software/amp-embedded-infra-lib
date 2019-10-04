@@ -52,6 +52,11 @@ namespace services
         output << "\r\n\r\n";
     }
 
+    infra::TextOutputStream& HttpResponseHeaderBuilder::Stream()
+    {
+        return output;
+    }
+
     HttpResponse::HttpResponse(std::size_t maxBodySize)
         : maxBodySize(maxBodySize)
     {}
@@ -59,18 +64,23 @@ namespace services
     void HttpResponse::WriteResponse(infra::TextOutputStream& stream) const
     {
         HttpResponseHeaderBuilder builder(stream);
+        auto contentType = ContentType();
         std::size_t resultMarker = stream.SaveMarker();
-        builder.AddHeader("Content-Length");
+        if (!contentType.empty())
+            builder.AddHeader("Content-Length");
         std::size_t sizeMarker = stream.SaveMarker();
-        builder.AddHeader("Content-Type", ContentType());
+        if (!contentType.empty())
+            builder.AddHeader("Content-Type", contentType);
         AddHeaders(builder);
+
         builder.StartBody();
         uint32_t sizeBeforeGetResponse = stream.ProcessedBytesSince(sizeMarker);
         infra::LimitedTextOutputStream limitedResponse(stream.Writer(), maxBodySize);
         WriteBody(limitedResponse);
-        uint32_t size = stream.ProcessedBytesSince(sizeMarker) - sizeBeforeGetResponse;
 
+        if (!contentType.empty())
         {
+            uint32_t size = stream.ProcessedBytesSince(sizeMarker) - sizeBeforeGetResponse;
             infra::SavedMarkerTextStream sizeStream(stream, sizeMarker);
             sizeStream << size;
         }
@@ -79,6 +89,11 @@ namespace services
             infra::SavedMarkerTextStream markerStream(stream, resultMarker);
             markerStream << Status();
         }
+    }
+
+    infra::BoundedConstString HttpResponse::ContentType() const
+    {
+        return infra::BoundedConstString();
     }
 
     void HttpResponse::AddHeaders(HttpResponseHeaderBuilder& builder) const
@@ -106,7 +121,10 @@ namespace services
         streamWriter = std::move(writer);
 
         if (sendingResponse)
+        {
             SendBuffer();
+            PrepareForNextRequest();
+        }
         else
             DataReceived();
     }
@@ -147,6 +165,12 @@ namespace services
     }
 
     void HttpServerConnectionObserver::SendResponse(const HttpResponse& response)
+    {
+        SendResponseWithoutNextRequest(response);
+        PrepareForNextRequest();
+    }
+
+    void HttpServerConnectionObserver::SendResponseWithoutNextRequest(const HttpResponse& response)
     {
         buffer.clear();
         infra::StringOutputStream responseStream(buffer);
@@ -246,13 +270,15 @@ namespace services
     void HttpServerConnectionObserver::PrepareForNextRequest()
     {
         RequestSendStream();
-
-        idle = true;
-        requestInProgress = false;
-        send100Response = false;
-        buffer.clear();
-        if (closeWhenIdle)
-            Abort();
+        if (!sendingResponse)
+        {
+            idle = true;
+            requestInProgress = false;
+            send100Response = false;
+            buffer.clear();
+            if (closeWhenIdle)
+                Abort();
+        }
     }
 
     bool HttpServerConnectionObserver::Expect100(HttpRequestParser& request) const
@@ -267,12 +293,7 @@ namespace services
         auto available = stream.Available();
         stream << buffer.substr(0, available);
         buffer.erase(0, available);
-
         sendingResponse = !buffer.empty();
-        if (sendingResponse)
-            RequestSendStream();
-        else
-            PrepareForNextRequest();
     }
 
     DefaultHttpServer::DefaultHttpServer(infra::BoundedString& buffer, ConnectionFactory& connectionFactory, uint16_t port)
