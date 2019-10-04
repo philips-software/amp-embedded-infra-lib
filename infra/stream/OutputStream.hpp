@@ -5,6 +5,7 @@
 #include "infra/stream/StreamManipulators.hpp"
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/ByteRange.hpp"
+#include "infra/util/IntegerNormalization.hpp"
 #include "infra/util/Optional.hpp"
 #include <type_traits>
 
@@ -101,16 +102,29 @@ namespace infra
         TextOutputStream& operator<<(BoundedConstString string);
         TextOutputStream& operator<<(const std::string& string);
         TextOutputStream& operator<<(char c);
+        TextOutputStream& operator<<(int8_t v);
         TextOutputStream& operator<<(uint8_t v);
+        TextOutputStream& operator<<(int16_t v);
+        TextOutputStream& operator<<(uint16_t v);
         TextOutputStream& operator<<(int32_t v);
         TextOutputStream& operator<<(uint32_t v);
         TextOutputStream& operator<<(int64_t v);
         TextOutputStream& operator<<(uint64_t v);
-#if !defined(__clang__) && defined(__GNUC__) && __GNUC__ <= 4 && __GNUC_MINOR__ <= 9 && __GNUC_PATCHLEVEL__ < 4
-        TextOutputStream& operator<<(int v);
-        TextOutputStream& operator<<(unsigned int v);
-#endif
         TextOutputStream& operator<<(float v);
+
+        template<class T>
+        struct IntegralOrEnum
+        {
+            static constexpr bool value = std::is_integral<T>::value || std::is_enum<T>::value;
+        };
+
+        template<class T, typename std::enable_if<IntegralOrEnum<T>::value, T>::type* = nullptr>
+        TextOutputStream& operator<<(T v)
+        {
+            using type = typename infra::NormalizedIntegralType<T>::type;
+
+            return *this << static_cast<type>(v);
+        }
 
         template<class... Args>
             void Format(const char* format, Args&&... arguments);

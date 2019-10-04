@@ -144,7 +144,22 @@ namespace infra
         return *this;
     }
 
+    TextOutputStream& TextOutputStream::operator<<(int8_t v)
+    {
+        return *this << static_cast<int64_t>(v);
+    }
+
     TextOutputStream& TextOutputStream::operator<<(uint8_t v)
+    {
+        return *this << static_cast<uint64_t>(v);
+    }
+
+    TextOutputStream& TextOutputStream::operator<<(int16_t v)
+    {
+        return *this << static_cast<int64_t>(v);
+    }
+
+    TextOutputStream& TextOutputStream::operator<<(uint16_t v)
     {
         return *this << static_cast<uint64_t>(v);
     }
@@ -201,18 +216,6 @@ namespace infra
 
         return *this;
     }
-
-#if !defined(__clang__) && defined(__GNUC__) && __GNUC__ <= 4 && __GNUC_MINOR__ <= 9 && __GNUC_PATCHLEVEL__ < 4
-    TextOutputStream& TextOutputStream::operator<<(int v)
-    {
-        return *this << static_cast<int64_t>(v);
-    }
-
-    TextOutputStream& TextOutputStream::operator<<(unsigned int v)
-    {
-        return *this << static_cast<uint64_t>(v);
-    }
-#endif
 
     TextOutputStream& TextOutputStream::operator<<(float v)
     {
