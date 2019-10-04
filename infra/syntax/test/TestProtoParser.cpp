@@ -74,7 +74,7 @@ TEST(ProtoParserTest, GetField_on_fixed32_returns_uint32_t)
 
 TEST(ProtoParserTest, GetField_returns_string)
 {
-    infra::ByteInputStream stream(std::array<uint8_t, 3>{ (1 << 3) | 2, 1, 'a' });
+    infra::ByteInputStream::WithStorage<3> stream(infra::inPlace, std::array<uint8_t, 3>{ (1 << 3) | 2, 1, 'a' });
     infra::ProtoParser parser(stream);
 
     infra::ProtoParser::Field field = parser.GetField();
@@ -85,7 +85,7 @@ TEST(ProtoParserTest, GetField_returns_string)
 
 TEST(ProtoParserTest, GetField_returns_bytes)
 {
-    infra::ByteInputStream stream(std::array<uint8_t, 3>{ (1 << 3) | 2, 1, 5 });
+    infra::ByteInputStream::WithStorage<3> stream(infra::inPlace, std::array<uint8_t, 3>{ (1 << 3) | 2, 1, 5 });
     infra::ProtoParser parser(stream);
 
     infra::ProtoParser::Field field = parser.GetField();
@@ -100,7 +100,6 @@ TEST(ProtoParserTest, GetField_returns_nested_object)
     infra::ProtoParser parser(stream);
 
     infra::ProtoParser::Field field = parser.GetField();
-    infra::BoundedString::WithStorage<10> string;
     infra::ProtoParser nestedParser = field.first.Get<infra::ProtoLengthDelimited>().Parser();
     infra::ProtoParser::Field nestedField = nestedParser.GetField();
     EXPECT_EQ(5, nestedField.first.Get<uint64_t>());
@@ -113,7 +112,6 @@ TEST(ProtoParserTest, SkipEverything_skips_LengthDelimited)
     infra::ProtoParser parser(stream);
 
     infra::ProtoParser::Field field = parser.GetField();
-    infra::BoundedString::WithStorage<10> string;
 
     field.first.Get<infra::ProtoLengthDelimited>().SkipEverything();
     

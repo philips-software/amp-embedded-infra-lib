@@ -61,7 +61,7 @@ namespace services
     void HttpRequestFormatter::AddContentLength(std::size_t size)
     {
         infra::StringOutputStream contentLengthStream(contentLength);
-        contentLengthStream << size;
+        contentLengthStream << static_cast<uint64_t>(size);
         contentLengthHeader.Emplace("content-length", contentLength);
     }
 
@@ -428,10 +428,7 @@ namespace services
     HttpHeader HttpClientImpl::HttpResponseParser::HeaderFromString(infra::BoundedConstString header)
     {
         infra::Tokenizer tokenizer(header, ':');
-        auto value = tokenizer.TokenAndRest(1);
-        auto headerBegin = value.find_first_not_of(' ');
-
-        return{ tokenizer.Token(0), headerBegin != infra::BoundedString::npos ? value.substr(headerBegin) : "" };
+        return{ tokenizer.Token(0), infra::TrimLeft(tokenizer.TokenAndRest(1)) };
     }
 
     void HttpClientImpl::HttpResponseParser::SetError()

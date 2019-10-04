@@ -16,21 +16,15 @@ struct RsaPublicKey
 
 struct RsaPrivateKey
 {
-    RsaPrivateKey(infra::ConstByteRange D, infra::ConstByteRange P, infra::ConstByteRange Q, infra::ConstByteRange DP, infra::ConstByteRange DQ, infra::ConstByteRange QP)
+    RsaPrivateKey(infra::ConstByteRange D, infra::ConstByteRange P, infra::ConstByteRange Q)
         : D(D)
         , P(P)
         , Q(Q)
-        , DP(DP)
-        , DQ(DQ)
-        , QP(QP)
     {}
 
     infra::ConstByteRange D;
     infra::ConstByteRange P;
     infra::ConstByteRange Q;
-    infra::ConstByteRange DP;
-    infra::ConstByteRange DQ;
-    infra::ConstByteRange QP;
 };
 
 #endif

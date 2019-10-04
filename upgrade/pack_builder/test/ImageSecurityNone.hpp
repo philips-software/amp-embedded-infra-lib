@@ -1,5 +1,5 @@
-#ifndef upgrade_pack_builder_test_IMAGE_SECURITY_NONE_HPP
-#define upgrade_pack_builder_test_IMAGE_SECURITY_NONE_HPP
+#ifndef UPGRADE_PACK_BUILDER_TEST_IMAGE_SECURITY_NONE_HPP
+#define UPGRADE_PACK_BUILDER_TEST_IMAGE_SECURITY_NONE_HPP
 
 #include "upgrade/pack/UpgradePackHeader.hpp"
 #include "upgrade/pack_builder/ImageSecurity.hpp"

@@ -13,7 +13,7 @@ endif()
 
 include("${CCOLA_DIR}/ccola.inc")
 
-ccola_project(emil VERSION 1.2.0)
+ccola_project(emil VERSION 1.3.0)
 
     ccola_add_version_header()
 

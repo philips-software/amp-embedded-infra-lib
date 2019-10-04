@@ -48,7 +48,8 @@ public:
 
         EXPECT_LE(data.size(), reader->Available());
         std::string receivedData(data.size(), ' ');
-        stream >> infra::BoundedString(receivedData);
+        infra::BoundedString boundedReceivedData(receivedData);
+        stream >> boundedReceivedData;
         EXPECT_EQ(data, receivedData);
 
         return reader;

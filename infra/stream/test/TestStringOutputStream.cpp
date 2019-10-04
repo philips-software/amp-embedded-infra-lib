@@ -175,6 +175,18 @@ TEST(StringOutputStreamTest, stream_negative_float)
     EXPECT_EQ("-42.123", stream.Storage());
 }
 
+TEST(StringOutputStreamTest, stream_enum_value)
+{
+    infra::StringOutputStream::WithStorage<20> stream;
+
+    enum E { a, b, c };
+    E e = E::b;
+
+    stream << e;
+
+    EXPECT_EQ("1", stream.Storage());
+}
+
 TEST(StringOutputStreamTest, stream_short_hex)
 {
     infra::StringOutputStream::WithStorage<10> stream;

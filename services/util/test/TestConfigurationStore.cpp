@@ -176,7 +176,7 @@ public:
     }
 
 public:
-    std::array<uint8_t, 12> data{ 6, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7 };
+    std::array<uint8_t, 12> data{ { 6, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7 } };
 
     infra::ByteRange buffer;
     services::ConfigurationBlobReadOnlyMemory configurationBlob;
@@ -866,7 +866,7 @@ public:
     public:
         static const uint32_t maxMessageSize = 10;
 
-        std::array<uint8_t, 8> data = { 0, 1, 2, 3, 4, 5, 6, 7 };
+        std::array<uint8_t, 8> data{ { 0, 1, 2, 3, 4, 5, 6, 7 } };
     };
 
 public:

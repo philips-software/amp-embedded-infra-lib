@@ -99,6 +99,7 @@ int main(int argc, const char* argv[], const char* env[])
 
     static hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
     static services::CertificatesMbedTls certificates;
+
     certificates.AddCertificateAuthority(infra::BoundedConstString(starfieldClass2Ca, sizeof(starfieldClass2Ca)));
     static services::ConnectionFactoryMbedTls::WithMaxConnectionsListenersAndConnectors<10, 2, 2> networkTls(
         eventDispatcherWithNetwork, certificates, randomDataGenerator);
@@ -106,7 +107,7 @@ int main(int argc, const char* argv[], const char* env[])
     static services::NameLookupWin nameLookup;
     static services::ConnectionFactoryWithNameResolverImpl::WithStorage<1> connectionFactory(networkTls, nameLookup);
     static services::ConnectionFactoryWithNameResolverForTls connectionFactoryTls(connectionFactory);
-    static services::HttpClientConnectorImpl<>::WithMaxHeaderSize<512> connector(connectionFactoryTls);
+    static services::HttpClientConnectorImpl<> connector(connectionFactoryTls);
 
     static application::TracingHttpClient httpClient("httpbin.org/get", 443, connector, tracer);
 
