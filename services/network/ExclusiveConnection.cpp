@@ -141,7 +141,7 @@ namespace services
 
     void ExclusiveConnectionFactory::Listener::ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address)
     {
-        if (!claimer.IsClaimed())
+        if (!claimer.IsQueued())
         {
             connectionFactory.mutex.RequestCloseConnection();
 
