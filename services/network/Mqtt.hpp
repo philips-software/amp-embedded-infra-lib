@@ -14,6 +14,8 @@ namespace services
     public:
         virtual void Connected() {}
         virtual void PublishDone() = 0;
+        virtual void SubscribeDone() = 0;
+        virtual void ReceivedNotification(infra::BoundedConstString topic, infra::StreamReader& payload) = 0;
         virtual void ClosingConnection() {}
     };
 
@@ -43,6 +45,7 @@ namespace services
     {
     public:
         virtual void Publish(infra::BoundedConstString topic, infra::BoundedConstString payload) = 0;
+        virtual void Subscribe(infra::BoundedConstString topic) = 0;
     };
 
     class MqttClientConnector

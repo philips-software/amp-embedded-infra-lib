@@ -2,6 +2,7 @@
 #define SERVICES_MQTT_IMPL_HPP
 
 #include "infra/timer/Timer.hpp"
+#include "infra/util/Endian.hpp"
 #include "infra/util/PolymorphicVariant.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "services/network/Mqtt.hpp"
@@ -17,6 +18,7 @@ namespace services
 
         // Implementation of MqttClient
         virtual void Publish(infra::BoundedConstString topic, infra::BoundedConstString payload) override;
+        virtual void Subscribe(infra::BoundedConstString topic) override;
 
         // Implementation of ConnectionObserver
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
@@ -84,25 +86,13 @@ namespace services
             uint32_t size = 0;
         };
 
-        struct BigEndianUint16
-        {
-            BigEndianUint16() = default;
-            BigEndianUint16(uint16_t value)
-                : msb(static_cast<uint8_t>(value >> 8))
-                , lsb(static_cast<uint8_t>(value))
-            {}
-
-            uint8_t msb = 0;
-            uint8_t lsb = 0;
-        };
-
         struct PacketConnect
         {
-            BigEndianUint16  protocolNameLength = 4;
+            infra::BigEndian<uint16_t> protocolNameLength = 4;
             std::array<char, 4> protocolName{{ 'M', 'Q', 'T', 'T' }};
             uint8_t protocolLevel = 4;
             uint8_t connectFlags = 0xc2;    // Username, password, clean session, no will
-            BigEndianUint16 keepAlive = 0;
+            infra::BigEndian<uint16_t> keepAlive = 0;
         };
 
         class StateBase

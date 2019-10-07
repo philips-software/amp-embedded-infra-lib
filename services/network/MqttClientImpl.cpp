@@ -27,7 +27,7 @@ namespace services
         AddString(topic);
 
         uint16_t packetIdentifier = 1;
-        stream << BigEndianUint16(packetIdentifier);
+        stream << infra::BigEndian<uint16_t>(packetIdentifier);
         stream << infra::StringAsByteRange(payload);
     }
 
@@ -43,7 +43,7 @@ namespace services
 
     void MqttClientImpl::MqttFormatter::AddString(infra::BoundedConstString value)
     {
-        stream << BigEndianUint16(static_cast<uint16_t>(value.size())) << infra::StringAsByteRange(value);
+        stream << infra::BigEndian<uint16_t>(static_cast<uint16_t>(value.size())) << infra::StringAsByteRange(value);
     }
 
     void MqttClientImpl::MqttFormatter::Header(PacketType packetType, std::size_t size, uint8_t flags)
@@ -105,6 +105,9 @@ namespace services
     {
         state->Publish(topic, payload);
     }
+
+    void MqttClientImpl::Subscribe(infra::BoundedConstString topic)
+    {}
 
     void MqttClientImpl::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
@@ -201,19 +204,19 @@ namespace services
                 else
                 {
                     signaledFailure = true; // The factory already got a ConnectionEstablished, so it should not get a ConnectionFailed
-                    clientConnection.ConnectionObserver::Subject().AbortAndDestroy();
+                    clientConnection.Abort();
                 }
             });
         }
         else
-            clientConnection.ConnectionObserver::Subject().AbortAndDestroy();
+            clientConnection.Abort();
     }
 
     void MqttClientImpl::StateConnecting::Timeout()
     {
         signaledFailure = true;
         factory.ConnectionFailed(MqttClientObserverFactory::ConnectFailReason::initializationTimedOut);
-        clientConnection.ConnectionObserver::Subject().AbortAndDestroy();
+        clientConnection.Abort();
     }
 
     void MqttClientImpl::StateConnected::ClosingConnection()
@@ -229,7 +232,7 @@ namespace services
         formatter.MessagePublish(topic, payload);
 
         writer = nullptr;
-        publishTimeout.Start(clientConnection.publishTimeout, [this]() { clientConnection.ConnectionObserver::Subject().AbortAndDestroy(); });
+        publishTimeout.Start(clientConnection.publishTimeout, [this]() { clientConnection.Abort(); });
     }
 
     void MqttClientImpl::StateConnected::DataReceived(infra::StreamReader& reader)

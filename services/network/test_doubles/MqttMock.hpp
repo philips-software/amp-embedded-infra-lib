@@ -13,6 +13,8 @@ namespace services
     public:
         MOCK_METHOD0(Connected, void());
         MOCK_METHOD0(PublishDone, void());
+        MOCK_METHOD0(SubscribeDone, void());
+        MOCK_METHOD2(ReceivedNotification, void(infra::BoundedConstString topic, infra::StreamReader& payload));
         MOCK_METHOD0(ClosingConnection, void());
     };
 
@@ -29,6 +31,7 @@ namespace services
     {
     public:
         MOCK_METHOD2(Publish, void(infra::BoundedConstString topic, infra::BoundedConstString payload));
+        MOCK_METHOD1(Subscribe, void(infra::BoundedConstString topic));
     };
 }
 
