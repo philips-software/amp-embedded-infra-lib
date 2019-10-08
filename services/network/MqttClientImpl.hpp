@@ -5,6 +5,7 @@
 #include "infra/util/Endian.hpp"
 #include "infra/util/PolymorphicVariant.hpp"
 #include "infra/util/SharedOptional.hpp"
+#include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/network/Mqtt.hpp"
 
 namespace services
@@ -166,26 +167,26 @@ namespace services
 
     class MqttClientConnectorImpl
         : public MqttClientConnector
-        , public ClientConnectionObserverFactory
+        , public ClientConnectionObserverFactoryWithNameResolver
     {
     public:
         MqttClientConnectorImpl(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password,
-            services::IPv4Address address, uint16_t port, services::ConnectionFactory& connectionFactory);
+            infra::BoundedConstString hostname, uint16_t port, services::ConnectionFactoryWithNameResolver& connectionFactory);
 
         // Implementation of MqttClientConnector
         virtual void Connect(MqttClientObserverFactory& factory) override;
         virtual void CancelConnect() override;
 
-        // Implementation of ClientConnectionObserverFactory
-        virtual IPAddress Address() const override;
+        // Implementation of ClientConnectionObserverFactoryWithNameResolver
+        virtual infra::BoundedConstString Hostname() const override;
         virtual uint16_t Port() const override;
         virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
         virtual void ConnectionFailed(ConnectFailReason reason) override;
         
     private:
-        services::IPv4Address address;
+        infra::BoundedConstString hostname;
         uint16_t port;
-        services::ConnectionFactory& connectionFactory;
+        services::ConnectionFactoryWithNameResolver& connectionFactory;
         infra::BoundedConstString clientId;
         infra::BoundedConstString username;
         infra::BoundedConstString password;

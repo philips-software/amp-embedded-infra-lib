@@ -285,8 +285,9 @@ namespace services
         clientConnection.ConnectionObserver::Subject().RequestSendStream(MqttFormatter::MessageSizePublish(clientConnection.GetObserver()));
     }
 
-    MqttClientConnectorImpl::MqttClientConnectorImpl(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password, services::IPv4Address address, uint16_t port, services::ConnectionFactory& connectionFactory)
-        : address(address)
+    MqttClientConnectorImpl::MqttClientConnectorImpl(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password,
+        infra::BoundedConstString address, uint16_t port, services::ConnectionFactoryWithNameResolver& connectionFactory)
+        : hostname(hostname)
         , port(port)
         , connectionFactory(connectionFactory)
         , clientId(clientId)
@@ -306,9 +307,9 @@ namespace services
         connectionFactory.CancelConnect(*this);
     }
 
-    IPAddress MqttClientConnectorImpl::Address() const
+    infra::BoundedConstString MqttClientConnectorImpl::Hostname() const
     {
-        return address;
+        return hostname;
     }
 
     uint16_t MqttClientConnectorImpl::Port() const

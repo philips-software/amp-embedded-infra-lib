@@ -12,7 +12,7 @@ class MqttClientTest
 {
 public:
     MqttClientTest()
-        : connector("clientId", "username", "password", services::IPv4Address{ 127, 0, 0, 1 }, 1234, connectionFactory)
+        : connector("clientId", "username", "password", "127.0.0.1", 1234, connectionFactory)
         , connectionPtr(infra::UnOwnedSharedPtr(connection))
         , clientPtr(infra::UnOwnedSharedPtr(client))
     {
@@ -60,7 +60,7 @@ public:
         }));
     }
 
-    testing::StrictMock<services::ConnectionFactoryMock> connectionFactory;
+    testing::StrictMock<services::ConnectionFactoryWithNameResolverMock> connectionFactory;
     testing::StrictMock<services::MqttClientObserverFactoryMock> factory;
     services::MqttClientConnectorImpl connector;
     testing::StrictMock<services::ConnectionStub> connection;
@@ -72,13 +72,13 @@ public:
 TEST_F(MqttClientTest, refused_connection_propagates_to_MqttClientFactory)
 {
     EXPECT_CALL(factory, ConnectionFailed(services::MqttClientObserverFactory::ConnectFailReason::refused));
-    connector.ConnectionFailed(services::ClientConnectionObserverFactory::ConnectFailReason::refused);
+    connector.ConnectionFailed(services::ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason::refused);
 }
 
 TEST_F(MqttClientTest, connection_failed_propagates_to_MqttClientFactory)
 {
     EXPECT_CALL(factory, ConnectionFailed(services::MqttClientObserverFactory::ConnectFailReason::connectionAllocationFailed));
-    connector.ConnectionFailed(services::ClientConnectionObserverFactory::ConnectFailReason::connectionAllocationFailed);
+    connector.ConnectionFailed(services::ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason::connectionAllocationFailed);
 }
 
 TEST_F(MqttClientTest, after_connected_connect_message_is_sent)
