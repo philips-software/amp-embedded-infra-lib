@@ -17,8 +17,9 @@ namespace services
         MqttClientImpl(MqttClientObserverFactory& factory, infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password, infra::Duration publishTimeout = std::chrono::seconds(30));
 
         // Implementation of MqttClient
-        virtual void Publish(infra::BoundedConstString topic, infra::BoundedConstString payload) override;
-        virtual void Subscribe(infra::BoundedConstString topic) override;
+        virtual void Publish() override;
+        virtual void Subscribe() override;
+        virtual void NotificationDone() override;
 
         // Implementation of ConnectionObserver
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
@@ -56,12 +57,15 @@ namespace services
 
             void MessageConnect(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password);
             static std::size_t MessageSizeConnect(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password);
-            void MessagePublish(infra::BoundedConstString topic, infra::BoundedConstString payload);
-            static std::size_t MessageSizePublish(infra::BoundedConstString topic, infra::BoundedConstString payload);
+            void MessagePublish(const MqttClientObserver& message);
+            static std::size_t MessageSizePublish(const MqttClientObserver& message);
 
         private:
             static std::size_t EncodedLength(infra::BoundedConstString value);
+            static std::size_t EncodedTopicLength(const MqttClientObserver& message);
+            static std::size_t PayloadLength(const MqttClientObserver& message);
             void AddString(infra::BoundedConstString value);
+            void AddTopic(const MqttClientObserver& message);
             void Header(PacketType packetType, std::size_t size, uint8_t flags = 0);
             uint8_t MakePacketType(PacketType packetType, uint8_t flags);
 
@@ -109,7 +113,7 @@ namespace services
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) = 0;
             virtual void DataReceived(infra::StreamReader& reader) = 0;
 
-            virtual void Publish(infra::BoundedConstString topic, infra::BoundedConstString payload);
+            virtual void Publish();
 
         protected:
             MqttClientImpl& clientConnection;
@@ -148,11 +152,9 @@ namespace services
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
             virtual void DataReceived(infra::StreamReader& reader) override;
 
-            virtual void Publish(infra::BoundedConstString topic, infra::BoundedConstString payload) override;
+            virtual void Publish() override;
 
         private:
-            infra::BoundedConstString topic;
-            infra::BoundedConstString payload;
             infra::TimerSingleShot publishTimeout;
         };
 
@@ -167,7 +169,8 @@ namespace services
         , public ClientConnectionObserverFactory
     {
     public:
-        MqttClientConnectorImpl(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password, services::IPv4Address address, uint16_t port, services::ConnectionFactory& connectionFactory);
+        MqttClientConnectorImpl(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password,
+            services::IPv4Address address, uint16_t port, services::ConnectionFactory& connectionFactory);
 
         // Implementation of MqttClientConnector
         virtual void Connect(MqttClientObserverFactory& factory) override;

@@ -42,6 +42,24 @@ public:
         connection.sentData.clear();
     }
 
+    void FillTopic(infra::BoundedConstString topic)
+    {
+        EXPECT_CALL(client, FillTopic(testing::_)).WillRepeatedly(testing::Invoke([topic](infra::StreamWriter& writer)
+        {
+            infra::TextOutputStream::WithErrorPolicy stream(writer);
+            stream << topic;
+        }));
+    }
+
+    void FillPayload(infra::BoundedConstString payload)
+    {
+        EXPECT_CALL(client, FillPayload(testing::_)).WillRepeatedly(testing::Invoke([payload](infra::StreamWriter& writer)
+        {
+            infra::TextOutputStream::WithErrorPolicy stream(writer);
+            stream << payload;
+        }));
+    }
+
     testing::StrictMock<services::ConnectionFactoryMock> connectionFactory;
     testing::StrictMock<services::MqttClientObserverFactoryMock> factory;
     services::MqttClientConnectorImpl connector;
@@ -173,7 +191,9 @@ TEST_F(MqttClientTest, Publish_some_data)
 {
     Connect();
 
-    client.Subject().Publish("topic", "payload");
+    FillTopic("topic");
+    FillPayload("payload");
+    client.Subject().Publish();
 
     ExecuteAllActions();
     EXPECT_EQ((std::vector<uint8_t>{ 0x32, 0x10, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 0, 1, 'p', 'a', 'y', 'l', 'o', 'a', 'd' }), connection.sentData);
@@ -186,7 +206,9 @@ TEST_F(MqttClientTest, partial_puback_is_ignored)
 {
     Connect();
 
-    client.Subject().Publish("topic", "payload");
+    FillTopic("topic");
+    FillPayload("payload");
+    client.Subject().Publish();
 
     ExecuteAllActions();
     EXPECT_EQ((std::vector<uint8_t>{ 0x32, 0x10, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 0, 1, 'p', 'a', 'y', 'l', 'o', 'a', 'd' }), connection.sentData);

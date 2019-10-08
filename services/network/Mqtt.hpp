@@ -12,11 +12,16 @@ namespace services
         : public infra::SingleObserver<MqttClientObserver, MqttClient>
     {
     public:
+        using infra::SingleObserver<MqttClientObserver, MqttClient>::SingleObserver;
+
         virtual void Connected() {}
         virtual void PublishDone() = 0;
         virtual void SubscribeDone() = 0;
-        virtual void ReceivedNotification(infra::BoundedConstString topic, infra::StreamReader& payload) = 0;
+        virtual void ReceivedNotification(infra::BoundedConstString topic, infra::BoundedConstString payload) = 0;
         virtual void ClosingConnection() {}
+
+        virtual void FillTopic(infra::StreamWriter& writer) const = 0;
+        virtual void FillPayload(infra::StreamWriter& writer) const = 0;
     };
 
     class MqttClientObserverFactory
@@ -44,8 +49,9 @@ namespace services
         : public infra::Subject<MqttClientObserver>
     {
     public:
-        virtual void Publish(infra::BoundedConstString topic, infra::BoundedConstString payload) = 0;
-        virtual void Subscribe(infra::BoundedConstString topic) = 0;
+        virtual void Publish() = 0;
+        virtual void Subscribe() = 0;
+        virtual void NotificationDone() = 0;
     };
 
     class MqttClientConnector
