@@ -11,6 +11,8 @@ ccola_component(stream static_library)
         ByteOutputStream.hpp
         CountingInputStream.cpp
         CountingInputStream.hpp
+        CountingOutputStream.cpp
+        CountingOutputStream.hpp
         Formatter.cpp
         Formatter.hpp
         InputStream.cpp
