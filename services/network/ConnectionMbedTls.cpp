@@ -125,9 +125,9 @@ namespace services
 
         if (receiveBuffer.size() != startSize)
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object)
-            {
-                object->GetObserver().DataReceived();
-            }, SharedFromThis());
+        {
+            object->GetObserver().DataReceived();
+        }, SharedFromThis());
     }
 
     void ConnectionMbedTls::Connected()
@@ -202,7 +202,7 @@ namespace services
     void ConnectionMbedTls::TryAllocateSendStream()
     {
         assert(streamWriter.Allocatable());
-        if (sendBuffer.max_size() - sendBuffer.size() >= requestedSendSize)
+        if (!sending)
         {
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object)
             {
@@ -275,9 +275,9 @@ namespace services
 
     void ConnectionMbedTls::TrySend()
     {
-        while (initialHandshake || !sendBuffer.empty())
+        while (initialHandshake || sending)
         {
-            infra::ConstByteRange range = sendBuffer.contiguous_range(sendBuffer.begin());
+            infra::ConstByteRange range = infra::MakeRange(sendBuffer);
             int result = initialHandshake
                 ? mbedtls_ssl_handshake(&sslContext)
                 : mbedtls_ssl_write(&sslContext, reinterpret_cast<const unsigned char*>(range.begin()), range.size());
@@ -308,6 +308,8 @@ namespace services
             else
             {
                 sendBuffer.erase(sendBuffer.begin(), sendBuffer.begin() + result);
+                if (sendBuffer.empty())
+                    sending = false;
                 if (static_cast<std::size_t>(result) < range.size())
                     break;
             }
@@ -334,24 +336,14 @@ namespace services
     }
 
     ConnectionMbedTls::StreamWriterMbedTls::StreamWriterMbedTls(ConnectionMbedTls& connection)
-        : connection(connection)
+        : infra::BoundedVectorStreamWriter(connection.sendBuffer)
+        , connection(connection)
     {}
 
     ConnectionMbedTls::StreamWriterMbedTls::~StreamWriterMbedTls()
     {
-        if (sent != 0)
-            connection.TrySend();
-    }
-
-    void ConnectionMbedTls::StreamWriterMbedTls::Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy)
-    {
-        connection.sendBuffer.insert(connection.sendBuffer.end(), range.begin(), range.end());
-        sent += range.size();
-    }
-
-    std::size_t ConnectionMbedTls::StreamWriterMbedTls::Available() const
-    {
-        return connection.sendBuffer.max_size() - sent;
+        connection.sending = true;
+        connection.TrySend();
     }
 
     ConnectionMbedTls::StreamReaderMbedTls::StreamReaderMbedTls(ConnectionMbedTls& connection)
@@ -542,14 +534,16 @@ namespace services
 
     void ConnectionFactoryWithNameResolverForTls::Connect(ClientConnectionObserverFactoryWithNameResolver& factory)
     {
-        clientConnectionFactory = &factory;
-        connectionFactoryWithNameResolver.Connect(*this);
+        waitingConnects.push_back(factory);
+        TryConnect();
     }
 
     void ConnectionFactoryWithNameResolverForTls::CancelConnect(ClientConnectionObserverFactoryWithNameResolver& factory)
     {
-        clientConnectionFactory = &factory;
-        connectionFactoryWithNameResolver.CancelConnect(*this);
+        if (clientConnectionFactory == &factory)
+            connectionFactoryWithNameResolver.CancelConnect(*this);
+        else
+            waitingConnects.erase(factory);
     }
 
     infra::BoundedConstString ConnectionFactoryWithNameResolverForTls::Hostname() const
@@ -572,11 +566,25 @@ namespace services
             createdObserver(connectionObserver);
             static_cast<ConnectionWithHostname&>(connectionObserver->Subject()).SetHostname(Hostname());
         });
+        clientConnectionFactory = nullptr;
+        TryConnect();
     }
 
     void ConnectionFactoryWithNameResolverForTls::ConnectionFailed(ConnectFailReason reason)
     {
         assert(clientConnectionFactory != nullptr);
-        return clientConnectionFactory->ConnectionFailed(reason);
+        clientConnectionFactory->ConnectionFailed(reason);
+        clientConnectionFactory = nullptr;
+        TryConnect();
+    }
+
+    void ConnectionFactoryWithNameResolverForTls::TryConnect()
+    {
+        if (clientConnectionFactory == nullptr && !waitingConnects.empty())
+        {
+            clientConnectionFactory = &waitingConnects.front();
+            waitingConnects.pop_front();
+            connectionFactoryWithNameResolver.Connect(*this);
+        }
     }
 }

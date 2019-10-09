@@ -10,11 +10,20 @@ namespace services
     void MqttClientImpl::MqttFormatter::MessageConnect(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password)
     {
         PacketConnect packetHeader{};
+
+        if (username.empty())
+            packetHeader.connectFlags &= 0x7f;
+        if (password.empty())
+            packetHeader.connectFlags &= 0xbf;
+
         Header(PacketType::packetTypeConnect, sizeof(packetHeader) + EncodedLength(clientId) + EncodedLength(username) + EncodedLength(password));
         stream << packetHeader;
         AddString(clientId);
-        AddString(username);
-        AddString(password);
+
+        if (!username.empty())
+            AddString(username);
+        if (!password.empty())
+            AddString(password);
     }
 
     std::size_t MqttClientImpl::MqttFormatter::MessageSizeConnect(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password)

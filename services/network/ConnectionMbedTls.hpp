@@ -3,6 +3,7 @@
 
 #include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
 #include "infra/stream/BoundedDequeInputStream.hpp"
+#include "infra/stream/BoundedVectorOutputStream.hpp"
 #include "infra/util/BoundedList.hpp"
 #include "infra/util/SharedObjectAllocatorFixedSize.hpp"
 #include "infra/util/SharedOptional.hpp"
@@ -80,19 +81,14 @@ namespace services
 
     private:
         class StreamWriterMbedTls
-            : public infra::StreamWriter
+            : public infra::BoundedVectorStreamWriter
         {
         public:
             explicit StreamWriterMbedTls(ConnectionMbedTls& connection);
             ~StreamWriterMbedTls();
 
         private:
-            virtual void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
-            virtual std::size_t Available() const override;
-
-        private:
             ConnectionMbedTls& connection;
-            std::size_t sent = 0;
         };
 
         class StreamReaderMbedTls
@@ -117,7 +113,8 @@ namespace services
         mbedtls_ctr_drbg_context ctr_drbg;
 
         infra::BoundedDeque<uint8_t>::WithMaxSize<2048> receiveBuffer;
-        infra::BoundedDeque<uint8_t>::WithMaxSize<2048> sendBuffer;
+        infra::BoundedVector<uint8_t>::WithMaxSize<2048> sendBuffer;
+        bool sending = false;
 
         infra::SharedOptional<StreamWriterMbedTls> streamWriter;
         std::size_t requestedSendSize = 0;
@@ -237,13 +234,16 @@ namespace services
         // Implementation of ClientConnectionObserverFactoryWithNameResolver
         virtual infra::BoundedConstString Hostname() const override;
         virtual uint16_t Port() const override;
-
         virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
         virtual void ConnectionFailed(ConnectFailReason reason) override;
 
     private:
+        void TryConnect();
+
+    private:
         ConnectionFactoryWithNameResolver& connectionFactoryWithNameResolver;
         ClientConnectionObserverFactoryWithNameResolver* clientConnectionFactory = nullptr;
+        infra::IntrusiveList<ClientConnectionObserverFactoryWithNameResolver> waitingConnects;
     };
 }
 
