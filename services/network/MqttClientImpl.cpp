@@ -37,6 +37,24 @@ namespace services
         return 5 + EncodedTopicLength(message) + PayloadLength(message);
     }
 
+    void MqttClientImpl::MqttFormatter::MessageSubscribe(const MqttClientObserver& message)
+    {
+        Header(PacketType::packetTypeSubscribe, EncodedTopicLength(message) + 3, 2);
+
+        uint16_t packetIdentifier = 1;
+        stream << infra::BigEndian<uint16_t>(packetIdentifier);
+
+        AddTopic(message);
+
+        uint8_t QoS = 2;
+        stream << QoS;
+    }
+
+    std::size_t MqttClientImpl::MqttFormatter::MessageSizeSubscribe(const MqttClientObserver& message)
+    {
+        return 5 + 2 + EncodedTopicLength(message) + 1;
+    }
+
     std::size_t MqttClientImpl::MqttFormatter::EncodedLength(infra::BoundedConstString value)
     {
         return 2 + value.size();
@@ -53,6 +71,7 @@ namespace services
     {
         infra::CountingStreamWriter countingWriter;
         message.FillPayload(countingWriter);
+        //TODO: Should not we have a +2 here for packet identified bytes??
         return countingWriter.Processed();
     }
 
@@ -128,7 +147,9 @@ namespace services
     }
 
     void MqttClientImpl::Subscribe()
-    {}
+    {
+        state->Subscribe();
+    }
 
     void MqttClientImpl::NotificationDone()
     {}
@@ -166,6 +187,11 @@ namespace services
     {}
 
     void MqttClientImpl::StateBase::Publish()
+    {
+        std::abort();
+    }
+
+    void MqttClientImpl::StateBase::Subscribe()
     {
         std::abort();
     }
@@ -253,10 +279,18 @@ namespace services
     {
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
         MqttFormatter formatter(stream);
-        formatter.MessagePublish(clientConnection.GetObserver());
 
-        writer = nullptr;
-        publishTimeout.Start(clientConnection.publishTimeout, [this]() { clientConnection.Abort(); });
+        if (operationState == OperationState::publishing)
+        {
+            formatter.MessagePublish(clientConnection.GetObserver());
+            writer = nullptr;
+            publishTimeout.Start(clientConnection.publishTimeout, [this]() { clientConnection.Abort(); });
+        }
+        else
+        {
+            formatter.MessageSubscribe(clientConnection.GetObserver());
+            writer = nullptr;
+        }
     }
 
     void MqttClientImpl::StateConnected::DataReceived(infra::StreamReader& reader)
@@ -278,11 +312,32 @@ namespace services
             clientConnection.GetObserver().PublishDone();
             clientConnection.ConnectionObserver::Subject().AckReceived();
         }
+        else if (parser.GetPacketType() == PacketType::packetTypeSubAck)
+        {
+            uint16_t packetIdentifier;
+            stream >> packetIdentifier;
+
+            uint8_t returnCode;
+            stream >> returnCode;
+
+            if (stream.Failed())
+                return;
+
+            clientConnection.GetObserver().SubscribeDone();
+            clientConnection.ConnectionObserver::Subject().AckReceived();
+        }
     }
 
     void MqttClientImpl::StateConnected::Publish()
     {
+        operationState = OperationState::publishing;
         clientConnection.ConnectionObserver::Subject().RequestSendStream(MqttFormatter::MessageSizePublish(clientConnection.GetObserver()));
+    }
+
+    void MqttClientImpl::StateConnected::Subscribe()
+    {
+        operationState = OperationState::subscribing;
+        clientConnection.ConnectionObserver::Subject().RequestSendStream(MqttFormatter::MessageSizeSubscribe(clientConnection.GetObserver()));
     }
 
     MqttClientConnectorImpl::MqttClientConnectorImpl(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password,

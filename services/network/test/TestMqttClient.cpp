@@ -199,7 +199,22 @@ TEST_F(MqttClientTest, Publish_some_data)
     EXPECT_EQ((std::vector<uint8_t>{ 0x32, 0x10, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 0, 1, 'p', 'a', 'y', 'l', 'o', 'a', 'd' }), connection.sentData);
 
     EXPECT_CALL(client, PublishDone());
-    connection.SimulateDataReceived(std::vector<uint8_t>{ 0x40, 0x00, 0x01, 0x00 });
+    connection.SimulateDataReceived(std::vector<uint8_t>{ 0x40, 0x02, 0x00, 0x01 });
+}
+
+TEST_F(MqttClientTest, publish_aborts_connection_with_30_sec_timeout)
+{
+    Connect();
+
+    FillTopic("topic");
+    FillPayload("payload");
+    client.Subject().Publish();
+
+    ExecuteAllActions();
+
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+    EXPECT_CALL(client, ClosingConnection());
+    ForwardTime(std::chrono::seconds(30));
 }
 
 TEST_F(MqttClientTest, partial_puback_is_ignored)
@@ -213,7 +228,21 @@ TEST_F(MqttClientTest, partial_puback_is_ignored)
     ExecuteAllActions();
     EXPECT_EQ((std::vector<uint8_t>{ 0x32, 0x10, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 0, 1, 'p', 'a', 'y', 'l', 'o', 'a', 'd' }), connection.sentData);
 
-    connection.SimulateDataReceived(std::vector<uint8_t>{ 0x40, 0x00, 0x01 });
+    connection.SimulateDataReceived(std::vector<uint8_t>{ 0x40, 0x02, 0x00 });
+}
+
+TEST_F(MqttClientTest, Subscribe_to_a_topic)
+{
+    Connect();
+
+    FillTopic("topic");
+    client.Subject().Subscribe();
+
+    ExecuteAllActions();
+    EXPECT_EQ((std::vector<uint8_t>{ 0x82, 0x0a, 0, 1, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 0x02}), connection.sentData);
+
+    EXPECT_CALL(client, SubscribeDone());
+    connection.SimulateDataReceived(std::vector<uint8_t>{ 0x90, 0x03, 0x00, 0x01, 0x04 });
 }
 
 TEST_F(MqttClientTest, closed_connection_results_in_ClosingConnection)

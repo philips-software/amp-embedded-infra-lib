@@ -60,6 +60,8 @@ namespace services
             static std::size_t MessageSizeConnect(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password);
             void MessagePublish(const MqttClientObserver& message);
             static std::size_t MessageSizePublish(const MqttClientObserver& message);
+            void MessageSubscribe(const MqttClientObserver& message);
+            static std::size_t MessageSizeSubscribe(const MqttClientObserver& message);
 
         private:
             static std::size_t EncodedLength(infra::BoundedConstString value);
@@ -115,6 +117,7 @@ namespace services
             virtual void DataReceived(infra::StreamReader& reader) = 0;
 
             virtual void Publish();
+            virtual void Subscribe();
 
         protected:
             MqttClientImpl& clientConnection;
@@ -154,9 +157,19 @@ namespace services
             virtual void DataReceived(infra::StreamReader& reader) override;
 
             virtual void Publish() override;
+            virtual void Subscribe() override;
+
+        private:
+            enum class OperationState
+            {
+                idle,
+                publishing,
+                subscribing
+            };
 
         private:
             infra::TimerSingleShot publishTimeout;
+            OperationState operationState = OperationState::idle;
         };
 
     private:
