@@ -218,7 +218,7 @@ TEST_F(MqttClientTest, publish_aborts_connection_with_30_sec_timeout)
 }
 
 TEST_F(MqttClientTest, partial_puback_is_ignored)
-{
+{//Why should we ignore this?
     Connect();
 
     FillTopic("topic");
@@ -231,7 +231,7 @@ TEST_F(MqttClientTest, partial_puback_is_ignored)
     connection.SimulateDataReceived(std::vector<uint8_t>{ 0x40, 0x02, 0x00 });
 }
 
-TEST_F(MqttClientTest, Subscribe_to_a_topic)
+TEST_F(MqttClientTest, subscribe_to_a_topic)
 {
     Connect();
 
@@ -245,6 +245,20 @@ TEST_F(MqttClientTest, Subscribe_to_a_topic)
     connection.SimulateDataReceived(std::vector<uint8_t>{ 0x90, 0x03, 0x00, 0x01, 0x04 });
 }
 
+TEST_F(MqttClientTest, subscribe_aborts_connection_with_30_sec_timeout)
+{
+    Connect();
+
+    FillTopic("topic");
+    client.Subject().Subscribe();
+
+    ExecuteAllActions();
+
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+    EXPECT_CALL(client, ClosingConnection());
+    ForwardTime(std::chrono::seconds(30));
+}
+
 TEST_F(MqttClientTest, closed_connection_results_in_ClosingConnection)
 {
     Connect();
@@ -252,4 +266,16 @@ TEST_F(MqttClientTest, closed_connection_results_in_ClosingConnection)
     EXPECT_CALL(connection, AbortAndDestroyMock());
     EXPECT_CALL(client, ClosingConnection());
     connection.AbortAndDestroy();
+}
+
+TEST_F(MqttClientTest, received_publish_is_forwarded_and_acked)
+{
+    Connect();
+
+    EXPECT_CALL(client, ReceivedNotification("topic", "payload"));
+    connection.SimulateDataReceived(std::vector<uint8_t>{ 0x32, 0x10, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 0, 1, 'p', 'a', 'y', 'l', 'o', 'a', 'd' });
+
+    client.Subject().NotificationDone();
+    ExecuteAllActions();
+    EXPECT_EQ((std::vector<uint8_t>{ 0x40, 0x02, 0x00, 0x01 }), connection.sentData);
 }

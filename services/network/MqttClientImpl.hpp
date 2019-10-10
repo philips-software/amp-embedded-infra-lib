@@ -15,7 +15,7 @@ namespace services
         , public MqttClient
     {
     public:
-        MqttClientImpl(MqttClientObserverFactory& factory, infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password, infra::Duration publishTimeout = std::chrono::seconds(30));
+        MqttClientImpl(MqttClientObserverFactory& factory, infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password, infra::Duration operationTimeout = std::chrono::seconds(30));
 
         // Implementation of MqttClient
         virtual void Publish() override;
@@ -62,6 +62,8 @@ namespace services
             static std::size_t MessageSizePublish(const MqttClientObserver& message);
             void MessageSubscribe(const MqttClientObserver& message);
             static std::size_t MessageSizeSubscribe(const MqttClientObserver& message);
+            void MessagePubAck(const MqttClientObserver& message);
+            static std::size_t MessageSizePubAck(const MqttClientObserver& message);
 
         private:
             static std::size_t EncodedLength(infra::BoundedConstString value);
@@ -82,6 +84,7 @@ namespace services
             MqttParser(infra::DataInputStream stream);
 
             PacketType GetPacketType() const;
+            size_t GetPacketSize() const;
 
         private:
             void ExtractType();
@@ -118,6 +121,7 @@ namespace services
 
             virtual void Publish();
             virtual void Subscribe();
+            virtual void PubAck();
 
         protected:
             MqttClientImpl& clientConnection;
@@ -158,22 +162,31 @@ namespace services
 
             virtual void Publish() override;
             virtual void Subscribe() override;
+            virtual void PubAck() override;
+
+        private:
+            void HandlePubAck(infra::DataInputStream& stream);
+            void HandleSubAck(infra::DataInputStream& stream);
+            void HandlePublish(infra::DataInputStream& stream, size_t packetLength);
 
         private:
             enum class OperationState
             {
                 idle,
                 publishing,
-                subscribing
+                subscribing,
+                pubacking
             };
 
         private:
-            infra::TimerSingleShot publishTimeout;
+            infra::TimerSingleShot operationTimeout;
             OperationState operationState = OperationState::idle;
+            std::array<char, 32> receivedTopic;
+            std::array<char, 1000> receivedPayload;
         };
 
     private:
-        infra::Duration publishTimeout;
+        infra::Duration operationTimeout;
         infra::PolymorphicVariant<StateBase, StateConnecting, StateConnected> state;
         infra::SharedPtr<MqttClientObserver> observer;
     };
