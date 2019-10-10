@@ -62,7 +62,7 @@ namespace services
             static std::size_t MessageSizePublish(const MqttClientObserver& message);
             void MessageSubscribe(const MqttClientObserver& message);
             static std::size_t MessageSizeSubscribe(const MqttClientObserver& message);
-            void MessagePubAck(const MqttClientObserver& message);
+            void MessagePubAck(const MqttClientObserver& message, uint16_t packetIdentifier);
             static std::size_t MessageSizePubAck(const MqttClientObserver& message);
 
         private:
@@ -183,6 +183,7 @@ namespace services
             OperationState operationState = OperationState::idle;
             std::array<char, 32> receivedTopic;
             std::array<char, 1000> receivedPayload;
+            uint16_t receivedPacketIdentifier;
         };
 
     private:

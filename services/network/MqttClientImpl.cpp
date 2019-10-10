@@ -64,11 +64,9 @@ namespace services
         return 5 + 2 + EncodedTopicLength(message) + 1;
     }
 
-    void MqttClientImpl::MqttFormatter::MessagePubAck(const MqttClientObserver& message)
+    void MqttClientImpl::MqttFormatter::MessagePubAck(const MqttClientObserver& message, uint16_t packetIdentifier)
     {
         Header(PacketType::packetTypePubAck, 2, 0);
-
-        uint16_t packetIdentifier = 1;
         stream << infra::BigEndian<uint16_t>(packetIdentifier);
     }
 
@@ -328,7 +326,7 @@ namespace services
         }
         else
         {
-            formatter.MessagePubAck(clientConnection.GetObserver());
+            formatter.MessagePubAck(clientConnection.GetObserver(), receivedPacketIdentifier);
             writer = nullptr;
         }
     }
@@ -356,6 +354,12 @@ namespace services
 
         stream.Failed();
 
+        if (infra::FromBigEndian(packetIdentifier) != 1 || returnCode == 0x80)
+        {
+            clientConnection.Abort();
+            return;
+        }
+
         operationTimeout.Cancel();
         clientConnection.GetObserver().SubscribeDone();
         clientConnection.ConnectionObserver::Subject().AckReceived();
@@ -371,9 +375,8 @@ namespace services
         topic.resize(topicSize);
         stream >> infra::text >> topic;
 
-        uint16_t packetIdentifier;
-        stream >> packetIdentifier;
-        packetIdentifier = infra::FromBigEndian(packetIdentifier);
+        stream >> receivedPacketIdentifier;
+        receivedPacketIdentifier = infra::FromBigEndian(receivedPacketIdentifier);
 
         uint16_t payloadSize = packetLength - topicSize - 2 - 2;
         infra::BoundedString payload(receivedPayload);
