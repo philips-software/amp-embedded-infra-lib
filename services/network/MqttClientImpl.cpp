@@ -62,7 +62,7 @@ namespace services
 
         AddTopic(message);
 
-        uint8_t QoS = 2;
+        uint8_t QoS = 1;
         stream << QoS;
     }
 
