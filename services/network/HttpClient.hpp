@@ -63,6 +63,8 @@ namespace services
 
         virtual void AckReceived() = 0;
         virtual void Close() = 0;
+
+        virtual Connection& GetConnection() = 0;
     };
 
     class HttpClientConnector

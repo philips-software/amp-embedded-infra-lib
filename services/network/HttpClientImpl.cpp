@@ -150,6 +150,11 @@ namespace services
         ConnectionObserver::Subject().CloseAndDestroy();
     }
 
+    Connection& HttpClientImpl::GetConnection()
+    {
+        return ConnectionObserver::Subject();
+    }
+
     void HttpClientImpl::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         if (forwardingStream)
