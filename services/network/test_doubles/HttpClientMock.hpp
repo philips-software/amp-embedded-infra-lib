@@ -52,6 +52,8 @@ namespace services
         MOCK_METHOD0(AckReceived, void());
         MOCK_METHOD0(Close, void());
 
+        MOCK_METHOD0(GetConnection, Connection&());
+
         void AttachObserver(const infra::SharedPtr<HttpClientObserver>& observer)
         {
             this->observer = observer;

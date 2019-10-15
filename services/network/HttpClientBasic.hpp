@@ -8,7 +8,7 @@ namespace services
 {
     class HttpClientBasic
         : protected services::HttpClientObserver
-        , private services::HttpClientObserverFactory
+        , protected services::HttpClientObserverFactory
     {
     public:
         HttpClientBasic(infra::BoundedString url, uint16_t port, services::HttpClientConnector& httpClientConnector);
@@ -35,12 +35,12 @@ namespace services
         virtual void ClosingConnection() override;
         virtual void BodyComplete() override;
 
-    private:
+    protected:
         // Implementation of HttpClientObserverFactory
-        virtual infra::BoundedConstString Hostname() const final;
-        virtual uint16_t Port() const final;
-        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::HttpClientObserver> client)>&& createdClientObserver) final;
-        virtual void ConnectionFailed(ConnectFailReason reason) final;
+        virtual infra::BoundedConstString Hostname() const override;
+        virtual uint16_t Port() const override;
+        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::HttpClientObserver> client)>&& createdClientObserver) override;
+        virtual void ConnectionFailed(ConnectFailReason reason) override;
 
     private:
         void Timeout();

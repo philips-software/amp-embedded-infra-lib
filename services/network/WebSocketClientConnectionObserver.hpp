@@ -8,7 +8,6 @@
 #include "services/network/Connection.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/network/HttpClientBasic.hpp"
-#include "services/network/HttpClientImpl.hpp"
 #include "services/network/WebSocket.hpp"
 #include "services/util/Stoppable.hpp"
 
@@ -150,8 +149,8 @@ namespace services
         ~HttpClientWebSocketInitiationResult() = default;
 
     public:
-        virtual void WebSocketInitiationDone() = 0;
-        virtual void WebSocketInitiationError(bool intermittentFailure) = 0;
+        virtual void WebSocketInitiationDone(Connection& connection) = 0;
+        virtual void WebSocketInitiationError(WebSocketClientObserverFactory::ConnectFailReason reason) = 0;
     };
 
     class HttpClientWebSocketInitiation
@@ -169,17 +168,23 @@ namespace services
 
         // Implementation of HttpClientBasic
         virtual void Connected() override;
-        virtual services::HttpHeaders Headers() const;
+        virtual services::HttpHeaders Headers() const override;
         virtual void StatusAvailable(HttpStatusCode statusCode) override;
         virtual void HeaderAvailable(HttpHeader header) override;
         virtual void BodyAvailable(infra::SharedPtr<infra::StreamReader>&& reader) override;
         virtual void BodyComplete() override;
         virtual void Done() override;
         virtual void Error(bool intermittentFailure) override;
+        virtual void ConnectionFailed(HttpClientObserverFactory::ConnectFailReason reason) override;
+
+    private:
+        WebSocketClientObserverFactory::ConnectFailReason Translate(HttpClientObserverFactory::ConnectFailReason reason) const;
 
     private:
         HttpClientWebSocketInitiationResult& result;
-        infra::BoundedVector<const services::HttpHeader>::WithMaxSize<4> headers;
+        infra::BoundedVector<const services::HttpHeader>::WithMaxSize<6> headers;
+        infra::BoundedString::WithStorage<32> webSocketKey;
+        WebSocketClientObserverFactory::ConnectFailReason initiationError = WebSocketClientObserverFactory::ConnectFailReason::upgradeFailed;
     };
 
     class WebSocketClientInitiationResult
@@ -192,59 +197,8 @@ namespace services
 
     public:
         virtual void InitiationDone(services::Connection& connection) = 0;
-        virtual void InitiationExpired() = 0;
-        virtual void InitiationError() = 0;
-        virtual void InitiationConnectionFailed(ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason reason) = 0;
+        virtual void InitiationError(WebSocketClientObserverFactory::ConnectFailReason reason) = 0;
         virtual void InitiationCancelled() = 0;
-    };
-
-    class WebSocketClientInitiation
-        : private HttpClientConnector
-        , private ClientConnectionObserverFactoryWithNameResolver
-        , private HttpClientWebSocketInitiationResult
-    {
-    public:
-        struct Creators
-        {
-            infra::CreatorBase<HttpClientWebSocketInitiation, void(WebSocketClientObserverFactory& clientObserverFactory, HttpClientConnector& clientConnector,
-                HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)>& httpClientInitiationCreator;
-        };
-
-        WebSocketClientInitiation(WebSocketClientObserverFactory& clientObserverFactory, ConnectionFactoryWithNameResolver& connectionFactory,
-            WebSocketClientInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator, const Creators& creators);
-
-        void CancelConnect();
-        WebSocketClientObserverFactory& Factory();
-
-    private:
-        // Implementation of HttpClientConnector
-        virtual void Connect(HttpClientObserverFactory& factory) override;
-        virtual void CancelConnect(HttpClientObserverFactory& factory) override;
-
-        // Implementation of ClientConnectionObserverFactoryWithNameResolver
-        virtual infra::BoundedConstString Hostname() const override;
-        virtual uint16_t Port() const override;
-        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
-        virtual void ConnectionFailed(ConnectFailReason reason) override;
-
-        // Implementation of HttpClientWebSocketInitiationResult
-        virtual void WebSocketInitiationDone() override;
-        virtual void WebSocketInitiationError(bool intermittentFailure) override;
-
-        void ExpiredWithSuccess();
-        void ExpiredWithError();
-        void ExpiredWithConnectionFailed(ConnectFailReason reason);
-        void ExpiredWithCancelled();
-
-    private:
-        WebSocketClientObserverFactory& clientObserverFactory;
-        ConnectionFactoryWithNameResolver& connectionFactory;
-        WebSocketClientInitiationResult& result;
-        hal::SynchronousRandomDataGenerator& randomDataGenerator;
-        infra::NotifyingSharedOptional<HttpClientImpl> httpClient;
-        HttpClientObserverFactory* httpClientObserverFactory = nullptr;
-    public:
-        infra::ProxyCreator<decltype(Creators::httpClientInitiationCreator)> initiationClient;
     };
 
     class WebSocketClientFactorySingleConnection
@@ -252,8 +206,14 @@ namespace services
         , private WebSocketClientInitiationResult
     {
     public:
+        struct Creators
+        {
+            infra::CreatorBase<HttpClientWebSocketInitiation, void(WebSocketClientObserverFactory& clientObserverFactory,
+                HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)>& httpClientInitiationCreator;
+        };
+
         WebSocketClientFactorySingleConnection(ConnectionFactoryWithNameResolver& connectionFactory,
-            hal::SynchronousRandomDataGenerator& randomDataGenerator, const WebSocketClientInitiation::Creators& creators);
+            hal::SynchronousRandomDataGenerator& randomDataGenerator, const Creators& creators);
 
         // Implementation of WebSocketClientConnector
         virtual void Connect(WebSocketClientObserverFactory& factory) override;
@@ -262,19 +222,41 @@ namespace services
     private:
         // Implementation of WebSocketClientInitiationResult
         virtual void InitiationDone(services::Connection& connection) override;
-        virtual void InitiationExpired() override;
-        virtual void InitiationError() override;
-        virtual void InitiationConnectionFailed(ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason reason) override;
+        virtual void InitiationError(WebSocketClientObserverFactory::ConnectFailReason reason) override;
         virtual void InitiationCancelled() override;
 
-        WebSocketClientObserverFactory::ConnectFailReason Translate(ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason reason);
+    private:
+        class WebSocketClientInitiation
+            : private HttpClientWebSocketInitiationResult
+        {
+        public:
+            WebSocketClientInitiation(WebSocketClientObserverFactory& clientObserverFactory, ConnectionFactoryWithNameResolver& connectionFactory,
+                WebSocketClientInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator, const Creators& creators);
+
+            void CancelConnect();
+            WebSocketClientObserverFactory& Factory();
+
+        private:
+            // Implementation of HttpClientWebSocketInitiationResult
+            virtual void WebSocketInitiationDone(Connection& connection) override;
+            virtual void WebSocketInitiationError(WebSocketClientObserverFactory::ConnectFailReason reason) override;
+
+        private:
+            WebSocketClientObserverFactory& clientObserverFactory;
+            ConnectionFactoryWithNameResolver& connectionFactory;
+            WebSocketClientInitiationResult& result;
+            hal::SynchronousRandomDataGenerator& randomDataGenerator;
+
+        public:
+            infra::ProxyCreator<decltype(Creators::httpClientInitiationCreator)> initiationClient;
+        };
 
     private:
         infra::Optional<WebSocketClientInitiation> initiation;
         infra::NotifyingSharedOptional<WebSocketClientConnectionObserver> webSocket;
         ConnectionFactoryWithNameResolver& connectionFactory;
         hal::SynchronousRandomDataGenerator& randomDataGenerator;
-        WebSocketClientInitiation::Creators creators;
+        Creators creators;
     };
 }
 

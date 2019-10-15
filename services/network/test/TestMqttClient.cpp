@@ -284,7 +284,7 @@ TEST_F(MqttClientTest, subscribe_to_a_topic)
     client.Subject().Subscribe();
 
     ExecuteAllActions();
-    EXPECT_EQ((std::vector<uint8_t>{ 0x82, 0x0a, 0, 1, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 0x02}), connection.sentData);
+    EXPECT_EQ((std::vector<uint8_t>{ 0x82, 0x0a, 0, 1, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 0x01}), connection.sentData);
 
     EXPECT_CALL(client, SubscribeDone());
     SubAckReceived(1, 0x01);

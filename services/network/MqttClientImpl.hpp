@@ -102,7 +102,7 @@ namespace services
             infra::BigEndian<uint16_t> protocolNameLength = 4;
             std::array<char, 4> protocolName{{ 'M', 'Q', 'T', 'T' }};
             uint8_t protocolLevel = 4;
-            uint8_t connectFlags = 0xc2;    // Username, password, clean session, no will
+            uint8_t connectFlags = 0x02;    // clean session, no will
             infra::BigEndian<uint16_t> keepAlive = 0;
         };
 
