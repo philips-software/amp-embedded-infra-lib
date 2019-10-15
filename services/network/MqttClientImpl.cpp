@@ -368,7 +368,7 @@ namespace services
         stream >> receivedPacketIdentifier;
         receivedPacketIdentifier = infra::FromBigEndian(receivedPacketIdentifier);
 
-        uint16_t payloadSize = packetLength - topicSize - 2 - 2;
+        uint16_t payloadSize = static_cast<uint16_t>(packetLength) - topicSize - 2 - 2;
         infra::BoundedString payload(receivedPayload);
         payload.resize(payloadSize);
         stream >> infra::text >> payload;
