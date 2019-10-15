@@ -7,6 +7,7 @@
 #include "infra/util/SharedOptional.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/network/Mqtt.hpp"
+#include "infra/util/BoundedDeque.hpp"
 
 namespace services
 {
@@ -168,22 +169,67 @@ namespace services
             void HandlePubAck(infra::DataInputStream& stream);
             void HandleSubAck(infra::DataInputStream& stream);
             void HandlePublish(infra::DataInputStream& stream, size_t packetLength);
+            void ProcessSendOperations();
 
         private:
-            enum class OperationState
+            class OperationBase
             {
-                idle,
-                publishing,
-                subscribing,
-                pubacking
+            public:
+                virtual ~OperationBase() = default;
+
+                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::SharedPtr<infra::StreamWriter>&& writer) = 0;
+                virtual std::size_t MessageSize(const MqttClientObserver& message) = 0;
             };
+
+            class OperationPublish
+                : public OperationBase
+            {
+            public:
+                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::SharedPtr<infra::StreamWriter>&& writer) override;
+                virtual std::size_t MessageSize(const MqttClientObserver& message) override;
+            };
+
+            class OperationSubscribe
+                : public OperationBase
+            {
+            public:
+                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::SharedPtr<infra::StreamWriter>&& writer) override;
+                virtual std::size_t MessageSize(const MqttClientObserver& message) override;
+            };
+
+            class OperationPubAck
+                : public OperationBase
+            {
+            public:
+                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::SharedPtr<infra::StreamWriter>&& writer) override;
+                virtual std::size_t MessageSize(const MqttClientObserver& message) override;
+            };
+
+            friend OperationSubscribe;
+            friend OperationPublish;
+            friend OperationPubAck;
 
         private:
             infra::TimerSingleShot operationTimeout;
-            OperationState operationState = OperationState::idle;
             std::array<char, 32> receivedTopic;
             std::array<char, 1000> receivedPayload;
             uint16_t receivedPacketIdentifier;
+
+            using OperationVariant = infra::PolymorphicVariant<OperationBase, OperationPublish, OperationSubscribe, OperationPubAck>;
+            infra::BoundedDeque<OperationVariant>::WithMaxSize<2> sendOperationQueue;
+
+        private:
+            template <class operation>
+            void QueueSendOperation()
+            {
+                if (sendOperationQueue.full())
+                    std::abort();
+                else
+                {
+                    sendOperationQueue.emplace_back(infra::InPlaceType<operation>());
+                    ProcessSendOperations();
+                }
+            }
         };
 
     private:

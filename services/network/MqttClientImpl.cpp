@@ -309,26 +309,9 @@ namespace services
 
     void MqttClientImpl::StateConnected::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        infra::DataOutputStream::WithErrorPolicy stream(*writer);
-        MqttFormatter formatter(stream);
-
-        if (operationState == OperationState::publishing)
-        {
-            formatter.MessagePublish(clientConnection.GetObserver());
-            writer = nullptr;
-            operationTimeout.Start(clientConnection.operationTimeout, [this]() { clientConnection.Abort(); });
-        }
-        else if (operationState == OperationState::subscribing)
-        {
-            formatter.MessageSubscribe(clientConnection.GetObserver());
-            writer = nullptr;
-            operationTimeout.Start(clientConnection.operationTimeout, [this]() { clientConnection.Abort(); });
-        }
-        else
-        {
-            formatter.MessagePubAck(clientConnection.GetObserver(), receivedPacketIdentifier);
-            writer = nullptr;
-        }
+        sendOperationQueue.front().Get().SendStreamAvailable(*this, std::move(writer));
+        sendOperationQueue.pop_front();
+        ProcessSendOperations();
     }
 
     void MqttClientImpl::StateConnected::HandlePubAck(infra::DataInputStream& stream)
@@ -406,20 +389,67 @@ namespace services
 
     void MqttClientImpl::StateConnected::Publish()
     {
-        operationState = OperationState::publishing;
-        clientConnection.ConnectionObserver::Subject().RequestSendStream(MqttFormatter::MessageSizePublish(clientConnection.GetObserver()));
+        QueueSendOperation<OperationPublish>();
     }
 
     void MqttClientImpl::StateConnected::Subscribe()
     {
-        operationState = OperationState::subscribing;
-        clientConnection.ConnectionObserver::Subject().RequestSendStream(MqttFormatter::MessageSizeSubscribe(clientConnection.GetObserver()));
+        QueueSendOperation<OperationSubscribe>();
     }
 
     void MqttClientImpl::StateConnected::PubAck()
     {
-        operationState = OperationState::pubacking;
-        clientConnection.ConnectionObserver::Subject().RequestSendStream(MqttFormatter::MessageSizePubAck(clientConnection.GetObserver()));
+        QueueSendOperation<OperationPubAck>();
+    }
+
+    void MqttClientImpl::StateConnected::ProcessSendOperations()
+    {
+        if (sendOperationQueue.size() == 1)
+            clientConnection.ConnectionObserver::Subject().RequestSendStream(sendOperationQueue.front().Get().MessageSize(clientConnection.GetObserver()));
+    }
+
+    void MqttClientImpl::StateConnected::OperationPublish::SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::SharedPtr<infra::StreamWriter>&& writer)
+    {
+        infra::DataOutputStream::WithErrorPolicy stream(*writer);
+        MqttFormatter formatter(stream);
+
+        formatter.MessagePublish(connectedState.clientConnection.GetObserver());
+        writer = nullptr;
+        connectedState.operationTimeout.Start(connectedState.clientConnection.operationTimeout, [&connectedState]() { connectedState.clientConnection.Abort(); });
+    }
+
+    std::size_t MqttClientImpl::StateConnected::OperationPublish::MessageSize(const MqttClientObserver& message)
+    {
+        return MqttFormatter::MessageSizePublish(message);
+    }
+
+    void MqttClientImpl::StateConnected::OperationSubscribe::SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::SharedPtr<infra::StreamWriter>&& writer)
+    {
+        infra::DataOutputStream::WithErrorPolicy stream(*writer);
+        MqttFormatter formatter(stream);
+
+        formatter.MessageSubscribe(connectedState.clientConnection.GetObserver());
+        writer = nullptr;
+        connectedState.operationTimeout.Start(connectedState.clientConnection.operationTimeout, [&connectedState]() { connectedState.clientConnection.Abort(); });
+    }
+
+    std::size_t MqttClientImpl::StateConnected::OperationSubscribe::MessageSize(const MqttClientObserver& message)
+    {
+        return MqttFormatter::MessageSizeSubscribe(message);
+    }
+
+    void MqttClientImpl::StateConnected::OperationPubAck::SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::SharedPtr<infra::StreamWriter>&& writer)
+    {
+        infra::DataOutputStream::WithErrorPolicy stream(*writer);
+        MqttFormatter formatter(stream);
+
+        formatter.MessagePubAck(connectedState.clientConnection.GetObserver(), connectedState.receivedPacketIdentifier);
+        writer = nullptr;
+    }
+
+    std::size_t MqttClientImpl::StateConnected::OperationPubAck::MessageSize(const MqttClientObserver& message)
+    {
+        return MqttFormatter::MessageSizePubAck(message);
     }
 
     MqttClientConnectorImpl::MqttClientConnectorImpl(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password,

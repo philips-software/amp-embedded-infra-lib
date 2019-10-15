@@ -6,6 +6,42 @@
 #include "services/network/test_doubles/ConnectionStub.hpp"
 #include "services/network/test_doubles/MqttMock.hpp"
 
+class ConnectionStubWithSendStreamControl
+    : public services::ConnectionStub
+{
+public:
+
+    virtual void RequestSendStream(std::size_t sendSize) override
+    {
+        if (autoSendStreamAvailable)
+            services::ConnectionStub::RequestSendStream(sendSize);
+        else
+        {
+            this->sendSize.Emplace(sendSize);
+            RequestSendStreamMock(sendSize);
+        }
+    }
+
+    void ScheduleGrantSendStream()
+    {
+        if (!sendSize)
+            std::abort();
+
+        services::ConnectionStub::RequestSendStream(*sendSize);
+        sendSize = infra::none;
+    }
+
+    void AutoSendStreamAvailableEnabled(bool newValue)
+    {
+        autoSendStreamAvailable = newValue;
+    }
+
+    MOCK_METHOD1(RequestSendStreamMock, void(std::size_t));
+private:
+    bool autoSendStreamAvailable = true;
+    infra::Optional <std::size_t> sendSize;
+};
+
 class MqttClientTest
     : public testing::Test
     , public infra::ClockFixture
@@ -60,10 +96,21 @@ public:
         }));
     }
 
+    void ExpectClosingConnection()
+    {
+        EXPECT_CALL(connection, AbortAndDestroyMock());
+        EXPECT_CALL(client, ClosingConnection());
+    }
+
+    void SubAckReceived(uint16_t packetIdentifier, uint8_t returnCode)
+    {
+        connection.SimulateDataReceived(std::vector<uint8_t>{ 0x90, 0x03, static_cast<uint8_t>(packetIdentifier >> 8), static_cast<uint8_t>(packetIdentifier), returnCode });
+    }
+
     testing::StrictMock<services::ConnectionFactoryWithNameResolverMock> connectionFactory;
     testing::StrictMock<services::MqttClientObserverFactoryMock> factory;
     services::MqttClientConnectorImpl connector;
-    testing::StrictMock<services::ConnectionStub> connection;
+    testing::StrictMock<ConnectionStubWithSendStreamControl> connection;
     infra::SharedPtr<services::Connection> connectionPtr;
     testing::StrictMock<services::MqttClientObserverMock> client;
     infra::SharedPtr<services::MqttClientObserver> clientPtr;
@@ -212,8 +259,7 @@ TEST_F(MqttClientTest, publish_aborts_connection_with_30_sec_timeout)
 
     ExecuteAllActions();
 
-    EXPECT_CALL(connection, AbortAndDestroyMock());
-    EXPECT_CALL(client, ClosingConnection());
+    ExpectClosingConnection();
     ForwardTime(std::chrono::seconds(30));
 }
 
@@ -226,7 +272,6 @@ TEST_F(MqttClientTest, partial_puback_is_ignored)
     client.Subject().Publish();
 
     ExecuteAllActions();
-    EXPECT_EQ((std::vector<uint8_t>{ 0x32, 0x10, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 0, 1, 'p', 'a', 'y', 'l', 'o', 'a', 'd' }), connection.sentData);
 
     connection.SimulateDataReceived(std::vector<uint8_t>{ 0x40, 0x02, 0x00 });
 }
@@ -242,7 +287,7 @@ TEST_F(MqttClientTest, subscribe_to_a_topic)
     EXPECT_EQ((std::vector<uint8_t>{ 0x82, 0x0a, 0, 1, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 0x02}), connection.sentData);
 
     EXPECT_CALL(client, SubscribeDone());
-    connection.SimulateDataReceived(std::vector<uint8_t>{ 0x90, 0x03, 0x00, 0x01, 0x01 });
+    SubAckReceived(1, 0x01);
 }
 
 TEST_F(MqttClientTest, suback_with_incorrect_packet_identifier_aborts_connection)
@@ -254,9 +299,8 @@ TEST_F(MqttClientTest, suback_with_incorrect_packet_identifier_aborts_connection
 
     ExecuteAllActions();
 
-    EXPECT_CALL(connection, AbortAndDestroyMock());
-    EXPECT_CALL(client, ClosingConnection());
-    connection.SimulateDataReceived(std::vector<uint8_t>{ 0x90, 0x03, 0x00, 0x02, 0x01 });
+    ExpectClosingConnection();
+    SubAckReceived(2, 0x01);
 }
 
 TEST_F(MqttClientTest, rejected_subscription_aborts_connection)
@@ -268,9 +312,8 @@ TEST_F(MqttClientTest, rejected_subscription_aborts_connection)
 
     ExecuteAllActions();
 
-    EXPECT_CALL(connection, AbortAndDestroyMock());
-    EXPECT_CALL(client, ClosingConnection());
-    connection.SimulateDataReceived(std::vector<uint8_t>{ 0x90, 0x03, 0x00, 0x01, 0x80 });
+    ExpectClosingConnection();
+    SubAckReceived(1, 0x80);
 }
 
 TEST_F(MqttClientTest, subscribe_aborts_connection_with_30_sec_timeout)
@@ -282,8 +325,7 @@ TEST_F(MqttClientTest, subscribe_aborts_connection_with_30_sec_timeout)
 
     ExecuteAllActions();
 
-    EXPECT_CALL(connection, AbortAndDestroyMock());
-    EXPECT_CALL(client, ClosingConnection());
+    ExpectClosingConnection();
     ForwardTime(std::chrono::seconds(30));
 }
 
@@ -291,8 +333,7 @@ TEST_F(MqttClientTest, closed_connection_results_in_ClosingConnection)
 {
     Connect();
 
-    EXPECT_CALL(connection, AbortAndDestroyMock());
-    EXPECT_CALL(client, ClosingConnection());
+    ExpectClosingConnection();
     connection.AbortAndDestroy();
 }
 
@@ -306,4 +347,59 @@ TEST_F(MqttClientTest, received_publish_is_forwarded_and_acked)
     client.Subject().NotificationDone();
     ExecuteAllActions();
     EXPECT_EQ((std::vector<uint8_t>{ 0x40, 0x02, 0x01, 0x02 }), connection.sentData);
+}
+
+TEST_F(MqttClientTest, received_publish_acked_and_publish_can_be_interleaved)
+{
+    Connect();
+
+    EXPECT_CALL(client, ReceivedNotification("topic", "payload"));
+    connection.SimulateDataReceived(std::vector<uint8_t>{ 0x32, 0x10, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 0, 1, 'p', 'a', 'y', 'l', 'o', 'a', 'd' });
+
+    connection.AutoSendStreamAvailableEnabled(false);
+
+    EXPECT_CALL(connection, RequestSendStreamMock(testing::_)).Times(1);
+    client.Subject().NotificationDone();
+    client.Subject().Publish();
+
+    connection.ScheduleGrantSendStream();
+
+    EXPECT_CALL(connection, RequestSendStreamMock(testing::_)).Times(1);
+    FillTopic("topic");
+    FillPayload("payload");
+    ExecuteAllActions();
+    EXPECT_EQ((std::vector<uint8_t>{ 0x40, 0x02, 0x00, 0x01 }), connection.sentData);
+    connection.sentData.clear();
+
+    connection.ScheduleGrantSendStream();
+
+    ExecuteAllActions();
+    EXPECT_EQ((std::vector<uint8_t>{ 0x32, 0x10, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 0, 1, 'p', 'a', 'y', 'l', 'o', 'a', 'd' }), connection.sentData);
+}
+
+TEST_F(MqttClientTest, received_publish_acked_and_subscribe_can_be_interleaved)
+{
+    Connect();
+
+    EXPECT_CALL(client, ReceivedNotification("topic", "payload"));
+    connection.SimulateDataReceived(std::vector<uint8_t>{ 0x32, 0x10, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 0, 1, 'p', 'a', 'y', 'l', 'o', 'a', 'd' });
+
+    connection.AutoSendStreamAvailableEnabled(false);
+
+    EXPECT_CALL(connection, RequestSendStreamMock(testing::_)).Times(1);
+    client.Subject().NotificationDone();
+    client.Subject().Subscribe();
+
+    connection.ScheduleGrantSendStream();
+
+    EXPECT_CALL(connection, RequestSendStreamMock(testing::_)).Times(1);
+    FillTopic("topic");
+    ExecuteAllActions();
+    EXPECT_EQ((std::vector<uint8_t>{ 0x40, 0x02, 0x00, 0x01 }), connection.sentData);
+    connection.sentData.clear();
+
+    connection.ScheduleGrantSendStream();
+
+    ExecuteAllActions();
+    EXPECT_EQ((std::vector<uint8_t>{ 0x82, 0x0a, 0, 1, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 0x02}), connection.sentData);
 }

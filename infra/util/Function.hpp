@@ -231,7 +231,7 @@ namespace infra
         template<class F>
         Result InvokerFunctions<Result(Args...), ExtraSize>::StaticInvoke(const InvokerFunctionsType& invokerFunctions, Args... args)
         {
-            return (reinterpret_cast<const F&>(invokerFunctions.data))(args...);
+            return (reinterpret_cast<const F&>(invokerFunctions.data))(std::forward<Args>(args)...);
         }
 
         template<std::size_t ExtraSize, class Result, class... Args>
