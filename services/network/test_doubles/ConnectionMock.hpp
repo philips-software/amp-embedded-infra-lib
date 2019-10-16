@@ -98,6 +98,9 @@ namespace services
         MOCK_CONST_METHOD0(Port, uint16_t());
         MOCK_METHOD1(ConnectionEstablishedMock, void(infra::Function<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver));
         MOCK_METHOD1(ConnectionFailed, void(ConnectFailReason reason));
+        MOCK_METHOD0(Destructor, void());
+
+        virtual ~ClientConnectionObserverFactoryMock() { Destructor(); }
     };
 
     class ConnectionFactoryWithNameLookupMock

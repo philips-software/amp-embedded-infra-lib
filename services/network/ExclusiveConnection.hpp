@@ -99,7 +99,7 @@ namespace services
         public:
             Connector(ExclusiveConnectionFactory& connectionFactory, ClientConnectionObserverFactory& clientFactory);
 
-            void CancelConnect(ClientConnectionObserverFactory& factory);
+            bool CancelConnect(ClientConnectionObserverFactory& factory);
 
             // Implementation of ClientConnectionObserverFactory
             virtual IPAddress Address() const override;
