@@ -14,6 +14,7 @@ namespace services
     class MqttClientImpl
         : public ConnectionObserver
         , public MqttClient
+        , public infra::EnableSharedFromThis<MqttClientImpl>
     {
     public:
         MqttClientImpl(MqttClientObserverFactory& factory, infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password, infra::Duration operationTimeout = std::chrono::seconds(30));
@@ -118,11 +119,14 @@ namespace services
             virtual void Connected();
             virtual void ClosingConnection() = 0;
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) = 0;
-            virtual void DataReceived(infra::StreamReader& reader) = 0;
+            virtual void HandleDataReceived() = 0;
 
             virtual void Publish();
             virtual void Subscribe();
-            virtual void PubAck();
+            virtual void NotificationDone();
+
+        protected:
+            infra::StreamReaderWithRewinding& ReceiveStream() const;
 
         protected:
             MqttClientImpl& clientConnection;
@@ -137,7 +141,7 @@ namespace services
             virtual void Connected() override;
             virtual void ClosingConnection() override;
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-            virtual void DataReceived(infra::StreamReader& reader) override;
+            virtual void HandleDataReceived() override;
 
         private:
             void Timeout();
@@ -159,16 +163,19 @@ namespace services
 
             virtual void ClosingConnection();
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-            virtual void DataReceived(infra::StreamReader& reader) override;
+            virtual void HandleDataReceived() override;
 
             virtual void Publish() override;
             virtual void Subscribe() override;
-            virtual void PubAck() override;
+            virtual void NotificationDone() override;
+
+        protected:
+            MqttClientImpl& ClientConnection() const;
 
         private:
-            void HandlePubAck(infra::DataInputStream& stream);
-            void HandleSubAck(infra::DataInputStream& stream);
-            void HandlePublish(infra::DataInputStream& stream, size_t packetLength);
+            void HandlePubAck();
+            void HandleSubAck();
+            void HandlePublish(size_t packetLength);
             void ProcessSendOperations();
 
         private:
@@ -205,10 +212,6 @@ namespace services
                 virtual std::size_t MessageSize(const MqttClientObserver& message) override;
             };
 
-            friend OperationSubscribe;
-            friend OperationPublish;
-            friend OperationPubAck;
-
         private:
             infra::TimerSingleShot operationTimeout;
             std::array<char, 32> receivedTopic;
@@ -216,26 +219,27 @@ namespace services
             uint16_t receivedPacketIdentifier;
 
             using OperationVariant = infra::PolymorphicVariant<OperationBase, OperationPublish, OperationSubscribe, OperationPubAck>;
-            infra::BoundedDeque<OperationVariant>::WithMaxSize<2> sendOperationQueue;
+            infra::BoundedDeque<OperationVariant>::WithMaxSize<2> sendOperations;
+            bool executingSend = false;
+            bool executingNotification = false;
 
         private:
-            template <class operation>
+            template<class operation>
             void QueueSendOperation()
             {
-                if (sendOperationQueue.full())
-                    std::abort();
-                else
-                {
-                    sendOperationQueue.emplace_back(infra::InPlaceType<operation>());
-                    ProcessSendOperations();
-                }
+                sendOperations.emplace_back(infra::InPlaceType<operation>());
+                ProcessSendOperations();
             }
         };
+
+    protected:
+        infra::StreamReaderWithRewinding& ReceiveStream();
 
     private:
         infra::Duration operationTimeout;
         infra::PolymorphicVariant<StateBase, StateConnecting, StateConnected> state;
         infra::SharedPtr<MqttClientObserver> observer;
+        infra::SharedPtr<infra::StreamReaderWithRewinding> receiveStream;
     };
 
     class MqttClientConnectorImpl
