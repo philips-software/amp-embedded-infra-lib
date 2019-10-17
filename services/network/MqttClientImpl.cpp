@@ -392,6 +392,9 @@ namespace services
         stream >> topicSize;
         topicSize = infra::FromBigEndian(topicSize);
 
+        if (stream.Failed())
+            return;
+
         infra::BoundedString topic(receivedTopic);
         topic.resize(topicSize);
         stream >> infra::text >> topic;
@@ -429,6 +432,8 @@ namespace services
             HandleSubAck(stream);
         else if (parser.GetPacketType() == PacketType::packetTypePublish)
             HandlePublish(parser.GetPacketSize(), stream);
+        else
+            clientConnection.Abort();
     }
 
     void MqttClientImpl::StateConnected::Publish()

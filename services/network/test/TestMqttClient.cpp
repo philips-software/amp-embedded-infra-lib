@@ -44,13 +44,6 @@ public:
         }
     }
 
-    virtual void AckReceived() override
-    {
-        if (mockAckReceived)
-            AckReceivedMock();
-        services::ConnectionStub::AckReceived();
-    }
-
     void ScheduleGrantSendStream()
     {
         services::ConnectionStub::RequestSendStream(*sendSize);
@@ -62,17 +55,10 @@ public:
         autoSendStreamAvailable = newValue;
     }
 
-    void MockAckReceived(bool newValue)
-    {
-        mockAckReceived = newValue;
-    }
-
-    MOCK_METHOD0(AckReceivedMock, void());
     MOCK_METHOD1(RequestSendStreamMock, void(std::size_t));
 
 private:
     bool autoSendStreamAvailable = true;
-    bool mockAckReceived = false;
     infra::Optional<std::size_t> sendSize;
 };
 
@@ -146,6 +132,23 @@ public:
     {
         connection.SimulateDataReceived(std::vector<uint8_t>{ 0x90, 0x03 });
         connection.SimulateDataReceived(std::vector<uint8_t>{ static_cast<uint8_t>(packetIdentifier >> 8), static_cast<uint8_t>(packetIdentifier), returnCode });
+    }
+
+    void ReceivePublish(std::string topic, std::string payload, uint16_t packetIdentifier)
+    {
+        std::size_t packetSize = topic.size() + 2 + payload.size() + 2;
+        assert(packetSize <= 127);
+
+        connection.SimulateDataReceived(std::vector<uint8_t>{ 0x32, static_cast<uint8_t>(packetSize) });
+
+        std::vector<uint8_t> variableHeader = { static_cast<uint8_t>(topic.size() >> 8), static_cast<uint8_t>(topic.size()) };
+        std::copy(topic.begin(), topic.end(), std::back_inserter(variableHeader));
+        variableHeader.push_back(static_cast<uint8_t>(packetIdentifier >> 8));
+        variableHeader.push_back(static_cast<uint8_t>(packetIdentifier));
+        connection.SimulateDataReceived(variableHeader);
+
+        std::vector<uint8_t> payloadRaw (payload.begin(), payload.end());
+        connection.SimulateDataReceived(payloadRaw);
     }
 
     testing::StrictMock<services::ConnectionFactoryWithNameResolverMock> connectionFactory;
@@ -340,14 +343,10 @@ TEST_F(MqttClientTest, receive_suback_and_puback_back_to_back)
 {
     Connect();
 
-    connection.MockAckReceived(true);
-
     testing::InSequence seq;
 
     EXPECT_CALL(client, SubscribeDone());
-    EXPECT_CALL(connection, AckReceivedMock());
     EXPECT_CALL(client, PublishDone());
-    EXPECT_CALL(connection, AckReceivedMock());
     connection.SimulateDataReceived(std::vector<uint8_t>{ 0x90, 0x03, 0x00, 0x01, 0x01, 0x40, 0x02, 0x00, 0x01 });
 }
 
@@ -402,12 +401,8 @@ TEST_F(MqttClientTest, received_publish_is_forwarded_and_acked)
 {
     Connect();
 
-    connection.MockAckReceived(true);
-
     EXPECT_CALL(client, ReceivedNotification("topic", "payload"));
-    EXPECT_CALL(connection, AckReceivedMock());
-    connection.SimulateDataReceived(std::vector<uint8_t>{ 0x32, 0x10, 0x00, 0x05, 't', 'o', 'p', 'i', 'c' });
-    connection.SimulateDataReceived(std::vector<uint8_t>{ 1, 2, 'p', 'a', 'y', 'l', 'o', 'a', 'd' });
+    ReceivePublish("topic", "payload", 0x0102);
 
     client.Subject().NotificationDone();
 
@@ -419,28 +414,18 @@ TEST_F(MqttClientTest, received_data_are_not_processed_until_NotificationDone)
 {
     Connect();
 
-    connection.MockAckReceived(true);
-
     EXPECT_CALL(client, ReceivedNotification("topic", "payload"));
-    EXPECT_CALL(connection, AckReceivedMock());
-    connection.SimulateDataReceived(std::vector<uint8_t>{ 0x32, 0x10, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 1, 2, 'p', 'a', 'y', 'l', 'o', 'a', 'd' });
+    ReceivePublish("topic", "payload", 1);
 
-    testing::Mock::VerifyAndClearExpectations(&connection);
-
-    connection.SimulateDataReceived(std::vector<uint8_t>{ 0x32, 0x10, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 1, 2, 'p', 'a', 'y', 'l', 'o', 'a', 'd' });
+    ReceivePublish("topic2", "payload2", 2);
 }
 
 TEST_F(MqttClientTest, received_data_are_not_processed_until_NotificationDone2)
 {
     Connect();
 
-    connection.MockAckReceived(true);
-
     EXPECT_CALL(client, ReceivedNotification("topic", "payload"));
-    EXPECT_CALL(connection, AckReceivedMock());
-    connection.SimulateDataReceived(std::vector<uint8_t>{ 0x32, 0x10, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 1, 2, 'p', 'a', 'y', 'l', 'o', 'a', 'd' });
-
-    testing::Mock::VerifyAndClearExpectations(&connection);
+    ReceivePublish("topic", "payload", 1);
 
     ReceiveSubAck(1, 0x01);
 }
@@ -449,18 +434,14 @@ TEST_F(MqttClientTest, receive_two_publishes)
 {
     Connect();
 
-    connection.MockAckReceived(true);
+    EXPECT_CALL(client, ReceivedNotification("topic", "payload"));
+    ReceivePublish("topic", "payload", 1);
 
-    EXPECT_CALL(client, ReceivedNotification("topic", "payload0"));
-    EXPECT_CALL(connection, AckReceivedMock());
-    connection.SimulateDataReceived(std::vector<uint8_t>{ 0x32, 0x11, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 1, 2, 'p', 'a', 'y', 'l', 'o', 'a', 'd', '0' });
-
-    connection.SimulateDataReceived(std::vector<uint8_t>{ 0x32, 0x11, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 1, 2, 'p', 'a', 'y', 'l', 'o', 'a', 'd', '1' });
+    ReceivePublish("topic2", "payload2", 2);
 
     client.Subject().NotificationDone();
 
-    EXPECT_CALL(client, ReceivedNotification("topic", "payload1"));
-    EXPECT_CALL(connection, AckReceivedMock());
+    EXPECT_CALL(client, ReceivedNotification("topic2", "payload2"));
     ExecuteAllActions();
 }
 
@@ -469,7 +450,7 @@ TEST_F(MqttClientTest, additional_received_data_are_processed_after_Notification
     Connect();
 
     EXPECT_CALL(client, ReceivedNotification("topic", "payload"));
-    connection.SimulateDataReceived(std::vector<uint8_t>{ 0x32, 0x10, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 1, 2, 'p', 'a', 'y', 'l', 'o', 'a', 'd' });
+    ReceivePublish("topic", "payload", 1);
 
     ReceiveSubAck(1, 0x01);
 
@@ -484,7 +465,7 @@ TEST_F(MqttClientTest, received_publish_acked_and_publish_can_be_interleaved)
     Connect();
 
     EXPECT_CALL(client, ReceivedNotification("topic", "payload"));
-    connection.SimulateDataReceived(std::vector<uint8_t>{ 0x32, 0x10, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 0, 1, 'p', 'a', 'y', 'l', 'o', 'a', 'd' });
+    ReceivePublish("topic", "payload", 1);
 
     connection.AutoSendStreamAvailableEnabled(false);
 
@@ -512,7 +493,7 @@ TEST_F(MqttClientTest, received_publish_acked_and_subscribe_can_be_interleaved)
     Connect();
 
     EXPECT_CALL(client, ReceivedNotification("topic", "payload"));
-    connection.SimulateDataReceived(std::vector<uint8_t>{ 0x32, 0x10, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 0, 1, 'p', 'a', 'y', 'l', 'o', 'a', 'd' });
+    ReceivePublish("topic", "payload", 1);
 
     connection.AutoSendStreamAvailableEnabled(false);
 
@@ -532,4 +513,20 @@ TEST_F(MqttClientTest, received_publish_acked_and_subscribe_can_be_interleaved)
 
     ExecuteAllActions();
     EXPECT_EQ((std::vector<uint8_t>{ 0x82, 0x0a, 0, 1, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 0x01}), connection.sentData);
+}
+
+TEST_F(MqttClientTest, received_disconnect_package_closes_connection)
+{
+    Connect();
+
+    ExpectClosingConnection();
+    connection.SimulateDataReceived(std::vector<uint8_t>{ 0xe0, 0x00 });
+}
+
+TEST_F(MqttClientTest, received_unhandled_package_closes_connection)
+{
+    Connect();
+
+    ExpectClosingConnection();
+    connection.SimulateDataReceived(std::vector<uint8_t>{ 0xd0, 0x00 });
 }
