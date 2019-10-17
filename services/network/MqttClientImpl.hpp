@@ -184,7 +184,7 @@ namespace services
             public:
                 virtual ~OperationBase() = default;
 
-                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::SharedPtr<infra::StreamWriter>&& writer) = 0;
+                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::StreamWriter& writer) = 0;
                 virtual std::size_t MessageSize(const MqttClientObserver& message) = 0;
             };
 
@@ -192,7 +192,7 @@ namespace services
                 : public OperationBase
             {
             public:
-                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::SharedPtr<infra::StreamWriter>&& writer) override;
+                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::StreamWriter& writer) override;
                 virtual std::size_t MessageSize(const MqttClientObserver& message) override;
             };
 
@@ -200,7 +200,7 @@ namespace services
                 : public OperationBase
             {
             public:
-                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::SharedPtr<infra::StreamWriter>&& writer) override;
+                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::StreamWriter& writer) override;
                 virtual std::size_t MessageSize(const MqttClientObserver& message) override;
             };
 
@@ -208,7 +208,7 @@ namespace services
                 : public OperationBase
             {
             public:
-                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::SharedPtr<infra::StreamWriter>&& writer) override;
+                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::StreamWriter& writer) override;
                 virtual std::size_t MessageSize(const MqttClientObserver& message) override;
             };
 

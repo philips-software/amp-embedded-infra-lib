@@ -405,10 +405,10 @@ TEST_F(MqttClientTest, received_publish_is_forwarded_and_acked)
     connection.MockAckReceived(true);
 
     EXPECT_CALL(client, ReceivedNotification("topic", "payload"));
+    EXPECT_CALL(connection, AckReceivedMock());
     connection.SimulateDataReceived(std::vector<uint8_t>{ 0x32, 0x10, 0x00, 0x05, 't', 'o', 'p', 'i', 'c' });
     connection.SimulateDataReceived(std::vector<uint8_t>{ 1, 2, 'p', 'a', 'y', 'l', 'o', 'a', 'd' });
 
-    EXPECT_CALL(connection, AckReceivedMock());
     client.Subject().NotificationDone();
 
     ExecuteAllActions();
@@ -422,6 +422,7 @@ TEST_F(MqttClientTest, received_data_are_not_processed_until_NotificationDone)
     connection.MockAckReceived(true);
 
     EXPECT_CALL(client, ReceivedNotification("topic", "payload"));
+    EXPECT_CALL(connection, AckReceivedMock());
     connection.SimulateDataReceived(std::vector<uint8_t>{ 0x32, 0x10, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 1, 2, 'p', 'a', 'y', 'l', 'o', 'a', 'd' });
 
     testing::Mock::VerifyAndClearExpectations(&connection);
@@ -436,6 +437,7 @@ TEST_F(MqttClientTest, received_data_are_not_processed_until_NotificationDone2)
     connection.MockAckReceived(true);
 
     EXPECT_CALL(client, ReceivedNotification("topic", "payload"));
+    EXPECT_CALL(connection, AckReceivedMock());
     connection.SimulateDataReceived(std::vector<uint8_t>{ 0x32, 0x10, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 1, 2, 'p', 'a', 'y', 'l', 'o', 'a', 'd' });
 
     testing::Mock::VerifyAndClearExpectations(&connection);
@@ -450,14 +452,15 @@ TEST_F(MqttClientTest, receive_two_publishes)
     connection.MockAckReceived(true);
 
     EXPECT_CALL(client, ReceivedNotification("topic", "payload0"));
+    EXPECT_CALL(connection, AckReceivedMock());
     connection.SimulateDataReceived(std::vector<uint8_t>{ 0x32, 0x11, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 1, 2, 'p', 'a', 'y', 'l', 'o', 'a', 'd', '0' });
 
     connection.SimulateDataReceived(std::vector<uint8_t>{ 0x32, 0x11, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 1, 2, 'p', 'a', 'y', 'l', 'o', 'a', 'd', '1' });
 
-    EXPECT_CALL(connection, AckReceivedMock());
     client.Subject().NotificationDone();
 
     EXPECT_CALL(client, ReceivedNotification("topic", "payload1"));
+    EXPECT_CALL(connection, AckReceivedMock());
     ExecuteAllActions();
 }
 
