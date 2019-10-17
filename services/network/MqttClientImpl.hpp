@@ -126,10 +126,11 @@ namespace services
             virtual void NotificationDone();
 
         protected:
-            infra::StreamReaderWithRewinding& ReceiveStream() const;
-
-        protected:
+            infra::StreamReader& NewReceiveStream();
             MqttClientImpl& clientConnection;
+
+        private:
+            infra::SharedPtr<infra::StreamReader> receiveStream;
         };
 
         class StateConnecting
@@ -173,9 +174,9 @@ namespace services
             MqttClientImpl& ClientConnection() const;
 
         private:
-            void HandlePubAck();
-            void HandleSubAck();
-            void HandlePublish(size_t packetLength);
+            void HandlePubAck(infra::DataInputStream::WithErrorPolicy stream);
+            void HandleSubAck(infra::DataInputStream::WithErrorPolicy stream);
+            void HandlePublish(size_t packetLength, infra::DataInputStream::WithErrorPolicy stream);
             void ProcessSendOperations();
 
         private:
@@ -233,13 +234,12 @@ namespace services
         };
 
     protected:
-        infra::StreamReaderWithRewinding& ReceiveStream();
+        infra::SharedPtr<infra::StreamReader> ReceiveStream();
 
     private:
         infra::Duration operationTimeout;
         infra::PolymorphicVariant<StateBase, StateConnecting, StateConnected> state;
         infra::SharedPtr<MqttClientObserver> observer;
-        infra::SharedPtr<infra::StreamReaderWithRewinding> receiveStream;
     };
 
     class MqttClientConnectorImpl

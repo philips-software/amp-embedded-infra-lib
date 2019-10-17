@@ -207,15 +207,11 @@ namespace services
     void MqttClientImpl::ClosingConnection()
     {
         state->ClosingConnection();
-        receiveStream = nullptr;
     }
 
-    infra::StreamReaderWithRewinding& MqttClientImpl::ReceiveStream()
+    infra::SharedPtr<infra::StreamReader> MqttClientImpl::ReceiveStream()
     {
-        if (receiveStream == nullptr)
-            receiveStream = ConnectionObserver::Subject().ReceiveStream();
-
-        return *receiveStream;
+        return ConnectionObserver::Subject().ReceiveStream();
     }
 
     MqttClientImpl::StateBase::StateBase(MqttClientImpl& clientConnection)
@@ -228,7 +224,9 @@ namespace services
     }
 
     void MqttClientImpl::StateBase::ClosingConnection()
-    {}
+    {
+        receiveStream = nullptr;
+    }
 
     void MqttClientImpl::StateBase::Publish()
     {
@@ -245,9 +243,11 @@ namespace services
         std::abort();
     }
 
-    infra::StreamReaderWithRewinding& MqttClientImpl::StateBase::ReceiveStream() const
+    infra::StreamReader& MqttClientImpl::StateBase::NewReceiveStream()
     {
-        return clientConnection.ReceiveStream();
+        receiveStream = nullptr;
+        receiveStream = clientConnection.ReceiveStream();
+        return *receiveStream;
     }
 
     MqttClientImpl::StateConnecting::StateConnecting(MqttClientImpl& clientConnection, MqttClientObserverFactory& factory, infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password)
@@ -268,6 +268,8 @@ namespace services
     {
         if (!signaledFailure)
             factory.ConnectionFailed(MqttClientObserverFactory::ConnectFailReason::initializationFailed);
+
+        StateBase::ClosingConnection();
     }
 
     void MqttClientImpl::StateConnecting::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -279,8 +281,7 @@ namespace services
 
     void MqttClientImpl::StateConnecting::HandleDataReceived()
     {
-        infra::DataInputStream::WithErrorPolicy stream(ReceiveStream(), infra::softFail);
-        static_cast<infra::StreamReaderWithRewinding&>(stream.Reader()).Rewind(0);
+        infra::DataInputStream::WithErrorPolicy stream(NewReceiveStream(), infra::softFail);
 
         MqttParser parser(stream);
         if (stream.Failed())
@@ -329,6 +330,8 @@ namespace services
     {
         clientConnection.GetObserver().ClosingConnection();
         clientConnection.observer->Detach();
+
+        StateBase::ClosingConnection();
     }
 
     void MqttClientImpl::StateConnected::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -346,10 +349,8 @@ namespace services
         return clientConnection;
     }
 
-    void MqttClientImpl::StateConnected::HandlePubAck()
+    void MqttClientImpl::StateConnected::HandlePubAck(infra::DataInputStream::WithErrorPolicy stream)
     {
-        infra::DataInputStream::WithErrorPolicy stream(ReceiveStream(), infra::softFail);
-
         uint16_t packetIdentifier;
         stream >> packetIdentifier;
 
@@ -362,10 +363,8 @@ namespace services
         HandleDataReceived();
     }
 
-    void MqttClientImpl::StateConnected::HandleSubAck()
+    void MqttClientImpl::StateConnected::HandleSubAck(infra::DataInputStream::WithErrorPolicy stream)
     {
-        infra::DataInputStream::WithErrorPolicy stream(ReceiveStream(), infra::softFail);
-
         uint16_t packetIdentifier;
         stream >> packetIdentifier;
 
@@ -387,10 +386,8 @@ namespace services
         HandleDataReceived();
     }
 
-    void MqttClientImpl::StateConnected::HandlePublish(size_t packetLength)
+    void MqttClientImpl::StateConnected::HandlePublish(size_t packetLength, infra::DataInputStream::WithErrorPolicy stream)
     {
-        infra::DataInputStream::WithErrorPolicy stream(ReceiveStream(), infra::softFail);
-
         uint16_t topicSize;
         stream >> topicSize;
         topicSize = infra::FromBigEndian(topicSize);
@@ -420,19 +417,18 @@ namespace services
         if (executingNotification)
             return;
 
-        infra::DataInputStream::WithErrorPolicy stream(ReceiveStream(), infra::softFail);
-        static_cast<infra::StreamReaderWithRewinding&>(stream.Reader()).Rewind(0);
+        infra::DataInputStream::WithErrorPolicy stream(NewReceiveStream(), infra::softFail);
         MqttParser parser(stream);
 
         if (stream.Failed())
             return;
 
         if (parser.GetPacketType() == PacketType::packetTypePubAck)
-            HandlePubAck();
+            HandlePubAck(stream);
         else if (parser.GetPacketType() == PacketType::packetTypeSubAck)
-            HandleSubAck();
+            HandleSubAck(stream);
         else if (parser.GetPacketType() == PacketType::packetTypePublish)
-            HandlePublish(parser.GetPacketSize());
+            HandlePublish(parser.GetPacketSize(), stream);
     }
 
     void MqttClientImpl::StateConnected::Publish()
