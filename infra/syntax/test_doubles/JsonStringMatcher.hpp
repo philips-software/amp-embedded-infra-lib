@@ -24,6 +24,7 @@ namespace testing
 
         Matcher(infra::JsonString s) { *this = Eq(s.ToStdString()); }
         Matcher(const char* s) { *this = Eq(infra::BoundedConstString(s)); }
+        Matcher(infra::BoundedConstString s) { *this = Eq(s); }
     };
 }
 
