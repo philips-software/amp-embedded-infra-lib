@@ -465,7 +465,9 @@ namespace services
 
     void HttpClientWebSocketInitiation::BodyComplete()
     {
-        result.WebSocketInitiationDone(Subject().GetConnection());
+        auto& subject = Subject();
+        Detach();
+        result.WebSocketInitiationDone(subject.GetConnection());
     }
 
     void HttpClientWebSocketInitiation::Done()
@@ -510,16 +512,15 @@ namespace services
         initiation.Emplace(factory, connectionFactory, static_cast<WebSocketClientInitiationResult&>(*this), randomDataGenerator, creators);
     }
 
-    void WebSocketClientFactorySingleConnection::CancelConnect(WebSocketClientObserverFactory& factory)
+    void WebSocketClientFactorySingleConnection::CancelConnect(WebSocketClientObserverFactory& factory, const infra::Function<void()>& onDone)
     {
-        initiation->CancelConnect();
+        initiation->CancelConnect(onDone);
     }
 
     void WebSocketClientFactorySingleConnection::InitiationDone(services::Connection& connection)
     {
         auto& factory = initiation->Factory();
         auto webSocketConnection = webSocket.Emplace(PathFromUrl(factory.Url()), connection);
-        initiation->initiationClient->Detach();
         connection.SwitchObserver(webSocketConnection);
         initiation = infra::none;
         factory.ConnectionEstablished([webSocketConnection](infra::SharedPtr<ConnectionObserver> connectionObserver)
@@ -552,9 +553,10 @@ namespace services
         , initiationClient(creators.httpClientInitiationCreator, clientObserverFactory, *this, randomDataGenerator)
     {}
 
-    void WebSocketClientFactorySingleConnection::WebSocketClientInitiation::CancelConnect()
+    void WebSocketClientFactorySingleConnection::WebSocketClientInitiation::CancelConnect(const infra::Function<void()>& onDone)
     {
-        initiationClient->Stop([this]() { result.InitiationCancelled(); });
+        onStopped = onDone;
+        initiationClient->Stop([this]() { auto onDone = onStopped; result.InitiationCancelled(); onDone(); });
     }
 
     WebSocketClientObserverFactory& WebSocketClientFactorySingleConnection::WebSocketClientInitiation::Factory()
