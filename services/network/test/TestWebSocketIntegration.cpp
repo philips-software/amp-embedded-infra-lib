@@ -54,7 +54,7 @@ TEST_F(WebSocketIntegrationTest, integration)
     services::ConnectionFactoryWithNameResolverStub connectionFactoryWithNameResolver(network, services::IPv4AddressLocalHost());
     hal::SynchronousFixedRandomDataGenerator randomDataGenerator({ 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4 });
     services::HttpClientConnectorImpl<> clientConnector(connectionFactoryWithNameResolver);
-    infra::Creator<services::HttpClientWebSocketInitiation, services::HttpClientWebSocketInitiation, void(services::WebSocketClientObserverFactory& clientObserverFactory,
+    infra::Creator<services::Stoppable, services::HttpClientWebSocketInitiation, void(services::WebSocketClientObserverFactory& clientObserverFactory,
         services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)> httpClientInitiationCreator(
         [&clientConnector](infra::Optional<services::HttpClientWebSocketInitiation>& value, services::WebSocketClientObserverFactory& clientObserverFactory,
             services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)

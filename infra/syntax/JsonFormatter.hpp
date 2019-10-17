@@ -44,6 +44,7 @@ namespace infra
         JsonObjectFormatter SubObject(infra::BoundedConstString tagName);
         JsonArrayFormatter SubArray(infra::BoundedConstString tagName);
         JsonStringStream AddString(const char* tagName);
+        infra::TextOutputStream AddObject(const char* tagName);
 
         bool Failed() const;
 

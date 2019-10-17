@@ -48,7 +48,7 @@ namespace services
 
     public:
         virtual void Connect(WebSocketClientObserverFactory& factory) = 0;
-        virtual void CancelConnect(WebSocketClientObserverFactory& factory) = 0;
+        virtual void CancelConnect(WebSocketClientObserverFactory& factory, const infra::Function<void()>& onDone) = 0;
     };
 
     class WebSocketClientConnectionObserver
@@ -208,7 +208,7 @@ namespace services
     public:
         struct Creators
         {
-            infra::CreatorBase<HttpClientWebSocketInitiation, void(WebSocketClientObserverFactory& clientObserverFactory,
+            infra::CreatorBase<Stoppable, void(WebSocketClientObserverFactory& clientObserverFactory,
                 HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)>& httpClientInitiationCreator;
         };
 
@@ -217,7 +217,7 @@ namespace services
 
         // Implementation of WebSocketClientConnector
         virtual void Connect(WebSocketClientObserverFactory& factory) override;
-        virtual void CancelConnect(WebSocketClientObserverFactory& factory) override;
+        virtual void CancelConnect(WebSocketClientObserverFactory& factory, const infra::Function<void()>& onDone) override;
 
     private:
         // Implementation of WebSocketClientInitiationResult
@@ -233,7 +233,7 @@ namespace services
             WebSocketClientInitiation(WebSocketClientObserverFactory& clientObserverFactory, ConnectionFactoryWithNameResolver& connectionFactory,
                 WebSocketClientInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator, const Creators& creators);
 
-            void CancelConnect();
+            void CancelConnect(const infra::Function<void()>& onDone);
             WebSocketClientObserverFactory& Factory();
 
         private:
@@ -247,8 +247,9 @@ namespace services
             WebSocketClientInitiationResult& result;
             hal::SynchronousRandomDataGenerator& randomDataGenerator;
 
-        public:
+        private:
             infra::ProxyCreator<decltype(Creators::httpClientInitiationCreator)> initiationClient;
+            infra::Function<void()> onStopped;
         };
 
     private:
