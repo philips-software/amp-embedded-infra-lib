@@ -125,7 +125,7 @@ public:
         });
     }
 
-    testing::StrictMock<services::ConnectionFactoryWithNameLookupMock> connectionFactory;
+    testing::StrictMock<services::ConnectionFactoryWithNameResolverMock> connectionFactory;
     testing::StrictMock<services::HttpClientObserverFactoryMock> factory;
     testing::StrictMock<services::HttpClientObserverFactoryMock> factory2;
     services::HttpClientConnectorImpl<> connector;

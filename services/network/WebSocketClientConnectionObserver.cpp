@@ -408,12 +408,13 @@ namespace services
     {
         std::array<uint8_t, 16> randomData;
         randomDataGenerator.GenerateRandomData(randomData);
-        infra::StringOutputStream::WithStorage<32> stream;
+        infra::StringOutputStream::WithWriter stream(webSocketKey);
         stream << infra::AsBase64(randomData);
 
+        headers.emplace_back("Content-Length", "0");
         headers.emplace_back("Upgrade", "websocket");
         headers.emplace_back("Connection", "Upgrade");
-        headers.emplace_back("Sec-WebSocket-Key", stream.Storage());
+        headers.emplace_back("Sec-WebSocket-Key", webSocketKey);
         headers.emplace_back("Sec-WebSocket-Version", "13");
     }
 
@@ -464,7 +465,9 @@ namespace services
 
     void HttpClientWebSocketInitiation::BodyComplete()
     {
-        result.WebSocketInitiationDone();
+        auto& subject = Subject();
+        Detach();
+        result.WebSocketInitiationDone(subject.GetConnection());
     }
 
     void HttpClientWebSocketInitiation::Done()
@@ -474,193 +477,15 @@ namespace services
 
     void HttpClientWebSocketInitiation::Error(bool intermittentFailure)
     {
-        result.WebSocketInitiationError(intermittentFailure);
+        result.WebSocketInitiationError(initiationError);
     }
 
-    WebSocketClientInitiation::WebSocketClientInitiation(WebSocketClientObserverFactory& clientObserverFactory, ConnectionFactoryWithNameResolver& connectionFactory,
-        WebSocketClientInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator, const Creators& creators)
-        : clientObserverFactory(clientObserverFactory)
-        , connectionFactory(connectionFactory)
-        , result(result)
-        , randomDataGenerator(randomDataGenerator)
-        , initiationClient(creators.httpClientInitiationCreator, clientObserverFactory, *this, *this, randomDataGenerator)
-    {}
-
-    void WebSocketClientInitiation::CancelConnect()
+    void HttpClientWebSocketInitiation::ConnectionFailed(HttpClientObserverFactory::ConnectFailReason reason)
     {
-        if (httpClient)
-        {
-            httpClient.OnAllocatable([this]() { ExpiredWithCancelled(); });
-            initiationClient->Stop(infra::emptyFunction);
-        }
-        else
-            initiationClient->Stop([this]() { ExpiredWithCancelled(); });
+        initiationError = Translate(reason);
     }
 
-    WebSocketClientObserverFactory& WebSocketClientInitiation::Factory()
-    {
-        return clientObserverFactory;
-    }
-
-    void WebSocketClientInitiation::Connect(services::HttpClientObserverFactory& factory)
-    {
-        assert(httpClientObserverFactory == nullptr);
-        httpClientObserverFactory = &factory;
-        connectionFactory.Connect(*this);
-    }
-
-    void WebSocketClientInitiation::CancelConnect(services::HttpClientObserverFactory& factory)
-    {
-        if (httpClientObserverFactory != nullptr)
-        {
-            httpClientObserverFactory = nullptr;
-            connectionFactory.CancelConnect(*this);
-            result.InitiationCancelled();
-        }
-        else
-        {
-            httpClient.OnAllocatable([this]() { ExpiredWithCancelled(); });
-            httpClient->Abort();
-        }
-    }
-
-    infra::BoundedConstString WebSocketClientInitiation::Hostname() const
-    {
-        return HostFromUrl(clientObserverFactory.Url());
-    }
-
-    uint16_t WebSocketClientInitiation::Port() const
-    {
-        return clientObserverFactory.Port();
-    }
-
-    void WebSocketClientInitiation::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
-    {
-        assert(httpClientObserverFactory != nullptr);
-        httpClientObserverFactory->ConnectionEstablished([this, &createdObserver](infra::SharedPtr<HttpClientObserver> observer)
-        {
-            if (observer)
-            {
-                auto httpClientPtr = httpClient.Emplace(clientObserverFactory.Url());
-                httpClient->AttachObserver(observer);
-                createdObserver(httpClientPtr);
-            }
-        });
-
-        httpClientObserverFactory = nullptr;
-    }
-
-    void WebSocketClientInitiation::ConnectionFailed(ConnectFailReason reason)
-    {
-        assert(httpClientObserverFactory != nullptr);
-
-        switch (reason)
-        {
-            case ConnectFailReason::refused:
-                httpClientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::refused);
-                break;
-            case ConnectFailReason::connectionAllocationFailed:
-                httpClientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::connectionAllocationFailed);
-                break;
-            case ConnectFailReason::nameLookupFailed:
-                httpClientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::nameLookupFailed);
-                break;
-            default:
-                std::abort();
-        }
-
-        httpClient.OnAllocatable([this, reason]() { ExpiredWithConnectionFailed(reason); });
-        httpClientObserverFactory = nullptr;
-    }
-
-    void WebSocketClientInitiation::WebSocketInitiationDone()
-    {
-        result.InitiationDone(httpClient->ConnectionObserver::Subject());
-        httpClient.OnAllocatable([this]() { ExpiredWithSuccess(); });
-    }
-
-    void WebSocketClientInitiation::WebSocketInitiationError(bool intermittentFailure)
-    {
-        httpClient.OnAllocatable([this]() { ExpiredWithError(); });
-    }
-
-    void WebSocketClientInitiation::ExpiredWithSuccess()
-    {
-        result.InitiationExpired();
-    }
-
-    void WebSocketClientInitiation::ExpiredWithError()
-    {
-        result.InitiationError();
-    }
-
-    void WebSocketClientInitiation::ExpiredWithConnectionFailed(ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason reason)
-    {
-        result.InitiationConnectionFailed(reason);
-    }
-
-    void WebSocketClientInitiation::ExpiredWithCancelled()
-    {
-        result.InitiationCancelled();
-    }
-
-    WebSocketClientFactorySingleConnection::WebSocketClientFactorySingleConnection(ConnectionFactoryWithNameResolver& connectionFactory,
-        hal::SynchronousRandomDataGenerator& randomDataGenerator, const WebSocketClientInitiation::Creators& creators)
-        : connectionFactory(connectionFactory)
-        , randomDataGenerator(randomDataGenerator)
-        , creators(creators)
-    {}
-
-    void WebSocketClientFactorySingleConnection::Connect(WebSocketClientObserverFactory& factory)
-    {
-        initiation.Emplace(factory, connectionFactory, static_cast<WebSocketClientInitiationResult&>(*this), randomDataGenerator, creators);
-    }
-
-    void WebSocketClientFactorySingleConnection::CancelConnect(WebSocketClientObserverFactory& factory)
-    {
-        initiation->CancelConnect();
-    }
-
-    void WebSocketClientFactorySingleConnection::InitiationDone(services::Connection& connection)
-    {
-        auto& factory = initiation->Factory();
-        auto webSocketConnection = webSocket.Emplace(PathFromUrl(factory.Url()), connection);
-        initiation->initiationClient->Detach();
-        connection.SwitchObserver(webSocketConnection);
-        factory.ConnectionEstablished([webSocketConnection](infra::SharedPtr<ConnectionObserver> connectionObserver)
-        {
-            webSocketConnection->SetOwnership(nullptr, connectionObserver);
-            connectionObserver->Attach(*webSocketConnection);
-            connectionObserver->Connected();
-        });
-    }
-
-    void WebSocketClientFactorySingleConnection::InitiationExpired()
-    {
-        initiation = infra::none;
-    }
-
-    void WebSocketClientFactorySingleConnection::InitiationError()
-    {
-        auto& factory = initiation->Factory();
-        initiation = infra::none;
-        factory.ConnectionFailed(WebSocketClientObserverFactory::ConnectFailReason::upgradeFailed);
-    }
-
-    void WebSocketClientFactorySingleConnection::InitiationConnectionFailed(ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason reason)
-    {
-        auto& factory = initiation->Factory();
-        initiation = infra::none;
-        factory.ConnectionFailed(Translate(reason));
-    }
-
-    void WebSocketClientFactorySingleConnection::InitiationCancelled()
-    {
-        auto& factory = initiation->Factory();
-        initiation = infra::none;
-    }
-
-    WebSocketClientObserverFactory::ConnectFailReason WebSocketClientFactorySingleConnection::Translate(ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason reason)
+    WebSocketClientObserverFactory::ConnectFailReason HttpClientWebSocketInitiation::Translate(HttpClientObserverFactory::ConnectFailReason reason) const
     {
         switch (reason)
         {
@@ -673,5 +498,79 @@ namespace services
             default:
                 std::abort();
         }
+    }
+
+    WebSocketClientFactorySingleConnection::WebSocketClientFactorySingleConnection(ConnectionFactoryWithNameResolver& connectionFactory,
+        hal::SynchronousRandomDataGenerator& randomDataGenerator, const Creators& creators)
+        : connectionFactory(connectionFactory)
+        , randomDataGenerator(randomDataGenerator)
+        , creators(creators)
+    {}
+
+    void WebSocketClientFactorySingleConnection::Connect(WebSocketClientObserverFactory& factory)
+    {
+        initiation.Emplace(factory, connectionFactory, static_cast<WebSocketClientInitiationResult&>(*this), randomDataGenerator, creators);
+    }
+
+    void WebSocketClientFactorySingleConnection::CancelConnect(WebSocketClientObserverFactory& factory, const infra::Function<void()>& onDone)
+    {
+        initiation->CancelConnect(onDone);
+    }
+
+    void WebSocketClientFactorySingleConnection::InitiationDone(services::Connection& connection)
+    {
+        auto& factory = initiation->Factory();
+        auto webSocketConnection = webSocket.Emplace(PathFromUrl(factory.Url()), connection);
+        connection.SwitchObserver(webSocketConnection);
+        initiation = infra::none;
+        factory.ConnectionEstablished([webSocketConnection](infra::SharedPtr<ConnectionObserver> connectionObserver)
+        {
+            webSocketConnection->SetOwnership(nullptr, connectionObserver);
+            connectionObserver->Attach(*webSocketConnection);
+            connectionObserver->Connected();
+        });
+    }
+
+    void WebSocketClientFactorySingleConnection::InitiationError(WebSocketClientObserverFactory::ConnectFailReason reason)
+    {
+        auto& factory = initiation->Factory();
+        initiation = infra::none;
+        factory.ConnectionFailed(reason);
+    }
+
+    void WebSocketClientFactorySingleConnection::InitiationCancelled()
+    {
+        auto& factory = initiation->Factory();
+        initiation = infra::none;
+    }
+
+    WebSocketClientFactorySingleConnection::WebSocketClientInitiation::WebSocketClientInitiation(WebSocketClientObserverFactory& clientObserverFactory, ConnectionFactoryWithNameResolver& connectionFactory,
+        WebSocketClientInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator, const Creators& creators)
+        : clientObserverFactory(clientObserverFactory)
+        , connectionFactory(connectionFactory)
+        , result(result)
+        , randomDataGenerator(randomDataGenerator)
+        , initiationClient(creators.httpClientInitiationCreator, clientObserverFactory, *this, randomDataGenerator)
+    {}
+
+    void WebSocketClientFactorySingleConnection::WebSocketClientInitiation::CancelConnect(const infra::Function<void()>& onDone)
+    {
+        onStopped = onDone;
+        initiationClient->Stop([this]() { auto onDone = onStopped; result.InitiationCancelled(); onDone(); });
+    }
+
+    WebSocketClientObserverFactory& WebSocketClientFactorySingleConnection::WebSocketClientInitiation::Factory()
+    {
+        return clientObserverFactory;
+    }
+
+    void WebSocketClientFactorySingleConnection::WebSocketClientInitiation::WebSocketInitiationDone(Connection& connection)
+    {
+        result.InitiationDone(connection);
+    }
+
+    void WebSocketClientFactorySingleConnection::WebSocketClientInitiation::WebSocketInitiationError(WebSocketClientObserverFactory::ConnectFailReason reason)
+    {
+        result.InitiationError(reason);
     }
 }

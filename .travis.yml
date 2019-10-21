@@ -3,6 +3,7 @@ language: cpp
 env:
   global:
     - BUILD_TYPE=Debug
+    - CMAKE_BUILD_PARALLEL_LEVEL=4
     - GTEST_COLOR=1
 
 matrix:
@@ -16,8 +17,14 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-5
+        sonarcloud:
+          organization: philips-software
+          token:
+            secure: "5AzPqoQ70TmiW4ZgTvmc3rUMd0E13dnYtIO4N00e+YCis624PhpdQDIfW4VotxZQtX6m/dYcj2CHgNUDgm7N4/t18jRVnFfv1+HqSoLBgdwIWIVhnX1kPdyQRxw/otaAhfRFjPcZCuJlJt0XRNTrBbEB/jyNm3Ad9kaa7lnw6WQWRisEgUI8veXNkFXO3WRKAW7xqZvK8Deojm8+CahtHtyqzTFoVtSoWQKWY83UfsicpRanYDtYW2znbJwjLqEoVLUksNXMzKtpjeXGiK5//VlVTFn7fmYuXAUMKphfAkvMEvTqFrR1Y+21swhnmNdAZKRwwrvh4BKU+eyZGuH6Sooc7bT+iuWeCEaJEVP87j9P9LoeGz/iD47qerXGEx7hNjK1BNKTkqT/agP420VtzbqfhKGoTk7BVB3XcqrQTARUGUDY5tsv+R+KHcMN8BMr2qeCpUKNgrolqTqXbnPRHkjjQAsQYAVcMgtOJem+AYQyZHrCBWYsu3Ybj6CdR4VvboNWtMi7UpQBn/H8eaFasQLHioSEHuuyv92MHA6iUQnlMJl5Vs73SWPY71g+OtahSWDEd3kdhox9bI3sLDeL+qifG7NWUW/B2ZKFvhbGMaxNEcwQWpOzG85MvuWKTS3fIozadJX+l4OtChG/sKsYxF+aBPmyW4oIky4ebvsXQ94="
+
       env:
         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+        - STATIC_ANALYSIS=1
 
     # - os: osx
     #   osx_image: xcode11
@@ -33,3 +40,4 @@ script:
   - cmake .. -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
   - cmake --build . --config ${BUILD_TYPE}
   - ctest -C ${BUILD_TYPE} -T Test --output-on-failure
+  - if [[ $STATIC_ANALYSIS ]]; then cd .. && sonar-scanner; fi

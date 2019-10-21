@@ -245,6 +245,14 @@ namespace infra
         return JsonStringStream(*stream);
     }
 
+    infra::TextOutputStream JsonObjectFormatter::AddObject(const char* tagName)
+    {
+        InsertSeparation();
+        *stream << '"' << tagName << R"(":)";
+
+        return *stream;
+    }
+
     bool JsonObjectFormatter::Failed() const
     {
         return stream->Failed();

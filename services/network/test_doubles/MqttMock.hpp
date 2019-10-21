@@ -13,7 +13,11 @@ namespace services
     public:
         MOCK_METHOD0(Connected, void());
         MOCK_METHOD0(PublishDone, void());
+        MOCK_METHOD0(SubscribeDone, void());
+        MOCK_METHOD2(ReceivedNotification, void(infra::BoundedConstString topic, infra::BoundedConstString payload));
         MOCK_METHOD0(ClosingConnection, void());
+        MOCK_CONST_METHOD1(FillTopic, void(infra::StreamWriter& writer));
+        MOCK_CONST_METHOD1(FillPayload, void(infra::StreamWriter& writer));
     };
 
     class MqttClientObserverFactoryMock
@@ -28,7 +32,9 @@ namespace services
         : public MqttClient
     {
     public:
-        MOCK_METHOD2(Publish, void(infra::BoundedConstString topic, infra::BoundedConstString payload));
+        MOCK_METHOD0(Publish, void());
+        MOCK_METHOD0(Subscribe, void());
+        MOCK_METHOD0(NotificationDone, void());
     };
 }
 

@@ -2,6 +2,7 @@
 #include "hal/synchronous_interfaces/test_doubles/SynchronousFixedRandomDataGenerator.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/ProxyCreatorMock.hpp"
+#include "services/network/HttpClientImpl.hpp"
 #include "services/network/HttpServer.hpp"
 #include "services/network/HttpPageWebSocket.hpp"
 #include "services/network/WebSocketClientConnectionObserver.hpp"
@@ -9,6 +10,7 @@
 #include "services/network/test_doubles/ConnectionFactoryWithNameResolverStub.hpp"
 #include "services/network/test_doubles/ConnectionLoopBack.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
+#include "services/network/test_doubles/HttpClientMock.hpp"
 #include "services/util/test_doubles/StoppableMock.hpp"
 
 namespace
@@ -51,16 +53,20 @@ TEST_F(WebSocketIntegrationTest, integration)
 
     services::ConnectionFactoryWithNameResolverStub connectionFactoryWithNameResolver(network, services::IPv4AddressLocalHost());
     hal::SynchronousFixedRandomDataGenerator randomDataGenerator({ 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4 });
-    infra::Creator<services::HttpClientWebSocketInitiation, services::HttpClientWebSocketInitiation, void(services::WebSocketClientObserverFactory& clientObserverFactory, services::HttpClientConnector& clientConnector,
-        services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)> httpClientInitiationCreator;
+    services::HttpClientConnectorImpl<> clientConnector(connectionFactoryWithNameResolver);
+    infra::Creator<services::Stoppable, services::HttpClientWebSocketInitiation, void(services::WebSocketClientObserverFactory& clientObserverFactory,
+        services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)> httpClientInitiationCreator(
+        [&clientConnector](infra::Optional<services::HttpClientWebSocketInitiation>& value, services::WebSocketClientObserverFactory& clientObserverFactory,
+            services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+        {
+            value.Emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
+        });
     services::WebSocketClientFactorySingleConnection webSocketClientFactory(connectionFactoryWithNameResolver, randomDataGenerator, { httpClientInitiationCreator });
 
     WebSocketClientObserverFactoryMock clientObserverFactory;
     infra::BoundedString::WithStorage<16> url("hostname/path");
     EXPECT_CALL(clientObserverFactory, Url()).WillRepeatedly(testing::Return(url));
     EXPECT_CALL(clientObserverFactory, Port()).WillRepeatedly(testing::Return(5));
-    webSocketClientFactory.Connect(clientObserverFactory);
-
     infra::SharedOptional<testing::StrictMock<services::ConnectionObserverFullMock>> clientConnection;
     EXPECT_CALL(clientObserverFactory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this, &clientConnection](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> client)>& createdClient)
     {
@@ -68,6 +74,7 @@ TEST_F(WebSocketIntegrationTest, integration)
         EXPECT_CALL(*clientConnection, Connected());
         createdClient(clientConnectionPtr);
     }));
+    webSocketClientFactory.Connect(clientObserverFactory);
     ExecuteAllActions();
 
     infra::SharedOptional<testing::StrictMock<services::ConnectionObserverFullMock>> serverConnection;

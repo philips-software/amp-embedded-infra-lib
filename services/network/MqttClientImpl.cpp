@@ -1,4 +1,6 @@
+#include "infra/stream/CountingOutputStream.hpp"
 #include "services/network/MqttClientImpl.hpp"
+#include "infra/event/EventDispatcherWithWeakPtr.hpp"
 
 namespace services
 {
@@ -9,11 +11,27 @@ namespace services
     void MqttClientImpl::MqttFormatter::MessageConnect(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password)
     {
         PacketConnect packetHeader{};
-        Header(PacketType::packetTypeConnect, sizeof(packetHeader) + EncodedLength(clientId) + EncodedLength(username) + EncodedLength(password));
+        std::size_t packetSize = sizeof(packetHeader) + EncodedLength(clientId);
+
+        if (!username.empty())
+        {
+            packetHeader.connectFlags |= 0x80;
+            packetSize += EncodedLength(username);
+        }
+        if (!password.empty())
+        {
+            packetHeader.connectFlags |= 0x40;
+            packetSize += EncodedLength(password);
+        }
+
+        Header(PacketType::packetTypeConnect, packetSize, 0);
         stream << packetHeader;
         AddString(clientId);
-        AddString(username);
-        AddString(password);
+
+        if (!username.empty())
+            AddString(username);
+        if (!password.empty())
+            AddString(password);
     }
 
     std::size_t MqttClientImpl::MqttFormatter::MessageSizeConnect(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password)
@@ -21,19 +39,48 @@ namespace services
         return 5 + sizeof(PacketConnect) + EncodedLength(clientId) + EncodedLength(username) + EncodedLength(password);
     }
 
-    void MqttClientImpl::MqttFormatter::MessagePublish(infra::BoundedConstString topic, infra::BoundedConstString payload)
+    void MqttClientImpl::MqttFormatter::MessagePublish(const MqttClientObserver& message)
     {
-        Header(PacketType::packetTypePublish, EncodedLength(topic) + payload.size() + 2, 2);
-        AddString(topic);
+        Header(PacketType::packetTypePublish, EncodedTopicLength(message) + PayloadLength(message) + 2, 2);
+        AddTopic(message);
 
         uint16_t packetIdentifier = 1;
-        stream << BigEndianUint16(packetIdentifier);
-        stream << infra::StringAsByteRange(payload);
+        stream << infra::BigEndian<uint16_t>(packetIdentifier);
+        message.FillPayload(stream.Writer());
     }
 
-    std::size_t MqttClientImpl::MqttFormatter::MessageSizePublish(infra::BoundedConstString topic, infra::BoundedConstString payload)
+    std::size_t MqttClientImpl::MqttFormatter::MessageSizePublish(const MqttClientObserver& message)
     {
-        return 5 + EncodedLength(topic) + payload.size();
+        return 5 + EncodedTopicLength(message) + PayloadLength(message);
+    }
+
+    void MqttClientImpl::MqttFormatter::MessageSubscribe(const MqttClientObserver& message)
+    {
+        Header(PacketType::packetTypeSubscribe, EncodedTopicLength(message) + 3, 2);
+
+        uint16_t packetIdentifier = 1;
+        stream << infra::BigEndian<uint16_t>(packetIdentifier);
+
+        AddTopic(message);
+
+        uint8_t QoS = 1;
+        stream << QoS;
+    }
+
+    std::size_t MqttClientImpl::MqttFormatter::MessageSizeSubscribe(const MqttClientObserver& message)
+    {
+        return 5 + 2 + EncodedTopicLength(message) + 1;
+    }
+
+    void MqttClientImpl::MqttFormatter::MessagePubAck(const MqttClientObserver& message, uint16_t packetIdentifier)
+    {
+        Header(PacketType::packetTypePubAck, 2, 0);
+        stream << infra::BigEndian<uint16_t>(packetIdentifier);
+    }
+
+    std::size_t MqttClientImpl::MqttFormatter::MessageSizePubAck(const MqttClientObserver& message)
+    {
+        return 4;
     }
 
     std::size_t MqttClientImpl::MqttFormatter::EncodedLength(infra::BoundedConstString value)
@@ -41,9 +88,30 @@ namespace services
         return 2 + value.size();
     }
 
+    std::size_t MqttClientImpl::MqttFormatter::EncodedTopicLength(const MqttClientObserver& message)
+    {
+        infra::CountingStreamWriter countingWriter;
+        message.FillTopic(countingWriter);
+        return 2 + countingWriter.Processed();
+    }
+
+    std::size_t MqttClientImpl::MqttFormatter::PayloadLength(const MqttClientObserver& message)
+    {
+        infra::CountingStreamWriter countingWriter;
+        message.FillPayload(countingWriter);
+        //TODO: Should not we have a +2 here for packet identified bytes??
+        return countingWriter.Processed();
+    }
+
     void MqttClientImpl::MqttFormatter::AddString(infra::BoundedConstString value)
     {
-        stream << BigEndianUint16(static_cast<uint16_t>(value.size())) << infra::StringAsByteRange(value);
+        stream << infra::BigEndian<uint16_t>(static_cast<uint16_t>(value.size())) << infra::StringAsByteRange(value);
+    }
+
+    void MqttClientImpl::MqttFormatter::AddTopic(const MqttClientObserver& message)
+    {
+        stream << infra::BigEndian<uint16_t>(static_cast<uint16_t>(EncodedTopicLength(message) - 2));
+        message.FillTopic(stream.Writer());
     }
 
     void MqttClientImpl::MqttFormatter::Header(PacketType packetType, std::size_t size, uint8_t flags)
@@ -75,6 +143,11 @@ namespace services
         return packetType;
     }
 
+    size_t MqttClientImpl::MqttParser::GetPacketSize() const
+    {
+        return size;
+    }
+
     void MqttClientImpl::MqttParser::ExtractType()
     {
         uint8_t combinedPacketType;
@@ -96,14 +169,24 @@ namespace services
         size += sizeByte << shift;
     }
 
-    MqttClientImpl::MqttClientImpl(MqttClientObserverFactory& factory, infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password, infra::Duration publishTimeout)
-        : publishTimeout(publishTimeout)
+    MqttClientImpl::MqttClientImpl(MqttClientObserverFactory& factory, infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password, infra::Duration operationTimeout)
+        : operationTimeout(operationTimeout)
         , state(infra::InPlaceType<StateConnecting>(), *this, factory, clientId, username, password)
     {}
 
-    void MqttClientImpl::Publish(infra::BoundedConstString topic, infra::BoundedConstString payload)
+    void MqttClientImpl::Publish()
     {
-        state->Publish(topic, payload);
+        state->Publish();
+    }
+
+    void MqttClientImpl::Subscribe()
+    {
+        state->Subscribe();
+    }
+
+    void MqttClientImpl::NotificationDone()
+    {
+        state->NotificationDone();
     }
 
     void MqttClientImpl::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -113,7 +196,7 @@ namespace services
 
     void MqttClientImpl::DataReceived()
     {
-        state->DataReceived(*ConnectionObserver::Subject().ReceiveStream());
+        state->HandleDataReceived();
     }
 
     void MqttClientImpl::Connected()
@@ -126,6 +209,11 @@ namespace services
         state->ClosingConnection();
     }
 
+    infra::SharedPtr<infra::StreamReader> MqttClientImpl::ReceiveStream()
+    {
+        return ConnectionObserver::Subject().ReceiveStream();
+    }
+
     MqttClientImpl::StateBase::StateBase(MqttClientImpl& clientConnection)
         : clientConnection(clientConnection)
     {}
@@ -136,11 +224,30 @@ namespace services
     }
 
     void MqttClientImpl::StateBase::ClosingConnection()
-    {}
+    {
+        receiveStream = nullptr;
+    }
 
-    void MqttClientImpl::StateBase::Publish(infra::BoundedConstString topic, infra::BoundedConstString payload)
+    void MqttClientImpl::StateBase::Publish()
     {
         std::abort();
+    }
+
+    void MqttClientImpl::StateBase::Subscribe()
+    {
+        std::abort();
+    }
+
+    void MqttClientImpl::StateBase::NotificationDone()
+    {
+        std::abort();
+    }
+
+    infra::StreamReader& MqttClientImpl::StateBase::NewReceiveStream()
+    {
+        receiveStream = nullptr;
+        receiveStream = clientConnection.ReceiveStream();
+        return *receiveStream;
     }
 
     MqttClientImpl::StateConnecting::StateConnecting(MqttClientImpl& clientConnection, MqttClientObserverFactory& factory, infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password)
@@ -161,6 +268,8 @@ namespace services
     {
         if (!signaledFailure)
             factory.ConnectionFailed(MqttClientObserverFactory::ConnectFailReason::initializationFailed);
+
+        StateBase::ClosingConnection();
     }
 
     void MqttClientImpl::StateConnecting::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -170,9 +279,10 @@ namespace services
         formatter.MessageConnect(clientId, username, password);
     }
 
-    void MqttClientImpl::StateConnecting::DataReceived(infra::StreamReader& reader)
+    void MqttClientImpl::StateConnecting::HandleDataReceived()
     {
-        infra::DataInputStream::WithErrorPolicy stream(reader, infra::softFail);
+        infra::DataInputStream::WithErrorPolicy stream(NewReceiveStream(), infra::softFail);
+
         MqttParser parser(stream);
         if (stream.Failed())
             return;
@@ -188,7 +298,7 @@ namespace services
 
             clientConnection.ConnectionObserver::Subject().AckReceived();
 
-            factory.ConnectionEstablished([this, &reader](infra::SharedPtr<MqttClientObserver> observer)
+            factory.ConnectionEstablished([this](infra::SharedPtr<MqttClientObserver> observer)
             {
                 if (observer)
                 {
@@ -196,72 +306,213 @@ namespace services
                     clientConnection.observer = observer;
                     auto& newState = clientConnection.state.Emplace<StateConnected>(clientConnection);
                     observer->Connected();
-                    newState.DataReceived(reader);
+                    newState.HandleDataReceived();
                 }
                 else
                 {
                     signaledFailure = true; // The factory already got a ConnectionEstablished, so it should not get a ConnectionFailed
-                    clientConnection.ConnectionObserver::Subject().AbortAndDestroy();
+                    clientConnection.Abort();
                 }
             });
         }
         else
-            clientConnection.ConnectionObserver::Subject().AbortAndDestroy();
+            clientConnection.Abort();
     }
 
     void MqttClientImpl::StateConnecting::Timeout()
     {
         signaledFailure = true;
         factory.ConnectionFailed(MqttClientObserverFactory::ConnectFailReason::initializationTimedOut);
-        clientConnection.ConnectionObserver::Subject().AbortAndDestroy();
+        clientConnection.Abort();
     }
 
     void MqttClientImpl::StateConnected::ClosingConnection()
     {
         clientConnection.GetObserver().ClosingConnection();
         clientConnection.observer->Detach();
+
+        StateBase::ClosingConnection();
     }
 
     void MqttClientImpl::StateConnected::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        infra::DataOutputStream::WithErrorPolicy stream(*writer);
-        MqttFormatter formatter(stream);
-        formatter.MessagePublish(topic, payload);
+        sendOperations.front()->SendStreamAvailable(*this, *writer);
+        sendOperations.pop_front();
+        executingSend = false;
 
         writer = nullptr;
-        publishTimeout.Start(clientConnection.publishTimeout, [this]() { clientConnection.ConnectionObserver::Subject().AbortAndDestroy(); });
+        ProcessSendOperations();
     }
 
-    void MqttClientImpl::StateConnected::DataReceived(infra::StreamReader& reader)
+    MqttClientImpl& MqttClientImpl::StateConnected::ClientConnection() const
     {
-        infra::DataInputStream::WithErrorPolicy stream(reader, infra::softFail);
+        return clientConnection;
+    }
+
+    void MqttClientImpl::StateConnected::HandlePubAck(infra::DataInputStream::WithErrorPolicy stream)
+    {
+        uint16_t packetIdentifier;
+        stream >> packetIdentifier;
+
+        if (stream.Failed())
+            return;
+
+        operationTimeout.Cancel();
+        clientConnection.GetObserver().PublishDone();
+        clientConnection.ConnectionObserver::Subject().AckReceived();
+        HandleDataReceived();
+    }
+
+    void MqttClientImpl::StateConnected::HandleSubAck(infra::DataInputStream::WithErrorPolicy stream)
+    {
+        uint16_t packetIdentifier;
+        stream >> packetIdentifier;
+
+        uint8_t returnCode;
+        stream >> returnCode;
+
+        if (stream.Failed())
+            return;
+
+        if (infra::FromBigEndian(packetIdentifier) != 1 || returnCode == 0x80)
+        {
+            clientConnection.Abort();
+            return;
+        }
+
+        operationTimeout.Cancel();
+        clientConnection.GetObserver().SubscribeDone();
+        clientConnection.ConnectionObserver::Subject().AckReceived();
+        HandleDataReceived();
+    }
+
+    void MqttClientImpl::StateConnected::HandlePublish(size_t packetLength, infra::DataInputStream::WithErrorPolicy stream)
+    {
+        uint16_t topicSize;
+        stream >> topicSize;
+        topicSize = infra::FromBigEndian(topicSize);
+
+        if (stream.Failed())
+            return;
+
+        infra::BoundedString topic(receivedTopic);
+        topic.resize(topicSize);
+        stream >> infra::text >> topic;
+
+        stream >> receivedPacketIdentifier;
+        receivedPacketIdentifier = infra::FromBigEndian(receivedPacketIdentifier);
+
+        uint16_t payloadSize = static_cast<uint16_t>(packetLength) - topicSize - 2 - 2;
+        infra::BoundedString payload(receivedPayload);
+        payload.resize(payloadSize);
+        stream >> infra::text >> payload;
+
+        if (stream.Failed())
+            return;
+
+        executingNotification = true;
+        clientConnection.GetObserver().ReceivedNotification(topic, payload);
+        clientConnection.ConnectionObserver::Subject().AckReceived();
+    }
+
+    void MqttClientImpl::StateConnected::HandleDataReceived()
+    {
+        if (executingNotification)
+            return;
+
+        infra::DataInputStream::WithErrorPolicy stream(NewReceiveStream(), infra::softFail);
         MqttParser parser(stream);
+
         if (stream.Failed())
             return;
 
         if (parser.GetPacketType() == PacketType::packetTypePubAck)
+            HandlePubAck(stream);
+        else if (parser.GetPacketType() == PacketType::packetTypeSubAck)
+            HandleSubAck(stream);
+        else if (parser.GetPacketType() == PacketType::packetTypePublish)
+            HandlePublish(parser.GetPacketSize(), stream);
+        else
+            clientConnection.Abort();
+    }
+
+    void MqttClientImpl::StateConnected::Publish()
+    {
+        QueueSendOperation<OperationPublish>();
+    }
+
+    void MqttClientImpl::StateConnected::Subscribe()
+    {
+        QueueSendOperation<OperationSubscribe>();
+    }
+
+    void MqttClientImpl::StateConnected::NotificationDone()
+    {
+        executingNotification = false;
+
+        QueueSendOperation<OperationPubAck>();
+
+        infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<MqttClientImpl>& client)
         {
-            uint16_t packetIdentifier;
-            stream >> packetIdentifier;
+            client->DataReceived();
+        }, ClientConnection().SharedFromThis());
+    }
 
-            if (stream.Failed())
-                return;
-
-            publishTimeout.Cancel();
-            clientConnection.GetObserver().PublishDone();
-            clientConnection.ConnectionObserver::Subject().AckReceived();
+    void MqttClientImpl::StateConnected::ProcessSendOperations()
+    {
+        if (!executingSend && !sendOperations.empty())
+        {
+            executingSend = true;
+            clientConnection.ConnectionObserver::Subject().RequestSendStream(sendOperations.front()->MessageSize(clientConnection.GetObserver()));
         }
     }
 
-    void MqttClientImpl::StateConnected::Publish(infra::BoundedConstString topic, infra::BoundedConstString payload)
+    void MqttClientImpl::StateConnected::OperationPublish::SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::StreamWriter& writer)
     {
-        this->topic = topic;
-        this->payload = payload;
-        clientConnection.ConnectionObserver::Subject().RequestSendStream(MqttFormatter::MessageSizePublish(topic, payload));
+        infra::DataOutputStream::WithErrorPolicy stream(writer);
+        MqttFormatter formatter(stream);
+
+        connectedState.operationTimeout.Start(connectedState.ClientConnection().operationTimeout, [&connectedState]() { connectedState.ClientConnection().Abort(); });
+
+        formatter.MessagePublish(connectedState.ClientConnection().GetObserver());
     }
 
-    MqttClientConnectorImpl::MqttClientConnectorImpl(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password, services::IPv4Address address, uint16_t port, services::ConnectionFactory& connectionFactory)
-        : address(address)
+    std::size_t MqttClientImpl::StateConnected::OperationPublish::MessageSize(const MqttClientObserver& message)
+    {
+        return MqttFormatter::MessageSizePublish(message);
+    }
+
+    void MqttClientImpl::StateConnected::OperationSubscribe::SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::StreamWriter& writer)
+    {
+        infra::DataOutputStream::WithErrorPolicy stream(writer);
+        MqttFormatter formatter(stream);
+
+        connectedState.operationTimeout.Start(connectedState.ClientConnection().operationTimeout, [&connectedState]() { connectedState.ClientConnection().Abort(); });
+
+        formatter.MessageSubscribe(connectedState.ClientConnection().GetObserver());
+    }
+
+    std::size_t MqttClientImpl::StateConnected::OperationSubscribe::MessageSize(const MqttClientObserver& message)
+    {
+        return MqttFormatter::MessageSizeSubscribe(message);
+    }
+
+    void MqttClientImpl::StateConnected::OperationPubAck::SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::StreamWriter& writer)
+    {
+        infra::DataOutputStream::WithErrorPolicy stream(writer);
+        MqttFormatter formatter(stream);
+
+        formatter.MessagePubAck(connectedState.ClientConnection().GetObserver(), connectedState.receivedPacketIdentifier);
+    }
+
+    std::size_t MqttClientImpl::StateConnected::OperationPubAck::MessageSize(const MqttClientObserver& message)
+    {
+        return MqttFormatter::MessageSizePubAck(message);
+    }
+
+    MqttClientConnectorImpl::MqttClientConnectorImpl(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password,
+        infra::BoundedConstString address, uint16_t port, services::ConnectionFactoryWithNameResolver& connectionFactory)
+        : hostname(hostname)
         , port(port)
         , connectionFactory(connectionFactory)
         , clientId(clientId)
@@ -281,9 +532,9 @@ namespace services
         connectionFactory.CancelConnect(*this);
     }
 
-    IPAddress MqttClientConnectorImpl::Address() const
+    infra::BoundedConstString MqttClientConnectorImpl::Hostname() const
     {
-        return address;
+        return hostname;
     }
 
     uint16_t MqttClientConnectorImpl::Port() const

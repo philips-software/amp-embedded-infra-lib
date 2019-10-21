@@ -9,7 +9,7 @@ namespace services
     class HttpPageWebSocket
         : public services::HttpPage
         , public services::ConnectionObserver
-        , private services::HttpResponse
+        , protected services::HttpResponse
     {
     public:
         HttpPageWebSocket(infra::BoundedConstString path, WebSocketObserverFactory& webSocketObserverFactory);
@@ -24,7 +24,7 @@ namespace services
         virtual void DataReceived() override;
         virtual void ClosingConnection() override;
 
-    private:
+    protected:
         // implementation of HttpResponse
         virtual infra::BoundedConstString Status() const override;
         virtual void WriteBody(infra::TextOutputStream& stream) const override;

@@ -103,7 +103,7 @@ namespace services
         virtual ~ClientConnectionObserverFactoryMock() { Destructor(); }
     };
 
-    class ConnectionFactoryWithNameLookupMock
+    class ConnectionFactoryWithNameResolverMock
         : public ConnectionFactoryWithNameResolver
     {
     public:
