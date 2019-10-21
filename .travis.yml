@@ -3,6 +3,7 @@ language: cpp
 env:
   global:
     - BUILD_TYPE=Debug
+    - CMAKE_BUILD_PARALLEL_LEVEL=4
     - GTEST_COLOR=1
 
 matrix:
