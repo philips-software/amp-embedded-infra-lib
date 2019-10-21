@@ -120,6 +120,11 @@ namespace infra
         return isGranted;
     }
 
+    bool ClaimableResource::ClaimerBase::IsQueued() const
+    {
+        return isQueued;
+    }
+
     void ClaimableResource::ClaimerBase::ReleaseAllClaims()
     {
         if (isGranted)

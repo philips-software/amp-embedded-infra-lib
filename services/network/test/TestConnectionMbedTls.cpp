@@ -42,6 +42,7 @@ TEST_F(ConnectionMbedTlsTest, when_allocation_on_network_fails_Listen_returns_nu
     EXPECT_CALL(network, Listen(1234, testing::_, services::IPVersions::both)).WillOnce(testing::DoAll(infra::SaveRef<1>(&serverConnectionObserverFactory), testing::Return(nullptr)));
     infra::SharedPtr<void> listener = connectionFactory.Listen(1234, serverObserverFactory);
     EXPECT_EQ(nullptr, listener);
+    EXPECT_CALL(clientObserverFactory, Destructor);
 }
 
 TEST_F(ConnectionMbedTlsTest, when_listener_allocation_fails_Listen_returns_nullptr)
@@ -50,6 +51,7 @@ TEST_F(ConnectionMbedTlsTest, when_listener_allocation_fails_Listen_returns_null
     infra::SharedPtr<void> listener1 = connectionFactory.Listen(1234, serverObserverFactory);
     infra::SharedPtr<void> listener2 = connectionFactory.Listen(1234, serverObserverFactory);
     EXPECT_EQ(nullptr, listener2);
+    EXPECT_CALL(clientObserverFactory, Destructor);
 }
 
 TEST_F(ConnectionMbedTlsTest, Listen_returns_listener)
@@ -57,6 +59,7 @@ TEST_F(ConnectionMbedTlsTest, Listen_returns_listener)
     EXPECT_CALL(network, Listen(1234, testing::_, services::IPVersions::both)).WillOnce(testing::DoAll(infra::SaveRef<1>(&serverConnectionObserverFactory), testing::Return(thisListener)));
     infra::SharedPtr<void> listener = connectionFactory.Listen(1234, serverObserverFactory);
     EXPECT_NE(nullptr, listener);
+    EXPECT_CALL(clientObserverFactory, Destructor);
 }
 
 TEST_F(ConnectionMbedTlsTest, create_connection)
@@ -82,6 +85,7 @@ TEST_F(ConnectionMbedTlsTest, create_connection)
     }));
     ExecuteAllActions();
     observer1->Subject().AbortAndDestroy();
+    EXPECT_CALL(clientObserverFactory, Destructor);
 }
 
 TEST_F(ConnectionMbedTlsTest, send_and_receive_data)
@@ -117,6 +121,7 @@ TEST_F(ConnectionMbedTlsTest, send_and_receive_data)
     EXPECT_EQ((std::vector<uint8_t>{ 5, 6, 7, 8 }), observer2->receivedData);
 
     observer1->Subject().AbortAndDestroy();
+    EXPECT_CALL(clientObserverFactory, Destructor);
 }
 
 TEST_F(ConnectionMbedTlsTest, reopen_connection)
@@ -166,4 +171,5 @@ TEST_F(ConnectionMbedTlsTest, reopen_connection)
 
         observer1->Subject().AbortAndDestroy();
     }
+    EXPECT_CALL(clientObserverFactory, Destructor);
 }

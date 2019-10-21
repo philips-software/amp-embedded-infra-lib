@@ -129,7 +129,11 @@ namespace services
     void ExclusiveConnectionFactory::CancelConnect(ClientConnectionObserverFactory& factory)
     {
         for (auto& connector : connectors)
-            connector.CancelConnect(factory);
+            if (connector.CancelConnect(factory))
+            {
+                connectors.remove(connector);
+                return;
+            }
     }
 
     ExclusiveConnectionFactory::Listener::Listener(ExclusiveConnectionFactory& connectionFactory, uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions)
@@ -141,7 +145,7 @@ namespace services
 
     void ExclusiveConnectionFactory::Listener::ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address)
     {
-        if (!claimer.IsClaimed())
+        if (!claimer.IsQueued())
         {
             connectionFactory.mutex.RequestCloseConnection();
 
@@ -165,10 +169,20 @@ namespace services
         connectionFactory.connectionFactory.Connect(*this);
     }
 
-    void ExclusiveConnectionFactory::Connector::CancelConnect(ClientConnectionObserverFactory& factory)
+    bool ExclusiveConnectionFactory::Connector::CancelConnect(ClientConnectionObserverFactory& factory)
     {
         if (&factory == &clientFactory)
-            connectionFactory.connectionFactory.CancelConnect(*this);
+        {
+            if (claimer.IsQueued())
+                claimer.Release();
+            else
+            {
+                connectionFactory.connectionFactory.CancelConnect(*this);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     IPAddress ExclusiveConnectionFactory::Connector::Address() const
