@@ -162,8 +162,8 @@ namespace services
         this->stream >> sizeByte;
         while (!stream.Failed() && sizeByte > 127)
         {
-            size += sizeByte << shift;
-            shift += 8;
+            size += (sizeByte & 0x7f) << shift;
+            shift += 7;
             this->stream >> sizeByte;
         }
         size += sizeByte << shift;
@@ -207,6 +207,11 @@ namespace services
     void MqttClientImpl::ClosingConnection()
     {
         state->ClosingConnection();
+    }
+
+    void MqttClientImpl::ReceivedNotification(infra::BoundedConstString topic, infra::BoundedConstString payload)
+    {
+        GetObserver().ReceivedNotification(topic, payload);
     }
 
     infra::SharedPtr<infra::StreamReader> MqttClientImpl::ReceiveStream()
@@ -395,7 +400,7 @@ namespace services
         if (stream.Failed())
             return;
 
-        infra::BoundedString topic(receivedTopic);
+        infra::BoundedString::WithStorage<128> topic;
         topic.resize(topicSize);
         stream >> infra::text >> topic;
 
@@ -403,7 +408,7 @@ namespace services
         receivedPacketIdentifier = infra::FromBigEndian(receivedPacketIdentifier);
 
         uint16_t payloadSize = static_cast<uint16_t>(packetLength) - topicSize - 2 - 2;
-        infra::BoundedString payload(receivedPayload);
+        infra::BoundedString::WithStorage<1024> payload;
         payload.resize(payloadSize);
         stream >> infra::text >> payload;
 
@@ -411,7 +416,7 @@ namespace services
             return;
 
         executingNotification = true;
-        clientConnection.GetObserver().ReceivedNotification(topic, payload);
+        clientConnection.ReceivedNotification(topic, payload);
         clientConnection.ConnectionObserver::Subject().AckReceived();
     }
 
