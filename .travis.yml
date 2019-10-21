@@ -1,5 +1,11 @@
 language: cpp
 
+addons:
+  sonarcloud:
+    organization: philips-software
+    token:
+      secure: "EEJZTqKut+pYAkDqajUVkJNNd3pVqGgsyrA/dSKnwGTAlXz3n6crFSLIa1r8DPZluOSG/WMNQEvyno/BxB2PAdeK5h+kKigLinoU2KTGWr1Fe8iyJz/HJ7gYuxdLNMTmdq+eOZ2GrfBb+50Z9ugMaPivOh5qjIt8x4Znbh7O/YeJB1+fxgUoxNv+MNyJH3hsiGbRvGgGkblHb0BRG7APtMQRGB2CbKC8QCRtgx+7GU4Q0cUjGmY22dRSY8X8COopZS3r7REa9wKOYqgHH4ikSo0VNKK0iJOtDWUy3Spwd7t1X1Su/5y4OkQsuUCe0zCl9sJnc1Rj+w5j0sqW9ZXTABMAyXICGKi9QmQCX5kP1chAcMxlGpDmlGcyJpNOsuqXAcf9g1Z27fQ8vi0HCwKz7AVwFdIDB8iGqqTxsS2FOsZXJ3rPlDqCmUVWYA023MfNA0isEGxIqolA5cc7leNSch5vXzP+fVThPYLJrTCZn4BF920PuvAHwusi6UzhqLFXsm8DVeWc/Nwp316sfjuHOKBpkLmgiIVNCkDp/FoEeXX2ddYfCAoosbUXtDihnJZJoy2B8AXsPB++wlMV0FV5azh+dYJy9Br2pV1dCV2khpHdRpca3FUbWWLqYxWv7wcj7Lfpd9rUulV1WkKQcgqN4NVezQ5jl/QihsIAhcgVvTY="
+
 env:
   global:
     - BUILD_TYPE=Debug
@@ -33,3 +39,4 @@ script:
   - cmake .. -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
   - cmake --build . --config ${BUILD_TYPE}
   - ctest -C ${BUILD_TYPE} -T Test --output-on-failure
+  - sonar-scanner
