@@ -1,0 +1,48 @@
+---
+Language: Cpp
+AccessModifierOffset: -4
+AlignAfterOpenBracket: DontAlign
+AlignEscapedNewlines: Left
+AlignOperands: 'false'
+AllowAllParametersOfDeclarationOnNextLine: 'true'
+AllowShortBlocksOnASingleLine: 'false'
+AllowShortCaseLabelsOnASingleLine: 'true'
+AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortIfStatementsOnASingleLine: 'false'
+AllowShortLoopsOnASingleLine: 'false'
+AlwaysBreakTemplateDeclarations: 'true'
+BreakBeforeBraces: Custom
+BraceWrapping:
+    AfterClass: 'true'
+    AfterControlStatement: 'true'
+    AfterEnum: 'true'
+    AfterExternBlock: 'true'
+    AfterFunction: 'true'
+    AfterNamespace: 'true'
+    AfterObjCDeclaration: 'true'
+    AfterStruct: 'true'
+    AfterUnion: 'true'
+    BeforeCatch: 'true'
+    BeforeElse: 'true'
+    SplitEmptyFunction: 'false'
+    SplitEmptyNamespace: 'false'
+    SplitEmptyRecord: 'false'
+BreakBeforeInheritanceComma: 'true'
+BreakConstructorInitializers: BeforeComma
+ColumnLimit: 0
+ConstructorInitializerAllOnOneLineOrOnePerLine: 'false'
+ContinuationIndentWidth: '4'
+Cpp11BracedListStyle: 'false'
+FixNamespaceComments: 'false'
+IncludeBlocks: Merge
+IndentWidth: '4'
+MaxEmptyLinesToKeep: '1'
+NamespaceIndentation: All
+PointerAlignment: Left
+SortIncludes: 'true'
+SpaceAfterTemplateKeyword: 'false'
+SpaceBeforeParens: ControlStatements
+SpacesInAngles: 'false'
+SpacesInCStyleCastParentheses: 'false'
+Standard: Cpp11
+---
