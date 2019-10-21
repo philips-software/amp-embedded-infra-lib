@@ -38,6 +38,6 @@ script:
   - cmake -E make_directory Build
   - cd Build
   - cmake .. -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
-  - cmake --build . --config ${BUILD_TYPE}
+  - if [[ $STATIC_ANALYSIS ]]; then build-wrapper-linux-x86-64 --out-dir ../sonar-build-wrapper cmake --build . --config ${BUILD_TYPE}; else cmake --build . --config ${BUILD_TYPE}; fi
   - ctest -C ${BUILD_TYPE} -T Test --output-on-failure
   - if [[ $STATIC_ANALYSIS ]]; then cd .. && sonar-scanner; fi
