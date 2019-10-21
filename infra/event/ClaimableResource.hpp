@@ -56,6 +56,7 @@ namespace infra
     public:
         virtual void Release() = 0;
         bool IsClaimed() const;
+        bool IsQueued() const;
 
     private:
         friend class ClaimableResource;

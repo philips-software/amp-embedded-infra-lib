@@ -11,6 +11,7 @@ namespace services
     {
     public:
         MOCK_METHOD1(SendResponse, void(const HttpResponse& response));
+        MOCK_METHOD1(SendResponseWithoutNextRequest, void(const HttpResponse& response));
         MOCK_METHOD1(TakeOverConnection, void(ConnectionObserver& observer));
     };
 

@@ -9,14 +9,10 @@ namespace services
     class HttpPageWebSocket
         : public services::HttpPage
         , public services::ConnectionObserver
+        , private services::HttpResponse
     {
     public:
-        struct Address
-        {
-            services::IPAddress address;
-        };
-
-        HttpPageWebSocket(infra::BoundedConstString path, WebSocketObserverFactory& webSocketObserverFactory, Address address);
+        HttpPageWebSocket(infra::BoundedConstString path, WebSocketObserverFactory& webSocketObserverFactory);
 
     public:
         // Implementation of HttpPage
@@ -29,9 +25,16 @@ namespace services
         virtual void ClosingConnection() override;
 
     private:
+        // implementation of HttpResponse
+        virtual infra::BoundedConstString Status() const override;
+        virtual void WriteBody(infra::TextOutputStream& stream) const override;
+        virtual void AddHeaders(HttpResponseHeaderBuilder& builder) const override;
+
+    private:
         infra::BoundedConstString path;
         WebSocketObserverFactory& webSocketObserverFactory;
-        services::IPAddress address;
+        static const uint8_t MaxWebSocketKeySize = 64;
+        infra::BoundedString::WithStorage<MaxWebSocketKeySize> webSocketKey;
     };
 }
 

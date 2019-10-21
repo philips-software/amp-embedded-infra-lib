@@ -7,8 +7,8 @@
 
 namespace services
 {
-    WebSocketServerConnectionObserver::WebSocketServerConnectionObserver(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedDeque<uint8_t>& receiveBuffer, services::Connection& connection, infra::BoundedConstString handshakeKey)
-        : receivingState(infra::InPlaceType<ReceivingStateInitial>(), *this, handshakeKey)
+    WebSocketServerConnectionObserver::WebSocketServerConnectionObserver(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedDeque<uint8_t>& receiveBuffer, services::Connection& connection)
+        : receivingState(infra::InPlaceType<ReceivingStateReceiveHeader>(), *this)
         , sendingState(infra::InPlaceType<SendingStateIdle>(), *this)
         , receiveBuffer(receiveBuffer)
         , sendBuffer(sendBuffer)
@@ -147,32 +147,6 @@ namespace services
     WebSocketServerConnectionObserver::ReceivingStateThatSendsData::ReceivingStateThatSendsData(WebSocketServerConnectionObserver& connection)
     {
         connection.receivingStateThatWantsToSendData = this;
-    }
-
-    WebSocketServerConnectionObserver::ReceivingStateInitial::ReceivingStateInitial(WebSocketServerConnectionObserver& connection, infra::BoundedConstString handshakeKey)
-        : ReceivingStateThatSendsData(connection)
-        , connection(connection)
-        , handshakeKey(handshakeKey)
-    {}
-
-    void WebSocketServerConnectionObserver::ReceivingStateInitial::Send(infra::SharedPtr<infra::StreamWriter>&& writer)
-    {
-        infra::BoundedString::WithStorage<MaxWebSocketKeySize> webSocketKey = handshakeKey;
-        static const infra::BoundedConstString webSocketGuid("258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
-        webSocketKey.append(webSocketGuid);
-
-        std::array<uint8_t, 20> sha1Digest;
-        mbedtls_sha1(reinterpret_cast<const uint8_t*>(webSocketKey.begin()), webSocketKey.size(), sha1Digest.data());    //TICS !INT#030
-
-        infra::TextOutputStream::WithErrorPolicy stream(*writer);
-        services::HttpResponseHeaderBuilder responseBuilder(stream, "101 Switching Protocols");
-        responseBuilder.AddHeader("Upgrade", "websocket");
-        responseBuilder.AddHeader("Connection", "Upgrade");
-        responseBuilder.AddHeader("Sec-WebSocket-Accept");
-        stream << infra::AsBase64(sha1Digest);
-        responseBuilder.StartBody();
-
-        connection.SetReceivingStateReceiveHeader();
     }
 
     WebSocketServerConnectionObserver::ReceivingStateReceiveHeader::ReceivingStateReceiveHeader(WebSocketServerConnectionObserver& connection)

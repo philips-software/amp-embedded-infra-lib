@@ -41,6 +41,8 @@ namespace services
         void AddHeader(infra::BoundedConstString key);
         void StartBody();
 
+        infra::TextOutputStream& Stream();
+
     private:
         infra::TextOutputStream& output;
     };
@@ -59,7 +61,7 @@ namespace services
     public: // For test access
         virtual infra::BoundedConstString Status() const = 0;
         virtual void WriteBody(infra::TextOutputStream& stream) const = 0;
-        virtual infra::BoundedConstString ContentType() const = 0;
+        virtual infra::BoundedConstString ContentType() const;
         virtual void AddHeaders(HttpResponseHeaderBuilder& builder) const;
 
     private:
@@ -76,6 +78,7 @@ namespace services
 
     public:
         virtual void SendResponse(const HttpResponse& response) = 0;
+        virtual void SendResponseWithoutNextRequest(const HttpResponse& response) = 0;
         virtual void TakeOverConnection(ConnectionObserver& observer) = 0;
     };
 
@@ -114,11 +117,14 @@ namespace services
 
         // Implementation of HttpServerConnection
         virtual void SendResponse(const HttpResponse& response) override;
+        virtual void SendResponseWithoutNextRequest(const HttpResponse& response) override;
         virtual void TakeOverConnection(ConnectionObserver& newObserver) override;
 
     protected:
         virtual void SendingHttpResponse(infra::BoundedConstString response) {}
         virtual void ReceivedHttpRequest(infra::BoundedConstString request) {}
+
+        // Implementation of HttpPageServer
         virtual HttpPage* PageForRequest(const HttpRequestParser& request) override;
 
     private:

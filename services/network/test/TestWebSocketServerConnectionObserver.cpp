@@ -15,19 +15,10 @@ public:
     {
         auto connectionPtr = connection.Emplace();
         services::ConnectionObserverStub previousConnectionObserver(*connection);
-        connection->SetOwnership(connectionPtr, webSocket.Emplace(*connection, infra::BoundedConstString("dGhlIHNhbXBsZSBub25jZQ==")));
+        connection->SetOwnership(connectionPtr, webSocket.Emplace(*connection));
         connectionObserver.Attach(*webSocket);
         webSocket->SetOwnership(nullptr, infra::UnOwnedSharedPtr(connectionObserver));
         webSocket->Connected();
-
-        std::string response =
-            "HTTP/1.1 101 Switching Protocols\r\n"
-            "Upgrade: websocket\r\n"
-            "Connection: Upgrade\r\n"
-            "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n";
-        ExecuteAllActions();
-        EXPECT_EQ(std::vector<uint8_t>(response.begin(), response.end()), connection->sentData);
-        connection->sentData.clear();
     }
 
     ~WebSocketServerConnectionObserverTest()
