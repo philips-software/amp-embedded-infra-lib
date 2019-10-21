@@ -30,6 +30,9 @@ namespace services
         virtual void Connected() override;
         virtual void ClosingConnection() override;
 
+    protected:
+        virtual void ReceivedNotification(infra::BoundedConstString topic, infra::BoundedConstString payload);
+
     private:
         enum class PacketType : uint8_t
         {
@@ -215,8 +218,6 @@ namespace services
 
         private:
             infra::TimerSingleShot operationTimeout;
-            std::array<char, 32> receivedTopic;
-            std::array<char, 1000> receivedPayload;
             uint16_t receivedPacketIdentifier;
 
             using OperationVariant = infra::PolymorphicVariant<OperationBase, OperationPublish, OperationSubscribe, OperationPubAck>;

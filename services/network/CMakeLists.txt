@@ -38,8 +38,10 @@ ccola_component(network static_library)
         LlmnrResponder.cpp
         LlmnrResponder.hpp
         Mqtt.hpp
-        MqttClientImpl.hpp
         MqttClientImpl.cpp
+        MqttClientImpl.hpp
+        MqttMultipleAccess.cpp
+        MqttMultipleAccess.hpp
         Multicast.hpp
         NameResolver.hpp
         NameResolverCache.cpp
@@ -59,6 +61,8 @@ ccola_component(network static_library)
         TracingConnectionMbedTls.hpp
         TracingHttpClientImpl.cpp
         TracingHttpClientImpl.hpp
+        TracingMqttClientImpl.cpp
+        TracingMqttClientImpl.hpp
         TracingStatusHttpClientImpl.cpp
         TracingStatusHttpClientImpl.hpp
         WebSocket.cpp
