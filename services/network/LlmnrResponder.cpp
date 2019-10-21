@@ -31,20 +31,20 @@ namespace services
         }
     }
 
-    const services::IPv4Address LlmnrResponder::llmnpMulticastAddress{ 224, 0, 0, 252 };
+    const services::IPv4Address LlmnrResponder::llmnrMulticastAddress{ 224, 0, 0, 252 };
 
     LlmnrResponder::LlmnrResponder(services::DatagramFactory& factory, services::Multicast& multicast, services::IPv4Info& ipv4Info, infra::BoundedConstString name)
-        : datagramExchange(factory.Listen(*this, llmnpPort, IPVersions::ipv4))
+        : datagramExchange(factory.Listen(*this, llmnrPort, IPVersions::ipv4))
         , multicast(multicast)
         , ipv4Info(ipv4Info)
         , name(name)
     {
-        multicast.JoinMulticastGroup(llmnpMulticastAddress);
+        multicast.JoinMulticastGroup(llmnrMulticastAddress);
     }
 
     LlmnrResponder::~LlmnrResponder()
     {
-        multicast.LeaveMulticastGroup(llmnpMulticastAddress);
+        multicast.LeaveMulticastGroup(llmnrMulticastAddress);
     }
 
     void LlmnrResponder::DataReceived(infra::StreamReaderWithRewinding& reader, services::UdpSocket from)

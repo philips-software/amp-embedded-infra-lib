@@ -11,8 +11,8 @@ namespace services
         : public services::DatagramExchangeObserver
     {
     public:
-        static const services::IPv4Address llmnpMulticastAddress;
-        static const uint16_t llmnpPort = 5355;
+        static const services::IPv4Address llmnrMulticastAddress;
+        static const uint16_t llmnrPort = 5355;
 
         LlmnrResponder(services::DatagramFactory& factory, services::Multicast& multicast, services::IPv4Info& ipv4Info, infra::BoundedConstString name);
         ~LlmnrResponder();
