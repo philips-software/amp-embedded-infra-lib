@@ -40,4 +40,4 @@ script:
   - cmake .. -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
   - cmake --build . --config ${BUILD_TYPE}
   - ctest -C ${BUILD_TYPE} -T Test --output-on-failure
-  - if [[ $STATIC_ANALYSIS ]]; then sonar-scanner; fi
+  - if [[ $STATIC_ANALYSIS ]]; then cd .. && sonar-scanner; fi
