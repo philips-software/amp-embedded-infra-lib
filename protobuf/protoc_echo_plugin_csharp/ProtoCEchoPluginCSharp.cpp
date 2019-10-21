@@ -75,7 +75,7 @@ namespace application
         {
             std::string basename = google::protobuf::compiler::cpp::StripProto(file->name()) + ".pb.cs";
 
-            CSharpEchoGenerator(generatorContext, basename, file);
+            CSharpEchoGenerator generator(generatorContext, basename, file);
 
             return true;
         }
