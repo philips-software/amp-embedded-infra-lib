@@ -1,6 +1,6 @@
+#include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "infra/stream/CountingOutputStream.hpp"
 #include "services/network/MqttClientImpl.hpp"
-#include "infra/event/EventDispatcherWithWeakPtr.hpp"
 
 namespace services
 {
@@ -460,7 +460,7 @@ namespace services
         infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<MqttClientImpl>& client)
         {
             client->DataReceived();
-        }, ClientConnection().SharedFromThis());
+        }, infra::MakeContainedSharedObject(clientConnection, clientConnection.ConnectionObserver::Subject().Observer()));
     }
 
     void MqttClientImpl::StateConnected::ProcessSendOperations()

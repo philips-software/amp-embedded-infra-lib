@@ -28,5 +28,7 @@ namespace services
     void TracingMqttClientImpl::ReceivedNotification(infra::BoundedConstString topic, infra::BoundedConstString payload)
     {
         tracer.Trace() << "MqttClient received notification on topic " << topic << " with contents " << payload;
+
+        MqttClientImpl::ReceivedNotification(topic, payload);
     }
 }
