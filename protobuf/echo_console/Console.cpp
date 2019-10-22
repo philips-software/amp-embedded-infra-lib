@@ -437,7 +437,7 @@ namespace application
 
             virtual void VisitBool(const EchoFieldBool& field) override
             {
-                std::cout << (fieldData.Get<uint32_t>() == 0 ? "false" : "true");
+                std::cout << (fieldData.Get<uint64_t>() == 0 ? "false" : "true");
             }
 
             virtual void VisitString(const EchoFieldString& field) override
