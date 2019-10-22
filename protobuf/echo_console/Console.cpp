@@ -473,7 +473,7 @@ namespace application
 
             virtual void VisitEnum(const EchoFieldEnum& field) override
             {
-                std::cout << fieldData.Get<uint32_t>();
+                std::cout << fieldData.Get<uint64_t>();
             }
 
             virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
