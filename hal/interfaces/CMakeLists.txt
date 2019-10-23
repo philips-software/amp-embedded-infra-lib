@@ -6,6 +6,8 @@ ccola_component(interfaces static_library)
         FileSystem.hpp
     all:
         AnalogToDigitalPin.hpp
+        Can.cpp
+        Can.hpp
         CommunicationConfigurator.hpp
         DigitalToAnalogPin.hpp
         Ethernet.cpp
