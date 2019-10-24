@@ -112,8 +112,8 @@ namespace services
         mbedtls_ssl_config sslConfig;
         mbedtls_ctr_drbg_context ctr_drbg;
 
-        infra::BoundedDeque<uint8_t>::WithMaxSize<2048> receiveBuffer;
-        infra::BoundedVector<uint8_t>::WithMaxSize<2048> sendBuffer;
+        infra::BoundedDeque<uint8_t>::WithMaxSize<1024> receiveBuffer;
+        infra::BoundedVector<uint8_t>::WithMaxSize<1024> sendBuffer;
         bool sending = false;
 
         infra::SharedOptional<StreamWriterMbedTls> streamWriter;
