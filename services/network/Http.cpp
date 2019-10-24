@@ -2,6 +2,8 @@
 
 namespace services
 {
+    const HttpHeaders noHeaders{};
+
     namespace
     {
         static const char* separator = ":";

@@ -81,7 +81,7 @@ namespace services
     };
 
     using HttpHeaders = infra::MemoryRange<const HttpHeader>;
-    static const HttpHeaders noHeaders{};
+    extern const HttpHeaders noHeaders;
 
     infra::BoundedConstString SchemeFromUrl(infra::BoundedConstString url);
     infra::BoundedConstString HostFromUrl(infra::BoundedConstString url);
