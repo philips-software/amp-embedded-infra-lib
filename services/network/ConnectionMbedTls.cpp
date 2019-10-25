@@ -142,6 +142,16 @@ namespace services
         ResetOwnership();
     }
 
+    void ConnectionMbedTls::Close()
+    {
+        GetObserver().Close();
+    }
+
+    void ConnectionMbedTls::Abort()
+    {
+        GetObserver().Abort();
+    }
+
     void ConnectionMbedTls::RequestSendStream(std::size_t sendSize)
     {
         assert(requestedSendSize == 0);

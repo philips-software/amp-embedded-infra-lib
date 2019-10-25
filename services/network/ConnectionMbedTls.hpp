@@ -46,13 +46,15 @@ namespace services
 
         void CreatedObserver(infra::SharedPtr<services::ConnectionObserver> connectionObserver);
 
-        // ConnectionObserver
+        // Implementation of ConnectionObserver
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void DataReceived() override;
         virtual void Connected() override;
         virtual void ClosingConnection() override;
+        virtual void Close() override;
+        virtual void Abort() override;
 
-        // ConnectionWithHostname
+        // Implementation of ConnectionWithHostname
         virtual void RequestSendStream(std::size_t sendSize) override;
         virtual std::size_t MaxSendStreamSize() const override;
         virtual infra::SharedPtr<infra::StreamReaderWithRewinding> ReceiveStream() override;
