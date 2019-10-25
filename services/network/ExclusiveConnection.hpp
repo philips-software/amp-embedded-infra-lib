@@ -46,6 +46,7 @@ namespace services
 
         private:
             ExclusiveConnectionFactoryMutex& mutex;
+            bool invokedClose = false;
         };
 
         infra::ClaimableResource resource;

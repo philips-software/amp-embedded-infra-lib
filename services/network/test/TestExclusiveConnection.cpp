@@ -45,6 +45,7 @@ public:
     {
         EXPECT_CALL(connectionFactory, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&clientResult));
         factory.Connect(clientFactory);
+        ExecuteAllActions();
 
         EXPECT_CALL(clientFactory, Address()).WillOnce(testing::Return(services::IPv4AddressLocalHost()));
         EXPECT_EQ(services::IPAddress(services::IPv4AddressLocalHost()), clientResult->Address());
@@ -139,6 +140,7 @@ TEST_F(ExclusiveConnectionTest, construct_one_connection_but_fails)
 {
     EXPECT_CALL(connectionFactory, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&clientResult));
     exclusive.Connect(clientFactory);
+    ExecuteAllActions();
 
     EXPECT_CALL(clientFactory, ConnectionFailed(services::ClientConnectionObserverFactory::ConnectFailReason::refused));
     clientResult->ConnectionFailed(services::ClientConnectionObserverFactory::ConnectFailReason::refused);
@@ -149,6 +151,7 @@ TEST_F(ExclusiveConnectionTest, construct_one_connection_and_cancel)
 {
     EXPECT_CALL(connectionFactory, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&clientResult));
     exclusive.Connect(clientFactory);
+    ExecuteAllActions();
 
     EXPECT_CALL(connectionFactory, CancelConnect(testing::Ref(*clientResult)));
     exclusive.CancelConnect(clientFactory);
@@ -162,10 +165,8 @@ TEST_F(ExclusiveConnectionTest, cancelation_of_unclaimed_connection_results_its_
 
     testing::StrictMock<services::ClientConnectionObserverFactoryMock> clientFactory2;
     services::ClientConnectionObserverFactory* clientResult2 = nullptr;
-    EXPECT_CALL(connectionFactory, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&clientResult2));
     exclusive.Connect(clientFactory2);
-
-    ConnectionEstablished(*clientResult2);
+    ExecuteAllActions();
 
     // Operate/check
     EXPECT_CALL(clientFactory2, Destructor);
@@ -194,17 +195,18 @@ TEST_F(ExclusiveConnectionTest, constructing_second_connection_results_in_close_
 
     testing::StrictMock<services::ClientConnectionObserverFactoryMock> clientFactory2;
     services::ClientConnectionObserverFactory* clientResult2 = nullptr;
-    EXPECT_CALL(connectionFactory, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&clientResult2));
-    exclusive.Connect(clientFactory2);
-
     EXPECT_CALL(*connectionObserver, Close());
-    ConnectionEstablished(*clientResult2);
+    exclusive.Connect(clientFactory2);
+    ExecuteAllActions();
 
     EXPECT_CALL(*connectionObserver, ClosingConnection());
     connection->ResetOwnership();
 
+    EXPECT_CALL(connectionFactory, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&clientResult2));
     ExpectConnectionEstablished(clientFactory2);
     ExecuteAllActions();
+
+    ConnectionEstablished(*clientResult2);
 
     EXPECT_CALL(*connectionObserver, ClosingConnection());
     connection->ResetOwnership();
@@ -218,16 +220,17 @@ TEST_F(ExclusiveConnectionTest, constructing_second_connection_does_not_result_i
 
     testing::StrictMock<services::ClientConnectionObserverFactoryMock> clientFactory2;
     services::ClientConnectionObserverFactory* clientResult2 = nullptr;
-    EXPECT_CALL(connectionFactory, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&clientResult2));
     exclusive.Connect(clientFactory2);
-
-    ConnectionEstablished(*clientResult2);
+    ExecuteAllActions();
 
     EXPECT_CALL(*connectionObserver, ClosingConnection());
     connection->ResetOwnership();
 
+    EXPECT_CALL(connectionFactory, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&clientResult2));
     ExpectConnectionEstablished(clientFactory2);
     ExecuteAllActions();
+
+    ConnectionEstablished(*clientResult2);
 
     EXPECT_CALL(*connectionObserver, ClosingConnection());
     connection->ResetOwnership();
@@ -243,32 +246,33 @@ TEST_F(ExclusiveConnectionTest, second_connection_is_immediately_requested_to_cl
     // second
     testing::StrictMock<services::ClientConnectionObserverFactoryMock> clientFactory2;
     services::ClientConnectionObserverFactory* clientResult2 = nullptr;
-    EXPECT_CALL(connectionFactory, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&clientResult2));
-    exclusive.Connect(clientFactory2);
-
     EXPECT_CALL(*connectionObserver, Close());
-    ConnectionEstablished(*clientResult2);
+    exclusive.Connect(clientFactory2);
+    ExecuteAllActions();
 
     // third
     testing::StrictMock<services::ClientConnectionObserverFactoryMock> clientFactory3;
     services::ClientConnectionObserverFactory* clientResult3 = nullptr;
-    EXPECT_CALL(connectionFactory, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&clientResult3));
     exclusive.Connect(clientFactory3);
-
-    EXPECT_CALL(*connectionObserver, Close());
-    ConnectionEstablished(*clientResult3);
+    ExecuteAllActions();
 
     EXPECT_CALL(*connectionObserver, ClosingConnection());
     connection->ResetOwnership();
+
+    EXPECT_CALL(connectionFactory, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&clientResult2));
+    ExecuteAllActions();
 
     ExpectConnectionEstablishedThatIsImmediatelyClosed(clientFactory2);
-    ExecuteAllActions();
+    ConnectionEstablished(*clientResult2);
 
     EXPECT_CALL(*connectionObserver, ClosingConnection());
     connection->ResetOwnership();
 
-    ExpectConnectionEstablished(clientFactory3);
+    EXPECT_CALL(connectionFactory, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&clientResult3));
     ExecuteAllActions();
+
+    ExpectConnectionEstablished(clientFactory3);
+    ConnectionEstablished(*clientResult3);
 
     EXPECT_CALL(*connectionObserver, ClosingConnection());
     connection->ResetOwnership();
