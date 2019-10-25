@@ -61,7 +61,7 @@ TEST_F(WebSocketIntegrationTest, integration)
         {
             value.Emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
         });
-    services::WebSocketClientFactorySingleConnection webSocketClientFactory(connectionFactoryWithNameResolver, randomDataGenerator, { httpClientInitiationCreator });
+    services::WebSocketClientFactorySingleConnection webSocketClientFactory(randomDataGenerator, { httpClientInitiationCreator });
 
     WebSocketClientObserverFactoryMock clientObserverFactory;
     infra::BoundedString::WithStorage<16> url("hostname/path");

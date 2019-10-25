@@ -500,16 +500,14 @@ namespace services
         }
     }
 
-    WebSocketClientFactorySingleConnection::WebSocketClientFactorySingleConnection(ConnectionFactoryWithNameResolver& connectionFactory,
-        hal::SynchronousRandomDataGenerator& randomDataGenerator, const Creators& creators)
-        : connectionFactory(connectionFactory)
-        , randomDataGenerator(randomDataGenerator)
+    WebSocketClientFactorySingleConnection::WebSocketClientFactorySingleConnection(hal::SynchronousRandomDataGenerator& randomDataGenerator, const Creators& creators)
+        : randomDataGenerator(randomDataGenerator)
         , creators(creators)
     {}
 
     void WebSocketClientFactorySingleConnection::Connect(WebSocketClientObserverFactory& factory)
     {
-        initiation.Emplace(factory, connectionFactory, static_cast<WebSocketClientInitiationResult&>(*this), randomDataGenerator, creators);
+        initiation.Emplace(factory, static_cast<WebSocketClientInitiationResult&>(*this), randomDataGenerator, creators);
     }
 
     void WebSocketClientFactorySingleConnection::CancelConnect(WebSocketClientObserverFactory& factory, const infra::Function<void()>& onDone)
@@ -540,14 +538,12 @@ namespace services
 
     void WebSocketClientFactorySingleConnection::InitiationCancelled()
     {
-        auto& factory = initiation->Factory();
         initiation = infra::none;
     }
 
-    WebSocketClientFactorySingleConnection::WebSocketClientInitiation::WebSocketClientInitiation(WebSocketClientObserverFactory& clientObserverFactory, ConnectionFactoryWithNameResolver& connectionFactory,
+    WebSocketClientFactorySingleConnection::WebSocketClientInitiation::WebSocketClientInitiation(WebSocketClientObserverFactory& clientObserverFactory,
         WebSocketClientInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator, const Creators& creators)
         : clientObserverFactory(clientObserverFactory)
-        , connectionFactory(connectionFactory)
         , result(result)
         , randomDataGenerator(randomDataGenerator)
         , initiationClient(creators.httpClientInitiationCreator, clientObserverFactory, *this, randomDataGenerator)
