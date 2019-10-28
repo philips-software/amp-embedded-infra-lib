@@ -214,6 +214,8 @@ namespace services
 
         WebSocketClientFactorySingleConnection(hal::SynchronousRandomDataGenerator& randomDataGenerator, const Creators& creators);
 
+        void Stop(const infra::Function<void()>& onDone);
+
         // Implementation of WebSocketClientConnector
         virtual void Connect(WebSocketClientObserverFactory& factory) override;
         virtual void CancelConnect(WebSocketClientObserverFactory& factory, const infra::Function<void()>& onDone) override;

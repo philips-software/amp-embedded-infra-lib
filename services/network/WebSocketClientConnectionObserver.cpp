@@ -505,6 +505,18 @@ namespace services
         , creators(creators)
     {}
 
+    void WebSocketClientFactorySingleConnection::Stop(const infra::Function<void()>& onDone)
+    {
+        if (!webSocket.Allocatable())
+        {
+            webSocket.OnAllocatable(onDone);
+            if (webSocket)
+                webSocket->Abort();
+        }
+        else
+            onDone();
+    }
+
     void WebSocketClientFactorySingleConnection::Connect(WebSocketClientObserverFactory& factory)
     {
         initiation.Emplace(factory, static_cast<WebSocketClientInitiationResult&>(*this), randomDataGenerator, creators);
