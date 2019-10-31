@@ -14,7 +14,6 @@ namespace services
     class MqttClientImpl
         : public ConnectionObserver
         , public MqttClient
-        , public infra::EnableSharedFromThis<MqttClientImpl>
     {
     public:
         MqttClientImpl(MqttClientObserverFactory& factory, infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password, infra::Duration operationTimeout = std::chrono::seconds(30));

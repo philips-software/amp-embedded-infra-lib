@@ -95,7 +95,9 @@ namespace services
 
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::Close()
     {
-        Connection::GetObserver().Close();
+        if (!invokedClose)
+            Connection::GetObserver().Close();
+        invokedClose = true;
     }
 
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::Abort()
@@ -166,20 +168,23 @@ namespace services
         , clientFactory(clientFactory)
         , claimer(connectionFactory.mutex.Resource())
     {
-        connectionFactory.connectionFactory.Connect(*this);
+        connectionFactory.mutex.RequestCloseConnection();
+
+        claimer.Claim([this]()
+        {
+            this->connectionFactory.connectionFactory.Connect(*this);
+        });
     }
 
     bool ExclusiveConnectionFactory::Connector::CancelConnect(ClientConnectionObserverFactory& factory)
     {
         if (&factory == &clientFactory)
         {
-            if (claimer.IsQueued())
-                claimer.Release();
-            else
-            {
+            if (!claimer.IsQueued() && createdObserver == nullptr)
                 connectionFactory.connectionFactory.CancelConnect(*this);
-                return true;
-            }
+
+            claimer.Release();
+            return true;
         }
 
         return false;
@@ -197,18 +202,12 @@ namespace services
 
     void ExclusiveConnectionFactory::Connector::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver)
     {
-        connectionFactory.mutex.RequestCloseConnection();
-
-        auto created = createdObserver.Clone();
-        claimer.Claim([this, created]()
+        this->createdObserver = std::move(createdObserver);
+        clientFactory.ConnectionEstablished([this](infra::SharedPtr<ConnectionObserver> connectionObserver)
         {
-            this->createdObserver = created;
-            clientFactory.ConnectionEstablished([this](infra::SharedPtr<ConnectionObserver> connectionObserver)
-            {
-                this->createdObserver(connectionFactory.mutex.CreateConnection(std::move(claimer), connectionObserver, connectionFactory.cancelConnectionOnNewRequest));
+            this->createdObserver(connectionFactory.mutex.CreateConnection(std::move(claimer), connectionObserver, connectionFactory.cancelConnectionOnNewRequest));
 
-                connectionFactory.connectors.remove(*this);
-            });
+            connectionFactory.connectors.remove(*this);
         });
     }
 

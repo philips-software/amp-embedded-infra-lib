@@ -212,8 +212,9 @@ namespace services
                 HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)>& httpClientInitiationCreator;
         };
 
-        WebSocketClientFactorySingleConnection(ConnectionFactoryWithNameResolver& connectionFactory,
-            hal::SynchronousRandomDataGenerator& randomDataGenerator, const Creators& creators);
+        WebSocketClientFactorySingleConnection(hal::SynchronousRandomDataGenerator& randomDataGenerator, const Creators& creators);
+
+        void Stop(const infra::Function<void()>& onDone);
 
         // Implementation of WebSocketClientConnector
         virtual void Connect(WebSocketClientObserverFactory& factory) override;
@@ -230,7 +231,7 @@ namespace services
             : private HttpClientWebSocketInitiationResult
         {
         public:
-            WebSocketClientInitiation(WebSocketClientObserverFactory& clientObserverFactory, ConnectionFactoryWithNameResolver& connectionFactory,
+            WebSocketClientInitiation(WebSocketClientObserverFactory& clientObserverFactory,
                 WebSocketClientInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator, const Creators& creators);
 
             void CancelConnect(const infra::Function<void()>& onDone);
@@ -243,7 +244,6 @@ namespace services
 
         private:
             WebSocketClientObserverFactory& clientObserverFactory;
-            ConnectionFactoryWithNameResolver& connectionFactory;
             WebSocketClientInitiationResult& result;
             hal::SynchronousRandomDataGenerator& randomDataGenerator;
 
@@ -255,7 +255,6 @@ namespace services
     private:
         infra::Optional<WebSocketClientInitiation> initiation;
         infra::NotifyingSharedOptional<WebSocketClientConnectionObserver> webSocket;
-        ConnectionFactoryWithNameResolver& connectionFactory;
         hal::SynchronousRandomDataGenerator& randomDataGenerator;
         Creators creators;
     };

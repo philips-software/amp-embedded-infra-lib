@@ -219,7 +219,8 @@ namespace services
     void ConnectionLwIp::StreamReaderLwIp::ConsumeRead()
     {
         uint16_t sizeRead = static_cast<uint16_t>(ConstructSaveMarker());
-        tcp_recved(connection.control, sizeRead);
+        if (connection.control != nullptr)
+            tcp_recved(connection.control, sizeRead);
         connection.receiveBuffer.erase(connection.receiveBuffer.begin(), connection.receiveBuffer.begin() + sizeRead);
         Rewind(0);
     }
