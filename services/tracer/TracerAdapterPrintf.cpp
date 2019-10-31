@@ -81,7 +81,7 @@ namespace services
                 break;
             case 's':
             {
-                auto* s = reinterpret_cast<const char*>(va_arg(*args, int32_t));
+                auto* s = va_arg(*args, char*);
                 tracer.Continue() << (s != nullptr ? s : "(null)");
                 break;
             }
