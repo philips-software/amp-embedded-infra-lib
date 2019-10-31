@@ -53,9 +53,10 @@ namespace services
             w.padding = '0';
             format++;
         }
+
         while (*format > '0' && *format <= '9')
         {
-            w.width = w.width*10 + *format - '0';
+            w.width = w.width * 10 + *format - '0';
             ++format;
         }
 
@@ -65,6 +66,7 @@ namespace services
             while (*format > '0' && *format <= '9')
                 ++format;
         }
+
         return w;
     }
 
