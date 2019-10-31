@@ -6,6 +6,11 @@ env:
     - CMAKE_BUILD_PARALLEL_LEVEL=4
     - GTEST_COLOR=1
 
+# SonarQube needs an unshallow clone for some of its
+# functions to work properly.
+git:
+  depth: false
+
 matrix:
   include:
     - os: windows
