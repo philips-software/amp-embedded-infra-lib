@@ -78,10 +78,11 @@ namespace services
         size_t keySizeInBits = mbedtls_pk_get_bitlen(&privateKey);
         int32_t exponent = ExtractExponent(*rsaContext);
 
-        mbedtls_rsa_gen_key(rsaContext, &RandomDataGeneratorWrapper, &randomDataGenerator, keySizeInBits, exponent);
+        int result = mbedtls_rsa_gen_key(rsaContext, &RandomDataGeneratorWrapper, &randomDataGenerator, keySizeInBits, exponent);
+        really_assert(result == 0);
     }
 
-    void CertificatesMbedTls::WritePrivateKey(infra::BoundedString outputBuffer)
+    void CertificatesMbedTls::WritePrivateKey(infra::BoundedString& outputBuffer)
     {
         infra::ByteOutputStream::WithStorage<2048> contentsStream;
         infra::Asn1Formatter formatter(contentsStream);
@@ -109,7 +110,7 @@ namespace services
         stream << '\0';
     }
 
-    void CertificatesMbedTls::WriteOwnCertificate(infra::BoundedString outputBuffer, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    void CertificatesMbedTls::WriteOwnCertificate(infra::BoundedString& outputBuffer, hal::SynchronousRandomDataGenerator& randomDataGenerator)
     {
         infra::ByteOutputStream::WithStorage<2048> contentsStream;
 
