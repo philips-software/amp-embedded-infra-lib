@@ -1,6 +1,6 @@
 # EmbeddedInfraLib (EmIL)
 
-[![Build Status](https://travis-ci.com/philips-software/embeddedinfralib.svg?branch=develop)](https://travis-ci.com/philips-software/embeddedinfralib) [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://travis-ci.com/philips-software/embeddedinfralib.svg?branch=develop)](https://travis-ci.com/philips-software/embeddedinfralib) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=philips-software.embeddedinfralib&metric=alert_status)](https://sonarcloud.io/dashboard?id=philips-software.embeddedinfralib) [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 
 **Description**: EmbeddedInfraLib is a set of C++ libraries and headers that provide heap-less, STL like, infrastructure for embedded software development.
 

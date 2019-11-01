@@ -73,7 +73,7 @@ namespace application
         {
             std::string basename = google::protobuf::compiler::cpp::StripProto(file->name()) + "Services.java";
 
-            JavaEchoGenerator(generatorContext, basename, file);
+            JavaEchoGenerator generator(generatorContext, basename, file);
 
             return true;
         }

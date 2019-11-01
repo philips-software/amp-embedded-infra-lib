@@ -19,8 +19,8 @@ namespace services
         // Implementation of ClientConnectionObserverFactory
         virtual services::IPAddress Address() const override;
         virtual uint16_t Port() const override;
-        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver);
-        virtual void ConnectionFailed(ConnectFailReason reason);
+        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
+        virtual void ConnectionFailed(ConnectFailReason reason) override;
 
     private:
         services::ConnectionFactory& connectionFactory;

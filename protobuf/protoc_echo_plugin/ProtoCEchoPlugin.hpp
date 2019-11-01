@@ -56,8 +56,8 @@ namespace application
         virtual void GenerateClass(Entities& formatter) override;
         virtual void GenerateConstructors() override;
         virtual void GenerateFunctions() override;
-        virtual void GenerateNestedMessageForwardDeclarations();
-        virtual void GenerateNestedMessages();
+        virtual void GenerateNestedMessageForwardDeclarations() override;
+        virtual void GenerateNestedMessages() override;
         virtual void GenerateFieldDeclarations() override;
         virtual void GenerateMaxMessageSize() override;
         virtual std::string SerializerBody() override;

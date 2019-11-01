@@ -53,9 +53,10 @@ namespace services
             w.padding = '0';
             format++;
         }
+
         while (*format > '0' && *format <= '9')
         {
-            w.width = w.width*10 + *format - '0';
+            w.width = w.width * 10 + *format - '0';
             ++format;
         }
 
@@ -65,6 +66,7 @@ namespace services
             while (*format > '0' && *format <= '9')
                 ++format;
         }
+
         return w;
     }
 
@@ -81,7 +83,7 @@ namespace services
                 break;
             case 's':
             {
-                auto* s = reinterpret_cast<const char*>(va_arg(*args, int32_t));
+                auto* s = va_arg(*args, char*);
                 tracer.Continue() << (s != nullptr ? s : "(null)");
                 break;
             }

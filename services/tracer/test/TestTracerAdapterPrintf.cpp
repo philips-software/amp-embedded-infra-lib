@@ -123,6 +123,6 @@ TEST_F(TracerAdapterPrintfTest, print_int_in_hex_with_X_to_tracer)
 
 TEST_F(TracerAdapterPrintfTest, print_multiple_values)
 {
-    Print("%u%u%u", 100, 200, 300);
-    EXPECT_EQ("100200300", stream.Storage());
+    Print("%u%c%s", 100, '2', "300");
+    EXPECT_EQ("1002300", stream.Storage());
 }

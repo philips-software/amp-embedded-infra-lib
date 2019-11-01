@@ -35,7 +35,7 @@ namespace services
         virtual infra::SharedPtr<DatagramExchange> Connect(DatagramExchangeObserver& observer, uint16_t localPort, UdpSocket remote) override;
 
     protected:
-        virtual void RequestExecution();
+        virtual void RequestExecution() override;
         virtual void Idle() override;
 
     private:
