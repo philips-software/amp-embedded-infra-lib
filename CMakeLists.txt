@@ -15,6 +15,10 @@ include("${CCOLA_DIR}/ccola.inc")
 
 ccola_project(emil VERSION 1.3.0)
 
+    if(CCOLA_ENABLE_COVERAGE)
+        ccola_enable_coverage_flags()
+    endif()
+
     ccola_add_version_header()
 
     ccola_subdirectories(
