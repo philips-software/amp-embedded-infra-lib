@@ -1,6 +1,8 @@
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS true)		# Allows endif() without repeating the predicate of the if-statement
 cmake_policy(SET CMP0005 NEW)					# Automatic escaping of preprocessor definitions
 
+option(CCOLA_ENABLE_COVERAGE "Enable compilation flags for code coverage" OFF)
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 if(NOT CMAKE_CONFIGURATION_TYPES)
