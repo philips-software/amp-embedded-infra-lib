@@ -516,7 +516,7 @@ namespace services
     }
 
     MqttClientConnectorImpl::MqttClientConnectorImpl(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password,
-        infra::BoundedConstString address, uint16_t port, services::ConnectionFactoryWithNameResolver& connectionFactory)
+        infra::BoundedConstString hostname, uint16_t port, services::ConnectionFactoryWithNameResolver& connectionFactory)
         : hostname(hostname)
         , port(port)
         , connectionFactory(connectionFactory)

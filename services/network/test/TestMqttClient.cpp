@@ -72,6 +72,9 @@ public:
         , connectionPtr(infra::UnOwnedSharedPtr(connection))
         , clientPtr(infra::UnOwnedSharedPtr(client))
     {
+        EXPECT_EQ(connector.Hostname(), "127.0.0.1");
+        EXPECT_EQ(connector.Port(), 1234);
+
         EXPECT_CALL(connectionFactory, Connect(testing::Ref(connector)));
         connector.Connect(factory);
     }
