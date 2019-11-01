@@ -164,7 +164,7 @@ namespace services
         public:
             using StateBase::StateBase;
 
-            virtual void ClosingConnection();
+            virtual void ClosingConnection() override;
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
             virtual void HandleDataReceived() override;
 

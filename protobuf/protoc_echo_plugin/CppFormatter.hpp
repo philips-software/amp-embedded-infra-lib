@@ -141,7 +141,7 @@ namespace application
         virtual void PrintHeader(google::protobuf::io::Printer& printer) const override;
         virtual void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
 
-        virtual bool HasSourceCode() const;
+        virtual bool HasSourceCode() const override;
 
     private:
         std::string Parameters() const;
