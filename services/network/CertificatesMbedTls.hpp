@@ -24,8 +24,8 @@ namespace services
         void Config(mbedtls_ssl_config& sslConfig);
 
         void GenerateNewKey(hal::SynchronousRandomDataGenerator& randomDataGenerator);
-        void WritePrivateKey(infra::BoundedString outputBuffer);
-        void WriteOwnCertificate(infra::BoundedString outputBuffer, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        void WritePrivateKey(infra::BoundedString& outputBuffer);
+        void WriteOwnCertificate(infra::BoundedString& outputBuffer, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
         void UpdateValidToDate();
 
