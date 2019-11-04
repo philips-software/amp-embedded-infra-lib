@@ -171,9 +171,13 @@ namespace services
         virtual void ConnectionFailed(ConnectFailReason reason) override;
 
     private:
+        void CancelConnect();
+
+    private:
         friend class ConnectionFactoryMbedTls;
 
         ConnectionFactoryMbedTls& factory;
+        ConnectionFactory& networkFactory;
         ClientConnectionObserverFactory& clientFactory;
     };
 

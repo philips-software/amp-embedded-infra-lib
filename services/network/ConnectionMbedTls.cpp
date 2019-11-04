@@ -398,6 +398,7 @@ namespace services
 
     ConnectionMbedTlsConnector::ConnectionMbedTlsConnector(ConnectionFactoryMbedTls& factory, ConnectionFactory& networkFactory, ClientConnectionObserverFactory& clientFactory)
         : factory(factory)
+        , networkFactory(networkFactory)
         , clientFactory(clientFactory)
     {
         networkFactory.Connect(*this);
@@ -437,6 +438,11 @@ namespace services
     {
         clientFactory.ConnectionFailed(reason);
         factory.Remove(*this);
+    }
+
+    void ConnectionMbedTlsConnector::CancelConnect()
+    {
+        networkFactory.CancelConnect(*this);
     }
 
     ConnectionFactoryMbedTls::ConnectionFactoryMbedTls(AllocatorConnectionMbedTls& connectionAllocator,
@@ -494,6 +500,7 @@ namespace services
             for (auto& connector : connectors)
                 if (&connector.clientFactory == &connectionObserverFactory)
                 {
+                    connector.CancelConnect();
                     connectors.remove(connector);
                     return;
                 }
