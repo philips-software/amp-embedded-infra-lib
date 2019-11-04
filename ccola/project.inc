@@ -283,4 +283,21 @@ macro(ccola_get_executable_path path target)
 endmacro()
 
 
+macro(ccola_enable_coverage_flags)
+
+	if(${CCOLA_ARCH} STREQUAL "linux")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
+
+        if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+            link_libraries(gcov)
+        else()
+            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
+        endif()
+
+	endif()
+
+endmacro()
+
+
 define_property(TARGET PROPERTY ccola_location BRIEF_DOCS docs FULL_DOCS docs)
