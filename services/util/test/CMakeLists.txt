@@ -15,6 +15,7 @@ ccola_component(util_test gmock_test)
         TestInverseLogicPin.cpp
         TestLowPowerSerialCommunication.cpp
         TestLowPowerSpiMaster.cpp
+        TestMemoryMappedStaticConfiguration.cpp
         TestRepeatingButton.cpp
         TestSignalLed.cpp
         TestSpiMasterWithChipSelect.cpp
