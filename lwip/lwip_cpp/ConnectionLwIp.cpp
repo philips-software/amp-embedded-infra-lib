@@ -231,6 +231,7 @@ namespace services
     {
         tcp_pcb* pcb = tcp_new();
         assert(pcb != nullptr);
+        ip_set_option(pcb, SOF_REUSEADDR);
         if (versions == IPVersions::both)
             err_t err = tcp_bind(pcb, IP_ADDR_ANY, port);
         else if (versions == IPVersions::ipv4)
