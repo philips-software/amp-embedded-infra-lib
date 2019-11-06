@@ -61,7 +61,8 @@ namespace services
 
     void ConnectionLwIp::AbortAndDestroy()
     {
-        tcp_abort(control); // Err is called as a result, and this callback destroys this connection object
+        if (control)
+            tcp_abort(control); // Err is called as a result, and this callback destroys this connection object
     }
 
     IPAddress ConnectionLwIp::IpAddress() const
