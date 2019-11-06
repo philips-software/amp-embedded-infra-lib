@@ -135,7 +135,8 @@ namespace services
             }
         }
 
-        cleanupTimer.Start(cleanupTime, [this]() { Cleanup(); });
+        if (cleanupTime != infra::TimePoint::max())
+            cleanupTimer.Start(cleanupTime, [this]() { Cleanup(); });
     }
 
     NameResolverCache::ActiveLookup::ActiveLookup(NameResolverCache& nameResolverCache, NameResolverResult& resolving)
