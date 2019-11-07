@@ -20,6 +20,7 @@ namespace services
         virtual void BodyAvailable(infra::SharedPtr<infra::StreamReader>&& reader) = 0;
         virtual void BodyComplete() = 0;
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) {}
+        virtual void FillContent(infra::StreamWriter& writer) const {}
     };
 
     class HttpClientObserverFactory
@@ -54,10 +55,19 @@ namespace services
         virtual void Head(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) = 0;
         virtual void Connect(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) = 0;
         virtual void Options(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) = 0;
+
+        // Full content is given as an argument
         virtual void Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) = 0;
+        // With this overload, the size of the content is given, and the observer receives repeated SendStreamAvailable calls until it provides
+        // enough content to fill the content size
         virtual void Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) = 0;
+        // No content is given, but the observer receives multiple FillContent calls. Each invocation must fill out the exact same contents.
+        virtual void Post(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) = 0;
+
         virtual void Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) = 0;
         virtual void Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) = 0;
+        virtual void Put(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) = 0;
+
         virtual void Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) = 0;
         virtual void Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) = 0;
 

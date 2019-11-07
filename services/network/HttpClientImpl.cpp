@@ -1,4 +1,5 @@
 #include "services/network/HttpClientImpl.hpp"
+#include "infra/stream/CountingOutputStream.hpp"
 #include "infra/stream/StringInputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/util/Tokenizer.hpp"
@@ -82,6 +83,8 @@ namespace services
     HttpClientImpl::HttpClientImpl(infra::BoundedConstString hostname)
         : hostname(hostname)
         , bodyReaderAccess(infra::emptyFunction)
+        , sendingState(infra::InPlaceType<SendingStateRequest>(), *this)
+        , nextState(infra::InPlaceType<SendingStateRequest>(), *this)
     {}
 
     void HttpClientImpl::AttachObserver(const infra::SharedPtr<HttpClientObserver>& observer)
@@ -120,6 +123,11 @@ namespace services
         ExecuteRequestWithContent(HttpVerb::post, requestTarget, contentSize, headers);
     }
 
+    void HttpClientImpl::Post(infra::BoundedConstString requestTarget, HttpHeaders headers)
+    {
+        ExecuteRequestWithContent(HttpVerb::post, requestTarget, headers);
+    }
+
     void HttpClientImpl::Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
     {
         ExecuteRequestWithContent(HttpVerb::put, requestTarget, content, headers);
@@ -128,6 +136,11 @@ namespace services
     void HttpClientImpl::Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers)
     {
         ExecuteRequestWithContent(HttpVerb::put, requestTarget, contentSize, headers);
+    }
+
+    void HttpClientImpl::Put(infra::BoundedConstString requestTarget, HttpHeaders headers)
+    {
+        ExecuteRequestWithContent(HttpVerb::put, requestTarget, headers);
     }
 
     void HttpClientImpl::Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
@@ -157,10 +170,7 @@ namespace services
 
     void HttpClientImpl::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        if (forwardingStream)
-            ForwardStream(std::move(writer));
-        else
-            WriteRequest(std::move(writer));
+        sendingState->SendStreamAvailable(std::move(writer));
     }
 
     void HttpClientImpl::DataReceived()
@@ -201,40 +211,9 @@ namespace services
         observer->StatusAvailable(code);
     }
 
-    void HttpClientImpl::WriteRequest(infra::SharedPtr<infra::StreamWriter>&& writer)
+    void HttpClientImpl::ExpectResponse()
     {
-        infra::TextOutputStream::WithErrorPolicy stream(*writer);
-        request->Write(stream);
-        request = infra::none;
-        writer = nullptr;
-
-        RequestForwardStreamOrExpectResponse();
-    }
-
-    void HttpClientImpl::ForwardStream(infra::SharedPtr<infra::StreamWriter>&& writer)
-    {
-        forwardStreamPtr = std::move(writer);
-        auto available = forwardStreamPtr->Available();
-        forwardStreamAccess.SetAction([this, available]()
-        {
-            streamingContentSize -= available - forwardStreamPtr->Available();
-
-            forwardStreamPtr = nullptr;
-
-            RequestForwardStreamOrExpectResponse();
-        });
-
-        observer->SendStreamAvailable(forwardStreamAccess.MakeShared(*forwardStreamPtr));
-    }
-
-    void HttpClientImpl::RequestForwardStreamOrExpectResponse()
-    {
-        forwardingStream = streamingContentSize != 0;
-
-        if (forwardingStream)
-            ConnectionObserver::Subject().RequestSendStream(std::min(streamingContentSize, ConnectionObserver::Subject().MaxSendStreamSize()));
-        else
-            response.Emplace(*this);
+        response.Emplace(*this);
     }
 
     void HttpClientImpl::HandleData()
@@ -309,8 +288,23 @@ namespace services
     void HttpClientImpl::ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, std::size_t contentSize, const HttpHeaders headers)
     {
         request.Emplace(verb, hostname, requestTarget, contentSize, headers);
-        streamingContentSize = contentSize;
+        nextState.Emplace<SendingStateForwardSendStream>(*this, contentSize);
         ConnectionObserver::Subject().RequestSendStream(request->Size());
+    }
+
+    void HttpClientImpl::ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, const HttpHeaders headers)
+    {
+        auto contentSize = ReadContentSizeFromObserver();
+        request.Emplace(verb, hostname, requestTarget, contentSize, headers);
+        nextState.Emplace<SendingStateForwardFillContent>(*this, contentSize);
+        ConnectionObserver::Subject().RequestSendStream(request->Size());
+    }
+
+    uint32_t HttpClientImpl::ReadContentSizeFromObserver() const
+    {
+        infra::DataOutputStream::WithWriter<infra::CountingStreamWriter> stream;
+        GetObserver().FillContent(stream.Writer());
+        return stream.Writer().Processed();
     }
 
     void HttpClientImpl::AbortAndDestroy()
@@ -446,4 +440,122 @@ namespace services
         : reader(reader)
         , limitedReader(*reader, contentLength)
     {}
+
+    HttpClientImpl::SendingState::SendingState(HttpClientImpl& client)
+        : client(client)
+    {}
+
+    void HttpClientImpl::SendingState::NextState()
+    {
+        auto& client = this->client;
+
+        client.sendingState = client.nextState;
+        client.nextState.Emplace<SendingStateRequest>(client);
+        client.sendingState->Activate();
+    }
+
+    HttpClientImpl::SendingStateRequest::SendingStateRequest(HttpClientImpl& client)
+        : SendingState(client)
+    {}
+
+    void HttpClientImpl::SendingStateRequest::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+    {
+        infra::TextOutputStream::WithErrorPolicy stream(*writer);
+        client.request->Write(stream);
+        client.request = infra::none;
+        writer = nullptr;
+
+        NextState();
+    }
+
+    void HttpClientImpl::SendingStateRequest::Activate()
+    {
+        client.ExpectResponse();
+    }
+
+    HttpClientImpl::SendingStateForwardSendStream::SendingStateForwardSendStream(const SendingStateForwardSendStream& other)
+        : SendingState(other)
+        , contentSize(other.contentSize)
+    {}
+
+    HttpClientImpl::SendingStateForwardSendStream::SendingStateForwardSendStream(HttpClientImpl& client, std::size_t contentSize)
+        : SendingState(client)
+        , contentSize(contentSize)
+    {}
+
+    void HttpClientImpl::SendingStateForwardSendStream::Activate()
+    {
+        if (contentSize != 0)
+            client.ConnectionObserver::Subject().RequestSendStream(std::min(contentSize, client.ConnectionObserver::Subject().MaxSendStreamSize()));
+        else
+            NextState();
+    }
+
+    void HttpClientImpl::SendingStateForwardSendStream::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+    {
+        forwardStreamPtr = std::move(writer);
+        auto available = forwardStreamPtr->Available();
+        forwardStreamAccess.SetAction([this, available]()
+        {
+            contentSize -= available - forwardStreamPtr->Available();
+
+            forwardStreamPtr = nullptr;
+
+            Activate();
+        });
+
+        client.observer->SendStreamAvailable(forwardStreamAccess.MakeShared(*forwardStreamPtr));
+    }
+
+    HttpClientImpl::SendingStateForwardFillContent::SendingStateForwardFillContent(HttpClientImpl& client, std::size_t contentSize)
+        : SendingState(client)
+        , contentSize(contentSize)
+    {}
+
+    void HttpClientImpl::SendingStateForwardFillContent::Activate()
+    {
+        if (contentSize != 0)
+            client.ConnectionObserver::Subject().RequestSendStream(std::min(contentSize, client.ConnectionObserver::Subject().MaxSendStreamSize()));
+        else
+            NextState();
+    }
+
+    void HttpClientImpl::SendingStateForwardFillContent::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+    {
+        WindowWriter windowWriter(*writer, processed, writer->Available());
+        client.observer->FillContent(windowWriter);
+        contentSize -= windowWriter.Processed();
+        processed += windowWriter.Processed();
+        writer = nullptr;
+        Activate();
+    }
+
+    HttpClientImpl::SendingStateForwardFillContent::WindowWriter::WindowWriter(infra::StreamWriter& writer, uint32_t start, uint32_t limit)
+        : writer(writer)
+        , start(start)
+        , limit(limit)
+    {}
+
+    std::size_t HttpClientImpl::SendingStateForwardFillContent::WindowWriter::Processed() const
+    {
+        return processed;
+    }
+
+    void HttpClientImpl::SendingStateForwardFillContent::WindowWriter::Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy)
+    {
+        auto discard = std::min(range.size(), start);
+        range = infra::Head(infra::DiscardHead(range, discard), limit);
+        start -= discard;
+
+        if (!range.empty())
+        {
+            writer.Insert(range, errorPolicy);
+            processed += range.size();
+        }
+    }
+
+    std::size_t HttpClientImpl::SendingStateForwardFillContent::WindowWriter::Available() const
+    {
+        return std::numeric_limits<std::size_t>::max();
+    }
 }

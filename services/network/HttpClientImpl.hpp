@@ -2,6 +2,7 @@
 #define SERVICES_HTTP_CLIENT_IMPL_HPP
 
 #include "infra/util/Optional.hpp"
+#include "infra/util/PolymorphicVariant.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "infra/stream/CountingInputStream.hpp"
 #include "infra/stream/LimitedInputStream.hpp"
@@ -44,14 +45,16 @@ namespace services
         void AttachObserver(const infra::SharedPtr<HttpClientObserver>& observer);
 
         // Implementation of HttpClient
-        virtual void Get(infra::BoundedConstString requestTarget, HttpHeaders headers) override;
-        virtual void Head(infra::BoundedConstString requestTarget, HttpHeaders headers) override;
-        virtual void Connect(infra::BoundedConstString requestTarget, HttpHeaders headers) override;
-        virtual void Options(infra::BoundedConstString requestTarget, HttpHeaders headers) override;
-        virtual void Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers) override;
-        virtual void Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers) override;
+        virtual void Get(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        virtual void Head(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        virtual void Connect(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        virtual void Options(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        virtual void Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        virtual void Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) override;
+        virtual void Post(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         virtual void Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
         virtual void Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) override;
+        virtual void Put(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         virtual void Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
         virtual void Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
         virtual void AckReceived() override;
@@ -66,11 +69,9 @@ namespace services
 
     protected:
         virtual void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine);
-        virtual void WriteRequest(infra::SharedPtr<infra::StreamWriter>&& writer);
 
     private:
-        void ForwardStream(infra::SharedPtr<infra::StreamWriter>&& writer);
-        void RequestForwardStreamOrExpectResponse();
+        void ExpectResponse();
         void HandleData();
         void BodyReceived();
         void BodyReaderDestroyed();
@@ -78,6 +79,8 @@ namespace services
         void ExecuteRequest(HttpVerb verb, infra::BoundedConstString requestTarget, const HttpHeaders headers);
         void ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers);
         void ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, std::size_t contentSize, const HttpHeaders headers);
+        void ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, const HttpHeaders headers);
+        uint32_t ReadContentSizeFromObserver() const;
         void AbortAndDestroy();
 
     private:
@@ -119,6 +122,81 @@ namespace services
             infra::CountingStreamReader countingReader{ limitedReader };
         };
 
+        class SendingState
+        {
+        public:
+            SendingState(HttpClientImpl& client);
+            virtual ~SendingState() = default;
+
+            virtual void Activate() = 0;
+            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) = 0;
+
+        protected:
+            void NextState();
+
+        protected:
+            HttpClientImpl& client;
+        };
+
+        class SendingStateRequest
+            : public SendingState
+        {
+        public:
+            SendingStateRequest(HttpClientImpl& client);
+
+            virtual void Activate() override;
+            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        };
+
+        class SendingStateForwardSendStream
+            : public SendingState
+        {
+        public:
+            SendingStateForwardSendStream(const SendingStateForwardSendStream& other);
+            SendingStateForwardSendStream(HttpClientImpl& client, std::size_t contentSize);
+
+            virtual void Activate() override;
+            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+
+        private:
+            std::size_t contentSize;
+            infra::AccessedBySharedPtr forwardStreamAccess;
+            infra::SharedPtr<infra::StreamWriter> forwardStreamPtr;
+        };
+
+        class SendingStateForwardFillContent
+            : public SendingState
+        {
+        public:
+            SendingStateForwardFillContent(HttpClientImpl& client, std::size_t contentSize);
+
+            virtual void Activate() override;
+            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+
+        private:
+            class WindowWriter
+                : public infra::StreamWriter
+            {
+            public:
+                WindowWriter(infra::StreamWriter& writer, std::size_t start, std::size_t limit);
+
+                std::size_t Processed() const;
+
+                virtual void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
+                virtual std::size_t Available() const override;
+
+            private:
+                infra::StreamWriter& writer;
+                std::size_t start;
+                std::size_t limit;
+                std::size_t processed = 0;
+            };
+
+        private:
+            std::size_t contentSize;
+            std::size_t processed = 0;
+        };
+
     protected:
         infra::SharedPtr<HttpClientObserver> observer;
         infra::Optional<HttpRequestFormatter> request;
@@ -129,10 +207,8 @@ namespace services
         infra::Optional<uint32_t> contentLength;
         infra::Optional<BodyReader> bodyReader;
         infra::AccessedBySharedPtr bodyReaderAccess;
-        std::size_t streamingContentSize = 0;
-        bool forwardingStream = false;
-        infra::AccessedBySharedPtr forwardStreamAccess;
-        infra::SharedPtr<infra::StreamWriter> forwardStreamPtr;
+        infra::PolymorphicVariant<SendingState, SendingStateRequest, SendingStateForwardSendStream, SendingStateForwardFillContent> sendingState;
+        infra::PolymorphicVariant<SendingState, SendingStateRequest, SendingStateForwardSendStream, SendingStateForwardFillContent> nextState;
     };
 
     template<class HttpClient = HttpClientImpl, class... Args>

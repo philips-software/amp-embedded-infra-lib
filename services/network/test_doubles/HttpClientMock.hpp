@@ -22,6 +22,7 @@ namespace services
         MOCK_METHOD1(BodyAvailable, void(infra::SharedPtr<infra::StreamReader>&& reader));
         MOCK_METHOD0(BodyComplete, void());
         MOCK_METHOD1(SendStreamAvailable, void(infra::SharedPtr<infra::StreamWriter>&& writer));
+        MOCK_CONST_METHOD1(FillContent, void(infra::StreamWriter& writer));
     };
 
     class HttpClientObserverFactoryMock
@@ -44,8 +45,10 @@ namespace services
         MOCK_METHOD2(Options, void(infra::BoundedConstString, HttpHeaders));
         MOCK_METHOD3(Post, void(infra::BoundedConstString, infra::BoundedConstString, HttpHeaders));
         MOCK_METHOD3(Post, void(infra::BoundedConstString, std::size_t, HttpHeaders));
+        MOCK_METHOD2(Post, void(infra::BoundedConstString, HttpHeaders));
         MOCK_METHOD3(Put, void(infra::BoundedConstString, infra::BoundedConstString, HttpHeaders));
         MOCK_METHOD3(Put, void(infra::BoundedConstString, std::size_t, HttpHeaders));
+        MOCK_METHOD2(Put, void(infra::BoundedConstString, HttpHeaders));
         MOCK_METHOD3(Patch, void(infra::BoundedConstString, infra::BoundedConstString, HttpHeaders));
         MOCK_METHOD3(Delete, void(infra::BoundedConstString, infra::BoundedConstString, HttpHeaders));
         

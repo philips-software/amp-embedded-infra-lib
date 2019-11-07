@@ -710,3 +710,49 @@ TEST_F(HttpClientTest, Post_request_with_large_body_is_executed)
     ExecuteAllActions();
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n")));
 }
+
+TEST_F(HttpClientTest, Put_request_with_unknown_body_size_is_executed)
+{
+    Connect();
+
+    EXPECT_CALL(client, FillContent(testing::_)).WillRepeatedly(testing::Invoke([this](infra::StreamWriter& writer)
+    {
+        infra::TextOutputStream::WithErrorPolicy stream(writer);
+        stream << "data";
+    }));
+
+    client.Subject().Put("/api/thing");
+    ExecuteAllActions();
+
+    EXPECT_EQ("PUT /api/thing HTTP/1.1\r\nhost:localhost\r\ncontent-length:4\r\n\r\ndata", connection.SentDataAsString());
+
+    EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
+    EXPECT_CALL(connection, AckReceivedMock());
+    EXPECT_CALL(client, BodyComplete());
+    client.Subject().Get("/");
+    ExecuteAllActions();
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n")));
+}
+
+TEST_F(HttpClientTest, Post_request_with_unknown_body_size_is_executed)
+{
+    Connect();
+
+    EXPECT_CALL(client, FillContent(testing::_)).WillRepeatedly(testing::Invoke([this](infra::StreamWriter& writer)
+    {
+        infra::TextOutputStream::WithErrorPolicy stream(writer);
+        stream << "data";
+    }));
+
+    client.Subject().Post("/api/thing");
+    ExecuteAllActions();
+
+    EXPECT_EQ("POST /api/thing HTTP/1.1\r\nhost:localhost\r\ncontent-length:4\r\n\r\ndata", connection.SentDataAsString());
+    
+    EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
+    EXPECT_CALL(connection, AckReceivedMock());
+    EXPECT_CALL(client, BodyComplete());
+    client.Subject().Get("/");
+    ExecuteAllActions();
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n")));
+}
