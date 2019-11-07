@@ -19,7 +19,7 @@ namespace infra
         infra::TimePoint nextTrigger = NextTrigger();
         if (nextTrigger != infra::TimePoint::max())
         {
-            infra::Duration durationToNextNotification = std::max(NextTrigger() - systemTime, Duration());
+            auto durationToNextNotification = nextTrigger > systemTime ? nextTrigger - systemTime : Duration();
             ticksNextNotification = std::min(static_cast<uint32_t>((durationToNextNotification + resolution - Duration(1)) / resolution), std::numeric_limits<uint32_t>::max() / 2);
         }
         else
