@@ -68,15 +68,27 @@ namespace services
         };
 
         class StreamReaderLwIp
-            : public infra::BoundedDequeInputStreamReader
+            : public infra::StreamReaderWithRewinding
         {
         public:
             StreamReaderLwIp(ConnectionLwIp& connection);
 
             void ConsumeRead();
 
+            virtual void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
+            virtual uint8_t Peek(infra::StreamErrorPolicy& errorPolicy) override;
+            virtual infra::ConstByteRange ExtractContiguousRange(std::size_t max) override;
+            virtual infra::ConstByteRange PeekContiguousRange(std::size_t start) override;
+            virtual bool Empty() const override;
+            virtual std::size_t Available() const override;
+            virtual std::size_t ConstructSaveMarker() const override;
+            virtual void Rewind(std::size_t marker) override;
+
         private:
             ConnectionLwIp& connection;
+            std::size_t offset = 0;
+            pbuf* currentPbuf;
+            std::size_t offsetInCurrentPbuf;
         };
 
     private:
@@ -91,7 +103,8 @@ namespace services
         infra::BoundedDeque<infra::ConstByteRange>::WithMaxSize<tcpSndQueueLen> sendBuffers;
         infra::BoundedDeque<std::array<uint8_t, TCP_MSS>>::WithMaxSize<tcpSndQueueLen> sendMemoryPool;
 
-        infra::BoundedDeque<uint8_t>::WithMaxSize<tcpWnd> receiveBuffer;
+        pbuf* receivedData = nullptr;
+        std::size_t consumed = 0;
         bool dataReceivedScheduled = false;
     };
 

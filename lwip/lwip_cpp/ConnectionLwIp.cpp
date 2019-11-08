@@ -16,6 +16,9 @@ namespace services
 
     ConnectionLwIp::~ConnectionLwIp()
     {
+        if (receivedData != nullptr)
+            pbuf_free(receivedData);
+
         if (control)
         {
             tcp_pcb* c = control;
@@ -148,9 +151,10 @@ namespace services
     {
         if (p != nullptr)
         {
-            for (pbuf* q = p; q != nullptr; q = q->next)
-                receiveBuffer.insert(receiveBuffer.end(), reinterpret_cast<uint8_t*>(q->payload), reinterpret_cast<uint8_t*>(q->payload) + q->len);
-            pbuf_free(p);
+            if (receivedData == nullptr)
+                receivedData = p;
+            else
+                pbuf_cat(receivedData, p);
 
             if (!dataReceivedScheduled && HasObserver())
             {
@@ -213,17 +217,134 @@ namespace services
     }
 
     ConnectionLwIp::StreamReaderLwIp::StreamReaderLwIp(ConnectionLwIp& connection)
-        : infra::BoundedDequeInputStreamReader(connection.receiveBuffer)
-        , connection(connection)
+        : connection(connection)
+        , currentPbuf(connection.receivedData)
+        , offsetInCurrentPbuf(connection.consumed)
     {}
 
     void ConnectionLwIp::StreamReaderLwIp::ConsumeRead()
     {
-        uint16_t sizeRead = static_cast<uint16_t>(ConstructSaveMarker());
         if (connection.control != nullptr)
-            tcp_recved(connection.control, sizeRead);
-        connection.receiveBuffer.erase(connection.receiveBuffer.begin(), connection.receiveBuffer.begin() + sizeRead);
-        Rewind(0);
+            tcp_recved(connection.control, static_cast<uint16_t>(offset));
+
+        offset += connection.consumed;
+        while (offset != 0 && offset >= connection.receivedData->len)
+        {
+            offset -= connection.receivedData->len;
+            auto newReceivedData = connection.receivedData->next;
+            pbuf_ref(newReceivedData);
+            pbuf_dechain(connection.receivedData);
+            pbuf_free(connection.receivedData);
+            connection.receivedData = newReceivedData;
+            connection.consumed = 0;
+        }
+
+        connection.consumed = offset;
+        offset = 0;
+
+        currentPbuf = connection.receivedData;
+        offsetInCurrentPbuf = connection.consumed;
+    }
+
+    void ConnectionLwIp::StreamReaderLwIp::Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy)
+    {
+        while (!range.empty())
+        {
+            auto chunk = ExtractContiguousRange(range.size());
+            if (chunk.empty())
+                break;
+
+            infra::Copy(chunk, infra::Head(range, chunk.size()));
+            range.pop_front(chunk.size());
+        }
+
+        errorPolicy.ReportResult(range.empty());
+    }
+
+    uint8_t ConnectionLwIp::StreamReaderLwIp::Peek(infra::StreamErrorPolicy& errorPolicy)
+    {
+        auto range = PeekContiguousRange(0);
+        errorPolicy.ReportResult(!range.empty());
+        if (!range.empty())
+            return range.front();
+        else
+            return 0;
+    }
+
+    infra::ConstByteRange ConnectionLwIp::StreamReaderLwIp::ExtractContiguousRange(std::size_t max)
+    {
+        auto chunk = infra::Head(PeekContiguousRange(0), max);
+
+        offset += chunk.size();
+        offsetInCurrentPbuf += chunk.size();
+
+        if (currentPbuf != nullptr && offsetInCurrentPbuf == currentPbuf->len)
+        {
+            currentPbuf = currentPbuf->next;
+            offsetInCurrentPbuf = 0;
+        }
+
+        return chunk;
+    }
+
+    infra::ConstByteRange ConnectionLwIp::StreamReaderLwIp::PeekContiguousRange(std::size_t start)
+    {
+        auto peekOffset = offsetInCurrentPbuf;
+        auto peekPbuf = currentPbuf;
+
+        while (start != 0 && peekPbuf != nullptr)
+        {
+            auto peekDelta = std::min(start, peekPbuf->len - peekOffset);
+            peekOffset += peekDelta;
+            start -= peekDelta;
+            if (peekOffset == peekPbuf->len)
+            {
+                peekOffset = 0;
+                peekPbuf = peekPbuf->next;
+            }
+        }
+
+        if (peekPbuf == nullptr)
+            return infra::ConstByteRange();
+        else
+            return infra::ConstByteRange(reinterpret_cast<const uint8_t*>(peekPbuf->payload) + peekOffset, reinterpret_cast<const uint8_t*>(peekPbuf->payload) + peekPbuf->len);
+    }
+
+    bool ConnectionLwIp::StreamReaderLwIp::Empty() const
+    {
+        return Available() == 0;
+    }
+
+    std::size_t ConnectionLwIp::StreamReaderLwIp::Available() const
+    {
+        if (connection.receivedData != nullptr)
+            return connection.receivedData->tot_len - connection.consumed - offset;
+        else
+            return 0;
+    }
+
+    std::size_t ConnectionLwIp::StreamReaderLwIp::ConstructSaveMarker() const
+    {
+        return offset;
+    }
+
+    void ConnectionLwIp::StreamReaderLwIp::Rewind(std::size_t marker)
+    {
+        offset = 0;
+        currentPbuf = connection.receivedData;
+        offsetInCurrentPbuf = connection.consumed;
+
+        while (marker != 0)
+        {
+            auto delta = std::min(marker, currentPbuf->len - offsetInCurrentPbuf);
+            offsetInCurrentPbuf += delta;
+            marker -= delta;
+            if (offsetInCurrentPbuf == currentPbuf->len)
+            {
+                offsetInCurrentPbuf = 0;
+                currentPbuf = currentPbuf->next;
+            }
+        }
     }
 
     ListenerLwIp::ListenerLwIp(AllocatorConnectionLwIp& allocator, uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions)
