@@ -400,11 +400,16 @@ namespace infra
         return stream;
     }
 
+    TextOutputStream& operator<<(TextOutputStream&& stream, const AsHexHelper& asHexHelper)
+    {
+        return stream << asHexHelper;
+    }
+
     AsBase64Helper::AsBase64Helper(ConstByteRange data)
         : data(data)
     {}
 
-    TextOutputStream& operator<<(TextOutputStream& stream, const AsBase64Helper& asHexHelper)
+    TextOutputStream& operator<<(TextOutputStream& stream, const AsBase64Helper& asBase64Helper)
     {
         static const char* encodeTable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
@@ -412,7 +417,7 @@ namespace infra
         uint8_t encodedByte = 0;
         uint32_t size = 0;
 
-        for (uint8_t byte : asHexHelper.data)
+        for (uint8_t byte : asBase64Helper.data)
         {
             encodedByte |= byte >> bitIndex;
             stream << encodeTable[encodedByte];

@@ -266,6 +266,7 @@ namespace infra
         explicit AsHexHelper(infra::ConstByteRange data);
 
         friend infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const AsHexHelper& asHexHelper);
+        friend infra::TextOutputStream& operator<<(TextOutputStream&& stream, const AsHexHelper& asHexHelper);
 
     private:
         infra::ConstByteRange data;
