@@ -530,7 +530,7 @@ namespace services
         Activate();
     }
 
-    HttpClientImpl::SendingStateForwardFillContent::WindowWriter::WindowWriter(infra::StreamWriter& writer, uint32_t start, uint32_t limit)
+    HttpClientImpl::SendingStateForwardFillContent::WindowWriter::WindowWriter(infra::StreamWriter& writer, std::size_t start, std::size_t limit)
         : writer(writer)
         , start(start)
         , limit(limit)
