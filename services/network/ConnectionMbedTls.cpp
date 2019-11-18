@@ -123,11 +123,15 @@ namespace services
                 receiveBuffer.resize(newBufferStart + static_cast<std::size_t>(result));
         }
 
-        if (receiveBuffer.size() != startSize)
-            infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object)
+        if (receiveBuffer.size() != startSize && !dataReceivedScheduled)
         {
-            object->GetObserver().DataReceived();
-        }, SharedFromThis());
+            dataReceivedScheduled = true;
+            infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object)
+            {
+                object->dataReceivedScheduled = false;
+                object->GetObserver().DataReceived();
+            }, SharedFromThis());
+        }
     }
 
     void ConnectionMbedTls::Connected()
