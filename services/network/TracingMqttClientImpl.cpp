@@ -25,10 +25,10 @@ namespace services
         MqttClientImpl::Subscribe();
     }
 
-    void TracingMqttClientImpl::ReceivedNotification(infra::BoundedConstString topic, infra::BoundedConstString payload)
+    infra::SharedPtr<infra::StreamWriter> TracingMqttClientImpl::ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize)
     {
-        tracer.Trace() << "MqttClient received notification on topic " << topic << " with contents " << payload;
+        tracer.Trace() << "MqttClient received notification on topic " << topic << " with contents size " << payloadSize;
 
-        MqttClientImpl::ReceivedNotification(topic, payload);
+        return MqttClientImpl::ReceivedNotification(topic, payloadSize);
     }
 }

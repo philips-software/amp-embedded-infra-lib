@@ -16,7 +16,7 @@ namespace services
         virtual void Subscribe() override;
 
     protected:
-        virtual void ReceivedNotification(infra::BoundedConstString topic, infra::BoundedConstString payload) override;
+        infra::SharedPtr<infra::StreamWriter> ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize) override;
 
     private:
         Tracer& tracer;

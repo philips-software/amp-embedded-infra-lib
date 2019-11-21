@@ -14,7 +14,7 @@ namespace services
         MOCK_METHOD0(Connected, void());
         MOCK_METHOD0(PublishDone, void());
         MOCK_METHOD0(SubscribeDone, void());
-        MOCK_METHOD2(ReceivedNotification, void(infra::BoundedConstString topic, infra::BoundedConstString payload));
+        MOCK_METHOD2(ReceivedNotification, infra::SharedPtr<infra::StreamWriter>(infra::BoundedConstString topic, uint32_t payloadSize));
         MOCK_METHOD0(ClosingConnection, void());
         MOCK_CONST_METHOD1(FillTopic, void(infra::StreamWriter& writer));
         MOCK_CONST_METHOD1(FillPayload, void(infra::StreamWriter& writer));

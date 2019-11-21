@@ -14,10 +14,7 @@ namespace services
 
     void MqttMultipleAccessMaster::NotificationDone()
     {
-        --notificationsSent;
-
-        if (notificationsSent == 0)
-            MqttClientObserver::Subject().NotificationDone();
+        MqttClientObserver::Subject().NotificationDone();
     }
 
     void MqttMultipleAccessMaster::Connected()
@@ -36,17 +33,16 @@ namespace services
         GetObserver().SubscribeDone();
     }
 
-    void MqttMultipleAccessMaster::ReceivedNotification(infra::BoundedConstString topic, infra::BoundedConstString payload)
+    infra::SharedPtr<infra::StreamWriter> MqttMultipleAccessMaster::ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize)
     {
-        notificationsSent = 1;
-
         for (auto& access : accesses)
         {
-            ++notificationsSent;
-            access.ReceivedNotification(topic, payload);
+            auto result = access.ReceivedNotification(topic, payloadSize);
+            if (result != nullptr)
+                return result;
         }
 
-        NotificationDone();
+        std::abort();
     }
 
     void MqttMultipleAccessMaster::ClosingConnection()
@@ -119,9 +115,9 @@ namespace services
         GetObserver().SubscribeDone();
     }
 
-    void MqttMultipleAccess::ReceivedNotification(infra::BoundedConstString topic, infra::BoundedConstString payload)
+    infra::SharedPtr<infra::StreamWriter> MqttMultipleAccess::ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize)
     {
-        GetObserver().ReceivedNotification(topic, payload);
+        return GetObserver().ReceivedNotification(topic, payloadSize);
     }
 
     void MqttMultipleAccess::ClosingConnection()

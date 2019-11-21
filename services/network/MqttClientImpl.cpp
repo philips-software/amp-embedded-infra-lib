@@ -209,9 +209,9 @@ namespace services
         state->ClosingConnection();
     }
 
-    void MqttClientImpl::ReceivedNotification(infra::BoundedConstString topic, infra::BoundedConstString payload)
+    infra::SharedPtr<infra::StreamWriter> MqttClientImpl::ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize)
     {
-        GetObserver().ReceivedNotification(topic, payload);
+        return GetObserver().ReceivedNotification(topic, payloadSize);
     }
 
     infra::SharedPtr<infra::StreamReader> MqttClientImpl::ReceiveStream()
@@ -354,6 +354,22 @@ namespace services
         return clientConnection;
     }
 
+    void MqttClientImpl::StateConnected::HandleNotificationData(infra::DataInputStream& inputStream)
+    {
+        infra::DataOutputStream::WithErrorPolicy outputStream(*notificationWriter);
+
+        while (notificationPayloadSize != 0 && !inputStream.Empty())
+        {
+            auto range = inputStream.ContiguousRange(notificationPayloadSize);
+            outputStream << range;
+            notificationPayloadSize -= static_cast<uint16_t>(range.size());
+            clientConnection.ConnectionObserver::Subject().AckReceived();
+        }
+
+        if (notificationPayloadSize == 0)
+            notificationWriter = nullptr;
+    }
+
     void MqttClientImpl::StateConnected::HandlePubAck(infra::DataInputStream::WithErrorPolicy stream)
     {
         uint16_t packetIdentifier;
@@ -407,25 +423,28 @@ namespace services
         stream >> receivedPacketIdentifier;
         receivedPacketIdentifier = infra::FromBigEndian(receivedPacketIdentifier);
 
-        uint16_t payloadSize = static_cast<uint16_t>(packetLength) - topicSize - 2 - 2;
-        infra::BoundedString::WithStorage<1024> payload;
-        payload.resize(payloadSize);
-        stream >> infra::text >> payload;
+        notificationPayloadSize = static_cast<uint16_t>(packetLength) - topicSize - 2 - 2;
 
         if (stream.Failed())
             return;
 
         executingNotification = true;
-        clientConnection.ReceivedNotification(topic, payload);
+        notificationWriter = clientConnection.ReceivedNotification(topic, notificationPayloadSize);
         clientConnection.ConnectionObserver::Subject().AckReceived();
+
+        HandleNotificationData(stream);
     }
 
     void MqttClientImpl::StateConnected::HandleDataReceived()
     {
+        infra::DataInputStream::WithErrorPolicy stream(NewReceiveStream(), infra::softFail);
+
+        if (notificationPayloadSize != 0)
+            HandleNotificationData(stream);
+
         if (executingNotification)
             return;
 
-        infra::DataInputStream::WithErrorPolicy stream(NewReceiveStream(), infra::softFail);
         MqttParser parser(stream);
 
         if (stream.Failed())

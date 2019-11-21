@@ -17,7 +17,7 @@ namespace services
         virtual void Connected() {}
         virtual void PublishDone() = 0;
         virtual void SubscribeDone() = 0;
-        virtual void ReceivedNotification(infra::BoundedConstString topic, infra::BoundedConstString payload) = 0;
+        virtual infra::SharedPtr<infra::StreamWriter> ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize) = 0;
         virtual void ClosingConnection() {}
 
         virtual void FillTopic(infra::StreamWriter& writer) const = 0;

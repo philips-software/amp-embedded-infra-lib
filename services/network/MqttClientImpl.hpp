@@ -30,7 +30,7 @@ namespace services
         virtual void ClosingConnection() override;
 
     protected:
-        virtual void ReceivedNotification(infra::BoundedConstString topic, infra::BoundedConstString payload);
+        virtual infra::SharedPtr<infra::StreamWriter> ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize);
 
     private:
         enum class PacketType : uint8_t
@@ -176,6 +176,7 @@ namespace services
             MqttClientImpl& ClientConnection() const;
 
         private:
+            void HandleNotificationData(infra::DataInputStream& inputStream);
             void HandlePubAck(infra::DataInputStream::WithErrorPolicy stream);
             void HandleSubAck(infra::DataInputStream::WithErrorPolicy stream);
             void HandlePublish(size_t packetLength, infra::DataInputStream::WithErrorPolicy stream);
@@ -223,6 +224,8 @@ namespace services
             infra::BoundedDeque<OperationVariant>::WithMaxSize<2> sendOperations;
             bool executingSend = false;
             bool executingNotification = false;
+            uint16_t notificationPayloadSize = 0;
+            infra::SharedPtr<infra::StreamWriter> notificationWriter;
 
         private:
             template<class operation>

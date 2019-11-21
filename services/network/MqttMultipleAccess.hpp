@@ -24,14 +24,13 @@ namespace services
         virtual void Connected() override;
         virtual void PublishDone() override;
         virtual void SubscribeDone() override;
-        virtual void ReceivedNotification(infra::BoundedConstString topic, infra::BoundedConstString payload) override;
+        virtual infra::SharedPtr<infra::StreamWriter> ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize) override;
         virtual void ClosingConnection() override;
         virtual void FillTopic(infra::StreamWriter& writer) const override;
         virtual void FillPayload(infra::StreamWriter& writer) const override;
 
     private:
         infra::IntrusiveForwardList<MqttMultipleAccess> accesses;
-        uint32_t notificationsSent = 0;
 
         friend class MqttMultipleAccess;
     };
@@ -54,7 +53,7 @@ namespace services
         virtual void Connected() override;
         virtual void PublishDone() override;
         virtual void SubscribeDone() override;
-        virtual void ReceivedNotification(infra::BoundedConstString topic, infra::BoundedConstString payload) override;
+        virtual infra::SharedPtr<infra::StreamWriter> ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize) override;
         virtual void ClosingConnection() override;
         virtual void FillTopic(infra::StreamWriter& writer) const override;
         virtual void FillPayload(infra::StreamWriter& writer) const override;

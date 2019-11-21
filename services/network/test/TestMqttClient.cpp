@@ -1,4 +1,5 @@
 #include "gmock/gmock.h"
+#include "infra/stream/StringOutputStream.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/network/MqttClientImpl.hpp"
@@ -6,6 +7,7 @@
 #include "services/network/test_doubles/ConnectionStub.hpp"
 #include "services/network/test_doubles/MqttMock.hpp"
 #include "network/test_doubles/AddressMock.hpp"
+#include <deque>
 
 namespace testing
 {
@@ -154,6 +156,24 @@ public:
         connection.SimulateDataReceived(payloadRaw);
     }
 
+    void ExpectReceivedNotification(infra::BoundedConstString topic, infra::BoundedConstString payload)
+    {
+        expectedNotificationPayload.push_back(payload);
+
+        EXPECT_CALL(client, ReceivedNotification(topic, payload.size())).WillOnce(testing::Invoke([this](infra::BoundedConstString topic, uint32_t payloadSize) -> infra::SharedPtr<infra::StreamWriter>
+        {
+            notificationPayloadStream.OnAllocatable([this]()
+            {
+                EXPECT_EQ(expectedNotificationPayload.front(), notificationPayload);
+                expectedNotificationPayload.pop_front();
+            });
+
+            notificationPayload.clear();
+            auto stream = notificationPayloadStream.Emplace(notificationPayload);
+            return infra::MakeContainedSharedObject(stream->Writer(), stream);
+        }));;
+    }
+
     testing::StrictMock<services::ConnectionFactoryWithNameResolverMock> connectionFactory;
     testing::StrictMock<services::MqttClientObserverFactoryMock> factory;
     testing::StrictMock<services::MqttClientObserverMock> client;
@@ -161,6 +181,10 @@ public:
     testing::StrictMock<ConnectionStubWithSendStreamControl> connection;
     infra::SharedPtr<services::Connection> connectionPtr;
     infra::SharedPtr<services::MqttClientObserver> clientPtr;
+
+    std::deque<infra::BoundedConstString> expectedNotificationPayload;
+    infra::BoundedString::WithStorage<1024> notificationPayload;
+    infra::NotifyingSharedOptional<infra::StringOutputStream> notificationPayloadStream;
 };
 
 TEST_F(MqttClientTest, refused_connection_propagates_to_MqttClientFactory)
@@ -404,7 +428,7 @@ TEST_F(MqttClientTest, received_publish_is_forwarded_and_acked)
 {
     Connect();
 
-    EXPECT_CALL(client, ReceivedNotification("topic", "payload"));
+    ExpectReceivedNotification("topic", "payload");
     ReceivePublish("topic", "payload", 0x0102);
 
     client.Subject().NotificationDone();
@@ -417,7 +441,7 @@ TEST_F(MqttClientTest, received_data_are_not_processed_until_NotificationDone)
 {
     Connect();
 
-    EXPECT_CALL(client, ReceivedNotification("topic", "payload"));
+    ExpectReceivedNotification("topic", "payload");
     ReceivePublish("topic", "payload", 1);
 
     ReceivePublish("topic2", "payload2", 2);
@@ -427,7 +451,7 @@ TEST_F(MqttClientTest, received_data_are_not_processed_until_NotificationDone2)
 {
     Connect();
 
-    EXPECT_CALL(client, ReceivedNotification("topic", "payload"));
+    ExpectReceivedNotification("topic", "payload");
     ReceivePublish("topic", "payload", 1);
 
     ReceiveSubAck(1, 0x01);
@@ -437,14 +461,14 @@ TEST_F(MqttClientTest, receive_two_publishes)
 {
     Connect();
 
-    EXPECT_CALL(client, ReceivedNotification("topic", "payload"));
+    ExpectReceivedNotification("topic", "payload");
     ReceivePublish("topic", "payload", 1);
 
     ReceivePublish("topic2", "payload2", 2);
 
     client.Subject().NotificationDone();
 
-    EXPECT_CALL(client, ReceivedNotification("topic2", "payload2"));
+    ExpectReceivedNotification("topic2", "payload2");
     ExecuteAllActions();
 }
 
@@ -452,7 +476,7 @@ TEST_F(MqttClientTest, additional_received_data_are_processed_after_Notification
 {
     Connect();
 
-    EXPECT_CALL(client, ReceivedNotification("topic", "payload"));
+    ExpectReceivedNotification("topic", "payload");
     ReceivePublish("topic", "payload", 1);
 
     ReceiveSubAck(1, 0x01);
@@ -467,7 +491,7 @@ TEST_F(MqttClientTest, received_publish_acked_and_publish_can_be_interleaved)
 {
     Connect();
 
-    EXPECT_CALL(client, ReceivedNotification("topic", "payload"));
+    ExpectReceivedNotification("topic", "payload");
     ReceivePublish("topic", "payload", 1);
 
     connection.AutoSendStreamAvailableEnabled(false);
@@ -495,7 +519,7 @@ TEST_F(MqttClientTest, received_publish_acked_and_subscribe_can_be_interleaved)
 {
     Connect();
 
-    EXPECT_CALL(client, ReceivedNotification("topic", "payload"));
+    ExpectReceivedNotification("topic", "payload");
     ReceivePublish("topic", "payload", 1);
 
     connection.AutoSendStreamAvailableEnabled(false);

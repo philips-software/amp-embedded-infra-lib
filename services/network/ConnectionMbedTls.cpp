@@ -64,12 +64,14 @@ namespace services
 
         switch (certificateValidation)
         {
-        case CertificateValidation::Default:
-            return server ? MBEDTLS_SSL_VERIFY_NONE : MBEDTLS_SSL_VERIFY_REQUIRED;
-        case CertificateValidation::Disabled:
-            return MBEDTLS_SSL_VERIFY_NONE;
-        case CertificateValidation::Enabled:
-            return MBEDTLS_SSL_VERIFY_REQUIRED;
+            case CertificateValidation::Default:
+                return server ? MBEDTLS_SSL_VERIFY_NONE : MBEDTLS_SSL_VERIFY_REQUIRED;
+            case CertificateValidation::Disabled:
+                return MBEDTLS_SSL_VERIFY_NONE;
+            case CertificateValidation::Enabled:
+                return MBEDTLS_SSL_VERIFY_REQUIRED;
+            default:
+                std::abort();
         }
     }
 
