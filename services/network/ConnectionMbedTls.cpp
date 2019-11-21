@@ -24,7 +24,7 @@ namespace services
         result = mbedtls_ssl_config_defaults(&sslConfig, server ? MBEDTLS_SSL_IS_SERVER : MBEDTLS_SSL_IS_CLIENT, MBEDTLS_SSL_TRANSPORT_STREAM, MBEDTLS_SSL_PRESET_DEFAULT);
         assert(result == 0);
         mbedtls_ssl_conf_rng(&sslConfig, mbedtls_ctr_drbg_random, &ctr_drbg);
-        mbedtls_ssl_conf_authmode(&sslConfig, (server && !parameters.parameters.Get<ServerParameters>().clientAuthenticationNeeded) ? MBEDTLS_SSL_VERIFY_NONE : MBEDTLS_SSL_VERIFY_REQUIRED);
+        mbedtls_ssl_conf_authmode(&sslConfig, GetAuthMode(parameters));
 
         certificates.Config(sslConfig);
 
@@ -55,6 +55,22 @@ namespace services
         mbedtls_ssl_set_bio(&sslContext, this, &ConnectionMbedTls::StaticSslSend, &ConnectionMbedTls::StaticSslReceive, nullptr);
 
         TryAllocateEncryptedSendStream();
+    }
+
+    int ConnectionMbedTls::GetAuthMode(const ParametersWorkaround& parameters) const
+    {
+        auto certificateValidation = server ? parameters.parameters.Get<ServerParameters>().certificateValidation :
+            parameters.parameters.Get<ClientParameters>().certificateValidation;
+
+        switch (certificateValidation)
+        {
+        case CertificateValidation::Default:
+            return server ? MBEDTLS_SSL_VERIFY_NONE : MBEDTLS_SSL_VERIFY_REQUIRED;
+        case CertificateValidation::Disabled:
+            return MBEDTLS_SSL_VERIFY_NONE;
+        case CertificateValidation::Enabled:
+            return MBEDTLS_SSL_VERIFY_REQUIRED;
+        }
     }
 
     ConnectionMbedTls::~ConnectionMbedTls()
@@ -371,19 +387,19 @@ namespace services
         Rewind(0);
     }
 
-    ConnectionMbedTlsListener::ConnectionMbedTlsListener(AllocatorConnectionMbedTls& allocator, ServerConnectionObserverFactory& factory, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, mbedtls_ssl_cache_context& serverCache, bool clientAuthenticationNeeded)
+    ConnectionMbedTlsListener::ConnectionMbedTlsListener(AllocatorConnectionMbedTls& allocator, ServerConnectionObserverFactory& factory, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, mbedtls_ssl_cache_context& serverCache, ConnectionMbedTls::CertificateValidation certificateValidation)
         : allocator(allocator)
         , factory(factory)
         , certificates(certificates)
         , randomDataGenerator(randomDataGenerator)
         , serverCache(serverCache)
-        , clientAuthenticationNeeded(clientAuthenticationNeeded)
+        , certificateValidation(certificateValidation)
     {}
 
     void ConnectionMbedTlsListener::ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, services::IPAddress address)
     {
         infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> creationFailed = createdObserver.Clone();
-        infra::SharedPtr<ConnectionMbedTls> connection = allocator.Allocate(std::move(createdObserver), certificates, randomDataGenerator, { ConnectionMbedTls::ServerParameters{ serverCache, clientAuthenticationNeeded } });
+        infra::SharedPtr<ConnectionMbedTls> connection = allocator.Allocate(std::move(createdObserver), certificates, randomDataGenerator, { ConnectionMbedTls::ServerParameters{ serverCache, certificateValidation } });
         if (connection)
         {
             factory.ConnectionAccepted([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
@@ -451,14 +467,14 @@ namespace services
 
     ConnectionFactoryMbedTls::ConnectionFactoryMbedTls(AllocatorConnectionMbedTls& connectionAllocator,
         AllocatorConnectionMbedTlsListener& listenerAllocator, infra::BoundedList<ConnectionMbedTlsConnector>& connectors,
-        ConnectionFactory& factory, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, bool needsAuthenticationDefault)
+        ConnectionFactory& factory, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, ConnectionMbedTls::CertificateValidation certificateValidation)
         : connectionAllocator(connectionAllocator)
         , listenerAllocator(listenerAllocator)
         , connectors(connectors)
         , factory(factory)
         , certificates(certificates)
         , randomDataGenerator(randomDataGenerator)
-        , needsAuthenticationDefault(needsAuthenticationDefault)
+        , certificateValidation(certificateValidation)
     {
         mbedtls_ssl_cache_init(&serverCache);
         mbedtls_ssl_session_init(&clientSession);
@@ -473,7 +489,7 @@ namespace services
     infra::SharedPtr<void> ConnectionFactoryMbedTls::Listen(uint16_t port, ServerConnectionObserverFactory& connectionObserverFactory, IPVersions versions)
     {
         infra::SharedPtr<ConnectionMbedTlsListener> listener = listenerAllocator.Allocate(connectionAllocator, connectionObserverFactory, certificates,
-            randomDataGenerator, serverCache, NeedsAuthentication(port));
+            randomDataGenerator, serverCache, certificateValidation);
 
         if (listener)
         {
@@ -523,7 +539,7 @@ namespace services
 
         previousAddress = address;
 
-        return connectionAllocator.Allocate(std::move(createdObserver), certificates, randomDataGenerator, { ConnectionMbedTls::ClientParameters{ clientSession } });
+        return connectionAllocator.Allocate(std::move(createdObserver), certificates, randomDataGenerator, { ConnectionMbedTls::ClientParameters{ clientSession, certificateValidation } });
     }
 
     void ConnectionFactoryMbedTls::Remove(ConnectionMbedTlsConnector& connector)
@@ -531,11 +547,6 @@ namespace services
         connectors.remove(connector);
 
         TryConnect();
-    }
-
-    bool ConnectionFactoryMbedTls::NeedsAuthentication(uint16_t port) const
-    {
-        return needsAuthenticationDefault;
     }
 
     void ConnectionFactoryMbedTls::TryConnect()
