@@ -66,8 +66,8 @@ namespace services
     }
 
     TracingConnectionFactoryMbedTls::TracingConnectionFactoryMbedTls(AllocatorTracingConnectionMbedTls& connectionAllocator, AllocatorConnectionMbedTlsListener& listenerAllocator, infra::BoundedList<ConnectionMbedTlsConnector>& connectors,
-        ConnectionFactory& factory, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, Tracer& tracer, DebugLevel level, bool needsAuthenticationDefault)
-        : ConnectionFactoryMbedTls(allocatorAdapter, listenerAllocator, connectors, factory, certificates, randomDataGenerator, needsAuthenticationDefault)
+        ConnectionFactory& factory, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, Tracer& tracer, DebugLevel level, ConnectionMbedTls::CertificateValidation certificateValidation)
+        : ConnectionFactoryMbedTls(allocatorAdapter, listenerAllocator, connectors, factory, certificates, randomDataGenerator, certificateValidation)
         , allocatorAdapter(connectionAllocator, tracer)
     {
         tracer.Trace() << "ConnectionFactoryMbedTls::ConnectionFactoryMbedTls()";
