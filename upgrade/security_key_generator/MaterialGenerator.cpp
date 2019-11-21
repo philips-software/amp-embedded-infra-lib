@@ -16,6 +16,9 @@ namespace application
 
     MaterialGenerator::MaterialGenerator(hal::SynchronousRandomDataGenerator& randomDataGenerator)
         : randomDataGenerator(randomDataGenerator)
+        , aesKey(aesKeyLength / 8, 0)
+        , xteaKey(xteaKeyLength / 8, 0)
+        , hmacKey(hmacKeyLength / 8, 0)
     {
         materialGenerator = this;
 

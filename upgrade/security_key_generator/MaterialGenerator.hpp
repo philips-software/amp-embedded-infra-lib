@@ -35,9 +35,9 @@ namespace application
         hal::SynchronousRandomDataGenerator& randomDataGenerator;
         mbedtls_pk_context pk;
 
-        std::vector<uint8_t> aesKey{ aesKeyLength / 8, 0 };
-        std::vector<uint8_t> xteaKey{ xteaKeyLength / 8, 0 };
-        std::vector<uint8_t> hmacKey{ hmacKeyLength / 8, 0 };
+        std::vector<uint8_t> aesKey;
+        std::vector<uint8_t> xteaKey;
+        std::vector<uint8_t> hmacKey;
         std::vector<uint8_t> ecDsa224PublicKey;
         std::vector<uint8_t> ecDsa224PrivateKey;
     };
