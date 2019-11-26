@@ -8,8 +8,6 @@ namespace services
         , socket(socket)
     {
         UpdateEventFlags();
-
-        infra::EventDispatcher::Instance().Schedule([this]() { Receive(); });
     }
 
     ConnectionWin::~ConnectionWin()
@@ -69,12 +67,7 @@ namespace services
         int addressLength = sizeof(address);
         getpeername(socket, reinterpret_cast<SOCKADDR*>(&address), &addressLength);
 
-        return IPv4Address{
-            static_cast<uint8_t>(address.sin_addr.s_addr >> 24),
-            static_cast<uint8_t>(address.sin_addr.s_addr >> 16),
-            static_cast<uint8_t>(address.sin_addr.s_addr >> 8),
-            static_cast<uint8_t>(address.sin_addr.s_addr)
-        };
+        return services::ConvertFromUint32(htonl(address.sin_addr.s_addr));
     }
 
     void ConnectionWin::SetObserver(infra::SharedPtr<services::ConnectionObserver> connectionObserver)
@@ -257,10 +250,7 @@ namespace services
 
         sockaddr_in saddress = {};
         saddress.sin_family = AF_INET;
-        saddress.sin_addr.s_net = address[0];
-        saddress.sin_addr.s_host = address[1];
-        saddress.sin_addr.s_lh = address[2];
-        saddress.sin_addr.s_impno = address[3];
+        saddress.sin_addr.s_addr = htonl(services::ConvertToUint32(address));
         saddress.sin_port = htons(factory.Port());
         if (connect(connectSocket, reinterpret_cast<sockaddr*>(&saddress), sizeof(saddress)) == SOCKET_ERROR)
         {

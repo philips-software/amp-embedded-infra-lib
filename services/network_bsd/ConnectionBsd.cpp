@@ -19,9 +19,7 @@ namespace services
     ConnectionBsd::ConnectionBsd(EventDispatcherWithNetwork& network, int socket)
         : network(network)
         , socket(socket)
-    {
-        infra::EventDispatcher::Instance().Schedule([this]() { Receive(); });
-    }
+    {}
 
     ConnectionBsd::~ConnectionBsd()
     {
@@ -75,12 +73,7 @@ namespace services
         socklen_t addressLength = sizeof(address);
         getpeername(socket, reinterpret_cast<sockaddr*>(&address), &addressLength);
 
-        return IPv4Address{
-            static_cast<uint8_t>(address.sin_addr.s_addr >> 24),
-            static_cast<uint8_t>(address.sin_addr.s_addr >> 16),
-            static_cast<uint8_t>(address.sin_addr.s_addr >> 8),
-            static_cast<uint8_t>(address.sin_addr.s_addr)
-        };
+        return services::ConvertFromUint32(htonl(address.sin_addr.s_addr));
     }
 
     void ConnectionBsd::SetObserver(infra::SharedPtr<services::ConnectionObserver> connectionObserver)

@@ -86,7 +86,7 @@ namespace services
             receiveBuffer.resize(received);
             infra::ByteInputStreamReader reader(infra::MakeRange(receiveBuffer));
 
-            auto from = Udpv4Socket{ IPv4Address{ fromAddress.sin_addr.s_net, fromAddress.sin_addr.s_host, fromAddress.sin_addr.s_lh, fromAddress.sin_addr.s_impno }, fromAddress.sin_port };
+            auto from = Udpv4Socket{ services::ConvertFromUint32(htonl(fromAddress.sin_addr.s_addr)), fromAddress.sin_port };
 
             GetObserver().DataReceived(reader, from);
         }
@@ -97,10 +97,7 @@ namespace services
         UpdateEventFlags();     // If there is something to send, update the flags before calling send, because FD_SEND is an edge-triggered event.
         sockaddr_in address{};
         address.sin_family = AF_INET;
-        address.sin_addr.s_net = requestedTo.Get<Udpv4Socket>().first[0];
-        address.sin_addr.s_host = requestedTo.Get<Udpv4Socket>().first[1];
-        address.sin_addr.s_lh = requestedTo.Get<Udpv4Socket>().first[2];
-        address.sin_addr.s_impno = requestedTo.Get<Udpv4Socket>().first[3];
+        address.sin_addr.s_addr = htonl(services::ConvertToUint32(requestedTo.Get<Udpv4Socket>().first));
         address.sin_port = htons(requestedTo.Get<Udpv4Socket>().second);
         int sent = sendto(socket, reinterpret_cast<char*>(sendBuffer->data()), sendBuffer->size(), 0, reinterpret_cast<sockaddr*>(&address), sizeof(address));
 
@@ -139,17 +136,16 @@ namespace services
             std::abort();
 
         UpdateEventFlags();
-
-        infra::EventDispatcher::Instance().Schedule([this]() { Receive(); });
     }
 
     void DatagramWin::BindLocal(uint16_t port)
     {
         sockaddr_in address{};
         address.sin_family = AF_INET;
-        address.sin_addr.s_addr = INADDR_ANY;
+        address.sin_addr.s_addr = htonl(INADDR_ANY);
         address.sin_port = htons(port);
         auto result = bind(socket, reinterpret_cast<sockaddr*>(&address), sizeof(address));
+        auto error = WSAGetLastError();
         assert(result == 0);
     }
 
@@ -157,10 +153,7 @@ namespace services
     {
         sockaddr_in address{};
         address.sin_family = AF_INET;
-        address.sin_addr.s_net = remote.Get<Udpv4Socket>().first[0];
-        address.sin_addr.s_host = remote.Get<Udpv4Socket>().first[1];
-        address.sin_addr.s_lh = remote.Get<Udpv4Socket>().first[2];
-        address.sin_addr.s_impno = remote.Get<Udpv4Socket>().first[3];
+        address.sin_addr.s_addr = htonl(services::ConvertToUint32(remote.Get<Udpv4Socket>().first));
         address.sin_port = htons(remote.Get<Udpv4Socket>().second);
         auto result = connect(socket, reinterpret_cast<sockaddr*>(&address), sizeof(address));
         auto error = WSAGetLastError();
