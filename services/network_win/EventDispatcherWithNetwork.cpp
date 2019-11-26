@@ -1,4 +1,5 @@
 #include "services/network_win/EventDispatcherWithNetwork.hpp"
+#include <ws2tcpip.h>
 
 namespace services
 {
@@ -100,6 +101,48 @@ namespace services
         auto result = infra::MakeSharedOnHeap<DatagramWin>(*this, localPort, remote, observer);
         RegisterDatagram(result);
         return result;
+    }
+
+    void EventDispatcherWithNetwork::JoinMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv4Address multicastAddress)
+    {
+        auto datagramIterator = std::find(datagrams.begin(), datagrams.end(), datagramExchange);
+
+        if (datagramIterator != datagrams.end())
+        {
+            auto datagram = datagramIterator->lock();
+
+            struct ip_mreq multicastRequest;
+            multicastRequest.imr_interface.s_addr = htonl(INADDR_ANY);
+            multicastRequest.imr_multiaddr.s_addr = htonl(services::ConvertToUint32(multicastAddress));
+
+            setsockopt(datagram->socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+        }
+    }
+
+    void EventDispatcherWithNetwork::LeaveMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv4Address multicastAddress)
+    {
+        auto datagramIterator = std::find(datagrams.begin(), datagrams.end(), datagramExchange);
+
+        if (datagramIterator != datagrams.end())
+        {
+            auto datagram = datagramIterator->lock();
+
+            struct ip_mreq multicastRequest;
+            multicastRequest.imr_interface.s_addr = htonl(INADDR_ANY);
+            multicastRequest.imr_multiaddr.s_addr = htonl(services::ConvertToUint32(multicastAddress));
+
+            setsockopt(datagram->socket, IPPROTO_IP, IP_DROP_MEMBERSHIP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+        }
+    }
+
+    void EventDispatcherWithNetwork::JoinMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv6Address multicastAddress)
+    {
+        std::abort();
+    }
+
+    void EventDispatcherWithNetwork::LeaveMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv6Address multicastAddress)
+    {
+        std::abort();
     }
 
     void EventDispatcherWithNetwork::RequestExecution()

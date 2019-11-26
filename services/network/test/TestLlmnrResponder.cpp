@@ -16,21 +16,21 @@ public:
         , execute([this]()
             {
                 EXPECT_CALL(factory, Listen(testing::Ref(responder), 5355, services::IPVersions::ipv4)).WillOnce(testing::Return(datagramExchangePtr));
-                EXPECT_CALL(multicast, JoinMulticastGroup(services::IPv4Address{ 224, 0, 0, 252 }));
+                EXPECT_CALL(multicast, JoinMulticastGroup(datagramExchangePtr, services::IPv4Address{ 224, 0, 0, 252 }));
             })
         , responder(factory, multicast, ipv4Info, "name")
     {}
 
     ~LlmnrResponderTest()
     {
-        EXPECT_CALL(multicast, LeaveMulticastGroup(services::IPv4Address{ 224, 0, 0, 252 }));
+        EXPECT_CALL(multicast, LeaveMulticastGroup(datagramExchangePtr, services::IPv4Address{ 224, 0, 0, 252 }));
     }
 
     testing::StrictMock<services::DatagramFactoryMock> factory;
     testing::StrictMock<services::MulticastMock> multicast;
     testing::StrictMock<services::IPv4InfoMock> ipv4Info;
     testing::StrictMock<services::DatagramExchangeMock> datagramExchange;
-    infra::SharedPtr<services::DatagramExchangeMock> datagramExchangePtr;
+    infra::SharedPtr<services::DatagramExchange> datagramExchangePtr;
     infra::Execute execute;
     services::LlmnrResponder responder;
 };

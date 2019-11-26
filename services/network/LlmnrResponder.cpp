@@ -39,12 +39,12 @@ namespace services
         , ipv4Info(ipv4Info)
         , name(name)
     {
-        multicast.JoinMulticastGroup(llmnrMulticastAddress);
+        multicast.JoinMulticastGroup(datagramExchange, llmnrMulticastAddress);
     }
 
     LlmnrResponder::~LlmnrResponder()
     {
-        multicast.LeaveMulticastGroup(llmnrMulticastAddress);
+        multicast.LeaveMulticastGroup(datagramExchange, llmnrMulticastAddress);
     }
 
     void LlmnrResponder::DataReceived(infra::StreamReaderWithRewinding& reader, services::UdpSocket from)

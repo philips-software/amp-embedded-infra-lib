@@ -10,10 +10,10 @@ namespace services
         : public Multicast
     {
     public:
-        MOCK_METHOD1(JoinMulticastGroup, void(IPv4Address multicastAddress));
-        MOCK_METHOD1(LeaveMulticastGroup, void(IPv4Address multicastAddress));
-        MOCK_METHOD1(JoinMulticastGroup, void(IPv6Address multicastAddress));
-        MOCK_METHOD1(LeaveMulticastGroup, void(IPv6Address multicastAddress));
+        MOCK_METHOD2(JoinMulticastGroup, void(infra::SharedPtr<DatagramExchange>, IPv4Address multicastAddress));
+        MOCK_METHOD2(LeaveMulticastGroup, void(infra::SharedPtr<DatagramExchange>, IPv4Address multicastAddress));
+        MOCK_METHOD2(JoinMulticastGroup, void(infra::SharedPtr<DatagramExchange>, IPv6Address multicastAddress));
+        MOCK_METHOD2(LeaveMulticastGroup, void(infra::SharedPtr<DatagramExchange>, IPv6Address multicastAddress));
     };
 }
 

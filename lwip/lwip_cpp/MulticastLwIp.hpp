@@ -9,10 +9,10 @@ namespace services
         : public Multicast
     {
     public:
-        virtual void JoinMulticastGroup(IPv4Address multicastAddress) override;
-        virtual void LeaveMulticastGroup(IPv4Address multicastAddress) override;
-        virtual void JoinMulticastGroup(IPv6Address multicastAddress) override;
-        virtual void LeaveMulticastGroup(IPv6Address multicastAddress) override;
+        virtual void JoinMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv4Address multicastAddress) override;
+        virtual void LeaveMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv4Address multicastAddress) override;
+        virtual void JoinMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv6Address multicastAddress) override;
+        virtual void LeaveMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv6Address multicastAddress) override;
     };
 }
 

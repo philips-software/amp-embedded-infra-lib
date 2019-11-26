@@ -1,6 +1,7 @@
 #ifndef SERVICES_EVENT_DISPATCHER_WITH_NETWORK_HPP
 #define SERVICES_EVENT_DISPATCHER_WITH_NETWORK_HPP
 
+#include "services/netowkr/Multicast.hpp"
 #include "services/network_bsd/ConnectionBsd.hpp"
 #include "services/network_bsd/DatagramBsd.hpp"
 #include <sys/select.h>
@@ -11,6 +12,7 @@ namespace services
         : public infra::EventDispatcherWithWeakPtr::WithSize<50>
         , public ConnectionFactory
         , public DatagramFactory
+        , public Multicast
     {
     public:
         EventDispatcherWithNetwork();
@@ -33,6 +35,12 @@ namespace services
         virtual infra::SharedPtr<DatagramExchange> Listen(DatagramExchangeObserver& observer, IPVersions versions = IPVersions::both) override;
         virtual infra::SharedPtr<DatagramExchange> Connect(DatagramExchangeObserver& observer, UdpSocket remote) override;
         virtual infra::SharedPtr<DatagramExchange> Connect(DatagramExchangeObserver& observer, uint16_t localPort, UdpSocket remote) override;
+
+        // Implementation of Multicast
+        virtual void JoinMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv4Address multicastAddress) override;
+        virtual void LeaveMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv4Address multicastAddress) override;
+        virtual void JoinMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv6Address multicastAddress) override;
+        virtual void LeaveMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv6Address multicastAddress) override;
 
     protected:
         virtual void RequestExecution() override;
