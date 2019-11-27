@@ -81,13 +81,13 @@ class HttpServerErrorTest
 TEST_F(HttpServerTest, accept_connection)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
-    EXPECT_CALL(connection, CloseAndDestroyMock());
+    EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
 TEST_F(HttpServerTest, accept_ipv6_connection)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv6AddressLocalHost());
-    EXPECT_CALL(connection, CloseAndDestroyMock());
+    EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
 TEST_F(HttpServerTest, wrong_start_url_results_in_error)
@@ -100,7 +100,7 @@ TEST_F(HttpServerTest, wrong_start_url_results_in_error)
     connection.SimulateDataReceived(data);
     ExecuteAllActions();
     CheckHttpResponse("404 Not Found", "{}");
-    EXPECT_CALL(connection, CloseAndDestroyMock());
+    EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
 TEST_F(HttpServerTest, too_long_http_request_results_in_error)
@@ -112,7 +112,7 @@ TEST_F(HttpServerTest, too_long_http_request_results_in_error)
     connection.SimulateDataReceived(data);
     ExecuteAllActions();
     CheckHttpResponse("500 Internal Server Error", R"({ "error": "Out of memory" })");
-    EXPECT_CALL(connection, CloseAndDestroyMock());
+    EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
 TEST_F(HttpServerTest, unsupported_verb_results_in_error)
@@ -124,7 +124,7 @@ TEST_F(HttpServerTest, unsupported_verb_results_in_error)
     connection.SimulateDataReceived(data);
     ExecuteAllActions();
     CheckHttpResponse("400 Bad request", "{}");
-    EXPECT_CALL(connection, CloseAndDestroyMock());
+    EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
 TEST_F(HttpServerTest, request_results_in_get)
@@ -132,7 +132,7 @@ TEST_F(HttpServerTest, request_results_in_get)
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     ExpectPageServerRequest(services::HttpVerb::get, "GET /path HTTP/1.1 \r\n\r\n");
-    EXPECT_CALL(connection, CloseAndDestroyMock());
+    EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
 TEST_F(HttpServerTest, double_request_results_in_closed_connection)
@@ -141,7 +141,7 @@ TEST_F(HttpServerTest, double_request_results_in_closed_connection)
 
     ExpectPageServerRequest(services::HttpVerb::get, "GET /path HTTP/1.1 \r\n\r\n");
 
-    EXPECT_CALL(connection, CloseAndDestroyMock());
+    EXPECT_CALL(connection, AbortAndDestroyMock());
     infra::ConstByteRange data = infra::MakeStringByteRange("GET /path HTTP/1.1 \r\n\r\n");
     connection.SimulateDataReceived(data);
     ExecuteAllActions();
@@ -159,7 +159,7 @@ TEST_F(HttpServerTest, split_message_is_accepted)
 
     connection.SimulateDataReceived(infra::MakeStringByteRange(rest));
     ExecuteAllActions();
-    EXPECT_CALL(connection, CloseAndDestroyMock());
+    EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
 TEST_F(HttpServerTest, send_100_response_when_expect_100_in_header)
@@ -181,7 +181,7 @@ TEST_F(HttpServerTest, send_100_response_when_expect_100_in_header)
     connection.sentData.erase(connection.sentData.begin(), connection.sentData.begin() + expectedResponseFirstPart.size());
     EXPECT_EQ(std::vector<uint8_t>(expectedResponseFirstPart.begin(), expectedResponseFirstPart.end()), responseFirstPart);
 
-    EXPECT_CALL(connection, CloseAndDestroyMock());
+    EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
 TEST_F(HttpServerTest, split_response_when_not_enough_available_in_stream)
@@ -225,7 +225,7 @@ TEST_F(HttpServerTest, second_connection_forces_idle_connection_to_close)
     ForwardTime(std::chrono::seconds(10));
     testing::Mock::VerifyAndClearExpectations(&connectionFirst);
 
-    EXPECT_CALL(connection, CloseAndDestroyMock());
+    EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
 TEST_F(HttpServerTest, non_idle_connection_is_not_closed_by_second_connection)
@@ -252,5 +252,5 @@ TEST_F(HttpServerTest, choose_correct_url)
     EXPECT_CALL(secondHttpPage, ServesRequest(testing::_)).WillOnce(testing::Return(false));
     ExpectPageServerRequest(services::HttpVerb::get, "GET /path HTTP/1.1 \r\nExpect: 100-continue\r\n\r\n");
 
-    EXPECT_CALL(connection, CloseAndDestroyMock());
+    EXPECT_CALL(connection, AbortAndDestroyMock());
 }

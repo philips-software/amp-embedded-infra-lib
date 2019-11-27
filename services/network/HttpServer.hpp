@@ -124,6 +124,8 @@ namespace services
         virtual void SendingHttpResponse(infra::BoundedConstString response) {}
         virtual void ReceivedHttpRequest(infra::BoundedConstString request) {}
 
+        virtual void SetIdle();
+
         // Implementation of HttpPageServer
         virtual HttpPage* PageForRequest(const HttpRequestParser& request) override;
 
@@ -138,6 +140,7 @@ namespace services
         void PrepareForNextRequest();
         bool Expect100(HttpRequestParser& request) const;
         void SendBuffer();
+        void CheckIdleClose();
 
     protected:
         infra::SharedPtr<infra::StreamWriter> streamWriter;
