@@ -131,6 +131,9 @@ namespace services
     {
         assert(socket != INVALID_SOCKET);
 
+        std::array<char, 1> option{ true };
+        setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, option.data(), option.size());
+
         ULONG nonBlock = 1;
         if (ioctlsocket(socket, FIONBIO, &nonBlock) == SOCKET_ERROR)
             std::abort();

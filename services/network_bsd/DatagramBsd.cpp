@@ -121,6 +121,9 @@ namespace services
     {
         assert(socket != -1);
 
+        std::array<char, 1> option{ true };
+        setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, option.data(), option.size());
+
         if (fcntl(socket, F_SETFL, fcntl(socket, F_GETFL, 0) | O_NONBLOCK) == -1)
             std::abort();
     }
