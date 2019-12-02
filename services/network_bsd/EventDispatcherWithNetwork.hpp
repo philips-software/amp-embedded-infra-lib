@@ -1,7 +1,7 @@
 #ifndef SERVICES_EVENT_DISPATCHER_WITH_NETWORK_HPP
 #define SERVICES_EVENT_DISPATCHER_WITH_NETWORK_HPP
 
-#include "services/netowkr/Multicast.hpp"
+#include "services/network/Multicast.hpp"
 #include "services/network_bsd/ConnectionBsd.hpp"
 #include "services/network_bsd/DatagramBsd.hpp"
 #include <sys/select.h>
