@@ -20,7 +20,7 @@ namespace services
 
     HttpRequestFormatter::HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers)
         : verb(verb)
-        , requestTarget(requestTarget)
+        , requestTarget(requestTarget.empty() ? "/" : requestTarget)
         , content(content)
         , hostHeader("host", hostname)
         , headers(headers)
@@ -31,7 +31,7 @@ namespace services
 
     HttpRequestFormatter::HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, std::size_t contentSize, const HttpHeaders headers)
         : verb(verb)
-        , requestTarget(requestTarget)
+        , requestTarget(requestTarget.empty() ? "/" : requestTarget)
         , hostHeader("host", hostname)
         , headers(headers)
     {

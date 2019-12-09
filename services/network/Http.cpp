@@ -58,12 +58,12 @@ namespace services
     infra::BoundedConstString HostFromUrl(infra::BoundedConstString url)
     {
         auto schemeEnd = SchemeEndPositionFromUrl(url);
-        return url.substr(schemeEnd, url.find('/', schemeEnd) - schemeEnd);
+        return url.substr(schemeEnd, url.find_first_of("/?", schemeEnd) - schemeEnd);
     }
 
     infra::BoundedConstString PathFromUrl(infra::BoundedConstString url)
     {
-        auto separator = url.find('/', SchemeEndPositionFromUrl(url));
+        auto separator = url.find_first_of("/?", SchemeEndPositionFromUrl(url));
         if (separator == infra::BoundedString::npos)
             return infra::BoundedConstString();
         else

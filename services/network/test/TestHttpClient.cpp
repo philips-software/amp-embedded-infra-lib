@@ -13,7 +13,9 @@ TEST(HttpTest, parse_components_from_url)
 {
     EXPECT_EQ("http", services::SchemeFromUrl("http://host/path"));
     EXPECT_EQ("host", services::HostFromUrl("http://host/path"));
+    EXPECT_EQ("host", services::HostFromUrl("http://host?query"));
     EXPECT_EQ("/path", services::PathFromUrl("http://host/path"));
+    EXPECT_EQ("?query", services::PathFromUrl("http://host?query"));
     EXPECT_EQ("/path/more", services::PathFromUrl("http://host/path/more"));
 }
 
@@ -235,6 +237,16 @@ TEST_F(HttpClientTest, Get_request_is_executed)
     ExecuteAllActions();
 
     EXPECT_EQ("GET /api/thing HTTP/1.1\r\nhost:localhost\r\n\r\n", connection.SentDataAsString());
+}
+
+TEST_F(HttpClientTest, Get_request_is_executed_with_empty_path)
+{
+    Connect();
+    client.Subject().Get("/");
+
+    ExecuteAllActions();
+
+    EXPECT_EQ("GET / HTTP/1.1\r\nhost:localhost\r\n\r\n", connection.SentDataAsString());
 }
 
 TEST_F(HttpClientTest, Head_request_is_executed)
