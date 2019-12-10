@@ -236,7 +236,7 @@ TEST_F(HttpClientTest, Get_request_is_executed)
 
     ExecuteAllActions();
 
-    EXPECT_EQ("GET /api/thing HTTP/1.1\r\nhost:localhost\r\n\r\n", connection.SentDataAsString());
+    EXPECT_EQ("GET /api/thing HTTP/1.1\r\nHost:localhost\r\n\r\n", connection.SentDataAsString());
 }
 
 TEST_F(HttpClientTest, Get_request_is_executed_with_empty_path)
@@ -246,7 +246,7 @@ TEST_F(HttpClientTest, Get_request_is_executed_with_empty_path)
 
     ExecuteAllActions();
 
-    EXPECT_EQ("GET / HTTP/1.1\r\nhost:localhost\r\n\r\n", connection.SentDataAsString());
+    EXPECT_EQ("GET / HTTP/1.1\r\nHost:localhost\r\n\r\n", connection.SentDataAsString());
 }
 
 TEST_F(HttpClientTest, Head_request_is_executed)
@@ -256,7 +256,7 @@ TEST_F(HttpClientTest, Head_request_is_executed)
 
     ExecuteAllActions();
 
-    EXPECT_EQ("HEAD /api/thing HTTP/1.1\r\nhost:localhost\r\n\r\n", connection.SentDataAsString());
+    EXPECT_EQ("HEAD /api/thing HTTP/1.1\r\nHost:localhost\r\n\r\n", connection.SentDataAsString());
 }
 
 TEST_F(HttpClientTest, Connect_request_is_executed)
@@ -265,7 +265,7 @@ TEST_F(HttpClientTest, Connect_request_is_executed)
     client.Subject().Connect("/api/thing");
 
     ExecuteAllActions();
-    EXPECT_EQ("CONNECT /api/thing HTTP/1.1\r\nhost:localhost\r\n\r\n", connection.SentDataAsString());
+    EXPECT_EQ("CONNECT /api/thing HTTP/1.1\r\nHost:localhost\r\n\r\n", connection.SentDataAsString());
 }
 
 TEST_F(HttpClientTest, Options_request_is_executed)
@@ -274,7 +274,7 @@ TEST_F(HttpClientTest, Options_request_is_executed)
     client.Subject().Options("/api/thing");
 
     ExecuteAllActions();
-    EXPECT_EQ("OPTIONS /api/thing HTTP/1.1\r\nhost:localhost\r\n\r\n", connection.SentDataAsString());
+    EXPECT_EQ("OPTIONS /api/thing HTTP/1.1\r\nHost:localhost\r\n\r\n", connection.SentDataAsString());
 }
 
 TEST_F(HttpClientTest, Post_request_is_executed)
@@ -283,7 +283,7 @@ TEST_F(HttpClientTest, Post_request_is_executed)
     client.Subject().Post("/api/thing", "body contents");
 
     ExecuteAllActions();
-    EXPECT_EQ("POST /api/thing HTTP/1.1\r\nhost:localhost\r\ncontent-length:13\r\n\r\nbody contents", connection.SentDataAsString());
+    EXPECT_EQ("POST /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:13\r\n\r\nbody contents", connection.SentDataAsString());
 }
 
 TEST_F(HttpClientTest, Put_request_is_executed)
@@ -292,7 +292,7 @@ TEST_F(HttpClientTest, Put_request_is_executed)
     client.Subject().Put("/api/thing", "body contents");
 
     ExecuteAllActions();
-    EXPECT_EQ("PUT /api/thing HTTP/1.1\r\nhost:localhost\r\ncontent-length:13\r\n\r\nbody contents", connection.SentDataAsString());
+    EXPECT_EQ("PUT /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:13\r\n\r\nbody contents", connection.SentDataAsString());
 }
 
 TEST_F(HttpClientTest, Patch_request_is_executed)
@@ -301,7 +301,7 @@ TEST_F(HttpClientTest, Patch_request_is_executed)
     client.Subject().Patch("/api/thing", "body contents");
 
     ExecuteAllActions();
-    EXPECT_EQ("PATCH /api/thing HTTP/1.1\r\nhost:localhost\r\ncontent-length:13\r\n\r\nbody contents", connection.SentDataAsString());
+    EXPECT_EQ("PATCH /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:13\r\n\r\nbody contents", connection.SentDataAsString());
 }
 
 TEST_F(HttpClientTest, Delete_request_is_executed)
@@ -310,18 +310,18 @@ TEST_F(HttpClientTest, Delete_request_is_executed)
     client.Subject().Delete("/api/thing", {});
 
     ExecuteAllActions();
-    EXPECT_EQ("DELETE /api/thing HTTP/1.1\r\nhost:localhost\r\n\r\n", connection.SentDataAsString());
+    EXPECT_EQ("DELETE /api/thing HTTP/1.1\r\nHost:localhost\r\n\r\n", connection.SentDataAsString());
 }
 
 TEST_F(HttpClientTest, request_contains_correct_headers)
 {
     Connect();
-    std::array<services::HttpHeader, 2> headers{ services::HttpHeader{ "authorization", "Basic Y29ubmVjdGl2aXR5OmlzY29vbA==" }, { "connection", "close" } };
+    std::array<services::HttpHeader, 2> headers{ services::HttpHeader{ "Authorization", "Basic Y29ubmVjdGl2aXR5OmlzY29vbA==" }, { "Connection", "close" } };
 
     client.Subject().Get("/api/thing", headers);
 
     ExecuteAllActions();
-    EXPECT_EQ("GET /api/thing HTTP/1.1\r\nauthorization:Basic Y29ubmVjdGl2aXR5OmlzY29vbA==\r\nconnection:close\r\nhost:localhost\r\n\r\n", connection.SentDataAsString());
+    EXPECT_EQ("GET /api/thing HTTP/1.1\r\nAuthorization:Basic Y29ubmVjdGl2aXR5OmlzY29vbA==\r\nConnection:close\r\nHost:localhost\r\n\r\n", connection.SentDataAsString());
 }
 
 TEST_F(HttpClientTest, incorrect_response_version_should_not_call_StatusAvailable)
@@ -679,7 +679,7 @@ TEST_F(HttpClientTest, Put_request_with_large_body_is_executed)
 
     EXPECT_CALL(client, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamWriter>& writer)
     {
-        EXPECT_EQ("PUT /api/thing HTTP/1.1\r\nhost:localhost\r\ncontent-length:1024\r\n\r\n", connection.SentDataAsString());
+        EXPECT_EQ("PUT /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:1024\r\n\r\n", connection.SentDataAsString());
         connection.sentData.clear();
 
         infra::TextOutputStream::WithErrorPolicy stream(*writer);
@@ -713,7 +713,7 @@ TEST_F(HttpClientTest, Post_request_with_large_body_is_executed)
 
     EXPECT_CALL(client, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamWriter>& writer)
     {
-        EXPECT_EQ("POST /api/thing HTTP/1.1\r\nhost:localhost\r\ncontent-length:1024\r\n\r\n", connection.SentDataAsString());
+        EXPECT_EQ("POST /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:1024\r\n\r\n", connection.SentDataAsString());
         connection.sentData.clear();
 
         infra::TextOutputStream::WithErrorPolicy stream(*writer);
@@ -753,7 +753,7 @@ TEST_F(HttpClientTest, Put_request_with_unknown_body_size_is_executed)
     client.Subject().Put("/api/thing");
     ExecuteAllActions();
 
-    EXPECT_EQ("PUT /api/thing HTTP/1.1\r\nhost:localhost\r\ncontent-length:4\r\n\r\ndata", connection.SentDataAsString());
+    EXPECT_EQ("PUT /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:4\r\n\r\ndata", connection.SentDataAsString());
 
     EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
     EXPECT_CALL(connection, AckReceivedMock());
@@ -776,7 +776,7 @@ TEST_F(HttpClientTest, Post_request_with_unknown_body_size_is_executed)
     client.Subject().Post("/api/thing");
     ExecuteAllActions();
 
-    EXPECT_EQ("POST /api/thing HTTP/1.1\r\nhost:localhost\r\ncontent-length:4\r\n\r\ndata", connection.SentDataAsString());
+    EXPECT_EQ("POST /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:4\r\n\r\ndata", connection.SentDataAsString());
     
     EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
     EXPECT_CALL(connection, AckReceivedMock());

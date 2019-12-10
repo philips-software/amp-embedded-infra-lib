@@ -22,7 +22,7 @@ namespace services
         : verb(verb)
         , requestTarget(requestTarget.empty() ? "/" : requestTarget)
         , content(content)
-        , hostHeader("host", hostname)
+        , hostHeader("Host", hostname)
         , headers(headers)
     {
         if (!content.empty())
@@ -32,7 +32,7 @@ namespace services
     HttpRequestFormatter::HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, std::size_t contentSize, const HttpHeaders headers)
         : verb(verb)
         , requestTarget(requestTarget.empty() ? "/" : requestTarget)
-        , hostHeader("host", hostname)
+        , hostHeader("Host", hostname)
         , headers(headers)
     {
         AddContentLength(contentSize);
@@ -63,7 +63,7 @@ namespace services
     {
         infra::StringOutputStream contentLengthStream(contentLength);
         contentLengthStream << static_cast<uint64_t>(size);
-        contentLengthHeader.Emplace("content-length", contentLength);
+        contentLengthHeader.Emplace("Content-Length", contentLength);
     }
 
     std::size_t HttpRequestFormatter::HeadersSize() const
