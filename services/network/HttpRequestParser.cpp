@@ -68,7 +68,7 @@ namespace services
         {
             auto nextHeaderStart = headersTail.find("\r\n");
             infra::Tokenizer tokenizer(headersTail.substr(0, nextHeaderStart), ':');
-            if (tokenizer.Token(0) == name)
+            if (infra::CaseInsensitiveCompare(tokenizer.Token(0), name))
                 return infra::TrimLeft(tokenizer.TokenAndRest(1));
             if (nextHeaderStart == infra::BoundedString::npos)
                 break;

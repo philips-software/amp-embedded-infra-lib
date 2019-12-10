@@ -405,7 +405,7 @@ namespace services
                 }
 
                 auto header = HeaderFromString(headerLine);
-                if (header.Field() == "Content-Length")
+                if (infra::CaseInsensitiveCompare(header.Field(), "Content-Length"))
                 {
                     contentLength = 0;
                     infra::StringInputStream contentLengthStream(header.Value());

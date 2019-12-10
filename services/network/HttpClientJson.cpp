@@ -43,7 +43,8 @@ namespace services
 
     void HttpClientJson::HeaderAvailable(services::HttpHeader header)
     {
-        if (header.Field() == "content-type" && header.Value() != "application/json")
+        if (infra::CaseInsensitiveCompare(header.Field(), "Content-Type") &&
+            header.Value() != "application/json")
             ContentError();
     }
 

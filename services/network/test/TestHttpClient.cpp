@@ -474,6 +474,23 @@ TEST_F(HttpClientTest, ResponseAvailable_forwards_response_body_to_client)
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\nDate:Sat, 28 Nov 2009 04:36:25 GMT\r\nExpires:-1\r\nContent-Length:10\r\n\r\nbody\r\ndata")));
 }
 
+TEST_F(HttpClientTest, ResponseAvailable_with_lower_case_headers_forwards_response_body_to_client)
+{
+    Connect();
+
+    EXPECT_CALL(connection, AckReceivedMock()).Times(2);
+    EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
+    EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>& reader) {
+        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+        EXPECT_EQ("body\r\ndata", infra::ByteRangeAsString(stream.ContiguousRange()));
+    }));
+    EXPECT_CALL(client, BodyComplete());
+
+    client.Subject().Get("/");
+    ExecuteAllActions();
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\ncontent-length:10\r\n\r\nbody\r\ndata")));
+}
+
 TEST_F(HttpClientTest, ResponseAvailable_without_ContentLength_is_rejected)
 {
     Connect();

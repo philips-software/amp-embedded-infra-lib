@@ -441,19 +441,19 @@ namespace services
 
     void HttpClientWebSocketInitiation::HeaderAvailable(HttpHeader header)
     {
-        if (header.Field() == "Upgrade")
+        if (infra::CaseInsensitiveCompare(header.Field(), "Upgrade"))
         {
             if (header.Value() != "websocket")
                 ContentError();
         }
 
-        if (header.Field() == "Connection")
+        if (infra::CaseInsensitiveCompare(header.Field(), "Connection"))
         {
             if (header.Value() != "Upgrade")
                 ContentError();
         }
 
-        if (header.Field() == "Sec-WebSocket-Version")
+        if (infra::CaseInsensitiveCompare(header.Field(), "Sec-WebSocket-Version"))
         {
             if (header.Value() != "13")
                 ContentError();
