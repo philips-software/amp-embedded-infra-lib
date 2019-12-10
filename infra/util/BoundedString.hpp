@@ -5,6 +5,8 @@
 
 #include "infra/util/MemoryRange.hpp"
 #include "infra/util/WithStorage.hpp"
+#include <algorithm>
+#include <cctype>
 #include <cstdlib>
 #include <cstring>
 #include <ostream>
@@ -319,6 +321,11 @@ namespace infra
 
     template<class T>
         BoundedStringBase<T> TrimLeft(BoundedStringBase<T> string);
+
+    template<class T, class U>
+        bool CaseInsensitiveCompare(const infra::BoundedStringBase<T>& lhs, const infra::BoundedStringBase<U>& rhs);
+    template<class T>
+        bool CaseInsensitiveCompare(const infra::BoundedStringBase<T>& lhs, const char* rhs);
 
     template<class T>
         MemoryRange<T> MakeRange(infra::BoundedStringBase<T>& container);
@@ -1648,6 +1655,20 @@ namespace infra
                 return string.substr(i);
 
         return BoundedStringBase<T>();
+    }
+
+    template<class T, class U>
+    bool CaseInsensitiveCompare(const infra::BoundedStringBase<T>& lhs, const infra::BoundedStringBase<U>& rhs)
+    {
+        return lhs.size() == rhs.size() &&
+            std::equal(std::begin(lhs), std::end(lhs), std::begin(rhs), [](auto a, auto b) { return std::tolower(a) == std::tolower(b); });
+    }
+
+    template<class T>
+    bool CaseInsensitiveCompare(const infra::BoundedStringBase<T>& lhs, const char* rhs)
+    {
+        return lhs.size() == std::strlen(rhs) &&
+            std::equal(std::begin(lhs), std::end(lhs), rhs, [](auto a, auto b) { return std::tolower(a) == std::tolower(b); });
     }
 
     template<class T>

@@ -519,6 +519,18 @@ TEST(BoundedStringTest, TestCompareOperators)
     EXPECT_TRUE(stringStd >= string);
 }
 
+TEST(BoundedStringTest, TestCaseInsensitiveCompare)
+{
+    infra::BoundedConstString string("Abc");
+    infra::BoundedConstString string2("Abc");
+
+    EXPECT_FALSE(infra::CaseInsensitiveCompare(string, ""));
+    
+    EXPECT_TRUE(infra::CaseInsensitiveCompare(string, string2));
+    EXPECT_TRUE(infra::CaseInsensitiveCompare(string, "abc"));
+    EXPECT_TRUE(infra::CaseInsensitiveCompare(string, "ABC"));
+}
+
 TEST(BoundedStringTest, TestConcatenateWithStdString)
 {
     EXPECT_EQ("ab", std::string("a") + infra::BoundedConstString("b"));
