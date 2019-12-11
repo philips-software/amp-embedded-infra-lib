@@ -26,6 +26,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-5
+            - python3-pip
         sonarcloud:
           organization: philips-software
           token:
