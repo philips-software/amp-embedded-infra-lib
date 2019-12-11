@@ -27,6 +27,7 @@ matrix:
           packages:
             - g++-5
             - python3-pip
+            - python3-setuptools
         sonarcloud:
           organization: philips-software
           token:
