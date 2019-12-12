@@ -1,4 +1,4 @@
-macro(protocol_buffer_echo input)
+macro(protocol_buffer_echo_cpp input)
 
     if(NOT CCOLA_COMPONENT_SKIP)
         ccola_make_absolute_from_source(absolute_input ${input})
@@ -185,5 +185,13 @@ macro(protocol_buffer_echo_java input)
         ccola_set_source_group("Generated Files" "${generated_dir_echo}/${source_base}Services.java")
 
     endif()
+
+endmacro()
+
+macro(protocol_buffer_echo_all input)
+
+    protocol_buffer_echo_cpp(${input})
+    protocol_buffer_echo_csharp(${input})
+    protocol_buffer_echo_java(${input})
 
 endmacro()
