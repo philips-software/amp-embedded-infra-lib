@@ -128,11 +128,7 @@ namespace services
             virtual void NotificationDone();
 
         protected:
-            infra::StreamReader& NewReceiveStream();
             MqttClientImpl& clientConnection;
-
-        private:
-            infra::SharedPtr<infra::StreamReader> receiveStream;
         };
 
         class StateConnecting
@@ -178,7 +174,7 @@ namespace services
         private:
             void HandleNotificationData(infra::DataInputStream& inputStream);
             void HandlePubAck(infra::DataInputStream::WithErrorPolicy stream);
-            void HandleSubAck(infra::DataInputStream::WithErrorPolicy stream);
+            void HandleSubAck(infra::DataInputStream::WithErrorPolicy stream, infra::SharedPtr<infra::StreamReader>& reader);
             void HandlePublish(size_t packetLength, infra::DataInputStream::WithErrorPolicy stream);
             void ProcessSendOperations();
 
@@ -188,7 +184,7 @@ namespace services
             public:
                 virtual ~OperationBase() = default;
 
-                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::StreamWriter& writer) = 0;
+                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::StreamWriter& writer, MqttClientObserver& observer) = 0;
                 virtual std::size_t MessageSize(const MqttClientObserver& message) = 0;
             };
 
@@ -196,7 +192,7 @@ namespace services
                 : public OperationBase
             {
             public:
-                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::StreamWriter& writer) override;
+                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::StreamWriter& writer, MqttClientObserver& observer) override;
                 virtual std::size_t MessageSize(const MqttClientObserver& message) override;
             };
 
@@ -204,7 +200,7 @@ namespace services
                 : public OperationBase
             {
             public:
-                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::StreamWriter& writer) override;
+                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::StreamWriter& writer, MqttClientObserver& observer) override;
                 virtual std::size_t MessageSize(const MqttClientObserver& message) override;
             };
 
@@ -212,7 +208,7 @@ namespace services
                 : public OperationBase
             {
             public:
-                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::StreamWriter& writer) override;
+                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::StreamWriter& writer, MqttClientObserver& observer) override;
                 virtual std::size_t MessageSize(const MqttClientObserver& message) override;
             };
 
