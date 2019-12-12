@@ -1661,14 +1661,14 @@ namespace infra
     bool CaseInsensitiveCompare(const infra::BoundedStringBase<T>& lhs, const infra::BoundedStringBase<U>& rhs)
     {
         return lhs.size() == rhs.size() &&
-            std::equal(std::begin(lhs), std::end(lhs), std::begin(rhs), [](auto a, auto b) { return std::tolower(a) == std::tolower(b); });
+            std::equal(std::begin(lhs), std::end(lhs), std::begin(rhs), [](T a, U b) { return std::tolower(a) == std::tolower(b); });
     }
 
     template<class T>
     bool CaseInsensitiveCompare(const infra::BoundedStringBase<T>& lhs, const char* rhs)
     {
         return lhs.size() == std::strlen(rhs) &&
-            std::equal(std::begin(lhs), std::end(lhs), rhs, [](auto a, auto b) { return std::tolower(a) == std::tolower(b); });
+            std::equal(std::begin(lhs), std::end(lhs), rhs, [](T a, T b) { return std::tolower(a) == std::tolower(b); });
     }
 
     template<class T>
