@@ -5,7 +5,14 @@ namespace services
     TracingMqttClientImpl::TracingMqttClientImpl(MqttClientObserverFactory& factory, infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password, Tracer& tracer, infra::Duration operationTimeout)
         : MqttClientImpl(factory, clientId, username, password, operationTimeout)
         , tracer(tracer)
-    {}
+    {
+        tracer.Trace() << "MqttClient constructed";
+    }
+
+    TracingMqttClientImpl::~TracingMqttClientImpl()
+    {
+        tracer.Trace() << "MqttClient destructed";
+    }
 
     void TracingMqttClientImpl::Publish()
     {

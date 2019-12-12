@@ -8,7 +8,14 @@ namespace services
         CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, const ConnectionMbedTls::ParametersWorkaround& parameters, Tracer& tracer)
         : ConnectionMbedTls(std::move(createdObserver), certificates, randomDataGenerator, parameters)
         , tracer(tracer)
-    {}
+    {
+        tracer.Trace() << "ConnectionMbedTls::ConnectionMbedTls";
+    }
+
+    TracingConnectionMbedTls::~TracingConnectionMbedTls()
+    {
+        tracer.Trace() << "ConnectionMbedTls::~ConnectionMbedTls";
+    }
 
     void TracingConnectionMbedTls::TlsInitFailure(int reason)
     {
@@ -61,7 +68,6 @@ namespace services
     infra::SharedPtr<ConnectionMbedTls> AllocatorTracingConnectionMbedTlsAdapter::Allocate(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver,
         CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, const ConnectionMbedTls::ParametersWorkaround& parameters)
     {
-        tracer.Trace() << "AllocatorTracingConnectionMbedTlsAdapter::Allocate()";
         return allocator.Allocate(std::move(createdObserver), certificates, randomDataGenerator, parameters, tracer);
     }
 

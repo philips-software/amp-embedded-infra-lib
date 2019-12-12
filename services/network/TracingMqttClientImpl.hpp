@@ -11,6 +11,7 @@ namespace services
     {
     public:
         TracingMqttClientImpl(MqttClientObserverFactory& factory, infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password, Tracer& tracer, infra::Duration operationTimeout = std::chrono::seconds(30));
+        ~TracingMqttClientImpl();
 
         virtual void Publish() override;
         virtual void Subscribe() override;
