@@ -17,7 +17,7 @@ namespace services
     
     void HttpPageWebSocket::RespondToRequest(services::HttpRequestParser& parser, services::HttpServerConnection& connection)
     {
-        if (parser.Header("Upgrade") == "websocket" && parser.Header("Connection") == "Upgrade" && !parser.Header("Sec-WebSocket-Key").empty())
+        if (parser.Header("Upgrade") == "websocket" && infra::CaseInsensitiveCompare(parser.Header("Connection"), "Upgrade") && !parser.Header("Sec-WebSocket-Key").empty())
         {
             webSocketKey = parser.Header("Sec-WebSocket-Key").substr(0, webSocketKey.max_size());
             static const infra::BoundedConstString webSocketGuid("258EAFA5-E914-47DA-95CA-C5AB0DC85B11");

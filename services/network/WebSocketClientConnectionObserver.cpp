@@ -449,7 +449,7 @@ namespace services
 
         if (infra::CaseInsensitiveCompare(header.Field(), "Connection"))
         {
-            if (header.Value() != "Upgrade")
+            if (!infra::CaseInsensitiveCompare(header.Value(), "Upgrade"))
                 ContentError();
         }
 
