@@ -14,6 +14,7 @@ namespace services
 
     protected:
         virtual void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine) override;
+        virtual void ClosingConnection() override;
 
     private:
         friend class TracingStatusHttpClientConnectorImpl;

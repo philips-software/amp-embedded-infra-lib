@@ -29,6 +29,8 @@ namespace services
 
         virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) = 0;
         virtual void ConnectionFailed(ConnectFailReason reason) = 0;
+
+        static const char* ToString(ConnectFailReason reason);
     };
 
     class ConnectionFactoryWithNameResolver

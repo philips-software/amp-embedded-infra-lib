@@ -79,7 +79,7 @@ namespace services
         }
 
         infra::DataInputStream::WithErrorPolicy stream(reader, infra::softFail);
-        NtpMessage message{ 0 };
+        NtpMessage message{};
         stream >> message;
 
         if (!stream.Failed() && message.Valid(originRequestTime))
@@ -96,7 +96,7 @@ namespace services
     void SntpClient::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
-        NtpMessage message{ 0 };
+        NtpMessage message{};
 
         originRequestTime = timeWithLocalization.Utc().Now().time_since_epoch();
         message.header = CreateNtpHeader(NtpLeapIndicator::noWarning, ntpRequestVersion, NtpMode::client);

@@ -2,6 +2,21 @@
 
 namespace services
 {
+    const char* ClientConnectionObserverFactoryWithNameResolver::ToString(ConnectFailReason reason)
+    {
+        switch (reason)
+        {
+            case refused:
+                return "refused";
+            case connectionAllocationFailed:
+                return "connectionAllocationFailed";
+            case nameLookupFailed:
+                return "nameLookupFailed";
+            default:
+                std::abort();
+        }
+    }
+
     ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason Convert(ClientConnectionObserverFactory::ConnectFailReason reason)
     {
         switch (reason)
