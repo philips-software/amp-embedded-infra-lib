@@ -16,7 +16,6 @@ namespace infra
 
         explicit StdVectorInputStreamReader(const std::vector<uint8_t>& vector);
 
-    private:
         virtual void Extract(ByteRange range, StreamErrorPolicy& errorPolicy) override;
         virtual uint8_t Peek(StreamErrorPolicy& errorPolicy) override;
         virtual ConstByteRange ExtractContiguousRange(std::size_t max) override;
