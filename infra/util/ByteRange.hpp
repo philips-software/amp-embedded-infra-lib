@@ -27,6 +27,7 @@ namespace infra
         ConstByteRange MakeByteRange(const T& v);
     ConstByteRange MakeStringByteRange(const char* string);
     ConstByteRange MakeStringByteRange(const std::string& string);
+    std::string ByteRangeAsStdString(infra::ConstByteRange range);
 
 #ifdef CCOLA_HOST_BUILD //TICS !POR#021
     // gtest uses PrintTo to display the contents of ByteRange
@@ -104,6 +105,11 @@ namespace infra
     inline ConstByteRange MakeStringByteRange(const std::string& string)
     {
         return ReinterpretCastByteRange(MakeRange(string.data(), string.data() + string.size()));
+    }
+
+    inline std::string ByteRangeAsStdString(infra::ConstByteRange range)
+    {
+        return std::string(reinterpret_cast<const char*>(range.begin()), range.size());
     }
 }
 
