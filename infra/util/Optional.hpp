@@ -76,6 +76,7 @@ namespace infra
 
         template<class U>
             T ValueOr(U&& value) const;
+        T ValueOrDefault() const;
 
     private:
         void Reset();
@@ -297,6 +298,15 @@ namespace infra
             return **this;
         else
             return std::move(value);
+    }
+
+    template<class T>
+    T Optional<T>::ValueOrDefault() const
+    {
+        if (initialized)
+            return **this;
+        else
+            return T();
     }
 
     template<class T>

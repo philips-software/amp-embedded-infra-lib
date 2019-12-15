@@ -239,6 +239,18 @@ TEST(OptionalTest, ValueOrGivesParameterWhenNothingIsStored)
     EXPECT_EQ(2, i.ValueOr(2));
 }
 
+TEST(OptionalTest, ValueOrDefaultGivesStoredWhenAvailable)
+{
+    infra::Optional<int> i(infra::inPlace, 5);
+    EXPECT_EQ(5, i.ValueOrDefault());
+}
+
+TEST(OptionalTest, ValueOrDefaultGivesDefaultWhenNothingIsStored)
+{
+    infra::Optional<int> i;
+    EXPECT_EQ(0, i.ValueOrDefault());
+}
+
 struct PolymorphicBool
 {
     PolymorphicBool(bool value)
