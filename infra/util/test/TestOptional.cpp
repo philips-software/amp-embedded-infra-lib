@@ -239,6 +239,20 @@ TEST(OptionalTest, ValueOrGivesParameterWhenNothingIsStored)
     EXPECT_EQ(2, i.ValueOr(2));
 }
 
+TEST(OptionalTest, ValueOrConstRefGivesStoredWhenAvailable)
+{
+    infra::Optional<int> i(infra::inPlace, 5);
+    const int x = 2;
+    EXPECT_EQ(5, i.ValueOr(x));
+}
+
+TEST(OptionalTest, ValueOrConstRefGivesParameterWhenNothingIsStored)
+{
+    infra::Optional<int> i;
+    const int x = 2;
+    EXPECT_EQ(2, i.ValueOr(x));
+}
+
 TEST(OptionalTest, ValueOrDefaultGivesStoredWhenAvailable)
 {
     infra::Optional<int> i(infra::inPlace, 5);

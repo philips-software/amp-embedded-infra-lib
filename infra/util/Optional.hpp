@@ -74,8 +74,8 @@ namespace infra
         friend bool operator==(const T& x, const Optional& y) { return y == x; }
         friend bool operator!=(const T& x, const Optional& y) { return y != x; }
 
-        template<class U>
-            T ValueOr(U&& value) const;
+        T ValueOr(T&& value) const;
+        const T& ValueOr(const T& value) const;
         T ValueOrDefault() const;
 
     private:
@@ -88,6 +88,9 @@ namespace infra
 
     template<class T> 
         Optional<typename std::decay<T>::type> MakeOptional(T&& value);
+
+    template<class T, class F>
+        auto TransformOptional(const infra::Optional<T>& value, F transformation)->infra::Optional<decltype(transformation(*value))>;
 
     template<class T, std::size_t ExtraSize>
     class OptionalForPolymorphicObjects
@@ -291,13 +294,21 @@ namespace infra
     }
 
     template<class T>
-    template<class U>
-    T Optional<T>::ValueOr(U&& value) const
+    T Optional<T>::ValueOr(T&& value) const
     {
         if (initialized)
             return **this;
         else
             return std::move(value);
+    }
+
+    template<class T>
+    const T& Optional<T>::ValueOr(const T& value) const
+    {
+        if (initialized)
+            return **this;
+        else
+            return value;
     }
 
     template<class T>
