@@ -87,12 +87,14 @@ namespace infra
 
     template<class Base, class StorageType>
     WithStorage<Base, StorageType>::WithStorage(const WithStorage& other)
-        : Base(detail::StorageHolder<StorageType, Base>::storage, other)
+        : detail::StorageHolder<StorageType, Base>()
+        , Base(detail::StorageHolder<StorageType, Base>::storage, other)
     {}
 
     template<class Base, class StorageType>
     WithStorage<Base, StorageType>::WithStorage(WithStorage&& other)
-        : Base(detail::StorageHolder<StorageType, Base>::storage, std::move(other))
+        : detail::StorageHolder<StorageType, Base>()
+        , Base(detail::StorageHolder<StorageType, Base>::storage, std::move(other))
     {}
 
     template<class Base, class StorageType>
