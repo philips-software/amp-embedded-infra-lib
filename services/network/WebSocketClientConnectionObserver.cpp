@@ -483,6 +483,7 @@ namespace services
     void HttpClientWebSocketInitiation::ConnectionFailed(HttpClientObserverFactory::ConnectFailReason reason)
     {
         initiationError = Translate(reason);
+        HttpClientBasic::ConnectionFailed(reason);
     }
 
     WebSocketClientObserverFactory::ConnectFailReason HttpClientWebSocketInitiation::Translate(HttpClientObserverFactory::ConnectFailReason reason) const
