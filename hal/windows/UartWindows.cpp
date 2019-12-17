@@ -4,10 +4,12 @@
 namespace hal
 {
     UartWindows::UartWindows(const std::string& portName)
-        : readThread([this]() { ReadThread(); })
     {
         std::string port = "\\\\.\\" + portName;
         handle = CreateFile(port.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
+
+        if (handle == INVALID_HANDLE_VALUE)
+            return;
 
         DCB dcb;
         SecureZeroMemory(&dcb, sizeof(DCB));
@@ -26,12 +28,15 @@ namespace hal
         commTimeOuts.WriteTotalTimeoutMultiplier = 0;
         commTimeOuts.WriteTotalTimeoutConstant = 0;
         SetCommTimeouts(handle, &commTimeOuts);
+
+        readThread = std::thread([this]() { ReadThread(); });
     }
 
     UartWindows::~UartWindows()
     {
         running = false;
-        readThread.join();
+        if (readThread.joinable())
+            readThread.join();
         CloseHandle(handle);
     }
 
