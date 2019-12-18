@@ -36,6 +36,21 @@ namespace services
         MOCK_METHOD0(AbortAndDestroy, void());
         MOCK_CONST_METHOD0(Ipv4Address, IPv4Address());
         MOCK_METHOD1(SetHostname, void(infra::BoundedConstString hostname));
+
+        void SetOwnership(const infra::SharedPtr<Connection>& owner, const infra::SharedPtr<ConnectionObserver>& observer)
+        {
+            self = owner;
+            services::ConnectionWithHostname::SetOwnership(observer);
+        }
+
+        void ResetOwnership()
+        {
+            services::ConnectionWithHostname::ResetOwnership();
+            self = nullptr;
+        }
+
+    private:
+        infra::SharedPtr<Connection> self;
     };
 
     class ConnectionObserverMock
@@ -78,7 +93,6 @@ namespace services
         MOCK_METHOD1(CancelConnect, void(ClientConnectionObserverFactory& factory));
 
         void NewConnection(ServerConnectionObserverFactory& serverConnectionObserverFactory, Connection& connection, services::IPAddress address);
-        void NewConnection(ServerConnectionObserverFactory& serverConnectionObserverFactory, infra::SharedPtr<Connection> connection, services::IPAddress address);
     };
 
     class ServerConnectionObserverFactoryMock

@@ -122,7 +122,7 @@ public:
         connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
         {
             connectionObserver->Attach(connection);
-            connection.SetOwnership(nullptr, connectionObserver);
+            connection.SetOwnership(connectionObserver);
             connectionObserver->Connected();
         });
     }
@@ -224,7 +224,7 @@ TEST_F(HttpClientTest, after_ConnectionEstablished_HttpClient_is_connected)
     connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
     {
         connectionObserver->Attach(connection);
-        connection.SetOwnership(nullptr, connectionObserver);
+        connection.SetOwnership(connectionObserver);
         connectionObserver->Connected();
     });
 }

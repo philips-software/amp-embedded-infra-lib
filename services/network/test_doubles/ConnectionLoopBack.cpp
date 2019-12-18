@@ -46,6 +46,18 @@ namespace services
         peer.ResetOwnership();
     }
 
+    void ConnectionLoopBackPeer::SetOwnership(const infra::SharedPtr<ConnectionLoopBack>& owner, const infra::SharedPtr<ConnectionObserver>& observer)
+    {
+        this->owner = owner;
+        Connection::SetOwnership(observer);
+    }
+
+    void ConnectionLoopBackPeer::ResetOwnership()
+    {
+        Connection::ResetOwnership();
+        owner = nullptr;
+    }
+
     void ConnectionLoopBackPeer::TryAllocateSendStream()
     {
         assert(streamWriter.Allocatable());
@@ -101,12 +113,12 @@ namespace services
         , client(server, *this)
     {}
 
-    Connection& ConnectionLoopBack::Server()
+    ConnectionLoopBackPeer& ConnectionLoopBack::Server()
     {
         return server;
     }
 
-    Connection& ConnectionLoopBack::Client()
+    ConnectionLoopBackPeer& ConnectionLoopBack::Client()
     {
         return client;
     }

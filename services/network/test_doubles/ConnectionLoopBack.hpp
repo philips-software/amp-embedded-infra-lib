@@ -26,6 +26,9 @@ namespace services
         virtual void CloseAndDestroy() override;
         virtual void AbortAndDestroy() override;
 
+        void SetOwnership(const infra::SharedPtr<ConnectionLoopBack>& owner, const infra::SharedPtr<ConnectionObserver>& observer);
+        void ResetOwnership();
+
     private:
         void TryAllocateSendStream();
 
@@ -62,6 +65,7 @@ namespace services
         infra::SharedOptional<StreamWriterLoopBack> streamWriter;
         std::size_t requestedSendSize = 0;
         infra::SharedOptional<StreamReaderLoopBack> streamReader;
+        infra::SharedPtr<ConnectionLoopBack> owner;
     };
 
     class ConnectionLoopBack
@@ -70,8 +74,8 @@ namespace services
     public:
         ConnectionLoopBack();
 
-        Connection& Server();
-        Connection& Client();
+        ConnectionLoopBackPeer& Server();
+        ConnectionLoopBackPeer& Client();
 
         void Connect(infra::SharedPtr<services::ConnectionObserver> serverObserver, infra::SharedPtr<services::ConnectionObserver> clientObserver);
 

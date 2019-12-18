@@ -536,7 +536,7 @@ namespace services
         initiation = infra::none;
         factory.ConnectionEstablished([webSocketConnection](infra::SharedPtr<ConnectionObserver> connectionObserver)
         {
-            webSocketConnection->SetOwnership(nullptr, connectionObserver);
+            webSocketConnection->SetOwnership(connectionObserver);
             connectionObserver->Attach(*webSocketConnection);
             connectionObserver->Connected();
         });

@@ -17,9 +17,8 @@ namespace services
         this->observer = newObserver;
     }
 
-    void Connection::SetOwnership(const infra::SharedPtr<void>& owner, const infra::SharedPtr<ConnectionObserver>& observer)
+    void Connection::SetOwnership(const infra::SharedPtr<ConnectionObserver>& observer)
     {
-        this->owner = owner;
         this->observer = observer;
     }
 
@@ -32,8 +31,8 @@ namespace services
             observer->ClosingConnection();
             observer->Detach();
         }
+
         observer = nullptr;
-        owner = nullptr;
     }
 
     infra::SharedPtr<ConnectionObserver> Connection::Observer() const

@@ -91,7 +91,7 @@ namespace services
         if (connectionObserver != nullptr)
         {
             connectionObserver->Attach(*this);
-            SetOwnership(nullptr, connectionObserver);
+            SetOwnership(connectionObserver);
             createdObserver(SharedFromThis());
         }
         else

@@ -73,7 +73,7 @@ namespace services
     void ConnectionWin::SetObserver(infra::SharedPtr<services::ConnectionObserver> connectionObserver)
     {
         connectionObserver->Attach(*this);
-        SetOwnership(SharedFromThis(), connectionObserver);
+        SetSelfOwnership(connectionObserver);
         network.RegisterConnection(SharedFromThis());
         connectionObserver->Connected();
     }
@@ -146,6 +146,18 @@ namespace services
     {
         int result = WSAEventSelect(socket, event, (!receiveBuffer.full() ? FD_READ : 0) | (!sendBuffer.empty() ? FD_WRITE : 0) | FD_CLOSE);
         assert(result == 0);
+    }
+
+    void ConnectionWin::SetSelfOwnership(const infra::SharedPtr<ConnectionObserver>& observer)
+    {
+        self = SharedFromThis();
+        SetOwnership(observer);
+    }
+
+    void ConnectionWin::ResetOwnership()
+    {
+        Connection::ResetOwnership();
+        self = nullptr;
     }
 
     void ConnectionWin::TryAllocateSendStream()

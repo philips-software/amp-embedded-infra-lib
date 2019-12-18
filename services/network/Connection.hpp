@@ -47,13 +47,12 @@ namespace services
         virtual void AbortAndDestroy() = 0;
 
         void SwitchObserver(const infra::SharedPtr<ConnectionObserver>& newObserver);
-        void SetOwnership(const infra::SharedPtr<void>& owner, const infra::SharedPtr<ConnectionObserver>& observer);
+        void SetOwnership(const infra::SharedPtr<ConnectionObserver>& observer);
         void ResetOwnership();
 
         infra::SharedPtr<ConnectionObserver> Observer() const;
 
     private:
-        infra::SharedPtr<void> owner;
         infra::SharedPtr<ConnectionObserver> observer;
     };
 

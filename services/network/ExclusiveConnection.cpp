@@ -16,7 +16,7 @@ namespace services
         auto result = exclusiveConnection.Emplace(*this);
 
         connectionObserver->Attach(*result);
-        result->SetOwnership(nullptr, connectionObserver);
+        result->SetOwnership(connectionObserver);
 
         return result;
     }

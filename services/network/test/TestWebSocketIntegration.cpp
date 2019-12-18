@@ -78,7 +78,7 @@ TEST_F(WebSocketIntegrationTest, integration)
     ExecuteAllActions();
 
     infra::SharedOptional<testing::StrictMock<services::ConnectionObserverFullMock>> serverConnection;
-    webSocketServerConnectionCreator->SetOwnership(nullptr, serverConnection.Emplace());
+    webSocketServerConnectionCreator->SetOwnership(serverConnection.Emplace());
     serverConnection->Attach(*webSocketServerConnectionCreator);
 
     // Send data from client to server

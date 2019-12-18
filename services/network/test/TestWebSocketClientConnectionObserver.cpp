@@ -13,20 +13,22 @@ class WebSocketClientConnectionObserverTest
 public:
     WebSocketClientConnectionObserverTest()
     {
-        auto connectionPtr = connection.Emplace();
+        connectionPtr = connection.Emplace();
         services::ConnectionObserverStub previousConnectionObserver(*connection);
-        connection->SetOwnership(connectionPtr, webSocket.Emplace("path", *connection));
+        connection->SetOwnership(webSocket.Emplace("path", *connection));
         connectionObserver.Attach(*webSocket);
-        webSocket->SetOwnership(nullptr, infra::UnOwnedSharedPtr(connectionObserver));
+        webSocket->SetOwnership(infra::UnOwnedSharedPtr(connectionObserver));
         webSocket->Connected();
     }
 
     ~WebSocketClientConnectionObserverTest()
     {
-        if (connection)
+        if (connectionPtr != nullptr)
         {
-            EXPECT_CALL(connectionObserver, ClosingConnection());
-            connection->ResetOwnership();
+            if (connectionPtr->Observer() != nullptr)
+                EXPECT_CALL(connectionObserver, ClosingConnection());
+            connectionPtr->ResetOwnership();
+            connectionPtr = nullptr;
         }
     }
 
@@ -73,6 +75,7 @@ public:
     testing::StrictMock<services::ConnectionObserverFullMock> connectionObserver;
     infra::SharedOptional<services::WebSocketClientConnectionObserver> webSocket;
     infra::SharedOptional<testing::StrictMock<services::ConnectionStub>> connection;
+    infra::SharedPtr<services::Connection> connectionPtr;
 };
 
 TEST_F(WebSocketClientConnectionObserverTest, send_frame)

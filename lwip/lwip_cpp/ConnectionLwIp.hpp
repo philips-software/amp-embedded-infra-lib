@@ -39,7 +39,9 @@ namespace services
         virtual void AckReceived() override;
         virtual void CloseAndDestroy() override;
         virtual void AbortAndDestroy() override;
-        
+
+        void SetSelfOwnership(const infra::SharedPtr<ConnectionObserver>& observer);
+        void ResetOwnership();
         IPAddress IpAddress() const;
 
     private:
@@ -106,6 +108,8 @@ namespace services
         pbuf* receivedData = nullptr;
         std::size_t consumed = 0;
         bool dataReceivedScheduled = false;
+
+        infra::SharedPtr<void> self;
     };
 
     using AllocatorConnectionLwIp = infra::SharedObjectAllocator<ConnectionLwIp, void(tcp_pcb*)>;

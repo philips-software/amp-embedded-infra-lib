@@ -68,6 +68,18 @@ namespace services
             tcp_abort(control); // Err is called as a result, and this callback destroys this connection object
     }
 
+    void ConnectionLwIp::SetSelfOwnership(const infra::SharedPtr<ConnectionObserver>& observer)
+    {
+        self = SharedFromThis();
+        SetOwnership(observer);
+    }
+
+    void ConnectionLwIp::ResetOwnership()
+    {
+        Connection::ResetOwnership();
+        self = nullptr;
+    }
+
     IPAddress ConnectionLwIp::IpAddress() const
     {
         if (control->remote_ip.type == IPADDR_TYPE_V4)
@@ -387,7 +399,7 @@ namespace services
                 if (connectionObserver)
                 {
                     connectionObserver->Attach(*connection);
-                    connection->SetOwnership(connection, connectionObserver);
+                    connection->SetSelfOwnership(connectionObserver);
                     connectionObserver->Connected();
                 }
             }, connection->IpAddress());
@@ -466,7 +478,7 @@ namespace services
                 if (connectionObserver)
                 {
                     connectionObserver->Attach(*connection);
-                    connection->SetOwnership(connection, connectionObserver);
+                    connection->SetSelfOwnership(connectionObserver);
                     connectionObserver->Connected();
                 }
             });

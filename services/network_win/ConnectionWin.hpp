@@ -39,6 +39,8 @@ namespace services
         void UpdateEventFlags();
 
     private:
+        void SetSelfOwnership(const infra::SharedPtr<ConnectionObserver>& observer);
+        void ResetOwnership();
         void TryAllocateSendStream();
 
     private:
@@ -80,6 +82,8 @@ namespace services
         std::size_t requestedSendSize = 0;
         infra::SharedOptional<StreamReaderWin> streamReader;
         bool trySend = false;
+
+        infra::SharedPtr<void> self;
     };
 
     using AllocatorConnectionWin = infra::SharedObjectAllocator<ConnectionWin, void(EventDispatcherWithNetwork&, SOCKET)>;
