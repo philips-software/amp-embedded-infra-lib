@@ -292,7 +292,7 @@ TEST(ProtoCEchoPluginTest, invoke_service_proxy_method)
 {
     services::ConnectionMock connection;
     services::Echo echo;
-    echo.Attach(connection);
+    connection.Attach(infra::UnOwnedSharedPtr(echo));
     test_messages::TestService1Proxy service(echo);
 
     testing::StrictMock<infra::MockCallback<void()>> onGranted;
@@ -302,7 +302,7 @@ TEST(ProtoCEchoPluginTest, invoke_service_proxy_method)
     infra::ByteOutputStreamWriter::WithStorage<128> writer;
     auto writerPtr = infra::UnOwnedSharedPtr(writer);
     EXPECT_CALL(onGranted, callback());
-    connection.GetObserver().SendStreamAvailable(writerPtr);
+    connection.Observer().SendStreamAvailable(writerPtr);
 
     service.Method(test_messages::TestUint32(5));
     EXPECT_EQ((std::vector<uint8_t>{ 1, 10, 2, 8, 5 }), (std::vector<uint8_t>(writer.Storage().begin(), writer.Storage().begin() + 5)));
@@ -321,7 +321,7 @@ TEST(ProtoCEchoPluginTest, service_method_is_invoked)
 {
     testing::StrictMock<services::ConnectionMock> connection;
     services::Echo echo;
-    echo.Attach(connection);
+    connection.Attach(infra::UnOwnedSharedPtr(echo));
     testing::StrictMock<TestService1Mock> service(echo);
 
     infra::ByteInputStreamReader::WithStorage<128> reader;
@@ -332,5 +332,5 @@ TEST(ProtoCEchoPluginTest, service_method_is_invoked)
     EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr)).WillOnce(testing::Return(emptyReaderPtr));
     EXPECT_CALL(service, Method(test_messages::TestUint32(5)));
     EXPECT_CALL(connection, AckReceived());
-    connection.GetObserver().DataReceived();
+    connection.Observer().DataReceived();
 }

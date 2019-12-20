@@ -31,8 +31,8 @@ class ConnectionStubWithSendStreamControl
 public:
     ~ConnectionStubWithSendStreamControl()
     {
-        if (HasObserver())
-            GetObserver().ClosingConnection();
+        if (Attached())
+            Observer().ClosingConnection();
     }
 
     virtual void RequestSendStream(std::size_t sendSize) override
@@ -91,8 +91,7 @@ public:
     {
         connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
         {
-            connectionObserver->Attach(connection);
-            connection.SetOwnership(connectionObserver);
+            connection.Attach(connectionObserver);
             connectionObserver->Connected();
         });
 
@@ -203,8 +202,7 @@ TEST_F(MqttClientTest, after_connected_connect_message_is_sent)
 {
     connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
     {
-        connectionObserver->Attach(connection);
-        connection.SetOwnership(connectionObserver);
+        connection.Attach(connectionObserver);
         connectionObserver->Connected();
     });
 
@@ -219,8 +217,7 @@ TEST_F(MqttClientTest, after_conack_MqttClient_is_connected)
 {
     connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
     {
-        connectionObserver->Attach(connection);
-        connection.SetOwnership(connectionObserver);
+        connection.Attach(connectionObserver);
         connectionObserver->Connected();
     });
 
@@ -243,8 +240,7 @@ TEST_F(MqttClientTest, partial_conack_is_ignored)
 {
     connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
     {
-        connectionObserver->Attach(connection);
-        connection.SetOwnership(connectionObserver);
+        connection.Attach(connectionObserver);
         connectionObserver->Connected();
     });
 
@@ -261,8 +257,7 @@ TEST_F(MqttClientTest, invalid_response_results_in_ConnectionFailed)
 {
     connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
     {
-        connectionObserver->Attach(connection);
-        connection.SetOwnership(connectionObserver);
+        connection.Attach(connectionObserver);
         connectionObserver->Connected();
     });
 
@@ -278,8 +273,7 @@ TEST_F(MqttClientTest, timeout_results_in_ConnectionFailed)
 {
     connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
     {
-        connectionObserver->Attach(connection);
-        connection.SetOwnership(connectionObserver);
+        connection.Attach(connectionObserver);
         connectionObserver->Connected();
     });
 
@@ -294,8 +288,7 @@ TEST_F(MqttClientTest, client_observer_allocation_failure_results_in_connection_
 {
     connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
     {
-        connectionObserver->Attach(connection);
-        connection.SetOwnership(connectionObserver);
+        connection.Attach(connectionObserver);
         connectionObserver->Connected();
     });
 

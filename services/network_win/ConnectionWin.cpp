@@ -72,7 +72,7 @@ namespace services
 
     void ConnectionWin::SetObserver(infra::SharedPtr<services::ConnectionObserver> connectionObserver)
     {
-        connectionObserver->Attach(*this);
+        Attach(connectionObserver);
         SetSelfOwnership(connectionObserver);
         network.RegisterConnection(SharedFromThis());
         connectionObserver->Connected();
@@ -96,7 +96,7 @@ namespace services
 
                 infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionWin>& object)
                 {
-                    object->GetObserver().DataReceived();
+                    object->Observer().DataReceived();
                 }, SharedFromThis());
             }
             else
@@ -151,7 +151,6 @@ namespace services
     void ConnectionWin::SetSelfOwnership(const infra::SharedPtr<ConnectionObserver>& observer)
     {
         self = SharedFromThis();
-        SetOwnership(observer);
     }
 
     void ConnectionWin::ResetOwnership()
@@ -169,7 +168,7 @@ namespace services
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([size](const infra::SharedPtr<ConnectionWin>& object)
             {
                 infra::SharedPtr<infra::StreamWriter> writer = object->streamWriter.Emplace(*object, size);
-                object->GetObserver().SendStreamAvailable(std::move(writer));
+                object->Observer().SendStreamAvailable(std::move(writer));
             }, SharedFromThis());
 
             requestedSendSize = 0;

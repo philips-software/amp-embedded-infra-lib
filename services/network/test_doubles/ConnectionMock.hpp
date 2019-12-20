@@ -40,7 +40,6 @@ namespace services
         void SetOwnership(const infra::SharedPtr<Connection>& owner, const infra::SharedPtr<ConnectionObserver>& observer)
         {
             self = owner;
-            services::ConnectionWithHostname::SetOwnership(observer);
         }
 
         void ResetOwnership()
@@ -57,11 +56,6 @@ namespace services
         : public services::ConnectionObserver
     {
     public:
-        ConnectionObserverMock() = default;
-        explicit ConnectionObserverMock(services::Connection& connection);
-
-        using services::ConnectionObserver::Subject;
-
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override { SendStreamAvailable(writer); }
         MOCK_METHOD1(SendStreamAvailable, void(infra::SharedPtr<infra::StreamWriter> writer));
         MOCK_METHOD0(DataReceived, void());
@@ -72,8 +66,6 @@ namespace services
     {
     public:
         using ConnectionObserver::ConnectionObserver;
-
-        using services::ConnectionObserver::Subject;
 
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override { SendStreamAvailable(writer); }
         MOCK_METHOD1(SendStreamAvailable, void(infra::SharedPtr<infra::StreamWriter> writer));

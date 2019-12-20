@@ -15,9 +15,10 @@ public:
         , receiveBuffer(2048)
         , receivedDataQueue(infra::inPlace, storage)
         , connection(infra::inPlace, infra::MakeByteRange(sendBuffer), infra::MemoryRange<uint8_t>(receiveBuffer), *receivedDataQueue,  serialCommunication, infra::emptyFunction, infra::emptyFunction)
-        , observer(*connection)
         , firstRequest2([this]() { ExecuteAllActions(); })
-    {}
+    {
+        connection->Attach(infra::UnOwnedSharedPtr(observer));
+    }
 
     testing::StrictMock<hal::SerialCommunicationMockWithAssert> serialCommunication;
     infra::Execute firstRequest1;
@@ -220,7 +221,7 @@ public:
     {
         observer.Detach();
         connection.Emplace(infra::MakeByteRange(sendBuffer), infra::MemoryRange<uint8_t>(receiveBuffer), *receivedDataQueue, serialCommunication, infra::emptyFunction, infra::emptyFunction);
-        observer.Attach(*connection);
+        connection->Attach(infra::UnOwnedSharedPtr(observer));
     }
 
     void ReconstructConnectionWithMinUpdateSize(size_t minUpdateSize)
@@ -228,7 +229,7 @@ public:
         ExpectWindowSizeRequest([this]() { serialCommunication.actionOnCompletion(); });
         observer.Detach();
         connection.Emplace(infra::MakeByteRange(sendBuffer), infra::MemoryRange<uint8_t>(receiveBuffer), *receivedDataQueue, serialCommunication, infra::emptyFunction, infra::emptyFunction, minUpdateSize);
-        observer.Attach(*connection);
+        connection->Attach(infra::UnOwnedSharedPtr(observer));
         ExecuteAllActions();
     }
 

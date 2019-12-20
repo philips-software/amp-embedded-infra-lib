@@ -90,8 +90,7 @@ namespace services
     {
         if (connectionObserver != nullptr)
         {
-            connectionObserver->Attach(*this);
-            SetOwnership(connectionObserver);
+            Attach(connectionObserver);
             createdObserver(SharedFromThis());
         }
         else
@@ -147,7 +146,7 @@ namespace services
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object)
             {
                 object->dataReceivedScheduled = false;
-                object->GetObserver().DataReceived();
+                object->Observer().DataReceived();
             }, SharedFromThis());
         }
     }
@@ -155,7 +154,7 @@ namespace services
     void ConnectionMbedTls::Connected()
     {
         InitTls();
-        GetObserver().Connected();
+        Observer().Connected();
     }
 
     void ConnectionMbedTls::ClosingConnection()
@@ -166,12 +165,12 @@ namespace services
 
     void ConnectionMbedTls::Close()
     {
-        GetObserver().Close();
+        Observer().Close();
     }
 
     void ConnectionMbedTls::Abort()
     {
-        GetObserver().Abort();
+        Observer().Abort();
     }
 
     void ConnectionMbedTls::RequestSendStream(std::size_t sendSize)
@@ -239,7 +238,7 @@ namespace services
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object)
             {
                 infra::SharedPtr<StreamWriterMbedTls> stream = object->streamWriter.Emplace(*object);
-                object->GetObserver().SendStreamAvailable(std::move(stream));
+                object->Observer().SendStreamAvailable(std::move(stream));
             }, SharedFromThis());
 
             requestedSendSize = 0;

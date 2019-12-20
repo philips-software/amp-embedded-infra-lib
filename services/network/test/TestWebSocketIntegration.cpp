@@ -34,7 +34,7 @@ class WebSocketIntegrationTest
 TEST_F(WebSocketIntegrationTest, integration)
 {
     services::HttpPageServer httpServer;
-    infra::Creator<services::ConnectionObserver, services::WebSocketServerConnectionObserver::WithBufferSizes<512, 512>, void(services::Connection& connection)> webSocketServerConnectionCreator;
+    infra::Creator<services::ConnectionObserver, services::WebSocketServerConnectionObserver::WithBufferSizes<512, 512>, void()> webSocketServerConnectionCreator;
     services::WebSocketObserverFactoryImpl websocketObserverFactory({ webSocketServerConnectionCreator });
     services::HttpPageWebSocket webSocketPage("path", websocketObserverFactory);
     httpServer.AddPage(webSocketPage);
@@ -78,8 +78,7 @@ TEST_F(WebSocketIntegrationTest, integration)
     ExecuteAllActions();
 
     infra::SharedOptional<testing::StrictMock<services::ConnectionObserverFullMock>> serverConnection;
-    webSocketServerConnectionCreator->SetOwnership(serverConnection.Emplace());
-    serverConnection->Attach(*webSocketServerConnectionCreator);
+    webSocketServerConnectionCreator->Attach(serverConnection.Emplace());
 
     // Send data from client to server
     EXPECT_CALL(*clientConnection, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke([this, &serverConnection](const infra::SharedPtr<infra::StreamWriter>& writer)

@@ -5,6 +5,7 @@
 #include "infra/stream/OutputStream.hpp"
 #include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/Observer.hpp"
+#include "infra/util/SharedOwnedObserver.hpp"
 #include "infra/util/SharedPtr.hpp"
 #include "services/network/Address.hpp"
 
@@ -13,11 +14,8 @@ namespace services
     class Connection;
 
     class ConnectionObserver
-        : public infra::SingleObserver<ConnectionObserver, Connection>
+        : public infra::SharedOwnedObserver<ConnectionObserver, Connection>
     {
-    public:
-        using infra::SingleObserver<ConnectionObserver, Connection>::SingleObserver;
-
     public:
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& streamWriter) = 0;
         virtual void DataReceived() = 0;
@@ -26,12 +24,15 @@ namespace services
         virtual void Close();
         virtual void Abort();
 
+        //virtual void Attached(SubjectType& subject) override { Connected(); }
+        virtual void Detaching() override { ClosingConnection(); }
+
     private:
         friend class Connection;
     };
 
     class Connection
-        : public infra::Subject<ConnectionObserver>
+        : public infra::SharedOwningSubject<ConnectionObserver>
     {
     public:
         // A new send stream may only be requested when any previous send stream has been destroyed
@@ -46,14 +47,7 @@ namespace services
         virtual void CloseAndDestroy() = 0;
         virtual void AbortAndDestroy() = 0;
 
-        void SwitchObserver(const infra::SharedPtr<ConnectionObserver>& newObserver);
-        void SetOwnership(const infra::SharedPtr<ConnectionObserver>& observer);
         void ResetOwnership();
-
-        infra::SharedPtr<ConnectionObserver> Observer() const;
-
-    private:
-        infra::SharedPtr<ConnectionObserver> observer;
     };
 
     class ConnectionWithHostname

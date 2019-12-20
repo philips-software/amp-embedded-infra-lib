@@ -14,9 +14,7 @@ namespace services
         really_assert(exclusiveConnection.Allocatable());
         currentClaimer = std::move(claimer);
         auto result = exclusiveConnection.Emplace(*this);
-
-        connectionObserver->Attach(*result);
-        result->SetOwnership(connectionObserver);
+        result->Attach(connectionObserver);
 
         return result;
     }
@@ -73,19 +71,19 @@ namespace services
 
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& streamWriter)
     {
-        Connection::GetObserver().SendStreamAvailable(std::move(streamWriter));
+        Connection::Observer().SendStreamAvailable(std::move(streamWriter));
     }
 
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::DataReceived()
     {
-        Connection::GetObserver().DataReceived();
+        Connection::Observer().DataReceived();
     }
 
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::Connected()
     {
-        Connection::GetObserver().Connected();
+        Connection::Observer().Connected();
         if (mutex.resource.ClaimsPending() && mutex.cancelConnectionOnNewRequest)
-            Connection::GetObserver().Close();
+            Connection::Observer().Close();
     }
 
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::ClosingConnection()
@@ -96,13 +94,13 @@ namespace services
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::Close()
     {
         if (!invokedClose)
-            Connection::GetObserver().Close();
+            Connection::Observer().Close();
         invokedClose = true;
     }
 
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::Abort()
     {
-        Connection::GetObserver().Abort();
+        Connection::Observer().Abort();
     }
 
     ExclusiveConnectionFactory::ExclusiveConnectionFactory(infra::BoundedList<infra::NotifyingSharedOptional<Listener>>& listeners, infra::BoundedList<Connector>& connectors,

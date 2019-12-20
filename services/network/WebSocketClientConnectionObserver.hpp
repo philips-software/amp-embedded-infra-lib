@@ -56,7 +56,7 @@ namespace services
         , public services::Connection
     {
     public:
-        WebSocketClientConnectionObserver(infra::BoundedConstString path, services::Connection& connection);
+        WebSocketClientConnectionObserver(infra::BoundedConstString path);
         ~WebSocketClientConnectionObserver();
 
         // Implementation of ConnectionObserver
@@ -185,6 +185,7 @@ namespace services
         infra::BoundedVector<const services::HttpHeader>::WithMaxSize<6> headers;
         infra::BoundedString::WithStorage<32> webSocketKey;
         WebSocketClientObserverFactory::ConnectFailReason initiationError = WebSocketClientObserverFactory::ConnectFailReason::upgradeFailed;
+        bool done = false;
     };
 
     class WebSocketClientInitiationResult

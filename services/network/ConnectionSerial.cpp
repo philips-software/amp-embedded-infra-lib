@@ -34,7 +34,7 @@ namespace services
         infra::EventDispatcher::Instance().Schedule([this]()
         {
             infra::SharedPtr<StreamWriterWithCyclicBuffer> writer = sendStream.Emplace(sendBuffer, *this);
-            this->GetObserver().SendStreamAvailable(std::move(writer));
+            this->Observer().SendStreamAvailable(std::move(writer));
         });
     }
 
@@ -43,7 +43,7 @@ namespace services
         if (!observerNotified)
         {
             observerNotified = true;
-            GetObserver().DataReceived();
+            Observer().DataReceived();
         }
     }
 

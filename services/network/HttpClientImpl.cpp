@@ -188,7 +188,7 @@ namespace services
 
     void HttpClientImpl::Connected()
     {
-        infra::WeakPtr<services::HttpClientImpl> self = infra::StaticPointerCast<HttpClientImpl>(services::ConnectionObserver::Subject().Observer());
+        infra::WeakPtr<services::HttpClientImpl> self = infra::StaticPointerCast<HttpClientImpl>(services::ConnectionObserver::Subject().ObserverPtr());
         bodyReaderAccess.SetAction([self]()
         {
             if (auto sharedSelf = self.lock())
@@ -201,7 +201,7 @@ namespace services
     void HttpClientImpl::ClosingConnection()
     {
         bodyReaderAccess.SetAction(infra::emptyFunction);
-        GetObserver().ClosingConnection();
+        observer->ClosingConnection();
         observer->Detach();
         observer = nullptr;
     }
@@ -222,7 +222,7 @@ namespace services
         {
             auto reader = ConnectionObserver::Subject().ReceiveStream();
 
-            infra::WeakPtr<services::ConnectionObserver> self = services::ConnectionObserver::Subject().Observer();
+            infra::WeakPtr<services::ConnectionObserver> self = services::ConnectionObserver::Subject().ObserverPtr();
 
             response->DataReceived(*reader);
 

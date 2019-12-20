@@ -6,13 +6,8 @@ namespace services
     {
         serverConnectionObserverFactory.ConnectionAccepted([&connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
         {
-            connectionObserver->Attach(connection);
-            connection.SetOwnership(connectionObserver);
+            connection.Attach(connectionObserver);
             connectionObserver->Connected();
         }, address);
     }
-
-    ConnectionObserverMock::ConnectionObserverMock(services::Connection& connection)
-        : services::ConnectionObserver(connection)
-    {}
 }

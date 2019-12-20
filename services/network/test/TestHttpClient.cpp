@@ -99,9 +99,6 @@ class HttpClientTest
 {
 public:
     HttpClientTest()
-        : connector(connectionFactory)
-        , connectionPtr(infra::UnOwnedSharedPtr(connection))
-        , clientPtr(infra::UnOwnedSharedPtr(client))
     {
         EXPECT_CALL(factory, Hostname()).WillRepeatedly(testing::Return("localhost"));
         EXPECT_CALL(factory, Port()).WillRepeatedly(testing::Return(80));
@@ -109,6 +106,11 @@ public:
         EXPECT_CALL(factory2, Port()).WillRepeatedly(testing::Return(80));
         EXPECT_CALL(connectionFactory, Connect(testing::Ref(connector)));
         connector.Connect(factory);
+    }
+
+    ~HttpClientTest()
+    {
+        EXPECT_CALL(client, ClosingConnection()).Times(testing::AnyNumber());
     }
 
     void Connect()
@@ -121,20 +123,19 @@ public:
 
         connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
         {
-            connectionObserver->Attach(connection);
-            connection.SetOwnership(connectionObserver);
+            connection.Attach(connectionObserver);
             connectionObserver->Connected();
         });
     }
 
+    testing::StrictMock<services::HttpClientObserverMock> client;
     testing::StrictMock<services::ConnectionFactoryWithNameResolverMock> connectionFactory;
     testing::StrictMock<services::HttpClientObserverFactoryMock> factory;
     testing::StrictMock<services::HttpClientObserverFactoryMock> factory2;
-    services::HttpClientConnectorImpl<> connector;
+    services::HttpClientConnectorImpl<> connector{ connectionFactory };
     testing::StrictMock<services::ConnectionStubWithAckReceivedMock> connection;
-    infra::SharedPtr<services::Connection> connectionPtr;
-    testing::StrictMock<services::HttpClientObserverMock> client;
-    infra::SharedPtr<services::HttpClientObserver> clientPtr;
+    infra::SharedPtr<services::Connection> connectionPtr{ infra::UnOwnedSharedPtr(connection) };
+    infra::SharedPtr<services::HttpClientObserver> clientPtr{ infra::UnOwnedSharedPtr(client) };
 };
 
 TEST_F(HttpClientTest, refused_connection_propagates_to_HttpClientFactory)
@@ -223,8 +224,7 @@ TEST_F(HttpClientTest, after_ConnectionEstablished_HttpClient_is_connected)
 
     connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
     {
-        connectionObserver->Attach(connection);
-        connection.SetOwnership(connectionObserver);
+        connection.Attach(connectionObserver);
         connectionObserver->Connected();
     });
 }
@@ -656,7 +656,7 @@ TEST_F(HttpClientTest, closed_before_reader_is_reset)
     client.Subject().Get("/");
     ExecuteAllActions();
 
-    auto clientConnection = connection.Observer();  // Keep the client alive so that reader may be kept alive a little longer
+    auto clientConnection = connection.ObserverPtr();  // Keep the client alive so that reader may be kept alive a little longer
 
     EXPECT_CALL(connection, AckReceivedMock()).Times(2);
     EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));

@@ -71,7 +71,6 @@ namespace services
     void ConnectionLwIp::SetSelfOwnership(const infra::SharedPtr<ConnectionObserver>& observer)
     {
         self = SharedFromThis();
-        SetOwnership(observer);
     }
 
     void ConnectionLwIp::ResetOwnership()
@@ -128,7 +127,7 @@ namespace services
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([sendBuffer](const infra::SharedPtr<ConnectionLwIp>& self)
             {
                 infra::SharedPtr<infra::StreamWriter> stream = self->streamWriter.Emplace(*self, sendBuffer);
-                self->GetObserver().SendStreamAvailable(std::move(stream));
+                self->Observer().SendStreamAvailable(std::move(stream));
             }, SharedFromThis());
 
             requestedSendSize = 0;
@@ -168,13 +167,13 @@ namespace services
             else
                 pbuf_cat(receivedData, p);
 
-            if (!dataReceivedScheduled && HasObserver())
+            if (!dataReceivedScheduled && Attached())
             {
                 dataReceivedScheduled = true;
                 infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionLwIp>& self)
                 {
                     self->dataReceivedScheduled = false;
-                    self->GetObserver().DataReceived();
+                    self->Observer().DataReceived();
                 }, SharedFromThis());
             }
         }
@@ -398,7 +397,7 @@ namespace services
             {
                 if (connectionObserver)
                 {
-                    connectionObserver->Attach(*connection);
+                    connection->Attach(connectionObserver);
                     connection->SetSelfOwnership(connectionObserver);
                     connectionObserver->Connected();
                 }
@@ -477,7 +476,7 @@ namespace services
             {
                 if (connectionObserver)
                 {
-                    connectionObserver->Attach(*connection);
+                    connection->Attach(connectionObserver);
                     connection->SetSelfOwnership(connectionObserver);
                     connectionObserver->Connected();
                 }

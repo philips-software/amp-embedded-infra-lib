@@ -7,17 +7,17 @@
 
 namespace services
 {
-    WebSocketServerConnectionObserver::WebSocketServerConnectionObserver(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedDeque<uint8_t>& receiveBuffer, services::Connection& connection)
+    WebSocketServerConnectionObserver::WebSocketServerConnectionObserver(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedDeque<uint8_t>& receiveBuffer)
         : receivingState(infra::InPlaceType<ReceivingStateReceiveHeader>(), *this)
         , sendingState(infra::InPlaceType<SendingStateIdle>(), *this)
         , receiveBuffer(receiveBuffer)
         , sendBuffer(sendBuffer)
         , streamReader([this]() { ReceiveStreamAllocatable(); })
         , streamWriter([this]() { SendStreamAllocatable(); })
-    {
-        connection.GetObserver().Detach();
-        services::ConnectionObserver::Attach(connection);
+    {}
 
+    void WebSocketServerConnectionObserver::Connected()
+    {
         sendingState->CheckForSomethingToDo();
     }
 
@@ -34,7 +34,7 @@ namespace services
         sendingState->CheckForSomethingToDo();
 
         if (startSize != receiveBuffer.size())
-            services::Connection::GetObserver().DataReceived();
+            services::Connection::Observer().DataReceived();
     }
 
     void WebSocketServerConnectionObserver::ClosingConnection()
@@ -136,7 +136,7 @@ namespace services
     {
         if (streamWriter.Allocatable() && sendBuffer.empty() && requestedSendSize != 0)
         {
-            services::Connection::GetObserver().SendStreamAvailable(streamWriter.Emplace(infra::inPlace, sendBuffer, requestedSendSize));
+            services::Connection::Observer().SendStreamAvailable(streamWriter.Emplace(infra::inPlace, sendBuffer, requestedSendSize));
             requestedSendSize = 0;
         }
     }
@@ -324,7 +324,7 @@ namespace services
 
     void WebSocketServerConnectionObserver::SendingStateInternalData::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        infra::WeakPtr<void> self(connection.services::ConnectionObserver::Subject().Observer());
+        infra::WeakPtr<void> self(connection.services::ConnectionObserver::Subject().ObserverPtr());
 
         infra::PostAssign(connection.receivingStateThatWantsToSendData, nullptr)->Send(std::move(writer));
 

@@ -123,8 +123,10 @@ namespace services
 
     void WebSocketObserverFactoryImpl::OnAllocatable(services::Connection& connection)
     {
-        auto observer = webSocketConnectionObserver.Emplace(connectionCreator, connection);
-        connection.SwitchObserver(infra::MakeContainedSharedObject(**observer, observer));
+        auto observer = webSocketConnectionObserver.Emplace(connectionCreator);
+        connection.Detach();
+        connection.Attach(infra::MakeContainedSharedObject(**observer, observer));
+        (*observer)->Connected();
         webSocketConnectionObserver.OnAllocatable(nullptr);
     }
 }

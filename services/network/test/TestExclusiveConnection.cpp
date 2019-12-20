@@ -15,7 +15,7 @@ public:
         {
             auto connectionPtr = connection.Emplace();
             connection->SetOwnership(connectionPtr, observer);
-            observer->Attach(*connection);
+            connection->Attach(observer);
             observer->Connected();
         });
     }
@@ -82,7 +82,7 @@ public:
         {
             auto connectionPtr = connection.Emplace();
             connection->SetOwnership(connectionPtr, observer);
-            observer->Attach(*connection);
+            connection->Attach(observer);
             observer->Connected();
         }, services::IPv4AddressLocalHost());
         ExecuteAllActions();
@@ -123,13 +123,13 @@ TEST_F(ExclusiveConnectionTest, construct_one_connection_via_Connect)
     EXPECT_CALL(*connection, SetHostname("hostname"));
     static_cast<services::ConnectionWithHostname&>(connectionObserver->Subject()).SetHostname("hostname");
     EXPECT_CALL(*connectionObserver, SendStreamAvailable(testing::_));
-    connection->GetObserver().SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>());
+    connection->Observer().SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>());
     EXPECT_CALL(*connectionObserver, DataReceived());
-    connection->GetObserver().DataReceived();
+    connection->Observer().DataReceived();
     EXPECT_CALL(*connectionObserver, Close());
-    connection->GetObserver().Close();
+    connection->Observer().Close();
     EXPECT_CALL(*connectionObserver, Abort());
-    connection->GetObserver().Abort();
+    connection->Observer().Abort();
 
     EXPECT_CALL(*connectionObserver, ClosingConnection());
     connection->ResetOwnership();

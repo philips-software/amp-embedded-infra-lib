@@ -321,7 +321,7 @@ namespace services
 
     void MqttClientImpl::StateConnected::ClosingConnection()
     {
-        clientConnection.GetObserver().ClosingConnection();
+        clientConnection.observer->ClosingConnection();
         clientConnection.observer->Detach();
     }
 
@@ -470,7 +470,7 @@ namespace services
         infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<MqttClientImpl>& client)
         {
             client->DataReceived();
-        }, infra::MakeContainedSharedObject(clientConnection, clientConnection.ConnectionObserver::Subject().Observer()));
+        }, infra::MakeContainedSharedObject(clientConnection, clientConnection.ConnectionObserver::Subject().ObserverPtr()));
     }
 
     void MqttClientImpl::StateConnected::ProcessSendOperations()

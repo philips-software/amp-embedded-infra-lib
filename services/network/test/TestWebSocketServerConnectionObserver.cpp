@@ -13,23 +13,16 @@ class WebSocketServerConnectionObserverTest
 public:
     WebSocketServerConnectionObserverTest()
     {
-        connectionPtr = connection.Emplace();
-        services::ConnectionObserverStub previousConnectionObserver(*connection);
-        connection->SetOwnership(webSocket.Emplace(*connection));
-        connectionObserver.Attach(*webSocket);
-        webSocket->SetOwnership(infra::UnOwnedSharedPtr(connectionObserver));
+        connection.Attach(webSocket.Emplace());
+        webSocket->Attach(infra::UnOwnedSharedPtr(connectionObserver));
         webSocket->Connected();
     }
 
     ~WebSocketServerConnectionObserverTest()
     {
-        if (connectionPtr != nullptr)
-        {
-            if (connectionPtr->Observer() != nullptr)
-                EXPECT_CALL(connectionObserver, ClosingConnection());
-            connectionPtr->ResetOwnership();
-            connectionPtr = nullptr;
-        }
+        if (connection.Observer() != nullptr)
+            EXPECT_CALL(connectionObserver, ClosingConnection());
+        connection.ResetOwnership();
     }
 
     infra::SharedPtr<infra::StreamWriter> SendData(const std::vector<uint8_t>& dataToSend, std::size_t requestSize = 2)
@@ -71,8 +64,8 @@ public:
 
     testing::StrictMock<services::ConnectionObserverFullMock> connectionObserver;
     infra::SharedOptional<services::WebSocketServerConnectionObserver::WithBufferSizes<512, 512>> webSocket;
-    infra::SharedOptional<testing::StrictMock<services::ConnectionStub>> connection;
-    infra::SharedPtr<services::Connection> connectionPtr;
+    testing::StrictMock<services::ConnectionStub> connection;
+    infra::SharedPtr<services::Connection> connectionPtr{ infra::UnOwnedSharedPtr(connection) };
 };
 
 TEST_F(WebSocketServerConnectionObserverTest, MaxSendStreamSize)
@@ -82,14 +75,14 @@ TEST_F(WebSocketServerConnectionObserverTest, MaxSendStreamSize)
 
 TEST_F(WebSocketServerConnectionObserverTest, CloseAndDestroy_closes_websocket)
 {
-    EXPECT_CALL(*connection, CloseAndDestroyMock());
+    EXPECT_CALL(connection, CloseAndDestroyMock());
     EXPECT_CALL(connectionObserver, ClosingConnection());
     webSocket->CloseAndDestroy();
 }
 
 TEST_F(WebSocketServerConnectionObserverTest, AbortAndDestroy_closes_websocket)
 {
-    EXPECT_CALL(*connection, AbortAndDestroyMock());
+    EXPECT_CALL(connection, AbortAndDestroyMock());
     EXPECT_CALL(connectionObserver, ClosingConnection());
     webSocket->AbortAndDestroy();
 }
@@ -99,7 +92,7 @@ TEST_F(WebSocketServerConnectionObserverTest, forward_single_frame)
     std::array<uint8_t, 11> receiveData = { 0x82, 0x85, 0xa5, 0xb5, 0xc5, 0xd5, 0x34, 0x63, 0xa5, 0x7b, 0xc9 };
 
     ExpectDataReceived({ 0x91, 0xd6, 0x60, 0xae, 0x6c });
-    connection->SimulateDataReceived(receiveData);
+    connection.SimulateDataReceived(receiveData);
 }
 
 TEST_F(WebSocketServerConnectionObserverTest, frame_header_not_received_in_one_go)
@@ -107,9 +100,9 @@ TEST_F(WebSocketServerConnectionObserverTest, frame_header_not_received_in_one_g
     std::array<uint8_t, 1> receiveData1 = { 0x82 };
     std::array<uint8_t, 10> receiveData2 = { 0x85, 0xa5, 0xb5, 0xc5, 0xd5, 0x34, 0x63, 0xa5, 0x7b, 0xc9 };
 
-    connection->SimulateDataReceived(receiveData1);
+    connection.SimulateDataReceived(receiveData1);
     ExpectDataReceived({ 0x91, 0xd6, 0x60, 0xae, 0x6c });
-    connection->SimulateDataReceived(receiveData2);
+    connection.SimulateDataReceived(receiveData2);
 }
 
 TEST_F(WebSocketServerConnectionObserverTest, frame_payload_not_received_in_one_go)
@@ -119,11 +112,11 @@ TEST_F(WebSocketServerConnectionObserverTest, frame_payload_not_received_in_one_
     std::array<uint8_t, 1> receiveData3 = { 0xc9 };
 
     EXPECT_CALL(connectionObserver, DataReceived());
-    connection->SimulateDataReceived(receiveData1);
+    connection.SimulateDataReceived(receiveData1);
     EXPECT_CALL(connectionObserver, DataReceived());
-    connection->SimulateDataReceived(receiveData2);
+    connection.SimulateDataReceived(receiveData2);
     ExpectDataReceived({ 0x91, 0xd6, 0x60, 0xae, 0x6c });
-    connection->SimulateDataReceived(receiveData3);
+    connection.SimulateDataReceived(receiveData3);
 }
 
 TEST_F(WebSocketServerConnectionObserverTest, two_separate_frames)
@@ -132,7 +125,7 @@ TEST_F(WebSocketServerConnectionObserverTest, two_separate_frames)
 
     testing::InSequence s;
     ExpectDataReceived({ 0x91 });
-    connection->SimulateDataReceived(receiveData);
+    connection.SimulateDataReceived(receiveData);
     CheckDataReceived({ 0x91 });
 }
 
@@ -142,7 +135,7 @@ TEST_F(WebSocketServerConnectionObserverTest, two_continuous_frames_belongs_one_
 
     testing::InSequence s;
     ExpectDataReceived({ 0x91 });
-    connection->SimulateDataReceived(receiveData);
+    connection.SimulateDataReceived(receiveData);
     CheckDataReceived({ 0x91 });
 }
 
@@ -152,10 +145,10 @@ TEST_F(WebSocketServerConnectionObserverTest, one_full_one_partial_frames_separa
     std::array<uint8_t, 5> receiveData2 = { 0xa5, 0xb5, 0xc5, 0xd5, 0x34 };
 
     ExpectDataReceived({ 0x91 });
-    connection->SimulateDataReceived(receiveData1);
+    connection.SimulateDataReceived(receiveData1);
 
     ExpectDataReceived({ 0x91 });
-    connection->SimulateDataReceived(receiveData2);
+    connection.SimulateDataReceived(receiveData2);
 }
 
 TEST_F(WebSocketServerConnectionObserverTest, one_full_one_partial_frames_separate_in_data)
@@ -168,10 +161,10 @@ TEST_F(WebSocketServerConnectionObserverTest, one_full_one_partial_frames_separa
         CheckDataReceived({ 0x91, 0x91 });
         CheckDataReceived({ 0x91 });
     }));
-    connection->SimulateDataReceived(receiveData1);
+    connection.SimulateDataReceived(receiveData1);
 
     ExpectDataReceived({ 0x91 });
-    connection->SimulateDataReceived(receiveData2);
+    connection.SimulateDataReceived(receiveData2);
 }
 
 TEST_F(WebSocketServerConnectionObserverTest, two_partial_in_three_chunks)
@@ -180,17 +173,17 @@ TEST_F(WebSocketServerConnectionObserverTest, two_partial_in_three_chunks)
     std::array<uint8_t, 12> receiveData2 = { 0xa5, 0xa5, 0xa5, 0x34, 0x34, 0x82, 0x82, 0xa5, 0xa5, 0xa5, 0xa5, 0x34 };
     std::array<uint8_t, 1> receiveData3 = { 0x34 };
 
-    connection->SimulateDataReceived(receiveData1);
+    connection.SimulateDataReceived(receiveData1);
 
     EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
     {
         CheckDataReceived({ 0x91, 0x91 });
         CheckDataReceived({ 0x91 });
     }));
-    connection->SimulateDataReceived(receiveData2);
+    connection.SimulateDataReceived(receiveData2);
 
     ExpectDataReceived({ 0x91 });
-    connection->SimulateDataReceived(receiveData3);
+    connection.SimulateDataReceived(receiveData3);
 }
 
 TEST_F(WebSocketServerConnectionObserverTest, receive_frame_with_larger_payload_than_receive_buffer)
@@ -198,11 +191,11 @@ TEST_F(WebSocketServerConnectionObserverTest, receive_frame_with_larger_payload_
     std::array<uint8_t, 8> receiveDataHeader = { 0x82, 0xFE, 0x02, 0x08, 0xa5, 0xa5, 0xa5, 0xa5 };
     std::array<uint8_t, 20> receiveDataPayload = { 0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34, 0x34 };
 
-    connection->SimulateDataReceived(receiveDataHeader);
+    connection.SimulateDataReceived(receiveDataHeader);
     for (int i = 0; i != 25; ++i)
     {
         EXPECT_CALL(connectionObserver, DataReceived());
-        connection->SimulateDataReceived(receiveDataPayload);
+        connection.SimulateDataReceived(receiveDataPayload);
     }
 
     testing::InSequence s;
@@ -212,7 +205,7 @@ TEST_F(WebSocketServerConnectionObserverTest, receive_frame_with_larger_payload_
         CheckDataReceived(std::vector<uint8_t>(8, 0x91));
     }));
 
-    connection->SimulateDataReceived(receiveDataPayload);
+    connection.SimulateDataReceived(receiveDataPayload);
 }
 
 TEST_F(WebSocketServerConnectionObserverTest, receive_close_request_from_client)
@@ -220,8 +213,8 @@ TEST_F(WebSocketServerConnectionObserverTest, receive_close_request_from_client)
     std::array<uint8_t, 11> receiveData = { 0x88, 0x85, 0xa5, 0xb5, 0xc5, 0xd5, 0x34, 0x63, 0xa5, 0x7b, 0xc9 };
     std::vector<uint8_t> sendData = { 0x88, 0x00 };
 
-    connection->SimulateDataReceived(receiveData);
-    EXPECT_CALL(*connection, CloseAndDestroyMock()).WillOnce(testing::Invoke([this, &sendData]() { EXPECT_EQ(sendData, connection->sentData); }));
+    connection.SimulateDataReceived(receiveData);
+    EXPECT_CALL(connection, CloseAndDestroyMock()).WillOnce(testing::Invoke([this, &sendData]() { EXPECT_EQ(sendData, connection.sentData); }));
     EXPECT_CALL(connectionObserver, ClosingConnection());
     ExecuteAllActions();
 }
@@ -231,8 +224,8 @@ TEST_F(WebSocketServerConnectionObserverTest, receive_wrong_operation_code)
     std::array<uint8_t, 7> receiveData = { 0x85, 0x81, 0xa5, 0xb5, 0xc5, 0xd5, 0x34 };
     std::vector<uint8_t> sendData = { 0x88, 0x00 };
 
-    connection->SimulateDataReceived(receiveData);
-    EXPECT_CALL(*connection, CloseAndDestroyMock()).WillOnce(testing::Invoke([this, &sendData]() { EXPECT_EQ(sendData, connection->sentData); }));
+    connection.SimulateDataReceived(receiveData);
+    EXPECT_CALL(connection, CloseAndDestroyMock()).WillOnce(testing::Invoke([this, &sendData]() { EXPECT_EQ(sendData, connection.sentData); }));
     EXPECT_CALL(connectionObserver, ClosingConnection());
     ExecuteAllActions();
 }
@@ -242,8 +235,8 @@ TEST_F(WebSocketServerConnectionObserverTest, receive_unmasked_frame_from_client
     std::array<uint8_t, 7> receiveData = { 0x82, 0x01, 0xa5, 0xb5, 0xc5, 0xd5, 0x34 };
     std::vector<uint8_t> sendData = { 0x88, 0x00 };
 
-    connection->SimulateDataReceived(receiveData);
-    EXPECT_CALL(*connection, CloseAndDestroyMock()).WillOnce(testing::Invoke([this, &sendData]() { EXPECT_EQ(sendData, connection->sentData); }));
+    connection.SimulateDataReceived(receiveData);
+    EXPECT_CALL(connection, CloseAndDestroyMock()).WillOnce(testing::Invoke([this, &sendData]() { EXPECT_EQ(sendData, connection.sentData); }));
     EXPECT_CALL(connectionObserver, ClosingConnection());
     ExecuteAllActions();
 }
@@ -253,8 +246,8 @@ TEST_F(WebSocketServerConnectionObserverTest, receive_non_zero_rsv)
     std::array<uint8_t, 7> receiveData = { 0x92, 0x81, 0xa5, 0xb5, 0xc5, 0xd5, 0x34 };
     std::vector<uint8_t> sendData = { 0x88, 0x00 };
 
-    connection->SimulateDataReceived(receiveData);
-    EXPECT_CALL(*connection, CloseAndDestroyMock()).WillOnce(testing::Invoke([this, &sendData]() { EXPECT_EQ(sendData, connection->sentData); }));
+    connection.SimulateDataReceived(receiveData);
+    EXPECT_CALL(connection, CloseAndDestroyMock()).WillOnce(testing::Invoke([this, &sendData]() { EXPECT_EQ(sendData, connection.sentData); }));
     EXPECT_CALL(connectionObserver, ClosingConnection());
     ExecuteAllActions();
 }
@@ -264,9 +257,9 @@ TEST_F(WebSocketServerConnectionObserverTest, receive_ping_request)
     std::array<uint8_t, 11> receiveData = { 0x89, 0x85, 0xa5, 0xb5, 0xc5, 0xd5, 0x34, 0x63, 0xa5, 0x7b, 0xc9 };
     std::vector<uint8_t> sendFrame = { 0x8A, 0x05, 0x91, 0xd6, 0x60, 0xae, 0x6c };
 
-    connection->SimulateDataReceived(receiveData);
+    connection.SimulateDataReceived(receiveData);
     ExecuteAllActions();
-    EXPECT_EQ(sendFrame, connection->sentData);
+    EXPECT_EQ(sendFrame, connection.sentData);
 }
 
 TEST_F(WebSocketServerConnectionObserverTest, send_data_in_one_frame)
@@ -275,7 +268,7 @@ TEST_F(WebSocketServerConnectionObserverTest, send_data_in_one_frame)
 
     SendData({ 0x91, 0x91 });
     ExecuteAllActions();
-    EXPECT_EQ(sendFrame, connection->sentData);
+    EXPECT_EQ(sendFrame, connection.sentData);
 }
 
 TEST_F(WebSocketServerConnectionObserverTest, send_data_after_first_frame)
@@ -299,7 +292,7 @@ TEST_F(WebSocketServerConnectionObserverTest, send_data_after_first_frame)
     ));
     ExecuteAllActions();
 
-    EXPECT_EQ((std::vector<uint8_t>{ 0x82, 0x02, 0x91, 0x91, 0x82, 0x02, 0x91, 0x91 }), connection->sentData);
+    EXPECT_EQ((std::vector<uint8_t>{ 0x82, 0x02, 0x91, 0x91, 0x82, 0x02, 0x91, 0x91 }), connection.sentData);
 }
 
 TEST_F(WebSocketServerConnectionObserverTest, dont_use_whole_buffer)
@@ -308,5 +301,5 @@ TEST_F(WebSocketServerConnectionObserverTest, dont_use_whole_buffer)
 
     SendData({ 0x91, 0x91 }, 128);
     ExecuteAllActions();
-    EXPECT_EQ(sendFrame, connection->sentData);
+    EXPECT_EQ(sendFrame, connection.sentData);
 }

@@ -25,10 +25,11 @@ namespace services
             using WithBufferSizes = infra::WithStorage<infra::WithStorage<WebSocketServerConnectionObserver, infra::BoundedVector<uint8_t>::WithMaxSize<SendBufferSize>>,
                 infra::BoundedDeque<uint8_t>::WithMaxSize<ReceiveBufferSize>>;
 
-        WebSocketServerConnectionObserver(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedDeque<uint8_t>& receiveBuffer, services::Connection& connection);
+        WebSocketServerConnectionObserver(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedDeque<uint8_t>& receiveBuffer);
 
     public:
         // Implementation of ConnectionObserver
+        virtual void Connected() override;
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void DataReceived() override;
         virtual void ClosingConnection() override;

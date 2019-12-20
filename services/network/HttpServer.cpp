@@ -189,9 +189,9 @@ namespace services
         Subject().AckReceived();
 
         auto& connection = Subject();
+        auto newObserverPtr = infra::MakeContainedSharedObject(newObserver, connection.ObserverPtr());
         Detach();
-        newObserver.Attach(connection);
-        connection.SwitchObserver(infra::MakeContainedSharedObject(newObserver, connection.Observer()));
+        connection.Attach(newObserverPtr);
     }
 
     void HttpServerConnectionObserver::SetIdle()
