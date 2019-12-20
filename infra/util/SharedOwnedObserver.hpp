@@ -9,7 +9,7 @@ namespace infra
     template<class ObserverType>
     class SharedOwningSubject;
 
-    template<class Descendant>
+    template<class Descendant, class SubjectType_>
     class SharedOwnedObserver
     {
     protected:
@@ -19,7 +19,7 @@ namespace infra
         ~SharedOwnedObserver();
 
     public:
-        using SubjectType = SharedOwningSubject<SharedOwnedObserver<Descendant>>;
+        using SubjectType = SubjectType_;
 
         bool Attached() const;
         SubjectType& Subject() const;
@@ -29,7 +29,7 @@ namespace infra
         virtual void Detaching() {}
 
     private:
-        friend class SubjectType;
+        friend SharedOwningSubject<Descendant>;
 
         SubjectType* subject = nullptr;
     };
@@ -52,34 +52,34 @@ namespace infra
         infra::SharedPtr<ObserverType> ObserverPtr() const;
 
     private:
-        friend class ObserverType;
+        friend ObserverType;
 
         infra::SharedPtr<ObserverType> observer;
     };
 
     //// Implementation ////
 
-    template<class Descendant>
-    SharedOwnedObserver<Descendant>::~SharedOwnedObserver()
+    template<class Descendant, class SubjectType_>
+    SharedOwnedObserver<Descendant, SubjectType_>::~SharedOwnedObserver()
     {
         if (subject != nullptr)
             Detach();
     }
 
-    template<class Descendant>
-    bool SharedOwnedObserver<Descendant>::Attached() const
+    template<class Descendant, class SubjectType_>
+    bool SharedOwnedObserver<Descendant, SubjectType_>::Attached() const
     {
         return subject != nullptr;
     }
 
-    template<class Descendant>
-    SubjectType& SharedOwnedObserver<Descendant>::Subject() const
+    template<class Descendant, class SubjectType_>
+    typename SharedOwnedObserver<Descendant, SubjectType_>::SubjectType& SharedOwnedObserver<Descendant, SubjectType_>::Subject() const
     {
         return *subject;
     }
 
-    template<class Descendant>
-    void SharedOwnedObserver<Descendant>::Detach()
+    template<class Descendant, class SubjectType_>
+    void SharedOwnedObserver<Descendant, SubjectType_>::Detach()
     {
         assert(subject != nullptr);
         subject->Detach();
@@ -117,7 +117,7 @@ namespace infra
         assert(observer != nullptr);
 
         this->observer = observer;
-        this->observer->subject = this;
+        this->observer->subject = static_cast<typename ObserverType::SubjectType*>(this);
         this->observer->Attached();
     }
 
