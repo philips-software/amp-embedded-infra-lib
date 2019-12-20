@@ -20,7 +20,7 @@ public:
 
     ~WebSocketServerConnectionObserverTest()
     {
-        if (connection.Observer() != nullptr)
+        if (connection.ObserverPtr() != nullptr)
             EXPECT_CALL(connectionObserver, ClosingConnection());
         connection.ResetOwnership();
     }
