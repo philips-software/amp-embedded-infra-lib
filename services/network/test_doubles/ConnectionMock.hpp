@@ -44,7 +44,7 @@ namespace services
 
         void ResetOwnership()
         {
-            services::ConnectionWithHostname::ResetOwnership();
+            Detach();
             self = nullptr;
         }
 

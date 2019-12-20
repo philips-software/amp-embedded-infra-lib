@@ -123,7 +123,7 @@ TEST_F(SingleConnectionListenerTest, second_connection_while_first_is_destroyed_
 
     infra::WeakPtr<services::ConnectionObserver> weakObserver = connectionObserver;
     EXPECT_CALL(connectionObserverMock, Destructed());
-    connection.ResetOwnership();
+    connection.Detach();
     connectionObserver = nullptr;
 
     serverConnectionObserverFactory->ConnectionAccepted(
@@ -155,7 +155,7 @@ TEST_F(SingleConnectionListenerTest, third_connection_while_second_has_not_yet_b
 
     infra::WeakPtr<services::ConnectionObserver> weakObserver = connectionObserver;
     EXPECT_CALL(connectionObserverMock, Destructed());
-    connection.ResetOwnership();
+    connection.Detach();
     connectionObserver = nullptr;
 
     serverConnectionObserverFactory->ConnectionAccepted(

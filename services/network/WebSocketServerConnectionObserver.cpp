@@ -39,7 +39,7 @@ namespace services
 
     void WebSocketServerConnectionObserver::ClosingConnection()
     {
-        ResetOwnership();
+        Connection::Detach();
     }
 
     void WebSocketServerConnectionObserver::RequestSendStream(std::size_t sendSize)

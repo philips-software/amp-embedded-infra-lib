@@ -11,10 +11,4 @@ namespace services
     {
         Subject().AbortAndDestroy();
     }
-
-    void Connection::ResetOwnership()
-    {
-        if (Attached())
-            Detach();
-    }
 }

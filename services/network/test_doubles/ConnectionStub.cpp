@@ -35,13 +35,13 @@ namespace services
     void ConnectionStub::CloseAndDestroy()
     {
         CloseAndDestroyMock();
-        ResetOwnership();
+        Detach();
     }
 
     void ConnectionStub::AbortAndDestroy()
     {
         AbortAndDestroyMock();
-        ResetOwnership();
+        Detach();
     }
 
     void ConnectionStub::SimulateDataReceived(infra::ConstByteRange data)
@@ -93,13 +93,13 @@ namespace services
     void ConnectionStubWithAckReceivedMock::CloseAndDestroy()
     {
         CloseAndDestroyMock();
-        ResetOwnership();
+        Detach();
     }
 
     void ConnectionStubWithAckReceivedMock::AbortAndDestroy()
     {
         AbortAndDestroyMock();
-        ResetOwnership();
+        Detach();
     }
 
     void ConnectionObserverStub::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)

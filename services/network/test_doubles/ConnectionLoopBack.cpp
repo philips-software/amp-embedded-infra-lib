@@ -53,7 +53,7 @@ namespace services
 
     void ConnectionLoopBackPeer::ResetOwnership()
     {
-        Connection::ResetOwnership();
+        Detach();
         owner = nullptr;
     }
 

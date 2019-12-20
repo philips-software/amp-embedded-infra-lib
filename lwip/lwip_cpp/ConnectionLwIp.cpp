@@ -75,7 +75,7 @@ namespace services
 
     void ConnectionLwIp::ResetOwnership()
     {
-        Connection::ResetOwnership();
+        Detach();
         self = nullptr;
     }
 

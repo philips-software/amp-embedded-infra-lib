@@ -20,9 +20,11 @@ public:
 
     ~WebSocketServerConnectionObserverTest()
     {
-        if (connection.ObserverPtr() != nullptr)
+        if (connection.Attached())
+        {
             EXPECT_CALL(connectionObserver, ClosingConnection());
-        connection.ResetOwnership();
+            connection.Detach();
+        }
     }
 
     infra::SharedPtr<infra::StreamWriter> SendData(const std::vector<uint8_t>& dataToSend, std::size_t requestSize = 2)

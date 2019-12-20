@@ -155,7 +155,7 @@ namespace services
 
     void ConnectionWin::ResetOwnership()
     {
-        Connection::ResetOwnership();
+        Detach();
         self = nullptr;
     }
 

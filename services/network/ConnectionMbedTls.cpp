@@ -82,8 +82,6 @@ namespace services
         mbedtls_ctr_drbg_free(&ctr_drbg);
         mbedtls_ssl_free(&sslContext);
         mbedtls_ssl_config_free(&sslConfig);
-
-        ResetOwnership();
     }
 
     void ConnectionMbedTls::CreatedObserver(infra::SharedPtr<services::ConnectionObserver> connectionObserver)
@@ -160,7 +158,7 @@ namespace services
     void ConnectionMbedTls::ClosingConnection()
     {
         encryptedSendWriter = nullptr;
-        ResetOwnership();
+        ConnectionWithHostname::Detach();
     }
 
     void ConnectionMbedTls::Close()

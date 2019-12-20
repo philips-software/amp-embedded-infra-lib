@@ -25,7 +25,6 @@ namespace services
         {
         public:
             ExclusiveConnection(ExclusiveConnectionFactoryMutex& mutex);
-            ~ExclusiveConnection();
 
             // Implementation of Connection
             virtual void RequestSendStream(std::size_t sendSize) override;

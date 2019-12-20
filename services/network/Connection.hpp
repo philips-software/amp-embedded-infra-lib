@@ -46,8 +46,6 @@ namespace services
 
         virtual void CloseAndDestroy() = 0;
         virtual void AbortAndDestroy() = 0;
-
-        void ResetOwnership();
     };
 
     class ConnectionWithHostname

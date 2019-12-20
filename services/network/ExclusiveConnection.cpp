@@ -29,11 +29,6 @@ namespace services
         : mutex(mutex)
     {}
 
-    ExclusiveConnectionFactoryMutex::ExclusiveConnection::~ExclusiveConnection()
-    {
-        ResetOwnership();
-    }
-
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::RequestSendStream(std::size_t sendSize)
     {
         return ConnectionObserver::Subject().RequestSendStream(sendSize);
@@ -88,7 +83,7 @@ namespace services
 
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::ClosingConnection()
     {
-        ResetOwnership();
+        ConnectionWithHostname::Detach();
     }
 
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::Close()

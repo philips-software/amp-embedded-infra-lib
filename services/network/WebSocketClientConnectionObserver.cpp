@@ -13,11 +13,6 @@ namespace services
         : streamWriter([this]() { StreamWriterAllocatable(); })
     {}
 
-    WebSocketClientConnectionObserver::~WebSocketClientConnectionObserver()
-    {
-        ResetOwnership();
-    }
-
     void WebSocketClientConnectionObserver::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         if (pongStreamRequested)
@@ -46,7 +41,7 @@ namespace services
 
     void WebSocketClientConnectionObserver::ClosingConnection()
     {
-        ResetOwnership();
+        Connection::Detach();
     }
 
     void WebSocketClientConnectionObserver::RequestSendStream(std::size_t sendSize)
