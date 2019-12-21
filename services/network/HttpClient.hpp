@@ -9,11 +9,10 @@ namespace services
     class HttpClient;
 
     class HttpClientObserver
-        : public infra::SingleObserver<HttpClientObserver, HttpClient>
+        : public infra::SharedOwnedObserver<HttpClientObserver, HttpClient>
     {
     public:
         virtual void Connected() {};
-        virtual void Detaching() {};
 
         virtual void StatusAvailable(HttpStatusCode statusCode) = 0;
         virtual void HeaderAvailable(HttpHeader header) = 0;
@@ -48,7 +47,7 @@ namespace services
     };
     
     class HttpClient
-        : public infra::Subject<HttpClientObserver>
+        : public infra::SharedOwningSubject<HttpClientObserver>
     {
     public:
         virtual void Get(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) = 0;
