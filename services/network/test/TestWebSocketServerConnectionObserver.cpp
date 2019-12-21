@@ -20,7 +20,7 @@ public:
 
     ~WebSocketServerConnectionObserverTest()
     {
-        if (connection.Attached())
+        if (connection.IsAttached())
         {
             EXPECT_CALL(connectionObserver, ClosingConnection());
             connection.Detach();

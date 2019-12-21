@@ -11,4 +11,9 @@ namespace services
     {
         Subject().AbortAndDestroy();
     }
+
+    void ConnectionObserver::Detaching()
+    {
+        ClosingConnection();
+    }
 }

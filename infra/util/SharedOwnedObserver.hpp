@@ -21,7 +21,7 @@ namespace infra
     public:
         using SubjectType = SubjectType_;
 
-        bool Attached() const;
+        bool IsAttached() const;
         SubjectType& Subject() const;
 
         void Detach();
@@ -47,7 +47,7 @@ namespace infra
         void Attach(const infra::SharedPtr<ObserverType>& observer);
         void Detach();
 
-        bool Attached() const;
+        bool IsAttached() const;
         ObserverType& Observer() const;
         infra::SharedPtr<ObserverType> ObserverPtr() const;
 
@@ -67,7 +67,7 @@ namespace infra
     }
 
     template<class Descendant, class SubjectType_>
-    bool SharedOwnedObserver<Descendant, SubjectType_>::Attached() const
+    bool SharedOwnedObserver<Descendant, SubjectType_>::IsAttached() const
     {
         return subject != nullptr;
     }
@@ -93,7 +93,7 @@ namespace infra
     }
 
     template<class ObserverType>
-    bool SharedOwningSubject<ObserverType>::Attached() const
+    bool SharedOwningSubject<ObserverType>::IsAttached() const
     {
         return observer != nullptr;
     }
@@ -118,7 +118,7 @@ namespace infra
 
         this->observer = observer;
         this->observer->subject = static_cast<typename ObserverType::SubjectType*>(this);
-        this->observer->Attached();
+        this->observer->Attached(*static_cast<typename ObserverType::SubjectType*>(this));
     }
 
     template<class ObserverType>

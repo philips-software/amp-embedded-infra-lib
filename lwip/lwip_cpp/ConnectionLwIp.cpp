@@ -167,7 +167,7 @@ namespace services
             else
                 pbuf_cat(receivedData, p);
 
-            if (!dataReceivedScheduled && Attached())
+            if (!dataReceivedScheduled && IsAttached())
             {
                 dataReceivedScheduled = true;
                 infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionLwIp>& self)

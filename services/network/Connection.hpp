@@ -24,8 +24,7 @@ namespace services
         virtual void Close();
         virtual void Abort();
 
-        //virtual void Attached(SubjectType& subject) override { Connected(); }
-        virtual void Detaching() override { ClosingConnection(); }
+        virtual void Detaching() override;
 
     private:
         friend class Connection;

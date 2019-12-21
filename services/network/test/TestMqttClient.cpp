@@ -31,7 +31,7 @@ class ConnectionStubWithSendStreamControl
 public:
     ~ConnectionStubWithSendStreamControl()
     {
-        if (Attached())
+        if (IsAttached())
             Observer().ClosingConnection();
     }
 

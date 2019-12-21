@@ -47,7 +47,7 @@ namespace services
     void ConnectionStub::SimulateDataReceived(infra::ConstByteRange data)
     {
         receivingData.insert(receivingData.end(), data.begin(), data.end());
-        if (Attached())
+        if (IsAttached())
             Observer().DataReceived();
     }
 

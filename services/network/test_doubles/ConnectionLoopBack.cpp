@@ -65,7 +65,7 @@ namespace services
             auto size = requestedSendSize;
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([this, size](const infra::SharedPtr<ConnectionLoopBack>& loopBack)
             {
-                if (Attached())
+                if (IsAttached())
                 {
                     infra::SharedPtr<infra::StreamWriter> writer = streamWriter.Emplace(*this, size);
                     Observer().SendStreamAvailable(std::move(writer));
@@ -90,7 +90,7 @@ namespace services
             ConnectionLoopBackPeer& connection = this->connection;
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([&connection](const infra::SharedPtr<ConnectionLoopBack>& loopBack)
             {
-                if (connection.peer.Attached())
+                if (connection.peer.IsAttached())
                     connection.peer.Observer().DataReceived();
             }, connection.loopBack.SharedFromThis());
         }
