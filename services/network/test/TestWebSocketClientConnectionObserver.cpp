@@ -14,8 +14,8 @@ public:
     WebSocketClientConnectionObserverTest()
     {
         connection.Attach(webSocket.Emplace("path"));
+        EXPECT_CALL(connectionObserver, Attached(testing::_));
         webSocket->Attach(infra::UnOwnedSharedPtr(connectionObserver));
-        webSocket->Connected();
     }
 
     ~WebSocketClientConnectionObserverTest()

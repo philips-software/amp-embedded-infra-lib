@@ -70,7 +70,7 @@ namespace services
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override { SendStreamAvailable(writer); }
         MOCK_METHOD1(SendStreamAvailable, void(infra::SharedPtr<infra::StreamWriter> writer));
         MOCK_METHOD0(DataReceived, void());
-        MOCK_METHOD0(Connected, void());
+        MOCK_METHOD1(Attached, void(services::Connection& connection));
         MOCK_METHOD0(Detaching, void());
         MOCK_METHOD0(Close, void());
         MOCK_METHOD0(Abort, void());

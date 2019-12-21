@@ -124,12 +124,10 @@ namespace services
 
     void ConnectionLoopBack::Connect(infra::SharedPtr<services::ConnectionObserver> serverObserver, infra::SharedPtr<services::ConnectionObserver> clientObserver)
     {
-        Server().Attach(serverObserver);
+        Client().SetOwnership(SharedFromThis(), clientObserver);
         Server().SetOwnership(SharedFromThis(), serverObserver);
         Client().Attach(clientObserver);
-        Client().SetOwnership(SharedFromThis(), clientObserver);
-        Client().Observer().Connected();
-        Server().Observer().Connected();
+        Server().Attach(serverObserver);
     }
 
     ConnectionLoopBackListener::ConnectionLoopBackListener(uint16_t port, ConnectionLoopBackFactory& loopBackFactory, ServerConnectionObserverFactory& connectionObserverFactory)

@@ -60,9 +60,9 @@ namespace services
         virtual Connection& GetConnection() override;
 
         // Implementation of ConnectionObserver
+        virtual void Attached(Connection& connection) override;
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void DataReceived() override;
-        virtual void Connected() override;
         virtual void Detaching() override;
 
     protected:

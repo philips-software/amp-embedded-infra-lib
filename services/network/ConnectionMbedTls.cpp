@@ -88,8 +88,8 @@ namespace services
     {
         if (connectionObserver != nullptr)
         {
-            Attach(connectionObserver);
             createdObserver(SharedFromThis());
+            Attach(connectionObserver);
         }
         else
             createdObserver(nullptr);
@@ -149,10 +149,9 @@ namespace services
         }
     }
 
-    void ConnectionMbedTls::Connected()
+    void ConnectionMbedTls::Attached(Connection& connection)
     {
         InitTls();
-        Observer().Connected();
     }
 
     void ConnectionMbedTls::Detaching()

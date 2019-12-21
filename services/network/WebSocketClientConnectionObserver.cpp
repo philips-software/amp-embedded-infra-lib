@@ -533,7 +533,6 @@ namespace services
         factory.ConnectionEstablished([webSocketConnection](infra::SharedPtr<ConnectionObserver> connectionObserver)
         {
             webSocketConnection->Attach(connectionObserver);
-            connectionObserver->Connected();
         });
     }
 

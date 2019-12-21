@@ -71,14 +71,16 @@ TEST_F(WebSocketIntegrationTest, integration)
     EXPECT_CALL(clientObserverFactory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this, &clientConnection](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> client)>& createdClient)
     {
         auto clientConnectionPtr = clientConnection.Emplace();
-        EXPECT_CALL(*clientConnection, Connected());
+        EXPECT_CALL(*clientConnection, Attached(testing::_));
         createdClient(clientConnectionPtr);
     }));
     webSocketClientFactory.Connect(clientObserverFactory);
     ExecuteAllActions();
 
     infra::SharedOptional<testing::StrictMock<services::ConnectionObserverFullMock>> serverConnection;
-    webSocketServerConnectionCreator->Attach(serverConnection.Emplace());
+    auto serverConnectionPtr = serverConnection.Emplace();
+    EXPECT_CALL(*serverConnection, Attached(testing::_));
+    webSocketServerConnectionCreator->Attach(serverConnectionPtr);
 
     // Send data from client to server
     EXPECT_CALL(*clientConnection, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke([this, &serverConnection](const infra::SharedPtr<infra::StreamWriter>& writer)

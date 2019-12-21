@@ -124,7 +124,6 @@ public:
         connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
         {
             connection.Attach(connectionObserver);
-            connectionObserver->Connected();
         });
     }
 
@@ -225,7 +224,6 @@ TEST_F(HttpClientTest, after_ConnectionEstablished_HttpClient_is_connected)
     connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
     {
         connection.Attach(connectionObserver);
-        connectionObserver->Connected();
     });
 }
 

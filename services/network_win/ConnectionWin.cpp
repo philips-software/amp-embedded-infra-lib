@@ -72,10 +72,9 @@ namespace services
 
     void ConnectionWin::SetObserver(infra::SharedPtr<services::ConnectionObserver> connectionObserver)
     {
-        Attach(connectionObserver);
         SetSelfOwnership(connectionObserver);
         network.RegisterConnection(SharedFromThis());
-        connectionObserver->Connected();
+        Attach(connectionObserver);
     }
 
     void ConnectionWin::Receive()

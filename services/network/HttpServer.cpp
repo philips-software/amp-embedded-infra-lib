@@ -109,9 +109,9 @@ namespace services
             })
     {}
 
-    void HttpServerConnectionObserver::Connected()
+    void HttpServerConnectionObserver::Attached(Connection& connection)
     {
-        connection = &Subject();
+        this->connection = &Subject();
         RequestSendStream();
     }
 

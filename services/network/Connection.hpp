@@ -19,7 +19,6 @@ namespace services
     public:
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& streamWriter) = 0;
         virtual void DataReceived() = 0;
-        virtual void Connected() {}
         virtual void Close();
         virtual void Abort();
 

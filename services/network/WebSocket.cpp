@@ -126,7 +126,6 @@ namespace services
         auto observer = webSocketConnectionObserver.Emplace(connectionCreator);
         connection.Detach();
         connection.Attach(infra::MakeContainedSharedObject(**observer, observer));
-        (*observer)->Connected();
         webSocketConnectionObserver.OnAllocatable(nullptr);
     }
 }

@@ -26,7 +26,7 @@ namespace services
         // Implementation of ConnectionObserver
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void DataReceived() override;
-        virtual void Connected() override;
+        virtual void Attached(Connection& connection) override;
         virtual void Detaching() override;
 
     protected:

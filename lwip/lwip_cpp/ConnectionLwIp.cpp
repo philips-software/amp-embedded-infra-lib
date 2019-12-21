@@ -397,9 +397,8 @@ namespace services
             {
                 if (connectionObserver)
                 {
-                    connection->Attach(connectionObserver);
                     connection->SetSelfOwnership(connectionObserver);
-                    connectionObserver->Connected();
+                    connection->Attach(connectionObserver);
                 }
             }, connection->IpAddress());
 
@@ -476,9 +475,8 @@ namespace services
             {
                 if (connectionObserver)
                 {
-                    connection->Attach(connectionObserver);
                     connection->SetSelfOwnership(connectionObserver);
-                    connectionObserver->Connected();
+                    connection->Attach(connectionObserver);
                 }
             });
 

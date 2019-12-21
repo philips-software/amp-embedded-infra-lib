@@ -7,7 +7,6 @@ namespace services
         serverConnectionObserverFactory.ConnectionAccepted([&connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
         {
             connection.Attach(connectionObserver);
-            connectionObserver->Connected();
         }, address);
     }
 }

@@ -198,7 +198,7 @@ namespace services
         state->HandleDataReceived();
     }
 
-    void MqttClientImpl::Connected()
+    void MqttClientImpl::Attached(Connection& connection)
     {
         state->Connected();
     }

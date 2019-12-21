@@ -16,7 +16,6 @@ public:
             auto connectionPtr = connection.Emplace();
             connection->SetOwnership(connectionPtr, observer);
             connection->Attach(observer);
-            observer->Connected();
         });
     }
 
@@ -25,7 +24,7 @@ public:
         EXPECT_CALL(factory, ConnectionEstablishedMock(testing::_)).WillOnce(testing::Invoke([this](infra::Function<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver)
         {
             auto observer = connectionObserver.Emplace();
-            EXPECT_CALL(*observer, Connected());
+            EXPECT_CALL(*observer, Attached(testing::_));
             createdObserver(observer);
         }));
     }
@@ -35,7 +34,7 @@ public:
         EXPECT_CALL(factory, ConnectionEstablishedMock(testing::_)).WillOnce(testing::Invoke([this](infra::Function<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver)
         {
             auto observer = connectionObserver.Emplace();
-            EXPECT_CALL(*observer, Connected());
+            EXPECT_CALL(*observer, Attached(testing::_));
             EXPECT_CALL(*observer, Close());
             createdObserver(observer);
         }));
@@ -75,7 +74,7 @@ public:
             .WillOnce(testing::Invoke([this](infra::Function<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver, services::IPAddress address)
         {
             auto observer = connectionObserver.Emplace();
-            EXPECT_CALL(*observer, Connected());
+            EXPECT_CALL(*observer, Attached(testing::_));
             createdObserver(observer);
         }));
         serverResult->ConnectionAccepted([this](infra::SharedPtr<services::ConnectionObserver> observer)
@@ -83,7 +82,6 @@ public:
             auto connectionPtr = connection.Emplace();
             connection->SetOwnership(connectionPtr, observer);
             connection->Attach(observer);
-            observer->Connected();
         }, services::IPv4AddressLocalHost());
         ExecuteAllActions();
     }
