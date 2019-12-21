@@ -12,8 +12,6 @@ namespace services
         : public infra::SharedOwnedObserver<HttpClientObserver, HttpClient>
     {
     public:
-        virtual void Connected() {};
-
         virtual void StatusAvailable(HttpStatusCode statusCode) = 0;
         virtual void HeaderAvailable(HttpHeader header) = 0;
         virtual void BodyAvailable(infra::SharedPtr<infra::StreamReader>&& reader) = 0;

@@ -23,7 +23,7 @@ namespace services
         HttpClientBasic::Cancel(onDone);
     }
 
-    void HttpClientJson::Connected()
+    void HttpClientJson::Attached()
     {
         HttpClientObserver::Subject().Get(Path(), Headers());
     }

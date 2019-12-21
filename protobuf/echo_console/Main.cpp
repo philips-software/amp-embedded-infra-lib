@@ -97,7 +97,7 @@ public:
     // Implementation of ConnectionObserver
     virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
     virtual void DataReceived() override;
-    virtual void Attached(services::Connection& connection) override;
+    virtual void Attached() override;
 
     // Implementation of ConsoleObserver
     virtual void Send(const std::string data) override;
@@ -137,7 +137,7 @@ void ConsoleClientConnection::DataReceived()
     {}
 }
 
-void ConsoleClientConnection::Attached(services::Connection& connection)
+void ConsoleClientConnection::Attached()
 {
     services::ConnectionObserver::Subject().RequestSendStream(services::ConnectionObserver::Subject().MaxSendStreamSize());
 }

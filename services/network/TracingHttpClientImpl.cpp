@@ -22,10 +22,10 @@ namespace services
         HttpClientImpl::DataReceived();
     }
 
-    void TracingHttpClientImpl::Attached(Connection& connection)
+    void TracingHttpClientImpl::Attached()
     {
         tracer.Trace() << "HttpClientImpl::Attached";
-        HttpClientImpl::Attached(connection);
+        HttpClientImpl::Attached();
     }
 
     void TracingHttpClientImpl::Detaching()

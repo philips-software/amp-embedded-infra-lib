@@ -60,7 +60,7 @@ namespace services
         virtual Connection& GetConnection() override;
 
         // Implementation of ConnectionObserver
-        virtual void Attached(Connection& connection) override;
+        virtual void Attached() override;
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void DataReceived() override;
         virtual void Detaching() override;
@@ -280,8 +280,8 @@ namespace services
         {
             if (observer)
             {
-                httpClientPtr->Attach(observer);
                 createdObserver(httpClientPtr);
+                httpClientPtr->Attach(observer);
             }
         });
 

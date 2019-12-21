@@ -4,9 +4,8 @@
 #include "infra/stream/InputStream.hpp"
 #include "infra/stream/OutputStream.hpp"
 #include "infra/util/AutoResetFunction.hpp"
-#include "infra/util/Observer.hpp"
+#include "infra/util/IntrusiveList.hpp"
 #include "infra/util/SharedOwnedObserver.hpp"
-#include "infra/util/SharedPtr.hpp"
 #include "services/network/Address.hpp"
 
 namespace services

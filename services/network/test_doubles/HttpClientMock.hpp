@@ -14,7 +14,7 @@ namespace services
         : public HttpClientObserver
     {
     public:
-        MOCK_METHOD0(Connected, void());
+        MOCK_METHOD0(Attached, void());
         MOCK_METHOD0(Detaching, void());
 
         MOCK_METHOD1(StatusAvailable, void(HttpStatusCode statusCode));

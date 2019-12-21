@@ -162,7 +162,7 @@ namespace services
         return ConnectionObserver::Subject();
     }
 
-    void HttpClientImpl::Attached(Connection& connection)
+    void HttpClientImpl::Attached()
     {
         infra::WeakPtr<services::HttpClientImpl> self = infra::StaticPointerCast<HttpClientImpl>(services::ConnectionObserver::Subject().ObserverPtr());
         bodyReaderAccess.SetAction([self]()
@@ -170,8 +170,6 @@ namespace services
             if (auto sharedSelf = self.lock())
                 sharedSelf->BodyReaderDestroyed();
         });
-
-        Observer().Connected();
     }
 
     void HttpClientImpl::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)

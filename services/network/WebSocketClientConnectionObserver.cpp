@@ -415,7 +415,7 @@ namespace services
         Cancel(onDone);
     }
 
-    void HttpClientWebSocketInitiation::Connected()
+    void HttpClientWebSocketInitiation::Attached()
     {
         Subject().Get(Path(), Headers());
     }

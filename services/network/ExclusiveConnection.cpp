@@ -74,7 +74,7 @@ namespace services
         Connection::Observer().DataReceived();
     }
 
-    void ExclusiveConnectionFactoryMutex::ExclusiveConnection::Attached(Connection& connection)
+    void ExclusiveConnectionFactoryMutex::ExclusiveConnection::Attached()
     {
         if (mutex.resource.ClaimsPending() && mutex.cancelConnectionOnNewRequest)
             Connection::Observer().Close();

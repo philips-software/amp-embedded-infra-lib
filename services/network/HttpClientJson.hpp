@@ -34,7 +34,7 @@ namespace services
         virtual infra::JsonObjectVisitor& TopJsonObjectVisitor() = 0;
 
         // Implementation of HttpClientObserver
-        virtual void Connected() override;  // Default implementation. Override for behaviour other than an HTTP GET request
+        virtual void Attached() override;  // Default implementation. Override for behaviour other than an HTTP GET request
         virtual void Detaching() override;
         virtual void StatusAvailable(services::HttpStatusCode statusCode) override;
         virtual void HeaderAvailable(services::HttpHeader header) override;

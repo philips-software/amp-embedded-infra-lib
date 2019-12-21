@@ -166,7 +166,7 @@ namespace services
         virtual void Stop(const infra::Function<void()>& onDone) override;
 
         // Implementation of HttpClientBasic
-        virtual void Connected() override;
+        virtual void Attached() override;
         virtual services::HttpHeaders Headers() const override;
         virtual void StatusAvailable(HttpStatusCode statusCode) override;
         virtual void HeaderAvailable(HttpHeader header) override;

@@ -16,7 +16,7 @@ namespace services
         , streamWriter([this]() { SendStreamAllocatable(); })
     {}
 
-    void WebSocketServerConnectionObserver::Attached(Connection& connection)
+    void WebSocketServerConnectionObserver::Attached()
     {
         sendingState->CheckForSomethingToDo();
     }

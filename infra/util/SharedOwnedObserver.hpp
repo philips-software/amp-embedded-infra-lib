@@ -25,7 +25,7 @@ namespace infra
         SubjectType& Subject() const;
 
         void Detach();
-        virtual void Attached(SubjectType& subject) {}
+        virtual void Attached() {}
         virtual void Detaching() {}
 
     private:
@@ -118,7 +118,7 @@ namespace infra
 
         this->observer = observer;
         this->observer->subject = static_cast<typename ObserverType::SubjectType*>(this);
-        this->observer->Attached(*static_cast<typename ObserverType::SubjectType*>(this));
+        this->observer->Attached();
     }
 
     template<class ObserverType>

@@ -149,7 +149,7 @@ namespace services
         }
     }
 
-    void ConnectionMbedTls::Attached(Connection& connection)
+    void ConnectionMbedTls::Attached()
     {
         InitTls();
     }
