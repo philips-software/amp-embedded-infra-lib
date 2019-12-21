@@ -29,12 +29,6 @@ class ConnectionStubWithSendStreamControl
     : public services::ConnectionStub
 {
 public:
-    ~ConnectionStubWithSendStreamControl()
-    {
-        if (IsAttached())
-            Observer().Detaching();
-    }
-
     virtual void RequestSendStream(std::size_t sendSize) override
     {
         if (autoSendStreamAvailable)
@@ -70,9 +64,6 @@ class MqttClientTest
 {
 public:
     MqttClientTest()
-        : connector("clientId", "username", "password", "127.0.0.1", 1234, connectionFactory)
-        , connectionPtr(infra::UnOwnedSharedPtr(connection))
-        , clientPtr(infra::UnOwnedSharedPtr(client))
     {
         EXPECT_EQ(connector.Hostname(), "127.0.0.1");
         EXPECT_EQ(connector.Port(), 1234);
@@ -176,10 +167,10 @@ public:
     testing::StrictMock<services::ConnectionFactoryWithNameResolverMock> connectionFactory;
     testing::StrictMock<services::MqttClientObserverFactoryMock> factory;
     testing::StrictMock<services::MqttClientObserverMock> client;
-    services::MqttClientConnectorImpl connector;
+    services::MqttClientConnectorImpl connector{ "clientId", "username", "password", "127.0.0.1", 1234, connectionFactory };
     testing::StrictMock<ConnectionStubWithSendStreamControl> connection;
-    infra::SharedPtr<services::Connection> connectionPtr;
-    infra::SharedPtr<services::MqttClientObserver> clientPtr;
+    infra::SharedPtr<services::Connection> connectionPtr{ infra::UnOwnedSharedPtr(connection) };
+    infra::SharedPtr<services::MqttClientObserver> clientPtr{ infra::UnOwnedSharedPtr(client) };
 
     std::deque<infra::BoundedConstString> expectedNotificationPayload;
     infra::BoundedString::WithStorage<1024> notificationPayload;

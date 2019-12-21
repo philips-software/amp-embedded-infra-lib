@@ -238,7 +238,6 @@ namespace services
     private:
         infra::Duration operationTimeout;
         infra::PolymorphicVariant<StateBase, StateConnecting, StateConnected> state;
-        infra::SharedPtr<MqttClientObserver> observer;
     };
 
     class MqttClientConnectorImpl

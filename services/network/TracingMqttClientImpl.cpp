@@ -17,9 +17,9 @@ namespace services
     void TracingMqttClientImpl::Publish()
     {
         tracer.Trace() << "MqttClient publish on topic ";
-        GetObserver().FillTopic(tracer.Continue().Writer());
+        Observer().FillTopic(tracer.Continue().Writer());
         tracer.Continue() << " with contents ";
-        GetObserver().FillPayload(tracer.Continue().Writer());
+        Observer().FillPayload(tracer.Continue().Writer());
 
         MqttClientImpl::Publish();
     }
@@ -27,7 +27,7 @@ namespace services
     void TracingMqttClientImpl::Subscribe()
     {
         tracer.Trace() << "MqttClient subscribe on topic ";
-        GetObserver().FillTopic(tracer.Continue().Writer());
+        Observer().FillTopic(tracer.Continue().Writer());
 
         MqttClientImpl::Subscribe();
     }
