@@ -37,10 +37,10 @@ namespace services
         active = nullptr;
     }
 
-    void MqttMultipleAccessMaster::Connected()
+    void MqttMultipleAccessMaster::Attached()
     {
         for (auto& access : accesses)
-            access.Connected();
+            access.Attached();
     }
 
     void MqttMultipleAccessMaster::PublishDone()
@@ -114,9 +114,9 @@ namespace services
         master.NotificationDone();
     }
 
-    void MqttMultipleAccess::Connected()
+    void MqttMultipleAccess::Attached()
     {
-        Observer().Connected();
+        Observer().Attached();
     }
 
     void MqttMultipleAccess::PublishDone()

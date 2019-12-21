@@ -12,7 +12,6 @@ namespace services
         : public infra::SharedOwnedObserver<MqttClientObserver, MqttClient>
     {
     public:
-        virtual void Connected() {}
         virtual void PublishDone() = 0;
         virtual void SubscribeDone() = 0;
         virtual infra::SharedPtr<infra::StreamWriter> ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize) = 0;

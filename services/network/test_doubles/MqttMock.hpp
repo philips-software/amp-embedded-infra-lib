@@ -11,7 +11,7 @@ namespace services
         : public MqttClientObserver
     {
     public:
-        MOCK_METHOD0(Connected, void());
+        MOCK_METHOD0(Attached, void());
         MOCK_METHOD0(PublishDone, void());
         MOCK_METHOD0(SubscribeDone, void());
         MOCK_METHOD2(ReceivedNotification, infra::SharedPtr<infra::StreamWriter>(infra::BoundedConstString topic, uint32_t payloadSize));

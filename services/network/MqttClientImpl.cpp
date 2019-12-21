@@ -294,9 +294,9 @@ namespace services
             {
                 if (observer)
                 {
-                    clientConnection.Attach(observer);
+                    auto& clientConnectionCopy = clientConnection;
                     auto& newState = clientConnection.state.Emplace<StateConnected>(clientConnection);
-                    observer->Connected();
+                    clientConnectionCopy.Attach(observer);
                     newState.HandleDataReceived();
                 }
                 else

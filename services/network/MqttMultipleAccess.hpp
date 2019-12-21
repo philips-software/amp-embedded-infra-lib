@@ -22,7 +22,7 @@ namespace services
         void ReleaseActive();
 
         // Implementation of MqttClientObserver
-        virtual void Connected() override;
+        virtual void Attached() override;
         virtual void PublishDone() override;
         virtual void SubscribeDone() override;
         virtual infra::SharedPtr<infra::StreamWriter> ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize) override;
@@ -48,7 +48,7 @@ namespace services
         virtual void Subscribe() override;
         virtual void NotificationDone() override;
 
-        void Connected();
+        void Attached();
         void PublishDone();
         void SubscribeDone();
         infra::SharedPtr<infra::StreamWriter> ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize);

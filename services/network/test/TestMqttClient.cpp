@@ -89,7 +89,7 @@ public:
 
         EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::MqttClientObserver> client)>& createdClient)
         {
-            EXPECT_CALL(client, Connected());
+            EXPECT_CALL(client, Attached());
             createdClient(clientPtr);
         }));
         connection.SimulateDataReceived(std::vector<uint8_t>{ 0x20, 0x00, 0x00, 0x00 });
@@ -213,7 +213,7 @@ TEST_F(MqttClientTest, after_conack_MqttClient_is_connected)
 
     EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::MqttClientObserver> client)>& createdClient)
     {
-        EXPECT_CALL(client, Connected());
+        EXPECT_CALL(client, Attached());
         createdClient(clientPtr);
     }));
 
