@@ -143,7 +143,7 @@ namespace services
             ReceivedRequest(receiveStream, available);
     }
 
-    void HttpServerConnectionObserver::ClosingConnection()
+    void HttpServerConnectionObserver::Detaching()
     {
         streamWriter = nullptr;
     }

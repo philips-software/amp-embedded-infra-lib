@@ -116,8 +116,8 @@ TEST_F(WebSocketIntegrationTest, integration)
     serverConnection->Subject().RequestSendStream(512);
     ExecuteAllActions();
 
-    EXPECT_CALL(*clientConnection, ClosingConnection());
-    EXPECT_CALL(*serverConnection, ClosingConnection());
+    EXPECT_CALL(*clientConnection, Detaching());
+    EXPECT_CALL(*serverConnection, Detaching());
     clientConnection->Subject().AbortAndDestroy();
     ExecuteAllActions();
 }

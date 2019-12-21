@@ -32,7 +32,7 @@ namespace services
 
     protected:
         // Implementation of HttpClientObserver
-        virtual void ClosingConnection() override;
+        virtual void Detaching() override;
         virtual void BodyComplete() override;
 
     protected:

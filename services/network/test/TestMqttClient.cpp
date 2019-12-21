@@ -32,7 +32,7 @@ public:
     ~ConnectionStubWithSendStreamControl()
     {
         if (IsAttached())
-            Observer().ClosingConnection();
+            Observer().Detaching();
     }
 
     virtual void RequestSendStream(std::size_t sendSize) override
@@ -129,7 +129,7 @@ public:
     void ExpectClosingConnection()
     {
         EXPECT_CALL(connection, AbortAndDestroyMock());
-        EXPECT_CALL(client, ClosingConnection());
+        EXPECT_CALL(client, Detaching());
     }
 
     void ReceiveSubAck(uint16_t packetIdentifier, uint8_t returnCode)

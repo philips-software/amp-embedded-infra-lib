@@ -39,7 +39,7 @@ namespace services
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& streamWriter) override;
             virtual void DataReceived() override;
             virtual void Connected() override;
-            virtual void ClosingConnection() override;
+            virtual void Detaching() override;
             virtual void Close() override;
             virtual void Abort() override;
 

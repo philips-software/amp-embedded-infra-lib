@@ -110,7 +110,7 @@ public:
 
     ~HttpClientTest()
     {
-        EXPECT_CALL(client, ClosingConnection()).Times(testing::AnyNumber());
+        EXPECT_CALL(client, Detaching()).Times(testing::AnyNumber());
     }
 
     void Connect()
@@ -183,7 +183,7 @@ TEST_F(HttpClientTest, second_connection_is_tried_when_first_is_closed)
 
     Connect();
     EXPECT_CALL(connection, AbortAndDestroyMock());
-    EXPECT_CALL(client, ClosingConnection());
+    EXPECT_CALL(client, Detaching());
     EXPECT_CALL(connectionFactory, Connect(testing::Ref(connector)));
     connection.AbortAndDestroy();
 }
@@ -193,7 +193,7 @@ TEST_F(HttpClientTest, closed_connection_results_in_ClosingConnection)
     Connect();
 
     EXPECT_CALL(connection, AbortAndDestroyMock());
-    EXPECT_CALL(client, ClosingConnection());
+    EXPECT_CALL(client, Detaching());
     connection.AbortAndDestroy();
 }
 
@@ -202,7 +202,7 @@ TEST_F(HttpClientTest, Close_propagates_to_Connection)
     Connect();
 
     EXPECT_CALL(connection, CloseAndDestroyMock());
-    EXPECT_CALL(client, ClosingConnection());
+    EXPECT_CALL(client, Detaching());
     client.Subject().Close();
 }
 
@@ -332,7 +332,7 @@ TEST_F(HttpClientTest, incorrect_response_version_should_not_call_StatusAvailabl
 
     EXPECT_CALL(connection, AckReceivedMock());
     EXPECT_CALL(connection, AbortAndDestroyMock());
-    EXPECT_CALL(client, ClosingConnection());
+    EXPECT_CALL(client, Detaching());
     client.Subject().Get("/");
     ExecuteAllActions();
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/X.Y 200 Success\r\n")));
@@ -346,7 +346,7 @@ TEST_F(HttpClientTest, incorrect_response_code_should_not_call_StatusAvailable)
 
     EXPECT_CALL(connection, AckReceivedMock());
     EXPECT_CALL(connection, AbortAndDestroyMock());
-    EXPECT_CALL(client, ClosingConnection());
+    EXPECT_CALL(client, Detaching());
     client.Subject().Get("/");
     ExecuteAllActions();
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 900 Invalid\r\n")));
@@ -420,7 +420,7 @@ TEST_F(HttpClientTest, too_long_header_is_rejected)
 
     EXPECT_CALL(connection, AckReceivedMock());
     EXPECT_CALL(connection, AbortAndDestroyMock());
-    EXPECT_CALL(client, ClosingConnection());
+    EXPECT_CALL(client, Detaching());
     client.Subject().Get("/");
     ExecuteAllActions();
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.0 200 Success\r\n012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789\r\n")));
@@ -498,7 +498,7 @@ TEST_F(HttpClientTest, ResponseAvailable_without_ContentLength_is_rejected)
     EXPECT_CALL(connection, AckReceivedMock());
     EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
     EXPECT_CALL(connection, AbortAndDestroyMock());
-    EXPECT_CALL(client, ClosingConnection());
+    EXPECT_CALL(client, Detaching());
 
     client.Subject().Get("/");
     ExecuteAllActions();
@@ -574,7 +574,7 @@ TEST_F(HttpClientTest, data_in_excess_of_ContentLength_is_ignored)
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\nDate:Sat, 28 Nov 2009 04:36:25 GMT\r\nExpires:-1\r\nContent-Length:10\r\n\r\nbody\r\ndata")));
 
     EXPECT_CALL(connection, AbortAndDestroyMock());
-    EXPECT_CALL(client, ClosingConnection());
+    EXPECT_CALL(client, Detaching());
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("extradata")));
 }
 
@@ -588,7 +588,7 @@ TEST_F(HttpClientTest, Close_while_DataAvailable_is_handled)
     EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK)).WillOnce(testing::Invoke([this](services::HttpStatusCode result)
     {
         EXPECT_CALL(connection, CloseAndDestroyMock());
-        EXPECT_CALL(client, ClosingConnection());
+        EXPECT_CALL(client, Detaching());
         client.Subject().Close();
     }));
 
@@ -608,7 +608,7 @@ TEST_F(HttpClientTest, Close_while_BodyAvailable_is_handled)
     {
         reader = nullptr;
         EXPECT_CALL(connection, CloseAndDestroyMock());
-        EXPECT_CALL(client, ClosingConnection());
+        EXPECT_CALL(client, Detaching());
         client.Subject().Close();
     }));
 
@@ -663,7 +663,7 @@ TEST_F(HttpClientTest, closed_before_reader_is_reset)
     EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>& reader)
     {
         EXPECT_CALL(connection, CloseAndDestroyMock());
-        EXPECT_CALL(client, ClosingConnection());
+        EXPECT_CALL(client, Detaching());
         client.Subject().Close();
         reader = nullptr;
     }));

@@ -28,10 +28,10 @@ namespace services
         HttpClientImpl::Connected();
     }
 
-    void TracingHttpClientImpl::ClosingConnection()
+    void TracingHttpClientImpl::Detaching()
     {
-        tracer.Trace() << "HttpClientImpl::ClosingConnection";
-        HttpClientImpl::ClosingConnection();
+        tracer.Trace() << "HttpClientImpl::Detaching";
+        HttpClientImpl::Detaching();
     }
 
     void TracingHttpClientImpl::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)

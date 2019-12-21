@@ -32,7 +32,7 @@ namespace services
         virtual void Connected() override;
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void DataReceived() override;
-        virtual void ClosingConnection() override;
+        virtual void Detaching() override;
 
         // Implementation of Connection
         virtual void RequestSendStream(std::size_t sendSize) override;

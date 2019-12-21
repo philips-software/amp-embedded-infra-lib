@@ -37,7 +37,7 @@ namespace services
             services::Connection::Observer().DataReceived();
     }
 
-    void WebSocketServerConnectionObserver::ClosingConnection()
+    void WebSocketServerConnectionObserver::Detaching()
     {
         Connection::Detach();
     }

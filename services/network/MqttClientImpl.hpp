@@ -27,7 +27,7 @@ namespace services
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void DataReceived() override;
         virtual void Connected() override;
-        virtual void ClosingConnection() override;
+        virtual void Detaching() override;
 
     protected:
         virtual infra::SharedPtr<infra::StreamWriter> ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize);
@@ -119,7 +119,7 @@ namespace services
 
         public:
             virtual void Connected();
-            virtual void ClosingConnection() = 0;
+            virtual void Detaching() = 0;
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) = 0;
             virtual void HandleDataReceived() = 0;
 
@@ -138,7 +138,7 @@ namespace services
             StateConnecting(MqttClientImpl& clientConnection, MqttClientObserverFactory& factory, infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password);
 
             virtual void Connected() override;
-            virtual void ClosingConnection() override;
+            virtual void Detaching() override;
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
             virtual void HandleDataReceived() override;
 
@@ -160,7 +160,7 @@ namespace services
         public:
             using StateBase::StateBase;
 
-            virtual void ClosingConnection() override;
+            virtual void Detaching() override;
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
             virtual void HandleDataReceived() override;
 

@@ -22,7 +22,7 @@ public:
     {
         if (connection.IsAttached())
         {
-            EXPECT_CALL(connectionObserver, ClosingConnection());
+            EXPECT_CALL(connectionObserver, Detaching());
             connection.Detach();
         }
     }
@@ -78,14 +78,14 @@ TEST_F(WebSocketServerConnectionObserverTest, MaxSendStreamSize)
 TEST_F(WebSocketServerConnectionObserverTest, CloseAndDestroy_closes_websocket)
 {
     EXPECT_CALL(connection, CloseAndDestroyMock());
-    EXPECT_CALL(connectionObserver, ClosingConnection());
+    EXPECT_CALL(connectionObserver, Detaching());
     webSocket->CloseAndDestroy();
 }
 
 TEST_F(WebSocketServerConnectionObserverTest, AbortAndDestroy_closes_websocket)
 {
     EXPECT_CALL(connection, AbortAndDestroyMock());
-    EXPECT_CALL(connectionObserver, ClosingConnection());
+    EXPECT_CALL(connectionObserver, Detaching());
     webSocket->AbortAndDestroy();
 }
 
@@ -217,7 +217,7 @@ TEST_F(WebSocketServerConnectionObserverTest, receive_close_request_from_client)
 
     connection.SimulateDataReceived(receiveData);
     EXPECT_CALL(connection, CloseAndDestroyMock()).WillOnce(testing::Invoke([this, &sendData]() { EXPECT_EQ(sendData, connection.sentData); }));
-    EXPECT_CALL(connectionObserver, ClosingConnection());
+    EXPECT_CALL(connectionObserver, Detaching());
     ExecuteAllActions();
 }
 
@@ -228,7 +228,7 @@ TEST_F(WebSocketServerConnectionObserverTest, receive_wrong_operation_code)
 
     connection.SimulateDataReceived(receiveData);
     EXPECT_CALL(connection, CloseAndDestroyMock()).WillOnce(testing::Invoke([this, &sendData]() { EXPECT_EQ(sendData, connection.sentData); }));
-    EXPECT_CALL(connectionObserver, ClosingConnection());
+    EXPECT_CALL(connectionObserver, Detaching());
     ExecuteAllActions();
 }
 
@@ -239,7 +239,7 @@ TEST_F(WebSocketServerConnectionObserverTest, receive_unmasked_frame_from_client
 
     connection.SimulateDataReceived(receiveData);
     EXPECT_CALL(connection, CloseAndDestroyMock()).WillOnce(testing::Invoke([this, &sendData]() { EXPECT_EQ(sendData, connection.sentData); }));
-    EXPECT_CALL(connectionObserver, ClosingConnection());
+    EXPECT_CALL(connectionObserver, Detaching());
     ExecuteAllActions();
 }
 
@@ -250,7 +250,7 @@ TEST_F(WebSocketServerConnectionObserverTest, receive_non_zero_rsv)
 
     connection.SimulateDataReceived(receiveData);
     EXPECT_CALL(connection, CloseAndDestroyMock()).WillOnce(testing::Invoke([this, &sendData]() { EXPECT_EQ(sendData, connection.sentData); }));
-    EXPECT_CALL(connectionObserver, ClosingConnection());
+    EXPECT_CALL(connectionObserver, Detaching());
     ExecuteAllActions();
 }
 

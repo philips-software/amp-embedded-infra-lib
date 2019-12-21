@@ -15,7 +15,7 @@ namespace services
     {
     public:
         MOCK_METHOD0(Connected, void());
-        MOCK_METHOD0(ClosingConnection, void());
+        MOCK_METHOD0(Detaching, void());
 
         MOCK_METHOD1(StatusAvailable, void(HttpStatusCode statusCode));
         MOCK_METHOD1(HeaderAvailable, void(HttpHeader header));

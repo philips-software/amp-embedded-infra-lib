@@ -83,7 +83,7 @@ namespace services
     void HttpClientBasic::Established()
     {}
 
-    void HttpClientBasic::ClosingConnection()
+    void HttpClientBasic::Detaching()
     {
         if (state == State::connected)
         {

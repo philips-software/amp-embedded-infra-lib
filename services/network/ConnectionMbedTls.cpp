@@ -155,7 +155,7 @@ namespace services
         Observer().Connected();
     }
 
-    void ConnectionMbedTls::ClosingConnection()
+    void ConnectionMbedTls::Detaching()
     {
         encryptedSendWriter = nullptr;
         ConnectionWithHostname::Detach();

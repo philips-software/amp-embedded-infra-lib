@@ -39,7 +39,7 @@ namespace services
             Observer().DataReceived();
     }
 
-    void WebSocketClientConnectionObserver::ClosingConnection()
+    void WebSocketClientConnectionObserver::Detaching()
     {
         Connection::Detach();
     }
@@ -457,7 +457,7 @@ namespace services
 
     void HttpClientWebSocketInitiation::BodyComplete()
     {
-        // Switching http client off will result in ClosingConnection(), resulting Error() being called
+        // Switching http client off will result in Detaching(), resulting Error() being called
         done = true;
         result.WebSocketInitiationDone(Subject().GetConnection());
     }

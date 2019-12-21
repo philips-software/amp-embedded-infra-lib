@@ -25,7 +25,7 @@ namespace services
         virtual void PublishDone() override;
         virtual void SubscribeDone() override;
         virtual infra::SharedPtr<infra::StreamWriter> ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize) override;
-        virtual void ClosingConnection() override;
+        virtual void Detaching() override;
         virtual void FillTopic(infra::StreamWriter& writer) const override;
         virtual void FillPayload(infra::StreamWriter& writer) const override;
 
@@ -54,7 +54,7 @@ namespace services
         virtual void PublishDone() override;
         virtual void SubscribeDone() override;
         virtual infra::SharedPtr<infra::StreamWriter> ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize) override;
-        virtual void ClosingConnection() override;
+        virtual void Detaching() override;
         virtual void FillTopic(infra::StreamWriter& writer) const override;
         virtual void FillPayload(infra::StreamWriter& writer) const override;
 

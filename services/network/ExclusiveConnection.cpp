@@ -81,7 +81,7 @@ namespace services
             Connection::Observer().Close();
     }
 
-    void ExclusiveConnectionFactoryMutex::ExclusiveConnection::ClosingConnection()
+    void ExclusiveConnectionFactoryMutex::ExclusiveConnection::Detaching()
     {
         ConnectionWithHostname::Detach();
     }

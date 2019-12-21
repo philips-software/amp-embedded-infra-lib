@@ -13,7 +13,7 @@ namespace services
     {
     public:
         virtual void Connected() {};
-        virtual void ClosingConnection() {};
+        virtual void Detaching() {};
 
         virtual void StatusAvailable(HttpStatusCode statusCode) = 0;
         virtual void HeaderAvailable(HttpHeader header) = 0;

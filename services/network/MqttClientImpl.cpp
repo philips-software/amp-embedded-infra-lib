@@ -204,9 +204,9 @@ namespace services
         state->Connected();
     }
 
-    void MqttClientImpl::ClosingConnection()
+    void MqttClientImpl::Detaching()
     {
-        state->ClosingConnection();
+        state->Detaching();
     }
 
     infra::SharedPtr<infra::StreamWriter> MqttClientImpl::ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize)
@@ -257,7 +257,7 @@ namespace services
         clientConnection.ConnectionObserver::Subject().RequestSendStream(MqttFormatter::MessageSizeConnect(clientId, username, password));
     }
 
-    void MqttClientImpl::StateConnecting::ClosingConnection()
+    void MqttClientImpl::StateConnecting::Detaching()
     {
         if (!signaledFailure)
             factory.ConnectionFailed(MqttClientObserverFactory::ConnectFailReason::initializationFailed);
@@ -319,9 +319,9 @@ namespace services
         clientConnection.Abort();
     }
 
-    void MqttClientImpl::StateConnected::ClosingConnection()
+    void MqttClientImpl::StateConnected::Detaching()
     {
-        clientConnection.observer->ClosingConnection();
+        clientConnection.observer->Detaching();
         clientConnection.observer->Detach();
     }
 

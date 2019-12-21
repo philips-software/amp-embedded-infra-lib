@@ -198,10 +198,10 @@ namespace services
         GetObserver().Connected();
     }
 
-    void HttpClientImpl::ClosingConnection()
+    void HttpClientImpl::Detaching()
     {
         bodyReaderAccess.SetAction(infra::emptyFunction);
-        observer->ClosingConnection();
+        observer->Detaching();
         observer->Detach();
         observer = nullptr;
     }

@@ -13,9 +13,9 @@ namespace services
         HttpClientImpl::StatusAvailable(code, statusLine);
     }
 
-    void TracingStatusHttpClientImpl::ClosingConnection()
+    void TracingStatusHttpClientImpl::Detaching()
     {
-        tracer.Trace() << "HttpClientImpl::ClosingConnection";
-        HttpClientImpl::ClosingConnection();
+        tracer.Trace() << "HttpClientImpl::Detaching";
+        HttpClientImpl::Detaching();
     }
 }

@@ -20,7 +20,7 @@ public:
     MOCK_METHOD0(Done, void());
 
     using services::HttpClientJson::ContentError;
-    using services::HttpClientJson::ClosingConnection;
+    using services::HttpClientJson::Detaching;
 };
 
 class HttpClientJsonTest
@@ -124,7 +124,7 @@ TEST_F(HttpClientJsonTest, ParseError_reports_Error)
     }));
     EXPECT_CALL(httpClient, Close()).WillOnce(testing::Invoke([this, &readerPtr]()
     {
-        controller.ClosingConnection();
+        controller.Detaching();
         EXPECT_TRUE(readerPtr == nullptr);
     }));
     EXPECT_CALL(controller, Error(false));

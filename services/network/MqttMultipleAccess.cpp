@@ -45,10 +45,10 @@ namespace services
         std::abort();
     }
 
-    void MqttMultipleAccessMaster::ClosingConnection()
+    void MqttMultipleAccessMaster::Detaching()
     {
         for (auto& access : accesses)
-            access.ClosingConnection();
+            access.Detaching();
     }
 
     void MqttMultipleAccessMaster::FillTopic(infra::StreamWriter& writer) const
@@ -120,9 +120,9 @@ namespace services
         return GetObserver().ReceivedNotification(topic, payloadSize);
     }
 
-    void MqttMultipleAccess::ClosingConnection()
+    void MqttMultipleAccess::Detaching()
     {
-        GetObserver().ClosingConnection();
+        GetObserver().Detaching();
     }
 
     void MqttMultipleAccess::FillTopic(infra::StreamWriter& writer) const

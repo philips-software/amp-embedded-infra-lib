@@ -65,7 +65,7 @@ namespace services
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void DataReceived() override;
         virtual void Connected() override;
-        virtual void ClosingConnection() override;
+        virtual void Detaching() override;
 
     protected:
         virtual void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine);

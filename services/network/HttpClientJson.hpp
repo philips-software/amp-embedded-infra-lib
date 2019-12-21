@@ -35,7 +35,7 @@ namespace services
 
         // Implementation of HttpClientObserver
         virtual void Connected() override;  // Default implementation. Override for behaviour other than an HTTP GET request
-        virtual void ClosingConnection() override;
+        virtual void Detaching() override;
         virtual void StatusAvailable(services::HttpStatusCode statusCode) override;
         virtual void HeaderAvailable(services::HttpHeader header) override;
         virtual void BodyAvailable(infra::SharedPtr<infra::StreamReader>&& reader) override;

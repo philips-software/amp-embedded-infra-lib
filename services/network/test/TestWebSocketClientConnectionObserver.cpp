@@ -22,7 +22,7 @@ public:
     {
         if (connection.IsAttached())
         {
-            EXPECT_CALL(connectionObserver, ClosingConnection());
+            EXPECT_CALL(connectionObserver, Detaching());
             connection.Detach();
         }
     }
@@ -403,14 +403,14 @@ TEST_F(WebSocketClientConnectionObserverTest, last_ping_is_ponged)
 
 TEST_F(WebSocketClientConnectionObserverTest, CloseAndDestroy)
 {
-    EXPECT_CALL(connectionObserver, ClosingConnection());
+    EXPECT_CALL(connectionObserver, Detaching());
     EXPECT_CALL(connection, CloseAndDestroyMock());
     webSocket->CloseAndDestroy();
 }
 
 TEST_F(WebSocketClientConnectionObserverTest, AbortAndDestroy)
 {
-    EXPECT_CALL(connectionObserver, ClosingConnection());
+    EXPECT_CALL(connectionObserver, Detaching());
     EXPECT_CALL(connection, AbortAndDestroyMock());
     webSocket->AbortAndDestroy();
 }

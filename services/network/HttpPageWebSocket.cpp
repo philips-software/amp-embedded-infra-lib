@@ -40,7 +40,7 @@ namespace services
     void HttpPageWebSocket::DataReceived()
     {}
 
-    void HttpPageWebSocket::ClosingConnection()
+    void HttpPageWebSocket::Detaching()
     {
         webSocketObserverFactory.CancelCreation();
     }
