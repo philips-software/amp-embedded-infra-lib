@@ -14,8 +14,8 @@ namespace services
         , public infra::ClaimableResource
     {
     public:
-        void MqttMultipleAccessMaster::Register(MqttMultipleAccess& access);
-        void MqttMultipleAccessMaster::Unregister(MqttMultipleAccess& access);
+        void Register(MqttMultipleAccess& access);
+        void Unregister(MqttMultipleAccess& access);
         void Publish(MqttMultipleAccess& access);
         void Subscribe(MqttMultipleAccess& access);
         void NotificationDone();

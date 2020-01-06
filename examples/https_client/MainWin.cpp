@@ -52,7 +52,7 @@ namespace application
 
     private:
         // Implementation of HttpClientBasic
-        virtual void Connected() override
+        virtual void Attached() override
         {
             HttpClientObserver::Subject().Get(Path(), Headers());
         }
