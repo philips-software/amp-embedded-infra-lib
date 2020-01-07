@@ -43,6 +43,12 @@ namespace services
             access.Attached();
     }
 
+    void MqttMultipleAccessMaster::Detaching()
+    {
+        for (auto& access : accesses)
+            access.Detaching();
+    }
+
     void MqttMultipleAccessMaster::PublishDone()
     {
         active->PublishDone();
@@ -65,12 +71,6 @@ namespace services
         std::abort();
     }
 
-    void MqttMultipleAccessMaster::Detaching()
-    {
-        for (auto& access : accesses)
-            access.Detaching();
-    }
-
     void MqttMultipleAccessMaster::FillTopic(infra::StreamWriter& writer) const
     {
         active->FillTopic(writer);
@@ -81,15 +81,20 @@ namespace services
         active->FillPayload(writer);
     }
 
-    MqttMultipleAccess::MqttMultipleAccess(MqttMultipleAccessMaster& master)
+    MqttMultipleAccess::MqttMultipleAccess(MqttMultipleAccessMaster& master, MqttClientObserver& observer)
         : master(master)
         , claimer(master)
+        , observer(observer)
     {
         master.Register(*this);
+        if (master.IsAttached())
+            Attached();
     }
 
     MqttMultipleAccess::~MqttMultipleAccess()
     {
+        if (master.IsAttached())
+            Detaching();
         master.Unregister(*this);
     }
 
@@ -116,11 +121,17 @@ namespace services
 
     void MqttMultipleAccess::Attached()
     {
-        Observer().Attached();
+        Attach(infra::UnOwnedSharedPtr(observer));
+    }
+
+    void MqttMultipleAccess::Detaching()
+    {
+        Detach();
     }
 
     void MqttMultipleAccess::PublishDone()
     {
+        master.ReleaseActive();
         claimer.Release();
         Observer().PublishDone();
     }
@@ -135,11 +146,6 @@ namespace services
     infra::SharedPtr<infra::StreamWriter> MqttMultipleAccess::ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize)
     {
         return Observer().ReceivedNotification(topic, payloadSize);
-    }
-
-    void MqttMultipleAccess::Detaching()
-    {
-        Observer().Detaching();
     }
 
     void MqttMultipleAccess::FillTopic(infra::StreamWriter& writer) const
