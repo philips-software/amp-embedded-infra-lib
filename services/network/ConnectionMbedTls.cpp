@@ -90,6 +90,10 @@ namespace services
         {
             createdObserver(SharedFromThis());
             Attach(connectionObserver);
+            if (aborting)
+                Observer().Abort();
+            else if (closing)
+                Observer().Close();
         }
         else
             createdObserver(nullptr);
@@ -162,12 +166,18 @@ namespace services
 
     void ConnectionMbedTls::Close()
     {
-        Observer().Close();
+        if (Connection::IsAttached())
+            Observer().Close();
+        else
+            closing = true;
     }
 
     void ConnectionMbedTls::Abort()
     {
-        Observer().Abort();
+        if (Connection::IsAttached())
+            Observer().Abort();
+        else
+            aborting = true;
     }
 
     void ConnectionMbedTls::RequestSendStream(std::size_t sendSize)
