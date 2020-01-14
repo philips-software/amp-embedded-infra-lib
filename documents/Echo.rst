@@ -1,0 +1,102 @@
+ECHO (Embedded CHOmmunication)
+##############################
+
+Introduction
+************
+
+ECHO is the name of the embedded remote procedure call (RPC) mechanism used in the Embedded Infrastructure Library. As an RPC mechanism, it provides mechanisms and tools to easily communicate with remote targets. ECHO builds on top of Google Protocol Buffers (Protobuf), which is chosen because as a Google standard it already has wide adoption in the world, with many programming languages being supported. Adding support for new languages is simplified by Google thanks to its flexible Protobuf compiler.
+
+In this document, we assume familiarity with the concepts of Protobuf such as its basic types, messages, and services. This document describes the additions and restrictions on the Protobuf messages; the translation from Protobuf services to a binary protocol; and running the compiler plug-ins that generate C++, C# and Java code, which serves as an example to write a Protobuf compiler plug-in for other languages.
+
+The ``.proto`` files, which contain a description of all messages and services, use the proto3 syntax.
+Information about Google Protocol Buffers can be found at `Protocol Buffers <https://developers.google.com/protocol-buffers/>`_.
+
+Protobuf Messages
+*****************
+
+Since ECHO builds on top of Protobuf, Google’s definition of messages and translation of messages to a binary format is used. Protobuf defines a mechanism to add options to messages, which is used by ECHO to place upper limits on otherwise unbounded messages, so that on embedded platforms a known amount of memory can be reserved for specific messages.
+
+For example, a message to hold a time zone locale (which has a maximum length of 32) may look like this::
+
+    message TimeLocale
+    {
+        string timezone = 1 [(string_size) = 32];
+    }
+
+Three entities in proto files are unbounded: fields of type string, fields of type bytes, and repeated fields. The options describing their upper limit are ``string_size``, ``bytes_size``, and ``array_size``. Repeated strings are defined as follows::
+
+    repeated string deviceUrls = 3 [(string_size) = 128, (array_size) = 2];
+
+The options ``string_size``, ``bytes_size``, and ``array_size`` are defined in ``EchoAttributes.proto``, which is part of this specification, and attached as appendix.
+
+Since in the generated embedded code these size attributes are used in the definition of the fields of messages, the limits on these fields are observed by design. Other languages/implementations may use introspection mechanisms to ensure that the limits are observed, or they may be made compliant by design; in any way, the limits may not be surpassed, otherwise results of communication are unpredictable.
+
+Protobuf Services
+*****************
+
+Conventions
+===========
+
+A service defined in Protobuf consist of a number of methods. Protobuf does not define the encoding/decoding rules, so this document fully defines this translation. Some RPC systems (like Google’s gRPC) use the name of the services and methods to make the call. Since ECHO is intended to be used in an embedded context, instead of using the names of services and methods options are used to assign identifiers to services and methods. Those options are defined in ``EchoAttributes.proto``, and are used like this::
+
+    service TestInteraction
+    {
+        option (service_id) = 11;
+
+        rpc Reset(Nothing) returns (Nothing) { option (method_id) = 1; }
+    }
+
+In ECHO, all messages are asynchronous. This is done for two reasons: 1) Without having to wait for a response, a sender can send many messages in quick succession, thereby fully utilizing network buffers. The receiver can then pre-process the next message when still executing the previous message; 2) Embedded applications without multiple threads often have other (real time) tasks to accomplish. Having to wait for a result of a message may complicate the execution model.
+
+ECHO introduces a limitation on Protobuf interfaces: Since all messages are assumed to be asynchronous, all messages must return ``Nothing``.
+
+All Protobuf methods take one message as parameter. When designing a method with one or more parameters, a message is created containing those parameters. When a method takes no data as input, the ``Nothing`` type is used, which results in the generated code containing no parameters (If a custom empty message would be used, generated methods would take one parameter of that type, even though it contains no fields). The ``Reset`` method in the example above therefore takes ``Nothing`` as parameter, which results in generation of a ``void Reset()`` function.
+
+Encoding Service Calls
+======================
+
+ECHO uses a reliable data stream to communicate, like TCP, so that correct ordering and delivery is guaranteed until a disconnect occurs. When a service’s method is invoked, the data is encoded as follows::
+
+<serviceId> <(methodId << 3) | 2> <length> <message>
+
+The ``serviceId``, adjusted ``methodId``, and ``length`` are encoded as Protobuf varints. The ``methodId`` is adjusted so that the combination of ``methodId``, ``length``, and ``message`` is the same as a Protobuf field where the ``methodId`` is the field number, and the ``message`` is the contents. So it is equivalent to::
+
+<serviceId> <field(methodId, message)>
+
+which is easier for some encoders/decoders.
+
+Adding Support to Other Languages
+*********************************
+
+The Google Protobuf compiler is able to generate code for a number of languages, including C++, C#, Java, and Python. This generated code can encode and decode the Protobuf messages defined in ``.proto`` files. Support for ECHO communication using the services must be added on top of that using a compiler plug-in. Such a compiler plug-in is written in your favourite language, and it is invoked by the Protobuf compiler. It is fed a Protobuf message on ``stdin``, which completely defines the interpreted ``.proto`` file, and on ``stdout`` the plug-in outputs a Protobuf message which completely defines the resulting code. The compiler takes care of the rest. This means that a compiler plug-in immediately deals with an abstract syntax tree containing all interpreted information about the ``.proto`` file, so that it can fully focus on the form of the output, instead of on parsing the input.
+
+If a language is targeted which is supported by the Protobuf compiler, then the compiler plug-in for that language only needs to generate code for the services, which consists of encoding and decoding services’ methods and their parameters. If an unsupported language is targeted, then the compiler plug-in also has to generate code for encoding and decoding the individual message.
+
+Appendix: EchoAttributes.proto
+******************************
+
+.. code-block::
+
+    syntax = "proto3";
+
+    option java_package = "com.philips.cococo.protobufEcho";
+    option java_outer_classname = "EchoAttributesProto";
+
+    import "google/protobuf/descriptor.proto";
+
+    extend google.protobuf.FieldOptions {
+      uint32 string_size = 50000;
+      uint32 bytes_size = 50001;
+      uint32 array_size = 50002;
+    }
+
+    extend google.protobuf.ServiceOptions {
+      uint32 service_id = 50000;
+    }
+
+    extend google.protobuf.MethodOptions {
+      uint32 method_id = 50000;
+    }
+
+    message Nothing {
+    }
