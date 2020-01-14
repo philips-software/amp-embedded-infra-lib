@@ -54,5 +54,6 @@ html_theme = 'sphinx_rtd_theme'
 # html_static_path = ['_static']
 
 primary_domain = 'cpp'
+highlight_language = 'cpp'
 
 plantuml = 'java -jar plantuml.jar'
