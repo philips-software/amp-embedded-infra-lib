@@ -36,17 +36,26 @@ namespace services
         MOCK_METHOD0(AbortAndDestroy, void());
         MOCK_CONST_METHOD0(Ipv4Address, IPv4Address());
         MOCK_METHOD1(SetHostname, void(infra::BoundedConstString hostname));
+
+        void SetOwnership(const infra::SharedPtr<Connection>& owner, const infra::SharedPtr<ConnectionObserver>& observer)
+        {
+            self = owner;
+        }
+
+        void ResetOwnership()
+        {
+            Detach();
+            self = nullptr;
+        }
+
+    private:
+        infra::SharedPtr<Connection> self;
     };
 
     class ConnectionObserverMock
         : public services::ConnectionObserver
     {
     public:
-        ConnectionObserverMock() = default;
-        explicit ConnectionObserverMock(services::Connection& connection);
-
-        using services::ConnectionObserver::Subject;
-
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override { SendStreamAvailable(writer); }
         MOCK_METHOD1(SendStreamAvailable, void(infra::SharedPtr<infra::StreamWriter> writer));
         MOCK_METHOD0(DataReceived, void());
@@ -58,13 +67,11 @@ namespace services
     public:
         using ConnectionObserver::ConnectionObserver;
 
-        using services::ConnectionObserver::Subject;
-
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override { SendStreamAvailable(writer); }
         MOCK_METHOD1(SendStreamAvailable, void(infra::SharedPtr<infra::StreamWriter> writer));
         MOCK_METHOD0(DataReceived, void());
-        MOCK_METHOD0(Connected, void());
-        MOCK_METHOD0(ClosingConnection, void());
+        MOCK_METHOD0(Attached, void());
+        MOCK_METHOD0(Detaching, void());
         MOCK_METHOD0(Close, void());
         MOCK_METHOD0(Abort, void());
     };
@@ -78,7 +85,6 @@ namespace services
         MOCK_METHOD1(CancelConnect, void(ClientConnectionObserverFactory& factory));
 
         void NewConnection(ServerConnectionObserverFactory& serverConnectionObserverFactory, Connection& connection, services::IPAddress address);
-        void NewConnection(ServerConnectionObserverFactory& serverConnectionObserverFactory, infra::SharedPtr<Connection> connection, services::IPAddress address);
     };
 
     class ServerConnectionObserverFactoryMock

@@ -11,7 +11,7 @@ namespace services
         infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionStub>& object)
         {
             infra::SharedPtr<infra::StreamWriter> stream = std::move(object->streamWriterPtr);
-            object->GetObserver().SendStreamAvailable(std::move(stream));
+            object->Observer().SendStreamAvailable(std::move(stream));
         }, SharedFromThis());
     }
 
@@ -35,20 +35,20 @@ namespace services
     void ConnectionStub::CloseAndDestroy()
     {
         CloseAndDestroyMock();
-        ResetOwnership();
+        Detach();
     }
 
     void ConnectionStub::AbortAndDestroy()
     {
         AbortAndDestroyMock();
-        ResetOwnership();
+        Detach();
     }
 
     void ConnectionStub::SimulateDataReceived(infra::ConstByteRange data)
     {
         receivingData.insert(receivingData.end(), data.begin(), data.end());
-        if (HasObserver())
-            GetObserver().DataReceived();
+        if (IsAttached())
+            Observer().DataReceived();
     }
 
     std::string ConnectionStub::SentDataAsString() const
@@ -93,13 +93,13 @@ namespace services
     void ConnectionStubWithAckReceivedMock::CloseAndDestroy()
     {
         CloseAndDestroyMock();
-        ResetOwnership();
+        Detach();
     }
 
     void ConnectionStubWithAckReceivedMock::AbortAndDestroy()
     {
         AbortAndDestroyMock();
-        ResetOwnership();
+        Detach();
     }
 
     void ConnectionObserverStub::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)

@@ -46,6 +46,7 @@ ccola_component(util static_library)
         SharedObjectAllocatorFixedSize.hpp
         SharedObjectAllocatorHeap.hpp
         SharedOptional.hpp
+        SharedOwnedObserver.hpp
         SharedPtr.cpp
         SharedPtr.hpp
         StaticStorage.hpp

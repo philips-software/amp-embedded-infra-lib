@@ -82,17 +82,18 @@ namespace services
         mbedtls_ctr_drbg_free(&ctr_drbg);
         mbedtls_ssl_free(&sslContext);
         mbedtls_ssl_config_free(&sslConfig);
-
-        ResetOwnership();
     }
 
     void ConnectionMbedTls::CreatedObserver(infra::SharedPtr<services::ConnectionObserver> connectionObserver)
     {
         if (connectionObserver != nullptr)
         {
-            connectionObserver->Attach(*this);
-            SetOwnership(nullptr, connectionObserver);
             createdObserver(SharedFromThis());
+            Attach(connectionObserver);
+            if (aborting)
+                Observer().Abort();
+            else if (closing)
+                Observer().Close();
         }
         else
             createdObserver(nullptr);
@@ -147,31 +148,36 @@ namespace services
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object)
             {
                 object->dataReceivedScheduled = false;
-                object->GetObserver().DataReceived();
+                object->Observer().DataReceived();
             }, SharedFromThis());
         }
     }
 
-    void ConnectionMbedTls::Connected()
+    void ConnectionMbedTls::Attached()
     {
         InitTls();
-        GetObserver().Connected();
     }
 
-    void ConnectionMbedTls::ClosingConnection()
+    void ConnectionMbedTls::Detaching()
     {
         encryptedSendWriter = nullptr;
-        ResetOwnership();
+        ConnectionWithHostname::Detach();
     }
 
     void ConnectionMbedTls::Close()
     {
-        GetObserver().Close();
+        if (Connection::IsAttached())
+            Observer().Close();
+        else
+            closing = true;
     }
 
     void ConnectionMbedTls::Abort()
     {
-        GetObserver().Abort();
+        if (Connection::IsAttached())
+            Observer().Abort();
+        else
+            aborting = true;
     }
 
     void ConnectionMbedTls::RequestSendStream(std::size_t sendSize)
@@ -239,7 +245,7 @@ namespace services
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object)
             {
                 infra::SharedPtr<StreamWriterMbedTls> stream = object->streamWriter.Emplace(*object);
-                object->GetObserver().SendStreamAvailable(std::move(stream));
+                object->Observer().SendStreamAvailable(std::move(stream));
             }, SharedFromThis());
 
             requestedSendSize = 0;

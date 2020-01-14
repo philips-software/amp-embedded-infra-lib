@@ -57,8 +57,8 @@ namespace services
         // Implementation of ConnectionObserver
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void DataReceived() override;
-        virtual void Connected() override;
-        virtual void ClosingConnection() override;
+        virtual void Attached() override;
+        virtual void Detaching() override;
         virtual void Close() override;
         virtual void Abort() override;
 
@@ -137,6 +137,8 @@ namespace services
         std::size_t encryptedSendStreamSize = 0;
 
         bool initialHandshake = true;
+        bool closing = false;
+        bool aborting = false;
     };
 
     using AllocatorConnectionMbedTls = infra::SharedObjectAllocator<ConnectionMbedTls,

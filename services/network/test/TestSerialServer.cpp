@@ -15,16 +15,22 @@ class SerialServerTest
     , public infra::ClockFixture
 {
 public:
+    SerialServerTest()
+    {
+        connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, *connection, services::IPv4AddressLocalHost());
+    }
+
     ~SerialServerTest()
     {
-        if (connection)
+        if (connectionPtr != nullptr)
         {
             EXPECT_CALL(*connection, AbortAndDestroyMock);
             connection->AbortAndDestroy();
         }
     }
 
-    testing::StrictMock<infra::SharedOptional<services::ConnectionStub>> connection;
+    infra::SharedOptional<testing::StrictMock<services::ConnectionStub>> connection;
+    infra::SharedPtr<services::Connection> connectionPtr{ connection.Emplace() };
     testing::StrictMock<services::ConnectionFactoryMock> connectionFactoryMock;
     testing::StrictMock<hal::SerialCommunicationMock> serialCommunicationMock;
     services::ServerConnectionObserverFactory* serverConnectionObserverFactory;
@@ -34,8 +40,6 @@ public:
 
 TEST_F(SerialServerTest, forward_data_from_serial_to_socket)
 {
-    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection.Emplace(), services::IPv4AddressLocalHost());
-
     serialCommunicationMock.dataReceived(std::vector<uint8_t>{ 'A', 'B', 'C' });
     ExecuteAllActions();
 
@@ -44,8 +48,6 @@ TEST_F(SerialServerTest, forward_data_from_serial_to_socket)
 
 TEST_F(SerialServerTest, forward_data_from_socket_to_serial)
 {
-    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection.Emplace(), services::IPv4AddressLocalHost());
-
     EXPECT_CALL(serialCommunicationMock, SendDataMock(std::vector<uint8_t>{ 'C', 'B', 'A' }));
     connection->SimulateDataReceived(std::vector<uint8_t>{ 'C', 'B', 'A' });
 }

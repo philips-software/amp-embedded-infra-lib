@@ -11,11 +11,14 @@ namespace services
 {
     class ExclusiveConnectionFactoryMutex
     {
+    private:
+        class ExclusiveConnection;
+
     public:
         using Claimer = infra::ClaimableResource::Claimer::WithSize<sizeof(void*) + sizeof(IPAddress) + sizeof(infra::AutoResetFunction<void()>)>;
 
         infra::ClaimableResource& Resource();
-        infra::SharedPtr<ConnectionObserver> CreateConnection(Claimer&& claimer, infra::SharedPtr<ConnectionObserver> connectionObserver, bool cancelConnectionOnNewRequest);
+        infra::SharedPtr<ExclusiveConnection> CreateConnection(Claimer&& claimer, bool cancelConnectionOnNewRequest);
         void RequestCloseConnection();
 
     private:
@@ -25,7 +28,6 @@ namespace services
         {
         public:
             ExclusiveConnection(ExclusiveConnectionFactoryMutex& mutex);
-            ~ExclusiveConnection();
 
             // Implementation of Connection
             virtual void RequestSendStream(std::size_t sendSize) override;
@@ -39,10 +41,11 @@ namespace services
             // Implementation of ConnectionObserver
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& streamWriter) override;
             virtual void DataReceived() override;
-            virtual void Connected() override;
-            virtual void ClosingConnection() override;
+            virtual void Detaching() override;
             virtual void Close() override;
             virtual void Abort() override;
+
+            void Attach(const infra::SharedPtr<ConnectionObserver>& observer);
 
         private:
             ExclusiveConnectionFactoryMutex& mutex;

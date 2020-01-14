@@ -56,13 +56,12 @@ namespace services
         , public services::Connection
     {
     public:
-        WebSocketClientConnectionObserver(infra::BoundedConstString path, services::Connection& connection);
-        ~WebSocketClientConnectionObserver();
+        WebSocketClientConnectionObserver(infra::BoundedConstString path);
 
         // Implementation of ConnectionObserver
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void DataReceived() override;
-        virtual void ClosingConnection() override;
+        virtual void Detaching() override;
 
         // Implementation of Connection
         virtual void RequestSendStream(std::size_t sendSize) override;
@@ -167,7 +166,7 @@ namespace services
         virtual void Stop(const infra::Function<void()>& onDone) override;
 
         // Implementation of HttpClientBasic
-        virtual void Connected() override;
+        virtual void Attached() override;
         virtual services::HttpHeaders Headers() const override;
         virtual void StatusAvailable(HttpStatusCode statusCode) override;
         virtual void HeaderAvailable(HttpHeader header) override;
@@ -185,6 +184,7 @@ namespace services
         infra::BoundedVector<const services::HttpHeader>::WithMaxSize<6> headers;
         infra::BoundedString::WithStorage<32> webSocketKey;
         WebSocketClientObserverFactory::ConnectFailReason initiationError = WebSocketClientObserverFactory::ConnectFailReason::upgradeFailed;
+        bool done = false;
     };
 
     class WebSocketClientInitiationResult

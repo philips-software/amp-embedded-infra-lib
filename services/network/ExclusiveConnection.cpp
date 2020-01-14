@@ -7,18 +7,13 @@ namespace services
         return resource;
     }
 
-    infra::SharedPtr<ConnectionObserver> ExclusiveConnectionFactoryMutex::CreateConnection(ExclusiveConnectionFactoryMutex::Claimer&& claimer,
-        infra::SharedPtr<ConnectionObserver> connectionObserver, bool cancelConnectionOnNewRequest)
+    infra::SharedPtr<ExclusiveConnectionFactoryMutex::ExclusiveConnection> ExclusiveConnectionFactoryMutex::CreateConnection(ExclusiveConnectionFactoryMutex::Claimer&& claimer,
+        bool cancelConnectionOnNewRequest)
     {
         this->cancelConnectionOnNewRequest = cancelConnectionOnNewRequest;
         really_assert(exclusiveConnection.Allocatable());
         currentClaimer = std::move(claimer);
-        auto result = exclusiveConnection.Emplace(*this);
-
-        connectionObserver->Attach(*result);
-        result->SetOwnership(nullptr, connectionObserver);
-
-        return result;
+        return exclusiveConnection.Emplace(*this);
     }
 
     void ExclusiveConnectionFactoryMutex::RequestCloseConnection()
@@ -30,11 +25,6 @@ namespace services
     ExclusiveConnectionFactoryMutex::ExclusiveConnection::ExclusiveConnection(ExclusiveConnectionFactoryMutex& mutex)
         : mutex(mutex)
     {}
-
-    ExclusiveConnectionFactoryMutex::ExclusiveConnection::~ExclusiveConnection()
-    {
-        ResetOwnership();
-    }
 
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::RequestSendStream(std::size_t sendSize)
     {
@@ -73,36 +63,37 @@ namespace services
 
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& streamWriter)
     {
-        Connection::GetObserver().SendStreamAvailable(std::move(streamWriter));
+        Connection::Observer().SendStreamAvailable(std::move(streamWriter));
     }
 
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::DataReceived()
     {
-        Connection::GetObserver().DataReceived();
+        Connection::Observer().DataReceived();
     }
 
-    void ExclusiveConnectionFactoryMutex::ExclusiveConnection::Connected()
+    void ExclusiveConnectionFactoryMutex::ExclusiveConnection::Detaching()
     {
-        Connection::GetObserver().Connected();
-        if (mutex.resource.ClaimsPending() && mutex.cancelConnectionOnNewRequest)
-            Connection::GetObserver().Close();
-    }
-
-    void ExclusiveConnectionFactoryMutex::ExclusiveConnection::ClosingConnection()
-    {
-        ResetOwnership();
+        ConnectionWithHostname::Detach();
     }
 
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::Close()
     {
         if (!invokedClose)
-            Connection::GetObserver().Close();
+            Connection::Observer().Close();
         invokedClose = true;
     }
 
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::Abort()
     {
-        Connection::GetObserver().Abort();
+        Connection::Observer().Abort();
+    }
+
+    void ExclusiveConnectionFactoryMutex::ExclusiveConnection::Attach(const infra::SharedPtr<ConnectionObserver>& observer)
+    {
+        ConnectionWithHostname::Attach(observer);
+
+        if (mutex.resource.ClaimsPending() && mutex.cancelConnectionOnNewRequest)
+            Connection::Observer().Close();
     }
 
     ExclusiveConnectionFactory::ExclusiveConnectionFactory(infra::BoundedList<infra::NotifyingSharedOptional<Listener>>& listeners, infra::BoundedList<Connector>& connectors,
@@ -157,7 +148,9 @@ namespace services
                 this->createdObserver = created;
                 factory.ConnectionAccepted([this](infra::SharedPtr<ConnectionObserver> connectionObserver)
                 {
-                    this->createdObserver(connectionFactory.mutex.CreateConnection(std::move(claimer), connectionObserver, connectionFactory.cancelConnectionOnNewRequest));
+                    auto newConnection = connectionFactory.mutex.CreateConnection(std::move(claimer), connectionFactory.cancelConnectionOnNewRequest);
+                    this->createdObserver(newConnection);
+                    newConnection->Attach(connectionObserver);
                 }, address);
             });
         }
@@ -205,7 +198,9 @@ namespace services
         this->createdObserver = std::move(createdObserver);
         clientFactory.ConnectionEstablished([this](infra::SharedPtr<ConnectionObserver> connectionObserver)
         {
-            this->createdObserver(connectionFactory.mutex.CreateConnection(std::move(claimer), connectionObserver, connectionFactory.cancelConnectionOnNewRequest));
+            auto newConnection = connectionFactory.mutex.CreateConnection(std::move(claimer), connectionFactory.cancelConnectionOnNewRequest);
+            this->createdObserver(newConnection);
+            newConnection->Attach(connectionObserver);
 
             connectionFactory.connectors.remove(*this);
         });

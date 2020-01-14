@@ -46,6 +46,17 @@ namespace services
         peer.ResetOwnership();
     }
 
+    void ConnectionLoopBackPeer::SetOwnership(const infra::SharedPtr<ConnectionLoopBack>& owner, const infra::SharedPtr<ConnectionObserver>& observer)
+    {
+        this->owner = owner;
+    }
+
+    void ConnectionLoopBackPeer::ResetOwnership()
+    {
+        Detach();
+        owner = nullptr;
+    }
+
     void ConnectionLoopBackPeer::TryAllocateSendStream()
     {
         assert(streamWriter.Allocatable());
@@ -54,10 +65,10 @@ namespace services
             auto size = requestedSendSize;
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([this, size](const infra::SharedPtr<ConnectionLoopBack>& loopBack)
             {
-                if (HasObserver())
+                if (IsAttached())
                 {
                     infra::SharedPtr<infra::StreamWriter> writer = streamWriter.Emplace(*this, size);
-                    GetObserver().SendStreamAvailable(std::move(writer));
+                    Observer().SendStreamAvailable(std::move(writer));
                 }
             }, loopBack.SharedFromThis());
 
@@ -79,8 +90,8 @@ namespace services
             ConnectionLoopBackPeer& connection = this->connection;
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([&connection](const infra::SharedPtr<ConnectionLoopBack>& loopBack)
             {
-                if (connection.peer.HasObserver())
-                    connection.peer.GetObserver().DataReceived();
+                if (connection.peer.IsAttached())
+                    connection.peer.Observer().DataReceived();
             }, connection.loopBack.SharedFromThis());
         }
     }
@@ -101,24 +112,22 @@ namespace services
         , client(server, *this)
     {}
 
-    Connection& ConnectionLoopBack::Server()
+    ConnectionLoopBackPeer& ConnectionLoopBack::Server()
     {
         return server;
     }
 
-    Connection& ConnectionLoopBack::Client()
+    ConnectionLoopBackPeer& ConnectionLoopBack::Client()
     {
         return client;
     }
 
     void ConnectionLoopBack::Connect(infra::SharedPtr<services::ConnectionObserver> serverObserver, infra::SharedPtr<services::ConnectionObserver> clientObserver)
     {
-        serverObserver->Attach(Server());
-        Server().SetOwnership(SharedFromThis(), serverObserver);
-        clientObserver->Attach(Client());
         Client().SetOwnership(SharedFromThis(), clientObserver);
-        Client().GetObserver().Connected();
-        Server().GetObserver().Connected();
+        Server().SetOwnership(SharedFromThis(), serverObserver);
+        Client().Attach(clientObserver);
+        Server().Attach(serverObserver);
     }
 
     ConnectionLoopBackListener::ConnectionLoopBackListener(uint16_t port, ConnectionLoopBackFactory& loopBackFactory, ServerConnectionObserverFactory& connectionObserverFactory)

@@ -204,11 +204,11 @@ TEST_F(HttpServerTest, split_response_when_not_enough_available_in_stream)
     }));
 
     infra::StringOutputStream::WithStorage<80> stream1;
-    connection.GetObserver().SendStreamAvailable(infra::UnOwnedSharedPtr(stream1.Writer()));
+    connection.Observer().SendStreamAvailable(infra::UnOwnedSharedPtr(stream1.Writer()));
     EXPECT_EQ("HTTP/1.1 200 OK\r\nContent-Length: 100\r\nContent-Type: application/text\r\n\r\n01234567", stream1.Storage());
 
     infra::StringOutputStream::WithStorage<80> stream2;
-    connection.GetObserver().SendStreamAvailable(infra::UnOwnedSharedPtr(stream2.Writer()));
+    connection.Observer().SendStreamAvailable(infra::UnOwnedSharedPtr(stream2.Writer()));
     EXPECT_EQ("89012345678901234567890123456789012345678901234567890123456789012345678901234567", stream2.Storage());
 }
 

@@ -9,16 +9,12 @@ namespace services
     class MqttClient;
 
     class MqttClientObserver
-        : public infra::SingleObserver<MqttClientObserver, MqttClient>
+        : public infra::SharedOwnedObserver<MqttClientObserver, MqttClient>
     {
     public:
-        using infra::SingleObserver<MqttClientObserver, MqttClient>::SingleObserver;
-
-        virtual void Connected() {}
         virtual void PublishDone() = 0;
         virtual void SubscribeDone() = 0;
         virtual infra::SharedPtr<infra::StreamWriter> ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize) = 0;
-        virtual void ClosingConnection() {}
 
         virtual void FillTopic(infra::StreamWriter& writer) const = 0;
         virtual void FillPayload(infra::StreamWriter& writer) const = 0;
@@ -46,7 +42,7 @@ namespace services
     };
 
     class MqttClient
-        : public infra::Subject<MqttClientObserver>
+        : public infra::SharedOwningSubject<MqttClientObserver>
     {
     public:
         virtual void Publish() = 0;

@@ -80,7 +80,7 @@ namespace services
     public:
         struct Creators
         {
-            infra::CreatorBase<services::ConnectionObserver, void(services::Connection& connection)>& connectionCreator;
+            infra::CreatorBase<services::ConnectionObserver, void()>& connectionCreator;
         };
 
         WebSocketObserverFactoryImpl(const Creators& creators);

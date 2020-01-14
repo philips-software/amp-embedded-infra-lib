@@ -99,7 +99,6 @@ namespace services
     {
         infra::CountingStreamWriter countingWriter;
         message.FillPayload(countingWriter);
-        //TODO: Should not we have a +2 here for packet identified bytes??
         return countingWriter.Processed();
     }
 
@@ -199,19 +198,19 @@ namespace services
         state->HandleDataReceived();
     }
 
-    void MqttClientImpl::Connected()
+    void MqttClientImpl::Attached()
     {
         state->Connected();
     }
 
-    void MqttClientImpl::ClosingConnection()
+    void MqttClientImpl::Detaching()
     {
-        state->ClosingConnection();
+        state->Detaching();
     }
 
     infra::SharedPtr<infra::StreamWriter> MqttClientImpl::ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize)
     {
-        return GetObserver().ReceivedNotification(topic, payloadSize);
+        return Observer().ReceivedNotification(topic, payloadSize);
     }
 
     infra::SharedPtr<infra::StreamReader> MqttClientImpl::ReceiveStream()
@@ -257,7 +256,7 @@ namespace services
         clientConnection.ConnectionObserver::Subject().RequestSendStream(MqttFormatter::MessageSizeConnect(clientId, username, password));
     }
 
-    void MqttClientImpl::StateConnecting::ClosingConnection()
+    void MqttClientImpl::StateConnecting::Detaching()
     {
         if (!signaledFailure)
             factory.ConnectionFailed(MqttClientObserverFactory::ConnectFailReason::initializationFailed);
@@ -295,10 +294,9 @@ namespace services
             {
                 if (observer)
                 {
-                    observer->Attach(clientConnection);
-                    clientConnection.observer = observer;
+                    auto& clientConnectionCopy = clientConnection;
                     auto& newState = clientConnection.state.Emplace<StateConnected>(clientConnection);
-                    observer->Connected();
+                    clientConnectionCopy.Attach(observer);
                     newState.HandleDataReceived();
                 }
                 else
@@ -319,15 +317,14 @@ namespace services
         clientConnection.Abort();
     }
 
-    void MqttClientImpl::StateConnected::ClosingConnection()
+    void MqttClientImpl::StateConnected::Detaching()
     {
-        clientConnection.GetObserver().ClosingConnection();
-        clientConnection.observer->Detach();
+        clientConnection.MqttClient::Detach();
     }
 
     void MqttClientImpl::StateConnected::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        sendOperations.front()->SendStreamAvailable(*this, *writer, clientConnection.GetObserver());
+        sendOperations.front()->SendStreamAvailable(*this, *writer, clientConnection.Observer());
         sendOperations.pop_front();
         executingSend = false;
 
@@ -470,7 +467,7 @@ namespace services
         infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<MqttClientImpl>& client)
         {
             client->DataReceived();
-        }, infra::MakeContainedSharedObject(clientConnection, clientConnection.ConnectionObserver::Subject().Observer()));
+        }, infra::MakeContainedSharedObject(clientConnection, clientConnection.ConnectionObserver::Subject().ObserverPtr()));
     }
 
     void MqttClientImpl::StateConnected::ProcessSendOperations()
@@ -478,7 +475,7 @@ namespace services
         if (!executingSend && !sendOperations.empty())
         {
             executingSend = true;
-            clientConnection.ConnectionObserver::Subject().RequestSendStream(sendOperations.front()->MessageSize(clientConnection.GetObserver()));
+            clientConnection.ConnectionObserver::Subject().RequestSendStream(sendOperations.front()->MessageSize(clientConnection.Observer()));
         }
     }
 
@@ -489,7 +486,7 @@ namespace services
 
         connectedState.operationTimeout.Start(connectedState.ClientConnection().operationTimeout, [&connectedState]() { connectedState.ClientConnection().Abort(); });
 
-        formatter.MessagePublish(connectedState.ClientConnection().GetObserver());
+        formatter.MessagePublish(connectedState.ClientConnection().Observer());
 
         observer.PublishDone();
     }
@@ -506,7 +503,7 @@ namespace services
 
         connectedState.operationTimeout.Start(connectedState.ClientConnection().operationTimeout, [&connectedState]() { connectedState.ClientConnection().Abort(); });
 
-        formatter.MessageSubscribe(connectedState.ClientConnection().GetObserver());
+        formatter.MessageSubscribe(connectedState.ClientConnection().Observer());
 
         observer.SubscribeDone();
     }
@@ -521,7 +518,7 @@ namespace services
         infra::DataOutputStream::WithErrorPolicy stream(writer);
         MqttFormatter formatter(stream);
 
-        formatter.MessagePubAck(connectedState.ClientConnection().GetObserver(), connectedState.receivedPacketIdentifier);
+        formatter.MessagePubAck(connectedState.ClientConnection().Observer(), connectedState.receivedPacketIdentifier);
     }
 
     std::size_t MqttClientImpl::StateConnected::OperationPubAck::MessageSize(const MqttClientObserver& message)

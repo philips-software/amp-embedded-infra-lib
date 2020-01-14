@@ -49,7 +49,7 @@ namespace services
 
     void HttpClientBasic::Close()
     {
-        assert(HttpClientObserver::Attached());
+        assert(HttpClientObserver::IsAttached());
         assert(state == State::connected);
 
         state = State::closing;
@@ -83,15 +83,13 @@ namespace services
     void HttpClientBasic::Established()
     {}
 
-    void HttpClientBasic::ClosingConnection()
+    void HttpClientBasic::Detaching()
     {
         if (state == State::connected)
         {
             state = State::closing;
             sharedAccess.SetAction([this]() { ReportError(true); });
         }
-
-        Detach();
     }
 
     void HttpClientBasic::BodyComplete()

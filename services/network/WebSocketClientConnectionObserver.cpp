@@ -9,17 +9,9 @@
 
 namespace services
 {
-    WebSocketClientConnectionObserver::WebSocketClientConnectionObserver(infra::BoundedConstString path, services::Connection& connection)
+    WebSocketClientConnectionObserver::WebSocketClientConnectionObserver(infra::BoundedConstString path)
         : streamWriter([this]() { StreamWriterAllocatable(); })
-    {
-        connection.GetObserver().Detach();
-        services::ConnectionObserver::Attach(connection);
-    }
-
-    WebSocketClientConnectionObserver::~WebSocketClientConnectionObserver()
-    {
-        ResetOwnership();
-    }
+    {}
 
     void WebSocketClientConnectionObserver::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
@@ -33,7 +25,7 @@ namespace services
             assert(observerStreamRequested);
             assert(requestedSendSize != infra::none);
             assert(!streamWriter);
-            Connection::GetObserver().SendStreamAvailable(streamWriter.Emplace(std::move(writer), *infra::PostAssign(requestedSendSize, infra::none)));
+            Connection::Observer().SendStreamAvailable(streamWriter.Emplace(std::move(writer), *infra::PostAssign(requestedSendSize, infra::none)));
         }
     }
 
@@ -44,12 +36,12 @@ namespace services
         TryAllocateSendStream();
 
         if (before != unackedReadAvailable)
-            GetObserver().DataReceived();
+            Observer().DataReceived();
     }
 
-    void WebSocketClientConnectionObserver::ClosingConnection()
+    void WebSocketClientConnectionObserver::Detaching()
     {
-        ResetOwnership();
+        Connection::Detach();
     }
 
     void WebSocketClientConnectionObserver::RequestSendStream(std::size_t sendSize)
@@ -423,7 +415,7 @@ namespace services
         Cancel(onDone);
     }
 
-    void HttpClientWebSocketInitiation::Connected()
+    void HttpClientWebSocketInitiation::Attached()
     {
         Subject().Get(Path(), Headers());
     }
@@ -465,9 +457,9 @@ namespace services
 
     void HttpClientWebSocketInitiation::BodyComplete()
     {
-        auto& subject = Subject();
-        Detach();
-        result.WebSocketInitiationDone(subject.GetConnection());
+        // Switching http client off will result in Detaching(), resulting Error() being called
+        done = true;
+        result.WebSocketInitiationDone(Subject().GetConnection());
     }
 
     void HttpClientWebSocketInitiation::Done()
@@ -477,7 +469,8 @@ namespace services
 
     void HttpClientWebSocketInitiation::Error(bool intermittentFailure)
     {
-        result.WebSocketInitiationError(initiationError);
+        if (!done)
+            result.WebSocketInitiationError(initiationError);
     }
 
     void HttpClientWebSocketInitiation::ConnectionFailed(HttpClientObserverFactory::ConnectFailReason reason)
@@ -531,14 +524,15 @@ namespace services
     void WebSocketClientFactorySingleConnection::InitiationDone(services::Connection& connection)
     {
         auto& factory = initiation->Factory();
-        auto webSocketConnection = webSocket.Emplace(PathFromUrl(factory.Url()), connection);
-        connection.SwitchObserver(webSocketConnection);
+        auto webSocketConnection = webSocket.Emplace(PathFromUrl(factory.Url()));
+
+        connection.Detach();
+        connection.Attach(webSocketConnection);
+
         initiation = infra::none;
         factory.ConnectionEstablished([webSocketConnection](infra::SharedPtr<ConnectionObserver> connectionObserver)
         {
-            webSocketConnection->SetOwnership(nullptr, connectionObserver);
-            connectionObserver->Attach(*webSocketConnection);
-            connectionObserver->Connected();
+            webSocketConnection->Attach(connectionObserver);
         });
     }
 

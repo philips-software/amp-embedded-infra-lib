@@ -87,12 +87,6 @@ namespace services
         , nextState(infra::InPlaceType<SendingStateRequest>(), *this)
     {}
 
-    void HttpClientImpl::AttachObserver(const infra::SharedPtr<HttpClientObserver>& observer)
-    {
-        this->observer = observer;
-        observer->Attach(*this);
-    }
-
     void HttpClientImpl::Get(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
         ExecuteRequest(HttpVerb::get, requestTarget, headers);
@@ -168,6 +162,16 @@ namespace services
         return ConnectionObserver::Subject();
     }
 
+    void HttpClientImpl::Attached()
+    {
+        infra::WeakPtr<services::HttpClientImpl> self = infra::StaticPointerCast<HttpClientImpl>(services::ConnectionObserver::Subject().ObserverPtr());
+        bodyReaderAccess.SetAction([self]()
+        {
+            if (auto sharedSelf = self.lock())
+                sharedSelf->BodyReaderDestroyed();
+        });
+    }
+
     void HttpClientImpl::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         sendingState->SendStreamAvailable(std::move(writer));
@@ -176,7 +180,7 @@ namespace services
     void HttpClientImpl::DataReceived()
     {
         if (bodyReader != infra::none)
-            observer->BodyAvailable(infra::MakeContainedSharedObject(bodyReader->countingReader, bodyReaderAccess.MakeShared(bodyReader)));
+            Observer().BodyAvailable(infra::MakeContainedSharedObject(bodyReader->countingReader, bodyReaderAccess.MakeShared(bodyReader)));
         else
         {
             if (response)
@@ -186,29 +190,15 @@ namespace services
         }
     }
 
-    void HttpClientImpl::Connected()
-    {
-        infra::WeakPtr<services::HttpClientImpl> self = infra::StaticPointerCast<HttpClientImpl>(services::ConnectionObserver::Subject().Observer());
-        bodyReaderAccess.SetAction([self]()
-        {
-            if (auto sharedSelf = self.lock())
-                sharedSelf->BodyReaderDestroyed();
-        });
-
-        GetObserver().Connected();
-    }
-
-    void HttpClientImpl::ClosingConnection()
+    void HttpClientImpl::Detaching()
     {
         bodyReaderAccess.SetAction(infra::emptyFunction);
-        GetObserver().ClosingConnection();
-        observer->Detach();
-        observer = nullptr;
+        HttpClient::Detach();
     }
 
     void HttpClientImpl::StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine)
     {
-        observer->StatusAvailable(code);
+        Observer().StatusAvailable(code);
     }
 
     void HttpClientImpl::ExpectResponse()
@@ -222,7 +212,7 @@ namespace services
         {
             auto reader = ConnectionObserver::Subject().ReceiveStream();
 
-            infra::WeakPtr<services::ConnectionObserver> self = services::ConnectionObserver::Subject().Observer();
+            infra::WeakPtr<services::ConnectionObserver> self = services::ConnectionObserver::Subject().ObserverPtr();
 
             response->DataReceived(*reader);
 
@@ -252,7 +242,7 @@ namespace services
         {
             bodyReader.Emplace(ConnectionObserver::Subject().ReceiveStream(), *contentLength);
 
-            observer->BodyAvailable(infra::MakeContainedSharedObject(bodyReader->countingReader, bodyReaderAccess.MakeShared(bodyReader)));
+            Observer().BodyAvailable(infra::MakeContainedSharedObject(bodyReader->countingReader, bodyReaderAccess.MakeShared(bodyReader)));
         }
     }
 
@@ -270,7 +260,7 @@ namespace services
     {
         contentLength = infra::none;
         response = infra::none;
-        observer->BodyComplete();
+        Observer().BodyComplete();
     }
 
     void HttpClientImpl::ExecuteRequest(HttpVerb verb, infra::BoundedConstString requestTarget, const HttpHeaders headers)
@@ -303,7 +293,7 @@ namespace services
     uint32_t HttpClientImpl::ReadContentSizeFromObserver() const
     {
         infra::DataOutputStream::WithWriter<infra::CountingStreamWriter> stream;
-        GetObserver().FillContent(stream.Writer());
+        Observer().FillContent(stream.Writer());
         return stream.Writer().Processed();
     }
 
@@ -412,7 +402,7 @@ namespace services
                     contentLengthStream >> *contentLength;
                 }
                 else
-                    httpClient.observer->HeaderAvailable(header);
+                    httpClient.Observer().HeaderAvailable(header);
             }
             else if (headerBuffer.full())
                 SetError();
@@ -504,7 +494,7 @@ namespace services
             Activate();
         });
 
-        client.observer->SendStreamAvailable(forwardStreamAccess.MakeShared(*forwardStreamPtr));
+        client.Observer().SendStreamAvailable(forwardStreamAccess.MakeShared(*forwardStreamPtr));
     }
 
     HttpClientImpl::SendingStateForwardFillContent::SendingStateForwardFillContent(HttpClientImpl& client, std::size_t contentSize)
@@ -523,7 +513,7 @@ namespace services
     void HttpClientImpl::SendingStateForwardFillContent::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         WindowWriter windowWriter(*writer, processed, writer->Available());
-        client.observer->FillContent(windowWriter);
+        client.Observer().FillContent(windowWriter);
         contentSize -= windowWriter.Processed();
         processed += windowWriter.Processed();
         writer = nullptr;

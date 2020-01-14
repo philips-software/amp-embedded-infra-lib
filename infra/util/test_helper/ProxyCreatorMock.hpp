@@ -136,6 +136,84 @@ namespace infra
     private:
         T& createdObject;
     };
+
+    template<>
+    class CreatorMock<void, void()>
+        : public CreatorBase<void, void()>
+    {
+    public:
+        MOCK_METHOD0(Constructed, void());
+        MOCK_METHOD0(Destructed, void());
+
+    protected:
+        virtual void Emplace() override { Constructed(); }
+        virtual void Destroy() override { Destructed(); }
+    };
+
+    template<class ConstructionArg0>
+    class CreatorMock<void, void(ConstructionArg0)>
+        : public CreatorBase<void, void(ConstructionArg0)>
+    {
+    public:
+        MOCK_METHOD1_T(Constructed, void(ConstructionArg0));
+        MOCK_METHOD0(Destructed, void());
+
+    protected:
+        virtual void Emplace(ConstructionArg0 arg0) override { Constructed(arg0); }
+        virtual void Destroy() override { Destructed(); }
+    };
+
+    template<class ConstructionArg0, class ConstructionArg1>
+    class CreatorMock<void, void(ConstructionArg0, ConstructionArg1)>
+        : public CreatorBase<void, void(ConstructionArg0, ConstructionArg1)>
+    {
+    public:
+        MOCK_METHOD2_T(Constructed, void(ConstructionArg0, ConstructionArg1));
+        MOCK_METHOD0(Destructed, void());
+
+    protected:
+        virtual void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1) override { Constructed(arg0, arg1); }
+        virtual void Destroy() override { Destructed(); }
+    };
+
+    template<class ConstructionArg0, class ConstructionArg1, class ConstructionArg2>
+    class CreatorMock<void, void(ConstructionArg0, ConstructionArg1, ConstructionArg2)>
+        : public CreatorBase<void, void(ConstructionArg0, ConstructionArg1, ConstructionArg2)>
+    {
+    public:
+        MOCK_METHOD3_T(Constructed, void(ConstructionArg0, ConstructionArg1, ConstructionArg2));
+        MOCK_METHOD0(Destructed, void());
+
+    protected:
+        virtual void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2) override { Constructed(arg0, arg1, arg2); }
+        virtual void Destroy() override { Destructed(); }
+    };
+
+    template<class ConstructionArg0, class ConstructionArg1, class ConstructionArg2, class ConstructionArg3>
+    class CreatorMock<void, void(ConstructionArg0, ConstructionArg1, ConstructionArg2, ConstructionArg3)>
+        : public CreatorBase<void, void(ConstructionArg0, ConstructionArg1, ConstructionArg2, ConstructionArg3)>
+    {
+    public:
+        MOCK_METHOD4_T(Constructed, void(ConstructionArg0, ConstructionArg1, ConstructionArg2, ConstructionArg3));
+        MOCK_METHOD0(Destructed, void());
+
+    protected:
+        virtual void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3) override { Constructed(arg0, arg1, arg2, arg3); }
+        virtual void Destroy() override { Destructed(); }
+    };
+
+    template<class ConstructionArg0, class ConstructionArg1, class ConstructionArg2, class ConstructionArg3, class ConstructionArg4>
+    class CreatorMock<void, void(ConstructionArg0, ConstructionArg1, ConstructionArg2, ConstructionArg3, ConstructionArg4)>
+        : public CreatorBase<void, void(ConstructionArg0, ConstructionArg1, ConstructionArg2, ConstructionArg3, ConstructionArg4)>
+    {
+    public:
+        MOCK_METHOD5_T(Constructed, void(ConstructionArg0, ConstructionArg1, ConstructionArg2, ConstructionArg3, ConstructionArg4));
+        MOCK_METHOD0(Destructed, void());
+
+    protected:
+        virtual void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3, ConstructionArg4 arg4) override { Constructed(arg0, arg1, arg2, arg3, arg4); }
+        virtual void Destroy() override { Destructed(); }
+    };
 }
 
 #endif

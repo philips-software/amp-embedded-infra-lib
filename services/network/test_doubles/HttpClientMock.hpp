@@ -14,8 +14,8 @@ namespace services
         : public HttpClientObserver
     {
     public:
-        MOCK_METHOD0(Connected, void());
-        MOCK_METHOD0(ClosingConnection, void());
+        MOCK_METHOD0(Attached, void());
+        MOCK_METHOD0(Detaching, void());
 
         MOCK_METHOD1(StatusAvailable, void(HttpStatusCode statusCode));
         MOCK_METHOD1(HeaderAvailable, void(HttpHeader header));
@@ -56,14 +56,6 @@ namespace services
         MOCK_METHOD0(Close, void());
 
         MOCK_METHOD0(GetConnection, Connection&());
-
-        void AttachObserver(const infra::SharedPtr<HttpClientObserver>& observer)
-        {
-            this->observer = observer;
-            observer->Attach(*this);
-        }
-
-        infra::SharedPtr<HttpClientObserver> observer;
     };
 
     class HttpClientConnectorMock

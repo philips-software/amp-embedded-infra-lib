@@ -42,8 +42,6 @@ namespace services
     public:
         HttpClientImpl(infra::BoundedConstString hostname);
 
-        void AttachObserver(const infra::SharedPtr<HttpClientObserver>& observer);
-
         // Implementation of HttpClient
         virtual void Get(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         virtual void Head(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
@@ -62,10 +60,10 @@ namespace services
         virtual Connection& GetConnection() override;
 
         // Implementation of ConnectionObserver
+        virtual void Attached() override;
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void DataReceived() override;
-        virtual void Connected() override;
-        virtual void ClosingConnection() override;
+        virtual void Detaching() override;
 
     protected:
         virtual void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine);
@@ -198,7 +196,6 @@ namespace services
         };
 
     protected:
-        infra::SharedPtr<HttpClientObserver> observer;
         infra::Optional<HttpRequestFormatter> request;
         infra::Optional<HttpResponseParser> response;
 
@@ -277,14 +274,14 @@ namespace services
     void HttpClientConnectorImpl<HttpClient, Args...>::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
     {
         assert(clientObserverFactory != nullptr);
-        auto clientPtr = InvokeEmplace(infra::MakeIndexSequence<sizeof...(Args)>{});
+        auto httpClientPtr = InvokeEmplace(infra::MakeIndexSequence<sizeof...(Args)>{});
 
-        clientObserverFactory->ConnectionEstablished([&clientPtr, &createdObserver](infra::SharedPtr<HttpClientObserver> observer)
+        clientObserverFactory->ConnectionEstablished([&httpClientPtr, &createdObserver](infra::SharedPtr<HttpClientObserver> observer)
         {
             if (observer)
             {
-                clientPtr->AttachObserver(observer);
-                createdObserver(clientPtr);
+                createdObserver(httpClientPtr);
+                httpClientPtr->Attach(observer);
             }
         });
 

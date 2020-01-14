@@ -109,9 +109,9 @@ namespace services
             })
     {}
 
-    void HttpServerConnectionObserver::Connected()
+    void HttpServerConnectionObserver::Attached()
     {
-        connection = &Subject();
+        this->connection = &Subject();
         RequestSendStream();
     }
 
@@ -143,7 +143,7 @@ namespace services
             ReceivedRequest(receiveStream, available);
     }
 
-    void HttpServerConnectionObserver::ClosingConnection()
+    void HttpServerConnectionObserver::Detaching()
     {
         streamWriter = nullptr;
     }
@@ -189,9 +189,9 @@ namespace services
         Subject().AckReceived();
 
         auto& connection = Subject();
+        auto newObserverPtr = infra::MakeContainedSharedObject(newObserver, connection.ObserverPtr());
         Detach();
-        newObserver.Attach(connection);
-        connection.SwitchObserver(infra::MakeContainedSharedObject(newObserver, connection.Observer()));
+        connection.Attach(newObserverPtr);
     }
 
     void HttpServerConnectionObserver::SetIdle()

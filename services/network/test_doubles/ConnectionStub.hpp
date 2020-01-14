@@ -89,19 +89,12 @@ namespace services
         : public services::ConnectionObserver
     {
     public:
-        ConnectionObserverStub() = default;
-        ConnectionObserverStub(services::Connection& connection)
-            : services::ConnectionObserver(connection)
-        {}
-
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void DataReceived() override;
 
         void SendData(const std::vector<uint8_t>& data);
 
         std::vector<uint8_t> receivedData;
-
-        using services::ConnectionObserver::Subject;
 
     private:
         void TryRequestSendStream();

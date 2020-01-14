@@ -22,16 +22,16 @@ namespace services
         HttpClientImpl::DataReceived();
     }
 
-    void TracingHttpClientImpl::Connected()
+    void TracingHttpClientImpl::Attached()
     {
-        tracer.Trace() << "HttpClientImpl::Connected";
-        HttpClientImpl::Connected();
+        tracer.Trace() << "HttpClientImpl::Attached";
+        HttpClientImpl::Attached();
     }
 
-    void TracingHttpClientImpl::ClosingConnection()
+    void TracingHttpClientImpl::Detaching()
     {
-        tracer.Trace() << "HttpClientImpl::ClosingConnection";
-        HttpClientImpl::ClosingConnection();
+        tracer.Trace() << "HttpClientImpl::Detaching";
+        HttpClientImpl::Detaching();
     }
 
     void TracingHttpClientImpl::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)

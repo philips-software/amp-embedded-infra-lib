@@ -34,7 +34,7 @@ class WebSocketIntegrationTest
 TEST_F(WebSocketIntegrationTest, integration)
 {
     services::HttpPageServer httpServer;
-    infra::Creator<services::ConnectionObserver, services::WebSocketServerConnectionObserver::WithBufferSizes<512, 512>, void(services::Connection& connection)> webSocketServerConnectionCreator;
+    infra::Creator<services::ConnectionObserver, services::WebSocketServerConnectionObserver::WithBufferSizes<512, 512>, void()> webSocketServerConnectionCreator;
     services::WebSocketObserverFactoryImpl websocketObserverFactory({ webSocketServerConnectionCreator });
     services::HttpPageWebSocket webSocketPage("path", websocketObserverFactory);
     httpServer.AddPage(webSocketPage);
@@ -71,15 +71,16 @@ TEST_F(WebSocketIntegrationTest, integration)
     EXPECT_CALL(clientObserverFactory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this, &clientConnection](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> client)>& createdClient)
     {
         auto clientConnectionPtr = clientConnection.Emplace();
-        EXPECT_CALL(*clientConnection, Connected());
+        EXPECT_CALL(*clientConnection, Attached());
         createdClient(clientConnectionPtr);
     }));
     webSocketClientFactory.Connect(clientObserverFactory);
     ExecuteAllActions();
 
     infra::SharedOptional<testing::StrictMock<services::ConnectionObserverFullMock>> serverConnection;
-    webSocketServerConnectionCreator->SetOwnership(nullptr, serverConnection.Emplace());
-    serverConnection->Attach(*webSocketServerConnectionCreator);
+    auto serverConnectionPtr = serverConnection.Emplace();
+    EXPECT_CALL(*serverConnection, Attached());
+    webSocketServerConnectionCreator->Attach(serverConnectionPtr);
 
     // Send data from client to server
     EXPECT_CALL(*clientConnection, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke([this, &serverConnection](const infra::SharedPtr<infra::StreamWriter>& writer)
@@ -117,8 +118,8 @@ TEST_F(WebSocketIntegrationTest, integration)
     serverConnection->Subject().RequestSendStream(512);
     ExecuteAllActions();
 
-    EXPECT_CALL(*clientConnection, ClosingConnection());
-    EXPECT_CALL(*serverConnection, ClosingConnection());
+    EXPECT_CALL(*clientConnection, Detaching());
+    EXPECT_CALL(*serverConnection, Detaching());
     clientConnection->Subject().AbortAndDestroy();
     ExecuteAllActions();
 }

@@ -29,12 +29,6 @@ class ConnectionStubWithSendStreamControl
     : public services::ConnectionStub
 {
 public:
-    ~ConnectionStubWithSendStreamControl()
-    {
-        if (HasObserver())
-            GetObserver().ClosingConnection();
-    }
-
     virtual void RequestSendStream(std::size_t sendSize) override
     {
         if (autoSendStreamAvailable)
@@ -70,9 +64,6 @@ class MqttClientTest
 {
 public:
     MqttClientTest()
-        : connector("clientId", "username", "password", "127.0.0.1", 1234, connectionFactory)
-        , connectionPtr(infra::UnOwnedSharedPtr(connection))
-        , clientPtr(infra::UnOwnedSharedPtr(client))
     {
         EXPECT_EQ(connector.Hostname(), "127.0.0.1");
         EXPECT_EQ(connector.Port(), 1234);
@@ -91,16 +82,14 @@ public:
     {
         connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
         {
-            connectionObserver->Attach(connection);
-            connection.SetOwnership(nullptr, connectionObserver);
-            connectionObserver->Connected();
+            connection.Attach(connectionObserver);
         });
 
         ExecuteAllActions();
 
         EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::MqttClientObserver> client)>& createdClient)
         {
-            EXPECT_CALL(client, Connected());
+            EXPECT_CALL(client, Attached());
             createdClient(clientPtr);
         }));
         connection.SimulateDataReceived(std::vector<uint8_t>{ 0x20, 0x00, 0x00, 0x00 });
@@ -130,7 +119,7 @@ public:
     void ExpectClosingConnection()
     {
         EXPECT_CALL(connection, AbortAndDestroyMock());
-        EXPECT_CALL(client, ClosingConnection());
+        EXPECT_CALL(client, Detaching());
     }
 
     void ReceiveSubAck(uint16_t packetIdentifier, uint8_t returnCode)
@@ -177,10 +166,10 @@ public:
     testing::StrictMock<services::ConnectionFactoryWithNameResolverMock> connectionFactory;
     testing::StrictMock<services::MqttClientObserverFactoryMock> factory;
     testing::StrictMock<services::MqttClientObserverMock> client;
-    services::MqttClientConnectorImpl connector;
+    services::MqttClientConnectorImpl connector{ "clientId", "username", "password", "127.0.0.1", 1234, connectionFactory };
     testing::StrictMock<ConnectionStubWithSendStreamControl> connection;
-    infra::SharedPtr<services::Connection> connectionPtr;
-    infra::SharedPtr<services::MqttClientObserver> clientPtr;
+    infra::SharedPtr<services::Connection> connectionPtr{ infra::UnOwnedSharedPtr(connection) };
+    infra::SharedPtr<services::MqttClientObserver> clientPtr{ infra::UnOwnedSharedPtr(client) };
 
     std::deque<infra::BoundedConstString> expectedNotificationPayload;
     infra::BoundedString::WithStorage<1024> notificationPayload;
@@ -203,9 +192,7 @@ TEST_F(MqttClientTest, after_connected_connect_message_is_sent)
 {
     connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
     {
-        connectionObserver->Attach(connection);
-        connection.SetOwnership(nullptr, connectionObserver);
-        connectionObserver->Connected();
+        connection.Attach(connectionObserver);
     });
 
     ExecuteAllActions();
@@ -219,16 +206,14 @@ TEST_F(MqttClientTest, after_conack_MqttClient_is_connected)
 {
     connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
     {
-        connectionObserver->Attach(connection);
-        connection.SetOwnership(nullptr, connectionObserver);
-        connectionObserver->Connected();
+        connection.Attach(connectionObserver);
     });
 
     ExecuteAllActions();
 
     EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::MqttClientObserver> client)>& createdClient)
     {
-        EXPECT_CALL(client, Connected());
+        EXPECT_CALL(client, Attached());
         createdClient(clientPtr);
     }));
 
@@ -243,9 +228,7 @@ TEST_F(MqttClientTest, partial_conack_is_ignored)
 {
     connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
     {
-        connectionObserver->Attach(connection);
-        connection.SetOwnership(nullptr, connectionObserver);
-        connectionObserver->Connected();
+        connection.Attach(connectionObserver);
     });
 
     ExecuteAllActions();
@@ -261,9 +244,7 @@ TEST_F(MqttClientTest, invalid_response_results_in_ConnectionFailed)
 {
     connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
     {
-        connectionObserver->Attach(connection);
-        connection.SetOwnership(nullptr, connectionObserver);
-        connectionObserver->Connected();
+        connection.Attach(connectionObserver);
     });
 
     ExecuteAllActions();
@@ -278,9 +259,7 @@ TEST_F(MqttClientTest, timeout_results_in_ConnectionFailed)
 {
     connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
     {
-        connectionObserver->Attach(connection);
-        connection.SetOwnership(nullptr, connectionObserver);
-        connectionObserver->Connected();
+        connection.Attach(connectionObserver);
     });
 
     ExecuteAllActions();
@@ -294,9 +273,7 @@ TEST_F(MqttClientTest, client_observer_allocation_failure_results_in_connection_
 {
     connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
     {
-        connectionObserver->Attach(connection);
-        connection.SetOwnership(nullptr, connectionObserver);
-        connectionObserver->Connected();
+        connection.Attach(connectionObserver);
     });
 
     ExecuteAllActions();

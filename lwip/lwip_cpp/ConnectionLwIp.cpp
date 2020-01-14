@@ -68,6 +68,17 @@ namespace services
             tcp_abort(control); // Err is called as a result, and this callback destroys this connection object
     }
 
+    void ConnectionLwIp::SetSelfOwnership(const infra::SharedPtr<ConnectionObserver>& observer)
+    {
+        self = SharedFromThis();
+    }
+
+    void ConnectionLwIp::ResetOwnership()
+    {
+        Detach();
+        self = nullptr;
+    }
+
     IPAddress ConnectionLwIp::IpAddress() const
     {
         if (control->remote_ip.type == IPADDR_TYPE_V4)
@@ -116,7 +127,7 @@ namespace services
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([sendBuffer](const infra::SharedPtr<ConnectionLwIp>& self)
             {
                 infra::SharedPtr<infra::StreamWriter> stream = self->streamWriter.Emplace(*self, sendBuffer);
-                self->GetObserver().SendStreamAvailable(std::move(stream));
+                self->Observer().SendStreamAvailable(std::move(stream));
             }, SharedFromThis());
 
             requestedSendSize = 0;
@@ -156,13 +167,13 @@ namespace services
             else
                 pbuf_cat(receivedData, p);
 
-            if (!dataReceivedScheduled && HasObserver())
+            if (!dataReceivedScheduled && IsAttached())
             {
                 dataReceivedScheduled = true;
                 infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionLwIp>& self)
                 {
                     self->dataReceivedScheduled = false;
-                    self->GetObserver().DataReceived();
+                    self->Observer().DataReceived();
                 }, SharedFromThis());
             }
         }
@@ -386,9 +397,8 @@ namespace services
             {
                 if (connectionObserver)
                 {
-                    connectionObserver->Attach(*connection);
-                    connection->SetOwnership(connection, connectionObserver);
-                    connectionObserver->Connected();
+                    connection->SetSelfOwnership(connectionObserver);
+                    connection->Attach(connectionObserver);
                 }
             }, connection->IpAddress());
 
@@ -465,9 +475,8 @@ namespace services
             {
                 if (connectionObserver)
                 {
-                    connectionObserver->Attach(*connection);
-                    connection->SetOwnership(connection, connectionObserver);
-                    connectionObserver->Connected();
+                    connection->SetSelfOwnership(connectionObserver);
+                    connection->Attach(connectionObserver);
                 }
             });
 

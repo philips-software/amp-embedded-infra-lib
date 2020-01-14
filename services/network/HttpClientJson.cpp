@@ -23,16 +23,16 @@ namespace services
         HttpClientBasic::Cancel(onDone);
     }
 
-    void HttpClientJson::Connected()
+    void HttpClientJson::Attached()
     {
         HttpClientObserver::Subject().Get(Path(), Headers());
     }
 
-    void HttpClientJson::ClosingConnection()
+    void HttpClientJson::Detaching()
     {
         readerPtr = nullptr;
         jsonParser = infra::none;
-        services::HttpClientBasic::ClosingConnection();
+        services::HttpClientBasic::Detaching();
     }
 
     void HttpClientJson::StatusAvailable(services::HttpStatusCode statusCode)
