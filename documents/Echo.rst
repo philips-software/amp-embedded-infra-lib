@@ -1,3 +1,5 @@
+.. highlight:: protobuf
+
 ECHO (Embedded CHOmmunication)
 ##############################
 
