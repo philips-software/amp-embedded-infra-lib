@@ -9,10 +9,17 @@
     #define INCLUDE_STD_FILESYSTEM_EXPERIMENTAL 0
 #elif defined(__cpp_lib_experimental_filesystem)
     #define INCLUDE_STD_FILESYSTEM_EXPERIMENTAL 1
+
+    #if defined(_MSC_VER) && _MSC_VER > 1900
+        // For now we can't compile for C++17 since not all of our platform
+        // compilers support that standard. As long as we can't, we need to
+        // silence the experimental filesystem warning under VS2017+.
+        #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
+    #endif
 #elif !defined(__has_include)
     #define INCLUDE_STD_FILESYSTEM_EXPERIMENTAL 1
 #elif __has_include(<filesystem>)
-    #if defined(_MSC_VER) && _MSC_VER < 1910
+    #if defined(_MSC_VER)
         // Work around for VisualStudio 2015 where include
         // and namespace don't match.
         #if __has_include(<yvals_core.h>)
