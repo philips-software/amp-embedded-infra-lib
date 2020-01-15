@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.6.2)
 
+project(emil VERSION 1.3.0)
+
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 
@@ -13,7 +15,7 @@ endif()
 
 include("${CCOLA_DIR}/ccola.inc")
 
-ccola_project(emil VERSION 1.3.0)
+ccola_project()
 
     if(CCOLA_ENABLE_COVERAGE)
         ccola_enable_coverage_flags()

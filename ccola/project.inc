@@ -1,9 +1,8 @@
-macro(ccola_project name)
+macro(ccola_project)
 
-	ccola_validate_name(${name})
-	ccola_verify_not_nested(${name} CCOLA_PROJECT_NAME "Project")
-	set(CCOLA_PROJECT_NAME ${name})
-	project(${CCOLA_PROJECT_NAME} ${ARGN})
+	ccola_validate_name(${CMAKE_PROJECT_NAME})
+	ccola_verify_not_nested(${CMAKE_PROJECT_NAME} CCOLA_PROJECT_NAME "Project")
+	set(CCOLA_PROJECT_NAME ${CMAKE_PROJECT_NAME})
 
 endmacro()
 
