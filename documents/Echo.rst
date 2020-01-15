@@ -57,13 +57,17 @@ All Protobuf methods take one message as parameter. When designing a method with
 Encoding Service Calls
 ======================
 
-ECHO uses a reliable data stream to communicate, like TCP, so that correct ordering and delivery is guaranteed until a disconnect occurs. When a service’s method is invoked, the data is encoded as follows::
+ECHO uses a reliable data stream to communicate, like TCP, so that correct ordering and delivery is guaranteed until a disconnect occurs. When a service’s method is invoked, the data is encoded as follows:
 
-<serviceId> <(methodId << 3) | 2> <length> <message>
+.. code-block:: none
 
-The ``serviceId``, adjusted ``methodId``, and ``length`` are encoded as Protobuf varints. The ``methodId`` is adjusted so that the combination of ``methodId``, ``length``, and ``message`` is the same as a Protobuf field where the ``methodId`` is the field number, and the ``message`` is the contents. So it is equivalent to::
+    <serviceId> <(methodId << 3) | 2> <length> <message>
 
-<serviceId> <field(methodId, message)>
+The ``serviceId``, adjusted ``methodId``, and ``length`` are encoded as Protobuf varints. The ``methodId`` is adjusted so that the combination of ``methodId``, ``length``, and ``message`` is the same as a Protobuf field where the ``methodId`` is the field number, and the ``message`` is the contents. So it is equivalent to:
+
+.. code-block:: none
+
+    <serviceId> <field(methodId, message)>
 
 which is easier for some encoders/decoders.
 
