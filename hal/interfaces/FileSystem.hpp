@@ -12,7 +12,7 @@
 #elif !defined(__has_include)
     #define INCLUDE_STD_FILESYSTEM_EXPERIMENTAL 1
 #elif __has_include(<filesystem>)
-    #ifdef _MSC_VER
+    #if defined(_MSC_VER) && _MSC_VER < 1910
         // Work around for VisualStudio 2015 where include
         // and namespace don't match.
         #if __has_include(<yvals_core.h>)
