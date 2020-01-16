@@ -72,7 +72,7 @@ class CertificatesMbedTlsTest
 public:
     CertificatesMbedTlsTest()
     {
-        certificates.AddCertificateAuthority(infra::BoundedConstString(mbedtls_test_cas_pem, mbedtls_test_cas_pem_len));
+        certificates.AddCertificateAuthority(infra::BoundedConstString(mbedtls_test_ca_crt, mbedtls_test_ca_crt_len));
         certificates.AddOwnCertificate(infra::BoundedConstString(mbedtls_test_srv_crt, mbedtls_test_srv_crt_len), infra::BoundedConstString(mbedtls_test_srv_key, mbedtls_test_srv_key_len));
     }
 
