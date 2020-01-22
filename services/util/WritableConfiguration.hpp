@@ -8,32 +8,52 @@
 #include "infra/syntax/ProtoParser.hpp"
 #include "mbedtls/sha256.h"
 #include <memory>
+#include "infra/event/EventDispatcher.hpp"
 
 namespace services
 {
-    template<class T, class TRef>
-    class MemoryMappedStaticConfiguration
+    template<class T>
+    class WritableConfigurationWriter
     {
     public:
-        MemoryMappedStaticConfiguration(hal::Flash& flash, infra::ConstByteRange flashRegion);
+        virtual void Write(const T& newValue, const infra::Function<void()>& onDone) = 0;
+    };
 
-        bool Valid() const;
-        const TRef& Get() const;
+    template<class TRef>
+    class WritableConfigurationReader
+    {
+    public:
+        virtual bool Valid() const = 0;
+        virtual const TRef& Get() const = 0;
+        virtual void Read(const infra::Function<void()>& onDone) = 0;
+    };
+
+    template<class T, class TRef>
+    class MemoryMappedWritableConfiguration
+        : public WritableConfigurationWriter<T>
+        , public WritableConfigurationReader<TRef>
+    {
+    public:
+        MemoryMappedWritableConfiguration(hal::Flash& flash, infra::ConstByteRange flashRegion);
+
+        virtual bool Valid() const override;
+        virtual const TRef& Get() const override;
+        virtual void Read(const infra::Function<void()>& onDone) override;
 
         // Warning: Allocates memory on the heap!
-        void Write(const T& newValue, const infra::Function<void()>& onDone);
+        virtual void Write(const T& newValue, const infra::Function<void()>& onDone) override;
 
-    private:
-        void Read();
+    protected:
+        void LoadConfiguration();
 
-    private:
+    protected:
         struct Header
         {
             std::array<uint8_t, 8> hash;
             uint32_t size;
         };
 
-    private:
+    protected:
         hal::Flash& flash;
         infra::ConstByteRange flashRegion;
         TRef value;
@@ -42,30 +62,56 @@ namespace services
         infra::Function<void()> onDone;
     };
 
+    template<class T, class TRef>
+    class WritableConfiguration
+        : public MemoryMappedWritableConfiguration<T, TRef>
+    {
+    public:
+        WritableConfiguration(hal::Flash& flash, infra::ByteRange flashRegion);
+
+        virtual void Read(const infra::Function<void()>& onDone) override;
+    };
+
     ////    Implementation    ////
 
     template<class T, class TRef>
-    MemoryMappedStaticConfiguration<T, TRef>::MemoryMappedStaticConfiguration(hal::Flash& flash, infra::ConstByteRange flashRegion)
-        : flash(flash)
-        , flashRegion(flashRegion)
+    WritableConfiguration<T, TRef>::WritableConfiguration(hal::Flash& flash, infra::ByteRange flashRegion)
+        : MemoryMappedWritableConfiguration<T, TRef>(flash, flashRegion)
+    {}
+
+    template<class T, class TRef>
+    void WritableConfiguration<T, TRef>::Read(const infra::Function<void()>& onDone)
     {
-        Read();
+        this->onDone = onDone;
+        flash.ReadBuffer(infra::ConstCastByteRange(flashRegion), 0, [this]()
+        {
+            LoadConfiguration();
+            this->onDone();
+        });
     }
 
     template<class T, class TRef>
-    bool MemoryMappedStaticConfiguration<T, TRef>::Valid() const
+    MemoryMappedWritableConfiguration<T, TRef>::MemoryMappedWritableConfiguration(hal::Flash& flash, infra::ConstByteRange flashRegion)
+        : flash(flash)
+        , flashRegion(flashRegion)
+    {
+        LoadConfiguration();
+    }
+
+    template<class T, class TRef>
+    bool MemoryMappedWritableConfiguration<T, TRef>::Valid() const
     {
         return valid;
     }
 
     template<class T, class TRef>
-    const TRef& MemoryMappedStaticConfiguration<T, TRef>::Get() const
+    const TRef& MemoryMappedWritableConfiguration<T, TRef>::Get() const
     {
         return value;
     }
 
     template<class T, class TRef>
-    void MemoryMappedStaticConfiguration<T, TRef>::Write(const T& newValue, const infra::Function<void()>& onDone)
+    void MemoryMappedWritableConfiguration<T, TRef>::Write(const T& newValue, const infra::Function<void()>& onDone)
     {
         this->onDone = onDone;
         auto stream = std::make_shared<infra::ByteOutputStream::WithStorage<T::maxMessageSize + sizeof(Header)>>();
@@ -83,11 +129,22 @@ namespace services
         headerProxy = header;
 
         this->stream = stream;
-        flash.EraseAll([this]() { flash.WriteBuffer(this->stream->Writer().Processed(), 0, [this]() { this->stream = nullptr; Read(); this->onDone(); }); });
+        flash.EraseAll([this]() { flash.WriteBuffer(this->stream->Writer().Processed(), 0, [this]() { this->stream = nullptr; Read(this->onDone); }); });
     }
 
     template<class T, class TRef>
-    void MemoryMappedStaticConfiguration<T, TRef>::Read()
+    void MemoryMappedWritableConfiguration<T, TRef>::Read(const infra::Function<void()>& onDone)
+    {
+        this->onDone = onDone;
+        infra::EventDispatcher::Instance().Schedule([this]()
+        {
+            LoadConfiguration();
+            this->onDone();
+        });
+    }
+
+    template <class T, class TRef>
+    void MemoryMappedWritableConfiguration<T, TRef>::LoadConfiguration()
     {
         infra::ByteInputStream::WithReader stream(flashRegion, infra::noFail);
         auto header = stream.Extract<Header>();

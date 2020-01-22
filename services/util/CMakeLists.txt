@@ -33,7 +33,7 @@ ccola_component(util static_library)
         LowPowerSerialCommunication.hpp
         LowPowerSpiMaster.cpp
         LowPowerSpiMaster.hpp
-        MemoryMappedStaticConfiguration.hpp
+        WritableConfiguration.hpp
         RepeatingButton.cpp
         RepeatingButton.hpp
         SignalLed.cpp
