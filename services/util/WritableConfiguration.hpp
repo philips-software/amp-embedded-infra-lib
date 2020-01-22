@@ -124,7 +124,7 @@ namespace services
         headerProxy = header;
 
         this->stream = stream;
-        flash.EraseAll([this]() { flash.WriteBuffer(this->stream->Writer().Processed(), 0, [this]() { this->stream = nullptr; Read(this->onDone); }); });
+        flash.EraseAll([this]() { flash.WriteBuffer(this->stream->Writer().Processed(), 0, [this]() { this->stream = nullptr; this->Read(this->onDone); }); });
     }
 
     template <class T, class TRef>
@@ -158,7 +158,7 @@ namespace services
         : WritableConfiguration<T, TRef>(flash)
         , memory(memory)
     {
-        LoadConfiguration(memory);
+        this->LoadConfiguration(memory);
     }
 
     template<class T, class TRef>
@@ -167,7 +167,7 @@ namespace services
         this->onDone = onDone;
         infra::EventDispatcher::Instance().Schedule([this]()
         {
-            LoadConfiguration(memory);
+            this->LoadConfiguration(memory);
             this->onDone();
         });
     }
@@ -182,9 +182,9 @@ namespace services
     void FlashReadingWritableConfiguration<T, TRef>::Read(const infra::Function<void()>& onDone)
     {
         this->onDone = onDone;
-        flash.ReadBuffer(memory, 0, [this]()
+        this->flash.ReadBuffer(memory, 0, [this]()
         {
-            LoadConfiguration(memory);
+            this->LoadConfiguration(memory);
             this->onDone();
         });
     }
