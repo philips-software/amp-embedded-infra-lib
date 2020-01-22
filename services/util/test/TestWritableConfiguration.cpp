@@ -40,7 +40,7 @@ namespace
     };
 }
 
-class AsynchronousWritableConfigurationTest
+class FlashReadingWritableConfigurationTest
     : public testing::Test
     , public infra::EventDispatcherFixture
 {
@@ -56,12 +56,12 @@ public:
     }
 
     hal::FlashStub flash{ 1, 16 };
-    infra::Optional<services::WritableConfiguration<DataProxy, DataProxy>> configuration;
+    infra::Optional<services::FlashReadingWritableConfiguration<DataProxy, DataProxy>> configuration;
 
     testing::StrictMock<Data> data;
 };
 
-TEST_F(AsynchronousWritableConfigurationTest, asynchronous_read_data)
+TEST_F(FlashReadingWritableConfigurationTest, asynchronous_read_data)
 {
     std::array<uint8_t, 16> flashRegion;
     ConstructConfiguration(flashRegion);

@@ -21,7 +21,7 @@ namespace services
     public:
         MOCK_CONST_METHOD0_T(Valid, bool());
         MOCK_CONST_METHOD0_T(Get, const TRef&());
-        MOCK_METHOD1_T(Read, void(const infra::Function<void()>& onDone));
+        MOCK_METHOD1_T(Read, void(const infra::Function<void()>&));
     };
 }
 
