@@ -39,11 +39,9 @@ namespace services
         virtual bool Valid() const override;
         virtual const TRef& Get() const override;
 
-        // Warning: Allocates memory on the heap!
-        virtual void Write(const T& newValue, const infra::Function<void()>& onDone) override;
-
     protected:
         void LoadConfiguration(infra::ConstByteRange memory);
+        void WriteConfiguration(const T& newValue, infra::DataOutputStream::WithWriter<infra::ByteOutputStreamWriter>& stream, infra::ByteRange storage, const infra::Function<void()>& onDone);
 
     protected:
         struct Header
@@ -56,7 +54,7 @@ namespace services
         hal::Flash& flash;
         TRef value;
         bool valid = false;
-        std::shared_ptr<infra::DataOutputStream::WithWriter<infra::ByteOutputStreamWriter>> stream;
+
         infra::Function<void()> onDone;
     };
 
@@ -69,8 +67,15 @@ namespace services
 
         virtual void Read(const infra::Function<void()>& onDone) override;
 
+        // Warning: Allocates memory on the heap!
+        virtual void Write(const T& newValue, const infra::Function<void()>& onDone) override;
+
+    private:
+        std::shared_ptr<infra::DataOutputStream::WithWriter<infra::ByteOutputStreamWriter>> stream;
+
     private:
         infra::ConstByteRange memory;
+        infra::Function<void()> onWriteDone;
     };
 
     template<class T, class TRef>
@@ -78,12 +83,14 @@ namespace services
         : public WritableConfiguration<T, TRef>
     {
     public:
-        FlashReadingWritableConfiguration(hal::Flash& flash, infra::ByteRange memory);
+        FlashReadingWritableConfiguration(hal::Flash& flash);
 
         virtual void Read(const infra::Function<void()>& onDone) override;
+        virtual void Write(const T& newValue, const infra::Function<void()>& onDone) override;
 
     private:
-        infra::ByteRange memory;
+        std::array<uint8_t, T::maxMessageSize + sizeof(Header)> memory;
+        infra::ByteOutputStream stream;
     };
 
     ////    Implementation    ////
@@ -106,28 +113,6 @@ namespace services
     }
 
     template<class T, class TRef>
-    void WritableConfiguration<T, TRef>::Write(const T& newValue, const infra::Function<void()>& onDone)
-    {
-        this->onDone = onDone;
-        auto stream = std::make_shared<infra::ByteOutputStream::WithStorage<T::maxMessageSize + sizeof(Header)>>();
-        auto headerProxy = stream->Writer().template Reserve<Header>(stream->ErrorPolicy());
-        auto marker = stream->SaveMarker();
-        infra::ProtoFormatter formatter(*stream);
-        newValue.Serialize(formatter);
-
-        Header header;
-        header.size = stream->SaveMarker() - marker;
-        headerProxy = header;
-        std::array<uint8_t, 32> messageHash;
-        mbedtls_sha256(stream->Storage().data() + sizeof(Header::hash), std::min<std::size_t>(header.size + sizeof(Header::size), stream->Storage().size() - sizeof(Header::hash)), messageHash.data(), 0);
-        infra::Copy(infra::Head(infra::MakeRange(messageHash), sizeof(Header::hash)), infra::MakeRange(header.hash));
-        headerProxy = header;
-
-        this->stream = stream;
-        flash.EraseAll([this]() { flash.WriteBuffer(this->stream->Writer().Processed(), 0, [this]() { this->stream = nullptr; this->Read(this->onDone); }); });
-    }
-
-    template <class T, class TRef>
     void WritableConfiguration<T, TRef>::LoadConfiguration(infra::ConstByteRange memory)
     {
         infra::ByteInputStream::WithReader stream(memory, infra::noFail);
@@ -154,6 +139,26 @@ namespace services
     }
 
     template<class T, class TRef>
+    void WritableConfiguration<T, TRef>::WriteConfiguration(const T& newValue, infra::DataOutputStream::WithWriter<infra::ByteOutputStreamWriter>& stream, infra::ByteRange storage, const infra::Function<void()>& onDone)
+    {
+        this->onDone = onDone;
+        auto headerProxy = stream.Writer().template Reserve<Header>(stream.ErrorPolicy());
+        auto marker = stream.SaveMarker();
+        infra::ProtoFormatter formatter(stream);
+        newValue.Serialize(formatter);
+
+        Header header;
+        header.size = stream.SaveMarker() - marker;
+        headerProxy = header;
+        std::array<uint8_t, 32> messageHash;
+        mbedtls_sha256(storage.begin() + sizeof(Header::hash), std::min<std::size_t>(header.size + sizeof(Header::size), storage.size() - sizeof(Header::hash)), messageHash.data(), 0);
+        infra::Copy(infra::Head(infra::MakeRange(messageHash), sizeof(Header::hash)), infra::MakeRange(header.hash));
+        headerProxy = header;
+
+        flash.EraseAll([this, &stream]() { flash.WriteBuffer(stream.Writer().Processed(), 0, [this]() { this->Read(this->onDone); }); });
+    }
+
+    template<class T, class TRef>
     MemoryMappedWritableConfiguration<T, TRef>::MemoryMappedWritableConfiguration(hal::Flash& flash, infra::ConstByteRange memory)
         : WritableConfiguration<T, TRef>(flash)
         , memory(memory)
@@ -173,9 +178,18 @@ namespace services
     }
 
     template<class T, class TRef>
-    FlashReadingWritableConfiguration<T, TRef>::FlashReadingWritableConfiguration(hal::Flash& flash, infra::ByteRange memory)
+    void MemoryMappedWritableConfiguration<T, TRef>::Write(const T& newValue, const infra::Function<void()>& onDone)
+    {
+        this->onWriteDone = onDone;
+        auto stream = std::make_shared<infra::ByteOutputStream::WithStorage<T::maxMessageSize + sizeof(Header)>>();
+        this->stream = stream;
+        this->WriteConfiguration(newValue, *this->stream, stream->Storage(), [this]() { this->stream == nullptr; this->onWriteDone(); });
+    }
+
+    template<class T, class TRef>
+    FlashReadingWritableConfiguration<T, TRef>::FlashReadingWritableConfiguration(hal::Flash& flash)
         : WritableConfiguration<T, TRef>(flash)
-        , memory(memory)
+        , stream(memory)
     {}
 
     template<class T, class TRef>
@@ -187,6 +201,12 @@ namespace services
             this->LoadConfiguration(memory);
             this->onDone();
         });
+    }
+
+    template<class T, class TRef>
+    void FlashReadingWritableConfiguration<T, TRef>::Write(const T& newValue, const infra::Function<void()>& onDone)
+    {
+        this->WriteConfiguration(newValue, this->stream, this->memory, onDone);
     }
 }
 
