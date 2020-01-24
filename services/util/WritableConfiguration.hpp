@@ -89,7 +89,7 @@ namespace services
         virtual void Write(const T& newValue, const infra::Function<void()>& onDone) override;
 
     private:
-        std::array<uint8_t, T::maxMessageSize + sizeof(Header)> memory;
+        std::array<uint8_t, T::maxMessageSize + sizeof(typename WritableConfiguration<T, TRef>::Header)> memory;
         infra::ByteOutputStream stream;
     };
 
@@ -181,7 +181,7 @@ namespace services
     void MemoryMappedWritableConfiguration<T, TRef>::Write(const T& newValue, const infra::Function<void()>& onDone)
     {
         this->onWriteDone = onDone;
-        auto stream = std::make_shared<infra::ByteOutputStream::WithStorage<T::maxMessageSize + sizeof(Header)>>();
+        auto stream = std::make_shared<infra::ByteOutputStream::WithStorage<T::maxMessageSize + sizeof(typename WritableConfiguration<T, TRef>::Header)>>();
         this->stream = stream;
         this->WriteConfiguration(newValue, *this->stream, stream->Storage(), [this]() { this->stream == nullptr; this->onWriteDone(); });
     }
