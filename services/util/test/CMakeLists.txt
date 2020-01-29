@@ -5,6 +5,7 @@ ccola_component(util_test gmock_test)
         TestCyclicStore.cpp
         TestDebouncedButton.cpp
         TestDebugLed.cpp
+        TestFlashAlign.cpp
         TestFlashMultipleAccess.cpp
         TestFlashQuadSpiCypressFll.cpp
         TestFlashQuadSpiMicronN25q.cpp
