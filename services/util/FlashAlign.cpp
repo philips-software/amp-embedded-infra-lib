@@ -74,7 +74,7 @@ namespace services
         }
     }
 
-    const FlashAlign::Chunk* FlashAlign::First()
+    FlashAlign::Chunk* FlashAlign::First()
     {
         if (chunks.empty())
             return nullptr;
@@ -82,7 +82,7 @@ namespace services
         return &chunks.front();
     }
 
-    const FlashAlign::Chunk* FlashAlign::Next()
+    FlashAlign::Chunk* FlashAlign::Next()
     {
         if (!chunks.empty())
             chunks.pop_front();

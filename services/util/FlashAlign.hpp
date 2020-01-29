@@ -27,8 +27,8 @@ namespace services
             infra::ConstByteRange data;
         };
 
-        const Chunk* First();
-        const Chunk* Next();
+        Chunk* First();
+        Chunk* Next();
 
     private:
         uint32_t AlignFirst(uint32_t address, infra::ConstByteRange& buffer);
