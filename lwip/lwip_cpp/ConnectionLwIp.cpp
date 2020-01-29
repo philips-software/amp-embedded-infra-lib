@@ -190,11 +190,13 @@ namespace services
                     self->Observer().DataReceived();
                 }, SharedFromThis());
             }
+            return ERR_OK;
         }
         else
+        {
             ResetOwnership();
-
-        return ERR_OK;
+            return ERR_ABRT;
+        }
     }
 
     void ConnectionLwIp::Err(err_t err)
