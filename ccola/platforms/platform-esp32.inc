@@ -6,8 +6,8 @@ set(CCOLA_ARCH_FAMILY xtensa)
 
 set(combined_flags "-g -ffunction-sections -fdata-sections -fstrict-volatile-bitfields -mlongcalls -nostdlib")
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${combined_flags} -std=gnu11")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${combined_flags}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${combined_flags} -std=gnu11 -fno-inline")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${combined_flags} -fno-inline")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -fno-exceptions -std=c++11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-use-cxa-atexit -fno-threadsafe-statics -mlongcalls -mtext-section-literals")
 set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${combined_flags}" CACHE STRING CMAKE_ASM_FLAGS FORCE)
