@@ -7,7 +7,6 @@
 #include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/syntax/ProtoParser.hpp"
 #include "mbedtls/sha256.h"
-#include <memory>
 #include "infra/event/EventDispatcher.hpp"
 
 namespace services
@@ -29,9 +28,20 @@ namespace services
     };
 
     template<class T, class TRef>
-    class WritableConfiguration
+    class WritableConfigurationReaderWriter
         : public WritableConfigurationWriter<T>
         , public WritableConfigurationReader<TRef>
+    {
+    public:
+        virtual bool Valid() const = 0;
+        virtual const TRef& Get() const = 0;
+        virtual void Read(const infra::Function<void()>& onDone) = 0;
+        virtual void Write(const T& newValue, const infra::Function<void()>& onDone) = 0;
+    };
+
+    template<class T, class TRef>
+    class WritableConfiguration
+        : public WritableConfigurationReaderWriter<T, TRef>
     {
     public:
         WritableConfiguration(hal::Flash& flash);

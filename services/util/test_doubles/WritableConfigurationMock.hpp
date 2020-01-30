@@ -7,7 +7,7 @@
 namespace services
 {
     template<class T>
-    class WritableStaticConfigurationWriterMock
+    class WritableConfigurationWriterMock
         : public WritableConfigurationWriter<T>
     {
     public:
@@ -15,7 +15,7 @@ namespace services
     };
 
     template<class TRef>
-    class WritableStaticConfigurationReaderMock
+    class WritableConfigurationReaderMock
         : public WritableConfigurationReader<TRef>
     {
     public:

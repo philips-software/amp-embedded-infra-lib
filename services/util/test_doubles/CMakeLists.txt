@@ -3,7 +3,7 @@ ccola_component(services_test_doubles x86: source other: noncompile)
     ccola_sources(
         ConfigurationStoreMock.hpp
         StoppableMock.hpp
-        WritableStaticConfigurationMock.hpp
+        WritableConfigurationMock.hpp
     )
 
     ccola_dependencies(

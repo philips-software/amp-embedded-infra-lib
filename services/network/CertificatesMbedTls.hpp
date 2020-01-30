@@ -17,17 +17,17 @@ namespace services
         CertificatesMbedTls& operator=(const CertificatesMbedTls& other) = delete;
         ~CertificatesMbedTls();
 
-        void AddCertificateAuthority(infra::ConstByteRange certificate);
-        void AddCertificateAuthority(const infra::BoundedConstString& certificate);
-        void AddOwnCertificate(const infra::BoundedConstString& certificate, const infra::BoundedConstString& privateKey);
+        virtual void AddCertificateAuthority(infra::ConstByteRange certificate);
+        virtual void AddCertificateAuthority(const infra::BoundedConstString& certificate);
+        virtual void AddOwnCertificate(const infra::BoundedConstString& certificate, const infra::BoundedConstString& privateKey);
 
-        void Config(mbedtls_ssl_config& sslConfig);
+        virtual void Config(mbedtls_ssl_config& sslConfig);
 
-        void GenerateNewKey(hal::SynchronousRandomDataGenerator& randomDataGenerator);
-        void WritePrivateKey(infra::BoundedString& outputBuffer);
-        void WriteOwnCertificate(infra::BoundedString& outputBuffer, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        virtual void GenerateNewKey(hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        virtual void WritePrivateKey(infra::BoundedString& outputBuffer);
+        virtual void WriteOwnCertificate(infra::BoundedString& outputBuffer, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
-        void UpdateValidToDate();
+        virtual void UpdateValidToDate();
 
     private:
         int32_t ExtractExponent(const mbedtls_rsa_context& rsaContext) const;
