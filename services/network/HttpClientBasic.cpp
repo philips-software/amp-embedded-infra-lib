@@ -2,19 +2,29 @@
 
 namespace services
 {
+    const NoAutoConnect noAutoConnect;
+
     HttpClientBasic::HttpClientBasic(infra::BoundedString url, uint16_t port, services::HttpClientConnector& httpClientConnector)
         : HttpClientBasic(url, port, httpClientConnector, std::chrono::minutes(1))
     {}
 
     HttpClientBasic::HttpClientBasic(infra::BoundedString url, uint16_t port, services::HttpClientConnector& httpClientConnector, infra::Duration timeoutDuration)
+        : HttpClientBasic(url, port, httpClientConnector, timeoutDuration, noAutoConnect)
+    {
+        Connect();
+    }
+
+    HttpClientBasic::HttpClientBasic(infra::BoundedString url, uint16_t port, services::HttpClientConnector& httpClientConnector, NoAutoConnect)
+        : HttpClientBasic(url, port, httpClientConnector, std::chrono::minutes(1), noAutoConnect)
+    {}
+
+    HttpClientBasic::HttpClientBasic(infra::BoundedString url, uint16_t port, services::HttpClientConnector& httpClientConnector, infra::Duration timeoutDuration, NoAutoConnect)
         : httpClientConnector(httpClientConnector)
         , sharedAccess([this]() { Expire(); })
         , url(url)
         , port(port)
         , timeoutDuration(timeoutDuration)
-    {
-        Connect();
-    }
+    {}
 
     void HttpClientBasic::Cancel(const infra::Function<void()>& onDone)
     {

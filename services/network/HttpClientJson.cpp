@@ -12,6 +12,16 @@ namespace services
         , jsonParserCreator(connectionInfo.jsonParserCreator)
     {}
 
+    HttpClientJson::HttpClientJson(infra::BoundedString url, const ConnectionInfo& connectionInfo, NoAutoConnect)
+        : services::HttpClientBasic(url, connectionInfo.port, connectionInfo.httpClientConnector, noAutoConnect)
+        , jsonParserCreator(connectionInfo.jsonParserCreator)
+    {}
+
+    HttpClientJson::HttpClientJson(infra::BoundedString url, const ConnectionInfo& connectionInfo, infra::Duration timeoutDuration, NoAutoConnect)
+        : services::HttpClientBasic(url, connectionInfo.port, connectionInfo.httpClientConnector, timeoutDuration, noAutoConnect)
+        , jsonParserCreator(connectionInfo.jsonParserCreator)
+    {}
+
     HttpClientJson::~HttpClientJson()
     {
         if (destructedIndication != nullptr)
