@@ -6,6 +6,9 @@
 
 namespace services
 {
+    struct NoAutoConnect {};
+    extern const NoAutoConnect noAutoConnect;
+
     class HttpClientBasic
         : protected services::HttpClientObserver
         , protected services::HttpClientObserverFactory
@@ -13,6 +16,8 @@ namespace services
     public:
         HttpClientBasic(infra::BoundedString url, uint16_t port, services::HttpClientConnector& httpClientConnector);
         HttpClientBasic(infra::BoundedString url, uint16_t port, services::HttpClientConnector& httpClientConnector, infra::Duration timeoutDuration);
+        HttpClientBasic(infra::BoundedString url, uint16_t port, services::HttpClientConnector& httpClientConnector, NoAutoConnect);
+        HttpClientBasic(infra::BoundedString url, uint16_t port, services::HttpClientConnector& httpClientConnector, infra::Duration timeoutDuration, NoAutoConnect);
 
         void Cancel(const infra::Function<void()>& onDone);
 

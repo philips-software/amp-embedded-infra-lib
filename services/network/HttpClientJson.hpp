@@ -26,6 +26,8 @@ namespace services
 
         HttpClientJson(infra::BoundedString url, const ConnectionInfo& connectionInfo);
         HttpClientJson(infra::BoundedString url, const ConnectionInfo& connectionInfo, infra::Duration timeoutDuration);
+        HttpClientJson(infra::BoundedString url, const ConnectionInfo& connectionInfo, NoAutoConnect);
+        HttpClientJson(infra::BoundedString url, const ConnectionInfo& connectionInfo, infra::Duration timeoutDuration, NoAutoConnect);
         ~HttpClientJson();
 
         void Cancel(const infra::Function<void()>& onDone);

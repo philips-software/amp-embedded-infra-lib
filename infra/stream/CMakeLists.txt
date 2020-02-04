@@ -41,6 +41,8 @@ ccola_component(stream static_library)
         StreamErrorPolicy.hpp
         StreamManipulators.cpp
         StreamManipulators.hpp
+        StreamWriterFile.cpp
+        StreamWriterFile.hpp
         StreamWriterPrintF.cpp
         StreamWriterPrintF.hpp
         StringInputStream.cpp
