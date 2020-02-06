@@ -153,7 +153,7 @@ namespace services
 
     SntpClient::NtpTimestamp SntpClient::Convert(infra::Duration time)
     {
-        NtpTimestamp ntpTime = { 0 };
+        NtpTimestamp ntpTime = { 0, 0 };
         ntpTime.seconds = static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::seconds>(time + ntpEpochOffset).count());
         ntpTime.fraction = static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::microseconds>(time).count() * ntpFractionFactor);
 

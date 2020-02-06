@@ -5,8 +5,6 @@ ccola_component(timer static_library)
         DerivedTimerService.hpp
         ScalableDerivedTimerService.cpp
         ScalableDerivedTimerService.hpp
-        StreamTime.cpp
-        StreamTime.hpp
         TickOnInterruptTimerService.cpp
         TickOnInterruptTimerService.hpp
         Timer.cpp
