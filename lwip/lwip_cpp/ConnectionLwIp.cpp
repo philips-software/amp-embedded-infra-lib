@@ -37,6 +37,7 @@ namespace services
     {
         assert(requestedSendSize == 0);
         assert(sendSize != 0 && sendSize <= MaxSendStreamSize());
+        really_assert(control != nullptr);
         requestedSendSize = sendSize;
         TryAllocateSendStream();
     }
@@ -71,7 +72,12 @@ namespace services
     void ConnectionLwIp::AbortAndDestroy()
     {
         if (control)
-            tcp_abort(control); // Err is called as a result, and this callback destroys this connection object
+        {
+            auto controlCopy = control;
+            ResetControl();
+            tcp_abort(controlCopy);
+            ResetOwnership();
+        }
     }
 
     void ConnectionLwIp::SetSelfOwnership(const infra::SharedPtr<ConnectionObserver>& observer)
@@ -190,11 +196,13 @@ namespace services
                     self->Observer().DataReceived();
                 }, SharedFromThis());
             }
+            return ERR_OK;
         }
         else
+        {
             ResetOwnership();
-
-        return ERR_OK;
+            return ERR_ABRT;
+        }
     }
 
     void ConnectionLwIp::Err(err_t err)
