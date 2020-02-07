@@ -115,6 +115,7 @@ namespace services
         {
         public:
             StateBufferAllocated(DatagramExchangeLwIP& datagramExchange, pbuf* buffer, infra::Optional<UdpSocket> remote);
+            ~StateBufferAllocated();
 
         private:
             DatagramExchangeLwIP& datagramExchange;
