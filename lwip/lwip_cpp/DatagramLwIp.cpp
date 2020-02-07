@@ -333,6 +333,11 @@ namespace services
         }, datagramExchange.SharedFromThis());
     }
 
+    DatagramExchangeLwIP::StateBufferAllocated::~StateBufferAllocated()
+    {
+        stream.OnAllocatable(infra::emptyFunction);
+    }
+
     infra::SharedPtr<DatagramExchange> DatagramFactoryLwIp::Listen(DatagramExchangeObserver& observer, uint16_t port, IPVersions versions)
     {
         infra::SharedPtr<DatagramExchangeLwIP> datagramExchange = allocatorDatagramExchanges.Allocate(observer);

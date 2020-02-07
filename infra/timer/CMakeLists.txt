@@ -3,6 +3,8 @@ ccola_component(timer static_library)
     ccola_sources(
         DerivedTimerService.cpp
         DerivedTimerService.hpp
+        PartitionedTime.cpp
+        PartitionedTime.hpp
         ScalableDerivedTimerService.cpp
         ScalableDerivedTimerService.hpp
         TickOnInterruptTimerService.cpp
