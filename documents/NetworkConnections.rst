@@ -2,13 +2,14 @@ Network Connections
 ===================
 
 The data sent over TCP and similar streaming connections are handled via Connection and ConnectionObserver objects. A Connection object represents the network
-towards which data is sent or received, a ConnectionObserver represents the application side handling sent or received data. The C++ wrapper for Lightweight IP
-therefore supports a class ConnectionLwIP; the HttpClientImpl class derives from ConnectionObserver, since HttpClientImpl interprets received data, parses HTTP
-headers, and forwards body datay.
+towards which data is sent or received, a ConnectionObserver represents the application side handling sent or received data. For example, the C++ wrapper for Lightweight IP
+provides a class ConnectionLwIP which derives from Connection; the HttpClientImpl class derives from ConnectionObserver, since HttpClientImpl interprets received data, parses HTTP
+headers, and forwards body data.
 
 The lifetime of a Connection/ConnectionObserver pair is under control of the network stack, since the network stacks knows when a connection is alive and when
 it is terminated. The Connection object therefore derives from SharedOwnedObserver, which holds a SharedPtr to its SharedOwningSubject, which is the
-ConnectionObserver. When a connection is closed, the Connection and ConnectionObserver objects 
+ConnectionObserver. When a connection is closed, the Connection object is destructed, and thereby releases its control over its ConnectionObserver, which typically
+results in the ConnectionObserver being destructed.
 
 .. uml::
 
@@ -53,3 +54,8 @@ ConnectionObserver. When a connection is closed, the Connection and ConnectionOb
     SharedOwnedObserver -left- SharedOwningSubject : < owns
 
     @enduml
+
+The methods on Connection and ConnectionObserver for sending and receiving data are geared towards asynchronous behaviour and as little copying as possible.
+By having fully asynchronous behaviour, the need for threads and/or blocking waits is completely avoided, and one application can easily handle multiple connections,
+in parallel with SPI transfers, UART communication, etc. without the need for locks or wasting MCU time on busy waits.
+
