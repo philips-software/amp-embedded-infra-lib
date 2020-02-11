@@ -2,6 +2,7 @@
 #include "infra/stream/StringInputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/stream/StreamManipulators.hpp"
+#include "infra/timer/PartitionedTime.hpp"
 #include "infra/timer/TimerServiceManager.hpp"
 #include <ctime>
 
@@ -145,13 +146,15 @@ namespace services
 
 infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const infra::TimePoint& timePoint)
 {
-    auto time = services::TimeWithLocalization::GetTm(timePoint);
-    std::array<char, 64> buffer = {};
+    auto time = infra::PartitionedTime(std::chrono::system_clock::to_time_t(timePoint));
 
-    std::size_t size = std::strftime(buffer.data(), buffer.size(), "%FT%T", time);
-
-    if (size > 0)
-        stream << buffer.data();
+    const auto w02 = infra::Width(2, '0');
+    stream << time.years << '-'
+           << w02 << time.months << infra::resetWidth << '-'
+           << w02 << time.days << infra::resetWidth << 'T'
+           << w02 << time.hours << infra::resetWidth << ':'
+           << w02 << time.minutes << infra::resetWidth << ':'
+           << w02 << time.seconds;
 
     return stream;
 }
