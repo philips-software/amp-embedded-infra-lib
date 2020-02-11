@@ -60,6 +60,14 @@ namespace services
         really_assert(result == 0);
     }
 
+    void CertificatesMbedTls::AddOwnCertificate(infra::ConstByteRange certificate, infra::ConstByteRange key)
+    {
+        int result = mbedtls_x509_crt_parse(&ownCertificate, reinterpret_cast<const unsigned char*>(certificate.begin()), certificate.size());
+        really_assert(result == 0);
+        result = mbedtls_pk_parse_key(&privateKey, reinterpret_cast<const unsigned char*>(key.begin()), key.size(), NULL, 0);
+        really_assert(result == 0);
+    }
+
     void CertificatesMbedTls::Config(mbedtls_ssl_config& sslConfig)
     {
         mbedtls_ssl_conf_ca_chain(&sslConfig, &caCertificates, nullptr);
