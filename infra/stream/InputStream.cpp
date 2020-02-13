@@ -450,7 +450,18 @@ namespace infra
 
     namespace
     {
-        uint8_t DecodeByte(char base64)
+        uint8_t DecodeHexByte(char hex)
+        {
+            if (hex >= '0' && hex <= '9')
+                return hex - '0';
+            if (hex >= 'a' && hex <= 'f')
+                return hex - 'a' + 10;
+            if (hex >= 'A' && hex <= 'F')
+                return hex - 'A' + 10;
+            return 16;
+        }
+
+        uint8_t DecodeBase64Byte(char base64)
         {
             static const char* encodeTable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
@@ -458,40 +469,82 @@ namespace infra
         }
     }
 
-    FromBase64Helper::FromBase64Helper(infra::ByteRange data)
+    FromHexHelper::FromHexHelper(infra::ByteRange data)
         : data(data)
     {}
 
-    infra::TextInputStream& operator>>(infra::TextInputStream& stream, FromBase64Helper fromHexHelper)
+    infra::TextInputStream& operator>>(infra::TextInputStream& stream, FromHexHelper helper)
     {
         uint8_t bitIndex = 0;
-        uint16_t decodedWord = 0;
+        uint8_t decodedByte = 0;
 
-        while (!fromHexHelper.data.empty() && !stream.Empty())
+        while (!helper.data.empty() && !stream.Empty())
         {
             char currentChar;
             stream >> currentChar;
 
-            uint8_t decodedValue = DecodeByte(currentChar);
+            uint8_t decodedValue = DecodeHexByte(currentChar);
             ++currentChar;
 
-            if (decodedValue < 64)
-            {
-                decodedWord = (decodedWord << 6) | decodedValue;
-                bitIndex += 6;
-
-                if (bitIndex >= 8)
-                {
-                    fromHexHelper.data.front() = static_cast<uint8_t>(decodedWord >> static_cast<uint8_t>(bitIndex - 8));
-                    fromHexHelper.data.pop_front();
-
-                    bitIndex -= 8;
-                }
-            }
-            else
+            if (decodedValue >= 16)
             {
                 stream.ErrorPolicy().ReportResult(false);
                 return stream;
+            }
+
+            decodedByte = (decodedByte << 4) | decodedValue;
+            bitIndex += 4;
+
+            if (bitIndex == 8)
+            {
+                helper.data.front() = decodedByte;
+                helper.data.pop_front();
+
+                bitIndex = 0;
+            }
+        }
+
+        stream.ErrorPolicy().ReportResult(helper.data.empty());
+        return stream;
+    }
+
+    infra::TextInputStream& operator>>(infra::TextInputStream&& stream, FromHexHelper helper)
+    {
+        return stream >> helper;
+    }
+
+    FromBase64Helper::FromBase64Helper(infra::ByteRange data)
+        : data(data)
+    {}
+
+    infra::TextInputStream& operator>>(infra::TextInputStream& stream, FromBase64Helper helper)
+    {
+        uint8_t bitIndex = 0;
+        uint16_t decodedWord = 0;
+
+        while (!helper.data.empty() && !stream.Empty())
+        {
+            char currentChar;
+            stream >> currentChar;
+
+            uint8_t decodedValue = DecodeBase64Byte(currentChar);
+            ++currentChar;
+
+            if (decodedValue >= 64)
+            {
+                stream.ErrorPolicy().ReportResult(false);
+                return stream;
+            }
+
+            decodedWord = (decodedWord << 6) | decodedValue;
+            bitIndex += 6;
+
+            if (bitIndex >= 8)
+            {
+                helper.data.front() = static_cast<uint8_t>(decodedWord >> static_cast<uint8_t>(bitIndex - 8));
+                helper.data.pop_front();
+
+                bitIndex -= 8;
             }
         }
 
@@ -503,13 +556,18 @@ namespace infra
             bitIndex -= 2;
         }
 
-        stream.ErrorPolicy().ReportResult(fromHexHelper.data.empty());
+        stream.ErrorPolicy().ReportResult(helper.data.empty());
         return stream;
     }
 
-    infra::TextInputStream& operator>>(infra::TextInputStream&& stream, FromBase64Helper fromBase64Helper)
+    infra::TextInputStream& operator>>(infra::TextInputStream&& stream, FromBase64Helper helper)
     {
-        return stream >> fromBase64Helper;
+        return stream >> helper;
+    }
+
+    FromHexHelper FromHex(infra::ByteRange data)
+    {
+        return FromHexHelper(data);
     }
 
     FromBase64Helper FromBase64(infra::ByteRange data)

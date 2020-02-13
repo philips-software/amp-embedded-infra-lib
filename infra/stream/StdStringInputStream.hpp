@@ -33,9 +33,9 @@ namespace infra
     public:
         using WithStorage = infra::WithStorage<TextInputStream::WithReader<StdStringInputStreamReader>, std::string>;
 
-        StdStringInputStream(std::string& storage);
-        StdStringInputStream(std::string& storage, const SoftFail&);
-        StdStringInputStream(std::string& storage, const NoFail&);
+        StdStringInputStream(const std::string& storage);
+        StdStringInputStream(const std::string& storage, const SoftFail&);
+        StdStringInputStream(const std::string& storage, const NoFail&);
     };
 }
 
