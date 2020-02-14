@@ -114,6 +114,17 @@ TEST(StringInputStreamTest, Consume)
     EXPECT_EQ("", infra::ByteRangeAsString(stream.PeekContiguousRange(0)));
 }
 
+TEST(StringInputStreamTest, FromHex)
+{
+    infra::StringInputStream stream(infra::BoundedConstString("ab01"));
+
+    std::array<uint8_t, 2> output;
+    stream >> infra::FromHex(output);
+
+    EXPECT_EQ((std::array<uint8_t, 2>{ 0xab, 0x01 }), output);
+    EXPECT_TRUE(stream.Empty());
+}
+
 TEST(StringInputStreamTest, FromBase64)
 {
     infra::StringInputStream stream(infra::BoundedConstString("YWJj"));

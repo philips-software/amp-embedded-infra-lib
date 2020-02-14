@@ -195,18 +195,31 @@ namespace infra
         StreamErrorPolicy errorPolicy;
     };
 
-    class FromBase64Helper
+    class FromHexHelper
     {
     public:
-        explicit FromBase64Helper(infra::ByteRange data);
+        explicit FromHexHelper(infra::ByteRange data);
 
-        friend infra::TextInputStream& operator>>(infra::TextInputStream& stream, FromBase64Helper fromBase64Helper);
-        friend infra::TextInputStream& operator>>(infra::TextInputStream&& stream, FromBase64Helper fromBase64Helper);
+        friend infra::TextInputStream& operator>>(infra::TextInputStream& stream, FromHexHelper helper);
+        friend infra::TextInputStream& operator>>(infra::TextInputStream&& stream, FromHexHelper helper);
 
     private:
         infra::ByteRange data;
     };
 
+    class FromBase64Helper
+    {
+    public:
+        explicit FromBase64Helper(infra::ByteRange data);
+
+        friend infra::TextInputStream& operator>>(infra::TextInputStream& stream, FromBase64Helper helper);
+        friend infra::TextInputStream& operator>>(infra::TextInputStream&& stream, FromBase64Helper helper);
+
+    private:
+        infra::ByteRange data;
+    };
+
+    FromHexHelper FromHex(infra::ByteRange data);
     FromBase64Helper FromBase64(infra::ByteRange data);
 
     ////    Implementation    ////

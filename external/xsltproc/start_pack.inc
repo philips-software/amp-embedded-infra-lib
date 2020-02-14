@@ -21,9 +21,14 @@ macro(generate_xslt output)
 	get_filename_component(absolute_directory "${absolute_output}" DIRECTORY)
 	ccola_create_directory_on_demand(${absolute_directory})
 
+	find_program(xsltproc_program
+	    NAMES xsltproc
+	          xsltproc.exe
+	    HINTS ${CCOLA_PACK_DIR_xsltproc})
+
 	add_custom_command(
 		OUTPUT ${absolute_output}
-		COMMAND ${CCOLA_PACK_DIR_xsltproc}/xsltproc.exe ${xslt_params} --output "${absolute_output}" ${absolute_inputs}
+		COMMAND ${xsltproc_program} ${xslt_params} --output "${absolute_output}" ${absolute_inputs}
 		DEPENDS ${absolute_inputs}
 		DEPENDS "${absolute_directory}"
 	)
