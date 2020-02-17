@@ -536,6 +536,16 @@ namespace services
         , password(password)
     {}
 
+    void MqttClientConnectorImpl::SetHostname(infra::BoundedConstString newHostname)
+    {
+        hostname = newHostname;
+    }
+
+    void MqttClientConnectorImpl::SetClientId(infra::BoundedConstString newClientId)
+    {
+        clientId = newClientId;
+    }
+
     void MqttClientConnectorImpl::Connect(MqttClientObserverFactory& factory)
     {
         assert(client.Allocatable());
@@ -572,6 +582,9 @@ namespace services
                 break;
             case ConnectFailReason::connectionAllocationFailed:
                 clientObserverFactory->ConnectionFailed(MqttClientObserverFactory::ConnectFailReason::connectionAllocationFailed);
+                break;
+            case ConnectFailReason::nameLookupFailed:
+                clientObserverFactory->ConnectionFailed(MqttClientObserverFactory::ConnectFailReason::nameLookupFailed);
                 break;
             default:
                 std::abort();

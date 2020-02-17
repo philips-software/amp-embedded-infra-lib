@@ -33,6 +33,7 @@ namespace services
         {
             refused,
             connectionAllocationFailed,
+            nameLookupFailed,
             initializationFailed,
             initializationTimedOut
         };
