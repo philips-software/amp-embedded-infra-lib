@@ -36,6 +36,14 @@ namespace services
         MOCK_METHOD0(Subscribe, void());
         MOCK_METHOD0(NotificationDone, void());
     };
+
+    class MqttClientConnectorMock
+        : public services::MqttClientConnector
+    {
+    public:
+        MOCK_METHOD1(Connect, void(services::MqttClientObserverFactory& factory));
+        MOCK_METHOD0(CancelConnect, void());
+    };
 }
 
 #endif
