@@ -207,9 +207,11 @@ namespace infra
         ~AccessedBySharedPtrWithExtraSize();
 
         template<class T>
-        SharedPtr<T> MakeShared(T& value);
+            SharedPtr<T> MakeShared(T& value);
 
         void SetAction(const infra::Function<void(), ExtraSize>& newOnUnReferenced);
+
+        bool Referenced() const;
 
     private:
         virtual void Destruct(const void* object) override;
@@ -619,6 +621,12 @@ namespace infra
     void AccessedBySharedPtrWithExtraSize<ExtraSize>::SetAction(const infra::Function<void(), ExtraSize>& newOnUnReferenced)
     {
         onUnReferenced = newOnUnReferenced;
+    }
+
+    template<std::size_t ExtraSize>
+    bool AccessedBySharedPtrWithExtraSize<ExtraSize>::Referenced() const
+    {
+        return !control.UnReferenced();
     }
 
     template<std::size_t ExtraSize>

@@ -419,8 +419,11 @@ TEST_F(SharedPtrTest, construct_AccessedBySharedPtr)
 
     {
         infra::WeakPtr<Object> weakObject(sharedObject.MakeShared(object));
+        EXPECT_TRUE(sharedObject.Referenced());
         EXPECT_CALL(cb, callback());
     }
+
+    EXPECT_FALSE(sharedObject.Referenced());
 }
 
 TEST_F(SharedPtrTest, construct_AccessedBySharedPtr_and_set_action_later)
