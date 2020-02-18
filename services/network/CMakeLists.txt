@@ -21,6 +21,8 @@ ccola_component(network static_library)
         Http.cpp
         Http.hpp
         HttpClient.hpp
+        HttpClientAuthentication.cpp
+        HttpClientAuthentication.hpp
         HttpClientBasic.cpp
         HttpClientBasic.hpp
         HttpClientImpl.cpp
