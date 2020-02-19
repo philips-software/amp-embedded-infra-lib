@@ -104,6 +104,12 @@ namespace services
     {
         if (!unauthorized)
             Observer().BodyAvailable(std::move(reader));
+        else
+        {
+            infra::DataInputStream::WithErrorPolicy stream(*reader);
+            while (!stream.Empty())
+                stream.ContiguousRange();
+        }
     }
 
     void HttpClientAuthentication::BodyComplete()
@@ -112,6 +118,8 @@ namespace services
         {
             if (Retry())
             {
+                unauthorized = false;
+                Reset();
                 request();
                 return;
             }

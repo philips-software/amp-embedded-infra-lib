@@ -43,6 +43,7 @@ namespace services
         virtual void Authenticate(infra::BoundedConstString scheme, infra::BoundedConstString value) = 0;
         virtual infra::BoundedConstString AuthenticationHeader() const = 0;
         virtual bool Retry() const = 0;
+        virtual void Reset() = 0;
 
     private:
         void Request(HttpHeaders headers, const infra::Function<void(), sizeof(void*) + 2 * sizeof(infra::BoundedConstString)>& newRequest);

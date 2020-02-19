@@ -20,6 +20,7 @@ namespace
         MOCK_METHOD2(Authenticate, void(infra::BoundedConstString scheme, infra::BoundedConstString value) );
         MOCK_CONST_METHOD0(AuthenticationHeader, infra::BoundedConstString());
         MOCK_CONST_METHOD0(Retry, bool());
+        MOCK_METHOD0(Reset, void());
     };
 }
 
@@ -183,6 +184,7 @@ TEST_F(HttpClientAuthenticationTest, unauthorized_is_not_retried)
     httpClient.Observer().HeaderAvailable({ "WWW-Authenticate", "scheme value" });
 
     testing::StrictMock<infra::StreamReaderMock> reader;
+    EXPECT_CALL(reader, Empty()).WillOnce(testing::Return(true));
     httpClient.Observer().BodyAvailable(infra::UnOwnedSharedPtr(reader));
 
     EXPECT_CALL(clientAuthentication, Retry()).WillOnce(testing::Return(false));
@@ -204,9 +206,11 @@ TEST_F(HttpClientAuthenticationTest, unauthorized_is_retried)
     httpClient.Observer().HeaderAvailable({ "WWW-Authenticate", "scheme value" });
 
     testing::StrictMock<infra::StreamReaderMock> reader;
+    EXPECT_CALL(reader, Empty()).WillOnce(testing::Return(true));
     httpClient.Observer().BodyAvailable(infra::UnOwnedSharedPtr(reader));
 
     EXPECT_CALL(clientAuthentication, Retry()).WillOnce(testing::Return(true));
+    EXPECT_CALL(clientAuthentication, Reset());
     EXPECT_CALL(httpClient, Get("target", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString requestTarget, services::HttpHeaders headers) { CheckHeaders(headers, "header contents"); }));
     httpClient.Observer().BodyComplete();
 }
