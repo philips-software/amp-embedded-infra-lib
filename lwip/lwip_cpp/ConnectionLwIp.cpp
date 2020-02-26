@@ -87,7 +87,8 @@ namespace services
 
     void ConnectionLwIp::ResetOwnership()
     {
-        Detach();
+        if (IsAttached())
+            Detach();
         self = nullptr;
     }
 
