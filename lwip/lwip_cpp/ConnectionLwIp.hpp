@@ -97,6 +97,9 @@ namespace services
         };
 
     private:
+        friend class ListenerLwIp;
+        friend class ConnectorLwIp;
+
         tcp_pcb* control;
         std::size_t requestedSendSize = 0;
 

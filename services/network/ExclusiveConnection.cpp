@@ -150,7 +150,8 @@ namespace services
                 {
                     auto newConnection = connectionFactory.mutex.CreateConnection(std::move(claimer), connectionFactory.cancelConnectionOnNewRequest);
                     this->createdObserver(newConnection);
-                    newConnection->Attach(connectionObserver);
+                    if (newConnection->ConnectionObserver::IsAttached())
+                        newConnection->Attach(connectionObserver);
                 }, address);
             });
         }
@@ -200,7 +201,8 @@ namespace services
         {
             auto newConnection = connectionFactory.mutex.CreateConnection(std::move(claimer), connectionFactory.cancelConnectionOnNewRequest);
             this->createdObserver(newConnection);
-            newConnection->Attach(connectionObserver);
+            if (newConnection->ConnectionObserver::IsAttached())
+                newConnection->Attach(connectionObserver);
 
             connectionFactory.connectors.remove(*this);
         });

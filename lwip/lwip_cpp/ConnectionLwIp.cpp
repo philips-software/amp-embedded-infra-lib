@@ -434,7 +434,7 @@ namespace services
         {
             factory.ConnectionAccepted([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
             {
-                if (connectionObserver)
+                if (connectionObserver && connection->control != nullptr)
                 {
                     connection->SetSelfOwnership(connectionObserver);
                     connection->Attach(connectionObserver);
@@ -512,7 +512,7 @@ namespace services
             control = nullptr;
             clientFactory.ConnectionEstablished([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
             {
-                if (connectionObserver)
+                if (connectionObserver && connection->control != nullptr)
                 {
                     connection->SetSelfOwnership(connectionObserver);
                     connection->Attach(connectionObserver);
