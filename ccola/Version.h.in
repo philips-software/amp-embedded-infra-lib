@@ -26,5 +26,6 @@ namespace ${CMAKE_PROJECT_NAME}
         static const uint16_t VERSION_MAJOR = ${VERSION_MAJOR};
         static const uint16_t VERSION_MINOR = ${VERSION_MINOR};
         static const uint16_t VERSION_PATCH = ${VERSION_PATCH};
+        static const uint16_t VERSION_TWEAK = ${VERSION_TWEAK};
     }  //! namespace generated
 }  //! namespace ${CMAKE_PROJECT_NAME}

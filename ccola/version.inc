@@ -13,6 +13,10 @@ macro(ccola_add_version_header)
         set(${CMAKE_PROJECT_NAME}_VERSION_PATCH 0)
     endif()
 
+    if (NOT ${CMAKE_PROJECT_NAME}_VERSION_TWEAK)
+        set(${CMAKE_PROJECT_NAME}_VERSION_TWEAK 0)
+    endif()
+
     add_custom_target(${CCOLA_VERSION_HEADER_TARGET}
         COMMAND ${CMAKE_COMMAND} -D CCOLA_VERSION_INPUT_FILE=${CCOLA_DIR}/Version.h.in
                                  -D CCOLA_VERSION_OUTPUT_FILE=${CMAKE_BINARY_DIR}/Version.h
@@ -21,6 +25,7 @@ macro(ccola_add_version_header)
                                  -D VERSION_MAJOR=${${CMAKE_PROJECT_NAME}_VERSION_MAJOR}
                                  -D VERSION_MINOR=${${CMAKE_PROJECT_NAME}_VERSION_MINOR}
                                  -D VERSION_PATCH=${${CMAKE_PROJECT_NAME}_VERSION_PATCH}
+                                 -D VERSION_TWEAK=${${CMAKE_PROJECT_NAME}_VERSION_TWEAK}
                                  -P ${CCOLA_DIR}/version_file_generator.inc
         BYPRODUCTS ${CMAKE_BINARY_DIR}/Version.h
         COMMENT "Generating version header for ${CMAKE_PROJECT_NAME}"
