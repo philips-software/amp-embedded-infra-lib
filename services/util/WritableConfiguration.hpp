@@ -51,7 +51,7 @@ namespace services
 
     protected:
         void LoadConfiguration(infra::ConstByteRange memory);
-        void WriteConfiguration(const T& newValue, infra::DataOutputStream::WithWriter<infra::ByteOutputStreamWriter>& stream, infra::ByteRange storage, const infra::Function<void()>& onDone);
+        void WriteConfiguration(const T& newValue, infra::ByteOutputStreamWriter& streamWriter, const infra::Function<void()>& onDone);
 
     protected:
         struct Header
@@ -81,7 +81,7 @@ namespace services
         virtual void Write(const T& newValue, const infra::Function<void()>& onDone) override;
 
     private:
-        std::shared_ptr<infra::DataOutputStream::WithWriter<infra::ByteOutputStreamWriter>> stream;
+        std::shared_ptr<infra::ByteOutputStreamWriter> streamWriter;
 
     private:
         infra::ConstByteRange memory;
@@ -99,8 +99,7 @@ namespace services
         virtual void Write(const T& newValue, const infra::Function<void()>& onDone) override;
 
     private:
-        std::array<uint8_t, T::maxMessageSize + sizeof(typename WritableConfiguration<T, TRef>::Header)> memory;
-        infra::ByteOutputStream stream;
+        infra::ByteOutputStreamWriter::WithStorage<T::maxMessageSize + sizeof(typename WritableConfiguration<T, TRef>::Header)> streamWriter;
     };
 
     ////    Implementation    ////
@@ -149,10 +148,14 @@ namespace services
     }
 
     template<class T, class TRef>
-    void WritableConfiguration<T, TRef>::WriteConfiguration(const T& newValue, infra::DataOutputStream::WithWriter<infra::ByteOutputStreamWriter>& stream, infra::ByteRange storage, const infra::Function<void()>& onDone)
+    void WritableConfiguration<T, TRef>::WriteConfiguration(const T& newValue, infra::ByteOutputStreamWriter& streamWriter, const infra::Function<void()>& onDone)
     {
         this->onDone = onDone;
-        auto headerProxy = stream.Writer().template Reserve<Header>(stream.ErrorPolicy());
+
+        auto storage = streamWriter.Remaining();
+        infra::DataOutputStream::WithErrorPolicy stream(streamWriter);
+
+        auto headerProxy = streamWriter.template Reserve<Header>(stream.ErrorPolicy());
         auto marker = stream.SaveMarker();
         infra::ProtoFormatter formatter(stream);
         newValue.Serialize(formatter);
@@ -165,7 +168,7 @@ namespace services
         infra::Copy(infra::Head(infra::MakeRange(messageHash), sizeof(Header::hash)), infra::MakeRange(header.hash));
         headerProxy = header;
 
-        flash.EraseAll([this, &stream]() { flash.WriteBuffer(stream.Writer().Processed(), 0, [this]() { this->Read(this->onDone); }); });
+        flash.EraseAll([this, &streamWriter]() { flash.WriteBuffer(streamWriter.Processed(), 0, [this]() { this->Read(this->onDone); }); });
     }
 
     template<class T, class TRef>
@@ -191,24 +194,22 @@ namespace services
     void MemoryMappedWritableConfiguration<T, TRef>::Write(const T& newValue, const infra::Function<void()>& onDone)
     {
         this->onWriteDone = onDone;
-        auto stream = std::make_shared<infra::ByteOutputStream::WithStorage<T::maxMessageSize + sizeof(typename WritableConfiguration<T, TRef>::Header)>>();
-        this->stream = stream;
-        this->WriteConfiguration(newValue, *this->stream, stream->Storage(), [this]() { this->stream == nullptr; this->onWriteDone(); });
+        streamWriter = std::make_shared<infra::ByteOutputStreamWriter::WithStorage<T::maxMessageSize + sizeof(typename WritableConfiguration<T, TRef>::Header)>>();
+        this->WriteConfiguration(newValue, *streamWriter, [this]() { this->streamWriter == nullptr; this->onWriteDone(); });
     }
 
     template<class T, class TRef>
     FlashReadingWritableConfiguration<T, TRef>::FlashReadingWritableConfiguration(hal::Flash& flash)
         : WritableConfiguration<T, TRef>(flash)
-        , stream(memory)
     {}
 
     template<class T, class TRef>
     void FlashReadingWritableConfiguration<T, TRef>::Read(const infra::Function<void()>& onDone)
     {
         this->onDone = onDone;
-        this->flash.ReadBuffer(memory, 0, [this]()
+        this->flash.ReadBuffer(streamWriter.Storage(), 0, [this]()
         {
-            this->LoadConfiguration(memory);
+            this->LoadConfiguration(streamWriter.Storage());
             this->onDone();
         });
     }
@@ -216,7 +217,8 @@ namespace services
     template<class T, class TRef>
     void FlashReadingWritableConfiguration<T, TRef>::Write(const T& newValue, const infra::Function<void()>& onDone)
     {
-        this->WriteConfiguration(newValue, this->stream, this->memory, onDone);
+        streamWriter.Reset();
+        this->WriteConfiguration(newValue, streamWriter, onDone);
     }
 }
 
