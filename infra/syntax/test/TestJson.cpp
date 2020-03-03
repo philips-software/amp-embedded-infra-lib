@@ -178,6 +178,12 @@ TEST(JsonTokenizerTest, clean_json)
     EXPECT_EQ(R"({"key":"value","key2":1234,"key3":true})", data);
 }
 
+TEST(JsonTokenizerTest, ValidJsonObject)
+{
+    EXPECT_TRUE(infra::ValidJsonObject(R"({ "key" : "value", "key2" : 1234, "key3" : true })"));
+    EXPECT_FALSE(infra::ValidJsonObject(R"({ "key" })"));
+}
+
 TEST(JsonObjectIteratorTest, empty_object_iterator_compares_equal_to_end)
 {
     infra::JsonObject object(R"({ })");

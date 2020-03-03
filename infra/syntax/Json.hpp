@@ -452,6 +452,7 @@ namespace infra
     infra::detail::DoublePair<JsonValueArrayIterator<JsonObject>> JsonObjectArray(JsonArray& array);
     infra::detail::DoublePair<JsonValueArrayIterator<JsonArray>> JsonArrayArray(JsonArray& array);
     void CleanJsonContents(infra::BoundedString& contents);
+    bool ValidJsonObject(infra::BoundedConstString contents);
 
     ////    Implementation    ////
 
