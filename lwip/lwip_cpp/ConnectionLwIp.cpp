@@ -405,7 +405,7 @@ namespace services
         assert(pcb != nullptr);
         ip_set_option(pcb, SOF_REUSEADDR);
         if (versions == IPVersions::both)
-            err_t err = tcp_bind(pcb, IP_ADDR_ANY, port);
+            err_t err = tcp_bind(pcb, IP_ANY_TYPE, port);
         else if (versions == IPVersions::ipv4)
             err_t err = tcp_bind(pcb, IP4_ADDR_ANY, port);
         else
