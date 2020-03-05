@@ -2,6 +2,7 @@
 #define INFRA_OBSERVER_HPP
 
 #include "infra/util/IntrusiveList.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include <cassert>
 
 namespace infra
@@ -209,7 +210,7 @@ namespace infra
     template<class ObserverType>
     Subject<ObserverType, void>::~Subject()
     {
-        assert(observers.empty());
+        really_assert(observers.empty());
     }
 
     template<class ObserverType>
@@ -281,7 +282,7 @@ namespace infra
     template<class ObserverType, class Helper>
     Subject<ObserverType, Helper>::~Subject()
     {
-        assert(observer == nullptr);
+        really_assert(observer == nullptr);
     }
 
     template<class ObserverType, class Helper>
