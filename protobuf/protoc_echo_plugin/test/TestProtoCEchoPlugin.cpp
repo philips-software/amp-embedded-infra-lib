@@ -208,7 +208,8 @@ TEST(ProtoCEchoPluginTest, serialize_message)
 
 TEST(ProtoCEchoPluginTest, deserialize_message)
 {
-    infra::ByteInputStream::WithStorage<4> stream(infra::inPlace, std::array<uint8_t, 4>{ (1 << 3) | 2, 2, 1 << 3, 5 });
+    std::array<uint8_t, 4> data{ (1 << 3) | 2, 2, 1 << 3, 5 };
+    infra::ByteInputStream stream(data);
     infra::ProtoParser parser(stream);
 
     test_messages::TestMessageWithMessageField message(parser);
