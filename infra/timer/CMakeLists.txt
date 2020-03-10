@@ -5,6 +5,8 @@ ccola_component(timer static_library)
         DerivedTimerService.hpp
         PartitionedTime.cpp
         PartitionedTime.hpp
+        RetryPolicy.cpp
+        RetryPolicy.hpp
         ScalableDerivedTimerService.cpp
         ScalableDerivedTimerService.hpp
         TickOnInterruptTimerService.cpp
@@ -13,8 +15,6 @@ ccola_component(timer static_library)
         Timer.hpp
         TimerAlternating.cpp
         TimerAlternating.hpp
-        TimerEvolving.cpp
-        TimerEvolving.hpp
         TimerLimitedRepeating.cpp
         TimerLimitedRepeating.hpp
         TimerLimitedRepeatingWithClosingAction.cpp

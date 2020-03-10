@@ -18,4 +18,5 @@ namespace infra
         uint16_t years;  // years since 1900
     };
 }
+
 #endif
