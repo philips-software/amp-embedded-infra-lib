@@ -139,6 +139,9 @@ namespace application
                 break;
         }
 
+        if (!foundKey)
+            throw std::runtime_error("Key: " + keyName + " is not found.");
+
         return rawKey;
     }
 
