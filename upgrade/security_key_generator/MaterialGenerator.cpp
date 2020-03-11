@@ -101,7 +101,7 @@ namespace application
         keysProto.ecDsaKey.privateKey.assign(ecDsa224PrivateKeyRange);
 
         infra::MemoryRange<uint8_t> ecDsa224PublicKeyRange(ecDsa224PublicKey);
-        keysProto.ecDsaKey.privateKey.assign(ecDsa224PublicKeyRange);
+        keysProto.ecDsaKey.publicKey.assign(ecDsa224PublicKeyRange);
 
         std::vector<uint8_t> keysPack;
         infra::StdVectorOutputStream keysPackStream(keysPack);
