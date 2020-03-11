@@ -23,7 +23,7 @@ namespace infra
     {
     public:
         RetryPolicyExponentialBackoff();
-        RetryPolicyExponentialBackoff(infra::Duration maximumDelay);
+        explicit RetryPolicyExponentialBackoff(infra::Duration maximumDelay);
 
         infra::Duration RetryDelay(bool intermittentFailure) override;
         void Reset() override;
