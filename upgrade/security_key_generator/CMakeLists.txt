@@ -1,4 +1,4 @@
-ccola_component(security_key_generator x86: executable other: noncompile)    
+ccola_component(security_key_generator x86: executable other: noncompile)
 
     ccola_sources(
         Main.cpp
@@ -13,7 +13,6 @@ ccola_component(security_key_generator x86: executable other: noncompile)
         hal.generic
         pack_builder
         pack
-        external.args
     )
 
 ccola_end_component()
