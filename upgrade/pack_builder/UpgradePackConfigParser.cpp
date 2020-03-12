@@ -94,17 +94,4 @@ namespace application
 
         return "";
     }
-
-    std::string UpgradePackConfigParser::GetUpgradeKeys()
-    {
-        if (json.HasKey("upgrade_keys"))
-        {
-            if (json.GetOptionalString("upgrade_keys") == infra::none)
-                throw ParseException(std::string("ConfigParser error: upgrade_keys should be a string"));
-            else
-                return json.GetString("upgrade_keys").ToStdString();
-        }
-
-        return "";
-    }
 }

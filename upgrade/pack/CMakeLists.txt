@@ -1,6 +1,4 @@
-ccola_component(pack static_library)
-
-    protocol_buffer_echo_cpp(UpgradeKeys.proto)
+ccola_component(pack source)
 
     ccola_sources(
         UpgradePackHeader.hpp

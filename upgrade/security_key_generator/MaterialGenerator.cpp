@@ -6,10 +6,6 @@
 #include <fstream>
 #include <iomanip>
 #include <string>
-#include "infra/syntax/ProtoFormatter.hpp"
-#include "hal/generic/FileSystemGeneric.hpp"
-#include "infra/stream/StdVectorOutputStream.hpp"
-#include "generated/echo/UpgradeKeys.pb.hpp"
 
 namespace application
 {
@@ -20,44 +16,64 @@ namespace application
 
     MaterialGenerator::MaterialGenerator(hal::SynchronousRandomDataGenerator& randomDataGenerator)
         : randomDataGenerator(randomDataGenerator)
+        , aesKey(aesKeyLength / 8, 0)
+        , xteaKey(xteaKeyLength / 8, 0)
+        , hmacKey(hmacKeyLength / 8, 0)
     {
         materialGenerator = this;
-    }
 
-    MaterialGenerator::~MaterialGenerator()
-    {
-    }
-
-    void MaterialGenerator::GenerateKeys()
-    {
-        aesKey.resize(aesKeyLength / 8, 0);
         randomDataGenerator.GenerateRandomData(infra::MakeRange(aesKey));
+        randomDataGenerator.GenerateRandomData(infra::MakeRange(xteaKey));
+        randomDataGenerator.GenerateRandomData(infra::MakeRange(hmacKey));
+
+        int ret;
 
         ecDsa224PublicKey.resize(ecDsa224KeyLength / 8 * 2);
         ecDsa224PrivateKey.resize(ecDsa224KeyLength / 8 * 2);
         uECC_set_rng(UccRandom);
-        auto ret = uECC_make_key(ecDsa224PublicKey.data(), ecDsa224PrivateKey.data(), uECC_secp224r1());
+        ret = uECC_make_key(ecDsa224PublicKey.data(), ecDsa224PrivateKey.data(), uECC_secp224r1());
         if (ret != 1)
             throw std::runtime_error("uECC_make_key returned an error");
 
-        keysAvailable = true;
+        mbedtls_entropy_context entropy;
+        mbedtls_entropy_init(&entropy);
+
+        ret = mbedtls_entropy_add_source(&entropy, RandomEntropy, this, 32, MBEDTLS_ENTROPY_SOURCE_STRONG);
+        if (ret != 0)
+            throw std::runtime_error("mbedtls_entropy_add_source returned an error");
+
+        mbedtls_ctr_drbg_context ctr_drbg;
+        mbedtls_ctr_drbg_init(&ctr_drbg);
+
+        ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, nullptr, 0);
+        if (ret != 0)
+            throw std::runtime_error("mbedtls_ctr_drbg_seed returned an error");
+
+        mbedtls_pk_init(&pk);
+
+        ret = mbedtls_pk_setup(&pk, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
+        if (ret != 0)
+            throw std::runtime_error("mbedtls_pk_setup returned an error");
+
+        ret = mbedtls_rsa_gen_key(mbedtls_pk_rsa(pk), mbedtls_ctr_drbg_random, &ctr_drbg,
+            rsaKeyLength, 65537);
+        if (ret != 0)
+            throw std::runtime_error("mbedtls_rsa_gen_key returned an error");
+
+        mbedtls_rsa_context* rsaContext = static_cast<mbedtls_rsa_context*>(pk.pk_ctx);
+        mbedtls_rsa_set_padding(rsaContext, MBEDTLS_RSA_PKCS_V21, MBEDTLS_MD_SHA256);
+
+        ret = mbedtls_rsa_check_privkey(rsaContext);
+        if (ret != 0)
+            throw std::runtime_error("Public key is invalid");
+
+        mbedtls_ctr_drbg_free(&ctr_drbg);
+        mbedtls_entropy_free(&entropy);
     }
 
-    void MaterialGenerator::ImportKeys(const std::string& fileName)
+    MaterialGenerator::~MaterialGenerator()
     {
-        hal::FileSystemGeneric fileSystem;
-        std::vector<std::string> fileContents = fileSystem.ReadFile(fileName);
-
-        auto rawAesKey = GetRawKey(fileContents, "aesKey");
-        aesKey = ExtractKey(rawAesKey);
-
-        auto rawEcDsaPrivateKey = GetRawKey(fileContents, "ecDsa224PrivateKey");
-        ecDsa224PrivateKey = ExtractKey(rawEcDsaPrivateKey);
-
-        auto rawEcDsaPublicKey = GetRawKey(fileContents, "ecDsa224PublicKey");
-        ecDsa224PublicKey = ExtractKey(rawEcDsaPublicKey);
-
-        keysAvailable = true;
+        mbedtls_pk_free(&pk);
     }
 
     void MaterialGenerator::WriteKeys(const std::string& fileName)
@@ -67,13 +83,19 @@ namespace application
         if (!file)
             throw std::runtime_error((std::string("Cannot open/create: ") + fileName).c_str());
 
+        mbedtls_rsa_context* rsaContext = static_cast<mbedtls_rsa_context*>(pk.pk_ctx);
 
         file << R"(#include "upgrade_keys/Keys.hpp"
 
 )";
 
         PrintVector(file, "aesKey", aesKey);
+        PrintVector(file, "xteaKey", xteaKey);
+        PrintVector(file, "hmacKey", hmacKey);
         PrintVector(file, "ecDsa224PublicKey", ecDsa224PublicKey);
+
+        PrintMpi(file, "rsaPrivateKeyN", rsaContext->N);
+        PrintMpi(file, "rsaPrivateKeyE", rsaContext->E);
 
         file << R"(#ifdef CCOLA_HOST_BUILD
 // Private keys are only available in the upgrade builder, which is compiled only on the host.
@@ -83,33 +105,24 @@ namespace application
 
         PrintVector(file, "ecDsa224PrivateKey", ecDsa224PrivateKey);
 
+        PrintMpi(file, "rsaPrivateKeyD", rsaContext->D);
+        PrintMpi(file, "rsaPrivateKeyP", rsaContext->P);
+        PrintMpi(file, "rsaPrivateKeyQ", rsaContext->Q);
+        PrintMpi(file, "rsaPrivateKeyDP", rsaContext->DP);
+        PrintMpi(file, "rsaPrivateKeyDQ", rsaContext->DQ);
+        PrintMpi(file, "rsaPrivateKeyQP", rsaContext->QP);
+
         file << R"(#endif
 )";
     }
 
-    void MaterialGenerator::WriteKeysProto(const std::string& fileName)
+    int MaterialGenerator::RandomEntropy(void* data, unsigned char* output, size_t length, size_t* outputLength)
     {
-        if (!keysAvailable)
-            throw std::runtime_error("Keys are not generated or imported.");
-
-        upgrade_keys::keys keysProto;
-        
-        infra::MemoryRange<uint8_t> aesKeyRange(aesKey);
-        keysProto.aesKey.symmetricKey.assign(aesKeyRange);
-
-        infra::MemoryRange<uint8_t> ecDsa224PrivateKeyRange(ecDsa224PrivateKey);
-        keysProto.ecDsaKey.privateKey.assign(ecDsa224PrivateKeyRange);
-
-        infra::MemoryRange<uint8_t> ecDsa224PublicKeyRange(ecDsa224PublicKey);
-        keysProto.ecDsaKey.publicKey.assign(ecDsa224PublicKeyRange);
-
-        std::vector<uint8_t> keysPack;
-        infra::StdVectorOutputStream keysPackStream(keysPack);
-        infra::ProtoFormatter protoFormatter(keysPackStream);
-        keysProto.Serialize(protoFormatter);
-
-        hal::FileSystemGeneric fileSystem;
-        fileSystem.WriteBinaryFile(fileName, keysPack);
+        std::vector<uint8_t> entropy(length);
+        reinterpret_cast<MaterialGenerator*>(data)->randomDataGenerator.GenerateRandomData(entropy);
+        std::copy(entropy.begin(), entropy.end(), output);
+        *outputLength = length;
+        return 0;
     }
 
     int MaterialGenerator::UccRandom(uint8_t* dest, unsigned size)
@@ -120,48 +133,19 @@ namespace application
         return 1;
     }
 
-    std::string MaterialGenerator::GetRawKey(const std::vector<std::string> contents, const std::string keyName)
+    void MaterialGenerator::PrintMpi(std::ostream& output, const char* name, mbedtls_mpi number)
     {
-        auto foundKey = false;
-        std::string rawKey;
-
-        for (auto line : contents)
+        std::vector<uint32_t> n(number.p, number.p + number.n);
+        std::vector<uint8_t> m;
+        for (uint32_t word : n)
         {
-            if (foundKey)
-                rawKey += line;
-            else if (line.find(keyName) != std::string::npos)
-            {
-                foundKey = true;
-                rawKey = line;
-            }
-
-            if (foundKey && rawKey.find("};") != std::string::npos)
-                break;
+            m.push_back(static_cast<uint8_t>(word));
+            m.push_back(static_cast<uint8_t>(word >> 8));
+            m.push_back(static_cast<uint8_t>(word >> 16));
+            m.push_back(static_cast<uint8_t>(word >> 24));
         }
 
-        if (!foundKey)
-            throw std::runtime_error("Key: " + keyName + " is not found.");
-
-        return rawKey;
-    }
-
-    std::vector<uint8_t> MaterialGenerator::ExtractKey(std::string rawKey)
-    {
-        auto innerOpen = rawKey.find_last_of('{');
-        auto innerClose = rawKey.find_first_of('}');
-        rawKey = rawKey.substr(innerOpen + 1, innerClose - innerOpen - 1);
-
-        std::vector<uint8_t> extractedValues;
-
-        while (rawKey.find(',') != std::string::npos)
-        {
-            extractedValues.push_back(std::stoi(rawKey, nullptr, 16));
-            rawKey = rawKey.substr(rawKey.find(',') + 1);
-        }
-
-        extractedValues.push_back(std::stoi(rawKey, nullptr, 16));
-
-        return extractedValues;
+        PrintVector(output, name, m);
     }
 
     void MaterialGenerator::PrintVector(std::ostream& output, const char* name, const std::vector<uint8_t>& vector)
@@ -184,5 +168,5 @@ namespace application
         output << "\n} };\n\n";
 
         output.copyfmt(oldState);
-    }
+    } //TICS !COV_CPP_STREAM_FORMAT_STATE_01
 }

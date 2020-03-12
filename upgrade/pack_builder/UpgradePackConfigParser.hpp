@@ -22,7 +22,6 @@ namespace application
         std::vector<std::pair<std::string, std::string>> GetComponents();
         std::vector<std::pair<std::string, std::string>> GetOptions();
         std::string GetOutputFilename();
-        std::string GetUpgradeKeys();
 
     private:
         void CheckValidJson();
