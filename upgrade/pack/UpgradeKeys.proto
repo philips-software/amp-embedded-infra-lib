@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+import "EchoAttributes.proto";
+
+package upgrade_keys;
+
+message aes128key
+{
+    bytes symmetricKey = 1 [(bytes_size) = 16];
+}
+
+message ecDsa224key
+{
+    bytes publicKey = 1 [(bytes_size) = 56];
+    bytes privateKey = 2 [(bytes_size) = 56];
+}
+
+message keys
+{
+	aes128key aesKey = 1;
+	ecDsa224key ecDsaKey = 2;
+}
