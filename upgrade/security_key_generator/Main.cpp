@@ -2,7 +2,6 @@
 #include "upgrade/security_key_generator/MaterialGenerator.hpp"
 #include <iostream>
 #include "external/args/args.hxx"
-#include "Version.h"
 #include "hal/generic/FileSystemGeneric.hpp"
 
 void GenerateUpgradeKeys(args::Subparser& p)
@@ -45,8 +44,7 @@ void ConvertUpgradeKeys(args::Subparser& p)
 int main(int argc, char* argv[])
 {
     std::string toolname = std::string(argv[0]).substr(std::string(argv[0]).find_last_of("\\") + 1);
-    args::ArgumentParser parser(" " + std::string(CoCoCo::generated::VERSION_FULL) + "\n" +
-        "\"" + toolname + "\"" + " is a tool used to generate and convert upgrade keys.");
+    args::ArgumentParser parser("\"" + toolname + "\"" + " is a tool used to generate and convert upgrade keys.");
 
     args::Group commands(parser, "Commands:");
     args::Command generateKeysCommand(commands, "generate_keys", "Generate upgrade keys and save in protobuf format to the specified output file[Keys.bin].", [&](args::Subparser &p) { GenerateUpgradeKeys(p); });
