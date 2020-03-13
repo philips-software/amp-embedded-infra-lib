@@ -24,6 +24,7 @@ ccola_project()
     ccola_add_version_header()
 
     ccola_subdirectories(
+        external/args
         external/googletest
         external/crypto
         infra
