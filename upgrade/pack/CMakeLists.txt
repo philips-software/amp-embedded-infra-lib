@@ -10,3 +10,9 @@ ccola_component(pack source)
     )
 
 ccola_end_component()
+
+ccola_component(pack_keys static_library)
+
+    protocol_buffer_echo_cpp(UpgradeKeys.proto)
+
+ccola_end_component()

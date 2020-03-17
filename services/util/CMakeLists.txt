@@ -9,6 +9,8 @@ ccola_component(util static_library)
         DebouncedButton.hpp
         DebugLed.cpp
         DebugLed.hpp
+        FlashAlign.cpp
+        FlashAlign.hpp
         FlashDelayedInit.cpp
         FlashDelayedInit.hpp
         FlashMultipleAccess.cpp
@@ -33,7 +35,7 @@ ccola_component(util static_library)
         LowPowerSerialCommunication.hpp
         LowPowerSpiMaster.cpp
         LowPowerSpiMaster.hpp
-        MemoryMappedStaticConfiguration.hpp
+        WritableConfiguration.hpp
         RepeatingButton.cpp
         RepeatingButton.hpp
         SignalLed.cpp

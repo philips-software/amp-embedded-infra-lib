@@ -53,15 +53,15 @@ namespace infra
         return string.size() - offset;
     }
 
-    StdStringInputStream::StdStringInputStream(std::string& storage)
+    StdStringInputStream::StdStringInputStream(const std::string& storage)
         : TextInputStream::WithReader<StdStringInputStreamReader>(storage)
     {}
 
-    StdStringInputStream::StdStringInputStream(std::string& storage, const SoftFail&)
+    StdStringInputStream::StdStringInputStream(const std::string& storage, const SoftFail&)
         : TextInputStream::WithReader<StdStringInputStreamReader>(storage, softFail)
     {}
 
-    StdStringInputStream::StdStringInputStream(std::string& storage, const NoFail&)
+    StdStringInputStream::StdStringInputStream(const std::string& storage, const NoFail&)
         : TextInputStream::WithReader<StdStringInputStreamReader>(storage, noFail)
     {}
 }

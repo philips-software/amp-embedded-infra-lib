@@ -2,17 +2,67 @@ include(CMakeForceCompiler)
 
 set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
-set(CCOLA_GCCARM_VERSION "5.4 2016q3")
-set(CMAKE_C_COMPILER "C:/Program Files (x86)/GNU Tools ARM Embedded/${CCOLA_GCCARM_VERSION}/bin/arm-none-eabi-gcc.exe")
-set(CMAKE_CXX_COMPILER "C:/Program Files (x86)/GNU Tools ARM Embedded/${CCOLA_GCCARM_VERSION}/bin/arm-none-eabi-g++.exe")
 
-set(CMAKE_ASM_COMPILER "C:/Program Files (x86)/GNU Tools ARM Embedded/${CCOLA_GCCARM_VERSION}/bin/arm-none-eabi-as.exe" CACHE FILEPATH as)
-set(CMAKE_AR "C:/Program Files (x86)/GNU Tools ARM Embedded/${CCOLA_GCCARM_VERSION}/bin/arm-none-eabi-gcc-ar.exe" CACHE FILEPATH ar)
-set(CMAKE_RANLIB "C:/Program Files (x86)/GNU Tools ARM Embedded/${CCOLA_GCCARM_VERSION}/bin/arm-none-eabi-gcc-ranlib.exe" CACHE FILEPATH ranlib)
-set(CMAKE_NM "C:/Program Files (x86)/GNU Tools ARM Embedded/${CCOLA_GCCARM_VERSION}/bin/arm-none-eabi-gcc-rm.exe" CACHE FILEPATH nm)
+set(hints_paths)
 
-set(CCOLA_LD_TOOL "C:/Program Files (x86)/GNU Tools ARM Embedded/${CCOLA_GCCARM_VERSION}/bin/arm-none-eabi-ld.exe")
-set(CCOLA_APP_SIZE_TOOL "C:/Program Files (x86)/GNU Tools ARM Embedded/${CCOLA_GCCARM_VERSION}/bin/arm-none-eabi-size.exe")
-set(CCOLA_OBJ_COPY_TOOL "C:/Program Files (x86)/GNU Tools ARM Embedded/${CCOLA_GCCARM_VERSION}/bin/arm-none-eabi-objcopy.exe")
-set(CCOLA_OBJ_DUMP_TOOL "C:/Program Files (x86)/GNU Tools ARM Embedded/${CCOLA_GCCARM_VERSION}/bin/arm-none-eabi-objdump.exe")
-set(CCOLA_DEBUG_TOOL "C:/Program Files (x86)/GNU Tools ARM Embedded/${CCOLA_GCCARM_VERSION}/bin/arm-none-eabi-gdb.exe")
+if(CMAKE_HOST_WIN32)
+    list(APPEND hints_paths "C:/Program Files (x86)/GNU Tools ARM Embedded/5.4 2016q3/bin/"
+                            "C:/Program Files (x86)/GNU Tools Arm Embedded/9 2019-q4-major/bin/")
+else()
+    list(APPEND hints_paths "/opt/gcc-arm-none-eabi-5_4-2016q3/bin/" "/opt/gcc-arm-none-eabi-9-2019-q4-major/bin/")
+endif()
+
+find_program(CMAKE_C_COMPILER
+    NAMES arm-none-eabi-gcc
+          arm-none-eabi-gcc.exe
+    HINTS ${hints_paths})
+
+find_program(CMAKE_CXX_COMPILER
+    NAMES arm-none-eabi-g++
+          arm-none-eabi-g++.exe
+    HINTS ${hints_paths})
+
+find_program(CMAKE_ASM_COMPILER
+    NAMES arm-none-eabi-as
+          arm-none-eabi-as.exe
+    HINTS ${hints_paths})
+
+find_program(CMAKE_AR
+    NAMES arm-none-eabi-ar
+          arm-none-eabi-ar.exe
+    HINTS ${hints_paths})
+
+find_program(CMAKE_RANLIB
+    NAMES arm-none-eabi-ranlib
+          arm-none-eabi-ranlib.exe
+    HINTS ${hints_paths})
+
+find_program(CMAKE_NM
+    NAMES arm-none-eabi-nm
+          arm-none-eabi-nm.exe
+    HINTS ${hints_paths})
+
+find_program(CCOLA_LD_TOOL
+    NAMES arm-none-eabi-ld
+          arm-none-eabi-ld.exe
+    HINTS ${hints_paths})
+
+find_program(CCOLA_APP_SIZE_TOOL
+    NAMES arm-none-eabi-size
+          arm-none-eabi-size.exe
+    HINTS ${hints_paths})
+
+find_program(CCOLA_OBJ_COPY_TOOL
+    NAMES arm-none-eabi-objcopy
+          arm-none-eabi-objcopy.exe
+    HINTS ${hints_paths})
+
+find_program(CCOLA_OBJ_DUMP_TOOL
+    NAMES arm-none-eabi-objdump
+          arm-none-eabi-objdump.exe
+    HINTS ${hints_paths})
+
+find_program(CCOLA_DEBUG_TOOL
+    NAMES arm-none-eabi-gdb
+          arm-none-eabi-gdb.exe
+    HINTS ${hints_paths})

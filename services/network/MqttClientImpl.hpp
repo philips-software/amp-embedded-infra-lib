@@ -248,6 +248,9 @@ namespace services
         MqttClientConnectorImpl(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password,
             infra::BoundedConstString hostname, uint16_t port, services::ConnectionFactoryWithNameResolver& connectionFactory);
 
+        void SetHostname(infra::BoundedConstString newHostname);
+        void SetClientId(infra::BoundedConstString newClientId);
+
         // Implementation of MqttClientConnector
         virtual void Connect(MqttClientObserverFactory& factory) override;
         virtual void CancelConnect() override;

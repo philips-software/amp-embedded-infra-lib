@@ -1,9 +1,8 @@
-macro(ccola_project name)
+macro(ccola_project)
 
-	ccola_validate_name(${name})
-	ccola_verify_not_nested(${name} CCOLA_PROJECT_NAME "Project")
-	set(CCOLA_PROJECT_NAME ${name})
-	project(${CCOLA_PROJECT_NAME} ${ARGN})
+	ccola_validate_name(${CMAKE_PROJECT_NAME})
+	ccola_verify_not_nested(${CMAKE_PROJECT_NAME} CCOLA_PROJECT_NAME "Project")
+	set(CCOLA_PROJECT_NAME ${CMAKE_PROJECT_NAME})
 
 endmacro()
 
@@ -286,8 +285,8 @@ endmacro()
 macro(ccola_enable_coverage_flags)
 
 	if(${CCOLA_ARCH} STREQUAL "linux")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage -fprofile-arcs -ftest-coverage -fno-inline")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage -fno-inline -fno-elide-constructors")
 
         if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
             link_libraries(gcov)

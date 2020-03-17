@@ -18,8 +18,6 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR
 	enable_testing()
 endif()
 
-project("Unnamed")
-
 include(${CCOLA_DIR}/util.inc)
 include(${CCOLA_DIR}/file_util.inc)
 

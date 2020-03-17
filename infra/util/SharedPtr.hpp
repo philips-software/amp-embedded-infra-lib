@@ -108,9 +108,9 @@ namespace infra
         typename std::add_lvalue_reference<T>::type operator*() const;
 
         template<class U>
-        bool operator==(const SharedPtr<U>& other) const;
+            bool operator==(const SharedPtr<U>& other) const;
         template<class U>
-        bool operator!=(const SharedPtr<U>& other) const;
+            bool operator!=(const SharedPtr<U>& other) const;
         bool operator==(std::nullptr_t) const;
         bool operator!=(std::nullptr_t) const;
         friend bool operator==(std::nullptr_t, const SharedPtr& ptr) { return ptr == nullptr; }
@@ -121,22 +121,22 @@ namespace infra
 
     private:
         template<class U>
-        friend class SharedPtr;
+            friend class SharedPtr;
         template<class U>
-        friend class WeakPtr;
+            friend class WeakPtr;
 
         template<class U, class V>
-        friend SharedPtr<U> StaticPointerCast(const SharedPtr<V>& sharedPtr);
+            friend SharedPtr<U> StaticPointerCast(const SharedPtr<V>& sharedPtr);
         template<class U, class V>
-        friend SharedPtr<U> StaticPointerCast(SharedPtr<V>&& sharedPtr);
+            friend SharedPtr<U> StaticPointerCast(SharedPtr<V>&& sharedPtr);
         template<class U>
-        friend SharedPtr<typename std::remove_const<U>::type> ConstCast(const SharedPtr<U>& sharedPtr);
+            friend SharedPtr<typename std::remove_const<U>::type> ConstCast(const SharedPtr<U>& sharedPtr);
         template<class U>
-        friend SharedPtr<typename std::remove_const<U>::type> ConstCast(SharedPtr<U>&& sharedPtr);
+            friend SharedPtr<typename std::remove_const<U>::type> ConstCast(SharedPtr<U>&& sharedPtr);
         template<class U, class V>
-        friend SharedPtr<U> MakeContainedSharedObject(U& object, const SharedPtr<V>& container);
+            friend SharedPtr<U> MakeContainedSharedObject(U& object, const SharedPtr<V>& container);
         template<class U, class V>
-        friend SharedPtr<U> MakeContainedSharedObject(U& object, SharedPtr<V>&& container);
+            friend SharedPtr<U> MakeContainedSharedObject(U& object, SharedPtr<V>&& container);
 
     private:
         detail::SharedPtrControl* control = nullptr;
@@ -148,50 +148,46 @@ namespace infra
     {
     public:
         WeakPtr() = default;
+        WeakPtr(std::nullptr_t);                    //TICS !INT#001
         WeakPtr(const WeakPtr<T>& other);
         WeakPtr(WeakPtr<T>&& other);
         template<class U> //TICS !INT#001
-        WeakPtr(const WeakPtr<U>& other);
+            WeakPtr(const WeakPtr<U>& other);
         template<class U>
-        WeakPtr(WeakPtr<U>&& other);            //TICS !INT#001
-        WeakPtr(const SharedPtr<T>& sharedPtr); //TICS !INT#001
+            WeakPtr(WeakPtr<U>&& other);            //TICS !INT#001
+        WeakPtr(const SharedPtr<T>& sharedPtr);     //TICS !INT#001
         WeakPtr& operator=(const WeakPtr<T>& other);
         WeakPtr& operator=(WeakPtr<T>&& other);
         WeakPtr& operator=(const SharedPtr<T>& sharedPtr);
+        WeakPtr& operator=(std::nullptr_t);
         ~WeakPtr();
 
         SharedPtr<T> lock() const;
 
         template<class U>
-        bool operator==(const WeakPtr<U>& other) const;
+            bool operator==(const WeakPtr<U>& other) const;
         template<class U>
-        bool operator!=(const WeakPtr<U>& other) const;
+            bool operator!=(const WeakPtr<U>& other) const;
         bool operator==(std::nullptr_t) const;
         bool operator!=(std::nullptr_t) const;
         friend bool operator==(std::nullptr_t, const WeakPtr& ptr) { return ptr == nullptr; }
         friend bool operator!=(std::nullptr_t, const WeakPtr& ptr) { return ptr != nullptr; }
         template<class U>
-        bool operator==(const SharedPtr<U>& other) const;
+            bool operator==(const SharedPtr<U>& other) const;
         template<class U>
-        bool operator!=(const SharedPtr<U>& other) const;
+            bool operator!=(const SharedPtr<U>& other) const;
         template<class U>
-        friend bool operator==(const SharedPtr<U>& left, const WeakPtr& right)
-        {
-            return right == left;
-        }
+            friend bool operator==(const SharedPtr<U>& left, const WeakPtr& right) { return right == left; }
         template<class U>
-        friend bool operator!=(const SharedPtr<U>& left, const WeakPtr& right)
-        {
-            return right != left;
-        }
+            friend bool operator!=(const SharedPtr<U>& left, const WeakPtr& right) { return right != left; }
 
     private:
         void Reset(detail::SharedPtrControl* newControl, T* newObject);
 
         template<class U>
-        friend class SharedPtr;
+            friend class SharedPtr;
         template<class U>
-        friend class WeakPtr;
+            friend class WeakPtr;
 
     private:
         detail::SharedPtrControl* control = nullptr;
@@ -211,9 +207,11 @@ namespace infra
         ~AccessedBySharedPtrWithExtraSize();
 
         template<class T>
-        SharedPtr<T> MakeShared(T& value);
+            SharedPtr<T> MakeShared(T& value);
 
         void SetAction(const infra::Function<void(), ExtraSize>& newOnUnReferenced);
+
+        bool Referenced() const;
 
     private:
         virtual void Destruct(const void* object) override;
@@ -413,6 +411,10 @@ namespace infra
     }
 
     template<class T>
+    WeakPtr<T>::WeakPtr(std::nullptr_t)
+    {}
+
+    template<class T>
     WeakPtr<T>::WeakPtr(const WeakPtr& other)
     {
         Reset(other.control, other.object);
@@ -467,6 +469,14 @@ namespace infra
     WeakPtr<T>& WeakPtr<T>::operator=(const SharedPtr<T>& sharedPtr)
     {
         Reset(sharedPtr.control, sharedPtr.object);
+
+        return *this;
+    }
+
+    template<class T>
+    WeakPtr<T>& WeakPtr<T>::operator=(std::nullptr_t)
+    {
+        Reset(nullptr, nullptr);
 
         return *this;
     }
@@ -611,6 +621,12 @@ namespace infra
     void AccessedBySharedPtrWithExtraSize<ExtraSize>::SetAction(const infra::Function<void(), ExtraSize>& newOnUnReferenced)
     {
         onUnReferenced = newOnUnReferenced;
+    }
+
+    template<std::size_t ExtraSize>
+    bool AccessedBySharedPtrWithExtraSize<ExtraSize>::Referenced() const
+    {
+        return !control.UnReferenced();
     }
 
     template<std::size_t ExtraSize>

@@ -194,6 +194,21 @@ namespace infra
         T* object = nullptr;
     };
 
+    template<class... ConstructionArgs>
+    class CreatorExternal<void, void(ConstructionArgs...)>
+        : public CreatorBase<void, void(ConstructionArgs...)>
+    {
+    public:
+        explicit CreatorExternal(const infra::Function<void(ConstructionArgs...)>& emplaceFunction, const infra::Function<void()>& destroyFunction);
+
+        virtual void Emplace(ConstructionArgs... args) override;
+        virtual void Destroy() override;
+
+    private:
+        infra::Function<void(ConstructionArgs... args)> emplaceFunction;
+        infra::Function<void()> destroyFunction;
+    };
+
     ////    Implementation    ////
 
     template<class T, class... ConstructionArgs>
@@ -456,6 +471,24 @@ namespace infra
     const T& CreatorExternal<T, void(ConstructionArgs...)>::Get() const
     {
         return *object;
+    }
+
+    template<class... ConstructionArgs>
+    CreatorExternal<void, void(ConstructionArgs...)>::CreatorExternal(const infra::Function<void(ConstructionArgs...)>& emplaceFunction, const infra::Function<void()>& destroyFunction)
+        : emplaceFunction(emplaceFunction)
+        , destroyFunction(destroyFunction)
+    {}
+
+    template<class... ConstructionArgs>
+    void CreatorExternal<void, void(ConstructionArgs...)>::Emplace(ConstructionArgs... args)
+    {
+        emplaceFunction(args...);
+    }
+
+    template<class... ConstructionArgs>
+    void CreatorExternal<void, void(ConstructionArgs...)>::Destroy()
+    {
+        destroyFunction();
     }
 }
 

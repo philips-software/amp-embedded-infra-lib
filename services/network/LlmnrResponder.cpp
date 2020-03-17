@@ -79,7 +79,7 @@ namespace services
         replying = false;
 
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
-        Header header{ id, Header::flagsResponse, 1, 1 };
+        Header header{ id, Header::flagsResponse, 1, 1, 0, 0 };
         stream << header;
         stream << static_cast<uint8_t>(name.size()) << infra::StringAsByteRange(name) << '\0';
         Footer footer;

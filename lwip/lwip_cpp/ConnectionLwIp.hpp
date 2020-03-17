@@ -6,6 +6,7 @@
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/util/BoundedList.hpp"
 #include "infra/util/ByteRange.hpp"
+#include "infra/util/IntrusiveList.hpp"
 #include "infra/util/SharedObjectAllocatorFixedSize.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "infra/util/WithStorage.hpp"
@@ -28,6 +29,7 @@ namespace services
     class ConnectionLwIp
         : public services::Connection
         , public infra::EnableSharedFromThis<ConnectionLwIp>
+        , public infra::IntrusiveList<ConnectionLwIp>::NodeType
     {
     public:
         ConnectionLwIp(tcp_pcb* control);
@@ -56,6 +58,7 @@ namespace services
         err_t Recv(pbuf* p, err_t err);
         void Err(err_t err);
         err_t Sent(uint16_t len);
+        void RemoveFromPool(infra::ConstByteRange range);
 
     private:
         class StreamWriterLwIp
@@ -94,6 +97,9 @@ namespace services
         };
 
     private:
+        friend class ListenerLwIp;
+        friend class ConnectorLwIp;
+
         tcp_pcb* control;
         std::size_t requestedSendSize = 0;
 
@@ -103,7 +109,8 @@ namespace services
         infra::ConstByteRange sendBuffer;
         infra::TimerSingleShot retrySendTimer;
         infra::BoundedDeque<infra::ConstByteRange>::WithMaxSize<tcpSndQueueLen> sendBuffers;
-        infra::BoundedDeque<std::array<uint8_t, TCP_MSS>>::WithMaxSize<tcpSndQueueLen> sendMemoryPool;
+        static infra::BoundedList<std::array<uint8_t, TCP_MSS>>::WithMaxSize<tcpSndQueueLen> sendMemoryPool;
+        static infra::IntrusiveList<ConnectionLwIp> sendMemoryPoolWaiting;
 
         pbuf* receivedData = nullptr;
         std::size_t consumed = 0;

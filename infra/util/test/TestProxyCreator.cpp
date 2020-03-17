@@ -115,6 +115,20 @@ TEST(ProxyCreatorTest, CreatePeripheralByCreatorExternal)
     EXPECT_CALL(destruction, callback());
 }
 
+TEST(ProxyCreatorTest, CreateVoidByCreatorExternal)
+{
+    infra::MockCallback<void()> construction;
+    infra::MockCallback<void()> destruction;
+
+    PeripheralWithTwoParameters peripheral(5, 6);
+    infra::CreatorExternal<void, void()> creator([&peripheral, &construction]() { construction.callback(); }, [&destruction]() { destruction.callback(); });
+
+    EXPECT_CALL(construction, callback());
+    infra::ProxyCreator<void, void()> creatorProxy(creator);
+
+    EXPECT_CALL(destruction, callback());
+}
+
 TEST(DelayedProxyCreatorTest, CreatePeripheral)
 {
     infra::Creator<PeripheralInterface, Peripheral, void()> creator;

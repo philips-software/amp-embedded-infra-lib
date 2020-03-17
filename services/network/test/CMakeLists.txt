@@ -7,6 +7,7 @@ ccola_component(network_test gmock_test)
         TestDnsResolver.cpp
         TestExclusiveConnection.cpp
         TestHttpClient.cpp
+        TestHttpClientAuthentication.cpp
         TestHttpClientBasic.cpp
         TestHttpClientJson.cpp
         TestHttpServer.cpp

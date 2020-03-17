@@ -137,6 +137,8 @@ namespace services
         std::size_t encryptedSendStreamSize = 0;
 
         bool initialHandshake = true;
+        bool closing = false;
+        bool aborting = false;
     };
 
     using AllocatorConnectionMbedTls = infra::SharedObjectAllocator<ConnectionMbedTls,

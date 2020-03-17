@@ -9,6 +9,7 @@ namespace services
 
     void SingleConnectionListener::Stop(const infra::Function<void()>& onDone)
     {
+        listener = nullptr;
         Stop(onDone, true);
     }
 

@@ -1240,4 +1240,13 @@ namespace infra
 
         contents = newContents;
     }
+
+    bool ValidJsonObject(infra::BoundedConstString contents)
+    {
+        JsonObject object(contents);
+        for (auto i : object)
+        {}
+
+        return !object.Error();
+    }
 }

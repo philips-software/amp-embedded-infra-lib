@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Changed
 
 - services/network; Camel-Cased HTTP headers
+- ccola/project.inc; Changed signature of ccola_project macro, removed the project name and forwarding towards CMake's project()-call. Recent CMake versions required a direct, literal call to the project()-method in the top-level CMakeLists.txt.
 
 ### Fixed
 

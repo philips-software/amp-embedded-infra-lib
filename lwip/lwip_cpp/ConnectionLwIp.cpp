@@ -3,6 +3,9 @@
 
 namespace services
 {
+    infra::BoundedList<std::array<uint8_t, TCP_MSS>>::WithMaxSize<tcpSndQueueLen> ConnectionLwIp::sendMemoryPool;
+    infra::IntrusiveList<ConnectionLwIp> ConnectionLwIp::sendMemoryPoolWaiting;
+
     ConnectionLwIp::ConnectionLwIp(tcp_pcb* control)
         : control(control)
     {
@@ -16,6 +19,9 @@ namespace services
 
     ConnectionLwIp::~ConnectionLwIp()
     {
+        if (sendMemoryPoolWaiting.has_element(*this))
+            sendMemoryPoolWaiting.erase(*this);
+
         if (receivedData != nullptr)
             pbuf_free(receivedData);
 
@@ -31,6 +37,7 @@ namespace services
     {
         assert(requestedSendSize == 0);
         assert(sendSize != 0 && sendSize <= MaxSendStreamSize());
+        really_assert(control != nullptr);
         requestedSendSize = sendSize;
         TryAllocateSendStream();
     }
@@ -65,7 +72,12 @@ namespace services
     void ConnectionLwIp::AbortAndDestroy()
     {
         if (control)
-            tcp_abort(control); // Err is called as a result, and this callback destroys this connection object
+        {
+            auto controlCopy = control;
+            ResetControl();
+            tcp_abort(controlCopy);
+            ResetOwnership();
+        }
     }
 
     void ConnectionLwIp::SetSelfOwnership(const infra::SharedPtr<ConnectionObserver>& observer)
@@ -75,7 +87,8 @@ namespace services
 
     void ConnectionLwIp::ResetOwnership()
     {
-        Detach();
+        if (IsAttached())
+            Detach();
         self = nullptr;
     }
 
@@ -122,6 +135,9 @@ namespace services
         assert(streamWriter.Allocatable());
         if (!sendBuffers.full() && !sendMemoryPool.full() && sendBuffer.empty())
         {
+            if (sendMemoryPoolWaiting.has_element(*this))
+                sendMemoryPoolWaiting.erase(*this);
+
             sendMemoryPool.emplace_back();
             infra::ByteRange sendBuffer = infra::Head(infra::ByteRange(sendMemoryPool.back()), requestedSendSize);
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([sendBuffer](const infra::SharedPtr<ConnectionLwIp>& self)
@@ -131,6 +147,11 @@ namespace services
             }, SharedFromThis());
 
             requestedSendSize = 0;
+        }
+        else if (sendMemoryPool.full())
+        {
+            if (!sendMemoryPoolWaiting.has_element(*this))
+                sendMemoryPoolWaiting.push_back(*this);
         }
     }
 
@@ -176,11 +197,13 @@ namespace services
                     self->Observer().DataReceived();
                 }, SharedFromThis());
             }
+            return ERR_OK;
         }
         else
+        {
             ResetOwnership();
-
-        return ERR_OK;
+            return ERR_ABRT;
+        }
     }
 
     void ConnectionLwIp::Err(err_t err)
@@ -198,8 +221,9 @@ namespace services
             if (sendBuffers.front().size() <= len)
             {
                 len -= static_cast<uint16_t>(sendBuffers.front().size());
+
+                RemoveFromPool(sendBuffers.front());
                 sendBuffers.pop_front();
-                sendMemoryPool.pop_front();
             }
             else
             {
@@ -214,6 +238,19 @@ namespace services
         return ERR_OK;
     }
 
+    void ConnectionLwIp::RemoveFromPool(infra::ConstByteRange range)
+    {
+        auto start = range.begin();
+        auto size = sendMemoryPool.size();
+        for (auto& range : sendMemoryPool)
+            if (range.data() == start)
+                sendMemoryPool.remove(range);
+        really_assert(size == sendMemoryPool.size() + 1);
+
+        if (!sendMemoryPoolWaiting.empty())
+            sendMemoryPoolWaiting.front().TryAllocateSendStream();
+    }
+
     ConnectionLwIp::StreamWriterLwIp::StreamWriterLwIp(ConnectionLwIp& connection, infra::ByteRange sendBuffer)
         : infra::ByteOutputStreamWriter(sendBuffer)
         , connection(connection)
@@ -223,8 +260,10 @@ namespace services
     {
         if (!Processed().empty() && connection.control != nullptr)
             connection.SendBuffer(Processed());
+        else if (!Processed().empty())
+            connection.RemoveFromPool(Processed());
         else
-            connection.sendMemoryPool.pop_back();
+            connection.RemoveFromPool(Remaining());
     }
 
     ConnectionLwIp::StreamReaderLwIp::StreamReaderLwIp(ConnectionLwIp& connection)
@@ -366,7 +405,7 @@ namespace services
         assert(pcb != nullptr);
         ip_set_option(pcb, SOF_REUSEADDR);
         if (versions == IPVersions::both)
-            err_t err = tcp_bind(pcb, IP_ADDR_ANY, port);
+            err_t err = tcp_bind(pcb, IP_ANY_TYPE, port);
         else if (versions == IPVersions::ipv4)
             err_t err = tcp_bind(pcb, IP4_ADDR_ANY, port);
         else
@@ -395,7 +434,7 @@ namespace services
         {
             factory.ConnectionAccepted([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
             {
-                if (connectionObserver)
+                if (connectionObserver && connection->control != nullptr)
                 {
                     connection->SetSelfOwnership(connectionObserver);
                     connection->Attach(connectionObserver);
@@ -473,7 +512,7 @@ namespace services
             control = nullptr;
             clientFactory.ConnectionEstablished([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
             {
-                if (connectionObserver)
+                if (connectionObserver && connection->control != nullptr)
                 {
                     connection->SetSelfOwnership(connectionObserver);
                     connection->Attach(connectionObserver);

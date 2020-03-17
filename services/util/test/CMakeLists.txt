@@ -5,6 +5,7 @@ ccola_component(util_test gmock_test)
         TestCyclicStore.cpp
         TestDebouncedButton.cpp
         TestDebugLed.cpp
+        TestFlashAlign.cpp
         TestFlashMultipleAccess.cpp
         TestFlashQuadSpiCypressFll.cpp
         TestFlashQuadSpiMicronN25q.cpp
@@ -15,7 +16,7 @@ ccola_component(util_test gmock_test)
         TestInverseLogicPin.cpp
         TestLowPowerSerialCommunication.cpp
         TestLowPowerSpiMaster.cpp
-        TestMemoryMappedStaticConfiguration.cpp
+        TestWritableConfiguration.cpp
         TestRepeatingButton.cpp
         TestSignalLed.cpp
         TestSpiMasterWithChipSelect.cpp
