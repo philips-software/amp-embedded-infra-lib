@@ -55,5 +55,3 @@ html_theme = 'sphinx_rtd_theme'
 
 primary_domain = 'cpp'
 highlight_language = 'cpp'
-
-plantuml = 'java -jar /home/jenkins/plantuml.jar'
