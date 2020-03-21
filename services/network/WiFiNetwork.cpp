@@ -44,6 +44,33 @@ namespace services
         return result;
     }
 
+    WiFiSecurity WiFiSecurity::Wpa3Security(infra::BoundedConstString key)
+    {
+        WiFiSecurity result;
+        result.securityMode = SecurityMode::wpa3Psk;
+        result.key = key;
+        return result;
+    }
+
+    infra::BoundedConstString WiFiSecurity::ToString() const
+    {
+        switch (securityMode)
+        {
+        case SecurityMode::open:
+            return "open";
+        case SecurityMode::wepShared:
+            return "wep";
+        case SecurityMode::wpaMixedPsk:
+            return "wpa";
+        case SecurityMode::wpa2MixedPsk:
+            return "wpa-2";
+        case SecurityMode::wpa3Psk:
+            return "wpa-3";
+        }
+
+        return "unknown";
+    }
+
     bool IPAddresses::operator==(const IPAddresses& other) const
     {
         return infra::Equals()

@@ -5,29 +5,24 @@
 #include "infra/timer/Timer.hpp"
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/Observer.hpp"
-#include "services/network/Address.hpp" 
+#include "services/network/Address.hpp"
 
 namespace services
 {
     struct WiFiSecurity
     {
-        WiFiSecurity() = default;
-        WiFiSecurity(const WiFiSecurity& other, infra::BoundedConstString key);
-
-        enum class SecurityMode
+        enum class SecurityMode : int8_t
         {
             unknown = -1,
             open = 0,
             wepShared,
             wpaMixedPsk,
             wpa2MixedPsk,
+            wpa3Psk
         };
 
-        SecurityMode securityMode = SecurityMode::open;
-
-        static const std::size_t minimumSecurityKeySize = 8;
-        static const std::size_t securityKeySize = 64;
-        infra::BoundedString::WithStorage<securityKeySize> key;
+        WiFiSecurity() = default;
+        WiFiSecurity(const WiFiSecurity& other, infra::BoundedConstString key);
 
         bool operator==(const WiFiSecurity& other) const;
         bool operator!=(const WiFiSecurity& other) const;
@@ -35,6 +30,15 @@ namespace services
         static WiFiSecurity WepSecurity(infra::BoundedConstString key);
         static WiFiSecurity WpaSecurity(infra::BoundedConstString key);
         static WiFiSecurity Wpa2Security(infra::BoundedConstString key);
+        static WiFiSecurity Wpa3Security(infra::BoundedConstString key);
+
+        infra::BoundedConstString ToString() const;
+
+        SecurityMode securityMode = SecurityMode::open;
+
+        static const std::size_t minimumSecurityKeySize = 8;
+        static const std::size_t securityKeySize = 64;
+        infra::BoundedString::WithStorage<securityKeySize> key;
     };
 
     using SsidString = infra::BoundedString::WithStorage<32>;
