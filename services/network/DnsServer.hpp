@@ -1,0 +1,53 @@
+#ifndef SERVICES_DNS_SERVER_HPP
+#define SERVICES_DNS_SERVER_HPP
+
+#include "services/network/Datagram.hpp"
+#include "services/network/Dns.hpp"
+
+namespace services
+{
+    class DnsServer
+        : public services::DatagramExchangeObserver
+    {
+    public:
+        static const uint16_t dnsPort = 53;
+
+        DnsServer(services::DatagramFactory& factory, services::IPv4Info& ipv4Info);
+
+        virtual void DataReceived(infra::StreamReaderWithRewinding& reader, services::UdpSocket from) override;
+        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+
+        std::size_t AnswerSize() const;
+
+    private:
+        class QuestionParser
+        {
+        public:
+            QuestionParser(infra::StreamReaderWithRewinding& reader);
+
+            bool RequestIncludesOneQuestion() const;
+            bool IsValid() const;
+
+            std::size_t QueryNameSize() const;
+            uint16_t QueryId() const;
+            infra::BoundedConstString Hostname() const;
+
+        private:
+            void ReconstructHostname();
+
+        private:
+            infra::StreamReaderWithRewinding& reader;
+            infra::DataInputStream::WithErrorPolicy stream{ reader, infra::noFail };
+            DnsRecordHeader header{};
+            infra::BoundedString::WithStorage<253> reconstructedHostname;
+            DnsQuestionFooter footer{};
+        };
+
+    private:
+        infra::SharedPtr<services::DatagramExchange> datagramExchange;
+        services::IPv4Info& ipv4Info;
+        infra::Optional<QuestionParser> question;
+    };
+}
+
+#endif

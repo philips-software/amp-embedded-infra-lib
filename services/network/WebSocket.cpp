@@ -1,17 +1,12 @@
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/Endian.hpp"
+#include "infra/util/EnumCast.hpp"
 #include "services/network/WebSocket.hpp"
 
 namespace
 {
     const uint8_t extendedPayloadLength16 = 126;
     const uint8_t extendedPayloadLength64 = 127;
-}
-
-template<typename T>
-constexpr auto enum_cast(T t) -> typename std::underlying_type<T>::type
-{
-    return static_cast<typename std::underlying_type<T>::type>(t);
 }
 
 namespace services
@@ -21,11 +16,11 @@ namespace services
         uint8_t first(0);
         uint8_t second(0);
         stream >> first >> second;
-        finalFrame = (first & enum_cast(WebSocketMask::finMask)) != 0;
-        rsv = (first & enum_cast(WebSocketMask::rsvMask)) >> 4;
-        opCode = static_cast<WebSocketOpCode>(first & enum_cast(WebSocketMask::opCodeMask));
-        masked = (second & enum_cast(WebSocketMask::payloadMask)) != 0;
-        payloadLength = second & enum_cast(WebSocketMask::payloadLengthMask);
+        finalFrame = (first & infra::enum_cast(WebSocketMask::finMask)) != 0;
+        rsv = (first & infra::enum_cast(WebSocketMask::rsvMask)) >> 4;
+        opCode = static_cast<WebSocketOpCode>(first & infra::enum_cast(WebSocketMask::opCodeMask));
+        masked = (second & infra::enum_cast(WebSocketMask::payloadMask)) != 0;
+        payloadLength = second & infra::enum_cast(WebSocketMask::payloadLengthMask);
 
         if (payloadLength == extendedPayloadLength16)
         {

@@ -14,8 +14,12 @@ ccola_component(network static_library)
         ConnectionSerial.cpp
         ConnectionSerial.hpp
         Datagram.hpp
+        Dns.cpp
+        Dns.hpp
         DnsResolver.cpp
         DnsResolver.hpp
+        DnsServer.cpp
+        DnsServer.hpp
         ExclusiveConnection.cpp
         ExclusiveConnection.hpp
         Http.cpp
