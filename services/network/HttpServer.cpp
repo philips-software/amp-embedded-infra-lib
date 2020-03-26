@@ -243,7 +243,8 @@ namespace services
     {
         RequestIsNowInProgress();
 
-        send100Response |= Expect100(request);
+        send100Response |= infra::CaseInsensitiveCompare(request.Header("Expect"), "100-continue");
+        closeWhenIdle |= infra::CaseInsensitiveCompare(request.Header("Connection"), "close");
 
         ServePage(request);
     }
@@ -273,7 +274,9 @@ namespace services
 
     void HttpServerConnectionObserver::PrepareForNextRequest()
     {
-        RequestSendStream();
+        if (!closeWhenIdle)
+            RequestSendStream();
+
         if (!sendingResponse)
         {
             requestInProgress = false;
@@ -281,11 +284,6 @@ namespace services
             buffer.clear();
             SetIdle();
         }
-    }
-
-    bool HttpServerConnectionObserver::Expect100(HttpRequestParser& request) const
-    {
-        return request.Header("Expect") == "100-continue";
     }
 
     void HttpServerConnectionObserver::SendBuffer()
