@@ -22,6 +22,7 @@ ccola_component(network_test gmock_test)
         TestWebSocketClientConnectionObserver.cpp
         TestWebSocketIntegration.cpp
         TestWebSocketServerConnectionObserver.cpp
+        TestWiFiNetwork.cpp
     )
 
     ccola_dependencies(

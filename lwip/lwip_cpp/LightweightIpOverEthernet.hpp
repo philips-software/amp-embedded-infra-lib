@@ -48,7 +48,7 @@ namespace services
         {
             infra::BoundedString::WithStorage<32> hostName;
             std::array<char, 2> ifName = { { 'r', 'p' } };
-            Ipv4Config ipConfig = { true };
+            Ipv4Config ipConfig = { true, {} };
         };
 
         LightweightIpOverEthernetFactory(hal::MacAddress macAddress, const Config& config);
