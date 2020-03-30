@@ -135,17 +135,6 @@ TEST_F(HttpServerTest, request_results_in_get)
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(HttpServerTest, connection_close_header_results_in_closed_connection)
-{
-    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
-
-    EXPECT_CALL(connection, CloseAndDestroyMock());
-    ExpectPageServerRequest(services::HttpVerb::get, "GET /path HTTP/1.1\r\nConnection: Close\r\n\r\n");
-    SendResponse("", "", "");
-
-    ExecuteAllActions();
-}
-
 TEST_F(HttpServerTest, double_request_results_in_closed_connection)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());

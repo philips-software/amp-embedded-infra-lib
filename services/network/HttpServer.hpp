@@ -138,6 +138,7 @@ namespace services
         void ServePage(HttpRequestParser& request);
         void RequestSendStream();
         void PrepareForNextRequest();
+        bool Expect100(HttpRequestParser& request) const;
         void SendBuffer();
         void CheckIdleClose();
 
