@@ -12,11 +12,15 @@ namespace services
     public:
         static const uint16_t dnsPort = 53;
 
-        DnsServer(services::DatagramFactory& factory, services::IPv4Info& ipv4Info);
+        using DnsEntry = std::pair<infra::BoundedConstString, services::IPAddress>;
+        using DnsEntries = infra::MemoryRange<DnsEntry>;
+
+        DnsServer(services::DatagramFactory& factory, DnsEntries dnsEntries);
 
         virtual void DataReceived(infra::StreamReaderWithRewinding& reader, services::UdpSocket from) override;
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
+        bool FindAnswer(infra::BoundedConstString hostname);
         std::size_t AnswerSize() const;
 
     private:
@@ -45,8 +49,9 @@ namespace services
 
     private:
         infra::SharedPtr<services::DatagramExchange> datagramExchange;
-        services::IPv4Info& ipv4Info;
+        DnsEntries dnsEntries;
         infra::Optional<QuestionParser> question;
+        infra::Optional<DnsEntry> answer;
     };
 }
 

@@ -6,13 +6,24 @@ namespace
     // Since we repeat the question in the answer we can use a pointer to the name
     // in the answer record. The name starts after the DnsRecordHeader.
     static const std::array<uint8_t, 2> rnameCompression{ 0xC0, sizeof(services::DnsRecordHeader) };
+
+    infra::BoundedConstString StripLeadingWww(infra::BoundedConstString hostname)
+    {
+        static const infra::BoundedConstString www = "www.";
+        auto wwwPos = hostname.find(www);
+
+        if (wwwPos != infra::BoundedConstString::npos && wwwPos == 0)
+            return hostname.substr(www.size(), hostname.size() - www.size());
+
+        return hostname;
+    }
 }
 
 namespace services
 {
-    DnsServer::DnsServer(services::DatagramFactory& factory, services::IPv4Info& ipv4Info)
+    DnsServer::DnsServer(services::DatagramFactory& factory, DnsEntries dnsEntries)
         : datagramExchange(factory.Listen(*this, dnsPort, IPVersions::ipv4))
-        , ipv4Info(ipv4Info)
+        , dnsEntries(dnsEntries)
     {}
 
     void DnsServer::DataReceived(infra::StreamReaderWithRewinding& reader, services::UdpSocket from)
@@ -21,7 +32,7 @@ namespace services
             return;
 
         question.Emplace(reader);
-        if (question->IsValid() && question->RequestIncludesOneQuestion())
+        if (question->IsValid() && question->RequestIncludesOneQuestion() && FindAnswer(question->Hostname()))
             datagramExchange->RequestSendStream(AnswerSize(), from);
         else
             question = infra::none;
@@ -43,9 +54,24 @@ namespace services
         stream << questionFooter;
         stream << rnameCompression;
         stream << payload;
-        stream << ipv4Info.GetIPv4Address();
+        stream << answer->second.Get<services::IPv4Address>();
 
         question = infra::none;
+        answer = infra::none;
+    }
+
+    bool DnsServer::FindAnswer(infra::BoundedConstString hostname)
+    {
+        auto hostnameWithoutWww = StripLeadingWww(hostname);
+
+        for (auto& entry : dnsEntries)
+            if (infra::CaseInsensitiveCompare(entry.first, hostnameWithoutWww))
+            {
+                answer.Emplace(entry);
+                return true;
+            }
+
+        return false;
     }
 
     std::size_t DnsServer::AnswerSize() const
