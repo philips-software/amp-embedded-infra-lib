@@ -10,7 +10,7 @@ namespace services
         : public ConfigurationStoreInterface
     {
     public:
-        MOCK_METHOD0(Write, void());
+        MOCK_METHOD0(Write, uint32_t());
     };
 }
 
