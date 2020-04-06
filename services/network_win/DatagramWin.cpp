@@ -280,10 +280,7 @@ namespace services
     void DatagramExchangeMultiple::MultipleWriter::Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy)
     {
         for (auto& writer : writers)
-        {
-            ++const_cast<uint8_t&>(range[0]);
             writer->Insert(range, errorPolicy);
-        }
     }
 
     std::size_t DatagramExchangeMultiple::MultipleWriter::Available() const
