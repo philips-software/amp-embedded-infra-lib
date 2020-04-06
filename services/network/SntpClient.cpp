@@ -1,4 +1,5 @@
 #include "services/network/SntpClient.hpp"
+#include "infra/util/EnumCast.hpp"
 
 namespace
 {
@@ -6,12 +7,6 @@ namespace
     const uint8_t ntpRequestVersion = 4;
     const infra::Duration ntpEpochOffset{ std::chrono::seconds((70 * 365 + 17) * 86400u) };
     const uint32_t ntpFractionFactor = 4295; // 2^32 / 10^6
-}
-
-template<typename T>
-constexpr auto enum_cast(T t) -> typename std::underlying_type<T>::type
-{
-    return static_cast<typename std::underlying_type<T>::type>(t);
 }
 
 namespace services
@@ -144,9 +139,9 @@ namespace services
 
         really_assert(versionNumber == 3 || versionNumber == 4);
 
-        result |= enum_cast(leapIndicator) << 6;
+        result |= infra::enum_cast(leapIndicator) << 6;
         result |= versionNumber << 3;
-        result |= enum_cast(mode);
+        result |= infra::enum_cast(mode);
 
         return result;
     }

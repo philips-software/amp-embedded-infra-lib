@@ -78,6 +78,7 @@ TEST_F(ConnectionMbedTlsTest, create_connection)
     {
         createdObserver(observer1.Emplace());
     }));
+    EXPECT_CALL(clientObserverFactory, Address());
     EXPECT_CALL(clientObserverFactory, ConnectionEstablishedMock(testing::_))
         .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver)
     {
@@ -105,6 +106,7 @@ TEST_F(ConnectionMbedTlsTest, send_and_receive_data)
     {
         createdObserver(observer1.Emplace());
     }));
+    EXPECT_CALL(clientObserverFactory, Address());
     EXPECT_CALL(clientObserverFactory, ConnectionEstablishedMock(testing::_))
         .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver)
     {
@@ -141,6 +143,7 @@ TEST_F(ConnectionMbedTlsTest, reopen_connection)
         {
             createdObserver(observer1.Emplace());
         }));
+        EXPECT_CALL(clientObserverFactory, Address());
         EXPECT_CALL(clientObserverFactory, ConnectionEstablishedMock(testing::_))
             .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver)
         {
@@ -162,6 +165,7 @@ TEST_F(ConnectionMbedTlsTest, reopen_connection)
         {
             createdObserver(observer1.Emplace());
         }));
+        EXPECT_CALL(clientObserverFactory, Address());
         EXPECT_CALL(clientObserverFactory, ConnectionEstablishedMock(testing::_))
             .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver)
         {
