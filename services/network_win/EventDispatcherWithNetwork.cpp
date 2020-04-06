@@ -103,6 +103,20 @@ namespace services
         return result;
     }
 
+    infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Connect(DatagramExchangeObserver& observer, IPAddress localAddress, UdpSocket remote)
+    {
+        auto result = infra::MakeSharedOnHeap<DatagramWin>(*this, localAddress, remote, observer);
+        RegisterDatagram(result);
+        return result;
+    }
+
+    infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Connect(DatagramExchangeObserver& observer, UdpSocket local, UdpSocket remote)
+    {
+        auto result = infra::MakeSharedOnHeap<DatagramWin>(*this, local, remote, observer);
+        RegisterDatagram(result);
+        return result;
+    }
+
     void EventDispatcherWithNetwork::JoinMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv4Address multicastAddress)
     {
         auto datagramIterator = std::find(datagrams.begin(), datagrams.end(), datagramExchange);

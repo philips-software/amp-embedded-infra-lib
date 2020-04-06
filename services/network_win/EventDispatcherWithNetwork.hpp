@@ -10,7 +10,7 @@ namespace services
     class EventDispatcherWithNetwork
         : public infra::EventDispatcherWithWeakPtr::WithSize<50>
         , public ConnectionFactory
-        , public DatagramFactory
+        , public DatagramFactoryWithLocalIpBinding
         , public Multicast
     {
     public:
@@ -29,11 +29,13 @@ namespace services
         virtual void Connect(ClientConnectionObserverFactory& factory) override;
         virtual void CancelConnect(ClientConnectionObserverFactory& factory) override;
 
-        // Implementation of DatagramFactory
+        // Implementation of DatagramFactoryWithLocalIpBinding
         virtual infra::SharedPtr<DatagramExchange> Listen(DatagramExchangeObserver& observer, uint16_t port, IPVersions versions = IPVersions::both) override;
         virtual infra::SharedPtr<DatagramExchange> Listen(DatagramExchangeObserver& observer, IPVersions versions = IPVersions::both) override;
         virtual infra::SharedPtr<DatagramExchange> Connect(DatagramExchangeObserver& observer, UdpSocket remote) override;
         virtual infra::SharedPtr<DatagramExchange> Connect(DatagramExchangeObserver& observer, uint16_t localPort, UdpSocket remote) override;
+        virtual infra::SharedPtr<DatagramExchange> Connect(DatagramExchangeObserver& observer, IPAddress localAddress, UdpSocket remote) override;
+        virtual infra::SharedPtr<DatagramExchange> Connect(DatagramExchangeObserver& observer, UdpSocket local, UdpSocket remote) override;
 
         // Implementation of Multicast
         virtual void JoinMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv4Address multicastAddress) override;
