@@ -1,85 +1,8 @@
 #include "services/network/HttpClientImpl.hpp"
 #include "infra/stream/CountingOutputStream.hpp"
-#include "infra/stream/StringInputStream.hpp"
-#include "infra/stream/StringOutputStream.hpp"
-#include "infra/util/Tokenizer.hpp"
 
 namespace services
 {
-    namespace
-    {
-        // Naming is according to rfc7230
-        const infra::BoundedConstString httpVersion = "HTTP/1.1";
-        const infra::BoundedConstString sp = " ";
-        const infra::BoundedConstString crlf = "\r\n";
-    }
-
-    HttpRequestFormatter::HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, const HttpHeaders headers)
-        : HttpRequestFormatter(verb, hostname, requestTarget, infra::BoundedConstString(), headers)
-    {}
-
-    HttpRequestFormatter::HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers)
-        : verb(verb)
-        , requestTarget(requestTarget.empty() ? "/" : requestTarget)
-        , content(content)
-        , hostHeader("Host", hostname)
-        , headers(headers)
-    {
-        if (!content.empty())
-            AddContentLength(content.size());
-    }
-
-    HttpRequestFormatter::HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, std::size_t contentSize, const HttpHeaders headers)
-        : verb(verb)
-        , requestTarget(requestTarget.empty() ? "/" : requestTarget)
-        , hostHeader("Host", hostname)
-        , headers(headers)
-    {
-        AddContentLength(contentSize);
-    }
-
-    std::size_t HttpRequestFormatter::Size() const
-    {
-        return HttpVerbToString(verb).size() + requestTarget.size() + httpVersion.size() + HeadersSize() + (2 * crlf.size()) + (2 * sp.size()) + content.size();
-    }
-
-    void HttpRequestFormatter::Write(infra::TextOutputStream stream) const
-    {
-        stream << verb << sp << requestTarget << sp << httpVersion << crlf;
-
-        for (auto&& header : headers)
-            stream << header << crlf;
-
-        stream << hostHeader << crlf;
-
-        if (contentLengthHeader)
-            stream << *contentLengthHeader << crlf;
-
-        stream << crlf;
-        stream << content;
-    }
-
-    void HttpRequestFormatter::AddContentLength(std::size_t size)
-    {
-        infra::StringOutputStream contentLengthStream(contentLength);
-        contentLengthStream << static_cast<uint64_t>(size);
-        contentLengthHeader.Emplace("Content-Length", contentLength);
-    }
-
-    std::size_t HttpRequestFormatter::HeadersSize() const
-    {
-        std::size_t headerSize = 0;
-        for (auto&& header : headers)
-            headerSize += (header.Size() + crlf.size());
-
-        if (contentLengthHeader)
-            headerSize += contentLengthHeader->Size() + crlf.size();
-
-        headerSize += hostHeader.Size() + crlf.size();
-
-        return headerSize;
-    }
-
     HttpClientImpl::HttpClientImpl(infra::BoundedConstString hostname)
         : hostname(hostname)
         , bodyReaderAccess(infra::emptyFunction)
@@ -164,7 +87,7 @@ namespace services
 
     void HttpClientImpl::Attached()
     {
-        infra::WeakPtr<services::HttpClientImpl> self = infra::StaticPointerCast<HttpClientImpl>(services::ConnectionObserver::Subject().ObserverPtr());
+        infra::WeakPtr<HttpClientImpl> self = infra::StaticPointerCast<HttpClientImpl>(services::ConnectionObserver::Subject().ObserverPtr());
         bodyReaderAccess.SetAction([self]()
         {
             if (auto sharedSelf = self.lock())
@@ -201,9 +124,14 @@ namespace services
         Observer().StatusAvailable(code);
     }
 
+    void HttpClientImpl::HeaderAvailable(HttpHeader header)
+    {
+        Observer().HeaderAvailable(header);
+    }
+
     void HttpClientImpl::ExpectResponse()
     {
-        response.Emplace(*this);
+        response.Emplace(static_cast<HttpHeaderParserObserver&>(*this));
     }
 
     void HttpClientImpl::HandleData()
@@ -300,130 +228,6 @@ namespace services
     void HttpClientImpl::AbortAndDestroy()
     {
         ConnectionObserver::Subject().AbortAndDestroy();
-    }
-
-    HttpClientImpl::HttpResponseParser::HttpResponseParser(HttpClientImpl& httpClient)
-        : httpClient(httpClient)
-    {}
-
-    void HttpClientImpl::HttpResponseParser::DataReceived(infra::StreamReaderWithRewinding& reader)
-    {
-        if (!statusParsed)
-            ParseStatusLine(reader);
-
-        if (!Error())
-            ParseHeaders(reader);
-    }
-
-    bool HttpClientImpl::HttpResponseParser::Done() const
-    {
-        return done;
-    }
-
-    bool HttpClientImpl::HttpResponseParser::Error() const
-    {
-        return error;
-    }
-
-    uint32_t HttpClientImpl::HttpResponseParser::ContentLength() const
-    {
-        return *contentLength;
-    }
-
-    void HttpClientImpl::HttpResponseParser::ParseStatusLine(infra::StreamReaderWithRewinding& reader)
-    {
-        infra::TextInputStream::WithErrorPolicy stream(reader);
-        infra::BoundedString::WithStorage<512> headerBuffer;
-        headerBuffer.resize(std::min(headerBuffer.max_size(), stream.Available()));
-        stream >> headerBuffer;
-
-        auto crlfPos = headerBuffer.find(crlf);
-        if (crlfPos != infra::BoundedString::npos)
-        {
-            auto statusLine = headerBuffer.substr(0, crlfPos);
-            reader.Rewind(statusLine.size() + crlf.size());
-
-            infra::Tokenizer tokenizer(statusLine, ' ');
-
-            auto versionValid = HttpVersionValid(tokenizer.Token(0));
-            auto optionalStatusCode = HttpStatusCodeFromString(tokenizer.Token(1));
-            if (versionValid && optionalStatusCode)
-            {
-                statusCode = *optionalStatusCode;
-                httpClient.StatusAvailable(statusCode, statusLine);
-            }
-            else
-                SetError();
-
-            statusParsed = true;
-        }
-    }
-
-    bool HttpClientImpl::HttpResponseParser::HttpVersionValid(infra::BoundedConstString httpVersion)
-    {
-        static const std::array<infra::BoundedConstString, 2> validVersions{ "HTTP/1.0",  "HTTP/1.1" };
-        return std::any_of(validVersions.begin(), validVersions.end(), [&](infra::BoundedConstString validVersion) { return httpVersion == validVersion; });
-    }
-
-    void HttpClientImpl::HttpResponseParser::ParseHeaders(infra::StreamReaderWithRewinding& reader)
-    {
-        infra::TextInputStream::WithErrorPolicy stream(reader);
-        infra::BoundedString::WithStorage<512> headerBuffer;
-        while (!done && !stream.Empty())
-        {
-            auto start = reader.ConstructSaveMarker();
-
-            headerBuffer.resize(std::min(headerBuffer.max_size(), stream.Available()));
-            stream >> headerBuffer;
-
-            auto crlfPos = headerBuffer.find(crlf);
-            if (crlfPos != infra::BoundedString::npos)
-            {
-                auto headerLine = headerBuffer.substr(0, crlfPos);
-                reader.Rewind(start + headerLine.size() + crlf.size());
-
-                if (headerLine.empty() && headerBuffer.size() > crlfPos)
-                {
-                    if (statusCode == HttpStatusCode::Continue
-                        || statusCode == HttpStatusCode::SwitchingProtocols
-                        || statusCode == HttpStatusCode::NoContent
-                        || statusCode == HttpStatusCode::NotModified)
-                        contentLength = 0;
-                    error = contentLength == infra::none;
-                    done = true;
-                    return;
-                }
-
-                auto header = HeaderFromString(headerLine);
-                if (infra::CaseInsensitiveCompare(header.Field(), "Content-Length"))
-                {
-                    contentLength = 0;
-                    infra::StringInputStream contentLengthStream(header.Value());
-                    contentLengthStream >> *contentLength;
-                }
-                else
-                    httpClient.Observer().HeaderAvailable(header);
-            }
-            else if (headerBuffer.full())
-                SetError();
-            else
-            {
-                reader.Rewind(start);
-                break;
-            }
-        }
-    }
-
-    HttpHeader HttpClientImpl::HttpResponseParser::HeaderFromString(infra::BoundedConstString header)
-    {
-        infra::Tokenizer tokenizer(header, ':');
-        return{ tokenizer.Token(0), infra::TrimLeft(tokenizer.TokenAndRest(1)) };
-    }
-
-    void HttpClientImpl::HttpResponseParser::SetError()
-    {
-        done = true;
-        error = true;
     }
 
     HttpClientImpl::BodyReader::BodyReader(const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader, uint32_t contentLength)

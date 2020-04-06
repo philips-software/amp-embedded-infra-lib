@@ -1,6 +1,7 @@
 #ifndef SERVICES_NETWORK_HTTP_HPP
 #define SERVICES_NETWORK_HTTP_HPP
 
+#include "infra/stream/InputStream.hpp"
 #include "infra/stream/OutputStream.hpp"
 #include "infra/util/BoundedString.hpp"
 
@@ -82,6 +83,71 @@ namespace services
 
     using HttpHeaders = infra::MemoryRange<const HttpHeader>;
     extern const HttpHeaders noHeaders;
+
+    class HttpRequestFormatter
+    {
+    public:
+        HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, const HttpHeaders headers);
+        HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers);
+        HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, std::size_t contentSize, const HttpHeaders headers);
+
+        std::size_t Size() const;
+        void Write(infra::TextOutputStream stream) const;
+
+    private:
+        void AddContentLength(std::size_t size);
+        std::size_t HeadersSize() const;
+
+    private:
+        HttpVerb verb;
+        infra::BoundedConstString requestTarget;
+        infra::BoundedConstString content;
+        infra::BoundedString::WithStorage<8> contentLength;
+        infra::Optional<HttpHeader> contentLengthHeader;
+        HttpHeader hostHeader;
+        const HttpHeaders headers;
+    };
+
+    class HttpHeaderParserObserver
+    {
+    protected:
+        HttpHeaderParserObserver() = default;
+        HttpHeaderParserObserver(const HttpHeaderParserObserver& other) = delete;
+        HttpHeaderParserObserver& operator=(const HttpHeaderParserObserver& other) = delete;
+        ~HttpHeaderParserObserver() = default;
+
+    public:
+        virtual void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine) = 0;
+        virtual void HeaderAvailable(HttpHeader header) = 0;
+    };
+
+    class HttpHeaderParser
+    {
+    public:
+        HttpHeaderParser(HttpHeaderParserObserver& observer);
+
+        void DataReceived(infra::StreamReaderWithRewinding& reader);
+        bool Done() const;
+        bool Error() const;
+        uint32_t ContentLength() const;
+
+    private:
+        void ParseStatusLine(infra::StreamReaderWithRewinding& reader);
+        bool HttpVersionValid(infra::BoundedConstString httpVersion);
+
+        void ParseHeaders(infra::StreamReaderWithRewinding& reader);
+        HttpHeader HeaderFromString(infra::BoundedConstString header);
+
+        void SetError();
+
+    private:
+        HttpHeaderParserObserver& observer;
+        bool done = false;
+        bool error = false;
+        bool statusParsed = false;
+        HttpStatusCode statusCode;
+        infra::Optional<uint32_t> contentLength;
+    };
 
     infra::BoundedConstString SchemeFromUrl(infra::BoundedConstString url);
     infra::BoundedConstString HostFromUrl(infra::BoundedConstString url);

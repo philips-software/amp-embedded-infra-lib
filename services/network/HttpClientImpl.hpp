@@ -11,33 +11,10 @@
 
 namespace services
 {
-    class HttpRequestFormatter
-    {
-    public:
-        HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, const HttpHeaders headers);
-        HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers);
-        HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, std::size_t contentSize, const HttpHeaders headers);
-
-        std::size_t Size() const;
-        void Write(infra::TextOutputStream stream) const;
-
-    private:
-        void AddContentLength(std::size_t size);
-        std::size_t HeadersSize() const;
-
-    private:
-        HttpVerb verb;
-        infra::BoundedConstString requestTarget;
-        infra::BoundedConstString content;
-        infra::BoundedString::WithStorage<8> contentLength;
-        infra::Optional<HttpHeader> contentLengthHeader;
-        HttpHeader hostHeader;
-        const HttpHeaders headers;
-    };
-
     class HttpClientImpl
         : public ConnectionObserver
         , public HttpClient
+        , protected HttpHeaderParserObserver
     {
     public:
         HttpClientImpl(infra::BoundedConstString hostname);
@@ -66,7 +43,9 @@ namespace services
         virtual void Detaching() override;
 
     protected:
-        virtual void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine);
+        // Implementation of HttpHeaderParserObserver
+        virtual void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine) override;
+        virtual void HeaderAvailable(HttpHeader header) override;
 
     private:
         void ExpectResponse();
@@ -82,34 +61,6 @@ namespace services
         void AbortAndDestroy();
 
     private:
-        class HttpResponseParser
-        {
-        public:
-            HttpResponseParser(HttpClientImpl& httpClient);
-
-            void DataReceived(infra::StreamReaderWithRewinding& reader);
-            bool Done() const;
-            bool Error() const;
-            uint32_t ContentLength() const;
-
-        private:
-            void ParseStatusLine(infra::StreamReaderWithRewinding& reader);
-            bool HttpVersionValid(infra::BoundedConstString httpVersion);
-
-            void ParseHeaders(infra::StreamReaderWithRewinding& reader);
-            HttpHeader HeaderFromString(infra::BoundedConstString header);
-
-            void SetError();
-
-        private:
-            HttpClientImpl& httpClient;
-            bool done = false;
-            bool error = false;
-            bool statusParsed = false;
-            HttpStatusCode statusCode;
-            infra::Optional<uint32_t> contentLength;
-        };
-
         class BodyReader
         {
         public:
@@ -197,7 +148,7 @@ namespace services
 
     protected:
         infra::Optional<HttpRequestFormatter> request;
-        infra::Optional<HttpResponseParser> response;
+        infra::Optional<HttpHeaderParser> response;
 
     private:
         infra::BoundedConstString hostname;
