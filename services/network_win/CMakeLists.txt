@@ -17,6 +17,7 @@ ccola_component(network_win win: static_library other: skip)
         
     ccola_external_libraries(
         ws2_32.lib
+        iphlpapi.lib
     )
 
 ccola_end_component()
