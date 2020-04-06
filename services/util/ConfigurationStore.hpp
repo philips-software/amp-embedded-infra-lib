@@ -7,6 +7,7 @@
 #include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/syntax/ProtoParser.hpp"
 #include "infra/util/AutoResetFunction.hpp"
+#include "infra/util/Observer.hpp"
 #include "infra/util/WithStorage.hpp"
 
 namespace services
@@ -83,7 +84,19 @@ namespace services
         infra::ConstByteRange data;
     };
 
+    class ConfigurationStoreInterface;
+
+    class ConfigurationStoreObserver
+        : public infra::Observer<ConfigurationStoreObserver, ConfigurationStoreInterface>
+    {
+    public:
+        using infra::Observer<ConfigurationStoreObserver, ConfigurationStoreInterface>::Observer;
+
+        virtual void OperationDone(uint32_t id) = 0;
+    };
+
     class ConfigurationStoreInterface
+        : public infra::Subject<ConfigurationStoreObserver>
     {
     protected:
         ConfigurationStoreInterface() = default;
@@ -92,7 +105,7 @@ namespace services
         ~ConfigurationStoreInterface() = default;
 
     public:
-        virtual void Write() = 0;
+        virtual uint32_t Write() = 0;
     };
 
     template<class T>
@@ -108,7 +121,7 @@ namespace services
         T* operator->();
         const T* operator->() const;
 
-        void Write();
+        uint32_t Write();
 
         template<class U>
             ConfigurationStoreAccess<U> Configuration(U& member) const;
@@ -129,9 +142,8 @@ namespace services
 
     public:
         void Recover(const infra::Function<void(bool success)>& onRecovered);
-        void Write(infra::Function<void()> onDone);
-        virtual void Write() override;
-        void Erase(infra::Function<void()> onDone);
+        virtual uint32_t Write() override;
+        uint32_t Erase();
 
         virtual void Serialize(ConfigurationBlob& blob, const infra::Function<void()>& onDone) = 0;
         virtual void Deserialize(ConfigurationBlob& blob) = 0;
@@ -161,9 +173,9 @@ namespace services
     private:
         ConfigurationBlob* activeBlob;
         ConfigurationBlob* inactiveBlob;
-        infra::AutoResetFunction<void()> onWriteDone;
         infra::AutoResetFunction<void(bool success)> onRecovered;
         uint32_t lockCount = 0;
+        uint32_t operationId = 0;
         bool writingBlob = false;
         bool writeRequested = false;
     };
@@ -174,8 +186,9 @@ namespace services
     public:
         virtual const T& Configuration() const = 0;
         virtual T& Configuration() = 0;
+        virtual ConfigurationStoreInterface& Interface() = 0;
 
-        virtual void Write(infra::Function<void()> onDone = infra::Function<void()>()) = 0;
+        virtual uint32_t Write() = 0;
         virtual ConfigurationStoreBase::LockGuard Lock() = 0;
     };
 
@@ -191,7 +204,8 @@ namespace services
 
         virtual const T& Configuration() const override;
         virtual T& Configuration() override;
-        virtual void Write(infra::Function<void()> onDone = infra::Function<void()>()) override;
+        virtual ConfigurationStoreInterface& Interface() override;
+        virtual uint32_t Write() override;
         virtual ConfigurationStoreBase::LockGuard Lock() override;
 
         virtual void Serialize(ConfigurationBlob& blob, const infra::Function<void()>& onDone) override;
@@ -215,22 +229,26 @@ namespace services
 
     class FactoryDefaultConfigurationStoreBase
         : public ConfigurationStoreInterface
+        , private ConfigurationStoreObserver
     {
     public:
         FactoryDefaultConfigurationStoreBase(ConfigurationStoreBase& configurationStore, ConfigurationBlob& factoryDefaultBlob);
 
         void Recover(const infra::Function<void()>& onLoadFactoryDefault, const infra::Function<void(bool isFactoryDefault)>& onRecovered);
-        void Write(infra::Function<void()> onDone);
-        virtual void Write() override;
+        virtual uint32_t Write() override;
 
         template<class T>
             ConfigurationStoreAccess<T> Access(T& configuration);
+
+    private:
+        virtual void OperationDone(uint32_t id) override;
 
     private:
         ConfigurationStoreBase& configurationStore;
         ConfigurationBlob& factoryDefaultBlob;
         infra::AutoResetFunction<void()> onLoadFactoryDefault;
         infra::AutoResetFunction<void(bool isFactoryDefault)> onRecovered;
+        uint32_t eraseOperationId = 0;
     };
 
     template<class T>
@@ -246,7 +264,8 @@ namespace services
 
         virtual const T& Configuration() const override;
         virtual T& Configuration() override;
-        virtual void Write(infra::Function<void()> onDone = infra::Function<void()>()) override;
+        virtual ConfigurationStoreInterface& Interface() override;
+        virtual uint32_t Write() override;
         virtual ConfigurationStoreBase::LockGuard Lock() override;
 
     private:
@@ -301,9 +320,15 @@ namespace services
     }
 
     template<class T>
-    void ConfigurationStoreImpl<T>::Write(infra::Function<void()> onDone)
+    ConfigurationStoreInterface& ConfigurationStoreImpl<T>::Interface()
     {
-        ConfigurationStoreBase::Write(onDone);
+        return *this;
+    }
+
+    template<class T>
+    uint32_t ConfigurationStoreImpl<T>::Write()
+    {
+        return ConfigurationStoreBase::Write();
     }
 
     template<class T>
@@ -382,9 +407,9 @@ namespace services
     }
 
     template<class T>
-    void ConfigurationStoreAccess<T>::Write()
+    uint32_t ConfigurationStoreAccess<T>::Write()
     {
-        configurationStore.Write();
+        return configurationStore.Write();
     }
 
     template<class T>
@@ -425,9 +450,15 @@ namespace services
     }
 
     template<class T>
-    void FactoryDefaultConfigurationStore<T>::Write(infra::Function<void()> onDone)
+    ConfigurationStoreInterface& FactoryDefaultConfigurationStore<T>::Interface()
     {
-        FactoryDefaultConfigurationStoreBase::Write(onDone);
+        return configurationStore;  // Identifiers returned by Write() are maintained by configurationStore, so that is the object that observers must attach to
+    }
+
+    template<class T>
+    uint32_t FactoryDefaultConfigurationStore<T>::Write()
+    {
+        return FactoryDefaultConfigurationStoreBase::Write();
     }
 
     template<class T>

@@ -119,29 +119,30 @@ namespace services
         , inactiveBlob(&blob2)
     {}
 
-    void ConfigurationStoreBase::Write(infra::Function<void()> onDone)
+    uint32_t ConfigurationStoreBase::Write()
     {
-        if (onDone)
-            onWriteDone = onDone;
+        uint32_t thisId = operationId;
 
         writeRequested = true;
         if (!writingBlob && lockCount == 0)
         {
+            ++operationId;
             writeRequested = false;
             writingBlob = true;
-            Serialize(*activeBlob, [this]() { inactiveBlob->Erase([this]() { BlobWriteDone(); }); });
+            Serialize(*activeBlob, [this, thisId]() { inactiveBlob->Erase([this, thisId]() { BlobWriteDone(); NotifyObservers([thisId](ConfigurationStoreObserver& observer) { observer.OperationDone(thisId); }); }); });
         }
+
+        return thisId;
     }
 
-    void ConfigurationStoreBase::Write()
+    uint32_t ConfigurationStoreBase::Erase()
     {
-        Write(infra::Function<void()>());
-    }
+        uint32_t thisId = operationId;
+        ++operationId;
 
-    void ConfigurationStoreBase::Erase(infra::Function<void()> onDone)
-    {
-        onWriteDone = onDone;
-        inactiveBlob->Erase([this]() { activeBlob->Erase([this]() { onWriteDone(); }); });
+        inactiveBlob->Erase([this, thisId]() { activeBlob->Erase([this, thisId]() { NotifyObservers([thisId](ConfigurationStoreObserver& observer) { observer.OperationDone(thisId); }); }); });
+
+        return thisId;
     }
 
     ConfigurationStoreBase::LockGuard ConfigurationStoreBase::Lock()
@@ -186,8 +187,6 @@ namespace services
         writingBlob = false;
         if (writeRequested)
             Write();
-        else if (onWriteDone)
-            onWriteDone();
     }
 
     void ConfigurationStoreBase::Unlocked()
@@ -255,7 +254,10 @@ namespace services
                             if (success)
                                 this->onRecovered(false);
                             else
-                                configurationStore.Erase([this]() { this->onRecovered(true); });
+                            {
+                                Attach(configurationStore);
+                                eraseOperationId = configurationStore.Erase();
+                            }
                         });
                     });
                 });
@@ -274,13 +276,17 @@ namespace services
         });
     }
 
-    void FactoryDefaultConfigurationStoreBase::Write(infra::Function<void()> onDone)
+    uint32_t FactoryDefaultConfigurationStoreBase::Write()
     {
-        configurationStore.Write(onDone);
+        return configurationStore.Write();
     }
 
-    void FactoryDefaultConfigurationStoreBase::Write()
+    void FactoryDefaultConfigurationStoreBase::OperationDone(uint32_t id)
     {
-        Write(infra::Function<void()>());
+        if (onRecovered != nullptr && eraseOperationId <= id)
+        {
+            onRecovered(true);
+            Detach();
+        }
     }
 }
