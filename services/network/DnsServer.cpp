@@ -23,7 +23,7 @@ namespace services
 {
     DnsServer::DnsServer(services::DatagramFactory& factory, DnsEntries dnsEntries)
         : datagramExchange(factory.Listen(*this, dnsPort, IPVersions::ipv4))
-        , dnsEntries(dnsEntries)
+        , dnsEntries(dnsEntries.entries)
     {}
 
     void DnsServer::DataReceived(infra::StreamReaderWithRewinding& reader, services::UdpSocket from)

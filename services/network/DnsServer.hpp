@@ -13,7 +13,10 @@ namespace services
         static const uint16_t dnsPort = 53;
 
         using DnsEntry = std::pair<infra::BoundedConstString, services::IPAddress>;
-        using DnsEntries = infra::MemoryRange<DnsEntry>;
+        struct DnsEntries
+        {
+            infra::MemoryRange<const DnsEntry> entries;
+        };
 
         DnsServer(services::DatagramFactory& factory, DnsEntries dnsEntries);
 
@@ -49,7 +52,7 @@ namespace services
 
     private:
         infra::SharedPtr<services::DatagramExchange> datagramExchange;
-        DnsEntries dnsEntries;
+        infra::MemoryRange<const DnsEntry> dnsEntries;
         infra::Optional<QuestionParser> question;
         infra::Optional<DnsEntry> answer;
     };
