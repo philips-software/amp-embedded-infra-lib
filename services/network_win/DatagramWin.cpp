@@ -401,6 +401,7 @@ namespace services
         auto result = GetAdaptersAddresses(AF_INET, 0, nullptr, nullptr, &size);
         assert(result == ERROR_BUFFER_OVERFLOW);
         auto adapterInfo = reinterpret_cast<IP_ADAPTER_ADDRESSES*>(malloc(size));
+        auto originalAdapterInfo = adapterInfo;
         result = GetAdaptersAddresses(AF_INET, 0, nullptr, adapterInfo, &size);
         assert(result == NO_ERROR);
 
@@ -414,7 +415,7 @@ namespace services
                     addresses.push_back(IPv4Address{ address.sin_addr.s_net, address.sin_addr.s_host, address.sin_addr.s_lh, address.sin_addr.s_impno });
                 }
 
-        free(adapterInfo);
+        free(originalAdapterInfo);
 
         return addresses;
     }
