@@ -1,5 +1,6 @@
 #include "services/network/HttpClientImpl.hpp"
 #include "infra/stream/CountingOutputStream.hpp"
+#include "infra/stream/StringInputStream.hpp"
 
 namespace services
 {
@@ -121,12 +122,20 @@ namespace services
 
     void HttpClientImpl::StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine)
     {
+        statusCode = code;
         Observer().StatusAvailable(code);
     }
 
     void HttpClientImpl::HeaderAvailable(HttpHeader header)
     {
-        Observer().HeaderAvailable(header);
+        if (infra::CaseInsensitiveCompare(header.Field(), "Content-Length"))
+        {
+            contentLength = 0;
+            infra::StringInputStream contentLengthStream(header.Value());
+            contentLengthStream >> *contentLength;
+        }
+        else
+            Observer().HeaderAvailable(header);
     }
 
     void HttpClientImpl::ExpectResponse()
@@ -148,11 +157,20 @@ namespace services
                 return;
 
             ConnectionObserver::Subject().AckReceived();
+
+            if (response->Done())
+            {
+                if (contentLength == infra::none && (statusCode == HttpStatusCode::Continue
+                    || statusCode == HttpStatusCode::SwitchingProtocols
+                    || statusCode == HttpStatusCode::NoContent
+                    || statusCode == HttpStatusCode::NotModified))
+                    contentLength = 0;
+            }
         }
 
         if (response->Done())
         {
-            if (!response->Error())
+            if (!response->Error() && contentLength != infra::none)
                 BodyReceived();
             else
                 AbortAndDestroy();
@@ -161,9 +179,6 @@ namespace services
 
     void HttpClientImpl::BodyReceived()
     {
-        if (!contentLength)
-            contentLength = response->ContentLength();
-
         if (contentLength == 0)
             BodyComplete();
         else

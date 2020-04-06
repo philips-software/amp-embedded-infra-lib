@@ -142,11 +142,6 @@ namespace services
         return error;
     }
 
-    uint32_t HttpHeaderParser::ContentLength() const
-    {
-        return *contentLength;
-    }
-
     void HttpHeaderParser::ParseStatusLine(infra::StreamReaderWithRewinding& reader)
     {
         infra::TextInputStream::WithErrorPolicy stream(reader);
@@ -201,25 +196,12 @@ namespace services
 
                 if (headerLine.empty() && headerBuffer.size() > crlfPos)
                 {
-                    if (statusCode == HttpStatusCode::Continue
-                        || statusCode == HttpStatusCode::SwitchingProtocols
-                        || statusCode == HttpStatusCode::NoContent
-                        || statusCode == HttpStatusCode::NotModified)
-                        contentLength = 0;
-                    error = contentLength == infra::none;
                     done = true;
                     return;
                 }
 
                 auto header = HeaderFromString(headerLine);
-                if (infra::CaseInsensitiveCompare(header.Field(), "Content-Length"))
-                {
-                    contentLength = 0;
-                    infra::StringInputStream contentLengthStream(header.Value());
-                    contentLengthStream >> *contentLength;
-                }
-                else
-                    observer.HeaderAvailable(header);
+                observer.HeaderAvailable(header);
             }
             else if (headerBuffer.full())
                 SetError();

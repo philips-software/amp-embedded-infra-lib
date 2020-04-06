@@ -129,7 +129,6 @@ namespace services
         void DataReceived(infra::StreamReaderWithRewinding& reader);
         bool Done() const;
         bool Error() const;
-        uint32_t ContentLength() const;
 
     private:
         void ParseStatusLine(infra::StreamReaderWithRewinding& reader);
@@ -146,7 +145,6 @@ namespace services
         bool error = false;
         bool statusParsed = false;
         HttpStatusCode statusCode;
-        infra::Optional<uint32_t> contentLength;
     };
 
     infra::BoundedConstString SchemeFromUrl(infra::BoundedConstString url);

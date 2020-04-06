@@ -152,6 +152,7 @@ namespace services
 
     private:
         infra::BoundedConstString hostname;
+        HttpStatusCode statusCode = HttpStatusCode::OK;
         infra::Optional<uint32_t> contentLength;
         infra::Optional<BodyReader> bodyReader;
         infra::AccessedBySharedPtr bodyReaderAccess;
