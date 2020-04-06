@@ -103,6 +103,20 @@ namespace services
         return result;
     }
 
+    infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Listen(DatagramExchangeObserver& observer, IPAddress localAddress, uint16_t port, IPVersions versions)
+    {
+        auto result = infra::MakeSharedOnHeap<DatagramWin>(*this, localAddress, port, observer);
+        RegisterDatagram(result);
+        return result;
+    }
+
+    infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Listen(DatagramExchangeObserver& observer, IPAddress localAddress, IPVersions versions)
+    {
+        auto result = infra::MakeSharedOnHeap<DatagramWin>(*this, localAddress, observer);
+        RegisterDatagram(result);
+        return result;
+    }
+
     infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Connect(DatagramExchangeObserver& observer, IPAddress localAddress, UdpSocket remote)
     {
         auto result = infra::MakeSharedOnHeap<DatagramWin>(*this, localAddress, remote, observer);

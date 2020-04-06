@@ -39,6 +39,22 @@ namespace services
         BindRemote(remote);
     }
 
+    DatagramWin::DatagramWin(EventDispatcherWithNetwork& network, IPAddress localAddress, DatagramExchangeObserver& observer)
+        : network(network)
+    {
+        observer.Attach(*this);
+        InitSocket();
+        BindLocal(MakeUdpSocket(localAddress, 0));
+    }
+
+    DatagramWin::DatagramWin(EventDispatcherWithNetwork& network, IPAddress localAddress, uint16_t localPort, DatagramExchangeObserver& observer)
+        : network(network)
+    {
+        observer.Attach(*this);
+        InitSocket();
+        BindLocal(MakeUdpSocket(localAddress, localPort));
+    }
+
     DatagramWin::DatagramWin(EventDispatcherWithNetwork& network, IPAddress localAddress, UdpSocket remote, DatagramExchangeObserver& observer)
         : network(network)
     {
@@ -219,6 +235,16 @@ namespace services
         GetObserver().Detach();
     }
 
+    void DatagramExchangeMultiple::Add(DatagramFactoryWithLocalIpBinding& factory, IPAddress local, uint16_t port, IPVersions versions)
+    {
+        observers.push_back(infra::MakeSharedOnHeap<Observer>(*this, factory, local, port, versions));
+    }
+
+    void DatagramExchangeMultiple::Add(DatagramFactoryWithLocalIpBinding& factory, IPAddress local, IPVersions versions)
+    {
+        observers.push_back(infra::MakeSharedOnHeap<Observer>(*this, factory, local, versions));
+    }
+
     void DatagramExchangeMultiple::Add(DatagramFactoryWithLocalIpBinding& factory, IPAddress local, UdpSocket remote)
     {
         observers.push_back(infra::MakeSharedOnHeap<Observer>(*this, factory, local, remote));
@@ -243,6 +269,18 @@ namespace services
 
         for (auto& observer : observers)
             observer->Subject().RequestSendStream(sendSize, to);
+    }
+
+    DatagramExchangeMultiple::Observer::Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, IPAddress local, uint16_t port, IPVersions versions)
+        : parent(parent)
+    {
+        exchange = factory.Listen(*this, local, port, versions);
+    }
+
+    DatagramExchangeMultiple::Observer::Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, IPAddress local, IPVersions versions)
+        : parent(parent)
+    {
+        exchange = factory.Listen(*this, local, versions);
     }
 
     DatagramExchangeMultiple::Observer::Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, IPAddress local, UdpSocket remote)
@@ -319,12 +357,22 @@ namespace services
 
     infra::SharedPtr<DatagramExchange> UdpOnAllInterfaces::Listen(DatagramExchangeObserver& observer, uint16_t port, IPVersions versions)
     {
-        return datagramFactory.Listen(observer, port, versions);
+        auto result = infra::MakeSharedOnHeap<DatagramExchangeMultiple>(observer);
+
+        for (auto address : GetIpAddresses())
+            result->Add(datagramFactory, address, port, versions);
+
+        return result;
     }
 
     infra::SharedPtr<DatagramExchange> UdpOnAllInterfaces::Listen(DatagramExchangeObserver& observer, IPVersions versions)
     {
-        return datagramFactory.Listen(observer, versions);
+        auto result = infra::MakeSharedOnHeap<DatagramExchangeMultiple>(observer);
+
+        for (auto address : GetIpAddresses())
+            result->Add(datagramFactory, address, versions);
+
+        return result;
     }
 
     infra::SharedPtr<DatagramExchange> UdpOnAllInterfaces::Connect(DatagramExchangeObserver& observer, UdpSocket remote)
@@ -350,39 +398,24 @@ namespace services
     std::vector<IPv4Address> UdpOnAllInterfaces::GetIpAddresses()
     {
         ULONG size(0);
-        auto result = GetAdaptersInfo(nullptr, &size);
+        auto result = GetAdaptersAddresses(AF_INET, 0, nullptr, nullptr, &size);
         assert(result == ERROR_BUFFER_OVERFLOW);
-        auto adapterInfo = reinterpret_cast<IP_ADAPTER_INFO*>(malloc(size));
-        result = GetAdaptersInfo(adapterInfo, &size);
+        auto adapterInfo = reinterpret_cast<IP_ADAPTER_ADDRESSES*>(malloc(size));
+        result = GetAdaptersAddresses(AF_INET, 0, nullptr, adapterInfo, &size);
         assert(result == NO_ERROR);
 
         std::vector<IPv4Address> addresses;
 
         for (; adapterInfo != nullptr; adapterInfo = adapterInfo->Next)
-        {
-            auto address = Translate(adapterInfo->IpAddressList.IpAddress);
-            if (address != IPv4Address())
-                addresses.push_back(address);
-        }
-
-        return addresses;
-    }
-
-    IPv4Address UdpOnAllInterfaces::Translate(const IP_ADDRESS_STRING& address)
-    {
-        std::string terminatedHostname(&address.String[0], &address.String[sizeof(IP_ADDRESS_STRING::String)]);
-        terminatedHostname.push_back('\0');
-
-        addrinfo* entry;
-        int res = getaddrinfo(terminatedHostname.c_str(), nullptr, nullptr, &entry);
-        if (res == 0)
-            for (; entry != nullptr; entry = entry->ai_next)
-                if (entry->ai_family == AF_INET)
+            for (auto ipAddresses = adapterInfo->FirstUnicastAddress; ipAddresses != nullptr; ipAddresses = ipAddresses->Next)
+                if (adapterInfo->OperStatus == IfOperStatusUp && ipAddresses->Address.lpSockaddr != nullptr && ipAddresses->Address.lpSockaddr->sa_family == AF_INET)
                 {
-                    sockaddr_in* address = reinterpret_cast<sockaddr_in*>(entry->ai_addr);
-                    return IPv4Address{ address->sin_addr.s_net, address->sin_addr.s_host, address->sin_addr.s_lh, address->sin_addr.s_impno };
+                    auto address = reinterpret_cast<sockaddr_in&>(*ipAddresses->Address.lpSockaddr);
+                    addresses.push_back(IPv4Address{ address.sin_addr.s_net, address.sin_addr.s_host, address.sin_addr.s_lh, address.sin_addr.s_impno });
                 }
 
-        return IPv4Address();
+        free(adapterInfo);
+
+        return addresses;
     }
 }

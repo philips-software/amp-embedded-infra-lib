@@ -25,6 +25,8 @@ namespace services
         DatagramWin(EventDispatcherWithNetwork& network, DatagramExchangeObserver& observer);
         DatagramWin(EventDispatcherWithNetwork& network, UdpSocket remote, DatagramExchangeObserver& observer);
         DatagramWin(EventDispatcherWithNetwork& network, uint16_t localPort, UdpSocket remote, DatagramExchangeObserver& observer);
+        DatagramWin(EventDispatcherWithNetwork& network, IPAddress localAddress, DatagramExchangeObserver& observer);
+        DatagramWin(EventDispatcherWithNetwork& network, IPAddress localAddress, uint16_t localPort, DatagramExchangeObserver& observer);
         DatagramWin(EventDispatcherWithNetwork& network, IPAddress localAddress, UdpSocket remote, DatagramExchangeObserver& observer);
         DatagramWin(EventDispatcherWithNetwork& network, UdpSocket local, UdpSocket remote, DatagramExchangeObserver& observer);
         ~DatagramWin();
@@ -77,6 +79,9 @@ namespace services
         : public DatagramFactory
     {
     public:
+        using DatagramFactory::Listen;
+        virtual infra::SharedPtr<DatagramExchange> Listen(DatagramExchangeObserver& observer, IPAddress localAddress, uint16_t port, IPVersions versions = IPVersions::both) = 0;
+        virtual infra::SharedPtr<DatagramExchange> Listen(DatagramExchangeObserver& observer, IPAddress localAddress, IPVersions versions = IPVersions::both) = 0;
         using DatagramFactory::Connect;
         virtual infra::SharedPtr<DatagramExchange> Connect(DatagramExchangeObserver& observer, IPAddress localAddress, UdpSocket remote) = 0;
         virtual infra::SharedPtr<DatagramExchange> Connect(DatagramExchangeObserver& observer, UdpSocket local, UdpSocket remote) = 0;
@@ -89,6 +94,8 @@ namespace services
         DatagramExchangeMultiple(DatagramExchangeObserver& observer);
         ~DatagramExchangeMultiple();
 
+        void Add(DatagramFactoryWithLocalIpBinding& factory, IPAddress local, uint16_t port, IPVersions versions);
+        void Add(DatagramFactoryWithLocalIpBinding& factory, IPAddress local, IPVersions versions);
         void Add(DatagramFactoryWithLocalIpBinding& factory, IPAddress local, UdpSocket remote);
         void Add(DatagramFactoryWithLocalIpBinding& factory, UdpSocket local, UdpSocket remote);
 
@@ -101,6 +108,8 @@ namespace services
             : public DatagramExchangeObserver
         {
         public:
+            Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, IPAddress local, uint16_t port, IPVersions versions);
+            Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, IPAddress local, IPVersions versions);
             Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, IPAddress local, UdpSocket remote);
             Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, UdpSocket local, UdpSocket remote);
 
