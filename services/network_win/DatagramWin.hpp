@@ -39,6 +39,9 @@ namespace services
         void TrySend();
         void UpdateEventFlags();
 
+        void JoinMulticastGroup(IPv4Address multicastAddress);
+        void LeaveMulticastGroup(IPv4Address multicastAddress);
+
     private:
         void InitSocket();
         void BindLocal(UdpSocket local);
@@ -63,6 +66,7 @@ namespace services
         EventDispatcherWithNetwork& network;
         SOCKET socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
         WSAEVENT event = WSACreateEvent();
+        IPv4Address localAddress{};
         infra::Optional<UdpSocket> connectedTo;
 
         infra::Optional<infra::BoundedVector<uint8_t>::WithMaxSize<508>> sendBuffer;
@@ -91,13 +95,16 @@ namespace services
         : public DatagramExchange
     {
     public:
-        DatagramExchangeMultiple(DatagramExchangeObserver& observer);
+        DatagramExchangeMultiple(DatagramExchangeObserver& observer, EventDispatcherWithNetwork& eventDispatcher);
         ~DatagramExchangeMultiple();
 
         void Add(DatagramFactoryWithLocalIpBinding& factory, IPAddress local, uint16_t port, IPVersions versions);
         void Add(DatagramFactoryWithLocalIpBinding& factory, IPAddress local, IPVersions versions);
         void Add(DatagramFactoryWithLocalIpBinding& factory, IPAddress local, UdpSocket remote);
         void Add(DatagramFactoryWithLocalIpBinding& factory, UdpSocket local, UdpSocket remote);
+
+        void JoinMulticastGroup(IPv4Address multicastAddress);
+        void LeaveMulticastGroup(IPv4Address multicastAddress);
 
         // Implementation of DatagramExchange
         virtual void RequestSendStream(std::size_t sendSize) override;
@@ -118,6 +125,7 @@ namespace services
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
         private:
+            friend class DatagramExchangeMultiple;
             DatagramExchangeMultiple& parent;
             infra::SharedPtr<DatagramExchange> exchange;
         };
@@ -142,6 +150,7 @@ namespace services
         };
 
     private:
+        EventDispatcherWithNetwork& eventDispatcher;
         std::vector<infra::SharedPtr<Observer>> observers;
         std::vector<infra::SharedPtr<infra::StreamWriter>> writers;
 
@@ -152,7 +161,7 @@ namespace services
         : public DatagramFactory
     {
     public:
-        UdpOnAllInterfaces(DatagramFactoryWithLocalIpBinding& datagramFactory);
+        UdpOnAllInterfaces(EventDispatcherWithNetwork& eventDispatcher);
 
         virtual infra::SharedPtr<DatagramExchange> Listen(DatagramExchangeObserver& observer, uint16_t port, IPVersions versions = IPVersions::both) override;
         virtual infra::SharedPtr<DatagramExchange> Listen(DatagramExchangeObserver& observer, IPVersions versions = IPVersions::both) override;
@@ -161,10 +170,9 @@ namespace services
 
     private:
         std::vector<IPv4Address> GetIpAddresses();
-        IPv4Address Translate(const IP_ADDRESS_STRING& address);
 
     private:
-        DatagramFactoryWithLocalIpBinding& datagramFactory;
+        EventDispatcherWithNetwork& eventDispatcher;
     };
 }
 

@@ -162,6 +162,30 @@ namespace services
         assert(result == 0);
     }
 
+    void DatagramWin::JoinMulticastGroup(IPv4Address multicastAddress)
+    {
+        struct ip_mreq multicastRequest;
+        if (localAddress == IPv4Address())
+            multicastRequest.imr_interface.s_addr = htonl(INADDR_ANY);
+        else
+            multicastRequest.imr_interface.s_addr = htonl(services::ConvertToUint32(localAddress));
+        multicastRequest.imr_multiaddr.s_addr = htonl(services::ConvertToUint32(multicastAddress));
+
+        setsockopt(socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+    }
+
+    void DatagramWin::LeaveMulticastGroup(IPv4Address multicastAddress)
+    {
+        struct ip_mreq multicastRequest;
+        if (localAddress == IPv4Address())
+            multicastRequest.imr_interface.s_addr = htonl(INADDR_ANY);
+        else
+            multicastRequest.imr_interface.s_addr = htonl(services::ConvertToUint32(localAddress));
+        multicastRequest.imr_multiaddr.s_addr = htonl(services::ConvertToUint32(multicastAddress));
+
+        setsockopt(socket, IPPROTO_IP, IP_DROP_MEMBERSHIP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+    }
+
     void DatagramWin::InitSocket()
     {
         assert(socket != INVALID_SOCKET);
@@ -178,9 +202,10 @@ namespace services
 
     void DatagramWin::BindLocal(UdpSocket local)
     {
+        localAddress = local.Get<Udpv4Socket>().first;
         sockaddr_in address{};
         address.sin_family = AF_INET;
-        address.sin_addr.s_addr = htonl(services::ConvertToUint32(local.Get<Udpv4Socket>().first));
+        address.sin_addr.s_addr = htonl(services::ConvertToUint32(localAddress));
         address.sin_port = htons(local.Get<Udpv4Socket>().second);
         auto result = bind(socket, reinterpret_cast<sockaddr*>(&address), sizeof(address));
         auto error = WSAGetLastError();
@@ -225,7 +250,8 @@ namespace services
         connection.trySend = true;
     }
 
-    DatagramExchangeMultiple::DatagramExchangeMultiple(DatagramExchangeObserver& observer)
+    DatagramExchangeMultiple::DatagramExchangeMultiple(DatagramExchangeObserver& observer, EventDispatcherWithNetwork& eventDispatcher)
+        : eventDispatcher(eventDispatcher)
     {
         observer.Attach(*this);
     }
@@ -253,6 +279,18 @@ namespace services
     void DatagramExchangeMultiple::Add(DatagramFactoryWithLocalIpBinding& factory, UdpSocket local, UdpSocket remote)
     {
         observers.push_back(infra::MakeSharedOnHeap<Observer>(*this, factory, local, remote));
+    }
+
+    void DatagramExchangeMultiple::JoinMulticastGroup(IPv4Address multicastAddress)
+    {
+        for (const auto& observer : observers)
+            eventDispatcher.JoinMulticastGroup(observer->exchange, multicastAddress);
+    }
+
+    void DatagramExchangeMultiple::LeaveMulticastGroup(IPv4Address multicastAddress)
+    {
+        for (const auto& observer : observers)
+            eventDispatcher.LeaveMulticastGroup(observer->exchange, multicastAddress);
     }
 
     void DatagramExchangeMultiple::RequestSendStream(std::size_t sendSize)
@@ -351,46 +389,50 @@ namespace services
         std::abort();
     }
 
-    UdpOnAllInterfaces::UdpOnAllInterfaces(DatagramFactoryWithLocalIpBinding& datagramFactory)
-        : datagramFactory(datagramFactory)
+    UdpOnAllInterfaces::UdpOnAllInterfaces(EventDispatcherWithNetwork& eventDispatcher)
+        : eventDispatcher(eventDispatcher)
     {}
 
     infra::SharedPtr<DatagramExchange> UdpOnAllInterfaces::Listen(DatagramExchangeObserver& observer, uint16_t port, IPVersions versions)
     {
-        auto result = infra::MakeSharedOnHeap<DatagramExchangeMultiple>(observer);
+        auto result = infra::MakeSharedOnHeap<DatagramExchangeMultiple>(observer, eventDispatcher);
+        eventDispatcher.RegisterDatagramMultiple(result);
 
         for (auto address : GetIpAddresses())
-            result->Add(datagramFactory, address, port, versions);
+            result->Add(eventDispatcher, address, port, versions);
 
         return result;
     }
 
     infra::SharedPtr<DatagramExchange> UdpOnAllInterfaces::Listen(DatagramExchangeObserver& observer, IPVersions versions)
     {
-        auto result = infra::MakeSharedOnHeap<DatagramExchangeMultiple>(observer);
+        auto result = infra::MakeSharedOnHeap<DatagramExchangeMultiple>(observer, eventDispatcher);
+        eventDispatcher.RegisterDatagramMultiple(result);
 
         for (auto address : GetIpAddresses())
-            result->Add(datagramFactory, address, versions);
+            result->Add(eventDispatcher, address, versions);
 
         return result;
     }
 
     infra::SharedPtr<DatagramExchange> UdpOnAllInterfaces::Connect(DatagramExchangeObserver& observer, UdpSocket remote)
     {
-        auto result = infra::MakeSharedOnHeap<DatagramExchangeMultiple>(observer);
+        auto result = infra::MakeSharedOnHeap<DatagramExchangeMultiple>(observer, eventDispatcher);
+        eventDispatcher.RegisterDatagramMultiple(result);
 
         for (auto address : GetIpAddresses())
-            result->Add(datagramFactory, address, remote);
+            result->Add(eventDispatcher, address, remote);
 
         return result;
     }
 
     infra::SharedPtr<DatagramExchange> UdpOnAllInterfaces::Connect(DatagramExchangeObserver& observer, uint16_t localPort, UdpSocket remote)
     {
-        auto result = infra::MakeSharedOnHeap<DatagramExchangeMultiple>(observer);
+        auto result = infra::MakeSharedOnHeap<DatagramExchangeMultiple>(observer, eventDispatcher);
+        eventDispatcher.RegisterDatagramMultiple(result);
 
         for (auto address : GetIpAddresses())
-            result->Add(datagramFactory, MakeUdpSocket(address, localPort), remote);
+            result->Add(eventDispatcher, MakeUdpSocket(address, localPort), remote);
 
         return result;
     }

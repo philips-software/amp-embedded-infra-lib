@@ -49,6 +49,11 @@ namespace services
         datagrams.push_back(datagram);
     }
 
+    void EventDispatcherWithNetwork::RegisterDatagramMultiple(const infra::SharedPtr<DatagramExchangeMultiple>& datagram)
+    {
+        datagramsMultiple.push_back(datagram);
+    }
+
     infra::SharedPtr<void> EventDispatcherWithNetwork::Listen(uint16_t port, services::ServerConnectionObserverFactory& factory, IPVersions versions)
     {
         assert(versions != IPVersions::ipv6);
@@ -133,33 +138,31 @@ namespace services
 
     void EventDispatcherWithNetwork::JoinMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv4Address multicastAddress)
     {
-        auto datagramIterator = std::find(datagrams.begin(), datagrams.end(), datagramExchange);
+        auto datagram = std::find(datagrams.begin(), datagrams.end(), datagramExchange);
 
-        if (datagramIterator != datagrams.end())
+        if (datagram != datagrams.end())
+            datagram->lock()->JoinMulticastGroup(multicastAddress);
+        else
         {
-            auto datagram = datagramIterator->lock();
+            auto datagram = std::find(datagramsMultiple.begin(), datagramsMultiple.end(), datagramExchange);
 
-            struct ip_mreq multicastRequest;
-            multicastRequest.imr_interface.s_addr = htonl(INADDR_ANY);
-            multicastRequest.imr_multiaddr.s_addr = htonl(services::ConvertToUint32(multicastAddress));
-
-            setsockopt(datagram->socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+            if (datagram != datagramsMultiple.end())
+                datagram->lock()->JoinMulticastGroup(multicastAddress);
         }
     }
 
     void EventDispatcherWithNetwork::LeaveMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv4Address multicastAddress)
     {
-        auto datagramIterator = std::find(datagrams.begin(), datagrams.end(), datagramExchange);
+        auto datagram = std::find(datagrams.begin(), datagrams.end(), datagramExchange);
 
-        if (datagramIterator != datagrams.end())
+        if (datagram != datagrams.end())
+            datagram->lock()->LeaveMulticastGroup(multicastAddress);
+        else
         {
-            auto datagram = datagramIterator->lock();
+            auto datagram = std::find(datagramsMultiple.begin(), datagramsMultiple.end(), datagramExchange);
 
-            struct ip_mreq multicastRequest;
-            multicastRequest.imr_interface.s_addr = htonl(INADDR_ANY);
-            multicastRequest.imr_multiaddr.s_addr = htonl(services::ConvertToUint32(multicastAddress));
-
-            setsockopt(datagram->socket, IPPROTO_IP, IP_DROP_MEMBERSHIP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+            if (datagram != datagramsMultiple.end())
+                datagram->lock()->LeaveMulticastGroup(multicastAddress);
         }
     }
 
@@ -287,5 +290,6 @@ namespace services
 
         connections.remove_if([](const infra::WeakPtr<ConnectionWin>& connection) { return connection.lock() == nullptr; });
         datagrams.remove_if([](const infra::WeakPtr<DatagramWin>& datagram) { return datagram.lock() == nullptr; });
+        datagramsMultiple.remove_if([](const infra::WeakPtr<DatagramExchangeMultiple>& datagram) { return datagram.lock() == nullptr; });
     }
 }

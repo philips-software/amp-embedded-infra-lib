@@ -22,6 +22,7 @@ namespace services
         void DeregisterListener(ListenerWin& listener);
         void DeregisterConnector(ConnectorWin& connector);
         void RegisterDatagram(const infra::SharedPtr<DatagramWin>& datagram);
+        void RegisterDatagramMultiple(const infra::SharedPtr<DatagramExchangeMultiple>& datagram);
 
     public:
         // Implementation of ConnectionFactory
@@ -54,6 +55,7 @@ namespace services
         infra::IntrusiveList<ListenerWin> listeners;
         std::list<ConnectorWin> connectors;
         std::list<infra::WeakPtr<DatagramWin>> datagrams;
+        std::list<infra::WeakPtr<DatagramExchangeMultiple>> datagramsMultiple;
         WSAEVENT wakeUpEvent = WSACreateEvent();
     };
 }
