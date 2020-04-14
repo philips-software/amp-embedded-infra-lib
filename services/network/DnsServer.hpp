@@ -23,7 +23,12 @@ namespace services
         virtual void DataReceived(infra::StreamReaderWithRewinding& reader, services::UdpSocket from) override;
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
-        bool FindAnswer(infra::BoundedConstString hostname);
+    protected:
+        virtual infra::Optional<DnsEntry> FindAnswer(infra::BoundedConstString hostname) = 0;
+
+        infra::MemoryRange<const DnsEntry> Entries() const;
+
+    private:
         std::size_t AnswerSize() const;
 
     private:
@@ -55,6 +60,16 @@ namespace services
         infra::MemoryRange<const DnsEntry> dnsEntries;
         infra::Optional<QuestionParser> question;
         infra::Optional<DnsEntry> answer;
+    };
+
+    class DnsServerImpl
+        : public DnsServer
+    {
+    public:
+        using DnsServer::DnsServer;
+
+    protected:
+        virtual infra::Optional<DnsEntry> FindAnswer(infra::BoundedConstString hostname) override;
     };
 }
 

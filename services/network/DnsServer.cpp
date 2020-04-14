@@ -32,8 +32,12 @@ namespace services
             return;
 
         question.Emplace(reader);
-        if (question->IsValid() && question->RequestIncludesOneQuestion() && FindAnswer(question->Hostname()))
-            datagramExchange->RequestSendStream(AnswerSize(), from);
+        if (question->IsValid() && question->RequestIncludesOneQuestion())
+        {
+            answer = FindAnswer(question->Hostname());
+            if (answer != infra::none)
+                datagramExchange->RequestSendStream(AnswerSize(), from);
+        }
         else
             question = infra::none;
     }
@@ -60,18 +64,9 @@ namespace services
         answer = infra::none;
     }
 
-    bool DnsServer::FindAnswer(infra::BoundedConstString hostname)
+    infra::MemoryRange<const DnsServer::DnsEntry> DnsServer::Entries() const
     {
-        auto hostnameWithoutWww = StripLeadingWww(hostname);
-
-        for (auto& entry : dnsEntries)
-            if (infra::CaseInsensitiveCompare(entry.first, hostnameWithoutWww))
-            {
-                answer.Emplace(entry);
-                return true;
-            }
-
-        return false;
+        return dnsEntries;
     }
 
     std::size_t DnsServer::AnswerSize() const
@@ -152,5 +147,16 @@ namespace services
             if (!hostnameParts.Empty())
                 reconstructedHostname += '.';
         }
+    }
+
+    infra::Optional<DnsServer::DnsEntry> DnsServerImpl::FindAnswer(infra::BoundedConstString hostname)
+    {
+        auto hostnameWithoutWww = StripLeadingWww(hostname);
+
+        for (auto& entry : Entries())
+            if (infra::CaseInsensitiveCompare(entry.first, hostnameWithoutWww))
+                return infra::MakeOptional(entry);
+
+        return infra::none;
     }
 }

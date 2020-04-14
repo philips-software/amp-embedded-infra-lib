@@ -36,7 +36,7 @@ public:
         { "hostname.com", services::IPv4Address{ 5, 6, 7, 8 } },
         { "other.com", services::IPv4Address{ 9, 10, 11, 12 } }
     };
-    services::DnsServer server{ factory, services::DnsServer::DnsEntries{ entries } };
+    services::DnsServerImpl server{ factory, services::DnsServer::DnsEntries{ entries } };
 };
 
 TEST_F(DnsServerTest, should_not_respond_to_question_with_unknown_hostname)
