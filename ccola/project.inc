@@ -44,7 +44,10 @@ macro(ccola_component name)
 	ccola_verify_not_nested(${name} CCOLA_COMPONENT_NAME "Component")
 	ccola_verify_nested(${name} CCOLA_PACKAGE_NAME "Component" "Package")
 
-	ccola_assign_parameters(componenttype 1 "${ARGV}")
+	set(componentlist "${ARGV}")
+	list(REMOVE_AT componentlist 0)
+	ccola_parse_selection_list(componentlist)
+	set(componenttype ${componentlist})
 
 	set(CCOLA_COMPONENT_NAME ${CCOLA_PACKAGE_NAME}.${name})
 	set(CCOLA_COMPONENT_TYPE ${componenttype})

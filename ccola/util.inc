@@ -341,19 +341,6 @@ macro(ccola_parse_selection_list_with_params list_selected combinations list)
 endmacro()
 
 
-macro(ccola_assign_parameters var skip_count aargs)
-
-	set(args "${aargs}")
-	foreach(i RANGE ${skip_count})
-		list(REMOVE_AT args 0)
-	endforeach()
-	ccola_parse_selection_list(args)
-
-	set(${var} ${args})
-
-endmacro()
-
-
 macro(ccola_promote_variable var)
 
 	if(NOT "${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CCOLA_TOP_SOURCE_DIR}")
