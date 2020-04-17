@@ -344,7 +344,7 @@ endmacro()
 macro(ccola_assign_parameters var skip_count aargs)
 
 	set(args "${aargs}")
-	foreach(i RANGE skip_count)
+	foreach(i RANGE ${skip_count})
 		list(REMOVE_AT args 0)
 	endforeach()
 	ccola_parse_selection_list(args)
