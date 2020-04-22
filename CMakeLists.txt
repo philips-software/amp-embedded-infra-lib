@@ -30,10 +30,10 @@ ccola_project()
         infra
         hal
         services
-        upgrade
         external/protobuf-3.3.0
         external/protoc-3.3.0
         protobuf
+        upgrade
         lwip
         examples
     )
