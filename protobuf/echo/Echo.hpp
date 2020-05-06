@@ -8,7 +8,19 @@
 
 namespace services
 {
-    class Echo;
+    class Service;
+    class ServiceProxy;
+
+    class Echo
+    {
+    public:
+        virtual void RequestSend(ServiceProxy& serviceProxy) = 0;
+        virtual infra::StreamWriter& SendStreamWriter() = 0;
+        virtual void Send() = 0;
+        virtual void ServiceDone(Service& service) = 0;
+        virtual void AttachService(Service& service) = 0;
+        virtual void DetachService(Service& service) = 0;
+    };
 
     class Service
         : public infra::IntrusiveList<Service>::NodeType
@@ -20,15 +32,13 @@ namespace services
         ~Service();
 
         void MethodDone();
+        uint32_t ServiceId() const;
+        bool InProgress() const;
+        void HandleMethod(uint32_t methodId, infra::ProtoParser& parser);
 
     protected:
-        virtual void Handle(uint32_t methodId, infra::ProtoParser& parser) = 0;
         Echo& Rpc();
-
-    private:
-        friend class Echo;
-
-        uint32_t ServiceId() const;
+        virtual void Handle(uint32_t methodId, infra::ProtoParser& parser) = 0;
 
     private:
         Echo& echo;
@@ -54,21 +64,23 @@ namespace services
         infra::Function<void()> onGranted;
     };
 
-    class Echo
-        : public services::ConnectionObserver
-        , public infra::EnableSharedFromThis<Echo>
+    class EchoOnConnection
+        : public Echo
+        , public ConnectionObserver
+        , public infra::EnableSharedFromThis<EchoOnConnection>
     {
     public:
+        // Implementation of ConnectionObserver
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void DataReceived() override;
 
-        void RequestSend(ServiceProxy& serviceProxy);
-        infra::StreamWriter& SendStreamWriter();
-        void Send();
-        void ServiceDone(Service& service);
-
-        void AttachService(Service& service);
-        void DetachService(Service& service);
+        // Implementation of Echo
+        virtual void RequestSend(ServiceProxy& serviceProxy) override;
+        virtual infra::StreamWriter& SendStreamWriter() override;
+        virtual void Send() override;
+        virtual void ServiceDone(Service& service) override;
+        virtual void AttachService(Service& service) override;
+        virtual void DetachService(Service& service) override;
 
     private:
         void ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoParser& argument);

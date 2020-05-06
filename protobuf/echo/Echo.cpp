@@ -22,14 +22,25 @@ namespace services
         Rpc().ServiceDone(*this);
     }
 
-    Echo& Service::Rpc()
-    {
-        return echo;
-    }
-
     uint32_t Service::ServiceId() const
     {
         return serviceId;
+    }
+
+    bool Service::InProgress() const
+    {
+        return inProgress;
+    }
+
+    void Service::HandleMethod(uint32_t methodId, infra::ProtoParser& parser)
+    {
+        inProgress = true;
+        Handle(methodId, parser);
+    }
+
+    Echo& Service::Rpc()
+    {
+        return echo;
     }
 
     ServiceProxy::ServiceProxy(Echo& echo, uint32_t id, uint32_t maxMessageSize)
@@ -59,7 +70,7 @@ namespace services
         return maxMessageSize;
     }
 
-    void Echo::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+    void EchoOnConnection::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         streamWriter = std::move(writer);
 
@@ -68,11 +79,11 @@ namespace services
         proxy.GrantSend();
     }
 
-    void Echo::DataReceived()
+    void EchoOnConnection::DataReceived()
     {
         while (!serviceBusy)
         {
-            infra::SharedPtr<infra::StreamReader> reader = services::ConnectionObserver::Subject().ReceiveStream();
+            infra::SharedPtr<infra::StreamReader> reader = ConnectionObserver::Subject().ReceiveStream();
             infra::DataInputStream::WithErrorPolicy stream(*reader, infra::softFail);
             infra::ProtoParser parser(stream);
             uint32_t serviceId = static_cast<uint32_t>(parser.GetVarInt());
@@ -92,68 +103,63 @@ namespace services
             if (serviceBusy)
                 break;
 
-            services::ConnectionObserver::Subject().AckReceived();
+            ConnectionObserver::Subject().AckReceived();
 
             if (stream.Empty())
                 break;
         }
     }
 
-    void Echo::RequestSend(ServiceProxy& serviceProxy)
+    void EchoOnConnection::RequestSend(ServiceProxy& serviceProxy)
     {
         if (sendRequesters.empty() && streamWriter == nullptr)
-            services::ConnectionObserver::Subject().RequestSendStream(serviceProxy.MaxMessageSize());
+            ConnectionObserver::Subject().RequestSendStream(serviceProxy.MaxMessageSize());
 
         sendRequesters.push_back(serviceProxy);
     }
 
-    infra::StreamWriter& Echo::SendStreamWriter()
+    infra::StreamWriter& EchoOnConnection::SendStreamWriter()
     {
         return *streamWriter;
     }
 
-    void Echo::Send()
+    void EchoOnConnection::Send()
     {
         streamWriter = nullptr;
 
         if (!sendRequesters.empty())
-            services::ConnectionObserver::Subject().RequestSendStream(sendRequesters.front().MaxMessageSize());
+            ConnectionObserver::Subject().RequestSendStream(sendRequesters.front().MaxMessageSize());
     }
 
-    void Echo::ServiceDone(Service& service)
+    void EchoOnConnection::ServiceDone(Service& service)
     {
         if (serviceBusy && *serviceBusy == service.ServiceId())
         {
             serviceBusy = infra::none;
-            infra::EventDispatcherWithWeakPtr::Instance().Schedule([](infra::SharedPtr<Echo> echo) { echo->DataReceived(); }, SharedFromThis());
+            infra::EventDispatcherWithWeakPtr::Instance().Schedule([](infra::SharedPtr<EchoOnConnection> echo) { echo->DataReceived(); }, SharedFromThis());
         }
     }
 
-    void Echo::AttachService(Service& service)
+    void EchoOnConnection::AttachService(Service& service)
     {
         services.push_back(service);
     }
 
-    void Echo::DetachService(Service& service)
+    void EchoOnConnection::DetachService(Service& service)
     {
         services.erase(service);
     }
 
-    void Echo::ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoParser& argument)
+    void EchoOnConnection::ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoParser& argument)
     {
         for (auto& service : services)
-        {
             if (service.ServiceId() == serviceId)
             {
-                if (service.inProgress)
+                if (service.InProgress())
                     serviceBusy = serviceId;
                 else
-                {
-                    service.inProgress = true;
-                    service.Handle(methodId, argument);
-                }
+                    service.HandleMethod(methodId, argument);
                 break;
             }
-        };
     }
 }

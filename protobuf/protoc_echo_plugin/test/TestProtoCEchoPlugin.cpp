@@ -291,7 +291,7 @@ TEST(ProtoCEchoPluginTest, deserialize_nested_repeated_message)
 TEST(ProtoCEchoPluginTest, invoke_service_proxy_method)
 {
     services::ConnectionMock connection;
-    services::Echo echo;
+    services::EchoOnConnection echo;
     connection.Attach(infra::UnOwnedSharedPtr(echo));
     test_messages::TestService1Proxy service(echo);
 
@@ -320,7 +320,7 @@ public:
 TEST(ProtoCEchoPluginTest, service_method_is_invoked)
 {
     testing::StrictMock<services::ConnectionMock> connection;
-    services::Echo echo;
+    services::EchoOnConnection echo;
     connection.Attach(infra::UnOwnedSharedPtr(echo));
     testing::StrictMock<TestService1Mock> service(echo);
 
