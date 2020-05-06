@@ -249,6 +249,15 @@ TEST(MemoryRangeTest, DiscardTail)
     EXPECT_EQ(infra::ByteRange(), infra::DiscardTail(infra::ByteRange(range), 14));
 }
 
+TEST(MemoryRangeTest, FindAndSplit)
+{
+    std::array<uint8_t, 4> range{ 1, 2, 3, 4 };
+    infra::ConstByteRange first, second;
+    std::tie(first, second) = infra::FindAndSplit(infra::MakeRange(range), 3);
+    EXPECT_EQ(infra::ByteRange(range.data(), range.data() + 2), first);
+    EXPECT_EQ(infra::ByteRange(range.data() + 2, range.data() + 4), second);
+}
+
 TEST(MemoryRangeTest, Convert)
 {
     std::array<uint8_t, 4> range{ 1, 2, 3, 4 };

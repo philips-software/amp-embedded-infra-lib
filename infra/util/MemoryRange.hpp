@@ -98,6 +98,9 @@ namespace infra
     template<class T>
         MemoryRange<T> DiscardTail(MemoryRange<T> range, std::size_t size);
 
+    template<class T>
+        std::pair<MemoryRange<T>, MemoryRange<T>> FindAndSplit(MemoryRange<T> range, typename std::decay<T>::type search);
+
     template<class T, class U>
         T Convert(MemoryRange<U> range);
 
@@ -411,6 +414,13 @@ namespace infra
 
         range.pop_back(size);
         return range;
+    }
+
+    template<class T>
+    std::pair<MemoryRange<T>, MemoryRange<T>> FindAndSplit(MemoryRange<T> range, typename std::decay<T>::type search)
+    {
+        auto position = std::find(range.begin(), range.end(), search);
+        return std::make_pair(MemoryRange<T>(range.begin(), position), MemoryRange<T>(position, range.end()));
     }
 
     template<class T, class U>
