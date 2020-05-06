@@ -28,3 +28,10 @@ ccola_set_component_properties_for_all_configurations(${CCOLA_COMPONENT_NAME} LI
 ccola_set_component_properties_for_all_configurations(${CCOLA_COMPONENT_NAME} PDB_OUTPUT_DIRECTORY ${CCOLA_PDB_INSTALL_DIR})
 set(lib_path ${CCOLA_STATIC_LIBRARY_INSTALL_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}${CCOLA_COMPONENT_NAME}${CMAKE_STATIC_LIBRARY_SUFFIX})
 ccola_inheritable_link_libraries(${lib_path})
+
+configure_file(
+    ${CCOLA_COMPONENT_GENERIC_CPP_INFO}
+    ${CCOLA_COMPONENT_INFO_INSTALL_DIR}/${CCOLA_COMPONENT_NAME}.generic_cpp.inc ESCAPE_QUOTES @ONLY)
+configure_file(
+    ${CCOLA_COMPONENT_GENERIC_CPP_PUBLIC_INFO}
+    ${CCOLA_PUBLIC_COMPONENT_INFO_INSTALL_DIR}/${CCOLA_COMPONENT_NAME}.generic_cpp.inc ESCAPE_QUOTES @ONLY)
