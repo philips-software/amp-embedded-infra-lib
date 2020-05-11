@@ -7,8 +7,8 @@ class TracerWithDateTimeTestImpl
     : public services::TracerWithDateTime
 {
 public:
-    TracerWithDateTimeTestImpl(infra::TimerService& timerService)
-        : services::TracerWithDateTime(stream, timerService)
+    TracerWithDateTimeTestImpl()
+        : services::TracerWithDateTime(stream)
     {}
 
     infra::TextOutputStream Continue()
@@ -40,7 +40,7 @@ TEST_F(TracerWithDateTimeTest, trace_inserts_date_time)
     time_t diff = mktime(localUtcDiff);
 
     ForwardTime(std::chrono::seconds(mktime(&timePoint) + nullTime - diff) + std::chrono::microseconds(1));
-    TracerWithDateTimeTestImpl tracer(systemTimerService);
+    TracerWithDateTimeTestImpl tracer;
 
     tracer.Trace();
     EXPECT_EQ("\r\n2016-07-12 16:35:14.000001 ", tracer.stream.Storage());

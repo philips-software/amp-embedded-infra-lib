@@ -1,16 +1,16 @@
 #include "infra/stream/StreamManipulators.hpp"
+#include "infra/timer/Timer.hpp"
 #include "services/tracer/TracerWithTime.hpp"
 
 namespace services
 {
-    TracerWithTime::TracerWithTime(infra::TextOutputStream& stream, const infra::TimerService& timerService)
+    TracerWithTime::TracerWithTime(infra::TextOutputStream& stream)
         : Tracer(stream)
-        , timerService(timerService)
     {}
 
     void TracerWithTime::InsertHeader()
     {
-        infra::TimePoint nowTimePoint = timerService.Now();
+        infra::TimePoint nowTimePoint = infra::Now();
         time_t now = std::chrono::system_clock::to_time_t(nowTimePoint);
         std::tm* utcTime = gmtime(&now);
         assert(utcTime != nullptr);

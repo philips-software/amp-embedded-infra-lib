@@ -1,12 +1,12 @@
 #include "infra/stream/StreamManipulators.hpp"
 #include "infra/timer/PartitionedTime.hpp"
+#include "infra/timer/Timer.hpp"
 #include "services/tracer/TracerWithDateTime.hpp"
 
 namespace services
 {
-    TracerWithDateTime::TracerWithDateTime(infra::TextOutputStream& stream, const infra::TimerService& timerService)
+    TracerWithDateTime::TracerWithDateTime(infra::TextOutputStream& stream)
         : Tracer(stream)
-        , timerService(timerService)
     {}
     
     void TracerWithDateTime::InsertHeader()
