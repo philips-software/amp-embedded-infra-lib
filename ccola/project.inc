@@ -84,6 +84,7 @@ macro(ccola_end_component)
 	unset(CCOLA_COMPONENT_DEPENDENCIES)
 	unset(CCOLA_COMPONENT_INHERITABLE_DEPENDENCIES)
 	unset(CCOLA_COMPONENT_PUBLIC_PROPERTIES)
+	unset(CCOLA_COMPONENT_EXCLUDE)
 
 endmacro()
 
@@ -113,6 +114,23 @@ macro(ccola_dependencies)
 			list(APPEND CCOLA_COMPONENT_DEPENDENCIES ${item})
 			ccola_list_remove_duplicates(CCOLA_COMPONENT_DEPENDENCIES)
 			include(${CCOLA_COMPONENT_TYPE_DIR}/add_dependency.inc)
+		endforeach()
+	endif()
+
+endmacro()
+
+macro(ccola_exclude_from_combined_library)
+
+	if(NOT CCOLA_COMPONENT_SKIP)
+		ccola_assert(CCOLA_COMPONENT_NAME "This command may only be used in a component")
+
+		set(exclude "${ARGV}")
+		ccola_parse_selection_list(exclude)
+
+		foreach(item ${exclude})
+			ccola_make_full_component_name(item)
+			list(APPEND CCOLA_COMPONENT_EXCLUDE ${item})
+			ccola_list_remove_duplicates(CCOLA_COMPONENT_EXCLUDE)
 		endforeach()
 	endif()
 
