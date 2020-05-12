@@ -21,8 +21,13 @@ namespace application
 
         std::vector<std::pair<std::string, std::string>> GetComponents();
         std::vector<std::pair<std::string, std::string>> GetOptions();
+        infra::JsonObject GetUpgradeConfiguration();
         std::string GetOutputFilename();
         std::string GetUpgradeKeys();
+        std::string GetProductName();
+        std::string GetProductVersion();
+        std::string GetComponentName();
+        uint32_t GetComponentVersion();
 
     private:
         void CheckValidJson();
