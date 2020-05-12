@@ -49,6 +49,7 @@ namespace services
         virtual void Publish() = 0;
         virtual void Subscribe() = 0;
         virtual void NotificationDone() = 0;
+        virtual void Disconnect() = 0;
     };
 
     class MqttClientConnector

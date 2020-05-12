@@ -35,6 +35,7 @@ namespace services
         MOCK_METHOD0(Publish, void());
         MOCK_METHOD0(Subscribe, void());
         MOCK_METHOD0(NotificationDone, void());
+        MOCK_METHOD0(Disconnect, void());
     };
 
     class MqttClientConnectorMock

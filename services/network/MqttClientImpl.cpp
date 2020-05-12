@@ -188,6 +188,11 @@ namespace services
         state->NotificationDone();
     }
 
+    void MqttClientImpl::Disconnect()
+    {
+        Subject().AbortAndDestroy();
+    }
+
     void MqttClientImpl::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         state->SendStreamAvailable(std::move(writer));

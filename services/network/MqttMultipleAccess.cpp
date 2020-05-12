@@ -31,6 +31,11 @@ namespace services
         MqttClientObserver::Subject().NotificationDone();
     }
 
+    void MqttMultipleAccessMaster::Disconnect()
+    {
+        MqttClientObserver::Subject().Disconnect();
+    }
+
     void MqttMultipleAccessMaster::ReleaseActive()
     {
         assert(active != nullptr);
@@ -117,6 +122,11 @@ namespace services
     void MqttMultipleAccess::NotificationDone()
     {
         master.NotificationDone();
+    }
+
+    void MqttMultipleAccess::Disconnect()
+    {
+        master.Disconnect();
     }
 
     void MqttMultipleAccess::Attached()

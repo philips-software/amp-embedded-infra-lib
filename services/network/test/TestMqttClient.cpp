@@ -406,6 +406,14 @@ TEST_F(MqttClientTest, closed_connection_results_in_ClosingConnection)
     connection.AbortAndDestroy();
 }
 
+TEST_F(MqttClientTest, disconnect_results_in_ClosingConnection)
+{
+    Connect();
+
+    ExpectClosingConnection();
+    client.Subject().Disconnect();
+}
+
 TEST_F(MqttClientTest, received_publish_is_forwarded_and_acked)
 {
     Connect();

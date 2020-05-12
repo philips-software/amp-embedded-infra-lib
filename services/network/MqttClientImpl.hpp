@@ -22,6 +22,7 @@ namespace services
         virtual void Publish() override;
         virtual void Subscribe() override;
         virtual void NotificationDone() override;
+        virtual void Disconnect() override;
 
         // Implementation of ConnectionObserver
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;

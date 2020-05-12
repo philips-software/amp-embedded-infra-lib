@@ -19,6 +19,7 @@ namespace services
         void Publish(MqttMultipleAccess& access);
         void Subscribe(MqttMultipleAccess& access);
         void NotificationDone();
+        void Disconnect();
         void ReleaseActive();
 
         // Implementation of MqttClientObserver
@@ -47,6 +48,7 @@ namespace services
         virtual void Publish() override;
         virtual void Subscribe() override;
         virtual void NotificationDone() override;
+        virtual void Disconnect() override;
 
         void Attached();
         void Detaching();
