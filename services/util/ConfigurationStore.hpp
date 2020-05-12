@@ -352,10 +352,7 @@ namespace services
         infra::ByteInputStream stream(blob.CurrentBlob());
         infra::ProtoParser parser(stream);
 
-        // Reset the configuration object by invoking the destructor, followed by the constructor
-        // We do it this way instead of "configuration = T()", because T might be several kB in size, which overflows the stack
-        configuration.~T();
-        new (&configuration) T();
+        infra::ReConstruct(configuration);
 
         configuration.Deserialize(parser);
     }

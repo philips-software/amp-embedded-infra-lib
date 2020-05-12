@@ -73,6 +73,9 @@ namespace infra
     template<class Base, class... Derived>
     using StaticStorageForInheritanceTree = StaticStorageForPolymorphicObjects<Base, MaxSizeOfTypes<Derived...>::value - sizeof(Base), typename MaxAlignmentType<Derived...>::Type>;
 
+    template<class T, class... Args>
+        void ReConstruct(T& value, Args&&... args);
+
     ////    Implementation    ////
 
     template<class T>
@@ -159,6 +162,13 @@ namespace infra
     const T* StaticStorageForPolymorphicObjects<T, ExtraSize, AlignAs>::operator->() const
     {
         return dataPtr;
+    }
+
+    template<class T, class... Args>
+    void ReConstruct(T& value, Args&&... args)
+    {
+        value.~T();
+        new(&value) T(std::forward<Args>(args)...);
     }
 }
 

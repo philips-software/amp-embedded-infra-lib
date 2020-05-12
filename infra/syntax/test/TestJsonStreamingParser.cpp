@@ -248,8 +248,7 @@ TEST_F(JsonStreamingObjectParserTest, propagation_stops_when_parser_is_deleted_i
 
     EXPECT_CALL(nestedVisitor, ParseError()).WillOnce(testing::Invoke([this]()
     {
-        parser.~WithBuffers<8, 12, 2>();
-        new (&parser) infra::JsonStreamingObjectParser::WithBuffers<8, 12, 2>{ visitor };
+        infra::ReConstruct(parser, visitor);
     }));
     parser.Feed("{ ^");
 }
@@ -274,8 +273,7 @@ TEST_F(JsonStreamingObjectParserWith3LevelsTest, propagation_stops_when_parser_i
 
     EXPECT_CALL(nestedVisitor, SemanticError()).WillOnce(testing::Invoke([this]()
     {
-        parser.~WithBuffers<8, 12, 3>();
-        new (&parser) infra::JsonStreamingObjectParser::WithBuffers<8, 12, 3>{ visitor };
+        infra::ReConstruct(parser, visitor);
     }));
     EXPECT_CALL(nestedVisitor2, VisitString("a", "b")).WillOnce(testing::Invoke([nestedParser](infra::BoundedConstString tag, infra::BoundedConstString value)
     {

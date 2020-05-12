@@ -139,8 +139,7 @@ namespace services
                 infra::DataInputStream limitedStream(limitedReader, stream.ErrorPolicy());
                 infra::ProtoParser parser(limitedStream);
 
-                value.~TRef();
-                new (&value) TRef(parser);
+                infra::ReConstruct(value, parser);
 
                 valid = !stream.Failed();
             }
