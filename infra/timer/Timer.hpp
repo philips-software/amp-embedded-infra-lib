@@ -76,6 +76,7 @@ namespace infra
     {
     public:
         explicit TimerSingleShot(uint32_t timerServiceId = systemTimerServiceId);
+        TimerSingleShot(TimePoint time, const infra::Function<void()>& action, uint32_t timerServiceId = systemTimerServiceId);
         TimerSingleShot(Duration duration, const infra::Function<void()>& action, uint32_t timerServiceId = systemTimerServiceId);
 
         void Start(TimePoint time, const infra::Function<void()>& action);

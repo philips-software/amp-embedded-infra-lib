@@ -18,6 +18,16 @@ TEST_F(TimerTest, SingleShotTimerTriggersOnceAfterDuration)
     ForwardTime(std::chrono::seconds(5));
 };
 
+TEST_F(TimerTest, SingleShotTimerTriggersOnceAfterTime)
+{
+    infra::MockCallback<void()> callback;
+    EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(1)));
+
+    infra::TimerSingleShot timer(infra::Now() + std::chrono::seconds(1), [&callback]() { callback.callback(); });
+
+    ForwardTime(std::chrono::seconds(5));
+};
+
 TEST_F(TimerTest, SingleShotTimerIsCancellable)
 {
     infra::MockCallback<void(infra::TimePoint)> callback;
