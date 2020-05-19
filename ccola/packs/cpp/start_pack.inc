@@ -150,7 +150,10 @@ macro(ccola_source_dependencies)
 	if(NOT CCOLA_COMPONENT_SKIP)
 		ccola_assert(CCOLA_COMPONENT_NAME "This command may only be used in a component")
 
-		list(APPEND CCOLA_COMPONENT_SOURCE_DEPENDENCIES ${ARGV})
+		set(dependencies "${ARGV}")
+		ccola_parse_selection_list(dependencies)
+
+		list(APPEND CCOLA_COMPONENT_SOURCE_DEPENDENCIES ${dependencies})
 	endif()
 
 endmacro()
@@ -206,7 +209,10 @@ macro(ccola_link_options)
 	if(NOT CCOLA_COMPONENT_SKIP)
 		ccola_assert(CCOLA_COMPONENT_NAME "This command may only be used in a component")
 
-		list(APPEND CCOLA_COMPONENT_LINK_OPTIONS ${ARGV})
+		set(options "${ARGV}")
+		ccola_parse_selection_list(options)
+
+		list(APPEND CCOLA_COMPONENT_LINK_OPTIONS ${options})
 	endif()
 
 endmacro()
@@ -235,7 +241,10 @@ macro(ccola_link_libraries)
 	if(NOT CCOLA_COMPONENT_SKIP)
 		ccola_assert(CCOLA_COMPONENT_NAME "This command may only be used in a component")
 
-		foreach(item ${ARGV})
+		set(libraries "${ARGV}")
+		ccola_parse_selection_list(libraries)
+
+		foreach(item ${libraries})
 			get_filename_component(full_path ${item} ABSOLUTE)
 			list(APPEND CCOLA_COMPONENT_LINK_LIBRARIES ${full_path})
 			ccola_list_remove_duplicates(CCOLA_COMPONENT_LINK_LIBRARIES)
@@ -250,7 +259,10 @@ macro(ccola_inheritable_link_libraries)
 	if(NOT CCOLA_COMPONENT_SKIP)
 		ccola_assert(CCOLA_COMPONENT_NAME "This command may only be used in a component")
 
-		foreach(library ${ARGV})
+		set(libraries "${ARGV}")
+		ccola_parse_selection_list(libraries)
+
+		foreach(library ${libraries})
 			ccola_translate_component_name(library)
 			ccola_link_libraries(${library})
 			get_filename_component(full_path ${library} ABSOLUTE)
@@ -267,7 +279,10 @@ macro(ccola_library_directories)
 	if(NOT CCOLA_COMPONENT_SKIP)
 		ccola_assert(CCOLA_COMPONENT_NAME "This command may only be used in a component")
 
-		foreach(item ${ARGV})
+		set(library_directories "${ARGV}")
+		ccola_parse_selection_list(library_directories)
+
+		foreach(item ${library_directories})
 			ccola_make_absolute(path ${item})
 			list(APPEND CCOLA_COMPONENT_LIBRARY_DIRECTORIES ${path})
 		endforeach()
@@ -301,7 +316,10 @@ macro(ccola_include_directories)
 	if(NOT CCOLA_COMPONENT_SKIP)
 		ccola_assert(CCOLA_COMPONENT_NAME "This command may only be used in a component")
 
-		foreach(item ${ARGV})
+		set(directories "${ARGV}")
+		ccola_parse_selection_list(directories)
+
+		foreach(item ${directories})
 			ccola_make_absolute(path ${item})
 			list(APPEND paths ${path})
 		endforeach()
@@ -317,7 +335,10 @@ macro(ccola_include_directories_absolute)
 	if(NOT CCOLA_COMPONENT_SKIP)
 		ccola_assert(CCOLA_COMPONENT_NAME "This command may only be used in a component")
 
-		list(APPEND CCOLA_COMPONENT_INCLUDE_DIRECTORIES ${ARGV})
+		set(directories "${ARGV}")
+		ccola_parse_selection_list(directories)
+
+		list(APPEND CCOLA_COMPONENT_INCLUDE_DIRECTORIES ${directories})
 		ccola_list_remove_duplicates(CCOLA_COMPONENT_INCLUDE_DIRECTORIES)
 	endif()
 
@@ -349,8 +370,11 @@ macro(ccola_inheritable_include_directories_absolute)
 	if(NOT CCOLA_COMPONENT_SKIP)
 		ccola_assert(CCOLA_COMPONENT_NAME "This command may only be used in a component")
 
-		ccola_include_directories_absolute(${ARGV})
-		list(APPEND CCOLA_COMPONENT_INHERITABLE_INCLUDE_DIRECTORIES ${ARGV})
+		set(directories "${ARGV}")
+		ccola_parse_selection_list(directories)
+
+		ccola_include_directories_absolute(${directories})
+		list(APPEND CCOLA_COMPONENT_INHERITABLE_INCLUDE_DIRECTORIES ${directories})
 		ccola_list_remove_duplicates(CCOLA_COMPONENT_INHERITABLE_INCLUDE_DIRECTORIES)
 	endif()
 
@@ -362,7 +386,10 @@ macro(ccola_runtime_directories)
 	if(NOT CCOLA_COMPONENT_SKIP)
 		ccola_assert(CCOLA_COMPONENT_NAME "This command may only be used in a component")
 
-		foreach(item ${ARGV})
+		set(directories "${ARGV}")
+		ccola_parse_selection_list(directories)
+
+		foreach(item ${directories})
 			ccola_make_absolute(path ${item})
 			string(REPLACE "<CCOLA_COMPONENT_NAME>" ${CCOLA_COMPONENT_NAME} runtime_directory "${path}")
 
@@ -469,7 +496,7 @@ macro(ccola_default_linker_scripts)
 			ccola_set_source_group("Linker Scripts" "${script_path}")
 		endforeach()
 
-		ccola_inherited_default_linker_scripts(${ARGV})
+		ccola_inherited_default_linker_scripts(${scrips})
 	endif()
 
 endmacro()
