@@ -5,10 +5,9 @@ namespace hal
 {
     TimerServiceGeneric::TimerServiceGeneric(uint32_t id)
         : infra::TimerService(id)
+        , nextTrigger(NextTrigger())
         , triggerThread([this]() { WaitForTrigger(); })
-    {
-        nextTrigger = NextTrigger();
-    }
+    {}
 
     TimerServiceGeneric::~TimerServiceGeneric()
     {
