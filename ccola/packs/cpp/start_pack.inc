@@ -496,7 +496,7 @@ macro(ccola_default_linker_scripts)
 			ccola_set_source_group("Linker Scripts" "${script_path}")
 		endforeach()
 
-		ccola_inherited_default_linker_scripts(${scrips})
+		ccola_inherited_default_linker_scripts(${scripts})
 	endif()
 
 endmacro()
