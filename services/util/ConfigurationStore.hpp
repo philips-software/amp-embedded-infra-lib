@@ -343,6 +343,7 @@ namespace services
         infra::ByteOutputStream stream(blob.MaxBlob());
         infra::ProtoFormatter formatter(stream);
         configuration.Serialize(formatter);
+        std::fill(stream.Writer().Remaining().begin(), stream.Writer().Remaining().end(), 0xff);
         blob.Write(stream.Writer().Processed().size(), onDone);
     }
 
