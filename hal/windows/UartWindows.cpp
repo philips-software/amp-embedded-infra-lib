@@ -42,7 +42,7 @@ namespace hal
 
     void UartWindows::ReadThread()
     {
-        const uint8_t readTimeoutMs = 500;
+        const uint16_t readTimeoutMs = 500;
 
         unsigned long bytesRead;
         bool pendingRead = false;
