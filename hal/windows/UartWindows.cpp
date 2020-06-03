@@ -114,8 +114,6 @@ namespace hal
                         std::abort();
                 }
             }
-            else
-                std::abort();
         }
 
        CloseHandle(overlapped.hEvent);
