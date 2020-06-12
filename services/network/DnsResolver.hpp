@@ -102,7 +102,7 @@ namespace services
             void TryFindAnswer(ReplyParser& replyParser);
             void TryFindRecursiveNameServer(ReplyParser& replyParser);
             void TryNewNameServers(ReplyParser& replyParser);
-            UdpSocket DnsUpdSocket() const;
+            UdpSocket DnsUdpSocket() const;
             std::size_t QuerySize() const;
 
         private:

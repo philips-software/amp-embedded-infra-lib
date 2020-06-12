@@ -394,7 +394,7 @@ namespace services
     {
         ReplyParser replyParser(reader, hostname);
 
-        if (replyParser.AnswerIsForCurrentQuery(from, GetAddress(DnsUpdSocket()), queryId))
+        if (replyParser.AnswerIsForCurrentQuery(from, GetAddress(DnsUdpSocket()), queryId))
         {
             if (replyParser.Error())
                 ResolveNextAttempt();
@@ -443,7 +443,7 @@ namespace services
 
     void DnsResolver::ActiveLookup::ResolveAttempt()
     {
-        datagramExchange->RequestSendStream(QuerySize(), DnsUpdSocket());
+        datagramExchange->RequestSendStream(QuerySize(), DnsUdpSocket());
     }
 
     void DnsResolver::ActiveLookup::SelectNextNameServer()
@@ -484,7 +484,7 @@ namespace services
         }
     }
 
-    UdpSocket DnsResolver::ActiveLookup::DnsUpdSocket() const
+    UdpSocket DnsResolver::ActiveLookup::DnsUdpSocket() const
     {
         return MakeUdpSocket(*currentNameServer, 53);
     }
