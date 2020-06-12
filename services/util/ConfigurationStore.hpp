@@ -68,6 +68,7 @@ namespace services
     private:
         struct Header
         {
+            std::array<uint8_t, 8> hash;
             uint32_t size;
         };
 
