@@ -80,6 +80,8 @@ namespace services
         // Warning: Allocates memory on the heap!
         virtual void Write(const T& newValue, const infra::Function<void()>& onDone) override;
 
+        infra::ConstByteRange GetMemory();
+
     private:
         std::shared_ptr<infra::ByteOutputStreamWriter> streamWriter;
 
@@ -195,6 +197,12 @@ namespace services
         this->onWriteDone = onDone;
         streamWriter = std::make_shared<infra::ByteOutputStreamWriter::WithStorage<T::maxMessageSize + sizeof(typename WritableConfiguration<T, TRef>::Header)>>();
         this->WriteConfiguration(newValue, *streamWriter, [this]() { this->streamWriter == nullptr; this->onWriteDone(); });
+    }
+
+    template<class T, class TRef>
+    infra::ConstByteRange MemoryMappedWritableConfiguration<T, TRef>::GetMemory()
+    {
+        return memory;
     }
 
     template<class T, class TRef>
