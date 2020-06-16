@@ -306,8 +306,8 @@ endmacro()
 macro(ccola_enable_coverage_flags)
 
 	if(${CCOLA_ARCH} STREQUAL "linux")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage -fprofile-arcs -ftest-coverage -fno-inline")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage -fno-inline -fno-elide-constructors")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
 
         if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
             link_libraries(gcov)
