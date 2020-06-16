@@ -2,6 +2,8 @@
 #define HAL_INTERFACE_FILE_SYSTEM_HPP
 
 #include <cstdint>
+#include <string>
+#include <vector>
 
 // Detect proper filesystem header and namespace; first by using
 // feature testing macros, then by using include file testing.
@@ -64,9 +66,6 @@
 #endif
     }
 #endif
-
-#include <string>
-#include <vector>
 
 namespace hal
 {

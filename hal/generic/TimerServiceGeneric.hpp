@@ -12,8 +12,10 @@ namespace hal
         : public infra::TimerService
     {
     public:
-        TimerServiceGeneric(uint32_t id = infra::systemTimerServiceId);
+        explicit TimerServiceGeneric(uint32_t id = infra::systemTimerServiceId);
+        TimerServiceGeneric(const TimerServiceGeneric& other) = delete;
         ~TimerServiceGeneric();
+        TimerServiceGeneric& operator=(const TimerServiceGeneric& other) = delete;
 
         virtual void NextTriggerChanged() override;
         virtual infra::TimePoint Now() const override;
