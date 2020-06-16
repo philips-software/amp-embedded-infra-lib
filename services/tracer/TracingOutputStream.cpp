@@ -35,7 +35,7 @@ namespace services
 
     void TracingStreamWriter::RestoreState(infra::ByteRange range)
     {
-        RestoreState(range);
+        writer.RestoreState(range);
     }
 
     infra::ByteRange TracingStreamWriter::Overwrite(std::size_t marker)
