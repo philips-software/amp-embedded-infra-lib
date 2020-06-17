@@ -52,5 +52,5 @@ script:
   - if [[ $STATIC_ANALYSIS ]]; then cmake .. -DCCOLA_ENABLE_COVERAGE=ON -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=${BUILD_TYPE}; else cmake .. -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=${BUILD_TYPE}; fi
   - if [[ $STATIC_ANALYSIS ]]; then build-wrapper-linux-x86-64 --out-dir ../sonar-build-wrapper cmake --build . --config ${BUILD_TYPE}; else cmake --build . --config ${BUILD_TYPE}; fi
   - ctest -C ${BUILD_TYPE} -T Test --output-on-failure
-  - if [[ $STATIC_ANALYSIS ]]; then gcovr --sonarqube=../coverage.xml -r ..; fi
+  - if [[ $STATIC_ANALYSIS ]]; then gcovr --sonarqube=../coverage.xml --exclude-unreachable-branches --exclude-throw-branches --root=.. --exclude=.*/generated/.* --exclude=.*/external/.* --exclude=.*/lwip/.* --exclude=.*/tracing/.* --exclude=.*/test/*.; fi
   - if [[ $STATIC_ANALYSIS ]]; then cd .. && sonar-scanner; fi
