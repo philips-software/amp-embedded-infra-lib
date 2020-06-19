@@ -5,7 +5,7 @@
 #include "infra/util/Function.hpp"
 
 #ifndef INFRA_SEQUENCER_FUNCTION_EXTRA_SIZE                                                                     //TICS !POR#021
-#define INFRA_SEQUENCER_FUNCTION_EXTRA_SIZE (INFRA_DEFAULT_FUNCTION_EXTRA_SIZE * (2 * sizeof(void*)))
+#define INFRA_SEQUENCER_FUNCTION_EXTRA_SIZE (INFRA_DEFAULT_FUNCTION_EXTRA_SIZE + (2 * sizeof(void*)))
 #endif
 
 namespace infra
