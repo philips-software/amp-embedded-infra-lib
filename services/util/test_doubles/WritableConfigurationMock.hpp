@@ -12,6 +12,7 @@ namespace services
     {
     public:
         MOCK_METHOD2_T(Write, void(const T&, const infra::Function<void()>&));
+        MOCK_METHOD1(Clear, void(const infra::Function<void()>&));
     };
 
     template<class TRef>

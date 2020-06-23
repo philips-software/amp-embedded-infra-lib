@@ -16,6 +16,7 @@ namespace services
     {
     public:
         virtual void Write(const T& newValue, const infra::Function<void()>& onDone) = 0;
+        virtual void Clear(const infra::Function<void()>& onDone) = 0;
     };
 
     template<class TRef>
@@ -37,6 +38,7 @@ namespace services
         virtual const TRef& Get() const = 0;
         virtual void Read(const infra::Function<void()>& onDone) = 0;
         virtual void Write(const T& newValue, const infra::Function<void()>& onDone) = 0;
+        virtual void Clear(const infra::Function<void()>& onDone) = 0;
     };
 
     template<class T, class TRef>
@@ -48,6 +50,8 @@ namespace services
 
         virtual bool Valid() const override;
         virtual const TRef& Get() const override;
+
+        virtual void Clear(const infra::Function<void()>& onDone) override;
 
     protected:
         void LoadConfiguration(infra::ConstByteRange memory);
@@ -170,6 +174,12 @@ namespace services
         headerProxy = header;
 
         flash.EraseAll([this, &streamWriter]() { flash.WriteBuffer(streamWriter.Processed(), 0, [this]() { this->Read(this->onDone); }); });
+    }
+
+    template<class T, class TRef>
+    void WritableConfiguration<T, TRef>::Clear(const infra::Function<void()>& onDone)
+    {
+        flash.EraseAll(onDone);
     }
 
     template<class T, class TRef>
