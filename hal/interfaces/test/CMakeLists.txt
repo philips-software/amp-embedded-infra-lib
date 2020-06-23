@@ -1,6 +1,7 @@
 ccola_component(interfaces_test gmock_test)
 
     ccola_sources(
+        TestCan.cpp
         TestFlash.cpp
         TestI2cRegisterAccess.cpp
         TestMacAddress.cpp
