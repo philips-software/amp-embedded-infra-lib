@@ -50,8 +50,9 @@ namespace infra
         virtual const infra::Function<void()>& Action() const;
         virtual void ComputeNextTriggerTime() = 0;
 
-    protected:
         TimePoint Now() const;
+
+    protected:
         Duration Resolution() const;
         void SetNextTriggerTime(TimePoint time, const infra::Function<void()>& action);
 
