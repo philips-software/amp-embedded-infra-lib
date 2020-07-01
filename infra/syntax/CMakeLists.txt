@@ -11,6 +11,8 @@ ccola_component(syntax static_library)
         JsonFormatter.hpp
         JsonInputStream.cpp
         JsonInputStream.hpp
+        JsonObjectNavigator.cpp
+        JsonObjectNavigator.hpp
         JsonStreamingParser.cpp
         JsonStreamingParser.hpp
         ProtoParser.cpp
