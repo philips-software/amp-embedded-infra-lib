@@ -8,8 +8,6 @@ set(hints_paths)
 if(CMAKE_HOST_WIN32)
     list(APPEND hints_paths "C:/Program Files (x86)/GNU Tools ARM Embedded/5.4 2016q3/bin/"
                             "C:/Program Files (x86)/GNU Tools Arm Embedded/9 2019-q4-major/bin/")
-else()
-    list(APPEND hints_paths "/opt/gcc-arm-none-eabi-5_4-2016q3/bin/" "/opt/gcc-arm-none-eabi-6_2-2016q4/bin/" "/opt/gcc-arm-none-eabi-9-2019-q4-major/bin/")
 endif()
 
 find_program(CMAKE_C_COMPILER
