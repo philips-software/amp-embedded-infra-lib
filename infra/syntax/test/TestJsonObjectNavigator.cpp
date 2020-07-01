@@ -3,7 +3,8 @@
 
 TEST(JsonObjectNavigatorTest, construct_with_string)
 {
-    infra::JsonObjectNavigator objectNavigator(R"({ "key" : "value", "enabled" : true })");
+    std::string jsonString = R"({ "key" : "value", "enabled" : true })";
+    infra::JsonObjectNavigator objectNavigator(jsonString);
 
     EXPECT_EQ("value", objectNavigator / infra::JsonStringNavigatorToken{ "key" });
 }
