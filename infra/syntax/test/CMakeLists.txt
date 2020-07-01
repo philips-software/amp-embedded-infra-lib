@@ -6,6 +6,7 @@ ccola_component(syntax_test gmock_test)
         TestJson.cpp
         TestJsonFormatter.cpp
         TestJsonInputStream.cpp
+        TestJsonObjectNavigator.cpp
         TestJsonStreamingParser.cpp
         TestProtoFormatter.cpp
         TestProtoParser.cpp
