@@ -5,6 +5,7 @@ macro(generate_xslt output)
 	ccola_parse_selection_list(inputs)
 
 	set(absolute_inputs)
+	set(absolute_inputs_xslt)
 	set(xslt_params)
 	foreach(input ${inputs})
 		string(SUBSTRING "${input}" 0 2 input_start)
@@ -12,7 +13,8 @@ macro(generate_xslt output)
 			list(APPEND xslt_params ${input})
 		else()
 			ccola_make_absolute_from_source(absolute_input ${input})
-			list(APPEND absolute_inputs "'${absolute_input}'")
+			list(APPEND absolute_inputs_xslt "'${absolute_input}'")
+			list(APPEND absolute_inputs "${absolute_input}")
 			ccola_set_source_group("Source Files" "${absolute_input}")
 		endif()
 	endforeach()
@@ -28,7 +30,7 @@ macro(generate_xslt output)
 
 	add_custom_command(
 		OUTPUT ${absolute_output}
-		COMMAND ${xsltproc_program} ${xslt_params} --output "${absolute_output}" ${absolute_inputs}
+		COMMAND ${xsltproc_program} ${xslt_params} --output "${absolute_output}" ${absolute_inputs_xslt}
 		DEPENDS ${absolute_inputs}
 		DEPENDS "${absolute_directory}"
 	)
@@ -36,6 +38,7 @@ macro(generate_xslt output)
 	ccola_sources(${absolute_inputs})
 
 	unset(absolute_inputs)
+	unset(absolute_inputs_xslt)
 	unset(xslt_params)
 
 endmacro()
