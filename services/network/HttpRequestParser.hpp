@@ -46,7 +46,6 @@ namespace services
         void FindVerb(infra::Tokenizer& tokenizer);
         void FindPath(infra::Tokenizer& tokenizer);
         void FindHeadersAndBody(infra::BoundedString data);
-        void CheckContentsLength(infra::BoundedString data);
 
     private:
         infra::BoundedString headers;

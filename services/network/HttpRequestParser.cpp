@@ -106,25 +106,16 @@ namespace services
             if (headersStart != bodyStart)
                 headers = data.substr(headersStart + 2, bodyStart);
             body = data.substr(bodyStart + 4);
-        }
 
-        CheckContentsLength(data);
-    }
+            auto contentsLength = Header("Content-Length");
+            if (!contentsLength.empty())
+            {
+                infra::StringInputStream stream(contentsLength, infra::noFail);
+                uint32_t size(0);
+                stream >> size;
 
-    void HttpRequestParserImpl::CheckContentsLength(infra::BoundedString data)
-    {
-        static const char* contentLengthTag = "\r\nContent-Length:";
-        std::size_t contentLengthHeaderStart = data.find(contentLengthTag);
-        if (contentLengthHeaderStart != infra::BoundedConstString::npos)
-        {
-            auto contentLengthStart = contentLengthHeaderStart + std::strlen(contentLengthTag);
-            auto contentLengthEnd = data.find("\r\n", contentLengthStart);
-            infra::StringInputStream stream(data.substr(contentLengthStart, contentLengthEnd - contentLengthStart), infra::noFail);
-            uint32_t size(0);
-            stream >> size;
-
-            if (body.size() < size)
-                complete = false;
+                complete = body.size() >= size;
+            }
         }
     }
 }

@@ -28,12 +28,33 @@ public:
         httpServer.Stop(infra::emptyFunction);
     }
 
+    void DontExpectPageServerRequest(const std::string& request)
+    {
+        infra::ConstByteRange data = infra::MakeStringByteRange(request);
+        connection.SimulateDataReceived(data);
+        ExecuteAllActions();
+    }
+
     void ExpectPageServerRequest(services::HttpVerb verb, const std::string& request)
     {
         EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(true));
         EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(testing::Invoke([this, verb](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
         {
             EXPECT_EQ(verb, parser.Verb());
+            httpConnection = &connection;
+        }));
+        infra::ConstByteRange data = infra::MakeStringByteRange(request);
+        connection.SimulateDataReceived(data);
+        ExecuteAllActions();
+    }
+
+    void ExpectPageServerRequestWithHeader(services::HttpVerb verb, const std::string& request, const services::HttpHeader& header)
+    {
+        EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(true));
+        EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(testing::Invoke([this, verb, header](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
+        {
+            EXPECT_EQ(verb, parser.Verb());
+            EXPECT_EQ(header.Value(), parser.Header(header.Field()));
             httpConnection = &connection;
         }));
         infra::ConstByteRange data = infra::MakeStringByteRange(request);
@@ -132,6 +153,38 @@ TEST_F(HttpServerTest, request_results_in_get)
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     ExpectPageServerRequest(services::HttpVerb::get, "GET /path HTTP/1.1 \r\n\r\n");
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+}
+
+TEST_F(HttpServerTest, request_parses_header)
+{
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    ExpectPageServerRequestWithHeader(services::HttpVerb::get, "GET /path HTTP/1.1 \r\nAccept-Encoding: identity\r\n\r\n", { "accept-encoding", "identity" });
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+}
+
+TEST_F(HttpServerTest, unfinished_request_is_not_served)
+{
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    DontExpectPageServerRequest("GET /path HTTP/1.1 \r\nContent-Length: 1\r\n\r\n");
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+}
+
+TEST_F(HttpServerTest, finished_request_is_served)
+{
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    ExpectPageServerRequest(services::HttpVerb::get, "GET /path HTTP/1.1 \r\nContent-Length: 1\r\n\r\nA");
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+}
+
+TEST_F(HttpServerTest, content_length_header_is_case_insensitive)
+{
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    ExpectPageServerRequest(services::HttpVerb::get, "GET /path HTTP/1.1 \r\ncontent-length: 1\r\n\r\nA");
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
