@@ -330,7 +330,10 @@ namespace services
             {
                 encryptedSendWriter = nullptr;
                 TlsWriteFailure(result);
-                ConnectionObserver::Subject().AbortAndDestroy();
+                // Since TrySend may be invoked from the destructor of StreamWriterMbedTls, and since ConnectionMbedTls holds the storage of that stream writer,
+                // we may not directly abort the connection here, since that would result in the stream writer not being able to be deallocted.
+                // Instead, schedule the abort.
+                infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object) { object->ConnectionObserver::Subject().AbortAndDestroy(); }, SharedFromThis());
                 return;
             }
             else if (initialHandshake)
