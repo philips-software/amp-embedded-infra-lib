@@ -126,6 +126,8 @@ namespace services
         template<class U>
             ConfigurationStoreAccess<U> Configuration(U& member) const;
 
+        ConfigurationStoreInterface& Interface();
+
     private:
         template<class U>
             friend class ConfigurationStoreAccess;
@@ -408,6 +410,12 @@ namespace services
     uint32_t ConfigurationStoreAccess<T>::Write()
     {
         return configurationStore.Write();
+    }
+
+    template<class T>
+    ConfigurationStoreInterface& ConfigurationStoreAccess<T>::Interface()
+    {
+        return configurationStore;
     }
 
     template<class T>
