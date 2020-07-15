@@ -1,0 +1,4 @@
+name: embedded_infrastructure_library
+title: Embedded Infrastructure Library documentation
+nav:
+  - modules/ROOT/nav.adoc
