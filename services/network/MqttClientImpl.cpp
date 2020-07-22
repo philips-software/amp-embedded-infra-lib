@@ -213,6 +213,11 @@ namespace services
         state->Detaching();
     }
 
+    void MqttClientImpl::CancellingConnection()
+    {
+        state->CancellingConnection();
+    }
+
     infra::SharedPtr<infra::StreamWriter> MqttClientImpl::ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize)
     {
         return Observer().ReceivedNotification(topic, payloadSize);
@@ -243,6 +248,11 @@ namespace services
     }
 
     void MqttClientImpl::StateBase::NotificationDone()
+    {
+        std::abort();
+    }
+
+    void MqttClientImpl::StateBase::CancellingConnection()
     {
         std::abort();
     }
@@ -320,6 +330,11 @@ namespace services
         signaledFailure = true;
         factory.ConnectionFailed(MqttClientObserverFactory::ConnectFailReason::initializationTimedOut);
         clientConnection.Abort();
+    }
+
+    void MqttClientImpl::StateConnecting::CancellingConnection()
+    {
+        signaledFailure = true;
     }
 
     void MqttClientImpl::StateConnected::Detaching()
@@ -554,13 +569,17 @@ namespace services
     void MqttClientConnectorImpl::Connect(MqttClientObserverFactory& factory)
     {
         assert(client.Allocatable());
+        connecting = true;
         clientObserverFactory = &factory;
         connectionFactory.Connect(*this);
     }
 
     void MqttClientConnectorImpl::CancelConnect()
     {
-        connectionFactory.CancelConnect(*this);
+        if (connecting)
+            connectionFactory.CancelConnect(*this);
+        else
+            client->CancellingConnection();
     }
 
     infra::BoundedConstString MqttClientConnectorImpl::Hostname() const
@@ -575,24 +594,29 @@ namespace services
 
     void MqttClientConnectorImpl::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
     {
+        connecting = false;
         createdObserver(client.Emplace(*clientObserverFactory, clientId, username, password));
     }
 
     void MqttClientConnectorImpl::ConnectionFailed(ConnectFailReason reason)
     {
-        switch (reason)
+        if (connecting)
         {
-            case ConnectFailReason::refused:
-                clientObserverFactory->ConnectionFailed(MqttClientObserverFactory::ConnectFailReason::refused);
-                break;
-            case ConnectFailReason::connectionAllocationFailed:
-                clientObserverFactory->ConnectionFailed(MqttClientObserverFactory::ConnectFailReason::connectionAllocationFailed);
-                break;
-            case ConnectFailReason::nameLookupFailed:
-                clientObserverFactory->ConnectionFailed(MqttClientObserverFactory::ConnectFailReason::nameLookupFailed);
-                break;
-            default:
-                std::abort();
+            connecting = false;
+            switch (reason)
+            {
+                case ConnectFailReason::refused:
+                    clientObserverFactory->ConnectionFailed(MqttClientObserverFactory::ConnectFailReason::refused);
+                    break;
+                case ConnectFailReason::connectionAllocationFailed:
+                    clientObserverFactory->ConnectionFailed(MqttClientObserverFactory::ConnectFailReason::connectionAllocationFailed);
+                    break;
+                case ConnectFailReason::nameLookupFailed:
+                    clientObserverFactory->ConnectionFailed(MqttClientObserverFactory::ConnectFailReason::nameLookupFailed);
+                    break;
+                default:
+                    std::abort();
+            }
         }
     }
 }
