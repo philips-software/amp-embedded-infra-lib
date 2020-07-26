@@ -21,7 +21,7 @@ namespace infra
         uint8_t hours;   // hours since midnight - [0, 23]
         uint8_t days;    // day of the month - [1, 31]
         uint8_t months;  // months since January - [1, 12]
-        uint16_t years;  // years since 1900
+        uint16_t years;  // years since year 0
     };
 }
 

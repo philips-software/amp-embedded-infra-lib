@@ -8,8 +8,8 @@ namespace infra
 
     PartitionedTime::PartitionedTime(time_t unixTime)
     {
-        int64_t z = static_cast<int>((unixTime >= 0) ? (unixTime / (24 * 60 * 60)) : ((unixTime - (24 * 60 * 60)) / (24 * 60 * 60)));
-        unixTime -= z * (24 * 60 * 60);
+        int z = static_cast<int>((unixTime >= 0) ? (unixTime / (24 * 60 * 60)) : ((unixTime - (24 * 60 * 60 - 1)) / (24 * 60 * 60)));
+        unixTime -= static_cast<time_t>(z) * (24 * 60 * 60);
 
         seconds = unixTime % 60;
         unixTime = unixTime / 60;
@@ -22,7 +22,7 @@ namespace infra
 
         // See http://howardhinnant.github.io/date_algorithms.html for this wonderful algorithm
         z += 719468;
-        const unsigned era = static_cast<unsigned>((z >= 0 ? z : z - 146096)) / 146097;
+        const int era = (z >= 0 ? z : z - 146096) / 146097;
         const unsigned doe = static_cast<unsigned>(z - era * 146097);               // [0, 146096]
         const unsigned yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365; // [0, 399]
         const int y = static_cast<int>(yoe) + era * 400;
@@ -47,16 +47,16 @@ namespace infra
 
     time_t PartitionedTime::ToTimeT() const
     {
-        auto y = years;
-        auto m = months;
-        auto d = days;
+        int16_t y = years;
+        uint8_t m = months;
+        uint8_t d = days;
 
         y -= m <= 2;
         const int era = (y >= 0 ? y : y - 399) / 400;
         const unsigned yoe = static_cast<unsigned>(y - era * 400);              // [0, 399]
         const unsigned doy = (153 * (m + (m > 2 ? -3 : 9)) + 2) / 5 + d - 1;    // [0, 365]
         const unsigned doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;             // [0, 146096]
-        return (era * 146097 + static_cast<int>(doe) - 719468) * (24 * 60 * 60) + seconds + (minutes + hours * 60) * 60;
+        return (era * 146097 + static_cast<time_t>(doe) - 719468) * (24 * 60 * 60) + seconds + (minutes + hours * 60) * 60;
     }
 
     infra::TimePoint PartitionedTime::ToTimePoint() const
