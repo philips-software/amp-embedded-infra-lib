@@ -23,6 +23,7 @@ namespace infra
         void UpdateTriggerTime(Timer& timer, TimePoint oldTriggerTime);
 
         void Progressed(TimePoint time);
+        void Jumped(TimePoint from, TimePoint to);
         TimePoint NextTrigger() const;
 
         virtual void NextTriggerChanged();
