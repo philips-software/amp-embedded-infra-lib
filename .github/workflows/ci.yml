@@ -1,0 +1,13 @@
+name: build
+on: [push]
+jobs:
+  cowsay2_1:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: build
+        run: |
+          cmake -E make_directory Build && cd Build
+          cmake .. -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=Debug
+          cmake --build .
+          ctest -C Debug -T Test --output-on-failure
