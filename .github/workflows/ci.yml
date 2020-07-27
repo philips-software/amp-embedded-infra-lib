@@ -32,7 +32,7 @@ jobs:
         run: |
           wget http://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
           unzip build-wrapper-linux-x86.zip
-          pip3 install gcovr==4.2
+          pip3 install --user gcovr==4.2
       - name: Build and Test
         run: |
           cmake -E make_directory Build && cd Build
