@@ -69,6 +69,18 @@ namespace infra
             ComputeNextTrigger();
     }
 
+    void TimerService::Jumped(TimePoint from, TimePoint to)
+    {
+        holdUpdate = true;
+
+        for (timerIterator = scheduledTimers.begin(); timerIterator != scheduledTimers.end(); )
+            timerIterator++->Jumped(from, to);
+
+        holdUpdate = false;
+        if (updateNeeded)
+            ComputeNextTrigger();
+    }
+
     TimePoint TimerService::NextTrigger() const
     {
         return nextTrigger;

@@ -30,8 +30,9 @@ namespace infra
 
     void DerivedTimerService::Shift(Duration shift)
     {
+        auto oldTime = Now();
         this->shift = shift;
-        NextTriggerChanged();
+        Jumped(oldTime, Now());
     }
 
     Duration DerivedTimerService::GetCurrentShift() const
