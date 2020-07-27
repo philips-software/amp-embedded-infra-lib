@@ -1,22 +1,49 @@
-name: build
-on: [push]
+name: Continuous Integration
+
+on:
+  - push
+  - pull_request
+
 jobs:
-  build:
+  build_test:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, windows-latest]
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build and Test
+        env:
+          BUILD_TYPE: Debug
+        run: |
+          cmake -E make_directory Build && cd Build
+          cmake .. -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+          cmake --build .
+          ctest -C $BUILD_TYPE -T Test --output-on-failure
+
+  static_analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install
+        run: |
+          wget http://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
+          unzip build-wrapper-linux-x86.zip
+          pip3 install --user git+https://github.com/gcovr/gcovr.git
+      - name: Checkout
+        uses: actions/checkout@v2
         with:
           # Disabling shallow clone is recommended for improving relevancy of reporting
           fetch-depth: 0
       - name: Build and Test
+        env:
+          BUILD_TYPE: Debug
         run: |
           cmake -E make_directory Build && cd Build
-          cmake .. -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=Debug
-          cmake --build .
-          ctest -C Debug -T Test --output-on-failure
+          cmake .. -DCCOLA_ENABLE_COVERAGE=ON -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+          build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir ../sonar-build-wrapper cmake --build . --config ${BUILD_TYPE}
+          ctest -C $BUILD_TYPE -T Test --output-on-failure
+          gcovr --sonarqube=../coverage.xml --exclude-unreachable-branches --exclude-throw-branches --root=.. --exclude=.*/generated/.* --exclude=.*/external/.* --exclude=.*/lwip/.* --exclude=.*/tracing/.* --exclude=.*/test/.*
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@v1.3
         env:

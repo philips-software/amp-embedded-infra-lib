@@ -2,6 +2,7 @@
 #define UPGRADE_PACK_BUILDER_LIBRARY_INPUT_HPP
 
 #include "upgrade/pack/UpgradePackHeader.hpp"
+#include <stdexcept>
 #include <string>
 #include <vector>
 
