@@ -23,16 +23,16 @@ jobs:
   static_analysis:
     runs-on: ubuntu-latest
     steps:
-      - name: Install
-        run: |
-          wget http://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
-          unzip build-wrapper-linux-x86.zip && chmod +x ${{ github.workspace }}/build-wrapper-linux-x86/build-wrapper-linux-x86-64
-          pip3 install gcovr==4.2
       - name: Checkout
         uses: actions/checkout@v2
         with:
           # Disabling shallow clone is recommended for improving relevancy of reporting
           fetch-depth: 0
+      - name: Install
+        run: |
+          wget http://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
+          unzip build-wrapper-linux-x86.zip
+          pip3 install gcovr==4.2
       - name: Build and Test
         run: |
           cmake -E make_directory Build && cd Build
