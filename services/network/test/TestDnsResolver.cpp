@@ -309,7 +309,7 @@ public:
     void DataReceived(const std::vector<uint8_t>& response, services::UdpSocket from)
     {
         infra::StdVectorInputStream::WithStorage stream(infra::inPlace, response);
-        datagramExchangeObserver->DataReceived(stream.Reader(), from);
+        datagramExchangeObserver->DataReceived(infra::UnOwnedSharedPtr(stream.Reader()), from);
     }
 
     const services::IPv4Address dnsServer1{ { 1, 2, 3, 4 } };

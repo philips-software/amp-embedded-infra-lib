@@ -92,7 +92,7 @@ namespace services
 
         private:
             // Implementation of DatagramExchangeObserver
-            virtual void DataReceived(infra::StreamReaderWithRewinding& reader, UdpSocket from) override;
+            virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
             void ResolveNextAttempt();
@@ -117,6 +117,8 @@ namespace services
             infra::BoundedString::WithStorage<253> hostname;
             infra::BoundedVector<IPAddress>::WithMaxSize<maxAttempts> nameServers;
             const IPAddress* currentNameServer;
+
+            infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
         };
 
     private:

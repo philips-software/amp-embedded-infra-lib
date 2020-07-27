@@ -18,7 +18,7 @@ public:
     void DataReceived(const std::vector<uint8_t>& data)
     {
         infra::ByteInputStreamReader requestReader(infra::MakeRange(data));
-        server.DataReceived(requestReader, services::Udpv4Socket{ { 1, 2, 3, 4 }, 53 });
+        server.DataReceived(infra::UnOwnedSharedPtr(requestReader), services::Udpv4Socket{ { 1, 2, 3, 4 }, 53 });
     }
 
     void ExpectResponse(const std::vector<uint8_t>& data)

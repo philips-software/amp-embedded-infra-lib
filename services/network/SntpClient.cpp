@@ -65,15 +65,15 @@ namespace services
         datagramExchange->RequestSendStream(sizeof(NtpMessage));
     }
 
-    void SntpClient::DataReceived(infra::StreamReaderWithRewinding& reader, services::UdpSocket from)
+    void SntpClient::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, services::UdpSocket from)
     {
-        if (reader.Empty())
+        if (reader->Empty())
         {
             NotifyTimeUnavailable();
             return;
         }
 
-        infra::DataInputStream::WithErrorPolicy stream(reader, infra::softFail);
+        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::softFail);
         NtpMessage message{};
         stream >> message;
 
