@@ -9,8 +9,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-        # Disabling shallow clone is recommended for improving relevancy of reporting
-        fetch-depth: 0
+          # Disabling shallow clone is recommended for improving relevancy of reporting
+          fetch-depth: 0
       - name: Build and Test
         run: |
           cmake -E make_directory Build && cd Build
