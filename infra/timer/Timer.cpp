@@ -32,6 +32,12 @@ namespace infra
         return action != nullptr;
     }
 
+    void Timer::Jumped(TimePoint from, TimePoint to)
+    {
+        // Default behaviour: Just pretend that during the jump no actual time passed
+        nextTriggerTime = Convert(Convert(nextTriggerTime) + (to - from));
+    }
+
     TimePoint Timer::NextTrigger() const
     {
         return Convert(nextTriggerTime);
@@ -156,6 +162,11 @@ namespace infra
     {
         Start(duration, action);
         action();
+    }
+
+    Duration TimerRepeating::TriggerPeriod() const
+    {
+        return triggerPeriod;
     }
 
     void TimerRepeating::ComputeNextTriggerTime()

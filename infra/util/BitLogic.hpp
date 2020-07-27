@@ -54,6 +54,12 @@ namespace infra
     {
         return dataRegister & (~(std::numeric_limits<typename std::remove_cv<T>::type>::max() << size) << (position * size));
     }
+
+    template<class T>
+    void MaskedUpdate(T& dataRegister, typename std::remove_cv<T>::type mask, typename std::remove_cv<T>::type update)
+    {
+        dataRegister = (dataRegister & ~mask) | update;
+    }
 }
 
 #endif

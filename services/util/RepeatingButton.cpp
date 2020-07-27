@@ -64,5 +64,4 @@ namespace services
     {
         SetNextTriggerTime(Now() + successiveDelay, Action());
     }
-
 }

@@ -2,6 +2,7 @@
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
+#include "infra/util/test_helper/MockCallback.hpp"
 #include "services/network/MqttClientImpl.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/network/test_doubles/ConnectionStub.hpp"
@@ -175,6 +176,39 @@ public:
     infra::BoundedString::WithStorage<1024> notificationPayload;
     infra::NotifyingSharedOptional<infra::StringOutputStream> notificationPayloadStream;
 };
+
+TEST_F(MqttClientTest, CancelConnect_cancels_connection_attempt)
+{
+    EXPECT_CALL(connectionFactory, Connect(testing::Ref(connector)));
+    connector.Connect(factory);
+
+    EXPECT_CALL(connectionFactory, CancelConnect(testing::Ref(connector)));
+    connector.CancelConnect();
+}
+
+TEST_F(MqttClientTest, connection_fully_established_results_in_mqtt_initializing)
+{
+    EXPECT_CALL(connectionFactory, Connect(testing::Ref(connector)));
+    connector.Connect(factory);
+
+    testing::StrictMock<services::ConnectionMock> connection;
+    EXPECT_CALL(connection, RequestSendStream(testing::_));
+    connector.ConnectionEstablished([&](infra::SharedPtr<services::ConnectionObserver> connectionObserver) { connection.Attach(connectionObserver); });
+
+    EXPECT_CALL(factory, ConnectionFailed(testing::_));
+}
+
+TEST_F(MqttClientTest, CancelConnect_while_mqtt_is_initializing)
+{
+    EXPECT_CALL(connectionFactory, Connect(testing::Ref(connector)));
+    connector.Connect(factory);
+
+    testing::StrictMock<services::ConnectionMock> connection;
+    EXPECT_CALL(connection, RequestSendStream(testing::_));
+    connector.ConnectionEstablished([&](infra::SharedPtr<services::ConnectionObserver> connectionObserver) { connection.Attach(connectionObserver); });
+
+    connector.CancelConnect();
+}
 
 TEST_F(MqttClientTest, refused_connection_propagates_to_MqttClientFactory)
 {

@@ -49,9 +49,11 @@ namespace infra
 
         virtual const infra::Function<void()>& Action() const;
         virtual void ComputeNextTriggerTime() = 0;
+        virtual void Jumped(TimePoint from, TimePoint to);
+
+        TimePoint Now() const;
 
     protected:
-        TimePoint Now() const;
         Duration Resolution() const;
         void SetNextTriggerTime(TimePoint time, const infra::Function<void()>& action);
 
@@ -96,6 +98,8 @@ namespace infra
 
         void Start(Duration duration, const infra::Function<void()>& action);
         void Start(Duration duration, const infra::Function<void()>& action, TriggerImmediately);
+
+        Duration TriggerPeriod() const;
 
     protected:
         virtual void ComputeNextTriggerTime() override;

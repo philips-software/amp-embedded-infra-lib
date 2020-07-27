@@ -30,6 +30,8 @@ namespace services
         virtual void Attached() override;
         virtual void Detaching() override;
 
+        void CancellingConnection();
+
     protected:
         virtual infra::SharedPtr<infra::StreamWriter> ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize);
 
@@ -128,6 +130,8 @@ namespace services
             virtual void Subscribe();
             virtual void NotificationDone();
 
+            virtual void CancellingConnection();
+
         protected:
             MqttClientImpl& clientConnection;
         };
@@ -142,6 +146,7 @@ namespace services
             virtual void Detaching() override;
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
             virtual void HandleDataReceived() override;
+            virtual void CancellingConnection() override;
 
         private:
             void Timeout();
@@ -265,6 +270,7 @@ namespace services
     private:
         infra::BoundedConstString hostname;
         uint16_t port;
+        bool connecting = false;
         services::ConnectionFactoryWithNameResolver& connectionFactory;
         infra::BoundedConstString clientId;
         infra::BoundedConstString username;
