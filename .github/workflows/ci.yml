@@ -1,12 +1,13 @@
 name: build
 on: [push]
 jobs:
-  cowsay2_1:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      os: [ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v2
-      - name: build
-        run: |
+      - run: |
           cmake -E make_directory Build && cd Build
           cmake .. -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=Debug
           cmake --build .
