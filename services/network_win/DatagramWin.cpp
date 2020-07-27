@@ -1,4 +1,4 @@
-#include "infra/stream/ByteInputStream.hpp"
+#include "infra/stream/StdVectorInputStream.hpp"
 #include "services/network_win/DatagramWin.hpp"
 #include "services/network_win/EventDispatcherWithNetwork.hpp"
 #include <ws2tcpip.h>
@@ -119,11 +119,12 @@ namespace services
         else if (fromAddressSize == sizeof(fromAddress) && fromAddress.sin_family == AF_INET)
         {
             receiveBuffer.resize(received);
-            infra::ByteInputStreamReader reader(infra::MakeRange(receiveBuffer));
+            auto reader = infra::MakeSharedOnHeap<infra::StdVectorInputStreamReader::WithStorage>();
+            reader->Storage() = std::vector<uint8_t>(receiveBuffer.begin(), receiveBuffer.end());
 
             auto from = Udpv4Socket{ services::ConvertFromUint32(htonl(fromAddress.sin_addr.s_addr)), fromAddress.sin_port };
 
-            GetObserver().DataReceived(reader, from);
+            GetObserver().DataReceived(std::move(reader), from);
         }
     }
 
@@ -333,9 +334,9 @@ namespace services
         exchange = factory.Connect(*this, local, remote);
     }
 
-    void DatagramExchangeMultiple::Observer::DataReceived(infra::StreamReaderWithRewinding& reader, UdpSocket from)
+    void DatagramExchangeMultiple::Observer::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from)
     {
-        parent.GetObserver().DataReceived(reader, from);
+        parent.GetObserver().DataReceived(std::move(reader), from);
     }
 
     void DatagramExchangeMultiple::Observer::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)

@@ -41,7 +41,7 @@ TEST_F(LlmnrResponderTest, request_record_a)
     infra::ByteInputStreamReader requestReader(infra::MakeRange(data));
 
     EXPECT_CALL(datagramExchange, RequestSendStream(38, services::UdpSocket{ services::Udpv4Socket{ { 1, 2, 3, 4 }, 12 } }));
-    responder.DataReceived(requestReader, services::Udpv4Socket{ { 1, 2, 3, 4 }, 12 });
+    responder.DataReceived(infra::UnOwnedSharedPtr(requestReader), services::Udpv4Socket{ { 1, 2, 3, 4 }, 12 });
 
     EXPECT_CALL(ipv4Info, GetIPv4Address()).WillOnce(testing::Return(services::IPv4Address{ 5, 6, 7, 8 }));
     infra::ByteOutputStreamWriter::WithStorage<512> response;
@@ -55,7 +55,7 @@ TEST_F(LlmnrResponderTest, query_for_someone_else_is_not_answered)
     std::vector<uint8_t> data{ 1, 2, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 4, 'n', 'o', 'n', 'e', 0, 0, 1, 0, 1 };
     infra::ByteInputStreamReader requestReader(infra::MakeRange(data));
 
-    responder.DataReceived(requestReader, services::Udpv4Socket{ { 1, 2, 3, 4 }, 12 });
+    responder.DataReceived(infra::UnOwnedSharedPtr(requestReader), services::Udpv4Socket{ { 1, 2, 3, 4 }, 12 });
 }
 
 TEST_F(LlmnrResponderTest, short_header_is_not_answered)
@@ -63,7 +63,7 @@ TEST_F(LlmnrResponderTest, short_header_is_not_answered)
     std::vector<uint8_t> data{ 1, 2, 0, 0, 0, 1, 0 };
     infra::ByteInputStreamReader requestReader(infra::MakeRange(data));
 
-    responder.DataReceived(requestReader, services::Udpv4Socket{ { 1, 2, 3, 4 }, 12 });
+    responder.DataReceived(infra::UnOwnedSharedPtr(requestReader), services::Udpv4Socket{ { 1, 2, 3, 4 }, 12 });
 }
 
 TEST_F(LlmnrResponderTest, unknown_request_is_not_answered)
@@ -71,7 +71,7 @@ TEST_F(LlmnrResponderTest, unknown_request_is_not_answered)
     std::vector<uint8_t> data{ 1, 2, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 4, 'n', 'a', 'm', 'e', 0, 0, 2, 0, 1 };
     infra::ByteInputStreamReader requestReader(infra::MakeRange(data));
 
-    responder.DataReceived(requestReader, services::Udpv4Socket{ { 1, 2, 3, 4 }, 12 });
+    responder.DataReceived(infra::UnOwnedSharedPtr(requestReader), services::Udpv4Socket{ { 1, 2, 3, 4 }, 12 });
 }
 
 TEST_F(LlmnrResponderTest, unknown_class_is_not_answered)
@@ -79,7 +79,7 @@ TEST_F(LlmnrResponderTest, unknown_class_is_not_answered)
     std::vector<uint8_t> data{ 1, 2, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 4, 'n', 'a', 'm', 'e', 0, 0, 1, 0, 2 };
     infra::ByteInputStreamReader requestReader(infra::MakeRange(data));
 
-    responder.DataReceived(requestReader, services::Udpv4Socket{ { 1, 2, 3, 4 }, 12 });
+    responder.DataReceived(infra::UnOwnedSharedPtr(requestReader), services::Udpv4Socket{ { 1, 2, 3, 4 }, 12 });
 }
 
 TEST_F(LlmnrResponderTest, unknown_flags_are_not_answered)
@@ -87,7 +87,7 @@ TEST_F(LlmnrResponderTest, unknown_flags_are_not_answered)
     std::vector<uint8_t> data{ 1, 2, 0, 8, 0, 1, 0, 0, 0, 0, 0, 0, 4, 'n', 'a', 'm', 'e', 0, 0, 1, 0, 1 };
     infra::ByteInputStreamReader requestReader(infra::MakeRange(data));
 
-    responder.DataReceived(requestReader, services::Udpv4Socket{ { 1, 2, 3, 4 }, 12 });
+    responder.DataReceived(infra::UnOwnedSharedPtr(requestReader), services::Udpv4Socket{ { 1, 2, 3, 4 }, 12 });
 }
 
 TEST_F(LlmnrResponderTest, multiple_questions_are_not_answered)
@@ -95,7 +95,7 @@ TEST_F(LlmnrResponderTest, multiple_questions_are_not_answered)
     std::vector<uint8_t> data{ 1, 2, 0, 1, 0, 8, 0, 0, 0, 0, 0, 0, 4, 'n', 'a', 'm', 'e', 0, 0, 1, 0, 1 };
     infra::ByteInputStreamReader requestReader(infra::MakeRange(data));
 
-    responder.DataReceived(requestReader, services::Udpv4Socket{ { 1, 2, 3, 4 }, 12 });
+    responder.DataReceived(infra::UnOwnedSharedPtr(requestReader), services::Udpv4Socket{ { 1, 2, 3, 4 }, 12 });
 }
 
 TEST_F(LlmnrResponderTest, improper_string_is_not_answered)
@@ -103,7 +103,7 @@ TEST_F(LlmnrResponderTest, improper_string_is_not_answered)
     std::vector<uint8_t> data{ 1, 2, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 4, 'n', 'a', 'm', 'e', 0xa5, 0, 1, 0, 1 };
     infra::ByteInputStreamReader requestReader(infra::MakeRange(data));
 
-    responder.DataReceived(requestReader, services::Udpv4Socket{ { 1, 2, 3, 4 }, 12 });
+    responder.DataReceived(infra::UnOwnedSharedPtr(requestReader), services::Udpv4Socket{ { 1, 2, 3, 4 }, 12 });
 }
 
 TEST_F(LlmnrResponderTest, ignore_request_when_replying)
@@ -112,7 +112,7 @@ TEST_F(LlmnrResponderTest, ignore_request_when_replying)
     infra::ByteInputStreamReader requestReader(infra::MakeRange(data));
 
     EXPECT_CALL(datagramExchange, RequestSendStream(38, services::UdpSocket{ services::Udpv4Socket{ { 1, 2, 3, 4 }, 12 } }));
-    responder.DataReceived(requestReader, services::Udpv4Socket{ { 1, 2, 3, 4 }, 12 });
+    responder.DataReceived(infra::UnOwnedSharedPtr(requestReader), services::Udpv4Socket{ { 1, 2, 3, 4 }, 12 });
 
-    responder.DataReceived(requestReader, services::Udpv4Socket{ { 1, 2, 3, 4 }, 12 });
+    responder.DataReceived(infra::UnOwnedSharedPtr(requestReader), services::Udpv4Socket{ { 1, 2, 3, 4 }, 12 });
 }

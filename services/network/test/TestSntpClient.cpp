@@ -21,7 +21,7 @@ public:
     void DataReceived(const std::vector<uint8_t>& data)
     {
         infra::ByteInputStreamReader requestReader(infra::MakeRange(data));
-        sntpClient.DataReceived(requestReader, services::Udpv4Socket{ { 1, 2, 3, 4 }, 123 });
+        sntpClient.DataReceived(infra::UnOwnedSharedPtr(requestReader), services::Udpv4Socket{ { 1, 2, 3, 4 }, 123 });
     }
 
     void HeaderReceived(uint8_t header)

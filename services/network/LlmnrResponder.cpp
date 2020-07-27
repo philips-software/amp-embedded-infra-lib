@@ -47,12 +47,12 @@ namespace services
         multicast.LeaveMulticastGroup(datagramExchange, llmnrMulticastAddress);
     }
 
-    void LlmnrResponder::DataReceived(infra::StreamReaderWithRewinding& reader, services::UdpSocket from)
+    void LlmnrResponder::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, services::UdpSocket from)
     {
         if (replying)
             return;
 
-        infra::DataInputStream::WithErrorPolicy stream(reader, infra::softFail);
+        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::softFail);
         Header header;
         stream >> header;
         LlmnrString<32> queriedName;

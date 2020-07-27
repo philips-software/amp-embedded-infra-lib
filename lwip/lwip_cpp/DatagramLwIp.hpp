@@ -126,6 +126,7 @@ namespace services
     private:
         udp_pcb* control = nullptr;
         infra::PolymorphicVariant<StateBase, StateIdle, StateWaitingForBuffer, StateBufferAllocated> state;
+        infra::SharedOptional<UdpReader> reader;
     };
 
     using AllocatorDatagramExchangeLwIp = infra::SharedObjectAllocator<DatagramExchangeLwIP, void(DatagramExchangeObserver& observer)>;

@@ -26,12 +26,12 @@ namespace services
         , dnsEntries(dnsEntries.entries)
     {}
 
-    void DnsServer::DataReceived(infra::StreamReaderWithRewinding& reader, services::UdpSocket from)
+    void DnsServer::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, services::UdpSocket from)
     {
         if (question)
             return;
 
-        question.Emplace(reader);
+        question.Emplace(*reader);
         if (question->IsValid() && question->RequestIncludesOneQuestion())
         {
             answer = FindAnswer(question->Hostname());

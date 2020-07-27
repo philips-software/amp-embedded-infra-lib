@@ -166,12 +166,16 @@ namespace services
 
     void DatagramExchangeLwIP::Recv(pbuf* buffer, const ip_addr_t* address, u16_t port)
     {
-        UdpReader reader(buffer);
-        if (IP_GET_TYPE(address) == IPADDR_TYPE_V4)
-            GetObserver().DataReceived(reader, Udpv4Socket{ IPv4Address{ ip4_addr1(ip_2_ip4(address)), ip4_addr2(ip_2_ip4(address)), ip4_addr3(ip_2_ip4(address)), ip4_addr4(ip_2_ip4(address)) }, port });
+        if (reader.Allocatable())
+        {
+            if (IP_GET_TYPE(address) == IPADDR_TYPE_V4)
+                GetObserver().DataReceived(reader.Emplace(buffer), Udpv4Socket{ IPv4Address{ ip4_addr1(ip_2_ip4(address)), ip4_addr2(ip_2_ip4(address)), ip4_addr3(ip_2_ip4(address)), ip4_addr4(ip_2_ip4(address)) }, port });
+            else
+                GetObserver().DataReceived(reader.Emplace(buffer), Udpv6Socket{ IPv6Address{ IP6_ADDR_BLOCK1(ip_2_ip6(address)), IP6_ADDR_BLOCK2(ip_2_ip6(address)), IP6_ADDR_BLOCK3(ip_2_ip6(address)), IP6_ADDR_BLOCK4(ip_2_ip6(address)),
+                    IP6_ADDR_BLOCK5(ip_2_ip6(address)), IP6_ADDR_BLOCK6(ip_2_ip6(address)), IP6_ADDR_BLOCK7(ip_2_ip6(address)), IP6_ADDR_BLOCK8(ip_2_ip6(address)) }, port });
+        }
         else
-            GetObserver().DataReceived(reader, Udpv6Socket{ IPv6Address{ IP6_ADDR_BLOCK1(ip_2_ip6(address)), IP6_ADDR_BLOCK2(ip_2_ip6(address)), IP6_ADDR_BLOCK3(ip_2_ip6(address)), IP6_ADDR_BLOCK4(ip_2_ip6(address)),
-                IP6_ADDR_BLOCK5(ip_2_ip6(address)), IP6_ADDR_BLOCK6(ip_2_ip6(address)), IP6_ADDR_BLOCK7(ip_2_ip6(address)), IP6_ADDR_BLOCK8(ip_2_ip6(address)) }, port });
+            pbuf_free(buffer);
     }
 
     DatagramExchangeLwIP::UdpReader::UdpReader(pbuf* buffer)
