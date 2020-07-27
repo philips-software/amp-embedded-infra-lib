@@ -25,9 +25,8 @@ jobs:
     steps:
       - name: Install
         run: |
-          pwd
           wget http://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
-          unzip build-wrapper-linux-x86.zip
+          unzip build-wrapper-linux-x86.zip && chmod +x ${{ github.workspace }}/build-wrapper-linux-x86/build-wrapper-linux-x86-64
           pip3 install gcovr==4.2
       - name: Checkout
         uses: actions/checkout@v2
