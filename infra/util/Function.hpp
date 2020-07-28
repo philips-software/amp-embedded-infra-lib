@@ -80,9 +80,9 @@ namespace infra
             template<class F>
                 static void StaticCopyConstruct(const InvokerFunctionsType& from, InvokerFunctionsType& to);
             template<class F>
-                static const VirtualMethodTable* StaticVirtualMethodTable(typename std::enable_if<std::is_trivial<F>::value>::type* = 0);
+                static const VirtualMethodTable* StaticVirtualMethodTable(typename std::enable_if<std::is_trivially_copy_constructible<F>::value && std::is_trivially_destructible<F>::value>::type* = 0);
             template<class F>
-                static const VirtualMethodTable* StaticVirtualMethodTable(typename std::enable_if<!std::is_trivial<F>::value>::type* = 0);
+                static const VirtualMethodTable* StaticVirtualMethodTable(typename std::enable_if<!std::is_trivially_copy_constructible<F>::value || !std::is_trivially_destructible<F>::value>::type* = 0);
             template<class F>
                 static void Construct(InvokerFunctionsType& invokerFunctions, F&& f);
         };
@@ -254,7 +254,7 @@ namespace infra
         template<std::size_t ExtraSize, class Result, class... Args>
         template<class F>
         const typename InvokerFunctions<Result(Args...), ExtraSize>::VirtualMethodTable*
-            InvokerFunctions<Result(Args...), ExtraSize>::StaticVirtualMethodTable(typename std::enable_if<std::is_trivial<F>::value>::type*)
+            InvokerFunctions<Result(Args...), ExtraSize>::StaticVirtualMethodTable(typename std::enable_if<std::is_trivially_copy_constructible<F>::value && std::is_trivially_destructible<F>::value>::type*)
         {
             static const VirtualMethodTable table = { &StaticInvoke<F>, nullptr, nullptr };
             return &table;
@@ -263,7 +263,7 @@ namespace infra
         template<std::size_t ExtraSize, class Result, class... Args>
         template<class F>
         const typename InvokerFunctions<Result(Args...), ExtraSize>::VirtualMethodTable*
-            InvokerFunctions<Result(Args...), ExtraSize>::StaticVirtualMethodTable(typename std::enable_if<!std::is_trivial<F>::value>::type*)
+            InvokerFunctions<Result(Args...), ExtraSize>::StaticVirtualMethodTable(typename std::enable_if<!std::is_trivially_copy_constructible<F>::value || !std::is_trivially_destructible<F>::value>::type*)
         {
             static const VirtualMethodTable table = { &StaticInvoke<F>, &StaticDestruct<F>, &StaticCopyConstruct<F> };
             return &table;
