@@ -1,8 +1,6 @@
 name: Continuous Integration
 
-on:
-  - push
-  - pull_request
+on: [push]
 
 jobs:
   build_test:
@@ -19,29 +17,3 @@ jobs:
           cmake .. -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=Debug
           cmake --build .
           ctest -C Debug -T Test --output-on-failure
-
-  static_analysis:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install
-        run: |
-          wget http://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
-          unzip build-wrapper-linux-x86.zip
-          pip3 install gcovr==4.2
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          # Disabling shallow clone is recommended for improving relevancy of reporting
-          fetch-depth: 0
-      - name: Build and Test
-        run: |
-          cmake -E make_directory Build && cd Build
-          cmake .. -DCCOLA_ENABLE_COVERAGE=ON -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=Debug
-          ${{ github.workspace }}/build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir ../sonar-build-wrapper cmake --build . --config Debug
-          ctest -C Debug -T Test --output-on-failure
-          gcovr --sonarqube=../coverage.xml --exclude-unreachable-branches --exclude-throw-branches --root=.. --exclude=.*/generated/.* --exclude=.*/external/.* --exclude=.*/lwip/.* --exclude=.*/tracing/.* --exclude=.*/test/.*
-      - name: SonarCloud Scan
-        uses: sonarsource/sonarcloud-github-action@v1.3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

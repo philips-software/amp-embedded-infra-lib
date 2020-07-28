@@ -17,15 +17,12 @@ notifications:
 
 matrix:
   include:
-    - os: windows
-
     - os: linux
       dist: bionic
       addons:
         apt:
           packages:
             - python3-pip
-            - python3-setuptools
         sonarcloud:
           organization: philips-software
           token:
@@ -33,24 +30,17 @@ matrix:
 
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-        - STATIC_ANALYSIS=1
-
-    # - os: osx
-    #   osx_image: xcode11
-    #   env:
-    #     - MACOSX_DEPLOYMENT_TARGET=10.15
 
 before_install:
   - eval "${MATRIX_EVAL}"
 
 install:
-  - if [[ $STATIC_ANALYSIS ]]; then pip3 install --user git+https://github.com/gcovr/gcovr.git; fi
+  - pip3 install --user gcovr
 
 script:
-  - cmake -E make_directory Build
-  - cd Build
-  - if [[ $STATIC_ANALYSIS ]]; then cmake .. -DCCOLA_ENABLE_COVERAGE=ON -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=${BUILD_TYPE}; else cmake .. -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=${BUILD_TYPE}; fi
-  - if [[ $STATIC_ANALYSIS ]]; then build-wrapper-linux-x86-64 --out-dir ../sonar-build-wrapper cmake --build . --config ${BUILD_TYPE}; else cmake --build . --config ${BUILD_TYPE}; fi
+  - cmake -E make_directory Build && cd Build
+  - cmake .. -DCCOLA_ENABLE_COVERAGE=ON -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+  - build-wrapper-linux-x86-64 --out-dir ../sonar-build-wrapper cmake --build . --config ${BUILD_TYPE}
   - ctest -C ${BUILD_TYPE} -T Test --output-on-failure
-  - if [[ $STATIC_ANALYSIS ]]; then gcovr --sonarqube=../coverage.xml --exclude-unreachable-branches --exclude-throw-branches --root=.. --exclude=.*/generated/.* --exclude=.*/external/.* --exclude=.*/lwip/.* --exclude=.*/tracing/.* --exclude=.*/test/*.; fi
-  - if [[ $STATIC_ANALYSIS ]]; then cd .. && sonar-scanner; fi
+  - gcovr --sonarqube=../coverage.xml --exclude-unreachable-branches --exclude-throw-branches --root=.. --exclude=.*/generated/.* --exclude=.*/examples/.* --exclude=.*/external/.* --exclude=.*/lwip/.* --exclude=.*/tracing/.* --exclude=.*/test/.*
+  - cd .. && sonar-scanner
