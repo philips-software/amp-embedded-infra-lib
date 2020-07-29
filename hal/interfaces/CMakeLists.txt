@@ -9,6 +9,7 @@ ccola_component(interfaces static_library)
         Can.cpp
         Can.hpp
         CommunicationConfigurator.hpp
+        Dac.hpp
         DigitalToAnalogPin.hpp
         Ethernet.cpp
         Ethernet.hpp
