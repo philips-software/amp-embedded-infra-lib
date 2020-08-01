@@ -24,6 +24,13 @@ namespace infra
         } while (systemTimerService.Now() != newSystemTime);
     }
 
+    void ClockFixture::JumpForwardTime(Duration amount)
+    {
+        ExecuteAllActions();
+        systemTimerService.TimeJumped(amount);
+        ExecuteAllActions();
+    }
+
     ClockFixture::TimeMatcherHelper ClockFixture::After(Duration duration) const
     {
         return TimeMatcherHelper(systemTimerService.Now() + duration);

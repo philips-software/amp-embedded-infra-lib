@@ -36,4 +36,11 @@ namespace infra
         systemTime += amount;
         Progressed(systemTime);
     }
+
+    void PerfectTimerService::TimeJumped(Duration amount)
+    {
+        auto oldSystemTime = systemTime;
+        systemTime += amount;
+        Jumped(oldSystemTime, systemTime);
+    }
 }

@@ -13,6 +13,8 @@ ccola_component(timer static_library)
         TickOnInterruptTimerService.hpp
         Timer.cpp
         Timer.hpp
+        TimerAlarm.cpp
+        TimerAlarm.hpp
         TimerAlternating.cpp
         TimerAlternating.hpp
         TimerLimitedRepeating.cpp

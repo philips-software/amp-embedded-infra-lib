@@ -17,6 +17,7 @@ namespace infra
 
         void SetResolution(Duration resolution);
         void TimeProgressed(Duration amount);
+        void TimeJumped(Duration amount);
 
     private:
         TimePoint systemTime = TimePoint();

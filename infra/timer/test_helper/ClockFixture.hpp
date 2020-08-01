@@ -19,6 +19,8 @@ namespace infra
 
         // Forward the 'apparent' system time, thereby triggering any timers that were waiting
         void ForwardTime(Duration time);
+        // Forward the system time with a jump
+        void JumpForwardTime(Duration time);
 
         class TimeMatcherHelper;
 
