@@ -11,7 +11,6 @@ ccola_component(interfaces static_library)
         CommunicationConfigurator.hpp
         Dac.hpp
         DigitalToAnalogPin.hpp
-        Ethernet.cpp
         Ethernet.hpp
         Flash.cpp
         Flash.hpp

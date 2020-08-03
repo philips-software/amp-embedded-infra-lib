@@ -22,7 +22,7 @@ namespace hal
         : public infra::SingleObserver<EthernetSmiObserver, EthernetSmi>
     {
     public:
-        explicit EthernetSmiObserver(EthernetSmi& subject);
+        using infra::SingleObserver<EthernetSmiObserver, EthernetSmi>::SingleObserver;
 
         virtual void LinkUp(LinkSpeed linkSpeed) = 0;
         virtual void LinkDown() = 0;
@@ -40,7 +40,7 @@ namespace hal
         : public infra::SingleObserver<EthernetMacObserver, EthernetMac>
     {
     public:
-        explicit EthernetMacObserver(EthernetMac& subject);
+        using infra::SingleObserver<EthernetMacObserver, EthernetMac>::SingleObserver;
 
         virtual infra::ByteRange RequestReceiveBuffer() = 0;
         virtual void ReceivedFrame(uint32_t usedBuffers, uint32_t frameSize) = 0;
