@@ -89,12 +89,36 @@ namespace infra
             return !(*this == other);
         }
 
+        template<class U>
+        bool operator==(U other) const
+        {
+            return value == SwapEndian(static_cast<T>(other));
+        }
+
+        template<class U>
+        bool operator!=(U other) const
+        {
+            return !(*this == other);
+        }
+
         friend bool operator==(T x, BigEndian y)
         {
             return y == x;
         }
 
         friend bool operator!=(T x, BigEndian y)
+        {
+            return y != x;
+        }
+
+        template<class U>
+        friend bool operator==(U x, BigEndian y)
+        {
+            return y == x;
+        }
+
+        template<class U>
+        friend bool operator!=(U x, BigEndian y)
         {
             return y != x;
         }
