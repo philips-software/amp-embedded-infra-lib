@@ -15,6 +15,8 @@ ccola_component(util static_library)
         BoundedVector.hpp
         ByteRange.hpp
         CompareMembers.hpp
+        ConstructBin.cpp
+        ConstructBin.hpp
         CrcCcittCalculator.cpp
         CrcCcittCalculator.hpp
         CyclicBuffer.hpp
