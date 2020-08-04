@@ -122,7 +122,7 @@ namespace services
             auto reader = infra::MakeSharedOnHeap<infra::StdVectorInputStreamReader::WithStorage>();
             reader->Storage() = std::vector<uint8_t>(receiveBuffer.begin(), receiveBuffer.end());
 
-            auto from = Udpv4Socket{ services::ConvertFromUint32(htonl(fromAddress.sin_addr.s_addr)), fromAddress.sin_port };
+            auto from = Udpv4Socket{ services::ConvertFromUint32(htonl(fromAddress.sin_addr.s_addr)), htons(fromAddress.sin_port) };
 
             GetObserver().DataReceived(std::move(reader), from);
         }
