@@ -16,7 +16,10 @@ namespace services
         dnsTypeA = 1,
         dnsTypeNameServer = 2,
         dnsTypeCName = 5,
-        dnsTypeAAAA = 26
+        dnsTypePtr = 12,
+        dnsTypeTxt = 16,
+        dnsTypeAAAA = 26,
+        dnsTypeSrv = 33
     };
 
     enum class DnsClass : uint16_t
@@ -91,6 +94,15 @@ namespace services
         virtual infra::BoundedConstString Current() const = 0;
         virtual void ConsumeCurrent() = 0;
         virtual bool Empty() const = 0;
+        virtual std::size_t StreamedSize() const = 0;
+
+        friend infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const DnsHostnameParts& dnsParts);
+        friend infra::TextOutputStream& operator<<(infra::TextOutputStream&& stream, const DnsHostnameParts& dnsParts);
+
+    protected:
+        friend class DnsPartsWithoutTerminationHelper;
+        void Stream(infra::TextOutputStream& stream) const;
+        virtual void StreamWithoutTermination(infra::TextOutputStream& stream) const = 0;
     };
 
     class DnsHostnamePartsString
@@ -102,6 +114,11 @@ namespace services
         virtual infra::BoundedConstString Current() const override;
         virtual void ConsumeCurrent() override;
         virtual bool Empty() const override;
+        virtual std::size_t StreamedSize() const override;
+        std::size_t NumberOfRemainingTokens() const;
+
+    protected:
+        virtual void StreamWithoutTermination(infra::TextOutputStream& stream) const override;
 
     private:
         infra::Tokenizer hostnameTokens;
@@ -112,13 +129,20 @@ namespace services
         : public DnsHostnameParts
     {
     public:
+        DnsHostnamePartsStream(const DnsHostnamePartsStream& other);
         DnsHostnamePartsStream(infra::StreamReaderWithRewinding& reader, uint32_t streamPosition);
 
         virtual infra::BoundedConstString Current() const override;
         virtual void ConsumeCurrent() override;
         virtual bool Empty() const override;
+        virtual std::size_t StreamedSize() const override;
+        void ConsumeStream();
+
+    protected:
+        virtual void StreamWithoutTermination(infra::TextOutputStream& stream) const override;
 
     private:
+        void DestructiveStream(infra::TextOutputStream& stream);
         void ReadNext();
 
     private:
@@ -126,12 +150,120 @@ namespace services
         uint32_t streamPosition;
         infra::DataInputStream::WithErrorPolicy stream;
         infra::BoundedString::WithStorage<63> label;
+        infra::Optional<std::size_t> finalPosition;
     };
+
+    template<std::size_t S>
+    class DnsHostnameInPartsHelper
+        : public DnsHostnameParts
+    {
+    public:
+        DnsHostnameInPartsHelper(infra::BoundedConstString part);
+        DnsHostnameInPartsHelper(const std::array<infra::BoundedConstString, S - 1>& parts, infra::BoundedConstString part);
+        DnsHostnameInPartsHelper(const DnsHostnameInPartsHelper& other);
+
+        virtual infra::BoundedConstString Current() const override;
+        virtual void ConsumeCurrent() override;
+        virtual bool Empty() const override;
+        virtual std::size_t StreamedSize() const override;
+
+        DnsHostnameInPartsHelper<S + 1> operator()(infra::BoundedConstString nextPart) const;
+
+    protected:
+        virtual void StreamWithoutTermination(infra::TextOutputStream& stream) const override;
+
+    private:
+        std::array<infra::BoundedConstString, S> parts;
+        typename std::array<infra::BoundedConstString, S>::const_iterator current{ parts.begin() };
+    };
+
+    DnsHostnameInPartsHelper<1> DnsHostnameInParts(infra::BoundedConstString part);
+
+    class DnsPartsWithoutTerminationHelper
+    {
+    public:
+        DnsPartsWithoutTerminationHelper(const DnsHostnameParts& parts);
+
+        friend infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const DnsPartsWithoutTerminationHelper& dnsParts);
+        friend infra::TextOutputStream& operator<<(infra::TextOutputStream&& stream, const DnsPartsWithoutTerminationHelper& dnsParts);
+
+    private:
+        void Stream(infra::TextOutputStream& stream) const;
+
+    private:
+        const DnsHostnameParts& parts;
+    };
+
+    DnsPartsWithoutTerminationHelper DnsPartsWithoutTermination(const DnsHostnameParts& parts);
 }
 
-namespace infra
+////    Implementation    ////
+
+namespace services
 {
-    DataOutputStream& operator<<(DataOutputStream& stream, services::DnsHostnamePartsString& dnsPartsString);
+    template<std::size_t S>
+    DnsHostnameInPartsHelper<S>::DnsHostnameInPartsHelper(infra::BoundedConstString part)
+    {
+        static_assert(S == 1, "Size must be 1 in this constructor");
+        parts.front() = part;
+    }
+
+    template<std::size_t S>
+    DnsHostnameInPartsHelper<S>::DnsHostnameInPartsHelper(const std::array<infra::BoundedConstString, S - 1>& parts, infra::BoundedConstString part)
+    {
+        for (std::size_t i = 0; i != parts.size(); ++i)
+            this->parts[i] = parts[i];
+
+        this->parts.back() = part;
+    }
+
+    template<std::size_t S>
+    DnsHostnameInPartsHelper<S>::DnsHostnameInPartsHelper(const DnsHostnameInPartsHelper& other)
+        : parts(other.parts)
+        , current(other.current)
+    {}
+
+    template<std::size_t S>
+    infra::BoundedConstString DnsHostnameInPartsHelper<S>::Current() const
+    {
+        return *current;
+    }
+
+    template<std::size_t S>
+    void DnsHostnameInPartsHelper<S>::ConsumeCurrent()
+    {
+        ++current;
+    }
+
+    template<std::size_t S>
+    bool DnsHostnameInPartsHelper<S>::Empty() const
+    {
+        return current == parts.end();
+    }
+
+    template<std::size_t S>
+    std::size_t DnsHostnameInPartsHelper<S>::StreamedSize() const
+    {
+        std::size_t result = 1;
+
+        for (auto part : parts)
+            result += part.size() + 1;
+
+        return result;
+    }
+
+    template<std::size_t S>
+    DnsHostnameInPartsHelper<S + 1> DnsHostnameInPartsHelper<S>::operator()(infra::BoundedConstString nextPart) const
+    {
+        return DnsHostnameInPartsHelper<S + 1>(parts, nextPart);
+    }
+
+    template<std::size_t S>
+    void DnsHostnameInPartsHelper<S>::StreamWithoutTermination(infra::TextOutputStream& stream) const
+    {
+        for (auto part : parts)
+            stream << infra::data << static_cast<uint8_t>(part.size()) << infra::text << part;
+    }
 }
 
 #endif

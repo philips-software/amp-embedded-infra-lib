@@ -54,7 +54,7 @@ namespace services
         DnsRecordPayload payload{ DnsType::dnsTypeA, DnsClass::dnsClassIn, std::chrono::seconds(60), sizeof(IPv4Address) };
 
         stream << header;
-        stream << hostnameParts;
+        stream << infra::text << hostnameParts;
         stream << questionFooter;
         stream << rnameCompression;
         stream << payload;
@@ -81,7 +81,6 @@ namespace services
     {
         stream >> header;
         ReconstructHostname();
-        stream.Consume(QueryNameSize());
         stream >> footer;
     }
 
@@ -147,6 +146,8 @@ namespace services
             if (!hostnameParts.Empty())
                 reconstructedHostname += '.';
         }
+
+        hostnameParts.ConsumeStream();
     }
 
     infra::Optional<DnsServer::DnsEntry> DnsServerImpl::FindAnswer(infra::BoundedConstString hostname)

@@ -3,6 +3,8 @@ ccola_component(network static_library)
     ccola_sources(
         Address.cpp
         Address.hpp
+        BonjourServer.cpp
+        BonjourServer.hpp
         CertificatesMbedTls.cpp
         CertificatesMbedTls.hpp
         Connection.cpp

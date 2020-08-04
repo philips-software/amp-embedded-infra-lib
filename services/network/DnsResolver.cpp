@@ -413,7 +413,7 @@ namespace services
         DnsQuestionFooter footer{ DnsType::dnsTypeA, DnsClass::dnsClassIn };
 
         stream << header;
-        stream << hostnameParts;
+        stream << infra::text << hostnameParts;
         stream << footer;
 
         timeoutTimer.Start(responseTimeout, [this]() { ResolveNextAttempt(); });

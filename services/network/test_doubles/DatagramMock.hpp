@@ -10,6 +10,12 @@ namespace services
         : public DatagramExchange
     {
     public:
+        ~DatagramExchangeMock()
+        {
+            if (HasObserver())
+                GetObserver().Detach();
+        }
+
         MOCK_METHOD1(RequestSendStream, void(std::size_t sendSize));
         MOCK_METHOD2(RequestSendStream, void(std::size_t sendSize, UdpSocket to));
     };
