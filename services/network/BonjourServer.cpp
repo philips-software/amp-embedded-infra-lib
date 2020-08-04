@@ -1,15 +1,10 @@
 #include "services/network/BonjourServer.hpp"
-#include "infra/stream/OverwriteStream.hpp"
 #include "infra/util/EnumCast.hpp"
 
 namespace services
 {
     namespace
     {
-        // Since we repeat the question in the answer we can use a pointer to the name
-        // in the answer record. The name starts after the DnsRecordHeader.
-        const std::array<uint8_t, 2> rnameCompression{ 0xC0, sizeof(DnsRecordHeader) };
-
         const uint16_t mdnsPort = 5353;
         const IPv4Address mdnsMulticastAddress{ 224, 0, 0, 251 };
     }
@@ -59,18 +54,25 @@ namespace services
         waitingReader = nullptr;
     }
 
-    BonjourServer::Answer::Answer(BonjourServer& server, uint16_t queryId, infra::StreamWriter& writer)
+    BonjourServer::Answer::Answer(BonjourServer& server, uint16_t queryId, infra::StreamWriter& writer, uint16_t answersCount, uint16_t additionalRecordsCount)
         : server(server)
         , queryId(queryId)
         , writer(writer)
+        , answersCount(answersCount)
+        , additionalRecordsCount(additionalRecordsCount)
     {
-        DnsRecordHeader header{ queryId, DnsRecordHeader::flagsResponse, 0, 0, 0, 0 };
+        DnsRecordHeader header{ queryId, DnsRecordHeader::flagsResponse, 0, answersCount, 0, additionalRecordsCount };
         stream << header;
     }
 
-    std::size_t BonjourServer::Answer::Answers() const
+    uint16_t BonjourServer::Answer::Answers() const
     {
         return answersCount;
+    }
+
+    uint16_t BonjourServer::Answer::AdditionalRecords() const
+    {
+        return additionalRecordsCount;
     }
 
     void BonjourServer::Answer::AddAAnswer()
@@ -139,14 +141,6 @@ namespace services
         AddTxt(DnsHostnameInParts(server.instance)(server.serviceName)(server.type)("local"));
     }
 
-    void BonjourServer::Answer::Finish()
-    {
-        infra::OverwriteDataStream overwriteStream(stream, startMarker);
-
-        DnsRecordHeader header{ queryId, DnsRecordHeader::flagsResponse, 0, answersCount, nameServersCount, additionalRecordsCount };
-        overwriteStream << header;
-    }
-
     void BonjourServer::Answer::AddA(const DnsHostnameParts& dnsHostname)
     {
         DnsRecordPayload payload{ DnsType::dnsTypeA, DnsClass::dnsClassIn, std::chrono::seconds(60), sizeof(IPv4Address) };
@@ -203,17 +197,17 @@ namespace services
         , reader(reader)
     {
         CreateAnswer(countingWriter);
-        reader.Rewind(0);
+        reader.Rewind(startMarker);
     }
 
     BonjourServer::QuestionParser::QuestionParser(BonjourServer& server, infra::StreamReaderWithRewinding& reader, infra::StreamWriter& writer)
         : server(server)
         , reader(reader)
     {
+        CreateAnswer(countingWriter);   // First fill the answersCount and additionalRecordsCount fields
+        reader.Rewind(startMarker);
         CreateAnswer(writer);
-        if (answer != infra::none)
-            answer->Finish();
-        reader.Rewind(0);
+        reader.Rewind(startMarker);
     }
 
     bool BonjourServer::QuestionParser::HasAnswer() const
@@ -233,7 +227,7 @@ namespace services
         if (!IsValidQuestion())
             return;
 
-        answer.Emplace(server, header.id, writer);
+        answer.Emplace(server, header.id, writer, answersCount, additionalRecordsCount);
 
         auto startOfQuestions = reader.ConstructSaveMarker();
 
@@ -244,6 +238,9 @@ namespace services
 
         for (auto i = 0; valid && i != header.questionsCount; ++i)
             ReadQuestionForAdditionalRecords();
+
+        answersCount = answer->Answers();
+        additionalRecordsCount = answer->AdditionalRecords();
 
         if (!valid)
             answer = infra::none;

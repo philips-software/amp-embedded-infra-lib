@@ -23,9 +23,10 @@ namespace services
         class Answer
         {
         public:
-            Answer(BonjourServer& server, uint16_t queryId, infra::StreamWriter& writer);
+            Answer(BonjourServer& server, uint16_t queryId, infra::StreamWriter& writer, uint16_t answersCount, uint16_t additionalRecordsCount);
 
-            std::size_t Answers() const;
+            uint16_t Answers() const;
+            uint16_t AdditionalRecords() const;
 
             void AddAAnswer();
             void AddAaaaAnswer();
@@ -37,8 +38,6 @@ namespace services
             void AddAaaaAdditional();
             void AddSrvAdditional();
             void AddTxtAdditional();
-
-            void Finish();
 
         private:
             void AddA(const DnsHostnameParts& dnsHostname);
@@ -52,10 +51,8 @@ namespace services
             uint16_t queryId;
             infra::StreamWriter& writer;
             infra::DataOutputStream::WithErrorPolicy stream{ writer };
-            std::size_t startMarker{ stream.SaveMarker() };
 
             uint16_t answersCount = 0;
-            uint16_t nameServersCount = 0;
             uint16_t additionalRecordsCount = 0;
         };
 
@@ -86,6 +83,7 @@ namespace services
             BonjourServer& server;
             infra::StreamReaderWithRewinding& reader;
             infra::DataInputStream::WithErrorPolicy stream{ reader, infra::noFail };
+            std::size_t startMarker{ reader.ConstructSaveMarker() };
             infra::CountingStreamWriter countingWriter;
             DnsRecordHeader header{};
             infra::BoundedString::WithStorage<253> reconstructedHostname;
@@ -93,6 +91,8 @@ namespace services
             bool valid = true;
 
             infra::Optional<Answer> answer;
+            uint16_t answersCount = 0;
+            uint16_t additionalRecordsCount = 0;
         };
 
     private:
