@@ -65,7 +65,7 @@ namespace services
             QuestionParser(BonjourServer& server, infra::StreamReaderWithRewinding& reader, infra::StreamWriter& writer);
 
             bool HasAnswer() const;
-            void RequestSendStream(DatagramExchange& datagramExchange, UdpSocket from);
+            void RequestSendStream(DatagramExchange& datagramExchange, UdpSocket from, UdpSocket to);
 
         private:
             void CreateAnswer(infra::StreamWriter& writer);
@@ -98,7 +98,8 @@ namespace services
         };
 
     private:
-        infra::SharedPtr<DatagramExchange> datagramExchange;
+        infra::SharedPtr<DatagramExchange> datagramExchangeIpv4;
+        infra::SharedPtr<DatagramExchange> datagramExchangeIpv6;
         Multicast& multicast;
         infra::BoundedConstString instance;
         infra::BoundedConstString serviceName;

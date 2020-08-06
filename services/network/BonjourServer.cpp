@@ -7,7 +7,8 @@ namespace services
     namespace
     {
         const uint16_t mdnsPort = 5353;
-        const IPv4Address mdnsMulticastAddress{ 224, 0, 0, 251 };
+        const IPv4Address mdnsMulticastAddressIpv4{ 224, 0, 0, 251 };
+        const IPv6Address mdnsMulticastAddressIpv6{ 0xff02, 0, 0, 0, 0, 0, 0, 0xfb };
 
         class DnsBitmap
         {
@@ -51,7 +52,8 @@ namespace services
 
     BonjourServer::BonjourServer(DatagramFactory& factory, Multicast& multicast, infra::BoundedConstString instance, infra::BoundedConstString serviceName, infra::BoundedConstString type,
         infra::Optional<IPv4Address> ipv4Address, infra::Optional<IPv6Address> ipv6Address, uint16_t port, const DnsHostnameParts& text)
-        : datagramExchange(factory.Listen(*this, mdnsPort, IPVersions::ipv4))
+        : datagramExchangeIpv4(ipv4Address != infra::none ? factory.Listen(*this, mdnsPort, IPVersions::ipv4) : nullptr)
+        , datagramExchangeIpv6(ipv6Address != infra::none ? factory.Listen(*this, mdnsPort, IPVersions::ipv6) : nullptr)
         , multicast(multicast)
         , instance(instance)
         , serviceName(serviceName)
@@ -61,12 +63,18 @@ namespace services
         , port(port)
         , text(text)
     {
-        multicast.JoinMulticastGroup(datagramExchange, mdnsMulticastAddress);
+        if (ipv4Address != infra::none)
+            multicast.JoinMulticastGroup(datagramExchangeIpv4, mdnsMulticastAddressIpv4);
+        if (ipv6Address != infra::none)
+            multicast.JoinMulticastGroup(datagramExchangeIpv6, mdnsMulticastAddressIpv6);
     }
 
     BonjourServer::~BonjourServer()
     {
-        multicast.LeaveMulticastGroup(datagramExchange, mdnsMulticastAddress);
+        if (ipv4Address != infra::none)
+            multicast.LeaveMulticastGroup(datagramExchangeIpv4, mdnsMulticastAddressIpv4);
+        if (ipv6Address != infra::none)
+            multicast.LeaveMulticastGroup(datagramExchangeIpv6, mdnsMulticastAddressIpv6);
     }
 
     void BonjourServer::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from)
@@ -80,7 +88,12 @@ namespace services
         waitingReader = std::move(reader);
         QuestionParser question(*this, *waitingReader);
         if (question.HasAnswer())
-            question.RequestSendStream(*datagramExchange, from);
+        {
+            if (GetAddress(from).Is<services::IPv4Address>())
+                question.RequestSendStream(*datagramExchangeIpv4, from, MakeUdpSocket(mdnsMulticastAddressIpv4, mdnsPort));
+            else
+                question.RequestSendStream(*datagramExchangeIpv6, from, MakeUdpSocket(mdnsMulticastAddressIpv6, mdnsPort));
+        }
         else
             waitingReader = nullptr;
     }
@@ -275,9 +288,9 @@ namespace services
         return answer != infra::none && answer->Answers() != 0;
     }
 
-    void BonjourServer::QuestionParser::RequestSendStream(DatagramExchange& datagramExchange, UdpSocket from)
+    void BonjourServer::QuestionParser::RequestSendStream(DatagramExchange& datagramExchange, UdpSocket from, UdpSocket to)
     {
-        datagramExchange.RequestSendStream(countingWriter.Processed(), MakeUdpSocket(mdnsMulticastAddress, mdnsPort));
+        datagramExchange.RequestSendStream(countingWriter.Processed(), to);
     }
 
     void BonjourServer::QuestionParser::CreateAnswer(infra::StreamWriter& writer)

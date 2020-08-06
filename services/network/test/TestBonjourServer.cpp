@@ -9,6 +9,12 @@
 #include "services/network/test_doubles/MulticastMock.hpp"
 #include "gmock/gmock.h"
 
+namespace
+{
+    const services::IPAddress ipv4Source{ services::IPv4Address{ 224, 0, 0, 251 } };
+    const services::IPAddress ipv6Source{ services::IPv6Address{ 0xff02, 0, 0, 0, 0, 0, 0, 0xfb } };
+}
+
 class BonjourServerTest
     : public testing::Test
     , public infra::EventDispatcherFixture
@@ -16,12 +22,25 @@ class BonjourServerTest
 public:
     ~BonjourServerTest()
     {
-        ExpectLeaveMulticast();
+        expectLeave();
     }
 
     void DataReceived(const std::vector<uint8_t>& data, services::IPv4Address address = services::IPv4Address{ 1, 2, 3, 4 }, uint16_t port = 5353)
     {
         datagramExchange->GetObserver().DataReceived(infra::MakeSharedOnHeap<infra::StdVectorInputStreamReader::WithStorage>(infra::inPlace, data), services::Udpv4Socket{ address, port });
+    }
+
+    void DataReceived(const std::vector<uint8_t>& data, services::IPv6Address address, uint16_t port = 5353)
+    {
+        datagramExchange->GetObserver().DataReceived(infra::MakeSharedOnHeap<infra::StdVectorInputStreamReader::WithStorage>(infra::inPlace, data), services::Udpv6Socket{ address, port });
+    }
+
+    void DataReceived(const std::vector<uint8_t>& data, services::IPAddress address, uint16_t port = 5353)
+    {
+        if (address.Is<services::IPv4Address>())
+            DataReceived(data, address.Get<services::IPv4Address>(), port);
+        else
+            DataReceived(data, address.Get<services::IPv6Address>(), port);
     }
 
     void PacketReceived(services::IPv4Address address = services::IPv4Address{ 1, 2, 3, 4 }, uint16_t port = 5353)
@@ -34,13 +53,13 @@ public:
         DataReceived(std::vector<uint8_t>());
     }
 
-    void PtrQueryReceived(uint16_t answers = 0, uint16_t nameServers = 0, uint16_t additional = 0)
+    void PtrQueryReceived(services::IPAddress source = ipv4Source, uint16_t answers = 0, uint16_t nameServers = 0, uint16_t additional = 0)
     {
         DataReceived(infra::ConstructBin()
             .Value<services::DnsRecordHeader>({ 0x0200, 0, 1, answers, nameServers, additional })
             (7)("service")(4)("type")(5)("local")(0)
             .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypePtr, services::DnsClass::dnsClassIn })
-            .Vector());
+            .Vector(), source);
     }
 
     void TooShortQueryReceived()
@@ -53,17 +72,17 @@ public:
 
     void QueryWithAnswerReceived()
     {
-        PtrQueryReceived(1, 0, 0);
+        PtrQueryReceived(ipv4Source, 1, 0, 0);
     }
 
     void QueryWithNameServerReceived()
     {
-        PtrQueryReceived(0, 1, 0);
+        PtrQueryReceived(ipv4Source, 0, 1, 0);
     }
 
     void QueryWithAdditionalReceived()
     {
-        PtrQueryReceived(0, 0, 1);
+        PtrQueryReceived(ipv4Source, 0, 0, 1);
     }
 
     void AnswerReceived()
@@ -147,40 +166,40 @@ public:
             .Vector());
     }
 
-    void SrvQueryReceived()
+    void SrvQueryReceived(services::IPAddress source = ipv4Source)
     {
         DataReceived(infra::ConstructBin()
             .Value<services::DnsRecordHeader>({ 0x0200, 0, 1, 0, 0, 0 })
             (8)("instance")(7)("service")(4)("type")(5)("local")(0)
             .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypeSrv, services::DnsClass::dnsClassIn })
-            .Vector());
+            .Vector(), source);
     }
 
-    void TxtQueryReceived()
+    void TxtQueryReceived(services::IPAddress source = ipv4Source)
     {
         DataReceived(infra::ConstructBin()
             .Value<services::DnsRecordHeader>({ 0x0200, 0, 1, 0, 0, 0 })
             (8)("instance")(7)("service")(4)("type")(5)("local")(0)
             .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypeTxt, services::DnsClass::dnsClassIn })
-            .Vector());
+            .Vector(), source);
     }
 
-    void AQueryReceived()
+    void AQueryReceived(services::IPAddress source = ipv4Source)
     {
         DataReceived(infra::ConstructBin()
             .Value<services::DnsRecordHeader>({ 0x0200, 0, 1, 0, 0, 0 })
             (8)("instance")(5)("local")(0)
             .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypeA, services::DnsClass::dnsClassIn })
-            .Vector());
+            .Vector(), source);
     }
 
-    void AaaaQueryReceived()
+    void AaaaQueryReceived(services::IPAddress source = ipv4Source)
     {
         DataReceived(infra::ConstructBin()
             .Value<services::DnsRecordHeader>({ 0x0200, 0, 1, 0, 0, 0 })
             (8)("instance")(5)("local")(0)
             .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypeAAAA, services::DnsClass::dnsClassIn })
-            .Vector());
+            .Vector(), source);
     }
 
     void ExpectResponse(const std::vector<uint8_t>& data)
@@ -270,7 +289,7 @@ public:
             .Vector();
     }
 
-    void ExpectListen()
+    void ExpectListenIpv4()
     {
         EXPECT_CALL(factory, Listen(testing::Ref(server), 5353, services::IPVersions::ipv4)).WillOnce(testing::Invoke([this](services::DatagramExchangeObserver& observer, uint16_t port, services::IPVersions versions)
         {
@@ -280,22 +299,43 @@ public:
         }));
     }
 
-    void ExpectJoinMulticast()
+    void ExpectListenIpv6()
+    {
+        EXPECT_CALL(factory, Listen(testing::Ref(server), 5353, services::IPVersions::ipv6)).WillOnce(testing::Invoke([this](services::DatagramExchangeObserver& observer, uint16_t port, services::IPVersions versions)
+        {
+            auto ptr = datagramExchange.Emplace();
+            observer.Attach(*ptr);
+            return ptr;
+        }));
+    }
+
+    void ExpectJoinMulticastIpv4()
     {
         EXPECT_CALL(multicast, JoinMulticastGroup(testing::_, services::IPv4Address{ 224, 0, 0, 251 }));
     }
 
-    void ExpectLeaveMulticast()
+    void ExpectJoinMulticastIpv6()
+    {
+        EXPECT_CALL(multicast, JoinMulticastGroup(testing::_, services::IPv6Address{ 0xff02, 0, 0, 0, 0, 0, 0, 0xfb }));
+    }
+
+    void ExpectLeaveMulticastIpv4()
     {
         EXPECT_CALL(multicast, LeaveMulticastGroup(testing::_, services::IPv4Address{ 224, 0, 0, 251 }));
     }
 
+    void ExpectLeaveMulticastIpv6()
+    {
+        EXPECT_CALL(multicast, LeaveMulticastGroup(testing::_, services::IPv6Address{ 0xff02, 0, 0, 0, 0, 0, 0, 0xfb }));
+    }
+
     void ReConstructIPv6()
     {
-        ExpectLeaveMulticast();
-        ExpectListen();
-        ExpectJoinMulticast();
+        ExpectLeaveMulticastIpv4();
+        ExpectListenIpv6();
+        ExpectJoinMulticastIpv6();
         infra::ReConstruct(server, factory, multicast, "instance", "service", "type", infra::none, infra::MakeOptional(services::IPv6Address{ 1, 2, 3, 4, 5, 6, 7, 8 }), 1234, text);
+        expectLeave = [this]() { ExpectLeaveMulticastIpv6(); };
     }
 
     testing::StrictMock<services::MulticastMock> multicast;
@@ -303,11 +343,13 @@ public:
     infra::SharedOptional<testing::StrictMock<services::DatagramExchangeMock>> datagramExchange;
     infra::Execute execute{ [this]
     {
-        ExpectListen();
-        ExpectJoinMulticast();
+        ExpectListenIpv4();
+        ExpectJoinMulticastIpv4();
     } };
     services::DnsHostnameInPartsHelper<2> text{ services::DnsHostnameInParts("aa=text")("bb=othertext") };
     services::BonjourServer server{ factory, multicast, "instance", "service", "type", infra::MakeOptional(services::IPv4Address{ 1, 2, 3, 4}), infra::none, 1234, text };
+
+    infra::Function<void()> expectLeave{ [this]() { ExpectLeaveMulticastIpv4(); } };
 };
 
 TEST_F(BonjourServerTest, nothing_happens_when_receiving_from_incorrect_port)
@@ -385,7 +427,7 @@ TEST_F(BonjourServerTest, aaaa_query_is_declined_when_no_ipv6_address_is_availab
         (NoAaaaAnswer())
         .Vector());
 
-    AQueryReceived();
+    AQueryReceived(ipv6Source);
 }
 
 TEST_F(BonjourServerTest, invalid_questions_are_ignored)
@@ -414,7 +456,7 @@ TEST_F(BonjourServerTest, aaaa_query_is_answered_when_ipv6_address_is_available)
         (AaaaAnswer())
         .Vector());
 
-    AaaaQueryReceived();
+    AaaaQueryReceived(ipv6Source);
     ExecuteAllActions();
 }
 
@@ -427,7 +469,7 @@ TEST_F(BonjourServerTest, a_query_is_declined_when_ipv6_address_is_available)
         (NoAAnswer())
         .Vector());
 
-    AQueryReceived();
+    AQueryReceived(ipv6Source);
 }
 
 TEST_F(BonjourServerTest, ptr_query_is_answered_with_ipv6_address_when_ipv6_address_is_available)
@@ -439,7 +481,7 @@ TEST_F(BonjourServerTest, ptr_query_is_answered_with_ipv6_address_when_ipv6_addr
         (PtrAnswer())(TxtAnswer())(SrvAnswer())(NoAAnswer())(AaaaAnswer())
         .Vector());
 
-    PtrQueryReceived();
+    PtrQueryReceived(ipv6Source);
 }
 
 TEST_F(BonjourServerTest, srv_query_is_answered_with_ipv6_address_when_ipv6_address_is_available)
@@ -451,5 +493,5 @@ TEST_F(BonjourServerTest, srv_query_is_answered_with_ipv6_address_when_ipv6_addr
         (SrvAnswer())(NoAAnswer())(AaaaAnswer())
         .Vector());
 
-    SrvQueryReceived();
+    SrvQueryReceived(ipv6Source);
 }
