@@ -241,12 +241,32 @@ public:
         .Vector();
     }
 
+    std::vector<uint8_t> NoAAnswer()
+    {
+        return infra::ConstructBin()
+            (8)("instance")(5)("local")(0)
+            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeNsec, services::DnsClass::dnsClassIn, std::chrono::seconds(60), 22 })
+            (8)("instance")(5)("local")(0)
+            (0)(4)(0)(0)(0)(0x80)
+            .Vector();
+    }
+
     std::vector<uint8_t> AaaaAnswer()
     {
         return infra::ConstructBin()
             (8)("instance")(5)("local")(0)
             .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeAAAA, services::DnsClass::dnsClassIn, std::chrono::seconds(60), 16 })
             .Value<services::IPv6Address>({ 1, 2, 3, 4, 5, 6, 7, 8 })
+            .Vector();
+    }
+
+    std::vector<uint8_t> NoAaaaAnswer()
+    {
+        return infra::ConstructBin()
+            (8)("instance")(5)("local")(0)
+            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeNsec, services::DnsClass::dnsClassIn, std::chrono::seconds(60), 22 })
+            (8)("instance")(5)("local")(0)
+            (0)(4)(0x40)(0)(0)(0)
             .Vector();
     }
 
@@ -303,8 +323,8 @@ TEST_F(BonjourServerTest, nothing_happens_when_receiving_empty_packet)
 TEST_F(BonjourServerTest, ptr_question_has_answers_and_additional_data)
 {
     ExpectResponse(infra::ConstructBin()
-        .Value<services::DnsRecordHeader>({0x0200, 0x8000, 0, 1, 0, 3})
-        (PtrAnswer())(TxtAnswer())(SrvAnswer())(AAnswer())
+        .Value<services::DnsRecordHeader>({0x0200, 0x8000, 0, 1, 0, 4})
+        (PtrAnswer())(TxtAnswer())(SrvAnswer())(AAnswer())(NoAaaaAnswer())
         .Vector());
 
     PtrQueryReceived();
@@ -314,8 +334,8 @@ TEST_F(BonjourServerTest, ptr_question_has_answers_and_additional_data)
 TEST_F(BonjourServerTest, srv_question_has_answers_and_additional_data)
 {
     ExpectResponse(infra::ConstructBin()
-        .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 1 })
-        (SrvAnswer())(AAnswer())
+        .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 2 })
+        (SrvAnswer())(AAnswer())(NoAaaaAnswer())
         .Vector());
 
     SrvQueryReceived();
@@ -347,13 +367,25 @@ TEST_F(BonjourServerTest, a_question_has_answers)
 TEST_F(BonjourServerTest, second_question_while_first_is_busy_is_ignored)
 {
     ExpectResponse(infra::ConstructBin()
-        .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 3 })
-        (PtrAnswer())(TxtAnswer())(SrvAnswer())(AAnswer())
+        .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 4 })
+        (PtrAnswer())(TxtAnswer())(SrvAnswer())(AAnswer())(NoAaaaAnswer())
         .Vector());
 
     PtrQueryReceived();
     PtrQueryReceived();
     ExecuteAllActions();
+}
+
+TEST_F(BonjourServerTest, aaaa_query_is_declined_when_no_ipv6_address_is_available)
+{
+    ReConstructIPv6();
+
+    ExpectResponse(infra::ConstructBin()
+        .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 0 })
+        (NoAaaaAnswer())
+        .Vector());
+
+    AQueryReceived();
 }
 
 TEST_F(BonjourServerTest, invalid_questions_are_ignored)
@@ -371,7 +403,6 @@ TEST_F(BonjourServerTest, invalid_questions_are_ignored)
     QueryForDifferentShortInstanceReceived();
     QueryForEmptyNameReceived();
     QueryForLongNameReceived();
-    AaaaQueryReceived();
 }
 
 TEST_F(BonjourServerTest, aaaa_query_is_answered_when_ipv6_address_is_available)
@@ -387,9 +418,14 @@ TEST_F(BonjourServerTest, aaaa_query_is_answered_when_ipv6_address_is_available)
     ExecuteAllActions();
 }
 
-TEST_F(BonjourServerTest, a_query_is_not_answered_when_ipv6_address_is_available)
+TEST_F(BonjourServerTest, a_query_is_declined_when_ipv6_address_is_available)
 {
     ReConstructIPv6();
+
+    ExpectResponse(infra::ConstructBin()
+        .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 0 })
+        (NoAAnswer())
+        .Vector());
 
     AQueryReceived();
 }
@@ -399,8 +435,8 @@ TEST_F(BonjourServerTest, ptr_query_is_answered_with_ipv6_address_when_ipv6_addr
     ReConstructIPv6();
 
     ExpectResponse(infra::ConstructBin()
-        .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 3 })
-        (PtrAnswer())(TxtAnswer())(SrvAnswer())(AaaaAnswer())
+        .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 4 })
+        (PtrAnswer())(TxtAnswer())(SrvAnswer())(NoAAnswer())(AaaaAnswer())
         .Vector());
 
     PtrQueryReceived();
@@ -411,8 +447,8 @@ TEST_F(BonjourServerTest, srv_query_is_answered_with_ipv6_address_when_ipv6_addr
     ReConstructIPv6();
 
     ExpectResponse(infra::ConstructBin()
-        .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 1 })
-        (SrvAnswer())(AaaaAnswer())
+        .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 2 })
+        (SrvAnswer())(NoAAnswer())(AaaaAnswer())
         .Vector());
 
     SrvQueryReceived();

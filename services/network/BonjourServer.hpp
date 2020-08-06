@@ -41,7 +41,9 @@ namespace services
 
         private:
             void AddA(const DnsHostnameParts& dnsHostname);
+            void AddNoA(const DnsHostnameParts& dnsHostname);
             void AddAaaa(const DnsHostnameParts& dnsHostname);
+            void AddNoAaaa(const DnsHostnameParts& dnsHostname);
             void AddPtr(const DnsHostnameParts& dnsHostname);
             void AddSrv(const DnsHostnameParts& dnsHostname);
             void AddTxt(const DnsHostnameParts& dnsHostname);

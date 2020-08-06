@@ -1,4 +1,5 @@
 #include "services/network/BonjourServer.hpp"
+#include "infra/util/BitLogic.hpp"
 #include "infra/util/EnumCast.hpp"
 
 namespace services
@@ -7,6 +8,45 @@ namespace services
     {
         const uint16_t mdnsPort = 5353;
         const IPv4Address mdnsMulticastAddress{ 224, 0, 0, 251 };
+
+        class DnsBitmap
+        {
+        public:
+            DnsBitmap(uint8_t index)
+                : bitmap(infra::Bit<uint32_t>(index))
+            {}
+
+            friend infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const DnsBitmap& bitmap)
+            {
+                stream << infra::data << BitReverse(static_cast<uint8_t>(bitmap.bitmap)) << BitReverse(static_cast<uint8_t>(bitmap.bitmap >> 8))
+                    << BitReverse(static_cast<uint8_t>(bitmap.bitmap >> 16)) << BitReverse(static_cast<uint8_t>(bitmap.bitmap >> 24));
+                return stream;
+            }
+
+            friend infra::TextOutputStream& operator<<(infra::TextOutputStream&& stream, const DnsBitmap& bitmap)
+            {
+                return stream << bitmap;
+            }
+
+        private:
+            static uint8_t BitReverse(uint8_t v)
+            {
+                uint8_t result(0);
+
+                for (int i = 0; i != 8; ++i)
+                {
+                    result <<= 1;
+                    if ((v & 1) == 1)
+                        result |= 1;
+                    v >>= 1;
+                }
+
+                return result;
+            }
+
+        private:
+            uint32_t bitmap;
+        };
     }
 
     BonjourServer::BonjourServer(DatagramFactory& factory, Multicast& multicast, infra::BoundedConstString instance, infra::BoundedConstString serviceName, infra::BoundedConstString type,
@@ -77,20 +117,20 @@ namespace services
 
     void BonjourServer::Answer::AddAAnswer()
     {
+        ++answersCount;
         if (server.ipv4Address != infra::none)
-        {
-            ++answersCount;
             AddA(DnsHostnameInParts(server.instance)("local"));
-        }
+        else
+            AddNoA(DnsHostnameInParts(server.instance)("local"));
     }
 
     void BonjourServer::Answer::AddAaaaAnswer()
     {
+        ++answersCount;
         if (server.ipv6Address != infra::none)
-        {
-            ++answersCount;
             AddAaaa(DnsHostnameInParts(server.instance)("local"));
-        }
+        else
+            AddNoAaaa(DnsHostnameInParts(server.instance)("local"));
     }
 
     void BonjourServer::Answer::AddPtrAnswer()
@@ -113,20 +153,20 @@ namespace services
 
     void BonjourServer::Answer::AddAAdditional()
     {
+        ++additionalRecordsCount;
         if (server.ipv4Address != infra::none)
-        {
-            ++additionalRecordsCount;
             AddA(DnsHostnameInParts(server.instance)("local"));
-        }
+        else
+            AddNoA(DnsHostnameInParts(server.instance)("local"));
     }
 
     void BonjourServer::Answer::AddAaaaAdditional()
     {
+        ++additionalRecordsCount;
         if (server.ipv6Address != infra::none)
-        {
-            ++additionalRecordsCount;
             AddAaaa(DnsHostnameInParts(server.instance)("local"));
-        }
+        else
+            AddNoAaaa(DnsHostnameInParts(server.instance)("local"));
     }
 
     void BonjourServer::Answer::AddSrvAdditional()
@@ -150,6 +190,16 @@ namespace services
         stream << *server.ipv4Address;
     }
 
+    void BonjourServer::Answer::AddNoA(const DnsHostnameParts& dnsHostname)
+    {
+        DnsRecordPayload payload{ DnsType::dnsTypeNsec, DnsClass::dnsClassIn, std::chrono::seconds(60), static_cast<uint16_t>(6 + dnsHostname.StreamedSize()) };
+
+        stream << infra::text << dnsHostname;
+        stream << payload;
+        stream << infra::text << dnsHostname;
+        stream << static_cast<uint8_t>(0) << static_cast<uint8_t>(4) << infra::text << DnsBitmap(static_cast<uint8_t>(DnsType::dnsTypeAAAA));
+    }
+
     void BonjourServer::Answer::AddAaaa(const DnsHostnameParts& dnsHostname)
     {
         DnsRecordPayload payload{ DnsType::dnsTypeAAAA, DnsClass::dnsClassIn, std::chrono::seconds(60), sizeof(IPv6Address) };
@@ -157,6 +207,16 @@ namespace services
         stream << infra::text << dnsHostname;
         stream << payload;
         stream << *server.ipv6Address;
+    }
+
+    void BonjourServer::Answer::AddNoAaaa(const DnsHostnameParts& dnsHostname)
+    {
+        DnsRecordPayload payload{ DnsType::dnsTypeNsec, DnsClass::dnsClassIn, std::chrono::seconds(60), static_cast<uint16_t>(6 + dnsHostname.StreamedSize()) };
+
+        stream << infra::text << dnsHostname;
+        stream << payload;
+        stream << infra::text << dnsHostname;
+        stream << static_cast<uint8_t>(0) << static_cast<uint8_t>(4) << infra::text << DnsBitmap(static_cast<uint8_t>(DnsType::dnsTypeA));
     }
 
     void BonjourServer::Answer::AddPtr(const DnsHostnameParts& dnsHostname)

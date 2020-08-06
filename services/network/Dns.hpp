@@ -18,8 +18,9 @@ namespace services
         dnsTypeCName = 5,
         dnsTypePtr = 12,
         dnsTypeTxt = 16,
-        dnsTypeAAAA = 26,
-        dnsTypeSrv = 33
+        dnsTypeAAAA = 28,
+        dnsTypeSrv = 33,
+        dnsTypeNsec = 47
     };
 
     enum class DnsClass : uint16_t
