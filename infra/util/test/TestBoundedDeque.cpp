@@ -228,6 +228,29 @@ TEST(BoundedDequeTest, TestContiguousRange)
     EXPECT_EQ(0, static_cast<const infra::BoundedDeque<int>&>(deque).contiguous_range(deque.begin() + 2).front());
 }
 
+TEST(BoundedDequeTest, TestContiguousRangeAtEnd)
+{
+    infra::BoundedDeque<int>::WithMaxSize<5> emptyDeque;
+    EXPECT_EQ(0, emptyDeque.contiguous_range_at_end(emptyDeque.begin()).size());
+    EXPECT_EQ(0, static_cast<const infra::BoundedDeque<int>&>(emptyDeque).contiguous_range_at_end(emptyDeque.begin()).size());
+
+    int range[3] = { 0, 1, 2 };
+    infra::BoundedDeque<int>::WithMaxSize<5> deque(range, range + 3);
+
+    EXPECT_EQ(3, deque.contiguous_range_at_end(deque.end()).size());
+    EXPECT_EQ(0, deque.contiguous_range_at_end(deque.end()).front());
+
+    deque.push_front(-1);
+    deque.push_front(-2);
+
+    EXPECT_EQ(3, static_cast<const infra::BoundedDeque<int>&>(deque).contiguous_range_at_end(deque.end()).size());
+    EXPECT_EQ(0, static_cast<const infra::BoundedDeque<int>&>(deque).contiguous_range_at_end(deque.end()).front());
+    EXPECT_EQ(2, static_cast<const infra::BoundedDeque<int>&>(deque).contiguous_range_at_end(deque.end() - 1).size());
+    EXPECT_EQ(1, static_cast<const infra::BoundedDeque<int>&>(deque).contiguous_range_at_end(deque.end() - 1).back());
+    EXPECT_EQ(2, static_cast<const infra::BoundedDeque<int>&>(deque).contiguous_range_at_end(deque.end() - 3).size());
+    EXPECT_EQ(-2, static_cast<const infra::BoundedDeque<int>&>(deque).contiguous_range_at_end(deque.end() - 3).front());
+}
+
 TEST(BoundedDequeTest, TestResizeBigger)
 {
     infra::BoundedDeque<int>::WithMaxSize<5> deque(std::size_t(2), 4);

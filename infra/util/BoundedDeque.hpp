@@ -16,7 +16,7 @@ namespace infra
     namespace detail
     {
         template<class DequeType, class T>
-            class BoundedDequeIterator;
+        class BoundedDequeIterator;
     }
 
     template<class T>
@@ -24,7 +24,7 @@ namespace infra
     {
     public:
         template<std::size_t Max>
-            using WithMaxSize = infra::WithStorage<BoundedDeque<T>, std::array<StaticStorage<T>, Max>>;
+        using WithMaxSize = infra::WithStorage<BoundedDeque<T>, std::array<StaticStorage<T>, Max>>;
 
         typedef T value_type;
         typedef T& reference;
@@ -78,6 +78,8 @@ namespace infra
         bool full() const;
         infra::MemoryRange<T> contiguous_range(const_iterator from);
         infra::MemoryRange<const T> contiguous_range(const_iterator from) const;
+        infra::MemoryRange<T> contiguous_range_at_end(const_iterator to);
+        infra::MemoryRange<const T> contiguous_range_at_end(const_iterator to) const;
 
     public:
         value_type& operator[](size_type position);
@@ -89,7 +91,7 @@ namespace infra
 
     public:
         template<class InputIterator>
-            void assign(InputIterator first, const InputIterator& last);
+        void assign(InputIterator first, const InputIterator& last);
         void assign(size_type n, const value_type& value);
         void assign(std::initializer_list<T> initializerList);
 
@@ -115,11 +117,11 @@ namespace infra
         void clear();
 
         template<class... Args>
-            iterator emplace(const const_iterator& position, Args&&... args);
+        iterator emplace(const const_iterator& position, Args&&... args);
         template<class... Args>
-            void emplace_front(Args&&... args);
+        void emplace_front(Args&&... args);
         template<class... Args>
-            void emplace_back(Args&&... args);
+        void emplace_back(Args&&... args);
 
     public:
         bool operator==(const BoundedDeque& other) const;
@@ -140,7 +142,7 @@ namespace infra
     };
 
     template<class T>
-        void swap(BoundedDeque<T>& x, BoundedDeque<T>& y);
+    void swap(BoundedDeque<T>& x, BoundedDeque<T>& y);
 
     namespace detail
     {
@@ -191,7 +193,6 @@ namespace infra
             std::size_t index;
             DequeType* deque;
         };
-
     }
 
     //// Implementation ////
@@ -334,7 +335,7 @@ namespace infra
     {
         return const_reverse_iterator(begin());
     }
-    
+
     template<class T>
     typename BoundedDeque<T>::const_iterator BoundedDeque<T>::cbegin() const
     {
@@ -415,6 +416,34 @@ namespace infra
         }
         else
             return infra::MemoryRange<const T>();
+    }
+
+    template<class T>
+    infra::MemoryRange<T> BoundedDeque<T>::contiguous_range_at_end(const_iterator to)
+    {
+        if (!empty())
+        {
+            std::size_t i = index(to.index);
+            if (i == 0)
+                i = storage.size();
+            return infra::MemoryRange<T>(std::max((&**storage.begin()) + i - to.index, &**storage.begin()), (&**storage.begin()) + i);
+        }
+        else
+            return infra::MemoryRange<T>();
+    }
+
+    template<class T>
+    infra::MemoryRange<const T> BoundedDeque<T>::contiguous_range_at_end(const_iterator to) const
+    {
+        if (!empty())
+        {
+            std::size_t i = index(to.index);
+            if (i == 0)
+                i = storage.size();
+            return infra::MemoryRange<T>(std::max((&**storage.begin()) + i - to.index, &**storage.begin()), (&**storage.begin()) + i);
+        }
+        else
+            return infra::MemoryRange<T>();
     }
 
     template<class T>
