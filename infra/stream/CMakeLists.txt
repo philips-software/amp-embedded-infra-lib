@@ -3,6 +3,8 @@ ccola_component(stream static_library)
     ccola_sources(
         BoundedDequeInputStream.cpp
         BoundedDequeInputStream.hpp
+        BoundedDequeOutputStream.cpp
+        BoundedDequeOutputStream.hpp
         BoundedVectorOutputStream.cpp
         BoundedVectorOutputStream.hpp
         ByteInputStream.cpp
