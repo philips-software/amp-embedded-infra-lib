@@ -12,9 +12,6 @@ namespace infra
     public:
         explicit BoundedDequeStreamWriter(BoundedDeque<uint8_t>& deque);
 
-        template<class T>
-            ReservedProxy<T> Reserve(StreamErrorPolicy& errorPolicy);
-
         void Reset();
         void Reset(BoundedDeque<uint8_t>& newDeque);
 
@@ -43,22 +40,6 @@ namespace infra
         BoundedDequeOutputStream(BoundedDeque<uint8_t>& storage, const SoftFail&);
         BoundedDequeOutputStream(BoundedDeque<uint8_t>& storage, const NoFail&);
     };
-
-    ////    Implementation    ////
-
-    template<class T>
-    ReservedProxy<T> BoundedDequeStreamWriter::Reserve(StreamErrorPolicy& errorPolicy)
-    {
-        ByteRange range(ByteRange(deque->end(), deque->end() + sizeof(T)));
-        std::size_t spaceLeft = deque->max_size() - deque->size();
-        bool spaceOk = sizeof(T) <= spaceLeft;
-        errorPolicy.ReportResult(spaceOk);
-
-        auto increase = std::min(spaceLeft, sizeof(T));
-        deque->insert(deque->end(), increase, 0);
-
-        return ReservedProxy<T>(infra::MakeRange(deque->end() - increase, deque->end()));
-    }
 }
 
 #endif
