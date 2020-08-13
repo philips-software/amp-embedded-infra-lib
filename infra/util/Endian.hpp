@@ -61,12 +61,12 @@ namespace infra
         BigEndian() = default;
 
         BigEndian(T value)
-            : value(SwapEndian(value))
+            : value(ToBigEndian(value))
         {}
 
         operator T() const
         {
-            return SwapEndian(value);
+            return FromBigEndian(value);
         }
 
         bool operator==(BigEndian other) const
@@ -81,7 +81,7 @@ namespace infra
 
         bool operator==(T other) const
         {
-            return value == SwapEndian(other);
+            return value == ToBigEndian(other);
         }
 
         bool operator!=(T other) const
@@ -92,7 +92,7 @@ namespace infra
         template<class U>
         bool operator==(U other) const
         {
-            return value == SwapEndian(static_cast<T>(other));
+            return value == ToBigEndian(static_cast<T>(other));
         }
 
         template<class U>
@@ -119,6 +119,79 @@ namespace infra
 
         template<class U>
         friend bool operator!=(U x, BigEndian y)
+        {
+            return y != x;
+        }
+
+    private:
+        T value{};
+    };
+
+    template<class T>
+    class LittleEndian
+    {
+    public:
+        LittleEndian() = default;
+
+        LittleEndian(T value)
+            : value(ToLittleEndian(value))
+        {}
+
+        operator T() const
+        {
+            return FromLittleEndian(value);
+        }
+
+        bool operator==(LittleEndian other) const
+        {
+            return value == other.value;
+        }
+
+        bool operator!=(LittleEndian other) const
+        {
+            return !(*this == other);
+        }
+
+        bool operator==(T other) const
+        {
+            return value == ToLittleEndian(other);
+        }
+
+        bool operator!=(T other) const
+        {
+            return !(*this == other);
+        }
+
+        template<class U>
+        bool operator==(U other) const
+        {
+            return value == ToLittleEndian(static_cast<T>(other));
+        }
+
+        template<class U>
+        bool operator!=(U other) const
+        {
+            return !(*this == other);
+        }
+
+        friend bool operator==(T x, LittleEndian y)
+        {
+            return y == x;
+        }
+
+        friend bool operator!=(T x, LittleEndian y)
+        {
+            return y != x;
+        }
+
+        template<class U>
+        friend bool operator==(U x, LittleEndian y)
+        {
+            return y == x;
+        }
+
+        template<class U>
+        friend bool operator!=(U x, LittleEndian y)
         {
             return y != x;
         }
