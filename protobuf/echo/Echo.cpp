@@ -70,7 +70,60 @@ namespace services
         return maxMessageSize;
     }
 
-    void EchoOnConnection::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+    void EchoOnStreams::RequestSend(ServiceProxy& serviceProxy)
+    {
+        if (sendRequesters.empty() && streamWriter == nullptr)
+            RequestSendStream(serviceProxy.MaxMessageSize());
+
+        sendRequesters.push_back(serviceProxy);
+    }
+
+    infra::StreamWriter& EchoOnStreams::SendStreamWriter()
+    {
+        return *streamWriter;
+    }
+
+    void EchoOnStreams::Send()
+    {
+        streamWriter = nullptr;
+
+        if (!sendRequesters.empty())
+            RequestSendStream(sendRequesters.front().MaxMessageSize());
+    }
+
+    void EchoOnStreams::ServiceDone(Service& service)
+    {
+        if (serviceBusy && *serviceBusy == service.ServiceId())
+        {
+            serviceBusy = infra::none;
+            infra::EventDispatcherWithWeakPtr::Instance().Schedule([](infra::SharedPtr<EchoOnStreams> echo) { echo->ServiceDone(); }, SharedFromThis());
+        }
+    }
+
+    void EchoOnStreams::AttachService(Service& service)
+    {
+        services.push_back(service);
+    }
+
+    void EchoOnStreams::DetachService(Service& service)
+    {
+        services.erase(service);
+    }
+
+    void EchoOnStreams::ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoParser& argument)
+    {
+        for (auto& service : services)
+            if (service.ServiceId() == serviceId)
+            {
+                if (service.InProgress())
+                    serviceBusy = serviceId;
+                else
+                    service.HandleMethod(methodId, argument);
+                break;
+            }
+    }
+
+    void EchoOnStreams::SetStreamWriter(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         streamWriter = std::move(writer);
 
@@ -79,9 +132,19 @@ namespace services
         proxy.GrantSend();
     }
 
+    bool EchoOnStreams::ServiceBusy() const
+    {
+        return serviceBusy != infra::none;
+    }
+
+    void EchoOnConnection::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+    {
+        SetStreamWriter(std::move(writer));
+    }
+
     void EchoOnConnection::DataReceived()
     {
-        while (!serviceBusy)
+        while (!ServiceBusy())
         {
             infra::SharedPtr<infra::StreamReader> reader = ConnectionObserver::Subject().ReceiveStream();
             infra::DataInputStream::WithErrorPolicy stream(*reader, infra::softFail);
@@ -100,7 +163,7 @@ namespace services
             ExecuteMethod(serviceId, methodId, argument);
             if (stream.Failed())
                 std::abort();
-            if (serviceBusy)
+            if (ServiceBusy())
                 break;
 
             ConnectionObserver::Subject().AckReceived();
@@ -110,56 +173,54 @@ namespace services
         }
     }
 
-    void EchoOnConnection::RequestSend(ServiceProxy& serviceProxy)
+    void EchoOnConnection::RequestSendStream(std::size_t size)
     {
-        if (sendRequesters.empty() && streamWriter == nullptr)
-            ConnectionObserver::Subject().RequestSendStream(serviceProxy.MaxMessageSize());
-
-        sendRequesters.push_back(serviceProxy);
+        ConnectionObserver::Subject().RequestSendStream(size);
     }
 
-    infra::StreamWriter& EchoOnConnection::SendStreamWriter()
+    void EchoOnConnection::ServiceDone()
     {
-        return *streamWriter;
+        DataReceived();
     }
 
-    void EchoOnConnection::Send()
+    void EchoOnMessageCommunication::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        streamWriter = nullptr;
-
-        if (!sendRequesters.empty())
-            ConnectionObserver::Subject().RequestSendStream(sendRequesters.front().MaxMessageSize());
+        SetStreamWriter(std::move(writer));
     }
 
-    void EchoOnConnection::ServiceDone(Service& service)
+    void EchoOnMessageCommunication::ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
-        if (serviceBusy && *serviceBusy == service.ServiceId())
-        {
-            serviceBusy = infra::none;
-            infra::EventDispatcherWithWeakPtr::Instance().Schedule([](infra::SharedPtr<EchoOnConnection> echo) { echo->DataReceived(); }, SharedFromThis());
-        }
+        this->reader = std::move(reader);
+        ProcessMessage();
     }
 
-    void EchoOnConnection::AttachService(Service& service)
+    void EchoOnMessageCommunication::RequestSendStream(std::size_t size)
     {
-        services.push_back(service);
+        MessageCommunicationObserver::Subject().RequestSendMessage(static_cast<uint16_t>(size));
     }
 
-    void EchoOnConnection::DetachService(Service& service)
+    void EchoOnMessageCommunication::ServiceDone()
     {
-        services.erase(service);
+        reader = nullptr;
     }
 
-    void EchoOnConnection::ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoParser& argument)
+    void EchoOnMessageCommunication::ProcessMessage()
     {
-        for (auto& service : services)
-            if (service.ServiceId() == serviceId)
-            {
-                if (service.InProgress())
-                    serviceBusy = serviceId;
-                else
-                    service.HandleMethod(methodId, argument);
-                break;
-            }
+        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::softFail);
+        infra::ProtoParser parser(stream);
+        uint32_t serviceId = static_cast<uint32_t>(parser.GetVarInt());
+        infra::ProtoParser::Field message = parser.GetField();
+        if (stream.Failed())
+            return;
+
+        assert(message.first.Is<infra::ProtoLengthDelimited>());
+        infra::ProtoParser argument(message.first.Get<infra::ProtoLengthDelimited>().Parser());
+        uint32_t methodId = message.second;
+        if (stream.Failed())
+            return;
+
+        ExecuteMethod(serviceId, methodId, argument);
+        if (stream.Failed())
+            std::abort();
     }
 }

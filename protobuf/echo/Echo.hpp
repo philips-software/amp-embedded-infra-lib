@@ -5,6 +5,7 @@
 #include "infra/util/Optional.hpp"
 #include "infra/syntax/ProtoParser.hpp"
 #include "services/network/Connection.hpp"
+#include "services/network/MessageCommunication.hpp"
 
 namespace services
 {
@@ -64,16 +65,11 @@ namespace services
         infra::Function<void()> onGranted;
     };
 
-    class EchoOnConnection
+    class EchoOnStreams
         : public Echo
-        , public ConnectionObserver
-        , public infra::EnableSharedFromThis<EchoOnConnection>
+        , public infra::EnableSharedFromThis<EchoOnStreams>
     {
     public:
-        // Implementation of ConnectionObserver
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        virtual void DataReceived() override;
-
         // Implementation of Echo
         virtual void RequestSend(ServiceProxy& serviceProxy) override;
         virtual infra::StreamWriter& SendStreamWriter() override;
@@ -82,14 +78,53 @@ namespace services
         virtual void AttachService(Service& service) override;
         virtual void DetachService(Service& service) override;
 
-    private:
+    protected:
+        virtual void RequestSendStream(std::size_t size) = 0;
+        virtual void ServiceDone() = 0;
+
         void ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoParser& argument);
+        void SetStreamWriter(infra::SharedPtr<infra::StreamWriter>&& writer);
+        bool ServiceBusy() const;
 
     private:
         infra::IntrusiveList<Service> services;
         infra::SharedPtr<infra::StreamWriter> streamWriter;
         infra::IntrusiveList<ServiceProxy> sendRequesters;
         infra::Optional<uint32_t> serviceBusy;
+    };
+
+    class EchoOnConnection
+        : public EchoOnStreams
+        , public ConnectionObserver
+    {
+    public:
+        // Implementation of ConnectionObserver
+        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        virtual void DataReceived() override;
+
+    protected:
+        virtual void RequestSendStream(std::size_t size) override;
+        virtual void ServiceDone() override;
+    };
+
+    class EchoOnMessageCommunication
+        : public EchoOnStreams
+        , public MessageCommunicationObserver
+    {
+    public:
+        // Implementation of MessageCommunicationObserver
+        virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        virtual void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
+
+    protected:
+        virtual void RequestSendStream(std::size_t size) override;
+        virtual void ServiceDone() override;
+
+    private:
+        void ProcessMessage();
+
+    private:
+        infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
     };
 }
 
