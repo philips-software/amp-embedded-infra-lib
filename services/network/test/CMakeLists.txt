@@ -15,6 +15,7 @@ ccola_component(network_test gmock_test)
         TestHttpServer.cpp
         TestLlmnrResponder.cpp
         TestMessageCommunication.cpp
+        TestMessageCommunicationCobs.cpp
         TestMqttClient.cpp
         TestNameResolverCache.cpp
         TestSerialServer.cpp
