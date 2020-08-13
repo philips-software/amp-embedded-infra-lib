@@ -30,7 +30,7 @@ namespace infra
     };
 
     class BoundedDequeOutputStream
-        : public TextOutputStream::WithWriter<BoundedDequeStreamWriter>
+        : public DataOutputStream::WithWriter<BoundedDequeStreamWriter>
     {
     public:
         template<std::size_t Max>

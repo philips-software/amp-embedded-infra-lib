@@ -56,14 +56,14 @@ namespace infra
     }
 
     BoundedDequeOutputStream::BoundedDequeOutputStream(BoundedDeque<uint8_t>& storage)
-        : TextOutputStream::WithWriter<BoundedDequeStreamWriter>(storage)
+        : DataOutputStream::WithWriter<BoundedDequeStreamWriter>(storage)
     {}
 
     BoundedDequeOutputStream::BoundedDequeOutputStream(BoundedDeque<uint8_t>& storage, const SoftFail&)
-        : TextOutputStream::WithWriter<BoundedDequeStreamWriter>(storage, softFail)
+        : DataOutputStream::WithWriter<BoundedDequeStreamWriter>(storage, softFail)
     {}
 
     BoundedDequeOutputStream::BoundedDequeOutputStream(BoundedDeque<uint8_t>& storage, const NoFail&)
-        : TextOutputStream::WithWriter<BoundedDequeStreamWriter>(storage, noFail)
+        : DataOutputStream::WithWriter<BoundedDequeStreamWriter>(storage, noFail)
     {}
 }
