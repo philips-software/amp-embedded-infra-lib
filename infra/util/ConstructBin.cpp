@@ -20,6 +20,12 @@ namespace infra
         return *this;
     }
 
+    ConstructBin& ConstructBin::operator()(std::initializer_list<uint8_t> v)
+    {
+        contents.insert(contents.end(), v.begin(), v.end());
+        return *this;
+    }
+
     std::vector<uint8_t> ConstructBin::Vector() const
     {
         return contents;

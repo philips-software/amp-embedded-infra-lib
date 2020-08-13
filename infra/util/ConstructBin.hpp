@@ -13,6 +13,7 @@ namespace infra
         ConstructBin& operator()(const std::vector<uint8_t>& v);
         ConstructBin& operator()(const std::string& v);
         ConstructBin& operator()(uint8_t v);
+        ConstructBin& operator()(std::initializer_list<uint8_t> v);
 
         template<class T>
             ConstructBin& Value(T v);
