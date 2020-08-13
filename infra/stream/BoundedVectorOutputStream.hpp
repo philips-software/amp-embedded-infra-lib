@@ -10,6 +10,9 @@ namespace infra
         : public StreamWriter
     {
     public:
+        template<std::size_t Size>
+            using WithStorage = infra::WithStorage<BoundedVectorStreamWriter, BoundedVector<uint8_t>::WithMaxSize<Size>>;
+
         explicit BoundedVectorStreamWriter(BoundedVector<uint8_t>& vector);
 
         template<class T>
