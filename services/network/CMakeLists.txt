@@ -45,6 +45,8 @@ ccola_component(network static_library)
         HttpServer.hpp
         LlmnrResponder.cpp
         LlmnrResponder.hpp
+        MessageCommunication.cpp
+        MessageCommunication.hpp
         Mqtt.hpp
         MqttClientImpl.cpp
         MqttClientImpl.hpp
