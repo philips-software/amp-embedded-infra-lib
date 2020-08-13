@@ -5,6 +5,8 @@ ccola_component(stream static_library)
         BoundedDequeInputStream.hpp
         BoundedDequeOutputStream.cpp
         BoundedDequeOutputStream.hpp
+        BoundedVectorInputStream.cpp
+        BoundedVectorInputStream.hpp
         BoundedVectorOutputStream.cpp
         BoundedVectorOutputStream.hpp
         ByteInputStream.cpp
