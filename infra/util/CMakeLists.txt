@@ -1,6 +1,7 @@
 ccola_component(util static_library)
 
     ccola_sources(
+        Aligned.hpp
         Allocator.hpp
         AllocatorFixedSpace.hpp
         AllocatorHeap.hpp
