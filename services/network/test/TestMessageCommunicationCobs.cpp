@@ -37,6 +37,18 @@ public:
         }));
     }
 
+    void ExpectReceivedMessage(const std::vector<uint8_t>& expected)
+    {
+        EXPECT_CALL(observer, ReceivedMessageOnInterrupt(testing::_)).WillOnce(testing::Invoke([this, expected](infra::StreamReader& reader)
+        {
+            infra::DataInputStream::WithErrorPolicy stream(reader);
+            std::vector<uint8_t> data(stream.Available(), 0);
+            stream >> infra::MakeRange(data);
+
+            EXPECT_EQ(expected, data);
+        }));
+    }
+
     testing::StrictMock<hal::SerialCommunicationCleanMock> serial;
     infra::Function<void(infra::ConstByteRange data)> receiveData;
     infra::Execute execute{ [this]() { EXPECT_CALL(serial, ReceiveData(testing::_)).WillOnce(testing::SaveArg<0>(&receiveData)); } };
@@ -133,39 +145,24 @@ TEST_F(MessageCommunicationCobsTest, send_large_data)
 
 TEST_F(MessageCommunicationCobsTest, receive_data)
 {
-    EXPECT_CALL(observer, ReceivedMessageOnInterrupt(testing::_)).WillOnce(testing::Invoke([this](infra::StreamReader& reader)
-    {
-        infra::DataInputStream::WithErrorPolicy stream(reader);
-        std::vector<uint8_t> data(stream.Available(), 0);
-        stream >> infra::MakeRange(data);
-
-        EXPECT_EQ((std::vector<uint8_t>{ 1, 2, 3, 4 }), data);
-    }));
+    ExpectReceivedMessage({ 1, 2, 3, 4 });
     receiveData(infra::ConstructBin()({ 0, 5, 1, 2, 3, 4, 0 }).Range());
 }
 
 TEST_F(MessageCommunicationCobsTest, receive_data_with_0)
 {
-    EXPECT_CALL(observer, ReceivedMessageOnInterrupt(testing::_)).WillOnce(testing::Invoke([this](infra::StreamReader& reader)
-    {
-        infra::DataInputStream::WithErrorPolicy stream(reader);
-        std::vector<uint8_t> data(stream.Available(), 0);
-        stream >> infra::MakeRange(data);
-
-        EXPECT_EQ((std::vector<uint8_t>{ 1, 0, 3, 4 }), data);
-    }));
+    ExpectReceivedMessage({ 1, 0, 3, 4 });
     receiveData(infra::ConstructBin()({ 0, 2, 1, 3, 3, 4, 0 }).Range());
 }
 
 TEST_F(MessageCommunicationCobsTest, receive_large_data)
 {
-    EXPECT_CALL(observer, ReceivedMessageOnInterrupt(testing::_)).WillOnce(testing::Invoke([this](infra::StreamReader& reader)
-    {
-        infra::DataInputStream::WithErrorPolicy stream(reader);
-        std::vector<uint8_t> data(stream.Available(), 0);
-        stream >> infra::MakeRange(data);
-
-        EXPECT_EQ((std::vector<uint8_t>(280, 3)), data);
-    }));
+    ExpectReceivedMessage(std::vector<uint8_t>(280, 3));
     receiveData(infra::ConstructBin()({ 0, 255 })(std::vector<uint8_t>(254, 3))({ 27 })(std::vector<uint8_t>(26, 3))({ 0 }).Range());
+}
+
+TEST_F(MessageCommunicationCobsTest, receive_interrupted_data)
+{
+    ExpectReceivedMessage({ 1, 2 });
+    receiveData(infra::ConstructBin()({ 0, 5, 1, 2, 0 }).Range());
 }
