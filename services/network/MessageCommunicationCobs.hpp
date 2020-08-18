@@ -33,6 +33,7 @@ namespace services
         void SendStreamFilled();
         void SendOrDone();
         void SendFrame();
+        void SendFrameDone();
         uint8_t FindDelimiter() const;
 
     private:

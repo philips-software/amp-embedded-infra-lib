@@ -124,16 +124,27 @@ namespace services
         serial.SendData(infra::MakeByteRange(frameSize), [this]()
         {
             --frameSize;
-            serial.SendData(infra::Head(dataToSend, frameSize), [this]()
-            {
-                if (frameSize == 254)
-                    dataToSend = infra::DiscardHead(dataToSend, 254);
-                else
-                    dataToSend = infra::DiscardHead(dataToSend, frameSize + 1);
-
-                SendOrDone();
-            });
+            if (frameSize != 0)
+                serial.SendData(infra::Head(dataToSend, frameSize), [this]() { SendFrameDone(); });
+            else
+                SendFrameDone();
         });
+    }
+
+    void MessageCommunicationCobs::SendFrameDone()
+    {
+        if (frameSize == 254)
+            dataToSend = infra::DiscardHead(dataToSend, 254);
+        else
+            dataToSend = infra::DiscardHead(dataToSend, frameSize);
+
+        if (dataToSend.empty() || frameSize == 254)
+            SendOrDone();
+        else
+        {
+            dataToSend.pop_front();
+            SendFrame();
+        }
     }
 
     uint8_t MessageCommunicationCobs::FindDelimiter() const

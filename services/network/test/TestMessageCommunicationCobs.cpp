@@ -114,6 +114,32 @@ TEST_F(MessageCommunicationCobsTest, send_data_with_0)
     onSent();
 }
 
+TEST_F(MessageCommunicationCobsTest, send_data_ending_with_0)
+{
+    testing::StrictMock<infra::MockCallback<void(uint16_t size)>> callback;
+    auto writer = communication.SendMessageStream(3, [&](uint16_t size) { callback.callback(size); });
+    infra::DataOutputStream::WithErrorPolicy stream(*writer);
+    stream << infra::ConstructBin()({ 5, 6, 0 }).Range();
+
+    ExpectSendData({ 0 });
+    writer = nullptr;
+
+    ExpectSendData({ 3 });
+    onSent();
+
+    ExpectSendData({ 5, 6 });      // Data 1
+    onSent();
+
+    ExpectSendData({ 1 });      // Stuffing
+    onSent();
+
+    ExpectSendData({ 0 });
+    onSent();
+
+    EXPECT_CALL(callback, callback(3));
+    onSent();
+}
+
 TEST_F(MessageCommunicationCobsTest, send_large_data)
 {
     testing::StrictMock<infra::MockCallback<void(uint16_t size)>> callback;
