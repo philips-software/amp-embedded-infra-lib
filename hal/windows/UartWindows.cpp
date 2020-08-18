@@ -1,5 +1,4 @@
 #include "hal/windows/UartWindows.hpp"
-#include <windows.h>
 
 namespace hal
 {
@@ -30,6 +29,7 @@ namespace hal
         SetCommTimeouts(handle, &commTimeOuts);
 
         readThread = std::thread([this]() { ReadThread(); });
+        SetThreadPriority(readThread.native_handle(), GetThreadPriority(readThread.native_handle()) + 1);
     }
 
     UartWindows::~UartWindows()
@@ -42,13 +42,6 @@ namespace hal
 
     void UartWindows::ReadThread()
     {
-        const uint16_t readTimeoutMs = 500;
-
-        unsigned long bytesRead;
-        bool pendingRead = false;
-        OVERLAPPED overlapped = { 0 };
-        uint8_t buffer[1];
-
         overlapped.hEvent = CreateEvent(nullptr, true, false, nullptr);
 
         std::unique_lock<std::mutex> lock(mutex);
@@ -57,37 +50,47 @@ namespace hal
 
         while (running)
         {
-            if (!pendingRead) 
-            {
-                if (!ReadFile(handle, buffer, sizeof(buffer), &bytesRead, &overlapped))
-                {
-                    if (GetLastError() == ERROR_IO_PENDING)
-                        pendingRead = true;
-                }
-                else 
-                {
-                    if (bytesRead)
-                        onReceivedData(infra::ConstByteRange(buffer, buffer + bytesRead));
-                }
-            }
+            if (!pendingRead)
+                ReadNonBlocking(infra::MakeByteRange(buffer));
 
-            if (pendingRead) 
-            {
-                if (WaitForSingleObject(overlapped.hEvent, readTimeoutMs) == WAIT_OBJECT_0)
-                {
-                    if (GetOverlappedResult(handle, &overlapped, &bytesRead, false))
-                    {
-                        if (bytesRead)
-                            onReceivedData(infra::ConstByteRange(buffer, buffer + bytesRead));
-                        pendingRead = false;
-                    }
-                    else
-                        std::abort();
-                }
-            }
+            if (pendingRead)
+                ReadBlocking(infra::MakeByteRange(buffer));
         }
 
         CloseHandle(overlapped.hEvent);
+    }
+
+    void UartWindows::ReadNonBlocking(infra::ByteRange range)
+    {
+        unsigned long bytesRead;
+
+        if (!ReadFile(handle, range.begin(), range.size(), &bytesRead, &overlapped))
+        {
+            if (GetLastError() == ERROR_IO_PENDING)
+                pendingRead = true;
+        }
+        else
+        {
+            if (bytesRead != 0)
+                onReceivedData(infra::ConstByteRange(range.begin(), range.begin() + bytesRead));
+        }
+    }
+
+    void UartWindows::ReadBlocking(infra::ByteRange range)
+    {
+        const uint16_t readTimeoutMs = 500;
+        if (WaitForSingleObject(overlapped.hEvent, readTimeoutMs) == WAIT_OBJECT_0)
+        {
+            unsigned long bytesRead;
+            if (GetOverlappedResult(handle, &overlapped, &bytesRead, false))
+            {
+                if (bytesRead != 0)
+                    onReceivedData(infra::ConstByteRange(range.begin(), range.begin() + bytesRead));
+                pendingRead = false;
+            }
+            else
+                std::abort();
+        }
     }
 
     void UartWindows::ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived)
@@ -117,7 +120,7 @@ namespace hal
         }
 
        CloseHandle(overlapped.hEvent);
-       
-       actionOnCompletion();
+
+       infra::EventDispatcher::Instance().Schedule(actionOnCompletion);
     }
 }

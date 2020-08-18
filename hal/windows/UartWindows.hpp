@@ -5,6 +5,8 @@
 #include <atomic>
 #include <mutex>
 #include <thread>
+#include <winsock2.h>
+#include <windows.h>
 
 namespace hal
 {
@@ -20,14 +22,21 @@ namespace hal
 
     private:
         void ReadThread();
+        void ReadNonBlocking(infra::ByteRange range);
+        void ReadBlocking(infra::ByteRange range);
 
-        infra::Function<void(infra::ConstByteRange data)> onReceivedData;        
+    private:
+        infra::Function<void(infra::ConstByteRange data)> onReceivedData;
 
         void* handle = nullptr;
         std::atomic<bool> running = true;
         std::mutex mutex;
         std::condition_variable receivedDataSet;
         std::thread readThread;
+
+        bool pendingRead = false;
+        OVERLAPPED overlapped = { 0 };
+        uint8_t buffer;
     };
 }
 
