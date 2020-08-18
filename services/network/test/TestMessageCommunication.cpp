@@ -217,14 +217,26 @@ TEST_F(WindowedMessageCommunicationTest, receive_message_after_initialized)
     ExecuteAllActions();
 }
 
-//TEST_F(WindowedMessageCommunicationTest, received_message_before_initialized_is_discarded)
-//{
-//    ReceivedMessage(infra::ConstructBin().Value<uint8_t>(4)("abcd").Vector());
-//
-//    FinishInitialization(6);
-//
-//    ExecuteAllActions();
-//}
+TEST_F(WindowedMessageCommunicationTest, received_message_before_initialized_is_discarded)
+{
+    ReceivedMessage(infra::ConstructBin().Value<uint8_t>(4)("abcd").Vector());
+
+    FinishInitialization(6);
+
+    ExecuteAllActions();
+}
+
+TEST_F(WindowedMessageCommunicationTest, received_release_window_before_initialized_is_discarded)
+{
+    communication.RequestSendMessage(4);
+    SendReleaseWindow(6);
+
+    OnSentData(infra::ConstructBin().Value<uint8_t>(1).Value<infra::LittleEndian<uint16_t>>(16).Vector());
+
+    ExpectSendMessageStream(5);
+    ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
+    SendInitResponse(6);
+}
 
 TEST_F(WindowedMessageCommunicationTest, handle_init_request_after_initialization)
 {

@@ -29,12 +29,15 @@ namespace services
             case Operation::init:
                 sendInitResponse = true;
                 otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
+                initialized = true;
                 break;
             case Operation::initResponse:
                 otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
+                initialized = true;
                 break;
             case Operation::releaseWindow:
-                otherAvailableWindow += stream.Extract<infra::LittleEndian<uint16_t>>();
+                if (initialized)
+                    otherAvailableWindow += stream.Extract<infra::LittleEndian<uint16_t>>();
                 break;
             case Operation::message:
                 if (initialized)
@@ -118,7 +121,10 @@ namespace services
             if (!sending)
             {
                 if (sendInitResponse)
-                    state.Emplace<StateSendingInitResponse>(*this);
+                {
+                    if (receivedData.Empty())
+                        state.Emplace<StateSendingInitResponse>(*this);
+                }
                 else if (requestedSendMessageSize && WindowSize(*requestedSendMessageSize) <= otherAvailableWindow)
                     state.Emplace<StateSendingMessage>(*this);
                 else if (releasedWindow != 0)
@@ -151,9 +157,7 @@ namespace services
 
     WindowedMessageCommunication::PacketReleaseWindow::PacketReleaseWindow(uint16_t window)
         : window(window)
-    {
-        assert(window <= 256);
-    }
+    {}
 
     WindowedMessageCommunication::StateSendingInit::StateSendingInit(WindowedMessageCommunication& communication)
         : communication(communication)
@@ -164,7 +168,6 @@ namespace services
         stream << PacketInit(communication.AvailableWindow());
 
         communication.receivedData.Pop(communication.receivedData.Size());
-        communication.initialized = true;
     }
 
     void WindowedMessageCommunication::StateSendingInit::OnSent()
@@ -232,8 +235,8 @@ namespace services
 
     void WindowedMessageCommunication::StateSendingMessage::OnSent(uint16_t sent)
     {
-        communication.sending = false;
         communication.otherAvailableWindow -= communication.WindowSize(sent - 1);
+        communication.sending = false;
         communication.SetNextState();
     }
 
@@ -280,7 +283,6 @@ namespace services
                     e = storage.begin();
             }
 
-            assert(b.load() != e.load());
             assert(storage.begin() <= e && e < storage.end());
             assert(storage.begin() <= b && b <= storage.end());
         }
