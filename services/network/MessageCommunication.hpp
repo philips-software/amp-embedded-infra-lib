@@ -22,7 +22,7 @@ namespace services
         : public infra::SingleObserver<MessageCommunicationObserver, MessageCommunication>
     {
     public:
-        infra::SingleObserver<MessageCommunicationObserver, MessageCommunication>::SingleObserver;
+        using infra::SingleObserver<MessageCommunicationObserver, MessageCommunication>::SingleObserver;
 
         virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) = 0;
         virtual void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) = 0;
@@ -42,7 +42,7 @@ namespace services
         : public infra::SingleObserver<MessageCommunicationReceiveOnInterruptObserver, MessageCommunicationReceiveOnInterrupt>
     {
     public:
-        infra::SingleObserver<MessageCommunicationReceiveOnInterruptObserver, MessageCommunicationReceiveOnInterrupt>::SingleObserver;
+        using infra::SingleObserver<MessageCommunicationReceiveOnInterruptObserver, MessageCommunicationReceiveOnInterrupt>::SingleObserver;
 
         virtual void ReceivedMessageOnInterrupt(infra::StreamReader& reader) = 0;
     };
@@ -55,15 +55,79 @@ namespace services
         virtual std::size_t MaxSendMessageSize() const = 0;
     };
 
+    namespace detail
+    {
+        class AtomicDeque
+        {
+        public:
+            template<std::size_t Size>
+                using WithStorage = infra::WithStorage<AtomicDeque, std::array<uint8_t, Size + 1>>;
+
+            AtomicDeque(infra::ByteRange storage);
+
+            void Push(infra::ConstByteRange range);
+            void Pop(std::size_t size);
+
+            std::size_t Size() const;
+            std::size_t MaxSize() const;
+            bool Empty() const;
+
+            infra::ConstByteRange PeekContiguousRange(std::size_t start) const;
+
+        public:
+            infra::ByteRange storage;
+            std::atomic<uint8_t*> b{ storage.begin() };
+            std::atomic<uint8_t*> e{ storage.begin() };
+        };
+
+        class AtomicDequeReader
+            : public infra::StreamReaderWithRewinding
+        {
+        public:
+            AtomicDequeReader(const AtomicDeque& deque);
+
+            virtual void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
+            virtual uint8_t Peek(infra::StreamErrorPolicy& errorPolicy) override;
+            virtual infra::ConstByteRange ExtractContiguousRange(std::size_t max) override;
+            virtual infra::ConstByteRange PeekContiguousRange(std::size_t start) override;
+            virtual bool Empty() const override;
+            virtual std::size_t Available() const override;
+            virtual std::size_t ConstructSaveMarker() const override;
+            virtual void Rewind(std::size_t marker) override;
+
+        private:
+            const AtomicDeque& deque;
+            std::size_t offset = 0;
+        };
+
+        class AtomicDequeWriter
+            : public infra::StreamWriter
+        {
+        public:
+            AtomicDequeWriter(AtomicDeque& deque);
+
+            virtual void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
+            virtual std::size_t Available() const override;
+            virtual std::size_t ConstructSaveMarker() const override;
+            virtual std::size_t GetProcessedBytesSince(std::size_t marker) const;
+            virtual infra::ByteRange SaveState(std::size_t marker) override;
+            virtual void RestoreState(infra::ByteRange range) override;
+            virtual infra::ByteRange Overwrite(std::size_t marker) override;
+
+        private:
+            AtomicDeque& deque;
+        };
+    }
+
     class WindowedMessageCommunication
         : public MessageCommunication
         , private MessageCommunicationReceiveOnInterruptObserver
     {
     public:
         template<std::size_t Size>
-            using WithReceiveBuffer = infra::WithStorage<WindowedMessageCommunication, infra::BoundedDeque<uint8_t>::WithMaxSize<Size>>;
+            using WithReceiveBuffer = infra::WithStorage<WindowedMessageCommunication, detail::AtomicDeque::WithStorage<Size>>;
 
-        WindowedMessageCommunication(infra::BoundedDeque<uint8_t>& receivedData, MessageCommunicationReceiveOnInterrupt& messageCommunication);
+        WindowedMessageCommunication(detail::AtomicDeque& receivedData, MessageCommunicationReceiveOnInterrupt& messageCommunication);
 
         // Implementation of MessageCommunication
         virtual void RequestSendMessage(uint16_t size) override;
@@ -74,8 +138,9 @@ namespace services
         virtual void ReceivedMessageOnInterrupt(infra::StreamReader& reader) override;
 
     private:
-        void EvaluateReceiveMessage();
-        void SetNextState(bool sendInitResponse);
+        void ReceivedMessage(infra::StreamReader& reader);
+        bool EvaluateReceiveMessage();
+        void SetNextState();
         uint16_t WindowSize(uint16_t messageSize) const;
         uint16_t AvailableWindow() const;
 
@@ -105,17 +170,20 @@ namespace services
             infra::Aligned<uint8_t, infra::LittleEndian<uint16_t>> window;
         };
 
+        struct PacketReleaseWindow
+        {
+            PacketReleaseWindow(uint16_t window);
+
+            Operation operation = Operation::releaseWindow;
+            infra::Aligned<uint8_t, infra::LittleEndian<uint16_t>> window;
+        };
+
         class State
         {
         public:
             virtual ~State() = default;
 
             virtual void RequestSendMessage(uint16_t size) = 0;
-
-            virtual void ReceivedInit(uint16_t availableWindow) = 0;
-            virtual void ReceivedInitResponse(uint16_t availableWindow) = 0;
-            virtual void ReceivedReleaseWindow(uint16_t additionalAvailableWindow) = 0;
-            virtual void ReceivedMessage(infra::StreamReader& reader) = 0;
         };
 
         class StateSendingInit
@@ -125,87 +193,84 @@ namespace services
             StateSendingInit(WindowedMessageCommunication& communication);
 
             virtual void RequestSendMessage(uint16_t size) override;
-            virtual void ReceivedInit(uint16_t availableWindow) override;
-            virtual void ReceivedInitResponse(uint16_t availableWindow) override;
-            virtual void ReceivedReleaseWindow(uint16_t additionalAvailableWindow) override;
-            virtual void ReceivedMessage(infra::StreamReader& reader) override;
 
         private:
             void OnSent();
 
         private:
             WindowedMessageCommunication& communication;
-            bool sendInitResponse = false;
-        };
-
-        class StateReceivable
-            : public State
-        {
-        public:
-            StateReceivable(WindowedMessageCommunication& communication);
-
-            virtual void ReceivedMessage(infra::StreamReader& reader) override;
-
-        protected:
-            void NextState();
-
-        protected:
-            WindowedMessageCommunication& communication;
-            bool sendInitResponse = false;
         };
 
         class StateSendingInitResponse
-            : public StateReceivable
+            : public State
         {
         public:
             StateSendingInitResponse(WindowedMessageCommunication& communication);
 
             virtual void RequestSendMessage(uint16_t size) override;
-            virtual void ReceivedInit(uint16_t availableWindow) override;
-            virtual void ReceivedInitResponse(uint16_t availableWindow) override;
-            virtual void ReceivedReleaseWindow(uint16_t additionalAvailableWindow) override;
 
         private:
             void OnSent();
 
         private:
-            bool sendInitResponse = false;
+            WindowedMessageCommunication& communication;
         };
 
         class StateOperational
-            : public StateReceivable
+            : public State
         {
         public:
-            using StateReceivable::StateReceivable;
+            StateOperational(WindowedMessageCommunication& communication);
 
             virtual void RequestSendMessage(uint16_t size) override;
-            virtual void ReceivedInit(uint16_t availableWindow) override;
-            virtual void ReceivedInitResponse(uint16_t availableWindow) override;
-            virtual void ReceivedReleaseWindow(uint16_t additionalAvailableWindow) override;
+
+        private:
+            WindowedMessageCommunication& communication;
         };
 
         class StateSendingMessage
-            : public StateReceivable
+            : public State
         {
         public:
             StateSendingMessage(WindowedMessageCommunication& communication);
 
             virtual void RequestSendMessage(uint16_t size) override;
-            virtual void ReceivedInit(uint16_t availableWindow) override;
-            virtual void ReceivedInitResponse(uint16_t availableWindow) override;
-            virtual void ReceivedReleaseWindow(uint16_t additionalAvailableWindow) override;
 
         private:
             void OnSent(uint16_t sent);
+
+        private:
+            WindowedMessageCommunication& communication;
+        };
+
+        class StateSendingReleaseWindow
+            : public State
+        {
+        public:
+            StateSendingReleaseWindow(WindowedMessageCommunication& communication);
+
+            virtual void RequestSendMessage(uint16_t size) override;
+
+        private:
+            void OnSent();
+
+        private:
+            WindowedMessageCommunication& communication;
         };
 
     private:
-        infra::BoundedDeque<uint8_t>& receivedData;
-        infra::NotifyingSharedOptional<infra::LimitedStreamReaderWithRewinding::WithInput<infra::BoundedDequeInputStreamReader>> reader;
+        detail::AtomicDeque& receivedData;
+        bool initialized = false;
+        infra::NotifyingSharedOptional<infra::LimitedStreamReaderWithRewinding::WithInput<detail::AtomicDequeReader>> reader;
         std::atomic<bool> notificationScheduled{ false };
-        uint16_t otherAvailableWindow = 0;
+        std::atomic<uint16_t> otherAvailableWindow{ 0 };
+        std::atomic<bool> switchingState{ false };
+        uint16_t releasedWindowBuffer = 0;
+        std::atomic<uint16_t> releasedWindow{ 0 };
+        bool sendInitResponse = false;
+        bool sending = false;
         infra::Optional<uint16_t> requestedSendMessageSize;
-        infra::PolymorphicVariant<State, StateSendingInit, StateSendingInitResponse, StateOperational, StateSendingMessage> state;
+        infra::PolymorphicVariant<State, StateSendingInit, StateSendingInitResponse, StateOperational, StateSendingMessage, StateSendingReleaseWindow> state;
     };
 }
 

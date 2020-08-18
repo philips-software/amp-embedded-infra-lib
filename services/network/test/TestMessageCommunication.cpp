@@ -121,6 +121,20 @@ public:
         }));
     }
 
+    void ExpectSendReleaseWindow(uint16_t releasedSize)
+    {
+        EXPECT_CALL(base, SendMessageStream(3, testing::_)).WillOnce(testing::Invoke([this, releasedSize](uint16_t size, const infra::Function<void(uint16_t size)>& onSent)
+        {
+            this->onSent = onSent;
+            return EmplaceWriter([this, releasedSize]()
+            {
+                this->onSent(3);
+                EXPECT_EQ(infra::ConstructBin().Value<uint8_t>(3).Value<infra::LittleEndian<uint16_t>>(releasedSize).Vector(), sentData.front());
+                sentData.pop_front();
+            });
+        }));
+    }
+
     testing::StrictMock<MessageCommunicationReceiveOnInterruptMock> base;
     std::deque<std::vector<uint8_t>> sentData;
     infra::NotifyingSharedOptional<infra::StdVectorOutputStreamWriter> writer;
@@ -199,17 +213,18 @@ TEST_F(WindowedMessageCommunicationTest, receive_message_after_initialized)
     ReceivedMessage(infra::ConstructBin().Value<uint8_t>(4)("abcd").Vector());
 
     ExpectReceivedMessage(infra::ConstructBin()("abcd").Vector());
+    ExpectSendReleaseWindow(6);
     ExecuteAllActions();
 }
 
-TEST_F(WindowedMessageCommunicationTest, received_message_before_initialized_is_discarded)
-{
-    ReceivedMessage(infra::ConstructBin().Value<uint8_t>(4)("abcd").Vector());
-
-    FinishInitialization(6);
-
-    ExecuteAllActions();
-}
+//TEST_F(WindowedMessageCommunicationTest, received_message_before_initialized_is_discarded)
+//{
+//    ReceivedMessage(infra::ConstructBin().Value<uint8_t>(4)("abcd").Vector());
+//
+//    FinishInitialization(6);
+//
+//    ExecuteAllActions();
+//}
 
 TEST_F(WindowedMessageCommunicationTest, handle_init_request_after_initialization)
 {
