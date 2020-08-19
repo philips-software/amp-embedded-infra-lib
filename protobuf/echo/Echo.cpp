@@ -73,9 +73,12 @@ namespace services
     void EchoOnStreams::RequestSend(ServiceProxy& serviceProxy)
     {
         if (sendRequesters.empty() && streamWriter == nullptr)
+        {
+            sendRequesters.push_back(serviceProxy);
             RequestSendStream(serviceProxy.MaxMessageSize());
-
-        sendRequesters.push_back(serviceProxy);
+        }
+        else
+            sendRequesters.push_back(serviceProxy);
     }
 
     infra::StreamWriter& EchoOnStreams::SendStreamWriter()
@@ -96,7 +99,7 @@ namespace services
         if (serviceBusy && *serviceBusy == service.ServiceId())
         {
             serviceBusy = infra::none;
-            infra::EventDispatcherWithWeakPtr::Instance().Schedule([](infra::SharedPtr<EchoOnStreams> echo) { echo->ServiceDone(); }, SharedFromThis());
+            infra::EventDispatcherWithWeakPtr::Instance().Schedule([](infra::SharedPtr<EchoOnStreams> echo) { echo->BusyServiceDone(); }, SharedFromThis());
         }
     }
 
@@ -178,7 +181,7 @@ namespace services
         ConnectionObserver::Subject().RequestSendStream(size);
     }
 
-    void EchoOnConnection::ServiceDone()
+    void EchoOnConnection::BusyServiceDone()
     {
         DataReceived();
     }
@@ -194,14 +197,21 @@ namespace services
         ProcessMessage();
     }
 
+    void EchoOnMessageCommunication::ServiceDone(Service& service)
+    {
+        reader = nullptr;
+        EchoOnStreams::ServiceDone(service);
+    }
+
     void EchoOnMessageCommunication::RequestSendStream(std::size_t size)
     {
         MessageCommunicationObserver::Subject().RequestSendMessage(static_cast<uint16_t>(size));
     }
 
-    void EchoOnMessageCommunication::ServiceDone()
+    void EchoOnMessageCommunication::BusyServiceDone()
     {
-        reader = nullptr;
+        // In this class, services are never busy, so BusyServiceDone() is never invoked
+        std::abort();
     }
 
     void EchoOnMessageCommunication::ProcessMessage()

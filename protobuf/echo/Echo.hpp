@@ -80,7 +80,7 @@ namespace services
 
     protected:
         virtual void RequestSendStream(std::size_t size) = 0;
-        virtual void ServiceDone() = 0;
+        virtual void BusyServiceDone() = 0;
 
         void ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoParser& argument);
         void SetStreamWriter(infra::SharedPtr<infra::StreamWriter>&& writer);
@@ -104,7 +104,7 @@ namespace services
 
     protected:
         virtual void RequestSendStream(std::size_t size) override;
-        virtual void ServiceDone() override;
+        virtual void BusyServiceDone() override;
     };
 
     class EchoOnMessageCommunication
@@ -112,13 +112,17 @@ namespace services
         , public MessageCommunicationObserver
     {
     public:
+        using MessageCommunicationObserver::MessageCommunicationObserver;
+
         // Implementation of MessageCommunicationObserver
         virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
 
+        virtual void ServiceDone(Service& service) override;
+
     protected:
         virtual void RequestSendStream(std::size_t size) override;
-        virtual void ServiceDone() override;
+        virtual void BusyServiceDone() override;
 
     private:
         void ProcessMessage();
