@@ -2,13 +2,17 @@
 
 namespace hal
 {
+    PortNotOpened::PortNotOpened(const std::string& portName)
+        : std::runtime_error("Unable to open port " + portName)
+    {}
+
     UartWindows::UartWindows(const std::string& portName)
     {
         std::string port = "\\\\.\\" + portName;
         handle = CreateFile(port.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr);
 
         if (handle == INVALID_HANDLE_VALUE)
-            return;
+            throw PortNotOpened(portName);
 
         DCB dcb;
         SecureZeroMemory(&dcb, sizeof(DCB));

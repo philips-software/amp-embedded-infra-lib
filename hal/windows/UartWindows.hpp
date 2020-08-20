@@ -10,6 +10,13 @@
 
 namespace hal
 {
+    class PortNotOpened
+        : public std::runtime_error
+    {
+    public:
+        PortNotOpened(const std::string& portName);
+    };
+
     class UartWindows
         : public SerialCommunication
     {
