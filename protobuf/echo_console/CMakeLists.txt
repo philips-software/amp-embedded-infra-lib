@@ -12,7 +12,9 @@ ccola_component(echo_console win: executable other: skip)
         protoc_echo_plugin_lib
         echo
         hal.generic
+        hal.windows
         services.network_win
+        arg_parser.args
     )
 
 ccola_end_component()

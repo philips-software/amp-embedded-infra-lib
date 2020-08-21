@@ -1,90 +1,87 @@
-#include "hal/generic/FileSystemGeneric.hpp"
+#include "external/args/args.hxx"
+#include "hal/windows/UartWindows.hpp"
 #include "infra/stream/IoOutputStream.hpp"
 #include "infra/syntax/Json.hpp"
 #include "infra/util/Tokenizer.hpp"
 #include "protobuf/echo_console/Console.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
+#include "services/network/MessageCommunicationCobs.hpp"
 #include "services/network_win/NameLookupWin.hpp"
 #include "services/tracer/GlobalTracer.hpp"
+#include <deque>
 #include <fstream>
 #include <iostream>
 
 #undef GetObject
 
-class ConfigParser
+class ConsoleClientUart
+    : public application::ConsoleObserver
+    , private services::MessageCommunicationObserver
 {
 public:
-    class ParseException
-        : public std::runtime_error
-    {
-    public:
-        ParseException(const std::string& message)
-            : std::runtime_error(message)
-        {}
-    };
+    ConsoleClientUart(application::Console& console, hal::SerialCommunication& serial);
+    ~ConsoleClientUart();
 
-public:
-    ConfigParser(hal::FileSystem& filesystem);
-
-    void Open(const hal::filesystem::path& filename);
-
-    std::string Hostname();
+    // Implementation of ConsoleObserver
+    virtual void Send(const std::string& message) override;
 
 private:
-    void CheckConfig();
-    void CheckValidJson();
-    void CheckMandatoryKeys();
+    // Implementation of MessageCommunicationObserver
+    virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+    virtual void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
 
 private:
-    hal::FileSystem& filesystem;
-    std::string fileContents;
-    infra::Optional<infra::JsonObject> json;
+    void CheckDataToBeSent();
+
+private:
+    std::deque<std::string> messagesToBeSent;
+    services::MessageCommunicationCobs::WithMaxMessageSize<2048> cobs;
+    services::WindowedMessageCommunication::WithReceiveBuffer<2048> windowed{ cobs };
+    bool sending = false;
 };
 
-ConfigParser::ConfigParser(hal::FileSystem& filesystem)
-    : filesystem(filesystem)
-{}
-
-void ConfigParser::Open(const hal::filesystem::path& filename)
+ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::SerialCommunication& serial)
+    : application::ConsoleObserver(console)
+    , cobs(serial)
 {
-    auto data = filesystem.ReadFile(filename);
-
-    if (data.size() == 0)
-        throw hal::EmptyFileException(filename);
-
-    std::for_each(data.begin(), data.end(), [this](const std::string& line) { fileContents.append(line); });
-
-    json.Emplace(fileContents);
-
-    CheckConfig();
+    services::MessageCommunicationObserver::Attach(windowed);
 }
 
-std::string ConfigParser::Hostname()
+ConsoleClientUart::~ConsoleClientUart()
 {
-    return json->GetObject("echo_console").GetString("hostname").ToStdString();
+    services::MessageCommunicationObserver::Detach();
 }
 
-void ConfigParser::CheckConfig()
+void ConsoleClientUart::Send(const std::string& message)
 {
-    CheckValidJson();
-    CheckMandatoryKeys();
+    messagesToBeSent.push_back(message);
+    CheckDataToBeSent();
 }
 
-void ConfigParser::CheckValidJson()
+void ConsoleClientUart::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
 {
-    for (auto it : *json)
-    {}
+    infra::DataOutputStream::WithErrorPolicy stream(*writer);
+    stream << infra::StringAsByteRange(infra::BoundedConstString(messagesToBeSent.front()));
+    writer = nullptr;
 
-    if (json->Error())
-        throw ParseException("ConfigParser error: invalid JSON");
+    messagesToBeSent.pop_front();
+    sending = false;
+
+    CheckDataToBeSent();
 }
 
-void ConfigParser::CheckMandatoryKeys()
+void ConsoleClientUart::ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
 {
-    if (!json->HasKey("echo_console"))
-        throw ParseException(std::string("ConfigParser error: required key echo_console missing"));
-    if (!json->GetObject("echo_console").HasKey("hostname"))
-        throw ParseException(std::string("ConfigParser error: required key echo_console/hostname missing"));
+    ConsoleObserver::Subject().DataReceived(*reader);
+}
+
+void ConsoleClientUart::CheckDataToBeSent()
+{
+    if (!sending && !messagesToBeSent.empty())
+    {
+        sending = true;
+        windowed.RequestSendMessage(static_cast<uint16_t>(messagesToBeSent.front().size()));
+    }
 }
 
 class ConsoleClientConnection
@@ -100,7 +97,7 @@ public:
     virtual void Attached() override;
 
     // Implementation of ConsoleObserver
-    virtual void Send(const std::string data) override;
+    virtual void Send(const std::string& message) override;
 
 private:
     void CheckDataToBeSent();
@@ -142,9 +139,9 @@ void ConsoleClientConnection::Attached()
     services::ConnectionObserver::Subject().RequestSendStream(services::ConnectionObserver::Subject().MaxSendStreamSize());
 }
 
-void ConsoleClientConnection::Send(const std::string data)
+void ConsoleClientConnection::Send(const std::string& message)
 {
-    dataToBeSent += data;
+    dataToBeSent += message;
     CheckDataToBeSent();
 }
 
@@ -161,8 +158,6 @@ void ConsoleClientConnection::CheckDataToBeSent()
         services::ConnectionObserver::Subject().RequestSendStream(services::ConnectionObserver::Subject().MaxSendStreamSize());
     }
 }
-
-using AllocatorConsole = infra::SharedObjectAllocator<ConsoleClientConnection, void(application::Console& console)>;
 
 class ConsoleClient
     : public services::ClientConnectionObserverFactoryWithNameResolver
@@ -232,53 +227,68 @@ int main(int argc, char* argv[], const char* env[])
     services::Tracer tracer(ioOutputStream);
     services::SetGlobalTracerInstance(tracer);
 
+    std::string toolname = argv[0];
+    args::ArgumentParser parser(toolname + " is a tool to communicate with an ECHO server.");
+    args::Group arguments(parser, "Arguments:");
+    args::Positional<std::string> target(arguments, "target", "COM port or hostname", args::Options::Required);
+    args::Group flags(parser, "Optional flags:");
+    args::HelpFlag help(flags, "help", "Display this help menu.", { 'h', "help" });
+    args::PositionalList<std::string> paths(arguments, "paths", "compiled proto files");
+
     try
     {
+        parser.Prog(toolname);
+        parser.ParseCLI(argc, argv);
+
         application::EchoRoot root;
 
-        for (int i = 1; i != argc; ++i)
+        for (auto path : paths)
         {
-            std::ifstream stream(argv[i], std::ios::binary);
+            std::ifstream stream(path, std::ios::binary);
             if (!stream)
             {
-                std::cerr << argv[0] << ": Could not read " << argv[i] << std::endl;
+                std::cerr << argv[0] << ": Could not read " << path << std::endl;
                 return 1;
             }
 
             google::protobuf::FileDescriptorSet descriptorSet;
             if (!descriptorSet.ParseFromIstream(&stream)) {
-                std::cerr << argv[0] << ": Could not parse contents from " << argv[i] << std::endl;
+                std::cerr << argv[0] << ": Could not parse contents from " << path << std::endl;
                 return 1;
             }
 
             root.AddDescriptorSet(descriptorSet);
-            std::cout << "Loaded " << argv[i] << std::endl;
-        }
-
-        hal::FileSystemGeneric filesystem;
-        static ConfigParser config(filesystem);
-
-        for (const char** var = env; *var != nullptr; ++var)
-        {
-            infra::Tokenizer tokenizer(*var, '=');
-            if (tokenizer.Token(0) == "ECHO_CONSOLE_CONFIG_LOCATION")
-                config.Open(tokenizer.Token(1).data());
+            std::cout << "Loaded " << path << std::endl;
         }
 
         application::Console console(root);
         services::NameLookupWin nameLookup;
         services::ConnectionFactoryWithNameResolverImpl::WithStorage<4> connectionFactory(console.ConnectionFactory(), nameLookup);
         infra::Optional<ConsoleClient> consoleClient;
+        infra::Optional<hal::UartWindows> uart;
+        infra::Optional<ConsoleClientUart> consoleClientUart;
         auto construct = [&]()
         {
-            consoleClient.Emplace(connectionFactory, console, config.Hostname(), services::GlobalTracer());
+            if (get(target).substr(0, 3) == "COM")
+            {
+                uart.Emplace(get(target));
+                consoleClientUart.Emplace(console, *uart);
+            }
+            else
+                consoleClient.Emplace(connectionFactory, console, get(target), services::GlobalTracer());
         };
         infra::EventDispatcher::Instance().Schedule([&]() { construct(); });
         console.Run();
     }
+    catch (const args::Help&)
+    {
+        std::cout << parser;
+        return 1;
+    }
     catch (const std::exception& ex)
     {
         std::cerr << ex.what() << std::endl;
+        return 1;
     }
 
     return 0;

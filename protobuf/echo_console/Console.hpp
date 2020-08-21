@@ -169,7 +169,7 @@ namespace application
     public:
         using infra::SingleObserver<ConsoleObserver, Console>::SingleObserver;
 
-        virtual void Send(const std::string data) = 0;
+        virtual void Send(const std::string& message) = 0;
     };
 
     class Console
