@@ -2,6 +2,7 @@
 #define SERVICES_BONJOUR_SERVER_HPP
 
 #include "infra/stream/CountingOutputStream.hpp"
+#include "infra/util/PolymorphicVariant.hpp"
 #include "services/network/Datagram.hpp"
 #include "services/network/Dns.hpp"
 #include "services/network/Multicast.hpp"
@@ -97,6 +98,62 @@ namespace services
             uint16_t additionalRecordsCount = 0;
         };
 
+        class State
+        {
+        public:
+            virtual ~State() = default;
+
+            virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) = 0;
+            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) = 0;
+        };
+
+        class StateIdle
+            : public State
+        {
+        public:
+            StateIdle(BonjourServer& server);
+
+            virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
+            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+
+        private:
+            BonjourServer& server;
+            infra::SharedPtr<infra::StreamReaderWithRewinding> waitingReader;
+        };
+
+        class StateAnnounce
+            : public State
+        {
+        public:
+            StateAnnounce(BonjourServer& server);
+
+            virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
+
+        protected:
+            void WriteAnnounceQuery(infra::StreamWriter& writer);
+
+        protected:
+            BonjourServer& server;
+        };
+
+        class StateAnnounceIPv4
+            : public StateAnnounce
+        {
+        public:
+            StateAnnounceIPv4(BonjourServer& server);
+
+            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        };
+
+        class StateAnnounceIPv6
+            : public StateAnnounce
+        {
+        public:
+            StateAnnounceIPv6(BonjourServer& server);
+
+            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        };
+
     private:
         infra::SharedPtr<DatagramExchange> datagramExchangeIpv4;
         infra::SharedPtr<DatagramExchange> datagramExchangeIpv6;
@@ -108,7 +165,7 @@ namespace services
         infra::Optional<IPv6Address> ipv6Address;
         uint16_t port;
         const DnsHostnameParts& text;
-        infra::SharedPtr<infra::StreamReaderWithRewinding> waitingReader;
+        infra::PolymorphicVariant<State, StateIdle, StateAnnounceIPv4, StateAnnounceIPv6> state{ infra::InPlaceType<StateIdle>(), *this };
     };
 }
 

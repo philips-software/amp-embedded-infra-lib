@@ -54,8 +54,7 @@ public:
     }
 
     void PtrQueryReceived(services::IPAddress source = ipv4Source, uint16_t answers = 0, uint16_t nameServers = 0, uint16_t additional = 0)
-    {
-        DataReceived(infra::ConstructBin()
+    {        DataReceived(infra::ConstructBin()
             .Value<services::DnsRecordHeader>({ 0x0200, 0, 1, answers, nameServers, additional })
             (7)("service")(4)("type")(5)("local")(0)
             .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypePtr, services::DnsClass::dnsClassIn })
@@ -227,7 +226,7 @@ public:
     {
         return infra::ConstructBin()
             (7)("service")(4)("type")(5)("local")(0)
-            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypePtr, services::DnsClass::dnsClassIn, std::chrono::seconds(60), 0x1d })
+            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypePtr, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 0x1d })
             (8)("instance")(7)("service")(4)("type")(5)("local")(0)
             .Vector();
     }
@@ -236,7 +235,7 @@ public:
     {
         return infra::ConstructBin()
             (8)("instance")(7)("service")(4)("type")(5)("local")(0)
-            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeTxt, services::DnsClass::dnsClassIn, std::chrono::seconds(60), 0x15 })
+            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeTxt, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 0x15 })
             (7)("aa=text")(12)("bb=othertext")
             .Vector();
     }
@@ -245,7 +244,7 @@ public:
     {
         return infra::ConstructBin()
             (8)("instance")(7)("service")(4)("type")(5)("local")(0)
-            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeSrv, services::DnsClass::dnsClassIn, std::chrono::seconds(60), 0x16 })
+            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeSrv, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 0x16 })
             .Value<infra::BigEndian<uint16_t>>(0).Value<infra::BigEndian<uint16_t>>(0).Value<infra::BigEndian<uint16_t>>(1234)
             (8)("instance")(5)("local")(0)
         .Vector();
@@ -255,7 +254,7 @@ public:
     {
         return infra::ConstructBin()
             (8)("instance")(5)("local")(0)
-            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeA, services::DnsClass::dnsClassIn, std::chrono::seconds(60), 4 })
+            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeA, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 4 })
             .Value<services::IPv4Address>({ 1, 2, 3, 4 })
         .Vector();
     }
@@ -264,9 +263,9 @@ public:
     {
         return infra::ConstructBin()
             (8)("instance")(5)("local")(0)
-            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeNsec, services::DnsClass::dnsClassIn, std::chrono::seconds(60), 22 })
+            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeNsec, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 22 })
             (8)("instance")(5)("local")(0)
-            (0)(4)(0)(0)(0)(0x80)
+            (0)(4)(0)(0)(0)(8)
             .Vector();
     }
 
@@ -274,7 +273,7 @@ public:
     {
         return infra::ConstructBin()
             (8)("instance")(5)("local")(0)
-            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeAAAA, services::DnsClass::dnsClassIn, std::chrono::seconds(60), 16 })
+            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeAAAA, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 16 })
             .Value<services::IPv6Address>({ 1, 2, 3, 4, 5, 6, 7, 8 })
             .Vector();
     }
@@ -283,7 +282,7 @@ public:
     {
         return infra::ConstructBin()
             (8)("instance")(5)("local")(0)
-            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeNsec, services::DnsClass::dnsClassIn, std::chrono::seconds(60), 22 })
+            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeNsec, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 22 })
             (8)("instance")(5)("local")(0)
             (0)(4)(0x40)(0)(0)(0)
             .Vector();
@@ -295,6 +294,12 @@ public:
         {
             auto ptr = datagramExchange.Emplace();
             observer.Attach(*ptr);
+
+            ExpectResponse(infra::ConstructBin()
+                .Value<services::DnsRecordHeader>({ 0x0000, 0x8000, 0, 5, 0, 0 })
+                (PtrAnswer())(SrvAnswer())(TxtAnswer())(AAnswer())(NoAaaaAnswer())
+                .Vector());
+
             return ptr;
         }));
     }
@@ -305,6 +310,12 @@ public:
         {
             auto ptr = datagramExchange.Emplace();
             observer.Attach(*ptr);
+
+            ExpectResponse(infra::ConstructBin()
+                .Value<services::DnsRecordHeader>({ 0x0000, 0x8000, 0, 5, 0, 0 })
+                (PtrAnswer())(SrvAnswer())(TxtAnswer())(NoAAnswer())(AaaaAnswer())
+                .Vector());
+
             return ptr;
         }));
     }
@@ -335,6 +346,7 @@ public:
         ExpectListenIpv6();
         ExpectJoinMulticastIpv6();
         infra::ReConstruct(server, factory, multicast, "instance", "service", "type", infra::none, infra::MakeOptional(services::IPv6Address{ 1, 2, 3, 4, 5, 6, 7, 8 }), 1234, text);
+        ExecuteAllActions();
         expectLeave = [this]() { ExpectLeaveMulticastIpv6(); };
     }
 
@@ -348,6 +360,11 @@ public:
     } };
     services::DnsHostnameInPartsHelper<2> text{ services::DnsHostnameInParts("aa=text")("bb=othertext") };
     services::BonjourServer server{ factory, multicast, "instance", "service", "type", infra::MakeOptional(services::IPv4Address{ 1, 2, 3, 4}), infra::none, 1234, text };
+
+    infra::Execute execute2{ [this]
+    {
+        ExecuteAllActions();
+    } };
 
     infra::Function<void()> expectLeave{ [this]() { ExpectLeaveMulticastIpv4(); } };
 };
@@ -418,16 +435,14 @@ TEST_F(BonjourServerTest, second_question_while_first_is_busy_is_ignored)
     ExecuteAllActions();
 }
 
-TEST_F(BonjourServerTest, aaaa_query_is_declined_when_no_ipv6_address_is_available)
+TEST_F(BonjourServerTest, aaaa_query_is_declined_when_no_ipv4_address_is_available)
 {
-    ReConstructIPv6();
-
     ExpectResponse(infra::ConstructBin()
         .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 0 })
         (NoAaaaAnswer())
         .Vector());
 
-    AQueryReceived(ipv6Source);
+    AaaaQueryReceived();
 }
 
 TEST_F(BonjourServerTest, invalid_questions_are_ignored)
@@ -460,7 +475,7 @@ TEST_F(BonjourServerTest, aaaa_query_is_answered_when_ipv6_address_is_available)
     ExecuteAllActions();
 }
 
-TEST_F(BonjourServerTest, a_query_is_declined_when_ipv6_address_is_available)
+TEST_F(BonjourServerTest, a_query_is_declined_when_no_ipv4_address_is_available)
 {
     ReConstructIPv6();
 
