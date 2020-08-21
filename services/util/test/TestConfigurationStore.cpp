@@ -70,7 +70,7 @@ public:
     infra::Function<void()> onReadDone;
     infra::Function<void()> onWriteDone;
     infra::Function<void()> onEraseDone;
-    services::ConfigurationBlobFlash::WithStorage<8> configurationBlob;
+    services::ConfigurationBlobFlash::WithStorage<8, 8> configurationBlob;
 };
 
 TEST_F(ConfigurationBlobTest, fail_to_recover_from_empty_flash)
@@ -147,6 +147,26 @@ TEST_F(ConfigurationBlobTest, Write_writes_to_flash)
     std::array<uint8_t, 20> blobData = { 0x21, 0xf1, 0xfb, 0x20, 0xaf, 0x91, 0x92, 0x86, 8, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 0 };
     EXPECT_EQ(blobData, writeBuffer);
 
+    EXPECT_CALL(flash, ReadBuffer(testing::_, 0, testing::_)).WillOnce(testing::Invoke([this](infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
+    {
+        infra::Copy(std::array<uint8_t, 8>{ 0x21, 0xf1, 0xfb, 0x20, 0xaf, 0x91, 0x92, 0x86 }, buffer);
+
+        EXPECT_CALL(flash, ReadBuffer(testing::_, 8, testing::_)).WillOnce(testing::Invoke([this](infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
+        {
+            infra::Copy(std::array<uint8_t, 8>{ 8, 0, 0, 0, 1, 2, 3, 4 }, buffer);
+
+            EXPECT_CALL(flash, ReadBuffer(testing::_, 16, testing::_)).WillOnce(testing::Invoke([this](infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
+            {
+                infra::Copy(std::array<uint8_t, 4>{ 5, 6, 7, 0 }, buffer);
+
+                onDone();
+            }));
+
+            onDone();
+        }));
+
+        onDone();
+    }));
     onWriteDone();
 }
 
@@ -654,7 +674,7 @@ public:
     hal::FlashStub flashFactoryDefault;
     hal::FlashStub flashBlob1;
     hal::FlashStub flashBlob2;
-    infra::Optional<services::FactoryDefaultConfigurationStore<Data>::WithBlobs> configurationStore;
+    infra::Optional<services::FactoryDefaultConfigurationStore<Data>::WithBlobs<>> configurationStore;
 };
 
 TEST_F(FactoryDefaultConfigurationStoreIntegrationTest, start_with_empty_flash_results_in_load_default)
@@ -889,7 +909,7 @@ public:
             0x02, 0x01, 0x08, 0x07, 0x06, 0x05, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff } };
     hal::FlashStub flashBlob1;
     hal::FlashStub flashBlob2;
-    infra::Optional<services::FactoryDefaultConfigurationStore<Data>::WithReadOnlyDefaultAndBlobs> configurationStore;
+    infra::Optional<services::FactoryDefaultConfigurationStore<Data>::WithReadOnlyDefaultAndBlobs<>> configurationStore;
 };
 
 TEST_F(FactoryDefaultConfigurationStoreReadOnlyMemoryIntegrationTest, factory_default_is_recovered_but_blobs_are_corrupt)

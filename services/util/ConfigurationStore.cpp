@@ -3,8 +3,9 @@
 
 namespace services
 {
-    ConfigurationBlobFlash::ConfigurationBlobFlash(infra::ByteRange blob, hal::Flash& flash)
+    ConfigurationBlobFlash::ConfigurationBlobFlash(infra::ByteRange blob, infra::ByteRange verificationBuffer, hal::Flash& flash)
         : blob(blob)
+        , verificationBuffer(verificationBuffer)
         , flash(flash)
     {
         really_assert(blob.size() <= flash.TotalSize());
@@ -35,16 +36,27 @@ namespace services
         });
     }
 
+    void ConfigurationBlobFlash::Write(uint32_t size, const infra::Function<void()>& onDone)
+    {
+        currentSize = size;
+        this->onDone = onDone;
+        PrepareBlobForWriting();
+        flash.WriteBuffer(blob, 0, [this]() { Verify(); });
+    }
+
     void ConfigurationBlobFlash::Erase(const infra::Function<void()>& onDone)
     {
         flash.EraseAll(onDone);
     }
 
-    void ConfigurationBlobFlash::Write(uint32_t size, const infra::Function<void()>& onDone)
+    infra::ByteRange ConfigurationBlobFlash::Blob()
     {
-        currentSize = size;
-        PrepareBlobForWriting();
-        flash.WriteBuffer(blob, 0, onDone);
+        return blob;
+    }
+
+    infra::ByteRange ConfigurationBlobFlash::VerificationBuffer()
+    {
+        return verificationBuffer;
     }
 
     void ConfigurationBlobFlash::RecoverCurrentSize()
@@ -80,6 +92,27 @@ namespace services
 
         infra::Copy(infra::Head(infra::MakeRange(messageHash), sizeof(header.hash)), infra::MakeRange(header.hash));
         infra::Copy(infra::MakeByteRange(header), infra::Head(blob, sizeof(header)));
+    }
+
+    void ConfigurationBlobFlash::Verify()
+    {
+        currentVerificationIndex = 0;
+
+        VerifyBlock();
+    }
+
+    void ConfigurationBlobFlash::VerifyBlock()
+    {
+        if (currentVerificationIndex != blob.size())
+            flash.ReadBuffer(infra::Head(verificationBuffer, blob.size() - currentVerificationIndex), currentVerificationIndex, [this]()
+            {
+                auto verificationBlock = infra::Head(verificationBuffer, blob.size() - currentVerificationIndex);
+                really_assert(infra::ContentsEqual(verificationBlock, infra::Head(infra::DiscardHead(blob, currentVerificationIndex), verificationBuffer.size())));
+                currentVerificationIndex += verificationBlock.size();
+                VerifyBlock();
+            });
+        else
+            onDone();
     }
 
     ConfigurationBlobReadOnlyMemory::ConfigurationBlobReadOnlyMemory(infra::ConstByteRange data)
