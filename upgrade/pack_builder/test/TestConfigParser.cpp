@@ -448,7 +448,7 @@ TEST_F(TestConfigParser, GetComponentVersion_returns_negative_1_when_component_v
     configJson.Emplace(R"( { "components":{}, "upgrade_configuration":{} } )");
 
     application::UpgradePackConfigParser parser(*configJson);
-    uint32_t negativeOne = ULONG_MAX;
+    uint32_t negativeOne = std::numeric_limits<uint32_t>::max();
     ASSERT_EQ(negativeOne, parser.GetComponentVersion());
 }
 
