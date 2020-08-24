@@ -42,22 +42,28 @@ namespace infra
         bool allocatable = true;
     };
 
-    template<class T>
-    class NotifyingSharedOptional
+    template<class T, std::size_t AllocatableSize>
+    class NotifyingSharedOptionalWithSize
         : public SharedOptional<T>
     {
     public:
-        NotifyingSharedOptional() = default;
-        explicit NotifyingSharedOptional(infra::Function<void()> onAllocatable);
+        template<std::size_t NewAllocatableSize>
+            using WithSize = NotifyingSharedOptionalWithSize<T, NewAllocatableSize>;
 
-        void OnAllocatable(infra::Function<void()> newOnAllocatable);
+        NotifyingSharedOptionalWithSize() = default;
+        explicit NotifyingSharedOptionalWithSize(const infra::Function<void(), AllocatableSize>& onAllocatable);
+
+        void OnAllocatable(const infra::Function<void(), AllocatableSize>& newOnAllocatable);
 
     protected:
         virtual void Deallocate(void* control) override;
 
     private:
-        infra::Function<void()> onAllocatable;
+        infra::Function<void(), AllocatableSize> onAllocatable;
     };
+
+    template<class T>
+        using NotifyingSharedOptional = NotifyingSharedOptionalWithSize<T, INFRA_DEFAULT_FUNCTION_EXTRA_SIZE>;
 
     ////    Implementation    ////
 
@@ -142,19 +148,19 @@ namespace infra
         allocatable = true;
     }
 
-    template<class T>
-    NotifyingSharedOptional<T>::NotifyingSharedOptional(infra::Function<void()> onAllocatable)
+    template<class T, std::size_t AllocatableSize>
+    NotifyingSharedOptionalWithSize<T, AllocatableSize>::NotifyingSharedOptionalWithSize(const infra::Function<void(), AllocatableSize>& onAllocatable)
         : onAllocatable(onAllocatable)
     {}
 
-    template<class T>
-    void NotifyingSharedOptional<T>::OnAllocatable(infra::Function<void()> newOnAllocatable)
+    template<class T, std::size_t AllocatableSize>
+    void NotifyingSharedOptionalWithSize<T, AllocatableSize>::OnAllocatable(const infra::Function<void(), AllocatableSize>& newOnAllocatable)
     {
         onAllocatable = newOnAllocatable;
     }
 
-    template<class T>
-    void NotifyingSharedOptional<T>::Deallocate(void* control)
+    template<class T, std::size_t AllocatableSize>
+    void NotifyingSharedOptionalWithSize<T, AllocatableSize>::Deallocate(void* control)
     {
         SharedOptional<T>::Deallocate(control);
         if (onAllocatable)
