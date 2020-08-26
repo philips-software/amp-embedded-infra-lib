@@ -24,6 +24,8 @@ ccola_component(network static_library)
         DnsServer.hpp
         ExclusiveConnection.cpp
         ExclusiveConnection.hpp
+        ExclusiveStartingConnection.cpp
+        ExclusiveStartingConnection.hpp
         Http.cpp
         Http.hpp
         HttpClient.hpp
