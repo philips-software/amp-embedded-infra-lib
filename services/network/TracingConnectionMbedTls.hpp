@@ -36,6 +36,7 @@ namespace services
 
         virtual infra::SharedPtr<ConnectionMbedTls> Allocate(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver,
             CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, const ConnectionMbedTls::ParametersWorkaround& parameters) override;
+        virtual void OnAllocatable(infra::AutoResetFunction<void()>&& callback) override;
 
     private:
         AllocatorTracingConnectionMbedTls& allocator;

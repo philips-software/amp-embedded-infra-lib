@@ -14,6 +14,7 @@ namespace infra
     {
     public:
         virtual SharedPtr<T> Allocate(ConstructionArgs... args) override;
+        virtual void OnAllocatable(infra::AutoResetFunction<void()>&& callback) override;
     };
 
     ////    Implementation    ////
@@ -22,6 +23,13 @@ namespace infra
     SharedPtr<T> SharedObjectAllocatorHeap<T, void(ConstructionArgs...)>::Allocate(ConstructionArgs... args)
     {
         return MakeSharedOnHeap<T>(std::forward<ConstructionArgs>(args)...);
+    }
+
+    template<class T, class... ConstructionArgs>
+    void SharedObjectAllocatorHeap<T, void(ConstructionArgs...)>::OnAllocatable(infra::AutoResetFunction<void()>&& callback)
+    {
+        // Heap allocation never fails, so there is no need to call onAllocatable
+        std::abort();
     }
 }
 

@@ -35,6 +35,7 @@ namespace infra
         ~SharedObjectAllocatorFixedSize();
 
         virtual SharedPtr<T> Allocate(ConstructionArgs... args) override;
+        virtual void OnAllocatable(infra::AutoResetFunction<void()>&& callback) override;
 
     private:
         virtual void Destruct(const void* object) override;
@@ -47,6 +48,7 @@ namespace infra
     private:
         infra::BoundedVector<Node>& elements;
         Node* freeList = nullptr;
+        infra::AutoResetFunction<void()> onAllocatable;
     };
 
     ////    Implementation    ////
@@ -76,6 +78,12 @@ namespace infra
     }
 
     template<class T, class... ConstructionArgs>
+    void SharedObjectAllocatorFixedSize<T, void(ConstructionArgs...)>::OnAllocatable(infra::AutoResetFunction<void()>&& callback)
+    {
+        onAllocatable = std::move(callback);
+    }
+
+    template<class T, class... ConstructionArgs>
     void SharedObjectAllocatorFixedSize<T, void(ConstructionArgs...)>::Destruct(const void* object)
     {
         reinterpret_cast<const StaticStorage<T>*>(object)->Destruct();
@@ -88,6 +96,9 @@ namespace infra
 
         node->next = freeList;
         freeList = node;
+
+        if (onAllocatable != nullptr)
+            onAllocatable();
     }
 
     template<class T, class... ConstructionArgs>
