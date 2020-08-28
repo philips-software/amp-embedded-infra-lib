@@ -14,28 +14,26 @@ namespace services
     {
     public:
         class ExclusiveStartingConnection
-            : public ConnectionWithHostname
-            , public ConnectionObserver
+            : public ConnectionWithHostnameDecorator
         {
         public:
             ExclusiveStartingConnection(ExclusiveStartingConnectionFactoryMutex& mutex);
             ~ExclusiveStartingConnection();
 
-            // Implementation of Connection
-            virtual void RequestSendStream(std::size_t sendSize) override;
-            virtual std::size_t MaxSendStreamSize() const override;
-            virtual infra::SharedPtr<infra::StreamReaderWithRewinding> ReceiveStream() override;
-            virtual void AckReceived() override;
-            virtual void CloseAndDestroy() override;
-            virtual void AbortAndDestroy() override;
-            virtual void SetHostname(infra::BoundedConstString hostname) override;
+        private:
+            ExclusiveStartingConnectionFactoryMutex& mutex;
+            bool reportedStarted = false;
+        };
+
+        class ExclusiveStartingConnectionRelease
+            : public ConnectionWithHostnameDecorator
+        {
+        public:
+            ExclusiveStartingConnectionRelease(ExclusiveStartingConnectionFactoryMutex& mutex);
+            ~ExclusiveStartingConnectionRelease();
 
             // Implementation of ConnectionObserver
-            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& streamWriter) override;
             virtual void DataReceived() override;
-            virtual void Detaching() override;
-            virtual void Close() override;
-            virtual void Abort() override;
 
         private:
             ExclusiveStartingConnectionFactoryMutex& mutex;
@@ -65,6 +63,7 @@ namespace services
         infra::SharedObjectAllocator<ExclusiveStartingConnection, void(ExclusiveStartingConnectionFactoryMutex& mutex)>& connections;
         infra::IntrusiveList<WaitingConnection> waitingConnections;
         bool starting = false;
+        ExclusiveStartingConnection* startingConnection = nullptr;
     };
 
     class ExclusiveStartingConnectionFactory
@@ -140,6 +139,74 @@ namespace services
         ExclusiveStartingConnectionFactoryMutex& mutex;
         infra::BoundedList<infra::NotifyingSharedOptional<Listener>>& listeners;
         infra::BoundedList<Connector>& connectors;
+        ConnectionFactory& connectionFactory;
+    };
+
+    class ExclusiveStartingConnectionReleaseFactory
+        : public ConnectionFactory
+    {
+    private:
+        class Listener;
+        class Connector;
+
+    public:
+        template<std::size_t NumListeners, std::size_t NumConnectors, std::size_t NumConnections>
+        using WithListenersAndConnectors = infra::WithStorage<infra::WithStorage<infra::WithStorage<ExclusiveStartingConnectionReleaseFactory,
+            infra::BoundedList<infra::NotifyingSharedOptional<Listener>>::WithMaxSize<NumListeners>>,
+            infra::BoundedList<Connector>::WithMaxSize<NumConnectors>>,
+            infra::BoundedList<infra::NotifyingSharedOptional<ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnectionRelease>>::WithMaxSize<NumConnections>>;
+
+        ExclusiveStartingConnectionReleaseFactory(infra::BoundedList<infra::NotifyingSharedOptional<Listener>>& listeners, infra::BoundedList<Connector>& connectors,
+            infra::BoundedList<infra::NotifyingSharedOptional<ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnectionRelease>>& connections,
+            ExclusiveStartingConnectionFactoryMutex& mutex, ConnectionFactory& connectionFactory);
+
+        // Implementation of ConnectionFactory
+        virtual infra::SharedPtr<void> Listen(uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions = IPVersions::both) override;
+        virtual void Connect(ClientConnectionObserverFactory& factory) override;
+        virtual void CancelConnect(ClientConnectionObserverFactory& factory) override;
+
+    private:
+        class Listener
+            : public ServerConnectionObserverFactory
+        {
+        public:
+            Listener(ExclusiveStartingConnectionReleaseFactory& connectionFactory, uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions);
+
+            // Implementation of ServerConnectionObserverFactory
+            virtual void ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address) override;
+
+        private:
+            ExclusiveStartingConnectionReleaseFactory& connectionFactory;
+            ServerConnectionObserverFactory& factory;
+            infra::SharedPtr<void> listener;
+            infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)> createdObserver;
+        };
+
+        class Connector
+            : public ClientConnectionObserverFactory
+        {
+        public:
+            Connector(ExclusiveStartingConnectionReleaseFactory& connectionFactory, ClientConnectionObserverFactory& clientFactory);
+
+            bool CancelConnect(ClientConnectionObserverFactory& factory);
+
+            // Implementation of ClientConnectionObserverFactory
+            virtual IPAddress Address() const override;
+            virtual uint16_t Port() const override;
+            virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver) override;
+            virtual void ConnectionFailed(ConnectFailReason reason) override;
+
+        private:
+            ExclusiveStartingConnectionReleaseFactory& connectionFactory;
+            ClientConnectionObserverFactory& clientFactory;
+            infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)> createdObserver;
+        };
+
+    private:
+        ExclusiveStartingConnectionFactoryMutex& mutex;
+        infra::BoundedList<infra::NotifyingSharedOptional<Listener>>& listeners;
+        infra::BoundedList<Connector>& connectors;
+        infra::BoundedList<infra::NotifyingSharedOptional<ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnectionRelease>>& connections;
         ConnectionFactory& connectionFactory;
     };
 }

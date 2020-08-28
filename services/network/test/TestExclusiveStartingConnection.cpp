@@ -13,9 +13,12 @@ public:
     {
         factory.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> observer)
         {
+            auto connectionReleasePtr = connectionRelease.Emplace(mutex);
+            connectionReleasePtr->Attach(observer);
+
             auto connectionPtr = connection.Emplace();
-            connection->SetOwnership(connectionPtr, observer);
-            connection->Attach(observer);
+            connection->SetOwnership(connectionPtr, connectionReleasePtr);
+            connection->Attach(connectionReleasePtr);
         });
     }
 
@@ -98,6 +101,7 @@ public:
     infra::SharedOptional<int> listenerStorage;
 
     infra::SharedOptional<testing::StrictMock<services::ConnectionObserverFullMock>> connectionObserver;
+    infra::SharedOptional<services::ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnectionRelease> connectionRelease;
     infra::SharedOptional<testing::StrictMock<services::ConnectionWithHostnameMock>> connection;
 };
 
@@ -235,7 +239,7 @@ TEST_F(ExclusiveStartingConnectionTest, constructing_second_connection_waits_for
         connection2->Attach(observer);
     });
 
-    // After receiving data on the first connection, the second connection is allowed to start
+    // After the first connection is closed, the second connection is allowed to start
     EXPECT_CALL(clientFactory, ConnectionEstablishedMock(testing::_)).WillOnce(testing::Invoke([&](infra::Function<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver)
     {
         auto observer = connectionObserver2.Emplace();

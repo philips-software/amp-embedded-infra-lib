@@ -14,6 +14,7 @@ namespace services
 
     void ExclusiveStartingConnectionFactoryMutex::Started()
     {
+        really_assert(starting);
         starting = false;
         TryAllocateConnection();
     }
@@ -37,55 +38,32 @@ namespace services
 
     ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection::ExclusiveStartingConnection(ExclusiveStartingConnectionFactoryMutex& mutex)
         : mutex(mutex)
-    {}
+    {
+        mutex.startingConnection = this;
+    }
 
     ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection::~ExclusiveStartingConnection()
+    {
+        if (!reportedStarted && mutex.startingConnection == this)
+        {
+            mutex.startingConnection = nullptr;
+            mutex.Started();
+        }
+    }
+
+    ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnectionRelease::ExclusiveStartingConnectionRelease(ExclusiveStartingConnectionFactoryMutex& mutex)
+        : mutex(mutex)
+    {
+        mutex.startingConnection = nullptr;
+    }
+
+    ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnectionRelease::~ExclusiveStartingConnectionRelease()
     {
         if (!reportedStarted)
             mutex.Started();
     }
 
-    void ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection::RequestSendStream(std::size_t sendSize)
-    {
-        return ConnectionObserver::Subject().RequestSendStream(sendSize);
-    }
-
-    std::size_t ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection::MaxSendStreamSize() const
-    {
-        return ConnectionObserver::Subject().MaxSendStreamSize();
-    }
-
-    infra::SharedPtr<infra::StreamReaderWithRewinding> ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection::ReceiveStream()
-    {
-        return ConnectionObserver::Subject().ReceiveStream();
-    }
-
-    void ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection::AckReceived()
-    {
-        ConnectionObserver::Subject().AckReceived();
-    }
-
-    void ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection::CloseAndDestroy()
-    {
-        ConnectionObserver::Subject().CloseAndDestroy();
-    }
-
-    void ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection::AbortAndDestroy()
-    {
-        ConnectionObserver::Subject().AbortAndDestroy();
-    }
-
-    void ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection::SetHostname(infra::BoundedConstString hostname)
-    {
-        static_cast<ConnectionWithHostname&>(ConnectionObserver::Subject()).SetHostname(hostname);
-    }
-
-    void ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& streamWriter)
-    {
-        Connection::Observer().SendStreamAvailable(std::move(streamWriter));
-    }
-
-    void ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection::DataReceived()
+    void ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnectionRelease::DataReceived()
     {
         if (!reportedStarted)
         {
@@ -93,22 +71,7 @@ namespace services
             mutex.Started();
         }
 
-        Connection::Observer().DataReceived();
-    }
-
-    void ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection::Detaching()
-    {
-        ConnectionWithHostname::Detach();
-    }
-
-    void ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection::Close()
-    {
-        Connection::Observer().Close();
-    }
-
-    void ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection::Abort()
-    {
-        Connection::Observer().Abort();
+        ConnectionWithHostnameDecorator::DataReceived();
     }
 
     ExclusiveStartingConnectionFactory::ExclusiveStartingConnectionFactory(infra::BoundedList<infra::NotifyingSharedOptional<Listener>>& listeners, infra::BoundedList<Connector>& connectors,
@@ -219,6 +182,113 @@ namespace services
     }
 
     void ExclusiveStartingConnectionFactory::Connector::ConnectionFailed(ConnectFailReason reason)
+    {
+        auto& clientFactory = this->clientFactory;
+        connectionFactory.connectors.remove(*this);
+        clientFactory.ConnectionFailed(reason);
+    }
+
+    ExclusiveStartingConnectionReleaseFactory::ExclusiveStartingConnectionReleaseFactory(infra::BoundedList<infra::NotifyingSharedOptional<Listener>>& listeners, infra::BoundedList<Connector>& connectors,
+        infra::BoundedList<infra::NotifyingSharedOptional<ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnectionRelease>>& connections,
+        ExclusiveStartingConnectionFactoryMutex& mutex, ConnectionFactory& connectionFactory)
+        : mutex(mutex)
+        , listeners(listeners)
+        , connectors(connectors)
+        , connections(connections)
+        , connectionFactory(connectionFactory)
+    {}
+
+    infra::SharedPtr<void> ExclusiveStartingConnectionReleaseFactory::Listen(uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions)
+    {
+        assert(!listeners.full());
+        listeners.emplace_back();
+        auto& index = listeners.back();
+        listeners.back().OnAllocatable([this, &index]() { listeners.remove(index); });
+        return listeners.back().Emplace(*this, port, factory, versions);
+    }
+
+    void ExclusiveStartingConnectionReleaseFactory::Connect(ClientConnectionObserverFactory& factory)
+    {
+        connectors.emplace_back(*this, factory);
+    }
+
+    void ExclusiveStartingConnectionReleaseFactory::CancelConnect(ClientConnectionObserverFactory& factory)
+    {
+        for (auto& connector : connectors)
+            if (connector.CancelConnect(factory))
+            {
+                connectors.remove(connector);
+                return;
+            }
+    }
+
+    ExclusiveStartingConnectionReleaseFactory::Listener::Listener(ExclusiveStartingConnectionReleaseFactory& connectionFactory, uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions)
+        : connectionFactory(connectionFactory)
+        , factory(factory)
+        , listener(connectionFactory.connectionFactory.Listen(port, *this, versions))
+    {}
+
+    void ExclusiveStartingConnectionReleaseFactory::Listener::ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address)
+    {
+        this->createdObserver = std::move(createdObserver);
+        factory.ConnectionAccepted([this](const infra::SharedPtr<ConnectionObserver>& connectionObserver)
+        {
+        	auto& connectionFactory = this->connectionFactory;
+            connectionFactory.connections.emplace_back();
+            auto& index = connectionFactory.connections.back();
+            connectionFactory.connections.back().OnAllocatable([&connectionFactory, &index]() { connectionFactory.connections.remove(index); });
+            auto connection = connectionFactory.connections.back().Emplace(connectionFactory.mutex);
+            this->createdObserver(connection);
+            connection->Attach(connectionObserver);
+        }, address);
+    }
+
+    ExclusiveStartingConnectionReleaseFactory::Connector::Connector(ExclusiveStartingConnectionReleaseFactory& connectionFactory, ClientConnectionObserverFactory& clientFactory)
+        : connectionFactory(connectionFactory)
+        , clientFactory(clientFactory)
+    {
+        connectionFactory.connectionFactory.Connect(*this);
+    }
+
+    bool ExclusiveStartingConnectionReleaseFactory::Connector::CancelConnect(ClientConnectionObserverFactory& factory)
+    {
+        if (&factory == &clientFactory)
+        {
+            connectionFactory.connectionFactory.CancelConnect(*this);
+            return true;
+        }
+
+        return false;
+    }
+
+    IPAddress ExclusiveStartingConnectionReleaseFactory::Connector::Address() const
+    {
+        return clientFactory.Address();
+    }
+
+    uint16_t ExclusiveStartingConnectionReleaseFactory::Connector::Port() const
+    {
+        return clientFactory.Port();
+    }
+
+    void ExclusiveStartingConnectionReleaseFactory::Connector::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver)
+    {
+        this->createdObserver = std::move(createdObserver);
+        clientFactory.ConnectionEstablished([this](const infra::SharedPtr<ConnectionObserver>& connectionObserver)
+        {
+        	auto& connectionFactory = this->connectionFactory;
+            connectionFactory.connections.emplace_back();
+            auto& index = connectionFactory.connections.back();
+            connectionFactory.connections.back().OnAllocatable([&connectionFactory, &index]() { connectionFactory.connections.remove(index); });
+            auto connection = connectionFactory.connections.back().Emplace(connectionFactory.mutex);
+            this->createdObserver(connection);
+            connection->Attach(connectionObserver);
+
+            connectionFactory.connectors.remove(*this);
+        });
+    }
+
+    void ExclusiveStartingConnectionReleaseFactory::Connector::ConnectionFailed(ConnectFailReason reason)
     {
         auto& clientFactory = this->clientFactory;
         connectionFactory.connectors.remove(*this);
