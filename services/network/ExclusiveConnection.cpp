@@ -177,7 +177,9 @@ namespace services
                     createdObserver = nullptr;
                     claimer.Release();
                 }
-            })
+
+            this->connectionFactory.connectors.remove(*this);
+        })
     {
         connectionFactory.mutex.RequestCloseConnection();
 
@@ -221,8 +223,6 @@ namespace services
             self->createdObserver(newConnection);
             if (newConnection->ConnectionObserver::IsAttached())
                 newConnection->Attach(connectionObserver);
-
-            self->connectionFactory.connectors.remove(*self);
         });
     }
 
