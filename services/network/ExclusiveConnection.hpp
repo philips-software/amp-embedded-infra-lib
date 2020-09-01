@@ -95,6 +95,7 @@ namespace services
             ExclusiveConnectionFactoryMutex::Claimer claimer;
             infra::SharedPtr<void> listener;
             infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)> createdObserver;
+            infra::AccessedBySharedPtr access;
         };
 
         class Connector
@@ -116,6 +117,7 @@ namespace services
             ClientConnectionObserverFactory& clientFactory;
             ExclusiveConnectionFactoryMutex::Claimer claimer;
             infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)> createdObserver;
+            infra::AccessedBySharedPtr access;
         };
 
     private:

@@ -54,9 +54,9 @@ namespace services
         ExclusiveStartingConnectionFactoryMutex(infra::SharedObjectAllocator<ExclusiveStartingConnection, void(ExclusiveStartingConnectionFactoryMutex& mutex)>& connections);
 
         void QueueConnection(WaitingConnection& waitingConnection);
+        void Started();
 
     private:
-        void Started();
         void TryAllocateConnection();
 
     private:
@@ -108,6 +108,7 @@ namespace services
             infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)> createdObserver;
             IPAddress address;
             infra::SharedPtr<ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection> connection;
+            infra::AccessedBySharedPtr access;
         };
 
         class Connector
@@ -131,6 +132,7 @@ namespace services
         private:
             ExclusiveStartingConnectionFactory& connectionFactory;
             ClientConnectionObserverFactory& clientFactory;
+            infra::AccessedBySharedPtr access;
             infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)> createdObserver;
             infra::SharedPtr<ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection> connection;
         };
@@ -179,6 +181,7 @@ namespace services
             ExclusiveStartingConnectionReleaseFactory& connectionFactory;
             ServerConnectionObserverFactory& factory;
             infra::SharedPtr<void> listener;
+            infra::AccessedBySharedPtr access;
             infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)> createdObserver;
         };
 
@@ -199,6 +202,7 @@ namespace services
         private:
             ExclusiveStartingConnectionReleaseFactory& connectionFactory;
             ClientConnectionObserverFactory& clientFactory;
+            infra::AccessedBySharedPtr access;
             infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)> createdObserver;
         };
 
