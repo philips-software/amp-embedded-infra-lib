@@ -13,9 +13,12 @@ if(${CCOLA_ARCH} STREQUAL "win")
     set(lib_tool lib.exe)
 
     foreach(item ${CCOLA_COMPONENT_INHERITABLE_LINK_LIBRARIES})
-        string(REPLACE "<CCOLA_CONFIGURATION>" "${CCOLA_SYSTEM_CONFIGURATION}" depend_lib "${item}")
-        list(APPEND depend_list  "${depend_lib}")
-        list(APPEND dependencies ${depend_lib})
+        if(MSVC_IDE)
+            string(REPLACE "<CCOLA_CONFIGURATION>" ${CCOLA_SYSTEM_CONFIGURATION}-$<CONFIGURATION> depend_lib "${item}")
+        else()
+            string(REPLACE "<CCOLA_CONFIGURATION>" "${CCOLA_SYSTEM_CONFIGURATION}" depend_lib "${item}")
+        endif()
+        list(APPEND depend_list ${depend_lib})
     endforeach()
 
     add_custom_command(
@@ -46,6 +49,16 @@ endif()
 add_custom_target(${CCOLA_COMPONENT_NAME} ALL
     DEPENDS ${lib_path}/${lib_name}
 )
+
+if(MSVC_IDE)
+    string(REPLACE ${CCOLA_SYSTEM_CONFIGURATION} ${CCOLA_SYSTEM_CONFIGURATION}-$<CONFIGURATION> new_lib_path "${lib_path}")
+    add_custom_command(
+        TARGET ${CCOLA_COMPONENT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${new_lib_path}
+        COMMAND ${CMAKE_COMMAND} -E rename ${lib_path}/${lib_name} ${new_lib_path}/${lib_name}
+    )
+endif()
 
 ccola_set_component_properties_for_all_configurations(${CCOLA_COMPONENT_NAME} ARCHIVE_OUTPUT_DIRECTORY ${CCOLA_STATIC_LIBRARY_INSTALL_DIR})
 ccola_set_component_properties_for_all_configurations(${CCOLA_COMPONENT_NAME} LIBRARY_OUTPUT_DIRECTORY ${CCOLA_STATIC_LIBRARY_INSTALL_DIR})
