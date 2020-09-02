@@ -8,22 +8,40 @@ foreach(item ${CCOLA_COMPONENT_EXCLUDE})
     endif()
 endforeach()
 
-foreach(item ${CCOLA_COMPONENT_INHERITABLE_LINK_LIBRARIES})
-    string(REPLACE "<CCOLA_CONFIGURATION>" "${CCOLA_SYSTEM_CONFIGURATION}" depend_lib "${item}")
-    list(APPEND extract_cmd COMMAND ${CMAKE_AR} -x ${depend_lib})
-    list(APPEND dependencies ${depend_lib})
-endforeach()
+if(${CCOLA_ARCH} STREQUAL "win")
+    get_filename_component(lib_tool_path ${CMAKE_LINKER} PATH)
+    set(lib_tool lib.exe)
 
-add_custom_command(
-    OUTPUT ${lib_path}/${lib_name}
-    COMMAND ${CMAKE_COMMAND} -E remove_directory obj
-    COMMAND ${CMAKE_COMMAND} -E remove ${lib_path}/${lib_name}
-    COMMAND ${CMAKE_COMMAND} -E make_directory obj
-    COMMAND cd obj
-    ${extract_cmd}
-    COMMAND ${CMAKE_AR} -rc ${lib_path}/${lib_name} *
-    DEPENDS ${dependencies}
-)
+    foreach(item ${CCOLA_COMPONENT_INHERITABLE_LINK_LIBRARIES})
+        string(REPLACE "<CCOLA_CONFIGURATION>" "${CCOLA_SYSTEM_CONFIGURATION}" depend_lib "${item}")
+        list(APPEND depend_list  "${depend_lib}")
+        list(APPEND dependencies ${depend_lib})
+    endforeach()
+
+    add_custom_command(
+        OUTPUT ${lib_path}/${lib_name}
+        COMMAND ${CMAKE_COMMAND} -E remove ${lib_path}/${lib_name}
+        COMMAND ${lib_tool_path}/${lib_tool} /OUT:${lib_path}/${lib_name} ${depend_list}
+        DEPENDS ${depend_list}
+    )
+else()
+    foreach(item ${CCOLA_COMPONENT_INHERITABLE_LINK_LIBRARIES})
+        string(REPLACE "<CCOLA_CONFIGURATION>" "${CCOLA_SYSTEM_CONFIGURATION}" depend_lib "${item}")
+        list(APPEND extract_cmd COMMAND ${CMAKE_AR} -x ${depend_lib})
+        list(APPEND dependencies ${depend_lib})
+    endforeach()
+
+    add_custom_command(
+        OUTPUT ${lib_path}/${lib_name}
+        COMMAND ${CMAKE_COMMAND} -E remove_directory obj
+        COMMAND ${CMAKE_COMMAND} -E remove ${lib_path}/${lib_name}
+        COMMAND ${CMAKE_COMMAND} -E make_directory obj
+        COMMAND cd obj
+        ${extract_cmd}
+        COMMAND ${CMAKE_AR} -rc ${lib_path}/${lib_name} *
+        DEPENDS ${dependencies}
+    )
+endif()
 
 add_custom_target(${CCOLA_COMPONENT_NAME} ALL
     DEPENDS ${lib_path}/${lib_name}
