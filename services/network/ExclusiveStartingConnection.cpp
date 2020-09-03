@@ -1,3 +1,4 @@
+#include "infra/event/EventDispatcher.hpp"
 #include "services/network/ExclusiveStartingConnection.hpp"
 
 namespace services
@@ -15,8 +16,11 @@ namespace services
     void ExclusiveStartingConnectionFactoryMutex::Started()
     {
         really_assert(starting);
-        starting = false;
-        TryAllocateConnection();
+        infra::EventDispatcher::Instance().Schedule([this]()
+        {
+            starting = false;
+            TryAllocateConnection();
+        });
     }
 
     void ExclusiveStartingConnectionFactoryMutex::TryAllocateConnection()

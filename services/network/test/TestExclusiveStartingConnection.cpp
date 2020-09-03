@@ -205,7 +205,8 @@ TEST_F(ExclusiveStartingConnectionTest, constructing_second_connection_waits_for
     EXPECT_CALL(*connectionObserver, DataReceived());
     connection->Observer().DataReceived();
 
-    //Destroy
+    // Destroy
+    ExecuteAllActions();
     EXPECT_CALL(*connectionObserver, Detaching());
     connection->ResetOwnership();
     EXPECT_CALL(*connectionObserver2, Detaching());
@@ -249,7 +250,8 @@ TEST_F(ExclusiveStartingConnectionTest, constructing_second_connection_waits_for
     EXPECT_CALL(*connectionObserver, Detaching());
     connection->ResetOwnership();
 
-    //Destroy
+    // Destroy
+    ExecuteAllActions();
     EXPECT_CALL(*connectionObserver2, Detaching());
     connection2->ResetOwnership();
     EXPECT_CALL(clientFactory, Destructor);
