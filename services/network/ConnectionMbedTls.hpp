@@ -139,6 +139,7 @@ namespace services
         bool initialHandshake = true;
         bool closing = false;
         bool aborting = false;
+        bool destructed = false;
     };
 
     using AllocatorConnectionMbedTls = infra::SharedObjectAllocator<ConnectionMbedTls,

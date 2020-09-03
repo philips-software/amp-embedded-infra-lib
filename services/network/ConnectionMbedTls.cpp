@@ -79,9 +79,12 @@ namespace services
     {
         encryptedSendWriter = nullptr;
 
-        mbedtls_ctr_drbg_free(&ctr_drbg);
-        mbedtls_ssl_free(&sslContext);
-        mbedtls_ssl_config_free(&sslConfig);
+        if (!destructed)
+        {
+            mbedtls_ctr_drbg_free(&ctr_drbg);
+            mbedtls_ssl_free(&sslContext);
+            mbedtls_ssl_config_free(&sslConfig);
+        }
     }
 
     void ConnectionMbedTls::CreatedObserver(infra::SharedPtr<services::ConnectionObserver> connectionObserver)
@@ -161,6 +164,12 @@ namespace services
     void ConnectionMbedTls::Detaching()
     {
         encryptedSendWriter = nullptr;
+
+        mbedtls_ctr_drbg_free(&ctr_drbg);
+        mbedtls_ssl_free(&sslContext);
+        mbedtls_ssl_config_free(&sslConfig);
+        destructed = true;
+
         ConnectionWithHostname::Detach();
     }
 
@@ -313,7 +322,7 @@ namespace services
 
     void ConnectionMbedTls::TrySend()
     {
-        while (initialHandshake || sending)
+        while (!destructed && (initialHandshake || sending))
         {
             infra::ConstByteRange range = infra::MakeRange(sendBuffer);
             int result = initialHandshake
