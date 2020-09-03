@@ -156,6 +156,7 @@ namespace services
                 }
 
                 createdObserver = nullptr;
+                this->connectionFactory.connectors.remove(*this);
             })
     {
         connectionFactory.connectionFactory.Connect(*this);
@@ -199,7 +200,6 @@ namespace services
             if (self->connection->ConnectionObserver::IsAttached())
                 self->connection->Attach(connectionObserver);
             self->connection = nullptr;
-            self->connectionFactory.connectors.remove(*self);
         });
     }
 
