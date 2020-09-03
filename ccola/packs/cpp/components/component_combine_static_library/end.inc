@@ -8,22 +8,43 @@ foreach(item ${CCOLA_COMPONENT_EXCLUDE})
     endif()
 endforeach()
 
-foreach(item ${CCOLA_COMPONENT_INHERITABLE_LINK_LIBRARIES})
-    string(REPLACE "<CCOLA_CONFIGURATION>" "${CCOLA_SYSTEM_CONFIGURATION}" depend_lib "${item}")
-    list(APPEND extract_cmd COMMAND ${CMAKE_AR} -x ${depend_lib})
-    list(APPEND dependencies ${depend_lib})
-endforeach()
+if(${CCOLA_ARCH} STREQUAL "win")
+    get_filename_component(lib_tool_path ${CMAKE_LINKER} PATH)
+    set(lib_tool lib.exe)
 
-add_custom_command(
-    OUTPUT ${lib_path}/${lib_name}
-    COMMAND ${CMAKE_COMMAND} -E remove_directory obj
-    COMMAND ${CMAKE_COMMAND} -E remove ${lib_path}/${lib_name}
-    COMMAND ${CMAKE_COMMAND} -E make_directory obj
-    COMMAND cd obj
-    ${extract_cmd}
-    COMMAND ${CMAKE_AR} -rc ${lib_path}/${lib_name} *
-    DEPENDS ${dependencies}
-)
+    foreach(item ${CCOLA_COMPONENT_INHERITABLE_LINK_LIBRARIES})
+        if(MSVC_IDE)
+            string(REPLACE "<CCOLA_CONFIGURATION>" ${CCOLA_SYSTEM_CONFIGURATION}-$<CONFIGURATION> depend_lib "${item}")
+        else()
+            string(REPLACE "<CCOLA_CONFIGURATION>" "${CCOLA_SYSTEM_CONFIGURATION}" depend_lib "${item}")
+        endif()
+        list(APPEND depend_list ${depend_lib})
+    endforeach()
+
+    add_custom_command(
+        OUTPUT ${lib_path}/${lib_name}
+        COMMAND ${CMAKE_COMMAND} -E remove ${lib_path}/${lib_name}
+        COMMAND ${lib_tool_path}/${lib_tool} /OUT:${lib_path}/${lib_name} ${depend_list}
+        DEPENDS ${depend_list}
+    )
+else()
+    foreach(item ${CCOLA_COMPONENT_INHERITABLE_LINK_LIBRARIES})
+        string(REPLACE "<CCOLA_CONFIGURATION>" "${CCOLA_SYSTEM_CONFIGURATION}" depend_lib "${item}")
+        list(APPEND extract_cmd COMMAND ${CMAKE_AR} -x ${depend_lib})
+        list(APPEND dependencies ${depend_lib})
+    endforeach()
+
+    add_custom_command(
+        OUTPUT ${lib_path}/${lib_name}
+        COMMAND ${CMAKE_COMMAND} -E remove_directory obj
+        COMMAND ${CMAKE_COMMAND} -E remove ${lib_path}/${lib_name}
+        COMMAND ${CMAKE_COMMAND} -E make_directory obj
+        COMMAND cd obj
+        ${extract_cmd}
+        COMMAND ${CMAKE_AR} -rc ${lib_path}/${lib_name} *
+        DEPENDS ${dependencies}
+    )
+endif()
 
 add_custom_target(${CCOLA_COMPONENT_NAME} ALL
     DEPENDS ${lib_path}/${lib_name}
@@ -32,7 +53,19 @@ add_custom_target(${CCOLA_COMPONENT_NAME} ALL
 ccola_set_component_properties_for_all_configurations(${CCOLA_COMPONENT_NAME} ARCHIVE_OUTPUT_DIRECTORY ${CCOLA_STATIC_LIBRARY_INSTALL_DIR})
 ccola_set_component_properties_for_all_configurations(${CCOLA_COMPONENT_NAME} LIBRARY_OUTPUT_DIRECTORY ${CCOLA_STATIC_LIBRARY_INSTALL_DIR})
 ccola_set_component_properties_for_all_configurations(${CCOLA_COMPONENT_NAME} PDB_OUTPUT_DIRECTORY ${CCOLA_PDB_INSTALL_DIR})
-ccola_inheritable_link_libraries(${lib_path}/${lib_name})
+
+if(MSVC_IDE)
+    string(REPLACE ${CCOLA_SYSTEM_CONFIGURATION} ${CCOLA_SYSTEM_CONFIGURATION}-$<CONFIGURATION> new_lib_path "${lib_path}")
+    add_custom_command(
+        TARGET ${CCOLA_COMPONENT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${new_lib_path}
+        COMMAND ${CMAKE_COMMAND} -E rename ${lib_path}/${lib_name} ${new_lib_path}/${lib_name}
+    )
+    ccola_inheritable_link_libraries(${new_lib_path}/${lib_name})
+else()
+    ccola_inheritable_link_libraries(${lib_path}/${lib_name})
+endif()
 
 configure_file(
     ${CCOLA_COMPONENT_GENERIC_CPP_INFO}
