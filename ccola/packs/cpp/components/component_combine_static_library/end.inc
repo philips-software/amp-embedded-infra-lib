@@ -50,6 +50,10 @@ add_custom_target(${CCOLA_COMPONENT_NAME} ALL
     DEPENDS ${lib_path}/${lib_name}
 )
 
+ccola_set_component_properties_for_all_configurations(${CCOLA_COMPONENT_NAME} ARCHIVE_OUTPUT_DIRECTORY ${CCOLA_STATIC_LIBRARY_INSTALL_DIR})
+ccola_set_component_properties_for_all_configurations(${CCOLA_COMPONENT_NAME} LIBRARY_OUTPUT_DIRECTORY ${CCOLA_STATIC_LIBRARY_INSTALL_DIR})
+ccola_set_component_properties_for_all_configurations(${CCOLA_COMPONENT_NAME} PDB_OUTPUT_DIRECTORY ${CCOLA_PDB_INSTALL_DIR})
+
 if(MSVC_IDE)
     string(REPLACE ${CCOLA_SYSTEM_CONFIGURATION} ${CCOLA_SYSTEM_CONFIGURATION}-$<CONFIGURATION> new_lib_path "${lib_path}")
     add_custom_command(
@@ -58,12 +62,10 @@ if(MSVC_IDE)
         COMMAND ${CMAKE_COMMAND} -E make_directory ${new_lib_path}
         COMMAND ${CMAKE_COMMAND} -E rename ${lib_path}/${lib_name} ${new_lib_path}/${lib_name}
     )
+    ccola_inheritable_link_libraries(${new_lib_path}/${lib_name})
+else()
+    ccola_inheritable_link_libraries(${lib_path}/${lib_name})
 endif()
-
-ccola_set_component_properties_for_all_configurations(${CCOLA_COMPONENT_NAME} ARCHIVE_OUTPUT_DIRECTORY ${CCOLA_STATIC_LIBRARY_INSTALL_DIR})
-ccola_set_component_properties_for_all_configurations(${CCOLA_COMPONENT_NAME} LIBRARY_OUTPUT_DIRECTORY ${CCOLA_STATIC_LIBRARY_INSTALL_DIR})
-ccola_set_component_properties_for_all_configurations(${CCOLA_COMPONENT_NAME} PDB_OUTPUT_DIRECTORY ${CCOLA_PDB_INSTALL_DIR})
-ccola_inheritable_link_libraries(${lib_path}/${lib_name})
 
 configure_file(
     ${CCOLA_COMPONENT_GENERIC_CPP_INFO}
