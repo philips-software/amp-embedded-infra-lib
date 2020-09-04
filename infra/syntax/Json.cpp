@@ -256,6 +256,31 @@ namespace infra
     }
 #endif
 
+    JsonFloat::JsonFloat(int32_t intValue, uint32_t nanoFractionalValue)
+        : intValue(intValue)
+        , nanoFractionalValue(nanoFractionalValue)
+    {}
+
+    bool JsonFloat::operator==(const JsonFloat& other) const
+    {
+        return intValue == other.intValue && nanoFractionalValue == other.nanoFractionalValue;
+    }
+
+    bool JsonFloat::operator!=(const JsonFloat& other) const
+    {
+        return !(*this == other);
+    }
+
+    int32_t JsonFloat::IntValue() const
+    {
+        return intValue;
+    }
+
+    uint32_t JsonFloat::NanoFractionalValue() const
+    {
+        return nanoFractionalValue;
+    }
+
     infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, JsonString value)
     {
         for (auto c : value)
@@ -614,6 +639,11 @@ namespace infra
         return GetValue<JsonString>(key);
     }
 
+    JsonFloat JsonObject::GetFloat(infra::BoundedConstString key)
+    {
+        return GetValue<JsonFloat>(key);
+    }
+
     bool JsonObject::GetBoolean(infra::BoundedConstString key)
     {
         return GetValue<bool>(key);
@@ -649,6 +679,11 @@ namespace infra
     infra::Optional<JsonString> JsonObject::GetOptionalString(infra::BoundedConstString key)
     {
         return GetOptionalValue<JsonString>(key);
+    }
+
+    infra::Optional<JsonFloat> JsonObject::GetOptionalFloat(infra::BoundedConstString key)
+    {
+        return GetOptionalValue<JsonFloat>(key);
     }
 
     infra::Optional<bool> JsonObject::GetOptionalBoolean(infra::BoundedConstString key)
@@ -783,7 +818,7 @@ namespace infra
         if (token.Is<JsonToken::String>())
             return infra::MakeOptional(JsonValue(token.Get<JsonToken::String>().Value()));
         else if (token.Is<JsonToken::Integer>())
-            return infra::MakeOptional(JsonValue(token.Get<JsonToken::Integer>().Value()));
+            return ReadIntegerOrFloat(token);
         else if (token.Is<JsonToken::Boolean>())
             return infra::MakeOptional(JsonValue(token.Get<JsonToken::Boolean>().Value()));
         else if (token.Is<JsonToken::LeftBrace>())
@@ -792,6 +827,23 @@ namespace infra
             return ReadArrayValue(token);
         else
             return infra::none;
+    }
+
+    infra::Optional<JsonValue> JsonIterator::ReadIntegerOrFloat(JsonToken::Token token)
+    {
+        auto current = tokenizer;
+
+        if (tokenizer.Token().Is<JsonToken::Dot>())
+        {
+            auto fractional = tokenizer.Token();
+            if (fractional.Is<JsonToken::Integer>() && fractional.Get<JsonToken::Integer>().Value() >= 0)
+                return infra::MakeOptional(JsonValue(JsonFloat(token.Get<JsonToken::Integer>().Value(), fractional.Get<JsonToken::Integer>().Value())));
+
+            return infra::none;
+        }
+
+        tokenizer = current;
+        return infra::MakeOptional(JsonValue(token.Get<JsonToken::Integer>().Value()));
     }
 
     infra::Optional<JsonValue> JsonIterator::ReadObjectValue(JsonToken::Token token)

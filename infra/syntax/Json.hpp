@@ -70,6 +70,23 @@ namespace infra
         infra::BoundedConstString source;
     };
 
+    class JsonFloat
+    {
+    public:
+        JsonFloat() = default;
+        JsonFloat(int32_t intValue, uint32_t nanoFractionalValue);
+
+        bool operator==(const JsonFloat& other) const;
+        bool operator!=(const JsonFloat& other) const;
+
+        int32_t IntValue() const;
+        uint32_t NanoFractionalValue() const;
+
+    private:
+        int32_t intValue = 0;
+        uint32_t nanoFractionalValue = 0;
+    };
+
     namespace JsonToken
     {
         class End
@@ -235,7 +252,7 @@ namespace infra
     class JsonObject;
     class JsonArray;
 
-    using JsonValue = infra::Variant<bool, int32_t, JsonString, JsonObject, JsonArray>;
+    using JsonValue = infra::Variant<bool, int32_t, JsonString, JsonFloat, JsonObject, JsonArray>;
 
     class JsonObject
     {
@@ -251,6 +268,7 @@ namespace infra
         bool HasKey(infra::BoundedConstString key);
 
         JsonString GetString(infra::BoundedConstString key);
+        JsonFloat GetFloat(infra::BoundedConstString key);
         bool GetBoolean(infra::BoundedConstString key);
         int32_t GetInteger(infra::BoundedConstString key);
         JsonObject GetObject(infra::BoundedConstString key);
@@ -258,6 +276,7 @@ namespace infra
         JsonValue GetValue(infra::BoundedConstString key);
 
         infra::Optional<JsonString> GetOptionalString(infra::BoundedConstString key);
+        infra::Optional<JsonFloat> GetOptionalFloat(infra::BoundedConstString key);
         infra::Optional<bool> GetOptionalBoolean(infra::BoundedConstString key);
         infra::Optional<int32_t> GetOptionalInteger(infra::BoundedConstString key);
         infra::Optional<JsonObject> GetOptionalObject(infra::BoundedConstString key);
@@ -321,6 +340,7 @@ namespace infra
         infra::Optional<JsonValue> ConvertValue(JsonToken::Token token);
 
     private:
+        infra::Optional<JsonValue> ReadIntegerOrFloat(JsonToken::Token token);
         infra::Optional<JsonValue> ReadObjectValue(JsonToken::Token token);
         infra::Optional<JsonValue> ReadArrayValue(JsonToken::Token token);
         infra::Optional<JsonToken::RightBrace> SearchObjectEnd();
