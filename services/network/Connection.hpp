@@ -112,12 +112,18 @@ namespace services
         virtual void AbortAndDestroy() override;
         virtual void SetHostname(infra::BoundedConstString hostname) override;
 
+        void Attach(const infra::SharedPtr<ConnectionObserver>& observer);
+
         // Implementation of ConnectionObserver
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& streamWriter) override;
         virtual void DataReceived() override;
         virtual void Detaching() override;
         virtual void Close() override;
         virtual void Abort() override;
+
+    private:
+        bool closing = false;
+        bool aborting = false;
     };
 
     static const uint32_t ethernetMtu = 1500;

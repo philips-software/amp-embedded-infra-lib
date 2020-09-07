@@ -47,6 +47,16 @@ namespace services
         static_cast<ConnectionWithHostname&>(ConnectionObserver::Subject()).SetHostname(hostname);
     }
 
+    void ConnectionWithHostnameDecorator::Attach(const infra::SharedPtr<ConnectionObserver>& observer)
+    {
+        ConnectionWithHostname::Attach(observer);
+
+        if (aborting)
+            Observer().Abort();
+        else if (closing)
+            Observer().Close();
+    }
+
     void ConnectionWithHostnameDecorator::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& streamWriter)
     {
         Connection::Observer().SendStreamAvailable(std::move(streamWriter));
@@ -64,11 +74,17 @@ namespace services
 
     void ConnectionWithHostnameDecorator::Close()
     {
-        Connection::Observer().Close();
+        if (Connection::IsAttached())
+            Observer().Close();
+        else
+            closing = true;
     }
 
     void ConnectionWithHostnameDecorator::Abort()
     {
-        Connection::Observer().Abort();
+        if (Connection::IsAttached())
+            Observer().Abort();
+        else
+            aborting = true;
     }
 }
