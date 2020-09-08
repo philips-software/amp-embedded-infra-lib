@@ -13,6 +13,11 @@ namespace services
         TryAllocateConnection();
     }
 
+    void ExclusiveStartingConnectionFactoryMutex::RemoveConnection(WaitingConnection& waitingConnection)
+    {
+        waitingConnections.erase(waitingConnection);
+    }
+
     void ExclusiveStartingConnectionFactoryMutex::Started()
     {
         really_assert(starting);
@@ -48,11 +53,16 @@ namespace services
 
     ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection::~ExclusiveStartingConnection()
     {
-        if (!reportedStarted && mutex.startingConnection == this)
+        if (mutex.startingConnection == this)
         {
             mutex.startingConnection = nullptr;
             mutex.Started();
         }
+    }
+
+    void ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection::ResetStarting()
+    {
+        mutex.startingConnection = nullptr;
     }
 
     ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnectionRelease::ExclusiveStartingConnectionRelease(ExclusiveStartingConnectionFactoryMutex& mutex)
@@ -114,16 +124,6 @@ namespace services
         : connectionFactory(connectionFactory)
         , factory(factory)
         , listener(connectionFactory.connectionFactory.Listen(port, *this, versions))
-        , access([this]()
-            {
-                if (connection != nullptr)
-                {
-                    connection = nullptr;
-                    this->connectionFactory.mutex.Started();
-                }
-
-                createdObserver = nullptr;
-            })
     {}
 
     void ExclusiveStartingConnectionFactory::Listener::ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address)
@@ -132,45 +132,43 @@ namespace services
 
         this->createdObserver = std::move(createdObserver);
         this->address = address;
-        connectionFactory.mutex.QueueConnection(*this);
+
+        factory.ConnectionAccepted([this](infra::SharedPtr<ConnectionObserver> connectionObserver)
+        {
+            this->connectionObserver = connectionObserver;
+            connectionFactory.mutex.QueueConnection(*this);
+        }, address);
     }
 
     void ExclusiveStartingConnectionFactory::Listener::Create(const infra::SharedPtr<ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection>& connection)
     {
-        this->connection = connection;
-        auto self = access.MakeShared(*this);
-        factory.ConnectionAccepted([self](infra::SharedPtr<ConnectionObserver> connectionObserver)
-        {
-            self->createdObserver(self->connection);
-            if (self->connection->ConnectionObserver::IsAttached())
-                self->connection->Attach(connectionObserver);
-            self->connection = nullptr;
-        }, address);
+        connection->ResetStarting();
+        createdObserver(connection);
+        if (connection->ConnectionObserver::IsAttached())
+            connection->Attach(connectionObserver);
+        connectionObserver = nullptr;
     }
 
     ExclusiveStartingConnectionFactory::Connector::Connector(ExclusiveStartingConnectionFactory& connectionFactory, ClientConnectionObserverFactory& clientFactory)
         : connectionFactory(connectionFactory)
         , clientFactory(clientFactory)
-        , access([this]()
-            {
-                if (connection != nullptr)
-                {
-                    connection = nullptr;
-                    this->connectionFactory.mutex.Started();
-                }
-
-                createdObserver = nullptr;
-                this->connectionFactory.connectors.remove(*this);
-            })
     {
-        connectionFactory.connectionFactory.Connect(*this);
+        connectionFactory.mutex.QueueConnection(*this);
     }
 
     bool ExclusiveStartingConnectionFactory::Connector::CancelConnect(ClientConnectionObserverFactory& factory)
     {
         if (&factory == &clientFactory)
         {
-            connectionFactory.connectionFactory.CancelConnect(*this);
+            if (connection != nullptr)
+            {
+                connection = nullptr;
+                connectionFactory.mutex.Started();
+                connectionFactory.connectionFactory.CancelConnect(*this);
+            }
+            else
+                connectionFactory.mutex.RemoveConnection(*this);
+
             return true;
         }
 
@@ -190,21 +188,40 @@ namespace services
     void ExclusiveStartingConnectionFactory::Connector::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver)
     {
         this->createdObserver = std::move(createdObserver);
-        connectionFactory.mutex.QueueConnection(*this);
+
+        auto self = access.MakeShared(*this);
+        access.SetAction([this]()
+        {
+            connectionFactory.mutex.Started();
+            connectionFactory.connectors.remove(*this);
+        });
+
+        clientFactory.ConnectionEstablished([self](infra::SharedPtr<ConnectionObserver> connectionObserver)
+        {
+            self->ObserverAvailable(connectionObserver);
+        });
     }
 
     void ExclusiveStartingConnectionFactory::Connector::Create(const infra::SharedPtr<ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection>& connection)
     {
-        this->connection = connection;
-        auto self = access.MakeShared(*this);
-
-        clientFactory.ConnectionEstablished([self](infra::SharedPtr<ConnectionObserver> connectionObserver)
+        access.SetAction([this]()
         {
-            self->createdObserver(self->connection);
-            if (self->connection->ConnectionObserver::IsAttached())
-                self->connection->Attach(connectionObserver);
-            self->connection = nullptr;
+            this->connectionFactory.connectors.remove(*this);
         });
+
+        connectionFactory.connectionFactory.Connect(*this);
+
+        this->connection = connection;
+    }
+
+    void ExclusiveStartingConnectionFactory::Connector::ObserverAvailable(infra::SharedPtr<ConnectionObserver> connectionObserver)
+    {
+        createdObserver(connection);
+        if (connection->ConnectionObserver::IsAttached())
+            connection->Attach(connectionObserver);
+        connection = nullptr;
+
+        access.SetAction([this]() { connectionFactory.connectors.remove(*this); });
     }
 
     void ExclusiveStartingConnectionFactory::Connector::ConnectionFailed(ConnectFailReason reason)

@@ -178,8 +178,8 @@ namespace services
                     claimer.Release();
                 }
 
-            this->connectionFactory.connectors.remove(*this);
-        })
+                this->connectionFactory.connectors.remove(*this);
+            })
     {
         connectionFactory.mutex.RequestCloseConnection();
 
@@ -228,6 +228,7 @@ namespace services
 
     void ExclusiveConnectionFactory::Connector::ConnectionFailed(ConnectFailReason reason)
     {
+        claimer.Release();
         auto& clientFactory = this->clientFactory;
         connectionFactory.connectors.remove(*this);
         clientFactory.ConnectionFailed(reason);

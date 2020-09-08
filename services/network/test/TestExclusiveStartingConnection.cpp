@@ -180,20 +180,11 @@ TEST_F(ExclusiveStartingConnectionTest, constructing_second_connection_waits_for
     ConnectionEstablished(*clientResult);
 
     // Operate
-    services::ClientConnectionObserverFactory* clientResult2 = nullptr;
-    EXPECT_CALL(connectionFactory, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&clientResult2));
     exclusive.Connect(clientFactory);
     ExecuteAllActions();
 
     infra::SharedOptional<testing::StrictMock<services::ConnectionObserverFullMock>> connectionObserver2;
     infra::SharedOptional<testing::StrictMock<services::ConnectionWithHostnameMock>> connection2;
-
-    clientResult2->ConnectionEstablished([&](infra::SharedPtr<services::ConnectionObserver> observer)
-    {
-        auto connectionPtr = connection2.Emplace();
-        connection2->SetOwnership(connectionPtr, observer);
-        connection2->Attach(observer);
-    });
 
     // After receiving data on the first connection, the second connection is allowed to start
     EXPECT_CALL(clientFactory, ConnectionEstablishedMock(testing::_)).WillOnce(testing::Invoke([&](infra::Function<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver)
@@ -203,7 +194,17 @@ TEST_F(ExclusiveStartingConnectionTest, constructing_second_connection_waits_for
         createdObserver(observer);
     }));
     EXPECT_CALL(*connectionObserver, DataReceived());
+    services::ClientConnectionObserverFactory* clientResult2 = nullptr;
     connection->Observer().DataReceived();
+    EXPECT_CALL(connectionFactory, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&clientResult2));
+    ExecuteAllActions();
+
+    clientResult2->ConnectionEstablished([&](infra::SharedPtr<services::ConnectionObserver> observer)
+    {
+        auto connectionPtr = connection2.Emplace();
+        connection2->SetOwnership(connectionPtr, observer);
+        connection2->Attach(observer);
+    });
 
     // Destroy
     ExecuteAllActions();
@@ -225,20 +226,11 @@ TEST_F(ExclusiveStartingConnectionTest, constructing_second_connection_waits_for
     ConnectionEstablished(*clientResult);
 
     // Operate
-    services::ClientConnectionObserverFactory* clientResult2 = nullptr;
-    EXPECT_CALL(connectionFactory, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&clientResult2));
     exclusive.Connect(clientFactory);
     ExecuteAllActions();
 
     infra::SharedOptional<testing::StrictMock<services::ConnectionObserverFullMock>> connectionObserver2;
     infra::SharedOptional<testing::StrictMock<services::ConnectionWithHostnameMock>> connection2;
-
-    clientResult2->ConnectionEstablished([&](infra::SharedPtr<services::ConnectionObserver> observer)
-    {
-        auto connectionPtr = connection2.Emplace();
-        connection2->SetOwnership(connectionPtr, observer);
-        connection2->Attach(observer);
-    });
 
     // After the first connection is closed, the second connection is allowed to start
     EXPECT_CALL(clientFactory, ConnectionEstablishedMock(testing::_)).WillOnce(testing::Invoke([&](infra::Function<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver)
@@ -249,6 +241,17 @@ TEST_F(ExclusiveStartingConnectionTest, constructing_second_connection_waits_for
     }));
     EXPECT_CALL(*connectionObserver, Detaching());
     connection->ResetOwnership();
+
+    services::ClientConnectionObserverFactory* clientResult2 = nullptr;
+    EXPECT_CALL(connectionFactory, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&clientResult2));
+    ExecuteAllActions();
+
+    clientResult2->ConnectionEstablished([&](infra::SharedPtr<services::ConnectionObserver> observer)
+    {
+        auto connectionPtr = connection2.Emplace();
+        connection2->SetOwnership(connectionPtr, observer);
+        connection2->Attach(observer);
+    });
 
     // Destroy
     ExecuteAllActions();

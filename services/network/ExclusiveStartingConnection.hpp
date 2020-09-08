@@ -20,9 +20,10 @@ namespace services
             ExclusiveStartingConnection(ExclusiveStartingConnectionFactoryMutex& mutex);
             ~ExclusiveStartingConnection();
 
+            void ResetStarting();
+
         private:
             ExclusiveStartingConnectionFactoryMutex& mutex;
-            bool reportedStarted = false;
         };
 
         class ExclusiveStartingConnectionRelease
@@ -54,6 +55,7 @@ namespace services
         ExclusiveStartingConnectionFactoryMutex(infra::SharedObjectAllocator<ExclusiveStartingConnection, void(ExclusiveStartingConnectionFactoryMutex& mutex)>& connections);
 
         void QueueConnection(WaitingConnection& waitingConnection);
+        void RemoveConnection(WaitingConnection& waitingConnection);
         void Started();
 
     private:
@@ -107,8 +109,7 @@ namespace services
             infra::SharedPtr<void> listener;
             infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)> createdObserver;
             IPAddress address;
-            infra::SharedPtr<ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection> connection;
-            infra::AccessedBySharedPtr access;
+            infra::SharedPtr<ConnectionObserver> connectionObserver;
         };
 
         class Connector
@@ -128,6 +129,9 @@ namespace services
 
             // Implementation of ExclusiveStartingConnectionFactoryMutex::WaitingConnection
             virtual void Create(const infra::SharedPtr<ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection>& connection) override;
+
+        private:
+            void ObserverAvailable(infra::SharedPtr<ConnectionObserver> connectionObserver);
 
         private:
             ExclusiveStartingConnectionFactory& connectionFactory;
