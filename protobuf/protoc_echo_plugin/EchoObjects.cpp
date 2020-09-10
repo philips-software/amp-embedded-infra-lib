@@ -36,30 +36,7 @@ namespace application
         , constantName(google::protobuf::compiler::cpp::FieldConstantName(&descriptor))
     {}
 
-    EchoEnum::EchoEnum(const google::protobuf::EnumDescriptor& descriptor)
-        : name(descriptor.name())
-    {
-        for (int i = 0; i != descriptor.value_count(); ++i)
-            members.push_back(std::make_pair(descriptor.value(i)->name(), descriptor.value(i)->number()));
-    }
-
-    EchoMessage::EchoMessage(const google::protobuf::Descriptor& descriptor, EchoRoot& root)
-        : descriptor(descriptor)
-        , name(descriptor.name())
-        , qualifiedName(QualifiedName(descriptor))
-        , qualifiedReferenceName(QualifiedReferenceName(descriptor))
-    {
-        for (int i = 0; i != descriptor.enum_type_count(); ++i)
-            nestedEnums.push_back(std::make_shared<EchoEnum>(*descriptor.enum_type(i)));
-
-        for (int i = 0; i != descriptor.nested_type_count(); ++i)
-            nestedMessages.push_back(root.AddMessage(*descriptor.nested_type(i)));
-
-        for (int i = 0; i != descriptor.field_count(); ++i)
-            fields.emplace_back(GenerateField(*descriptor.field(i), root));
-    }
-
-    std::shared_ptr<EchoField> EchoMessage::GenerateField(const google::protobuf::FieldDescriptor& fieldDescriptor, EchoRoot& root)
+    std::shared_ptr<EchoField> EchoField::GenerateField(const google::protobuf::FieldDescriptor& fieldDescriptor, EchoRoot& root)
     {
         if (fieldDescriptor.label() != google::protobuf::FieldDescriptor::LABEL_REPEATED)
             switch (fieldDescriptor.type())
@@ -95,6 +72,29 @@ namespace application
                 default:
                     throw UnsupportedFieldType{ fieldDescriptor.name(), fieldDescriptor.type() };
             }
+    }
+
+    EchoEnum::EchoEnum(const google::protobuf::EnumDescriptor& descriptor)
+        : name(descriptor.name())
+    {
+        for (int i = 0; i != descriptor.value_count(); ++i)
+            members.push_back(std::make_pair(descriptor.value(i)->name(), descriptor.value(i)->number()));
+    }
+
+    EchoMessage::EchoMessage(const google::protobuf::Descriptor& descriptor, EchoRoot& root)
+        : descriptor(descriptor)
+        , name(descriptor.name())
+        , qualifiedName(QualifiedName(descriptor))
+        , qualifiedReferenceName(QualifiedReferenceName(descriptor))
+    {
+        for (int i = 0; i != descriptor.enum_type_count(); ++i)
+            nestedEnums.push_back(std::make_shared<EchoEnum>(*descriptor.enum_type(i)));
+
+        for (int i = 0; i != descriptor.nested_type_count(); ++i)
+            nestedMessages.push_back(root.AddMessage(*descriptor.nested_type(i)));
+
+        for (int i = 0; i != descriptor.field_count(); ++i)
+            fields.emplace_back(EchoField::GenerateField(*descriptor.field(i), root));
     }
 
     void EchoFieldInt32::Accept(EchoFieldVisitor& visitor) const

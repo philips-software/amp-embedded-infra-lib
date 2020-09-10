@@ -304,7 +304,7 @@ TEST(ProtoCEchoPluginTest, invoke_service_proxy_method)
     EXPECT_CALL(onGranted, callback());
     connection.Observer().SendStreamAvailable(writerPtr);
 
-    service.Method(test_messages::TestUint32(5));
+    service.Method(5);
     EXPECT_EQ((std::vector<uint8_t>{ 1, 10, 2, 8, 5 }), (std::vector<uint8_t>(writer.Storage().begin(), writer.Storage().begin() + 5)));
 }
 
@@ -314,7 +314,7 @@ class TestService1Mock
 public:
     using test_messages::TestService1::TestService1;
 
-    MOCK_METHOD1(Method, void(const test_messages::TestUint32& argument));
+    MOCK_METHOD1(Method, void(uint32_t value));
 };
 
 TEST(ProtoCEchoPluginTest, service_method_is_invoked)
@@ -330,7 +330,7 @@ TEST(ProtoCEchoPluginTest, service_method_is_invoked)
     infra::ByteInputStreamReader::WithStorage<0> emptyReader;
     auto emptyReaderPtr = infra::UnOwnedSharedPtr(emptyReader);
     EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr)).WillOnce(testing::Return(emptyReaderPtr));
-    EXPECT_CALL(service, Method(test_messages::TestUint32(5)));
+    EXPECT_CALL(service, Method(5));
     EXPECT_CALL(connection, AckReceived());
     connection.Observer().DataReceived();
 }

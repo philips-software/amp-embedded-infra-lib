@@ -24,6 +24,8 @@ namespace application
         std::string name;
         int number;
         std::string constantName;
+
+        static std::shared_ptr<EchoField> GenerateField(const google::protobuf::FieldDescriptor& fieldDescriptor, EchoRoot& root);
     };
 
     class EchoEnum
@@ -47,9 +49,6 @@ namespace application
         std::vector<std::shared_ptr<EchoField>> fields;
         std::vector<std::shared_ptr<EchoMessage>> nestedMessages;
         std::vector<std::shared_ptr<EchoEnum>> nestedEnums;
-
-    private:
-        std::shared_ptr<EchoField> GenerateField(const google::protobuf::FieldDescriptor& fieldDescriptor, EchoRoot& root);
     };
 
     class EchoFieldInt32
