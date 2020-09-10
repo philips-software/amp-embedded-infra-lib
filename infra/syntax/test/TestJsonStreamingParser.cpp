@@ -614,3 +614,23 @@ TEST_F(JsonStreamingObjectParserArrayTest, when_nested_visitor_is_null_tokens_of
     EXPECT_CALL(arrayVisitor, VisitString("a"));
     parser.Feed(R"(}, "a")");
 }
+
+class JsonStreamingArrayParserTest
+    : public testing::Test
+{
+public:
+    testing::StrictMock<infra::JsonArrayVisitorMock> visitor;
+    infra::JsonStreamingArrayParser::WithBuffers<8, 12, 2> parser{ visitor };
+};
+
+TEST_F(JsonStreamingArrayParserTest, feed_empty_array)
+{
+    EXPECT_CALL(visitor, Close());
+    parser.Feed(" []");
+}
+
+TEST_F(JsonStreamingArrayParserTest, VisitString)
+{
+    EXPECT_CALL(visitor, VisitString("a"));
+    parser.Feed(R"([ "a" )");
+}

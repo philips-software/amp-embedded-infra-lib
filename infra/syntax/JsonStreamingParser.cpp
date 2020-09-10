@@ -535,6 +535,13 @@ namespace infra
         state = State::semanticError;
     }
 
+    JsonSubArrayParser::JsonSubArrayParser(infra::BoundedString tagBuffer, infra::BoundedString valueBuffer,
+        char& subObjects, JsonArrayVisitor& visitor)
+        : JsonSubParser(tagBuffer, valueBuffer, subObjects)
+        , visitor(&visitor)
+        , state(State::init)
+    {}
+
     JsonSubArrayParser::JsonSubArrayParser(infra::BoundedString tagBuffer, infra::BoundedString valueBuffer, char& subObjects)
         : JsonSubParser(tagBuffer, valueBuffer, subObjects)
     {}
@@ -650,6 +657,13 @@ namespace infra
 
                 return;
             }
+            else if (state == State::init)
+            {
+                if (token == Token::leftBracket)
+                    state = State::initialOpen;
+                else
+                    state = State::parseError;
+            }
             else if (state == State::skipNestedObject)
             {
                 if (token == Token::rightBrace)
@@ -719,6 +733,21 @@ namespace infra
     }
 
     void JsonStreamingObjectParser::Feed(infra::BoundedConstString data)
+    {
+        auto dataRange(infra::MakeRange(data));
+
+        while (!dataRange.empty() && !subObjects.empty())
+            subObjects.back()->Feed(dataRange);
+    }
+
+    JsonStreamingArrayParser::JsonStreamingArrayParser(infra::BoundedString tagBuffer, infra::BoundedString valueBuffer,
+        char& subObjects, JsonArrayVisitor& visitor)
+        : subObjects(reinterpret_cast<infra::BoundedVector<infra::PolymorphicVariant<JsonSubParser, JsonSubObjectParser, JsonSubArrayParser>>&>(subObjects))
+    {
+        this->subObjects.emplace_back(infra::InPlaceType<JsonSubArrayParser>(), tagBuffer, valueBuffer, subObjects, visitor);
+    }
+
+    void JsonStreamingArrayParser::Feed(infra::BoundedConstString data)
     {
         auto dataRange(infra::MakeRange(data));
 

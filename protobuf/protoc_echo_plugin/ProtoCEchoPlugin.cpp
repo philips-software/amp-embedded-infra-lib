@@ -22,6 +22,73 @@ namespace application
 
             return result;
         }
+
+        class TypeNameVisitor
+            : public EchoFieldVisitor
+        {
+        public:
+            TypeNameVisitor(std::string& result)
+                : result(result)
+            {}
+
+            virtual void VisitInt32(const EchoFieldInt32& field) override
+            {
+                result = "int32_t";
+            }
+
+            virtual void VisitFixed32(const EchoFieldFixed32& field) override
+            {
+                result = "uint32_t";
+            }
+
+            virtual void VisitBool(const EchoFieldBool& field) override
+            {
+                result = "bool";
+            }
+
+            virtual void VisitString(const EchoFieldString& field) override
+            {
+                result = "infra::BoundedConstString";
+            }
+
+            virtual void VisitMessage(const EchoFieldMessage& field) override
+            {
+                result = "const " + field.message->qualifiedName + "&";
+            }
+
+            virtual void VisitBytes(const EchoFieldBytes& field) override
+            {
+                result = "const infra::BoundedVector<uint8_t>&";
+            }
+
+            virtual void VisitUint32(const EchoFieldUint32& field) override
+            {
+                result = "uint32_t";
+            }
+
+            virtual void VisitEnum(const EchoFieldEnum& field) override
+            {
+                result = field.typeName;
+            }
+
+            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
+            {
+                result = "const infra::BoundedVector<infra::BoundedString::WithStorage<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">>&";
+            }
+
+            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
+            {
+                result = "const infra::BoundedVector<" + field.message->qualifiedName + ">&";
+            }
+
+            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
+            {
+                result = "const infra::BoundedVector<uint32_t>&";
+            }
+
+        private:
+            std::string& result;
+        };
     }
 
     bool CppInfraCodeGenerator::Generate(const google::protobuf::FileDescriptor* file, const std::string& parameter,
@@ -1217,7 +1284,7 @@ namespace application
         auto constructors = std::make_shared<Access>("public");
         auto constructor = std::make_shared<Constructor>(service->name + "Proxy", "", 0);
         constructor->Parameter("services::Echo& echo");
-        constructor->Initializer("services::ServiceProxy(echo, serviceId, " + MaxMessageSize() + ")");
+        constructor->Initializer("services::ServiceProxy(echo, serviceId, maxMessageSize)");
 
         constructors->Add(constructor);
         serviceProxyFormatter->Add(constructors);
@@ -1231,7 +1298,15 @@ namespace application
         {
             auto serviceMethod = std::make_shared<Function>(method.name, "", "void", Function::fVirtual | Function::fAbstract);
             if (method.parameter)
-                serviceMethod->Parameter("const " + method.parameter->qualifiedName + "& argument");
+            {
+                for (auto field: method.parameter->fields)
+                {
+                    std::string typeName;
+                    TypeNameVisitor visitor(typeName);
+                    field->Accept(visitor);
+                    serviceMethod->Parameter(typeName + " " + field->name);
+                }
+            }
             functions->Add(serviceMethod);
         }
 
@@ -1251,7 +1326,16 @@ namespace application
         {
             auto serviceMethod = std::make_shared<Function>(method.name, ProxyMethodBody(method), "void", 0);
             if (method.parameter)
-                serviceMethod->Parameter("const " + method.parameter->qualifiedName + "& argument");
+            {
+                for (auto field: method.parameter->fields)
+                {
+                    std::string typeName;
+                    TypeNameVisitor visitor(typeName);
+                    field->Accept(visitor);
+                    serviceMethod->Parameter(typeName + " " + field->name);
+                }
+            }
+
             functions->Add(serviceMethod);
         }
 
@@ -1269,6 +1353,12 @@ namespace application
 
         serviceFormatter->Add(fields);
         serviceProxyFormatter->Add(fields);
+
+        auto publicFields = std::make_shared<Access>("public");
+        publicFields->Add(std::make_shared<DataMember>("maxMessageSize", "static const uint32_t", MaxMessageSize()));
+
+        serviceFormatter->Add(publicFields);
+        serviceProxyFormatter->Add(publicFields);
     }
 
     std::string ServiceGenerator::MaxMessageSize() const
@@ -1298,13 +1388,24 @@ namespace application
             for (auto& method : service->methods)
             {
                 if (method.parameter)
+                {
                     printer.Print(R"(    case id$name$:
     {
         $argument$ argument(parser);
-        $name$(argument);
+        $name$()", "name", method.name, "argument", method.parameter->qualifiedName);
+
+                    for (auto& field: method.parameter->fields)
+                    {
+                        printer.Print("argument.$field$", "field", field->name);
+                        if (&field != &method.parameter->fields.back())
+                            printer.Print(", ");
+                    }
+
+                    printer.Print(R"();
         break;
     }
-)", "name", method.name, "argument", method.parameter->qualifiedName);
+)");
+                }
                 else
                     printer.Print(R"(    case id$name$:
     {
@@ -1335,8 +1436,22 @@ formatter.PutVarInt(serviceId);
 )", "name", method.name);
 
             if (method.parameter)
-                printer.Print(R"(    argument.Serialize(formatter);
+            {
+                printer.Print("    $type$(", "type", method.parameter->qualifiedName);
+
+                for (auto& field: method.parameter->fields)
+                {
+                    std::string typeName;
+                    TypeNameVisitor visitor(typeName);
+                    field->Accept(visitor);
+                    printer.Print("$field$", "field", field->name);
+                    if (&field != &method.parameter->fields.back())
+                        printer.Print(", ");
+                }
+
+                printer.Print(R"().Serialize(formatter);
 )");
+            }
 
             printer.Print(R"(}
 Rpc().Send();
