@@ -1217,7 +1217,7 @@ namespace application
         auto constructors = std::make_shared<Access>("public");
         auto constructor = std::make_shared<Constructor>(service->name + "Proxy", "", 0);
         constructor->Parameter("services::Echo& echo");
-        constructor->Initializer("services::ServiceProxy(echo, serviceId, " + MaxMessageSize() + ")");
+        constructor->Initializer("services::ServiceProxy(echo, serviceId, maxMessageSize)");
 
         constructors->Add(constructor);
         serviceProxyFormatter->Add(constructors);
@@ -1269,6 +1269,12 @@ namespace application
 
         serviceFormatter->Add(fields);
         serviceProxyFormatter->Add(fields);
+
+        auto publicFields = std::make_shared<Access>("public");
+        publicFields->Add(std::make_shared<DataMember>("maxMessageSize", "static const uint32_t", MaxMessageSize()));
+
+        serviceFormatter->Add(publicFields);
+        serviceProxyFormatter->Add(publicFields);
     }
 
     std::string ServiceGenerator::MaxMessageSize() const
