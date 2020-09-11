@@ -328,6 +328,23 @@ namespace application
     void DataMember::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
     {}
 
+    StaticDataMember::StaticDataMember(const std::string& name, const std::string& type, const std::string& initializer)
+        : Entity(true, true)
+        , name(name)
+        , type(type)
+        , initializer(initializer)
+    {}
+
+    void StaticDataMember::PrintHeader(google::protobuf::io::Printer& printer) const
+    {
+        printer.Print("static $type$ $name$;\n", "type", type, "name", name);
+    }
+
+    void StaticDataMember::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
+    {
+        printer.Print("$type$ $scope$$name$ = $initializer$;\n", "type", type, "scope", scope, "name", name, "initializer", initializer);
+    }
+
     IncludesByHeader::IncludesByHeader()
         : Entity(true, false)
     {}

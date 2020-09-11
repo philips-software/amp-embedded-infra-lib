@@ -171,6 +171,21 @@ namespace application
         std::string initializer;
     };
 
+    class StaticDataMember
+        : public Entity
+    {
+    public:
+        StaticDataMember(const std::string& name, const std::string& type, const std::string& initializer);
+
+        virtual void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        virtual void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+
+    private:
+        std::string name;
+        std::string type;
+        std::string initializer;
+    };
+
     class IncludesByHeader
         : public Entity
     {
