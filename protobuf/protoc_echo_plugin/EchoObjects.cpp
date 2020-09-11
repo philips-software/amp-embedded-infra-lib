@@ -18,6 +18,17 @@ namespace application
             return namespaceString + descriptor.name();
         }
 
+        std::string QualifiedName(const google::protobuf::EnumDescriptor& descriptor)
+        {
+            std::string namespaceString;
+
+            namespaceString = descriptor.file()->package() + "::";
+            for (auto containingType = descriptor.containing_type(); containingType != nullptr; containingType = containingType->containing_type())
+                namespaceString += containingType->name() + "::";
+
+            return namespaceString + descriptor.name();
+        }
+
         std::string QualifiedReferenceName(const google::protobuf::Descriptor& descriptor)
         {
             std::string namespaceString;
@@ -156,6 +167,7 @@ namespace application
     EchoFieldEnum::EchoFieldEnum(const google::protobuf::FieldDescriptor& descriptor)
         : EchoField(descriptor)
         , typeName(descriptor.enum_type()->name())
+        , qualifiedTypeName(QualifiedName(*descriptor.enum_type()))
     {}
 
     void EchoFieldEnum::Accept(EchoFieldVisitor& visitor) const

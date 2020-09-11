@@ -129,6 +129,7 @@ namespace application
         virtual void Accept(EchoFieldVisitor& visitor) const override;
 
         std::string typeName;
+        std::string qualifiedTypeName;
     };
 
     class EchoFieldRepeated

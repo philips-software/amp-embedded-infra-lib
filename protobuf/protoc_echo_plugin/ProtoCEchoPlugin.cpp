@@ -68,7 +68,7 @@ namespace application
 
             virtual void VisitEnum(const EchoFieldEnum& field) override
             {
-                result = field.typeName;
+                result = field.qualifiedTypeName;
             }
 
             virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
