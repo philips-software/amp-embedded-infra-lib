@@ -50,6 +50,14 @@ add_custom_target(${CCOLA_COMPONENT_NAME} ALL
     DEPENDS ${lib_path}/${lib_name}
 )
 
+foreach(item ${CCOLA_COMPONENT_DEPENDENCIES})
+    add_dependencies(${CCOLA_COMPONENT_NAME} ${item})
+endforeach()
+
+foreach(item ${CCOLA_COMPONENT_INHERITABLE_DEPENDENCIES})
+    add_dependencies(${CCOLA_COMPONENT_NAME} ${item})
+endforeach()
+
 ccola_set_component_properties_for_all_configurations(${CCOLA_COMPONENT_NAME} ARCHIVE_OUTPUT_DIRECTORY ${CCOLA_STATIC_LIBRARY_INSTALL_DIR})
 ccola_set_component_properties_for_all_configurations(${CCOLA_COMPONENT_NAME} LIBRARY_OUTPUT_DIRECTORY ${CCOLA_STATIC_LIBRARY_INSTALL_DIR})
 ccola_set_component_properties_for_all_configurations(${CCOLA_COMPONENT_NAME} PDB_OUTPUT_DIRECTORY ${CCOLA_PDB_INSTALL_DIR})
