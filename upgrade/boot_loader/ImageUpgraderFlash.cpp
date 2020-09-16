@@ -2,10 +2,10 @@
 
 namespace application
 {
-    ImageUpgraderFlash::ImageUpgraderFlash(infra::ByteRange buffer, const char* targetName, Decryptor& decryptor, hal::SynchronousFlash& internalFlash, uint32_t destinationAddressOffset)
+    ImageUpgraderFlash::ImageUpgraderFlash(infra::ByteRange buffer, const char* targetName, Decryptor& decryptor, hal::SynchronousFlash& flash, uint32_t destinationAddressOffset)
         : ImageUpgrader(targetName, decryptor)
         , buffer(buffer)
-        , internalFlash(&internalFlash)
+        , flash(&flash)
         , destinationAddressOffset(destinationAddressOffset)
     {}
 
@@ -13,7 +13,7 @@ namespace application
     {
         destinationAddress += destinationAddressOffset;
 
-        internalFlash->EraseSectors(internalFlash->SectorOfAddress(destinationAddress), internalFlash->SectorOfAddress(destinationAddress + imageSize - 1) + 1);
+        flash->EraseSectors(flash->SectorOfAddress(destinationAddress), flash->SectorOfAddress(destinationAddress + imageSize - 1) + 1);
 
         uint32_t imageAddressStart = imageAddress;
         while (imageAddress - imageAddressStart < imageSize)
@@ -24,7 +24,7 @@ namespace application
 
             ImageDecryptor().DecryptPart(bufferRange);
 
-            internalFlash->WriteBuffer(bufferRange, destinationAddress);
+            flash->WriteBuffer(bufferRange, destinationAddress);
             destinationAddress += bufferRange.size();
         }
 
@@ -33,6 +33,6 @@ namespace application
 
     void ImageUpgraderFlash::SetFlash(hal::SynchronousFlash& flash)
     {
-        internalFlash = &flash;
+        this->flash = &flash;
     }
 }
