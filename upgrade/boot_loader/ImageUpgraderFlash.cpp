@@ -1,15 +1,15 @@
-#include "upgrade/boot_loader/ImageUpgraderInternalFlash.hpp"
+#include "upgrade/boot_loader/ImageUpgraderFlash.hpp"
 
 namespace application
 {
-    ImageUpgraderInternalFlash::ImageUpgraderInternalFlash(infra::ByteRange buffer, const char* targetName, Decryptor& decryptor, hal::SynchronousFlash& internalFlash, uint32_t destinationAddressOffset)
+    ImageUpgraderFlash::ImageUpgraderFlash(infra::ByteRange buffer, const char* targetName, Decryptor& decryptor, hal::SynchronousFlash& internalFlash, uint32_t destinationAddressOffset)
         : ImageUpgrader(targetName, decryptor)
         , buffer(buffer)
         , internalFlash(&internalFlash)
         , destinationAddressOffset(destinationAddressOffset)
     {}
 
-    uint32_t ImageUpgraderInternalFlash::Upgrade(hal::SynchronousFlash& upgradePackFlash, uint32_t imageAddress, uint32_t imageSize, uint32_t destinationAddress)
+    uint32_t ImageUpgraderFlash::Upgrade(hal::SynchronousFlash& upgradePackFlash, uint32_t imageAddress, uint32_t imageSize, uint32_t destinationAddress)
     {
         destinationAddress += destinationAddressOffset;
 
@@ -31,7 +31,7 @@ namespace application
         return 0;
     }
 
-    void ImageUpgraderInternalFlash::SetFlash(hal::SynchronousFlash& flash)
+    void ImageUpgraderFlash::SetFlash(hal::SynchronousFlash& flash)
     {
         internalFlash = &flash;
     }
