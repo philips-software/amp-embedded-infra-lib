@@ -44,6 +44,7 @@ message WiFiStation
         wepShared = 0x8001;
         wpaMixedPsk = 0x200006;
         wpa2MixedPsk = 0x400006;
+        wpa3Psk = 0x800000;
         unknown = -1;
     }
 
