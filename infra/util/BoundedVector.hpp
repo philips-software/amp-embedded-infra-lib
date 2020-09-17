@@ -241,13 +241,19 @@ namespace infra
     template<class T>
     typename BoundedVector<T>::iterator BoundedVector<T>::begin()
     {
-        return &*storage[0];
+        if (!storage.empty())
+            return &*storage[0];
+        else
+            return nullptr;
     }
 
     template<class T>
     typename BoundedVector<T>::const_iterator BoundedVector<T>::begin() const
     {
-        return &*storage[0];
+        if (!storage.empty())
+            return &*storage[0];
+        else
+            return nullptr;
     }
 
     template<class T>

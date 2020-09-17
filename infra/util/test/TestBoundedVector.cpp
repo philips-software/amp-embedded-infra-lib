@@ -139,6 +139,10 @@ TEST(BoundedVectorTest, TestBeginAndEnd)
     EXPECT_EQ(vector.rend(), static_cast<const infra::BoundedVector<int>&>(vector).rend());
     EXPECT_EQ(vector.rbegin(), vector.crbegin());
     EXPECT_EQ(vector.rend(), vector.crend());
+
+    infra::BoundedVector<int>::WithMaxSize<0> emptyVector;
+    EXPECT_TRUE(emptyVector.begin() == emptyVector.end());
+    EXPECT_TRUE(emptyVector.cbegin() == emptyVector.cend());
 }
 
 TEST(BoundedVectorTest, TestRange)
