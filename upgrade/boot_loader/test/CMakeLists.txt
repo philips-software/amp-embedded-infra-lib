@@ -3,7 +3,7 @@ ccola_component(boot_loader_test gmock_test)
     ccola_sources(
         TestDecryptorAes.cpp
         TestImageUpgraderEraseSectors.cpp
-        TestImageUpgraderInternalFlash.cpp
+        TestImageUpgraderFlash.cpp
         TestImageUpgraderSkip.cpp
         TestPackUpgrader.cpp
         TestSecondStageToRamLoader.cpp
