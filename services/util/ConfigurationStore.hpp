@@ -252,9 +252,6 @@ namespace services
         void Recover(const infra::Function<void()>& onLoadFactoryDefault, const infra::Function<void(bool isFactoryDefault)>& onRecovered);
         virtual uint32_t Write() override;
 
-        template<class T>
-            ConfigurationStoreAccess<T> Access(T& configuration);
-
     private:
         virtual void OperationDone(uint32_t id) override;
 
@@ -284,6 +281,9 @@ namespace services
         virtual ConfigurationStoreInterface& Interface() override;
         virtual uint32_t Write() override;
         virtual ConfigurationStoreBase::LockGuard Lock() override;
+        
+        template<class U>
+            ConfigurationStoreAccess<U> Access(U& configuration);
 
     private:
         ConfigurationStoreImpl<T> configurationStore;
@@ -450,16 +450,17 @@ namespace services
     }
 
     template<class T>
-    ConfigurationStoreAccess<T> FactoryDefaultConfigurationStoreBase::Access(T& configuration)
-    {
-        return ConfigurationStoreAccess<T>(*this, configuration);
-    }
-
-    template<class T>
     FactoryDefaultConfigurationStore<T>::FactoryDefaultConfigurationStore(ConfigurationBlob& blobFactoryDefault, ConfigurationBlob& blob1, ConfigurationBlob& blob2)
         : FactoryDefaultConfigurationStoreBase(configurationStore, blobFactoryDefault)
         , configurationStore(blob1, blob2)
     {}
+
+    template<class T>
+    template<class U>
+    ConfigurationStoreAccess<U> FactoryDefaultConfigurationStore<T>::Access(U& configuration)
+    {
+        return ConfigurationStoreAccess<U>(this->configurationStore, configuration);
+    }
 
     template<class T>
     const T& FactoryDefaultConfigurationStore<T>::Configuration() const

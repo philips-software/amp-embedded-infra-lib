@@ -14,8 +14,8 @@ ccola_component(boot_loader static_library)
         ImageUpgrader.hpp
         ImageUpgraderEraseSectors.cpp
         ImageUpgraderEraseSectors.hpp
-        ImageUpgraderInternalFlash.cpp
-        ImageUpgraderInternalFlash.hpp
+        ImageUpgraderFlash.cpp
+        ImageUpgraderFlash.hpp
         ImageUpgraderSkip.cpp
         ImageUpgraderSkip.hpp
         PackUpgrader.cpp
