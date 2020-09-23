@@ -43,18 +43,22 @@ namespace services
     {
         int result = mbedtls_ssl_setup(&sslContext, &sslConfig);
         if (result != 0)
-            TlsInitFailure(result);
-        really_assert(result == 0);
-
-        if (!server)
         {
-            result = mbedtls_ssl_set_session(&sslContext, clientSession);
-            assert(result == 0);
+            TlsInitFailure(result);
+            Abort();
         }
+        else
+        {
+            if (!server)
+            {
+                result = mbedtls_ssl_set_session(&sslContext, clientSession);
+                assert(result == 0);
+            }
 
-        mbedtls_ssl_set_bio(&sslContext, this, &ConnectionMbedTls::StaticSslSend, &ConnectionMbedTls::StaticSslReceive, nullptr);
+            mbedtls_ssl_set_bio(&sslContext, this, &ConnectionMbedTls::StaticSslSend, &ConnectionMbedTls::StaticSslReceive, nullptr);
 
-        TryAllocateEncryptedSendStream();
+            TryAllocateEncryptedSendStream();
+        }
     }
 
     int ConnectionMbedTls::GetAuthMode(const ParametersWorkaround& parameters) const
