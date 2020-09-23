@@ -79,21 +79,33 @@ namespace services
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::Close()
     {
         if (!invokedClose)
-            Connection::Observer().Close();
+        {
+            if (Connection::IsAttached())
+                Connection::Observer().Close();
+            else
+                closing = true;
+        }
+
         invokedClose = true;
     }
 
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::Abort()
     {
-        Connection::Observer().Abort();
+        if (Connection::IsAttached())
+            Connection::Observer().Abort();
+        else
+            aborting = true;
     }
 
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::Attach(const infra::SharedPtr<ConnectionObserver>& observer)
     {
         ConnectionWithHostname::Attach(observer);
 
-        if (mutex.resource.ClaimsPending() && mutex.cancelConnectionOnNewRequest)
+        if (aborting)
+            Connection::Observer().Abort();
+        if ((mutex.resource.ClaimsPending() && mutex.cancelConnectionOnNewRequest) || closing)
             Connection::Observer().Close();
+
     }
 
     ExclusiveConnectionFactory::ExclusiveConnectionFactory(infra::BoundedList<infra::NotifyingSharedOptional<Listener>>& listeners, infra::BoundedList<Connector>& connectors,
