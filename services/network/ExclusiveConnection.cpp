@@ -73,7 +73,8 @@ namespace services
 
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::Detaching()
     {
-        ConnectionWithHostname::Detach();
+        if (ConnectionWithHostname::IsAttached())
+            ConnectionWithHostname::Detach();
     }
 
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::Close()
