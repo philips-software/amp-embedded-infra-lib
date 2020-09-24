@@ -1,5 +1,6 @@
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "lwip/lwip_cpp/ConnectionLwIp.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -208,6 +209,7 @@ namespace services
 
     void ConnectionLwIp::Err(err_t err)
     {
+        services::GlobalTracer().Trace() << "ConnectionLwIp::Err received err " << err;
         assert(err == ERR_RST || err == ERR_CLSD || err == ERR_ABRT);
         ResetControl();
         ResetOwnership();
@@ -429,6 +431,7 @@ namespace services
     err_t ListenerLwIp::Accept(tcp_pcb* newPcb, err_t err)
     {
         tcp_accepted(listenPort);
+        services::GlobalTracer().Trace() << "ListenerLwIp::Accept accepted new connection";
         infra::SharedPtr<ConnectionLwIp> connection = allocator.Allocate(newPcb);
         if (connection)
         {
@@ -450,6 +453,7 @@ namespace services
         }
         else
         {
+            services::GlobalTracer().Trace() << "ListenerLwIp::Accept connection allocation failed";
             tcp_abort(newPcb);
             return ERR_ABRT;
         }
@@ -506,6 +510,7 @@ namespace services
 
     err_t ConnectorLwIp::Connected()
     {
+        services::GlobalTracer().Trace() << "ConnectorLwIp::Connected connection established";
         infra::SharedPtr<ConnectionLwIp> connection = connectionAllocator.Allocate(control);
         if (connection)
         {
@@ -529,6 +534,7 @@ namespace services
         }
         else
         {
+            services::GlobalTracer().Trace() << "ConnectorLwIp::Connected connection allocation failed";
             tcp_abort(control);
             control = nullptr;
             clientFactory.ConnectionFailed(ClientConnectionObserverFactory::ConnectFailReason::connectionAllocationFailed);
