@@ -96,6 +96,7 @@ namespace services
         {
         public:
             Listener(ExclusiveStartingConnectionFactory& connectionFactory, uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions);
+            ~Listener();
 
             // Implementation of ServerConnectionObserverFactory
             virtual void ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address) override;
@@ -107,14 +108,15 @@ namespace services
             ExclusiveStartingConnectionFactory& connectionFactory;
             ServerConnectionObserverFactory& factory;
             infra::SharedPtr<void> listener;
+            infra::AccessedBySharedPtr access;
             infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)> createdObserver;
             IPAddress address;
-            infra::SharedPtr<ConnectionObserver> connectionObserver;
+            infra::SharedPtr<ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection> connection;
+            bool accepting = false;
         };
 
         class Connector
             : public ClientConnectionObserverFactory
-            , public ExclusiveStartingConnectionFactoryMutex::WaitingConnection
         {
         public:
             Connector(ExclusiveStartingConnectionFactory& connectionFactory, ClientConnectionObserverFactory& clientFactory);
@@ -127,18 +129,12 @@ namespace services
             virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver) override;
             virtual void ConnectionFailed(ConnectFailReason reason) override;
 
-            // Implementation of ExclusiveStartingConnectionFactoryMutex::WaitingConnection
-            virtual void Create(const infra::SharedPtr<ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection>& connection) override;
-
-        private:
-            void ObserverAvailable(infra::SharedPtr<ConnectionObserver> connectionObserver);
-
         private:
             ExclusiveStartingConnectionFactory& connectionFactory;
             ClientConnectionObserverFactory& clientFactory;
             infra::AccessedBySharedPtr access;
             infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)> createdObserver;
-            infra::SharedPtr<ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection> connection;
+            bool connecting = true;
         };
 
     private:
@@ -191,6 +187,7 @@ namespace services
 
         class Connector
             : public ClientConnectionObserverFactory
+            , public ExclusiveStartingConnectionFactoryMutex::WaitingConnection
         {
         public:
             Connector(ExclusiveStartingConnectionReleaseFactory& connectionFactory, ClientConnectionObserverFactory& clientFactory);
@@ -203,11 +200,15 @@ namespace services
             virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver) override;
             virtual void ConnectionFailed(ConnectFailReason reason) override;
 
+            // Implementation of ExclusiveStartingConnectionFactoryMutex::WaitingConnection
+            virtual void Create(const infra::SharedPtr<ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection>& connection) override;
+
         private:
             ExclusiveStartingConnectionReleaseFactory& connectionFactory;
             ClientConnectionObserverFactory& clientFactory;
             infra::AccessedBySharedPtr access;
             infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)> createdObserver;
+            infra::SharedPtr<ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection> connection;
         };
 
     private:

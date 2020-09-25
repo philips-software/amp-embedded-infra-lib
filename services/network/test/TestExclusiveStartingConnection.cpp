@@ -13,12 +13,9 @@ public:
     {
         factory.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> observer)
         {
-            auto connectionReleasePtr = connectionRelease.Emplace(mutex);
-            connectionReleasePtr->Attach(observer);
-
             auto connectionPtr = connection.Emplace();
-            connection->SetOwnership(connectionPtr, connectionReleasePtr);
-            connection->Attach(connectionReleasePtr);
+            connection->SetOwnership(connectionPtr, observer);
+            connection->Attach(observer);
         });
     }
 
@@ -101,13 +98,14 @@ public:
     infra::SharedOptional<int> listenerStorage;
 
     infra::SharedOptional<testing::StrictMock<services::ConnectionObserverFullMock>> connectionObserver;
-    infra::SharedOptional<services::ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnectionRelease> connectionRelease;
     infra::SharedOptional<testing::StrictMock<services::ConnectionWithHostnameMock>> connection;
+
+    services::ExclusiveStartingConnectionReleaseFactory::WithListenersAndConnectors<2, 3, 3> exclusiveRelease{ mutex, exclusive };
 };
 
 TEST_F(ExclusiveStartingConnectionTest, construct_one_connection_via_Connect)
 {
-    CreateClientConnection(exclusive);
+    CreateClientConnection(exclusiveRelease);
 
     EXPECT_CALL(*connection, RequestSendStream(10));
     connectionObserver->Subject().RequestSendStream(10);
@@ -140,7 +138,7 @@ TEST_F(ExclusiveStartingConnectionTest, construct_one_connection_via_Connect)
 TEST_F(ExclusiveStartingConnectionTest, construct_one_connection_but_fails)
 {
     EXPECT_CALL(connectionFactory, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&clientResult));
-    exclusive.Connect(clientFactory);
+    exclusiveRelease.Connect(clientFactory);
     ExecuteAllActions();
 
     EXPECT_CALL(clientFactory, ConnectionFailed(services::ClientConnectionObserverFactory::ConnectFailReason::refused));
@@ -151,17 +149,17 @@ TEST_F(ExclusiveStartingConnectionTest, construct_one_connection_but_fails)
 TEST_F(ExclusiveStartingConnectionTest, construct_one_connection_and_cancel)
 {
     EXPECT_CALL(connectionFactory, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&clientResult));
-    exclusive.Connect(clientFactory);
+    exclusiveRelease.Connect(clientFactory);
     ExecuteAllActions();
 
     EXPECT_CALL(connectionFactory, CancelConnect(testing::Ref(*clientResult)));
-    exclusive.CancelConnect(clientFactory);
+    exclusiveRelease.CancelConnect(clientFactory);
     EXPECT_CALL(clientFactory, Destructor);
 }
 
 TEST_F(ExclusiveStartingConnectionTest, construct_one_connection_via_Listen)
 {
-    auto listener = Listen(exclusive);
+    auto listener = Listen(exclusiveRelease);
     CreateServerConnection();
 
     EXPECT_CALL(*connectionObserver, Detaching());
@@ -173,14 +171,14 @@ TEST_F(ExclusiveStartingConnectionTest, constructing_second_connection_waits_for
 {
     // Build
     EXPECT_CALL(connectionFactory, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&clientResult));
-    exclusive.Connect(clientFactory);
+    exclusiveRelease.Connect(clientFactory);
     ExecuteAllActions();
 
     ExpectConnectionEstablished(clientFactory);
     ConnectionEstablished(*clientResult);
 
     // Operate
-    exclusive.Connect(clientFactory);
+    exclusiveRelease.Connect(clientFactory);
     ExecuteAllActions();
 
     infra::SharedOptional<testing::StrictMock<services::ConnectionObserverFullMock>> connectionObserver2;
@@ -219,14 +217,14 @@ TEST_F(ExclusiveStartingConnectionTest, constructing_second_connection_waits_for
 {
     // Build
     EXPECT_CALL(connectionFactory, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&clientResult));
-    exclusive.Connect(clientFactory);
+    exclusiveRelease.Connect(clientFactory);
     ExecuteAllActions();
 
     ExpectConnectionEstablished(clientFactory);
     ConnectionEstablished(*clientResult);
 
     // Operate
-    exclusive.Connect(clientFactory);
+    exclusiveRelease.Connect(clientFactory);
     ExecuteAllActions();
 
     infra::SharedOptional<testing::StrictMock<services::ConnectionObserverFullMock>> connectionObserver2;
