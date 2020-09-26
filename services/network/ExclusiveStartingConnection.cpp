@@ -1,5 +1,6 @@
 #include "infra/event/EventDispatcher.hpp"
 #include "services/network/ExclusiveStartingConnection.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -20,6 +21,7 @@ namespace services
 
     void ExclusiveStartingConnectionFactoryMutex::Started()
     {
+        services::GlobalTracer().Trace() << "====== ExclusiveStartingConnectionFactoryMutex::Started";
         really_assert(starting);
         infra::EventDispatcher::Instance().Schedule([this]()
         {
@@ -143,6 +145,7 @@ namespace services
         this->createdObserver = std::move(createdObserver);
         this->address = address;
 
+        services::GlobalTracer().Trace() << "====== ExclusiveStartingConnectionFactory::Listener::ConnectionAccepted queueing connection";
         connectionFactory.mutex.QueueConnection(*this);
         accepting = true;
     }
@@ -291,6 +294,7 @@ namespace services
                 connection = nullptr;
             })
     {
+        services::GlobalTracer().Trace() << "====== ExclusiveStartingConnectionReleaseFactory::Connector::Connector queueing connection";
         connectionFactory.mutex.QueueConnection(*this);
     }
 

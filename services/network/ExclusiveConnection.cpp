@@ -1,4 +1,5 @@
 #include "services/network/ExclusiveConnection.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -163,9 +164,11 @@ namespace services
         {
             connectionFactory.mutex.RequestCloseConnection();
 
+            services::GlobalTracer().Trace() << "===== ExclusiveConnectionFactory::Listener::ConnectionAccepted claiming";
             auto created = createdObserver.Clone();
             claimer.Claim([this, address, created]()
             {
+                services::GlobalTracer().Trace() << "===== ExclusiveConnectionFactory::Listener::ConnectionAccepted claim granted";
                 this->createdObserver = created;
                 auto self = access.MakeShared(*this);
                 factory.ConnectionAccepted([self](infra::SharedPtr<ConnectionObserver> connectionObserver)
@@ -196,8 +199,10 @@ namespace services
     {
         connectionFactory.mutex.RequestCloseConnection();
 
+        services::GlobalTracer().Trace() << "===== ExclusiveConnectionFactory::Connector::Connector claiming";
         claimer.Claim([this]()
         {
+            services::GlobalTracer().Trace() << "===== ExclusiveConnectionFactory::Connector::Connector claim granted";
             this->connectionFactory.connectionFactory.Connect(*this);
         });
     }
