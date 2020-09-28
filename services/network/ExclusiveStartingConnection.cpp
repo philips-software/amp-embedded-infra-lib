@@ -37,13 +37,17 @@ namespace services
             auto connection = connections.Allocate(*this);
             if (connection != nullptr)
             {
+                services::GlobalTracer().Trace() << "====== ExclusiveStartingConnectionFactoryMutex::TryAllocateConnection allocated connection";
                 starting = true;
                 auto& waitingConnection = waitingConnections.front();
                 waitingConnections.pop_front();
                 waitingConnection.Create(connection);
             }
             else
+            {
+                services::GlobalTracer().Trace() << "====== ExclusiveStartingConnectionFactoryMutex::TryAllocateConnection did not yet allocate connection";
                 connections.OnAllocatable([this]() { TryAllocateConnection(); });
+            }
         }
     }
 
