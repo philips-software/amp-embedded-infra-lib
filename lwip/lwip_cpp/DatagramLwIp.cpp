@@ -81,6 +81,7 @@ namespace services
             IPv6Address ipv6Address = remote.Get<Udpv6Socket>().first;
             ip_addr_t ipAddress IPADDR6_INIT(0, 0, 0, 0);
             IP6_ADDR(&ipAddress.u_addr.ip6, PP_HTONL(ipv6Address[1] + (static_cast<uint32_t>(ipv6Address[0]) << 16)), PP_HTONL(ipv6Address[3] + (static_cast<uint32_t>(ipv6Address[2]) << 16)), PP_HTONL(ipv6Address[5] + (static_cast<uint32_t>(ipv6Address[4]) << 16)), PP_HTONL(ipv6Address[7] + (static_cast<uint32_t>(ipv6Address[6]) << 16)));
+            ip6_addr_set_zone(&ipAddress.u_addr.ip6, netif_default->ip6_addr->u_addr.ip6.zone);
             err_t result = udp_connect(control, &ipAddress, remote.Get<Udpv6Socket>().second);
             assert(result == ERR_OK);
         }
@@ -110,6 +111,7 @@ namespace services
             IPv6Address ipv6Address = remote.Get<Udpv6Socket>().first;
             ip_addr_t ipAddress IPADDR6_INIT(0, 0, 0, 0);
             IP6_ADDR(&ipAddress.u_addr.ip6, PP_HTONL(ipv6Address[1] + (static_cast<uint32_t>(ipv6Address[0]) << 16)), PP_HTONL(ipv6Address[3] + (static_cast<uint32_t>(ipv6Address[2]) << 16)), PP_HTONL(ipv6Address[5] + (static_cast<uint32_t>(ipv6Address[4]) << 16)), PP_HTONL(ipv6Address[7] + (static_cast<uint32_t>(ipv6Address[6]) << 16)));
+            ip6_addr_set_zone(&ipAddress.u_addr.ip6, netif_default->ip6_addr->u_addr.ip6.zone);
             err_t result = udp_connect(control, &ipAddress, remote.Get<Udpv6Socket>().second);
             assert(result == ERR_OK);
             result = udp_bind(control, IP6_ADDR_ANY, localPort);
@@ -266,6 +268,9 @@ namespace services
         else
         {
             auto address = Convert(*remote).first;
+            if (address.type == IPADDR_TYPE_V6)
+                ip6_addr_set_zone(&address.u_addr.ip6, netif_default->ip6_addr->u_addr.ip6.zone);
+
             err_t result = udp_sendto(control, buffer, &address, Convert(*remote).second);
             assert(result == ERR_OK);
         }
