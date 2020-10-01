@@ -42,6 +42,7 @@ namespace services
         virtual void CloseAndDestroy() override;
         virtual void AbortAndDestroy() override;
 
+        void Attach(const infra::SharedPtr<ConnectionObserver>& observer);
         void SetSelfOwnership(const infra::SharedPtr<ConnectionObserver>& observer);
         void ResetOwnership();
         IPAddress IpAddress() const;
@@ -134,11 +135,15 @@ namespace services
         static err_t Accept(void* arg, struct tcp_pcb* newPcb, err_t err);
 
         err_t Accept(tcp_pcb* newPcb, err_t err);
+        err_t ProcessBacklog();
+        void PurgeBacklog();
 
     private:
         AllocatorConnectionLwIp& allocator;
         tcp_pcb* listenPort;
         ServerConnectionObserverFactory& factory;
+        infra::BoundedList<infra::SharedPtr<ConnectionLwIp>>::WithMaxSize<6> backlog;
+        infra::AccessedBySharedPtr access;
     };
 
     using AllocatorListenerLwIp = infra::SharedObjectAllocator<ListenerLwIp, void(AllocatorConnectionLwIp&, uint16_t, ServerConnectionObserverFactory&, IPVersions versions)>;

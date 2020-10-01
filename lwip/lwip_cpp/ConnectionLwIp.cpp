@@ -81,6 +81,14 @@ namespace services
         }
     }
 
+    void ConnectionLwIp::Attach(const infra::SharedPtr<ConnectionObserver>& observer)
+    {
+        Connection::Attach(observer);
+
+        if (receivedData != nullptr)
+            observer->DataReceived();
+    }
+
     void ConnectionLwIp::SetSelfOwnership(const infra::SharedPtr<ConnectionObserver>& observer)
     {
         self = SharedFromThis();
@@ -402,6 +410,7 @@ namespace services
     ListenerLwIp::ListenerLwIp(AllocatorConnectionLwIp& allocator, uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions)
         : allocator(allocator)
         , factory(factory)
+        , access([this]() { ProcessBacklog(); })
     {
         tcp_pcb* pcb = tcp_new();
         assert(pcb != nullptr);
@@ -432,11 +441,44 @@ namespace services
     {
         tcp_accepted(listenPort);
         services::GlobalTracer().Trace() << "ListenerLwIp::Accept accepted new connection";
-        infra::SharedPtr<ConnectionLwIp> connection = allocator.Allocate(newPcb);
-        if (connection)
+        PurgeBacklog();
+        if (!backlog.full())
         {
-            factory.ConnectionAccepted([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
+            infra::SharedPtr<ConnectionLwIp> connection = allocator.Allocate(newPcb);
+            if (connection)
             {
+                backlog.push_back(connection);
+                return ProcessBacklog();
+            }
+            else
+            {
+                services::GlobalTracer().Trace() << "ListenerLwIp::ProcessBacklog connection allocation failed";
+                tcp_abort(newPcb);
+                return ERR_ABRT;
+            }
+        }
+        else
+        {
+            services::GlobalTracer().Trace() << "ListenerLwIp::Accept backlog is full";
+            tcp_abort(newPcb);
+            return ERR_ABRT;
+        }
+    }
+
+    err_t ListenerLwIp::ProcessBacklog()
+    {
+        PurgeBacklog();
+        if (!backlog.empty() && !access.Referenced())
+        {
+            services::GlobalTracer().Trace() << "ListenerLwIp::ProcessBacklog processing new connection";
+            auto self = access.MakeShared(*this);
+
+            auto connection = self->backlog.front();
+            factory.ConnectionAccepted([self](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
+            {
+                auto connection = self->backlog.front();
+                self->backlog.pop_front();
+
                 if (connectionObserver && connection->control != nullptr)
                 {
                     connection->SetSelfOwnership(connectionObserver);
@@ -452,10 +494,20 @@ namespace services
                 return ERR_ABRT;
         }
         else
+            return ERR_OK;
+    }
+
+    void ListenerLwIp::PurgeBacklog()
+    {
+        for (auto i = backlog.begin(); i != backlog.end();)
         {
-            services::GlobalTracer().Trace() << "ListenerLwIp::Accept connection allocation failed";
-            tcp_abort(newPcb);
-            return ERR_ABRT;
+            if ((*i)->control == nullptr)
+            {
+                services::GlobalTracer().Trace() << "ListenerLwIp::PurgeBacklog removing closed connection";
+                backlog.erase(i++);
+            }
+            else
+                ++i;
         }
     }
 
