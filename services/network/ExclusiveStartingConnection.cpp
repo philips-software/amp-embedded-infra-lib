@@ -21,7 +21,7 @@ namespace services
 
     void ExclusiveStartingConnectionFactoryMutex::Started()
     {
-        services::GlobalTracer().Trace() << "====== ExclusiveStartingConnectionFactoryMutex::Started";
+        services::GlobalTracer().Trace() << "ExclusiveStartingConnectionFactoryMutex::Started";
         really_assert(starting);
         infra::EventDispatcher::Instance().Schedule([this]()
         {
@@ -37,7 +37,7 @@ namespace services
             auto connection = connections.Allocate(*this);
             if (connection != nullptr)
             {
-                services::GlobalTracer().Trace() << "====== ExclusiveStartingConnectionFactoryMutex::TryAllocateConnection allocated connection";
+                services::GlobalTracer().Trace() << "ExclusiveStartingConnectionFactoryMutex::TryAllocateConnection allocated connection";
                 starting = true;
                 auto& waitingConnection = waitingConnections.front();
                 waitingConnections.pop_front();
@@ -45,7 +45,7 @@ namespace services
             }
             else
             {
-                services::GlobalTracer().Trace() << "====== ExclusiveStartingConnectionFactoryMutex::TryAllocateConnection did not yet allocate connection";
+                services::GlobalTracer().Trace() << "ExclusiveStartingConnectionFactoryMutex::TryAllocateConnection did not yet allocate connection";
                 connections.OnAllocatable([this]() { TryAllocateConnection(); });
             }
         }
@@ -149,7 +149,7 @@ namespace services
         this->createdObserver = std::move(createdObserver);
         this->address = address;
 
-        services::GlobalTracer().Trace() << "====== ExclusiveStartingConnectionFactory::Listener::ConnectionAccepted queueing connection";
+        services::GlobalTracer().Trace() << "ExclusiveStartingConnectionFactory::Listener::ConnectionAccepted queueing connection";
         connectionFactory.mutex.QueueConnection(*this);
         accepting = true;
     }
@@ -298,7 +298,7 @@ namespace services
                 connection = nullptr;
             })
     {
-        services::GlobalTracer().Trace() << "====== ExclusiveStartingConnectionReleaseFactory::Connector::Connector queueing connection";
+        services::GlobalTracer().Trace() << "ExclusiveStartingConnectionReleaseFactory::Connector::Connector queueing connection";
         connectionFactory.mutex.QueueConnection(*this);
     }
 

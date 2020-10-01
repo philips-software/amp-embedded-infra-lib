@@ -69,7 +69,8 @@ namespace services
 
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::DataReceived()
     {
-        Connection::Observer().DataReceived();
+        if (ConnectionWithHostname::IsAttached())
+            Connection::Observer().DataReceived();
     }
 
     void ExclusiveConnectionFactoryMutex::ExclusiveConnection::Detaching()
@@ -164,11 +165,11 @@ namespace services
         {
             connectionFactory.mutex.RequestCloseConnection();
 
-            services::GlobalTracer().Trace() << "===== ExclusiveConnectionFactory::Listener::ConnectionAccepted claiming";
+            services::GlobalTracer().Trace() << "ExclusiveConnectionFactory::Listener::ConnectionAccepted claiming";
             auto created = createdObserver.Clone();
             claimer.Claim([this, address, created]()
             {
-                services::GlobalTracer().Trace() << "===== ExclusiveConnectionFactory::Listener::ConnectionAccepted claim granted";
+                services::GlobalTracer().Trace() << "ExclusiveConnectionFactory::Listener::ConnectionAccepted claim granted";
                 this->createdObserver = created;
                 auto self = access.MakeShared(*this);
                 factory.ConnectionAccepted([self](infra::SharedPtr<ConnectionObserver> connectionObserver)
@@ -199,10 +200,10 @@ namespace services
     {
         connectionFactory.mutex.RequestCloseConnection();
 
-        services::GlobalTracer().Trace() << "===== ExclusiveConnectionFactory::Connector::Connector claiming";
+        services::GlobalTracer().Trace() << "ExclusiveConnectionFactory::Connector::Connector claiming";
         claimer.Claim([this]()
         {
-            services::GlobalTracer().Trace() << "===== ExclusiveConnectionFactory::Connector::Connector claim granted";
+            services::GlobalTracer().Trace() << "ExclusiveConnectionFactory::Connector::Connector claim granted";
             this->connectionFactory.connectionFactory.Connect(*this);
         });
     }

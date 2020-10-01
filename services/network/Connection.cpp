@@ -64,12 +64,14 @@ namespace services
 
     void ConnectionWithHostnameDecorator::DataReceived()
     {
-        Connection::Observer().DataReceived();
+        if (Connection::IsAttached())
+            Connection::Observer().DataReceived();
     }
 
     void ConnectionWithHostnameDecorator::Detaching()
     {
-        ConnectionWithHostname::Detach();
+        if (Connection::IsAttached())
+            ConnectionWithHostname::Detach();
     }
 
     void ConnectionWithHostnameDecorator::Close()
