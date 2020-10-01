@@ -30,7 +30,7 @@ namespace application
         uint32_t GetComponentVersion();
 
     private:
-        void CheckValidJson();
+        void CheckValidJsonObject(infra::JsonObject& jsonObject);
         void CheckMandatoryKeys();
      
     private:

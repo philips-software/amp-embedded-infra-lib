@@ -14,22 +14,23 @@ namespace application
     UpgradePackConfigParser::UpgradePackConfigParser(infra::JsonObject& json)
         : json(json)
     {
-        CheckValidJson();
+        CheckValidJsonObject(json);
         CheckMandatoryKeys();
     }
 
-    void UpgradePackConfigParser::CheckValidJson()
+    void UpgradePackConfigParser::CheckValidJsonObject(infra::JsonObject& jsonObject)
     {
-        for (auto it : json)
-        {}
+        for (auto it : jsonObject)
+            if (it.value.Is<infra::JsonObject>())
+                CheckValidJsonObject(it.value.Get<infra::JsonObject>());
 
-        if (json.Error())
+        if (jsonObject.Error())
             throw ParseException("ConfigParser error: invalid JSON");
     }
 
     void UpgradePackConfigParser::CheckMandatoryKeys()
     {
-        std::vector<std::string> mandatoryKeys = { "components" };
+        std::vector<std::string> mandatoryKeys = { "components", "output_filename" };
         for (const auto& key : mandatoryKeys)
             if (!json.HasKey(key))
                 throw ParseException("ConfigParser error: required key " + key + " missing");
