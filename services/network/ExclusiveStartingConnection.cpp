@@ -356,6 +356,7 @@ namespace services
     void ExclusiveStartingConnectionReleaseFactory::Connector::ConnectionFailed(ConnectFailReason reason)
     {
         auto& clientFactory = this->clientFactory;
+        connectionFactory.mutex.RemoveConnection(*this);
         connectionFactory.mutex.Started();
         connectionFactory.connectors.remove(*this);
         clientFactory.ConnectionFailed(reason);
