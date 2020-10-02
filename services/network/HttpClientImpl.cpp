@@ -117,7 +117,8 @@ namespace services
     void HttpClientImpl::Detaching()
     {
         bodyReaderAccess.SetAction(infra::emptyFunction);
-        HttpClient::Detach();
+        if (HttpClient::IsAttached())
+            HttpClient::Detach();
     }
 
     void HttpClientImpl::StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine)
