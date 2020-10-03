@@ -30,7 +30,7 @@ namespace application
 
     void UpgradePackConfigParser::CheckMandatoryKeys()
     {
-        std::vector<std::string> mandatoryKeys = { "components", "output_filename" };
+        std::vector<std::string> mandatoryKeys = { "components" };
         for (const auto& key : mandatoryKeys)
             if (!json.HasKey(key))
                 throw ParseException("ConfigParser error: required key " + key + " missing");
