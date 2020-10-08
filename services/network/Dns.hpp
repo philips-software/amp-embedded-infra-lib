@@ -130,8 +130,9 @@ namespace services
         : public DnsHostnameParts
     {
     public:
-        DnsHostnamePartsStream(const DnsHostnamePartsStream& other);
         DnsHostnamePartsStream(infra::StreamReaderWithRewinding& reader, uint32_t streamPosition);
+        DnsHostnamePartsStream(const DnsHostnamePartsStream& other);
+        ~DnsHostnamePartsStream() = default;
 
         virtual infra::BoundedConstString Current() const override;
         virtual void ConsumeCurrent() override;
