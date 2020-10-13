@@ -82,14 +82,6 @@ namespace services
             stream << infra::data << static_cast<uint8_t>(hostnameTokens.Token(i).size()) << infra::text << hostnameTokens.Token(i);
     }
 
-    DnsHostnamePartsStream::DnsHostnamePartsStream(const DnsHostnamePartsStream& other)
-        : reader(other.reader)
-        , streamPosition(other.streamPosition)
-        , stream(reader, infra::noFail)
-        , label(other.label)
-        , finalPosition(other.finalPosition)
-    {}
-
     DnsHostnamePartsStream::DnsHostnamePartsStream(infra::StreamReaderWithRewinding& reader, uint32_t streamPosition)
         : reader(reader)
         , streamPosition(streamPosition)
@@ -97,6 +89,14 @@ namespace services
     {
         ReadNext();
     }
+
+    DnsHostnamePartsStream::DnsHostnamePartsStream(const DnsHostnamePartsStream& other)
+        : reader(other.reader)
+        , streamPosition(other.streamPosition)
+        , stream(reader, infra::noFail)
+        , label(other.label)
+        , finalPosition(other.finalPosition)
+    {}
 
     infra::BoundedConstString DnsHostnamePartsStream::Current() const
     {
