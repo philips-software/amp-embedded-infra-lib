@@ -66,6 +66,7 @@ namespace services
         infra::IntrusiveList<WaitingConnection> waitingConnections;
         bool starting = false;
         ExclusiveStartingConnection* startingConnection = nullptr;
+        infra::SharedPtr<ExclusiveStartingConnectionFactoryMutex> self{ infra::UnOwnedSharedPtr(*this) };
     };
 
     class ExclusiveStartingConnectionFactory

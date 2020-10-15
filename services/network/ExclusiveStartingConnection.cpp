@@ -1,4 +1,4 @@
-#include "infra/event/EventDispatcher.hpp"
+#include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "services/network/ExclusiveStartingConnection.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 
@@ -23,11 +23,11 @@ namespace services
     {
         services::GlobalTracer().Trace() << "ExclusiveStartingConnectionFactoryMutex::Started";
         really_assert(starting);
-        infra::EventDispatcher::Instance().Schedule([this]()
+        infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ExclusiveStartingConnectionFactoryMutex>& self)
         {
-            starting = false;
-            TryAllocateConnection();
-        });
+            self->starting = false;
+            self->TryAllocateConnection();
+        }, self);
     }
 
     void ExclusiveStartingConnectionFactoryMutex::TryAllocateConnection()

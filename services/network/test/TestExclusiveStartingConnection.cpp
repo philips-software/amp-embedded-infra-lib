@@ -1,12 +1,12 @@
 #include "gmock/gmock.h"
-#include "infra/event/test_helper/EventDispatcherFixture.hpp"
+#include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/network/ExclusiveStartingConnection.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 
 class ExclusiveStartingConnectionTest
     : public testing::Test
-    , public infra::EventDispatcherFixture
+    , public infra::EventDispatcherWithWeakPtrFixture
 {
 public:
     void ConnectionEstablished(services::ClientConnectionObserverFactory& factory)
