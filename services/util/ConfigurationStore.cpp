@@ -292,10 +292,7 @@ namespace services
                             if (success)
                                 this->onRecovered(false);
                             else
-                            {
-                                Attach(configurationStore);
                                 eraseOperationId = configurationStore.Erase();
-                            }
                         });
                     });
                 });
@@ -322,9 +319,8 @@ namespace services
     void FactoryDefaultConfigurationStoreBase::OperationDone(uint32_t id)
     {
         if (onRecovered != nullptr && eraseOperationId <= id)
-        {
             onRecovered(true);
-            Detach();
-        }
+
+        NotifyObservers([id](ConfigurationStoreObserver& observer) { observer.OperationDone(id); });
     }
 }

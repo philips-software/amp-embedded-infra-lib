@@ -249,7 +249,7 @@ namespace services
 
     class FactoryDefaultConfigurationStoreBase
         : public ConfigurationStoreInterface
-        , private ConfigurationStoreObserver
+        , protected ConfigurationStoreObserver
     {
     public:
         FactoryDefaultConfigurationStoreBase(ConfigurationStoreBase& configurationStore, ConfigurationBlob& factoryDefaultBlob);
@@ -257,7 +257,7 @@ namespace services
         void Recover(const infra::Function<void()>& onLoadFactoryDefault, const infra::Function<void(bool isFactoryDefault)>& onRecovered);
         virtual uint32_t Write() override;
 
-    private:
+    protected:
         virtual void OperationDone(uint32_t id) override;
 
     private:
@@ -280,6 +280,7 @@ namespace services
             class WithReadOnlyDefaultAndBlobs;
 
         FactoryDefaultConfigurationStore(ConfigurationBlob& blobFactoryDefault, ConfigurationBlob& blob1, ConfigurationBlob& blob2);
+        ~FactoryDefaultConfigurationStore();
 
         virtual const T& Configuration() const override;
         virtual T& Configuration() override;
@@ -459,7 +460,15 @@ namespace services
     FactoryDefaultConfigurationStore<T>::FactoryDefaultConfigurationStore(ConfigurationBlob& blobFactoryDefault, ConfigurationBlob& blob1, ConfigurationBlob& blob2)
         : FactoryDefaultConfigurationStoreBase(configurationStore, blobFactoryDefault)
         , configurationStore(blob1, blob2)
-    {}
+    {
+        Attach(configurationStore);
+    }
+
+    template<class T>
+    FactoryDefaultConfigurationStore<T>::~FactoryDefaultConfigurationStore()
+    {
+        Detach();
+    }
 
     template<class T>
     template<class U>
