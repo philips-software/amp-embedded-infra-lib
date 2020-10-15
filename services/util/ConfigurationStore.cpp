@@ -147,6 +147,50 @@ namespace services
         std::abort();
     }
 
+    ConfigurationStoreInterface::LockGuard ConfigurationStoreInterface::Lock()
+    {
+        return LockGuard(*this);
+    }
+
+    bool ConfigurationStoreInterface::IsLocked() const
+    {
+        return lockCount != 0;
+    }
+
+    ConfigurationStoreInterface::LockGuard::LockGuard(ConfigurationStoreInterface& store)
+        : store(&store)
+    {
+        ++store.lockCount;
+    }
+
+    ConfigurationStoreInterface::LockGuard::LockGuard(const LockGuard& other)
+        : store(other.store)
+    {
+        ++store->lockCount;
+    }
+
+    ConfigurationStoreInterface::LockGuard& ConfigurationStoreInterface::LockGuard::operator=(const LockGuard& other)
+    {
+        if (this != &other)
+        {
+            --store->lockCount;
+            if (store->lockCount == 0)
+                store->Unlocked();
+
+            store = other.store;
+            ++store->lockCount;
+        }
+
+        return *this;
+    }
+
+    ConfigurationStoreInterface::LockGuard::~LockGuard()
+    {
+        --store->lockCount;
+        if (store->lockCount == 0)
+            store->Unlocked();
+    }
+
     ConfigurationStoreBase::ConfigurationStoreBase(ConfigurationBlob& blob1, ConfigurationBlob& blob2)
         : activeBlob(&blob1)
         , inactiveBlob(&blob2)
@@ -157,7 +201,7 @@ namespace services
         uint32_t thisId = operationId;
 
         writeRequested = true;
-        if (!writingBlob && lockCount == 0)
+        if (!writingBlob && !IsLocked())
         {
             ++operationId;
             writeRequested = false;
@@ -176,11 +220,6 @@ namespace services
         inactiveBlob->Erase([this, thisId]() { activeBlob->Erase([this, thisId]() { NotifyObservers([thisId](ConfigurationStoreObserver& observer) { observer.OperationDone(thisId); }); }); });
 
         return thisId;
-    }
-
-    ConfigurationStoreBase::LockGuard ConfigurationStoreBase::Lock()
-    {
-        return LockGuard(*this);
     }
 
     void ConfigurationStoreBase::Recover(const infra::Function<void(bool success)>& onRecovered)
@@ -204,6 +243,12 @@ namespace services
         });
     }
 
+    void ConfigurationStoreBase::Unlocked()
+    {
+        if (writeRequested)
+            Write();
+    }
+
     void ConfigurationStoreBase::OnBlobLoaded(bool success)
     {
         std::swap(activeBlob, inactiveBlob);
@@ -220,46 +265,6 @@ namespace services
         writingBlob = false;
         if (writeRequested)
             Write();
-    }
-
-    void ConfigurationStoreBase::Unlocked()
-    {
-        if (writeRequested)
-            Write();
-    }
-
-    ConfigurationStoreBase::LockGuard::LockGuard(ConfigurationStoreBase& store)
-        : store(&store)
-    {
-        ++store.lockCount;
-    }
-
-    ConfigurationStoreBase::LockGuard::LockGuard(const LockGuard& other)
-        : store(other.store)
-    {
-        ++store->lockCount;
-    }
-
-    ConfigurationStoreBase::LockGuard& ConfigurationStoreBase::LockGuard::operator=(const LockGuard& other)
-    {
-        if (this != &other)
-        {
-            --store->lockCount;
-            if (store->lockCount == 0)
-                store->Unlocked();
-
-            store = other.store;
-            ++store->lockCount;
-        }
-
-        return *this;
-    }
-
-    ConfigurationStoreBase::LockGuard::~LockGuard()
-    {
-        --store->lockCount;
-        if (store->lockCount == 0)
-            store->Unlocked();
     }
 
     FactoryDefaultConfigurationStoreBase::FactoryDefaultConfigurationStoreBase(ConfigurationStoreBase& configurationStore, ConfigurationBlob& factoryDefaultBlob)

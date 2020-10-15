@@ -11,6 +11,7 @@ namespace services
     {
     public:
         MOCK_METHOD0(Write, uint32_t());
+        MOCK_METHOD0(Unlocked, void());
     };
 }
 

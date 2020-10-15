@@ -117,6 +117,25 @@ namespace services
 
     public:
         virtual uint32_t Write() = 0;
+
+        class LockGuard
+        {
+        public:
+            LockGuard(ConfigurationStoreInterface& store);
+            LockGuard(const LockGuard& other);
+            LockGuard& operator=(const LockGuard& other);
+            ~LockGuard();
+
+        private:
+            ConfigurationStoreInterface* store;
+        };
+
+        LockGuard Lock();
+        bool IsLocked() const;
+        virtual void Unlocked() = 0;
+
+    private:
+        uint32_t lockCount = 0;
     };
 
     template<class T>
@@ -161,33 +180,19 @@ namespace services
         virtual void Serialize(ConfigurationBlob& blob, const infra::Function<void()>& onDone) = 0;
         virtual void Deserialize(ConfigurationBlob& blob) = 0;
 
-        class LockGuard
-        {
-        public:
-            LockGuard(ConfigurationStoreBase& store);
-            LockGuard(const LockGuard& other);
-            LockGuard& operator=(const LockGuard& other);
-            ~LockGuard();
-
-        private:
-            ConfigurationStoreBase* store;
-        };
-
-        LockGuard Lock();
-
         template<class T>
             ConfigurationStoreAccess<T> Access(T& configuration);
+
+        virtual void Unlocked() override;
 
     private:
         void OnBlobLoaded(bool success);
         void BlobWriteDone();
-        void Unlocked();
 
     private:
         ConfigurationBlob* activeBlob;
         ConfigurationBlob* inactiveBlob;
         infra::AutoResetFunction<void(bool success)> onRecovered;
-        uint32_t lockCount = 0;
         uint32_t operationId = 0;
         bool writingBlob = false;
         bool writeRequested = false;
@@ -281,7 +286,8 @@ namespace services
         virtual ConfigurationStoreInterface& Interface() override;
         virtual uint32_t Write() override;
         virtual ConfigurationStoreBase::LockGuard Lock() override;
-        
+        virtual void Unlocked() override;
+
         template<class U>
             ConfigurationStoreAccess<U> Access(U& configuration);
 
@@ -490,6 +496,12 @@ namespace services
     ConfigurationStoreBase::LockGuard FactoryDefaultConfigurationStore<T>::Lock()
     {
         return configurationStore.Lock();
+    }
+
+    template<class T>
+    void FactoryDefaultConfigurationStore<T>::Unlocked()
+    {
+        configurationStore.Unlocked();
     }
 
     template<class T>
