@@ -566,6 +566,19 @@ namespace services
         clientId = newClientId;
     }
 
+    void MqttClientConnectorImpl::Stop(const infra::Function<void()>& onDone)
+    {
+        if (client.Allocatable())
+            onDone();
+        else
+        {
+            client.OnAllocatable(onDone);
+
+            if (client)
+                client->Abort();
+        }
+    }
+
     void MqttClientConnectorImpl::Connect(MqttClientObserverFactory& factory)
     {
         assert(client.Allocatable());

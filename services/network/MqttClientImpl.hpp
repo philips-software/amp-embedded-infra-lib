@@ -257,6 +257,8 @@ namespace services
         void SetHostname(infra::BoundedConstString newHostname);
         void SetClientId(infra::BoundedConstString newClientId);
 
+        void Stop(const infra::Function<void()>& onDone);
+
         // Implementation of MqttClientConnector
         virtual void Connect(MqttClientObserverFactory& factory) override;
         virtual void CancelConnect() override;
@@ -275,7 +277,7 @@ namespace services
         infra::BoundedConstString clientId;
         infra::BoundedConstString username;
         infra::BoundedConstString password;
-        infra::SharedOptional<MqttClientImpl> client;
+        infra::NotifyingSharedOptional<MqttClientImpl> client;
         MqttClientObserverFactory* clientObserverFactory = nullptr;
     };
 }
