@@ -620,7 +620,8 @@ namespace services
         clientConnectionFactory->ConnectionEstablished([this, &createdObserver](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
         {
             createdObserver(connectionObserver);
-            static_cast<ConnectionWithHostname&>(connectionObserver->Subject()).SetHostname(Hostname());
+            if (connectionObserver->IsAttached())
+                static_cast<ConnectionWithHostname&>(connectionObserver->Subject()).SetHostname(Hostname());
         });
         clientConnectionFactory = nullptr;
         TryConnect();
