@@ -2,11 +2,13 @@
 #define SERVICES_FLASH_QUAD_SPI_CYPRESS_FLL_HPP
 
 #include "services/util/FlashQuadSpi.hpp"
+#include "hal/interfaces/FlashId.hpp"
 
 namespace services
 {
     class FlashQuadSpiCypressFll
         : public FlashQuadSpi
+        , public hal::FlashId
     {
     public:
         static const uint8_t commandPageProgram;
@@ -32,7 +34,8 @@ namespace services
 
         void SwitchToSingleSpeed(infra::Function<void()> onDone);
 
-        virtual void ReadUniqueId(infra::ByteRange buffer, infra::Function<void()> onDone) override;
+        // implement FlashId
+        virtual void ReadFlashId(infra::ByteRange buffer, infra::Function<void()> onDone) override;
 
     private:
         void SwitchToQuadSpeed();

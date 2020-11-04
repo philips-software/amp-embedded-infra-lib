@@ -33,8 +33,6 @@ namespace hal
         virtual void WriteBuffer(infra::ConstByteRange buffer, uint32_t address, infra::Function<void()> onDone) = 0;
         virtual void ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone) = 0;
 
-        virtual void ReadUniqueId(infra::ByteRange buffer, infra::Function<void()> onDone);
-
         void EraseSector(uint32_t sectorIndex, infra::Function<void()> onDone);
         virtual void EraseSectors(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone) = 0;  // Erases sectors in de range [beginIndex, endIndex)
         void EraseAll(infra::Function<void()> onDone);
