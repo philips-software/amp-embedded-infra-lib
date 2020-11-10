@@ -20,6 +20,15 @@ namespace services
 
     ConnectionLwIp::~ConnectionLwIp()
     {
+        while (!sendBuffers.empty())
+        {
+            RemoveFromPool(sendBuffers.front());
+            sendBuffers.pop_front();
+        }
+
+        if (!sendBufferForStream.empty())
+            RemoveFromPool(sendBufferForStream);
+
         if (sendMemoryPoolWaiting.has_element(*this))
             sendMemoryPoolWaiting.erase(*this);
 
@@ -148,10 +157,11 @@ namespace services
                 sendMemoryPoolWaiting.erase(*this);
 
             sendMemoryPool.emplace_back();
-            infra::ByteRange sendBuffer = infra::Head(infra::ByteRange(sendMemoryPool.back()), requestedSendSize);
-            infra::EventDispatcherWithWeakPtr::Instance().Schedule([sendBuffer](const infra::SharedPtr<ConnectionLwIp>& self)
+            sendBufferForStream = infra::Head(infra::ByteRange(sendMemoryPool.back()), requestedSendSize);
+            infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionLwIp>& self)
             {
-                infra::SharedPtr<infra::StreamWriter> stream = self->streamWriter.Emplace(*self, sendBuffer);
+                infra::SharedPtr<infra::StreamWriter> stream = self->streamWriter.Emplace(*self, self->sendBufferForStream);
+                self->sendBufferForStream = infra::ByteRange();
                 self->Observer().SendStreamAvailable(std::move(stream));
             }, SharedFromThis());
 
