@@ -83,6 +83,16 @@ namespace services
         return 4;
     }
 
+    void MqttClientImpl::MqttFormatter::MessagePing(const MqttClientObserver& message)
+    {
+        Header(PacketType::packetTypePingReq, 0, 0);
+    }
+
+    std::size_t MqttClientImpl::MqttFormatter::MessageSizePing(const MqttClientObserver& message)
+    {
+        return 2;
+    }
+
     std::size_t MqttClientImpl::MqttFormatter::EncodedLength(infra::BoundedConstString value)
     {
         return 2 + value.size();
@@ -168,8 +178,10 @@ namespace services
         size += sizeByte << shift;
     }
 
-    MqttClientImpl::MqttClientImpl(MqttClientObserverFactory& factory, infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password, infra::Duration operationTimeout)
+    MqttClientImpl::MqttClientImpl(MqttClientObserverFactory& factory, infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password,
+        infra::Duration operationTimeout, infra::Duration pingInterval)
         : operationTimeout(operationTimeout)
+        , pingInterval(pingInterval)
         , state(infra::InPlaceType<StateConnecting>(), *this, factory, clientId, username, password)
     {}
 
@@ -216,6 +228,12 @@ namespace services
     void MqttClientImpl::CancellingConnection()
     {
         state->CancellingConnection();
+    }
+
+    MqttClientImpl::StateConnected::StateConnected(MqttClientImpl& clientConnection)
+        : StateBase(clientConnection)
+    {
+        StartPing();
     }
 
     infra::SharedPtr<infra::StreamWriter> MqttClientImpl::ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize)
@@ -408,7 +426,7 @@ namespace services
         clientConnection.ConnectionObserver::Subject().AckReceived();
     }
 
-    void MqttClientImpl::StateConnected::HandlePublish(size_t packetLength, infra::DataInputStream::WithErrorPolicy stream)
+    void MqttClientImpl::StateConnected::HandlePublish(std::size_t packetLength, infra::DataInputStream::WithErrorPolicy stream)
     {
         uint16_t topicSize;
         stream >> topicSize;
@@ -460,6 +478,8 @@ namespace services
                 HandleSubAck(stream, reader);
             else if (parser.GetPacketType() == PacketType::packetTypePublish)
                 HandlePublish(parser.GetPacketSize(), stream);
+            else if (parser.GetPacketType() == PacketType::packetTypePingResp)
+                HandlePingReply();
             else
             {
                 reader = nullptr;
@@ -497,6 +517,32 @@ namespace services
             executingSend = true;
             clientConnection.ConnectionObserver::Subject().RequestSendStream(sendOperations.front()->MessageSize(clientConnection.Observer()));
         }
+    }
+
+    void MqttClientImpl::StateConnected::StartPing()
+    {
+        pingTimer.Start(clientConnection.pingInterval, [this]() { SendPing(); });
+    }
+
+    void MqttClientImpl::StateConnected::SendPing()
+    {
+        QueueSendOperation<OperationPing>(*this);
+    }
+
+    void MqttClientImpl::StateConnected::HandlePingReply()
+    {
+        clientConnection.ConnectionObserver::Subject().AckReceived();
+        StartPing();
+    }
+
+    void MqttClientImpl::StateConnected::StartWaitForPingReply()
+    {
+        pingTimer.Start(clientConnection.operationTimeout, [this]() { PingReplyTimeout(); });
+    }
+
+    void MqttClientImpl::StateConnected::PingReplyTimeout()
+    {
+        clientConnection.Abort();
     }
 
     void MqttClientImpl::StateConnected::OperationPublish::SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::StreamWriter& writer, MqttClientObserver& observer)
@@ -544,6 +590,25 @@ namespace services
     std::size_t MqttClientImpl::StateConnected::OperationPubAck::MessageSize(const MqttClientObserver& message)
     {
         return MqttFormatter::MessageSizePubAck(message);
+    }
+
+    MqttClientImpl::StateConnected::OperationPing::OperationPing(StateConnected& state)
+        : state(state)
+    {}
+
+    void MqttClientImpl::StateConnected::OperationPing::SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::StreamWriter& writer, MqttClientObserver& observer)
+    {
+        infra::DataOutputStream::WithErrorPolicy stream(writer);
+        MqttFormatter formatter(stream);
+
+        formatter.MessagePing(connectedState.ClientConnection().Observer());
+
+        state.StartWaitForPingReply();
+    }
+
+    std::size_t MqttClientImpl::StateConnected::OperationPing::MessageSize(const MqttClientObserver& message)
+    {
+        return MqttFormatter::MessageSizePing(message);
     }
 
     MqttClientConnectorImpl::MqttClientConnectorImpl(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password,

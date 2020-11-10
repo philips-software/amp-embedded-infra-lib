@@ -580,5 +580,29 @@ TEST_F(MqttClientTest, received_unhandled_package_closes_connection)
     Connect();
 
     ExpectClosingConnection();
+    connection.SimulateDataReceived(std::vector<uint8_t>{ 0xf0, 0x00 });
+}
+
+TEST_F(MqttClientTest, after_35_seconds_ping_request_is_sent)
+{
+    Connect();
+
+    ForwardTime(std::chrono::seconds(35));
+    EXPECT_EQ((std::vector<uint8_t>{ 0xc0, 0x00 }), connection.sentData);
+
     connection.SimulateDataReceived(std::vector<uint8_t>{ 0xd0, 0x00 });
+
+    ForwardTime(std::chrono::seconds(35));
+    EXPECT_EQ((std::vector<uint8_t>{ 0xc0, 0x00, 0xc0, 0x00 }), connection.sentData);
+}
+
+TEST_F(MqttClientTest, without_ping_reply_connection_is_closed)
+{
+    Connect();
+
+    ForwardTime(std::chrono::seconds(35));
+    EXPECT_EQ((std::vector<uint8_t>{ 0xc0, 0x00 }), connection.sentData);
+
+    ExpectClosingConnection();
+    ForwardTime(std::chrono::seconds(30));
 }

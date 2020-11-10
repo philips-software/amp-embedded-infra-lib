@@ -16,7 +16,8 @@ namespace services
         , public MqttClient
     {
     public:
-        MqttClientImpl(MqttClientObserverFactory& factory, infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password, infra::Duration operationTimeout = std::chrono::seconds(30));
+        MqttClientImpl(MqttClientObserverFactory& factory, infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password,
+            infra::Duration operationTimeout = std::chrono::seconds(30), infra::Duration pingInterval = std::chrono::seconds(35));
 
         // Implementation of MqttClient
         virtual void Publish() override;
@@ -71,6 +72,8 @@ namespace services
             static std::size_t MessageSizeSubscribe(const MqttClientObserver& message);
             void MessagePubAck(const MqttClientObserver& message, uint16_t packetIdentifier);
             static std::size_t MessageSizePubAck(const MqttClientObserver& message);
+            void MessagePing(const MqttClientObserver& message);
+            static std::size_t MessageSizePing(const MqttClientObserver& message);
 
         private:
             static std::size_t EncodedLength(infra::BoundedConstString value);
@@ -164,7 +167,7 @@ namespace services
             : public StateBase
         {
         public:
-            using StateBase::StateBase;
+            StateConnected(MqttClientImpl& clientConnection);
 
             virtual void Detaching() override;
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
@@ -183,6 +186,11 @@ namespace services
             void HandleSubAck(infra::DataInputStream::WithErrorPolicy stream, infra::SharedPtr<infra::StreamReader>& reader);
             void HandlePublish(size_t packetLength, infra::DataInputStream::WithErrorPolicy stream);
             void ProcessSendOperations();
+            void StartPing();
+            void SendPing();
+            void HandlePingReply();
+            void StartWaitForPingReply();
+            void PingReplyTimeout();
 
         private:
             class OperationBase
@@ -218,22 +226,36 @@ namespace services
                 virtual std::size_t MessageSize(const MqttClientObserver& message) override;
             };
 
+            class OperationPing
+                : public OperationBase
+            {
+            public:
+                OperationPing(StateConnected& state);
+
+                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::StreamWriter& writer, MqttClientObserver& observer) override;
+                virtual std::size_t MessageSize(const MqttClientObserver& message) override;
+
+            private:
+                StateConnected& state;
+            };
+
         private:
             infra::TimerSingleShot operationTimeout;
             uint16_t receivedPacketIdentifier;
 
-            using OperationVariant = infra::PolymorphicVariant<OperationBase, OperationPublish, OperationSubscribe, OperationPubAck>;
-            infra::BoundedDeque<OperationVariant>::WithMaxSize<2> sendOperations;
+            using OperationVariant = infra::PolymorphicVariant<OperationBase, OperationPublish, OperationSubscribe, OperationPubAck, OperationPing>;
+            infra::BoundedDeque<OperationVariant>::WithMaxSize<3> sendOperations;
             bool executingSend = false;
             bool executingNotification = false;
             uint16_t notificationPayloadSize = 0;
             infra::SharedPtr<infra::StreamWriter> notificationWriter;
+            infra::TimerSingleShot pingTimer;
 
         private:
-            template<class operation>
-            void QueueSendOperation()
+            template<class operation, class... Args>
+            void QueueSendOperation(Args&&... args)
             {
-                sendOperations.emplace_back(infra::InPlaceType<operation>());
+                sendOperations.emplace_back(infra::InPlaceType<operation>(), std::forward<Args>(args)...);
                 ProcessSendOperations();
             }
         };
@@ -243,6 +265,7 @@ namespace services
 
     private:
         infra::Duration operationTimeout;
+        infra::Duration pingInterval;
         infra::PolymorphicVariant<StateBase, StateConnecting, StateConnected> state;
     };
 
