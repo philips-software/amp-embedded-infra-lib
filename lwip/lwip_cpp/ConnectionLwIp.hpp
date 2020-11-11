@@ -110,6 +110,7 @@ namespace services
         infra::ConstByteRange sendBuffer;
         infra::TimerSingleShot retrySendTimer;
         infra::BoundedDeque<infra::ConstByteRange>::WithMaxSize<tcpSndQueueLen> sendBuffers;
+        infra::ByteRange sendBufferForStream;
         static infra::BoundedList<std::array<uint8_t, TCP_MSS>>::WithMaxSize<tcpSndQueueLen> sendMemoryPool;
         static infra::IntrusiveList<ConnectionLwIp> sendMemoryPoolWaiting;
 
