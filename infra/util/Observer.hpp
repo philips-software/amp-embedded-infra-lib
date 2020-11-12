@@ -27,6 +27,7 @@ namespace infra
         Observer& operator=(const Observer& other) = delete;
         ~Observer();
 
+    public:
         SubjectType& Subject() const;
         bool Attached() const;
 
@@ -76,6 +77,11 @@ namespace infra
         Subject& operator=(const Subject&) = delete;
         ~Subject();
 
+        using SubjectType = typename ObserverType::SubjectType;
+        friend class Observer<ObserverType_, SubjectType>;
+        virtual void RegisterObserver(Observer<ObserverType_, SubjectType>* observer);
+        virtual void UnregisterObserver(Observer<ObserverType_, SubjectType>* observer);
+
     public:
         template<class F>
             void NotifyObservers(F callback, typename std::enable_if<std::is_same<typename std::result_of<F(ObserverType_&)>::type, void>::value>::type* = 0) const;
@@ -84,14 +90,7 @@ namespace infra
         template<class F>
             bool NotifyObservers(F callback, typename std::enable_if<!std::is_same<typename std::result_of<F(ObserverType_&)>::type, void>::value>::type* = 0) const;
         template<class F>
-            bool NotifyObservers(F callback, typename std::enable_if<!std::is_same<typename std::result_of<F(ObserverType_&)>::type, void>::value>::type* = 0);
-
-    private:
-        using SubjectType = typename ObserverType::SubjectType;
-        friend class Observer<ObserverType_, SubjectType>;
-
-        void RegisterObserver(Observer<ObserverType_, SubjectType>* observer);
-        void UnregisterObserver(Observer<ObserverType_, SubjectType>* observer);
+            bool NotifyObservers(F callback, typename std::enable_if<!std::is_same<typename std::result_of<F(ObserverType_&)>::type, void>::value>::type* = 0);   
 
     private:
         IntrusiveList<Observer<ObserverType_, SubjectType>> observers;
