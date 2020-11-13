@@ -36,11 +36,7 @@ namespace services
             pbuf_free(receivedData);
 
         if (control)
-        {
-            tcp_pcb* c = control;
-            ResetControl();
-            tcp_abort(c);
-        }
+            AbortControl();
     }
 
     void ConnectionLwIp::RequestSendStream(std::size_t sendSize)
@@ -83,9 +79,7 @@ namespace services
     {
         if (control)
         {
-            auto controlCopy = control;
-            ResetControl();
-            tcp_abort(controlCopy);
+            AbortControl();
             ResetOwnership();
         }
     }
@@ -183,6 +177,16 @@ namespace services
         control = nullptr;
     }
 
+    void ConnectionLwIp::AbortControl()
+    {
+        tcp_arg(control, nullptr);
+        tcp_recv(control, nullptr);
+        tcp_err(control, nullptr);
+        tcp_sent(control, nullptr);
+        tcp_abort(control);
+        control = nullptr;
+    }
+
     err_t ConnectionLwIp::Recv(void* arg, tcp_pcb* tpcb, pbuf* p, err_t err)
     {
         return static_cast<ConnectionLwIp*>(arg)->Recv(p, err);
@@ -237,7 +241,7 @@ namespace services
     {
         while (len != 0)
         {
-            assert(!sendBuffers.empty());
+            really_assert(!sendBuffers.empty());
             if (sendBuffers.front().size() <= len)
             {
                 len -= static_cast<uint16_t>(sendBuffers.front().size());
@@ -551,10 +555,7 @@ namespace services
     ConnectorLwIp::~ConnectorLwIp()
     {
         if (control != nullptr)
-        {
-            control->errf = nullptr;    // Avoid tcp_abort triggering callback Err
-            tcp_abort(control);
-        }
+            AbortControl();
     }
 
     err_t ConnectorLwIp::StaticConnected(void* arg, tcp_pcb* tpcb, err_t err)
@@ -576,7 +577,7 @@ namespace services
         infra::SharedPtr<ConnectionLwIp> connection = connectionAllocator.Allocate(control);
         if (connection)
         {
-            control = nullptr;
+            ResetControl();
             clientFactory.ConnectionEstablished([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
             {
                 if (connectionObserver && connection->control != nullptr)
@@ -597,8 +598,7 @@ namespace services
         else
         {
             services::GlobalTracer().Trace() << "ConnectorLwIp::Connected connection allocation failed";
-            tcp_abort(control);
-            control = nullptr;
+            AbortControl();
             clientFactory.ConnectionFailed(ClientConnectionObserverFactory::ConnectFailReason::connectionAllocationFailed);
             factory.Remove(*this);
             return ERR_ABRT;
@@ -607,9 +607,24 @@ namespace services
 
     void ConnectorLwIp::Error(err_t err)
     {
-        control = nullptr;
+        ResetControl();
         clientFactory.ConnectionFailed(ClientConnectionObserverFactory::ConnectFailReason::refused);
         factory.Remove(*this);
+    }
+
+    void ConnectorLwIp::ResetControl()
+    {
+        control->errf = nullptr;
+        control->connected = nullptr;
+        control = nullptr;
+    }
+
+    void ConnectorLwIp::AbortControl()
+    {
+        control->errf = nullptr;    // Avoid tcp_abort triggering callback Err
+        control->connected = nullptr;
+        tcp_abort(control);
+        control = nullptr;
     }
 
     ConnectionFactoryLwIp::ConnectionFactoryLwIp(AllocatorListenerLwIp& listenerAllocator, infra::BoundedList<ConnectorLwIp>& connectors, AllocatorConnectionLwIp& connectionAllocator)

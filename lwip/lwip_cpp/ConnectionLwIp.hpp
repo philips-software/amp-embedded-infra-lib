@@ -51,6 +51,7 @@ namespace services
         void SendBuffer(infra::ConstByteRange buffer);
         void TryAllocateSendStream();
         void ResetControl();
+        void AbortControl();
 
         static err_t Recv(void* arg, tcp_pcb* tpcb, pbuf* p, err_t err);
         static void Err(void* arg, err_t err);
@@ -162,6 +163,8 @@ namespace services
         static void StaticError(void* arg, err_t err);
         err_t Connected();
         void Error(err_t err);
+        void ResetControl();
+        void AbortControl();
 
     private:
         friend class ConnectionFactoryLwIp;
