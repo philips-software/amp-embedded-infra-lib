@@ -192,6 +192,7 @@ namespace services
         {
         public:
             Connector(ExclusiveStartingConnectionReleaseFactory& connectionFactory, ClientConnectionObserverFactory& clientFactory);
+            ~Connector();
 
             bool CancelConnect(ClientConnectionObserverFactory& factory);
 
@@ -210,6 +211,7 @@ namespace services
             infra::AccessedBySharedPtr access;
             infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)> createdObserver;
             infra::SharedPtr<ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnection> connection;
+            bool connecting = true;
         };
 
     private:

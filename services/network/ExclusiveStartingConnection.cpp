@@ -302,6 +302,12 @@ namespace services
         connectionFactory.mutex.QueueConnection(*this);
     }
 
+    ExclusiveStartingConnectionReleaseFactory::Connector::~Connector()
+    {
+        if (connecting)
+            connectionFactory.mutex.RemoveConnection(*this);
+    }
+
     bool ExclusiveStartingConnectionReleaseFactory::Connector::CancelConnect(ClientConnectionObserverFactory& factory)
     {
         if (&factory == &clientFactory)
@@ -309,7 +315,10 @@ namespace services
             if (connection != nullptr)
                 connectionFactory.connectionFactory.CancelConnect(*this);
             else
+            {
+                connecting = false;
                 connectionFactory.mutex.RemoveConnection(*this);
+            }
 
             return true;
         }
@@ -329,6 +338,9 @@ namespace services
 
     void ExclusiveStartingConnectionReleaseFactory::Connector::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver)
     {
+        connecting = false;
+        connectionFactory.mutex.RemoveConnection(*this);
+
         this->createdObserver = std::move(createdObserver);
         auto self = access.MakeShared(*this);
         clientFactory.ConnectionEstablished([self](const infra::SharedPtr<ConnectionObserver>& connectionObserver)
@@ -356,6 +368,7 @@ namespace services
     void ExclusiveStartingConnectionReleaseFactory::Connector::ConnectionFailed(ConnectFailReason reason)
     {
         auto& clientFactory = this->clientFactory;
+        connecting = false;
         connectionFactory.mutex.RemoveConnection(*this);
         connectionFactory.connectors.remove(*this);
         clientFactory.ConnectionFailed(reason);
