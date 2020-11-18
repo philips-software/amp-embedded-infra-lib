@@ -41,7 +41,7 @@ namespace application
         }
     }
 
-    uint32_t MaxVarIntSize(uint32_t value)
+    uint32_t MaxVarIntSize(uint64_t value)
     {
         uint32_t result = 1;
 
@@ -65,41 +65,47 @@ namespace application
         if (fieldDescriptor.label() != google::protobuf::FieldDescriptor::LABEL_REPEATED)
             switch (fieldDescriptor.type())
             {
-            case google::protobuf::FieldDescriptor::TYPE_INT32:
-                return std::make_shared<EchoFieldInt32>(fieldDescriptor);
-            case google::protobuf::FieldDescriptor::TYPE_FIXED32:
-                return std::make_shared<EchoFieldFixed32>(fieldDescriptor);
-            case google::protobuf::FieldDescriptor::TYPE_BOOL:
-                return std::make_shared<EchoFieldBool>(fieldDescriptor);
-            case google::protobuf::FieldDescriptor::TYPE_STRING:
-            {
-                if (fieldDescriptor.options().GetExtension(string_size) != 0)
-                    return std::make_shared<EchoFieldString>(fieldDescriptor);
-                else
-                    return std::make_shared<EchoFieldStdString>(fieldDescriptor);
-            }
-            case google::protobuf::FieldDescriptor::TYPE_MESSAGE:
-                return std::make_shared<EchoFieldMessage>(fieldDescriptor, root);
-            case google::protobuf::FieldDescriptor::TYPE_BYTES:
-                return std::make_shared<EchoFieldBytes>(fieldDescriptor);
-            case google::protobuf::FieldDescriptor::TYPE_UINT32:
-                return std::make_shared<EchoFieldUint32>(fieldDescriptor);
-            case google::protobuf::FieldDescriptor::TYPE_ENUM:
-                return std::make_shared<EchoFieldEnum>(fieldDescriptor);
-            default:
-                throw UnsupportedFieldType{ fieldDescriptor.name(), fieldDescriptor.type() };
+                case google::protobuf::FieldDescriptor::TYPE_INT64:
+                    return std::make_shared<EchoFieldInt64>(fieldDescriptor);
+                case google::protobuf::FieldDescriptor::TYPE_UINT64:
+                    return std::make_shared<EchoFieldUint64>(fieldDescriptor);
+                case google::protobuf::FieldDescriptor::TYPE_INT32:
+                    return std::make_shared<EchoFieldInt32>(fieldDescriptor);
+                case google::protobuf::FieldDescriptor::TYPE_FIXED64:
+                    return std::make_shared<EchoFieldFixed64>(fieldDescriptor);
+                case google::protobuf::FieldDescriptor::TYPE_FIXED32:
+                    return std::make_shared<EchoFieldFixed32>(fieldDescriptor);
+                case google::protobuf::FieldDescriptor::TYPE_BOOL:
+                    return std::make_shared<EchoFieldBool>(fieldDescriptor);
+                case google::protobuf::FieldDescriptor::TYPE_STRING:
+                {
+                    if (fieldDescriptor.options().GetExtension(string_size) != 0)
+                        return std::make_shared<EchoFieldString>(fieldDescriptor);
+                    else
+                        return std::make_shared<EchoFieldStdString>(fieldDescriptor);
+                }
+                case google::protobuf::FieldDescriptor::TYPE_MESSAGE:
+                    return std::make_shared<EchoFieldMessage>(fieldDescriptor, root);
+                case google::protobuf::FieldDescriptor::TYPE_BYTES:
+                    return std::make_shared<EchoFieldBytes>(fieldDescriptor);
+                case google::protobuf::FieldDescriptor::TYPE_UINT32:
+                    return std::make_shared<EchoFieldUint32>(fieldDescriptor);
+                case google::protobuf::FieldDescriptor::TYPE_ENUM:
+                    return std::make_shared<EchoFieldEnum>(fieldDescriptor);
+                default:
+                    throw UnsupportedFieldType{ fieldDescriptor.name(), fieldDescriptor.type() };
             }
         else
             switch (fieldDescriptor.type())
             {
-            case google::protobuf::FieldDescriptor::TYPE_STRING:
-                return std::make_shared<EchoFieldRepeatedString>(fieldDescriptor);
-            case google::protobuf::FieldDescriptor::TYPE_MESSAGE:
-                return std::make_shared<EchoFieldRepeatedMessage>(fieldDescriptor, root);
-            case google::protobuf::FieldDescriptor::TYPE_UINT32:
-                return std::make_shared<EchoFieldRepeatedUint32>(fieldDescriptor);
-            default:
-                throw UnsupportedFieldType{ fieldDescriptor.name(), fieldDescriptor.type() };
+                case google::protobuf::FieldDescriptor::TYPE_STRING:
+                    return std::make_shared<EchoFieldRepeatedString>(fieldDescriptor);
+                case google::protobuf::FieldDescriptor::TYPE_MESSAGE:
+                    return std::make_shared<EchoFieldRepeatedMessage>(fieldDescriptor, root);
+                case google::protobuf::FieldDescriptor::TYPE_UINT32:
+                    return std::make_shared<EchoFieldRepeatedUint32>(fieldDescriptor);
+                default:
+                    throw UnsupportedFieldType{ fieldDescriptor.name(), fieldDescriptor.type() };
             }
     }
 
@@ -144,9 +150,24 @@ namespace application
                 : maxMessageSize(maxMessageSize)
             {}
 
+            virtual void VisitInt64(const EchoFieldInt64& field) override
+            {
+                maxMessageSize += MaxVarIntSize(std::numeric_limits<uint64_t>::max()) + MaxVarIntSize((field.number << 3) | 2);
+            }
+
+            virtual void VisitUint64(const EchoFieldUint64& field) override
+            {
+                maxMessageSize += MaxVarIntSize(std::numeric_limits<uint64_t>::max()) + MaxVarIntSize((field.number << 3) | 2);
+            }
+
             virtual void VisitInt32(const EchoFieldInt32& field) override
             {
                 maxMessageSize += MaxVarIntSize(std::numeric_limits<uint32_t>::max()) + MaxVarIntSize((field.number << 3) | 2);
+            }
+
+            virtual void VisitFixed64(const EchoFieldFixed64& field) override
+            {
+                maxMessageSize += 8 + MaxVarIntSize((field.number << 3) | 2);
             }
 
             virtual void VisitFixed32(const EchoFieldFixed32& field) override
@@ -236,9 +257,19 @@ namespace application
         visitor.VisitInt32(*this);
     }
 
+    void EchoFieldInt64::Accept(EchoFieldVisitor& visitor) const
+    {
+        visitor.VisitInt64(*this);
+    }
+
     void EchoFieldFixed32::Accept(EchoFieldVisitor& visitor) const
     {
         visitor.VisitFixed32(*this);
+    }
+
+    void EchoFieldFixed64::Accept(EchoFieldVisitor& visitor) const
+    {
+        visitor.VisitFixed64(*this);
     }
 
     void EchoFieldBool::Accept(EchoFieldVisitor& visitor) const
@@ -294,6 +325,11 @@ namespace application
     void EchoFieldUint32::Accept(EchoFieldVisitor& visitor) const
     {
         visitor.VisitUint32(*this);
+    }
+
+    void EchoFieldUint64::Accept(EchoFieldVisitor& visitor) const
+    {
+        visitor.VisitUint64(*this);
     }
 
     EchoFieldEnum::EchoFieldEnum(const google::protobuf::FieldDescriptor& descriptor)

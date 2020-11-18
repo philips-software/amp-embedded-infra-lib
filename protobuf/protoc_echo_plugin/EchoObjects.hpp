@@ -9,7 +9,7 @@
 
 namespace application
 {
-    uint32_t MaxVarIntSize(uint32_t value);
+    uint32_t MaxVarIntSize(uint64_t value);
 
     class EchoFieldVisitor;
     class EchoRoot;
@@ -71,7 +71,25 @@ namespace application
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
 
+    class EchoFieldInt64
+        : public EchoField
+    {
+    public:
+        using EchoField::EchoField;
+
+        virtual void Accept(EchoFieldVisitor& visitor) const override;
+    };
+
     class EchoFieldFixed32
+        : public EchoField
+    {
+    public:
+        using EchoField::EchoField;
+
+        virtual void Accept(EchoFieldVisitor& visitor) const override;
+    };
+
+    class EchoFieldFixed64
         : public EchoField
     {
     public:
@@ -133,6 +151,15 @@ namespace application
     };
 
     class EchoFieldUint32
+        : public EchoField
+    {
+    public:
+        using EchoField::EchoField;
+
+        virtual void Accept(EchoFieldVisitor& visitor) const override;
+    };
+
+    class EchoFieldUint64
         : public EchoField
     {
     public:
@@ -254,7 +281,10 @@ namespace application
         EchoFieldVisitor& operator=(const EchoFieldVisitor& other) = delete;
         virtual ~EchoFieldVisitor() = default;
 
+        virtual void VisitInt64(const EchoFieldInt64& field) = 0;
+        virtual void VisitUint64(const EchoFieldUint64& field) = 0;
         virtual void VisitInt32(const EchoFieldInt32& field) = 0;
+        virtual void VisitFixed64(const EchoFieldFixed64& field) = 0;
         virtual void VisitFixed32(const EchoFieldFixed32& field) = 0;
         virtual void VisitBool(const EchoFieldBool& field) = 0;
         virtual void VisitString(const EchoFieldString& field) = 0;

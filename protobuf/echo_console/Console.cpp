@@ -425,9 +425,24 @@ namespace application
                 , console(console)
             {}
 
+            virtual void VisitInt64(const EchoFieldInt64& field) override
+            {
+                std::cout << static_cast<int32_t>(fieldData.Get<uint64_t>());
+            }
+
+            virtual void VisitUint64(const EchoFieldUint64& field) override
+            {
+                std::cout << static_cast<int32_t>(fieldData.Get<uint64_t>());
+            }
+
             virtual void VisitInt32(const EchoFieldInt32& field) override
             {
                 std::cout << static_cast<int32_t>(fieldData.Get<uint64_t>());
+            }
+
+            virtual void VisitFixed64(const EchoFieldFixed64& field) override
+            {
+                std::cout << fieldData.Get<uint64_t>();
             }
 
             virtual void VisitFixed32(const EchoFieldFixed32& field) override
@@ -556,9 +571,24 @@ namespace application
                 : console(console)
             {}
 
+            virtual void VisitInt64(const EchoFieldInt64& field) override
+            {
+                services::GlobalTracer().Continue() << "int64";
+            }
+
+            virtual void VisitUint64(const EchoFieldUint64& field) override
+            {
+                services::GlobalTracer().Continue() << "uint64";
+            }
+
             virtual void VisitInt32(const EchoFieldInt32& field) override
             {
                 services::GlobalTracer().Continue() << "int32";
+            }
+
+            virtual void VisitFixed64(const EchoFieldFixed64& field) override
+            {
+                services::GlobalTracer().Continue() << "fixed64";
             }
 
             virtual void VisitFixed32(const EchoFieldFixed32& field) override
@@ -880,6 +910,22 @@ namespace application
                 , methodInvocation(methodInvocation)
             {}
 
+            virtual void VisitInt64(const EchoFieldInt64& field) override
+            {
+                if (!value.Is<int64_t>())
+                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+
+                formatter.PutVarIntField(value.Get<int64_t>(), field.number);
+            }
+
+            virtual void VisitUint64(const EchoFieldUint64& field) override
+            {
+                if (!value.Is<int64_t>())
+                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+
+                formatter.PutVarIntField(value.Get<int64_t>(), field.number);
+            }
+
             virtual void VisitInt32(const EchoFieldInt32& field) override
             {
                 if (!value.Is<int64_t>())
@@ -894,6 +940,14 @@ namespace application
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
 
                 formatter.PutFixed32Field(static_cast<uint32_t>(value.Get<int64_t>()), field.number);
+            }
+
+            virtual void VisitFixed64(const EchoFieldFixed64& field) override
+            {
+                if (!value.Is<int64_t>())
+                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+
+                formatter.PutFixed64Field(static_cast<uint64_t>(value.Get<int64_t>()), field.number);
             }
 
             virtual void VisitBool(const EchoFieldBool& field) override
