@@ -1,6 +1,7 @@
 ccola_component(network_test gmock_test)
 
     ccola_sources(
+        TestAddress.cpp
         TestBonjourServer.cpp
         TestCertificatesMbedTls.cpp
         TestConnectionMbedTls.cpp

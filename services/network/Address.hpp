@@ -34,6 +34,10 @@ namespace services
     uint32_t ConvertToUint32(IPv4Address address);
     IPv4Address ConvertFromUint32(uint32_t address);
 
+    infra::Optional<IPAddress> ParseIpAddress(infra::BoundedConstString address);
+    infra::Optional<IPv4Address> ParseIpv4Address(infra::BoundedConstString address);
+    infra::Optional<IPv6Address> ParseFullIpv6Address(infra::BoundedConstString address);
+
     struct IPv4InterfaceAddresses
     {
         IPv4Address address;

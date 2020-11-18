@@ -1,5 +1,7 @@
 #include "infra/util/CompareMembers.hpp"
 #include "services/network/Address.hpp"
+#include "infra/stream/StringInputStream.hpp"
+#include "infra/util/Tokenizer.hpp"
 
 namespace services
 {
@@ -50,6 +52,76 @@ namespace services
             static_cast<uint8_t>(address >> 8),
             static_cast<uint8_t>(address)
         };
+    }
+
+    infra::Optional<IPAddress> ParseIpAddress(infra::BoundedConstString address)
+    {
+        auto ipv4 = ParseIpv4Address(address);
+        if (ipv4)
+            return infra::MakeOptional(IPAddress{ *ipv4 });
+
+        auto ipv6 = ParseFullIpv6Address(address);
+        if (ipv6)
+            return infra::MakeOptional(IPAddress{ *ipv6 });
+
+        return infra::none;
+    }
+
+    infra::Optional<IPv4Address> ParseIpv4Address(infra::BoundedConstString address)
+    {
+        IPv4Address ipv4Address;
+        uint8_t parsedCount = 0;
+        infra::Tokenizer tokenizer(address, '.');
+
+        for (int i = 0; i < 4; i++)
+        {
+            auto token = tokenizer.Token(i);
+
+            uint16_t decimal;
+            infra::StringInputStream stream(token, infra::softFail);
+            stream >> infra::Width(3) >> decimal;
+
+            if (stream.Failed() || stream.Available() != 0)
+                return infra::none;
+                
+            if (decimal != static_cast<uint8_t>(decimal))
+                return infra::none;
+
+            parsedCount += token.size();
+            ipv4Address[i] = static_cast<uint8_t>(decimal);
+        }
+
+        if (parsedCount + 3 != address.size())
+            return infra::none;
+
+        return infra::MakeOptional(ipv4Address);
+    }
+
+    infra::Optional<IPv6Address> ParseFullIpv6Address(infra::BoundedConstString address)
+    {
+        IPv6Address ipv6Address;
+        uint8_t parsedCount = 0;
+        infra::Tokenizer tokenizer(address, ':');
+
+        for (int i = 0; i < 8; i++)
+        {
+            auto token = tokenizer.Token(i);
+
+            uint32_t decimal;
+            infra::StringInputStream stream(token, infra::softFail);
+            stream >> infra::hex >> infra::Width(4) >> decimal;
+
+            if (stream.Failed() || stream.Available() != 0)
+                return infra::none;
+
+            parsedCount += token.size();
+            ipv6Address[i] = decimal;
+        }
+
+        if (parsedCount + 7 != address.size())
+            return infra::none;
+
+        return infra::MakeOptional(ipv6Address);
     }
 
     bool IPv4InterfaceAddresses::operator==(const IPv4InterfaceAddresses& other) const
