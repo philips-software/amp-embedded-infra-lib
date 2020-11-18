@@ -22,6 +22,7 @@ namespace infra
         ProtoParser Parser();
         void GetString(infra::BoundedString& string);
         void GetStringReference(infra::BoundedConstString& string);
+        std::string GetStdString();
         void GetBytes(infra::BoundedVector<uint8_t>& bytes);
         void GetBytesReference(infra::ConstByteRange& bytes);
 

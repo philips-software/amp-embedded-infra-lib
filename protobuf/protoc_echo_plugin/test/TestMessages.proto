@@ -22,6 +22,10 @@ message TestString {
   string value = 1 [(string_size) = 20];
 }
 
+message TestStdString {
+  string value = 1;
+}
+
 message TestRepeatedString {
   repeated string value = 1 [(string_size) = 20, (array_size) = 10];
 }

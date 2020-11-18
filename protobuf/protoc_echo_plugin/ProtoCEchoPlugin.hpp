@@ -79,7 +79,7 @@ namespace application
         void GenerateServiceProxyFunctions();
         void GenerateFieldConstants();
 
-        std::string MaxMessageSize() const;
+        uint32_t MaxMessageSize() const;
         std::string HandleBody() const;
         std::string ProxyMethodBody(const EchoMethod& method) const;
 

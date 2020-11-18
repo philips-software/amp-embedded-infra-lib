@@ -3,11 +3,14 @@
 
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "infra/util/Optional.hpp"
 #include <memory>
 #include <vector>
 
 namespace application
 {
+    uint32_t MaxVarIntSize(uint32_t value);
+
     class EchoFieldVisitor;
     class EchoRoot;
 
@@ -42,6 +45,8 @@ namespace application
     public:
         EchoMessage(const google::protobuf::Descriptor& descriptor, EchoRoot& root);
 
+        infra::Optional<uint32_t> MaxMessageSize() const;
+
         const google::protobuf::Descriptor& descriptor;
         std::string name;
         std::string qualifiedName;
@@ -49,6 +54,12 @@ namespace application
         std::vector<std::shared_ptr<EchoField>> fields;
         std::vector<std::shared_ptr<EchoMessage>> nestedMessages;
         std::vector<std::shared_ptr<EchoEnum>> nestedEnums;
+
+    private:
+        void ComputeMaxMessageSize();
+
+    private:
+        infra::Optional<uint32_t> maxMessageSize;
     };
 
     class EchoFieldInt32
@@ -89,6 +100,15 @@ namespace application
         uint32_t maxStringSize;
     };
 
+    class EchoFieldStdString
+        : public EchoField
+    {
+    public:
+        EchoFieldStdString(const google::protobuf::FieldDescriptor& descriptor);
+
+        virtual void Accept(EchoFieldVisitor& visitor) const override;
+    };
+
     class EchoFieldMessage
         : public EchoField
     {
@@ -98,6 +118,7 @@ namespace application
         virtual void Accept(EchoFieldVisitor& visitor) const override;
 
         std::shared_ptr<EchoMessage> message;
+        const google::protobuf::FieldDescriptor& descriptor;
     };
 
     class EchoFieldBytes
@@ -237,6 +258,7 @@ namespace application
         virtual void VisitFixed32(const EchoFieldFixed32& field) = 0;
         virtual void VisitBool(const EchoFieldBool& field) = 0;
         virtual void VisitString(const EchoFieldString& field) = 0;
+        virtual void VisitStdString(const EchoFieldStdString& field) = 0;
         virtual void VisitMessage(const EchoFieldMessage& field) = 0;
         virtual void VisitBytes(const EchoFieldBytes& field) = 0;
         virtual void VisitUint32(const EchoFieldUint32& field) = 0;

@@ -39,6 +39,13 @@ namespace infra
         string = infra::ByteRangeAsString(input.ContiguousRange());
     }
 
+    std::string ProtoLengthDelimited::GetStdString()
+    {
+        std::string result(input.Available(), ' ');
+        input >> infra::ConstCastByteRange(infra::ConstByteRange(reinterpret_cast<const uint8_t*>(result.data()), reinterpret_cast<const uint8_t*>(result.data() + result.size())));
+        return result;
+    }
+
     void ProtoLengthDelimited::GetBytes(infra::BoundedVector<uint8_t>& bytes)
     {
         bytes.resize(std::min(input.Available(), bytes.max_size()));

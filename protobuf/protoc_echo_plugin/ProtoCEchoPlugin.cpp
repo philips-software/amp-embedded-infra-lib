@@ -10,19 +10,6 @@ namespace application
 {
     namespace
     {
-        uint32_t MaxVarIntSize(uint32_t value)
-        {
-            uint32_t result = 1;
-
-            while (value > 127)
-            {
-                value >>= 7;
-                ++result;
-            }
-
-            return result;
-        }
-
         class TypeNameVisitor
             : public EchoFieldVisitor
         {
@@ -49,6 +36,11 @@ namespace application
             virtual void VisitString(const EchoFieldString& field) override
             {
                 result = "infra::BoundedConstString";
+            }
+
+            virtual void VisitStdString(const EchoFieldStdString& field) override
+            {
+                result = "std::string";
             }
 
             virtual void VisitMessage(const EchoFieldMessage& field) override
@@ -197,6 +189,12 @@ namespace application
             virtual void VisitString(const EchoFieldString& field) override
             {
                 constructor.Parameter("infra::BoundedConstString " + field.name);
+                constructor.Initializer(field.name + "(" + field.name + ")");
+            }
+
+            virtual void VisitStdString(const EchoFieldStdString& field) override
+            {
+                constructor.Parameter("std::string " + field.name);
                 constructor.Initializer(field.name + "(" + field.name + ")");
             }
 
@@ -356,6 +354,11 @@ namespace application
                 entities.Add(std::make_shared<DataMember>(field.name, "infra::BoundedString::WithStorage<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">"));
             }
 
+            virtual void VisitStdString(const EchoFieldStdString& field) override
+            {
+                entities.Add(std::make_shared<DataMember>(field.name, "std::string"));
+            }
+
             virtual void VisitEnum(const EchoFieldEnum& field) override
             {
                 entities.Add(std::make_shared<DataMember>(field.name, field.typeName, "{}"));
@@ -425,84 +428,12 @@ namespace application
 
     void MessageGenerator::GenerateMaxMessageSize()
     {
-        class GenerateMaxMessageSizeVisitor
-            : public EchoFieldVisitor
+        if (message->MaxMessageSize() != infra::none)
         {
-        public:
-            GenerateMaxMessageSizeVisitor(std::string& maxMessageSize)
-                : maxMessageSize(maxMessageSize)
-            {}
-
-            virtual void VisitInt32(const EchoFieldInt32& field) override
-            {
-                maxMessageSize += " + " + google::protobuf::SimpleItoa(MaxVarIntSize(std::numeric_limits<uint32_t>::max()) + MaxVarIntSize((field.number << 3) | 2));
-            }
-
-            virtual void VisitFixed32(const EchoFieldFixed32& field) override
-            {
-                maxMessageSize += " + " + google::protobuf::SimpleItoa(4 + MaxVarIntSize((field.number << 3) | 2));
-            }
-
-            virtual void VisitBool(const EchoFieldBool& field) override
-            {
-                maxMessageSize += " + " + google::protobuf::SimpleItoa(MaxVarIntSize(1) + MaxVarIntSize((field.number << 3) | 2));
-            }
-
-            virtual void VisitString(const EchoFieldString& field) override
-            {
-                maxMessageSize += " + " + google::protobuf::SimpleItoa(field.maxStringSize + MaxVarIntSize(field.maxStringSize) + MaxVarIntSize((field.number << 3) | 2));
-            }
-
-            virtual void VisitMessage(const EchoFieldMessage& field) override
-            {
-                maxMessageSize += " + " + field.message->qualifiedName + "::maxMessageSize + " + google::protobuf::SimpleItoa(MaxVarIntSize((field.number << 3) | 2));
-            }
-
-            virtual void VisitBytes(const EchoFieldBytes& field) override
-            {
-                maxMessageSize += " + " + google::protobuf::SimpleItoa(field.maxBytesSize + MaxVarIntSize(field.maxBytesSize) + MaxVarIntSize((field.number << 3) | 2));
-            }
-
-            virtual void VisitUint32(const EchoFieldUint32& field) override
-            {
-                maxMessageSize += " + " + google::protobuf::SimpleItoa(MaxVarIntSize(std::numeric_limits<uint32_t>::max()) + MaxVarIntSize((field.number << 3) | 2));
-            }
-
-            virtual void VisitEnum(const EchoFieldEnum& field) override
-            {
-                maxMessageSize += " + " + google::protobuf::SimpleItoa(MaxVarIntSize(std::numeric_limits<uint32_t>::max()) + MaxVarIntSize((field.number << 3) | 2));
-            }
-
-            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
-            {
-                maxMessageSize += " + " + google::protobuf::SimpleItoa(field.maxArraySize * (field.maxStringSize + MaxVarIntSize(field.maxStringSize) + MaxVarIntSize((field.number << 3) | 2)));
-            }
-
-            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
-            {
-                maxMessageSize += " + " + google::protobuf::SimpleItoa(field.maxArraySize) + " * " + field.message->qualifiedName + "::maxMessageSize + " +
-                    google::protobuf::SimpleItoa(field.maxArraySize * MaxVarIntSize((field.number << 3) | 2));
-            }
-
-            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
-            {
-                maxMessageSize += " + " + google::protobuf::SimpleItoa(field.maxArraySize * (MaxVarIntSize(std::numeric_limits<uint32_t>::max()) + MaxVarIntSize((field.number << 3) | 2)));
-            }
-
-        private:
-            std::string& maxMessageSize;
-        };
-
-        auto fields = std::make_shared<Access>("public");
-
-        std::string maxMessageSize = "0";
-        GenerateMaxMessageSizeVisitor visitor(maxMessageSize);
-        for (auto& field : message->fields)
-            field->Accept(visitor);
-
-        fields->Add(std::make_shared<DataMember>("maxMessageSize", "static const uint32_t", maxMessageSize));
-        
-        classFormatter->Add(fields);
+            auto fields = std::make_shared<Access>("public");
+            fields->Add(std::make_shared<DataMember>("maxMessageSize", "static const uint32_t", google::protobuf::SimpleItoa(*message->MaxMessageSize())));
+            classFormatter->Add(fields);
+        }
     }
 
     std::string MessageGenerator::SerializerBody()
@@ -537,6 +468,13 @@ namespace application
             }
 
             virtual void VisitString(const EchoFieldString& field) override
+            {
+                printer.Print("formatter.PutStringField($name$, $constant$);\n"
+                    , "name", field.name
+                    , "constant", field.constantName);
+            }
+
+            virtual void VisitStdString(const EchoFieldStdString& field) override
             {
                 printer.Print("formatter.PutStringField($name$, $constant$);\n"
                     , "name", field.name
@@ -675,6 +613,16 @@ namespace application
                 , "constant", field.constantName);
             }
 
+            virtual void VisitStdString(const EchoFieldStdString& field) override
+            {
+                printer.Print(R"(case $constant$:
+    $name$ = field.first.Get<infra::ProtoLengthDelimited>().GetStdString();
+    break;
+)"
+, "name", field.name
+, "constant", field.constantName);
+            }
+            
             virtual void VisitEnum(const EchoFieldEnum& field) override
             {
                 printer.Print(R"(case $constant$:
@@ -871,6 +819,12 @@ namespace application
                 constructor.Initializer(field.name + "(" + field.name + ")");
             }
 
+            virtual void VisitStdString(const EchoFieldStdString& field) override
+            {
+                constructor.Parameter("const std::string& " + field.name);
+                constructor.Initializer(field.name + "(" + field.name + ")");
+            }
+
             virtual void VisitEnum(const EchoFieldEnum& field) override
             {
                 constructor.Parameter(field.typeName + " " + field.name);
@@ -1014,6 +968,11 @@ namespace application
                 entities.Add(std::make_shared<DataMember>(field.name, "infra::BoundedConstString"));
             }
 
+            virtual void VisitStdString(const EchoFieldStdString& field) override
+            {
+                entities.Add(std::make_shared<DataMember>(field.name, "std::string"));
+            }
+
             virtual void VisitMessage(const EchoFieldMessage& field) override
             {
                 entities.Add(std::make_shared<DataMember>(field.name, field.message->qualifiedReferenceName));
@@ -1120,6 +1079,16 @@ namespace application
             {
                 printer.Print(R"(case $constant$:
     field.first.Get<infra::ProtoLengthDelimited>().GetStringReference($name$);
+    break;
+)"
+, "name", field.name
+, "constant", field.constantName);
+            }
+
+            virtual void VisitStdString(const EchoFieldStdString& field) override
+            {
+                printer.Print(R"(case $constant$:
+    $name$ = field.first.Get<infra::ProtoLengthDelimited>().GetStdString();
     break;
 )"
 , "name", field.name
@@ -1355,22 +1324,24 @@ namespace application
         serviceProxyFormatter->Add(fields);
 
         auto publicFields = std::make_shared<Access>("public");
-        publicFields->Add(std::make_shared<StaticDataMember>("maxMessageSize", "const uint32_t", MaxMessageSize()));
+        publicFields->Add(std::make_shared<StaticDataMember>("maxMessageSize", "const uint32_t", google::protobuf::SimpleItoa(MaxMessageSize())));
 
         serviceFormatter->Add(publicFields);
         serviceProxyFormatter->Add(publicFields);
     }
 
-    std::string ServiceGenerator::MaxMessageSize() const
+    uint32_t ServiceGenerator::MaxMessageSize() const
     {
-        std::string result = "0";
-        
+        uint32_t result = 0;
+
         for (auto& method : service->methods)
         {
-            if (method.parameter)
-                result = "std::max<uint32_t>(" + google::protobuf::SimpleItoa(MaxVarIntSize(service->serviceId) + MaxVarIntSize((method.methodId << 3) | 2)) + " + 10 + " + method.parameter->qualifiedName + "::maxMessageSize, " + result + ")";
+            if (method.parameter && !method.parameter->MaxMessageSize())
+                result = std::numeric_limits<uint32_t>::max();
+            else if (method.parameter)
+                result = std::max<uint32_t>(MaxVarIntSize(service->serviceId) + MaxVarIntSize((method.methodId << 3) | 2) + 10 + *method.parameter->MaxMessageSize(), result);
             else
-                result = "std::max<uint32_t>(" + google::protobuf::SimpleItoa(MaxVarIntSize(service->serviceId) + MaxVarIntSize((method.methodId << 3) | 2)) + " + 10, " + result + ")";
+                result = std::max<uint32_t>(MaxVarIntSize(service->serviceId) + MaxVarIntSize((method.methodId << 3) | 2) + 10, result);
         }
 
         return result;

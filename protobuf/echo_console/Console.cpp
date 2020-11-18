@@ -447,6 +447,11 @@ namespace application
                 std::cout << std::string(string.begin(), string.end());
             }
 
+            virtual void VisitStdString(const EchoFieldStdString& field) override
+            {
+                std::cout << fieldData.Get<infra::ProtoLengthDelimited>().GetStdString();
+            }
+
             virtual void VisitMessage(const EchoFieldMessage& field) override
             {
                 std::cout << "{ ";
@@ -569,6 +574,11 @@ namespace application
             virtual void VisitString(const EchoFieldString& field) override
             {
                 services::GlobalTracer().Continue() << "string[" << field.maxStringSize << "]";
+            }
+
+            virtual void VisitStdString(const EchoFieldStdString& field) override
+            {
+                services::GlobalTracer().Continue() << "string";
             }
 
             virtual void VisitMessage(const EchoFieldMessage& field) override
@@ -895,6 +905,14 @@ namespace application
             }
 
             virtual void VisitString(const EchoFieldString& field) override
+            {
+                if (!value.Is<std::string>())
+                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+
+                formatter.PutStringField(infra::BoundedConstString(value.Get<std::string>().data(), value.Get<std::string>().size()), field.number);
+            }
+
+            virtual void VisitStdString(const EchoFieldStdString& field) override
             {
                 if (!value.Is<std::string>())
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
