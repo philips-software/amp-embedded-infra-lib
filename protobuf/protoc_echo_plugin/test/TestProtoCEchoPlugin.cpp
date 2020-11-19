@@ -29,6 +29,28 @@ TEST(ProtoCEchoPluginTest, deserialize_int32)
     EXPECT_EQ(-1, message.value);
 }
 
+TEST(ProtoCEchoPluginTest, serialize_int64)
+{
+    test_messages::TestInt64 message;
+    message.value = -1;
+
+    infra::ByteOutputStream::WithStorage<100> stream;
+    infra::ProtoFormatter formatter(stream);
+    message.Serialize(formatter);
+
+    EXPECT_EQ((std::array<uint8_t, 11>{ 8, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 1 }), stream.Writer().Processed());
+}
+
+TEST(ProtoCEchoPluginTest, deserialize_int64)
+{
+    std::array<uint8_t, 11> data{ 8, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 1 };
+    infra::ByteInputStream stream(data);
+    infra::ProtoParser parser(stream);
+
+    test_messages::TestInt64 message(parser);
+    EXPECT_EQ(-1, message.value);
+}
+
 TEST(ProtoCEchoPluginTest, serialize_fixed32)
 {
     test_messages::TestFixed32 message;
@@ -49,6 +71,72 @@ TEST(ProtoCEchoPluginTest, deserialize_fixed32)
 
     test_messages::TestFixed32 message(parser);
     EXPECT_EQ(1020304, message.value);
+}
+
+TEST(ProtoCEchoPluginTest, serialize_fixed64)
+{
+    test_messages::TestFixed64 message;
+    message.value = 102030405060708;
+
+    infra::ByteOutputStream::WithStorage<100> stream;
+    infra::ProtoFormatter formatter(stream);
+    message.Serialize(formatter);
+
+    EXPECT_EQ((std::array<uint8_t, 9>{ 9, 0x64, 0xc8, 0x0c, 0xce, 0xcb, 0x5c, 0x00, 0x00 }), stream.Writer().Processed());
+}
+
+TEST(ProtoCEchoPluginTest, deserialize_fixed64)
+{
+    std::array<uint8_t, 9> data{ 9, 0x64, 0xc8, 0x0c, 0xce, 0xcb, 0x5c, 0x00, 0x00 };
+    infra::ByteInputStream stream(data);
+    infra::ProtoParser parser(stream);
+
+    test_messages::TestFixed64 message(parser);
+    EXPECT_EQ(102030405060708, message.value);
+}
+
+TEST(ProtoCEchoPluginTest, serialize_sfixed32)
+{
+    test_messages::TestSFixed32 message;
+    message.value = -1;
+
+    infra::ByteOutputStream::WithStorage<100> stream;
+    infra::ProtoFormatter formatter(stream);
+    message.Serialize(formatter);
+
+    EXPECT_EQ((std::array<uint8_t, 5>{ 13, 0xff, 0xff, 0xff, 0xff }), stream.Writer().Processed());
+}
+
+TEST(ProtoCEchoPluginTest, deserialize_sfixed32)
+{
+    std::array<uint8_t, 5> data{ 13, 0xff, 0xff, 0xff, 0xff };
+    infra::ByteInputStream stream(data);
+    infra::ProtoParser parser(stream);
+
+    test_messages::TestSFixed32 message(parser);
+    EXPECT_EQ(-1, message.value);
+}
+
+TEST(ProtoCEchoPluginTest, serialize_sfixed64)
+{
+    test_messages::TestSFixed64 message;
+    message.value = -1;
+
+    infra::ByteOutputStream::WithStorage<100> stream;
+    infra::ProtoFormatter formatter(stream);
+    message.Serialize(formatter);
+
+    EXPECT_EQ((std::array<uint8_t, 9>{ 9, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }), stream.Writer().Processed());
+}
+
+TEST(ProtoCEchoPluginTest, deserialize_sfixed64)
+{
+    std::array<uint8_t, 9> data{ 9, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
+    infra::ByteInputStream stream(data);
+    infra::ProtoParser parser(stream);
+
+    test_messages::TestSFixed64 message(parser);
+    EXPECT_EQ(-1, message.value);
 }
 
 TEST(ProtoCEchoPluginTest, serialize_bool)
@@ -92,6 +180,28 @@ TEST(ProtoCEchoPluginTest, deserialize_string)
     infra::ProtoParser parser(stream);
 
     test_messages::TestString message(parser);
+    EXPECT_EQ("abcd", message.value);
+}
+
+TEST(ProtoCEchoPluginTest, serialize_std_string)
+{
+    test_messages::TestStdString message;
+    message.value = "abcd";
+
+    infra::ByteOutputStream::WithStorage<100> stream;
+    infra::ProtoFormatter formatter(stream);
+    message.Serialize(formatter);
+
+    EXPECT_EQ((std::array<uint8_t, 6>{ 10, 4, 'a', 'b', 'c', 'd' }), stream.Writer().Processed());
+}
+
+TEST(ProtoCEchoPluginTest, deserialize_std_string)
+{
+    std::array<uint8_t, 6> data{ 10, 4, 'a', 'b', 'c', 'd' };
+    infra::ByteInputStream stream(data);
+    infra::ProtoParser parser(stream);
+
+    test_messages::TestStdString message(parser);
     EXPECT_EQ("abcd", message.value);
 }
 
@@ -166,6 +276,28 @@ TEST(ProtoCEchoPluginTest, deserialize_uint32)
     infra::ProtoParser parser(stream);
 
     test_messages::TestUint32 message(parser);
+    EXPECT_EQ(5, message.value);
+}
+
+TEST(ProtoCEchoPluginTest, serialize_uint64)
+{
+    test_messages::TestUInt64 message;
+    message.value = 5;
+
+    infra::ByteOutputStream::WithStorage<100> stream;
+    infra::ProtoFormatter formatter(stream);
+    message.Serialize(formatter);
+
+    EXPECT_EQ((std::array<uint8_t, 2>{ 1 << 3, 5 }), stream.Writer().Processed());
+}
+
+TEST(ProtoCEchoPluginTest, deserialize_uint64)
+{
+    std::array<uint8_t, 2> data{ 1 << 3, 5 };
+    infra::ByteInputStream stream(data);
+    infra::ProtoParser parser(stream);
+
+    test_messages::TestUInt64 message(parser);
     EXPECT_EQ(5, message.value);
 }
 

@@ -496,6 +496,16 @@ namespace application
                 std::cout << fieldData.Get<uint64_t>();
             }
 
+            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {
+                std::cout << static_cast<int64_t>(fieldData.Get<uint64_t>());
+            }
+
+            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {
+                std::cout << static_cast<int32_t>(fieldData.Get<uint32_t>());
+            }
+
             virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
             {
                 infra::BoundedString string;
@@ -631,6 +641,16 @@ namespace application
             virtual void VisitEnum(const EchoFieldEnum& field) override
             {
                 services::GlobalTracer().Continue() << field.typeName;
+            }
+
+            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {
+                services::GlobalTracer().Continue() << "sfixed64";
+            }
+
+            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {
+                services::GlobalTracer().Continue() << "sfixed32";
             }
 
             virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
@@ -980,6 +1000,22 @@ namespace application
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
 
                 formatter.PutVarIntField(value.Get<int64_t>(), field.number);
+            }
+
+            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {
+                if (!value.Is<int64_t>())
+                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+
+                formatter.PutFixed32Field(static_cast<uint32_t>(value.Get<int64_t>()), field.number);
+            }
+
+            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {
+                if (!value.Is<int64_t>())
+                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+
+                formatter.PutFixed64Field(static_cast<uint64_t>(value.Get<int64_t>()), field.number);
             }
 
             virtual void VisitMessage(const EchoFieldMessage& field) override

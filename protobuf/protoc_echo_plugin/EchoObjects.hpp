@@ -98,6 +98,24 @@ namespace application
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
 
+    class EchoFieldSFixed32
+        : public EchoField
+    {
+    public:
+        using EchoField::EchoField;
+
+        virtual void Accept(EchoFieldVisitor& visitor) const override;
+    };
+
+    class EchoFieldSFixed64
+        : public EchoField
+    {
+    public:
+        using EchoField::EchoField;
+
+        virtual void Accept(EchoFieldVisitor& visitor) const override;
+    };
+
     class EchoFieldBool
         : public EchoField
     {
@@ -293,6 +311,8 @@ namespace application
         virtual void VisitBytes(const EchoFieldBytes& field) = 0;
         virtual void VisitUint32(const EchoFieldUint32& field) = 0;
         virtual void VisitEnum(const EchoFieldEnum& field) = 0;
+        virtual void VisitSFixed64(const EchoFieldSFixed64& field) = 0;
+        virtual void VisitSFixed32(const EchoFieldSFixed32& field) = 0;
         virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) = 0;
         virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) = 0;
         virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) = 0;

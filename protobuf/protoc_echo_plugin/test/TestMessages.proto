@@ -10,8 +10,32 @@ message TestInt32 {
   int32 value = 1;
 }
 
+message TestInt64 {
+  int64 value = 1;
+}
+
+message TestUInt32 {
+  uint32 value = 1;
+}
+
+message TestUInt64 {
+  uint64 value = 1;
+}
+
 message TestFixed32 {
   fixed32 value = 1;
+}
+
+message TestFixed64 {
+  sfixed64 value = 1;
+}
+
+message TestSFixed64 {
+  fixed64 value = 1;
+}
+
+message TestSFixed32 {
+  sfixed32 value = 1;
 }
 
 message TestBool {

@@ -78,6 +78,16 @@ namespace application
                 result = field.qualifiedTypeName;
             }
 
+            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {
+                result = "int64_t";
+            }
+
+            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {
+                result = "int32_t";
+            }
+
             virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
             {
                 result = "const infra::BoundedVector<infra::BoundedString::WithStorage<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">>&";
@@ -255,6 +265,18 @@ namespace application
                 constructor.Initializer(field.name + "(" + field.name + ")");
             }
 
+            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {
+                constructor.Parameter("int64_t " + field.name);
+                constructor.Initializer(field.name + "(" + field.name + ")");
+            }
+
+            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {
+                constructor.Parameter("int32_t " + field.name);
+                constructor.Initializer(field.name + "(" + field.name + ")");
+            }
+
             virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
             {
                 constructor.Parameter("const infra::BoundedVector<infra::BoundedString::WithStorage<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">>& " + field.name);
@@ -412,6 +434,16 @@ namespace application
                 entities.Add(std::make_shared<DataMember>(field.name, field.typeName, "{}"));
             }
 
+            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {
+                entities.Add(std::make_shared<DataMember>(field.name, "int64_t", "0"));
+            }
+
+            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {
+                entities.Add(std::make_shared<DataMember>(field.name, "int32_t", "0"));
+            }
+
             virtual void VisitMessage(const EchoFieldMessage& field) override
             {
                 entities.Add(std::make_shared<DataMember>(field.name, field.message->qualifiedName));
@@ -553,6 +585,20 @@ namespace application
             virtual void VisitEnum(const EchoFieldEnum& field) override
             {
                 printer.Print("formatter.PutVarIntField(static_cast<uint64_t>($name$), $constant$);\n"
+                    , "name", field.name
+                    , "constant", field.constantName);
+            }
+
+            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {
+                printer.Print("formatter.PutFixed64Field(static_cast<uint64_t>($name$), $constant$);\n"
+                    , "name", field.name
+                    , "constant", field.constantName);
+            }
+
+            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {
+                printer.Print("formatter.PutFixed32Field(static_cast<uint32_t>($name$), $constant$);\n"
                     , "name", field.name
                     , "constant", field.constantName);
             }
@@ -731,6 +777,26 @@ namespace application
                 , "name", field.name
                 , "type", field.typeName
                 , "constant", field.constantName);
+            }
+
+            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {
+                printer.Print(R"(case $constant$:
+    $name$ = static_cast<int64_t>(field.first.Get<uint64_t>());
+    break;
+)"
+, "name", field.name
+, "constant", field.constantName);
+            }
+
+            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {
+                printer.Print(R"(case $constant$:
+    $name$ = static_cast<int32_t>(field.first.Get<uint32_t>());
+    break;
+)"
+, "name", field.name
+, "constant", field.constantName);
             }
 
             virtual void VisitMessage(const EchoFieldMessage& field) override
@@ -948,6 +1014,18 @@ namespace application
                 constructor.Initializer(field.name + "(" + field.name + ")");
             }
 
+            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {
+                constructor.Parameter("int64_t " + field.name);
+                constructor.Initializer(field.name + "(" + field.name + ")");
+            }
+
+            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {
+                constructor.Parameter("int32_t " + field.name);
+                constructor.Initializer(field.name + "(" + field.name + ")");
+            }
+
             virtual void VisitMessage(const EchoFieldMessage& field) override
             {
                 constructor.Parameter("const " + field.message->qualifiedReferenceName + "& " + field.name);
@@ -1125,6 +1203,16 @@ namespace application
                 entities.Add(std::make_shared<DataMember>(field.name, field.typeName, "{}"));
             }
 
+            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {
+                entities.Add(std::make_shared<DataMember>(field.name, "int64_t", "0"));
+            }
+
+            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {
+                entities.Add(std::make_shared<DataMember>(field.name, "int32_t", "0"));
+            }
+
             virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
             {
                 entities.Add(std::make_shared<DataMember>(field.name
@@ -1299,6 +1387,26 @@ namespace application
                 , "name", field.name
                 , "type", field.typeName
                 , "constant", field.constantName);
+            }
+
+            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {
+                printer.Print(R"(case $constant$:
+    $name$ = static_cast<int64_t>(field.first.Get<uint64_t>());
+    break;
+)"
+, "name", field.name
+, "constant", field.constantName);
+            }
+
+            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {
+                printer.Print(R"(case $constant$:
+    $name$ = static_cast<int32_t>(field.first.Get<uint32_t>());
+    break;
+)"
+, "name", field.name
+, "constant", field.constantName);
             }
 
             virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override

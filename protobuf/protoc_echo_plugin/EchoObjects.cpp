@@ -92,6 +92,10 @@ namespace application
                     return std::make_shared<EchoFieldUint32>(fieldDescriptor);
                 case google::protobuf::FieldDescriptor::TYPE_ENUM:
                     return std::make_shared<EchoFieldEnum>(fieldDescriptor);
+                case google::protobuf::FieldDescriptor::TYPE_SFIXED64:
+                    return std::make_shared<EchoFieldSFixed64>(fieldDescriptor);
+                case google::protobuf::FieldDescriptor::TYPE_SFIXED32:
+                    return std::make_shared<EchoFieldSFixed32>(fieldDescriptor);
                 default:
                     throw UnsupportedFieldType{ fieldDescriptor.name(), fieldDescriptor.type() };
             }
@@ -213,6 +217,16 @@ namespace application
             virtual void VisitEnum(const EchoFieldEnum& field) override
             {
                 maxMessageSize += MaxVarIntSize(std::numeric_limits<uint32_t>::max()) + MaxVarIntSize((field.number << 3) | 2);
+            }
+
+            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {
+                maxMessageSize += 8 + MaxVarIntSize((field.number << 3) | 2);
+            }
+
+            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {
+                maxMessageSize += 4 + MaxVarIntSize((field.number << 3) | 2);
             }
 
             virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
@@ -341,6 +355,16 @@ namespace application
     void EchoFieldEnum::Accept(EchoFieldVisitor& visitor) const
     {
         visitor.VisitEnum(*this);
+    }
+
+    void EchoFieldSFixed32::Accept(EchoFieldVisitor& visitor) const
+    {
+        visitor.VisitSFixed32(*this);
+    }
+
+    void EchoFieldSFixed64::Accept(EchoFieldVisitor& visitor) const
+    {
+        visitor.VisitSFixed64(*this);
     }
 
     EchoFieldRepeated::EchoFieldRepeated(const google::protobuf::FieldDescriptor& descriptor)
