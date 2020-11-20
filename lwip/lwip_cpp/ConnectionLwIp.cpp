@@ -29,6 +29,9 @@ namespace services
         if (!sendBufferForStream.empty())
             RemoveFromPool(sendBufferForStream);
 
+        if (!sendBuffer.empty())
+            RemoveFromPool(sendBuffer);
+
         if (sendMemoryPoolWaiting.has_element(*this))
             sendMemoryPoolWaiting.erase(*this);
 
@@ -264,11 +267,10 @@ namespace services
 
     void ConnectionLwIp::RemoveFromPool(infra::ConstByteRange range)
     {
-        auto start = range.begin();
         auto size = sendMemoryPool.size();
-        for (auto& range : sendMemoryPool)
-            if (range.data() == start)
-                sendMemoryPool.remove(range);
+        for (auto& r : sendMemoryPool)
+            if (infra::MakeRange(r).contains(range.begin()))
+                sendMemoryPool.remove(r);
         really_assert(size == sendMemoryPool.size() + 1);
 
         if (!sendMemoryPoolWaiting.empty())
