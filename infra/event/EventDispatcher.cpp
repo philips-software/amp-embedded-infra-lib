@@ -50,10 +50,13 @@ namespace infra
 
     void EventDispatcherWorkerImpl::ExecuteFirstAction()
     {
-        scheduledActions[scheduledActionsPopIndex].first();
-        scheduledActions[scheduledActionsPopIndex].first = nullptr;
-        scheduledActions[scheduledActionsPopIndex].second = false;
-        scheduledActionsPopIndex = (scheduledActionsPopIndex + 1) % scheduledActions.size();
+        if (scheduledActions[scheduledActionsPopIndex].second)
+        {
+            scheduledActions[scheduledActionsPopIndex].first();
+            scheduledActions[scheduledActionsPopIndex].first = nullptr;
+            scheduledActions[scheduledActionsPopIndex].second = false;
+            scheduledActionsPopIndex = (scheduledActionsPopIndex + 1) % scheduledActions.size();
+        }
     }
 
     bool EventDispatcherWorkerImpl::IsIdle() const

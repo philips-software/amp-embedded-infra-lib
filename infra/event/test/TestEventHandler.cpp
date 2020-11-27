@@ -35,6 +35,9 @@ TEST_F(EventDispatcherTest, TestExecuteOneEvent)
 {
     infra::MockCallback<void()> callback;
 
+    EXPECT_CALL(callback, callback()).Times(0);
+    ExecuteFirstAction();
+
     infra::EventDispatcher::Instance().Schedule([&callback, this]() { callback.callback(); });
     infra::EventDispatcher::Instance().Schedule([&callback, this]() { callback.callback(); });
 

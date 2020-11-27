@@ -66,10 +66,13 @@ namespace infra
 
     void EventDispatcherWithWeakPtrWorker::ExecuteFirstAction()
     {
-        scheduledActions[scheduledActionsPopIndex].first->Execute();
-        scheduledActions[scheduledActionsPopIndex].first.Destruct();
-        scheduledActions[scheduledActionsPopIndex].second = false;
-        scheduledActionsPopIndex = (scheduledActionsPopIndex + 1) % scheduledActions.size();
+        if (scheduledActions[scheduledActionsPopIndex].second)
+        {
+            scheduledActions[scheduledActionsPopIndex].first->Execute();
+            scheduledActions[scheduledActionsPopIndex].first.Destruct();
+            scheduledActions[scheduledActionsPopIndex].second = false;
+            scheduledActionsPopIndex = (scheduledActionsPopIndex + 1) % scheduledActions.size();
+        }
     }
 
     bool EventDispatcherWithWeakPtrWorker::TryExecuteAction()
