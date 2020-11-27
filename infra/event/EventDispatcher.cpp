@@ -48,6 +48,14 @@ namespace infra
         {}
     }
 
+    void EventDispatcherWorkerImpl::ExecuteFirstAction()
+    {
+        scheduledActions[scheduledActionsPopIndex].first();
+        scheduledActions[scheduledActionsPopIndex].first = nullptr;
+        scheduledActions[scheduledActionsPopIndex].second = false;
+        scheduledActionsPopIndex = (scheduledActionsPopIndex + 1) % scheduledActions.size();
+    }
+
     bool EventDispatcherWorkerImpl::IsIdle() const
     {
         return !scheduledActions[scheduledActionsPopIndex].second;
@@ -64,19 +72,11 @@ namespace infra
     void EventDispatcherWorkerImpl::Idle()
     {}
 
-    void EventDispatcherWorkerImpl::ExecuteFirstAction()
-    {
-        scheduledActions[scheduledActionsPopIndex].first();
-    }
-
     bool EventDispatcherWorkerImpl::TryExecuteAction()
     {
         if (scheduledActions[scheduledActionsPopIndex].second)
         {
             ExecuteFirstAction();
-            scheduledActions[scheduledActionsPopIndex].first = nullptr;
-            scheduledActions[scheduledActionsPopIndex].second = false;
-            scheduledActionsPopIndex = (scheduledActionsPopIndex + 1) % scheduledActions.size();
             return true;
         }
         else

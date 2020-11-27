@@ -31,6 +31,20 @@ TEST_F(EventDispatcherTest, TestScheduleTwice)
     ExecuteAllActions();
 }
 
+TEST_F(EventDispatcherTest, TestExecuteOneEvent)
+{
+    infra::MockCallback<void()> callback;
+
+    infra::EventDispatcher::Instance().Schedule([&callback, this]() { callback.callback(); });
+    infra::EventDispatcher::Instance().Schedule([&callback, this]() { callback.callback(); });
+
+    EXPECT_CALL(callback, callback()).Times(1);
+    ExecuteFirstAction();
+
+    EXPECT_CALL(callback, callback()).Times(1);
+    ExecuteFirstAction();
+}
+
 bool helper1turn = true;
 
 void helper1()

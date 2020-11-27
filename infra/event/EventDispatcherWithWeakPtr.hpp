@@ -62,6 +62,7 @@ namespace infra
         template<class T>
             void Schedule(const typename std::decay<infra::Function<void(const infra::SharedPtr<T>& object)>>::type& action, const infra::WeakPtr<T>& object);
 
+        virtual void ExecuteFirstAction() override;
         virtual std::size_t MinCapacity() const override;
         virtual bool IsIdle() const override;
 
@@ -71,8 +72,6 @@ namespace infra
     protected:
         virtual void RequestExecution();
         virtual void Idle();
-
-        virtual void ExecuteFirstAction() override;
 
     private:
         bool TryExecuteAction();

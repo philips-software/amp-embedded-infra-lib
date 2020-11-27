@@ -33,6 +33,7 @@ namespace infra
         explicit EventDispatcherWorkerImpl(MemoryRange<std::pair<infra::Function<void()>, std::atomic<bool>>> scheduledActionsStorage);
 
         virtual void Schedule(const infra::Function<void()>& action) override;
+        virtual void ExecuteFirstAction() override;
         virtual std::size_t MinCapacity() const override;
         virtual bool IsIdle() const override;
 
@@ -42,8 +43,6 @@ namespace infra
     protected:
         virtual void RequestExecution();
         virtual void Idle();
-
-        virtual void ExecuteFirstAction() override;
 
     private:
         bool TryExecuteAction();

@@ -29,6 +29,20 @@ TEST_F(EventDispatcherWithWeakPtrTest, TestScheduleTwice)
     ExecuteAllActions();
 }
 
+TEST_F(EventDispatcherWithWeakPtrTest, TestExecuteOneEvent)
+{
+    infra::MockCallback<void()> callback;
+
+    infra::EventDispatcher::Instance().Schedule([&callback, this]() { callback.callback(); });
+    infra::EventDispatcher::Instance().Schedule([&callback, this]() { callback.callback(); });
+
+    EXPECT_CALL(callback, callback()).Times(1);
+    ExecuteFirstAction();
+
+    EXPECT_CALL(callback, callback()).Times(1);
+    ExecuteFirstAction();
+}
+
 TEST_F(EventDispatcherWithWeakPtrTest, TestScheduleSharedPtr)
 {
     infra::MockCallback<void()> callback;
