@@ -168,10 +168,6 @@ namespace infra
             bool operator==(const WeakPtr<U>& other) const;
         template<class U>
             bool operator!=(const WeakPtr<U>& other) const;
-        bool operator==(std::nullptr_t) const;
-        bool operator!=(std::nullptr_t) const;
-        friend bool operator==(std::nullptr_t, const WeakPtr& ptr) { return ptr == nullptr; }
-        friend bool operator!=(std::nullptr_t, const WeakPtr& ptr) { return ptr != nullptr; }
         template<class U>
             bool operator==(const SharedPtr<U>& other) const;
         template<class U>
@@ -505,18 +501,6 @@ namespace infra
     bool WeakPtr<T>::operator!=(const WeakPtr<U>& other) const
     {
         return !(*this == other);
-    }
-
-    template<class T>
-    bool WeakPtr<T>::operator==(std::nullptr_t) const
-    {
-        return object == nullptr;
-    }
-
-    template<class T>
-    bool WeakPtr<T>::operator!=(std::nullptr_t) const
-    {
-        return !(*this == nullptr);
     }
 
     template<class T>

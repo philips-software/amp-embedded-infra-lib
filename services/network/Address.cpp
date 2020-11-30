@@ -70,7 +70,7 @@ namespace services
     infra::Optional<IPv4Address> ParseIpv4Address(infra::BoundedConstString address)
     {
         IPv4Address ipv4Address;
-        uint8_t parsedCount = 0;
+        std::size_t parsedCount = 0;
         infra::Tokenizer tokenizer(address, '.');
 
         for (int i = 0; i < 4; i++)
@@ -83,7 +83,7 @@ namespace services
 
             if (stream.Failed() || stream.Available() != 0)
                 return infra::none;
-                
+
             if (decimal != static_cast<uint8_t>(decimal))
                 return infra::none;
 
@@ -100,7 +100,7 @@ namespace services
     infra::Optional<IPv6Address> ParseFullIpv6Address(infra::BoundedConstString address)
     {
         IPv6Address ipv6Address;
-        uint8_t parsedCount = 0;
+        std::size_t parsedCount = 0;
         infra::Tokenizer tokenizer(address, ':');
 
         for (int i = 0; i < 8; i++)

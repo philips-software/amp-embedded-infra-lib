@@ -366,16 +366,6 @@ TEST_F(SharedPtrTest, test_WeakPtr_equality)
     EXPECT_FALSE(weak1 == weakEmpty);
     EXPECT_TRUE(weak1 != weakEmpty);
 
-    EXPECT_FALSE(weak1 == nullptr);
-    EXPECT_FALSE(nullptr == weak1);
-    EXPECT_TRUE(weak1 != nullptr);
-    EXPECT_TRUE(nullptr != weak1);
-
-    EXPECT_TRUE(weakEmpty == nullptr);
-    EXPECT_TRUE(nullptr == weakEmpty);
-    EXPECT_FALSE(weakEmpty != nullptr);
-    EXPECT_FALSE(nullptr != weakEmpty);
-
     EXPECT_CALL(objectConstructionMock, Destruct(testing::_)).Times(2);
 }
 
