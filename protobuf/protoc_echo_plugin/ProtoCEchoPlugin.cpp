@@ -1603,7 +1603,7 @@ namespace application
         serviceProxyFormatter->Add(fields);
 
         auto publicFields = std::make_shared<Access>("public");
-        publicFields->Add(std::make_shared<StaticDataMember>("maxMessageSize", "const uint32_t", google::protobuf::SimpleItoa(MaxMessageSize())));
+        publicFields->Add(std::make_shared<DataMember>("maxMessageSize", "static const uint32_t", google::protobuf::SimpleItoa(MaxMessageSize())));
 
         serviceFormatter->Add(publicFields);
         serviceProxyFormatter->Add(publicFields);
