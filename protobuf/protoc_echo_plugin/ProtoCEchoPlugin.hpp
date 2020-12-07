@@ -16,6 +16,20 @@ namespace application
             google::protobuf::compiler::GeneratorContext* generatorContext, std::string* error) const override;
     };
 
+    class EnumGenerator
+    {
+    public:
+        EnumGenerator(const std::shared_ptr<const EchoEnum>& enum_);
+        EnumGenerator(const EnumGenerator& other) = delete;
+        EnumGenerator& operator=(const EnumGenerator& other) = delete;
+        ~EnumGenerator() = default;
+
+        void Run(Entities& formatter);
+
+    private:
+        std::shared_ptr<const EchoEnum> enum_;
+    };
+
     class MessageGenerator
     {
     public:
@@ -111,6 +125,7 @@ namespace application
         Entities formatter;
         const google::protobuf::FileDescriptor* file;
 
+        std::vector<std::shared_ptr<EnumGenerator>> enumGenerators;
         std::vector<std::shared_ptr<MessageGenerator>> messageGenerators;
         std::vector<std::shared_ptr<MessageReferenceGenerator>> messageReferenceGenerators;
         std::vector<std::shared_ptr<ServiceGenerator>> serviceGenerators;

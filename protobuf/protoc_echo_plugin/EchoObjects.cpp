@@ -442,6 +442,9 @@ namespace application
             if (file.dependency(i)->name() != "EchoAttributes.proto")
                 dependencies.push_back(root.GetFile(*file.dependency(i)));
 
+        for (int i = 0; i != file.enum_type_count(); ++i)
+            enums.push_back(std::make_shared<EchoEnum>(*file.enum_type(i)));
+
         for (int i = 0; i != file.message_type_count(); ++i)
             messages.push_back(root.AddMessage(*file.message_type(i)));
 

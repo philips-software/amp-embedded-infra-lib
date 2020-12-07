@@ -159,6 +159,15 @@ namespace application
         }
     }
 
+    EnumGenerator::EnumGenerator(const std::shared_ptr<const EchoEnum>& enum_)
+        : enum_(enum_)
+    {}
+
+    void EnumGenerator::Run(Entities& formatter)
+    {
+        formatter.Add(std::make_shared<EnumDeclaration>(enum_->name, enum_->members));
+    }
+
     MessageGenerator::MessageGenerator(const std::shared_ptr<const EchoMessage>& message)
         : message(message)
     {}
@@ -1732,6 +1741,12 @@ Rpc().Send();
             auto newEntity = newNamespace.get();
             currentEntity->Add(newNamespace);
             currentEntity = newEntity;
+        }
+
+        for (auto& enum_: root.GetFile(*file)->enums)
+        {
+            enumGenerators.emplace_back(std::make_shared<EnumGenerator>(enum_));
+            enumGenerators.back()->Run(*currentEntity);
         }
 
         for (auto& message : root.GetFile(*file)->messages)

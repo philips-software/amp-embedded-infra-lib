@@ -266,6 +266,7 @@ namespace application
 
         std::string name;
         std::vector<std::string> packageParts;
+        std::vector<std::shared_ptr<EchoEnum>> enums;
         std::vector<std::shared_ptr<EchoMessage>> messages;
         std::vector<std::shared_ptr<EchoService>> services;
         std::vector<std::shared_ptr<EchoFile>> dependencies;

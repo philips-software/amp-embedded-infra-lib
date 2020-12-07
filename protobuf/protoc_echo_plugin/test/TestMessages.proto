@@ -6,6 +6,15 @@ package test_messages;
 option java_package = "com.philips.cococo.protobufEcho";
 option java_outer_classname = "TestMessagesProto";
 
+enum Enumeration {
+  val0 = 0;
+  val1 = 1;
+}
+
+message TestEnum {
+  Enumeration e = 1;
+}
+
 message TestInt32 {
   int32 value = 1;
 }
