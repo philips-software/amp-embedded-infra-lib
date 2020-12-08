@@ -63,7 +63,7 @@ namespace services
             template<std::size_t Size>
                 using WithStorage = infra::WithStorage<AtomicDeque, std::array<uint8_t, Size + 1>>;
 
-            AtomicDeque(infra::ByteRange storage);
+            explicit AtomicDeque(infra::ByteRange storage);
 
             void Push(infra::ConstByteRange range);
             void Pop(std::size_t size);
@@ -84,7 +84,7 @@ namespace services
             : public infra::StreamReaderWithRewinding
         {
         public:
-            AtomicDequeReader(const AtomicDeque& deque);
+            explicit AtomicDequeReader(const AtomicDeque& deque);
 
             virtual void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
             virtual uint8_t Peek(infra::StreamErrorPolicy& errorPolicy) override;
@@ -104,7 +104,7 @@ namespace services
             : public infra::StreamWriter
         {
         public:
-            AtomicDequeWriter(AtomicDeque& deque);
+            explicit AtomicDequeWriter(AtomicDeque& deque);
 
             virtual void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
             virtual std::size_t Available() const override;
@@ -156,7 +156,7 @@ namespace services
 
         struct PacketInit
         {
-            PacketInit(uint16_t window);
+            explicit PacketInit(uint16_t window);
 
             Operation operation = Operation::init;
             infra::Aligned<uint8_t, infra::LittleEndian<uint16_t>> window;
@@ -164,7 +164,7 @@ namespace services
 
         struct PacketInitResponse
         {
-            PacketInitResponse(uint16_t window);
+            explicit PacketInitResponse(uint16_t window);
 
             Operation operation = Operation::initResponse;
             infra::Aligned<uint8_t, infra::LittleEndian<uint16_t>> window;
@@ -172,7 +172,7 @@ namespace services
 
         struct PacketReleaseWindow
         {
-            PacketReleaseWindow(uint16_t window);
+            explicit PacketReleaseWindow(uint16_t window);
 
             Operation operation = Operation::releaseWindow;
             infra::Aligned<uint8_t, infra::LittleEndian<uint16_t>> window;
@@ -190,7 +190,7 @@ namespace services
             : public State
         {
         public:
-            StateSendingInit(WindowedMessageCommunication& communication);
+            explicit StateSendingInit(WindowedMessageCommunication& communication);
 
             virtual void RequestSendMessage(uint16_t size) override;
 
@@ -205,7 +205,7 @@ namespace services
             : public State
         {
         public:
-            StateSendingInitResponse(WindowedMessageCommunication& communication);
+            explicit StateSendingInitResponse(WindowedMessageCommunication& communication);
 
             virtual void RequestSendMessage(uint16_t size) override;
 
@@ -220,7 +220,7 @@ namespace services
             : public State
         {
         public:
-            StateOperational(WindowedMessageCommunication& communication);
+            explicit StateOperational(WindowedMessageCommunication& communication);
 
             virtual void RequestSendMessage(uint16_t size) override;
 
@@ -232,7 +232,7 @@ namespace services
             : public State
         {
         public:
-            StateSendingMessage(WindowedMessageCommunication& communication);
+            explicit StateSendingMessage(WindowedMessageCommunication& communication);
 
             virtual void RequestSendMessage(uint16_t size) override;
 
@@ -247,7 +247,7 @@ namespace services
             : public State
         {
         public:
-            StateSendingReleaseWindow(WindowedMessageCommunication& communication);
+            explicit StateSendingReleaseWindow(WindowedMessageCommunication& communication);
 
             virtual void RequestSendMessage(uint16_t size) override;
 

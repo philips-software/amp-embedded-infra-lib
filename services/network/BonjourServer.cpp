@@ -13,7 +13,7 @@ namespace services
         class DnsBitmap
         {
         public:
-            DnsBitmap(uint8_t index)
+            explicit DnsBitmap(uint8_t index)
                 : bitmap(infra::Bit<uint32_t>(index))
             {}
 

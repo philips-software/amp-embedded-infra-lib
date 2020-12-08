@@ -10,12 +10,12 @@ namespace infra
     class Aligned
     {
     public:
-        Aligned(Type value)
+        explicit Aligned(Type value)
         {
             Copy(ReinterpretCastMemoryRange<As>(MakeRange(&value, &value + 1)), MakeRange(this->value));
         }
 
-        operator Type() const
+        explicit operator Type() const
         {
             Type result;
             Copy(MakeRange(value), ReinterpretCastMemoryRange<As>(MakeRange(&value, &value + 1)));

@@ -36,7 +36,7 @@ namespace infra
         template<std::size_t Max>
             using WithStorage = infra::WithStorage<DataOutputStream::WithWriter<BoundedDequeStreamWriter>, BoundedDeque<uint8_t>::WithMaxSize<Max>>;
 
-        BoundedDequeOutputStream(BoundedDeque<uint8_t>& storage);
+        explicit BoundedDequeOutputStream(BoundedDeque<uint8_t>& storage);
         BoundedDequeOutputStream(BoundedDeque<uint8_t>& storage, const SoftFail&);
         BoundedDequeOutputStream(BoundedDeque<uint8_t>& storage, const NoFail&);
     };
