@@ -34,7 +34,7 @@ namespace infra
         years = y + (m <= 2);
         months = m;
         days = d;
-    };
+    }
 
     PartitionedTime::PartitionedTime(uint16_t years, uint8_t months, uint8_t days, uint8_t hours, uint8_t minutes, int8_t seconds)
         : years(years)

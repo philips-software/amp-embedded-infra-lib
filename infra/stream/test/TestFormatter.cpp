@@ -218,7 +218,7 @@ namespace
         TestFormatObject& operator=(const TestFormatObject&) = delete;
         TestFormatObject(TestFormatObject&& other) noexcept {}
         TestFormatObject& operator=(TestFormatObject&& other) noexcept { return *this; }
-        ~TestFormatObject() = default;;
+        ~TestFormatObject() = default;
 
         int v{ 9 };
         bool b{ true };

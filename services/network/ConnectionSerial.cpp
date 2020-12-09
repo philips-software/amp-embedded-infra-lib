@@ -235,7 +235,7 @@ namespace services
     size_t ConnectionSerial::MessageHeader::Size()
     {
         assert(Type() != MessageType::SizeRequest);
-        return static_cast<uint16_t>(headerContent[1]) << 8 | static_cast<uint16_t>(headerContent[2]);;
+        return static_cast<uint16_t>(headerContent[1]) << 8 | static_cast<uint16_t>(headerContent[2]);
     }
 
     bool ConnectionSerial::MessageHeader::IsDone()

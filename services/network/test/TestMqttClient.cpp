@@ -161,7 +161,7 @@ public:
             notificationPayload.clear();
             auto stream = notificationPayloadStream.Emplace(notificationPayload);
             return infra::MakeContainedSharedObject(stream->Writer(), stream);
-        }));;
+        }));
     }
 
     testing::StrictMock<services::ConnectionFactoryWithNameResolverMock> connectionFactory;

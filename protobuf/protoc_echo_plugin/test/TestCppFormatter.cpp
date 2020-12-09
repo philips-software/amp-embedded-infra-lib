@@ -480,7 +480,7 @@ TEST_F(CppFormatterTest, IncludesByHeader_prints_header)
 
 TEST_F(CppFormatterTest, IncludesByHeader_prints_no_source)
 {
-    application::IncludesByHeader include;;
+    application::IncludesByHeader include;
     include.Path("path");
     include.PrintSource(*printer, "scope");
     ExpectPrinted("");
