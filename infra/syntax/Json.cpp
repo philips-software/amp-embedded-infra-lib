@@ -517,9 +517,9 @@ namespace infra
                 return JsonToken::LeftBracket(parseIndex++);
             else if (objectString[parseIndex] == ']')
                 return JsonToken::RightBracket(parseIndex++);
-            else if (std::isdigit(objectString[parseIndex]) != 0 || objectString[parseIndex] == '-')
+            else if (std::isdigit(static_cast<unsigned char>(objectString[parseIndex])) != 0 || objectString[parseIndex] == '-')
                 return TryCreateIntegerToken();
-            else if (std::isalpha(objectString[parseIndex]) != 0)
+            else if (std::isalpha(static_cast<unsigned char>(objectString[parseIndex])) != 0)
                 return TryCreateIdentifierToken();
             else
                 return JsonToken::Error();
@@ -538,7 +538,7 @@ namespace infra
 
     void JsonTokenizer::SkipWhitespace()
     {
-        while (parseIndex != objectString.size() && std::isspace(objectString[parseIndex]))                         //TICS !CON#007
+        while (parseIndex != objectString.size() && std::isspace(static_cast<unsigned char>(objectString[parseIndex])))                         //TICS !CON#007
             ++parseIndex;
     }
 
@@ -573,7 +573,7 @@ namespace infra
             ++parseIndex;
         }
 
-        while (parseIndex != objectString.size() && std::isdigit(objectString[parseIndex]))                             //TICS !CON#007
+        while (parseIndex != objectString.size() && std::isdigit(static_cast<unsigned char>(objectString[parseIndex])))                             //TICS !CON#007
             ++parseIndex;
 
         infra::BoundedConstString integer = objectString.substr(tokenStart, parseIndex - tokenStart);
@@ -592,7 +592,7 @@ namespace infra
     {
         std::size_t tokenStart = parseIndex;
 
-        while (parseIndex != objectString.size() && std::isalpha(objectString[parseIndex]))                         //TICS !CON#007
+        while (parseIndex != objectString.size() && std::isalpha(static_cast<unsigned char>(objectString[parseIndex])))                         //TICS !CON#007
             ++parseIndex;
 
         infra::BoundedConstString identifier = objectString.substr(tokenStart, parseIndex - tokenStart);
