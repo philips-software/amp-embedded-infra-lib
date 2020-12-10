@@ -123,9 +123,14 @@ namespace infra
 
         template<class T>
         class IntrusiveForwardListIterator
-            : public std::iterator<std::forward_iterator_tag, T>
         {
         public:
+            using iterator_category = std::forward_iterator_tag;
+            using value_type = T;
+            using difference_type = std::ptrdiff_t;
+            using pointer = value_type*;
+            using reference = value_type&;
+
             IntrusiveForwardListIterator();
             explicit IntrusiveForwardListIterator(const IntrusiveForwardListNode<typename std::remove_const<T>::type>* node);
             template<class T2>                                                                          //TICS !INT#001

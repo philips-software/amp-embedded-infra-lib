@@ -141,10 +141,15 @@ namespace infra
     {
         template<class T, class Compare>
         class IntrusiveBinarySearchTreeIterator
-            : public std::iterator<std::bidirectional_iterator_tag, T>
         {
         public:
-            typedef IntrusiveBinarySearchTree<typename std::remove_const<T>::type, Compare> TreeType;
+            using iterator_category = std::bidirectional_iterator_tag;
+            using value_type = T;
+            using difference_type = std::ptrdiff_t;
+            using pointer = value_type*;
+            using reference = value_type&;
+
+            using TreeType = IntrusiveBinarySearchTree<typename std::remove_const<T>::type, Compare>;
 
             IntrusiveBinarySearchTreeIterator();
             IntrusiveBinarySearchTreeIterator(const T* node, const TreeType& tree);

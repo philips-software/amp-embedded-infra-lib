@@ -148,9 +148,14 @@ namespace infra
     {
         template<class DequeType, class T>
         class BoundedDequeIterator
-            : public std::iterator<std::random_access_iterator_tag, T>
         {
         public:
+            using iterator_category = std::random_access_iterator_tag;
+            using value_type = T;
+            using difference_type = std::ptrdiff_t;
+            using pointer = value_type*;
+            using reference = value_type&;
+
             BoundedDequeIterator() = delete;
             BoundedDequeIterator(DequeType* deque, std::size_t offset);
             template<class DequeType2, class T2>                                                                        //TICS !INT#001

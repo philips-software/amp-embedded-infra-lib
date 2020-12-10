@@ -136,8 +136,14 @@ namespace infra
     {
         template<class T>
         class BoundedForwardListIterator
-            : public std::iterator<std::forward_iterator_tag, T>
         {
+        public:
+            using iterator_category = std::forward_iterator_tag;
+            using value_type = T;
+            using difference_type = std::ptrdiff_t;
+            using pointer = value_type*;
+            using reference = value_type&;
+
         private:
             typedef detail::BoundedForwardListNode<typename std::remove_const<T>::type> NodeType;
 

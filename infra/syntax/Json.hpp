@@ -14,9 +14,14 @@
 namespace infra
 {
     class JsonStringIterator
-        : public std::iterator<std::forward_iterator_tag, char>
     {
     public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = char;
+        using difference_type = std::ptrdiff_t;
+        using pointer = value_type*;
+        using reference = value_type&;
+
         JsonStringIterator(infra::BoundedConstString::const_iterator position, infra::BoundedConstString::const_iterator end);
 
         char operator*() const;
@@ -352,9 +357,15 @@ namespace infra
     };
 
     class JsonObjectIterator
-        : public std::iterator<std::forward_iterator_tag, JsonKeyValue>
-        , private JsonIterator
+        : private JsonIterator
     {
+    public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = JsonKeyValue;
+        using difference_type = std::ptrdiff_t;
+        using pointer = value_type*;
+        using reference = value_type&;
+
     private:
         friend class JsonObject;
 
@@ -401,9 +412,15 @@ namespace infra
     };
 
     class JsonArrayIterator
-        : public std::iterator<std::forward_iterator_tag, JsonValue>
-        , private JsonIterator
+        : private JsonIterator
     {
+    public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = JsonValue;
+        using difference_type = std::ptrdiff_t;
+        using pointer = value_type*;
+        using reference = value_type&;
+
     private:
         friend class JsonArray;
 
@@ -445,9 +462,14 @@ namespace infra
 
     template<class T>
     class JsonValueArrayIterator
-        : public std::iterator<std::forward_iterator_tag, T>
     {
     public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = T;
+        using difference_type = std::ptrdiff_t;
+        using pointer = value_type*;
+        using reference = value_type&;
+
         JsonValueArrayIterator() = default;
         JsonValueArrayIterator(const JsonArrayIterator& arrayIterator, const JsonArrayIterator& arrayEndIterator);
 

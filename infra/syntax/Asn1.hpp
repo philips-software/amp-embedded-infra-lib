@@ -24,9 +24,14 @@ namespace infra
     };
 
     class Asn1SequenceIterator
-        : public std::iterator<std::forward_iterator_tag, Asn1SequenceIterator>
     {
     public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = Asn1SequenceIterator;
+        using difference_type = std::ptrdiff_t;
+        using pointer = value_type*;
+        using reference = value_type&;
+
         Asn1SequenceIterator();
         explicit Asn1SequenceIterator(infra::ConstByteRange range);
 

@@ -147,8 +147,14 @@ namespace infra
     {
         template<class T, class U>
         class BoundedListIterator
-            : public std::iterator<std::bidirectional_iterator_tag, T>
         {
+        public:
+            using iterator_category = std::bidirectional_iterator_tag;
+            using value_type = T;
+            using difference_type = std::ptrdiff_t;
+            using pointer = value_type*;
+            using reference = value_type&;
+
         private:
             using NodeType = BoundedListNode<U>;
             using ContainerType = BoundedList<U>;
