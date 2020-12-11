@@ -6,6 +6,8 @@ ccola_component(interfaces static_library)
         FileSystem.hpp
     all:
         AnalogToDigitalPin.hpp
+        AsyncGpio.cpp
+        AsyncGpio.hpp
         Can.cpp
         Can.hpp
         CommunicationConfigurator.hpp
