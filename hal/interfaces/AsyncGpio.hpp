@@ -14,11 +14,11 @@ namespace hal
         ~AsyncGpioPin() = default;
 
     public:
-        virtual void Get(const infra::Function<void(bool result)>& onDone) const = 0;
+        virtual void Get(const infra::Function<void(bool result)>& onDone) = 0;
         virtual void Set(bool value, const infra::Function<void()>& onDone) = 0;
-        virtual void GetOutputLatch(const infra::Function<void(bool result)>& onDone) const = 0;
+        virtual void GetOutputLatch(const infra::Function<void(bool result)>& onDone) = 0;
         virtual void SetAsInput(const infra::Function<void()>& onDone) = 0;
-        virtual void IsInput(const infra::Function<void(bool isInput)>& onDone) const = 0;
+        virtual void IsInput(const infra::Function<void(bool isInput)>& onDone) = 0;
 
         virtual void Configure(PinConfigType config, const infra::Function<void()>& onDone) = 0;
         virtual void Configure(PinConfigType config, bool startOutputState, const infra::Function<void()>& onDone) = 0;
@@ -35,7 +35,7 @@ namespace hal
         AsyncInputPin(const AsyncInputPin& other) = delete;
         AsyncInputPin& operator=(const AsyncInputPin& other) = delete;
 
-        void Get(const infra::Function<void(bool result)>& onDone) const;
+        void Get(const infra::Function<void(bool result)>& onDone);
 
         void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, const infra::Function<void()>& onDone);
         void DisableInterrupt(const infra::Function<void()>& onDone);
@@ -52,7 +52,7 @@ namespace hal
         AsyncOutputPin& operator=(const AsyncOutputPin& other) = delete;
 
         void Set(bool value, const infra::Function<void()>& onDone);
-        void GetOutputLatch(const infra::Function<void(bool result)>& onDone) const;
+        void GetOutputLatch(const infra::Function<void(bool result)>& onDone);
 
     private:
         AsyncGpioPin& pin;
@@ -66,11 +66,11 @@ namespace hal
         AsyncTriStatePin(const AsyncTriStatePin& other) = delete;
         AsyncTriStatePin& operator=(const AsyncTriStatePin& other) = delete;
 
-        void Get(const infra::Function<void(bool result)>& onDone) const;
-        void GetOutputLatch(const infra::Function<void(bool result)>& onDone) const;
+        void Get(const infra::Function<void(bool result)>& onDone);
+        void GetOutputLatch(const infra::Function<void(bool result)>& onDone);
         void Set(bool value, const infra::Function<void()>& onDone);
         void SetAsInput(const infra::Function<void()>& onDone);
-        void IsInput(const infra::Function<void(bool result)>& onDone) const;
+        void IsInput(const infra::Function<void(bool result)>& onDone);
 
         void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, const infra::Function<void()>& onDone);
         void DisableInterrupt(const infra::Function<void()>& onDone);

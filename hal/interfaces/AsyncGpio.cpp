@@ -8,7 +8,7 @@ namespace hal
         pin.Configure(PinConfigType::input, onDone);
     }
 
-    void AsyncInputPin::Get(const infra::Function<void(bool result)>& onDone) const
+    void AsyncInputPin::Get(const infra::Function<void(bool result)>& onDone)
     {
         pin.Get(onDone);
     }
@@ -34,7 +34,7 @@ namespace hal
         pin.Set(value, onDone);
     }
 
-    void AsyncOutputPin::GetOutputLatch(const infra::Function<void(bool result)>& onDone) const
+    void AsyncOutputPin::GetOutputLatch(const infra::Function<void(bool result)>& onDone)
     {
         pin.GetOutputLatch(onDone);
     }
@@ -51,7 +51,7 @@ namespace hal
         pin.Configure(PinConfigType::triState, startOutputState, onDone);
     }
 
-    void AsyncTriStatePin::Get(const infra::Function<void(bool result)>& onDone) const
+    void AsyncTriStatePin::Get(const infra::Function<void(bool result)>& onDone)
     {
         pin.Get(onDone);
     }
@@ -61,7 +61,7 @@ namespace hal
         pin.Set(value, onDone);
     }
 
-    void AsyncTriStatePin::GetOutputLatch(const infra::Function<void(bool result)>& onDone) const
+    void AsyncTriStatePin::GetOutputLatch(const infra::Function<void(bool result)>& onDone)
     {
         pin.GetOutputLatch(onDone);
     }
@@ -71,7 +71,7 @@ namespace hal
         pin.SetAsInput(onDone);
     }
 
-    void AsyncTriStatePin::IsInput(const infra::Function<void(bool result)>& onDone) const
+    void AsyncTriStatePin::IsInput(const infra::Function<void(bool result)>& onDone)
     {
         pin.IsInput(onDone);
     }
