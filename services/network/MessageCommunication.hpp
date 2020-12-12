@@ -124,8 +124,10 @@ namespace services
         , private MessageCommunicationReceiveOnInterruptObserver
     {
     public:
+        static constexpr uint32_t RawMessageSize(uint32_t messageSize) { return messageSize + sizeof(uint32_t); };
+
         template<std::size_t Size>
-            using WithReceiveBuffer = infra::WithStorage<WindowedMessageCommunication, detail::AtomicDeque::WithStorage<Size>>;
+            using WithReceiveBuffer = infra::WithStorage<WindowedMessageCommunication, detail::AtomicDeque::WithStorage<RawMessageSize(Size)>>;
 
         WindowedMessageCommunication(detail::AtomicDeque& receivedData, MessageCommunicationReceiveOnInterrupt& messageCommunication);
 
