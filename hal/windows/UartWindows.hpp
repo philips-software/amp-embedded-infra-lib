@@ -7,6 +7,7 @@
 #include <thread>
 #include <winsock2.h>
 #include <windows.h>
+#include <setupapi.h>
 
 namespace hal
 {
@@ -49,6 +50,37 @@ namespace hal
         bool pendingRead = false;
         OVERLAPPED overlapped = { 0 };
         uint8_t buffer;
+    };
+
+    class UartPortFinder
+    {
+    public:
+        UartPortFinder();
+
+        class UartNotFound
+            : public std::runtime_error
+        {
+        public:
+            UartNotFound(const std::string& portName);
+        };
+
+        std::string PhysicalDeviceObjectNameForDeviceDescription(const std::string& deviceDescription) const;
+
+    private:
+        void ReadAllComPortDevices();
+        void ReadDevice(SP_DEVINFO_DATA& deviceInfo);
+
+    private:
+        struct Description
+        {
+            std::string deviceDescription;
+            std::string friendlyName;
+            std::string physicalDeviceObjectName;
+        };
+
+        std::vector<Description> descriptions;
+
+        HDEVINFO deviceInformationSet;
     };
 }
 
