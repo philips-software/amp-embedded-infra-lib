@@ -1,5 +1,4 @@
 #include "UpgradePackConfigParser.hpp"
-#include <complex.h>
 
 namespace
 {
