@@ -87,6 +87,9 @@ ccola_component(network static_library)
         WebSocketServerConnectionObserver.hpp
         WiFiNetwork.cpp
         WiFiNetwork.hpp
+    x86:
+        CertificateConvertor.cpp
+        CertificateConvertor.hpp
     )
 
     ccola_dependencies(
