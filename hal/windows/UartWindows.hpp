@@ -21,13 +21,18 @@ namespace hal
         : public SerialCommunication
     {
     public:
+        struct DeviceName {};
+        static const DeviceName deviceName;
+
         UartWindows(const std::string& portName);
+        UartWindows(const std::string& name, DeviceName);
         ~UartWindows();
 
         virtual void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) override;
         virtual void SendData(infra::MemoryRange<const uint8_t> data, infra::Function<void()> actionOnCompletion = infra::emptyFunction) override;
 
     private:
+        void Open(const std::string& name);
         void ReadThread();
         void ReadNonBlocking(infra::ByteRange range);
         void ReadBlocking(infra::ByteRange range);

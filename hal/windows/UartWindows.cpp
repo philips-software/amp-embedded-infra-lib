@@ -2,17 +2,67 @@
 
 namespace hal
 {
+    const UartWindows::DeviceName UartWindows::deviceName;
+
     PortNotOpened::PortNotOpened(const std::string& portName)
         : std::runtime_error("Unable to open port " + portName)
     {}
 
     UartWindows::UartWindows(const std::string& portName)
     {
-        std::string port = "\\\\.\\" + portName;
-        handle = CreateFile(port.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr);
+        Open(R"(\\.\)" + portName);
+    }
+
+    UartWindows::UartWindows(const std::string& name, DeviceName)
+    {
+        Open(R"(\\.\GLOBALROOT)" + name);
+    }
+
+    UartWindows::~UartWindows()
+    {
+        running = false;
+        if (readThread.joinable())
+            readThread.join();
+        CloseHandle(handle);
+    }
+
+    void UartWindows::ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived)
+    {
+        std::unique_lock<std::mutex> lock(mutex);
+        onReceivedData = dataReceived;
+        receivedDataSet.notify_all();
+    }
+
+    void UartWindows::SendData(infra::MemoryRange<const uint8_t> data, infra::Function<void()> actionOnCompletion)
+    {
+        OVERLAPPED overlapped = { 0 };
+        unsigned long bytesWritten;
+
+        overlapped.hEvent = CreateEvent(nullptr, true, false, nullptr);
+
+        if (!WriteFile(handle, data.begin(), data.size(), &bytesWritten, &overlapped))
+        {
+            if (GetLastError() == ERROR_IO_PENDING)
+            {
+                if (WaitForSingleObject(overlapped.hEvent, INFINITE) == WAIT_OBJECT_0)
+                {
+                    if (!GetOverlappedResult(handle, &overlapped, &bytesWritten, false))
+                        std::abort();
+                }
+            }
+        }
+
+        CloseHandle(overlapped.hEvent);
+
+        infra::EventDispatcher::Instance().Schedule(actionOnCompletion);
+    }
+
+    void UartWindows::Open(const std::string& name)
+    {
+        handle = CreateFile(name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr);
 
         if (handle == INVALID_HANDLE_VALUE)
-            throw PortNotOpened(portName);
+            throw PortNotOpened(name);
 
         DCB dcb;
         SecureZeroMemory(&dcb, sizeof(DCB));
@@ -34,14 +84,6 @@ namespace hal
 
         readThread = std::thread([this]() { ReadThread(); });
         SetThreadPriority(readThread.native_handle(), GetThreadPriority(readThread.native_handle()) + 1);
-    }
-
-    UartWindows::~UartWindows()
-    {
-        running = false;
-        if (readThread.joinable())
-            readThread.join();
-        CloseHandle(handle);
     }
 
     void UartWindows::ReadThread()
@@ -95,36 +137,5 @@ namespace hal
             else
                 std::abort();
         }
-    }
-
-    void UartWindows::ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived)
-    {
-        std::unique_lock<std::mutex> lock(mutex);
-        onReceivedData = dataReceived;
-        receivedDataSet.notify_all();
-    }
-
-    void UartWindows::SendData(infra::MemoryRange<const uint8_t> data, infra::Function<void()> actionOnCompletion)
-    {
-        OVERLAPPED overlapped = { 0 };
-        unsigned long bytesWritten;
-
-        overlapped.hEvent = CreateEvent(nullptr, true, false, nullptr);
-
-        if (!WriteFile(handle, data.begin(), data.size(), &bytesWritten, &overlapped))
-        {
-            if (GetLastError() == ERROR_IO_PENDING)
-            {
-                if (WaitForSingleObject(overlapped.hEvent, INFINITE) == WAIT_OBJECT_0)
-                {
-                    if (!GetOverlappedResult(handle, &overlapped, &bytesWritten, false))
-                        std::abort();
-                }
-            }
-        }
-
-       CloseHandle(overlapped.hEvent);
-
-       infra::EventDispatcher::Instance().Schedule(actionOnCompletion);
     }
 }
