@@ -32,10 +32,10 @@ namespace services
         return inProgress;
     }
 
-    void Service::HandleMethod(uint32_t methodId, infra::ProtoParser& parser)
+    void Service::HandleMethod(uint32_t methodId, infra::ProtoLengthDelimited& contents)
     {
         inProgress = true;
-        Handle(methodId, parser);
+        Handle(methodId, contents);
     }
 
     Echo& Service::Rpc()
@@ -68,6 +68,30 @@ namespace services
     uint32_t ServiceProxy::MaxMessageSize() const
     {
         return maxMessageSize;
+    }
+
+    ServiceForwarder::ServiceForwarder(Echo& echo, uint32_t id, Echo& forwardTo, uint32_t maxMessageSize)
+        : Service(echo, id)
+        , ServiceProxy(forwardTo, id, maxMessageSize)
+    {}
+
+    void ServiceForwarder::Handle(uint32_t methodId, infra::ProtoLengthDelimited& contents)
+    {
+        this->methodId = methodId;
+        RequestSend([this, &contents]()
+        {
+            infra::DataOutputStream::WithErrorPolicy stream(services::ServiceProxy::Rpc().SendStreamWriter());
+            infra::ProtoFormatter formatter(stream);
+            formatter.PutVarInt(ServiceId());
+            {
+                infra::ProtoLengthDelimitedFormatter argumentFormatter = formatter.LengthDelimitedFormatter(this->methodId);
+                infra::ConstByteRange bytes;
+                contents.GetBytesReference(bytes);
+                formatter.PutBytes(bytes);
+            }
+            services::ServiceProxy::Rpc().Send();
+            MethodDone();
+        });
     }
 
     void EchoOnStreams::RequestSend(ServiceProxy& serviceProxy)
@@ -113,7 +137,7 @@ namespace services
         services.erase(service);
     }
 
-    void EchoOnStreams::ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoParser& argument)
+    void EchoOnStreams::ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents)
     {
         for (auto& service : services)
             if (service.ServiceId() == serviceId)
@@ -121,7 +145,7 @@ namespace services
                 if (service.InProgress())
                     serviceBusy = serviceId;
                 else
-                    service.HandleMethod(methodId, argument);
+                    service.HandleMethod(methodId, contents);
                 break;
             }
     }
@@ -157,13 +181,7 @@ namespace services
             if (stream.Failed())
                 break;
 
-            assert(message.first.Is<infra::ProtoLengthDelimited>());
-            infra::ProtoParser argument(message.first.Get<infra::ProtoLengthDelimited>().Parser());
-            uint32_t methodId = message.second;
-            if (stream.Failed())
-                break;
-
-            ExecuteMethod(serviceId, methodId, argument);
+            ExecuteMethod(serviceId, message.second, message.first.Get<infra::ProtoLengthDelimited>());
             if (stream.Failed())
                 std::abort();
             if (ServiceBusy())
@@ -224,12 +242,7 @@ namespace services
             return;
 
         assert(message.first.Is<infra::ProtoLengthDelimited>());
-        infra::ProtoParser argument(message.first.Get<infra::ProtoLengthDelimited>().Parser());
-        uint32_t methodId = message.second;
-        if (stream.Failed())
-            return;
-
-        ExecuteMethod(serviceId, methodId, argument);
+        ExecuteMethod(serviceId, message.second, message.first.Get<infra::ProtoLengthDelimited>());
         if (stream.Failed())
             std::abort();
     }

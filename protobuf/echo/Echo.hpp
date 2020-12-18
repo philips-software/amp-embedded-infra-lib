@@ -35,11 +35,11 @@ namespace services
         void MethodDone();
         uint32_t ServiceId() const;
         bool InProgress() const;
-        void HandleMethod(uint32_t methodId, infra::ProtoParser& parser);
+        void HandleMethod(uint32_t methodId, infra::ProtoLengthDelimited& contents);
 
     protected:
         Echo& Rpc();
-        virtual void Handle(uint32_t methodId, infra::ProtoParser& parser) = 0;
+        virtual void Handle(uint32_t methodId, infra::ProtoLengthDelimited& contents) = 0;
 
     private:
         Echo& echo;
@@ -65,6 +65,19 @@ namespace services
         infra::Function<void()> onGranted;
     };
 
+    class ServiceForwarder
+        : public services::Service
+        , private services::ServiceProxy
+    {
+    public:
+        ServiceForwarder(Echo& echo, uint32_t id, Echo& forwardTo, uint32_t maxMessageSize);
+
+        virtual void Handle(uint32_t methodId, infra::ProtoLengthDelimited& contents) override;
+
+    private:
+        uint32_t methodId;
+    };
+
     class EchoOnStreams
         : public Echo
         , public infra::EnableSharedFromThis<EchoOnStreams>
@@ -82,7 +95,7 @@ namespace services
         virtual void RequestSendStream(std::size_t size) = 0;
         virtual void BusyServiceDone() = 0;
 
-        void ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoParser& argument);
+        void ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents);
         void SetStreamWriter(infra::SharedPtr<infra::StreamWriter>&& writer);
         bool ServiceBusy() const;
 

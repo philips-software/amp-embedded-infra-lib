@@ -1560,7 +1560,7 @@ namespace application
 
         auto handle = std::make_shared<Function>("Handle", HandleBody(), "void", Function::fVirtual | Function::fOverride);
         handle->Parameter("uint32_t methodId");
-        handle->Parameter("infra::ProtoParser& parser");
+        handle->Parameter("infra::ProtoLengthDelimited& contents");
         functions->Add(handle);
 
         serviceFormatter->Add(functions);
@@ -1592,21 +1592,17 @@ namespace application
 
     void ServiceGenerator::GenerateFieldConstants()
     {
-        auto fields = std::make_shared<Access>("private");
+        auto fields = std::make_shared<Access>("public");
 
         fields->Add(std::make_shared<DataMember>("serviceId", "static const uint32_t", google::protobuf::SimpleItoa(service->serviceId)));
 
         for (auto& method : service->methods)
             fields->Add(std::make_shared<DataMember>("id" + method.name, "static const uint32_t", google::protobuf::SimpleItoa(method.methodId)));
 
+        fields->Add(std::make_shared<DataMember>("maxMessageSize", "static const uint32_t", google::protobuf::SimpleItoa(MaxMessageSize())));
+
         serviceFormatter->Add(fields);
         serviceProxyFormatter->Add(fields);
-
-        auto publicFields = std::make_shared<Access>("public");
-        publicFields->Add(std::make_shared<DataMember>("maxMessageSize", "static const uint32_t", google::protobuf::SimpleItoa(MaxMessageSize())));
-
-        serviceFormatter->Add(publicFields);
-        serviceProxyFormatter->Add(publicFields);
     }
 
     uint32_t ServiceGenerator::MaxMessageSize() const
@@ -1633,7 +1629,11 @@ namespace application
             google::protobuf::io::OstreamOutputStream stream(&result);
             google::protobuf::io::Printer printer(&stream, '$', nullptr);
 
-            printer.Print("switch (methodId)\n{\n");
+            printer.Print(R"(infra::ProtoParser parser(contents.Parser());
+
+switch (methodId)
+{
+)");
 
             for (auto& method : service->methods)
             {
