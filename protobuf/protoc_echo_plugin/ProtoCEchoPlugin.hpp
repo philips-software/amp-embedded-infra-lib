@@ -44,6 +44,9 @@ namespace application
         virtual void GenerateClass(Entities& formatter);
         virtual void GenerateConstructors();
         virtual void GenerateFunctions();
+        virtual void GenerateTypeMap(const std::string& messageSuffix = "");
+        virtual void GenerateGetters();
+        virtual void AddTypeMapType(EchoField& field, Entities& entities, const std::string& messageSuffix);
         virtual void GenerateNestedMessageForwardDeclarations();
         virtual void GenerateEnums();
         virtual void GenerateNestedMessages();
@@ -70,6 +73,9 @@ namespace application
         virtual void GenerateClass(Entities& formatter) override;
         virtual void GenerateConstructors() override;
         virtual void GenerateFunctions() override;
+        virtual void GenerateTypeMap(const std::string& messageSuffix) override;
+        virtual void AddTypeMapType(EchoField& field, Entities& entities, const std::string& messageSuffix) override;
+        virtual void GenerateGetters() override;
         virtual void GenerateNestedMessageForwardDeclarations() override;
         virtual void GenerateNestedMessages() override;
         virtual void GenerateFieldDeclarations() override;

@@ -12,6 +12,41 @@ namespace services
     class Service;
     class ServiceProxy;
 
+    struct ProtoBool {};
+    struct ProtoUInt32 {};
+    struct ProtoInt32 {};
+    struct ProtoUInt64 {};
+    struct ProtoInt64 {};
+    struct ProtoFixed32 {};
+    struct ProtoFixed64 {};
+    struct ProtoSFixed32 {};
+    struct ProtoSFixed64 {};
+    struct ProtoStdString {};
+
+    template<class T>
+    struct ProtoMessage {};
+
+    template<class T>
+    struct ProtoEnum {};
+
+    template<std::size_t Max>
+    struct ProtoBytes {};
+
+    template<std::size_t Max>
+    struct ProtoString {};
+
+    template<std::size_t Max, class T>
+    struct ProtoRepeated {};
+
+    template<class T>
+    class ProtoValueType;
+
+    template<>
+    class ProtoValueType<ProtoUInt32>
+    {
+        using Type = uint32_t;
+    };
+
     class Echo
     {
     public:

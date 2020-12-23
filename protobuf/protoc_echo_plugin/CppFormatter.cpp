@@ -45,8 +45,9 @@ namespace application
         return hasSourceCode;
     }
 
-    Entities::Entities(bool insertNewlineBetweenEntities)
-        : insertNewlineBetweenEntities(insertNewlineBetweenEntities)
+    Entities::Entities(bool insertNewlineBetweenEntities, bool hasSourceCode)
+        : Entity(true, hasSourceCode)
+        , insertNewlineBetweenEntities(insertNewlineBetweenEntities)
     {}
 
     void Entities::Add(std::shared_ptr<Entity>&& newEntity)
@@ -266,14 +267,14 @@ namespace application
         {
             printer.Print(R"($scope$$name$($parameters$)
 )"
-                , "scope", scope
-                , "name", name
-                , "parameters", Parameters());
+, "scope", scope
+, "name", name
+, "parameters", Parameters());
 
             printer.Indent();
             PrintInitializers(printer);
             printer.Outdent();
-        
+
             if (body.empty())
                 printer.Print("{}\n");
             else
@@ -302,7 +303,7 @@ namespace application
     void Constructor::PrintInitializers(google::protobuf::io::Printer& printer) const
     {
         std::string separator = ": ";
-        
+
         for (auto& initializer : initializers)
         {
             printer.Print("$separator$$initializer$\n", "separator", separator, "initializer", initializer);
@@ -343,6 +344,49 @@ namespace application
     void StaticDataMember::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
     {
         printer.Print("$type$ $scope$$name$ = $initializer$;\n", "type", type, "scope", scope, "name", name, "initializer", initializer);
+    }
+
+    Using::Using(const std::string& name, const std::string& definition)
+        : Entity(true, false)
+        , name(name)
+        , definition(definition)
+    {}
+
+    void Using::PrintHeader(google::protobuf::io::Printer& printer) const
+    {
+        printer.Print("using $name$ = $definition$;\n", "name", name, "definition", definition);
+    }
+
+    void Using::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
+    {}
+
+    void UsingTemplate::PrintHeader(google::protobuf::io::Printer& printer) const
+    {
+        printer.Print("template<$parameters$>\n", "parameters", Parameters());
+        Using::PrintHeader(printer);
+    }
+
+    void UsingTemplate::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
+    {}
+
+    void UsingTemplate::TemplateParameter(const std::string& parameter)
+    {
+        parameters.push_back(parameter);
+    }
+
+    std::string UsingTemplate::Parameters() const
+    {
+        std::string result;
+
+        for (auto& parameter : parameters)
+        {
+            if (!result.empty())
+                result.append(", ");
+
+            result.append(parameter);
+        }
+
+        return result;
     }
 
     IncludesByHeader::IncludesByHeader()
@@ -396,6 +440,78 @@ namespace application
     void ClassForwardDeclaration::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
     {}
 
+    StructTemplateForwardDeclaration::StructTemplateForwardDeclaration(const std::string& name)
+        : Entity(true, false)
+        , name(name)
+    {}
+
+    void StructTemplateForwardDeclaration::PrintHeader(google::protobuf::io::Printer& printer) const
+    {
+        printer.Print("template<$parameters$>\n", "parameters", Parameters());
+        printer.Print("struct $name$;\n", "name", name);
+    }
+
+    void StructTemplateForwardDeclaration::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
+    {}
+
+    void StructTemplateForwardDeclaration::TemplateParameter(const std::string& parameter)
+    {
+        parameters.push_back(parameter);
+    }
+
+    std::string StructTemplateForwardDeclaration::Parameters() const
+    {
+        std::string result;
+
+        for (auto& parameter : parameters)
+        {
+            if (!result.empty())
+                result.append(", ");
+
+            result.append(parameter);
+        }
+
+        return result;
+    }
+
+    StructTemplateSpecialization::StructTemplateSpecialization(const std::string& name)
+        : Entities(false, false)
+        , name(name)
+    {}
+
+    void StructTemplateSpecialization::PrintHeader(google::protobuf::io::Printer& printer) const
+    {
+        printer.Print("template<>\n");
+        printer.Print("struct $name$<$specializations$> {\n", "name", name, "specializations", Specializations());
+        printer.Indent();
+        Entities::PrintHeader(printer);
+        printer.Outdent();
+        printer.Print("};\n");
+    }
+
+    void StructTemplateSpecialization::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
+    {}
+
+    void StructTemplateSpecialization::TemplateSpecialization(const std::string& parameter)
+    {
+        specializations.push_back(parameter);
+    }
+
+    std::string StructTemplateSpecialization::Specializations() const
+    {
+        std::string result;
+
+        for (auto& specialization : specializations)
+        {
+            if (!result.empty())
+                result.append(", ");
+
+            result.append(specialization);
+        }
+
+        return result;
+    }
+
     EnumDeclaration::EnumDeclaration(const std::string& name, const std::vector<std::pair<std::string, int>>& members)
         : Entity(true, false)
         , name(name)
@@ -421,6 +537,5 @@ namespace application
     }
 
     void EnumDeclaration::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
-    {
-    }
+    {}
 }
