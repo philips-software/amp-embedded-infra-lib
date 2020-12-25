@@ -91,7 +91,7 @@ namespace application
                 case google::protobuf::FieldDescriptor::TYPE_UINT32:
                     return std::make_shared<EchoFieldUint32>(fieldDescriptor);
                 case google::protobuf::FieldDescriptor::TYPE_ENUM:
-                    return std::make_shared<EchoFieldEnum>(fieldDescriptor);
+                    return std::make_shared<EchoFieldEnum>(fieldDescriptor, root);
                 case google::protobuf::FieldDescriptor::TYPE_SFIXED64:
                     return std::make_shared<EchoFieldSFixed64>(fieldDescriptor);
                 case google::protobuf::FieldDescriptor::TYPE_SFIXED32:
@@ -114,8 +114,13 @@ namespace application
     }
 
     EchoEnum::EchoEnum(const google::protobuf::EnumDescriptor& descriptor)
-        : name(descriptor.name())
+        : descriptor(descriptor)
+        , name(descriptor.name())
+        , qualifiedTypeName(QualifiedName(descriptor))
     {
+        for (auto containingType = descriptor.containing_type(); containingType != nullptr; containingType = containingType->containing_type())
+            containedInMessageName += containingType->name();
+
         for (int i = 0; i != descriptor.value_count(); ++i)
             members.push_back(std::make_pair(descriptor.value(i)->name(), descriptor.value(i)->number()));
     }
@@ -127,7 +132,7 @@ namespace application
         , qualifiedReferenceName(QualifiedReferenceName(descriptor))
     {
         for (int i = 0; i != descriptor.enum_type_count(); ++i)
-            nestedEnums.push_back(std::make_shared<EchoEnum>(*descriptor.enum_type(i)));
+            nestedEnums.push_back(root.AddEnum(*descriptor.enum_type(i)));
 
         for (int i = 0; i != descriptor.nested_type_count(); ++i)
             nestedMessages.push_back(root.AddMessage(*descriptor.nested_type(i)));
@@ -346,10 +351,9 @@ namespace application
         visitor.VisitUint64(*this);
     }
 
-    EchoFieldEnum::EchoFieldEnum(const google::protobuf::FieldDescriptor& descriptor)
+    EchoFieldEnum::EchoFieldEnum(const google::protobuf::FieldDescriptor& descriptor, EchoRoot& root)
         : EchoField(descriptor)
-        , typeName(descriptor.enum_type()->name())
-        , qualifiedTypeName(QualifiedName(*descriptor.enum_type()))
+        , type(root.GetEnum(*descriptor.enum_type()))
     {}
 
     void EchoFieldEnum::Accept(EchoFieldVisitor& visitor) const
@@ -443,7 +447,7 @@ namespace application
                 dependencies.push_back(root.GetFile(*file.dependency(i)));
 
         for (int i = 0; i != file.enum_type_count(); ++i)
-            enums.push_back(std::make_shared<EchoEnum>(*file.enum_type(i)));
+            enums.push_back(root.AddEnum(*file.enum_type(i)));
 
         for (int i = 0; i != file.message_type_count(); ++i)
             messages.push_back(root.AddMessage(*file.message_type(i)));
@@ -500,6 +504,26 @@ namespace application
                 return message;
 
         throw MessageNotFound{ descriptor.name() };
+    }
+
+    std::shared_ptr<EchoEnum> EchoRoot::AddEnum(const google::protobuf::EnumDescriptor& descriptor)
+    {
+        for (auto enum_ : enums)
+            if (&enum_->descriptor == &descriptor)
+                std::abort();
+
+        auto result = std::make_shared<EchoEnum>(descriptor);
+        enums.push_back(result);
+        return result;
+    }
+
+    std::shared_ptr<EchoEnum> EchoRoot::GetEnum(const google::protobuf::EnumDescriptor& descriptor)
+    {
+        for (auto enum_ : enums)
+            if (&enum_->descriptor == &descriptor)
+                return enum_;
+
+        throw EnumNotFound{ descriptor.name() };
     }
 
     std::shared_ptr<EchoService> EchoRoot::AddService(const google::protobuf::ServiceDescriptor& descriptor)

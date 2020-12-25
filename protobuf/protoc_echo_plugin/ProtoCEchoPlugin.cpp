@@ -75,7 +75,7 @@ namespace application
 
             virtual void VisitEnum(const EchoFieldEnum& field) override
             {
-                result = field.qualifiedTypeName;
+                result = field.type->qualifiedTypeName;
             }
 
             virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
@@ -157,6 +157,11 @@ namespace application
             *error = "Message " + exception.name + " was used before having been fully defined";
             return false;
         }
+        catch (EnumNotFound& exception)
+        {
+            *error = "Enum " + exception.name + " was used before having been fully defined";
+            return false;
+        }
     }
 
     EnumGenerator::EnumGenerator(const std::shared_ptr<const EchoEnum>& enum_)
@@ -168,28 +173,402 @@ namespace application
         formatter.Add(std::make_shared<EnumDeclaration>(enum_->name, enum_->members));
     }
 
-    MessageGenerator::MessageGenerator(const std::shared_ptr<const EchoMessage>& message)
+    MessageEnumGenerator::MessageEnumGenerator(const std::shared_ptr<const EchoMessage>& message)
         : message(message)
+    {}
+
+    void MessageEnumGenerator::Run(Entities& formatter)
+    {
+        if (!message->nestedEnums.empty())
+        {
+            auto enumNamespace = std::make_shared<Namespace>("detail");
+
+            for (auto& nestedEnum : message->nestedEnums)
+                enumNamespace->Add(std::make_shared<EnumDeclaration>(message->name + nestedEnum->name, nestedEnum->members));
+
+            formatter.Add(enumNamespace);
+        }
+    }
+
+    MessageTypeMapGenerator::MessageTypeMapGenerator(const std::shared_ptr<const EchoMessage>& message)
+        : message(message)
+    {}
+
+    void MessageTypeMapGenerator::Run(Entities& formatter)
+    {
+        class GenerateTypeMapEntryVisitor
+            : public EchoFieldVisitor
+        {
+        public:
+            GenerateTypeMapEntryVisitor(Entities& entities, const std::string& messageSuffix)
+                : entities(entities)
+                , messageSuffix(messageSuffix)
+            {}
+
+            virtual void VisitInt64(const EchoFieldInt64& field) override
+            {
+                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoInt64"));
+            }
+
+            virtual void VisitUint64(const EchoFieldUint64& field) override
+            {
+                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoUInt64"));
+            }
+
+            virtual void VisitInt32(const EchoFieldInt32& field) override
+            {
+                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoInt32"));
+            }
+
+            virtual void VisitFixed64(const EchoFieldFixed64& field) override
+            {
+                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoFixed64"));
+            }
+
+            virtual void VisitFixed32(const EchoFieldFixed32& field) override
+            {
+                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoFixed32"));
+            }
+
+            virtual void VisitBool(const EchoFieldBool& field) override
+            {
+                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoBool"));
+            }
+
+            virtual void VisitString(const EchoFieldString& field) override
+            {
+                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoString<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">"));
+            }
+
+            virtual void VisitStdString(const EchoFieldStdString& field) override
+            {
+                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoStdString"));
+            }
+
+            virtual void VisitEnum(const EchoFieldEnum& field) override
+            {
+                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoEnum<" + field.type->containedInMessageName + field.type->name + ">"));
+            }
+
+            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {
+                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoSFixed64"));
+            }
+
+            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {
+                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoSFixed32"));
+            }
+
+            virtual void VisitMessage(const EchoFieldMessage& field) override
+            {
+                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoMessage<" + field.message->name + messageSuffix + ">"));
+            }
+
+            virtual void VisitBytes(const EchoFieldBytes& field) override
+            {
+                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoBytes<" + google::protobuf::SimpleItoa(field.maxBytesSize) + ">"));
+            }
+
+            virtual void VisitUint32(const EchoFieldUint32& field) override
+            {
+                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoUInt32"));
+            }
+
+            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
+            {
+                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoRepeated<" + google::protobuf::SimpleItoa(field.maxArraySize) + ", services::ProtoString<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">>"));
+            }
+
+            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
+            {
+                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoRepeated<" + google::protobuf::SimpleItoa(field.maxArraySize) + ", services::ProtoMessage<" + field.message->name + messageSuffix + ">>"));
+            }
+
+            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
+            {
+                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoRepeated<" + google::protobuf::SimpleItoa(field.maxArraySize) + ", services::ProtoUInt32>"));
+            }
+
+        private:
+            Entities& entities;
+            std::string messageSuffix;
+        };
+
+        auto typeMapNamespace = std::make_shared<Namespace>("detail");
+
+        auto typeMapDeclaration = std::make_shared<StructTemplateForwardDeclaration>(MessageName() + "TypeMap");
+        typeMapDeclaration->TemplateParameter("std::size_t fieldIndex");
+        typeMapNamespace->Add(typeMapDeclaration);
+
+        for (auto& field : message->fields)
+        {
+            auto typeMapSpecialization = std::make_shared<StructTemplateSpecialization>(MessageName() + "TypeMap");
+            typeMapSpecialization->TemplateSpecialization(google::protobuf::SimpleItoa(std::distance(message->fields.data(), &field)));
+            GenerateTypeMapEntryVisitor visitor(*typeMapSpecialization, MessageSuffix());
+            field->Accept(visitor);
+            AddTypeMapType(*field, *typeMapSpecialization, MessageSuffix());
+            typeMapNamespace->Add(typeMapSpecialization);
+        }
+
+        formatter.Add(typeMapNamespace);
+    }
+
+    void MessageTypeMapGenerator::AddTypeMapType(EchoField& field, Entities& entities, const std::string& messageSuffix)
+    {
+        class GenerateTypeMapEntryVisitor
+            : public EchoFieldVisitor
+        {
+        public:
+            GenerateTypeMapEntryVisitor(Entities& entities, const std::string& messageSuffix)
+                : entities(entities)
+                , messageSuffix(messageSuffix)
+            {}
+
+            virtual void VisitInt64(const EchoFieldInt64& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "int64_t"));
+            }
+
+            virtual void VisitUint64(const EchoFieldUint64& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "uint64_t"));
+            }
+
+            virtual void VisitInt32(const EchoFieldInt32& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "int32_t"));
+            }
+
+            virtual void VisitFixed64(const EchoFieldFixed64& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "uint64_t"));
+            }
+
+            virtual void VisitFixed32(const EchoFieldFixed32& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "uint32_t"));
+            }
+
+            virtual void VisitBool(const EchoFieldBool& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "bool"));
+            }
+
+            virtual void VisitString(const EchoFieldString& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "infra::BoundedString::WithStorage<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">"));
+            }
+
+            virtual void VisitStdString(const EchoFieldStdString& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "std::string"));
+            }
+
+            virtual void VisitEnum(const EchoFieldEnum& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", field.type->containedInMessageName + field.type->name));
+            }
+
+            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "int64_t"));
+            }
+
+            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "int32_t"));
+            }
+
+            virtual void VisitMessage(const EchoFieldMessage& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", field.message->name + messageSuffix));
+            }
+
+            virtual void VisitBytes(const EchoFieldBytes& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<uint8_t>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxBytesSize) + ">"));
+            }
+
+            virtual void VisitUint32(const EchoFieldUint32& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "uint32_t"));
+            }
+
+            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<infra::BoundedString::WithStorage<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
+            }
+
+            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<" + field.message->name + messageSuffix + ">::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
+            }
+
+            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<uint32_t>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
+            }
+
+        private:
+            Entities& entities;
+            std::string messageSuffix;
+        };
+
+        GenerateTypeMapEntryVisitor visitor(entities, messageSuffix);
+        field.Accept(visitor);
+    }
+
+    std::string MessageTypeMapGenerator::MessageSuffix() const
+    {
+        return "";
+    }
+
+    std::string MessageTypeMapGenerator::MessageName() const
+    {
+        return message->name + MessageSuffix();
+    }
+
+    void MessageReferenceTypeMapGenerator::AddTypeMapType(EchoField& field, Entities& entities, const std::string& messageSuffix)
+    {
+        class GenerateTypeMapEntryVisitor
+            : public EchoFieldVisitor
+        {
+        public:
+            GenerateTypeMapEntryVisitor(Entities& entities, const std::string& messageSuffix)
+                : entities(entities)
+                , messageSuffix(messageSuffix)
+            {}
+
+            virtual void VisitInt64(const EchoFieldInt64& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "int64_t"));
+            }
+
+            virtual void VisitUint64(const EchoFieldUint64& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "uint64_t"));
+            }
+
+            virtual void VisitInt32(const EchoFieldInt32& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "int32_t"));
+            }
+
+            virtual void VisitFixed64(const EchoFieldFixed64& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "uint64_t"));
+            }
+
+            virtual void VisitFixed32(const EchoFieldFixed32& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "uint32_t"));
+            }
+
+            virtual void VisitBool(const EchoFieldBool& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "bool"));
+            }
+
+            virtual void VisitString(const EchoFieldString& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "infra::BoundedConstString"));
+            }
+
+            virtual void VisitStdString(const EchoFieldStdString& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "std::string"));
+            }
+
+            virtual void VisitEnum(const EchoFieldEnum& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", field.type->containedInMessageName + field.type->name));
+            }
+
+            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "int64_t"));
+            }
+
+            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "int32_t"));
+            }
+
+            virtual void VisitMessage(const EchoFieldMessage& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", field.message->name + messageSuffix));
+            }
+
+            virtual void VisitBytes(const EchoFieldBytes& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "infra::ConstByteRange"));
+            }
+
+            virtual void VisitUint32(const EchoFieldUint32& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "uint32_t"));
+            }
+
+            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<infra::BoundedConstString>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
+            }
+
+            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<" + field.message->name + messageSuffix + ">::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
+            }
+
+            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
+            {
+                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<uint32_t>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
+            }
+
+        private:
+            Entities& entities;
+            std::string messageSuffix;
+        };
+
+        GenerateTypeMapEntryVisitor visitor(entities, MessageSuffix());
+        field.Accept(visitor);
+    }
+
+    std::string MessageReferenceTypeMapGenerator::MessageSuffix() const
+    {
+        return "Reference";
+    }
+
+    MessageGenerator::MessageGenerator(const std::shared_ptr<const EchoMessage>& message, const std::string& prefix)
+        : message(message)
+        , prefix(prefix)
     {}
 
     void MessageGenerator::Run(Entities& formatter)
     {
+        GenerateNestedMessages(formatter);
+        GenerateTypeMap(formatter);
         GenerateClass(formatter);
-        GenerateNestedMessageForwardDeclarations();
+        GenerateNestedMessageAliases();
         GenerateEnums();
         GenerateConstructors();
         GenerateFunctions();
         GenerateTypeMap();
         GenerateGetters();
-        GenerateNestedMessages();
         GenerateFieldDeclarations();
         GenerateFieldConstants();
         GenerateMaxMessageSize();
     }
 
+    void MessageGenerator::GenerateTypeMap(Entities& formatter)
+    {
+        MessageTypeMapGenerator typeMapGenerator(message);
+        typeMapGenerator.Run(formatter);
+    }
+
     void MessageGenerator::GenerateClass(Entities& formatter)
     {
-        auto class_ = std::make_shared<Class>(message->name);
+        auto class_ = std::make_shared<Class>(prefix + message->name);
         classFormatter = class_.get();
         formatter.Add(class_);
     }
@@ -272,7 +651,7 @@ namespace application
 
             virtual void VisitEnum(const EchoFieldEnum& field) override
             {
-                constructor.Parameter(field.typeName + " " + field.name);
+                constructor.Parameter(field.type->name + " " + field.name);
                 constructor.Initializer(field.name + "(" + field.name + ")");
             }
 
@@ -311,18 +690,18 @@ namespace application
         };
 
         auto constructors = std::make_shared<Access>("public");
-        constructors->Add(std::make_shared<Constructor>(message->name, "", Constructor::cDefault));
+        constructors->Add(std::make_shared<Constructor>(prefix + message->name, "", Constructor::cDefault));
 
         if (!message->fields.empty())
         {
-            auto constructByMembers = std::make_shared<Constructor>(message->name, "", 0);
+            auto constructByMembers = std::make_shared<Constructor>(prefix + message->name, "", 0);
             GenerateConstructorsVisitor visitor(*constructByMembers);
             for (auto& field : message->fields)
                 field->Accept(visitor);
             constructors->Add(constructByMembers);
         }
 
-        auto constructByProtoParser = std::make_shared<Constructor>(message->name, "Deserialize(parser);\n", 0);
+        auto constructByProtoParser = std::make_shared<Constructor>(prefix + message->name, "Deserialize(parser);\n", 0);
         constructByProtoParser->Parameter("infra::ProtoParser& parser");
         constructors->Add(constructByProtoParser);
         classFormatter->Add(constructors);
@@ -341,11 +720,11 @@ namespace application
         functions->Add(deserialize);
 
         auto compareEqual = std::make_shared<Function>("operator==", CompareEqualBody(), "bool", Function::fConst);
-        compareEqual->Parameter("const " + message->name + "& other");
+        compareEqual->Parameter("const " + prefix + message->name + "& other");
         functions->Add(compareEqual);
 
         auto compareUnEqual = std::make_shared<Function>("operator!=", CompareUnEqualBody(), "bool", Function::fConst);
-        compareUnEqual->Parameter("const " + message->name + "& other");
+        compareUnEqual->Parameter("const " + prefix + message->name + "& other");
         functions->Add(compareUnEqual);
 
         classFormatter->Add(functions);
@@ -353,234 +732,16 @@ namespace application
 
     void MessageGenerator::GenerateTypeMap(const std::string& messageSuffix)
     {
-        class GenerateTypeMapEntryVisitor
-            : public EchoFieldVisitor
-        {
-        public:
-            GenerateTypeMapEntryVisitor(Entities& entities, const std::string& messageSuffix)
-                : entities(entities)
-                , messageSuffix(messageSuffix)
-            {}
-
-            virtual void VisitInt64(const EchoFieldInt64& field) override
-            {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoInt64"));
-            }
-
-            virtual void VisitUint64(const EchoFieldUint64& field) override
-            {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoUInt64"));
-            }
-
-            virtual void VisitInt32(const EchoFieldInt32& field) override
-            {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoInt32"));
-            }
-
-            virtual void VisitFixed64(const EchoFieldFixed64& field) override
-            {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoFixed64"));
-            }
-
-            virtual void VisitFixed32(const EchoFieldFixed32& field) override
-            {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoFixed32"));
-            }
-
-            virtual void VisitBool(const EchoFieldBool& field) override
-            {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoBool"));
-            }
-
-            virtual void VisitString(const EchoFieldString& field) override
-            {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoString<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">"));
-            }
-
-            virtual void VisitStdString(const EchoFieldStdString& field) override
-            {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoStdString"));
-            }
-
-            virtual void VisitEnum(const EchoFieldEnum& field) override
-            {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoEnum<" + field.typeName + ">"));
-            }
-
-            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
-            {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoSFixed64"));
-            }
-
-            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
-            {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoSFixed32"));
-            }
-
-            virtual void VisitMessage(const EchoFieldMessage& field) override
-            {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoMessage<" + field.message->name + messageSuffix + ">"));
-            }
-
-            virtual void VisitBytes(const EchoFieldBytes& field) override
-            {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoBytes<" + google::protobuf::SimpleItoa(field.maxBytesSize) + ">"));
-            }
-
-            virtual void VisitUint32(const EchoFieldUint32& field) override
-            {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoUInt32"));
-            }
-
-            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
-            {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoRepeated<" + google::protobuf::SimpleItoa(field.maxArraySize) + ", services::ProtoString<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">>"));
-            }
-
-            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
-            {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoRepeated<" + google::protobuf::SimpleItoa(field.maxArraySize) + ", services::ProtoMessage<" + field.message->name + messageSuffix + ">>"));
-            }
-
-            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
-            {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoRepeated<" + google::protobuf::SimpleItoa(field.maxArraySize) + ", services::ProtoUInt32>"));
-            }
-
-        private:
-            Entities& entities;
-            std::string messageSuffix;
-        };
-
         auto typeMap = std::make_shared<Access>("public");
 
-        auto typeMapDeclaration = std::make_shared<StructTemplateForwardDeclaration>("TypeMap");
-        typeMapDeclaration->TemplateParameter("std::size_t fieldIndex");
-        typeMap->Add(typeMapDeclaration);
-
-        for (auto& field : message->fields)
-        {
-            auto typeMapSpecialization = std::make_shared<StructTemplateSpecialization>("TypeMap");
-            typeMapSpecialization->TemplateSpecialization(google::protobuf::SimpleItoa(std::distance(message->fields.data(), &field)));
-            GenerateTypeMapEntryVisitor visitor(*typeMapSpecialization, messageSuffix);
-            field->Accept(visitor);
-            AddTypeMapType(*field, *typeMapSpecialization, messageSuffix);
-            typeMap->Add(typeMapSpecialization);
-        }
-
-        auto protoTypeUsing = std::make_shared<UsingTemplate>("ProtoType", "typename TypeMap<fieldIndex>::ProtoType");
+        auto protoTypeUsing = std::make_shared<UsingTemplate>("ProtoType", "typename detail::" + prefix + message->name + messageSuffix + "TypeMap<fieldIndex>::ProtoType");
         protoTypeUsing->TemplateParameter("std::size_t fieldIndex");
         typeMap->Add(protoTypeUsing);
-        auto typeUsing = std::make_shared<UsingTemplate>("Type", "typename TypeMap<fieldIndex>::Type");
+        auto typeUsing = std::make_shared<UsingTemplate>("Type", "typename detail::" + prefix + message->name + messageSuffix + "TypeMap<fieldIndex>::Type");
         typeUsing->TemplateParameter("std::size_t fieldIndex");
         typeMap->Add(typeUsing);
 
         classFormatter->Add(typeMap);
-    }
-
-    void MessageGenerator::AddTypeMapType(EchoField& field, Entities& entities, const std::string& messageSuffix)
-    {
-        class GenerateTypeMapEntryVisitor
-            : public EchoFieldVisitor
-        {
-        public:
-            GenerateTypeMapEntryVisitor(Entities& entities, const std::string& messageSuffix)
-                : entities(entities)
-                , messageSuffix(messageSuffix)
-            {}
-
-            virtual void VisitInt64(const EchoFieldInt64& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "int64_t"));
-            }
-
-            virtual void VisitUint64(const EchoFieldUint64& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "uint64_t"));
-            }
-
-            virtual void VisitInt32(const EchoFieldInt32& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "int32_t"));
-            }
-
-            virtual void VisitFixed64(const EchoFieldFixed64& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "uint64_t"));
-            }
-
-            virtual void VisitFixed32(const EchoFieldFixed32& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "uint32_t"));
-            }
-
-            virtual void VisitBool(const EchoFieldBool& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "bool"));
-            }
-
-            virtual void VisitString(const EchoFieldString& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "infra::BoundedString::WithStorage<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">"));
-            }
-
-            virtual void VisitStdString(const EchoFieldStdString& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "std::string"));
-            }
-
-            virtual void VisitEnum(const EchoFieldEnum& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", field.typeName));
-            }
-
-            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "int64_t"));
-            }
-
-            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "int32_t"));
-            }
-
-            virtual void VisitMessage(const EchoFieldMessage& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", field.message->name + messageSuffix));
-            }
-
-            virtual void VisitBytes(const EchoFieldBytes& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<uint8_t>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxBytesSize) + ">"));
-            }
-
-            virtual void VisitUint32(const EchoFieldUint32& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "uint32_t"));
-            }
-
-            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<infra::BoundedString::WithStorage<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
-            }
-
-            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<" + field.message->name + messageSuffix + ">::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
-            }
-
-            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<uint32_t>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
-            }
-
-        private:
-            Entities& entities;
-            std::string messageSuffix;
-        };
-
-        GenerateTypeMapEntryVisitor visitor(entities, messageSuffix);
-        field.Accept(visitor);
     }
 
     void MessageGenerator::GenerateGetters()
@@ -590,7 +751,7 @@ namespace application
         for (auto& field : message->fields)
         {
             auto index = std::distance(message->fields.data(), &field);
-            auto function = std::make_shared<Function>("Get", "return " + field->name + ";\n", message->qualifiedName + "::Type<" + google::protobuf::SimpleItoa(index) + ">&", 0);
+            auto function = std::make_shared<Function>("Get", "return " + field->name + ";\n", prefix + message->name + "::Type<" + google::protobuf::SimpleItoa(index) + ">&", 0);
             function->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
             getters->Add(function);
         }
@@ -598,16 +759,16 @@ namespace application
         classFormatter->Add(getters);
     }
 
-    void MessageGenerator::GenerateNestedMessageForwardDeclarations()
+    void MessageGenerator::GenerateNestedMessageAliases()
     {
         if (!message->nestedMessages.empty())
         {
-            auto forwardDeclarations = std::make_shared<Access>("public");
+            auto aliases = std::make_shared<Access>("public");
 
-            for (auto& nestedMessage: message->nestedMessages)
-                forwardDeclarations->Add(std::make_shared<ClassForwardDeclaration>(nestedMessage->name));
+            for (auto& nestedMessage : message->nestedMessages)
+                aliases->Add(std::make_shared<Using>(nestedMessage->name, "detail::" + prefix + message->name + nestedMessage->name));
 
-            classFormatter->Add(forwardDeclarations);
+            classFormatter->Add(aliases);
         }
     }
 
@@ -615,25 +776,25 @@ namespace application
     {
         if (!message->nestedEnums.empty())
         {
-            auto forwardDeclarations = std::make_shared<Access>("public");
+            auto aliases = std::make_shared<Access>("public");
 
             for (auto& nestedEnum : message->nestedEnums)
-                forwardDeclarations->Add(std::make_shared<EnumDeclaration>(nestedEnum->name, nestedEnum->members));
+                aliases->Add(std::make_shared<Using>(nestedEnum->name, "detail::" + prefix + message->name + nestedEnum->name));
 
-            classFormatter->Add(forwardDeclarations);
+            classFormatter->Add(aliases);
         }
     }
 
-    void MessageGenerator::GenerateNestedMessages()
+    void MessageGenerator::GenerateNestedMessages(Entities& formatter)
     {
         if (!message->nestedMessages.empty())
         {
-            auto nestedMessages = std::make_shared<Access>("public");
+            auto nestedMessages = std::make_shared<Namespace>("detail");
 
             for (auto& nestedMessage : message->nestedMessages)
-                MessageGenerator(nestedMessage).Run(*nestedMessages);
+                MessageGenerator(nestedMessage, prefix + message->name).Run(*nestedMessages);
 
-            classFormatter->Add(nestedMessages);
+            formatter.Add(nestedMessages);
         }
     }
 
@@ -689,7 +850,7 @@ namespace application
 
             virtual void VisitEnum(const EchoFieldEnum& field) override
             {
-                entities.Add(std::make_shared<DataMember>(field.name, field.typeName, "{}"));
+                entities.Add(std::make_shared<DataMember>(field.name, field.type->name, "{}"));
             }
 
             virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
@@ -1033,7 +1194,7 @@ namespace application
     break;
 )"
                 , "name", field.name
-                , "type", field.typeName
+                , "type", field.type->name
                 , "constant", field.constantName);
             }
 
@@ -1201,9 +1362,15 @@ namespace application
         return result.str();
     }
 
+    void MessageReferenceGenerator::GenerateTypeMap(Entities& formatter)
+    {
+        MessageReferenceTypeMapGenerator typeMapGenerator(message);
+        typeMapGenerator.Run(formatter);
+    }
+
     void MessageReferenceGenerator::GenerateClass(Entities& formatter)
     {
-        auto class_ = std::make_shared<Class>(message->name + "Reference");
+        auto class_ = std::make_shared<Class>(prefix + message->name + "Reference");
         classFormatter = class_.get();
         formatter.Add(class_);
     }
@@ -1268,7 +1435,7 @@ namespace application
 
             virtual void VisitEnum(const EchoFieldEnum& field) override
             {
-                constructor.Parameter(field.typeName + " " + field.name);
+                constructor.Parameter(field.type->name + " " + field.name);
                 constructor.Initializer(field.name + "(" + field.name + ")");
             }
 
@@ -1325,18 +1492,18 @@ namespace application
         };
 
         auto constructors = std::make_shared<Access>("public");
-        constructors->Add(std::make_shared<Constructor>(message->name + "Reference", "", Constructor::cDefault));
+        constructors->Add(std::make_shared<Constructor>(prefix + message->name + "Reference", "", Constructor::cDefault));
 
         if (!message->fields.empty())
         {
-            auto constructByMembers = std::make_shared<Constructor>(message->name + "Reference", "", 0);
+            auto constructByMembers = std::make_shared<Constructor>(prefix + message->name + "Reference", "", 0);
             GenerateConstructorsVisitor visitor(*constructByMembers);
             for (auto& field : message->fields)
                 field->Accept(visitor);
             constructors->Add(constructByMembers);
         }
 
-        auto constructByProtoParser = std::make_shared<Constructor>(message->name + "Reference", "Deserialize(parser);\n", 0);
+        auto constructByProtoParser = std::make_shared<Constructor>(prefix + message->name + "Reference", "Deserialize(parser);\n", 0);
         constructByProtoParser->Parameter("infra::ProtoParser& parser");
         constructors->Add(constructByProtoParser);
         classFormatter->Add(constructors);
@@ -1355,11 +1522,11 @@ namespace application
         functions->Add(deserialize);
 
         auto compareEqual = std::make_shared<Function>("operator==", CompareEqualBody(), "bool", Function::fConst);
-        compareEqual->Parameter("const " + message->name + "Reference& other");
+        compareEqual->Parameter("const " + prefix + message->name + "Reference& other");
         functions->Add(compareEqual);
 
         auto compareUnEqual = std::make_shared<Function>("operator!=", CompareUnEqualBody(), "bool", Function::fConst);
-        compareUnEqual->Parameter("const " + message->name + "Reference& other");
+        compareUnEqual->Parameter("const " + prefix + message->name + "Reference& other");
         functions->Add(compareUnEqual);
 
         classFormatter->Add(functions);
@@ -1370,111 +1537,6 @@ namespace application
         MessageGenerator::GenerateTypeMap("Reference");
     }
 
-    void MessageReferenceGenerator::AddTypeMapType(EchoField& field, Entities& entities, const std::string& messageSuffix)
-    {
-        class GenerateTypeMapEntryVisitor
-            : public EchoFieldVisitor
-        {
-        public:
-            GenerateTypeMapEntryVisitor(Entities& entities, const std::string& messageSuffix)
-                : entities(entities)
-                , messageSuffix(messageSuffix)
-            {}
-
-            virtual void VisitInt64(const EchoFieldInt64& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "int64_t"));
-            }
-
-            virtual void VisitUint64(const EchoFieldUint64& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "uint64_t"));
-            }
-
-            virtual void VisitInt32(const EchoFieldInt32& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "int32_t"));
-            }
-
-            virtual void VisitFixed64(const EchoFieldFixed64& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "uint64_t"));
-            }
-
-            virtual void VisitFixed32(const EchoFieldFixed32& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "uint32_t"));
-            }
-
-            virtual void VisitBool(const EchoFieldBool& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "bool"));
-            }
-
-            virtual void VisitString(const EchoFieldString& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "infra::BoundedConstString"));
-            }
-
-            virtual void VisitStdString(const EchoFieldStdString& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "std::string"));
-            }
-
-            virtual void VisitEnum(const EchoFieldEnum& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", field.typeName));
-            }
-
-            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "int64_t"));
-            }
-
-            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "int32_t"));
-            }
-
-            virtual void VisitMessage(const EchoFieldMessage& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", field.message->name + messageSuffix));
-            }
-
-            virtual void VisitBytes(const EchoFieldBytes& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "infra::ConstByteRange"));
-            }
-
-            virtual void VisitUint32(const EchoFieldUint32& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "uint32_t"));
-            }
-
-            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<infra::BoundedConstString>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
-            }
-
-            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<" + field.message->name + messageSuffix + ">::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
-            }
-
-            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<uint32_t>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
-            }
-
-        private:
-            Entities& entities;
-            std::string messageSuffix;
-        };
-
-        GenerateTypeMapEntryVisitor visitor(entities, messageSuffix);
-        field.Accept(visitor);
-    }
-
     void MessageReferenceGenerator::GenerateGetters()
     {
         auto getters = std::make_shared<Access>("public");
@@ -1482,7 +1544,7 @@ namespace application
         for (auto& field : message->fields)
         {
             auto index = std::distance(message->fields.data(), &field);
-            auto function = std::make_shared<Function>("Get", "return " + field->name + ";\n", message->qualifiedReferenceName + "::Type<" + google::protobuf::SimpleItoa(index) + ">&", 0);
+            auto function = std::make_shared<Function>("Get", "return " + field->name + ";\n", prefix + message->name + "Reference::Type<" + google::protobuf::SimpleItoa(index) + ">&", 0);
             function->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
             getters->Add(function);
         }
@@ -1490,29 +1552,29 @@ namespace application
         classFormatter->Add(getters);
     }
 
-    void MessageReferenceGenerator::GenerateNestedMessageForwardDeclarations()
+    void MessageReferenceGenerator::GenerateNestedMessageAliases()
     {
         if (!message->nestedMessages.empty())
         {
-            auto forwardDeclarations = std::make_shared<Access>("public");
+            auto aliases = std::make_shared<Access>("public");
 
             for (auto& nestedMessage : message->nestedMessages)
-                forwardDeclarations->Add(std::make_shared<ClassForwardDeclaration>(nestedMessage->name + "Reference"));
+                aliases->Add(std::make_shared<Using>(nestedMessage->name, "detail::" + prefix + message->name + "Reference" + nestedMessage->name + "Reference"));
 
-            classFormatter->Add(forwardDeclarations);
+            classFormatter->Add(aliases);
         }
     }
 
-    void MessageReferenceGenerator::GenerateNestedMessages()
+    void MessageReferenceGenerator::GenerateNestedMessages(Entities& formatter)
     {
         if (!message->nestedMessages.empty())
         {
-            auto nestedMessages = std::make_shared<Access>("public");
+            auto nestedMessages = std::make_shared<Namespace>("detail");
 
             for (auto& nestedMessage : message->nestedMessages)
-                MessageReferenceGenerator(nestedMessage).Run(*nestedMessages);
+                MessageReferenceGenerator(nestedMessage, prefix + message->name).Run(*nestedMessages);
 
-            classFormatter->Add(nestedMessages);
+            formatter.Add(nestedMessages);
         }
     }
 
@@ -1583,7 +1645,7 @@ namespace application
 
             virtual void VisitEnum(const EchoFieldEnum& field) override
             {
-                entities.Add(std::make_shared<DataMember>(field.name, field.typeName, "{}"));
+                entities.Add(std::make_shared<DataMember>(field.name, field.type->name, "{}"));
             }
 
             virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
@@ -1768,7 +1830,7 @@ namespace application
     break;
 )"
                 , "name", field.name
-                , "type", field.typeName
+                , "type", field.type->name
                 , "constant", field.constantName);
             }
 
@@ -2125,9 +2187,11 @@ Rpc().Send();
 
         for (auto& message : root.GetFile(*file)->messages)
         {
-            messageReferenceGenerators.emplace_back(std::make_shared<MessageReferenceGenerator>(message));
+            MessageEnumGenerator messageEnumGenerator(message);
+            messageEnumGenerator.Run(*currentEntity);
+            messageReferenceGenerators.emplace_back(std::make_shared<MessageReferenceGenerator>(message, ""));
             messageReferenceGenerators.back()->Run(*currentEntity);
-            messageGenerators.emplace_back(std::make_shared<MessageGenerator>(message));
+            messageGenerators.emplace_back(std::make_shared<MessageGenerator>(message, ""));
             messageGenerators.back()->Run(*currentEntity);
         }
 

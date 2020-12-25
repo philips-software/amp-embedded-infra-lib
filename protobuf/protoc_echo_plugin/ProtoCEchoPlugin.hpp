@@ -30,10 +30,56 @@ namespace application
         std::shared_ptr<const EchoEnum> enum_;
     };
 
+    class MessageEnumGenerator
+    {
+    public:
+        MessageEnumGenerator(const std::shared_ptr<const EchoMessage>& message);
+        MessageEnumGenerator(const MessageEnumGenerator& other) = delete;
+        MessageEnumGenerator& operator=(const MessageEnumGenerator& other) = delete;
+        ~MessageEnumGenerator() = default;
+
+        void Run(Entities& formatter);
+
+    private:
+        std::shared_ptr<const EchoMessage> message;
+    };
+
+    class MessageTypeMapGenerator
+    {
+    public:
+        MessageTypeMapGenerator(const std::shared_ptr<const EchoMessage>& message);
+        MessageTypeMapGenerator(const MessageTypeMapGenerator& other) = delete;
+        MessageTypeMapGenerator& operator=(const MessageTypeMapGenerator& other) = delete;
+        ~MessageTypeMapGenerator() = default;
+
+        void Run(Entities& formatter);
+
+    protected:
+        virtual void AddTypeMapType(EchoField& field, Entities& entities, const std::string& messageSuffix);
+        virtual std::string MessageSuffix() const;
+
+    private:
+        std::string MessageName() const;
+
+    protected:
+        std::shared_ptr<const EchoMessage> message;
+    };
+
+    class MessageReferenceTypeMapGenerator
+        : public MessageTypeMapGenerator
+    {
+    public:
+        using MessageTypeMapGenerator::MessageTypeMapGenerator;
+
+    protected:
+        virtual void AddTypeMapType(EchoField& field, Entities& entities, const std::string& messageSuffix);
+        virtual std::string MessageSuffix() const;
+    };
+
     class MessageGenerator
     {
     public:
-        MessageGenerator(const std::shared_ptr<const EchoMessage>& message);
+        MessageGenerator(const std::shared_ptr<const EchoMessage>& message, const std::string& prefix);
         MessageGenerator(const MessageGenerator& other) = delete;
         MessageGenerator& operator=(const MessageGenerator& other) = delete;
         ~MessageGenerator() = default;
@@ -41,15 +87,15 @@ namespace application
         void Run(Entities& formatter);
 
     protected:
+        virtual void GenerateTypeMap(Entities& formatter);
         virtual void GenerateClass(Entities& formatter);
         virtual void GenerateConstructors();
         virtual void GenerateFunctions();
         virtual void GenerateTypeMap(const std::string& messageSuffix = "");
         virtual void GenerateGetters();
-        virtual void AddTypeMapType(EchoField& field, Entities& entities, const std::string& messageSuffix);
-        virtual void GenerateNestedMessageForwardDeclarations();
+        virtual void GenerateNestedMessageAliases();
         virtual void GenerateEnums();
-        virtual void GenerateNestedMessages();
+        virtual void GenerateNestedMessages(Entities& formatter);
         virtual void GenerateFieldDeclarations();
         virtual void GenerateFieldConstants();
         virtual void GenerateMaxMessageSize();
@@ -60,6 +106,7 @@ namespace application
 
     protected:
         std::shared_ptr<const EchoMessage> message;
+        std::string prefix;
         Class* classFormatter;
     };
 
@@ -70,14 +117,14 @@ namespace application
         using MessageGenerator::MessageGenerator;
 
     protected:
+        virtual void GenerateTypeMap(Entities& formatter);
         virtual void GenerateClass(Entities& formatter) override;
         virtual void GenerateConstructors() override;
         virtual void GenerateFunctions() override;
         virtual void GenerateTypeMap(const std::string& messageSuffix) override;
-        virtual void AddTypeMapType(EchoField& field, Entities& entities, const std::string& messageSuffix) override;
         virtual void GenerateGetters() override;
-        virtual void GenerateNestedMessageForwardDeclarations() override;
-        virtual void GenerateNestedMessages() override;
+        virtual void GenerateNestedMessageAliases() override;
+        virtual void GenerateNestedMessages(Entities& formatter) override;
         virtual void GenerateFieldDeclarations() override;
         virtual void GenerateMaxMessageSize() override;
         virtual std::string SerializerBody() override;
