@@ -8,6 +8,8 @@
 
 namespace application
 {
+    class EchoGenerator;
+
     class CppInfraCodeGenerator
         : public google::protobuf::compiler::CodeGenerator
     {
@@ -47,7 +49,7 @@ namespace application
     class MessageTypeMapGenerator
     {
     public:
-        MessageTypeMapGenerator(const std::shared_ptr<const EchoMessage>& message);
+        MessageTypeMapGenerator(const std::shared_ptr<const EchoMessage>& message, const std::string& prefix);
         MessageTypeMapGenerator(const MessageTypeMapGenerator& other) = delete;
         MessageTypeMapGenerator& operator=(const MessageTypeMapGenerator& other) = delete;
         ~MessageTypeMapGenerator() = default;
@@ -56,13 +58,12 @@ namespace application
 
     protected:
         virtual void AddTypeMapType(EchoField& field, Entities& entities, const std::string& messageSuffix);
-        virtual std::string MessageSuffix() const;
-
-    private:
         std::string MessageName() const;
+        virtual std::string MessageSuffix() const;
 
     protected:
         std::shared_ptr<const EchoMessage> message;
+        std::string prefix;
     };
 
     class MessageReferenceTypeMapGenerator
@@ -73,7 +74,7 @@ namespace application
 
     protected:
         virtual void AddTypeMapType(EchoField& field, Entities& entities, const std::string& messageSuffix);
-        virtual std::string MessageSuffix() const;
+        virtual std::string MessageSuffix() const override;
     };
 
     class MessageGenerator
@@ -88,24 +89,32 @@ namespace application
 
     protected:
         virtual void GenerateTypeMap(Entities& formatter);
-        virtual void GenerateClass(Entities& formatter);
+        void GenerateClass(Entities& formatter);
         virtual void GenerateConstructors();
-        virtual void GenerateFunctions();
-        virtual void GenerateTypeMap(const std::string& messageSuffix = "");
+        void GenerateFunctions();
+        void GenerateTypeMap();
         virtual void GenerateGetters();
-        virtual void GenerateNestedMessageAliases();
+        void GenerateNestedMessageAliases();
         virtual void GenerateEnums();
         virtual void GenerateNestedMessages(Entities& formatter);
         virtual void GenerateFieldDeclarations();
-        virtual void GenerateFieldConstants();
+        void GenerateFieldConstants();
         virtual void GenerateMaxMessageSize();
         virtual std::string SerializerBody();
         virtual std::string DeserializerBody();
         virtual std::string CompareEqualBody() const;
         virtual std::string CompareUnEqualBody() const;
 
-    protected:
+        virtual std::string ClassName() const;
+        virtual std::string ReferencedName() const;
+        virtual std::string MessageSuffix() const;
+        std::string TypeMapName() const;
+        std::string ReferencedEnumPrefix() const;
+
+    public:
         std::shared_ptr<const EchoMessage> message;
+
+    protected:
         std::string prefix;
         Class* classFormatter;
     };
@@ -118,18 +127,18 @@ namespace application
 
     protected:
         virtual void GenerateTypeMap(Entities& formatter);
-        virtual void GenerateClass(Entities& formatter) override;
         virtual void GenerateConstructors() override;
-        virtual void GenerateFunctions() override;
-        virtual void GenerateTypeMap(const std::string& messageSuffix) override;
         virtual void GenerateGetters() override;
-        virtual void GenerateNestedMessageAliases() override;
         virtual void GenerateNestedMessages(Entities& formatter) override;
         virtual void GenerateFieldDeclarations() override;
         virtual void GenerateMaxMessageSize() override;
         virtual std::string SerializerBody() override;
         virtual std::string DeserializerBody() override;
-   };
+
+        virtual std::string ClassName() const override;
+        virtual std::string ReferencedName() const override;
+        virtual std::string MessageSuffix() const override;
+    };
 
     class ServiceGenerator
     {

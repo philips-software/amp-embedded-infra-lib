@@ -39,6 +39,19 @@ namespace application
 
             return namespaceString + descriptor.name() + "Reference";
         }
+
+        std::string QualifiedDetailName(const google::protobuf::Descriptor& descriptor)
+        {
+            std::string namespaceString;
+
+            if (descriptor.containing_type() != nullptr)
+            {
+                for (auto containingType = descriptor.containing_type(); containingType != nullptr; containingType = containingType->containing_type())
+                    namespaceString += containingType->name();
+            }
+
+            return namespaceString + descriptor.name();
+        }
     }
 
     uint32_t MaxVarIntSize(uint64_t value)
@@ -130,6 +143,7 @@ namespace application
         , name(descriptor.name())
         , qualifiedName(QualifiedName(descriptor))
         , qualifiedReferenceName(QualifiedReferenceName(descriptor))
+        , qualifiedDetailName(QualifiedDetailName(descriptor))
     {
         for (int i = 0; i != descriptor.enum_type_count(); ++i)
             nestedEnums.push_back(root.AddEnum(*descriptor.enum_type(i)));

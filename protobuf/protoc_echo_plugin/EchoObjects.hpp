@@ -54,6 +54,7 @@ namespace application
         std::string name;
         std::string qualifiedName;
         std::string qualifiedReferenceName;
+        std::string qualifiedDetailName;
         std::vector<std::shared_ptr<EchoField>> fields;
         std::vector<std::shared_ptr<EchoMessage>> nestedMessages;
         std::vector<std::shared_ptr<EchoEnum>> nestedEnums;

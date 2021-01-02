@@ -190,8 +190,9 @@ namespace application
         }
     }
 
-    MessageTypeMapGenerator::MessageTypeMapGenerator(const std::shared_ptr<const EchoMessage>& message)
+    MessageTypeMapGenerator::MessageTypeMapGenerator(const std::shared_ptr<const EchoMessage>& message, const std::string& prefix)
         : message(message)
+        , prefix(prefix)
     {}
 
     void MessageTypeMapGenerator::Run(Entities& formatter)
@@ -262,7 +263,7 @@ namespace application
 
             virtual void VisitMessage(const EchoFieldMessage& field) override
             {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoMessage<" + field.message->name + messageSuffix + ">"));
+                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoMessage<" + field.message->qualifiedDetailName + messageSuffix + ">"));
             }
 
             virtual void VisitBytes(const EchoFieldBytes& field) override
@@ -282,7 +283,7 @@ namespace application
 
             virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
             {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoRepeated<" + google::protobuf::SimpleItoa(field.maxArraySize) + ", services::ProtoMessage<" + field.message->name + messageSuffix + ">>"));
+                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoRepeated<" + google::protobuf::SimpleItoa(field.maxArraySize) + ", services::ProtoMessage<" + field.message->qualifiedDetailName + messageSuffix + ">>"));
             }
 
             virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
@@ -382,7 +383,7 @@ namespace application
 
             virtual void VisitMessage(const EchoFieldMessage& field) override
             {
-                entities.Add(std::make_shared<Using>("Type", field.message->name + messageSuffix));
+                entities.Add(std::make_shared<Using>("Type", field.message->qualifiedDetailName + messageSuffix));
             }
 
             virtual void VisitBytes(const EchoFieldBytes& field) override
@@ -402,7 +403,7 @@ namespace application
 
             virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
             {
-                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<" + field.message->name + messageSuffix + ">::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
+                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<" + field.message->qualifiedDetailName + messageSuffix + ">::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
             }
 
             virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
@@ -419,14 +420,14 @@ namespace application
         field.Accept(visitor);
     }
 
+    std::string MessageTypeMapGenerator::MessageName() const
+    {
+        return prefix + message->name + MessageSuffix();
+    }
+
     std::string MessageTypeMapGenerator::MessageSuffix() const
     {
         return "";
-    }
-
-    std::string MessageTypeMapGenerator::MessageName() const
-    {
-        return message->name + MessageSuffix();
     }
 
     void MessageReferenceTypeMapGenerator::AddTypeMapType(EchoField& field, Entities& entities, const std::string& messageSuffix)
@@ -435,9 +436,8 @@ namespace application
             : public EchoFieldVisitor
         {
         public:
-            GenerateTypeMapEntryVisitor(Entities& entities, const std::string& messageSuffix)
+            GenerateTypeMapEntryVisitor(Entities& entities)
                 : entities(entities)
-                , messageSuffix(messageSuffix)
             {}
 
             virtual void VisitInt64(const EchoFieldInt64& field) override
@@ -497,7 +497,7 @@ namespace application
 
             virtual void VisitMessage(const EchoFieldMessage& field) override
             {
-                entities.Add(std::make_shared<Using>("Type", field.message->name + messageSuffix));
+                entities.Add(std::make_shared<Using>("Type", field.message->qualifiedDetailName + "Reference"));
             }
 
             virtual void VisitBytes(const EchoFieldBytes& field) override
@@ -517,7 +517,7 @@ namespace application
 
             virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
             {
-                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<" + field.message->name + messageSuffix + ">::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
+                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<" + field.message->qualifiedDetailName + "Reference>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
             }
 
             virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
@@ -527,10 +527,9 @@ namespace application
 
         private:
             Entities& entities;
-            std::string messageSuffix;
         };
 
-        GenerateTypeMapEntryVisitor visitor(entities, MessageSuffix());
+        GenerateTypeMapEntryVisitor visitor(entities);
         field.Accept(visitor);
     }
 
@@ -562,13 +561,13 @@ namespace application
 
     void MessageGenerator::GenerateTypeMap(Entities& formatter)
     {
-        MessageTypeMapGenerator typeMapGenerator(message);
+        MessageTypeMapGenerator typeMapGenerator(message, prefix);
         typeMapGenerator.Run(formatter);
     }
 
     void MessageGenerator::GenerateClass(Entities& formatter)
     {
-        auto class_ = std::make_shared<Class>(prefix + message->name);
+        auto class_ = std::make_shared<Class>(ClassName());
         classFormatter = class_.get();
         formatter.Add(class_);
     }
@@ -690,18 +689,18 @@ namespace application
         };
 
         auto constructors = std::make_shared<Access>("public");
-        constructors->Add(std::make_shared<Constructor>(prefix + message->name, "", Constructor::cDefault));
+        constructors->Add(std::make_shared<Constructor>(ClassName(), "", Constructor::cDefault));
 
         if (!message->fields.empty())
         {
-            auto constructByMembers = std::make_shared<Constructor>(prefix + message->name, "", 0);
+            auto constructByMembers = std::make_shared<Constructor>(ClassName(), "", 0);
             GenerateConstructorsVisitor visitor(*constructByMembers);
             for (auto& field : message->fields)
                 field->Accept(visitor);
             constructors->Add(constructByMembers);
         }
 
-        auto constructByProtoParser = std::make_shared<Constructor>(prefix + message->name, "Deserialize(parser);\n", 0);
+        auto constructByProtoParser = std::make_shared<Constructor>(ClassName(), "Deserialize(parser);\n", 0);
         constructByProtoParser->Parameter("infra::ProtoParser& parser");
         constructors->Add(constructByProtoParser);
         classFormatter->Add(constructors);
@@ -720,24 +719,24 @@ namespace application
         functions->Add(deserialize);
 
         auto compareEqual = std::make_shared<Function>("operator==", CompareEqualBody(), "bool", Function::fConst);
-        compareEqual->Parameter("const " + prefix + message->name + "& other");
+        compareEqual->Parameter("const " + ClassName() + "& other");
         functions->Add(compareEqual);
 
         auto compareUnEqual = std::make_shared<Function>("operator!=", CompareUnEqualBody(), "bool", Function::fConst);
-        compareUnEqual->Parameter("const " + prefix + message->name + "& other");
+        compareUnEqual->Parameter("const " + ClassName() + "& other");
         functions->Add(compareUnEqual);
 
         classFormatter->Add(functions);
     }
 
-    void MessageGenerator::GenerateTypeMap(const std::string& messageSuffix)
+    void MessageGenerator::GenerateTypeMap()
     {
         auto typeMap = std::make_shared<Access>("public");
 
-        auto protoTypeUsing = std::make_shared<UsingTemplate>("ProtoType", "typename detail::" + prefix + message->name + messageSuffix + "TypeMap<fieldIndex>::ProtoType");
+        auto protoTypeUsing = std::make_shared<UsingTemplate>("ProtoType", "typename " + TypeMapName() + "<fieldIndex>::ProtoType");
         protoTypeUsing->TemplateParameter("std::size_t fieldIndex");
         typeMap->Add(protoTypeUsing);
-        auto typeUsing = std::make_shared<UsingTemplate>("Type", "typename detail::" + prefix + message->name + messageSuffix + "TypeMap<fieldIndex>::Type");
+        auto typeUsing = std::make_shared<UsingTemplate>("Type", "typename " + TypeMapName() + "<fieldIndex>::Type");
         typeUsing->TemplateParameter("std::size_t fieldIndex");
         typeMap->Add(typeUsing);
 
@@ -751,7 +750,7 @@ namespace application
         for (auto& field : message->fields)
         {
             auto index = std::distance(message->fields.data(), &field);
-            auto function = std::make_shared<Function>("Get", "return " + field->name + ";\n", prefix + message->name + "::Type<" + google::protobuf::SimpleItoa(index) + ">&", 0);
+            auto function = std::make_shared<Function>("Get", "return " + field->name + ";\n", ClassName() + "::Type<" + google::protobuf::SimpleItoa(index) + ">&", 0);
             function->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
             getters->Add(function);
         }
@@ -766,7 +765,7 @@ namespace application
             auto aliases = std::make_shared<Access>("public");
 
             for (auto& nestedMessage : message->nestedMessages)
-                aliases->Add(std::make_shared<Using>(nestedMessage->name, "detail::" + prefix + message->name + nestedMessage->name));
+                aliases->Add(std::make_shared<Using>(nestedMessage->name + MessageSuffix(), "detail::" + nestedMessage->qualifiedDetailName + MessageSuffix()));
 
             classFormatter->Add(aliases);
         }
@@ -779,7 +778,7 @@ namespace application
             auto aliases = std::make_shared<Access>("public");
 
             for (auto& nestedEnum : message->nestedEnums)
-                aliases->Add(std::make_shared<Using>(nestedEnum->name, "detail::" + prefix + message->name + nestedEnum->name));
+                aliases->Add(std::make_shared<Using>(nestedEnum->name, ReferencedEnumPrefix() + nestedEnum->name));
 
             classFormatter->Add(aliases);
         }
@@ -792,7 +791,7 @@ namespace application
             auto nestedMessages = std::make_shared<Namespace>("detail");
 
             for (auto& nestedMessage : message->nestedMessages)
-                MessageGenerator(nestedMessage, prefix + message->name).Run(*nestedMessages);
+                MessageGenerator(nestedMessage, ClassName()).Run(*nestedMessages);
 
             formatter.Add(nestedMessages);
         }
@@ -1362,17 +1361,35 @@ namespace application
         return result.str();
     }
 
-    void MessageReferenceGenerator::GenerateTypeMap(Entities& formatter)
+    std::string MessageGenerator::ClassName() const
     {
-        MessageReferenceTypeMapGenerator typeMapGenerator(message);
-        typeMapGenerator.Run(formatter);
+        return prefix + message->name;
     }
 
-    void MessageReferenceGenerator::GenerateClass(Entities& formatter)
+    std::string MessageGenerator::ReferencedName() const
     {
-        auto class_ = std::make_shared<Class>(prefix + message->name + "Reference");
-        classFormatter = class_.get();
-        formatter.Add(class_);
+        return ClassName();
+    }
+
+    std::string MessageGenerator::MessageSuffix() const
+    {
+        return "";
+    }
+
+    std::string MessageGenerator::TypeMapName() const
+    {
+        return "detail::" + ClassName() + "TypeMap";
+    }
+
+    std::string MessageGenerator::ReferencedEnumPrefix() const
+    {
+        return "detail::" + prefix + message->name;
+    }
+
+    void MessageReferenceGenerator::GenerateTypeMap(Entities& formatter)
+    {
+        MessageReferenceTypeMapGenerator typeMapGenerator(message, prefix);
+        typeMapGenerator.Run(formatter);
     }
 
     void MessageReferenceGenerator::GenerateConstructors()
@@ -1492,49 +1509,21 @@ namespace application
         };
 
         auto constructors = std::make_shared<Access>("public");
-        constructors->Add(std::make_shared<Constructor>(prefix + message->name + "Reference", "", Constructor::cDefault));
+        constructors->Add(std::make_shared<Constructor>(ClassName(), "", Constructor::cDefault));
 
         if (!message->fields.empty())
         {
-            auto constructByMembers = std::make_shared<Constructor>(prefix + message->name + "Reference", "", 0);
+            auto constructByMembers = std::make_shared<Constructor>(ClassName(), "", 0);
             GenerateConstructorsVisitor visitor(*constructByMembers);
             for (auto& field : message->fields)
                 field->Accept(visitor);
             constructors->Add(constructByMembers);
         }
 
-        auto constructByProtoParser = std::make_shared<Constructor>(prefix + message->name + "Reference", "Deserialize(parser);\n", 0);
+        auto constructByProtoParser = std::make_shared<Constructor>(ClassName(), "Deserialize(parser);\n", 0);
         constructByProtoParser->Parameter("infra::ProtoParser& parser");
         constructors->Add(constructByProtoParser);
         classFormatter->Add(constructors);
-    }
-
-    void MessageReferenceGenerator::GenerateFunctions()
-    {
-        auto functions = std::make_shared<Access>("public");
-
-        auto serialize = std::make_shared<Function>("Serialize", SerializerBody(), "void", Function::fConst);
-        serialize->Parameter("infra::ProtoFormatter& formatter");
-        functions->Add(serialize);
-
-        auto deserialize = std::make_shared<Function>("Deserialize", DeserializerBody(), "void", 0);
-        deserialize->Parameter("infra::ProtoParser& parser");
-        functions->Add(deserialize);
-
-        auto compareEqual = std::make_shared<Function>("operator==", CompareEqualBody(), "bool", Function::fConst);
-        compareEqual->Parameter("const " + prefix + message->name + "Reference& other");
-        functions->Add(compareEqual);
-
-        auto compareUnEqual = std::make_shared<Function>("operator!=", CompareUnEqualBody(), "bool", Function::fConst);
-        compareUnEqual->Parameter("const " + prefix + message->name + "Reference& other");
-        functions->Add(compareUnEqual);
-
-        classFormatter->Add(functions);
-    }
-
-    void MessageReferenceGenerator::GenerateTypeMap(const std::string& messageSuffix)
-    {
-        MessageGenerator::GenerateTypeMap("Reference");
     }
 
     void MessageReferenceGenerator::GenerateGetters()
@@ -1544,25 +1533,12 @@ namespace application
         for (auto& field : message->fields)
         {
             auto index = std::distance(message->fields.data(), &field);
-            auto function = std::make_shared<Function>("Get", "return " + field->name + ";\n", prefix + message->name + "Reference::Type<" + google::protobuf::SimpleItoa(index) + ">&", 0);
+            auto function = std::make_shared<Function>("Get", "return " + field->name + ";\n", ClassName() + "::Type<" + google::protobuf::SimpleItoa(index) + ">&", 0);
             function->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
             getters->Add(function);
         }
 
         classFormatter->Add(getters);
-    }
-
-    void MessageReferenceGenerator::GenerateNestedMessageAliases()
-    {
-        if (!message->nestedMessages.empty())
-        {
-            auto aliases = std::make_shared<Access>("public");
-
-            for (auto& nestedMessage : message->nestedMessages)
-                aliases->Add(std::make_shared<Using>(nestedMessage->name, "detail::" + prefix + message->name + "Reference" + nestedMessage->name + "Reference"));
-
-            classFormatter->Add(aliases);
-        }
     }
 
     void MessageReferenceGenerator::GenerateNestedMessages(Entities& formatter)
@@ -1572,7 +1548,7 @@ namespace application
             auto nestedMessages = std::make_shared<Namespace>("detail");
 
             for (auto& nestedMessage : message->nestedMessages)
-                MessageReferenceGenerator(nestedMessage, prefix + message->name).Run(*nestedMessages);
+                MessageReferenceGenerator(nestedMessage, message->name).Run(*nestedMessages);
 
             formatter.Add(nestedMessages);
         }
@@ -1930,6 +1906,21 @@ namespace application
         }
 
         return result.str();
+    }
+
+    std::string MessageReferenceGenerator::ClassName() const
+    {
+        return MessageGenerator::ClassName() + "Reference";
+    }
+
+    std::string MessageReferenceGenerator::ReferencedName() const
+    {
+        return "detail::" + ClassName();
+    }
+
+    std::string MessageReferenceGenerator::MessageSuffix() const
+    {
+        return "Reference";
     }
 
     ServiceGenerator::ServiceGenerator(const std::shared_ptr<const EchoService>& service, Entities& formatter)
