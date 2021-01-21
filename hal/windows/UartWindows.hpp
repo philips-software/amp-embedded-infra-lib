@@ -65,6 +65,7 @@ namespace hal
         };
 
         std::string PhysicalDeviceObjectNameForDeviceDescription(const std::string& deviceDescription) const;
+        std::string PhysicalDeviceObjectNameForMatchingDeviceId(const std::string& matchingDeviceId) const;
 
     private:
         void ReadAllComPortDevices();
@@ -76,6 +77,7 @@ namespace hal
             std::string deviceDescription;
             std::string friendlyName;
             std::string physicalDeviceObjectName;
+            std::string matchingDeviceId;
         };
 
         std::vector<Description> descriptions;
