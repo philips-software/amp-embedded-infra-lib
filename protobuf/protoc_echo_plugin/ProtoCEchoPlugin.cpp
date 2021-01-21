@@ -765,7 +765,7 @@ namespace application
             auto aliases = std::make_shared<Access>("public");
 
             for (auto& nestedMessage : message->nestedMessages)
-                aliases->Add(std::make_shared<Using>(nestedMessage->name + MessageSuffix(), "detail::" + nestedMessage->qualifiedDetailName + MessageSuffix()));
+                aliases->Add(std::make_shared<Using>(nestedMessage->name + MessageSuffix(), nestedMessage->qualifiedDetailName + MessageSuffix()));
 
             classFormatter->Add(aliases);
         }

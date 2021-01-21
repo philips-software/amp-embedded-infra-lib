@@ -44,8 +44,12 @@ namespace application
         {
             std::string namespaceString;
 
+            namespaceString = descriptor.file()->package() + "::";
+
             if (descriptor.containing_type() != nullptr)
             {
+                namespaceString += "detail::";
+
                 for (auto containingType = descriptor.containing_type(); containingType != nullptr; containingType = containingType->containing_type())
                     namespaceString += containingType->name();
             }
