@@ -140,7 +140,7 @@ public:
     infra::NotifyingSharedOptional<infra::StdVectorOutputStreamWriter> writer;
     infra::AutoResetFunction<void(uint16_t size)> onSent;
     infra::Execute execute{ [this]() { ExpectSendMessageStream(3); } };
-    services::WindowedMessageCommunication::WithReceiveBuffer<16> communication{ base };
+    services::WindowedMessageCommunication::WithReceiveBuffer<12> communication{ base };
     testing::StrictMock<MessageCommunicationObserverMock> observer{ communication };
 };
 
