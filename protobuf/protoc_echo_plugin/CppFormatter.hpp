@@ -33,7 +33,7 @@ namespace application
         : public Entity
     {
     public:
-        explicit Entities(bool insertNewlineBetweenEntities);
+        explicit Entities(bool insertNewlineBetweenEntities, bool hasSourceCode = true);
 
         void Add(std::shared_ptr<Entity>&& newEntity);
 
@@ -186,6 +186,38 @@ namespace application
         std::string initializer;
     };
 
+    class Using
+        : public Entity
+    {
+    public:
+        Using(const std::string& name, const std::string& definition);
+
+        virtual void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        virtual void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+
+    private:
+        std::string name;
+        std::string definition;
+    };
+
+    class UsingTemplate
+        : public Using
+    {
+    public:
+        using Using::Using;
+
+        virtual void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        virtual void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+
+        void TemplateParameter(const std::string& parameter);
+
+    private:
+        std::string Parameters() const;
+
+    private:
+        std::vector<std::string> parameters;
+    };
+
     class IncludesByHeader
         : public Entity
     {
@@ -227,6 +259,44 @@ namespace application
 
     private:
         std::string name;
+    };
+
+    class StructTemplateForwardDeclaration
+        : public Entity
+    {
+    public:
+        explicit StructTemplateForwardDeclaration(const std::string& name);
+
+        virtual void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        virtual void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+
+        void TemplateParameter(const std::string& parameter);
+
+    private:
+        std::string Parameters() const;
+
+    private:
+        std::string name;
+        std::vector<std::string> parameters;
+    };
+
+    class StructTemplateSpecialization
+        : public Entities
+    {
+    public:
+        explicit StructTemplateSpecialization(const std::string& name);
+
+        void TemplateSpecialization(const std::string& specialization);
+
+        virtual void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        virtual void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+
+    private:
+        std::string Specializations() const;
+
+    private:
+        std::string name;
+        std::vector<std::string> specializations;
     };
 
     class EnumDeclaration

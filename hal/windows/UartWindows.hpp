@@ -7,6 +7,7 @@
 #include <thread>
 #include <winsock2.h>
 #include <windows.h>
+#include <setupapi.h>
 
 namespace hal
 {
@@ -21,13 +22,18 @@ namespace hal
         : public SerialCommunication
     {
     public:
+        struct DeviceName {};
+        static const DeviceName deviceName;
+
         UartWindows(const std::string& portName);
+        UartWindows(const std::string& name, DeviceName);
         ~UartWindows();
 
         virtual void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) override;
         virtual void SendData(infra::MemoryRange<const uint8_t> data, infra::Function<void()> actionOnCompletion = infra::emptyFunction) override;
 
     private:
+        void Open(const std::string& name);
         void ReadThread();
         void ReadNonBlocking(infra::ByteRange range);
         void ReadBlocking(infra::ByteRange range);
@@ -44,6 +50,37 @@ namespace hal
         bool pendingRead = false;
         OVERLAPPED overlapped = { 0 };
         uint8_t buffer;
+    };
+
+    class UartPortFinder
+    {
+    public:
+        UartPortFinder();
+
+        class UartNotFound
+            : public std::runtime_error
+        {
+        public:
+            UartNotFound(const std::string& portName);
+        };
+
+        std::string PhysicalDeviceObjectNameForDeviceDescription(const std::string& deviceDescription) const;
+
+    private:
+        void ReadAllComPortDevices();
+        void ReadDevice(SP_DEVINFO_DATA& deviceInfo);
+
+    private:
+        struct Description
+        {
+            std::string deviceDescription;
+            std::string friendlyName;
+            std::string physicalDeviceObjectName;
+        };
+
+        std::vector<Description> descriptions;
+
+        HDEVINFO deviceInformationSet;
     };
 }
 

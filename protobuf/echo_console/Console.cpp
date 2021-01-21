@@ -640,7 +640,7 @@ namespace application
 
             virtual void VisitEnum(const EchoFieldEnum& field) override
             {
-                services::GlobalTracer().Continue() << field.typeName;
+                services::GlobalTracer().Continue() << field.type->name;
             }
 
             virtual void VisitSFixed64(const EchoFieldSFixed64& field) override

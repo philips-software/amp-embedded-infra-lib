@@ -36,7 +36,10 @@ namespace application
     public:
         EchoEnum(const google::protobuf::EnumDescriptor& descriptor);
 
+        const google::protobuf::EnumDescriptor& descriptor;
         std::string name;
+        std::string qualifiedTypeName;
+        std::string containedInMessageName;
         std::vector<std::pair<std::string, int>> members;
     };
 
@@ -51,6 +54,7 @@ namespace application
         std::string name;
         std::string qualifiedName;
         std::string qualifiedReferenceName;
+        std::string qualifiedDetailName;
         std::vector<std::shared_ptr<EchoField>> fields;
         std::vector<std::shared_ptr<EchoMessage>> nestedMessages;
         std::vector<std::shared_ptr<EchoEnum>> nestedEnums;
@@ -190,12 +194,11 @@ namespace application
         : public EchoField
     {
     public:
-        EchoFieldEnum(const google::protobuf::FieldDescriptor& descriptor);
+        EchoFieldEnum(const google::protobuf::FieldDescriptor& descriptor, EchoRoot& root);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
 
-        std::string typeName;
-        std::string qualifiedTypeName;
+        std::shared_ptr<EchoEnum> type;
     };
 
     class EchoFieldRepeated
@@ -283,10 +286,13 @@ namespace application
         std::shared_ptr<EchoFile> GetFile(const google::protobuf::FileDescriptor& file);
         std::shared_ptr<EchoMessage> AddMessage(const google::protobuf::Descriptor& descriptor);
         std::shared_ptr<EchoMessage> GetMessage(const google::protobuf::Descriptor& descriptor);
+        std::shared_ptr<EchoEnum> AddEnum(const google::protobuf::EnumDescriptor& descriptor);
+        std::shared_ptr<EchoEnum> GetEnum(const google::protobuf::EnumDescriptor& descriptor);
         std::shared_ptr<EchoService> AddService(const google::protobuf::ServiceDescriptor& descriptor);
 
         std::vector<std::shared_ptr<EchoFile>> files;
         std::vector<std::shared_ptr<EchoMessage>> messages;
+        std::vector<std::shared_ptr<EchoEnum>> enums;
         std::vector<std::shared_ptr<EchoService>> services;
 
         google::protobuf::DescriptorPool pool;
@@ -352,6 +358,11 @@ namespace application
     };
 
     struct MessageNotFound
+    {
+        std::string name;
+    };
+
+    struct EnumNotFound
     {
         std::string name;
     };

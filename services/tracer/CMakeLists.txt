@@ -9,6 +9,8 @@ ccola_component(tracer static_library)
         StreamWriterOnSynchronousSerialCommunication.hpp
         Tracer.cpp
         Tracer.hpp
+        TracerOnIoOutputInfrastructure.cpp
+        TracerOnIoOutputInfrastructure.hpp
         TracerWithDateTime.cpp
         TracerWithDateTime.hpp
         TracerWithTime.cpp

@@ -16,7 +16,7 @@ namespace hal
         bothEdges
     };
 
-    enum class PinConfigType
+    enum class PinConfigType: uint8_t
     {
         input,
         output,
