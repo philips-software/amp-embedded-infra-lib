@@ -21,24 +21,11 @@ namespace services
             remainingPartialSize -= range.size();
 
         onAddDone = onDone;
-        claimerAdd.Claim([this, range]()
-        {
-            assert(sequencer.Finished());
-            sequencer.Load([this, range]()
-            {
-                sequencer.If([this]() { return !partialAddStarted; });
-                    FillSectorIfDataDoesNotFit(range.size() + remainingPartialSize);
-                    EraseSectorIfAtStart();
-                    WriteSectorStatusIfAtStartOfSector();
-                sequencer.EndIf();
-                WriteRange(range);
-                sequencer.Execute([this]()
-                {
-                    claimerAdd.Release();
-                    onAddDone();
-                });
-            });
-        });
+
+        if (partialAddStarted)
+            AddClaimed(range);
+        else
+            claimerAdd.Claim([this, range]() { AddClaimed(range); });
     }
 
     void CyclicStore::AddPartial(infra::ConstByteRange range, uint32_t totalSize, infra::Function<void()> onDone)
@@ -49,26 +36,55 @@ namespace services
         Add(range, onDone);
     }
 
+    void CyclicStore::AddClaimed(infra::ConstByteRange range)
+    {        
+        assert(sequencer.Finished());
+        sequencer.Load([this, range]()
+        {
+            sequencer.If([this]() { return !partialAddStarted; });
+                FillSectorIfDataDoesNotFit(range.size() + remainingPartialSize);
+                EraseSectorIfAtStart();
+                WriteSectorStatusIfAtStartOfSector();
+            sequencer.EndIf();
+            WriteRange(range);
+            sequencer.Execute([this]()
+            {                
+                if (!partialAddStarted)
+                    claimerAdd.Release();
+
+                infra::EventDispatcher::Instance().Schedule([this]() { onAddDone(); });
+            });
+        });
+    }
+
     void CyclicStore::Clear(infra::Function<void()> onDone)
     {
         onClearDone = onDone;
-        claimerClear.Claim([this]()
-        {
-            endAddress = 0;
-            startAddress = 0;
+        claimerClear.Claim([this](){ ClearClaimed(); });
+    }
 
-            assert(sequencer.Finished());
-            sequencer.Load([this]()
+    void CyclicStore::ClearUrgent(infra::Function<void()> onDone)
+    {
+        onClearDone = onDone;
+        claimerClear.ClaimUrgent([this]() { ClearClaimed(); });
+    }
+
+    void CyclicStore::ClearClaimed()
+    {
+        endAddress = 0;
+        startAddress = 0;
+
+        assert(sequencer.Finished());
+        sequencer.Load([this]()
+        {
+            sequencer.Step([this]()
             {
-                sequencer.Step([this]()
-                {
-                    flash.EraseAll([this]() { sequencer.Continue(); });
-                });
-                sequencer.Execute([this]()
-                {
-                    claimerClear.Release();
-                    onClearDone();
-                });
+                flash.EraseAll([this]() { sequencer.Continue(); });
+            });
+            sequencer.Execute([this]()
+            {
+                claimerClear.Release();
+                onClearDone();
             });
         });
     }

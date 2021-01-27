@@ -855,6 +855,43 @@ TEST_F(CyclicStoreTest, TestParallelAddAndClear)
     ExecuteAllActions();
 }
 
+TEST_F(CyclicStoreTest, TestParallelAddPartialAndClear)
+{
+    std::vector<uint8_t> data = { 11 };
+    cyclicStore.AddPartial(data, 3, infra::emptyFunction);
+    cyclicStore.Clear(infra::emptyFunction);
+    ExecuteAllActions();
+    std::vector<uint8_t> secondData = { 12 };
+    cyclicStore.Add(secondData, infra::emptyFunction);
+    ExecuteAllActions();
+
+    EXPECT_EQ((std::vector<uint8_t>{ 0xfc, 0xfc, 3, 0, 11, 12, 0xff, 0xff, 0xff, 0xff }), flash.sectors[0]);
+
+    std::vector<uint8_t> thirdData = { 13 };
+    cyclicStore.Add(thirdData, infra::emptyFunction);
+    ExecuteAllActions();
+
+    EXPECT_EQ((std::vector<uint8_t>{ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }), flash.sectors[0]);
+
+    ExecuteAllActions();
+}
+
+TEST_F(CyclicStoreTest, TestParallelAddAndClearUrgent)
+{
+    std::vector<uint8_t> data = { 11 };
+    cyclicStore.Add(data, infra::emptyFunction);
+    ExecuteAllActions();
+
+    std::vector<uint8_t> data2 = { 12 };
+    cyclicStore.Add(data2, infra::emptyFunction);
+    cyclicStore.ClearUrgent(infra::emptyFunction);
+    ExecuteAllActions();
+
+    EXPECT_EQ((std::vector<uint8_t>{ 0xfc, 0xf8, 1, 0, 12, 0xff, 0xff, 0xff, 0xff, 0xff }), flash.sectors[0]);
+
+    ExecuteAllActions();
+}
+
 TEST_F(CyclicStoreTest, when_iterator_is_at_start_of_an_empty_sector_newly_added_item_is_available_in_next_read)
 {
     infra::MockCallback<void(std::vector<uint8_t>)> mock;

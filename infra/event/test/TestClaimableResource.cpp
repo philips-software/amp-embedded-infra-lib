@@ -108,6 +108,19 @@ TEST_F(TestClaimableResource, ClaimIsGrantedWhileProcessingReleaseEvent)
     EXPECT_EQ(1, claimerB.claimsGranted);
 }
 
+TEST_F(TestClaimableResource, ClaimUrgentTakesPrecedence)
+{
+    claimerB.Claim([this]() { claimerB.GrantedClaim(); });
+    claimerA.ClaimUrgent([this]() { claimerA.GrantedClaim(); });
+    ExecuteAllActions();
+    EXPECT_EQ(1, claimerA.claimsGranted);
+    EXPECT_EQ(0, claimerB.claimsGranted);
+    claimerA.Release();
+    ExecuteAllActions();
+    EXPECT_EQ(1, claimerA.claimsGranted);
+    EXPECT_EQ(1, claimerB.claimsGranted);
+}
+
 TEST_F(TestClaimableResource, TwoConsecutiveReleasesBeforeReleaseOfClaimIsProcessedResultsInNoAdditionalClaimsGranted)
 {
     claimerA.Claim([this]() { claimerA.GrantedClaim(); });

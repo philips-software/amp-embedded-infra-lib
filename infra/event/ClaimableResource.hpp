@@ -29,10 +29,10 @@ namespace infra
 
     private:
         void ReEvaluateClaim();
-        void AddClaim(ClaimerBase& claimer);
+        void AddClaim(ClaimerBase& claimer, bool urgent);
         void RemoveClaim(ClaimerBase& claimer);
         void ReplaceClaim(ClaimerBase& claimerOld, ClaimerBase& claimerNew);
-        void EnqueueClaimer(ClaimerBase& claimer);
+        void EnqueueClaimer(ClaimerBase& claimer, bool urgent);
         void DequeueClaimer(ClaimerBase& claimer);
 
     private:
@@ -82,6 +82,7 @@ namespace infra
         using ClaimerBase::ClaimerBase;
 
         void Claim(const infra::Function<void(), ExtraSize>& claimedFunc);
+        void ClaimUrgent(const infra::Function<void(), ExtraSize>& claimedFunc);
         virtual void Release() override;
 
     private:
@@ -100,7 +101,17 @@ namespace infra
 
         this->onGranted = onGranted;
         this->isQueued = true;
-        resource.AddClaim(*this);
+        resource.AddClaim(*this, false);
+    }
+
+    template<std::size_t ExtraSize>
+    void ClaimableResource::ClaimerWithSize<ExtraSize>::ClaimUrgent(const infra::Function<void(), ExtraSize>& onGranted)
+    {
+        really_assert(!this->onGranted);
+
+        this->onGranted = onGranted;
+        this->isQueued = true;
+        resource.AddClaim(*this, true);
     }
 
     template<std::size_t ExtraSize>

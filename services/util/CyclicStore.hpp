@@ -22,12 +22,16 @@ namespace services
         void Add(infra::ConstByteRange range, infra::Function<void()> onDone);
         void AddPartial(infra::ConstByteRange range, uint32_t totalSize, infra::Function<void()> onDone);
         void Clear(infra::Function<void()> onDone);
+        void ClearUrgent(infra::Function<void()> onDone);
 
         class Iterator;
 
         Iterator Begin() const;
 
     private:
+        void AddClaimed(infra::ConstByteRange range);
+        void ClearClaimed();
+
         void Recover();
         void RecoverSector(uint32_t sectorIndex);
         void RecoverEndAddress();

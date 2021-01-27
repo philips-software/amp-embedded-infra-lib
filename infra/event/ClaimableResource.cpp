@@ -25,9 +25,9 @@ namespace infra
         }
     }
 
-    void ClaimableResource::AddClaim(ClaimerBase& claimer)
+    void ClaimableResource::AddClaim(ClaimerBase& claimer, bool urgent)
     {
-        EnqueueClaimer(claimer);
+        EnqueueClaimer(claimer, urgent);
 
         if (currentClaim == nullptr)
             infra::EventDispatcher::Instance().Schedule([this]() { ReEvaluateClaim(); });
@@ -58,9 +58,12 @@ namespace infra
             }
     }
 
-    void ClaimableResource::EnqueueClaimer(ClaimerBase& claimer)
+    void ClaimableResource::EnqueueClaimer(ClaimerBase& claimer, bool urgent)
     {
-        pendingClaims.push_back(claimer);
+        if (urgent)
+            pendingClaims.push_front(claimer);
+        else
+            pendingClaims.push_back(claimer);
     }
 
     void ClaimableResource::DequeueClaimer(ClaimerBase& claimer)
