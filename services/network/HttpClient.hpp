@@ -65,7 +65,10 @@ namespace services
         virtual void Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) = 0;
         virtual void Put(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) = 0;
 
+        // Full content is given as an argument
         virtual void Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) = 0;
+        // No content is given, but the observer receives multiple FillContent calls. Each invocation must fill out the exact same contents.
+        virtual void Patch(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) = 0;
         virtual void Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) = 0;
 
         virtual void AckReceived() = 0;

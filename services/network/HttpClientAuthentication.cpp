@@ -61,6 +61,11 @@ namespace services
         Request(headers, [this, requestTarget, content]() {  Subject().Patch(requestTarget, content, infra::MakeRange(headersWithAuthorization)); });
     }
 
+    void HttpClientAuthentication::Patch(infra::BoundedConstString requestTarget, HttpHeaders headers)
+    {
+        Request(headers, [this, requestTarget]() {  Subject().Patch(requestTarget, infra::MakeRange(headersWithAuthorization)); });
+    }
+
     void HttpClientAuthentication::Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
     {
         Request(headers, [this, requestTarget, content]() {  Subject().Delete(requestTarget, content, infra::MakeRange(headersWithAuthorization)); });

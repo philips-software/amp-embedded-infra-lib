@@ -50,6 +50,7 @@ namespace services
         MOCK_METHOD3(Put, void(infra::BoundedConstString, std::size_t, HttpHeaders));
         MOCK_METHOD2(Put, void(infra::BoundedConstString, HttpHeaders));
         MOCK_METHOD3(Patch, void(infra::BoundedConstString, infra::BoundedConstString, HttpHeaders));
+        MOCK_METHOD2(Patch, void(infra::BoundedConstString, HttpHeaders));
         MOCK_METHOD3(Delete, void(infra::BoundedConstString, infra::BoundedConstString, HttpHeaders));
         
         MOCK_METHOD0(AckReceived, void());

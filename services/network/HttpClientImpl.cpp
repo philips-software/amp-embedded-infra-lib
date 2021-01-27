@@ -66,6 +66,11 @@ namespace services
         ExecuteRequestWithContent(HttpVerb::patch, requestTarget, content, headers);
     }
 
+    void HttpClientImpl::Patch(infra::BoundedConstString requestTarget, HttpHeaders headers)
+    {
+        ExecuteRequestWithContent(HttpVerb::patch, requestTarget, headers);
+    }
+
     void HttpClientImpl::Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
     {
         ExecuteRequestWithContent(HttpVerb::delete_, requestTarget, content, headers);
