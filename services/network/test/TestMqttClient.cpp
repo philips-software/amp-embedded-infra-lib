@@ -72,7 +72,7 @@ public:
 
         ExecuteAllActions();
 
-        EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::MqttClientObserver> client)>& createdClient)
+        EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::MqttClientObserver> client)>&& createdClient)
         {
             EXPECT_CALL(client, Attached());
             createdClient(clientPtr);
@@ -229,7 +229,7 @@ TEST_F(MqttClientTest, after_conack_MqttClient_is_connected)
 
     ExecuteAllActions();
 
-    EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::MqttClientObserver> client)>& createdClient)
+    EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::MqttClientObserver> client)>&& createdClient)
     {
         EXPECT_CALL(client, Attached());
         createdClient(clientPtr);
@@ -296,7 +296,7 @@ TEST_F(MqttClientTest, client_observer_allocation_failure_results_in_connection_
 
     ExecuteAllActions();
 
-    EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::MqttClientObserver> client)>& createdClient)
+    EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::MqttClientObserver> client)>&& createdClient)
     {
         createdClient(nullptr);
     }));

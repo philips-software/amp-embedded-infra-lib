@@ -115,7 +115,7 @@ public:
 
     void Connect()
     {
-        EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::HttpClientObserver> client)>& createdClient)
+        EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::HttpClientObserver> client)>&& createdClient)
         {
             EXPECT_CALL(client, Attached());
             createdClient(clientPtr);
@@ -215,7 +215,7 @@ TEST_F(HttpClientTest, AckReceived_propagates_to_Connection)
 
 TEST_F(HttpClientTest, after_ConnectionEstablished_HttpClient_is_connected)
 {
-    EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::HttpClientObserver> client)>& createdClient)
+    EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::HttpClientObserver> client)>&& createdClient)
     {
         EXPECT_CALL(client, Attached());
         createdClient(clientPtr);
