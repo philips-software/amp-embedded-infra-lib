@@ -3328,6 +3328,9 @@ class PrettyUnitTestResultPrinter : public TestEventListener {
   static void PrintFailedTests(const UnitTest& unit_test);
   static void PrintFailedTestSuites(const UnitTest& unit_test);
   static void PrintSkippedTests(const UnitTest& unit_test);
+
+private:
+    bool hasFailure = false;
 };
 
   // Fired before each iteration of tests starts.
@@ -3367,7 +3370,7 @@ void PrettyUnitTestResultPrinter::OnTestIterationStart(
 
 void PrettyUnitTestResultPrinter::OnEnvironmentsSetUpStart(
     const UnitTest& /*unit_test*/) {
-  ColoredPrintf(GTestColor::kGreen, "[----------] ");
+  ColoredPrintf(hasFailure ? GTestColor::kRed : GTestColor::kGreen, "[----------] ");
   printf("Global test environment set-up.\n");
   fflush(stdout);
 }
@@ -3376,7 +3379,7 @@ void PrettyUnitTestResultPrinter::OnEnvironmentsSetUpStart(
 void PrettyUnitTestResultPrinter::OnTestCaseStart(const TestCase& test_case) {
   const std::string counts =
       FormatCountableNoun(test_case.test_to_run_count(), "test", "tests");
-  ColoredPrintf(GTestColor::kGreen, "[----------] ");
+  ColoredPrintf(hasFailure ? GTestColor::kRed : GTestColor::kGreen, "[----------] ");
   printf("%s from %s", counts.c_str(), test_case.name());
   if (test_case.type_param() == nullptr) {
     printf("\n");
@@ -3390,7 +3393,7 @@ void PrettyUnitTestResultPrinter::OnTestSuiteStart(
     const TestSuite& test_suite) {
   const std::string counts =
       FormatCountableNoun(test_suite.test_to_run_count(), "test", "tests");
-  ColoredPrintf(GTestColor::kGreen, "[----------] ");
+  ColoredPrintf(hasFailure ? GTestColor::kRed : GTestColor::kGreen, "[----------] ");
   printf("%s from %s", counts.c_str(), test_suite.name());
   if (test_suite.type_param() == nullptr) {
     printf("\n");
@@ -3402,7 +3405,9 @@ void PrettyUnitTestResultPrinter::OnTestSuiteStart(
 #endif  // GTEST_REMOVE_LEGACY_TEST_CASEAPI_
 
 void PrettyUnitTestResultPrinter::OnTestStart(const TestInfo& test_info) {
-  ColoredPrintf(GTestColor::kGreen, "[ RUN      ] ");
+  ColoredPrintf(hasFailure ? GTestColor::kRed : GTestColor::kGreen, "[");
+  ColoredPrintf(GTestColor::kGreen, " RUN      ");
+  ColoredPrintf(hasFailure ? GTestColor::kRed : GTestColor::kGreen, "] ");
   PrintTestName(test_info.test_suite_name(), test_info.name());
   printf("\n");
   fflush(stdout);
@@ -3425,10 +3430,15 @@ void PrettyUnitTestResultPrinter::OnTestPartResult(
 
 void PrettyUnitTestResultPrinter::OnTestEnd(const TestInfo& test_info) {
   if (test_info.result()->Passed()) {
-    ColoredPrintf(GTestColor::kGreen, "[       OK ] ");
+    ColoredPrintf(hasFailure ? GTestColor::kRed : GTestColor::kGreen, "[");
+    ColoredPrintf(GTestColor::kGreen, "       OK ");
+    ColoredPrintf(hasFailure ? GTestColor::kRed : GTestColor::kGreen, "] ");
   } else if (test_info.result()->Skipped()) {
-    ColoredPrintf(GTestColor::kGreen, "[  SKIPPED ] ");
+    ColoredPrintf(hasFailure ? GTestColor::kRed : GTestColor::kGreen, "[");
+    ColoredPrintf(GTestColor::kGreen, "  SKIPPED ");
+    ColoredPrintf(hasFailure ? GTestColor::kRed : GTestColor::kGreen, "] ");
   } else {
+    hasFailure = true;
     ColoredPrintf(GTestColor::kRed, "[  FAILED  ] ");
   }
   PrintTestName(test_info.test_suite_name(), test_info.name());
@@ -3450,7 +3460,7 @@ void PrettyUnitTestResultPrinter::OnTestCaseEnd(const TestCase& test_case) {
 
   const std::string counts =
       FormatCountableNoun(test_case.test_to_run_count(), "test", "tests");
-  ColoredPrintf(GTestColor::kGreen, "[----------] ");
+  ColoredPrintf(hasFailure ? GTestColor::kRed : GTestColor::kGreen, "[----------] ");
   printf("%s from %s (%s ms total)\n\n", counts.c_str(), test_case.name(),
          internal::StreamableToString(test_case.elapsed_time()).c_str());
   fflush(stdout);
@@ -3461,7 +3471,7 @@ void PrettyUnitTestResultPrinter::OnTestSuiteEnd(const TestSuite& test_suite) {
 
   const std::string counts =
       FormatCountableNoun(test_suite.test_to_run_count(), "test", "tests");
-  ColoredPrintf(GTestColor::kGreen, "[----------] ");
+  ColoredPrintf(hasFailure ? GTestColor::kRed : GTestColor::kGreen, "[----------] ");
   printf("%s from %s (%s ms total)\n\n", counts.c_str(), test_suite.name(),
          internal::StreamableToString(test_suite.elapsed_time()).c_str());
   fflush(stdout);
@@ -3470,7 +3480,7 @@ void PrettyUnitTestResultPrinter::OnTestSuiteEnd(const TestSuite& test_suite) {
 
 void PrettyUnitTestResultPrinter::OnEnvironmentsTearDownStart(
     const UnitTest& /*unit_test*/) {
-  ColoredPrintf(GTestColor::kGreen, "[----------] ");
+  ColoredPrintf(hasFailure ? GTestColor::kRed : GTestColor::kGreen, "[----------] ");
   printf("Global test environment tear-down\n");
   fflush(stdout);
 }
@@ -3549,7 +3559,7 @@ void PrettyUnitTestResultPrinter::PrintSkippedTests(const UnitTest& unit_test) {
 
 void PrettyUnitTestResultPrinter::OnTestIterationEnd(const UnitTest& unit_test,
                                                      int /*iteration*/) {
-  ColoredPrintf(GTestColor::kGreen, "[==========] ");
+  ColoredPrintf(hasFailure ? GTestColor::kRed : GTestColor::kGreen, "[==========] ");
   printf("%s from %s ran.",
          FormatTestCount(unit_test.test_to_run_count()).c_str(),
          FormatTestSuiteCount(unit_test.test_suite_to_run_count()).c_str());
@@ -3558,7 +3568,7 @@ void PrettyUnitTestResultPrinter::OnTestIterationEnd(const UnitTest& unit_test,
            internal::StreamableToString(unit_test.elapsed_time()).c_str());
   }
   printf("\n");
-  ColoredPrintf(GTestColor::kGreen, "[  PASSED  ] ");
+  ColoredPrintf(hasFailure ? GTestColor::kRed : GTestColor::kGreen, "[  PASSED  ] ");
   printf("%s.\n", FormatTestCount(unit_test.successful_test_count()).c_str());
 
   const int skipped_test_count = unit_test.skipped_test_count();
