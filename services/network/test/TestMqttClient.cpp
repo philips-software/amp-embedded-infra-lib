@@ -10,22 +10,6 @@
 #include "network/test_doubles/AddressMock.hpp"
 #include <deque>
 
-namespace testing
-{
-    struct DummyType {};
-
-    template<>
-    struct NiceMock<DummyType>
-    {
-        static void allow(const void* mock)
-        {
-            Mock::AllowUninterestingCalls(mock);
-        }
-    };
-
-    typedef NiceMock<DummyType> UninterestingCalls;
-}
-
 class ConnectionStubWithSendStreamControl
     : public services::ConnectionStub
 {
@@ -75,8 +59,8 @@ public:
 
     ~MqttClientTest()
     {
-        testing::UninterestingCalls().allow(&factory);
-        testing::UninterestingCalls().allow(&client);
+        EXPECT_CALL(factory, ConnectionFailed(testing::_)).Times(testing::AnyNumber());
+        EXPECT_CALL(client, Detaching()).Times(testing::AnyNumber());
     }
 
     void Connect()
