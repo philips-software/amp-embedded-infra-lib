@@ -102,7 +102,7 @@ public:
 
     void ExpectSendMessageStreamAvailable(const std::vector<uint8_t>& data)
     {
-        EXPECT_CALL(observer, SendMessageStreamAvailable(testing::_)).WillOnce(testing::Invoke([data](infra::SharedPtr<infra::StreamWriter>& writer)
+        EXPECT_CALL(observer, SendMessageStreamAvailable(testing::_)).WillOnce(testing::Invoke([data](infra::SharedPtr<infra::StreamWriter>&& writer)
         {
             infra::DataOutputStream::WithErrorPolicy stream(*writer);
             stream << infra::MakeRange(data);
@@ -111,7 +111,7 @@ public:
 
     void ExpectReceivedMessage(const std::vector<uint8_t>& expected)
     {
-        EXPECT_CALL(observer, ReceivedMessage(testing::_)).WillOnce(testing::Invoke([expected](infra::SharedPtr<infra::StreamReaderWithRewinding>& reader)
+        EXPECT_CALL(observer, ReceivedMessage(testing::_)).WillOnce(testing::Invoke([expected](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
         {
             infra::DataInputStream::WithErrorPolicy stream(*reader);
             std::vector<uint8_t> data(stream.Available(), 0);
