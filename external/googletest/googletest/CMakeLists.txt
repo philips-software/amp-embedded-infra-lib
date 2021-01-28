@@ -1,6 +1,6 @@
 ccola_component(gtest static_library)
 
-    ccola_inheritable_definitions(_VARIADIC_MAX=10 GTEST_HAS_SEH=0)
+    ccola_inheritable_definitions(_VARIADIC_MAX=10 GTEST_HAS_SEH=0 GTEST_HAS_PTHREAD=0)
 
     ccola_sources(
         src/gtest.cc
