@@ -9,17 +9,15 @@ ccola_component(gmock x86: static_library other: source)
         include/gmock/gmock.h
         include/gmock/gmock-actions.h
         include/gmock/gmock-cardinalities.h
-        include/gmock/gmock-generated-actions.h
-        include/gmock/gmock-generated-function-mockers.h
-        include/gmock/gmock-generated-matchers.h
-        include/gmock/gmock-generated-nice-strict.h
+        include/gmock/gmock-function-mocker.h
         include/gmock/gmock-matchers.h
         include/gmock/gmock-more-actions.h
         include/gmock/gmock-more-matchers.h
+        include/gmock/gmock-nice-strict.h
         include/gmock/gmock-spec-builders.h
-        include/gmock/internal/gmock-generated-internal-utils.h
         include/gmock/internal/gmock-internal-utils.h
         include/gmock/internal/gmock-port.h
+        include/gmock/internal/gmock-pp.h
     )
 
     ccola_inheritable_include_directories(

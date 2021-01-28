@@ -33,8 +33,9 @@
 # This file should be sourced, and not executed as a standalone script.
 #
 
-# TODO() - we can check if this is being sourced using $BASH_VERSION and $BASH_SOURCE[0] != ${0}.
-
-if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
-    if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.9" CC="clang-3.9"; fi
+if [ "${TRAVIS_OS_NAME}" != "osx" ]; then
+   echo "Not a macOS build; skipping"
+   exit 0
 fi
+
+# This file is currently intentionally empty.

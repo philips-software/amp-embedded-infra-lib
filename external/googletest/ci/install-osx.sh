@@ -36,4 +36,4 @@ if [ "${TRAVIS_OS_NAME}" != "osx" ]; then
     exit 0
 fi
 
-brew install ccache
+# This file is currently intentionally empty.
