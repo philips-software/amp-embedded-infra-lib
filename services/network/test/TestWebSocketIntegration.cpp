@@ -68,7 +68,7 @@ TEST_F(WebSocketIntegrationTest, integration)
     EXPECT_CALL(clientObserverFactory, Url()).WillRepeatedly(testing::Return(url));
     EXPECT_CALL(clientObserverFactory, Port()).WillRepeatedly(testing::Return(5));
     infra::SharedOptional<testing::StrictMock<services::ConnectionObserverFullMock>> clientConnection;
-    EXPECT_CALL(clientObserverFactory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this, &clientConnection](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> client)>& createdClient)
+    EXPECT_CALL(clientObserverFactory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this, &clientConnection](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> client)>&& createdClient)
     {
         auto clientConnectionPtr = clientConnection.Emplace();
         EXPECT_CALL(*clientConnection, Attached());
