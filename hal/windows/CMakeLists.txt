@@ -5,6 +5,8 @@ ccola_component(windows win: static_library other: skip)
     )
 
     ccola_sources(
+        UartPortFinder.cpp
+        UartPortFinder.hpp
         UartWindows.cpp
         UartWindows.hpp
     )
