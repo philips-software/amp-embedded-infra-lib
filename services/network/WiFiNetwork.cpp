@@ -20,22 +20,6 @@ namespace services
         return !(*this == other);
     }
 
-    WiFiSecurity WiFiSecurity::WepSecurity(infra::BoundedConstString key)
-    {
-        WiFiSecurity result;
-        result.securityMode = SecurityMode::wepShared;
-        result.key = key;
-        return result;
-    }
-
-    WiFiSecurity WiFiSecurity::WpaSecurity(infra::BoundedConstString key)
-    {
-        WiFiSecurity result;
-        result.securityMode = SecurityMode::wpaMixedPsk;
-        result.key = key;
-        return result;
-    }
-
     WiFiSecurity WiFiSecurity::Wpa2Security(infra::BoundedConstString key)
     {
         WiFiSecurity result;
@@ -58,10 +42,6 @@ namespace services
         {
         case SecurityMode::open:
             return "open";
-        case SecurityMode::wepShared:
-            return "wep";
-        case SecurityMode::wpaMixedPsk:
-            return "wpa";
         case SecurityMode::wpa2MixedPsk:
             return "wpa-2";
         case SecurityMode::wpa3Psk:
