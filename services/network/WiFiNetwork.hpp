@@ -15,8 +15,6 @@ namespace services
         {
             unknown = -1,
             open = 0,
-            wepShared,
-            wpaMixedPsk,
             wpa2MixedPsk,
             wpa3Psk
         };
@@ -27,8 +25,6 @@ namespace services
         bool operator==(const WiFiSecurity& other) const;
         bool operator!=(const WiFiSecurity& other) const;
 
-        static WiFiSecurity WepSecurity(infra::BoundedConstString key);
-        static WiFiSecurity WpaSecurity(infra::BoundedConstString key);
         static WiFiSecurity Wpa2Security(infra::BoundedConstString key);
         static WiFiSecurity Wpa3Security(infra::BoundedConstString key);
 
