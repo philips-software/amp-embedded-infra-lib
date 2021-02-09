@@ -1,4 +1,5 @@
 #include "hal/windows/UartWindows.hpp"
+#include "infra/event/EventDispatcher.hpp"
 
 namespace hal
 {
