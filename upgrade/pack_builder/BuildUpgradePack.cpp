@@ -25,15 +25,24 @@ namespace application
 
         struct UsageException
         {};
+
+        struct MissingTargetException
+            : std::runtime_error
+        {
+            MissingTargetException(const std::string& target)
+                : std::runtime_error("Missing target: " + target)
+            {}
+        };
     }
 
     int BuildUpgradePack(const application::UpgradePackBuilder::HeaderInfo& headerInfo, const std::vector<std::string>& supportedHexTargets,
-        const std::vector<std::pair<std::string, uint32_t>>& supportedElfTargets, const std::vector<std::pair<std::string, uint32_t>>& supportedBinaryTargets, std::string outputFilename,
+        const std::vector<std::pair<std::string, uint32_t>>& supportedElfTargets, const std::vector<std::pair<std::string, uint32_t>>& supportedBinaryTargets,
+        const std::vector<std::string>& mandatoryTargets, std::string outputFilename,
         TargetAndFiles targetAndFiles, BuildOptions buildOptions, infra::JsonObject& configuration, infra::ConstByteRange aesKey,
         infra::ConstByteRange ecDsa224PublicKey, infra::ConstByteRange ecDsa224PrivateKey, const std::vector<NoFileInputFactory*>& otherTargets)
     {
         UpgradePackBuilderFacade builderFacade(headerInfo);
-        builderFacade.Build(supportedHexTargets, supportedElfTargets, supportedBinaryTargets, outputFilename, targetAndFiles, buildOptions, configuration, aesKey, ecDsa224PublicKey, ecDsa224PrivateKey, otherTargets);
+        builderFacade.Build(supportedHexTargets, supportedElfTargets, supportedBinaryTargets, mandatoryTargets, outputFilename, targetAndFiles, buildOptions, configuration, aesKey, ecDsa224PublicKey, ecDsa224PrivateKey, otherTargets);
         return builderFacade.Result();
     }
 
@@ -46,12 +55,12 @@ namespace application
     }
 
     void UpgradePackBuilderFacade::Build(const std::vector<std::string>& supportedHexTargets, const std::vector<std::pair<std::string, uint32_t>>& supportedElfTargets, const std::vector<std::pair<std::string, uint32_t>>& supportedBinaryTargets,
-        std::string outputFilename, TargetAndFiles& targetAndFiles, BuildOptions& buildOptions, infra::JsonObject& configuration, infra::ConstByteRange aesKey, infra::ConstByteRange ecDsa224PublicKey,
+        const std::vector<std::string>& mandatoryTargets, std::string outputFilename, TargetAndFiles& targetAndFiles, BuildOptions& buildOptions, infra::JsonObject& configuration, infra::ConstByteRange aesKey, infra::ConstByteRange ecDsa224PublicKey,
         infra::ConstByteRange ecDsa224PrivateKey, const std::vector<NoFileInputFactory*>& otherTargets)
     {
         try
         {
-            TryBuild(supportedHexTargets, supportedElfTargets, supportedBinaryTargets, outputFilename, targetAndFiles, buildOptions, configuration, aesKey, ecDsa224PublicKey, ecDsa224PrivateKey, otherTargets);
+            TryBuild(supportedHexTargets, supportedElfTargets, supportedBinaryTargets, mandatoryTargets, outputFilename, targetAndFiles, buildOptions, configuration, aesKey, ecDsa224PublicKey, ecDsa224PrivateKey, otherTargets);
         }
         catch (UsageException&)
         {
@@ -66,7 +75,7 @@ namespace application
     }
 
     void UpgradePackBuilderFacade::TryBuild(const std::vector<std::string>& supportedHexTargets, const std::vector<std::pair<std::string, uint32_t>>& supportedElfTargets, const std::vector<std::pair<std::string, uint32_t>>& supportedBinaryTargets,
-        std::string outputFilename, TargetAndFiles& targetAndFiles, BuildOptions& buildOptions, infra::JsonObject& configuration, infra::ConstByteRange aesKey, infra::ConstByteRange ecDsa224PublicKey,
+        const std::vector<std::string>& mandatoryTargets, std::string outputFilename, TargetAndFiles& targetAndFiles, BuildOptions& buildOptions, infra::JsonObject& configuration, infra::ConstByteRange aesKey, infra::ConstByteRange ecDsa224PublicKey,
         infra::ConstByteRange ecDsa224PrivateKey, const std::vector<NoFileInputFactory*>& otherTargets)
     {
         hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
@@ -80,6 +89,17 @@ namespace application
         std::vector<std::unique_ptr<application::Input>> inputs;
         for (auto targetAndFile : targetAndFiles)
             inputs.push_back(inputFactory.CreateInput(targetAndFile.first, targetAndFile.second));
+
+        for (auto mandatoryTarget : mandatoryTargets)
+        {
+            bool found = false;
+            for (auto& input : inputs)
+                if (input->TargetName() == mandatoryTarget)
+                    found = true;
+
+            if (!found)
+                throw MissingTargetException(mandatoryTarget);
+        }
 
         application::UpgradePackBuilder builder(this->headerInfo, std::move(inputs), signer);
         PostBuilder(builder, signer, buildOptions);
