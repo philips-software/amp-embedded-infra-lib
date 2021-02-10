@@ -947,7 +947,7 @@ TEST_P(ConnectionSerialTestHeaderBytesTest, unescaped_header_bytes_received_midc
     ExpectAndCompleteWindowSizeRequest();
 }
 
-INSTANTIATE_TEST_CASE_P(HeaderBytes, ConnectionSerialTestHeaderBytesTest, testing::Values(0xfa, 0xfb, 0xfc, 0xfd, 0xfe));
+INSTANTIATE_TEST_SUITE_P(HeaderBytes, ConnectionSerialTestHeaderBytesTest, testing::Values(0xfa, 0xfb, 0xfc, 0xfd, 0xfe));
 
 TEST_F(ConnectionSerialTest, reset_connection_during_a_content_send)
 {

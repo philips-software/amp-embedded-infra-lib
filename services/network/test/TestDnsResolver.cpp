@@ -600,7 +600,7 @@ TEST_P(DnsResolverTestTooShort, too_short_response_results_in_retry)
     DataReceived(MakeShortenedDnsResponse("hostname.com", hostAddress1, GetParam()), services::Udpv4Socket{ dnsServer2, 53 });
 }
 
-INSTANTIATE_TEST_CASE_P(too_short_response_results_in_retry, DnsResolverTestTooShort, testing::Range(1, 17));
+INSTANTIATE_TEST_SUITE_P(too_short_response_results_in_retry, DnsResolverTestTooShort, testing::Range(1, 17));
 
 class DnsResolverTestEvenShorter
     : public DnsResolverTest
@@ -613,4 +613,4 @@ TEST_P(DnsResolverTestEvenShorter, too_short_response_is_ignored)
     DataReceived(MakeShortenedDnsResponse("hostname.com", hostAddress1, GetParam()), services::Udpv4Socket{ dnsServer2, 53 });
 }
 
-INSTANTIATE_TEST_CASE_P(too_short_response_is_ignored, DnsResolverTestEvenShorter, testing::Range(17, 47));
+INSTANTIATE_TEST_SUITE_P(too_short_response_is_ignored, DnsResolverTestEvenShorter, testing::Range(17, 47));

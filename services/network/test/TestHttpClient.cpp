@@ -49,7 +49,7 @@ TEST_P(HttpStatusMessageFormattingTest, write_formatted_HttpStatusCode_to_stream
     EXPECT_EQ(parameter.string, stream.Storage());
 }
 
-INSTANTIATE_TEST_CASE_P(HttpStatusMessageTest, HttpStatusMessageFormattingTest,
+INSTANTIATE_TEST_SUITE_P(HttpStatusMessageTest, HttpStatusMessageFormattingTest,
     testing::Values(
         HttpStatusCodeWithString{ services::HttpStatusCode::Continue, "Continue" },
         HttpStatusCodeWithString{ services::HttpStatusCode::SwitchingProtocols, "SwitchingProtocols" },
