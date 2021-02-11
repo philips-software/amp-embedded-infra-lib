@@ -66,7 +66,7 @@ namespace services
 
             void MessageConnect(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password);
             static std::size_t MessageSizeConnect(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password);
-            void MessagePublish(const MqttClientObserver& message);
+            void MessagePublish(const MqttClientObserver& message, uint16_t packetIdentifier);
             static std::size_t MessageSizePublish(const MqttClientObserver& message);
             void MessageSubscribe(const MqttClientObserver& message);
             static std::size_t MessageSizeSubscribe(const MqttClientObserver& message);
@@ -191,6 +191,7 @@ namespace services
             void HandlePingReply();
             void StartWaitForPingReply();
             void PingReplyTimeout();
+            uint16_t GeneratePacketIdentifier();
 
         private:
             class OperationBase
@@ -250,6 +251,7 @@ namespace services
             uint16_t notificationPayloadSize = 0;
             infra::SharedPtr<infra::StreamWriter> notificationWriter;
             infra::TimerSingleShot pingTimer;
+            uint16_t packetIdentifier = 0;
 
         private:
             template<class operation, class... Args>
