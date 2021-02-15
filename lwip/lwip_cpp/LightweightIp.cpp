@@ -36,6 +36,11 @@ namespace services
         return result;
     }
 
+    bool LightweightIp::PendingSend() const
+    {
+        return ConnectionFactoryLwIp::PendingSend();
+    }
+
     IPv4Address LightweightIp::GetIPv4Address() const
     {
         return Convert(netif_default->ip_addr);

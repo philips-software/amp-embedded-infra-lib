@@ -6,6 +6,7 @@
 #include "lwip/lwip_cpp/ConnectionLwIp.hpp"
 #include "lwip/lwip_cpp/DatagramLwIp.hpp"
 #include "lwip/lwip_cpp/MulticastLwIp.hpp"
+#include "services/network/PendingSend.hpp"
 
 namespace services
 {
@@ -14,6 +15,7 @@ namespace services
         , public DatagramFactoryLwIp
         , public MulticastLwIp
         , public IPv4Info
+        , public PendingSendLightweightIp
         , public infra::InterfaceConnector<LightweightIp>
     {
     public:
@@ -26,6 +28,9 @@ namespace services
         LightweightIp(AllocatorListenerLwIp& listenerAllocator, infra::BoundedList<ConnectorLwIp>& connectors, AllocatorConnectionLwIp& connectionAllocator, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
         uint32_t Rand();
+
+        //PendingSendLightweightIp
+        virtual bool PendingSend() const override;
 
         // Implementation of IPv4Info
         virtual IPv4Address GetIPv4Address() const override;
