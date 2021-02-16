@@ -2,6 +2,7 @@
 #define SERVICES_SYNCHRONOUS_FLASH_SPI_HPP
 
 #include "hal/synchronous_interfaces/SynchronousFlashHomogeneous.hpp"
+#include "hal/synchronous_interfaces/SynchronousFlashId.hpp"
 #include "hal/synchronous_interfaces/SynchronousSpi.hpp"
 
 namespace services
@@ -13,6 +14,7 @@ namespace services
 
     class SynchronousFlashSpi
         : public hal::SynchronousFlashHomogeneous
+        , public hal::SynchronousFlashId
     {
     public:
         using Config = SynchronousFlashSpiConfig;
@@ -24,6 +26,7 @@ namespace services
         static const uint8_t commandEraseSubSector;
         static const uint8_t commandEraseSector;
         static const uint8_t commandEraseBulk;
+        static const uint8_t commandReadId;
 
         static const uint32_t sizeSector = 65536;
         static const uint32_t sizeSubSector = 4096;
@@ -37,6 +40,8 @@ namespace services
         virtual void WriteBuffer(infra::ConstByteRange buffer, uint32_t address) override;
         virtual void ReadBuffer(infra::ByteRange buffer, uint32_t address) override;
         virtual void EraseSectors(uint32_t beginIndex, uint32_t endIndex) override;
+
+        virtual void ReadFlashId(infra::ByteRange buffer) override;
 
     private:
         std::array<uint8_t, 3> ConvertAddress(uint32_t address) const;
