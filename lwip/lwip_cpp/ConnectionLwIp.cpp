@@ -23,28 +23,18 @@ namespace services
     ConnectionLwIp::~ConnectionLwIp()
     {
         factory.connections.erase_slow(*this);
-        bool sendBuffersEmpty = true;
-        bool sendBufferEmpty = true;
-        bool sendBufferForStreamEmpty = true;
 
         while (!sendBuffers.empty())
         {
-            sendBuffersEmpty = false;
             RemoveFromPool(sendBuffers.front());
             sendBuffers.pop_front();
         }
 
         if (!sendBufferForStream.empty())
-        {
-            sendBufferForStreamEmpty = false;
             RemoveFromPool(sendBufferForStream);
-        }
 
         if (!sendBuffer.empty())
-        {
-            sendBufferEmpty = false;
             RemoveFromPool(sendBuffer);
-        }
 
         if (sendMemoryPoolWaiting.has_element(*this))
             sendMemoryPoolWaiting.erase(*this);
@@ -54,8 +44,6 @@ namespace services
 
         if (control)
             AbortControl();
-
-        services::GlobalTracer().Trace() << "Buffers empty: " << sendBuffersEmpty << sendBufferForStreamEmpty << sendBufferEmpty;
     }
 
     void ConnectionLwIp::RequestSendStream(std::size_t sendSize)
@@ -147,7 +135,6 @@ namespace services
 
     bool ConnectionLwIp::PendingSend() const
     {
-        services::GlobalTracer().Trace() << "Buffers empty: " << sendBuffers.empty() << sendBufferForStream.empty() << sendBuffer.empty();
         return !(sendBuffers.empty() && sendBufferForStream.empty() && sendBuffer.empty());
     }
 
@@ -266,7 +253,6 @@ namespace services
     {
         while (len != 0)
         {
-            services::GlobalTracer().Trace() << "ConnectionLwIp::Sent len: " << len;
             really_assert(!sendBuffers.empty());
             if (sendBuffers.front().size() <= len)
             {
