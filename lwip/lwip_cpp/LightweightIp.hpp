@@ -6,7 +6,7 @@
 #include "lwip/lwip_cpp/ConnectionLwIp.hpp"
 #include "lwip/lwip_cpp/DatagramLwIp.hpp"
 #include "lwip/lwip_cpp/MulticastLwIp.hpp"
-#include "services/network/PendingSend.hpp"
+#include "services/network/ConnectionStatus.hpp"
 
 namespace services
 {
@@ -15,7 +15,7 @@ namespace services
         , public DatagramFactoryLwIp
         , public MulticastLwIp
         , public IPv4Info
-        , public PendingSendLightweightIp
+        , public ConnectionStatus
         , public infra::InterfaceConnector<LightweightIp>
     {
     public:
@@ -29,7 +29,7 @@ namespace services
 
         uint32_t Rand();
 
-        //PendingSendLightweightIp
+        //Implementation of ConnectionStatus
         virtual bool PendingSend() const override;
 
         // Implementation of IPv4Info
