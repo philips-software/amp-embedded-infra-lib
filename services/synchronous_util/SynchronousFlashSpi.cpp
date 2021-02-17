@@ -9,6 +9,7 @@ namespace services
     const uint8_t SynchronousFlashSpi::commandEraseSubSector = 0x20;
     const uint8_t SynchronousFlashSpi::commandEraseSector = 0xd8;
     const uint8_t SynchronousFlashSpi::commandEraseBulk = 0xc7;
+    const uint8_t SynchronousFlashSpi::commandReadId = 0x9f;
 
     SynchronousFlashSpi::SynchronousFlashSpi(hal::SynchronousSpi& spi, const Config& config)
         : SynchronousFlashHomogeneous(config.numberOfSubSectors, sizeSubSector)
@@ -46,6 +47,12 @@ namespace services
             EraseSomeSectors(endIndex);
             HoldWhileWriteInProgress();
         }
+    }
+
+    void SynchronousFlashSpi::ReadFlashId(infra::ByteRange buffer)
+    {
+        spi.SendData(infra::MakeByteRange(commandReadId), hal::SynchronousSpi::continueSession);
+        spi.ReceiveData(buffer, hal::SynchronousSpi::stop);
     }
 
     std::array<uint8_t, 3> SynchronousFlashSpi::ConvertAddress(uint32_t address) const
