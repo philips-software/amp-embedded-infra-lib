@@ -26,9 +26,26 @@ namespace infra
         return *this;
     }
 
+    ConstructBin& ConstructBin::Repeat(std::size_t amount, uint8_t v)
+    {
+        contents.insert(contents.end(), amount, v);
+        return *this;
+    }
+
+    ConstructBin& ConstructBin::TextStream(const std::function<void(infra::TextOutputStream stream)>& callback)
+    {
+        callback(infra::StdVectorOutputStream(contents) << infra::text);
+        return *this;
+    }
+
     std::vector<uint8_t> ConstructBin::Vector() const
     {
         return contents;
+    }
+
+    std::string ConstructBin::String() const
+    {
+        return infra::ByteRangeAsStdString(infra::MakeRange(contents));
     }
 
     ConstByteRange ConstructBin::Range() const
