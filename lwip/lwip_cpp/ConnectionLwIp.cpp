@@ -7,9 +7,11 @@ namespace services
     infra::BoundedList<std::array<uint8_t, TCP_MSS>>::WithMaxSize<tcpSndQueueLen> ConnectionLwIp::sendMemoryPool;
     infra::IntrusiveList<ConnectionLwIp> ConnectionLwIp::sendMemoryPoolWaiting;
 
-    ConnectionLwIp::ConnectionLwIp(tcp_pcb* control)
-        : control(control)
+    ConnectionLwIp::ConnectionLwIp(ConnectionFactoryLwIp& factory, tcp_pcb* control)
+        : factory(factory)
+        , control(control)
     {
+        factory.connections.push_front(*this);
         assert(control != nullptr);
         tcp_arg(control, this);
         tcp_recv(control, &ConnectionLwIp::Recv);
@@ -20,6 +22,8 @@ namespace services
 
     ConnectionLwIp::~ConnectionLwIp()
     {
+        factory.connections.erase_slow(*this);
+
         while (!sendBuffers.empty())
         {
             RemoveFromPool(sendBuffers.front());
@@ -115,7 +119,7 @@ namespace services
                 ip4_addr2(ip_2_ip4(&control->remote_ip)),
                 ip4_addr3(ip_2_ip4(&control->remote_ip)),
                 ip4_addr4(ip_2_ip4(&control->remote_ip))
-        };
+            };
         else
             return IPv6Address{
                 IP6_ADDR_BLOCK1(ip_2_ip6(&control->remote_ip)),
@@ -126,7 +130,12 @@ namespace services
                 IP6_ADDR_BLOCK6(ip_2_ip6(&control->remote_ip)),
                 IP6_ADDR_BLOCK7(ip_2_ip6(&control->remote_ip)),
                 IP6_ADDR_BLOCK8(ip_2_ip6(&control->remote_ip))
-        };
+            };
+    }
+
+    bool ConnectionLwIp::PendingSend() const
+    {
+        return !(sendBuffers.empty() && sendBufferForStream.empty() && sendBuffer.empty());
     }
 
     void ConnectionLwIp::SendBuffer(infra::ConstByteRange buffer)
@@ -423,10 +432,11 @@ namespace services
         }
     }
 
-    ListenerLwIp::ListenerLwIp(AllocatorConnectionLwIp& allocator, uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions)
+    ListenerLwIp::ListenerLwIp(AllocatorConnectionLwIp& allocator, uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions, ConnectionFactoryLwIp& connectionFactory)
         : allocator(allocator)
         , factory(factory)
         , access([this]() { ProcessBacklog(); })
+        , connectionFactory(connectionFactory)
     {
         tcp_pcb* pcb = tcp_new();
         assert(pcb != nullptr);
@@ -460,7 +470,7 @@ namespace services
         PurgeBacklog();
         if (!backlog.full())
         {
-            infra::SharedPtr<ConnectionLwIp> connection = allocator.Allocate(newPcb);
+            infra::SharedPtr<ConnectionLwIp> connection = allocator.Allocate(connectionFactory, newPcb);
             if (connection)
             {
                 backlog.push_back(connection);
@@ -576,7 +586,7 @@ namespace services
     err_t ConnectorLwIp::Connected()
     {
         services::GlobalTracer().Trace() << "ConnectorLwIp::Connected connection established";
-        infra::SharedPtr<ConnectionLwIp> connection = connectionAllocator.Allocate(control);
+        infra::SharedPtr<ConnectionLwIp> connection = connectionAllocator.Allocate(factory, control);
         if (connection)
         {
             ResetControl();
@@ -637,7 +647,7 @@ namespace services
 
     infra::SharedPtr<void> ConnectionFactoryLwIp::Listen(uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions)
     {
-        return listenerAllocator.Allocate(connectionAllocator, port, factory, versions);
+        return listenerAllocator.Allocate(connectionAllocator, port, factory, versions, *this);
     }
 
     void ConnectionFactoryLwIp::Connect(ClientConnectionObserverFactory& factory)
@@ -668,6 +678,14 @@ namespace services
     {
         connectors.remove(connector);
         TryConnect();
+    }
+
+    bool ConnectionFactoryLwIp::PendingSend() const
+    {
+        return std::any_of(connections.begin(), connections.end(), [](auto& c)
+        {
+            return c.PendingSend();
+        });
     }
 
     void ConnectionFactoryLwIp::TryConnect()

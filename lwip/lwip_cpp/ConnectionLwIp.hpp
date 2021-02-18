@@ -26,13 +26,16 @@ namespace services
     static const uint32_t tcpWnd = TCP_WND;
 #endif
 
+    class ConnectionFactoryLwIp;
+
     class ConnectionLwIp
         : public services::Connection
         , public infra::EnableSharedFromThis<ConnectionLwIp>
         , public infra::IntrusiveList<ConnectionLwIp>::NodeType
+        , public infra::IntrusiveForwardList<ConnectionLwIp>::NodeType
     {
     public:
-        ConnectionLwIp(tcp_pcb* control);
+        ConnectionLwIp(ConnectionFactoryLwIp& factory, tcp_pcb* control);
         ~ConnectionLwIp();
 
         virtual void RequestSendStream(std::size_t sendSize) override;
@@ -46,6 +49,7 @@ namespace services
         void SetSelfOwnership(const infra::SharedPtr<ConnectionObserver>& observer);
         void ResetOwnership();
         IPAddress IpAddress() const;
+        bool PendingSend() const;
 
     private:
         void SendBuffer(infra::ConstByteRange buffer);
@@ -102,6 +106,7 @@ namespace services
         friend class ListenerLwIp;
         friend class ConnectorLwIp;
 
+        ConnectionFactoryLwIp& factory;
         tcp_pcb* control;
         std::size_t requestedSendSize = 0;
 
@@ -122,7 +127,7 @@ namespace services
         infra::SharedPtr<void> self;
     };
 
-    using AllocatorConnectionLwIp = infra::SharedObjectAllocator<ConnectionLwIp, void(tcp_pcb*)>;
+    using AllocatorConnectionLwIp = infra::SharedObjectAllocator<ConnectionLwIp, void(ConnectionFactoryLwIp&, tcp_pcb*)>;
 
     class ListenerLwIp
     {
@@ -130,7 +135,7 @@ namespace services
         template<std::size_t Size>
             using WithFixedAllocator = infra::WithStorage<ListenerLwIp, AllocatorConnectionLwIp::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<Size>>;
 
-        ListenerLwIp(AllocatorConnectionLwIp& allocator, uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions);
+        ListenerLwIp(AllocatorConnectionLwIp& allocator, uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions, ConnectionFactoryLwIp& connectionFactory);
         ~ListenerLwIp();
 
     private:
@@ -146,9 +151,10 @@ namespace services
         ServerConnectionObserverFactory& factory;
         infra::BoundedList<infra::SharedPtr<ConnectionLwIp>>::WithMaxSize<6> backlog;
         infra::AccessedBySharedPtr access;
+        ConnectionFactoryLwIp& connectionFactory;
     };
 
-    using AllocatorListenerLwIp = infra::SharedObjectAllocator<ListenerLwIp, void(AllocatorConnectionLwIp&, uint16_t, ServerConnectionObserverFactory&, IPVersions versions)>;
+    using AllocatorListenerLwIp = infra::SharedObjectAllocator<ListenerLwIp, void(AllocatorConnectionLwIp&, uint16_t, ServerConnectionObserverFactory&, IPVersions, ConnectionFactoryLwIp&)>;
 
     class ConnectionFactoryLwIp;
 
@@ -193,15 +199,19 @@ namespace services
         virtual void CancelConnect(ClientConnectionObserverFactory& factory) override;
 
         void Remove(ConnectorLwIp& connector);
+        bool PendingSend() const;
 
     private:
         void TryConnect();
 
     private:
+        friend class ConnectionLwIp;
+
         AllocatorListenerLwIp& listenerAllocator;
         infra::IntrusiveList<ClientConnectionObserverFactory> waitingConnectors;
         infra::BoundedList<ConnectorLwIp>& connectors;
         AllocatorConnectionLwIp& connectionAllocator;
+        infra::IntrusiveForwardList<ConnectionLwIp> connections;
     };
 }
 
