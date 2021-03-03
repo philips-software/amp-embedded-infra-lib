@@ -435,7 +435,14 @@ namespace services
     ListenerLwIp::ListenerLwIp(AllocatorConnectionLwIp& allocator, uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions, ConnectionFactoryLwIp& connectionFactory)
         : allocator(allocator)
         , factory(factory)
-        , access([this]() { ProcessBacklog(); })
+        , access([this]()
+        {
+            auto weakSelf = infra::WeakPtr<ListenerLwIp>(this->self);
+            this->self = nullptr;
+
+            if (weakSelf.lock())
+                ProcessBacklog();
+        })
         , connectionFactory(connectionFactory)
     {
         tcp_pcb* pcb = tcp_new();
@@ -497,11 +504,12 @@ namespace services
         if (!backlog.empty() && !access.Referenced())
         {
             services::GlobalTracer().Trace() << "ListenerLwIp::ProcessBacklog processing new connection";
+
+            this->self = SharedFromThis();
             auto self = access.MakeShared(*this);
 
             auto connection = self->backlog.front();
-            factory.ConnectionAccepted([self](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-            {
+            factory.ConnectionAccepted([self](infra::SharedPtr<services::ConnectionObserver> connectionObserver) {
                 auto connection = self->backlog.front();
                 self->backlog.pop_front();
 
