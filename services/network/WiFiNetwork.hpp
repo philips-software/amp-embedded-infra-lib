@@ -37,7 +37,8 @@ namespace services
         infra::BoundedString::WithStorage<securityKeySize> key;
     };
 
-    using SsidString = infra::BoundedString::WithStorage<32>;
+    const uint8_t MaxSsidSize{ 32 };
+    using SsidString = infra::BoundedString::WithStorage<MaxSsidSize>;
 
     struct IPAddresses
     {
