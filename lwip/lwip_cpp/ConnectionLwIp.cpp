@@ -435,14 +435,7 @@ namespace services
     ListenerLwIp::ListenerLwIp(AllocatorConnectionLwIp& allocator, uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions, ConnectionFactoryLwIp& connectionFactory)
         : allocator(allocator)
         , factory(factory)
-        , access([this]()
-        {
-            auto weakSelf = infra::WeakPtr<ListenerLwIp>(this->self);
-            this->self = nullptr;
-
-            if (weakSelf.lock())
-                ProcessBacklog();
-        })
+        , access([this]() { TryProcessBacklog(); })
         , connectionFactory(connectionFactory)
     {
         tcp_pcb* pcb = tcp_new();
@@ -496,6 +489,15 @@ namespace services
             tcp_abort(newPcb);
             return ERR_ABRT;
         }
+    }
+
+    void ListenerLwIp::TryProcessBacklog()
+    {
+        auto weakSelf = infra::WeakPtr<ListenerLwIp>(this->self);
+        this->self = nullptr;
+
+        if (weakSelf.lock())
+            ProcessBacklog();
     }
 
     err_t ListenerLwIp::ProcessBacklog()
