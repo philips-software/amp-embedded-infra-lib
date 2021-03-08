@@ -8,6 +8,7 @@ ccola_component(network_test gmock_test)
         TestConnectionMbedTls.cpp
         TestConnectionSerial.cpp
         TestCucumberWireProtocolParser.cpp
+        TestCucumberWireProtocolServer.cpp
         TestDnsResolver.cpp
         TestDnsServer.cpp
         TestExclusiveConnection.cpp
