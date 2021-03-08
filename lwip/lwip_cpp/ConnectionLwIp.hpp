@@ -130,6 +130,7 @@ namespace services
     using AllocatorConnectionLwIp = infra::SharedObjectAllocator<ConnectionLwIp, void(ConnectionFactoryLwIp&, tcp_pcb*)>;
 
     class ListenerLwIp
+        : infra::EnableSharedFromThis<ListenerLwIp>
     {
     public:
         template<std::size_t Size>
@@ -142,10 +143,12 @@ namespace services
         static err_t Accept(void* arg, struct tcp_pcb* newPcb, err_t err);
 
         err_t Accept(tcp_pcb* newPcb, err_t err);
+        void TryProcessBacklog();
         err_t ProcessBacklog();
         void PurgeBacklog();
 
     private:
+        infra::SharedPtr<ListenerLwIp> self;
         AllocatorConnectionLwIp& allocator;
         tcp_pcb* listenPort;
         ServerConnectionObserverFactory& factory;
