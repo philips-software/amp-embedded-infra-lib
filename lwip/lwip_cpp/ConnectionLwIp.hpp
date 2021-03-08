@@ -60,10 +60,12 @@ namespace services
         static err_t Recv(void* arg, tcp_pcb* tpcb, pbuf* p, err_t err);
         static void Err(void* arg, err_t err);
         static err_t Sent(void* arg, struct tcp_pcb* tpcb, uint16_t len);
+        static void Destroy(u8_t id, void *data);
 
         err_t Recv(pbuf* p, err_t err);
         void Err(err_t err);
         err_t Sent(uint16_t len);
+        void Destroy();
         void RemoveFromPool(infra::ConstByteRange range);
 
     private:
@@ -108,6 +110,7 @@ namespace services
 
         ConnectionFactoryLwIp& factory;
         tcp_pcb* control;
+        tcp_ext_arg_callbacks callbacks;
         std::size_t requestedSendSize = 0;
 
         infra::SharedOptional<StreamWriterLwIp> streamWriter;

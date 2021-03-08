@@ -1476,7 +1476,7 @@
  * additional argument entries in an array (see tcp_ext_arg_alloc_id)
  */
 #if !defined LWIP_TCP_PCB_NUM_EXT_ARGS || defined __DOXYGEN__
-#define LWIP_TCP_PCB_NUM_EXT_ARGS       0
+#define LWIP_TCP_PCB_NUM_EXT_ARGS       1
 #endif
 
 /** LWIP_ALTCP==1: enable the altcp API.
