@@ -82,11 +82,7 @@ namespace services
 
     void ConnectionLwIp::CloseAndDestroy()
     {
-        tcp_ext_arg_set_callbacks(control, 0, &emptyCallbacks);
-        tcp_arg(control, nullptr);
-        tcp_recv(control, nullptr);
-        tcp_err(control, nullptr);
-        tcp_sent(control, nullptr);
+        DisableCallbacks();
 
         err_t result = tcp_close(control);
         if (result != ERR_OK)
@@ -198,14 +194,20 @@ namespace services
 
     void ConnectionLwIp::AbortControl()
     {
+        DisableCallbacks();
+
+        tcp_abort(control);
+        control = nullptr;
+    }
+
+    void ConnectionLwIp::DisableCallbacks()
+    {
         tcp_ext_arg_set_callbacks(control, 0, &emptyCallbacks);
 
         tcp_arg(control, nullptr);
         tcp_recv(control, nullptr);
         tcp_err(control, nullptr);
         tcp_sent(control, nullptr);
-        tcp_abort(control);
-        control = nullptr;
     }
 
     err_t ConnectionLwIp::Recv(void* arg, tcp_pcb* tpcb, pbuf* p, err_t err)
@@ -259,6 +261,9 @@ namespace services
     {
         services::GlobalTracer().Trace() << "ConnectionLwIp::Err received err " << err;
         assert(err == ERR_RST || err == ERR_CLSD || err == ERR_ABRT);
+
+        DisableCallbacks();
+
         control = nullptr;  // When Err is received, the pcb has already been freed
         ResetOwnership();
     }

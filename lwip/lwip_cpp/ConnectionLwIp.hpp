@@ -54,8 +54,8 @@ namespace services
     private:
         void SendBuffer(infra::ConstByteRange buffer);
         void TryAllocateSendStream();
-        void ResetControl();
         void AbortControl();
+        void DisableCallbacks();
 
         static err_t Recv(void* arg, tcp_pcb* tpcb, pbuf* p, err_t err);
         static void Err(void* arg, err_t err);
