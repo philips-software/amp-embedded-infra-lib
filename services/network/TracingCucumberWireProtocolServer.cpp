@@ -8,7 +8,8 @@ namespace services
 
     void TracingCucumberWireProtocolConnectionObserver::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        CucumberWireProtocolConnectionObserver::SendStreamAvailable(std::move(writer));
+        auto tracingWriterPtr = tracingWriter.Emplace(std::move(writer), tracer);
+        CucumberWireProtocolConnectionObserver::SendStreamAvailable(infra::MakeContainedSharedObject(tracingWriterPtr->Writer(), std::move(tracingWriterPtr)));
     }
 
     void TracingCucumberWireProtocolConnectionObserver::DataReceived()
@@ -22,6 +23,16 @@ namespace services
         reader = nullptr;
 
         CucumberWireProtocolConnectionObserver::DataReceived();
+    }
+
+    TracingCucumberWireProtocolConnectionObserver::TracingWriter::TracingWriter(infra::SharedPtr<infra::StreamWriter>&& writer, services::Tracer& tracer)
+        : writer(std::move(writer))
+        , tracingWriter(*this->writer, tracer)
+    {}
+
+    infra::StreamWriter& TracingCucumberWireProtocolConnectionObserver::TracingWriter::Writer()
+    {
+        return tracingWriter;
     }
 
     TracingCucumberWireProtocolServer::TracingCucumberWireProtocolServer(services::ConnectionFactory& connectionFactory, uint16_t port, services::Tracer& tracer)

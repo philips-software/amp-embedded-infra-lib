@@ -13,13 +13,14 @@ namespace services
 
     void CucumberWireProtocolConnectionObserver::DataReceived()
     {
-        auto reader = ConnectionObserver::Subject().ReceiveStream();
+        auto reader = Subject().ReceiveStream();
         infra::DataInputStream::WithErrorPolicy stream(*reader);
 
-        ConnectionObserver::Subject().AckReceived();
-        reader = nullptr;
+        while (!stream.Empty())
+            stream.ContiguousRange();
 
-        ConnectionObserver::Subject().RequestSendStream(ConnectionObserver::Subject().MaxSendStreamSize());
+        Subject().AckReceived();
+        Subject().RequestSendStream(ConnectionObserver::Subject().MaxSendStreamSize());
     }
 
     CucumberWireProtocolServer::CucumberWireProtocolServer(services::ConnectionFactory& connectionFactory, uint16_t port)

@@ -3,6 +3,7 @@
 
 #include "services/network/CucumberWireProtocolServer.hpp"
 #include "services/tracer/Tracer.hpp"
+#include "services/tracer/TracingOutputStream.hpp"
 
 namespace services
 {
@@ -17,7 +18,21 @@ namespace services
         virtual void DataReceived() override;
 
     private:
+        class TracingWriter
+        {
+        public:
+            TracingWriter(infra::SharedPtr<infra::StreamWriter>&& writer, services::Tracer& tracer);
+
+            infra::StreamWriter& Writer();
+
+        private:
+            infra::SharedPtr<infra::StreamWriter> writer;
+            TracingStreamWriter tracingWriter;
+        };
+
+    private:
         services::Tracer& tracer;
+        infra::SharedOptional<TracingWriter> tracingWriter;
     };
 
     class TracingCucumberWireProtocolServer
