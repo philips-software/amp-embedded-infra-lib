@@ -140,7 +140,7 @@ namespace services
 
     void CucumberWireProtocolConnectionObserver::DataReceived()
     {
-        auto reader = ConnectionObserver::Subject().ReceiveStream();
+        auto reader = Subject().ReceiveStream();
         infra::DataInputStream::WithErrorPolicy stream(*reader);
 
 		do
@@ -154,7 +154,8 @@ namespace services
         ConnectionObserver::Subject().AckReceived();
         reader = nullptr;
 
-        ConnectionObserver::Subject().RequestSendStream(ConnectionObserver::Subject().MaxSendStreamSize());
+        Subject().AckReceived();
+        Subject().RequestSendStream(ConnectionObserver::Subject().MaxSendStreamSize());
     }
 
     CucumberWireProtocolServer::CucumberWireProtocolServer(const infra::ByteRange receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port)
