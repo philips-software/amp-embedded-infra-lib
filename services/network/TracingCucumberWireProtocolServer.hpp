@@ -18,7 +18,7 @@ namespace services
         virtual void DataReceived() override;
 
     private:
-		const infra::ByteRange receiveBuffer;
+        const infra::ByteRange receiveBuffer;
         class TracingWriter
         {
         public:
@@ -40,11 +40,14 @@ namespace services
         : public services::SingleConnectionListener
     {
     public:
+        template<size_t BufferSize>
+        using WithBuffer = infra::WithStorage<TracingCucumberWireProtocolServer, std::array<uint8_t, BufferSize>>;
+
         TracingCucumberWireProtocolServer(const infra::ByteRange receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port, services::Tracer& tracer);
 
     private:
         services::Tracer& tracer;
-		const infra::ByteRange receiveBuffer;
+        const infra::ByteRange receiveBuffer;
         infra::Creator<services::ConnectionObserver, TracingCucumberWireProtocolConnectionObserver, void(services::IPAddress address)> connectionCreator;
     };
 }

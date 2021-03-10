@@ -2,112 +2,113 @@
 
 namespace services
 {
-	void CucumberWireProtocolParser::FailureMessage(infra::BoundedString& responseBuffer, infra::BoundedConstString failMessage, infra::BoundedConstString exceptionType)
-	{
-		{
-			infra::JsonArrayFormatter::WithStringStream result(infra::inPlace, responseBuffer);
-			result.Add((infra::BoundedConstString) "fail");
+    void CucumberWireProtocolParser::FailureMessage(infra::BoundedString& responseBuffer, infra::BoundedConstString failMessage, infra::BoundedConstString exceptionType)
+    {
+        {
+            infra::JsonArrayFormatter::WithStringStream result(infra::inPlace, responseBuffer);
+            result.Add((infra::BoundedConstString) "fail");
 
-			infra::JsonObjectFormatter subObject(result.SubObject());
-			subObject.Add("message", failMessage);
-			subObject.Add("exception", exceptionType);
-		}
-		responseBuffer.insert(responseBuffer.size(), "\n");
-	}
+            infra::JsonObjectFormatter subObject(result.SubObject());
+            subObject.Add("message", failMessage);
+            subObject.Add("exception", exceptionType);
+        }
 
-	void CucumberWireProtocolParser::SuccessMessage(infra::BoundedString& responseBuffer)
-	{
+        responseBuffer.insert(responseBuffer.size(), "\n");
+    }
+
+    void CucumberWireProtocolParser::SuccessMessage(infra::BoundedString& responseBuffer)
+    {
         {
             infra::JsonArrayFormatter::WithStringStream result(infra::inPlace, responseBuffer);
             result.Add((infra::BoundedConstString) "success");
             infra::JsonArrayFormatter subArray(result.SubArray());
         }
-		
-		responseBuffer.insert(responseBuffer.size(), "\n");
-	}
 
-	void CucumberWireProtocolParser::ParseRequest(infra::ByteRange inputRange)
-	{
-		infra::JsonArray input(infra::ByteRangeAsString(inputRange));
+        responseBuffer.insert(responseBuffer.size(), "\n");
+    }
 
-		for (auto value : input)
-		{}
+    void CucumberWireProtocolParser::ParseRequest(infra::ByteRange inputRange)
+    {
+        infra::JsonArray input(infra::ByteRangeAsString(inputRange));
 
-		if (input.Error())
-		{
-			requestType = invalid;
-			return;
-		}
+        for (auto value : input)
+        {}
 
-		infra::JsonArrayIterator iterator(input.begin());
+        if (input.Error())
+        {
+            requestType = invalid;
+            return;
+        }
 
-		if (iterator->Get<infra::JsonString>() == "step_matches")
-		{
-			requestType = step_matches;
+        infra::JsonArrayIterator iterator(input.begin());
 
-			iterator++;
-			nameToMatch = iterator->Get<infra::JsonObject>();
-		}
-		else if (iterator->Get<infra::JsonString>() == "begin_scenario")
-			requestType = begin_scenario;
-		else if (iterator->Get<infra::JsonString>() == "end_scenario")
-			requestType = end_scenario;
-		else if (iterator->Get<infra::JsonString>() == "invoke")
-		{
-			requestType = invoke;
+        if (iterator->Get<infra::JsonString>() == "step_matches")
+        {
+            requestType = step_matches;
 
-			iterator++;
+            iterator++;
+            nameToMatch = iterator->Get<infra::JsonObject>();
+        }
+        else if (iterator->Get<infra::JsonString>() == "begin_scenario")
+            requestType = begin_scenario;
+        else if (iterator->Get<infra::JsonString>() == "end_scenario")
+            requestType = end_scenario;
+        else if (iterator->Get<infra::JsonString>() == "invoke")
+        {
+            requestType = invoke;
+
+            iterator++;
             infra::BoundedString::WithStorage<6> invokeIdString;
             iterator->Get<infra::JsonObject>().GetString("id").ToString(invokeIdString);
             infra::StringInputStream stream(invokeIdString);
             stream >> invokeId;
 
-			invokeArguments = iterator->Get<infra::JsonObject>().GetArray("args");
-		}
-		else if (iterator->Get<infra::JsonString>() == "snippet_text")
-			requestType = snippet_text;
-		else
-			requestType = invalid;
-	}
+            invokeArguments = iterator->Get<infra::JsonObject>().GetArray("args");
+        }
+        else if (iterator->Get<infra::JsonString>() == "snippet_text")
+            requestType = snippet_text;
+        else
+            requestType = invalid;
+    }
 
-	void CucumberWireProtocolParser::FormatResponse(infra::DataOutputStream::WithErrorPolicy& stream)
-	{
-		infra::BoundedString::WithStorage<256> responseBuffer;
+    void CucumberWireProtocolParser::FormatResponse(infra::DataOutputStream::WithErrorPolicy& stream)
+    {
+        infra::BoundedString::WithStorage<256> responseBuffer;
 
-		if (this->requestType == step_matches)
-		{
-			bool stepMatchResult = true;
-			{
-				infra::JsonArrayFormatter::WithStringStream result(infra::inPlace, responseBuffer);
+        if (this->requestType == step_matches)
+        {
+            bool stepMatchResult = true;
+            {
+                infra::JsonArrayFormatter::WithStringStream result(infra::inPlace, responseBuffer);
 
-				if (stepMatchResult == true)
-				{
-					result.Add((infra::BoundedConstString) "success");
-					infra::JsonArrayFormatter subArray(result.SubArray());
+                if (stepMatchResult == true)
+                {
+                    result.Add((infra::BoundedConstString) "success");
+                    infra::JsonArrayFormatter subArray(result.SubArray());
 
-					infra::JsonObjectFormatter subObject(subArray.SubObject());
-					infra::StringOutputStream::WithStorage<6> idStream;
-					idStream << this->matchedId;
-					subObject.Add("id", idStream.Storage());
+                    infra::JsonObjectFormatter subObject(subArray.SubObject());
+                    infra::StringOutputStream::WithStorage<6> idStream;
+                    idStream << this->matchedId;
+                    subObject.Add("id", idStream.Storage());
 
-					subObject.Add(infra::JsonKeyValue{ "args", infra::JsonValue(infra::InPlaceType<infra::JsonArray>(), this->matchedArguments) });
-				}
-			}
-			responseBuffer.insert(responseBuffer.size(), "\n");
-		}
-		else if (this->requestType == begin_scenario)
-			SuccessMessage(responseBuffer);
-		else if (this->requestType == end_scenario)
-			SuccessMessage(responseBuffer);
-		else if (this->requestType == invoke)
-		{
-			{
-				infra::JsonArrayFormatter::WithStringStream result(infra::inPlace, responseBuffer);
-				result.Add("pending");
-				result.Add("I'll do it later");
-			}
-			responseBuffer.insert(responseBuffer.size(), "\n");
-		}
+                    subObject.Add(infra::JsonKeyValue{ "args", infra::JsonValue(infra::InPlaceType<infra::JsonArray>(), this->matchedArguments) });
+                }
+            }
+            responseBuffer.insert(responseBuffer.size(), "\n");
+        }
+        else if (this->requestType == begin_scenario)
+            SuccessMessage(responseBuffer);
+        else if (this->requestType == end_scenario)
+            SuccessMessage(responseBuffer);
+        else if (this->requestType == invoke)
+        {
+            {
+                infra::JsonArrayFormatter::WithStringStream result(infra::inPlace, responseBuffer);
+                result.Add("pending");
+                result.Add("I'll do it later");
+            }
+            responseBuffer.insert(responseBuffer.size(), "\n");
+        }
         else if (this->requestType == snippet_text)
         {
             {
@@ -117,24 +118,24 @@ namespace services
             }
             responseBuffer.insert(responseBuffer.size(), "\n");
         }
-		else
-			FailureMessage(responseBuffer, "Invalid Request", "Some.Foreign.ExceptionType");
+        else
+            FailureMessage(responseBuffer, "Invalid Request", "Some.Foreign.ExceptionType");
 
-		stream << infra::StringAsByteRange(responseBuffer);
-	}
+        stream << infra::StringAsByteRange(responseBuffer);
+    }
 
-	CucumberWireProtocolConnectionObserver::CucumberWireProtocolConnectionObserver(const infra::ByteRange receiveBuffer)
-		: receiveBufferVector(infra::ReinterpretCastMemoryRange<infra::StaticStorage<uint8_t>>(receiveBuffer))
-		, receiveBuffer(receiveBuffer)
-	{}
+    CucumberWireProtocolConnectionObserver::CucumberWireProtocolConnectionObserver(const infra::ByteRange receiveBuffer)
+        : receiveBufferVector(infra::ReinterpretCastMemoryRange<infra::StaticStorage<uint8_t>>(receiveBuffer))
+        , receiveBuffer(receiveBuffer)
+    {}
 
     void CucumberWireProtocolConnectionObserver::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
-		
-		cucumberParser.FormatResponse(stream);
 
-		receiveBufferVector.clear();
+        cucumberParser.FormatResponse(stream);
+
+        receiveBufferVector.clear();
         writer = nullptr;
     }
 
@@ -143,16 +144,13 @@ namespace services
         auto reader = Subject().ReceiveStream();
         infra::DataInputStream::WithErrorPolicy stream(*reader);
 
-		do
-		{
-			dataBuffer = stream.ContiguousRange();
-			receiveBufferVector.insert(receiveBufferVector.end(), dataBuffer.begin(), dataBuffer.end());
-		} while (dataBuffer.size() != 0);
+        do
+        {
+            dataBuffer = stream.ContiguousRange();
+            receiveBufferVector.insert(receiveBufferVector.end(), dataBuffer.begin(), dataBuffer.end());
+        } while (dataBuffer.size() != 0);
 
-		cucumberParser.ParseRequest(receiveBufferVector.range());
-
-        ConnectionObserver::Subject().AckReceived();
-        reader = nullptr;
+        cucumberParser.ParseRequest(receiveBufferVector.range());
 
         Subject().AckReceived();
         Subject().RequestSendStream(ConnectionObserver::Subject().MaxSendStreamSize());
@@ -160,7 +158,7 @@ namespace services
 
     CucumberWireProtocolServer::CucumberWireProtocolServer(const infra::ByteRange receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port)
         : SingleConnectionListener(connectionFactory, port, { connectionCreator })
-		, receiveBuffer(receiveBuffer)
+        , receiveBuffer(receiveBuffer)
         , connectionCreator([this](infra::Optional<CucumberWireProtocolConnectionObserver>& value, services::IPAddress address) {
             value.Emplace(this->receiveBuffer);
         })
