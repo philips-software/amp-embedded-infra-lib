@@ -570,6 +570,8 @@ namespace application
                 services::GlobalTracer().Continue() << ")";
             }
         }
+        
+        services::GlobalTracer().Trace();
     }
 
     void Console::ListFields(const EchoMessage& message)
@@ -679,6 +681,8 @@ namespace application
         {
             field->Accept(visitor);
             services::GlobalTracer().Continue() << " " << field->name;
+            if (field != message.fields.back())
+                services::GlobalTracer().Continue() << ", ";
         }
     }
 
