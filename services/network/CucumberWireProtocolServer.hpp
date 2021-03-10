@@ -34,7 +34,7 @@ namespace services
         RequestType requestType;
         infra::JsonObject nameToMatch;
         uint8_t matchedId;
-        infra::JsonArray matchedArguments;
+        infra::JsonArray matchedArguments = infra::JsonArray("[]");
 
         uint8_t invokeId;
         infra::JsonArray invokeArguments;

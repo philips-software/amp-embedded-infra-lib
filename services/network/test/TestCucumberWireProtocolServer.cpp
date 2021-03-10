@@ -67,7 +67,7 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_step_match_request_wit
     infra::ConstByteRange data = infra::MakeStringByteRange("[\"step_matches\",{\"name_to_match\":\"we're all wired\"}]");
     connection.SimulateDataReceived(data);
     ExecuteAllActions();
-    std::string response = "[ \"success\", [ { \"id\":\"0\", \"args\": } ] ]\n";
+    std::string response = "[ \"success\", [ { \"id\":\"0\", \"args\":[] } ] ]\n";
     std::vector<uint8_t> responseVector(response.begin(), response.end());
     EXPECT_EQ(responseVector, connection.sentData);
 

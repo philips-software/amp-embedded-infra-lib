@@ -91,7 +91,8 @@ namespace services
                     idStream << this->matchedId;
                     subObject.Add("id", idStream.Storage());
 
-                    subObject.Add(infra::JsonKeyValue{ "args", infra::JsonValue(infra::InPlaceType<infra::JsonArray>(), this->matchedArguments) });
+                    subObject.Add(infra::JsonKeyValue{ "args", infra::JsonValue(infra::InPlaceType<infra::JsonArray>(), matchedArguments) });
+
                 }
             }
             responseBuffer.insert(responseBuffer.size(), "\n");
