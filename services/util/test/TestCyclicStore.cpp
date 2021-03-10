@@ -59,6 +59,20 @@ TEST_F(CyclicStoreTest, AddFirstItem)
     EXPECT_EQ((std::vector<uint8_t>{ 0xfc, 0xf8, 2, 0, 11, 12, 0xff, 0xff, 0xff, 0xff }), flash.sectors[0]);
 }
 
+TEST_F(CyclicStoreTest, ClearNoItem)
+{
+    infra::VerifyingFunctionMock<void()> done;
+
+    AddItem(KeepBytesAlive({ 11, 12 }), [&done]() { done.callback(); });
+
+    services::CyclicStore::Iterator iterator = cyclicStore.Begin();
+    Read(iterator);
+    iterator.Erase([]() {});
+    ExecuteAllActions();
+
+    EXPECT_EQ((std::vector<uint8_t>{ 0xfc, 0xf8, 2, 0, 11, 12, 0xff, 0xff, 0xff, 0xff }), flash.sectors[0]);
+}
+
 TEST_F(CyclicStoreTest, AddPartialItem)
 {
     AddPartialItem(KeepBytesAlive({ 11 }), 3);
@@ -177,6 +191,22 @@ TEST_F(CyclicStoreTest, ReadFirstItem)
 
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
     EXPECT_EQ((std::vector<uint8_t>{ 11, 12 }), Read(iterator));
+}
+
+TEST_F(CyclicStoreTest, ClearFirstItem)
+{
+    infra::VerifyingFunctionMock<void()> done;
+
+    AddItem(KeepBytesAlive({ 11, 12 }), [&done]() { done.callback(); });
+
+    services::CyclicStore::Iterator iterator = cyclicStore.Begin();
+    iterator.Erase([]() {});
+    ExecuteAllActions();
+
+    EXPECT_EQ((std::vector<uint8_t>{ 0xfc, 0xf0, 2, 0, 11, 12, 0xff, 0xff, 0xff, 0xff }), flash.sectors[0]);
+
+    iterator = cyclicStore.Begin();
+    EXPECT_EQ((std::vector<uint8_t>{}), Read(iterator));
 }
 
 TEST_F(CyclicStoreTest, ReadFirstItemTwice)
