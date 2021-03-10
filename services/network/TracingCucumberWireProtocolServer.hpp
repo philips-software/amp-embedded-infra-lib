@@ -11,13 +11,14 @@ namespace services
         : public CucumberWireProtocolConnectionObserver
     {
     public:
-        TracingCucumberWireProtocolConnectionObserver(services::Tracer& tracer);
+        TracingCucumberWireProtocolConnectionObserver(const infra::ByteRange receiveBuffer, services::Tracer& tracer);
 
         // Implementation of ConnectionObserver
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void DataReceived() override;
 
     private:
+		const infra::ByteRange receiveBuffer;
         class TracingWriter
         {
         public:
@@ -39,10 +40,11 @@ namespace services
         : public services::SingleConnectionListener
     {
     public:
-        TracingCucumberWireProtocolServer(services::ConnectionFactory& connectionFactory, uint16_t port, services::Tracer& tracer);
+        TracingCucumberWireProtocolServer(const infra::ByteRange receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port, services::Tracer& tracer);
 
     private:
         services::Tracer& tracer;
+		const infra::ByteRange receiveBuffer;
         infra::Creator<services::ConnectionObserver, TracingCucumberWireProtocolConnectionObserver, void(services::IPAddress address)> connectionCreator;
     };
 }
