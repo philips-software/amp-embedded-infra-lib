@@ -4,6 +4,11 @@
 
 namespace services
 {
+    namespace
+    {
+        static tcp_ext_arg_callbacks emptyCallbacks{};
+    }
+
     infra::BoundedList<std::array<uint8_t, TCP_MSS>>::WithMaxSize<tcpSndQueueLen> ConnectionLwIp::sendMemoryPool;
     infra::IntrusiveList<ConnectionLwIp> ConnectionLwIp::sendMemoryPoolWaiting;
 
@@ -18,6 +23,11 @@ namespace services
         tcp_err(control, &ConnectionLwIp::Err);
         tcp_sent(control, &ConnectionLwIp::Sent);
         tcp_nagle_disable(control);
+
+        callbacks.destroy = &ConnectionLwIp::Destroy;
+        callbacks.passive_open = 0;
+        tcp_ext_arg_set_callbacks(control, 0, &callbacks);
+        tcp_ext_arg_set(control, 0, this);
     }
 
     ConnectionLwIp::~ConnectionLwIp()
@@ -72,12 +82,14 @@ namespace services
 
     void ConnectionLwIp::CloseAndDestroy()
     {
+        DisableCallbacks();
+
         err_t result = tcp_close(control);
         if (result != ERR_OK)
             AbortAndDestroy();
         else
         {
-            ResetControl();
+            control = nullptr;  // tcp_close frees the pcb
             ResetOwnership();
         }
     }
@@ -180,23 +192,22 @@ namespace services
         }
     }
 
-    void ConnectionLwIp::ResetControl()
+    void ConnectionLwIp::AbortControl()
     {
-        tcp_arg(control, nullptr);
-        tcp_recv(control, nullptr);
-        tcp_err(control, nullptr);
-        tcp_sent(control, nullptr);
+        DisableCallbacks();
+
+        tcp_abort(control);
         control = nullptr;
     }
 
-    void ConnectionLwIp::AbortControl()
+    void ConnectionLwIp::DisableCallbacks()
     {
+        tcp_ext_arg_set_callbacks(control, 0, &emptyCallbacks);
+
         tcp_arg(control, nullptr);
         tcp_recv(control, nullptr);
         tcp_err(control, nullptr);
         tcp_sent(control, nullptr);
-        tcp_abort(control);
-        control = nullptr;
     }
 
     err_t ConnectionLwIp::Recv(void* arg, tcp_pcb* tpcb, pbuf* p, err_t err)
@@ -212,6 +223,11 @@ namespace services
     err_t ConnectionLwIp::Sent(void* arg, struct tcp_pcb* tpcb, std::uint16_t len)
     {
         return static_cast<ConnectionLwIp*>(arg)->Sent(len);
+    }
+
+    void ConnectionLwIp::Destroy(u8_t id, void* data)
+    {
+        static_cast<ConnectionLwIp*>(data)->Destroy();
     }
 
     err_t ConnectionLwIp::Recv(pbuf* p, err_t err)
@@ -245,7 +261,10 @@ namespace services
     {
         services::GlobalTracer().Trace() << "ConnectionLwIp::Err received err " << err;
         assert(err == ERR_RST || err == ERR_CLSD || err == ERR_ABRT);
-        ResetControl();
+
+        DisableCallbacks();
+
+        control = nullptr;  // When Err is received, the pcb has already been freed
         ResetOwnership();
     }
 
@@ -272,6 +291,13 @@ namespace services
             TryAllocateSendStream();
 
         return ERR_OK;
+    }
+
+    void ConnectionLwIp::Destroy()
+    {
+        // Invoked when LightweightIP destroyed the pcb already
+        control = nullptr;
+        ResetOwnership();
     }
 
     void ConnectionLwIp::RemoveFromPool(infra::ConstByteRange range)
