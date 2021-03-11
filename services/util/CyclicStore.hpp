@@ -86,7 +86,7 @@ namespace services
             Iterator& operator=(const Iterator& other);
 
             void Read(infra::ByteRange buffer, const infra::Function<void(infra::ByteRange result)>& onDone);
-            void Erase(const infra::Function<void()>& onDone);
+            void ErasePrevious(const infra::Function<void()>& onDone);  // Erase the item that just hase been read
 
             void SectorIsErased(uint32_t sectorIndex);
 
@@ -96,7 +96,7 @@ namespace services
             void ReadSectorStatusIfAtStart();
             void ReadBlockHeader();
             void ReadData();
-            void EraseData();
+            void ErasePreviousData();
             void IncreaseAddressForNonData();
 
         private:
@@ -113,6 +113,9 @@ namespace services
 
             bool found = false;
             bool reachedEnd = false;
+
+            bool previousErased = true; // When the iterator is constructed, it is pointing at the start. Since no previous item exists, it does not need to be erased
+            uint32_t addressPreviousBlockHeader;
         };
 
     private:
