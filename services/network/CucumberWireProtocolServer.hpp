@@ -6,13 +6,19 @@
 #include "infra/syntax/Json.hpp"
 #include "infra/syntax/JsonFormatter.hpp"
 #include "infra/util/BoundedVector.hpp"
+#include "infra/util/BoundedString.hpp"
 #include "services/network/Connection.hpp"
 #include "services/network/SingleConnectionListener.hpp"
+#include "infra/util/IntrusiveList.hpp"
+#include "infra/util/IntrusiveForwardList.hpp"
 
 namespace services
 {
     class CucumberWireProtocolParser
     {
+    public:
+        CucumberWireProtocolParser();
+
         enum RequestType
         {
             step_matches,
@@ -25,7 +31,9 @@ namespace services
 
     public:
         void ParseRequest(infra::ByteRange inputRange);
+        bool MatchName(uint8_t& id, infra::JsonArray& arguments);
         void FormatResponse(infra::DataOutputStream::WithErrorPolicy& stream);
+        bool MatchArguments(infra::JsonArray& arguments);
 
         void SuccessMessage(infra::BoundedString& responseBuffer);
         void FailureMessage(infra::BoundedString& responseBuffer, infra::BoundedConstString failMessage, infra::BoundedConstString exceptionType);
@@ -33,11 +41,48 @@ namespace services
     private:
         RequestType requestType;
         infra::JsonObject nameToMatch;
+        bool matchResult;
         uint8_t matchedId;
-        infra::JsonArray matchedArguments = infra::JsonArray("[]");
+        infra::JsonArray matchedArguments;
 
         uint8_t invokeId;
         infra::JsonArray invokeArguments;
+
+    public:
+        
+    };
+
+    class StepNames
+    {
+    public:
+        class Step
+            : public infra::IntrusiveList<Step>::NodeType
+        {
+        public:
+            Step(uint8_t id, infra::JsonArray matchArguments, infra::JsonArray invokeArguments, infra::BoundedString stepName);
+
+            uint8_t id;
+            infra::JsonArray matchArguments;
+            infra::JsonArray invokeArguments;
+            infra::BoundedString::WithStorage<128> stepName;
+
+            //void Invoke();
+            //bool Match();
+        };
+
+    public:
+        StepNames();
+
+    public:
+        infra::Optional<StepNames::Step> MatchStep(uint8_t id);
+        infra::Optional<StepNames::Step> MatchStep(infra::BoundedString nameToMatch);
+        //void AddStep();
+
+    private:
+        infra::IntrusiveList<Step> stepList;
+        StepNames::Step AWiFiNodeIsAvailable;
+        StepNames::Step TheConnectivityNodeConnectsToThatNetwork;
+        StepNames::Step TheConnectivityNodeShouldBeConnected;
     };
 
     class CucumberWireProtocolConnectionObserver

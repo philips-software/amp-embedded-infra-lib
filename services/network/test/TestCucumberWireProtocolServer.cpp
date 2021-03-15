@@ -52,7 +52,7 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_invalid_input_with_fail)
     infra::ConstByteRange data = infra::MakeStringByteRange("[\"invalid_request\",{\"argument\":\"fail\"}]");
     connection.SimulateDataReceived(data);
     ExecuteAllActions();
-    std::string response = "[ \"fail\", { \"message\":\"Invalid Request\", \"exception\":\"Some.Foreign.ExceptionType\" } ]\n";
+    std::string response = "[ \"fail\", { \"message\":\"Invalid Request\", \"exception\":\"Exception.InvalidRequestType\" } ]\n";
     std::vector<uint8_t> responseVector(response.begin(), response.end());
     EXPECT_EQ(responseVector, connection.sentData);
 
@@ -60,14 +60,14 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_invalid_input_with_fail)
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(CucumberWireProtocolpServerTest, should_respond_to_step_match_request_with_success)
+TEST_F(CucumberWireProtocolpServerTest, should_respond_to_nonexistent_step_match_request_with_fail)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     infra::ConstByteRange data = infra::MakeStringByteRange("[\"step_matches\",{\"name_to_match\":\"we're all wired\"}]");
     connection.SimulateDataReceived(data);
     ExecuteAllActions();
-    std::string response = "[ \"success\", [ { \"id\":\"0\", \"args\":[] } ] ]\n";
+    std::string response = "[ \"fail\", { \"message\":\"Step not Matched\", \"exception\":\"Exception.Step.NotFound\" } ]\n";
     std::vector<uint8_t> responseVector(response.begin(), response.end());
     EXPECT_EQ(responseVector, connection.sentData);
 
@@ -75,14 +75,29 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_step_match_request_wit
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_pending)
+TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_invalid_argument_list_with_fail)
+{
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    infra::ConstByteRange data = infra::MakeStringByteRange(R"(["invoke",{"id":"1","args":[[["invalid","arguments"],["CoCoCo","password"],["WLAN","1234"]]]}])");
+    connection.SimulateDataReceived(data);
+    ExecuteAllActions();
+    std::string response = "[ \"fail\", { \"message\":\"Invalid Arguments\", \"exception\":\"Exception.Arguments.Invalid\" } ]\n";
+    std::vector<uint8_t> responseVector(response.begin(), response.end());
+    EXPECT_EQ(responseVector, connection.sentData);
+
+    connection.sentData.clear();
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+}
+
+TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_success)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     infra::ConstByteRange data = infra::MakeStringByteRange(R"(["invoke",{"id":"1","args":[]}])");
     connection.SimulateDataReceived(data);
     ExecuteAllActions();
-    std::string response = "[ \"pending\", \"I'll do it later\" ]\n";
+    std::string response = "[ \"success\", [  ] ]\n";
     std::vector<uint8_t> responseVector(response.begin(), response.end());
     EXPECT_EQ(responseVector, connection.sentData);
 
@@ -90,7 +105,22 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_pe
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(CucumberWireProtocolpServerTest, should_respond_to_begin_scenario_request_with_pending)
+TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_argument_list_with_success)
+{
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    infra::ConstByteRange data = infra::MakeStringByteRange(R"(["invoke",{"id":"1","args":[[["ssid","key"],["CoCoCo","password"],["WLAN","1234"]]]}])");
+    connection.SimulateDataReceived(data);
+    ExecuteAllActions();
+    std::string response = "[ \"success\", [  ] ]\n";
+    std::vector<uint8_t> responseVector(response.begin(), response.end());
+    EXPECT_EQ(responseVector, connection.sentData);
+
+    connection.sentData.clear();
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+}
+
+TEST_F(CucumberWireProtocolpServerTest, should_respond_to_begin_scenario_request_with_success)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
@@ -105,7 +135,7 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_begin_scenario_request
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(CucumberWireProtocolpServerTest, should_respond_to_end_scenario_request_with_pending)
+TEST_F(CucumberWireProtocolpServerTest, should_respond_to_end_scenario_request_with_success)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
@@ -128,6 +158,21 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_snippet_text_request_w
     connection.SimulateDataReceived(data);
     ExecuteAllActions();
     std::string response = "[ \"success\", \"snippet\" ]\n";
+    std::vector<uint8_t> responseVector(response.begin(), response.end());
+    EXPECT_EQ(responseVector, connection.sentData);
+
+    connection.sentData.clear();
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+}
+
+TEST_F(CucumberWireProtocolpServerTest, should_respond_to_step_match_request_with_success)
+{
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    infra::ConstByteRange data = infra::MakeStringByteRange("[\"step_matches\",{\"name_to_match\":\"a WiFi network is available\"}]");
+    connection.SimulateDataReceived(data);
+    ExecuteAllActions();
+    std::string response = "[ \"success\", [ { \"id\":\"1\", \"args\":[] } ] ]\n";
     std::vector<uint8_t> responseVector(response.begin(), response.end());
     EXPECT_EQ(responseVector, connection.sentData);
 
