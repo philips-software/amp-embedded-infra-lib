@@ -4,7 +4,7 @@
 #include "hal/interfaces/Flash.hpp"
 #include "infra/util/AutoResetFunction.hpp"
 
-#ifndef SERVICES_FLASH_DELAYED_INIT_FUNCTION_EXTRA_SIZE                                                         //TICS !POR#021
+#ifndef SERVICES_FLASH_DELAYED_INIT_FUNCTION_EXTRA_SIZE
 #define SERVICES_FLASH_DELAYED_INIT_FUNCTION_EXTRA_SIZE (INFRA_DEFAULT_FUNCTION_EXTRA_SIZE + (5 * sizeof(void*)))
 #endif
 

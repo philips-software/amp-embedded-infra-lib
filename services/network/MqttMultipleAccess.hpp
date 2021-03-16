@@ -9,7 +9,7 @@ namespace services
 {
     class MqttMultipleAccess;
 
-    class MqttMultipleAccessMaster                                                                             //TICS !OOP#013
+    class MqttMultipleAccessMaster
         : public MqttClientObserver
         , public infra::ClaimableResource
     {

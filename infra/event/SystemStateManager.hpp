@@ -21,7 +21,7 @@ namespace infra
     };
 
     template<class Derived>
-    class SystemState                                                                                           //TICS !OOP#013
+    class SystemState
         : public SystemStateBase
     {
     public:

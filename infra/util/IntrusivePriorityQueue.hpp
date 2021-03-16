@@ -32,7 +32,7 @@ namespace infra
     public:
         explicit IntrusivePriorityQueue(const Compare& comp = Compare());
         template <class InputIterator>
-            IntrusivePriorityQueue(InputIterator first, InputIterator last, const Compare& comp = Compare());           //TICS !INT#022
+            IntrusivePriorityQueue(InputIterator first, InputIterator last, const Compare& comp = Compare());
         IntrusivePriorityQueue(const IntrusivePriorityQueue&) = delete;
         IntrusivePriorityQueue(IntrusivePriorityQueue&& other);
         IntrusivePriorityQueue& operator=(const IntrusivePriorityQueue&) = delete;

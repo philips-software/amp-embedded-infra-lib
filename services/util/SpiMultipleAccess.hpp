@@ -5,13 +5,13 @@
 #include "infra/event/ClaimableResource.hpp"
 #include "infra/util/AutoResetFunction.hpp"
 
-#ifndef SERVICES_SPI_MULTIPLE_ACCESS_FUNCTION_EXTRA_SIZE                                                        //TICS !POR#021
+#ifndef SERVICES_SPI_MULTIPLE_ACCESS_FUNCTION_EXTRA_SIZE
 #define SERVICES_SPI_MULTIPLE_ACCESS_FUNCTION_EXTRA_SIZE (INFRA_DEFAULT_FUNCTION_EXTRA_SIZE + (7 * sizeof(void*)))
 #endif
 
 namespace services
 {
-    class SpiMultipleAccessMaster                                                                               //TICS !OOP#013
+    class SpiMultipleAccessMaster
         : public hal::SpiMaster
         , public infra::ClaimableResource
     {

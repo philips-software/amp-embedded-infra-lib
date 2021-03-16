@@ -4,7 +4,7 @@
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/Function.hpp"
 
-#ifndef INFRA_SEQUENCER_FUNCTION_EXTRA_SIZE                                                                     //TICS !POR#021
+#ifndef INFRA_SEQUENCER_FUNCTION_EXTRA_SIZE
 #define INFRA_SEQUENCER_FUNCTION_EXTRA_SIZE (INFRA_DEFAULT_FUNCTION_EXTRA_SIZE + (2 * sizeof(void*)))
 #endif
 

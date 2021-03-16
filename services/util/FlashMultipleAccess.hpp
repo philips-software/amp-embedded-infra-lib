@@ -5,13 +5,13 @@
 #include "infra/event/ClaimableResource.hpp"
 #include "infra/util/AutoResetFunction.hpp"
 
-#ifndef SERVICES_FLASH_MULTIPLE_ACCESS_FUNCTION_EXTRA_SIZE                                                      //TICS !POR#021
+#ifndef SERVICES_FLASH_MULTIPLE_ACCESS_FUNCTION_EXTRA_SIZE
 #define SERVICES_FLASH_MULTIPLE_ACCESS_FUNCTION_EXTRA_SIZE (INFRA_DEFAULT_FUNCTION_EXTRA_SIZE + (8 * sizeof(void*)))
 #endif
 
 namespace services
 {
-    class FlashMultipleAccessMaster                                                                             //TICS !OOP#013
+    class FlashMultipleAccessMaster
         : public hal::Flash
         , public infra::ClaimableResource
     {

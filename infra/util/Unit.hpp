@@ -215,7 +215,7 @@ namespace infra
         Quantity();
         explicit Quantity(StorageType v);
         Quantity(const Quantity& other);
-        template<class OtherUnit>                                                                                       //TICS !INT#001
+        template<class OtherUnit>
             Quantity(Quantity<OtherUnit, StorageType> other, typename std::enable_if<UnitSame<OtherUnit, UnitType>::value>::type* = 0);
 
         Quantity& operator=(const Quantity& other);
@@ -225,8 +225,8 @@ namespace infra
         StorageType Value() const;
 
         Quantity operator-() const;
-        Quantity& operator+=(Quantity other);                                                                           //TICS !INT#008
-        Quantity& operator-=(Quantity other);                                                                           //TICS !INT#008
+        Quantity& operator+=(Quantity other);
+        Quantity& operator-=(Quantity other);
         Quantity& operator*=(StorageType other);
         Quantity& operator/=(StorageType other);
 

@@ -36,7 +36,7 @@ namespace infra
 
         Optional(const Optional& other);
         Optional(Optional&& other);
-        Optional(None);                                             //TICS !INT#001
+        Optional(None);
         template<class U>
             explicit Optional(const Optional<U>& other);
         template<class... Args>
@@ -99,9 +99,9 @@ namespace infra
         OptionalForPolymorphicObjects() = default;
 
         OptionalForPolymorphicObjects(const OptionalForPolymorphicObjects& other) = delete;
-        template<class Derived, std::size_t OtherExtraSize>                                             //TICS !INT#001
+        template<class Derived, std::size_t OtherExtraSize>
             OptionalForPolymorphicObjects(const OptionalForPolymorphicObjects<Derived, OtherExtraSize>& other, typename std::enable_if<std::is_base_of<T, Derived>::value>::type* = 0);
-        OptionalForPolymorphicObjects(None);                                                            //TICS !INT#001
+        OptionalForPolymorphicObjects(None);
         template<class Derived, class... Args>
             OptionalForPolymorphicObjects(InPlaceType<Derived>, Args&&... args);
 
