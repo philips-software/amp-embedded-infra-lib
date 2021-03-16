@@ -2,9 +2,61 @@
 
 namespace services
 {
-    CucumberWireProtocolParser::CucumberWireProtocolParser()
+    uint8_t  StepStorage::Step::nrSteps = 0;
+
+    uint8_t StepStorage::Step::Id()
+    {
+        return id;
+    }
+
+    void StepStorage::Step::SetId(uint8_t id)
+    {
+        this->id = id;
+    }
+
+    infra::JsonArray StepStorage::Step::MatchArguments()
+    {
+        return matchArguments;
+    }
+
+    void StepStorage::Step::SetMatchArguments(infra::JsonArray arguments)
+    {
+        this->matchArguments = arguments;
+    }
+
+    infra::JsonArray StepStorage::Step::InvokeArguments()
+    {
+        return this->invokeArguments;
+    }
+
+    void StepStorage::Step::SetInvokeArguments(infra::JsonArray arguments)
+    {
+        this->invokeArguments = arguments;
+    }
+
+    infra::BoundedString StepStorage::Step::StepName()
+    {
+        return stepName;
+    }
+
+    void StepStorage::Step::StepName(infra::BoundedString stepName)
+    {
+        this->stepName = stepName;
+    }
+
+    StepStorage::Step::Step(infra::JsonArray matchArguments, infra::JsonArray invokeArguments, infra::BoundedString stepName)
+        : id(nrSteps)
+        , matchArguments(matchArguments)
+        , invokeArguments(invokeArguments)
+        , stepName(stepName)
+    {
+        nrSteps++;
+    }
+
+    CucumberWireProtocolParser::CucumberWireProtocolParser(StepStorage& stepStorage)
         : matchedArguments(infra::JsonArray("[]"))
         , invokeArguments(infra::JsonArray("[]"))
+        , stepStorage(stepStorage)
     {}
 
     void CucumberWireProtocolParser::FailureMessage(infra::BoundedString& responseBuffer, infra::BoundedConstString failMessage, infra::BoundedConstString exceptionType)
@@ -17,7 +69,6 @@ namespace services
             subObject.Add("message", failMessage);
             subObject.Add("exception", exceptionType);
         }
-
         responseBuffer.insert(responseBuffer.size(), "\n");
     }
 
@@ -28,7 +79,6 @@ namespace services
             result.Add((infra::BoundedConstString) "success");
             infra::JsonArrayFormatter subArray(result.SubArray());
         }
-
         responseBuffer.insert(responseBuffer.size(), "\n");
     }
 
@@ -139,14 +189,13 @@ namespace services
 
     bool CucumberWireProtocolParser::MatchName(uint8_t& id, infra::JsonArray& arguments)
     {
-        StepNames cucumberStepNames;
         infra::BoundedString::WithStorage<64> nameToMatchString;
-
+        
         nameToMatch.GetString("name_to_match").ToString(nameToMatchString);
-        if (cucumberStepNames.MatchStep(nameToMatchString) != infra::none)
+        if (this->stepStorage.MatchStep(nameToMatchString) != infra::none)
         {
-            id = cucumberStepNames.MatchStep(nameToMatchString)->id;
-            arguments = cucumberStepNames.MatchStep(nameToMatchString)->matchArguments;
+            id = stepStorage.MatchStep(nameToMatchString)->Id();
+            arguments = stepStorage.MatchStep(nameToMatchString)->MatchArguments();
             return true;
         }
         return false;
@@ -154,9 +203,7 @@ namespace services
 
     bool CucumberWireProtocolParser::MatchArguments(infra::JsonArray& arguments)
     {
-        StepNames cucumberStepNames;
-
-        if (cucumberStepNames.MatchStep(invokeId) != infra::none)
+        if (this->stepStorage.MatchStep(invokeId) != infra::none)
         {
             infra::JsonArrayIterator argumentIterator(arguments.begin());
             if (arguments.begin() != arguments.end())
@@ -167,7 +214,7 @@ namespace services
                 infra::JsonArray argumentList = argumentIterator->Get<infra::JsonArray>();
                 argumentIterator = argumentList.begin();
 
-                infra::JsonArray stepArgumentsList(cucumberStepNames.MatchStep(invokeId)->invokeArguments);
+                infra::JsonArray stepArgumentsList(this->stepStorage.MatchStep(invokeId)->InvokeArguments());
                 infra::JsonArrayIterator stepArgumentIterator(stepArgumentsList.begin());
 
                 do
@@ -186,48 +233,39 @@ namespace services
         return false;
     }
 
-    StepNames::Step::Step(uint8_t id, infra::JsonArray matchArguments, infra::JsonArray invokeArguments, infra::BoundedString stepName)
-        : id(id)
-        , matchArguments(matchArguments)
-        , invokeArguments(invokeArguments)
-        , stepName(stepName)
-    {}
+    StepStorage::StepStorage(){}
 
-    StepNames::StepNames()
-        : AWiFiNodeIsAvailable(StepNames::Step(1, infra::JsonArray("[]"), infra::JsonArray("[\"ssid\", \"key\"]"), "a WiFi network is available"))
-        , TheConnectivityNodeConnectsToThatNetwork(StepNames::Step(2, infra::JsonArray("[]"), infra::JsonArray("[]"), "the Connectivity Node connects to that network"))
-        , TheConnectivityNodeShouldBeConnected(StepNames::Step(3, infra::JsonArray("[]"), infra::JsonArray("[]"), "the Connectivity Node should be connected"))
-    {
-        this->stepList.push_back(AWiFiNodeIsAvailable);
-        this->stepList.push_back(TheConnectivityNodeConnectsToThatNetwork);
-        this->stepList.push_back(TheConnectivityNodeShouldBeConnected);
-    }
-
-    infra::Optional<StepNames::Step> StepNames::MatchStep(infra::BoundedString nameToMatch)
+    infra::Optional<StepStorage::Step> StepStorage::MatchStep(const infra::BoundedString nameToMatch)
     {
         for (auto& step : stepList)
-            if (step.stepName == nameToMatch)
+            if (step.StepName() == nameToMatch)
             {
-                infra::Optional<StepNames::Step> tempStep(infra::inPlace, step);
+                infra::Optional<StepStorage::Step> tempStep(infra::inPlace, step);
                 return tempStep;
             }
         return infra::none;
     }
 
-    infra::Optional<StepNames::Step> StepNames::MatchStep(uint8_t id)
+    infra::Optional<StepStorage::Step> StepStorage::MatchStep(uint8_t id)
     {
         for (auto& step : stepList)
-            if (step.id == id)
+            if (step.Id() == id)
             {
-                infra::Optional<StepNames::Step> tempStep(infra::inPlace, step);
+                infra::Optional<StepStorage::Step> tempStep(infra::inPlace, step);
                 return tempStep;
             }
         return infra::none;
     }
 
-    CucumberWireProtocolConnectionObserver::CucumberWireProtocolConnectionObserver(const infra::ByteRange receiveBuffer)
+    void StepStorage::AddStep(StepStorage::Step& step)
+    {
+        this->stepList.push_front(step);
+    }
+
+    CucumberWireProtocolConnectionObserver::CucumberWireProtocolConnectionObserver(const infra::ByteRange receiveBuffer, StepStorage& stepStorage)
         : receiveBufferVector(infra::ReinterpretCastMemoryRange<infra::StaticStorage<uint8_t>>(receiveBuffer))
         , receiveBuffer(receiveBuffer)
+        , cucumberParser(stepStorage)
     {}
 
     void CucumberWireProtocolConnectionObserver::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -257,11 +295,12 @@ namespace services
         Subject().RequestSendStream(ConnectionObserver::Subject().MaxSendStreamSize());
     }
 
-    CucumberWireProtocolServer::CucumberWireProtocolServer(const infra::ByteRange receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port)
+    CucumberWireProtocolServer::CucumberWireProtocolServer(const infra::ByteRange receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port, StepStorage& stepStorage)
         : SingleConnectionListener(connectionFactory, port, { connectionCreator })
         , receiveBuffer(receiveBuffer)
+        , stepStorage(stepStorage)
         , connectionCreator([this](infra::Optional<CucumberWireProtocolConnectionObserver>& value, services::IPAddress address) {
-            value.Emplace(this->receiveBuffer);
+            value.Emplace(this->receiveBuffer, this->stepStorage);
         })
     {}
 }

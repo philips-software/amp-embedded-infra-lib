@@ -2,8 +2,8 @@
 
 namespace services
 {
-	TracingCucumberWireProtocolConnectionObserver::TracingCucumberWireProtocolConnectionObserver(const infra::ByteRange receiveBuffer, services::Tracer& tracer)
-		: CucumberWireProtocolConnectionObserver::CucumberWireProtocolConnectionObserver(receiveBuffer)
+	TracingCucumberWireProtocolConnectionObserver::TracingCucumberWireProtocolConnectionObserver(const infra::ByteRange receiveBuffer, StepStorage& stepNames, services::Tracer& tracer)
+		: CucumberWireProtocolConnectionObserver::CucumberWireProtocolConnectionObserver(receiveBuffer, stepNames)
 		, tracer(tracer)
 		, receiveBuffer(receiveBuffer)
     {
@@ -38,13 +38,14 @@ namespace services
         return tracingWriter;
     }
 
-    TracingCucumberWireProtocolServer::TracingCucumberWireProtocolServer(const infra::ByteRange receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port, services::Tracer& tracer)
+    TracingCucumberWireProtocolServer::TracingCucumberWireProtocolServer(const infra::ByteRange receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port, StepStorage& stepStorage, services::Tracer& tracer)
         : SingleConnectionListener(connectionFactory, port, { connectionCreator })
 		, receiveBuffer(receiveBuffer)
         , tracer(tracer)
+        , stepStorage(stepStorage)
         , connectionCreator([this](infra::Optional<TracingCucumberWireProtocolConnectionObserver>& value, services::IPAddress address) {
             this->tracer.Trace() << "CucumberWireProtocolServer connection accepted from: " << address;
-            value.Emplace(this->receiveBuffer, this->tracer);
+            value.Emplace(this->receiveBuffer, this->stepStorage, this->tracer);
         })
     {}
 }
