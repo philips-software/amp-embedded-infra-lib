@@ -87,15 +87,15 @@ namespace infra
     {
     public:
         SharedPtr() = default;
-        SharedPtr(std::nullptr_t); //TICS !INT#001
+        SharedPtr(std::nullptr_t);
         SharedPtr(detail::SharedPtrControl* control, T* object);
         SharedPtr(const SharedPtr& other);
         SharedPtr(SharedPtr&& other);
         template<class U>
-        SharedPtr(const WeakPtr<U>& other); //TICS !INT#001
-        template<class U>                   //TICS !INT#001
+        SharedPtr(const WeakPtr<U>& other);
+        template<class U>
         SharedPtr(const SharedPtr<U>& other);
-        template<class U> //TICS !INT#001
+        template<class U>
         SharedPtr(SharedPtr<U>&& other);
         SharedPtr& operator=(const SharedPtr& other);
         SharedPtr& operator=(SharedPtr&& other);
@@ -148,14 +148,14 @@ namespace infra
     {
     public:
         WeakPtr() = default;
-        WeakPtr(std::nullptr_t);                    //TICS !INT#001
+        WeakPtr(std::nullptr_t);
         WeakPtr(const WeakPtr<T>& other);
         WeakPtr(WeakPtr<T>&& other);
-        template<class U> //TICS !INT#001
+        template<class U>
             WeakPtr(const WeakPtr<U>& other);
         template<class U>
-            WeakPtr(WeakPtr<U>&& other);            //TICS !INT#001
-        WeakPtr(const SharedPtr<T>& sharedPtr);     //TICS !INT#001
+            WeakPtr(WeakPtr<U>&& other);
+        WeakPtr(const SharedPtr<T>& sharedPtr);
         WeakPtr& operator=(const WeakPtr<T>& other);
         WeakPtr& operator=(WeakPtr<T>&& other);
         WeakPtr& operator=(const SharedPtr<T>& sharedPtr);

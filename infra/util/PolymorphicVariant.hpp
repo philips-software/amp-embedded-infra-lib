@@ -261,16 +261,16 @@ namespace infra
     typename std::enable_if<ExistsInTypeList<U, T...>::value, bool>::type PolymorphicVariant<Base, T...>::operator==(const U& other) const
     {
         if (Which() != IndexInTypeList<U, T...>::value)
-            return false;                                                                                               //TICS !CON#007
+            return false;
 
-        return GetAtIndex<IndexInTypeList<U, T...>::value>() == other;                                                  //TICS !CON#007
+        return GetAtIndex<IndexInTypeList<U, T...>::value>() == other;
     }
 
     template<class Base, class... T>
     template<class U>
     typename std::enable_if<ExistsInTypeList<U, T...>::value, bool>::type PolymorphicVariant<Base, T...>::operator!=(const U& other) const
     {
-        return !(*this == other);                                                                                       //TICS !CON#007
+        return !(*this == other);
     }
 
     template<class Base, class... T>
@@ -278,9 +278,9 @@ namespace infra
     typename std::enable_if<ExistsInTypeList<U, T...>::value, bool>::type PolymorphicVariant<Base, T...>::operator<(const U& other) const
     {
         if (Which() != IndexInTypeList<U, T...>::value)
-            return Which() < IndexInTypeList<U, T...>::value;                                                           //TICS !CON#007
+            return Which() < IndexInTypeList<U, T...>::value;
 
-        return GetAtIndex<IndexInTypeList<U, T...>::value>() < other;                                                   //TICS !CON#007
+        return GetAtIndex<IndexInTypeList<U, T...>::value>() < other;
     }
 
     template<class Base, class... T>
@@ -288,23 +288,23 @@ namespace infra
     typename std::enable_if<ExistsInTypeList<U, T...>::value, bool>::type PolymorphicVariant<Base, T...>::operator>(const U& other) const
     {
         if (Which() != IndexInTypeList<U, T...>::value)
-            return Which() > IndexInTypeList<U, T...>::value;                                                           //TICS !CON#007
+            return Which() > IndexInTypeList<U, T...>::value;
 
-        return other < GetAtIndex<IndexInTypeList<U, T...>::value>();                                                   //TICS !CON#007
+        return other < GetAtIndex<IndexInTypeList<U, T...>::value>();
     }
 
     template<class Base, class... T>
     template<class U>
     typename std::enable_if<ExistsInTypeList<U, T...>::value, bool>::type PolymorphicVariant<Base, T...>::operator<=(const U& other) const
     {
-        return !(*this > other);                                                                                        //TICS !CON#007
+        return !(*this > other);
     }
 
     template<class Base, class... T>
     template<class U>
     typename std::enable_if<ExistsInTypeList<U, T...>::value, bool>::type PolymorphicVariant<Base, T...>::operator>=(const U& other) const
     {
-        return !(*this < other);                                                                                        //TICS !CON#007
+        return !(*this < other);
     }
 
     template<class Base, class... T>

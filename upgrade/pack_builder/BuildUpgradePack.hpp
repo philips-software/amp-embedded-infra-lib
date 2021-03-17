@@ -49,7 +49,7 @@ namespace application
 
 
     protected:
-        UpgradePackBuilder::HeaderInfo headerInfo;                                                                      //TICS !INT#002
+        UpgradePackBuilder::HeaderInfo headerInfo;
 
     private:
         int result = 0;

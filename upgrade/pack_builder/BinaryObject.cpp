@@ -159,7 +159,7 @@ namespace application
 
         uint8_t size = 0;
         stream >> infra::hex >> infra::Width(2, '0') >> size >> infra::Width(4, '0') >> address >> infra::Width(2, '0') >> recordType;
-        uint8_t sum = static_cast<uint8_t>(size + static_cast<uint8_t>(address) + static_cast<uint8_t>(address >> 8) + recordType);         //TICS !POR#006
+        uint8_t sum = static_cast<uint8_t>(size + static_cast<uint8_t>(address) + static_cast<uint8_t>(address >> 8) + recordType);
 
         if (stream.Failed())
             throw RecordTooShortException(fileName, lineNumber);

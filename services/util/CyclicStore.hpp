@@ -6,7 +6,7 @@
 #include "infra/util/IntrusiveForwardList.hpp"
 #include "infra/util/Sequencer.hpp"
 
-#ifndef SERVICES_CYCLIC_STORE_FUNCTION_EXTRA_SIZE                                                               //TICS !POR#021
+#ifndef SERVICES_CYCLIC_STORE_FUNCTION_EXTRA_SIZE
 #define SERVICES_CYCLIC_STORE_FUNCTION_EXTRA_SIZE (INFRA_DEFAULT_FUNCTION_EXTRA_SIZE + 2 * sizeof(void*))
 #endif
 

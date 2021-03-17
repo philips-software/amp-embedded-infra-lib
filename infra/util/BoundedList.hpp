@@ -99,7 +99,7 @@ namespace infra
         void insert(iterator position, value_type&& value);
 
         template<class InputIterator>
-            void assign(InputIterator first, InputIterator last);                                                       //TICS !INT#022
+            void assign(InputIterator first, InputIterator last);
         void assign(size_type n, const value_type& value);
         template<class InputIterator>
             void move_from_range(InputIterator first, InputIterator last);
@@ -162,7 +162,7 @@ namespace infra
         public:
             BoundedListIterator() = default;
             BoundedListIterator(NodeType* node, const ContainerType* container);
-            template<class T2>                                                                                          //TICS !INT#001
+            template<class T2>
                 BoundedListIterator(const BoundedListIterator<T2, U>& other);
             template<class T2>
                 BoundedListIterator& operator=(const BoundedListIterator<T2, U>& other);

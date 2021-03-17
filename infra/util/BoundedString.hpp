@@ -54,16 +54,16 @@ namespace infra
         BoundedStringBase(MemoryRange<NonConstT> range, const char* s);
         BoundedStringBase(MemoryRange<NonConstT> range, const std::string& s);
         BoundedStringBase(T* s, size_type count);
-        BoundedStringBase(T* s);                                                                        //TICS !INT#001
-        BoundedStringBase(const std::string& s);                                                        //TICS !INT#001
-        BoundedStringBase(std::string& s);                                                              //TICS !INT#001
+        BoundedStringBase(T* s);
+        BoundedStringBase(const std::string& s);
+        BoundedStringBase(std::string& s);
         template<class InputIterator>
             BoundedStringBase(MemoryRange<NonConstT> range, InputIterator first, InputIterator last);
         BoundedStringBase(MemoryRange<NonConstT> range, std::initializer_list<char> initializerList);
         template<class U>
         BoundedStringBase(MemoryRange<NonConstT> range, const BoundedStringBase<U>& other);
         BoundedStringBase(const BoundedStringBase& other);
-        template<class U>                                                                               //TICS !INT#001
+        template<class U>
             BoundedStringBase(const BoundedStringBase<U>& other);
 
         BoundedStringBase& operator=(const BoundedStringBase& other);
@@ -345,7 +345,7 @@ namespace infra
     template<class T>
         std::string AsStdString(const infra::BoundedStringBase<T>& s);
 
-#ifdef CCOLA_HOST_BUILD //TICS !POR#021
+#ifdef CCOLA_HOST_BUILD
     // gtest uses PrintTo to display the contents of BoundedStringBase<T>
     template<class T>
     void PrintTo(const BoundedStringBase<T>& string, std::ostream* os)

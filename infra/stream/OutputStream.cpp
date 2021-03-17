@@ -413,7 +413,7 @@ namespace infra
     {
         static const char* encodeTable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-        uint8_t bitIndex = 2;                                                                                           //TICS !OLC#006
+        uint8_t bitIndex = 2;
         uint8_t encodedByte = 0;
         uint32_t size = 0;
 
@@ -423,7 +423,7 @@ namespace infra
             stream << encodeTable[encodedByte];
             ++size;
 
-            encodedByte = static_cast<uint8_t>(byte << (8 - bitIndex)) >> 2;                                            //TICS !POR#006
+            encodedByte = static_cast<uint8_t>(byte << (8 - bitIndex)) >> 2;
 
             bitIndex += 2;
 

@@ -10,7 +10,7 @@ namespace hal
         if (!receiveData.empty())
         {
             std::vector<uint8_t> dataToBeReceived = ReceiveDataMock(nextAction);
-            EXPECT_EQ(dataToBeReceived.size(), receiveData.size());                                                     //TICS !CFL#001
+            EXPECT_EQ(dataToBeReceived.size(), receiveData.size());
             std::copy(dataToBeReceived.begin(), dataToBeReceived.end(), receiveData.begin());
         }
 

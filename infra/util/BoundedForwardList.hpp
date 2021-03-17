@@ -92,7 +92,7 @@ namespace infra
         void insert_after(iterator position, value_type&& value);
 
         template<class InputIterator>
-        void assign(InputIterator first, InputIterator last);                                                           //TICS !INT#022
+        void assign(InputIterator first, InputIterator last);
         void assign(size_type n, const value_type& value);
         template<class InputIterator>
         void move_from_range(InputIterator first, InputIterator last);
@@ -150,7 +150,7 @@ namespace infra
         public:
             BoundedForwardListIterator();
             explicit BoundedForwardListIterator(NodeType* node);
-            template<class T2>                                                                                          //TICS !INT#001
+            template<class T2>
                 BoundedForwardListIterator(const BoundedForwardListIterator<T2>& other);
             template<class T2>
                 BoundedForwardListIterator& operator=(const BoundedForwardListIterator<T2>& other);

@@ -7,7 +7,7 @@
 #include <chrono>
 #include <cstdlib>
 
-#ifdef CCOLA_HOST_BUILD                                                                                         //TICS !POR#021
+#ifdef CCOLA_HOST_BUILD
 #include <ctime>
 #include <iomanip>
 #endif
@@ -112,7 +112,7 @@ namespace infra
     };
 }
 
-#ifdef CCOLA_HOST_BUILD                                                                                         //TICS !POR#021
+#ifdef CCOLA_HOST_BUILD
 namespace std
 {
     // gtest uses PrintTo to display the contents of TimePoint
