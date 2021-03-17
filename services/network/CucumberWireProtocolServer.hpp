@@ -21,7 +21,7 @@ namespace services
             : public infra::IntrusiveList<Step>::NodeType
         {
         public:
-            Step(infra::JsonArray matchArguments, infra::JsonArray invokeArguments, infra::BoundedString stepName);
+            Step(const infra::JsonArray& matchArguments, const infra::JsonArray& invokeArguments, const infra::BoundedString& stepName);
 
             ~Step(){}
 
@@ -31,13 +31,14 @@ namespace services
            void SetMatchArguments(infra::JsonArray arguments);
            infra::JsonArray InvokeArguments();
            void SetInvokeArguments(infra::JsonArray arguments);
-
            infra::BoundedString StepName();
            void StepName(infra::BoundedString stepName);
 
+           bool ContainsArguments();
+           infra::JsonArray ParseArguments(const infra::BoundedString& nameToMatch, infra::BoundedString& arrayBuffer);
+
         private:
             uint8_t id;
-
             infra::JsonArray matchArguments;
             infra::JsonArray invokeArguments;
             infra::BoundedString::WithStorage<128> stepName;
@@ -52,8 +53,8 @@ namespace services
 
     public:
         infra::Optional<StepStorage::Step> MatchStep(uint8_t id);
-        infra::Optional<StepStorage::Step> MatchStep(const infra::BoundedString nameToMatch);
-        void AddStep(StepStorage::Step& step);
+        infra::Optional<StepStorage::Step> MatchStep(const infra::BoundedString& nameToMatch);
+        void AddStep(const StepStorage::Step& step);
 
     private:
         infra::IntrusiveList<Step> stepList;
@@ -75,8 +76,11 @@ namespace services
         };
 
     public:
-        void ParseRequest(infra::ByteRange inputRange);
-        bool MatchName(uint8_t& id, infra::JsonArray& arguments);
+        void ParseRequest(const infra::ByteRange& inputRange);
+        bool ContainsArguments(const infra::BoundedString& string);
+        infra::JsonArray ParseArguments(infra::BoundedString& inputString);
+        infra::Optional<infra::BoundedString> ReformatStepName(const infra::BoundedString& nameToMatch, infra::JsonArray& arguments, infra::BoundedString& bufferString);
+        bool MatchName(const infra::BoundedString& nameToMatchString);
         void FormatResponse(infra::DataOutputStream::WithErrorPolicy& stream);
         bool MatchArguments(infra::JsonArray& arguments);
 
@@ -85,14 +89,15 @@ namespace services
 
     private:
         StepStorage& stepStorage;
+
         RequestType requestType;
+
         infra::JsonObject nameToMatch;
         bool matchResult;
-        uint8_t matchedId;
-        infra::JsonArray matchedArguments;
 
         uint8_t invokeId;
-        infra::JsonArray invokeArguments;        
+        infra::JsonArray invokeArguments;      
+        infra::BoundedString::WithStorage<256> invokeArgumentBuffer;
     };
 
     class CucumberWireProtocolConnectionObserver

@@ -32,6 +32,7 @@ public:
         this->stepDataBase.AddStep(AWiFiNetworkIsAvailable);
         this->stepDataBase.AddStep(TheConnectivityNodeConnectsToThatNetwork);
         this->stepDataBase.AddStep(TheConnectivityNodeShouldBeConnected);
+        this->stepDataBase.AddStep(TheWiFiNetwork_IsSeenWithin_Seconds);
     }
 
     testing::StrictMock<services::ConnectionStub> connection;
@@ -45,6 +46,7 @@ public:
     services::StepStorage::Step AWiFiNetworkIsAvailable = services::StepStorage::Step(infra::JsonArray("[]"), infra::JsonArray("[\"ssid\", \"key\"]"), "a WiFi network is available");
     services::StepStorage::Step TheConnectivityNodeConnectsToThatNetwork = services::StepStorage::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "the Connectivity Node connects to that network");
     services::StepStorage::Step TheConnectivityNodeShouldBeConnected = services::StepStorage::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "the Connectivity Node should be connected");
+    services::StepStorage::Step TheWiFiNetwork_IsSeenWithin_Seconds = services::StepStorage::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "the WiFi network '%s' is seen within %d seconds");
 };
 
 TEST_F(CucumberWireProtocolpServerTest, accept_connection)
@@ -109,9 +111,8 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_su
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     infra::StringOutputStream::WithStorage<128> inputStream;
     inputStream << R"(["invoke",{"id":")" << this->stepDataBase.MatchStep("a WiFi network is available")->Id() << R"(","args":[]}])";
+    connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
-    infra::ConstByteRange data = infra::StringAsByteRange(inputStream.Storage());
-    connection.SimulateDataReceived(data);
     ExecuteAllActions();
     std::string response = "[ \"success\", [  ] ]\n";
     std::vector<uint8_t> responseVector(response.begin(), response.end());
@@ -126,9 +127,8 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_ar
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     infra::StringOutputStream::WithStorage<256> inputStream;
     inputStream << R"(["invoke",{"id":")" << this->stepDataBase.MatchStep("a WiFi network is available")->Id() << R"(","args":[[["ssid","key"],["CoCoCo","password"],["WLAN","1234"]]]}])";
+    connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
-    infra::ConstByteRange data = infra::StringAsByteRange(inputStream.Storage());
-    connection.SimulateDataReceived(data);
     ExecuteAllActions();
     std::string response = "[ \"success\", [  ] ]\n";
     std::vector<uint8_t> responseVector(response.begin(), response.end());
@@ -191,13 +191,29 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_step_match_request_wit
     connection.SimulateDataReceived(data);
     ExecuteAllActions();
     infra::StringOutputStream::WithStorage<256> inputStream;
-    inputStream << "[ \"success\", [ { \"id\":\"" << this->stepDataBase.MatchStep("a WiFi network is available")->Id() << "\", \"args\":[] } ] ]\n";
+    EXPECT_EQ(this->AWiFiNetworkIsAvailable.Id(), this->stepDataBase.MatchStep("a WiFi network is available")->Id());
 
-    //std::string response = inputStream.Storage().begin();
-    //std::string response = "[ \"success\", [ { \"id\":\"1\", \"args\":[] } ] ]\n";
+    inputStream << "[ \"success\", [ { \"id\":\"" << this->stepDataBase.MatchStep("a WiFi network is available")->Id() << "\", \"args\":[] } ] ]\n";
     std::vector<uint8_t> responseVector(inputStream.Storage().begin(), inputStream.Storage().end());
     EXPECT_EQ(responseVector, connection.sentData);
 
     connection.sentData.clear();
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
+/*
+TEST_F(CucumberWireProtocolpServerTest, should_respond_to_step_match_request_with_arguments_with_success)
+{
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+    connection.SimulateDataReceived(infra::MakeStringByteRange("[\"step_matches\",{\"name_to_match\":\"the WiFi network 'CoCoCo' is seen within 60 seconds\"}]"));
+    ExecuteAllActions();
+
+    infra::StringOutputStream::WithStorage<256> inputStream;
+    EXPECT_EQ(this->TheWiFiNetwork_IsSeenWithin_Seconds.Id(), this->stepDataBase.MatchStep("the WiFi network '%s' is seen within %d seconds")->Id());
+
+    inputStream << "[ \"success\", [ { \"id\":\"" << this->stepDataBase.MatchStep("the WiFi network '%s' is seen within %d seconds")->Id() << "\", \"args\":[{\"val\":\"CoCoCo\", \"pos\":19}] } ] ]\n";
+    std::vector<uint8_t> responseVector(inputStream.Storage().begin(), inputStream.Storage().end());
+    EXPECT_EQ(responseVector, connection.sentData);
+
+    connection.sentData.clear();
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+}*/
