@@ -5,26 +5,70 @@
 
 namespace hal
 {
-    class FlashHomogeneous
-        : public Flash
+    template<class T>
+    class FlashHomogeneousBase;
+
+    using FlashHomogeneous = FlashHomogeneousBase<uint32_t>;
+    using FlashHomogeneous64 = FlashHomogeneousBase<uint64_t>;
+
+    template<class T>
+    class FlashHomogeneousBase
+        : public FlashBase<T>
     {
     public:
-        FlashHomogeneous(uint32_t numberOfSectors, uint32_t sizeOfEachSector);
+        FlashHomogeneousBase(T numberOfSectors, uint32_t sizeOfEachSector);
 
     protected:
-        ~FlashHomogeneous() = default;
+        ~FlashHomogeneousBase() = default;
 
     public:
-        virtual uint32_t NumberOfSectors() const override;
-        virtual uint32_t SizeOfSector(uint32_t sectorIndex) const override;
+        virtual T NumberOfSectors() const override;
+        virtual uint32_t SizeOfSector(T sectorIndex) const override;
 
-        virtual uint32_t SectorOfAddress(uint32_t address) const override;
-        virtual uint32_t AddressOfSector(uint32_t sectorIndex) const override;
+        virtual T SectorOfAddress(T address) const override;
+        virtual T AddressOfSector(T sectorIndex) const override;
 
     private:
-        uint32_t numberOfSectors;
+        T numberOfSectors;
         uint32_t sizeOfEachSector;
     };
+
+#ifndef _MSC_VER
+    extern template class FlashHomogeneousBase<uint32_t>;
+    extern template class FlashHomogeneousBase<uint64_t>;
+#endif
+
+    ////    Implementation    ////
+
+    template<class T>
+    FlashHomogeneousBase<T>::FlashHomogeneousBase(T numberOfSectors, uint32_t sizeOfEachSector)
+        : numberOfSectors(numberOfSectors)
+        , sizeOfEachSector(sizeOfEachSector)
+    {}
+
+    template<class T>
+    T FlashHomogeneousBase<T>::NumberOfSectors() const
+    {
+        return numberOfSectors;
+    }
+
+    template<class T>
+    uint32_t FlashHomogeneousBase<T>::SizeOfSector(T sectorIndex) const
+    {
+        return sizeOfEachSector;
+    }
+
+    template<class T>
+    T FlashHomogeneousBase<T>::SectorOfAddress(T address) const
+    {
+        return address / sizeOfEachSector;
+    }
+
+    template<class T>
+    T FlashHomogeneousBase<T>::AddressOfSector(T sectorIndex) const
+    {
+        return sectorIndex * sizeOfEachSector;
+    }
 }
 
 #endif
