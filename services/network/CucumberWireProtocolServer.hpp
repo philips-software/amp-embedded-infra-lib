@@ -14,6 +14,7 @@
 
 namespace services
 {
+
     class StepStorage
     {
     public:
@@ -33,6 +34,7 @@ namespace services
            void SetInvokeArguments(infra::JsonArray arguments);
            infra::BoundedString StepName();
            void StepName(infra::BoundedString stepName);
+           infra::BoundedString MatchArgumentsBuffer();
 
            bool ContainsArguments();
            infra::JsonArray ParseArguments(const infra::BoundedString& nameToMatch, infra::BoundedString& arrayBuffer);
@@ -41,21 +43,24 @@ namespace services
             uint8_t id;
             infra::JsonArray matchArguments;
             infra::JsonArray invokeArguments;
-            infra::BoundedString::WithStorage<128> stepName;
+            infra::BoundedString::WithStorage<256> stepName;
+            infra::BoundedString::WithStorage<256> matchArgumentsBuffer;
 
-            static uint8_t  nrSteps;
+            static uint8_t nrSteps;
             //void Invoke();
             //bool Match();
         };
 
     public:
         StepStorage();
-
+        
     public:
         infra::Optional<StepStorage::Step> MatchStep(uint8_t id);
         infra::Optional<StepStorage::Step> MatchStep(const infra::BoundedString& nameToMatch);
         void AddStep(const StepStorage::Step& step);
+        bool MatchStepName(StepStorage::Step& step, const infra::BoundedString& stepName);
 
+        uint8_t nrStepMatches;
     private:
         infra::IntrusiveList<Step> stepList;
     };
@@ -74,13 +79,19 @@ namespace services
             end_scenario,
             invalid
         };
+        
+        enum MatchResult
+        {
+            success,
+            fail,
+            duplicate
+        };
 
     public:
         void ParseRequest(const infra::ByteRange& inputRange);
         bool ContainsArguments(const infra::BoundedString& string);
-        infra::JsonArray ParseArguments(infra::BoundedString& inputString);
-        infra::Optional<infra::BoundedString> ReformatStepName(const infra::BoundedString& nameToMatch, infra::JsonArray& arguments, infra::BoundedString& bufferString);
-        bool MatchName(const infra::BoundedString& nameToMatchString);
+        MatchResult MatchName(const infra::BoundedString& nameToMatchString);
+        
         void FormatResponse(infra::DataOutputStream::WithErrorPolicy& stream);
         bool MatchArguments(infra::JsonArray& arguments);
 
@@ -93,7 +104,7 @@ namespace services
         RequestType requestType;
 
         infra::JsonObject nameToMatch;
-        bool matchResult;
+        MatchResult matchResult;
 
         uint8_t invokeId;
         infra::JsonArray invokeArguments;      

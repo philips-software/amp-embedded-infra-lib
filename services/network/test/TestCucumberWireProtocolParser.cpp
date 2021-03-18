@@ -28,7 +28,6 @@ public:
     services::StepStorage::Step TheConnectivityNodeConnectsToThatNetwork = services::StepStorage::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "the Connectivity Node connects to that network");
     services::StepStorage::Step TheConnectivityNodeShouldBeConnected = services::StepStorage::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "the Connectivity Node should be connected");
     services::StepStorage::Step TheWiFiNetwork_IsSeenWithin_Seconds = services::StepStorage::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "the WiFi network '%s' is seen within %d seconds");
-
     services::StepStorage::Step StepWith3Arguments = services::StepStorage::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "the WiFi network '%s' is seen within %d minutes and %d seconds");
 
     services::CucumberWireProtocolParser cucumberWireProtocolParser;
@@ -51,34 +50,24 @@ TEST_F(CucumberWireProtocolParserTest, test_step_parsing_arguments)
 {
     infra::BoundedString::WithStorage<128> input = "the WiFi network 'CoCoCo' is seen within 10 minutes and 30 seconds";
     infra::JsonArray expectedArguments("[ { \"val\":\"CoCoCo\", \"pos\":18 }, { \"val\":\"10\", \"pos\":41 }, { \"val\":\"30\", \"pos\":56 } ]");
-   
+    
     infra::BoundedString::WithStorage<128> arrayBuffer;
     infra::JsonArray jsonArray = this->StepWith3Arguments.ParseArguments(input, arrayBuffer);
 
     EXPECT_EQ(jsonArray, expectedArguments);
 }
 
-TEST_F(CucumberWireProtocolParserTest, test_reformatting_arguments)
+TEST_F(CucumberWireProtocolParserTest, test_matching_step_name)
 {
-    infra::BoundedString::WithStorage<128> input = "the WiFi network 'CoCoCo' is seen within 10 minutes and 30 seconds";
-    infra::BoundedString::WithStorage<128> arrayBuffer = "[ { \"val\":\"CoCoCo\", \"pos\":18 }, { \"val\":\"10\", \"pos\":41 }, { \"val\":\"30\", \"pos\":56 } ]";
-    infra::JsonArray jsonArray(arrayBuffer);
+    infra::BoundedString::WithStorage<128> input = "a WiFi network is available";
+    EXPECT_TRUE(stepDataBase.MatchStepName(AWiFiNetworkIsAvailable, input));
+    EXPECT_FALSE(stepDataBase.MatchStepName(StepWith3Arguments, input));
 
-    infra::BoundedString::WithStorage<128> responseBuffer;
-    this->cucumberWireProtocolParser.ReformatStepName(input, jsonArray, responseBuffer);
-}
+    input = "the WiFi network 'CoCoCo' is seen within 10 minutes and 30 seconds";
+    EXPECT_FALSE(stepDataBase.MatchStepName(AWiFiNetworkIsAvailable, input));
+    EXPECT_TRUE(stepDataBase.MatchStepName(StepWith3Arguments, input));
 
-
-TEST_F(CucumberWireProtocolParserTest, test_parsing_arguments)
-{
-    infra::BoundedString::WithStorage<128> input = "sentence 'argument' after 10 seconds with a '2nd argument'";
-    infra::JsonArray expectedJsonArray("[ { \"val\":\"argument\", \"pos\":10 }, { \"val\":\"10\", \"pos\":26 }, { \"val\":\"2nd argument\", \"pos\":45 } ]");
-    infra::JsonArray jsonArray = this->cucumberWireProtocolParser.ParseArguments(input);
-    infra::BoundedString::WithStorage<128> jsonArrayString;
-    EXPECT_EQ(jsonArray, expectedJsonArray);
-
-    //infra::BoundedString::WithStorage<128> parsedArguments = jsonArray.ObjectString();
-   // EXPECT_EQ("[ { \"val\":\"10\", \"pos\":26 } ]", parsedArguments);
-
-    EXPECT_EQ(input, "sentence '%s' after %d seconds with a '%s'");
+    input = "the WiFi network 'CoCoCo' is seen within '10' minutes and '30' seconds";
+    EXPECT_FALSE(stepDataBase.MatchStepName(AWiFiNetworkIsAvailable, input));
+    EXPECT_FALSE(stepDataBase.MatchStepName(StepWith3Arguments, input));
 }

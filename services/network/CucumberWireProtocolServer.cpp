@@ -2,7 +2,7 @@
 
 namespace services
 {
-    uint8_t  StepStorage::Step::nrSteps = 0;
+    uint8_t StepStorage::Step::nrSteps = 0;
 
     uint8_t StepStorage::Step::Id()
     {
@@ -44,6 +44,11 @@ namespace services
         this->stepName = stepName;
     }
 
+    infra::BoundedString StepStorage::Step::MatchArgumentsBuffer()
+    {
+        return matchArgumentsBuffer;
+    }
+
     bool StepStorage::Step::ContainsArguments()
     {
         if (this->StepName().find("\'%s\'") != infra::BoundedString::npos || this->StepName().find("%d") != infra::BoundedString::npos)
@@ -59,9 +64,9 @@ namespace services
             uint8_t argOffset = 0;
             do
             {
-                if (this->StepName().find("\'%s\'", argPos) != infra::BoundedString::npos)
+                if (StepName().find("\'%s\'", argPos) != infra::BoundedString::npos)
                 {
-                    argPos = this->StepName().find("\'%s\'", argPos);
+                    argPos = StepName().find("\'%s\'", argPos);
                     if (nameToMatch[argPos + argOffset] == '\'')
                     {
                         infra::JsonObjectFormatter subObject(arguments.SubObject());
@@ -74,9 +79,9 @@ namespace services
                         argOffset += stringStream.Storage().size() - 2;
                     }
                 }
-                if (this->StepName().find("%d", argPos) != infra::BoundedString::npos)
+                if (StepName().find("%d", argPos) != infra::BoundedString::npos)
                 {
-                    argPos = this->StepName().find("%d", argPos);
+                    argPos = StepName().find("%d", argPos);
                     infra::JsonObjectFormatter subObject(arguments.SubObject());
                     infra::StringOutputStream::WithStorage<32> digitStream;
                     for (uint8_t i = 0; (nameToMatch[argPos + argOffset + i] >= '0' && nameToMatch[argPos + argOffset + i] <= '9'); i++)
@@ -86,7 +91,7 @@ namespace services
                     argPos++;
                     argOffset += digitStream.Storage().size() - 2;
                 }
-            } while (this->StepName().find("\'%s\'", argPos) != infra::BoundedString::npos || this->StepName().find("%d", argPos) != infra::BoundedString::npos);
+            } while (StepName().find("\'%s\'", argPos) != infra::BoundedString::npos || StepName().find("%d", argPos) != infra::BoundedString::npos);
         }
         infra::JsonArray argumentArray(arrayBuffer);
         return argumentArray;
@@ -151,13 +156,10 @@ namespace services
             iterator++;
             nameToMatch = iterator->Get<infra::JsonObject>();
 
-            infra::BoundedString::WithStorage<64> nameToMatchString;
+            infra::BoundedString::WithStorage<256> nameToMatchString;
             nameToMatch.GetString("name_to_match").ToString(nameToMatchString);
 
-            if (MatchName(nameToMatchString))
-                matchResult = true;
-            else
-                matchResult = false;
+            matchResult = MatchName(nameToMatchString);
         }
         else if (iterator->Get<infra::JsonString>() == "begin_scenario")
             requestType = begin_scenario;
@@ -181,33 +183,6 @@ namespace services
             requestType = invalid;
     }
 
-    infra::Optional<infra::BoundedString> CucumberWireProtocolParser::ReformatStepName(const infra::BoundedString& nameToMatch, infra::JsonArray& arguments, infra::BoundedString& bufferString)
-    {
-        infra::JsonArrayIterator iterator(arguments.begin());
-
-        bufferString.AssignFromStorage(nameToMatch);
-        uint8_t argumentOffset = 0;
-
-        for (infra::JsonArrayIterator iterator(arguments.begin()); iterator != arguments.end(); iterator++)
-        {
-            infra::JsonObject object = iterator->Get<infra::JsonObject>();
-            infra::BoundedString::WithStorage<16> val;
-            iterator->Get<infra::JsonObject>().GetString("val").ToString(val);
-            if ((iterator->Get<infra::JsonObject>().GetInteger("pos") - argumentOffset) <= bufferString.size() && (iterator->Get<infra::JsonObject>().GetInteger("pos") + iterator->Get<infra::JsonObject>().GetString("val").size() - argumentOffset <= bufferString.size()))
-            {
-                if (val.find_first_not_of("0123456789") == infra::BoundedString::npos)
-                    bufferString.replace(bufferString.begin() + iterator->Get<infra::JsonObject>().GetInteger("pos") - argumentOffset, bufferString.begin() + iterator->Get<infra::JsonObject>().GetInteger("pos") + iterator->Get<infra::JsonObject>().GetString("val").size() - argumentOffset, "%d");
-                else
-                    bufferString.replace(bufferString.begin() + iterator->Get<infra::JsonObject>().GetInteger("pos") - argumentOffset, bufferString.begin() + iterator->Get<infra::JsonObject>().GetInteger("pos") + iterator->Get<infra::JsonObject>().GetString("val").size() - argumentOffset, "%s");
-                argumentOffset += iterator->Get<infra::JsonObject>().GetString("val").size() - 2;
-            }
-            else
-                return infra::none;
-        }
-        infra::Optional<infra::BoundedString> returnString(infra::inPlace, bufferString);
-        return returnString;
-    }
-
     bool CucumberWireProtocolParser::ContainsArguments(const infra::BoundedString& string)
     {
         for  (char& c : string)
@@ -220,54 +195,13 @@ namespace services
         return false;
     }
 
-    infra::JsonArray CucumberWireProtocolParser::ParseArguments(infra::BoundedString& inputString)
-    {
-        {
-            infra::JsonArrayFormatter::WithStringStream arguments(infra::inPlace, invokeArgumentBuffer);
-            uint8_t originalPos = 0;
-            uint8_t editPos = 0;
-
-            for(infra::BoundedString::iterator c = inputString.begin(); c != inputString.end(); ++c, originalPos++, editPos++)
-            {
-                if (*c == '\'')
-                {
-                    infra::JsonObjectFormatter subObject(arguments.SubObject());
-                    infra::StringOutputStream::WithStorage<32> stringStream;
-                    for (uint8_t i = 1; inputString[editPos + i] != '\''; i++)
-                        stringStream << inputString[editPos + i];
-                    subObject.Add("val", stringStream.Storage());
-                    inputString.replace(inputString.begin() + editPos + 1, inputString.begin() + editPos + 1 + stringStream.Storage().size(), "%s");
-                    subObject.Add("pos", originalPos + 1);
-                    c += sizeof("%s");
-                    editPos += sizeof("%s");
-                    originalPos += stringStream.Storage().size() + 1;
-                }
-                if ((*c >= '0' && *c <= '9'))
-                {
-                    infra::JsonObjectFormatter subObject(arguments.SubObject());
-                    infra::StringOutputStream::WithStorage<32> digitStream;
-                    for (uint8_t i = 0; (inputString[editPos + i] >= '0' && inputString[editPos + i] <= '9'); i++)
-                        digitStream << inputString[editPos + i];
-                    subObject.Add("val", digitStream.Storage());
-                    inputString.replace(inputString.begin() + editPos, inputString.begin() + editPos + digitStream.Storage().size(), "%d");
-                    subObject.Add("pos", originalPos);
-                    originalPos += digitStream.Storage().size() - 1;
-                    c++;
-                    editPos++;
-                }
-            }
-        }
-        infra::JsonArray argumentArray(invokeArgumentBuffer);
-        return argumentArray;
-    }
-
     void CucumberWireProtocolParser::FormatResponse(infra::DataOutputStream::WithErrorPolicy& stream)
     {
         infra::BoundedString::WithStorage<256> responseBuffer;
 
         if (this->requestType == step_matches)
         {
-            if (matchResult == true)
+            if (matchResult == success)
             {
                 {
                     infra::JsonArrayFormatter::WithStringStream result(infra::inPlace, responseBuffer);
@@ -277,7 +211,7 @@ namespace services
 
                     infra::JsonObjectFormatter subObject(subArray.SubObject());
 
-                    infra::BoundedString::WithStorage<64> nameToMatchString;
+                    infra::BoundedString::WithStorage<256> nameToMatchString;
                     nameToMatch.GetString("name_to_match").ToString(nameToMatchString);
 
                     infra::StringOutputStream::WithStorage<6> idStream;
@@ -285,11 +219,12 @@ namespace services
                     subObject.Add("id", idStream.Storage());
                     subObject.Add(infra::JsonKeyValue{ "args", infra::JsonValue(infra::InPlaceType<infra::JsonArray>(), this->stepStorage.MatchStep(nameToMatchString)->MatchArguments()) });
                 }
-            }
-            if (matchResult == false)
-                FailureMessage(responseBuffer, "Step not Matched", "Exception.Step.NotFound");
-            else
                 responseBuffer.insert(responseBuffer.size(), "\n");
+            }
+            else if (matchResult == duplicate)
+                FailureMessage(responseBuffer, "Duplicate Step", "Exception.Step.Duplicate");
+            else if (matchResult == fail)
+                FailureMessage(responseBuffer, "Step not Matched", "Exception.Step.NotFound");
         }
         else if (this->requestType == begin_scenario)
             SuccessMessage(responseBuffer);
@@ -321,13 +256,14 @@ namespace services
         stream << infra::StringAsByteRange(responseBuffer);
     }
 
-    bool CucumberWireProtocolParser::MatchName(const infra::BoundedString& nameToMatchString)
+    CucumberWireProtocolParser::MatchResult CucumberWireProtocolParser::MatchName(const infra::BoundedString& nameToMatchString)
     {
-        if (this->stepStorage.MatchStep(nameToMatchString) != infra::none)
-        {
-            return true;
-        }
-        return false;
+        if (stepStorage.MatchStep(nameToMatchString) != infra::none)
+            return MatchResult::success;
+        else if (stepStorage.nrStepMatches >= 2)
+            return MatchResult::duplicate;
+        else
+            return MatchResult::fail;
     }
 
     bool CucumberWireProtocolParser::MatchArguments(infra::JsonArray& arguments)
@@ -362,17 +298,67 @@ namespace services
         return false;
     }
 
-    StepStorage::StepStorage(){}
+    StepStorage::StepStorage() : nrStepMatches(0) {}
 
     infra::Optional<StepStorage::Step> StepStorage::MatchStep(const infra::BoundedString& nameToMatch)
     {
+        nrStepMatches = 0;
+        infra::Optional<StepStorage::Step> returnStep;
         for (auto& step : stepList)
-            if (step.StepName() == nameToMatch)
+        {
+            if (MatchStepName(step, nameToMatch))
             {
-                infra::Optional<StepStorage::Step> tempStep(infra::inPlace, step);
-                return tempStep;
+                returnStep.Emplace(step);
+                nrStepMatches++;
+                if (step.ContainsArguments())
+                    step.SetMatchArguments(step.ParseArguments(nameToMatch, step.MatchArgumentsBuffer()));
             }
-        return infra::none;
+        }
+
+        if (nrStepMatches >= 2 || nrStepMatches == 0)
+            return infra::none;
+        else
+            return returnStep;
+    }
+
+    bool StepStorage::MatchStepName(StepStorage::Step& step, const infra::BoundedString& nameToMatch)
+    {
+        uint8_t count = 0;
+        uint8_t sizeOffset = 0;
+        for (infra::BoundedString::iterator c = nameToMatch.begin(); c != nameToMatch.end(); ++c, count++)
+        {
+            if (step.StepName()[count] != *c)
+            {
+                if (((count - 1) >= 0 && (count + 2) <= step.StepName().size()) && (step.StepName()[count - 1] == '\'' && step.StepName()[count] == '%' && step.StepName()[count + 1] == 's' && step.StepName()[count + 2] == '\'' && *(c - 1) == '\''))
+                {
+                    count += 2;
+                    do
+                    {
+                        sizeOffset++;
+                        c++;
+                    } while (c != nameToMatch.end() && *c != '\'');
+                    sizeOffset -= 2;
+                }
+                else if ((count + 1 <= step.StepName().size()) && (step.StepName()[count] == '%' && step.StepName()[count + 1] == 'd'))
+                {
+                    count++;
+                    while (c != nameToMatch.end() && *(c + 1) >= '0' && *(c + 1) <= '9')
+                    {
+                        sizeOffset++;
+                        c++;
+                    }
+                    sizeOffset--;
+                }
+                else
+                    return false;
+            }
+        }
+        if (step.StepName().size() + sizeOffset == nameToMatch.size())
+        {
+            return true;
+        }
+        else
+            return false;
     }
 
     infra::Optional<StepStorage::Step> StepStorage::MatchStep(uint8_t id)
