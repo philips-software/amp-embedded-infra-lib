@@ -24,14 +24,14 @@ namespace services
         this->matchArguments = arguments;
     }
 
-    infra::JsonArray StepStorage::Step::InvokeArguments()
+    infra::JsonArray StepStorage::Step::TableHeaders()
     {
-        return this->invokeArguments;
+        return this->tableHeaders;
     }
 
-    void StepStorage::Step::SetInvokeArguments(infra::JsonArray arguments)
+    void StepStorage::Step::SetTableHeaders(infra::JsonArray arguments)
     {
-        this->invokeArguments = arguments;
+        this->tableHeaders = arguments;
     }
 
     infra::BoundedString StepStorage::Step::StepName()
@@ -54,6 +54,30 @@ namespace services
         if (this->StepName().find("\'%s\'") != infra::BoundedString::npos || this->StepName().find("%d") != infra::BoundedString::npos)
             return true;
         return false;
+    }
+
+    uint8_t StepStorage::Step::NrArguments()
+    {
+        uint8_t nrArguments = 0;
+        {
+            uint8_t argPos = 0;
+            do
+            {
+                if (StepName().find("\'%s\'", argPos) != infra::BoundedString::npos)
+                {
+                    argPos = StepName().find("\'%s\'", argPos);
+                    argPos++;
+                    nrArguments++;
+                }
+                if (StepName().find("%d", argPos) != infra::BoundedString::npos)
+                {
+                    argPos = StepName().find("%d", argPos);
+                    argPos++;
+                    nrArguments++;
+                }
+            } while (StepName().find("\'%s\'", argPos) != infra::BoundedString::npos || StepName().find("%d", argPos) != infra::BoundedString::npos);
+        }
+        return nrArguments;
     }
 
     infra::JsonArray StepStorage::Step::ParseArguments(const infra::BoundedString& nameToMatch, infra::BoundedString& arrayBuffer)
@@ -97,10 +121,19 @@ namespace services
         return argumentArray;
     }
 
-    StepStorage::Step::Step(const infra::JsonArray& matchArguments, const infra::JsonArray& invokeArguments, const infra::BoundedString& stepName)
+    StepStorage::Step::Step(const infra::BoundedString& stepName)
+        : id(nrSteps)
+        , matchArguments(infra::JsonArray("[]"))
+        , tableHeaders(infra::JsonArray("[]"))
+        , stepName(stepName)
+    {
+        nrSteps++;
+    }
+
+    StepStorage::Step::Step(const infra::JsonArray& matchArguments, const infra::JsonArray& tableHeaders, const infra::BoundedString& stepName)
         : id(nrSteps)
         , matchArguments(matchArguments)
-        , invokeArguments(invokeArguments)
+        , tableHeaders(tableHeaders)
         , stepName(stepName)
     {
         nrSteps++;
@@ -270,28 +303,46 @@ namespace services
     {
         if (this->stepStorage.MatchStep(invokeId) != infra::none)
         {
+            if (arguments.begin() == arguments.end() && (stepStorage.MatchStep(invokeId)->ContainsArguments() == false) && (stepStorage.MatchStep(invokeId)->TableHeaders().begin() == stepStorage.MatchStep(invokeId)->TableHeaders().end()))
+                return true;
+
             infra::JsonArrayIterator argumentIterator(arguments.begin());
-            if (arguments.begin() != arguments.end())
+
+            uint8_t validStringCount = 0;
+            for (auto string : JsonStringArray(arguments))
             {
-                infra::JsonArrayIterator argumentIterator(arguments.begin());
-                argumentIterator = argumentIterator->Get<infra::JsonArray>().begin();
+                validStringCount++;
+                argumentIterator++;
+            }
+            if (stepStorage.MatchStep(invokeId)->NrArguments() != validStringCount)
+                return false;
+            if ((argumentIterator == arguments.end() && stepStorage.MatchStep(invokeId)->TableHeaders() != infra::JsonArray("[]")) || (argumentIterator != arguments.end() && stepStorage.MatchStep(invokeId)->TableHeaders() == infra::JsonArray("[]")))
+                return false;
+            if (argumentIterator == arguments.end() && stepStorage.MatchStep(invokeId)->TableHeaders() == infra::JsonArray("[]"))
+                return true;
 
-                infra::JsonArray argumentList = argumentIterator->Get<infra::JsonArray>();
-                argumentIterator = argumentList.begin();
-
-                infra::JsonArray stepArgumentsList(this->stepStorage.MatchStep(invokeId)->InvokeArguments());
-                infra::JsonArrayIterator stepArgumentIterator(stepArgumentsList.begin());
-
-                do
+            uint8_t rowCount = 0;
+            uint8_t headerCollumns = 0;
+            infra::JsonArrayIterator rowIterator(argumentIterator->Get<infra::JsonArray>().begin());
+            while (rowIterator != argumentIterator->Get<infra::JsonArray>().end())
+            {
+                uint8_t collumnCount = 0;
+                if (rowCount == 0)
                 {
-                    if (argumentIterator->Get<infra::JsonString>() != stepArgumentIterator->Get<infra::JsonString>())
-                    {
+                    for (auto string : JsonStringArray(stepStorage.MatchStep(invokeId)->TableHeaders()))
+                        headerCollumns++;
+                    if (rowIterator->Get<infra::JsonArray>() != stepStorage.MatchStep(invokeId)->TableHeaders())
                         return false;
-                    }
-
-                    argumentIterator++;
-                    stepArgumentIterator++;
-                } while (argumentIterator != argumentList.end() && stepArgumentIterator != stepArgumentsList.end());
+                }
+                else
+                {
+                    for (auto string : JsonStringArray(rowIterator->Get<infra::JsonArray>()))
+                        collumnCount++;
+                    if (collumnCount != headerCollumns)
+                        return false;
+                }
+                rowCount++;
+                rowIterator++;
             }
             return true;
         }

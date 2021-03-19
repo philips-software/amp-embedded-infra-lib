@@ -71,3 +71,8 @@ TEST_F(CucumberWireProtocolParserTest, test_matching_step_name)
     EXPECT_FALSE(stepDataBase.MatchStepName(AWiFiNetworkIsAvailable, input));
     EXPECT_FALSE(stepDataBase.MatchStepName(StepWith3Arguments, input));
 }
+
+TEST_F(CucumberWireProtocolParserTest, test_step_nr_of_arguments)
+{
+    EXPECT_EQ(2, TheWiFiNetwork_IsSeenWithin_Seconds.NrArguments());
+}

@@ -22,7 +22,8 @@ namespace services
             : public infra::IntrusiveList<Step>::NodeType
         {
         public:
-            Step(const infra::JsonArray& matchArguments, const infra::JsonArray& invokeArguments, const infra::BoundedString& stepName);
+            Step(const infra::BoundedString& stepName);
+            Step(const infra::JsonArray& matchArguments, const infra::JsonArray& tableHeaders, const infra::BoundedString& stepName);
 
             ~Step(){}
 
@@ -30,19 +31,20 @@ namespace services
            void SetId(uint8_t);
            infra::JsonArray MatchArguments();
            void SetMatchArguments(infra::JsonArray arguments);
-           infra::JsonArray InvokeArguments();
-           void SetInvokeArguments(infra::JsonArray arguments);
+           infra::JsonArray TableHeaders();
+           void SetTableHeaders(infra::JsonArray arguments);
            infra::BoundedString StepName();
            void StepName(infra::BoundedString stepName);
            infra::BoundedString MatchArgumentsBuffer();
 
            bool ContainsArguments();
+           uint8_t NrArguments();
            infra::JsonArray ParseArguments(const infra::BoundedString& nameToMatch, infra::BoundedString& arrayBuffer);
 
         private:
             uint8_t id;
             infra::JsonArray matchArguments;
-            infra::JsonArray invokeArguments;
+            infra::JsonArray tableHeaders;
             infra::BoundedString::WithStorage<256> stepName;
             infra::BoundedString::WithStorage<256> matchArgumentsBuffer;
 
