@@ -6,7 +6,6 @@
 
 namespace hal
 {
-    //TICS -INT#002: A mock or stub may have public data
     class I2cMasterMock
         : public hal::I2cMaster
     {
@@ -20,7 +19,6 @@ namespace hal
         MOCK_METHOD2(ReceiveDataMock, std::vector<uint8_t>(hal::I2cAddress address, hal::Action nextAction));
     };
 
-    //TICS -INT#002: A mock or stub may have public data
     class I2cMasterMockWithoutAutomaticDone
         : public hal::I2cMaster
     {
@@ -37,8 +35,6 @@ namespace hal
         infra::Function<void(hal::Result)> onReceived;
     };
 
-    //TICS -INT#002: A mock or stub may have public data
-    //TICS -INT#027: MOCK_METHOD can't add 'virtual' to its signature
     class I2cSlaveMock
         : public hal::I2cSlave
     {

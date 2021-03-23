@@ -352,8 +352,8 @@ namespace infra
         infra::Optional<JsonToken::RightBracket> SearchArrayEnd();
 
     protected:
-        infra::BoundedConstString objectString;                                         //TICS !INT#002
-        JsonTokenizer tokenizer;                                                        //TICS !INT#002
+        infra::BoundedConstString objectString;
+        JsonTokenizer tokenizer;
     };
 
     class JsonObjectIterator
@@ -370,7 +370,7 @@ namespace infra
         friend class JsonObject;
 
         JsonObjectIterator();
-        JsonObjectIterator(JsonObject& object);                                         //TICS !INT#001
+        JsonObjectIterator(JsonObject& object);
 
     public:
         bool operator==(const JsonObjectIterator& other) const;

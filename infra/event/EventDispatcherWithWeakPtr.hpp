@@ -4,7 +4,7 @@
 #include "infra/event/EventDispatcher.hpp"
 #include "infra/util/SharedPtr.hpp"
 
-#ifndef INFRA_EVENT_DISPATCHER_WITH_WEAK_PTR_FUNCTION_EXTRA_SIZE                                                        //TICS !POR#021
+#ifndef INFRA_EVENT_DISPATCHER_WITH_WEAK_PTR_FUNCTION_EXTRA_SIZE
 #define INFRA_EVENT_DISPATCHER_WITH_WEAK_PTR_FUNCTION_EXTRA_SIZE (INFRA_DEFAULT_FUNCTION_EXTRA_SIZE + (3 * sizeof(void*)))
 #endif
 

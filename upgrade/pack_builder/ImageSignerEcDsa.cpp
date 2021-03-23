@@ -49,7 +49,7 @@ namespace application
         mbedtls_sha256_init(&ctx);
         mbedtls_sha256_starts(&ctx, 0);
         mbedtls_sha256_update(&ctx, image.data(), image.size());
-        mbedtls_sha256_finish(&ctx, hash.data());                                                                       //TICS !INT#030
+        mbedtls_sha256_finish(&ctx, hash.data());
         mbedtls_sha256_free(&ctx);
     }
 

@@ -35,7 +35,7 @@ namespace application
 
         size_t offset = 0;
         std::array<uint8_t, blockLength> stream_block = {};
-        int ret = mbedtls_aes_crypt_ctr(&ctx, data.size(), &offset, counter.data(), stream_block.data(), data.data(), result.data() + blockLength);     //TICS !INT#030
+        int ret = mbedtls_aes_crypt_ctr(&ctx, data.size(), &offset, counter.data(), stream_block.data(), data.data(), result.data() + blockLength);
         if (ret != 0)
             throw std::runtime_error("AES encryption failed");
 

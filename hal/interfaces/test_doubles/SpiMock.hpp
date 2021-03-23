@@ -10,8 +10,6 @@
 
 namespace hal
 {
-    //TICS -INT#002: A mock or stub may have public data
-    //TICS -INT#027
     class SpiMock
         : public SpiMaster
     {

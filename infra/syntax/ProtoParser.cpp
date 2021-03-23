@@ -78,7 +78,7 @@ namespace infra
         {
             input >> byte;
 
-            result += static_cast<uint64_t>(byte & 0x7f) << shift;                                                      //TICS !POR#006
+            result += static_cast<uint64_t>(byte & 0x7f) << shift;
             shift += 7;
         } while (!input.Failed() && (byte & 0x80) != 0);
 

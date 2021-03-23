@@ -17,15 +17,15 @@ namespace infra
     public:
         MemoryRange();
         MemoryRange(T* begin, T* end);
-        template<class U>                                                           //TICS !INT#001
+        template<class U>
             MemoryRange(const MemoryRange<U>& other);
-        template<class T2, std::size_t N>                                           //TICS !INT#001
+        template<class T2, std::size_t N>
             constexpr MemoryRange(const std::array<T2, N>& array);
-        template<class T2, std::size_t N>                                           //TICS !INT#001
+        template<class T2, std::size_t N>
             MemoryRange(std::array<T2, N>& array);
-        template<class T2>                                                          //TICS !INT#001
+        template<class T2>
             MemoryRange(const std::vector<T2>& vector);
-        template<class T2>                                                          //TICS !INT#001
+        template<class T2>
             MemoryRange(std::vector<T2>& vector);
 
         bool empty() const;

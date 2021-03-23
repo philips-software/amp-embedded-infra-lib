@@ -56,7 +56,7 @@ namespace services
     void HttpPageWebSocket::AddHeaders(HttpResponseHeaderBuilder& builder) const
     {
         std::array<uint8_t, 20> sha1Digest;
-        mbedtls_sha1(reinterpret_cast<const uint8_t*>(webSocketKey.begin()), webSocketKey.size(), sha1Digest.data());    //TICS !INT#030
+        mbedtls_sha1(reinterpret_cast<const uint8_t*>(webSocketKey.begin()), webSocketKey.size(), sha1Digest.data());
 
         builder.AddHeader("Upgrade", "websocket");
         builder.AddHeader("Connection", "Upgrade");

@@ -79,7 +79,7 @@ namespace infra
         stream << value;
     }
 
-    class Asn1ContainerFormatter                                                                                        //TICS !OOP#013
+    class Asn1ContainerFormatter
         : public Asn1Formatter
     {
     public:

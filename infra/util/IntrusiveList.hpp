@@ -141,7 +141,7 @@ namespace infra
 
             IntrusiveListIterator();
             explicit IntrusiveListIterator(const IntrusiveListNode<typename std::remove_const<T>::type>* node);
-            template<class T2>                                                                                  //TICS !INT#001
+            template<class T2>
                 IntrusiveListIterator(const IntrusiveListIterator<T2>& other);
 
             template<class T2>

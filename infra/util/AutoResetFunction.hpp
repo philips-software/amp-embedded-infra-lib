@@ -21,7 +21,7 @@ namespace infra
         AutoResetFunction(const AutoResetFunction& other) = delete;
         AutoResetFunction(AutoResetFunction&& other);
 
-        template<class F>                                                               //TICS !INT#001
+        template<class F>
             AutoResetFunction(F f);
 
         ~AutoResetFunction() = default;

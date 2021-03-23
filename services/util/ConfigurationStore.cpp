@@ -76,7 +76,7 @@ namespace services
             return false;
 
         std::array<uint8_t, 32> messageHash;
-        mbedtls_sha256(blob.begin() + sizeof(header.hash), std::min<std::size_t>(header.size + sizeof(header.size), blob.size() - sizeof(header.hash)), messageHash.data(), 0);  //TICS !INT#030
+        mbedtls_sha256(blob.begin() + sizeof(header.hash), std::min<std::size_t>(header.size + sizeof(header.size), blob.size() - sizeof(header.hash)), messageHash.data(), 0);
 
         return infra::Head(infra::MakeRange(messageHash), sizeof(header.hash)) == header.hash;
     }
@@ -88,7 +88,7 @@ namespace services
         infra::Copy(infra::MakeByteRange(header), infra::Head(blob, sizeof(header)));
 
         std::array<uint8_t, 32> messageHash;
-        mbedtls_sha256(blob.begin() + sizeof(header.hash), currentSize + sizeof(header.size), messageHash.data(), 0);  //TICS !INT#030
+        mbedtls_sha256(blob.begin() + sizeof(header.hash), currentSize + sizeof(header.size), messageHash.data(), 0);
 
         infra::Copy(infra::Head(infra::MakeRange(messageHash), sizeof(header.hash)), infra::MakeRange(header.hash));
         infra::Copy(infra::MakeByteRange(header), infra::Head(blob, sizeof(header)));

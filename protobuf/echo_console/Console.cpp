@@ -239,7 +239,7 @@ namespace application
 
     void ConsoleTokenizer::SkipWhitespace()
     {
-        while (parseIndex != line.size() && std::isspace(line[parseIndex]))                         //TICS !CON#007
+        while (parseIndex != line.size() && std::isspace(line[parseIndex]))
             ++parseIndex;
     }
 
@@ -275,13 +275,13 @@ namespace application
         std::size_t tokenStart = parseIndex;
         bool sign = false;
 
-        if (parseIndex != line.size() && line[parseIndex] == '-')                                       //TICS !CON#007
+        if (parseIndex != line.size() && line[parseIndex] == '-')
         {
             sign = true;
             ++parseIndex;
         }
 
-        while (parseIndex != line.size() && std::isdigit(line[parseIndex]))                             //TICS !CON#007
+        while (parseIndex != line.size() && std::isdigit(line[parseIndex]))
             ++parseIndex;
 
         std::string integer = line.substr(tokenStart, parseIndex - tokenStart);
@@ -300,7 +300,7 @@ namespace application
     {
         std::size_t tokenStart = parseIndex;
 
-        while (parseIndex != line.size() && std::isalnum(line[parseIndex]))                         //TICS !CON#007
+        while (parseIndex != line.size() && std::isalnum(line[parseIndex]))
             ++parseIndex;
 
         std::string identifier = line.substr(tokenStart, parseIndex - tokenStart);
