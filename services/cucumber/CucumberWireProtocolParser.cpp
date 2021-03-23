@@ -12,7 +12,6 @@ namespace services
         {
             infra::JsonArrayFormatter::WithStringStream result(infra::inPlace, responseBuffer);
             result.Add((infra::BoundedConstString) "fail");
-
             infra::JsonObjectFormatter subObject(result.SubObject());
             subObject.Add("message", failMessage);
             subObject.Add("exception", exceptionType);
@@ -30,50 +29,38 @@ namespace services
         responseBuffer.insert(responseBuffer.size(), "\n");
     }
 
+    void CucumberWireProtocolParser::SuccessMessage(uint8_t id, infra::JsonArray& arguments, infra::BoundedString& responseBuffer)
+    {
+        {
+            infra::JsonArrayFormatter::WithStringStream result(infra::inPlace, responseBuffer);
+
+            result.Add((infra::BoundedConstString) "success");
+            infra::JsonArrayFormatter subArray(result.SubArray());
+            infra::JsonObjectFormatter subObject(subArray.SubObject());
+
+            infra::StringOutputStream::WithStorage<6> idStream;
+            idStream << id;
+            subObject.Add("id", idStream.Storage());
+            subObject.Add(infra::JsonKeyValue{ "args", infra::JsonValue(infra::InPlaceType<infra::JsonArray>(), arguments) });
+        }
+        responseBuffer.insert(responseBuffer.size(), "\n");
+    }
+
     void CucumberWireProtocolParser::ParseRequest(const infra::ByteRange& inputRange)
     {
         infra::JsonArray input(infra::ByteRangeAsString(inputRange));
-
-        for (auto value : input)
-        {
-        }
-
-        if (input.Error())
-        {
-            requestType = invalid;
+        if (InputError(input))
             return;
-        }
 
         infra::JsonArrayIterator iterator(input.begin());
-
         if (iterator->Get<infra::JsonString>() == "step_matches")
-        {
-            requestType = step_matches;
-
-            iterator++;
-            nameToMatch = iterator->Get<infra::JsonObject>();
-
-            infra::BoundedString::WithStorage<256> nameToMatchString;
-            nameToMatch.GetString("name_to_match").ToString(nameToMatchString);
-
-            matchResult = MatchName(nameToMatchString);
-        }
+            ParseStepMatchRequest(iterator);
         else if (iterator->Get<infra::JsonString>() == "begin_scenario")
             requestType = begin_scenario;
         else if (iterator->Get<infra::JsonString>() == "end_scenario")
             requestType = end_scenario;
         else if (iterator->Get<infra::JsonString>() == "invoke")
-        {
-            requestType = invoke;
-
-            iterator++;
-            infra::BoundedString::WithStorage<6> invokeIdString;
-            iterator->Get<infra::JsonObject>().GetString("id").ToString(invokeIdString);
-            infra::StringInputStream stream(invokeIdString);
-            stream >> invokeId;
-
-            invokeArguments = iterator->Get<infra::JsonObject>().GetArray("args");
-        }
+            ParseInvokeRequest(iterator);
         else if (iterator->Get<infra::JsonString>() == "snippet_text")
             requestType = snippet_text;
         else
@@ -96,60 +83,30 @@ namespace services
     {
         infra::BoundedString::WithStorage<256> responseBuffer;
 
-        if (this->requestType == step_matches)
+        switch (requestType)
         {
-            if (matchResult == success)
-            {
-                {
-                    infra::JsonArrayFormatter::WithStringStream result(infra::inPlace, responseBuffer);
-
-                    result.Add((infra::BoundedConstString) "success");
-                    infra::JsonArrayFormatter subArray(result.SubArray());
-
-                    infra::JsonObjectFormatter subObject(subArray.SubObject());
-
-                    infra::BoundedString::WithStorage<256> nameToMatchString;
-                    nameToMatch.GetString("name_to_match").ToString(nameToMatchString);
-
-                    infra::StringOutputStream::WithStorage<6> idStream;
-                    idStream << stepStorage.MatchStep(nameToMatchString)->Id();
-                    subObject.Add("id", idStream.Storage());
-                    subObject.Add(infra::JsonKeyValue{ "args", infra::JsonValue(infra::InPlaceType<infra::JsonArray>(), stepStorage.MatchStep(nameToMatchString)->MatchArguments()) });
-                }
-                responseBuffer.insert(responseBuffer.size(), "\n");
-            }
-            else if (matchResult == duplicate)
-                FailureMessage(responseBuffer, "Duplicate Step", "Exception.Step.Duplicate");
-            else if (matchResult == fail)
-                FailureMessage(responseBuffer, "Step not Matched", "Exception.Step.NotFound");
-        }
-        else if (this->requestType == begin_scenario)
+        case step_matches:
+            FormatStepMatchResponse(responseBuffer);
+            break;
+        case invoke:
+            FormatInvokeResponse(responseBuffer);
+            break;
+        case snippet_text:
+            FormatSnippetResponse(responseBuffer);
+            break;
+        case begin_scenario:
             SuccessMessage(responseBuffer);
-        else if (this->requestType == end_scenario)
+            break;
+        case end_scenario:
             SuccessMessage(responseBuffer);
-        else if (this->requestType == invoke)
-        {
-            if (Invoke())
-            {
-                SuccessMessage(responseBuffer);
-            }
-            else
-            {
-                FailureMessage(responseBuffer, "Invalid Arguments", "Exception.Arguments.Invalid");
-            }
-        }
-        else if (this->requestType == snippet_text)
-        {
-            {
-                infra::JsonArrayFormatter::WithStringStream result(infra::inPlace, responseBuffer);
-                result.Add((infra::BoundedConstString) "success");
-                result.Add("snippet");
-            }
-            responseBuffer.insert(responseBuffer.size(), "\n");
-        }
-        else
+            break;
+        case invalid:
             FailureMessage(responseBuffer, "Invalid Request", "Exception.InvalidRequestType");
-
+            break;
+        default:
+            FailureMessage(responseBuffer, "Invalid Request", "Exception.InvalidRequestType");
+            break;
+        }  
         stream << infra::StringAsByteRange(responseBuffer);
     }
 
@@ -198,31 +155,110 @@ namespace services
             if (argumentIterator == arguments.end() && stepStorage.MatchStep(invokeId)->TableHeaders() == infra::JsonArray("[]"))
                 return true;
 
-            uint8_t rowCount = 0;
-            uint8_t headerCollumns = 0;
-            infra::JsonArrayIterator rowIterator(argumentIterator->Get<infra::JsonArray>().begin());
-            while (rowIterator != argumentIterator->Get<infra::JsonArray>().end())
-            {
-                uint8_t collumnCount = 0;
-                if (rowCount == 0)
-                {
-                    for (auto string : JsonStringArray(stepStorage.MatchStep(invokeId)->TableHeaders()))
-                        headerCollumns++;
-                    if (rowIterator->Get<infra::JsonArray>() != stepStorage.MatchStep(invokeId)->TableHeaders())
-                        return false;
-                }
-                else
-                {
-                    for (auto string : JsonStringArray(rowIterator->Get<infra::JsonArray>()))
-                        collumnCount++;
-                    if (collumnCount != headerCollumns)
-                        return false;
-                }
-                rowCount++;
-                rowIterator++;
-            }
+            if (TableFormatError(argumentIterator))
+                return false;
             return true;
         }
         return false;
+    }
+
+    bool CucumberWireProtocolParser::TableFormatError(infra::JsonArrayIterator& iteratorAtTable)
+    {
+        uint8_t rowCount = 0;
+        uint8_t headerCollumns = 0;
+        infra::JsonArrayIterator rowIterator(iteratorAtTable->Get<infra::JsonArray>().begin());
+        while (rowIterator != iteratorAtTable->Get<infra::JsonArray>().end())
+        {
+            uint8_t collumnCount = 0;
+            if (rowCount == 0)
+            {
+                for (auto string : JsonStringArray(stepStorage.MatchStep(invokeId)->TableHeaders()))
+                    headerCollumns++;
+                if (rowIterator->Get<infra::JsonArray>() != stepStorage.MatchStep(invokeId)->TableHeaders())
+                    return true;
+            }
+            else
+            {
+                for (auto string : JsonStringArray(rowIterator->Get<infra::JsonArray>()))
+                    collumnCount++;
+                if (collumnCount != headerCollumns)
+                    return true;
+            }
+            rowCount++;
+            rowIterator++;
+        }
+        return false;
+    }
+
+    bool CucumberWireProtocolParser::InputError(infra::JsonArray& input)
+    {
+        for (auto value : input);
+        if (input.Error())
+        {
+            requestType = invalid;
+            return true;
+        }
+        return false;
+    }
+
+    void CucumberWireProtocolParser::ParseStepMatchRequest(infra::JsonArrayIterator& iteratorAtRequestType)
+    {
+        requestType = step_matches;
+        iteratorAtRequestType++;
+        nameToMatch = iteratorAtRequestType->Get<infra::JsonObject>();
+        infra::BoundedString::WithStorage<256> nameToMatchString;
+        nameToMatch.GetString("name_to_match").ToString(nameToMatchString);
+        matchResult = MatchName(nameToMatchString);
+    }
+
+    void CucumberWireProtocolParser::ParseInvokeRequest(infra::JsonArrayIterator& iteratorAtRequestType)
+    {
+        requestType = invoke;
+        iteratorAtRequestType++;
+        infra::BoundedString::WithStorage<6> invokeIdString;
+        iteratorAtRequestType->Get<infra::JsonObject>().GetString("id").ToString(invokeIdString);
+        infra::StringInputStream stream(invokeIdString);
+        stream >> invokeId;
+        invokeArguments = iteratorAtRequestType->Get<infra::JsonObject>().GetArray("args");
+    }
+
+    void CucumberWireProtocolParser::FormatStepMatchResponse(infra::BoundedString& responseBuffer)
+    {
+        switch (matchResult)
+        {
+        case success:
+        {
+            infra::BoundedString::WithStorage<256> nameToMatchString;
+            nameToMatch.GetString("name_to_match").ToString(nameToMatchString);
+            SuccessMessage(stepStorage.MatchStep(nameToMatchString)->Id(), stepStorage.MatchStep(nameToMatchString)->MatchArguments(), responseBuffer);
+        }
+        break;
+        case fail:
+            FailureMessage(responseBuffer, "Step not Matched", "Exception.Step.NotFound");
+            break;
+        case duplicate:
+            FailureMessage(responseBuffer, "Duplicate Step", "Exception.Step.Duplicate");
+            break;
+        default:
+            break;
+        }
+    }
+
+    void CucumberWireProtocolParser::FormatInvokeResponse(infra::BoundedString& responseBuffer)
+    {
+        if (Invoke())
+            SuccessMessage(responseBuffer);
+        else
+            FailureMessage(responseBuffer, "Invalid Arguments", "Exception.Arguments.Invalid");
+    }
+
+    void CucumberWireProtocolParser::FormatSnippetResponse(infra::BoundedString& responseBuffer)
+    {
+        {
+            infra::JsonArrayFormatter::WithStringStream result(infra::inPlace, responseBuffer);
+            result.Add((infra::BoundedConstString) "success");
+            result.Add("snippet");
+        }
+        responseBuffer.insert(responseBuffer.size(), "\n");
     }
 }

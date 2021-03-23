@@ -47,15 +47,15 @@ public:
     services::CucumberWireProtocolServer::WithBuffer<512> cucumberServer;
     services::StepStorage stepDataBase;
 
-    services::Step AWiFiNetworkIsAvailable = services::Step(infra::JsonArray("[]"), infra::JsonArray("[\"ssid\", \"key\"]"), "a WiFi network is available");
-    services::Step TheConnectivityNodeConnectsToThatNetwork = services::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "the Connectivity Node connects to that network");
-    services::Step TheConnectivityNodeShouldBeConnected = services::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "the Connectivity Node should be connected");
-    services::Step TheWiFiNetwork_IsSeenWithin_Minutes = services::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "the WiFi network '%s' is seen within %d minutes");
-    services::Step TheWiFiNetwork_IsSeenWithin_MinutesAnd_Seconds = services::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "the WiFi network '%s' is seen within %d minutes and %d seconds");
+    services::CucumberStep AWiFiNetworkIsAvailable = services::CucumberStep(infra::JsonArray("[]"), infra::JsonArray("[\"ssid\", \"key\"]"), "a WiFi network is available");
+    services::CucumberStep TheConnectivityNodeConnectsToThatNetwork = services::CucumberStep("the Connectivity Node connects to that network");
+    services::CucumberStep TheConnectivityNodeShouldBeConnected = services::CucumberStep("the Connectivity Node should be connected");
+    services::CucumberStep TheWiFiNetwork_IsSeenWithin_Minutes = services::CucumberStep("the WiFi network '%s' is seen within %d minutes");
+    services::CucumberStep TheWiFiNetwork_IsSeenWithin_MinutesAnd_Seconds = services::CucumberStep("the WiFi network '%s' is seen within %d minutes and %d seconds");
 
-    services::Step DuplicateStep1 = services::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "a duplicate feature");
-    services::Step DuplicateStep2 = services::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "a duplicate feature");
-    services::Step StepWithArgumentsAndTable = services::Step(infra::JsonArray("[]"), infra::JsonArray("[\"field\", \"value\"]"), "sentence with '%s' and %d digit");
+    services::CucumberStep DuplicateStep1 = services::CucumberStep("a duplicate feature");
+    services::CucumberStep DuplicateStep2 = services::CucumberStep("a duplicate feature");
+    services::CucumberStep StepWithArgumentsAndTable = services::CucumberStep(infra::JsonArray("[]"), infra::JsonArray("[\"field\", \"value\"]"), "sentence with '%s' and %d digit");
 };
 
 TEST_F(CucumberWireProtocolpServerTest, accept_connection)

@@ -25,21 +25,14 @@ public:
 
     services::StepStorage stepDataBase;
 
-    services::Step AWiFiNetworkIsAvailable = services::Step(infra::JsonArray("[]"), infra::JsonArray("[\"ssid\", \"key\"]"), "a WiFi network is available");
-    services::Step TheConnectivityNodeConnectsToThatNetwork = services::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "the Connectivity Node connects to that network");
-    services::Step TheConnectivityNodeShouldBeConnected = services::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "the Connectivity Node should be connected");
-    services::Step TheWiFiNetwork_IsSeenWithin_Seconds = services::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "the WiFi network '%s' is seen within %d seconds");
-    services::Step StepWith3Arguments = services::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "the WiFi network '%s' is seen within %d minutes and %d seconds");
+    services::CucumberStep AWiFiNetworkIsAvailable = services::CucumberStep(infra::JsonArray("[]"), infra::JsonArray("[\"ssid\", \"key\"]"), "a WiFi network is available");
+    services::CucumberStep TheConnectivityNodeConnectsToThatNetwork = services::CucumberStep("the Connectivity Node connects to that network");
+    services::CucumberStep TheConnectivityNodeShouldBeConnected = services::CucumberStep(infra::JsonArray("[]"), infra::JsonArray("[]"), "the Connectivity Node should be connected");
+    services::CucumberStep TheWiFiNetwork_IsSeenWithin_Seconds = services::CucumberStep(infra::JsonArray("[]"), infra::JsonArray("[]"), "the WiFi network '%s' is seen within %d seconds");
+    services::CucumberStep StepWith3Arguments = services::CucumberStep(infra::JsonArray("[]"), infra::JsonArray("[]"), "the WiFi network '%s' is seen within %d minutes and %d seconds");
 
     services::CucumberWireProtocolParser cucumberWireProtocolParser;
 };
-
-TEST_F(CucumberWireProtocolParserTest, test_contains_arguments)
-{
-    EXPECT_FALSE(this->cucumberWireProtocolParser.ContainsArguments("a regular string"));
-    EXPECT_TRUE(this->cucumberWireProtocolParser.ContainsArguments("wait 9 seconds"));
-    EXPECT_TRUE(this->cucumberWireProtocolParser.ContainsArguments("a WiFi network 'CoCoCo'"));
-}
 
 TEST_F(CucumberWireProtocolParserTest, test_step_contains_arguments)
 {

@@ -31,15 +31,8 @@ namespace services
 
     public:
         void ParseRequest(const infra::ByteRange& inputRange);
-        bool ContainsArguments(const infra::BoundedString& string);
-        MatchResult MatchName(const infra::BoundedString& nameToMatchString);
-        bool Invoke();
-
         void FormatResponse(infra::DataOutputStream::WithErrorPolicy& stream);
-        bool MatchArguments(infra::JsonArray& arguments);
-
-        void SuccessMessage(infra::BoundedString& responseBuffer);
-        void FailureMessage(infra::BoundedString& responseBuffer, infra::BoundedConstString failMessage, infra::BoundedConstString exceptionType);
+        
 
     private:
         StepStorage& stepStorage;
@@ -52,6 +45,25 @@ namespace services
         uint8_t invokeId;
         infra::JsonArray invokeArguments;
         infra::BoundedString::WithStorage<256> invokeArgumentBuffer;
+
+        bool ContainsArguments(const infra::BoundedString& string);
+        MatchResult MatchName(const infra::BoundedString& nameToMatchString);
+        bool Invoke();
+
+        bool MatchArguments(infra::JsonArray& arguments);
+        bool TableFormatError(infra::JsonArrayIterator& iteratorAtTable);
+
+        void SuccessMessage(infra::BoundedString& responseBuffer);
+        void SuccessMessage(uint8_t id, infra::JsonArray& arguments, infra::BoundedString& responseBuffer);
+        void FailureMessage(infra::BoundedString& responseBuffer, infra::BoundedConstString failMessage, infra::BoundedConstString exceptionType);
+
+        bool InputError(infra::JsonArray& input);
+        void ParseStepMatchRequest(infra::JsonArrayIterator& iteratorAtRequestType);
+        void ParseInvokeRequest(infra::JsonArrayIterator& iteratorAtRequestType);
+
+        void FormatStepMatchResponse(infra::BoundedString& responseBuffer);
+        void FormatInvokeResponse(infra::BoundedString& responseBuffer);
+        void FormatSnippetResponse(infra::BoundedString& responseBuffer);
     };
 }
 

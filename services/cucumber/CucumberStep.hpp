@@ -10,14 +10,14 @@
 
 namespace services
 {
-    class Step
-        : public infra::IntrusiveList<Step>::NodeType
+    class CucumberStep
+        : public infra::IntrusiveList<CucumberStep>::NodeType
     {
     public:
-        Step(const infra::BoundedString& stepName);
-        Step(const infra::JsonArray& matchArguments, const infra::JsonArray& tableHeaders, const infra::BoundedString& stepName);
+        CucumberStep(const infra::BoundedString& stepName);
+        CucumberStep(const infra::JsonArray& matchArguments, const infra::JsonArray& tableHeaders, const infra::BoundedString& stepName);
 
-        ~Step() {}
+        ~CucumberStep() {}
 
         uint8_t Id();
         void SetId(uint8_t);
