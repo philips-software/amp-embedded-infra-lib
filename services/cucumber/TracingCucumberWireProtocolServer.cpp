@@ -1,4 +1,4 @@
-#include "services/network/TracingCucumberWireProtocolServer.hpp"
+#include "services/cucumber/TracingCucumberWireProtocolServer.hpp"
 
 namespace services
 {

@@ -4,7 +4,7 @@
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
-#include "services/network/CucumberWireProtocolServer.hpp"
+#include "services/cucumber/CucumberWireProtocolServer.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/network/test_doubles/ConnectionStub.hpp"
 #include "gmock/gmock.h"
@@ -47,15 +47,15 @@ public:
     services::CucumberWireProtocolServer::WithBuffer<512> cucumberServer;
     services::StepStorage stepDataBase;
 
-    services::StepStorage::Step AWiFiNetworkIsAvailable = services::StepStorage::Step(infra::JsonArray("[]"), infra::JsonArray("[\"ssid\", \"key\"]"), "a WiFi network is available");
-    services::StepStorage::Step TheConnectivityNodeConnectsToThatNetwork = services::StepStorage::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "the Connectivity Node connects to that network");
-    services::StepStorage::Step TheConnectivityNodeShouldBeConnected = services::StepStorage::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "the Connectivity Node should be connected");
-    services::StepStorage::Step TheWiFiNetwork_IsSeenWithin_Minutes = services::StepStorage::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "the WiFi network '%s' is seen within %d minutes");
-    services::StepStorage::Step TheWiFiNetwork_IsSeenWithin_MinutesAnd_Seconds = services::StepStorage::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "the WiFi network '%s' is seen within %d minutes and %d seconds");
+    services::Step AWiFiNetworkIsAvailable = services::Step(infra::JsonArray("[]"), infra::JsonArray("[\"ssid\", \"key\"]"), "a WiFi network is available");
+    services::Step TheConnectivityNodeConnectsToThatNetwork = services::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "the Connectivity Node connects to that network");
+    services::Step TheConnectivityNodeShouldBeConnected = services::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "the Connectivity Node should be connected");
+    services::Step TheWiFiNetwork_IsSeenWithin_Minutes = services::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "the WiFi network '%s' is seen within %d minutes");
+    services::Step TheWiFiNetwork_IsSeenWithin_MinutesAnd_Seconds = services::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "the WiFi network '%s' is seen within %d minutes and %d seconds");
 
-    services::StepStorage::Step DuplicateStep1 = services::StepStorage::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "a duplicate feature");
-    services::StepStorage::Step DuplicateStep2 = services::StepStorage::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "a duplicate feature");
-    services::StepStorage::Step StepWithArgumentsAndTable = services::StepStorage::Step(infra::JsonArray("[]"), infra::JsonArray("[\"field\", \"value\"]"), "sentence with '%s' and %d digit");
+    services::Step DuplicateStep1 = services::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "a duplicate feature");
+    services::Step DuplicateStep2 = services::Step(infra::JsonArray("[]"), infra::JsonArray("[]"), "a duplicate feature");
+    services::Step StepWithArgumentsAndTable = services::Step(infra::JsonArray("[]"), infra::JsonArray("[\"field\", \"value\"]"), "sentence with '%s' and %d digit");
 };
 
 TEST_F(CucumberWireProtocolpServerTest, accept_connection)
@@ -201,6 +201,26 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_non_matching_substring
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
+TEST_F(CucumberWireProtocolpServerTest, should_respond_to_non_matching_substring_of_step_request_with_fail)
+{
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+    infra::BoundedString::WithStorage<256> input = "[\"step_matches\",{\"name_to_match\":\"a WiFi network is\"}]";
+    connection.SimulateDataReceived(infra::StringAsByteRange(input));
+    ExecuteAllActions();
+
+    infra::BoundedString::WithStorage<128> nameToMatch = "a WiFi network is";
+
+    EXPECT_EQ(infra::none, this->stepDataBase.MatchStep(nameToMatch));
+
+    infra::StringOutputStream::WithStorage<256> responseStream;
+    responseStream << "[ \"fail\", { \"message\":\"Step not Matched\", \"exception\":\"Exception.Step.NotFound\" } ]\n";
+    std::vector<uint8_t> responseVector(responseStream.Storage().begin(), responseStream.Storage().end());
+    EXPECT_EQ(responseVector, connection.sentData);
+
+    connection.sentData.clear();
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+}
+
 TEST_F(CucumberWireProtocolpServerTest, should_respond_to_long_matching_string_of_step_request_with_success)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
@@ -339,7 +359,7 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_ar
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     infra::StringOutputStream::WithStorage<256> inputStream;
-    inputStream << R"(["invoke",{"id":")" << this->stepDataBase.MatchStep("the WiFi network '%s' is seen within %d minutes")->Id() << R"(","args":["HOMELAN", "10"]}])";
+    inputStream << R"(["invoke",{"id":")" << this->stepDataBase.MatchStep("the WiFi network 'HOMELAN' is seen within 10 minutes")->Id() << R"(","args":["HOMELAN", "10"]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
     ExecuteAllActions();
@@ -430,6 +450,3 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_snippet_text_request_w
     connection.sentData.clear();
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
-
-
-

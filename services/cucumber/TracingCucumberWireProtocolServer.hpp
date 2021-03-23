@@ -1,7 +1,7 @@
 #ifndef SERVICES_TRACING_CUCUMBER_WIRE_PROTOCOL_SERVER_HPP
 #define SERVICES_TRACING_CUCUMBER_WIRE_PROTOCOL_SERVER_HPP
 
-#include "services/network/CucumberWireProtocolServer.hpp"
+#include "services/cucumber/CucumberWireProtocolServer.hpp"
 #include "services/tracer/Tracer.hpp"
 #include "services/tracer/TracingOutputStream.hpp"
 

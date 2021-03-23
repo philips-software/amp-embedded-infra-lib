@@ -16,8 +16,6 @@ ccola_component(network static_library)
         ConnectionSerial.cpp
         ConnectionSerial.hpp
         ConnectionStatus.hpp
-        CucumberWireProtocolServer.cpp
-        CucumberWireProtocolServer.hpp
         Datagram.hpp
         Dns.cpp
         Dns.hpp
@@ -77,8 +75,6 @@ ccola_component(network static_library)
         TracingConnectionFactoryWithNameResolver.hpp
         TracingConnectionMbedTls.cpp
         TracingConnectionMbedTls.hpp
-        TracingCucumberWireProtocolServer.cpp
-        TracingCucumberWireProtocolServer.hpp
         TracingHttpClientImpl.cpp
         TracingHttpClientImpl.hpp
         TracingMqttClientImpl.cpp

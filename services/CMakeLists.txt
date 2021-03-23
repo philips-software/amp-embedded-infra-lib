@@ -2,6 +2,7 @@ ccola_package(services)
 
     ccola_subdirectories(
         tracer
+        cucumber
         util
         network
         network_win
