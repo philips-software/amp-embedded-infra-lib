@@ -7,6 +7,8 @@
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/IntrusiveList.hpp"
 #include "infra/util/IntrusiveForwardList.hpp"
+#include "services/tracer/Tracer.hpp"
+#include "services/tracer/TracingOutputStream.hpp"
 
 namespace services
 {
@@ -28,11 +30,15 @@ namespace services
         infra::BoundedString& StepName();
         void StepName(infra::BoundedString stepName);
         infra::BoundedString& MatchArgumentsBuffer();
-        void Invoke(infra::JsonArray& arguments);
+
+        static uint8_t NrSteps();
+        static void SetNrSteps(uint8_t nrSteps);
 
         bool ContainsArguments();
         uint8_t NrArguments();
         infra::JsonArray ParseArguments(const infra::BoundedString& nameToMatch, infra::BoundedString& arrayBuffer);
+
+        virtual void Invoke(infra::JsonArray& arguments) = 0;
 
     private:
         uint8_t id;

@@ -112,7 +112,7 @@ namespace services
 
     CucumberWireProtocolParser::MatchResult CucumberWireProtocolParser::MatchName(const infra::BoundedString& nameToMatchString)
     {
-        if (stepStorage.MatchStep(nameToMatchString) != infra::none)
+        if (stepStorage.MatchStep(nameToMatchString) != nullptr)
             return MatchResult::success;
         else if (stepStorage.nrStepMatches >= 2)
             return MatchResult::duplicate;
@@ -135,7 +135,7 @@ namespace services
 
     bool CucumberWireProtocolParser::MatchArguments(infra::JsonArray& arguments)
     {
-        if (this->stepStorage.MatchStep(invokeId) != infra::none)
+        if (this->stepStorage.MatchStep(invokeId) != nullptr)
         {
             if (arguments.begin() == arguments.end() && (stepStorage.MatchStep(invokeId)->ContainsArguments() == false) && (stepStorage.MatchStep(invokeId)->TableHeaders().begin() == stepStorage.MatchStep(invokeId)->TableHeaders().end()))
                 return true;

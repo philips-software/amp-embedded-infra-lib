@@ -12,9 +12,11 @@ namespace services
     public:
         StepStorage();
 
+        ~StepStorage();
+
     public:
-        infra::Optional<CucumberStep> MatchStep(uint8_t id);
-        infra::Optional<CucumberStep> MatchStep(const infra::BoundedString& nameToMatch);
+        CucumberStep* MatchStep(uint8_t id);
+        CucumberStep* MatchStep(const infra::BoundedString& nameToMatch);
         void AddStep(const CucumberStep& step);
         bool CompareStepName(CucumberStep& step, const infra::BoundedString& stepName);
 

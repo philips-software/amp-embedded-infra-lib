@@ -4,6 +4,11 @@ namespace services
 {
     StepStorage::StepStorage() : nrStepMatches(0) {}
 
+    StepStorage::~StepStorage()
+    {
+        services::CucumberStep::SetNrSteps(0);
+    }
+
     bool StepStorage::CompareStepName(CucumberStep& step, const infra::BoundedString& nameToMatch)
    {
         uint8_t count = 0;
@@ -34,35 +39,32 @@ namespace services
             return false;
     }
 
-    infra::Optional<CucumberStep> StepStorage::MatchStep(const infra::BoundedString& nameToMatch)
+    CucumberStep* StepStorage::MatchStep(const infra::BoundedString& nameToMatch)
     {
         nrStepMatches = 0;
-        infra::Optional<CucumberStep> returnStep;
+        CucumberStep *returnStep = nullptr;
         for (auto& step : stepList)
-        {
             if (CompareStepName(step, nameToMatch))
             {
-                returnStep.Emplace(step);
+                returnStep = &step;
                 nrStepMatches++;
                 if (step.ContainsArguments())
                     step.SetMatchArguments(step.ParseArguments(nameToMatch, step.MatchArgumentsBuffer()));
             }
-        }
         if (nrStepMatches >= 2 || nrStepMatches == 0)
-            return infra::none;
+            return nullptr;
         else
             return returnStep;
     }
 
-    infra::Optional<CucumberStep> StepStorage::MatchStep(uint8_t id)
+    CucumberStep* StepStorage::MatchStep(uint8_t id)
     {
         for (auto& step : stepList)
             if (step.Id() == id)
             {
-                infra::Optional<CucumberStep> tempStep(infra::inPlace, step);
-                return tempStep;
+                return &step;
             }
-        return infra::none;
+        return nullptr;
     }
 
     void StepStorage::AddStep(const CucumberStep& step)

@@ -49,6 +49,16 @@ namespace services
         return matchArgumentsBuffer;
     }
 
+    uint8_t CucumberStep::NrSteps()
+    {
+        return nrSteps;
+    }
+
+    void CucumberStep::SetNrSteps(uint8_t nrOfSteps)
+    {
+        nrSteps = nrOfSteps;
+    }
+
     bool CucumberStep::ContainsArguments()
     {
         if (StepName().find("\'%s\'") != infra::BoundedString::npos || StepName().find("%d") != infra::BoundedString::npos)
@@ -110,11 +120,6 @@ namespace services
             }
         }
         return infra::JsonArray(arrayBuffer);
-    }
-
-    void CucumberStep::Invoke(infra::JsonArray& arguments)
-    {
-        
     }
 
     CucumberStep::CucumberStep(const infra::BoundedString& stepName)
