@@ -2,14 +2,14 @@
 
 namespace services
 {
-    StepStorage::StepStorage() : nrStepMatches(0) {}
+    CucumberStepStorage::CucumberStepStorage() : nrStepMatches(0) {}
 
-    StepStorage::~StepStorage()
+    CucumberStepStorage::~CucumberStepStorage()
     {
         services::CucumberStep::SetNrSteps(0);
     }
 
-    bool StepStorage::CompareStepName(CucumberStep& step, const infra::BoundedString& nameToMatch)
+    bool CucumberStepStorage::CompareStepName(CucumberStep& step, const infra::BoundedString& nameToMatch)
    {
         uint8_t count = 0;
         uint8_t sizeOffset = 0;
@@ -39,7 +39,7 @@ namespace services
             return false;
     }
 
-    CucumberStep* StepStorage::MatchStep(const infra::BoundedString& nameToMatch)
+    CucumberStep* CucumberStepStorage::MatchStep(const infra::BoundedString& nameToMatch)
     {
         nrStepMatches = 0;
         CucumberStep *returnStep = nullptr;
@@ -57,7 +57,7 @@ namespace services
             return returnStep;
     }
 
-    CucumberStep* StepStorage::MatchStep(uint8_t id)
+    CucumberStep* CucumberStepStorage::MatchStep(uint8_t id)
     {
         for (auto& step : stepList)
             if (step.Id() == id)
@@ -67,8 +67,18 @@ namespace services
         return nullptr;
     }
 
-    void StepStorage::AddStep(const CucumberStep& step)
+    void CucumberStepStorage::AddStep(const CucumberStep& step)
     {
         this->stepList.push_front(step);
+    }
+
+    void CucumberStepStorage::DeleteStep(const CucumberStep& step)
+    {
+        stepList.erase(step);
+    }
+
+    void CucumberStepStorage::ClearStorage()
+    {
+        stepList.clear();
     }
 }

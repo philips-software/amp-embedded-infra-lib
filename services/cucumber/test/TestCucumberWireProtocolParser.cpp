@@ -14,16 +14,19 @@ class CucumberWireProtocolParserTest
 {
 public:
     CucumberWireProtocolParserTest()
-        : cucumberWireProtocolParser(stepDataBase)
+        : cucumberWireProtocolParser(services::CucumberStepStorage::Instance())
     {
-        this->stepDataBase.AddStep(aWiFiNetworkIsAvailable);
-        this->stepDataBase.AddStep(theConnectivityNodeConnectsToThatNetwork);
-        this->stepDataBase.AddStep(theConnectivityNodeShouldBeConnected);
-        this->stepDataBase.AddStep(theWiFiNetwork_IsSeenWithin_Seconds);
-        this->stepDataBase.AddStep(stepWith3Arguments);
+        services::CucumberStepStorage::Instance().AddStep(aWiFiNetworkIsAvailable);
+        services::CucumberStepStorage::Instance().AddStep(theConnectivityNodeConnectsToThatNetwork);
+        services::CucumberStepStorage::Instance().AddStep(theConnectivityNodeShouldBeConnected);
+        services::CucumberStepStorage::Instance().AddStep(theWiFiNetwork_IsSeenWithin_Seconds);
+        services::CucumberStepStorage::Instance().AddStep(stepWith3Arguments);
     }
 
-    services::StepStorage stepDataBase;
+    ~CucumberWireProtocolParserTest()
+    {
+        services::CucumberStepStorage::Instance().ClearStorage();
+    }
 
     class AWiFiNetworkIsAvailable : public services::CucumberStep
     {
@@ -145,16 +148,16 @@ TEST_F(CucumberWireProtocolParserTest, test_matching_step_name)
 {
     
     infra::BoundedString::WithStorage<128> input = "a WiFi network is available";
-    EXPECT_TRUE(stepDataBase.CompareStepName(aWiFiNetworkIsAvailable, input));
-    EXPECT_FALSE(stepDataBase.CompareStepName(stepWith3Arguments, input));
+    EXPECT_TRUE(services::CucumberStepStorage::Instance().CompareStepName(aWiFiNetworkIsAvailable, input));
+    EXPECT_FALSE(services::CucumberStepStorage::Instance().CompareStepName(stepWith3Arguments, input));
 
     input = "the WiFi network 'CoCoCo' is seen within 10 minutes and 30 seconds";
-    EXPECT_FALSE(stepDataBase.CompareStepName(aWiFiNetworkIsAvailable, input));
-    EXPECT_TRUE(stepDataBase.CompareStepName(stepWith3Arguments, input));
+    EXPECT_FALSE(services::CucumberStepStorage::Instance().CompareStepName(aWiFiNetworkIsAvailable, input));
+    EXPECT_TRUE(services::CucumberStepStorage::Instance().CompareStepName(stepWith3Arguments, input));
 
     input = "the WiFi network 'CoCoCo' is seen within '10' minutes and '30' seconds";
-    EXPECT_FALSE(stepDataBase.CompareStepName(aWiFiNetworkIsAvailable, input));
-    EXPECT_FALSE(stepDataBase.CompareStepName(stepWith3Arguments, input));
+    EXPECT_FALSE(services::CucumberStepStorage::Instance().CompareStepName(aWiFiNetworkIsAvailable, input));
+    EXPECT_FALSE(services::CucumberStepStorage::Instance().CompareStepName(stepWith3Arguments, input));
     
 }
 

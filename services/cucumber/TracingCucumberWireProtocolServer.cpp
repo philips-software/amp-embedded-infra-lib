@@ -2,7 +2,7 @@
 
 namespace services
 {
-	TracingCucumberWireProtocolConnectionObserver::TracingCucumberWireProtocolConnectionObserver(const infra::ByteRange receiveBuffer, StepStorage& stepNames, services::Tracer& tracer)
+	TracingCucumberWireProtocolConnectionObserver::TracingCucumberWireProtocolConnectionObserver(const infra::ByteRange receiveBuffer, CucumberStepStorage& stepNames, services::Tracer& tracer)
 		: CucumberWireProtocolConnectionObserver::CucumberWireProtocolConnectionObserver(receiveBuffer, stepNames)
 		, tracer(tracer)
 		, receiveBuffer(receiveBuffer)
@@ -38,7 +38,7 @@ namespace services
         return tracingWriter;
     }
 
-    TracingCucumberWireProtocolServer::TracingCucumberWireProtocolServer(const infra::ByteRange receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port, StepStorage& stepStorage, services::Tracer& tracer)
+    TracingCucumberWireProtocolServer::TracingCucumberWireProtocolServer(const infra::ByteRange receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port, CucumberStepStorage& stepStorage, services::Tracer& tracer)
         : SingleConnectionListener(connectionFactory, port, { connectionCreator })
 		, receiveBuffer(receiveBuffer)
         , tracer(tracer)

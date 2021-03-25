@@ -2,7 +2,7 @@
 
 namespace services
 {
-    CucumberWireProtocolParser::CucumberWireProtocolParser(StepStorage& stepStorage)
+    CucumberWireProtocolParser::CucumberWireProtocolParser(CucumberStepStorage& stepStorage)
         : invokeArguments(infra::JsonArray("[]"))
         , stepStorage(stepStorage)
     {}

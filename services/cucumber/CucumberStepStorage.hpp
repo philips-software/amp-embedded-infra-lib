@@ -4,20 +4,24 @@
 #include "services/cucumber/CucumberStep.hpp"
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/BoundedString.hpp"
+#include "infra/util/InterfaceConnector.hpp"
 
 namespace services
 {
-    class StepStorage
+    class CucumberStepStorage
+        : public infra::InterfaceConnector<CucumberStepStorage>
     {
     public:
-        StepStorage();
+        CucumberStepStorage();
 
-        ~StepStorage();
+        ~CucumberStepStorage();
 
     public:
         CucumberStep* MatchStep(uint8_t id);
         CucumberStep* MatchStep(const infra::BoundedString& nameToMatch);
         void AddStep(const CucumberStep& step);
+        void DeleteStep(const CucumberStep& step);
+        void ClearStorage();
         bool CompareStepName(CucumberStep& step, const infra::BoundedString& stepName);
 
         uint8_t nrStepMatches;

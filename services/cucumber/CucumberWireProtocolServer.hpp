@@ -21,7 +21,7 @@ namespace services
         : public services::ConnectionObserver
     {
     public:
-        CucumberWireProtocolConnectionObserver(const infra::ByteRange receiveBuffer, StepStorage& stepStorage);
+        CucumberWireProtocolConnectionObserver(const infra::ByteRange receiveBuffer, CucumberStepStorage& stepStorage);
 
         // Implementation of ConnectionObserver
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
@@ -42,10 +42,10 @@ namespace services
         template<size_t BufferSize>
         using WithBuffer = infra::WithStorage<CucumberWireProtocolServer, std::array<uint8_t, BufferSize>>;
 
-        CucumberWireProtocolServer(const infra::ByteRange receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port, StepStorage& stepStorage);
+        CucumberWireProtocolServer(const infra::ByteRange receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port, CucumberStepStorage& stepStorage);
 
     private:
-        StepStorage& stepStorage;
+        CucumberStepStorage& stepStorage;
         const infra::ByteRange receiveBuffer;
         infra::Creator<services::ConnectionObserver, CucumberWireProtocolConnectionObserver, void(services::IPAddress address)> connectionCreator;
     };

@@ -10,7 +10,7 @@ namespace services
     class CucumberWireProtocolParser
     {
     public:
-        CucumberWireProtocolParser(StepStorage& stepStorage);
+        CucumberWireProtocolParser(CucumberStepStorage& stepStorage);
 
         enum RequestType
         {
@@ -35,7 +35,7 @@ namespace services
         
 
     private:
-        StepStorage& stepStorage;
+        CucumberStepStorage& stepStorage;
 
         RequestType requestType;
 
