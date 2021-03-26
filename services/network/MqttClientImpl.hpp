@@ -182,9 +182,10 @@ namespace services
 
         private:
             void HandleNotificationData(infra::DataInputStream& inputStream);
-            void HandlePubAck(infra::DataInputStream::WithErrorPolicy stream);
-            void HandleSubAck(infra::DataInputStream::WithErrorPolicy stream, infra::SharedPtr<infra::StreamReader>& reader);
+            void HandlePubAck(std::size_t packetLength, infra::DataInputStream::WithErrorPolicy stream);
+            void HandleSubAck(std::size_t packetLength, infra::DataInputStream::WithErrorPolicy stream, infra::SharedPtr<infra::StreamReader>& reader);
             void HandlePublish(size_t packetLength, infra::DataInputStream::WithErrorPolicy stream);
+            void PopFrontOperation();
             void ProcessSendOperations();
             void StartPing();
             void SendPing();
@@ -199,45 +200,66 @@ namespace services
             public:
                 virtual ~OperationBase() = default;
 
-                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::StreamWriter& writer, MqttClientObserver& observer) = 0;
+                virtual void SendStreamAvailable(infra::StreamWriter& writer) = 0;
                 virtual std::size_t MessageSize(const MqttClientObserver& message) = 0;
+                virtual void HandlePubAck() {}
+                virtual void HandleSubAck() {}
             };
 
             class OperationPublish
                 : public OperationBase
             {
             public:
-                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::StreamWriter& writer, MqttClientObserver& observer) override;
+                OperationPublish(StateConnected& connectedState, MqttClientObserver& observer);
+
+                virtual void SendStreamAvailable(infra::StreamWriter& writer) override;
                 virtual std::size_t MessageSize(const MqttClientObserver& message) override;
+                virtual void HandlePubAck() override;
+
+            private:
+                StateConnected& connectedState;
+                MqttClientObserver& observer;
             };
 
             class OperationSubscribe
                 : public OperationBase
             {
             public:
-                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::StreamWriter& writer, MqttClientObserver& observer) override;
+                OperationSubscribe(StateConnected& connectedState, MqttClientObserver& observer);
+
+                virtual void SendStreamAvailable(infra::StreamWriter& writer) override;
                 virtual std::size_t MessageSize(const MqttClientObserver& message) override;
+                virtual void HandleSubAck() override;
+
+            private:
+                StateConnected& connectedState;
+                MqttClientObserver& observer;
             };
 
             class OperationPubAck
                 : public OperationBase
             {
             public:
-                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::StreamWriter& writer, MqttClientObserver& observer) override;
+                OperationPubAck(StateConnected& connectedState);
+
+                virtual void SendStreamAvailable(infra::StreamWriter& writer) override;
                 virtual std::size_t MessageSize(const MqttClientObserver& message) override;
+
+            private:
+                StateConnected& connectedState;
             };
 
             class OperationPing
                 : public OperationBase
             {
             public:
-                OperationPing(StateConnected& state);
+                OperationPing(StateConnected& connectedState);
 
-                virtual void SendStreamAvailable(MqttClientImpl::StateConnected& connectedState, infra::StreamWriter& writer, MqttClientObserver& observer) override;
+                virtual void SendStreamAvailable(infra::StreamWriter& writer) override;
                 virtual std::size_t MessageSize(const MqttClientObserver& message) override;
 
             private:
-                StateConnected& state;
+                StateConnected& connectedState;
             };
 
         private:
