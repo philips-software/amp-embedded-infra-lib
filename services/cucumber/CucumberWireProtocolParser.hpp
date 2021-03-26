@@ -46,12 +46,14 @@ namespace services
         infra::JsonArray invokeArguments;
         infra::BoundedString::WithStorage<256> invokeArgumentBuffer;
 
+        services::CucumberStep* stepmatchStep;
+        services::CucumberStep* invokeStep;
+
         bool ContainsArguments(const infra::BoundedString& string);
         MatchResult MatchName(const infra::BoundedString& nameToMatchString);
         bool Invoke();
 
-        bool MatchArguments(infra::JsonArray& arguments);
-        bool TableFormatError(infra::JsonArrayIterator& iteratorAtTable);
+        bool MatchStringArguments(infra::JsonArray& arguments);
 
         void SuccessMessage(infra::BoundedString& responseBuffer);
         void SuccessMessage(uint8_t id, infra::JsonArray& arguments, infra::BoundedString& responseBuffer);

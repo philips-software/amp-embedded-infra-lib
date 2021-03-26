@@ -11,6 +11,7 @@
 #include "gmock/gmock.h"
 #include "services/tracer/Tracer.hpp"
 #include "infra/stream/IoOutputStream.hpp"
+#include "infra/syntax/Json.hpp"
 
 #include "services\cucumber\CucumberStepMacro.hpp"
 
@@ -68,9 +69,9 @@ public:
         {}
 
     public:
-        void Invoke(infra::JsonArray& arguments)
+        bool Invoke(infra::JsonArray& arguments)
         {
-
+            return true;
         }
     };
     
@@ -86,9 +87,9 @@ public:
         {}
 
     public:
-        void Invoke(infra::JsonArray& arguments)
+        bool Invoke(infra::JsonArray& arguments)
         {
-
+            return true;
         }
     };
 
@@ -104,9 +105,9 @@ public:
         {}
 
     public:
-        void Invoke(infra::JsonArray& arguments)
+        bool Invoke(infra::JsonArray& arguments)
         {
-
+            return true;
         }
     };
 
@@ -122,9 +123,9 @@ public:
         {}
 
     public:
-        void Invoke(infra::JsonArray& arguments)
+        bool Invoke(infra::JsonArray& arguments)
         {
-
+            return true;
         }
     };
 
@@ -140,9 +141,9 @@ public:
         {}
 
     public:
-        void Invoke(infra::JsonArray& arguments)
+        bool Invoke(infra::JsonArray& arguments)
         {
-
+            return true;
         }
     };
 
@@ -158,9 +159,9 @@ public:
         {}
 
     public:
-        void Invoke(infra::JsonArray& arguments)
+        bool Invoke(infra::JsonArray& arguments)
         {
-
+            return true;
         }
     };
 
@@ -176,9 +177,9 @@ public:
         {}
 
     public:
-        void Invoke(infra::JsonArray& arguments)
+        bool Invoke(infra::JsonArray& arguments)
         {
-
+            return true;
         }
     };
 
@@ -194,9 +195,9 @@ public:
         {}
 
     public:
-        void Invoke(infra::JsonArray& arguments)
+        bool Invoke(infra::JsonArray& arguments)
         {
-
+            return true;
         }
     };
 
@@ -223,7 +224,7 @@ TEST_F(CucumberWireProtocolpServerTest, accept_ipv6_connection)
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(CucumberWireProtocolpServerTest, invoke_step)
+TEST_F(CucumberWireProtocolpServerTest, invoke_mock_step)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     infra::StringOutputStream::WithStorage<256> inputStream;
@@ -316,13 +317,14 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_step_match_request_wit
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
-    infra::ConstByteRange data = infra::MakeStringByteRange("[\"step_matches\",{\"name_to_match\":\"a WiFi network is available\"}]");
+    GIVEN("a step", { return true; });
+
+    infra::ConstByteRange data = infra::MakeStringByteRange("[\"step_matches\",{\"name_to_match\":\"a step\"}]");
     connection.SimulateDataReceived(data);
     ExecuteAllActions();
     infra::StringOutputStream::WithStorage<256> inputStream;
-    EXPECT_EQ(this->aWiFiNetworkIsAvailable.Id(), services::CucumberStepStorage::Instance().MatchStep("a WiFi network is available")->Id());
 
-    inputStream << "[ \"success\", [ { \"id\":\"" << services::CucumberStepStorage::Instance().MatchStep("a WiFi network is available")->Id() << "\", \"args\":[] } ] ]\n";
+    inputStream << "[ \"success\", [ { \"id\":\"" << services::CucumberStepStorage::Instance().MatchStep("a step")->Id() << "\", \"args\":[] } ] ]\n";
     std::vector<uint8_t> responseVector(inputStream.Storage().begin(), inputStream.Storage().end());
     EXPECT_EQ(responseVector, connection.sentData);
 
@@ -412,12 +414,20 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_ex
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
+    static infra::IoOutputStream ioOutputStream;
+    static services::Tracer tracer(ioOutputStream);
+
+    GIVEN("the Node connects to that network", {
+        tracer.Trace() << *GetTableArgument<infra::JsonString>("invalid", 1) << "\n";
+        return false;
+    });
+
     infra::StringOutputStream::WithStorage<256> inputStream;
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the Connectivity Node connects to that network")->Id() << R"(","args":[[["invalid","arguments"],["CoCoCo","password"],["WLAN","1234"]]]}])";
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network")->Id() << R"(","args":[[["invalid","arguments"],["CoCoCo","password"],["WLAN","1234"]]]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
     ExecuteAllActions();
-    std::string response = "[ \"fail\", { \"message\":\"Invalid Arguments\", \"exception\":\"Exception.Arguments.Invalid\" } ]\n";
+    std::string response = "[ \"fail\", { \"message\":\"Invoke Failed\", \"exception\":\"Exception.Invoke.Failed\" } ]\n";
     std::vector<uint8_t> responseVector(response.begin(), response.end());
     EXPECT_EQ(responseVector, connection.sentData);
 
@@ -429,12 +439,16 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_in
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
+    GIVEN("a network is available", {
+        return false;
+    });
+
     infra::StringOutputStream::WithStorage<256> inputStream;
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("a WiFi network is available")->Id() << R"(","args":[[["invalid","header"],["CoCoCo","password"],["WLAN","1234"]]]}])";
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("a network is available")->Id() << R"(","args":[[["invalid","header"],["CoCoCo","password"],["WLAN","1234"]]]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
     ExecuteAllActions();
-    std::string response = "[ \"fail\", { \"message\":\"Invalid Arguments\", \"exception\":\"Exception.Arguments.Invalid\" } ]\n";
+    std::string response = "[ \"fail\", { \"message\":\"Invoke Failed\", \"exception\":\"Exception.Invoke.Failed\" } ]\n";
     std::vector<uint8_t> responseVector(response.begin(), response.end());
     EXPECT_EQ(responseVector, connection.sentData);
 
@@ -442,16 +456,23 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_in
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_invalid_argument_table_with_fail_1)
+TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_nonexistent_argument_table_with_fail_1)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
+    GIVEN("a network is available", {
+        if (GetTableArgument<infra::JsonString>("key", 1) == nullptr)
+            return false;
+        else
+            return true;
+    })
+
     infra::StringOutputStream::WithStorage<256> inputStream;
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("a WiFi network is available")->Id() << R"(","args":[[["ssid"],["CoCoCo"],["WLAN"]]]}])";
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("a network is available")->Id() << R"(","args":[[["ssid"],["CoCoCo"],["WLAN"]]]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
     ExecuteAllActions();
-    std::string response = "[ \"fail\", { \"message\":\"Invalid Arguments\", \"exception\":\"Exception.Arguments.Invalid\" } ]\n";
+    std::string response = "[ \"fail\", { \"message\":\"Invoke Failed\", \"exception\":\"Exception.Invoke.Failed\" } ]\n";
     std::vector<uint8_t> responseVector(response.begin(), response.end());
     EXPECT_EQ(responseVector, connection.sentData);
 
@@ -463,10 +484,19 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_in
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
-    infra::ConstByteRange data = infra::MakeStringByteRange(R"(["invoke",{"id":"1","args":[[["invalid","arguments"],["CoCoCo","password","password2"],["WLAN","1234"]]]}])");
-    connection.SimulateDataReceived(data);
+    GIVEN("the Node connects to that network", {
+        if (GetTableArgument<infra::JsonString>("field", 1) == nullptr)
+            return false;
+        else
+            return true;
+    })
+
+        infra::StringOutputStream::WithStorage<256> inputStream;
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network")->Id() << R"(","args":[[["invalid","arguments"],["CoCoCo","password"],["WLAN","1234"]]]}])";
+    connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
+
     ExecuteAllActions();
-    std::string response = "[ \"fail\", { \"message\":\"Invalid Arguments\", \"exception\":\"Exception.Arguments.Invalid\" } ]\n";
+    std::string response = "[ \"fail\", { \"message\":\"Invoke Failed\", \"exception\":\"Exception.Invoke.Failed\" } ]\n";
     std::vector<uint8_t> responseVector(response.begin(), response.end());
     EXPECT_EQ(responseVector, connection.sentData);
 
@@ -478,27 +508,19 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_in
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
-    infra::ConstByteRange data = infra::MakeStringByteRange(R"(["invoke",{"id":"1","args":[[["invalid","arguments"],["CoCoCo"],["WLAN","1234"]]]}])");
-    connection.SimulateDataReceived(data);
-    ExecuteAllActions();
-    std::string response = "[ \"fail\", { \"message\":\"Invalid Arguments\", \"exception\":\"Exception.Arguments.Invalid\" } ]\n";
-    std::vector<uint8_t> responseVector(response.begin(), response.end());
-    EXPECT_EQ(responseVector, connection.sentData);
-
-    connection.sentData.clear();
-    EXPECT_CALL(connection, AbortAndDestroyMock());
-}
-
-TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_nonexistent_arguments_with_fail)
-{
-    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+    GIVEN("the Node connects to that network", {
+        if (GetTableArgument<infra::JsonString>("key", 1) == nullptr)
+            return false;
+        else
+            return true;
+    })
 
     infra::StringOutputStream::WithStorage<256> inputStream;
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the Connectivity Node connects to that network")->Id() << R"(","args":["argument1", "argument2"]}])";
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network")->Id() << R"(","args":[[["invalid","arguments"],["CoCoCo","password"],["WLAN","1234"]]]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
     ExecuteAllActions();
-    std::string response = "[ \"fail\", { \"message\":\"Invalid Arguments\", \"exception\":\"Exception.Arguments.Invalid\" } ]\n";
+    std::string response = "[ \"fail\", { \"message\":\"Invoke Failed\", \"exception\":\"Exception.Invoke.Failed\" } ]\n";
     std::vector<uint8_t> responseVector(response.begin(), response.end());
     EXPECT_EQ(responseVector, connection.sentData);
 
@@ -509,8 +531,13 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_no
 TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_success)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    GIVEN("the Node connects to that network", {
+        return true;
+    })
+
     infra::StringOutputStream::WithStorage<128> inputStream;
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the Connectivity Node connects to that network")->Id() << R"(","args":[]}])";
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network")->Id() << R"(","args":[]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
     ExecuteAllActions();
@@ -625,6 +652,7 @@ TEST_F(CucumberWireProtocolpServerTest, test_macro)
     GIVEN("when macro is called", 
     {
         tracer.Trace() << "Macro's invoke is called\n";
+        return true;
     });
 
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
@@ -635,5 +663,29 @@ TEST_F(CucumberWireProtocolpServerTest, test_macro)
     ExecuteAllActions();
     connection.sentData.clear();
     EXPECT_CALL(connection, AbortAndDestroyMock());
-    
+}
+
+TEST_F(CucumberWireProtocolpServerTest, test_2_macros)
+{
+    static infra::IoOutputStream ioOutputStream;
+    static services::Tracer tracer(ioOutputStream);
+    GIVEN("when macro is called",
+    {
+        tracer.Trace() << "Macro's invoke is called\n";
+    return true;
+    });
+
+    GIVEN("when another macro is called", {
+        tracer.Trace() << "Another Macro's invoke is called\n";
+    return true;
+    });
+
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+    infra::StringOutputStream::WithStorage<256> inputStream;
+
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("when macro is called")->Id() << R"(","args":[]}])";
+    connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
+    ExecuteAllActions();
+    connection.sentData.clear();
+    EXPECT_CALL(connection, AbortAndDestroyMock());
 }

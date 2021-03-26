@@ -112,7 +112,8 @@ namespace services
 
     CucumberWireProtocolParser::MatchResult CucumberWireProtocolParser::MatchName(const infra::BoundedString& nameToMatchString)
     {
-        if (stepStorage.MatchStep(nameToMatchString) != nullptr)
+        stepmatchStep = stepStorage.MatchStep(nameToMatchString);
+        if (stepmatchStep != nullptr)
             return MatchResult::success;
         else if (stepStorage.nrStepMatches >= 2)
             return MatchResult::duplicate;
@@ -122,22 +123,17 @@ namespace services
 
     bool CucumberWireProtocolParser::Invoke()
     {
-        if (!MatchArguments(invokeArguments))
-        {
+        if (!MatchStringArguments(invokeArguments))
             return false;
-        }
         else
-        {
-            stepStorage.MatchStep(invokeId)->Invoke(invokeArguments);
-            return true;
-        }
+            return invokeStep->Invoke(invokeArguments);
     }
 
-    bool CucumberWireProtocolParser::MatchArguments(infra::JsonArray& arguments)
+    bool CucumberWireProtocolParser::MatchStringArguments(infra::JsonArray& arguments)
     {
-        if (this->stepStorage.MatchStep(invokeId) != nullptr)
+        if (invokeStep != nullptr)
         {
-            if (arguments.begin() == arguments.end() && (stepStorage.MatchStep(invokeId)->ContainsArguments() == false) && (stepStorage.MatchStep(invokeId)->TableHeaders().begin() == stepStorage.MatchStep(invokeId)->TableHeaders().end()))
+            if (arguments.begin() == arguments.end() && (invokeStep->ContainsStringArguments() == false))
                 return true;
 
             infra::JsonArrayIterator argumentIterator(arguments.begin());
@@ -148,44 +144,9 @@ namespace services
                 validStringCount++;
                 argumentIterator++;
             }
-            if (stepStorage.MatchStep(invokeId)->NrArguments() != validStringCount)
-                return false;
-            if ((argumentIterator == arguments.end() && stepStorage.MatchStep(invokeId)->TableHeaders() != infra::JsonArray("[]")) || (argumentIterator != arguments.end() && stepStorage.MatchStep(invokeId)->TableHeaders() == infra::JsonArray("[]")))
-                return false;
-            if (argumentIterator == arguments.end() && stepStorage.MatchStep(invokeId)->TableHeaders() == infra::JsonArray("[]"))
-                return true;
-
-            if (TableFormatError(argumentIterator))
+            if (invokeStep->NrArguments() != validStringCount)
                 return false;
             return true;
-        }
-        return false;
-    }
-
-    bool CucumberWireProtocolParser::TableFormatError(infra::JsonArrayIterator& iteratorAtTable)
-    {
-        uint8_t rowCount = 0;
-        uint8_t headerCollumns = 0;
-        infra::JsonArrayIterator rowIterator(iteratorAtTable->Get<infra::JsonArray>().begin());
-        while (rowIterator != iteratorAtTable->Get<infra::JsonArray>().end())
-        {
-            uint8_t collumnCount = 0;
-            if (rowCount == 0)
-            {
-                for (auto string : JsonStringArray(stepStorage.MatchStep(invokeId)->TableHeaders()))
-                    headerCollumns++;
-                if (rowIterator->Get<infra::JsonArray>() != stepStorage.MatchStep(invokeId)->TableHeaders())
-                    return true;
-            }
-            else
-            {
-                for (auto string : JsonStringArray(rowIterator->Get<infra::JsonArray>()))
-                    collumnCount++;
-                if (collumnCount != headerCollumns)
-                    return true;
-            }
-            rowCount++;
-            rowIterator++;
         }
         return false;
     }
@@ -227,12 +188,8 @@ namespace services
         switch (matchResult)
         {
         case success:
-        {
-            infra::BoundedString::WithStorage<256> nameToMatchString;
-            nameToMatch.GetString("name_to_match").ToString(nameToMatchString);
-            SuccessMessage(stepStorage.MatchStep(nameToMatchString)->Id(), stepStorage.MatchStep(nameToMatchString)->MatchArguments(), responseBuffer);
-        }
-        break;
+            SuccessMessage(stepmatchStep->Id(), stepmatchStep->MatchArguments(), responseBuffer);
+            break;
         case fail:
             FailureMessage(responseBuffer, "Step not Matched", "Exception.Step.NotFound");
             break;
@@ -246,10 +203,11 @@ namespace services
 
     void CucumberWireProtocolParser::FormatInvokeResponse(infra::BoundedString& responseBuffer)
     {
-        if (Invoke())
+        invokeStep = stepStorage.MatchStep(invokeId);
+        if (Invoke() && invokeStep != nullptr)
             SuccessMessage(responseBuffer);
         else
-            FailureMessage(responseBuffer, "Invalid Arguments", "Exception.Arguments.Invalid");
+            FailureMessage(responseBuffer, "Invoke Failed", "Exception.Invoke.Failed");
     }
 
     void CucumberWireProtocolParser::FormatSnippetResponse(infra::BoundedString& responseBuffer)

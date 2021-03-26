@@ -48,7 +48,7 @@ namespace services
             {
                 returnStep = &step;
                 nrStepMatches++;
-                if (step.ContainsArguments())
+                if (step.ContainsStringArguments())
                     step.SetMatchArguments(step.ParseArguments(nameToMatch, step.MatchArgumentsBuffer()));
             }
         if (nrStepMatches >= 2 || nrStepMatches == 0)

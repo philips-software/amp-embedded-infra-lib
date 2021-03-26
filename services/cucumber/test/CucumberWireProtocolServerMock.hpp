@@ -20,7 +20,7 @@ namespace services
             : CucumberStep("Mock Step")
         {}
 
-        MOCK_METHOD1(Invoke, void(infra::JsonArray& arguments));
+        MOCK_METHOD1(Invoke, bool(infra::JsonArray& arguments));
     };
 
 }

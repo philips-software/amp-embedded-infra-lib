@@ -5,10 +5,11 @@
 #include "services\cucumber\CucumberStepStorage.hpp"
 #include "infra/util/BoundedVector.hpp"
 
-#define TOKENIZE(x, y) x ## y 
+#define CONCAT2(x, y) x ## y 
+#define CONCAT(x, y) CONCAT2(x, y)
 
-#define CLASSNAME TOKENIZE(Step_, __LINE__)
-#define VARNAME TOKENIZE(step_, __LINE__)
+#define CLASSNAME CONCAT(Step_, __LINE__)
+#define VARNAME CONCAT(step_, __LINE__)
 
 #define GIVEN(NAME, FUNC) DEFINESTEP(NAME, FUNC)
 #define WHEN(NAME, FUNC) DEFINESTEP(NAME, FUNC)
@@ -23,12 +24,13 @@
         CLASSNAME()                                                                                                                                \
             : services::CucumberStep(NAME)                                                                                                         \
         {                                                                                                                                          \
-            services::CucumberStepStorage::Instance().AddStep(*this);                                                                               \
+            services::CucumberStepStorage::Instance().AddStep(*this);                                                                              \
         }                                                                                                                                          \
                                                                                                                                                    \
     public:                                                                                                                                        \
-        void Invoke(infra::JsonArray& arguments)                                                                                                   \
+        bool Invoke(infra::JsonArray& arguments)                                                                                                   \
         {                                                                                                                                          \
+            SetInvokeArguments(arguments);                                                                                                         \
             FUNC                                                                                                                                   \
         }                                                                                                                                          \
     };                                                                                                                                             \

@@ -24,14 +24,14 @@ namespace services
         matchArguments = arguments;
     }
 
-    infra::JsonArray& CucumberStep::TableHeaders()
+    infra::JsonArray& CucumberStep::InvokeArguments()
     {
-        return this->tableHeaders;
+        return invokeArguments;
     }
 
-    void CucumberStep::SetTableHeaders(infra::JsonArray arguments)
+    void CucumberStep::SetInvokeArguments(infra::JsonArray arguments)
     {
-        tableHeaders = arguments;
+        invokeArguments = arguments;
     }
 
     infra::BoundedString& CucumberStep::StepName()
@@ -59,7 +59,7 @@ namespace services
         nrSteps = nrOfSteps;
     }
 
-    bool CucumberStep::ContainsArguments()
+    bool CucumberStep::ContainsStringArguments()
     {
         if (StepName().find("\'%s\'") != infra::BoundedString::npos || StepName().find("%d") != infra::BoundedString::npos)
             return true;
@@ -122,10 +122,11 @@ namespace services
         return infra::JsonArray(arrayBuffer);
     }
 
+    
+
     CucumberStep::CucumberStep(const infra::BoundedString& stepName)
         : id(nrSteps)
         , matchArguments(infra::JsonArray("[]"))
-        , tableHeaders(infra::JsonArray("[]"))
         , stepName(stepName)
     {
         nrSteps++;
@@ -134,7 +135,6 @@ namespace services
     CucumberStep::CucumberStep(const infra::JsonArray& matchArguments, const infra::JsonArray& tableHeaders, const infra::BoundedString& stepName)
         : id(nrSteps)
         , matchArguments(matchArguments)
-        , tableHeaders(tableHeaders)
         , stepName(stepName)
     {
         nrSteps++;
