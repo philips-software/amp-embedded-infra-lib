@@ -59,20 +59,31 @@ namespace services
 
     CucumberStep* CucumberStepStorage::MatchStep(uint8_t id)
     {
-        for (auto& step : stepList)
-            if (step.Id() == id)
+        infra::detail::IntrusiveListIterator<CucumberStep> iterator =  stepList.begin();
+        uint8_t size = stepList.size();
+        for (uint8_t count = 1; iterator != stepList.end() && count != id; count++, iterator++);
+        if (iterator == stepList.end() && id != iterator->Id())
+            return nullptr;
+        return &*iterator;
+
+
+        /*
+        for (infra::detail::IntrusiveListIterator<CucumberStep> iterator = stepList.begin(); iterator != stepList.end(); iterator++)
+            if (iterator->Id() == id)
             {
-                return &step;
+                return &*iterator;
             }
         return nullptr;
+        */
     }
 
-    void CucumberStepStorage::AddStep(const CucumberStep& step)
+    void CucumberStepStorage::AddStep(CucumberStep& step)
     {
         this->stepList.push_front(step);
+        step.SetId(stepList.size());
     }
 
-    void CucumberStepStorage::DeleteStep(const CucumberStep& step)
+    void CucumberStepStorage::DeleteStep(CucumberStep& step)
     {
         stepList.erase(step);
     }

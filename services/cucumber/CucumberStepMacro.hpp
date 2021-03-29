@@ -31,6 +31,7 @@
         bool Invoke(infra::JsonArray& arguments)                                                                                                   \
         {                                                                                                                                          \
             SetInvokeArguments(arguments);                                                                                                         \
+            GetTableDimensions();                                                                                                         \
             FUNC                                                                                                                                   \
         }                                                                                                                                          \
     };                                                                                                                                             \

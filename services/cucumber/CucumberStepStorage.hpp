@@ -19,8 +19,8 @@ namespace services
     public:
         CucumberStep* MatchStep(uint8_t id);
         CucumberStep* MatchStep(const infra::BoundedString& nameToMatch);
-        void AddStep(const CucumberStep& step);
-        void DeleteStep(const CucumberStep& step);
+        void AddStep(CucumberStep& step);
+        void DeleteStep(CucumberStep& step);
         void ClearStorage();
         bool CompareStepName(CucumberStep& step, const infra::BoundedString& stepName);
 

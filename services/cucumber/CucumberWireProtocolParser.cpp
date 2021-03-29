@@ -144,7 +144,7 @@ namespace services
                 validStringCount++;
                 argumentIterator++;
             }
-            if (invokeStep->NrArguments() != validStringCount)
+            if (invokeStep->NrStringArguments() != validStringCount)
                 return false;
             return true;
         }

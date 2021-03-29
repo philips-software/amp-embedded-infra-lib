@@ -163,5 +163,5 @@ TEST_F(CucumberWireProtocolParserTest, test_matching_step_name)
 
 TEST_F(CucumberWireProtocolParserTest, test_step_nr_of_arguments)
 {
-    EXPECT_EQ(2, theWiFiNetwork_IsSeenWithin_Seconds.NrArguments());
+    EXPECT_EQ(2, theWiFiNetwork_IsSeenWithin_Seconds.NrStringArguments());
 }

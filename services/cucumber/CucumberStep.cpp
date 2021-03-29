@@ -49,6 +49,16 @@ namespace services
         return matchArgumentsBuffer;
     }
 
+    uint8_t CucumberStep::NrRows()
+    {
+        return nrRows;
+    }
+
+    uint8_t CucumberStep::NrCollumns()
+    {
+        return nrCollumns;
+    }
+
     uint8_t CucumberStep::NrSteps()
     {
         return nrSteps;
@@ -66,7 +76,7 @@ namespace services
         return false;
     }
 
-    uint8_t CucumberStep::NrArguments()
+    uint8_t CucumberStep::NrStringArguments()
     {
         uint8_t nrArguments = 0;
         {
@@ -122,19 +132,47 @@ namespace services
         return infra::JsonArray(arrayBuffer);
     }
 
-    
+    void CucumberStep::GetTableDimensions()
+    {
+        if (invokeArguments.begin() != invokeArguments.end())
+        {
+            infra::JsonArrayIterator argumentIterator(invokeArguments.begin());
+            if (ContainsStringArguments())
+            {
+                for (uint8_t stringArgumentCount = 0; stringArgumentCount < NrStringArguments(); stringArgumentCount++, argumentIterator++);
+            }
+            if (argumentIterator != invokeArguments.end())
+            {
+                infra::JsonArrayIterator rowIterator = argumentIterator->Get<infra::JsonArray>().begin();
+                infra::JsonArray collumnArray = rowIterator->Get<infra::JsonArray>();
+                for (auto string : JsonStringArray(collumnArray))
+                    nrCollumns++;
+                for (; rowIterator != invokeArguments.end(); nrRows++, rowIterator++);
+            }
+            else
+            {
+                nrRows = 0;
+                nrCollumns = 0;
+            }
+        }
+        else
+        {
+            nrRows = 0;
+            nrCollumns = 0;
+        }
+    }
 
     CucumberStep::CucumberStep(const infra::BoundedString& stepName)
-        : id(nrSteps)
-        , matchArguments(infra::JsonArray("[]"))
+        : matchArguments(infra::JsonArray("[]"))
         , stepName(stepName)
+        , nrRows(0)
+        , nrCollumns(0)
     {
         nrSteps++;
     }
 
     CucumberStep::CucumberStep(const infra::JsonArray& matchArguments, const infra::JsonArray& tableHeaders, const infra::BoundedString& stepName)
-        : id(nrSteps)
-        , matchArguments(matchArguments)
+        : matchArguments(matchArguments)
         , stepName(stepName)
     {
         nrSteps++;
