@@ -17,7 +17,7 @@ namespace services
         ~CucumberStepStorage();
 
     public:
-        CucumberStep* MatchStep(uint8_t id);
+        CucumberStep& GetStep(uint8_t id);
         CucumberStep* MatchStep(const infra::BoundedString& nameToMatch);
         void AddStep(CucumberStep& step);
         void DeleteStep(CucumberStep& step);

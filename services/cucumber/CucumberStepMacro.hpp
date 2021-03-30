@@ -1,8 +1,8 @@
 #ifndef SERVICES_CUCUMBER_STEP_MACRO_HPP 
 #define SERVICES_CUCUMBER_STEP_MACRO_HPP
 
-#include "services\cucumber\CucumberWireProtocolServer.hpp"
-#include "services\cucumber\CucumberStepStorage.hpp"
+#include "services/cucumber/CucumberWireProtocolServer.hpp"
+#include "services/cucumber/CucumberStepStorage.hpp"
 #include "infra/util/BoundedVector.hpp"
 
 #define CONCAT2(x, y) x ## y 
@@ -11,13 +11,13 @@
 #define CLASSNAME CONCAT(Step_, __LINE__)
 #define VARNAME CONCAT(step_, __LINE__)
 
-#define GIVEN(NAME, FUNC) DEFINESTEP(NAME, FUNC)
-#define WHEN(NAME, FUNC) DEFINESTEP(NAME, FUNC)
-#define THEN(NAME, FUNC) DEFINESTEP(NAME, FUNC)
+#define GIVEN(NAME) DEFINESTEP(NAME)
+#define WHEN(NAME) DEFINESTEP(NAME)
+#define THEN(NAME) DEFINESTEP(NAME)
 
-
-#define DEFINESTEP(NAME, FUNC)                                                                                                                     \
-                                                                                                                                                   \
+#define DEFINESTEP(NAME)                                                                                                                           \
+namespace services                                                                                                                                 \
+{                                                                                                                                                  \
     class CLASSNAME : public services::CucumberStep                                                                                                \
     {                                                                                                                                              \
     public:                                                                                                                                        \
@@ -28,15 +28,13 @@
         }                                                                                                                                          \
                                                                                                                                                    \
     public:                                                                                                                                        \
-        bool Invoke(infra::JsonArray& arguments)                                                                                                   \
-        {                                                                                                                                          \
-            SetInvokeArguments(arguments);                                                                                                         \
-            GetTableDimensions();                                                                                                         \
-            FUNC                                                                                                                                   \
-        }                                                                                                                                          \
+        bool Invoke(infra::JsonArray& arguments);                                                                                                  \
     };                                                                                                                                             \
-                                                                                                                                                   \
-    static CLASSNAME VARNAME;                                                                                          
-
+}                                                                                                                                                  \
+namespace                                                                                                                                          \
+{                                                                                                                                                  \
+        static services::CLASSNAME VARNAME;                                                                                                        \
+}                                                                                                                                                  \
+bool services::CLASSNAME::Invoke(infra::JsonArray& arguments)
 
 #endif

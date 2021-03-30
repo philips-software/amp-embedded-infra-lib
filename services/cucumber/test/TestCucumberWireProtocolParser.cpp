@@ -15,17 +15,10 @@ class CucumberWireProtocolParserTest
 public:
     CucumberWireProtocolParserTest()
         : cucumberWireProtocolParser(services::CucumberStepStorage::Instance())
-    {
-        services::CucumberStepStorage::Instance().AddStep(aWiFiNetworkIsAvailable);
-        services::CucumberStepStorage::Instance().AddStep(theConnectivityNodeConnectsToThatNetwork);
-        services::CucumberStepStorage::Instance().AddStep(theConnectivityNodeShouldBeConnected);
-        services::CucumberStepStorage::Instance().AddStep(theWiFiNetwork_IsSeenWithin_Seconds);
-        services::CucumberStepStorage::Instance().AddStep(stepWith3Arguments);
-    }
+    {}
 
     ~CucumberWireProtocolParserTest()
     {
-        services::CucumberStepStorage::Instance().ClearStorage();
     }
 
     class AWiFiNetworkIsAvailable : public services::CucumberStep
@@ -133,20 +126,25 @@ TEST_F(CucumberWireProtocolParserTest, test_step_contains_arguments)
     EXPECT_TRUE(this->theWiFiNetwork_IsSeenWithin_Seconds.ContainsStringArguments());
 }
 
+TEST_F(CucumberWireProtocolParserTest, test_step_id_assignment)
+{
+
+}
+
 TEST_F(CucumberWireProtocolParserTest, test_step_parsing_arguments)
 {
     infra::BoundedString::WithStorage<128> input = "the WiFi network 'CoCoCo' is seen within 10 minutes and 30 seconds";
     infra::JsonArray expectedArguments("[ { \"val\":\"CoCoCo\", \"pos\":18 }, { \"val\":\"10\", \"pos\":41 }, { \"val\":\"30\", \"pos\":56 } ]");
     
     infra::BoundedString::WithStorage<128> arrayBuffer;
-    infra::JsonArray jsonArray = this->stepWith3Arguments.ParseArguments(input, arrayBuffer);
+    infra::JsonArray jsonArray = stepWith3Arguments.ParseArguments(input, arrayBuffer);
 
     EXPECT_EQ(jsonArray, expectedArguments);
 }
 
+
 TEST_F(CucumberWireProtocolParserTest, test_matching_step_name)
 {
-    
     infra::BoundedString::WithStorage<128> input = "a WiFi network is available";
     EXPECT_TRUE(services::CucumberStepStorage::Instance().CompareStepName(aWiFiNetworkIsAvailable, input));
     EXPECT_FALSE(services::CucumberStepStorage::Instance().CompareStepName(stepWith3Arguments, input));
@@ -158,7 +156,6 @@ TEST_F(CucumberWireProtocolParserTest, test_matching_step_name)
     input = "the WiFi network 'CoCoCo' is seen within '10' minutes and '30' seconds";
     EXPECT_FALSE(services::CucumberStepStorage::Instance().CompareStepName(aWiFiNetworkIsAvailable, input));
     EXPECT_FALSE(services::CucumberStepStorage::Instance().CompareStepName(stepWith3Arguments, input));
-    
 }
 
 TEST_F(CucumberWireProtocolParserTest, test_step_nr_of_arguments)

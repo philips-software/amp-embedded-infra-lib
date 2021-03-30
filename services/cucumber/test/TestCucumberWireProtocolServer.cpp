@@ -17,6 +17,90 @@
 
 static services::CucumberStepStorage stepStorage;
 
+/*
+GIVEN("the WiFi network '%s' is seen within %d minutes")
+{
+    if (ContainsStringArguments())
+    {
+        for (uint8_t i = 0; i < NrStringArguments(); i++)
+            if (GetStringArgument<infra::JsonString>(i) != nullptr)
+                tracer.Trace() << *GetStringArgument<infra::JsonString>(i) << "\n";
+            else
+                return false;
+        for (uint8_t i = 0; i < NrRows(); i++)
+        {
+            if (GetTableArgument<infra::JsonString>("field", i) != nullptr)
+                tracer.Trace() << *GetTableArgument<infra::JsonString>("field", i) << "\n";
+            else
+                return false;
+        }
+    }
+    else
+        return false;
+    return true;
+}
+*/
+
+GIVEN("a duplicate feature") 
+{
+    return true;
+}
+
+GIVEN("a duplicate feature") 
+{
+    return true;
+}
+
+GIVEN("a step") 
+{ 
+    return true; 
+}
+
+GIVEN("the WiFi network '%s' is seen within %d minutes")
+{
+    return true;
+}
+
+GIVEN("the WiFi network '%s' is seen within %d minutes and %d seconds")
+{
+    return true;
+}
+
+GIVEN("the Node connects to that network") 
+{
+    static infra::IoOutputStream ioOutputStream;
+    static services::Tracer tracer(ioOutputStream);
+    if (GetTableArgument<infra::JsonString>("ssid", arguments) != nullptr)
+    {
+        tracer.Trace() << *GetTableArgument<infra::JsonString>("ssid", arguments) << "\n";
+        return true;
+    }
+    return false;
+}
+
+GIVEN("a network is available") 
+{
+    if (GetTableArgument<infra::JsonString>("field", arguments) != nullptr)
+    return true;
+    else
+        return false;
+}
+
+GIVEN("sentence with '%s' and %d digit")
+{
+    return true;
+}
+
+GIVEN("when macro is called")
+{
+    return true;
+}
+
+GIVEN("when another macro is called")
+{
+    return true;
+}
+
 class CucumberWireProtocolpServerTest
     : public testing::Test
     , public infra::ClockFixture
@@ -30,7 +114,6 @@ public:
 
     ~CucumberWireProtocolpServerTest()
     {
-        services::CucumberStepStorage::Instance().ClearStorage();
         cucumberServer.Stop(infra::emptyFunction);
     }
 
@@ -55,6 +138,7 @@ TEST_F(CucumberWireProtocolpServerTest, accept_ipv6_connection)
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
+/*
 TEST_F(CucumberWireProtocolpServerTest, invoke_mock_step)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
@@ -67,9 +151,11 @@ TEST_F(CucumberWireProtocolpServerTest, invoke_mock_step)
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
     ExecuteAllActions();
     
+    services::CucumberStepStorage::Instance().ClearStorage();
     connection.sentData.clear();
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
+*/
 
 TEST_F(CucumberWireProtocolpServerTest, should_respond_to_non_json_format_with_fail)
 {
@@ -120,10 +206,6 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_string_of_request_with
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
-    GIVEN("the WiFi network '%s' is seen within %d minutes and %d seconds", {
-        return true;
-    });
-
     connection.SimulateDataReceived(infra::MakeStringByteRange("[\"step_matches\",{\"name_to_match\":\"the WiFi network 'CoCoCo' is seen within minutes 10 and 30 seconds\"}]"));
     ExecuteAllActions();
 
@@ -140,14 +222,6 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_duplicate_step_match_r
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
-    GIVEN("a duplicate feature", {
-        return true;
-    });
-
-    GIVEN("a duplicate feature", {
-        return true;
-    });
-
     connection.SimulateDataReceived(infra::MakeStringByteRange("[\"step_matches\",{\"name_to_match\":\"a duplicate feature\"}]"));
     ExecuteAllActions();
 
@@ -163,8 +237,6 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_duplicate_step_match_r
 TEST_F(CucumberWireProtocolpServerTest, should_respond_to_step_match_request_with_success)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
-
-    GIVEN("a step", { return true; });
 
     infra::ConstByteRange data = infra::MakeStringByteRange("[\"step_matches\",{\"name_to_match\":\"a step\"}]");
     connection.SimulateDataReceived(data);
@@ -183,10 +255,6 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_step_match_request_wit
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
-    GIVEN("the WiFi network '%s' is seen within %d minutes", {
-        return true;
-    });
-
     connection.SimulateDataReceived(infra::MakeStringByteRange("[\"step_matches\",{\"name_to_match\":\"the WiFi network 'CoCoCo' is seen within 60 minutes\"}]"));
     ExecuteAllActions();
 
@@ -202,14 +270,6 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_step_match_request_wit
 TEST_F(CucumberWireProtocolpServerTest, should_respond_to_non_matching_substring_of_step_request_with_success)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
-
-    GIVEN("the WiFi network '%s' is seen within %d minutes", {
-        return true;
-    });
-
-    GIVEN("the WiFi network '%s' is seen within %d minutes and %d seconds", {
-        return true;
-    });
 
     infra::BoundedString::WithStorage<256> input = "[\"step_matches\",{\"name_to_match\":\"the WiFi network 'CoCoCo' is seen within 60 minutes\"}]";
     connection.SimulateDataReceived(infra::StringAsByteRange(input));
@@ -227,10 +287,6 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_non_matching_substring
 TEST_F(CucumberWireProtocolpServerTest, should_respond_to_non_matching_substring_of_step_request_with_fail)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
-
-    GIVEN("a WiFi network is seen within %d seconds", {
-        return true;
-    });
 
     infra::BoundedString::WithStorage<256> input = "[\"step_matches\",{\"name_to_match\":\"a WiFi network is\"}]";
     connection.SimulateDataReceived(infra::StringAsByteRange(input));
@@ -251,10 +307,6 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_long_matching_string_o
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
-    GIVEN("the WiFi network '%s' is seen within %d minutes and %d seconds", {
-        return true;
-    });
-
     connection.SimulateDataReceived(infra::MakeStringByteRange("[\"step_matches\",{\"name_to_match\":\"the WiFi network 'CoCoCo' is seen within 10 minutes and 30 seconds\"}]"));
     ExecuteAllActions();
 
@@ -270,14 +322,6 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_long_matching_string_o
 TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_excessive_argument_list_with_fail)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
-
-    static infra::IoOutputStream ioOutputStream;
-    static services::Tracer tracer(ioOutputStream);
-
-    GIVEN("the Node connects to that network", {
-        tracer.Trace() << *GetTableArgument<infra::JsonString>("invalid", 1) << "\n";
-        return false;
-    });
 
     infra::StringOutputStream::WithStorage<256> inputStream;
     inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network")->Id() << R"(","args":[[["invalid","arguments"],["CoCoCo","password"],["WLAN","1234"]]]}])";
@@ -296,13 +340,6 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_in
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
-    GIVEN("a network is available", {
-        if (GetTableArgument<infra::JsonString>("field", 1) != nullptr)
-            return true;
-        else
-            return false;
-    });
-
     infra::StringOutputStream::WithStorage<256> inputStream;
     inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("a network is available")->Id() << R"(","args":[[["invalid","header"],["CoCoCo","password"],["WLAN","1234"]]]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
@@ -319,13 +356,6 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_in
 TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_nonexistent_argument_table_with_fail_1)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
-
-    GIVEN("a network is available", {
-        if (GetTableArgument<infra::JsonString>("key", 1) == nullptr)
-            return false;
-        else
-            return true;
-    })
 
     infra::StringOutputStream::WithStorage<256> inputStream;
     inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("a network is available")->Id() << R"(","args":[[["ssid"],["CoCoCo"],["WLAN"]]]}])";
@@ -344,14 +374,7 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_in
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
-    GIVEN("the Node connects to that network", {
-        if (GetTableArgument<infra::JsonString>("field", 1) == nullptr)
-            return false;
-        else
-            return true;
-    })
-
-        infra::StringOutputStream::WithStorage<256> inputStream;
+    infra::StringOutputStream::WithStorage<256> inputStream;
     inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network")->Id() << R"(","args":[[["invalid","arguments"],["CoCoCo","password"],["WLAN","1234"]]]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
@@ -367,13 +390,6 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_in
 TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_invalid_argument_table_with_fail_3)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
-
-    GIVEN("the Node connects to that network", {
-        if (GetTableArgument<infra::JsonString>("key", 1) == nullptr)
-            return false;
-        else
-            return true;
-    })
 
     infra::StringOutputStream::WithStorage<256> inputStream;
     inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network")->Id() << R"(","args":[[["invalid","arguments"],["CoCoCo","password"],["WLAN","1234"]]]}])";
@@ -392,16 +408,6 @@ TEST_F(CucumberWireProtocolpServerTest, test_invoke_request_table_parsing)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
-    GIVEN("the Node connects to that network", {
-        for (size_t i = 0; i < NrRows(); i++)
-        {
-            if (GetTableArgument<infra::JsonString>("ssid", i) == nullptr)
-                return false;
-            else
-                return true;
-        }
-    });
-
     infra::StringOutputStream::WithStorage<256> inputStream;
     inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network")->Id() << R"(","args":[[["ssid","key"],["CoCoCo","password"],["WLAN","1234"]]]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
@@ -418,20 +424,6 @@ TEST_F(CucumberWireProtocolpServerTest, test_invoke_request_table_parsing)
 TEST_F(CucumberWireProtocolpServerTest, test_invoke_request_string_arguments_parsing)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
-
-    static infra::IoOutputStream ioOutputStream;
-    static services::Tracer tracer(ioOutputStream);
-
-    GIVEN("the WiFi network '%s' is seen within %d minutes", {
-        if (ContainsStringArguments())
-            for (uint8_t i = 0; i < NrStringArguments(); i++)
-                if (GetStringArgument<infra::JsonString>(i) != nullptr)
-                    tracer.Trace() << *GetStringArgument<infra::JsonString>(i) << "\n";
-                else
-                    return false;
-        else
-            return false;
-    });
 
     infra::StringOutputStream::WithStorage<256> inputStream;
     inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the WiFi network '%s' is seen within %d minutes")->Id() << R"(","args":["HOMELAN", "10"]}])";
@@ -450,30 +442,6 @@ TEST_F(CucumberWireProtocolpServerTest, test_invoke_request_string_arguments_wit
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
-    static infra::IoOutputStream ioOutputStream;
-    static services::Tracer tracer(ioOutputStream);
-
-    GIVEN("the WiFi network '%s' is seen within %d minutes", {
-        if (ContainsStringArguments())
-        {
-            for (uint8_t i = 0; i < NrStringArguments(); i++)
-                if (GetStringArgument<infra::JsonString>(i) != nullptr)
-                    tracer.Trace() << *GetStringArgument<infra::JsonString>(i) << "\n";
-                else
-                    return false;
-            for (uint8_t i = 0; i < NrRows(); i++)
-            {
-                if (GetTableArgument<infra::JsonString>("field", i) != nullptr)
-                    tracer.Trace() << *GetTableArgument<infra::JsonString>("field", i) << "\n";
-                else
-                    return false;
-            }
-        }
-        else
-            return false;
-        return true;
-    });
-
     infra::StringOutputStream::WithStorage<256> inputStream;
     inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the WiFi network '%s' is seen within %d minutes")->Id() << R"(","args":["argument", "35", [["field","value"],["CoCoCo","password"],["WLAN","1234"]]]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
@@ -491,12 +459,8 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_su
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
-    GIVEN("the Node connects to that network", {
-        return true;
-    })
-
     infra::StringOutputStream::WithStorage<128> inputStream;
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network")->Id() << R"(","args":[]}])";
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("a step")->Id() << R"(","args":[]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
     ExecuteAllActions();
@@ -511,10 +475,6 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_su
 TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_arguments_with_success)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
-
-    GIVEN("the WiFi network '%s' is seen within %d minutes", {
-        return true;
-    });
 
     infra::StringOutputStream::WithStorage<256> inputStream;
     inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the WiFi network 'HOMELAN' is seen within 10 minutes")->Id() << R"(","args":["HOMELAN", "10"]}])";
@@ -533,18 +493,8 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_ta
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
-    GIVEN("a WiFi network is available", {
-        if (GetTableArgument<infra::JsonString>("ssid", 1) != nullptr)
-            return true;
-        else
-        {
-            *GetTableArgument<infra::JsonString>("ssid", 1);
-            return false;
-        }
-    });
-
     infra::StringOutputStream::WithStorage<256> inputStream;
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("a WiFi network is available")->Id() << R"(","args":[[["ssid","key"],["CoCoCo","password"],["WLAN","1234"]]]}])";
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network")->Id() << R"(","args":[[["ssid","key"],["CoCoCo","password"],["WLAN","1234"]]]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
     ExecuteAllActions();
@@ -559,10 +509,6 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_ta
 TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_arguments_and_table_list_with_success)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
-
-    GIVEN("sentence with '%s' and %d digit", {
-        return true;
-    });
 
     infra::StringOutputStream::WithStorage<256> inputStream;
     inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("sentence with 'argument' and 35 digit")->Id() << R"(","args":["argument", "35", [["field","value"],["CoCoCo","password"],["WLAN","1234"]]]}])";
@@ -624,14 +570,6 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_snippet_text_request_w
 
 TEST_F(CucumberWireProtocolpServerTest, test_macro)
 {
-    static infra::IoOutputStream ioOutputStream;
-    static services::Tracer tracer(ioOutputStream);
-    GIVEN("when macro is called", 
-    {
-        tracer.Trace() << "Macro's invoke is called\n";
-        return true;
-    });
-
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     infra::StringOutputStream::WithStorage<256> inputStream;
 
@@ -644,19 +582,6 @@ TEST_F(CucumberWireProtocolpServerTest, test_macro)
 
 TEST_F(CucumberWireProtocolpServerTest, test_2_macros)
 {
-    static infra::IoOutputStream ioOutputStream;
-    static services::Tracer tracer(ioOutputStream);
-    GIVEN("when macro is called",
-    {
-        tracer.Trace() << "Macro's invoke is called\n";
-    return true;
-    });
-
-    GIVEN("when another macro is called", {
-        tracer.Trace() << "Another Macro's invoke is called\n";
-    return true;
-    });
-
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     infra::StringOutputStream::WithStorage<256> inputStream;
 

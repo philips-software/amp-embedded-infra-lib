@@ -13,7 +13,7 @@
 namespace services
 {
     class CucumberStep
-        : public infra::IntrusiveList<CucumberStep>::NodeType
+        : public infra::IntrusiveList<CucumberStep>::NodeType 
     {
     public:
         CucumberStep(const infra::BoundedString& stepName);
@@ -44,7 +44,7 @@ namespace services
         infra::JsonArray ParseArguments(const infra::BoundedString& nameToMatch, infra::BoundedString& arrayBuffer);
 
         template <class T>
-        T* GetTableArgument(const infra::BoundedString& collumnHeader, uint8_t rowNumber);
+        T* GetTableArgument(const infra::BoundedString& fieldName, infra::JsonArray& arguments);
         void GetTableDimensions();
 
         virtual bool Invoke(infra::JsonArray& arguments) = 0;
@@ -78,42 +78,20 @@ namespace services
     }
 
     template<class T>
-    inline T* CucumberStep::GetTableArgument(const infra::BoundedString& collumnHeader, uint8_t rowNumber)
+    inline T* CucumberStep::GetTableArgument(const infra::BoundedString& fieldName, infra::JsonArray& arguments)
     {
-        uint8_t collumnMatch = 0;
-        uint8_t nrMatches = 0;
         T* result = nullptr;
-
-        infra::JsonArrayIterator argumentIterator(invokeArguments.begin());
+        infra::JsonArrayIterator argumentIterator(arguments.begin());
         if (ContainsStringArguments())
-        {
             for (uint8_t stringArgumentCount = 0; stringArgumentCount < NrStringArguments(); stringArgumentCount++, argumentIterator++);
-        }
-        if (argumentIterator != invokeArguments.end())
-        {
-            infra::JsonArrayIterator rowIterator = argumentIterator->Get<infra::JsonArray>().begin();
-            infra::JsonArray collumnArray = rowIterator->Get<infra::JsonArray>();
-            uint8_t collumnCount = 1;
-            for (auto string : JsonStringArray(collumnArray))
-            {
-                if (string == collumnHeader)
-                    collumnMatch = collumnCount;
-                collumnCount++;
-            }
-            if (collumnMatch != 0)
-                for (uint8_t rowCount = 0; rowIterator != invokeArguments.end(); rowCount++, rowIterator++)
+        if (argumentIterator != arguments.end())
+            for (infra::JsonArrayIterator rowIterator = argumentIterator->Get<infra::JsonArray>().begin(); rowIterator != arguments.end(); rowIterator++)
+                if (fieldName == rowIterator->Get<infra::JsonArray>().begin()->Get<infra::JsonString>())
                 {
-                    if (rowCount == rowNumber)
-                    {
-                        collumnCount = 1;
-                        infra::JsonArray collumnArray = rowIterator->Get<infra::JsonArray>();
-                        infra::JsonArrayIterator value(collumnArray.begin());
-                        for (; value != collumnArray.end() && collumnCount != collumnMatch; value++, collumnCount++);
-                        if (collumnCount == collumnMatch)
-                            result = &value->Get<infra::JsonString>();
-                    }
+                    infra::JsonArrayIterator collumnIterator = rowIterator->Get<infra::JsonArray>().begin();
+                    collumnIterator++;
+                    result = &collumnIterator->Get<infra::JsonString>();
                 }
-        }
         return result;
     }
     

@@ -7,6 +7,7 @@ namespace services
     CucumberStepStorage::~CucumberStepStorage()
     {
         services::CucumberStep::SetNrSteps(0);
+        ClearStorage();
     }
 
     bool CucumberStepStorage::CompareStepName(CucumberStep& step, const infra::BoundedString& nameToMatch)
@@ -43,6 +44,7 @@ namespace services
     {
         nrStepMatches = 0;
         CucumberStep *returnStep = nullptr;
+        uint8_t size = stepList.size();
         for (auto& step : stepList)
             if (CompareStepName(step, nameToMatch))
             {
@@ -57,30 +59,19 @@ namespace services
             return returnStep;
     }
 
-    CucumberStep* CucumberStepStorage::MatchStep(uint8_t id)
+    CucumberStep& CucumberStepStorage::GetStep(uint8_t id)
     {
-        infra::detail::IntrusiveListIterator<CucumberStep> iterator =  stepList.begin();
-        uint8_t size = stepList.size();
-        for (uint8_t count = 1; iterator != stepList.end() && count != id; count++, iterator++);
-        if (iterator == stepList.end() && id != iterator->Id())
-            return nullptr;
-        return &*iterator;
-
-
-        /*
-        for (infra::detail::IntrusiveListIterator<CucumberStep> iterator = stepList.begin(); iterator != stepList.end(); iterator++)
-            if (iterator->Id() == id)
-            {
-                return &*iterator;
-            }
-        return nullptr;
-        */
+        really_assert(id <= stepList.size());
+        auto& step = stepList.begin();
+        while (id-- > 0)
+            ++step;
+        return *step;
     }
 
     void CucumberStepStorage::AddStep(CucumberStep& step)
     {
-        this->stepList.push_front(step);
-        step.SetId(stepList.size());
+        this->stepList.push_back(step);
+        step.SetId(stepList.size() - 1);
     }
 
     void CucumberStepStorage::DeleteStep(CucumberStep& step)

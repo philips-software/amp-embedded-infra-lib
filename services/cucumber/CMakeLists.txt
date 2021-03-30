@@ -6,7 +6,6 @@ ccola_component(cucumber static_library)
         CucumberStep.hpp
         CucumberStep.cpp
 		CucumberStepMacro.hpp
-		CucumberStepMacro.cpp
         CucumberStepStorage.hpp
         CucumberStepStorage.cpp
         CucumberWireProtocolParser.hpp

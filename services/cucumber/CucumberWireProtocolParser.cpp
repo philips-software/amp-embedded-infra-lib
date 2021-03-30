@@ -203,7 +203,7 @@ namespace services
 
     void CucumberWireProtocolParser::FormatInvokeResponse(infra::BoundedString& responseBuffer)
     {
-        invokeStep = stepStorage.MatchStep(invokeId);
+        invokeStep = &stepStorage.GetStep(invokeId);
         if (Invoke() && invokeStep != nullptr)
             SuccessMessage(responseBuffer);
         else
