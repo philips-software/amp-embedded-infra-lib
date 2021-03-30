@@ -16,16 +16,31 @@ namespace services
 
         ~CucumberStepStorage();
 
+        enum StepMatchResult
+        {
+            success,
+            fail,
+            duplicate
+        };
+
     public:
+        StepMatchResult& MatchResult();
+        void SetMatchResult(StepMatchResult result);
+        uint8_t& MatchId();
+        void SetMatchId(uint8_t& id);
+
         CucumberStep& GetStep(uint8_t id);
-        CucumberStep* MatchStep(const infra::BoundedString& nameToMatch);
+        uint8_t GetId(CucumberStep& step);
+        void MatchStep(const infra::BoundedString& nameToMatch);
         void AddStep(CucumberStep& step);
         void DeleteStep(CucumberStep& step);
         void ClearStorage();
         bool CompareStepName(CucumberStep& step, const infra::BoundedString& stepName);
 
-        uint8_t nrStepMatches;
     private:
+        uint8_t matchId;
+        StepMatchResult matchResult;
+
         infra::IntrusiveList<CucumberStep> stepList;
     };
 }

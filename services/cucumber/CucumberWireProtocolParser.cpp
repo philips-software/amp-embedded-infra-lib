@@ -110,17 +110,6 @@ namespace services
         stream << infra::StringAsByteRange(responseBuffer);
     }
 
-    CucumberWireProtocolParser::MatchResult CucumberWireProtocolParser::MatchName(const infra::BoundedString& nameToMatchString)
-    {
-        stepmatchStep = stepStorage.MatchStep(nameToMatchString);
-        if (stepmatchStep != nullptr)
-            return MatchResult::success;
-        else if (stepStorage.nrStepMatches >= 2)
-            return MatchResult::duplicate;
-        else
-            return MatchResult::fail;
-    }
-
     bool CucumberWireProtocolParser::Invoke()
     {
         if (!MatchStringArguments(invokeArguments))
@@ -169,7 +158,7 @@ namespace services
         nameToMatch = iteratorAtRequestType->Get<infra::JsonObject>();
         infra::BoundedString::WithStorage<256> nameToMatchString;
         nameToMatch.GetString("name_to_match").ToString(nameToMatchString);
-        matchResult = MatchName(nameToMatchString);
+        stepStorage.MatchStep(nameToMatchString);
     }
 
     void CucumberWireProtocolParser::ParseInvokeRequest(infra::JsonArrayIterator& iteratorAtRequestType)
@@ -185,15 +174,15 @@ namespace services
 
     void CucumberWireProtocolParser::FormatStepMatchResponse(infra::BoundedString& responseBuffer)
     {
-        switch (matchResult)
+        switch (stepStorage.MatchResult())
         {
-        case success:
-            SuccessMessage(stepmatchStep->Id(), stepmatchStep->MatchArguments(), responseBuffer);
+        case CucumberStepStorage::success:
+            SuccessMessage(stepStorage.MatchId(), stepStorage.GetStep(stepStorage.MatchId()).MatchArguments(), responseBuffer);
             break;
-        case fail:
+        case CucumberStepStorage::fail:
             FailureMessage(responseBuffer, "Step not Matched", "Exception.Step.NotFound");
             break;
-        case duplicate:
+        case CucumberStepStorage::duplicate:
             FailureMessage(responseBuffer, "Duplicate Step", "Exception.Step.Duplicate");
             break;
         default:

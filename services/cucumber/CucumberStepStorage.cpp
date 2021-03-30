@@ -2,12 +2,33 @@
 
 namespace services
 {
-    CucumberStepStorage::CucumberStepStorage() : nrStepMatches(0) {}
+    CucumberStepStorage::CucumberStepStorage()
+    {}
 
     CucumberStepStorage::~CucumberStepStorage()
     {
         services::CucumberStep::SetNrSteps(0);
         ClearStorage();
+    }
+
+    services::CucumberStepStorage::StepMatchResult& CucumberStepStorage::MatchResult()
+    {
+        return matchResult;
+    }
+
+    void CucumberStepStorage::SetMatchResult(StepMatchResult result)
+    {
+        matchResult = result;
+    }
+
+    uint8_t& CucumberStepStorage::MatchId()
+    {
+        return matchId;
+    }
+
+    void CucumberStepStorage::SetMatchId(uint8_t& id)
+    {
+        matchId = id;
     }
 
     bool CucumberStepStorage::CompareStepName(CucumberStep& step, const infra::BoundedString& nameToMatch)
@@ -40,23 +61,26 @@ namespace services
             return false;
     }
 
-    CucumberStep* CucumberStepStorage::MatchStep(const infra::BoundedString& nameToMatch)
+    void CucumberStepStorage::MatchStep(const infra::BoundedString& nameToMatch)
     {
-        nrStepMatches = 0;
-        CucumberStep *returnStep = nullptr;
-        uint8_t size = stepList.size();
+        uint8_t nrStepMatches = 0, count = 0;
         for (auto& step : stepList)
+        {
             if (CompareStepName(step, nameToMatch))
             {
-                returnStep = &step;
+                SetMatchId(count);
                 nrStepMatches++;
-                if (step.ContainsStringArguments())
+                if (step.ContainsStringArguments() && nrStepMatches < 2)
                     step.SetMatchArguments(step.ParseArguments(nameToMatch, step.MatchArgumentsBuffer()));
             }
-        if (nrStepMatches >= 2 || nrStepMatches == 0)
-            return nullptr;
+            count++;
+        }
+        if (nrStepMatches >= 2)
+            SetMatchResult(services::CucumberStepStorage::duplicate);
+        else if ((nrStepMatches == 0 && count == stepList.size()))
+            SetMatchResult(services::CucumberStepStorage::fail);
         else
-            return returnStep;
+            SetMatchResult(services::CucumberStepStorage::success);
     }
 
     CucumberStep& CucumberStepStorage::GetStep(uint8_t id)
@@ -66,6 +90,18 @@ namespace services
         while (id-- > 0)
             ++step;
         return *step;
+    }
+
+    uint8_t CucumberStepStorage::GetId(CucumberStep& step)
+    {
+        uint8_t count = 0;
+        for (auto& stepIterator : stepList)
+        {
+            if (&stepIterator == &step)
+                return count;
+            count++;
+        }
+        return count;
     }
 
     void CucumberStepStorage::AddStep(CucumberStep& step)

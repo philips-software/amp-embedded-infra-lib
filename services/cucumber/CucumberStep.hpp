@@ -16,10 +16,13 @@ namespace services
         : public infra::IntrusiveList<CucumberStep>::NodeType 
     {
     public:
+        CucumberStep(const services::CucumberStep& step);
         CucumberStep(const infra::BoundedString& stepName);
         CucumberStep(const infra::JsonArray& matchArguments, const infra::JsonArray& tableHeaders, const infra::BoundedString& stepName);
 
         ~CucumberStep() {}
+
+        bool operator==(const CucumberStep& other) const;
 
         uint8_t Id();
         void SetId(uint8_t);

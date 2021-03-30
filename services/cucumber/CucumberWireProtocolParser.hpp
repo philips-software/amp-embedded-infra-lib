@@ -22,13 +22,6 @@ namespace services
             invalid
         };
 
-        enum MatchResult
-        {
-            success,
-            fail,
-            duplicate
-        };
-
     public:
         void ParseRequest(const infra::ByteRange& inputRange);
         void FormatResponse(infra::DataOutputStream::WithErrorPolicy& stream);
@@ -40,17 +33,14 @@ namespace services
         RequestType requestType;
 
         infra::JsonObject nameToMatch;
-        MatchResult matchResult;
 
         uint8_t invokeId;
         infra::JsonArray invokeArguments;
         infra::BoundedString::WithStorage<256> invokeArgumentBuffer;
 
-        services::CucumberStep* stepmatchStep;
         services::CucumberStep* invokeStep;
 
         bool ContainsArguments(const infra::BoundedString& string);
-        MatchResult MatchName(const infra::BoundedString& nameToMatchString);
         bool Invoke();
 
         bool MatchStringArguments(infra::JsonArray& arguments);

@@ -162,6 +162,23 @@ namespace services
         }
     }
 
+    bool CucumberStep::operator==(const CucumberStep& other) const
+    {
+        if (stepName == other.stepName)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    CucumberStep::CucumberStep(const services::CucumberStep& step)
+        : matchArguments(step.matchArguments)
+        , stepName(step.stepName)
+    {}
+
     CucumberStep::CucumberStep(const infra::BoundedString& stepName)
         : matchArguments(infra::JsonArray("[]"))
         , stepName(stepName)

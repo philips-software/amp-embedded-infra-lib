@@ -13,7 +13,7 @@
 #include "infra/stream/IoOutputStream.hpp"
 #include "infra/syntax/Json.hpp"
 
-#include "services\cucumber\CucumberStepMacro.hpp"
+#include "services/cucumber/CucumberStepMacro.hpp"
 
 static services::CucumberStepStorage stepStorage;
 
@@ -243,7 +243,8 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_step_match_request_wit
     ExecuteAllActions();
     infra::StringOutputStream::WithStorage<256> inputStream;
 
-    inputStream << "[ \"success\", [ { \"id\":\"" << services::CucumberStepStorage::Instance().MatchStep("a step")->Id() << "\", \"args\":[] } ] ]\n";
+    services::CucumberStepStorage::Instance().MatchStep("a step");
+    inputStream << "[ \"success\", [ { \"id\":\"" << services::CucumberStepStorage::Instance().MatchId() << "\", \"args\":[] } ] ]\n";
     std::vector<uint8_t> responseVector(inputStream.Storage().begin(), inputStream.Storage().end());
     EXPECT_EQ(responseVector, connection.sentData);
 
@@ -258,8 +259,9 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_step_match_request_wit
     connection.SimulateDataReceived(infra::MakeStringByteRange("[\"step_matches\",{\"name_to_match\":\"the WiFi network 'CoCoCo' is seen within 60 minutes\"}]"));
     ExecuteAllActions();
 
+    services::CucumberStepStorage::Instance().MatchStep("the WiFi network '%s' is seen within %d minutes");
     infra::StringOutputStream::WithStorage<256> inputStream;
-    inputStream << "[ \"success\", [ { \"id\":\"" << services::CucumberStepStorage::Instance().MatchStep("the WiFi network '%s' is seen within %d minutes")->Id() << "\", \"args\":[ { \"val\":\"CoCoCo\", \"pos\":18 }, { \"val\":\"60\", \"pos\":41 } ] } ] ]\n";
+    inputStream << "[ \"success\", [ { \"id\":\"" << services::CucumberStepStorage::Instance().MatchId() << "\", \"args\":[ { \"val\":\"CoCoCo\", \"pos\":18 }, { \"val\":\"60\", \"pos\":41 } ] } ] ]\n";
     std::vector<uint8_t> responseVector(inputStream.Storage().begin(), inputStream.Storage().end());
     EXPECT_EQ(responseVector, connection.sentData);
 
@@ -276,7 +278,8 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_non_matching_substring
     ExecuteAllActions();
 
     infra::StringOutputStream::WithStorage<256> responseStream;
-    responseStream << "[ \"success\", [ { \"id\":\"" << services::CucumberStepStorage::Instance().MatchStep("the WiFi network 'CoCoCo' is seen within 60 minutes")->Id() << "\", \"args\":[ { \"val\":\"CoCoCo\", \"pos\":18 }, { \"val\":\"60\", \"pos\":41 } ] } ] ]\n";
+    services::CucumberStepStorage::Instance().MatchStep("the WiFi network 'CoCoCo' is seen within 60 minutes");
+    responseStream << "[ \"success\", [ { \"id\":\"" << services::CucumberStepStorage::Instance().MatchId() << "\", \"args\":[ { \"val\":\"CoCoCo\", \"pos\":18 }, { \"val\":\"60\", \"pos\":41 } ] } ] ]\n";
     std::vector<uint8_t> responseVector(responseStream.Storage().begin(), responseStream.Storage().end());
     EXPECT_EQ(responseVector, connection.sentData);
 
@@ -292,7 +295,8 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_non_matching_substring
     connection.SimulateDataReceived(infra::StringAsByteRange(input));
     ExecuteAllActions();
 
-    EXPECT_EQ(nullptr, services::CucumberStepStorage::Instance().MatchStep("a WiFi network is"));
+    services::CucumberStepStorage::Instance().MatchStep("a WiFi network is");
+    EXPECT_EQ(services::CucumberStepStorage::fail, services::CucumberStepStorage::Instance().MatchResult());
 
     infra::StringOutputStream::WithStorage<256> responseStream;
     responseStream << "[ \"fail\", { \"message\":\"Step not Matched\", \"exception\":\"Exception.Step.NotFound\" } ]\n";
@@ -311,7 +315,8 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_long_matching_string_o
     ExecuteAllActions();
 
     infra::StringOutputStream::WithStorage<256> responseStream;
-    responseStream << "[ \"success\", [ { \"id\":\"" << services::CucumberStepStorage::Instance().MatchStep("the WiFi network '%s' is seen within %d minutes and %d seconds")->Id() << "\", \"args\":[ { \"val\":\"CoCoCo\", \"pos\":18 }, { \"val\":\"10\", \"pos\":41 }, { \"val\":\"30\", \"pos\":56 } ] } ] ]\n";
+    services::CucumberStepStorage::Instance().MatchStep("the WiFi network '%s' is seen within %d minutes and %d seconds");
+    responseStream << "[ \"success\", [ { \"id\":\"" << services::CucumberStepStorage::Instance().MatchId() << "\", \"args\":[ { \"val\":\"CoCoCo\", \"pos\":18 }, { \"val\":\"10\", \"pos\":41 }, { \"val\":\"30\", \"pos\":56 } ] } ] ]\n";
     std::vector<uint8_t> responseVector(responseStream.Storage().begin(), responseStream.Storage().end());
     EXPECT_EQ(responseVector, connection.sentData);
 
@@ -324,7 +329,8 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_ex
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     infra::StringOutputStream::WithStorage<256> inputStream;
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network")->Id() << R"(","args":[[["invalid","arguments"],["CoCoCo","password"],["WLAN","1234"]]]}])";
+    services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network");
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":[[["invalid","arguments"],["CoCoCo","password"],["WLAN","1234"]]]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
     ExecuteAllActions();
@@ -341,7 +347,8 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_in
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     infra::StringOutputStream::WithStorage<256> inputStream;
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("a network is available")->Id() << R"(","args":[[["invalid","header"],["CoCoCo","password"],["WLAN","1234"]]]}])";
+    services::CucumberStepStorage::Instance().MatchStep("a network is available");
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":[[["invalid","header"],["CoCoCo","password"],["WLAN","1234"]]]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
     ExecuteAllActions();
@@ -358,7 +365,8 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_no
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     infra::StringOutputStream::WithStorage<256> inputStream;
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("a network is available")->Id() << R"(","args":[[["ssid"],["CoCoCo"],["WLAN"]]]}])";
+    services::CucumberStepStorage::Instance().MatchStep("a network is available");
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":[[["ssid"],["CoCoCo"],["WLAN"]]]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
     ExecuteAllActions();
@@ -375,7 +383,8 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_in
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     infra::StringOutputStream::WithStorage<256> inputStream;
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network")->Id() << R"(","args":[[["invalid","arguments"],["CoCoCo","password"],["WLAN","1234"]]]}])";
+    services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network");
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":[[["invalid","arguments"],["CoCoCo","password"],["WLAN","1234"]]]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
     ExecuteAllActions();
@@ -392,7 +401,8 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_in
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     infra::StringOutputStream::WithStorage<256> inputStream;
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network")->Id() << R"(","args":[[["invalid","arguments"],["CoCoCo","password"],["WLAN","1234"]]]}])";
+    services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network");
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":[[["invalid","arguments"],["CoCoCo","password"],["WLAN","1234"]]]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
     ExecuteAllActions();
@@ -409,7 +419,8 @@ TEST_F(CucumberWireProtocolpServerTest, test_invoke_request_table_parsing)
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     infra::StringOutputStream::WithStorage<256> inputStream;
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network")->Id() << R"(","args":[[["ssid","key"],["CoCoCo","password"],["WLAN","1234"]]]}])";
+    services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network");
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":[[["ssid","key"],["CoCoCo","password"],["WLAN","1234"]]]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
     ExecuteAllActions();
@@ -426,7 +437,8 @@ TEST_F(CucumberWireProtocolpServerTest, test_invoke_request_string_arguments_par
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     infra::StringOutputStream::WithStorage<256> inputStream;
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the WiFi network '%s' is seen within %d minutes")->Id() << R"(","args":["HOMELAN", "10"]}])";
+    services::CucumberStepStorage::Instance().MatchStep("the WiFi network '%s' is seen within %d minutes");
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":["HOMELAN", "10"]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
     ExecuteAllActions();
@@ -443,7 +455,8 @@ TEST_F(CucumberWireProtocolpServerTest, test_invoke_request_string_arguments_wit
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     infra::StringOutputStream::WithStorage<256> inputStream;
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the WiFi network '%s' is seen within %d minutes")->Id() << R"(","args":["argument", "35", [["field","value"],["CoCoCo","password"],["WLAN","1234"]]]}])";
+    services::CucumberStepStorage::Instance().MatchStep("the WiFi network '%s' is seen within %d minutes");
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":["argument", "35", [["field","value"],["CoCoCo","password"],["WLAN","1234"]]]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
     ExecuteAllActions();
@@ -460,7 +473,8 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_su
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     infra::StringOutputStream::WithStorage<128> inputStream;
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("a step")->Id() << R"(","args":[]}])";
+    services::CucumberStepStorage::Instance().MatchStep("a step");
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":[]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
     ExecuteAllActions();
@@ -477,7 +491,8 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_ar
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     infra::StringOutputStream::WithStorage<256> inputStream;
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the WiFi network 'HOMELAN' is seen within 10 minutes")->Id() << R"(","args":["HOMELAN", "10"]}])";
+    services::CucumberStepStorage::Instance().MatchStep("the WiFi network 'HOMELAN' is seen within 10 minutes");
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":["HOMELAN", "10"]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
     ExecuteAllActions();
@@ -494,7 +509,8 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_ta
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     infra::StringOutputStream::WithStorage<256> inputStream;
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network")->Id() << R"(","args":[[["ssid","key"],["CoCoCo","password"],["WLAN","1234"]]]}])";
+    services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network");
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":[[["ssid","key"],["CoCoCo","password"],["WLAN","1234"]]]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
     ExecuteAllActions();
@@ -511,7 +527,8 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_ar
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     infra::StringOutputStream::WithStorage<256> inputStream;
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("sentence with 'argument' and 35 digit")->Id() << R"(","args":["argument", "35", [["field","value"],["CoCoCo","password"],["WLAN","1234"]]]}])";
+    services::CucumberStepStorage::Instance().MatchStep("sentence with 'argument' and 35 digit");
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":["argument", "35", [["field","value"],["CoCoCo","password"],["WLAN","1234"]]]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
     ExecuteAllActions();
@@ -564,30 +581,6 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_snippet_text_request_w
     std::vector<uint8_t> responseVector(response.begin(), response.end());
     EXPECT_EQ(responseVector, connection.sentData);
 
-    connection.sentData.clear();
-    EXPECT_CALL(connection, AbortAndDestroyMock());
-}
-
-TEST_F(CucumberWireProtocolpServerTest, test_macro)
-{
-    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
-    infra::StringOutputStream::WithStorage<256> inputStream;
-
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("when macro is called")->Id() << R"(","args":[]}])";
-    connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
-    ExecuteAllActions();
-    connection.sentData.clear();
-    EXPECT_CALL(connection, AbortAndDestroyMock());
-}
-
-TEST_F(CucumberWireProtocolpServerTest, test_2_macros)
-{
-    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
-    infra::StringOutputStream::WithStorage<256> inputStream;
-
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep("when macro is called")->Id() << R"(","args":[]}])";
-    connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
-    ExecuteAllActions();
     connection.sentData.clear();
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
