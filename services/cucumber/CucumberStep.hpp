@@ -18,62 +18,48 @@ namespace services
     public:
         CucumberStep(const services::CucumberStep& step);
         CucumberStep(const infra::BoundedString& stepName);
-        CucumberStep(const infra::JsonArray& matchArguments, const infra::JsonArray& tableHeaders, const infra::BoundedString& stepName);
 
         ~CucumberStep() {}
 
         bool operator==(const CucumberStep& other) const;
 
-        uint8_t Id();
-        void SetId(uint8_t);
         infra::JsonArray& MatchArguments();
         void SetMatchArguments(infra::JsonArray arguments);
-        infra::JsonArray& InvokeArguments();
-        void SetInvokeArguments(infra::JsonArray arguments);
         infra::BoundedString& StepName();
         void StepName(infra::BoundedString stepName);
         infra::BoundedString& MatchArgumentsBuffer();
-        uint8_t NrRows();
-        uint8_t NrCollumns();
-
 
         static uint8_t NrSteps();
         static void SetNrSteps(uint8_t nrSteps);
 
         template<class T>
-        T* GetStringArgument(uint8_t argumentNumber);
+        T* GetStringArgument(uint8_t argumentNumber, infra::JsonArray& arguments);
         bool ContainsStringArguments();
         uint8_t NrStringArguments();
-        infra::JsonArray ParseArguments(const infra::BoundedString& nameToMatch, infra::BoundedString& arrayBuffer);
+        infra::JsonArray ParseMatchArguments(const infra::BoundedString& nameToMatch);
 
         template <class T>
         T* GetTableArgument(const infra::BoundedString& fieldName, infra::JsonArray& arguments);
-        void GetTableDimensions();
 
         virtual bool Invoke(infra::JsonArray& arguments) = 0;
 
     private:
-        uint8_t id;
         infra::JsonArray matchArguments;
-        infra::JsonArray invokeArguments;
-        infra::BoundedString::WithStorage<256> stepName;
         infra::BoundedString::WithStorage<256> matchArgumentsBuffer;
-
-        uint8_t nrRows;
-        uint8_t nrCollumns;
+        infra::BoundedString::WithStorage<256> stepName;
 
         static uint8_t nrSteps;
     };
 
     template<class T>
-    inline T* CucumberStep::GetStringArgument(uint8_t argumentNumber)
+    inline T* CucumberStep::GetStringArgument(uint8_t argumentNumber, infra::JsonArray& arguments)
     {
         T* result = nullptr;
-        if (invokeArguments.begin() != invokeArguments.end())
+        if (arguments.begin() != arguments.end())
         {
-            infra::JsonArrayIterator argumentIterator(invokeArguments.begin());
-            uint8_t argumentCount = 0;
-            for (; argumentIterator != invokeArguments.end() && argumentCount != argumentNumber; argumentIterator++, argumentCount++);
+            infra::JsonArrayIterator argumentIterator(arguments.begin());
+            uint8_t argumentCount = 1;
+            for (; argumentIterator != arguments.end() && argumentCount != argumentNumber; argumentIterator++, argumentCount++);
             if (argumentCount == argumentNumber)
                 result = &argumentIterator->Get<infra::JsonString>();
         }
@@ -93,7 +79,8 @@ namespace services
                 {
                     infra::JsonArrayIterator collumnIterator = rowIterator->Get<infra::JsonArray>().begin();
                     collumnIterator++;
-                    result = &collumnIterator->Get<infra::JsonString>();
+                    if (collumnIterator != rowIterator->Get<infra::JsonArray>().end())
+                        result = &collumnIterator->Get<infra::JsonString>();
                 }
         return result;
     }

@@ -17,30 +17,6 @@
 
 static services::CucumberStepStorage stepStorage;
 
-/*
-GIVEN("the WiFi network '%s' is seen within %d minutes")
-{
-    if (ContainsStringArguments())
-    {
-        for (uint8_t i = 0; i < NrStringArguments(); i++)
-            if (GetStringArgument<infra::JsonString>(i) != nullptr)
-                tracer.Trace() << *GetStringArgument<infra::JsonString>(i) << "\n";
-            else
-                return false;
-        for (uint8_t i = 0; i < NrRows(); i++)
-        {
-            if (GetTableArgument<infra::JsonString>("field", i) != nullptr)
-                tracer.Trace() << *GetTableArgument<infra::JsonString>("field", i) << "\n";
-            else
-                return false;
-        }
-    }
-    else
-        return false;
-    return true;
-}
-*/
-
 GIVEN("a duplicate feature") 
 {
     return true;
@@ -58,37 +34,38 @@ GIVEN("a step")
 
 GIVEN("the WiFi network '%s' is seen within %d minutes")
 {
-    return true;
+    if (GetStringArgument<infra::JsonString>(1, arguments) != nullptr && GetStringArgument<infra::JsonString>(2, arguments) != nullptr)
+        return true;
+    return false;
 }
 
 GIVEN("the WiFi network '%s' is seen within %d minutes and %d seconds")
 {
-    return true;
+    if (GetStringArgument<infra::JsonString>(1, arguments) != nullptr && GetStringArgument<infra::JsonString>(2, arguments) != nullptr && GetStringArgument<infra::JsonString>(3, arguments) != nullptr)
+        return true;
+    return false;
 }
 
 GIVEN("the Node connects to that network") 
 {
-    static infra::IoOutputStream ioOutputStream;
-    static services::Tracer tracer(ioOutputStream);
     if (GetTableArgument<infra::JsonString>("ssid", arguments) != nullptr)
-    {
-        tracer.Trace() << *GetTableArgument<infra::JsonString>("ssid", arguments) << "\n";
         return true;
-    }
     return false;
 }
 
 GIVEN("a network is available") 
 {
-    if (GetTableArgument<infra::JsonString>("field", arguments) != nullptr)
-    return true;
-    else
-        return false;
+    if (GetTableArgument<infra::JsonString>("field", arguments) != nullptr && GetTableArgument<infra::JsonString>("ssid", arguments) && GetTableArgument<infra::JsonString>("key", arguments))
+        return true;
+    return false;
 }
 
 GIVEN("sentence with '%s' and %d digit")
 {
-    return true;
+    if (GetStringArgument<infra::JsonString>(1, arguments) != nullptr && GetStringArgument<infra::JsonString>(2, arguments) != nullptr)
+        if (GetTableArgument<infra::JsonString>("field", arguments) != nullptr && GetTableArgument<infra::JsonString>("ssid", arguments) && GetTableArgument<infra::JsonString>("key", arguments))
+            return true;
+    return false;
 }
 
 GIVEN("when macro is called")
@@ -324,13 +301,13 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_long_matching_string_o
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_excessive_argument_list_with_fail)
+TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_invalid_field_table_with_fail)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     infra::StringOutputStream::WithStorage<256> inputStream;
     services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network");
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":[[["invalid","arguments"],["CoCoCo","password"],["WLAN","1234"]]]}])";
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":[[["field","value"],["invalid","password"],["invalid","1234"]]]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
     ExecuteAllActions();
@@ -342,67 +319,13 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_ex
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_invalid_table_header_with_fail)
+TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_onecollumn_argument_table_with_fail)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     infra::StringOutputStream::WithStorage<256> inputStream;
     services::CucumberStepStorage::Instance().MatchStep("a network is available");
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":[[["invalid","header"],["CoCoCo","password"],["WLAN","1234"]]]}])";
-    connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
-
-    ExecuteAllActions();
-    std::string response = "[ \"fail\", { \"message\":\"Invoke Failed\", \"exception\":\"Exception.Invoke.Failed\" } ]\n";
-    std::vector<uint8_t> responseVector(response.begin(), response.end());
-    EXPECT_EQ(responseVector, connection.sentData);
-
-    connection.sentData.clear();
-    EXPECT_CALL(connection, AbortAndDestroyMock());
-}
-
-TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_nonexistent_argument_table_with_fail_1)
-{
-    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
-
-    infra::StringOutputStream::WithStorage<256> inputStream;
-    services::CucumberStepStorage::Instance().MatchStep("a network is available");
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":[[["ssid"],["CoCoCo"],["WLAN"]]]}])";
-    connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
-
-    ExecuteAllActions();
-    std::string response = "[ \"fail\", { \"message\":\"Invoke Failed\", \"exception\":\"Exception.Invoke.Failed\" } ]\n";
-    std::vector<uint8_t> responseVector(response.begin(), response.end());
-    EXPECT_EQ(responseVector, connection.sentData);
-
-    connection.sentData.clear();
-    EXPECT_CALL(connection, AbortAndDestroyMock());
-}
-
-TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_invalid_argument_table_with_fail_2)
-{
-    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
-
-    infra::StringOutputStream::WithStorage<256> inputStream;
-    services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network");
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":[[["invalid","arguments"],["CoCoCo","password"],["WLAN","1234"]]]}])";
-    connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
-
-    ExecuteAllActions();
-    std::string response = "[ \"fail\", { \"message\":\"Invoke Failed\", \"exception\":\"Exception.Invoke.Failed\" } ]\n";
-    std::vector<uint8_t> responseVector(response.begin(), response.end());
-    EXPECT_EQ(responseVector, connection.sentData);
-
-    connection.sentData.clear();
-    EXPECT_CALL(connection, AbortAndDestroyMock());
-}
-
-TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_invalid_argument_table_with_fail_3)
-{
-    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
-
-    infra::StringOutputStream::WithStorage<256> inputStream;
-    services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network");
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":[[["invalid","arguments"],["CoCoCo","password"],["WLAN","1234"]]]}])";
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":[[["field"],["ssid"],["key"]]]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
     ExecuteAllActions();
@@ -528,7 +451,7 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_ar
 
     infra::StringOutputStream::WithStorage<256> inputStream;
     services::CucumberStepStorage::Instance().MatchStep("sentence with 'argument' and 35 digit");
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":["argument", "35", [["field","value"],["CoCoCo","password"],["WLAN","1234"]]]}])";
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":["argument", "35", [["field","value"],["ssid","CoCoCo"],["key","password"]]]}])";
     connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
 
     ExecuteAllActions();

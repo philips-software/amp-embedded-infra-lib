@@ -4,16 +4,6 @@ namespace services
 {
     uint8_t CucumberStep::nrSteps = 0;
 
-    uint8_t CucumberStep::Id()
-    {
-        return id;
-    }
-
-    void CucumberStep::SetId(uint8_t idIn)
-    {
-        id = idIn;
-    }
-
     infra::JsonArray& CucumberStep::MatchArguments()
     {
         return matchArguments;
@@ -22,16 +12,6 @@ namespace services
     void CucumberStep::SetMatchArguments(infra::JsonArray arguments)
     {
         matchArguments = arguments;
-    }
-
-    infra::JsonArray& CucumberStep::InvokeArguments()
-    {
-        return invokeArguments;
-    }
-
-    void CucumberStep::SetInvokeArguments(infra::JsonArray arguments)
-    {
-        invokeArguments = arguments;
     }
 
     infra::BoundedString& CucumberStep::StepName()
@@ -47,16 +27,6 @@ namespace services
     infra::BoundedString& CucumberStep::MatchArgumentsBuffer()
     {
         return matchArgumentsBuffer;
-    }
-
-    uint8_t CucumberStep::NrRows()
-    {
-        return nrRows;
-    }
-
-    uint8_t CucumberStep::NrCollumns()
-    {
-        return nrCollumns;
     }
 
     uint8_t CucumberStep::NrSteps()
@@ -95,11 +65,11 @@ namespace services
         return nrArguments;
     }
 
-    infra::JsonArray CucumberStep::ParseArguments(const infra::BoundedString& nameToMatch, infra::BoundedString& arrayBuffer)
+    infra::JsonArray CucumberStep::ParseMatchArguments(const infra::BoundedString& nameToMatch)
     {
         {
-            arrayBuffer.clear();
-            infra::JsonArrayFormatter::WithStringStream arguments(infra::inPlace, arrayBuffer);
+            matchArgumentsBuffer.clear();
+            infra::JsonArrayFormatter::WithStringStream arguments(infra::inPlace, matchArgumentsBuffer);
             for (uint32_t argPos = 0, argOffset = 0; StepName().find("\'%s\'", argPos) != infra::BoundedString::npos || StepName().find("%d", argPos) != infra::BoundedString::npos; argPos++)
             {
                 if (StepName().find("\'%s\'", argPos) != infra::BoundedString::npos)
@@ -129,37 +99,7 @@ namespace services
                 }
             }
         }
-        return infra::JsonArray(arrayBuffer);
-    }
-
-    void CucumberStep::GetTableDimensions()
-    {
-        if (invokeArguments.begin() != invokeArguments.end())
-        {
-            infra::JsonArrayIterator argumentIterator(invokeArguments.begin());
-            if (ContainsStringArguments())
-            {
-                for (uint8_t stringArgumentCount = 0; stringArgumentCount < NrStringArguments(); stringArgumentCount++, argumentIterator++);
-            }
-            if (argumentIterator != invokeArguments.end())
-            {
-                infra::JsonArrayIterator rowIterator = argumentIterator->Get<infra::JsonArray>().begin();
-                infra::JsonArray collumnArray = rowIterator->Get<infra::JsonArray>();
-                for (auto string : JsonStringArray(collumnArray))
-                    nrCollumns++;
-                for (; rowIterator != invokeArguments.end(); nrRows++, rowIterator++);
-            }
-            else
-            {
-                nrRows = 0;
-                nrCollumns = 0;
-            }
-        }
-        else
-        {
-            nrRows = 0;
-            nrCollumns = 0;
-        }
+        return infra::JsonArray(matchArgumentsBuffer);
     }
 
     bool CucumberStep::operator==(const CucumberStep& other) const
@@ -181,15 +121,6 @@ namespace services
 
     CucumberStep::CucumberStep(const infra::BoundedString& stepName)
         : matchArguments(infra::JsonArray("[]"))
-        , stepName(stepName)
-        , nrRows(0)
-        , nrCollumns(0)
-    {
-        nrSteps++;
-    }
-
-    CucumberStep::CucumberStep(const infra::JsonArray& matchArguments, const infra::JsonArray& tableHeaders, const infra::BoundedString& stepName)
-        : matchArguments(matchArguments)
         , stepName(stepName)
     {
         nrSteps++;

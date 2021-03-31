@@ -33,7 +33,7 @@ namespace services                                                              
 }                                                                                                                                                  \
 namespace                                                                                                                                          \
 {                                                                                                                                                  \
-        static services::CLASSNAME VARNAME;                                                                                                        \
+    static services::CLASSNAME VARNAME;                                                                                                            \
 }                                                                                                                                                  \
 bool services::CLASSNAME::Invoke(infra::JsonArray& arguments)
 

@@ -28,10 +28,6 @@ public:
             : CucumberStep(stepName)
         {}
 
-        AWiFiNetworkIsAvailable(const infra::JsonArray& matchArguments, const infra::JsonArray& tableHeaders, const infra::BoundedString& stepName)
-            : CucumberStep(matchArguments, tableHeaders, stepName)
-        {}
-
     public:
         bool Invoke(infra::JsonArray& arguments)
         {
@@ -44,10 +40,6 @@ public:
     public:
         TheConnectivityNodeConnectsToThatNetwork(const infra::BoundedString& stepName)
             : CucumberStep(stepName)
-        {}
-
-        TheConnectivityNodeConnectsToThatNetwork(const infra::JsonArray& matchArguments, const infra::JsonArray& tableHeaders, const infra::BoundedString& stepName)
-            : CucumberStep(matchArguments, tableHeaders, stepName)
         {}
 
     public:
@@ -64,10 +56,6 @@ public:
             : CucumberStep(stepName)
         {}
 
-        TheConnectivityNodeShouldBeConnected(const infra::JsonArray& matchArguments, const infra::JsonArray& tableHeaders, const infra::BoundedString& stepName)
-            : CucumberStep(matchArguments, tableHeaders, stepName)
-        {}
-
     public:
         bool Invoke(infra::JsonArray& arguments)
         {
@@ -80,10 +68,6 @@ public:
     public:
         TheWiFiNetwork_IsSeenWithin_Seconds(const infra::BoundedString& stepName)
             : CucumberStep(stepName)
-        {}
-
-        TheWiFiNetwork_IsSeenWithin_Seconds(const infra::JsonArray& matchArguments, const infra::JsonArray& tableHeaders, const infra::BoundedString& stepName)
-            : CucumberStep(matchArguments, tableHeaders, stepName)
         {}
 
     public:
@@ -100,10 +84,6 @@ public:
             : CucumberStep(stepName)
         {}
 
-        StepWith3Arguments(const infra::JsonArray& matchArguments, const infra::JsonArray& tableHeaders, const infra::BoundedString& stepName)
-            : CucumberStep(matchArguments, tableHeaders, stepName)
-        {}
-
     public:
         bool Invoke(infra::JsonArray& arguments)
         {
@@ -111,11 +91,11 @@ public:
         }
     };
 
-    AWiFiNetworkIsAvailable aWiFiNetworkIsAvailable = AWiFiNetworkIsAvailable(infra::JsonArray("[]"), infra::JsonArray("[\"ssid\", \"key\"]"), "a WiFi network is available");
+    AWiFiNetworkIsAvailable aWiFiNetworkIsAvailable = AWiFiNetworkIsAvailable("a WiFi network is available");
     TheConnectivityNodeConnectsToThatNetwork theConnectivityNodeConnectsToThatNetwork = TheConnectivityNodeConnectsToThatNetwork("the Connectivity Node connects to that network");
-    TheConnectivityNodeShouldBeConnected theConnectivityNodeShouldBeConnected = TheConnectivityNodeShouldBeConnected(infra::JsonArray("[]"), infra::JsonArray("[]"), "the Connectivity Node should be connected");
-    TheWiFiNetwork_IsSeenWithin_Seconds theWiFiNetwork_IsSeenWithin_Seconds = TheWiFiNetwork_IsSeenWithin_Seconds(infra::JsonArray("[]"), infra::JsonArray("[]"), "the WiFi network '%s' is seen within %d seconds");
-    StepWith3Arguments stepWith3Arguments = StepWith3Arguments(infra::JsonArray("[]"), infra::JsonArray("[]"), "the WiFi network '%s' is seen within %d minutes and %d seconds");
+    TheConnectivityNodeShouldBeConnected theConnectivityNodeShouldBeConnected = TheConnectivityNodeShouldBeConnected("the Connectivity Node should be connected");
+    TheWiFiNetwork_IsSeenWithin_Seconds theWiFiNetwork_IsSeenWithin_Seconds = TheWiFiNetwork_IsSeenWithin_Seconds("the WiFi network '%s' is seen within %d seconds");
+    StepWith3Arguments stepWith3Arguments = StepWith3Arguments("the WiFi network '%s' is seen within %d minutes and %d seconds");
 
     services::CucumberWireProtocolParser cucumberWireProtocolParser;
 };
@@ -131,8 +111,7 @@ TEST_F(CucumberWireProtocolParserTest, test_step_parsing_arguments)
     infra::BoundedString::WithStorage<128> input = "the WiFi network 'CoCoCo' is seen within 10 minutes and 30 seconds";
     infra::JsonArray expectedArguments("[ { \"val\":\"CoCoCo\", \"pos\":18 }, { \"val\":\"10\", \"pos\":41 }, { \"val\":\"30\", \"pos\":56 } ]");
     
-    infra::BoundedString::WithStorage<128> arrayBuffer;
-    infra::JsonArray jsonArray = stepWith3Arguments.ParseArguments(input, arrayBuffer);
+    infra::JsonArray jsonArray = stepWith3Arguments.ParseMatchArguments(input);
 
     EXPECT_EQ(jsonArray, expectedArguments);
 }

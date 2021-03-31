@@ -71,7 +71,7 @@ namespace services
                 SetMatchId(count);
                 nrStepMatches++;
                 if (step.ContainsStringArguments() && nrStepMatches < 2)
-                    step.SetMatchArguments(step.ParseArguments(nameToMatch, step.MatchArgumentsBuffer()));
+                    step.SetMatchArguments(step.ParseMatchArguments(nameToMatch));
             }
             count++;
         }
@@ -107,7 +107,6 @@ namespace services
     void CucumberStepStorage::AddStep(CucumberStep& step)
     {
         this->stepList.push_back(step);
-        step.SetId(stepList.size() - 1);
     }
 
     void CucumberStepStorage::DeleteStep(CucumberStep& step)

@@ -115,14 +115,14 @@ namespace services
         if (!MatchStringArguments(invokeArguments))
             return false;
         else
-            return invokeStep->Invoke(invokeArguments);
+            return stepStorage.GetStep(invokeId).Invoke(invokeArguments);
     }
 
     bool CucumberWireProtocolParser::MatchStringArguments(infra::JsonArray& arguments)
     {
-        if (invokeStep != nullptr)
+        if (&stepStorage.GetStep(invokeId) != nullptr)
         {
-            if (arguments.begin() == arguments.end() && (invokeStep->ContainsStringArguments() == false))
+            if (arguments.begin() == arguments.end() && (stepStorage.GetStep(invokeId).ContainsStringArguments() == false))
                 return true;
 
             infra::JsonArrayIterator argumentIterator(arguments.begin());
@@ -133,7 +133,7 @@ namespace services
                 validStringCount++;
                 argumentIterator++;
             }
-            if (invokeStep->NrStringArguments() != validStringCount)
+            if (stepStorage.GetStep(invokeId).NrStringArguments() != validStringCount)
                 return false;
             return true;
         }
@@ -192,8 +192,7 @@ namespace services
 
     void CucumberWireProtocolParser::FormatInvokeResponse(infra::BoundedString& responseBuffer)
     {
-        invokeStep = &stepStorage.GetStep(invokeId);
-        if (Invoke() && invokeStep != nullptr)
+        if (Invoke() && &stepStorage.GetStep(invokeId) != nullptr)
             SuccessMessage(responseBuffer);
         else
             FailureMessage(responseBuffer, "Invoke Failed", "Exception.Invoke.Failed");

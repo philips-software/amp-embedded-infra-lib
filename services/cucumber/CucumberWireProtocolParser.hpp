@@ -38,8 +38,6 @@ namespace services
         infra::JsonArray invokeArguments;
         infra::BoundedString::WithStorage<256> invokeArgumentBuffer;
 
-        services::CucumberStep* invokeStep;
-
         bool ContainsArguments(const infra::BoundedString& string);
         bool Invoke();
 
