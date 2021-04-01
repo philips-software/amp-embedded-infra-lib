@@ -102,8 +102,8 @@ public:
 
 TEST_F(CucumberWireProtocolParserTest, test_step_contains_arguments)
 {
-    EXPECT_FALSE(aWiFiNetworkIsAvailable.ContainsStringArguments());
-    EXPECT_TRUE(theWiFiNetwork_IsSeenWithin_Seconds.ContainsStringArguments());
+    EXPECT_FALSE(aWiFiNetworkIsAvailable.HasStringArguments());
+    EXPECT_TRUE(theWiFiNetwork_IsSeenWithin_Seconds.HasStringArguments());
 }
 
 TEST_F(CucumberWireProtocolParserTest, test_step_parsing_arguments)

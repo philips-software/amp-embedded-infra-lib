@@ -70,12 +70,8 @@ namespace services
     bool CucumberWireProtocolParser::ContainsArguments(const infra::BoundedString& string)
     {
         for (char& c : string)
-        {
-            infra::StringOutputStream::WithStorage<1> cToInt;
-            cToInt << c;
             if (c == '\'' || (c >= '0' && c <= '9'))
                 return true;
-        }
         return false;
     }
 
@@ -122,7 +118,7 @@ namespace services
     {
         if (&stepStorage.GetStep(invokeId) != nullptr)
         {
-            if (arguments.begin() == arguments.end() && (stepStorage.GetStep(invokeId).ContainsStringArguments() == false))
+            if (arguments.begin() == arguments.end() && (stepStorage.GetStep(invokeId).HasStringArguments() == false))
                 return true;
 
             infra::JsonArrayIterator argumentIterator(arguments.begin());

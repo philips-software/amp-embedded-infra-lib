@@ -36,7 +36,6 @@ namespace services
 
         uint8_t invokeId;
         infra::JsonArray invokeArguments;
-        infra::BoundedString::WithStorage<256> invokeArgumentBuffer;
 
         bool ContainsArguments(const infra::BoundedString& string);
         bool Invoke();

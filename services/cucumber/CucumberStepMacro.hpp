@@ -28,13 +28,19 @@ namespace services                                                              
         }                                                                                                                                          \
                                                                                                                                                    \
     public:                                                                                                                                        \
-        bool Invoke(infra::JsonArray& arguments);                                                                                                  \
+        bool Invoke(infra::JsonArray& arguments)                                                                                                   \
+        {                                                                                                                                          \
+            invokeArguments = &arguments;                                                                                                          \
+            return Execute();                                                                                                                      \
+        }                                                                                                                                          \
+    private:                                                                                                                                       \
+        bool Execute();                                                                                                                            \
     };                                                                                                                                             \
 }                                                                                                                                                  \
 namespace                                                                                                                                          \
 {                                                                                                                                                  \
     static services::CLASSNAME VARNAME;                                                                                                            \
 }                                                                                                                                                  \
-bool services::CLASSNAME::Invoke(infra::JsonArray& arguments)
+bool services::CLASSNAME::Execute()
 
 #endif

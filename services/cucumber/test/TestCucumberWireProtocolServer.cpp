@@ -34,36 +34,36 @@ GIVEN("a step")
 
 GIVEN("the WiFi network '%s' is seen within %d minutes")
 {
-    if (GetStringArgument<infra::JsonString>(1, arguments) != nullptr && GetStringArgument<infra::JsonString>(2, arguments) != nullptr)
+    if (ContainsStringArgument(0) && ContainsStringArgument(1))
         return true;
     return false;
 }
 
 GIVEN("the WiFi network '%s' is seen within %d minutes and %d seconds")
 {
-    if (GetStringArgument<infra::JsonString>(1, arguments) != nullptr && GetStringArgument<infra::JsonString>(2, arguments) != nullptr && GetStringArgument<infra::JsonString>(3, arguments) != nullptr)
+    if (ContainsStringArgument(0) && ContainsStringArgument(1) && ContainsStringArgument(2))
         return true;
     return false;
 }
 
 GIVEN("the Node connects to that network") 
 {
-    if (GetTableArgument<infra::JsonString>("ssid", arguments) != nullptr)
+    if (ContainsTableArgument("ssid"))
         return true;
     return false;
 }
 
 GIVEN("a network is available") 
 {
-    if (GetTableArgument<infra::JsonString>("field", arguments) != nullptr && GetTableArgument<infra::JsonString>("ssid", arguments) && GetTableArgument<infra::JsonString>("key", arguments))
+    if (ContainsTableArgument("field") && ContainsTableArgument("ssid") && ContainsTableArgument("key"))
         return true;
     return false;
 }
 
 GIVEN("sentence with '%s' and %d digit")
 {
-    if (GetStringArgument<infra::JsonString>(1, arguments) != nullptr && GetStringArgument<infra::JsonString>(2, arguments) != nullptr)
-        if (GetTableArgument<infra::JsonString>("field", arguments) != nullptr && GetTableArgument<infra::JsonString>("ssid", arguments) && GetTableArgument<infra::JsonString>("key", arguments))
+    if (ContainsStringArgument(0) && ContainsStringArgument(1))
+        if (ContainsTableArgument("field") && ContainsTableArgument("ssid") && ContainsTableArgument("key"))
             return true;
     return false;
 }

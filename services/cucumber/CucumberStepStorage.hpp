@@ -30,7 +30,6 @@ namespace services
         void SetMatchId(uint8_t& id);
 
         CucumberStep& GetStep(uint8_t id);
-        uint8_t GetId(CucumberStep& step);
         void MatchStep(const infra::BoundedString& nameToMatch);
         void AddStep(CucumberStep& step);
         void DeleteStep(CucumberStep& step);

@@ -36,9 +36,7 @@ namespace services
         uint8_t count = 0;
         uint8_t sizeOffset = 0;
         for (infra::BoundedString::iterator c = nameToMatch.begin(); c != nameToMatch.end(); ++c, count++)
-        {
             if (step.StepName()[count] != *c)
-            {
                 if (((count - 1) >= 0 && (count + 2) <= step.StepName().size()) && (step.StepName()[count - 1] == '\'' && step.StepName()[count] == '%' && step.StepName()[count + 1] == 's' && step.StepName()[count + 2] == '\'' && *(c - 1) == '\''))
                 {
                     count += 2;
@@ -53,8 +51,6 @@ namespace services
                 }
                 else
                     return false;
-            }
-        }
         if (step.StepName().size() + sizeOffset == nameToMatch.size())
             return true;
         else
@@ -70,7 +66,7 @@ namespace services
             {
                 SetMatchId(count);
                 nrStepMatches++;
-                if (step.ContainsStringArguments() && nrStepMatches < 2)
+                if (step.HasStringArguments() && nrStepMatches < 2)
                     step.SetMatchArguments(step.ParseMatchArguments(nameToMatch));
             }
             count++;
@@ -90,18 +86,6 @@ namespace services
         while (id-- > 0)
             ++step;
         return *step;
-    }
-
-    uint8_t CucumberStepStorage::GetId(CucumberStep& step)
-    {
-        uint8_t count = 0;
-        for (auto& stepIterator : stepList)
-        {
-            if (&stepIterator == &step)
-                return count;
-            count++;
-        }
-        return count;
     }
 
     void CucumberStepStorage::AddStep(CucumberStep& step)
