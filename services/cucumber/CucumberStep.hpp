@@ -9,6 +9,7 @@
 #include "infra/util/IntrusiveForwardList.hpp"
 #include "services/tracer/Tracer.hpp"
 #include "services/tracer/TracingOutputStream.hpp"
+#include "services/cucumber/CucumberContext.hpp"
 
 namespace services
 {
@@ -45,7 +46,7 @@ namespace services
 
     protected:
         infra::JsonArray* invokeArguments;
-
+        
     private:
         infra::JsonArray matchArguments;
         infra::BoundedString::WithStorage<256> matchArgumentsBuffer;

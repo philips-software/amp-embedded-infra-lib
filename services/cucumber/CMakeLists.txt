@@ -1,5 +1,7 @@
 ccola_component(cucumber static_library)
 
+	ccola_inheritable_include_directories(../..)
+
     ccola_sources(
         CucumberWireProtocolServer.cpp
         CucumberWireProtocolServer.hpp

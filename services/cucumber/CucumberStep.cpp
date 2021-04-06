@@ -70,6 +70,7 @@ namespace services
                     if (collumnIterator != rowIterator->Get<infra::JsonArray>().end())
                         return collumnIterator->Get<infra::JsonString>();
                 }
+        return infra::JsonString("");
     }
 
     bool CucumberStep::HasStringArguments()
@@ -113,6 +114,7 @@ namespace services
             if (argumentCount == argumentNumber)
                 return argumentIterator->Get<infra::JsonString>();
         }
+        return infra::JsonString("");
     }
 
     infra::JsonArray CucumberStep::ParseMatchArguments(const infra::BoundedString& nameToMatch)

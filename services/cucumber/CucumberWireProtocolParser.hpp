@@ -2,6 +2,7 @@
 #define SERVICES_CUCUMBER_WIRE_PROTOCOL_PARSER_HPP
 
 #include "services/cucumber/CucumberStepStorage.hpp"
+#include "services/cucumber/CucumberContext.hpp"
 #include "services/cucumber/CucumberStep.hpp"
 #include "infra/stream/StringInputStream.hpp"
 

@@ -14,6 +14,7 @@
 #include "services/cucumber/CucumberStepStorage.hpp"
 #include "services/cucumber/CucumberStep.hpp"
 #include "services/cucumber/CucumberWireProtocolParser.hpp"
+#include "services/cucumber/CucumberContext.hpp"
 
 namespace services
 {

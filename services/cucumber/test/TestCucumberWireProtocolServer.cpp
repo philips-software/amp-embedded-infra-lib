@@ -49,7 +49,9 @@ GIVEN("the WiFi network '%s' is seen within %d minutes and %d seconds")
 GIVEN("the Node connects to that network") 
 {
     if (ContainsTableArgument("ssid"))
-        return true;
+    {
+            return true;
+    }
     return false;
 }
 
@@ -65,6 +67,8 @@ GIVEN("sentence with '%s' and %d digit")
     if (ContainsStringArgument(0) && ContainsStringArgument(1))
         if (ContainsTableArgument("field") && ContainsTableArgument("ssid") && ContainsTableArgument("key"))
             return true;
+    GetTableArgument("field");
+    
     return false;
 }
 
