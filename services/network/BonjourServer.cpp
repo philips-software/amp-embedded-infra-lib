@@ -204,7 +204,7 @@ namespace services
 
         stream << infra::text << dnsHostname;
         stream << payload;
-        stream << *server.ipv6Address;
+        stream << services::ToNetworkOrder(*server.ipv6Address);
     }
 
     void BonjourServer::Answer::AddNoAaaa(const DnsHostnameParts& dnsHostname)

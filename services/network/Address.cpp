@@ -124,6 +124,13 @@ namespace services
         return infra::MakeOptional(ipv6Address);
     }
 
+    IPv6AddressNetworkOrder ToNetworkOrder(IPv6Address address)
+    {
+        IPv6AddressNetworkOrder result;
+        std::copy(address.begin(), address.end(), result.begin());
+        return result;
+    }
+
     bool IPv4InterfaceAddresses::operator==(const IPv4InterfaceAddresses& other) const
     {
         return infra::Equals()

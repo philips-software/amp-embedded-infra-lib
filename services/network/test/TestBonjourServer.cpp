@@ -274,7 +274,7 @@ public:
         return infra::ConstructBin()
             (8)("instance")(5)("local")(0)
             .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeAAAA, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 16 })
-            .Value<services::IPv6Address>({ 1, 2, 3, 4, 5, 6, 7, 8 })
+            .Value<services::IPv6AddressNetworkOrder>({ 1, 2, 3, 4, 5, 6, 7, 8 })
             .Vector();
     }
 
