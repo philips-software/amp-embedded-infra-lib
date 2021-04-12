@@ -37,7 +37,7 @@
 #endif
 
 #ifndef UTIL_FUNCTION_ALIGNMENT
-#define UTIL_FUNCTION_ALIGNMENT uint32_t
+#define UTIL_FUNCTION_ALIGNMENT void*
 #endif
 
 namespace infra
