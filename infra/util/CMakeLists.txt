@@ -64,11 +64,6 @@ ccola_component(util static_library)
         infra.util.natvis
     )
 
-    ccola_inheritable_definitions(
-        x86_64:
-            UTIL_FUNCTION_ALIGNMENT=uint64_t
-    )
-
 ccola_end_component()
 
 ccola_subdirectories(
