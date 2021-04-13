@@ -2,6 +2,9 @@ name: Continuous Integration
 
 on: [push, pull_request]
 
+env:
+  CMAKE_BUILD_PARALLEL_LEVEL=4
+  GTEST_COLOR=1
 jobs:
   build_test:
     runs-on: ${{ matrix.os }}
@@ -49,6 +52,9 @@ jobs:
           ctest -C Debug -T Test --no-compress-output --output-on-failure
           gcovr --sonarqube=../coverage.xml --exclude-unreachable-branches --exclude-throw-branches -j 4 --root=.. --exclude=.*/generated/.* --exclude=.*/examples/.* --exclude=.*/external/.* --exclude=.*/lwip/.* --exclude=.*/tracing/.* --exclude=.*/test/.*
       - name: Analysis
+        env:
+          # to get access to secrets.SONAR_TOKEN, provide GITHUB_TOKEN
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           export SONAR_PROJECT_VERSION=`grep -m 1 -o '".*"' Build/[Vv]ersion.h | tr -d '"'`
-          sonar-scanner
+          sonar-scanner -Dsonar.login=${{ secrets.SONAR_TOKEN }} -Dsonar.host.url=https://sonarcloud.io/
