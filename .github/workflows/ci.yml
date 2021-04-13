@@ -7,6 +7,7 @@ env:
   GTEST_COLOR: 1
 jobs:
   build_test:
+    name: Build & Test
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -21,6 +22,7 @@ jobs:
           cmake --build .
           ctest -C Debug -T Test --no-compress-output --output-on-failure
   static_analysis:
+    name: Static Analysis
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
