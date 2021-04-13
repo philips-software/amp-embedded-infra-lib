@@ -31,9 +31,9 @@ jobs:
           packages: gcovr
       - name: Install Sonar Scanner
         env:
-          SONAR_SCANNER_VERSION: "4.6.0.2311"
-          SONAR_SCANNER_URL: "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip"
-          SONAR_WRAPPER_URL: "https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip"
+          SONAR_SCANNER_VERSION: 4.6.0.2311
+          SONAR_SCANNER_URL: https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.0.2311-linux.zip
+          SONAR_WRAPPER_URL: https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
         run: |
           wget -qN "${{ env.SONAR_WRAPPER_URL }}"
           wget -qN "${{ env.SONAR_SCANNER_URL }}"
