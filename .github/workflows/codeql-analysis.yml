@@ -2,6 +2,8 @@ name: CodeQL Analysis
 
 on: [push, pull_request]
 
+env:
+  CMAKE_BUILD_PARALLEL_LEVEL: 4
 jobs:
   analyze:
     name: Analyze
