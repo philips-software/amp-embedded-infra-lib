@@ -7,6 +7,7 @@
 #include "services/cucumber/CucumberStep.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
+#include "infra/util/Function.hpp"
 
 class CucumberWireProtocolParserTest
     : public testing::Test
@@ -29,9 +30,9 @@ public:
         {}
 
     public:
-        bool Invoke(infra::JsonArray& arguments)
+        void Invoke(infra::JsonArray& arguments, infra::Function<void(bool)> onDone)
         {
-            return true;
+            return;
         }
     };
 
@@ -43,9 +44,9 @@ public:
         {}
 
     public:
-        bool Invoke(infra::JsonArray& arguments)
+        void Invoke(infra::JsonArray& arguments, infra::Function<void(bool)> onDone)
         {
-            return true;
+            return;
         }
     };
 
@@ -57,9 +58,9 @@ public:
         {}
 
     public:
-        bool Invoke(infra::JsonArray& arguments)
+        void Invoke(infra::JsonArray& arguments, infra::Function<void(bool)> onDone)
         {
-            return true;
+            return;
         }
     };
 
@@ -71,9 +72,9 @@ public:
         {}
 
     public:
-        bool Invoke(infra::JsonArray& arguments)
+        void Invoke(infra::JsonArray& arguments, infra::Function<void(bool)> onDone)
         {
-            return true;
+            return;
         }
     };
 
@@ -85,9 +86,9 @@ public:
         {}
 
     public:
-        bool Invoke(infra::JsonArray& arguments)
+        void Invoke(infra::JsonArray& arguments, infra::Function<void(bool)> onDone)
         {
-            return true;
+            return;
         }
     };
 

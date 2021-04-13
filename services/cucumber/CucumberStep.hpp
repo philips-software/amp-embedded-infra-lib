@@ -10,6 +10,7 @@
 #include "services/tracer/Tracer.hpp"
 #include "services/tracer/TracingOutputStream.hpp"
 #include "services/cucumber/CucumberContext.hpp"
+#include "infra/util/Function.hpp"
 
 namespace services
 {
@@ -42,7 +43,7 @@ namespace services
         infra::JsonString GetTableArgument(const infra::BoundedString& fieldName);
         bool ContainsTableArgument(const infra::BoundedString& fieldName);
 
-        virtual bool Invoke(infra::JsonArray& arguments) = 0;
+        virtual void Invoke(infra::JsonArray& arguments, infra::Function<void(bool)> OnDone) = 0;
 
     protected:
         infra::JsonArray* invokeArguments;

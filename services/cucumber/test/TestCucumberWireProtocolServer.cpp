@@ -16,70 +16,89 @@
 #include "services/cucumber/CucumberStepMacro.hpp"
 
 static services::CucumberStepStorage stepStorage;
+static services::CucumberContext context;
+static uint8_t value = 45;
 
 GIVEN("a duplicate feature") 
 {
-    return true;
+    onDone(true);
 }
 
 GIVEN("a duplicate feature") 
 {
-    return true;
+    onDone(true);
 }
 
 GIVEN("a step") 
 { 
-    return true; 
+    onDone(true);
 }
 
 GIVEN("the WiFi network '%s' is seen within %d minutes")
 {
     if (ContainsStringArgument(0) && ContainsStringArgument(1))
-        return true;
-    return false;
+        onDone(true);
+    else
+        onDone(false);
 }
 
 GIVEN("the WiFi network '%s' is seen within %d minutes and %d seconds")
 {
     if (ContainsStringArgument(0) && ContainsStringArgument(1) && ContainsStringArgument(2))
-        return true;
-    return false;
+        onDone(true);
+    else
+        onDone(false);
 }
 
 GIVEN("the Node connects to that network") 
 {
     if (ContainsTableArgument("ssid"))
-    {
-            return true;
-    }
-    return false;
+        onDone(true);
+    else
+        onDone(false);
 }
 
 GIVEN("a network is available") 
 {
     if (ContainsTableArgument("field") && ContainsTableArgument("ssid") && ContainsTableArgument("key"))
-        return true;
-    return false;
+        onDone(true);
+    else
+        onDone(false);
 }
 
 GIVEN("sentence with '%s' and %d digit")
 {
     if (ContainsStringArgument(0) && ContainsStringArgument(1))
         if (ContainsTableArgument("field") && ContainsTableArgument("ssid") && ContainsTableArgument("key"))
-            return true;
+            onDone(true);
+        else
+            onDone(false);
     GetTableArgument("field");
+
     
-    return false;
 }
 
 GIVEN("when macro is called")
 {
-    return true;
+    onDone(true);
 }
 
 GIVEN("when another macro is called")
 {
-    return true;
+    onDone(true);
+}
+
+GIVEN("a value is stored")
+{
+
+    context.Add("key0", &value);
+    onDone(true);
+}
+
+GIVEN("a value is used")
+{
+    uint8_t value2 = context.Get<uint8_t>("key0");
+    onDone(true);
 }
 
 class CucumberWireProtocolpServerTest
@@ -118,25 +137,6 @@ TEST_F(CucumberWireProtocolpServerTest, accept_ipv6_connection)
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv6AddressLocalHost());
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
-
-/*
-TEST_F(CucumberWireProtocolpServerTest, invoke_mock_step)
-{
-    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
-    infra::StringOutputStream::WithStorage<256> inputStream;
-
-    services::CucumberStepStorage::Instance().AddStep(cucumberStepMock);
-    
-    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchStep(cucumberStepMock.StepName())->Id() << R"(","args":[]}])";
-    EXPECT_CALL(cucumberStepMock, Invoke);
-    connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
-    ExecuteAllActions();
-    
-    services::CucumberStepStorage::Instance().ClearStorage();
-    connection.sentData.clear();
-    EXPECT_CALL(connection, AbortAndDestroyMock());
-}
-*/
 
 TEST_F(CucumberWireProtocolpServerTest, should_respond_to_non_json_format_with_fail)
 {
@@ -509,5 +509,28 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_snippet_text_request_w
     EXPECT_EQ(responseVector, connection.sentData);
 
     connection.sentData.clear();
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+}
+
+TEST_F(CucumberWireProtocolpServerTest, test_context_storage)
+{
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    infra::StringOutputStream::WithStorage<256> inputStream;
+    services::CucumberStepStorage::Instance().MatchStep("a value is stored");
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":[]}])";
+
+    connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
+    ExecuteAllActions();
+    connection.sentData.clear();
+
+    inputStream.Storage().clear();
+    services::CucumberStepStorage::Instance().MatchStep("a value is used");
+    inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":[]}])";
+
+    connection.SimulateDataReceived(infra::StringAsByteRange(inputStream.Storage()));
+    ExecuteAllActions();
+    connection.sentData.clear();
+
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }

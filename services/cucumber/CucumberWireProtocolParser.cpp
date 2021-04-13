@@ -106,14 +106,6 @@ namespace services
         stream << infra::StringAsByteRange(responseBuffer);
     }
 
-    bool CucumberWireProtocolParser::Invoke()
-    {
-        if (!MatchStringArguments(invokeArguments))
-            return false;
-        else
-            return stepStorage.GetStep(invokeId).Invoke(invokeArguments);
-    }
-
     bool CucumberWireProtocolParser::MatchStringArguments(infra::JsonArray& arguments)
     {
         if (&stepStorage.GetStep(invokeId) != nullptr)
@@ -188,8 +180,13 @@ namespace services
 
     void CucumberWireProtocolParser::FormatInvokeResponse(infra::BoundedString& responseBuffer)
     {
-        if (Invoke() && &stepStorage.GetStep(invokeId) != nullptr)
-            SuccessMessage(responseBuffer);
+        if (MatchStringArguments(invokeArguments))
+            stepStorage.GetStep(invokeId).Invoke(invokeArguments, [&](bool success) {
+                if (success)
+                    SuccessMessage(responseBuffer);
+                else
+                    FailureMessage(responseBuffer, "Invoke Failed", "Exception.Invoke.Failed");
+             });
         else
             FailureMessage(responseBuffer, "Invoke Failed", "Exception.Invoke.Failed");
     }

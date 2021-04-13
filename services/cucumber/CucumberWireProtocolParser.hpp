@@ -39,7 +39,6 @@ namespace services
         infra::JsonArray invokeArguments;
 
         bool ContainsArguments(const infra::BoundedString& string);
-        bool Invoke();
 
         bool MatchStringArguments(infra::JsonArray& arguments);
 

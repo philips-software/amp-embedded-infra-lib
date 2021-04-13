@@ -3,6 +3,7 @@
 
 #include "gmock/gmock.h"
 #include "services\cucumber\CucumberWireProtocolServer.hpp"
+#include "infra/util/Function.hpp"
 
 namespace services
 {
@@ -20,7 +21,7 @@ namespace services
             : CucumberStep("Mock Step")
         {}
 
-        MOCK_METHOD1(Invoke, bool(infra::JsonArray& arguments));
+        MOCK_METHOD2(Invoke, void(infra::JsonArray& arguments, infra::Function<void(bool)> onDone));
     };
 
 }

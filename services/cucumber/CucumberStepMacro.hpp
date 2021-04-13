@@ -28,19 +28,19 @@ namespace services                                                              
         }                                                                                                                                          \
                                                                                                                                                    \
     public:                                                                                                                                        \
-        bool Invoke(infra::JsonArray& arguments)                                                                                                   \
+        void Invoke(infra::JsonArray& arguments, infra::Function<void(bool)> onDone)                                                                                                   \
         {                                                                                                                                          \
             invokeArguments = &arguments;                                                                                                          \
-            return Execute();                                                                                                                      \
+            Execute(onDone);                                                                                                                      \
         }                                                                                                                                          \
     private:                                                                                                                                       \
-        bool Execute();                                                                                                                            \
+        void Execute(infra::Function<void(bool)> onDone);                                                                                                                            \
     };                                                                                                                                             \
 }                                                                                                                                                  \
 namespace                                                                                                                                          \
 {                                                                                                                                                  \
     static services::CLASSNAME VARNAME;                                                                                                            \
 }                                                                                                                                                  \
-bool services::CLASSNAME::Execute()
+void services::CLASSNAME::Execute(infra::Function<void(bool)> onDone)
 
 #endif
