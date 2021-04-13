@@ -14,9 +14,9 @@ jobs:
       - name: Build and Test
         run: |
           cmake -E make_directory Build && cd Build
-          cmake .. -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=Debug
+          cmake .. -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=RelWithDebInfo
           cmake --build .
-          ctest -C Debug -T Test --no-compress-output --output-on-failure
+          ctest -C RelWithDebInfo -T Test --no-compress-output --output-on-failure
   static_analysis:
     runs-on: ubuntu-latest
     steps:
@@ -31,14 +31,24 @@ jobs:
           packages: gcovr
       - name: Install Sonar Scanner
         env:
-          SONAR_WRAPPER_URL: https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
-          SONAR_SCANNER_URL: https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.0.2311-linux.zip
+          SONAR_SCANNER_VERSION: "4.6.0.2311"
+          SONAR_SCANNER_URL: "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip"
+          SONAR_WRAPPER_URL: "https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip"
         run: |
           wget -qN "${{ env.SONAR_WRAPPER_URL }}"
           wget -qN "${{ env.SONAR_SCANNER_URL }}"
           unzip -qqo build-wrapper-linux-x86.zip
-          unzip -qqo sonar-scanner-cli-4.6.0.2311-linux.zip
+          unzip -qqo "sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip"
+          echo "${PWD}/build-wrapper-linux-x86" >> $GITHUB_PATH
+          echo "${PWD}/sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux/bin" >> $GITHUB_PATH
       - name: Build
         run: |
           cmake -E make_directory Build && cd Build
           cmake -G Ninja .. -DCCOLA_INSTALL_DIR=Install -DCCOLA_ENABLE_COVERAGE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
+          build-wrapper-linux-x86-64 --out-dir ../sonar-build-wrapper cmake --build . --config Debug
+          ctest -C Debug -T Test --no-compress-output --output-on-failure
+          gcovr --sonarqube=../coverage.xml --exclude-unreachable-branches --exclude-throw-branches -j 4 --root=.. --exclude=.*/generated/.* --exclude=.*/examples/.* --exclude=.*/external/.* --exclude=.*/lwip/.* --exclude=.*/tracing/.* --exclude=.*/test/.*
+      - name: Analysis
+        run: |
+          export SONAR_PROJECT_VERSION=`grep -m 1 -o '".*"' Build/[Vv]ersion.h | tr -d '"'`
+          sonar-scanner
