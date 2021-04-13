@@ -14,6 +14,30 @@ jobs:
       - name: Build and Test
         run: |
           cmake -E make_directory Build && cd Build
-          cmake .. -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=Debug
+          cmake -G Ninja .. -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=Debug
           cmake --build .
-          ctest -C Debug -T Test --output-on-failure
+          ctest -C Debug -T Test --no-compress-output --output-on-failure
+  static_analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Disable shallow clone to enable blame information
+      - uses: actions/setup-python@v1
+      - uses: BSFishy/pip-action@v1
+        with:
+          packages: gcovr
+      - name: Install Sonar Scanner
+        env:
+          SONAR_WRAPPER_URL: https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
+          SONAR_SCANNER_URL: https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.0.2311-linux.zip
+        run: |
+          wget -qN "${{ env.SONAR_WRAPPER_URL }}"
+          wget -qN "${{ env.SONAR_SCANNER_URL }}"
+          unzip -qqo build-wrapper-linux-x86.zip
+          unzip -qqo sonar-scanner-cli-4.6.0.2311-linux.zip
+      - name: Build
+        run: |
+          cmake -E make_directory Build && cd Build
+          cmake -G Ninja .. -DCCOLA_INSTALL_DIR=Install -DCCOLA_ENABLE_COVERAGE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
