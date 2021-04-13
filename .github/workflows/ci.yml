@@ -14,9 +14,9 @@ jobs:
       - name: Build and Test
         run: |
           cmake -E make_directory Build && cd Build
-          cmake .. -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake .. -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=Debug
           cmake --build .
-          ctest -C RelWithDebInfo -T Test --no-compress-output --output-on-failure
+          ctest -C Debug -T Test --no-compress-output --output-on-failure
   static_analysis:
     runs-on: ubuntu-latest
     steps:
@@ -40,7 +40,7 @@ jobs:
           unzip -qqo build-wrapper-linux-x86.zip
           unzip -qqo "sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip"
           echo "${PWD}/build-wrapper-linux-x86" >> $GITHUB_PATH
-          echo "${PWD}/sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux/bin" >> $GITHUB_PATH
+          echo "${PWD}/sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-linux/bin" >> $GITHUB_PATH
       - name: Build
         run: |
           cmake -E make_directory Build && cd Build

@@ -1,5 +1,7 @@
 ccola_component(http_server x86: executable other: skip)
 
+    ccola_add_version_header_dependency()
+
     ccola_sources(
         TimeHttpPage.cpp
         TimeHttpPage.hpp
