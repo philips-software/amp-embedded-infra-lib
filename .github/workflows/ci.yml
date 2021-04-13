@@ -3,8 +3,8 @@ name: Continuous Integration
 on: [push, pull_request]
 
 env:
-  CMAKE_BUILD_PARALLEL_LEVEL=4
-  GTEST_COLOR=1
+  CMAKE_BUILD_PARALLEL_LEVEL: 4
+  GTEST_COLOR: 1
 jobs:
   build_test:
     runs-on: ${{ matrix.os }}
