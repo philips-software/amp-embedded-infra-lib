@@ -11,11 +11,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - uses: seanmiddleditch/gha-setup-ninja@v3
       - name: Build and Test
         run: |
           cmake -E make_directory Build && cd Build
-          cmake -G Ninja .. -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=Debug
+          cmake .. -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=Debug
           cmake --build .
           ctest -C Debug -T Test --no-compress-output --output-on-failure
   static_analysis:
