@@ -38,6 +38,8 @@ namespace infra
     {
     public:
         explicit SystemStateParticipant(SystemStateManager& aSystemStateManager);
+        SystemStateParticipant(const SystemStateParticipant& other) = delete;
+        SystemStateParticipant& operator=(const SystemStateParticipant& other) = delete;
         ~SystemStateParticipant();
 
     protected:

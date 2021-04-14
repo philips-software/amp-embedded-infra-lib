@@ -124,6 +124,8 @@ namespace hal
     {
     public:
         explicit ScopedHigh(OutputPin& pin);
+        ScopedHigh(const ScopedHigh& other) = delete;
+        ScopedHigh& operator=(const ScopedHigh& other) = delete;
         ~ScopedHigh();
 
     private:
@@ -134,6 +136,8 @@ namespace hal
     {
     public:
         explicit ScopedLow(OutputPin& pin);
+        ScopedLow(const ScopedLow& other) = delete;
+        ScopedLow& operator=(const ScopedLow& other) = delete;
         ~ScopedLow();
 
     private:

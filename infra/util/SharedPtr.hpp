@@ -200,6 +200,8 @@ namespace infra
 
         AccessedBySharedPtrWithExtraSize() = default;
         AccessedBySharedPtrWithExtraSize(const infra::Function<void(), ExtraSize>& onUnReferenced);
+        AccessedBySharedPtrWithExtraSize(const AccessedBySharedPtrWithExtraSize& other) = delete;
+        AccessedBySharedPtrWithExtraSize& operator=(const AccessedBySharedPtrWithExtraSize& other) = delete;
         ~AccessedBySharedPtrWithExtraSize();
 
         template<class T>

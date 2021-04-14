@@ -168,6 +168,8 @@ namespace services
     {
     public:
         ConnectorLwIp(ConnectionFactoryLwIp& factory, ClientConnectionObserverFactory& clientFactory, AllocatorConnectionLwIp& connectionAllocator);
+        ConnectorLwIp(const ConnectorLwIp& other) = delete;
+        ConnectorLwIp& operator=(const ConnectorLwIp& other) = delete;
         ~ConnectorLwIp();
 
     private:

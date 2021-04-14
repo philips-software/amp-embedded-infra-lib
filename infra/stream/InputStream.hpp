@@ -142,6 +142,8 @@ namespace infra
         template<class Storage, class... Args>
             WithReader(Storage&& storage, const NoFail&, Args&&... args);
         WithReader(const WithReader& other);
+        WithReader& operator=(const WithReader& other) = delete;
+        ~WithReader() = default;
 
         TheReader& Reader();
 
@@ -157,6 +159,7 @@ namespace infra
         WithErrorPolicy(StreamReader& reader, SoftFail);
         WithErrorPolicy(StreamReader& reader, NoFail);
         WithErrorPolicy(const WithErrorPolicy& other);
+        ~WithErrorPolicy() = default;
 
     private:
         StreamErrorPolicy errorPolicy;
@@ -175,6 +178,8 @@ namespace infra
         template<class Storage, class... Args>
             WithReader(Storage&& storage, const NoFail&, Args&&... args);
         WithReader(const WithReader& other);
+        WithReader& operator=(const WithReader& other) = delete;
+        ~WithReader() = default;
 
         TheReader& Reader();
 
@@ -190,6 +195,7 @@ namespace infra
         WithErrorPolicy(StreamReader& writer, SoftFail);
         WithErrorPolicy(StreamReader& writer, NoFail);
         WithErrorPolicy(const WithErrorPolicy& other);
+        ~WithErrorPolicy() = default;
 
     private:
         StreamErrorPolicy errorPolicy;

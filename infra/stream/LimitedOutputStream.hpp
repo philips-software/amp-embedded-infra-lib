@@ -14,6 +14,7 @@ namespace infra
 
         LimitedStreamWriter(StreamWriter& output, uint32_t length);
         LimitedStreamWriter(const LimitedStreamWriter& other);
+        ~LimitedStreamWriter() = default;
 
     public:
         virtual void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy) override;
