@@ -6,6 +6,28 @@ namespace services
 {
     namespace
     {
+        IPAddress Convert(const ip_addr_t& address)
+        {
+            if (address.type == IPADDR_TYPE_V4)
+                return IPv4Address{
+                ip4_addr1(ip_2_ip4(&address)),
+                ip4_addr2(ip_2_ip4(&address)),
+                ip4_addr3(ip_2_ip4(&address)),
+                ip4_addr4(ip_2_ip4(&address))
+            };
+            else
+                return IPv6Address{
+                IP6_ADDR_BLOCK1(ip_2_ip6(&address)),
+                IP6_ADDR_BLOCK2(ip_2_ip6(&address)),
+                IP6_ADDR_BLOCK3(ip_2_ip6(&address)),
+                IP6_ADDR_BLOCK4(ip_2_ip6(&address)),
+                IP6_ADDR_BLOCK5(ip_2_ip6(&address)),
+                IP6_ADDR_BLOCK6(ip_2_ip6(&address)),
+                IP6_ADDR_BLOCK7(ip_2_ip6(&address)),
+                IP6_ADDR_BLOCK8(ip_2_ip6(&address))
+            };
+        }
+
         static tcp_ext_arg_callbacks emptyCallbacks{};
     }
 
@@ -125,24 +147,7 @@ namespace services
 
     IPAddress ConnectionLwIp::IpAddress() const
     {
-        if (control->remote_ip.type == IPADDR_TYPE_V4)
-            return IPv4Address{
-                ip4_addr1(ip_2_ip4(&control->remote_ip)),
-                ip4_addr2(ip_2_ip4(&control->remote_ip)),
-                ip4_addr3(ip_2_ip4(&control->remote_ip)),
-                ip4_addr4(ip_2_ip4(&control->remote_ip))
-            };
-        else
-            return IPv6Address{
-                IP6_ADDR_BLOCK1(ip_2_ip6(&control->remote_ip)),
-                IP6_ADDR_BLOCK2(ip_2_ip6(&control->remote_ip)),
-                IP6_ADDR_BLOCK3(ip_2_ip6(&control->remote_ip)),
-                IP6_ADDR_BLOCK4(ip_2_ip6(&control->remote_ip)),
-                IP6_ADDR_BLOCK5(ip_2_ip6(&control->remote_ip)),
-                IP6_ADDR_BLOCK6(ip_2_ip6(&control->remote_ip)),
-                IP6_ADDR_BLOCK7(ip_2_ip6(&control->remote_ip)),
-                IP6_ADDR_BLOCK8(ip_2_ip6(&control->remote_ip))
-            };
+        return Convert(control->remote_ip);
     }
 
     bool ConnectionLwIp::PendingSend() const
@@ -492,7 +497,7 @@ namespace services
     err_t ListenerLwIp::Accept(tcp_pcb* newPcb, err_t err)
     {
         tcp_accepted(listenPort);
-        services::GlobalTracer().Trace() << "ListenerLwIp::Accept accepted new connection";
+        services::GlobalTracer().Trace() << "ListenerLwIp::Accept accepted new connection from " << Convert(newPcb->remote_ip);
         PurgeBacklog();
         if (!backlog.full())
         {
