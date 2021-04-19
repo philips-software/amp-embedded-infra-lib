@@ -545,6 +545,8 @@ TEST_F(CucumberWireProtocolpServerTest, test_context_storage)
     ExecuteAllActions();
     connection.sentData.clear();
 
+    EXPECT_TRUE(context.Contains("key0"));
+
     inputStream.Storage().clear();
     services::CucumberStepStorage::Instance().MatchStep("a value is used");
     inputStream << R"(["invoke",{"id":")" << services::CucumberStepStorage::Instance().MatchId() << R"(","args":[]}])";

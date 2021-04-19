@@ -20,13 +20,14 @@ namespace services
         : public infra::InterfaceConnector<CucumberContext>
     {
     public:
-
         infra::BoundedVector<CucumberContextValue>::WithMaxSize<512> vector;
 
         template <class T>
         T Get(infra::BoundedConstString key);
 
         void Add(infra::BoundedConstString key, void *value);
+        void Clear();
+        bool Contains(infra::BoundedConstString key);
     };
 
     template<class T>

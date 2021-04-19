@@ -11,4 +11,16 @@ namespace services
     {
         vector.push_back(CucumberContextValue(key, value));
     }
+
+    void CucumberContext::Clear()
+    {
+        vector.clear();
+    }
+
+    bool CucumberContext::Contains(infra::BoundedConstString key)
+    {
+        for (auto var : vector)
+            if (var.key == key)
+                return true;
+    }
 }
