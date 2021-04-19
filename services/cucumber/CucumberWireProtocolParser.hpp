@@ -5,6 +5,7 @@
 #include "services/cucumber/CucumberContext.hpp"
 #include "services/cucumber/CucumberStep.hpp"
 #include "infra/stream/StringInputStream.hpp"
+#include "services/cucumber/CucumberEcho.hpp"
 
 namespace services
 {
@@ -23,6 +24,12 @@ namespace services
             invalid
         };
 
+        enum ConditionsMatchResult
+        {
+            Met,
+            NotMet
+        };
+
     public:
         void ParseRequest(const infra::ByteRange& inputRange);
         void FormatResponse(infra::DataOutputStream::WithErrorPolicy& stream);
@@ -32,6 +39,7 @@ namespace services
         CucumberStepStorage& stepStorage;
 
         RequestType requestType;
+        ConditionsMatchResult startConditionResult;
 
         infra::JsonObject nameToMatch;
 
@@ -49,10 +57,12 @@ namespace services
         bool InputError(infra::JsonArray& input);
         void ParseStepMatchRequest(infra::JsonArrayIterator& iteratorAtRequestType);
         void ParseInvokeRequest(infra::JsonArrayIterator& iteratorAtRequestType);
+        void ParseBeginScenarioRequest();
 
         void FormatStepMatchResponse(infra::BoundedString& responseBuffer);
         void FormatInvokeResponse(infra::BoundedString& responseBuffer);
         void FormatSnippetResponse(infra::BoundedString& responseBuffer);
+        void FormatBeginScenarioResponse(infra::BoundedString& responseBuffer);
     };
 }
 

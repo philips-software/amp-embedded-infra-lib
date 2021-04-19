@@ -56,7 +56,7 @@ namespace services
         if (iterator->Get<infra::JsonString>() == "step_matches")
             ParseStepMatchRequest(iterator);
         else if (iterator->Get<infra::JsonString>() == "begin_scenario")
-            requestType = begin_scenario;
+            ParseBeginScenarioRequest();
         else if (iterator->Get<infra::JsonString>() == "end_scenario")
             requestType = end_scenario;
         else if (iterator->Get<infra::JsonString>() == "invoke")
@@ -91,7 +91,7 @@ namespace services
             FormatSnippetResponse(responseBuffer);
             break;
         case begin_scenario:
-            SuccessMessage(responseBuffer);
+            FormatBeginScenarioResponse(responseBuffer);
             break;
         case end_scenario:
             SuccessMessage(responseBuffer);
@@ -160,6 +160,15 @@ namespace services
         invokeArguments = iteratorAtRequestType->Get<infra::JsonObject>().GetArray("args");
     }
 
+    void CucumberWireProtocolParser::ParseBeginScenarioRequest()
+    {
+        requestType = begin_scenario;
+        if (CucumberContext::Instance().Get<infra::SharedPtr<services::CucumberEchoProto>>("EchoProto") != nullptr)
+            startConditionResult = Met;
+        else
+            startConditionResult = NotMet;
+    }
+
     void CucumberWireProtocolParser::FormatStepMatchResponse(infra::BoundedString& responseBuffer)
     {
         switch (stepStorage.MatchResult())
@@ -182,6 +191,7 @@ namespace services
     {
         if (MatchStringArguments(invokeArguments))
             stepStorage.GetStep(invokeId).Invoke(invokeArguments, [&](bool success) {
+            responseBuffer.clear();
                 if (success)
                     SuccessMessage(responseBuffer);
                 else
@@ -200,4 +210,13 @@ namespace services
         }
         responseBuffer.insert(responseBuffer.size(), "\n");
     }
+
+    void CucumberWireProtocolParser::FormatBeginScenarioResponse(infra::BoundedString& responseBuffer)
+    {
+        if (startConditionResult == Met)
+            SuccessMessage(responseBuffer);
+        else
+            FailureMessage(responseBuffer, "Begin Conditions not met", "BeginScenario.Conditions.NotMet");
+    }
+
 }

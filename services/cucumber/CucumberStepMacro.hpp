@@ -15,32 +15,32 @@
 #define WHEN(NAME) DEFINESTEP(NAME)
 #define THEN(NAME) DEFINESTEP(NAME)
 
-#define DEFINESTEP(NAME)                                                                                                                           \
-namespace services                                                                                                                                 \
-{                                                                                                                                                  \
-    class CLASSNAME : public services::CucumberStep                                                                                                \
-    {                                                                                                                                              \
-    public:                                                                                                                                        \
-        CLASSNAME()                                                                                                                                \
-            : services::CucumberStep(NAME)                                                                                                         \
-        {                                                                                                                                          \
-            services::CucumberStepStorage::Instance().AddStep(*this);                                                                              \
-        }                                                                                                                                          \
-                                                                                                                                                   \
-    public:                                                                                                                                        \
-        void Invoke(infra::JsonArray& arguments, infra::Function<void(bool)> onDone)                                                                                                   \
-        {                                                                                                                                          \
-            invokeArguments = &arguments;                                                                                                          \
-            Execute(onDone);                                                                                                                      \
-        }                                                                                                                                          \
-    private:                                                                                                                                       \
-        void Execute(infra::Function<void(bool)> onDone);                                                                                                                            \
-    };                                                                                                                                             \
-}                                                                                                                                                  \
-namespace                                                                                                                                          \
-{                                                                                                                                                  \
-    static services::CLASSNAME VARNAME;                                                                                                            \
-}                                                                                                                                                  \
+#define DEFINESTEP(NAME)                                                                                                                               \
+namespace services                                                                                                                                     \
+{                                                                                                                                                      \
+    class CLASSNAME : public services::CucumberStep                                                                                                    \
+    {                                                                                                                                                  \
+    public:                                                                                                                                            \
+        CLASSNAME()                                                                                                                                    \
+            : services::CucumberStep(NAME)                                                                                                             \
+        {                                                                                                                                              \
+            services::CucumberStepStorage::Instance().AddStep(*this);                                                                                  \
+        }                                                                                                                                              \
+                                                                                                                                                       \
+    public:                                                                                                                                            \
+        void Invoke(infra::JsonArray& arguments, infra::Function<void(bool)> onDone)                                                                   \
+        {                                                                                                                                              \
+            invokeArguments = &arguments;                                                                                                              \
+            Execute(onDone);                                                                                                                           \
+        }                                                                                                                                              \
+    private:                                                                                                                                           \
+        void Execute(infra::Function<void(bool)> onDone);                                                                                              \
+    };                                                                                                                                                 \
+}                                                                                                                                                      \
+namespace                                                                                                                                              \
+{                                                                                                                                                      \
+    static services::CLASSNAME VARNAME;                                                                                                                \
+}                                                                                                                                                      \
 void services::CLASSNAME::Execute(infra::Function<void(bool)> onDone)
 
 #endif

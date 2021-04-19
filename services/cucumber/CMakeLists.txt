@@ -3,6 +3,8 @@ ccola_component(cucumber static_library)
 	ccola_inheritable_include_directories(../..)
 
     ccola_sources(
+		CucumberEcho.hpp
+		CucumberEcho.cpp
         CucumberContext.hpp
         CucumberContext.cpp
         CucumberWireProtocolServer.cpp
@@ -26,6 +28,7 @@ ccola_component(cucumber static_library)
         crypto.mbed_tls
         hal.synchronous_interfaces
         services.tracer
+		reference_product_mcu.echo_controllers
     )
 
 ccola_end_component()

@@ -110,6 +110,7 @@ public:
         : connectionPtr(infra::UnOwnedSharedPtr(connection))
         , execute([this]() { EXPECT_CALL(connectionFactoryMock, Listen(1234, testing::_, services::IPVersions::both)).WillOnce(testing::DoAll(infra::SaveRef<1>(&serverConnectionObserverFactory), testing::Return(nullptr))); })
         , cucumberServer(connectionFactoryMock, 1234, services::CucumberStepStorage::Instance())
+        , tracer(ioOutputStream)
     {}
 
     ~CucumberWireProtocolpServerTest()
@@ -117,6 +118,8 @@ public:
         cucumberServer.Stop(infra::emptyFunction);
     }
 
+    infra::IoOutputStream ioOutputStream;
+    services::Tracer tracer;
     testing::StrictMock<services::ConnectionStub> connection;
     infra::SharedPtr<services::ConnectionStub> connectionPtr;
     testing::StrictMock<services::ConnectionFactoryMock> connectionFactoryMock;
@@ -467,9 +470,27 @@ TEST_F(CucumberWireProtocolpServerTest, should_respond_to_invoke_request_with_ar
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
+TEST_F(CucumberWireProtocolpServerTest, should_respond_to_begin_scenario_request_without_echoproto_with_fail)
+{
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    infra::ConstByteRange data = infra::MakeStringByteRange(R"(["begin_scenario"])");
+    connection.SimulateDataReceived(data);
+    ExecuteAllActions();
+    std::string response = "[ \"fail\", { \"message\":\"Begin Conditions not met\", \"exception\":\"BeginScenario.Conditions.NotMet\" } ]\n";
+    std::vector<uint8_t> responseVector(response.begin(), response.end());
+    EXPECT_EQ(responseVector, connection.sentData);
+
+    connection.sentData.clear();
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+}
+
 TEST_F(CucumberWireProtocolpServerTest, should_respond_to_begin_scenario_request_with_success)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    EXPECT_CALL(connectionFactoryMock, Connect);
+    testing::StrictMock<services::CucumberEchoClientMock::WithMaxConnections<1>> echoClientMock(connectionFactoryMock, services::IPv4AddressLocalHost(), tracer);
 
     infra::ConstByteRange data = infra::MakeStringByteRange(R"(["begin_scenario"])");
     connection.SimulateDataReceived(data);
