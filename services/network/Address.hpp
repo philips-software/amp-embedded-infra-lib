@@ -29,6 +29,8 @@ namespace services
 
     IPAddress GetAddress(UdpSocket socket);
     uint16_t GetPort(UdpSocket socket);
+    IPVersions GetVersion(IPAddress socket);
+    IPVersions GetVersion(UdpSocket socket);
 
     IPv4Address IPv4AddressLocalHost();
     IPv6Address IPv6AddressLocalHost();
