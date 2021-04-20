@@ -152,6 +152,8 @@ namespace infra
         struct WithExtraSize
         {
             explicit WithExtraSize(Function<void(), ExtraSize> f);
+            WithExtraSize(const WithExtraSize& other) = delete;
+            WithExtraSize& operator=(const WithExtraSize& other) = delete;
             ~WithExtraSize();
 
         private:
@@ -159,6 +161,8 @@ namespace infra
         };
 
         explicit ExecuteOnDestruction(Function<void()> f);
+        ExecuteOnDestruction(const ExecuteOnDestruction& other) = delete;
+        ExecuteOnDestruction& operator=(const ExecuteOnDestruction& other) = delete;
         ~ExecuteOnDestruction();
 
     private:

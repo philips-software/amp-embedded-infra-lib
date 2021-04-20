@@ -33,6 +33,8 @@ namespace infra
         WithStorage(const WithStorage& other);
         WithStorage(WithStorage&& other);
 
+        ~WithStorage() = default;
+
         WithStorage& operator=(const WithStorage& other);
         WithStorage& operator=(WithStorage&& other);
 
