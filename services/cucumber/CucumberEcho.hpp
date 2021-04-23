@@ -10,6 +10,7 @@
 #include "infra/util/SharedObjectAllocatorFixedSize.hpp"
 #include "generated/echo/CucumberInteraction.pb.hpp"
 #include "services/cucumber/CucumberContext.hpp"
+#include "infra/timer/Timer.hpp"
 
 namespace services {
 
@@ -37,11 +38,13 @@ namespace services {
 
         void LedSet(cucumber_interaction::LedRequest::Led led, bool high);
 
-    protected:
+    public:
         virtual services::IPAddress Address() const;
         virtual infra::BoundedConstString Hostname() const;
         virtual uint16_t Port() const override;
     public:
+        void Connect();
+        void SetAddress(services::IPAddress address);
         virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
         virtual void ConnectionFailed(ConnectFailReason reason) override;
 
@@ -55,7 +58,8 @@ namespace services {
         AllocatorCucumberEchoProto& allocator;
     };
 
-
+    void SetGlobalCucumberEchoClient(services::CucumberEchoClient& echoClient);
+    services::CucumberEchoClient& GlobalCucumberEchoClient();
 }
 
 #endif

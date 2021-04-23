@@ -24,6 +24,12 @@ uint32_t StaticLwIpRand();
 #define LWIP_RAND() StaticLwIpRand()
 #define MEM_ALIGNMENT 4
 #define LWIP_STATS 0
+#define LWIP_NETIF_LOOPBACK 1
+#define LWIP_LOOPBACK_MAX_PBUFS 8
+#define LWIP_HAVE_LOOPIF 1
+#define LWIP_LOOPIF_MULTICAST 1
+#define LWIP_NETIF_STATUS_CALLBACK 1
+
 
 #define LWIP_DNS_SECURE 0
 
