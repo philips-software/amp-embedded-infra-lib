@@ -6,7 +6,7 @@ include(${CCOLA_DIR}/platforms/platform-cortex-m.inc)
 
 set(combined_flags "-mfpu=fpv5-d16 -mfloat-abi=softfp")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${combined_flags}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${combined_flags}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${combined_flags} -Wno-register")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mfpu=fpv5-d16 -mfloat-abi=softfp")
 
 add_definitions(-DSTM32F7 -DSTM32F767xx)
