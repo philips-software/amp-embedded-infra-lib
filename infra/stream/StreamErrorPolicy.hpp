@@ -14,6 +14,8 @@ namespace infra
         StreamErrorPolicy() = default;
         explicit StreamErrorPolicy(SoftFail);
         explicit StreamErrorPolicy(NoFail);
+        StreamErrorPolicy(const StreamErrorPolicy& other) = default;
+        StreamErrorPolicy& operator=(const StreamErrorPolicy& other) = delete;
         ~StreamErrorPolicy();
 
         virtual bool Failed() const;

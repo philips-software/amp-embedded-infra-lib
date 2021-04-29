@@ -1,9 +1,13 @@
 name: Continuous Integration
 
-on: [push]
+on: [push, pull_request]
 
+env:
+  CMAKE_BUILD_PARALLEL_LEVEL: 4
+  GTEST_COLOR: 1
 jobs:
   build_test:
+    name: Build & Test
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -14,6 +18,45 @@ jobs:
       - name: Build and Test
         run: |
           cmake -E make_directory Build && cd Build
-          cmake .. -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=Debug
+          cmake .. -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=Debug
           cmake --build .
-          ctest -C Debug -T Test --output-on-failure
+          ctest -C Debug -T Test --no-compress-output --output-on-failure
+  static_analysis:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Disable shallow clone to enable blame information
+      - uses: seanmiddleditch/gha-setup-ninja@v3
+      - uses: actions/setup-python@v1
+      - uses: BSFishy/pip-action@v1
+        with:
+          packages: gcovr
+      - name: Install Sonar Scanner
+        env:
+          SONAR_SCANNER_VERSION: 4.6.0.2311
+          SONAR_SCANNER_URL: https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.0.2311-linux.zip
+          SONAR_WRAPPER_URL: https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
+        run: |
+          wget -qN "${{ env.SONAR_WRAPPER_URL }}"
+          wget -qN "${{ env.SONAR_SCANNER_URL }}"
+          unzip -qqo build-wrapper-linux-x86.zip
+          unzip -qqo "sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip"
+          echo "${PWD}/build-wrapper-linux-x86" >> $GITHUB_PATH
+          echo "${PWD}/sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-linux/bin" >> $GITHUB_PATH
+      - name: Build
+        run: |
+          cmake -E make_directory Build && cd Build
+          cmake -G Ninja .. -DCCOLA_INSTALL_DIR=Install -DCCOLA_ENABLE_COVERAGE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
+          build-wrapper-linux-x86-64 --out-dir ../sonar-build-wrapper cmake --build . --config Debug
+          ctest -C Debug -T Test --no-compress-output --output-on-failure
+          gcovr --sonarqube=../coverage.xml --exclude-unreachable-branches --exclude-throw-branches -j 4 --root=.. --exclude=.*/generated/.* --exclude=.*/examples/.* --exclude=.*/external/.* --exclude=.*/lwip/.* --exclude=.*/tracing/.* --exclude=.*/test/.*
+      - name: Analysis
+        env:
+          # to get access to secrets.SONAR_TOKEN, provide GITHUB_TOKEN
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          export SONAR_PROJECT_VERSION=`grep -m 1 -o '".*"' Build/[Vv]ersion.h | tr -d '"'`
+          sonar-scanner -Dsonar.login=${{ secrets.SONAR_TOKEN }} -Dsonar.host.url=https://sonarcloud.io/

@@ -36,7 +36,8 @@ namespace services
 
     DatagramExchangeLwIP::~DatagramExchangeLwIP()
     {
-        GetObserver().Detach();
+        if (HasObserver())
+            GetObserver().Detach();
         udp_remove(control);
     }
 
@@ -168,7 +169,7 @@ namespace services
 
     void DatagramExchangeLwIP::Recv(pbuf* buffer, const ip_addr_t* address, u16_t port)
     {
-        if (reader.Allocatable())
+        if (HasObserver() && reader.Allocatable())
         {
             if (IP_GET_TYPE(address) == IPADDR_TYPE_V4)
                 GetObserver().DataReceived(reader.Emplace(buffer), Udpv4Socket{ IPv4Address{ ip4_addr1(ip_2_ip4(address)), ip4_addr2(ip_2_ip4(address)), ip4_addr3(ip_2_ip4(address)), ip4_addr4(ip_2_ip4(address)) }, port });
@@ -338,7 +339,8 @@ namespace services
     {
         infra::EventDispatcherWithWeakPtr::Instance().Schedule([this](const infra::SharedPtr<DatagramExchange>& datagramExchange)
         {
-            datagramExchange->GetObserver().SendStreamAvailable(infra::SharedPtr<UdpWriter>(std::move(streamPtr)));
+            if (datagramExchange->HasObserver())
+                datagramExchange->GetObserver().SendStreamAvailable(infra::SharedPtr<UdpWriter>(std::move(streamPtr)));
         }, datagramExchange.SharedFromThis());
     }
 

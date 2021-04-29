@@ -10,7 +10,7 @@ namespace services
     {
         ip4_addr_t groupAddress;
         IP4_ADDR(&groupAddress, multicastAddress[0], multicastAddress[1], multicastAddress[2], multicastAddress[3]);
-        err_t result = igmp_joingroup_netif(netif_default, &groupAddress);
+        err_t result = igmp_joingroup(&IP4_ADDR_ANY->u_addr.ip4, &groupAddress);
         assert(result == ERR_OK);
     }
 
@@ -18,7 +18,7 @@ namespace services
     {
         ip4_addr_t groupAddress;
         IP4_ADDR(&groupAddress, multicastAddress[0], multicastAddress[1], multicastAddress[2], multicastAddress[3]);
-        err_t result = igmp_leavegroup_netif(netif_default, &groupAddress);
+        err_t result = igmp_leavegroup(&IP4_ADDR_ANY->u_addr.ip4, &groupAddress);
         assert(result == ERR_OK);
     }
 
@@ -26,7 +26,7 @@ namespace services
     {
         ip6_addr_t groupAddress;
         IP6_ADDR(&groupAddress, PP_HTONL(multicastAddress[1] + (static_cast<uint32_t>(multicastAddress[0]) << 16)), PP_HTONL(multicastAddress[3] + (static_cast<uint32_t>(multicastAddress[2]) << 16)), PP_HTONL(multicastAddress[5] + (static_cast<uint32_t>(multicastAddress[4]) << 16)), PP_HTONL(multicastAddress[7] + (static_cast<uint32_t>(multicastAddress[6]) << 16)));
-        err_t result = mld6_joingroup_netif(netif_default, &groupAddress);
+        err_t result = mld6_joingroup(&IP6_ADDR_ANY->u_addr.ip6, &groupAddress);
         assert(result == ERR_OK);
     }
 
@@ -34,7 +34,7 @@ namespace services
     {
         ip6_addr_t groupAddress;
         IP6_ADDR(&groupAddress, PP_HTONL(multicastAddress[1] + (static_cast<uint32_t>(multicastAddress[0]) << 16)), PP_HTONL(multicastAddress[3] + (static_cast<uint32_t>(multicastAddress[2]) << 16)), PP_HTONL(multicastAddress[5] + (static_cast<uint32_t>(multicastAddress[4]) << 16)), PP_HTONL(multicastAddress[7] + (static_cast<uint32_t>(multicastAddress[6]) << 16)));
-        err_t result = mld6_leavegroup_netif(netif_default, &groupAddress);
+        err_t result = mld6_leavegroup(&IP6_ADDR_ANY->u_addr.ip6, &groupAddress);
         assert(result == ERR_OK);
     }
 }

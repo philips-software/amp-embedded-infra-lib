@@ -1,8 +1,8 @@
 #ifndef HAL_SERIAL_COMMUNICATION_HPP
 #define HAL_SERIAL_COMMUNICATION_HPP
 
+#include "infra/util/ByteRange.hpp"
 #include "infra/util/Function.hpp"
-#include "infra/util/MemoryRange.hpp"
 
 namespace hal
 {

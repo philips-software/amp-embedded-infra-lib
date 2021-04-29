@@ -65,6 +65,7 @@ namespace infra
         BoundedStringBase(const BoundedStringBase& other);
         template<class U>
             BoundedStringBase(const BoundedStringBase<U>& other);
+        ~BoundedStringBase() = default;
 
         BoundedStringBase& operator=(const BoundedStringBase& other);
         BoundedStringBase& operator=(const char* s);

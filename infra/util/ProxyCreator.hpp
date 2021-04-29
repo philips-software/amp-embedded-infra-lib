@@ -26,6 +26,8 @@ namespace infra
     {
     public:
         ProxyCreator(CreatorBase<T, void(ConstructionArgs...)>& creator, ConstructionArgs... args);
+        ProxyCreator(const ProxyCreator& other) = delete;
+        ProxyCreator& operator=(const ProxyCreator& other) = delete;
         ~ProxyCreator();
 
         T& operator*();
@@ -50,6 +52,8 @@ namespace infra
     {
     public:
         ProxyCreator(CreatorBase<void, void(ConstructionArgs...)>& creator, ConstructionArgs... args);
+        ProxyCreator(const ProxyCreator& other) = delete;
+        ProxyCreator& operator=(const ProxyCreator& other) = delete;
         ~ProxyCreator();
 
     private:
@@ -61,6 +65,8 @@ namespace infra
     {
     public:
         explicit DelayedProxyCreator(CreatorBase<T, void(ConstructionArgs...)>& creator);
+        DelayedProxyCreator(const DelayedProxyCreator& other) = delete;
+        DelayedProxyCreator& operator=(const DelayedProxyCreator& other) = delete;
         ~DelayedProxyCreator();
 
         void Emplace(ConstructionArgs... args);

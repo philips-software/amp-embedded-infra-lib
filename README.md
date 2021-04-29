@@ -7,7 +7,7 @@
 ## Dependencies
 
 EmIL requires:
-- A recent c++ compiler that supports C++14 at minimum (most notable it should support std::filesystem).
+- A recent C++ compiler that supports C++17 at minimum (most notable it should support std::filesystem).
 - CMake 3.6 or higher.
 
 EmIL is know to build under the following configurations:

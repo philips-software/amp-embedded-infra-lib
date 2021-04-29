@@ -32,6 +32,8 @@ namespace infra
             using WithStorage = infra::WithStorage<SharedObjectAllocatorFixedSize, typename infra::BoundedVector<Node>::template WithMaxSize<NumberOfElements>>;
 
         explicit SharedObjectAllocatorFixedSize(infra::BoundedVector<Node>& elements);
+        SharedObjectAllocatorFixedSize(const SharedObjectAllocatorFixedSize& other) = delete;
+        SharedObjectAllocatorFixedSize& operator=(const SharedObjectAllocatorFixedSize& other) = delete;
         ~SharedObjectAllocatorFixedSize();
 
         virtual SharedPtr<T> Allocate(ConstructionArgs... args) override;

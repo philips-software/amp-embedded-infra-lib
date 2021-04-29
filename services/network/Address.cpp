@@ -29,6 +29,22 @@ namespace services
             return socket.Get<Udpv6Socket>().second;
     }
 
+    IPVersions GetVersion(IPAddress address)
+    {
+        if (address.Is<IPv4Address>())
+            return services::IPVersions::ipv4;
+        else
+            return services::IPVersions::ipv6;
+    }
+
+    IPVersions GetVersion(UdpSocket socket)
+    {
+        if (socket.Is<Udpv4Socket>())
+            return services::IPVersions::ipv4;
+        else
+            return services::IPVersions::ipv6;
+    }
+
     IPv4Address IPv4AddressLocalHost()
     {
         return IPv4Address{ 127, 0, 0, 1 };
