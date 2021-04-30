@@ -29,11 +29,11 @@ if(${CCOLA_ARCH} STREQUAL "win")
     )
 else()
 
-    string(APPEND mri_script "create ${lib_path}/${lib_name}\n")
+    string(APPEND mri_script "create \"${lib_path}/${lib_name}\"\n")
 
     foreach(item ${CCOLA_COMPONENT_INHERITABLE_LINK_LIBRARIES})
         string(REPLACE "<CCOLA_CONFIGURATION>" "${CCOLA_SYSTEM_CONFIGURATION}" depend_lib "${item}")
-        string(APPEND mri_script "addlib ${depend_lib}\n")
+        string(APPEND mri_script "addlib \"${depend_lib}\"\n")
         list(APPEND dependencies ${depend_lib})
     endforeach()
 
