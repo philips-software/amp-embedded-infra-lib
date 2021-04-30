@@ -5,6 +5,7 @@
 #include <array>
 #include <cassert>
 #include <cstdlib>
+#include <cstddef>
 #include <initializer_list>
 #include <type_traits>
 #include <vector>
@@ -28,8 +29,18 @@ namespace infra
         template<class T2>                                                          //TICS !INT#001
             MemoryRange(std::vector<T2>& vector);
 
+        using value_type = T;
+        using pointer = T*;
+        using const_pointer = const T*;
+        using reference = T&;
+        using const_reference = const T&;
+        using iterator = pointer;
+        using const_iterator = const_pointer;
+        using difference_type = std::ptrdiff_t;
+        using size_type = std::size_t;
+
         bool empty() const;
-        std::size_t size() const;
+        size_type size() const;
 
         // MemoryRange does not own its elements, so accessing an element is a const operation that returns a non-const element
         T* begin() const;
@@ -37,7 +48,7 @@ namespace infra
         T* end() const;
         const T* cend() const;
 
-        T& operator[](std::size_t index) const;
+        T& operator[](size_type index) const;
         template<class U>
             bool operator==(const MemoryRange<U>& rhs) const;
         template<class U>
@@ -50,10 +61,10 @@ namespace infra
         bool contains_or_end(const T* element) const;
 
         void clear();
-        void pop_front(std::size_t num = 1);
-        void pop_back(std::size_t num = 1);
-        void shrink_from_front_to(std::size_t newSize);
-        void shrink_from_back_to(std::size_t newSize);
+        void pop_front(size_type num = 1);
+        void pop_back(size_type num = 1);
+        void shrink_from_front_to(size_type newSize);
+        void shrink_from_back_to(size_type newSize);
 
     private:
         T* beginElement;
