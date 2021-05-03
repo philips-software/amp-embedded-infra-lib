@@ -29,11 +29,12 @@ if(${CCOLA_ARCH} STREQUAL "win")
     )
 else()
 
-    string(APPEND mri_script "create \"${lib_path}/${lib_name}\"\n")
+    string(APPEND mri_script "create ${lib_name}\n")
 
     foreach(item ${CCOLA_COMPONENT_INHERITABLE_LINK_LIBRARIES})
         string(REPLACE "<CCOLA_CONFIGURATION>" "${CCOLA_SYSTEM_CONFIGURATION}" depend_lib "${item}")
-        string(APPEND mri_script "addlib \"${depend_lib}\"\n")
+        file(RELATIVE_PATH depend_lib_rel ${lib_path} ${depend_lib})
+        string(APPEND mri_script "addlib ${depend_lib_rel}\n")
         list(APPEND dependencies ${depend_lib})
     endforeach()
 
@@ -43,6 +44,7 @@ else()
 
     add_custom_command(
         OUTPUT ${lib_path}/${lib_name}
+        WORKING_DIRECTORY ${lib_path}
         COMMAND ${CMAKE_COMMAND} -E remove ${lib_path}/${lib_name}
         COMMAND ${CMAKE_AR} -M < ${ar_script}
         DEPENDS ${dependencies}
