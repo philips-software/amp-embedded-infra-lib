@@ -1,11 +1,7 @@
 #ifndef HAL_GPIO_HPP
 #define HAL_GPIO_HPP
 
-#include "infra/event/EventDispatcher.hpp"
-#include "infra/util/InterfaceConnector.hpp"
-#include "infra/util/Optional.hpp"
-#include <array>
-#include <cassert>
+#include "infra/util/Function.hpp"
 
 namespace hal
 {
