@@ -9,14 +9,18 @@ namespace hal
         : std::runtime_error("Unable to open port " + portName)
     {}
 
-    UartWindows::UartWindows(const std::string& portName)
+    PortNotInitialized::PortNotInitialized(const std::string& portName, DWORD errorCode)
+        : std::runtime_error("Unable to initialize port " + portName + " Errorcode: " + std::to_string(errorCode))
+    {}
+
+    UartWindows::UartWindows(const std::string& portName, UartWindowsConfig config)
     {
-        Open(R"(\\.\)" + portName);
+        Open(R"(\\.\)" + portName, config);
     }
 
-    UartWindows::UartWindows(const std::string& name, DeviceName)
+    UartWindows::UartWindows(const std::string& name, DeviceName, UartWindowsConfig config)
     {
-        Open(R"(\\.\GLOBALROOT)" + name);
+        Open(R"(\\.\GLOBALROOT)" + name, config);
     }
 
     UartWindows::~UartWindows()
@@ -58,7 +62,7 @@ namespace hal
         infra::EventDispatcher::Instance().Schedule(actionOnCompletion);
     }
 
-    void UartWindows::Open(const std::string& name)
+    void UartWindows::Open(const std::string& name, UartWindowsConfig config)
     {
         handle = CreateFile(name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr);
 
@@ -68,11 +72,18 @@ namespace hal
         DCB dcb;
         SecureZeroMemory(&dcb, sizeof(DCB));
         dcb.DCBlength = sizeof(DCB);
-        dcb.BaudRate = CBR_115200;
+        dcb.BaudRate = config.baudRate;
         dcb.ByteSize = 8;
         dcb.Parity = NOPARITY;
         dcb.StopBits = ONESTOPBIT;
-        SetCommState(handle, &dcb);
+        dcb.fRtsControl = (uint32_t)config.flowControlRts;
+        dcb.fOutxCtsFlow = config.flowControlRts == UartWindowsConfig::RtsFlowControl::RtsHandshake;
+        if (!SetCommState(handle, &dcb))
+        {
+            DWORD dw = GetLastError();
+            throw PortNotInitialized(name, dw);
+        }
+            
         PurgeComm(handle, PURGE_TXCLEAR | PURGE_RXCLEAR);
 
         COMMTIMEOUTS commTimeOuts;
