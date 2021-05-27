@@ -78,6 +78,7 @@ namespace services
     void ServiceForwarder::Handle(uint32_t methodId, infra::ProtoLengthDelimited& contents)
     {
         this->methodId = methodId;
+        this->contents.Emplace(contents);
         RequestSend([this, &contents]()
         {
             infra::DataOutputStream::WithErrorPolicy stream(services::ServiceProxy::Rpc().SendStreamWriter());
@@ -86,7 +87,7 @@ namespace services
             {
                 infra::ProtoLengthDelimitedFormatter argumentFormatter = formatter.LengthDelimitedFormatter(this->methodId);
                 infra::ConstByteRange bytes;
-                contents.GetBytesReference(bytes);
+                this->contents->GetBytesReference(bytes);
                 formatter.PutBytes(bytes);
             }
             services::ServiceProxy::Rpc().Send();
@@ -217,6 +218,7 @@ namespace services
 
     void EchoOnMessageCommunication::ServiceDone(Service& service)
     {
+        parser = infra::none;
         reader = nullptr;
         EchoOnStreams::ServiceDone(service);
     }
@@ -235,9 +237,9 @@ namespace services
     void EchoOnMessageCommunication::ProcessMessage()
     {
         infra::DataInputStream::WithErrorPolicy stream(*reader, infra::softFail);
-        infra::ProtoParser parser(stream);
-        uint32_t serviceId = static_cast<uint32_t>(parser.GetVarInt());
-        infra::ProtoParser::Field message = parser.GetField();
+        parser.Emplace(stream);
+        uint32_t serviceId = static_cast<uint32_t>(parser->GetVarInt());
+        infra::ProtoParser::Field message = parser->GetField();
         if (stream.Failed())
             return;
 

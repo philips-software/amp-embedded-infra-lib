@@ -110,6 +110,7 @@ namespace services
         virtual void Handle(uint32_t methodId, infra::ProtoLengthDelimited& contents) override;
 
     private:
+        infra::Optional<infra::ProtoLengthDelimited> contents;
         uint32_t methodId;
     };
 
@@ -177,6 +178,7 @@ namespace services
 
     private:
         infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
+        infra::Optional<infra::ProtoParser> parser;
     };
 }
 
