@@ -216,7 +216,6 @@ namespace services
 
     void MdnsClient::QueryHandler::SendQuery(MdnsQuery& query)
     {
-        //assert
         waitingQuery = &query;
 
         infra::BoundedConstString hostnameCopy = waitingQuery->DnsHostname();

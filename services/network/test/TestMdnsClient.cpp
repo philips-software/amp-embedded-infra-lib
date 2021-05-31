@@ -392,6 +392,28 @@ TEST_F(MdnsClientTest, other_query_asking_starts_active_query_after_first_query_
     ExpectLeaveMulticastIpv4();
 }
 
+TEST_F(MdnsClientTest, other_query_asking_starts_active_query_after_first_query_is_canceled)
+{
+    ExpectListenIpv4();
+    ExpectJoinMulticastIpv4();
+    ConstructAllQueries();
+
+    ExpectRequestSendStream();
+
+    queryPtr->Ask();
+    queryA->Ask();
+
+    DestructQueryPtr();
+
+    ExpectRequestSendStream();
+    SendStreamAvailableAndExpectNoQuestion();
+
+    auto aQuestion = AQuestion();
+    SendStreamAvailableAndExpectQuestion(aQuestion);
+
+    ExpectLeaveMulticastIpv4();
+}
+
 TEST_F(MdnsClientTest, other_query_asking_starts_active_query_after_first_query_is_done_and_asked_again)
 {
     ExpectListenIpv4();

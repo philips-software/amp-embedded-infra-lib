@@ -54,7 +54,8 @@ public:
     }
 
     void PtrQueryReceived(services::IPAddress source = ipv4Source, uint16_t answers = 0, uint16_t nameServers = 0, uint16_t additional = 0)
-    {        DataReceived(infra::ConstructBin()
+    {
+        DataReceived(infra::ConstructBin()
             .Value<services::DnsRecordHeader>({ 0x0200, 0, 1, answers, nameServers, additional })
             (7)("service")(4)("type")(5)("local")(0)
             .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypePtr, services::DnsClass::dnsClassIn })
