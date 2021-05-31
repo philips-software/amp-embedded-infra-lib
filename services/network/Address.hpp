@@ -42,6 +42,7 @@ namespace services
     infra::Optional<IPv4Address> ParseIpv4Address(infra::BoundedConstString address);
     infra::Optional<IPv6Address> ParseFullIpv6Address(infra::BoundedConstString address);
 
+    IPv6Address FromNetworkOrder(IPv6AddressNetworkOrder address);
     IPv6AddressNetworkOrder ToNetworkOrder(IPv6Address address);
 
     struct IPv4InterfaceAddresses
