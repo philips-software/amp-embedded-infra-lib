@@ -70,9 +70,10 @@ namespace services
         return maxMessageSize;
     }
 
-    ServiceForwarder::ServiceForwarder(Echo& echo, uint32_t id, Echo& forwardTo, uint32_t maxMessageSize)
+    ServiceForwarder::ServiceForwarder(infra::ByteRange messageBuffer, Echo& echo, uint32_t id, Echo& forwardTo)
         : Service(echo, id)
-        , ServiceProxy(forwardTo, id, maxMessageSize)
+        , ServiceProxy(forwardTo, id, messageBuffer.size())
+        , messageBuffer(messageBuffer)
     {}
 
     void ServiceForwarder::Handle(uint32_t methodId, infra::ProtoLengthDelimited& contents)
@@ -86,10 +87,29 @@ namespace services
             formatter.PutVarInt(ServiceId());
             {
                 infra::ProtoLengthDelimitedFormatter argumentFormatter = formatter.LengthDelimitedFormatter(this->methodId);
-                infra::ConstByteRange bytes;
-                this->contents->GetBytesReference(bytes);
-                formatter.PutBytes(bytes);
+
+                auto bytes = messageBuffer;
+                uint32_t processedSize = 0;
+
+                while(true)
+                {
+                    infra::ConstByteRange contiguousBytes;
+                    this->contents->GetBytesReference(contiguousBytes);
+                    
+                    if (contiguousBytes.size() == 0)
+                        break;
+                    
+                    std::copy(contiguousBytes.begin(), contiguousBytes.end(), bytes.begin() + processedSize);
+                    processedSize += contiguousBytes.size();
+                }
+
+                if (processedSize)
+                {
+                    bytes.shrink_from_back_to(processedSize);
+                    formatter.PutBytes(bytes);
+                }
             }
+
             services::ServiceProxy::Rpc().Send();
             MethodDone();
         });
