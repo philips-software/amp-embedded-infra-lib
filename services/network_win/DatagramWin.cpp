@@ -145,6 +145,7 @@ namespace services
         }
 
         sendBuffer = infra::none;
+        TryAllocateSendStream();
         UpdateEventFlags();
     }
 
@@ -229,9 +230,10 @@ namespace services
     void DatagramWin::TryAllocateSendStream()
     {
         assert(streamWriter.Allocatable());
-        if (!sendBuffer)
+        if (!sendBuffer && requestedSendSize != 0)
         {
             sendBuffer.Emplace(requestedSendSize, 0);
+            requestedSendSize = 0;
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<DatagramWin>& object)
             {
                 infra::SharedPtr<infra::StreamWriter> writer = object->streamWriter.Emplace(*object);
