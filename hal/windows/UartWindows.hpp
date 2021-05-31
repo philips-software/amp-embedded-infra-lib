@@ -18,22 +18,52 @@ namespace hal
         PortNotOpened(const std::string& portName);
     };
 
+    class PortNotInitialized
+        : public std::runtime_error
+    {
+    public:
+        PortNotInitialized(const std::string& portName, DWORD errorCode);
+    };
+
     class UartWindows
         : public SerialCommunication
     {
-    public:
+    public: 
+
+        struct UartWindowsConfig
+        {
+            enum class RtsFlowControl
+            {
+                RtsControlDisable = RTS_CONTROL_DISABLE,
+                RtsControlEnable = RTS_CONTROL_ENABLE,
+                RtsHandshake = RTS_CONTROL_HANDSHAKE,
+                RtsControlToggle = RTS_CONTROL_TOGGLE
+            };
+
+            UartWindowsConfig()
+                : baudRate(CBR_115200)
+                , flowControlRts(RtsFlowControl::RtsControlDisable) {}
+
+            UartWindowsConfig(uint32_t newbaudRate, RtsFlowControl newFlowControlRts)
+                : baudRate(newbaudRate)
+                , flowControlRts(newFlowControlRts)
+            {}
+
+            uint32_t baudRate;
+            RtsFlowControl flowControlRts;
+        };
         struct DeviceName {};
         static const DeviceName deviceName;
 
-        UartWindows(const std::string& portName);
-        UartWindows(const std::string& name, DeviceName);
+        UartWindows(const std::string& portName, UartWindowsConfig config = UartWindowsConfig());
+        UartWindows(const std::string& name, DeviceName, UartWindowsConfig config = UartWindowsConfig());
         ~UartWindows();
 
         virtual void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) override;
         virtual void SendData(infra::MemoryRange<const uint8_t> data, infra::Function<void()> actionOnCompletion = infra::emptyFunction) override;
 
     private:
-        void Open(const std::string& name);
+        void Open(const std::string& name, UartWindowsConfig config = UartWindowsConfig());
         void ReadThread();
         void ReadNonBlocking(infra::ByteRange range);
         void ReadBlocking(infra::ByteRange range);
