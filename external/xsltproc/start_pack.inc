@@ -38,7 +38,6 @@ macro(generate_xslt output)
 		OUTPUT ${absolute_output}
 		COMMAND ${xsltproc_program} ${xslt_params} --output "${absolute_output}" ${absolute_inputs}
 		DEPENDS ${absolute_inputs}
-		DEPENDS "${absolute_directory}"
 	)
 
 	ccola_sources(${absolute_inputs})
