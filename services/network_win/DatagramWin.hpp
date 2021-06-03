@@ -75,6 +75,7 @@ namespace services
         std::size_t requestedSendSize = 0;
         UdpSocket requestedTo;
         bool trySend = false;
+        infra::SharedPtr<DatagramWin> self;
     };
 
     using AllocatorDatagramWin = infra::SharedObjectAllocator<DatagramWin, void(EventDispatcherWithNetwork&, SOCKET)>;
@@ -135,7 +136,7 @@ namespace services
             : public infra::StreamWriter
         {
         public:
-            MultipleWriter(const std::vector<infra::SharedPtr<infra::StreamWriter>>& writers);
+            MultipleWriter(std::vector<infra::SharedPtr<infra::StreamWriter>>& writers);
 
             virtual void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
             virtual std::size_t Available() const override;
