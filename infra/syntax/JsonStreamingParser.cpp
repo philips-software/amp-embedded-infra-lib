@@ -754,4 +754,58 @@ namespace infra
         while (!dataRange.empty() && !subObjects.empty())
             subObjects.back()->Feed(dataRange);
     }
+
+    JsonObjectVisitorDecorator::JsonObjectVisitorDecorator(JsonObjectVisitor& decorated)
+        : decorated(decorated)
+    {}
+
+    void JsonObjectVisitorDecorator::VisitString(infra::BoundedConstString tag, infra::BoundedConstString value)
+    {
+        decorated.VisitString(tag, value);
+    }
+
+    void JsonObjectVisitorDecorator::VisitNumber(infra::BoundedConstString tag, int64_t value)
+    {
+        decorated.VisitNumber(tag, value);
+    }
+
+    void JsonObjectVisitorDecorator::VisitBoolean(infra::BoundedConstString tag, bool value)
+    {
+        decorated.VisitBoolean(tag, value);
+    }
+
+    void JsonObjectVisitorDecorator::VisitNull(infra::BoundedConstString tag)
+    {
+        decorated.VisitNull(tag);
+    }
+
+    JsonObjectVisitor* JsonObjectVisitorDecorator::VisitObject(infra::BoundedConstString tag, JsonSubObjectParser& parser)
+    {
+        return decorated.VisitObject(tag, parser);
+    }
+
+    JsonArrayVisitor* JsonObjectVisitorDecorator::VisitArray(infra::BoundedConstString tag, JsonSubArrayParser& parser)
+    {
+        return decorated.VisitArray(tag, parser);
+    }
+
+    void JsonObjectVisitorDecorator::Close()
+    {
+        decorated.Close();
+    }
+
+    void JsonObjectVisitorDecorator::ParseError()
+    {
+        decorated.ParseError();
+    }
+
+    void JsonObjectVisitorDecorator::SemanticError()
+    {
+        decorated.SemanticError();
+    }
+
+    void JsonObjectVisitorDecorator::StringOverflow()
+    {
+        decorated.StringOverflow();
+    }
 }
