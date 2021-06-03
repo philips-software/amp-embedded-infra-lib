@@ -32,9 +32,9 @@ namespace services
         : public MdnsQuery
     {
     public:
-        MdnsQueryImpl(MdnsClient& mdnsClient, services::DnsType dnsType, infra::BoundedConstString instance, infra::BoundedConstString serviceType, infra::BoundedConstString protocol, infra::Function<void(infra::ConstByteRange data)> result);
-        MdnsQueryImpl(MdnsClient& mdnsClient, services::DnsType dnsType, infra::BoundedConstString serviceType, infra::BoundedConstString protocol, infra::Function<void(infra::ConstByteRange data)> result);
-        MdnsQueryImpl(MdnsClient& mdnsClient, services::DnsType dnsType, infra::BoundedConstString instance, infra::Function<void(infra::ConstByteRange data)> result);
+        MdnsQueryImpl(MdnsClient& mdnsClient, services::DnsType dnsType, infra::BoundedConstString instance, infra::BoundedConstString serviceName, infra::BoundedConstString type, infra::Function<void(infra::ConstByteRange data)> queryHit);
+        MdnsQueryImpl(MdnsClient& mdnsClient, services::DnsType dnsType, infra::BoundedConstString serviceName, infra::BoundedConstString type, infra::Function<void(infra::ConstByteRange data)> queryHit);
+        MdnsQueryImpl(MdnsClient& mdnsClient, services::DnsType dnsType, infra::BoundedConstString instance, infra::Function<void(infra::ConstByteRange data)> queryHit);
 
         ~MdnsQueryImpl();
 
@@ -50,40 +50,56 @@ namespace services
     private:
         MdnsClient& mdnsClient;
         services::DnsType dnsType;
-        infra::Function<void(infra::ConstByteRange data)> result;
         infra::BoundedString::WithStorage<253> dnsHostname;
+        infra::Function<void(infra::ConstByteRange data)> queryHit;
         bool waiting = false;
     };
 
     class MdnsClient
+        : private DatagramExchangeObserver
     {
     public:
         MdnsClient(DatagramFactory& datagramFactory, Multicast& multicast);
+        ~MdnsClient();
 
         void RegisterQuery(MdnsQuery& query);
         void UnRegisterQuery(MdnsQuery& query);
         void ActiveQuerySingleShot(MdnsQuery& query);
+
+    private:
+        // Implementation of DatagramExchangeObserver
+        virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
+        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+
+        infra::detail::IntrusiveListIterator<MdnsQuery> FindNextWaitingQuery();
+        void TrySendNextQuery();
+        void SendQuery(MdnsQuery& query);
+        void ActiveQueryDone();
+        bool IsActivelyQuerying();
+        void CancelActiveQueryIfEqual(MdnsQuery& query);
         
     private:
-        class QueryHandler
-            : public DatagramExchangeObserver
+        class ActiveMdnsQuery
+            : private DatagramExchangeObserver
         {
         public:
-            QueryHandler(MdnsClient& client);
-            ~QueryHandler();
+            ActiveMdnsQuery(MdnsClient& mdnsClient, DatagramFactory& datagramFactory, Multicast& multicast, MdnsQuery& query);
+            ~ActiveMdnsQuery();
 
-            void SendQuery(MdnsQuery& query);
-            bool IsActiveQuerying();
-            void CancelActiveQueryIfEqual(MdnsQuery& query);
+            bool IsCurrentQuery(MdnsQuery& query);
 
         private:
+            // Implementation of DatagramExchangeObserver
             virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
+            void SendQuery();
+
         private:
-            MdnsClient& client;
+            MdnsClient& mdnsClient;
             infra::SharedPtr<DatagramExchange> datagramExchange;
-            MdnsQuery* waitingQuery = nullptr;
+            Multicast& multicast;
+            MdnsQuery& query;
         };
 
         class AnswerParser
@@ -109,13 +125,10 @@ namespace services
         };
 
     private:
-        void TrySendNextQuery();
-        infra::detail::IntrusiveListIterator<MdnsQuery> FindNextWaitingQuery();
-    
-    private:
         DatagramFactory& datagramFactory;
         Multicast& multicast;
-        infra::Optional<QueryHandler> queryHandler;
+        infra::SharedPtr<DatagramExchange> datagramExchange;
+        infra::Optional<ActiveMdnsQuery> activeMdnsQuery;
         infra::IntrusiveList<MdnsQuery> queries;
         size_t lastWaitingQueryPosition = 0;
     };
