@@ -315,15 +315,6 @@ namespace services
         if ((header.flags & DnsRecordHeader::flagsResponse) != DnsRecordHeader::flagsQuery)
             return false;
 
-        if (header.answersCount != 0)
-            return false;
-
-        if (header.nameServersCount != 0)
-            return false;
-
-        if (header.additionalRecordsCount != 0)
-            return false;
-
         return true;
     }
 

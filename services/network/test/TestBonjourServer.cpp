@@ -54,11 +54,34 @@ public:
     }
 
     void PtrQueryReceived(services::IPAddress source = ipv4Source, uint16_t answers = 0, uint16_t nameServers = 0, uint16_t additional = 0)
-    {        DataReceived(infra::ConstructBin()
+    {
+        DataReceived(infra::ConstructBin()
             .Value<services::DnsRecordHeader>({ 0x0200, 0, 1, answers, nameServers, additional })
             (7)("service")(4)("type")(5)("local")(0)
             .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypePtr, services::DnsClass::dnsClassIn })
             .Vector(), source);
+    }
+
+    void PtrQueryWithTwoQuestionsReceived()
+    {
+        DataReceived(infra::ConstructBin()
+            .Value<services::DnsRecordHeader>({ 0x0200, 0, 2, 0, 0, 0 })
+            (7)("service")(4)("type")(5)("local")(0)
+            .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypePtr, services::DnsClass::dnsClassIn })
+            (5)("other")(4)("type")(5)("local")(0)
+            .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypePtr, services::DnsClass::dnsClassIn })
+            .Vector(), ipv4Source);
+    }
+
+    void PtrQueryWithTwoEqualQuestionsReceived()
+    {
+        DataReceived(infra::ConstructBin()
+            .Value<services::DnsRecordHeader>({ 0x0200, 0, 2, 0, 0, 0 })
+            (7)("service")(4)("type")(5)("local")(0)
+            .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypePtr, services::DnsClass::dnsClassIn })
+            (7)("service")(4)("type")(5)("local")(0)
+            .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypePtr, services::DnsClass::dnsClassIn })
+            .Vector(), ipv4Source);
     }
 
     void TooShortQueryReceived()
@@ -71,17 +94,35 @@ public:
 
     void QueryWithAnswerReceived()
     {
-        PtrQueryReceived(ipv4Source, 1, 0, 0);
+        DataReceived(infra::ConstructBin()
+            .Value<services::DnsRecordHeader>({ 0x0200, 0, 1, 1, 0, 0 })
+            (7)("service")(4)("type")(5)("local")(0)
+            .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypePtr, services::DnsClass::dnsClassIn })
+            (7)("service")(4)("type")(5)("local")(0)
+            .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypePtr, services::DnsClass::dnsClassIn })
+            .Vector(), ipv4Source);
     }
 
     void QueryWithNameServerReceived()
     {
-        PtrQueryReceived(ipv4Source, 0, 1, 0);
+        DataReceived(infra::ConstructBin()
+            .Value<services::DnsRecordHeader>({ 0x0200, 0, 1, 0, 1, 0 })
+            (7)("service")(4)("type")(5)("local")(0)
+            .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypePtr, services::DnsClass::dnsClassIn })
+            (7)("service")(4)("type")(5)("local")(0)
+            .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypePtr, services::DnsClass::dnsClassIn })
+            .Vector(), ipv4Source);
     }
 
     void QueryWithAdditionalReceived()
     {
-        PtrQueryReceived(ipv4Source, 0, 0, 1);
+        DataReceived(infra::ConstructBin()
+            .Value<services::DnsRecordHeader>({ 0x0200, 0, 1, 0, 0, 1 })
+            (7)("service")(4)("type")(5)("local")(0)
+            .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypePtr, services::DnsClass::dnsClassIn })
+            (7)("service")(4)("type")(5)("local")(0)
+            .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypePtr, services::DnsClass::dnsClassIn })
+            .Vector(), ipv4Source);
     }
 
     void AnswerReceived()
@@ -390,6 +431,29 @@ TEST_F(BonjourServerTest, ptr_question_has_answers_and_additional_data)
     ExecuteAllActions();
 }
 
+TEST_F(BonjourServerTest, ptr_question_with_two_questions_has_answers_and_additional_data)
+{
+    ExpectResponse(infra::ConstructBin()
+        .Value<services::DnsRecordHeader>({0x0200, 0x8000, 0, 1, 0, 4})
+        (PtrAnswer())(TxtAnswer())(SrvAnswer())(AAnswer())(NoAaaaAnswer())
+        .Vector());
+
+    PtrQueryWithTwoQuestionsReceived();
+    ExecuteAllActions();
+}
+
+TEST_F(BonjourServerTest, ptr_question_with_two_equal_questions_has_answers_and_additional_data)
+{
+    ExpectResponse(infra::ConstructBin()
+        .Value<services::DnsRecordHeader>({0x0200, 0x8000, 0, 2, 0, 8})
+        (PtrAnswer())(PtrAnswer())(TxtAnswer())(SrvAnswer())(AAnswer())(NoAaaaAnswer())
+        (TxtAnswer())(SrvAnswer())(AAnswer())(NoAaaaAnswer())
+        .Vector());
+
+    PtrQueryWithTwoEqualQuestionsReceived();
+    ExecuteAllActions();
+}
+
 TEST_F(BonjourServerTest, srv_question_has_answers_and_additional_data)
 {
     ExpectResponse(infra::ConstructBin()
@@ -448,9 +512,6 @@ TEST_F(BonjourServerTest, aaaa_query_is_declined_when_no_ipv4_address_is_availab
 TEST_F(BonjourServerTest, invalid_questions_are_ignored)
 {
     TooShortQueryReceived();
-    QueryWithAnswerReceived();
-    QueryWithNameServerReceived();
-    QueryWithAdditionalReceived();
     AnswerReceived();
     DifferentOpcodeReceived();
     NonInQueryReceived();
@@ -460,6 +521,39 @@ TEST_F(BonjourServerTest, invalid_questions_are_ignored)
     QueryForDifferentShortInstanceReceived();
     QueryForEmptyNameReceived();
     QueryForLongNameReceived();
+}
+
+TEST_F(BonjourServerTest, answer_in_query_is_ignored)
+{
+    ExpectResponse(infra::ConstructBin()
+        .Value<services::DnsRecordHeader>({0x0200, 0x8000, 0, 1, 0, 4})
+        (PtrAnswer())(TxtAnswer())(SrvAnswer())(AAnswer())(NoAaaaAnswer())
+        .Vector());
+
+    QueryWithAnswerReceived();
+    ExecuteAllActions();
+}
+
+TEST_F(BonjourServerTest, name_server_in_query_is_ignored)
+{
+    ExpectResponse(infra::ConstructBin()
+        .Value<services::DnsRecordHeader>({0x0200, 0x8000, 0, 1, 0, 4})
+        (PtrAnswer())(TxtAnswer())(SrvAnswer())(AAnswer())(NoAaaaAnswer())
+        .Vector());
+
+    QueryWithNameServerReceived();
+    ExecuteAllActions();
+}
+
+TEST_F(BonjourServerTest, additional_record_in_query_is_ignored)
+{
+    ExpectResponse(infra::ConstructBin()
+        .Value<services::DnsRecordHeader>({0x0200, 0x8000, 0, 1, 0, 4})
+        (PtrAnswer())(TxtAnswer())(SrvAnswer())(AAnswer())(NoAaaaAnswer())
+        .Vector());
+
+    QueryWithAdditionalReceived();
+    ExecuteAllActions();
 }
 
 TEST_F(BonjourServerTest, aaaa_query_is_answered_when_ipv6_address_is_available)
