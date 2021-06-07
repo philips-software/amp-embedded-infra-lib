@@ -85,30 +85,24 @@ namespace services
             infra::DataOutputStream::WithErrorPolicy stream(services::ServiceProxy::Rpc().SendStreamWriter());
             infra::ProtoFormatter formatter(stream);
             formatter.PutVarInt(ServiceId());
+
+            auto bytes = messageBuffer;
+            uint32_t processedSize = 0;
+
+            while(true)
             {
-                infra::ProtoLengthDelimitedFormatter argumentFormatter = formatter.LengthDelimitedFormatter(this->methodId);
-
-                auto bytes = messageBuffer;
-                uint32_t processedSize = 0;
-
-                while(true)
-                {
-                    infra::ConstByteRange contiguousBytes;
-                    this->contents->GetBytesReference(contiguousBytes);
-                    
-                    if (contiguousBytes.size() == 0)
-                        break;
-                    
-                    std::copy(contiguousBytes.begin(), contiguousBytes.end(), bytes.begin() + processedSize);
-                    processedSize += contiguousBytes.size();
-                }
-
-                if (processedSize)
-                {
-                    bytes.shrink_from_back_to(processedSize);
-                    formatter.PutBytes(bytes);
-                }
+                infra::ConstByteRange contiguousBytes;
+                this->contents->GetBytesReference(contiguousBytes);
+                
+                if (contiguousBytes.size() == 0)
+                    break;
+                
+                std::copy(contiguousBytes.begin(), contiguousBytes.end(), bytes.begin() + processedSize);
+                processedSize += contiguousBytes.size();
             }
+
+            bytes.shrink_from_back_to(processedSize);
+            formatter.PutBytesField(bytes, this->methodId);
 
             services::ServiceProxy::Rpc().Send();
             MethodDone();
