@@ -140,6 +140,13 @@ namespace services
         return infra::MakeOptional(ipv6Address);
     }
 
+    IPv6Address FromNetworkOrder(IPv6AddressNetworkOrder address)
+    {
+        IPv6Address result;
+        std::copy(address.begin(), address.end(), result.begin());
+        return result;
+    }
+
     IPv6AddressNetworkOrder ToNetworkOrder(IPv6Address address)
     {
         IPv6AddressNetworkOrder result;

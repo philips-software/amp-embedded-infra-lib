@@ -37,6 +37,7 @@ namespace services
         static const uint16_t flagsRecursionDesired = 0x0100;
         static const uint16_t flagsResponse = 0x8000;
         static const uint16_t flagsErrorMask = 0x000f;
+        static const uint16_t flagsNoError = 0;
 
         infra::BigEndian<uint16_t> id;
         infra::BigEndian<uint16_t> flags;
