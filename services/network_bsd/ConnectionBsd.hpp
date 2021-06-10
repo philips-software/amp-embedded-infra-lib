@@ -108,6 +108,8 @@ namespace services
     {
     public:
         ConnectorBsd(EventDispatcherWithNetwork& network, services::ClientConnectionObserverFactory& factory);
+        ConnectorBsd(const ConnectorBsd& other) = delete;
+        ConnectorBsd& operator=(const ConnectorBsd& other) = delete;
         ~ConnectorBsd();
 
         void Connected();

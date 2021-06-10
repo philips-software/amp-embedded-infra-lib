@@ -389,7 +389,7 @@ namespace infra
     template<std::size_t ExtraSize, class Result, class... Args>
     typename Function<Result(Args...), ExtraSize>::ResultType Function<Result(Args...), ExtraSize>::operator()(Args... args) const
     {
-        return invokerFunctions.virtualMethodTable->invoke(invokerFunctions, args...);
+        return invokerFunctions.virtualMethodTable->invoke(invokerFunctions, args...);  //NOSONAR
     }
 
     namespace detail

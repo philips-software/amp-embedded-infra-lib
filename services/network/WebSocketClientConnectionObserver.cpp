@@ -483,11 +483,11 @@ namespace services
     {
         switch (reason)
         {
-            case ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason::refused:
+            case HttpClientObserverFactory::ConnectFailReason::refused:
                 return WebSocketClientObserverFactory::ConnectFailReason::refused;
-            case ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason::connectionAllocationFailed:
+            case HttpClientObserverFactory::ConnectFailReason::connectionAllocationFailed:
                 return WebSocketClientObserverFactory::ConnectFailReason::connectionAllocationFailed;
-            case ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason::nameLookupFailed:
+            case HttpClientObserverFactory::ConnectFailReason::nameLookupFailed:
                 return WebSocketClientObserverFactory::ConnectFailReason::nameLookupFailed;
             default:
                 std::abort();

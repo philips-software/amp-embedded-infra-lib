@@ -82,7 +82,7 @@ namespace infra
 
     TextOutputStream& TextOutputStream::operator<<(const char* zeroTerminatedString)
     {
-        const auto len = std::strlen(zeroTerminatedString);
+        const auto len = std::strlen(zeroTerminatedString); //NOSONAR
         OutputOptionalPadding(len);
         Writer().Insert(ReinterpretCastByteRange(MakeRange(zeroTerminatedString, zeroTerminatedString + len)), ErrorPolicy());
         return *this;

@@ -214,11 +214,11 @@ namespace infra
     public:
         Quantity();
         explicit Quantity(StorageType v);
-        Quantity(const Quantity& other);
+        Quantity(const Quantity& other) = default;
         template<class OtherUnit>
             Quantity(Quantity<OtherUnit, StorageType> other, typename std::enable_if<UnitSame<OtherUnit, UnitType>::value>::type* = 0);
 
-        Quantity& operator=(const Quantity& other);
+        Quantity& operator=(const Quantity& other) = default;
         template<class OtherUnit>
             typename std::enable_if<UnitSame<OtherUnit, UnitType>::value, Quantity&>::type operator=(const Quantity<OtherUnit, StorageType>& other);
 
@@ -262,22 +262,10 @@ namespace infra
     {}
 
     template<class UnitType, class StorageType>
-    Quantity<UnitType, StorageType>::Quantity(const Quantity& other)
-        : value(other.value)
-    {}
-
-    template<class UnitType, class StorageType>
     template<class OtherUnit>
     Quantity<UnitType, StorageType>::Quantity(Quantity<OtherUnit, StorageType> other, typename std::enable_if<UnitSame<OtherUnit, UnitType>::value>::type*)
         : value(other.value * OtherUnit::Factor::n * UnitType::Factor::d / OtherUnit::Factor::d / UnitType::Factor::n)
     {}
-
-    template<class UnitType, class StorageType>
-    Quantity<UnitType, StorageType>& Quantity<UnitType, StorageType>::operator=(const Quantity& other)
-    {
-        value = other.value;
-        return *this;
-    }
 
     template<class UnitType, class StorageType>
     template<class OtherUnit>

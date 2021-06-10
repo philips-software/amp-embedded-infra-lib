@@ -288,14 +288,14 @@ namespace services
         client.ExpectResponse();
     }
 
-    HttpClientImpl::SendingStateForwardSendStream::SendingStateForwardSendStream(const SendingStateForwardSendStream& other)
-        : SendingState(other)
-        , contentSize(other.contentSize)
-    {}
-
     HttpClientImpl::SendingStateForwardSendStream::SendingStateForwardSendStream(HttpClientImpl& client, std::size_t contentSize)
         : SendingState(client)
         , contentSize(contentSize)
+    {}
+
+    HttpClientImpl::SendingStateForwardSendStream::SendingStateForwardSendStream(const SendingStateForwardSendStream& other)
+        : SendingState(other)
+        , contentSize(other.contentSize)
     {}
 
     void HttpClientImpl::SendingStateForwardSendStream::Activate()
