@@ -79,30 +79,31 @@ namespace services
     void ServiceForwarder::Handle(uint32_t methodId, infra::ProtoLengthDelimited& contents)
     {
         this->methodId = methodId;
-        this->contents.Emplace(contents);
+
+        bytes.Emplace(messageBuffer);
+        uint32_t processedSize = 0;
+
+        while (true)
+        {
+            infra::ConstByteRange contiguousBytes;
+            contents.GetBytesReference(contiguousBytes);
+
+            if (contiguousBytes.size() == 0)
+                break;
+
+            std::copy(contiguousBytes.begin(), contiguousBytes.end(), bytes->begin() + processedSize);
+            processedSize += contiguousBytes.size();
+        }
+
+        bytes->shrink_from_back_to(processedSize);
+
         RequestSend([this, &contents]()
         {
             infra::DataOutputStream::WithErrorPolicy stream(services::ServiceProxy::Rpc().SendStreamWriter());
             infra::ProtoFormatter formatter(stream);
-            formatter.PutVarInt(ServiceId());
-
-            auto bytes = messageBuffer;
-            uint32_t processedSize = 0;
-
-            while(true)
-            {
-                infra::ConstByteRange contiguousBytes;
-                this->contents->GetBytesReference(contiguousBytes);
-                
-                if (contiguousBytes.size() == 0)
-                    break;
-                
-                std::copy(contiguousBytes.begin(), contiguousBytes.end(), bytes.begin() + processedSize);
-                processedSize += contiguousBytes.size();
-            }
-
-            bytes.shrink_from_back_to(processedSize);
-            formatter.PutBytesField(bytes, this->methodId);
+            formatter.PutVarInt(ServiceId());            
+            formatter.PutBytesField(*bytes, this->methodId);
+            bytes = infra::none;
 
             services::ServiceProxy::Rpc().Send();
             MethodDone();
@@ -232,7 +233,6 @@ namespace services
 
     void EchoOnMessageCommunication::ServiceDone(Service& service)
     {
-        parser = infra::none;
         reader = nullptr;
         EchoOnStreams::ServiceDone(service);
     }
@@ -251,9 +251,9 @@ namespace services
     void EchoOnMessageCommunication::ProcessMessage()
     {
         infra::DataInputStream::WithErrorPolicy stream(*reader, infra::softFail);
-        parser.Emplace(stream);
-        uint32_t serviceId = static_cast<uint32_t>(parser->GetVarInt());
-        infra::ProtoParser::Field message = parser->GetField();
+        infra::ProtoParser parser(stream);
+        uint32_t serviceId = static_cast<uint32_t>(parser.GetVarInt());
+        infra::ProtoParser::Field message = parser.GetField();
         if (stream.Failed())
             return;
 
