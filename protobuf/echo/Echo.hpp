@@ -115,7 +115,7 @@ namespace services
 
     private:
         const infra::ByteRange messageBuffer;
-        infra::Optional<infra::ProtoLengthDelimited> contents;
+        infra::Optional<infra::ByteRange> bytes;
         uint32_t methodId;
     };
 
@@ -183,7 +183,6 @@ namespace services
 
     private:
         infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
-        infra::Optional<infra::ProtoParser> parser;
     };
 }
 
