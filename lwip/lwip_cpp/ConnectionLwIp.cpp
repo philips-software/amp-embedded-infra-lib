@@ -267,9 +267,10 @@ namespace services
         services::GlobalTracer().Trace() << "ConnectionLwIp::Err received err " << err;
         assert(err == ERR_RST || err == ERR_CLSD || err == ERR_ABRT);
 
-        DisableCallbacks();
+        if (err != ERR_ABRT)    // When ERR_ABRT, pcb has already been freed
+            DisableCallbacks();
 
-        control = nullptr;  // When Err is received, the pcb has already been freed
+        control = nullptr;      // When Err is received, either the pcb has already been freed (when ERR_ABRT), or the pcb will be freed by LwIP when we return (when ERR_CLSD or ERR_RST)
         ResetOwnership();
     }
 
