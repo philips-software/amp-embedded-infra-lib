@@ -10,7 +10,6 @@
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/cucumber/CucumberStepMacro.hpp"
 #include "services/cucumber/CucumberWireProtocolServer.hpp"
-#include "services/cucumber/WiFiSetupContext.hpp"
 #include "services/cucumber/test/CucumberWireProtocolServerMock.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/network/test_doubles/ConnectionStub.hpp"
