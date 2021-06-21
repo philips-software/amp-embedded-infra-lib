@@ -1,24 +1,24 @@
 ccola_component(cucumber static_library)
 
-	ccola_inheritable_include_directories(../..)
+    ccola_inheritable_include_directories(../..)
 
     ccola_sources(
-        CucumberContext.hpp
         CucumberContext.cpp
-        CucumberWireProtocolServer.cpp
-        CucumberWireProtocolServer.hpp
+        CucumberContext.hpp
         CucumberRequestHandlers.hpp
-        CucumberStep.hpp
         CucumberStep.cpp
-		CucumberStepMacro.hpp
-        CucumberStepStorage.hpp
+        CucumberStep.hpp
+        CucumberStepMacro.hpp
         CucumberStepStorage.cpp
+        CucumberStepStorage.hpp
         CucumberWireProtocolController.cpp
         CucumberWireProtocolController.hpp
-        CucumberWireProtocolParser.cpp
-        CucumberWireProtocolParser.hpp
         CucumberWireProtocolFormatter.cpp
         CucumberWireProtocolFormatter.hpp
+        CucumberWireProtocolParser.cpp
+        CucumberWireProtocolParser.hpp
+        CucumberWireProtocolServer.cpp
+        CucumberWireProtocolServer.hpp
         TracingCucumberWireProtocolServer.cpp
         TracingCucumberWireProtocolServer.hpp
     )
@@ -30,7 +30,6 @@ ccola_component(cucumber static_library)
         infra.timer
         hal.synchronous_interfaces
         services.tracer
-		reference_product_mcu.echo_controllers
     )
 
 ccola_end_component()
