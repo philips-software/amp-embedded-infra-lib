@@ -2,12 +2,12 @@ ccola_package(services)
 
     ccola_subdirectories(
         tracer
-        cucumber
         util
         network
         network_win
         network_bsd
         synchronous_util
+        cucumber
     )
 
 ccola_end_package()

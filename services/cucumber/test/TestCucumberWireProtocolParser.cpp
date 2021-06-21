@@ -4,8 +4,8 @@
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/cucumber/CucumberWireProtocolServer.hpp"
-#include "services/network/test_doubles/ConnectionStub.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
+#include "services/network/test_doubles/ConnectionStub.hpp"
 
 class CucumberWireProtocolReceiverTest
     : public testing::Test

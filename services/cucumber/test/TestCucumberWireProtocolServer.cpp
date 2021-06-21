@@ -1,5 +1,4 @@
 #include "gtest/gtest.h"
-#include "hal/generic/TimerServiceGeneric.hpp"
 #include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/IoOutputStream.hpp"
@@ -10,11 +9,8 @@
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/cucumber/CucumberStepMacro.hpp"
 #include "services/cucumber/CucumberWireProtocolServer.hpp"
-#include "services/cucumber/test/CucumberWireProtocolServerMock.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/network/test_doubles/ConnectionStub.hpp"
-#include "services/network_win/EventDispatcherWithNetwork.hpp"
-#include "services/tracer/Tracer.hpp"
 
 static services::CucumberStepStorage stepStorage;
 static uint8_t val = 42;
@@ -124,6 +120,16 @@ GIVEN("nothing happens for %d seconds", infra::None)
         }
 }
 
+class CucumberStepMock
+    : public services::CucumberStep
+{
+public:
+    CucumberStepMock()
+        : CucumberStep("Mock Step")
+    {}
+
+    MOCK_METHOD1(Invoke, void(infra::JsonArray& arguments));
+};
 
 class CucumberWireProtocolServerTest
     : public testing::Test
@@ -144,13 +150,12 @@ public:
     }
 
     infra::IoOutputStream ioOutputStream;
-    services::Tracer tracer;
     testing::StrictMock<services::ConnectionStub> connection;
     infra::SharedPtr<services::ConnectionStub> connectionPtr;
     testing::StrictMock<services::ConnectionFactoryMock> connectionFactoryMock;
     services::ServerConnectionObserverFactory* serverConnectionObserverFactory;
     infra::Execute execute;
-    testing::StrictMock<services::CucumberStepMock> cucumberStepMock;
+    testing::StrictMock<CucumberStepMock> cucumberStepMock;
     services::CucumberWireProtocolServer::WithBuffer<512> cucumberServer;
     services::CucumberContext context;
 };
