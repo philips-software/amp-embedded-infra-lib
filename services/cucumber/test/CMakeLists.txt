@@ -9,6 +9,7 @@ ccola_component(cucumber_test gmock_test)
     ccola_dependencies(
         network
         network_test_doubles
+        infra.timer
         infra.timer_test_helper
         infra.util_test_helper
         hal.generic
@@ -16,6 +17,7 @@ ccola_component(cucumber_test gmock_test)
         hal.synchronous_test_doubles
         services.util
         services.cucumber
+		cucumber_test.clients
     )
 
 ccola_end_component()

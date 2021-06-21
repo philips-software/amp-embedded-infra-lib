@@ -7,20 +7,35 @@ namespace services
         , value(value)
     {}
 
+    infra::TimerSingleShot& CucumberContext::TimeoutTimer()
+    {
+        static infra::TimerSingleShot timeoutTimer;
+        return timeoutTimer;
+    }
+
     void CucumberContext::Add(infra::BoundedConstString key, void *value)
     {
-        vector.push_back(CucumberContextValue(key, value));
+        for (auto& var : varStorage)
+            if (var.key == key)
+                varStorage.erase(&var);
+        varStorage.emplace_back(key, value);
     }
 
     void CucumberContext::Clear()
     {
-        vector.clear();
+        varStorage.clear();
+    }
+
+    bool CucumberContext::Empty()
+    {
+        return varStorage.empty();
     }
 
     bool CucumberContext::Contains(infra::BoundedConstString key)
     {
-        for (auto var : vector)
+        for (auto& var : varStorage)
             if (var.key == key)
                 return true;
+        return false;
     }
 }

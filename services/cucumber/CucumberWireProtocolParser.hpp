@@ -1,69 +1,54 @@
 #ifndef SERVICES_CUCUMBER_WIRE_PROTOCOL_PARSER_HPP 
 #define SERVICES_CUCUMBER_WIRE_PROTOCOL_PARSER_HPP
 
-#include "services/cucumber/CucumberStepStorage.hpp"
-#include "services/cucumber/CucumberContext.hpp"
-#include "services/cucumber/CucumberStep.hpp"
 #include "infra/stream/StringInputStream.hpp"
-#include "services/cucumber/CucumberEcho.hpp"
+#include "services/cucumber/CucumberContext.hpp"
+#include "services/cucumber/CucumberStepStorage.hpp"
 
 namespace services
 {
     class CucumberWireProtocolParser
     {
     public:
-        CucumberWireProtocolParser(CucumberStepStorage& stepStorage);
+        CucumberWireProtocolParser() = default;
 
         enum RequestType
         {
-            step_matches,
-            invoke,
-            snippet_text,
-            begin_scenario,
-            end_scenario,
-            invalid
+            Step_matches,
+            Invoke,
+            Snippet_text,
+            Begin_scenario,
+            End_scenario,
+            Invalid
         };
-
-        enum ConditionsMatchResult
-        {
-            Met,
-            NotMet
-        };
-
-    public:
-        void ParseRequest(const infra::ByteRange& inputRange);
-        void FormatResponse(infra::DataOutputStream::WithErrorPolicy& stream);
-        
-
-    private:
-        CucumberStepStorage& stepStorage;
 
         RequestType requestType;
-        ConditionsMatchResult startConditionResult;
-
         infra::JsonObject nameToMatch;
-
-        uint8_t invokeId;
+        uint32_t invokeId;
         infra::JsonArray invokeArguments;
+        infra::Optional<infra::JsonObject> scenarioTags;
 
-        bool ContainsArguments(const infra::BoundedString& string);
+        void ParseRequest(const infra::BoundedString& inputString);
+        bool Valid(const infra::BoundedString& inputString);
+    private:
+        void ParseStepMatchRequest(infra::JsonArray& input);
+        void ParseInvokeRequest(infra::JsonArray& input);
+        void ParseBeginScenarioRequest(infra::JsonArray& input);
+        void ParseEndScenarioRequest();
+        void ParseSnippetTextRequest();
 
-        bool MatchStringArguments(infra::JsonArray& arguments);
-
-        void SuccessMessage(infra::BoundedString& responseBuffer);
-        void SuccessMessage(uint8_t id, infra::JsonArray& arguments, infra::BoundedString& responseBuffer);
-        void FailureMessage(infra::BoundedString& responseBuffer, infra::BoundedConstString failMessage, infra::BoundedConstString exceptionType);
-
-        bool InputError(infra::JsonArray& input);
-        void ParseStepMatchRequest(infra::JsonArrayIterator& iteratorAtRequestType);
-        void ParseInvokeRequest(infra::JsonArrayIterator& iteratorAtRequestType);
-        void ParseBeginScenarioRequest();
-
-        void FormatStepMatchResponse(infra::BoundedString& responseBuffer);
-        void FormatInvokeResponse(infra::BoundedString& responseBuffer);
-        void FormatSnippetResponse(infra::BoundedString& responseBuffer);
-        void FormatBeginScenarioResponse(infra::BoundedString& responseBuffer);
+        template <class T>
+        T ConvertToIntType(const infra::BoundedString& input);
     };
+
+    template<class T>
+    inline T CucumberWireProtocolParser::ConvertToIntType(const infra::BoundedString & input)
+    {
+        T out;
+        infra::StringInputStream stream(input);
+        stream >> out;
+        return out;
+    }
 }
 
 #endif

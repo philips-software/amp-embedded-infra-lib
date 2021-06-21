@@ -1,44 +1,45 @@
 #ifndef SERVICES_CUCUMBER_STEP_STORAGE_HPP 
 #define SERVICES_CUCUMBER_STEP_STORAGE_HPP
 
-#include "services/cucumber/CucumberStep.hpp"
-#include "infra/util/BoundedVector.hpp"
 #include "infra/util/BoundedString.hpp"
-#include "infra/util/InterfaceConnector.hpp"
+#include "services/cucumber/CucumberStep.hpp"
 
 namespace services
 {
     class CucumberStepStorage
-        : public infra::InterfaceConnector<CucumberStepStorage>
     {
     public:
-        CucumberStepStorage();
-
-        ~CucumberStepStorage();
+        CucumberStepStorage() = default;
+        CucumberStepStorage& operator=(const CucumberStepStorage& other) = delete;
+        CucumberStepStorage(CucumberStepStorage& other) = delete;
+        virtual ~CucumberStepStorage() = default;
 
         enum StepMatchResult
         {
-            success,
-            fail,
-            duplicate
+            Success,
+            Fail,
+            Duplicate
         };
 
-    public:
-        StepMatchResult& MatchResult();
-        void SetMatchResult(StepMatchResult result);
-        uint8_t& MatchId();
-        void SetMatchId(uint8_t& id);
+        struct Match
+        {
+            StepMatchResult result;
+            uint32_t id;
+            CucumberStep* step;
+        };
+
+        static CucumberStepStorage& Instance();
 
         CucumberStep& GetStep(uint8_t id);
-        void MatchStep(const infra::BoundedString& nameToMatch);
+        services::CucumberStepStorage::Match MatchStep(const infra::BoundedString& nameToMatch);
         void AddStep(CucumberStep& step);
         void DeleteStep(CucumberStep& step);
         void ClearStorage();
-        bool CompareStepName(CucumberStep& step, const infra::BoundedString& stepName);
+        bool MatchesStepName(CucumberStep& step, const infra::BoundedString& stepName);
 
     private:
-        uint8_t matchId;
-        StepMatchResult matchResult;
+        void IterateThroughStringArgument(infra::BoundedString::iterator& iterator, const infra::BoundedString& nameToMatch, int16_t& offsetCounter);
+        void IterateThroughIntegerArgument(infra::BoundedString::iterator& iterator, const infra::BoundedString& nameToMatch, int16_t& offsetCounter);
 
         infra::IntrusiveList<CucumberStep> stepList;
     };

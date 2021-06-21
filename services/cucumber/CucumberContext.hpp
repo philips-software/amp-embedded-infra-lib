@@ -1,9 +1,10 @@
 #ifndef SERVICES_CUCUMBER_CONTEXT_HPP 
 #define SERVICES_CUCUMBER_CONTEXT_HPP
 
-#include "infra/util/InterfaceConnector.hpp"
+#include "infra/timer/Timer.hpp"
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/BoundedVector.hpp"
+#include "infra/util/InterfaceConnector.hpp"
 
 namespace services
 {
@@ -11,8 +12,10 @@ namespace services
     {
     public:
         CucumberContextValue(infra::BoundedConstString key, void *value);
+        CucumberContextValue(CucumberContextValue& other) = delete;
+        virtual ~CucumberContextValue() = default;
 
-        infra::BoundedConstString::WithStorage<64> key;
+        infra::BoundedConstString key;
         void *value;
     };
 
@@ -20,33 +23,34 @@ namespace services
         : public infra::InterfaceConnector<CucumberContext>
     {
     public:
-        infra::BoundedVector<CucumberContextValue>::WithMaxSize<512> vector;
+        CucumberContext() = default;
+        CucumberContext& operator=(const CucumberContext& other) = delete;
+        CucumberContext(CucumberContext& other) = delete;
+        virtual ~CucumberContext() = default;
 
+        infra::TimerSingleShot& TimeoutTimer();
+
+    private:
+        infra::BoundedVector<CucumberContextValue>::WithMaxSize<128> varStorage;
+        
+    public:
         template <class T>
-        T Get(infra::BoundedConstString key);
+        T& Get(infra::BoundedConstString key);
 
         void Add(infra::BoundedConstString key, void *value);
         void Clear();
+        bool Empty();
         bool Contains(infra::BoundedConstString key);
     };
 
     template<class T>
-    inline T CucumberContext::Get(infra::BoundedConstString key)
+    inline T& CucumberContext::Get(infra::BoundedConstString key)
     {
-        T* ptr = nullptr;
-        uint8_t nrMatches = 0;
-        for (auto node : vector)
+        for (auto& node : varStorage)
             if (node.key == key)
-            {
-                ptr = static_cast<T*>(node.value);
-                nrMatches++;
-            }
-        if (nrMatches == 1)
-            return *ptr;
-        else
-            return T();
+                return *(static_cast<T*>(node.value));
+        std::abort();
     }
-
 }
 
 #endif

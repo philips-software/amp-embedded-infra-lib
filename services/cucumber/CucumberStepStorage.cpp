@@ -2,81 +2,81 @@
 
 namespace services
 {
-    CucumberStepStorage::CucumberStepStorage()
-    {}
-
-    CucumberStepStorage::~CucumberStepStorage()
+    CucumberStepStorage& CucumberStepStorage::Instance()
     {
-        services::CucumberStep::SetNrSteps(0);
-        ClearStorage();
+        static CucumberStepStorage instance;
+        return instance;
     }
 
-    services::CucumberStepStorage::StepMatchResult& CucumberStepStorage::MatchResult()
+    void CucumberStepStorage::IterateThroughStringArgument(infra::BoundedString::iterator& iterator, const infra::BoundedString& nameToMatch, int16_t& offsetCounter)
     {
-        return matchResult;
+        while (iterator != nameToMatch.end() && *iterator != '\'')
+        {
+            iterator++;
+            offsetCounter++;
+        }
+        offsetCounter -= 2;
     }
 
-    void CucumberStepStorage::SetMatchResult(StepMatchResult result)
+    void CucumberStepStorage::IterateThroughIntegerArgument(infra::BoundedString::iterator& iterator, const infra::BoundedString& nameToMatch, int16_t& offsetCounter)
     {
-        matchResult = result;
+        while (iterator != nameToMatch.end() && *(iterator + 1) >= '0' && *(iterator + 1) <= '9')
+        {
+            iterator++;
+            offsetCounter++;
+        }
+        offsetCounter--;
     }
 
-    uint8_t& CucumberStepStorage::MatchId()
+    bool CucumberStepStorage::MatchesStepName(CucumberStep& step, const infra::BoundedString& nameToMatch)
     {
-        return matchId;
-    }
-
-    void CucumberStepStorage::SetMatchId(uint8_t& id)
-    {
-        matchId = id;
-    }
-
-    bool CucumberStepStorage::CompareStepName(CucumberStep& step, const infra::BoundedString& nameToMatch)
-   {
-        uint8_t count = 0;
-        uint8_t sizeOffset = 0;
-        for (infra::BoundedString::iterator c = nameToMatch.begin(); c != nameToMatch.end(); ++c, count++)
+        uint16_t count = 0; 
+        int16_t sizeOffset = 0;
+        for (infra::BoundedString::iterator c = nameToMatch.begin(); c != nameToMatch.end(); c++, count++)
+        {
             if (step.StepName()[count] != *c)
-                if (((count - 1) >= 0 && (count + 2) <= step.StepName().size()) && (step.StepName()[count - 1] == '\'' && step.StepName()[count] == '%' && step.StepName()[count + 1] == 's' && step.StepName()[count + 2] == '\'' && *(c - 1) == '\''))
+            {
+                if ((count - 1) >= 0 && step.StepName().find("\'%s\'", (count - 1)) == (count - 1))
                 {
                     count += 2;
-                    for (; c != nameToMatch.end() && *c != '\''; c++, sizeOffset++);
-                    sizeOffset -= 2;
+                    IterateThroughStringArgument(c, nameToMatch, sizeOffset);
                 }
-                else if ((count + 1 <= step.StepName().size()) && (step.StepName()[count] == '%' && step.StepName()[count + 1] == 'd'))
+                else if (step.StepName().find("%d", count) == count)
                 {
                     count++;
-                    for (; c != nameToMatch.end() && *(c + 1) >= '0' && *(c + 1) <= '9'; c++, sizeOffset++);
-                    sizeOffset--;
+                    IterateThroughIntegerArgument(c, nameToMatch, sizeOffset);
                 }
                 else
                     return false;
-        if (step.StepName().size() + sizeOffset == nameToMatch.size())
-            return true;
-        else
-            return false;
+            }
+        }
+        return step.StepName().size() + sizeOffset == nameToMatch.size();
     }
 
-    void CucumberStepStorage::MatchStep(const infra::BoundedString& nameToMatch)
+    services::CucumberStepStorage::Match CucumberStepStorage::MatchStep(const infra::BoundedString& nameToMatch)
     {
-        uint8_t nrStepMatches = 0, count = 0;
+        Match matchResult;
+        uint8_t nrStepMatches = 0;
+        uint8_t count = 0;
         for (auto& step : stepList)
         {
-            if (CompareStepName(step, nameToMatch))
+            if (MatchesStepName(step, nameToMatch))
             {
-                SetMatchId(count);
+                matchResult.id = count;
                 nrStepMatches++;
-                if (step.HasStringArguments() && nrStepMatches < 2)
-                    step.SetMatchArguments(step.ParseMatchArguments(nameToMatch));
             }
             count++;
         }
         if (nrStepMatches >= 2)
-            SetMatchResult(services::CucumberStepStorage::duplicate);
-        else if ((nrStepMatches == 0 && count == stepList.size()))
-            SetMatchResult(services::CucumberStepStorage::fail);
+            matchResult.result = Duplicate;
+        else if (nrStepMatches == 0)
+            matchResult.result = Fail;
         else
-            SetMatchResult(services::CucumberStepStorage::success);
+        {
+            matchResult.result = Success;
+            matchResult.step = &GetStep(matchResult.id);
+        }
+        return matchResult;
     }
 
     CucumberStep& CucumberStepStorage::GetStep(uint8_t id)
@@ -95,11 +95,11 @@ namespace services
 
     void CucumberStepStorage::DeleteStep(CucumberStep& step)
     {
-        stepList.erase(step);
+        this->stepList.erase(step);
     }
 
     void CucumberStepStorage::ClearStorage()
     {
-        stepList.clear();
+        this->stepList.clear();
     }
 }

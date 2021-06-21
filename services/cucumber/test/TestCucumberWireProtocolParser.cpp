@@ -1,26 +1,24 @@
 #include "gmock/gmock.h"
-#include "infra/util/BoundedString.hpp"
-#include "infra/syntax/Json.hpp"
-#include "infra/syntax/JsonFormatter.hpp"
 #include "infra/stream/StringOutputStream.hpp"
-#include "services/cucumber/CucumberWireProtocolServer.hpp"
-#include "services/cucumber/CucumberStep.hpp"
+#include "infra/syntax/JsonFormatter.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
-#include "infra/util/Function.hpp"
+#include "services/cucumber/CucumberWireProtocolServer.hpp"
+#include "services/network/test_doubles/ConnectionStub.hpp"
+#include "services/network/test_doubles/ConnectionMock.hpp"
 
-class CucumberWireProtocolParserTest
+class CucumberWireProtocolReceiverTest
     : public testing::Test
     , public infra::ClockFixture
 {
 public:
-    CucumberWireProtocolParserTest()
-        : cucumberWireProtocolParser(services::CucumberStepStorage::Instance())
+    CucumberWireProtocolReceiverTest()
+        : aWiFiNetworkIsAvailable("a WiFi network is available")
+        , theConnectivityNodeConnectsToThatNetwork("the Connectivity Node connects to that network")
+        , theConnectivityNodeShouldBeConnected("the Connectivity Node should be connected")
+        , theWiFiNetwork_IsSeenWithin_Seconds("the WiFi network '%s' is seen within %d seconds")
+        , stepWith3Arguments("the WiFi network '%s' is seen within %d minutes and %d seconds")
     {}
-
-    ~CucumberWireProtocolParserTest()
-    {
-    }
 
     class AWiFiNetworkIsAvailable : public services::CucumberStep
     {
@@ -29,11 +27,7 @@ public:
             : CucumberStep(stepName)
         {}
 
-    public:
-        void Invoke(infra::JsonArray& arguments, infra::Function<void(bool)> onDone)
-        {
-            return;
-        }
+        void Invoke(infra::JsonArray& arguments) {};
     };
 
     class TheConnectivityNodeConnectsToThatNetwork : public services::CucumberStep
@@ -43,11 +37,7 @@ public:
             : CucumberStep(stepName)
         {}
 
-    public:
-        void Invoke(infra::JsonArray& arguments, infra::Function<void(bool)> onDone)
-        {
-            return;
-        }
+        void Invoke(infra::JsonArray& arguments) {};
     };
 
     class TheConnectivityNodeShouldBeConnected : public services::CucumberStep
@@ -57,11 +47,7 @@ public:
             : CucumberStep(stepName)
         {}
 
-    public:
-        void Invoke(infra::JsonArray& arguments, infra::Function<void(bool)> onDone)
-        {
-            return;
-        }
+        void Invoke(infra::JsonArray& arguments) {};
     };
 
     class TheWiFiNetwork_IsSeenWithin_Seconds : public services::CucumberStep
@@ -71,11 +57,7 @@ public:
             : CucumberStep(stepName)
         {}
 
-    public:
-        void Invoke(infra::JsonArray& arguments, infra::Function<void(bool)> onDone)
-        {
-            return;
-        }
+        void Invoke(infra::JsonArray& arguments) {};
     };
 
     class StepWith3Arguments : public services::CucumberStep
@@ -85,55 +67,47 @@ public:
             : CucumberStep(stepName)
         {}
 
-    public:
-        void Invoke(infra::JsonArray& arguments, infra::Function<void(bool)> onDone)
-        {
-            return;
-        }
+        void Invoke(infra::JsonArray& arguments) {};
     };
 
-    AWiFiNetworkIsAvailable aWiFiNetworkIsAvailable = AWiFiNetworkIsAvailable("a WiFi network is available");
-    TheConnectivityNodeConnectsToThatNetwork theConnectivityNodeConnectsToThatNetwork = TheConnectivityNodeConnectsToThatNetwork("the Connectivity Node connects to that network");
-    TheConnectivityNodeShouldBeConnected theConnectivityNodeShouldBeConnected = TheConnectivityNodeShouldBeConnected("the Connectivity Node should be connected");
-    TheWiFiNetwork_IsSeenWithin_Seconds theWiFiNetwork_IsSeenWithin_Seconds = TheWiFiNetwork_IsSeenWithin_Seconds("the WiFi network '%s' is seen within %d seconds");
-    StepWith3Arguments stepWith3Arguments = StepWith3Arguments("the WiFi network '%s' is seen within %d minutes and %d seconds");
+    AWiFiNetworkIsAvailable aWiFiNetworkIsAvailable;
+    TheConnectivityNodeConnectsToThatNetwork theConnectivityNodeConnectsToThatNetwork;
+    TheConnectivityNodeShouldBeConnected theConnectivityNodeShouldBeConnected;
+    TheWiFiNetwork_IsSeenWithin_Seconds theWiFiNetwork_IsSeenWithin_Seconds;
+    StepWith3Arguments stepWith3Arguments;
 
-    services::CucumberWireProtocolParser cucumberWireProtocolParser;
+    services::CucumberWireProtocolParser parser;
 };
 
-TEST_F(CucumberWireProtocolParserTest, test_step_contains_arguments)
+TEST_F(CucumberWireProtocolReceiverTest, test_step_contains_arguments)
 {
     EXPECT_FALSE(aWiFiNetworkIsAvailable.HasStringArguments());
     EXPECT_TRUE(theWiFiNetwork_IsSeenWithin_Seconds.HasStringArguments());
 }
 
-TEST_F(CucumberWireProtocolParserTest, test_step_parsing_arguments)
-{
-    infra::BoundedString::WithStorage<128> input = "the WiFi network 'CoCoCo' is seen within 10 minutes and 30 seconds";
-    infra::JsonArray expectedArguments("[ { \"val\":\"CoCoCo\", \"pos\":18 }, { \"val\":\"10\", \"pos\":41 }, { \"val\":\"30\", \"pos\":56 } ]");
-    
-    infra::JsonArray jsonArray = stepWith3Arguments.ParseMatchArguments(input);
-
-    EXPECT_EQ(jsonArray, expectedArguments);
-}
-
-
-TEST_F(CucumberWireProtocolParserTest, test_matching_step_name)
+TEST_F(CucumberWireProtocolReceiverTest, test_matching_step_name)
 {
     infra::BoundedString::WithStorage<128> input = "a WiFi network is available";
-    EXPECT_TRUE(services::CucumberStepStorage::Instance().CompareStepName(aWiFiNetworkIsAvailable, input));
-    EXPECT_FALSE(services::CucumberStepStorage::Instance().CompareStepName(stepWith3Arguments, input));
+    EXPECT_TRUE(services::CucumberStepStorage::Instance().MatchesStepName(aWiFiNetworkIsAvailable, input));
+    EXPECT_FALSE(services::CucumberStepStorage::Instance().MatchesStepName(stepWith3Arguments, input));
 
     input = "the WiFi network 'CoCoCo' is seen within 10 minutes and 30 seconds";
-    EXPECT_FALSE(services::CucumberStepStorage::Instance().CompareStepName(aWiFiNetworkIsAvailable, input));
-    EXPECT_TRUE(services::CucumberStepStorage::Instance().CompareStepName(stepWith3Arguments, input));
+    EXPECT_FALSE(services::CucumberStepStorage::Instance().MatchesStepName(aWiFiNetworkIsAvailable, input));
+    EXPECT_TRUE(services::CucumberStepStorage::Instance().MatchesStepName(stepWith3Arguments, input));
 
     input = "the WiFi network 'CoCoCo' is seen within '10' minutes and '30' seconds";
-    EXPECT_FALSE(services::CucumberStepStorage::Instance().CompareStepName(aWiFiNetworkIsAvailable, input));
-    EXPECT_FALSE(services::CucumberStepStorage::Instance().CompareStepName(stepWith3Arguments, input));
+    EXPECT_FALSE(services::CucumberStepStorage::Instance().MatchesStepName(aWiFiNetworkIsAvailable, input));
+    EXPECT_FALSE(services::CucumberStepStorage::Instance().MatchesStepName(stepWith3Arguments, input));
 }
 
-TEST_F(CucumberWireProtocolParserTest, test_step_nr_of_arguments)
+TEST_F(CucumberWireProtocolReceiverTest, test_step_nr_of_arguments)
 {
-    EXPECT_EQ(2, theWiFiNetwork_IsSeenWithin_Seconds.NrStringArguments());
+    EXPECT_EQ(2, theWiFiNetwork_IsSeenWithin_Seconds.NrArguments());
+}
+
+TEST_F(CucumberWireProtocolReceiverTest, test_parsing_begin_scenario_tags)
+{
+    infra::BoundedString::WithStorage<128> input = R"(["begin_scenario",{"tags":["tag1","tag2"]}])";
+    parser.ParseRequest(input);
+    EXPECT_EQ(parser.scenarioTags, infra::JsonObject(R"({"tags":["tag1","tag2"]})"));
 }

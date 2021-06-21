@@ -1,18 +1,13 @@
 #ifndef CUCUMBER_WIRE_PROTOCOL_SERVER_MOCK_HPP
 #define CUCUMBER_WIRE_PROTOCOL_SERVER_MOCK_HPP
 
+#include "cucumber_test/clients/CucumberEchoClient.hpp"
 #include "gmock/gmock.h"
-#include "services\cucumber\CucumberWireProtocolServer.hpp"
 #include "infra/util/Function.hpp"
-#include "services/cucumber/CucumberEcho.hpp"
+#include "services\cucumber\CucumberWireProtocolServer.hpp"
 
 namespace services
 {
-    class CucumberWireProtocolServerMock
-        : public services::CucumberWireProtocolServer
-    {
-
-    };
 
     class CucumberStepMock
         : public services::CucumberStep
@@ -22,24 +17,24 @@ namespace services
             : CucumberStep("Mock Step")
         {}
 
-        MOCK_METHOD2(Invoke, void(infra::JsonArray& arguments, infra::Function<void(bool)> onDone));
+        MOCK_METHOD1(Invoke, void(infra::JsonArray& arguments));
     };
 
-    using AllocatorCucumberEchoProtoMock = infra::SharedObjectAllocator<CucumberEchoProto, void()>;
+    using AllocatorCucumberEchoProtoMock = infra::SharedObjectAllocator<application::CucumberEchoProto, void()>;
 
     class CucumberEchoClientMock
-        : public services::CucumberEchoClient
+        : public application::CucumberEchoClient
     {
     public:
         template<std::size_t MaxConnections>
         using WithMaxConnections = infra::WithStorage<CucumberEchoClientMock, AllocatorCucumberEchoProtoMock::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxConnections>>;
 
-        CucumberEchoClientMock(AllocatorCucumberEchoProto& allocator, services::ConnectionFactory& connectionFactory, services::IPAddress hostname, services::Tracer& tracer)
+        CucumberEchoClientMock(application::AllocatorCucumberEchoProto& allocator, services::ConnectionFactory& connectionFactory, services::IPAddress hostname, services::Tracer& tracer)
             : connectionFactory(connectionFactory)
             , allocator(allocator)
             , hostname(hostname)
             , tracer(tracer)
-            , CucumberEchoClient(allocator, connectionFactory, hostname, tracer)
+            , application::CucumberEchoClient(allocator, connectionFactory, hostname, tracer)
         {
             ConnectionEstablished([](infra::SharedPtr<services::ConnectionObserver>) {});
         }
@@ -50,7 +45,7 @@ namespace services
         services::ConnectionFactory& connectionFactory;
         services::IPAddress hostname;
         services::Tracer& tracer;
-        AllocatorCucumberEchoProto& allocator;
+        application::AllocatorCucumberEchoProto& allocator;
     };
 
     void CucumberEchoClientMock::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)

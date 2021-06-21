@@ -1,16 +1,10 @@
 #ifndef SERVICES_CUCUMBER_STEP_HPP 
 #define SERVICES_CUCUMBER_STEP_HPP
 
-#include "infra/syntax/Json.hpp"
 #include "infra/syntax/JsonFormatter.hpp"
-#include "infra/util/BoundedVector.hpp"
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/IntrusiveList.hpp"
-#include "infra/util/IntrusiveForwardList.hpp"
-#include "services/tracer/Tracer.hpp"
-#include "services/tracer/TracingOutputStream.hpp"
 #include "services/cucumber/CucumberContext.hpp"
-#include "infra/util/Function.hpp"
 
 namespace services
 {
@@ -18,42 +12,30 @@ namespace services
         : public infra::IntrusiveList<CucumberStep>::NodeType 
     {
     public:
-        CucumberStep(const services::CucumberStep& step);
-        CucumberStep(const infra::BoundedString& stepName);
-
-        ~CucumberStep() {}
-
+        explicit CucumberStep(const infra::BoundedString& stepName);
+        CucumberStep& operator=(const CucumberStep& other) = delete;
+        CucumberStep(CucumberStep& other) = delete;
+        virtual ~CucumberStep() = default;
         bool operator==(const CucumberStep& other) const;
 
-        infra::JsonArray& MatchArguments();
-        void SetMatchArguments(infra::JsonArray arguments);
         infra::BoundedString& StepName();
-        void StepName(infra::BoundedString stepName);
-        infra::BoundedString& MatchArgumentsBuffer();
 
-        static uint8_t NrSteps();
-        static void SetNrSteps(uint8_t nrSteps);
-
-        infra::JsonString GetStringArgument(uint8_t argumentNumber);
+        infra::Optional<infra::JsonString> GetTableArgument(const infra::BoundedString& fieldName);
+        bool ContainsTableArgument(const infra::BoundedString& fieldName);
+        infra::Optional<infra::JsonString> GetStringArgument(uint8_t argumentNumber);
         bool HasStringArguments();
         bool ContainsStringArgument(uint8_t index);
-        uint8_t NrStringArguments();
-        infra::JsonArray ParseMatchArguments(const infra::BoundedString& nameToMatch);
+        uint16_t NrArguments();
 
-        infra::JsonString GetTableArgument(const infra::BoundedString& fieldName);
-        bool ContainsTableArgument(const infra::BoundedString& fieldName);
-
-        virtual void Invoke(infra::JsonArray& arguments, infra::Function<void(bool)> OnDone) = 0;
+        virtual void Invoke(infra::JsonArray& arguments) = 0;
+        static services::CucumberContext& Context();
 
     protected:
         infra::JsonArray* invokeArguments;
-        
     private:
-        infra::JsonArray matchArguments;
-        infra::BoundedString::WithStorage<256> matchArgumentsBuffer;
-        infra::BoundedString::WithStorage<256> stepName;
+        void IterateThroughStringArguments(infra::JsonArrayIterator& iterator);
 
-        static uint8_t nrSteps;
+        infra::BoundedString::WithStorage<256> stepName;
     };
 }
 
