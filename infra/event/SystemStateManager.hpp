@@ -21,7 +21,7 @@ namespace infra
     };
 
     template<class Derived>
-    class SystemState                                                                                           //TICS !OOP#013
+    class SystemState
         : public SystemStateBase
     {
     public:
@@ -38,6 +38,8 @@ namespace infra
     {
     public:
         explicit SystemStateParticipant(SystemStateManager& aSystemStateManager);
+        SystemStateParticipant(const SystemStateParticipant& other) = delete;
+        SystemStateParticipant& operator=(const SystemStateParticipant& other) = delete;
         ~SystemStateParticipant();
 
     protected:

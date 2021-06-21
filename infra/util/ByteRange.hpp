@@ -29,7 +29,7 @@ namespace infra
     ConstByteRange MakeStringByteRange(const std::string& string);
     std::string ByteRangeAsStdString(infra::ConstByteRange range);
 
-#ifdef CCOLA_HOST_BUILD //TICS !POR#021
+#ifdef CCOLA_HOST_BUILD
     // gtest uses PrintTo to display the contents of ByteRange
     inline void PrintTo(ByteRange range, std::ostream* os)
     {
@@ -99,7 +99,7 @@ namespace infra
 
     inline ConstByteRange MakeStringByteRange(const char* string)
     {
-        return ReinterpretCastByteRange(MakeRange(string, string + std::strlen(string)));
+        return ReinterpretCastByteRange(MakeRange(string, string + std::strlen(string)));   //NOSONAR
     }
 
     inline ConstByteRange MakeStringByteRange(const std::string& string)

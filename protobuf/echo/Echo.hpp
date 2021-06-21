@@ -105,11 +105,17 @@ namespace services
         , private services::ServiceProxy
     {
     public:
-        ServiceForwarder(Echo& echo, uint32_t id, Echo& forwardTo, uint32_t maxMessageSize);
+        ServiceForwarder(infra::ByteRange messageBuffer, Echo& echo, uint32_t id, Echo& forwardTo);
+
+        template<std::size_t MaxMessageSize>
+            using WithMaxMessageSize = infra::WithStorage<ServiceForwarder, std::array<uint8_t, MaxMessageSize>>;
+        
 
         virtual void Handle(uint32_t methodId, infra::ProtoLengthDelimited& contents) override;
 
     private:
+        const infra::ByteRange messageBuffer;
+        infra::Optional<infra::ByteRange> bytes;
         uint32_t methodId;
     };
 

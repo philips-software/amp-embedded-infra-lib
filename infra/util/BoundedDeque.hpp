@@ -158,7 +158,7 @@ namespace infra
 
             BoundedDequeIterator() = delete;
             BoundedDequeIterator(DequeType* deque, std::size_t offset);
-            template<class DequeType2, class T2>                                                                        //TICS !INT#001
+            template<class DequeType2, class T2>
                 BoundedDequeIterator(const BoundedDequeIterator<DequeType2, T2>& other);
             template<class DequeType2, class T2>
                 BoundedDequeIterator& operator=(const BoundedDequeIterator<DequeType2, T2>& other);

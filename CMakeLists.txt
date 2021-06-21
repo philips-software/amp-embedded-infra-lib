@@ -2,7 +2,13 @@ cmake_minimum_required(VERSION 3.6.2)
 
 project(emil VERSION 1.3.0)
 
-set(CMAKE_CXX_STANDARD 14)
+if(MSVC_VERSION LESS 1920)
+    # Since we still need to support VS2015.
+    set(CMAKE_CXX_STANDARD 14)
+else()
+    set(CMAKE_CXX_STANDARD 17)
+endif()
+
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 
 if(NOT CCOLA_DIR)

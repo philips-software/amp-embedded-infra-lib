@@ -25,7 +25,7 @@ namespace infra
     class ProtoFormatter
     {
     public:
-        explicit ProtoFormatter(infra::DataOutputStream output);
+        explicit ProtoFormatter(infra::DataOutputStream& output);
 
         void PutVarInt(uint64_t value);
         void PutSignedVarInt(uint64_t value);

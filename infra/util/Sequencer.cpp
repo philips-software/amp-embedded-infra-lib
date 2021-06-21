@@ -199,7 +199,7 @@ namespace infra
         IncreaseCurrentStep();
     }
 
-void Sequencer::IncreaseCurrentStep()
+    void Sequencer::IncreaseCurrentStep()
     {
         ++examine.back();
     }

@@ -538,7 +538,7 @@ namespace infra
 
     void JsonTokenizer::SkipWhitespace()
     {
-        while (parseIndex != objectString.size() && std::isspace(static_cast<unsigned char>(objectString[parseIndex])))                         //TICS !CON#007
+        while (parseIndex != objectString.size() && std::isspace(static_cast<unsigned char>(objectString[parseIndex])))
             ++parseIndex;
     }
 
@@ -567,13 +567,13 @@ namespace infra
         std::size_t tokenStart = parseIndex;
         bool sign = false;
 
-        if (parseIndex != objectString.size() && objectString[parseIndex] == '-')                                       //TICS !CON#007
+        if (parseIndex != objectString.size() && objectString[parseIndex] == '-')
         {
             sign = true;
             ++parseIndex;
         }
 
-        while (parseIndex != objectString.size() && std::isdigit(static_cast<unsigned char>(objectString[parseIndex])))                             //TICS !CON#007
+        while (parseIndex != objectString.size() && std::isdigit(static_cast<unsigned char>(objectString[parseIndex])))
             ++parseIndex;
 
         infra::BoundedConstString integer = objectString.substr(tokenStart, parseIndex - tokenStart);
@@ -592,7 +592,7 @@ namespace infra
     {
         std::size_t tokenStart = parseIndex;
 
-        while (parseIndex != objectString.size() && std::isalpha(static_cast<unsigned char>(objectString[parseIndex])))                         //TICS !CON#007
+        while (parseIndex != objectString.size() && std::isalpha(static_cast<unsigned char>(objectString[parseIndex])))
             ++parseIndex;
 
         infra::BoundedConstString identifier = objectString.substr(tokenStart, parseIndex - tokenStart);

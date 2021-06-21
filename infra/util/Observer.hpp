@@ -20,7 +20,7 @@ namespace infra
 
     public:
         Observer() = default;
-        Observer(SubjectType& subject);                                                                                 //TICS !INT#001
+        Observer(SubjectType& subject);
 
     protected:
         Observer(const Observer& other) = delete;
@@ -47,7 +47,7 @@ namespace infra
 
     public:
         SingleObserver() = default;
-        SingleObserver(SubjectType& subject);                                                                           //TICS !INT#001
+        SingleObserver(SubjectType& subject);
 
     protected:
         SingleObserver(const SingleObserver& other) = delete;
@@ -315,7 +315,7 @@ namespace infra
     template<class ObserverType, class Helper>
     void Subject<ObserverType, Helper>::UnregisterObserver(SingleObserver<ObserverType, ObserverSubjectType>* observer)
     {
-        (void)observer; // Avoid warning in release mode                                                                //TICS !CFL#024
+        (void)observer; // Avoid warning in release mode
         assert(this->observer == observer);
         this->observer = nullptr;
     }

@@ -214,19 +214,19 @@ namespace infra
     public:
         Quantity();
         explicit Quantity(StorageType v);
-        Quantity(const Quantity& other);
-        template<class OtherUnit>                                                                                       //TICS !INT#001
+        Quantity(const Quantity& other) = default;
+        template<class OtherUnit>
             Quantity(Quantity<OtherUnit, StorageType> other, typename std::enable_if<UnitSame<OtherUnit, UnitType>::value>::type* = 0);
 
-        Quantity& operator=(const Quantity& other);
+        Quantity& operator=(const Quantity& other) = default;
         template<class OtherUnit>
             typename std::enable_if<UnitSame<OtherUnit, UnitType>::value, Quantity&>::type operator=(const Quantity<OtherUnit, StorageType>& other);
 
         StorageType Value() const;
 
         Quantity operator-() const;
-        Quantity& operator+=(Quantity other);                                                                           //TICS !INT#008
-        Quantity& operator-=(Quantity other);                                                                           //TICS !INT#008
+        Quantity& operator+=(Quantity other);
+        Quantity& operator-=(Quantity other);
         Quantity& operator*=(StorageType other);
         Quantity& operator/=(StorageType other);
 
@@ -262,22 +262,10 @@ namespace infra
     {}
 
     template<class UnitType, class StorageType>
-    Quantity<UnitType, StorageType>::Quantity(const Quantity& other)
-        : value(other.value)
-    {}
-
-    template<class UnitType, class StorageType>
     template<class OtherUnit>
     Quantity<UnitType, StorageType>::Quantity(Quantity<OtherUnit, StorageType> other, typename std::enable_if<UnitSame<OtherUnit, UnitType>::value>::type*)
         : value(other.value * OtherUnit::Factor::n * UnitType::Factor::d / OtherUnit::Factor::d / UnitType::Factor::n)
     {}
-
-    template<class UnitType, class StorageType>
-    Quantity<UnitType, StorageType>& Quantity<UnitType, StorageType>::operator=(const Quantity& other)
-    {
-        value = other.value;
-        return *this;
-    }
 
     template<class UnitType, class StorageType>
     template<class OtherUnit>

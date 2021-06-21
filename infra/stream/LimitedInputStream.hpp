@@ -15,6 +15,7 @@ namespace infra
 
         LimitedStreamReader(StreamReader& input, uint32_t length);
         LimitedStreamReader(const LimitedStreamReader& other);
+        ~LimitedStreamReader() = default;
 
         void ResetLength(uint32_t newLength);
 
@@ -40,6 +41,7 @@ namespace infra
 
         LimitedStreamReaderWithRewinding(StreamReaderWithRewinding& input, uint32_t length);
         LimitedStreamReaderWithRewinding(const LimitedStreamReaderWithRewinding& other);
+        ~LimitedStreamReaderWithRewinding() = default;
 
         void ResetLength(uint32_t newLength);
 

@@ -102,8 +102,10 @@ namespace services
             : public SendingState
         {
         public:
-            SendingStateForwardSendStream(const SendingStateForwardSendStream& other);
             SendingStateForwardSendStream(HttpClientImpl& client, std::size_t contentSize);
+            SendingStateForwardSendStream(const SendingStateForwardSendStream& other);
+            SendingStateForwardSendStream& operator=(const SendingStateForwardSendStream& other) = default;
+            ~SendingStateForwardSendStream() = default;
 
             virtual void Activate() override;
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;

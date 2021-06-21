@@ -54,6 +54,8 @@ namespace services
 
         ExclusiveStartingConnectionFactoryMutex(infra::SharedObjectAllocator<ExclusiveStartingConnection, void(ExclusiveStartingConnectionFactoryMutex& mutex)>& connections);
 
+        void Stop(const infra::Function<void()>& onDone);
+
         void QueueConnection(WaitingConnection& waitingConnection);
         void RemoveConnection(WaitingConnection& waitingConnection);
         void Started();
@@ -66,7 +68,7 @@ namespace services
         infra::IntrusiveList<WaitingConnection> waitingConnections;
         bool starting = false;
         ExclusiveStartingConnection* startingConnection = nullptr;
-        infra::SharedPtr<ExclusiveStartingConnectionFactoryMutex> self{ infra::UnOwnedSharedPtr(*this) };
+        bool stopping = false;
     };
 
     class ExclusiveStartingConnectionFactory

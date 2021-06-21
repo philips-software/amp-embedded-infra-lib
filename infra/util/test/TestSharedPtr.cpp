@@ -152,13 +152,24 @@ TEST_F(SharedPtrTest, convert_SharedPtr_to_and_from_const)
     EXPECT_FALSE(static_cast<bool>(object));
     EXPECT_TRUE(static_cast<bool>(movedConstObject));
 
-    infra::SharedPtr<MySharedObject> nonConstObject(infra::ConstCast(constObject));
+    infra::SharedPtr<MySharedObject> nonConstObject(infra::ConstPointerCast(constObject));
     EXPECT_TRUE(static_cast<bool>(nonConstObject));
-    infra::SharedPtr<MySharedObject> movedNonConstObject(infra::ConstCast(std::move(constObject)));
+    infra::SharedPtr<MySharedObject> movedNonConstObject(infra::ConstPointerCast(std::move(constObject)));
     EXPECT_FALSE(static_cast<bool>(constObject));
     EXPECT_TRUE(static_cast<bool>(movedNonConstObject));
 
     EXPECT_CALL(objectConstructionMock, Destruct(testing::_));
+}
+
+TEST_F(SharedPtrTest, ConstPointerCast_and_SharedPointerCast_respect_nullptr)
+{
+    infra::SharedPtr<const MySharedObjectBase> constObject;
+
+    EXPECT_EQ(nullptr, infra::ConstPointerCast(constObject));
+    EXPECT_EQ(nullptr, infra::ConstPointerCast(std::move(constObject)));
+
+    EXPECT_EQ(nullptr, infra::StaticPointerCast<const MySharedObject>(constObject));
+    EXPECT_EQ(nullptr, infra::StaticPointerCast<const MySharedObject>(std::move(constObject)));
 }
 
 TEST_F(SharedPtrTest, convert_SharedPtr_to_and_from_base)

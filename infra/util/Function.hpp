@@ -32,12 +32,12 @@
 #include <tuple>
 #include <type_traits>
 
-#ifndef INFRA_DEFAULT_FUNCTION_EXTRA_SIZE                                                                   //TICS !POR#021
+#ifndef INFRA_DEFAULT_FUNCTION_EXTRA_SIZE
 #define INFRA_DEFAULT_FUNCTION_EXTRA_SIZE (2 * sizeof(void*))
 #endif
 
-#ifndef UTIL_FUNCTION_ALIGNMENT                                                                             //TICS !POR#021
-#define UTIL_FUNCTION_ALIGNMENT uint32_t
+#ifndef UTIL_FUNCTION_ALIGNMENT
+#define UTIL_FUNCTION_ALIGNMENT void*
 #endif
 
 namespace infra
@@ -96,10 +96,10 @@ namespace infra
 
     public:
         Function() = default;
-        Function(std::nullptr_t);                                                       //TICS !INT#001
+        Function(std::nullptr_t);
         Function(const Function& other);
 
-        template<class F>                                                               //TICS !INT#001
+        template<class F>
             Function(F f);
 
         ~Function();
@@ -152,6 +152,8 @@ namespace infra
         struct WithExtraSize
         {
             explicit WithExtraSize(Function<void(), ExtraSize> f);
+            WithExtraSize(const WithExtraSize& other) = delete;
+            WithExtraSize& operator=(const WithExtraSize& other) = delete;
             ~WithExtraSize();
 
         private:
@@ -159,6 +161,8 @@ namespace infra
         };
 
         explicit ExecuteOnDestruction(Function<void()> f);
+        ExecuteOnDestruction(const ExecuteOnDestruction& other) = delete;
+        ExecuteOnDestruction& operator=(const ExecuteOnDestruction& other) = delete;
         ~ExecuteOnDestruction();
 
     private:
@@ -179,7 +183,7 @@ namespace infra
     template<std::size_t ExtraSize, class Result, class... Args>
         bool operator!=(std::nullptr_t, const Function<Result(Args...), ExtraSize>& f);
 
-#ifdef CCOLA_HOST_BUILD //TICS !POR#021
+#ifdef CCOLA_HOST_BUILD
     // gtest uses PrintTo to display the contents of Function
     template<class... Args>
     struct PrintParameterNames;
@@ -238,7 +242,7 @@ namespace infra
         template<class F>
         void InvokerFunctions<Result(Args...), ExtraSize>::StaticDestruct(InvokerFunctionsType& invokerFunctions)
         {
-            reinterpret_cast<F&>(invokerFunctions.data).~F();                                                                                       //TICS !CFL#024
+            reinterpret_cast<F&>(invokerFunctions.data).~F();
             invokerFunctions.virtualMethodTable = nullptr;
         }
 
@@ -246,8 +250,8 @@ namespace infra
         template<class F>
         void InvokerFunctions<Result(Args...), ExtraSize>::StaticCopyConstruct(const InvokerFunctionsType& from, InvokerFunctionsType& to)
         {
-            new (&to.data) F(reinterpret_cast<const F&>(from.data));                                                                                //TICS !OAL#011
-            std::memset(reinterpret_cast<char*>(&to.data) + sizeof(F), 0, ExtraSize - sizeof(F));                                                   //TICS !COV_CPP_NO_EFFECT_13
+            new (&to.data) F(reinterpret_cast<const F&>(from.data));
+            std::memset(reinterpret_cast<char*>(&to.data) + sizeof(F), 0, ExtraSize - sizeof(F));
             to.virtualMethodTable = StaticVirtualMethodTable<F>();
         }
 
@@ -276,8 +280,8 @@ namespace infra
             static_assert(sizeof(F) <= ExtraSize, "Not enough static storage availabe for construction of derived type");
             static_assert(std::alignment_of<F>::value <= sizeof(UTIL_FUNCTION_ALIGNMENT), "Alignment of U is larger than alignment of this function");
 
-            new (&invokerFunctions.data) F(std::forward<F>(f));                                                                                     //TICS !OAL#011
-            std::memset(reinterpret_cast<char*>(&invokerFunctions.data) + sizeof(F), 0, ExtraSize - sizeof(F));                                     //TICS !COV_CPP_NO_EFFECT_13
+            new (&invokerFunctions.data) F(std::forward<F>(f));
+            std::memset(reinterpret_cast<char*>(&invokerFunctions.data) + sizeof(F), 0, ExtraSize - sizeof(F));
             invokerFunctions.virtualMethodTable = StaticVirtualMethodTable<F>();
         }
     }
@@ -330,7 +334,7 @@ namespace infra
     template<std::size_t ExtraSize, class Result, class... Args>
     void Function<Result(Args...), ExtraSize>::CopyConstruct(const StorageType& from, StorageType& to)
     {
-        if (from.virtualMethodTable->copyConstruct != nullptr)                                                      //TICS !CON#007
+        if (from.virtualMethodTable->copyConstruct != nullptr)
             from.virtualMethodTable->copyConstruct(from, to);
         else
             Copy(MakeByteRange(from), MakeByteRange(to));
@@ -339,7 +343,7 @@ namespace infra
     template<std::size_t ExtraSize, class Result, class... Args>
     void Function<Result(Args...), ExtraSize>::Destruct(StorageType& storage)
     {
-        if (storage.virtualMethodTable->destruct != nullptr)                                                        //TICS !CON#007
+        if (storage.virtualMethodTable->destruct != nullptr)
             storage.virtualMethodTable->destruct(storage);
     }
 
@@ -385,7 +389,7 @@ namespace infra
     template<std::size_t ExtraSize, class Result, class... Args>
     typename Function<Result(Args...), ExtraSize>::ResultType Function<Result(Args...), ExtraSize>::operator()(Args... args) const
     {
-        return invokerFunctions.virtualMethodTable->invoke(invokerFunctions, args...);
+        return invokerFunctions.virtualMethodTable->invoke(invokerFunctions, args...);  //NOSONAR
     }
 
     namespace detail
@@ -420,7 +424,7 @@ namespace infra
     template<std::size_t ExtraSize, class Result, class... Args>
     bool Function<Result(Args...), ExtraSize>::Initialized() const
     {
-        return invokerFunctions.virtualMethodTable != nullptr;                                                  //TICS !CON#007
+        return invokerFunctions.virtualMethodTable != nullptr;
     }
 
     template<std::size_t ExtraSize, class Result, class... Args>

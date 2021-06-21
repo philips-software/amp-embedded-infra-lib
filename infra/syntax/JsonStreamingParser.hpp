@@ -31,12 +31,6 @@ namespace infra
     class JsonObjectVisitor
         : public JsonVisitor
     {
-    protected:
-        JsonObjectVisitor() = default;
-        JsonObjectVisitor(const JsonObjectVisitor& other) = delete;
-        JsonObjectVisitor& operator=(const JsonObjectVisitor& other) = delete;
-        ~JsonObjectVisitor() = default;
-
     public:
         virtual void VisitString(infra::BoundedConstString tag, infra::BoundedConstString value);
         virtual void VisitNumber(infra::BoundedConstString tag, int64_t value);
@@ -268,6 +262,29 @@ namespace infra
         , public JsonStreamingArrayParser
     {
         WithBuffers(JsonArrayVisitor& visitor);
+    };
+
+    class JsonObjectVisitorDecorator
+        : public JsonObjectVisitor
+    {
+    protected:
+        JsonObjectVisitorDecorator(JsonObjectVisitor& decorated);
+
+    public:
+        virtual void VisitString(infra::BoundedConstString tag, infra::BoundedConstString value) override;
+        virtual void VisitNumber(infra::BoundedConstString tag, int64_t value) override;
+        virtual void VisitBoolean(infra::BoundedConstString tag, bool value) override;
+        virtual void VisitNull(infra::BoundedConstString tag) override;
+        virtual JsonObjectVisitor* VisitObject(infra::BoundedConstString tag, JsonSubObjectParser& parser) override;
+        virtual JsonArrayVisitor* VisitArray(infra::BoundedConstString tag, JsonSubArrayParser& parser) override;
+
+        virtual void Close() override;
+        virtual void ParseError() override;
+        virtual void SemanticError() override;
+        virtual void StringOverflow() override;
+
+    private:
+        JsonObjectVisitor& decorated;
     };
 
     //// Implementation

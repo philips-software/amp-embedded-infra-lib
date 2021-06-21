@@ -1,4 +1,4 @@
-#include "infra/event/EventDispatcherWithWeakPtr.hpp"
+#include "infra/event/EventDispatcher.hpp"
 #include "services/network/ExclusiveStartingConnection.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 
@@ -7,6 +7,13 @@ namespace services
     ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnectionFactoryMutex(infra::SharedObjectAllocator<ExclusiveStartingConnection, void(ExclusiveStartingConnectionFactoryMutex& mutex)>& connections)
         : connections(connections)
     {}
+
+    void ExclusiveStartingConnectionFactoryMutex::Stop(const infra::Function<void()>& onDone)
+    {
+        stopping = true;
+        // By scheduling onDone, Started() will either complete scheduled events, or not schedule new events
+        infra::EventDispatcher::Instance().Schedule(onDone);
+    }
 
     void ExclusiveStartingConnectionFactoryMutex::QueueConnection(WaitingConnection& waitingConnection)
     {
@@ -23,11 +30,13 @@ namespace services
     {
         services::GlobalTracer().Trace() << "ExclusiveStartingConnectionFactoryMutex::Started";
         really_assert(starting);
-        infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ExclusiveStartingConnectionFactoryMutex>& self)
-        {
-            self->starting = false;
-            self->TryAllocateConnection();
-        }, self);
+
+        if (!stopping)
+            infra::EventDispatcher::Instance().Schedule([this]()
+            {
+                starting = false;
+                TryAllocateConnection();
+            });
     }
 
     void ExclusiveStartingConnectionFactoryMutex::TryAllocateConnection()

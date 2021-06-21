@@ -366,7 +366,7 @@ namespace services
 
         uint8_t AtomicDequeReader::Peek(infra::StreamErrorPolicy& errorPolicy)
         {
-            auto range = PeekContiguousRange(offset);
+            auto range = PeekContiguousRange(0);
             errorPolicy.ReportResult(!range.empty());
             if (!range.empty())
                 return range.front();
@@ -376,7 +376,7 @@ namespace services
 
         infra::ConstByteRange AtomicDequeReader::ExtractContiguousRange(std::size_t max)
         {
-            auto range = infra::Head(PeekContiguousRange(offset), max);
+            auto range = infra::Head(PeekContiguousRange(0), max);
             offset += range.size();
             return range;
         }

@@ -30,7 +30,7 @@ namespace application
             message += size;
         }
 
-        mbedtls_sha256_finish(&ctx, messageHash.data());                                                    //TICS !INT#030
+        mbedtls_sha256_finish(&ctx, messageHash.data());
         mbedtls_sha256_free(&ctx);
 
         std::array<uint8_t, 56> theSignature;

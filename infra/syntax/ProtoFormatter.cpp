@@ -28,7 +28,7 @@ namespace infra
         }
     }
 
-    ProtoFormatter::ProtoFormatter(infra::DataOutputStream output)
+    ProtoFormatter::ProtoFormatter(infra::DataOutputStream& output)
         : output(output.Writer(), output.ErrorPolicy())
     {}
 

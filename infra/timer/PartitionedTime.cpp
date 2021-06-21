@@ -37,12 +37,12 @@ namespace infra
     }
 
     PartitionedTime::PartitionedTime(uint16_t years, uint8_t months, uint8_t days, uint8_t hours, uint8_t minutes, int8_t seconds)
-        : years(years)
-        , months(months)
-        , days(days)
-        , hours(hours)
+        : seconds(seconds)
         , minutes(minutes)
-        , seconds(seconds)
+        , hours(hours)
+        , days(days)
+        , months(months)
+        , years(years)
     {}
 
     time_t PartitionedTime::ToTimeT() const

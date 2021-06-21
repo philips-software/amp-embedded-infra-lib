@@ -22,7 +22,7 @@ namespace application
 
     void DecryptorAesMbedTls::DecryptPart(infra::ByteRange data)
     {
-        mbedtls_aes_crypt_ctr(&ctx, data.size(), &currentStreamBlockOffset, counter.data(), currentStreamBlock.data(), data.begin(), data.begin());     //TICS !INT#030
+        mbedtls_aes_crypt_ctr(&ctx, data.size(), &currentStreamBlockOffset, counter.data(), currentStreamBlock.data(), data.begin(), data.begin());
     }
 
     bool DecryptorAesMbedTls::DecryptAndAuthenticate(infra::ByteRange data)

@@ -6,7 +6,6 @@
 
 namespace hal
 {
-    //TICS -INT#002: A mock or stub may have public data
     class SynchronousFlashStub
         : public hal::SynchronousFlash
     {

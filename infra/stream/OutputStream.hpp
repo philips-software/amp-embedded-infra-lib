@@ -196,6 +196,8 @@ namespace infra
         template<class Storage, class... Args>
             WithWriter(Storage&& storage, NoFail, Args&&... args);
         WithWriter(const WithWriter& other);
+        WithWriter& operator=(const WithWriter& other) = delete;
+        ~WithWriter() = default;
 
         TheWriter& Writer();
 
@@ -211,6 +213,7 @@ namespace infra
         WithErrorPolicy(StreamWriter& writer, SoftFail);
         WithErrorPolicy(StreamWriter& writer, NoFail);
         WithErrorPolicy(const WithErrorPolicy& other);
+        ~WithErrorPolicy() = default;
 
     private:
         StreamErrorPolicy errorPolicy;
@@ -229,6 +232,8 @@ namespace infra
         template<class Storage, class... Args>
             WithWriter(Storage&& storage, NoFail, Args&&... args);
         WithWriter(const WithWriter& other);
+        WithWriter& operator=(const WithWriter& other) = delete;
+        ~WithWriter() = default;
 
         TheWriter& Writer();
 
@@ -244,6 +249,7 @@ namespace infra
         WithErrorPolicy(StreamWriter& writer, SoftFail);
         WithErrorPolicy(StreamWriter& writer, NoFail);
         WithErrorPolicy(const WithErrorPolicy& other);
+        ~WithErrorPolicy() = default;
 
     private:
         StreamErrorPolicy errorPolicy;

@@ -1,40 +1,70 @@
 #include "gtest/gtest.h"
 #include "hal/interfaces/test_doubles/FlashStub.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
+#include "infra/util/test_helper/LifetimeHelper.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "services/util/CyclicStore.hpp"
 
-class CyclicStoreBaseTest
+class CyclicStoreTest
     : public testing::Test
     , public infra::ClockFixture
+    , protected infra::LifetimeHelper
 {
 public:
-    CyclicStoreBaseTest()
-        : flash(2, 10)
-    {}
+    void AddItem(infra::ConstByteRange data, const infra::Function<void()>& onDone = infra::emptyFunction)
+    {
+        cyclicStore.Add(data, onDone);
+        ExecuteAllActions();
+    }
 
-    hal::FlashStub flash;
-};
+    void AddPartialItem(infra::ConstByteRange data, uint32_t totalSize, const infra::Function<void()>& onDone = infra::emptyFunction)
+    {
+        cyclicStore.AddPartial(data, totalSize, onDone);
+        ExecuteAllActions();
+    }
 
-class CyclicStoreTest
-    : public CyclicStoreBaseTest
-{
-public:
-    CyclicStoreTest()
-        : cyclicStore(flash)
-    {}
+    void ReConstructCyclicStore()
+    {
+        infra::ReConstruct(cyclicStore, flash);
+        ExecuteAllActions();
+    }
 
-    services::CyclicStore cyclicStore;
+    void ReConstructFlashAndCyclicStore(uint32_t numberOfSectors, uint32_t sizeOfEachSector)
+    {
+        infra::ReConstruct(flash, numberOfSectors, sizeOfEachSector);
+        ReConstructCyclicStore();
+    }
+
+    std::vector<uint8_t> Read(services::CyclicStore::Iterator& iterator, std::size_t maxSize = 1000)
+    {
+        std::vector<uint8_t> result;
+
+        std::vector<uint8_t> readDataBuffer(maxSize, 0);
+        iterator.Read(readDataBuffer, [&](infra::ByteRange data) { result.insert(result.end(), data.begin(), data.end()); });
+        ExecuteAllActions();
+
+        return result;
+    }
+
+    hal::FlashStub flash{ 2, 10 };
+    services::CyclicStore cyclicStore{ flash };
 };
 
 TEST_F(CyclicStoreTest, AddFirstItem)
 {
-    infra::MockCallback<void()> done;
+    infra::VerifyingFunctionMock<void()> done;
 
-    std::vector<uint8_t> data = { 11, 12 };
-    cyclicStore.Add(data, [&done]() { done.callback(); });
+    AddItem(KeepBytesAlive({ 11, 12 }), [&done]() { done.callback(); });
 
-    EXPECT_CALL(done, callback());
+    EXPECT_EQ((std::vector<uint8_t>{ 0xfc, 0xf8, 2, 0, 11, 12, 0xff, 0xff, 0xff, 0xff }), flash.sectors[0]);
+}
+
+TEST_F(CyclicStoreTest, ClearNoItem)
+{
+    AddItem(KeepBytesAlive({ 11, 12 }));
+
+    services::CyclicStore::Iterator iterator = cyclicStore.Begin();
+    iterator.ErasePrevious([]() {});
     ExecuteAllActions();
 
     EXPECT_EQ((std::vector<uint8_t>{ 0xfc, 0xf8, 2, 0, 11, 12, 0xff, 0xff, 0xff, 0xff }), flash.sectors[0]);
@@ -42,36 +72,24 @@ TEST_F(CyclicStoreTest, AddFirstItem)
 
 TEST_F(CyclicStoreTest, AddPartialItem)
 {
-    std::vector<uint8_t> data = { 11 };
-    cyclicStore.AddPartial(data, 3, infra::emptyFunction);
-    ExecuteAllActions();
-    std::vector<uint8_t> secondData = { 12 };
-    cyclicStore.Add(secondData, infra::emptyFunction);
-    ExecuteAllActions();
-    std::vector<uint8_t> thirdData = { 13 };
-    cyclicStore.Add(thirdData, infra::emptyFunction);
-    ExecuteAllActions();
+    AddPartialItem(KeepBytesAlive({ 11 }), 3);
+    AddItem(KeepBytesAlive({ 12 }));
+    AddItem(KeepBytesAlive({ 13 }));
 
     EXPECT_EQ((std::vector<uint8_t>{ 0xfc, 0xf8, 3, 0, 11, 12, 13, 0xff, 0xff, 0xff }), flash.sectors[0]);
 }
 
 TEST_F(CyclicStoreTest, AddSecondItem)
 {
-    std::vector<uint8_t> data = { 11 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    ExecuteAllActions();
-    std::vector<uint8_t> secondData = { 12 };
-    cyclicStore.Add(secondData, infra::emptyFunction);
-    ExecuteAllActions();
+    AddItem(KeepBytesAlive({ 11 }));
+    AddItem(KeepBytesAlive({ 12 }));
 
     EXPECT_EQ((std::vector<uint8_t>{ 0xfc, 0xf8, 1, 0, 11, 0xf8, 1, 0, 12, 0xff }), flash.sectors[0]);
 }
 
 TEST_F(CyclicStoreTest, FillSector)
 {
-    std::vector<uint8_t> data = { 11, 12, 13, 14, 15, 16 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    ExecuteAllActions();
+    AddItem(KeepBytesAlive({ 11, 12, 13, 14, 15, 16 }));
 
     EXPECT_EQ((std::vector<std::vector<uint8_t>>{
         { 0xfc, 0xf8, 6, 0, 11, 12, 13, 14, 15, 16 },
@@ -81,12 +99,8 @@ TEST_F(CyclicStoreTest, FillSector)
 
 TEST_F(CyclicStoreTest, AddItemInNewSector)
 {
-    std::vector<uint8_t> data = { 11, 12, 13, 14, 15, 16 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    ExecuteAllActions();
-    std::vector<uint8_t> secondData = { 21 };
-    cyclicStore.Add(secondData, infra::emptyFunction);
-    ExecuteAllActions();
+    AddItem(KeepBytesAlive({ 11, 12, 13, 14, 15, 16 }));
+    AddItem(KeepBytesAlive({ 21 }));
 
     EXPECT_EQ((std::vector<std::vector<uint8_t>>{
         { 0xfc, 0xf8, 6, 0, 11, 12, 13, 14, 15, 16 },
@@ -96,12 +110,8 @@ TEST_F(CyclicStoreTest, AddItemInNewSector)
 
 TEST_F(CyclicStoreTest, FillUnusedSpaceWhenAddingItem)
 {
-    std::vector<uint8_t> data = { 11, 12, 13 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    ExecuteAllActions();
-    std::vector<uint8_t> secondData = { 21 };
-    cyclicStore.Add(secondData, infra::emptyFunction);
-    ExecuteAllActions();
+    AddItem(KeepBytesAlive({ 11, 12, 13 }));
+    AddItem(KeepBytesAlive({ 21 }));
 
     EXPECT_EQ((std::vector<std::vector<uint8_t>>{
         { 0xfc, 0xf8, 3, 0, 11, 12, 13, 0x7f, 0xff, 0xff },
@@ -111,12 +121,8 @@ TEST_F(CyclicStoreTest, FillUnusedSpaceWhenAddingItem)
 
 TEST_F(CyclicStoreTest, FillOneByteOfUnusedSpaceWhenAddingItem)
 {
-    std::vector<uint8_t> data = { 11, 12, 13, 14, 15 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    ExecuteAllActions();
-    std::vector<uint8_t> secondData = { 21 };
-    cyclicStore.Add(secondData, infra::emptyFunction);
-    ExecuteAllActions();
+    AddItem(KeepBytesAlive({ 11, 12, 13, 14, 15 }));
+    AddItem(KeepBytesAlive({ 21 }));
 
     EXPECT_EQ((std::vector<std::vector<uint8_t>>{
         { 0xfc, 0xf8, 5, 0, 11, 12, 13, 14, 15, 0x7f, },
@@ -134,9 +140,7 @@ TEST_F(CyclicStoreTest, AddFirstItemWhenFlashStopsAfterNSteps)
         ExecuteAllActions();
         flash.stopAfterWriteSteps = i;
 
-        std::vector<uint8_t> data = { 11, 12 };
-        cyclicStore.Add(data, infra::emptyFunction);
-        ExecuteAllActions();
+        AddItem(KeepBytesAlive({ 11, 12 }));
 
         flashAfterNSteps.push_back(flash.sectors[0]);
     }
@@ -153,15 +157,9 @@ TEST_F(CyclicStoreTest, AddFirstItemWhenFlashStopsAfterNSteps)
 
 TEST_F(CyclicStoreTest, AddItemWhichCausesSectorToBeErased)
 {
-    std::vector<uint8_t> data = { 11, 12, 13, 14, 15, 16 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    ExecuteAllActions();
-    std::vector<uint8_t> secondData = { 21, 22, 23, 24, 25, 26 };
-    cyclicStore.Add(secondData, infra::emptyFunction);
-    ExecuteAllActions();
-    std::vector<uint8_t> thirdData = { 31, 32, 33, 34, 35, 36 };
-    cyclicStore.Add(thirdData, infra::emptyFunction);
-    ExecuteAllActions();
+    AddItem(KeepBytesAlive({ 11, 12, 13, 14, 15, 16 }));
+    AddItem(KeepBytesAlive({ 21, 22, 23, 24, 25, 26 }));
+    AddItem(KeepBytesAlive({ 31, 32, 33, 34, 35, 36 }));
 
     EXPECT_EQ((std::vector<std::vector<uint8_t>>{
         { 0xfe, 0xf8, 6, 0, 31, 32, 33, 34, 35, 36 },
@@ -173,15 +171,10 @@ TEST_F(CyclicStoreTest, AddItemOverflowingSectorWhichCausesSectorToBeErased)
 {
     flash.sectors[0].resize(14);
     flash.sectors[1].resize(14);
-    std::vector<uint8_t> data = { 11, 12, 13, 14, 15, 16 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    ExecuteAllActions();
-    std::vector<uint8_t> secondData = { 21, 22, 23, 24, 25, 26 };
-    cyclicStore.Add(secondData, infra::emptyFunction);
-    ExecuteAllActions();
-    std::vector<uint8_t> thirdData = { 31, 32, 33, 34, 35, 36 };
-    cyclicStore.Add(thirdData, infra::emptyFunction);
-    ExecuteAllActions();
+
+    AddItem(KeepBytesAlive({ 11, 12, 13, 14, 15, 16 }));
+    AddItem(KeepBytesAlive({ 21, 22, 23, 24, 25, 26 }));
+    AddItem(KeepBytesAlive({ 31, 32, 33, 34, 35, 36 }));
 
     EXPECT_EQ((std::vector<std::vector<uint8_t>>{
         { 0xfe, 0xf8, 6, 0, 31, 32, 33, 34, 35, 36, 0xff, 0xff, 0xff, 0xff },
@@ -191,154 +184,101 @@ TEST_F(CyclicStoreTest, AddItemOverflowingSectorWhichCausesSectorToBeErased)
 
 TEST_F(CyclicStoreTest, ReadFirstItem)
 {
-    std::vector<uint8_t> data = { 11, 12 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    ExecuteAllActions();
-
-    infra::MockCallback<void(std::vector<uint8_t>)> mock;
-    EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 11, 12 }));
+    AddItem(KeepBytesAlive({ 11, 12 }));
 
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
-    std::vector<uint8_t> readDataBuffer(2, 0);
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
+    EXPECT_EQ((std::vector<uint8_t>{ 11, 12 }), Read(iterator));
+}
 
+TEST_F(CyclicStoreTest, ClearFirstItem)
+{
+    AddItem(KeepBytesAlive({ 11, 12 }));
+
+    services::CyclicStore::Iterator iterator = cyclicStore.Begin();
+    Read(iterator);
+    iterator.ErasePrevious([]() {});
     ExecuteAllActions();
+
+    EXPECT_EQ((std::vector<uint8_t>{ 0xfc, 0xf0, 2, 0, 11, 12, 0xff, 0xff, 0xff, 0xff }), flash.sectors[0]);
+
+    iterator = cyclicStore.Begin();
+    EXPECT_EQ((std::vector<uint8_t>{}), Read(iterator));
 }
 
 TEST_F(CyclicStoreTest, ReadFirstItemTwice)
 {
     // build
-    std::vector<uint8_t> data = { 11, 12 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    ExecuteAllActions();
-
-    infra::MockCallback<void(std::vector<uint8_t>)> mock;
-    EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 11, 12 }));
+    AddItem(KeepBytesAlive({ 11, 12 }));
 
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
-    std::vector<uint8_t> readDataBuffer(2, 0);
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
-
-    ExecuteAllActions();
+    EXPECT_EQ((std::vector<uint8_t>{ 11, 12 }), Read(iterator));
 
     // operate/check
-    EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 11, 12 }));
-
     iterator = cyclicStore.Begin();
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
-
-    ExecuteAllActions();
+    EXPECT_EQ((std::vector<uint8_t>{ 11, 12 }), Read(iterator));
 }
 
 TEST_F(CyclicStoreTest, ReadItemWithInsufficientBufferSpace)
 {
-    std::vector<uint8_t> data = { 11, 12 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    ExecuteAllActions();
-
-    infra::MockCallback<void(std::vector<uint8_t>)> mock;
-    EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 11 }));
+    AddItem(KeepBytesAlive({ 11, 12 }));
 
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
-    std::vector<uint8_t> readDataBuffer(1, 0);
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
-
-    ExecuteAllActions();
+    EXPECT_EQ((std::vector<uint8_t>{ 11 }), Read(iterator, 1));
 }
 
 TEST_F(CyclicStoreTest, ReadSecondItem)
 {
-    std::vector<uint8_t> data = { 11 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    ExecuteAllActions();
-    std::vector<uint8_t> secondData = { 21 };
-    cyclicStore.Add(secondData, infra::emptyFunction);
-    ExecuteAllActions();
-
-    infra::MockCallback<void(std::vector<uint8_t>)> mock;
-    EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 21 }));
+    AddItem(KeepBytesAlive({ 11 }));
+    AddItem(KeepBytesAlive({ 21 }));
 
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
-    std::vector<uint8_t> readDataBuffer(20, 0);
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) {});
-    ExecuteAllActions();
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
-    ExecuteAllActions();
+    Read(iterator);
+    EXPECT_EQ((std::vector<uint8_t>{ 21 }), Read(iterator));
 }
 
 TEST_F(CyclicStoreTest, ReadSecondItemInNewSector)
 {
-    std::vector<uint8_t> data = { 11, 12, 13, 14, 15, 16 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    ExecuteAllActions();
-    std::vector<uint8_t> secondData = { 21 };
-    cyclicStore.Add(secondData, infra::emptyFunction);
-    ExecuteAllActions();
+    AddItem(KeepBytesAlive({ 11, 12, 13, 14, 15, 16 }));
+    AddItem(KeepBytesAlive({ 21 }));
 
     ASSERT_EQ((std::vector<std::vector<uint8_t>>{
         { 0xfc, 0xf8, 6, 0, 11, 12, 13, 14, 15, 16 },
         { 0xfe, 0xf8, 1, 0, 21, 0xff, 0xff, 0xff, 0xff, 0xff },
     }), flash.sectors);
 
-    infra::MockCallback<void(std::vector<uint8_t>)> mock;
-    EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 21 }));
-
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
-    std::vector<uint8_t> readDataBuffer(2, 0);
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) {});
-    ExecuteAllActions();
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
-    ExecuteAllActions();
+    Read(iterator);
+    EXPECT_EQ((std::vector<uint8_t>{ 21 }), Read(iterator));
 }
 
 TEST_F(CyclicStoreTest, ReadSecondItemAfterSkipSpace)
 {
-    std::vector<uint8_t> data = { 11, 12, 13 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    ExecuteAllActions();
-    std::vector<uint8_t> secondData = { 21 };
-    cyclicStore.Add(secondData, infra::emptyFunction);
-    ExecuteAllActions();
+    AddItem(KeepBytesAlive({ 11, 12, 13 }));
+    AddItem(KeepBytesAlive({ 21 }));
 
     ASSERT_EQ((std::vector<std::vector<uint8_t>>{
         { 0xfc, 0xf8, 3, 0, 11, 12, 13, 0x7f, 0xff, 0xff },
         { 0xfe, 0xf8, 1, 0, 21, 0xff, 0xff, 0xff, 0xff, 0xff },
     }), flash.sectors);
 
-    infra::MockCallback<void(std::vector<uint8_t>)> mock;
-    EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 21 }));
-
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
-    std::vector<uint8_t> readDataBuffer(2, 0);
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) {});
-    ExecuteAllActions();
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
-    ExecuteAllActions();
+    Read(iterator);
+    EXPECT_EQ((std::vector<uint8_t>{ 21 }), Read(iterator));
 }
 
 TEST_F(CyclicStoreTest, ReadSecondItemAfterSkipSpaceOfOneByte)
 {
-    std::vector<uint8_t> data = { 11, 12, 13, 14, 15 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    ExecuteAllActions();
-    std::vector<uint8_t> secondData = { 21 };
-    cyclicStore.Add(secondData, infra::emptyFunction);
-    ExecuteAllActions();
+    AddItem(KeepBytesAlive({ 11, 12, 13, 14, 15 }));
+    AddItem(KeepBytesAlive({ 21 }));
 
     ASSERT_EQ((std::vector<std::vector<uint8_t>>{
         { 0xfc, 0xf8, 5, 0, 11, 12, 13, 14, 15, 0x7f, },
         { 0xfe, 0xf8, 1, 0, 21, 0xff, 0xff, 0xff, 0xff, 0xff },
     }), flash.sectors);
 
-    infra::MockCallback<void(std::vector<uint8_t>)> mock;
-    EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 21 }));
-
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
-    std::vector<uint8_t> readDataBuffer(2, 0);
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) {});
-    ExecuteAllActions();
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
-    ExecuteAllActions();
+    Read(iterator);
+    EXPECT_EQ((std::vector<uint8_t>{ 21 }), Read(iterator));
 }
 
 TEST_F(CyclicStoreTest, ReadSecondItemAfterSkipSpaceReallySkipsSector)
@@ -348,65 +288,33 @@ TEST_F(CyclicStoreTest, ReadSecondItemAfterSkipSpaceReallySkipsSector)
         { 0xfe, 0xf8, 1, 0, 31 },
     };
 
-    infra::MockCallback<void(std::vector<uint8_t>)> mock;
-    EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 31 }));
-
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
-    std::vector<uint8_t> readDataBuffer(2, 0);
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) {});
-    ExecuteAllActions();
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
-    ExecuteAllActions();
+    Read(iterator);
+    EXPECT_EQ((std::vector<uint8_t>{ 31 }), Read(iterator));
 }
 
 TEST_F(CyclicStoreTest, ReadInEmptyYieldsEmptyRange)
 {
-    infra::MockCallback<void(bool)> mock;
-    EXPECT_CALL(mock, callback(true));
-
-    std::vector<uint8_t> readDataBuffer(2, 0);
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(result.empty()); });
-    ExecuteAllActions();
+    EXPECT_EQ((std::vector<uint8_t>{}), Read(iterator));
 }
 
 TEST_F(CyclicStoreTest, ReadPastEndYieldsEmptyRange)
 {
-    std::vector<uint8_t> data = { 11, 12, 13 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    ExecuteAllActions();
+    AddItem(KeepBytesAlive({ 11, 12, 13 }));
 
-    infra::MockCallback<void(bool)> mock;
-    EXPECT_CALL(mock, callback(true));
-
-    std::vector<uint8_t> readDataBuffer(2, 0);
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) {});
-    ExecuteAllActions();
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(result.empty()); });
-    ExecuteAllActions();
+    Read(iterator);
+    EXPECT_EQ((std::vector<uint8_t>{ }), Read(iterator));
 }
 
 TEST_F(CyclicStoreTest, ReadPastEndInAFullFlashYieldsEmptyRange)
 {
-    std::vector<uint8_t> data = { 11, 12, 13, 14, 15, 16 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    ExecuteAllActions();
-    std::vector<uint8_t> secondData = { 21 };
-    cyclicStore.Add(secondData, infra::emptyFunction);
-    ExecuteAllActions();
+    AddItem(KeepBytesAlive({ 11, 12, 13, 14, 15, 16 }));
 
-    infra::MockCallback<void(bool)> mock;
-    EXPECT_CALL(mock, callback(true));
-
-    std::vector<uint8_t> readDataBuffer(6, 0);
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) {});
-    ExecuteAllActions();
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) {});
-    ExecuteAllActions();
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(result.empty()); });
-    ExecuteAllActions();
+    Read(iterator);
+    EXPECT_EQ((std::vector<uint8_t>{ }), Read(iterator));
 }
 
 TEST_F(CyclicStoreTest, ReadWhileAddWaitsForAddToFinish)
@@ -415,20 +323,18 @@ TEST_F(CyclicStoreTest, ReadWhileAddWaitsForAddToFinish)
     cyclicStore.Add(data, infra::emptyFunction);
 
     infra::MockCallback<void(std::vector<uint8_t>)> mock;
-    EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 11, 12 }));
 
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
     std::vector<uint8_t> readDataBuffer(2, 0);
     iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
 
+    EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 11, 12 }));
     ExecuteAllActions();
 }
 
 TEST_F(CyclicStoreTest, AddWhileClearWaitsforClearToFinish)
 {
-    std::vector<uint8_t> data = { 11, 12 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    ExecuteAllActions();
+    AddItem(KeepBytesAlive({ 11, 12 }));
 
     infra::MockCallback<void()> done;
     flash.delaySignalEraseDone = true;
@@ -437,106 +343,87 @@ TEST_F(CyclicStoreTest, AddWhileClearWaitsforClearToFinish)
     ExecuteAllActions();
     flash.delaySignalEraseDone = false;
 
-    std::vector<uint8_t> secondData = { 21, 22 };
-    cyclicStore.Add(secondData, infra::emptyFunction);
-    ExecuteAllActions();
+    AddItem(KeepBytesAlive({ 21, 22 }));
 
     EXPECT_CALL(done, callback());
     onEraseDone();
 
-    infra::MockCallback<void(std::vector<uint8_t>)> mock;
-    EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 21, 22 }));
-
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
-    std::vector<uint8_t> readDataBuffer(2, 0);
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
-
-    ExecuteAllActions();
+    EXPECT_EQ((std::vector<uint8_t>{ 21, 22 }), Read(iterator));
 }
 
 TEST_F(CyclicStoreTest, ReadItemAfterCyclicalLogging)
 {
-    std::vector<uint8_t> data = { 11, 12, 13, 14, 15, 16 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    ExecuteAllActions();
-    std::vector<uint8_t> secondData = { 21, 22, 23, 24, 25, 26 };
-    cyclicStore.Add(secondData, infra::emptyFunction);
-    ExecuteAllActions();
-    std::vector<uint8_t> thirdData = { 31, 32, 33, 34, 35, 36 };
-    cyclicStore.Add(thirdData, infra::emptyFunction);
-    ExecuteAllActions();
+    AddItem(KeepBytesAlive({ 11, 12, 13, 14, 15, 16 }));
+    AddItem(KeepBytesAlive({ 21, 22, 23, 24, 25, 26 }));
+    AddItem(KeepBytesAlive({ 31, 32, 33, 34, 35, 36 }));
 
     ASSERT_EQ((std::vector<std::vector<uint8_t>>{
         { 0xfe, 0xf8, 6, 0, 31, 32, 33, 34, 35, 36 },
         { 0xfc, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 },
     }), flash.sectors);
 
-    infra::MockCallback<void(std::vector<uint8_t>)> mock;
-    EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 21, 22, 23, 24, 25, 26 }));
-    
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
-    std::vector<uint8_t> readDataBuffer(10, 0);
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
-
-    ExecuteAllActions();
+    EXPECT_EQ((std::vector<uint8_t>{ 21, 22, 23, 24, 25, 26 }), Read(iterator));
 }
 
-TEST_F(CyclicStoreBaseTest, ReadItemAfterCyclicalLogging2)
+TEST_F(CyclicStoreTest, ClearFirstItemAfterWrapAroundDoesNothing)
+{
+    AddItem(KeepBytesAlive({ 11, 12, 13, 14, 15, 16 }));
+
+    services::CyclicStore::Iterator iterator = cyclicStore.Begin();
+    Read(iterator);
+
+    AddItem(KeepBytesAlive({ 21, 22, 23, 24, 25, 26 }));
+    AddItem(KeepBytesAlive({ 31, 32, 33, 34, 35, 36 }));
+
+    ASSERT_EQ((std::vector<std::vector<uint8_t>>{
+        { 0xfe, 0xf8, 6, 0, 31, 32, 33, 34, 35, 36 },
+        { 0xfc, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 },
+    }), flash.sectors);
+
+    iterator.ErasePrevious([]() {});
+    ExecuteAllActions();
+
+    EXPECT_EQ((std::vector<std::vector<uint8_t>>{
+        { 0xfe, 0xf8, 6, 0, 31, 32, 33, 34, 35, 36 },
+        { 0xfc, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 },
+    }), flash.sectors);
+}
+
+
+TEST_F(CyclicStoreTest, ReadItemAfterCyclicalLogging2)
 {
     std::vector<std::vector<uint8_t>> sectors =
         { { 0xfc, 0xf8, 6, 0, 11, 12, 13, 14, 15, 16 },
           { 0xfe, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 } };
     flash.sectors = sectors;
-    services::CyclicStore cyclicStore(flash);
-
-    infra::MockCallback<void(std::vector<uint8_t>)> mock;
-    EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 11, 12, 13, 14, 15, 16 }));
+    ReConstructCyclicStore();
 
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
-    std::vector<uint8_t> readDataBuffer(10, 0);
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
-    ExecuteAllActions();
+    EXPECT_EQ((std::vector<uint8_t>{ 11, 12, 13, 14, 15, 16 }), Read(iterator));
 
-    std::vector<uint8_t> data = { 31, 32, 33, 34, 35, 36 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    ExecuteAllActions();
+    AddItem(KeepBytesAlive({ 31, 32, 33, 34, 35, 36 }));
 
     ASSERT_EQ((std::vector<std::vector<uint8_t>>{
         { 0xfe, 0xf8, 6, 0, 31, 32, 33, 34, 35, 36 },
         { 0xfc, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 }
     }), flash.sectors);
 
-    EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 21, 22, 23, 24, 25, 26 }));
-
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
-    ExecuteAllActions();
+    EXPECT_EQ((std::vector<uint8_t>{ 21, 22, 23, 24, 25, 26 }), Read(iterator));
 }
 
-TEST_F(CyclicStoreBaseTest, RecoverAndReadFirstItem)
+TEST_F(CyclicStoreTest, RecoverAndReadFirstItem)
 {
-    {
-        services::CyclicStore cyclicStore(flash);
-        ExecuteAllActions();
+    ReConstructCyclicStore();
+    AddItem(KeepBytesAlive({ 11, 12 }));
 
-        std::vector<uint8_t> data = { 11, 12 };
-        cyclicStore.Add(data, infra::emptyFunction);
-        ExecuteAllActions();
-    }
-
-    services::CyclicStore cyclicStore(flash);
-    ExecuteAllActions();
-
-    infra::MockCallback<void(std::vector<uint8_t>)> mock;
-    EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 11, 12 }));
-
+    ReConstructCyclicStore();
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
-    std::vector<uint8_t> readDataBuffer(2, 0);
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
-
-    ExecuteAllActions();
+    EXPECT_EQ((std::vector<uint8_t>{ 11, 12 }), Read(iterator));
 }
 
-TEST_F(CyclicStoreBaseTest, RecoverFromAllDifferentGoodScenarios)
+TEST_F(CyclicStoreTest, RecoverFromAllDifferentGoodScenarios)
 {
     struct Scenario
     {
@@ -608,32 +495,23 @@ TEST_F(CyclicStoreBaseTest, RecoverFromAllDifferentGoodScenarios)
     {
         flash.sectors = scenarios[index].flashContents;
 
-        services::CyclicStore cyclicStore(flash);
-        ExecuteAllActions();
-
-        infra::MockCallback<void(std::vector<uint8_t>, std::size_t)> mock;
-        EXPECT_CALL(mock, callback(scenarios[index].expected, index));
+        ReConstructCyclicStore();
 
         services::CyclicStore::Iterator iterator = cyclicStore.Begin();
-        std::vector<uint8_t> readDataBuffer(10, 0);
-        iterator.Read(readDataBuffer, [&mock, index](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end()), index); });
-        ExecuteAllActions();
+        EXPECT_EQ(scenarios[index].expected, Read(iterator));
 
-        std::vector<uint8_t> data = { 66 };
-        cyclicStore.Add(data, infra::emptyFunction);
-        ExecuteAllActions();
+        AddItem(KeepBytesAlive({ 66 }));
 
         EXPECT_EQ(scenarios[index].flashContentsAfterAddition, flash.sectors);
     }
 }
 
-TEST_F(CyclicStoreBaseTest, InAllCorruptScenariosFlashIsErased)
+TEST_F(CyclicStoreTest, InAllCorruptScenariosFlashIsErased)
 {
     const std::vector<uint8_t> first = { 0xfc, 0xf8, 1, 0, 55 };
     const std::vector<uint8_t> empty = { 0xff, 0xff, 0xff, 0xff, 0xff };
     const std::vector<uint8_t> used = { 0xfe, 0xf8, 1, 0, 44 };
     const std::vector<uint8_t> corrupt = { 0xaa, 0xf8, 1, 0, 44 };
-
 
     const std::array<std::vector<std::vector<uint8_t>>, 8> scenarios = { {
         std::vector<std::vector<uint8_t>>{ empty, first, empty },
@@ -650,8 +528,7 @@ TEST_F(CyclicStoreBaseTest, InAllCorruptScenariosFlashIsErased)
     {
         flash.sectors = scenarios[index];
 
-        services::CyclicStore cyclicStore(flash);
-        ExecuteAllActions();
+        ReConstructCyclicStore();
 
         std::vector<std::vector<uint8_t>> emptyFlash = flash.sectors;
         for (auto& sector : emptyFlash)
@@ -661,19 +538,15 @@ TEST_F(CyclicStoreBaseTest, InAllCorruptScenariosFlashIsErased)
     }
 }
 
-TEST_F(CyclicStoreBaseTest, AfterRecoveryItemsAreInsertedAfterCurrentContents)
+TEST_F(CyclicStoreTest, AfterRecoveryItemsAreInsertedAfterCurrentContents)
 {
     flash.sectors = std::vector<std::vector<uint8_t>>{
         { 0xfc, 0xf8, 1, 0, 16, 0xff, 0xff, 0xff, 0xff },
         { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }
     };
 
-    services::CyclicStore cyclicStore(flash);
-    ExecuteAllActions();
-
-    std::vector<uint8_t> data = { 32 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    ExecuteAllActions();
+    ReConstructCyclicStore();
+    AddItem(KeepBytesAlive({ 32 }));
 
     EXPECT_EQ((std::vector<std::vector<uint8_t>>{
         { 0xfc, 0xf8, 1, 0, 16, 0xf8, 1, 0, 32 },
@@ -681,7 +554,7 @@ TEST_F(CyclicStoreBaseTest, AfterRecoveryItemsAreInsertedAfterCurrentContents)
     }), flash.sectors);
 }
 
-TEST_F(CyclicStoreBaseTest, RecoveryAfterPartialWriteContinuesAtTheCorrectPosition)
+TEST_F(CyclicStoreTest, RecoveryAfterPartialWriteContinuesAtTheCorrectPosition)
 {
     struct Scenario
     {
@@ -717,18 +590,14 @@ TEST_F(CyclicStoreBaseTest, RecoveryAfterPartialWriteContinuesAtTheCorrectPositi
     {
         flash.sectors[0] = scenarios[index].flashContents;
 
-        services::CyclicStore cyclicStore(flash);
-        ExecuteAllActions();
-
-        std::vector<uint8_t> data = { 22 };
-        cyclicStore.Add(data, infra::emptyFunction);
-        ExecuteAllActions();
+        ReConstructCyclicStore();
+        AddItem(KeepBytesAlive({ 22 }));
 
         EXPECT_EQ(scenarios[index].flashContentsAfterAdd, flash.sectors[0]);
     }
 }
 
-TEST_F(CyclicStoreBaseTest, RecoveryAfterCorruptionContinuesAtTheNextSector)
+TEST_F(CyclicStoreTest, RecoveryAfterCorruptionContinuesAtTheNextSector)
 {
     const std::array<std::vector<uint8_t>, 3> scenarios =
     { {
@@ -744,18 +613,14 @@ TEST_F(CyclicStoreBaseTest, RecoveryAfterCorruptionContinuesAtTheNextSector)
         flash.sectors[0] = scenarios[index];
         flash.sectors[1] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 
-        services::CyclicStore cyclicStore(flash);
-        ExecuteAllActions();
-
-        std::vector<uint8_t> data = { 22 };
-        cyclicStore.Add(data, infra::emptyFunction);
-        ExecuteAllActions();
+        ReConstructCyclicStore();
+        AddItem(KeepBytesAlive({ 22 }));
 
         EXPECT_EQ(nextSector, flash.sectors[1]);
     }
 }
 
-TEST_F(CyclicStoreBaseTest, ReadSkipsIncompleteData)
+TEST_F(CyclicStoreTest, ReadSkipsIncompleteData)
 {
     const std::array<std::vector<uint8_t>, 4> scenarios =
     { {
@@ -769,20 +634,14 @@ TEST_F(CyclicStoreBaseTest, ReadSkipsIncompleteData)
     {
         flash.sectors[0] = scenarios[index];
 
-        services::CyclicStore cyclicStore(flash);
-        ExecuteAllActions();
-
-        infra::MockCallback<void(std::vector<uint8_t>)> mock;
-        EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 22 }));
+        ReConstructCyclicStore();
 
         services::CyclicStore::Iterator iterator = cyclicStore.Begin();
-        std::vector<uint8_t> readDataBuffer(2, 0);
-        iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
-        ExecuteAllActions();
+        EXPECT_EQ((std::vector<uint8_t>{ 22 }), Read(iterator));
     }
 }
 
-TEST_F(CyclicStoreBaseTest, OnCorruptDataReadSkipsToNextSector)
+TEST_F(CyclicStoreTest, OnCorruptDataReadSkipsToNextSector)
 {
     const std::array<std::vector<uint8_t>, 3> scenarios =
     { {
@@ -797,35 +656,22 @@ TEST_F(CyclicStoreBaseTest, OnCorruptDataReadSkipsToNextSector)
     {
         flash.sectors[0] = scenarios[index];
 
-        services::CyclicStore cyclicStore(flash);
-        ExecuteAllActions();
-
-        infra::MockCallback<void(std::vector<uint8_t>)> mock;
-        EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 33 }));
+        ReConstructCyclicStore();
 
         services::CyclicStore::Iterator iterator = cyclicStore.Begin();
-        std::vector<uint8_t> readDataBuffer(2, 0);
-        iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
-        ExecuteAllActions();
+        EXPECT_EQ((std::vector<uint8_t>{ 33 }), Read(iterator));
     }
 }
 
 TEST_F(CyclicStoreTest, WhenSectorIsErasedIteratorIsMovedForward)
 {
-    std::vector<uint8_t> data = { 11, 12, 13, 14, 15, 16 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    ExecuteAllActions();
-    std::vector<uint8_t> secondData = { 21, 22, 23, 24, 25, 26 };
-    cyclicStore.Add(secondData, infra::emptyFunction);
-    ExecuteAllActions();
+    AddItem(KeepBytesAlive({ 11, 12, 13, 14, 15, 16 }));
+    AddItem(KeepBytesAlive({ 21, 22, 23, 24, 25, 26 }));
 
     ASSERT_EQ((std::vector<std::vector<uint8_t>>{
         { 0xfc, 0xf8, 6, 0, 11, 12, 13, 14, 15, 16 },
         { 0xfe, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 },
     }), flash.sectors);
-
-    infra::MockCallback<void(std::vector<uint8_t>)> mock;
-    EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 21, 22, 23, 24, 25, 26 }));
 
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
 
@@ -833,9 +679,7 @@ TEST_F(CyclicStoreTest, WhenSectorIsErasedIteratorIsMovedForward)
     cyclicStore.Add(erasingSectorData, infra::emptyFunction);
     ExecuteAllActions();
 
-    std::vector<uint8_t> readDataBuffer(12, 0);
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
-    ExecuteAllActions();
+    EXPECT_EQ((std::vector<uint8_t>{ 21, 22, 23, 24, 25, 26 }), Read(iterator));
 }
 
 TEST_F(CyclicStoreTest, TestParallelAddAndClear)
@@ -847,9 +691,7 @@ TEST_F(CyclicStoreTest, TestParallelAddAndClear)
     EXPECT_CALL(mock, callback(std::vector<uint8_t>{}));
     iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
 
-    std::vector<uint8_t> data = { 11, 12, 13, 14, 15, 16 };
-    cyclicStore.Add(data, infra::emptyFunction);
-
+    cyclicStore.Add(KeepBytesAlive({ 11, 12, 13, 14, 15, 16 }), infra::emptyFunction);
     cyclicStore.Clear(infra::emptyFunction);
 
     ExecuteAllActions();
@@ -857,20 +699,14 @@ TEST_F(CyclicStoreTest, TestParallelAddAndClear)
 
 TEST_F(CyclicStoreTest, TestParallelAddPartialAndClear)
 {
-    std::vector<uint8_t> data = { 11 };
-    cyclicStore.AddPartial(data, 3, infra::emptyFunction);
+    cyclicStore.AddPartial(KeepBytesAlive({ 11 }), 3, infra::emptyFunction);
     cyclicStore.Clear(infra::emptyFunction);
     ExecuteAllActions();
-    std::vector<uint8_t> secondData = { 12 };
-    cyclicStore.Add(secondData, infra::emptyFunction);
-    ExecuteAllActions();
 
+    AddItem(KeepBytesAlive({ 12 }));
     EXPECT_EQ((std::vector<uint8_t>{ 0xfc, 0xfc, 3, 0, 11, 12, 0xff, 0xff, 0xff, 0xff }), flash.sectors[0]);
 
-    std::vector<uint8_t> thirdData = { 13 };
-    cyclicStore.Add(thirdData, infra::emptyFunction);
-    ExecuteAllActions();
-
+    AddItem(KeepBytesAlive({ 13 }));
     EXPECT_EQ((std::vector<uint8_t>{ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }), flash.sectors[0]);
 
     ExecuteAllActions();
@@ -878,12 +714,9 @@ TEST_F(CyclicStoreTest, TestParallelAddPartialAndClear)
 
 TEST_F(CyclicStoreTest, TestParallelAddAndClearUrgent)
 {
-    std::vector<uint8_t> data = { 11 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    ExecuteAllActions();
+    AddItem(KeepBytesAlive({ 1 }));
 
-    std::vector<uint8_t> data2 = { 12 };
-    cyclicStore.Add(data2, infra::emptyFunction);
+    cyclicStore.Add(KeepBytesAlive({ 12 }), infra::emptyFunction);
     cyclicStore.ClearUrgent(infra::emptyFunction);
     ExecuteAllActions();
 
@@ -894,49 +727,26 @@ TEST_F(CyclicStoreTest, TestParallelAddAndClearUrgent)
 
 TEST_F(CyclicStoreTest, when_iterator_is_at_start_of_an_empty_sector_newly_added_item_is_available_in_next_read)
 {
-    infra::MockCallback<void(std::vector<uint8_t>)> mock;
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
-    std::vector<uint8_t> readDataBuffer(6, 0);
 
-    EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 11, 12, 13, 14, 15, 16 }));
+    cyclicStore.Add(KeepBytesAlive({ 11, 12, 13, 14, 15, 16 }), infra::emptyFunction);
+    EXPECT_EQ((std::vector<uint8_t>{ 11, 12, 13, 14, 15, 16 }), Read(iterator));
 
-    std::vector<uint8_t> data = { 11, 12, 13, 14, 15, 16 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
-    ExecuteAllActions();
-
-    EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 21, 22, 23, 24, 25, 26 }));
-
-    std::vector<uint8_t> data2 = { 21, 22, 23, 24, 25, 26 };
-    cyclicStore.Add(data2, infra::emptyFunction);
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
-    ExecuteAllActions();
+    cyclicStore.Add(KeepBytesAlive({ 21, 22, 23, 24, 25, 26 }), infra::emptyFunction);
+    EXPECT_EQ((std::vector<uint8_t>{ 21, 22, 23, 24, 25, 26 }), Read(iterator));
 }
 
-TEST_F(CyclicStoreBaseTest, when_iterator_is_at_the_end_of_flash_newly_added_item_is_available_in_next_read)
+TEST_F(CyclicStoreTest, when_iterator_is_at_the_end_of_flash_newly_added_item_is_available_in_next_read)
 {
-    hal::FlashStub flash(2, 30);
-    services::CyclicStore cyclicStore(flash);
+    ReConstructFlashAndCyclicStore(2, 30);
 
-    infra::MockCallback<void(std::vector<uint8_t>)> mock;
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
-    std::vector<uint8_t> readDataBuffer(6, 0);
 
-    EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 11, 12, 13, 14, 15, 16 }));
+    cyclicStore.Add(KeepBytesAlive({ 11, 12, 13, 14, 15, 16 }), infra::emptyFunction);
+    EXPECT_EQ((std::vector<uint8_t>{ 11, 12, 13, 14, 15, 16 }), Read(iterator));
+    
+    EXPECT_EQ((std::vector<uint8_t>{ }), Read(iterator));
 
-    std::vector<uint8_t> data = { 11, 12, 13, 14, 15, 16 };
-    cyclicStore.Add(data, infra::emptyFunction);
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
-    ExecuteAllActions();
-
-    EXPECT_CALL(mock, callback(std::vector<uint8_t>()));
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
-    ExecuteAllActions();
-
-    EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 21, 22, 23, 24, 25, 26 }));
-
-    std::vector<uint8_t> data2 = { 21, 22, 23, 24, 25, 26 };
-    cyclicStore.Add(data2, infra::emptyFunction);
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
-    ExecuteAllActions();
+    cyclicStore.Add(KeepBytesAlive({ 21, 22, 23, 24, 25, 26 }), infra::emptyFunction);
+    EXPECT_EQ((std::vector<uint8_t>{ 21, 22, 23, 24, 25, 26 }), Read(iterator));
 }

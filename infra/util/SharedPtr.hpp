@@ -87,15 +87,15 @@ namespace infra
     {
     public:
         SharedPtr() = default;
-        SharedPtr(std::nullptr_t); //TICS !INT#001
+        SharedPtr(std::nullptr_t);
         SharedPtr(detail::SharedPtrControl* control, T* object);
         SharedPtr(const SharedPtr& other);
         SharedPtr(SharedPtr&& other);
         template<class U>
-        SharedPtr(const WeakPtr<U>& other); //TICS !INT#001
-        template<class U>                   //TICS !INT#001
+        SharedPtr(const WeakPtr<U>& other);
+        template<class U>
         SharedPtr(const SharedPtr<U>& other);
-        template<class U> //TICS !INT#001
+        template<class U>
         SharedPtr(SharedPtr<U>&& other);
         SharedPtr& operator=(const SharedPtr& other);
         SharedPtr& operator=(SharedPtr&& other);
@@ -130,9 +130,9 @@ namespace infra
         template<class U, class V>
             friend SharedPtr<U> StaticPointerCast(SharedPtr<V>&& sharedPtr);
         template<class U>
-            friend SharedPtr<typename std::remove_const<U>::type> ConstCast(const SharedPtr<U>& sharedPtr);
+            friend SharedPtr<typename std::remove_const<U>::type> ConstPointerCast(const SharedPtr<U>& sharedPtr);
         template<class U>
-            friend SharedPtr<typename std::remove_const<U>::type> ConstCast(SharedPtr<U>&& sharedPtr);
+            friend SharedPtr<typename std::remove_const<U>::type> ConstPointerCast(SharedPtr<U>&& sharedPtr);
         template<class U, class V>
             friend SharedPtr<U> MakeContainedSharedObject(U& object, const SharedPtr<V>& container);
         template<class U, class V>
@@ -148,14 +148,14 @@ namespace infra
     {
     public:
         WeakPtr() = default;
-        WeakPtr(std::nullptr_t);                    //TICS !INT#001
+        WeakPtr(std::nullptr_t);
         WeakPtr(const WeakPtr<T>& other);
         WeakPtr(WeakPtr<T>&& other);
-        template<class U> //TICS !INT#001
+        template<class U>
             WeakPtr(const WeakPtr<U>& other);
         template<class U>
-            WeakPtr(WeakPtr<U>&& other);            //TICS !INT#001
-        WeakPtr(const SharedPtr<T>& sharedPtr);     //TICS !INT#001
+            WeakPtr(WeakPtr<U>&& other);
+        WeakPtr(const SharedPtr<T>& sharedPtr);
         WeakPtr& operator=(const WeakPtr<T>& other);
         WeakPtr& operator=(WeakPtr<T>&& other);
         WeakPtr& operator=(const SharedPtr<T>& sharedPtr);
@@ -200,6 +200,8 @@ namespace infra
 
         AccessedBySharedPtrWithExtraSize() = default;
         AccessedBySharedPtrWithExtraSize(const infra::Function<void(), ExtraSize>& onUnReferenced);
+        AccessedBySharedPtrWithExtraSize(const AccessedBySharedPtrWithExtraSize& other) = delete;
+        AccessedBySharedPtrWithExtraSize& operator=(const AccessedBySharedPtrWithExtraSize& other) = delete;
         ~AccessedBySharedPtrWithExtraSize();
 
         template<class T>
@@ -381,26 +383,38 @@ namespace infra
     template<class U, class T>
     SharedPtr<U> StaticPointerCast(const SharedPtr<T>& sharedPtr)
     {
+        if (sharedPtr == nullptr)
+            return nullptr;
+
         return SharedPtr<U>(sharedPtr.control, static_cast<U*>(sharedPtr.object));
     }
 
     template<class U, class T>
     SharedPtr<U> StaticPointerCast(SharedPtr<T>&& sharedPtr)
     {
+        if (sharedPtr == nullptr)
+            return nullptr;
+
         SharedPtr<U> result(sharedPtr.control, static_cast<U*>(sharedPtr.object));
         sharedPtr.Reset(nullptr, nullptr);
         return result;
     }
 
     template<class T>
-    SharedPtr<typename std::remove_const<T>::type> ConstCast(const SharedPtr<T>& sharedPtr)
+    SharedPtr<typename std::remove_const<T>::type> ConstPointerCast(const SharedPtr<T>& sharedPtr)
     {
+        if (sharedPtr == nullptr)
+            return nullptr;
+
         return SharedPtr<typename std::remove_const<T>::type>(sharedPtr.control, const_cast<typename std::remove_const<T>::type*>(sharedPtr.object));
     }
 
     template<class T>
-    SharedPtr<typename std::remove_const<T>::type> ConstCast(SharedPtr<T>&& sharedPtr)
+    SharedPtr<typename std::remove_const<T>::type> ConstPointerCast(SharedPtr<T>&& sharedPtr)
     {
+        if (sharedPtr == nullptr)
+            return nullptr;
+
         SharedPtr<typename std::remove_const<T>::type> result(sharedPtr.control, const_cast<typename std::remove_const<T>::type*>(sharedPtr.object));
         sharedPtr.Reset(nullptr, nullptr);
         return result;

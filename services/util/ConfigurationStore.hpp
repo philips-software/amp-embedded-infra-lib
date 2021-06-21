@@ -280,6 +280,8 @@ namespace services
             class WithReadOnlyDefaultAndBlobs;
 
         FactoryDefaultConfigurationStore(ConfigurationBlob& blobFactoryDefault, ConfigurationBlob& blob1, ConfigurationBlob& blob2);
+        FactoryDefaultConfigurationStore(const FactoryDefaultConfigurationStore& other) = delete;
+        FactoryDefaultConfigurationStore& operator=(const FactoryDefaultConfigurationStore& other) = delete;
         ~FactoryDefaultConfigurationStore();
 
         virtual const T& Configuration() const override;

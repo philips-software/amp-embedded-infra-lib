@@ -48,6 +48,8 @@ ccola_component(network static_library)
         HttpServer.hpp
         LlmnrResponder.cpp
         LlmnrResponder.hpp
+        MdnsClient.cpp
+        MdnsClient.hpp
         MessageCommunication.cpp
         MessageCommunication.hpp
         MessageCommunicationCobs.cpp

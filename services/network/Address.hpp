@@ -2,6 +2,7 @@
 #define SERVICES_ADDRESS_HPP
 
 #include "infra/stream/OutputStream.hpp"
+#include "infra/util/Endian.hpp"
 #include "infra/util/Variant.hpp"
 #include <array>
 #include <utility>
@@ -10,6 +11,7 @@ namespace services
 {
     using IPv4Address = std::array<uint8_t, 4>;
     using IPv6Address = std::array<uint16_t, 8>;
+    using IPv6AddressNetworkOrder = std::array<infra::BigEndian<uint16_t>, 8>;
     using IPAddress = infra::Variant<services::IPv4Address, services::IPv6Address>;
 
     enum class IPVersions
@@ -27,6 +29,8 @@ namespace services
 
     IPAddress GetAddress(UdpSocket socket);
     uint16_t GetPort(UdpSocket socket);
+    IPVersions GetVersion(IPAddress socket);
+    IPVersions GetVersion(UdpSocket socket);
 
     IPv4Address IPv4AddressLocalHost();
     IPv6Address IPv6AddressLocalHost();
@@ -37,6 +41,9 @@ namespace services
     infra::Optional<IPAddress> ParseIpAddress(infra::BoundedConstString address);
     infra::Optional<IPv4Address> ParseIpv4Address(infra::BoundedConstString address);
     infra::Optional<IPv6Address> ParseFullIpv6Address(infra::BoundedConstString address);
+
+    IPv6Address FromNetworkOrder(IPv6AddressNetworkOrder address);
+    IPv6AddressNetworkOrder ToNetworkOrder(IPv6Address address);
 
     struct IPv4InterfaceAddresses
     {

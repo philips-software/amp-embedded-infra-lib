@@ -194,8 +194,8 @@ namespace services
         ClientConnectionObserverFactory& clientFactory;
     };
 
-#ifdef _MSC_VER                                                                                                         //TICS !POR#021
-#pragma warning(disable:4503)                                                                                           //TICS !POR#018
+#ifdef _MSC_VER
+#pragma warning(disable:4503)
 #endif
 
     class ConnectionFactoryMbedTls

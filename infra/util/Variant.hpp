@@ -18,10 +18,10 @@ namespace infra
 
         Variant();
         Variant(const Variant& other);
-        template<class... T2>                                                                   //TICS !INT#001
+        template<class... T2>
             Variant(const Variant<T2...>& other);
-        template<class U>                                                                       //TICS !INT#001
-            Variant(const U& v, typename std::enable_if<ExistsInTypeList<U, T...>::value>::type* = 0);                                                                //TICS !INT#001
+        template<class U>
+            Variant(const U& v, typename std::enable_if<ExistsInTypeList<U, T...>::value>::type* = 0);
         template<class U, class... Args>
             explicit Variant(InPlaceType<U>, Args&&... args);
         template<class... Args>
@@ -146,7 +146,7 @@ namespace infra
     template<class... T>
     Variant<T...>& Variant<T...>::operator=(const Variant& other)
     {
-        if (this != &other)                                                                                         //TICS !CON#007
+        if (this != &other)
         {
             detail::CopyVisitor<T...> visitor(*this);
             ApplyVisitor(visitor, other);
@@ -194,7 +194,7 @@ namespace infra
     const U& Variant<T...>::Get() const
     {
         really_assert((dataIndex == IndexInTypeList<U, T...>::value));
-        return reinterpret_cast<const U&>(data);                                                                        //TICS !CON#007
+        return reinterpret_cast<const U&>(data);
     }
 
     template<class... T>
@@ -202,21 +202,21 @@ namespace infra
     U& Variant<T...>::Get()
     {
         really_assert((dataIndex == IndexInTypeList<U, T...>::value));
-        return reinterpret_cast<U&>(data);                                                                              //TICS !CON#007
+        return reinterpret_cast<U&>(data);
     }
 
     template<class... T>
     template<std::size_t Index>
     const typename TypeAtIndex<Index, T...>::Type& Variant<T...>::GetAtIndex() const
     {
-        return Get<typename TypeAtIndex<Index, T...>::Type>();                                                          //TICS !CON#007
+        return Get<typename TypeAtIndex<Index, T...>::Type>();
     }
 
     template<class... T>
     template<std::size_t Index>
     typename TypeAtIndex<Index, T...>::Type& Variant<T...>::GetAtIndex()
     {
-        return Get<typename TypeAtIndex<Index, T...>::Type>();                                                          //TICS !CON#007
+        return Get<typename TypeAtIndex<Index, T...>::Type>();
     }
 
     template<class... T>
@@ -229,23 +229,23 @@ namespace infra
     template<class U>
     bool Variant<T...>::Is() const
     {
-        return Which() == IndexInTypeList<U, T...>::value;                                                      //TICS !CON#007
+        return Which() == IndexInTypeList<U, T...>::value;
     }
 
     template<class... T>
     bool Variant<T...>::operator==(const Variant& other) const
     {
-        if (Which() != other.Which())                                                                           //TICS !CON#007
+        if (Which() != other.Which())
             return false;
 
         detail::EqualVisitor visitor;
-        return ApplySameTypeVisitor(visitor, *this, other);                                                     //TICS !CON#007
+        return ApplySameTypeVisitor(visitor, *this, other);
     }
 
     template<class... T>
     bool Variant<T...>::operator!=(const Variant& other) const
     {
-        return !(*this == other);                                                                               //TICS !CON#007
+        return !(*this == other);
     }
 
     template<class... T>
@@ -332,7 +332,7 @@ namespace infra
     U& Variant<T...>::ConstructInEmptyVariant(Args&&... args)
     {
         dataIndex = IndexInTypeList<U, T...>::value;
-        return *new(&data) U(std::forward<Args>(args)...);                                                                  //TICS !OAL#011: This is placement-new
+        return *new(&data) U(std::forward<Args>(args)...);
     }
 
     template<class... T>
@@ -344,7 +344,7 @@ namespace infra
     }
 
     template<class... T>
-    void Variant<T...>::Destruct()                                                                                  //TICS !INT#006
+    void Variant<T...>::Destruct()
     {
         detail::DestroyVisitor visitor;
         ApplyVisitor(visitor, *this);
@@ -369,7 +369,7 @@ namespace infra
     {
         really_assert(variant1.Which() == variant2.Which());
         detail::ApplySameTypeVisitorHelper<0, Visitor, Variant> helper;
-        return helper(visitor, variant1, variant2);                                                                     //TICS !CON#007
+        return helper(visitor, variant1, variant2);
     }
 
     template<class... T>

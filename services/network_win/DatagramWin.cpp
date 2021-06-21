@@ -75,7 +75,8 @@ namespace services
 
     DatagramWin::~DatagramWin()
     {
-        GetObserver().Detach();
+        if (HasObserver())
+            GetObserver().Detach();
 
         BOOL result = WSACloseEvent(event);
         assert(result == TRUE);
@@ -145,6 +146,7 @@ namespace services
         }
 
         sendBuffer = infra::none;
+        TryAllocateSendStream();
         UpdateEventFlags();
     }
 
@@ -152,8 +154,9 @@ namespace services
     {
         if (trySend)
         {
-            trySend = false;
             Send();
+            trySend = false;
+            self = nullptr;
         }
     }
 
@@ -229,9 +232,10 @@ namespace services
     void DatagramWin::TryAllocateSendStream()
     {
         assert(streamWriter.Allocatable());
-        if (!sendBuffer)
+        if (!sendBuffer && requestedSendSize != 0)
         {
             sendBuffer.Emplace(requestedSendSize, 0);
+            requestedSendSize = 0;
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<DatagramWin>& object)
             {
                 infra::SharedPtr<infra::StreamWriter> writer = object->streamWriter.Emplace(*object);
@@ -249,6 +253,7 @@ namespace services
     {
         connection.sendBuffer->resize(Processed().size());
         connection.trySend = true;
+        connection.self = connection.SharedFromThis();
     }
 
     DatagramExchangeMultiple::DatagramExchangeMultiple(DatagramExchangeObserver& observer, EventDispatcherWithNetwork& eventDispatcher)
@@ -346,13 +351,14 @@ namespace services
         if (parent.writers.size() == parent.observers.size())
         {
             parent.GetObserver().SendStreamAvailable(parent.multipleWriter.Emplace(parent.writers));
-            parent.writers.clear();
         }
     }
 
-    DatagramExchangeMultiple::MultipleWriter::MultipleWriter(const std::vector<infra::SharedPtr<infra::StreamWriter>>& writers)
+    DatagramExchangeMultiple::MultipleWriter::MultipleWriter(std::vector<infra::SharedPtr<infra::StreamWriter>>& writers)
         : writers(writers)
-    {}
+    {
+        writers.clear();
+    }
 
     void DatagramExchangeMultiple::MultipleWriter::Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy)
     {

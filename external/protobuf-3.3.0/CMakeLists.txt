@@ -4,7 +4,12 @@ ccola_package(protobuf)
 
         ccola_inheritable_include_directories(src)
 
-        ccola_inheritable_definitions(PROTOBUF_USE_DLLS)
+        ccola_inheritable_definitions(
+            PROTOBUF_USE_DLLS
+        win:
+            _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING
+        )
+
         ccola_definitions(
             LIBPROTOBUF_EXPORTS
         unix:

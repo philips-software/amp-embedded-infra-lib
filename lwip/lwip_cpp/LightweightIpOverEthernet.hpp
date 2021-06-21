@@ -52,6 +52,8 @@ namespace services
         };
 
         LightweightIpOverEthernetFactory(hal::MacAddress macAddress, const Config& config);
+        LightweightIpOverEthernetFactory(const LightweightIpOverEthernetFactory& other) = delete;
+        LightweightIpOverEthernetFactory& operator=(const LightweightIpOverEthernetFactory& other) = delete;
         ~LightweightIpOverEthernetFactory();
 
         void Create(hal::EthernetMac& ethernet);

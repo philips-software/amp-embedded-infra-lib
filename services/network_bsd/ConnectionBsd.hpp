@@ -90,6 +90,8 @@ namespace services
     {
     public:
         ListenerBsd(EventDispatcherWithNetwork& network, uint16_t port, services::ServerConnectionObserverFactory& factory);
+        ListenerBsd(const ListenerBsd& other) = delete;
+        ListenerBsd& operator=(const ListenerBsd& other) = delete;
         ~ListenerBsd();
 
         void Accept();
@@ -108,6 +110,8 @@ namespace services
     {
     public:
         ConnectorBsd(EventDispatcherWithNetwork& network, services::ClientConnectionObserverFactory& factory);
+        ConnectorBsd(const ConnectorBsd& other) = delete;
+        ConnectorBsd& operator=(const ConnectorBsd& other) = delete;
         ~ConnectorBsd();
 
         void Connected();

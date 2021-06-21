@@ -6,8 +6,6 @@
 
 namespace hal
 {
-    //TICS -INT#002: A mock or stub may have public data
-    //TICS -INT#027: MOCK_METHOD can't add 'virtual' to its signature
     class CommunicationConfiguratorMock
         : public CommunicationConfigurator
     {

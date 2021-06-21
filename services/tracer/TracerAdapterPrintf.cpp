@@ -100,7 +100,7 @@ namespace services
                 else
                     tracer.Continue() << va_arg(*args, uint32_t);
                 break;
-            case 'p':                                                                                               //TICS !CFL#001
+            case 'p':
                 tracer.Continue() << "0x";
             case 'X':
             case 'x':

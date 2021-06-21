@@ -37,7 +37,7 @@ namespace infra
     }
 
     template<class T, class Compare = std::less<T>>
-    class IntrusiveSet                                                                                                  //TICS !OOP#013
+    class IntrusiveSet
         : public IntrusiveBinarySearchTree<T, Compare>
     {
     public:
@@ -68,14 +68,14 @@ namespace infra
 
     public:
         // For test purposes
-        bool invariant_holds() const;                                                                                   //TICS !OOP#011
+        bool invariant_holds() const;
 
     public:
         void insert(const_reference value);
         void erase(const_reference value);
 
         template<class InputIterator>
-            void assign(InputIterator first, InputIterator last);                                                       //TICS !INT#022
+            void assign(InputIterator first, InputIterator last);
 
         void swap(IntrusiveSet& other);
 
@@ -228,7 +228,7 @@ namespace infra
     }
 
     template<class T, class Compare>
-    void IntrusiveSet<T, Compare>::erase(const_reference value)                                                         //TICS !CFL#016
+    void IntrusiveSet<T, Compare>::erase(const_reference value)
     {
         // See http://www.geeksforgeeks.org/red-black-tree-set-3-delete-2/ for the algorithm
 
@@ -239,9 +239,9 @@ namespace infra
 
         {
             // Step 1
-            bool twoChildren = value.left && value.right;                                                               //TICS !OLC#006
+            bool twoChildren = value.left && value.right;
 
-            T* valueParent = value.parent;                                                                              //TICS !OLC#006
+            T* valueParent = value.parent;
             T* replacement;
             T* oldReplacementParent;
             T** oldReplacement;
@@ -391,7 +391,7 @@ namespace infra
     void IntrusiveSet<T, Compare>::assign(InputIterator first, InputIterator last)
     {
         this->clear();
-        for (; first != last; ++first)                                                                                  //TICS !CFL#018
+        for (; first != last; ++first)
             insert(*first);
     }
 

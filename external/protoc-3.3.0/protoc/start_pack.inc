@@ -43,7 +43,6 @@ macro(protocol_buffer_cpp input)
             OUTPUT "${generated_dir_cpp}/${source_base}.pb.cc" "${generated_dir_cpp}/${source_base}.pb.h"
             COMMAND ${protoc_compiler_binary} ${protopath} --error_format=${error_format} --cpp_out="${generated_dir_cpp}" ${absolute_input}
             DEPENDS "${absolute_input}"
-            DEPENDS "${generated_dir_cpp}"
         )
 
         ccola_sources("${generated_dir_cpp}/${source_base}.pb.cc" "${generated_dir_cpp}/${source_base}.pb.h")
@@ -102,7 +101,6 @@ macro(protocol_buffer_csharp input)
             OUTPUT "${generated_dir}/${source_base}.cs"
             COMMAND ${protoc_compiler_binary} ${protopath} --error_format=${error_format} --csharp_out="${generated_dir}" ${absolute_input}
             DEPENDS "${absolute_input}"
-            DEPENDS "${generated_dir}"
         )
 
         ccola_sources("${generated_dir}/${source_base}.cs")
@@ -157,7 +155,6 @@ macro(protocol_buffer_java input)
             OUTPUT "${generated_dir}/${source_base}Proto.java"
             COMMAND ${protoc_compiler_binary} ${protopath} --error_format=${error_format} --java_out="${java_dir}" ${absolute_input}
             DEPENDS "${absolute_input}"
-            DEPENDS "${generated_dir}"
         )
 
         ccola_sources("${generated_dir}/${source_base}Proto.java")

@@ -15,8 +15,8 @@ namespace infra
     {
     public:
         ProtoLengthDelimited(infra::DataInputStream inputStream, uint32_t length);
-
         ProtoLengthDelimited(const ProtoLengthDelimited& other);
+        ~ProtoLengthDelimited() = default;
 
         void SkipEverything();
         ProtoParser Parser();

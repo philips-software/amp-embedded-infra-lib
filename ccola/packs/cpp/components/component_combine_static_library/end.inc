@@ -28,22 +28,27 @@ if(${CCOLA_ARCH} STREQUAL "win")
         DEPENDS ${depend_list}
     )
 else()
+
+    string(APPEND mri_script "create ${lib_name}\n")
+
     foreach(item ${CCOLA_COMPONENT_INHERITABLE_LINK_LIBRARIES})
         string(REPLACE "<CCOLA_CONFIGURATION>" "${CCOLA_SYSTEM_CONFIGURATION}" depend_lib "${item}")
-        list(APPEND extract_cmd COMMAND ${CMAKE_AR} -x ${depend_lib})
+        file(RELATIVE_PATH depend_lib_rel ${lib_path} ${depend_lib})
+        string(APPEND mri_script "addlib ${depend_lib_rel}\n")
         list(APPEND dependencies ${depend_lib})
     endforeach()
 
+    string(APPEND mri_script "save \n end")
+    set(ar_script ${CMAKE_CURRENT_BINARY_DIR}/ar_script.mri)
+    file(WRITE ${ar_script} ${mri_script})
+
     add_custom_command(
         OUTPUT ${lib_path}/${lib_name}
-        COMMAND ${CMAKE_COMMAND} -E remove_directory obj
+        WORKING_DIRECTORY ${lib_path}
         COMMAND ${CMAKE_COMMAND} -E remove ${lib_path}/${lib_name}
-        COMMAND ${CMAKE_COMMAND} -E make_directory obj
-        COMMAND cd obj
-        ${extract_cmd}
-        COMMAND ${CMAKE_AR} -rc ${lib_path}/${lib_name} *
+        COMMAND ${CMAKE_AR} -M < ${ar_script}
         DEPENDS ${dependencies}
-    )
+    )    
 endif()
 
 add_custom_target(${CCOLA_COMPONENT_NAME} ALL

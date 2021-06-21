@@ -206,7 +206,7 @@ namespace services
     {
         this->onWriteDone = onDone;
         streamWriter = std::make_shared<infra::ByteOutputStreamWriter::WithStorage<T::maxMessageSize + sizeof(typename WritableConfiguration<T, TRef>::Header)>>();
-        this->WriteConfiguration(newValue, *streamWriter, [this]() { this->streamWriter == nullptr; this->onWriteDone(); });
+        this->WriteConfiguration(newValue, *streamWriter, [this]() { this->streamWriter = nullptr; this->onWriteDone(); });
     }
 
     template<class T, class TRef>

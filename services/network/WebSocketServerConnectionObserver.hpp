@@ -46,7 +46,7 @@ namespace services
         void ReceiveStreamAllocatable();
         void SendStreamAllocatable();
         void SetReceivingStateReceiveHeader();
-        void SetStateReceiveData(services::WebSocketFrameHeader header);                                                          //TICS !INT#008
+        void SetStateReceiveData(services::WebSocketFrameHeader header);
         void SetReceivingStateClose();
         void SetReceivingStatePong();
         void SetStateSendingIdle();

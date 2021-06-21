@@ -88,6 +88,8 @@ namespace services
         {
         public:
             FrameWriter(infra::SharedPtr<infra::StreamWriter>&& writer, std::size_t sendSize);
+            FrameWriter(const FrameWriter& other) = delete;
+            FrameWriter& operator=(const FrameWriter& other) = delete;
             ~FrameWriter();
 
         private:

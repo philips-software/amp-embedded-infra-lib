@@ -37,6 +37,7 @@ namespace services
         static const uint16_t flagsRecursionDesired = 0x0100;
         static const uint16_t flagsResponse = 0x8000;
         static const uint16_t flagsErrorMask = 0x000f;
+        static const uint16_t flagsNoError = 0;
 
         infra::BigEndian<uint16_t> id;
         infra::BigEndian<uint16_t> flags;
@@ -162,7 +163,6 @@ namespace services
     public:
         DnsHostnameInPartsHelper(infra::BoundedConstString part);
         DnsHostnameInPartsHelper(const std::array<infra::BoundedConstString, S - 1>& parts, infra::BoundedConstString part);
-        DnsHostnameInPartsHelper(const DnsHostnameInPartsHelper& other);
 
         virtual infra::BoundedConstString Current() const override;
         virtual void ConsumeCurrent() override;
@@ -218,12 +218,6 @@ namespace services
 
         this->parts.back() = part;
     }
-
-    template<std::size_t S>
-    DnsHostnameInPartsHelper<S>::DnsHostnameInPartsHelper(const DnsHostnameInPartsHelper& other)
-        : parts(other.parts)
-        , current(other.current)
-    {}
 
     template<std::size_t S>
     infra::BoundedConstString DnsHostnameInPartsHelper<S>::Current() const

@@ -27,11 +27,11 @@ namespace infra
             IntrusiveBinarySearchTreeNode& operator=(const IntrusiveBinarySearchTreeNode& other);
 
         public:
-            T* parent = nullptr;                                                                                        //TICS !INT#002
-            T* left = nullptr;                                                                                          //TICS !INT#002
-            T* right = nullptr;                                                                                         //TICS !INT#002
-            T* previousInOrder = nullptr;                                                                               //TICS !INT#002
-            T* nextInOrder = nullptr;                                                                                   //TICS !INT#002
+            T* parent = nullptr;
+            T* left = nullptr;
+            T* right = nullptr;
+            T* previousInOrder = nullptr;
+            T* nextInOrder = nullptr;
         };
 
         template<class T, class Compare>
@@ -392,7 +392,7 @@ namespace infra
     }
 
     template<class T, class Compare>
-    bool IntrusiveBinarySearchTree<T, Compare>::invariant_holds() const                                                 //TICS !CFL#016
+    bool IntrusiveBinarySearchTree<T, Compare>::invariant_holds() const
     {
         std::size_t nodesDiscovered = 0;
 
@@ -574,7 +574,7 @@ namespace infra
     }
 
     template<class T, class Compare>
-    std::tuple<T*, T*, T**> IntrusiveBinarySearchTree<T, Compare>::remove_from_tree(reference value)                    //TICS !CFL#016
+    std::tuple<T*, T*, T**> IntrusiveBinarySearchTree<T, Compare>::remove_from_tree(reference value)
     {
         T* replacement = nullptr;
         T* oldReplacementParent = nullptr;

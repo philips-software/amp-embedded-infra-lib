@@ -54,17 +54,18 @@ namespace infra
         BoundedStringBase(MemoryRange<NonConstT> range, const char* s);
         BoundedStringBase(MemoryRange<NonConstT> range, const std::string& s);
         BoundedStringBase(T* s, size_type count);
-        BoundedStringBase(T* s);                                                                        //TICS !INT#001
-        BoundedStringBase(const std::string& s);                                                        //TICS !INT#001
-        BoundedStringBase(std::string& s);                                                              //TICS !INT#001
+        BoundedStringBase(T* s);
+        BoundedStringBase(const std::string& s);
+        BoundedStringBase(std::string& s);
         template<class InputIterator>
             BoundedStringBase(MemoryRange<NonConstT> range, InputIterator first, InputIterator last);
         BoundedStringBase(MemoryRange<NonConstT> range, std::initializer_list<char> initializerList);
         template<class U>
         BoundedStringBase(MemoryRange<NonConstT> range, const BoundedStringBase<U>& other);
         BoundedStringBase(const BoundedStringBase& other);
-        template<class U>                                                                               //TICS !INT#001
+        template<class U>
             BoundedStringBase(const BoundedStringBase<U>& other);
+        ~BoundedStringBase() = default;
 
         BoundedStringBase& operator=(const BoundedStringBase& other);
         BoundedStringBase& operator=(const char* s);
@@ -345,7 +346,7 @@ namespace infra
     template<class T>
         std::string AsStdString(const infra::BoundedStringBase<T>& s);
 
-#ifdef CCOLA_HOST_BUILD //TICS !POR#021
+#ifdef CCOLA_HOST_BUILD
     // gtest uses PrintTo to display the contents of BoundedStringBase<T>
     template<class T>
     void PrintTo(const BoundedStringBase<T>& string, std::ostream* os)
@@ -425,7 +426,7 @@ namespace infra
 
     template<class T>
     BoundedStringBase<T>::BoundedStringBase(T* s)
-        : range(s, s + std::strlen(s))
+        : range(s, s + std::strlen(s))  //NOSONAR
         , length(range.size())
     {}
 
@@ -706,7 +707,7 @@ namespace infra
     template<class T>
     BoundedStringBase<T>& BoundedStringBase<T>::insert(size_type index, const char* s)
     {
-        return insert(index, s, std::strlen(s));
+        return insert(index, s, std::strlen(s));    //NOSONAR
     }
 
     template<class T>
@@ -860,7 +861,7 @@ namespace infra
     template<class T>
     BoundedStringBase<T>& BoundedStringBase<T>::append(const char* s)
     {
-        return append(s, std::strlen(s));
+        return append(s, std::strlen(s));   //NOSONAR
     }
 
     template<class T>
@@ -915,13 +916,13 @@ namespace infra
     template<class T>
     int BoundedStringBase<T>::compare(const char* s) const
     {
-        return CompareImpl(begin(), end(), s, s + std::strlen(s));
+        return CompareImpl(begin(), end(), s, s + std::strlen(s));  //NOSONAR
     }
 
     template<class T>
     int BoundedStringBase<T>::compare(size_type pos1, size_type count1, const char* s) const
     {
-        return CompareImpl(begin() + pos1, begin() + pos1 + count1, s, s + std::strlen(s));
+        return CompareImpl(begin() + pos1, begin() + pos1 + count1, s, s + std::strlen(s)); //NOSONAR
     }
 
     template<class T>
@@ -989,14 +990,14 @@ namespace infra
     template<class T>
     BoundedStringBase<T>& BoundedStringBase<T>::replace(size_type pos, size_type count, const char* cstr)
     {
-        ReplaceImpl(begin() + pos, count, cstr, std::strlen(cstr));
+        ReplaceImpl(begin() + pos, count, cstr, std::strlen(cstr)); //NOSONAR
         return *this;
     }
 
     template<class T>
     BoundedStringBase<T>& BoundedStringBase<T>::replace(const_iterator first, const_iterator last, const char* cstr)
     {
-        ReplaceImpl(begin() + std::distance(cbegin(), first), std::distance(first, last), cstr, std::strlen(cstr));
+        ReplaceImpl(begin() + std::distance(cbegin(), first), std::distance(first, last), cstr, std::strlen(cstr)); //NOSONAR
         return *this;
     }
 
@@ -1128,7 +1129,7 @@ namespace infra
     template<class T>
     typename BoundedStringBase<T>::size_type BoundedStringBase<T>::find(const char* s, size_type pos) const
     {
-        return find(s, pos, std::strlen(s));
+        return find(s, pos, std::strlen(s));    //NOSONAR
     }
 
     template<class T>
@@ -1159,7 +1160,7 @@ namespace infra
     template<class T>
     typename BoundedStringBase<T>::size_type BoundedStringBase<T>::rfind(const char* s, size_type pos) const
     {
-        return rfind(s, pos, std::strlen(s));
+        return rfind(s, pos, std::strlen(s));   //NOSONAR
     }
 
     template<class T>
@@ -1189,7 +1190,7 @@ namespace infra
     template<class T>
     typename BoundedStringBase<T>::size_type BoundedStringBase<T>::find_first_of(const char* s, size_type pos) const
     {
-        return find_first_of(s, pos, std::strlen(s));
+        return find_first_of(s, pos, std::strlen(s));   //NOSONAR
     }
 
     template<class T>
@@ -1219,7 +1220,7 @@ namespace infra
     template<class T>
     typename BoundedStringBase<T>::size_type BoundedStringBase<T>::find_first_not_of(const char* s, size_type pos) const
     {
-        return find_first_not_of(s, pos, std::strlen(s));
+        return find_first_not_of(s, pos, std::strlen(s));   //NOSONAR
     }
 
     template<class T>
@@ -1249,7 +1250,7 @@ namespace infra
     template<class T>
     typename BoundedStringBase<T>::size_type BoundedStringBase<T>::find_last_of(const char* s, size_type pos) const
     {
-        return find_last_of(s, pos, std::strlen(s));
+        return find_last_of(s, pos, std::strlen(s));    //NOSONAR
     }
 
     template<class T>
@@ -1279,7 +1280,7 @@ namespace infra
     template<class T>
     typename BoundedStringBase<T>::size_type BoundedStringBase<T>::find_last_not_of(const char* s, size_type pos) const
     {
-        return find_last_not_of(s, pos, std::strlen(s));
+        return find_last_not_of(s, pos, std::strlen(s));    //NOSONAR
     }
 
     template<class T>
@@ -1326,7 +1327,7 @@ namespace infra
     template<class T>
     void BoundedStringBase<T>::AssignToRange(infra::MemoryRange<NonConstT> range, size_type& length, const char* s)
     {
-        AssignToRange(range, length, s, std::strlen(s));
+        AssignToRange(range, length, s, std::strlen(s));    //NOSONAR
     }
 
     template<class T>
@@ -1488,14 +1489,14 @@ namespace infra
     template<class T>
     bool operator==(const char* lhs, const BoundedStringBase<T>& rhs)
     {
-        return std::strlen(lhs) == rhs.size()
+        return std::strlen(lhs) == rhs.size()   //NOSONAR
             && std::equal(rhs.begin(), rhs.end(), lhs);
     }
 
     template<class T>
     bool operator==(const BoundedStringBase<T>& lhs, const char* rhs)
     {
-        return lhs.size() == std::strlen(rhs)
+        return lhs.size() == std::strlen(rhs)   //NOSONAR
             && std::equal(lhs.begin(), lhs.end(), rhs);
     }
 
@@ -1540,13 +1541,13 @@ namespace infra
     template<class T>
     bool operator<(const char* lhs, const BoundedStringBase<T>& rhs)
     {
-        return std::lexicographical_compare(lhs, lhs + std::strlen(lhs), rhs.begin(), rhs.end());
+        return std::lexicographical_compare(lhs, lhs + std::strlen(lhs), rhs.begin(), rhs.end());   //NOSONAR
     }
 
     template<class T>
     bool operator<(const BoundedStringBase<T>& lhs, const char* rhs)
     {
-        return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs, rhs + std::strlen(rhs));
+        return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs, rhs + std::strlen(rhs));   //NOSONAR
     }
 
     template<class T>
@@ -1667,7 +1668,7 @@ namespace infra
     template<class T>
     bool CaseInsensitiveCompare(const infra::BoundedStringBase<T>& lhs, const char* rhs)
     {
-        return lhs.size() == std::strlen(rhs) &&
+        return lhs.size() == std::strlen(rhs) &&    //NOSONAR
             std::equal(std::begin(lhs), std::end(lhs), rhs, [](T a, T b) { return std::tolower(a) == std::tolower(b); });
     }
 
