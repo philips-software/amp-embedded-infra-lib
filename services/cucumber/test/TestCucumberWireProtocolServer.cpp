@@ -1,7 +1,4 @@
 #include "gtest/gtest.h"
-#include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
-#include "infra/stream/ByteOutputStream.hpp"
-#include "infra/stream/IoOutputStream.hpp"
 #include "infra/stream/StringInputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
@@ -106,18 +103,17 @@ GIVEN("a value is used", infra::None)
 
 GIVEN("nothing happens for %d seconds", infra::None)
 {
-    if (ContainsStringArgument(0))
-        if (!Context().TimeoutTimer().Armed())
-        {
-            infra::BoundedString::WithStorage<2> secondsString;
-            GetStringArgument(0)->ToString(secondsString);
-            infra::StringInputStream secondsStream(secondsString);
-            uint32_t seconds;
-            secondsStream >> seconds;
-            Context().TimeoutTimer().Start(std::chrono::seconds(seconds), [=]() {
-                Success();
-            });
-        }
+    if (ContainsStringArgument(0) && !Context().TimeoutTimer().Armed())
+    {
+        infra::BoundedString::WithStorage<2> secondsString;
+        GetStringArgument(0)->ToString(secondsString);
+        infra::StringInputStream secondsStream(secondsString);
+        uint32_t seconds;
+        secondsStream >> seconds;
+        Context().TimeoutTimer().Start(std::chrono::seconds(seconds), [=]() {
+            Success();
+        });
+    }
 }
 
 class CucumberStepMock
@@ -140,7 +136,6 @@ public:
         : connectionPtr(infra::UnOwnedSharedPtr(connection))
         , execute([this]() { EXPECT_CALL(connectionFactoryMock, Listen(1234, testing::_, services::IPVersions::both)).WillOnce(testing::DoAll(infra::SaveRef<1>(&serverConnectionObserverFactory), testing::Return(nullptr))); })
         , cucumberServer(connectionFactoryMock, 1234)
-        , tracer(ioOutputStream)
         , context()
     {}
 
@@ -149,7 +144,6 @@ public:
         cucumberServer.Stop(infra::emptyFunction);
     }
 
-    infra::IoOutputStream ioOutputStream;
     testing::StrictMock<services::ConnectionStub> connection;
     infra::SharedPtr<services::ConnectionStub> connectionPtr;
     testing::StrictMock<services::ConnectionFactoryMock> connectionFactoryMock;
@@ -529,11 +523,6 @@ TEST_F(CucumberWireProtocolServerTest, should_respond_to_invoke_request_with_arg
 TEST_F(CucumberWireProtocolServerTest, should_respond_to_begin_scenario_request_with_success)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
-
-    EXPECT_CALL(connectionFactoryMock, Connect);
-    testing::StrictMock<services::CucumberEchoClientMock::WithMaxConnections<1>> echoClientMock(connectionFactoryMock, services::IPv4AddressLocalHost(), tracer);
-    echoClientMock.Connect();
-    services::CucumberContext::Instance().Add("EchoClient", &echoClientMock);
 
     infra::ConstByteRange data = infra::MakeStringByteRange(R"(["begin_scenario"])");
     connection.SimulateDataReceived(data);
