@@ -2,7 +2,7 @@
 
 namespace services
 {
-    CucumberContextValue::CucumberContextValue(infra::BoundedConstString key, void *value)
+    CucumberContextValue::CucumberContextValue(infra::BoundedConstString key, void* value)
         : key(key)
         , value(value)
     {}
@@ -13,29 +13,24 @@ namespace services
         return timeoutTimer;
     }
 
-    void CucumberContext::Add(infra::BoundedConstString key, void *value)
+    void CucumberContext::Add(infra::BoundedConstString key, void* value)
     {
-        for (auto& var : varStorage)
-            if (var.key == key)
-                varStorage.erase(&var);
-        varStorage.emplace_back(key, value);
+        storage.erase(std::remove_if(storage.begin(), storage.end(), [key](auto& var) { return var.key == key; }), storage.end());
+        storage.emplace_back(key, value);
     }
 
     void CucumberContext::Clear()
     {
-        varStorage.clear();
+        storage.clear();
     }
 
-    bool CucumberContext::Empty()
+    bool CucumberContext::Empty() const
     {
-        return varStorage.empty();
+        return storage.empty();
     }
 
-    bool CucumberContext::Contains(infra::BoundedConstString key)
+    bool CucumberContext::Contains(infra::BoundedConstString key) const
     {
-        for (auto& var : varStorage)
-            if (var.key == key)
-                return true;
-        return false;
+        return std::any_of(storage.begin(), storage.end(), [key](auto& var) { return var.key == key; });
     }
 }

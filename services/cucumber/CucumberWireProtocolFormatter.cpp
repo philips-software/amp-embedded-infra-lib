@@ -1,4 +1,4 @@
-#include "services\cucumber\CucumberWireProtocolFormatter.hpp"
+#include "services/cucumber/CucumberWireProtocolFormatter.hpp"
 
 namespace services
 {
@@ -29,7 +29,7 @@ namespace services
         responseBuffer.insert(responseBuffer.size(), "\n");
     }
 
-    void CucumberWireProtocolFormatter::CreateSuccessMessage(uint8_t id, const infra::JsonArray& arguments)
+    void CucumberWireProtocolFormatter::CreateSuccessMessage(uint32_t id, const infra::JsonArray& arguments)
     {
         {
             infra::JsonArrayFormatter::WithStringStream result(infra::inPlace, responseBuffer);
@@ -81,16 +81,16 @@ namespace services
     {
         switch (controller.storageMatch.result)
         {
-        case CucumberStepStorage::Success:
+        case CucumberStepStorage::StepMatchResult::Success:
             if (controller.storageMatch.step->HasStringArguments())
                 CreateSuccessMessage(controller.storageMatch.id, FormatStepArguments(controller.nameToMatchString));
             else
                 CreateSuccessMessage(controller.storageMatch.id, infra::JsonArray("[]"));
             break;
-        case CucumberStepStorage::Fail:
+        case CucumberStepStorage::StepMatchResult::Fail:
             CreateFailureMessage("Step not Matched", "Exception.Step.NotFound");
             break;
-        case CucumberStepStorage::Duplicate:
+        case CucumberStepStorage::StepMatchResult::Duplicate:
             CreateFailureMessage("Duplicate Step", "Exception.Step.Duplicate");
             break;
         default:
@@ -171,6 +171,7 @@ namespace services
                 }
             }
         }
+
         return infra::JsonArray(stepMatchArgumentsBuffer);
     }
 }

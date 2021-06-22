@@ -14,7 +14,7 @@ namespace services
         CucumberStepStorage(CucumberStepStorage& other) = delete;
         virtual ~CucumberStepStorage() = default;
 
-        enum StepMatchResult
+        enum class StepMatchResult
         {
             Success,
             Fail,
@@ -30,16 +30,17 @@ namespace services
 
         static CucumberStepStorage& Instance();
 
-        CucumberStep& GetStep(uint8_t id);
-        services::CucumberStepStorage::Match MatchStep(const infra::BoundedString& nameToMatch);
-        void AddStep(CucumberStep& step);
-        void DeleteStep(CucumberStep& step);
-        void ClearStorage();
         bool MatchesStepName(CucumberStep& step, const infra::BoundedString& stepName);
+        services::CucumberStepStorage::Match MatchStep(const infra::BoundedString& nameToMatch);
+
+        CucumberStep& GetStep(uint32_t id);
+        void AddStep(const CucumberStep& step);
+        void DeleteStep(const CucumberStep& step);
+        void ClearStorage();
 
     private:
-        void IterateThroughStringArgument(infra::BoundedString::iterator& iterator, const infra::BoundedString& nameToMatch, int16_t& offsetCounter);
-        void IterateThroughIntegerArgument(infra::BoundedString::iterator& iterator, const infra::BoundedString& nameToMatch, int16_t& offsetCounter);
+        void SkipStringArgument(infra::BoundedString::iterator& iterator, const infra::BoundedString& nameToMatch, int16_t& offsetCounter) const;
+        void SkipIntegerArgument(infra::BoundedString::iterator& iterator, const infra::BoundedString& nameToMatch, int16_t& offsetCounter) const;
 
         infra::IntrusiveList<CucumberStep> stepList;
     };

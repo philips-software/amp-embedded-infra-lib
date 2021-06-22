@@ -30,6 +30,7 @@ namespace services
 
         void ParseRequest(const infra::BoundedString& inputString);
         bool Valid(const infra::BoundedString& inputString);
+
     private:
         void ParseStepMatchRequest(infra::JsonArray& input);
         void ParseInvokeRequest(infra::JsonArray& input);
@@ -42,7 +43,7 @@ namespace services
     };
 
     template<class T>
-    inline T CucumberWireProtocolParser::ConvertToIntType(const infra::BoundedString & input)
+    inline T CucumberWireProtocolParser::ConvertToIntType(const infra::BoundedString& input)
     {
         T out;
         infra::StringInputStream stream(input);

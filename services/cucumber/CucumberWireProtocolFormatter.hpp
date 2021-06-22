@@ -23,7 +23,7 @@ namespace services
         infra::BoundedString::WithStorage<256> stepMatchArgumentsBuffer;
 
         void CreateSuccessMessage();
-        void CreateSuccessMessage(uint8_t id, const infra::JsonArray& arguments);
+        void CreateSuccessMessage(uint32_t id, const infra::JsonArray& arguments);
         void CreateFailureMessage(infra::BoundedConstString failMessage, infra::BoundedConstString exceptionType);
 
         void FormatStepMatchResponse();

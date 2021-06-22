@@ -330,7 +330,7 @@ TEST_F(CucumberWireProtocolServerTest, should_respond_to_non_matching_substring_
     connection.SimulateDataReceived(infra::StringAsByteRange(input));
     ExecuteAllActions();
     
-    EXPECT_EQ(services::CucumberStepStorage::Fail, services::CucumberStepStorage::Instance().MatchStep("a WiFi network is").result);
+    EXPECT_EQ(services::CucumberStepStorage::StepMatchResult::Fail, services::CucumberStepStorage::Instance().MatchStep("a WiFi network is").result);
 
     infra::StringOutputStream::WithStorage<256> responseStream;
     responseStream << "[ \"fail\", { \"message\":\"Step not Matched\", \"exception\":\"Exception.Step.NotFound\" } ]\n";

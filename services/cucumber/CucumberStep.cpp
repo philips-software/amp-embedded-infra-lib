@@ -2,7 +2,7 @@
 
 namespace services
 {
-    CucumberStep::CucumberStep(const infra::BoundedString& stepName)
+    CucumberStep::CucumberStep(infra::BoundedConstString stepName)
         : stepName(stepName)
     {}
 
@@ -16,7 +16,7 @@ namespace services
         return services::CucumberContext::Instance();
     }
 
-    infra::BoundedString& CucumberStep::StepName()
+    infra::BoundedConstString CucumberStep::StepName() const
     {
         return stepName;
     }

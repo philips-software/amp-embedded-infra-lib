@@ -1,6 +1,7 @@
 #ifndef INFRA_LIFETIME_HELPER_HPP
 #define INFRA_LIFETIME_HELPER_HPP
 
+#include "infra/util/ByteRange.hpp"
 #include <memory>
 #include <vector>
 

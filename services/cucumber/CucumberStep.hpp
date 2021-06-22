@@ -1,7 +1,7 @@
 #ifndef SERVICES_CUCUMBER_STEP_HPP 
 #define SERVICES_CUCUMBER_STEP_HPP
 
-#include "infra/syntax/JsonFormatter.hpp"
+#include "infra/syntax/Json.hpp"
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/IntrusiveList.hpp"
 #include "services/cucumber/CucumberContext.hpp"
@@ -12,13 +12,14 @@ namespace services
         : public infra::IntrusiveList<CucumberStep>::NodeType 
     {
     public:
-        explicit CucumberStep(const infra::BoundedString& stepName);
+        explicit CucumberStep(infra::BoundedConstString stepName);
+        virtual ~CucumberStep() = default;
         CucumberStep& operator=(const CucumberStep& other) = delete;
         CucumberStep(CucumberStep& other) = delete;
-        virtual ~CucumberStep() = default;
+
         bool operator==(const CucumberStep& other) const;
 
-        infra::BoundedString& StepName();
+        infra::BoundedConstString StepName() const;
 
         infra::Optional<infra::JsonString> GetTableArgument(const infra::BoundedString& fieldName);
         bool ContainsTableArgument(const infra::BoundedString& fieldName);
@@ -31,11 +32,12 @@ namespace services
         static services::CucumberContext& Context();
 
     protected:
-        infra::JsonArray* invokeArguments;
+        infra::JsonArray* invokeArguments = nullptr;
+
     private:
         void IterateThroughStringArguments(infra::JsonArrayIterator& iterator);
 
-        infra::BoundedString::WithStorage<256> stepName;
+        infra::BoundedConstString stepName;
     };
 }
 

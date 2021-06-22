@@ -13,7 +13,7 @@ namespace services
         : public services::ConnectionObserver
     {
     public:
-        CucumberWireProtocolConnectionObserver(const infra::ByteRange receiveBuffer);
+        explicit CucumberWireProtocolConnectionObserver(const infra::ByteRange receiveBuffer);
 
         // Implementation of ConnectionObserver
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
