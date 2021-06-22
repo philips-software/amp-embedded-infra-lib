@@ -1,4 +1,4 @@
-#include "services\cucumber\CucumberWireProtocolParser.hpp"
+#include "services/cucumber/CucumberWireProtocolParser.hpp"
 
 namespace services
 {

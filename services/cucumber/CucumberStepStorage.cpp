@@ -90,7 +90,7 @@ namespace services
     CucumberStep& CucumberStepStorage::GetStep(uint32_t id)
     {
         really_assert(id <= stepList.size());
-        auto& step = stepList.begin();
+        auto step = stepList.begin();
         while (id-- > 0)
             ++step;
         return *step;
