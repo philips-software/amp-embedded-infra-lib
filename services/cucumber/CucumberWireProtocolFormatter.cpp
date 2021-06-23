@@ -52,22 +52,22 @@ namespace services
 
         switch (parser.requestType)
         {
-        case CucumberWireProtocolParser::Step_matches:
+        case CucumberWireProtocolParser::RequestType::StepMatches:
             FormatStepMatchResponse();
             break;
-        case CucumberWireProtocolParser::Invoke:
+        case CucumberWireProtocolParser::RequestType::Invoke:
             FormatInvokeResponse();
             break;
-        case CucumberWireProtocolParser::Snippet_text:
+        case CucumberWireProtocolParser::RequestType::SnippetText:
             FormatSnippetResponse();
             break;
-        case CucumberWireProtocolParser::Begin_scenario:
+        case CucumberWireProtocolParser::RequestType::BeginScenario:
             FormatBeginScenarioResponse();
             break;
-        case CucumberWireProtocolParser::End_scenario:
+        case CucumberWireProtocolParser::RequestType::EndScenario:
             FormatEndScenarioResponse();
             break;
-        case CucumberWireProtocolParser::Invalid:
+        case CucumberWireProtocolParser::RequestType::Invalid:
             CreateFailureMessage("Invalid Request", "Exception.InvalidRequestType");
             break;
         default:

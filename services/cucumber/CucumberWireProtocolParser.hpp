@@ -12,13 +12,13 @@ namespace services
     public:
         CucumberWireProtocolParser() = default;
 
-        enum RequestType
+        enum class RequestType
         {
-            Step_matches,
+            StepMatches,
             Invoke,
-            Snippet_text,
-            Begin_scenario,
-            End_scenario,
+            SnippetText,
+            BeginScenario,
+            EndScenario,
             Invalid
         };
 
@@ -45,7 +45,7 @@ namespace services
     template<class T>
     inline T CucumberWireProtocolParser::ConvertToIntType(const infra::BoundedString& input)
     {
-        T out;
+        T out{};
         infra::StringInputStream stream(input);
         stream >> out;
         return out;

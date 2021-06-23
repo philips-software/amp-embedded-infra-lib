@@ -9,8 +9,8 @@ namespace services
     }
 
     CucumberWireProtocolConnectionObserver::CucumberWireProtocolConnectionObserver(const infra::ByteRange receiveBuffer)
-        : receiveBufferVector(infra::ReinterpretCastMemoryRange<infra::StaticStorage<uint8_t>>(receiveBuffer))
-        , receiveBuffer(receiveBuffer)
+        : receiveBuffer(receiveBuffer)
+        , receiveBufferVector(infra::ReinterpretCastMemoryRange<infra::StaticStorage<uint8_t>>(receiveBuffer))
         , controller(*this, scenarioRequestHandler)
         , formatter(parser, controller)
     {}

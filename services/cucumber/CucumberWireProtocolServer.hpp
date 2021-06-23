@@ -7,8 +7,6 @@
 
 namespace services
 {
-    void InitCucumberWireServer(ConnectionFactory& connectionFactory, uint16_t port);
-
     class CucumberWireProtocolConnectionObserver
         : public services::ConnectionObserver
     {
@@ -24,8 +22,7 @@ namespace services
         infra::BoundedVector<uint8_t> receiveBufferVector;
         infra::ConstByteRange dataBuffer;
 
-        services::CucumberScenarioRequestHandler scenarioRequestHandler;
-
+        CucumberScenarioRequestHandler scenarioRequestHandler;
         CucumberWireProtocolParser parser;
         CucumberWireProtocolController controller;
         CucumberWireProtocolFormatter formatter;
@@ -43,6 +40,20 @@ namespace services
     private:
         const infra::ByteRange receiveBuffer;
         infra::Creator<services::ConnectionObserver, CucumberWireProtocolConnectionObserver, void(services::IPAddress address)> connectionCreator;
+    };
+}
+
+namespace main_
+{
+    template<size_t BufferSize>
+    struct CucumberInfrastructure
+    {
+        CucumberInfrastructure(services::ConnectionFactory& connectionFactory, uint16_t port)
+            : server(connectionFactory, port)
+        {}
+
+        services::CucumberContext context;
+        services::CucumberWireProtocolServer::WithBuffer<BufferSize> server;
     };
 }
 

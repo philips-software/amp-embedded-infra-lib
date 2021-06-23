@@ -29,7 +29,7 @@ namespace services
         uint16_t NrArguments();
 
         virtual void Invoke(infra::JsonArray& arguments) = 0;
-        static services::CucumberContext& Context();
+        services::CucumberContext& Context();
 
     protected:
         infra::JsonArray* invokeArguments = nullptr;

@@ -7,8 +7,6 @@
 
 namespace services
 {
-    void InitCucumberWireServer(ConnectionFactory& connectionFactory, uint16_t port, Tracer& tracer);
-    
     class TracingCucumberWireProtocolConnectionObserver
         : public CucumberWireProtocolConnectionObserver
     {
@@ -51,6 +49,20 @@ namespace services
         services::Tracer& tracer;
         const infra::ByteRange receiveBuffer;
         infra::Creator<services::ConnectionObserver, TracingCucumberWireProtocolConnectionObserver, void(services::IPAddress address)> connectionCreator;
+    };
+}
+
+namespace main_
+{
+    template<size_t BufferSize>
+    struct TracingCucumberInfrastructure
+    {
+        TracingCucumberInfrastructure(services::ConnectionFactory& connectionFactory, uint16_t port, services::Tracer& tracer)
+            : server(connectionFactory, port, tracer)
+        {}
+
+        services::CucumberContext context;
+        services::TracingCucumberWireProtocolServer::WithBuffer<BufferSize> server;
     };
 }
 
