@@ -109,7 +109,6 @@ namespace services
 
         template<std::size_t MaxMessageSize>
             using WithMaxMessageSize = infra::WithStorage<ServiceForwarder, std::array<uint8_t, MaxMessageSize>>;
-        
 
         virtual void Handle(uint32_t methodId, infra::ProtoLengthDelimited& contents) override;
 
