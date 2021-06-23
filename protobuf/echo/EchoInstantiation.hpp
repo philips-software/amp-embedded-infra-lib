@@ -25,8 +25,8 @@ namespace main_
     {
         EchoForwarder(services::Echo& echo, hal::SerialCommunication& serialCommunication, uint32_t toSerialId, uint32_t fromSerialId)
             : echoStack(serialCommunication)
-            , toSerial(echo, toSerialId, echoStack.Echo())
-            , fromSerial(echoStack.Echo(), fromSerialId, echo)
+            , toSerial(echo, toSerialId, echoStack)
+            , fromSerial(echoStack, fromSerialId, echo)
         {}
 
         EchoOnSerialCommunication<MessageSize> echoStack;
