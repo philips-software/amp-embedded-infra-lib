@@ -21,34 +21,17 @@ namespace services
         return stepName;
     }
 
-    void CucumberStep::IterateThroughStringArguments(infra::JsonArrayIterator& iterator)
-    {
-        uint32_t nrArgs = NrArguments();
-        if (HasStringArguments())
-            for (uint8_t stringArgumentCount = 0; stringArgumentCount < nrArgs; stringArgumentCount++)
-                iterator++;
-    }
-
-    bool CucumberStep::ContainsTableArgument(const infra::BoundedString& fieldName)
+    bool CucumberStep::ContainsTableArgument(infra::BoundedConstString fieldName)
     {
         return GetTableArgument(fieldName) != infra::none;
     }
 
-    infra::Optional<infra::JsonString> CucumberStep::GetTableArgument(const infra::BoundedString& fieldName)
+    infra::Optional<infra::JsonString> CucumberStep::GetTableArgument(infra::BoundedConstString fieldName)
     {
-        infra::JsonArrayIterator argumentIterator(invokeArguments->begin());
-        IterateThroughStringArguments(argumentIterator);
-
-        if (argumentIterator != invokeArguments->end())
-            for (infra::JsonArrayIterator rowIterator = argumentIterator->Get<infra::JsonArray>().begin(); rowIterator != invokeArguments->end(); rowIterator++)
-                if (fieldName == rowIterator->Get<infra::JsonArray>().begin()->Get<infra::JsonString>())
-                {
-                    infra::JsonArrayIterator collumnIterator = rowIterator->Get<infra::JsonArray>().begin();
-                    collumnIterator++;
-                    if (collumnIterator != rowIterator->Get<infra::JsonArray>().end())
-                        return infra::Optional<infra::JsonString>(infra::inPlace, collumnIterator->Get<infra::JsonString>());
-                }
-        return infra::Optional<infra::JsonString>(infra::none);
+        TableArgumentVisitor visitor(fieldName);
+        infra::JsonStreamingArrayParser::WithBuffers<1, 32, 4> parser(visitor);
+        parser.Feed(invokeArguments->ObjectString());
+        return visitor.MatchedArgument();
     }
 
     bool CucumberStep::HasStringArguments()
@@ -59,6 +42,14 @@ namespace services
     bool CucumberStep::ContainsStringArgument(uint8_t index)
     {
         return GetStringArgument(index) != infra::none;
+    }
+
+    infra::Optional<infra::JsonString> CucumberStep::GetStringArgument(uint8_t argumentNumber)
+    {
+        StringArgumentVisitor visitor(argumentNumber);
+        infra::JsonStreamingArrayParser::WithBuffers<1, 32, 4> arrayParser(visitor);
+        arrayParser.Feed(invokeArguments->ObjectString());
+        return visitor.MatchedArgument();
     }
 
     uint16_t CucumberStep::NrArguments()
@@ -79,20 +70,57 @@ namespace services
         return nrArguments;
     }
 
-    infra::Optional<infra::JsonString> CucumberStep::GetStringArgument(uint8_t argumentNumber)
+    StringArgumentVisitor::StringArgumentVisitor(size_t argNumber)
+        : argNumber(argNumber)
+    {}
+
+    void StringArgumentVisitor::VisitString(infra::BoundedConstString value)
     {
-        if (invokeArguments->begin() != invokeArguments->end())
+        if (argCount == argNumber)
+            matchedArgument.Emplace(infra::JsonString(value));
+
+        if (!tableArgument)
+            argCount++;
+        value.clear();
+    }
+
+    infra::JsonArrayVisitor* StringArgumentVisitor::VisitArray(infra::JsonSubArrayParser& parser)
+    {
+        tableArgument = true;
+        return this;
+    }
+
+    infra::Optional<infra::JsonString>& StringArgumentVisitor::MatchedArgument()
+    {
+        return matchedArgument;
+    }
+
+    TableArgumentVisitor::TableArgumentVisitor(infra::BoundedConstString field)
+        : field(field)
+    {}
+
+    void TableArgumentVisitor::VisitString(infra::BoundedConstString value)
+    {
+        if (match)
         {
-            infra::JsonArrayIterator argumentIterator(invokeArguments->begin());
-            uint8_t argumentCount = 0;
-            while (argumentIterator != invokeArguments->end() && argumentCount != argumentNumber)
-            {
-                argumentIterator++;
-                argumentCount++;
-            }
-            if (argumentCount == argumentNumber)
-                return infra::Optional<infra::JsonString>(infra::inPlace, argumentIterator->Get<infra::JsonString>());
+            matchedArgument.Emplace(infra::JsonString(value));
+            match = false;
         }
-        return infra::Optional<infra::JsonString>(infra::none);
+
+        if (tableArgument && value == field)
+            match = true;
+        value.clear();
+    }
+
+    infra::JsonArrayVisitor* TableArgumentVisitor::VisitArray(infra::JsonSubArrayParser& parser)
+    {
+        tableArgument = true;
+        match = false;
+        return this;
+    }
+
+    infra::Optional<infra::JsonString>& TableArgumentVisitor::MatchedArgument()
+    {
+        return matchedArgument;
     }
 }
