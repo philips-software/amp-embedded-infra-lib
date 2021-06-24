@@ -20,23 +20,24 @@ namespace services
     {
         switch (parser.requestType)
         {
-        case CucumberWireProtocolParser::Step_matches:
+        case CucumberWireProtocolParser::RequestType::StepMatches:
             HandleStepMatchRequest(parser);
             break;
-        case CucumberWireProtocolParser::Invoke:
+        case CucumberWireProtocolParser::RequestType::Invoke:
             HandleInvokeRequest(parser);
             break;
-        case CucumberWireProtocolParser::Begin_scenario:
+        case CucumberWireProtocolParser::RequestType::BeginScenario:
             HandleBeginScenarioRequest(parser);
             break;
-        case CucumberWireProtocolParser::End_scenario:
+        case CucumberWireProtocolParser::RequestType::EndScenario:
             HandleEndScenarioRequest();
             break;
-        case CucumberWireProtocolParser::Snippet_text:
+        case CucumberWireProtocolParser::RequestType::SnippetText:
             HandleSnippetTextRequest();
             break;
-        case CucumberWireProtocolParser::Invalid:
+        case CucumberWireProtocolParser::RequestType::Invalid:
             HandleInvalidRequest();
+            break;
         default:
             break;
         }
@@ -83,7 +84,7 @@ namespace services
     bool CucumberWireProtocolController::MatchStringArguments(uint8_t id, infra::JsonArray& arguments)
     {
         uint8_t validStringCount = 0;
-        for (auto string : JsonStringArray(arguments))
+        for (const auto& string : JsonStringArray(arguments))
             validStringCount++;
         return CucumberStepStorage::Instance().GetStep(id).NrArguments() == validStringCount;
     }

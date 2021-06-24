@@ -19,16 +19,18 @@ namespace services
         else if (request == "snippet_text")
             ParseSnippetTextRequest();
         else
-            requestType = Invalid;
+            requestType = RequestType::Invalid;
     }   
 
     bool CucumberWireProtocolParser::Valid(const infra::BoundedString& inputString)
     {
         infra::JsonArray input(inputString);
-        for (auto& value : input);
+        for (auto& value : input)
+        {}
+
         if (input.Error())
         {
-            requestType = Invalid;
+            requestType = RequestType::Invalid;
             return false;
         }
         return true;
@@ -36,7 +38,7 @@ namespace services
 
     void CucumberWireProtocolParser::ParseStepMatchRequest(infra::JsonArray& input)
     {
-        requestType = Step_matches;
+        requestType = RequestType::StepMatches;
         infra::JsonArrayIterator iterator(input.begin());
         iterator++;
         nameToMatch = iterator->Get<infra::JsonObject>();
@@ -44,7 +46,7 @@ namespace services
 
     void CucumberWireProtocolParser::ParseInvokeRequest(infra::JsonArray& input)
     {
-        requestType = Invoke;
+        requestType = RequestType::Invoke;
         infra::JsonArrayIterator iterator(input.begin());
         iterator++;
         infra::BoundedString::WithStorage<6> idString;
@@ -60,16 +62,16 @@ namespace services
             scenarioTags.Emplace(std::move(iterator->Get<infra::JsonObject>()));
         else
             scenarioTags = infra::none;
-        requestType = Begin_scenario;
+        requestType = RequestType::BeginScenario;
     }
 
     void CucumberWireProtocolParser::ParseEndScenarioRequest()
     {
-        requestType = End_scenario;
+        requestType = RequestType::EndScenario;
     }
 
     void CucumberWireProtocolParser::ParseSnippetTextRequest()
     {
-        requestType = Snippet_text;
+        requestType = RequestType::SnippetText;
     }
 }
