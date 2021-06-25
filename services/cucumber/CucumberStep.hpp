@@ -25,9 +25,9 @@ namespace services
         infra::Optional<infra::JsonString> GetTableArgument(infra::BoundedConstString fieldName);
         bool ContainsTableArgument(infra::BoundedConstString fieldName);
         infra::Optional<infra::JsonString> GetStringArgument(uint8_t argumentNumber);
-        bool HasStringArguments();
+        bool HasStringArguments() const;
         bool ContainsStringArgument(uint8_t index);
-        uint16_t NrArguments();
+        uint16_t NrArguments() const;
 
         virtual void Invoke(infra::JsonArray& arguments) = 0;
         services::CucumberContext& Context();

@@ -48,7 +48,7 @@ TEST_F(CucumberWireProtocolParserTest, test_step_nr_of_arguments)
     EXPECT_EQ(2, theWiFiNetwork_IsSeenWithin_Seconds.NrArguments());
 }
 
-TEST_F(CucumberWireProtocolParserTest, test_parsing_begin_scenario_tags)
+TEST_F(CucumberWireProtocolParserTest, should_parse_begin_scenario_tags)
 {
     parser.ParseRequest(KeepAlive<infra::BoundedString>(R"(["begin_scenario",{"tags":["tag1","tag2"]}])"));
     EXPECT_EQ(parser.scenarioTags, infra::JsonObject(R"({"tags":["tag1","tag2"]})"));

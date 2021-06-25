@@ -2,12 +2,6 @@
 
 namespace services
 {
-    void InitCucumberWireServer(services::ConnectionFactory& connectionFactory, uint16_t port)
-    {
-        static services::CucumberContext context;
-        static services::CucumberWireProtocolServer::WithBuffer<512> tracingCucumberServer(connectionFactory, port);
-    }
-
     CucumberWireProtocolConnectionObserver::CucumberWireProtocolConnectionObserver(const infra::ByteRange receiveBuffer)
         : receiveBuffer(receiveBuffer)
         , receiveBufferVector(infra::ReinterpretCastMemoryRange<infra::StaticStorage<uint8_t>>(receiveBuffer))

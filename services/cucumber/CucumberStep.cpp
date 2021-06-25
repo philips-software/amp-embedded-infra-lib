@@ -34,7 +34,7 @@ namespace services
         return visitor.MatchedArgument();
     }
 
-    bool CucumberStep::HasStringArguments()
+    bool CucumberStep::HasStringArguments() const
     {
         return StepName().find("\'%s\'") != infra::BoundedString::npos || StepName().find("%d") != infra::BoundedString::npos;
     }
@@ -52,7 +52,7 @@ namespace services
         return visitor.MatchedArgument();
     }
 
-    uint16_t CucumberStep::NrArguments()
+    uint16_t CucumberStep::NrArguments() const
     {
         uint8_t nrArguments = 0;
         size_t strArgPos = StepName().find("\'%s\'", 0);
