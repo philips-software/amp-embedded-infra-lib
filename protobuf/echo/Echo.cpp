@@ -145,6 +145,10 @@ namespace services
 
     void EchoOnStreams::AttachService(Service& service)
     {
+    	for (auto& s : services)
+    		if (s.ServiceId() == service.ServiceId())
+    			std::abort();
+
         services.push_back(service);
     }
 
