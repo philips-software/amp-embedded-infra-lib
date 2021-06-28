@@ -327,7 +327,7 @@ TEST_F(CucumberWireProtocolServerTest, test_invoke_request_table_parsing)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     auto match = services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network");
-    InvokeStep(match.id, R"([[[" ssid "," key "],[" CoCoCo "," password "],[" WLAN "," 1234 "]]])");
+    InvokeStep(match.id, R"([[["ssid","key"],["CoCoCo","password"],["WLAN","1234"]]])");
 
     CheckSuccessResponse();
     EXPECT_CALL(connection, AbortAndDestroyMock());
