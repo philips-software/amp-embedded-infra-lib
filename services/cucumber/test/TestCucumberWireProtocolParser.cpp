@@ -25,6 +25,12 @@ public:
     services::CucumberWireProtocolParser parser;
 };
 
+TEST_F(CucumberWireProtocolParserTest, test_valid_input)
+{
+    EXPECT_TRUE(parser.Valid(R"(["request", {"argument":"argument"}])"));
+    EXPECT_FALSE(parser.Valid("invalid input"));
+}
+
 TEST_F(CucumberWireProtocolParserTest, test_step_contains_arguments)
 {
     EXPECT_FALSE(aWiFiNetworkIsAvailable.HasStringArguments());
@@ -45,6 +51,7 @@ TEST_F(CucumberWireProtocolParserTest, test_matching_step_name)
 
 TEST_F(CucumberWireProtocolParserTest, test_step_nr_of_arguments)
 {
+    EXPECT_EQ(0, aWiFiNetworkIsAvailable.NrArguments());
     EXPECT_EQ(2, theWiFiNetwork_IsSeenWithin_Seconds.NrArguments());
 }
 
