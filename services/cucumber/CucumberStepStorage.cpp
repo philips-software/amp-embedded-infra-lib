@@ -74,6 +74,7 @@ namespace services
             }
             count++;
         }
+
         if (nrStepMatches >= 2)
             matchResult.result = StepMatchResult::Duplicate;
         else if (nrStepMatches == 0)
