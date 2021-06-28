@@ -5,6 +5,7 @@ ccola_component(timer static_library)
         DerivedTimerService.hpp
         PartitionedTime.cpp
         PartitionedTime.hpp
+        Retry.hpp
         RetryPolicy.cpp
         RetryPolicy.hpp
         ScalableDerivedTimerService.cpp

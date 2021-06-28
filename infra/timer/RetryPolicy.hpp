@@ -36,6 +36,19 @@ namespace infra
         infra::TimePoint retryAfterMaximumDelay;
         infra::Optional<infra::Duration> retryDelay;
     };
+
+    class RetryPolicyFixedInterval
+        : public RetryPolicy
+    {
+    public:
+        RetryPolicyFixedInterval(infra::Duration delay);
+
+        infra::Duration RetryDelay(bool intermittentFailure) override;
+        void Reset() override {}
+
+    private:
+        infra::Duration retryDelay;
+    };
 }
 
 #endif

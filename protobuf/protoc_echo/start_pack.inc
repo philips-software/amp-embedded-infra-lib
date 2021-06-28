@@ -7,6 +7,7 @@ macro(protocol_buffer_echo_cpp input)
         ccola_get_filename_component_we(source_base ${input})
 
         get_filename_component(generated_dir_echo "${CMAKE_CURRENT_BINARY_DIR}/generated/echo" ABSOLUTE)
+        ccola_create_directory_on_demand("${generated_dir_echo}")
 
         ccola_get_executable_path(protoc_echo_plugin_path protobuf.protoc_echo_plugin)
         ccola_get_executable_path(protobuf_libprotobuf_path protobuf.libprotobuf)
@@ -74,6 +75,7 @@ macro(protocol_buffer_echo_csharp input)
         ccola_get_filename_component_we(source_base ${input})
 
         get_filename_component(generated_dir_echo "${CMAKE_CURRENT_BINARY_DIR}/generated" ABSOLUTE)
+        ccola_create_directory_on_demand("${generated_dir_echo}")
 
         ccola_get_executable_path(protoc_echo_plugin_path protobuf.protoc_echo_plugin_csharp)
         ccola_get_executable_path(protobuf_libprotobuf_path protobuf.libprotobuf)
@@ -136,6 +138,7 @@ macro(protocol_buffer_echo_java input)
 
         get_filename_component(java_dir "${CMAKE_CURRENT_BINARY_DIR}/generated/com/philips/cococo/protobufEcho" ABSOLUTE)
         get_filename_component(generated_dir_echo "${java_dir}" ABSOLUTE)
+        ccola_create_directory_on_demand("${generated_dir_echo}")
 
         ccola_get_executable_path(protoc_echo_plugin_path protobuf.protoc_echo_plugin_java)
         ccola_get_executable_path(protobuf_libprotobuf_path protobuf.libprotobuf)

@@ -50,4 +50,13 @@ namespace infra
         else
             return std::chrono::hours(1);
     }
+
+    RetryPolicyFixedInterval::RetryPolicyFixedInterval(infra::Duration delay)
+        : retryDelay(delay)
+    {}
+
+    infra::Duration RetryPolicyFixedInterval::RetryDelay(bool intermittentFailure)
+    {
+        return retryDelay;
+    }
 }

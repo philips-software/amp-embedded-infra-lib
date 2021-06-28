@@ -12,22 +12,22 @@
 static services::CucumberStepStorage stepStorage;
 static uint8_t val = 42;
 
-GIVEN("a duplicate feature", infra::None)
+GIVEN("a duplicate feature")
 {
     Success();
 }
 
-GIVEN("a duplicate feature", infra::None)
+GIVEN("a duplicate feature")
 {
     Success();
 }
 
-GIVEN("a step", infra::None)
+GIVEN("a step")
 {
     Success();
 }
 
-GIVEN("the WiFi network '%s' is seen within %d minutes", infra::None)
+GIVEN("the WiFi network '%s' is seen within %d minutes")
 {
     if (ContainsStringArgument(0) && ContainsStringArgument(1))
         Success();
@@ -35,7 +35,7 @@ GIVEN("the WiFi network '%s' is seen within %d minutes", infra::None)
         Error("Incorrect Arguments");
 }
 
-GIVEN("the WiFi network '%s' is seen within %d minutes and %d seconds", infra::None)
+GIVEN("the WiFi network '%s' is seen within %d minutes and %d seconds")
 {
     if (ContainsStringArgument(0) && ContainsStringArgument(1) && ContainsStringArgument(2))
         Success();
@@ -43,7 +43,7 @@ GIVEN("the WiFi network '%s' is seen within %d minutes and %d seconds", infra::N
         Error("Incorrect Arguments");
 }
 
-GIVEN("the WiFi network '%s' is seen within %d minutes '%s' is seen within %d seconds", infra::None)
+GIVEN("the WiFi network '%s' is seen within %d minutes '%s' is seen within %d seconds")
 {
     if (ContainsStringArgument(0) && ContainsStringArgument(1) && ContainsStringArgument(2) && ContainsStringArgument(3))
         Success();
@@ -51,7 +51,7 @@ GIVEN("the WiFi network '%s' is seen within %d minutes '%s' is seen within %d se
         Error("Incorrect Arguments");
 }
 
-GIVEN("the Node connects to that network", infra::None)
+GIVEN("the Node connects to that network")
 {
     if (ContainsTableArgument("ssid") && ContainsTableArgument("CoCoCo") && ContainsTableArgument("WLAN"))
         Success();
@@ -59,7 +59,7 @@ GIVEN("the Node connects to that network", infra::None)
         Error("Incorrect Arguments");
 }
 
-GIVEN("a network is available", infra::None)
+GIVEN("a network is available")
 {
     if (ContainsTableArgument("field") && ContainsTableArgument("ssid") && ContainsTableArgument("key"))
         Success();
@@ -67,7 +67,7 @@ GIVEN("a network is available", infra::None)
         Error("Incorrect Arguments");
 }
 
-GIVEN("sentence with '%s' and %d digit", infra::None)
+GIVEN("sentence with '%s' and %d digit")
 {
     if (ContainsStringArgument(0) && ContainsStringArgument(1))
         if (ContainsTableArgument("field") && ContainsTableArgument("ssid") && ContainsTableArgument("key"))
@@ -78,13 +78,13 @@ GIVEN("sentence with '%s' and %d digit", infra::None)
         Error("Incorrect Arguments");
 }
 
-GIVEN("a value is stored", infra::None)
+GIVEN("a value is stored")
 {
     Context().Add("key0", &val);
     Success();
 }
 
-GIVEN("a value is used", infra::None)
+GIVEN("a value is used")
 {
     if (Context().Get<uint8_t>("key0") == 42)
         Success();
@@ -92,7 +92,7 @@ GIVEN("a value is used", infra::None)
         Error("Value not equal");
 }
 
-GIVEN("nothing happens for %d seconds", infra::None)
+GIVEN("nothing happens for %d seconds")
 {
     if (ContainsStringArgument(0))
     {
