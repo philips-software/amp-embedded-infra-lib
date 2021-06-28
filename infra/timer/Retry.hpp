@@ -18,6 +18,13 @@ namespace infra
     public:
         static_assert(std::is_base_of<infra::RetryPolicy, T>::value, "T should derive from infra::RetryPolicy");
 
+        Retry() = default;
+
+        template<class... Args>
+        Retry(Args&&... args)
+            : policy(std::forward<Args>(args)...)
+        {}
+
         void Start(FailureType type, const infra::Function<void()>& action);
         void Stop();
 
@@ -46,6 +53,9 @@ namespace infra
         timer.Cancel();
         policy.Reset();
     }
+
+    using RetryFixedInterval = Retry<RetryPolicyFixedInterval>;
+    using RetryExponentialBackoff = Retry<RetryPolicyExponentialBackoff>;
 }
 
 #endif
