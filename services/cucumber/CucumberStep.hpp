@@ -9,10 +9,10 @@
 namespace services
 {
     class CucumberStep
-        : public infra::IntrusiveList<CucumberStep>::NodeType 
+        : public infra::IntrusiveList<CucumberStep>::NodeType
     {
     public:
-        explicit CucumberStep(infra::BoundedConstString stepName);
+        CucumberStep(infra::BoundedConstString stepName, infra::BoundedConstString sourceLocation);
         virtual ~CucumberStep() = default;
         CucumberStep& operator=(const CucumberStep& other) = delete;
         CucumberStep(CucumberStep& other) = delete;
@@ -20,6 +20,7 @@ namespace services
         bool operator==(const CucumberStep& other) const;
 
         infra::BoundedConstString StepName() const;
+        infra::BoundedConstString SourceLocation() const;
 
         infra::Optional<infra::JsonString> GetTableArgument(const infra::BoundedString& fieldName);
         bool ContainsTableArgument(const infra::BoundedString& fieldName);
@@ -35,9 +36,10 @@ namespace services
         infra::JsonArray* invokeArguments = nullptr;
 
     private:
-        void IterateThroughStringArguments(infra::JsonArrayIterator& iterator);
+        void SkipOverStringArguments(infra::JsonArrayIterator& iterator) const;
 
         infra::BoundedConstString stepName;
+        infra::BoundedConstString sourceLocation;
     };
 }
 

@@ -12,30 +12,28 @@ namespace services
     public:
         CucumberWireProtocolFormatter(CucumberWireProtocolParser& parser, CucumberWireProtocolController& controller);
 
-    public:
-        void FormatResponse(infra::DataOutputStream::WithErrorPolicy& stream);
+        void FormatResponse(infra::TextOutputStream::WithErrorPolicy& stream);
 
     private:
-        CucumberWireProtocolParser& parser;
-        CucumberWireProtocolController& controller;
+        void CreateSuccessMessage(infra::TextOutputStream::WithErrorPolicy& stream);
+        void CreateSuccessMessage(infra::TextOutputStream::WithErrorPolicy& stream, uint32_t id, const infra::JsonArray& arguments, infra::BoundedConstString sourceLocation);
+        void CreateFailureMessage(infra::TextOutputStream::WithErrorPolicy& stream, infra::BoundedConstString failMessage, infra::BoundedConstString exceptionType);
 
-        infra::BoundedString::WithStorage<256> responseBuffer;
-        infra::BoundedString::WithStorage<256> stepMatchArgumentsBuffer;
-
-        void CreateSuccessMessage();
-        void CreateSuccessMessage(uint32_t id, const infra::JsonArray& arguments);
-        void CreateFailureMessage(infra::BoundedConstString failMessage, infra::BoundedConstString exceptionType);
-
-        void FormatStepMatchResponse();
-        void FormatInvokeResponse();
-        void FormatSnippetResponse();
-        void FormatBeginScenarioResponse();
-        void FormatEndScenarioResponse();
+        void FormatStepMatchResponse(infra::TextOutputStream::WithErrorPolicy& stream);
+        void FormatInvokeResponse(infra::TextOutputStream::WithErrorPolicy& stream);
+        void FormatSnippetResponse(infra::TextOutputStream::WithErrorPolicy& stream);
+        void FormatBeginScenarioResponse(infra::TextOutputStream::WithErrorPolicy& stream);
+        void FormatEndScenarioResponse(infra::TextOutputStream::WithErrorPolicy& stream);
 
         void AddStringValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, uint16_t& offset);
         void AddDigitValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, uint16_t& offset);
 
         infra::JsonArray FormatStepArguments(const infra::BoundedString& nameToMatch);
+
+    private:
+        CucumberWireProtocolParser& parser;
+        CucumberWireProtocolController& controller;
+        infra::BoundedString::WithStorage<256> stepMatchArgumentsBuffer;
     };
 }
 

@@ -5,7 +5,9 @@ class StepStub
     : public services::CucumberStep
 {
 public:
-    using CucumberStep::CucumberStep;
+    StepStub(infra::BoundedConstString stepName)
+        : services::CucumberStep(stepName, "")
+    {}
 
     void Invoke(infra::JsonArray& arguments) final {};
 };

@@ -7,32 +7,61 @@ namespace services
         , controller(controller)
     {}
 
-    void CucumberWireProtocolFormatter::CreateFailureMessage(infra::BoundedConstString failMessage, infra::BoundedConstString exceptionType)
+    void CucumberWireProtocolFormatter::FormatResponse(infra::TextOutputStream::WithErrorPolicy& stream)
+    {
+        switch (parser.requestType)
+        {
+        case CucumberWireProtocolParser::RequestType::StepMatches:
+            FormatStepMatchResponse(stream);
+            break;
+        case CucumberWireProtocolParser::RequestType::Invoke:
+            FormatInvokeResponse(stream);
+            break;
+        case CucumberWireProtocolParser::RequestType::SnippetText:
+            FormatSnippetResponse(stream);
+            break;
+        case CucumberWireProtocolParser::RequestType::BeginScenario:
+            FormatBeginScenarioResponse(stream);
+            break;
+        case CucumberWireProtocolParser::RequestType::EndScenario:
+            FormatEndScenarioResponse(stream);
+            break;
+        case CucumberWireProtocolParser::RequestType::Invalid:
+            CreateFailureMessage(stream, "Invalid Request", "Exception.InvalidRequestType");
+            break;
+        default:
+            std::abort();
+        }
+    }
+
+    void CucumberWireProtocolFormatter::CreateFailureMessage(infra::TextOutputStream::WithErrorPolicy& stream, infra::BoundedConstString failMessage, infra::BoundedConstString exceptionType)
     {
         {
-            infra::JsonArrayFormatter::WithStringStream result(infra::inPlace, responseBuffer);
+            infra::JsonArrayFormatter result(stream);
             result.Add("fail");
             infra::JsonObjectFormatter subObject(result.SubObject());
             subObject.Add("message", failMessage);
             subObject.Add("exception", exceptionType);
         }
-        responseBuffer.insert(responseBuffer.size(), "\n");
+
+        stream << "\n";
     }
 
-    void CucumberWireProtocolFormatter::CreateSuccessMessage()
+    void CucumberWireProtocolFormatter::CreateSuccessMessage(infra::TextOutputStream::WithErrorPolicy& stream)
     {
         {
-            infra::JsonArrayFormatter::WithStringStream result(infra::inPlace, responseBuffer);
+            infra::JsonArrayFormatter result(stream);
             result.Add("success");
             infra::JsonArrayFormatter subArray(result.SubArray());
         }
-        responseBuffer.insert(responseBuffer.size(), "\n");
+
+        stream << "\n";
     }
 
-    void CucumberWireProtocolFormatter::CreateSuccessMessage(uint32_t id, const infra::JsonArray& arguments)
+    void CucumberWireProtocolFormatter::CreateSuccessMessage(infra::TextOutputStream::WithErrorPolicy& stream, uint32_t id, const infra::JsonArray& arguments, infra::BoundedConstString sourceLocation)
     {
         {
-            infra::JsonArrayFormatter::WithStringStream result(infra::inPlace, responseBuffer);
+            infra::JsonArrayFormatter result(stream);
 
             result.Add("success");
             infra::JsonArrayFormatter subArray(result.SubArray());
@@ -42,88 +71,59 @@ namespace services
             idStream << id;
             subObject.Add("id", idStream.Storage());
             subObject.Add(infra::JsonKeyValue{ "args", infra::JsonValue(infra::InPlaceType<infra::JsonArray>(), arguments) });
+            subObject.Add("source", sourceLocation);
         }
-        responseBuffer.insert(responseBuffer.size(), "\n");
+
+        stream << "\n";
     }
 
-    void CucumberWireProtocolFormatter::FormatResponse(infra::DataOutputStream::WithErrorPolicy& stream)
-    {
-        responseBuffer.clear();
-
-        switch (parser.requestType)
-        {
-        case CucumberWireProtocolParser::RequestType::StepMatches:
-            FormatStepMatchResponse();
-            break;
-        case CucumberWireProtocolParser::RequestType::Invoke:
-            FormatInvokeResponse();
-            break;
-        case CucumberWireProtocolParser::RequestType::SnippetText:
-            FormatSnippetResponse();
-            break;
-        case CucumberWireProtocolParser::RequestType::BeginScenario:
-            FormatBeginScenarioResponse();
-            break;
-        case CucumberWireProtocolParser::RequestType::EndScenario:
-            FormatEndScenarioResponse();
-            break;
-        case CucumberWireProtocolParser::RequestType::Invalid:
-            CreateFailureMessage("Invalid Request", "Exception.InvalidRequestType");
-            break;
-        default:
-            std::abort();
-            break;
-        }
-        stream << infra::StringAsByteRange(responseBuffer);
-    }
-
-    void CucumberWireProtocolFormatter::FormatStepMatchResponse()
+    void CucumberWireProtocolFormatter::FormatStepMatchResponse(infra::TextOutputStream::WithErrorPolicy& stream)
     {
         switch (controller.storageMatch.result)
         {
         case CucumberStepStorage::StepMatchResult::Success:
             if (controller.storageMatch.step->HasStringArguments())
-                CreateSuccessMessage(controller.storageMatch.id, FormatStepArguments(controller.nameToMatchString));
+                CreateSuccessMessage(stream, controller.storageMatch.id, FormatStepArguments(controller.nameToMatchString), controller.storageMatch.step->SourceLocation());
             else
-                CreateSuccessMessage(controller.storageMatch.id, infra::JsonArray("[]"));
+                CreateSuccessMessage(stream, controller.storageMatch.id, infra::JsonArray("[]"), controller.storageMatch.step->SourceLocation());
             break;
         case CucumberStepStorage::StepMatchResult::Fail:
-            CreateFailureMessage("Step not Matched", "Exception.Step.NotFound");
+            CreateFailureMessage(stream, "Step not Matched", "Exception.Step.NotFound");
             break;
         case CucumberStepStorage::StepMatchResult::Duplicate:
-            CreateFailureMessage("Duplicate Step", "Exception.Step.Duplicate");
+            CreateFailureMessage(stream, "Duplicate Step", "Exception.Step.Duplicate");
             break;
         default:
             break;
         }
     }
 
-    void CucumberWireProtocolFormatter::FormatInvokeResponse()
+    void CucumberWireProtocolFormatter::FormatInvokeResponse(infra::TextOutputStream::WithErrorPolicy& stream)
     {
         if (controller.invokeInfo.successfull)
-            CreateSuccessMessage();
+            CreateSuccessMessage(stream);
         else
-            CreateFailureMessage("Invoke Failed", *controller.invokeInfo.failReason);
+            CreateFailureMessage(stream, "Invoke Failed", *controller.invokeInfo.failReason);
     }
 
-    void CucumberWireProtocolFormatter::FormatSnippetResponse()
+    void CucumberWireProtocolFormatter::FormatSnippetResponse(infra::TextOutputStream::WithErrorPolicy& stream)
     {
         {
-            infra::JsonArrayFormatter::WithStringStream result(infra::inPlace, responseBuffer);
+            infra::JsonArrayFormatter result(stream);
             result.Add("success");
             result.Add("snippet");
         }
-        responseBuffer.insert(responseBuffer.size(), "\n");
+        stream << "\n";
     }
 
-    void CucumberWireProtocolFormatter::FormatBeginScenarioResponse()
+    void CucumberWireProtocolFormatter::FormatBeginScenarioResponse(infra::TextOutputStream::WithErrorPolicy& stream)
     {
-        CreateSuccessMessage();
+        CreateSuccessMessage(stream);
     }
 
-    void CucumberWireProtocolFormatter::FormatEndScenarioResponse()
+    void CucumberWireProtocolFormatter::FormatEndScenarioResponse(infra::TextOutputStream::WithErrorPolicy& stream)
     {
-        CreateSuccessMessage();
+        CreateSuccessMessage(stream);
     }
 
     void CucumberWireProtocolFormatter::AddStringValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, uint16_t& offset)

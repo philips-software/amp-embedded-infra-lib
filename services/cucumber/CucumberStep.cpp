@@ -2,8 +2,9 @@
 
 namespace services
 {
-    CucumberStep::CucumberStep(infra::BoundedConstString stepName)
+    CucumberStep::CucumberStep(infra::BoundedConstString stepName, infra::BoundedConstString sourceLocation)
         : stepName(stepName)
+        , sourceLocation(sourceLocation)
     {}
 
     bool CucumberStep::operator==(const CucumberStep& other) const
@@ -21,7 +22,12 @@ namespace services
         return stepName;
     }
 
-    void CucumberStep::IterateThroughStringArguments(infra::JsonArrayIterator& iterator)
+    infra::BoundedConstString CucumberStep::SourceLocation() const
+    {
+        return sourceLocation;
+    }
+
+    void CucumberStep::SkipOverStringArguments(infra::JsonArrayIterator& iterator) const
     {
         uint32_t nrArgs = NrArguments();
         if (HasStringArguments())
@@ -37,7 +43,7 @@ namespace services
     infra::Optional<infra::JsonString> CucumberStep::GetTableArgument(const infra::BoundedString& fieldName)
     {
         infra::JsonArrayIterator argumentIterator(invokeArguments->begin());
-        IterateThroughStringArguments(argumentIterator);
+        SkipOverStringArguments(argumentIterator);
 
         if (argumentIterator != invokeArguments->end())
             for (infra::JsonArrayIterator rowIterator = argumentIterator->Get<infra::JsonArray>().begin(); rowIterator != invokeArguments->end(); rowIterator++)

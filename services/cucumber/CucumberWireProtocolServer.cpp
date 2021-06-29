@@ -11,7 +11,7 @@ namespace services
 
     void CucumberWireProtocolConnectionObserver::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        infra::DataOutputStream::WithErrorPolicy stream(*writer);
+        infra::TextOutputStream::WithErrorPolicy stream(*writer);
         formatter.FormatResponse(stream);
 
         receiveBufferVector.clear();

@@ -112,7 +112,7 @@ class CucumberStepMock
 {
 public:
     CucumberStepMock()
-        : CucumberStep("Mock Step")
+        : CucumberStep("Mock Step", "")
     {}
 
     MOCK_METHOD1(Invoke, void(infra::JsonArray& arguments));
@@ -153,10 +153,10 @@ public:
         EXPECT_EQ("[ \"success\", [  ] ]\n", connection.SentDataAsString());
     }
 
-    void CheckSuccessResponse(int id, infra::BoundedConstString arguments)
+    void CheckSuccessResponse(int id, infra::BoundedConstString arguments, infra::BoundedConstString location)
     {
         std::string response = std::string("[ \"success\", [ { \"id\":\"") + std::to_string(id)
-            + std::string("\", \"args\":") + arguments + std::string(" } ] ]\n");
+            + std::string("\", \"args\":") + arguments + std::string(", \"source\":\"") + location + std::string("\" } ] ]\n");
         EXPECT_EQ(response, connection.SentDataAsString());
     }
 
@@ -213,7 +213,7 @@ TEST_F(CucumberWireProtocolServerTest, test_step_parsing_arguments)
     ReceiveData("[\"step_matches\",{\"name_to_match\":\"the WiFi network 'CoCoCo' is seen within 10 minutes and 30 seconds\"}]");
 
     auto match = services::CucumberStepStorage::Instance().MatchStep("the WiFi network '%s' is seen within %d minutes and %d seconds");
-    CheckSuccessResponse(match.id, "[ { \"val\":\"CoCoCo\", \"pos\":18 }, { \"val\":\"10\", \"pos\":41 }, { \"val\":\"30\", \"pos\":56 } ]");
+    CheckSuccessResponse(match.id, "[ { \"val\":\"CoCoCo\", \"pos\":18 }, { \"val\":\"10\", \"pos\":41 }, { \"val\":\"30\", \"pos\":56 } ]", "TestCucumberWireProtocolServer.cpp:38");
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
@@ -223,7 +223,7 @@ TEST_F(CucumberWireProtocolServerTest, test_step_parsing_arguments_2)
     ReceiveData("[\"step_matches\",{\"name_to_match\":\"the WiFi network 'CoCoCo' is seen within 10 minutes 'CoCoCo2' is seen within 30 seconds\"}]");
 
     auto match = services::CucumberStepStorage::Instance().MatchStep("the WiFi network '%s' is seen within %d minutes '%s' is seen within %d seconds");
-    CheckSuccessResponse(match.id, "[ { \"val\":\"CoCoCo\", \"pos\":18 }, { \"val\":\"10\", \"pos\":41 }, { \"val\":\"CoCoCo2\", \"pos\":53 }, { \"val\":\"30\", \"pos\":77 } ]");
+    CheckSuccessResponse(match.id, "[ { \"val\":\"CoCoCo\", \"pos\":18 }, { \"val\":\"10\", \"pos\":41 }, { \"val\":\"CoCoCo2\", \"pos\":53 }, { \"val\":\"30\", \"pos\":77 } ]", "TestCucumberWireProtocolServer.cpp:46");
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
@@ -260,7 +260,7 @@ TEST_F(CucumberWireProtocolServerTest, should_respond_to_step_match_request_with
     ReceiveData("[\"step_matches\",{\"name_to_match\":\"a step\"}]");
     
     auto match = services::CucumberStepStorage::Instance().MatchStep("a step");
-    CheckSuccessResponse(match.id, "[]");
+    CheckSuccessResponse(match.id, "[]", "TestCucumberWireProtocolServer.cpp:25");
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
@@ -270,7 +270,7 @@ TEST_F(CucumberWireProtocolServerTest, should_respond_to_step_match_request_with
     ReceiveData("[\"step_matches\",{\"name_to_match\":\"the WiFi network 'CoCoCo' is seen within 60 minutes\"}]");
 
     auto match = services::CucumberStepStorage::Instance().MatchStep("the WiFi network '%s' is seen within %d minutes");
-    CheckSuccessResponse(match.id, "[ { \"val\":\"CoCoCo\", \"pos\":18 }, { \"val\":\"60\", \"pos\":41 } ]");
+    CheckSuccessResponse(match.id, "[ { \"val\":\"CoCoCo\", \"pos\":18 }, { \"val\":\"60\", \"pos\":41 } ]", "TestCucumberWireProtocolServer.cpp:30");
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
@@ -280,7 +280,7 @@ TEST_F(CucumberWireProtocolServerTest, should_respond_to_non_matching_substring_
     ReceiveData("[\"step_matches\",{\"name_to_match\":\"the WiFi network 'CoCoCo' is seen within 60 minutes\"}]");
 
     auto match = services::CucumberStepStorage::Instance().MatchStep("the WiFi network 'CoCoCo' is seen within 60 minutes");
-    CheckSuccessResponse(match.id, "[ { \"val\":\"CoCoCo\", \"pos\":18 }, { \"val\":\"60\", \"pos\":41 } ]");
+    CheckSuccessResponse(match.id, "[ { \"val\":\"CoCoCo\", \"pos\":18 }, { \"val\":\"60\", \"pos\":41 } ]", "TestCucumberWireProtocolServer.cpp:30");
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
@@ -299,7 +299,7 @@ TEST_F(CucumberWireProtocolServerTest, should_respond_to_long_matching_string_of
     ReceiveData("[\"step_matches\",{\"name_to_match\":\"the WiFi network 'CoCoCo' is seen within 10 minutes and 30 seconds\"}]");
 
     auto match = services::CucumberStepStorage::Instance().MatchStep("the WiFi network '%s' is seen within %d minutes and %d seconds");
-    CheckSuccessResponse(match.id, "[ { \"val\":\"CoCoCo\", \"pos\":18 }, { \"val\":\"10\", \"pos\":41 }, { \"val\":\"30\", \"pos\":56 } ]");
+    CheckSuccessResponse(match.id, "[ { \"val\":\"CoCoCo\", \"pos\":18 }, { \"val\":\"10\", \"pos\":41 }, { \"val\":\"30\", \"pos\":56 } ]", "TestCucumberWireProtocolServer.cpp:38");
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
