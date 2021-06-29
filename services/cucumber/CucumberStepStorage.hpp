@@ -39,9 +39,6 @@ namespace services
         void ClearStorage();
 
     private:
-        void SkipStringArgument(infra::BoundedString::iterator& iterator, const infra::BoundedString& nameToMatch, int16_t& offsetCounter) const;
-        void SkipIntegerArgument(infra::BoundedString::iterator& iterator, const infra::BoundedString& nameToMatch, int16_t& offsetCounter) const;
-
         infra::IntrusiveList<CucumberStep> stepList;
     };
 }

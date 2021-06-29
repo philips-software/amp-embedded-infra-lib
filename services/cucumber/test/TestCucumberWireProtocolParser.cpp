@@ -2,19 +2,27 @@
 #include "infra/util/test_helper/LifetimeHelper.hpp"
 #include "services/cucumber/CucumberWireProtocolParser.hpp"
 
+class StepStub
+    : public services::CucumberStep
+{
+public:
+    using CucumberStep::CucumberStep;
+
+    void Invoke(infra::JsonArray& arguments) final{};
+};
+
+bool CheckStepMatcher(infra::BoundedString stepString, infra::BoundedString matchString)
+{
+    StepStub step{ stepString };
+    return services::CucumberStepStorage::Instance().MatchesStepName(step, matchString);
+}
+
 class CucumberWireProtocolParserTest
     : public testing::Test
     , public infra::LifetimeHelper
 {
 public:
-    class StepStub
-        : public services::CucumberStep
-    {
-    public:
-        using CucumberStep::CucumberStep;
 
-        void Invoke(infra::JsonArray& arguments) final {};
-    };
 
     StepStub aWiFiNetworkIsAvailable{ "a WiFi network is available" };
     StepStub theConnectivityNodeConnectsToThatNetwork{ "the Connectivity Node connects to that network" };
@@ -24,6 +32,23 @@ public:
 
     services::CucumberWireProtocolParser parser;
 };
+
+TEST(CucumberStepMatcherTest, should_match_input_for_matching_steps)
+{
+    std::vector<std::pair<std::string, std::string>> testVectors = {
+        std::make_pair("literal step", "literal step"),
+        std::make_pair("step with %d parameter", "step with 42 parameter"),
+        std::make_pair("step with '%s' string argument", "step with 'foo' string argument"),
+        std::make_pair("ends on parameter '%s'", "ends on parameter 'foo'"),
+        std::make_pair("'%s' starts with string", "'foo' starts with string"),
+        std::make_pair("'%s'", "'foo'"),
+        std::make_pair("'%s' %d '%s'", "'foo' 42 'bar'"),
+        std::make_pair("'%s'", "'foo bar'")
+    };
+
+    for (const auto& [stepString, matchString] : testVectors)
+        EXPECT_TRUE(CheckStepMatcher(stepString, matchString));
+}
 
 TEST_F(CucumberWireProtocolParserTest, test_step_contains_arguments)
 {

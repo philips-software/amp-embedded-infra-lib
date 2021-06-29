@@ -1,5 +1,50 @@
 #include "services/cucumber/CucumberStepStorage.hpp"
 
+namespace
+{
+    template<class Iterator>
+    std::size_t SkipStringArgument(Iterator& iterator, Iterator end)
+    {
+        std::size_t skippedSize = 0;
+
+        while (iterator != end && *iterator != '\'')
+        {
+            ++iterator;
+            ++skippedSize;
+        }
+
+        return skippedSize;
+    }
+
+    template<class Iterator>
+    std::size_t SkipIntegerArgument(Iterator& iterator, Iterator end)
+    {
+        std::size_t skippedSize = 0;
+
+        while (iterator != end && *iterator >= '0' && *iterator <= '9')
+        {
+            ++iterator;
+            ++skippedSize;
+        }
+        
+        return skippedSize;
+    }
+
+    template<class Iterator>
+    std::size_t SkipMarker(Iterator& iterator, Iterator end)
+    {
+        std::size_t skippedSize = 0;
+
+        while (iterator != end && (*iterator == '%' || *iterator == 's' || *iterator == 'd'))
+        {
+            ++iterator;
+            ++skippedSize;
+        }
+
+        return skippedSize;
+    }
+}
+
 namespace services
 {
     CucumberStepStorage& CucumberStepStorage::Instance()
@@ -8,48 +53,28 @@ namespace services
         return instance;
     }
 
-    void CucumberStepStorage::SkipStringArgument(infra::BoundedString::iterator& iterator, const infra::BoundedString& nameToMatch, int16_t& offsetCounter) const
-    {
-        while (iterator != nameToMatch.end() && *iterator != '\'')
-        {
-            ++iterator;
-            ++offsetCounter;
-        }
-        offsetCounter -= 2;
-    }
-
-    void CucumberStepStorage::SkipIntegerArgument(infra::BoundedString::iterator& iterator, const infra::BoundedString& nameToMatch, int16_t& offsetCounter) const
-    {
-        while (iterator != nameToMatch.end() && *iterator >= '0' && *iterator <= '9')
-        {
-            ++iterator;
-            ++offsetCounter;
-        }
-        offsetCounter -= 2;
-    }
-
     bool CucumberStepStorage::MatchesStepName(CucumberStep& step, const infra::BoundedString& nameToMatch)
     {
-        constexpr auto intMarker = "%d";
-        constexpr auto stringMarker = R"('%s')";
-        int16_t sizeOffset = 0;
-        infra::BoundedConstString stepName = step.StepName();
-
+        std::size_t sizeOffset = 0;
+        auto stepName = step.StepName();
         auto nameToMatchIterator = nameToMatch.begin();
+
         for (auto stepNameIterator = stepName.begin(); stepNameIterator != stepName.end(); ++stepNameIterator, ++nameToMatchIterator)
         {
             if (*stepNameIterator != *nameToMatchIterator)
             {
+                constexpr auto intMarker = "%d";
+                constexpr auto stringMarker = R"('%s')";
+
                 if (infra::BoundedConstString(stepNameIterator - 1, std::strlen(stringMarker)) == stringMarker)
                 {
-                    SkipStringArgument(nameToMatchIterator, nameToMatch, sizeOffset);
-                    stepNameIterator += std::strlen(stringMarker);
-                    nameToMatchIterator += 2;
+                    sizeOffset += SkipStringArgument(nameToMatchIterator, nameToMatch.end());
+                    sizeOffset -= SkipMarker(stepNameIterator, stepName.end());
                 }
                 else if (infra::BoundedConstString(stepNameIterator, std::strlen(intMarker)) == intMarker)
                 {
-                    SkipIntegerArgument(nameToMatchIterator, nameToMatch, sizeOffset);
-                    stepNameIterator += std::strlen(intMarker);
+                    sizeOffset += SkipIntegerArgument(nameToMatchIterator, nameToMatch.end());
+                    sizeOffset -= SkipMarker(stepNameIterator, stepName.end());
                 }
                 else
                     return false;
