@@ -2,9 +2,8 @@
 
 namespace services
 {
-    CucumberWireProtocolConnectionObserver::CucumberWireProtocolConnectionObserver(const infra::ByteRange receiveBuffer)
-        : receiveBuffer(receiveBuffer)
-        , receiveBufferVector(infra::ReinterpretCastMemoryRange<infra::StaticStorage<uint8_t>>(receiveBuffer))
+    CucumberWireProtocolConnectionObserver::CucumberWireProtocolConnectionObserver(infra::BoundedString& buffer)
+        : buffer(buffer)
         , controller(*this, scenarioRequestHandler)
         , formatter(parser, controller)
     {}
@@ -14,30 +13,36 @@ namespace services
         infra::TextOutputStream::WithErrorPolicy stream(*writer);
         formatter.FormatResponse(stream);
 
-        receiveBufferVector.clear();
+        buffer.clear();
         writer = nullptr;
     }
 
     void CucumberWireProtocolConnectionObserver::DataReceived()
     {
-        auto reader = Subject().ReceiveStream();
-        infra::DataInputStream::WithErrorPolicy stream(*reader);
+        infra::SharedPtr<infra::StreamReader> reader = Subject().ReceiveStream();
+        infra::TextInputStream::WithErrorPolicy stream(*reader);
 
-        do
+        if (auto available = stream.Available(); available > buffer.max_size() - buffer.size())
         {
-            dataBuffer = stream.ContiguousRange();
-            receiveBufferVector.insert(receiveBufferVector.end(), dataBuffer.begin(), dataBuffer.end());
-        } while (dataBuffer.size() != 0);
+            while (!stream.Empty())
+                stream.ContiguousRange();
+            // Report error buffer overflow.
+        }
+        else if (available > 0)
+        {
+            buffer.resize(buffer.size() + available);
+            auto justReceived = buffer.substr(buffer.size() - available);
+            stream >> justReceived;
 
-        infra::BoundedString input = infra::ByteRangeAsString(receiveBufferVector.range());
-        if (parser.Valid(input))
-            parser.ParseRequest(input);
-        controller.HandleRequest(parser);
+            if (parser.Valid(buffer))
+                parser.ParseRequest(buffer);
+            controller.HandleRequest(parser);
+        }
 
         Subject().AckReceived();
     }
 
-    CucumberWireProtocolServer::CucumberWireProtocolServer(const infra::ByteRange receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port)
+    CucumberWireProtocolServer::CucumberWireProtocolServer(infra::BoundedString& receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port)
         : SingleConnectionListener(connectionFactory, port, { connectionCreator })
         , receiveBuffer(receiveBuffer)
         , connectionCreator([this](infra::Optional<CucumberWireProtocolConnectionObserver>& value, services::IPAddress address) {

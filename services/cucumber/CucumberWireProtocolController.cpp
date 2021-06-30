@@ -2,18 +2,17 @@
 
 namespace services
 {
-    CucumberWireProtocolController::CucumberWireProtocolController(services::ConnectionObserver& connectionObserver
-        , services::CucumberScenarioRequestHandler& scenarioRequestHandler)
-        : connectionObserver(connectionObserver)
-        , scenarioRequestHandler(scenarioRequestHandler)
-        , invokeSuccess([this]() { InvokeSuccess(); })
+    CucumberWireProtocolController::CucumberWireProtocolController(ConnectionObserver& connectionObserver, CucumberScenarioRequestHandler& scenarioRequestHandler)
+        : invokeSuccess([this]() { InvokeSuccess(); })
         , invokeError([this](infra::BoundedConstString& reason) { InvokeError(reason); })
+        , connectionObserver(connectionObserver)
+        , scenarioRequestHandler(scenarioRequestHandler)
     {
-        if (services::CucumberContext::InstanceSet())
-            if (!services::CucumberContext::Instance().Contains("InvokeSuccess"))
-                services::CucumberContext::Instance().Add("InvokeSuccess", &invokeSuccess);
-            if (!services::CucumberContext::Instance().Contains("InvokeError"))
-                services::CucumberContext::Instance().Add("InvokeError", &invokeError);
+        if (CucumberContext::InstanceSet())
+        {
+            CucumberContext::Instance().Add("InvokeSuccess", &invokeSuccess);
+            CucumberContext::Instance().Add("InvokeError", &invokeError);
+        }
     }
 
     void CucumberWireProtocolController::HandleRequest(CucumberWireProtocolParser& parser)

@@ -11,16 +11,14 @@ namespace services
         : public services::ConnectionObserver
     {
     public:
-        explicit CucumberWireProtocolConnectionObserver(const infra::ByteRange receiveBuffer);
+        explicit CucumberWireProtocolConnectionObserver(infra::BoundedString& buffer);
 
         // Implementation of ConnectionObserver
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        virtual void DataReceived() override;        
+        virtual void DataReceived() override;
 
     private:
-        const infra::ByteRange receiveBuffer;
-        infra::BoundedVector<uint8_t> receiveBufferVector;
-        infra::ConstByteRange dataBuffer;
+        infra::BoundedString& buffer;
 
         CucumberScenarioRequestHandler scenarioRequestHandler;
         CucumberWireProtocolParser parser;
@@ -33,12 +31,12 @@ namespace services
     {
     public:
         template<size_t BufferSize>
-        using WithBuffer = infra::WithStorage<CucumberWireProtocolServer, std::array<uint8_t, BufferSize>>;
+            using WithBuffer = infra::WithStorage<CucumberWireProtocolServer, infra::BoundedString::WithStorage<BufferSize>>;
 
-        CucumberWireProtocolServer(const infra::ByteRange receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port);
+        CucumberWireProtocolServer(infra::BoundedString& receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port);
 
     private:
-        const infra::ByteRange receiveBuffer;
+        infra::BoundedString& receiveBuffer;
         infra::Creator<services::ConnectionObserver, CucumberWireProtocolConnectionObserver, void(services::IPAddress address)> connectionCreator;
     };
 }

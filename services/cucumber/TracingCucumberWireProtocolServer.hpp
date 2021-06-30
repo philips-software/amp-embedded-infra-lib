@@ -11,15 +11,13 @@ namespace services
         : public CucumberWireProtocolConnectionObserver
     {
     public:
-        TracingCucumberWireProtocolConnectionObserver(const infra::ByteRange receiveBuffer, services::Tracer& tracer);
+        TracingCucumberWireProtocolConnectionObserver(infra::BoundedString& receiveBuffer, services::Tracer& tracer);
 
         // Implementation of ConnectionObserver
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void DataReceived() override;
 
     private:
-        services::Tracer& tracer;
-        const infra::ByteRange receiveBuffer;
         class TracingWriter
         {
         public:
@@ -33,6 +31,8 @@ namespace services
         };
 
     private:
+        services::Tracer& tracer;
+        infra::BoundedString& receiveBuffer;
         infra::SharedOptional<TracingWriter> tracingWriter;
     };
 
@@ -41,13 +41,13 @@ namespace services
     {
     public:
         template<size_t BufferSize>
-        using WithBuffer = infra::WithStorage<TracingCucumberWireProtocolServer, std::array<uint8_t, BufferSize>>;
+            using WithBuffer = infra::WithStorage<TracingCucumberWireProtocolServer, infra::BoundedString::WithStorage<BufferSize>>;
 
-        TracingCucumberWireProtocolServer(const infra::ByteRange receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port, services::Tracer& tracer);
+        TracingCucumberWireProtocolServer(infra::BoundedString& receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port, services::Tracer& tracer);
 
     private:
         services::Tracer& tracer;
-        const infra::ByteRange receiveBuffer;
+        infra::BoundedString& receiveBuffer;
         infra::Creator<services::ConnectionObserver, TracingCucumberWireProtocolConnectionObserver, void(services::IPAddress address)> connectionCreator;
     };
 }
