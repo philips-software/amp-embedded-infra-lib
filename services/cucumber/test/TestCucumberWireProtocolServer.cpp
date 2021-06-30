@@ -124,10 +124,8 @@ class CucumberWireProtocolServerTest
 {
 public:
     CucumberWireProtocolServerTest()
-        : connectionPtr(infra::UnOwnedSharedPtr(connection))
-        , execute([this]() { EXPECT_CALL(connectionFactoryMock, Listen(1234, testing::_, services::IPVersions::both)).WillOnce(testing::DoAll(infra::SaveRef<1>(&serverConnectionObserverFactory), testing::Return(nullptr))); })
-        , cucumberServer(connectionFactoryMock, 1234)
-        , context()
+        : execute([this]() { EXPECT_CALL(connectionFactoryMock, Listen(1234, testing::_, services::IPVersions::both)).WillOnce(testing::DoAll(infra::SaveRef<1>(&serverConnectionObserverFactory), testing::Return(nullptr))); })
+        , cucumberServer(connectionFactoryMock, 1234, scenarioHandler)
     {}
 
     ~CucumberWireProtocolServerTest()
@@ -168,13 +166,14 @@ public:
     }
 
     testing::StrictMock<services::ConnectionStub> connection;
-    infra::SharedPtr<services::ConnectionStub> connectionPtr;
+    infra::SharedPtr<services::ConnectionStub> connectionPtr{ infra::UnOwnedSharedPtr(connection) };
     testing::StrictMock<services::ConnectionFactoryMock> connectionFactoryMock;
     services::ServerConnectionObserverFactory* serverConnectionObserverFactory = nullptr;
     infra::Execute execute;
     testing::StrictMock<CucumberStepMock> cucumberStepMock;
-    services::CucumberWireProtocolServer::WithBuffer<512> cucumberServer;
+    services::CucumberScenarioRequestHandler scenarioHandler;
     services::CucumberContext context;
+    services::CucumberWireProtocolServer::WithBuffer<512> cucumberServer;
 };
 
 TEST_F(CucumberWireProtocolServerTest, accept_connection)

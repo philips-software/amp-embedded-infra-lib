@@ -2,7 +2,7 @@
 
 namespace services
 {
-    CucumberWireProtocolConnectionObserver::CucumberWireProtocolConnectionObserver(infra::BoundedString& buffer)
+    CucumberWireProtocolConnectionObserver::CucumberWireProtocolConnectionObserver(infra::BoundedString& buffer, CucumberScenarioRequestHandler& scenarioRequestHandler)
         : buffer(buffer)
         , controller(*this, scenarioRequestHandler)
         , formatter(parser, controller)
@@ -42,11 +42,12 @@ namespace services
         Subject().AckReceived();
     }
 
-    CucumberWireProtocolServer::CucumberWireProtocolServer(infra::BoundedString& receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port)
+    CucumberWireProtocolServer::CucumberWireProtocolServer(infra::BoundedString& receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port, CucumberScenarioRequestHandler& scenarioRequestHandler)
         : SingleConnectionListener(connectionFactory, port, { connectionCreator })
         , receiveBuffer(receiveBuffer)
+        , scenarioRequestHandler(scenarioRequestHandler)
         , connectionCreator([this](infra::Optional<CucumberWireProtocolConnectionObserver>& value, services::IPAddress address) {
-            value.Emplace(this->receiveBuffer);
+            value.Emplace(this->receiveBuffer, this->scenarioRequestHandler);
         })
     {}
 }

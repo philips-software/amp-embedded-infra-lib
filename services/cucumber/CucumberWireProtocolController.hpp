@@ -11,7 +11,7 @@ namespace services
     class CucumberWireProtocolController
     {
     public:
-        CucumberWireProtocolController(services::ConnectionObserver& connectionObserver, services::CucumberScenarioRequestHandler& scenarioRequestHandler);
+        CucumberWireProtocolController(ConnectionObserver& connectionObserver, CucumberScenarioRequestHandler& scenarioRequestHandler);
 
         struct InvokeInfo
         {
@@ -37,12 +37,12 @@ namespace services
         infra::Function<void()> invokeSuccess;
         infra::Function<void(infra::BoundedConstString&)> invokeError;
         InvokeInfo invokeInfo;
-        services::CucumberStepStorage::Match storageMatch;
+        CucumberStepStorage::Match storageMatch;
         infra::BoundedString::WithStorage<256> nameToMatchString;
 
     private:
-        services::ConnectionObserver& connectionObserver;
-        services::CucumberScenarioRequestHandler& scenarioRequestHandler;
+        ConnectionObserver& connectionObserver;
+        CucumberScenarioRequestHandler& scenarioRequestHandler;
     };
 }
 

@@ -11,7 +11,7 @@ namespace services
         : public services::ConnectionObserver
     {
     public:
-        explicit CucumberWireProtocolConnectionObserver(infra::BoundedString& buffer);
+        CucumberWireProtocolConnectionObserver(infra::BoundedString& buffer, CucumberScenarioRequestHandler& scenarioRequestHandler);
 
         // Implementation of ConnectionObserver
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
@@ -20,7 +20,6 @@ namespace services
     private:
         infra::BoundedString& buffer;
 
-        CucumberScenarioRequestHandler scenarioRequestHandler;
         CucumberWireProtocolParser parser;
         CucumberWireProtocolController controller;
         CucumberWireProtocolFormatter formatter;
@@ -33,10 +32,11 @@ namespace services
         template<size_t BufferSize>
             using WithBuffer = infra::WithStorage<CucumberWireProtocolServer, infra::BoundedString::WithStorage<BufferSize>>;
 
-        CucumberWireProtocolServer(infra::BoundedString& receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port);
+        CucumberWireProtocolServer(infra::BoundedString& receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port, CucumberScenarioRequestHandler& scenarioRequestHandler);
 
     private:
         infra::BoundedString& receiveBuffer;
+        CucumberScenarioRequestHandler& scenarioRequestHandler;
         infra::Creator<services::ConnectionObserver, CucumberWireProtocolConnectionObserver, void(services::IPAddress address)> connectionCreator;
     };
 }
@@ -47,10 +47,15 @@ namespace main_
     struct CucumberInfrastructure
     {
         CucumberInfrastructure(services::ConnectionFactory& connectionFactory, uint16_t port)
-            : server(connectionFactory, port)
+            : server(connectionFactory, port, defaultScenarioRequestHandler)
+        {}
+
+        CucumberInfrastructure(services::ConnectionFactory& connectionFactory, uint16_t port, services::CucumberScenarioRequestHandler scenarioRequestHandler)
+            : server(connectionFactory, port, scenarioRequestHandler)
         {}
 
         services::CucumberContext context;
+        services::CucumberScenarioRequestHandler defaultScenarioRequestHandler;
         services::CucumberWireProtocolServer::WithBuffer<BufferSize> server;
     };
 }
