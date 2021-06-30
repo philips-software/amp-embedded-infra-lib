@@ -26,6 +26,8 @@ namespace services
         {
             while (!stream.Empty())
                 stream.ContiguousRange();
+
+            Subject().AckReceived();
             // Report error buffer overflow.
         }
         else if (available > 0)
@@ -33,13 +35,12 @@ namespace services
             buffer.resize(buffer.size() + available);
             auto justReceived = buffer.substr(buffer.size() - available);
             stream >> justReceived;
+            Subject().AckReceived();
 
             if (parser.Valid(buffer))
                 parser.ParseRequest(buffer);
             controller.HandleRequest(parser);
         }
-
-        Subject().AckReceived();
     }
 
     CucumberWireProtocolServer::CucumberWireProtocolServer(infra::BoundedString& receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port, CucumberScenarioRequestHandler& scenarioRequestHandler)
