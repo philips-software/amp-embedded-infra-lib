@@ -5,31 +5,35 @@
 
 namespace services
 {
-    class FlashRegion
-        : public hal::Flash
+    template<class T>
+    class FlashRegionBase;
+
+    using FlashRegion = FlashRegionBase<uint32_t>;
+    using FlashRegion64 = FlashRegionBase<uint64_t>;
+
+    template<class T>
+    class FlashRegionBase
+        : public hal::FlashBase<T>
     {
     public:
-        FlashRegion(hal::Flash& master, uint32_t startSector, uint32_t numberOfSectors);
+        FlashRegionBase(hal::FlashBase<T>& master, T startSector, T numberOfSectors);
 
     public:
-        virtual uint32_t NumberOfSectors() const override;
-        virtual uint32_t SizeOfSector(uint32_t sectorIndex) const override;
+        virtual T NumberOfSectors() const override;
+        virtual uint32_t SizeOfSector(T sectorIndex) const override;
 
-        virtual uint32_t SectorOfAddress(uint32_t address) const override;
-        virtual uint32_t AddressOfSector(uint32_t sectorIndex) const override;
+        virtual T SectorOfAddress(T address) const override;
+        virtual T AddressOfSector(T sectorIndex) const override;
 
-        virtual void WriteBuffer(infra::ConstByteRange buffer, uint32_t address, infra::Function<void()> onDone) override;
-        virtual void ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone) override;
-        virtual void EraseSectors(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone) override;
-
-    private:
-        uint32_t ToMasterAddress(uint32_t address) const;
+        virtual void WriteBuffer(infra::ConstByteRange buffer, T address, infra::Function<void()> onDone) override;
+        virtual void ReadBuffer(infra::ByteRange buffer, T address, infra::Function<void()> onDone) override;
+        virtual void EraseSectors(T beginIndex, T endIndex, infra::Function<void()> onDone) override;
 
     private:
-        hal::Flash& master;
-        uint32_t startSector;
-        uint32_t numberOfSectors;
-        uint32_t masterAddressOfStartSector;
+        hal::FlashBase<T>& master;
+        T startSector;
+        T numberOfSectors;
+        T masterAddressOfStartSector;
     };
 }
 
