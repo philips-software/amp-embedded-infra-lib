@@ -104,7 +104,7 @@ namespace                                                                       
         }                                                                                                \
     };                                                                                                   \
                                                                                                          \
-    volatile static CLASSNAME VARNAME;                                                                   \
+    static CLASSNAME VARNAME;                                                                            \
 }                                                                                                        \
                                                                                                          \
 void CLASSNAME::Execute()

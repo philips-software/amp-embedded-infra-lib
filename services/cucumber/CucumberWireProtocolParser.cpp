@@ -25,7 +25,7 @@ namespace services
     bool CucumberWireProtocolParser::Valid(const infra::BoundedString& inputString)
     {
         infra::JsonArray input(inputString);
-        for (auto& value : input)
+        for (const auto& value : input)
         {}
 
         if (input.Error())
@@ -33,6 +33,7 @@ namespace services
             requestType = RequestType::Invalid;
             return false;
         }
+
         return true;
     }
 
