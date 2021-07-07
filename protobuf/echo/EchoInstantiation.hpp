@@ -23,13 +23,11 @@ namespace main_
     template<std::size_t MessageSize>
     struct EchoForwarder
     {
-        EchoForwarder(services::Echo& echo, hal::SerialCommunication& serialCommunication, uint32_t serviceId, uint32_t responseId)
-            : echoStack(serialCommunication)
-            , service(echo, serviceId, echoStack)
-            , response(echoStack, responseId, echo)
+        EchoForwarder(services::Echo& echoFrom, services::Echo& echoTo, uint32_t serviceId, uint32_t responseId)
+            : service(echoFrom, serviceId, echoTo)
+            , response(echoTo, responseId, echoFrom)
         {}
 
-        EchoOnSerialCommunication<MessageSize> echoStack;
         services::ServiceForwarder::WithMaxMessageSize<MessageSize> service;
         services::ServiceForwarder::WithMaxMessageSize<MessageSize> response;
     };
