@@ -23,15 +23,27 @@ namespace main_
     template<std::size_t MessageSize>
     struct EchoForwarder
     {
-        EchoForwarder(services::Echo& echo, hal::SerialCommunication& serialCommunication, uint32_t serviceId, uint32_t responseId)
+        EchoForwarder(services::Echo& echo, hal::SerialCommunication& serialCommunication, uint32_t serviceIdPeerNode, uint32_t responseIdPeerNode)
             : echoStack(serialCommunication)
-            , service(echo, serviceId, echoStack)
-            , response(echoStack, responseId, echo)
+            , servicePeerNode(echo, serviceIdPeerNode, echoStack)
+            , responsePeerNode(echoStack, responseIdPeerNode, echo)
         {}
 
+        EchoForwarder(services::Echo& echo, hal::SerialCommunication& serialCommunication, uint32_t serviceIdPeerNode, uint32_t responseIdPeerNode
+            , uint32_t serviceIdDiCommClient, uint32_t responseIdDiCommClient)
+            : echoStack(serialCommunication)
+            , servicePeerNode(echo, serviceIdPeerNode, echoStack)
+            , responsePeerNode(echoStack, responseIdPeerNode, echo)
+        {
+            this->serviceDiCommClient.Emplace(echo, serviceIdDiCommClient, echoStack);
+            this->responseDiCommClient.Emplace(echoStack, responseIdDiCommClient, echo);
+        }
+
         EchoOnSerialCommunication<MessageSize> echoStack;
-        services::ServiceForwarder::WithMaxMessageSize<MessageSize> service;
-        services::ServiceForwarder::WithMaxMessageSize<MessageSize> response;
+        services::ServiceForwarder::WithMaxMessageSize<MessageSize> servicePeerNode;
+        services::ServiceForwarder::WithMaxMessageSize<MessageSize> responsePeerNode;
+        infra::Optional<services::ServiceForwarder::WithMaxMessageSize<MessageSize>> serviceDiCommClient;
+        infra::Optional<services::ServiceForwarder::WithMaxMessageSize<MessageSize>> responseDiCommClient;
     };
 }
 
