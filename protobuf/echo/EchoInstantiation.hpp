@@ -2,6 +2,7 @@
 #define PROTOBUF_ECHO_INSTANTIATIONS
 
 #include "protobuf/echo/Echo.hpp"
+#include "infra/util/BoundedVector.hpp"
 #include "services/network/MessageCommunicationCobs.hpp"
 
 namespace main_
@@ -20,30 +21,28 @@ namespace main_
         services::EchoOnMessageCommunication echo{ windowed };
     };
 
-    template<std::size_t MessageSize>
-    struct EchoForwarder
+    template<std::size_t MessageSize, std::size_t MaxServices>
+    class EchoForwarder
     {
-        EchoForwarder(services::Echo& echo, hal::SerialCommunication& serialCommunication, uint32_t serviceIdPeerNode, uint32_t responseIdPeerNode)
-            : echoStack(serialCommunication)
-            , servicePeerNode(echo, serviceIdPeerNode, echoStack)
-            , responsePeerNode(echoStack, responseIdPeerNode, echo)
+    public:
+        EchoForwarder(services::Echo& echo, hal::SerialCommunication& serialCommunication)
+            : echo(echo)
+            , echoStack(serialCommunication)
         {}
 
-        EchoForwarder(services::Echo& echo, hal::SerialCommunication& serialCommunication, uint32_t serviceIdPeerNode, uint32_t responseIdPeerNode
-            , uint32_t serviceIdDiCommClient, uint32_t responseIdDiCommClient)
-            : echoStack(serialCommunication)
-            , servicePeerNode(echo, serviceIdPeerNode, echoStack)
-            , responsePeerNode(echoStack, responseIdPeerNode, echo)
+        void AddService(uint32_t serviceId, uint32_t responseId)
         {
-            this->serviceDiCommClient.Emplace(echo, serviceIdDiCommClient, echoStack);
-            this->responseDiCommClient.Emplace(echoStack, responseIdDiCommClient, echo);
+            std::array<uint8_t, MessageSize> storageService;
+            std::array<uint8_t, MessageSize> storageResponse;
+            vector.emplace_back(storageService, echo, serviceId, echoStack);
+            vector.emplace_back(storageResponse, echoStack, responseId, echo);
         }
 
+    private:
+        services::Echo& echo;
         EchoOnSerialCommunication<MessageSize> echoStack;
-        services::ServiceForwarder::WithMaxMessageSize<MessageSize> servicePeerNode;
-        services::ServiceForwarder::WithMaxMessageSize<MessageSize> responsePeerNode;
-        infra::Optional<services::ServiceForwarder::WithMaxMessageSize<MessageSize>> serviceDiCommClient;
-        infra::Optional<services::ServiceForwarder::WithMaxMessageSize<MessageSize>> responseDiCommClient;
+
+        infra::BoundedVector<services::ServiceForwarder>::WithMaxSize<MaxServices> vector;
     };
 }
 
