@@ -61,13 +61,13 @@ namespace hal
 
         while (!buffer.empty())
         {
-            std::size_t size = std::min<uint32_t>(buffer.size(), SizeOfSector(SectorOfAddress(address)) - static_cast<std::size_t>(AddressOffsetInSector(address)));
+            std::size_t size = std::min<uint32_t>(buffer.size(), SizeOfSector(SectorOfAddress(address)) - static_cast<std::size_t>(this->AddressOffsetInSector(address)));
 
             for (std::size_t i = 0; i != size; ++i)
-                sectors[static_cast<std::size_t>(SectorOfAddress(address))][static_cast<std::size_t>(AddressOffsetInSector(address) + i)] &= buffer[i];
+                sectors[static_cast<std::size_t>(SectorOfAddress(address))][static_cast<std::size_t>(this->AddressOffsetInSector(address) + i)] &= buffer[i];
 
             buffer.pop_front(size);
-            address = StartOfNextSector(address);
+            address = this->StartOfNextSector(address);
         }
     }
 
@@ -76,11 +76,11 @@ namespace hal
     {
         while (!buffer.empty())
         {
-            std::size_t size = std::min<uint32_t>(buffer.size(), SizeOfSector(SectorOfAddress(address)) - static_cast<std::size_t>(AddressOffsetInSector(address)));
-            std::copy(sectors[static_cast<std::size_t>(SectorOfAddress(address))].begin() + static_cast<std::size_t>(AddressOffsetInSector(address)), sectors[static_cast<std::size_t>(SectorOfAddress(address))].begin() + static_cast<std::size_t>(AddressOffsetInSector(address)) + size, buffer.begin());
+            std::size_t size = std::min<uint32_t>(buffer.size(), SizeOfSector(SectorOfAddress(address)) - static_cast<std::size_t>(this->AddressOffsetInSector(address)));
+            std::copy(sectors[static_cast<std::size_t>(SectorOfAddress(address))].begin() + static_cast<std::size_t>(this->AddressOffsetInSector(address)), sectors[static_cast<std::size_t>(SectorOfAddress(address))].begin() + static_cast<std::size_t>(AddressOffsetInSector(address)) + size, buffer.begin());
 
             buffer.pop_front(size);
-            address = StartOfNextSectorCyclical(address);
+            address = this->StartOfNextSectorCyclical(address);
         }
 
         infra::EventDispatcher::Instance().Schedule(onDone);
