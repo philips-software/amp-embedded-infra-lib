@@ -77,7 +77,7 @@ namespace hal
         while (!buffer.empty())
         {
             std::size_t size = std::min<uint32_t>(buffer.size(), SizeOfSector(SectorOfAddress(address)) - static_cast<std::size_t>(this->AddressOffsetInSector(address)));
-            std::copy(sectors[static_cast<std::size_t>(SectorOfAddress(address))].begin() + static_cast<std::size_t>(this->AddressOffsetInSector(address)), sectors[static_cast<std::size_t>(SectorOfAddress(address))].begin() + static_cast<std::size_t>(AddressOffsetInSector(address)) + size, buffer.begin());
+            std::copy(sectors[static_cast<std::size_t>(SectorOfAddress(address))].begin() + static_cast<std::size_t>(this->AddressOffsetInSector(address)), sectors[static_cast<std::size_t>(SectorOfAddress(address))].begin() + static_cast<std::size_t>(this->AddressOffsetInSector(address)) + size, buffer.begin());
 
             buffer.pop_front(size);
             address = this->StartOfNextSectorCyclical(address);
