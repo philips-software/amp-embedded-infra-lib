@@ -6,6 +6,7 @@
 #include "infra/util/SharedOptional.hpp"
 #include "infra/stream/CountingInputStream.hpp"
 #include "infra/stream/LimitedInputStream.hpp"
+#include "infra/stream/StringOutputStream.hpp"
 #include "services/network/HttpClient.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 
@@ -163,13 +164,137 @@ namespace services
         infra::PolymorphicVariant<SendingState, SendingStateRequest, SendingStateForwardSendStream, SendingStateForwardFillContent> nextState;
     };
 
-    template<class HttpClient = HttpClientImpl, class... Args>
+    template<class HttpClient = services::HttpClientImpl, class... Args>
     class HttpClientConnectorImpl
+        : public services::HttpClientConnector
+        , public services::ClientConnectionObserverFactory
+    {
+    public:
+        HttpClientConnectorImpl(services::ConnectionFactory& connectionFactory, services::IPAddress address, Args&&... args)
+            : address(address)
+            , connectionFactory(connectionFactory)
+            , client([this]() { TryConnectWaiting(); })
+            , args(std::forward<Args>(args)...)
+        {}
+
+        // Implementation of ClientConnectionObserverFactory
+        virtual services::IPAddress Address() const override
+        {
+            return address;
+        }
+
+        virtual uint16_t Port() const override
+        {
+            return 443;
+        }
+
+        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override
+        {
+            assert(clientObserverFactory != nullptr);
+            auto httpClientPtr = InvokeEmplace(infra::MakeIndexSequence<sizeof...(Args)>{});
+
+            clientObserverFactory->ConnectionEstablished([&httpClientPtr, &createdObserver](infra::SharedPtr<services::HttpClientObserver> observer) {
+                if (observer)
+                {
+                    createdObserver(httpClientPtr);
+                    httpClientPtr->Attach(observer);
+                }
+            });
+
+            clientObserverFactory = nullptr;
+        }
+
+        virtual void ConnectionFailed(ConnectFailReason reason) override
+        {
+            assert(clientObserverFactory != nullptr);
+
+            switch (reason)
+            {
+            case ConnectFailReason::refused:
+                clientObserverFactory->ConnectionFailed(services::HttpClientObserverFactory::ConnectFailReason::refused);
+                break;
+            case ConnectFailReason::connectionAllocationFailed:
+                clientObserverFactory->ConnectionFailed(services::HttpClientObserverFactory::ConnectFailReason::connectionAllocationFailed);
+                break;
+            default:
+                std::abort();
+            }
+
+            clientObserverFactory = nullptr;
+            TryConnectWaiting();
+        }
+
+        // Implementation of HttpClientConnector
+        virtual void Connect(services::HttpClientObserverFactory& factory) override
+        {
+            waitingClientObserverFactories.push_back(factory);
+            TryConnectWaiting();
+        }
+
+        virtual void CancelConnect(services::HttpClientObserverFactory& factory) override
+        {
+            if (clientObserverFactory == &factory)
+            {
+                connectionFactory.CancelConnect(*this);
+                clientObserverFactory = nullptr;
+            }
+            else
+                waitingClientObserverFactories.erase(factory);
+
+            TryConnectWaiting();
+        }
+
+    private:
+        void TryConnectWaiting();
+
+    private:
+        template<std::size_t... I>
+        infra::SharedPtr<HttpClient> InvokeEmplace(infra::IndexSequence<I...>)
+        {
+            ipAddress.Storage().clear();
+            if (address.Is<services::IPv4Address>())
+            {
+                auto& addr = address.Get<services::IPv4Address>();
+                ipAddress << addr[0] << '.' << addr[1] << '.' << addr[2] << '.' << addr[3];
+            }
+            else
+            {
+                auto& addr = address.Get<services::IPv6Address>();
+                ipAddress << addr[0] << '.' << addr[1] << '.' << addr[2] << '.' << addr[3] << '.' << addr[4] << '.' << addr[5] << '.' << addr[6] << '.' << addr[7];
+            }
+
+            return client.Emplace(ipAddress.Storage(), std::get<I>(args)...);
+        }
+
+    private:
+        services::IPAddress address;
+        infra::StringOutputStream::WithStorage<31> ipAddress;
+        services::ConnectionFactory& connectionFactory;
+        infra::NotifyingSharedOptional<HttpClient> client;
+        std::tuple<Args...> args;
+
+        services::HttpClientObserverFactory* clientObserverFactory = nullptr;
+        infra::IntrusiveList<services::HttpClientObserverFactory> waitingClientObserverFactories;
+    };
+
+    template<class HttpClient, class... Args>
+    void HttpClientConnectorImpl<HttpClient, Args...>::TryConnectWaiting()
+    {
+        if (clientObserverFactory == nullptr && client.Allocatable() && !waitingClientObserverFactories.empty())
+        {
+            clientObserverFactory = &waitingClientObserverFactories.front();
+            waitingClientObserverFactories.pop_front();
+            connectionFactory.Connect(*this);
+        }
+    }
+
+    template<class HttpClient = HttpClientImpl, class... Args>
+    class HttpClientConnectorWithNameResolverImpl
         : public HttpClientConnector
         , public ClientConnectionObserverFactoryWithNameResolver
     {
     public:
-        HttpClientConnectorImpl(ConnectionFactoryWithNameResolver& connectionFactory, Args&&... args);
+        HttpClientConnectorWithNameResolverImpl(ConnectionFactoryWithNameResolver& connectionFactory, Args&&... args);
 
         // Implementation of ClientConnectionObserverFactoryWithNameResolver
         virtual infra::BoundedConstString Hostname() const override;
@@ -200,33 +325,33 @@ namespace services
     ////    Implementation    ////
 
     template<class HttpClient, class... Args>
-    HttpClientConnectorImpl<HttpClient, Args...>::HttpClientConnectorImpl(services::ConnectionFactoryWithNameResolver& connectionFactory, Args&&... args)
+    HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::HttpClientConnectorWithNameResolverImpl(services::ConnectionFactoryWithNameResolver& connectionFactory, Args&&... args)
         : connectionFactory(connectionFactory)
         , client([this]() { TryConnectWaiting(); })
         , args(std::forward<Args>(args)...)
     {}
 
     template<class HttpClient, class... Args>
-    infra::BoundedConstString HttpClientConnectorImpl<HttpClient, Args...>::Hostname() const
+    infra::BoundedConstString HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::Hostname() const
     {
         return clientObserverFactory->Hostname();
     }
 
     template<class HttpClient, class... Args>
-    uint16_t HttpClientConnectorImpl<HttpClient, Args...>::Port() const
+    uint16_t HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::Port() const
     {
         return clientObserverFactory->Port();
     }
 
     template<class HttpClient, class... Args>
     template<std::size_t... I>
-    infra::SharedPtr<HttpClient> HttpClientConnectorImpl<HttpClient, Args...>::InvokeEmplace(infra::IndexSequence<I...>)
+    infra::SharedPtr<HttpClient> HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::InvokeEmplace(infra::IndexSequence<I...>)
     {
         return client.Emplace(Hostname(), std::get<I>(args)...);
     }
 
     template<class HttpClient, class... Args>
-    void HttpClientConnectorImpl<HttpClient, Args...>::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
+    void HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
     {
         assert(clientObserverFactory != nullptr);
         auto httpClientPtr = InvokeEmplace(infra::MakeIndexSequence<sizeof...(Args)>{});
@@ -244,7 +369,7 @@ namespace services
     }
 
     template<class HttpClient, class... Args>
-    void HttpClientConnectorImpl<HttpClient, Args...>::ConnectionFailed(ConnectFailReason reason)
+    void HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::ConnectionFailed(ConnectFailReason reason)
     {
         assert(clientObserverFactory != nullptr);
 
@@ -268,14 +393,14 @@ namespace services
     }
 
     template<class HttpClient, class... Args>
-    void HttpClientConnectorImpl<HttpClient, Args...>::Connect(HttpClientObserverFactory& factory)
+    void HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::Connect(HttpClientObserverFactory& factory)
     {
         waitingClientObserverFactories.push_back(factory);
         TryConnectWaiting();
     }
 
     template<class HttpClient, class... Args>
-    void HttpClientConnectorImpl<HttpClient, Args...>::CancelConnect(HttpClientObserverFactory& factory)
+    void HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::CancelConnect(HttpClientObserverFactory& factory)
     {
         if (clientObserverFactory == &factory)
         {
@@ -289,7 +414,7 @@ namespace services
     }
 
     template<class HttpClient, class... Args>
-    void HttpClientConnectorImpl<HttpClient, Args...>::TryConnectWaiting()
+    void HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::TryConnectWaiting()
     {
         if (clientObserverFactory == nullptr && client.Allocatable() && !waitingClientObserverFactories.empty())
         {
