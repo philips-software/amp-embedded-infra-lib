@@ -152,6 +152,7 @@ namespace services
 
     infra::JsonArray CucumberWireProtocolFormatter::FormatStepArguments(const infra::BoundedString& nameToMatch)
     {
+        stepMatchArgumentsBuffer.clear();
         {
             infra::JsonArrayFormatter::WithStringStream arguments(infra::inPlace, stepMatchArgumentsBuffer);
             uint32_t strArgPos = controller.storageMatch.step->StepName().find("\'%s\'", 0);

@@ -35,12 +35,19 @@ namespace services
                 iterator++;
     }
 
-    bool CucumberStep::ContainsTableArgument(const infra::BoundedString& fieldName)
+    bool CucumberStep::ContainsTableArgument(infra::BoundedConstString fieldName)
     {
         return GetTableArgument(fieldName) != infra::none;
     }
 
-    infra::Optional<infra::JsonString> CucumberStep::GetTableArgument(const infra::BoundedString& fieldName)
+    infra::JsonArray CucumberStep::GetTable()
+    {
+        infra::JsonArrayIterator argumentIterator(invokeArguments->begin());
+        SkipOverStringArguments(argumentIterator);
+        return argumentIterator->Get<infra::JsonArray>();
+    }
+
+    infra::Optional<infra::JsonString> CucumberStep::GetTableArgument(infra::BoundedConstString fieldName)
     {
         infra::JsonArrayIterator argumentIterator(invokeArguments->begin());
         SkipOverStringArguments(argumentIterator);
@@ -83,6 +90,21 @@ namespace services
             intArgPos = StepName().find("%d", ++intArgPos);
         }
         return nrArguments;
+    }
+
+    uint16_t CucumberStep::NrFields() const
+    {
+        uint16_t nrFields = 0;
+        infra::JsonArrayIterator argumentIterator(invokeArguments->begin());
+        SkipOverStringArguments(argumentIterator);
+
+        if (argumentIterator != invokeArguments->end())
+        {
+            nrFields++;
+            for (infra::JsonArrayIterator rowIterator = argumentIterator->Get<infra::JsonArray>().begin(); rowIterator != invokeArguments->end(); rowIterator++)
+                nrFields++;
+        }
+        return nrFields;
     }
 
     infra::Optional<infra::JsonString> CucumberStep::GetStringArgument(uint8_t argumentNumber)
