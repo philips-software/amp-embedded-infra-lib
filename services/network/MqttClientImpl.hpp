@@ -64,7 +64,7 @@ namespace services
         public:
             MqttFormatter(infra::DataOutputStream stream);
 
-            void MessageConnect(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password);
+            void MessageConnect(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password, infra::Duration keepAlive);
             static std::size_t MessageSizeConnect(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password);
             void MessagePublish(const MqttClientObserver& message, uint16_t packetIdentifier);
             static std::size_t MessageSizePublish(const MqttClientObserver& message);
