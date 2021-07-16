@@ -10,6 +10,8 @@ namespace infra
     class Aligned
     {
     public:
+        Aligned() = default;
+
         explicit Aligned(Type value)
         {
             Copy(ReinterpretCastMemoryRange<As>(MakeRange(&value, &value + 1)), MakeRange(this->value));
