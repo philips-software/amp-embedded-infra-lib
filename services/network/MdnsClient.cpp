@@ -10,27 +10,27 @@ namespace services
         const uint16_t mdnsPort = 5353;
         const IPv4Address mdnsMulticastAddressIpv4{ 224, 0, 0, 251 };
         const IPv6Address mdnsMulticastAddressIpv6{ 0xff02, 0, 0, 0, 0, 0, 0, 0xfb };
+    }
 
-        void CreateDnsHostname(infra::BoundedConstString instance, infra::BoundedConstString serviceName, infra::BoundedConstString type, infra::BoundedString& out)
-        {
-            infra::StringOutputStream stream(out);
+    void CreateMdnsHostname(infra::BoundedConstString instance, infra::BoundedConstString serviceName, infra::BoundedConstString type, infra::BoundedString& out)
+    {
+        infra::StringOutputStream stream(out);
 
-            auto start = stream.SaveMarker();
-            auto AddPartToStream = [&stream, &start](infra::BoundedConstString part)
+        auto start = stream.SaveMarker();
+        auto AddPartToStream = [&stream, &start](infra::BoundedConstString part)
+            {
+                if (!part.empty())
                 {
-                    if (!part.empty())
-                    {
-                        if (stream.ProcessedBytesSince(start) != 0)
-                            stream << ".";
-                        stream << part;
-                    }
-                };
+                    if (stream.ProcessedBytesSince(start) != 0)
+                        stream << ".";
+                    stream << part;
+                }
+            };
 
-            AddPartToStream(instance);
-            AddPartToStream(serviceName);
-            AddPartToStream(type);
-            AddPartToStream("local");
-        }
+        AddPartToStream(instance);
+        AddPartToStream(serviceName);
+        AddPartToStream(type);
+        AddPartToStream("local");
     }
 
     MdnsQueryImpl::MdnsQueryImpl(MdnsClient& mdnsClient, services::DnsType dnsType, infra::BoundedConstString instance, infra::BoundedConstString serviceName, infra::BoundedConstString type, infra::Function<void(infra::ConstByteRange data)> queryHit)
@@ -39,7 +39,7 @@ namespace services
         , queryHit(queryHit)
     {
         if (dnsType == services::DnsType::dnsTypeSrv || dnsType == services::DnsType::dnsTypeTxt)
-            CreateDnsHostname(instance, serviceName, type, dnsHostname);
+            CreateMdnsHostname(instance, serviceName, type, dnsHostname);
         else
             std::abort();
 
@@ -52,7 +52,7 @@ namespace services
         , queryHit(queryHit)
     {
         if (dnsType == services::DnsType::dnsTypePtr)
-            CreateDnsHostname("", serviceName, type, dnsHostname);
+            CreateMdnsHostname("", serviceName, type, dnsHostname);
         else
             std::abort();
         
@@ -65,7 +65,7 @@ namespace services
         , queryHit(queryHit)
     {
         if (dnsType == services::DnsType::dnsTypeA || dnsType == services::DnsType::dnsTypeAAAA)
-            CreateDnsHostname(instance, "", "", dnsHostname);
+            CreateMdnsHostname(instance, "", "", dnsHostname);
         else
             std::abort();
         
@@ -153,7 +153,10 @@ namespace services
 
     void MdnsClient::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        std::abort();
+        if (activeMdnsQuery)
+            activeMdnsQuery->SendStreamAvailable(std::move(writer));
+        else
+            std::abort();
     }
 
     infra::detail::IntrusiveListIterator<MdnsQuery> MdnsClient::FindNextWaitingQuery()
@@ -218,27 +221,15 @@ namespace services
 
     MdnsClient::ActiveMdnsQuery::ActiveMdnsQuery(MdnsClient& mdnsClient, DatagramFactory& datagramFactory, Multicast& multicast, MdnsQuery& query)
         : mdnsClient(mdnsClient)
-        , datagramExchange(datagramFactory.Listen(*this, mdnsPort, IPVersions::ipv4))
-        , multicast(multicast)
         , query(query)
     {
-        multicast.JoinMulticastGroup(datagramExchange, mdnsMulticastAddressIpv4);
-
         SendQuery();
-    }
-
-    MdnsClient::ActiveMdnsQuery::~ActiveMdnsQuery()
-    {
-        multicast.LeaveMulticastGroup(datagramExchange, mdnsMulticastAddressIpv4);
     }
 
     bool MdnsClient::ActiveMdnsQuery::IsCurrentQuery(MdnsQuery& query)
     {
         return &this->query == &query;
     }
-
-    void MdnsClient::ActiveMdnsQuery::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from)
-    {}
 
     void MdnsClient::ActiveMdnsQuery::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
@@ -275,7 +266,7 @@ namespace services
 
         std::size_t querySize = sizeof(DnsRecordHeader) + hostnameSize + hostnameCopy.size() + 1 + sizeof(DnsQuestionFooter);
 
-        datagramExchange->RequestSendStream(querySize, MakeUdpSocket(mdnsMulticastAddressIpv4, mdnsPort));
+        mdnsClient.datagramExchange->RequestSendStream(querySize, MakeUdpSocket(mdnsMulticastAddressIpv4, mdnsPort));
     }
 
     MdnsClient::AnswerParser::AnswerParser(MdnsClient& client, infra::StreamReaderWithRewinding& reader)

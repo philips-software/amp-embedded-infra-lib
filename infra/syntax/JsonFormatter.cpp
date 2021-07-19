@@ -175,6 +175,14 @@ namespace infra
         *stream << '"';
     }
 
+    void JsonObjectFormatter::Add(infra::BoundedConstString tagName, infra::BoundedConstString tag)
+    {
+        InsertSeparation();
+        *stream << '"' << tagName << R"(":")";
+        InsertEscapedTag(*stream, tag);
+        *stream << '"';
+    }
+
     void JsonObjectFormatter::Add(JsonString tagName, JsonString tag)
     {
         InsertSeparation();

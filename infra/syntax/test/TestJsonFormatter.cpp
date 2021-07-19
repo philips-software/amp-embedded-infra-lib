@@ -70,12 +70,14 @@ TEST(JsonObjectFormatter, add_BoundedConstString)
     infra::BoundedString::WithStorage<64> string;
 
     {
-        infra::BoundedConstString s("test");
+        infra::BoundedConstString value("test");
+        infra::BoundedConstString key("tag");
         infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
-        formatter.Add("tag", s);
+        formatter.Add("tag", value);
+        formatter.Add(key, value);
     }
 
-    EXPECT_EQ(R"({ "tag":"test" })", string);
+    EXPECT_EQ(R"({ "tag":"test", "tag":"test" })", string);
 }
 
 TEST(JsonObjectFormatter, add_milli_float)

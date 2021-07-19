@@ -9,6 +9,8 @@
 
 namespace services
 {
+    void CreateMdnsHostname(infra::BoundedConstString instance, infra::BoundedConstString serviceName, infra::BoundedConstString type, infra::BoundedString& out);
+
     class MdnsQuery
         : public infra::IntrusiveList<MdnsQuery>::NodeType
     {
@@ -80,25 +82,19 @@ namespace services
         
     private:
         class ActiveMdnsQuery
-            : private DatagramExchangeObserver
         {
         public:
             ActiveMdnsQuery(MdnsClient& mdnsClient, DatagramFactory& datagramFactory, Multicast& multicast, MdnsQuery& query);
-            ~ActiveMdnsQuery();
 
             bool IsCurrentQuery(MdnsQuery& query);
 
+            void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer);
         private:
-            // Implementation of DatagramExchangeObserver
-            virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
-            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
             void SendQuery();
 
         private:
             MdnsClient& mdnsClient;
-            infra::SharedPtr<DatagramExchange> datagramExchange;
-            Multicast& multicast;
             MdnsQuery& query;
         };
 

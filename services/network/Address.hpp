@@ -97,6 +97,7 @@ namespace infra
 {
     infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::IPv4Address& address);
     infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::IPv6Address& address);
+    infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::IPv6AddressNetworkOrder& address);
     infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::IPAddress& address);
 }
 
