@@ -8,7 +8,7 @@ namespace services
         : stream(stream)
     {}
 
-    void MqttClientImpl::MqttFormatter::MessageConnect(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password)
+    void MqttClientImpl::MqttFormatter::MessageConnect(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password, infra::Duration keepAlive)
     {
         PacketConnect packetHeader{};
         std::size_t packetSize = sizeof(packetHeader) + EncodedLength(clientId);
@@ -23,6 +23,8 @@ namespace services
             packetHeader.connectFlags |= 0x40;
             packetSize += EncodedLength(password);
         }
+
+        packetHeader.keepAlive = static_cast<uint16_t>(std::chrono::duration_cast<std::chrono::seconds>(keepAlive).count());
 
         Header(PacketType::packetTypeConnect, packetSize, 0);
         stream << packetHeader;
@@ -298,7 +300,7 @@ namespace services
     {
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
         MqttFormatter formatter(stream);
-        formatter.MessageConnect(clientId, username, password);
+        formatter.MessageConnect(clientId, username, password, clientConnection.pingInterval);
     }
 
     void MqttClientImpl::StateConnecting::HandleDataReceived()

@@ -3,7 +3,8 @@
 
 namespace services
 {
-    FlashRegion::FlashRegion(hal::Flash& master, uint32_t startSector, uint32_t numberOfSectors)
+    template<class T>
+    FlashRegionBase<T>::FlashRegionBase(hal::FlashBase<T>& master, T startSector, T numberOfSectors)
         : master(master)
         , startSector(startSector)
         , numberOfSectors(numberOfSectors)
@@ -12,41 +13,51 @@ namespace services
         really_assert(startSector + numberOfSectors <= master.NumberOfSectors());
     }
 
-    uint32_t FlashRegion::NumberOfSectors() const
+    template<class T>
+    T FlashRegionBase<T>::NumberOfSectors() const
     {
         return numberOfSectors;
     }
 
-    uint32_t FlashRegion::SizeOfSector(uint32_t sectorIndex) const
+    template<class T>
+    uint32_t FlashRegionBase<T>::SizeOfSector(T sectorIndex) const
     {
         return master.SizeOfSector(startSector + sectorIndex);
     }
 
-    uint32_t FlashRegion::SectorOfAddress(uint32_t address) const
+    template<class T>
+    T FlashRegionBase<T>::SectorOfAddress(T address) const
     {
         return master.SectorOfAddress(masterAddressOfStartSector + address) - startSector;
     }
 
-    uint32_t FlashRegion::AddressOfSector(uint32_t sectorIndex) const
+    template<class T>
+    T FlashRegionBase<T>::AddressOfSector(T sectorIndex) const
     {
         return master.AddressOfSector(sectorIndex + startSector) - masterAddressOfStartSector;
     }
 
-    void FlashRegion::WriteBuffer(infra::ConstByteRange buffer, uint32_t address, infra::Function<void()> onDone)
+    template<class T>
+    void FlashRegionBase<T>::WriteBuffer(infra::ConstByteRange buffer, T address, infra::Function<void()> onDone)
     {
         really_assert(SectorOfAddress(address) <= numberOfSectors && SectorOfAddress(address + buffer.size()) <= numberOfSectors);
         master.WriteBuffer(buffer, address + masterAddressOfStartSector, onDone);
     }
 
-    void FlashRegion::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
+    template<class T>
+    void FlashRegionBase<T>::ReadBuffer(infra::ByteRange buffer, T address, infra::Function<void()> onDone)
     {
         really_assert(SectorOfAddress(address) <= numberOfSectors && SectorOfAddress(address + buffer.size()) <= numberOfSectors);
         master.ReadBuffer(buffer, address + masterAddressOfStartSector, onDone);
     }
 
-    void FlashRegion::EraseSectors(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone)
+    template<class T>
+    void FlashRegionBase<T>::EraseSectors(T beginIndex, T endIndex, infra::Function<void()> onDone)
     {
         really_assert(beginIndex <= numberOfSectors && endIndex <= numberOfSectors);
         master.EraseSectors(beginIndex + startSector, endIndex + startSector, onDone);
     }
+
+    template class FlashRegionBase<uint32_t>;
+    template class FlashRegionBase<uint64_t>;
 }

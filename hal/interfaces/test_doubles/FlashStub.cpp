@@ -3,21 +3,25 @@
 
 namespace hal
 {
-    FlashStub::FlashStub(uint32_t numberOfSectors, uint32_t sizeOfEachSector)
-        : sectors(numberOfSectors, std::vector<uint8_t>(sizeOfEachSector, 0xff))
+    template<class T>
+    FlashStubBase<T>::FlashStubBase(T numberOfSectors, uint32_t sizeOfEachSector)
+        : sectors(static_cast<std::size_t>(numberOfSectors), std::vector<uint8_t>(sizeOfEachSector, 0xff))
     {}
 
-    uint32_t FlashStub::NumberOfSectors() const
+    template<class T>
+    T FlashStubBase<T>::NumberOfSectors() const
     {
         return sectors.size();
     }
 
-    uint32_t FlashStub::SizeOfSector(uint32_t sectorIndex) const
+    template<class T>
+    uint32_t FlashStubBase<T>::SizeOfSector(T sectorIndex) const
     {
-        return sectors[sectorIndex].size();
+        return sectors[static_cast<std::size_t>(sectorIndex)].size();
     }
 
-    uint32_t FlashStub::SectorOfAddress(uint32_t address) const
+    template<class T>
+    T FlashStubBase<T>::SectorOfAddress(T address) const
     {
         for (std::size_t index = 0; index != sectors.size(); ++index)
         {
@@ -31,7 +35,8 @@ namespace hal
         return sectors.size();
     }
 
-    uint32_t FlashStub::AddressOfSector(uint32_t sectorIndex) const
+    template<class T>
+    T FlashStubBase<T>::AddressOfSector(T sectorIndex) const
     {
         assert(sectorIndex <= sectors.size());
 
@@ -43,7 +48,8 @@ namespace hal
         return result;
     }
 
-    void FlashStub::WriteBuffer(infra::ConstByteRange buffer, uint32_t address, infra::Function<void()> onDone)
+    template<class T>
+    void FlashStubBase<T>::WriteBuffer(infra::ConstByteRange buffer, T address, infra::Function<void()> onDone)
     {
         infra::EventDispatcher::Instance().Schedule(onDone);
 
@@ -55,37 +61,42 @@ namespace hal
 
         while (!buffer.empty())
         {
-            std::size_t size = std::min<uint32_t>(buffer.size(), SizeOfSector(SectorOfAddress(address)) - AddressOffsetInSector(address));
+            std::size_t size = std::min<uint32_t>(buffer.size(), SizeOfSector(SectorOfAddress(address)) - static_cast<std::size_t>(this->AddressOffsetInSector(address)));
 
             for (std::size_t i = 0; i != size; ++i)
-                sectors[SectorOfAddress(address)][AddressOffsetInSector(address) + i] &= buffer[i];
+                sectors[static_cast<std::size_t>(SectorOfAddress(address))][static_cast<std::size_t>(this->AddressOffsetInSector(address) + i)] &= buffer[i];
 
             buffer.pop_front(size);
-            address = StartOfNextSector(address);
+            address = this->StartOfNextSector(address);
         }
     }
 
-    void FlashStub::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
+    template<class T>
+    void FlashStubBase<T>::ReadBuffer(infra::ByteRange buffer, T address, infra::Function<void()> onDone)
     {
         while (!buffer.empty())
         {
-            std::size_t size = std::min<uint32_t>(buffer.size(), SizeOfSector(SectorOfAddress(address)) - AddressOffsetInSector(address));
-            std::copy(sectors[SectorOfAddress(address)].begin() + AddressOffsetInSector(address), sectors[SectorOfAddress(address)].begin() + AddressOffsetInSector(address) + size, buffer.begin());
+            std::size_t size = std::min<uint32_t>(buffer.size(), SizeOfSector(SectorOfAddress(address)) - static_cast<std::size_t>(this->AddressOffsetInSector(address)));
+            std::copy(sectors[static_cast<std::size_t>(SectorOfAddress(address))].begin() + static_cast<std::size_t>(this->AddressOffsetInSector(address)), sectors[static_cast<std::size_t>(SectorOfAddress(address))].begin() + static_cast<std::size_t>(this->AddressOffsetInSector(address)) + size, buffer.begin());
 
             buffer.pop_front(size);
-            address = StartOfNextSectorCyclical(address);
+            address = this->StartOfNextSectorCyclical(address);
         }
 
         infra::EventDispatcher::Instance().Schedule(onDone);
     }
 
-    void FlashStub::EraseSectors(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone)
+    template<class T>
+    void FlashStubBase<T>::EraseSectors(T beginIndex, T endIndex, infra::Function<void()> onDone)
     {
-        for (uint32_t sectorIndex = beginIndex; sectorIndex != endIndex; ++sectorIndex)
-            std::fill(sectors[sectorIndex].begin(), sectors[sectorIndex].end(), 0xff);
+        for (T sectorIndex = beginIndex; sectorIndex != endIndex; ++sectorIndex)
+            std::fill(sectors[static_cast<std::size_t>(sectorIndex)].begin(), sectors[static_cast<std::size_t>(sectorIndex)].end(), 0xff);
 
         onEraseDone = onDone;
         if (!delaySignalEraseDone)
             infra::EventDispatcher::Instance().Schedule(onDone);
     }
+
+    template class FlashStubBase<uint32_t>;
+    template class FlashStubBase<uint64_t>;
 }
