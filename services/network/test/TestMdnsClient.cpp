@@ -256,6 +256,11 @@ public:
         queryPtr.Emplace(client, services::DnsType::dnsTypePtr, "_service", "_protocol", callback);
     }
 
+    void QueryPtr(infra::Function<void(infra::ConstByteRange data)>& callback, infra::Function<void(infra::BoundedString hostname, services::DnsRecordPayload payload, infra::ConstByteRange data)>& additionalRecordsCallback)
+    {
+        queryPtr.Emplace(client, services::DnsType::dnsTypePtr, "_service", "_protocol", callback, additionalRecordsCallback);
+    }
+
     void QueryTxt(infra::Function<void(infra::ConstByteRange data)>& callback)
     {
         queryTxt.Emplace(client, services::DnsType::dnsTypeTxt, "_instance", "_service", "_protocol", callback);
@@ -264,11 +269,6 @@ public:
     void QuerySrv(infra::Function<void(infra::ConstByteRange data)>& callback)
     {
         querySrv.Emplace(client, services::DnsType::dnsTypeSrv, "_instance", "_service", "_protocol", callback);
-    }
-
-    void DestructQueryPtr()
-    {
-        queryPtr = infra::none;
     }
 
     void ConstructAllQueries()
@@ -289,6 +289,11 @@ public:
         QuerySrv(expectedQuerySrvCallback);
     }
 
+    void ConstructPtrQueryWithExpectedCallbackAndAdditionalRecordsCallback()
+    {
+        QueryPtr(expectedQueryPtrCallback, expectedAdditionalRecordsCallbackPtr);
+    }
+
     void DestructAllQueries()
     {
         queryA = infra::none;
@@ -296,6 +301,11 @@ public:
         queryPtr = infra::none;
         queryTxt = infra::none;
         querySrv = infra::none;
+    }
+
+    void DestructQueryPtr()
+    {
+        queryPtr = infra::none;
     }
 
     testing::StrictMock<services::MulticastMock> multicast;
@@ -320,6 +330,36 @@ public:
     infra::Function<void(infra::ConstByteRange data)> expectedQueryPtrCallback{ [&](infra::ConstByteRange data) { callback.callback(services::DnsType::dnsTypePtr); EXPECT_EQ(data, PtrAnswer()); } };
     infra::Function<void(infra::ConstByteRange data)> expectedQueryTxtCallback{ [&](infra::ConstByteRange data) { callback.callback(services::DnsType::dnsTypeTxt); EXPECT_EQ(data, TxtAnswer()); } };
     infra::Function<void(infra::ConstByteRange data)> expectedQuerySrvCallback{ [&](infra::ConstByteRange data) { callback.callback(services::DnsType::dnsTypeSrv); EXPECT_EQ(data, SrvAnswer()); } };
+
+    infra::MockCallback<void(services::DnsType dnsType)> additionalRecordsCallback; 
+    infra::Function<void(infra::BoundedString hostname, services::DnsRecordPayload payload, infra::ConstByteRange data)> expectedAdditionalRecordsCallbackPtr
+    { 
+        [&](infra::BoundedString hostname, services::DnsRecordPayload payload, infra::ConstByteRange data)
+        {
+            // additionalRecordsCallback.callback(payload.type);
+
+            if (payload.type == services::DnsType::dnsTypeA)
+            {
+                EXPECT_EQ(data, AAnswer());
+                additionalRecordsCallback.callback(services::DnsType::dnsTypeA);
+            }
+            if (payload.type == services::DnsType::dnsTypeAAAA)
+            {
+                EXPECT_EQ(data, AaaaAnswer());
+                additionalRecordsCallback.callback(services::DnsType::dnsTypeAAAA);
+            }
+            if (payload.type == services::DnsType::dnsTypeTxt)
+            {
+                EXPECT_EQ(data, TxtAnswer());
+                additionalRecordsCallback.callback(services::DnsType::dnsTypeTxt);
+            }
+            if (payload.type == services::DnsType::dnsTypeSrv)
+            {
+                EXPECT_EQ(data, SrvAnswer());
+                additionalRecordsCallback.callback(services::DnsType::dnsTypeSrv);
+            }
+        }
+    };
 
     infra::Optional<services::MdnsQueryImpl> queryA;
     infra::Optional<services::MdnsQueryImpl> queryAaaa;
@@ -510,21 +550,22 @@ TEST_F(MdnsClientTest, receiving_matching_answer_to_active_query_results_in_data
     SrvAnswerReceived();
 }
 
-TEST_F(MdnsClientTest, receiving_matching_additional_answers_to_passive_query_results_in_data)
+TEST_F(MdnsClientTest, receiving_additional_records_to_passive_query_results_in_data)
 {
-    ConstructAllQueriesWithExpectedCallback();
+    ConstructPtrQueryWithExpectedCallbackAndAdditionalRecordsCallback();
 
-    EXPECT_CALL(callback, callback(services::DnsType::dnsTypeA));
-    EXPECT_CALL(callback, callback(services::DnsType::dnsTypeAAAA));
+    
     EXPECT_CALL(callback, callback(services::DnsType::dnsTypePtr));
-    EXPECT_CALL(callback, callback(services::DnsType::dnsTypeTxt));
-    EXPECT_CALL(callback, callback(services::DnsType::dnsTypeSrv));
+    EXPECT_CALL(additionalRecordsCallback, callback(services::DnsType::dnsTypeA));
+    EXPECT_CALL(additionalRecordsCallback, callback(services::DnsType::dnsTypeAAAA));
+    EXPECT_CALL(additionalRecordsCallback, callback(services::DnsType::dnsTypeTxt));
+    EXPECT_CALL(additionalRecordsCallback, callback(services::DnsType::dnsTypeSrv));
     PtrAnswerReceivedWithAdditionalRecords();
 }
 
-TEST_F(MdnsClientTest, receiving_matching_additional_answers_to_active_query_results_in_data)
+TEST_F(MdnsClientTest, receiving_additional_records_to_active_query_results_in_data)
 {
-    ConstructAllQueriesWithExpectedCallback();
+    ConstructPtrQueryWithExpectedCallbackAndAdditionalRecordsCallback();
 
     ExpectActiveQueryStarted();
     queryPtr->Ask();
@@ -532,10 +573,40 @@ TEST_F(MdnsClientTest, receiving_matching_additional_answers_to_active_query_res
     auto ptrQuestion = PtrQuestion();
     SendStreamAvailableAndExpectQuestion(ptrQuestion);
 
-    EXPECT_CALL(callback, callback(services::DnsType::dnsTypeA));
-    EXPECT_CALL(callback, callback(services::DnsType::dnsTypeAAAA));
     EXPECT_CALL(callback, callback(services::DnsType::dnsTypePtr));
-    EXPECT_CALL(callback, callback(services::DnsType::dnsTypeTxt));
-    EXPECT_CALL(callback, callback(services::DnsType::dnsTypeSrv));
+    EXPECT_CALL(additionalRecordsCallback, callback(services::DnsType::dnsTypeA));
+    EXPECT_CALL(additionalRecordsCallback, callback(services::DnsType::dnsTypeAAAA));
+    EXPECT_CALL(additionalRecordsCallback, callback(services::DnsType::dnsTypeTxt));
+    EXPECT_CALL(additionalRecordsCallback, callback(services::DnsType::dnsTypeSrv));
     PtrAnswerReceivedWithAdditionalRecords();
 }
+
+// TEST_F(MdnsClientTest, receiving_additional_records_to_passive_query_results_in_data)
+// {
+//     ConstructAllQueriesWithExpectedCallback();
+
+//     EXPECT_CALL(callback, callback(services::DnsType::dnsTypeA));
+//     EXPECT_CALL(callback, callback(services::DnsType::dnsTypeAAAA));
+//     EXPECT_CALL(callback, callback(services::DnsType::dnsTypePtr));
+//     EXPECT_CALL(callback, callback(services::DnsType::dnsTypeTxt));
+//     EXPECT_CALL(callback, callback(services::DnsType::dnsTypeSrv));
+//     PtrAnswerReceivedWithAdditionalRecords();
+// }
+
+// TEST_F(MdnsClientTest, receiving_additional_records_to_active_query_results_in_data)
+// {
+//     ConstructAllQueriesWithExpectedCallback();
+
+//     ExpectActiveQueryStarted();
+//     queryPtr->Ask();
+
+//     auto ptrQuestion = PtrQuestion();
+//     SendStreamAvailableAndExpectQuestion(ptrQuestion);
+
+//     EXPECT_CALL(callback, callback(services::DnsType::dnsTypeA));
+//     EXPECT_CALL(callback, callback(services::DnsType::dnsTypeAAAA));
+//     EXPECT_CALL(callback, callback(services::DnsType::dnsTypePtr));
+//     EXPECT_CALL(callback, callback(services::DnsType::dnsTypeTxt));
+//     EXPECT_CALL(callback, callback(services::DnsType::dnsTypeSrv));
+//     PtrAnswerReceivedWithAdditionalRecords();
+// }

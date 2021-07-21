@@ -25,7 +25,9 @@ namespace services
         virtual services::DnsType DnsType() const = 0;
         virtual bool IsWaiting() const = 0;
         virtual void SetWaiting(bool waiting) = 0;
-        virtual void CheckQuery(infra::BoundedString& hostname, DnsRecordPayload& payload, infra::ConstByteRange data) = 0;
+        virtual void CheckAnswer(infra::BoundedString& hostname, DnsRecordPayload& payload, infra::ConstByteRange data) = 0;
+        virtual void CheckAdditionalRecord(infra::BoundedString& hostname, DnsRecordPayload& payload, infra::ConstByteRange data) = 0;
+        virtual void EndOfAnswerNotification() = 0;
     };
 
     class MdnsClient;
@@ -34,9 +36,12 @@ namespace services
         : public MdnsQuery
     {
     public:
-        MdnsQueryImpl(MdnsClient& mdnsClient, services::DnsType dnsType, infra::BoundedConstString instance, infra::BoundedConstString serviceName, infra::BoundedConstString type, infra::Function<void(infra::ConstByteRange data)> queryHit);
-        MdnsQueryImpl(MdnsClient& mdnsClient, services::DnsType dnsType, infra::BoundedConstString serviceName, infra::BoundedConstString type, infra::Function<void(infra::ConstByteRange data)> queryHit);
-        MdnsQueryImpl(MdnsClient& mdnsClient, services::DnsType dnsType, infra::BoundedConstString instance, infra::Function<void(infra::ConstByteRange data)> queryHit);
+        MdnsQueryImpl(MdnsClient& mdnsClient, services::DnsType dnsType, infra::BoundedConstString instance, infra::BoundedConstString serviceName, infra::BoundedConstString type, infra::Function<void(infra::ConstByteRange data)> queryHit, 
+            infra::Function<void(infra::BoundedString hostname, DnsRecordPayload payload, infra::ConstByteRange data)> queryAdditionalRecordHit = [](infra::BoundedString hostname, DnsRecordPayload payload, infra::ConstByteRange data){});
+        MdnsQueryImpl(MdnsClient& mdnsClient, services::DnsType dnsType, infra::BoundedConstString serviceName, infra::BoundedConstString type, infra::Function<void(infra::ConstByteRange data)> queryHit,
+            infra::Function<void(infra::BoundedString hostname, DnsRecordPayload payload, infra::ConstByteRange data)> queryAdditionalRecordHit = [](infra::BoundedString hostname, DnsRecordPayload payload, infra::ConstByteRange data){});
+        MdnsQueryImpl(MdnsClient& mdnsClient, services::DnsType dnsType, infra::BoundedConstString instance, infra::Function<void(infra::ConstByteRange data)> queryHit,
+            infra::Function<void(infra::BoundedString hostname, DnsRecordPayload payload, infra::ConstByteRange data)> queryAdditionalRecordHit = [](infra::BoundedString hostname, DnsRecordPayload payload, infra::ConstByteRange data){});
 
         ~MdnsQueryImpl();
 
@@ -45,7 +50,9 @@ namespace services
         virtual services::DnsType DnsType() const override;
         virtual bool IsWaiting() const override;
         virtual void SetWaiting(bool waiting) override;
-        virtual void CheckQuery(infra::BoundedString& hostname, DnsRecordPayload& payload, infra::ConstByteRange data) override;
+        virtual void CheckAnswer(infra::BoundedString& hostname, DnsRecordPayload& payload, infra::ConstByteRange data) override;
+        virtual void CheckAdditionalRecord(infra::BoundedString& hostname, DnsRecordPayload& payload, infra::ConstByteRange data) override;
+        virtual void EndOfAnswerNotification() override;
 
         void Ask();
 
@@ -54,6 +61,8 @@ namespace services
         services::DnsType dnsType;
         infra::BoundedString::WithStorage<253> dnsHostname;
         infra::Function<void(infra::ConstByteRange data)> queryHit;
+        infra::Function<void(infra::BoundedString hostname, DnsRecordPayload payload, infra::ConstByteRange data)> queryAdditionalRecordHit;
+        bool processingQuery = false;
         bool waiting = false;
     };
 
@@ -106,7 +115,7 @@ namespace services
         private:
             void Parse();
             bool IsValidAnswer() const;
-            void ReadAnswer();
+            void ReadRecord(bool isAnswer);
             void ReadHostname();
 
         private:
