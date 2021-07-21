@@ -70,7 +70,7 @@ namespace infra
 
             const VirtualMethodTable* virtualMethodTable = nullptr;
 
-            using StorageType = typename std::aligned_storage_t<ExtraSize, std::alignment_of_v<UTIL_FUNCTION_ALIGNMENT>>;
+            using StorageType = typename std::aligned_storage<ExtraSize, std::alignment_of<UTIL_FUNCTION_ALIGNMENT>::value>::type;
             StorageType data;
 
             template<class F>
@@ -80,9 +80,9 @@ namespace infra
             template<class F>
                 static void StaticCopyConstruct(const InvokerFunctionsType& from, InvokerFunctionsType& to);
             template<class F>
-                static const VirtualMethodTable* StaticVirtualMethodTable(typename std::enable_if_t<std::is_trivially_copy_constructible_v<F> && std::is_trivially_destructible_v<F>>* = nullptr);
+                static const VirtualMethodTable* StaticVirtualMethodTable(typename std::enable_if<std::is_trivially_copy_constructible<F>::value && std::is_trivially_destructible<F>::value>::type* = nullptr);
             template<class F>
-                static const VirtualMethodTable* StaticVirtualMethodTable(typename std::enable_if_t<!std::is_trivially_copy_constructible_v<F> || !std::is_trivially_destructible_v<F>>* = nullptr);
+                static const VirtualMethodTable* StaticVirtualMethodTable(typename std::enable_if<!std::is_trivially_copy_constructible<F>::value || !std::is_trivially_destructible<F>::value>::type* = nullptr);
             template<class F>
                 static void Construct(InvokerFunctionsType& invokerFunctions, F&& f);
         };
@@ -258,7 +258,7 @@ namespace infra
         template<std::size_t ExtraSize, class Result, class... Args>
         template<class F>
         const typename InvokerFunctions<Result(Args...), ExtraSize>::VirtualMethodTable*
-            InvokerFunctions<Result(Args...), ExtraSize>::StaticVirtualMethodTable(typename std::enable_if_t<std::is_trivially_copy_constructible_v<F> && std::is_trivially_destructible_v<F>>*)
+            InvokerFunctions<Result(Args...), ExtraSize>::StaticVirtualMethodTable(typename std::enable_if<std::is_trivially_copy_constructible<F>::value && std::is_trivially_destructible<F>::value>::type*)
         {
             static const VirtualMethodTable table = { &StaticInvoke<F>, nullptr, nullptr };
             return &table;
@@ -267,7 +267,7 @@ namespace infra
         template<std::size_t ExtraSize, class Result, class... Args>
         template<class F>
         const typename InvokerFunctions<Result(Args...), ExtraSize>::VirtualMethodTable*
-            InvokerFunctions<Result(Args...), ExtraSize>::StaticVirtualMethodTable(typename std::enable_if_t<!std::is_trivially_copy_constructible_v<F> || !std::is_trivially_destructible_v<F>>*)
+            InvokerFunctions<Result(Args...), ExtraSize>::StaticVirtualMethodTable(typename std::enable_if<!std::is_trivially_copy_constructible<F>::value || !std::is_trivially_destructible<F>::value>::type*)
         {
             static const VirtualMethodTable table = { &StaticInvoke<F>, &StaticDestruct<F>, &StaticCopyConstruct<F> };
             return &table;
@@ -278,7 +278,7 @@ namespace infra
         void InvokerFunctions<Result(Args...), ExtraSize>::Construct(InvokerFunctionsType& invokerFunctions, F&& f)
         {
             static_assert(sizeof(F) <= ExtraSize, "Not enough static storage availabe for construction of derived type");
-            static_assert(std::alignment_of_v<F> <= sizeof(UTIL_FUNCTION_ALIGNMENT), "Alignment of U is larger than alignment of this function");
+            static_assert(std::alignment_of<F>::value <= sizeof(UTIL_FUNCTION_ALIGNMENT), "Alignment of U is larger than alignment of this function");
 
             new (&invokerFunctions.data) F(std::forward<F>(f));
             std::memset(reinterpret_cast<char*>(&invokerFunctions.data) + sizeof(F), 0, ExtraSize - sizeof(F));
