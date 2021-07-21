@@ -131,7 +131,7 @@ public:
     testing::StrictMock<services::ConnectionFactoryWithNameResolverMock> connectionFactory;
     testing::StrictMock<services::HttpClientObserverFactoryMock> factory;
     testing::StrictMock<services::HttpClientObserverFactoryMock> factory2;
-    services::HttpClientConnectorImpl<> connector{ connectionFactory };
+    services::HttpClientConnectorWithNameResolverImpl<> connector{ connectionFactory };
     testing::StrictMock<services::ConnectionStubWithAckReceivedMock> connection;
     infra::SharedPtr<services::Connection> connectionPtr{ infra::UnOwnedSharedPtr(connection) };
     infra::SharedPtr<services::HttpClientObserver> clientPtr{ infra::UnOwnedSharedPtr(client) };

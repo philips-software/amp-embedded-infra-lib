@@ -7,7 +7,6 @@ macro(protocol_buffer_cpp input)
         ccola_get_filename_component_we(source_base ${input})
 
         get_filename_component(generated_dir_cpp "${CMAKE_CURRENT_BINARY_DIR}/generated/proto_cpp" ABSOLUTE)
-        ccola_create_directory_on_demand("${generated_dir_cpp}")
 
         set(protopath)
         foreach(dependency ${PROTOBUF_DEPENDENCIES})
@@ -41,6 +40,7 @@ macro(protocol_buffer_cpp input)
 
         add_custom_command(
             OUTPUT "${generated_dir_cpp}/${source_base}.pb.cc" "${generated_dir_cpp}/${source_base}.pb.h"
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${generated_dir_cpp}
             COMMAND ${protoc_compiler_binary} ${protopath} --error_format=${error_format} --cpp_out="${generated_dir_cpp}" ${absolute_input}
             DEPENDS "${absolute_input}"
         )
@@ -65,7 +65,6 @@ macro(protocol_buffer_csharp input)
         ccola_get_filename_component_we(source_base ${input})
 
         get_filename_component(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated" ABSOLUTE)
-        ccola_create_directory_on_demand("${generated_dir}")
 
         set(protopath)
         foreach(dependency ${PROTOBUF_DEPENDENCIES})
@@ -99,6 +98,7 @@ macro(protocol_buffer_csharp input)
 
         add_custom_command(
             OUTPUT "${generated_dir}/${source_base}.cs"
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${generated_dir}
             COMMAND ${protoc_compiler_binary} ${protopath} --error_format=${error_format} --csharp_out="${generated_dir}" ${absolute_input}
             DEPENDS "${absolute_input}"
         )
@@ -119,7 +119,6 @@ macro(protocol_buffer_java input)
 
         get_filename_component(java_dir "${CMAKE_CURRENT_BINARY_DIR}/generated" ABSOLUTE)
         get_filename_component(generated_dir "${java_dir}/com/philips/cococo/protobufEcho" ABSOLUTE)
-        ccola_create_directory_on_demand("${generated_dir}")
 
         set(protopath)
         foreach(dependency ${PROTOBUF_DEPENDENCIES})
@@ -153,6 +152,7 @@ macro(protocol_buffer_java input)
 
         add_custom_command(
             OUTPUT "${generated_dir}/${source_base}Proto.java"
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${generated_dir}
             COMMAND ${protoc_compiler_binary} ${protopath} --error_format=${error_format} --java_out="${java_dir}" ${absolute_input}
             DEPENDS "${absolute_input}"
         )

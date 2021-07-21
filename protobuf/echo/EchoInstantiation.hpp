@@ -2,6 +2,7 @@
 #define PROTOBUF_ECHO_INSTANTIATIONS
 
 #include "protobuf/echo/Echo.hpp"
+#include "infra/util/BoundedVector.hpp"
 #include "services/network/MessageCommunicationCobs.hpp"
 
 namespace main_
@@ -20,16 +21,28 @@ namespace main_
         services::EchoOnMessageCommunication echo{ windowed };
     };
 
-    template<std::size_t MessageSize>
-    struct EchoForwarder
+    template<std::size_t MessageSize, std::size_t MaxServices>
+    class EchoForwarder
     {
-        EchoForwarder(services::Echo& echoFrom, services::Echo& echoTo, uint32_t serviceId, uint32_t responseId)
-            : service(echoFrom, serviceId, echoTo)
-            , response(echoTo, responseId, echoFrom)
+    public:
+        EchoForwarder(services::Echo& echo, hal::SerialCommunication& serialCommunication)
+            : echo(echo)
+            , echoStack(serialCommunication)
         {}
 
-        services::ServiceForwarder::WithMaxMessageSize<MessageSize> service;
-        services::ServiceForwarder::WithMaxMessageSize<MessageSize> response;
+        void AddService(uint32_t serviceId, uint32_t responseId)
+        {
+            std::array<uint8_t, MessageSize> storageService;
+            std::array<uint8_t, MessageSize> storageResponse;
+            vector.emplace_back(storageService, echo, serviceId, echoStack);
+            vector.emplace_back(storageResponse, echoStack, responseId, echo);
+        }
+
+    private:
+        services::Echo& echo;
+        EchoOnSerialCommunication<MessageSize> echoStack;
+
+        infra::BoundedVector<services::ServiceForwarder>::WithMaxSize<MaxServices> vector;
     };
 }
 

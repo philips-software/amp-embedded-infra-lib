@@ -221,7 +221,7 @@ TEST_F(MqttClientTest, after_connected_connect_message_is_sent)
 
     ExecuteAllActions();
 
-    EXPECT_EQ((std::vector<uint8_t>{ 0x10, 0x28, 0x00, 0x04, 'M' , 'Q' , 'T' , 'T' , 0x04, 0xc2, 0x00, 0x00, 0x00, 0x08, 'c' , 'l' ,
+    EXPECT_EQ((std::vector<uint8_t>{ 0x10, 0x28, 0x00, 0x04, 'M', 'Q', 'T', 'T', 0x04, 0xc2, 0x00, 35, 0x00, 0x08, 'c' , 'l' ,
         'i' , 'e' , 'n' , 't' , 'I' , 'd' , 0x00, 0x08, 'u' , 's' , 'e' , 'r' , 'n' , 'a' , 'm' , 'e' ,
         0x00, 0x08, 'p' , 'a' , 's' , 's' , 'w' , 'o' , 'r' , 'd' }), connection.sentData);
 }

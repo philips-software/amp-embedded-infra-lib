@@ -126,7 +126,7 @@ namespace services
         CreateSuccessMessage(stream);
     }
 
-    void CucumberWireProtocolFormatter::AddStringValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, uint16_t& offset)
+    void CucumberWireProtocolFormatter::AddStringValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, int16_t& offset)
     {
         infra::JsonObjectFormatter subObject(formatter.SubObject());
         infra::StringOutputStream::WithStorage<32> stringStream;
@@ -134,11 +134,11 @@ namespace services
             stringStream << nameToMatch[argPos + offset + i];
         subObject.Add("val", stringStream.Storage());
         subObject.Add("pos", argPos + offset + 1);
-        offset += (uint16_t)stringStream.Storage().size() - 2;
+        offset += (int16_t)stringStream.Storage().size() - 2;
         argPos++;
     }
 
-    void CucumberWireProtocolFormatter::AddDigitValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, uint16_t& offset)
+    void CucumberWireProtocolFormatter::AddDigitValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, int16_t& offset)
     {
         infra::JsonObjectFormatter subObject(formatter.SubObject());
         infra::StringOutputStream::WithStorage<32> digitStream;
@@ -146,17 +146,18 @@ namespace services
             digitStream << nameToMatch[argPos + offset + i];
         subObject.Add("val", digitStream.Storage());
         subObject.Add("pos", argPos + offset);
-        offset += (uint16_t)digitStream.Storage().size() - 2;
+        offset += (int16_t)digitStream.Storage().size() - 2;
         argPos++;
     }
 
     infra::JsonArray CucumberWireProtocolFormatter::FormatStepArguments(const infra::BoundedString& nameToMatch)
     {
+        stepMatchArgumentsBuffer.clear();
         {
             infra::JsonArrayFormatter::WithStringStream arguments(infra::inPlace, stepMatchArgumentsBuffer);
             uint32_t strArgPos = controller.storageMatch.step->StepName().find("\'%s\'", 0);
             uint32_t intArgPos = controller.storageMatch.step->StepName().find("%d", 0);
-            uint16_t argOffset = 0;
+            int16_t argOffset = 0;
             while (strArgPos != infra::BoundedString::npos || intArgPos != infra::BoundedString::npos)
             {
                 if (strArgPos != infra::BoundedString::npos && strArgPos < intArgPos)

@@ -6,24 +6,85 @@
 
 namespace infra
 {
-    template<class As, class Type>
+    template<class As, class T>
     class Aligned
     {
     public:
-        explicit Aligned(Type value)
+        Aligned() = default;
+
+        explicit Aligned(T value)
         {
             Copy(ReinterpretCastMemoryRange<As>(MakeRange(&value, &value + 1)), MakeRange(this->value));
         }
 
-        explicit operator Type() const
+        T Value() const
         {
-            Type result;
-            Copy(MakeRange(value), ReinterpretCastMemoryRange<As>(MakeRange(&value, &value + 1)));
+            T result;
+            Copy(MakeRange(value), ReinterpretCastMemoryRange<As>(MakeRange(&result, &result + 1)));
             return result;
         }
 
+        operator T() const
+        {
+            return Value();
+        }
+
+        bool operator==(Aligned other) const
+        {
+            return value == other.value;
+        }
+
+        bool operator!=(Aligned other) const
+        {
+            return !(*this == other);
+        }
+
+        bool operator==(T other) const
+        {
+            return Value() == other;
+        }
+
+        bool operator!=(T other) const
+        {
+            return !(*this == other);
+        }
+
+        template<class U>
+        bool operator==(U other) const
+        {
+            return Value() == static_cast<T>(other);
+        }
+
+        template<class U>
+        bool operator!=(U other) const
+        {
+            return !(*this == other);
+        }
+
+        friend bool operator==(T x, Aligned y)
+        {
+            return y == x;
+        }
+
+        friend bool operator!=(T x, Aligned y)
+        {
+            return y != x;
+        }
+
+        template<class U>
+        friend bool operator==(U x, Aligned y)
+        {
+            return y == x;
+        }
+
+        template<class U>
+        friend bool operator!=(U x, Aligned y)
+        {
+            return y != x;
+        }
+
     private:
-        std::array<As, sizeof(Type) / sizeof(As)> value;
+        std::array<As, sizeof(T) / sizeof(As)> value;
     };
 }
 

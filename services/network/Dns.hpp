@@ -163,6 +163,8 @@ namespace services
     public:
         DnsHostnameInPartsHelper(infra::BoundedConstString part);
         DnsHostnameInPartsHelper(const std::array<infra::BoundedConstString, S - 1>& parts, infra::BoundedConstString part);
+        DnsHostnameInPartsHelper(const DnsHostnameInPartsHelper& other);
+        DnsHostnameInPartsHelper& operator=(const DnsHostnameInPartsHelper& other) = delete;
 
         virtual infra::BoundedConstString Current() const override;
         virtual void ConsumeCurrent() override;
@@ -218,6 +220,11 @@ namespace services
 
         this->parts.back() = part;
     }
+
+    template<std::size_t S>
+    DnsHostnameInPartsHelper<S>::DnsHostnameInPartsHelper(const DnsHostnameInPartsHelper& other)
+        : parts(other.parts)
+    {}
 
     template<std::size_t S>
     infra::BoundedConstString DnsHostnameInPartsHelper<S>::Current() const
