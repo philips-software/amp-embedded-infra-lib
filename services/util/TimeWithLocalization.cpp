@@ -4,7 +4,6 @@
 #include "infra/stream/StreamManipulators.hpp"
 #include "infra/timer/PartitionedTime.hpp"
 #include "infra/timer/TimerServiceManager.hpp"
-#include <ctime>
 
 namespace services
 {
@@ -37,14 +36,6 @@ namespace services
         return timeAsGmTime;
     }
 
-    void TimeWithLocalization::TimePointToHourMinSec(infra::TimePoint timePoint, uint8_t& hours, uint8_t& min, uint8_t& sec)
-    {
-        auto timeAsGmTime = GetTm(timePoint);
-        hours = static_cast<uint8_t>(timeAsGmTime->tm_hour);
-        min = static_cast<uint8_t>(timeAsGmTime->tm_min);
-        sec = static_cast<uint8_t>(timeAsGmTime->tm_sec);
-    }
-
     infra::Optional<infra::TimePoint> TimeWithLocalization::TimePointFromString(infra::BoundedConstString timePointString)
     {
         uint16_t year = 0;
@@ -61,22 +52,7 @@ namespace services
         if (stream.Failed())
             return infra::none;
 
-        struct std::tm tm = {};
-        tm.tm_year = year - 1900;
-        tm.tm_mon = month - 1;
-        tm.tm_mday = day + 1;   // Adjust 1 day forward for tests that use times close to 1970
-        tm.tm_hour = hour;
-        tm.tm_min = minute;
-        tm.tm_sec = second;
-
-        time_t nullTime = 100000;
-        std::tm* localUtcDiff = gmtime(&nullTime);
-        assert(localUtcDiff != nullptr);
-
-        std::time_t newTime = std::mktime(&tm) + nullTime - std::mktime(localUtcDiff);
-        newTime -= 24 * 3600;   // Adjust 1 day backward for tests that use times close to 1970
-
-        return infra::Optional<infra::TimePoint>(infra::inPlace, std::chrono::seconds(newTime));
+        return infra::MakeOptional(infra::PartitionedTime(year, month, day, hour, minute, second).ToTimePoint());
     }
 
     infra::Optional<infra::Duration> TimeWithLocalization::DurationFromString(infra::BoundedConstString durationString)
@@ -118,14 +94,6 @@ namespace services
             return infra::Optional<infra::BoundedConstString>(infra::inPlace, left.substr(left.find_first_of('-')));
 
         return infra::none;
-    }
-
-    uint8_t TimeWithLocalization::TimePointToCalenderDay(infra::TimePoint timePoint)
-    {
-        auto timeAsGmTime = GetTm(timePoint);
-        std::mktime(timeAsGmTime);
-
-        return static_cast<uint8_t>(timeAsGmTime->tm_wday);
     }
 
     infra::Duration TimeWithLocalization::GetOffsetFromLocalToUtc() const

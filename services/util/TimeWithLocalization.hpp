@@ -24,9 +24,6 @@ namespace services
         static infra::Optional<infra::Duration> DurationFromString(infra::BoundedConstString durationString);
         static infra::Optional<infra::BoundedConstString> OffsetFromTimeString(infra::BoundedConstString timePointString);
 
-        static uint8_t TimePointToCalenderDay(infra::TimePoint timePoint);
-        static void TimePointToHourMinSec(infra::TimePoint timePoint, uint8_t& hours, uint8_t& min, uint8_t& sec);
-
         infra::Duration GetOffsetFromLocalToUtc() const;
         infra::Duration GetOffsetTimezone() const;
         infra::Duration GetOffsetDaylightSaving() const;
