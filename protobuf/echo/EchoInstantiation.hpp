@@ -38,6 +38,12 @@ namespace main_
             vector.emplace_back(storageResponse, echoStack, responseId, echo);
         }
 
+        void AddResponse(uint32_t responseId)
+        {
+            std::array<uint8_t, MessageSize> storageResponse;
+            vector.emplace_back(storageResponse, echoStack, responseId, echo);
+        }
+
     private:
         services::Echo& echo;
         EchoOnSerialCommunication<MessageSize> echoStack;
