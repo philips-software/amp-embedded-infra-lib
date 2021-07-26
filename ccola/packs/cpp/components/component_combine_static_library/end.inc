@@ -67,6 +67,8 @@ ccola_set_component_properties_for_all_configurations(${CCOLA_COMPONENT_NAME} AR
 ccola_set_component_properties_for_all_configurations(${CCOLA_COMPONENT_NAME} LIBRARY_OUTPUT_DIRECTORY ${CCOLA_STATIC_LIBRARY_INSTALL_DIR})
 ccola_set_component_properties_for_all_configurations(${CCOLA_COMPONENT_NAME} PDB_OUTPUT_DIRECTORY ${CCOLA_PDB_INSTALL_DIR})
 
+set_target_properties(${CCOLA_COMPONENT_NAME} PROPERTIES FOLDER ${CCOLA_PACKAGE_NAME})
+
 if(MSVC_IDE)
     string(REPLACE ${CCOLA_SYSTEM_CONFIGURATION} ${CCOLA_SYSTEM_CONFIGURATION}-$<CONFIGURATION> new_lib_path "${lib_path}")
     add_custom_command(

@@ -53,14 +53,21 @@ namespace infra
 
         y -= m <= 2;
         const int era = (y >= 0 ? y : y - 399) / 400;
-        const unsigned yoe = static_cast<unsigned>(y - era * 400);              // [0, 399]
-        const unsigned doy = (153 * (m + (m > 2 ? -3 : 9)) + 2) / 5 + d - 1;    // [0, 365]
-        const unsigned doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;             // [0, 146096]
+        const unsigned yoe = static_cast<unsigned>(y - era * 400);           // [0, 399]
+        const unsigned doy = (153 * (m + (m > 2 ? -3 : 9)) + 2) / 5 + d - 1; // [0, 365]
+        const unsigned doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;          // [0, 146096]
         return (era * 146097 + static_cast<time_t>(doe) - 719468) * (24 * 60 * 60) + seconds + (minutes + hours * 60) * 60;
     }
 
     infra::TimePoint PartitionedTime::ToTimePoint() const
     {
         return infra::TimePoint() + std::chrono::seconds(ToTimeT());
+    }
+
+    int PartitionedTime::WeekDay() const
+    {
+        auto unixTime = ToTimeT();
+        int days = static_cast<int>((unixTime >= 0) ? (unixTime / (24 * 60 * 60)) : ((unixTime - (24 * 60 * 60 - 1)) / (24 * 60 * 60)));
+        return days >= -4 ? (days + 4) % 7 : (days + 5) % 7 + 6;
     }
 }

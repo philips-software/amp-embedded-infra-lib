@@ -16,6 +16,8 @@ namespace infra
         time_t ToTimeT() const;
         infra::TimePoint ToTimePoint() const;
 
+        int WeekDay() const; // days since Sunday - [0, 6]
+
         uint8_t seconds; // seconds after the minute - [0, 59]
         uint8_t minutes; // minutes after the hour - [0, 59]
         uint8_t hours;   // hours since midnight - [0, 23]

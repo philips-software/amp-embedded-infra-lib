@@ -22,6 +22,7 @@ ccola_component(util_test gmock_test)
         TestSpiMasterWithChipSelect.cpp
         TestSpiMultipleAccess.cpp
         TestTerminal.cpp
+        TestTimeWithLocalization.cpp
     )
 
     ccola_dependencies(
