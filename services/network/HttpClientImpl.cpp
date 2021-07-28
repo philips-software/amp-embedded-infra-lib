@@ -253,10 +253,21 @@ namespace services
             }
         }
 
-        stream >> infra::hex >> chunkLength >> r >> n;
+        stream >> infra::hex >> chunkLength >> r;
 
         if (!stream.Failed())
         {
+            if (r == ';')
+            {
+                while (!stream.Failed() && r != '\r')
+                    stream >> r;
+            }
+
+            stream >> n;
+
+            if (stream.Failed())
+                return false;
+
             if (r != '\r' || n != '\n')
             {
                 AbortAndDestroy();
