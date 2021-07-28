@@ -140,6 +140,11 @@ namespace services
             infra::StringInputStream contentLengthStream(header.Value());
             contentLengthStream >> *contentLength;
         }
+        else if (infra::CaseInsensitiveCompare(header.Field(), "Transfer-Encoding") && header.Value() == "chunked")
+        {
+            contentLength = 0;
+            chunkedEncoding = true;
+        }
         else
             Observer().HeaderAvailable(header);
     }
@@ -185,13 +190,26 @@ namespace services
 
     void HttpClientImpl::BodyReceived()
     {
-        if (contentLength == 0)
-            BodyComplete();
-        else
+        bool repeat = true;
+        while (repeat)
         {
-            bodyReader.Emplace(ConnectionObserver::Subject().ReceiveStream(), *contentLength);
+            if (contentLength == 0)
+            {
+                if (chunkedEncoding)
+                    repeat = ReadChunkLength();
+                else
+                {
+                    repeat = false;
+                    BodyComplete();
+                }
+            }
+            else
+            {
+                bodyReader.Emplace(ConnectionObserver::Subject().ReceiveStream(), *contentLength);
 
-            Observer().BodyAvailable(infra::MakeContainedSharedObject(bodyReader->countingReader, bodyReaderAccess.MakeShared(bodyReader)));
+                Observer().BodyAvailable(infra::MakeContainedSharedObject(bodyReader->countingReader, bodyReaderAccess.MakeShared(bodyReader)));
+                repeat = chunkedEncoding && contentLength == 0;
+            }
         }
     }
 
@@ -201,15 +219,62 @@ namespace services
         *contentLength -= bodyReader->countingReader.TotalRead();
         bodyReader = infra::none;
 
-        if (*contentLength == 0)
+        if (*contentLength == 0 && !chunkedEncoding)
             BodyComplete();
     }
 
     void HttpClientImpl::BodyComplete()
     {
         contentLength = infra::none;
+        firstChunk = true;
         response = infra::none;
         Observer().BodyComplete();
+    }
+
+    bool HttpClientImpl::ReadChunkLength()
+    {
+        auto reader = ConnectionObserver::Subject().ReceiveStream();
+        infra::TextInputStream::WithErrorPolicy stream(*reader, infra::softFail);
+
+        uint32_t chunkLength = 0;
+        char r;
+        char n;
+
+        if (!firstChunk)
+        {
+            stream >> r >> n;
+            if (stream.Failed())
+                return false;
+
+            if (r != '\r' || n != '\n')
+            {
+                AbortAndDestroy();
+                return false;
+            }
+        }
+
+        stream >> infra::hex >> chunkLength >> r >> n;
+
+        if (!stream.Failed())
+        {
+            if (r != '\r' || n != '\n')
+            {
+                AbortAndDestroy();
+                return false;
+            }
+
+            ConnectionObserver::Subject().AckReceived();
+            *contentLength = chunkLength;
+            firstChunk = false;
+            reader = nullptr;
+
+            if (chunkLength == 0)
+                chunkedEncoding = false;
+
+            return true;
+        }
+        else
+            return false;
     }
 
     void HttpClientImpl::ExecuteRequest(HttpVerb verb, infra::BoundedConstString requestTarget, const HttpHeaders headers)
