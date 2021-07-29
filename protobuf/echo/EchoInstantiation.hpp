@@ -32,16 +32,15 @@ namespace main_
 
         void AddService(uint32_t serviceId, uint32_t responseId)
         {
-            std::array<uint8_t, MessageSize> storageService;
-            std::array<uint8_t, MessageSize> storageResponse;
-            vector.emplace_back(storageService, echo, serviceId, echoStack);
-            vector.emplace_back(storageResponse, echoStack, responseId, echo);
+            vector.emplace_back(storage[vector.size()], echo, serviceId, echoStack);
+            vector.emplace_back(storage[vector.size()], echoStack, responseId, echo);
         }
 
     private:
         services::Echo& echo;
         EchoOnSerialCommunication<MessageSize> echoStack;
 
+        std::array<std::array<uint8_t, MessageSize>, MaxServices> storage;
         infra::BoundedVector<services::ServiceForwarder>::WithMaxSize<MaxServices> vector;
     };
 }
