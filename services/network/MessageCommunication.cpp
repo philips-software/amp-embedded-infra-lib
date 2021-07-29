@@ -45,7 +45,10 @@ namespace services
                 break;
         }
 
-        SetNextState();
+        infra::EventDispatcher::Instance().Schedule([this]()
+        {
+            SetNextState();
+        });
     }
 
     void WindowedMessageCommunication::ReceivedMessage(infra::StreamReader& reader)
