@@ -45,6 +45,9 @@ namespace infra
 
         Field GetField();
 
+        // Forward this result to the input stream
+        void ReportResult(bool ok);
+
     private:
         infra::LimitedStreamReader limitedReader;
         infra::DataInputStream input;

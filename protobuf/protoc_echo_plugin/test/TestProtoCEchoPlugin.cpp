@@ -183,6 +183,16 @@ TEST(ProtoCEchoPluginTest, deserialize_string)
     EXPECT_EQ("abcd", message.value);
 }
 
+TEST(ProtoCEchoPluginTest, deserialize_corrupt_string)
+{
+    std::array<uint8_t, 6> data{ 10, 5, 'a', 'b', 'c', 'd' };
+    infra::ByteInputStream stream(data, infra::softFail);
+    infra::ProtoParser parser(stream);
+
+    test_messages::TestString message(parser);
+    EXPECT_TRUE(stream.Failed());
+}
+
 TEST(ProtoCEchoPluginTest, serialize_std_string)
 {
     test_messages::TestStdString message;
