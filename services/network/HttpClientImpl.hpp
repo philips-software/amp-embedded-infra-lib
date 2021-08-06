@@ -55,6 +55,7 @@ namespace services
         void BodyReceived();
         void BodyReaderDestroyed();
         void BodyComplete();
+        bool ReadChunkLength();
         void ExecuteRequest(HttpVerb verb, infra::BoundedConstString requestTarget, const HttpHeaders headers);
         void ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers);
         void ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, std::size_t contentSize, const HttpHeaders headers);
@@ -158,6 +159,8 @@ namespace services
         infra::BoundedConstString hostname;
         HttpStatusCode statusCode = HttpStatusCode::OK;
         infra::Optional<uint32_t> contentLength;
+        bool chunkedEncoding = false;
+        bool firstChunk = true;
         infra::Optional<BodyReader> bodyReader;
         infra::AccessedBySharedPtr bodyReaderAccess;
         infra::PolymorphicVariant<SendingState, SendingStateRequest, SendingStateForwardSendStream, SendingStateForwardFillContent> sendingState;

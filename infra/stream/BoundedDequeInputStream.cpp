@@ -25,8 +25,10 @@ namespace infra
 
     uint8_t BoundedDequeInputStreamReader::Peek(StreamErrorPolicy& errorPolicy)
     {
+        auto savedOffset = offset;
         uint8_t element = 0;
         Extract(MakeByteRange(element), errorPolicy);
+        offset = savedOffset;
         return element;
     }
 

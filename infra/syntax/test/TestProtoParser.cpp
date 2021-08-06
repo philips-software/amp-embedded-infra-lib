@@ -83,6 +83,26 @@ TEST(ProtoParserTest, GetField_returns_string)
     EXPECT_EQ("a", string);
 }
 
+TEST(ProtoParserTest, GetField_on_unknown_type_reports_error)
+{
+    infra::ByteInputStream stream(std::array<uint8_t, 2>{ 1 << 3 | 4, 5 }, infra::softFail);
+    infra::ProtoParser parser(stream);
+
+    infra::ProtoParser::Field field = parser.GetField();
+    EXPECT_TRUE(stream.Failed());
+}
+
+TEST(ProtoParserTest, too_short_string_is_reported_on_stream)
+{
+    infra::ByteInputStream::WithStorage<5> stream(infra::inPlace, std::array<uint8_t, 5>{ (1 << 3) | 2, 5, 'a', 'b', 'c' }, infra::softFail);
+    infra::ProtoParser parser(stream);
+
+    infra::ProtoParser::Field field = parser.GetField();
+    infra::BoundedString::WithStorage<10> string;
+    field.first.Get<infra::ProtoLengthDelimited>().GetString(string);
+    EXPECT_TRUE(stream.Failed());
+}
+
 TEST(ProtoParserTest, GetField_returns_bytes)
 {
     infra::ByteInputStream::WithStorage<3> stream(infra::inPlace, std::array<uint8_t, 3>{ (1 << 3) | 2, 1, 5 });
@@ -92,6 +112,17 @@ TEST(ProtoParserTest, GetField_returns_bytes)
     infra::BoundedVector<uint8_t>::WithMaxSize<10> bytes;
     field.first.Get<infra::ProtoLengthDelimited>().GetBytes(bytes);
     EXPECT_EQ(5, bytes.front());
+}
+
+TEST(ProtoParserTest, too_short_bytes_is_reported_on_stream)
+{
+    infra::ByteInputStream::WithStorage<5> stream(infra::inPlace, std::array<uint8_t, 5>{ (1 << 3) | 2, 5, 5, 6, 7 }, infra::softFail);
+    infra::ProtoParser parser(stream);
+
+    infra::ProtoParser::Field field = parser.GetField();
+    infra::BoundedVector<uint8_t>::WithMaxSize<10> bytes;
+    field.first.Get<infra::ProtoLengthDelimited>().GetBytes(bytes);
+    EXPECT_TRUE(stream.Failed());
 }
 
 TEST(ProtoParserTest, GetField_returns_nested_object)
@@ -118,4 +149,13 @@ TEST(ProtoParserTest, SkipEverything_skips_LengthDelimited)
     field = parser.GetField();
     EXPECT_EQ(5, field.first.Get<uint64_t>());
     EXPECT_EQ(1, field.second);
+}
+
+TEST(ProtoParserTest, ReportResult_is_propagated)
+{
+    infra::ByteInputStream::WithStorage<5> stream(infra::inPlace, std::array<uint8_t, 5>{ (1 << 3) | 2, 5, 5, 6, 7 }, infra::softFail);
+    infra::ProtoParser parser(stream);
+
+    parser.ReportResult(false);
+    EXPECT_TRUE(stream.Failed());
 }

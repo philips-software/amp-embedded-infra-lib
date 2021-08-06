@@ -783,3 +783,78 @@ TEST_F(HttpClientTest, Post_request_with_unknown_body_size_is_executed)
     ExecuteAllActions();
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n")));
 }
+
+TEST_F(HttpClientTest, chunked_transfer_is_delivered_in_parts)
+{
+    Connect();
+
+    client.Subject().Get("/");
+    ExecuteAllActions();
+
+    EXPECT_CALL(connection, AckReceivedMock()).Times(9);
+    EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
+    EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader) {
+        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+        EXPECT_EQ("Wiki", infra::ByteRangeAsString(stream.ContiguousRange()));
+    })).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader) {
+        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+        EXPECT_EQ("pedia ", infra::ByteRangeAsString(stream.ContiguousRange()));
+    })).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader) {
+        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+        EXPECT_EQ("in \r\n\r\nchunks.", infra::ByteRangeAsString(stream.ContiguousRange()));
+    }));
+    EXPECT_CALL(client, BodyComplete());
+
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\n")));
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("Transfer-Encoding:chunked\r\n\r\n4\r\nWiki\r\n6\r\npedia \r\nE\r\nin \r\n\r\nchunks.\r\n0\r\n\r\n")));
+}
+
+TEST_F(HttpClientTest, trailers_after_chunks_are_ignored)
+{
+    Connect();
+
+    client.Subject().Get("/");
+    ExecuteAllActions();
+
+    EXPECT_CALL(connection, AckReceivedMock()).Times(9);
+    EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
+    EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader) {
+        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+        EXPECT_EQ("Wiki", infra::ByteRangeAsString(stream.ContiguousRange()));
+    })).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader) {
+        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+        EXPECT_EQ("pedia ", infra::ByteRangeAsString(stream.ContiguousRange()));
+    })).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader) {
+        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+        EXPECT_EQ("in \r\n\r\nchunks.", infra::ByteRangeAsString(stream.ContiguousRange()));
+    }));
+    EXPECT_CALL(client, BodyComplete());
+
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\n")));
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("Transfer-Encoding:chunked\r\n\r\n4\r\nWiki\r\n6\r\npedia \r\nE\r\nin \r\n\r\nchunks.\r\n0\r\nContent-Encoding: text\r\n")));
+}
+
+TEST_F(HttpClientTest, chunk_extensions_are_ignored)
+{
+    Connect();
+
+    client.Subject().Get("/");
+    ExecuteAllActions();
+
+    EXPECT_CALL(connection, AckReceivedMock()).Times(9);
+    EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
+    EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader) {
+        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+        EXPECT_EQ("Wiki", infra::ByteRangeAsString(stream.ContiguousRange()));
+    })).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader) {
+        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+        EXPECT_EQ("pedia ", infra::ByteRangeAsString(stream.ContiguousRange()));
+    })).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader) {
+        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+        EXPECT_EQ("in \r\n\r\nchunks.", infra::ByteRangeAsString(stream.ContiguousRange()));
+    }));
+    EXPECT_CALL(client, BodyComplete());
+
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\n")));
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("Transfer-Encoding:chunked\r\n\r\n4;name=val\r\nWiki\r\n6\r\npedia \r\nE\r\nin \r\n\r\nchunks.\r\n0\r\n\r\n")));
+}

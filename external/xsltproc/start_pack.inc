@@ -27,7 +27,6 @@ macro(generate_xslt output)
 
 	ccola_make_absolute_from_intermediate(absolute_output ${output})
 	get_filename_component(absolute_directory "${absolute_output}" DIRECTORY)
-	ccola_create_directory_on_demand(${absolute_directory})
 
 	find_program(xsltproc_program
 	    NAMES xsltproc
@@ -36,6 +35,7 @@ macro(generate_xslt output)
 
 	add_custom_command(
 		OUTPUT ${absolute_output}
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${absolute_directory}
 		COMMAND ${xsltproc_program} ${xslt_params} --output "${absolute_output}" ${absolute_inputs}
 		DEPENDS ${absolute_inputs}
 	)

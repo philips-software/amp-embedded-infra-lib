@@ -1,6 +1,4 @@
 #include "infra/syntax/ProtoParser.hpp"
-#include <cassert>
-#include <cstdlib>
 
 namespace infra
 {
@@ -30,7 +28,7 @@ namespace infra
     void ProtoLengthDelimited::GetString(infra::BoundedString& string)
     {
         string.resize(std::min(input.Available(), string.max_size()));
-        assert(string.size() == input.Available());
+        input.ErrorPolicy().ReportResult(string.size() == input.Available());
         input >> infra::StringAsByteRange(string);
     }
 
@@ -49,7 +47,7 @@ namespace infra
     void ProtoLengthDelimited::GetBytes(infra::BoundedVector<uint8_t>& bytes)
     {
         bytes.resize(std::min(input.Available(), bytes.max_size()));
-        assert(bytes.size() == input.Available());
+        input.ErrorPolicy().ReportResult(bytes.size() == input.Available());
         input >> infra::MakeRange(bytes);
     }
 
@@ -116,10 +114,13 @@ namespace infra
             case 5:
                 return std::make_pair(GetFixed32(), fieldNumber);
             default:
-                if (!input.Failed())
-                    std::abort();
-                // Todo: Report proper error
+                input.ErrorPolicy().ReportResult(false);
                 return std::make_pair(static_cast<uint32_t>(0), 0);
         }
+    }
+
+    void ProtoParser::ReportResult(bool ok)
+    {
+        input.ErrorPolicy().ReportResult(ok);
     }
 }
