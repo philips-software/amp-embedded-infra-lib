@@ -22,6 +22,7 @@ ccola_component(util_test gmock_test)
         TestIntrusiveList.cpp
         TestIntrusivePriorityQueue.cpp
         TestIntrusiveSet.cpp
+        TestIntrusiveUnorderedSet.cpp
         TestMemoryRange.cpp
         TestObserver.cpp
         TestOptional.cpp

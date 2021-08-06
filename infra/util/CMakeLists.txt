@@ -33,6 +33,7 @@ ccola_component(util static_library)
         IntrusiveList.hpp
         IntrusivePriorityQueue.hpp
         IntrusiveSet.hpp
+        IntrusiveUnorderedSet.hpp
         MemoryRange.hpp
         Observer.hpp
         Optional.cpp
