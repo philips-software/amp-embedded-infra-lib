@@ -196,6 +196,13 @@ namespace infra
         return stream;
     }
 
+    infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::IPv6AddressNetworkOrder& address)
+    {
+        stream << infra::hex << address[0] << ":" << address[1] << ":" << address[2] << ":" << address[3] << ":" << address[4] << ":" << address[5] << ":" << address[6] << ":" << address[7];
+
+        return stream;
+    }
+
     infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::IPAddress& address)
     {
         if (address.Is<services::IPv4Address>())

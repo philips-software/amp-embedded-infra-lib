@@ -32,16 +32,29 @@ namespace main_
 
         void AddService(uint32_t serviceId, uint32_t responseId)
         {
-            vector.emplace_back(storage[vector.size()], echo, serviceId, echoStack);
-            vector.emplace_back(storage[vector.size()], echoStack, responseId, echo);
+            AddForwarder(echo, serviceId, echoStack);
+            AddForwarder(echoStack, responseId, echo);
+        }
+
+        void AddResponse(uint32_t responseId)
+        {
+            AddForwarder(echoStack, responseId, echo);
+        }
+    
+    private:
+        void AddForwarder(services::Echo& forwardFrom, uint32_t id, services::Echo& forwardTo)
+        {
+            assert(!forwarderStorage.full() && !forwarders.full());
+            forwarderStorage.emplace_back();
+            forwarders.emplace_back(forwarderStorage.back(), forwardFrom, id, forwardTo);
         }
 
     private:
         services::Echo& echo;
         EchoOnSerialCommunication<MessageSize> echoStack;
 
-        std::array<std::array<uint8_t, MessageSize>, MaxServices> storage;
-        infra::BoundedVector<services::ServiceForwarder>::WithMaxSize<MaxServices> vector;
+        infra::BoundedVector<services::ServiceForwarder>::WithMaxSize<MaxServices> forwarders;
+        typename infra::BoundedVector<std::array<uint8_t, MessageSize>>::template WithMaxSize<MaxServices> forwarderStorage;
     };
 }
 

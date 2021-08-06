@@ -50,16 +50,19 @@ public:
     void SendInitRequest(uint16_t availableWindow)
     {
         ReceivedMessage(infra::ConstructBin().Value<uint8_t>(1).Value<infra::LittleEndian<uint16_t>>(availableWindow).Vector());
+        ExecuteAllActions();
     }
 
     void SendInitResponse(uint16_t availableWindow)
     {
         ReceivedMessage(infra::ConstructBin().Value<uint8_t>(2).Value<infra::LittleEndian<uint16_t>>(availableWindow).Vector());
+        ExecuteAllActions();
     }
 
     void SendReleaseWindow(uint16_t availableWindow)
     {
         ReceivedMessage(infra::ConstructBin().Value<uint8_t>(3).Value<infra::LittleEndian<uint16_t>>(availableWindow).Vector());
+        ExecuteAllActions();
     }
 
     void FinishInitialization(uint16_t availableWindow)

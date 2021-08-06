@@ -35,6 +35,7 @@ namespace infra
         void Add(JsonString tagName, int64_t tag);
         void Add(const char* tagName, const char* tag);
         void Add(const char* tagName, infra::BoundedConstString tag);
+        void Add(infra::BoundedConstString tagName, infra::BoundedConstString tag);
         void Add(JsonString tagName, JsonString tag);
         void Add(JsonString tagName, const JsonObject& tag);
         void Add(JsonString tagName, const JsonArray& tag);
