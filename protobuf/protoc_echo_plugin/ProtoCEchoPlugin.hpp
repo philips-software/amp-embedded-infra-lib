@@ -57,7 +57,7 @@ namespace application
         void Run(Entities& formatter);
 
     protected:
-        virtual void AddTypeMapType(EchoField& field, Entities& entities, const std::string& messageSuffix);
+        virtual void AddTypeMapType(EchoField& field, Entities& entities);
         std::string MessageName() const;
         virtual std::string MessageSuffix() const;
 
@@ -73,7 +73,7 @@ namespace application
         using MessageTypeMapGenerator::MessageTypeMapGenerator;
 
     protected:
-        virtual void AddTypeMapType(EchoField& field, Entities& entities, const std::string& messageSuffix);
+        virtual void AddTypeMapType(EchoField& field, Entities& entities);
         virtual std::string MessageSuffix() const override;
     };
 

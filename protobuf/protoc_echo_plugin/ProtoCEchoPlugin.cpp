@@ -10,11 +10,11 @@ namespace application
 {
     namespace
     {
-        class TypeNameVisitor
+        class ParameterTypeVisitor
             : public EchoFieldVisitor
         {
         public:
-            TypeNameVisitor(std::string& result)
+            ParameterTypeVisitor(std::string& result)
                 : result(result)
             {}
 
@@ -75,7 +75,7 @@ namespace application
 
             virtual void VisitEnum(const EchoFieldEnum& field) override
             {
-                result = field.type->qualifiedTypeName;
+                result = field.type->qualifiedDetailName;
             }
 
             virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
@@ -101,6 +101,299 @@ namespace application
             virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
             {
                 result = "const infra::BoundedVector<uint32_t>&";
+            }
+
+        private:
+            std::string& result;
+            std::string messageSuffix;
+        };
+
+        class ParameterReferenceTypeVisitor
+            : public EchoFieldVisitor
+        {
+        public:
+            ParameterReferenceTypeVisitor(std::string& result)
+                : result(result)
+            {}
+
+            virtual void VisitInt64(const EchoFieldInt64& field) override
+            {
+                result = "int64_t";
+            }
+
+            virtual void VisitUint64(const EchoFieldUint64& field) override
+            {
+                result = "uint64_t";
+            }
+
+            virtual void VisitInt32(const EchoFieldInt32& field) override
+            {
+                result = "int32_t";
+            }
+
+            virtual void VisitFixed64(const EchoFieldFixed64& field) override
+            {
+                result = "uint64_t";
+            }
+
+            virtual void VisitFixed32(const EchoFieldFixed32& field) override
+            {
+                result = "uint32_t";
+            }
+
+            virtual void VisitBool(const EchoFieldBool& field) override
+            {
+                result = "bool";
+            }
+
+            virtual void VisitString(const EchoFieldString& field) override
+            {
+                result = "infra::BoundedConstString";
+            }
+
+            virtual void VisitStdString(const EchoFieldStdString& field) override
+            {
+                result = "std::string";
+            }
+
+            virtual void VisitMessage(const EchoFieldMessage& field) override
+            {
+                result = "const " + field.message->qualifiedDetailReferenceName + "&";
+            }
+
+            virtual void VisitBytes(const EchoFieldBytes& field) override
+            {
+                result = "infra::ConstByteRange";
+            }
+
+            virtual void VisitUint32(const EchoFieldUint32& field) override
+            {
+                result = "uint32_t";
+            }
+
+            virtual void VisitEnum(const EchoFieldEnum& field) override
+            {
+                result = field.type->qualifiedDetailName;
+            }
+
+            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {
+                result = "int64_t";
+            }
+
+            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {
+                result = "int32_t";
+            }
+
+            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
+            {
+                result = "const infra::BoundedVector<infra::BoundedConstString>&";
+            }
+
+            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
+            {
+                result = "const infra::BoundedVector<" + field.message->qualifiedDetailReferenceName + ">&";
+            }
+
+            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
+            {
+                result = "const infra::BoundedVector<uint32_t>&";
+            }
+
+        private:
+            std::string& result;
+            std::string messageSuffix;
+        };
+
+        class StorageTypeVisitor
+            : public EchoFieldVisitor
+        {
+        public:
+            StorageTypeVisitor(std::string& result)
+                : result(result)
+            {}
+
+            virtual void VisitInt64(const EchoFieldInt64& field) override
+            {
+                result = "int64_t";
+            }
+
+            virtual void VisitUint64(const EchoFieldUint64& field) override
+            {
+                result = "uint64_t";
+            }
+
+            virtual void VisitInt32(const EchoFieldInt32& field) override
+            {
+                result = "int32_t";
+            }
+
+            virtual void VisitFixed64(const EchoFieldFixed64& field) override
+            {
+                result = "uint64_t";
+            }
+
+            virtual void VisitFixed32(const EchoFieldFixed32& field) override
+            {
+                result = "uint32_t";
+            }
+
+            virtual void VisitBool(const EchoFieldBool& field) override
+            {
+                result = "bool";
+            }
+
+            virtual void VisitString(const EchoFieldString& field) override
+            {
+                result = "infra::BoundedString::WithStorage<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">";
+            }
+
+            virtual void VisitStdString(const EchoFieldStdString& field) override
+            {
+                result = "std::string";
+            }
+
+            virtual void VisitEnum(const EchoFieldEnum& field) override
+            {
+                result = field.type->qualifiedDetailName;
+            }
+
+            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {
+                result = "int64_t";
+            }
+
+            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {
+                result = "int32_t";
+            }
+
+            virtual void VisitMessage(const EchoFieldMessage& field) override
+            {
+                result = field.message->qualifiedDetailName;
+            }
+
+            virtual void VisitBytes(const EchoFieldBytes& field) override
+            {
+                result = "infra::BoundedVector<uint8_t>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxBytesSize) + ">";
+            }
+
+            virtual void VisitUint32(const EchoFieldUint32& field) override
+            {
+                result = "uint32_t";
+            }
+
+            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
+            {
+                result = "infra::BoundedVector<infra::BoundedString::WithStorage<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">";
+            }
+
+            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
+            {
+                result = "infra::BoundedVector<" + field.message->qualifiedDetailName + ">::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">";
+            }
+
+            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
+            {
+                result = "infra::BoundedVector<uint32_t>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">";
+            }
+
+        private:
+            std::string& result;
+        };
+
+        class ReferenceStorageTypeVisitor
+            : public EchoFieldVisitor
+        {
+        public:
+            ReferenceStorageTypeVisitor(std::string& result)
+                : result(result)
+            {}
+
+            virtual void VisitInt64(const EchoFieldInt64& field) override
+            {
+                result = "int64_t";
+            }
+
+            virtual void VisitUint64(const EchoFieldUint64& field) override
+            {
+                result = "uint64_t";
+            }
+
+            virtual void VisitInt32(const EchoFieldInt32& field) override
+            {
+                result = "int32_t";
+            }
+
+            virtual void VisitFixed64(const EchoFieldFixed64& field) override
+            {
+                result = "uint64_t";
+            }
+
+            virtual void VisitFixed32(const EchoFieldFixed32& field) override
+            {
+                result = "uint32_t";
+            }
+
+            virtual void VisitBool(const EchoFieldBool& field) override
+            {
+                result = "bool";
+            }
+
+            virtual void VisitString(const EchoFieldString& field) override
+            {
+                result = "infra::BoundedConstString";
+            }
+
+            virtual void VisitStdString(const EchoFieldStdString& field) override
+            {
+                result = "std::string";
+            }
+
+            virtual void VisitMessage(const EchoFieldMessage& field) override
+            {
+                result = field.message->qualifiedReferenceName;
+            }
+
+            virtual void VisitBytes(const EchoFieldBytes& field) override
+            {
+                result = "infra::ConstByteRange";
+            }
+
+            virtual void VisitUint32(const EchoFieldUint32& field) override
+            {
+                result = "uint32_t";
+            }
+
+            virtual void VisitEnum(const EchoFieldEnum& field) override
+            {
+                result = field.type->name;
+            }
+
+            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {
+                result = "int64_t";
+            }
+
+            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {
+                result = "int32_t";
+            }
+
+            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
+            {
+                result = "infra::BoundedVector<infra::BoundedConstString>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">";
+            }
+
+            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
+            {
+                result = "infra::BoundedVector<" + field.message->qualifiedReferenceName + ">::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">";
+            }
+
+            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
+            {
+                result = "infra::BoundedVector<uint32_t>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">";
             }
 
         private:
@@ -308,116 +601,19 @@ namespace application
             typeMapSpecialization->TemplateSpecialization(google::protobuf::SimpleItoa(std::distance(message->fields.data(), &field)));
             GenerateTypeMapEntryVisitor visitor(*typeMapSpecialization, MessageSuffix());
             field->Accept(visitor);
-            AddTypeMapType(*field, *typeMapSpecialization, MessageSuffix());
+            AddTypeMapType(*field, *typeMapSpecialization);
             typeMapNamespace->Add(typeMapSpecialization);
         }
 
         formatter.Add(typeMapNamespace);
     }
 
-    void MessageTypeMapGenerator::AddTypeMapType(EchoField& field, Entities& entities, const std::string& messageSuffix)
+    void MessageTypeMapGenerator::AddTypeMapType(EchoField& field, Entities& entities)
     {
-        class GenerateTypeMapEntryVisitor
-            : public EchoFieldVisitor
-        {
-        public:
-            GenerateTypeMapEntryVisitor(Entities& entities, const std::string& messageSuffix)
-                : entities(entities)
-                , messageSuffix(messageSuffix)
-            {}
-
-            virtual void VisitInt64(const EchoFieldInt64& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "int64_t"));
-            }
-
-            virtual void VisitUint64(const EchoFieldUint64& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "uint64_t"));
-            }
-
-            virtual void VisitInt32(const EchoFieldInt32& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "int32_t"));
-            }
-
-            virtual void VisitFixed64(const EchoFieldFixed64& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "uint64_t"));
-            }
-
-            virtual void VisitFixed32(const EchoFieldFixed32& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "uint32_t"));
-            }
-
-            virtual void VisitBool(const EchoFieldBool& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "bool"));
-            }
-
-            virtual void VisitString(const EchoFieldString& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "infra::BoundedString::WithStorage<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">"));
-            }
-
-            virtual void VisitStdString(const EchoFieldStdString& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "std::string"));
-            }
-
-            virtual void VisitEnum(const EchoFieldEnum& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", field.type->containedInMessageName + field.type->name));
-            }
-
-            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "int64_t"));
-            }
-
-            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "int32_t"));
-            }
-
-            virtual void VisitMessage(const EchoFieldMessage& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", field.message->qualifiedDetailName + messageSuffix));
-            }
-
-            virtual void VisitBytes(const EchoFieldBytes& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<uint8_t>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxBytesSize) + ">"));
-            }
-
-            virtual void VisitUint32(const EchoFieldUint32& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "uint32_t"));
-            }
-
-            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<infra::BoundedString::WithStorage<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
-            }
-
-            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<" + field.message->qualifiedDetailName + messageSuffix + ">::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
-            }
-
-            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<uint32_t>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
-            }
-
-        private:
-            Entities& entities;
-            std::string messageSuffix;
-        };
-
-        GenerateTypeMapEntryVisitor visitor(entities, messageSuffix);
+        std::string result;
+        StorageTypeVisitor visitor(result);
         field.Accept(visitor);
+        entities.Add(std::make_shared<Using>("Type", result));
     }
 
     std::string MessageTypeMapGenerator::MessageName() const
@@ -430,107 +626,12 @@ namespace application
         return "";
     }
 
-    void MessageReferenceTypeMapGenerator::AddTypeMapType(EchoField& field, Entities& entities, const std::string& messageSuffix)
+    void MessageReferenceTypeMapGenerator::AddTypeMapType(EchoField& field, Entities& entities)
     {
-        class GenerateTypeMapEntryVisitor
-            : public EchoFieldVisitor
-        {
-        public:
-            GenerateTypeMapEntryVisitor(Entities& entities)
-                : entities(entities)
-            {}
-
-            virtual void VisitInt64(const EchoFieldInt64& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "int64_t"));
-            }
-
-            virtual void VisitUint64(const EchoFieldUint64& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "uint64_t"));
-            }
-
-            virtual void VisitInt32(const EchoFieldInt32& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "int32_t"));
-            }
-
-            virtual void VisitFixed64(const EchoFieldFixed64& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "uint64_t"));
-            }
-
-            virtual void VisitFixed32(const EchoFieldFixed32& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "uint32_t"));
-            }
-
-            virtual void VisitBool(const EchoFieldBool& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "bool"));
-            }
-
-            virtual void VisitString(const EchoFieldString& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "infra::BoundedConstString"));
-            }
-
-            virtual void VisitStdString(const EchoFieldStdString& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "std::string"));
-            }
-
-            virtual void VisitEnum(const EchoFieldEnum& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", field.type->containedInMessageName + field.type->name));
-            }
-
-            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "int64_t"));
-            }
-
-            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "int32_t"));
-            }
-
-            virtual void VisitMessage(const EchoFieldMessage& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", field.message->qualifiedDetailName + "Reference"));
-            }
-
-            virtual void VisitBytes(const EchoFieldBytes& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "infra::ConstByteRange"));
-            }
-
-            virtual void VisitUint32(const EchoFieldUint32& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "uint32_t"));
-            }
-
-            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<infra::BoundedConstString>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
-            }
-
-            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<" + field.message->qualifiedDetailName + "Reference>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
-            }
-
-            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
-            {
-                entities.Add(std::make_shared<Using>("Type", "infra::BoundedVector<uint32_t>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
-            }
-
-        private:
-            Entities& entities;
-        };
-
-        GenerateTypeMapEntryVisitor visitor(entities);
+        std::string result;
+        ParameterReferenceTypeVisitor visitor(result);
         field.Accept(visitor);
+        entities.Add(std::make_shared<Using>("Type", result));
     }
 
     std::string MessageReferenceTypeMapGenerator::MessageSuffix() const
@@ -574,129 +675,20 @@ namespace application
 
     void MessageGenerator::GenerateConstructors()
     {
-        class GenerateConstructorsVisitor
-            : public EchoFieldVisitor
-        {
-        public:
-            GenerateConstructorsVisitor(Constructor& constructor)
-                : constructor(constructor)
-            {}
-
-            virtual void VisitInt64(const EchoFieldInt64& field) override
-            {
-                constructor.Parameter("int64_t " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitUint64(const EchoFieldUint64& field) override
-            {
-                constructor.Parameter("uint64_t " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitInt32(const EchoFieldInt32& field) override
-            {
-                constructor.Parameter("int32_t " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitFixed64(const EchoFieldFixed64& field) override
-            {
-                constructor.Parameter("uint64_t " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitFixed32(const EchoFieldFixed32& field) override
-            {
-                constructor.Parameter("uint32_t " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitBool(const EchoFieldBool& field) override
-            {
-                constructor.Parameter("bool " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitString(const EchoFieldString& field) override
-            {
-                constructor.Parameter("infra::BoundedConstString " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitStdString(const EchoFieldStdString& field) override
-            {
-                constructor.Parameter("std::string " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitMessage(const EchoFieldMessage& field) override
-            {
-                constructor.Parameter("const " + field.message->qualifiedName + "& " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitBytes(const EchoFieldBytes& field) override
-            {
-                constructor.Parameter("const infra::BoundedVector<uint8_t>& " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitUint32(const EchoFieldUint32& field) override
-            {
-                constructor.Parameter("uint32_t " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitEnum(const EchoFieldEnum& field) override
-            {
-                constructor.Parameter(field.type->name + " " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
-            {
-                constructor.Parameter("int64_t " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
-            {
-                constructor.Parameter("int32_t " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
-            {
-                constructor.Parameter("const infra::BoundedVector<infra::BoundedString::WithStorage<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">>& " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
-            {
-                constructor.Parameter("const infra::BoundedVector<" + field.message->qualifiedName + ">& " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
-            {
-                constructor.Parameter("const infra::BoundedVector<uint32_t>& " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-        private:
-            Constructor& constructor;
-        };
-
         auto constructors = std::make_shared<Access>("public");
         constructors->Add(std::make_shared<Constructor>(ClassName(), "", Constructor::cDefault));
 
         if (!message->fields.empty())
         {
             auto constructByMembers = std::make_shared<Constructor>(ClassName(), "", 0);
-            GenerateConstructorsVisitor visitor(*constructByMembers);
+            std::string typeNameResult;
+            ParameterTypeVisitor visitor(typeNameResult);
             for (auto& field : message->fields)
+            {
                 field->Accept(visitor);
+                constructByMembers->Parameter(typeNameResult + " " + field->name);
+                constructByMembers->Initializer(field->name + "(" + field->name + ")");
+            }
             constructors->Add(constructByMembers);
         }
 
@@ -799,113 +791,17 @@ namespace application
 
     void MessageGenerator::GenerateFieldDeclarations()
     {
-        class GenerateFieldDeclarationVisitor
-            : public EchoFieldVisitor
-        {
-        public:
-            GenerateFieldDeclarationVisitor(Entities& entities)
-                : entities(entities)
-            {}
-
-            virtual void VisitInt64(const EchoFieldInt64& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "int64_t", "0"));
-            }
-
-            virtual void VisitUint64(const EchoFieldUint64& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "uint64_t", "0"));
-            }
-
-            virtual void VisitInt32(const EchoFieldInt32& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "int32_t", "0"));
-            }
-
-            virtual void VisitFixed64(const EchoFieldFixed64& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "uint64_t", "0"));
-            }
-
-            virtual void VisitFixed32(const EchoFieldFixed32& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "uint32_t", "0"));
-            }
-
-            virtual void VisitBool(const EchoFieldBool& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "bool", "false"));
-            }
-
-            virtual void VisitString(const EchoFieldString& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "infra::BoundedString::WithStorage<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">"));
-            }
-
-            virtual void VisitStdString(const EchoFieldStdString& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "std::string"));
-            }
-
-            virtual void VisitEnum(const EchoFieldEnum& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, field.type->name, "{}"));
-            }
-
-            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "int64_t", "0"));
-            }
-
-            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "int32_t", "0"));
-            }
-
-            virtual void VisitMessage(const EchoFieldMessage& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, field.message->qualifiedName));
-            }
-
-            virtual void VisitBytes(const EchoFieldBytes& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "infra::BoundedVector<uint8_t>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxBytesSize) + ">"));
-            }
-
-            virtual void VisitUint32(const EchoFieldUint32& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "uint32_t", "0"));
-            }
-
-            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name
-                    , "infra::BoundedVector<infra::BoundedString::WithStorage<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
-            }
-
-            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name
-                    , "infra::BoundedVector<" + field.message->qualifiedName + ">::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
-            }
-
-            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name
-                    , "infra::BoundedVector<uint32_t>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
-            }
-
-        private:
-            Entities& entities;
-        };
-
         if (!message->fields.empty())
         {
             auto fields = std::make_shared<Access>("public");
 
-            GenerateFieldDeclarationVisitor visitor(*fields);
+            std::string result;
+            StorageTypeVisitor visitor(result);
             for (auto& field : message->fields)
+            {
                 field->Accept(visitor);
+                fields->Add(std::make_shared<DataMember>(field->name, result, "{}"));
+            }
 
             classFormatter->Add(fields);
         }
@@ -1430,129 +1326,20 @@ namespace application
 
     void MessageReferenceGenerator::GenerateConstructors()
     {
-        class GenerateConstructorsVisitor
-            : public EchoFieldVisitor
-        {
-        public:
-            GenerateConstructorsVisitor(Constructor& constructor)
-                : constructor(constructor)
-            {}
-
-            virtual void VisitInt64(const EchoFieldInt64& field) override
-            {
-                constructor.Parameter("int64_t " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitUint64(const EchoFieldUint64& field) override
-            {
-                constructor.Parameter("uint64_t " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitInt32(const EchoFieldInt32& field) override
-            {
-                constructor.Parameter("int32_t " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitFixed64(const EchoFieldFixed64& field) override
-            {
-                constructor.Parameter("uint64_t " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitFixed32(const EchoFieldFixed32& field) override
-            {
-                constructor.Parameter("uint32_t " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitBool(const EchoFieldBool& field) override
-            {
-                constructor.Parameter("bool " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitString(const EchoFieldString& field) override
-            {
-                constructor.Parameter("infra::BoundedConstString " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitStdString(const EchoFieldStdString& field) override
-            {
-                constructor.Parameter("const std::string& " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitEnum(const EchoFieldEnum& field) override
-            {
-                constructor.Parameter(field.type->name + " " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
-            {
-                constructor.Parameter("int64_t " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
-            {
-                constructor.Parameter("int32_t " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitMessage(const EchoFieldMessage& field) override
-            {
-                constructor.Parameter("const " + field.message->qualifiedReferenceName + "& " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitBytes(const EchoFieldBytes& field) override
-            {
-                constructor.Parameter("infra::ConstByteRange " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitUint32(const EchoFieldUint32& field) override
-            {
-                constructor.Parameter("uint32_t " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
-            {
-                constructor.Parameter("const infra::BoundedVector<infra::BoundedConstString>& " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
-            {
-                constructor.Parameter("const infra::BoundedVector<" + field.message->qualifiedReferenceName + ">& " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
-            {
-                constructor.Parameter("const infra::BoundedVector<uint32_t>& " + field.name);
-                constructor.Initializer(field.name + "(" + field.name + ")");
-            }
-
-        private:
-            Constructor& constructor;
-        };
-
         auto constructors = std::make_shared<Access>("public");
         constructors->Add(std::make_shared<Constructor>(ClassName(), "", Constructor::cDefault));
 
         if (!message->fields.empty())
         {
             auto constructByMembers = std::make_shared<Constructor>(ClassName(), "", 0);
-            GenerateConstructorsVisitor visitor(*constructByMembers);
+            std::string result;
+            ParameterReferenceTypeVisitor visitor(result);
             for (auto& field : message->fields)
+            {
                 field->Accept(visitor);
+                constructByMembers->Parameter(result + " " + field->name);
+                constructByMembers->Initializer(field->name + "(" + field->name + ")");
+            }
             constructors->Add(constructByMembers);
         }
 
@@ -1592,113 +1379,17 @@ namespace application
 
     void MessageReferenceGenerator::GenerateFieldDeclarations()
     {
-        class GenerateFieldDeclarationVisitor
-            : public EchoFieldVisitor
-        {
-        public:
-            GenerateFieldDeclarationVisitor(Entities& entities)
-                : entities(entities)
-            {}
-
-            virtual void VisitInt64(const EchoFieldInt64& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "int64_t", "0"));
-            }
-
-            virtual void VisitUint64(const EchoFieldUint64& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "uint64_t", "0"));
-            }
-
-            virtual void VisitInt32(const EchoFieldInt32& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "int32_t", "0"));
-            }
-
-            virtual void VisitFixed64(const EchoFieldFixed64& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "uint64_t", "0"));
-            }
-
-            virtual void VisitFixed32(const EchoFieldFixed32& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "uint32_t", "0"));
-            }
-
-            virtual void VisitBool(const EchoFieldBool& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "bool", "false"));
-            }
-
-            virtual void VisitString(const EchoFieldString& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "infra::BoundedConstString"));
-            }
-
-            virtual void VisitStdString(const EchoFieldStdString& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "std::string"));
-            }
-
-            virtual void VisitMessage(const EchoFieldMessage& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, field.message->qualifiedReferenceName));
-            }
-
-            virtual void VisitBytes(const EchoFieldBytes& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "infra::ConstByteRange"));
-            }
-
-            virtual void VisitUint32(const EchoFieldUint32& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "uint32_t", "0"));
-            }
-
-            virtual void VisitEnum(const EchoFieldEnum& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, field.type->name, "{}"));
-            }
-
-            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "int64_t", "0"));
-            }
-
-            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name, "int32_t", "0"));
-            }
-
-            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name
-                    , "infra::BoundedVector<infra::BoundedConstString>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
-            }
-
-            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name
-                    , "infra::BoundedVector<" + field.message->qualifiedReferenceName + ">::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
-            }
-
-            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
-            {
-                entities.Add(std::make_shared<DataMember>(field.name
-                    , "infra::BoundedVector<uint32_t>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">"));
-            }
-
-        private:
-            Entities& entities;
-        };
-
         if (!message->fields.empty())
         {
             auto fields = std::make_shared<Access>("public");
 
-            GenerateFieldDeclarationVisitor visitor(*fields);
+            std::string result;
+            ReferenceStorageTypeVisitor visitor(result);
             for (auto& field : message->fields)
+            {
                 field->Accept(visitor);
+                fields->Add(std::make_shared<DataMember>(field->name, result, "{}"));
+            }
 
             classFormatter->Add(fields);
         }
@@ -2049,7 +1740,7 @@ namespace application
                 for (auto field: method.parameter->fields)
                 {
                     std::string typeName;
-                    TypeNameVisitor visitor(typeName);
+                    ParameterTypeVisitor visitor(typeName);
                     field->Accept(visitor);
                     serviceMethod->Parameter(typeName + " " + field->name);
                 }
@@ -2077,7 +1768,7 @@ namespace application
                 for (auto field: method.parameter->fields)
                 {
                     std::string typeName;
-                    TypeNameVisitor visitor(typeName);
+                    ParameterTypeVisitor visitor(typeName);
                     field->Accept(visitor);
                     serviceMethod->Parameter(typeName + " " + field->name);
                 }
@@ -2191,7 +1882,7 @@ formatter.PutVarInt(serviceId);
                 for (auto& field: method.parameter->fields)
                 {
                     std::string typeName;
-                    TypeNameVisitor visitor(typeName);
+                    ParameterTypeVisitor visitor(typeName);
                     field->Accept(visitor);
                     printer.Print("$field$", "field", field->name);
                     if (&field != &method.parameter->fields.back())

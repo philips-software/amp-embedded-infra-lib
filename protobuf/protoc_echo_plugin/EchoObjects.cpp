@@ -29,6 +29,23 @@ namespace application
             return namespaceString + descriptor.name();
         }
 
+        std::string QualifiedDetailName(const google::protobuf::EnumDescriptor& descriptor)
+        {
+            std::string namespaceString;
+
+            namespaceString = descriptor.file()->package() + "::";
+
+            if (descriptor.containing_type() != nullptr)
+            {
+                namespaceString += "detail::";
+
+                for (auto containingType = descriptor.containing_type(); containingType != nullptr; containingType = containingType->containing_type())
+                    namespaceString += containingType->name();
+            }
+
+            return namespaceString + descriptor.name();
+        }
+
         std::string QualifiedReferenceName(const google::protobuf::Descriptor& descriptor)
         {
             std::string namespaceString;
@@ -55,6 +72,23 @@ namespace application
             }
 
             return namespaceString + descriptor.name();
+        }
+
+        std::string QualifiedDetailReferenceName(const google::protobuf::Descriptor& descriptor)
+        {
+            std::string namespaceString;
+
+            namespaceString = descriptor.file()->package() + "::";
+
+            if (descriptor.containing_type() != nullptr)
+            {
+                namespaceString += "detail::";
+
+                for (auto containingType = descriptor.containing_type(); containingType != nullptr; containingType = containingType->containing_type())
+                    namespaceString += containingType->name();
+            }
+
+            return namespaceString + descriptor.name() + "Reference";
         }
     }
 
@@ -134,6 +168,7 @@ namespace application
         : descriptor(descriptor)
         , name(descriptor.name())
         , qualifiedTypeName(QualifiedName(descriptor))
+        , qualifiedDetailName(QualifiedDetailName(descriptor))
     {
         for (auto containingType = descriptor.containing_type(); containingType != nullptr; containingType = containingType->containing_type())
             containedInMessageName += containingType->name();
@@ -148,6 +183,7 @@ namespace application
         , qualifiedName(QualifiedName(descriptor))
         , qualifiedReferenceName(QualifiedReferenceName(descriptor))
         , qualifiedDetailName(QualifiedDetailName(descriptor))
+        , qualifiedDetailReferenceName(QualifiedDetailReferenceName(descriptor))
     {
         for (int i = 0; i != descriptor.enum_type_count(); ++i)
             nestedEnums.push_back(root.AddEnum(*descriptor.enum_type(i)));

@@ -39,6 +39,7 @@ namespace application
         const google::protobuf::EnumDescriptor& descriptor;
         std::string name;
         std::string qualifiedTypeName;
+        std::string qualifiedDetailName;
         std::string containedInMessageName;
         std::vector<std::pair<std::string, int>> members;
     };
@@ -55,6 +56,7 @@ namespace application
         std::string qualifiedName;
         std::string qualifiedReferenceName;
         std::string qualifiedDetailName;
+        std::string qualifiedDetailReferenceName;
         std::vector<std::shared_ptr<EchoField>> fields;
         std::vector<std::shared_ptr<EchoMessage>> nestedMessages;
         std::vector<std::shared_ptr<EchoEnum>> nestedEnums;
