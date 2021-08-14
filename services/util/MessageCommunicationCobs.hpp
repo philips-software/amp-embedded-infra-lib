@@ -2,7 +2,7 @@
 #define SERVICES_MESSAGE_COMMUNICATION_COBS_HPP
 
 #include "hal/interfaces/SerialCommunication.hpp"
-#include "services/network/MessageCommunication.hpp"
+#include "services/util/MessageCommunication.hpp"
 
 namespace services
 {

@@ -35,7 +35,10 @@ ccola_component(util static_library)
         LowPowerSerialCommunication.hpp
         LowPowerSpiMaster.cpp
         LowPowerSpiMaster.hpp
-        WritableConfiguration.hpp
+        MessageCommunication.cpp
+        MessageCommunication.hpp
+        MessageCommunicationCobs.cpp
+        MessageCommunicationCobs.hpp
         RepeatingButton.cpp
         RepeatingButton.hpp
         SignalLed.cpp
@@ -49,6 +52,7 @@ ccola_component(util static_library)
         Terminal.hpp
         TimeWithLocalization.cpp
         TimeWithLocalization.hpp
+        WritableConfiguration.hpp
     )
 
     ccola_dependencies(

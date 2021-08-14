@@ -16,13 +16,15 @@ ccola_component(util_test gmock_test)
         TestInverseLogicPin.cpp
         TestLowPowerSerialCommunication.cpp
         TestLowPowerSpiMaster.cpp
-        TestWritableConfiguration.cpp
+        TestMessageCommunication.cpp
+        TestMessageCommunicationCobs.cpp
         TestRepeatingButton.cpp
         TestSignalLed.cpp
         TestSpiMasterWithChipSelect.cpp
         TestSpiMultipleAccess.cpp
         TestTerminal.cpp
         TestTimeWithLocalization.cpp
+        TestWritableConfiguration.cpp
     )
 
     ccola_dependencies(

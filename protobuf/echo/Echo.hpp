@@ -5,7 +5,7 @@
 #include "infra/util/Optional.hpp"
 #include "infra/syntax/ProtoParser.hpp"
 #include "services/network/Connection.hpp"
-#include "services/network/MessageCommunication.hpp"
+#include "services/util/MessageCommunication.hpp"
 
 namespace services
 {

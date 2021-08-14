@@ -1,7 +1,7 @@
 #include "infra/event/EventDispatcher.hpp"
 #include "infra/stream/BoundedDequeOutputStream.hpp"
 #include "infra/util/PostAssign.hpp"
-#include "services/network/MessageCommunication.hpp"
+#include "services/util/MessageCommunication.hpp"
 
 namespace services
 {

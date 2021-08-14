@@ -7,7 +7,7 @@
 #include "infra/util/Endian.hpp"
 #include "infra/util/test_helper/MemoryRangeMatcher.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
-#include "services/network/MessageCommunicationCobs.hpp"
+#include "services/util/MessageCommunicationCobs.hpp"
 #include "gmock/gmock.h"
 #include <deque>
 

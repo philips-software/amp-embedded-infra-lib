@@ -4,7 +4,7 @@
 #include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/ConstructBin.hpp"
 #include "infra/util/Endian.hpp"
-#include "services/network/MessageCommunication.hpp"
+#include "services/util/MessageCommunication.hpp"
 #include "gmock/gmock.h"
 #include <deque>
 

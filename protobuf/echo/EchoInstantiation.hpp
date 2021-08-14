@@ -3,7 +3,7 @@
 
 #include "protobuf/echo/Echo.hpp"
 #include "infra/util/BoundedVector.hpp"
-#include "services/network/MessageCommunicationCobs.hpp"
+#include "services/util/MessageCommunicationCobs.hpp"
 
 namespace main_
 {

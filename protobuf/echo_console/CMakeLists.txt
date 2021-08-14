@@ -14,6 +14,7 @@ ccola_component(echo_console win: executable other: skip)
         hal.generic
         hal.windows
         services.network_win
+        services.util
         arg_parser.args
     )
 

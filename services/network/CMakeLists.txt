@@ -50,10 +50,6 @@ ccola_component(network static_library)
         LlmnrResponder.hpp
         MdnsClient.cpp
         MdnsClient.hpp
-        MessageCommunication.cpp
-        MessageCommunication.hpp
-        MessageCommunicationCobs.cpp
-        MessageCommunicationCobs.hpp
         Mqtt.hpp
         MqttClientImpl.cpp
         MqttClientImpl.hpp

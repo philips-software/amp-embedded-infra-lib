@@ -1,6 +1,6 @@
 #include "infra/stream/BoundedVectorInputStream.hpp"
 #include "infra/stream/LimitedInputStream.hpp"
-#include "services/network/MessageCommunicationCobs.hpp"
+#include "services/util/MessageCommunicationCobs.hpp"
 
 namespace services
 {
