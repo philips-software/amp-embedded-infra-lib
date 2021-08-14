@@ -10,6 +10,186 @@ namespace application
 {
     namespace
     {
+        class StorageTypeVisitor
+            : public EchoFieldVisitor
+        {
+        public:
+            StorageTypeVisitor(std::string& result)
+                : result(result)
+            {}
+
+            virtual void VisitInt64(const EchoFieldInt64& field) override
+            {
+                result = "int64_t";
+            }
+
+            virtual void VisitUint64(const EchoFieldUint64& field) override
+            {
+                result = "uint64_t";
+            }
+
+            virtual void VisitInt32(const EchoFieldInt32& field) override
+            {
+                result = "int32_t";
+            }
+
+            virtual void VisitFixed64(const EchoFieldFixed64& field) override
+            {
+                result = "uint64_t";
+            }
+
+            virtual void VisitFixed32(const EchoFieldFixed32& field) override
+            {
+                result = "uint32_t";
+            }
+
+            virtual void VisitBool(const EchoFieldBool& field) override
+            {
+                result = "bool";
+            }
+
+            virtual void VisitString(const EchoFieldString& field) override
+            {
+                result = "infra::BoundedString::WithStorage<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">";
+            }
+
+            virtual void VisitStdString(const EchoFieldStdString& field) override
+            {
+                result = "std::string";
+            }
+
+            virtual void VisitEnum(const EchoFieldEnum& field) override
+            {
+                result = field.type->qualifiedDetailName;
+            }
+
+            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {
+                result = "int64_t";
+            }
+
+            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {
+                result = "int32_t";
+            }
+
+            virtual void VisitMessage(const EchoFieldMessage& field) override
+            {
+                result = field.message->qualifiedDetailName;
+            }
+
+            virtual void VisitBytes(const EchoFieldBytes& field) override
+            {
+                result = "infra::BoundedVector<uint8_t>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxBytesSize) + ">";
+            }
+
+            virtual void VisitUint32(const EchoFieldUint32& field) override
+            {
+                result = "uint32_t";
+            }
+
+            virtual void VisitRepeated(const EchoFieldRepeated& field) override
+            {
+                std::string r;
+                StorageTypeVisitor visitor(r);
+                field.type->Accept(visitor);
+                result = "infra::BoundedVector<" + r + ">::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">";
+            }
+
+        private:
+            std::string& result;
+        };
+
+        class ReferenceStorageTypeVisitor
+            : public EchoFieldVisitor
+        {
+        public:
+            ReferenceStorageTypeVisitor(std::string& result)
+                : result(result)
+            {}
+
+            virtual void VisitInt64(const EchoFieldInt64& field) override
+            {
+                result = "int64_t";
+            }
+
+            virtual void VisitUint64(const EchoFieldUint64& field) override
+            {
+                result = "uint64_t";
+            }
+
+            virtual void VisitInt32(const EchoFieldInt32& field) override
+            {
+                result = "int32_t";
+            }
+
+            virtual void VisitFixed64(const EchoFieldFixed64& field) override
+            {
+                result = "uint64_t";
+            }
+
+            virtual void VisitFixed32(const EchoFieldFixed32& field) override
+            {
+                result = "uint32_t";
+            }
+
+            virtual void VisitBool(const EchoFieldBool& field) override
+            {
+                result = "bool";
+            }
+
+            virtual void VisitString(const EchoFieldString& field) override
+            {
+                result = "infra::BoundedConstString";
+            }
+
+            virtual void VisitStdString(const EchoFieldStdString& field) override
+            {
+                result = "std::string";
+            }
+
+            virtual void VisitMessage(const EchoFieldMessage& field) override
+            {
+                result = field.message->qualifiedDetailReferenceName;
+            }
+
+            virtual void VisitBytes(const EchoFieldBytes& field) override
+            {
+                result = "infra::ConstByteRange";
+            }
+
+            virtual void VisitUint32(const EchoFieldUint32& field) override
+            {
+                result = "uint32_t";
+            }
+
+            virtual void VisitEnum(const EchoFieldEnum& field) override
+            {
+                result = field.type->name;
+            }
+
+            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {
+                result = "int64_t";
+            }
+
+            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {
+                result = "int32_t";
+            }
+
+            virtual void VisitRepeated(const EchoFieldRepeated& field) override
+            {
+                std::string r;
+                ReferenceStorageTypeVisitor visitor(r);
+                field.type->Accept(visitor);
+                result = "infra::BoundedVector<" + r + ">::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">";
+            }
+
+        private:
+            std::string& result;
+        };
+
         class ParameterTypeVisitor
             : public EchoFieldVisitor
         {
@@ -88,19 +268,12 @@ namespace application
                 result = "int32_t";
             }
 
-            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
+            virtual void VisitRepeated(const EchoFieldRepeated& field) override
             {
-                result = "const infra::BoundedVector<infra::BoundedString::WithStorage<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">>&";
-            }
-
-            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
-            {
-                result = "const infra::BoundedVector<" + field.message->qualifiedName + ">&";
-            }
-
-            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
-            {
-                result = "const infra::BoundedVector<uint32_t>&";
+                std::string r;
+                StorageTypeVisitor visitor(r);
+                field.type->Accept(visitor);
+                result = "const infra::BoundedVector<" + r + ">&";
             }
 
         private:
@@ -186,218 +359,17 @@ namespace application
                 result = "int32_t";
             }
 
-            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
+            virtual void VisitRepeated(const EchoFieldRepeated& field) override
             {
-                result = "const infra::BoundedVector<infra::BoundedConstString>&";
-            }
-
-            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
-            {
-                result = "const infra::BoundedVector<" + field.message->qualifiedDetailReferenceName + ">&";
-            }
-
-            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
-            {
-                result = "const infra::BoundedVector<uint32_t>&";
+                std::string r;
+                ReferenceStorageTypeVisitor visitor(r);
+                field.type->Accept(visitor);
+                result = "const infra::BoundedVector<" + r + ">&";
             }
 
         private:
             std::string& result;
             std::string messageSuffix;
-        };
-
-        class StorageTypeVisitor
-            : public EchoFieldVisitor
-        {
-        public:
-            StorageTypeVisitor(std::string& result)
-                : result(result)
-            {}
-
-            virtual void VisitInt64(const EchoFieldInt64& field) override
-            {
-                result = "int64_t";
-            }
-
-            virtual void VisitUint64(const EchoFieldUint64& field) override
-            {
-                result = "uint64_t";
-            }
-
-            virtual void VisitInt32(const EchoFieldInt32& field) override
-            {
-                result = "int32_t";
-            }
-
-            virtual void VisitFixed64(const EchoFieldFixed64& field) override
-            {
-                result = "uint64_t";
-            }
-
-            virtual void VisitFixed32(const EchoFieldFixed32& field) override
-            {
-                result = "uint32_t";
-            }
-
-            virtual void VisitBool(const EchoFieldBool& field) override
-            {
-                result = "bool";
-            }
-
-            virtual void VisitString(const EchoFieldString& field) override
-            {
-                result = "infra::BoundedString::WithStorage<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">";
-            }
-
-            virtual void VisitStdString(const EchoFieldStdString& field) override
-            {
-                result = "std::string";
-            }
-
-            virtual void VisitEnum(const EchoFieldEnum& field) override
-            {
-                result = field.type->qualifiedDetailName;
-            }
-
-            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
-            {
-                result = "int64_t";
-            }
-
-            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
-            {
-                result = "int32_t";
-            }
-
-            virtual void VisitMessage(const EchoFieldMessage& field) override
-            {
-                result = field.message->qualifiedDetailName;
-            }
-
-            virtual void VisitBytes(const EchoFieldBytes& field) override
-            {
-                result = "infra::BoundedVector<uint8_t>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxBytesSize) + ">";
-            }
-
-            virtual void VisitUint32(const EchoFieldUint32& field) override
-            {
-                result = "uint32_t";
-            }
-
-            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
-            {
-                result = "infra::BoundedVector<infra::BoundedString::WithStorage<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">";
-            }
-
-            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
-            {
-                result = "infra::BoundedVector<" + field.message->qualifiedDetailName + ">::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">";
-            }
-
-            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
-            {
-                result = "infra::BoundedVector<uint32_t>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">";
-            }
-
-        private:
-            std::string& result;
-        };
-
-        class ReferenceStorageTypeVisitor
-            : public EchoFieldVisitor
-        {
-        public:
-            ReferenceStorageTypeVisitor(std::string& result)
-                : result(result)
-            {}
-
-            virtual void VisitInt64(const EchoFieldInt64& field) override
-            {
-                result = "int64_t";
-            }
-
-            virtual void VisitUint64(const EchoFieldUint64& field) override
-            {
-                result = "uint64_t";
-            }
-
-            virtual void VisitInt32(const EchoFieldInt32& field) override
-            {
-                result = "int32_t";
-            }
-
-            virtual void VisitFixed64(const EchoFieldFixed64& field) override
-            {
-                result = "uint64_t";
-            }
-
-            virtual void VisitFixed32(const EchoFieldFixed32& field) override
-            {
-                result = "uint32_t";
-            }
-
-            virtual void VisitBool(const EchoFieldBool& field) override
-            {
-                result = "bool";
-            }
-
-            virtual void VisitString(const EchoFieldString& field) override
-            {
-                result = "infra::BoundedConstString";
-            }
-
-            virtual void VisitStdString(const EchoFieldStdString& field) override
-            {
-                result = "std::string";
-            }
-
-            virtual void VisitMessage(const EchoFieldMessage& field) override
-            {
-                result = field.message->qualifiedReferenceName;
-            }
-
-            virtual void VisitBytes(const EchoFieldBytes& field) override
-            {
-                result = "infra::ConstByteRange";
-            }
-
-            virtual void VisitUint32(const EchoFieldUint32& field) override
-            {
-                result = "uint32_t";
-            }
-
-            virtual void VisitEnum(const EchoFieldEnum& field) override
-            {
-                result = field.type->name;
-            }
-
-            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
-            {
-                result = "int64_t";
-            }
-
-            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
-            {
-                result = "int32_t";
-            }
-
-            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
-            {
-                result = "infra::BoundedVector<infra::BoundedConstString>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">";
-            }
-
-            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
-            {
-                result = "infra::BoundedVector<" + field.message->qualifiedReferenceName + ">::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">";
-            }
-
-            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
-            {
-                result = "infra::BoundedVector<uint32_t>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">";
-            }
-
-        private:
-            std::string& result;
         };
     }
 
@@ -494,98 +466,91 @@ namespace application
             : public EchoFieldVisitor
         {
         public:
-            GenerateTypeMapEntryVisitor(Entities& entities, const std::string& messageSuffix)
-                : entities(entities)
+            GenerateTypeMapEntryVisitor(std::string& result, const std::string& messageSuffix)
+                : result(result)
                 , messageSuffix(messageSuffix)
             {}
 
             virtual void VisitInt64(const EchoFieldInt64& field) override
             {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoInt64"));
+                result = "services::ProtoInt64";
             }
 
             virtual void VisitUint64(const EchoFieldUint64& field) override
             {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoUInt64"));
+                result = "services::ProtoUInt64";
             }
 
             virtual void VisitInt32(const EchoFieldInt32& field) override
             {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoInt32"));
+                result = "services::ProtoInt32";
             }
 
             virtual void VisitFixed64(const EchoFieldFixed64& field) override
             {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoFixed64"));
+                result = "services::ProtoFixed64";
             }
 
             virtual void VisitFixed32(const EchoFieldFixed32& field) override
             {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoFixed32"));
+                result = "services::ProtoFixed32";
             }
 
             virtual void VisitBool(const EchoFieldBool& field) override
             {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoBool"));
+                result = "services::ProtoBool";
             }
 
             virtual void VisitString(const EchoFieldString& field) override
             {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoString<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">"));
+                result = "services::ProtoString<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">";
             }
 
             virtual void VisitStdString(const EchoFieldStdString& field) override
             {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoStdString"));
+                result = "services::ProtoStdString";
             }
 
             virtual void VisitEnum(const EchoFieldEnum& field) override
             {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoEnum<" + field.type->containedInMessageName + field.type->name + ">"));
+                result = "services::ProtoEnum<" + field.type->containedInMessageName + field.type->name + ">";
             }
 
             virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
             {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoSFixed64"));
+                result = "services::ProtoSFixed64";
             }
 
             virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
             {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoSFixed32"));
+                result = "services::ProtoSFixed32";
             }
 
             virtual void VisitMessage(const EchoFieldMessage& field) override
             {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoMessage<" + field.message->qualifiedDetailName + messageSuffix + ">"));
+                result = "services::ProtoMessage<" + field.message->qualifiedDetailName + messageSuffix + ">";
             }
 
             virtual void VisitBytes(const EchoFieldBytes& field) override
             {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoBytes<" + google::protobuf::SimpleItoa(field.maxBytesSize) + ">"));
+                result = "services::ProtoBytes<" + google::protobuf::SimpleItoa(field.maxBytesSize) + ">";
             }
 
             virtual void VisitUint32(const EchoFieldUint32& field) override
             {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoUInt32"));
+                result = "services::ProtoUInt32";
             }
 
-            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
+            virtual void VisitRepeated(const EchoFieldRepeated& field) override
             {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoRepeated<" + google::protobuf::SimpleItoa(field.maxArraySize) + ", services::ProtoString<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">>"));
-            }
-
-            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
-            {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoRepeated<" + google::protobuf::SimpleItoa(field.maxArraySize) + ", services::ProtoMessage<" + field.message->qualifiedDetailName + messageSuffix + ">>"));
-            }
-
-            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
-            {
-                entities.Add(std::make_shared<Using>("ProtoType", "services::ProtoRepeated<" + google::protobuf::SimpleItoa(field.maxArraySize) + ", services::ProtoUInt32>"));
+                std::string r;
+                GenerateTypeMapEntryVisitor visitor(r, messageSuffix);
+                field.type->Accept(visitor);
+                result = "services::ProtoRepeated<" + google::protobuf::SimpleItoa(field.maxArraySize) + ", " + r + ">";
             }
 
         private:
-            Entities& entities;
+            std::string& result;
             std::string messageSuffix;
         };
 
@@ -599,8 +564,10 @@ namespace application
         {
             auto typeMapSpecialization = std::make_shared<StructTemplateSpecialization>(MessageName() + "TypeMap");
             typeMapSpecialization->TemplateSpecialization(google::protobuf::SimpleItoa(std::distance(message->fields.data(), &field)));
-            GenerateTypeMapEntryVisitor visitor(*typeMapSpecialization, MessageSuffix());
+            std::string result;
+            GenerateTypeMapEntryVisitor visitor(result, MessageSuffix());
             field->Accept(visitor);
+            typeMapSpecialization->Add(std::make_shared<Using>("ProtoType", result));
             AddTypeMapType(*field, *typeMapSpecialization);
             typeMapNamespace->Add(typeMapSpecialization);
         }
@@ -836,84 +803,85 @@ namespace application
             : public EchoFieldVisitor
         {
         public:
-            GenerateSerializerBodyVisitor(google::protobuf::io::Printer& printer)
+            GenerateSerializerBodyVisitor(google::protobuf::io::Printer& printer, const std::string& name)
                 : printer(printer)
+                , name(name)
             {}
 
             virtual void VisitInt64(const EchoFieldInt64& field) override
             {
                 printer.Print("formatter.PutVarIntField($name$, $constant$);\n"
-                    , "name", field.name
+                    , "name", name
                     , "constant", field.constantName);
             }
 
             virtual void VisitUint64(const EchoFieldUint64& field) override
             {
                 printer.Print("formatter.PutVarIntField($name$, $constant$);\n"
-                    , "name", field.name
+                    , "name", name
                     , "constant", field.constantName);
             }
 
             virtual void VisitInt32(const EchoFieldInt32& field) override
             {
                 printer.Print("formatter.PutVarIntField($name$, $constant$);\n"
-                    , "name", field.name
+                    , "name", name
                     , "constant", field.constantName);
             }
 
             virtual void VisitFixed64(const EchoFieldFixed64& field) override
             {
                 printer.Print("formatter.PutFixed64Field($name$, $constant$);\n"
-                    , "name", field.name
+                    , "name", name
                     , "constant", field.constantName);
             }
 
             virtual void VisitFixed32(const EchoFieldFixed32& field) override
             {
                 printer.Print("formatter.PutFixed32Field($name$, $constant$);\n"
-                    , "name", field.name
+                    , "name", name
                     , "constant", field.constantName);
             }
 
             virtual void VisitBool(const EchoFieldBool& field) override
             {
                 printer.Print("formatter.PutVarIntField($name$, $constant$);\n"
-                    , "name", field.name
+                    , "name", name
                     , "constant", field.constantName);
             }
 
             virtual void VisitString(const EchoFieldString& field) override
             {
                 printer.Print("formatter.PutStringField($name$, $constant$);\n"
-                    , "name", field.name
+                    , "name", name
                     , "constant", field.constantName);
             }
 
             virtual void VisitStdString(const EchoFieldStdString& field) override
             {
                 printer.Print("formatter.PutStringField($name$, $constant$);\n"
-                    , "name", field.name
+                    , "name", name
                     , "constant", field.constantName);
             }
 
             virtual void VisitEnum(const EchoFieldEnum& field) override
             {
                 printer.Print("formatter.PutVarIntField(static_cast<uint64_t>($name$), $constant$);\n"
-                    , "name", field.name
+                    , "name", name
                     , "constant", field.constantName);
             }
 
             virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
             {
                 printer.Print("formatter.PutFixed64Field(static_cast<uint64_t>($name$), $constant$);\n"
-                    , "name", field.name
+                    , "name", name
                     , "constant", field.constantName);
             }
 
             virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
             {
                 printer.Print("formatter.PutFixed32Field(static_cast<uint32_t>($name$), $constant$);\n"
-                    , "name", field.name
+                    , "name", name
                     , "constant", field.constantName);
             }
 
@@ -924,59 +892,38 @@ namespace application
     $name$.Serialize(formatter);
 }
 )"
-                , "name", field.name
+                , "name", name
                 , "constant", field.constantName);
             }
 
             virtual void VisitBytes(const EchoFieldBytes& field) override
             {
                 printer.Print("formatter.PutBytesField(infra::MakeRange($name$), $constant$);\n"
-                    , "name", field.name
+                    , "name", name
                     , "constant", field.constantName);
             }
 
             virtual void VisitUint32(const EchoFieldUint32& field) override
             {
                 printer.Print("formatter.PutVarIntField($name$, $constant$);\n"
-                    , "name", field.name
+                    , "name", name
                     , "constant", field.constantName);
             }
 
-            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
+            virtual void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 printer.Print(R"(for (auto& subField : $name$)
-    formatter.PutStringField(subField, $constant$);
-)"
-                , "name", field.name
-                , "constant", field.constantName);
-            }
-
-            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
-            {
-                printer.Print(R"(if (!$name$.empty())
-{
-    for (auto& subField : $name$)
-    {
-        infra::ProtoLengthDelimitedFormatter subFormatter = formatter.LengthDelimitedFormatter($constant$);
-        subField.Serialize(formatter);
-    }
-}
-)"
-                , "name", field.name
-                , "constant", field.constantName);
-            }
-
-            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
-            {
-                printer.Print(R"(for (auto& subField : $name$)
-    formatter.PutVarIntField(subField, $constant$);
-)"
-                , "name", field.name
-                , "constant", field.constantName);
+)",
+                    "name", name);
+                printer.Indent();
+                GenerateSerializerBodyVisitor visitor(printer, "subField");
+                field.type->Accept(visitor);
+                printer.Outdent();
             }
 
         private:
             google::protobuf::io::Printer& printer;
+            std::string name;
         };
 
         std::ostringstream result;
@@ -984,9 +931,11 @@ namespace application
             google::protobuf::io::OstreamOutputStream stream(&result);
             google::protobuf::io::Printer printer(&stream, '$', nullptr);
 
-            GenerateSerializerBodyVisitor visitor(printer);
             for (auto& field : message->fields)
+            {
+                GenerateSerializerBodyVisitor visitor(printer, field->name);
                 field->Accept(visitor);
+            }
         }
      
         return result.str();
@@ -1174,9 +1123,43 @@ namespace application
                 , "constant", field.constantName);
             }
 
-            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
+            virtual void VisitRepeated(const EchoFieldRepeated& field) override
             {
-                printer.Print(R"(case $constant$:
+                class GenerateNestedDeserializerBodyVisitor
+                    : public EchoFieldVisitor
+                {
+                public:
+                    GenerateNestedDeserializerBodyVisitor(google::protobuf::io::Printer& printer)
+                        : printer(printer)
+                    {}
+
+                    virtual void VisitInt64(const EchoFieldInt64& field) override
+                    {
+                    }
+
+                    virtual void VisitUint64(const EchoFieldUint64& field) override
+                    {
+                    }
+
+                    virtual void VisitInt32(const EchoFieldInt32& field) override
+                    {
+                    }
+
+                    virtual void VisitFixed64(const EchoFieldFixed64& field) override
+                    {
+                    }
+
+                    virtual void VisitFixed32(const EchoFieldFixed32& field) override
+                    {
+                    }
+
+                    virtual void VisitBool(const EchoFieldBool& field) override
+                    {
+                    }
+
+                    virtual void VisitString(const EchoFieldString& field) override
+                    {
+                        printer.Print(R"(case $constant$:
     parser.ReportResult(field.first.Is<infra::ProtoLengthDelimited>());
     if (field.first.Is<infra::ProtoLengthDelimited>())
     {
@@ -1184,14 +1167,29 @@ namespace application
         field.first.Get<infra::ProtoLengthDelimited>().GetString($name$.back());
     }
     break;
-)"
-                , "name", field.name
-                , "constant", field.constantName);
-            }
+)",
+                            "name", field.name, "constant", field.constantName);
+                    }
 
-            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
-            {
-                printer.Print(R"(case $constant$:
+                    virtual void VisitStdString(const EchoFieldStdString& field) override
+                    {
+                    }
+
+                    virtual void VisitEnum(const EchoFieldEnum& field) override
+                    {
+                    }
+
+                    virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+                    {
+                    }
+
+                    virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+                    {
+                    }
+
+                    virtual void VisitMessage(const EchoFieldMessage& field) override
+                    {
+                        printer.Print(R"(case $constant$:
     parser.ReportResult(field.first.Is<infra::ProtoLengthDelimited>());
     if (field.first.Is<infra::ProtoLengthDelimited>())
     {
@@ -1199,21 +1197,36 @@ namespace application
         $name$.emplace_back(parser);
     }
     break;
-)"
-                , "name", field.name
-                , "constant", field.constantName);
-            }
+)",
+                            "name", field.name, "constant", field.constantName);
+                    }
 
-            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
-            {
-                printer.Print(R"(case $constant$:
+                    virtual void VisitBytes(const EchoFieldBytes& field) override
+                    {
+                    }
+
+                    virtual void VisitUint32(const EchoFieldUint32& field) override
+                    {
+                        printer.Print(R"(case $constant$:
     parser.ReportResult(field.first.Is<uint64_t>());
     if (field.first.Is<uint64_t>())
         $name$.push_back(static_cast<uint32_t>(field.first.Get<uint64_t>()));
     break;
-)"
-                , "name", field.name
-                , "constant", field.constantName);
+)",
+                            "name", field.name, "constant", field.constantName);
+                    }
+
+                    virtual void VisitRepeated(const EchoFieldRepeated& field) override
+                    {
+                        std::abort();
+                    }
+
+                private:
+                    google::protobuf::io::Printer& printer;
+                };
+
+                GenerateNestedDeserializerBodyVisitor visitor(printer);
+                field.type->Accept(visitor);
             }
 
         private:
@@ -1585,9 +1598,43 @@ namespace application
 , "constant", field.constantName);
             }
 
-            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
+            virtual void VisitRepeated(const EchoFieldRepeated& field) override
             {
-                printer.Print(R"(case $constant$:
+                class GenerateRepeatedDeserializerBodyVisitor
+                    : public EchoFieldVisitor
+                {
+                public:
+                    GenerateRepeatedDeserializerBodyVisitor(google::protobuf::io::Printer& printer)
+                        : printer(printer)
+                    {}
+
+                    virtual void VisitInt64(const EchoFieldInt64& field) override
+                    {
+                    }
+
+                    virtual void VisitUint64(const EchoFieldUint64& field) override
+                    {
+                    }
+
+                    virtual void VisitInt32(const EchoFieldInt32& field) override
+                    {
+                    }
+
+                    virtual void VisitFixed64(const EchoFieldFixed64& field) override
+                    {
+                    }
+
+                    virtual void VisitFixed32(const EchoFieldFixed32& field) override
+                    {
+                    }
+
+                    virtual void VisitBool(const EchoFieldBool& field) override
+                    {
+                    }
+
+                    virtual void VisitString(const EchoFieldString& field) override
+                    {
+                        printer.Print(R"(case $constant$:
     parser.ReportResult(field.first.Is<infra::ProtoLengthDelimited>());
     if (field.first.Is<infra::ProtoLengthDelimited>())
     {
@@ -1595,14 +1642,17 @@ namespace application
         field.first.Get<infra::ProtoLengthDelimited>().GetStringReference($name$.back());
     }
     break;
-)"
-, "name", field.name
-, "constant", field.constantName);
-            }
+)",
+                            "name", field.name, "constant", field.constantName);
+                    }
 
-            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
-            {
-                printer.Print(R"(case $constant$:
+                    virtual void VisitStdString(const EchoFieldStdString& field) override
+                    {
+                    }
+
+                    virtual void VisitMessage(const EchoFieldMessage& field) override
+                    {
+                        printer.Print(R"(case $constant$:
     parser.ReportResult(field.first.Is<infra::ProtoLengthDelimited>());
     if (field.first.Is<infra::ProtoLengthDelimited>())
     {
@@ -1610,21 +1660,48 @@ namespace application
         $name$.emplace_back(parser);
     }
     break;
-)"
-, "name", field.name
-, "constant", field.constantName);
-            }
+)",
+                            "name", field.name, "constant", field.constantName);
+                    }
 
-            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
-            {
-                printer.Print(R"(case $constant$:
+                    virtual void VisitBytes(const EchoFieldBytes& field) override
+                    {
+                    }
+
+                    virtual void VisitUint32(const EchoFieldUint32& field) override
+                    {
+                        printer.Print(R"(case $constant$:
     parser.ReportResult(field.first.Is<uint64_t>());
     if (field.first.Is<uint64_t>())
         $name$.push_back(static_cast<uint32_t>(field.first.Get<uint64_t>()));
     break;
-)"
-, "name", field.name
-, "constant", field.constantName);
+)",
+                            "name", field.name, "constant", field.constantName);
+                    }
+
+                    virtual void VisitEnum(const EchoFieldEnum& field) override
+                    {
+                    }
+
+                    virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+                    {
+                    }
+
+                    virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+                    {
+                    }
+
+                    virtual void VisitRepeated(const EchoFieldRepeated& field) override
+                    {
+                        std::abort();
+                    }
+
+                private:
+                    google::protobuf::io::Printer& printer;
+                };
+
+                GenerateRepeatedDeserializerBodyVisitor visitor(printer);
+                field.type->Accept(visitor);
             }
 
         private:

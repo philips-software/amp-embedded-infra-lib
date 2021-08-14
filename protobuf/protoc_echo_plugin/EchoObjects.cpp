@@ -154,11 +154,11 @@ namespace application
             switch (fieldDescriptor.type())
             {
                 case google::protobuf::FieldDescriptor::TYPE_STRING:
-                    return std::make_shared<EchoFieldRepeatedString>(fieldDescriptor);
+                    return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldString>(fieldDescriptor));
                 case google::protobuf::FieldDescriptor::TYPE_MESSAGE:
-                    return std::make_shared<EchoFieldRepeatedMessage>(fieldDescriptor, root);
+                    return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldMessage>(fieldDescriptor, root));
                 case google::protobuf::FieldDescriptor::TYPE_UINT32:
-                    return std::make_shared<EchoFieldRepeatedUint32>(fieldDescriptor);
+                    return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldUint32>(fieldDescriptor));
                 default:
                     throw UnsupportedFieldType{ fieldDescriptor.name(), fieldDescriptor.type() };
             }
@@ -288,24 +288,96 @@ namespace application
                 maxMessageSize += 4 + MaxVarIntSize((field.number << 3) | 2);
             }
 
-            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
+            virtual void VisitRepeated(const EchoFieldRepeated& field) override
             {
-                maxMessageSize += field.maxArraySize * (field.maxStringSize + MaxVarIntSize(field.maxStringSize) + MaxVarIntSize((field.number << 3) | 2));
-            }
+                class GenerateNestedMaxMessageSizeVisitor
+                    : public EchoFieldVisitor
+                {
+                public:
+                    GenerateNestedMaxMessageSizeVisitor(uint32_t maxArraySize, uint32_t& maxMessageSize)
+                        : maxArraySize(maxArraySize)
+                        , maxMessageSize(maxMessageSize)
+                    {}
 
-            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
-            {
-                uint32_t fieldMaxMessageSize = 0;
-                GenerateMaxMessageSizeVisitor visitor(fieldMaxMessageSize);
-                for (auto& field : field.message->fields)
-                    field->Accept(visitor);
+                    virtual void VisitInt64(const EchoFieldInt64& field) override
+                    {
+                    }
 
-                maxMessageSize += field.maxArraySize * (fieldMaxMessageSize + MaxVarIntSize((field.number << 3) | 2));
-            }
+                    virtual void VisitUint64(const EchoFieldUint64& field) override
+                    {
+                    }
 
-            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
-            {
-                maxMessageSize += field.maxArraySize * (MaxVarIntSize(std::numeric_limits<uint32_t>::max()) + MaxVarIntSize((field.number << 3) | 2));
+                    virtual void VisitInt32(const EchoFieldInt32& field) override
+                    {
+                    }
+
+                    virtual void VisitFixed64(const EchoFieldFixed64& field) override
+                    {
+                    }
+
+                    virtual void VisitFixed32(const EchoFieldFixed32& field) override
+                    {
+                    }
+
+                    virtual void VisitBool(const EchoFieldBool& field) override
+                    {
+                    }
+
+                    virtual void VisitString(const EchoFieldString& field) override
+                    {
+                        maxMessageSize += maxArraySize * (field.maxStringSize + MaxVarIntSize(field.maxStringSize) + MaxVarIntSize((field.number << 3) | 2));
+                    }
+
+                    virtual void VisitStdString(const EchoFieldStdString& field) override
+                    {
+                    }
+
+                    virtual void VisitMessage(const EchoFieldMessage& field) override
+                    {
+                        uint32_t fieldMaxMessageSize = 0;
+                        GenerateMaxMessageSizeVisitor visitor(fieldMaxMessageSize);
+                        for (auto& field : field.message->fields)
+                            field->Accept(visitor);
+
+                        maxMessageSize += maxArraySize * (fieldMaxMessageSize + MaxVarIntSize((field.number << 3) | 2));
+                    }
+
+                    virtual void VisitBytes(const EchoFieldBytes& field) override
+                    {
+                    }
+
+                    virtual void VisitUint32(const EchoFieldUint32& field) override
+                    {
+                        maxMessageSize += maxArraySize * (MaxVarIntSize(std::numeric_limits<uint32_t>::max()) + MaxVarIntSize((field.number << 3) | 2));
+                    }
+
+                    virtual void VisitEnum(const EchoFieldEnum& field) override
+                    {
+                    }
+
+                    virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+                    {
+                    }
+
+                    virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+                    {
+                    }
+
+                    virtual void VisitRepeated(const EchoFieldRepeated& field) override
+                    {
+                        std::abort();
+                    }
+
+                private:
+                    uint32_t maxArraySize;
+                    uint32_t& maxMessageSize;
+                };
+
+                uint32_t max = 0;
+                GenerateNestedMaxMessageSizeVisitor visitor(field.maxArraySize, max);
+                field.type->Accept(visitor);
+
+                maxMessageSize = max;
             }
 
         private:
@@ -425,40 +497,18 @@ namespace application
         visitor.VisitSFixed64(*this);
     }
 
-    EchoFieldRepeated::EchoFieldRepeated(const google::protobuf::FieldDescriptor& descriptor)
+    EchoFieldRepeated::EchoFieldRepeated(const google::protobuf::FieldDescriptor& descriptor, const std::shared_ptr<EchoField>& type)
         : EchoField(descriptor)
         , maxArraySize(descriptor.options().GetExtension(array_size))
+        , type(type)
     {
         if (maxArraySize == 0)
             throw UnspecifiedArraySize{ name };
     }
 
-    EchoFieldRepeatedString::EchoFieldRepeatedString(const google::protobuf::FieldDescriptor& descriptor)
-        : EchoFieldRepeated(descriptor)
-        , maxStringSize(descriptor.options().GetExtension(string_size))
+    void EchoFieldRepeated::Accept(EchoFieldVisitor& visitor) const
     {
-        if (maxStringSize == 0)
-            throw UnspecifiedStringSize{ name };
-    }
-
-    void EchoFieldRepeatedString::Accept(EchoFieldVisitor& visitor) const
-    {
-        visitor.VisitRepeatedString(*this);
-    }
-
-    EchoFieldRepeatedMessage::EchoFieldRepeatedMessage(const google::protobuf::FieldDescriptor& descriptor, EchoRoot& root)
-        : EchoFieldRepeated(descriptor)
-        , message(root.GetMessage(*descriptor.message_type()))
-    {}
-
-    void EchoFieldRepeatedMessage::Accept(EchoFieldVisitor& visitor) const
-    {
-        visitor.VisitRepeatedMessage(*this);
-    }
-
-    void EchoFieldRepeatedUint32::Accept(EchoFieldVisitor& visitor) const
-    {
-        visitor.VisitRepeatedUint32(*this);
+        visitor.VisitRepeated(*this);
     }
 
     EchoMethod::EchoMethod(const google::protobuf::MethodDescriptor& descriptor, EchoRoot& root)

@@ -506,24 +506,95 @@ namespace application
                 std::cout << static_cast<int32_t>(fieldData.Get<uint32_t>());
             }
 
-            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
+            virtual void VisitRepeated(const EchoFieldRepeated& field) override
             {
-                infra::BoundedString string;
-                fieldData.Get<infra::ProtoLengthDelimited>().GetString(string);
-                std::cout << std::string(string.begin(), string.end());
-            }
+                class PrintRepeatedFieldVisitor
+                    : public EchoFieldVisitor
+                {
+                public:
+                    PrintRepeatedFieldVisitor(infra::Variant<uint32_t, uint64_t, infra::ProtoLengthDelimited>& fieldData, infra::ProtoParser& parser, Console& console)
+                        : fieldData(fieldData)
+                        , parser(parser)
+                        , console(console)
+                    {}
 
-            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
-            {
-                std::cout << "{ ";
-                infra::ProtoParser messageParser = fieldData.Get<infra::ProtoLengthDelimited>().Parser();
-                console.PrintMessage(*field.message, messageParser);
-                std::cout << " }";
-            }
+                    virtual void VisitInt64(const EchoFieldInt64& field) override
+                    {
+                    }
 
-            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
-            {
-                std::cout << fieldData.Get<uint32_t>();
+                    virtual void VisitUint64(const EchoFieldUint64& field) override
+                    {
+                    }
+
+                    virtual void VisitInt32(const EchoFieldInt32& field) override
+                    {
+                    }
+
+                    virtual void VisitFixed64(const EchoFieldFixed64& field) override
+                    {
+                    }
+
+                    virtual void VisitFixed32(const EchoFieldFixed32& field) override
+                    {
+                    }
+
+                    virtual void VisitBool(const EchoFieldBool& field) override
+                    {
+                    }
+
+                    virtual void VisitString(const EchoFieldString& field) override
+                    {
+                        infra::BoundedString string;
+                        fieldData.Get<infra::ProtoLengthDelimited>().GetString(string);
+                        std::cout << std::string(string.begin(), string.end());
+                    }
+
+                    virtual void VisitStdString(const EchoFieldStdString& field) override
+                    {
+                    }
+
+                    virtual void VisitMessage(const EchoFieldMessage& field) override
+                    {
+                        std::cout << "{ ";
+                        infra::ProtoParser messageParser = fieldData.Get<infra::ProtoLengthDelimited>().Parser();
+                        console.PrintMessage(*field.message, messageParser);
+                        std::cout << " }";
+                    }
+
+                    virtual void VisitBytes(const EchoFieldBytes& field) override
+                    {
+                    }
+
+                    virtual void VisitUint32(const EchoFieldUint32& field) override
+                    {
+                        std::cout << fieldData.Get<uint32_t>();
+                    }
+
+                    virtual void VisitEnum(const EchoFieldEnum& field) override
+                    {
+                    }
+
+                    virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+                    {
+                    }
+
+                    virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+                    {
+                    }
+
+                    virtual void VisitRepeated(const EchoFieldRepeated& field) override
+                    {
+                        std::abort();
+                    }
+
+                private:
+                    infra::Variant<uint32_t, uint64_t, infra::ProtoLengthDelimited>& fieldData;
+                    infra::ProtoParser& parser;
+                    Console& console;
+                };
+
+                PrintRepeatedFieldVisitor visitor(fieldData, parser, console);
+                field.Accept(visitor);
             }
 
         private:
@@ -655,21 +726,11 @@ namespace application
                 services::GlobalTracer().Continue() << "sfixed32";
             }
 
-            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
+            virtual void VisitRepeated(const EchoFieldRepeated& field) override
             {
-                services::GlobalTracer().Continue() << "string[" << field.maxStringSize << "][" << field.maxArraySize << "]";
-            }
-
-            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
-            {
-                services::GlobalTracer().Continue() << "{ ";
-                console.ListFields(*field.message);
-                services::GlobalTracer().Continue() << " }[" << field.maxArraySize << "]";
-            }
-
-            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
-            {
-                services::GlobalTracer().Continue() << "int32[" << field.maxArraySize << "]";
+                ListFieldVisitor visitor(console);
+                field.Accept(visitor);
+                services::GlobalTracer().Continue() << "[" << field.maxArraySize << "] ";
             }
 
             Console& console;
@@ -1058,58 +1119,130 @@ namespace application
                 formatter.PutVarIntField(value.Get<int64_t>(), field.number);
             }
 
-            virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) override
+            virtual void VisitRepeated(const EchoFieldRepeated& field) override
             {
-                if (!value.Is<std::vector<MessageTokens>>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex };
-
-                for (auto& messageTokens : value.Get<std::vector<MessageTokens>>())
+                struct EncodeRepeatedFieldVisitor
+                    : public EchoFieldVisitor
                 {
-                    if (messageTokens.tokens.size() < 1)
-                        throw ConsoleExceptions::MissingParameter{ valueIndex };
-                    if (messageTokens.tokens.size() > 1)
-                        throw ConsoleExceptions::TooManyParameters{ messageTokens.tokens[1].second };
-                    if (!messageTokens.tokens.front().first.Is<std::string>())
-                        throw ConsoleExceptions::IncorrectType{ messageTokens.tokens.front().second };
+                    EncodeRepeatedFieldVisitor(const MessageTokens::MessageTokenValue& value, std::size_t valueIndex, infra::ProtoFormatter& formatter, MethodInvocation& methodInvocation)
+                        : value(value)
+                        , valueIndex(valueIndex)
+                        , formatter(formatter)
+                        , methodInvocation(methodInvocation)
+                    {}
 
-                    formatter.PutStringField(infra::BoundedConstString(messageTokens.tokens.front().first.Get<std::string>().data(), messageTokens.tokens.front().first.Get<std::string>().size()), field.number);
-                }
-            }
+                    virtual void VisitInt64(const EchoFieldInt64& field) override
+                    {
+                    }
 
-            virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) override
-            {
-                if (!value.Is<std::vector<MessageTokens>>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+                    virtual void VisitUint64(const EchoFieldUint64& field) override
+                    {
+                    }
 
-                for (auto& messageTokens : value.Get<std::vector<MessageTokens>>())
-                {
-                    if (messageTokens.tokens.size() < 1)
-                        throw ConsoleExceptions::MissingParameter{ valueIndex };
-                    if (messageTokens.tokens.size() > 1)
-                        throw ConsoleExceptions::TooManyParameters{ messageTokens.tokens[1].second };
-                    if (!messageTokens.tokens.front().first.Is<MessageTokens>())
-                        throw ConsoleExceptions::IncorrectType{ messageTokens.tokens.front().second };
+                    virtual void VisitInt32(const EchoFieldInt32& field) override
+                    {
+                    }
 
-                    methodInvocation.EncodeMessage(*field.message, messageTokens.tokens.front().first.Get<MessageTokens>(), messageTokens.tokens.front().second, formatter);
-                }
-            }
+                    virtual void VisitFixed32(const EchoFieldFixed32& field) override
+                    {
+                    }
 
-            virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) override
-            {
-                if (!value.Is<std::vector<MessageTokens>>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+                    virtual void VisitFixed64(const EchoFieldFixed64& field) override
+                    {
+                    }
 
-                for (auto& messageTokens : value.Get<std::vector<MessageTokens>>())
-                {
-                    if (messageTokens.tokens.size() < 1)
-                        throw ConsoleExceptions::MissingParameter{ valueIndex };
-                    if (messageTokens.tokens.size() > 1)
-                        throw ConsoleExceptions::TooManyParameters{ messageTokens.tokens[1].second };
-                    if (!messageTokens.tokens.front().first.Is<int64_t>())
-                        throw ConsoleExceptions::IncorrectType{ messageTokens.tokens.front().second };
+                    virtual void VisitBool(const EchoFieldBool& field) override
+                    {
+                    }
 
-                    formatter.PutVarIntField(messageTokens.tokens.front().first.Get<int64_t>(), field.number);
-                }
+                    virtual void VisitString(const EchoFieldString& field) override
+                    {
+                        if (!value.Is<std::vector<MessageTokens>>())
+                            throw ConsoleExceptions::IncorrectType{ valueIndex };
+
+                        for (auto& messageTokens : value.Get<std::vector<MessageTokens>>())
+                        {
+                            if (messageTokens.tokens.size() < 1)
+                                throw ConsoleExceptions::MissingParameter{ valueIndex };
+                            if (messageTokens.tokens.size() > 1)
+                                throw ConsoleExceptions::TooManyParameters{ messageTokens.tokens[1].second };
+                            if (!messageTokens.tokens.front().first.Is<std::string>())
+                                throw ConsoleExceptions::IncorrectType{ messageTokens.tokens.front().second };
+
+                            formatter.PutStringField(infra::BoundedConstString(messageTokens.tokens.front().first.Get<std::string>().data(), messageTokens.tokens.front().first.Get<std::string>().size()), field.number);
+                        }
+                    }
+
+                    virtual void VisitStdString(const EchoFieldStdString& field) override
+                    {
+                    }
+
+                    virtual void VisitEnum(const EchoFieldEnum& field) override
+                    {
+                    }
+
+                    virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+                    {
+                    }
+
+                    virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+                    {
+                    }
+
+                    virtual void VisitMessage(const EchoFieldMessage& field) override
+                    {
+                        if (!value.Is<std::vector<MessageTokens>>())
+                            throw ConsoleExceptions::IncorrectType{ valueIndex };
+
+                        for (auto& messageTokens : value.Get<std::vector<MessageTokens>>())
+                        {
+                            if (messageTokens.tokens.size() < 1)
+                                throw ConsoleExceptions::MissingParameter{ valueIndex };
+                            if (messageTokens.tokens.size() > 1)
+                                throw ConsoleExceptions::TooManyParameters{ messageTokens.tokens[1].second };
+                            if (!messageTokens.tokens.front().first.Is<MessageTokens>())
+                                throw ConsoleExceptions::IncorrectType{ messageTokens.tokens.front().second };
+
+                            methodInvocation.EncodeMessage(*field.message, messageTokens.tokens.front().first.Get<MessageTokens>(), messageTokens.tokens.front().second, formatter);
+                        }
+                    }
+
+                    virtual void VisitBytes(const EchoFieldBytes& field) override
+                    {
+                    }
+
+                    virtual void VisitUint32(const EchoFieldUint32& field) override
+                    {
+                        if (!value.Is<std::vector<MessageTokens>>())
+                            throw ConsoleExceptions::IncorrectType{ valueIndex };
+
+                        for (auto& messageTokens : value.Get<std::vector<MessageTokens>>())
+                        {
+                            if (messageTokens.tokens.size() < 1)
+                                throw ConsoleExceptions::MissingParameter{ valueIndex };
+                            if (messageTokens.tokens.size() > 1)
+                                throw ConsoleExceptions::TooManyParameters{ messageTokens.tokens[1].second };
+                            if (!messageTokens.tokens.front().first.Is<int64_t>())
+                                throw ConsoleExceptions::IncorrectType{ messageTokens.tokens.front().second };
+
+                            formatter.PutVarIntField(messageTokens.tokens.front().first.Get<int64_t>(), field.number);
+                        }
+                    }
+
+                    virtual void VisitRepeated(const EchoFieldRepeated& field) override
+                    {
+                        std::abort();
+                    }
+
+                private:
+                    const MessageTokens::MessageTokenValue& value;
+                    std::size_t valueIndex;
+                    infra::ProtoFormatter& formatter;
+                    MethodInvocation& methodInvocation;
+                };
+
+                EncodeRepeatedFieldVisitor visitor(value, valueIndex, formatter, methodInvocation);
+                field.Accept(visitor);
             }
 
         private:

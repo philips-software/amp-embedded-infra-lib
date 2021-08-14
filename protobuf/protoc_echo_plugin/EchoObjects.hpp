@@ -207,40 +207,12 @@ namespace application
         : public EchoField
     {
     public:
-        EchoFieldRepeated(const google::protobuf::FieldDescriptor& descriptor);
-      
+        EchoFieldRepeated(const google::protobuf::FieldDescriptor& descriptor, const std::shared_ptr<EchoField>& type);
+
+        virtual void Accept(EchoFieldVisitor& visitor) const override;
+
         uint32_t maxArraySize;
-    };
-
-    class EchoFieldRepeatedString
-        : public EchoFieldRepeated
-    {
-    public:
-        EchoFieldRepeatedString(const google::protobuf::FieldDescriptor& descriptor);
-
-        virtual void Accept(EchoFieldVisitor& visitor) const override;
-
-        uint32_t maxStringSize;
-    };
-
-    class EchoFieldRepeatedMessage
-        : public EchoFieldRepeated
-    {
-    public:
-        EchoFieldRepeatedMessage(const google::protobuf::FieldDescriptor& descriptor, EchoRoot& root);
-
-        virtual void Accept(EchoFieldVisitor& visitor) const override;
-
-        std::shared_ptr<EchoMessage> message;
-    };
-
-    class EchoFieldRepeatedUint32
-        : public EchoFieldRepeated
-    {
-    public:
-        using EchoFieldRepeated::EchoFieldRepeated;
-
-        virtual void Accept(EchoFieldVisitor& visitor) const override;
+        std::shared_ptr<EchoField> type;
     };
 
     class EchoMethod
@@ -322,9 +294,7 @@ namespace application
         virtual void VisitEnum(const EchoFieldEnum& field) = 0;
         virtual void VisitSFixed64(const EchoFieldSFixed64& field) = 0;
         virtual void VisitSFixed32(const EchoFieldSFixed32& field) = 0;
-        virtual void VisitRepeatedString(const EchoFieldRepeatedString& field) = 0;
-        virtual void VisitRepeatedMessage(const EchoFieldRepeatedMessage& field) = 0;
-        virtual void VisitRepeatedUint32(const EchoFieldRepeatedUint32& field) = 0;
+        virtual void VisitRepeated(const EchoFieldRepeated& field) = 0;
     };
 
     struct UnsupportedFieldType
