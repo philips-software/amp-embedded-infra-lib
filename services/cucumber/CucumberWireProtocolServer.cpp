@@ -22,7 +22,8 @@ namespace services
         infra::SharedPtr<infra::StreamReader> reader = Subject().ReceiveStream();
         infra::TextInputStream::WithErrorPolicy stream(*reader);
 
-        if (auto available = stream.Available(); available > buffer.max_size() - buffer.size())
+        auto available = stream.Available();
+        if (available > buffer.max_size() - buffer.size())
         {
             while (!stream.Empty())
                 stream.ContiguousRange();

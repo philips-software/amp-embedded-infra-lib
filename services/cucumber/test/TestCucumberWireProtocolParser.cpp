@@ -32,8 +32,8 @@ TEST(CucumberStepMatcherTest, should_match_input_for_matching_steps)
         std::make_pair("", "")
     };
 
-    for (const auto& [stepString, matchString] : testVectors)
-        EXPECT_TRUE(CheckStepMatcher(stepString, matchString));
+    for (const auto& stepAndMatch : testVectors)
+        EXPECT_TRUE(CheckStepMatcher(stepAndMatch.first, stepAndMatch.second));
 }
 
 TEST(CucumberStepMatcherTest, should_not_match_input_for_non_matching_steps)
@@ -44,8 +44,8 @@ TEST(CucumberStepMatcherTest, should_not_match_input_for_non_matching_steps)
         std::make_pair("'%s' step", "'foo step")
     };
 
-    for (const auto& [stepString, matchString] : testVectors)
-        EXPECT_FALSE(CheckStepMatcher(stepString, matchString));
+    for (const auto& stepAndMatch : testVectors)
+        EXPECT_FALSE(CheckStepMatcher(stepAndMatch.first, stepAndMatch.second));
 }
 
 TEST(CucumberStepMatcherTest, should_report_if_step_has_arguments)
