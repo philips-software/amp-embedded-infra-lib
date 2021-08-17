@@ -14,7 +14,7 @@ namespace infra
     class ProtoLengthDelimited
     {
     public:
-        ProtoLengthDelimited(infra::DataInputStream inputStream, uint32_t length);
+        ProtoLengthDelimited(infra::DataInputStream inputStream, infra::StreamErrorPolicy& formatErrorPolicy, uint32_t length);
         ProtoLengthDelimited(const ProtoLengthDelimited& other);
         ~ProtoLengthDelimited() = default;
 
@@ -29,6 +29,7 @@ namespace infra
     private:
         infra::LimitedStreamReader limitedReader;
         infra::DataInputStream input;
+        infra::StreamErrorPolicy& formatErrorPolicy;
     };
 
     class ProtoParser
@@ -37,6 +38,7 @@ namespace infra
         using Field = std::pair<infra::Variant<uint32_t, uint64_t, ProtoLengthDelimited>, uint32_t>;
 
         explicit ProtoParser(infra::DataInputStream inputStream);
+        ProtoParser(infra::DataInputStream inputStream, infra::StreamErrorPolicy& formatErrorPolicy);
 
         bool Empty() const;
         uint64_t GetVarInt();
@@ -45,12 +47,13 @@ namespace infra
 
         Field GetField();
 
-        // Forward this result to the input stream
-        void ReportResult(bool ok);
+        void ReportFormatResult(bool ok);
+        bool FormatFailed() const;
 
     private:
         infra::LimitedStreamReader limitedReader;
         infra::DataInputStream input;
+        infra::StreamErrorPolicy& formatErrorPolicy;
     };
 }
 

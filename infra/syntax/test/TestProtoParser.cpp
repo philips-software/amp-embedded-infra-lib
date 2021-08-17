@@ -156,6 +156,6 @@ TEST(ProtoParserTest, ReportResult_is_propagated)
     infra::ByteInputStream::WithStorage<5> stream(infra::inPlace, std::array<uint8_t, 5>{ (1 << 3) | 2, 5, 5, 6, 7 }, infra::softFail);
     infra::ProtoParser parser(stream);
 
-    parser.ReportResult(false);
+    parser.ReportFormatResult(false);
     EXPECT_TRUE(stream.Failed());
 }

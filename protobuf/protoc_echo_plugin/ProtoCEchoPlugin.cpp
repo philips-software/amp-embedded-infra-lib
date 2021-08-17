@@ -954,7 +954,7 @@ namespace application
             virtual void VisitInt64(const EchoFieldInt64& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<uint64_t>());
+    parser.ReportFormatResult(field.first.Is<uint64_t>());
     if (field.first.Is<uint64_t>())
         $name$ = static_cast<int64_t>(field.first.Get<uint64_t>());
     break;
@@ -966,7 +966,7 @@ namespace application
             virtual void VisitUint64(const EchoFieldUint64& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<uint64_t>());
+    parser.ReportFormatResult(field.first.Is<uint64_t>());
     if (field.first.Is<uint64_t>())
         $name$ = field.first.Get<uint64_t>();
     break;
@@ -978,7 +978,7 @@ namespace application
             virtual void VisitInt32(const EchoFieldInt32& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<uint64_t>());
+    parser.ReportFormatResult(field.first.Is<uint64_t>());
     if (field.first.Is<uint64_t>())
         $name$ = static_cast<int32_t>(field.first.Get<uint64_t>());
     break;
@@ -990,7 +990,7 @@ namespace application
             virtual void VisitFixed64(const EchoFieldFixed64& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<uint64_t>());
+    parser.ReportFormatResult(field.first.Is<uint64_t>());
     if (field.first.Is<uint64_t>())
         $name$ = field.first.Get<uint64_t>();
     break;
@@ -1002,7 +1002,7 @@ namespace application
             virtual void VisitFixed32(const EchoFieldFixed32& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<uint32_t>());
+    parser.ReportFormatResult(field.first.Is<uint32_t>());
     if (field.first.Is<uint32_t>())
         $name$ = field.first.Get<uint32_t>();
     break;
@@ -1014,7 +1014,7 @@ namespace application
             virtual void VisitBool(const EchoFieldBool& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<uint64_t>());
+    parser.ReportFormatResult(field.first.Is<uint64_t>());
     if (field.first.Is<uint64_t>())
         $name$ = field.first.Get<uint64_t>() != 0;
     break;
@@ -1026,7 +1026,7 @@ namespace application
             virtual void VisitString(const EchoFieldString& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<infra::ProtoLengthDelimited>());
+    parser.ReportFormatResult(field.first.Is<infra::ProtoLengthDelimited>());
     if (field.first.Is<infra::ProtoLengthDelimited>())
         field.first.Get<infra::ProtoLengthDelimited>().GetString($name$);
     break;
@@ -1038,7 +1038,7 @@ namespace application
             virtual void VisitStdString(const EchoFieldStdString& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<infra::ProtoLengthDelimited>());
+    parser.ReportFormatResult(field.first.Is<infra::ProtoLengthDelimited>());
     if (field.first.Is<infra::ProtoLengthDelimited>())
         $name$ = field.first.Get<infra::ProtoLengthDelimited>().GetStdString();
     break;
@@ -1050,7 +1050,7 @@ namespace application
             virtual void VisitEnum(const EchoFieldEnum& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<uint64_t>());
+    parser.ReportFormatResult(field.first.Is<uint64_t>());
     if (field.first.Is<uint64_t>())
         $name$ = static_cast<$type$>(field.first.Get<uint64_t>());
     break;
@@ -1063,7 +1063,7 @@ namespace application
             virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<uint64_t>());
+    parser.ReportFormatResult(field.first.Is<uint64_t>());
     if (field.first.Is<uint64_t>())
         $name$ = static_cast<int64_t>(field.first.Get<uint64_t>());
     break;
@@ -1075,7 +1075,7 @@ namespace application
             virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<uint32_t>());
+    parser.ReportFormatResult(field.first.Is<uint32_t>());
     if (field.first.Is<uint32_t>())
         $name$ = static_cast<int32_t>(field.first.Get<uint32_t>());
     break;
@@ -1087,7 +1087,7 @@ namespace application
             virtual void VisitMessage(const EchoFieldMessage& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<infra::ProtoLengthDelimited>());
+    parser.ReportFormatResult(field.first.Is<infra::ProtoLengthDelimited>());
     if (field.first.Is<infra::ProtoLengthDelimited>())
     {
         infra::ProtoParser nestedParser = field.first.Get<infra::ProtoLengthDelimited>().Parser();
@@ -1102,7 +1102,7 @@ namespace application
             virtual void VisitBytes(const EchoFieldBytes& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<infra::ProtoLengthDelimited>());
+    parser.ReportFormatResult(field.first.Is<infra::ProtoLengthDelimited>());
     if (field.first.Is<infra::ProtoLengthDelimited>())
         field.first.Get<infra::ProtoLengthDelimited>().GetBytes($name$);
     break;
@@ -1114,7 +1114,7 @@ namespace application
             virtual void VisitUint32(const EchoFieldUint32& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<uint64_t>());
+    parser.ReportFormatResult(field.first.Is<uint64_t>());
     if (field.first.Is<uint64_t>())
         $name$ = static_cast<uint32_t>(field.first.Get<uint64_t>());
     break;
@@ -1160,7 +1160,7 @@ namespace application
                     virtual void VisitString(const EchoFieldString& field) override
                     {
                         printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<infra::ProtoLengthDelimited>());
+    parser.ReportFormatResult(field.first.Is<infra::ProtoLengthDelimited>());
     if (field.first.Is<infra::ProtoLengthDelimited>())
     {
         $name$.emplace_back();
@@ -1190,7 +1190,7 @@ namespace application
                     virtual void VisitMessage(const EchoFieldMessage& field) override
                     {
                         printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<infra::ProtoLengthDelimited>());
+    parser.ReportFormatResult(field.first.Is<infra::ProtoLengthDelimited>());
     if (field.first.Is<infra::ProtoLengthDelimited>())
     {
         infra::ProtoParser parser = field.first.Get<infra::ProtoLengthDelimited>().Parser();
@@ -1208,7 +1208,7 @@ namespace application
                     virtual void VisitUint32(const EchoFieldUint32& field) override
                     {
                         printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<uint64_t>());
+    parser.ReportFormatResult(field.first.Is<uint64_t>());
     if (field.first.Is<uint64_t>())
         $name$.push_back(static_cast<uint32_t>(field.first.Get<uint64_t>()));
     break;
@@ -1429,7 +1429,7 @@ namespace application
             virtual void VisitInt64(const EchoFieldInt64& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<uint64_t>());
+    parser.ReportFormatResult(field.first.Is<uint64_t>());
     if (field.first.Is<uint64_t>())
         $name$ = static_cast<int64_t>(field.first.Get<uint64_t>());
     break;
@@ -1441,7 +1441,7 @@ namespace application
             virtual void VisitUint64(const EchoFieldUint64& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<uint64_t>());
+    parser.ReportFormatResult(field.first.Is<uint64_t>());
     if (field.first.Is<uint64_t>())
         $name$ = field.first.Get<uint64_t>();
     break;
@@ -1453,7 +1453,7 @@ namespace application
             virtual void VisitInt32(const EchoFieldInt32& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<uint64_t>());
+    parser.ReportFormatResult(field.first.Is<uint64_t>());
     if (field.first.Is<uint64_t>())
         $name$ = static_cast<int32_t>(field.first.Get<uint64_t>());
     break;
@@ -1465,7 +1465,7 @@ namespace application
             virtual void VisitFixed64(const EchoFieldFixed64& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<uint64_t>());
+    parser.ReportFormatResult(field.first.Is<uint64_t>());
     if (field.first.Is<uint64_t>())
         $name$ = field.first.Get<uint64_t>();
     break;
@@ -1477,7 +1477,7 @@ namespace application
             virtual void VisitFixed32(const EchoFieldFixed32& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<uint32_t>());
+    parser.ReportFormatResult(field.first.Is<uint32_t>());
     if (field.first.Is<uint32_t>())
         $name$ = field.first.Get<uint32_t>();
     break;
@@ -1489,7 +1489,7 @@ namespace application
             virtual void VisitBool(const EchoFieldBool& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<uint64_t>());
+    parser.ReportFormatResult(field.first.Is<uint64_t>());
     if (field.first.Is<uint64_t>())
         $name$ = field.first.Get<uint64_t>() != 0;
     break;
@@ -1501,7 +1501,7 @@ namespace application
             virtual void VisitString(const EchoFieldString& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<infra::ProtoLengthDelimited>());
+    parser.ReportFormatResult(field.first.Is<infra::ProtoLengthDelimited>());
     if (field.first.Is<infra::ProtoLengthDelimited>())
         field.first.Get<infra::ProtoLengthDelimited>().GetStringReference($name$);
     break;
@@ -1513,7 +1513,7 @@ namespace application
             virtual void VisitStdString(const EchoFieldStdString& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<infra::ProtoLengthDelimited>());
+    parser.ReportFormatResult(field.first.Is<infra::ProtoLengthDelimited>());
     if (field.first.Is<infra::ProtoLengthDelimited>())
         $name$ = field.first.Get<infra::ProtoLengthDelimited>().GetStdString();
     break;
@@ -1525,7 +1525,7 @@ namespace application
             virtual void VisitMessage(const EchoFieldMessage& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<infra::ProtoLengthDelimited>());
+    parser.ReportFormatResult(field.first.Is<infra::ProtoLengthDelimited>());
     if (field.first.Is<infra::ProtoLengthDelimited>())
     {
         infra::ProtoParser nestedParser = field.first.Get<infra::ProtoLengthDelimited>().Parser();
@@ -1540,7 +1540,7 @@ namespace application
             virtual void VisitBytes(const EchoFieldBytes& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<infra::ProtoLengthDelimited>());
+    parser.ReportFormatResult(field.first.Is<infra::ProtoLengthDelimited>());
     if (field.first.Is<infra::ProtoLengthDelimited>())
         field.first.Get<infra::ProtoLengthDelimited>().GetBytesReference($name$);
     break;
@@ -1552,7 +1552,7 @@ namespace application
             virtual void VisitUint32(const EchoFieldUint32& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<uint64_t>());
+    parser.ReportFormatResult(field.first.Is<uint64_t>());
     if (field.first.Is<uint64_t>())
         $name$ = static_cast<uint32_t>(field.first.Get<uint64_t>());
     break;
@@ -1564,7 +1564,7 @@ namespace application
             virtual void VisitEnum(const EchoFieldEnum& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<uint64_t>());
+    parser.ReportFormatResult(field.first.Is<uint64_t>());
     if (field.first.Is<uint64_t>())
         $name$ = static_cast<$type$>(field.first.Get<uint64_t>());
     break;
@@ -1577,7 +1577,7 @@ namespace application
             virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<uint64_t>());
+    parser.ReportFormatResult(field.first.Is<uint64_t>());
     if (field.first.Is<uint64_t>())
         $name$ = static_cast<int64_t>(field.first.Get<uint64_t>());
     break;
@@ -1589,7 +1589,7 @@ namespace application
             virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
             {
                 printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<uint32_t>());
+    parser.ReportFormatResult(field.first.Is<uint32_t>());
     if (field.first.Is<uint32_t>())
         $name$ = static_cast<int32_t>(field.first.Get<uint32_t>());
     break;
@@ -1635,7 +1635,7 @@ namespace application
                     virtual void VisitString(const EchoFieldString& field) override
                     {
                         printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<infra::ProtoLengthDelimited>());
+    parser.ReportFormatResult(field.first.Is<infra::ProtoLengthDelimited>());
     if (field.first.Is<infra::ProtoLengthDelimited>())
     {
         $name$.emplace_back();
@@ -1653,7 +1653,7 @@ namespace application
                     virtual void VisitMessage(const EchoFieldMessage& field) override
                     {
                         printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<infra::ProtoLengthDelimited>());
+    parser.ReportFormatResult(field.first.Is<infra::ProtoLengthDelimited>());
     if (field.first.Is<infra::ProtoLengthDelimited>())
     {
         infra::ProtoParser parser = field.first.Get<infra::ProtoLengthDelimited>().Parser();
@@ -1671,7 +1671,7 @@ namespace application
                     virtual void VisitUint32(const EchoFieldUint32& field) override
                     {
                         printer.Print(R"(case $constant$:
-    parser.ReportResult(field.first.Is<uint64_t>());
+    parser.ReportFormatResult(field.first.Is<uint64_t>());
     if (field.first.Is<uint64_t>())
         $name$.push_back(static_cast<uint32_t>(field.first.Get<uint64_t>()));
     break;
@@ -1828,6 +1828,7 @@ namespace application
         auto handle = std::make_shared<Function>("Handle", HandleBody(), "void", Function::fVirtual | Function::fOverride);
         handle->Parameter("uint32_t methodId");
         handle->Parameter("infra::ProtoLengthDelimited& contents");
+        handle->Parameter("services::EchoErrorPolicy& errorPolicy");
         functions->Add(handle);
 
         serviceFormatter->Add(functions);
@@ -1909,7 +1910,8 @@ switch (methodId)
                     printer.Print(R"(    case id$name$:
     {
         $argument$ argument(parser);
-        $name$()", "name", method.name, "argument", method.parameter->qualifiedName);
+        if (!parser.FormatFailed())
+            $name$()", "name", method.name, "argument", method.parameter->qualifiedName);
 
                     for (auto& field: method.parameter->fields)
                     {
@@ -1925,12 +1927,14 @@ switch (methodId)
                 }
                 else
                     printer.Print(R"(    case id$name$:
-    {
         $name$();
         break;
-    }
 )", "name", method.name);
             }
+
+            printer.Print(R"(    default:
+        errorPolicy.MethodNotFound(ServiceId(), methodId);
+)");
 
             printer.Print("}\n");
         }

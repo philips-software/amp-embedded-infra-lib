@@ -2,9 +2,10 @@
 
 namespace infra
 {
-    ProtoLengthDelimited::ProtoLengthDelimited(infra::DataInputStream inputStream, uint32_t length)
+    ProtoLengthDelimited::ProtoLengthDelimited(infra::DataInputStream inputStream, infra::StreamErrorPolicy& formatErrorPolicy, uint32_t length)
         : limitedReader(inputStream.Reader(), length)
         , input(limitedReader, inputStream.ErrorPolicy())
+        , formatErrorPolicy(formatErrorPolicy)
     {
         inputStream.ErrorPolicy().ReportResult(inputStream.Available() >= length);
     }
@@ -12,6 +13,7 @@ namespace infra
     ProtoLengthDelimited::ProtoLengthDelimited(const ProtoLengthDelimited& other)
         : limitedReader(other.limitedReader)
         , input(limitedReader, other.input.ErrorPolicy())
+        , formatErrorPolicy(other.formatErrorPolicy)
     {}
 
     void ProtoLengthDelimited::SkipEverything()
@@ -22,13 +24,13 @@ namespace infra
 
     ProtoParser ProtoLengthDelimited::Parser()
     {
-        return ProtoParser(input);
+        return ProtoParser(input, formatErrorPolicy);
     }
 
     void ProtoLengthDelimited::GetString(infra::BoundedString& string)
     {
         string.resize(std::min(input.Available(), string.max_size()));
-        input.ErrorPolicy().ReportResult(string.size() == input.Available());
+        formatErrorPolicy.ReportResult(string.size() == input.Available());
         input >> infra::StringAsByteRange(string);
     }
 
@@ -47,7 +49,7 @@ namespace infra
     void ProtoLengthDelimited::GetBytes(infra::BoundedVector<uint8_t>& bytes)
     {
         bytes.resize(std::min(input.Available(), bytes.max_size()));
-        input.ErrorPolicy().ReportResult(bytes.size() == input.Available());
+        formatErrorPolicy.ReportResult(bytes.size() == input.Available());
         input >> infra::MakeRange(bytes);
     }
 
@@ -57,8 +59,13 @@ namespace infra
     }
 
     ProtoParser::ProtoParser(infra::DataInputStream inputStream)
+        : ProtoParser(inputStream, inputStream.ErrorPolicy())
+    {}
+
+    ProtoParser::ProtoParser(infra::DataInputStream inputStream, infra::StreamErrorPolicy& formatErrorPolicy)
         : limitedReader(inputStream.Reader(), inputStream.Available())
         , input(limitedReader, inputStream.ErrorPolicy())
+        , formatErrorPolicy(formatErrorPolicy)
     {}
 
     bool ProtoParser::Empty() const
@@ -110,17 +117,22 @@ namespace infra
             case 1:
                 return std::make_pair(GetFixed64(), fieldNumber);
             case 2:
-                return std::make_pair(ProtoLengthDelimited(input, static_cast<uint32_t>(GetVarInt())), fieldNumber);
+                return std::make_pair(ProtoLengthDelimited(input, formatErrorPolicy, static_cast<uint32_t>(GetVarInt())), fieldNumber);
             case 5:
                 return std::make_pair(GetFixed32(), fieldNumber);
             default:
-                input.ErrorPolicy().ReportResult(false);
+                formatErrorPolicy.ReportResult(false);
                 return std::make_pair(static_cast<uint32_t>(0), 0);
         }
     }
 
-    void ProtoParser::ReportResult(bool ok)
+    void ProtoParser::ReportFormatResult(bool ok)
     {
-        input.ErrorPolicy().ReportResult(ok);
+        formatErrorPolicy.ReportResult(ok);
+    }
+
+    bool ProtoParser::FormatFailed() const
+    {
+        return formatErrorPolicy.Failed();
     }
 }

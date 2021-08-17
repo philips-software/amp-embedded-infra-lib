@@ -47,6 +47,28 @@ namespace services
         using Type = uint32_t;
     };
 
+    class EchoErrorPolicy
+    {
+    protected:
+        ~EchoErrorPolicy() = default;
+
+    public:
+        virtual void MessageFormatError() = 0;
+        virtual void ServiceNotFound(uint32_t serviceId) = 0;
+        virtual void MethodNotFound(uint32_t serviceId, uint32_t methodId) = 0;
+    };
+
+    class EchoErrorPolicyAbort
+        : public EchoErrorPolicy
+    {
+    public:
+        virtual void MessageFormatError() override;
+        virtual void ServiceNotFound(uint32_t serviceId) override;
+        virtual void MethodNotFound(uint32_t serviceId, uint32_t methodId) override;
+    };
+
+    extern EchoErrorPolicyAbort echoErrorPolicyAbort;
+
     class Echo
     {
     public:
@@ -70,11 +92,11 @@ namespace services
         void MethodDone();
         uint32_t ServiceId() const;
         bool InProgress() const;
-        void HandleMethod(uint32_t methodId, infra::ProtoLengthDelimited& contents);
+        void HandleMethod(uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy);
 
     protected:
         Echo& Rpc();
-        virtual void Handle(uint32_t methodId, infra::ProtoLengthDelimited& contents) = 0;
+        virtual void Handle(uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy) = 0;
 
     private:
         Echo& echo;
@@ -110,7 +132,7 @@ namespace services
         template<std::size_t MaxMessageSize>
             using WithMaxMessageSize = infra::WithStorage<ServiceForwarder, std::array<uint8_t, MaxMessageSize>>;
 
-        virtual void Handle(uint32_t methodId, infra::ProtoLengthDelimited& contents) override;
+        virtual void Handle(uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy) override;
 
     private:
         const infra::ByteRange messageBuffer;
@@ -123,6 +145,8 @@ namespace services
         , public infra::EnableSharedFromThis<EchoOnStreams>
     {
     public:
+        EchoOnStreams(EchoErrorPolicy& errorPolicy = echoErrorPolicyAbort);
+
         // Implementation of Echo
         virtual void RequestSend(ServiceProxy& serviceProxy) override;
         virtual infra::StreamWriter& SendStreamWriter() override;
@@ -138,6 +162,10 @@ namespace services
         void ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents);
         void SetStreamWriter(infra::SharedPtr<infra::StreamWriter>&& writer);
         bool ServiceBusy() const;
+        bool ProcessMessage(infra::DataInputStream& stream);
+
+    protected:
+        EchoErrorPolicy& errorPolicy;
 
     private:
         infra::IntrusiveList<Service> services;
@@ -151,6 +179,8 @@ namespace services
         , public ConnectionObserver
     {
     public:
+        using EchoOnStreams::EchoOnStreams;
+
         // Implementation of ConnectionObserver
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void DataReceived() override;
@@ -165,7 +195,7 @@ namespace services
         , public MessageCommunicationObserver
     {
     public:
-        using MessageCommunicationObserver::MessageCommunicationObserver;
+        EchoOnMessageCommunication(MessageCommunication& subject, EchoErrorPolicy& errorPolicy = echoErrorPolicyAbort);
 
         // Implementation of MessageCommunicationObserver
         virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;

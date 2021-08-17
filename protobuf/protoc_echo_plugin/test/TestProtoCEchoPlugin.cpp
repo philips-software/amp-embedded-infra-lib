@@ -430,12 +430,35 @@ TEST(ProtoCEchoPluginTest, deserialize_nested_repeated_message)
     EXPECT_EQ(6, message.message[1].value);
 }
 
-TEST(ProtoCEchoPluginTest, invoke_service_proxy_method)
+namespace
 {
+    class EchoErrorPolicyMock
+        : public services::EchoErrorPolicy
+    {
+    public:
+        MOCK_METHOD0(MessageFormatError, void());
+        MOCK_METHOD1(ServiceNotFound, void(uint32_t serviceId));
+        MOCK_METHOD2(MethodNotFound, void(uint32_t serviceId, uint32_t methodId));
+    };
+}
+
+class EchoTest
+    : public testing::Test
+{
+public:
+    EchoTest()
+    {
+        connection.Attach(infra::UnOwnedSharedPtr(echo));
+    }
+
+    testing::StrictMock<EchoErrorPolicyMock> errorPolicy;
     services::ConnectionMock connection;
-    services::EchoOnConnection echo;
-    connection.Attach(infra::UnOwnedSharedPtr(echo));
-    test_messages::TestService1Proxy service(echo);
+    services::EchoOnConnection echo{ errorPolicy };
+};
+
+TEST_F(EchoTest, invoke_service_proxy_method)
+{
+    test_messages::TestService1Proxy service{ echo };
 
     testing::StrictMock<infra::MockCallback<void()>> onGranted;
     EXPECT_CALL(connection, RequestSendStream(18));
@@ -450,20 +473,20 @@ TEST(ProtoCEchoPluginTest, invoke_service_proxy_method)
     EXPECT_EQ((std::vector<uint8_t>{ 1, 10, 2, 8, 5 }), (std::vector<uint8_t>(writer.Storage().begin(), writer.Storage().begin() + 5)));
 }
 
-class TestService1Mock
-    : public test_messages::TestService1
+namespace
 {
-public:
-    using test_messages::TestService1::TestService1;
+    class TestService1Mock
+        : public test_messages::TestService1
+    {
+    public:
+        using test_messages::TestService1::TestService1;
 
-    MOCK_METHOD1(Method, void(uint32_t value));
-};
+        MOCK_METHOD1(Method, void(uint32_t value));
+    };
+}
 
-TEST(ProtoCEchoPluginTest, service_method_is_invoked)
+TEST_F(EchoTest, service_method_is_invoked)
 {
-    testing::StrictMock<services::ConnectionMock> connection;
-    services::EchoOnConnection echo;
-    connection.Attach(infra::UnOwnedSharedPtr(echo));
     testing::StrictMock<TestService1Mock> service(echo);
 
     infra::ByteInputStreamReader::WithStorage<128> reader;
@@ -473,6 +496,81 @@ TEST(ProtoCEchoPluginTest, service_method_is_invoked)
     auto emptyReaderPtr = infra::UnOwnedSharedPtr(emptyReader);
     EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr)).WillOnce(testing::Return(emptyReaderPtr));
     EXPECT_CALL(service, Method(5));
+    EXPECT_CALL(connection, AckReceived());
+    connection.Observer().DataReceived();
+}
+
+TEST_F(EchoTest, MessageFormatError_is_reported_when_message_is_not_a_LengthDelimited)
+{
+    testing::StrictMock<TestService1Mock> service(echo);
+
+    infra::ByteInputStreamReader::WithStorage<128> reader;
+    infra::Copy(infra::MakeRange(std::array<uint8_t, 3>{ 1, 0, 2 }), infra::Head(infra::MakeRange(reader.Storage()), 3));
+    auto readerPtr = infra::UnOwnedSharedPtr(reader);
+    infra::ByteInputStreamReader::WithStorage<0> emptyReader;
+    auto emptyReaderPtr = infra::UnOwnedSharedPtr(emptyReader);
+    EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr)).WillOnce(testing::Return(emptyReaderPtr));
+    EXPECT_CALL(errorPolicy, MessageFormatError());
+    EXPECT_CALL(connection, AckReceived());
+    connection.Observer().DataReceived();
+}
+
+TEST_F(EchoTest, MessageFormatError_is_reported_when_message_is_of_unknown_type)
+{
+    testing::StrictMock<TestService1Mock> service(echo);
+
+    infra::ByteInputStreamReader::WithStorage<128> reader;
+    infra::Copy(infra::MakeRange(std::array<uint8_t, 2>{ 1, 6 }), infra::Head(infra::MakeRange(reader.Storage()), 2));
+    auto readerPtr = infra::UnOwnedSharedPtr(reader);
+    infra::ByteInputStreamReader::WithStorage<0> emptyReader;
+    auto emptyReaderPtr = infra::UnOwnedSharedPtr(emptyReader);
+    EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr)).WillOnce(testing::Return(emptyReaderPtr));
+    EXPECT_CALL(errorPolicy, MessageFormatError());
+    EXPECT_CALL(connection, AckReceived());
+    connection.Observer().DataReceived();
+}
+
+TEST_F(EchoTest, MessageFormatError_is_reported_when_parameter_in_message_is_of_incorrect_type)
+{
+    testing::StrictMock<TestService1Mock> service(echo);
+
+    infra::ByteInputStreamReader::WithStorage<128> reader;
+    infra::Copy(infra::MakeRange(std::array<uint8_t, 8>{ 1, 10, 2, 13, 5, 0, 0, 0 }), infra::Head(infra::MakeRange(reader.Storage()), 8));
+    auto readerPtr = infra::UnOwnedSharedPtr(reader);
+    infra::ByteInputStreamReader::WithStorage<0> emptyReader;
+    auto emptyReaderPtr = infra::UnOwnedSharedPtr(emptyReader);
+    EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr)).WillOnce(testing::Return(emptyReaderPtr));
+    EXPECT_CALL(errorPolicy, MessageFormatError());
+    EXPECT_CALL(connection, AckReceived());
+    connection.Observer().DataReceived();
+}
+
+TEST_F(EchoTest, ServiceNotFound_is_reported)
+{
+    testing::StrictMock<TestService1Mock> service(echo);
+
+    infra::ByteInputStreamReader::WithStorage<128> reader;
+    infra::Copy(infra::MakeRange(std::array<uint8_t, 5>{ 2, 10, 2, 8, 5 }), infra::Head(infra::MakeRange(reader.Storage()), 5));
+    auto readerPtr = infra::UnOwnedSharedPtr(reader);
+    infra::ByteInputStreamReader::WithStorage<0> emptyReader;
+    auto emptyReaderPtr = infra::UnOwnedSharedPtr(emptyReader);
+    EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr)).WillOnce(testing::Return(emptyReaderPtr));
+    EXPECT_CALL(errorPolicy, ServiceNotFound(2));
+    EXPECT_CALL(connection, AckReceived());
+    connection.Observer().DataReceived();
+}
+
+TEST_F(EchoTest, MethodNotFound_is_reported)
+{
+    testing::StrictMock<TestService1Mock> service(echo);
+
+    infra::ByteInputStreamReader::WithStorage<128> reader;
+    infra::Copy(infra::MakeRange(std::array<uint8_t, 5>{ 1, 18, 2, 8, 5 }), infra::Head(infra::MakeRange(reader.Storage()), 5));
+    auto readerPtr = infra::UnOwnedSharedPtr(reader);
+    infra::ByteInputStreamReader::WithStorage<0> emptyReader;
+    auto emptyReaderPtr = infra::UnOwnedSharedPtr(emptyReader);
+    EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr)).WillOnce(testing::Return(emptyReaderPtr));
+    EXPECT_CALL(errorPolicy, MethodNotFound(1, 2));
     EXPECT_CALL(connection, AckReceived());
     connection.Observer().DataReceived();
 }

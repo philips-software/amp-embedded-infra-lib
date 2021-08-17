@@ -4,6 +4,8 @@
 
 namespace services
 {
+    EchoErrorPolicyAbort echoErrorPolicyAbort;
+
     Service::Service(Echo& echo, uint32_t id)
         : echo(echo)
         , serviceId(id)
@@ -32,10 +34,10 @@ namespace services
         return inProgress;
     }
 
-    void Service::HandleMethod(uint32_t methodId, infra::ProtoLengthDelimited& contents)
+    void Service::HandleMethod(uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy)
     {
         inProgress = true;
-        Handle(methodId, contents);
+        Handle(methodId, contents, errorPolicy);
     }
 
     Echo& Service::Rpc()
@@ -76,7 +78,7 @@ namespace services
         , messageBuffer(messageBuffer)
     {}
 
-    void ServiceForwarder::Handle(uint32_t methodId, infra::ProtoLengthDelimited& contents)
+    void ServiceForwarder::Handle(uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy)
     {
         this->methodId = methodId;
 
@@ -101,7 +103,7 @@ namespace services
         {
             infra::DataOutputStream::WithErrorPolicy stream(services::ServiceProxy::Rpc().SendStreamWriter());
             infra::ProtoFormatter formatter(stream);
-            formatter.PutVarInt(ServiceId());            
+            formatter.PutVarInt(ServiceId());
             formatter.PutBytesField(*bytes, this->methodId);
             bytes = infra::none;
 
@@ -109,6 +111,25 @@ namespace services
             MethodDone();
         });
     }
+
+    void EchoErrorPolicyAbort::MessageFormatError()
+    {
+        std::abort();
+    }
+
+    void EchoErrorPolicyAbort::ServiceNotFound(uint32_t serviceId)
+    {
+        std::abort();
+    }
+
+    void EchoErrorPolicyAbort::MethodNotFound(uint32_t serviceId, uint32_t methodId)
+    {
+        std::abort();
+    }
+
+    EchoOnStreams::EchoOnStreams(EchoErrorPolicy& errorPolicy)
+        : errorPolicy(errorPolicy)
+    {}
 
     void EchoOnStreams::RequestSend(ServiceProxy& serviceProxy)
     {
@@ -145,9 +166,9 @@ namespace services
 
     void EchoOnStreams::AttachService(Service& service)
     {
-    	for (auto& s : services)
-    		if (s.ServiceId() == service.ServiceId())
-    			std::abort();
+        for (auto& s : services)
+            if (s.ServiceId() == service.ServiceId())
+                std::abort();
 
         services.push_back(service);
     }
@@ -165,9 +186,12 @@ namespace services
                 if (service.InProgress())
                     serviceBusy = serviceId;
                 else
-                    service.HandleMethod(methodId, contents);
-                break;
+                    service.HandleMethod(methodId, contents, errorPolicy);
+
+                return;
             }
+
+        errorPolicy.ServiceNotFound(serviceId);
     }
 
     void EchoOnStreams::SetStreamWriter(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -184,6 +208,28 @@ namespace services
         return serviceBusy != infra::none;
     }
 
+    bool EchoOnStreams::ProcessMessage(infra::DataInputStream& stream)
+    {
+        infra::StreamErrorPolicy formatErrorPolicy(infra::softFail);
+        infra::ProtoParser parser(stream, formatErrorPolicy);
+        uint32_t serviceId = static_cast<uint32_t>(parser.GetVarInt());
+        infra::ProtoParser::Field message = parser.GetField();
+        if (stream.Failed())
+            return false;
+
+        if (formatErrorPolicy.Failed() || !message.first.Is<infra::ProtoLengthDelimited>())
+            errorPolicy.MessageFormatError();
+        else
+        {
+            ExecuteMethod(serviceId, message.second, message.first.Get<infra::ProtoLengthDelimited>());
+
+            if (stream.Failed() || formatErrorPolicy.Failed())
+                errorPolicy.MessageFormatError();
+        }
+
+        return true;
+    }
+
     void EchoOnConnection::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         SetStreamWriter(std::move(writer));
@@ -195,19 +241,11 @@ namespace services
         {
             infra::SharedPtr<infra::StreamReader> reader = ConnectionObserver::Subject().ReceiveStream();
             infra::DataInputStream::WithErrorPolicy stream(*reader, infra::softFail);
-            infra::ProtoParser parser(stream);
-            uint32_t serviceId = static_cast<uint32_t>(parser.GetVarInt());
-            infra::ProtoParser::Field message = parser.GetField();
-            if (stream.Failed())
-                break;
+            if (ProcessMessage(stream))
+                ConnectionObserver::Subject().AckReceived();
 
-            ExecuteMethod(serviceId, message.second, message.first.Get<infra::ProtoLengthDelimited>());
-            if (stream.Failed())
-                std::abort();
             if (ServiceBusy())
                 break;
-
-            ConnectionObserver::Subject().AckReceived();
 
             if (stream.Empty())
                 break;
@@ -223,6 +261,11 @@ namespace services
     {
         DataReceived();
     }
+
+    EchoOnMessageCommunication::EchoOnMessageCommunication(MessageCommunication& subject, EchoErrorPolicy& errorPolicy)
+        : EchoOnStreams(errorPolicy)
+        , MessageCommunicationObserver(subject)
+    {}
 
     void EchoOnMessageCommunication::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
@@ -255,15 +298,7 @@ namespace services
     void EchoOnMessageCommunication::ProcessMessage()
     {
         infra::DataInputStream::WithErrorPolicy stream(*reader, infra::softFail);
-        infra::ProtoParser parser(stream);
-        uint32_t serviceId = static_cast<uint32_t>(parser.GetVarInt());
-        infra::ProtoParser::Field message = parser.GetField();
-        if (stream.Failed())
-            return;
-
-        assert(message.first.Is<infra::ProtoLengthDelimited>());
-        ExecuteMethod(serviceId, message.second, message.first.Get<infra::ProtoLengthDelimited>());
-        if (stream.Failed())
-            std::abort();
+        if (!EchoOnStreams::ProcessMessage(stream))
+            errorPolicy.MessageFormatError();
     }
 }
