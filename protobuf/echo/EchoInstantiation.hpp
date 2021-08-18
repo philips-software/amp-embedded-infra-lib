@@ -17,7 +17,7 @@ namespace main_
         operator services::Echo&() { return echo; }
 
         services::MessageCommunicationCobs::WithMaxMessageSize<MessageSize> cobs;
-        services::WindowedMessageCommunication::WithReceiveBuffer<MessageSize> windowed{ cobs };
+        services::MessageCommunicationWindowed::WithReceiveBuffer<MessageSize> windowed{ cobs };
         services::EchoOnMessageCommunication echo{ windowed };
     };
 

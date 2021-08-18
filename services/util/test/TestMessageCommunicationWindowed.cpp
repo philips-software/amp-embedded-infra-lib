@@ -4,7 +4,7 @@
 #include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/ConstructBin.hpp"
 #include "infra/util/Endian.hpp"
-#include "services/util/MessageCommunication.hpp"
+#include "services/util/MessageCommunicationWindowed.hpp"
 #include "gmock/gmock.h"
 #include <deque>
 
@@ -143,7 +143,7 @@ public:
     infra::NotifyingSharedOptional<infra::StdVectorOutputStreamWriter> writer;
     infra::AutoResetFunction<void(uint16_t size)> onSent;
     infra::Execute execute{ [this]() { ExpectSendMessageStream(3); } };
-    services::WindowedMessageCommunication::WithReceiveBuffer<12> communication{ base };
+    services::MessageCommunicationWindowed::WithReceiveBuffer<12> communication{ base };
     testing::StrictMock<MessageCommunicationObserverMock> observer{ communication };
 };
 
