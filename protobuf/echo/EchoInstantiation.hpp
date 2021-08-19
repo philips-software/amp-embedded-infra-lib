@@ -4,6 +4,7 @@
 #include "protobuf/echo/Echo.hpp"
 #include "infra/util/BoundedVector.hpp"
 #include "services/util/MessageCommunicationCobs.hpp"
+#include "services/util/MessageCommunicationWindowed.hpp"
 
 namespace main_
 {
