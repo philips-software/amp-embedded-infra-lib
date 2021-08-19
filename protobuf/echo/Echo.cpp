@@ -1,5 +1,4 @@
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
-#include "infra/syntax/ProtoFormatter.hpp"
 #include "protobuf/echo/Echo.hpp"
 
 namespace services

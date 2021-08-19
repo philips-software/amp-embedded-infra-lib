@@ -269,7 +269,7 @@ TEST(ProtoCEchoPluginTest, deserialize_bytes)
 
 TEST(ProtoCEchoPluginTest, serialize_uint32)
 {
-    test_messages::TestUint32 message;
+    test_messages::TestUInt32 message;
     message.value = 5;
 
     infra::ByteOutputStream::WithStorage<100> stream;
@@ -285,7 +285,7 @@ TEST(ProtoCEchoPluginTest, deserialize_uint32)
     infra::ByteInputStream stream(data);
     infra::ProtoParser parser(stream);
 
-    test_messages::TestUint32 message(parser);
+    test_messages::TestUInt32 message(parser);
     EXPECT_EQ(5, message.value);
 }
 
@@ -313,7 +313,7 @@ TEST(ProtoCEchoPluginTest, deserialize_uint64)
 
 TEST(ProtoCEchoPluginTest, serialize_repeated_uint32)
 {
-    test_messages::TestRepeatedUint32 message;
+    test_messages::TestRepeatedUInt32 message;
     message.value.push_back(5);
     message.value.push_back(6);
 
@@ -330,7 +330,7 @@ TEST(ProtoCEchoPluginTest, deserialize_repeated_uint32)
     infra::ByteInputStream stream(data);
     infra::ProtoParser parser(stream);
 
-    test_messages::TestRepeatedUint32 message(parser);
+    test_messages::TestRepeatedUInt32 message(parser);
     EXPECT_EQ(2, message.value.size());
     EXPECT_EQ(5, message.value[0]);
     EXPECT_EQ(6, message.value[1]);

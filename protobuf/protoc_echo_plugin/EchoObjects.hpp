@@ -18,12 +18,15 @@ namespace application
     {
     public:
         EchoField(const google::protobuf::FieldDescriptor& descriptor);
+        EchoField(const std::string& protoType, const google::protobuf::FieldDescriptor& descriptor);
         EchoField(const EchoField& other) = delete;
         EchoField& operator=(const EchoField& other) = delete;
         virtual ~EchoField() = default;
 
         virtual void Accept(EchoFieldVisitor& visitor) const = 0;
 
+        std::string protoType;
+        std::string protoReferenceType;
         std::string name;
         int number;
         std::string constantName;
@@ -72,7 +75,7 @@ namespace application
         : public EchoField
     {
     public:
-        using EchoField::EchoField;
+        EchoFieldInt32(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -81,7 +84,7 @@ namespace application
         : public EchoField
     {
     public:
-        using EchoField::EchoField;
+        EchoFieldInt64(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -90,7 +93,7 @@ namespace application
         : public EchoField
     {
     public:
-        using EchoField::EchoField;
+        EchoFieldFixed32(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -99,7 +102,7 @@ namespace application
         : public EchoField
     {
     public:
-        using EchoField::EchoField;
+        EchoFieldFixed64(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -108,7 +111,7 @@ namespace application
         : public EchoField
     {
     public:
-        using EchoField::EchoField;
+        EchoFieldSFixed32(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -117,7 +120,7 @@ namespace application
         : public EchoField
     {
     public:
-        using EchoField::EchoField;
+        EchoFieldSFixed64(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -126,7 +129,7 @@ namespace application
         : public EchoField
     {
     public:
-        using EchoField::EchoField;
+        EchoFieldBool(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -178,7 +181,7 @@ namespace application
         : public EchoField
     {
     public:
-        using EchoField::EchoField;
+        EchoFieldUint32(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -187,7 +190,7 @@ namespace application
         : public EchoField
     {
     public:
-        using EchoField::EchoField;
+        EchoFieldUint64(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };

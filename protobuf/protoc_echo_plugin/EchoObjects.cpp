@@ -106,7 +106,13 @@ namespace application
     }
 
     EchoField::EchoField(const google::protobuf::FieldDescriptor& descriptor)
-        : name(descriptor.name())
+        : EchoField("", descriptor)
+    {}
+
+    EchoField::EchoField(const std::string& protoType, const google::protobuf::FieldDescriptor& descriptor)
+        : protoType(protoType)
+        , protoReferenceType(protoType)
+        , name(descriptor.name())
         , number(descriptor.number())
         , constantName(google::protobuf::compiler::cpp::FieldConstantName(&descriptor))
     {}
@@ -153,12 +159,35 @@ namespace application
         else
             switch (fieldDescriptor.type())
             {
+                case google::protobuf::FieldDescriptor::TYPE_INT64:
+                    return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldInt64>(fieldDescriptor));
+                case google::protobuf::FieldDescriptor::TYPE_UINT64:
+                    return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldUint64>(fieldDescriptor));
+                case google::protobuf::FieldDescriptor::TYPE_INT32:
+                    return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldInt32>(fieldDescriptor));
+                case google::protobuf::FieldDescriptor::TYPE_FIXED64:
+                    return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldFixed64>(fieldDescriptor));
+                case google::protobuf::FieldDescriptor::TYPE_FIXED32:
+                    return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldFixed32>(fieldDescriptor));
+                case google::protobuf::FieldDescriptor::TYPE_BOOL:
+                    return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldBool>(fieldDescriptor));
                 case google::protobuf::FieldDescriptor::TYPE_STRING:
-                    return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldString>(fieldDescriptor));
+                    if (fieldDescriptor.options().GetExtension(string_size) != 0)
+                        return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldString>(fieldDescriptor));
+                    else
+                        return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldStdString>(fieldDescriptor));
                 case google::protobuf::FieldDescriptor::TYPE_MESSAGE:
                     return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldMessage>(fieldDescriptor, root));
+                case google::protobuf::FieldDescriptor::TYPE_BYTES:
+                    return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldBytes>(fieldDescriptor));
                 case google::protobuf::FieldDescriptor::TYPE_UINT32:
                     return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldUint32>(fieldDescriptor));
+                case google::protobuf::FieldDescriptor::TYPE_ENUM:
+                    return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldEnum>(fieldDescriptor, root));
+                case google::protobuf::FieldDescriptor::TYPE_SFIXED64:
+                    return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldSFixed64>(fieldDescriptor));
+                case google::protobuf::FieldDescriptor::TYPE_SFIXED32:
+                    return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldSFixed32>(fieldDescriptor));
                 default:
                     throw UnsupportedFieldType{ fieldDescriptor.name(), fieldDescriptor.type() };
             }
@@ -290,94 +319,10 @@ namespace application
 
             virtual void VisitRepeated(const EchoFieldRepeated& field) override
             {
-                class GenerateNestedMaxMessageSizeVisitor
-                    : public EchoFieldVisitor
-                {
-                public:
-                    GenerateNestedMaxMessageSizeVisitor(uint32_t maxArraySize, uint32_t& maxMessageSize)
-                        : maxArraySize(maxArraySize)
-                        , maxMessageSize(maxMessageSize)
-                    {}
-
-                    virtual void VisitInt64(const EchoFieldInt64& field) override
-                    {
-                    }
-
-                    virtual void VisitUint64(const EchoFieldUint64& field) override
-                    {
-                    }
-
-                    virtual void VisitInt32(const EchoFieldInt32& field) override
-                    {
-                    }
-
-                    virtual void VisitFixed64(const EchoFieldFixed64& field) override
-                    {
-                    }
-
-                    virtual void VisitFixed32(const EchoFieldFixed32& field) override
-                    {
-                    }
-
-                    virtual void VisitBool(const EchoFieldBool& field) override
-                    {
-                    }
-
-                    virtual void VisitString(const EchoFieldString& field) override
-                    {
-                        maxMessageSize += maxArraySize * (field.maxStringSize + MaxVarIntSize(field.maxStringSize) + MaxVarIntSize((field.number << 3) | 2));
-                    }
-
-                    virtual void VisitStdString(const EchoFieldStdString& field) override
-                    {
-                    }
-
-                    virtual void VisitMessage(const EchoFieldMessage& field) override
-                    {
-                        uint32_t fieldMaxMessageSize = 0;
-                        GenerateMaxMessageSizeVisitor visitor(fieldMaxMessageSize);
-                        for (auto& field : field.message->fields)
-                            field->Accept(visitor);
-
-                        maxMessageSize += maxArraySize * (fieldMaxMessageSize + MaxVarIntSize((field.number << 3) | 2));
-                    }
-
-                    virtual void VisitBytes(const EchoFieldBytes& field) override
-                    {
-                    }
-
-                    virtual void VisitUint32(const EchoFieldUint32& field) override
-                    {
-                        maxMessageSize += maxArraySize * (MaxVarIntSize(std::numeric_limits<uint32_t>::max()) + MaxVarIntSize((field.number << 3) | 2));
-                    }
-
-                    virtual void VisitEnum(const EchoFieldEnum& field) override
-                    {
-                    }
-
-                    virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
-                    {
-                    }
-
-                    virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
-                    {
-                    }
-
-                    virtual void VisitRepeated(const EchoFieldRepeated& field) override
-                    {
-                        std::abort();
-                    }
-
-                private:
-                    uint32_t maxArraySize;
-                    uint32_t& maxMessageSize;
-                };
-
                 uint32_t max = 0;
-                GenerateNestedMaxMessageSizeVisitor visitor(field.maxArraySize, max);
+                GenerateMaxMessageSizeVisitor visitor(max);
                 field.type->Accept(visitor);
-
-                maxMessageSize = max;
+                maxMessageSize = field.maxArraySize * max;
             }
 
         private:
@@ -397,25 +342,45 @@ namespace application
         {}
     }
 
+    EchoFieldInt32::EchoFieldInt32(const google::protobuf::FieldDescriptor& descriptor)
+        : EchoField("services::ProtoInt32", descriptor)
+    {}
+
     void EchoFieldInt32::Accept(EchoFieldVisitor& visitor) const
     {
         visitor.VisitInt32(*this);
     }
+
+    EchoFieldInt64::EchoFieldInt64(const google::protobuf::FieldDescriptor& descriptor)
+        : EchoField("services::ProtoInt64", descriptor)
+    {}
 
     void EchoFieldInt64::Accept(EchoFieldVisitor& visitor) const
     {
         visitor.VisitInt64(*this);
     }
 
+    EchoFieldFixed32::EchoFieldFixed32(const google::protobuf::FieldDescriptor& descriptor)
+        : EchoField("services::ProtoFixed32", descriptor)
+    {}
+
     void EchoFieldFixed32::Accept(EchoFieldVisitor& visitor) const
     {
         visitor.VisitFixed32(*this);
     }
 
+    EchoFieldFixed64::EchoFieldFixed64(const google::protobuf::FieldDescriptor& descriptor)
+        : EchoField("services::ProtoFixed64", descriptor)
+    {}
+
     void EchoFieldFixed64::Accept(EchoFieldVisitor& visitor) const
     {
         visitor.VisitFixed64(*this);
     }
+
+    EchoFieldBool::EchoFieldBool(const google::protobuf::FieldDescriptor& descriptor)
+        : EchoField("services::ProtoBool", descriptor)
+    {}
 
     void EchoFieldBool::Accept(EchoFieldVisitor& visitor) const
     {
@@ -427,6 +392,7 @@ namespace application
         , maxStringSize(descriptor.options().GetExtension(string_size))
     {
         assert(maxStringSize != 0);
+        protoReferenceType = protoType = "services::ProtoString<" + google::protobuf::SimpleItoa(maxStringSize) + ">";
     }
 
     void EchoFieldString::Accept(EchoFieldVisitor& visitor) const
@@ -435,7 +401,7 @@ namespace application
     }
 
     EchoFieldStdString::EchoFieldStdString(const google::protobuf::FieldDescriptor& descriptor)
-        : EchoField(descriptor)
+        : EchoField("services::ProtoStdString" , descriptor)
     {}
 
     void EchoFieldStdString::Accept(EchoFieldVisitor& visitor) const
@@ -447,7 +413,10 @@ namespace application
         : EchoField(descriptor)
         , message(root.GetMessage(*descriptor.message_type()))
         , descriptor(descriptor)
-    {}
+    {
+        protoType = "services::ProtoMessage<" + message->qualifiedDetailName + ">";
+        protoReferenceType = "services::ProtoMessage<" + message->qualifiedDetailReferenceName + ">";
+    }
 
     void EchoFieldMessage::Accept(EchoFieldVisitor& visitor) const
     {
@@ -460,6 +429,8 @@ namespace application
     {
         if (maxBytesSize == 0)
             throw UnspecifiedBytesSize{ name };
+
+        protoReferenceType = protoType = "services::ProtoBytes<" + google::protobuf::SimpleItoa(maxBytesSize) + ">";
     }
 
     void EchoFieldBytes::Accept(EchoFieldVisitor& visitor) const
@@ -467,10 +438,18 @@ namespace application
         visitor.VisitBytes(*this);
     }
 
+    EchoFieldUint32::EchoFieldUint32(const google::protobuf::FieldDescriptor& descriptor)
+        : EchoField("services::ProtoUInt32", descriptor)
+    {}
+
     void EchoFieldUint32::Accept(EchoFieldVisitor& visitor) const
     {
         visitor.VisitUint32(*this);
     }
+
+    EchoFieldUint64::EchoFieldUint64(const google::protobuf::FieldDescriptor& descriptor)
+        : EchoField("services::ProtoUInt64", descriptor)
+    {}
 
     void EchoFieldUint64::Accept(EchoFieldVisitor& visitor) const
     {
@@ -480,17 +459,27 @@ namespace application
     EchoFieldEnum::EchoFieldEnum(const google::protobuf::FieldDescriptor& descriptor, EchoRoot& root)
         : EchoField(descriptor)
         , type(root.GetEnum(*descriptor.enum_type()))
-    {}
+    {
+        protoReferenceType = protoType = "services::ProtoEnum<" + type->qualifiedDetailName + ">";
+    }
 
     void EchoFieldEnum::Accept(EchoFieldVisitor& visitor) const
     {
         visitor.VisitEnum(*this);
     }
 
+    EchoFieldSFixed32::EchoFieldSFixed32(const google::protobuf::FieldDescriptor& descriptor)
+        : EchoField("services::ProtoSFixed32", descriptor)
+    {}
+
     void EchoFieldSFixed32::Accept(EchoFieldVisitor& visitor) const
     {
         visitor.VisitSFixed32(*this);
     }
+
+    EchoFieldSFixed64::EchoFieldSFixed64(const google::protobuf::FieldDescriptor& descriptor)
+        : EchoField("services::ProtoSFixed64", descriptor)
+    {}
 
     void EchoFieldSFixed64::Accept(EchoFieldVisitor& visitor) const
     {
@@ -504,6 +493,9 @@ namespace application
     {
         if (maxArraySize == 0)
             throw UnspecifiedArraySize{ name };
+
+        protoType = "services::ProtoRepeated<" + google::protobuf::SimpleItoa(maxArraySize) + ", " + type->protoType + ">";
+        protoReferenceType = "services::ProtoRepeated<" + google::protobuf::SimpleItoa(maxArraySize) + ", " + type->protoReferenceType + ">";
     }
 
     void EchoFieldRepeated::Accept(EchoFieldVisitor& visitor) const
