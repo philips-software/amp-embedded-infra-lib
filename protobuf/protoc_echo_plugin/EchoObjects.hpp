@@ -145,11 +145,11 @@ namespace application
         uint32_t maxStringSize;
     };
 
-    class EchoFieldStdString
+    class EchoFieldUnboundedString
         : public EchoField
     {
     public:
-        EchoFieldStdString(const google::protobuf::FieldDescriptor& descriptor);
+        EchoFieldUnboundedString(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -227,6 +227,17 @@ namespace application
         std::shared_ptr<EchoField> type;
     };
 
+    class EchoFieldUnboundedRepeated
+        : public EchoField
+    {
+    public:
+        EchoFieldUnboundedRepeated(const google::protobuf::FieldDescriptor& descriptor, const std::shared_ptr<EchoField>& type);
+
+        virtual void Accept(EchoFieldVisitor& visitor) const override;
+
+        std::shared_ptr<EchoField> type;
+    };
+
     class EchoMethod
     {
     public:
@@ -299,7 +310,7 @@ namespace application
         virtual void VisitFixed32(const EchoFieldFixed32& field) = 0;
         virtual void VisitBool(const EchoFieldBool& field) = 0;
         virtual void VisitString(const EchoFieldString& field) = 0;
-        virtual void VisitStdString(const EchoFieldStdString& field) = 0;
+        virtual void VisitUnboundedString(const EchoFieldUnboundedString& field) = 0;
         virtual void VisitMessage(const EchoFieldMessage& field) = 0;
         virtual void VisitBytes(const EchoFieldBytes& field) = 0;
         virtual void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) = 0;
@@ -308,6 +319,7 @@ namespace application
         virtual void VisitSFixed64(const EchoFieldSFixed64& field) = 0;
         virtual void VisitSFixed32(const EchoFieldSFixed32& field) = 0;
         virtual void VisitRepeated(const EchoFieldRepeated& field) = 0;
+        virtual void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) = 0;
     };
 
     struct UnsupportedFieldType

@@ -460,7 +460,7 @@ namespace application
                 std::cout << fieldData.Get<infra::ProtoLengthDelimited>().GetStdString();
             }
 
-            virtual void VisitStdString(const EchoFieldStdString& field) override
+            virtual void VisitUnboundedString(const EchoFieldUnboundedString& field) override
             {
                 std::cout << fieldData.Get<infra::ProtoLengthDelimited>().GetStdString();
             }
@@ -516,7 +516,13 @@ namespace application
             virtual void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 PrintFieldVisitor visitor(fieldData, parser, console);
-                field.Accept(visitor);
+                field.type->Accept(visitor);
+            }
+
+            virtual void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
+            {
+                PrintFieldVisitor visitor(fieldData, parser, console);
+                field.type->Accept(visitor);
             }
 
         private:
@@ -611,7 +617,7 @@ namespace application
                 services::GlobalTracer().Continue() << "string[" << field.maxStringSize << "]";
             }
 
-            virtual void VisitStdString(const EchoFieldStdString& field) override
+            virtual void VisitUnboundedString(const EchoFieldUnboundedString& field) override
             {
                 services::GlobalTracer().Continue() << "string";
             }
@@ -656,8 +662,14 @@ namespace application
             virtual void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 ListFieldVisitor visitor(console);
-                field.Accept(visitor);
+                field.type->Accept(visitor);
                 services::GlobalTracer().Continue() << "[" << field.maxArraySize << "] ";
+            }
+
+            virtual void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
+            {
+                ListFieldVisitor visitor(console);
+                field.type->Accept(visitor);
             }
 
             Console& console;
@@ -978,7 +990,7 @@ namespace application
                 formatter.PutStringField(infra::BoundedConstString(value.Get<std::string>().data(), value.Get<std::string>().size()), field.number);
             }
 
-            virtual void VisitStdString(const EchoFieldStdString& field) override
+            virtual void VisitUnboundedString(const EchoFieldUnboundedString& field) override
             {
                 if (!value.Is<std::string>())
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
@@ -1067,6 +1079,25 @@ namespace application
             }
 
             virtual void VisitRepeated(const EchoFieldRepeated& field) override
+            {
+                if (!value.Is<std::vector<MessageTokens>>())
+                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+
+                for (auto& messageTokens : value.Get<std::vector<MessageTokens>>())
+                {
+                    if (messageTokens.tokens.size() < 1)
+                        throw ConsoleExceptions::MissingParameter{ valueIndex };
+                    if (messageTokens.tokens.size() > 1)
+                        throw ConsoleExceptions::TooManyParameters{ messageTokens.tokens[1].second };
+                    if (!messageTokens.tokens.front().first.Is<int64_t>())
+                        throw ConsoleExceptions::IncorrectType{ messageTokens.tokens.front().second };
+
+                    EncodeFieldVisitor visitor(messageTokens, valueIndex, formatter, methodInvocation);
+                    field.type->Accept(visitor);
+                }
+            }
+
+            virtual void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
             {
                 if (!value.Is<std::vector<MessageTokens>>())
                     throw ConsoleExceptions::IncorrectType{ valueIndex };

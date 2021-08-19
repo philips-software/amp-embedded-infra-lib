@@ -97,6 +97,24 @@ message TestRepeatedEverything {
   repeated bytes v15 = 15 [(array_size) = 10];
 }
 
+message TestUnboundedRepeatedEverything {
+  repeated Enumeration v1 = 1;
+  repeated int32 v2 = 2;
+  repeated int64 v3 = 3;
+  repeated uint32 v4 = 4;
+  repeated uint64 v5 = 5;
+  repeated fixed32 v6 = 6;
+  repeated sfixed64 v7 = 7;
+  repeated fixed64 v8 = 8;
+  repeated sfixed32 v9 = 9;
+  repeated bool v10 = 10;
+  repeated string v11 = 11 [(string_size) = 20];
+  repeated string v12 = 12;
+  repeated TestUInt32 v13 = 13;
+  repeated bytes v14 = 14 [(bytes_size) = 10];
+  repeated bytes v15 = 15;
+}
+
 message TestNestedMessage
 {
     message NestedMessage

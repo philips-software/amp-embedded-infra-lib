@@ -53,7 +53,7 @@ namespace application
                 result = "infra::BoundedString::WithStorage<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">";
             }
 
-            virtual void VisitStdString(const EchoFieldStdString& field) override
+            virtual void VisitUnboundedString(const EchoFieldUnboundedString& field) override
             {
                 result = "std::string";
             }
@@ -99,6 +99,14 @@ namespace application
                 StorageTypeVisitor visitor(r);
                 field.type->Accept(visitor);
                 result = "infra::BoundedVector<" + r + ">::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">";
+            }
+
+            virtual void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
+            {
+                std::string r;
+                StorageTypeVisitor visitor(r);
+                field.type->Accept(visitor);
+                result = "std::vector<" + r + ">";
             }
 
         protected:
@@ -151,7 +159,7 @@ namespace application
                 result = "infra::BoundedConstString";
             }
 
-            virtual void VisitStdString(const EchoFieldStdString& field) override
+            virtual void VisitUnboundedString(const EchoFieldUnboundedString& field) override
             {
                 result = "const std::string&";
             }
@@ -182,6 +190,14 @@ namespace application
                 StorageTypeVisitor visitor(r);
                 field.type->Accept(visitor);
                 result = "const infra::BoundedVector<" + r + ">&";
+            }
+
+            virtual void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
+            {
+                std::string r;
+                StorageTypeVisitor visitor(r);
+                field.type->Accept(visitor);
+                result = "const std::vector<" + r + ">&";
             }
         };
 

@@ -22,7 +22,7 @@ namespace services
     struct ProtoFixed64 {};
     struct ProtoSFixed32 {};
     struct ProtoSFixed64 {};
-    struct ProtoStdString {};
+    struct ProtoUnboundedString {};
     struct ProtoUnboundedBytes {};
 
     template<class T>
@@ -40,6 +40,9 @@ namespace services
     template<std::size_t Max, class T>
     struct ProtoRepeated {};
 
+    template<class T>
+    struct ProtoUnboundedRepeated {};
+
     void SerializeField(ProtoBool, infra::ProtoFormatter& formatter, bool value, uint32_t fieldNumber);
     void SerializeField(ProtoUInt32, infra::ProtoFormatter& formatter, uint32_t value, uint32_t fieldNumber);
     void SerializeField(ProtoInt32, infra::ProtoFormatter& formatter, int32_t value, uint32_t fieldNumber);
@@ -49,11 +52,15 @@ namespace services
     void SerializeField(ProtoFixed64, infra::ProtoFormatter& formatter, uint64_t value, uint32_t fieldNumber);
     void SerializeField(ProtoSFixed32, infra::ProtoFormatter& formatter, int32_t value, uint32_t fieldNumber);
     void SerializeField(ProtoSFixed64, infra::ProtoFormatter& formatter, int64_t value, uint32_t fieldNumber);
-    void SerializeField(ProtoStdString, infra::ProtoFormatter& formatter, const std::string& value, uint32_t fieldNumber);
+    void SerializeField(ProtoUnboundedString, infra::ProtoFormatter& formatter, const std::string& value, uint32_t fieldNumber);
     void SerializeField(ProtoUnboundedBytes, infra::ProtoFormatter& formatter, const std::vector<uint8_t>& value, uint32_t fieldNumber);
 
     template<std::size_t Max, class T, class U>
     void SerializeField(ProtoRepeated<Max, T>, infra::ProtoFormatter& formatter, const infra::BoundedVector<U>& value, uint32_t fieldNumber);
+    template<class T, class U>
+    void SerializeField(ProtoUnboundedRepeated<T>, infra::ProtoFormatter& formatter, const std::vector<U>& value, uint32_t fieldNumber);
+    template<class T>
+    void SerializeField(ProtoUnboundedRepeated<T>, infra::ProtoFormatter& formatter, const std::vector<bool>& value, uint32_t fieldNumber);
     template<class T, class U>
     void SerializeField(ProtoMessage<T>, infra::ProtoFormatter& formatter, const U& value, uint32_t fieldNumber);
     template<class T>
@@ -72,11 +79,15 @@ namespace services
     void DeserializeField(ProtoFixed64, infra::ProtoParser& parser, infra::ProtoParser::Field& field, uint64_t& value);
     void DeserializeField(ProtoSFixed32, infra::ProtoParser& parser, infra::ProtoParser::Field& field, int32_t& value);
     void DeserializeField(ProtoSFixed64, infra::ProtoParser& parser, infra::ProtoParser::Field& field, int64_t& value);
-    void DeserializeField(ProtoStdString, infra::ProtoParser& parser, infra::ProtoParser::Field& field, std::string& value);
+    void DeserializeField(ProtoUnboundedString, infra::ProtoParser& parser, infra::ProtoParser::Field& field, std::string& value);
     void DeserializeField(ProtoUnboundedBytes, infra::ProtoParser& parser, infra::ProtoParser::Field& field, std::vector<uint8_t>& value);
 
     template<std::size_t Max, class T, class U>
     void DeserializeField(ProtoRepeated<Max, T>, infra::ProtoParser& parser, infra::ProtoParser::Field& field, infra::BoundedVector<U>& value);
+    template<class T, class U>
+    void DeserializeField(ProtoUnboundedRepeated<T>, infra::ProtoParser& parser, infra::ProtoParser::Field& field, std::vector<U>& value);
+    template<class T>
+    void DeserializeField(ProtoUnboundedRepeated<T>, infra::ProtoParser& parser, infra::ProtoParser::Field& field, std::vector<bool>& value);
     template<class T, class U>
     void DeserializeField(ProtoMessage<T>, infra::ProtoParser& parser, infra::ProtoParser::Field& field, U& value);
     template<class T>
@@ -304,7 +315,7 @@ namespace services
         formatter.PutFixed64Field(static_cast<uint64_t>(value), fieldNumber);
     }
 
-    inline void SerializeField(ProtoStdString, infra::ProtoFormatter& formatter, const std::string& value, uint32_t fieldNumber)
+    inline void SerializeField(ProtoUnboundedString, infra::ProtoFormatter& formatter, const std::string& value, uint32_t fieldNumber)
     {
         formatter.PutStringField(value, fieldNumber);
     }
@@ -318,6 +329,20 @@ namespace services
     void SerializeField(ProtoRepeated<Max, T>, infra::ProtoFormatter& formatter, const infra::BoundedVector<U>& value, uint32_t fieldNumber)
     {
         for (auto& v : value)
+            SerializeField(T(), formatter, v, fieldNumber);
+    }
+
+    template<class T, class U>
+    void SerializeField(ProtoUnboundedRepeated<T>, infra::ProtoFormatter& formatter, const std::vector<U>& value, uint32_t fieldNumber)
+    {
+        for (auto& v : value)
+            SerializeField(T(), formatter, v, fieldNumber);
+    }
+
+    template<class T>
+    void SerializeField(ProtoUnboundedRepeated<T>, infra::ProtoFormatter& formatter, const std::vector<bool>& value, uint32_t fieldNumber)
+    {
+        for (auto v : value)
             SerializeField(T(), formatter, v, fieldNumber);
     }
 
@@ -409,7 +434,7 @@ namespace services
             value = static_cast<int64_t>(field.first.Get<uint64_t>());
     }
 
-    inline void DeserializeField(ProtoStdString, infra::ProtoParser& parser, infra::ProtoParser::Field& field, std::string& value)
+    inline void DeserializeField(ProtoUnboundedString, infra::ProtoParser& parser, infra::ProtoParser::Field& field, std::string& value)
     {
         parser.ReportFormatResult(field.first.Is<infra::ProtoLengthDelimited>());
         if (field.first.Is<infra::ProtoLengthDelimited>())
@@ -428,6 +453,21 @@ namespace services
     {
         value.emplace_back();
         DeserializeField(T(), parser, field, value.back());
+    }
+
+    template<class T, class U>
+    void DeserializeField(ProtoUnboundedRepeated<T>, infra::ProtoParser& parser, infra::ProtoParser::Field& field, std::vector<U>& value)
+    {
+        value.emplace_back();
+        DeserializeField(T(), parser, field, value.back());
+    }
+
+    template<class T>
+    void DeserializeField(ProtoUnboundedRepeated<T>, infra::ProtoParser& parser, infra::ProtoParser::Field& field, std::vector<bool>& value)
+    {
+        bool result{};
+        DeserializeField(T(), parser, field, result);
+        value.push_back(result);
     }
 
     template<class T, class U>
