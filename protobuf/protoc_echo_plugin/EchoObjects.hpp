@@ -177,6 +177,15 @@ namespace application
         uint32_t maxBytesSize;
     };
 
+    class EchoFieldUnboundedBytes
+        : public EchoField
+    {
+    public:
+        EchoFieldUnboundedBytes(const google::protobuf::FieldDescriptor& descriptor);
+
+        virtual void Accept(EchoFieldVisitor& visitor) const override;
+    };
+
     class EchoFieldUint32
         : public EchoField
     {
@@ -293,6 +302,7 @@ namespace application
         virtual void VisitStdString(const EchoFieldStdString& field) = 0;
         virtual void VisitMessage(const EchoFieldMessage& field) = 0;
         virtual void VisitBytes(const EchoFieldBytes& field) = 0;
+        virtual void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) = 0;
         virtual void VisitUint32(const EchoFieldUint32& field) = 0;
         virtual void VisitEnum(const EchoFieldEnum& field) = 0;
         virtual void VisitSFixed64(const EchoFieldSFixed64& field) = 0;

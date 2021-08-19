@@ -23,6 +23,7 @@ namespace services
     struct ProtoSFixed32 {};
     struct ProtoSFixed64 {};
     struct ProtoStdString {};
+    struct ProtoUnboundedBytes {};
 
     template<class T>
     struct ProtoMessage {};
@@ -49,6 +50,7 @@ namespace services
     void SerializeField(ProtoSFixed32, infra::ProtoFormatter& formatter, int32_t value, uint32_t fieldNumber);
     void SerializeField(ProtoSFixed64, infra::ProtoFormatter& formatter, int64_t value, uint32_t fieldNumber);
     void SerializeField(ProtoStdString, infra::ProtoFormatter& formatter, const std::string& value, uint32_t fieldNumber);
+    void SerializeField(ProtoUnboundedBytes, infra::ProtoFormatter& formatter, const std::vector<uint8_t>& value, uint32_t fieldNumber);
 
     template<std::size_t Max, class T, class U>
     void SerializeField(ProtoRepeated<Max, T>, infra::ProtoFormatter& formatter, const infra::BoundedVector<U>& value, uint32_t fieldNumber);
@@ -71,6 +73,7 @@ namespace services
     void DeserializeField(ProtoSFixed32, infra::ProtoParser& parser, infra::ProtoParser::Field& field, int32_t& value);
     void DeserializeField(ProtoSFixed64, infra::ProtoParser& parser, infra::ProtoParser::Field& field, int64_t& value);
     void DeserializeField(ProtoStdString, infra::ProtoParser& parser, infra::ProtoParser::Field& field, std::string& value);
+    void DeserializeField(ProtoUnboundedBytes, infra::ProtoParser& parser, infra::ProtoParser::Field& field, std::vector<uint8_t>& value);
 
     template<std::size_t Max, class T, class U>
     void DeserializeField(ProtoRepeated<Max, T>, infra::ProtoParser& parser, infra::ProtoParser::Field& field, infra::BoundedVector<U>& value);
@@ -306,6 +309,11 @@ namespace services
         formatter.PutStringField(value, fieldNumber);
     }
 
+    inline void SerializeField(ProtoUnboundedBytes, infra::ProtoFormatter& formatter, const std::vector<uint8_t>& value, uint32_t fieldNumber)
+    {
+        formatter.PutBytesField(value, fieldNumber);
+    }
+
     template<std::size_t Max, class T, class U>
     void SerializeField(ProtoRepeated<Max, T>, infra::ProtoFormatter& formatter, const infra::BoundedVector<U>& value, uint32_t fieldNumber)
     {
@@ -406,6 +414,13 @@ namespace services
         parser.ReportFormatResult(field.first.Is<infra::ProtoLengthDelimited>());
         if (field.first.Is<infra::ProtoLengthDelimited>())
             value = field.first.Get<infra::ProtoLengthDelimited>().GetStdString();
+    }
+
+    inline void DeserializeField(ProtoUnboundedBytes, infra::ProtoParser& parser, infra::ProtoParser::Field& field, std::vector<uint8_t>& value)
+    {
+        parser.ReportFormatResult(field.first.Is<infra::ProtoLengthDelimited>());
+        if (field.first.Is<infra::ProtoLengthDelimited>())
+            value = field.first.Get<infra::ProtoLengthDelimited>().GetUnboundedBytes();
     }
 
     template<std::size_t Max, class T, class U>

@@ -67,6 +67,10 @@ message TestBytes {
   bytes value = 1 [(bytes_size) = 10];
 }
 
+message TestUnboundedBytes {
+  bytes value = 1;
+}
+
 message TestRepeatedUInt32 {
   repeated uint32 value = 1 [(array_size) = 10];
 }
@@ -89,6 +93,8 @@ message TestRepeatedEverything {
   repeated string v11 = 11 [(string_size) = 20, (array_size) = 10];
   repeated string v12 = 12 [(array_size) = 10];
   repeated TestUInt32 v13 = 13 [(array_size) = 10];
+  repeated bytes v14 = 14 [(bytes_size) = 10, (array_size) = 10];
+  repeated bytes v15 = 15 [(array_size) = 10];
 }
 
 message TestNestedMessage

@@ -135,16 +135,17 @@ namespace application
                 case google::protobuf::FieldDescriptor::TYPE_BOOL:
                     return std::make_shared<EchoFieldBool>(fieldDescriptor);
                 case google::protobuf::FieldDescriptor::TYPE_STRING:
-                {
                     if (fieldDescriptor.options().GetExtension(string_size) != 0)
                         return std::make_shared<EchoFieldString>(fieldDescriptor);
                     else
                         return std::make_shared<EchoFieldStdString>(fieldDescriptor);
-                }
                 case google::protobuf::FieldDescriptor::TYPE_MESSAGE:
                     return std::make_shared<EchoFieldMessage>(fieldDescriptor, root);
                 case google::protobuf::FieldDescriptor::TYPE_BYTES:
-                    return std::make_shared<EchoFieldBytes>(fieldDescriptor);
+                    if (fieldDescriptor.options().GetExtension(bytes_size) != 0)
+                        return std::make_shared<EchoFieldBytes>(fieldDescriptor);
+                    else
+                        return std::make_shared<EchoFieldUnboundedBytes>(fieldDescriptor);
                 case google::protobuf::FieldDescriptor::TYPE_UINT32:
                     return std::make_shared<EchoFieldUint32>(fieldDescriptor);
                 case google::protobuf::FieldDescriptor::TYPE_ENUM:
@@ -179,7 +180,10 @@ namespace application
                 case google::protobuf::FieldDescriptor::TYPE_MESSAGE:
                     return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldMessage>(fieldDescriptor, root));
                 case google::protobuf::FieldDescriptor::TYPE_BYTES:
-                    return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldBytes>(fieldDescriptor));
+                    if (fieldDescriptor.options().GetExtension(bytes_size) != 0)
+                        return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldBytes>(fieldDescriptor));
+                    else
+                        return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldUnboundedBytes>(fieldDescriptor));
                 case google::protobuf::FieldDescriptor::TYPE_UINT32:
                     return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldUint32>(fieldDescriptor));
                 case google::protobuf::FieldDescriptor::TYPE_ENUM:
@@ -295,6 +299,11 @@ namespace application
             virtual void VisitBytes(const EchoFieldBytes& field) override
             {
                 maxMessageSize += field.maxBytesSize + MaxVarIntSize(field.maxBytesSize) + MaxVarIntSize((field.number << 3) | 2);
+            }
+
+            virtual void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
+            {
+                throw NoMaxMessageSize();
             }
 
             virtual void VisitUint32(const EchoFieldUint32& field) override
@@ -436,6 +445,17 @@ namespace application
     void EchoFieldBytes::Accept(EchoFieldVisitor& visitor) const
     {
         visitor.VisitBytes(*this);
+    }
+
+    EchoFieldUnboundedBytes::EchoFieldUnboundedBytes(const google::protobuf::FieldDescriptor& descriptor)
+        : EchoField(descriptor)
+    {
+        protoReferenceType = protoType = "services::ProtoUnboundedBytes";
+    }
+
+    void EchoFieldUnboundedBytes::Accept(EchoFieldVisitor& visitor) const
+    {
+        visitor.VisitUnboundedBytes(*this);
     }
 
     EchoFieldUint32::EchoFieldUint32(const google::protobuf::FieldDescriptor& descriptor)

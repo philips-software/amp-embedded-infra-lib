@@ -58,6 +58,13 @@ namespace infra
         bytes = input.ContiguousRange();
     }
 
+    std::vector<uint8_t> ProtoLengthDelimited::GetUnboundedBytes()
+    {
+        std::vector<uint8_t> result(input.Available());
+        input >> infra::MakeRange(result);
+        return result;
+    }
+
     ProtoParser::ProtoParser(infra::DataInputStream inputStream)
         : ProtoParser(inputStream, inputStream.ErrorPolicy())
     {}

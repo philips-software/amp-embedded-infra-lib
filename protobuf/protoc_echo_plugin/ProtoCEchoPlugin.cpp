@@ -83,6 +83,11 @@ namespace application
                 result = "infra::BoundedVector<uint8_t>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxBytesSize) + ">";
             }
 
+            virtual void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
+            {
+                result = "std::vector<uint8_t>";
+            }
+
             virtual void VisitUint32(const EchoFieldUint32& field) override
             {
                 result = "uint32_t";
@@ -146,6 +151,11 @@ namespace application
                 result = "infra::BoundedConstString";
             }
 
+            virtual void VisitStdString(const EchoFieldStdString& field) override
+            {
+                result = "const std::string&";
+            }
+
             virtual void VisitMessage(const EchoFieldMessage& field) override
             {
                 result = "const " + field.message->qualifiedName + "&";
@@ -154,6 +164,11 @@ namespace application
             virtual void VisitBytes(const EchoFieldBytes& field) override
             {
                 result = "const infra::BoundedVector<uint8_t>&";
+            }
+
+            virtual void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
+            {
+                result = "const std::vector<uint8_t>&";
             }
 
             virtual void VisitEnum(const EchoFieldEnum& field) override

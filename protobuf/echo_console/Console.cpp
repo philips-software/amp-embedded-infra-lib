@@ -457,9 +457,7 @@ namespace application
 
             virtual void VisitString(const EchoFieldString& field) override
             {
-                infra::BoundedString::WithStorage<1024> string;
-                fieldData.Get<infra::ProtoLengthDelimited>().GetString(string);
-                std::cout << std::string(string.begin(), string.end());
+                std::cout << fieldData.Get<infra::ProtoLengthDelimited>().GetStdString();
             }
 
             virtual void VisitStdString(const EchoFieldStdString& field) override
@@ -477,8 +475,17 @@ namespace application
 
             virtual void VisitBytes(const EchoFieldBytes& field) override
             {
-                infra::BoundedVector<uint8_t>::WithMaxSize<1024> bytes;
-                fieldData.Get<infra::ProtoLengthDelimited>().GetBytes(bytes);
+                std::vector<uint8_t> bytes = fieldData.Get<infra::ProtoLengthDelimited>().GetUnboundedBytes();
+
+                std::cout << "[";
+                for (auto byte : bytes)
+                    std::cout << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(byte);
+                std::cout << "]";
+            }
+
+            virtual void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
+            {
+                std::vector<uint8_t> bytes = fieldData.Get<infra::ProtoLengthDelimited>().GetUnboundedBytes();
 
                 std::cout << "[";
                 for (auto byte : bytes)
@@ -619,6 +626,11 @@ namespace application
             virtual void VisitBytes(const EchoFieldBytes& field) override
             {
                 services::GlobalTracer().Continue() << "bytes[" << field.maxBytesSize << "]";
+            }
+
+            virtual void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
+            {
+                services::GlobalTracer().Continue() << "bytes";
             }
 
             virtual void VisitUint32(const EchoFieldUint32& field) override
@@ -1007,6 +1019,26 @@ namespace application
             }
 
             virtual void VisitBytes(const EchoFieldBytes& field) override
+            {
+                if (!value.Is<std::vector<MessageTokens>>())
+                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+                std::vector<uint8_t> bytes;
+                for (auto& messageTokens : value.Get<std::vector<MessageTokens>>())
+                {
+                    if (messageTokens.tokens.size() < 1)
+                        throw ConsoleExceptions::MissingParameter{ valueIndex };
+                    if (messageTokens.tokens.size() > 1)
+                        throw ConsoleExceptions::TooManyParameters{ messageTokens.tokens[1].second };
+                    if (!messageTokens.tokens.front().first.Is<int64_t>())
+                        throw ConsoleExceptions::IncorrectType{ messageTokens.tokens[0].second };
+
+                    bytes.push_back(static_cast<uint8_t>(messageTokens.tokens.front().first.Get<int64_t>()));
+                }
+
+                formatter.PutBytesField(infra::MakeRange(bytes), field.number);
+            }
+
+            virtual void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
             {
                 if (!value.Is<std::vector<MessageTokens>>())
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
