@@ -451,8 +451,12 @@ namespace services
     template<std::size_t Max, class T, class U>
     void DeserializeField(ProtoRepeated<Max, T>, infra::ProtoParser& parser, infra::ProtoParser::Field& field, infra::BoundedVector<U>& value)
     {
-        value.emplace_back();
-        DeserializeField(T(), parser, field, value.back());
+        parser.ReportFormatResult(!value.full());
+        if (!value.full())
+        {
+            value.emplace_back();
+            DeserializeField(T(), parser, field, value.back());
+        }
     }
 
     template<class T, class U>
