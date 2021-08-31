@@ -968,6 +968,7 @@ switch (methodId)
 
             printer.Print(R"(    default:
         errorPolicy.MethodNotFound(ServiceId(), methodId);
+        contents.SkipEverything();
 )");
 
             printer.Print("}\n");

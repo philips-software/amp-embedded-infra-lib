@@ -191,6 +191,7 @@ namespace services
             }
 
         errorPolicy.ServiceNotFound(serviceId);
+        contents.SkipEverything();
     }
 
     void EchoOnStreams::SetStreamWriter(infra::SharedPtr<infra::StreamWriter>&& writer)
