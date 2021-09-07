@@ -9,7 +9,10 @@ public:
         : services::CucumberStep(stepName, "")
     {}
 
-    void Invoke(infra::JsonArray& arguments) final {};
+    void Invoke(infra::JsonArray& arguments) final 
+    {
+        invokeArguments = &arguments;
+    };
 };
 
 bool CheckStepMatcher(infra::BoundedString stepString, infra::BoundedString matchString)
@@ -64,6 +67,53 @@ TEST(CucumberStepMatcherTest, should_report_correct_argument_count)
 
     StepStub withoutArguments{ "Me too!" };
     EXPECT_EQ(0, withoutArguments.NrArguments());
+}
+
+TEST(CucumberStepMatcherTest, get_table_argument)
+{
+    StepStub withTableArgument{ "I am here for a table argument" };
+    infra::JsonArray arguments(R"([[["field","value"]]])");
+    withTableArgument.Invoke(arguments);
+    infra::BoundedString::WithStorage<5> argument;
+    withTableArgument.GetTableArgument("field")->ToString(argument);
+    EXPECT_EQ("value", argument);
+}
+
+TEST(CucumberStepMatcherTest, get_string_argument)
+{
+    StepStub withStingArgument{ "I am here for a string argument '%s'" };
+    infra::JsonArray arguments(R"([ "abc" ])");
+    withStingArgument.Invoke(arguments);
+    infra::BoundedString::WithStorage<3> argument;
+    withStingArgument.GetStringArgument(0)->ToString(argument);
+    EXPECT_EQ("abc", argument);
+}
+
+TEST(CucumberStepMatcherTest, get_integer_argument)
+{
+    StepStub withIntegerArgument{ "I am here for a integer argument %d" };
+    infra::JsonArray arguments(R"([ 5 ])");
+    withIntegerArgument.Invoke(arguments);
+    auto argument = withIntegerArgument.GetIntegerArgument(0);
+    EXPECT_EQ(5, *argument);
+}
+
+TEST(CucumberStepMatcherTest, get_all_arguments)
+{
+    StepStub withDifferingArguments{ "I am here for an integer argument %d, string argument '%s', and table argument" };
+    infra::JsonArray arguments(R"([ 5, "abc", [["field","value"]] ])");
+    withDifferingArguments.Invoke(arguments);
+
+    auto integerArgument = withDifferingArguments.GetIntegerArgument(0);
+    EXPECT_EQ(5, *integerArgument);
+
+    infra::BoundedString::WithStorage<3> stringArgument;
+    withDifferingArguments.GetStringArgument(1)->ToString(stringArgument);
+    EXPECT_EQ("abc", stringArgument);
+
+    infra::BoundedString::WithStorage<5> tableArgument;
+    withDifferingArguments.GetTableArgument("field")->ToString(tableArgument);
+    EXPECT_EQ("value", tableArgument);
 }
 
 class CucumberWireProtocolParserTest

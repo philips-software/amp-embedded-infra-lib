@@ -2,7 +2,7 @@ ccola_component(cucumber_test gmock_test)
 
     ccola_sources(
         TestCucumberWireProtocolParser.cpp
-        #TestCucumberWireProtocolServer.cpp
+        # TestCucumberWireProtocolServer.cpp
     )
 
     ccola_dependencies(

@@ -66,7 +66,7 @@ namespace services
 
     bool CucumberStep::HasStringArguments() const
     {
-        return StepName().find("\'%s\'") != infra::BoundedString::npos || StepName().find("%d") != infra::BoundedString::npos;
+        return StepName().find(R"('%s')") != infra::BoundedString::npos || StepName().find("%d") != infra::BoundedString::npos;
     }
 
     bool CucumberStep::ContainsStringArgument(uint8_t index)
@@ -77,12 +77,12 @@ namespace services
     uint16_t CucumberStep::NrArguments() const
     {
         uint8_t nrArguments = 0;
-        size_t strArgPos = StepName().find("\'%s\'", 0);
+        size_t strArgPos = StepName().find(R"('%s')", 0);
         size_t intArgPos = StepName().find("%d", 0);
         while (strArgPos != infra::BoundedString::npos)
         {
             nrArguments++;
-            strArgPos = StepName().find("\'%s\'", ++strArgPos);
+            strArgPos = StepName().find(R"('%s')", ++strArgPos);
         }
         while (intArgPos != infra::BoundedString::npos)
         {
@@ -109,6 +109,17 @@ namespace services
 
     infra::Optional<infra::JsonString> CucumberStep::GetStringArgument(uint8_t argumentNumber)
     {
+        return GetArgument<infra::JsonString>(argumentNumber);
+    }
+
+    infra::Optional<int32_t> CucumberStep::GetIntegerArgument(uint8_t argumentNumber)
+    {
+        return GetArgument<int32_t>(argumentNumber);
+    }
+
+    template <class T>
+    infra::Optional<T> CucumberStep::GetArgument(uint8_t argumentNumber)
+    {
         if (invokeArguments->begin() != invokeArguments->end())
         {
             infra::JsonArrayIterator argumentIterator(invokeArguments->begin());
@@ -119,8 +130,8 @@ namespace services
                 argumentCount++;
             }
             if (argumentCount == argumentNumber)
-                return infra::Optional<infra::JsonString>(infra::inPlace, argumentIterator->Get<infra::JsonString>());
+                return infra::Optional<T>(infra::inPlace, argumentIterator->Get<T>());
         }
-        return infra::Optional<infra::JsonString>(infra::none);
+        return infra::Optional<T>(infra::none);
     }
 }
