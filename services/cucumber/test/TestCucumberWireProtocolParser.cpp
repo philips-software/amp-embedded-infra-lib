@@ -28,8 +28,12 @@ TEST(CucumberStepMatcherTest, should_match_input_for_matching_steps)
         std::make_pair("step with %d argument", "step with 42 argument"),
         std::make_pair("step with '%s' argument", "step with 'foo' argument"),
         std::make_pair("ends on parameter '%s'", "ends on parameter 'foo'"),
+        std::make_pair("ends on parameter %d", "ends on parameter 42"),
         std::make_pair("'%s' starts with string", "'foo' starts with string"),
+        std::make_pair("%d starts with integer", "42 starts with integer"),
         std::make_pair("'%s'", "'foo'"),
+        std::make_pair("%d", "42"),
+        std::make_pair("'%d'", "'42'"),
         std::make_pair("'%s' %d '%s'", "'foo' 42 'bar'"),
         std::make_pair("'%s'", "'foo bar'"),
         std::make_pair("", "")
@@ -44,6 +48,7 @@ TEST(CucumberStepMatcherTest, should_not_match_input_for_non_matching_steps)
     std::vector<std::pair<std::string, std::string>> testVectors = {
         std::make_pair("step", ""),
         std::make_pair("'%s'", "42"),
+        std::make_pair("step with %s argument", "step with foo argument"),
         std::make_pair("'%s' step", "'foo step")
     };
 

@@ -59,7 +59,7 @@ namespace services
         auto stepName = step.StepName();
         auto nameToMatchIterator = nameToMatch.begin();
 
-        for (auto stepNameIterator = stepName.begin(); stepNameIterator != stepName.end(); ++stepNameIterator, ++nameToMatchIterator)
+        for (auto stepNameIterator = stepName.begin(); stepNameIterator != stepName.end();)
         {
             if (*stepNameIterator != *nameToMatchIterator)
             {
@@ -79,6 +79,8 @@ namespace services
                 else
                     return false;
             }
+            else
+                ++stepNameIterator, ++nameToMatchIterator;
         }
 
         return stepName.size() + sizeOffset == nameToMatch.size();
