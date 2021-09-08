@@ -26,7 +26,7 @@ namespace services
         infra::Optional<infra::JsonString> GetTableArgument(infra::BoundedConstString fieldName);
         bool ContainsTableArgument(infra::BoundedConstString fieldName);
         infra::Optional<infra::JsonString> GetStringArgument(uint8_t argumentNumber);
-        infra::Optional<int32_t> GetIntegerArgument(uint8_t argumentNumber);
+        infra::Optional<uint32_t> GetUIntegerArgument(uint8_t argumentNumber);
         bool HasStringArguments() const;
         bool ContainsStringArgument(uint8_t index);
         uint16_t NrArguments() const;
@@ -40,9 +40,6 @@ namespace services
 
     private:
         void SkipOverStringArguments(infra::JsonArrayIterator& iterator) const;
-
-        template <class T>
-        infra::Optional<T> GetArgument(uint8_t argumentNumber);
 
         infra::BoundedConstString stepName;
         infra::BoundedConstString sourceLocation;

@@ -94,23 +94,23 @@ TEST(CucumberStepMatcherTest, get_string_argument)
     EXPECT_EQ("abc", argument);
 }
 
-TEST(CucumberStepMatcherTest, get_integer_argument)
+TEST(CucumberStepMatcherTest, get_unsigned_integer_argument)
 {
-    StepStub withIntegerArgument{ "I am here for a integer argument %d" };
-    infra::JsonArray arguments(R"([ 5 ])");
-    withIntegerArgument.Invoke(arguments);
-    auto argument = withIntegerArgument.GetIntegerArgument(0);
+    StepStub withUIntegerArgument{ "I am here for an unsigned integer argument %d" };
+    infra::JsonArray arguments(R"([ "5" ])");
+    withUIntegerArgument.Invoke(arguments);
+    auto argument = withUIntegerArgument.GetUIntegerArgument(0);
     EXPECT_EQ(5, *argument);
 }
 
 TEST(CucumberStepMatcherTest, get_all_arguments)
 {
-    StepStub withDifferingArguments{ "I am here for an integer argument %d, string argument '%s', and table argument" };
-    infra::JsonArray arguments(R"([ 5, "abc", [["field","value"]] ])");
+    StepStub withDifferingArguments{ "I am here for an unsigned integer argument %d, string argument '%s', and table argument" };
+    infra::JsonArray arguments(R"([ "5", "abc", [["field","value"]] ])");
     withDifferingArguments.Invoke(arguments);
 
-    auto integerArgument = withDifferingArguments.GetIntegerArgument(0);
-    EXPECT_EQ(5, *integerArgument);
+    auto uIntegerArgument = withDifferingArguments.GetUIntegerArgument(0);
+    EXPECT_EQ(5, *uIntegerArgument);
 
     infra::BoundedString::WithStorage<3> stringArgument;
     withDifferingArguments.GetStringArgument(1)->ToString(stringArgument);

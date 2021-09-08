@@ -1,4 +1,5 @@
 #include "services/cucumber/CucumberStep.hpp"
+#include "infra/stream/StringInputStream.hpp"
 
 namespace services
 {
@@ -109,17 +110,6 @@ namespace services
 
     infra::Optional<infra::JsonString> CucumberStep::GetStringArgument(uint8_t argumentNumber)
     {
-        return GetArgument<infra::JsonString>(argumentNumber);
-    }
-
-    infra::Optional<int32_t> CucumberStep::GetIntegerArgument(uint8_t argumentNumber)
-    {
-        return GetArgument<int32_t>(argumentNumber);
-    }
-
-    template <class T>
-    infra::Optional<T> CucumberStep::GetArgument(uint8_t argumentNumber)
-    {
         if (invokeArguments->begin() != invokeArguments->end())
         {
             infra::JsonArrayIterator argumentIterator(invokeArguments->begin());
@@ -130,8 +120,25 @@ namespace services
                 argumentCount++;
             }
             if (argumentCount == argumentNumber)
-                return infra::Optional<T>(infra::inPlace, argumentIterator->Get<T>());
+                return infra::Optional<infra::JsonString>(infra::inPlace, argumentIterator->Get<infra::JsonString>());
         }
-        return infra::Optional<T>(infra::none);
+        return infra::Optional<infra::JsonString>(infra::none);
+    }
+
+    infra::Optional<uint32_t> CucumberStep::GetUIntegerArgument(uint8_t argumentNumber)
+    {
+        auto optionalStringArgument = GetStringArgument(argumentNumber);
+
+        if (optionalStringArgument)
+        {
+            infra::BoundedString::WithStorage<10> stringArgument;
+            optionalStringArgument->ToString(stringArgument);
+            infra::StringInputStream stream(stringArgument);
+            uint32_t argument;
+            stream >> argument;
+            return infra::Optional<uint32_t>(infra::inPlace, uint32_t(argument));
+        }
+
+        return infra::Optional<uint32_t>(infra::none);
     }
 }
