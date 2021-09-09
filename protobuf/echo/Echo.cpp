@@ -241,7 +241,7 @@ namespace services
         {
             infra::SharedPtr<infra::StreamReader> reader = ConnectionObserver::Subject().ReceiveStream();
             infra::DataInputStream::WithErrorPolicy stream(*reader, infra::softFail);
-            if (ProcessMessage(stream))
+            if (ProcessMessage(stream) && !ServiceBusy())
                 ConnectionObserver::Subject().AckReceived();
 
             if (ServiceBusy())
