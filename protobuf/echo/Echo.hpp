@@ -112,7 +112,7 @@ namespace services
         virtual void MethodNotFound(uint32_t serviceId, uint32_t methodId) = 0;
     };
 
-    class EchoErrorPolicyAbort
+    class EchoErrorPolicyAbortOnMessageFormatError
         : public EchoErrorPolicy
     {
     public:
@@ -121,6 +121,15 @@ namespace services
         virtual void MethodNotFound(uint32_t serviceId, uint32_t methodId) override;
     };
 
+    class EchoErrorPolicyAbort
+        : public EchoErrorPolicyAbortOnMessageFormatError
+    {
+    public:
+        virtual void ServiceNotFound(uint32_t serviceId) override;
+        virtual void MethodNotFound(uint32_t serviceId, uint32_t methodId) override;
+    };
+
+    extern EchoErrorPolicyAbortOnMessageFormatError echoErrorPolicyAbortOnMessageFormatError;
     extern EchoErrorPolicyAbort echoErrorPolicyAbort;
 
     class Echo
@@ -199,7 +208,7 @@ namespace services
         , public infra::EnableSharedFromThis<EchoOnStreams>
     {
     public:
-        EchoOnStreams(EchoErrorPolicy& errorPolicy = echoErrorPolicyAbort);
+        EchoOnStreams(EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
 
         // Implementation of Echo
         virtual void RequestSend(ServiceProxy& serviceProxy) override;
@@ -249,7 +258,7 @@ namespace services
         , public MessageCommunicationObserver
     {
     public:
-        EchoOnMessageCommunication(MessageCommunication& subject, EchoErrorPolicy& errorPolicy = echoErrorPolicyAbort);
+        EchoOnMessageCommunication(MessageCommunication& subject, EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
 
         // Implementation of MessageCommunicationObserver
         virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
