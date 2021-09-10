@@ -199,7 +199,7 @@ namespace services
             flash.ReadBuffer(infra::MakeByteRange(blockHeader), endAddress, [this]() { sequencer.Continue(); });
         });
         sequencer.While([this]() { return blockHeader.status != BlockStatus::empty && !flash.AtStartOfSector(endAddress); });
-            sequencer.If([this]() { return blockHeader.status == BlockStatus::dataReady; });
+            sequencer.If([this]() { return blockHeader.status == BlockStatus::dataReady || blockHeader.status == BlockStatus::erased; });
                 sequencer.Execute([this]()
                 {
                     endAddress += sizeof(BlockHeader);
