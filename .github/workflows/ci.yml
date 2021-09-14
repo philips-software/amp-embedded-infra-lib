@@ -57,8 +57,8 @@ jobs:
       - name: Build
         run: |
           cmake -E make_directory Build
-          cmake -S . -B build -G Ninja -DCCOLA_INSTALL_DIR=Install -DCCOLA_ENABLE_COVERAGE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
-          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build build/ --config Debug
+          cmake -S . -B Build -G Ninja -DCCOLA_INSTALL_DIR=Install -DCCOLA_ENABLE_COVERAGE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
+          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build Build/ --config Debug
           pushd Build && ctest -C Debug -T Test --no-compress-output --output-on-failure && popd
           gcovr --sonarqube=coverage.xml --exclude-unreachable-branches --exclude-throw-branches -j 2 --exclude=.*/generated/.* --exclude=.*/examples/.* --exclude=.*/external/.* --exclude=.*/lwip/.* --exclude=.*/tracing/.* --exclude=.*/test/.*
       - name: Analysis
