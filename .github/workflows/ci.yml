@@ -1,6 +1,11 @@
 name: Continuous Integration
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 env:
   CMAKE_BUILD_PARALLEL_LEVEL: 4
@@ -24,6 +29,10 @@ jobs:
   static_analysis:
     name: Static Analysis
     runs-on: ubuntu-latest
+    env:
+      SONAR_SCANNER_VERSION: 4.6.1.2450
+      SONAR_SERVER_URL: "https://sonarcloud.io"
+      BUILD_WRAPPER_OUT_DIR: build_wrapper_output
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -36,9 +45,8 @@ jobs:
           packages: gcovr
       - name: Install Sonar Scanner
         env:
-          SONAR_SCANNER_VERSION: 4.6.0.2311
-          SONAR_SCANNER_URL: https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.0.2311-linux.zip
-          SONAR_WRAPPER_URL: https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
+          SONAR_SCANNER_URL: https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip
+          SONAR_WRAPPER_URL: ${{ env.SONAR_SERVER_URL }}/static/cpp/build-wrapper-linux-x86.zip
         run: |
           wget -qN "${{ env.SONAR_WRAPPER_URL }}"
           wget -qN "${{ env.SONAR_SCANNER_URL }}"
@@ -48,15 +56,16 @@ jobs:
           echo "${PWD}/sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-linux/bin" >> $GITHUB_PATH
       - name: Build
         run: |
-          cmake -E make_directory Build && cd Build
-          cmake -G Ninja .. -DCCOLA_INSTALL_DIR=Install -DCCOLA_ENABLE_COVERAGE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
-          build-wrapper-linux-x86-64 --out-dir ../sonar-build-wrapper cmake --build . --config Debug
-          ctest -C Debug -T Test --no-compress-output --output-on-failure
-          gcovr --sonarqube=../coverage.xml --exclude-unreachable-branches --exclude-throw-branches -j 4 --root=.. --exclude=.*/generated/.* --exclude=.*/examples/.* --exclude=.*/external/.* --exclude=.*/lwip/.* --exclude=.*/tracing/.* --exclude=.*/test/.*
+          cmake -E make_directory Build
+          cmake -S . -B build -G Ninja -DCCOLA_INSTALL_DIR=Install -DCCOLA_ENABLE_COVERAGE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
+          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build build/ --config Debug
+          pushd Build && ctest -C Debug -T Test --no-compress-output --output-on-failure && popd
+          gcovr --sonarqube=coverage.xml --exclude-unreachable-branches --exclude-throw-branches -j 2 --exclude=.*/generated/.* --exclude=.*/examples/.* --exclude=.*/external/.* --exclude=.*/lwip/.* --exclude=.*/tracing/.* --exclude=.*/test/.*
       - name: Analysis
         env:
           # to get access to secrets.SONAR_TOKEN, provide GITHUB_TOKEN
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           export SONAR_PROJECT_VERSION=`grep -m 1 -o '".*"' Build/[Vv]ersion.h | tr -d '"'`
-          sonar-scanner -Dsonar.login=${{ secrets.SONAR_TOKEN }} -Dsonar.host.url=https://sonarcloud.io/
+          sonar-scanner -D sonar.host.url="${{ env.SONAR_SERVER_URL }}" -D sonar.cfamily.build-wrapper-output="${{ env.BUILD_WRAPPER_OUT_DIR }}"
