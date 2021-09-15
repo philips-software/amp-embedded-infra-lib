@@ -18,14 +18,14 @@ namespace infra
         {
             switch (c)
             {
-            case '"':  stream << "\\\""; break;
+            case '"': stream << "\\\""; break;
             case '\\': stream << "\\\\"; break;
             case '\b': stream << "\\b"; break;
             case '\f': stream << "\\f"; break;
             case '\n': stream << "\\n"; break;
             case '\r': stream << "\\r"; break;
             case '\t': stream << "\\t"; break;
-            default:   stream << "\\u" << infra::hex << infra::Width(4, '0') << static_cast<uint8_t>(c); break;
+            default: stream << "\\u" << infra::hex << infra::Width(4, '0') << static_cast<uint8_t>(c); break;
             }
         }
 

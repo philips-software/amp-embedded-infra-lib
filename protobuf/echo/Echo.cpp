@@ -1,5 +1,5 @@
-#include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "protobuf/echo/Echo.hpp"
+#include "infra/event/EventDispatcherWithWeakPtr.hpp"
 
 namespace services
 {
@@ -99,8 +99,7 @@ namespace services
 
         bytes->shrink_from_back_to(processedSize);
 
-        RequestSend([this, &contents]()
-        {
+        RequestSend([this, &contents]() {
             infra::DataOutputStream::WithErrorPolicy stream(services::ServiceProxy::Rpc().SendStreamWriter());
             infra::ProtoFormatter formatter(stream);
             formatter.PutVarInt(ServiceId());

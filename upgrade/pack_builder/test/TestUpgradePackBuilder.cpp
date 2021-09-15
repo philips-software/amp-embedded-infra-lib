@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "upgrade/pack_builder/UpgradePackBuilder.hpp"
+#include "gtest/gtest.h"
 
 class ImageSignerNone
     : public application::ImageSigner
@@ -120,19 +120,18 @@ TEST_F(TestUpgradePackBuilder, HeaderVersion)
 {
     application::UpgradePackBuilder upgradePackBuilder(headerInfo, std::move(inputs), signer);
     std::vector<uint8_t> upgradePack = upgradePackBuilder.UpgradePack();
-    const application::UpgradePackHeaderEpilogue& epilogue = reinterpret_cast<const application::UpgradePackHeaderEpilogue&>(*(upgradePack.begin() + sizeof(application::UpgradePackHeaderPrologue)+signer.SignatureLength()));
+    const application::UpgradePackHeaderEpilogue& epilogue = reinterpret_cast<const application::UpgradePackHeaderEpilogue&>(*(upgradePack.begin() + sizeof(application::UpgradePackHeaderPrologue) + signer.SignatureLength()));
 
     EXPECT_EQ(1, epilogue.headerVersion);
 }
 
 TEST_F(TestUpgradePackBuilder, check_product_and_component_parts_in_header)
 {
-    std::array<char, 64> productName = { { 'p', 'r', 'o', 'd' , 'u', 'c', 't', ' ', 'n', 'a', 'm' , 'e' } };
-    std::array<char, 64> productVersion = { { 'p', 'r', 'o', 'd' , 'u', 'c', 't', ' ', 'v', 'e', 'r' , 's', 'i', 'o', 'n' } };
-    std::array<char, 64> componentName = { { 'c', 'o', 'm', 'p' , 'o', 'n', 'e', 'n', 't', ' ', 'n' , 'a', 'm', 'e' } };
+    std::array<char, 64> productName = { { 'p', 'r', 'o', 'd', 'u', 'c', 't', ' ', 'n', 'a', 'm', 'e' } };
+    std::array<char, 64> productVersion = { { 'p', 'r', 'o', 'd', 'u', 'c', 't', ' ', 'v', 'e', 'r', 's', 'i', 'o', 'n' } };
+    std::array<char, 64> componentName = { { 'c', 'o', 'm', 'p', 'o', 'n', 'e', 'n', 't', ' ', 'n', 'a', 'm', 'e' } };
 
-    headerInfo =
-    {
+    headerInfo = {
         "product name",
         "product version",
         "component name",
@@ -162,7 +161,7 @@ TEST_F(TestUpgradePackBuilder, NoImages)
 {
     application::UpgradePackBuilder upgradePackBuilder(headerInfo, std::move(inputs), signer);
     std::vector<uint8_t> upgradePack = upgradePackBuilder.UpgradePack();
-    const application::UpgradePackHeaderEpilogue& epilogue = reinterpret_cast<const application::UpgradePackHeaderEpilogue&>(*(upgradePack.begin() + sizeof(application::UpgradePackHeaderPrologue)+signer.SignatureLength()));
+    const application::UpgradePackHeaderEpilogue& epilogue = reinterpret_cast<const application::UpgradePackHeaderEpilogue&>(*(upgradePack.begin() + sizeof(application::UpgradePackHeaderPrologue) + signer.SignatureLength()));
 
     EXPECT_EQ(0, epilogue.numberOfImages);
 }
@@ -179,12 +178,12 @@ TEST_F(TestUpgradePackBuilder, OneImage)
 
 TEST_F(TestUpgradePackBuilder, ImageContents)
 {
-    inputs.push_back(std::make_unique<InputStub>(std::vector<uint8_t>{1, 2, 3, 4}));
+    inputs.push_back(std::make_unique<InputStub>(std::vector<uint8_t>{ 1, 2, 3, 4 }));
     application::UpgradePackBuilder upgradePackBuilder(headerInfo, std::move(inputs), signer);
     std::vector<uint8_t> upgradePack = upgradePackBuilder.UpgradePack();
     std::vector<uint8_t> imageContents(upgradePack.begin() + sizeof(application::UpgradePackHeaderPrologue) + signer.SignatureLength() + sizeof(application::UpgradePackHeaderEpilogue), upgradePack.end());
 
-    EXPECT_EQ((std::vector<uint8_t>{1, 2, 3, 4}), imageContents);
+    EXPECT_EQ((std::vector<uint8_t>{ 1, 2, 3, 4 }), imageContents);
 }
 
 TEST_F(TestUpgradePackBuilder, SignatureDoesNotVerify)

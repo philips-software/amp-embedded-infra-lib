@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/stream/StdStringInputStream.hpp"
+#include "gtest/gtest.h"
 #include <cstdint>
 
 TEST(StdStringInputStreamTest, ExtractHex)

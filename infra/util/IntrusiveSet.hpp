@@ -52,14 +52,14 @@ namespace infra
         typedef typename IntrusiveBinarySearchTree<T, Compare>::const_reverse_iterator const_reverse_iterator;
         typedef typename IntrusiveBinarySearchTree<T, Compare>::difference_type difference_type;
         typedef typename IntrusiveBinarySearchTree<T, Compare>::size_type size_type;
-    
+
         typedef detail::IntrusiveSetNode<T> NodeType;
         typedef typename NodeType::Colour Colour;
-        
+
     public:
         explicit IntrusiveSet(const Compare& compare = Compare());
         template<class InputIterator>
-            IntrusiveSet(InputIterator first, InputIterator last, const Compare& comp = Compare());
+        IntrusiveSet(InputIterator first, InputIterator last, const Compare& comp = Compare());
         IntrusiveSet(const IntrusiveSet&) = delete;
         IntrusiveSet(IntrusiveSet&& other);
         IntrusiveSet& operator=(const IntrusiveSet&) = delete;
@@ -75,7 +75,7 @@ namespace infra
         void erase(const_reference value);
 
         template<class InputIterator>
-            void assign(InputIterator first, InputIterator last);
+        void assign(InputIterator first, InputIterator last);
 
         void swap(IntrusiveSet& other);
 
@@ -84,7 +84,7 @@ namespace infra
     };
 
     template<class T, class Compare>
-        void swap(IntrusiveSet<T, Compare>& node, IntrusiveSet<T, Compare>& uncle);
+    void swap(IntrusiveSet<T, Compare>& node, IntrusiveSet<T, Compare>& uncle);
 
     ////    Implementation    ////
 
@@ -159,8 +159,7 @@ namespace infra
             return blackLevels == 0;
 
         mustBeBlack = node.colour == Colour::red;
-        return ((!node.left && blackLevels == 0) || (node.left && invariant_holds_for_each_path(*node.left, mustBeBlack, blackLevels)))
-            && ((!node.right && blackLevels == 0) || (node.right && invariant_holds_for_each_path(*node.right, mustBeBlack, blackLevels)));
+        return ((!node.left && blackLevels == 0) || (node.left && invariant_holds_for_each_path(*node.left, mustBeBlack, blackLevels))) && ((!node.right && blackLevels == 0) || (node.right && invariant_holds_for_each_path(*node.right, mustBeBlack, blackLevels)));
     }
 
     template<class T, class Compare>
@@ -251,8 +250,8 @@ namespace infra
             {
                 bool firstRed = replacement && replacement->colour == Colour::red;
                 bool secondRed = oldReplacementParent == &value
-                                    ? twoChildren ? *oldReplacement && (*oldReplacement)->colour == Colour::red : value.colour == Colour::red
-                                    : *oldReplacement && (*oldReplacement)->colour == Colour::red;
+                    ? twoChildren ? *oldReplacement && (*oldReplacement)->colour == Colour::red : value.colour == Colour::red
+                    : *oldReplacement && (*oldReplacement)->colour == Colour::red;
 
                 if (!firstRed && !secondRed)
                 {
@@ -292,8 +291,7 @@ namespace infra
         {
             T* doubleBlackSibling = &doubleBlackParent->left == doubleBlack ? doubleBlackParent->right : doubleBlackParent->left;
 
-            if (doubleBlackSibling->colour == Colour::black
-                && ((doubleBlackSibling->left && doubleBlackSibling->left->colour == Colour::red) || (doubleBlackSibling->right && doubleBlackSibling->right->colour == Colour::red)))
+            if (doubleBlackSibling->colour == Colour::black && ((doubleBlackSibling->left && doubleBlackSibling->left->colour == Colour::red) || (doubleBlackSibling->right && doubleBlackSibling->right->colour == Colour::red)))
             {
                 T** redNephew = (doubleBlackSibling->left && doubleBlackSibling->left->colour == Colour::red) ? &doubleBlackSibling->left : &doubleBlackSibling->right;
                 (*redNephew)->colour = Colour::black;
@@ -337,8 +335,7 @@ namespace infra
 
                 doubleBlackParent = nullptr;
             }
-            else if (doubleBlackSibling->colour == Colour::black
-                && (!doubleBlackSibling->left || doubleBlackSibling->left->colour == Colour::black) && (!doubleBlackSibling->right || doubleBlackSibling->right->colour == Colour::black))
+            else if (doubleBlackSibling->colour == Colour::black && (!doubleBlackSibling->left || doubleBlackSibling->left->colour == Colour::black) && (!doubleBlackSibling->right || doubleBlackSibling->right->colour == Colour::black))
             {
                 // Step 3.2 b
                 doubleBlackSibling->colour = Colour::red;

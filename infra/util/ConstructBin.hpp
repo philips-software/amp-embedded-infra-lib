@@ -21,7 +21,7 @@ namespace infra
         ConstructBin& TextStream(const std::function<void(infra::TextOutputStream stream)>& callback);
 
         template<class T>
-            ConstructBin& Value(T v);
+        ConstructBin& Value(T v);
 
         std::vector<uint8_t> Vector() const;
         std::string String() const;

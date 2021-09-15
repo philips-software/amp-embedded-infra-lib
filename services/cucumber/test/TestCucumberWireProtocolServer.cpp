@@ -1,4 +1,3 @@
-#include "gtest/gtest.h"
 #include "infra/stream/StringInputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
@@ -8,6 +7,7 @@
 #include "services/cucumber/CucumberWireProtocolServer.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/network/test_doubles/ConnectionStub.hpp"
+#include "gtest/gtest.h"
 
 static services::CucumberStepStorage stepStorage;
 static uint8_t val = 42;
@@ -153,15 +153,13 @@ public:
 
     void CheckSuccessResponse(int id, infra::BoundedConstString arguments, infra::BoundedConstString location)
     {
-        std::string response = std::string("[ \"success\", [ { \"id\":\"") + std::to_string(id)
-            + std::string("\", \"args\":") + arguments + std::string(", \"source\":\"") + location + std::string("\" } ] ]\n");
+        std::string response = std::string("[ \"success\", [ { \"id\":\"") + std::to_string(id) + std::string("\", \"args\":") + arguments + std::string(", \"source\":\"") + location + std::string("\" } ] ]\n");
         EXPECT_EQ(response, connection.SentDataAsString());
     }
 
     void InvokeStep(int id, infra::BoundedConstString arguments)
     {
-        std::string request = std::string("[\"invoke\",{\"id\":\"") + std::to_string(id) 
-            + std::string("\",\"args\":") + arguments + std::string("}]");
+        std::string request = std::string("[\"invoke\",{\"id\":\"") + std::to_string(id) + std::string("\",\"args\":") + arguments + std::string("}]");
         ReceiveData(request);
     }
 
@@ -257,7 +255,7 @@ TEST_F(CucumberWireProtocolServerTest, should_respond_to_step_match_request_with
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     ReceiveData("[\"step_matches\",{\"name_to_match\":\"a step\"}]");
-    
+
     auto match = services::CucumberStepStorage::Instance().MatchStep("a step");
     CheckSuccessResponse(match.id, "[]", "TestCucumberWireProtocolServer.cpp:25");
     EXPECT_CALL(connection, AbortAndDestroyMock());
@@ -287,7 +285,7 @@ TEST_F(CucumberWireProtocolServerTest, should_respond_to_non_matching_substring_
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     ReceiveData("[\"step_matches\",{\"name_to_match\":\"a WiFi network is\"}]");
-    
+
     CheckFailResponse("Step not Matched", "Exception.Step.NotFound");
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }

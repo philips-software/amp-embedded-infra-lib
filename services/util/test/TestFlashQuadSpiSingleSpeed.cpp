@@ -1,8 +1,8 @@
-#include "gmock/gmock.h"
 #include "hal/interfaces/test_doubles/QuadSpiStub.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "services/util/FlashQuadSpiSingleSpeed.hpp"
+#include "gmock/gmock.h"
 
 class FlashQuadSpiSingleSpeedTest
     : public testing::Test
@@ -24,10 +24,8 @@ public:
     testing::StrictMock<infra::MockCallback<void()>> finished;
 };
 
-#define EXPECT_ENABLE_WRITE() EXPECT_CALL(spiStub, SendDataMock( \
-    hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiSingleSpeed::commandWriteEnable), {}, {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::SingleSpeed()))
-#define EXPECT_POLL_WRITE_DONE() EXPECT_CALL(spiStub, PollStatusMock( \
-    hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiSingleSpeed::commandReadStatusRegister), {}, {}, 0 }, 1, 0, 1, hal::QuadSpi::Lines::SingleSpeed()))
+#define EXPECT_ENABLE_WRITE() EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiSingleSpeed::commandWriteEnable), {}, {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::SingleSpeed()))
+#define EXPECT_POLL_WRITE_DONE() EXPECT_CALL(spiStub, PollStatusMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiSingleSpeed::commandReadStatusRegister), {}, {}, 0 }, 1, 0, 1, hal::QuadSpi::Lines::SingleSpeed()))
 
 TEST_F(FlashQuadSpiSingleSpeedTest, Construction)
 {
@@ -45,7 +43,7 @@ TEST_F(FlashQuadSpiSingleSpeedTest, ReadData)
     std::array<uint8_t, 4> buffer;
     flash.ReadBuffer(buffer, 0, [this]() { finished.callback(); });
     ExecuteAllActions();
-    
+
     EXPECT_EQ(receiveData, buffer);
 }
 
@@ -59,7 +57,7 @@ TEST_F(FlashQuadSpiSingleSpeedTest, ReadDataAtNonZeroAddress)
     std::array<uint8_t, 4> buffer;
     flash.ReadBuffer(buffer, 0 + 0x123456, [this]() { finished.callback(); });
     ExecuteAllActions();
-    
+
     EXPECT_EQ(receiveData, buffer);
 }
 

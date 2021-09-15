@@ -73,8 +73,7 @@ public:
 
     void ExpectSendInitResponse(uint16_t availableWindow)
     {
-        EXPECT_CALL(base, SendMessageStream(3, testing::_)).WillOnce(testing::Invoke([this, availableWindow](uint16_t size, const infra::Function<void(uint16_t size)>& onSent)
-        {
+        EXPECT_CALL(base, SendMessageStream(3, testing::_)).WillOnce(testing::Invoke([this, availableWindow](uint16_t size, const infra::Function<void(uint16_t size)>& onSent) {
             this->onSent = onSent;
             return EmplaceWriter();
         }));
@@ -82,8 +81,7 @@ public:
 
     void ExpectSendMessageStream(uint16_t size)
     {
-        EXPECT_CALL(base, SendMessageStream(size, testing::_)).WillOnce(testing::Invoke([this](uint16_t size, const infra::Function<void(uint16_t size)>& onSent)
-        {
+        EXPECT_CALL(base, SendMessageStream(size, testing::_)).WillOnce(testing::Invoke([this](uint16_t size, const infra::Function<void(uint16_t size)>& onSent) {
             this->onSent = onSent;
             return EmplaceWriter();
         }));
@@ -105,8 +103,7 @@ public:
 
     void ExpectSendMessageStreamAvailable(const std::vector<uint8_t>& data)
     {
-        EXPECT_CALL(observer, SendMessageStreamAvailable(testing::_)).WillOnce(testing::Invoke([data](infra::SharedPtr<infra::StreamWriter>&& writer)
-        {
+        EXPECT_CALL(observer, SendMessageStreamAvailable(testing::_)).WillOnce(testing::Invoke([data](infra::SharedPtr<infra::StreamWriter>&& writer) {
             infra::DataOutputStream::WithErrorPolicy stream(*writer);
             stream << infra::MakeRange(data);
         }));
@@ -114,8 +111,7 @@ public:
 
     void ExpectReceivedMessage(const std::vector<uint8_t>& expected)
     {
-        EXPECT_CALL(observer, ReceivedMessage(testing::_)).WillOnce(testing::Invoke([expected](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
-        {
+        EXPECT_CALL(observer, ReceivedMessage(testing::_)).WillOnce(testing::Invoke([expected](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) {
             infra::DataInputStream::WithErrorPolicy stream(*reader);
             std::vector<uint8_t> data(stream.Available(), 0);
             stream >> infra::MakeRange(data);
@@ -126,11 +122,9 @@ public:
 
     void ExpectSendReleaseWindow(uint16_t releasedSize)
     {
-        EXPECT_CALL(base, SendMessageStream(3, testing::_)).WillOnce(testing::Invoke([this, releasedSize](uint16_t size, const infra::Function<void(uint16_t size)>& onSent)
-        {
+        EXPECT_CALL(base, SendMessageStream(3, testing::_)).WillOnce(testing::Invoke([this, releasedSize](uint16_t size, const infra::Function<void(uint16_t size)>& onSent) {
             this->onSent = onSent;
-            return EmplaceWriter([this, releasedSize]()
-            {
+            return EmplaceWriter([this, releasedSize]() {
                 this->onSent(3);
                 EXPECT_EQ(infra::ConstructBin().Value<uint8_t>(3).Value<infra::LittleEndian<uint16_t>>(releasedSize).Vector(), sentData.front());
                 sentData.pop_front();

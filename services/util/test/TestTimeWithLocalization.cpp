@@ -1,8 +1,8 @@
-#include "gmock/gmock.h"
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/timer/PartitionedTime.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "services/util/TimeWithLocalization.hpp"
+#include "gmock/gmock.h"
 
 class TimeWithLocalizationTest
     : public testing::Test

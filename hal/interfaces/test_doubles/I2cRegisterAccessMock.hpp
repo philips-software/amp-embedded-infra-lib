@@ -1,8 +1,8 @@
 #ifndef HAL_I2C_REGISTER_ACCESS_MOCK_HPP
 #define HAL_I2C_REGISTER_ACCESS_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "hal/interfaces/I2c.hpp"
+#include "gmock/gmock.h"
 
 namespace hal
 {

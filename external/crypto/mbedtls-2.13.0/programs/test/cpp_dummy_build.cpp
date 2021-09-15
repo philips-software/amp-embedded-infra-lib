@@ -112,7 +112,7 @@
 
 int main()
 {
-    mbedtls_platform_context *ctx = NULL;
+    mbedtls_platform_context* ctx = NULL;
     mbedtls_platform_setup(ctx);
     mbedtls_printf("CPP Build test\n");
     mbedtls_platform_teardown(ctx);

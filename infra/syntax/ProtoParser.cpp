@@ -119,17 +119,17 @@ namespace infra
 
         switch (type)
         {
-            case 0:
-                return std::make_pair(GetVarInt(), fieldNumber);
-            case 1:
-                return std::make_pair(GetFixed64(), fieldNumber);
-            case 2:
-                return std::make_pair(ProtoLengthDelimited(input, formatErrorPolicy, static_cast<uint32_t>(GetVarInt())), fieldNumber);
-            case 5:
-                return std::make_pair(GetFixed32(), fieldNumber);
-            default:
-                formatErrorPolicy.ReportResult(false);
-                return std::make_pair(static_cast<uint32_t>(0), 0);
+        case 0:
+            return std::make_pair(GetVarInt(), fieldNumber);
+        case 1:
+            return std::make_pair(GetFixed64(), fieldNumber);
+        case 2:
+            return std::make_pair(ProtoLengthDelimited(input, formatErrorPolicy, static_cast<uint32_t>(GetVarInt())), fieldNumber);
+        case 5:
+            return std::make_pair(GetFixed32(), fieldNumber);
+        default:
+            formatErrorPolicy.ReportResult(false);
+            return std::make_pair(static_cast<uint32_t>(0), 0);
         }
     }
 

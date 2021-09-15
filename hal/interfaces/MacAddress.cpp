@@ -16,12 +16,12 @@ namespace infra
         auto& mac = asMacAddressHelper.macAddress;
         const auto w02 = Width(2, '0');
         stream << hex
-            << w02 << mac[0] << resetWidth << ':'
-            << w02 << mac[1] << resetWidth << ':'
-            << w02 << mac[2] << resetWidth << ':'
-            << w02 << mac[3] << resetWidth << ':'
-            << w02 << mac[4] << resetWidth << ':'
-            << w02 << mac[5];
+               << w02 << mac[0] << resetWidth << ':'
+               << w02 << mac[1] << resetWidth << ':'
+               << w02 << mac[2] << resetWidth << ':'
+               << w02 << mac[3] << resetWidth << ':'
+               << w02 << mac[4] << resetWidth << ':'
+               << w02 << mac[5];
         return stream;
     }
 

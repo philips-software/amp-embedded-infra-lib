@@ -1,6 +1,6 @@
-#include "mbedtls/sha256.h"
-#include "crypto/micro-ecc/uECC.h"
 #include "upgrade/boot_loader/VerifierEcDsa.hpp"
+#include "crypto/micro-ecc/uECC.h"
+#include "mbedtls/sha256.h"
 
 namespace application
 {
@@ -36,9 +36,9 @@ namespace application
         flash.ReadBuffer(theSignature, signature.first);
 
         return uECC_verify(key.begin(),
-            messageHash.data(),
-            messageHash.size(),
-            theSignature.data(),
-            uECC_secp224r1()) == 1;
+                   messageHash.data(),
+                   messageHash.size(),
+                   theSignature.data(),
+                   uECC_secp224r1()) == 1;
     }
 }

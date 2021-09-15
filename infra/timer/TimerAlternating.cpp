@@ -36,6 +36,6 @@ namespace infra
         index = (index + 1) & 1;
 
         triggerStart += durations[index];
-        SetNextTriggerTime(triggerStart, infra::emptyFunction);     // Dummy function, this is overruled in Action()
+        SetNextTriggerTime(triggerStart, infra::emptyFunction); // Dummy function, this is overruled in Action()
     }
 }

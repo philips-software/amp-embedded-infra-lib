@@ -1,5 +1,5 @@
-#include "gmock/gmock.h"
 #include "services/network/CertificateConvertor.hpp"
+#include "gmock/gmock.h"
 
 TEST(CertificateConvertorTest, should_convert_certificate_from_pem_to_der)
 {
@@ -63,5 +63,6 @@ TEST(CertificateConvertorTest, should_throw_on_invalid_certificate)
             EXPECT_STREQ("CertificateConvertor::Convert Base64 decoding failed", e.what());
             throw;
         }
-    }, std::exception);
+    },
+        std::exception);
 }

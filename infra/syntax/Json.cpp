@@ -1,5 +1,5 @@
-#include "infra/stream/StringOutputStream.hpp"
 #include "infra/syntax/Json.hpp"
+#include "infra/stream/StringOutputStream.hpp"
 #include <cctype>
 
 namespace
@@ -38,41 +38,40 @@ namespace infra
 
             switch (*next++)
             {
-                case '"':  return '"';
-                case '\\': return '\\';
-                case 'b': return '\b';
-                case 'f': return '\f';
-                case 'n': return '\n';
-                case 'r': return '\r';
-                case 't': return '\t';
-                case 'u':
+            case '"': return '"';
+            case '\\': return '\\';
+            case 'b': return '\b';
+            case 'f': return '\f';
+            case 'n': return '\n';
+            case 'r': return '\r';
+            case 't': return '\t';
+            case 'u': {
+                char result = 0;
+
+                for (int skipCode = 0; skipCode != 4 && next != end; ++skipCode, ++next)
                 {
-                    char result = 0;
-
-                    for (int skipCode = 0; skipCode != 4 && next != end; ++skipCode, ++next)
+                    if (*next >= '0' && *next <= '9')
                     {
-                        if (*next >= '0' && *next <= '9')
-                        {
-                            result *= 16;
-                            result += *next - '0';
-                        }
-                        else if (*next >= 'a' && *next <= 'f')
-                        {
-                            result *= 16;
-                            result += *next - 'a' + 10;
-                        }
-                        else if (*next >= 'A' && *next <= 'F')
-                        {
-                            result *= 16;
-                            result += *next - 'A' + 10;
-                        }
-                        else
-                            break;
+                        result *= 16;
+                        result += *next - '0';
                     }
-
-                    return result;
+                    else if (*next >= 'a' && *next <= 'f')
+                    {
+                        result *= 16;
+                        result += *next - 'a' + 10;
+                    }
+                    else if (*next >= 'A' && *next <= 'F')
+                    {
+                        result *= 16;
+                        result += *next - 'A' + 10;
+                    }
+                    else
+                        break;
                 }
-                default: return *std::prev(next);
+
+                return result;
+            }
+            default: return *std::prev(next);
             }
         }
         else
@@ -882,8 +881,7 @@ namespace infra
 
         if (token.Is<JsonToken::RightBrace>())
             return infra::MakeOptional(token.Get<JsonToken::RightBrace>());
-        return
-            infra::none;
+        return infra::none;
     }
 
     infra::Optional<JsonToken::RightBracket> JsonIterator::SearchArrayEnd()
@@ -967,26 +965,26 @@ namespace infra
         JsonToken::Token token = tokenizer.Token();
         switch (state)
         {
-            case readObjectStart:
-                ReadObjectStart(token);
-                break;
-            case readKeyOrEnd:
-                ReadKeyOrEnd(token);
-                break;
-            case readKey:
-                ReadKey(token);
-                break;
-            case readColon:
-                ReadColon(token);
-                break;
-            case readValue:
-                ReadValue(token);
-                break;
-            case readCommaOrObjectEnd:
-                ReadCommaOrObjectEnd(token);
-                break;
-            case end:
-                std::abort();
+        case readObjectStart:
+            ReadObjectStart(token);
+            break;
+        case readKeyOrEnd:
+            ReadKeyOrEnd(token);
+            break;
+        case readKey:
+            ReadKey(token);
+            break;
+        case readColon:
+            ReadColon(token);
+            break;
+        case readValue:
+            ReadValue(token);
+            break;
+        case readCommaOrObjectEnd:
+            ReadCommaOrObjectEnd(token);
+            break;
+        case end:
+            std::abort();
         }
     }
 
@@ -1110,32 +1108,32 @@ namespace infra
             JsonToken::Token token = tokenizer.Token();
             switch (state)
             {
-                case readArrayStart:
-                    state = readValueOrEnd;
-                    if (!token.Is<JsonToken::LeftBracket>())
-                        SetError();
-                    break;
-                case readValueOrEnd:
-                    state = readCommaOrArrayEnd;
-                    if (token.Is<JsonToken::RightBracket>())
-                        state = end;
-                    else
-                        ReadValue(token);
-                    break;
-                case readValue:
-                    state = readCommaOrArrayEnd;
+            case readArrayStart:
+                state = readValueOrEnd;
+                if (!token.Is<JsonToken::LeftBracket>())
+                    SetError();
+                break;
+            case readValueOrEnd:
+                state = readCommaOrArrayEnd;
+                if (token.Is<JsonToken::RightBracket>())
+                    state = end;
+                else
                     ReadValue(token);
-                    break;
-                case readCommaOrArrayEnd:
-                    if (token.Is<JsonToken::Comma>())
-                        state = readValue;
-                    else if (token.Is<JsonToken::RightBracket>())
-                        state = end;
-                    else
-                        SetError();
-                    break;
-                case end:
-                    std::abort();
+                break;
+            case readValue:
+                state = readCommaOrArrayEnd;
+                ReadValue(token);
+                break;
+            case readCommaOrArrayEnd:
+                if (token.Is<JsonToken::Comma>())
+                    state = readValue;
+                else if (token.Is<JsonToken::RightBracket>())
+                    state = end;
+                else
+                    SetError();
+                break;
+            case end:
+                std::abort();
             }
         } while (state != readCommaOrArrayEnd && state != end);
 
@@ -1297,7 +1295,8 @@ namespace infra
     {
         JsonObject object(contents);
         for (auto i : object)
-        {}
+        {
+        }
 
         return !object.Error();
     }

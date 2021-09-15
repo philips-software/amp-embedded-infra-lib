@@ -1,9 +1,9 @@
 #ifndef LWIP_CONNECTION_LW_IP_HPP
 #define LWIP_CONNECTION_LW_IP_HPP
 
-#include "infra/timer/Timer.hpp"
 #include "infra/stream/BoundedDequeInputStream.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
+#include "infra/timer/Timer.hpp"
 #include "infra/util/BoundedList.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/IntrusiveList.hpp"
@@ -18,7 +18,7 @@ namespace services
 {
 #ifdef ESP_PLATFORM
     static const uint32_t tcpSndBuf = 2 * TCP_MSS;
-    static const uint32_t tcpSndQueueLen = ((4 * (tcpSndBuf) + (TCP_MSS - 1))/(TCP_MSS));
+    static const uint32_t tcpSndQueueLen = ((4 * (tcpSndBuf) + (TCP_MSS - 1)) / (TCP_MSS));
     static const uint32_t tcpWnd = (4 * TCP_MSS);
 #else
     static const uint32_t tcpSndBuf = TCP_SND_BUF;
@@ -60,7 +60,7 @@ namespace services
         static err_t Recv(void* arg, tcp_pcb* tpcb, pbuf* p, err_t err);
         static void Err(void* arg, err_t err);
         static err_t Sent(void* arg, struct tcp_pcb* tpcb, uint16_t len);
-        static void Destroy(u8_t id, void *data);
+        static void Destroy(u8_t id, void* data);
 
         err_t Recv(pbuf* p, err_t err);
         void Err(err_t err);
@@ -137,7 +137,7 @@ namespace services
     {
     public:
         template<std::size_t Size>
-            using WithFixedAllocator = infra::WithStorage<ListenerLwIp, AllocatorConnectionLwIp::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<Size>>;
+        using WithFixedAllocator = infra::WithStorage<ListenerLwIp, AllocatorConnectionLwIp::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<Size>>;
 
         ListenerLwIp(AllocatorConnectionLwIp& allocator, uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions, ConnectionFactoryLwIp& connectionFactory);
         ~ListenerLwIp();
@@ -194,10 +194,10 @@ namespace services
     {
     public:
         template<std::size_t MaxListeners, std::size_t MaxConnectors, std::size_t MaxConnections>
-            using WithFixedAllocator = infra::WithStorage<infra::WithStorage<infra::WithStorage<ConnectionFactoryLwIp,
-                AllocatorListenerLwIp::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxListeners>>,
-                infra::BoundedList<ClientConnectionObserverFactory>::WithMaxSize<MaxConnectors>>,
-                AllocatorConnectionLwIp::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxConnections>>;
+        using WithFixedAllocator = infra::WithStorage<infra::WithStorage<infra::WithStorage<ConnectionFactoryLwIp,
+                                                                             AllocatorListenerLwIp::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxListeners>>,
+                                                          infra::BoundedList<ClientConnectionObserverFactory>::WithMaxSize<MaxConnectors>>,
+            AllocatorConnectionLwIp::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxConnections>>;
 
     public:
         ConnectionFactoryLwIp(AllocatorListenerLwIp& listenerAllocator, infra::BoundedList<ConnectorLwIp>& connectors, AllocatorConnectionLwIp& connectionAllocator);

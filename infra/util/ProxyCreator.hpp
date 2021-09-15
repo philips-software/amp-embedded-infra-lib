@@ -86,7 +86,7 @@ namespace infra
     {
     public:
         template<class Concrete>
-            using WithCreator = Creator<T, Concrete, void(ConstructionArgs...)>;
+        using WithCreator = Creator<T, Concrete, void(ConstructionArgs...)>;
 
         using ProxyCreator = infra::ProxyCreator<T, void(ConstructionArgs...)>;
 

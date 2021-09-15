@@ -1,8 +1,8 @@
-#include "gmock/gmock.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "infra/util/Optional.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "protobuf/protoc_echo_plugin/CppFormatter.hpp"
+#include "gmock/gmock.h"
 #include <sstream>
 
 class EntityMock
@@ -531,7 +531,7 @@ TEST_F(CppFormatterTest, EnumDeclaration_prints_header)
 
 TEST_F(CppFormatterTest, EnumDeclaration_prints_no_source)
 {
-    application::EnumDeclaration declaration("name", { {"m1", 0}, {"m2", 1} });
+    application::EnumDeclaration declaration("name", { { "m1", 0 }, { "m2", 1 } });
     declaration.PrintSource(*printer, "scope");
     ExpectPrinted("");
 }

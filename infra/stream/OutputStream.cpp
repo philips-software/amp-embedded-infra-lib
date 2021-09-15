@@ -64,12 +64,12 @@ namespace infra
     {
         return writer.Available();
     }
-    
+
     StreamWriter& OutputStream::Writer() const
     {
         return writer;
     }
-    
+
     StreamErrorPolicy& OutputStream::ErrorPolicy() const
     {
         return errorPolicy;
@@ -181,17 +181,17 @@ namespace infra
             v = -v;
         switch (radix)
         {
-            case Radix::dec:
-                OutputAsDecimal(v, negative);
-                break;
-            case Radix::bin:
-                OutputAsBinary(v, negative);
-                break;
-            case Radix::hex:
-                OutputAsHexadecimal(v, negative);
-                break;
-            default:
-                std::abort();
+        case Radix::dec:
+            OutputAsDecimal(v, negative);
+            break;
+        case Radix::bin:
+            OutputAsBinary(v, negative);
+            break;
+        case Radix::hex:
+            OutputAsHexadecimal(v, negative);
+            break;
+        default:
+            std::abort();
         }
 
         return *this;
@@ -200,18 +200,18 @@ namespace infra
     TextOutputStream& TextOutputStream::operator<<(uint64_t v)
     {
         switch (radix)
-            {
-            case Radix::dec:
-                OutputAsDecimal(v, false);
-                break;
-            case Radix::bin:
-                OutputAsBinary(v, false);
-                break;
-            case Radix::hex:
-                OutputAsHexadecimal(v, false);
-                break;
-            default:
-                std::abort();
+        {
+        case Radix::dec:
+            OutputAsDecimal(v, false);
+            break;
+        case Radix::bin:
+            OutputAsBinary(v, false);
+            break;
+        case Radix::hex:
+            OutputAsHexadecimal(v, false);
+            break;
+        default:
+            std::abort();
         }
 
         return *this;
@@ -227,7 +227,7 @@ namespace infra
         *this << static_cast<uint32_t>(v);
         v -= static_cast<uint32_t>(v);
         *this << ".";
-        *this << Width(3,'0') << static_cast<uint32_t>(v * 1000);
+        *this << Width(3, '0') << static_cast<uint32_t>(v * 1000);
         return *this;
     }
 

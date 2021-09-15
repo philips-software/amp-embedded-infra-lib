@@ -2,7 +2,6 @@
 #define LOW_POWER_EVENT_DISPATCHER
 
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
-
 #include <atomic>
 
 namespace infra
@@ -38,7 +37,7 @@ namespace infra
     {
     public:
         template<std::size_t StorageSize, class T = LowPowerEventDispatcherWorker>
-            using WithSize = infra::EventDispatcherWithWeakPtrWorker::WithSize<StorageSize, T>;
+        using WithSize = infra::EventDispatcherWithWeakPtrWorker::WithSize<StorageSize, T>;
 
         LowPowerEventDispatcherWorker(infra::MemoryRange<std::pair<infra::EventDispatcherWithWeakPtrWorker::ActionStorage, std::atomic<bool>>> scheduledActionsStorage, LowPowerStrategy& lowPowerStrategy);
 

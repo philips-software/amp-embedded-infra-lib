@@ -2,12 +2,12 @@
 #define SERVICES_MEMORY_MAPPED_STATIC_CONFIGURATION_HPP
 
 #include "hal/interfaces/Flash.hpp"
+#include "infra/event/EventDispatcher.hpp"
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/syntax/ProtoParser.hpp"
 #include "mbedtls/sha256.h"
-#include "infra/event/EventDispatcher.hpp"
 
 namespace services
 {
@@ -194,8 +194,7 @@ namespace services
     void MemoryMappedWritableConfiguration<T, TRef>::Read(const infra::Function<void()>& onDone)
     {
         this->onDone = onDone;
-        infra::EventDispatcher::Instance().Schedule([this]()
-        {
+        infra::EventDispatcher::Instance().Schedule([this]() {
             this->LoadConfiguration(memory);
             this->onDone();
         });
@@ -224,8 +223,7 @@ namespace services
     void FlashReadingWritableConfiguration<T, TRef>::Read(const infra::Function<void()>& onDone)
     {
         this->onDone = onDone;
-        this->flash.ReadBuffer(streamWriter.Storage(), 0, [this]()
-        {
+        this->flash.ReadBuffer(streamWriter.Storage(), 0, [this]() {
             this->LoadConfiguration(streamWriter.Storage());
             this->onDone();
         });

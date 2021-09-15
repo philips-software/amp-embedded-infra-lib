@@ -1,8 +1,8 @@
-#include "gmock/gmock.h"
-#include "infra/util/SharedPtr.hpp"
 #include "infra/util/SharedObjectAllocatorFixedSize.hpp"
+#include "infra/util/SharedPtr.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "infra/util/test_helper/MonitoredConstructionObject.hpp"
+#include "gmock/gmock.h"
 
 using AllocatorMySharedObject = infra::SharedObjectAllocator<infra::MonitoredConstructionObject, void(infra::ConstructionMonitorMock&)>;
 

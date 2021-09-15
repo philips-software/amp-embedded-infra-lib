@@ -12,12 +12,11 @@ namespace hal
         mainClock.Refere();
         this->onDone = onDone;
 
-        spiMaster.SendAndReceive(sendData, receiveData, nextAction, [this](){
+        spiMaster.SendAndReceive(sendData, receiveData, nextAction, [this]() {
             this->onDone();
             this->mainClock.Release();
         });
     }
-
 
     void LowPowerSpiMaster::SetChipSelectConfigurator(ChipSelectConfigurator& configurator)
     {

@@ -20,13 +20,14 @@ namespace services
             ParseSnippetTextRequest();
         else
             requestType = RequestType::Invalid;
-    }   
+    }
 
     bool CucumberWireProtocolParser::Valid(const infra::BoundedString& inputString)
     {
         infra::JsonArray input(inputString);
         for (const auto& value : input)
-        {}
+        {
+        }
 
         if (input.Error())
         {

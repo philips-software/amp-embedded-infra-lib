@@ -1,8 +1,8 @@
-#include "mbedtls/xtea.h"
 #include "upgrade/pack_builder/ImageSecurityXteaHmac.hpp"
-#include <cassert>
+#include "mbedtls/xtea.h"
 #include <algorithm>
 #include <array>
+#include <cassert>
 
 namespace application
 {

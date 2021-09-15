@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/util/PolymorphicVariant.hpp"
+#include "gtest/gtest.h"
 
 namespace
 {

@@ -1,5 +1,5 @@
-#include "mbedtls/sha256.h"
 #include "services/util/ConfigurationStore.hpp"
+#include "mbedtls/sha256.h"
 
 namespace services
 {
@@ -24,8 +24,7 @@ namespace services
     void ConfigurationBlobFlash::Recover(const infra::Function<void(bool success)>& onRecovered)
     {
         this->onRecovered = onRecovered;
-        flash.ReadBuffer(blob, 0, [this]()
-        {
+        flash.ReadBuffer(blob, 0, [this]() {
             if (BlobIsValid())
             {
                 RecoverCurrentSize();
@@ -104,8 +103,7 @@ namespace services
     void ConfigurationBlobFlash::VerifyBlock()
     {
         if (currentVerificationIndex != blob.size())
-            flash.ReadBuffer(infra::Head(verificationBuffer, blob.size() - currentVerificationIndex), currentVerificationIndex, [this]()
-            {
+            flash.ReadBuffer(infra::Head(verificationBuffer, blob.size() - currentVerificationIndex), currentVerificationIndex, [this]() {
                 auto verificationBlock = infra::Head(verificationBuffer, blob.size() - currentVerificationIndex);
                 really_assert(infra::ContentsEqual(verificationBlock, infra::Head(infra::DiscardHead(blob, currentVerificationIndex), verificationBuffer.size())));
                 currentVerificationIndex += verificationBlock.size();
@@ -226,8 +224,7 @@ namespace services
     {
         this->onRecovered = onRecovered;
 
-        activeBlob->Recover([this](bool success)
-        {
+        activeBlob->Recover([this](bool success) {
             if (success)
             {
                 inactiveBlob->Erase([this]() { OnBlobLoaded(true); });
@@ -235,8 +232,7 @@ namespace services
             else
             {
                 std::swap(activeBlob, inactiveBlob);
-                activeBlob->Recover([this](bool success)
-                {
+                activeBlob->Recover([this](bool success) {
                     inactiveBlob->Erase([this, success]() { OnBlobLoaded(success); });
                 });
             }
@@ -277,18 +273,14 @@ namespace services
         this->onLoadFactoryDefault = onLoadFactoryDefault;
         this->onRecovered = onRecovered;
 
-        factoryDefaultBlob.Recover([this](bool success)
-        {
+        factoryDefaultBlob.Recover([this](bool success) {
             if (!success)
             {
                 this->onLoadFactoryDefault();
 
-                factoryDefaultBlob.Erase([this]()
-                {
-                    configurationStore.Serialize(factoryDefaultBlob, [this]()
-                    {
-                        configurationStore.Recover([this](bool success)
-                        {
+                factoryDefaultBlob.Erase([this]() {
+                    configurationStore.Serialize(factoryDefaultBlob, [this]() {
+                        configurationStore.Recover([this](bool success) {
                             if (success)
                                 this->onRecovered(false);
                             else
@@ -303,8 +295,7 @@ namespace services
 
                 this->onLoadFactoryDefault = nullptr;
 
-                configurationStore.Recover([this](bool success)
-                {
+                configurationStore.Recover([this](bool success) {
                     this->onRecovered(!success);
                 });
             }

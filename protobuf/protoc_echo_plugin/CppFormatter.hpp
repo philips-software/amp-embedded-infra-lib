@@ -13,7 +13,7 @@ namespace application
         explicit Entity(bool hasHeaderCode = true, bool hasSourceCode = true);
         Entity(const Entity& other) = delete;
         Entity& operator=(const Entity& other) = delete;
-        
+
     public:
         virtual ~Entity() = default;
 

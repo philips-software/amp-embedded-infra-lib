@@ -1,5 +1,5 @@
-#include "infra/stream/SavedMarkerStream.hpp"
 #include "infra/syntax/ProtoFormatter.hpp"
+#include "infra/stream/SavedMarkerStream.hpp"
 
 namespace infra
 {

@@ -1,7 +1,7 @@
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
 #include "infra/util/Function.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 TEST(FunctionTest, TestConstructedEmpty)
 {
@@ -17,7 +17,7 @@ TEST(FunctionTest, TestConstructedEmptyByNullptr)
 
 TEST(FunctionTest, TestConstructedNotEmpty)
 {
-    infra::Function<void()> f([]() {} );
+    infra::Function<void()> f([]() {});
     EXPECT_TRUE(static_cast<bool>(f));
 }
 
@@ -41,7 +41,7 @@ TEST(FunctionTest, TestConstructedWithTheEmptyFunction)
 TEST(FunctionTest, TestCall)
 {
     infra::MockCallback<void()> m;
-    infra::Function<void()> f([&m]() { m.callback(); } );
+    infra::Function<void()> f([&m]() { m.callback(); });
     EXPECT_CALL(m, callback());
     f();
 }
@@ -88,7 +88,7 @@ TEST(FunctionTest, TestCopyConstructedFromEmptyFunction)
 TEST(FunctionTest, TestCopyConstruct)
 {
     infra::MockCallback<void()> m;
-    infra::Function<void()> f([&m]() { m.callback(); } );
+    infra::Function<void()> f([&m]() { m.callback(); });
     infra::Function<void()> f2(f);
     EXPECT_TRUE(static_cast<bool>(f));
     EXPECT_CALL(m, callback());
@@ -117,7 +117,7 @@ TEST(FunctionTest, TestCopyAssignFromEmptyFunction)
 TEST(FunctionTest, TestCopyAssign)
 {
     infra::MockCallback<void()> m;
-    infra::Function<void()> f([&m]() { m.callback(); } );
+    infra::Function<void()> f([&m]() { m.callback(); });
     infra::Function<void()> f2;
     f2 = f;
     EXPECT_TRUE(static_cast<bool>(f));
@@ -128,7 +128,7 @@ TEST(FunctionTest, TestCopyAssign)
 TEST(FunctionTest, TestAssignNullptr)
 {
     infra::MockCallback<void()> m;
-    infra::Function<void()> f([&m]() { m.callback(); } );
+    infra::Function<void()> f([&m]() { m.callback(); });
     f = nullptr;
     EXPECT_FALSE(static_cast<bool>(f));
 }
@@ -145,7 +145,7 @@ TEST(FunctionTest, TestAssign)
 TEST(FunctionTest, TestSwapFilledEmpty)
 {
     infra::MockCallback<void()> m;
-    infra::Function<void()> f([&m]() { m.callback(); } );
+    infra::Function<void()> f([&m]() { m.callback(); });
     infra::Function<void()> f2;
     swap(f, f2);
     EXPECT_FALSE(static_cast<bool>(f));
@@ -187,14 +187,14 @@ TEST(FunctionTest, TestSwapEmptyEmpty)
 
 TEST(FunctionTest, TestReturnValue)
 {
-    infra::Function<int()> f([]() { return 1; } );
+    infra::Function<int()> f([]() { return 1; });
     EXPECT_EQ(1, f());
 }
 
 TEST(FunctionTest, TestParameter)
 {
     infra::MockCallback<void(int)> m;
-    infra::Function<void(int)> f([&m](int x) { m.callback(x); } );
+    infra::Function<void(int)> f([&m](int x) { m.callback(x); });
     EXPECT_CALL(m, callback(1));
     f(1);
 }
@@ -202,7 +202,7 @@ TEST(FunctionTest, TestParameter)
 TEST(FunctionProxyTest, TestProxy)
 {
     infra::MockCallback<void()> m;
-    infra::Function<void(), 40> p([&m]() { m.callback(); } );
+    infra::Function<void(), 40> p([&m]() { m.callback(); });
 
     EXPECT_CALL(m, callback());
     infra::Function<void(), sizeof(void*)> f([&p]() { p(); });

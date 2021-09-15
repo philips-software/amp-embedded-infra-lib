@@ -1,5 +1,5 @@
-#include "upgrade/pack_builder/InputBinary.hpp"
 #include "upgrade/pack_builder/InputHex.hpp"
+#include "upgrade/pack_builder/InputBinary.hpp"
 
 namespace application
 {

@@ -46,7 +46,7 @@ namespace services
         struct Answer
         {
             static const uint16_t nameIsPointer = 0xc000;
-            static const uint16_t defaultTtl = 30;  // RFC4795 recommends a TTL of 30 seconds
+            static const uint16_t defaultTtl = 30; // RFC4795 recommends a TTL of 30 seconds
 
             infra::BigEndian<uint16_t> name;
             infra::BigEndian<uint16_t> type;

@@ -1,5 +1,5 @@
-#include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "services/network/test_doubles/ConnectionStub.hpp"
+#include "infra/event/EventDispatcherWithWeakPtr.hpp"
 
 namespace services
 {
@@ -8,11 +8,11 @@ namespace services
         assert(streamWriter.Allocatable());
         assert(sendSize <= MaxSendStreamSize());
         streamWriterPtr = streamWriter.Emplace(infra::inPlace, sentData, sendSize);
-        infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionStub>& object)
-        {
+        infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionStub>& object) {
             infra::SharedPtr<infra::StreamWriter> stream = std::move(object->streamWriterPtr);
             object->Observer().SendStreamAvailable(std::move(stream));
-        }, SharedFromThis());
+        },
+            SharedFromThis());
     }
 
     std::size_t ConnectionStub::MaxSendStreamSize() const
@@ -53,7 +53,7 @@ namespace services
 
     std::string ConnectionStub::SentDataAsString() const
     {
-        return{ sentData.begin(), sentData.end() };
+        return { sentData.begin(), sentData.end() };
     }
 
     ConnectionStub::StreamWriterStub::StreamWriterStub(ConnectionStub& connection, std::size_t size)

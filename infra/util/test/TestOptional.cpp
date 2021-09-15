@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/util/Optional.hpp"
+#include "gtest/gtest.h"
 
 namespace infra
 {
@@ -203,7 +203,9 @@ TEST(OptionalTest, TestIndirect)
 {
     struct X
     {
-        X(): x(true) {}
+        X()
+            : x(true)
+        {}
         bool x;
     };
 

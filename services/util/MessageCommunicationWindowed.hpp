@@ -17,7 +17,7 @@ namespace services
         {
         public:
             template<std::size_t Size>
-                using WithStorage = infra::WithStorage<AtomicDeque, std::array<uint8_t, Size + 1>>;
+            using WithStorage = infra::WithStorage<AtomicDeque, std::array<uint8_t, Size + 1>>;
 
             explicit AtomicDeque(infra::ByteRange storage);
 
@@ -83,7 +83,7 @@ namespace services
         static constexpr uint32_t RawMessageSize(uint32_t messageSize) { return messageSize + sizeof(uint32_t); };
 
         template<std::size_t Size>
-            using WithReceiveBuffer = infra::WithStorage<MessageCommunicationWindowed, detail::AtomicDeque::WithStorage<RawMessageSize(Size)>>;
+        using WithReceiveBuffer = infra::WithStorage<MessageCommunicationWindowed, detail::AtomicDeque::WithStorage<RawMessageSize(Size)>>;
 
         MessageCommunicationWindowed(detail::AtomicDeque& receivedData, MessageCommunicationReceiveOnInterrupt& messageCommunication);
 
@@ -103,8 +103,7 @@ namespace services
         uint16_t AvailableWindow() const;
 
     private:
-        enum class Operation
-            : uint8_t
+        enum class Operation : uint8_t
         {
             init = 1,
             initResponse,

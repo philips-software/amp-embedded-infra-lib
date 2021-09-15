@@ -48,8 +48,7 @@ namespace hal
             {
                 nextTrigger = infra::TimePoint::max();
 
-                infra::EventDispatcher::Instance().Schedule([this]()
-                {
+                infra::EventDispatcher::Instance().Schedule([this]() {
                     std::unique_lock<std::recursive_mutex> eventLock(mutex);
                     Progressed(Now());
                     NextTriggerChanged();

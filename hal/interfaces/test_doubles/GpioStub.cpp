@@ -16,9 +16,8 @@ namespace hal
             state = value;
 
             if (triggerOnChange)
-            if ((value && triggerOnChange->second != InterruptTrigger::fallingEdge)
-                || (!value && triggerOnChange->second != InterruptTrigger::risingEdge))
-                triggerOnChange->first();
+                if ((value && triggerOnChange->second != InterruptTrigger::fallingEdge) || (!value && triggerOnChange->second != InterruptTrigger::risingEdge))
+                    triggerOnChange->first();
         }
     }
 
@@ -69,8 +68,7 @@ namespace hal
             state = value;
 
             if (triggerOnChange)
-                if ((value && triggerOnChange->second != InterruptTrigger::fallingEdge)
-                    || (!value && triggerOnChange->second != InterruptTrigger::risingEdge))
+                if ((value && triggerOnChange->second != InterruptTrigger::fallingEdge) || (!value && triggerOnChange->second != InterruptTrigger::risingEdge))
                     triggerOnChange->first();
         }
     }
@@ -87,10 +85,7 @@ namespace hal
 
     bool PinChange::operator==(const PinChange& other) const
     {
-        return infra::Equals()
-            (duration, other.duration)
-            (state, other.state)
-            ;
+        return infra::Equals()(duration, other.duration)(state, other.state);
     }
 
     bool PinChange::operator!=(const PinChange& other) const
@@ -109,7 +104,7 @@ namespace hal
 
         GpioPinStub::Set(value);
     }
-    
+
     std::vector<PinChange> GpioPinSpy::PinChanges() const
     {
         return pinChanges;

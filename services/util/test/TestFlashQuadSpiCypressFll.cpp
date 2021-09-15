@@ -1,8 +1,8 @@
-#include "gmock/gmock.h"
 #include "hal/interfaces/test_doubles/QuadSpiStub.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "services/util/FlashQuadSpiCypressFll.hpp"
+#include "gmock/gmock.h"
 
 class FlashQuadSpiCypressFllTest
     : public testing::Test
@@ -12,8 +12,7 @@ public:
     FlashQuadSpiCypressFllTest()
         : flash(spiStub, onInitialized)
     {
-        EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandEnterQpi), {}, {}, 0 },
-            infra::ConstByteRange(), hal::QuadSpi::Lines::SingleSpeed()));
+        EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandEnterQpi), {}, {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::SingleSpeed()));
 
         ForwardTime(std::chrono::milliseconds(100));
         testing::Mock::VerifyAndClear(&spiStub);
@@ -27,10 +26,8 @@ public:
     testing::StrictMock<infra::MockCallback<void()>> finished;
 };
 
-#define EXPECT_ENABLE_WRITE() EXPECT_CALL(spiStub, SendDataMock( \
-    hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandWriteEnable), {}, {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()))
-#define EXPECT_POLL_WRITE_DONE() EXPECT_CALL(spiStub, PollStatusMock( \
-    hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandReadStatusRegister), {}, {}, 0 }, 1, 0, 1, hal::QuadSpi::Lines::QuadSpeed()))
+#define EXPECT_ENABLE_WRITE() EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandWriteEnable), {}, {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()))
+#define EXPECT_POLL_WRITE_DONE() EXPECT_CALL(spiStub, PollStatusMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandReadStatusRegister), {}, {}, 0 }, 1, 0, 1, hal::QuadSpi::Lines::QuadSpeed()))
 
 TEST_F(FlashQuadSpiCypressFllTest, Construction)
 {
@@ -48,7 +45,7 @@ TEST_F(FlashQuadSpiCypressFllTest, ReadData)
     std::array<uint8_t, 4> buffer;
     flash.ReadBuffer(buffer, 0, [this]() { finished.callback(); });
     ExecuteAllActions();
-    
+
     EXPECT_EQ(receiveData, buffer);
 }
 
@@ -62,7 +59,7 @@ TEST_F(FlashQuadSpiCypressFllTest, ReadDataAtNonZeroAddress)
     std::array<uint8_t, 4> buffer;
     flash.ReadBuffer(buffer, 0 + 0x123456, [this]() { finished.callback(); });
     ExecuteAllActions();
-    
+
     EXPECT_EQ(receiveData, buffer);
 }
 

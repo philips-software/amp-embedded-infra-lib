@@ -1,8 +1,8 @@
 #ifndef NETWORK_SNTP_MOCK_HPP
 #define NETWORK_SNTP_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "services/network/SntpClient.hpp"
+#include "gmock/gmock.h"
 
 namespace services
 {

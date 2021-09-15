@@ -7,36 +7,36 @@
 //  where your singleton is. Via the static Instance function, everyone can access the singleton.
 //  Used together with an interface, this is a good way to decouple construction of your specific
 //  singleton from accessing the singleton via a generic interface. For example:
-//  
+//
 //  class IDisplay
 //      : InterfaceConnector<IDisplay>
 //  {
 //  public:
 //      virtual void Write(char s) = 0;
 //  };
-//  
+//
 //  --- In the HAL layer:
-//  
+//
 //  class DisplayOnSTM
 //      : IDisplay
 //  {
 //  public:
 //      void Write(char s) { ... }
 //  };
-//  
+//
 //  --- In an application layer, which is independent of the specific hardware implementation:
-//  
+//
 //  void DoSomethingWithDisplay()
 //  {
 //      IDisplay::Instance().Write('x');
 //  }
-//  
+//
 //  --- In main.cpp:
-//  
+//
 //  int main()
 //  {
 //      static DisplayOnSTM display;
-//  
+//
 //      ...
 //  }
 

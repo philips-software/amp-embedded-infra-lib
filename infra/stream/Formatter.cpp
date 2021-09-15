@@ -100,7 +100,7 @@ namespace infra
         const std::size_t SignSize = 1;
         const auto size = std::numeric_limits<uint64_t>::digits + SignSize;
         BoundedString::WithStorage<size> buffer;
-        auto index(size-1);
+        auto index(size - 1);
 
         decltype(value) divider{};
         switch (spec.type)
@@ -139,7 +139,7 @@ namespace infra
         if (spec.align == FormatAlign::nothing)
             spec.align = FormatAlign::right;
 
-        RawFormat(stream, BoundedConstString(&buffer[index], size-index), spec);
+        RawFormat(stream, BoundedConstString(&buffer[index], size - index), spec);
     }
 
     void FormatterBase::SignedInteger(TextOutputStream& stream, int64_t value, FormatSpec& spec) const

@@ -58,7 +58,8 @@ namespace application
     void Entities::PrintHeader(google::protobuf::io::Printer& printer) const
     {
         if (insertNewlineBetweenEntities)
-            ForEach(Filter(entities, [](const std::shared_ptr<Entity>& entity) { return entity->HasHeaderCode(); }), [&printer](const std::shared_ptr<Entity>& entity) { entity->PrintHeader(printer); }, [&printer]() { printer.Print("\n"); });
+            ForEach(
+                Filter(entities, [](const std::shared_ptr<Entity>& entity) { return entity->HasHeaderCode(); }), [&printer](const std::shared_ptr<Entity>& entity) { entity->PrintHeader(printer); }, [&printer]() { printer.Print("\n"); });
         else
             for (auto& entity : entities)
                 entity->PrintHeader(printer);
@@ -66,7 +67,8 @@ namespace application
 
     void Entities::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
     {
-        ForEach(Filter(entities, [](const std::shared_ptr<Entity>& entity) { return entity->HasSourceCode(); }), [&printer, &scope](const std::shared_ptr<Entity>& entity) { entity->PrintSource(printer, scope); }, [&printer]() { printer.Print("\n"); });
+        ForEach(
+            Filter(entities, [](const std::shared_ptr<Entity>& entity) { return entity->HasSourceCode(); }), [&printer, &scope](const std::shared_ptr<Entity>& entity) { entity->PrintSource(printer, scope); }, [&printer]() { printer.Print("\n"); });
     }
 
     bool Entities::EntitiesHaveHeaderCode() const
@@ -100,7 +102,8 @@ namespace application
     void Class::PrintHeader(google::protobuf::io::Printer& printer) const
     {
         printer.Print(R"(class $name$
-)", "name", name);
+)",
+            "name", name);
 
         if (!parents.empty())
             printer.Print("    : $parents$\n", "parents", Parents());
@@ -121,7 +124,8 @@ namespace application
     std::string Class::Parents() const
     {
         std::string res;
-        ForEach(parents, [&res](const std::string& parent) { res += parent; }, [&res]() { res += "\n    , "; });
+        ForEach(
+            parents, [&res](const std::string& parent) { res += parent; }, [&res]() { res += "\n    , "; });
         return res;
     }
 
@@ -195,24 +199,12 @@ namespace application
 
     void Function::PrintHeader(google::protobuf::io::Printer& printer) const
     {
-        printer.Print("$virtual$$result$ $name$($parameters$)$const$$override$$abstract$;\n"
-            , "result", result
-            , "name", name
-            , "parameters", Parameters()
-            , "const", (flags & fConst) != 0 ? " const" : ""
-            , "virtual", (flags & fVirtual) != 0 ? "virtual " : ""
-            , "abstract", (flags & fAbstract) != 0 ? " = 0" : ""
-            , "override", (flags & fOverride) != 0 ? " override" : "");
+        printer.Print("$virtual$$result$ $name$($parameters$)$const$$override$$abstract$;\n", "result", result, "name", name, "parameters", Parameters(), "const", (flags & fConst) != 0 ? " const" : "", "virtual", (flags & fVirtual) != 0 ? "virtual " : "", "abstract", (flags & fAbstract) != 0 ? " = 0" : "", "override", (flags & fOverride) != 0 ? " override" : "");
     }
 
     void Function::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
     {
-        printer.Print("$result$ $scope$$name$($parameters$)$const$\n"
-            , "result", result
-            , "scope", scope
-            , "name", name
-            , "parameters", Parameters()
-            , "const", (flags & fConst) != 0 ? " const" : "");
+        printer.Print("$result$ $scope$$name$($parameters$)$const$\n", "result", result, "scope", scope, "name", name, "parameters", Parameters(), "const", (flags & fConst) != 0 ? " const" : "");
 
         if (body.empty())
             printer.Print("{}\n");
@@ -229,7 +221,8 @@ namespace application
     std::string Function::Parameters() const
     {
         std::string res;
-        ForEach(parameters, [&res](const std::string& parameter) { res += parameter; }, [&res]() { res += ", "; });
+        ForEach(
+            parameters, [&res](const std::string& parameter) { res += parameter; }, [&res]() { res += ", "; });
         return res;
     }
 
@@ -254,11 +247,7 @@ namespace application
 
     void Constructor::PrintHeader(google::protobuf::io::Printer& printer) const
     {
-        printer.Print("$name$($parameters$)$default$$delete$;\n"
-            , "name", name
-            , "parameters", Parameters()
-            , "default", (flags & cDefault) != 0 ? " = default" : ""
-            , "delete", (flags & cDelete) != 0 ? " = delete" : "");
+        printer.Print("$name$($parameters$)$default$$delete$;\n", "name", name, "parameters", Parameters(), "default", (flags & cDefault) != 0 ? " = default" : "", "delete", (flags & cDelete) != 0 ? " = delete" : "");
     }
 
     void Constructor::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
@@ -266,10 +255,8 @@ namespace application
         if ((flags & cDefault) == 0 && (flags & cDelete) == 0)
         {
             printer.Print(R"($scope$$name$($parameters$)
-)"
-, "scope", scope
-, "name", name
-, "parameters", Parameters());
+)",
+                "scope", scope, "name", name, "parameters", Parameters());
 
             printer.Indent();
             PrintInitializers(printer);
@@ -296,7 +283,8 @@ namespace application
     std::string Constructor::Parameters() const
     {
         std::string result;
-        ForEach(parameters, [&result](const std::string& parameter) { result += parameter; }, [&result]() { result += ", "; });
+        ForEach(
+            parameters, [&result](const std::string& parameter) { result += parameter; }, [&result]() { result += ", "; });
         return result;
     }
 
@@ -402,7 +390,8 @@ namespace application
     {
         for (auto& path : paths)
             printer.Print(R"(#include "$path$"
-)", "path", path);
+)",
+                "path", path);
     }
 
     void IncludesByHeader::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
@@ -424,7 +413,8 @@ namespace application
     {
         for (auto& path : paths)
             printer.Print(R"(#include "$path$"
-)", "path", path);
+)",
+                "path", path);
     }
 
     ClassForwardDeclaration::ClassForwardDeclaration(const std::string& name)

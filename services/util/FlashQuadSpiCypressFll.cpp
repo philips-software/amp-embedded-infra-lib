@@ -1,5 +1,5 @@
-#include "infra/event/EventDispatcher.hpp"
 #include "services/util/FlashQuadSpiCypressFll.hpp"
+#include "infra/event/EventDispatcher.hpp"
 
 namespace services
 {
@@ -19,8 +19,7 @@ namespace services
         : FlashQuadSpi(spi, numberOfSectors, commandPageProgram)
         , onInitialized(onInitialized)
     {
-        sequencer.Load([this]()
-        {
+        sequencer.Load([this]() {
             sequencer.Step([this]() { initDelayTimer.Start(std::chrono::milliseconds(100), [this]() { sequencer.Continue(); }); });
             sequencer.Step([this]() { SwitchToQuadSpeed(); });
             sequencer.Step([this]() { infra::EventDispatcher::Instance().Schedule([this]() { this->onInitialized(); }); });
@@ -107,7 +106,7 @@ namespace services
 
     void FlashQuadSpiCypressFll::ReadFlashId(infra::ByteRange buffer, infra::Function<void()> onDone)
     {
-        static const hal::QuadSpi::Header readUniqueIdHeader{ infra::MakeOptional(commandReadUniqueId),{},{}, 16 };
+        static const hal::QuadSpi::Header readUniqueIdHeader{ infra::MakeOptional(commandReadUniqueId), {}, {}, 16 };
         spi.ReceiveData(readUniqueIdHeader, buffer, hal::QuadSpi::Lines::QuadSpeed(), onDone);
     }
 }

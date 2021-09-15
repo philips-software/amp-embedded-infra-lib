@@ -1,8 +1,8 @@
+#include "services/network/HttpServer.hpp"
 #include "infra/stream/LimitedOutputStream.hpp"
 #include "infra/stream/SavedMarkerStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "services/network/HttpErrors.hpp"
-#include "services/network/HttpServer.hpp"
 
 namespace services
 {
@@ -34,17 +34,20 @@ namespace services
 
     void HttpResponseHeaderBuilder::AddHeader(infra::BoundedConstString key, infra::BoundedConstString value)
     {
-        output << "\r\n" << key << ": " << value;
+        output << "\r\n"
+               << key << ": " << value;
     }
 
     void HttpResponseHeaderBuilder::AddHeader(infra::BoundedConstString key, uint32_t value)
     {
-        output << "\r\n" << key << ": " << value;
+        output << "\r\n"
+               << key << ": " << value;
     }
 
     void HttpResponseHeaderBuilder::AddHeader(infra::BoundedConstString key)
     {
-        output << "\r\n" << key << ": ";
+        output << "\r\n"
+               << key << ": ";
     }
 
     void HttpResponseHeaderBuilder::StartBody()
@@ -102,11 +105,10 @@ namespace services
     HttpServerConnectionObserver::HttpServerConnectionObserver(infra::BoundedString& buffer, HttpPageServer& httpServer)
         : buffer(buffer)
         , httpServer(httpServer)
-        , initialIdle(std::chrono::seconds(10), [this]()
-            {
-                idle = true;
-                CheckIdleClose();
-            })
+        , initialIdle(std::chrono::seconds(10), [this]() {
+            idle = true;
+            CheckIdleClose();
+        })
     {}
 
     void HttpServerConnectionObserver::Attached()
@@ -297,7 +299,7 @@ namespace services
         buffer.erase(0, available);
         sendingResponse = !buffer.empty();
     }
-    
+
     void HttpServerConnectionObserver::CheckIdleClose()
     {
         if (closeWhenIdle && idle)
@@ -307,9 +309,8 @@ namespace services
     DefaultHttpServer::DefaultHttpServer(infra::BoundedString& buffer, ConnectionFactory& connectionFactory, uint16_t port)
         : SingleConnectionListener(connectionFactory, port, { connectionCreator })
         , buffer(buffer)
-        , connectionCreator([this](infra::Optional<HttpServerConnectionObserver>& value, IPAddress address)
-            {
-                value.Emplace(this->buffer, *this);
-            })
+        , connectionCreator([this](infra::Optional<HttpServerConnectionObserver>& value, IPAddress address) {
+            value.Emplace(this->buffer, *this);
+        })
     {}
 }

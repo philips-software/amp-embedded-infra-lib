@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/syntax/Json.hpp"
+#include "gtest/gtest.h"
 
 TEST(BasicUsageTest, object_with_some_values)
 {
@@ -393,7 +393,8 @@ TEST(JsonObjectTest, incorrect_object_sets_error)
         infra::JsonObject object(errorObject);
 
         for (auto keyValue : object)
-        {}
+        {
+        }
 
         EXPECT_TRUE(object.Error());
     }
@@ -517,7 +518,8 @@ TEST(JsonObjectTest, nested_float_is_accepted)
     infra::JsonObject object(R"({ "key": { "nestedKey", 1.5 } })");
 
     for (auto x : object)
-    {}
+    {
+    }
 
     EXPECT_FALSE(object.Error());
 }
@@ -661,7 +663,8 @@ TEST(JsonArrayTest, iterate_over_strings_in_array_with_other_values_sets_error)
     infra::JsonArray jsonArray(R"([ true, "value" ])");
 
     for (auto string : JsonStringArray(jsonArray))
-    {}
+    {
+    }
 
     EXPECT_TRUE(jsonArray.Error());
 }
@@ -715,7 +718,8 @@ TEST(JsonArrayTest, incorrect_array_sets_error)
         infra::JsonArray jsonArray(errorArray);
 
         for (auto value : jsonArray)
-        {}
+        {
+        }
 
         EXPECT_TRUE(jsonArray.Error());
     }
@@ -726,7 +730,8 @@ TEST(JsonArrayTest, nested_float_is_accepted)
     infra::JsonArray jsonArray(R"([ { 1.5 } ])");
 
     for (auto x : jsonArray)
-    {}
+    {
+    }
 
     EXPECT_FALSE(jsonArray.Error());
 }

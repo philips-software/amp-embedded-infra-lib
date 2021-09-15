@@ -18,7 +18,7 @@ namespace services
 
     private:
         friend class TracingStatusHttpClientConnectorImpl;
-        
+
         Tracer& tracer;
     };
 }

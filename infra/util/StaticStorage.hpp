@@ -29,9 +29,9 @@ namespace infra
         ~StaticStorage() = default;
 
         template<class... Args>
-            void Construct(Args&&... args);
+        void Construct(Args&&... args);
         template<class U, class... Args>
-            void Construct(std::initializer_list<U> list, Args&&... args);
+        void Construct(std::initializer_list<U> list, Args&&... args);
 
         void Destruct() const;
 
@@ -56,7 +56,7 @@ namespace infra
         ~StaticStorageForPolymorphicObjects() = default;
 
         template<class U, class... Args>
-            void Construct(Args&&... args);
+        void Construct(Args&&... args);
 
         void Destruct();
 
@@ -74,7 +74,7 @@ namespace infra
     using StaticStorageForInheritanceTree = StaticStorageForPolymorphicObjects<Base, MaxSizeOfTypes<Derived...>::value - sizeof(Base), typename MaxAlignmentType<Derived...>::Type>;
 
     template<class T, class... Args>
-        void ReConstruct(T& value, Args&&... args);
+    void ReConstruct(T& value, Args&&... args);
 
     ////    Implementation    ////
 
@@ -82,14 +82,14 @@ namespace infra
     template<class... Args>
     void StaticStorage<T>::Construct(Args&&... args)
     {
-        new(&data) T(std::forward<Args>(args)...);
+        new (&data) T(std::forward<Args>(args)...);
     }
 
     template<class T>
     template<class U, class... Args>
     void StaticStorage<T>::Construct(std::initializer_list<U> list, Args&&... args)
     {
-        new(&data) T(list, std::forward<Args>(args)...);
+        new (&data) T(list, std::forward<Args>(args)...);
     }
 
     template<class T>
@@ -130,7 +130,7 @@ namespace infra
         static_assert(std::is_base_of<T, U>::value, "Constructed type needs to be derived from T");
         static_assert(std::alignment_of<U>::value <= sizeof(AlignAs), "Alignment of U is larger than alignment of this function");
         static_assert(sizeof(U) <= sizeof(T) + ExtraSize, "Not enough static storage availabe for construction of derived type");
-        dataPtr = new(&data) U(std::forward<Args>(args)...);
+        dataPtr = new (&data) U(std::forward<Args>(args)...);
     }
 
     template<class T, std::size_t ExtraSize, class AlignAs>
@@ -168,7 +168,7 @@ namespace infra
     void ReConstruct(T& value, Args&&... args)
     {
         value.~T();
-        new(&value) T(std::forward<Args>(args)...);
+        new (&value) T(std::forward<Args>(args)...);
     }
 }
 

@@ -1,6 +1,6 @@
+#include "upgrade/pack_builder/ImageSignerRsa.hpp"
 #include "mbedtls/rsa.h"
 #include "mbedtls/sha256.h"
-#include "upgrade/pack_builder/ImageSignerRsa.hpp"
 
 //TICS -CON#002
 
@@ -73,8 +73,7 @@ namespace application
         if (mbedtls_rsa_check_pubkey(&rsaCtx) != 0)
             return false;
 
-        bool success = mbedtls_rsa_rsassa_pss_verify(&rsaCtx, NULL, NULL, MBEDTLS_RSA_PUBLIC, MBEDTLS_MD_SHA256, hash.size(), hash.data(), signature.data()) == 0
-            && mbedtls_rsa_self_test(0) == 0;
+        bool success = mbedtls_rsa_rsassa_pss_verify(&rsaCtx, NULL, NULL, MBEDTLS_RSA_PUBLIC, MBEDTLS_MD_SHA256, hash.size(), hash.data(), signature.data()) == 0 && mbedtls_rsa_self_test(0) == 0;
 
         mbedtls_rsa_free(&rsaCtx);
 

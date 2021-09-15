@@ -1,8 +1,8 @@
-#include "infra/event/EventDispatcher.hpp"
 #include "services/network_bsd/NameLookupBsd.hpp"
-#include <sys/types.h>
-#include <sys/socket.h>
+#include "infra/event/EventDispatcher.hpp"
 #include <netdb.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 
 namespace services
 {
@@ -69,8 +69,7 @@ namespace services
                 {
                     sockaddr_in* address = reinterpret_cast<sockaddr_in*>(entry->ai_addr);
                     auto ipv4Address = services::ConvertFromUint32(ntohl(address->sin_addr.s_addr));
-                    infra::EventDispatcher::Instance().Schedule([this, ipv4Address]()
-                    {
+                    infra::EventDispatcher::Instance().Schedule([this, ipv4Address]() {
                         std::lock_guard<std::mutex> lock(mutex);
                         if (&nameLookup.front() == currentLookup)
                         {
@@ -82,8 +81,7 @@ namespace services
                     return;
                 }
 
-        infra::EventDispatcher::Instance().Schedule([this]()
-        {
+        infra::EventDispatcher::Instance().Schedule([this]() {
             std::unique_lock<std::mutex> lock(mutex);
             if (&nameLookup.front() == currentLookup)
             {

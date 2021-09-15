@@ -1,8 +1,8 @@
-#include "gtest/gtest.h"
 #include "infra/util/BoundedList.hpp"
 #include "infra/util/test_helper/MoveConstructible.hpp"
-#include <functional>
 #include "util/test_helper/MonitoredConstructionObject.hpp"
+#include "gtest/gtest.h"
+#include <functional>
 
 TEST(BoundedListTest, TestConstructedEmpty)
 {
@@ -28,7 +28,7 @@ TEST(BoundedListTest, TestConstructionWith2Elements)
 
 TEST(BoundedListTest, TestConstructionWithRange)
 {
-    int range[3] = { 0, 1, 2};
+    int range[3] = { 0, 1, 2 };
     infra::BoundedList<int>::WithMaxSize<5> list(range, range + 3);
 
     EXPECT_EQ(3, list.size());
@@ -100,7 +100,7 @@ TEST(BoundedListTest, TestMove)
 
 TEST(BoundedListTest, TestBeginAndEnd)
 {
-    int range[3] = { 0, 1, 2};
+    int range[3] = { 0, 1, 2 };
     infra::BoundedList<int>::WithMaxSize<5> list(range, range + 3);
 
     EXPECT_EQ(list.end(), std::next(list.begin(), 3));
@@ -119,7 +119,7 @@ TEST(BoundedListTest, TestFull)
 
 TEST(BoundedListTest, TestFront)
 {
-    int range[3] = { 0, 1, 2};
+    int range[3] = { 0, 1, 2 };
     infra::BoundedList<int>::WithMaxSize<5> list(range, range + 3);
 
     EXPECT_EQ(0, list.front());
@@ -137,7 +137,7 @@ TEST(BoundedListTest, TestBack)
 
 TEST(BoundedListTest, TestAssignRange)
 {
-    int range[3] = { 0, 1, 2};
+    int range[3] = { 0, 1, 2 };
     infra::BoundedList<int>::WithMaxSize<5> list(range, range + 3);
 
     int otherRange[2] = { 4, 5 };
@@ -150,7 +150,7 @@ TEST(BoundedListTest, TestAssignRange)
 
 TEST(BoundedListTest, TestAssignN)
 {
-    int range[3] = { 0, 1, 2};
+    int range[3] = { 0, 1, 2 };
     infra::BoundedList<int>::WithMaxSize<5> list(range, range + 3);
 
     list.assign(std::size_t(2), 4);
@@ -262,9 +262,9 @@ TEST(BoundedListTest, TestPopBack)
 
 TEST(BoundedListTest, TestSwap)
 {
-    int range1[3] = { 0, 1, 2};
+    int range1[3] = { 0, 1, 2 };
     infra::BoundedList<int>::WithMaxSize<5> list1(range1, range1 + 3);
-    int range2[3] = { 3, 4, 5};
+    int range2[3] = { 3, 4, 5 };
     infra::BoundedList<int>::WithMaxSize<5> list2(range2, range2 + 3);
 
     swap(list1, list2);
@@ -277,9 +277,9 @@ TEST(BoundedListTest, TestSwap)
 
 TEST(BoundedListTest, TestSwapDifferentSizes)
 {
-    int range1[3] = { 0, 1, 2};
+    int range1[3] = { 0, 1, 2 };
     infra::BoundedList<int>::WithMaxSize<5> list1(range1, range1 + 3);
-    int range2[2] = { 3, 4};
+    int range2[2] = { 3, 4 };
     infra::BoundedList<int>::WithMaxSize<5> list2(range2, range2 + 2);
 
     swap(list1, list2);
@@ -426,7 +426,7 @@ TEST_F(BoundedListConstructionTest, TestEraseAllAfterDestruction)
 {
     infra::BoundedList<MonitoredConstructionInt>::WithMaxSize<5> monitoredList;
 
-    EXPECT_CALL(constructionMonitor, Construct(testing::_)).Times(3);    
+    EXPECT_CALL(constructionMonitor, Construct(testing::_)).Times(3);
 
     monitoredList.emplace_front(constructionMonitor);
     monitoredList.emplace_front(constructionMonitor);

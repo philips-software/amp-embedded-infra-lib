@@ -1,8 +1,8 @@
 #ifndef HAL_COMMUNICATION_CONFIGURATOR_MOCK_HPP
 #define HAL_COMMUNICATION_CONFIGURATOR_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "hal/interfaces/CommunicationConfigurator.hpp"
+#include "gmock/gmock.h"
 
 namespace hal
 {

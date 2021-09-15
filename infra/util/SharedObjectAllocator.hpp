@@ -14,7 +14,7 @@ namespace infra
     {
     public:
         template<template<class, class...> class Allocator>
-            using UsingAllocator = Allocator<T, void(ConstructionArgs...)>;
+        using UsingAllocator = Allocator<T, void(ConstructionArgs...)>;
 
     protected:
         ~SharedObjectAllocator() = default;

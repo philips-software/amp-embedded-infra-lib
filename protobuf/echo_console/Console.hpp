@@ -182,7 +182,8 @@ namespace application
         services::ConnectionFactory& ConnectionFactory();
         void DataReceived(infra::StreamReader& reader);
 
-        struct IncompletePacket {};
+        struct IncompletePacket
+        {};
 
     private:
         struct MessageTokens

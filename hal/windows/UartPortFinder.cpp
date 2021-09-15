@@ -1,8 +1,7 @@
 #include "hal/windows/UartPortFinder.hpp"
 #include "infra/util/Optional.hpp"
-
-#include <initguid.h>
 #include <devpkey.h>
+#include <initguid.h>
 
 namespace hal
 {

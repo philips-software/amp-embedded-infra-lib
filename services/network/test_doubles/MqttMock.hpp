@@ -1,9 +1,9 @@
 #ifndef NETWORK_MQTT_MOCK_HPP
 #define NETWORK_MQTT_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "infra/util/test_helper/BoundedStringMatcher.hpp"
 #include "services/network/Mqtt.hpp"
+#include "gmock/gmock.h"
 
 namespace services
 {

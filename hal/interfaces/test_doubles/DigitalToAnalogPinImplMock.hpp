@@ -1,8 +1,8 @@
 #ifndef HAL_ANALOG_TO_DIGITAL_PIN_IMPL_MOCK_HPP
 #define HAL_ANALOG_TO_DIGITAL_PIN_IMPL_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "hal/interfaces/DigitalToAnalogPin.hpp"
+#include "gmock/gmock.h"
 
 namespace hal
 {

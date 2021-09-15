@@ -1,4 +1,3 @@
-#include "gmock/gmock.h"
 #include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/util/ConstructBin.hpp"
 #include "infra/util/Function.hpp"
@@ -7,6 +6,7 @@
 #include "services/network/MdnsClient.hpp"
 #include "services/network/test_doubles/DatagramMock.hpp"
 #include "services/network/test_doubles/MulticastMock.hpp"
+#include "gmock/gmock.h"
 
 namespace
 {
@@ -90,46 +90,36 @@ public:
 
     std::vector<uint8_t> AQuestion()
     {
-        return infra::ConstructBin()
-            (QuestionHeader())
-            (9)("_instance")(5)("local")(0)
-            .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypeA, services::DnsClass::dnsClassIn})
+        return infra::ConstructBin()(QuestionHeader())(9)("_instance")(5)("local")(0)
+            .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypeA, services::DnsClass::dnsClassIn })
             .Vector();
     }
 
     std::vector<uint8_t> AaaaQuestion()
     {
-        return infra::ConstructBin()
-            (QuestionHeader())
-            (9)("_instance")(5)("local")(0)
-            .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypeAAAA, services::DnsClass::dnsClassIn})
+        return infra::ConstructBin()(QuestionHeader())(9)("_instance")(5)("local")(0)
+            .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypeAAAA, services::DnsClass::dnsClassIn })
             .Vector();
     }
 
     std::vector<uint8_t> PtrQuestion()
     {
-        return infra::ConstructBin()
-            (QuestionHeader())
-            (8)("_service")(9)("_protocol")(5)("local")(0)
-            .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypePtr, services::DnsClass::dnsClassIn})
+        return infra::ConstructBin()(QuestionHeader())(8)("_service")(9)("_protocol")(5)("local")(0)
+            .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypePtr, services::DnsClass::dnsClassIn })
             .Vector();
     }
 
     std::vector<uint8_t> TxtQuestion()
     {
-        return infra::ConstructBin()
-            (QuestionHeader())
-            (9)("_instance")(8)("_service")(9)("_protocol")(5)("local")(0)
-            .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypeTxt, services::DnsClass::dnsClassIn})
+        return infra::ConstructBin()(QuestionHeader())(9)("_instance")(8)("_service")(9)("_protocol")(5)("local")(0)
+            .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypeTxt, services::DnsClass::dnsClassIn })
             .Vector();
     }
 
     std::vector<uint8_t> SrvQuestion()
     {
-        return infra::ConstructBin()
-            (QuestionHeader())
-            (9)("_instance")(8)("_service")(9)("_protocol")(5)("local")(0)
-            .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypeSrv, services::DnsClass::dnsClassIn})
+        return infra::ConstructBin()(QuestionHeader())(9)("_instance")(8)("_service")(9)("_protocol")(5)("local")(0)
+            .Value<services::DnsQuestionFooter>({ services::DnsType::dnsTypeSrv, services::DnsClass::dnsClassIn })
             .Vector();
     }
 
@@ -149,96 +139,81 @@ public:
 
     std::vector<uint8_t> PtrAnswer()
     {
-        return infra::ConstructBin()
-            (8)("instance")(7)("service")(4)("type")(5)("local")(0)
+        return infra::ConstructBin()(8)("instance")(7)("service")(4)("type")(5)("local")(0)
             .Vector();
     }
 
     std::vector<uint8_t> TxtAnswer()
     {
-        return infra::ConstructBin()
-            (7)("aa=text")(12)("bb=othertext")
+        return infra::ConstructBin()(7)("aa=text")(12)("bb=othertext")
             .Vector();
     }
 
     std::vector<uint8_t> SrvAnswer()
     {
         return infra::ConstructBin()
-            .Value<infra::BigEndian<uint16_t>>(0).Value<infra::BigEndian<uint16_t>>(0).Value<infra::BigEndian<uint16_t>>(1234)
-            (8)("instance")(5)("local")(0)
+            .Value<infra::BigEndian<uint16_t>>(0)
+            .Value<infra::BigEndian<uint16_t>>(0)
+            .Value<infra::BigEndian<uint16_t>>(1234)(8)("instance")(5)("local")(0)
             .Vector();
     }
 
     void AAnswerReceived(services::IPAddress source = mdnsMulticastAddressIpv4)
     {
         DataReceived(infra::ConstructBin()
-            .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 0 })
-            (9)("_instance")(5)("local")(0)
-            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeA, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 4 })
-            (AAnswer())
-            .Vector(), source);
+                         .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 0 })(9)("_instance")(5)("local")(0)
+                         .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeA, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 4 })(AAnswer())
+                         .Vector(),
+            source);
     }
 
     void AaaaAnswerReceived(services::IPAddress source = mdnsMulticastAddressIpv6)
     {
         DataReceived(infra::ConstructBin()
-            .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 0 })
-            (9)("_instance")(5)("local")(0)
-            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeAAAA, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 16 })
-            (AaaaAnswer())
-            .Vector(), source);
+                         .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 0 })(9)("_instance")(5)("local")(0)
+                         .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeAAAA, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 16 })(AaaaAnswer())
+                         .Vector(),
+            source);
     }
 
     void PtrAnswerReceived(services::IPAddress source = mdnsMulticastAddressIpv4)
     {
         DataReceived(infra::ConstructBin()
-            .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 0 })
-            (8)("_service")(9)("_protocol")(5)("local")(0)
-            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypePtr, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 0x1d })
-            (PtrAnswer())
-            .Vector(), source);
+                         .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 0 })(8)("_service")(9)("_protocol")(5)("local")(0)
+                         .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypePtr, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 0x1d })(PtrAnswer())
+                         .Vector(),
+            source);
     }
 
     void TxtAnswerReceived(services::IPAddress source = mdnsMulticastAddressIpv4)
     {
         DataReceived(infra::ConstructBin()
-            .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 0 })
-            (9)("_instance")(8)("_service")(9)("_protocol")(5)("local")(0)
-            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeTxt, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 0x15 })
-            (TxtAnswer())
-            .Vector(), source);
+                         .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 0 })(9)("_instance")(8)("_service")(9)("_protocol")(5)("local")(0)
+                         .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeTxt, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 0x15 })(TxtAnswer())
+                         .Vector(),
+            source);
     }
 
     void SrvAnswerReceived(services::IPAddress source = mdnsMulticastAddressIpv4)
     {
         DataReceived(infra::ConstructBin()
-            .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 0 })
-            (9)("_instance")(8)("_service")(9)("_protocol")(5)("local")(0)
-            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeSrv, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 0x16 })
-            (SrvAnswer())
-            .Vector(), source);
+                         .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 0 })(9)("_instance")(8)("_service")(9)("_protocol")(5)("local")(0)
+                         .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeSrv, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 0x16 })(SrvAnswer())
+                         .Vector(),
+            source);
     }
 
     void PtrAnswerReceivedWithAdditionalRecords(services::IPAddress source = mdnsMulticastAddressIpv4)
     {
         DataReceived(infra::ConstructBin()
-            .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 4 })
-            (8)("_service")(9)("_protocol")(5)("local")(0)
-            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypePtr, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 0x1d })
-            (PtrAnswer())
-            (9)("_instance")(8)("_service")(9)("_protocol")(5)("local")(0)
-            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeTxt, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 0x15 })
-            (TxtAnswer())
-            (9)("_instance")(8)("_service")(9)("_protocol")(5)("local")(0)
-            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeSrv, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 0x16 })
-            (SrvAnswer())
-            (9)("_instance")(5)("local")(0)
-            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeA, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 4 })
-            (AAnswer())
-            (9)("_instance")(5)("local")(0)
-            .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeAAAA, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 16 })
-            (AaaaAnswer())
-            .Vector(), source);
+                         .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 4 })(8)("_service")(9)("_protocol")(5)("local")(0)
+                         .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypePtr, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 0x1d })(PtrAnswer())(9)("_instance")(8)("_service")(9)("_protocol")(5)("local")(0)
+                         .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeTxt, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 0x15 })(TxtAnswer())(9)("_instance")(8)("_service")(9)("_protocol")(5)("local")(0)
+                         .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeSrv, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 0x16 })(SrvAnswer())(9)("_instance")(5)("local")(0)
+                         .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeA, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 4 })(AAnswer())(9)("_instance")(5)("local")(0)
+                         .Value<services::DnsRecordPayload>({ services::DnsType::dnsTypeAAAA, services::DnsClass::dnsClassIn, std::chrono::seconds(5), 16 })(AaaaAnswer())
+                         .Vector(),
+            source);
     }
 
     void QueryA(infra::Function<void(infra::ConstByteRange data)>& callback)
@@ -311,8 +286,7 @@ public:
     testing::StrictMock<services::MulticastMock> multicast;
     testing::StrictMock<services::DatagramFactoryMock> factory;
     infra::SharedOptional<testing::StrictMock<services::DatagramExchangeMock>> datagramExchange;
-    infra::Execute execute{ [this]
-    {
+    infra::Execute execute{ [this] {
         ExpectListenIpv4();
         ExpectJoinMulticastIpv4();
     } };
@@ -331,11 +305,9 @@ public:
     infra::Function<void(infra::ConstByteRange data)> expectedQueryTxtCallback{ [&](infra::ConstByteRange data) { callback.callback(services::DnsType::dnsTypeTxt); EXPECT_EQ(data, TxtAnswer()); } };
     infra::Function<void(infra::ConstByteRange data)> expectedQuerySrvCallback{ [&](infra::ConstByteRange data) { callback.callback(services::DnsType::dnsTypeSrv); EXPECT_EQ(data, SrvAnswer()); } };
 
-    infra::MockCallback<void(services::DnsType dnsType)> additionalRecordsCallback; 
-    infra::Function<void(infra::BoundedString hostname, services::DnsRecordPayload payload, infra::ConstByteRange data)> expectedAdditionalRecordsCallbackPtr
-    { 
-        [&](infra::BoundedString hostname, services::DnsRecordPayload payload, infra::ConstByteRange data)
-        {
+    infra::MockCallback<void(services::DnsType dnsType)> additionalRecordsCallback;
+    infra::Function<void(infra::BoundedString hostname, services::DnsRecordPayload payload, infra::ConstByteRange data)> expectedAdditionalRecordsCallbackPtr{
+        [&](infra::BoundedString hostname, services::DnsRecordPayload payload, infra::ConstByteRange data) {
             // additionalRecordsCallback.callback(payload.type);
 
             if (payload.type == services::DnsType::dnsTypeA)
@@ -390,7 +362,7 @@ TEST_F(MdnsClientTest, other_query_asking_starts_active_query_after_first_query_
     ExpectActiveQueryStarted();
     auto ptrQuestion = PtrQuestion();
     SendStreamAvailableAndExpectQuestion(ptrQuestion);
-    
+
     auto aQuestion = AQuestion();
     SendStreamAvailableAndExpectQuestion(aQuestion);
 }
@@ -429,7 +401,6 @@ TEST_F(MdnsClientTest, other_query_asking_after_canceling_first_starts_active_qu
 
     auto txtQuestion = TxtQuestion();
     SendStreamAvailableAndExpectQuestion(txtQuestion);
-
 }
 
 TEST_F(MdnsClientTest, other_query_asking_starts_active_query_after_first_query_is_done_and_asked_again)
@@ -554,7 +525,6 @@ TEST_F(MdnsClientTest, receiving_additional_records_to_passive_query_results_in_
 {
     ConstructPtrQueryWithExpectedCallbackAndAdditionalRecordsCallback();
 
-    
     EXPECT_CALL(callback, callback(services::DnsType::dnsTypePtr));
     EXPECT_CALL(additionalRecordsCallback, callback(services::DnsType::dnsTypeA));
     EXPECT_CALL(additionalRecordsCallback, callback(services::DnsType::dnsTypeAAAA));
