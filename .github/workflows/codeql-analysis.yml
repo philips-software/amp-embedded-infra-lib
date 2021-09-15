@@ -1,11 +1,6 @@
 name: CodeQL Analysis
 
-on:
-  push:
-    branches:
-      - develop
-  pull_request:
-    types: [opened, synchronize, reopened]
+on: [push, pull_request]
 
 env:
   CMAKE_BUILD_PARALLEL_LEVEL: 2
