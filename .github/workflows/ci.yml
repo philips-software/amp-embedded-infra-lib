@@ -8,7 +8,7 @@ on:
     types: [opened, synchronize, reopened]
 
 env:
-  CMAKE_BUILD_PARALLEL_LEVEL: 4
+  CMAKE_BUILD_PARALLEL_LEVEL: 2
   GTEST_COLOR: 1
 jobs:
   build_test:
@@ -37,7 +37,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0  # Disable shallow clone to enable blame information
+          fetch-depth: 0 # Disable shallow clone to enable blame information
       - uses: seanmiddleditch/gha-setup-ninja@v3
       - uses: actions/setup-python@v1
       - uses: BSFishy/pip-action@v1
