@@ -22,7 +22,8 @@ jobs:
       - uses: actions/checkout@v2
       - uses: DoozyX/clang-format-lint-action@v0.12
         with:
-          inplace: True
+          inplace: true
+          extensions: "cpp,hpp"
       - uses: EndBug/add-and-commit@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
