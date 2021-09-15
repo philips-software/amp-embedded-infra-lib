@@ -8,28 +8,39 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
-env:
-  APPLY_FIXES: all
-  APPLY_FIXES_EVENT: pull_request
-  APPLY_FIXES_MODE: commit
-
 jobs:
   cancel_duplicates:
     name: Cancel duplicate jobs
     runs-on: ubuntu-latest
     steps:
       - uses: fkirc/skip-duplicate-actions@master
+
+  formatter:
+    name: Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: DoozyX/clang-format-lint-action@v0.12
         with:
-          github_token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+          inplace: True
+      - uses: EndBug/add-and-commit@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          default_author: github_actions
+          message: '[Formatting Bot] clang-format changes'
 
   linter:
-    name: Linter
+    name: Linting
     runs-on: ubuntu-latest
+    env:
+      APPLY_FIXES: all
+      APPLY_FIXES_EVENT: pull_request
+      APPLY_FIXES_MODE: commit
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
           fetch-depth: 0
       - name: Run Linter
         id: ml
