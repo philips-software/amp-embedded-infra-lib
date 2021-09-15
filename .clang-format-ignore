@@ -1,3 +1,3 @@
 # Exclude external code from Clang Format
-external/*
-lwip/lwip-*/*
+external/.*
+lwip/lwip-*/.*

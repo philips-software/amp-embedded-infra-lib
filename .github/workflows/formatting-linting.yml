@@ -27,8 +27,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          default_author: github_actions
-          message: '[Formatting Bot] clang-format changes'
+          committer_name: GitHub Actions
+          committer_email: 41898282+github-actions[bot]@users.noreply.github.com
+          message: "[Formatting Bot] clang-format changes"
 
   linter:
     name: Linting
