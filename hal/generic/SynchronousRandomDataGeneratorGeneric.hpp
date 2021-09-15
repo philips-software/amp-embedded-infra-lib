@@ -5,7 +5,7 @@
 #include <random>
 
 namespace hal
-{    
+{
     class SynchronousRandomDataGeneratorGeneric
         : public SynchronousRandomDataGenerator
     {

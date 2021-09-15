@@ -45,7 +45,8 @@ namespace infra
     void EventDispatcherWorkerImpl::ExecuteAllActions()
     {
         while (TryExecuteAction())
-        {}
+        {
+        }
     }
 
     void EventDispatcherWorkerImpl::ExecuteFirstAction()

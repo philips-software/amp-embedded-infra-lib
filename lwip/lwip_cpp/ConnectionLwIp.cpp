@@ -1,5 +1,5 @@
-#include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "lwip/lwip_cpp/ConnectionLwIp.hpp"
+#include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 
 namespace services
@@ -10,22 +10,22 @@ namespace services
         {
             if (address.type == IPADDR_TYPE_V4)
                 return IPv4Address{
-                ip4_addr1(ip_2_ip4(&address)),
-                ip4_addr2(ip_2_ip4(&address)),
-                ip4_addr3(ip_2_ip4(&address)),
-                ip4_addr4(ip_2_ip4(&address))
-            };
+                    ip4_addr1(ip_2_ip4(&address)),
+                    ip4_addr2(ip_2_ip4(&address)),
+                    ip4_addr3(ip_2_ip4(&address)),
+                    ip4_addr4(ip_2_ip4(&address))
+                };
             else
                 return IPv6Address{
-                IP6_ADDR_BLOCK1(ip_2_ip6(&address)),
-                IP6_ADDR_BLOCK2(ip_2_ip6(&address)),
-                IP6_ADDR_BLOCK3(ip_2_ip6(&address)),
-                IP6_ADDR_BLOCK4(ip_2_ip6(&address)),
-                IP6_ADDR_BLOCK5(ip_2_ip6(&address)),
-                IP6_ADDR_BLOCK6(ip_2_ip6(&address)),
-                IP6_ADDR_BLOCK7(ip_2_ip6(&address)),
-                IP6_ADDR_BLOCK8(ip_2_ip6(&address))
-            };
+                    IP6_ADDR_BLOCK1(ip_2_ip6(&address)),
+                    IP6_ADDR_BLOCK2(ip_2_ip6(&address)),
+                    IP6_ADDR_BLOCK3(ip_2_ip6(&address)),
+                    IP6_ADDR_BLOCK4(ip_2_ip6(&address)),
+                    IP6_ADDR_BLOCK5(ip_2_ip6(&address)),
+                    IP6_ADDR_BLOCK6(ip_2_ip6(&address)),
+                    IP6_ADDR_BLOCK7(ip_2_ip6(&address)),
+                    IP6_ADDR_BLOCK8(ip_2_ip6(&address))
+                };
         }
 
         static tcp_ext_arg_callbacks emptyCallbacks{};
@@ -111,7 +111,7 @@ namespace services
             AbortAndDestroy();
         else
         {
-            control = nullptr;  // tcp_close frees the pcb
+            control = nullptr; // tcp_close frees the pcb
             ResetOwnership();
         }
     }
@@ -181,12 +181,12 @@ namespace services
 
             sendMemoryPool.emplace_back();
             sendBufferForStream = infra::Head(infra::ByteRange(sendMemoryPool.back()), requestedSendSize);
-            infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionLwIp>& self)
-            {
+            infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionLwIp>& self) {
                 infra::SharedPtr<infra::StreamWriter> stream = self->streamWriter.Emplace(*self, self->sendBufferForStream);
                 self->sendBufferForStream = infra::ByteRange();
                 self->Observer().SendStreamAvailable(std::move(stream));
-            }, SharedFromThis());
+            },
+                SharedFromThis());
 
             requestedSendSize = 0;
         }
@@ -247,11 +247,11 @@ namespace services
             if (!dataReceivedScheduled && IsAttached())
             {
                 dataReceivedScheduled = true;
-                infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionLwIp>& self)
-                {
+                infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionLwIp>& self) {
                     self->dataReceivedScheduled = false;
                     self->Observer().DataReceived();
-                }, SharedFromThis());
+                },
+                    SharedFromThis());
             }
             return ERR_OK;
         }
@@ -267,10 +267,10 @@ namespace services
         services::GlobalTracer().Trace() << "ConnectionLwIp::Err received err " << err;
         assert(err == ERR_RST || err == ERR_CLSD || err == ERR_ABRT);
 
-        if (err != ERR_ABRT)    // When ERR_ABRT, pcb has already been freed
+        if (err != ERR_ABRT) // When ERR_ABRT, pcb has already been freed
             DisableCallbacks();
 
-        control = nullptr;      // When Err is received, either the pcb has already been freed (when ERR_ABRT), or the pcb will be freed by LwIP when we return (when ERR_CLSD or ERR_RST)
+        control = nullptr; // When Err is received, either the pcb has already been freed (when ERR_ABRT), or the pcb will be freed by LwIP when we return (when ERR_CLSD or ERR_RST)
         ResetOwnership();
     }
 
@@ -552,7 +552,8 @@ namespace services
                     connection->SetSelfOwnership(connectionObserver);
                     connection->Attach(connectionObserver);
                 }
-            }, connection->IpAddress());
+            },
+                connection->IpAddress());
 
             infra::WeakPtr<ConnectionLwIp> weakConnection = connection;
             connection = nullptr;
@@ -632,8 +633,7 @@ namespace services
         if (connection)
         {
             ResetControl();
-            clientFactory.ConnectionEstablished([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-            {
+            clientFactory.ConnectionEstablished([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver) {
                 if (connectionObserver && connection->control != nullptr)
                 {
                     connection->SetSelfOwnership(connectionObserver);
@@ -675,7 +675,7 @@ namespace services
 
     void ConnectorLwIp::AbortControl()
     {
-        control->errf = nullptr;    // Avoid tcp_abort triggering callback Err
+        control->errf = nullptr; // Avoid tcp_abort triggering callback Err
         control->connected = nullptr;
         tcp_abort(control);
         control = nullptr;
@@ -712,7 +712,7 @@ namespace services
                     return;
                 }
 
-            std::abort();   // Not found
+            std::abort(); // Not found
         }
     }
 
@@ -724,8 +724,7 @@ namespace services
 
     bool ConnectionFactoryLwIp::PendingSend() const
     {
-        return std::any_of(connections.begin(), connections.end(), [](auto& c)
-        {
+        return std::any_of(connections.begin(), connections.end(), [](auto& c) {
             return c.PendingSend();
         });
     }

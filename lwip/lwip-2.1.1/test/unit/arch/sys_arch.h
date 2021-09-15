@@ -38,17 +38,18 @@ typedef int sys_sem_t;
 typedef int sys_mutex_t;
 #define sys_mutex_valid(mutex) (((mutex) != NULL)
 
-struct lwip_mbox {
-  void* sem;
-  void** q_mem;
-  unsigned int head, tail;
-  int size;
-  int used;
+struct lwip_mbox
+{
+    void* sem;
+    void** q_mem;
+    unsigned int head, tail;
+    int size;
+    int used;
 };
 typedef struct lwip_mbox sys_mbox_t;
 #define SYS_MBOX_NULL NULL
-#define sys_mbox_valid(mbox) ((mbox != NULL) && ((mbox)->sem != NULL)  && ((mbox)->sem != (void*)-1))
-#define sys_mbox_valid_val(mbox) (((mbox).sem != NULL)  && ((mbox).sem != (void*)-1))
+#define sys_mbox_valid(mbox) ((mbox != NULL) && ((mbox)->sem != NULL) && ((mbox)->sem != (void*)-1))
+#define sys_mbox_valid_val(mbox) (((mbox).sem != NULL) && ((mbox).sem != (void*)-1))
 
 /* DWORD (thread id) is used for sys_thread_t but we won't include windows.h */
 typedef u32_t sys_thread_t;
@@ -69,4 +70,3 @@ void test_sys_arch_wait_callback(test_sys_arch_waiting_fn waiting_fn);
 extern u32_t lwip_sys_now;
 
 #endif /* LWIP_HDR_TEST_SYS_ARCH_H */
-

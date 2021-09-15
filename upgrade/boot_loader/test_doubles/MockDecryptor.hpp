@@ -1,8 +1,8 @@
 #ifndef UPGRADE_MOCK_DECRYPTOR_HPP
 #define UPGRADE_MOCK_DECRYPTOR_HPP
 
-#include "gmock/gmock.h"
 #include "upgrade/boot_loader/Decryptor.hpp"
+#include "gmock/gmock.h"
 
 namespace application
 {

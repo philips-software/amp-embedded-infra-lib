@@ -1,7 +1,7 @@
-#include "gtest/gtest.h"
 #include "hal/interfaces/test_doubles/FileSystemStub.hpp"
 #include "upgrade/pack_builder/InputBinary.hpp"
 #include "upgrade/pack_builder/test/ImageSecurityNone.hpp"
+#include "gtest/gtest.h"
 #include <algorithm>
 
 class TestInputBinary
@@ -30,8 +30,7 @@ public:
 
     bool operator==(const char* other) const
     {
-        return std::equal(contents.begin(), contents.end(), other)
-            && std::all_of(other + contents.size(), other + length, [](char i){ return i == 0; });
+        return std::equal(contents.begin(), contents.end(), other) && std::all_of(other + contents.size(), other + length, [](char i) { return i == 0; });
     }
 
 private:
@@ -84,7 +83,7 @@ TEST_F(TestInputBinary, Image)
     std::vector<uint8_t> image = input.Image();
     image.erase(image.begin(), image.begin() + sizeof(application::ImageHeaderPrologue) + 8);
 
-    EXPECT_EQ((std::vector<uint8_t>{1, 2, 3, 4}), image);
+    EXPECT_EQ((std::vector<uint8_t>{ 1, 2, 3, 4 }), image);
 }
 
 class ImageSecurityStub
@@ -135,7 +134,7 @@ TEST_F(TestInputBinaryWithEncryptionAndMac, Image)
 TEST(TestInputBinaryConstructionWithVector, Construction)
 {
     application::ImageSecurityNone imageSecurity;
-    application::InputBinary input("main", std::vector<uint8_t>{1, 2, 3, 4}, 4321, imageSecurity);
+    application::InputBinary input("main", std::vector<uint8_t>{ 1, 2, 3, 4 }, 4321, imageSecurity);
 
     std::vector<uint8_t> image = input.Image();
     application::ImageHeaderPrologue& header = reinterpret_cast<application::ImageHeaderPrologue&>(image.front());

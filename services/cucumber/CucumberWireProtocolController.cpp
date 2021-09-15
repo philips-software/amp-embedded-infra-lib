@@ -91,8 +91,8 @@ namespace services
     void CucumberWireProtocolController::InvokeSuccess()
     {
         invokeInfo.successfull = true;
-   	    services::CucumberContext::Instance().TimeoutTimer().Cancel();
-        
+        services::CucumberContext::Instance().TimeoutTimer().Cancel();
+
         connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize());
     }
 

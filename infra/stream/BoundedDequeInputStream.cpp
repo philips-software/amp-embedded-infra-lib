@@ -45,7 +45,7 @@ namespace infra
     }
 
     bool BoundedDequeInputStreamReader::Empty() const
-    {  
+    {
         return offset == container.size();
     }
 
@@ -54,7 +54,7 @@ namespace infra
         return container.size() - offset;
     }
 
-    std::size_t  BoundedDequeInputStreamReader::ConstructSaveMarker() const
+    std::size_t BoundedDequeInputStreamReader::ConstructSaveMarker() const
     {
         return offset;
     }

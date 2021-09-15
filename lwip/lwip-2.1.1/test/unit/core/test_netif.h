@@ -3,6 +3,6 @@
 
 #include "../lwip_check.h"
 
-Suite *netif_suite(void);
+Suite* netif_suite(void);
 
 #endif

@@ -36,79 +36,96 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
 
-namespace google {
-namespace protobuf {
-namespace compiler {
-namespace csharp {
+namespace google
+{
+    namespace protobuf
+    {
+        namespace compiler
+        {
+            namespace csharp
+            {
 
-// Functions to create C# XML documentation comments.
-// Currently this only includes documentation comments containing text specified as comments
-// in the .proto file; documentation comments generated just from field/message/enum/proto names
-// is inlined in the relevant code. If more control is required, that code can be moved here.
+                // Functions to create C# XML documentation comments.
+                // Currently this only includes documentation comments containing text specified as comments
+                // in the .proto file; documentation comments generated just from field/message/enum/proto names
+                // is inlined in the relevant code. If more control is required, that code can be moved here.
 
-void WriteDocCommentBodyImpl(io::Printer* printer, SourceLocation location) {
-    string comments = location.leading_comments.empty() ?
-        location.trailing_comments : location.leading_comments;
-    if (comments.empty()) {
-        return;
-    }
-    // XML escaping... no need for apostrophes etc as the whole text is going to be a child
-    // node of a summary element, not part of an attribute.
-    comments = StringReplace(comments, "&", "&amp;", true);
-    comments = StringReplace(comments, "<", "&lt;", true);
-    vector<string> lines = Split(comments, "\n", false /* skip_empty */);
-    // TODO: We really should work out which part to put in the summary and which to put in the remarks...
-    // but that needs to be part of a bigger effort to understand the markdown better anyway.
-    printer->Print("/// <summary>\n");
-    bool last_was_empty = false;
-    // We squash multiple blank lines down to one, and remove any trailing blank lines. We need
-    // to preserve the blank lines themselves, as this is relevant in the markdown.
-    // Note that we can't remove leading or trailing whitespace as *that's* relevant in markdown too.
-    // (We don't skip "just whitespace" lines, either.)
-    for (std::vector<string>::iterator it = lines.begin(); it != lines.end(); ++it) {
-        string line = *it;
-        if (line.empty()) {
-            last_was_empty = true;
-        } else {
-            if (last_was_empty) {
-                printer->Print("///\n");
-            }
-            last_was_empty = false;
-            printer->Print("///$line$\n", "line", *it);
-        }
-    }
-    printer->Print("/// </summary>\n");
-}
+                void WriteDocCommentBodyImpl(io::Printer* printer, SourceLocation location)
+                {
+                    string comments = location.leading_comments.empty() ? location.trailing_comments : location.leading_comments;
+                    if (comments.empty())
+                    {
+                        return;
+                    }
+                    // XML escaping... no need for apostrophes etc as the whole text is going to be a child
+                    // node of a summary element, not part of an attribute.
+                    comments = StringReplace(comments, "&", "&amp;", true);
+                    comments = StringReplace(comments, "<", "&lt;", true);
+                    vector<string> lines = Split(comments, "\n", false /* skip_empty */);
+                    // TODO: We really should work out which part to put in the summary and which to put in the remarks...
+                    // but that needs to be part of a bigger effort to understand the markdown better anyway.
+                    printer->Print("/// <summary>\n");
+                    bool last_was_empty = false;
+                    // We squash multiple blank lines down to one, and remove any trailing blank lines. We need
+                    // to preserve the blank lines themselves, as this is relevant in the markdown.
+                    // Note that we can't remove leading or trailing whitespace as *that's* relevant in markdown too.
+                    // (We don't skip "just whitespace" lines, either.)
+                    for (std::vector<string>::iterator it = lines.begin(); it != lines.end(); ++it)
+                    {
+                        string line = *it;
+                        if (line.empty())
+                        {
+                            last_was_empty = true;
+                        }
+                        else
+                        {
+                            if (last_was_empty)
+                            {
+                                printer->Print("///\n");
+                            }
+                            last_was_empty = false;
+                            printer->Print("///$line$\n", "line", *it);
+                        }
+                    }
+                    printer->Print("/// </summary>\n");
+                }
 
-template <typename DescriptorType>
-static void WriteDocCommentBody(
-    io::Printer* printer, const DescriptorType* descriptor) {
-    SourceLocation location;
-    if (descriptor->GetSourceLocation(&location)) {
-        WriteDocCommentBodyImpl(printer, location);
-    }
-}
+                template<typename DescriptorType>
+                static void WriteDocCommentBody(
+                    io::Printer* printer, const DescriptorType* descriptor)
+                {
+                    SourceLocation location;
+                    if (descriptor->GetSourceLocation(&location))
+                    {
+                        WriteDocCommentBodyImpl(printer, location);
+                    }
+                }
 
-void WriteMessageDocComment(io::Printer* printer, const Descriptor* message) {
-    WriteDocCommentBody(printer, message);
-}
+                void WriteMessageDocComment(io::Printer* printer, const Descriptor* message)
+                {
+                    WriteDocCommentBody(printer, message);
+                }
 
-void WritePropertyDocComment(io::Printer* printer, const FieldDescriptor* field) {
-    WriteDocCommentBody(printer, field);
-}
+                void WritePropertyDocComment(io::Printer* printer, const FieldDescriptor* field)
+                {
+                    WriteDocCommentBody(printer, field);
+                }
 
-void WriteEnumDocComment(io::Printer* printer, const EnumDescriptor* enumDescriptor) {
-    WriteDocCommentBody(printer, enumDescriptor);
-}
-void WriteEnumValueDocComment(io::Printer* printer, const EnumValueDescriptor* value) {
-    WriteDocCommentBody(printer, value);
-}
+                void WriteEnumDocComment(io::Printer* printer, const EnumDescriptor* enumDescriptor)
+                {
+                    WriteDocCommentBody(printer, enumDescriptor);
+                }
+                void WriteEnumValueDocComment(io::Printer* printer, const EnumValueDescriptor* value)
+                {
+                    WriteDocCommentBody(printer, value);
+                }
 
-void WriteMethodDocComment(io::Printer* printer, const MethodDescriptor* method) {
-    WriteDocCommentBody(printer, method);
-}
+                void WriteMethodDocComment(io::Printer* printer, const MethodDescriptor* method)
+                {
+                    WriteDocCommentBody(printer, method);
+                }
 
-}  // namespace csharp
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+            } // namespace csharp
+        }     // namespace compiler
+    }         // namespace protobuf
+} // namespace google

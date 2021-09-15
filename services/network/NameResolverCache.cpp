@@ -1,5 +1,5 @@
-#include "mbedtls/sha256.h"
 #include "services/network/NameResolverCache.hpp"
+#include "mbedtls/sha256.h"
 
 namespace services
 {
@@ -124,7 +124,7 @@ namespace services
         infra::TimePoint now = infra::Now();
         infra::TimePoint cleanupTime = infra::TimePoint::max();
 
-        for (auto entry = cache.begin(); entry != cache.end(); )
+        for (auto entry = cache.begin(); entry != cache.end();)
         {
             if (entry->validUntil <= now)
                 entry = cache.erase(entry);

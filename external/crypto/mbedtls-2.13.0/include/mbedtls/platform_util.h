@@ -28,10 +28,11 @@
 #include <stddef.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/**
+    /**
  * \brief       Securely zeroize a buffer
  *
  *              The function is meant to wipe the data contained in a buffer so
@@ -53,7 +54,7 @@ extern "C" {
  * \param len   Length of the buffer in bytes
  *
  */
-void mbedtls_platform_zeroize( void *buf, size_t len );
+    void mbedtls_platform_zeroize(void* buf, size_t len);
 
 #ifdef __cplusplus
 }

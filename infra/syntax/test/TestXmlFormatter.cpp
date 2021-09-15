@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/syntax/XmlFormatter.hpp"
+#include "gtest/gtest.h"
 
 TEST(XmlFormatter, usage_example)
 {

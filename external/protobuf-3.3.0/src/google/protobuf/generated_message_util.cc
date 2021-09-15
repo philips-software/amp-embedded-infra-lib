@@ -33,48 +33,55 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <google/protobuf/generated_message_util.h>
-
 #include <limits>
 
+namespace google
+{
+    namespace protobuf
+    {
+        namespace internal
+        {
 
-namespace google {
-namespace protobuf {
-namespace internal {
+            double Infinity()
+            {
+                return std::numeric_limits<double>::infinity();
+            }
+            double NaN()
+            {
+                return std::numeric_limits<double>::quiet_NaN();
+            }
 
-double Infinity() {
-  return std::numeric_limits<double>::infinity();
-}
-double NaN() {
-  return std::numeric_limits<double>::quiet_NaN();
-}
+            ExplicitlyConstructed<::std::string> fixed_address_empty_string;
+            GOOGLE_PROTOBUF_DECLARE_ONCE(empty_string_once_init_);
 
-ExplicitlyConstructed< ::std::string> fixed_address_empty_string;
-GOOGLE_PROTOBUF_DECLARE_ONCE(empty_string_once_init_);
+            void DeleteEmptyString() { fixed_address_empty_string.Shutdown(); }
 
-void DeleteEmptyString() { fixed_address_empty_string.Shutdown(); }
+            void InitEmptyString()
+            {
+                fixed_address_empty_string.DefaultConstruct();
+                OnShutdown(&DeleteEmptyString);
+            }
 
-void InitEmptyString() {
-  fixed_address_empty_string.DefaultConstruct();
-  OnShutdown(&DeleteEmptyString);
-}
+            size_t StringSpaceUsedExcludingSelfLong(const string& str)
+            {
+                const void* start = &str;
+                const void* end = &str + 1;
+                if (start <= str.data() && str.data() < end)
+                {
+                    // The string's data is stored inside the string object itself.
+                    return 0;
+                }
+                else
+                {
+                    return str.capacity();
+                }
+            }
 
-size_t StringSpaceUsedExcludingSelfLong(const string& str) {
-  const void* start = &str;
-  const void* end = &str + 1;
-  if (start <= str.data() && str.data() < end) {
-    // The string's data is stored inside the string object itself.
-    return 0;
-  } else {
-    return str.capacity();
-  }
-}
+            void InitProtobufDefaults()
+            {
+                GetEmptyString();
+            }
 
-
-
-void InitProtobufDefaults() {
-  GetEmptyString();
-}
-
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+        } // namespace internal
+    }     // namespace protobuf
+} // namespace google

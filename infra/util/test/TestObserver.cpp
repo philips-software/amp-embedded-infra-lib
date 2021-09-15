@@ -1,6 +1,6 @@
+#include "infra/util/Observer.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "infra/util/Observer.hpp"
 
 class MySubject;
 
@@ -84,7 +84,7 @@ TEST(ObserverTest, notify_one_observer)
     MyObserver observer(subject);
 
     EXPECT_CALL(observer, Callback());
-    subject.NotifyObservers([](MyObserver& o) { o.Callback(); } );
+    subject.NotifyObservers([](MyObserver& o) { o.Callback(); });
 }
 
 TEST(ObserverTest, notify_two_observers)
@@ -166,13 +166,13 @@ TEST(SingleObserverTest, NotifyObserver)
 
     MySingleObserver observer(subject);
     EXPECT_CALL(observer, Callback());
-    subject.NotifyObservers([](MySingleObserver &o) { o.Callback(); });
+    subject.NotifyObservers([](MySingleObserver& o) { o.Callback(); });
 }
 
 TEST(SingleObserverTest, NotifyWithoutObserver)
 {
     MySingleSubject subject;
-    subject.NotifyObservers([](MySingleObserver &o) { o.Callback(); });
+    subject.NotifyObservers([](MySingleObserver& o) { o.Callback(); });
 }
 
 TEST(SingleObserverTest, RegisterAfterConstruction)

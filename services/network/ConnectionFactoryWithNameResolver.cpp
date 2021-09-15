@@ -6,14 +6,14 @@ namespace services
     {
         switch (reason)
         {
-            case refused:
-                return "refused";
-            case connectionAllocationFailed:
-                return "connectionAllocationFailed";
-            case nameLookupFailed:
-                return "nameLookupFailed";
-            default:
-                std::abort();
+        case refused:
+            return "refused";
+        case connectionAllocationFailed:
+            return "connectionAllocationFailed";
+        case nameLookupFailed:
+            return "nameLookupFailed";
+        default:
+            std::abort();
         }
     }
 
@@ -21,12 +21,12 @@ namespace services
     {
         switch (reason)
         {
-            case ClientConnectionObserverFactory::ConnectFailReason::refused:
-                return ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason::refused;
-            case ClientConnectionObserverFactory::ConnectFailReason::connectionAllocationFailed:
-                return ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason::connectionAllocationFailed;
-            default:
-                std::abort();
+        case ClientConnectionObserverFactory::ConnectFailReason::refused:
+            return ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason::refused;
+        case ClientConnectionObserverFactory::ConnectFailReason::connectionAllocationFailed:
+            return ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason::connectionAllocationFailed;
+        default:
+            std::abort();
         }
     }
 

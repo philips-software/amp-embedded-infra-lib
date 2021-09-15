@@ -1,8 +1,8 @@
 #ifndef NETWORK_HTTP_SERVER_MOCK_HPP
 #define NETWORK_HTTP_SERVER_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "services/network/HttpServer.hpp"
+#include "gmock/gmock.h"
 
 namespace services
 {

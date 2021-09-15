@@ -36,12 +36,15 @@ namespace services
         : public MdnsQuery
     {
     public:
-        MdnsQueryImpl(MdnsClient& mdnsClient, services::DnsType dnsType, infra::BoundedConstString instance, infra::BoundedConstString serviceName, infra::BoundedConstString type, infra::Function<void(infra::ConstByteRange data)> queryHit, 
-            infra::Function<void(infra::BoundedString hostname, DnsRecordPayload payload, infra::ConstByteRange data)> queryAdditionalRecordHit = [](infra::BoundedString hostname, DnsRecordPayload payload, infra::ConstByteRange data){});
-        MdnsQueryImpl(MdnsClient& mdnsClient, services::DnsType dnsType, infra::BoundedConstString serviceName, infra::BoundedConstString type, infra::Function<void(infra::ConstByteRange data)> queryHit,
-            infra::Function<void(infra::BoundedString hostname, DnsRecordPayload payload, infra::ConstByteRange data)> queryAdditionalRecordHit = [](infra::BoundedString hostname, DnsRecordPayload payload, infra::ConstByteRange data){});
-        MdnsQueryImpl(MdnsClient& mdnsClient, services::DnsType dnsType, infra::BoundedConstString instance, infra::Function<void(infra::ConstByteRange data)> queryHit,
-            infra::Function<void(infra::BoundedString hostname, DnsRecordPayload payload, infra::ConstByteRange data)> queryAdditionalRecordHit = [](infra::BoundedString hostname, DnsRecordPayload payload, infra::ConstByteRange data){});
+        MdnsQueryImpl(
+            MdnsClient& mdnsClient, services::DnsType dnsType, infra::BoundedConstString instance, infra::BoundedConstString serviceName, infra::BoundedConstString type, infra::Function<void(infra::ConstByteRange data)> queryHit,
+            infra::Function<void(infra::BoundedString hostname, DnsRecordPayload payload, infra::ConstByteRange data)> queryAdditionalRecordHit = [](infra::BoundedString hostname, DnsRecordPayload payload, infra::ConstByteRange data) {});
+        MdnsQueryImpl(
+            MdnsClient& mdnsClient, services::DnsType dnsType, infra::BoundedConstString serviceName, infra::BoundedConstString type, infra::Function<void(infra::ConstByteRange data)> queryHit,
+            infra::Function<void(infra::BoundedString hostname, DnsRecordPayload payload, infra::ConstByteRange data)> queryAdditionalRecordHit = [](infra::BoundedString hostname, DnsRecordPayload payload, infra::ConstByteRange data) {});
+        MdnsQueryImpl(
+            MdnsClient& mdnsClient, services::DnsType dnsType, infra::BoundedConstString instance, infra::Function<void(infra::ConstByteRange data)> queryHit,
+            infra::Function<void(infra::BoundedString hostname, DnsRecordPayload payload, infra::ConstByteRange data)> queryAdditionalRecordHit = [](infra::BoundedString hostname, DnsRecordPayload payload, infra::ConstByteRange data) {});
 
         ~MdnsQueryImpl();
 
@@ -88,7 +91,7 @@ namespace services
         void ActiveQueryDone();
         bool IsActivelyQuerying();
         void CancelActiveQueryIfEqual(MdnsQuery& query);
-        
+
     private:
         class ActiveMdnsQuery
         {
@@ -98,8 +101,8 @@ namespace services
             bool IsCurrentQuery(MdnsQuery& query);
 
             void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer);
-        private:
 
+        private:
             void SendQuery();
 
         private:

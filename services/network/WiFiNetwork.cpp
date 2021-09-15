@@ -1,5 +1,5 @@
-#include "infra/util/CompareMembers.hpp"
 #include "services/network/WiFiNetwork.hpp"
+#include "infra/util/CompareMembers.hpp"
 
 namespace services
 {
@@ -10,9 +10,7 @@ namespace services
 
     bool WiFiSecurity::operator==(const WiFiSecurity& other) const
     {
-        return infra::Equals()
-            (securityMode, other.securityMode)
-            (key, other.key);
+        return infra::Equals()(securityMode, other.securityMode)(key, other.key);
     }
 
     bool WiFiSecurity::operator!=(const WiFiSecurity& other) const
@@ -53,10 +51,7 @@ namespace services
 
     bool IPAddresses::operator==(const IPAddresses& other) const
     {
-        return infra::Equals()
-            (address, other.address)
-            (netmask, other.netmask)
-            (gateway, other.gateway);
+        return infra::Equals()(address, other.address)(netmask, other.netmask)(gateway, other.gateway);
     }
 
     bool IPAddresses::operator!=(const IPAddresses& other) const
@@ -66,9 +61,7 @@ namespace services
 
     bool IpConfig::operator==(const IpConfig& other) const
     {
-        return infra::Equals()
-            (useDhcp, other.useDhcp)
-            (addresses, other.addresses);
+        return infra::Equals()(useDhcp, other.useDhcp)(addresses, other.addresses);
     }
 
     bool IpConfig::operator!=(const IpConfig& other) const

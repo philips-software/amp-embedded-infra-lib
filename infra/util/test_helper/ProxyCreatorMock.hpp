@@ -1,8 +1,8 @@
 #ifndef INFRA_PROXY_CREATOR_MOCK_HPP
 #define INFRA_PROXY_CREATOR_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "infra/util/ProxyCreator.hpp"
+#include "gmock/gmock.h"
 
 namespace infra
 {
@@ -22,7 +22,9 @@ namespace infra
         : public CreatorBase<T, void()>
     {
     public:
-        CreatorMock(T& createdObject) : createdObject(createdObject) {}
+        CreatorMock(T& createdObject)
+            : createdObject(createdObject)
+        {}
 
         MOCK_METHOD0(Constructed, void());
         MOCK_METHOD0(Destructed, void());
@@ -42,7 +44,9 @@ namespace infra
         : public CreatorBase<T, void(ConstructionArg0)>
     {
     public:
-        CreatorMock(T& createdObject) : createdObject(createdObject) {}
+        CreatorMock(T& createdObject)
+            : createdObject(createdObject)
+        {}
 
         MOCK_METHOD1_T(Constructed, void(ConstructionArg0));
         MOCK_METHOD0(Destructed, void());
@@ -62,7 +66,9 @@ namespace infra
         : public CreatorBase<T, void(ConstructionArg0, ConstructionArg1)>
     {
     public:
-        CreatorMock(T& createdObject) : createdObject(createdObject) {}
+        CreatorMock(T& createdObject)
+            : createdObject(createdObject)
+        {}
 
         MOCK_METHOD2_T(Constructed, void(ConstructionArg0, ConstructionArg1));
         MOCK_METHOD0(Destructed, void());
@@ -82,7 +88,9 @@ namespace infra
         : public CreatorBase<T, void(ConstructionArg0, ConstructionArg1, ConstructionArg2)>
     {
     public:
-        CreatorMock(T& createdObject) : createdObject(createdObject) {}
+        CreatorMock(T& createdObject)
+            : createdObject(createdObject)
+        {}
 
         MOCK_METHOD3_T(Constructed, void(ConstructionArg0, ConstructionArg1, ConstructionArg2));
         MOCK_METHOD0(Destructed, void());
@@ -102,7 +110,9 @@ namespace infra
         : public CreatorBase<T, void(ConstructionArg0, ConstructionArg1, ConstructionArg2, ConstructionArg3)>
     {
     public:
-        CreatorMock(T& createdObject) : createdObject(createdObject) {}
+        CreatorMock(T& createdObject)
+            : createdObject(createdObject)
+        {}
 
         MOCK_METHOD4_T(Constructed, void(ConstructionArg0, ConstructionArg1, ConstructionArg2, ConstructionArg3));
         MOCK_METHOD0(Destructed, void());
@@ -122,7 +132,9 @@ namespace infra
         : public CreatorBase<T, void(ConstructionArg0, ConstructionArg1, ConstructionArg2, ConstructionArg3, ConstructionArg4)>
     {
     public:
-        CreatorMock(T& createdObject) : createdObject(createdObject) {}
+        CreatorMock(T& createdObject)
+            : createdObject(createdObject)
+        {}
 
         MOCK_METHOD5_T(Constructed, void(ConstructionArg0, ConstructionArg1, ConstructionArg2, ConstructionArg3, ConstructionArg4));
         MOCK_METHOD0(Destructed, void());

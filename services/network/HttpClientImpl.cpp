@@ -94,8 +94,7 @@ namespace services
     void HttpClientImpl::Attached()
     {
         infra::WeakPtr<HttpClientImpl> self = infra::StaticPointerCast<HttpClientImpl>(services::ConnectionObserver::Subject().ObserverPtr());
-        bodyReaderAccess.SetAction([self]()
-        {
+        bodyReaderAccess.SetAction([self]() {
             if (auto sharedSelf = self.lock())
                 sharedSelf->BodyReaderDestroyed();
         });
@@ -164,17 +163,14 @@ namespace services
 
             response->DataReceived(*reader);
 
-            if (!self.lock())   // DataReceived may close the connection
+            if (!self.lock()) // DataReceived may close the connection
                 return;
 
             ConnectionObserver::Subject().AckReceived();
 
             if (response->Done())
             {
-                if (contentLength == infra::none && (statusCode == HttpStatusCode::Continue
-                    || statusCode == HttpStatusCode::SwitchingProtocols
-                    || statusCode == HttpStatusCode::NoContent
-                    || statusCode == HttpStatusCode::NotModified))
+                if (contentLength == infra::none && (statusCode == HttpStatusCode::Continue || statusCode == HttpStatusCode::SwitchingProtocols || statusCode == HttpStatusCode::NoContent || statusCode == HttpStatusCode::NotModified))
                     contentLength = 0;
             }
         }
@@ -386,8 +382,7 @@ namespace services
     {
         forwardStreamPtr = std::move(writer);
         auto available = forwardStreamPtr->Available();
-        forwardStreamAccess.SetAction([this, available]()
-        {
+        forwardStreamAccess.SetAction([this, available]() {
             contentSize -= available - forwardStreamPtr->Available();
 
             forwardStreamPtr = nullptr;

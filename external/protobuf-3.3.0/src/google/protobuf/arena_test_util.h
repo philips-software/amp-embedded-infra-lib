@@ -31,61 +31,73 @@
 #ifndef GOOGLE_PROTOBUF_ARENA_TEST_UTIL_H__
 #define GOOGLE_PROTOBUF_ARENA_TEST_UTIL_H__
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/arena.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 
-namespace google {
-namespace protobuf {
+namespace google
+{
+    namespace protobuf
+    {
 
-template <typename T, bool use_arena>
-void TestParseCorruptedString(const T& message) {
-  int success_count = 0;
-  string s = message.SerializeAsString();
-  const int kMaxIters = 900;
-  const int stride = s.size() <= kMaxIters ? 1 : s.size() / kMaxIters;
-  const int start = stride == 1 || use_arena ? 0 : (stride + 1) / 2;
-  for (int i = start; i < s.size(); i += stride) {
-    for (int c = 1 + (i % 17); c < 256; c += 2 * c + (i & 3)) {
-      s[i] ^= c;
-      google::protobuf::Arena arena;
-      T* message =
-          google::protobuf::Arena::CreateMessage<T>(use_arena ? &arena : NULL);
-      if (message->ParseFromString(s)) {
-        ++success_count;
-      }
-      if (!use_arena) {
-        delete message;
-      }
-      s[i] ^= c;  // Restore s to its original state.
-    }
-  }
-  // This next line is a low bar.  But getting through the test without crashing
-  // due to use-after-free or other bugs is a big part of what we're checking.
-  GOOGLE_CHECK_GT(success_count, 0);
-}
+        template<typename T, bool use_arena>
+        void TestParseCorruptedString(const T& message)
+        {
+            int success_count = 0;
+            string s = message.SerializeAsString();
+            const int kMaxIters = 900;
+            const int stride = s.size() <= kMaxIters ? 1 : s.size() / kMaxIters;
+            const int start = stride == 1 || use_arena ? 0 : (stride + 1) / 2;
+            for (int i = start; i < s.size(); i += stride)
+            {
+                for (int c = 1 + (i % 17); c < 256; c += 2 * c + (i & 3))
+                {
+                    s[i] ^= c;
+                    google::protobuf::Arena arena;
+                    T* message =
+                        google::protobuf::Arena::CreateMessage<T>(use_arena ? &arena : NULL);
+                    if (message->ParseFromString(s))
+                    {
+                        ++success_count;
+                    }
+                    if (!use_arena)
+                    {
+                        delete message;
+                    }
+                    s[i] ^= c; // Restore s to its original state.
+                }
+            }
+            // This next line is a low bar.  But getting through the test without crashing
+            // due to use-after-free or other bugs is a big part of what we're checking.
+            GOOGLE_CHECK_GT(success_count, 0);
+        }
 
-namespace internal {
+        namespace internal
+        {
 
-class NoHeapChecker {
- public:
-  NoHeapChecker() {
-    capture_alloc.Hook();
-  }
-  ~NoHeapChecker();
- private:
-  class NewDeleteCapture {
-   public:
-    // TOOD(xiaofeng): Implement this for opensource protobuf.
-    void Hook() {}
-    void Unhook() {}
-    int alloc_count() { return 0; }
-    int free_count() { return 0; }
-  } capture_alloc;
-};
+            class NoHeapChecker
+            {
+            public:
+                NoHeapChecker()
+                {
+                    capture_alloc.Hook();
+                }
+                ~NoHeapChecker();
 
-}  // namespace internal
-}  // namespace protobuf
+            private:
+                class NewDeleteCapture
+                {
+                public:
+                    // TOOD(xiaofeng): Implement this for opensource protobuf.
+                    void Hook() {}
+                    void Unhook() {}
+                    int alloc_count() { return 0; }
+                    int free_count() { return 0; }
+                } capture_alloc;
+            };
 
-}  // namespace google
-#endif  // GOOGLE_PROTOBUF_ARENA_TEST_UTIL_H__
+        } // namespace internal
+    }     // namespace protobuf
+
+} // namespace google
+#endif // GOOGLE_PROTOBUF_ARENA_TEST_UTIL_H__

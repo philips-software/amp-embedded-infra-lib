@@ -30,8 +30,7 @@ namespace services
         streamReader = ConnectionObserver::Subject().ReceiveStream();
         infra::DataInputStream::WithErrorPolicy stream(*streamReader);
 
-        serialCommunication.SendData(stream.ContiguousRange(), [this]
-        {
+        serialCommunication.SendData(stream.ContiguousRange(), [this] {
             ConnectionObserver::Subject().AckReceived();
             streamReader = nullptr;
         });
@@ -50,9 +49,8 @@ namespace services
         : SingleConnectionListener(connectionFactory, port, { connectionCreator })
         , receiveBuffer(receiveBuffer)
         , serialCommunication(serialCommunication)
-        , connectionCreator([this](infra::Optional<SerialServerConnectionObserver>& value, services::IPAddress address)
-          {
-              value.Emplace(this->receiveBuffer, this->serialCommunication);
-          })
+        , connectionCreator([this](infra::Optional<SerialServerConnectionObserver>& value, services::IPAddress address) {
+            value.Emplace(this->receiveBuffer, this->serialCommunication);
+        })
     {}
 }

@@ -1,4 +1,3 @@
-#include "gmock/gmock.h"
 #include "infra/stream/test/StreamMock.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/BoundedStringMatcher.hpp"
@@ -6,6 +5,7 @@
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/network/HttpClientBasic.hpp"
 #include "services/network/test_doubles/HttpClientMock.hpp"
+#include "gmock/gmock.h"
 
 class HttpClientBasicMock
     : public services::HttpClientBasic
@@ -78,8 +78,7 @@ TEST_F(HttpClientBasicTest, Stop_while_connected_does_not_invoke_Done)
     EXPECT_CALL(*controller, Established());
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.Attach(client); });
 
-    EXPECT_CALL(httpClient, Close()).WillOnce(testing::Invoke([this]()
-    {
+    EXPECT_CALL(httpClient, Close()).WillOnce(testing::Invoke([this]() {
         EXPECT_CALL(onStopped, callback());
         httpClient.Detach();
         controller = infra::none;

@@ -30,68 +30,68 @@
 #else
 #include <stdio.h>
 #include <stdlib.h>
-#define mbedtls_fprintf         fprintf
-#define mbedtls_printf          printf
-#define MBEDTLS_EXIT_SUCCESS    EXIT_SUCCESS
-#define MBEDTLS_EXIT_FAILURE    EXIT_FAILURE
+#define mbedtls_fprintf fprintf
+#define mbedtls_printf printf
+#define MBEDTLS_EXIT_SUCCESS EXIT_SUCCESS
+#define MBEDTLS_EXIT_FAILURE EXIT_FAILURE
 #endif /* MBEDTLS_PLATFORM_C */
 
 #if defined(MBEDTLS_HAVEGE_C) && defined(MBEDTLS_FS_IO)
 #include "mbedtls/havege.h"
-
 #include <stdio.h>
 #include <time.h>
 #endif
 
 #if !defined(MBEDTLS_HAVEGE_C) || !defined(MBEDTLS_FS_IO)
-int main( void )
+int main(void)
 {
     mbedtls_printf("MBEDTLS_HAVEGE_C not defined.\n");
-    return( 0 );
+    return (0);
 }
 #else
-int main( int argc, char *argv[] )
+int main(int argc, char* argv[])
 {
-    FILE *f;
+    FILE* f;
     time_t t;
     int i, k, ret = 1;
     int exit_code = MBEDTLS_EXIT_FAILURE;
     mbedtls_havege_state hs;
     unsigned char buf[1024];
 
-    if( argc < 2 )
+    if (argc < 2)
     {
-        mbedtls_fprintf( stderr, "usage: %s <output filename>\n", argv[0] );
-        return( exit_code );
+        mbedtls_fprintf(stderr, "usage: %s <output filename>\n", argv[0]);
+        return (exit_code);
     }
 
-    if( ( f = fopen( argv[1], "wb+" ) ) == NULL )
+    if ((f = fopen(argv[1], "wb+")) == NULL)
     {
-        mbedtls_printf( "failed to open '%s' for writing.\n", argv[1] );
-        return( exit_code );
+        mbedtls_printf("failed to open '%s' for writing.\n", argv[1]);
+        return (exit_code);
     }
 
-    mbedtls_havege_init( &hs );
+    mbedtls_havege_init(&hs);
 
-    t = time( NULL );
+    t = time(NULL);
 
-    for( i = 0, k = 768; i < k; i++ )
+    for (i = 0, k = 768; i < k; i++)
     {
-        if( ( ret = mbedtls_havege_random( &hs, buf, sizeof( buf ) ) ) != 0 )
+        if ((ret = mbedtls_havege_random(&hs, buf, sizeof(buf))) != 0)
         {
-            mbedtls_printf( " failed\n  !  mbedtls_havege_random returned -0x%04X",
-                            -ret );
+            mbedtls_printf(" failed\n  !  mbedtls_havege_random returned -0x%04X",
+                -ret);
             goto exit;
         }
 
-        fwrite( buf, sizeof( buf ), 1, f );
+        fwrite(buf, sizeof(buf), 1, f);
 
-        mbedtls_printf( "Generating %ldkb of data in file '%s'... %04.1f" \
-                "%% done\r", (long)(sizeof(buf) * k / 1024), argv[1], (100 * (float) (i + 1)) / k );
-        fflush( stdout );
+        mbedtls_printf("Generating %ldkb of data in file '%s'... %04.1f"
+                       "%% done\r",
+            (long)(sizeof(buf) * k / 1024), argv[1], (100 * (float)(i + 1)) / k);
+        fflush(stdout);
     }
 
-    if( t == time( NULL ) )
+    if (t == time(NULL))
         t--;
 
     mbedtls_printf(" \n ");
@@ -99,8 +99,8 @@ int main( int argc, char *argv[] )
     exit_code = MBEDTLS_EXIT_SUCCESS;
 
 exit:
-    mbedtls_havege_free( &hs );
-    fclose( f );
-    return( exit_code );
+    mbedtls_havege_free(&hs);
+    fclose(f);
+    return (exit_code);
 }
 #endif /* MBEDTLS_HAVEGE_C */

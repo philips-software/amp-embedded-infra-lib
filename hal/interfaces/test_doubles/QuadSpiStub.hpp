@@ -1,9 +1,9 @@
 #ifndef HAL_QUAD_SPI_STUB_HPP
 #define HAL_QUAD_SPI_STUB_HPP
 
-#include "gmock/gmock.h"
 #include "hal/interfaces/QuadSpi.hpp"
 #include "infra/util/AutoResetFunction.hpp"
+#include "gmock/gmock.h"
 
 namespace hal
 {

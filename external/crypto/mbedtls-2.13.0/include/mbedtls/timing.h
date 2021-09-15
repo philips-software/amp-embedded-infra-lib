@@ -33,38 +33,39 @@
 #include <stdint.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #if !defined(MBEDTLS_TIMING_ALT)
-// Regular implementation
-//
+    // Regular implementation
+    //
 
-/**
+    /**
  * \brief          timer structure
  */
-struct mbedtls_timing_hr_time
-{
-    unsigned char opaque[32];
-};
+    struct mbedtls_timing_hr_time
+    {
+        unsigned char opaque[32];
+    };
 
-/**
+    /**
  * \brief          Context for mbedtls_timing_set/get_delay()
  */
-typedef struct mbedtls_timing_delay_context
-{
-    struct mbedtls_timing_hr_time   timer;
-    uint32_t                        int_ms;
-    uint32_t                        fin_ms;
-} mbedtls_timing_delay_context;
+    typedef struct mbedtls_timing_delay_context
+    {
+        struct mbedtls_timing_hr_time timer;
+        uint32_t int_ms;
+        uint32_t fin_ms;
+    } mbedtls_timing_delay_context;
 
-#else  /* MBEDTLS_TIMING_ALT */
+#else /* MBEDTLS_TIMING_ALT */
 #include "timing_alt.h"
 #endif /* MBEDTLS_TIMING_ALT */
 
-extern volatile int mbedtls_timing_alarmed;
+    extern volatile int mbedtls_timing_alarmed;
 
-/**
+    /**
  * \brief          Return the CPU cycle counter value
  *
  * \warning        This is only a best effort! Do not rely on this!
@@ -74,9 +75,9 @@ extern volatile int mbedtls_timing_alarmed;
  * \note           This value starts at an unspecified origin and
  *                 may wrap around.
  */
-unsigned long mbedtls_timing_hardclock( void );
+    unsigned long mbedtls_timing_hardclock(void);
 
-/**
+    /**
  * \brief          Return the elapsed time in milliseconds
  *
  * \param val      points to a timer structure
@@ -93,9 +94,9 @@ unsigned long mbedtls_timing_hardclock( void );
  *                 get_timer(0) }` the value time1+time2 is only approximately
  *                 the delay since the first reset.
  */
-unsigned long mbedtls_timing_get_timer( struct mbedtls_timing_hr_time *val, int reset );
+    unsigned long mbedtls_timing_get_timer(struct mbedtls_timing_hr_time* val, int reset);
 
-/**
+    /**
  * \brief          Setup an alarm clock
  *
  * \param seconds  delay before the "mbedtls_timing_alarmed" flag is set
@@ -105,9 +106,9 @@ unsigned long mbedtls_timing_get_timer( struct mbedtls_timing_hr_time *val, int 
  *                 context, this means one for the whole process, not one per
  *                 thread.
  */
-void mbedtls_set_alarm( int seconds );
+    void mbedtls_set_alarm(int seconds);
 
-/**
+    /**
  * \brief          Set a pair of delays to watch
  *                 (See \c mbedtls_timing_get_delay().)
  *
@@ -121,9 +122,9 @@ void mbedtls_set_alarm( int seconds );
  * \note           To set a single delay, either use \c mbedtls_timing_set_timer
  *                 directly or use this function with int_ms == fin_ms.
  */
-void mbedtls_timing_set_delay( void *data, uint32_t int_ms, uint32_t fin_ms );
+    void mbedtls_timing_set_delay(void* data, uint32_t int_ms, uint32_t fin_ms);
 
-/**
+    /**
  * \brief          Get the status of delays
  *                 (Memory helper: number of delays passed.)
  *
@@ -135,15 +136,15 @@ void mbedtls_timing_set_delay( void *data, uint32_t int_ms, uint32_t fin_ms );
  *                  1 if only the intermediate delay is passed,
  *                  2 if the final delay is passed.
  */
-int mbedtls_timing_get_delay( void *data );
+    int mbedtls_timing_get_delay(void* data);
 
 #if defined(MBEDTLS_SELF_TEST)
-/**
+    /**
  * \brief          Checkup routine
  *
  * \return         0 if successful, or 1 if a test failed
  */
-int mbedtls_timing_self_test( int verbose );
+    int mbedtls_timing_self_test(int verbose);
 #endif
 
 #ifdef __cplusplus

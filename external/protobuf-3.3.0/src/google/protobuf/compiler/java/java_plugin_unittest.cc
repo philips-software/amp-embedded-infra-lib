@@ -39,90 +39,97 @@
 #include <google/protobuf/stubs/shared_ptr.h>
 #endif
 
-#include <google/protobuf/compiler/java/java_generator.h>
 #include <google/protobuf/compiler/command_line_interface.h>
-#include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/compiler/java/java_generator.h>
 #include <google/protobuf/io/printer.h>
-
-#include <google/protobuf/testing/file.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
-namespace google {
-namespace protobuf {
-namespace compiler {
-namespace java {
-namespace {
+namespace google
+{
+    namespace protobuf
+    {
+        namespace compiler
+        {
+            namespace java
+            {
+                namespace
+                {
 
-class TestGenerator : public CodeGenerator {
- public:
-  TestGenerator() {}
-  ~TestGenerator() {}
+                    class TestGenerator : public CodeGenerator
+                    {
+                    public:
+                        TestGenerator() {}
+                        ~TestGenerator() {}
 
-  virtual bool Generate(const FileDescriptor* file,
-                        const string& parameter,
-                        GeneratorContext* context,
-                        string* error) const {
-    string filename = "Test.java";
-    TryInsert(filename, "outer_class_scope", context);
-    TryInsert(filename, "class_scope:foo.Bar", context);
-    TryInsert(filename, "class_scope:foo.Bar.Baz", context);
-    TryInsert(filename, "builder_scope:foo.Bar", context);
-    TryInsert(filename, "builder_scope:foo.Bar.Baz", context);
-    TryInsert(filename, "enum_scope:foo.Qux", context);
-    return true;
-  }
+                        virtual bool Generate(const FileDescriptor* file,
+                            const string& parameter,
+                            GeneratorContext* context,
+                            string* error) const
+                        {
+                            string filename = "Test.java";
+                            TryInsert(filename, "outer_class_scope", context);
+                            TryInsert(filename, "class_scope:foo.Bar", context);
+                            TryInsert(filename, "class_scope:foo.Bar.Baz", context);
+                            TryInsert(filename, "builder_scope:foo.Bar", context);
+                            TryInsert(filename, "builder_scope:foo.Bar.Baz", context);
+                            TryInsert(filename, "enum_scope:foo.Qux", context);
+                            return true;
+                        }
 
-  void TryInsert(const string& filename, const string& insertion_point,
-                 GeneratorContext* context) const {
-    google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
-        context->OpenForInsert(filename, insertion_point));
-    io::Printer printer(output.get(), '$');
-    printer.Print("// inserted $name$\n", "name", insertion_point);
-  }
-};
+                        void TryInsert(const string& filename, const string& insertion_point,
+                            GeneratorContext* context) const
+                        {
+                            google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
+                                context->OpenForInsert(filename, insertion_point));
+                            io::Printer printer(output.get(), '$');
+                            printer.Print("// inserted $name$\n", "name", insertion_point);
+                        }
+                    };
 
-// This test verifies that all the expected insertion points exist.  It does
-// not verify that they are correctly-placed; that would require actually
-// compiling the output which is a bit more than I care to do for this test.
-TEST(JavaPluginTest, PluginTest) {
-  GOOGLE_CHECK_OK(File::SetContents(TestTempDir() + "/test.proto",
-                             "syntax = \"proto2\";\n"
-                             "package foo;\n"
-                             "option java_package = \"\";\n"
-                             "option java_outer_classname = \"Test\";\n"
-                             "message Bar {\n"
-                             "  message Baz {}\n"
-                             "}\n"
-                             "enum Qux { BLAH = 1; }\n",
-                             true));
+                    // This test verifies that all the expected insertion points exist.  It does
+                    // not verify that they are correctly-placed; that would require actually
+                    // compiling the output which is a bit more than I care to do for this test.
+                    TEST(JavaPluginTest, PluginTest)
+                    {
+                        GOOGLE_CHECK_OK(File::SetContents(TestTempDir() + "/test.proto",
+                            "syntax = \"proto2\";\n"
+                            "package foo;\n"
+                            "option java_package = \"\";\n"
+                            "option java_outer_classname = \"Test\";\n"
+                            "message Bar {\n"
+                            "  message Baz {}\n"
+                            "}\n"
+                            "enum Qux { BLAH = 1; }\n",
+                            true));
 
-  google::protobuf::compiler::CommandLineInterface cli;
-  cli.SetInputsAreProtoPathRelative(true);
+                        google::protobuf::compiler::CommandLineInterface cli;
+                        cli.SetInputsAreProtoPathRelative(true);
 
-  JavaGenerator java_generator;
-  TestGenerator test_generator;
-  cli.RegisterGenerator("--java_out", &java_generator, "");
-  cli.RegisterGenerator("--test_out", &test_generator, "");
+                        JavaGenerator java_generator;
+                        TestGenerator test_generator;
+                        cli.RegisterGenerator("--java_out", &java_generator, "");
+                        cli.RegisterGenerator("--test_out", &test_generator, "");
 
-  string proto_path = "-I" + TestTempDir();
-  string java_out = "--java_out=" + TestTempDir();
-  string test_out = "--test_out=" + TestTempDir();
+                        string proto_path = "-I" + TestTempDir();
+                        string java_out = "--java_out=" + TestTempDir();
+                        string test_out = "--test_out=" + TestTempDir();
 
-  const char* argv[] = {
-    "protoc",
-    proto_path.c_str(),
-    java_out.c_str(),
-    test_out.c_str(),
-    "test.proto"
-  };
+                        const char* argv[] = {
+                            "protoc",
+                            proto_path.c_str(),
+                            java_out.c_str(),
+                            test_out.c_str(),
+                            "test.proto"
+                        };
 
-  EXPECT_EQ(0, cli.Run(5, argv));
-}
+                        EXPECT_EQ(0, cli.Run(5, argv));
+                    }
 
-}  // namespace
-}  // namespace java
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+                } // namespace
+            }     // namespace java
+        }         // namespace compiler
+    }             // namespace protobuf
+} // namespace google

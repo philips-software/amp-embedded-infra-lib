@@ -86,7 +86,7 @@ namespace services
             Iterator& operator=(const Iterator& other);
 
             void Read(infra::ByteRange buffer, const infra::Function<void(infra::ByteRange result)>& onDone);
-            void ErasePrevious(const infra::Function<void()>& onDone);  // Erase the item that just hase been read
+            void ErasePrevious(const infra::Function<void()>& onDone); // Erase the item that just hase been read
 
             void SectorIsErased(uint32_t sectorIndex);
 
@@ -137,7 +137,7 @@ namespace services
 
         infra::Optional<Iterator> erasingPosition;
 
-        enum class RecoverPhase: uint8_t
+        enum class RecoverPhase : uint8_t
         {
             searchingStartOrEmpty,
             checkingAllUsed,

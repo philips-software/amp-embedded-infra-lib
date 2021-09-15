@@ -27,47 +27,39 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <cstdio>
 #include <crtdbg.h>
+
+#include <cstdio>
+
 #include "gtest/gtest.h"
 
-namespace testing
-{
-    class MemoryLeakDetector
-        : public EmptyTestEventListener
-    {
-    public:
-        virtual void OnTestStart(const TestInfo&)
-        {
-            _CrtMemCheckpoint(&memState);
-        }
+namespace testing {
+class MemoryLeakDetector : public EmptyTestEventListener {
+ public:
+  virtual void OnTestStart(const TestInfo&) { _CrtMemCheckpoint(&memState); }
 
-        virtual void OnTestEnd(const TestInfo& test_info)
-        {
-            if (test_info.result()->Passed())
-            {
-                _CrtMemState stateNow, stateDiff;
-                _CrtMemCheckpoint(&stateNow);
-                int diffResult = _CrtMemDifference(&stateDiff, &memState, &stateNow);
-                if (diffResult)
-                {
-                    FAIL() << "Memory leak of " << stateDiff.lSizes[1] << " byte(s) detected.";
-                }
-            }
-        }
+  virtual void OnTestEnd(const TestInfo& test_info) {
+    if (test_info.result()->Passed()) {
+      _CrtMemState stateNow, stateDiff;
+      _CrtMemCheckpoint(&stateNow);
+      int diffResult = _CrtMemDifference(&stateDiff, &memState, &stateNow);
+      if (diffResult) {
+        FAIL() << "Memory leak of " << stateDiff.lSizes[1]
+               << " byte(s) detected.";
+      }
+    }
+  }
 
-    private:
-        _CrtMemState memState;
-    };
-}
+ private:
+  _CrtMemState memState;
+};
+}  // namespace testing
 
 #if GTEST_OS_ESP8266 || GTEST_OS_ESP32
 #if GTEST_OS_ESP8266
 extern "C" {
 #endif
-void setup() {
-  testing::InitGoogleTest();
-}
+void setup() { testing::InitGoogleTest(); }
 
 void loop() { RUN_ALL_TESTS(); }
 
@@ -77,11 +69,12 @@ void loop() { RUN_ALL_TESTS(); }
 
 #else
 
-GTEST_API_ int main(int argc, char **argv) {
+GTEST_API_ int main(int argc, char** argv) {
   printf("Running main() from %s\n", __FILE__);
   testing::InitGoogleTest(&argc, argv);
 
-    //testing::UnitTest::GetInstance()->listeners().Append(new testing::MemoryLeakDetector());
+  // testing::UnitTest::GetInstance()->listeners().Append(new
+  // testing::MemoryLeakDetector());
 
   return RUN_ALL_TESTS();
 }

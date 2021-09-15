@@ -11,7 +11,7 @@ namespace services
     {
     public:
         template<std::size_t NumParallelActions>
-            using WithStorage = infra::WithStorage<TracingConnectionFactoryWithNameResolver, infra::BoundedList<Action>::WithMaxSize<NumParallelActions>>;
+        using WithStorage = infra::WithStorage<TracingConnectionFactoryWithNameResolver, infra::BoundedList<Action>::WithMaxSize<NumParallelActions>>;
 
         TracingConnectionFactoryWithNameResolver(infra::BoundedList<Action>& actions, ConnectionFactory& connectionFactory, NameResolver& nameLookup, services::Tracer& tracer);
 

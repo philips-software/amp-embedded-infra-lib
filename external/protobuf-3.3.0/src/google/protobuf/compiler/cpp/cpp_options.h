@@ -33,39 +33,43 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_OPTIONS_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_OPTIONS_H__
 
-#include <string>
-
 #include <google/protobuf/stubs/common.h>
-namespace google {
-namespace protobuf {
-namespace compiler {
-namespace cpp {
+#include <string>
+namespace google
+{
+    namespace protobuf
+    {
+        namespace compiler
+        {
+            namespace cpp
+            {
 
-// Generator options (see generator.cc for a description of each):
-struct Options {
-  Options()
-      : safe_boundary_check(false),
-        proto_h(false),
-        transitive_pb_h(true),
-        annotate_headers(false),
-        enforce_lite(false),
-        table_driven_parsing(false) {}
+                // Generator options (see generator.cc for a description of each):
+                struct Options
+                {
+                    Options()
+                        : safe_boundary_check(false)
+                        , proto_h(false)
+                        , transitive_pb_h(true)
+                        , annotate_headers(false)
+                        , enforce_lite(false)
+                        , table_driven_parsing(false)
+                    {}
 
-  string dllexport_decl;
-  bool safe_boundary_check;
-  bool proto_h;
-  bool transitive_pb_h;
-  bool annotate_headers;
-  bool enforce_lite;
-  bool table_driven_parsing;
-  string annotation_pragma_name;
-  string annotation_guard_name;
-};
+                    string dllexport_decl;
+                    bool safe_boundary_check;
+                    bool proto_h;
+                    bool transitive_pb_h;
+                    bool annotate_headers;
+                    bool enforce_lite;
+                    bool table_driven_parsing;
+                    string annotation_pragma_name;
+                    string annotation_guard_name;
+                };
 
-}  // namespace cpp
-}  // namespace compiler
-}  // namespace protobuf
+            } // namespace cpp
+        }     // namespace compiler
+    }         // namespace protobuf
 
-
-}  // namespace google
-#endif  // GOOGLE_PROTOBUF_COMPILER_CPP_OPTIONS_H__
+} // namespace google
+#endif // GOOGLE_PROTOBUF_COMPILER_CPP_OPTIONS_H__

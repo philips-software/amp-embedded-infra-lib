@@ -5,8 +5,8 @@
 #include "infra/util/ByteRange.hpp"
 #include "upgrade/pack_builder/UpgradePackBuilder.hpp"
 #include "upgrade/pack_builder/UpgradePackInputFactory.hpp"
-#include <vector>
 #include <utility>
+#include <vector>
 
 namespace application
 {
@@ -46,7 +46,6 @@ namespace application
             const std::vector<std::string>& supportedHexTargets, const std::vector<std::pair<std::string, uint32_t>>& supportedElfTargets,
             const std::vector<std::pair<std::string, uint32_t>>& supportedBinaryTargets,
             const std::vector<NoFileInputFactory*>& otherTargets) const;
-
 
     protected:
         UpgradePackBuilder::HeaderInfo headerInfo;

@@ -16,8 +16,7 @@ namespace services
     {
         assert(minUpdateSize <= receiveQueue.EmptySize() - MessageHeader::HeaderSize);
 
-        serialCommunication.ReceiveData([this](infra::ConstByteRange data)
-        {
+        serialCommunication.ReceiveData([this](infra::ConstByteRange data) {
             for (uint8_t byte : data)
                 if (!receiveQueue.Full())
                     receiveQueue.AddFromInterrupt(byte);
@@ -31,8 +30,7 @@ namespace services
         sendStreamAvailable = false;
         pendingSendStream = 0;
 
-        infra::EventDispatcher::Instance().Schedule([this]()
-        {
+        infra::EventDispatcher::Instance().Schedule([this]() {
             infra::SharedPtr<StreamWriterWithCyclicBuffer> writer = sendStream.Emplace(sendBuffer, *this);
             this->Observer().SendStreamAvailable(std::move(writer));
         });
@@ -135,31 +133,31 @@ namespace services
     {
         switch (messageHeader->Type())
         {
-            case MessageType::SizeRequest:
-                state->SizeRequestReceived();
-                break;
+        case MessageType::SizeRequest:
+            state->SizeRequestReceived();
+            break;
 
-            case MessageType::SizeResponseRequest:
-                state->SizeResponseRequestReceived(messageHeader->Size());
-                break;
+        case MessageType::SizeResponseRequest:
+            state->SizeResponseRequestReceived(messageHeader->Size());
+            break;
 
-            case MessageType::SizeResponse:
-                state->SizeResponseReceived(messageHeader->Size());
-                break;
+        case MessageType::SizeResponse:
+            state->SizeResponseReceived(messageHeader->Size());
+            break;
 
-            case MessageType::Content:
-                contentToReceive = messageHeader->Size();
-                break;
+        case MessageType::Content:
+            contentToReceive = messageHeader->Size();
+            break;
 
-            case MessageType::SizeUpdate:
-                state->SizeUpdateReceived(messageHeader->Size());
-                break;
+        case MessageType::SizeUpdate:
+            state->SizeUpdateReceived(messageHeader->Size());
+            break;
         }
     }
 
     void ConnectionSerial::InitCompleted()
     {
-        GoStateConnectedIdle();    
+        GoStateConnectedIdle();
         onConnected();
     }
 
@@ -181,7 +179,7 @@ namespace services
     void ConnectionSerial::SendStreamFilled(infra::ByteRange data)
     {
         contentReadyForSend = data;
-        infra::EventDispatcher::Instance().Schedule([this](){ state->EvaluatePendingSend(); });
+        infra::EventDispatcher::Instance().Schedule([this]() { state->EvaluatePendingSend(); });
     }
 
     void ConnectionSerial::GoStateInitSizeRequest()
@@ -216,7 +214,7 @@ namespace services
 
     ConnectionSerial::MessageHeader::MessageHeader()
     {}
-    
+
     ConnectionSerial::MessageHeader::MessageHeader(MessageType type)
     {
         headerContent[0] = static_cast<uint8_t>(type);
@@ -351,8 +349,7 @@ namespace services
     void ConnectionSerial::StateInitSizeRequest::SendWindowSizeRequest()
     {
         sendInProgress = true;
-        serialCommunication.SendData(windowSizeReqMsg.Range(), [this]()
-        {
+        serialCommunication.SendData(windowSizeReqMsg.Range(), [this]() {
             sendInProgress = false;
 
             if (!responseRequestAfterSend && !responseAfterSend)
@@ -404,8 +401,7 @@ namespace services
     {
         sendInProgress = true;
         windowSizeRespReqMsg.SetSize(connection.ReceiveBufferSize());
-        serialCommunication.SendData(windowSizeRespReqMsg.Range(), [this]()
-        {
+        serialCommunication.SendData(windowSizeRespReqMsg.Range(), [this]() {
             sendInProgress = false;
 
             if (responseRequestAfterSend)
@@ -436,8 +432,7 @@ namespace services
     void ConnectionSerial::StateInitSizeResponse::SendWindowSizeResponse()
     {
         windowSizeRespMsg.SetSize(connection.ReceiveBufferSize());
-        serialCommunication.SendData(windowSizeRespMsg.Range(), [this]()
-        {
+        serialCommunication.SendData(windowSizeRespMsg.Range(), [this]() {
             if (responseRequestAfterSend)
                 connection.GoStateInitSizeResponseRequest();
             else
@@ -475,7 +470,7 @@ namespace services
         size_t maxContentSize = connection.peerBufferSize > windowUpdateAndHeaderRoom ? connection.peerBufferSize - windowUpdateAndHeaderRoom : 0;
 
         size_t contentSize = 0;
-        for (size_t i=0; i<sendBuffer.size(); i++)
+        for (size_t i = 0; i < sendBuffer.size(); i++)
         {
             uint8_t incr = 0;
 
@@ -497,8 +492,7 @@ namespace services
         contentMsgHeader.SetSize(size);
         connection.peerBufferSize -= size + MessageHeader::HeaderSize;
 
-        serialCommunication.SendData(contentMsgHeader.Range(), [this]()
-        {
+        serialCommunication.SendData(contentMsgHeader.Range(), [this]() {
             SendEscapedContent();
         });
     }
@@ -524,8 +518,7 @@ namespace services
     void ConnectionSerial::StateConnectedSendingContent::SendPartialContent(infra::ByteRange range, size_t rawContentSize)
     {
         partialContentSizeBeingSent = range.size();
-        serialCommunication.SendData(range, [this, rawContentSize]()
-        {
+        serialCommunication.SendData(range, [this, rawContentSize]() {
             sendBuffer = infra::Tail(sendBuffer, sendBuffer.size() - rawContentSize);
             connection.totalContentSizeToSend -= partialContentSizeBeingSent;
 
@@ -559,7 +552,7 @@ namespace services
     bool ConnectionSerial::StateConnected::UpdatePossible()
     {
         return connection.accumulatedWindowSizeUpdate.ValueOr(0) >= connection.minUpdateSize &&
-                !connection.updateInProgress && connection.peerBufferSize >= MessageHeader::HeaderSize;
+            !connection.updateInProgress && connection.peerBufferSize >= MessageHeader::HeaderSize;
     }
 
     void ConnectionSerial::StateConnected::AccumulateWindowUpdateSize(size_t size)
@@ -674,8 +667,7 @@ namespace services
         updateMsg.SetSize(*connection.accumulatedWindowSizeUpdate);
         *connection.accumulatedWindowSizeUpdate = 0;
 
-        serialCommunication.SendData(updateMsg.Range(), [this]()
-        {
+        serialCommunication.SendData(updateMsg.Range(), [this]() {
             connection.updateInProgress = false;
 
             if (*connection.accumulatedWindowSizeUpdate == 0)

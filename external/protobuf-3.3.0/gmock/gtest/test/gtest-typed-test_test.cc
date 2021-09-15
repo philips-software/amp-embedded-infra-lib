@@ -29,58 +29,64 @@
 //
 // Author: wan@google.com (Zhanyong Wan)
 
-#include <set>
-#include <vector>
-
 #include "test/gtest-typed-test_test.h"
 #include "gtest/gtest.h"
+#include <set>
+#include <vector>
 
 using testing::Test;
 
 // Used for testing that SetUpTestCase()/TearDownTestCase(), fixture
 // ctor/dtor, and SetUp()/TearDown() work correctly in typed tests and
 // type-parameterized test.
-template <typename T>
-class CommonTest : public Test {
-  // For some technical reason, SetUpTestCase() and TearDownTestCase()
-  // must be public.
- public:
-  static void SetUpTestCase() {
-    shared_ = new T(5);
-  }
+template<typename T>
+class CommonTest : public Test
+{
+    // For some technical reason, SetUpTestCase() and TearDownTestCase()
+    // must be public.
+public:
+    static void SetUpTestCase()
+    {
+        shared_ = new T(5);
+    }
 
-  static void TearDownTestCase() {
-    delete shared_;
-    shared_ = NULL;
-  }
+    static void TearDownTestCase()
+    {
+        delete shared_;
+        shared_ = NULL;
+    }
 
-  // This 'protected:' is optional.  There's no harm in making all
-  // members of this fixture class template public.
- protected:
-  // We used to use std::list here, but switched to std::vector since
-  // MSVC's <list> doesn't compile cleanly with /W4.
-  typedef std::vector<T> Vector;
-  typedef std::set<int> IntSet;
+    // This 'protected:' is optional.  There's no harm in making all
+    // members of this fixture class template public.
+protected:
+    // We used to use std::list here, but switched to std::vector since
+    // MSVC's <list> doesn't compile cleanly with /W4.
+    typedef std::vector<T> Vector;
+    typedef std::set<int> IntSet;
 
-  CommonTest() : value_(1) {}
+    CommonTest()
+        : value_(1)
+    {}
 
-  virtual ~CommonTest() { EXPECT_EQ(3, value_); }
+    virtual ~CommonTest() { EXPECT_EQ(3, value_); }
 
-  virtual void SetUp() {
-    EXPECT_EQ(1, value_);
-    value_++;
-  }
+    virtual void SetUp()
+    {
+        EXPECT_EQ(1, value_);
+        value_++;
+    }
 
-  virtual void TearDown() {
-    EXPECT_EQ(2, value_);
-    value_++;
-  }
+    virtual void TearDown()
+    {
+        EXPECT_EQ(2, value_);
+        value_++;
+    }
 
-  T value_;
-  static T* shared_;
+    T value_;
+    static T* shared_;
 };
 
-template <typename T>
+template<typename T>
 T* CommonTest<T>::shared_ = NULL;
 
 // This #ifdef block tests typed tests.
@@ -94,50 +100,55 @@ using testing::Types;
 typedef Types<char, int> TwoTypes;
 TYPED_TEST_CASE(CommonTest, TwoTypes);
 
-TYPED_TEST(CommonTest, ValuesAreCorrect) {
-  // Static members of the fixture class template can be visited via
-  // the TestFixture:: prefix.
-  EXPECT_EQ(5, *TestFixture::shared_);
+TYPED_TEST(CommonTest, ValuesAreCorrect)
+{
+    // Static members of the fixture class template can be visited via
+    // the TestFixture:: prefix.
+    EXPECT_EQ(5, *TestFixture::shared_);
 
-  // Typedefs in the fixture class template can be visited via the
-  // "typename TestFixture::" prefix.
-  typename TestFixture::Vector empty;
-  EXPECT_EQ(0U, empty.size());
+    // Typedefs in the fixture class template can be visited via the
+    // "typename TestFixture::" prefix.
+    typename TestFixture::Vector empty;
+    EXPECT_EQ(0U, empty.size());
 
-  typename TestFixture::IntSet empty2;
-  EXPECT_EQ(0U, empty2.size());
+    typename TestFixture::IntSet empty2;
+    EXPECT_EQ(0U, empty2.size());
 
-  // Non-static members of the fixture class must be visited via
-  // 'this', as required by C++ for class templates.
-  EXPECT_EQ(2, this->value_);
+    // Non-static members of the fixture class must be visited via
+    // 'this', as required by C++ for class templates.
+    EXPECT_EQ(2, this->value_);
 }
 
 // The second test makes sure shared_ is not deleted after the first
 // test.
-TYPED_TEST(CommonTest, ValuesAreStillCorrect) {
-  // Static members of the fixture class template can also be visited
-  // via 'this'.
-  ASSERT_TRUE(this->shared_ != NULL);
-  EXPECT_EQ(5, *this->shared_);
+TYPED_TEST(CommonTest, ValuesAreStillCorrect)
+{
+    // Static members of the fixture class template can also be visited
+    // via 'this'.
+    ASSERT_TRUE(this->shared_ != NULL);
+    EXPECT_EQ(5, *this->shared_);
 
-  // TypeParam can be used to refer to the type parameter.
-  EXPECT_EQ(static_cast<TypeParam>(2), this->value_);
+    // TypeParam can be used to refer to the type parameter.
+    EXPECT_EQ(static_cast<TypeParam>(2), this->value_);
 }
 
 // Tests that multiple TYPED_TEST_CASE's can be defined in the same
 // translation unit.
 
-template <typename T>
-class TypedTest1 : public Test {
+template<typename T>
+class TypedTest1 : public Test
+{
 };
 
 // Verifies that the second argument of TYPED_TEST_CASE can be a
 // single type.
 TYPED_TEST_CASE(TypedTest1, int);
-TYPED_TEST(TypedTest1, A) {}
+TYPED_TEST(TypedTest1, A)
+{}
 
-template <typename T>
-class TypedTest2 : public Test {
+template<typename T>
+class TypedTest2 : public Test
+{
 };
 
 // Verifies that the second argument of TYPED_TEST_CASE can be a
@@ -146,26 +157,30 @@ TYPED_TEST_CASE(TypedTest2, Types<int>);
 
 // This also verifies that tests from different typed test cases can
 // share the same name.
-TYPED_TEST(TypedTest2, A) {}
+TYPED_TEST(TypedTest2, A)
+{}
 
 // Tests that a typed test case can be defined in a namespace.
 
-namespace library1 {
+namespace library1
+{
 
-template <typename T>
-class NumericTest : public Test {
-};
+    template<typename T>
+    class NumericTest : public Test
+    {
+    };
 
-typedef Types<int, long> NumericTypes;
-TYPED_TEST_CASE(NumericTest, NumericTypes);
+    typedef Types<int, long> NumericTypes;
+    TYPED_TEST_CASE(NumericTest, NumericTypes);
 
-TYPED_TEST(NumericTest, DefaultIsZero) {
-  EXPECT_EQ(0, TypeParam());
-}
+    TYPED_TEST(NumericTest, DefaultIsZero)
+    {
+        EXPECT_EQ(0, TypeParam());
+    }
 
-}  // namespace library1
+} // namespace library1
 
-#endif  // GTEST_HAS_TYPED_TEST
+#endif // GTEST_HAS_TYPED_TEST
 
 // This #ifdef block tests type-parameterized tests.
 #if GTEST_HAS_TYPED_TEST_P
@@ -175,92 +190,103 @@ using testing::internal::TypedTestCasePState;
 
 // Tests TypedTestCasePState.
 
-class TypedTestCasePStateTest : public Test {
- protected:
-  virtual void SetUp() {
-    state_.AddTestName("foo.cc", 0, "FooTest", "A");
-    state_.AddTestName("foo.cc", 0, "FooTest", "B");
-    state_.AddTestName("foo.cc", 0, "FooTest", "C");
-  }
+class TypedTestCasePStateTest : public Test
+{
+protected:
+    virtual void SetUp()
+    {
+        state_.AddTestName("foo.cc", 0, "FooTest", "A");
+        state_.AddTestName("foo.cc", 0, "FooTest", "B");
+        state_.AddTestName("foo.cc", 0, "FooTest", "C");
+    }
 
-  TypedTestCasePState state_;
+    TypedTestCasePState state_;
 };
 
-TEST_F(TypedTestCasePStateTest, SucceedsForMatchingList) {
-  const char* tests = "A, B, C";
-  EXPECT_EQ(tests,
-            state_.VerifyRegisteredTestNames("foo.cc", 1, tests));
+TEST_F(TypedTestCasePStateTest, SucceedsForMatchingList)
+{
+    const char* tests = "A, B, C";
+    EXPECT_EQ(tests,
+        state_.VerifyRegisteredTestNames("foo.cc", 1, tests));
 }
 
 // Makes sure that the order of the tests and spaces around the names
 // don't matter.
-TEST_F(TypedTestCasePStateTest, IgnoresOrderAndSpaces) {
-  const char* tests = "A,C,   B";
-  EXPECT_EQ(tests,
-            state_.VerifyRegisteredTestNames("foo.cc", 1, tests));
+TEST_F(TypedTestCasePStateTest, IgnoresOrderAndSpaces)
+{
+    const char* tests = "A,C,   B";
+    EXPECT_EQ(tests,
+        state_.VerifyRegisteredTestNames("foo.cc", 1, tests));
 }
 
 typedef TypedTestCasePStateTest TypedTestCasePStateDeathTest;
 
-TEST_F(TypedTestCasePStateDeathTest, DetectsDuplicates) {
-  EXPECT_DEATH_IF_SUPPORTED(
-      state_.VerifyRegisteredTestNames("foo.cc", 1, "A, B, A, C"),
-      "foo\\.cc.1.?: Test A is listed more than once\\.");
+TEST_F(TypedTestCasePStateDeathTest, DetectsDuplicates)
+{
+    EXPECT_DEATH_IF_SUPPORTED(
+        state_.VerifyRegisteredTestNames("foo.cc", 1, "A, B, A, C"),
+        "foo\\.cc.1.?: Test A is listed more than once\\.");
 }
 
-TEST_F(TypedTestCasePStateDeathTest, DetectsExtraTest) {
-  EXPECT_DEATH_IF_SUPPORTED(
-      state_.VerifyRegisteredTestNames("foo.cc", 1, "A, B, C, D"),
-      "foo\\.cc.1.?: No test named D can be found in this test case\\.");
+TEST_F(TypedTestCasePStateDeathTest, DetectsExtraTest)
+{
+    EXPECT_DEATH_IF_SUPPORTED(
+        state_.VerifyRegisteredTestNames("foo.cc", 1, "A, B, C, D"),
+        "foo\\.cc.1.?: No test named D can be found in this test case\\.");
 }
 
-TEST_F(TypedTestCasePStateDeathTest, DetectsMissedTest) {
-  EXPECT_DEATH_IF_SUPPORTED(
-      state_.VerifyRegisteredTestNames("foo.cc", 1, "A, C"),
-      "foo\\.cc.1.?: You forgot to list test B\\.");
+TEST_F(TypedTestCasePStateDeathTest, DetectsMissedTest)
+{
+    EXPECT_DEATH_IF_SUPPORTED(
+        state_.VerifyRegisteredTestNames("foo.cc", 1, "A, C"),
+        "foo\\.cc.1.?: You forgot to list test B\\.");
 }
 
 // Tests that defining a test for a parameterized test case generates
 // a run-time error if the test case has been registered.
-TEST_F(TypedTestCasePStateDeathTest, DetectsTestAfterRegistration) {
-  state_.VerifyRegisteredTestNames("foo.cc", 1, "A, B, C");
-  EXPECT_DEATH_IF_SUPPORTED(
-      state_.AddTestName("foo.cc", 2, "FooTest", "D"),
-      "foo\\.cc.2.?: Test D must be defined before REGISTER_TYPED_TEST_CASE_P"
-      "\\(FooTest, \\.\\.\\.\\)\\.");
+TEST_F(TypedTestCasePStateDeathTest, DetectsTestAfterRegistration)
+{
+    state_.VerifyRegisteredTestNames("foo.cc", 1, "A, B, C");
+    EXPECT_DEATH_IF_SUPPORTED(
+        state_.AddTestName("foo.cc", 2, "FooTest", "D"),
+        "foo\\.cc.2.?: Test D must be defined before REGISTER_TYPED_TEST_CASE_P"
+        "\\(FooTest, \\.\\.\\.\\)\\.");
 }
 
 // Tests that SetUpTestCase()/TearDownTestCase(), fixture ctor/dtor,
 // and SetUp()/TearDown() work correctly in type-parameterized tests.
 
-template <typename T>
-class DerivedTest : public CommonTest<T> {
+template<typename T>
+class DerivedTest : public CommonTest<T>
+{
 };
 
 TYPED_TEST_CASE_P(DerivedTest);
 
-TYPED_TEST_P(DerivedTest, ValuesAreCorrect) {
-  // Static members of the fixture class template can be visited via
-  // the TestFixture:: prefix.
-  EXPECT_EQ(5, *TestFixture::shared_);
+TYPED_TEST_P(DerivedTest, ValuesAreCorrect)
+{
+    // Static members of the fixture class template can be visited via
+    // the TestFixture:: prefix.
+    EXPECT_EQ(5, *TestFixture::shared_);
 
-  // Non-static members of the fixture class must be visited via
-  // 'this', as required by C++ for class templates.
-  EXPECT_EQ(2, this->value_);
+    // Non-static members of the fixture class must be visited via
+    // 'this', as required by C++ for class templates.
+    EXPECT_EQ(2, this->value_);
 }
 
 // The second test makes sure shared_ is not deleted after the first
 // test.
-TYPED_TEST_P(DerivedTest, ValuesAreStillCorrect) {
-  // Static members of the fixture class template can also be visited
-  // via 'this'.
-  ASSERT_TRUE(this->shared_ != NULL);
-  EXPECT_EQ(5, *this->shared_);
-  EXPECT_EQ(2, this->value_);
+TYPED_TEST_P(DerivedTest, ValuesAreStillCorrect)
+{
+    // Static members of the fixture class template can also be visited
+    // via 'this'.
+    ASSERT_TRUE(this->shared_ != NULL);
+    EXPECT_EQ(5, *this->shared_);
+    EXPECT_EQ(2, this->value_);
 }
 
 REGISTER_TYPED_TEST_CASE_P(DerivedTest,
-                           ValuesAreCorrect, ValuesAreStillCorrect);
+    ValuesAreCorrect, ValuesAreStillCorrect);
 
 typedef Types<short, long> MyTwoTypes;
 INSTANTIATE_TYPED_TEST_CASE_P(My, DerivedTest, MyTwoTypes);
@@ -268,8 +294,9 @@ INSTANTIATE_TYPED_TEST_CASE_P(My, DerivedTest, MyTwoTypes);
 // Tests that multiple TYPED_TEST_CASE_P's can be defined in the same
 // translation unit.
 
-template <typename T>
-class TypedTestP1 : public Test {
+template<typename T>
+class TypedTestP1 : public Test
+{
 };
 
 TYPED_TEST_CASE_P(TypedTestP1);
@@ -278,8 +305,10 @@ TYPED_TEST_CASE_P(TypedTestP1);
 // TYPED_TEST_P() is not enclosed in a namespace.
 typedef int IntAfterTypedTestCaseP;
 
-TYPED_TEST_P(TypedTestP1, A) {}
-TYPED_TEST_P(TypedTestP1, B) {}
+TYPED_TEST_P(TypedTestP1, A)
+{}
+TYPED_TEST_P(TypedTestP1, B)
+{}
 
 // For testing that the code between TYPED_TEST_P() and
 // REGISTER_TYPED_TEST_CASE_P() is not enclosed in a namespace.
@@ -287,15 +316,17 @@ typedef int IntBeforeRegisterTypedTestCaseP;
 
 REGISTER_TYPED_TEST_CASE_P(TypedTestP1, A, B);
 
-template <typename T>
-class TypedTestP2 : public Test {
+template<typename T>
+class TypedTestP2 : public Test
+{
 };
 
 TYPED_TEST_CASE_P(TypedTestP2);
 
 // This also verifies that tests from different type-parameterized
 // test cases can share the same name.
-TYPED_TEST_P(TypedTestP2, A) {}
+TYPED_TEST_P(TypedTestP2, A)
+{}
 
 REGISTER_TYPED_TEST_CASE_P(TypedTestP2, A);
 
@@ -316,36 +347,40 @@ INSTANTIATE_TYPED_TEST_CASE_P(Double, TypedTestP2, Types<double>);
 // Tests that the same type-parameterized test case can be
 // instantiated in different translation units linked together.
 // (ContainerTest is also instantiated in gtest-typed-test_test.cc.)
-typedef Types<std::vector<double>, std::set<char> > MyContainers;
+typedef Types<std::vector<double>, std::set<char>> MyContainers;
 INSTANTIATE_TYPED_TEST_CASE_P(My, ContainerTest, MyContainers);
 
 // Tests that a type-parameterized test case can be defined and
 // instantiated in a namespace.
 
-namespace library2 {
+namespace library2
+{
 
-template <typename T>
-class NumericTest : public Test {
-};
+    template<typename T>
+    class NumericTest : public Test
+    {
+    };
 
-TYPED_TEST_CASE_P(NumericTest);
+    TYPED_TEST_CASE_P(NumericTest);
 
-TYPED_TEST_P(NumericTest, DefaultIsZero) {
-  EXPECT_EQ(0, TypeParam());
-}
+    TYPED_TEST_P(NumericTest, DefaultIsZero)
+    {
+        EXPECT_EQ(0, TypeParam());
+    }
 
-TYPED_TEST_P(NumericTest, ZeroIsLessThanOne) {
-  EXPECT_LT(TypeParam(0), TypeParam(1));
-}
+    TYPED_TEST_P(NumericTest, ZeroIsLessThanOne)
+    {
+        EXPECT_LT(TypeParam(0), TypeParam(1));
+    }
 
-REGISTER_TYPED_TEST_CASE_P(NumericTest,
-                           DefaultIsZero, ZeroIsLessThanOne);
-typedef Types<int, double> NumericTypes;
-INSTANTIATE_TYPED_TEST_CASE_P(My, NumericTest, NumericTypes);
+    REGISTER_TYPED_TEST_CASE_P(NumericTest,
+        DefaultIsZero, ZeroIsLessThanOne);
+    typedef Types<int, double> NumericTypes;
+    INSTANTIATE_TYPED_TEST_CASE_P(My, NumericTest, NumericTypes);
 
-}  // namespace library2
+} // namespace library2
 
-#endif  // GTEST_HAS_TYPED_TEST_P
+#endif // GTEST_HAS_TYPED_TEST_P
 
 #if !defined(GTEST_HAS_TYPED_TEST) && !defined(GTEST_HAS_TYPED_TEST_P)
 
@@ -355,6 +390,7 @@ INSTANTIATE_TYPED_TEST_CASE_P(My, NumericTest, NumericTypes);
 // that library at all and consequently complain about missing entry
 // point defined in that library (fatal error LNK1561: entry point
 // must be defined). This dummy test keeps gtest_main linked in.
-TEST(DummyTest, TypedTestsAreNotSupportedOnThisPlatform) {}
+TEST(DummyTest, TypedTestsAreNotSupportedOnThisPlatform)
+{}
 
-#endif  // #if !defined(GTEST_HAS_TYPED_TEST) && !defined(GTEST_HAS_TYPED_TEST_P)
+#endif // #if !defined(GTEST_HAS_TYPED_TEST) && !defined(GTEST_HAS_TYPED_TEST_P)

@@ -34,7 +34,7 @@ namespace services
     {
     public:
         template<size_t BufferSize>
-            using WithBuffer = infra::WithStorage<SerialServer, std::array<uint8_t, BufferSize>>;
+        using WithBuffer = infra::WithStorage<SerialServer, std::array<uint8_t, BufferSize>>;
 
         SerialServer(const infra::ByteRange receiveBuffer, hal::SerialCommunication& serialCommunication, services::ConnectionFactory& connectionFactory, uint16_t port);
 

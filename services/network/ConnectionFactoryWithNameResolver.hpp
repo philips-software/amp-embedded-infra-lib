@@ -79,8 +79,7 @@ namespace services
 
     public:
         template<std::size_t NumParallelActions>
-            using WithStorage = infra::WithStorage<ConnectionFactoryWithNameResolverImpl
-                , infra::BoundedList<Action>::WithMaxSize<NumParallelActions>>;
+        using WithStorage = infra::WithStorage<ConnectionFactoryWithNameResolverImpl, infra::BoundedList<Action>::WithMaxSize<NumParallelActions>>;
 
         ConnectionFactoryWithNameResolverImpl(infra::BoundedList<Action>& actions, ConnectionFactory& connectionFactory, NameResolver& nameLookup);
 

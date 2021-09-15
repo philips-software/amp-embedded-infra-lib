@@ -1,4 +1,3 @@
-#include "gmock/gmock.h"
 #include "hal/interfaces/test_doubles/SerialCommunicationMock.hpp"
 #include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
@@ -9,6 +8,7 @@
 #include "services/network/SerialServer.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/network/test_doubles/ConnectionStub.hpp"
+#include "gmock/gmock.h"
 
 class SerialServerTest
     : public testing::Test

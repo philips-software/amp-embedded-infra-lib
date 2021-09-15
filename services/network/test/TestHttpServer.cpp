@@ -1,4 +1,3 @@
-#include "gmock/gmock.h"
 #include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/StringInputStream.hpp"
@@ -9,6 +8,7 @@
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/network/test_doubles/ConnectionStub.hpp"
 #include "services/network/test_doubles/HttpServerMock.hpp"
+#include "gmock/gmock.h"
 
 class HttpServerTest
     : public testing::Test
@@ -38,8 +38,7 @@ public:
     void ExpectPageServerRequest(services::HttpVerb verb, const std::string& request)
     {
         EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(true));
-        EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(testing::Invoke([this, verb](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
-        {
+        EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(testing::Invoke([this, verb](services::HttpRequestParser& parser, services::HttpServerConnection& connection) {
             EXPECT_EQ(verb, parser.Verb());
             httpConnection = &connection;
         }));
@@ -51,8 +50,7 @@ public:
     void ExpectPageServerRequestWithHeader(services::HttpVerb verb, const std::string& request, const services::HttpHeader& header)
     {
         EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(true));
-        EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(testing::Invoke([this, verb, header](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
-        {
+        EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(testing::Invoke([this, verb, header](services::HttpRequestParser& parser, services::HttpServerConnection& connection) {
             EXPECT_EQ(verb, parser.Verb());
             EXPECT_EQ(header.Value(), parser.Header(header.Field()));
             httpConnection = &connection;
@@ -207,8 +205,7 @@ TEST_F(HttpServerTest, split_message_is_accepted)
 
     std::string rest = R"({"other":"param"})";
 
-    ExpectPageServerRequest(services::HttpVerb::get, std::string("GET /path") +
-        " HTTP/1.1\r\nAccept-Encoding: identity\r\nHost: 192.168.1.56\r\nContent-Length: " + std::to_string(rest.size()) + "\r\nContent-Type: application-json\r\n\r\n");
+    ExpectPageServerRequest(services::HttpVerb::get, std::string("GET /path") + " HTTP/1.1\r\nAccept-Encoding: identity\r\nHost: 192.168.1.56\r\nContent-Length: " + std::to_string(rest.size()) + "\r\nContent-Type: application-json\r\n\r\n");
 
     connection.SimulateDataReceived(infra::MakeStringByteRange(rest));
     ExecuteAllActions();
@@ -250,8 +247,7 @@ TEST_F(HttpServerTest, split_response_when_not_enough_available_in_stream)
     EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
     EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(true));
     EXPECT_CALL(connection, AckReceived());
-    EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(testing::Invoke([this](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
-    {
+    EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(testing::Invoke([this](services::HttpRequestParser& parser, services::HttpServerConnection& connection) {
         httpConnection = &connection;
         SendResponse("200 OK", "application/text", "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789");
     }));

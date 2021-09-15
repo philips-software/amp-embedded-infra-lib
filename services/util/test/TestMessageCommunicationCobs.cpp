@@ -30,8 +30,7 @@ class MessageCommunicationCobsTest
 public:
     void ExpectSendData(const std::vector<uint8_t>& v)
     {
-        EXPECT_CALL(serial, SendData(testing::_, testing::_)).WillOnce(testing::Invoke([this, v](infra::ConstByteRange data, infra::Function<void()> onDone)
-        {
+        EXPECT_CALL(serial, SendData(testing::_, testing::_)).WillOnce(testing::Invoke([this, v](infra::ConstByteRange data, infra::Function<void()> onDone) {
             EXPECT_EQ(v, data);
             onSent = onDone;
         }));
@@ -39,8 +38,7 @@ public:
 
     void ExpectReceivedMessage(const std::vector<uint8_t>& expected)
     {
-        EXPECT_CALL(observer, ReceivedMessageOnInterrupt(testing::_)).WillOnce(testing::Invoke([this, expected](infra::StreamReader& reader)
-        {
+        EXPECT_CALL(observer, ReceivedMessageOnInterrupt(testing::_)).WillOnce(testing::Invoke([this, expected](infra::StreamReader& reader) {
             infra::DataInputStream::WithErrorPolicy stream(reader);
             std::vector<uint8_t> data(stream.Available(), 0);
             stream >> infra::MakeRange(data);
@@ -98,13 +96,13 @@ TEST_F(MessageCommunicationCobsTest, send_data_with_0)
     ExpectSendData({ 2 });
     onSent();
 
-    ExpectSendData({ 1 });      // Data 1
+    ExpectSendData({ 1 }); // Data 1
     onSent();
 
-    ExpectSendData({ 3 });      // Stuffing
+    ExpectSendData({ 3 }); // Stuffing
     onSent();
 
-    ExpectSendData({ 3, 4 });   // Data 3, 4
+    ExpectSendData({ 3, 4 }); // Data 3, 4
     onSent();
 
     ExpectSendData({ 0 });
@@ -127,10 +125,10 @@ TEST_F(MessageCommunicationCobsTest, send_data_ending_with_0)
     ExpectSendData({ 3 });
     onSent();
 
-    ExpectSendData({ 5, 6 });      // Data 1
+    ExpectSendData({ 5, 6 }); // Data 1
     onSent();
 
-    ExpectSendData({ 1 });      // Stuffing
+    ExpectSendData({ 1 }); // Stuffing
     onSent();
 
     ExpectSendData({ 0 });
@@ -156,7 +154,7 @@ TEST_F(MessageCommunicationCobsTest, send_large_data)
     ExpectSendData(std::vector<uint8_t>(254, 3));
     onSent();
 
-    ExpectSendData({ 27 });      // Stuffing
+    ExpectSendData({ 27 }); // Stuffing
     onSent();
 
     ExpectSendData(std::vector<uint8_t>(26, 3));

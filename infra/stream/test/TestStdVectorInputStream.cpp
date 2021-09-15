@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/stream/StdVectorInputStream.hpp"
+#include "gtest/gtest.h"
 #include <cstdint>
 
 TEST(StdVectorInputStreamTest, Extract)

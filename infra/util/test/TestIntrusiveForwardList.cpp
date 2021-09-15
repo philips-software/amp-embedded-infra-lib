@@ -1,12 +1,14 @@
-#include "gtest/gtest.h"
 #include "infra/util/IntrusiveForwardList.hpp"
+#include "gtest/gtest.h"
 #include <functional>
 #include <memory>
 
 struct ForwardListInt
     : infra::IntrusiveForwardList<ForwardListInt>::NodeType
 {
-    ForwardListInt(int v): value(v) {}
+    ForwardListInt(int v)
+        : value(v)
+    {}
 
     int value;
 
@@ -30,7 +32,7 @@ TEST(IntrusiveForwardListTest, TestConstructedEmpty)
 
 TEST(IntrusiveForwardListTest, TestConstructionWithRange)
 {
-    ForwardListInt range[3] = { 0, 1, 2};
+    ForwardListInt range[3] = { 0, 1, 2 };
     infra::IntrusiveForwardList<ForwardListInt> list(range, range + 3);
 
     EXPECT_EQ(ForwardListInt(0), *list.begin());
@@ -40,7 +42,7 @@ TEST(IntrusiveForwardListTest, TestConstructionWithRange)
 
 TEST(IntrusiveForwardListTest, TestMoveConstruction)
 {
-    ForwardListInt range[3] = { 0, 1, 2};
+    ForwardListInt range[3] = { 0, 1, 2 };
     infra::IntrusiveForwardList<ForwardListInt> original(range, range + 3);
     infra::IntrusiveForwardList<ForwardListInt> copy(std::move(original));
 
@@ -52,7 +54,7 @@ TEST(IntrusiveForwardListTest, TestMoveConstruction)
 
 TEST(IntrusiveForwardListTest, TestMoveAssignment)
 {
-    ForwardListInt range[3] = { 0, 1, 2};
+    ForwardListInt range[3] = { 0, 1, 2 };
     infra::IntrusiveForwardList<ForwardListInt> original(range, range + 3);
     infra::IntrusiveForwardList<ForwardListInt> copy;
     copy = std::move(original);
@@ -70,13 +72,14 @@ TEST(IntrusiveForwardListTest, IterateAfterMoveAssignment)
     infra::IntrusiveForwardList<ForwardListInt> copy;
     copy = std::move(original);
 
-    for (ForwardListInt& i: copy)
-    {}
+    for (ForwardListInt& i : copy)
+    {
+    }
 }
 
 TEST(IntrusiveForwardListTest, TestBeginAndEnd)
 {
-    ForwardListInt range[3] = { 0, 1, 2};
+    ForwardListInt range[3] = { 0, 1, 2 };
     infra::IntrusiveForwardList<ForwardListInt> list(range, range + 3);
 
     EXPECT_EQ(list.end(), std::next(list.begin(), 3));
@@ -88,7 +91,7 @@ TEST(IntrusiveForwardListTest, TestBeginAndEnd)
 
 TEST(IntrusiveForwardListTest, TestFront)
 {
-    ForwardListInt range[3] = { 0, 1, 2};
+    ForwardListInt range[3] = { 0, 1, 2 };
     infra::IntrusiveForwardList<ForwardListInt> list(range, range + 3);
 
     EXPECT_EQ(ForwardListInt(0), list.front());
@@ -113,7 +116,7 @@ TEST(IntrusiveForwardListTest, TestHasElement)
 
 TEST(IntrusiveForwardListTest, TestAssignRange)
 {
-    ForwardListInt range[3] = { 0, 1, 2};
+    ForwardListInt range[3] = { 0, 1, 2 };
     infra::IntrusiveForwardList<ForwardListInt> list(range, range + 3);
 
     ForwardListInt otherRange[2] = { 4, 5 };
@@ -137,7 +140,7 @@ TEST(IntrusiveForwardListTest, TestAssignN)
 
 TEST(IntrusiveForwardListTest, TestPushFront)
 {
-    ForwardListInt range[3] = { 0, 1, 2};
+    ForwardListInt range[3] = { 0, 1, 2 };
     infra::IntrusiveForwardList<ForwardListInt> list(range, range + 3);
     ForwardListInt i1(1);
     list.push_front(i1);
@@ -148,7 +151,7 @@ TEST(IntrusiveForwardListTest, TestPushFront)
 
 TEST(IntrusiveForwardListTest, TestPopFront)
 {
-    ForwardListInt range[3] = { 0, 1, 2};
+    ForwardListInt range[3] = { 0, 1, 2 };
     infra::IntrusiveForwardList<ForwardListInt> list(range, range + 3);
     list.pop_front();
 
@@ -157,9 +160,9 @@ TEST(IntrusiveForwardListTest, TestPopFront)
 
 TEST(IntrusiveForwardListTest, TestSwap)
 {
-    ForwardListInt range1[3] = { 0, 1, 2};
+    ForwardListInt range1[3] = { 0, 1, 2 };
     infra::IntrusiveForwardList<ForwardListInt> list1(range1, range1 + 3);
-    ForwardListInt range2[3] = { 3, 4, 5};
+    ForwardListInt range2[3] = { 3, 4, 5 };
     infra::IntrusiveForwardList<ForwardListInt> list2(range2, range2 + 3);
 
     swap(list1, list2);
@@ -172,9 +175,9 @@ TEST(IntrusiveForwardListTest, TestSwap)
 
 TEST(IntrusiveForwardListTest, TestSwapDifferentSizes)
 {
-    ForwardListInt range1[3] = { 0, 1, 2};
+    ForwardListInt range1[3] = { 0, 1, 2 };
     infra::IntrusiveForwardList<ForwardListInt> list1(range1, range1 + 3);
-    ForwardListInt range2[2] = { 3, 4};
+    ForwardListInt range2[2] = { 3, 4 };
     infra::IntrusiveForwardList<ForwardListInt> list2(range2, range2 + 2);
 
     swap(list1, list2);
@@ -187,7 +190,7 @@ TEST(IntrusiveForwardListTest, TestSwapDifferentSizes)
 
 TEST(IntrusiveForwardListTest, TestClear)
 {
-    ForwardListInt range[3] = { 0, 1, 2};
+    ForwardListInt range[3] = { 0, 1, 2 };
     infra::IntrusiveForwardList<ForwardListInt> list(range, range + 3);
     list.clear();
 
@@ -199,7 +202,7 @@ TEST(IntrusiveForwardListTest, TestClear)
 
 TEST(IntrusiveForwardListTest, TestInsert)
 {
-    ForwardListInt range[3] = { 0, 1, 2};
+    ForwardListInt range[3] = { 0, 1, 2 };
     infra::IntrusiveForwardList<ForwardListInt> list(range, range + 3);
     ForwardListInt i2(2);
     list.insert_after(list.begin(), i2);
@@ -210,7 +213,7 @@ TEST(IntrusiveForwardListTest, TestInsert)
 
 TEST(IntrusiveForwardListTest, TestEraseAfter)
 {
-    ForwardListInt range[3] = { 0, 1, 2};
+    ForwardListInt range[3] = { 0, 1, 2 };
     infra::IntrusiveForwardList<ForwardListInt> list(range, range + 3);
     list.erase_after(range[0]);
 

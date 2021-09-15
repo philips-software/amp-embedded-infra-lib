@@ -3,6 +3,6 @@
 
 #include "../lwip_check.h"
 
-Suite *mem_suite(void);
+Suite* mem_suite(void);
 
 #endif

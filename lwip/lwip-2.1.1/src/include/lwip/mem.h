@@ -40,14 +40,15 @@
 #include "lwip/opt.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #if MEM_LIBC_MALLOC
 
 #include "lwip/arch.h"
 
-typedef size_t mem_size_t;
+    typedef size_t mem_size_t;
 #define MEM_SIZE_F SZT_F
 
 #elif MEM_USE_POOLS
@@ -69,11 +70,11 @@ typedef u16_t mem_size_t;
 #endif /* MEM_SIZE > 64000 */
 #endif
 
-void  mem_init(void);
-void *mem_trim(void *mem, mem_size_t size);
-void *mem_malloc(mem_size_t size);
-void *mem_calloc(mem_size_t count, mem_size_t size);
-void  mem_free(void *mem);
+    void mem_init(void);
+    void* mem_trim(void* mem, mem_size_t size);
+    void* mem_malloc(mem_size_t size);
+    void* mem_calloc(mem_size_t count, mem_size_t size);
+    void mem_free(void* mem);
 
 #ifdef __cplusplus
 }

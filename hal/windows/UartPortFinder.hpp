@@ -1,12 +1,11 @@
 #ifndef HAL_UART_PORTFINDER_HPP
 #define HAL_UART_PORTFINDER_HPP
 
-#include <winsock2.h>
 #include <setupapi.h>
 #include <stdexcept>
 #include <string>
 #include <vector>
-
+#include <winsock2.h>
 
 namespace hal
 {

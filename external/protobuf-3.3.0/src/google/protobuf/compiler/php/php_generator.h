@@ -32,26 +32,30 @@
 #define GOOGLE_PROTOBUF_COMPILER_PHP_GENERATOR_H__
 
 #include <google/protobuf/compiler/code_generator.h>
-
 #include <string>
 
-namespace google {
-namespace protobuf {
-namespace compiler {
-namespace php {
+namespace google
+{
+    namespace protobuf
+    {
+        namespace compiler
+        {
+            namespace php
+            {
 
-class LIBPROTOC_EXPORT Generator
-    : public google::protobuf::compiler::CodeGenerator {
-  virtual bool Generate(
-      const FileDescriptor* file,
-      const string& parameter,
-      GeneratorContext* generator_context,
-      string* error) const;
-};
+                class LIBPROTOC_EXPORT Generator
+                    : public google::protobuf::compiler::CodeGenerator
+                {
+                    virtual bool Generate(
+                        const FileDescriptor* file,
+                        const string& parameter,
+                        GeneratorContext* generator_context,
+                        string* error) const;
+                };
 
-}  // namespace php
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+            } // namespace php
+        }     // namespace compiler
+    }         // namespace protobuf
+} // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_PHP_GENERATOR_H__
+#endif // GOOGLE_PROTOBUF_COMPILER_PHP_GENERATOR_H__

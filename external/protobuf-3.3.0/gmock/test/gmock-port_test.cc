@@ -40,4 +40,5 @@
 // test here to make references to symbols in the gtest library and avoid
 // 'undefined symbol' linker errors in gmock_main:
 
-TEST(DummyTest, Dummy) {}
+TEST(DummyTest, Dummy)
+{}

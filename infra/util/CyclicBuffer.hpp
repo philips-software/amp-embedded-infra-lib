@@ -17,7 +17,7 @@ namespace infra
     {
     public:
         template<std::size_t StorageSize>
-            using WithStorage = infra::WithStorage<CyclicBuffer<T>, std::array<T, StorageSize>>;
+        using WithStorage = infra::WithStorage<CyclicBuffer<T>, std::array<T, StorageSize>>;
 
         explicit CyclicBuffer(MemoryRange<T> aStorage);
 
@@ -72,7 +72,7 @@ namespace infra
         else if (back < front)
             return (storage.end() - front) + (back - storage.begin());
         else
-            return back - front;            
+            return back - front;
     }
 
     template<class T>

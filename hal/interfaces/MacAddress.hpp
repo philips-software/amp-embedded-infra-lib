@@ -1,8 +1,8 @@
 #ifndef HAL_MAC_ADDRESS_HPP
 #define HAL_MAC_ADDRESS_HPP
 
-#include <array>
 #include "infra/stream/OutputStream.hpp"
+#include <array>
 
 namespace hal
 {

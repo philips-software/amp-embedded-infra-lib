@@ -1,10 +1,10 @@
 #ifndef INFRA_CLAIMABLE_RESOURCE_HPP
 #define INFRA_CLAIMABLE_RESOURCE_HPP
 
-#include <cstdint>
 #include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/IntrusiveList.hpp"
 #include "infra/util/ReallyAssert.hpp"
+#include <cstdint>
 
 namespace infra
 {
@@ -15,7 +15,7 @@ namespace infra
 
         // Use Claimer::WithSize<> if you need a non-default size
         template<std::size_t ExtraSize>
-            class ClaimerWithSize;
+        class ClaimerWithSize;
 
     public:
         using Claimer = ClaimerWithSize<INFRA_DEFAULT_FUNCTION_EXTRA_SIZE>;
@@ -77,7 +77,7 @@ namespace infra
     {
     public:
         template<std::size_t NewExtraSize>
-            using WithSize = ClaimerWithSize<NewExtraSize>;
+        using WithSize = ClaimerWithSize<NewExtraSize>;
 
         using ClaimerBase::ClaimerBase;
 

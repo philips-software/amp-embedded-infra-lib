@@ -1,8 +1,8 @@
 #ifndef NETWORK_DATAGRAM_MOCK_HPP
 #define NETWORK_DATAGRAM_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "services/network/Datagram.hpp"
+#include "gmock/gmock.h"
 
 namespace services
 {

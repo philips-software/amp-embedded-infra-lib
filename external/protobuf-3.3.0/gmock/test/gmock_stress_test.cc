@@ -35,288 +35,324 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-namespace testing {
-namespace {
+namespace testing
+{
+    namespace
+    {
 
-// From <gtest/internal/gtest-port.h>.
-using ::testing::internal::ThreadWithParam;
+        // From <gtest/internal/gtest-port.h>.
+        using ::testing::internal::ThreadWithParam;
 
-// The maximum number of test threads (not including helper threads)
-// to create.
-const int kMaxTestThreads = 50;
+        // The maximum number of test threads (not including helper threads)
+        // to create.
+        const int kMaxTestThreads = 50;
 
-// How many times to repeat a task in a test thread.
-const int kRepeat = 50;
+        // How many times to repeat a task in a test thread.
+        const int kRepeat = 50;
 
-class MockFoo {
- public:
-  MOCK_METHOD1(Bar, int(int n));  // NOLINT
-  MOCK_METHOD2(Baz, char(const char* s1, const internal::string& s2));  // NOLINT
-};
+        class MockFoo
+        {
+        public:
+            MOCK_METHOD1(Bar, int(int n));                                       // NOLINT
+            MOCK_METHOD2(Baz, char(const char* s1, const internal::string& s2)); // NOLINT
+        };
 
-// Helper for waiting for the given thread to finish and then deleting it.
-template <typename T>
-void JoinAndDelete(ThreadWithParam<T>* t) {
-  t->Join();
-  delete t;
-}
+        // Helper for waiting for the given thread to finish and then deleting it.
+        template<typename T>
+        void JoinAndDelete(ThreadWithParam<T>* t)
+        {
+            t->Join();
+            delete t;
+        }
 
-using internal::linked_ptr;
+        using internal::linked_ptr;
 
-// Helper classes for testing using linked_ptr concurrently.
+        // Helper classes for testing using linked_ptr concurrently.
 
-class Base {
- public:
-  explicit Base(int a_x) : x_(a_x) {}
-  virtual ~Base() {}
-  int x() const { return x_; }
- private:
-  int x_;
-};
+        class Base
+        {
+        public:
+            explicit Base(int a_x)
+                : x_(a_x)
+            {}
+            virtual ~Base() {}
+            int x() const { return x_; }
 
-class Derived1 : public Base {
- public:
-  Derived1(int a_x, int a_y) : Base(a_x), y_(a_y) {}
-  int y() const { return y_; }
- private:
-  int y_;
-};
+        private:
+            int x_;
+        };
 
-class Derived2 : public Base {
- public:
-  Derived2(int a_x, int a_z) : Base(a_x), z_(a_z) {}
-  int z() const { return z_; }
- private:
-  int z_;
-};
+        class Derived1 : public Base
+        {
+        public:
+            Derived1(int a_x, int a_y)
+                : Base(a_x)
+                , y_(a_y)
+            {}
+            int y() const { return y_; }
 
-linked_ptr<Derived1> pointer1(new Derived1(1, 2));
-linked_ptr<Derived2> pointer2(new Derived2(3, 4));
+        private:
+            int y_;
+        };
 
-struct Dummy {};
+        class Derived2 : public Base
+        {
+        public:
+            Derived2(int a_x, int a_z)
+                : Base(a_x)
+                , z_(a_z)
+            {}
+            int z() const { return z_; }
 
-// Tests that we can copy from a linked_ptr and read it concurrently.
-void TestConcurrentCopyAndReadLinkedPtr(Dummy /* dummy */) {
-  // Reads pointer1 and pointer2 while they are being copied from in
-  // another thread.
-  EXPECT_EQ(1, pointer1->x());
-  EXPECT_EQ(2, pointer1->y());
-  EXPECT_EQ(3, pointer2->x());
-  EXPECT_EQ(4, pointer2->z());
+        private:
+            int z_;
+        };
 
-  // Copies from pointer1.
-  linked_ptr<Derived1> p1(pointer1);
-  EXPECT_EQ(1, p1->x());
-  EXPECT_EQ(2, p1->y());
+        linked_ptr<Derived1> pointer1(new Derived1(1, 2));
+        linked_ptr<Derived2> pointer2(new Derived2(3, 4));
 
-  // Assigns from pointer2 where the LHS was empty.
-  linked_ptr<Base> p2;
-  p2 = pointer1;
-  EXPECT_EQ(1, p2->x());
+        struct Dummy
+        {};
 
-  // Assigns from pointer2 where the LHS was not empty.
-  p2 = pointer2;
-  EXPECT_EQ(3, p2->x());
-}
+        // Tests that we can copy from a linked_ptr and read it concurrently.
+        void TestConcurrentCopyAndReadLinkedPtr(Dummy /* dummy */)
+        {
+            // Reads pointer1 and pointer2 while they are being copied from in
+            // another thread.
+            EXPECT_EQ(1, pointer1->x());
+            EXPECT_EQ(2, pointer1->y());
+            EXPECT_EQ(3, pointer2->x());
+            EXPECT_EQ(4, pointer2->z());
 
-const linked_ptr<Derived1> p0(new Derived1(1, 2));
+            // Copies from pointer1.
+            linked_ptr<Derived1> p1(pointer1);
+            EXPECT_EQ(1, p1->x());
+            EXPECT_EQ(2, p1->y());
 
-// Tests that we can concurrently modify two linked_ptrs that point to
-// the same object.
-void TestConcurrentWriteToEqualLinkedPtr(Dummy /* dummy */) {
-  // p1 and p2 point to the same, shared thing.  One thread resets p1.
-  // Another thread assigns to p2.  This will cause the same
-  // underlying "ring" to be updated concurrently.
-  linked_ptr<Derived1> p1(p0);
-  linked_ptr<Derived1> p2(p0);
+            // Assigns from pointer2 where the LHS was empty.
+            linked_ptr<Base> p2;
+            p2 = pointer1;
+            EXPECT_EQ(1, p2->x());
 
-  EXPECT_EQ(1, p1->x());
-  EXPECT_EQ(2, p1->y());
+            // Assigns from pointer2 where the LHS was not empty.
+            p2 = pointer2;
+            EXPECT_EQ(3, p2->x());
+        }
 
-  EXPECT_EQ(1, p2->x());
-  EXPECT_EQ(2, p2->y());
+        const linked_ptr<Derived1> p0(new Derived1(1, 2));
 
-  p1.reset();
-  p2 = p0;
+        // Tests that we can concurrently modify two linked_ptrs that point to
+        // the same object.
+        void TestConcurrentWriteToEqualLinkedPtr(Dummy /* dummy */)
+        {
+            // p1 and p2 point to the same, shared thing.  One thread resets p1.
+            // Another thread assigns to p2.  This will cause the same
+            // underlying "ring" to be updated concurrently.
+            linked_ptr<Derived1> p1(p0);
+            linked_ptr<Derived1> p2(p0);
 
-  EXPECT_EQ(1, p2->x());
-  EXPECT_EQ(2, p2->y());
-}
+            EXPECT_EQ(1, p1->x());
+            EXPECT_EQ(2, p1->y());
 
-// Tests that different mock objects can be used in their respective
-// threads.  This should generate no Google Test failure.
-void TestConcurrentMockObjects(Dummy /* dummy */) {
-  // Creates a mock and does some typical operations on it.
-  MockFoo foo;
-  ON_CALL(foo, Bar(_))
-      .WillByDefault(Return(1));
-  ON_CALL(foo, Baz(_, _))
-      .WillByDefault(Return('b'));
-  ON_CALL(foo, Baz(_, "you"))
-      .WillByDefault(Return('a'));
+            EXPECT_EQ(1, p2->x());
+            EXPECT_EQ(2, p2->y());
 
-  EXPECT_CALL(foo, Bar(0))
-      .Times(AtMost(3));
-  EXPECT_CALL(foo, Baz(_, _));
-  EXPECT_CALL(foo, Baz("hi", "you"))
-      .WillOnce(Return('z'))
-      .WillRepeatedly(DoDefault());
+            p1.reset();
+            p2 = p0;
 
-  EXPECT_EQ(1, foo.Bar(0));
-  EXPECT_EQ(1, foo.Bar(0));
-  EXPECT_EQ('z', foo.Baz("hi", "you"));
-  EXPECT_EQ('a', foo.Baz("hi", "you"));
-  EXPECT_EQ('b', foo.Baz("hi", "me"));
-}
+            EXPECT_EQ(1, p2->x());
+            EXPECT_EQ(2, p2->y());
+        }
 
-// Tests invoking methods of the same mock object in multiple threads.
+        // Tests that different mock objects can be used in their respective
+        // threads.  This should generate no Google Test failure.
+        void TestConcurrentMockObjects(Dummy /* dummy */)
+        {
+            // Creates a mock and does some typical operations on it.
+            MockFoo foo;
+            ON_CALL(foo, Bar(_))
+                .WillByDefault(Return(1));
+            ON_CALL(foo, Baz(_, _))
+                .WillByDefault(Return('b'));
+            ON_CALL(foo, Baz(_, "you"))
+                .WillByDefault(Return('a'));
 
-struct Helper1Param {
-  MockFoo* mock_foo;
-  int* count;
-};
+            EXPECT_CALL(foo, Bar(0))
+                .Times(AtMost(3));
+            EXPECT_CALL(foo, Baz(_, _));
+            EXPECT_CALL(foo, Baz("hi", "you"))
+                .WillOnce(Return('z'))
+                .WillRepeatedly(DoDefault());
 
-void Helper1(Helper1Param param) {
-  for (int i = 0; i < kRepeat; i++) {
-    const char ch = param.mock_foo->Baz("a", "b");
-    if (ch == 'a') {
-      // It was an expected call.
-      (*param.count)++;
-    } else {
-      // It was an excessive call.
-      EXPECT_EQ('\0', ch);
-    }
+            EXPECT_EQ(1, foo.Bar(0));
+            EXPECT_EQ(1, foo.Bar(0));
+            EXPECT_EQ('z', foo.Baz("hi", "you"));
+            EXPECT_EQ('a', foo.Baz("hi", "you"));
+            EXPECT_EQ('b', foo.Baz("hi", "me"));
+        }
 
-    // An unexpected call.
-    EXPECT_EQ('\0', param.mock_foo->Baz("x", "y")) << "Expected failure.";
+        // Tests invoking methods of the same mock object in multiple threads.
 
-    // An uninteresting call.
-    EXPECT_EQ(1, param.mock_foo->Bar(5));
-  }
-}
+        struct Helper1Param
+        {
+            MockFoo* mock_foo;
+            int* count;
+        };
 
-// This should generate 3*kRepeat + 1 failures in total.
-void TestConcurrentCallsOnSameObject(Dummy /* dummy */) {
-  MockFoo foo;
+        void Helper1(Helper1Param param)
+        {
+            for (int i = 0; i < kRepeat; i++)
+            {
+                const char ch = param.mock_foo->Baz("a", "b");
+                if (ch == 'a')
+                {
+                    // It was an expected call.
+                    (*param.count)++;
+                }
+                else
+                {
+                    // It was an excessive call.
+                    EXPECT_EQ('\0', ch);
+                }
 
-  ON_CALL(foo, Bar(_))
-      .WillByDefault(Return(1));
-  EXPECT_CALL(foo, Baz(_, "b"))
-      .Times(kRepeat)
-      .WillRepeatedly(Return('a'));
-  EXPECT_CALL(foo, Baz(_, "c"));  // Expected to be unsatisfied.
+                // An unexpected call.
+                EXPECT_EQ('\0', param.mock_foo->Baz("x", "y")) << "Expected failure.";
 
-  // This chunk of code should generate kRepeat failures about
-  // excessive calls, and 2*kRepeat failures about unexpected calls.
-  int count1 = 0;
-  const Helper1Param param = { &foo, &count1 };
-  ThreadWithParam<Helper1Param>* const t =
-      new ThreadWithParam<Helper1Param>(Helper1, param, NULL);
+                // An uninteresting call.
+                EXPECT_EQ(1, param.mock_foo->Bar(5));
+            }
+        }
 
-  int count2 = 0;
-  const Helper1Param param2 = { &foo, &count2 };
-  Helper1(param2);
-  JoinAndDelete(t);
+        // This should generate 3*kRepeat + 1 failures in total.
+        void TestConcurrentCallsOnSameObject(Dummy /* dummy */)
+        {
+            MockFoo foo;
 
-  EXPECT_EQ(kRepeat, count1 + count2);
+            ON_CALL(foo, Bar(_))
+                .WillByDefault(Return(1));
+            EXPECT_CALL(foo, Baz(_, "b"))
+                .Times(kRepeat)
+                .WillRepeatedly(Return('a'));
+            EXPECT_CALL(foo, Baz(_, "c")); // Expected to be unsatisfied.
 
-  // foo's destructor should generate one failure about unsatisfied
-  // expectation.
-}
+            // This chunk of code should generate kRepeat failures about
+            // excessive calls, and 2*kRepeat failures about unexpected calls.
+            int count1 = 0;
+            const Helper1Param param = { &foo, &count1 };
+            ThreadWithParam<Helper1Param>* const t =
+                new ThreadWithParam<Helper1Param>(Helper1, param, NULL);
 
-// Tests using the same mock object in multiple threads when the
-// expectations are partially ordered.
+            int count2 = 0;
+            const Helper1Param param2 = { &foo, &count2 };
+            Helper1(param2);
+            JoinAndDelete(t);
 
-void Helper2(MockFoo* foo) {
-  for (int i = 0; i < kRepeat; i++) {
-    foo->Bar(2);
-    foo->Bar(3);
-  }
-}
+            EXPECT_EQ(kRepeat, count1 + count2);
 
-// This should generate no Google Test failures.
-void TestPartiallyOrderedExpectationsWithThreads(Dummy /* dummy */) {
-  MockFoo foo;
-  Sequence s1, s2;
+            // foo's destructor should generate one failure about unsatisfied
+            // expectation.
+        }
 
-  {
-    InSequence dummy;
-    EXPECT_CALL(foo, Bar(0));
-    EXPECT_CALL(foo, Bar(1))
-        .InSequence(s1, s2);
-  }
+        // Tests using the same mock object in multiple threads when the
+        // expectations are partially ordered.
 
-  EXPECT_CALL(foo, Bar(2))
-      .Times(2*kRepeat)
-      .InSequence(s1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(foo, Bar(3))
-      .Times(2*kRepeat)
-      .InSequence(s2);
+        void Helper2(MockFoo* foo)
+        {
+            for (int i = 0; i < kRepeat; i++)
+            {
+                foo->Bar(2);
+                foo->Bar(3);
+            }
+        }
 
-  {
-    InSequence dummy;
-    EXPECT_CALL(foo, Bar(2))
-        .InSequence(s1, s2);
-    EXPECT_CALL(foo, Bar(4));
-  }
+        // This should generate no Google Test failures.
+        void TestPartiallyOrderedExpectationsWithThreads(Dummy /* dummy */)
+        {
+            MockFoo foo;
+            Sequence s1, s2;
 
-  foo.Bar(0);
-  foo.Bar(1);
+            {
+                InSequence dummy;
+                EXPECT_CALL(foo, Bar(0));
+                EXPECT_CALL(foo, Bar(1))
+                    .InSequence(s1, s2);
+            }
 
-  ThreadWithParam<MockFoo*>* const t =
-      new ThreadWithParam<MockFoo*>(Helper2, &foo, NULL);
-  Helper2(&foo);
-  JoinAndDelete(t);
+            EXPECT_CALL(foo, Bar(2))
+                .Times(2 * kRepeat)
+                .InSequence(s1)
+                .RetiresOnSaturation();
+            EXPECT_CALL(foo, Bar(3))
+                .Times(2 * kRepeat)
+                .InSequence(s2);
 
-  foo.Bar(2);
-  foo.Bar(4);
-}
+            {
+                InSequence dummy;
+                EXPECT_CALL(foo, Bar(2))
+                    .InSequence(s1, s2);
+                EXPECT_CALL(foo, Bar(4));
+            }
 
-// Tests using Google Mock constructs in many threads concurrently.
-TEST(StressTest, CanUseGMockWithThreads) {
-  void (*test_routines[])(Dummy dummy) = {
-    &TestConcurrentCopyAndReadLinkedPtr,
-    &TestConcurrentWriteToEqualLinkedPtr,
-    &TestConcurrentMockObjects,
-    &TestConcurrentCallsOnSameObject,
-    &TestPartiallyOrderedExpectationsWithThreads,
-  };
+            foo.Bar(0);
+            foo.Bar(1);
 
-  const int kRoutines = sizeof(test_routines)/sizeof(test_routines[0]);
-  const int kCopiesOfEachRoutine = kMaxTestThreads / kRoutines;
-  const int kTestThreads = kCopiesOfEachRoutine * kRoutines;
-  ThreadWithParam<Dummy>* threads[kTestThreads] = {};
-  for (int i = 0; i < kTestThreads; i++) {
-    // Creates a thread to run the test function.
-    threads[i] =
-        new ThreadWithParam<Dummy>(test_routines[i % kRoutines], Dummy(), NULL);
-    GTEST_LOG_(INFO) << "Thread #" << i << " running . . .";
-  }
+            ThreadWithParam<MockFoo*>* const t =
+                new ThreadWithParam<MockFoo*>(Helper2, &foo, NULL);
+            Helper2(&foo);
+            JoinAndDelete(t);
 
-  // At this point, we have many threads running.
-  for (int i = 0; i < kTestThreads; i++) {
-    JoinAndDelete(threads[i]);
-  }
+            foo.Bar(2);
+            foo.Bar(4);
+        }
 
-  // Ensures that the correct number of failures have been reported.
-  const TestInfo* const info = UnitTest::GetInstance()->current_test_info();
-  const TestResult& result = *info->result();
-  const int kExpectedFailures = (3*kRepeat + 1)*kCopiesOfEachRoutine;
-  GTEST_CHECK_(kExpectedFailures == result.total_part_count())
-      << "Expected " << kExpectedFailures << " failures, but got "
-      << result.total_part_count();
-}
+        // Tests using Google Mock constructs in many threads concurrently.
+        TEST(StressTest, CanUseGMockWithThreads)
+        {
+            void (*test_routines[])(Dummy dummy) = {
+                &TestConcurrentCopyAndReadLinkedPtr,
+                &TestConcurrentWriteToEqualLinkedPtr,
+                &TestConcurrentMockObjects,
+                &TestConcurrentCallsOnSameObject,
+                &TestPartiallyOrderedExpectationsWithThreads,
+            };
 
-}  // namespace
-}  // namespace testing
+            const int kRoutines = sizeof(test_routines) / sizeof(test_routines[0]);
+            const int kCopiesOfEachRoutine = kMaxTestThreads / kRoutines;
+            const int kTestThreads = kCopiesOfEachRoutine * kRoutines;
+            ThreadWithParam<Dummy>* threads[kTestThreads] = {};
+            for (int i = 0; i < kTestThreads; i++)
+            {
+                // Creates a thread to run the test function.
+                threads[i] =
+                    new ThreadWithParam<Dummy>(test_routines[i % kRoutines], Dummy(), NULL);
+                GTEST_LOG_(INFO) << "Thread #" << i << " running . . .";
+            }
 
-int main(int argc, char **argv) {
-  testing::InitGoogleMock(&argc, argv);
+            // At this point, we have many threads running.
+            for (int i = 0; i < kTestThreads; i++)
+            {
+                JoinAndDelete(threads[i]);
+            }
 
-  const int exit_code = RUN_ALL_TESTS();  // Expected to fail.
-  GTEST_CHECK_(exit_code != 0) << "RUN_ALL_TESTS() did not fail as expected";
+            // Ensures that the correct number of failures have been reported.
+            const TestInfo* const info = UnitTest::GetInstance()->current_test_info();
+            const TestResult& result = *info->result();
+            const int kExpectedFailures = (3 * kRepeat + 1) * kCopiesOfEachRoutine;
+            GTEST_CHECK_(kExpectedFailures == result.total_part_count())
+                << "Expected " << kExpectedFailures << " failures, but got "
+                << result.total_part_count();
+        }
 
-  printf("\nPASS\n");
-  return 0;
+    } // namespace
+} // namespace testing
+
+int main(int argc, char** argv)
+{
+    testing::InitGoogleMock(&argc, argv);
+
+    const int exit_code = RUN_ALL_TESTS(); // Expected to fail.
+    GTEST_CHECK_(exit_code != 0) << "RUN_ALL_TESTS() did not fail as expected";
+
+    printf("\nPASS\n");
+    return 0;
 }

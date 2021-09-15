@@ -33,14 +33,18 @@
 
 #include <google/protobuf/stubs/template_util.h>
 
-namespace google {
-namespace protobuf {
+namespace google
+{
+    namespace protobuf
+    {
 
-// This type trait can be used to cause templates to only match proto2 enum
-// types.
-template <typename T> struct is_proto_enum : ::google::protobuf::internal::false_type {};
+        // This type trait can be used to cause templates to only match proto2 enum
+        // types.
+        template<typename T>
+        struct is_proto_enum : ::google::protobuf::internal::false_type
+        {};
 
-}  // namespace protobuf
+    } // namespace protobuf
 
-}  // namespace google
-#endif  // GOOGLE_PROTOBUF_GENERATED_ENUM_UTIL_H__
+} // namespace google
+#endif // GOOGLE_PROTOBUF_GENERATED_ENUM_UTIL_H__

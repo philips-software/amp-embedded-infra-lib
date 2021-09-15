@@ -1,8 +1,8 @@
 #ifndef INFRA_STRING_OUTPUT_STREAM_HPP
 #define INFRA_STRING_OUTPUT_STREAM_HPP
 
-#include "infra/stream/StreamManipulators.hpp"
 #include "infra/stream/OutputStream.hpp"
+#include "infra/stream/StreamManipulators.hpp"
 #include "infra/util/BoundedString.hpp"
 #include <cstdint>
 
@@ -15,7 +15,7 @@ namespace infra
         explicit StringOutputStreamWriter(BoundedString& string);
 
         template<class T>
-            ReservedProxy<T> Reserve(StreamErrorPolicy& errorPolicy);
+        ReservedProxy<T> Reserve(StreamErrorPolicy& errorPolicy);
 
         void Reset();
         void Reset(BoundedString& newString);
@@ -39,7 +39,7 @@ namespace infra
     {
     public:
         template<std::size_t Max>
-            using WithStorage = infra::WithStorage<TextOutputStream::WithWriter<StringOutputStreamWriter>, BoundedString::WithStorage<Max>>;
+        using WithStorage = infra::WithStorage<TextOutputStream::WithWriter<StringOutputStreamWriter>, BoundedString::WithStorage<Max>>;
 
         StringOutputStream(BoundedString& storage);
         StringOutputStream(BoundedString& storage, const SoftFail&);

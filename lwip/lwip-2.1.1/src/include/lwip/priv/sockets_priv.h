@@ -46,7 +46,8 @@
 #include "lwip/sys.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #define NUM_SOCKETS MEMP_NUM_NETCONN
@@ -58,73 +59,84 @@ extern "C" {
 #define SELWAIT_T u8_t
 #endif
 
-union lwip_sock_lastdata {
-  struct netbuf *netbuf;
-  struct pbuf *pbuf;
-};
+    union lwip_sock_lastdata
+    {
+        struct netbuf* netbuf;
+        struct pbuf* pbuf;
+    };
 
-/** Contains all internal pointers and states used for a socket */
-struct lwip_sock {
-  /** sockets currently are built on netconns, each socket has one netconn */
-  struct netconn *conn;
-  /** data that was left from the previous read */
-  union lwip_sock_lastdata lastdata;
+    /** Contains all internal pointers and states used for a socket */
+    struct lwip_sock
+    {
+        /** sockets currently are built on netconns, each socket has one netconn */
+        struct netconn* conn;
+        /** data that was left from the previous read */
+        union lwip_sock_lastdata lastdata;
 #if LWIP_SOCKET_SELECT || LWIP_SOCKET_POLL
-  /** number of times data was received, set by event_callback(),
+        /** number of times data was received, set by event_callback(),
       tested by the receive and select functions */
-  s16_t rcvevent;
-  /** number of times data was ACKed (free send buffer), set by event_callback(),
+        s16_t rcvevent;
+        /** number of times data was ACKed (free send buffer), set by event_callback(),
       tested by select */
-  u16_t sendevent;
-  /** error happened for this socket, set by event_callback(), tested by select */
-  u16_t errevent;
-  /** counter of how many threads are waiting for this socket using select */
-  SELWAIT_T select_waiting;
+        u16_t sendevent;
+        /** error happened for this socket, set by event_callback(), tested by select */
+        u16_t errevent;
+        /** counter of how many threads are waiting for this socket using select */
+        SELWAIT_T select_waiting;
 #endif /* LWIP_SOCKET_SELECT || LWIP_SOCKET_POLL */
 #if LWIP_NETCONN_FULLDUPLEX
-  /* counter of how many threads are using a struct lwip_sock (not the 'int') */
-  u8_t fd_used;
-  /* status of pending close/delete actions */
-  u8_t fd_free_pending;
-#define LWIP_SOCK_FD_FREE_TCP  1
+        /* counter of how many threads are using a struct lwip_sock (not the 'int') */
+        u8_t fd_used;
+        /* status of pending close/delete actions */
+        u8_t fd_free_pending;
+#define LWIP_SOCK_FD_FREE_TCP 1
 #define LWIP_SOCK_FD_FREE_FREE 2
 #endif
-};
+    };
 
 #ifndef set_errno
-#define set_errno(err) do { if (err) { errno = (err); } } while(0)
+#define set_errno(err)     \
+    do                     \
+    {                      \
+        if (err)           \
+        {                  \
+            errno = (err); \
+        }                  \
+    } while (0)
 #endif
 
 #if !LWIP_TCPIP_CORE_LOCKING
 /** Maximum optlen used by setsockopt/getsockopt */
 #define LWIP_SETGETSOCKOPT_MAXOPTLEN LWIP_MAX(16, sizeof(struct ifreq))
 
-/** This struct is used to pass data to the set/getsockopt_internal
+    /** This struct is used to pass data to the set/getsockopt_internal
  * functions running in tcpip_thread context (only a void* is allowed) */
-struct lwip_setgetsockopt_data {
-  /** socket index for which to change options */
-  int s;
-  /** level of the option to process */
-  int level;
-  /** name of the option to process */
-  int optname;
-  /** set: value to set the option to
+    struct lwip_setgetsockopt_data
+    {
+        /** socket index for which to change options */
+        int s;
+        /** level of the option to process */
+        int level;
+        /** name of the option to process */
+        int optname;
+        /** set: value to set the option to
     * get: value of the option is stored here */
 #if LWIP_MPU_COMPATIBLE
-  u8_t optval[LWIP_SETGETSOCKOPT_MAXOPTLEN];
+        u8_t optval[LWIP_SETGETSOCKOPT_MAXOPTLEN];
 #else
-  union {
-    void *p;
-    const void *pc;
-  } optval;
+        union
+        {
+            void* p;
+            const void* pc;
+        } optval;
 #endif
-  /** size of *optval */
-  socklen_t optlen;
-  /** if an error occurs, it is temporarily stored here */
-  int err;
-  /** semaphore to wake up the calling task */
-  void* completed_sem;
-};
+        /** size of *optval */
+        socklen_t optlen;
+        /** if an error occurs, it is temporarily stored here */
+        int err;
+        /** semaphore to wake up the calling task */
+        void* completed_sem;
+    };
 #endif /* !LWIP_TCPIP_CORE_LOCKING */
 
 #ifdef __cplusplus
@@ -136,37 +148,38 @@ struct lwip_sock* lwip_socket_dbg_get_socket(int fd);
 #if LWIP_SOCKET_SELECT || LWIP_SOCKET_POLL
 
 #if LWIP_NETCONN_SEM_PER_THREAD
-#define SELECT_SEM_T        sys_sem_t*
+#define SELECT_SEM_T sys_sem_t*
 #define SELECT_SEM_PTR(sem) (sem)
 #else /* LWIP_NETCONN_SEM_PER_THREAD */
-#define SELECT_SEM_T        sys_sem_t
+#define SELECT_SEM_T sys_sem_t
 #define SELECT_SEM_PTR(sem) (&(sem))
 #endif /* LWIP_NETCONN_SEM_PER_THREAD */
 
 /** Description for a task waiting in select */
-struct lwip_select_cb {
-  /** Pointer to the next waiting task */
-  struct lwip_select_cb *next;
-  /** Pointer to the previous waiting task */
-  struct lwip_select_cb *prev;
+struct lwip_select_cb
+{
+    /** Pointer to the next waiting task */
+    struct lwip_select_cb* next;
+    /** Pointer to the previous waiting task */
+    struct lwip_select_cb* prev;
 #if LWIP_SOCKET_SELECT
-  /** readset passed to select */
-  fd_set *readset;
-  /** writeset passed to select */
-  fd_set *writeset;
-  /** unimplemented: exceptset passed to select */
-  fd_set *exceptset;
+    /** readset passed to select */
+    fd_set* readset;
+    /** writeset passed to select */
+    fd_set* writeset;
+    /** unimplemented: exceptset passed to select */
+    fd_set* exceptset;
 #endif /* LWIP_SOCKET_SELECT */
 #if LWIP_SOCKET_POLL
-  /** fds passed to poll; NULL if select */
-  struct pollfd *poll_fds;
-  /** nfds passed to poll; 0 if select */
-  nfds_t poll_nfds;
+    /** fds passed to poll; NULL if select */
+    struct pollfd* poll_fds;
+    /** nfds passed to poll; 0 if select */
+    nfds_t poll_nfds;
 #endif /* LWIP_SOCKET_POLL */
-  /** don't signal the same semaphore twice: set to 1 when signalled */
-  int sem_signalled;
-  /** semaphore to wake up a task waiting for select */
-  SELECT_SEM_T sem;
+    /** don't signal the same semaphore twice: set to 1 when signalled */
+    int sem_signalled;
+    /** semaphore to wake up a task waiting for select */
+    SELECT_SEM_T sem;
 };
 #endif /* LWIP_SOCKET_SELECT || LWIP_SOCKET_POLL */
 

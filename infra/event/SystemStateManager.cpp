@@ -1,5 +1,5 @@
-#include "infra/event/EventDispatcher.hpp"
 #include "infra/event/SystemStateManager.hpp"
+#include "infra/event/EventDispatcher.hpp"
 
 namespace infra
 {
@@ -78,7 +78,7 @@ namespace infra
         if (participantsInPreviousState.empty())
             GoToNextState();
         else
-            for (SystemStateParticipant& participant: participantsInPreviousState)
+            for (SystemStateParticipant& participant : participantsInPreviousState)
                 participant.RequestState(*currentState);
     }
 }

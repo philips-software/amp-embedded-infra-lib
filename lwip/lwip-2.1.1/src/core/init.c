@@ -35,45 +35,44 @@
  * Author: Adam Dunkels <adam@sics.se>
  */
 
-#include "lwip/opt.h"
-
 #include "lwip/init.h"
-#include "lwip/stats.h"
-#include "lwip/sys.h"
+#include "lwip/api.h"
+#include "lwip/dns.h"
+#include "lwip/etharp.h"
+#include "lwip/igmp.h"
+#include "lwip/ip.h"
+#include "lwip/ip6.h"
 #include "lwip/mem.h"
 #include "lwip/memp.h"
-#include "lwip/pbuf.h"
-#include "lwip/netif.h"
-#include "lwip/sockets.h"
-#include "lwip/ip.h"
-#include "lwip/raw.h"
-#include "lwip/udp.h"
-#include "lwip/priv/tcp_priv.h"
-#include "lwip/igmp.h"
-#include "lwip/dns.h"
-#include "lwip/timeouts.h"
-#include "lwip/etharp.h"
-#include "lwip/ip6.h"
-#include "lwip/nd6.h"
 #include "lwip/mld6.h"
-#include "lwip/api.h"
-
-#include "netif/ppp/ppp_opts.h"
+#include "lwip/nd6.h"
+#include "lwip/netif.h"
+#include "lwip/opt.h"
+#include "lwip/pbuf.h"
+#include "lwip/priv/tcp_priv.h"
+#include "lwip/raw.h"
+#include "lwip/sockets.h"
+#include "lwip/stats.h"
+#include "lwip/sys.h"
+#include "lwip/timeouts.h"
+#include "lwip/udp.h"
 #include "netif/ppp/ppp_impl.h"
+#include "netif/ppp/ppp_opts.h"
 
 #ifndef LWIP_SKIP_PACKING_CHECK
 
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/bpstruct.h"
+#include "arch/bpstruct.h"
 #endif
 PACK_STRUCT_BEGIN
-struct packed_struct_test {
-  PACK_STRUCT_FLD_8(u8_t  dummy1);
-  PACK_STRUCT_FIELD(u32_t dummy2);
+struct packed_struct_test
+{
+    PACK_STRUCT_FLD_8(u8_t dummy1);
+    PACK_STRUCT_FIELD(u32_t dummy2);
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
-#  include "arch/epstruct.h"
+#include "arch/epstruct.h"
 #endif
 #define PACKED_STRUCT_TEST_EXPECTED_SIZE 5
 
@@ -101,19 +100,19 @@ PACK_STRUCT_END
 #error "If you want to use DNS, you have to define LWIP_UDP=1 in your lwipopts.h"
 #endif
 #if !MEMP_MEM_MALLOC /* MEMP_NUM_* checks are disabled when not using the pool allocator */
-#if (LWIP_ARP && ARP_QUEUEING && (MEMP_NUM_ARP_QUEUE<=0))
+#if (LWIP_ARP && ARP_QUEUEING && (MEMP_NUM_ARP_QUEUE <= 0))
 #error "If you want to use ARP Queueing, you have to define MEMP_NUM_ARP_QUEUE>=1 in your lwipopts.h"
 #endif
-#if (LWIP_RAW && (MEMP_NUM_RAW_PCB<=0))
+#if (LWIP_RAW && (MEMP_NUM_RAW_PCB <= 0))
 #error "If you want to use RAW, you have to define MEMP_NUM_RAW_PCB>=1 in your lwipopts.h"
 #endif
-#if (LWIP_UDP && (MEMP_NUM_UDP_PCB<=0))
+#if (LWIP_UDP && (MEMP_NUM_UDP_PCB <= 0))
 #error "If you want to use UDP, you have to define MEMP_NUM_UDP_PCB>=1 in your lwipopts.h"
 #endif
-#if (LWIP_TCP && (MEMP_NUM_TCP_PCB<=0))
+#if (LWIP_TCP && (MEMP_NUM_TCP_PCB <= 0))
 #error "If you want to use TCP, you have to define MEMP_NUM_TCP_PCB>=1 in your lwipopts.h"
 #endif
-#if (LWIP_IGMP && (MEMP_NUM_IGMP_GROUP<=1))
+#if (LWIP_IGMP && (MEMP_NUM_IGMP_GROUP <= 1))
 #error "If you want to use IGMP, you have to define MEMP_NUM_IGMP_GROUP>1 in your lwipopts.h"
 #endif
 #if (LWIP_IGMP && !LWIP_MULTICAST_TX_OPTIONS)
@@ -122,7 +121,7 @@ PACK_STRUCT_END
 #if (LWIP_IGMP && !LWIP_IPV4)
 #error "IGMP needs LWIP_IPV4 enabled in your lwipopts.h"
 #endif
-#if ((LWIP_NETCONN || LWIP_SOCKET) && (MEMP_NUM_TCPIP_MSG_API<=0))
+#if ((LWIP_NETCONN || LWIP_SOCKET) && (MEMP_NUM_TCPIP_MSG_API <= 0))
 #error "If you want to use Sequential API, you have to define MEMP_NUM_TCPIP_MSG_API>=1 in your lwipopts.h"
 #endif
 /* There must be sufficient timeouts, taking into account requirements of the subsystems. */
@@ -169,16 +168,16 @@ PACK_STRUCT_END
 #if (LWIP_TCP && LWIP_TCP_SACK_OUT && (LWIP_TCP_MAX_SACK_NUM < 1))
 #error "LWIP_TCP_MAX_SACK_NUM must be greater than 0"
 #endif
-#if (LWIP_NETIF_API && (NO_SYS==1))
+#if (LWIP_NETIF_API && (NO_SYS == 1))
 #error "If you want to use NETIF API, you have to define NO_SYS=0 in your lwipopts.h"
 #endif
-#if ((LWIP_SOCKET || LWIP_NETCONN) && (NO_SYS==1))
+#if ((LWIP_SOCKET || LWIP_NETCONN) && (NO_SYS == 1))
 #error "If you want to use Sequential API, you have to define NO_SYS=0 in your lwipopts.h"
 #endif
-#if (LWIP_PPP_API && (NO_SYS==1))
+#if (LWIP_PPP_API && (NO_SYS == 1))
 #error "If you want to use PPP API, you have to define NO_SYS=0 in your lwipopts.h"
 #endif
-#if (LWIP_PPP_API && (PPP_SUPPORT==0))
+#if (LWIP_PPP_API && (PPP_SUPPORT == 0))
 #error "If you want to use PPP API, you have to enable PPP_SUPPORT in your lwipopts.h"
 #endif
 #if (((!LWIP_DHCP) || (!LWIP_AUTOIP)) && LWIP_DHCP_AUTOIP_COOP)
@@ -240,7 +239,6 @@ PACK_STRUCT_END
 #if LWIP_SOCKET
 #endif /* LWIP_SOCKET */
 
-
 /* Compile-time checks for deprecated options.
  */
 #ifdef MEMP_NUM_TCPIP_MSG
@@ -263,7 +261,7 @@ PACK_STRUCT_END
 #endif
 
 #ifndef LWIP_DISABLE_TCP_SANITY_CHECKS
-#define LWIP_DISABLE_TCP_SANITY_CHECKS  0
+#define LWIP_DISABLE_TCP_SANITY_CHECKS 0
 #endif
 #ifndef LWIP_DISABLE_MEMP_SANITY_CHECKS
 #define LWIP_DISABLE_MEMP_SANITY_CHECKS 0
@@ -277,7 +275,7 @@ PACK_STRUCT_END
 #error "lwip_sanity_check: WARNING: MEMP_NUM_NETCONN cannot be 0 when using sockets!"
 #endif
 #else /* MEMP_MEM_MALLOC */
-#if MEMP_NUM_NETCONN > (MEMP_NUM_TCP_PCB+MEMP_NUM_TCP_PCB_LISTEN+MEMP_NUM_UDP_PCB+MEMP_NUM_RAW_PCB)
+#if MEMP_NUM_NETCONN > (MEMP_NUM_TCP_PCB + MEMP_NUM_TCP_PCB_LISTEN + MEMP_NUM_UDP_PCB + MEMP_NUM_RAW_PCB)
 #error "lwip_sanity_check: WARNING: MEMP_NUM_NETCONN should be less than the sum of MEMP_NUM_{TCP,RAW,UDP}_PCB+MEMP_NUM_TCP_PCB_LISTEN. If you know what you are doing, define LWIP_DISABLE_MEMP_SANITY_CHECKS to 1 to disable this error."
 #endif
 #endif /* LWIP_NETCONN || LWIP_SOCKET */
@@ -328,53 +326,52 @@ PACK_STRUCT_END
  * Initialize all modules.
  * Use this in NO_SYS mode. Use tcpip_init() otherwise.
  */
-void
-lwip_init(void)
+void lwip_init(void)
 {
 #ifndef LWIP_SKIP_CONST_CHECK
-  int a = 0;
-  LWIP_UNUSED_ARG(a);
-  LWIP_ASSERT("LWIP_CONST_CAST not implemented correctly. Check your lwIP port.", LWIP_CONST_CAST(void *, &a) == &a);
+    int a = 0;
+    LWIP_UNUSED_ARG(a);
+    LWIP_ASSERT("LWIP_CONST_CAST not implemented correctly. Check your lwIP port.", LWIP_CONST_CAST(void*, &a) == &a);
 #endif
 #ifndef LWIP_SKIP_PACKING_CHECK
-  LWIP_ASSERT("Struct packing not implemented correctly. Check your lwIP port.", sizeof(struct packed_struct_test) == PACKED_STRUCT_TEST_EXPECTED_SIZE);
+    LWIP_ASSERT("Struct packing not implemented correctly. Check your lwIP port.", sizeof(struct packed_struct_test) == PACKED_STRUCT_TEST_EXPECTED_SIZE);
 #endif
 
-  /* Modules initialization */
-  stats_init();
+    /* Modules initialization */
+    stats_init();
 #if !NO_SYS
-  sys_init();
+    sys_init();
 #endif /* !NO_SYS */
-  mem_init();
-  memp_init();
-  pbuf_init();
-  netif_init();
+    mem_init();
+    memp_init();
+    pbuf_init();
+    netif_init();
 #if LWIP_IPV4
-  ip_init();
+    ip_init();
 #if LWIP_ARP
-  etharp_init();
+    etharp_init();
 #endif /* LWIP_ARP */
 #endif /* LWIP_IPV4 */
 #if LWIP_RAW
-  raw_init();
+    raw_init();
 #endif /* LWIP_RAW */
 #if LWIP_UDP
-  udp_init();
+    udp_init();
 #endif /* LWIP_UDP */
 #if LWIP_TCP
-  tcp_init();
+    tcp_init();
 #endif /* LWIP_TCP */
 #if LWIP_IGMP
-  igmp_init();
+    igmp_init();
 #endif /* LWIP_IGMP */
 #if LWIP_DNS
-  dns_init();
+    dns_init();
 #endif /* LWIP_DNS */
 #if PPP_SUPPORT
-  ppp_init();
+    ppp_init();
 #endif
 
 #if LWIP_TIMERS
-  sys_timeouts_init();
+    sys_timeouts_init();
 #endif /* LWIP_TIMERS */
 }

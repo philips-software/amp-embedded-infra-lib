@@ -6,14 +6,14 @@
 
 namespace application
 {
-    enum class UpgradePackStatus: uint8_t
+    enum class UpgradePackStatus : uint8_t
     {
-        empty = 0xff,                   // 1111.1111
-        downloaded = 0xfe,              // 1111.1110
-        readyToDeploy = 0xfc,           // 1111.1100
-        deployStarted = 0xf8,           // 1111.1000
-        deployed = 0xf0,                // 1111.0000
-        invalid = 0x7f,                 // 0111.1111
+        empty = 0xff,         // 1111.1111
+        downloaded = 0xfe,    // 1111.1110
+        readyToDeploy = 0xfc, // 1111.1100
+        deployStarted = 0xf8, // 1111.1000
+        deployed = 0xf0,      // 1111.0000
+        invalid = 0x7f,       // 0111.1111
     };
 
     inline UpgradePackStatus operator|(UpgradePackStatus left, UpgradePackStatus right)
@@ -21,7 +21,7 @@ namespace application
         return static_cast<UpgradePackStatus>(static_cast<uint8_t>(left) | static_cast<uint8_t>(right));
     }
 
-    static const std::array<uint8_t, 3> upgradePackMagic = {'U', 'P', 'H'};
+    static const std::array<uint8_t, 3> upgradePackMagic = { 'U', 'P', 'H' };
 
     static const uint32_t upgradeErrorCodeUnknownHeaderVersion = 0;
     static const uint32_t upgradeErrorCodeInvalidSignature = 1;
@@ -34,47 +34,47 @@ namespace application
 
     struct UpgradePackHeaderPrologue
     {
-        UpgradePackStatus status;       // Overwritten after downloading, this indicates checked, invalid,
-                                        // ready to deploy, deployed
-        std::array<uint8_t, 3> magic;   // Simple sanity check. Filled with 'U', 'P', 'H'.
-        uint32_t errorCode;             // Set by the boot loaders upon detection of an error. 0-999 is reserved by the reference boot loaders.
+        UpgradePackStatus status;     // Overwritten after downloading, this indicates checked, invalid,
+                                      // ready to deploy, deployed
+        std::array<uint8_t, 3> magic; // Simple sanity check. Filled with 'U', 'P', 'H'.
+        uint32_t errorCode;           // Set by the boot loaders upon detection of an error. 0-999 is reserved by the reference boot loaders.
         uint32_t signedContentsLength;
 
-        uint16_t signatureMethod;       // Identifier that indicates the signature method chosen. 1 = RSA.
-        uint16_t signatureLength;       // Size of the signature. 128 for RSA
+        uint16_t signatureMethod; // Identifier that indicates the signature method chosen. 1 = RSA.
+        uint16_t signatureLength; // Size of the signature. 128 for RSA
     };
 
     static_assert(sizeof(UpgradePackHeaderPrologue) == 16, "Incorrect size");
 
     struct UpgradePackHeaderEpilogue
     {
-        uint16_t headerVersion;                 // Indicates the structure of the UpgradePackHeaders and ImageHeaderPrologue
-        uint16_t headerLength;                  // sizeof(UpgradePackHeaderPrologue) + signatureLength + sizeof(UpgradePackHeaderEpilogue)
+        uint16_t headerVersion; // Indicates the structure of the UpgradePackHeaders and ImageHeaderPrologue
+        uint16_t headerLength;  // sizeof(UpgradePackHeaderPrologue) + signatureLength + sizeof(UpgradePackHeaderEpilogue)
         uint32_t numberOfImages;
-        std::array<char, 64> productName;       // Product-specific name, checked by bootloader in order to avoid
-                                                // flashing a multicooker with air purifier firmware
-        std::array<char, 64> productVersion;    // Product-specific version string
-        std::array<char, 64> componentName;     // HSDP component name
-        uint32_t componentVersion;              // HSDP component version
+        std::array<char, 64> productName;    // Product-specific name, checked by bootloader in order to avoid
+                                             // flashing a multicooker with air purifier firmware
+        std::array<char, 64> productVersion; // Product-specific version string
+        std::array<char, 64> componentName;  // HSDP component name
+        uint32_t componentVersion;           // HSDP component version
     };
 
     static_assert(sizeof(UpgradePackHeaderEpilogue) == 204, "Incorrect size");
 
     struct ImageHeaderPrologue
     {
-        uint32_t lengthOfHeaderAndImage;    // sizeof(ImageHeaderPrologue) + binaryLength rounded up to multiple of 4,
-                                            // filled out with zeros.
-        std::array<char, 8> targetName;     // Indication for which upgrader to use. Some targetNames may be product-specific.
-                                            // Generic: "boot1st", "boot2nd", "wifi", filled out with zeros.
-        uint32_t encryptionAndMacMethod;    // Identifier that indicates the encryption and MAC method chosen. 1 = aes, 2 = xtea/hmac.
+        uint32_t lengthOfHeaderAndImage; // sizeof(ImageHeaderPrologue) + binaryLength rounded up to multiple of 4,
+                                         // filled out with zeros.
+        std::array<char, 8> targetName;  // Indication for which upgrader to use. Some targetNames may be product-specific.
+                                         // Generic: "boot1st", "boot2nd", "wifi", filled out with zeros.
+        uint32_t encryptionAndMacMethod; // Identifier that indicates the encryption and MAC method chosen. 1 = aes, 2 = xtea/hmac.
         //uint8_t[depends on encryptionAndMacMethod] macAndIV;
         //// Start of encryption/mac
     };
 
     struct ImageHeaderEpilogue
     {
-        uint32_t destinationAddress;        // Address at which to flash the binary image
-        uint32_t imageSize;                 // Length of the binary image
+        uint32_t destinationAddress; // Address at which to flash the binary image
+        uint32_t imageSize;          // Length of the binary image
     };
 }
 

@@ -47,19 +47,19 @@
  * mbedtls include directory must be reachable via include search path
  */
 #ifndef LWIP_ALTCP_TLS_MBEDTLS
-#define LWIP_ALTCP_TLS_MBEDTLS                        0
+#define LWIP_ALTCP_TLS_MBEDTLS 0
 #endif
 
 /** Configure debug level of this file */
 #ifndef ALTCP_MBEDTLS_DEBUG
-#define ALTCP_MBEDTLS_DEBUG                           LWIP_DBG_OFF
+#define ALTCP_MBEDTLS_DEBUG LWIP_DBG_OFF
 #endif
 
 /** Set a session timeout in seconds for the basic session cache
  * ATTENTION: Using a session cache can lower security by reusing keys!
  */
 #ifndef ALTCP_MBEDTLS_SESSION_CACHE_TIMEOUT_SECONDS
-#define ALTCP_MBEDTLS_SESSION_CACHE_TIMEOUT_SECONDS   0
+#define ALTCP_MBEDTLS_SESSION_CACHE_TIMEOUT_SECONDS 0
 #endif
 
 #endif /* LWIP_ALTCP */

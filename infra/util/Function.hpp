@@ -59,9 +59,9 @@ namespace infra
             // do not need to be implemented for trivial types (such as most lambdas), which saves space
             struct VirtualMethodTable
             {
-                using Invoker = Result(*)(const InvokerFunctionsType& invokerFunctions, Args...);
-                using Destructor = void(*)(InvokerFunctionsType& invokerFunctions);
-                using CopyConstructor = void(*)(const InvokerFunctionsType& from, InvokerFunctionsType& to);
+                using Invoker = Result (*)(const InvokerFunctionsType& invokerFunctions, Args...);
+                using Destructor = void (*)(InvokerFunctionsType& invokerFunctions);
+                using CopyConstructor = void (*)(const InvokerFunctionsType& from, InvokerFunctionsType& to);
 
                 Invoker invoke;
                 Destructor destruct;
@@ -74,17 +74,17 @@ namespace infra
             StorageType data;
 
             template<class F>
-                static Result StaticInvoke(const InvokerFunctionsType& invokerFunctions, Args... args);
+            static Result StaticInvoke(const InvokerFunctionsType& invokerFunctions, Args... args);
             template<class F>
-                static void StaticDestruct(InvokerFunctionsType& invokerFunctions);
+            static void StaticDestruct(InvokerFunctionsType& invokerFunctions);
             template<class F>
-                static void StaticCopyConstruct(const InvokerFunctionsType& from, InvokerFunctionsType& to);
+            static void StaticCopyConstruct(const InvokerFunctionsType& from, InvokerFunctionsType& to);
             template<class F>
-                static const VirtualMethodTable* StaticVirtualMethodTable(typename std::enable_if<std::is_trivially_copy_constructible<F>::value && std::is_trivially_destructible<F>::value>::type* = nullptr);
+            static const VirtualMethodTable* StaticVirtualMethodTable(typename std::enable_if<std::is_trivially_copy_constructible<F>::value && std::is_trivially_destructible<F>::value>::type* = nullptr);
             template<class F>
-                static const VirtualMethodTable* StaticVirtualMethodTable(typename std::enable_if<!std::is_trivially_copy_constructible<F>::value || !std::is_trivially_destructible<F>::value>::type* = nullptr);
+            static const VirtualMethodTable* StaticVirtualMethodTable(typename std::enable_if<!std::is_trivially_copy_constructible<F>::value || !std::is_trivially_destructible<F>::value>::type* = nullptr);
             template<class F>
-                static void Construct(InvokerFunctionsType& invokerFunctions, F&& f);
+            static void Construct(InvokerFunctionsType& invokerFunctions, F&& f);
         };
     }
 
@@ -100,7 +100,7 @@ namespace infra
         Function(const Function& other);
 
         template<class F>
-            Function(F f);
+        Function(F f);
 
         ~Function();
 
@@ -116,7 +116,7 @@ namespace infra
 
     private:
         template<class F>
-            void Assign(F f);
+        void Assign(F f);
 
         void Clear();
         bool Initialized() const;
@@ -172,16 +172,16 @@ namespace infra
     extern const infra::Function<void()> emptyFunction;
 
     template<std::size_t ExtraSize, class Result, class... Args>
-        void swap(Function<Result(Args...), ExtraSize>& x, Function<Result(Args...), ExtraSize>& y);
+    void swap(Function<Result(Args...), ExtraSize>& x, Function<Result(Args...), ExtraSize>& y);
 
     template<std::size_t ExtraSize, class Result, class... Args>
-        bool operator==(const Function<Result(Args...), ExtraSize>& f, std::nullptr_t);
+    bool operator==(const Function<Result(Args...), ExtraSize>& f, std::nullptr_t);
     template<std::size_t ExtraSize, class Result, class... Args>
-        bool operator==(std::nullptr_t, const Function<Result(Args...), ExtraSize>& f);
+    bool operator==(std::nullptr_t, const Function<Result(Args...), ExtraSize>& f);
     template<std::size_t ExtraSize, class Result, class... Args>
-        bool operator!=(const Function<Result(Args...), ExtraSize>& f, std::nullptr_t);
+    bool operator!=(const Function<Result(Args...), ExtraSize>& f, std::nullptr_t);
     template<std::size_t ExtraSize, class Result, class... Args>
-        bool operator!=(std::nullptr_t, const Function<Result(Args...), ExtraSize>& f);
+    bool operator!=(std::nullptr_t, const Function<Result(Args...), ExtraSize>& f);
 
 #ifdef CCOLA_HOST_BUILD
     // gtest uses PrintTo to display the contents of Function
@@ -258,7 +258,7 @@ namespace infra
         template<std::size_t ExtraSize, class Result, class... Args>
         template<class F>
         const typename InvokerFunctions<Result(Args...), ExtraSize>::VirtualMethodTable*
-            InvokerFunctions<Result(Args...), ExtraSize>::StaticVirtualMethodTable(typename std::enable_if<std::is_trivially_copy_constructible<F>::value && std::is_trivially_destructible<F>::value>::type*)
+        InvokerFunctions<Result(Args...), ExtraSize>::StaticVirtualMethodTable(typename std::enable_if<std::is_trivially_copy_constructible<F>::value && std::is_trivially_destructible<F>::value>::type*)
         {
             static const VirtualMethodTable table = { &StaticInvoke<F>, nullptr, nullptr };
             return &table;
@@ -267,7 +267,7 @@ namespace infra
         template<std::size_t ExtraSize, class Result, class... Args>
         template<class F>
         const typename InvokerFunctions<Result(Args...), ExtraSize>::VirtualMethodTable*
-            InvokerFunctions<Result(Args...), ExtraSize>::StaticVirtualMethodTable(typename std::enable_if<!std::is_trivially_copy_constructible<F>::value || !std::is_trivially_destructible<F>::value>::type*)
+        InvokerFunctions<Result(Args...), ExtraSize>::StaticVirtualMethodTable(typename std::enable_if<!std::is_trivially_copy_constructible<F>::value || !std::is_trivially_destructible<F>::value>::type*)
         {
             static const VirtualMethodTable table = { &StaticInvoke<F>, &StaticDestruct<F>, &StaticCopyConstruct<F> };
             return &table;
@@ -389,7 +389,7 @@ namespace infra
     template<std::size_t ExtraSize, class Result, class... Args>
     typename Function<Result(Args...), ExtraSize>::ResultType Function<Result(Args...), ExtraSize>::operator()(Args... args) const
     {
-        return invokerFunctions.virtualMethodTable->invoke(invokerFunctions, std::forward<Args>(args)...);  //NOSONAR
+        return invokerFunctions.virtualMethodTable->invoke(invokerFunctions, std::forward<Args>(args)...); //NOSONAR
     }
 
     namespace detail

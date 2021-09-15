@@ -20,13 +20,12 @@
  */
 
 #include "mbedtls/cipher.h"
-#include "mbedtls/entropy.h"
 #include "mbedtls/ctr_drbg.h"
-
+#include "mbedtls/entropy.h"
 #include <stdio.h>
 #include <string.h>
 
-static void print_hex(const char *title, const unsigned char buf[], size_t len)
+static void print_hex(const char* title, const unsigned char buf[], size_t len)
 {
     printf("%s: ", title);
 
@@ -41,8 +40,22 @@ static void print_hex(const char *title, const unsigned char buf[], size_t len)
  * device/channel/etc. Just used a fixed on here for simplicity.
  */
 static const unsigned char secret_key[16] = {
-    0xf4, 0x82, 0xc6, 0x70, 0x3c, 0xc7, 0x61, 0x0a,
-    0xb9, 0xa0, 0xb8, 0xe9, 0x87, 0xb8, 0xc1, 0x72,
+    0xf4,
+    0x82,
+    0xc6,
+    0x70,
+    0x3c,
+    0xc7,
+    0x61,
+    0x0a,
+    0xb9,
+    0xa0,
+    0xb8,
+    0xe9,
+    0x87,
+    0xb8,
+    0xc1,
+    0x72,
 };
 
 static int example(void)
@@ -56,14 +69,14 @@ static int example(void)
     int ret;
 
     printf("\r\n\r\n");
-    print_hex("plaintext message", (unsigned char *) message, sizeof message);
+    print_hex("plaintext message", (unsigned char*)message, sizeof message);
 
     /*
      * Setup random number generator
      * (Note: later this might be done automatically.)
      */
-    mbedtls_entropy_context entropy;    /* entropy pool for seeding PRNG */
-    mbedtls_ctr_drbg_context drbg;      /* pseudo-random generator */
+    mbedtls_entropy_context entropy; /* entropy pool for seeding PRNG */
+    mbedtls_ctr_drbg_context drbg;   /* pseudo-random generator */
 
     mbedtls_entropy_init(&entropy);
     mbedtls_ctr_drbg_init(&drbg);
@@ -71,8 +84,9 @@ static int example(void)
     /* Seed the PRNG using the entropy pool, and throw in our secret key as an
      * additional source of randomness. */
     ret = mbedtls_ctr_drbg_seed(&drbg, mbedtls_entropy_func, &entropy,
-                                       secret_key, sizeof (secret_key));
-    if (ret != 0) {
+        secret_key, sizeof(secret_key));
+    if (ret != 0)
+    {
         printf("mbedtls_ctr_drbg_init() returned -0x%04X\r\n", -ret);
         return 1;
     }
@@ -85,13 +99,15 @@ static int example(void)
     mbedtls_cipher_init(&ctx);
 
     ret = mbedtls_cipher_setup(&ctx, mbedtls_cipher_info_from_type(MBEDTLS_CIPHER_AES_128_CCM));
-    if (ret != 0) {
+    if (ret != 0)
+    {
         printf("mbedtls_cipher_setup() returned -0x%04X\r\n", -ret);
         return 1;
     }
 
     ret = mbedtls_cipher_setkey(&ctx, secret_key, 8 * sizeof secret_key, MBEDTLS_ENCRYPT);
-    if (ret != 0) {
+    if (ret != 0)
+    {
         printf("mbedtls_cipher_setkey() returned -0x%04X\r\n", -ret);
         return 1;
     }
@@ -117,11 +133,12 @@ static int example(void)
      * and append it to the ciphertext */
     const size_t tag_len = 16;
     ret = mbedtls_cipher_auth_encrypt(&ctx, ciphertext, nonce_len,
-                              (const unsigned char *) metadata, sizeof metadata,
-                              (const unsigned char *) message, sizeof message,
-                              ciphertext + nonce_len, &ciphertext_len,
-                              ciphertext + nonce_len + sizeof message, tag_len );
-    if (ret != 0) {
+        (const unsigned char*)metadata, sizeof metadata,
+        (const unsigned char*)message, sizeof message,
+        ciphertext + nonce_len, &ciphertext_len,
+        ciphertext + nonce_len + sizeof message, tag_len);
+    if (ret != 0)
+    {
         printf("mbedtls_cipher_auth_encrypt() returned -0x%04X\r\n", -ret);
         return 1;
     }
@@ -141,23 +158,26 @@ static int example(void)
     size_t decrypted_len = 0;
 
     ret = mbedtls_cipher_setkey(&ctx, secret_key, 8 * sizeof secret_key, MBEDTLS_DECRYPT);
-    if (ret != 0) {
+    if (ret != 0)
+    {
         printf("mbedtls_cipher_setkey() returned -0x%04X\r\n", -ret);
         return 1;
     }
 
     ret = mbedtls_cipher_auth_decrypt(&ctx,
-                              ciphertext, nonce_len,
-                              (const unsigned char *) metadata, sizeof metadata,
-                              ciphertext + nonce_len, ciphertext_len - nonce_len - tag_len,
-                              decrypted, &decrypted_len,
-                              ciphertext + ciphertext_len - tag_len, tag_len );
+        ciphertext, nonce_len,
+        (const unsigned char*)metadata, sizeof metadata,
+        ciphertext + nonce_len, ciphertext_len - nonce_len - tag_len,
+        decrypted, &decrypted_len,
+        ciphertext + ciphertext_len - tag_len, tag_len);
     /* Checking the return code is CRITICAL for security here */
-    if (ret == MBEDTLS_ERR_CIPHER_AUTH_FAILED) {
+    if (ret == MBEDTLS_ERR_CIPHER_AUTH_FAILED)
+    {
         printf("Something bad is happening! Data is not authentic!\r\n");
         return 1;
     }
-    if (ret != 0) {
+    if (ret != 0)
+    {
         printf("mbedtls_cipher_authdecrypt() returned -0x%04X\r\n", -ret);
         return 1;
     }
@@ -174,7 +194,8 @@ static int example(void)
 #include "mbed-drivers/test_env.h"
 #include "minar/minar.h"
 
-static void run() {
+static void run()
+{
     MBED_HOSTTEST_TIMEOUT(10);
     MBED_HOSTTEST_SELECT(default);
     MBED_HOSTTEST_DESCRIPTION(mbed TLS example authcrypt);
@@ -182,7 +203,8 @@ static void run() {
     MBED_HOSTTEST_RESULT(example() == 0);
 }
 
-void app_start(int, char*[]) {
+void app_start(int, char*[])
+{
     /* Use 115200 bps for consistency with other examples */
     get_stdio_serial().baud(115200);
     minar::Scheduler::postCallback(mbed::util::FunctionPointer0<void>(run).bind());
@@ -190,7 +212,8 @@ void app_start(int, char*[]) {
 
 #else
 
-int main() {
+int main()
+{
     return example();
 }
 

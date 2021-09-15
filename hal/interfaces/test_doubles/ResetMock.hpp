@@ -1,8 +1,8 @@
 #ifndef HAL_RESET_MOCK_HPP
 #define HAL_RESET_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "hal/interfaces/Reset.hpp"
+#include "gmock/gmock.h"
 
 namespace hal
 {

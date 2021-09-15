@@ -69,7 +69,7 @@ namespace application
         uint32_t imageAddress = address;
         address += imageHeader.lengthOfHeaderAndImage;
 
-        for (auto& imageUpgrader: imageUpgraders)
+        for (auto& imageUpgrader : imageUpgraders)
         {
             if (std::strncmp(imageHeader.targetName.data(), imageUpgrader->TargetName(), imageHeader.targetName.size()) == 0)
             {

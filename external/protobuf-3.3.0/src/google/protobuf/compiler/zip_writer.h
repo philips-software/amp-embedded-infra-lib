@@ -60,34 +60,39 @@
 
 // Author: kenton@google.com (Kenton Varda)
 
-#include <vector>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/stubs/common.h>
+#include <vector>
 
-namespace google {
-namespace protobuf {
-namespace compiler {
+namespace google
+{
+    namespace protobuf
+    {
+        namespace compiler
+        {
 
-class ZipWriter {
- public:
-  ZipWriter(io::ZeroCopyOutputStream* raw_output);
-  ~ZipWriter();
+            class ZipWriter
+            {
+            public:
+                ZipWriter(io::ZeroCopyOutputStream* raw_output);
+                ~ZipWriter();
 
-  bool Write(const string& filename, const string& contents);
-  bool WriteDirectory();
+                bool Write(const string& filename, const string& contents);
+                bool WriteDirectory();
 
- private:
-  struct FileInfo {
-    string name;
-    uint32 offset;
-    uint32 size;
-    uint32 crc32;
-  };
+            private:
+                struct FileInfo
+                {
+                    string name;
+                    uint32 offset;
+                    uint32 size;
+                    uint32 crc32;
+                };
 
-  io::ZeroCopyOutputStream* raw_output_;
-  std::vector<FileInfo> files_;
-};
+                io::ZeroCopyOutputStream* raw_output_;
+                std::vector<FileInfo> files_;
+            };
 
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+        } // namespace compiler
+    }     // namespace protobuf
+} // namespace google

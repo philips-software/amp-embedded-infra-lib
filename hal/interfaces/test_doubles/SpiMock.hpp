@@ -1,12 +1,12 @@
 #ifndef HAL_SPI_MOCK_HPP
 #define HAL_SPI_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "hal/interfaces/Spi.hpp"
 #include "infra/util/AutoResetFunction.hpp"
+#include "gmock/gmock.h"
 #include <cstdint>
-#include <vector>
 #include <utility>
+#include <vector>
 
 namespace hal
 {

@@ -45,7 +45,8 @@ namespace infra
     void EventDispatcherWithWeakPtrWorker::ExecuteAllActions()
     {
         while (TryExecuteAction())
-        {}
+        {
+        }
     }
 
     bool EventDispatcherWithWeakPtrWorker::IsIdle() const

@@ -1,9 +1,9 @@
 #ifndef INFRA_JSON_STRING_MATCHER_HPP
 #define INFRA_JSON_STRING_MATCHER_HPP
 
-#include "gmock/gmock.h"
 #include "infra/syntax/Json.hpp"
 #include "infra/util/test_helper/BoundedStringMatcher.hpp"
+#include "gmock/gmock.h"
 
 namespace testing
 {
@@ -23,7 +23,9 @@ namespace testing
         {}
 
         template<class M, class = typename std::remove_reference<M>::type::is_gtest_matcher>
-            Matcher(M&& m) : internal::MatcherBase<infra::JsonString>(std::forward<M>(m)) {}
+        Matcher(M&& m)
+            : internal::MatcherBase<infra::JsonString>(std::forward<M>(m))
+        {}
 
         Matcher(infra::JsonString s) { *this = Eq(s.ToStdString()); }
         Matcher(const char* s) { *this = Eq(infra::BoundedConstString(s)); }

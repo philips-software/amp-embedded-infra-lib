@@ -33,11 +33,12 @@
 
 #include <stddef.h>
 
-struct FileToc {
-  const char* name;
-  const char* data;
+struct FileToc
+{
+    const char* name;
+    const char* data;
 };
 
 extern struct FileToc well_known_types_js[];
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_JS_WELL_KNOWN_TYPES_EMBED_H__
+#endif // GOOGLE_PROTOBUF_COMPILER_JS_WELL_KNOWN_TYPES_EMBED_H__

@@ -74,49 +74,48 @@ namespace services
     {
         switch (format)
         {
-            case '\0': break;
-            case '%':
-                tracer.Continue() << format;
-                break;
-            case 'c':
-                tracer.Continue() << static_cast<const char>(va_arg(*args, int32_t));
-                break;
-            case 's':
-            {
-                auto* s = va_arg(*args, char*);
-                tracer.Continue() << (s != nullptr ? s : "(null)");
-                break;
-            }
-            case 'd':
-            case 'i':
-                if (lengthSpecifier >= 2)
-                    tracer.Continue() << va_arg(*args, int64_t);
-                else
-                    tracer.Continue() << va_arg(*args, int32_t);
-                break;
-            case 'u':
-                if (lengthSpecifier >= 2)
-                    tracer.Continue() << va_arg(*args, uint64_t);
-                else
-                    tracer.Continue() << va_arg(*args, uint32_t);
-                break;
-            case 'p':
-                tracer.Continue() << "0x";
-            case 'X':
-            case 'x':
-                if (lengthSpecifier >= 2)
-                    tracer.Continue() << infra::hex << width << va_arg(*args, uint64_t);
-                else
-                    tracer.Continue() << infra::hex << width << va_arg(*args, uint32_t);
-                break;
-            case 'f':
-                tracer.Continue() << static_cast<float>(va_arg(*args, double));
-                break;
-            default:
-                while (lengthSpecifier-- > 0)
-                    tracer.Continue() << 'l';
-                tracer.Continue() << format;
-                break;
+        case '\0': break;
+        case '%':
+            tracer.Continue() << format;
+            break;
+        case 'c':
+            tracer.Continue() << static_cast<const char>(va_arg(*args, int32_t));
+            break;
+        case 's': {
+            auto* s = va_arg(*args, char*);
+            tracer.Continue() << (s != nullptr ? s : "(null)");
+            break;
+        }
+        case 'd':
+        case 'i':
+            if (lengthSpecifier >= 2)
+                tracer.Continue() << va_arg(*args, int64_t);
+            else
+                tracer.Continue() << va_arg(*args, int32_t);
+            break;
+        case 'u':
+            if (lengthSpecifier >= 2)
+                tracer.Continue() << va_arg(*args, uint64_t);
+            else
+                tracer.Continue() << va_arg(*args, uint32_t);
+            break;
+        case 'p':
+            tracer.Continue() << "0x";
+        case 'X':
+        case 'x':
+            if (lengthSpecifier >= 2)
+                tracer.Continue() << infra::hex << width << va_arg(*args, uint64_t);
+            else
+                tracer.Continue() << infra::hex << width << va_arg(*args, uint32_t);
+            break;
+        case 'f':
+            tracer.Continue() << static_cast<float>(va_arg(*args, double));
+            break;
+        default:
+            while (lengthSpecifier-- > 0)
+                tracer.Continue() << 'l';
+            tracer.Continue() << format;
+            break;
         }
     }
 }

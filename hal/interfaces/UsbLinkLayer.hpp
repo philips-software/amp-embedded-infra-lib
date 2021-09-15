@@ -9,14 +9,14 @@ namespace hal
 {
     class UsbLinkLayer;
 
-    enum class UsbSpeed: uint8_t
+    enum class UsbSpeed : uint8_t
     {
         high = 0,
         full = 1,
         low = 2
     };
 
-    enum class UsbEndPointType: uint8_t
+    enum class UsbEndPointType : uint8_t
     {
         control = 0,
         isochronous = 1,
@@ -28,7 +28,9 @@ namespace hal
         : public infra::SingleObserver<UsbLinkLayerObserver, UsbLinkLayer>
     {
     protected:
-        UsbLinkLayerObserver(UsbLinkLayer& linkLayer) : infra::SingleObserver<UsbLinkLayerObserver, UsbLinkLayer>(linkLayer) {}
+        UsbLinkLayerObserver(UsbLinkLayer& linkLayer)
+            : infra::SingleObserver<UsbLinkLayerObserver, UsbLinkLayer>(linkLayer)
+        {}
         ~UsbLinkLayerObserver() = default;
 
     public:

@@ -32,15 +32,18 @@
 // It is not compiled into anything, but it may be read by an automated
 // documentation generator.
 
-namespace google {
+namespace google
+{
 
-namespace protobuf {
+    namespace protobuf
+    {
 
-// Utility classes.
-//
-// This package contains various utilities for message comprasion, JSON
-// conversion, well known types, etc.
-namespace util {}
+        // Utility classes.
+        //
+        // This package contains various utilities for message comprasion, JSON
+        // conversion, well known types, etc.
+        namespace util
+        {}
 
-}  // namespace protobuf
-}  // namespace google
+    } // namespace protobuf
+} // namespace google

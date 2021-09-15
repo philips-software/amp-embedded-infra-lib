@@ -38,45 +38,46 @@
  * \{
  */
 #ifndef MBEDTLS_SSL_COOKIE_TIMEOUT
-#define MBEDTLS_SSL_COOKIE_TIMEOUT     60 /**< Default expiration delay of DTLS cookies, in seconds if HAVE_TIME, or in number of cookies issued */
+#define MBEDTLS_SSL_COOKIE_TIMEOUT 60 /**< Default expiration delay of DTLS cookies, in seconds if HAVE_TIME, or in number of cookies issued */
 #endif
 
 /* \} name SECTION: Module settings */
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/**
+    /**
  * \brief          Context for the default cookie functions.
  */
-typedef struct mbedtls_ssl_cookie_ctx
-{
-    mbedtls_md_context_t    hmac_ctx;   /*!< context for the HMAC portion   */
+    typedef struct mbedtls_ssl_cookie_ctx
+    {
+        mbedtls_md_context_t hmac_ctx; /*!< context for the HMAC portion   */
 #if !defined(MBEDTLS_HAVE_TIME)
-    unsigned long   serial;     /*!< serial number for expiration   */
+        unsigned long serial; /*!< serial number for expiration   */
 #endif
-    unsigned long   timeout;    /*!< timeout delay, in seconds if HAVE_TIME,
+        unsigned long timeout; /*!< timeout delay, in seconds if HAVE_TIME,
                                      or in number of tickets issued */
 
 #if defined(MBEDTLS_THREADING_C)
-    mbedtls_threading_mutex_t mutex;
+        mbedtls_threading_mutex_t mutex;
 #endif
-} mbedtls_ssl_cookie_ctx;
+    } mbedtls_ssl_cookie_ctx;
 
-/**
+    /**
  * \brief          Initialize cookie context
  */
-void mbedtls_ssl_cookie_init( mbedtls_ssl_cookie_ctx *ctx );
+    void mbedtls_ssl_cookie_init(mbedtls_ssl_cookie_ctx* ctx);
 
-/**
+    /**
  * \brief          Setup cookie context (generate keys)
  */
-int mbedtls_ssl_cookie_setup( mbedtls_ssl_cookie_ctx *ctx,
-                      int (*f_rng)(void *, unsigned char *, size_t),
-                      void *p_rng );
+    int mbedtls_ssl_cookie_setup(mbedtls_ssl_cookie_ctx* ctx,
+        int (*f_rng)(void*, unsigned char*, size_t),
+        void* p_rng);
 
-/**
+    /**
  * \brief          Set expiration delay for cookies
  *                 (Default MBEDTLS_SSL_COOKIE_TIMEOUT)
  *
@@ -85,22 +86,22 @@ int mbedtls_ssl_cookie_setup( mbedtls_ssl_cookie_ctx *ctx,
  *                 issued in the meantime.
  *                 0 to disable expiration (NOT recommended)
  */
-void mbedtls_ssl_cookie_set_timeout( mbedtls_ssl_cookie_ctx *ctx, unsigned long delay );
+    void mbedtls_ssl_cookie_set_timeout(mbedtls_ssl_cookie_ctx* ctx, unsigned long delay);
 
-/**
+    /**
  * \brief          Free cookie context
  */
-void mbedtls_ssl_cookie_free( mbedtls_ssl_cookie_ctx *ctx );
+    void mbedtls_ssl_cookie_free(mbedtls_ssl_cookie_ctx* ctx);
 
-/**
+    /**
  * \brief          Generate cookie, see \c mbedtls_ssl_cookie_write_t
  */
-mbedtls_ssl_cookie_write_t mbedtls_ssl_cookie_write;
+    mbedtls_ssl_cookie_write_t mbedtls_ssl_cookie_write;
 
-/**
+    /**
  * \brief          Verify cookie, see \c mbedtls_ssl_cookie_write_t
  */
-mbedtls_ssl_cookie_check_t mbedtls_ssl_cookie_check;
+    mbedtls_ssl_cookie_check_t mbedtls_ssl_cookie_check;
 
 #ifdef __cplusplus
 }
