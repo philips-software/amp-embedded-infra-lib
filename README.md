@@ -44,9 +44,10 @@ Documentation is available under the [documents](documents) folder.
 
 * [CMakeCcolaUserManual](documents/CMakeCcolaUserManual.docx) describes the CMake Component Layer (Ccola) from a user perspective.
 * [Coding Standard C++ Embedded Projects](documents/Coding%20Standard%20C++%20Embedded%20Projects.docx) describes the coding standards adhered to for this project.
-* [Containers](documents/Containers.md) describes the basic heap-less containers provided by EmIL.
-* [Echo (Embedded CHOmmunication)](documents/Echo.md) describes the RPC (Remote Procedure Call) framework built on top of Google Protobuf.
-* [MemoryRange](documents/MemoryRange.md) describes the basic building block for most of EmIL's heap-less memory management.
+* [Containers](documents/modules/ROOT/pages/Containers.adoc) describes the basic heap-less containers provided by EmIL.
+* [Echo (Embedded CHOmmunication)](documents/modules/ROOT/pages/Echo.adoc) describes the RPC (Remote Procedure Call) framework built on top of Google Protobuf.
+* [MemoryRange](documents/modules/ROOT/pages/MemoryRange.adoc) describes the basic building block for most of EmIL's heap-less memory management.
+* [NetworkConnections](documents/modules/ROOT/pages/NetworkConnections.adoc) describes EmILs network connection interface design.
 
 ## Contributing
 

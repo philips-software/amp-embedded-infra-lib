@@ -36,6 +36,7 @@ jobs:
         uses: nvuillam/mega-linter@v4
         env:
           VALIDATE_ALL_CODEBASE: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create PR with fixes
         id: cpr
         if: steps.ml.outputs.has_updated_sources == 1 && (env.APPLY_FIXES_EVENT == 'all' || env.APPLY_FIXES_EVENT == github.event_name) && env.APPLY_FIXES_MODE == 'pull_request' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
@@ -50,7 +51,6 @@ jobs:
         run: |
           echo "Pull-Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
           echo "Pull-Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
-
       - name: Prepare Commit
         if: steps.ml.outputs.has_updated_sources == 1 && (env.APPLY_FIXES_EVENT == 'all' || env.APPLY_FIXES_EVENT == github.event_name) && env.APPLY_FIXES_MODE == 'commit' && github.ref != 'refs/heads/master' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
         run: sudo chown -Rc $UID .git/
