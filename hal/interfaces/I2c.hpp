@@ -1,8 +1,8 @@
 #ifndef HAL_I2C_HPP
 #define HAL_I2C_HPP
 
-#include "infra/util/Function.hpp"
 #include "infra/util/ByteRange.hpp"
+#include "infra/util/Function.hpp"
 
 namespace hal
 {

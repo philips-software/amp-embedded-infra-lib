@@ -53,32 +53,33 @@
 #include "lwip/opt.h"
 #if LWIP_PERF
 #include "arch/perf.h"
-#else /* LWIP_PERF */
-#define PERF_START    /* null definition */
-#define PERF_STOP(x)  /* null definition */
-#endif /* LWIP_PERF */
+#else                /* LWIP_PERF */
+#define PERF_START   /* null definition */
+#define PERF_STOP(x) /* null definition */
+#endif               /* LWIP_PERF */
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-#define LWIP_MAX(x , y)  (((x) > (y)) ? (x) : (y))
-#define LWIP_MIN(x , y)  (((x) < (y)) ? (x) : (y))
+#define LWIP_MAX(x, y) (((x) > (y)) ? (x) : (y))
+#define LWIP_MIN(x, y) (((x) < (y)) ? (x) : (y))
 
 /* Get the number of entries in an array ('x' must NOT be a pointer!) */
-#define LWIP_ARRAYSIZE(x) (sizeof(x)/sizeof((x)[0]))
+#define LWIP_ARRAYSIZE(x) (sizeof(x) / sizeof((x)[0]))
 
 /** Create u32_t value from bytes */
-#define LWIP_MAKEU32(a,b,c,d) (((u32_t)((a) & 0xff) << 24) | \
-                               ((u32_t)((b) & 0xff) << 16) | \
-                               ((u32_t)((c) & 0xff) << 8)  | \
-                                (u32_t)((d) & 0xff))
+#define LWIP_MAKEU32(a, b, c, d) (((u32_t)((a)&0xff) << 24) | \
+    ((u32_t)((b)&0xff) << 16) |                               \
+    ((u32_t)((c)&0xff) << 8) |                                \
+    (u32_t)((d)&0xff))
 
 #ifndef NULL
 #ifdef __cplusplus
 #define NULL 0
 #else
-#define NULL ((void *)0)
+#define NULL ((void*)0)
 #endif
 #endif
 
@@ -87,10 +88,10 @@ extern "C" {
 #define lwip_ntohs(x) ((u16_t)(x))
 #define lwip_htonl(x) ((u32_t)(x))
 #define lwip_ntohl(x) ((u32_t)(x))
-#define PP_HTONS(x)   ((u16_t)(x))
-#define PP_NTOHS(x)   ((u16_t)(x))
-#define PP_HTONL(x)   ((u32_t)(x))
-#define PP_NTOHL(x)   ((u32_t)(x))
+#define PP_HTONS(x) ((u16_t)(x))
+#define PP_NTOHS(x) ((u16_t)(x))
+#define PP_HTONL(x) ((u32_t)(x))
+#define PP_NTOHL(x) ((u32_t)(x))
 #else /* BYTE_ORDER != BIG_ENDIAN */
 #ifndef lwip_htons
 u16_t lwip_htons(u16_t x);
@@ -108,9 +109,9 @@ u32_t lwip_htonl(u32_t x);
 #define PP_HTONS(x) ((u16_t)((((x) & (u16_t)0x00ffU) << 8) | (((x) & (u16_t)0xff00U) >> 8)))
 #define PP_NTOHS(x) PP_HTONS(x)
 #define PP_HTONL(x) ((((x) & (u32_t)0x000000ffUL) << 24) | \
-                     (((x) & (u32_t)0x0000ff00UL) <<  8) | \
-                     (((x) & (u32_t)0x00ff0000UL) >>  8) | \
-                     (((x) & (u32_t)0xff000000UL) >> 24))
+    (((x) & (u32_t)0x0000ff00UL) << 8) |                   \
+    (((x) & (u32_t)0x00ff0000UL) >> 8) |                   \
+    (((x) & (u32_t)0xff000000UL) >> 24))
 #define PP_NTOHL(x) PP_HTONL(x)
 #endif /* BYTE_ORDER == BIG_ENDIAN */
 
@@ -122,27 +123,27 @@ u32_t lwip_htonl(u32_t x);
 #define ntohl(x) lwip_ntohl(x)
 #endif
 
-/* Functions that are not available as standard implementations.
+    /* Functions that are not available as standard implementations.
  * In cc.h, you can #define these to implementations available on
  * your platform to save some code bytes if you use these functions
  * in your application, too.
  */
 
 #ifndef lwip_itoa
-/* This can be #defined to itoa() or snprintf(result, bufsize, "%d", number) depending on your platform */
-void  lwip_itoa(char* result, size_t bufsize, int number);
+    /* This can be #defined to itoa() or snprintf(result, bufsize, "%d", number) depending on your platform */
+    void lwip_itoa(char* result, size_t bufsize, int number);
 #endif
 #ifndef lwip_strnicmp
-/* This can be #defined to strnicmp() or strncasecmp() depending on your platform */
-int   lwip_strnicmp(const char* str1, const char* str2, size_t len);
+    /* This can be #defined to strnicmp() or strncasecmp() depending on your platform */
+    int lwip_strnicmp(const char* str1, const char* str2, size_t len);
 #endif
 #ifndef lwip_stricmp
-/* This can be #defined to stricmp() or strcasecmp() depending on your platform */
-int   lwip_stricmp(const char* str1, const char* str2);
+    /* This can be #defined to stricmp() or strcasecmp() depending on your platform */
+    int lwip_stricmp(const char* str1, const char* str2);
 #endif
 #ifndef lwip_strnstr
-/* This can be #defined to strnstr() depending on your platform */
-char* lwip_strnstr(const char* buffer, const char* token, size_t n);
+    /* This can be #defined to strnstr() depending on your platform */
+    char* lwip_strnstr(const char* buffer, const char* token, size_t n);
 #endif
 
 #ifdef __cplusplus

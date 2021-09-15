@@ -1,6 +1,6 @@
-#include "gmock/gmock.h"
 #include "infra/stream/LimitedInputStream.hpp"
 #include "infra/stream/test/StreamMock.hpp"
+#include "gmock/gmock.h"
 
 TEST(LimitedInputStreamTest, Extract)
 {
@@ -52,13 +52,12 @@ TEST(LimitedInputStreamTest, PeekContiguousRange)
     testing::StrictMock<infra::StreamReaderMock> reader;
     infra::LimitedStreamReader limitedReader(reader, 2);
 
-    std::array<uint8_t, 2> data{{1, 2}};
+    std::array<uint8_t, 2> data{ { 1, 2 } };
     EXPECT_CALL(reader, PeekContiguousRange(0)).WillOnce(testing::Return(infra::MakeRange(data)));
     EXPECT_EQ(infra::MakeRange(data), limitedReader.PeekContiguousRange(0));
 
     EXPECT_CALL(reader, Empty()).WillOnce(testing::Return(false));
     EXPECT_FALSE(limitedReader.Empty());
-
 }
 
 TEST(LimitedInputStreamTest, Available)

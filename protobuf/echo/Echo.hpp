@@ -1,10 +1,10 @@
 #ifndef PROTOBUF_ECHO_HPP
 #define PROTOBUF_ECHO_HPP
 
-#include "infra/util/Function.hpp"
-#include "infra/util/Optional.hpp"
 #include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/syntax/ProtoParser.hpp"
+#include "infra/util/Function.hpp"
+#include "infra/util/Optional.hpp"
 #include "services/network/Connection.hpp"
 #include "services/util/MessageCommunication.hpp"
 
@@ -13,35 +13,52 @@ namespace services
     class Service;
     class ServiceProxy;
 
-    struct ProtoBool {};
-    struct ProtoUInt32 {};
-    struct ProtoInt32 {};
-    struct ProtoUInt64 {};
-    struct ProtoInt64 {};
-    struct ProtoFixed32 {};
-    struct ProtoFixed64 {};
-    struct ProtoSFixed32 {};
-    struct ProtoSFixed64 {};
-    struct ProtoUnboundedString {};
-    struct ProtoUnboundedBytes {};
+    struct ProtoBool
+    {};
+    struct ProtoUInt32
+    {};
+    struct ProtoInt32
+    {};
+    struct ProtoUInt64
+    {};
+    struct ProtoInt64
+    {};
+    struct ProtoFixed32
+    {};
+    struct ProtoFixed64
+    {};
+    struct ProtoSFixed32
+    {};
+    struct ProtoSFixed64
+    {};
+    struct ProtoUnboundedString
+    {};
+    struct ProtoUnboundedBytes
+    {};
 
     template<class T>
-    struct ProtoMessage {};
+    struct ProtoMessage
+    {};
 
     template<class T>
-    struct ProtoEnum {};
+    struct ProtoEnum
+    {};
 
     template<std::size_t Max>
-    struct ProtoBytes {};
+    struct ProtoBytes
+    {};
 
     template<std::size_t Max>
-    struct ProtoString {};
+    struct ProtoString
+    {};
 
     template<std::size_t Max, class T>
-    struct ProtoRepeated {};
+    struct ProtoRepeated
+    {};
 
     template<class T>
-    struct ProtoUnboundedRepeated {};
+    struct ProtoUnboundedRepeated
+    {};
 
     void SerializeField(ProtoBool, infra::ProtoFormatter& formatter, bool value, uint32_t fieldNumber);
     void SerializeField(ProtoUInt32, infra::ProtoFormatter& formatter, uint32_t value, uint32_t fieldNumber);
@@ -193,7 +210,7 @@ namespace services
         ServiceForwarder(infra::ByteRange messageBuffer, Echo& echo, uint32_t id, Echo& forwardTo);
 
         template<std::size_t MaxMessageSize>
-            using WithMaxMessageSize = infra::WithStorage<ServiceForwarder, std::array<uint8_t, MaxMessageSize>>;
+        using WithMaxMessageSize = infra::WithStorage<ServiceForwarder, std::array<uint8_t, MaxMessageSize>>;
 
         virtual void Handle(uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy) override;
 

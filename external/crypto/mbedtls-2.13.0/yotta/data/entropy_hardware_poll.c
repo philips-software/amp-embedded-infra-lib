@@ -37,39 +37,40 @@
  * Get one byte of entropy from the RNG, assuming it is up and running.
  * As recommended (34.1.1), get only one bit of each output.
  */
-static void rng_get_byte( unsigned char *byte )
+static void rng_get_byte(unsigned char* byte)
 {
     size_t bit;
 
     /* 34.5 Steps 3-4-5: poll SR and read from OR when ready */
-    for( bit = 0; bit < 8; bit++ )
+    for (bit = 0; bit < 8; bit++)
     {
-        while( ( RNG->SR & RNG_SR_OREG_LVL_MASK ) == 0 );
-        *byte |= ( RNG->OR & 1 ) << bit;
+        while ((RNG->SR & RNG_SR_OREG_LVL_MASK) == 0)
+            ;
+        *byte |= (RNG->OR & 1) << bit;
     }
 }
 
 /*
  * Get len bytes of entropy from the hardware RNG.
  */
-int mbedtls_hardware_poll( void *data,
-                    unsigned char *output, size_t len, size_t *olen )
+int mbedtls_hardware_poll(void* data,
+    unsigned char* output, size_t len, size_t* olen)
 {
     size_t i;
     int ret;
-    ((void) data);
+    ((void)data);
 
-    CLOCK_SYS_EnableRngaClock( 0 );
+    CLOCK_SYS_EnableRngaClock(0);
 
     /* Set "Interrupt Mask", "High Assurance" and "Go",
      * unset "Clear interrupt" and "Sleep" */
     RNG->CR = RNG_CR_INTM_MASK | RNG_CR_HA_MASK | RNG_CR_GO_MASK;
 
-    for( i = 0; i < len; i++ )
-        rng_get_byte( output + i );
+    for (i = 0; i < len; i++)
+        rng_get_byte(output + i);
 
     /* Just be extra sure that we didn't do it wrong */
-    if( ( RNG->SR & RNG_SR_SECV_MASK ) != 0 )
+    if ((RNG->SR & RNG_SR_SECV_MASK) != 0)
     {
         ret = -1;
         goto cleanup;
@@ -80,9 +81,9 @@ int mbedtls_hardware_poll( void *data,
 
 cleanup:
     /* Disable clock to save power - assume we're the only users of RNG */
-    CLOCK_SYS_DisableRngaClock( 0 );
+    CLOCK_SYS_DisableRngaClock(0);
 
-    return( ret );
+    return (ret);
 }
 
 #endif

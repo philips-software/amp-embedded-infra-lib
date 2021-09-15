@@ -33,48 +33,48 @@
 #define LWIP_HDR_LWIPOPTS_H__
 
 /* Prevent having to link sys_arch.c (we don't test the API layers in unit tests) */
-#define NO_SYS                          1
-#define LWIP_NETCONN                    0
-#define LWIP_SOCKET                     0
-#define SYS_LIGHTWEIGHT_PROT            0
+#define NO_SYS 1
+#define LWIP_NETCONN 0
+#define LWIP_SOCKET 0
+#define SYS_LIGHTWEIGHT_PROT 0
 
-#define LWIP_IPV6                       1
-#define IPV6_FRAG_COPYHEADER            1
-#define LWIP_IPV6_DUP_DETECT_ATTEMPTS   0
+#define LWIP_IPV6 1
+#define IPV6_FRAG_COPYHEADER 1
+#define LWIP_IPV6_DUP_DETECT_ATTEMPTS 0
 
 /* Enable some protocols to test them */
-#define LWIP_DHCP                       1
-#define LWIP_AUTOIP                     1
+#define LWIP_DHCP 1
+#define LWIP_AUTOIP 1
 
-#define LWIP_IGMP                       1
-#define LWIP_DNS                        1
+#define LWIP_IGMP 1
+#define LWIP_DNS 1
 
-#define LWIP_ALTCP                      1
+#define LWIP_ALTCP 1
 
 /* Turn off checksum verification of fuzzed data */
-#define CHECKSUM_CHECK_IP               0
-#define CHECKSUM_CHECK_UDP              0
-#define CHECKSUM_CHECK_TCP              0
-#define CHECKSUM_CHECK_ICMP             0
-#define CHECKSUM_CHECK_ICMP6            0
+#define CHECKSUM_CHECK_IP 0
+#define CHECKSUM_CHECK_UDP 0
+#define CHECKSUM_CHECK_TCP 0
+#define CHECKSUM_CHECK_ICMP 0
+#define CHECKSUM_CHECK_ICMP6 0
 
 /* Minimal changes to opt.h required for tcp unit tests: */
-#define MEM_SIZE                        16000
-#define TCP_SND_QUEUELEN                40
-#define MEMP_NUM_TCP_SEG                TCP_SND_QUEUELEN
-#define TCP_OVERSIZE                    1
-#define TCP_SND_BUF                     (12 * TCP_MSS)
-#define TCP_WND                         (10 * TCP_MSS)
-#define LWIP_WND_SCALE                  1
-#define TCP_RCV_SCALE                   2
-#define PBUF_POOL_SIZE                  400 /* pbuf tests need ~200KByte */
+#define MEM_SIZE 16000
+#define TCP_SND_QUEUELEN 40
+#define MEMP_NUM_TCP_SEG TCP_SND_QUEUELEN
+#define TCP_OVERSIZE 1
+#define TCP_SND_BUF (12 * TCP_MSS)
+#define TCP_WND (10 * TCP_MSS)
+#define LWIP_WND_SCALE 1
+#define TCP_RCV_SCALE 2
+#define PBUF_POOL_SIZE 400 /* pbuf tests need ~200KByte */
 
 /* Minimal changes to opt.h required for etharp unit tests: */
-#define ETHARP_SUPPORT_STATIC_ENTRIES   1
+#define ETHARP_SUPPORT_STATIC_ENTRIES 1
 
-#define LWIP_NUM_NETIF_CLIENT_DATA      1
-#define LWIP_SNMP                       1
-#define MIB2_STATS                      1
-#define LWIP_MDNS_RESPONDER             1
+#define LWIP_NUM_NETIF_CLIENT_DATA 1
+#define LWIP_SNMP 1
+#define MIB2_STATS 1
+#define LWIP_MDNS_RESPONDER 1
 
 #endif /* LWIP_HDR_LWIPOPTS_H__ */

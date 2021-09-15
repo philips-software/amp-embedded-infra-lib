@@ -103,7 +103,7 @@ namespace services
     {
     public:
         template<::size_t BufferSize>
-            using WithBuffer = infra::WithStorage<HttpServerConnectionObserver, infra::BoundedString::WithStorage<BufferSize>>;
+        using WithBuffer = infra::WithStorage<HttpServerConnectionObserver, infra::BoundedString::WithStorage<BufferSize>>;
 
         HttpServerConnectionObserver(infra::BoundedString& buffer, HttpPageServer& httpServer);
 
@@ -163,7 +163,7 @@ namespace services
     {
     public:
         template<::size_t BufferSize>
-            using WithBuffer = infra::WithStorage<DefaultHttpServer, infra::BoundedString::WithStorage<BufferSize>>;
+        using WithBuffer = infra::WithStorage<DefaultHttpServer, infra::BoundedString::WithStorage<BufferSize>>;
 
         DefaultHttpServer(infra::BoundedString& buffer, ConnectionFactory& connectionFactory, uint16_t port);
 

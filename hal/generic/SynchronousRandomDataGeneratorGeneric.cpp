@@ -1,5 +1,5 @@
-#include <algorithm>
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
+#include <algorithm>
 
 namespace hal
 {

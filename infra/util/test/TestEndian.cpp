@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/util/Endian.hpp"
+#include "gtest/gtest.h"
 
 TEST(EndianTest, SwapEndian_changes_endianness)
 {
@@ -30,8 +30,8 @@ TEST(EndianTest, compare_BigEndian_objects)
 
 TEST(EndianTest, array_in_BigEndian)
 {
-    infra::BigEndian<std::array<uint8_t, 5>> x{ { 1, 2, 3, 4, 5} };
-    EXPECT_EQ((std::array<uint8_t, 5>{ { 5, 4, 3, 2, 1 }}), (reinterpret_cast<std::array<uint8_t, 5>&>(x)));
+    infra::BigEndian<std::array<uint8_t, 5>> x{ { 1, 2, 3, 4, 5 } };
+    EXPECT_EQ((std::array<uint8_t, 5>{ { 5, 4, 3, 2, 1 } }), (reinterpret_cast<std::array<uint8_t, 5>&>(x)));
 }
 
 TEST(EndianTest, conversion_functions)

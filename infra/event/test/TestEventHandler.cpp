@@ -1,8 +1,8 @@
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
 #include "infra/event/EventDispatcher.hpp"
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 class EventDispatcherTest
     : public testing::Test

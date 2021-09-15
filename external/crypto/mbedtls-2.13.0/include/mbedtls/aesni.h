@@ -26,22 +26,23 @@
 
 #include "aes.h"
 
-#define MBEDTLS_AESNI_AES      0x02000000u
-#define MBEDTLS_AESNI_CLMUL    0x00000002u
+#define MBEDTLS_AESNI_AES 0x02000000u
+#define MBEDTLS_AESNI_CLMUL 0x00000002u
 
-#if defined(MBEDTLS_HAVE_ASM) && defined(__GNUC__) &&  \
-    ( defined(__amd64__) || defined(__x86_64__) )   &&  \
-    ! defined(MBEDTLS_HAVE_X86_64)
+#if defined(MBEDTLS_HAVE_ASM) && defined(__GNUC__) && \
+    (defined(__amd64__) || defined(__x86_64__)) &&    \
+    !defined(MBEDTLS_HAVE_X86_64)
 #define MBEDTLS_HAVE_X86_64
 #endif
 
 #if defined(MBEDTLS_HAVE_X86_64)
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/**
+    /**
  * \brief          AES-NI features detection routine
  *
  * \param what     The feature to detect
@@ -49,9 +50,9 @@ extern "C" {
  *
  * \return         1 if CPU has support for the feature, 0 otherwise
  */
-int mbedtls_aesni_has_support( unsigned int what );
+    int mbedtls_aesni_has_support(unsigned int what);
 
-/**
+    /**
  * \brief          AES-NI AES-ECB block en(de)cryption
  *
  * \param ctx      AES context
@@ -61,12 +62,12 @@ int mbedtls_aesni_has_support( unsigned int what );
  *
  * \return         0 on success (cannot fail)
  */
-int mbedtls_aesni_crypt_ecb( mbedtls_aes_context *ctx,
-                     int mode,
-                     const unsigned char input[16],
-                     unsigned char output[16] );
+    int mbedtls_aesni_crypt_ecb(mbedtls_aes_context* ctx,
+        int mode,
+        const unsigned char input[16],
+        unsigned char output[16]);
 
-/**
+    /**
  * \brief          GCM multiplication: c = a * b in GF(2^128)
  *
  * \param c        Result
@@ -76,21 +77,21 @@ int mbedtls_aesni_crypt_ecb( mbedtls_aes_context *ctx,
  * \note           Both operands and result are bit strings interpreted as
  *                 elements of GF(2^128) as per the GCM spec.
  */
-void mbedtls_aesni_gcm_mult( unsigned char c[16],
-                     const unsigned char a[16],
-                     const unsigned char b[16] );
+    void mbedtls_aesni_gcm_mult(unsigned char c[16],
+        const unsigned char a[16],
+        const unsigned char b[16]);
 
-/**
+    /**
  * \brief           Compute decryption round keys from encryption round keys
  *
  * \param invkey    Round keys for the equivalent inverse cipher
  * \param fwdkey    Original round keys (for encryption)
  * \param nr        Number of rounds (that is, number of round keys minus one)
  */
-void mbedtls_aesni_inverse_key( unsigned char *invkey,
-                        const unsigned char *fwdkey, int nr );
+    void mbedtls_aesni_inverse_key(unsigned char* invkey,
+        const unsigned char* fwdkey, int nr);
 
-/**
+    /**
  * \brief           Perform key expansion (for encryption)
  *
  * \param rk        Destination buffer where the round keys are written
@@ -99,9 +100,9 @@ void mbedtls_aesni_inverse_key( unsigned char *invkey,
  *
  * \return          0 if successful, or MBEDTLS_ERR_AES_INVALID_KEY_LENGTH
  */
-int mbedtls_aesni_setkey_enc( unsigned char *rk,
-                      const unsigned char *key,
-                      size_t bits );
+    int mbedtls_aesni_setkey_enc(unsigned char* rk,
+        const unsigned char* key,
+        size_t bits);
 
 #ifdef __cplusplus
 }

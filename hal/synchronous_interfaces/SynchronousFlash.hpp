@@ -38,7 +38,7 @@ namespace hal
         virtual void ReadBuffer(infra::ByteRange buffer, uint32_t address) = 0;
 
         void EraseSector(uint32_t sectorIndex);
-        virtual void EraseSectors(uint32_t beginIndex, uint32_t endIndex) = 0;  // Erases sectors in de range [beginIndex, endIndex)
+        virtual void EraseSectors(uint32_t beginIndex, uint32_t endIndex) = 0; // Erases sectors in de range [beginIndex, endIndex)
         void EraseAll();
     };
 }

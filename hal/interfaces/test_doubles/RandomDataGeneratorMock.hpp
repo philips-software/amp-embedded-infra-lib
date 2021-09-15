@@ -1,8 +1,8 @@
 #ifndef HAL_RANDOM_DATA_GENERATOR_MOCK_HPP
 #define HAL_RANDOM_DATA_GENERATOR_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "hal/interfaces/RandomDataGenerator.hpp"
+#include "gmock/gmock.h"
 
 namespace hal
 {

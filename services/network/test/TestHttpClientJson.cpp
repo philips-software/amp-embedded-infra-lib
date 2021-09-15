@@ -1,4 +1,3 @@
-#include "gmock/gmock.h"
 #include "infra/stream/test/StreamMock.hpp"
 #include "infra/syntax/test_doubles/JsonStreamingParserMock.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
@@ -7,6 +6,7 @@
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/network/HttpClientJson.hpp"
 #include "services/network/test_doubles/HttpClientMock.hpp"
+#include "gmock/gmock.h"
 
 class HttpClientJsonMock
     : public services::HttpClientJson
@@ -112,12 +112,10 @@ TEST_F(HttpClientJsonTest, ParseError_reports_Error)
     auto readerPtr(infra::UnOwnedSharedPtr(reader));
     EXPECT_CALL(reader, Empty()).WillOnce(testing::Return(false));
     EXPECT_CALL(reader, ExtractContiguousRange(testing::_)).WillOnce(testing::Return(infra::MakeStringByteRange(R"({ ] })")));
-    EXPECT_CALL(jsonObjectVisitor, ParseError()).WillOnce(testing::Invoke([this]()
-    {
+    EXPECT_CALL(jsonObjectVisitor, ParseError()).WillOnce(testing::Invoke([this]() {
         controller.ContentError();
     }));
-    EXPECT_CALL(httpClient, Close()).WillOnce(testing::Invoke([this, &readerPtr]()
-    {
+    EXPECT_CALL(httpClient, Close()).WillOnce(testing::Invoke([this, &readerPtr]() {
         controller.Detaching();
         EXPECT_TRUE(readerPtr == nullptr);
     }));

@@ -1,7 +1,7 @@
-#include "gtest/gtest.h"
 #include "infra/timer/TimerLimitedRepeatingWithClosingAction.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
+#include "gtest/gtest.h"
 
 class TimerLimitedRepeatingWithClosingActionTest
     : public testing::Test
@@ -16,10 +16,8 @@ TEST_F(TimerLimitedRepeatingWithClosingActionTest, TimerIsExecuted)
     EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(2)));
     EXPECT_CALL(extra, callback()).With(After(std::chrono::seconds(3)));
 
-    infra::TimerLimitedRepeatingWithClosingAction timer(2, std::chrono::seconds(1)
-        , [&callback]() { callback.callback(); }
-        , [&extra]() { extra.callback(); }
-    );
+    infra::TimerLimitedRepeatingWithClosingAction timer(
+        2, std::chrono::seconds(1), [&callback]() { callback.callback(); }, [&extra]() { extra.callback(); });
 
     ForwardTime(std::chrono::seconds(5));
 }
@@ -50,10 +48,8 @@ TEST_F(TimerLimitedRepeatingWithClosingActionTest, ResolutionIsTakenIntoAccount)
     EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(3)));
     EXPECT_CALL(extra, callback()).With(After(std::chrono::seconds(4)));
 
-    infra::TimerLimitedRepeatingWithClosingAction timer(2, std::chrono::seconds(1)
-        , [&callback]() { callback.callback(); }
-        , [&extra]() { extra.callback(); }
-    );
+    infra::TimerLimitedRepeatingWithClosingAction timer(
+        2, std::chrono::seconds(1), [&callback]() { callback.callback(); }, [&extra]() { extra.callback(); });
 
     ForwardTime(std::chrono::seconds(5));
 }

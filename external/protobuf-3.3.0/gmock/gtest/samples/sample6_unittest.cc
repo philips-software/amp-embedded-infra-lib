@@ -34,44 +34,48 @@
 
 // The interface and its implementations are in this header.
 #include "prime_tables.h"
-
 #include "gtest/gtest.h"
 
 // First, we define some factory functions for creating instances of
 // the implementations.  You may be able to skip this step if all your
 // implementations can be constructed the same way.
 
-template <class T>
+template<class T>
 PrimeTable* CreatePrimeTable();
 
-template <>
-PrimeTable* CreatePrimeTable<OnTheFlyPrimeTable>() {
-  return new OnTheFlyPrimeTable;
+template<>
+PrimeTable* CreatePrimeTable<OnTheFlyPrimeTable>()
+{
+    return new OnTheFlyPrimeTable;
 }
 
-template <>
-PrimeTable* CreatePrimeTable<PreCalculatedPrimeTable>() {
-  return new PreCalculatedPrimeTable(10000);
+template<>
+PrimeTable* CreatePrimeTable<PreCalculatedPrimeTable>()
+{
+    return new PreCalculatedPrimeTable(10000);
 }
 
 // Then we define a test fixture class template.
-template <class T>
-class PrimeTableTest : public testing::Test {
- protected:
-  // The ctor calls the factory function to create a prime table
-  // implemented by T.
-  PrimeTableTest() : table_(CreatePrimeTable<T>()) {}
+template<class T>
+class PrimeTableTest : public testing::Test
+{
+protected:
+    // The ctor calls the factory function to create a prime table
+    // implemented by T.
+    PrimeTableTest()
+        : table_(CreatePrimeTable<T>())
+    {}
 
-  virtual ~PrimeTableTest() { delete table_; }
+    virtual ~PrimeTableTest() { delete table_; }
 
-  // Note that we test an implementation via the base interface
-  // instead of the actual implementation class.  This is important
-  // for keeping the tests close to the real world scenario, where the
-  // implementation is invoked via the base interface.  It avoids
-  // got-yas where the implementation class has a method that shadows
-  // a method with the same name (but slightly different argument
-  // types) in the base interface, for example.
-  PrimeTable* const table_;
+    // Note that we test an implementation via the base interface
+    // instead of the actual implementation class.  This is important
+    // for keeping the tests close to the real world scenario, where the
+    // implementation is invoked via the base interface.  It avoids
+    // got-yas where the implementation class has a method that shadows
+    // a method with the same name (but slightly different argument
+    // types) in the base interface, for example.
+    PrimeTable* const table_;
 };
 
 #if GTEST_HAS_TYPED_TEST
@@ -97,45 +101,48 @@ TYPED_TEST_CASE(PrimeTableTest, Implementations);
 
 // Then use TYPED_TEST(TestCaseName, TestName) to define a typed test,
 // similar to TEST_F.
-TYPED_TEST(PrimeTableTest, ReturnsFalseForNonPrimes) {
-  // Inside the test body, you can refer to the type parameter by
-  // TypeParam, and refer to the fixture class by TestFixture.  We
-  // don't need them in this example.
+TYPED_TEST(PrimeTableTest, ReturnsFalseForNonPrimes)
+{
+    // Inside the test body, you can refer to the type parameter by
+    // TypeParam, and refer to the fixture class by TestFixture.  We
+    // don't need them in this example.
 
-  // Since we are in the template world, C++ requires explicitly
-  // writing 'this->' when referring to members of the fixture class.
-  // This is something you have to learn to live with.
-  EXPECT_FALSE(this->table_->IsPrime(-5));
-  EXPECT_FALSE(this->table_->IsPrime(0));
-  EXPECT_FALSE(this->table_->IsPrime(1));
-  EXPECT_FALSE(this->table_->IsPrime(4));
-  EXPECT_FALSE(this->table_->IsPrime(6));
-  EXPECT_FALSE(this->table_->IsPrime(100));
+    // Since we are in the template world, C++ requires explicitly
+    // writing 'this->' when referring to members of the fixture class.
+    // This is something you have to learn to live with.
+    EXPECT_FALSE(this->table_->IsPrime(-5));
+    EXPECT_FALSE(this->table_->IsPrime(0));
+    EXPECT_FALSE(this->table_->IsPrime(1));
+    EXPECT_FALSE(this->table_->IsPrime(4));
+    EXPECT_FALSE(this->table_->IsPrime(6));
+    EXPECT_FALSE(this->table_->IsPrime(100));
 }
 
-TYPED_TEST(PrimeTableTest, ReturnsTrueForPrimes) {
-  EXPECT_TRUE(this->table_->IsPrime(2));
-  EXPECT_TRUE(this->table_->IsPrime(3));
-  EXPECT_TRUE(this->table_->IsPrime(5));
-  EXPECT_TRUE(this->table_->IsPrime(7));
-  EXPECT_TRUE(this->table_->IsPrime(11));
-  EXPECT_TRUE(this->table_->IsPrime(131));
+TYPED_TEST(PrimeTableTest, ReturnsTrueForPrimes)
+{
+    EXPECT_TRUE(this->table_->IsPrime(2));
+    EXPECT_TRUE(this->table_->IsPrime(3));
+    EXPECT_TRUE(this->table_->IsPrime(5));
+    EXPECT_TRUE(this->table_->IsPrime(7));
+    EXPECT_TRUE(this->table_->IsPrime(11));
+    EXPECT_TRUE(this->table_->IsPrime(131));
 }
 
-TYPED_TEST(PrimeTableTest, CanGetNextPrime) {
-  EXPECT_EQ(2, this->table_->GetNextPrime(0));
-  EXPECT_EQ(3, this->table_->GetNextPrime(2));
-  EXPECT_EQ(5, this->table_->GetNextPrime(3));
-  EXPECT_EQ(7, this->table_->GetNextPrime(5));
-  EXPECT_EQ(11, this->table_->GetNextPrime(7));
-  EXPECT_EQ(131, this->table_->GetNextPrime(128));
+TYPED_TEST(PrimeTableTest, CanGetNextPrime)
+{
+    EXPECT_EQ(2, this->table_->GetNextPrime(0));
+    EXPECT_EQ(3, this->table_->GetNextPrime(2));
+    EXPECT_EQ(5, this->table_->GetNextPrime(3));
+    EXPECT_EQ(7, this->table_->GetNextPrime(5));
+    EXPECT_EQ(11, this->table_->GetNextPrime(7));
+    EXPECT_EQ(131, this->table_->GetNextPrime(128));
 }
 
 // That's it!  Google Test will repeat each TYPED_TEST for each type
 // in the type list specified in TYPED_TEST_CASE.  Sit back and be
 // happy that you don't have to define them multiple times.
 
-#endif  // GTEST_HAS_TYPED_TEST
+#endif // GTEST_HAS_TYPED_TEST
 
 #if GTEST_HAS_TYPED_TEST_P
 
@@ -157,8 +164,9 @@ using testing::Types;
 // First, define a test fixture class template.  Here we just reuse
 // the PrimeTableTest fixture defined earlier:
 
-template <class T>
-class PrimeTableTest2 : public PrimeTableTest<T> {
+template<class T>
+class PrimeTableTest2 : public PrimeTableTest<T>
+{
 };
 
 // Then, declare the test case.  The argument is the name of the test
@@ -168,37 +176,40 @@ TYPED_TEST_CASE_P(PrimeTableTest2);
 
 // Next, use TYPED_TEST_P(TestCaseName, TestName) to define a test,
 // similar to what you do with TEST_F.
-TYPED_TEST_P(PrimeTableTest2, ReturnsFalseForNonPrimes) {
-  EXPECT_FALSE(this->table_->IsPrime(-5));
-  EXPECT_FALSE(this->table_->IsPrime(0));
-  EXPECT_FALSE(this->table_->IsPrime(1));
-  EXPECT_FALSE(this->table_->IsPrime(4));
-  EXPECT_FALSE(this->table_->IsPrime(6));
-  EXPECT_FALSE(this->table_->IsPrime(100));
+TYPED_TEST_P(PrimeTableTest2, ReturnsFalseForNonPrimes)
+{
+    EXPECT_FALSE(this->table_->IsPrime(-5));
+    EXPECT_FALSE(this->table_->IsPrime(0));
+    EXPECT_FALSE(this->table_->IsPrime(1));
+    EXPECT_FALSE(this->table_->IsPrime(4));
+    EXPECT_FALSE(this->table_->IsPrime(6));
+    EXPECT_FALSE(this->table_->IsPrime(100));
 }
 
-TYPED_TEST_P(PrimeTableTest2, ReturnsTrueForPrimes) {
-  EXPECT_TRUE(this->table_->IsPrime(2));
-  EXPECT_TRUE(this->table_->IsPrime(3));
-  EXPECT_TRUE(this->table_->IsPrime(5));
-  EXPECT_TRUE(this->table_->IsPrime(7));
-  EXPECT_TRUE(this->table_->IsPrime(11));
-  EXPECT_TRUE(this->table_->IsPrime(131));
+TYPED_TEST_P(PrimeTableTest2, ReturnsTrueForPrimes)
+{
+    EXPECT_TRUE(this->table_->IsPrime(2));
+    EXPECT_TRUE(this->table_->IsPrime(3));
+    EXPECT_TRUE(this->table_->IsPrime(5));
+    EXPECT_TRUE(this->table_->IsPrime(7));
+    EXPECT_TRUE(this->table_->IsPrime(11));
+    EXPECT_TRUE(this->table_->IsPrime(131));
 }
 
-TYPED_TEST_P(PrimeTableTest2, CanGetNextPrime) {
-  EXPECT_EQ(2, this->table_->GetNextPrime(0));
-  EXPECT_EQ(3, this->table_->GetNextPrime(2));
-  EXPECT_EQ(5, this->table_->GetNextPrime(3));
-  EXPECT_EQ(7, this->table_->GetNextPrime(5));
-  EXPECT_EQ(11, this->table_->GetNextPrime(7));
-  EXPECT_EQ(131, this->table_->GetNextPrime(128));
+TYPED_TEST_P(PrimeTableTest2, CanGetNextPrime)
+{
+    EXPECT_EQ(2, this->table_->GetNextPrime(0));
+    EXPECT_EQ(3, this->table_->GetNextPrime(2));
+    EXPECT_EQ(5, this->table_->GetNextPrime(3));
+    EXPECT_EQ(7, this->table_->GetNextPrime(5));
+    EXPECT_EQ(11, this->table_->GetNextPrime(7));
+    EXPECT_EQ(131, this->table_->GetNextPrime(128));
 }
 
 // Type-parameterized tests involve one extra step: you have to
 // enumerate the tests you defined:
 REGISTER_TYPED_TEST_CASE_P(
-    PrimeTableTest2,  // The first argument is the test case name.
+    PrimeTableTest2, // The first argument is the test case name.
     // The rest of the arguments are the test names.
     ReturnsFalseForNonPrimes, ReturnsTrueForPrimes, CanGetNextPrime);
 
@@ -217,8 +228,8 @@ REGISTER_TYPED_TEST_CASE_P(
 // defined at the time we write the TYPED_TEST_P()s.
 typedef Types<OnTheFlyPrimeTable, PreCalculatedPrimeTable>
     PrimeTableImplementations;
-INSTANTIATE_TYPED_TEST_CASE_P(OnTheFlyAndPreCalculated,    // Instance name
-                              PrimeTableTest2,             // Test case name
-                              PrimeTableImplementations);  // Type list
+INSTANTIATE_TYPED_TEST_CASE_P(OnTheFlyAndPreCalculated, // Instance name
+    PrimeTableTest2,                                    // Test case name
+    PrimeTableImplementations);                         // Type list
 
-#endif  // GTEST_HAS_TYPED_TEST_P
+#endif // GTEST_HAS_TYPED_TEST_P

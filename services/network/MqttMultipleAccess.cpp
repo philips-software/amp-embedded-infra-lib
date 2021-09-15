@@ -105,16 +105,14 @@ namespace services
 
     void MqttMultipleAccess::Publish()
     {
-        claimer.Claim([this]()
-        {
+        claimer.Claim([this]() {
             master.Publish(*this);
         });
     }
 
     void MqttMultipleAccess::Subscribe()
     {
-        claimer.Claim([this]()
-        {
+        claimer.Claim([this]() {
             master.Subscribe(*this);
         });
     }

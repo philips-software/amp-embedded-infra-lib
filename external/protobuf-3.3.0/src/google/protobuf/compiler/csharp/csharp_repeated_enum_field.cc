@@ -28,100 +28,113 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <sstream>
-
 #include <google/protobuf/compiler/code_generator.h>
+#include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
+#include <google/protobuf/compiler/csharp/csharp_helpers.h>
+#include <google/protobuf/compiler/csharp/csharp_repeated_enum_field.h>
 #include <google/protobuf/compiler/plugin.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/wire_format.h>
+#include <sstream>
 
-#include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
-#include <google/protobuf/compiler/csharp/csharp_helpers.h>
-#include <google/protobuf/compiler/csharp/csharp_repeated_enum_field.h>
+namespace google
+{
+    namespace protobuf
+    {
+        namespace compiler
+        {
+            namespace csharp
+            {
 
-namespace google {
-namespace protobuf {
-namespace compiler {
-namespace csharp {
+                RepeatedEnumFieldGenerator::RepeatedEnumFieldGenerator(
+                    const FieldDescriptor* descriptor, int fieldOrdinal, const Options* options)
+                    : FieldGeneratorBase(descriptor, fieldOrdinal, options)
+                {
+                }
 
-RepeatedEnumFieldGenerator::RepeatedEnumFieldGenerator(
-    const FieldDescriptor* descriptor, int fieldOrdinal, const Options *options)
-    : FieldGeneratorBase(descriptor, fieldOrdinal, options) {
-}
+                RepeatedEnumFieldGenerator::~RepeatedEnumFieldGenerator()
+                {
+                }
 
-RepeatedEnumFieldGenerator::~RepeatedEnumFieldGenerator() {
+                void RepeatedEnumFieldGenerator::GenerateMembers(io::Printer* printer)
+                {
+                    printer->Print(
+                        variables_,
+                        "private static readonly pb::FieldCodec<$type_name$> _repeated_$name$_codec\n"
+                        "    = pb::FieldCodec.ForEnum($tag$, x => (int) x, x => ($type_name$) x);\n");
+                    printer->Print(variables_,
+                        "private readonly pbc::RepeatedField<$type_name$> $name$_ = new pbc::RepeatedField<$type_name$>();\n");
+                    WritePropertyDocComment(printer, descriptor_);
+                    AddPublicMemberAttributes(printer);
+                    printer->Print(
+                        variables_,
+                        "$access_level$ pbc::RepeatedField<$type_name$> $property_name$ {\n"
+                        "  get { return $name$_; }\n"
+                        "}\n");
+                }
 
-}
+                void RepeatedEnumFieldGenerator::GenerateMergingCode(io::Printer* printer)
+                {
+                    printer->Print(
+                        variables_,
+                        "$name$_.Add(other.$name$_);\n");
+                }
 
-void RepeatedEnumFieldGenerator::GenerateMembers(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "private static readonly pb::FieldCodec<$type_name$> _repeated_$name$_codec\n"
-    "    = pb::FieldCodec.ForEnum($tag$, x => (int) x, x => ($type_name$) x);\n");
-  printer->Print(variables_,
-    "private readonly pbc::RepeatedField<$type_name$> $name$_ = new pbc::RepeatedField<$type_name$>();\n");
-  WritePropertyDocComment(printer, descriptor_);
-  AddPublicMemberAttributes(printer);
-  printer->Print(
-    variables_,
-    "$access_level$ pbc::RepeatedField<$type_name$> $property_name$ {\n"
-    "  get { return $name$_; }\n"
-    "}\n");
-}
+                void RepeatedEnumFieldGenerator::GenerateParsingCode(io::Printer* printer)
+                {
+                    printer->Print(
+                        variables_,
+                        "$name$_.AddEntriesFrom(input, _repeated_$name$_codec);\n");
+                }
 
-void RepeatedEnumFieldGenerator::GenerateMergingCode(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "$name$_.Add(other.$name$_);\n");
-}
+                void RepeatedEnumFieldGenerator::GenerateSerializationCode(io::Printer* printer)
+                {
+                    printer->Print(
+                        variables_,
+                        "$name$_.WriteTo(output, _repeated_$name$_codec);\n");
+                }
 
-void RepeatedEnumFieldGenerator::GenerateParsingCode(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "$name$_.AddEntriesFrom(input, _repeated_$name$_codec);\n");
-}
+                void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer)
+                {
+                    printer->Print(
+                        variables_,
+                        "size += $name$_.CalculateSize(_repeated_$name$_codec);\n");
+                }
 
-void RepeatedEnumFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "$name$_.WriteTo(output, _repeated_$name$_codec);\n");
-}
+                void RepeatedEnumFieldGenerator::WriteHash(io::Printer* printer)
+                {
+                    printer->Print(
+                        variables_,
+                        "hash ^= $name$_.GetHashCode();\n");
+                }
 
-void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {  
-  printer->Print(
-    variables_,
-    "size += $name$_.CalculateSize(_repeated_$name$_codec);\n");
-}
+                void RepeatedEnumFieldGenerator::WriteEquals(io::Printer* printer)
+                {
+                    printer->Print(
+                        variables_,
+                        "if(!$name$_.Equals(other.$name$_)) return false;\n");
+                }
 
-void RepeatedEnumFieldGenerator::WriteHash(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "hash ^= $name$_.GetHashCode();\n");
-}
+                void RepeatedEnumFieldGenerator::WriteToString(io::Printer* printer)
+                {
+                    printer->Print(variables_,
+                        "PrintField(\"$descriptor_name$\", $name$_, writer);\n");
+                }
 
-void RepeatedEnumFieldGenerator::WriteEquals(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "if(!$name$_.Equals(other.$name$_)) return false;\n");
-}
+                void RepeatedEnumFieldGenerator::GenerateCloningCode(io::Printer* printer)
+                {
+                    printer->Print(variables_,
+                        "$name$_ = other.$name$_.Clone();\n");
+                }
 
-void RepeatedEnumFieldGenerator::WriteToString(io::Printer* printer) {
-  printer->Print(variables_,
-    "PrintField(\"$descriptor_name$\", $name$_, writer);\n");
-}
+                void RepeatedEnumFieldGenerator::GenerateFreezingCode(io::Printer* printer)
+                {
+                }
 
-void RepeatedEnumFieldGenerator::GenerateCloningCode(io::Printer* printer) {
-  printer->Print(variables_,
-    "$name$_ = other.$name$_.Clone();\n");
-}
-
-void RepeatedEnumFieldGenerator::GenerateFreezingCode(io::Printer* printer) {
-}
-
-}  // namespace csharp
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+            } // namespace csharp
+        }     // namespace compiler
+    }         // namespace protobuf
+} // namespace google

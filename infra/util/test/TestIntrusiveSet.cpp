@@ -1,6 +1,6 @@
-#include "gtest/gtest.h"
 #include "infra/util/IntrusiveSet.hpp"
 #include "infra/util/ReverseRange.hpp"
+#include "gtest/gtest.h"
 #include <array>
 #include <functional>
 #include <memory>
@@ -10,7 +10,9 @@ namespace
     struct SetInt
         : infra::IntrusiveSet<SetInt>::NodeType
     {
-        SetInt(int v): value(v) {}
+        SetInt(int v)
+            : value(v)
+        {}
 
         int value;
 
@@ -61,7 +63,6 @@ public:
             os << ")";
         }
     }
-
 };
 
 TEST_F(IntrusiveSetTest, TestConstructedEmpty)
@@ -75,7 +76,7 @@ TEST_F(IntrusiveSetTest, TestConstructedEmpty)
 
 TEST_F(IntrusiveSetTest, TestConstructionWithRange)
 {
-    SetInt range[3] = { 0, 1, 2};
+    SetInt range[3] = { 0, 1, 2 };
     infra::IntrusiveSet<SetInt> set(range, range + 3);
 
     EXPECT_EQ(3, set.size());
@@ -88,7 +89,7 @@ TEST_F(IntrusiveSetTest, TestConstructionWithRange)
 
 TEST_F(IntrusiveSetTest, TestMoveConstruction)
 {
-    SetInt range[3] = { 0, 1, 2};
+    SetInt range[3] = { 0, 1, 2 };
     infra::IntrusiveSet<SetInt> original(range, range + 3);
     infra::IntrusiveSet<SetInt> copy(std::move(original));
 
@@ -101,7 +102,7 @@ TEST_F(IntrusiveSetTest, TestMoveConstruction)
 
 TEST_F(IntrusiveSetTest, TestMoveAssignment)
 {
-    SetInt range[3] = { 0, 1, 2};
+    SetInt range[3] = { 0, 1, 2 };
     infra::IntrusiveSet<SetInt> original(range, range + 3);
     infra::IntrusiveSet<SetInt> copy;
     copy = std::move(original);
@@ -120,16 +121,18 @@ TEST_F(IntrusiveSetTest, IterateAfterMoveAssignment)
     infra::IntrusiveSet<SetInt> copy;
     copy = std::move(original);
 
-    for (SetInt& i: copy)
-    {}
+    for (SetInt& i : copy)
+    {
+    }
 
-    for (SetInt& i: MakeReverseRange(copy))
-    {}
+    for (SetInt& i : MakeReverseRange(copy))
+    {
+    }
 }
 
 TEST_F(IntrusiveSetTest, TestBeginAndEnd)
 {
-    SetInt range[3] = { 0, 1, 2};
+    SetInt range[3] = { 0, 1, 2 };
     infra::IntrusiveSet<SetInt> set(range, range + 3);
 
     EXPECT_EQ(set.end(), std::next(set.begin(), 3));
@@ -141,7 +144,7 @@ TEST_F(IntrusiveSetTest, TestBeginAndEnd)
 
 TEST_F(IntrusiveSetTest, TestFront)
 {
-    SetInt range[3] = { 0, 1, 2};
+    SetInt range[3] = { 0, 1, 2 };
     infra::IntrusiveSet<SetInt> set(range, range + 3);
 
     EXPECT_EQ(SetInt(0), set.front());
@@ -149,7 +152,7 @@ TEST_F(IntrusiveSetTest, TestFront)
 
 TEST_F(IntrusiveSetTest, TestBack)
 {
-    SetInt range[3] = { 0, 1, 2};
+    SetInt range[3] = { 0, 1, 2 };
     infra::IntrusiveSet<SetInt> set(range, range + 3);
 
     EXPECT_EQ(SetInt(2), set.back());
@@ -184,7 +187,7 @@ TEST_F(IntrusiveSetTest, TestNotHasElementForSameValue)
 
 TEST_F(IntrusiveSetTest, TestAssignRange)
 {
-    SetInt range[3] = { 0, 1, 2};
+    SetInt range[3] = { 0, 1, 2 };
     SetInt otherRange[2] = { 4, 5 };
 
     infra::IntrusiveSet<SetInt> set(range, range + 3);
@@ -212,7 +215,7 @@ TEST_F(IntrusiveSetTest, TestAssignN)
 
 TEST_F(IntrusiveSetTest, TestSwap)
 {
-    SetInt range1[3] = { 0, 1, 2};
+    SetInt range1[3] = { 0, 1, 2 };
     SetInt range2[3] = { 3, 4, 5 };
     infra::IntrusiveSet<SetInt> set1(range1, range1 + 3);
     infra::IntrusiveSet<SetInt> set2(range2, range2 + 3);
@@ -231,7 +234,7 @@ TEST_F(IntrusiveSetTest, TestSwap)
 
 TEST_F(IntrusiveSetTest, TestSwapDifferentSizes)
 {
-    SetInt range1[3] = { 0, 1, 2};
+    SetInt range1[3] = { 0, 1, 2 };
     SetInt range2[2] = { 3, 4 };
     infra::IntrusiveSet<SetInt> set1(range1, range1 + 3);
     infra::IntrusiveSet<SetInt> set2(range2, range2 + 2);
@@ -250,7 +253,7 @@ TEST_F(IntrusiveSetTest, TestSwapDifferentSizes)
 
 TEST_F(IntrusiveSetTest, TestClear)
 {
-    SetInt range[3] = { 0, 1, 2};
+    SetInt range[3] = { 0, 1, 2 };
     infra::IntrusiveSet<SetInt> set(range, range + 3);
     set.clear();
 

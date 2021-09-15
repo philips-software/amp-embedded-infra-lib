@@ -3,6 +3,6 @@
 
 #include "../lwip_check.h"
 
-Suite *timers_suite(void);
+Suite* timers_suite(void);
 
 #endif

@@ -1,7 +1,7 @@
-#include "gtest/gtest.h"
 #include "hal/interfaces/test_doubles/FlashMock.hpp"
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "services/util/FlashMultipleAccess.hpp"
+#include "gtest/gtest.h"
 
 class FlashMultipleAccessTest
     : public testing::Test

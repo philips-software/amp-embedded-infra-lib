@@ -36,77 +36,92 @@
 
 const char output_file[] = "well_known_types_embed.cc";
 
-static bool AsciiIsPrint(unsigned char c) {
-  return c >= 32 && c < 127;
+static bool AsciiIsPrint(unsigned char c)
+{
+    return c >= 32 && c < 127;
 }
 
-static char ToDecimalDigit(int num) {
-  assert(num < 10);
-  return '0' + num;
+static char ToDecimalDigit(int num)
+{
+    assert(num < 10);
+    return '0' + num;
 }
 
-static std::string CEscape(const std::string& str) {
-  std::string dest;
+static std::string CEscape(const std::string& str)
+{
+    std::string dest;
 
-  for (size_t i = 0; i < str.size(); ++i) {
-    unsigned char ch = str[i];
-    switch (ch) {
-      case '\n': dest += "\\n"; break;
-      case '\r': dest += "\\r"; break;
-      case '\t': dest += "\\t"; break;
-      case '\"': dest += "\\\""; break;
-      case '\\': dest += "\\\\"; break;
-      default:
-        if (AsciiIsPrint(ch)) {
-          dest += ch;
-        } else {
-          dest += "\\";
-          dest += ToDecimalDigit(ch / 64);
-          dest += ToDecimalDigit((ch % 64) / 8);
-          dest += ToDecimalDigit(ch % 8);
+    for (size_t i = 0; i < str.size(); ++i)
+    {
+        unsigned char ch = str[i];
+        switch (ch)
+        {
+        case '\n': dest += "\\n"; break;
+        case '\r': dest += "\\r"; break;
+        case '\t': dest += "\\t"; break;
+        case '\"': dest += "\\\""; break;
+        case '\\': dest += "\\\\"; break;
+        default:
+            if (AsciiIsPrint(ch))
+            {
+                dest += ch;
+            }
+            else
+            {
+                dest += "\\";
+                dest += ToDecimalDigit(ch / 64);
+                dest += ToDecimalDigit((ch % 64) / 8);
+                dest += ToDecimalDigit(ch % 8);
+            }
+            break;
         }
-        break;
     }
-  }
 
-  return dest;
+    return dest;
 }
 
-static void AddFile(const char* name, std::basic_ostream<char>* out) {
-  std::ifstream in(name);
+static void AddFile(const char* name, std::basic_ostream<char>* out)
+{
+    std::ifstream in(name);
 
-  if (!in.is_open()) {
-    std::cerr << "Couldn't open input file: " << name << "\n";
-    std::exit(EXIT_FAILURE);
-  }
-
-  // Make canonical name only include the final element.
-  for (const char *p = name; *p; p++) {
-    if (*p == '/') {
-      name = p + 1;
+    if (!in.is_open())
+    {
+        std::cerr << "Couldn't open input file: " << name << "\n";
+        std::exit(EXIT_FAILURE);
     }
-  }
 
-  *out << "{\"" << CEscape(name) << "\",\n";
+    // Make canonical name only include the final element.
+    for (const char* p = name; *p; p++)
+    {
+        if (*p == '/')
+        {
+            name = p + 1;
+        }
+    }
 
-  for (std::string line; std::getline(in, line); ) {
-    *out << "  \"" << CEscape(line) << "\\n\"\n";
-  }
+    *out << "{\"" << CEscape(name) << "\",\n";
 
-  *out << "},\n";
+    for (std::string line; std::getline(in, line);)
+    {
+        *out << "  \"" << CEscape(line) << "\\n\"\n";
+    }
+
+    *out << "},\n";
 }
 
-int main(int argc, char *argv[]) {
-  std::cout << "#include "
-               "\"google/protobuf/compiler/js/well_known_types_embed.h\"\n";
-  std::cout << "struct FileToc well_known_types_js[] = {\n";
+int main(int argc, char* argv[])
+{
+    std::cout << "#include "
+                 "\"google/protobuf/compiler/js/well_known_types_embed.h\"\n";
+    std::cout << "struct FileToc well_known_types_js[] = {\n";
 
-  for (int i = 1; i < argc; i++) {
-    AddFile(argv[i], &std::cout);
-  }
+    for (int i = 1; i < argc; i++)
+    {
+        AddFile(argv[i], &std::cout);
+    }
 
-  std::cout << "  {NULL, NULL}  // Terminate the list.\n";
-  std::cout << "};\n";
+    std::cout << "  {NULL, NULL}  // Terminate the list.\n";
+    std::cout << "};\n";
 
-  return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }

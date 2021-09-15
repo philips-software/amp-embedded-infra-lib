@@ -28,10 +28,9 @@
 #if defined(MBEDTLS_VERSION_C)
 
 #include "mbedtls/version.h"
-
 #include <string.h>
 
-static const char *features[] = {
+static const char* features[] = {
 #if defined(MBEDTLS_VERSION_FEATURES)
 #if defined(MBEDTLS_HAVE_ASM)
     "MBEDTLS_HAVE_ASM",
@@ -748,23 +747,23 @@ static const char *features[] = {
     NULL
 };
 
-int mbedtls_version_check_feature( const char *feature )
+int mbedtls_version_check_feature(const char* feature)
 {
-    const char **idx = features;
+    const char** idx = features;
 
-    if( *idx == NULL )
-        return( -2 );
+    if (*idx == NULL)
+        return (-2);
 
-    if( feature == NULL )
-        return( -1 );
+    if (feature == NULL)
+        return (-1);
 
-    while( *idx != NULL )
+    while (*idx != NULL)
     {
-        if( !strcmp( *idx, feature ) )
-            return( 0 );
+        if (!strcmp(*idx, feature))
+            return (0);
         idx++;
     }
-    return( -1 );
+    return (-1);
 }
 
 #endif /* MBEDTLS_VERSION_C */

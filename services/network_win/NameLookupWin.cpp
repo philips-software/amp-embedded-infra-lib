@@ -1,5 +1,5 @@
-#include "infra/event/EventDispatcher.hpp"
 #include "services/network_win/NameLookupWin.hpp"
+#include "infra/event/EventDispatcher.hpp"
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
@@ -68,8 +68,7 @@ namespace services
                 {
                     sockaddr_in* address = reinterpret_cast<sockaddr_in*>(entry->ai_addr);
                     auto ipv4Address = services::IPv4Address{ address->sin_addr.s_net, address->sin_addr.s_host, address->sin_addr.s_lh, address->sin_addr.s_impno };
-                    infra::EventDispatcher::Instance().Schedule([this, ipv4Address]()
-                    {
+                    infra::EventDispatcher::Instance().Schedule([this, ipv4Address]() {
                         std::lock_guard<std::mutex> lock(mutex);
                         if (&nameLookup.front() == currentLookup)
                         {
@@ -81,8 +80,7 @@ namespace services
                     return;
                 }
 
-        infra::EventDispatcher::Instance().Schedule([this]()
-        {
+        infra::EventDispatcher::Instance().Schedule([this]() {
             std::unique_lock<std::mutex> lock(mutex);
             if (&nameLookup.front() == currentLookup)
             {

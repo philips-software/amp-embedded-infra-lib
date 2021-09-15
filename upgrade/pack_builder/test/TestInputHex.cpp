@@ -1,7 +1,7 @@
-#include "gtest/gtest.h"
 #include "hal/interfaces/test_doubles/FileSystemStub.hpp"
 #include "upgrade/pack_builder/InputHex.hpp"
 #include "upgrade/pack_builder/test/ImageSecurityNone.hpp"
+#include "gtest/gtest.h"
 #include <algorithm>
 
 class TestInputHex
@@ -25,4 +25,3 @@ TEST_F(TestInputHex, ImageSize)
 
     EXPECT_EQ(25, image.size());
 }
-

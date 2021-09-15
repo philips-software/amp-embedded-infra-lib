@@ -86,16 +86,17 @@
 #define LWIP_HDR_IP6_ZONE_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/**
+    /**
  * @defgroup ip6_zones IPv6 Zones
  * @ingroup ip6
  * @{
  */
 
-#if LWIP_IPV6  /* don't build if not configured for use in lwipopts.h */
+#if LWIP_IPV6 /* don't build if not configured for use in lwipopts.h */
 
 /** Identifier for "no zone". */
 #define IP6_NO_ZONE 0
@@ -127,21 +128,21 @@ extern "C" {
  * This macro must only be used on IPv6 addresses of the same scope. */
 #define ip6_addr_cmp_zone(ip6addr1, ip6addr2) ((ip6addr1)->zone == (ip6addr2)->zone)
 
-/** Symbolic constants for the 'type' parameters in some of the macros.
+    /** Symbolic constants for the 'type' parameters in some of the macros.
  * These exist for efficiency only, allowing the macros to avoid certain tests
  * when the address is known not to be of a certain type. Dead code elimination
  * will do the rest. IP6_MULTICAST is supported but currently not optimized.
  * @see ip6_addr_has_scope, ip6_addr_assign_zone, ip6_addr_lacks_zone.
  */
-enum lwip_ipv6_scope_type
-{
-  /** Unknown */
-  IP6_UNKNOWN   = 0,
-  /** Unicast */
-  IP6_UNICAST   = 1,
-  /** Multicast */
-  IP6_MULTICAST = 2
-};
+    enum lwip_ipv6_scope_type
+    {
+        /** Unknown */
+        IP6_UNKNOWN = 0,
+        /** Unicast */
+        IP6_UNICAST = 1,
+        /** Multicast */
+        IP6_MULTICAST = 2
+    };
 
 /** IPV6_CUSTOM_SCOPES: together, the following three macro definitions,
  * @ref ip6_addr_has_scope, @ref ip6_addr_assign_zone, and
@@ -175,9 +176,7 @@ enum lwip_ipv6_scope_type
  * @return 1 if the address has a constrained scope, 0 if it does not.
  */
 #define ip6_addr_has_scope(ip6addr, type) \
-  (ip6_addr_islinklocal(ip6addr) || (((type) != IP6_UNICAST) && \
-   (ip6_addr_ismulticast_iflocal(ip6addr) || \
-    ip6_addr_ismulticast_linklocal(ip6addr))))
+    (ip6_addr_islinklocal(ip6addr) || (((type) != IP6_UNICAST) && (ip6_addr_ismulticast_iflocal(ip6addr) || ip6_addr_ismulticast_linklocal(ip6addr))))
 
 /**
  * Assign a zone index to an IPv6 address, based on a network interface. If the
@@ -196,8 +195,8 @@ enum lwip_ipv6_scope_type
  * @param netif the network interface (const).
  */
 #define ip6_addr_assign_zone(ip6addr, type, netif) \
-    (ip6_addr_set_zone((ip6addr), \
-      ip6_addr_has_scope((ip6addr), (type)) ? netif_get_index(netif) : 0))
+    (ip6_addr_set_zone((ip6addr),                  \
+        ip6_addr_has_scope((ip6addr), (type)) ? netif_get_index(netif) : 0))
 
 /**
  * Test whether an IPv6 address is "zone-compatible" with a network interface.
@@ -246,13 +245,18 @@ enum lwip_ipv6_scope_type
  * @param dest the IPv6 address for which to select and set a zone.
  * @param src source IPv6 address (const); may be equal to dest.
  */
-#define ip6_addr_select_zone(dest, src) do { struct netif *selected_netif; \
-  selected_netif = ip6_route((src), (dest)); \
-  if (selected_netif != NULL) { \
-    ip6_addr_assign_zone((dest), IP6_UNKNOWN, selected_netif); \
-  } } while (0)
+#define ip6_addr_select_zone(dest, src)                                \
+    do                                                                 \
+    {                                                                  \
+        struct netif* selected_netif;                                  \
+        selected_netif = ip6_route((src), (dest));                     \
+        if (selected_netif != NULL)                                    \
+        {                                                              \
+            ip6_addr_assign_zone((dest), IP6_UNKNOWN, selected_netif); \
+        }                                                              \
+    } while (0)
 
-/**
+    /**
  * @}
  */
 
@@ -282,11 +286,10 @@ enum lwip_ipv6_scope_type
     ip6_addr_has_scope(ip6addr, IP6_UNKNOWN) == ip6_addr_has_zone(ip6addr))
 
 /** Verify that the given IPv6 address is properly zoned for the given netif. */
-#define IP6_ADDR_ZONECHECK_NETIF(ip6addr, netif) LWIP_ASSERT("IPv6 netif zone check failed", \
-    ip6_addr_has_scope(ip6addr, IP6_UNKNOWN) ? \
-    (ip6_addr_has_zone(ip6addr) && \
-     (((netif) == NULL) || ip6_addr_test_zone((ip6addr), (netif)))) : \
-    !ip6_addr_has_zone(ip6addr))
+#define IP6_ADDR_ZONECHECK_NETIF(ip6addr, netif) LWIP_ASSERT("IPv6 netif zone check failed",                      \
+    ip6_addr_has_scope(ip6addr, IP6_UNKNOWN) ? (ip6_addr_has_zone(ip6addr) &&                                     \
+                                                   (((netif) == NULL) || ip6_addr_test_zone((ip6addr), (netif)))) \
+                                             : !ip6_addr_has_zone(ip6addr))
 
 #else /* LWIP_IPV6_SCOPES && LWIP_IPV6_SCOPES_DEBUG */
 

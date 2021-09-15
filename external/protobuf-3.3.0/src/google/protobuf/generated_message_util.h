@@ -40,12 +40,11 @@
 
 #include <assert.h>
 #include <climits>
-#include <string>
-
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/has_bits.h>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/once.h>
+#include <string>
 
 #ifndef PROTOBUF_FINAL
 #if LANG_CXX11 && !defined(__NVCC__)
@@ -53,17 +52,22 @@
 #else
 #define PROTOBUF_FINAL
 #endif
-#endif  // !PROTOBUF_FINAL
+#endif // !PROTOBUF_FINAL
 
-namespace google {
+namespace google
+{
 
-namespace protobuf {
+    namespace protobuf
+    {
 
-class Arena;
-namespace io { class CodedInputStream; }
+        class Arena;
+        namespace io
+        {
+            class CodedInputStream;
+        }
 
-namespace internal {
-
+        namespace internal
+        {
 
 // Annotation for the compiler to emit a deprecation message if a field marked
 // with option 'deprecated=true' is used in the code, or for other things in
@@ -75,7 +79,6 @@ namespace internal {
 #define PROTOBUF_DEPRECATED
 
 #define GOOGLE_PROTOBUF_DEPRECATED_ATTR
-
 
 // Returns the offset of the given field within the given aggregate type.
 // This is equivalent to the ANSI C offsetof() macro.  However, according
@@ -89,142 +92,153 @@ namespace internal {
 // For Clang we use __builtin_offsetof() and suppress the warning,
 // to avoid Control Flow Integrity and UBSan vptr sanitizers from
 // crashing while trying to validate the invalid reinterpet_casts.
-#define GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TYPE, FIELD)  \
-  _Pragma("clang diagnostic push")                                   \
-  _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"")         \
-  __builtin_offsetof(TYPE, FIELD)                                    \
-  _Pragma("clang diagnostic pop")
+#define GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TYPE, FIELD)                                \
+    _Pragma("clang diagnostic push")                                                               \
+        _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"") __builtin_offsetof(TYPE, FIELD) \
+            _Pragma("clang diagnostic pop")
 #else
 // Note that we calculate relative to the pointer value 16 here since if we
 // just use zero, GCC complains about dereferencing a NULL pointer.  We
 // choose 16 rather than some other number just in case the compiler would
 // be confused by an unaligned pointer.
-#define GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TYPE, FIELD)  \
-  static_cast<int>(                                                  \
-      reinterpret_cast<const char*>(                                 \
-          &reinterpret_cast<const TYPE*>(16)->FIELD) -               \
-      reinterpret_cast<const char*>(16))
+#define GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TYPE, FIELD) \
+    static_cast<int>(                                               \
+        reinterpret_cast<const char*>(                              \
+            &reinterpret_cast<const TYPE*>(16)->FIELD) -            \
+        reinterpret_cast<const char*>(16))
 #endif
 
-#define GOOGLE_PROTOBUF_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(ONEOF, FIELD)  \
-  static_cast< ::google::protobuf::uint32>(                                                    \
-      reinterpret_cast<const char*>(&(ONEOF->FIELD))                        \
-      - reinterpret_cast<const char*>(ONEOF))
+#define GOOGLE_PROTOBUF_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(ONEOF, FIELD) \
+    static_cast<::google::protobuf::uint32>(                               \
+        reinterpret_cast<const char*>(&(ONEOF->FIELD)) - reinterpret_cast<const char*>(ONEOF))
 // TODO(acozzette): remove this transitional macro after updating generated code
 #define PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(ONEOF, FIELD) \
-  GOOGLE_PROTOBUF_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(ONEOF, FIELD)
+    GOOGLE_PROTOBUF_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(ONEOF, FIELD)
 
-// Constants for special floating point values.
-LIBPROTOBUF_EXPORT double Infinity();
-LIBPROTOBUF_EXPORT double NaN();
+            // Constants for special floating point values.
+            LIBPROTOBUF_EXPORT double Infinity();
+            LIBPROTOBUF_EXPORT double NaN();
 
-// This type is used to define a global variable, without it's constructor
-// and destructor run on start and end of the program lifetime. This circumvents
-// the initial construction order fiasco, while keeping the address of the
-// empty string a compile time constant.
-template <typename T>
-class ExplicitlyConstructed {
- public:
-  void DefaultConstruct() {
-    new (&union_) T();
-    init_ = true;
-  }
+            // This type is used to define a global variable, without it's constructor
+            // and destructor run on start and end of the program lifetime. This circumvents
+            // the initial construction order fiasco, while keeping the address of the
+            // empty string a compile time constant.
+            template<typename T>
+            class ExplicitlyConstructed
+            {
+            public:
+                void DefaultConstruct()
+                {
+                    new (&union_) T();
+                    init_ = true;
+                }
 
-  bool IsInitialized() { return init_; }
-  void Shutdown() {
-    if (init_) {
-      init_ = false;
-      get_mutable()->~T();
-    }
-  }
+                bool IsInitialized() { return init_; }
+                void Shutdown()
+                {
+                    if (init_)
+                    {
+                        init_ = false;
+                        get_mutable()->~T();
+                    }
+                }
 
 #if LANG_CXX11
-  constexpr
+                constexpr
 #endif
-      const T&
-      get() const {
-    return reinterpret_cast<const T&>(union_);
-  }
-  T* get_mutable() { return reinterpret_cast<T*>(&union_); }
+                    const T&
+                    get() const
+                {
+                    return reinterpret_cast<const T&>(union_);
+                }
+                T* get_mutable() { return reinterpret_cast<T*>(&union_); }
 
- private:
-  // Prefer c++14 aligned_storage, but for compatibility this will do.
-  union AlignedUnion {
-    char space[sizeof(T)];
-    int64 align_to_int64;
-    void* align_to_ptr;
-  } union_;
-  bool init_;  // false by linker
-};
+            private:
+                // Prefer c++14 aligned_storage, but for compatibility this will do.
+                union AlignedUnion
+                {
+                    char space[sizeof(T)];
+                    int64 align_to_int64;
+                    void* align_to_ptr;
+                } union_;
+                bool init_; // false by linker
+            };
 
-// TODO(jieluo): Change to template. We have tried to use template,
-// but it causes net/rpc/python:rpcutil_test fail (the empty string will
-// init twice). It may related to swig. Change to template after we
-// found the solution.
+            // TODO(jieluo): Change to template. We have tried to use template,
+            // but it causes net/rpc/python:rpcutil_test fail (the empty string will
+            // init twice). It may related to swig. Change to template after we
+            // found the solution.
 
-// Default empty string object. Don't use this directly. Instead, call
-// GetEmptyString() to get the reference.
-extern ExplicitlyConstructed< ::std::string> fixed_address_empty_string;
-LIBPROTOBUF_EXPORT extern ProtobufOnceType empty_string_once_init_;
-LIBPROTOBUF_EXPORT void InitEmptyString();
+            // Default empty string object. Don't use this directly. Instead, call
+            // GetEmptyString() to get the reference.
+            extern ExplicitlyConstructed<::std::string> fixed_address_empty_string;
+            LIBPROTOBUF_EXPORT extern ProtobufOnceType empty_string_once_init_;
+            LIBPROTOBUF_EXPORT void InitEmptyString();
 
+            LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyStringAlreadyInited()
+            {
+                return fixed_address_empty_string.get();
+            }
 
-LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyStringAlreadyInited() {
-  return fixed_address_empty_string.get();
-}
+            LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyString()
+            {
+                ::google::protobuf::GoogleOnceInit(&empty_string_once_init_, &InitEmptyString);
+                return GetEmptyStringAlreadyInited();
+            }
 
-LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyString() {
-  ::google::protobuf::GoogleOnceInit(&empty_string_once_init_, &InitEmptyString);
-  return GetEmptyStringAlreadyInited();
-}
+            LIBPROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const string& str);
 
-LIBPROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const string& str);
+            // True if IsInitialized() is true for all elements of t.  Type is expected
+            // to be a RepeatedPtrField<some message type>.  It's useful to have this
+            // helper here to keep the protobuf compiler from ever having to emit loops in
+            // IsInitialized() methods.  We want the C++ compiler to inline this or not
+            // as it sees fit.
+            template<class Type>
+            bool AllAreInitialized(const Type& t)
+            {
+                for (int i = t.size(); --i >= 0;)
+                {
+                    if (!t.Get(i).IsInitialized())
+                        return false;
+                }
+                return true;
+            }
 
+            LIBPROTOBUF_EXPORT void InitProtobufDefaults();
 
-// True if IsInitialized() is true for all elements of t.  Type is expected
-// to be a RepeatedPtrField<some message type>.  It's useful to have this
-// helper here to keep the protobuf compiler from ever having to emit loops in
-// IsInitialized() methods.  We want the C++ compiler to inline this or not
-// as it sees fit.
-template <class Type> bool AllAreInitialized(const Type& t) {
-  for (int i = t.size(); --i >= 0; ) {
-    if (!t.Get(i).IsInitialized()) return false;
-  }
-  return true;
-}
+            // We compute sizes as size_t but cache them as int.  This function converts a
+            // computed size to a cached size.  Since we don't proceed with serialization if
+            // the total size was > INT_MAX, it is not important what this function returns
+            // for inputs > INT_MAX.  However this case should not error or GOOGLE_CHECK-fail,
+            // because the full size_t resolution is still returned from ByteSizeLong() and
+            // checked against INT_MAX; we can catch the overflow there.
+            inline int ToCachedSize(size_t size)
+            {
+                return static_cast<int>(size);
+            }
 
-LIBPROTOBUF_EXPORT void InitProtobufDefaults();
+            // For cases where a legacy function returns an integer size.  We GOOGLE_DCHECK() that
+            // the conversion will fit within an integer; if this is false then we are
+            // losing information.
+            inline int ToIntSize(size_t size)
+            {
+                GOOGLE_DCHECK_LE(size, static_cast<size_t>(INT_MAX));
+                return static_cast<int>(size);
+            }
 
-// We compute sizes as size_t but cache them as int.  This function converts a
-// computed size to a cached size.  Since we don't proceed with serialization if
-// the total size was > INT_MAX, it is not important what this function returns
-// for inputs > INT_MAX.  However this case should not error or GOOGLE_CHECK-fail,
-// because the full size_t resolution is still returned from ByteSizeLong() and
-// checked against INT_MAX; we can catch the overflow there.
-inline int ToCachedSize(size_t size) {
-  return static_cast<int>(size);
-}
+            // We mainly calculate sizes in terms of size_t, but some functions that compute
+            // sizes return "int".  These int sizes are expected to always be positive.
+            // This function is more efficient than casting an int to size_t directly on
+            // 64-bit platforms because it avoids making the compiler emit a sign extending
+            // instruction, which we don't want and don't want to pay for.
+            inline size_t FromIntSize(int size)
+            {
+                // Convert to unsigned before widening so sign extension is not necessary.
+                return static_cast<unsigned int>(size);
+            }
 
-// For cases where a legacy function returns an integer size.  We GOOGLE_DCHECK() that
-// the conversion will fit within an integer; if this is false then we are
-// losing information.
-inline int ToIntSize(size_t size) {
-  GOOGLE_DCHECK_LE(size, static_cast<size_t>(INT_MAX));
-  return static_cast<int>(size);
-}
+        } // namespace internal
+    }     // namespace protobuf
 
-// We mainly calculate sizes in terms of size_t, but some functions that compute
-// sizes return "int".  These int sizes are expected to always be positive.
-// This function is more efficient than casting an int to size_t directly on
-// 64-bit platforms because it avoids making the compiler emit a sign extending
-// instruction, which we don't want and don't want to pay for.
-inline size_t FromIntSize(int size) {
-  // Convert to unsigned before widening so sign extension is not necessary.
-  return static_cast<unsigned int>(size);
-}
-
-}  // namespace internal
-}  // namespace protobuf
-
-}  // namespace google
-#endif  // GOOGLE_PROTOBUF_GENERATED_MESSAGE_UTIL_H__
+} // namespace google
+#endif // GOOGLE_PROTOBUF_GENERATED_MESSAGE_UTIL_H__

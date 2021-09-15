@@ -33,11 +33,13 @@
 
 #include <google/protobuf/arenastring.h>
 
-namespace google {
-namespace protobuf {
-namespace internal {
+namespace google
+{
+    namespace protobuf
+    {
+        namespace internal
+        {
 
-
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+        } // namespace internal
+    }     // namespace protobuf
+} // namespace google

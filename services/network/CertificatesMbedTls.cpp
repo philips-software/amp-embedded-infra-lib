@@ -1,9 +1,9 @@
+#include "services/network/CertificatesMbedTls.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/util/ReallyAssert.hpp"
-#include "services/network/CertificatesMbedTls.hpp"
-#include "mbedtls/pk.h"
 #include "mbedtls/oid.h"
+#include "mbedtls/pk.h"
 
 namespace
 {

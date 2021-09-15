@@ -1,6 +1,6 @@
-#include "gtest/gtest.h"
 #include "hal/interfaces/Flash.hpp"
 #include "hal/interfaces/test_doubles/FlashStub.hpp"
+#include "gtest/gtest.h"
 
 class FlashAddressTest
     : public testing::Test

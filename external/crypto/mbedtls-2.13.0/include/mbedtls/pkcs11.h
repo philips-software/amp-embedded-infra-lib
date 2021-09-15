@@ -35,34 +35,34 @@
 #if defined(MBEDTLS_PKCS11_C)
 
 #include "x509_crt.h"
-
 #include <pkcs11-helper-1.0/pkcs11h-certificate.h>
 
-#if ( defined(__ARMCC_VERSION) || defined(_MSC_VER) ) && \
+#if (defined(__ARMCC_VERSION) || defined(_MSC_VER)) && \
     !defined(inline) && !defined(__cplusplus)
 #define inline __inline
 #endif
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/**
+    /**
  * Context for PKCS #11 private keys.
  */
-typedef struct mbedtls_pkcs11_context
-{
+    typedef struct mbedtls_pkcs11_context
+    {
         pkcs11h_certificate_t pkcs11h_cert;
         int len;
-} mbedtls_pkcs11_context;
+    } mbedtls_pkcs11_context;
 
-/**
+    /**
  * Initialize a mbedtls_pkcs11_context.
  * (Just making memory references valid.)
  */
-void mbedtls_pkcs11_init( mbedtls_pkcs11_context *ctx );
+    void mbedtls_pkcs11_init(mbedtls_pkcs11_context* ctx);
 
-/**
+    /**
  * Fill in a mbed TLS certificate, based on the given PKCS11 helper certificate.
  *
  * \param cert          X.509 certificate to fill
@@ -70,9 +70,9 @@ void mbedtls_pkcs11_init( mbedtls_pkcs11_context *ctx );
  *
  * \return              0 on success.
  */
-int mbedtls_pkcs11_x509_cert_bind( mbedtls_x509_crt *cert, pkcs11h_certificate_t pkcs11h_cert );
+    int mbedtls_pkcs11_x509_cert_bind(mbedtls_x509_crt* cert, pkcs11h_certificate_t pkcs11h_cert);
 
-/**
+    /**
  * Set up a mbedtls_pkcs11_context storing the given certificate. Note that the
  * mbedtls_pkcs11_context will take over control of the certificate, freeing it when
  * done.
@@ -82,18 +82,18 @@ int mbedtls_pkcs11_x509_cert_bind( mbedtls_x509_crt *cert, pkcs11h_certificate_t
  *
  * \return              0 on success
  */
-int mbedtls_pkcs11_priv_key_bind( mbedtls_pkcs11_context *priv_key,
-        pkcs11h_certificate_t pkcs11_cert );
+    int mbedtls_pkcs11_priv_key_bind(mbedtls_pkcs11_context* priv_key,
+        pkcs11h_certificate_t pkcs11_cert);
 
-/**
+    /**
  * Free the contents of the given private key context. Note that the structure
  * itself is not freed.
  *
  * \param priv_key      Private key structure to cleanup
  */
-void mbedtls_pkcs11_priv_key_free( mbedtls_pkcs11_context *priv_key );
+    void mbedtls_pkcs11_priv_key_free(mbedtls_pkcs11_context* priv_key);
 
-/**
+    /**
  * \brief          Do an RSA private key decrypt, then remove the message
  *                 padding
  *
@@ -110,13 +110,13 @@ void mbedtls_pkcs11_priv_key_free( mbedtls_pkcs11_context *priv_key );
  *                 of ctx->N (eg. 128 bytes if RSA-1024 is used) otherwise
  *                 an error is thrown.
  */
-int mbedtls_pkcs11_decrypt( mbedtls_pkcs11_context *ctx,
-                       int mode, size_t *olen,
-                       const unsigned char *input,
-                       unsigned char *output,
-                       size_t output_max_len );
+    int mbedtls_pkcs11_decrypt(mbedtls_pkcs11_context* ctx,
+        int mode, size_t* olen,
+        const unsigned char* input,
+        unsigned char* output,
+        size_t output_max_len);
 
-/**
+    /**
  * \brief          Do a private RSA to sign a message digest
  *
  * \param ctx      PKCS #11 context
@@ -132,39 +132,39 @@ int mbedtls_pkcs11_decrypt( mbedtls_pkcs11_context *ctx,
  * \note           The "sig" buffer must be as large as the size
  *                 of ctx->N (eg. 128 bytes if RSA-1024 is used).
  */
-int mbedtls_pkcs11_sign( mbedtls_pkcs11_context *ctx,
-                    int mode,
-                    mbedtls_md_type_t md_alg,
-                    unsigned int hashlen,
-                    const unsigned char *hash,
-                    unsigned char *sig );
+    int mbedtls_pkcs11_sign(mbedtls_pkcs11_context* ctx,
+        int mode,
+        mbedtls_md_type_t md_alg,
+        unsigned int hashlen,
+        const unsigned char* hash,
+        unsigned char* sig);
 
-/**
+    /**
  * SSL/TLS wrappers for PKCS#11 functions
  */
-static inline int mbedtls_ssl_pkcs11_decrypt( void *ctx, int mode, size_t *olen,
-                        const unsigned char *input, unsigned char *output,
-                        size_t output_max_len )
-{
-    return mbedtls_pkcs11_decrypt( (mbedtls_pkcs11_context *) ctx, mode, olen, input, output,
-                           output_max_len );
-}
+    static inline int mbedtls_ssl_pkcs11_decrypt(void* ctx, int mode, size_t* olen,
+        const unsigned char* input, unsigned char* output,
+        size_t output_max_len)
+    {
+        return mbedtls_pkcs11_decrypt((mbedtls_pkcs11_context*)ctx, mode, olen, input, output,
+            output_max_len);
+    }
 
-static inline int mbedtls_ssl_pkcs11_sign( void *ctx,
-                     int (*f_rng)(void *, unsigned char *, size_t), void *p_rng,
-                     int mode, mbedtls_md_type_t md_alg, unsigned int hashlen,
-                     const unsigned char *hash, unsigned char *sig )
-{
-    ((void) f_rng);
-    ((void) p_rng);
-    return mbedtls_pkcs11_sign( (mbedtls_pkcs11_context *) ctx, mode, md_alg,
-                        hashlen, hash, sig );
-}
+    static inline int mbedtls_ssl_pkcs11_sign(void* ctx,
+        int (*f_rng)(void*, unsigned char*, size_t), void* p_rng,
+        int mode, mbedtls_md_type_t md_alg, unsigned int hashlen,
+        const unsigned char* hash, unsigned char* sig)
+    {
+        ((void)f_rng);
+        ((void)p_rng);
+        return mbedtls_pkcs11_sign((mbedtls_pkcs11_context*)ctx, mode, md_alg,
+            hashlen, hash, sig);
+    }
 
-static inline size_t mbedtls_ssl_pkcs11_key_len( void *ctx )
-{
-    return ( (mbedtls_pkcs11_context *) ctx )->len;
-}
+    static inline size_t mbedtls_ssl_pkcs11_key_len(void* ctx)
+    {
+        return ((mbedtls_pkcs11_context*)ctx)->len;
+    }
 
 #ifdef __cplusplus
 }

@@ -16,6 +16,7 @@ namespace application
                 : std::runtime_error(message)
             {}
         };
+
     public:
         UpgradePackConfigParser(infra::JsonObject& json);
 
@@ -32,10 +33,10 @@ namespace application
     private:
         void CheckValidJsonObject(infra::JsonObject& jsonObject);
         void CheckMandatoryKeys();
-     
+
     private:
         infra::JsonObject& json;
     };
 }
 
-#endif  // !PACK_BUILDER_CONFIG_PARSER_HPP
+#endif // !PACK_BUILDER_CONFIG_PARSER_HPP

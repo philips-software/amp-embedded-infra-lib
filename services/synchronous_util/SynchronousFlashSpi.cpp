@@ -129,7 +129,8 @@ namespace services
     void SynchronousFlashSpi::HoldWhileWriteInProgress()
     {
         while ((ReadStatusRegister() & 1) == 1)
-        {}
+        {
+        }
     }
 
     uint8_t SynchronousFlashSpi::ReadStatusRegister()

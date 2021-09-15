@@ -28,23 +28,26 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/arena_test_util.h>
-
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 
 #define EXPECT_EQ GOOGLE_CHECK_EQ
 
-namespace google {
-namespace protobuf {
-namespace internal {
+namespace google
+{
+    namespace protobuf
+    {
+        namespace internal
+        {
 
-NoHeapChecker::~NoHeapChecker() {
-  capture_alloc.Unhook();
-  EXPECT_EQ(0, capture_alloc.alloc_count());
-  EXPECT_EQ(0, capture_alloc.free_count());
-}
+            NoHeapChecker::~NoHeapChecker()
+            {
+                capture_alloc.Unhook();
+                EXPECT_EQ(0, capture_alloc.alloc_count());
+                EXPECT_EQ(0, capture_alloc.free_count());
+            }
 
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+        } // namespace internal
+    }     // namespace protobuf
+} // namespace google

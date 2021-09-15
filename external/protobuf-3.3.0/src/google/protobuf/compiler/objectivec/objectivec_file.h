@@ -31,57 +31,64 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FILE_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FILE_H__
 
-#include <string>
-#include <set>
-#include <vector>
 #include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
 #include <google/protobuf/stubs/common.h>
+#include <set>
+#include <string>
+#include <vector>
 
-namespace google {
-namespace protobuf {
-class FileDescriptor;  // descriptor.h
-namespace io {
-class Printer;  // printer.h
-}
-}
+namespace google
+{
+    namespace protobuf
+    {
+        class FileDescriptor; // descriptor.h
+        namespace io
+        {
+            class Printer; // printer.h
+        }
+    }
 
-namespace protobuf {
-namespace compiler {
-namespace objectivec {
+    namespace protobuf
+    {
+        namespace compiler
+        {
+            namespace objectivec
+            {
 
-class EnumGenerator;
-class ExtensionGenerator;
-class MessageGenerator;
+                class EnumGenerator;
+                class ExtensionGenerator;
+                class MessageGenerator;
 
-class FileGenerator {
- public:
-  FileGenerator(const FileDescriptor* file, const Options& options);
-  ~FileGenerator();
+                class FileGenerator
+                {
+                public:
+                    FileGenerator(const FileDescriptor* file, const Options& options);
+                    ~FileGenerator();
 
-  void GenerateSource(io::Printer* printer);
-  void GenerateHeader(io::Printer* printer);
+                    void GenerateSource(io::Printer* printer);
+                    void GenerateHeader(io::Printer* printer);
 
-  const string& RootClassName() const { return root_class_name_; }
+                    const string& RootClassName() const { return root_class_name_; }
 
- private:
-  const FileDescriptor* file_;
-  string root_class_name_;
+                private:
+                    const FileDescriptor* file_;
+                    string root_class_name_;
 
-  vector<EnumGenerator*> enum_generators_;
-  vector<MessageGenerator*> message_generators_;
-  vector<ExtensionGenerator*> extension_generators_;
+                    vector<EnumGenerator*> enum_generators_;
+                    vector<MessageGenerator*> message_generators_;
+                    vector<ExtensionGenerator*> extension_generators_;
 
-  const Options options_;
+                    const Options options_;
 
-  void PrintFileRuntimePreamble(
-      io::Printer* printer, const string& header_to_import) const;
+                    void PrintFileRuntimePreamble(
+                        io::Printer* printer, const string& header_to_import) const;
 
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileGenerator);
-};
+                    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileGenerator);
+                };
 
-}  // namespace objectivec
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+            } // namespace objectivec
+        }     // namespace compiler
+    }         // namespace protobuf
+} // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FILE_H__
+#endif // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FILE_H__

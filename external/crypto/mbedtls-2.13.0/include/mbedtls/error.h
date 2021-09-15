@@ -101,10 +101,11 @@
  */
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/**
+    /**
  * \brief Translate a mbed TLS error code into a string representation,
  *        Result is truncated if necessary and always includes a terminating
  *        null byte.
@@ -113,7 +114,7 @@ extern "C" {
  * \param buffer    buffer to place representation in
  * \param buflen    length of the buffer
  */
-void mbedtls_strerror( int errnum, char *buffer, size_t buflen );
+    void mbedtls_strerror(int errnum, char* buffer, size_t buflen);
 
 #ifdef __cplusplus
 }

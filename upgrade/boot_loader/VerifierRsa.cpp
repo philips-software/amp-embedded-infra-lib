@@ -1,7 +1,7 @@
-#include "mbedtls/sha256.h"
-#include "mbedtls/rsa.h"
-#include "crypto/micro-ecc/uECC.h"
 #include "upgrade/boot_loader/VerifierRsa.hpp"
+#include "crypto/micro-ecc/uECC.h"
+#include "mbedtls/rsa.h"
+#include "mbedtls/sha256.h"
 
 //TICS -CON#002
 

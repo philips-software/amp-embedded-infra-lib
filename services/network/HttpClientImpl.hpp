@@ -1,14 +1,14 @@
 #ifndef SERVICES_HTTP_CLIENT_IMPL_HPP
 #define SERVICES_HTTP_CLIENT_IMPL_HPP
 
-#include "infra/util/Optional.hpp"
-#include "infra/util/PolymorphicVariant.hpp"
-#include "infra/util/SharedOptional.hpp"
 #include "infra/stream/CountingInputStream.hpp"
 #include "infra/stream/LimitedInputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
-#include "services/network/HttpClient.hpp"
+#include "infra/util/Optional.hpp"
+#include "infra/util/PolymorphicVariant.hpp"
+#include "infra/util/SharedOptional.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
+#include "services/network/HttpClient.hpp"
 
 namespace services
 {
@@ -314,7 +314,7 @@ namespace services
 
     private:
         template<std::size_t... I>
-            infra::SharedPtr<HttpClient> InvokeEmplace(infra::IndexSequence<I...>);
+        infra::SharedPtr<HttpClient> InvokeEmplace(infra::IndexSequence<I...>);
 
     private:
         ConnectionFactoryWithNameResolver& connectionFactory;
@@ -359,8 +359,7 @@ namespace services
         assert(clientObserverFactory != nullptr);
         auto httpClientPtr = InvokeEmplace(infra::MakeIndexSequence<sizeof...(Args)>{});
 
-        clientObserverFactory->ConnectionEstablished([&httpClientPtr, &createdObserver](infra::SharedPtr<HttpClientObserver> observer)
-        {
+        clientObserverFactory->ConnectionEstablished([&httpClientPtr, &createdObserver](infra::SharedPtr<HttpClientObserver> observer) {
             if (observer)
             {
                 createdObserver(httpClientPtr);
@@ -378,17 +377,17 @@ namespace services
 
         switch (reason)
         {
-            case ConnectFailReason::refused:
-                clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::refused);
-                break;
-            case ConnectFailReason::connectionAllocationFailed:
-                clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::connectionAllocationFailed);
-                break;
-            case ConnectFailReason::nameLookupFailed:
-                clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::nameLookupFailed);
-                break;
-            default:
-                std::abort();
+        case ConnectFailReason::refused:
+            clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::refused);
+            break;
+        case ConnectFailReason::connectionAllocationFailed:
+            clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::connectionAllocationFailed);
+            break;
+        case ConnectFailReason::nameLookupFailed:
+            clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::nameLookupFailed);
+            break;
+        default:
+            std::abort();
         }
 
         clientObserverFactory = nullptr;

@@ -34,45 +34,45 @@ namespace services
     {
         switch (c)
         {
-            case '\n':
-                break;
-            case '\r':
-                ProcessEnter();
-                break;
-            case 27:
-                state.processingEscapeSequence = true;
-                break;
-            case '\b':
-            case '\x7F':
-                ProcessBackspace();
-                break;
-            case 1: // ctrl-a
-                MoveCursorHome();
-                break;
-            case 2: // ctrl-b
-                MoveCursorLeft();
-                break;
-            case 3: // ctrl-c
-                OverwriteBuffer("");
-                break;
-            case 4: // ctrl-d
-                ProcessDelete();
-                break;
-            case 5: // ctrl-e
-                MoveCursorEnd();
-                break;
-            case 6: // ctrl-f
-                MoveCursorRight();
-                break;
-            case 14: // ctrl-n
-                HistoryForward();
-                break;
-            case 16: // ctrl-p
-                HistoryBackward();
-                break;
-            default:
-                SendNonEscapeChar(c);
-                break;
+        case '\n':
+            break;
+        case '\r':
+            ProcessEnter();
+            break;
+        case 27:
+            state.processingEscapeSequence = true;
+            break;
+        case '\b':
+        case '\x7F':
+            ProcessBackspace();
+            break;
+        case 1: // ctrl-a
+            MoveCursorHome();
+            break;
+        case 2: // ctrl-b
+            MoveCursorLeft();
+            break;
+        case 3: // ctrl-c
+            OverwriteBuffer("");
+            break;
+        case 4: // ctrl-d
+            ProcessDelete();
+            break;
+        case 5: // ctrl-e
+            MoveCursorEnd();
+            break;
+        case 6: // ctrl-f
+            MoveCursorRight();
+            break;
+        case 14: // ctrl-n
+            HistoryForward();
+            break;
+        case 16: // ctrl-p
+            HistoryBackward();
+            break;
+        default:
+            SendNonEscapeChar(c);
+            break;
         }
     }
 
@@ -84,27 +84,27 @@ namespace services
 
         switch (in)
         {
-            case 'A':
-                HistoryBackward();
-                break;
-            case 'B':
-                HistoryForward();
-                break;
-            case 'C':
-                MoveCursorRight();
-                break;
-            case 'D':
-                MoveCursorLeft();
-                break;
-            case 'F':
-                MoveCursorEnd();
-                break;
-            case 'H':
-                MoveCursorHome();
-                break;
-            default:
-                SendBell();
-                break;
+        case 'A':
+            HistoryBackward();
+            break;
+        case 'B':
+            HistoryForward();
+            break;
+        case 'C':
+            MoveCursorRight();
+            break;
+        case 'D':
+            MoveCursorLeft();
+            break;
+        case 'F':
+            MoveCursorEnd();
+            break;
+        case 'H':
+            MoveCursorHome();
+            break;
+        default:
+            SendBell();
+            break;
         }
 
         return false;

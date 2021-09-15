@@ -31,189 +31,224 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_CONVERTER_DATAPIECE_H__
 #define GOOGLE_PROTOBUF_UTIL_CONVERTER_DATAPIECE_H__
 
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/statusor.h>
+#include <google/protobuf/stubs/stringpiece.h>
 #include <string>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/stringpiece.h>
-#include <google/protobuf/stubs/statusor.h>
+namespace google
+{
+    namespace protobuf
+    {
+        class Enum;
+    } // namespace protobuf
 
+    namespace protobuf
+    {
+        namespace util
+        {
+            namespace converter
+            {
 
-namespace google {
-namespace protobuf {
-class Enum;
-}  // namespace protobuf
+                // Container for a single piece of data together with its data type.
+                //
+                // For primitive types (int32, int64, uint32, uint64, double, float, bool),
+                // the data is stored by value.
+                //
+                // For string, a StringPiece is stored. For Cord, a pointer to Cord is stored.
+                // Just like StringPiece, the DataPiece class does not own the storage for
+                // the actual string or Cord, so it is the user's responsiblity to guarantee
+                // that the underlying storage is still valid when the DataPiece is accessed.
+                class LIBPROTOBUF_EXPORT DataPiece
+                {
+                public:
+                    // Identifies data type of the value.
+                    // These are the types supported by DataPiece.
+                    enum Type
+                    {
+                        TYPE_INT32 = 1,
+                        TYPE_INT64 = 2,
+                        TYPE_UINT32 = 3,
+                        TYPE_UINT64 = 4,
+                        TYPE_DOUBLE = 5,
+                        TYPE_FLOAT = 6,
+                        TYPE_BOOL = 7,
+                        TYPE_ENUM = 8,
+                        TYPE_STRING = 9,
+                        TYPE_BYTES = 10,
+                        TYPE_NULL = 11, // explicit NULL type
+                    };
 
+                    // Constructors and Destructor
+                    explicit DataPiece(const int32 value)
+                        : type_(TYPE_INT32)
+                        , i32_(value)
+                        , use_strict_base64_decoding_(false)
+                    {}
+                    explicit DataPiece(const int64 value)
+                        : type_(TYPE_INT64)
+                        , i64_(value)
+                        , use_strict_base64_decoding_(false)
+                    {}
+                    explicit DataPiece(const uint32 value)
+                        : type_(TYPE_UINT32)
+                        , u32_(value)
+                        , use_strict_base64_decoding_(false)
+                    {}
+                    explicit DataPiece(const uint64 value)
+                        : type_(TYPE_UINT64)
+                        , u64_(value)
+                        , use_strict_base64_decoding_(false)
+                    {}
+                    explicit DataPiece(const double value)
+                        : type_(TYPE_DOUBLE)
+                        , double_(value)
+                        , use_strict_base64_decoding_(false)
+                    {}
+                    explicit DataPiece(const float value)
+                        : type_(TYPE_FLOAT)
+                        , float_(value)
+                        , use_strict_base64_decoding_(false)
+                    {}
+                    explicit DataPiece(const bool value)
+                        : type_(TYPE_BOOL)
+                        , bool_(value)
+                        , use_strict_base64_decoding_(false)
+                    {}
+                    DataPiece(StringPiece value, bool use_strict_base64_decoding)
+                        : type_(TYPE_STRING)
+                        , str_(StringPiecePod::CreateFromStringPiece(value))
+                        , use_strict_base64_decoding_(use_strict_base64_decoding)
+                    {}
+                    // Constructor for bytes. The second parameter is not used.
+                    DataPiece(StringPiece value, bool dummy, bool use_strict_base64_decoding)
+                        : type_(TYPE_BYTES)
+                        , str_(StringPiecePod::CreateFromStringPiece(value))
+                        , use_strict_base64_decoding_(use_strict_base64_decoding)
+                    {}
 
-namespace protobuf {
-namespace util {
-namespace converter {
+                    DataPiece(const DataPiece& r)
+                        : type_(r.type_)
+                    {
+                        InternalCopy(r);
+                    }
 
-// Container for a single piece of data together with its data type.
-//
-// For primitive types (int32, int64, uint32, uint64, double, float, bool),
-// the data is stored by value.
-//
-// For string, a StringPiece is stored. For Cord, a pointer to Cord is stored.
-// Just like StringPiece, the DataPiece class does not own the storage for
-// the actual string or Cord, so it is the user's responsiblity to guarantee
-// that the underlying storage is still valid when the DataPiece is accessed.
-class LIBPROTOBUF_EXPORT DataPiece {
- public:
-  // Identifies data type of the value.
-  // These are the types supported by DataPiece.
-  enum Type {
-    TYPE_INT32 = 1,
-    TYPE_INT64 = 2,
-    TYPE_UINT32 = 3,
-    TYPE_UINT64 = 4,
-    TYPE_DOUBLE = 5,
-    TYPE_FLOAT = 6,
-    TYPE_BOOL = 7,
-    TYPE_ENUM = 8,
-    TYPE_STRING = 9,
-    TYPE_BYTES = 10,
-    TYPE_NULL = 11,  // explicit NULL type
-  };
+                    DataPiece& operator=(const DataPiece& x)
+                    {
+                        InternalCopy(x);
+                        return *this;
+                    }
 
-  // Constructors and Destructor
-  explicit DataPiece(const int32 value)
-      : type_(TYPE_INT32), i32_(value), use_strict_base64_decoding_(false) {}
-  explicit DataPiece(const int64 value)
-      : type_(TYPE_INT64), i64_(value), use_strict_base64_decoding_(false) {}
-  explicit DataPiece(const uint32 value)
-      : type_(TYPE_UINT32), u32_(value), use_strict_base64_decoding_(false) {}
-  explicit DataPiece(const uint64 value)
-      : type_(TYPE_UINT64), u64_(value), use_strict_base64_decoding_(false) {}
-  explicit DataPiece(const double value)
-      : type_(TYPE_DOUBLE),
-        double_(value),
-        use_strict_base64_decoding_(false) {}
-  explicit DataPiece(const float value)
-      : type_(TYPE_FLOAT), float_(value), use_strict_base64_decoding_(false) {}
-  explicit DataPiece(const bool value)
-      : type_(TYPE_BOOL), bool_(value), use_strict_base64_decoding_(false) {}
-  DataPiece(StringPiece value, bool use_strict_base64_decoding)
-      : type_(TYPE_STRING),
-        str_(StringPiecePod::CreateFromStringPiece(value)),
-        use_strict_base64_decoding_(use_strict_base64_decoding) {}
-  // Constructor for bytes. The second parameter is not used.
-  DataPiece(StringPiece value, bool dummy, bool use_strict_base64_decoding)
-      : type_(TYPE_BYTES),
-        str_(StringPiecePod::CreateFromStringPiece(value)),
-        use_strict_base64_decoding_(use_strict_base64_decoding) {}
+                    static DataPiece NullData() { return DataPiece(TYPE_NULL, 0); }
 
-  DataPiece(const DataPiece& r) : type_(r.type_) { InternalCopy(r); }
+                    virtual ~DataPiece()
+                    {
+                    }
 
-  DataPiece& operator=(const DataPiece& x) {
-    InternalCopy(x);
-    return *this;
-  }
+                    // Accessors
+                    Type type() const { return type_; }
 
-  static DataPiece NullData() { return DataPiece(TYPE_NULL, 0); }
+                    bool use_strict_base64_decoding() { return use_strict_base64_decoding_; }
 
-  virtual ~DataPiece() {
-  }
+                    StringPiece str() const
+                    {
+                        GOOGLE_LOG_IF(DFATAL, type_ != TYPE_STRING) << "Not a string type.";
+                        return str_;
+                    }
 
-  // Accessors
-  Type type() const { return type_; }
+                    // Parses, casts or converts the value stored in the DataPiece into an int32.
+                    util::StatusOr<int32> ToInt32() const;
 
-  bool use_strict_base64_decoding() { return use_strict_base64_decoding_; }
+                    // Parses, casts or converts the value stored in the DataPiece into a uint32.
+                    util::StatusOr<uint32> ToUint32() const;
 
-  StringPiece str() const {
-    GOOGLE_LOG_IF(DFATAL, type_ != TYPE_STRING) << "Not a string type.";
-    return str_;
-  }
+                    // Parses, casts or converts the value stored in the DataPiece into an int64.
+                    util::StatusOr<int64> ToInt64() const;
 
+                    // Parses, casts or converts the value stored in the DataPiece into a uint64.
+                    util::StatusOr<uint64> ToUint64() const;
 
-  // Parses, casts or converts the value stored in the DataPiece into an int32.
-  util::StatusOr<int32> ToInt32() const;
+                    // Parses, casts or converts the value stored in the DataPiece into a double.
+                    util::StatusOr<double> ToDouble() const;
 
-  // Parses, casts or converts the value stored in the DataPiece into a uint32.
-  util::StatusOr<uint32> ToUint32() const;
+                    // Parses, casts or converts the value stored in the DataPiece into a float.
+                    util::StatusOr<float> ToFloat() const;
 
-  // Parses, casts or converts the value stored in the DataPiece into an int64.
-  util::StatusOr<int64> ToInt64() const;
+                    // Parses, casts or converts the value stored in the DataPiece into a bool.
+                    util::StatusOr<bool> ToBool() const;
 
-  // Parses, casts or converts the value stored in the DataPiece into a uint64.
-  util::StatusOr<uint64> ToUint64() const;
+                    // Parses, casts or converts the value stored in the DataPiece into a string.
+                    util::StatusOr<string> ToString() const;
 
-  // Parses, casts or converts the value stored in the DataPiece into a double.
-  util::StatusOr<double> ToDouble() const;
+                    // Tries to convert the value contained in this datapiece to string. If the
+                    // conversion fails, it returns the default_string.
+                    string ValueAsStringOrDefault(StringPiece default_string) const;
 
-  // Parses, casts or converts the value stored in the DataPiece into a float.
-  util::StatusOr<float> ToFloat() const;
+                    util::StatusOr<string> ToBytes() const;
 
-  // Parses, casts or converts the value stored in the DataPiece into a bool.
-  util::StatusOr<bool> ToBool() const;
+                    // Converts a value into protocol buffer enum number. If the value is a
+                    // string, first attempts conversion by name, trying names as follows:
+                    //   1) the directly provided string value.
+                    //   2) the value upper-cased and replacing '-' by '_'
+                    //   3) if use_lower_camel_for_enums is true it also attempts by comparing
+                    //   enum name without underscore with the value upper cased above.
+                    // If the value is not a string, attempts to convert to a 32-bit integer.
+                    // If none of these succeeds, returns a conversion error status.
+                    util::StatusOr<int> ToEnum(const google::protobuf::Enum* enum_type,
+                        bool use_lower_camel_for_enums) const;
 
-  // Parses, casts or converts the value stored in the DataPiece into a string.
-  util::StatusOr<string> ToString() const;
+                private:
+                    // Disallow implicit constructor.
+                    DataPiece();
 
-  // Tries to convert the value contained in this datapiece to string. If the
-  // conversion fails, it returns the default_string.
-  string ValueAsStringOrDefault(StringPiece default_string) const;
+                    // Helper to create NULL or ENUM types.
+                    DataPiece(Type type, int32 val)
+                        : type_(type)
+                        , i32_(val)
+                        , use_strict_base64_decoding_(false)
+                    {}
 
-  util::StatusOr<string> ToBytes() const;
+                    // For numeric conversion between
+                    //     int32, int64, uint32, uint64, double, float and bool
+                    template<typename To>
+                    util::StatusOr<To> GenericConvert() const;
 
-  // Converts a value into protocol buffer enum number. If the value is a
-  // string, first attempts conversion by name, trying names as follows:
-  //   1) the directly provided string value.
-  //   2) the value upper-cased and replacing '-' by '_'
-  //   3) if use_lower_camel_for_enums is true it also attempts by comparing
-  //   enum name without underscore with the value upper cased above.
-  // If the value is not a string, attempts to convert to a 32-bit integer.
-  // If none of these succeeds, returns a conversion error status.
-  util::StatusOr<int> ToEnum(const google::protobuf::Enum* enum_type,
-                               bool use_lower_camel_for_enums) const;
+                    // For conversion from string to
+                    //     int32, int64, uint32, uint64, double, float and bool
+                    template<typename To>
+                    util::StatusOr<To> StringToNumber(bool (*func)(StringPiece, To*)) const;
 
- private:
-  // Disallow implicit constructor.
-  DataPiece();
+                    // Decodes a base64 string. Returns true on success.
+                    bool DecodeBase64(StringPiece src, string* dest) const;
 
-  // Helper to create NULL or ENUM types.
-  DataPiece(Type type, int32 val)
-      : type_(type), i32_(val), use_strict_base64_decoding_(false) {}
+                    // Helper function to initialize this DataPiece with 'other'.
+                    void InternalCopy(const DataPiece& other);
 
-  // For numeric conversion between
-  //     int32, int64, uint32, uint64, double, float and bool
-  template <typename To>
-  util::StatusOr<To> GenericConvert() const;
+                    // Data type for this piece of data.
+                    Type type_;
 
-  // For conversion from string to
-  //     int32, int64, uint32, uint64, double, float and bool
-  template <typename To>
-  util::StatusOr<To> StringToNumber(bool (*func)(StringPiece, To*)) const;
+                    typedef ::google::protobuf::internal::StringPiecePod StringPiecePod;
 
-  // Decodes a base64 string. Returns true on success.
-  bool DecodeBase64(StringPiece src, string* dest) const;
+                    // Stored piece of data.
+                    union
+                    {
+                        int32 i32_;
+                        int64 i64_;
+                        uint32 u32_;
+                        uint64 u64_;
+                        double double_;
+                        float float_;
+                        bool bool_;
+                        StringPiecePod str_;
+                    };
 
-  // Helper function to initialize this DataPiece with 'other'.
-  void InternalCopy(const DataPiece& other);
+                    // Uses a stricter version of base64 decoding for byte fields.
+                    bool use_strict_base64_decoding_;
+                };
 
-  // Data type for this piece of data.
-  Type type_;
+            } // namespace converter
+        }     // namespace util
+    }         // namespace protobuf
 
-  typedef ::google::protobuf::internal::StringPiecePod StringPiecePod;
-
-  // Stored piece of data.
-  union {
-    int32 i32_;
-    int64 i64_;
-    uint32 u32_;
-    uint64 u64_;
-    double double_;
-    float float_;
-    bool bool_;
-    StringPiecePod str_;
-  };
-
-  // Uses a stricter version of base64 decoding for byte fields.
-  bool use_strict_base64_decoding_;
-};
-
-}  // namespace converter
-}  // namespace util
-}  // namespace protobuf
-
-}  // namespace google
-#endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_DATAPIECE_H__
+} // namespace google
+#endif // GOOGLE_PROTOBUF_UTIL_CONVERTER_DATAPIECE_H__

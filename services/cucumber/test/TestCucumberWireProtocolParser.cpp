@@ -1,5 +1,5 @@
-#include "gmock/gmock.h"
 #include "services/cucumber/CucumberWireProtocolParser.hpp"
+#include "gmock/gmock.h"
 
 class StepStub
     : public services::CucumberStep
@@ -9,7 +9,7 @@ public:
         : services::CucumberStep(stepName, "")
     {}
 
-    void Invoke(infra::JsonArray& arguments) final {};
+    void Invoke(infra::JsonArray& arguments) final{};
 };
 
 bool CheckStepMatcher(infra::BoundedString stepString, infra::BoundedString matchString)

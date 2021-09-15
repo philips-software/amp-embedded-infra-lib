@@ -77,19 +77,19 @@
 #define GOOGLE_PROTOBUF_ARCH_PPC 1
 #define GOOGLE_PROTOBUF_ARCH_32_BIT 1
 #elif defined(__GNUC__)
-# if (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)) || (__GNUC__ > 4))
+#if (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)) || (__GNUC__ > 4))
 // We fallback to the generic Clang/GCC >= 4.7 implementation in atomicops.h
-# elif defined(__clang__)
-#  if !__has_extension(c_atomic)
+#elif defined(__clang__)
+#if !__has_extension(c_atomic)
 GOOGLE_PROTOBUF_PLATFORM_ERROR
-#  endif
+#endif
 // We fallback to the generic Clang/GCC >= 4.7 implementation in atomicops.h
-# endif
-# if __LP64__
-#  define GOOGLE_PROTOBUF_ARCH_64_BIT 1
-# else
-#  define GOOGLE_PROTOBUF_ARCH_32_BIT 1
-# endif
+#endif
+#if __LP64__
+#define GOOGLE_PROTOBUF_ARCH_64_BIT 1
+#else
+#define GOOGLE_PROTOBUF_ARCH_32_BIT 1
+#endif
 #else
 GOOGLE_PROTOBUF_PLATFORM_ERROR
 #endif
@@ -122,4 +122,4 @@ GOOGLE_PROTOBUF_PLATFORM_ERROR
 #define GOOGLE_PROTOBUF_NO_THREADLOCAL
 #endif
 
-#endif  // GOOGLE_PROTOBUF_PLATFORM_MACROS_H_
+#endif // GOOGLE_PROTOBUF_PLATFORM_MACROS_H_

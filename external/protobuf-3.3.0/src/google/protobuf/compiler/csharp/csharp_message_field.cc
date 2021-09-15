@@ -28,173 +28,192 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <sstream>
-
 #include <google/protobuf/compiler/code_generator.h>
+#include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
+#include <google/protobuf/compiler/csharp/csharp_helpers.h>
+#include <google/protobuf/compiler/csharp/csharp_message_field.h>
+#include <google/protobuf/compiler/csharp/csharp_options.h>
 #include <google/protobuf/compiler/plugin.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <sstream>
 
-#include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
-#include <google/protobuf/compiler/csharp/csharp_helpers.h>
-#include <google/protobuf/compiler/csharp/csharp_message_field.h>
-#include <google/protobuf/compiler/csharp/csharp_options.h>
+namespace google
+{
+    namespace protobuf
+    {
+        namespace compiler
+        {
+            namespace csharp
+            {
 
-namespace google {
-namespace protobuf {
-namespace compiler {
-namespace csharp {
+                MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor,
+                    int fieldOrdinal,
+                    const Options* options)
+                    : FieldGeneratorBase(descriptor, fieldOrdinal, options)
+                {
+                    variables_["has_property_check"] = name() + "_ != null";
+                    variables_["has_not_property_check"] = name() + "_ == null";
+                }
 
-MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor,
-                                             int fieldOrdinal,
-                                             const Options *options)
-    : FieldGeneratorBase(descriptor, fieldOrdinal, options) {
-  variables_["has_property_check"] = name() + "_ != null";
-  variables_["has_not_property_check"] = name() + "_ == null";
-}
+                MessageFieldGenerator::~MessageFieldGenerator()
+                {
+                }
 
-MessageFieldGenerator::~MessageFieldGenerator() {
+                void MessageFieldGenerator::GenerateMembers(io::Printer* printer)
+                {
+                    printer->Print(
+                        variables_,
+                        "private $type_name$ $name$_;\n");
+                    WritePropertyDocComment(printer, descriptor_);
+                    AddPublicMemberAttributes(printer);
+                    printer->Print(
+                        variables_,
+                        "$access_level$ $type_name$ $property_name$ {\n"
+                        "  get { return $name$_; }\n"
+                        "  set {\n"
+                        "    $name$_ = value;\n"
+                        "  }\n"
+                        "}\n");
+                }
 
-}
+                void MessageFieldGenerator::GenerateMergingCode(io::Printer* printer)
+                {
+                    printer->Print(
+                        variables_,
+                        "if (other.$has_property_check$) {\n"
+                        "  if ($has_not_property_check$) {\n"
+                        "    $name$_ = new $type_name$();\n"
+                        "  }\n"
+                        "  $property_name$.MergeFrom(other.$property_name$);\n"
+                        "}\n");
+                }
 
-void MessageFieldGenerator::GenerateMembers(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "private $type_name$ $name$_;\n");
-  WritePropertyDocComment(printer, descriptor_);
-  AddPublicMemberAttributes(printer);
-  printer->Print(
-    variables_,
-    "$access_level$ $type_name$ $property_name$ {\n"
-    "  get { return $name$_; }\n"
-    "  set {\n"
-    "    $name$_ = value;\n"
-    "  }\n"
-    "}\n");
-}
+                void MessageFieldGenerator::GenerateParsingCode(io::Printer* printer)
+                {
+                    printer->Print(
+                        variables_,
+                        "if ($has_not_property_check$) {\n"
+                        "  $name$_ = new $type_name$();\n"
+                        "}\n"
+                        // TODO(jonskeet): Do we really need merging behaviour like this?
+                        "input.ReadMessage($name$_);\n"); // No need to support TYPE_GROUP...
+                }
 
-void MessageFieldGenerator::GenerateMergingCode(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "if (other.$has_property_check$) {\n"
-    "  if ($has_not_property_check$) {\n"
-    "    $name$_ = new $type_name$();\n"
-    "  }\n"
-    "  $property_name$.MergeFrom(other.$property_name$);\n"
-    "}\n");
-}
+                void MessageFieldGenerator::GenerateSerializationCode(io::Printer* printer)
+                {
+                    printer->Print(
+                        variables_,
+                        "if ($has_property_check$) {\n"
+                        "  output.WriteRawTag($tag_bytes$);\n"
+                        "  output.WriteMessage($property_name$);\n"
+                        "}\n");
+                }
 
-void MessageFieldGenerator::GenerateParsingCode(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "if ($has_not_property_check$) {\n"
-    "  $name$_ = new $type_name$();\n"
-    "}\n"
-    // TODO(jonskeet): Do we really need merging behaviour like this?
-    "input.ReadMessage($name$_);\n"); // No need to support TYPE_GROUP...
-}
+                void MessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer)
+                {
+                    printer->Print(
+                        variables_,
+                        "if ($has_property_check$) {\n"
+                        "  size += $tag_size$ + pb::CodedOutputStream.ComputeMessageSize($property_name$);\n"
+                        "}\n");
+                }
 
-void MessageFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "if ($has_property_check$) {\n"
-    "  output.WriteRawTag($tag_bytes$);\n"
-    "  output.WriteMessage($property_name$);\n"
-    "}\n");
-}
+                void MessageFieldGenerator::WriteHash(io::Printer* printer)
+                {
+                    printer->Print(
+                        variables_,
+                        "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n");
+                }
+                void MessageFieldGenerator::WriteEquals(io::Printer* printer)
+                {
+                    printer->Print(
+                        variables_,
+                        "if (!object.Equals($property_name$, other.$property_name$)) return false;\n");
+                }
+                void MessageFieldGenerator::WriteToString(io::Printer* printer)
+                {
+                    variables_["field_name"] = GetFieldName(descriptor_);
+                    printer->Print(
+                        variables_,
+                        "PrintField(\"$field_name$\", has$property_name$, $name$_, writer);\n");
+                }
 
-void MessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "if ($has_property_check$) {\n"
-    "  size += $tag_size$ + pb::CodedOutputStream.ComputeMessageSize($property_name$);\n"
-    "}\n");
-}
+                void MessageFieldGenerator::GenerateCloningCode(io::Printer* printer)
+                {
+                    printer->Print(variables_,
+                        "$property_name$ = other.$has_property_check$ ? other.$property_name$.Clone() : null;\n");
+                }
 
-void MessageFieldGenerator::WriteHash(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n");
-}
-void MessageFieldGenerator::WriteEquals(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "if (!object.Equals($property_name$, other.$property_name$)) return false;\n");
-}
-void MessageFieldGenerator::WriteToString(io::Printer* printer) {
-  variables_["field_name"] = GetFieldName(descriptor_);
-  printer->Print(
-    variables_,
-    "PrintField(\"$field_name$\", has$property_name$, $name$_, writer);\n");
-}
+                void MessageFieldGenerator::GenerateFreezingCode(io::Printer* printer)
+                {
+                }
 
-void MessageFieldGenerator::GenerateCloningCode(io::Printer* printer) {
-  printer->Print(variables_,
-    "$property_name$ = other.$has_property_check$ ? other.$property_name$.Clone() : null;\n");
-}
+                void MessageFieldGenerator::GenerateCodecCode(io::Printer* printer)
+                {
+                    printer->Print(
+                        variables_,
+                        "pb::FieldCodec.ForMessage($tag$, $type_name$.Parser)");
+                }
 
-void MessageFieldGenerator::GenerateFreezingCode(io::Printer* printer) {
-}
+                MessageOneofFieldGenerator::MessageOneofFieldGenerator(
+                    const FieldDescriptor* descriptor,
+                    int fieldOrdinal,
+                    const Options* options)
+                    : MessageFieldGenerator(descriptor, fieldOrdinal, options)
+                {
+                    SetCommonOneofFieldVariables(&variables_);
+                }
 
-void MessageFieldGenerator::GenerateCodecCode(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "pb::FieldCodec.ForMessage($tag$, $type_name$.Parser)");
-}
+                MessageOneofFieldGenerator::~MessageOneofFieldGenerator()
+                {
+                }
 
-MessageOneofFieldGenerator::MessageOneofFieldGenerator(
-    const FieldDescriptor* descriptor,
-	  int fieldOrdinal,
-    const Options *options)
-    : MessageFieldGenerator(descriptor, fieldOrdinal, options) {
-  SetCommonOneofFieldVariables(&variables_);
-}
+                void MessageOneofFieldGenerator::GenerateMembers(io::Printer* printer)
+                {
+                    WritePropertyDocComment(printer, descriptor_);
+                    AddPublicMemberAttributes(printer);
+                    printer->Print(
+                        variables_,
+                        "$access_level$ $type_name$ $property_name$ {\n"
+                        "  get { return $has_property_check$ ? ($type_name$) $oneof_name$_ : null; }\n"
+                        "  set {\n"
+                        "    $oneof_name$_ = value;\n"
+                        "    $oneof_name$Case_ = value == null ? $oneof_property_name$OneofCase.None : $oneof_property_name$OneofCase.$property_name$;\n"
+                        "  }\n"
+                        "}\n");
+                }
 
-MessageOneofFieldGenerator::~MessageOneofFieldGenerator() {
+                void MessageOneofFieldGenerator::GenerateParsingCode(io::Printer* printer)
+                {
+                    // TODO(jonskeet): We may be able to do better than this
+                    printer->Print(
+                        variables_,
+                        "$type_name$ subBuilder = new $type_name$();\n"
+                        "if ($has_property_check$) {\n"
+                        "  subBuilder.MergeFrom($property_name$);\n"
+                        "}\n"
+                        "input.ReadMessage(subBuilder);\n" // No support of TYPE_GROUP
+                        "$property_name$ = subBuilder;\n");
+                }
 
-}
+                void MessageOneofFieldGenerator::WriteToString(io::Printer* printer)
+                {
+                    printer->Print(
+                        variables_,
+                        "PrintField(\"$descriptor_name$\", $has_property_check$, $oneof_name$_, writer);\n");
+                }
 
-void MessageOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
-  WritePropertyDocComment(printer, descriptor_);
-  AddPublicMemberAttributes(printer);
-  printer->Print(
-    variables_,
-    "$access_level$ $type_name$ $property_name$ {\n"
-    "  get { return $has_property_check$ ? ($type_name$) $oneof_name$_ : null; }\n"
-    "  set {\n"
-    "    $oneof_name$_ = value;\n"
-    "    $oneof_name$Case_ = value == null ? $oneof_property_name$OneofCase.None : $oneof_property_name$OneofCase.$property_name$;\n"
-    "  }\n"
-    "}\n");
-}
+                void MessageOneofFieldGenerator::GenerateCloningCode(io::Printer* printer)
+                {
+                    printer->Print(variables_,
+                        "$property_name$ = other.$property_name$.Clone();\n");
+                }
 
-void MessageOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
-  // TODO(jonskeet): We may be able to do better than this
-  printer->Print(
-    variables_,
-    "$type_name$ subBuilder = new $type_name$();\n"
-    "if ($has_property_check$) {\n"
-    "  subBuilder.MergeFrom($property_name$);\n"
-    "}\n"
-    "input.ReadMessage(subBuilder);\n" // No support of TYPE_GROUP
-    "$property_name$ = subBuilder;\n");
-}
-
-void MessageOneofFieldGenerator::WriteToString(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "PrintField(\"$descriptor_name$\", $has_property_check$, $oneof_name$_, writer);\n");
-}
-
-void MessageOneofFieldGenerator::GenerateCloningCode(io::Printer* printer) {
-  printer->Print(variables_,
-    "$property_name$ = other.$property_name$.Clone();\n");
-}
-
-}  // namespace csharp
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+            } // namespace csharp
+        }     // namespace compiler
+    }         // namespace protobuf
+} // namespace google

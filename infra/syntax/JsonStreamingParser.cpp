@@ -1,5 +1,5 @@
-#include "infra/util/Function.hpp"
 #include "infra/syntax/JsonStreamingParser.hpp"
+#include "infra/util/Function.hpp"
 #include <cctype>
 
 namespace infra
@@ -147,115 +147,116 @@ namespace infra
 
                 switch (tokenState)
                 {
-                    case TokenState::open:
-                        if (std::isspace(c))
-                        {
-                            while (!data.empty() && std::isspace(data.front()))
-                                data.pop_front();
-                        }
-                        else switch (c)
-                        {
-                            case ':':
-                                FoundToken(Token::colon);
-                                break;
-                            case ',':
-                                FoundToken(Token::comma);
-                                break;
-                            case '{':
-                                FoundToken(Token::leftBrace);
-                                break;
-                            case '}':
-                                FoundToken(Token::rightBrace);
-                                break;
-                            case '[':
-                                FoundToken(Token::leftBracket);
-                                break;
-                            case ']':
-                                FoundToken(Token::rightBracket);
-                                break;
-                            case '"':
-                                tokenState = TokenState::stringOpen;
-                                break;
-                            case '-':
-                                tokenState = TokenState::numberOpen;
-                                tokenNumber = 0;
-                                tokenSign = -1;
-                                break;
-                            default:
-                                if (std::isalpha(c))
-                                {
-                                    tokenState = TokenState::identifierOpen;
-                                    valueBuffer = c;
-                                }
-                                else if (std::isdigit(c))
-                                {
-                                    tokenState = TokenState::numberOpen;
-                                    tokenNumber = c - '0';
-                                    tokenSign = 1;
-                                }
-                                else
-                                    FoundToken(Token::error);
-                        }
-                        break;
-                    case TokenState::stringOpen:
-                    case TokenState::stringOverflowOpen:
-                        while (true)
-                        {
-                            if (c == '\\')
-                                tokenState = TokenState::stringOpenAndEscaped;
-                            else if (c == '"')
-                                FoundToken(tokenState == TokenState::stringOpen ? Token::string : Token::stringOverflow);
-                            else
-                                AddToValueBuffer(c, saveValue, true);
-
-                            if ((tokenState != TokenState::stringOpen && tokenState != TokenState::stringOverflowOpen) || data.empty())
-                                break;
-
-                            c = data.front();
+                case TokenState::open:
+                    if (std::isspace(c))
+                    {
+                        while (!data.empty() && std::isspace(data.front()))
                             data.pop_front();
-                        }
-                        break;
-                    case TokenState::stringOpenAndEscaped:
-                        tokenState = TokenState::stringOpen;
-                        ProcessEscapedData(c, saveValue);
-                        break;
-                    case TokenState::unicodeValueOpen:
-                        if (c >= '0' && c <= '9')
+                    }
+                    else
+                        switch (c)
                         {
-                            ++unicodeIndex;
-                            unicode = unicode * 16 + c - '0';
-                        }
-                        else if (c >= 'a' && c <= 'f')
-                        {
-                            ++unicodeIndex;
-                            unicode = unicode * 16 + c - 'a' + 10;
-                        }
-                        else if (c >= 'A' && c <= 'F')
-                        {
-                            ++unicodeIndex;
-                            unicode = unicode * 16 + c - 'A' + 10;
-                        }
-                        else
-                        {
-                            unicodeIndex = 0;
-                            unicode = 0;
-                            FoundToken(Token::error);
-                        }
-
-                        if (unicodeIndex == 4)
-                        {
+                        case ':':
+                            FoundToken(Token::colon);
+                            break;
+                        case ',':
+                            FoundToken(Token::comma);
+                            break;
+                        case '{':
+                            FoundToken(Token::leftBrace);
+                            break;
+                        case '}':
+                            FoundToken(Token::rightBrace);
+                            break;
+                        case '[':
+                            FoundToken(Token::leftBracket);
+                            break;
+                        case ']':
+                            FoundToken(Token::rightBracket);
+                            break;
+                        case '"':
                             tokenState = TokenState::stringOpen;
-                            if (valueBuffer.full())
-                                FoundToken(Token::error);
+                            break;
+                        case '-':
+                            tokenState = TokenState::numberOpen;
+                            tokenNumber = 0;
+                            tokenSign = -1;
+                            break;
+                        default:
+                            if (std::isalpha(c))
+                            {
+                                tokenState = TokenState::identifierOpen;
+                                valueBuffer = c;
+                            }
+                            else if (std::isdigit(c))
+                            {
+                                tokenState = TokenState::numberOpen;
+                                tokenNumber = c - '0';
+                                tokenSign = 1;
+                            }
                             else
-                                AddToValueBuffer(static_cast<char>(unicode), saveValue, true);
-
-                            unicodeIndex = 0;
-                            unicode = 0;
+                                FoundToken(Token::error);
                         }
-                        break;
-                    default:
-                        std::abort();
+                    break;
+                case TokenState::stringOpen:
+                case TokenState::stringOverflowOpen:
+                    while (true)
+                    {
+                        if (c == '\\')
+                            tokenState = TokenState::stringOpenAndEscaped;
+                        else if (c == '"')
+                            FoundToken(tokenState == TokenState::stringOpen ? Token::string : Token::stringOverflow);
+                        else
+                            AddToValueBuffer(c, saveValue, true);
+
+                        if ((tokenState != TokenState::stringOpen && tokenState != TokenState::stringOverflowOpen) || data.empty())
+                            break;
+
+                        c = data.front();
+                        data.pop_front();
+                    }
+                    break;
+                case TokenState::stringOpenAndEscaped:
+                    tokenState = TokenState::stringOpen;
+                    ProcessEscapedData(c, saveValue);
+                    break;
+                case TokenState::unicodeValueOpen:
+                    if (c >= '0' && c <= '9')
+                    {
+                        ++unicodeIndex;
+                        unicode = unicode * 16 + c - '0';
+                    }
+                    else if (c >= 'a' && c <= 'f')
+                    {
+                        ++unicodeIndex;
+                        unicode = unicode * 16 + c - 'a' + 10;
+                    }
+                    else if (c >= 'A' && c <= 'F')
+                    {
+                        ++unicodeIndex;
+                        unicode = unicode * 16 + c - 'A' + 10;
+                    }
+                    else
+                    {
+                        unicodeIndex = 0;
+                        unicode = 0;
+                        FoundToken(Token::error);
+                    }
+
+                    if (unicodeIndex == 4)
+                    {
+                        tokenState = TokenState::stringOpen;
+                        if (valueBuffer.full())
+                            FoundToken(Token::error);
+                        else
+                            AddToValueBuffer(static_cast<char>(unicode), saveValue, true);
+
+                        unicodeIndex = 0;
+                        unicode = 0;
+                    }
+                    break;
+                default:
+                    std::abort();
                 }
             }
         }
@@ -308,15 +309,15 @@ namespace infra
     {
         switch (c)
         {
-            case '"': AddToValueBuffer('"', saveValue, true); break;
-            case '\\': AddToValueBuffer('\\', saveValue, true); break;
-            case 'b': AddToValueBuffer('\b', saveValue, true); break;
-            case 'f': AddToValueBuffer('\f', saveValue, true); break;
-            case 'n': AddToValueBuffer('\n', saveValue, true); break;
-            case 'r': AddToValueBuffer('\r', saveValue, true); break;
-            case 't': AddToValueBuffer('\t', saveValue, true); break;
-            case 'u': tokenState = TokenState::unicodeValueOpen; break;
-            default: AddToValueBuffer(c, saveValue, true);
+        case '"': AddToValueBuffer('"', saveValue, true); break;
+        case '\\': AddToValueBuffer('\\', saveValue, true); break;
+        case 'b': AddToValueBuffer('\b', saveValue, true); break;
+        case 'f': AddToValueBuffer('\f', saveValue, true); break;
+        case 'n': AddToValueBuffer('\n', saveValue, true); break;
+        case 'r': AddToValueBuffer('\r', saveValue, true); break;
+        case 't': AddToValueBuffer('\t', saveValue, true); break;
+        case 'u': tokenState = TokenState::unicodeValueOpen; break;
+        default: AddToValueBuffer(c, saveValue, true);
         }
     }
 
@@ -358,8 +359,7 @@ namespace infra
     {
         bool destructed = false;
         destructedIndication = &destructed;
-        infra::ExecuteOnDestruction::WithExtraSize<3 * sizeof(void*)> execute([this, &destructed, &data]()
-        {
+        infra::ExecuteOnDestruction::WithExtraSize<3 * sizeof(void*)> execute([this, &destructed, &data]() {
             if (!destructed)
                 destructedIndication = nullptr;
         });
@@ -556,8 +556,7 @@ namespace infra
     {
         bool destructed = false;
         destructedIndication = &destructed;
-        infra::ExecuteOnDestruction::WithExtraSize<3 * sizeof(void*)> execute([this, &destructed, &data]()
-        {
+        infra::ExecuteOnDestruction::WithExtraSize<3 * sizeof(void*)> execute([this, &destructed, &data]() {
             if (!destructed)
                 destructedIndication = nullptr;
         });

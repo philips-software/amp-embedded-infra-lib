@@ -39,32 +39,32 @@
 #include MBEDTLS_CONFIG_FILE
 #endif
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
-#define MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA         -0x0051 /**< Invalid input parameter(s). */
-#define MBEDTLS_ERR_CHACHA20_FEATURE_UNAVAILABLE    -0x0053 /**< Feature not available. For example, s part of the API is not implemented. */
-#define MBEDTLS_ERR_CHACHA20_HW_ACCEL_FAILED        -0x0055  /**< Chacha20 hardware accelerator failed. */
+#define MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA -0x0051      /**< Invalid input parameter(s). */
+#define MBEDTLS_ERR_CHACHA20_FEATURE_UNAVAILABLE -0x0053 /**< Feature not available. For example, s part of the API is not implemented. */
+#define MBEDTLS_ERR_CHACHA20_HW_ACCEL_FAILED -0x0055     /**< Chacha20 hardware accelerator failed. */
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #if !defined(MBEDTLS_CHACHA20_ALT)
 
-typedef struct mbedtls_chacha20_context
-{
-    uint32_t state[16];          /*! The state (before round operations). */
-    uint8_t  keystream8[64];     /*! Leftover keystream bytes. */
-    size_t keystream_bytes_used; /*! Number of keystream bytes already used. */
-}
-mbedtls_chacha20_context;
+    typedef struct mbedtls_chacha20_context
+    {
+        uint32_t state[16];          /*! The state (before round operations). */
+        uint8_t keystream8[64];      /*! Leftover keystream bytes. */
+        size_t keystream_bytes_used; /*! Number of keystream bytes already used. */
+    } mbedtls_chacha20_context;
 
-#else  /* MBEDTLS_CHACHA20_ALT */
+#else /* MBEDTLS_CHACHA20_ALT */
 #include "chacha20_alt.h"
 #endif /* MBEDTLS_CHACHA20_ALT */
 
-/**
+    /**
  * \brief           This function initializes the specified ChaCha20 context.
  *
  *                  It must be the first API called before using
@@ -78,16 +78,16 @@ mbedtls_chacha20_context;
  *
  * \param ctx       The ChaCha20 context to initialize.
  */
-void mbedtls_chacha20_init( mbedtls_chacha20_context *ctx );
+    void mbedtls_chacha20_init(mbedtls_chacha20_context* ctx);
 
-/**
+    /**
  * \brief           This function releases and clears the specified ChaCha20 context.
  *
  * \param ctx       The ChaCha20 context to clear.
  */
-void mbedtls_chacha20_free( mbedtls_chacha20_context *ctx );
+    void mbedtls_chacha20_free(mbedtls_chacha20_context* ctx);
 
-/**
+    /**
  * \brief           This function sets the encryption/decryption key.
  *
  * \note            After using this function, you must also call
@@ -101,10 +101,10 @@ void mbedtls_chacha20_free( mbedtls_chacha20_context *ctx );
  * \return          \c 0 on success.
  * \return          #MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA if ctx or key is NULL.
  */
-int mbedtls_chacha20_setkey( mbedtls_chacha20_context *ctx,
-                             const unsigned char key[32] );
+    int mbedtls_chacha20_setkey(mbedtls_chacha20_context* ctx,
+        const unsigned char key[32]);
 
-/**
+    /**
  * \brief           This function sets the nonce and initial counter value.
  *
  * \note            A ChaCha20 context can be re-used with the same key by
@@ -122,11 +122,11 @@ int mbedtls_chacha20_setkey( mbedtls_chacha20_context *ctx,
  * \return          #MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA if ctx or nonce is
  *                  NULL.
  */
-int mbedtls_chacha20_starts( mbedtls_chacha20_context* ctx,
-                             const unsigned char nonce[12],
-                             uint32_t counter );
+    int mbedtls_chacha20_starts(mbedtls_chacha20_context* ctx,
+        const unsigned char nonce[12],
+        uint32_t counter);
 
-/**
+    /**
  * \brief           This function encrypts or decrypts data.
  *
  *                  Since ChaCha20 is a stream cipher, the same operation is
@@ -155,12 +155,12 @@ int mbedtls_chacha20_starts( mbedtls_chacha20_context* ctx,
  * \return          #MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA if the ctx, input, or
  *                  output pointers are NULL.
  */
-int mbedtls_chacha20_update( mbedtls_chacha20_context *ctx,
-                             size_t size,
-                             const unsigned char *input,
-                             unsigned char *output );
+    int mbedtls_chacha20_update(mbedtls_chacha20_context* ctx,
+        size_t size,
+        const unsigned char* input,
+        unsigned char* output);
 
-/**
+    /**
  * \brief           This function encrypts or decrypts data with ChaCha20 and
  *                  the given key and nonce.
  *
@@ -188,21 +188,21 @@ int mbedtls_chacha20_update( mbedtls_chacha20_context *ctx,
  * \return          #MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA if key, nonce, input,
  *                  or output is NULL.
  */
-int mbedtls_chacha20_crypt( const unsigned char key[32],
-                            const unsigned char nonce[12],
-                            uint32_t counter,
-                            size_t size,
-                            const unsigned char* input,
-                            unsigned char* output );
+    int mbedtls_chacha20_crypt(const unsigned char key[32],
+        const unsigned char nonce[12],
+        uint32_t counter,
+        size_t size,
+        const unsigned char* input,
+        unsigned char* output);
 
 #if defined(MBEDTLS_SELF_TEST)
-/**
+    /**
  * \brief           The ChaCha20 checkup routine.
  *
  * \return          \c 0 on success.
  * \return          \c 1 on failure.
  */
-int mbedtls_chacha20_self_test( int verbose );
+    int mbedtls_chacha20_self_test(int verbose);
 #endif /* MBEDTLS_SELF_TEST */
 
 #ifdef __cplusplus

@@ -1,12 +1,12 @@
 #ifndef NETWORK_CONNECTION_STUB_HPP
 #define NETWORK_CONNECTION_STUB_HPP
 
-#include "gmock/gmock.h"
 #include "infra/stream/BoundedDequeInputStream.hpp"
-#include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/stream/LimitedOutputStream.hpp"
+#include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "services/network/Connection.hpp"
+#include "gmock/gmock.h"
 #include <vector>
 
 namespace services

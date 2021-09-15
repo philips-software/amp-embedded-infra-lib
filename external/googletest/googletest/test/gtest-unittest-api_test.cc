@@ -32,10 +32,11 @@
 // This file contains tests verifying correctness of data provided via
 // UnitTest's public methods.
 
-#include "gtest/gtest.h"
-
 #include <string.h>  // For strcmp.
+
 #include <algorithm>
+
+#include "gtest/gtest.h"
 
 using ::testing::InitGoogleTest;
 
@@ -56,13 +57,12 @@ class UnitTestHelper {
   static TestSuite const** GetSortedTestSuites() {
     UnitTest& unit_test = *UnitTest::GetInstance();
     auto const** const test_suites = new const TestSuite*[static_cast<size_t>(
-      unit_test.total_test_suite_count())];
+        unit_test.total_test_suite_count())];
 
     for (int i = 0; i < unit_test.total_test_suite_count(); ++i)
       test_suites[i] = unit_test.GetTestSuite(i);
 
-    std::sort(test_suites,
-              test_suites + unit_test.total_test_suite_count(),
+    std::sort(test_suites, test_suites + unit_test.total_test_suite_count(),
               LessByName<TestSuite>());
     return test_suites;
   }
@@ -73,8 +73,7 @@ class UnitTestHelper {
     UnitTest& unit_test = *UnitTest::GetInstance();
     for (int i = 0; i < unit_test.total_test_suite_count(); ++i) {
       const TestSuite* test_suite = unit_test.GetTestSuite(i);
-      if (0 == strcmp(test_suite->name(), name))
-        return test_suite;
+      if (0 == strcmp(test_suite->name(), name)) return test_suite;
     }
     return nullptr;
   }
@@ -84,7 +83,7 @@ class UnitTestHelper {
   // array.
   static TestInfo const** GetSortedTests(const TestSuite* test_suite) {
     TestInfo const** const tests = new const TestInfo*[static_cast<size_t>(
-      test_suite->total_test_count())];
+        test_suite->total_test_count())];
 
     for (int i = 0; i < test_suite->total_test_count(); ++i)
       tests[i] = test_suite->GetTestInfo(i);
@@ -96,7 +95,8 @@ class UnitTestHelper {
 };
 
 #if GTEST_HAS_TYPED_TEST
-template <typename T> class TestSuiteWithCommentTest : public Test {};
+template <typename T>
+class TestSuiteWithCommentTest : public Test {};
 TYPED_TEST_SUITE(TestSuiteWithCommentTest, Types<int>);
 TYPED_TEST(TestSuiteWithCommentTest, Dummy) {}
 
@@ -332,7 +332,7 @@ class FinalSuccessChecker : public Environment {
 }  // namespace internal
 }  // namespace testing
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   InitGoogleTest(&argc, argv);
 
   AddGlobalTestEnvironment(new testing::internal::FinalSuccessChecker());

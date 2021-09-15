@@ -1,9 +1,9 @@
-#include "gmock/gmock.h"
 #include "hal/interfaces/test_doubles/SerialCommunicationMock.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "services/network/ConnectionSerial.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
+#include "gmock/gmock.h"
 
 class ConnectionSerialTest
     : public testing::Test
@@ -14,7 +14,7 @@ public:
         : firstRequest1([this]() { ExpectWindowSizeRequest([this]() { serialCommunication.actionOnCompletion(); }); })
         , receiveBuffer(2048)
         , receivedDataQueue(infra::inPlace, storage)
-        , connection(infra::inPlace, infra::MakeByteRange(sendBuffer), infra::MemoryRange<uint8_t>(receiveBuffer), *receivedDataQueue,  serialCommunication, infra::emptyFunction, infra::emptyFunction)
+        , connection(infra::inPlace, infra::MakeByteRange(sendBuffer), infra::MemoryRange<uint8_t>(receiveBuffer), *receivedDataQueue, serialCommunication, infra::emptyFunction, infra::emptyFunction)
         , firstRequest2([this]() { ExecuteAllActions(); })
     {
         connection->Attach(infra::UnOwnedSharedPtr(observer));
@@ -178,14 +178,13 @@ public:
     {
         uint8_t serialCallCount = ExpectSepearateContentHeaderAndContentMessages(msg);
         ExecuteAllActions();
-        for (int i=0; i<serialCallCount; i++)
+        for (int i = 0; i < serialCallCount; i++)
             serialCommunication.actionOnCompletion();
     }
 
     void ExpectSendStreamAvailable(std::vector<uint8_t> msg)
     {
-        EXPECT_CALL(observer, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke([msg](infra::SharedPtr<infra::StreamWriter> writer)
-        {
+        EXPECT_CALL(observer, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke([msg](infra::SharedPtr<infra::StreamWriter> writer) {
             infra::ByteOutputStream::WithErrorPolicy stream(*writer);
             stream << infra::ConstByteRange(msg);
         }));
@@ -252,7 +251,6 @@ TEST_F(ConnectionSerialTest, MaxSendStreamSize)
 {
     EXPECT_EQ(sizeof(sendBuffer), connection->MaxSendStreamSize());
 }
-
 
 //Window size request
 TEST_F(ConnectionSerialTest, sends_request_for_window_size_after_construction_at_every_second)
@@ -451,7 +449,6 @@ TEST_F(ConnectionSerialTest, unexpected_response_after_initialization_blocks_sen
     ExecuteAllActions();
 }
 
-
 TEST_F(ConnectionSerialTest, escape_header_and_escape_bytes_in_content)
 {
     Initialization();
@@ -569,7 +566,9 @@ TEST_F(ConnectionSerialTest, extract_received_content_via_StreamReader_using_Ext
 {
     ReconstructConnectionWithMinUpdateSize(2000);
     Initialization();
-    ContentMessageReceived({ '1', });
+    ContentMessageReceived({
+        '1',
+    });
     ContentMessageReceivedAndObserverNotified({ '2', '3' });
 
     infra::SharedPtr<infra::StreamReader> reader = connection->ReceiveStream();
@@ -956,10 +955,9 @@ TEST_F(ConnectionSerialTest, reset_connection_during_a_content_send)
     GetAndWriteToSendStream({ '1' });
 
     EXPECT_CALL(serialCommunication, SendDataMock(std::vector<uint8_t>({ 0xfd, static_cast<uint8_t>(1 >> 8), static_cast<uint8_t>(1) })))
-        .WillOnce(testing::InvokeWithoutArgs([this]()
-    {
-        WindowSizeRequestReceived();
-    }));
+        .WillOnce(testing::InvokeWithoutArgs([this]() {
+            WindowSizeRequestReceived();
+        }));
     EXPECT_CALL(serialCommunication, SendDataMock(std::vector<uint8_t>({ '1' })));
     ExecuteAllActions();
     serialCommunication.actionOnCompletion();

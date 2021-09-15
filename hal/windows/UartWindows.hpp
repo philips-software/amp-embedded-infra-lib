@@ -4,10 +4,10 @@
 #include "hal/interfaces/SerialCommunication.hpp"
 #include <atomic>
 #include <mutex>
-#include <thread>
-#include <winsock2.h>
-#include <windows.h>
 #include <setupapi.h>
+#include <thread>
+#include <windows.h>
+#include <winsock2.h>
 
 namespace hal
 {
@@ -28,8 +28,7 @@ namespace hal
     class UartWindows
         : public SerialCommunication
     {
-    public: 
-
+    public:
         struct UartWindowsConfig
         {
             enum class RtsFlowControl
@@ -42,7 +41,8 @@ namespace hal
 
             UartWindowsConfig()
                 : baudRate(CBR_115200)
-                , flowControlRts(RtsFlowControl::RtsControlDisable) {}
+                , flowControlRts(RtsFlowControl::RtsControlDisable)
+            {}
 
             UartWindowsConfig(uint32_t newbaudRate, RtsFlowControl newFlowControlRts)
                 : baudRate(newbaudRate)
@@ -52,7 +52,8 @@ namespace hal
             uint32_t baudRate;
             RtsFlowControl flowControlRts;
         };
-        struct DeviceName {};
+        struct DeviceName
+        {};
         static const DeviceName deviceName;
 
         UartWindows(const std::string& portName, UartWindowsConfig config = UartWindowsConfig());

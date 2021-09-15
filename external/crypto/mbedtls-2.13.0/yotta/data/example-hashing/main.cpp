@@ -23,15 +23,15 @@
  * This program illustrates various ways of hashing a buffer.
  * You normally need only one of these two includes.
  */
-#include "mbedtls/sha256.h" /* SHA-256 only */
 #include "mbedtls/md.h"     /* generic interface */
+#include "mbedtls/sha256.h" /* SHA-256 only */
 
 #if defined(TARGET_LIKE_MBED)
 #include "mbed-drivers/mbed.h"
 #endif
 #include <cstdio>
 
-static void print_hex(const char *title, const unsigned char buf[], size_t len)
+static void print_hex(const char* title, const unsigned char buf[], size_t len)
 {
     printf("%s: ", title);
 
@@ -42,12 +42,12 @@ static void print_hex(const char *title, const unsigned char buf[], size_t len)
 }
 
 static const char hello_str[] = "Hello, world!";
-static const unsigned char *hello_buffer = (const unsigned char *) hello_str;
+static const unsigned char* hello_buffer = (const unsigned char*)hello_str;
 static const size_t hello_len = sizeof hello_str - 1;
 
 int example(void)
 {
-    printf( "\r\n\r\n" );
+    printf("\r\n\r\n");
 
     /*
      * Method 1: use all-in-one function of a specific SHA-xxx module
@@ -58,7 +58,6 @@ int example(void)
     mbedtls_sha256(hello_buffer, hello_len, output1, 0);
 
     print_hex("Method 1", output1, sizeof output1);
-
 
     /*
      * Method 2: use the streaming interface of a specific SHA-xxx module
@@ -87,7 +86,7 @@ int example(void)
     unsigned char output3[MBEDTLS_MD_MAX_SIZE]; /* Enough for any hash */
 
     /* Can easily pick any hash you want, by identifier */
-    const mbedtls_md_info_t *md_info3 = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
+    const mbedtls_md_info_t* md_info3 = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
 
     if (md_info3 == NULL)
     {
@@ -105,13 +104,12 @@ int example(void)
 
     print_hex("Method 3", output3, mbedtls_md_get_size(md_info3));
 
-
     /*
      * Method 4: streaming & generic interface
      */
     unsigned char output4[MBEDTLS_MD_MAX_SIZE]; /* Enough for any hash */
 
-    const mbedtls_md_info_t *md_info4 = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
+    const mbedtls_md_info_t* md_info4 = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
 
     if (md_info4 == NULL)
     {
@@ -143,7 +141,6 @@ int example(void)
     /* Or you could re-use the context by doing mbedtls_md_starts() again */
     mbedtls_md_free(&ctx4);
 
-
     printf("\r\nDONE\r\n");
 
     return 0;
@@ -154,7 +151,8 @@ int example(void)
 #include "mbed-drivers/test_env.h"
 #include "minar/minar.h"
 
-static void run() {
+static void run()
+{
     MBED_HOSTTEST_TIMEOUT(10);
     MBED_HOSTTEST_SELECT(default);
     MBED_HOSTTEST_DESCRIPTION(mbed TLS example on hashing);
@@ -162,7 +160,8 @@ static void run() {
     MBED_HOSTTEST_RESULT(example() == 0);
 }
 
-void app_start(int, char*[]) {
+void app_start(int, char*[])
+{
     /* Use 115200 bps for consistency with other examples */
     get_stdio_serial().baud(115200);
     minar::Scheduler::postCallback(mbed::util::FunctionPointer0<void>(run).bind());
@@ -170,7 +169,8 @@ void app_start(int, char*[]) {
 
 #else
 
-int main() {
+int main()
+{
     return example();
 }
 

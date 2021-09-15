@@ -1,7 +1,7 @@
 #include "lwip/lwip_cpp/LightweightIp.hpp"
 #include "lwip/init.h"
 #ifndef ESP_PLATFORM
-	#include "lwip/timeouts.h"
+#include "lwip/timeouts.h"
 #endif
 
 extern "C" uint32_t StaticLwIpRand()
@@ -15,7 +15,12 @@ namespace services
     {
         IPv4Address Convert(ip_addr_t address)
         {
-            return{ ip4_addr1(&address.u_addr.ip4), ip4_addr2(&address.u_addr.ip4), ip4_addr3(&address.u_addr.ip4), ip4_addr4(&address.u_addr.ip4), };
+            return {
+                ip4_addr1(&address.u_addr.ip4),
+                ip4_addr2(&address.u_addr.ip4),
+                ip4_addr3(&address.u_addr.ip4),
+                ip4_addr4(&address.u_addr.ip4),
+            };
         }
     }
 
@@ -25,7 +30,8 @@ namespace services
     {
 #if NO_SYS
         lwip_init();
-        sysCheckTimer.Start(std::chrono::milliseconds(50), [this]() { sys_check_timeouts(); }, infra::triggerImmediately);
+        sysCheckTimer.Start(
+            std::chrono::milliseconds(50), [this]() { sys_check_timeouts(); }, infra::triggerImmediately);
 #endif
     }
 

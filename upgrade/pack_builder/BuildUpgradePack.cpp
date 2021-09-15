@@ -1,8 +1,8 @@
-#include "mbedtls/memory_buffer_alloc.h"
+#include "upgrade/pack_builder/BuildUpgradePack.hpp"
 #include "hal/generic/FileSystemGeneric.hpp"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
+#include "mbedtls/memory_buffer_alloc.h"
 #include "upgrade/pack_builder/BinaryObject.hpp"
-#include "upgrade/pack_builder/BuildUpgradePack.hpp"
 #include "upgrade/pack_builder/ImageEncryptorAes.hpp"
 #include "upgrade/pack_builder/ImageSignerEcDsa.hpp"
 #include "upgrade/pack_builder/Input.hpp"
@@ -130,7 +130,7 @@ namespace application
     }
 
     void UpgradePackBuilderFacade::ShowUsage(TargetAndFiles& targetAndFiles, BuildOptions& buildOptions,
-        const std::vector<std::string>& supportedHexTargets, const std::vector<std::pair<std::string, uint32_t>>& supportedElfTargets, 
+        const std::vector<std::string>& supportedHexTargets, const std::vector<std::pair<std::string, uint32_t>>& supportedElfTargets,
         const std::vector<std::pair<std::string, uint32_t>>& supportedBinaryTargets,
         const std::vector<NoFileInputFactory*>& otherTargets) const
     {

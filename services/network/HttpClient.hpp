@@ -43,7 +43,7 @@ namespace services
         virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<HttpClientObserver> client)>&& createdClientObserver) = 0;
         virtual void ConnectionFailed(ConnectFailReason reason) = 0;
     };
-    
+
     class HttpClient
         : public infra::SharedOwningSubject<HttpClientObserver>
     {

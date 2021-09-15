@@ -3012,7 +3012,7 @@
  * guaranteed if the other end of the connection also supports the TLS
  * max_fragment_len extension. Otherwise the connection may fail.
  */
-#define MBEDTLS_SSL_OUT_CONTENT_LEN             4096
+#define MBEDTLS_SSL_OUT_CONTENT_LEN 4096
 
 /** \def MBEDTLS_SSL_DTLS_MAX_BUFFERING
  *
@@ -3047,10 +3047,10 @@
  *
  * The value below is only an example, not the default.
  */
-#define MBEDTLS_SSL_CIPHERSUITES \
+#define MBEDTLS_SSL_CIPHERSUITES                   \
     MBEDTLS_TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, \
-    MBEDTLS_TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
- //#define MBEDTLS_SSL_CIPHERSUITES MBEDTLS_TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,MBEDTLS_TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        MBEDTLS_TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+//#define MBEDTLS_SSL_CIPHERSUITES MBEDTLS_TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,MBEDTLS_TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
 
 /* X509 options */
 //#define MBEDTLS_X509_MAX_INTERMEDIATE_CA   8   /**< Maximum number of intermediate CAs in a verification chain. */

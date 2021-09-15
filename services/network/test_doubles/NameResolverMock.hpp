@@ -1,8 +1,8 @@
 #ifndef NETWORK_NAME_RESOLVER_MOCK_MOCK_HPP
 #define NETWORK_NAME_RESOLVER_MOCK_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "services/network/NameResolver.hpp"
+#include "gmock/gmock.h"
 
 namespace services
 {

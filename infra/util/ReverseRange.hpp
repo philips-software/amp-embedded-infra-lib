@@ -16,7 +16,7 @@ namespace infra
     namespace detail
     {
         template<class T>
-        struct DoublePair: std::pair<T, T>
+        struct DoublePair : std::pair<T, T>
         {
             DoublePair() = default;
             DoublePair(const T& x, const T& y)

@@ -1,10 +1,10 @@
+#include "services/network/WebSocketClientConnectionObserver.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "infra/stream/SavedMarkerStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/util/Endian.hpp"
 #include "mbedtls/sha1.h"
 #include "services/network/HttpServer.hpp"
-#include "services/network/WebSocketClientConnectionObserver.hpp"
 #include <cassert>
 
 namespace services
@@ -483,14 +483,14 @@ namespace services
     {
         switch (reason)
         {
-            case HttpClientObserverFactory::ConnectFailReason::refused:
-                return WebSocketClientObserverFactory::ConnectFailReason::refused;
-            case HttpClientObserverFactory::ConnectFailReason::connectionAllocationFailed:
-                return WebSocketClientObserverFactory::ConnectFailReason::connectionAllocationFailed;
-            case HttpClientObserverFactory::ConnectFailReason::nameLookupFailed:
-                return WebSocketClientObserverFactory::ConnectFailReason::nameLookupFailed;
-            default:
-                std::abort();
+        case HttpClientObserverFactory::ConnectFailReason::refused:
+            return WebSocketClientObserverFactory::ConnectFailReason::refused;
+        case HttpClientObserverFactory::ConnectFailReason::connectionAllocationFailed:
+            return WebSocketClientObserverFactory::ConnectFailReason::connectionAllocationFailed;
+        case HttpClientObserverFactory::ConnectFailReason::nameLookupFailed:
+            return WebSocketClientObserverFactory::ConnectFailReason::nameLookupFailed;
+        default:
+            std::abort();
         }
     }
 
@@ -530,8 +530,7 @@ namespace services
         connection.Attach(webSocketConnection);
 
         initiation = infra::none;
-        factory.ConnectionEstablished([webSocketConnection](infra::SharedPtr<ConnectionObserver> connectionObserver)
-        {
+        factory.ConnectionEstablished([webSocketConnection](infra::SharedPtr<ConnectionObserver> connectionObserver) {
             webSocketConnection->Attach(connectionObserver);
         });
     }

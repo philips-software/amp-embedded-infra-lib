@@ -37,8 +37,8 @@
 #define GMOCK_INCLUDE_GMOCK_INTERNAL_GMOCK_PORT_H_
 
 #include <assert.h>
-#include <stdlib.h>
 #include <iostream>
+#include <stdlib.h>
 
 // Most of the types needed for porting Google Mock are also required
 // for Google Test and are defined in gtest-port.h.
@@ -53,7 +53,7 @@
 // For MS Visual C++, check the compiler version. At least VS 2003 is
 // required to compile Google Mock.
 #if defined(_MSC_VER) && _MSC_VER < 1310
-# error "At least Visual C++ 2003 (7.1) is required to compile Google Mock."
+#error "At least Visual C++ 2003 (7.1) is required to compile Google Mock."
 #endif
 
 // Macro for referencing flags.  This is public as we want the user to
@@ -75,4 +75,4 @@
 #define GMOCK_DEFINE_string_(name, default_val, doc) \
     GTEST_API_ ::std::string GMOCK_FLAG(name) = (default_val)
 
-#endif  // GMOCK_INCLUDE_GMOCK_INTERNAL_GMOCK_PORT_H_
+#endif // GMOCK_INCLUDE_GMOCK_INTERNAL_GMOCK_PORT_H_

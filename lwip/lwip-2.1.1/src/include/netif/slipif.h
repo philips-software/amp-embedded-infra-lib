@@ -40,8 +40,8 @@
 #ifndef LWIP_HDR_NETIF_SLIPIF_H
 #define LWIP_HDR_NETIF_SLIPIF_H
 
-#include "lwip/opt.h"
 #include "lwip/netif.h"
+#include "lwip/opt.h"
 
 /** Set this to 1 to start a thread that blocks reading on the serial line
  * (using sio_read()).
@@ -68,15 +68,16 @@
 #endif
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-err_t slipif_init(struct netif * netif);
-void slipif_poll(struct netif *netif);
+    err_t slipif_init(struct netif* netif);
+    void slipif_poll(struct netif* netif);
 #if SLIP_RX_FROM_ISR
-void slipif_process_rxqueue(struct netif *netif);
-void slipif_received_byte(struct netif *netif, u8_t data);
-void slipif_received_bytes(struct netif *netif, u8_t *data, u8_t len);
+    void slipif_process_rxqueue(struct netif* netif);
+    void slipif_received_byte(struct netif* netif, u8_t data);
+    void slipif_received_bytes(struct netif* netif, u8_t* data, u8_t len);
 #endif /* SLIP_RX_FROM_ISR */
 
 #ifdef __cplusplus
@@ -84,4 +85,3 @@ void slipif_received_bytes(struct netif *netif, u8_t *data, u8_t len);
 #endif
 
 #endif /* LWIP_HDR_NETIF_SLIPIF_H */
-

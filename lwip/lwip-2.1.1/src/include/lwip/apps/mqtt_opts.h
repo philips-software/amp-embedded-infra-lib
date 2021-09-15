@@ -40,7 +40,8 @@
 #include "lwip/opt.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /**
@@ -92,7 +93,7 @@ extern "C" {
 #define MQTT_CONNECT_TIMOUT 100
 #endif
 
-/**
+    /**
  * @}
  */
 

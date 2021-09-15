@@ -1,8 +1,8 @@
-#include "gmock/gmock.h"
 #include "infra/stream/LimitedOutputStream.hpp"
 #include "infra/stream/OverwriteStream.hpp"
 #include "infra/stream/SavedMarkerStream.hpp"
 #include "infra/stream/test/StreamMock.hpp"
+#include "gmock/gmock.h"
 
 TEST(LimitedOutputStreamTest, Insert)
 {

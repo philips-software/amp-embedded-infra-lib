@@ -170,10 +170,10 @@ namespace infra
     struct CanCallHelper
     {
         template<class ResultType, class... Args>
-            static decltype(std::declval<ResultType>()(std::declval<Args>()...), std::true_type()) f(int);
+        static decltype(std::declval<ResultType>()(std::declval<Args>()...), std::true_type()) f(int);
 
         template<class ResultType, class... Args>
-            static std::false_type f(...);
+        static std::false_type f(...);
     };
 
     template<class ResultType, class... Args>

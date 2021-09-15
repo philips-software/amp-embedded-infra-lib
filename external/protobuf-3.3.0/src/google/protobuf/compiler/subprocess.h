@@ -34,75 +34,78 @@
 #define GOOGLE_PROTOBUF_COMPILER_SUBPROCESS_H__
 
 #ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN   // right...
+#define WIN32_LEAN_AND_MEAN // right...
 #include <windows.h>
-#else  // _WIN32
+#else // _WIN32
 #include <sys/types.h>
 #include <unistd.h>
-#endif  // !_WIN32
+#endif // !_WIN32
 #include <google/protobuf/stubs/common.h>
-
 #include <string>
 
+namespace google
+{
+    namespace protobuf
+    {
 
-namespace google {
-namespace protobuf {
+        class Message;
 
-class Message;
+        namespace compiler
+        {
 
-namespace compiler {
+            // Utility class for launching sub-processes.
+            class LIBPROTOC_EXPORT Subprocess
+            {
+            public:
+                Subprocess();
+                ~Subprocess();
 
-// Utility class for launching sub-processes.
-class LIBPROTOC_EXPORT Subprocess {
- public:
-  Subprocess();
-  ~Subprocess();
+                enum SearchMode
+                {
+                    SEARCH_PATH, // Use PATH environment variable.
+                    EXACT_NAME   // Program is an exact file name; don't use the PATH.
+                };
 
-  enum SearchMode {
-    SEARCH_PATH,   // Use PATH environment variable.
-    EXACT_NAME     // Program is an exact file name; don't use the PATH.
-  };
+                // Start the subprocess.  Currently we don't provide a way to specify
+                // arguments as protoc plugins don't have any.
+                void Start(const string& program, SearchMode search_mode);
 
-  // Start the subprocess.  Currently we don't provide a way to specify
-  // arguments as protoc plugins don't have any.
-  void Start(const string& program, SearchMode search_mode);
-
-  // Serialize the input message and pipe it to the subprocess's stdin, then
-  // close the pipe.  Meanwhile, read from the subprocess's stdout and parse
-  // the data into *output.  All this is done carefully to avoid deadlocks.
-  // Returns true if successful.  On any sort of error, returns false and sets
-  // *error to a description of the problem.
-  bool Communicate(const Message& input, Message* output, string* error);
+                // Serialize the input message and pipe it to the subprocess's stdin, then
+                // close the pipe.  Meanwhile, read from the subprocess's stdout and parse
+                // the data into *output.  All this is done carefully to avoid deadlocks.
+                // Returns true if successful.  On any sort of error, returns false and sets
+                // *error to a description of the problem.
+                bool Communicate(const Message& input, Message* output, string* error);
 
 #ifdef _WIN32
-  // Given an error code, returns a human-readable error message.  This is
-  // defined here so that CommandLineInterface can share it.
-  static string Win32ErrorMessage(DWORD error_code);
+                // Given an error code, returns a human-readable error message.  This is
+                // defined here so that CommandLineInterface can share it.
+                static string Win32ErrorMessage(DWORD error_code);
 #endif
 
- private:
+            private:
 #ifdef _WIN32
-  DWORD process_start_error_;
-  HANDLE child_handle_;
+                DWORD process_start_error_;
+                HANDLE child_handle_;
 
-  // The file handles for our end of the child's pipes.  We close each and
-  // set it to NULL when no longer needed.
-  HANDLE child_stdin_;
-  HANDLE child_stdout_;
+                // The file handles for our end of the child's pipes.  We close each and
+                // set it to NULL when no longer needed.
+                HANDLE child_stdin_;
+                HANDLE child_stdout_;
 
-#else  // _WIN32
-  pid_t child_pid_;
+#else // _WIN32
+                pid_t child_pid_;
 
-  // The file descriptors for our end of the child's pipes.  We close each and
-  // set it to -1 when no longer needed.
-  int child_stdin_;
-  int child_stdout_;
+                // The file descriptors for our end of the child's pipes.  We close each and
+                // set it to -1 when no longer needed.
+                int child_stdin_;
+                int child_stdout_;
 
-#endif  // !_WIN32
-};
+#endif // !_WIN32
+            };
 
-}  // namespace compiler
-}  // namespace protobuf
+        } // namespace compiler
+    }     // namespace protobuf
 
-}  // namespace google
-#endif  // GOOGLE_PROTOBUF_COMPILER_SUBPROCESS_H__
+} // namespace google
+#endif // GOOGLE_PROTOBUF_COMPILER_SUBPROCESS_H__

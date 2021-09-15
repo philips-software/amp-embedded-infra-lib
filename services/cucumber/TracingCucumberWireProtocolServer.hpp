@@ -40,7 +40,7 @@ namespace services
     {
     public:
         template<size_t BufferSize>
-            using WithBuffer = infra::WithStorage<TracingCucumberWireProtocolServer, infra::BoundedString::WithStorage<BufferSize>>;
+        using WithBuffer = infra::WithStorage<TracingCucumberWireProtocolServer, infra::BoundedString::WithStorage<BufferSize>>;
 
         TracingCucumberWireProtocolServer(infra::BoundedString& receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port, CucumberScenarioRequestHandler& scenarioRequestHandler, services::Tracer& tracer);
 

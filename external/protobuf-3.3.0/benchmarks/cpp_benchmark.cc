@@ -28,13 +28,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <glob.h>
-#include <iostream>
-#include <fstream>
 #include "benchmark/benchmark_api.h"
-#include "benchmarks.pb.h"
 #include "benchmark_messages_proto2.pb.h"
 #include "benchmark_messages_proto3.pb.h"
+#include "benchmarks.pb.h"
+#include <fstream>
+#include <glob.h>
+#include <iostream>
 
 #define PREFIX "dataset."
 #define SUFFIX ".pb"
@@ -46,197 +46,238 @@ using google::protobuf::DescriptorPool;
 using google::protobuf::Message;
 using google::protobuf::MessageFactory;
 
-class Fixture : public benchmark::Fixture {
- public:
-  Fixture(const BenchmarkDataset& dataset, const std::string& suffix) {
-    for (int i = 0; i < dataset.payload_size(); i++) {
-      payloads_.push_back(dataset.payload(i));
+class Fixture : public benchmark::Fixture
+{
+public:
+    Fixture(const BenchmarkDataset& dataset, const std::string& suffix)
+    {
+        for (int i = 0; i < dataset.payload_size(); i++)
+        {
+            payloads_.push_back(dataset.payload(i));
+        }
+
+        const Descriptor* d =
+            DescriptorPool::generated_pool()->FindMessageTypeByName(
+                dataset.message_name());
+
+        if (!d)
+        {
+            std::cerr << "Couldn't find message named '" << dataset.message_name()
+                      << "\n";
+        }
+
+        prototype_ = MessageFactory::generated_factory()->GetPrototype(d);
+        SetName((dataset.name() + suffix).c_str());
     }
 
-    const Descriptor* d =
-        DescriptorPool::generated_pool()->FindMessageTypeByName(
-            dataset.message_name());
-
-    if (!d) {
-      std::cerr << "Couldn't find message named '" << dataset.message_name()
-                << "\n";
-    }
-
-    prototype_ = MessageFactory::generated_factory()->GetPrototype(d);
-    SetName((dataset.name() + suffix).c_str());
-  }
-
- protected:
-  std::vector<std::string> payloads_;
-  const Message* prototype_;
+protected:
+    std::vector<std::string> payloads_;
+    const Message* prototype_;
 };
 
-class WrappingCounter {
- public:
-  WrappingCounter(size_t limit) : value_(0), limit_(limit) {}
+class WrappingCounter
+{
+public:
+    WrappingCounter(size_t limit)
+        : value_(0)
+        , limit_(limit)
+    {}
 
-  size_t Next() {
-    size_t ret = value_;
-    if (++value_ == limit_) {
-      value_ = 0;
+    size_t Next()
+    {
+        size_t ret = value_;
+        if (++value_ == limit_)
+        {
+            value_ = 0;
+        }
+        return ret;
     }
-    return ret;
-  }
 
- private:
-  size_t value_;
-  size_t limit_;
+private:
+    size_t value_;
+    size_t limit_;
 };
 
-template <class T>
-class ParseNewFixture : public Fixture {
- public:
-  ParseNewFixture(const BenchmarkDataset& dataset)
-      : Fixture(dataset, "_parse_new") {}
+template<class T>
+class ParseNewFixture : public Fixture
+{
+public:
+    ParseNewFixture(const BenchmarkDataset& dataset)
+        : Fixture(dataset, "_parse_new")
+    {}
 
-  virtual void BenchmarkCase(benchmark::State& state) {
-    WrappingCounter i(payloads_.size());
-    size_t total = 0;
+    virtual void BenchmarkCase(benchmark::State& state)
+    {
+        WrappingCounter i(payloads_.size());
+        size_t total = 0;
 
-    while (state.KeepRunning()) {
-      T m;
-      const std::string& payload = payloads_[i.Next()];
-      total += payload.size();
-      m.ParseFromString(payload);
+        while (state.KeepRunning())
+        {
+            T m;
+            const std::string& payload = payloads_[i.Next()];
+            total += payload.size();
+            m.ParseFromString(payload);
+        }
+
+        state.SetBytesProcessed(total);
     }
-
-    state.SetBytesProcessed(total);
-  }
 };
 
-template <class T>
-class ParseNewArenaFixture : public Fixture {
- public:
-  ParseNewArenaFixture(const BenchmarkDataset& dataset)
-      : Fixture(dataset, "_parse_newarena") {}
+template<class T>
+class ParseNewArenaFixture : public Fixture
+{
+public:
+    ParseNewArenaFixture(const BenchmarkDataset& dataset)
+        : Fixture(dataset, "_parse_newarena")
+    {}
 
-  virtual void BenchmarkCase(benchmark::State& state) {
-    WrappingCounter i(payloads_.size());
-    size_t total = 0;
+    virtual void BenchmarkCase(benchmark::State& state)
+    {
+        WrappingCounter i(payloads_.size());
+        size_t total = 0;
 
-    while (state.KeepRunning()) {
-      Arena arena;
-      Message* m = Arena::CreateMessage<T>(&arena);
-      const std::string& payload = payloads_[i.Next()];
-      total += payload.size();
-      m->ParseFromString(payload);
+        while (state.KeepRunning())
+        {
+            Arena arena;
+            Message* m = Arena::CreateMessage<T>(&arena);
+            const std::string& payload = payloads_[i.Next()];
+            total += payload.size();
+            m->ParseFromString(payload);
+        }
+
+        state.SetBytesProcessed(total);
     }
-
-    state.SetBytesProcessed(total);
-  }
 };
 
-template <class T>
-class ParseReuseFixture : public Fixture {
- public:
-  ParseReuseFixture(const BenchmarkDataset& dataset)
-      : Fixture(dataset, "_parse_reuse") {}
+template<class T>
+class ParseReuseFixture : public Fixture
+{
+public:
+    ParseReuseFixture(const BenchmarkDataset& dataset)
+        : Fixture(dataset, "_parse_reuse")
+    {}
 
-  virtual void BenchmarkCase(benchmark::State& state) {
-    T m;
-    WrappingCounter i(payloads_.size());
-    size_t total = 0;
+    virtual void BenchmarkCase(benchmark::State& state)
+    {
+        T m;
+        WrappingCounter i(payloads_.size());
+        size_t total = 0;
 
-    while (state.KeepRunning()) {
-      const std::string& payload = payloads_[i.Next()];
-      total += payload.size();
-      m.ParseFromString(payload);
+        while (state.KeepRunning())
+        {
+            const std::string& payload = payloads_[i.Next()];
+            total += payload.size();
+            m.ParseFromString(payload);
+        }
+
+        state.SetBytesProcessed(total);
     }
-
-    state.SetBytesProcessed(total);
-  }
 };
 
-template <class T>
-class SerializeFixture : public Fixture {
- public:
-  SerializeFixture(const BenchmarkDataset& dataset)
-      : Fixture(dataset, "_serialize") {
-    for (size_t i = 0; i < payloads_.size(); i++) {
-      message_.push_back(new T);
-      message_.back()->ParseFromString(payloads_[i]);
-    }
-  }
-
-  ~SerializeFixture() {
-    for (size_t i = 0; i < message_.size(); i++) {
-      delete message_[i];
-    }
-  }
-
-  virtual void BenchmarkCase(benchmark::State& state) {
-    size_t total = 0;
-    std::string str;
-    WrappingCounter i(payloads_.size());
-
-    while (state.KeepRunning()) {
-      str.clear();
-      message_[i.Next()]->SerializeToString(&str);
-      total += str.size();
+template<class T>
+class SerializeFixture : public Fixture
+{
+public:
+    SerializeFixture(const BenchmarkDataset& dataset)
+        : Fixture(dataset, "_serialize")
+    {
+        for (size_t i = 0; i < payloads_.size(); i++)
+        {
+            message_.push_back(new T);
+            message_.back()->ParseFromString(payloads_[i]);
+        }
     }
 
-    state.SetBytesProcessed(total);
-  }
+    ~SerializeFixture()
+    {
+        for (size_t i = 0; i < message_.size(); i++)
+        {
+            delete message_[i];
+        }
+    }
 
- private:
-  std::vector<T*> message_;
+    virtual void BenchmarkCase(benchmark::State& state)
+    {
+        size_t total = 0;
+        std::string str;
+        WrappingCounter i(payloads_.size());
+
+        while (state.KeepRunning())
+        {
+            str.clear();
+            message_[i.Next()]->SerializeToString(&str);
+            total += str.size();
+        }
+
+        state.SetBytesProcessed(total);
+    }
+
+private:
+    std::vector<T*> message_;
 };
 
-std::string ReadFile(const std::string& name) {
-  std::ifstream file(name.c_str());
-  GOOGLE_CHECK(file.is_open()) << "Couldn't find file '" << name <<
-                                  "', please make sure you are running "
-                                  "this command from the benchmarks/ "
-                                  "directory.\n";
-  return std::string((std::istreambuf_iterator<char>(file)),
-                     std::istreambuf_iterator<char>());
+std::string ReadFile(const std::string& name)
+{
+    std::ifstream file(name.c_str());
+    GOOGLE_CHECK(file.is_open()) << "Couldn't find file '" << name << "', please make sure you are running "
+                                                                      "this command from the benchmarks/ "
+                                                                      "directory.\n";
+    return std::string((std::istreambuf_iterator<char>(file)),
+        std::istreambuf_iterator<char>());
 }
 
-template <class T>
-void RegisterBenchmarksForType(const BenchmarkDataset& dataset) {
-  ::benchmark::internal::RegisterBenchmarkInternal(
-      new ParseNewFixture<T>(dataset));
-  ::benchmark::internal::RegisterBenchmarkInternal(
-      new ParseReuseFixture<T>(dataset));
-  ::benchmark::internal::RegisterBenchmarkInternal(
-      new ParseNewArenaFixture<T>(dataset));
-  ::benchmark::internal::RegisterBenchmarkInternal(
-      new SerializeFixture<T>(dataset));
+template<class T>
+void RegisterBenchmarksForType(const BenchmarkDataset& dataset)
+{
+    ::benchmark::internal::RegisterBenchmarkInternal(
+        new ParseNewFixture<T>(dataset));
+    ::benchmark::internal::RegisterBenchmarkInternal(
+        new ParseReuseFixture<T>(dataset));
+    ::benchmark::internal::RegisterBenchmarkInternal(
+        new ParseNewArenaFixture<T>(dataset));
+    ::benchmark::internal::RegisterBenchmarkInternal(
+        new SerializeFixture<T>(dataset));
 }
 
-void RegisterBenchmarks(const std::string& dataset_bytes) {
-  BenchmarkDataset dataset;
-  GOOGLE_CHECK(dataset.ParseFromString(dataset_bytes));
+void RegisterBenchmarks(const std::string& dataset_bytes)
+{
+    BenchmarkDataset dataset;
+    GOOGLE_CHECK(dataset.ParseFromString(dataset_bytes));
 
-  if (dataset.message_name() == "benchmarks.proto3.GoogleMessage1") {
-    RegisterBenchmarksForType<benchmarks::proto3::GoogleMessage1>(dataset);
-  } else if (dataset.message_name() == "benchmarks.proto2.GoogleMessage1") {
-    RegisterBenchmarksForType<benchmarks::proto2::GoogleMessage1>(dataset);
-  } else if (dataset.message_name() == "benchmarks.proto2.GoogleMessage2") {
-    RegisterBenchmarksForType<benchmarks::proto2::GoogleMessage2>(dataset);
-  } else {
-    std::cerr << "Unknown message type: " << dataset.message_name();
-    exit(1);
-  }
+    if (dataset.message_name() == "benchmarks.proto3.GoogleMessage1")
+    {
+        RegisterBenchmarksForType<benchmarks::proto3::GoogleMessage1>(dataset);
+    }
+    else if (dataset.message_name() == "benchmarks.proto2.GoogleMessage1")
+    {
+        RegisterBenchmarksForType<benchmarks::proto2::GoogleMessage1>(dataset);
+    }
+    else if (dataset.message_name() == "benchmarks.proto2.GoogleMessage2")
+    {
+        RegisterBenchmarksForType<benchmarks::proto2::GoogleMessage2>(dataset);
+    }
+    else
+    {
+        std::cerr << "Unknown message type: " << dataset.message_name();
+        exit(1);
+    }
 }
 
-int main(int argc, char *argv[]) {
-  glob_t glob_result;
-  if (glob("dataset.*.pb", 0, NULL, &glob_result) != 0) {
-    fprintf(stderr, "No dataset files found.\n");
-    return 1;
-  }
+int main(int argc, char* argv[])
+{
+    glob_t glob_result;
+    if (glob("dataset.*.pb", 0, NULL, &glob_result) != 0)
+    {
+        fprintf(stderr, "No dataset files found.\n");
+        return 1;
+    }
 
-  for (size_t i = 0; i < glob_result.gl_pathc; i++) {
-    fprintf(stderr, "Found input dataset: %s\n", glob_result.gl_pathv[i]);
-    RegisterBenchmarks(ReadFile(glob_result.gl_pathv[i]));
-  }
+    for (size_t i = 0; i < glob_result.gl_pathc; i++)
+    {
+        fprintf(stderr, "Found input dataset: %s\n", glob_result.gl_pathv[i]);
+        RegisterBenchmarks(ReadFile(glob_result.gl_pathv[i]));
+    }
 
-  ::benchmark::Initialize(&argc, argv);
-  ::benchmark::RunSpecifiedBenchmarks();
+    ::benchmark::Initialize(&argc, argv);
+    ::benchmark::RunSpecifiedBenchmarks();
 }

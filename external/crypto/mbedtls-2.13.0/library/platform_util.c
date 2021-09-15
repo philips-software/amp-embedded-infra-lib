@@ -27,7 +27,6 @@
 #endif
 
 #include "mbedtls/platform_util.h"
-
 #include <stddef.h>
 #include <string.h>
 
@@ -58,10 +57,10 @@
  * mbedtls_platform_zeroize() to use a suitable implementation for their
  * platform and needs.
  */
-static void * (* const volatile memset_func)( void *, int, size_t ) = memset;
+static void* (*const volatile memset_func)(void*, int, size_t) = memset;
 
-void mbedtls_platform_zeroize( void *buf, size_t len )
+void mbedtls_platform_zeroize(void* buf, size_t len)
 {
-    memset_func( buf, 0, len );
+    memset_func(buf, 0, len);
 }
 #endif /* MBEDTLS_PLATFORM_ZEROIZE_ALT */
