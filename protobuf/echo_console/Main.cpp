@@ -6,6 +6,7 @@
 #include "protobuf/echo_console/Console.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/util/MessageCommunicationCobs.hpp"
+#include "services/util/MessageCommunicationWindowed.hpp"
 #include "services/network_win/NameLookupWin.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 #include <deque>
@@ -36,7 +37,7 @@ private:
 private:
     std::deque<std::string> messagesToBeSent;
     services::MessageCommunicationCobs::WithMaxMessageSize<2048> cobs;
-    services::WindowedMessageCommunication::WithReceiveBuffer<2048> windowed{ cobs };
+    services::MessageCommunicationWindowed::WithReceiveBuffer<2048> windowed{ cobs };
     bool sending = false;
 };
 

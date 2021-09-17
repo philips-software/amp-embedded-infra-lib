@@ -3,6 +3,7 @@
 
 #include "hal/interfaces/Gpio.hpp"
 #include "infra/timer/TimerService.hpp"
+#include "infra/util/Optional.hpp"
 #include "infra/util/VariantDetail.hpp"
 #include <array>
 #include <functional>

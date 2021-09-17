@@ -67,16 +67,52 @@ message TestBytes {
   bytes value = 1 [(bytes_size) = 10];
 }
 
-message TestUint32 {
-  uint32 value = 1;
+message TestUnboundedBytes {
+  bytes value = 1;
 }
 
-message TestRepeatedUint32 {
+message TestRepeatedUInt32 {
   repeated uint32 value = 1 [(array_size) = 10];
 }
 
 message TestMessageWithMessageField {
-  TestUint32 message = 1;
+  TestUInt32 message = 1;
+}
+
+message TestRepeatedEverything {
+  repeated Enumeration v1 = 1 [(array_size) = 10];
+  repeated int32 v2 = 2 [(array_size) = 10];
+  repeated int64 v3 = 3 [(array_size) = 10];
+  repeated uint32 v4 = 4 [(array_size) = 10];
+  repeated uint64 v5 = 5 [(array_size) = 10];
+  repeated fixed32 v6 = 6 [(array_size) = 10];
+  repeated sfixed64 v7 = 7 [(array_size) = 10];
+  repeated fixed64 v8 = 8 [(array_size) = 10];
+  repeated sfixed32 v9 = 9 [(array_size) = 10];
+  repeated bool v10 = 10 [(array_size) = 10];
+  repeated string v11 = 11 [(string_size) = 20, (array_size) = 10];
+  repeated string v12 = 12 [(array_size) = 10];
+  repeated TestUInt32 v13 = 13 [(array_size) = 10];
+  repeated bytes v14 = 14 [(bytes_size) = 10, (array_size) = 10];
+  repeated bytes v15 = 15 [(array_size) = 10];
+}
+
+message TestUnboundedRepeatedEverything {
+  repeated Enumeration v1 = 1;
+  repeated int32 v2 = 2;
+  repeated int64 v3 = 3;
+  repeated uint32 v4 = 4;
+  repeated uint64 v5 = 5;
+  repeated fixed32 v6 = 6;
+  repeated sfixed64 v7 = 7;
+  repeated fixed64 v8 = 8;
+  repeated sfixed32 v9 = 9;
+  repeated bool v10 = 10;
+  repeated string v11 = 11 [(string_size) = 20];
+  repeated string v12 = 12;
+  repeated TestUInt32 v13 = 13;
+  repeated bytes v14 = 14 [(bytes_size) = 10];
+  repeated bytes v15 = 15;
 }
 
 message TestNestedMessage
@@ -123,7 +159,7 @@ service TestService1
 {
   option (service_id) = 1;
 
-  rpc Method(TestUint32) returns (Nothing) { option (method_id) = 1; }
+  rpc Method(TestUInt32) returns (Nothing) { option (method_id) = 1; }
 }
 
 service TestService2

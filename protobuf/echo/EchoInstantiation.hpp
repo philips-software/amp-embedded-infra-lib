@@ -4,6 +4,7 @@
 #include "protobuf/echo/Echo.hpp"
 #include "infra/util/BoundedVector.hpp"
 #include "services/util/MessageCommunicationCobs.hpp"
+#include "services/util/MessageCommunicationWindowed.hpp"
 
 namespace main_
 {
@@ -17,7 +18,7 @@ namespace main_
         operator services::Echo&() { return echo; }
 
         services::MessageCommunicationCobs::WithMaxMessageSize<MessageSize> cobs;
-        services::WindowedMessageCommunication::WithReceiveBuffer<MessageSize> windowed{ cobs };
+        services::MessageCommunicationWindowed::WithReceiveBuffer<MessageSize> windowed{ cobs };
         services::EchoOnMessageCommunication echo{ windowed };
     };
 
