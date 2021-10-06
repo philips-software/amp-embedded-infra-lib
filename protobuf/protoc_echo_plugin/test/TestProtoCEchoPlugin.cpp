@@ -502,6 +502,19 @@ TEST_F(EchoTest, service_method_is_invoked)
     connection.Observer().DataReceived();
 }
 
+TEST_F(EchoTest, on_partial_message_service_method_is_not_invoked)
+{
+    testing::StrictMock<TestService1Mock> service(echo);
+
+    infra::ByteInputStreamReader::WithStorage<4> reader;
+    infra::Copy(infra::MakeRange(std::array<uint8_t, 4>{ 1, 10, 2, 8 }), infra::Head(infra::MakeRange(reader.Storage()), 4));
+    auto readerPtr = infra::UnOwnedSharedPtr(reader);
+    infra::ByteInputStreamReader::WithStorage<0> emptyReader;
+    auto emptyReaderPtr = infra::UnOwnedSharedPtr(emptyReader);
+    EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
+    connection.Observer().DataReceived();
+}
+
 TEST_F(EchoTest, service_method_is_invoked_twice)
 {
     testing::StrictMock<TestService1Mock> service(echo);
