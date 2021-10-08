@@ -1,27 +1,27 @@
 #include "infra/event/EventDispatcher.hpp"
 #include "infra/stream/BoundedDequeOutputStream.hpp"
 #include "infra/util/PostAssign.hpp"
-#include "services/util/MessageCommunication.hpp"
+#include "services/util/MessageCommunicationWindowed.hpp"
 
 namespace services
 {
-    WindowedMessageCommunication::WindowedMessageCommunication(detail::AtomicDeque& receivedData, MessageCommunicationReceiveOnInterrupt& messageCommunication)
+    MessageCommunicationWindowed::MessageCommunicationWindowed(detail::AtomicDeque& receivedData, MessageCommunicationReceiveOnInterrupt& messageCommunication)
         : MessageCommunicationReceiveOnInterruptObserver(messageCommunication)
         , receivedData(receivedData)
         , state(infra::InPlaceType<StateSendingInit>(), *this)
     {}
 
-    void WindowedMessageCommunication::RequestSendMessage(uint16_t size)
+    void MessageCommunicationWindowed::RequestSendMessage(uint16_t size)
     {
         state->RequestSendMessage(size);
     }
 
-    std::size_t WindowedMessageCommunication::MaxSendMessageSize() const
+    std::size_t MessageCommunicationWindowed::MaxSendMessageSize() const
     {
         return MessageCommunicationReceiveOnInterruptObserver::Subject().MaxSendMessageSize() - sizeof(Operation);
     }
 
-    void WindowedMessageCommunication::ReceivedMessageOnInterrupt(infra::StreamReader& reader)
+    void MessageCommunicationWindowed::ReceivedMessageOnInterrupt(infra::StreamReader& reader)
     {
         infra::DataInputStream::WithErrorPolicy stream(reader, infra::noFail);
         switch (stream.Extract<Operation>())
@@ -51,7 +51,7 @@ namespace services
         });
     }
 
-    void WindowedMessageCommunication::ReceivedMessage(infra::StreamReader& reader)
+    void MessageCommunicationWindowed::ReceivedMessage(infra::StreamReader& reader)
     {
         uint16_t size = static_cast<uint16_t>(reader.Available());
 
@@ -70,7 +70,7 @@ namespace services
         EvaluateReceiveMessage();
     }
 
-    bool WindowedMessageCommunication::EvaluateReceiveMessage()
+    bool MessageCommunicationWindowed::EvaluateReceiveMessage()
     {
         if (!notificationScheduled && reader.Allocatable())
         {
@@ -117,7 +117,7 @@ namespace services
         return false;
     }
 
-    void WindowedMessageCommunication::SetNextState()
+    void MessageCommunicationWindowed::SetNextState()
     {
         if (!switchingState.exchange(true))
         {
@@ -140,29 +140,29 @@ namespace services
         }
     }
 
-    uint16_t WindowedMessageCommunication::WindowSize(uint16_t messageSize) const
+    uint16_t MessageCommunicationWindowed::WindowSize(uint16_t messageSize) const
     {
         return messageSize + sizeof(uint16_t);
     }
 
-    uint16_t WindowedMessageCommunication::AvailableWindow() const
+    uint16_t MessageCommunicationWindowed::AvailableWindow() const
     {
         return static_cast<uint16_t>(receivedData.MaxSize() - receivedData.Size());
     }
 
-    WindowedMessageCommunication::PacketInit::PacketInit(uint16_t window)
+    MessageCommunicationWindowed::PacketInit::PacketInit(uint16_t window)
         : window(window)
     {}
 
-    WindowedMessageCommunication::PacketInitResponse::PacketInitResponse(uint16_t window)
+    MessageCommunicationWindowed::PacketInitResponse::PacketInitResponse(uint16_t window)
         : window(window)
     {}
 
-    WindowedMessageCommunication::PacketReleaseWindow::PacketReleaseWindow(uint16_t window)
+    MessageCommunicationWindowed::PacketReleaseWindow::PacketReleaseWindow(uint16_t window)
         : window(window)
     {}
 
-    WindowedMessageCommunication::StateSendingInit::StateSendingInit(WindowedMessageCommunication& communication)
+    MessageCommunicationWindowed::StateSendingInit::StateSendingInit(MessageCommunicationWindowed& communication)
         : communication(communication)
     {
         communication.sending = true;
@@ -173,18 +173,18 @@ namespace services
         communication.receivedData.Pop(communication.receivedData.Size());
     }
 
-    void WindowedMessageCommunication::StateSendingInit::OnSent()
+    void MessageCommunicationWindowed::StateSendingInit::OnSent()
     {
         communication.sending = false;
         communication.SetNextState();
     }
 
-    void WindowedMessageCommunication::StateSendingInit::RequestSendMessage(uint16_t size)
+    void MessageCommunicationWindowed::StateSendingInit::RequestSendMessage(uint16_t size)
     {
         communication.requestedSendMessageSize = size;
     }
 
-    WindowedMessageCommunication::StateSendingInitResponse::StateSendingInitResponse(WindowedMessageCommunication& communication)
+    MessageCommunicationWindowed::StateSendingInitResponse::StateSendingInitResponse(MessageCommunicationWindowed& communication)
         : communication(communication)
     {
         assert(communication.receivedData.Empty());
@@ -197,28 +197,28 @@ namespace services
         communication.sendInitResponse = false;
     }
 
-    void WindowedMessageCommunication::StateSendingInitResponse::RequestSendMessage(uint16_t size)
+    void MessageCommunicationWindowed::StateSendingInitResponse::RequestSendMessage(uint16_t size)
     {
         communication.requestedSendMessageSize = size;
     }
 
-    void WindowedMessageCommunication::StateSendingInitResponse::OnSent()
+    void MessageCommunicationWindowed::StateSendingInitResponse::OnSent()
     {
         communication.sending = false;
         communication.SetNextState();
     }
 
-    WindowedMessageCommunication::StateOperational::StateOperational(WindowedMessageCommunication& communication)
+    MessageCommunicationWindowed::StateOperational::StateOperational(MessageCommunicationWindowed& communication)
         : communication(communication)
     {}
 
-    void WindowedMessageCommunication::StateOperational::RequestSendMessage(uint16_t size)
+    void MessageCommunicationWindowed::StateOperational::RequestSendMessage(uint16_t size)
     {
         communication.requestedSendMessageSize = size;
         communication.SetNextState();
     }
 
-    WindowedMessageCommunication::StateSendingMessage::StateSendingMessage(WindowedMessageCommunication& communication)
+    MessageCommunicationWindowed::StateSendingMessage::StateSendingMessage(MessageCommunicationWindowed& communication)
         : communication(communication)
     {
         communication.sending = true;
@@ -231,19 +231,19 @@ namespace services
         communication.GetObserver().SendMessageStreamAvailable(std::move(writer));
     }
 
-    void WindowedMessageCommunication::StateSendingMessage::RequestSendMessage(uint16_t size)
+    void MessageCommunicationWindowed::StateSendingMessage::RequestSendMessage(uint16_t size)
     {
         communication.requestedSendMessageSize = size;
     }
 
-    void WindowedMessageCommunication::StateSendingMessage::OnSent(uint16_t sent)
+    void MessageCommunicationWindowed::StateSendingMessage::OnSent(uint16_t sent)
     {
         communication.otherAvailableWindow -= communication.WindowSize(sent - 1);
         communication.sending = false;
         communication.SetNextState();
     }
 
-    WindowedMessageCommunication::StateSendingReleaseWindow::StateSendingReleaseWindow(WindowedMessageCommunication& communication)
+    MessageCommunicationWindowed::StateSendingReleaseWindow::StateSendingReleaseWindow(MessageCommunicationWindowed& communication)
         : communication(communication)
     {
         communication.sending = true;
@@ -253,12 +253,12 @@ namespace services
         stream << PacketReleaseWindow(communication.releasedWindow.exchange(0));
     }
 
-    void WindowedMessageCommunication::StateSendingReleaseWindow::RequestSendMessage(uint16_t size)
+    void MessageCommunicationWindowed::StateSendingReleaseWindow::RequestSendMessage(uint16_t size)
     {
         communication.requestedSendMessageSize = size;
     }
 
-    void WindowedMessageCommunication::StateSendingReleaseWindow::OnSent()
+    void MessageCommunicationWindowed::StateSendingReleaseWindow::OnSent()
     {
         communication.sending = false;
         communication.SetNextState();

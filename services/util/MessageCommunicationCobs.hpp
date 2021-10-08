@@ -2,6 +2,9 @@
 #define SERVICES_MESSAGE_COMMUNICATION_COBS_HPP
 
 #include "hal/interfaces/SerialCommunication.hpp"
+#include "infra/stream/BoundedVectorOutputStream.hpp"
+#include "infra/stream/LimitedOutputStream.hpp"
+#include "infra/util/SharedOptional.hpp"
 #include "services/util/MessageCommunication.hpp"
 
 namespace services

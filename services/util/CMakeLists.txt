@@ -35,10 +35,11 @@ ccola_component(util static_library)
         LowPowerSerialCommunication.hpp
         LowPowerSpiMaster.cpp
         LowPowerSpiMaster.hpp
-        MessageCommunication.cpp
         MessageCommunication.hpp
         MessageCommunicationCobs.cpp
         MessageCommunicationCobs.hpp
+        MessageCommunicationWindowed.cpp
+        MessageCommunicationWindowed.hpp
         RepeatingButton.cpp
         RepeatingButton.hpp
         SignalLed.cpp

@@ -18,12 +18,15 @@ namespace application
     {
     public:
         EchoField(const google::protobuf::FieldDescriptor& descriptor);
+        EchoField(const std::string& protoType, const google::protobuf::FieldDescriptor& descriptor);
         EchoField(const EchoField& other) = delete;
         EchoField& operator=(const EchoField& other) = delete;
         virtual ~EchoField() = default;
 
         virtual void Accept(EchoFieldVisitor& visitor) const = 0;
 
+        std::string protoType;
+        std::string protoReferenceType;
         std::string name;
         int number;
         std::string constantName;
@@ -72,7 +75,7 @@ namespace application
         : public EchoField
     {
     public:
-        using EchoField::EchoField;
+        EchoFieldInt32(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -81,7 +84,7 @@ namespace application
         : public EchoField
     {
     public:
-        using EchoField::EchoField;
+        EchoFieldInt64(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -90,7 +93,7 @@ namespace application
         : public EchoField
     {
     public:
-        using EchoField::EchoField;
+        EchoFieldFixed32(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -99,7 +102,7 @@ namespace application
         : public EchoField
     {
     public:
-        using EchoField::EchoField;
+        EchoFieldFixed64(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -108,7 +111,7 @@ namespace application
         : public EchoField
     {
     public:
-        using EchoField::EchoField;
+        EchoFieldSFixed32(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -117,7 +120,7 @@ namespace application
         : public EchoField
     {
     public:
-        using EchoField::EchoField;
+        EchoFieldSFixed64(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -126,7 +129,7 @@ namespace application
         : public EchoField
     {
     public:
-        using EchoField::EchoField;
+        EchoFieldBool(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -142,11 +145,11 @@ namespace application
         uint32_t maxStringSize;
     };
 
-    class EchoFieldStdString
+    class EchoFieldUnboundedString
         : public EchoField
     {
     public:
-        EchoFieldStdString(const google::protobuf::FieldDescriptor& descriptor);
+        EchoFieldUnboundedString(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -174,11 +177,20 @@ namespace application
         uint32_t maxBytesSize;
     };
 
+    class EchoFieldUnboundedBytes
+        : public EchoField
+    {
+    public:
+        EchoFieldUnboundedBytes(const google::protobuf::FieldDescriptor& descriptor);
+
+        virtual void Accept(EchoFieldVisitor& visitor) const override;
+    };
+
     class EchoFieldUint32
         : public EchoField
     {
     public:
-        using EchoField::EchoField;
+        EchoFieldUint32(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -187,7 +199,7 @@ namespace application
         : public EchoField
     {
     public:
-        using EchoField::EchoField;
+        EchoFieldUint64(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -212,6 +224,17 @@ namespace application
         virtual void Accept(EchoFieldVisitor& visitor) const override;
 
         uint32_t maxArraySize;
+        std::shared_ptr<EchoField> type;
+    };
+
+    class EchoFieldUnboundedRepeated
+        : public EchoField
+    {
+    public:
+        EchoFieldUnboundedRepeated(const google::protobuf::FieldDescriptor& descriptor, const std::shared_ptr<EchoField>& type);
+
+        virtual void Accept(EchoFieldVisitor& visitor) const override;
+
         std::shared_ptr<EchoField> type;
     };
 
@@ -287,14 +310,16 @@ namespace application
         virtual void VisitFixed32(const EchoFieldFixed32& field) = 0;
         virtual void VisitBool(const EchoFieldBool& field) = 0;
         virtual void VisitString(const EchoFieldString& field) = 0;
-        virtual void VisitStdString(const EchoFieldStdString& field) = 0;
+        virtual void VisitUnboundedString(const EchoFieldUnboundedString& field) = 0;
         virtual void VisitMessage(const EchoFieldMessage& field) = 0;
         virtual void VisitBytes(const EchoFieldBytes& field) = 0;
+        virtual void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) = 0;
         virtual void VisitUint32(const EchoFieldUint32& field) = 0;
         virtual void VisitEnum(const EchoFieldEnum& field) = 0;
         virtual void VisitSFixed64(const EchoFieldSFixed64& field) = 0;
         virtual void VisitSFixed32(const EchoFieldSFixed32& field) = 0;
         virtual void VisitRepeated(const EchoFieldRepeated& field) = 0;
+        virtual void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) = 0;
     };
 
     struct UnsupportedFieldType
