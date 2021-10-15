@@ -1,5 +1,6 @@
 #include "gmock/gmock.h"
 #include "generated/echo/TestMessages.pb.hpp"
+#include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
@@ -269,7 +270,7 @@ TEST(ProtoCEchoPluginTest, deserialize_bytes)
 
 TEST(ProtoCEchoPluginTest, serialize_uint32)
 {
-    test_messages::TestUint32 message;
+    test_messages::TestUInt32 message;
     message.value = 5;
 
     infra::ByteOutputStream::WithStorage<100> stream;
@@ -285,7 +286,7 @@ TEST(ProtoCEchoPluginTest, deserialize_uint32)
     infra::ByteInputStream stream(data);
     infra::ProtoParser parser(stream);
 
-    test_messages::TestUint32 message(parser);
+    test_messages::TestUInt32 message(parser);
     EXPECT_EQ(5, message.value);
 }
 
@@ -313,7 +314,7 @@ TEST(ProtoCEchoPluginTest, deserialize_uint64)
 
 TEST(ProtoCEchoPluginTest, serialize_repeated_uint32)
 {
-    test_messages::TestRepeatedUint32 message;
+    test_messages::TestRepeatedUInt32 message;
     message.value.push_back(5);
     message.value.push_back(6);
 
@@ -330,7 +331,7 @@ TEST(ProtoCEchoPluginTest, deserialize_repeated_uint32)
     infra::ByteInputStream stream(data);
     infra::ProtoParser parser(stream);
 
-    test_messages::TestRepeatedUint32 message(parser);
+    test_messages::TestRepeatedUInt32 message(parser);
     EXPECT_EQ(2, message.value.size());
     EXPECT_EQ(5, message.value[0]);
     EXPECT_EQ(6, message.value[1]);
@@ -444,6 +445,7 @@ namespace
 
 class EchoTest
     : public testing::Test
+    , public infra::EventDispatcherWithWeakPtrFixture
 {
 public:
     EchoTest()
@@ -498,6 +500,44 @@ TEST_F(EchoTest, service_method_is_invoked)
     EXPECT_CALL(service, Method(5));
     EXPECT_CALL(connection, AckReceived());
     connection.Observer().DataReceived();
+}
+
+TEST_F(EchoTest, on_partial_message_service_method_is_not_invoked)
+{
+    testing::StrictMock<TestService1Mock> service(echo);
+
+    infra::ByteInputStreamReader::WithStorage<4> reader;
+    infra::Copy(infra::MakeRange(std::array<uint8_t, 4>{ 1, 10, 2, 8 }), infra::Head(infra::MakeRange(reader.Storage()), 4));
+    auto readerPtr = infra::UnOwnedSharedPtr(reader);
+    infra::ByteInputStreamReader::WithStorage<0> emptyReader;
+    auto emptyReaderPtr = infra::UnOwnedSharedPtr(emptyReader);
+    EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
+    connection.Observer().DataReceived();
+}
+
+TEST_F(EchoTest, service_method_is_invoked_twice)
+{
+    testing::StrictMock<TestService1Mock> service(echo);
+
+    infra::ByteInputStreamReader::WithStorage<128> reader;
+    infra::Copy(infra::MakeRange(std::array<uint8_t, 5>{ 1, 10, 2, 8, 5 }), infra::Head(infra::MakeRange(reader.Storage()), 5));
+    auto readerPtr = infra::UnOwnedSharedPtr(reader);
+    infra::ByteInputStreamReader::WithStorage<128> reader2;
+    infra::Copy(infra::MakeRange(std::array<uint8_t, 5>{ 1, 10, 2, 8, 5 }), infra::Head(infra::MakeRange(reader2.Storage()), 5));
+    auto reader2Ptr = infra::UnOwnedSharedPtr(reader2);
+    infra::ByteInputStreamReader::WithStorage<0> emptyReader;
+    auto emptyReaderPtr = infra::UnOwnedSharedPtr(emptyReader);
+    EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr)).WillOnce(testing::Return(reader2Ptr));
+    EXPECT_CALL(service, Method(5));
+    EXPECT_CALL(connection, AckReceived());
+    connection.Observer().DataReceived();
+
+    reader2.Rewind(0);
+    EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(reader2Ptr)).WillOnce(testing::Return(emptyReaderPtr));
+    EXPECT_CALL(service, Method(5));
+    EXPECT_CALL(connection, AckReceived());
+    service.MethodDone();
+    ExecuteAllActions();
 }
 
 TEST_F(EchoTest, MessageFormatError_is_reported_when_message_is_not_a_LengthDelimited)

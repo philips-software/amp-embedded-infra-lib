@@ -72,6 +72,8 @@ namespace application
     public:
         using MessageTypeMapGenerator::MessageTypeMapGenerator;
 
+        void Run(Entities& formatter);
+
     protected:
         virtual void AddTypeMapType(EchoField& field, Entities& entities);
         virtual std::string MessageSuffix() const override;
@@ -133,7 +135,6 @@ namespace application
         virtual void GenerateFieldDeclarations() override;
         virtual void GenerateMaxMessageSize() override;
         virtual std::string SerializerBody() override;
-        virtual std::string DeserializerBody() override;
 
         virtual std::string ClassName() const override;
         virtual std::string ReferencedName() const override;

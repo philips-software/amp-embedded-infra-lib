@@ -3,7 +3,7 @@ name: CodeQL Analysis
 on: [push, pull_request]
 
 env:
-  CMAKE_BUILD_PARALLEL_LEVEL: 4
+  CMAKE_BUILD_PARALLEL_LEVEL: 2
 jobs:
   analyze:
     name: Analyze
@@ -16,8 +16,8 @@ jobs:
         with:
           languages: cpp
       - run: |
-          cmake -E make_directory Build && cd Build
-          cmake .. -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=Debug
-          cmake --build .
+          cmake -E make_directory Build
+          cmake -S . -B Build -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=Debug
+          cmake --build Build/
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v1

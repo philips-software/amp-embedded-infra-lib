@@ -25,6 +25,7 @@ namespace infra
         std::string GetStdString();
         void GetBytes(infra::BoundedVector<uint8_t>& bytes);
         void GetBytesReference(infra::ConstByteRange& bytes);
+        std::vector<uint8_t> GetUnboundedBytes();
 
     private:
         infra::LimitedStreamReader limitedReader;

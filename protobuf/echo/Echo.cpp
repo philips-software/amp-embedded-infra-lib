@@ -1,9 +1,9 @@
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
-#include "infra/syntax/ProtoFormatter.hpp"
 #include "protobuf/echo/Echo.hpp"
 
 namespace services
 {
+    EchoErrorPolicyAbortOnMessageFormatError echoErrorPolicyAbortOnMessageFormatError;
     EchoErrorPolicyAbort echoErrorPolicyAbort;
 
     Service::Service(Echo& echo, uint32_t id)
@@ -112,10 +112,16 @@ namespace services
         });
     }
 
-    void EchoErrorPolicyAbort::MessageFormatError()
+    void EchoErrorPolicyAbortOnMessageFormatError::MessageFormatError()
     {
         std::abort();
     }
+
+    void EchoErrorPolicyAbortOnMessageFormatError::ServiceNotFound(uint32_t serviceId)
+    {}
+
+    void EchoErrorPolicyAbortOnMessageFormatError::MethodNotFound(uint32_t serviceId, uint32_t methodId)
+    {}
 
     void EchoErrorPolicyAbort::ServiceNotFound(uint32_t serviceId)
     {
@@ -192,6 +198,7 @@ namespace services
             }
 
         errorPolicy.ServiceNotFound(serviceId);
+        contents.SkipEverything();
     }
 
     void EchoOnStreams::SetStreamWriter(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -241,14 +248,12 @@ namespace services
         {
             infra::SharedPtr<infra::StreamReader> reader = ConnectionObserver::Subject().ReceiveStream();
             infra::DataInputStream::WithErrorPolicy stream(*reader, infra::softFail);
-            if (ProcessMessage(stream))
+
+            if (!ProcessMessage(stream))
+                break;
+
+            if (!ServiceBusy())     // The message was not executed when ServiceBusy() is true, so don't ack the received data
                 ConnectionObserver::Subject().AckReceived();
-
-            if (ServiceBusy())
-                break;
-
-            if (stream.Empty())
-                break;
         }
     }
 
