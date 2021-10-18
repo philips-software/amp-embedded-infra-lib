@@ -25,4 +25,3 @@ TEST_F(TestInputHex, ImageSize)
 
     EXPECT_EQ(25, image.size());
 }
-
