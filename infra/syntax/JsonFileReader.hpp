@@ -9,6 +9,16 @@ namespace infra
 {
     class JsonFileReader
     {
+    protected:
+        class JsonFileReaderException
+            : public std::runtime_error
+        {
+        public:
+            explicit JsonFileReaderException(const std::string& message)
+                : std::runtime_error(std::string("JsonFileReader: ") + message)
+            {}
+        };
+
     public:
         JsonFileReader(hal::FileSystem& filesystem, const hal::filesystem::path& filename);
 
@@ -17,7 +27,7 @@ namespace infra
 
     private:
         std::string ReadFileContents(hal::FileSystem& filesystem, const hal::filesystem::path& filename) const;
-        void CheckValidJsonObject(infra::JsonObject& jsonObject);
+        void CheckValidJsonObject(infra::JsonObject& jsonObject) const;
 
     private:
         std::string fileContents;

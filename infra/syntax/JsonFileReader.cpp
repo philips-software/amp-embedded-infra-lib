@@ -24,23 +24,23 @@ namespace infra
     {
         std::string result;
 
-        auto data = filesystem.ReadFile(filename);
-        if (data.size() == 0)
+        auto fileData = filesystem.ReadFile(filename);
+        if (fileData.empty())
             throw hal::EmptyFileException(filename);
 
-        for (auto& line : data)
+        for (const auto& line : fileData)
             result.append(line);
 
         return result;
     }
 
-    void JsonFileReader::CheckValidJsonObject(infra::JsonObject& jsonObject)
+    void JsonFileReader::CheckValidJsonObject(infra::JsonObject& jsonObject) const
     {
         for (auto it : jsonObject)
             if (it.value.Is<infra::JsonObject>())
                 CheckValidJsonObject(it.value.Get<infra::JsonObject>());
 
         if (jsonObject.Error())
-            throw std::runtime_error("JsonFileReader: Invalid JSON object.");
+            throw JsonFileReaderException("Invalid JSON object.");
     }
 }
