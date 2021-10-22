@@ -364,6 +364,8 @@ namespace services
     void MqttClientImpl::StateConnected::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         sendOperations.front()->SendStreamAvailable(*writer);
+        if (!waitingForPingReply)
+            StartPing();
 
         writer = nullptr;
     }
@@ -547,15 +549,16 @@ namespace services
 
     void MqttClientImpl::StateConnected::HandlePingReply()
     {
+        waitingForPingReply = false;
         clientConnection.ConnectionObserver::Subject().AckReceived();
         StartPing();
 
-        executingSend = false;
         ProcessSendOperations();
     }
 
     void MqttClientImpl::StateConnected::StartWaitForPingReply()
     {
+        waitingForPingReply = true;
         pingTimer.Start(clientConnection.operationTimeout, [this]() { PingReplyTimeout(); });
     }
 

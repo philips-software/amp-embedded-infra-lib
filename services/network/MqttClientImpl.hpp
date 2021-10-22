@@ -274,6 +274,7 @@ namespace services
             infra::SharedPtr<infra::StreamWriter> notificationWriter;
             infra::TimerSingleShot pingTimer;
             uint16_t packetIdentifier = 0;
+            bool waitingForPingReply = false;
 
         private:
             template<class operation, class... Args>
