@@ -1,2 +1,3 @@
-lwip/lwip-*/* linguist-vendored
-external/* linguist-vendored
+lwip/lwip-*/** linguist-vendored
+external/** linguist-vendored
+*.inc linguist-language=CMake

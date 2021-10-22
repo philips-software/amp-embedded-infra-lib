@@ -5,6 +5,8 @@ ccola_component(generic x86: static_library other: skip)
         FileSystemGeneric.hpp
         SynchronousRandomDataGeneratorGeneric.cpp
         SynchronousRandomDataGeneratorGeneric.hpp
+        TimeKeeperGeneric.cpp
+        TimeKeeperGeneric.hpp
         TimerServiceGeneric.cpp
         TimerServiceGeneric.hpp
     )
