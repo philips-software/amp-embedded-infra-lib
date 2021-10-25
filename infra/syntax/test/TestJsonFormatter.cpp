@@ -282,6 +282,18 @@ TEST(JsonObjectFormatter, JsonEscapedStringSize_results_in_size_of_escaped_strin
     EXPECT_EQ(12, infra::JsonEscapedStringSize("\x11\x11"));
 }
 
+TEST(JsonObjectFormatter, JsonSubStringOfMaxEscapedSize_returns_substring_of_the_correct_size)
+{
+    EXPECT_EQ("", infra::JsonSubStringOfMaxEscapedSize("a\n\x11 ", 0));
+    EXPECT_EQ("a", infra::JsonSubStringOfMaxEscapedSize("a\n\x11 ", 1));
+    EXPECT_EQ("a", infra::JsonSubStringOfMaxEscapedSize("a\n\x11 ", 2));
+    EXPECT_EQ("a\n", infra::JsonSubStringOfMaxEscapedSize("a\n\x11 ", 3));
+    EXPECT_EQ("a\n", infra::JsonSubStringOfMaxEscapedSize("a\n\x11 ", 8));
+    EXPECT_EQ("a\n\x11", infra::JsonSubStringOfMaxEscapedSize("a\n\x11 ", 9));
+    EXPECT_EQ("a\n\x11 ", infra::JsonSubStringOfMaxEscapedSize("a\n\x11 ", 10));
+    EXPECT_EQ("a\n\x11 ", infra::JsonSubStringOfMaxEscapedSize("a\n\x11 ", 11));
+}
+
 TEST(JsonArrayFormatter, construction_results_in_empty_object)
 {
     infra::BoundedString::WithStorage<64> string;
