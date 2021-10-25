@@ -10,6 +10,7 @@
 namespace infra
 {
     std::size_t JsonEscapedStringSize(infra::BoundedConstString string);
+    infra::BoundedConstString JsonSubStringOfMaxEscapedSize(infra::BoundedConstString string, std::size_t maxEscapedSize);
 
     class JsonArrayFormatter;
     class JsonStringStream;

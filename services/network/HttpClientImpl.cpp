@@ -121,6 +121,7 @@ namespace services
 
     void HttpClientImpl::Detaching()
     {
+        reader = nullptr;
         bodyReaderAccess.SetAction(infra::emptyFunction);
         if (HttpClient::IsAttached())
             HttpClient::Detach();
@@ -158,7 +159,7 @@ namespace services
     {
         if (!response->Done())
         {
-            auto reader = ConnectionObserver::Subject().ReceiveStream();
+            reader = ConnectionObserver::Subject().ReceiveStream();
 
             infra::WeakPtr<services::ConnectionObserver> self = services::ConnectionObserver::Subject().ObserverPtr();
 
@@ -168,6 +169,7 @@ namespace services
                 return;
 
             ConnectionObserver::Subject().AckReceived();
+            reader = nullptr;
 
             if (response->Done())
             {

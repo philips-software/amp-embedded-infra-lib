@@ -18,6 +18,7 @@ namespace infra
         ConstructBin& operator()(std::initializer_list<uint8_t> v);
 
         ConstructBin& Repeat(std::size_t amount, uint8_t v);
+        ConstructBin& RepeatString(std::size_t amount, const std::string& v);
         ConstructBin& TextStream(const std::function<void(infra::TextOutputStream stream)>& callback);
 
         template<class T>
