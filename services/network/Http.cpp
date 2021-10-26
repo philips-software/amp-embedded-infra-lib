@@ -123,10 +123,24 @@ namespace services
         : observer(observer)
     {}
 
+    HttpHeaderParser ::~HttpHeaderParser()
+    {
+        if (destroyed != nullptr)
+            *destroyed = true;
+    }
+
     void HttpHeaderParser::DataReceived(infra::StreamReaderWithRewinding& reader)
     {
+        bool localDestroyed = false;
+        destroyed = &localDestroyed;
+
         if (!statusParsed)
             ParseStatusLine(reader);
+
+        if (localDestroyed)
+            return;
+
+        destroyed = nullptr;
 
         if (!Error())
             ParseHeaders(reader);
@@ -152,6 +166,7 @@ namespace services
         auto crlfPos = headerBuffer.find(crlf);
         if (crlfPos != infra::BoundedString::npos)
         {
+            statusParsed = true;
             auto statusLine = headerBuffer.substr(0, crlfPos);
             reader.Rewind(statusLine.size() + crlf.size());
 
@@ -166,8 +181,6 @@ namespace services
             }
             else
                 SetError();
-
-            statusParsed = true;
         }
     }
 

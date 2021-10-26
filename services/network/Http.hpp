@@ -125,6 +125,7 @@ namespace services
     {
     public:
         HttpHeaderParser(HttpHeaderParserObserver& observer);
+        ~HttpHeaderParser();
 
         void DataReceived(infra::StreamReaderWithRewinding& reader);
         bool Done() const;
@@ -145,6 +146,7 @@ namespace services
         bool error = false;
         bool statusParsed = false;
         HttpStatusCode statusCode;
+        bool* destroyed = nullptr;
     };
 
     infra::BoundedConstString SchemeFromUrl(infra::BoundedConstString url);
