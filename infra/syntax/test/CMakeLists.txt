@@ -4,6 +4,7 @@ ccola_component(syntax_test gmock_test)
         TestAsn1.cpp
         TestAsn1Formatter.cpp
         TestJson.cpp
+        TestJsonFileReader.cpp
         TestJsonFormatter.cpp
         TestJsonInputStream.cpp
         TestJsonObjectNavigator.cpp

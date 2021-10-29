@@ -2,8 +2,8 @@
 
 namespace infra
 {
-    JsonFileReader::JsonFileReader(hal::FileSystem& filesystem, const hal::filesystem::path& filename)
-        : fileContents(ReadFileContents(filesystem, filename))
+    JsonFileReader::JsonFileReader(const std::vector<std::string>& fileData)
+        : fileContents(ReadFileContents(fileData))
         , json(fileContents.c_str())
         , jsonObjectNavigator(json)
     {
@@ -20,13 +20,12 @@ namespace infra
         return jsonObjectNavigator;
     }
 
-    std::string JsonFileReader::ReadFileContents(hal::FileSystem& filesystem, const hal::filesystem::path& filename) const
+    std::string JsonFileReader::ReadFileContents(const std::vector<std::string>& fileData) const
     {
         std::string result;
 
-        auto fileData = filesystem.ReadFile(filename);
         if (fileData.empty())
-            throw hal::EmptyFileException(filename);
+            throw JsonFileReaderException("Missing JSON data.");
 
         for (const auto& line : fileData)
             result.append(line);

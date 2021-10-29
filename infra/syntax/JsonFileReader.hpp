@@ -2,7 +2,6 @@
 #define JSON_FILE_READER_HPP
 
 #include "infra/syntax/Json.hpp"
-#include "hal/interfaces/FileSystem.hpp"
 #include "infra/syntax/JsonObjectNavigator.hpp"
 
 namespace infra
@@ -20,13 +19,13 @@ namespace infra
         };
 
     public:
-        JsonFileReader(hal::FileSystem& filesystem, const hal::filesystem::path& filename);
+        explicit JsonFileReader(const std::vector<std::string>& fileData);
 
         infra::JsonObject& GetJsonObject();
         infra::JsonObjectNavigator& GetNavigator();
 
     private:
-        std::string ReadFileContents(hal::FileSystem& filesystem, const hal::filesystem::path& filename) const;
+        std::string ReadFileContents(const std::vector<std::string>& fileData) const;
         void CheckValidJsonObject(infra::JsonObject& jsonObject) const;
 
     private:
