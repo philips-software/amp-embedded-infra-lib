@@ -55,10 +55,10 @@ TEST_F(TestJsonFileReader, read_valid_json_from_file)
 
     const infra::JsonStringNavigatorToken stringToken{ "string" };
     const infra::JsonObjectNavigatorToken objectToken{ "object" };
-    const infra::JsonStringNavigatorToken objectNestedToken{ "nested" };
+    const infra::JsonBoolNavigatorToken objectNestedToken{ "nested" };
 
     EXPECT_EQ(jsonFileReader->GetNavigator() / stringToken, "value");
-    EXPECT_EQ(jsonFileReader->GetNavigator() / objectToken / objectNestedToken, "nested");
+    EXPECT_EQ(jsonFileReader->GetNavigator() / objectToken / objectNestedToken, true);
 }
 
 TEST_F(TestJsonFileReader, read_empty_json_throws_exception)
