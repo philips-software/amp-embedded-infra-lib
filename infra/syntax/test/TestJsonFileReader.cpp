@@ -41,24 +41,21 @@ namespace
 
 class TestJsonFileReader
     : public testing::Test
-{
-public:
-    infra::Optional<infra::JsonFileReader> jsonFileReader;
-};
+{};
 
 TEST_F(TestJsonFileReader, read_valid_json_from_file)
 {
-    jsonFileReader.Emplace(validJson);
+    infra::JsonFileReader jsonFileReader(validJson);
 
-    EXPECT_EQ(jsonFileReader->GetJsonObject().GetString("string"), "value");
-    EXPECT_EQ(jsonFileReader->GetJsonObject().GetObject("object").GetBoolean("nested"), true);
+    EXPECT_EQ(jsonFileReader.GetJsonObject().GetString("string"), "value");
+    EXPECT_EQ(jsonFileReader.GetJsonObject().GetObject("object").GetBoolean("nested"), true);
 
     const infra::JsonStringNavigatorToken stringToken{ "string" };
     const infra::JsonObjectNavigatorToken objectToken{ "object" };
     const infra::JsonBoolNavigatorToken objectNestedToken{ "nested" };
 
-    EXPECT_EQ(jsonFileReader->GetNavigator() / stringToken, "value");
-    EXPECT_EQ(jsonFileReader->GetNavigator() / objectToken / objectNestedToken, true);
+    EXPECT_EQ(jsonFileReader.GetNavigator() / stringToken, "value");
+    EXPECT_EQ(jsonFileReader.GetNavigator() / objectToken / objectNestedToken, true);
 }
 
 TEST_F(TestJsonFileReader, read_empty_json_throws_exception)
@@ -67,7 +64,7 @@ TEST_F(TestJsonFileReader, read_empty_json_throws_exception)
         {
             try
             {
-                jsonFileReader.Emplace(emptyJson);
+                infra::JsonFileReader jsonFileReader(emptyJson);
             }
             catch (const std::exception& e)
             {
@@ -84,7 +81,7 @@ TEST_F(TestJsonFileReader, read_invalid_json_throws_exception)
         {
             try
             {
-                jsonFileReader.Emplace(invalidJson);
+                infra::JsonFileReader jsonFileReader(invalidJson);
             }
             catch (const std::exception& e)
             {
@@ -101,7 +98,7 @@ TEST_F(TestJsonFileReader, read_invalid_nested_json_throws_exception)
         {
             try
             {
-                jsonFileReader.Emplace(invalidNestedJson);
+                infra::JsonFileReader jsonFileReader(invalidNestedJson);
             }
             catch (const std::exception& e)
             {
