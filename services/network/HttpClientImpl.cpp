@@ -235,8 +235,8 @@ namespace services
 
     bool HttpClientImpl::ReadChunkLength()
     {
-        auto reader = ConnectionObserver::Subject().ReceiveStream();
-        infra::TextInputStream::WithErrorPolicy stream(*reader, infra::softFail);
+        auto chunkSizeReader = ConnectionObserver::Subject().ReceiveStream();
+        infra::TextInputStream::WithErrorPolicy stream(*chunkSizeReader, infra::softFail);
 
         uint32_t chunkLength = 0;
         char r;
@@ -279,7 +279,7 @@ namespace services
             ConnectionObserver::Subject().AckReceived();
             *contentLength = chunkLength;
             firstChunk = false;
-            reader = nullptr;
+            chunkSizeReader = nullptr;
 
             if (chunkLength == 0)
                 chunkedEncoding = false;
