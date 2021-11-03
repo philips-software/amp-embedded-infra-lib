@@ -73,9 +73,9 @@ namespace services
         MdnsClient(DatagramFactory& datagramFactory, Multicast& multicast);
         ~MdnsClient();
 
-        void RegisterQuery(MdnsQuery& query);
-        void UnRegisterQuery(MdnsQuery& query);
-        void ActiveQuerySingleShot(MdnsQuery& query);
+        virtual void RegisterQuery(MdnsQuery& query);
+        virtual void UnRegisterQuery(MdnsQuery& query);
+        virtual void ActiveQuerySingleShot(MdnsQuery& query);
 
     private:
         // Implementation of DatagramExchangeObserver
