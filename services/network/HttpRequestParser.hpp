@@ -17,44 +17,48 @@ namespace services
         ~HttpRequestParser() = default;
 
     public:
-        virtual bool Complete() const = 0;
+        virtual bool HeadersComplete() const = 0;
         virtual bool Valid() const = 0;
         virtual HttpVerb Verb() const = 0;
         virtual const infra::Tokenizer& PathTokens() const = 0;
-        virtual infra::BoundedString Body() = 0;
-        virtual infra::BoundedConstString Body() const = 0;
         virtual infra::BoundedConstString Header(infra::BoundedConstString name) const = 0;
         virtual void EnumerateHeaders(const infra::Function<void(infra::BoundedConstString name, infra::BoundedConstString value)>& enumerator) const = 0;
+        virtual infra::BoundedString& BodyBuffer() = 0;
+        virtual infra::Optional<uint32_t> ContentLength() const = 0;
     };
 
     class HttpRequestParserImpl
         : public HttpRequestParser
     {
     public:
-        HttpRequestParserImpl(infra::BoundedString data);
+        HttpRequestParserImpl(infra::BoundedString& data);
 
-        virtual bool Complete() const override;
+        virtual bool HeadersComplete() const override;
         virtual bool Valid() const override;
         virtual HttpVerb Verb() const override;
         virtual const infra::Tokenizer& PathTokens() const override;
-        virtual infra::BoundedString Body() override;
-        virtual infra::BoundedConstString Body() const override;
         virtual infra::BoundedConstString Header(infra::BoundedConstString name) const override;
         virtual void EnumerateHeaders(const infra::Function<void(infra::BoundedConstString name, infra::BoundedConstString value)>& enumerator) const override;
+        virtual infra::BoundedString& BodyBuffer() override;
+        virtual infra::Optional<uint32_t> ContentLength() const override;
+
+        void SetContentLength(uint32_t length);
 
     private:
         void FindVerb(infra::Tokenizer& tokenizer);
         void FindPath(infra::Tokenizer& tokenizer);
-        void FindHeadersAndBody(infra::BoundedString data);
+        void FindHeadersAndBodyStart(infra::BoundedString& data);
+        void ReadContentsLength();
 
     private:
         infra::BoundedString headers;
-        infra::BoundedString body;
+        infra::BoundedString bodyBuffer;
         HttpVerb verb;
         infra::BoundedConstString path;
         infra::Tokenizer pathTokens;
-        bool complete = true;
+        bool headersComplete = true;
         bool valid = true;
+        infra::Optional<uint32_t> contentLength;
     };
 }
 

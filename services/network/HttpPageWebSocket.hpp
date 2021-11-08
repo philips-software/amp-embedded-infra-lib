@@ -7,7 +7,7 @@
 namespace services
 {
     class HttpPageWebSocket
-        : public services::HttpPage
+        : public services::SimpleHttpPage
         , public services::ConnectionObserver
         , protected services::HttpResponse
     {
@@ -15,7 +15,7 @@ namespace services
         HttpPageWebSocket(infra::BoundedConstString path, WebSocketObserverFactory& webSocketObserverFactory);
 
     public:
-        // Implementation of HttpPage
+        // Implementation of SimpleHttpPage
         virtual bool ServesRequest(const infra::Tokenizer& pathTokens) const override;
         virtual void RespondToRequest(services::HttpRequestParser& parser, services::HttpServerConnection& connection) override;
 

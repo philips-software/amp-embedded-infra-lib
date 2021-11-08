@@ -17,6 +17,7 @@ namespace services
             : verb(verb)
             , pathTokens(path, '/')
             , body(body)
+            , contentLength(body.size())
         {}
 
         HttpRequestParserStub(HttpVerb verb, infra::BoundedConstString path, const std::string& body)
@@ -24,14 +25,13 @@ namespace services
             , path(path)
             , pathTokens(path, '/')
             , body(body)
+            , contentLength(body.size())
         {}
 
-        virtual bool Complete() const override { return true; }
+        virtual bool HeadersComplete() const override { return true; }
         virtual bool Valid() const override { return true; }
         virtual HttpVerb Verb() const override { return verb; }
         virtual const infra::Tokenizer& PathTokens() const override { return pathTokens; }
-        virtual infra::BoundedString Body() override { return body; }
-        virtual infra::BoundedConstString Body() const override { return body; }
         virtual infra::BoundedConstString Header(infra::BoundedConstString name) const override
         {
             for (auto& header : headers)
@@ -47,10 +47,14 @@ namespace services
                 enumerator(header.first, header.second);
         }
 
+        virtual infra::BoundedString& BodyBuffer() override { return body; }
+        virtual infra::Optional<uint32_t> ContentLength() const { return infra::MakeOptional(contentLength); }
+
         HttpVerb verb;
         infra::BoundedConstString path;
         infra::Tokenizer pathTokens;
-        std::string body;
+        infra::BoundedString::WithStorage<1024> body;
+        uint32_t contentLength;
         std::vector<std::pair<std::string, std::string>> headers;
     };
 }
