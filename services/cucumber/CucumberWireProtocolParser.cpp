@@ -2,7 +2,7 @@
 
 namespace services
 {
-    void CucumberWireProtocolParser::ParseRequest(const infra::BoundedString& inputString)
+    void CucumberWireProtocolParser::ParseRequest(infra::BoundedConstString inputString)
     {
         infra::JsonArray input(inputString);
         infra::JsonArrayIterator iterator(input.begin());
@@ -22,7 +22,7 @@ namespace services
             requestType = RequestType::Invalid;
     }   
 
-    bool CucumberWireProtocolParser::Valid(const infra::BoundedString& inputString)
+    bool CucumberWireProtocolParser::Valid(infra::BoundedConstString inputString)
     {
         infra::JsonArray input(inputString);
         for (const auto& value : input)
