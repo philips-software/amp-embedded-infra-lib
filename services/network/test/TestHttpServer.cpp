@@ -352,7 +352,7 @@ TEST_F(HttpServerTest, connection_is_kept_open_by_page)
 
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
-    infra::WeakPtr<void> observer = connection.ObserverPtr();
+    infra::WeakPtr<services::ConnectionObserver> observer = connection.ObserverPtr();
 
     EXPECT_CALL(page, ServesRequest(testing::_)).WillOnce(testing::Return(true));
     EXPECT_CALL(page, RequestReceived(testing::_, testing::_)).WillOnce(testing::Invoke([this](services::HttpRequestParser& parser, services::HttpServerConnection& connection) {
