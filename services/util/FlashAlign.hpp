@@ -35,11 +35,11 @@ namespace services
         uint32_t AlignFullWords(uint32_t address, infra::ConstByteRange& buffer);
         void AlignLast(uint32_t address, infra::ConstByteRange& buffer);
 
-        uint8_t align;
         uint32_t alignedAddress = 0;
 
         infra::ByteRange firstChunk;
         infra::ByteRange lastChunk;
+        uint8_t align;
 
         infra::ConstByteRange buffer;
 
