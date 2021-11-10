@@ -21,7 +21,8 @@ namespace services
     public:
         MOCK_CONST_METHOD1(ServesRequest, bool(const infra::Tokenizer& pathTokens));
         MOCK_METHOD2(RequestReceived, void(services::HttpRequestParser& parser, services::HttpServerConnection& connection));
-        MOCK_METHOD1(DataReceived, void(infra::StreamReaderWithRewinding& reader));
+        MOCK_METHOD1(DataReceived, void(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader));
+        MOCK_METHOD0(Close, void());
     };
 
     class SimpleHttpPageMock

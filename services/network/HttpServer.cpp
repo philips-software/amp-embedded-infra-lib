@@ -1,5 +1,3 @@
-#include "infra/stream/CountingInputStream.hpp"
-#include "infra/stream/LimitedInputStream.hpp"
 #include "infra/stream/LimitedOutputStream.hpp"
 #include "infra/stream/SavedMarkerStream.hpp"
 #include "infra/stream/StringInputStream.hpp"
@@ -106,6 +104,27 @@ namespace services
     HttpServerConnectionObserver::HttpServerConnectionObserver(infra::BoundedString& buffer, HttpPageServer& httpServer)
         : buffer(buffer)
         , httpServer(httpServer)
+        , pageLimitedReader([this]()
+            {
+                if (contentLength != infra::none)
+                    *contentLength -= pageCountingReader->TotalRead();
+                lengthRead += pageCountingReader->TotalRead();
+                Subject().AckReceived();
+                pageCountingReader = infra::none;
+                pageReader = nullptr;
+
+                if (contentLength != infra::none && contentLength == 0)
+                {
+                    pageServer->Close();
+                    pageServer = nullptr;
+                }
+
+                infra::WeakPtr<void> weakSelf = keepSelfAlive;
+                keepSelfAlive = nullptr;
+
+                if (weakSelf.lock())
+                    DataReceived();
+            })
         , initialIdle(std::chrono::seconds(10), [this]()
             {
                 idle = true;
@@ -134,7 +153,7 @@ namespace services
 
     void HttpServerConnectionObserver::DataReceived()
     {
-        if (streamWriter == nullptr)
+        if (streamWriter == nullptr || pageReader != nullptr)
             return;
 
         infra::SharedPtr<infra::StreamReaderWithRewinding> reader = Subject().ReceiveStream();
@@ -144,13 +163,15 @@ namespace services
 
         if (!reader->Empty())
             if (pageServer != nullptr)
-                DataReceivedForPage(*reader);
+                DataReceivedForPage(std::move(reader));
+            else if (parser != infra::none)     // Received data after contents for the page, but before closing the page request
+                Abort();
             else
-                ReceivedRequest(*reader);
+                ReceivedRequest(std::move(reader));
 
         if (weakSelf.lock())
         {
-            if (IsAttached())
+            if (IsAttached() && (pageReader != nullptr || reader != nullptr))
                 Subject().AckReceived();
             readerPtr = nullptr;
         }
@@ -158,13 +179,15 @@ namespace services
 
     void HttpServerConnectionObserver::Detaching()
     {
-        if (pageServer != nullptr && contentLength == infra::none)
+        if (pageServer != nullptr)
         {
-            parser->SetContentLength(lengthRead);
-            contentLength = 0;
-            infra::StringInputStreamReader reader("");
-            DataReceivedForPage(reader);
+            if (contentLength == infra::none)
+                parser->SetContentLength(lengthRead);
+
+            pageServer->Close();
         }
+
+        pageLimitedReader.OnAllocatable([this]() { keepSelfAlive = nullptr; });
 
         streamWriter = nullptr;
 
@@ -210,7 +233,10 @@ namespace services
     void HttpServerConnectionObserver::TakeOverConnection(ConnectionObserver& newObserver)
     {
         streamWriter = nullptr;
-        Subject().AckReceived();
+        if (pageReader != nullptr)
+            Subject().AckReceived();
+        pageLimitedReader.OnAllocatable(infra::emptyFunction);
+        pageServer = nullptr;
 
         auto& connection = Subject();
         auto newObserverPtr = infra::MakeContainedSharedObject(newObserver, connection.ObserverPtr());
@@ -242,10 +268,10 @@ namespace services
         SendResponse(HttpResponseOutOfMemory::Instance());
     }
 
-    void HttpServerConnectionObserver::ReceivedRequest(infra::StreamReaderWithRewinding& reader)
+    void HttpServerConnectionObserver::ReceivedRequest(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
-        infra::TextInputStream::WithErrorPolicy stream(reader);
-        auto start = reader.ConstructSaveMarker();
+        infra::TextInputStream::WithErrorPolicy stream(*reader);
+        auto start = reader->ConstructSaveMarker();
         auto available = std::min(stream.Available(), buffer.max_size() - buffer.size());
         buffer.resize(buffer.size() + available);
         auto justReceived = buffer.substr(buffer.size() - available);
@@ -260,31 +286,31 @@ namespace services
         parser.Emplace(buffer);
         if (parser->HeadersComplete())
         {
-            reader.Rewind(start + buffer.size());
+            reader->Rewind(start + buffer.size());
             Subject().AckReceived();
-            TryHandleRequest(reader);
+            TryHandleRequest(std::move(reader));
         }
-        else if (!reader.Empty())
-            ReceivedTooMuchData(reader);
+        else if (!reader->Empty())
+            ReceivedTooMuchData(*reader);
         else
             Subject().AckReceived();
     }
 
-    void HttpServerConnectionObserver::TryHandleRequest(infra::StreamReaderWithRewinding& reader)
+    void HttpServerConnectionObserver::TryHandleRequest(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
         if (!parser->Valid())
             SendResponse(HttpResponseBadRequest::Instance());
         else
-            HandleRequest(reader);
+            HandleRequest(std::move(reader));
     }
 
-    void HttpServerConnectionObserver::HandleRequest(infra::StreamReaderWithRewinding& reader)
+    void HttpServerConnectionObserver::HandleRequest(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
         RequestIsNowInProgress();
 
         send100Response |= Expect100();
 
-        ServePage(reader);
+        ServePage(std::move(reader));
     }
 
     void HttpServerConnectionObserver::RequestIsNowInProgress()
@@ -294,31 +320,33 @@ namespace services
         ReceivedHttpRequest(buffer);
     }
 
-    void HttpServerConnectionObserver::ServePage(infra::StreamReaderWithRewinding& reader)
+    void HttpServerConnectionObserver::ServePage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
         contentLength = parser->ContentLength();
         pageServer = PageForRequest(*parser);
         if (pageServer != nullptr)
         {
+            infra::WeakPtr<ConnectionObserver> weakSelf = Subject().ObserverPtr();
+
             pageServer->RequestReceived(*parser, *this);
-            if (pageServer != nullptr)
-                DataReceivedForPage(reader);
+
+            if (weakSelf.lock() && pageServer != nullptr)
+                DataReceivedForPage(std::move(reader));
         }
         else
             SendResponse(HttpResponseNotFound::Instance());
     }
 
-    void HttpServerConnectionObserver::DataReceivedForPage(infra::StreamReaderWithRewinding& reader)
+    void HttpServerConnectionObserver::DataReceivedForPage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
-        if (contentLength != infra::none && reader.Available() > *contentLength)
+        if (contentLength != infra::none && reader->Available() > *contentLength)
             Abort();
         else
         {
-            infra::LimitedStreamReaderWithRewinding::WithInput<infra::CountingStreamReaderWithRewinding> countingReader(infra::inPlace, reader, contentLength.ValueOr(std::numeric_limits<uint32_t>::max()));
-            pageServer->DataReceived(countingReader);
-            if (contentLength != infra::none)
-                *contentLength -= countingReader.Storage().TotalRead();
-            lengthRead += countingReader.Storage().TotalRead();
+            keepSelfAlive = Subject().ObserverPtr();
+            pageReader = std::move(reader);
+            pageCountingReader.Emplace(*pageReader);
+            pageServer->DataReceived(pageLimitedReader.Emplace(*pageCountingReader, contentLength.ValueOr(std::numeric_limits<uint32_t>::max())));
         }
     }
 
@@ -369,9 +397,9 @@ namespace services
         this->parser = &parser;
     }
 
-    void SimpleHttpPage::DataReceived(infra::StreamReaderWithRewinding& reader)
+    void SimpleHttpPage::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
-        infra::TextInputStream::WithErrorPolicy stream(reader);
+        infra::TextInputStream::WithErrorPolicy stream(*reader);
         auto& buffer = parser->BodyBuffer();
         auto available = stream.Available();
         if (available > buffer.max_size() - buffer.size() || buffer.size() + available > parser->ContentLength().ValueOr(std::numeric_limits<uint32_t>::max()))
@@ -387,9 +415,14 @@ namespace services
             auto justReceived = buffer.substr(buffer.size() - available);
             stream >> justReceived;
 
-            if (buffer.size() == parser->ContentLength())
-                RespondToRequest(*parser, *connection);
+            reader = nullptr;
         }
+    }
+
+    void SimpleHttpPage::Close()
+    {
+        if (parser->BodyBuffer().size() == parser->ContentLength())
+            RespondToRequest(*parser, *connection);
     }
 
     DefaultHttpServer::DefaultHttpServer(infra::BoundedString& buffer, ConnectionFactory& connectionFactory, uint16_t port)

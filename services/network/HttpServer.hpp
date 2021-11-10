@@ -2,6 +2,8 @@
 #define DI_COMM_HTTP_SERVER_HPP
 
 #include "infra/timer/Timer.hpp"
+#include "infra/stream/CountingInputStream.hpp"
+#include "infra/stream/LimitedInputStream.hpp"
 #include "infra/util/IntrusiveForwardList.hpp"
 #include "infra/util/ProxyCreator.hpp"
 #include "infra/util/SharedOptional.hpp"
@@ -94,7 +96,8 @@ namespace services
     public:
         virtual bool ServesRequest(const infra::Tokenizer& pathTokens) const = 0;
         virtual void RequestReceived(HttpRequestParser& parser, HttpServerConnection& connection) = 0;
-        virtual void DataReceived(infra::StreamReaderWithRewinding& reader) = 0;
+        virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) = 0;
+        virtual void Close() = 0;
     };
 
     class SimpleHttpPage
@@ -102,7 +105,9 @@ namespace services
     {
     public:
         virtual void RequestReceived(HttpRequestParser& parser, HttpServerConnection& connection) override;
-        virtual void DataReceived(infra::StreamReaderWithRewinding& reader) override;
+        virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
+        virtual void Close() override;
+
         virtual void RespondToRequest(HttpRequestParser& parser, HttpServerConnection& connection) = 0;
 
     private:
@@ -145,12 +150,12 @@ namespace services
 
     private:
         void ReceivedTooMuchData(infra::StreamReader& reader);
-        void ReceivedRequest(infra::StreamReaderWithRewinding& reader);
-        void TryHandleRequest(infra::StreamReaderWithRewinding& reader);
-        void HandleRequest(infra::StreamReaderWithRewinding& reader);
+        void ReceivedRequest(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
+        void TryHandleRequest(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
+        void HandleRequest(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
         void RequestIsNowInProgress();
-        void ServePage(infra::StreamReaderWithRewinding& reader);
-        void DataReceivedForPage(infra::StreamReaderWithRewinding& reader);
+        void ServePage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
+        void DataReceivedForPage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
         void RequestSendStream();
         void PrepareForNextRequest();
         bool Expect100() const;
@@ -171,6 +176,10 @@ namespace services
         infra::Optional<uint32_t> contentLength;
         uint32_t lengthRead = 0;
         HttpPage* pageServer = nullptr;
+        infra::SharedPtr<infra::StreamReaderWithRewinding> pageReader;
+        infra::Optional<infra::CountingStreamReaderWithRewinding> pageCountingReader;
+        infra::NotifyingSharedOptional<infra::LimitedStreamReaderWithRewinding> pageLimitedReader;
+        infra::SharedPtr<void> keepSelfAlive;
         infra::Optional<HttpRequestParserImpl> parser;
         bool sendingResponse = false;
         infra::TimerSingleShot initialIdle;
