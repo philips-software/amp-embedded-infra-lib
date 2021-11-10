@@ -1651,7 +1651,7 @@ namespace infra
     template<class T>
     BoundedStringBase<T> TrimLeft(BoundedStringBase<T> string)
     {
-        for (size_t i = 0; i != string.size(); ++i)
+        for (std::size_t i = 0; i != string.size(); ++i)
             if (string[i] != ' ')
                 return string.substr(i);
 
