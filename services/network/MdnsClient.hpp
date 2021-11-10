@@ -131,8 +131,8 @@ namespace services
 
     private:
         DatagramFactory& datagramFactory;
-        Multicast& multicast;
         infra::SharedPtr<DatagramExchange> datagramExchange;
+        Multicast& multicast;
         infra::Optional<ActiveMdnsQuery> activeMdnsQuery;
         infra::IntrusiveList<MdnsQuery> queries;
         size_t lastWaitingQueryPosition = 0;

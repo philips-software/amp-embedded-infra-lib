@@ -154,6 +154,9 @@ namespace services
             case MessageType::SizeUpdate:
                 state->SizeUpdateReceived(messageHeader->Size());
                 break;
+
+            default:
+                break;
         }
     }
 

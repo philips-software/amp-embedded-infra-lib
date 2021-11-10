@@ -146,15 +146,15 @@ namespace services
         infra::SharedPtr<infra::StreamWriter> streamWriter;
 
     protected:
+        infra::BoundedString& buffer;
         HttpPageServer& httpServer;
+        infra::TimerSingleShot initialIdle;
         Connection* connection = nullptr;
         bool send100Response = false;
-        infra::BoundedString& buffer;
         bool closeWhenIdle = false;
         bool idle = false;
         bool requestInProgress = false;
         bool sendingResponse = false;
-        infra::TimerSingleShot initialIdle;
     };
 
     class DefaultHttpServer
