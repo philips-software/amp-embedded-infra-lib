@@ -168,10 +168,11 @@ namespace services
         infra::SharedPtr<infra::StreamReaderWithRewinding>* readerPtr = nullptr;
 
     protected:
+        infra::BoundedString& buffer;
         HttpPageServer& httpServer;
+        infra::TimerSingleShot initialIdle;
         Connection* connection = nullptr;
         bool send100Response = false;
-        infra::BoundedString& buffer;
         bool closeWhenIdle = false;
         bool idle = false;
         infra::Optional<uint32_t> contentLength;
@@ -183,7 +184,6 @@ namespace services
         infra::SharedPtr<void> keepSelfAlive;
         infra::Optional<HttpRequestParserImpl> parser;
         bool sendingResponse = false;
-        infra::TimerSingleShot initialIdle;
 
         friend class SimpleHttpPage;
     };
