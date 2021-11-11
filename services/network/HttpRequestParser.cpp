@@ -3,14 +3,14 @@
 
 namespace services
 {
-    HttpRequestParserImpl::HttpRequestParserImpl(infra::BoundedString data)
+    HttpRequestParserImpl::HttpRequestParserImpl(infra::BoundedString& data)
         : pathTokens("", '/')
     {
         infra::Tokenizer tokenizer(data, ' ');
 
         FindVerb(tokenizer);
         FindPath(tokenizer);
-        FindHeadersAndBody(data);
+        FindHeadersAndBodyStart(data);
     }
 
     void HttpRequestParserImpl::FindVerb(infra::Tokenizer& tokenizer)
@@ -30,9 +30,9 @@ namespace services
         pathTokens = infra::Tokenizer(path, '/');
     }
 
-    bool HttpRequestParserImpl::Complete() const
+    bool HttpRequestParserImpl::HeadersComplete() const
     {
-        return complete;
+        return headersComplete;
     }
 
     bool HttpRequestParserImpl::Valid() const
@@ -48,16 +48,6 @@ namespace services
     const infra::Tokenizer& HttpRequestParserImpl::PathTokens() const
     {
         return pathTokens;
-    }
-
-    infra::BoundedString HttpRequestParserImpl::Body()
-    {
-        return body;
-    }
-
-    infra::BoundedConstString HttpRequestParserImpl::Body() const
-    {
-        return body;
     }
 
     infra::BoundedConstString HttpRequestParserImpl::Header(infra::BoundedConstString name) const
@@ -95,27 +85,55 @@ namespace services
         }
     }
 
-    void HttpRequestParserImpl::FindHeadersAndBody(infra::BoundedString data)
+    infra::BoundedString& HttpRequestParserImpl::BodyBuffer()
+    {
+        return bodyBuffer;
+    }
+
+    infra::Optional<uint32_t> HttpRequestParserImpl::ContentLength() const
+    {
+        return contentLength;
+    }
+
+    void HttpRequestParserImpl::SetContentLength(uint32_t length)
+    {
+        contentLength = length;
+    }
+
+    void HttpRequestParserImpl::FindHeadersAndBodyStart(infra::BoundedString& data)
     {
         auto bodyStart = data.find("\r\n\r\n", 0, 4);
         if (bodyStart == infra::BoundedString::npos)
-            complete = false;
+            headersComplete = false;
         else
         {
             auto headersStart = data.find("\r\n");
             if (headersStart != bodyStart)
-                headers = data.substr(headersStart + 2, bodyStart);
-            body = data.substr(bodyStart + 4);
+                headers = data.substr(headersStart + 2, bodyStart - headersStart - 2);
 
-            auto contentsLength = Header("Content-Length");
-            if (!contentsLength.empty())
-            {
-                infra::StringInputStream stream(contentsLength, infra::noFail);
-                uint32_t size(0);
-                stream >> size;
+            bodyStart += 4;
 
-                complete = body.size() >= size;
-            }
+            headersComplete = true;
+
+            data.resize(data.max_size());
+            bodyBuffer = data.substr(bodyStart);
+            bodyBuffer.clear();
+            data.resize(bodyStart);
+
+            ReadContentLength();
         }
+    }
+
+    void HttpRequestParserImpl::ReadContentLength()
+    {
+        auto contentsLengthString = Header("Content-Length");
+        if (!contentsLengthString.empty())
+        {
+            infra::StringInputStream stream(contentsLengthString, infra::noFail);
+            contentLength.Emplace(0);
+            stream >> *contentLength;
+        }
+        else if (verb == HttpVerb::get || verb == HttpVerb::head || verb == HttpVerb::delete_ || verb == HttpVerb::connect)
+            contentLength = 0;
     }
 }

@@ -6,10 +6,10 @@
 namespace application
 {
     class TimeHttpPage
-        : public services::HttpPage
+        : public services::SimpleHttpPage
     {
     public:
-        // Implementation of services::HttpPage
+        // Implementation of SimpleHttpPage
         virtual bool ServesRequest(const infra::Tokenizer& pathTokens) const override;
         virtual void RespondToRequest(services::HttpRequestParser& parser, services::HttpServerConnection& connection) override;
 
