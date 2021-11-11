@@ -120,11 +120,11 @@ namespace services
             bodyBuffer.clear();
             data.resize(bodyStart);
 
-            ReadContentsLength();
+            ReadContentLength();
         }
     }
 
-    void HttpRequestParserImpl::ReadContentsLength()
+    void HttpRequestParserImpl::ReadContentLength()
     {
         auto contentsLengthString = Header("Content-Length");
         if (!contentsLengthString.empty())
