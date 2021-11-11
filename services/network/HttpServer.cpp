@@ -104,27 +104,7 @@ namespace services
     HttpServerConnectionObserver::HttpServerConnectionObserver(infra::BoundedString& buffer, HttpPageServer& httpServer)
         : buffer(buffer)
         , httpServer(httpServer)
-        , pageLimitedReader([this]()
-            {
-                if (contentLength != infra::none)
-                    *contentLength -= pageCountingReader->TotalRead();
-                lengthRead += pageCountingReader->TotalRead();
-                Subject().AckReceived();
-                pageCountingReader = infra::none;
-                pageReader = nullptr;
-
-                if (contentLength != infra::none && contentLength == 0)
-                {
-                    pageServer->Close();
-                    pageServer = nullptr;
-                }
-
-                infra::WeakPtr<void> weakSelf = keepSelfAlive;
-                keepSelfAlive = nullptr;
-
-                if (weakSelf.lock())
-                    DataReceived();
-            })
+        , pageLimitedReader([this]() { PageReaderClosed(); })
         , initialIdle(std::chrono::seconds(10), [this]()
             {
                 idle = true;
@@ -349,6 +329,29 @@ namespace services
             pageServer->DataReceived(pageLimitedReader.Emplace(*pageCountingReader, contentLength.ValueOr(std::numeric_limits<uint32_t>::max())));
         }
     }
+
+    void HttpServerConnectionObserver::PageReaderClosed()
+    {
+        if (contentLength != infra::none)
+            *contentLength -= pageCountingReader->TotalRead();
+        lengthRead += pageCountingReader->TotalRead();
+        Subject().AckReceived();
+        pageCountingReader = infra::none;
+        pageReader = nullptr;
+
+        if (contentLength != infra::none && contentLength == 0)
+        {
+            pageServer->Close();
+            pageServer = nullptr;
+        }
+
+        infra::WeakPtr<void> weakSelf = keepSelfAlive;
+        keepSelfAlive = nullptr;
+
+        if (weakSelf.lock())
+            DataReceived();
+    }
+
 
     void HttpServerConnectionObserver::RequestSendStream()
     {

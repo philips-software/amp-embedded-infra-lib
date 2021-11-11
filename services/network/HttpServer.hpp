@@ -156,6 +156,7 @@ namespace services
         void RequestIsNowInProgress();
         void ServePage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
         void DataReceivedForPage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
+        void PageReaderClosed();
         void RequestSendStream();
         void PrepareForNextRequest();
         bool Expect100() const;
