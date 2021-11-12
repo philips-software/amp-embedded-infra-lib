@@ -743,15 +743,3 @@ TEST(BoundedStringTest, TestPrintTo2)
     infra::PrintTo(string, &stream);
     EXPECT_EQ(R"("abc")", stream.str());
 }
-
-TEST(BoundedStringTest, ConstCasts)
-{
-    infra::BoundedConstString::WithStorage<5> constString = "abcde";
-    infra::BoundedString::WithStorage<5> string = infra::ConstCastBoundedString<char>(constString);
-
-    EXPECT_EQ(string, "abcde");
-
-    string.erase();
-    EXPECT_TRUE(string.empty());
-    EXPECT_EQ(constString, "abcde");
-}

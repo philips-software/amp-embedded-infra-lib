@@ -329,8 +329,6 @@ namespace infra
         bool CaseInsensitiveCompare(const infra::BoundedStringBase<T>& lhs, const char* rhs);
 
     template<class T>
-        infra::BoundedStringBase<T> ConstCastBoundedString(infra::BoundedStringBase<const T>& string);
-    template<class T>
         MemoryRange<T> MakeRange(infra::BoundedStringBase<T>& container);
     template<class T>
         MemoryRange<const T> MakeRange(const infra::BoundedStringBase<T>& container);
@@ -1672,12 +1670,6 @@ namespace infra
     {
         return lhs.size() == std::strlen(rhs) &&    //NOSONAR
             std::equal(std::begin(lhs), std::end(lhs), rhs, [](T a, T b) { return std::tolower(a) == std::tolower(b); });
-    }
-
-    template<class T>
-    infra::BoundedStringBase<T> ConstCastBoundedString(infra::BoundedStringBase<const T>& string)
-    {
-        return infra::BoundedStringBase<T>(ConstCastMemoryRange<T>(StringAsMemoryRange<const T>(string)), string.size());
     }
 
     template<class T>
