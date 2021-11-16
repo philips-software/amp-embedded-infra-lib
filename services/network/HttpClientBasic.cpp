@@ -108,6 +108,11 @@ namespace services
         Close();
     }
 
+    void HttpClientBasic::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+    {
+        StartTimeout();
+    }
+
     infra::BoundedConstString HttpClientBasic::Hostname() const
     {
         return services::HostFromUrl(url);
@@ -121,7 +126,7 @@ namespace services
     void HttpClientBasic::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::HttpClientObserver> client)>&& createdClientObserver)
     {
         state = State::connected;
-        timeoutTimer.Start(timeoutDuration, [this]() { Timeout(); });
+        StartTimeout();
         Established();
         createdClientObserver(sharedAccess.MakeShared(static_cast<services::HttpClientObserver&>(*this)));
     }
@@ -129,6 +134,11 @@ namespace services
     void HttpClientBasic::ConnectionFailed(services::HttpClientObserverFactory::ConnectFailReason reason)
     {
         ReportError(true);
+    }
+
+    void HttpClientBasic::StartTimeout()
+    {
+        timeoutTimer.Start(timeoutDuration, [this]() { Timeout(); });
     }
 
     void HttpClientBasic::Timeout()

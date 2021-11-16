@@ -39,6 +39,7 @@ namespace services
         // Implementation of HttpClientObserver
         virtual void Detaching() override;
         virtual void BodyComplete() override;
+        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
     protected:
         // Implementation of HttpClientObserverFactory
@@ -48,6 +49,7 @@ namespace services
         virtual void ConnectionFailed(ConnectFailReason reason) override;
 
     private:
+        void StartTimeout();
         void Timeout();
         void Expire();
         void ReportError(bool intermittentFailure);

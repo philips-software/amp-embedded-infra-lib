@@ -170,6 +170,20 @@ TEST_F(HttpClientBasicTest, timer_resets_after_BodyComplete)
     ForwardTime(std::chrono::minutes(1));
 }
 
+TEST_F(HttpClientBasicTest, timer_resets_after_SendStreamAvailable)
+{
+    EXPECT_CALL(*controller, Established());
+    httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.Attach(client); });
+
+    ForwardTime(std::chrono::seconds(30));
+
+    httpClient.Observer().SendStreamAvailable(nullptr);
+
+    ForwardTime(std::chrono::seconds(30));
+
+    EXPECT_CALL(*controller, Error(true));
+}
+
 TEST_F(HttpClientBasicTest, Stop_after_ClosingConnection)
 {
     EXPECT_CALL(*controller, Established());
