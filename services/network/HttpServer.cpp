@@ -173,6 +173,8 @@ namespace services
 
         if (readerPtr != nullptr)
             *readerPtr = nullptr;
+
+        connection = nullptr;
     }
 
     void HttpServerConnectionObserver::Close()
@@ -186,7 +188,8 @@ namespace services
         // TakeOverConnection may have been invoked, which leads to Subject() not being available. However, TakeOverConnection may have been invoked by a page
         // which is about to upgrade to a web connection, but which is not yet upgraded since it is waiting for storage. In that case, if the HttpServer
         // must close down, then we still need to invoke CloseAndDestroy on the connection. Therefore, connection is used instead of Subject()
-        connection->AbortAndDestroy();
+        if (connection != nullptr)
+            connection->AbortAndDestroy();
     }
 
     void HttpServerConnectionObserver::SendResponse(const HttpResponse& response)
@@ -390,7 +393,7 @@ namespace services
     
     void HttpServerConnectionObserver::CheckIdleClose()
     {
-        if (closeWhenIdle && idle)
+        if (closeWhenIdle && idle && IsAttached())
             ConnectionObserver::Close();
     }
 
