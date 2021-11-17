@@ -2,8 +2,6 @@
 #include "mbedtls/sha256.h"
 #include "upgrade/pack_builder/ImageSignerRsa.hpp"
 
-//TICS -CON#002
-
 namespace
 {
     // System Workbench's GCC does not yet support std::make_reverse_iterator
