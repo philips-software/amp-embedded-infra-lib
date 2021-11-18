@@ -156,7 +156,7 @@ namespace services
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object)
             {
                 object->dataReceivedScheduled = false;
-                if (object->Observer().IsAttached())
+                if (object->Connection::IsAttached())
                     object->Observer().DataReceived();
             }, SharedFromThis());
         }
@@ -261,7 +261,7 @@ namespace services
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object)
             {
                 infra::SharedPtr<StreamWriterMbedTls> stream = object->streamWriter.Emplace(*object);
-                if (object->Observer().IsAttached())
+                if (object->Connection::IsAttached())
                     object->Observer().SendStreamAvailable(std::move(stream));
             }, SharedFromThis());
 
