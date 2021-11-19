@@ -7,6 +7,18 @@ namespace services
 {
     const HttpHeaders noHeaders{};
 
+    namespace http_responses
+    {
+        const char* ok = "200 OK";
+        const char* badRequest = "400 Bad Request";
+        const char* notFound = "404 Not Found";
+        const char* conflict = "409 Conflict";
+        const char* unprocessableEntity = "422 Unprocessable Entity";
+        const char* tooManyRequests = "429 Too Many Requests";
+        const char* internalServerError = "500 Internal Server Error";
+        const char* notImplemented = "501 Not Implemented";
+    }
+
     namespace
     {
         const char* separator = ":";
