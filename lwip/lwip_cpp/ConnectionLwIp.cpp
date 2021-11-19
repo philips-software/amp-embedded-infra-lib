@@ -459,7 +459,7 @@ namespace services
 
     void ConnectionLwIp::StreamReaderLwIp::Rewind(std::size_t marker)
     {
-        offset = 0;
+        offset = marker;
         currentPbuf = connection.receivedData;
         offsetInCurrentPbuf = connection.consumed;
 
