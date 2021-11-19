@@ -192,6 +192,46 @@ TEST_F(HttpServerWithSimplePageTest, request_without_content_length_still_result
     connection.AbortAndDestroy();
 }
 
+TEST_F(HttpServerWithSimplePageTest, request_with_content_length_results_in_put)
+{
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    ExpectPageServerRequestWithBody(services::HttpVerb::put, "PUT /path HTTP/1.1 \r\nContent-Length: 8\r\n\r\ndatadata", "datadata");
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+    connection.AbortAndDestroy();
+}
+
+TEST_F(HttpServerWithSimplePageTest, request_with_more_data_than_content_length_results_in_abort)
+{
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(true));
+    infra::ConstByteRange data = infra::MakeStringByteRange("PUT /path HTTP/1.1 \r\nContent-Length: 7\r\n\r\ndatadata");
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+    connection.SimulateDataReceived(data);
+    ExecuteAllActions();
+}
+
+TEST_F(HttpServerWithSimplePageTest, Get_with_data_results_in_abort)
+{
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+    ExpectPageServerRequest(services::HttpVerb::get, "GET /path HTTP/1.1 \r\n\r\ndatadata");
+    ExecuteAllActions();
+
+    testing::Mock::VerifyAndClearExpectations(&connection);
+}
+
+TEST_F(HttpServerWithSimplePageTest, Get_with_connection_close_results_in_request)
+{
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    ExpectPageServerRequest(services::HttpVerb::get, "GET /path HTTP/1.1 \r\nConnection: close\r\n\r\n");
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+    connection.AbortAndDestroy();
+}
+
 TEST_F(HttpServerWithSimplePageTest, request_parses_header)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
