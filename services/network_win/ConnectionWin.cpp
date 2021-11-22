@@ -6,6 +6,7 @@ namespace services
     ConnectionWin::ConnectionWin(EventDispatcherWithNetwork& network, SOCKET socket)
         : network(network)
         , socket(socket)
+        , streamReader([this]() { keepAliveForReader = nullptr; })
     {
         UpdateEventFlags();
     }
@@ -40,6 +41,7 @@ namespace services
 
     infra::SharedPtr<infra::StreamReaderWithRewinding> ConnectionWin::ReceiveStream()
     {
+        keepAliveForReader = SharedFromThis();
         return streamReader.Emplace(*this);
     }
 

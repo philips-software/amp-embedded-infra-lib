@@ -10,6 +10,7 @@ namespace services
         , randomDataGenerator(randomDataGenerator)
         , server(parameters.parameters.Is<ServerParameters>())
         , clientSession(parameters.parameters.Is<ClientParameters>() ? &parameters.parameters.Get<ClientParameters>().clientSession : nullptr)
+        , receiveReader([this]() { keepAliveForReader = nullptr; })
     {
         mbedtls_ssl_init(&sslContext);
         mbedtls_ssl_config_init(&sslConfig);
@@ -155,7 +156,8 @@ namespace services
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object)
             {
                 object->dataReceivedScheduled = false;
-                object->Observer().DataReceived();
+                if (object->Connection::IsAttached())
+                    object->Observer().DataReceived();
             }, SharedFromThis());
         }
     }
@@ -208,6 +210,7 @@ namespace services
 
     infra::SharedPtr<infra::StreamReaderWithRewinding> ConnectionMbedTls::ReceiveStream()
     {
+        keepAliveForReader = SharedFromThis();
         return receiveReader.Emplace(*this);
     }
 
@@ -258,7 +261,8 @@ namespace services
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object)
             {
                 infra::SharedPtr<StreamWriterMbedTls> stream = object->streamWriter.Emplace(*object);
-                object->Observer().SendStreamAvailable(std::move(stream));
+                if (object->Connection::IsAttached())
+                    object->Observer().SendStreamAvailable(std::move(stream));
             }, SharedFromThis());
 
             requestedSendSize = 0;

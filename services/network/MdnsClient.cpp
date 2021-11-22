@@ -130,8 +130,8 @@ namespace services
 
     MdnsClient::MdnsClient(DatagramFactory& datagramFactory, Multicast& multicast)
         : datagramFactory(datagramFactory)
-        , datagramExchange(datagramFactory.Listen(*this, mdnsPort, IPVersions::ipv4))
         , multicast(multicast)
+        , datagramExchange(datagramFactory.Listen(*this, mdnsPort, IPVersions::ipv4))
     {
         multicast.JoinMulticastGroup(datagramExchange, mdnsMulticastAddressIpv4);
     }

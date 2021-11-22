@@ -46,9 +46,9 @@ namespace services
             return "wpa-2";
         case SecurityMode::wpa3Psk:
             return "wpa-3";
+        default:
+            return "unknown";
         }
-
-        return "unknown";
     }
 
     bool IPAddresses::operator==(const IPAddresses& other) const

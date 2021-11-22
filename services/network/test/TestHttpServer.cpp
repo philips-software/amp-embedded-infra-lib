@@ -19,9 +19,7 @@ public:
         : connectionPtr(infra::UnOwnedSharedPtr(connection))
         , execute([this]() { EXPECT_CALL(connectionFactoryMock, Listen(80, testing::_, services::IPVersions::both)).WillOnce(testing::DoAll(infra::SaveRef<1>(&serverConnectionObserverFactory), testing::Return(nullptr))); })
         , httpServer(connectionFactoryMock, 80)
-    {
-        httpServer.AddPage(httpPage);
-    }
+    {}
 
     ~HttpServerTest()
     {
@@ -30,33 +28,6 @@ public:
 
     void DontExpectPageServerRequest(const std::string& request)
     {
-        infra::ConstByteRange data = infra::MakeStringByteRange(request);
-        connection.SimulateDataReceived(data);
-        ExecuteAllActions();
-    }
-
-    void ExpectPageServerRequest(services::HttpVerb verb, const std::string& request)
-    {
-        EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(true));
-        EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(testing::Invoke([this, verb](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
-        {
-            EXPECT_EQ(verb, parser.Verb());
-            httpConnection = &connection;
-        }));
-        infra::ConstByteRange data = infra::MakeStringByteRange(request);
-        connection.SimulateDataReceived(data);
-        ExecuteAllActions();
-    }
-
-    void ExpectPageServerRequestWithHeader(services::HttpVerb verb, const std::string& request, const services::HttpHeader& header)
-    {
-        EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(true));
-        EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(testing::Invoke([this, verb, header](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
-        {
-            EXPECT_EQ(verb, parser.Verb());
-            EXPECT_EQ(header.Value(), parser.Header(header.Field()));
-            httpConnection = &connection;
-        }));
         infra::ConstByteRange data = infra::MakeStringByteRange(request);
         connection.SimulateDataReceived(data);
         ExecuteAllActions();
@@ -89,29 +60,82 @@ public:
     testing::StrictMock<services::ConnectionFactoryMock> connectionFactoryMock;
     services::ServerConnectionObserverFactory* serverConnectionObserverFactory;
     infra::Execute execute;
-    testing::StrictMock<services::HttpPageMock> httpPage;
     services::DefaultHttpServer::WithBuffer<256> httpServer;
     services::HttpServerConnection* httpConnection;
+
+    infra::StringInputStreamReader emptyReader{ "" };
+    infra::SharedPtr<infra::StreamReaderWithRewinding> emptyReaderPtr { infra::UnOwnedSharedPtr(emptyReader) };
+};
+
+class HttpServerWithSimplePageTest
+    : public HttpServerTest
+{
+public:
+    HttpServerWithSimplePageTest()
+    {
+        httpServer.AddPage(httpPage);
+    }
+
+    void ExpectPageServerRequest(services::HttpVerb verb, const std::string& request)
+    {
+        EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(true));
+        EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(testing::Invoke([this, verb](services::HttpRequestParser& parser, services::HttpServerConnection& connection) {
+            EXPECT_EQ(verb, parser.Verb());
+            httpConnection = &connection;
+        }));
+        infra::ConstByteRange data = infra::MakeStringByteRange(request);
+        connection.SimulateDataReceived(data);
+        ExecuteAllActions();
+    }
+
+    void ExpectPageServerRequestWithBody(services::HttpVerb verb, const std::string& request, const std::string& body)
+    {
+        EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(true));
+        EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(testing::Invoke([this, verb, body](services::HttpRequestParser& parser, services::HttpServerConnection& connection) {
+            EXPECT_EQ(verb, parser.Verb());
+            EXPECT_EQ(body, parser.BodyBuffer());
+            httpConnection = &connection;
+        }));
+        infra::ConstByteRange data = infra::MakeStringByteRange(request);
+        connection.SimulateDataReceived(data);
+        ExecuteAllActions();
+    }
+
+    void ExpectPageServerRequestWithHeader(services::HttpVerb verb, const std::string& request, const services::HttpHeader& header)
+    {
+        EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(true));
+        EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(testing::Invoke([this, verb, header](services::HttpRequestParser& parser, services::HttpServerConnection& connection) {
+            EXPECT_EQ(verb, parser.Verb());
+            EXPECT_EQ(header.Value(), parser.Header(header.Field()));
+            httpConnection = &connection;
+        }));
+        infra::ConstByteRange data = infra::MakeStringByteRange(request);
+        connection.SimulateDataReceived(data);
+        ExecuteAllActions();
+    }
+
+public:
+    testing::StrictMock<services::SimpleHttpPageMock> httpPage;
 };
 
 class HttpServerErrorTest
-    : public HttpServerTest
+    : public HttpServerWithSimplePageTest
     , public testing::WithParamInterface<const char*>
 {};
 
-TEST_F(HttpServerTest, accept_connection)
+TEST_F(HttpServerWithSimplePageTest, accept_connection)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(HttpServerTest, accept_ipv6_connection)
+TEST_F(HttpServerWithSimplePageTest, accept_ipv6_connection)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv6AddressLocalHost());
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(HttpServerTest, wrong_start_url_results_in_error)
+TEST_F(HttpServerWithSimplePageTest, wrong_start_url_results_in_error)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
@@ -120,23 +144,25 @@ TEST_F(HttpServerTest, wrong_start_url_results_in_error)
     EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(false));
     connection.SimulateDataReceived(data);
     ExecuteAllActions();
-    CheckHttpResponse("404 Not Found", "{}");
     EXPECT_CALL(connection, AbortAndDestroyMock());
+    connection.AbortAndDestroy();
+    CheckHttpResponse("404 Not Found", "{}");
 }
 
-TEST_F(HttpServerTest, too_long_http_request_results_in_error)
+TEST_F(HttpServerWithSimplePageTest, too_long_http_request_results_in_error)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
-    infra::ConstByteRange data = infra::MakeStringByteRange("PUT /path/subpath/subpath/subpath/subpath/subpath/subpath/subpath HTTP/1.1 \r\n Content-Type: application/json \r\n Host: 192.168.0.98 \r\n Connection: Close \r\n\r\n { \"data\":\"1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\" }");
+    infra::ConstByteRange data = infra::MakeStringByteRange("PUT /path/subpath/subpath/subpath/subpath/subpath/subpath/subpath HTTP/1.1\r\nContent-Type: application/json\r\nHost: 192.168.0.98\r\nConnection: Close\r\nContent-Length: 688\r\n\r\n { \"data\":\"1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\" }");
 
+    EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(true));
     connection.SimulateDataReceived(data);
     ExecuteAllActions();
     CheckHttpResponse("500 Internal Server Error", R"({ "error": "Out of memory" })");
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(HttpServerTest, unsupported_verb_results_in_error)
+TEST_F(HttpServerWithSimplePageTest, unsupported_verb_results_in_error)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
@@ -148,15 +174,65 @@ TEST_F(HttpServerTest, unsupported_verb_results_in_error)
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(HttpServerTest, request_results_in_get)
+TEST_F(HttpServerWithSimplePageTest, request_results_in_get)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
     ExpectPageServerRequest(services::HttpVerb::get, "GET /path HTTP/1.1 \r\n\r\n");
     EXPECT_CALL(connection, AbortAndDestroyMock());
+    connection.AbortAndDestroy();
 }
 
-TEST_F(HttpServerTest, request_parses_header)
+TEST_F(HttpServerWithSimplePageTest, request_without_content_length_still_results_in_put)
+{
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    ExpectPageServerRequestWithBody(services::HttpVerb::put, "PUT /path HTTP/1.1 \r\n\r\ndatadata", "datadata");
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+    connection.AbortAndDestroy();
+}
+
+TEST_F(HttpServerWithSimplePageTest, request_with_content_length_results_in_put)
+{
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    ExpectPageServerRequestWithBody(services::HttpVerb::put, "PUT /path HTTP/1.1 \r\nContent-Length: 8\r\n\r\ndatadata", "datadata");
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+    connection.AbortAndDestroy();
+}
+
+TEST_F(HttpServerWithSimplePageTest, request_with_more_data_than_content_length_results_in_abort)
+{
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(true));
+    infra::ConstByteRange data = infra::MakeStringByteRange("PUT /path HTTP/1.1 \r\nContent-Length: 7\r\n\r\ndatadata");
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+    connection.SimulateDataReceived(data);
+    ExecuteAllActions();
+}
+
+TEST_F(HttpServerWithSimplePageTest, Get_with_data_results_in_abort)
+{
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+    ExpectPageServerRequest(services::HttpVerb::get, "GET /path HTTP/1.1 \r\n\r\ndatadata");
+    ExecuteAllActions();
+
+    testing::Mock::VerifyAndClearExpectations(&connection);
+}
+
+TEST_F(HttpServerWithSimplePageTest, Get_with_connection_close_results_in_request)
+{
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    ExpectPageServerRequest(services::HttpVerb::get, "GET /path HTTP/1.1 \r\nConnection: close\r\n\r\n");
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+    connection.AbortAndDestroy();
+}
+
+TEST_F(HttpServerWithSimplePageTest, request_parses_header)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
@@ -164,15 +240,16 @@ TEST_F(HttpServerTest, request_parses_header)
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(HttpServerTest, unfinished_request_is_not_served)
+TEST_F(HttpServerWithSimplePageTest, unfinished_request_is_not_served)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
+    EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(true));
     DontExpectPageServerRequest("GET /path HTTP/1.1 \r\nContent-Length: 1\r\n\r\n");
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(HttpServerTest, finished_request_is_served)
+TEST_F(HttpServerWithSimplePageTest, finished_request_is_served)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
@@ -180,7 +257,7 @@ TEST_F(HttpServerTest, finished_request_is_served)
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(HttpServerTest, content_length_header_is_case_insensitive)
+TEST_F(HttpServerWithSimplePageTest, content_length_header_is_case_insensitive)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
@@ -188,7 +265,7 @@ TEST_F(HttpServerTest, content_length_header_is_case_insensitive)
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(HttpServerTest, double_request_results_in_closed_connection)
+TEST_F(HttpServerWithSimplePageTest, double_request_results_in_closed_connection)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
@@ -201,7 +278,7 @@ TEST_F(HttpServerTest, double_request_results_in_closed_connection)
     testing::Mock::VerifyAndClearExpectations(&connection);
 }
 
-TEST_F(HttpServerTest, split_message_is_accepted)
+TEST_F(HttpServerWithSimplePageTest, split_message_is_accepted)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
@@ -215,7 +292,7 @@ TEST_F(HttpServerTest, split_message_is_accepted)
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(HttpServerTest, send_100_response_when_expect_100_in_header)
+TEST_F(HttpServerWithSimplePageTest, send_100_response_when_expect_100_in_header)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
@@ -237,7 +314,7 @@ TEST_F(HttpServerTest, send_100_response_when_expect_100_in_header)
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(HttpServerTest, split_response_when_not_enough_available_in_stream)
+TEST_F(HttpServerWithSimplePageTest, split_response_when_not_enough_available_in_stream)
 {
     testing::StrictMock<services::ConnectionMock> connection;
     EXPECT_CALL(connection, MaxSendStreamSize()).WillRepeatedly(testing::Return(555));
@@ -249,7 +326,7 @@ TEST_F(HttpServerTest, split_response_when_not_enough_available_in_stream)
     auto readerPtr = infra::UnOwnedSharedPtr(reader);
     EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
     EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(true));
-    EXPECT_CALL(connection, AckReceived());
+    EXPECT_CALL(connection, AckReceived()).Times(2);
     EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(testing::Invoke([this](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
     {
         httpConnection = &connection;
@@ -265,7 +342,7 @@ TEST_F(HttpServerTest, split_response_when_not_enough_available_in_stream)
     EXPECT_EQ("89012345678901234567890123456789012345678901234567890123456789012345678901234567", stream2.Storage());
 }
 
-TEST_F(HttpServerTest, second_connection_forces_idle_connection_to_close)
+TEST_F(HttpServerWithSimplePageTest, second_connection_forces_idle_connection_to_close)
 {
     testing::StrictMock<services::ConnectionMock> connectionFirst;
     EXPECT_CALL(connectionFirst, MaxSendStreamSize()).WillOnce(testing::Return(555));
@@ -281,7 +358,7 @@ TEST_F(HttpServerTest, second_connection_forces_idle_connection_to_close)
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(HttpServerTest, non_idle_connection_is_not_closed_by_second_connection)
+TEST_F(HttpServerWithSimplePageTest, non_idle_connection_is_not_closed_by_second_connection)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
@@ -295,7 +372,7 @@ TEST_F(HttpServerTest, non_idle_connection_is_not_closed_by_second_connection)
     SendResponse("", "", "");
 }
 
-TEST_F(HttpServerTest, choose_correct_url)
+TEST_F(HttpServerWithSimplePageTest, choose_correct_url)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
 
@@ -306,4 +383,32 @@ TEST_F(HttpServerTest, choose_correct_url)
     ExpectPageServerRequest(services::HttpVerb::get, "GET /path HTTP/1.1 \r\nExpect: 100-continue\r\n\r\n");
 
     EXPECT_CALL(connection, AbortAndDestroyMock());
+}
+
+TEST_F(HttpServerTest, connection_is_kept_open_by_page)
+{
+    testing::StrictMock<services::HttpPageMock> page;
+    httpServer.AddPage(page);
+
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    infra::WeakPtr<services::ConnectionObserver> observer = connection.ObserverPtr();
+
+    EXPECT_CALL(page, ServesRequest(testing::_)).WillOnce(testing::Return(true));
+    EXPECT_CALL(page, RequestReceived(testing::_, testing::_)).WillOnce(testing::Invoke([this](services::HttpRequestParser& parser, services::HttpServerConnection& connection) {
+        httpConnection = &connection;
+    }));
+    infra::SharedPtr<infra::StreamReaderWithRewinding> savedReader;
+    EXPECT_CALL(page, DataReceived(testing::_)).WillOnce(testing::Invoke([&savedReader](const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader) { savedReader = reader; }));
+    EXPECT_CALL(page, Close());
+    infra::ConstByteRange data = infra::MakeStringByteRange("GET /path HTTP/1.1 \r\n\r\n");
+    connection.SimulateDataReceived(data);
+    ExecuteAllActions();
+
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+    connection.AbortAndDestroy();
+
+    EXPECT_NE(nullptr, observer.lock());
+    savedReader = nullptr;
+    EXPECT_EQ(nullptr, observer.lock());
 }

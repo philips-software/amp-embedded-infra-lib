@@ -37,6 +37,7 @@ namespace services
     ConnectionLwIp::ConnectionLwIp(ConnectionFactoryLwIp& factory, tcp_pcb* control)
         : factory(factory)
         , control(control)
+        , streamReader([this]() { keepAliveForReader = nullptr; })
     {
         factory.connections.push_front(*this);
         assert(control != nullptr);
@@ -54,6 +55,8 @@ namespace services
 
     ConnectionLwIp::~ConnectionLwIp()
     {
+        services::GlobalTracer().Trace() << "ConnectionLwIp::~ConnectionLwIp";
+
         factory.connections.erase_slow(*this);
 
         while (!sendBuffers.empty())
@@ -94,6 +97,7 @@ namespace services
 
     infra::SharedPtr<infra::StreamReaderWithRewinding> ConnectionLwIp::ReceiveStream()
     {
+        keepAliveForReader = SharedFromThis();
         return streamReader.Emplace(*this);
     }
 
@@ -142,6 +146,9 @@ namespace services
     {
         if (IsAttached())
             Detach();
+
+        if (keepAliveForReader != nullptr)
+            services::GlobalTracer().Trace() << "ConnectionLwIp::ResetOwnership: staying alive a little longer";
         self = nullptr;
     }
 
@@ -185,7 +192,8 @@ namespace services
             {
                 infra::SharedPtr<infra::StreamWriter> stream = self->streamWriter.Emplace(*self, self->sendBufferForStream);
                 self->sendBufferForStream = infra::ByteRange();
-                self->Observer().SendStreamAvailable(std::move(stream));
+                if (self->IsAttached())
+                    self->Observer().SendStreamAvailable(std::move(stream));
             }, SharedFromThis());
 
             requestedSendSize = 0;
@@ -250,7 +258,8 @@ namespace services
                 infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionLwIp>& self)
                 {
                     self->dataReceivedScheduled = false;
-                    self->Observer().DataReceived();
+                    if (self->IsAttached())
+                        self->Observer().DataReceived();
                 }, SharedFromThis());
             }
             return ERR_OK;
@@ -268,10 +277,12 @@ namespace services
         assert(err == ERR_RST || err == ERR_CLSD || err == ERR_ABRT);
 
         if (err != ERR_ABRT)    // When ERR_ABRT, pcb has already been freed
+        {
             DisableCallbacks();
 
-        control = nullptr;      // When Err is received, either the pcb has already been freed (when ERR_ABRT), or the pcb will be freed by LwIP when we return (when ERR_CLSD or ERR_RST)
-        ResetOwnership();
+            control = nullptr;      // When Err is received, either the pcb has already been freed (when ERR_ABRT), or the pcb will be freed by LwIP when we return (when ERR_CLSD or ERR_RST)
+            ResetOwnership();
+        }
     }
 
     err_t ConnectionLwIp::Sent(std::uint16_t len)
@@ -302,6 +313,7 @@ namespace services
     void ConnectionLwIp::Destroy()
     {
         // Invoked when LightweightIP destroyed the pcb already
+        services::GlobalTracer().Trace() << "ConnectionLwIp::Destroy";
         control = nullptr;
         ResetOwnership();
     }
@@ -447,7 +459,7 @@ namespace services
 
     void ConnectionLwIp::StreamReaderLwIp::Rewind(std::size_t marker)
     {
-        offset = 0;
+        offset = marker;
         currentPbuf = connection.receivedData;
         offsetInCurrentPbuf = connection.consumed;
 

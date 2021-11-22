@@ -369,6 +369,8 @@ namespace services
                     answer->AddAAdditional();
                     answer->AddAaaaAdditional();
                     break;
+                default:
+                    break;
             }
         }
     }

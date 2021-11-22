@@ -19,7 +19,7 @@ namespace application
 
     infra::BoundedConstString TimeHttpPage::TimeResponse::Status() const
     {
-        return "200 OK";
+        return services::http_responses::ok;
     }
 
     infra::BoundedConstString TimeHttpPage::TimeResponse::ContentType() const
