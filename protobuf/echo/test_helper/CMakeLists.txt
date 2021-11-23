@@ -1,8 +1,8 @@
 ccola_component(test_helper static_library)
 
     ccola_sources(
-        EchoOnStreamsHelper.cpp
-        EchoOnStreamsHelper.hpp
+        EchoSingleLoopback.cpp
+        EchoSingleLoopback.hpp
     )
 
     ccola_dependencies(
