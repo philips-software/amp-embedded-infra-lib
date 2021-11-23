@@ -3,8 +3,6 @@
 #include "crypto/micro-ecc/uECC.h"
 #include "upgrade/boot_loader/VerifierRsa.hpp"
 
-//TICS -CON#002
-
 namespace application
 {
     VerifierRsa::VerifierRsa(infra::ConstByteRange publicKeyN, infra::ConstByteRange publicKeyE)

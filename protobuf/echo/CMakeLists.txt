@@ -13,3 +13,7 @@ ccola_component(echo static_library)
     )
 
 ccola_end_component()
+
+ccola_subdirectories(
+    test_helper
+)
