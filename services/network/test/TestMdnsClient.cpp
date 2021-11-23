@@ -552,7 +552,6 @@ TEST_F(MdnsClientTest, receiving_additional_records_to_passive_query_results_in_
 {
     ConstructPtrQueryWithExpectedCallbackAndAdditionalRecordsCallback();
 
-    
     EXPECT_CALL(callback, callback(services::DnsType::dnsTypePtr));
     EXPECT_CALL(additionalRecordsCallback, callback(services::DnsType::dnsTypeA));
     EXPECT_CALL(additionalRecordsCallback, callback(services::DnsType::dnsTypeAAAA));

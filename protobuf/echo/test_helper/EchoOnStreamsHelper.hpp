@@ -1,5 +1,5 @@
-#ifndef PROTOBUF_TEST_HELPER_ECHO_TEST_HELPER_HPP
-#define PROTOBUF_TEST_HELPER_ECHO_TEST_HELPER_HPP
+#ifndef PROTOBUF_TEST_HELPER_ECHO_ON_STREAMS_HELPER_HPP
+#define PROTOBUF_TEST_HELPER_ECHO_ON_STREAMS_HELPER_HPP
 
 #include "infra/stream/BoundedVectorOutputStream.hpp"
 #include "infra/stream/LimitedOutputStream.hpp"
