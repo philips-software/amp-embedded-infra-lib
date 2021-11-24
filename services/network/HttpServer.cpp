@@ -150,11 +150,7 @@ namespace services
                 ReceivedRequest(std::move(reader));
 
         if (weakSelf.lock())
-        {
-            if (IsAttached() && (pageReader != nullptr || reader != nullptr))
-                Subject().AckReceived();
             readerPtr = nullptr;
-        }
     }
 
     void HttpServerConnectionObserver::Detaching()

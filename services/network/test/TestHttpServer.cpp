@@ -387,6 +387,8 @@ TEST_F(HttpServerWithSimplePageTest, choose_correct_url)
 
 TEST_F(HttpServerTest, connection_is_kept_open_by_page)
 {
+    testing::StrictMock<services::ConnectionStubWithAckReceivedMock> connection;
+    infra::SharedPtr<services::ConnectionStub> connectionPtr(infra::UnOwnedSharedPtr(connection));
     testing::StrictMock<services::HttpPageMock> page;
     httpServer.AddPage(page);
 
@@ -401,14 +403,17 @@ TEST_F(HttpServerTest, connection_is_kept_open_by_page)
     infra::SharedPtr<infra::StreamReaderWithRewinding> savedReader;
     EXPECT_CALL(page, DataReceived(testing::_)).WillOnce(testing::Invoke([&savedReader](const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader) { savedReader = reader; }));
     EXPECT_CALL(page, Close());
-    infra::ConstByteRange data = infra::MakeStringByteRange("GET /path HTTP/1.1 \r\n\r\n");
+    infra::ConstByteRange data = infra::MakeStringByteRange("PUT /path HTTP/1.1 \r\n\r\n0");
     connection.SimulateDataReceived(data);
+    EXPECT_CALL(connection, AckReceivedMock());
     ExecuteAllActions();
 
     EXPECT_CALL(connection, AbortAndDestroyMock());
     connection.AbortAndDestroy();
 
     EXPECT_NE(nullptr, observer.lock());
+    infra::DataInputStream::WithErrorPolicy stream(*savedReader);
+    EXPECT_EQ('0', stream.Extract<char>());
     savedReader = nullptr;
     EXPECT_EQ(nullptr, observer.lock());
 }
