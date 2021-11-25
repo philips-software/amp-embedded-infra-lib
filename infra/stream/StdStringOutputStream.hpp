@@ -12,6 +12,8 @@ namespace infra
         : public StreamWriter
     {
     public:
+        using WithStorage = infra::WithStorage<StdStringOutputStreamWriter, std::string>;
+
         explicit StdStringOutputStreamWriter(std::string& string);
 
     private:
