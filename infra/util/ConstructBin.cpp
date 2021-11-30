@@ -34,7 +34,7 @@ namespace infra
 
     ConstructBin& ConstructBin::RepeatString(std::size_t amount, const std::string& v)
     {
-        for (int i = 0; i != amount; ++i)
+        for (size_t i = 0; i != amount; ++i)
             contents.insert(contents.end(), v.begin(), v.end());
         return *this;
     }

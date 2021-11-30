@@ -346,7 +346,6 @@ namespace services
 
         void AtomicDequeReader::Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy)
         {
-            auto available = deque.Size();
             while (!range.empty())
             {
                 auto dequeRange = infra::Head(PeekContiguousRange(0), range.size());
