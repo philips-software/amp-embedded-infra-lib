@@ -5,7 +5,6 @@
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/Observer.hpp"
-#include "services/network/Connection.hpp"
 
 namespace hal
 {
