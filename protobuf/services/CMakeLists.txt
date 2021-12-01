@@ -1,7 +1,7 @@
-ccola_component(services static_library)
 
-	protocol_buffer_csharp(Network.proto)
-	protocol_buffer_java(Network.proto)
-	protocol_buffer_echo_cpp(Network.proto)
+add_library(protobuf.services EXCLUDE_FROM_ALL STATIC)
 
-ccola_end_component()
+protocol_buffer_echo_cpp(protobuf.services ${CMAKE_CURRENT_LIST_DIR}/Network.proto)
+# TODO enable csharp and java generation
+# protocol_buffer_csharp(protobuf.services ${CMAKE_CURRENT_LIST_DIR}/Network.proto)
+# protocol_buffer_java(protobuf.services ${CMAKE_CURRENT_LIST_DIR}/Network.proto)

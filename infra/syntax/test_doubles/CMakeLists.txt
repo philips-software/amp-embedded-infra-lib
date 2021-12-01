@@ -1,13 +1,14 @@
-ccola_component(syntax_test_doubles x86: source other: noncompile)
 
-    ccola_sources(
-        JsonStreamingParserMock.hpp
-        JsonStringMatcher.hpp
-    )
+add_library(infra.syntax_test_doubles EXCLUDE_FROM_ALL STATIC)
 
-    ccola_dependencies(
-        syntax
-        gmock.gmock
-    )
+target_link_libraries(infra.syntax_test_doubles
+    PUBLIC
+    infra.syntax
+    gmock
+)
 
-ccola_end_component()
+target_sources(infra.syntax_test_doubles
+    PRIVATE
+    JsonStreamingParserMock.hpp
+    JsonStringMatcher.hpp
+)

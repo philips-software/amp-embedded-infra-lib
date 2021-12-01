@@ -1,18 +1,19 @@
-ccola_component(synchronous_util static_library)
 
-    ccola_sources(
-        SynchronousFlashRegion.cpp
-        SynchronousFlashQuadSpi.cpp
-        SynchronousFlashSpi.cpp
-        SynchronousSpiMasterWithChipSelect.cpp
-        SynchronousFlashRegion.hpp
-        SynchronousFlashQuadSpi.hpp
-        SynchronousFlashSpi.hpp
-        SynchronousSpiMasterWithChipSelect.hpp
-    )
+add_library(services.synchronous_util EXCLUDE_FROM_ALL STATIC)
 
-    ccola_dependencies(
-        hal.synchronous_interfaces
-    )
+target_link_libraries(services.synchronous_util
+    PUBLIC
 
-ccola_end_component()
+    hal.synchronous_interfaces
+)
+
+target_sources(services.synchronous_util PRIVATE
+    SynchronousFlashRegion.cpp
+    SynchronousFlashQuadSpi.cpp
+    SynchronousFlashSpi.cpp
+    SynchronousSpiMasterWithChipSelect.cpp
+    SynchronousFlashRegion.hpp
+    SynchronousFlashQuadSpi.hpp
+    SynchronousFlashSpi.hpp
+    SynchronousSpiMasterWithChipSelect.hpp
+)

@@ -1,21 +1,22 @@
-ccola_component(util_test_helper x86: source other: skip)
 
-    ccola_sources(
-        BoundedStringMatcher.hpp
-        OptionalMatcher.hpp
-        LifetimeHelper.hpp
-        MemoryRangeMatcher.hpp
-        MockCallback.hpp
-        MockHelpers.hpp
-        MonitoredConstructionObject.hpp
-        MoveConstructible.hpp
-        ProxyCreatorMock.hpp
-        VariantPrintTo.hpp
-    )
+add_library(infra.util_test_helper EXCLUDE_FROM_ALL STATIC)
 
-    ccola_dependencies(
-        gmock.gmock
-        util
-    )
+target_link_libraries(infra.util_test_helper
+    PUBLIC
+    gmock
+    infra.util
+)
 
-ccola_end_component()
+target_sources(infra.util_test_helper
+    PRIVATE
+    BoundedStringMatcher.hpp
+    OptionalMatcher.hpp
+    LifetimeHelper.hpp
+    MemoryRangeMatcher.hpp
+    MockCallback.hpp
+    MockHelpers.hpp
+    MonitoredConstructionObject.hpp
+    MoveConstructible.hpp
+    ProxyCreatorMock.hpp
+    VariantPrintTo.hpp
+)

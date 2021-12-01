@@ -1,23 +1,22 @@
-ccola_component(synchronous_test_doubles x86: static_library other: noncompile)
 
-    ccola_sources(
-        SynchronousEncryptorMock.hpp
-        SynchronousFixedRandomDataGenerator.cpp
-        SynchronousFixedRandomDataGenerator.hpp
-        SynchronousFlashStub.cpp
-        SynchronousFlashStub.hpp
-        SynchronousRandomDataGeneratorMock.hpp
-        SynchronousSerialCommunicationMock.cpp
-        SynchronousSerialCommunicationMock.hpp
-    )
+add_library(hal.synchronous_test_doubles EXCLUDE_FROM_ALL STATIC)
 
-    ccola_dependencies(
-        synchronous_interfaces
-        gmock.gmock
-    )
-
-ccola_end_component()
-
-ccola_subdirectories(
-    test
+target_link_libraries(hal.synchronous_test_doubles
+    PUBLIC
+    hal.synchronous_interfaces
+    gmock
 )
+
+target_sources(hal.synchronous_test_doubles
+    PRIVATE
+    SynchronousEncryptorMock.hpp
+    SynchronousFixedRandomDataGenerator.cpp
+    SynchronousFixedRandomDataGenerator.hpp
+    SynchronousFlashStub.cpp
+    SynchronousFlashStub.hpp
+    SynchronousRandomDataGeneratorMock.hpp
+    SynchronousSerialCommunicationMock.cpp
+    SynchronousSerialCommunicationMock.hpp
+)
+
+add_subdirectory(test)

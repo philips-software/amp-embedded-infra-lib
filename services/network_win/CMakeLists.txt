@@ -1,6 +1,17 @@
-ccola_component(network_win win: static_library other: skip)
+if(TARGET_BUILD_WIN)
 
-    ccola_sources(
+    add_library(services.network_win EXCLUDE_FROM_ALL STATIC)
+
+    target_link_libraries(services.network_win
+        PUBLIC
+
+        services.network
+        
+        ws2_32.lib
+        iphlpapi.lib
+    )
+
+    target_sources(services.network_win PRIVATE
         ConnectionWin.cpp
         ConnectionWin.hpp
         DatagramWin.cpp
@@ -11,13 +22,4 @@ ccola_component(network_win win: static_library other: skip)
         NameLookupWin.hpp
     )
 
-    ccola_dependencies(
-        services.network
-    )
-        
-    ccola_external_libraries(
-        ws2_32.lib
-        iphlpapi.lib
-    )
-
-ccola_end_component()
+endif()

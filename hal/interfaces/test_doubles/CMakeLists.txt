@@ -1,42 +1,41 @@
-ccola_component(test_doubles x86: static_library other: noncompile)
 
-    ccola_sources(
-        AnalogToDigitalPinImplMock.hpp
-        CommunicationConfiguratorMock.hpp
-        DigitalToAnalogPinImplMock.hpp
-        FileSystemStub.cpp
-        FileSystemStub.hpp
-        FlashMock.cpp
-        FlashMock.hpp
-        FlashStub.cpp
-        FlashStub.hpp
-        GpioMock.hpp
-        GpioStub.cpp
-        GpioStub.hpp
-        I2cMock.cpp
-        I2cMock.hpp
-        I2cRegisterAccessMock.cpp
-        I2cRegisterAccessMock.hpp
-        QuadSpiStub.cpp
-        QuadSpiStub.hpp
-        RandomDataGeneratorMock.hpp
-        ResetMock.hpp
-        SerialCommunicationMock.cpp
-        SerialCommunicationMock.hpp
-        SerialCommunicationStub.cpp
-        SerialCommunicationStub.hpp
-        SpiMock.cpp
-        SpiMock.hpp
-    )
+add_library(hal.interfaces_test_doubles EXCLUDE_FROM_ALL STATIC)
 
-    ccola_dependencies(
-        interfaces
-        gmock.gmock
-        infra.stream
-    )
-
-ccola_end_component()
-
-ccola_subdirectories(
-    test
+target_link_libraries(hal.interfaces_test_doubles
+    PUBLIC
+    hal.interfaces
+    infra.stream
+    gmock
 )
+
+target_sources(hal.interfaces_test_doubles
+    PRIVATE
+    AnalogToDigitalPinImplMock.hpp
+    CommunicationConfiguratorMock.hpp
+    DigitalToAnalogPinImplMock.hpp
+    FileSystemStub.cpp
+    FileSystemStub.hpp
+    FlashMock.cpp
+    FlashMock.hpp
+    FlashStub.cpp
+    FlashStub.hpp
+    GpioMock.hpp
+    GpioStub.cpp
+    GpioStub.hpp
+    I2cMock.cpp
+    I2cMock.hpp
+    I2cRegisterAccessMock.cpp
+    I2cRegisterAccessMock.hpp
+    QuadSpiStub.cpp
+    QuadSpiStub.hpp
+    RandomDataGeneratorMock.hpp
+    ResetMock.hpp
+    SerialCommunicationMock.cpp
+    SerialCommunicationMock.hpp
+    SerialCommunicationStub.cpp
+    SerialCommunicationStub.hpp
+    SpiMock.cpp
+    SpiMock.hpp
+)
+
+add_subdirectory(test)

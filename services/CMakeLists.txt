@@ -1,13 +1,7 @@
-ccola_package(services)
-
-    ccola_subdirectories(
-        tracer
-        util
-        network
-        network_win
-        network_bsd
-        synchronous_util
-        cucumber
-    )
-
-ccola_end_package()
+add_subdirectory(cucumber)
+add_subdirectory(network_bsd)
+add_subdirectory(network_win)
+add_subdirectory(network)
+add_subdirectory(synchronous_util)
+add_subdirectory(tracer)
+add_subdirectory(util)

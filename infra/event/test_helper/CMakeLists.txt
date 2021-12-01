@@ -1,13 +1,15 @@
-ccola_component(event_test_helper x86: source other: skip)
 
-    ccola_sources(
-        EventDispatcherFixture.hpp
-        EventDispatcherWithWeakPtrFixture.hpp
-    )
+add_library(infra.event_test_helper EXCLUDE_FROM_ALL STATIC)
 
-    ccola_dependencies(
-        event
-        util_test_helper
-    )
+target_link_libraries(infra.event_test_helper
+    PUBLIC
+    gmock
+    infra.event
+    infra.util_test_helper
+)
 
-ccola_end_component()
+target_sources(infra.event_test_helper
+    PRIVATE
+    EventDispatcherFixture.hpp
+    EventDispatcherWithWeakPtrFixture.hpp
+)

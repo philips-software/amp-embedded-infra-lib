@@ -1,6 +1,13 @@
-ccola_component(network_bsd unix: static_library other: skip)
+if(TARGET_BUILD_UNIX)
+    add_library(services.network_bsd EXCLUDE_FROM_ALL STATIC)
 
-    ccola_sources(
+    target_link_libraries(services.network_bsd
+        PUBLIC
+
+        services.network
+    )
+
+    target_sources(services.network_bsd PRIVATE
         ConnectionBsd.cpp
         ConnectionBsd.hpp
         DatagramBsd.cpp
@@ -11,8 +18,4 @@ ccola_component(network_bsd unix: static_library other: skip)
         NameLookupBsd.hpp
     )
 
-    ccola_dependencies(
-        services.network
-    )
-
-ccola_end_component()
+endif()

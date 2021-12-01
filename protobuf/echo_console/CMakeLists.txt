@@ -1,16 +1,23 @@
-ccola_component(echo_console win: executable other: skip)
+if(TARGET_BUILD_WIN)
+    add_executable(protobuf.echo_console)
 
-    ccola_compile_options(/wd4018 /wd4251 /wd4273 /wd4800)
-
-    ccola_sources(
-        Console.cpp
-        Console.hpp
-        Main.cpp
+    target_compile_options(protobuf.echo_console
+        PRIVATE
+        $<$<BOOL:${TARGET_BUILD_WIN}>:
+            $<$<CXX_COMPILER_ID:MSVC>:
+                /wd4018
+                /wd4251
+                /wd4273
+                /wd4800
+            >
+        >
     )
 
-    ccola_dependencies(
-        protoc_echo_plugin_lib
-        echo
+    target_link_libraries(protobuf.echo_console
+        PUBLIC
+
+        protobuf.protoc_echo_plugin_lib
+        protobuf.echo
         hal.generic
         hal.windows
         services.network_win
@@ -18,4 +25,11 @@ ccola_component(echo_console win: executable other: skip)
         arg_parser.args
     )
 
-ccola_end_component()
+    target_sources(protobuf.echo_console PRIVATE
+        Console.cpp
+        Console.hpp
+        Main.cpp
+    )
+
+endif(TARGET_BUILD_WIN)
+

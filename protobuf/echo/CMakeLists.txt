@@ -1,15 +1,17 @@
-ccola_component(echo static_library)
 
-    ccola_sources(
-        Echo.cpp
-        Echo.hpp
-        EchoInstantiation.hpp
-    )
+add_library(protobuf.echo EXCLUDE_FROM_ALL STATIC)
 
-    ccola_dependencies(
-        infra.stream
-        infra.syntax
-        services.network
-    )
+target_link_libraries(protobuf.echo
+    PUBLIC
 
-ccola_end_component()
+    infra.stream
+    infra.syntax
+    services.network
+)
+
+target_sources(protobuf.echo PRIVATE
+    Echo.cpp
+    Echo.hpp
+    EchoInstantiation.hpp
+)
+

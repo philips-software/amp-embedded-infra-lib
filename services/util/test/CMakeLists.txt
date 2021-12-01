@@ -1,38 +1,43 @@
-ccola_component(util_test gmock_test)
+add_executable(services.util_test)
+add_test(NAME services.util_test COMMAND services.util_test)
 
-    ccola_sources(
-        TestConfigurationStore.cpp
-        TestCyclicStore.cpp
-        TestDebouncedButton.cpp
-        TestDebugLed.cpp
-        TestFlashAlign.cpp
-        TestFlashMultipleAccess.cpp
-        TestFlashQuadSpiCypressFll.cpp
-        TestFlashQuadSpiMicronN25q.cpp
-        TestFlashQuadSpiSingleSpeed.cpp
-        TestFlashRegion.cpp
-        TestFlashSpi.cpp
-        TestI2cMultipleAccess.cpp
-        TestInverseLogicPin.cpp
-        TestLowPowerSerialCommunication.cpp
-        TestLowPowerSpiMaster.cpp
-        TestMessageCommunicationWindowed.cpp
-        TestMessageCommunicationCobs.cpp
-        TestRepeatingButton.cpp
-        TestSignalLed.cpp
-        TestSpiMasterWithChipSelect.cpp
-        TestSpiMultipleAccess.cpp
-        TestTerminal.cpp
-        TestTimeWithLocalization.cpp
-        TestWritableConfiguration.cpp
-    )
+target_link_libraries(services.util_test
+    PUBLIC
+    services.tracer
+    services.util
+    hal.interfaces_test_doubles
+    infra.timer_test_helper
+    infra.util_test_helper
 
-    ccola_dependencies(
-        tracer
-        util
-        hal.test_doubles
-        infra.timer_test_helper
-        infra.util_test_helper
-    )
+    gtest
+    gmock
+    gmock_main
+)
 
-ccola_end_component()
+target_sources(services.util_test
+    PRIVATE
+    TestConfigurationStore.cpp
+    TestCyclicStore.cpp
+    TestDebouncedButton.cpp
+    TestDebugLed.cpp
+    TestFlashAlign.cpp
+    TestFlashMultipleAccess.cpp
+    TestFlashQuadSpiCypressFll.cpp
+    TestFlashQuadSpiMicronN25q.cpp
+    TestFlashQuadSpiSingleSpeed.cpp
+    TestFlashRegion.cpp
+    TestFlashSpi.cpp
+    TestI2cMultipleAccess.cpp
+    TestInverseLogicPin.cpp
+    TestLowPowerSerialCommunication.cpp
+    TestLowPowerSpiMaster.cpp
+    TestMessageCommunicationWindowed.cpp
+    TestMessageCommunicationCobs.cpp
+    TestRepeatingButton.cpp
+    TestSignalLed.cpp
+    TestSpiMasterWithChipSelect.cpp
+    TestSpiMultipleAccess.cpp
+    TestTerminal.cpp
+    TestTimeWithLocalization.cpp
+    TestWritableConfiguration.cpp
+)

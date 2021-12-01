@@ -1,36 +1,37 @@
-ccola_component(syntax static_library)
+add_library(infra.syntax EXCLUDE_FROM_ALL STATIC)
 
-    ccola_sources(
-        Asn1.cpp
-        Asn1.hpp
-        Asn1Formatter.cpp
-        Asn1Formatter.hpp
-        Json.cpp
-        Json.hpp
-        JsonFormatter.cpp
-        JsonFormatter.hpp
-        JsonInputStream.cpp
-        JsonInputStream.hpp        
-        JsonStreamingParser.cpp
-        JsonStreamingParser.hpp
-        ProtoParser.cpp
-        ProtoParser.hpp
-        ProtoFormatter.cpp
-        ProtoFormatter.hpp
-        XmlFormatter.cpp
-        XmlFormatter.hpp
-      x86:  
+target_link_libraries(infra.syntax
+    PUBLIC
+    infra.util
+)
+
+target_sources(infra.syntax PRIVATE
+    Asn1.cpp
+    Asn1.hpp
+    Asn1Formatter.cpp
+    Asn1Formatter.hpp
+    Json.cpp
+    Json.hpp
+    JsonFormatter.cpp
+    JsonFormatter.hpp
+    JsonInputStream.cpp
+    JsonInputStream.hpp
+    JsonStreamingParser.cpp
+    JsonStreamingParser.hpp
+    ProtoFormatter.cpp
+    ProtoFormatter.hpp
+    ProtoParser.cpp
+    ProtoParser.hpp
+    XmlFormatter.cpp
+    XmlFormatter.hpp
+)
+
+if(TARGET_ARCH_X86)
+    target_sources(infra.syntax PRIVATE
         JsonObjectNavigator.cpp
         JsonObjectNavigator.hpp
     )
+endif()
 
-    ccola_dependencies(
-        stream
-    )
-
-ccola_end_component()
-
-ccola_subdirectories(
-    test_doubles
-    test
-)
+add_subdirectory(test_doubles)
+add_subdirectory(test)

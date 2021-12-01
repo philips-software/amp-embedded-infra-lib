@@ -1,26 +1,31 @@
-ccola_component(stream_test gmock_test)
+add_executable(infra.stream_test)
+add_test(NAME infra.stream_test COMMAND infra.stream_test)
 
-    ccola_sources(
-        StreamMock.hpp
-        TestBoundedDequeInputStream.cpp
-        TestBoundedVectorOutputStream.cpp
-        TestByteInputStream.cpp
-        TestByteOutputStream.cpp
-        TestCountingInputStream.cpp
-        TestFormatter.cpp
-        TestLimitedInputStream.cpp
-        TestLimitedOutputStream.cpp
-        TestOutputStreamSwitch.cpp
-        TestStdStringInputStream.cpp
-        TestStdStringOutputStream.cpp
-        TestStdVectorInputStream.cpp
-        TestStringInputStream.cpp
-        TestStringOutputStream.cpp
-    )
+target_link_libraries(infra.stream_test
+    PUBLIC
+    infra.stream
+    infra.util_test_helper
 
-    ccola_dependencies(
-        stream
-        util_test_helper
-    )
+    gtest
+    gmock
+    gmock_main
+)
 
-ccola_end_component()
+target_sources(infra.stream_test
+    PRIVATE
+    StreamMock.hpp
+    TestBoundedDequeInputStream.cpp
+    TestBoundedVectorOutputStream.cpp
+    TestByteInputStream.cpp
+    TestByteOutputStream.cpp
+    TestCountingInputStream.cpp
+    TestFormatter.cpp
+    TestLimitedInputStream.cpp
+    TestLimitedOutputStream.cpp
+    TestOutputStreamSwitch.cpp
+    TestStdStringInputStream.cpp
+    TestStdStringOutputStream.cpp
+    TestStdVectorInputStream.cpp
+    TestStringInputStream.cpp
+    TestStringOutputStream.cpp
+)

@@ -1,22 +1,24 @@
-ccola_component(windows win: static_library other: skip)
+if(TARGET_BUILD_WIN)
 
-    ccola_inheritable_definitions(
+    add_library(hal.windows EXCLUDE_FROM_ALL STATIC)
+
+    target_link_libraries(hal.windows
+        PUBLIC
+        hal.interfaces
+        setupapi.lib
+    )
+
+    target_compile_definitions(hal.windows 
+        PUBLIC
+        NOMINMAX
         _SETUPAPI_VER=_WIN32_WINNT_LONGHORN
     )
 
-    ccola_sources(
+    target_sources(hal.windows PRIVATE
         UartPortFinder.cpp
         UartPortFinder.hpp
         UartWindows.cpp
         UartWindows.hpp
     )
 
-    ccola_external_libraries(
-        setupapi.lib
-    )
-
-    ccola_dependencies(
-        interfaces
-    )
-
-ccola_end_component()
+endif(TARGET_BUILD_WIN)

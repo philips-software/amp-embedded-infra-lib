@@ -1,50 +1,60 @@
-ccola_component(util_test gmock_test)
+add_executable(infra.util_test)
+add_test(NAME infra.util_test COMMAND infra.util_test)
 
-    ccola_sources(
-        TestAllocatorFixedSpace.cpp
-        TestAllocatorHeap.cpp
-        TestAutoResetFunction.cpp
-        TestBitLogic.cpp
-        TestBoundedDeque.cpp
-        TestBoundedForwardList.cpp
-        TestBoundedList.cpp
-        TestBoundedPriorityQueue.cpp
-        TestBoundedString.cpp
-        TestBoundedVector.cpp
-        TestCompareMembers.cpp
-        TestCyclicBuffer.cpp
-        TestEndian.cpp
-        TestFixedPoint.cpp
-        TestFunction.cpp
-        TestInterfaceConnector.cpp
-        TestIntrusiveBinarySearchTree.cpp
-        TestIntrusiveForwardList.cpp
-        TestIntrusiveList.cpp
-        TestIntrusivePriorityQueue.cpp
-        TestIntrusiveSet.cpp
-        TestIntrusiveUnorderedSet.cpp
-        TestMemoryRange.cpp
-        TestObserver.cpp
-        TestOptional.cpp
-        TestPolymorphicVariant.cpp
-        TestProxyCreator.cpp
-        TestReferenceCountedSingleton.cpp
-        TestSequencer.cpp
-        TestSharedObjectAllocatorFixedSize.cpp
-        TestSharedObjectAllocatorHeap.cpp
-        TestSharedOptional.cpp
-        TestSharedPtr.cpp
-        TestStaticStorage.cpp
-        TestTokenizer.cpp
-        TestUnit.cpp
-        TestVariant.cpp
-    win:
+target_link_libraries(infra.util_test
+    PUBLIC
+    infra.util
+    infra.util_test_helper
+
+    gtest
+    gmock
+    gmock_main
+)
+
+target_sources(infra.util_test
+    PRIVATE
+    TestAllocatorFixedSpace.cpp
+    TestAllocatorHeap.cpp
+    TestAutoResetFunction.cpp
+    TestBitLogic.cpp
+    TestBoundedDeque.cpp
+    TestBoundedForwardList.cpp
+    TestBoundedList.cpp
+    TestBoundedPriorityQueue.cpp
+    TestBoundedString.cpp
+    TestBoundedVector.cpp
+    TestCompareMembers.cpp
+    TestCyclicBuffer.cpp
+    TestEndian.cpp
+    TestFixedPoint.cpp
+    TestFunction.cpp
+    TestInterfaceConnector.cpp
+    TestIntrusiveBinarySearchTree.cpp
+    TestIntrusiveForwardList.cpp
+    TestIntrusiveList.cpp
+    TestIntrusivePriorityQueue.cpp
+    TestIntrusiveSet.cpp
+    TestIntrusiveUnorderedSet.cpp
+    TestMemoryRange.cpp
+    TestObserver.cpp
+    TestOptional.cpp
+    TestPolymorphicVariant.cpp
+    TestProxyCreator.cpp
+    TestReferenceCountedSingleton.cpp
+    TestSequencer.cpp
+    TestSharedObjectAllocatorFixedSize.cpp
+    TestSharedObjectAllocatorHeap.cpp
+    TestSharedOptional.cpp
+    TestSharedPtr.cpp
+    TestStaticStorage.cpp
+    TestTokenizer.cpp
+    TestUnit.cpp
+    TestVariant.cpp
+)
+
+if(TARGET_BUILD_WIN)
+    target_sources(infra.util_test
+        PRIVATE
         TestNatvis.cpp
     )
-
-    ccola_dependencies(
-        util
-        util_test_helper
-    )
-
-ccola_end_component()
+endif()

@@ -1,14 +1,15 @@
-ccola_component(services_test_doubles x86: source other: noncompile)
 
-    ccola_sources(
-        ConfigurationStoreMock.hpp
-        StoppableMock.hpp
-        WritableConfigurationMock.hpp
-    )
+add_library(services.services_test_doubles EXCLUDE_FROM_ALL STATIC)
 
-    ccola_dependencies(
-        util
-        gmock.gmock
-    )
+target_link_libraries(services.services_test_doubles
+    PUBLIC
 
-ccola_end_component()
+    services.util
+    gmock
+)
+
+target_sources(services.services_test_doubles PRIVATE
+    ConfigurationStoreMock.hpp
+    StoppableMock.hpp
+    WritableConfigurationMock.hpp
+)
