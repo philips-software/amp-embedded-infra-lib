@@ -20,6 +20,9 @@ ConnectionObserver being destructed.
 
 [plantuml]
 ----
+@startuml
+    !theme sketchy-outline
+
     class SharedOwnedObserver {
         +bool IsAttached() const
         +SharedOwningSubject& Subject() const
@@ -57,6 +60,7 @@ ConnectionObserver being destructed.
     SharedOwnedObserver <|-- ConnectionObserver 
     SharedOwningSubject <|-- Connection
     SharedOwnedObserver -left- SharedOwningSubject : < owns
+@enduml
 ----
 
 The methods on Connection and ConnectionObserver for sending and
