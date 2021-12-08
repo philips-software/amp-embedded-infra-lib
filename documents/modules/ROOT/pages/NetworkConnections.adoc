@@ -18,7 +18,10 @@ is closed, the Connection object is destructed, and thereby releases its
 control over its ConnectionObserver, which typically results in the
 ConnectionObserver being destructed.
 
+[plantuml]
+----
 @startuml
+    !theme sketchy-outline
 
     class SharedOwnedObserver {
         +bool IsAttached() const
@@ -57,8 +60,8 @@ ConnectionObserver being destructed.
     SharedOwnedObserver <|-- ConnectionObserver 
     SharedOwningSubject <|-- Connection
     SharedOwnedObserver -left- SharedOwningSubject : < owns
-
 @enduml
+----
 
 The methods on Connection and ConnectionObserver for sending and
 receiving data are geared towards asynchronous behaviour and as little
