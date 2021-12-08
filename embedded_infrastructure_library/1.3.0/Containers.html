@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Untitled :: EmIL: Embedded Infrastructure Library</title>
+    <link rel="canonical" href="https://philips-software.github.io/embeddedinfralib/embedded_infrastructure_library/1.3.0/Containers.html">
+    <meta name="generator" content="Antora 2.3.4">
+    <link rel="stylesheet" href="../../_/css/site.css">
+    <script>var uiRootPath = '../../_'</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://philips-software.github.io/embeddedinfralib">EmIL: Embedded Infrastructure Library</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#">Home</a>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Products</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Product A</a>
+            <a class="navbar-item" href="#">Product B</a>
+            <a class="navbar-item" href="#">Product C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Services</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Service A</a>
+            <a class="navbar-item" href="#">Service B</a>
+            <a class="navbar-item" href="#">Service C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Resources</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Resource A</a>
+            <a class="navbar-item" href="#">Resource B</a>
+            <a class="navbar-item" href="#">Resource C</a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <span class="control">
+            <a class="button is-primary" href="#">Download</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="embedded_infrastructure_library" data-version="1.3.0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="index.html">Embedded Infrastructure Library documentation</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="MemoryRange.html">MemoryRange</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="Containers.html">Containers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="Echo.html">Echo</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="NetworkConnections.html">NetworkConnections</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Embedded Infrastructure Library documentation</span>
+    <span class="version">1.3.0</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <a class="title" href="index.html">Embedded Infrastructure Library documentation</a>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="index.html">1.3.0</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Embedded Infrastructure Library documentation</a></li>
+    <li><a href="Containers.html">Containers</a></li>
+  </ul>
+</nav>
+  <div class="edit-this-page"><a href="https://github.com/philips-software/embeddedinfralib/edit/feature/antora-doc-generation/documents/modules/ROOT/pages/Containers.adoc">Edit this Page</a></div>
+  </div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<div class="sect1">
+<h2 id="_containers"><a class="anchor" href="#_containers"></a>Containers</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h3>
+<div class="paragraph">
+<p>Containers are used to store a number of elements. While the C++
+standard template library contains several containers like <code>std::vector</code>
+and <code>std::set</code>, the storage of these containers is allocated on the
+heap. In embedded applications, more control over the storage is
+desired. For this reason, the infra package contains two types of
+containers: the <code>Bounded</code> containers and the <code>Intrusive</code> containers.
+While their storage is not on the heap, the interfaces of these
+containers closely mimic the interfaces of the standard containers.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_bounded_containers"><a class="anchor" href="#_bounded_containers"></a>Bounded Containers</h3>
+<div class="sect3">
+<h4 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h4>
+<div class="paragraph">
+<p>The first strategy to deal with storage in containers is by allocating
+memory inside the containers themselves. The size of a container
+therefore includes the storage of its elements. The maximum number of
+elements to be stored is passed as a template parameter to the
+instantiation of the container, e.g.
+<code>infra::BoundedVector&lt;int&gt;::WithMaxSize&lt;5&gt; myVector</code> declares a
+container <code>myVector</code> which holds up to 5 integers. Since the size of the
+storage is known up front, the maximum number of elements that can be
+placed in the container is bounded, hence their name.</p>
+</div>
+<div class="paragraph">
+<p>The Bounded counterparts of the containers of the standard library are
+the following:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Bounded Container</th>
+<th class="tableblock halign-left valign-top">Standard Container</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>infra::BoundedVector&lt;T&gt;::WithMaxSize&lt;N&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>std::vector&lt;T&gt;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>infra::BoundedDeque&lt;T&gt;::WithMaxSize&lt;N&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>std::deque&lt;T&gt;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>infra::BoundedString&lt;T&gt;::WithStorage&lt;N&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>std::string&lt;T&gt;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>infra::BoundedPriorityQueue&lt;T, N&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>std::priority_queue&lt;T&gt;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>infra::BoundedList&lt;T&gt;::WithMaxSize&lt;N&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>std::list&lt;T&gt;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>infra::BoundedForwardList&lt;T&gt;::WithMaxSize&lt;N&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>std::forward_list&lt;T&gt;</code></p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>These bounded containers conform to the same specifications as placed by
+the C++ standard on their counterparts where possible, so they generally
+have the same constructors, accessors, types, and complexity
+requirements. One notable omission is the allocator passed to standard
+containers, since bounded containers allocate their elements inside
+their own space. These containers have two additional accessors:
+<code>std::size_t max_size()</code> and bool <code>full()</code>.</p>
+</div>
+<div class="paragraph">
+<p>While the intention of this document is not to repeat the documentation
+available on standard containers, for quick reference a summary of
+available functions is given here:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Method</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>bool empty()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Returns true if and only if the container is empty</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>std::size_t size()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Returns the number of currently held elements</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>iterator begin()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Returns an iterator to the first element</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>iterator end()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Returns an iterator which points to one past the last
+element</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>void clear()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Removes all elements</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>void push_back(element)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Inserts one element to the back</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>void push_front(element)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Inserts one element to the front</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>void emplace_back(&#8230;&#8203;)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Constructs one element at the back,
+parameters are forwarded to the constructor of the element</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>void emplace_front(&#8230;&#8203;)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Constructs one element at the front,
+parameters are forwarded to the constructor of the element</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>void pop_back()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Removes one element from the back</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>void pop_front()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Removes one element from the front</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>iterator insert(position, element)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Inserts an element at the given
+position</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>iterator erase(position)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Removes an element at the given position</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_references_to_bounded_containers"><a class="anchor" href="#_references_to_bounded_containers"></a>References to Bounded Containers</h4>
+<div class="paragraph">
+<p>Often, the class that holds a container of elements is not the class
+that makes the decision how big that container should be. For example,
+the <code>UrlRouter</code> holds a <code>BoundedVector</code> for storing the <code>PageServers</code> to
+which it refers. It doesn’t know, however, whether it should be able to
+hold 2, 10, or 500 <code>PageServers</code>. Allocating too much space would be
+wasteful; but at the place in the code where the <code>UrlRouter</code> is
+instantiated this limit is known. In order to specify the maximum
+storage for a container at a later moment, <code>BoundedVector&lt;T&gt;</code> (and
+similarly other containers) may be created as a reference to a
+<code>BoundedVector&lt;T&gt;::WithStorage&lt;N&gt;</code>. By constructing the actual
+<code>BoundedVector</code> at the point of instantiation of <code>UrlRouter</code>, the choice
+for the maximum number of elements is delayed. For example:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>class UrlRouter
+{
+public:
+    explicit UrlRouter(infra::BoundedVector&lt;PageServer&gt;&amp; storage);
+
+protected:
+    infra::BoundedVector&lt;PageServer&gt;&amp; pageServers;
+};</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>UrlRouter</code> can now be instantiated as follows:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>infra::BoundedVector&lt;PageServer&gt;::WithMaxSize&lt;10&gt; storage;
+UrlRouter router(storage);</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>UrlRouter</code> now uses a <code>BoundedVector</code> with a maximum size of 10
+elements. In order to simplify instantiation of the <code>UrlRouter</code>, it uses
+the <code>infra::WithStorage</code> helper class to feed a constructed
+<code>BoundedVector</code> to the <code>UrlRouter</code>. Using this <code>WithMaxSize</code> parameter,
+instantiation is simplified to:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>class UrlRouter
+{
+public:
+    template&lt;std::size_t Max&gt;
+        using WithMaxSize = infra::WithStorage&lt;UrlRouter, infra::BoundedVector&lt;PageServer&gt;::WithMaxSize&lt;Max&gt;&gt;;
+
+    explicit UrlRouter(infra::BoundedVector&lt;PageServer&gt;&amp; storage);
+
+protected:
+    infra::BoundedVector&lt;PageServer&gt;&amp; pageServers;
+};
+
+UrlRouter::WithMaxSize&lt;10&gt; router;</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_intrusive_containers"><a class="anchor" href="#_intrusive_containers"></a>Intrusive Containers</h3>
+<div class="paragraph">
+<p>Another approach for storing elements in a container is to not allocate
+additional storage for an object, but to make the user of a container
+responsible for storage allocation. By adding some additional
+administration to an object, a container can keep track of its objects
+by jumping from object to object via that additional administration. For
+instance, objects used in an <code>infra::IntrusiveForwardList</code> each have a
+next pointer, so that when the container keeps track of its first
+element it can enumerate all its elements by following the next pointer.</p>
+</div>
+<div class="paragraph">
+<p>In order to inject the administration into elements, the elements derive
+from <code>container::NodeType</code>. The container’s administration therefore
+intrudes into the element, hence their name <code>Intrusive</code> containers. A
+consequence of this is that an element can only be assigned to one
+container at a time, but unlike the <code>Bounded</code> containers, <code>Intrusive</code>
+containers cannot become full.</p>
+</div>
+<div class="paragraph">
+<p>Like the <code>Bounded</code> containers, the infra package contains counterparts
+of containers found in the standard library that closely mimic their
+behaviour. The provided <code>Intrusive</code> containers are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Intrusive Container</th>
+<th class="tableblock halign-left valign-top">Standard Container</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>infra::IntrusiveForwardList&lt;T&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>std::forward_list&lt;T&gt;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>infra::IntrusiveList&lt;T&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>std::list&lt;T&gt;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>infra::IntrusivePriorityQueue&lt;T, Compare&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>std::priority_queue&lt;T, Compare&gt;</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>infra::IntrusiveSet&lt;T, Compare&gt;</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>std::set&lt;T, Compare&gt;</code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_stdarray"><a class="anchor" href="#_stdarray"></a>std::array</h3>
+<div class="paragraph">
+<p>One standard container of note is <code>std::array&lt;T, Size&gt;</code>. This container
+does not use the heap and has a fixed size. It is a drop-in replacement
+of the C array, with a C++ interface. When a container of a fixed-size
+is needed, <code>std::array</code> should be used.</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>This page was built using the Antora default UI.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+</footer>
+<script src="../../_/js/site.js"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+  </body>
+</html>

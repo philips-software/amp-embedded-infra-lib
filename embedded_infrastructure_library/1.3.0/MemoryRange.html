@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Untitled :: EmIL: Embedded Infrastructure Library</title>
+    <link rel="canonical" href="https://philips-software.github.io/embeddedinfralib/embedded_infrastructure_library/1.3.0/MemoryRange.html">
+    <meta name="generator" content="Antora 2.3.4">
+    <link rel="stylesheet" href="../../_/css/site.css">
+    <script>var uiRootPath = '../../_'</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://philips-software.github.io/embeddedinfralib">EmIL: Embedded Infrastructure Library</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#">Home</a>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Products</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Product A</a>
+            <a class="navbar-item" href="#">Product B</a>
+            <a class="navbar-item" href="#">Product C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Services</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Service A</a>
+            <a class="navbar-item" href="#">Service B</a>
+            <a class="navbar-item" href="#">Service C</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Resources</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">Resource A</a>
+            <a class="navbar-item" href="#">Resource B</a>
+            <a class="navbar-item" href="#">Resource C</a>
+          </div>
+        </div>
+        <div class="navbar-item">
+          <span class="control">
+            <a class="button is-primary" href="#">Download</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="embedded_infrastructure_library" data-version="1.3.0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="index.html">Embedded Infrastructure Library documentation</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="MemoryRange.html">MemoryRange</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="Containers.html">Containers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="Echo.html">Echo</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="NetworkConnections.html">NetworkConnections</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Embedded Infrastructure Library documentation</span>
+    <span class="version">1.3.0</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <a class="title" href="index.html">Embedded Infrastructure Library documentation</a>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="index.html">1.3.0</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Embedded Infrastructure Library documentation</a></li>
+    <li><a href="MemoryRange.html">MemoryRange</a></li>
+  </ul>
+</nav>
+  <div class="edit-this-page"><a href="https://github.com/philips-software/embeddedinfralib/edit/feature/antora-doc-generation/documents/modules/ROOT/pages/MemoryRange.adoc">Edit this Page</a></div>
+  </div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<div class="sect1">
+<h2 id="_memoryrange"><a class="anchor" href="#_memoryrange"></a>MemoryRange</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Embedded applications regularly handle blocks of memory. Such memory may
+either be typed (for example, consisting of a number of characters) or
+un-typed. Traditionally, blocks of memory are handled by having a
+pointer to its first element and a separate size. Since passing around
+two separate but related parameters is cumbersome at best and
+error-prone at its worst, we have improved on dealing with blocks of
+memory by introducing the class template <code>MemoryRange</code>. A <code>MemoryRange</code>
+is an object which defines a block of memory with a start and an end,
+and which has a number of functions that makes dealing with those blocks
+as a whole easier. This approach reduces the potential for buffer
+overflows, since while it is easy to shrink a block or to split it; it
+is much more difficult to create a larger block, thereby overflowing the
+original block of memory.</p>
+</div>
+<div class="paragraph">
+<p>The MemoryRanges that are most often used are <code>MemoryRange&lt;uint8_t&gt;</code>,
+which has an alias <code>ByteRange</code>, and its const counterpart
+<code>ConstByteRange</code> which aliases to <code>MemoryRange&lt;const uint8_t&gt;</code>.
+Everywhere where untyped memory is used <code>ByteRange</code> or <code>ConstByteRange</code>
+is used to define where the data resides in memory. For example: the SPI
+interface <code>SendData</code> method takes a <code>ConstByteRange</code> parameter
+specifying the data which should be sent.</p>
+</div>
+<div class="paragraph">
+<p>A <code>MemoryRange</code> does not include the storage it points to. Modifying a
+<code>MemoryRange</code> does not modify the storage. If storage is needed,
+std::array is a good candidate. After creating a std::array and filling
+it with data, a MemoryRange can be constructed from it by using
+<code>MakeRange</code>, after which the <code>MemoryRange</code> can be used for passing
+around the data.</p>
+</div>
+<div class="sect2">
+<h3 id="_memoryrange_accessors"><a class="anchor" href="#_memoryrange_accessors"></a>MemoryRange Accessors</h3>
+<div class="paragraph">
+<p>These are the most used accessors of <code>MemoryRange</code>:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Method</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>begin()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Returns a pointer to the first element of the data</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>end()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Returns a pointer to one position beyond the last element of
+the data</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>empty()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Returns true if and only if <code>size()</code> == 0</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>size()</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Returns the number of elements pointed to: <code>end()</code> -
+<code>begin()</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>pop_front(num)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Remove num elements from the front of the range</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>pop_back(num)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Remove num elements from the back of the range</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>shrink_from_front_to(newSize)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">If <code>size()</code> &gt; <code>newSize</code>, pop elements
+from the front until <code>size()</code> == <code>newSize</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>shrink_from_back_to(newSize)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">If <code>size()</code> &gt; <code>newSize</code>, pop elements
+from the back until <code>size()</code> == <code>newSize</code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_helper_functions"><a class="anchor" href="#_helper_functions"></a>Helper Functions</h3>
+<div class="paragraph">
+<p>In addition to the members of MemoryRange, a number of helper functions
+exist:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Function</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>MakeRange(&#8230;&#8203;)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Convert the parameter(s) to a <code>MemoryRange</code>. Works
+with <code>std::array</code>, <code>infra::BoundedVector</code>, etc.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Head(range, size)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Returns range if its size is less than size,
+otherwise a new range consisting of the first size elements of range</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Tail(range, size)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Returns range if its size is less than size,
+otherwise a new range consisting of the last size elements of range</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>DiscardHead(range, size)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Returns an empty range if size is greater
+than <code>range.size()</code>, otherwise a new range consisting of range except
+for the first size elements</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>DiscardTail(range, size)</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Returns an empty range if size is greater
+than <code>range.size()</code>, otherwise a new range consisting of range except
+for the last size elements</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_example"><a class="anchor" href="#_example"></a>Example</h3>
+<div class="paragraph">
+<p>This example function shows how to use the MemoryRange functions to cut
+up a block of data into smaller pieces:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>void SendInBlocks(infra::ConstByteRange sendData, std::size_t blockSize)
+{
+    while (!sendData.empty())
+    {
+        Send(infra::Head(sendData, blockSize));
+        sendData = infra::DiscardHead(sendData, blockSize);
+    }
+}
+
+void Example()
+{
+    std::array&lt;uint8_t, 256&gt; data = { ... };
+    SendInBlocks(data, 16);
+}</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>This page was built using the Antora default UI.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+</footer>
+<script src="../../_/js/site.js"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+  </body>
+</html>
