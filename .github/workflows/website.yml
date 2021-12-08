@@ -5,7 +5,7 @@ on:
   push:
 
 env:
-  SITE_DIR: 'site'
+  SITE_DIR: "site"
 jobs:
   build_antora:
     name: Build Antora Documentation
@@ -33,17 +33,17 @@ jobs:
     if: ${{ github.ref == 'refs/heads/develop' }}
     name: Publish to GitHub Pages
     steps:
-     - name: Checkout
-       uses: actions/checkout@v2
-     - name: Retrieve Antora Site
-       uses: actions/download-artifact@v1
-       with:
-         name: antora
-         path: "${{ github.workspace }}/${{ env.SITE_DIR }}"
-     - name: Publish to GitHub Pages
-       uses: peaceiris/actions-gh-pages@v3
-       with:
-         github_token: ${{ secrets.GITHUB_TOKEN }}
-         publish_dir: ${{ env.SITE_DIR }}
-         user_name: 'github-actions[bot]'
-         user_email: 'github-actions[bot]@users.noreply.github.com'
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Retrieve Antora Site
+        uses: actions/download-artifact@v1
+        with:
+          name: antora
+          path: "${{ github.workspace }}/${{ env.SITE_DIR }}"
+      - name: Publish to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ${{ env.SITE_DIR }}
+          user_name: "github-actions[bot]"
+          user_email: "github-actions[bot]@users.noreply.github.com"
