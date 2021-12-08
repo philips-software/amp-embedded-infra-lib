@@ -16,7 +16,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Build Antora Site
-        uses: kameshsampath/antora-site-action@6069ae47f8c6dfd2a7c842d2dea766c639ab0053
+        uses: philips-forks/antora-site-action@0c58ca8552165764e9d1d0c2216403cd6c2520b9
         with:
           antora_playbook: antora-playbook.yml
           antora_generator: "antora-site-generator-lunr"
