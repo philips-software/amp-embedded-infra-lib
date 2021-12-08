@@ -30,6 +30,7 @@ jobs:
   deploy_antora:
     runs-on: ubuntu-latest
     needs: build_antora
+    if: ${{ github.ref == 'refs/heads/develop' }}
     name: Publish to GitHub Pages
     steps:
      - name: Checkout
