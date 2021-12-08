@@ -61,7 +61,7 @@ Make sure you have all development dependencies installed. E.g. [CMake](https://
 
 # How to report a bug
 
-If you find a security vulnerability, do NOT open an issue. Email one of the [maintainers](MAINTAINERS.md) instead.
+If you find a security vulnerability, do NOT open an issue. Email one of the [maintainers](CODEOWNERS) instead.
 
 In order to determine whether you are dealing with a security issue, ask yourself these two questions:
 * Can I access something that's not mine, or something I shouldn't have access to?
@@ -76,5 +76,3 @@ When filing an issue, make sure to answer these five questions:
 3. What did you do?
 4. What did you expect to see?
 5. What did you see instead?
-
-[Coding Standard C++ Embedded Projects]: documents/Coding%20Standard%20C++%20Embedded%20Projects.docx
