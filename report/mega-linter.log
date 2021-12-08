@@ -1,0 +1,164 @@
+----------------------------------------------------------------------------------------------------
+-------------------------------------------- MegaLinter --------------------------------------------
+----------------------------------------------------------------------------------------------------
+ - Image Creation Date: 2021-12-08T11:04:02Z
+ - Image Revision: 3971670e
+ - Image Version: v5
+----------------------------------------------------------------------------------------------------
+The MegaLinter documentation can be found at:
+ - https://megalinter.github.io
+----------------------------------------------------------------------------------------------------
+GITHUB_REPOSITORY: philips-software/embeddedinfralib
+GITHUB_REF: refs/pull/44/merge
+GITHUB_RUN_ID: 1554444011
+
+
+To receive reports as email, please set variable EMAIL_REPORTER_EMAIL
+Listing all files in directory [/github/workspace], then filter with:
+- File extensions: .md, .yaml, .yml
+- Excluding .gitignored files [0]: 
+Kept [12] files on [2809] found files
+
++----MATCHING LINTERS-------------------+------------+----------------+------------+
+| Descriptor | Linter                   | Criteria   | Matching files | Format/Fix |
++------------+--------------------------+------------+----------------+------------+
+| MARKDOWN   | markdownlint             | .md        | 5              | yes        |
+| MARKDOWN   | markdown-link-check      | .md        | 5              | no         |
+| MARKDOWN   | markdown-table-formatter | .md        | 5              | yes        |
+| SPELL      | misspell                 |            | 12             | yes        |
+| YAML       | prettier                 | .yml|.yaml | 7              | yes        |
+| YAML       | yamllint                 | .yml|.yaml | 7              | no         |
+| YAML       | v8r                      | .yml|.yaml | 7              | no         |
++------------+--------------------------+------------+----------------+------------+
+
+
+[1m### Processed [SPELL] files[0m
+- Using [misspell v0.3.4] https://megalinter.github.io/v5/descriptors/spell_misspell
+- MegaLinter key: [SPELL_MISSPELL]
+- Rules config: identified by [misspell]
+[misspell] .github/workflows/ci.yml
+[misspell] .github/workflows/codeql-analysis.yml
+[misspell] .github/workflows/mega-linter.yml
+[misspell] .github/workflows/website.yml
+[misspell] .mega-linter.yml
+[misspell] CHANGELOG.md
+[misspell] CODE_OF_CONDUCT.md
+[misspell] CONTRIBUTING.md
+[misspell] LICENSE.md
+[misspell] README.md
+[misspell] antora-playbook.yml
+[misspell] documents/antora.yml
+[32m✅ Linted [SPELL] files with [misspell] successfully - (0.2s)[0m
+[Text Reporter] Generated TEXT report: /github/workspace/report/linters_logs/SUCCESS-SPELL_MISSPELL.log
+
+[1m### Processed [MARKDOWN] files[0m
+- Using [markdownlint v0.30.0] https://megalinter.github.io/v5/descriptors/markdown_markdownlint
+- MegaLinter key: [MARKDOWN_MARKDOWNLINT]
+- Rules config: [.markdownlint.json]
+[markdownlint] CHANGELOG.md
+[markdownlint] CODE_OF_CONDUCT.md
+[markdownlint] CONTRIBUTING.md
+[markdownlint] LICENSE.md
+[markdownlint] README.md
+--Error detail:
+/github/workspace/CHANGELOG.md:21 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### Changed"]
+/github/workspace/CHANGELOG.md:26 MD024/no-duplicate-heading/no-duplicate-header Multiple headings with the same content [Context: "### Fixed"]
+/github/workspace/CONTRIBUTING.md:7 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]
+/github/workspace/CONTRIBUTING.md:11 MD025/single-title/single-h1 Multiple top-level headings in the same document [Context: "# Ground Rules"]
+/github/workspace/CONTRIBUTING.md:20 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]
+/github/workspace/CONTRIBUTING.md:24 MD025/single-title/single-h1 Multiple top-level headings in the same document [Context: "# Your First Contribution"]
+/github/workspace/CONTRIBUTING.md:26 MD001/heading-increment/header-increment Heading levels should only increment by one level at a time [Expected: h2; Actual: h3]
+/github/workspace/CONTRIBUTING.md:62 MD025/single-title/single-h1 Multiple top-level headings in the same document [Context: "# How to report a bug"]
+/github/workspace/LICENSE.md:1 MD041/first-line-heading/first-line-h1 First line in a file should be a top-level heading [Context: "This EmbeddedInfraLib Project ..."]
+/github/workspace/LICENSE.md:5:401 MD013/line-length Line length [Expected: 400; Actual: 436]
+/github/workspace/LICENSE.md:9:401 MD013/line-length Line length [Expected: 400; Actual: 464]
+/github/workspace/README.md:3:401 MD013/line-length Line length [Expected: 400; Actual: 985]
+/github/workspace/README.md:22 MD040/fenced-code-language Fenced code blocks should have a language specified [Context: "```"]
+/github/workspace/README.md:33 MD040/fenced-code-language Fenced code blocks should have a language specified [Context: "```"]
+
+[33m✅ Linted [MARKDOWN] files with [markdownlint]: Found 14 non blocking error(s) - (0.63s)[0m
+[Text Reporter] Generated TEXT report: /github/workspace/report/linters_logs/ERROR-MARKDOWN_MARKDOWNLINT.log
+
+[1m### Processed [YAML] files[0m
+- Using [prettier v2.5.1] https://megalinter.github.io/v5/descriptors/yaml_prettier
+- MegaLinter key: [YAML_PRETTIER]
+- Rules config: identified by [prettier]
+[prettier] .github/workflows/ci.yml
+[prettier] .github/workflows/codeql-analysis.yml
+[prettier] .github/workflows/mega-linter.yml
+[prettier] .github/workflows/website.yml
+[prettier] .mega-linter.yml
+[36m[prettier] antora-playbook.yml - FIXED[0m
+[prettier] documents/antora.yml
+[32m✅ Linted [YAML] files with [prettier] successfully - (1.27s)[0m
+[Text Reporter] Generated TEXT report: /github/workspace/report/linters_logs/SUCCESS-YAML_PRETTIER.log
+
+[1m### Processed [YAML] files[0m
+- Using [yamllint v1.26.3] https://megalinter.github.io/v5/descriptors/yaml_yamllint
+- MegaLinter key: [YAML_YAMLLINT]
+- Rules config: [.yamllint.yml]
+[yamllint] .github/workflows/ci.yml
+[yamllint] .github/workflows/codeql-analysis.yml
+[yamllint] .github/workflows/mega-linter.yml
+[yamllint] .github/workflows/website.yml
+[yamllint] .mega-linter.yml
+[yamllint] antora-playbook.yml
+[yamllint] documents/antora.yml
+[32m✅ Linted [YAML] files with [yamllint] successfully - (0.17s)[0m
+[Text Reporter] Generated TEXT report: /github/workspace/report/linters_logs/SUCCESS-YAML_YAMLLINT.log
+
+[1m### Processed [MARKDOWN] files[0m
+- Using [markdown-link-check v3.9.0] https://megalinter.github.io/v5/descriptors/markdown_markdown_link_check
+- MegaLinter key: [MARKDOWN_MARKDOWN_LINK_CHECK]
+- Rules config: [.markdown-link-check.json]
+[markdown-link-check] CHANGELOG.md - SUCCESS - 0 error(s)
+[markdown-link-check] CODE_OF_CONDUCT.md - SUCCESS - 0 error(s)
+[markdown-link-check] CONTRIBUTING.md - SUCCESS - 0 error(s)
+[markdown-link-check] LICENSE.md - SUCCESS - 0 error(s)
+[markdown-link-check] README.md - SUCCESS - 0 error(s)
+[32m✅ Linted [MARKDOWN] files with [markdown-link-check] successfully - (7.51s)[0m
+
+[1m### Processed [YAML] files[0m
+- Using [v8r v0.6.1] https://megalinter.github.io/v5/descriptors/yaml_v8r
+- MegaLinter key: [YAML_V8R]
+- Rules config: identified by [v8r]
+[v8r] .github/workflows/ci.yml - SUCCESS - 0 error(s)
+[v8r] .github/workflows/codeql-analysis.yml - SUCCESS - 0 error(s)
+[v8r] .github/workflows/mega-linter.yml - SUCCESS - 0 error(s)
+[v8r] .github/workflows/website.yml - SUCCESS - 0 error(s)
+[v8r] .mega-linter.yml - SUCCESS - 0 error(s)
+[v8r] antora-playbook.yml - SUCCESS - 0 error(s)
+[v8r] documents/antora.yml - SUCCESS - 0 error(s)
+[32m✅ Linted [YAML] files with [v8r] successfully - (5.06s)[0m
+[Text Reporter] Generated TEXT report: /github/workspace/report/linters_logs/SUCCESS-MARKDOWN_MARKDOWN_LINK_CHECK.log
+[Text Reporter] Generated TEXT report: /github/workspace/report/linters_logs/SUCCESS-YAML_V8R.log
+
+[1m### Processed [MARKDOWN] files[0m
+- Using [markdown-table-formatter v1.2.0] https://megalinter.github.io/v5/descriptors/markdown_markdown_table_formatter
+- MegaLinter key: [MARKDOWN_MARKDOWN_TABLE_FORMATTER]
+- Rules config: identified by [markdown-table-formatter]
+[markdown-table-formatter] CHANGELOG.md
+[markdown-table-formatter] CODE_OF_CONDUCT.md
+[markdown-table-formatter] CONTRIBUTING.md
+[markdown-table-formatter] LICENSE.md
+[markdown-table-formatter] README.md
+[32m✅ Linted [MARKDOWN] files with [markdown-table-formatter] successfully - (0.35s)[0m
+[Text Reporter] Generated TEXT report: /github/workspace/report/linters_logs/SUCCESS-MARKDOWN_MARKDOWN_TABLE_FORMATTER.log
+
++----SUMMARY--+--------------------------+---------------+-------+-------+--------+--------------+
+| Descriptor  | Linter                   | Mode          | Files | Fixed | Errors | Elapsed time |
++-------------+--------------------------+---------------+-------+-------+--------+--------------+
+| ◬ MARKDOWN  | markdownlint             | list_of_files |     5 |     0 |     14 |        0.63s |
+| ✅ MARKDOWN | markdown-link-check      | file          |     5 |       |      0 |        7.51s |
+| ✅ MARKDOWN | markdown-table-formatter | list_of_files |     5 |     0 |      0 |        0.35s |
+| ✅ SPELL    | misspell                 | list_of_files |    12 |     0 |      0 |         0.2s |
+| ✅ YAML     | prettier                 | list_of_files |     7 |     1 |      0 |        1.27s |
+| ✅ YAML     | v8r                      | file          |     7 |       |      0 |        5.06s |
+| ✅ YAML     | yamllint                 | list_of_files |     7 |       |      0 |        0.17s |
++-------------+--------------------------+---------------+-------+-------+--------+--------------+
+
+Identified PR#44 from environment
+[GitHub Comment Reporter] Posted summary as comment on philips-software/embeddedinfralib #PR44
+[Updated Sources Reporter] copied 1 fixed source files in folder /github/workspace/report/updated_sources.
+Download it from artifacts then copy-paste it in your local repo to apply linters updates
+[33m◬ Successfully linted all files, but with ignored errors[0m
