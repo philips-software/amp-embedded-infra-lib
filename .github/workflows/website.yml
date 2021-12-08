@@ -1,0 +1,29 @@
+---
+name: Build & Publish Documentation
+
+on:
+  push:
+
+env:
+  SITE_DIR: 'site'
+jobs:
+  build_antora:
+    name: "Build Antora Documentation"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: "Build Antora Site"
+        uses: kameshsampath/antora-site-action@v0.2.4
+        with:
+          antora_playbook: antora-playbook.yml
+          antora_generator: "antora-site-generator-lunr"
+          antora_docsearch_enabled: "true"
+          antora_docsearch_index_version: "latest"
+      - name: "Store Antora Site"
+        uses: actions/upload-artifact@v1.0.0
+        with:
+          name: antora
+          path: "${{ github.workspace }}/build/${{ env.SITE_DIR }}"
