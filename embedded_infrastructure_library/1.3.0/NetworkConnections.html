@@ -112,7 +112,7 @@
     <li><a href="NetworkConnections.html">NetworkConnections</a></li>
   </ul>
 </nav>
-  <div class="edit-this-page"><a href="https://github.com/philips-software/embeddedinfralib/edit/feature/antora-doc-generation/documents/modules/ROOT/pages/NetworkConnections.adoc">Edit this Page</a></div>
+  <div class="edit-this-page"><a href="https://github.com/philips-software/embeddedinfralib/edit/develop/documents/modules/ROOT/pages/NetworkConnections.adoc">Edit this Page</a></div>
   </div>
   <div class="content">
 <aside class="toc sidebar" data-title="Contents" data-levels="2">
@@ -142,64 +142,10 @@ is closed, the Connection object is destructed, and thereby releases its
 control over its ConnectionObserver, which typically results in the
 ConnectionObserver being destructed.</p>
 </div>
-<div class="paragraph">
-<p>@startuml</p>
-</div>
-<div class="literalblock">
+<div class="imageblock plantuml">
 <div class="content">
-<pre>class SharedOwnedObserver {
-    +bool IsAttached() const
-    +SharedOwningSubject&amp; Subject() const
-    +void Detach()
-    +{abstract}void Attached() {}
-    +{abstract}void Detaching() {}
-    -SharedOwningSubject* subject
-}</pre>
+<img src="http://www.plantuml.com/plantuml/png/ZLJ1Se8m4Btx5TiBW-tW1pYE8wEN7ZhjmC5Z9y2sf68oJHQifVvx0wA04jiSc2Lv-xBlPPE59gOetsOZCEEEKjmYw0rIdEuzcLF61OxgjJXZMaEOCeN9yqwOJwHH5QYWhDUhyH19cS6ZzebOd6BYZY6MGbCBEETpyHxcqGV6v40JNACBoHDOOKNcZjlfaaMQ58lfK0CwkvK7A-f8OxRjmxo1Ykv17uCQTHZKtw8x-Xko5rAp0QFc89leGk5HW5kBXziKpfbZ_ATD_p-CTWC7Jf4DRXLtYWoWbzlpRoc5C9vnAKxmqdfY8Oea98LiwnUCPopAqEtKKA-i5QVA5WTqvz_UAoj6BC0OUL4POeKjCwcnQfJ9P69lAJ-IYdeeYrQmYmpmCqTDhLPNKpATQlwDhmIwcZRXOALTu1FxQYcgZElZQnClJGoG9QZMdD80TrmafhVdqBZK57NZziMR_nhgYsHbj2gvlyLNcNg5R8mTUdvcFvutq5TzVEUwNk2jl5w6R-GDKanX1d8dz6XXF3UFvoy0" alt="diagram">
 </div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>class SharedOwningSubject {
-    -SharedPtr&lt;SharedOwnedObserver&gt; observer
-    +void Attach(const SharedPtr&lt;SharedOwnedObserver&gt;&amp; observer)
-    +void Detach()
-    +bool IsAttached() const
-    +SharedOwnedObserver&amp; Observer() const
-    +SharedPtr&lt;SharedOwnedObserver&gt; ObserverPtr() const
-}</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>class ConnectionObserver{
-    +{abstract}void SendStreamAvailable(SharedPtr&lt;StreamWriter&gt;&amp;&amp; streamWriter)
-    +{abstract}void DataReceived()
-    +{abstract}void Close() {...}
-    +{abstract}void Abort() {...}
-}</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>class Connection {
-    +{abstract}void RequestSendStream(std::size_t sendSize)
-    +{abstract}std::size_t MaxSendStreamSize() const
-    +{abstract}SharedPtr&lt;StreamReaderWithRewinding&gt; ReceiveStream()
-    +{abstract}void AckReceived()
-    +{abstract}void CloseAndDestroy()
-    +{abstract}void AbortAndDestroy()
-}</pre>
-</div>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>SharedOwnedObserver &lt;|-- ConnectionObserver
-SharedOwningSubject &lt;|-- Connection
-SharedOwnedObserver -left- SharedOwningSubject : &lt; owns</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>@enduml</p>
 </div>
 <div class="paragraph">
 <p>The methods on Connection and ConnectionObserver for sending and
