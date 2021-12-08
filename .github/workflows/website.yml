@@ -21,7 +21,6 @@ jobs:
           antora_playbook: antora-playbook.yml
           antora_generator: "antora-site-generator-lunr"
           antora_docsearch_enabled: "true"
-          antora_docsearch_index_version: "latest"
       - name: Store Antora Site
         uses: actions/upload-artifact@v1.0.0
         with:
