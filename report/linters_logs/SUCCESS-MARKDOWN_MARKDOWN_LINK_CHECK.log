@@ -1,9 +1,0 @@
-Results of markdown-link-check linter (version 3.9.0)
-See documentation on https://megalinter.github.io/descriptors/markdown_markdown_link_check/
------------------------------------------------
-
-✅ [SUCCESS] CHANGELOG.md
-✅ [SUCCESS] CODE_OF_CONDUCT.md
-✅ [SUCCESS] CONTRIBUTING.md
-✅ [SUCCESS] LICENSE.md
-✅ [SUCCESS] README.md
