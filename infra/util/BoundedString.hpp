@@ -63,11 +63,13 @@ namespace infra
         template<class U>
         BoundedStringBase(MemoryRange<NonConstT> range, const BoundedStringBase<U>& other);
         BoundedStringBase(const BoundedStringBase& other);
+        BoundedStringBase(BoundedStringBase&& other) noexcept = default;
         template<class U>
             BoundedStringBase(const BoundedStringBase<U>& other);
         ~BoundedStringBase() = default;
 
         BoundedStringBase& operator=(const BoundedStringBase& other);
+        BoundedStringBase& operator=(BoundedStringBase&& other) noexcept = default;
         BoundedStringBase& operator=(const char* s);
         BoundedStringBase& operator=(char ch);
         BoundedStringBase& operator=(const std::string& s);
