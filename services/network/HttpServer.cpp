@@ -142,12 +142,14 @@ namespace services
         infra::WeakPtr<ConnectionObserver> weakSelf = Subject().ObserverPtr();
 
         if (!reader->Empty())
+        {
             if (pageServer != nullptr)
                 DataReceivedForPage(std::move(reader));
             else if (parser != infra::none)     // Received data after contents for the page, but before closing the page request
                 Abort();
             else
                 ReceivedRequest(std::move(reader));
+        }
 
         if (weakSelf.lock())
             readerPtr = nullptr;

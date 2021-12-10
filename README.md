@@ -1,6 +1,6 @@
 # EmbeddedInfraLib (EmIL)
 
-[![Continuous Integration](https://github.com/philips-software/embeddedinfralib/workflows/Continuous%20Integration/badge.svg)](https://github.com/philips-software/embeddedinfralib/actions) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=philips-software_embeddedinfralib&metric=alert_status)](https://sonarcloud.io/dashboard?id=philips-software_embeddedinfralib) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=philips-software_embeddedinfralib&metric=coverage)](https://sonarcloud.io/dashboard?id=philips-software_embeddedinfralib) [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
+[![Continuous Integration](https://github.com/philips-software/embeddedinfralib/workflows/Continuous%20Integration/badge.svg)](https://github.com/philips-software/embeddedinfralib/actions) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=philips-software_embeddedinfralib&metric=alert_status)](https://sonarcloud.io/dashboard?id=philips-software_embeddedinfralib) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=philips-software_embeddedinfralib&metric=coverage)](https://sonarcloud.io/dashboard?id=philips-software_embeddedinfralib) [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT) [![Documentation](https://img.shields.io/website?down_message=offline&label=Documentation&up_message=online&url=https%3A%2F%2Fimg.shields.io%2Fwebsite-up-down-green-red%2Fhttps%2Fphilips-software.github.io%2Fembeddedinfralib.svg)](https://philips-software.github.io/embeddedinfralib/)
 
 **Description**: EmbeddedInfraLib is a set of C++ libraries and headers that provide heap-less, STL like, infrastructure for embedded software development.
 
@@ -40,14 +40,7 @@ Code examples can be found under the [examples](examples) folder.
 
 ## Documentation
 
-Documentation is available under the [documents](documents) folder.
-
-* [CMakeCcolaUserManual](documents/CMakeCcolaUserManual.docx) describes the CMake Component Layer (Ccola) from a user perspective.
-* [Coding Standard C++ Embedded Projects](documents/Coding%20Standard%20C++%20Embedded%20Projects.docx) describes the coding standards adhered to for this project.
-* [Containers](documents/modules/ROOT/pages/Containers.adoc) describes the basic heap-less containers provided by EmIL.
-* [Echo (Embedded CHOmmunication)](documents/modules/ROOT/pages/Echo.adoc) describes the RPC (Remote Procedure Call) framework built on top of Google Protobuf.
-* [MemoryRange](documents/modules/ROOT/pages/MemoryRange.adoc) describes the basic building block for most of EmIL's heap-less memory management.
-* [NetworkConnections](documents/modules/ROOT/pages/NetworkConnections.adoc) describes EmILs network connection interface design.
+Documentation is available on [philips-software.github.io/embeddedinfralib](https://philips-software.github.io/embeddedinfralib/).
 
 ## Contributing
 

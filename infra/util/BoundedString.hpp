@@ -63,11 +63,13 @@ namespace infra
         template<class U>
         BoundedStringBase(MemoryRange<NonConstT> range, const BoundedStringBase<U>& other);
         BoundedStringBase(const BoundedStringBase& other);
+        BoundedStringBase(BoundedStringBase&& other) noexcept = default;
         template<class U>
             BoundedStringBase(const BoundedStringBase<U>& other);
         ~BoundedStringBase() = default;
 
         BoundedStringBase& operator=(const BoundedStringBase& other);
+        BoundedStringBase& operator=(BoundedStringBase&& other) noexcept = default;
         BoundedStringBase& operator=(const char* s);
         BoundedStringBase& operator=(char ch);
         BoundedStringBase& operator=(const std::string& s);
@@ -345,6 +347,7 @@ namespace infra
 
     template<class T>
         std::string AsStdString(const infra::BoundedStringBase<T>& s);
+    MemoryRange<const uint8_t> StdStringAsByteRange(const std::string& string);
 
 #ifdef CCOLA_HOST_BUILD
     // gtest uses PrintTo to display the contents of BoundedStringBase<T>

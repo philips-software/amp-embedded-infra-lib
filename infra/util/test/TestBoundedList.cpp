@@ -1,8 +1,8 @@
 #include "gtest/gtest.h"
 #include "infra/util/BoundedList.hpp"
 #include "infra/util/test_helper/MoveConstructible.hpp"
+#include "infra/util/test_helper/MonitoredConstructionObject.hpp"
 #include <functional>
-#include "util/test_helper/MonitoredConstructionObject.hpp"
 
 TEST(BoundedListTest, TestConstructedEmpty)
 {

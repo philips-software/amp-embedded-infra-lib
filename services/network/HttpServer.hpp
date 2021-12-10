@@ -170,7 +170,6 @@ namespace services
     protected:
         infra::BoundedString& buffer;
         HttpPageServer& httpServer;
-        infra::TimerSingleShot initialIdle;
         Connection* connection = nullptr;
         bool send100Response = false;
         bool closeWhenIdle = false;
@@ -183,6 +182,7 @@ namespace services
         infra::NotifyingSharedOptional<infra::LimitedStreamReaderWithRewinding> pageLimitedReader;
         infra::SharedPtr<void> keepSelfAlive;
         infra::Optional<HttpRequestParserImpl> parser;
+        infra::TimerSingleShot initialIdle;
         bool sendingResponse = false;
 
         friend class SimpleHttpPage;
