@@ -35,7 +35,7 @@ namespace infra
         ResultType operator()(Args... args);
         ResultType Invoke(const std::tuple<Args...>& args);
 
-        infra::Function<Result(Args...)> Clone() const;
+        infra::Function<Result(Args...), ExtraSize> Clone() const;
         void Swap(AutoResetFunction& other);
 
     private:
@@ -109,7 +109,7 @@ namespace infra
     }
 
     template<std::size_t ExtraSize, class Result, class... Args>
-    infra::Function<Result(Args...)> AutoResetFunction<Result(Args...), ExtraSize>::Clone() const
+    infra::Function<Result(Args...), ExtraSize> AutoResetFunction<Result(Args...), ExtraSize>::Clone() const
     {
         return function;
     }
