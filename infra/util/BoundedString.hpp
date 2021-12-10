@@ -347,6 +347,7 @@ namespace infra
 
     template<class T>
         std::string AsStdString(const infra::BoundedStringBase<T>& s);
+    MemoryRange<const uint8_t> StdStringAsByteRange(const std::string& string);
 
 #ifdef CCOLA_HOST_BUILD
     // gtest uses PrintTo to display the contents of BoundedStringBase<T>
