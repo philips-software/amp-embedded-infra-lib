@@ -37,6 +37,13 @@ namespace infra
         MOCK_CONST_METHOD3_T(callback, T(P1, P2, P3));
     };
 
+    template<class T, class P1, class P2, class P3, class P4>
+    class MockCallback<T(P1, P2, P3, P4)>
+    {
+    public:
+        MOCK_CONST_METHOD4_T(callback, T(P1, P2, P3, P4));
+    };
+
     template<class T, std::size_t ExtraSize = INFRA_DEFAULT_FUNCTION_EXTRA_SIZE>
     class VerifyingFunctionMock;
 
