@@ -1,8 +1,8 @@
 #include "hal/windows/UartPortFinder.hpp"
 #include "infra/util/Optional.hpp"
-
 #include <initguid.h>
 #include <devpkey.h>
+#include <sstream>
 
 namespace hal
 {
@@ -19,12 +19,40 @@ namespace hal
             return result;
         }
 
+        std::vector<std::string> ConvertMbcsToUtf8(const std::vector<std::wstring>& from)
+        {
+            std::vector<std::string> result;
+
+            for (auto& i : from)
+                result.push_back(ConvertMbcsToUtf8(i));
+
+            return result;
+        }
+
         std::wstring ConvertBufferToString(const std::vector<uint8_t>& buffer)
         {
             std::wstring result(reinterpret_cast<LPCWCH>(buffer.data()), reinterpret_cast<LPCWCH>(buffer.data()) + buffer.size() / 2);
 
-            while (!result.empty() && result.back() == 0)
-                result.pop_back();
+            auto terminator = result.find(L'\0');
+            if (terminator != std::wstring::npos)
+                result.erase(terminator);
+
+            return result;
+        }
+
+        std::vector<std::wstring> ConvertBufferToStringList(std::vector<uint8_t> buffer)
+        {
+            std::vector<std::wstring> result;
+
+            auto item = ConvertBufferToString(buffer);
+            while (!item.empty())
+            {
+                result.push_back(item);
+
+                buffer.erase(buffer.begin(), buffer.begin() + 2 * item.size() + 2);
+
+                item = ConvertBufferToString(buffer);
+            }
 
             return result;
         }
@@ -58,6 +86,36 @@ namespace hal
         throw UartNotFound(matchingDeviceId);
     }
 
+    std::string UartPortFinder::PhysicalDeviceObjectNameForMatchingHardwareId(const std::string& matchingHardwareId) const
+    {
+        for (auto& description : descriptions)
+            for (auto& hardwareId : description.hardwareIds)
+                if (hardwareId == matchingHardwareId)
+                    return description.physicalDeviceObjectName;
+
+        throw UartNotFound(matchingHardwareId);
+    }
+
+    std::string UartPortFinder::ListAttributes() const
+    {
+        std::ostringstream stream;
+
+        for (auto& description : descriptions)
+        {
+            stream
+                << "==============" << std::endl
+                << "deviceDescription: " << description.deviceDescription << std::endl
+                << "friendlyName: " << description.friendlyName << std::endl
+                << "physicalDeviceObjectName: " << description.physicalDeviceObjectName << std::endl
+                << "matchingDeviceId: " << description.matchingDeviceId << std::endl;
+
+            for (auto& hardwareId : description.hardwareIds)
+                stream << "hardwareId: " << hardwareId << std::endl;
+        }
+
+        return stream.str();
+    }
+
     void UartPortFinder::ReadAllComPortDevices()
     {
         SP_DEVINFO_DATA deviceInfo{};
@@ -80,6 +138,7 @@ namespace hal
         infra::Optional<std::string> friendlyName;
         infra::Optional<std::string> physicalDeviceObjectName;
         infra::Optional<std::string> matchingDeviceId;
+        infra::Optional<std::vector<std::string>> hardwareIds;
 
         for (auto& key : keys)
         {
@@ -99,10 +158,12 @@ namespace hal
                 physicalDeviceObjectName = ConvertMbcsToUtf8(ConvertBufferToString(buffer));
             if (key == DEVPKEY_Device_MatchingDeviceId && propType == DEVPROP_TYPE_STRING)
                 matchingDeviceId = ConvertMbcsToUtf8(ConvertBufferToString(buffer));
+            if (key == DEVPKEY_Device_HardwareIds && propType == DEVPROP_TYPE_STRING_LIST)
+                hardwareIds = ConvertMbcsToUtf8(ConvertBufferToStringList(buffer));
         }
 
-        if (deviceDescription && friendlyName && physicalDeviceObjectName)
-            descriptions.push_back({ *deviceDescription, *friendlyName, *physicalDeviceObjectName, *matchingDeviceId });
+        if (deviceDescription && friendlyName && physicalDeviceObjectName && hardwareIds)
+            descriptions.push_back({ *deviceDescription, *friendlyName, *physicalDeviceObjectName, *matchingDeviceId, *hardwareIds });
     }
 
     UartPortFinder::UartNotFound::UartNotFound(const std::string& portName)
