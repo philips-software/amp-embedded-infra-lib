@@ -1,6 +1,5 @@
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "infra/stream/StringOutputStream.hpp"
-#include "infra/util/ConstructBin.hpp"
 #include "services/network/MdnsClient.hpp"
 
 namespace services
