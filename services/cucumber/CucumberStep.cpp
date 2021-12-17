@@ -67,7 +67,7 @@ namespace services
 
     bool CucumberStep::HasStringArguments() const
     {
-        return StepName().find(R"('%s')") != infra::BoundedString::npos || StepName().find("%d") != infra::BoundedString::npos;
+        return StepName().find(R"('%s')") != infra::BoundedString::npos || StepName().find("%d") != infra::BoundedString::npos || StepName().find("%b") != infra::BoundedString::npos;
     }
 
     bool CucumberStep::ContainsStringArgument(uint8_t index)
@@ -80,6 +80,7 @@ namespace services
         uint8_t nrArguments = 0;
         size_t strArgPos = StepName().find(R"('%s')", 0);
         size_t intArgPos = StepName().find("%d", 0);
+        size_t boolArgPos = StepName().find("%b", 0);
         while (strArgPos != infra::BoundedString::npos)
         {
             nrArguments++;
@@ -89,6 +90,11 @@ namespace services
         {
             nrArguments++;
             intArgPos = StepName().find("%d", ++intArgPos);
+        }
+        while (boolArgPos != infra::BoundedString::npos)
+        {
+            nrArguments++;
+            boolArgPos = StepName().find("%b", ++boolArgPos);
         }
         return nrArguments;
     }
@@ -140,5 +146,19 @@ namespace services
         }
 
         return infra::Optional<uint32_t>(infra::none);
+    }
+
+    infra::Optional<bool> CucumberStep::GetBooleanArgument(uint8_t argumentNumber)
+    {
+        auto optionalStringArgument = GetStringArgument(argumentNumber);
+
+        if (optionalStringArgument)
+        {
+            infra::BoundedString::WithStorage<5> stringArgument;
+            optionalStringArgument->ToString(stringArgument);
+            return infra::Optional<bool>(infra::inPlace, stringArgument == "true");
+        }
+
+        return infra::Optional<bool>(infra::none);
     }
 }
