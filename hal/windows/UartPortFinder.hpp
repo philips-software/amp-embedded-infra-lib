@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-
 namespace hal
 {
     class UartPortFinder
@@ -24,6 +23,8 @@ namespace hal
 
         std::string PhysicalDeviceObjectNameForDeviceDescription(const std::string& deviceDescription) const;
         std::string PhysicalDeviceObjectNameForMatchingDeviceId(const std::string& matchingDeviceId) const;
+        std::string PhysicalDeviceObjectNameForMatchingHardwareId(const std::string& matchingHardwareId) const;
+        std::string ListAttributes() const;
 
     private:
         void ReadAllComPortDevices();
@@ -36,6 +37,7 @@ namespace hal
             std::string friendlyName;
             std::string physicalDeviceObjectName;
             std::string matchingDeviceId;
+            std::vector<std::string> hardwareIds;
         };
 
         std::vector<Description> descriptions;
