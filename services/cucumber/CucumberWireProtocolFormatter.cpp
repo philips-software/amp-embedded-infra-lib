@@ -141,12 +141,26 @@ namespace services
     void CucumberWireProtocolFormatter::AddDigitValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, int16_t& offset)
     {
         infra::JsonObjectFormatter subObject(formatter.SubObject());
-        infra::StringOutputStream::WithStorage<32> digitStream;
+        infra::StringOutputStream::WithStorage<10> digitStream;
         for (uint8_t i = 0; (nameToMatch[argPos + offset + i] >= '0' && nameToMatch[argPos + offset + i] <= '9'); i++)
             digitStream << nameToMatch[argPos + offset + i];
         subObject.Add("val", digitStream.Storage());
         subObject.Add("pos", argPos + offset);
         offset += (int16_t)digitStream.Storage().size() - 2;
+        argPos++;
+    }
+
+    void CucumberWireProtocolFormatter::AddBooleanValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, int16_t& offset)
+    {
+        infra::JsonObjectFormatter subObject(formatter.SubObject());
+        infra::StringOutputStream::WithStorage<5> boolStream;
+        if (nameToMatch[argPos + offset] == 't')
+            boolStream << "true";
+        else if (nameToMatch[argPos + offset] == 'f')
+            boolStream << "false";
+        subObject.Add("val", boolStream.Storage());
+        subObject.Add("pos", argPos + offset);
+        offset += (int16_t)boolStream.Storage().size() - 2;
         argPos++;
     }
 
@@ -157,18 +171,25 @@ namespace services
             infra::JsonArrayFormatter::WithStringStream arguments(infra::inPlace, stepMatchArgumentsBuffer);
             uint32_t strArgPos = controller.storageMatch.step->StepName().find(R"('%s')", 0);
             uint32_t intArgPos = controller.storageMatch.step->StepName().find("%d", 0);
+            uint32_t boolArgPos = controller.storageMatch.step->StepName().find("%b", 0);
             int16_t argOffset = 0;
-            while (strArgPos != infra::BoundedString::npos || intArgPos != infra::BoundedString::npos)
+            while (strArgPos != infra::BoundedString::npos || intArgPos != infra::BoundedString::npos || boolArgPos != infra::BoundedString::npos)
             {
-                if (strArgPos != infra::BoundedString::npos && strArgPos < intArgPos)
+                auto nArgument = std::min({strArgPos, intArgPos, boolArgPos});
+                if (strArgPos != infra::BoundedString::npos && strArgPos == nArgument)
                 {
                     AddStringValue(arguments, nameToMatch, strArgPos, argOffset);
                     strArgPos = controller.storageMatch.step->StepName().find(R"('%s')", strArgPos);
                 }
-                else if (intArgPos != infra::BoundedString::npos && intArgPos < strArgPos)
+                else if (intArgPos != infra::BoundedString::npos && intArgPos == nArgument)
                 {
                     AddDigitValue(arguments, nameToMatch, intArgPos, argOffset);
                     intArgPos = controller.storageMatch.step->StepName().find("%d", intArgPos);
+                }
+                else if (boolArgPos != infra::BoundedString::npos && boolArgPos == nArgument)
+                {
+                    AddBooleanValue(arguments, nameToMatch, boolArgPos, argOffset);
+                    boolArgPos = controller.storageMatch.step->StepName().find("%b", boolArgPos);
                 }
             }
         }
