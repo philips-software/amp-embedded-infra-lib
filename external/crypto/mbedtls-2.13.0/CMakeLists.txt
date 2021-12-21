@@ -6,7 +6,7 @@ target_include_directories(crypto.mbedtls_emil PUBLIC
 
 target_compile_options(crypto.mbedtls_emil
     PUBLIC
-    $<$<BOOL:TARGET_BUILD_CORTEX>:-fomit-frame-pointer>    
+    $<$<BOOL:${TARGET_BUILD_CORTEX}>:-fomit-frame-pointer>
 )
 
 target_sources(crypto.mbedtls_emil PRIVATE
@@ -176,7 +176,6 @@ target_link_libraries(crypto.mbed_tls
     crypto.mbedtls_emil
     # OR
     # ${MBEDTLS_ALTERNATIVE_DEPEND}
-
 )
 
 add_library(crypto.mbed_tls_minimal EXCLUDE_FROM_ALL INTERFACE)
