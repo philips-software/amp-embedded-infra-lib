@@ -80,7 +80,8 @@ namespace services
 
         infra::SharedOptional<StreamWriterWin> streamWriter;
         std::size_t requestedSendSize = 0;
-        infra::SharedOptional<StreamReaderWin> streamReader;
+        infra::NotifyingSharedOptional<StreamReaderWin> streamReader;
+        infra::SharedPtr<void> keepAliveForReader;
         bool trySend = false;
 
         infra::SharedPtr<void> self;

@@ -15,6 +15,8 @@ if(TARGET_BUILD_WIN)
     )
 
     target_sources(hal.windows PRIVATE
+        SynchronousUartWindows.cpp
+        SynchronousUartWindows.hpp
         UartPortFinder.cpp
         UartPortFinder.hpp
         UartWindows.cpp

@@ -114,7 +114,8 @@ namespace services
         std::size_t requestedSendSize = 0;
 
         infra::SharedOptional<StreamWriterLwIp> streamWriter;
-        infra::SharedOptional<StreamReaderLwIp> streamReader;
+        infra::NotifyingSharedOptional<StreamReaderLwIp> streamReader;
+        infra::SharedPtr<void> keepAliveForReader;
 
         infra::ConstByteRange sendBuffer;
         infra::TimerSingleShot retrySendTimer;

@@ -91,6 +91,35 @@ namespace infra
         return size;
     }
 
+    infra::BoundedConstString JsonSubStringOfMaxEscapedSize(infra::BoundedConstString string, std::size_t maxEscapedSize)
+    {
+        std::size_t start = 0;
+        std::size_t size = 0;
+
+        while (start != string.size() && size < maxEscapedSize)
+        {
+            infra::BoundedConstString nonEscapedSubString = std::get<1>(NonEscapedSubString(string, start));
+
+            if (!nonEscapedSubString.empty())
+            {
+                auto increment = std::min(nonEscapedSubString.size(), maxEscapedSize - size);
+                size += increment;
+                start += increment;
+            }
+            if (start != string.size())
+            {
+                auto escapedSize = EscapedCharacterSize(string[start]);
+                if (escapedSize > maxEscapedSize - size)
+                    break;
+
+                size += escapedSize;
+                ++start;
+            }
+        }
+
+        return string.substr(0, start);
+    }
+
     JsonObjectFormatter::JsonObjectFormatter(infra::TextOutputStream& stream)
         : stream(&stream)
     {

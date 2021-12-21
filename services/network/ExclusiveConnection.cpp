@@ -200,10 +200,8 @@ namespace services
     {
         connectionFactory.mutex.RequestCloseConnection();
 
-        services::GlobalTracer().Trace() << "ExclusiveConnectionFactory::Connector::Connector claiming";
         claimer.Claim([this]()
         {
-            services::GlobalTracer().Trace() << "ExclusiveConnectionFactory::Connector::Connector claim granted";
             this->connectionFactory.connectionFactory.Connect(*this);
         });
     }

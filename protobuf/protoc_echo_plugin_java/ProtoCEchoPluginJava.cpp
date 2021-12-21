@@ -266,7 +266,7 @@ namespace application
 package com.philips.cococo.protobufEcho;
 
 import com.philips.cococo.protobufEcho.TestInteractionProto.*;
-import com.philips.cococo.protobufEcho.WiFiFlashProto.*;
+import com.philips.cococo.protobufEcho.ProductFlashProto.*;
 import com.philips.cococo.protobufEcho.DiCommProto.*;
 import com.philips.cococo.protobufEcho.TestMessagesProto.*;
 import com.philips.cococo.protobufEcho.WiFiUiProto.*;

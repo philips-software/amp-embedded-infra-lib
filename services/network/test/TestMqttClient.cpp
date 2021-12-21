@@ -572,6 +572,7 @@ TEST_F(MqttClientTest, after_35_seconds_ping_request_is_sent)
     ForwardTime(std::chrono::seconds(35));
     EXPECT_EQ((std::vector<uint8_t>{ 0xc0, 0x00 }), connection.sentData);
 
+    // Ping reply
     connection.SimulateDataReceived(std::vector<uint8_t>{ 0xd0, 0x00 });
 
     ForwardTime(std::chrono::seconds(35));
@@ -587,4 +588,52 @@ TEST_F(MqttClientTest, without_ping_reply_connection_is_closed)
 
     ExpectClosingConnection();
     ForwardTime(std::chrono::seconds(30));
+}
+
+TEST_F(MqttClientTest, command_while_sending_ping_is_sent_after_reply)
+{
+    Connect();
+
+    ForwardTime(std::chrono::seconds(35));
+    EXPECT_EQ((std::vector<uint8_t>{ 0xc0, 0x00 }), connection.sentData);
+    connection.sentData.clear();
+
+    FillTopic("topic");
+    FillPayload("payload");
+    client.Subject().Publish();
+
+    EXPECT_TRUE(connection.sentData.empty());
+
+    // Ping reply
+    connection.SimulateDataReceived(std::vector<uint8_t>{ 0xd0, 0x00 });
+
+    ExecuteAllActions();
+    EXPECT_EQ((std::vector<uint8_t>{ 0x32, 0x10, 0x00, 0x05, 't', 'o', 'p', 'i', 'c', 0, 1, 'p', 'a', 'y', 'l', 'o', 'a', 'd' }), connection.sentData);
+
+    EXPECT_CALL(client, PublishDone());
+    connection.SimulateDataReceived(std::vector<uint8_t>{ 0x40, 0x02, 0x00, 0x01 });
+}
+
+TEST_F(MqttClientTest, _35_seconds_after_previous_traffic_ping_request_is_sent)
+{
+    Connect();
+
+    ForwardTime(std::chrono::seconds(20));
+
+    FillTopic("topic");
+    FillPayload("payload");
+    client.Subject().Publish();
+    ExecuteAllActions();
+    connection.sentData.clear();
+
+    EXPECT_CALL(client, PublishDone());
+    connection.SimulateDataReceived(std::vector<uint8_t>{ 0x40, 0x02, 0x00, 0x01 });
+
+    ForwardTime(std::chrono::seconds(34));
+    EXPECT_TRUE(connection.sentData.empty());
+    ForwardTime(std::chrono::seconds(1));
+    EXPECT_EQ((std::vector<uint8_t>{ 0xc0, 0x00 }), connection.sentData);
+
+    // Ping reply
+    connection.SimulateDataReceived(std::vector<uint8_t>{ 0xd0, 0x00 });
 }

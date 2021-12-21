@@ -121,6 +121,7 @@ namespace services
 
     void HttpClientImpl::Detaching()
     {
+        reader = nullptr;
         bodyReaderAccess.SetAction(infra::emptyFunction);
         if (HttpClient::IsAttached())
             HttpClient::Detach();
@@ -158,7 +159,7 @@ namespace services
     {
         if (!response->Done())
         {
-            auto reader = ConnectionObserver::Subject().ReceiveStream();
+            reader = ConnectionObserver::Subject().ReceiveStream();
 
             infra::WeakPtr<services::ConnectionObserver> self = services::ConnectionObserver::Subject().ObserverPtr();
 
@@ -168,6 +169,7 @@ namespace services
                 return;
 
             ConnectionObserver::Subject().AckReceived();
+            reader = nullptr;
 
             if (response->Done())
             {
@@ -233,8 +235,8 @@ namespace services
 
     bool HttpClientImpl::ReadChunkLength()
     {
-        auto reader = ConnectionObserver::Subject().ReceiveStream();
-        infra::TextInputStream::WithErrorPolicy stream(*reader, infra::softFail);
+        auto chunkSizeReader = ConnectionObserver::Subject().ReceiveStream();
+        infra::TextInputStream::WithErrorPolicy stream(*chunkSizeReader, infra::softFail);
 
         uint32_t chunkLength = 0;
         char r;
@@ -277,7 +279,7 @@ namespace services
             ConnectionObserver::Subject().AckReceived();
             *contentLength = chunkLength;
             firstChunk = false;
-            reader = nullptr;
+            chunkSizeReader = nullptr;
 
             if (chunkLength == 0)
                 chunkedEncoding = false;

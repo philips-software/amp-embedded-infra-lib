@@ -26,6 +26,7 @@ namespace services
         infra::Optional<infra::JsonString> GetTableArgument(infra::BoundedConstString fieldName);
         bool ContainsTableArgument(infra::BoundedConstString fieldName);
         infra::Optional<infra::JsonString> GetStringArgument(uint8_t argumentNumber);
+        infra::Optional<uint32_t> GetUIntegerArgument(uint8_t argumentNumber);
         bool HasStringArguments() const;
         bool ContainsStringArgument(uint8_t index);
         uint16_t NrArguments() const;

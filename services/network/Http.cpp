@@ -7,6 +7,18 @@ namespace services
 {
     const HttpHeaders noHeaders{};
 
+    namespace http_responses
+    {
+        const char* ok = "200 OK";
+        const char* badRequest = "400 Bad Request";
+        const char* notFound = "404 Not Found";
+        const char* conflict = "409 Conflict";
+        const char* unprocessableEntity = "422 Unprocessable Entity";
+        const char* tooManyRequests = "429 Too Many Requests";
+        const char* internalServerError = "500 Internal Server Error";
+        const char* notImplemented = "501 Not Implemented";
+    }
+
     namespace
     {
         const char* separator = ":";
@@ -123,10 +135,24 @@ namespace services
         : observer(observer)
     {}
 
+    HttpHeaderParser ::~HttpHeaderParser()
+    {
+        if (destroyed != nullptr)
+            *destroyed = true;
+    }
+
     void HttpHeaderParser::DataReceived(infra::StreamReaderWithRewinding& reader)
     {
+        bool localDestroyed = false;
+        destroyed = &localDestroyed;
+
         if (!statusParsed)
             ParseStatusLine(reader);
+
+        if (localDestroyed)
+            return;
+
+        destroyed = nullptr;
 
         if (!Error())
             ParseHeaders(reader);
@@ -152,6 +178,7 @@ namespace services
         auto crlfPos = headerBuffer.find(crlf);
         if (crlfPos != infra::BoundedString::npos)
         {
+            statusParsed = true;
             auto statusLine = headerBuffer.substr(0, crlfPos);
             reader.Rewind(statusLine.size() + crlf.size());
 
@@ -166,8 +193,6 @@ namespace services
             }
             else
                 SetError();
-
-            statusParsed = true;
         }
     }
 

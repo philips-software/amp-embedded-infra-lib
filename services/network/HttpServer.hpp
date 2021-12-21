@@ -2,6 +2,8 @@
 #define DI_COMM_HTTP_SERVER_HPP
 
 #include "infra/timer/Timer.hpp"
+#include "infra/stream/CountingInputStream.hpp"
+#include "infra/stream/LimitedInputStream.hpp"
 #include "infra/util/IntrusiveForwardList.hpp"
 #include "infra/util/ProxyCreator.hpp"
 #include "infra/util/SharedOptional.hpp"
@@ -93,7 +95,24 @@ namespace services
 
     public:
         virtual bool ServesRequest(const infra::Tokenizer& pathTokens) const = 0;
+        virtual void RequestReceived(HttpRequestParser& parser, HttpServerConnection& connection) = 0;
+        virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) = 0;
+        virtual void Close() = 0;
+    };
+
+    class SimpleHttpPage
+        : public HttpPage
+    {
+    public:
+        virtual void RequestReceived(HttpRequestParser& parser, HttpServerConnection& connection) override;
+        virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
+        virtual void Close() override;
+
         virtual void RespondToRequest(HttpRequestParser& parser, HttpServerConnection& connection) = 0;
+
+    private:
+        HttpServerConnection* connection = nullptr;
+        HttpRequestParser* parser = nullptr;
     };
 
     class HttpServerConnectionObserver
@@ -130,31 +149,43 @@ namespace services
         virtual HttpPage* PageForRequest(const HttpRequestParser& request) override;
 
     private:
-        void ReceivedTooMuchData(infra::TextInputStream& receiveStream);
-        void ReceivedRequest(infra::TextInputStream& receiveStream, std::size_t available);
-        void TryHandleRequest(HttpRequestParser& request);
-        void HandleRequest(HttpRequestParser& request);
+        void ReceivedTooMuchData(infra::StreamReader& reader);
+        void ReceivedRequest(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
+        void TryHandleRequest(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
+        void HandleRequest(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
         void RequestIsNowInProgress();
-        void ServePage(HttpRequestParser& request);
+        void ServePage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
+        void DataReceivedForPage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
+        void PageReaderClosed();
         void RequestSendStream();
         void PrepareForNextRequest();
-        bool Expect100(HttpRequestParser& request) const;
+        bool Expect100() const;
         void SendBuffer();
         void CheckIdleClose();
 
     protected:
         infra::SharedPtr<infra::StreamWriter> streamWriter;
+        infra::SharedPtr<infra::StreamReaderWithRewinding>* readerPtr = nullptr;
 
     protected:
+        infra::BoundedString& buffer;
         HttpPageServer& httpServer;
         Connection* connection = nullptr;
         bool send100Response = false;
-        infra::BoundedString& buffer;
         bool closeWhenIdle = false;
         bool idle = false;
-        bool requestInProgress = false;
-        bool sendingResponse = false;
+        infra::Optional<uint32_t> contentLength;
+        uint32_t lengthRead = 0;
+        HttpPage* pageServer = nullptr;
+        infra::SharedPtr<infra::StreamReaderWithRewinding> pageReader;
+        infra::Optional<infra::CountingStreamReaderWithRewinding> pageCountingReader;
+        infra::NotifyingSharedOptional<infra::LimitedStreamReaderWithRewinding> pageLimitedReader;
+        infra::SharedPtr<void> keepSelfAlive;
+        infra::Optional<HttpRequestParserImpl> parser;
         infra::TimerSingleShot initialIdle;
+        bool sendingResponse = false;
+
+        friend class SimpleHttpPage;
     };
 
     class DefaultHttpServer

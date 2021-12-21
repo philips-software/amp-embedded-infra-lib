@@ -1,8 +1,10 @@
 #include "infra/stream/LimitedOutputStream.hpp"
 #include "infra/stream/SavedMarkerStream.hpp"
+#include "infra/stream/StringInputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "services/network/HttpErrors.hpp"
 #include "services/network/HttpServer.hpp"
+#include <limits>
 
 namespace services
 {
@@ -102,6 +104,7 @@ namespace services
     HttpServerConnectionObserver::HttpServerConnectionObserver(infra::BoundedString& buffer, HttpPageServer& httpServer)
         : buffer(buffer)
         , httpServer(httpServer)
+        , pageLimitedReader([this]() { PageReaderClosed(); })
         , initialIdle(std::chrono::seconds(10), [this]()
             {
                 idle = true;
@@ -130,22 +133,46 @@ namespace services
 
     void HttpServerConnectionObserver::DataReceived()
     {
-        if (streamWriter == nullptr)
+        if (streamWriter == nullptr || pageReader != nullptr)
             return;
 
-        infra::SharedPtr<infra::StreamReader> reader = Subject().ReceiveStream();
-        infra::TextInputStream::WithErrorPolicy receiveStream(*reader);
+        infra::SharedPtr<infra::StreamReaderWithRewinding> reader = Subject().ReceiveStream();
+        readerPtr = &reader;
 
-        auto available = receiveStream.Available();
-        if (available > buffer.max_size() - buffer.size())
-            ReceivedTooMuchData(receiveStream);
-        else if (available > 0)
-            ReceivedRequest(receiveStream, available);
+        infra::WeakPtr<ConnectionObserver> weakSelf = Subject().ObserverPtr();
+
+        if (!reader->Empty())
+        {
+            if (pageServer != nullptr)
+                DataReceivedForPage(std::move(reader));
+            else if (parser != infra::none)     // Received data after contents for the page, but before closing the page request
+                Abort();
+            else
+                ReceivedRequest(std::move(reader));
+        }
+
+        if (weakSelf.lock())
+            readerPtr = nullptr;
     }
 
     void HttpServerConnectionObserver::Detaching()
     {
+        if (pageServer != nullptr)
+        {
+            if (contentLength == infra::none)
+                parser->SetContentLength(lengthRead);
+
+            pageServer->Close();
+        }
+
+        pageLimitedReader.OnAllocatable([this]() { keepSelfAlive = nullptr; });
+
         streamWriter = nullptr;
+
+        if (readerPtr != nullptr)
+            *readerPtr = nullptr;
+
+        connection = nullptr;
     }
 
     void HttpServerConnectionObserver::Close()
@@ -159,7 +186,8 @@ namespace services
         // TakeOverConnection may have been invoked, which leads to Subject() not being available. However, TakeOverConnection may have been invoked by a page
         // which is about to upgrade to a web connection, but which is not yet upgraded since it is waiting for storage. In that case, if the HttpServer
         // must close down, then we still need to invoke CloseAndDestroy on the connection. Therefore, connection is used instead of Subject()
-        connection->AbortAndDestroy();
+        if (connection != nullptr)
+            connection->AbortAndDestroy();
     }
 
     void HttpServerConnectionObserver::SendResponse(const HttpResponse& response)
@@ -186,7 +214,10 @@ namespace services
     void HttpServerConnectionObserver::TakeOverConnection(ConnectionObserver& newObserver)
     {
         streamWriter = nullptr;
-        Subject().AckReceived();
+        if (pageReader != nullptr)
+            Subject().AckReceived();
+        pageLimitedReader.OnAllocatable(infra::emptyFunction);
+        pageServer = nullptr;
 
         auto& connection = Subject();
         auto newObserverPtr = infra::MakeContainedSharedObject(newObserver, connection.ObserverPtr());
@@ -209,61 +240,119 @@ namespace services
             return httpServer.PageForRequest(request);
     }
 
-    void HttpServerConnectionObserver::ReceivedTooMuchData(infra::TextInputStream& receiveStream)
+    void HttpServerConnectionObserver::ReceivedTooMuchData(infra::StreamReader& reader)
     {
-        while (!receiveStream.Empty())
-            receiveStream.ContiguousRange();
+        infra::TextInputStream::WithErrorPolicy stream(reader);
+        while (!stream.Empty())
+            stream.ContiguousRange();
         Subject().AckReceived();
         SendResponse(HttpResponseOutOfMemory::Instance());
     }
 
-    void HttpServerConnectionObserver::ReceivedRequest(infra::TextInputStream& receiveStream, std::size_t available)
+    void HttpServerConnectionObserver::ReceivedRequest(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
+        infra::TextInputStream::WithErrorPolicy stream(*reader);
+        auto start = reader->ConstructSaveMarker();
+        auto available = std::min(stream.Available(), buffer.max_size() - buffer.size());
         buffer.resize(buffer.size() + available);
         auto justReceived = buffer.substr(buffer.size() - available);
-        receiveStream >> justReceived;
-        Subject().AckReceived();
+        stream >> justReceived;
 
-        HttpRequestParserImpl parser(buffer);
-        if (parser.Complete())
-            TryHandleRequest(parser);
-    }
+        // First eat up any leftover of previous requests
+        auto reducedContentLength = std::min<uint32_t>(contentLength.ValueOr(0), buffer.size());
+        buffer.erase(buffer.begin(), buffer.begin() + reducedContentLength);
+        if (contentLength != infra::none)
+            *contentLength -= reducedContentLength;
 
-    void HttpServerConnectionObserver::TryHandleRequest(HttpRequestParser& request)
-    {
-        if (!request.Valid())
-            SendResponse(HttpResponseBadRequest::Instance());
-        else if (requestInProgress)
-            Abort();
+        parser.Emplace(buffer);
+        if (parser->HeadersComplete())
+        {
+            reader->Rewind(start + buffer.size());
+            Subject().AckReceived();
+            TryHandleRequest(std::move(reader));
+        }
+        else if (!reader->Empty())
+            ReceivedTooMuchData(*reader);
         else
-            HandleRequest(request);
+            Subject().AckReceived();
     }
 
-    void HttpServerConnectionObserver::HandleRequest(HttpRequestParser& request)
+    void HttpServerConnectionObserver::TryHandleRequest(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+    {
+        if (!parser->Valid())
+            SendResponse(HttpResponseBadRequest::Instance());
+        else
+            HandleRequest(std::move(reader));
+    }
+
+    void HttpServerConnectionObserver::HandleRequest(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
         RequestIsNowInProgress();
 
-        send100Response |= Expect100(request);
+        send100Response |= Expect100();
 
-        ServePage(request);
+        ServePage(std::move(reader));
     }
 
     void HttpServerConnectionObserver::RequestIsNowInProgress()
     {
         idle = false;
         initialIdle.Cancel();
-        requestInProgress = true;
         ReceivedHttpRequest(buffer);
     }
 
-    void HttpServerConnectionObserver::ServePage(HttpRequestParser& request)
+    void HttpServerConnectionObserver::ServePage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
-        auto pageServer = PageForRequest(request);
+        contentLength = parser->ContentLength();
+        pageServer = PageForRequest(*parser);
         if (pageServer != nullptr)
-            pageServer->RespondToRequest(request, *this);
+        {
+            infra::WeakPtr<ConnectionObserver> weakSelf = Subject().ObserverPtr();
+
+            pageServer->RequestReceived(*parser, *this);
+
+            if (weakSelf.lock() && pageServer != nullptr)
+                DataReceivedForPage(std::move(reader));
+        }
         else
             SendResponse(HttpResponseNotFound::Instance());
     }
+
+    void HttpServerConnectionObserver::DataReceivedForPage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+    {
+        if (contentLength != infra::none && reader->Available() > *contentLength)
+            Abort();
+        else
+        {
+            keepSelfAlive = Subject().ObserverPtr();
+            pageReader = std::move(reader);
+            pageCountingReader.Emplace(*pageReader);
+            pageServer->DataReceived(pageLimitedReader.Emplace(*pageCountingReader, contentLength.ValueOr(std::numeric_limits<uint32_t>::max())));
+        }
+    }
+
+    void HttpServerConnectionObserver::PageReaderClosed()
+    {
+        if (contentLength != infra::none)
+            *contentLength -= pageCountingReader->TotalRead();
+        lengthRead += pageCountingReader->TotalRead();
+        Subject().AckReceived();
+        pageCountingReader = infra::none;
+        pageReader = nullptr;
+
+        if (contentLength != infra::none && contentLength == 0)
+        {
+            pageServer->Close();
+            pageServer = nullptr;
+        }
+
+        infra::WeakPtr<void> weakSelf = keepSelfAlive;
+        keepSelfAlive = nullptr;
+
+        if (weakSelf.lock())
+            DataReceived();
+    }
+
 
     void HttpServerConnectionObserver::RequestSendStream()
     {
@@ -276,16 +365,18 @@ namespace services
         RequestSendStream();
         if (!sendingResponse)
         {
-            requestInProgress = false;
+            pageServer = nullptr;
+            parser = infra::none;
+            lengthRead = 0;
             send100Response = false;
             buffer.clear();
             SetIdle();
         }
     }
 
-    bool HttpServerConnectionObserver::Expect100(HttpRequestParser& request) const
+    bool HttpServerConnectionObserver::Expect100() const
     {
-        return request.Header("Expect") == "100-continue";
+        return parser->Header("Expect") == "100-continue";
     }
 
     void HttpServerConnectionObserver::SendBuffer()
@@ -300,8 +391,42 @@ namespace services
     
     void HttpServerConnectionObserver::CheckIdleClose()
     {
-        if (closeWhenIdle && idle)
+        if (closeWhenIdle && idle && IsAttached())
             ConnectionObserver::Close();
+    }
+
+    void SimpleHttpPage::RequestReceived(HttpRequestParser& parser, HttpServerConnection& connection)
+    {
+        this->connection = &connection;
+        this->parser = &parser;
+    }
+
+    void SimpleHttpPage::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+    {
+        infra::TextInputStream::WithErrorPolicy stream(*reader);
+        auto& buffer = parser->BodyBuffer();
+        auto available = stream.Available();
+        if (available > buffer.max_size() - buffer.size() || buffer.size() + available > parser->ContentLength().ValueOr(std::numeric_limits<uint32_t>::max()))
+        {
+            while (!stream.Empty())
+                stream.ContiguousRange();
+            connection->SendResponse(HttpResponseOutOfMemory::Instance());
+        }
+        else
+        {
+            auto available = stream.Available();
+            buffer.resize(buffer.size() + available);
+            auto justReceived = buffer.substr(buffer.size() - available);
+            stream >> justReceived;
+
+            reader = nullptr;
+        }
+    }
+
+    void SimpleHttpPage::Close()
+    {
+        if (parser->BodyBuffer().size() == parser->ContentLength())
+            RespondToRequest(*parser, *connection);
     }
 
     DefaultHttpServer::DefaultHttpServer(infra::BoundedString& buffer, ConnectionFactory& connectionFactory, uint16_t port)

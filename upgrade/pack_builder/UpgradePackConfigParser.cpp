@@ -1,13 +1,5 @@
 #include "UpgradePackConfigParser.hpp"
 
-namespace
-{
-    std::pair<std::string, std::string> StdStringPair(infra::JsonString str1, infra::JsonString str2)
-    {
-        return std::pair<std::string, std::string>(str1.ToStdString(), str2.ToStdString());
-    }
-}
-
 namespace application
 {
     UpgradePackConfigParser::UpgradePackConfigParser(infra::JsonObject& json)

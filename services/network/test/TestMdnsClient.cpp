@@ -336,8 +336,6 @@ public:
     { 
         [&](infra::BoundedString hostname, services::DnsRecordPayload payload, infra::ConstByteRange data)
         {
-            // additionalRecordsCallback.callback(payload.type);
-
             if (payload.type == services::DnsType::dnsTypeA)
             {
                 EXPECT_EQ(data, AAnswer());
@@ -554,7 +552,6 @@ TEST_F(MdnsClientTest, receiving_additional_records_to_passive_query_results_in_
 {
     ConstructPtrQueryWithExpectedCallbackAndAdditionalRecordsCallback();
 
-    
     EXPECT_CALL(callback, callback(services::DnsType::dnsTypePtr));
     EXPECT_CALL(additionalRecordsCallback, callback(services::DnsType::dnsTypeA));
     EXPECT_CALL(additionalRecordsCallback, callback(services::DnsType::dnsTypeAAAA));
@@ -580,33 +577,3 @@ TEST_F(MdnsClientTest, receiving_additional_records_to_active_query_results_in_d
     EXPECT_CALL(additionalRecordsCallback, callback(services::DnsType::dnsTypeSrv));
     PtrAnswerReceivedWithAdditionalRecords();
 }
-
-// TEST_F(MdnsClientTest, receiving_additional_records_to_passive_query_results_in_data)
-// {
-//     ConstructAllQueriesWithExpectedCallback();
-
-//     EXPECT_CALL(callback, callback(services::DnsType::dnsTypeA));
-//     EXPECT_CALL(callback, callback(services::DnsType::dnsTypeAAAA));
-//     EXPECT_CALL(callback, callback(services::DnsType::dnsTypePtr));
-//     EXPECT_CALL(callback, callback(services::DnsType::dnsTypeTxt));
-//     EXPECT_CALL(callback, callback(services::DnsType::dnsTypeSrv));
-//     PtrAnswerReceivedWithAdditionalRecords();
-// }
-
-// TEST_F(MdnsClientTest, receiving_additional_records_to_active_query_results_in_data)
-// {
-//     ConstructAllQueriesWithExpectedCallback();
-
-//     ExpectActiveQueryStarted();
-//     queryPtr->Ask();
-
-//     auto ptrQuestion = PtrQuestion();
-//     SendStreamAvailableAndExpectQuestion(ptrQuestion);
-
-//     EXPECT_CALL(callback, callback(services::DnsType::dnsTypeA));
-//     EXPECT_CALL(callback, callback(services::DnsType::dnsTypeAAAA));
-//     EXPECT_CALL(callback, callback(services::DnsType::dnsTypePtr));
-//     EXPECT_CALL(callback, callback(services::DnsType::dnsTypeTxt));
-//     EXPECT_CALL(callback, callback(services::DnsType::dnsTypeSrv));
-//     PtrAnswerReceivedWithAdditionalRecords();
-// }

@@ -1,4 +1,3 @@
-
 add_library(protobuf.echo EXCLUDE_FROM_ALL STATIC)
 
 target_link_libraries(protobuf.echo
@@ -15,3 +14,4 @@ target_sources(protobuf.echo PRIVATE
     EchoInstantiation.hpp
 )
 
+add_subdirectory(test_helper)

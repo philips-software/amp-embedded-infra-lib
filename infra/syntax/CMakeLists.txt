@@ -18,10 +18,10 @@ target_sources(infra.syntax PRIVATE
     JsonInputStream.hpp
     JsonStreamingParser.cpp
     JsonStreamingParser.hpp
-    ProtoFormatter.cpp
-    ProtoFormatter.hpp
     ProtoParser.cpp
     ProtoParser.hpp
+    ProtoFormatter.cpp
+    ProtoFormatter.hpp
     XmlFormatter.cpp
     XmlFormatter.hpp
 )
@@ -30,6 +30,8 @@ if(TARGET_ARCH_X86)
     target_sources(infra.syntax PRIVATE
         JsonObjectNavigator.cpp
         JsonObjectNavigator.hpp
+        JsonFileReader.cpp
+        JsonFileReader.hpp
     )
 endif()
 

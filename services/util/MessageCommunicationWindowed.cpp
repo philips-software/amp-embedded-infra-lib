@@ -99,9 +99,6 @@ namespace services
                             });
                             receivedData.Pop(2);
 
-                            auto end = receivedData.e.load();
-                            auto begin = receivedData.b.load();
-
                             GetObserver().ReceivedMessage(reader.Emplace(infra::inPlace, receivedData, size));
                         }
 
@@ -272,8 +269,6 @@ namespace services
 
         void AtomicDeque::Push(infra::ConstByteRange range)
         {
-            auto end = e.load();
-            auto begin = b.load();
             assert(range.size() <= MaxSize() - Size());
 
             while (!range.empty())
@@ -351,10 +346,6 @@ namespace services
 
         void AtomicDequeReader::Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy)
         {
-            auto end = deque.e.load();
-            auto begin = deque.b.load();
-
-            auto available = deque.Size();
             while (!range.empty())
             {
                 auto dequeRange = infra::Head(PeekContiguousRange(0), range.size());

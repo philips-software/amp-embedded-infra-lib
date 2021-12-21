@@ -15,6 +15,8 @@ if(TARGET_ARCH_X86)
         FileSystemGeneric.hpp
         SynchronousRandomDataGeneratorGeneric.cpp
         SynchronousRandomDataGeneratorGeneric.hpp
+        TimeKeeperGeneric.cpp
+        TimeKeeperGeneric.hpp
         TimerServiceGeneric.cpp
         TimerServiceGeneric.hpp
     )

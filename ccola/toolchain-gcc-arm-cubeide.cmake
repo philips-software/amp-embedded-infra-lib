@@ -1,8 +1,12 @@
 include(CMakeForceCompiler)
 
-find_program(gcc_path NAMES "arm-none-eabi-gcc.exe" PATHS "C:/ST/STM32CubeIDE_1.4.0/STM32CubeIDE/plugins/*/tools/bin")
+file(GLOB bin_paths "C:/ST/STM32CubeIDE_*/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.*/tools/bin/")
+list(GET bin_paths 0 bin_path)
+
+find_program(gcc_path NAMES "arm-none-eabi-gcc.exe" PATHS "${bin_path}/")
+
 if(NOT gcc_path)
-	message(FATAL_ERROR "GCC not found. Make sure you have started CubeIDE at least once to install the toolchain.")
+    message(FATAL_ERROR "GCC not found. Make sure you have started CubeIDE at least once to install the toolchain.")
 endif()
 
 get_filename_component(tools_path "${gcc_path}" DIRECTORY)

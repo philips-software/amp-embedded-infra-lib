@@ -8,14 +8,15 @@ target_link_libraries(hal.synchronous_interfaces_test_doubles
 
 target_sources(hal.synchronous_interfaces_test_doubles
     PRIVATE
-    SynchronousEncryptorMock.hpp
-    SynchronousFixedRandomDataGenerator.cpp
-    SynchronousFixedRandomDataGenerator.hpp
-    SynchronousFlashStub.cpp
-    SynchronousFlashStub.hpp
-    SynchronousRandomDataGeneratorMock.hpp
-    SynchronousSerialCommunicationMock.cpp
+    TimeKeeperMock.hpp
     SynchronousSerialCommunicationMock.hpp
+    SynchronousSerialCommunicationMock.cpp
+    SynchronousRandomDataGeneratorMock.hpp
+    SynchronousFlashStub.hpp
+    SynchronousFlashStub.cpp
+    SynchronousFixedRandomDataGenerator.hpp
+    SynchronousFixedRandomDataGenerator.cpp
+    SynchronousEncryptorMock.hpp
 )
 
 add_subdirectory(test)

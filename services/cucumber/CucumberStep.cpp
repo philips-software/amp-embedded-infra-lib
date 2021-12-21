@@ -1,4 +1,5 @@
 #include "services/cucumber/CucumberStep.hpp"
+#include "infra/stream/StringInputStream.hpp"
 
 namespace services
 {
@@ -66,7 +67,7 @@ namespace services
 
     bool CucumberStep::HasStringArguments() const
     {
-        return StepName().find("\'%s\'") != infra::BoundedString::npos || StepName().find("%d") != infra::BoundedString::npos;
+        return StepName().find(R"('%s')") != infra::BoundedString::npos || StepName().find("%d") != infra::BoundedString::npos;
     }
 
     bool CucumberStep::ContainsStringArgument(uint8_t index)
@@ -77,12 +78,12 @@ namespace services
     uint16_t CucumberStep::NrArguments() const
     {
         uint8_t nrArguments = 0;
-        size_t strArgPos = StepName().find("\'%s\'", 0);
+        size_t strArgPos = StepName().find(R"('%s')", 0);
         size_t intArgPos = StepName().find("%d", 0);
         while (strArgPos != infra::BoundedString::npos)
         {
             nrArguments++;
-            strArgPos = StepName().find("\'%s\'", ++strArgPos);
+            strArgPos = StepName().find(R"('%s')", ++strArgPos);
         }
         while (intArgPos != infra::BoundedString::npos)
         {
@@ -122,5 +123,22 @@ namespace services
                 return infra::Optional<infra::JsonString>(infra::inPlace, argumentIterator->Get<infra::JsonString>());
         }
         return infra::Optional<infra::JsonString>(infra::none);
+    }
+
+    infra::Optional<uint32_t> CucumberStep::GetUIntegerArgument(uint8_t argumentNumber)
+    {
+        auto optionalStringArgument = GetStringArgument(argumentNumber);
+
+        if (optionalStringArgument)
+        {
+            infra::BoundedString::WithStorage<10> stringArgument;
+            optionalStringArgument->ToString(stringArgument);
+            infra::StringInputStream stream(stringArgument);
+            uint32_t argument;
+            stream >> argument;
+            return infra::Optional<uint32_t>(infra::inPlace, uint32_t(argument));
+        }
+
+        return infra::Optional<uint32_t>(infra::none);
     }
 }

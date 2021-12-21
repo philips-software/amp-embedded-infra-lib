@@ -1,6 +1,5 @@
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "infra/stream/StringOutputStream.hpp"
-#include "infra/util/ConstructBin.hpp"
 #include "services/network/MdnsClient.hpp"
 
 namespace services
@@ -130,8 +129,8 @@ namespace services
 
     MdnsClient::MdnsClient(DatagramFactory& datagramFactory, Multicast& multicast)
         : datagramFactory(datagramFactory)
-        , datagramExchange(datagramFactory.Listen(*this, mdnsPort, IPVersions::ipv4))
         , multicast(multicast)
+        , datagramExchange(datagramFactory.Listen(*this, mdnsPort, IPVersions::ipv4))
     {
         multicast.JoinMulticastGroup(datagramExchange, mdnsMulticastAddressIpv4);
     }

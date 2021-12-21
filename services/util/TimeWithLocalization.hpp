@@ -7,6 +7,10 @@
 
 namespace services
 {
+    const uint32_t utcTimerServiceId = 1;
+    const uint32_t localTimeWithoutDaylightSavingTimerServiceId = 2;
+    const uint32_t localTimeTimerServiceId = 3;
+
     class TimeWithLocalization
     {
     public:
@@ -14,7 +18,10 @@ namespace services
         static const std::size_t TimeOffsetSize = 6;
 
     public:
-        explicit TimeWithLocalization(uint32_t systemTimerServiceId = infra::systemTimerServiceId, uint32_t utcTimerServiceId = 1, uint32_t localTimeWithoutDaylightSavingTimerServiceId = 2, uint32_t localTimeTimerServiceId = 3);
+        explicit TimeWithLocalization(uint32_t systemTimerServiceId = infra::systemTimerServiceId,
+            uint32_t utcTimerServiceId = utcTimerServiceId,
+            uint32_t localTimeWithoutDaylightSavingTimerServiceId = localTimeWithoutDaylightSavingTimerServiceId,
+            uint32_t localTimeTimerServiceId = localTimeTimerServiceId);
 
         infra::DerivedTimerService& Utc();
         infra::DerivedTimerService& LocalWithoutDaylightSaving();

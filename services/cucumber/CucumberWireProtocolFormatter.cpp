@@ -155,7 +155,7 @@ namespace services
         stepMatchArgumentsBuffer.clear();
         {
             infra::JsonArrayFormatter::WithStringStream arguments(infra::inPlace, stepMatchArgumentsBuffer);
-            uint32_t strArgPos = controller.storageMatch.step->StepName().find("\'%s\'", 0);
+            uint32_t strArgPos = controller.storageMatch.step->StepName().find(R"('%s')", 0);
             uint32_t intArgPos = controller.storageMatch.step->StepName().find("%d", 0);
             int16_t argOffset = 0;
             while (strArgPos != infra::BoundedString::npos || intArgPos != infra::BoundedString::npos)
@@ -163,7 +163,7 @@ namespace services
                 if (strArgPos != infra::BoundedString::npos && strArgPos < intArgPos)
                 {
                     AddStringValue(arguments, nameToMatch, strArgPos, argOffset);
-                    strArgPos = controller.storageMatch.step->StepName().find("\'%s\'", strArgPos);
+                    strArgPos = controller.storageMatch.step->StepName().find(R"('%s')", strArgPos);
                 }
                 else if (intArgPos != infra::BoundedString::npos && intArgPos < strArgPos)
                 {

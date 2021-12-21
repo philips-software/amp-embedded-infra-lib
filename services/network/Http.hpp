@@ -65,6 +65,18 @@ namespace services
         HttpVersionNotSupported = 505
     };
 
+    namespace http_responses
+    {
+        extern const char* ok;                     // 200
+        extern const char* badRequest;             // 400
+        extern const char* notFound;               // 404
+        extern const char* conflict;               // 409
+        extern const char* unprocessableEntity;    // 422
+        extern const char* tooManyRequests;        // 429
+        extern const char* internalServerError;    // 500
+        extern const char* notImplemented;         // 501
+    }
+
     class HttpHeader
     {
     public:
@@ -125,6 +137,7 @@ namespace services
     {
     public:
         HttpHeaderParser(HttpHeaderParserObserver& observer);
+        ~HttpHeaderParser();
 
         void DataReceived(infra::StreamReaderWithRewinding& reader);
         bool Done() const;
@@ -145,6 +158,7 @@ namespace services
         bool error = false;
         bool statusParsed = false;
         HttpStatusCode statusCode;
+        bool* destroyed = nullptr;
     };
 
     infra::BoundedConstString SchemeFromUrl(infra::BoundedConstString url);

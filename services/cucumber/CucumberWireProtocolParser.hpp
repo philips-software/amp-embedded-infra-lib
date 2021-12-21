@@ -28,8 +28,8 @@ namespace services
         infra::JsonArray invokeArguments;
         infra::Optional<infra::JsonObject> scenarioTags;
 
-        void ParseRequest(const infra::BoundedString& inputString);
-        bool Valid(const infra::BoundedString& inputString);
+        void ParseRequest(infra::BoundedConstString inputString);
+        bool Valid(infra::BoundedConstString inputString);
 
     private:
         void ParseStepMatchRequest(infra::JsonArray& input);
