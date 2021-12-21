@@ -5,12 +5,15 @@
 #include "infra/timer/DerivedTimerService.hpp"
 #include "infra/util/Optional.hpp"
 
-namespace services
+namespace infra
 {
     const uint32_t utcTimerServiceId = 1;
     const uint32_t localTimeWithoutDaylightSavingTimerServiceId = 2;
     const uint32_t localTimeTimerServiceId = 3;
+}
 
+namespace services
+{
     class TimeWithLocalization
     {
     public:
@@ -19,9 +22,9 @@ namespace services
 
     public:
         explicit TimeWithLocalization(uint32_t systemTimerServiceId = infra::systemTimerServiceId,
-            uint32_t utcTimerServiceId = utcTimerServiceId,
-            uint32_t localTimeWithoutDaylightSavingTimerServiceId = localTimeWithoutDaylightSavingTimerServiceId,
-            uint32_t localTimeTimerServiceId = localTimeTimerServiceId);
+            uint32_t utcTimerServiceId = infra::utcTimerServiceId,
+            uint32_t localTimeWithoutDaylightSavingTimerServiceId = infra::localTimeWithoutDaylightSavingTimerServiceId,
+            uint32_t localTimeTimerServiceId = infra::localTimeTimerServiceId);
 
         infra::DerivedTimerService& Utc();
         infra::DerivedTimerService& LocalWithoutDaylightSaving();
