@@ -1,22 +1,22 @@
-ccola_component(micro_ecc static_library)
+add_library(crypto.micro_ecc EXCLUDE_FROM_ALL STATIC)
 
-    ccola_inheritable_include_directories(.)
+target_include_directories(crypto.micro_ecc PUBLIC
+    ${CMAKE_CURRENT_LIST_DIR}
+)
 
-    ccola_compile_options(win: "/wd4244" cortex: "-fomit-frame-pointer")
+target_compile_options(crypto.micro_ecc
+    PUBLIC
+    $<$<BOOL:${TARGET_BUILD_CORTEX}>:-fomit-frame-pointer>
+    $<$<CXX_COMPILER_ID:MSVC>:/wd4244>
+)
 
-    ccola_sources(
-        asm_arm.inc
-        asm_arm_mult_square.inc
-        curve-specific.inc
-        platform-specific.inc
-        types.h
-        uECC.c
-        uECC.h
-        uECC_vli.h
-    )
-
-    ccola_subdirectories(
-        #test
-    )
-
-ccola_end_component()
+target_sources(crypto.micro_ecc PRIVATE
+    asm_arm.inc
+    asm_arm_mult_square.inc
+    curve-specific.inc
+    platform-specific.inc
+    types.h
+    uECC.c
+    uECC.h
+    uECC_vli.h
+)
