@@ -46,10 +46,12 @@ namespace hal
     void SynchronousFlashStub::WriteBuffer(infra::ConstByteRange buffer, uint32_t address)
     {
         if (stopAfterWriteSteps)
+        {
             if (*stopAfterWriteSteps > 0)
                 --*stopAfterWriteSteps;
             else
                 return;
+        }
 
         WriteBufferImpl(buffer, address);
     }

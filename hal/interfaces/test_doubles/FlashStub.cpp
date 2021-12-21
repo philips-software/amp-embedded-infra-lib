@@ -54,10 +54,12 @@ namespace hal
         infra::EventDispatcher::Instance().Schedule(onDone);
 
         if (stopAfterWriteSteps)
+        {
             if (*stopAfterWriteSteps > 0)
                 --*stopAfterWriteSteps;
             else
                 return;
+        }
 
         while (!buffer.empty())
         {

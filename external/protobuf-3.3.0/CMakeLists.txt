@@ -109,6 +109,7 @@ if(TARGET_ARCH_X86)
 
     target_compile_options(protobuf.libprotobuf
         PRIVATE
+        $<$<COMPILE_LANG_AND_ID:CXX,AppleClang,Clang>:-Wno-enum-compare-switch>
         $<$<BOOL:${TARGET_BUILD_WIN}>:
             $<$<CXX_COMPILER_ID:MSVC>:
                 /wd4018
@@ -259,6 +260,7 @@ if(TARGET_ARCH_X86)
 
     target_compile_options(protobuf.libprotoc
         PRIVATE
+        $<$<COMPILE_LANG_AND_ID:CXX,AppleClang,Clang>:-Wno-enum-compare-switch>
         $<$<BOOL:${TARGET_BUILD_WIN}>:
             $<$<CXX_COMPILER_ID:MSVC>:
                 /wd4018

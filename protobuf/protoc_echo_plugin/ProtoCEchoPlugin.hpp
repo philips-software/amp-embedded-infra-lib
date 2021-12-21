@@ -75,7 +75,7 @@ namespace application
         void Run(Entities& formatter);
 
     protected:
-        virtual void AddTypeMapType(EchoField& field, Entities& entities);
+        virtual void AddTypeMapType(EchoField& field, Entities& entities) override;
         virtual std::string MessageSuffix() const override;
     };
 
@@ -128,7 +128,7 @@ namespace application
         using MessageGenerator::MessageGenerator;
 
     protected:
-        virtual void GenerateTypeMap(Entities& formatter);
+        virtual void GenerateTypeMap(Entities& formatter) override;
         virtual void GenerateConstructors() override;
         virtual void GenerateGetters() override;
         virtual void GenerateNestedMessages(Entities& formatter) override;

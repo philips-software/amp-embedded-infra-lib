@@ -19,7 +19,7 @@ namespace infra
 
     public:
         virtual void ComputeNextTriggerTime() override;
-        virtual void Jumped(TimePoint from, TimePoint to);
+        virtual void Jumped(TimePoint from, TimePoint to) override;
 
     private:
         void ComputeNextTriggerTime(const infra::Function<void()>& action);
