@@ -1,5 +1,5 @@
 add_executable(infra.syntax_test)
-add_test(NAME infra.syntax_test COMMAND infra.syntax_test)
+gtest_discover_tests(infra.syntax_test AUTO)
 
 target_link_libraries(infra.syntax_test
     PUBLIC

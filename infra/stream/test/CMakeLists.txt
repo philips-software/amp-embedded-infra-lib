@@ -1,5 +1,5 @@
 add_executable(infra.stream_test)
-add_test(NAME infra.stream_test COMMAND infra.stream_test)
+gtest_discover_tests(infra.stream_test AUTO)
 
 target_link_libraries(infra.stream_test
     PUBLIC

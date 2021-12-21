@@ -1,5 +1,5 @@
 add_executable(services.cucumber_test)
-add_test(NAME services.cucumber_test COMMAND services.cucumber_test)
+gtest_discover_tests(services.cucumber_test AUTO)
 
 target_link_libraries(services.cucumber_test
     PUBLIC

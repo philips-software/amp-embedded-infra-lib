@@ -1,5 +1,5 @@
 add_executable(infra.util_test)
-add_test(NAME infra.util_test COMMAND infra.util_test)
+gtest_discover_tests(infra.util_test AUTO)
 
 target_link_libraries(infra.util_test
     PUBLIC

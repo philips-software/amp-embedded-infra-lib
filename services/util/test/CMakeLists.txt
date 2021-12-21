@@ -1,5 +1,5 @@
 add_executable(services.util_test)
-add_test(NAME services.util_test COMMAND services.util_test)
+gtest_discover_tests(services.util_test AUTO)
 
 target_link_libraries(services.util_test
     PUBLIC

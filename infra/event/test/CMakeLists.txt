@@ -1,5 +1,5 @@
 add_executable(infra.event_test)
-add_test(NAME infra.event_test COMMAND infra.event_test)
+gtest_discover_tests(infra.event_test AUTO)
 
 target_link_libraries(infra.event_test
     PUBLIC

@@ -1,5 +1,5 @@
 add_executable(services.network_test)
-add_test(NAME services.network_test COMMAND services.network_test)
+gtest_discover_tests(services.network_test AUTO)
 
 target_link_libraries(services.network_test
     PUBLIC

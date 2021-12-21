@@ -1,5 +1,5 @@
 add_executable(services.tracer_test)
-add_test(NAME services.tracer_test COMMAND services.tracer_test)
+gtest_discover_tests(services.tracer_test AUTO)
 
 target_link_libraries(services.tracer_test
     PUBLIC

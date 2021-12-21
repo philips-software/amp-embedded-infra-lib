@@ -1,5 +1,5 @@
 add_executable(infra.timer_test)
-add_test(NAME infra.timer_test COMMAND infra.timer_test)
+gtest_discover_tests(infra.timer_test AUTO)
 
 target_link_libraries(infra.timer_test
     PUBLIC
