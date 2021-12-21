@@ -2,12 +2,8 @@ cmake_minimum_required (VERSION 3.20)
 
 project(emil VERSION 1.3.0)
 
-if(MSVC_VERSION LESS 1920)
-    # Since we still need to support VS2015.
-    set(CMAKE_CXX_STANDARD 14)
-else()
-    set(CMAKE_CXX_STANDARD 17)
-endif()
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED true)
 
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
     set(TARGET_BUILD_WIN ON)
@@ -50,16 +46,13 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR
     # add_executable(example example.cpp)
     # target_link_libraries(example gtest_main)
     # add_test(NAME example_test COMMAND example)
-
 endif()
 
 set(CCOLA_DIR "${CMAKE_SOURCE_DIR}/ccola")
 set(CCOLA_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
 include("${CCOLA_DIR}/ccola.inc")
 
-
 add_subdirectory(external/args)
-# add_subdirectory(external/googletest)
 add_subdirectory(external/crypto)
 add_subdirectory(infra)
 add_subdirectory(hal)
