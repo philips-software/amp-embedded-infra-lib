@@ -11,7 +11,7 @@ if(TARGET_ARCH_X86)
 
         PRIVATE
         LIBPROTOBUF_EXPORTS
-        $<$<BOOL:${TARGET_BUILD_UNIX}>:HAVE_PTHREAD>
+        $<$<OR:$<BOOL:${TARGET_BUILD_UNIX}>,$<BOOL:${TARGET_BUILD_DARWIN}>>:HAVE_PTHREAD>
     )
 
     target_compile_options(protobuf.libprotobuf_lite
@@ -33,12 +33,12 @@ if(TARGET_ARCH_X86)
             >
         >
 
-        $<$<BOOL:${TARGET_BUILD_UNIX}>:-fPIC>
+        $<$<OR:$<BOOL:${TARGET_BUILD_UNIX}>,$<BOOL:${TARGET_BUILD_DARWIN}>>:-fPIC>
     )
 
     target_link_libraries(protobuf.libprotobuf_lite
         PUBLIC
-        $<$<BOOL:${TARGET_BUILD_UNIX}>:pthread>
+        $<$<OR:$<BOOL:${TARGET_BUILD_UNIX}>,$<BOOL:${TARGET_BUILD_DARWIN}>>:pthread>
     )
 
     target_include_directories(protobuf.libprotobuf_lite
@@ -90,19 +90,19 @@ if(TARGET_ARCH_X86)
         src/google/protobuf/wire_format_lite.h
     )
 
-    if(TARGET_BUILD_UNIX)
+    if(TARGET_BUILD_UNIX OR TARGET_BUILD_DARWIN)
         target_sources(protobuf.libprotobuf_lite PRIVATE
             src/google/protobuf/stubs/atomicops_internals_x86_gcc.cc
             src/google/protobuf/stubs/atomicops_internals_x86_gcc.h
         )
-    endif(TARGET_BUILD_UNIX)
+    endif()
 
     if(TARGET_BUILD_WIN)
         target_sources(protobuf.libprotobuf_lite PRIVATE
             src/google/protobuf/stubs/atomicops_internals_x86_msvc.cc
             src/google/protobuf/stubs/atomicops_internals_x86_msvc.h
         )
-    endif(TARGET_BUILD_WIN)
+    endif()
 
 
     add_library(protobuf.libprotobuf EXCLUDE_FROM_ALL SHARED)
@@ -253,7 +253,6 @@ if(TARGET_ARCH_X86)
         src/google/protobuf/wire_format.h
         src/google/protobuf/wrappers.pb.cc
         src/google/protobuf/wrappers.pb.h
-
     )
 
     add_library(protobuf.libprotoc EXCLUDE_FROM_ALL STATIC)
