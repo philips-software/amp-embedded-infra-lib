@@ -1,13 +1,13 @@
-ccola_component(boot_loader_test_doubles x86: static_library other: noncompile)
+add_library(upgrade.boot_loader_test_doubles EXCLUDE_FROM_ALL STATIC)
 
-    ccola_sources(
-        MockDecryptor.cpp
-        MockDecryptor.hpp
-    )
+target_link_libraries(upgrade.boot_loader_test_doubles
+    PUBLIC
+    upgrade.boot_loader
+    gmock
+)
 
-    ccola_dependencies(
-        boot_loader
-        gmock.gmock
-    )
-
-ccola_end_component()
+target_sources(upgrade.boot_loader_test_doubles
+    PRIVATE
+    MockDecryptor.cpp
+    MockDecryptor.hpp
+)

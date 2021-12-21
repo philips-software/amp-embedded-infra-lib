@@ -9,7 +9,7 @@ target_link_libraries(services.network_test
     infra.util_test_helper
     hal.generic
     hal.interfaces_test_doubles
-    hal.synchronous_test_doubles
+    hal.synchronous_interfaces_test_doubles
     services.util
 
     gtest

@@ -1,18 +1,16 @@
-ccola_component(pack source)
 
-    ccola_sources(
-        UpgradePackHeader.hpp
-        KeyDefinitions.hpp
-    )
+add_library(upgrade.pack INTERFACE)
 
-    ccola_dependencies(
-        infra.util
-    )
+target_include_directories(upgrade.pack
+    INTERFACE
+    ${CMAKE_CURRENT_LIST_DIR}
+)
 
-ccola_end_component()
+target_link_libraries(upgrade.pack
+    INTERFACE
+    infra.util
+)
 
-ccola_component(pack_keys static_library)
+add_library(upgrade.pack_keys EXCLUDE_FROM_ALL STATIC)
 
-    protocol_buffer_echo_cpp(UpgradeKeys.proto)
-
-ccola_end_component()
+protocol_buffer_echo_cpp(upgrade.pack_keys UpgradeKeys.proto)

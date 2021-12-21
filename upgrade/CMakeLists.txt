@@ -1,13 +1,5 @@
-ccola_package(upgrade)
-
-	ccola_pack_directory(pack_builder_pack)
-
-	ccola_subdirectories(
-		pack
-		pack_builder
-		security_key_generator
-		boot_loader
-		deploy_pack_to_external
-	)
-
-ccola_end_package()
+add_subdirectory(boot_loader)
+add_subdirectory(deploy_pack_to_external)
+add_subdirectory(pack)
+add_subdirectory(pack_builder)
+add_subdirectory(security_key_generator)

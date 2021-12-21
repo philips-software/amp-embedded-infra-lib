@@ -1,51 +1,48 @@
-ccola_component(boot_loader static_library)
+add_library(upgrade.boot_loader EXCLUDE_FROM_ALL STATIC)
 
-    ccola_sources(
-        Decryptor.hpp
-        DecryptorAesMbedTls.cpp
-        DecryptorAesMbedTls.hpp
-        DecryptorAesTiny.cpp
-        DecryptorAesTiny.hpp
-        DecryptorNone.cpp
-        DecryptorNone.hpp
-        DecryptorXtea.cpp
-        DecryptorXtea.hpp
-        ImageUpgrader.cpp
-        ImageUpgrader.hpp
-        ImageUpgraderEraseSectors.cpp
-        ImageUpgraderEraseSectors.hpp
-        ImageUpgraderFlash.cpp
-        ImageUpgraderFlash.hpp
-        ImageUpgraderSkip.cpp
-        ImageUpgraderSkip.hpp
-        PackUpgrader.cpp
-        PackUpgrader.hpp
-        SecondStageToRamLoader.cpp
-        SecondStageToRamLoader.hpp
-        Verifier.hpp
-        VerifierEcDsa.cpp
-        VerifierEcDsa.hpp
-        VerifierNone.cpp
-        VerifierNone.hpp
-        VerifierRsa.cpp
-        VerifierRsa.hpp
-    )
-
-    ccola_dependencies(
-        pack
-        infra.util
-        infra.stream
-        infra.syntax
-        crypto.mbed_tls_minimal
-        crypto.micro_ecc
-        crypto.tiny_aes128
-        hal.synchronous_interfaces
-        services.synchronous_util
-    )
-
-ccola_end_component()
-
-ccola_subdirectories(
-    test_doubles
-    test
+target_link_libraries(upgrade.boot_loader
+    PUBLIC
+    crypto.mbed_tls_minimal
+    crypto.micro_ecc
+    crypto.tiny_aes128
+    hal.synchronous_interfaces
+    infra.stream
+    infra.syntax
+    infra.util
+    services.synchronous_util
+    upgrade.pack
 )
+
+target_sources(upgrade.boot_loader PRIVATE
+    Decryptor.hpp
+    DecryptorAesMbedTls.cpp
+    DecryptorAesMbedTls.hpp
+    DecryptorAesTiny.cpp
+    DecryptorAesTiny.hpp
+    DecryptorNone.cpp
+    DecryptorNone.hpp
+    DecryptorXtea.cpp
+    DecryptorXtea.hpp
+    ImageUpgrader.cpp
+    ImageUpgrader.hpp
+    ImageUpgraderEraseSectors.cpp
+    ImageUpgraderEraseSectors.hpp
+    ImageUpgraderFlash.cpp
+    ImageUpgraderFlash.hpp
+    ImageUpgraderSkip.cpp
+    ImageUpgraderSkip.hpp
+    PackUpgrader.cpp
+    PackUpgrader.hpp
+    SecondStageToRamLoader.cpp
+    SecondStageToRamLoader.hpp
+    Verifier.hpp
+    VerifierEcDsa.cpp
+    VerifierEcDsa.hpp
+    VerifierNone.cpp
+    VerifierNone.hpp
+    VerifierRsa.cpp
+    VerifierRsa.hpp
+)
+
+add_subdirectory(test)
+add_subdirectory(test_doubles)

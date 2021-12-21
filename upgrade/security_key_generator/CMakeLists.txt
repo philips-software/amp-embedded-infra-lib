@@ -1,17 +1,19 @@
-ccola_component(security_key_generator x86: executable other: noncompile)
+if(TARGET_ARCH_X86)
+    add_executable(upgrade.security_key_generator)
 
-    ccola_sources(
+    target_link_libraries(upgrade.security_key_generator
+        PUBLIC
+        arg_parser.args
+        crypto.mbed_tls
+        hal.generic
+        upgrade.pack_keys
+        upgrade.pack_builder
+    )
+
+    target_sources(upgrade.security_key_generator
+        PRIVATE
         Main.cpp
         MaterialGenerator.cpp
         MaterialGenerator.hpp
     )
-
-    ccola_dependencies(
-        crypto.mbed_tls
-        hal.generic
-        pack_keys
-        pack_builder
-        arg_parser.args
-    )
-
-ccola_end_component()
+endif()

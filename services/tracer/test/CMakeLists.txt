@@ -6,7 +6,7 @@ target_link_libraries(services.tracer_test
     services.tracer
     infra.timer_test_helper
     hal.interfaces_test_doubles
-    hal.synchronous_test_doubles
+    hal.synchronous_interfaces_test_doubles
 
     gtest
     gmock

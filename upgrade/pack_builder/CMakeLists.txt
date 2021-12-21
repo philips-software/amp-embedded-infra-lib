@@ -1,6 +1,19 @@
-ccola_component(pack_builder x86: static_library other: noncompile)
+if(TARGET_ARCH_X86)
+    add_library(upgrade.pack_builder EXCLUDE_FROM_ALL STATIC)
 
-    ccola_sources(
+    target_link_libraries(upgrade.pack_builder
+        PUBLIC
+
+        crypto.mbed_tls
+        crypto.micro_ecc
+        crypto.tiny_aes128
+        hal.interfaces
+        infra.util
+        infra.stream
+        upgrade.pack
+    )
+
+    target_sources(upgrade.pack_builder PRIVATE
         BinaryObject.cpp
         BinaryObject.hpp
         BuildReferenceUpgradePack.cpp
@@ -42,18 +55,5 @@ ccola_component(pack_builder x86: static_library other: noncompile)
         UpgradePackInputFactory.hpp
     )
 
-    ccola_dependencies(
-        pack
-        infra.util
-        infra.stream
-        hal.interfaces
-        crypto.mbed_tls
-        crypto.micro_ecc
-        crypto.tiny_aes128
-    )
-
-ccola_end_component()
-
-ccola_subdirectories(
-    test
-)
+    add_subdirectory(test)
+endif()

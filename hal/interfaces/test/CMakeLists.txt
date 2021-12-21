@@ -1,5 +1,5 @@
 add_executable(hal.interfaces_test)
-add_test(NAME hal.interfaces_test COMMAND hal.interfaces_test)
+gtest_discover_tests(hal.interfaces_test AUTO)
 
 target_link_libraries(hal.interfaces_test
     PUBLIC

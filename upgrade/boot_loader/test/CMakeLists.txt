@@ -1,19 +1,24 @@
-ccola_component(boot_loader_test gmock_test)
+add_executable(upgrade.boot_loader_test)
+gtest_discover_tests(upgrade.boot_loader_test AUTO)
 
-    ccola_sources(
-        TestDecryptorAes.cpp
-        TestImageUpgraderEraseSectors.cpp
-        TestImageUpgraderFlash.cpp
-        TestImageUpgraderSkip.cpp
-        TestPackUpgrader.cpp
-        TestSecondStageToRamLoader.cpp
-    )
+target_link_libraries(upgrade.boot_loader_test
+    PUBLIC
+    upgrade.boot_loader
+    upgrade.boot_loader_test_doubles
+    infra.stream
+    hal.synchronous_interfaces_test_doubles
 
-    ccola_dependencies(
-        boot_loader
-        boot_loader_test_doubles
-        infra.stream
-        hal.synchronous_test_doubles
-    )
+    gtest
+    gmock
+    gmock_main
+)
 
-ccola_end_component()
+target_sources(upgrade.boot_loader_test
+    PRIVATE
+    TestDecryptorAes.cpp
+    TestImageUpgraderEraseSectors.cpp
+    TestImageUpgraderFlash.cpp
+    TestImageUpgraderSkip.cpp
+    TestPackUpgrader.cpp
+    TestSecondStageToRamLoader.cpp
+)
