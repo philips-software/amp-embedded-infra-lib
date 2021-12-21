@@ -1,8 +1,8 @@
 
-add_library(infra.syntax_test_doubles EXCLUDE_FROM_ALL STATIC)
+add_library(infra.syntax_test_doubles EXCLUDE_FROM_ALL INTERFACE)
 
 target_link_libraries(infra.syntax_test_doubles
-    PUBLIC
+    INTERFACE
     infra.syntax
     gmock
 )

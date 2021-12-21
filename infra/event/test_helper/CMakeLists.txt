@@ -1,8 +1,8 @@
 
-add_library(infra.event_test_helper EXCLUDE_FROM_ALL STATIC)
+add_library(infra.event_test_helper EXCLUDE_FROM_ALL INTERFACE)
 
 target_link_libraries(infra.event_test_helper
-    PUBLIC
+    INTERFACE
     gmock
     infra.event
     infra.util_test_helper
