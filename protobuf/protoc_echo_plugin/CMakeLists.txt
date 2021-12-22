@@ -2,6 +2,7 @@ set(PROTOC_ECHO_PLUGIN_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} CACHE INTERNAL "pr
 
 if(TARGET_ARCH_X86)
     add_library(protobuf.protoc_echo_plugin_lib EXCLUDE_FROM_ALL STATIC)
+    add_library(emil::protobuf.protoc_echo_plugin_lib ALIAS protobuf.protoc_echo_plugin_lib)
 
     target_compile_options(protobuf.protoc_echo_plugin_lib
         PRIVATE
@@ -45,6 +46,7 @@ if(TARGET_ARCH_X86)
     )
 
     add_executable(protobuf.protoc_echo_plugin)
+    add_executable(emil::protobuf.protoc_echo_plugin ALIAS protobuf.protoc_echo_plugin)
 
     target_compile_options(protobuf.protoc_echo_plugin
         PRIVATE
@@ -66,5 +68,4 @@ if(TARGET_ARCH_X86)
     target_sources(protobuf.protoc_echo_plugin PRIVATE
         Main.cpp
     )
-
 endif()
