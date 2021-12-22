@@ -1,5 +1,4 @@
-if(TARGET_BUILD_WIN)
-
+if (TARGET_BUILD_WIN)
     add_library(services.network_win EXCLUDE_FROM_ALL STATIC)
 
     target_link_libraries(services.network_win
@@ -21,5 +20,4 @@ if(TARGET_BUILD_WIN)
         NameLookupWin.cpp
         NameLookupWin.hpp
     )
-
 endif()
