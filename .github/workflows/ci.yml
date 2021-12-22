@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        gcc: ['5-2016-q3', 6-2017-q2', '7-2018-q2', '8-2019-q3']
+        gcc: ["5-2016-q3", "6-2017-q2", "7-2018-q2", "8-2019-q3"]
     steps:
       - name: Install GNU Arm Embedded Toolchain ${{ matrix.gcc }}
         uses: carlosperate/arm-none-eabi-gcc-action@v1
