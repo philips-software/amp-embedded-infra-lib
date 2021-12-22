@@ -37,6 +37,8 @@ jobs:
         uses: carlosperate/arm-none-eabi-gcc-action@v1
         with:
           release: ${{ matrix.gcc }}
+      - name: Checkout
+        uses: actions/checkout@v2
       - run: |
           cmake -B Build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-gcc.cmake
           cmake --build Build --config Release

@@ -53,7 +53,6 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR
     if (ENABLE_COVERAGE)
         add_compile_options(
             -g -O0 --coverage -fprofile-arcs -ftest-coverage -fno-inline
-            $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>
             $<$<COMPILE_LANGUAGE:CXX>:-fno-elide-constructors>
         )
 
