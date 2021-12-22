@@ -37,12 +37,12 @@ namespace
 
         if (*iterator == 't')
         {
-            if (*(++iterator) == 'r' && *(++iterator) == 'u' && *(++iterator) == 'e')
+            if (*++iterator == 'r' && *++iterator == 'u' && *++iterator == 'e')
                 skippedSize = 4;
         }
         else if (*iterator == 'f')
         {
-            if (*(++iterator) == 'a' && *(++iterator) == 'l' && *(++iterator) == 's' && *(++iterator) == 'e')
+            if (*++iterator == 'a' && *++iterator == 'l' && *++iterator == 's' && *++iterator == 'e')
                 skippedSize = 5;
         }
 

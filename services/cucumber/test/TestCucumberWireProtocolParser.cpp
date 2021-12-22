@@ -54,7 +54,9 @@ TEST(CucumberStepMatcherTest, should_not_match_input_for_non_matching_steps)
         std::make_pair("step", ""),
         std::make_pair("'%s'", "42"),
         std::make_pair("step with %s argument", "step with foo argument"),
-        std::make_pair("'%s' step", "'foo step")
+        std::make_pair("'%s' step", "'foo step"),
+        std::make_pair("%b step", "foles step"),
+        std::make_pair("%b step", "maybe step")
     };
 
     for (const auto& stepAndMatch : testVectors)
