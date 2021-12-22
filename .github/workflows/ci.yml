@@ -40,7 +40,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - run: |
-          cmake -B Build-Host -DCMAKE_BUILD_TYPE=Release
+          cmake -B Build-Host -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=Off
           cmake --build Build-Host --config Release
           cmake -B Build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=Build-Host -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-gcc.cmake
           cmake --build Build --config Release
