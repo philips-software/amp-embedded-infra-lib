@@ -87,31 +87,4 @@ add_subdirectory(external/protoc-3.3.0)
 add_subdirectory(protobuf)
 add_subdirectory(upgrade)
 # add_subdirectory(lwip)
-# add_subdirectory(examples)
-
-
-
-# ccola_project()
-
-#     if(CCOLA_ENABLE_COVERAGE)
-#         ccola_enable_coverage_flags()
-#     endif()
-
-#     ccola_add_version_header()
-
-#     ccola_subdirectories(
-#         external/args
-#         external/googletest
-#         external/crypto
-#         infra
-#         hal
-#         services
-#         external/protobuf-3.3.0
-#         external/protoc-3.3.0
-#         protobuf
-#         upgrade
-#         lwip
-#         examples
-#     )
-
-# ccola_end_project()
+add_subdirectory(examples)

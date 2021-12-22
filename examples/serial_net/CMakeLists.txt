@@ -1,19 +1,5 @@
-ccola_component(serial_net win: executable other: skip)
-
-    ccola_add_version_header_dependency()
-
-    ccola_sources(
-	win:
-        MainWin.cpp
-    )
-
-    ccola_dependencies(
-        infra.util
-		services.util
-        hal.generic
-	win:
-	    services.network_win
-		hal.windows
-    )
-
-ccola_end_component()
+if (TARGET_BUILD_WIN)
+    add_executable(examples.serial_net)
+    target_sources(examples.serial_net PRIVATE MainWin.cpp)
+    target_link_libraries(examples.serial_net PUBLIC hal.generic hal.windows infra.util services.network_win services.util)
+endif()

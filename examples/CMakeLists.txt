@@ -1,10 +1,6 @@
-ccola_package(examples)
-
-    ccola_subdirectories(
-        http_server
-        https_client
-        serial_net
-        sntp_client
-    )
-
-ccola_end_package()
+if (TARGET_ARCH_X86)
+    add_subdirectory(http_server)
+    add_subdirectory(https_client)
+    add_subdirectory(serial_net)
+    add_subdirectory(sntp_client)
+endif()
