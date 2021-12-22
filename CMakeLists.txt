@@ -23,6 +23,13 @@ endif()
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
     set(TARGET_BUILD_DARWIN ON)
     set(TARGET_ARCH_X86 ON)
+
+    # Suppress warnings about *.a files having no symbols on Darwin.
+    # The warning is emitted when *.cpp.o contains no operational code.
+    set(CMAKE_C_ARCHIVE_CREATE   "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
+    set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
+    set(CMAKE_C_ARCHIVE_FINISH   "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
+    set(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
 endif()
 
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Generic")
