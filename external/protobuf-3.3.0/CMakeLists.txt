@@ -1,4 +1,4 @@
-if(TARGET_ARCH_X86)
+if (TARGET_ARCH_X86)
 
     set(PROTOBUF_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL "protobuf-3.3.0 directory")
 
@@ -43,7 +43,8 @@ if(TARGET_ARCH_X86)
 
     target_include_directories(protobuf.libprotobuf_lite
         PUBLIC
-        src
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     )
 
     target_sources(protobuf.libprotobuf_lite PRIVATE
@@ -104,6 +105,19 @@ if(TARGET_ARCH_X86)
         )
     endif()
 
+    install(TARGETS protobuf.libprotobuf_lite
+        EXPORT protobuf.libprotobuf_lite_targets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    )
+
+    install(EXPORT protobuf.libprotobuf_lite_targets
+        FILE emil_protobuf.cmake
+        NAMESPACE emil::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/emil
+    )
 
     add_library(protobuf.libprotobuf EXCLUDE_FROM_ALL SHARED)
 
@@ -137,12 +151,6 @@ if(TARGET_ARCH_X86)
         PUBLIC
         protobuf.libprotobuf_lite
     )
-
-    # target_include_directories(protobuf.libprotobuf
-    #     PUBLIC
-    #     $<TARGET_PROPERTY:protobuf.libprotobuf_lite,INTERFACE_INCLUDE_DIRECTORIES>
-    #     # src
-    # )
 
     target_sources(protobuf.libprotobuf PRIVATE
         src/google/protobuf/any.cc
@@ -295,11 +303,6 @@ if(TARGET_ARCH_X86)
         PUBLIC
         protobuf.libprotobuf
     )
-
-    # target_include_directories(protobuf.libprotoc
-    #     PUBLIC
-    #     src
-    # )
 
     target_sources(protobuf.libprotoc PRIVATE
         src/google/protobuf/any.cc

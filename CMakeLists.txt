@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.20)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-project(emil LANGUAGES C CXX VERSION 1.3.0)
+project(emil LANGUAGES C CXX VERSION 2.0.0)
 
 set_directory_properties(PROPERTY USE_FOLDERS ON)
 
@@ -73,6 +73,8 @@ endif()
 
 set(CCOLA_DIR "${CMAKE_SOURCE_DIR}/ccola")
 include("${CCOLA_DIR}/ccola.inc")
+include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
 include(version)
 
 add_version_header_target(generated.version_header)
