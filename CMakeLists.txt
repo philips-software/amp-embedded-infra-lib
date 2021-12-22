@@ -90,3 +90,21 @@ add_subdirectory(protobuf)
 add_subdirectory(upgrade)
 # add_subdirectory(lwip)
 add_subdirectory(examples)
+
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/emilConfigVersion.cmake"
+    VERSION "${${CMAKE_PROJECT_NAME}_VERSION}"
+    COMPATIBILITY AnyNewerVersion
+)
+
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in
+    "${CMAKE_CURRENT_BINARY_DIR}/emilConfig.cmake"
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/emil
+    NO_CHECK_REQUIRED_COMPONENTS_MACRO
+)
+
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/emilConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/emilConfigVersion.cmake"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/emil
+)
