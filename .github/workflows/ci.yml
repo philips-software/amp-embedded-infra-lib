@@ -12,8 +12,8 @@ env:
   CMAKE_BUILD_PARALLEL_LEVEL: 2
   GTEST_COLOR: 1
 jobs:
-  build_test:
-    name: Build & Test
+  host_build_test:
+    name: Host Build & Test
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -23,10 +23,23 @@ jobs:
         uses: actions/checkout@v2
       - name: Build and Test
         run: |
-          cmake -E make_directory Build && cd Build
-          cmake .. -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=Debug
-          cmake --build .
-          ctest -C Debug -T Test --no-compress-output --output-on-failure
+          cmake -B Build -DCMAKE_BUILD_TYPE=Debug
+          cmake --build Build --config Debug
+          pushd Build && ctest -Q -C Debug -T Test --no-compress-output --output-on-failure
+  embedded_build:
+    name: Embedded Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        gcc: ['5-2016-q3', 6-2017-q2', '7-2018-q2', '8-2019-q3']
+    steps:
+      - name: Install GNU Arm Embedded Toolchain ${{ matrix.gcc }}
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: ${{ matrix.gcc }}
+      - run: |
+          cmake -B Build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-gcc.cmake
+          cmake --build Build --config Release
   static_analysis:
     name: Static Analysis
     runs-on: ubuntu-latest
@@ -58,9 +71,9 @@ jobs:
       - name: Build
         run: |
           cmake -E make_directory Build
-          cmake -S . -B Build -G Ninja -DCCOLA_INSTALL_DIR=Install -DCCOLA_ENABLE_COVERAGE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
-          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build Build/ --config Debug
-          pushd Build && ctest -C Debug -T Test --no-compress-output --output-on-failure && popd
+          cmake -S . -B Build -G Ninja -DENABLE_COVERAGE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
+          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build Build --config Debug
+          pushd Build && ctest -Q -C Debug -T Test --no-compress-output --output-on-failure && popd
           gcovr --sonarqube=coverage.xml --exclude-unreachable-branches --exclude-throw-branches -j 2 --exclude=.*/generated/.* --exclude=.*/examples/.* --exclude=.*/external/.* --exclude=.*/lwip/.* --exclude=.*/tracing/.* --exclude=.*/test/.*
       - name: Analysis
         env:

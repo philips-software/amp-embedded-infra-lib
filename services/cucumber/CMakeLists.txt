@@ -33,4 +33,6 @@ target_sources(services.cucumber PRIVATE
     TracingCucumberWireProtocolServer.hpp
 )
 
-add_subdirectory(test)
+if(BUILD_TESTING)
+    add_subdirectory(test)
+endif()

@@ -34,4 +34,6 @@ target_sources(services.tracer PRIVATE
     TracingOutputStream.hpp
 )
 
-add_subdirectory(test)
+if(BUILD_TESTING)
+    add_subdirectory(test)
+endif()

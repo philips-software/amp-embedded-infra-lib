@@ -60,5 +60,6 @@ target_sources(infra.stream PRIVATE
     StringOutputStream.hpp
 )
 
-
-add_subdirectory(test)
+if(BUILD_TESTING)
+    add_subdirectory(test)
+endif()

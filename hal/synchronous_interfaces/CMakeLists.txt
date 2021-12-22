@@ -30,4 +30,6 @@ target_sources(hal.synchronous_interfaces
     TimeService.hpp
 )
 
-add_subdirectory(test_doubles)
+if(BUILD_TESTING)
+    add_subdirectory(test_doubles)
+endif()

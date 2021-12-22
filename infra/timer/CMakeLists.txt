@@ -35,5 +35,7 @@ target_sources(infra.timer PRIVATE
     TimerServiceManager.hpp
 )
 
-add_subdirectory(test)
-add_subdirectory(test_helper)
+if(BUILD_TESTING)
+    add_subdirectory(test)
+    add_subdirectory(test_helper)
+endif()

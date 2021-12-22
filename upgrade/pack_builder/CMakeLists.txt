@@ -54,6 +54,7 @@ if(TARGET_ARCH_X86)
         UpgradePackInputFactory.cpp
         UpgradePackInputFactory.hpp
     )
-
-    add_subdirectory(test)
+    if(BUILD_TESTING)
+        add_subdirectory(test)
+    endif()
 endif()

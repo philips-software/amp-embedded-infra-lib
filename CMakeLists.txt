@@ -1,6 +1,11 @@
 cmake_minimum_required (VERSION 3.20)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-project(emil VERSION 1.3.0)
+project(emil LANGUAGES C CXX VERSION 1.3.0)
+
+set_directory_properties(PROPERTY USE_FOLDERS ON)
+
+option(ENABLE_COVERAGE "Enable code coverage measurements" OFF)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
@@ -42,15 +47,28 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(googletest)
 
-    # Now simply link against gtest or gtest_main as needed. Eg
-    # add_executable(example example.cpp)
-    # target_link_libraries(example gtest_main)
-    # add_test(NAME example_test COMMAND example)
+    set_target_properties(gtest gtest_main gmock gmock_main PROPERTIES FOLDER External/GoogleTest)
+    mark_as_advanced(BUILD_GMOCK BUILD_GTEST BUILD_SHARED_LIBS gmock_build_tests gtest_build_samples test_build_tests gtest_disable_pthreads gtest_force_shared_crt gtest_hide_internal_symbols)
+
+    if (ENABLE_COVERAGE)
+        add_compile_options(
+            -g -O0 --coverage -fprofile-arcs -ftest-coverage -fno-inline
+            $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions -fno-elide-constructors>
+        )
+
+        if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
+            link_libraries(gcov)
+        else()
+            add_link_options(--coverage)
+        endif()
+    endif()
 endif()
 
 set(CCOLA_DIR "${CMAKE_SOURCE_DIR}/ccola")
-set(CCOLA_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
 include("${CCOLA_DIR}/ccola.inc")
+include(version)
+
+add_version_header_target(generated.version_header)
 
 add_subdirectory(external/args)
 add_subdirectory(external/crypto)
@@ -65,17 +83,6 @@ add_subdirectory(upgrade)
 # add_subdirectory(examples)
 
 
-# set(CMAKE_CXX_STANDARD_REQUIRED true)
-
-# if(NOT CCOLA_DIR)
-#     set(CCOLA_DIR "${CMAKE_SOURCE_DIR}/ccola")
-# endif()
-
-# if(NOT CCOLA_INSTALL_DIR)
-# 	set(CCOLA_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
-# endif()
-
-# include("${CCOLA_DIR}/ccola.inc")
 
 # ccola_project()
 

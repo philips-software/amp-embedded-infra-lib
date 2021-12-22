@@ -20,5 +20,7 @@ target_sources(infra.event PRIVATE
     SystemStateManager.hpp
 )
 
-add_subdirectory(test)
-add_subdirectory(test_helper)
+if(BUILD_TESTING)
+    add_subdirectory(test)
+    add_subdirectory(test_helper)
+endif()

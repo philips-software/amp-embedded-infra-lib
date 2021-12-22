@@ -44,5 +44,7 @@ target_sources(upgrade.boot_loader PRIVATE
     VerifierRsa.hpp
 )
 
-add_subdirectory(test)
-add_subdirectory(test_doubles)
+if(BUILD_TESTING)
+    add_subdirectory(test)
+    add_subdirectory(test_doubles)
+endif()

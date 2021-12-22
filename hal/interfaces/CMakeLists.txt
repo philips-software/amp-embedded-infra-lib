@@ -52,5 +52,7 @@ target_sources(hal.interfaces
     $<$<BOOL:${TARGET_ARCH_X86}>:FileSystem.hpp>
 )
 
-add_subdirectory(test)
-add_subdirectory(test_doubles)
+if(BUILD_TESTING)
+    add_subdirectory(test)
+    add_subdirectory(test_doubles)
+endif()

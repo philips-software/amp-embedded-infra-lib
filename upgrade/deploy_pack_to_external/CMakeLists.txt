@@ -13,4 +13,6 @@ target_sources(upgrade.deploy_pack_to_external PRIVATE
     DeployPackToExternal.hpp
 )
 
-add_subdirectory(test)
+if(BUILD_TESTING)
+    add_subdirectory(test)
+endif()

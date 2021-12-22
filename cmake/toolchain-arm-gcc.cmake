@@ -6,7 +6,8 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 set(hints_paths)
 
 if(CMAKE_HOST_WIN32)
-    list(APPEND hints_paths "C:/Program Files (x86)/GNU Tools Arm Embedded/8 2019-q3-update/bin/")
+    set(X86_PROGRAM_FILES "ProgramFiles(x86)")
+    list(APPEND hints_paths "$ENV{${X86_PROGRAM_FILES}}/GNU Tools Arm Embedded/8 2019-q3-update/bin/")
 endif()
 
 find_program(CMAKE_C_COMPILER
