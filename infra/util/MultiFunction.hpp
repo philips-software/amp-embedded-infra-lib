@@ -69,7 +69,7 @@ namespace infra
         template<class F2>
         MultiFunctionHelper(F2 f)
         {
-            functions.Emplace<typename infra::TypeAtIndex<IndexOfFunctionObject<F2>::Value, F...>::Type>(f);
+            functions.template Emplace<typename infra::TypeAtIndex<IndexOfFunctionObject<F2>::Value, F...>::Type>(f);
         }
 
         template<class... Args>
@@ -81,7 +81,7 @@ namespace infra
         template<class... Args>
         typename ResultOf<Args...>::Type operator()(Args&&... args)
         {
-            return functions.GetAtIndex<IndexOf<Args...>::Value + 1>()(std::forward<Args>(args)...);
+            return functions.template GetAtIndex<IndexOf<Args...>::Value + 1>()(std::forward<Args>(args)...);
         }
 
         template<class... Args>
