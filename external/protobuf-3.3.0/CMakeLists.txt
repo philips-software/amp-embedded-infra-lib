@@ -1,7 +1,6 @@
+set(PROTOBUF_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL "protobuf-3.3.0 directory")
+
 if (TARGET_ARCH_X86)
-
-    set(PROTOBUF_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL "protobuf-3.3.0 directory")
-
     add_library(protobuf.libprotobuf_lite EXCLUDE_FROM_ALL STATIC)
     add_library(emil::protobuf.libprotobuf_lite ALIAS protobuf.libprotobuf_lite)
 
@@ -106,21 +105,8 @@ if (TARGET_ARCH_X86)
         )
     endif()
 
-    install(TARGETS protobuf.libprotobuf_lite
-        EXPORT protobuf.libprotobuf_lite_targets
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    )
-
-    install(EXPORT protobuf.libprotobuf_lite_targets
-        FILE emil_protobuf.cmake
-        NAMESPACE emil::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/emil
-    )
-
     add_library(protobuf.libprotobuf EXCLUDE_FROM_ALL SHARED)
+    add_library(emil::protobuf.libprotobuf ALIAS protobuf.libprotobuf)
 
     target_compile_options(protobuf.libprotobuf
         PRIVATE
@@ -266,6 +252,7 @@ if (TARGET_ARCH_X86)
     )
 
     add_library(protobuf.libprotoc EXCLUDE_FROM_ALL STATIC)
+    add_library(emil::protobuf.libprotoc ALIAS protobuf.libprotoc)
 
     target_compile_options(protobuf.libprotoc
         PRIVATE
@@ -424,4 +411,15 @@ if (TARGET_ARCH_X86)
         src/google/protobuf/compiler/zip_writer.h
     )
 
+    install(
+        TARGETS
+        protobuf.libprotobuf_lite
+        protobuf.libprotobuf
+        protobuf.libprotoc
+        EXPORT emilProtobufTargets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    )
 endif()
