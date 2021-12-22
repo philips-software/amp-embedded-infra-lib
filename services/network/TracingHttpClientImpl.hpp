@@ -40,10 +40,25 @@ namespace services
 
     template<class HttpClient = HttpClientImpl, class... Args>
     class TracingHttpClientConnectorImpl
+        : public HttpClientConnectorImpl<HttpClient, Args...>
+    {
+    public:
+        TracingHttpClientConnectorImpl(services::ConnectionFactory& connectionFactory, services::IPAddress address, Args&&... args, services::Tracer& tracer);
+
+        // Implementation of ClientConnectionObserverFactory
+        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver) override;
+        virtual void ConnectionFailed(typename HttpClientConnectorImpl<HttpClient, Args...>::ConnectFailReason reason) override;
+
+    private:
+        services::Tracer& tracer;
+    };
+
+    template<class HttpClient = HttpClientImpl, class... Args>
+    class TracingHttpClientConnectorWithNameResolverImpl
         : public HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>
     {
     public:
-        TracingHttpClientConnectorImpl(ConnectionFactoryWithNameResolver& connectionFactory, Args&&... args, services::Tracer& tracer);
+        TracingHttpClientConnectorWithNameResolverImpl(ConnectionFactoryWithNameResolver& connectionFactory, Args&&... args, services::Tracer& tracer);
 
         // Implementation of ClientConnectionObserverFactoryWithNameResolver
         virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver) override;
@@ -56,22 +71,42 @@ namespace services
     //// Implementation ////
 
     template<class HttpClient, class... Args>
-    TracingHttpClientConnectorImpl<HttpClient, Args...>::TracingHttpClientConnectorImpl(ConnectionFactoryWithNameResolver& connectionFactory, Args&&... args, services::Tracer& tracer)
-        : HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>(connectionFactory, std::forward<Args>(args)...)
+    TracingHttpClientConnectorImpl<HttpClient, Args...>::TracingHttpClientConnectorImpl(services::ConnectionFactory& connectionFactory, services::IPAddress address, Args&&... args, services::Tracer& tracer)
+        : HttpClientConnectorImpl<HttpClient, Args...>(connectionFactory, address, std::forward<Args>(args)...)
         , tracer(tracer)
     {}
 
     template<class HttpClient, class... Args>
     void TracingHttpClientConnectorImpl<HttpClient, Args...>::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver)
     {
-        tracer.Trace() << "HttpClientConnectorImpl::ConnectionEstablished with " << this->Hostname();
+        tracer.Trace() << "HttpClientConnectorImpl::ConnectionEstablished with " << this->Address();
+        HttpClientConnectorImpl<HttpClient, Args...>::ConnectionEstablished(std::move(createdObserver));
+    }
+
+    template<class HttpClient, class... Args>
+    void TracingHttpClientConnectorImpl<HttpClient, Args...>::ConnectionFailed(typename HttpClientConnectorImpl<HttpClient, Args...>::ConnectFailReason reason)
+    {
+        tracer.Trace() << "HttpClientConnectorImpl::ConnectionFailed with " << this->Address() << " reason: " << reason;
+        HttpClientConnectorImpl<HttpClient, Args...>::ConnectionFailed(reason);
+    }
+
+    template<class HttpClient, class... Args>
+    TracingHttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::TracingHttpClientConnectorWithNameResolverImpl(ConnectionFactoryWithNameResolver& connectionFactory, Args&&... args, services::Tracer& tracer)
+        : HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>(connectionFactory, std::forward<Args>(args)...)
+        , tracer(tracer)
+    {}
+
+    template<class HttpClient, class... Args>
+    void TracingHttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver)
+    {
+        tracer.Trace() << "HttpClientConnectorWithNameResolverImpl::ConnectionEstablished with " << this->Hostname();
         HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::ConnectionEstablished(std::move(createdObserver));
     }
 
     template<class HttpClient, class... Args>
-    void TracingHttpClientConnectorImpl<HttpClient, Args...>::ConnectionFailed(typename HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::ConnectFailReason reason)
+    void TracingHttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::ConnectionFailed(typename HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::ConnectFailReason reason)
     {
-        tracer.Trace() << "HttpClientConnectorImpl::ConnectionFailed with " << this->Hostname() << " reason: " << reason;
+        tracer.Trace() << "HttpClientConnectorWithNameResolverImpl::ConnectionFailed with " << this->Hostname() << " reason: " << reason;
         HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::ConnectionFailed(reason);
     }
 }

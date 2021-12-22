@@ -31,11 +31,32 @@ namespace
     }
 
     template<class Iterator>
+    std::size_t SkipBooleanArgument(Iterator& iterator, Iterator end)
+    {
+        std::size_t skippedSize = 0;
+
+        if (*iterator == 't')
+        {
+            if (*++iterator == 'r' && *++iterator == 'u' && *++iterator == 'e')
+                skippedSize = 4;
+        }
+        else if (*iterator == 'f')
+        {
+            if (*++iterator == 'a' && *++iterator == 'l' && *++iterator == 's' && *++iterator == 'e')
+                skippedSize = 5;
+        }
+
+        ++iterator;
+
+        return skippedSize;
+    }
+
+    template<class Iterator>
     std::size_t SkipMarker(Iterator& iterator, Iterator end)
     {
         std::size_t skippedSize = 0;
 
-        while (iterator != end && (*iterator == '%' || *iterator == 's' || *iterator == 'd'))
+        while (iterator != end && (*iterator == '%' || *iterator == 's' || *iterator == 'd' || *iterator == 'b'))
         {
             ++iterator;
             ++skippedSize;
@@ -64,6 +85,7 @@ namespace services
             if (*stepNameIterator != *nameToMatchIterator)
             {
                 constexpr auto intMarker = "%d";
+                constexpr auto boolMarker = "%b";
                 constexpr auto stringMarker = R"('%s')";
 
                 if (infra::BoundedConstString(stepNameIterator - 1, std::strlen(stringMarker)) == stringMarker)
@@ -74,6 +96,11 @@ namespace services
                 else if (infra::BoundedConstString(stepNameIterator, std::strlen(intMarker)) == intMarker)
                 {
                     sizeOffset += SkipIntegerArgument(nameToMatchIterator, nameToMatch.end());
+                    sizeOffset -= SkipMarker(stepNameIterator, stepName.end());
+                }
+                else if (infra::BoundedConstString(stepNameIterator, std::strlen(boolMarker)) == boolMarker)
+                {
+                    sizeOffset += SkipBooleanArgument(nameToMatchIterator, nameToMatch.end());
                     sizeOffset -= SkipMarker(stepNameIterator, stepName.end());
                 }
                 else

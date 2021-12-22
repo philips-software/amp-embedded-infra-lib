@@ -27,6 +27,7 @@ namespace services
 
         void AddStringValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, int16_t& offset);
         void AddDigitValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, int16_t& offset);
+        void AddBooleanValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, int16_t& offset);
 
         infra::JsonArray FormatStepArguments(const infra::BoundedString& nameToMatch);
 
