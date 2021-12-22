@@ -14,7 +14,7 @@ TEST(AutoResetMultiFunctionTest, IsInvokeable)
 TEST(AutoResetMultiFunctionTest, IsResetAfterInvoke)
 {
     infra::MockCallback<void()> m;
-    infra::AutoResetMultiFunction<void()>::And<void(bool)> f([&m]() { m.callback(); });
+    infra::AutoResetMultiFunction<void()>::And<void(bool)>::And<void(int)> f([&m]() { m.callback(); });
 
     EXPECT_CALL(m, callback());
     f();
@@ -37,7 +37,7 @@ TEST(AutoResetMultiFunctionTest, ReAssignDuringInvoke)
 
 TEST(AutoResetMultiFunctionTest, TestConstructedEmpty)
 {
-    infra::AutoResetMultiFunction<void()>::And<void(bool)> f;
+    infra::AutoResetMultiFunction<void()> f;
     EXPECT_FALSE(f);
 }
 

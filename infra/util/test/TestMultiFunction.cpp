@@ -32,7 +32,7 @@ TEST(MultiFunctionTest, multi_function_construct_with_first)
 {
     infra::VerifyingFunctionMock<void()> m;
 
-    infra::MultiFunction<void()>::And<void(bool)> f([&]() { m.callback(); });
+    infra::MultiFunction<void()>::And<void(bool)>::And<void(int)> f([&]() { m.callback(); });
     f();
 }
 
