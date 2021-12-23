@@ -23,12 +23,11 @@ if (TARGET_ARCH_X86)
         protobuf.libprotobuf
         protobuf.libprotoc
         protobuf.echo_attributes
-        infra.stream
     )
 
-    target_include_directories(protobuf.protoc_echo_plugin_lib
-        PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/embeddedinfralib/protobuf/protoc_echo_plugin
+    target_include_directories(protobuf.protoc_echo_plugin_lib PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/../../>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     )
 
     target_sources(protobuf.protoc_echo_plugin_lib PRIVATE

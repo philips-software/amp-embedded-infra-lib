@@ -268,7 +268,7 @@ namespace application
         ComputeMaxMessageSize();
     }
 
-    infra::Optional<uint32_t> EchoMessage::MaxMessageSize() const
+    std::optional<uint32_t> EchoMessage::MaxMessageSize() const
     {
         return maxMessageSize;
     }

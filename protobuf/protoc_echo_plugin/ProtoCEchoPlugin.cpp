@@ -568,7 +568,7 @@ namespace application
 
     void MessageGenerator::GenerateMaxMessageSize()
     {
-        if (message->MaxMessageSize() != infra::none)
+        if (message->MaxMessageSize() != std::nullopt)
         {
             auto fields = std::make_shared<Access>("public");
             fields->Add(std::make_shared<DataMember>("maxMessageSize", "static const uint32_t", google::protobuf::SimpleItoa(*message->MaxMessageSize())));

@@ -3,8 +3,8 @@
 
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "infra/util/Optional.hpp"
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace application
@@ -52,7 +52,7 @@ namespace application
     public:
         EchoMessage(const google::protobuf::Descriptor& descriptor, EchoRoot& root);
 
-        infra::Optional<uint32_t> MaxMessageSize() const;
+        std::optional<uint32_t> MaxMessageSize() const;
 
         const google::protobuf::Descriptor& descriptor;
         std::string name;
@@ -68,7 +68,7 @@ namespace application
         void ComputeMaxMessageSize();
 
     private:
-        infra::Optional<uint32_t> maxMessageSize;
+        std::optional<uint32_t> maxMessageSize;
     };
 
     class EchoFieldInt32
