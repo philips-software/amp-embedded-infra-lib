@@ -10,13 +10,13 @@ add_subdirectory(services)
 
 # Generate and install export file
 install(EXPORT emilProtobufTargets
-    FILE emilProtobuf.cmake
+    FILE emilProtobufTargets.cmake
     NAMESPACE emil::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/emil
 )
 
 # Generate the export targets for the build tree
 export(EXPORT emilProtobufTargets
-    FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/emilProtobuf.cmake"
+    FILE "${CMAKE_BINARY_DIR}/emilProtobufTargets.cmake"
     NAMESPACE emil::
 )

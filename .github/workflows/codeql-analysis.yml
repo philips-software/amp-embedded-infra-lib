@@ -22,8 +22,7 @@ jobs:
         with:
           languages: cpp
       - run: |
-          cmake -E make_directory Build
-          cmake -S . -B Build -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=Debug
-          cmake --build Build/
+          cmake -B Build -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=Debug
+          cmake --build Build
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v1

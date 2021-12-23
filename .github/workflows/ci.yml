@@ -42,7 +42,7 @@ jobs:
       - run: |
           cmake -B Build-Host -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=Off
           cmake --build Build-Host --config Release
-          cmake -B Build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=Build-Host -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-gcc.cmake
+          cmake -B Build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=${{ github.workspace }}/Build-Host -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-gcc.cmake
           cmake --build Build --config Release
   static_analysis:
     name: Static Analysis
