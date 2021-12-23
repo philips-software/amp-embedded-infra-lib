@@ -405,6 +405,6 @@ if (TARGET_ARCH_X86)
         protobuf.libprotobuf_lite
         protobuf.libprotobuf
         protobuf.libprotoc
-        EXPORT emilProtobufTargets
+        EXPORT emilProtobufHostTargets
     )
 endif()

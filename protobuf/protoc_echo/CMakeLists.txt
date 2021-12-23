@@ -1,6 +1,6 @@
 function(protocol_buffer_echo_cpp target input)
     if (CMAKE_CROSSCOMPILING)
-        find_package(emil 2.0.0 COMPONENTS Protobuf)
+        find_package(emil 2.0.0 COMPONENTS ProtobufHost)
     endif()
 
     ccola_make_absolute_from_source(absolute_input ${input})
@@ -55,13 +55,12 @@ function(protocol_buffer_echo_cpp target input)
         ${generated_files}
     )
     
-    target_include_directories(${target}
-        PUBLIC
-        ${CMAKE_CURRENT_BINARY_DIR}
+    target_include_directories(${target} PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     )
     
-    target_link_libraries(${target}
-        PUBLIC
+    target_link_libraries(${target} PUBLIC
         protobuf.echo
     )
 endfunction()

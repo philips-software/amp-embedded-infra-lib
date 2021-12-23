@@ -61,4 +61,10 @@ if (TARGET_ARCH_X86)
     target_sources(protobuf.protoc_echo_plugin PRIVATE
         Main.cpp
     )
+
+    install(TARGETS
+        protobuf.protoc_echo_plugin_lib
+        protobuf.protoc_echo_plugin
+        EXPORT emilProtobufHostTargets
+    )
 endif()

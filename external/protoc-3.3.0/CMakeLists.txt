@@ -48,7 +48,11 @@ macro(protocol_buffer_cpp target input)
     )
 
     target_sources(${target} PRIVATE ${generated_files})
-    target_include_directories(${target} PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${generated_dir_cpp})
+    target_include_directories(${target} PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+        "$<BUILD_INTERFACE:${generated_dir_cpp}>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+    )
     target_link_libraries(${target} PUBLIC protobuf.libprotobuf)
 
 endmacro()
