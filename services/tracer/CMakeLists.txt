@@ -1,9 +1,8 @@
-
 add_library(services.tracer EXCLUDE_FROM_ALL STATIC)
+add_library(emil::services.tracer ALIAS services.tracer)
+install(TARGETS services.tracer EXPORT emilServicesTargets)
 
-target_link_libraries(services.tracer
-    PUBLIC
-
+target_link_libraries(services.tracer PUBLIC
     hal.interfaces
     hal.synchronous_interfaces
     infra.stream
@@ -34,6 +33,6 @@ target_sources(services.tracer PRIVATE
     TracingOutputStream.hpp
 )
 
-if(BUILD_TESTING)
+if (BUILD_TESTING)
     add_subdirectory(test)
 endif()

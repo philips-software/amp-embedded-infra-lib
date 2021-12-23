@@ -1,10 +1,8 @@
-if(TARGET_ARCH_X86)
+if (TARGET_ARCH_X86)
     add_library(upgrade.pack_builder EXCLUDE_FROM_ALL STATIC)
 
-    target_link_libraries(upgrade.pack_builder
-        PUBLIC
-
-        crypto.mbed_tls
+    target_link_libraries(upgrade.pack_builder PUBLIC
+        crypto.mbedtls
         crypto.micro_ecc
         crypto.tiny_aes128
         hal.interfaces
@@ -54,7 +52,8 @@ if(TARGET_ARCH_X86)
         UpgradePackInputFactory.cpp
         UpgradePackInputFactory.hpp
     )
-    if(BUILD_TESTING)
+
+    if (BUILD_TESTING)
         add_subdirectory(test)
     endif()
 endif()

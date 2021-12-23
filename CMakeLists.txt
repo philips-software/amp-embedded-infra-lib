@@ -74,7 +74,7 @@ endif()
 set(CCOLA_DIR "${CMAKE_SOURCE_DIR}/ccola")
 include("${CCOLA_DIR}/ccola.inc")
 include(CMakePackageConfigHelpers)
-include(GNUInstallDirs)
+include(GNUInstallDirs)  # included to supply proper defaults to install(...) commands
 include(version)
 
 add_version_header_target(generated.version_header)

@@ -1,7 +1,8 @@
 add_library(infra.stream EXCLUDE_FROM_ALL STATIC)
+add_library(emil::infra.stream ALIAS infra.stream)
+install(TARGETS infra.stream EXPORT emilInfraTargets)
 
-target_link_libraries(infra.stream
-    PUBLIC
+target_link_libraries(infra.stream PUBLIC
     infra.util
 )
 
@@ -60,6 +61,6 @@ target_sources(infra.stream PRIVATE
     StringOutputStream.hpp
 )
 
-if(BUILD_TESTING)
+if (BUILD_TESTING)
     add_subdirectory(test)
 endif()

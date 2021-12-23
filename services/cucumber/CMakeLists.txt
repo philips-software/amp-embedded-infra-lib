@@ -1,9 +1,8 @@
-
 add_library(services.cucumber EXCLUDE_FROM_ALL STATIC)
+add_library(emil::services.cucumber ALIAS services.cucumber)
+install(TARGETS services.cucumber EXPORT emilServicesTargets)
 
-target_link_libraries(services.cucumber
-    PUBLIC
-
+target_link_libraries(services.cucumber PUBLIC
     infra.event
     infra.stream
     infra.syntax
@@ -33,6 +32,6 @@ target_sources(services.cucumber PRIVATE
     TracingCucumberWireProtocolServer.hpp
 )
 
-if(BUILD_TESTING)
+if (BUILD_TESTING)
     add_subdirectory(test)
 endif()

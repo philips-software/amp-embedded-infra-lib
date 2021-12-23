@@ -1,11 +1,15 @@
-
 add_library(crypto.mbedtls_emil EXCLUDE_FROM_ALL STATIC)
+add_library(crypto.mbedtls ALIAS crypto.mbedtls_emil)
+add_library(crypto.mbedtls_minimal ALIAS crypto.mbedtls_emil)
+add_library(emil::crypto.mbedtls_emil ALIAS crypto.mbedtls_emil)
+install(TARGETS crypto.mbedtls_emil EXPORT emilCryptoTargets)
+
 target_include_directories(crypto.mbedtls_emil PUBLIC
-    include
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
-target_compile_options(crypto.mbedtls_emil
-    PUBLIC
+target_compile_options(crypto.mbedtls_emil PUBLIC
     $<$<BOOL:${TARGET_BUILD_CORTEX}>:-fomit-frame-pointer>
 )
 
@@ -167,22 +171,4 @@ target_sources(crypto.mbedtls_emil PRIVATE
     library/x509write_crt.c
     library/x509write_csr.c
     library/xtea.c
-)
-
-add_library(crypto.mbed_tls EXCLUDE_FROM_ALL INTERFACE)
-
-target_link_libraries(crypto.mbed_tls
-    INTERFACE
-    crypto.mbedtls_emil
-    # OR
-    # ${MBEDTLS_ALTERNATIVE_DEPEND}
-)
-
-add_library(crypto.mbed_tls_minimal EXCLUDE_FROM_ALL INTERFACE)
-
-target_link_libraries(crypto.mbed_tls_minimal
-    INTERFACE
-    crypto.mbedtls_emil
-    # OR
-    # ${MBEDTLS_MINIMAL_ALTERNATIVE_DEPEND}
 )

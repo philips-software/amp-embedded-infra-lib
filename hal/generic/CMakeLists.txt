@@ -1,15 +1,14 @@
-if(TARGET_ARCH_X86)
+if (TARGET_ARCH_X86)
     add_library(hal.generic EXCLUDE_FROM_ALL STATIC)
+    add_library(emil::hal.generic ALIAS hal.generic)
+    install(TARGETS hal.generic EXPORT emilHalTargets)
 
-    target_link_libraries(hal.generic
-        PUBLIC
-
+    target_link_libraries(hal.generic PUBLIC
         hal.interfaces
         hal.synchronous_interfaces
-
-        $<$<BOOL:${TARGET_BUILD_UNIX}>:pthread>
+        $<$<OR:$<BOOL:${TARGET_BUILD_UNIX}>,$<BOOL:${TARGET_BUILD_DARWIN}>>:pthread>
     )
-
+    
     target_sources(hal.generic PRIVATE
         FileSystemGeneric.cpp
         FileSystemGeneric.hpp

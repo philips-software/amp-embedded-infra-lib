@@ -14,8 +14,7 @@ if (TARGET_ARCH_X86)
         $<$<OR:$<BOOL:${TARGET_BUILD_UNIX}>,$<BOOL:${TARGET_BUILD_DARWIN}>>:HAVE_PTHREAD>
     )
 
-    target_compile_options(protobuf.libprotobuf_lite
-        PRIVATE
+    target_compile_options(protobuf.libprotobuf_lite PRIVATE
         $<$<BOOL:${TARGET_BUILD_WIN}>:
             $<$<CXX_COMPILER_ID:MSVC>:
                 /wd4018
@@ -36,13 +35,11 @@ if (TARGET_ARCH_X86)
         $<$<OR:$<BOOL:${TARGET_BUILD_UNIX}>,$<BOOL:${TARGET_BUILD_DARWIN}>>:-fPIC>
     )
 
-    target_link_libraries(protobuf.libprotobuf_lite
-        PUBLIC
+    target_link_libraries(protobuf.libprotobuf_lite PUBLIC
         $<$<OR:$<BOOL:${TARGET_BUILD_UNIX}>,$<BOOL:${TARGET_BUILD_DARWIN}>>:pthread>
     )
 
-    target_include_directories(protobuf.libprotobuf_lite
-        PUBLIC
+    target_include_directories(protobuf.libprotobuf_lite PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     )
@@ -91,14 +88,14 @@ if (TARGET_ARCH_X86)
         src/google/protobuf/wire_format_lite.h
     )
 
-    if(TARGET_BUILD_UNIX OR TARGET_BUILD_DARWIN)
+    if (TARGET_BUILD_UNIX OR TARGET_BUILD_DARWIN)
         target_sources(protobuf.libprotobuf_lite PRIVATE
             src/google/protobuf/stubs/atomicops_internals_x86_gcc.cc
             src/google/protobuf/stubs/atomicops_internals_x86_gcc.h
         )
     endif()
 
-    if(TARGET_BUILD_WIN)
+    if (TARGET_BUILD_WIN)
         target_sources(protobuf.libprotobuf_lite PRIVATE
             src/google/protobuf/stubs/atomicops_internals_x86_msvc.cc
             src/google/protobuf/stubs/atomicops_internals_x86_msvc.h
@@ -108,8 +105,7 @@ if (TARGET_ARCH_X86)
     add_library(protobuf.libprotobuf EXCLUDE_FROM_ALL SHARED)
     add_library(emil::protobuf.libprotobuf ALIAS protobuf.libprotobuf)
 
-    target_compile_options(protobuf.libprotobuf
-        PRIVATE
+    target_compile_options(protobuf.libprotobuf PRIVATE
         $<$<COMPILE_LANG_AND_ID:CXX,AppleClang,Clang>:-Wno-enum-compare-switch>
         $<$<BOOL:${TARGET_BUILD_WIN}>:
             $<$<CXX_COMPILER_ID:MSVC>:
@@ -129,13 +125,11 @@ if (TARGET_ARCH_X86)
         >
     )
 
-    target_compile_definitions(protobuf.libprotobuf
-        PRIVATE
+    target_compile_definitions(protobuf.libprotobuf PRIVATE
         LIBPROTOBUF_EXPORTS
     )
 
-    target_link_libraries(protobuf.libprotobuf
-        PUBLIC
+    target_link_libraries(protobuf.libprotobuf PUBLIC
         protobuf.libprotobuf_lite
     )
 
@@ -254,8 +248,7 @@ if (TARGET_ARCH_X86)
     add_library(protobuf.libprotoc EXCLUDE_FROM_ALL STATIC)
     add_library(emil::protobuf.libprotoc ALIAS protobuf.libprotoc)
 
-    target_compile_options(protobuf.libprotoc
-        PRIVATE
+    target_compile_options(protobuf.libprotoc PRIVATE
         $<$<COMPILE_LANG_AND_ID:CXX,AppleClang,Clang>:-Wno-enum-compare-switch>
         $<$<BOOL:${TARGET_BUILD_WIN}>:
             $<$<CXX_COMPILER_ID:MSVC>:
@@ -275,20 +268,17 @@ if (TARGET_ARCH_X86)
         >
     )
 
-    target_link_options(protobuf.libprotoc
-        PRIVATE
+    target_link_options(protobuf.libprotoc PRIVATE
         $<$<BOOL:${TARGET_BUILD_WIN}>:
             $<$<CXX_COMPILER_ID:MSVC>:/ignore:4217>
         >
     )
 
-    target_compile_definitions(protobuf.libprotoc
-        PUBLIC
+    target_compile_definitions(protobuf.libprotoc PUBLIC
         LIBPROTOC_EXPORTS
     )
 
-    target_link_libraries(protobuf.libprotoc
-        PUBLIC
+    target_link_libraries(protobuf.libprotoc PUBLIC
         protobuf.libprotobuf
     )
 
@@ -411,15 +401,10 @@ if (TARGET_ARCH_X86)
         src/google/protobuf/compiler/zip_writer.h
     )
 
-    install(
-        TARGETS
+    install(TARGETS
         protobuf.libprotobuf_lite
         protobuf.libprotobuf
         protobuf.libprotoc
         EXPORT emilProtobufTargets
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
 endif()

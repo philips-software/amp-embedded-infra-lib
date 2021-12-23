@@ -1,14 +1,13 @@
-
 add_library(services.util EXCLUDE_FROM_ALL STATIC)
+add_library(emil::services.util ALIAS services.util)
+install(TARGETS services.util EXPORT emilServicesTargets)
 
-target_link_libraries(services.util
-    PUBLIC
-
+target_link_libraries(services.util PUBLIC
     hal.interfaces
     infra.util
     infra.stream
     infra.syntax
-    crypto.mbed_tls
+    crypto.mbedtls
 )
 
 target_sources(services.util PRIVATE
@@ -67,7 +66,7 @@ target_sources(services.util PRIVATE
     WritableConfiguration.hpp
 )
 
-if(BUILD_TESTING)
+if (BUILD_TESTING)
     add_subdirectory(test)
     add_subdirectory(test_doubles)
 endif()

@@ -1,12 +1,13 @@
 add_library(infra.util EXCLUDE_FROM_ALL STATIC)
+add_library(emil::infra.util ALIAS infra.util)
+install(TARGETS infra.util EXPORT emilInfraTargets)
 
-target_include_directories(infra.util
-    PUBLIC
-    "${CMAKE_CURRENT_LIST_DIR}/../../"
+target_include_directories(infra.util PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/../../>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
-target_link_libraries(infra.util
-    PUBLIC
+target_link_libraries(infra.util PUBLIC
     infra.stream
 )
 
@@ -74,14 +75,13 @@ target_sources(infra.util PRIVATE
     WithStorage.hpp
 )
 
-if(TARGET_BUILD_WIN)
-    target_sources(infra.util
-        PRIVATE
+if (TARGET_BUILD_WIN)
+    target_sources(infra.util PRIVATE
         infra.util.natvis
     )
 endif()
 
-if(BUILD_TESTING)
+if (BUILD_TESTING)
     add_subdirectory(test)
     add_subdirectory(test_helper)
 endif()

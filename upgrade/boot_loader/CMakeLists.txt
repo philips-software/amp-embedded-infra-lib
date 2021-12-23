@@ -2,7 +2,7 @@ add_library(upgrade.boot_loader EXCLUDE_FROM_ALL STATIC)
 
 target_link_libraries(upgrade.boot_loader
     PUBLIC
-    crypto.mbed_tls_minimal
+    crypto.mbedtls_minimal
     crypto.micro_ecc
     crypto.tiny_aes128
     hal.synchronous_interfaces
@@ -44,7 +44,7 @@ target_sources(upgrade.boot_loader PRIVATE
     VerifierRsa.hpp
 )
 
-if(BUILD_TESTING)
+if (BUILD_TESTING)
     add_subdirectory(test)
     add_subdirectory(test_doubles)
 endif()

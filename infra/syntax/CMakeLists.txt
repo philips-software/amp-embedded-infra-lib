@@ -1,7 +1,8 @@
 add_library(infra.syntax EXCLUDE_FROM_ALL STATIC)
+add_library(emil::infra.syntax ALIAS infra.syntax)
+install(TARGETS infra.syntax EXPORT emilInfraTargets)
 
-target_link_libraries(infra.syntax
-    PUBLIC
+target_link_libraries(infra.syntax PUBLIC
     infra.util
 )
 
@@ -26,7 +27,7 @@ target_sources(infra.syntax PRIVATE
     XmlFormatter.hpp
 )
 
-if(TARGET_ARCH_X86)
+if (TARGET_ARCH_X86)
     target_sources(infra.syntax PRIVATE
         JsonObjectNavigator.cpp
         JsonObjectNavigator.hpp
@@ -35,7 +36,7 @@ if(TARGET_ARCH_X86)
     )
 endif()
 
-if(BUILD_TESTING)
+if (BUILD_TESTING)
     add_subdirectory(test_doubles)
     add_subdirectory(test)
 endif()

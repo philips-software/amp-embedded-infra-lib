@@ -1,21 +1,19 @@
 add_library(hal.interfaces EXCLUDE_FROM_ALL STATIC)
+add_library(emil::hal.interfaces ALIAS hal.interfaces)
+install(TARGETS hal.interfaces EXPORT emilHalTargets)
 
-target_include_directories(hal.interfaces
-    PUBLIC
-    "${CMAKE_CURRENT_LIST_DIR}/../../"
+target_include_directories(hal.interfaces PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/../../>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
-target_link_libraries(hal.interfaces
-    PUBLIC
-
+target_link_libraries(hal.interfaces PUBLIC
     infra.util
     infra.event
-
     $<$<BOOL:${TARGET_BUILD_UNIX}>:stdc++fs>
 )
 
-target_sources(hal.interfaces
-    PRIVATE
+target_sources(hal.interfaces PRIVATE
     AnalogToDigitalPin.hpp
     AsyncGpio.cpp
     AsyncGpio.hpp
@@ -47,12 +45,11 @@ target_sources(hal.interfaces
     Spi.hpp
     UsbCustomHid.hpp
     UsbLinkLayer.hpp
-
     $<$<BOOL:${TARGET_ARCH_X86}>:FileSystem.cpp>
     $<$<BOOL:${TARGET_ARCH_X86}>:FileSystem.hpp>
 )
 
-if(BUILD_TESTING)
+if (BUILD_TESTING)
     add_subdirectory(test)
     add_subdirectory(test_doubles)
 endif()

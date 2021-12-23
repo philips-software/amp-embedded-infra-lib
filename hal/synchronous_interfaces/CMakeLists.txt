@@ -1,18 +1,17 @@
-
 add_library(hal.synchronous_interfaces EXCLUDE_FROM_ALL STATIC)
+add_library(emil::hal.synchronous_interfaces ALIAS hal.synchronous_interfaces)
+install(TARGETS hal.synchronous_interfaces EXPORT emilHalTargets)
 
-target_include_directories(hal.synchronous_interfaces
-    PUBLIC
-    "${CMAKE_CURRENT_LIST_DIR}/../../"
+target_include_directories(hal.synchronous_interfaces PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/../../>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
-target_link_libraries(hal.synchronous_interfaces
-    PUBLIC
+target_link_libraries(hal.synchronous_interfaces PUBLIC
     infra.util
 )
 
-target_sources(hal.synchronous_interfaces
-    PRIVATE
+target_sources(hal.synchronous_interfaces PRIVATE
     SynchronousEncryptor.hpp
     SynchronousFlash.cpp
     SynchronousFlash.hpp
@@ -30,6 +29,6 @@ target_sources(hal.synchronous_interfaces
     TimeService.hpp
 )
 
-if(BUILD_TESTING)
+if (BUILD_TESTING)
     add_subdirectory(test_doubles)
 endif()

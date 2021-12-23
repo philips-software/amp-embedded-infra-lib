@@ -1,8 +1,8 @@
-
 add_library(infra.timer EXCLUDE_FROM_ALL STATIC)
+add_library(emil::infra.timer ALIAS infra.timer)
+install(TARGETS infra.timer EXPORT emilInfraTargets)
 
-target_link_libraries(infra.timer
-    PUBLIC
+target_link_libraries(infra.timer PUBLIC
     infra.event
     infra.util
 )
@@ -35,7 +35,7 @@ target_sources(infra.timer PRIVATE
     TimerServiceManager.hpp
 )
 
-if(BUILD_TESTING)
+if (BUILD_TESTING)
     add_subdirectory(test)
     add_subdirectory(test_helper)
 endif()

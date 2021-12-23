@@ -1,11 +1,10 @@
 set(PROTOC_ECHO_PLUGIN_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} CACHE INTERNAL "protoc echo plugin binary directory")
 
-if(TARGET_ARCH_X86)
+if (TARGET_ARCH_X86)
     add_library(protobuf.protoc_echo_plugin_lib EXCLUDE_FROM_ALL STATIC)
     add_library(emil::protobuf.protoc_echo_plugin_lib ALIAS protobuf.protoc_echo_plugin_lib)
 
-    target_compile_options(protobuf.protoc_echo_plugin_lib
-        PRIVATE
+    target_compile_options(protobuf.protoc_echo_plugin_lib PRIVATE
         $<$<BOOL:${TARGET_BUILD_WIN}>:
             $<$<CXX_COMPILER_ID:MSVC>:
                 /wd4018
@@ -16,14 +15,11 @@ if(TARGET_ARCH_X86)
         >
     )
 
-    target_compile_definitions(protobuf.protoc_echo_plugin_lib
-        PRIVATE
+    target_compile_definitions(protobuf.protoc_echo_plugin_lib PRIVATE
         LIBPROTOC_EXPORTS
     )
 
-    target_link_libraries(protobuf.protoc_echo_plugin_lib
-        PUBLIC
-
+    target_link_libraries(protobuf.protoc_echo_plugin_lib PUBLIC
         protobuf.libprotobuf
         protobuf.libprotoc
         protobuf.echo_attributes
@@ -48,8 +44,7 @@ if(TARGET_ARCH_X86)
     add_executable(protobuf.protoc_echo_plugin)
     add_executable(emil::protobuf.protoc_echo_plugin ALIAS protobuf.protoc_echo_plugin)
 
-    target_compile_options(protobuf.protoc_echo_plugin
-        PRIVATE
+    target_compile_options(protobuf.protoc_echo_plugin PRIVATE
         $<$<BOOL:${TARGET_BUILD_WIN}>:
             $<$<CXX_COMPILER_ID:MSVC>:
                 /wd4018
@@ -60,8 +55,7 @@ if(TARGET_ARCH_X86)
         >
     )
 
-    target_link_libraries(protobuf.protoc_echo_plugin
-        PUBLIC
+    target_link_libraries(protobuf.protoc_echo_plugin PUBLIC
         protobuf.protoc_echo_plugin_lib
     )
 

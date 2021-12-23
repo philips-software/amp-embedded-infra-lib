@@ -1,16 +1,15 @@
-
 add_library(services.network EXCLUDE_FROM_ALL STATIC)
+add_library(emil::services.network ALIAS services.network)
+install(TARGETS services.network EXPORT emilServicesTargets)
 
-target_link_libraries(services.network
-    PUBLIC
-
+target_link_libraries(services.network PUBLIC
     infra.event
     infra.stream
     infra.syntax
     infra.timer
     hal.synchronous_interfaces
     services.tracer
-    crypto.mbed_tls
+    crypto.mbedtls
 )
 
 target_sources(services.network PRIVATE
@@ -102,14 +101,14 @@ target_sources(services.network PRIVATE
     WiFiNetwork.hpp
 )
 
-if(TARGET_ARCH_X86)
+if (TARGET_ARCH_X86)
     target_sources(services.network PRIVATE
         CertificateConvertor.cpp
         CertificateConvertor.hpp
     )
 endif()
 
-if(BUILD_TESTING)
+if (BUILD_TESTING)
     add_subdirectory(test)
     add_subdirectory(test_doubles)
 endif()
