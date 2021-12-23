@@ -1,6 +1,6 @@
 function(protocol_buffer_echo_cpp target input)
     if (CMAKE_CROSSCOMPILING)
-        find_package(emil 2.0 COMPONENTS protobuf)
+        find_package(emil COMPONENTS protobuf)
         message(WARNING "TODO: build proto generator when cross-compiling")
         # https://stackoverflow.com/questions/42506804/launch-host-and-target-crosscompiling-builds-inside-cmake
         # https://stackoverflow.com/questions/36173840/how-to-instruct-cmake-to-use-the-build-architecture-compiler
