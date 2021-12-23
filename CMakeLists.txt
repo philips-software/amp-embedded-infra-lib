@@ -93,7 +93,6 @@ add_subdirectory(examples)
 
 write_basic_package_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/emilConfigVersion.cmake"
-    VERSION "${${CMAKE_PROJECT_NAME}_VERSION}"
     COMPATIBILITY AnyNewerVersion
 )
 
