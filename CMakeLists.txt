@@ -94,6 +94,9 @@ add_subdirectory(examples)
 write_basic_package_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/emilConfigVersion.cmake"
     COMPATIBILITY AnyNewerVersion
+    # When cross-compiling for a 32-bit architecture and re-using host tooling from a 64-bit architecture
+    # ARCH_INDEPENDENT is necessary here. See: https://cmake.org/cmake/help/latest/module/CMakePackageConfigHelpers.html.
+    ARCH_INDEPENDENT
 )
 
 configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in
