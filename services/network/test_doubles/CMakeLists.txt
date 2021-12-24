@@ -19,6 +19,7 @@ target_sources(services.network_test_doubles PRIVATE
     ConnectionStub.cpp
     ConnectionStub.hpp
     DatagramMock.hpp
+    HttpClientAuthenticationStub.hpp
     HttpClientMock.hpp
     HttpClientMock.cpp
     HttpRequestParserStub.hpp

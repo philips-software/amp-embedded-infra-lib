@@ -40,17 +40,25 @@ namespace hal
                 RtsControlToggle = RTS_CONTROL_TOGGLE
             };
 
-            UartWindowsConfig()
-                : baudRate(CBR_115200)
-                , flowControlRts(RtsFlowControl::RtsControlDisable) {}
+            enum class Parity
+            {
+                none = NOPARITY,
+                even = EVENPARITY,
+                odd = ODDPARITY,
+                mark = MARKPARITY,
+                space = SPACEPARITY
+            };
+
+            UartWindowsConfig() = default;
 
             UartWindowsConfig(uint32_t newbaudRate, RtsFlowControl newFlowControlRts)
                 : baudRate(newbaudRate)
                 , flowControlRts(newFlowControlRts)
             {}
 
-            uint32_t baudRate;
-            RtsFlowControl flowControlRts;
+            uint32_t baudRate = CBR_115200;
+            RtsFlowControl flowControlRts = RtsFlowControl::RtsControlDisable;
+            Parity parity = Parity::none;
         };
         struct DeviceName {};
         static const DeviceName deviceName;

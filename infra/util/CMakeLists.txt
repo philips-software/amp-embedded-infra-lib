@@ -17,6 +17,7 @@ target_sources(infra.util PRIVATE
     AllocatorFixedSpace.hpp
     AllocatorHeap.hpp
     AutoResetFunction.hpp
+    AutoResetMultiFunction.hpp
     BitLogic.hpp
     BoundedDeque.hpp
     BoundedForwardList.hpp

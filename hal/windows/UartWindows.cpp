@@ -74,7 +74,7 @@ namespace hal
         dcb.DCBlength = sizeof(DCB);
         dcb.BaudRate = config.baudRate;
         dcb.ByteSize = 8;
-        dcb.Parity = NOPARITY;
+        dcb.Parity = static_cast<BYTE>(config.parity);
         dcb.StopBits = ONESTOPBIT;
         dcb.fRtsControl = (uint32_t)config.flowControlRts;
         dcb.fOutxCtsFlow = config.flowControlRts == UartWindowsConfig::RtsFlowControl::RtsHandshake;
@@ -140,14 +140,11 @@ namespace hal
         if (WaitForSingleObject(overlapped.hEvent, readTimeoutMs) == WAIT_OBJECT_0)
         {
             unsigned long bytesRead;
-            if (GetOverlappedResult(handle, &overlapped, &bytesRead, false))
-            {
-                if (bytesRead != 0)
-                    onReceivedData(infra::ConstByteRange(range.begin(), range.begin() + bytesRead));
-                pendingRead = false;
-            }
-            else
+            if (!GetOverlappedResult(handle, &overlapped, &bytesRead, false))
                 std::abort();
+            if (bytesRead != 0)
+                onReceivedData(infra::ConstByteRange(range.begin(), range.begin() + bytesRead));
+            pendingRead = false;
         }
     }
 }

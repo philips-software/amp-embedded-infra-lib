@@ -25,6 +25,7 @@
 #include "infra/util/IntegerSequence.hpp"
 #include "infra/util/ReallyAssert.hpp"
 #include "infra/util/StaticStorage.hpp"
+#include "infra/util/VariadicTemplates.hpp"
 #include <cstddef>
 #include <cstring>
 #include <functional>
@@ -93,6 +94,7 @@ namespace infra
     {
     public:
         using ResultType = Result;
+        using Arguments = List<Args...>;
 
     public:
         Function() = default;

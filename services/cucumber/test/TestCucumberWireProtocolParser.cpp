@@ -26,15 +26,20 @@ TEST(CucumberStepMatcherTest, should_match_input_for_matching_steps)
     std::vector<std::pair<std::string, std::string>> testVectors = {
         std::make_pair("literal step", "literal step"),
         std::make_pair("step with %d argument", "step with 42 argument"),
+        std::make_pair("step with %b argument", "step with true argument"),
         std::make_pair("step with '%s' argument", "step with 'foo' argument"),
         std::make_pair("ends on parameter '%s'", "ends on parameter 'foo'"),
         std::make_pair("ends on parameter %d", "ends on parameter 42"),
+        std::make_pair("ends on parameter %b", "ends on parameter false"),
         std::make_pair("'%s' starts with string", "'foo' starts with string"),
         std::make_pair("%d starts with integer", "42 starts with integer"),
+        std::make_pair("%b starts with integer", "true starts with integer"),
         std::make_pair("'%s'", "'foo'"),
         std::make_pair("%d", "42"),
+        std::make_pair("%b", "false"),
         std::make_pair("'%d'", "'42'"),
-        std::make_pair("'%s' %d '%s'", "'foo' 42 'bar'"),
+        std::make_pair("'%b'", "'true'"),
+        std::make_pair("'%s' %d %b '%s'", "'foo' 42 false 'bar'"),
         std::make_pair("'%s'", "'foo bar'"),
         std::make_pair("", "")
     };
@@ -49,7 +54,9 @@ TEST(CucumberStepMatcherTest, should_not_match_input_for_non_matching_steps)
         std::make_pair("step", ""),
         std::make_pair("'%s'", "42"),
         std::make_pair("step with %s argument", "step with foo argument"),
-        std::make_pair("'%s' step", "'foo step")
+        std::make_pair("'%s' step", "'foo step"),
+        std::make_pair("%b step", "foles step"),
+        std::make_pair("%b step", "maybe step")
     };
 
     for (const auto& stepAndMatch : testVectors)
@@ -67,8 +74,8 @@ TEST(CucumberStepMatcherTest, should_report_if_step_has_arguments)
 
 TEST(CucumberStepMatcherTest, should_report_correct_argument_count)
 {
-    StepStub withArguments{ "I am here for an argument '%s', %d" };
-    EXPECT_EQ(2, withArguments.NrArguments());
+    StepStub withArguments{ "I am here for an argument '%s', %d, %b" };
+    EXPECT_EQ(3, withArguments.NrArguments());
 
     StepStub withoutArguments{ "Me too!" };
     EXPECT_EQ(0, withoutArguments.NrArguments());
@@ -103,10 +110,21 @@ TEST(CucumberStepMatcherTest, get_unsigned_integer_argument)
     EXPECT_EQ(5, *argument);
 }
 
+TEST(CucumberStepMatcherTest, get_boolean_argument)
+{
+    StepStub withBooleanArgument{ "I am here for an boolean argument %b and %b" };
+    infra::JsonArray arguments(R"([ "true", "false" ])");
+    withBooleanArgument.Invoke(arguments);
+    auto argument = withBooleanArgument.GetBooleanArgument(0);
+    EXPECT_EQ(true, *argument);
+    argument = withBooleanArgument.GetBooleanArgument(1);
+    EXPECT_EQ(false, *argument);
+}
+
 TEST(CucumberStepMatcherTest, get_all_arguments)
 {
-    StepStub withDifferingArguments{ "I am here for an unsigned integer argument %d, string argument '%s', and table argument" };
-    infra::JsonArray arguments(R"([ "5", "abc", [["field","value"]] ])");
+    StepStub withDifferingArguments{ "I am here for an unsigned integer argument %d, string argument '%s', boolean argument %b, and table argument" };
+    infra::JsonArray arguments(R"([ "5", "abc", "true", [["field","value"]] ])");
     withDifferingArguments.Invoke(arguments);
 
     auto uIntegerArgument = withDifferingArguments.GetUIntegerArgument(0);
@@ -115,6 +133,9 @@ TEST(CucumberStepMatcherTest, get_all_arguments)
     infra::BoundedString::WithStorage<3> stringArgument;
     withDifferingArguments.GetStringArgument(1)->ToString(stringArgument);
     EXPECT_EQ("abc", stringArgument);
+
+    auto booleanArgument = withDifferingArguments.GetBooleanArgument(2);
+    EXPECT_EQ(true, *booleanArgument);
 
     infra::BoundedString::WithStorage<5> tableArgument;
     withDifferingArguments.GetTableArgument("field")->ToString(tableArgument);

@@ -5,7 +5,6 @@ target_link_libraries(infra.util_test
     PUBLIC
     infra.util
     infra.util_test_helper
-
     gtest
     gmock
     gmock_main
@@ -16,6 +15,7 @@ target_sources(infra.util_test
     TestAllocatorFixedSpace.cpp
     TestAllocatorHeap.cpp
     TestAutoResetFunction.cpp
+    TestAutoResetMultiFunction.cpp
     TestBitLogic.cpp
     TestBoundedDeque.cpp
     TestBoundedForwardList.cpp
