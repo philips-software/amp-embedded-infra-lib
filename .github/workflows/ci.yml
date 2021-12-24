@@ -21,12 +21,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - uses: seanmiddleditch/gha-setup-ninja@v3
-      - uses: hendrikmuhs/ccache-action@v1
-        with:
-          key: ${{ matrix.os }}
       - name: Build and Test
         run: |
-          cmake -B Build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILER_LAUNCHER=ccache
+          cmake -B Build -G Ninja -DCMAKE_BUILD_TYPE=Debug
           cmake --build Build --config Debug
           pushd Build && ctest -Q -C Debug -T Test --no-compress-output --output-on-failure
   embedded_build:
@@ -47,7 +44,7 @@ jobs:
         with:
           key: ${{ matrix.gcc }}
       - run: |
-          cmake -B Build-Host -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=Off -DCMAKE_COMPILER_LAUNCHER=ccache
+          cmake -B Build-Host -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=Off -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build Build-Host --config Release
           cmake -B Build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILER_LAUNCHER=ccache -DCMAKE_PREFIX_PATH=${{ github.workspace }}/Build-Host -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-gcc.cmake
           cmake --build Build --config Release
@@ -82,7 +79,7 @@ jobs:
       - uses: hendrikmuhs/ccache-action@v1
       - name: Build
         run: |
-          cmake -B Build -G Ninja -DENABLE_COVERAGE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILER_LAUNCHER=ccache
+          cmake -B Build -G Ninja -DENABLE_COVERAGE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build Build --config Debug
           pushd Build && ctest -Q -C Debug -T Test --no-compress-output --output-on-failure && popd
           gcovr --sonarqube=coverage.xml --exclude-unreachable-branches --exclude-throw-branches -j 2 --exclude=.*/generated/.* --exclude=.*/examples/.* --exclude=.*/external/.* --exclude=.*/lwip/.* --exclude=.*/tracing/.* --exclude=.*/test/.*
