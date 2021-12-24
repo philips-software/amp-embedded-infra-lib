@@ -6,6 +6,7 @@ ccola_component(util static_library)
         AllocatorFixedSpace.hpp
         AllocatorHeap.hpp
         AutoResetFunction.hpp
+        AutoResetMultiFunction.hpp
         BitLogic.hpp
         BoundedDeque.hpp
         BoundedForwardList.hpp
@@ -35,6 +36,7 @@ ccola_component(util static_library)
         IntrusiveSet.hpp
         IntrusiveUnorderedSet.hpp
         MemoryRange.hpp
+        MultiFunction.hpp
         Observer.hpp
         Optional.cpp
         Optional.hpp

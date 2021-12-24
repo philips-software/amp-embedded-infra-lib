@@ -376,5 +376,5 @@ TEST(VariantTest, TestRecursiveLoopUnrollingX)
     EmptyVisitor visitor;
     infra::ApplyVisitor(visitor, v);
     infra::ApplyVisitor(visitor, v, v);
-    infra::ApplySameTypeVisitor(visitor, v, v);    
+    infra::ApplySameTypeVisitor(visitor, v, v);
 }

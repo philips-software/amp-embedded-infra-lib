@@ -4,6 +4,7 @@ ccola_component(util_test gmock_test)
         TestAllocatorFixedSpace.cpp
         TestAllocatorHeap.cpp
         TestAutoResetFunction.cpp
+        TestAutoResetMultiFunction.cpp
         TestBitLogic.cpp
         TestBoundedDeque.cpp
         TestBoundedForwardList.cpp
@@ -24,6 +25,7 @@ ccola_component(util_test gmock_test)
         TestIntrusiveSet.cpp
         TestIntrusiveUnorderedSet.cpp
         TestMemoryRange.cpp
+        TestMultiFunction.cpp
         TestObserver.cpp
         TestOptional.cpp
         TestPolymorphicVariant.cpp

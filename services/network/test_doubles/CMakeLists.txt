@@ -11,6 +11,7 @@ ccola_component(network_test_doubles x86: static_library other: noncompile)
         ConnectionStub.cpp
         ConnectionStub.hpp
         DatagramMock.hpp
+        HttpClientAuthenticationStub.hpp
         HttpClientMock.hpp
         HttpClientMock.cpp
         HttpRequestParserStub.hpp
