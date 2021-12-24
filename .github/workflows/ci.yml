@@ -9,7 +9,6 @@ on:
     types: [opened, synchronize, reopened]
 
 env:
-  CMAKE_BUILD_PARALLEL_LEVEL: 2
   GTEST_COLOR: 1
 jobs:
   host_build_test:
@@ -21,9 +20,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - uses: seanmiddleditch/gha-setup-ninja@v3
       - name: Build and Test
         run: |
-          cmake -B Build -DCMAKE_BUILD_TYPE=Debug
+          cmake -B Build -G Ninja -DCMAKE_BUILD_TYPE=Debug
           cmake --build Build --config Debug
           pushd Build && ctest -Q -C Debug -T Test --no-compress-output --output-on-failure
   embedded_build:
@@ -37,12 +37,13 @@ jobs:
         uses: carlosperate/arm-none-eabi-gcc-action@v1
         with:
           release: ${{ matrix.gcc }}
+      - uses: seanmiddleditch/gha-setup-ninja@v3
       - name: Checkout
         uses: actions/checkout@v2
       - run: |
-          cmake -B Build-Host -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=Off
+          cmake -B Build-Host -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=Off
           cmake --build Build-Host --config Release
-          cmake -B Build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=${{ github.workspace }}/Build-Host -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-gcc.cmake
+          cmake -B Build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=${{ github.workspace }}/Build-Host -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-gcc.cmake
           cmake --build Build --config Release
   static_analysis:
     name: Static Analysis

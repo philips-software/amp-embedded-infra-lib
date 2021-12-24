@@ -8,8 +8,6 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
-env:
-  CMAKE_BUILD_PARALLEL_LEVEL: 2
 jobs:
   analyze:
     name: Analyze
@@ -17,12 +15,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - uses: seanmiddleditch/gha-setup-ninja@v3
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v1
         with:
           languages: cpp
       - run: |
-          cmake -B Build -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=Debug
+          cmake -B Build -G Ninja -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=Debug
           cmake --build Build
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v1
