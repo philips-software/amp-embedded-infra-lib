@@ -1,4 +1,3 @@
-
 add_library(protobuf.services EXCLUDE_FROM_ALL STATIC)
 
 protocol_buffer_echo_cpp(protobuf.services ${CMAKE_CURRENT_LIST_DIR}/Network.proto)

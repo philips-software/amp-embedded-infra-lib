@@ -1,23 +1,15 @@
-ccola_component(protoc_echo_plugin_java x86: executable other: skip)
+if (TARGET_ARCH_X86)
+    add_executable(protobuf.protoc_echo_plugin_java)
+    add_executable(emil::protobuf.protoc_echo_plugin_java ALIAS protobuf.protoc_echo_plugin_java)
+    install(TARGETS protobuf.protoc_echo_plugin_java EXPORT emilProtobufHostTargets)
 
-    ccola_compile_options(
-    win:
-        /wd4018 /wd4251 /wd4273 /wd4800
+    target_link_libraries(protobuf.protoc_echo_plugin_java PUBLIC
+        protobuf.protoc_echo_plugin_lib
     )
 
-    ccola_inheritable_definitions(LIBPROTOC_EXPORTS)
-
-    ccola_sources(
+    target_sources(protobuf.protoc_echo_plugin_java PRIVATE
         Main.cpp
         ProtoCEchoPluginJava.cpp
         ProtoCEchoPluginJava.hpp
     )
-
-    ccola_dependencies(
-        libprotobuf
-        libprotoc
-        echo_attributes
-        infra.stream
-    )
-
-ccola_end_component()
+endif()

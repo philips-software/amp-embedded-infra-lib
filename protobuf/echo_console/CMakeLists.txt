@@ -1,8 +1,7 @@
-if(TARGET_BUILD_WIN)
+if (TARGET_BUILD_WIN)
     add_executable(protobuf.echo_console)
 
-    target_compile_options(protobuf.echo_console
-        PRIVATE
+    target_compile_options(protobuf.echo_console PRIVATE
         $<$<BOOL:${TARGET_BUILD_WIN}>:
             $<$<CXX_COMPILER_ID:MSVC>:
                 /wd4018
@@ -13,9 +12,7 @@ if(TARGET_BUILD_WIN)
         >
     )
 
-    target_link_libraries(protobuf.echo_console
-        PUBLIC
-
+    target_link_libraries(protobuf.echo_console PUBLIC
         protobuf.protoc_echo_plugin_lib
         protobuf.echo
         hal.generic
@@ -31,5 +28,4 @@ if(TARGET_BUILD_WIN)
         Main.cpp
     )
 
-endif(TARGET_BUILD_WIN)
-
+endif()

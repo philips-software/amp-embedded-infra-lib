@@ -23,7 +23,7 @@ function(protocol_buffer_echo_cpp target input)
         endforeach()
     endforeach()
 
-    if(CMAKE_HOST_WIN32)    # TODO chage to compiler-specific condition
+    if (MSVC)
         set(error_format "msvs")
     else()
         set(error_format "gcc")
@@ -50,8 +50,7 @@ function(protocol_buffer_echo_cpp target input)
         DEPENDS emil::protobuf.protoc_echo_plugin
     )
 
-    target_sources(${target}
-        PRIVATE
+    target_sources(${target} PRIVATE
         ${generated_files}
     )
     
