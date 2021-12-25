@@ -15,7 +15,7 @@ install(EXPORT emilProtobufTargets
 )
 
 # Generate the export targets for the build tree
-export(EXPORT emilProtobufHostTargets
+export(EXPORT emilProtobufTargets
     FILE "${CMAKE_BINARY_DIR}/emilProtobufTargets.cmake"
     NAMESPACE emil::
 )
