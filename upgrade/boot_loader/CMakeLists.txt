@@ -1,7 +1,8 @@
 add_library(upgrade.boot_loader EXCLUDE_FROM_ALL STATIC)
+add_library(emil::upgrade.boot_loader ALIAS upgrade.boot_loader)
+install(TARGETS upgrade.boot_loader EXPORT emilUpgradeTargets)
 
-target_link_libraries(upgrade.boot_loader
-    PUBLIC
+target_link_libraries(upgrade.boot_loader PUBLIC
     crypto.mbedtls_minimal
     crypto.micro_ecc
     crypto.tiny_aes128

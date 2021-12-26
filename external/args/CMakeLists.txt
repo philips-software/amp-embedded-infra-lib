@@ -1,9 +1,7 @@
-
-if(TARGET_ARCH_X86)
+if (TARGET_ARCH_X86)
     add_library(arg_parser.args EXCLUDE_FROM_ALL INTERFACE)
 
-    target_include_directories(arg_parser.args
-        INTERFACE
+    target_include_directories(arg_parser.args INTERFACE
         ${CMAKE_CURRENT_LIST_DIR}
     )
 endif()
