@@ -22,6 +22,7 @@ if (TARGET_ARCH_X86)
                 /wd4244
                 /wd4251
                 /wd4267
+                /wd4273
                 /wd4305
                 /wd4309
                 /wd4506
@@ -114,6 +115,7 @@ if (TARGET_ARCH_X86)
                 /wd4244
                 /wd4251
                 /wd4267
+                /wd4273
                 /wd4305
                 /wd4309
                 /wd4506
@@ -257,6 +259,7 @@ if (TARGET_ARCH_X86)
                 /wd4244
                 /wd4251
                 /wd4267
+                /wd4273
                 /wd4305
                 /wd4309
                 /wd4506
