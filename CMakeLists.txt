@@ -6,6 +6,7 @@ project(emil LANGUAGES C CXX VERSION 2.0.0)
 set_directory_properties(PROPERTY USE_FOLDERS ON)
 
 option(ENABLE_COVERAGE "Enable code coverage measurements" OFF)
+option(BUILD_EXAMPLES "Enable build of the examples" ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED true)

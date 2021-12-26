@@ -1,4 +1,4 @@
-if (TARGET_ARCH_X86)
+if (TARGET_ARCH_X86 AND BUILD_EXAMPLES)
     add_subdirectory(http_server)
     add_subdirectory(https_client)
     add_subdirectory(serial_net)
