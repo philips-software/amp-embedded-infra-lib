@@ -89,7 +89,7 @@ add_subdirectory(external/protobuf-3.3.0)
 add_subdirectory(external/protoc-3.3.0)
 add_subdirectory(protobuf)
 add_subdirectory(upgrade)
-# add_subdirectory(lwip)
+add_subdirectory(lwip)
 add_subdirectory(examples)
 
 write_basic_package_version_file(

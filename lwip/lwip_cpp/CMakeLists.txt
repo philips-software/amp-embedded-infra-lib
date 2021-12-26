@@ -1,32 +1,32 @@
-ccola_component(lwip_cpp static_library)
+add_library(lwip.lwip_cpp EXCLUDE_FROM_ALL STATIC)
+add_library(emil::lwip.lwip_cpp ALIAS lwip.lwip_cpp)
+install(TARGETS lwip.lwip_cpp EXPORT emilLwipTargets)
 
-    ccola_sources(
-        ConnectionLwIp.cpp
-        ConnectionLwIp.hpp
-        DatagramLwIp.cpp
-        DatagramLwIp.hpp
-        LightweightIp.cpp
-        LightweightIp.hpp
-        LightweightIpOverEthernet.cpp
-        LightweightIpOverEthernet.hpp
-        MulticastLwIp.cpp
-        MulticastLwIp.hpp
+target_link_libraries(lwip.lwip_cpp PUBLIC
+    services.network
+    infra.event
+    hal.interfaces
+)
+
+if (LWIP_ALTERNATIVE_DEPEND)
+    target_link_libraries(lwip.lwip_cpp PUBLIC
+        ${LWIP_ALTERNATIVE_DEPEND}
     )
-
-    ccola_dependencies(
-        services.network
-        infra.event
-        hal.interfaces
+else()
+    target_link_libraries(lwip.lwip_cpp PUBLIC
+        lwip.lwip
     )
+endif()
 
-    if(LWIP_ALTERNATIVE_DEPEND)
-        ccola_dependencies(
-            ${LWIP_ALTERNATIVE_DEPEND}
-        )
-    else()
-        ccola_dependencies(
-            lwip
-        )
-    endif()
-
-ccola_end_component()
+target_sources(lwip.lwip_cpp PRIVATE
+    ConnectionLwIp.cpp
+    ConnectionLwIp.hpp
+    DatagramLwIp.cpp
+    DatagramLwIp.hpp
+    LightweightIp.cpp
+    LightweightIp.hpp
+    LightweightIpOverEthernet.cpp
+    LightweightIpOverEthernet.hpp
+    MulticastLwIp.cpp
+    MulticastLwIp.hpp
+)
