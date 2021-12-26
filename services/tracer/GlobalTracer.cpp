@@ -1,4 +1,4 @@
-#ifdef CCOLA_HOST_BUILD
+#ifdef EMIL_HOST_BUILD
 #include "infra/stream/IoOutputStream.hpp"
 #endif
 #include "services/tracer/Tracer.hpp"
@@ -9,7 +9,7 @@ namespace services
     {
         Tracer* globalTracerInstance = nullptr;
 
-#ifdef CCOLA_HOST_BUILD
+#ifdef EMIL_HOST_BUILD
         infra::IoOutputStream ioOutputStream;
         Tracer tracerDummy(ioOutputStream);
 #endif
@@ -24,7 +24,7 @@ namespace services
 
     Tracer& GlobalTracer()
     {
-#ifdef CCOLA_HOST_BUILD
+#ifdef EMIL_HOST_BUILD
         if (globalTracerInstance == nullptr)
             return tracerDummy;
 #endif

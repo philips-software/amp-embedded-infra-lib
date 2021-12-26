@@ -185,7 +185,7 @@ namespace infra
     template<std::size_t ExtraSize, class Result, class... Args>
         bool operator!=(std::nullptr_t, const Function<Result(Args...), ExtraSize>& f);
 
-#ifdef CCOLA_HOST_BUILD
+#ifdef EMIL_HOST_BUILD
     // gtest uses PrintTo to display the contents of Function
     template<class... Args>
     struct PrintParameterNames;

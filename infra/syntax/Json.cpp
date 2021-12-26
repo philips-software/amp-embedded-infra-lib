@@ -244,7 +244,7 @@ namespace infra
         }
     }
 
-#ifdef CCOLA_HOST_BUILD
+#ifdef EMIL_HOST_BUILD
     std::string JsonString::ToStdString() const
     {
         std::string result;

@@ -75,7 +75,7 @@ namespace application
         PrintVector(file, "aesKey", aesKey);
         PrintVector(file, "ecDsa224PublicKey", ecDsa224PublicKey);
 
-        file << R"(#ifdef CCOLA_HOST_BUILD
+        file << R"(#ifdef EMIL_HOST_BUILD
 // Private keys are only available in the upgrade builder, which is compiled only on the host.
 // So when compiling for any embedded platform, these keys are not included
 
