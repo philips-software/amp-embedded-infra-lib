@@ -72,8 +72,7 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR
     endif()
 endif()
 
-set(CCOLA_DIR "${CMAKE_CURRENT_LIST_DIR}/ccola")
-include("${CCOLA_DIR}/ccola.inc")
+include("${CMAKE_CURRENT_LIST_DIR}/ccola/file_util.inc")
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)  # included to supply proper defaults to install(...) commands
 include(version)
