@@ -16,13 +16,15 @@ macro(protocol_buffer_cpp target input)
         endforeach()
     endforeach()
 
+    get_target_property(PROTBUF_DIR emil::protobuf.libprotobuf SOURCE_DIR)
+
     foreach(dependency_path "${absolute_directory_input}" "${PROTOBUF_DIR}/src/google/protobuf" "${PROTOC_DIR}/../../protobuf/echo_attributes")
         foreach(path ${dependency_path})
             list(APPEND protopath --proto_path=${path})
         endforeach()
     endforeach()
 
-    if(CMAKE_HOST_WIN32)    # TODO chage to compiler-specific condition
+    if (MSVC)
         set(error_format "msvs")
     else()
         set(error_format "gcc")

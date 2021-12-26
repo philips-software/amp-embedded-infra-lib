@@ -17,6 +17,9 @@ function(protocol_buffer_echo_cpp target input)
     #     endforeach()
     # endforeach()
 
+    get_target_property(ECHO_ATTRIBUTES_DIR emil::protobuf.echo_attributes SOURCE_DIR)
+    get_target_property(PROTBUF_DIR emil::protobuf.libprotobuf SOURCE_DIR)
+
     foreach(dependency_path "${absolute_directory_input}" "${PROTOBUF_DIR}/src/google/protobuf" "${ECHO_ATTRIBUTES_DIR}")
         foreach(path ${dependency_path})
             list(APPEND protopath "--proto_path=${path}")

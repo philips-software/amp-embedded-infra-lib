@@ -1,5 +1,3 @@
-set(PROTOBUF_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL "protobuf-3.3.0 directory")
-
 if (TARGET_ARCH_X86)
     add_library(protobuf.libprotobuf_lite EXCLUDE_FROM_ALL STATIC)
     add_library(emil::protobuf.libprotobuf_lite ALIAS protobuf.libprotobuf_lite)

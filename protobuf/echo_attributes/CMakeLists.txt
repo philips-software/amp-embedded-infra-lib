@@ -1,5 +1,3 @@
-set(ECHO_ATTRIBUTES_DIR ${CMAKE_CURRENT_LIST_DIR} CACHE INTERNAL "echo-attributes directory")
-
 if (TARGET_ARCH_X86)
     add_library(protobuf.echo_attributes EXCLUDE_FROM_ALL STATIC)
     add_library(emil::protobuf.echo_attributes ALIAS protobuf.echo_attributes)
