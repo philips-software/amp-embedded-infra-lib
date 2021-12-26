@@ -20,10 +20,8 @@ EmIL is know to build under the following configurations:
 EmIL can be built by-itself, for example to execute the included micro-tests, or it can be built as part of a larger project. This paragraph describes how to build EmIL by-itself.
 
 ```
-cmake -E make_directory Build
-cd Build
-cmake .. -DCCOLA_DIR=ccola -DCCOLA_INSTALL_DIR=Install
-cmake --build .
+cmake -B Build
+cmake --build Build
 ```
 
 ## How to test the software
