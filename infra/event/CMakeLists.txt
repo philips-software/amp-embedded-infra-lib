@@ -16,6 +16,7 @@ ccola_component(event static_library)
 
     ccola_dependencies(
         util
+        stream
     )
 
 ccola_end_component()

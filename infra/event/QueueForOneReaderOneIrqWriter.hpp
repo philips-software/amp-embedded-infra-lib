@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <cassert>
 #include "infra/event/EventDispatcher.hpp"
+#include "infra/stream/InputStream.hpp"
 
 namespace infra
 {
@@ -19,6 +20,8 @@ namespace infra
 
         template<std::size_t Size>
             using WithStorage = infra::WithStorage<QueueForOneReaderOneIrqWriter<T>, std::array<T, Size + 1>>;
+
+        class StreamReader;
 
         QueueForOneReaderOneIrqWriter(infra::MemoryRange<T> buffer, const infra::Function<void()>& onDataAvailable);
 
@@ -47,6 +50,30 @@ namespace infra
 
         infra::Function<void()> onDataAvailable;
         std::atomic_bool notificationScheduled;
+    };
+
+    template<class T>
+    class QueueForOneReaderOneIrqWriter<T>::StreamReader
+        : public StreamReaderWithRewinding
+    {
+    public:
+        StreamReader(QueueForOneReaderOneIrqWriter<T>& queue);
+
+        void Commit(); // Invalidates save markers, rewinding is not possible to points before Commit()
+
+        virtual void Extract(ByteRange range, StreamErrorPolicy& errorPolicy) override;
+        virtual uint8_t Peek(StreamErrorPolicy& errorPolicy) override;
+        virtual ConstByteRange ExtractContiguousRange(std::size_t max) override;
+        virtual ConstByteRange PeekContiguousRange(std::size_t start) override;
+        virtual bool Empty() const override;
+        virtual std::size_t Available() const override;
+        virtual std::size_t ConstructSaveMarker() const override;
+        virtual void Rewind(std::size_t marker) override;
+
+    private:
+        QueueForOneReaderOneIrqWriter<T>& queue;
+        std::size_t available{ queue.Size() };
+        std::size_t offset{ 0 };
     };
 
     //// Implementation ////
@@ -218,6 +245,83 @@ namespace infra
     {
         notificationScheduled = false;
         onDataAvailable();
+    }
+
+    template<class T>
+    QueueForOneReaderOneIrqWriter<T>::StreamReader::StreamReader(QueueForOneReaderOneIrqWriter<T>& queue)
+        : queue(queue)
+    {}
+
+    template<class T>
+    void QueueForOneReaderOneIrqWriter<T>::StreamReader::Commit()
+    {
+        queue.Consume(offset);
+        offset = 0;
+    }
+
+    template<class T>
+    void QueueForOneReaderOneIrqWriter<T>::StreamReader::Extract(ByteRange range, StreamErrorPolicy& errorPolicy)
+    {
+        while (!range.empty())
+        {
+            auto from = infra::Head(queue.ContiguousRange(offset), std::min(range.size(), Available()));
+            errorPolicy.ReportResult(!from.empty());
+            if (from.empty())
+                break;
+
+            infra::Copy(from, infra::Head(range, from.size()));
+            offset += from.size();
+            range.pop_front(from.size());
+        }
+    }
+
+    template<class T>
+    uint8_t QueueForOneReaderOneIrqWriter<T>::StreamReader::Peek(StreamErrorPolicy& errorPolicy)
+    {
+        auto from = infra::Head(queue.ContiguousRange(offset), Available());
+        errorPolicy.ReportResult(!from.empty());
+        if (from.empty())
+            return 0;
+        else
+            return from.front();
+    }
+
+    template<class T>
+    infra::ConstByteRange QueueForOneReaderOneIrqWriter<T>::StreamReader::ExtractContiguousRange(std::size_t max)
+    {
+        auto result = infra::Head(queue.ContiguousRange(offset), std::min(max, Available()));
+        offset += result.size();
+        return result;
+    }
+
+    template<class T>
+    infra::ConstByteRange QueueForOneReaderOneIrqWriter<T>::StreamReader::PeekContiguousRange(std::size_t start)
+    {
+        return infra::Head(queue.ContiguousRange(offset + start), Available());
+    }
+
+    template<class T>
+    bool QueueForOneReaderOneIrqWriter<T>::StreamReader::Empty() const
+    {
+        return Available() == 0;
+    }
+
+    template<class T>
+    std::size_t QueueForOneReaderOneIrqWriter<T>::StreamReader::Available() const
+    {
+        return available - offset;
+    }
+
+    template<class T>
+    std::size_t QueueForOneReaderOneIrqWriter<T>::StreamReader::ConstructSaveMarker() const
+    {
+        return offset;
+    }
+
+    template<class T>
+    void QueueForOneReaderOneIrqWriter<T>::StreamReader::Rewind(std::size_t marker)
+    {
+        offset = marker;
     }
 }
 
