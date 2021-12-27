@@ -15,9 +15,9 @@ endif()
 
 include(CMakeDependentOption)
 
-option(EMIL_BUILD_TESTS "Enable build of the tests" EMIL_DEFAULTOPT)
-option(EMIL_BUILD_EXAMPLES "Enable build of the examples" EMIL_DEFAULTOPT)
-cmake_dependent_option(EMIL_ENABLE_COVERAGE "Enable compiler flags for code coverage measurements" OFF EMIL_BUILD_TESTS OFF)
+option(EMIL_BUILD_TESTS "Enable build of the tests" ${EMIL_DEFAULTOPT})
+option(EMIL_BUILD_EXAMPLES "Enable build of the examples" ${EMIL_DEFAULTOPT})
+cmake_dependent_option(EMIL_ENABLE_COVERAGE "Enable compiler flags for code coverage measurements" OFF "EMIL_BUILD_TESTS" OFF)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
