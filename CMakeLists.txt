@@ -3,21 +3,25 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 project(emil LANGUAGES C CXX VERSION 2.0.0)
 
+if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    set(EMIL_STANDALONE On)
+endif()
+
+include(CMakeDependentOption)
+
 # When building EmIL by itself the examples and tests will be built
 # by-default. When consuming EmIL as a dependency the tests and
 # examples are disabled. This behavior can be overridden by below
 # options.
-if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+if (EMIL_STANDALONE)
     set(EMIL_DEFAULTOPT On)
 else()
     set(EMIL_DEFAULTOPT Off)
 endif()
 
-include(CMakeDependentOption)
-
 option(EMIL_BUILD_TESTS "Enable build of the tests" ${EMIL_DEFAULTOPT})
 option(EMIL_BUILD_EXAMPLES "Enable build of the examples" ${EMIL_DEFAULTOPT})
-cmake_dependent_option(EMIL_ENABLE_COVERAGE "Enable compiler flags for code coverage measurements" OFF "EMIL_BUILD_TESTS" OFF)
+cmake_dependent_option(EMIL_ENABLE_COVERAGE "Enable compiler flags for code coverage measurements" Off "EMIL_BUILD_TESTS" Off)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
@@ -110,7 +114,7 @@ if (EMIL_BUILD_EXAMPLES)
 endif()
 
 write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/emilConfigVersion.cmake"
+    "${CMAKE_BINARY_DIR}/emilConfigVersion.cmake"
     COMPATIBILITY AnyNewerVersion
     # When cross-compiling for a 32-bit architecture and re-using host tooling from a 64-bit architecture
     # ARCH_INDEPENDENT is necessary here. See: https://cmake.org/cmake/help/latest/module/CMakePackageConfigHelpers.html.
@@ -118,13 +122,13 @@ write_basic_package_version_file(
 )
 
 configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in
-    "${CMAKE_CURRENT_BINARY_DIR}/emilConfig.cmake"
+    "${CMAKE_BINARY_DIR}/emilConfig.cmake"
     INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/emil
     NO_CHECK_REQUIRED_COMPONENTS_MACRO
 )
 
 install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/emilConfig.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/emilConfigVersion.cmake"
+    "${CMAKE_BINARY_DIR}/emilConfig.cmake"
+    "${CMAKE_BINARY_DIR}/emilConfigVersion.cmake"
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/emil
 )
