@@ -14,6 +14,6 @@ install(EXPORT emilLwipTargets
 
 # Generate the export targets for the build tree
 export(EXPORT emilLwipTargets
-    FILE "${CMAKE_CURRENT_BINARY_DIR}/emilLwipTargets.cmake"
+    FILE "${CMAKE_BINARY_DIR}/emilLwipTargets.cmake"
     NAMESPACE emil::
 )

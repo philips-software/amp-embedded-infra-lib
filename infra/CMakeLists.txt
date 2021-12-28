@@ -13,6 +13,6 @@ install(EXPORT emilInfraTargets
 
 # Generate the export targets for the build tree
 export(EXPORT emilInfraTargets
-    FILE "${CMAKE_CURRENT_BINARY_DIR}/emilInfraTargets.cmake"
+    FILE "${CMAKE_BINARY_DIR}/emilInfraTargets.cmake"
     NAMESPACE emil::
 )

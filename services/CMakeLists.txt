@@ -15,6 +15,6 @@ install(EXPORT emilServicesTargets
 
 # Generate the export targets for the build tree
 export(EXPORT emilServicesTargets
-    FILE "${CMAKE_CURRENT_BINARY_DIR}/emilServicesTargets.cmake"
+    FILE "${CMAKE_BINARY_DIR}/emilServicesTargets.cmake"
     NAMESPACE emil::
 )

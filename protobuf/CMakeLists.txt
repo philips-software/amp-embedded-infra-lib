@@ -16,7 +16,7 @@ install(EXPORT emilProtobufTargets
 
 # Generate the export targets for the build tree
 export(EXPORT emilProtobufTargets
-    FILE "${CMAKE_CURRENT_BINARY_DIR}/emilProtobufTargets.cmake"
+    FILE "${CMAKE_BINARY_DIR}/emilProtobufTargets.cmake"
     NAMESPACE emil::
 )
 
@@ -30,7 +30,7 @@ if (TARGET_ARCH_X86)
 
     # Generate the export targets for the build tree
     export(EXPORT emilProtobufHostTargets
-        FILE "${CMAKE_CURRENT_BINARY_DIR}/emilProtobufHostTargets.cmake"
+        FILE "${CMAKE_BINARY_DIR}/emilProtobufHostTargets.cmake"
         NAMESPACE emil::
     )
 endif()
