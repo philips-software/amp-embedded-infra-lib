@@ -13,7 +13,7 @@ install(EXPORT emilUpgradeTargets
 
 # Generate the export targets for the build tree
 export(EXPORT emilUpgradeTargets
-    FILE "${CMAKE_BINARY_DIR}/emilUpgradeTargets.cmake"
+    FILE "${CMAKE_CURRENT_BINARY_DIR}/emilUpgradeTargets.cmake"
     NAMESPACE emil::
 )
 
@@ -27,7 +27,7 @@ if (TARGET_ARCH_X86)
 
     # Generate the export targets for the build tree
     export(EXPORT emilUpgradeHostTargets
-        FILE "${CMAKE_BINARY_DIR}/emilUpgradeHostTargets.cmake"
+        FILE "${CMAKE_CURRENT_BINARY_DIR}/emilUpgradeHostTargets.cmake"
         NAMESPACE emil::
     )
 endif()

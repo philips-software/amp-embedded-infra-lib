@@ -12,6 +12,6 @@ install(EXPORT emilHalTargets
 
 # Generate the export targets for the build tree
 export(EXPORT emilHalTargets
-    FILE "${CMAKE_BINARY_DIR}/emilHalTargets.cmake"
+    FILE "${CMAKE_CURRENT_BINARY_DIR}/emilHalTargets.cmake"
     NAMESPACE emil::
 )

@@ -11,6 +11,6 @@ install(EXPORT emilCryptoTargets
 
 # Generate the export targets for the build tree
 export(EXPORT emilCryptoTargets
-    FILE "${CMAKE_BINARY_DIR}/emilCryptoTargets.cmake"
+    FILE "${CMAKE_CURRENT_BINARY_DIR}/emilCryptoTargets.cmake"
     NAMESPACE emil::
 )
