@@ -52,7 +52,7 @@ namespace services
     class HttpResponse
     {
     protected:
-        HttpResponse(std::size_t maxBodySize);
+        HttpResponse() = default;
         HttpResponse(const HttpResponse& other) = delete;
         HttpResponse& operator=(const HttpResponse& other) = delete;
         ~HttpResponse() = default;
@@ -65,10 +65,23 @@ namespace services
         virtual void WriteBody(infra::TextOutputStream& stream) const = 0;
         virtual infra::BoundedConstString ContentType() const;
         virtual void AddHeaders(HttpResponseHeaderBuilder& builder) const;
+    };
+
+    class SimpleHttpResponse
+        : public HttpResponse
+    {
+    public:
+        SimpleHttpResponse(infra::BoundedConstString status, infra::BoundedConstString body = infra::BoundedConstString());
+
+        virtual infra::BoundedConstString Status() const override;
+        virtual void WriteBody(infra::TextOutputStream& stream) const override;
 
     private:
-        std::size_t maxBodySize;
+        infra::BoundedConstString status;
+        infra::BoundedConstString body;
     };
+
+    extern SimpleHttpResponse httpResponseOk;
 
     class HttpServerConnection
     {

@@ -5,8 +5,7 @@
 namespace services
 {
     HttpPageWebSocket::HttpPageWebSocket(infra::BoundedConstString path, WebSocketObserverFactory& webSocketObserverFactory)
-        : services::HttpResponse(0)
-        , path(path)
+        : path(path)
         , webSocketObserverFactory(webSocketObserverFactory)
     {}
 

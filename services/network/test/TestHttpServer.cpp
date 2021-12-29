@@ -35,7 +35,7 @@ public:
 
     void SendResponse(infra::BoundedConstString status, infra::BoundedConstString contentType, infra::BoundedConstString body)
     {
-        testing::StrictMock<services::HttpResponseMock> response(1024);
+        testing::StrictMock<services::HttpResponseMock> response;
         EXPECT_CALL(response, ContentType()).WillOnce(testing::Return(contentType));
         EXPECT_CALL(response, AddHeaders(testing::_));
         EXPECT_CALL(response, WriteBody(testing::_)).WillOnce(testing::Invoke([body](infra::TextOutputStream& stream) { stream << body; }));

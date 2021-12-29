@@ -8,6 +8,8 @@
 
 namespace services
 {
+    SimpleHttpResponse httpResponseOk{ services::http_responses::ok };
+
     void HttpPageServer::AddPage(services::HttpPage& page)
     {
         pages.push_front(page);
@@ -59,10 +61,6 @@ namespace services
         return output;
     }
 
-    HttpResponse::HttpResponse(std::size_t maxBodySize)
-        : maxBodySize(maxBodySize)
-    {}
-
     void HttpResponse::WriteResponse(infra::TextOutputStream& stream) const
     {
         HttpResponseHeaderBuilder builder(stream);
@@ -77,8 +75,7 @@ namespace services
 
         builder.StartBody();
         uint32_t sizeBeforeGetResponse = stream.ProcessedBytesSince(sizeMarker);
-        infra::LimitedTextOutputStream limitedResponse(stream.Writer(), maxBodySize);
-        WriteBody(limitedResponse);
+        WriteBody(stream);
 
         if (!contentType.empty())
         {
@@ -100,6 +97,21 @@ namespace services
 
     void HttpResponse::AddHeaders(HttpResponseHeaderBuilder& builder) const
     {}
+
+    SimpleHttpResponse::SimpleHttpResponse(infra::BoundedConstString status, infra::BoundedConstString body)
+        : status(status)
+        , body(body)
+    {}
+
+    infra::BoundedConstString SimpleHttpResponse::Status() const
+    {
+        return status;
+    }
+
+    void SimpleHttpResponse::WriteBody(infra::TextOutputStream& stream) const
+    {
+        stream << body;
+    }
 
     HttpServerConnectionObserver::HttpServerConnectionObserver(infra::BoundedString& buffer, HttpPageServer& httpServer)
         : buffer(buffer)
