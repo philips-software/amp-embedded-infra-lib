@@ -18,8 +18,6 @@ namespace application
             : public services::HttpResponse
         {
         public:
-            TimeResponse();
-
             // Implementation of services::HttpResponse
             virtual infra::BoundedConstString Status() const override;
             virtual infra::BoundedConstString ContentType() const override;

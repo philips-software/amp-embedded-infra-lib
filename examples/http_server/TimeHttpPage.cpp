@@ -13,10 +13,6 @@ namespace application
         connection.SendResponse(timeResponse);
     }
 
-    TimeHttpPage::TimeResponse::TimeResponse()
-        : services::HttpResponse(128)
-    {}
-
     infra::BoundedConstString TimeHttpPage::TimeResponse::Status() const
     {
         return services::http_responses::ok;
