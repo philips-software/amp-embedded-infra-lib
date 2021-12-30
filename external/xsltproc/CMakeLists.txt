@@ -1,4 +1,4 @@
-macro(generate_xslt target output)
+function(generate_xslt target output)
 
     set(inputs ${ARGV})
     list(REMOVE_AT inputs 0 1)
@@ -29,7 +29,7 @@ macro(generate_xslt target output)
     find_program(xsltproc_program
         NAMES xsltproc
               xsltproc.exe
-        HINTS ${CCOLA_PACK_DIR_xsltproc})
+        HINTS ${CMAKE_CURRENT_LIST_DIR})
 
     add_custom_command(
         OUTPUT ${absolute_output}
@@ -43,4 +43,4 @@ macro(generate_xslt target output)
     unset(absolute_inputs)
     unset(xslt_params)
 
-endmacro()
+endfunction()
