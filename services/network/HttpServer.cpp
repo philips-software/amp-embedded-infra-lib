@@ -113,6 +113,14 @@ namespace services
         stream << body;
     }
 
+    infra::BoundedConstString SimpleHttpResponse::ContentType() const
+    {
+        if (!body.empty())
+            return "text/plain";
+        else
+            return infra::BoundedConstString();
+    }
+
     HttpServerConnectionObserver::HttpServerConnectionObserver(infra::BoundedString& buffer, HttpPageServer& httpServer)
         : buffer(buffer)
         , httpServer(httpServer)
@@ -276,15 +284,20 @@ namespace services
         if (contentLength != infra::none)
             *contentLength -= reducedContentLength;
 
-        parser.Emplace(buffer);
-        if (parser->HeadersComplete())
+        if (!buffer.empty())
         {
-            reader->Rewind(start + buffer.size());
-            Subject().AckReceived();
-            TryHandleRequest(std::move(reader));
+            parser.Emplace(buffer);
+            if (parser->HeadersComplete())
+            {
+                reader->Rewind(start + buffer.size());
+                Subject().AckReceived();
+                TryHandleRequest(std::move(reader));
+            }
+            else if (!reader->Empty())
+                ReceivedTooMuchData(*reader);
+            else
+                Subject().AckReceived();
         }
-        else if (!reader->Empty())
-            ReceivedTooMuchData(*reader);
         else
             Subject().AckReceived();
     }

@@ -75,6 +75,7 @@ namespace services
 
         virtual infra::BoundedConstString Status() const override;
         virtual void WriteBody(infra::TextOutputStream& stream) const override;
+        virtual infra::BoundedConstString ContentType() const override;
 
     private:
         infra::BoundedConstString status;
