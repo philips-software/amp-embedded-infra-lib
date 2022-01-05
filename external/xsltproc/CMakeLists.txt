@@ -29,7 +29,8 @@ function(generate_xslt target output)
     find_program(xsltproc_program
         NAMES xsltproc
               xsltproc.exe
-        HINTS ${CMAKE_CURRENT_LIST_DIR})
+        HINTS ${CMAKE_CURRENT_FUNCTION_LIST_DIR}
+    )
 
     add_custom_command(
         OUTPUT ${absolute_output}
