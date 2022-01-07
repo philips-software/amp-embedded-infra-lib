@@ -102,9 +102,11 @@ namespace hal
     {
         overlapped.hEvent = CreateEvent(nullptr, true, false, nullptr);
 
-        std::unique_lock<std::mutex> lock(mutex);
-        if (!onReceivedData)
-            receivedDataSet.wait(lock);
+        {
+            std::unique_lock<std::mutex> lock(mutex);
+            if (!onReceivedData)
+                receivedDataSet.wait(lock);
+        }
 
         while (running)
         {
@@ -130,7 +132,10 @@ namespace hal
         else
         {
             if (bytesRead != 0)
+            {
+                std::unique_lock<std::mutex> lock(mutex);
                 onReceivedData(infra::ConstByteRange(range.begin(), range.begin() + bytesRead));
+            }
         }
     }
 
@@ -142,8 +147,13 @@ namespace hal
             unsigned long bytesRead;
             if (!GetOverlappedResult(handle, &overlapped, &bytesRead, false))
                 std::abort();
+
             if (bytesRead != 0)
+            {
+                std::unique_lock<std::mutex> lock(mutex);
                 onReceivedData(infra::ConstByteRange(range.begin(), range.begin() + bytesRead));
+            }
+
             pendingRead = false;
         }
     }

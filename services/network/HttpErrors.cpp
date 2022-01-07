@@ -2,9 +2,8 @@
 
 namespace services
 {
-    HttpErrorResponse::HttpErrorResponse(const char* status, const char* body, std::size_t maxBodySize)
-        : HttpResponse(maxBodySize)
-        , status(status)
+    HttpErrorResponse::HttpErrorResponse(const char* status, const char* body)
+        : status(status)
         , body(body)
     {}
 

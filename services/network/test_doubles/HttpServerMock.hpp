@@ -37,10 +37,6 @@ namespace services
         : public HttpResponse
     {
     public:
-        HttpResponseMock(std::size_t maxBodySize)
-            : HttpResponse(maxBodySize)
-        {}
-
         MOCK_CONST_METHOD0(Status, infra::BoundedConstString());
         MOCK_CONST_METHOD1(WriteBody, void(infra::TextOutputStream& stream));
         MOCK_CONST_METHOD0(ContentType, infra::BoundedConstString());

@@ -4,6 +4,7 @@ install(TARGETS infra.event EXPORT emilInfraTargets)
 
 target_link_libraries(infra.event PUBLIC
     infra.util
+    infra.stream
 )
 
 target_sources(infra.event PRIVATE

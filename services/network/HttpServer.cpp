@@ -8,6 +8,8 @@
 
 namespace services
 {
+    SimpleHttpResponse httpResponseOk{ services::http_responses::ok };
+
     void HttpPageServer::AddPage(services::HttpPage& page)
     {
         pages.push_front(page);
@@ -59,10 +61,6 @@ namespace services
         return output;
     }
 
-    HttpResponse::HttpResponse(std::size_t maxBodySize)
-        : maxBodySize(maxBodySize)
-    {}
-
     void HttpResponse::WriteResponse(infra::TextOutputStream& stream) const
     {
         HttpResponseHeaderBuilder builder(stream);
@@ -77,8 +75,7 @@ namespace services
 
         builder.StartBody();
         uint32_t sizeBeforeGetResponse = stream.ProcessedBytesSince(sizeMarker);
-        infra::LimitedTextOutputStream limitedResponse(stream.Writer(), maxBodySize);
-        WriteBody(limitedResponse);
+        WriteBody(stream);
 
         if (!contentType.empty())
         {
@@ -100,6 +97,29 @@ namespace services
 
     void HttpResponse::AddHeaders(HttpResponseHeaderBuilder& builder) const
     {}
+
+    SimpleHttpResponse::SimpleHttpResponse(infra::BoundedConstString status, infra::BoundedConstString body)
+        : status(status)
+        , body(body)
+    {}
+
+    infra::BoundedConstString SimpleHttpResponse::Status() const
+    {
+        return status;
+    }
+
+    void SimpleHttpResponse::WriteBody(infra::TextOutputStream& stream) const
+    {
+        stream << body;
+    }
+
+    infra::BoundedConstString SimpleHttpResponse::ContentType() const
+    {
+        if (!body.empty())
+            return "text/plain";
+        else
+            return infra::BoundedConstString();
+    }
 
     HttpServerConnectionObserver::HttpServerConnectionObserver(infra::BoundedString& buffer, HttpPageServer& httpServer)
         : buffer(buffer)
@@ -264,15 +284,20 @@ namespace services
         if (contentLength != infra::none)
             *contentLength -= reducedContentLength;
 
-        parser.Emplace(buffer);
-        if (parser->HeadersComplete())
+        if (!buffer.empty())
         {
-            reader->Rewind(start + buffer.size());
-            Subject().AckReceived();
-            TryHandleRequest(std::move(reader));
+            parser.Emplace(buffer);
+            if (parser->HeadersComplete())
+            {
+                reader->Rewind(start + buffer.size());
+                Subject().AckReceived();
+                TryHandleRequest(std::move(reader));
+            }
+            else if (!reader->Empty())
+                ReceivedTooMuchData(*reader);
+            else
+                Subject().AckReceived();
         }
-        else if (!reader->Empty())
-            ReceivedTooMuchData(*reader);
         else
             Subject().AckReceived();
     }

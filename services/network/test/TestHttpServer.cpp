@@ -35,7 +35,7 @@ public:
 
     void SendResponse(infra::BoundedConstString status, infra::BoundedConstString contentType, infra::BoundedConstString body)
     {
-        testing::StrictMock<services::HttpResponseMock> response(1024);
+        testing::StrictMock<services::HttpResponseMock> response;
         EXPECT_CALL(response, ContentType()).WillOnce(testing::Return(contentType));
         EXPECT_CALL(response, AddHeaders(testing::_));
         EXPECT_CALL(response, WriteBody(testing::_)).WillOnce(testing::Invoke([body](infra::TextOutputStream& stream) { stream << body; }));
@@ -416,4 +416,28 @@ TEST_F(HttpServerTest, connection_is_kept_open_by_page)
     EXPECT_EQ('0', stream.Extract<char>());
     savedReader = nullptr;
     EXPECT_EQ(nullptr, observer.lock());
+}
+
+TEST_F(HttpServerWithSimplePageTest, when_responding_early_to_a_request_next_request_is_accepted)
+{
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    testing::StrictMock<services::HttpPageMock> page;
+    httpServer.AddPage(page);
+
+    for (int i = 0; i != 2; ++i)
+    {
+        EXPECT_CALL(page, ServesRequest(testing::_)).WillOnce(testing::Return(true));
+        EXPECT_CALL(page, RequestReceived(testing::_, testing::_)).WillOnce(testing::Invoke([this](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
+            {
+                connection.SendResponse(services::httpResponseOk);
+            }));
+
+        infra::ConstByteRange data = infra::MakeStringByteRange("PUT /path HTTP/1.1 \r\nContent-Length: 8\r\n\r\ndatadata");
+        connection.SimulateDataReceived(data);
+        ExecuteAllActions();
+    }
+
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+    connection.AbortAndDestroy();
 }

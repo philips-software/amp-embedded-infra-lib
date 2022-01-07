@@ -163,3 +163,31 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, EmptySize)
     queue.Emplace(buffer, [this]() {});
     EXPECT_EQ(sizeof(buffer)-1, queue->EmptySize());
 }
+
+TEST_F(QueueForOneReaderOneIrqWriterTest, StreamReader)
+{
+    queue.Emplace(buffer, [this]() {});
+    std::array<uint8_t, 4> full = { { 1, 2, 3, 4 } };
+    queue->AddFromInterrupt(full);
+
+    infra::QueueForOneReaderOneIrqWriter<uint8_t>::StreamReader reader(*queue);
+    infra::DataInputStream::WithErrorPolicy stream(reader, infra::noFail);
+
+    EXPECT_EQ(4, stream.Available());
+    EXPECT_FALSE(stream.Empty());
+
+    EXPECT_EQ(1, stream.Extract<uint8_t>());
+    EXPECT_EQ(2, reader.Peek(stream.ErrorPolicy()));
+
+    EXPECT_EQ(3, stream.PeekContiguousRange(1).front());
+    EXPECT_EQ(2, stream.PeekContiguousRange(1).size());
+    EXPECT_EQ(4, stream.ContiguousRange().back());
+
+    ASSERT_TRUE(queue->Full());
+    reader.Commit();
+    EXPECT_FALSE(queue->Full());
+
+    ASSERT_FALSE(stream.Failed());
+    reader.Peek(stream.ErrorPolicy());
+    EXPECT_TRUE(stream.Failed());
+}

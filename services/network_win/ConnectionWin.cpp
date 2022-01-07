@@ -97,7 +97,8 @@ namespace services
 
                 infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionWin>& object)
                 {
-                    object->Observer().DataReceived();
+                    if (object->IsAttached())
+                        object->Observer().DataReceived();
                 }, SharedFromThis());
             }
             else
@@ -169,8 +170,11 @@ namespace services
             auto size = requestedSendSize;
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([size](const infra::SharedPtr<ConnectionWin>& object)
             {
-                infra::SharedPtr<infra::StreamWriter> writer = object->streamWriter.Emplace(*object, size);
-                object->Observer().SendStreamAvailable(std::move(writer));
+                if (object->IsAttached())
+                {
+                    infra::SharedPtr<infra::StreamWriter> writer = object->streamWriter.Emplace(*object, size);
+                    object->Observer().SendStreamAvailable(std::move(writer));
+                }
             }, SharedFromThis());
 
             requestedSendSize = 0;

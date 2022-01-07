@@ -9,7 +9,7 @@ namespace services
         : public HttpResponse
     {
     public:
-        HttpErrorResponse(const char* status, const char* body, std::size_t maxBodySize = 50);
+        HttpErrorResponse(const char* status, const char* body);
 
     protected:
         virtual infra::BoundedConstString Status() const override;
