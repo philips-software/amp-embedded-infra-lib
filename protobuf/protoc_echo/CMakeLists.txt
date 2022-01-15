@@ -1,13 +1,14 @@
 function(protocol_buffer_echo_cpp target input)
+
     if (CMAKE_CROSSCOMPILING)
         find_package(emil 2.0.0 COMPONENTS ProtobufHost)
     endif()
 
-    ccola_make_absolute_from_source(absolute_input ${input})
-    ccola_get_filename_component_we(source_base ${input})
-    get_filename_component(absolute_directory_input ${absolute_input} DIRECTORY)
-
-    get_filename_component(generated_dir_echo "${CMAKE_CURRENT_BINARY_DIR}/generated/echo" ABSOLUTE)
+    cmake_path(ABSOLUTE_PATH input NORMALIZE OUTPUT_VARIABLE absolute_input)
+    cmake_path(GET absolute_input STEM source_base)
+    cmake_path(GET absolute_input PARENT_PATH absolute_directory_input)
+    cmake_path(SET generated_dir_echo "generated/echo")
+    cmake_path(ABSOLUTE_PATH generated_dir_echo BASE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} NORMALIZE OUTPUT_VARIABLE generated_dir_echo)
 
     set(protopath)
     # foreach(dependency ${PROTOBUF_DEPENDENCIES})
@@ -65,4 +66,5 @@ function(protocol_buffer_echo_cpp target input)
     target_link_libraries(${target} PUBLIC
         protobuf.echo
     )
+
 endfunction()

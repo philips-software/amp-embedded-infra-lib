@@ -18,17 +18,16 @@ function(generate_xslt target output)
                 list(APPEND xslt_params ${input})
             endif()
         else()
-            ccola_make_absolute_from_source(absolute_input ${input})
+            cmake_path(ABSOLUTE_PATH input NORMALIZE OUTPUT_VARIABLE absolute_input)
             list(APPEND absolute_inputs "${absolute_input}")
         endif()
     endforeach()
 
-    ccola_make_absolute_from_intermediate(absolute_output ${output})
-    get_filename_component(absolute_directory "${absolute_output}" DIRECTORY)
+    cmake_path(ABSOLUTE_PATH output BASE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} NORMALIZE OUTPUT_VARIABLE absolute_output)
+    cmake_path(GET absolute_output PARENT_PATH absolute_directory)
 
     find_program(xsltproc_program
         NAMES xsltproc
-              xsltproc.exe
         HINTS ${CMAKE_CURRENT_FUNCTION_LIST_DIR}
     )
 

@@ -1,12 +1,12 @@
 set(PROTOC_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL "protoc-3.3.0 directory")
 
-macro(protocol_buffer_cpp target input)
+function(protocol_buffer_cpp target input)
 
-    ccola_make_absolute_from_source(absolute_input ${input})
-    ccola_get_filename_component_we(source_base ${input})
-    get_filename_component(absolute_directory_input ${absolute_input} DIRECTORY)
-
-    get_filename_component(generated_dir_cpp "${CMAKE_CURRENT_BINARY_DIR}/generated/proto_cpp" ABSOLUTE)
+    cmake_path(ABSOLUTE_PATH input NORMALIZE OUTPUT_VARIABLE absolute_input)
+    cmake_path(GET absolute_input STEM source_base)
+    cmake_path(GET absolute_input PARENT_PATH absolute_directory_input)
+    cmake_path(SET generated_dir_cpp "generated/proto_cpp")
+    cmake_path(ABSOLUTE_PATH generated_dir_cpp BASE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} NORMALIZE OUTPUT_VARIABLE generated_dir_cpp)
 
     set(protopath)
     foreach(dependency ${PROTOBUF_DEPENDENCIES})
@@ -49,26 +49,18 @@ macro(protocol_buffer_cpp target input)
         DEPENDS "${absolute_input}"
     )
 
-    target_sources(${target} PRIVATE ${generated_files})
+    target_sources(${target} PRIVATE
+        ${generated_files}
+    )
+
     target_include_directories(${target} PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
         "$<BUILD_INTERFACE:${generated_dir_cpp}>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     )
-    target_link_libraries(${target} PUBLIC protobuf.libprotobuf)
 
-endmacro()
+    target_link_libraries(${target} PUBLIC
+        protobuf.libprotobuf
+    )
 
-
-macro(protocol_buffer_dependencies)
-
-    set(dependencies "${ARGV}")
-    emil_parse_selection_list(dependencies)
-
-    foreach(item ${dependencies})
-        emil_make_full_component_name(item)
-        emil_dependencies(${item})
-        set(PROTOBUF_DEPENDENCIES ${PROTOBUF_DEPENDENCIES} ${item})
-    endforeach()
-
-endmacro()
+endfunction()

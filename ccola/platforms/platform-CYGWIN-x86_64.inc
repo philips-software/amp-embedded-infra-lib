@@ -1,5 +1,0 @@
-set(CCOLA_ARCH_FAMILY win)
-set(CCOLA_ARCH win)
-set(CCOLA_CORE none)
-set(CCOLA_PROCESSOR_FAMILY none)
-set(CCOLA_PROCESSOR none)
