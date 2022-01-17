@@ -56,7 +56,7 @@ namespace application
         CalculateSha256(image);
 
         mbedtls_rsa_context rsaCtx;
-        mbedtls_rsa_init(&rsaCtx, MBEDTLS_RSA_PKCS_V21, MBEDTLS_MD_SHA256);
+        mbedtls_rsa_init(&rsaCtx);
         mbedtls_rsa_set_padding(&rsaCtx, MBEDTLS_RSA_PKCS_V21, MBEDTLS_MD_SHA256);
         mbedtls_rsa_import_raw(&rsaCtx,
             SwapBytes(publicKey.N).data(), publicKey.N.size(),
@@ -71,7 +71,7 @@ namespace application
         if (mbedtls_rsa_check_pubkey(&rsaCtx) != 0)
             return false;
 
-        bool success = mbedtls_rsa_rsassa_pss_verify(&rsaCtx, NULL, NULL, MBEDTLS_RSA_PUBLIC, MBEDTLS_MD_SHA256, hash.size(), hash.data(), signature.data()) == 0
+        bool success = mbedtls_rsa_rsassa_pss_verify(&rsaCtx, MBEDTLS_MD_SHA256, hash.size(), hash.data(), signature.data()) == 0
             && mbedtls_rsa_self_test(0) == 0;
 
         mbedtls_rsa_free(&rsaCtx);
@@ -94,7 +94,7 @@ namespace application
         int ret;
 
         mbedtls_rsa_context rsaCtx;
-        mbedtls_rsa_init(&rsaCtx, MBEDTLS_RSA_PKCS_V21, MBEDTLS_MD_SHA256);
+        mbedtls_rsa_init(&rsaCtx);
         mbedtls_rsa_set_padding(&rsaCtx, MBEDTLS_RSA_PKCS_V21, MBEDTLS_MD_SHA256);
 
         mbedtls_rsa_import_raw(&rsaCtx,
@@ -107,14 +107,14 @@ namespace application
         if (mbedtls_rsa_complete(&rsaCtx) != 0)
             throw std::runtime_error("Invalid public or private key parameters");
 
-        if (rsaCtx.len != signature.size())
+        if (rsaCtx.private_len != signature.size())
             throw std::runtime_error("Key length wrong");
 
         ret = mbedtls_rsa_check_privkey(&rsaCtx);
         if (ret != 0)
             throw std::runtime_error("Public or private key is invalid");
 
-        ret = mbedtls_rsa_rsassa_pss_sign(&rsaCtx, RandomNumberGenerator, this, MBEDTLS_RSA_PRIVATE, MBEDTLS_MD_SHA256, hash.size(), hash.data(), signature.data());
+        ret = mbedtls_rsa_rsassa_pss_sign(&rsaCtx, RandomNumberGenerator, this, MBEDTLS_MD_SHA256, hash.size(), hash.data(), signature.data());
         if (ret != 0)
             throw std::runtime_error("Failed to calculate signature");
 

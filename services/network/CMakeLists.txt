@@ -9,7 +9,7 @@ target_link_libraries(services.network PUBLIC
     infra.timer
     hal.synchronous_interfaces
     services.tracer
-    crypto.mbedtls
+    mbedtls
 )
 
 target_sources(services.network PRIVATE

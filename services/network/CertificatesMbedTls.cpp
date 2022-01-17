@@ -1,9 +1,9 @@
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/util/ReallyAssert.hpp"
-#include "services/network/CertificatesMbedTls.hpp"
-#include "mbedtls/pk.h"
 #include "mbedtls/oid.h"
+#include "mbedtls/pk.h"
+#include "services/network/CertificatesMbedTls.hpp"
 
 namespace
 {
@@ -15,7 +15,7 @@ namespace
 
     infra::ByteRange MakeByteRange(const mbedtls_mpi& number)
     {
-        return infra::ByteRange(reinterpret_cast<unsigned char*>(number.p), reinterpret_cast<unsigned char*>(number.p + number.n));
+        return infra::ByteRange(reinterpret_cast<unsigned char*>(number.MBEDTLS_PRIVATE(p)), reinterpret_cast<unsigned char*>(number.MBEDTLS_PRIVATE(p) + number.MBEDTLS_PRIVATE(n)));
     }
 
     infra::ConstByteRange MakeConstByteRange(const mbedtls_x509_buf& buffer)
@@ -52,19 +52,19 @@ namespace services
         really_assert(result == 0);
     }
 
-    void CertificatesMbedTls::AddOwnCertificate(const infra::BoundedConstString& certificate, const infra::BoundedConstString& key)
+    void CertificatesMbedTls::AddOwnCertificate(const infra::BoundedConstString& certificate, const infra::BoundedConstString& key, hal::SynchronousRandomDataGenerator& randomDataGenerator)
     {
         int result = mbedtls_x509_crt_parse(&ownCertificate, reinterpret_cast<const unsigned char*>(certificate.data()), certificate.size());
         really_assert(result == 0);
-        result = mbedtls_pk_parse_key(&privateKey, reinterpret_cast<const unsigned char*>(key.data()), key.size(), NULL, 0);
+        result = mbedtls_pk_parse_key(&privateKey, reinterpret_cast<const unsigned char*>(key.data()), key.size(), nullptr, 0, &RandomDataGeneratorWrapper, &randomDataGenerator);
         really_assert(result == 0);
     }
 
-    void CertificatesMbedTls::AddOwnCertificate(infra::ConstByteRange certificate, infra::ConstByteRange key)
+    void CertificatesMbedTls::AddOwnCertificate(infra::ConstByteRange certificate, infra::ConstByteRange key, hal::SynchronousRandomDataGenerator& randomDataGenerator)
     {
         int result = mbedtls_x509_crt_parse(&ownCertificate, reinterpret_cast<const unsigned char*>(certificate.begin()), certificate.size());
         really_assert(result == 0);
-        result = mbedtls_pk_parse_key(&privateKey, reinterpret_cast<const unsigned char*>(key.begin()), key.size(), NULL, 0);
+        result = mbedtls_pk_parse_key(&privateKey, reinterpret_cast<const unsigned char*>(key.begin()), key.size(), nullptr, 0, &RandomDataGeneratorWrapper, &randomDataGenerator);
         really_assert(result == 0);
     }
 
@@ -99,15 +99,15 @@ namespace services
 
             mbedtls_rsa_context& rsaContext = *mbedtls_pk_rsa(privateKey);
 
-            sequence.Add(uint8_t(rsaContext.ver));
-            sequence.AddBigNumber(MakeByteRange(rsaContext.N));
-            sequence.AddBigNumber(MakeByteRange(rsaContext.E));
-            sequence.AddBigNumber(MakeByteRange(rsaContext.D));
-            sequence.AddBigNumber(MakeByteRange(rsaContext.P));
-            sequence.AddBigNumber(MakeByteRange(rsaContext.Q));
-            sequence.AddBigNumber(MakeByteRange(rsaContext.DP));
-            sequence.AddBigNumber(MakeByteRange(rsaContext.DQ));
-            sequence.AddBigNumber(MakeByteRange(rsaContext.QP));
+            sequence.Add(uint8_t(rsaContext.MBEDTLS_PRIVATE(ver)));
+            sequence.AddBigNumber(MakeByteRange(rsaContext.MBEDTLS_PRIVATE(N)));
+            sequence.AddBigNumber(MakeByteRange(rsaContext.MBEDTLS_PRIVATE(E)));
+            sequence.AddBigNumber(MakeByteRange(rsaContext.MBEDTLS_PRIVATE(D)));
+            sequence.AddBigNumber(MakeByteRange(rsaContext.MBEDTLS_PRIVATE(P)));
+            sequence.AddBigNumber(MakeByteRange(rsaContext.MBEDTLS_PRIVATE(Q)));
+            sequence.AddBigNumber(MakeByteRange(rsaContext.MBEDTLS_PRIVATE(DP)));
+            sequence.AddBigNumber(MakeByteRange(rsaContext.MBEDTLS_PRIVATE(DQ)));
+            sequence.AddBigNumber(MakeByteRange(rsaContext.MBEDTLS_PRIVATE(QP)));
         }
 
         outputBuffer.clear();
@@ -180,8 +180,8 @@ namespace services
                                 mbedtls_rsa_context* rsaContext = mbedtls_pk_rsa(privateKey);
                                 really_assert(rsaContext != nullptr);
 
-                                rsaPublicKeySequence.AddBigNumber(MakeByteRange(rsaContext->N));
-                                rsaPublicKeySequence.AddBigNumber(MakeByteRange(rsaContext->E));
+                                rsaPublicKeySequence.AddBigNumber(MakeByteRange(rsaContext->MBEDTLS_PRIVATE(N)));
+                                rsaPublicKeySequence.AddBigNumber(MakeByteRange(rsaContext->MBEDTLS_PRIVATE(E)));
                             }
                         }
                     }
@@ -196,13 +196,13 @@ namespace services
                 // Sign new certificate
                 unsigned char hash[64] = {};
 
-                if (mbedtls_md(mbedtls_md_info_from_type(ownCertificate.sig_md), tbsBegin.cend(), std::distance(tbsBegin.cend(), tbsEnd.cend()), hash) != 0)
+                if (mbedtls_md(mbedtls_md_info_from_type(ownCertificate.MBEDTLS_PRIVATE(sig_md)), tbsBegin.cend(), std::distance(tbsBegin.cend(), tbsEnd.cend()), hash) != 0)
                     std::abort();
 
                 unsigned char signature[MBEDTLS_MPI_MAX_SIZE];
                 size_t signatureLength = 0;
 
-                if (mbedtls_pk_sign(&privateKey, ownCertificate.sig_md, hash, 0, signature, &signatureLength, &RandomDataGeneratorWrapper, &randomDataGenerator) != 0)
+                if (mbedtls_pk_sign(&privateKey, ownCertificate.MBEDTLS_PRIVATE(sig_md), hash, 0, signature, sizeof(signature), &signatureLength, &RandomDataGeneratorWrapper, &randomDataGenerator) != 0)
                     std::abort();
 
                 X509AddAlgorithm(certificateSequence, ownCertificate.sig_oid);
@@ -226,7 +226,7 @@ namespace services
     int32_t CertificatesMbedTls::ExtractExponent(const mbedtls_rsa_context& rsaContext) const
     {
         uint32_t exponent = 0;
-        mbedtls_mpi_write_binary(&rsaContext.E, reinterpret_cast<unsigned char*>(&exponent), sizeof(uint32_t));
+        mbedtls_mpi_write_binary(&rsaContext.MBEDTLS_PRIVATE(E), reinterpret_cast<unsigned char*>(&exponent), sizeof(uint32_t));
         exponent = (exponent << 16) | (exponent >> 16);
         exponent = ((exponent & 0x00ff00ff) << 8) | ((exponent & 0xff00ff00) >> 8);
 

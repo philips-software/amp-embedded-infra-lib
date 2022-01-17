@@ -1,7 +1,6 @@
 #include "gmock/gmock.h"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
-#include "mbedtls/config.h"
-#include "mbedtls/certs.h"
+#include "services/network/test_doubles/Certificates.hpp"
 #include "services/network/CertificatesMbedTls.hpp"
 
 bool operator==(const mbedtls_x509_time& lhs, const mbedtls_x509_time& rhs)
@@ -22,7 +21,7 @@ public:
     {
         uint32_t flags = 0;
 
-        EXPECT_EQ(0, mbedtls_x509_crt_verify(&ownCertificate, &caCertificates, nullptr, "localhost", &flags, nullptr, nullptr));
+        EXPECT_EQ(0, mbedtls_x509_crt_verify(&ownCertificate, &caCertificates, nullptr, "es.philips.local", &flags, nullptr, nullptr));
 
         if (flags != 0)
         {
@@ -72,8 +71,8 @@ class CertificatesMbedTlsTest
 public:
     CertificatesMbedTlsTest()
     {
-        certificates.AddCertificateAuthority(infra::BoundedConstString(mbedtls_test_ca_crt, mbedtls_test_ca_crt_len));
-        certificates.AddOwnCertificate(infra::BoundedConstString(mbedtls_test_srv_crt, mbedtls_test_srv_crt_len), infra::BoundedConstString(mbedtls_test_srv_key, mbedtls_test_srv_key_len));
+        certificates.AddCertificateAuthority(services::testCaCertificate);
+        certificates.AddOwnCertificate(services::testServerCertificate, services::testServerKey, randomDataGenerator);
     }
 
     CertificatesMbedTlsWithVerify certificates;
@@ -85,7 +84,7 @@ TEST_F(CertificatesMbedTlsTest, write_private_key)
     infra::BoundedString::WithStorage<2048> privateKey;
     certificates.WritePrivateKey(privateKey);
 
-    EXPECT_TRUE(CompareStringIgnoreNewline(mbedtls_test_srv_key, privateKey.data()));
+    EXPECT_TRUE(CompareStringIgnoreNewline(services::testServerKey.data(), privateKey.data()));
 }
 
 TEST_F(CertificatesMbedTlsTest, generate_new_key)
@@ -95,7 +94,7 @@ TEST_F(CertificatesMbedTlsTest, generate_new_key)
     infra::BoundedString::WithStorage<2048> privateKey;
     certificates.WritePrivateKey(privateKey);
 
-    EXPECT_FALSE(CompareStringIgnoreNewline(mbedtls_test_srv_key, privateKey.data()));
+    EXPECT_FALSE(CompareStringIgnoreNewline(services::testServerKey.data(), privateKey.data()));
 }
 
 TEST_F(CertificatesMbedTlsTest, write_certificate)

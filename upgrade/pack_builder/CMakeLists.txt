@@ -4,7 +4,7 @@ if (TARGET_ARCH_X86)
     install(TARGETS upgrade.pack_builder EXPORT emilUpgradeHostTargets)
 
     target_link_libraries(upgrade.pack_builder PUBLIC
-        crypto.mbedtls
+        mbedcrypto
         crypto.micro_ecc
         crypto.tiny_aes128
         hal.interfaces
@@ -27,11 +27,7 @@ if (TARGET_ARCH_X86)
         ImageEncryptorAes.hpp
         ImageEncryptorNone.cpp
         ImageEncryptorNone.hpp
-        ImageEncryptorXtea.cpp
-        ImageEncryptorXtea.hpp
         ImageSecurity.hpp
-        ImageSecurityXteaHmac.cpp
-        ImageSecurityXteaHmac.hpp
         ImageSigner.hpp
         ImageSignerEcDsa.cpp
         ImageSignerEcDsa.hpp

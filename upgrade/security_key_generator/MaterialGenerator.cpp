@@ -1,8 +1,5 @@
 #include "upgrade/security_key_generator/MaterialGenerator.hpp"
 #include "crypto/micro-ecc/uECC.h"
-#include "mbedtls/ctr_drbg.h"
-#include "mbedtls/entropy.h"
-#include "mbedtls/pk_internal.h"
 #include <fstream>
 #include <iomanip>
 #include <string>

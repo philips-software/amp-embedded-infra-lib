@@ -1,15 +1,14 @@
-
 add_library(services.network_test_doubles EXCLUDE_FROM_ALL STATIC)
 
-target_link_libraries(services.network_test_doubles
-    PUBLIC
-
+target_link_libraries(services.network_test_doubles PUBLIC
     services.network
     gmock
 )
 
 target_sources(services.network_test_doubles PRIVATE
     AddressMock.hpp
+    Certificates.cpp
+    Certificates.hpp
     ConnectionFactoryWithNameResolverStub.cpp
     ConnectionFactoryWithNameResolverStub.hpp
     ConnectionLoopBack.cpp

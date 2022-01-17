@@ -7,7 +7,7 @@ target_link_libraries(services.util PUBLIC
     infra.util
     infra.stream
     infra.syntax
-    crypto.mbedtls
+    mbedcrypto
 )
 
 target_sources(services.util PRIVATE

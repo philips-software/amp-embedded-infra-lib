@@ -2,8 +2,6 @@
 #define SECURITY_KEY_GENERATOR_MATERIAL_GENERATOR_HPP
 
 #include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
-#include "mbedtls/pk.h"
-#include "mbedtls/rsa.h"
 #include <array>
 #include <cstdint>
 #include <string>
@@ -18,7 +16,6 @@ namespace application
 
         static const std::size_t aesKeyLength = 128;
         static const std::size_t hmacKeyLength = 256;
-        static const std::size_t xteaKeyLength = 128;
         static const std::size_t ecDsa224KeyLength = 224;
 
         void WriteKeys(const std::string& fileName);

@@ -1,8 +1,7 @@
 add_executable(services.network_test)
 gtest_discover_tests(services.network_test AUTO)
 
-target_link_libraries(services.network_test
-    PUBLIC
+target_link_libraries(services.network_test PUBLIC
     services.network
     services.network_test_doubles
     infra.timer_test_helper
@@ -11,14 +10,12 @@ target_link_libraries(services.network_test
     hal.interfaces_test_doubles
     hal.synchronous_interfaces_test_doubles
     services.util
-
     gtest
     gmock
     gmock_main
 )
 
-target_sources(services.network_test
-    PRIVATE
+target_sources(services.network_test PRIVATE
     TestAddress.cpp
     TestBonjourServer.cpp
     TestCertificateConvertor.cpp

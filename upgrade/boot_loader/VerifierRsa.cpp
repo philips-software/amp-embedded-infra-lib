@@ -37,20 +37,21 @@ namespace application
         flash.ReadBuffer(theSignature, signature.first);
 
         mbedtls_rsa_context rsaCtx;
-        mbedtls_rsa_init(&rsaCtx, MBEDTLS_RSA_PKCS_V21, MBEDTLS_MD_SHA256);
-        rsaCtx.len = publicKeyN.size();
-        rsaCtx.N.s = 1;
-        rsaCtx.N.n = publicKeyN.size();
-        rsaCtx.N.p = reinterpret_cast<mbedtls_mpi_uint*>(const_cast<uint8_t*>(publicKeyN.begin()));
-        rsaCtx.E.s = 1;
-        rsaCtx.E.n = publicKeyE.size();
-        rsaCtx.E.p = reinterpret_cast<mbedtls_mpi_uint*>(const_cast<uint8_t*>(publicKeyE.begin()));
+        mbedtls_rsa_init(&rsaCtx);
+        mbedtls_rsa_set_padding(&rsaCtx, MBEDTLS_RSA_PKCS_V21, MBEDTLS_MD_SHA256);
+        rsaCtx.MBEDTLS_PRIVATE(len) = publicKeyN.size();
+        rsaCtx.MBEDTLS_PRIVATE(N).MBEDTLS_PRIVATE(s) = 1;
+        rsaCtx.MBEDTLS_PRIVATE(N).MBEDTLS_PRIVATE(n) = publicKeyN.size();
+        rsaCtx.MBEDTLS_PRIVATE(N).MBEDTLS_PRIVATE(p) = reinterpret_cast<mbedtls_mpi_uint*>(const_cast<uint8_t*>(publicKeyN.begin()));
+        rsaCtx.MBEDTLS_PRIVATE(E).MBEDTLS_PRIVATE(s) = 1;
+        rsaCtx.MBEDTLS_PRIVATE(E).MBEDTLS_PRIVATE(n) = publicKeyE.size();
+        rsaCtx.MBEDTLS_PRIVATE(E).MBEDTLS_PRIVATE(p) = reinterpret_cast<mbedtls_mpi_uint*>(const_cast<uint8_t*>(publicKeyE.begin()));
         mbedtls_rsa_set_padding(&rsaCtx, MBEDTLS_RSA_PKCS_V21, MBEDTLS_MD_SHA256);
 
-        int ret = mbedtls_rsa_rsassa_pss_verify(&rsaCtx, nullptr, nullptr, MBEDTLS_RSA_PUBLIC, MBEDTLS_MD_SHA256, messageHash.size(), messageHash.data(), theSignature.data());
+        int ret = mbedtls_rsa_rsassa_pss_verify(&rsaCtx, MBEDTLS_MD_SHA256, messageHash.size(), messageHash.data(), theSignature.data());
 
-        rsaCtx.N.p = nullptr;
-        rsaCtx.E.p = nullptr;
+        rsaCtx.MBEDTLS_PRIVATE(N).MBEDTLS_PRIVATE(p) = nullptr;
+        rsaCtx.MBEDTLS_PRIVATE(E).MBEDTLS_PRIVATE(p) = nullptr;
         mbedtls_rsa_free(&rsaCtx);
 
         return ret == 0;

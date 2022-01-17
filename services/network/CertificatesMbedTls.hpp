@@ -19,8 +19,8 @@ namespace services
 
         virtual void AddCertificateAuthority(infra::ConstByteRange certificate);
         virtual void AddCertificateAuthority(const infra::BoundedConstString& certificate);
-        virtual void AddOwnCertificate(const infra::BoundedConstString& certificate, const infra::BoundedConstString& privateKey);
-        virtual void AddOwnCertificate(infra::ConstByteRange certificate, infra::ConstByteRange privateKey);
+        virtual void AddOwnCertificate(const infra::BoundedConstString& certificate, const infra::BoundedConstString& privateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        virtual void AddOwnCertificate(infra::ConstByteRange certificate, infra::ConstByteRange privateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
         virtual void Config(mbedtls_ssl_config& sslConfig);
 

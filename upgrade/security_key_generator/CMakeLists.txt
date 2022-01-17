@@ -5,7 +5,7 @@ if (TARGET_ARCH_X86)
 
     target_link_libraries(upgrade.security_key_generator PUBLIC
         arg_parser.args
-        crypto.mbedtls
+        mbedcrypto
         hal.generic
         upgrade.pack_keys
         upgrade.pack_builder

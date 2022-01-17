@@ -66,7 +66,7 @@ namespace application
                                             // filled out with zeros.
         std::array<char, 8> targetName;     // Indication for which upgrader to use. Some targetNames may be product-specific.
                                             // Generic: "boot1st", "boot2nd", "wifi", filled out with zeros.
-        uint32_t encryptionAndMacMethod;    // Identifier that indicates the encryption and MAC method chosen. 1 = aes, 2 = xtea/hmac.
+        uint32_t encryptionAndMacMethod;    // Identifier that indicates the encryption and MAC method chosen. 1 = aes.
         //uint8_t[depends on encryptionAndMacMethod] macAndIV;
         //// Start of encryption/mac
     };

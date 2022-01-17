@@ -3,7 +3,7 @@ add_library(emil::upgrade.boot_loader ALIAS upgrade.boot_loader)
 install(TARGETS upgrade.boot_loader EXPORT emilUpgradeTargets)
 
 target_link_libraries(upgrade.boot_loader PUBLIC
-    crypto.mbedtls_minimal
+    mbedcrypto
     crypto.micro_ecc
     crypto.tiny_aes128
     hal.synchronous_interfaces
@@ -22,8 +22,6 @@ target_sources(upgrade.boot_loader PRIVATE
     DecryptorAesTiny.hpp
     DecryptorNone.cpp
     DecryptorNone.hpp
-    DecryptorXtea.cpp
-    DecryptorXtea.hpp
     ImageUpgrader.cpp
     ImageUpgrader.hpp
     ImageUpgraderEraseSectors.cpp
