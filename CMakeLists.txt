@@ -7,6 +7,7 @@ if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set(EMIL_STANDALONE On)
 endif()
 
+include(FetchContent)
 include(CMakeDependentOption)
 
 # When building EmIL by itself the examples and tests will be built
@@ -63,7 +64,6 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR
         include(CTest)
         include(GoogleTest)
     
-        include(FetchContent)
         FetchContent_Declare(
             googletest
             GIT_REPOSITORY https://github.com/google/googletest.git
