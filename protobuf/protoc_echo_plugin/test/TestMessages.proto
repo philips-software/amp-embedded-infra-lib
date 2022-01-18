@@ -3,7 +3,7 @@ syntax = "proto3";
 import "EchoAttributes.proto";
 
 package test_messages;
-option java_package = "com.philips.cococo.protobufEcho";
+option java_package = "com.philips.emil.protobufEcho";
 option java_outer_classname = "TestMessagesProto";
 
 enum Enumeration {

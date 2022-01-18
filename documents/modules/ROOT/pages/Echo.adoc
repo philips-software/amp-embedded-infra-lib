@@ -161,7 +161,7 @@ decoding the individual message.
 ----
 syntax = "proto3";
 
-option java_package = "com.philips.cococo.protobufEcho";
+option java_package = "com.philips.emil.protobufEcho";
 option java_outer_classname = "EchoAttributesProto";
 
 import "google/protobuf/descriptor.proto";

@@ -26,7 +26,6 @@ if (TARGET_ARCH_X86)
     )
 
     protocol_buffer_cpp(protobuf.echo_attributes ${CMAKE_CURRENT_LIST_DIR}/EchoAttributes.proto)
-    # TODO enable csharp and java functions
-    # protocol_buffer_csharp(protobuf.echo_attributes ${CMAKE_CURRENT_LIST_DIR}/EchoAttributes.proto)
-    # protocol_buffer_java(protobuf.echo_attributes ${CMAKE_CURRENT_LIST_DIR}/EchoAttributes.proto)
+    protocol_buffer_csharp(protobuf.echo_attributes ${CMAKE_CURRENT_LIST_DIR}/EchoAttributes.proto)
+    protocol_buffer_java(protobuf.echo_attributes ${CMAKE_CURRENT_LIST_DIR}/EchoAttributes.proto)
 endif()
