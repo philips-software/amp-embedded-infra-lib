@@ -33,7 +33,6 @@ if (TARGET_ARCH_X86)
         CppFormatter.hpp
         EchoObjects.cpp
         EchoObjects.hpp
-        Main.cpp
         ProtoCEchoPlugin.cpp
         ProtoCEchoPlugin.hpp
     )
@@ -48,6 +47,10 @@ if (TARGET_ARCH_X86)
     target_sources(protobuf.protoc_echo_plugin PRIVATE
         Main.cpp
     )
+
+    if (BUILD_TESTING)
+        add_subdirectory(test)
+    endif()
 
     install(TARGETS
         protobuf.protoc_echo_plugin_lib
