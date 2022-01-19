@@ -69,6 +69,8 @@ function(protocol_buffer_generator)
         ${generated_files}
     )
 
+    set_source_files_properties(${generated_files} PROPERTIES FOLDER "Generated")
+
     target_include_directories(${PROTOGEN_TARGET} PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
         "$<BUILD_INTERFACE:${generated_dir}>"
