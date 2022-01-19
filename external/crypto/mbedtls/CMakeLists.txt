@@ -4,8 +4,9 @@ FetchContent_Declare(
     GIT_TAG v3.1.0
 )
 
-option(ENABLE_TESTING Off)
-option(ENABLE_PROGRAMS Off)
+set(ENABLE_TESTING Off CACHE INTERNAL "")
+set(ENABLE_PROGRAMS Off CACHE INTERNAL "")
+set(GEN_FILES Off CACHE INTERNAL "")
 
 FetchContent_MakeAvailable(mbedtls)
 
