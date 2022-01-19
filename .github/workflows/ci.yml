@@ -42,7 +42,7 @@ jobs:
         with:
           key: ${{ matrix.gcc }}
       - run: |
-          cmake -B Build-Host -G Ninja -DCMAKE_BUILD_TYPE=Release -DEMIL_BUILD_TESTING=Off -DEMIL_BUILD_EXAMPLES=Off -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake -B Build-Host -G Ninja -DCMAKE_BUILD_TYPE=Release -DEMIL_BUILD_TESTS=Off -DEMIL_BUILD_EXAMPLES=Off -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build Build-Host --config Release
           cmake -B Build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_PREFIX_PATH=${{ github.workspace }}/Build-Host -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-gcc.cmake
           cmake --build Build --config Release
