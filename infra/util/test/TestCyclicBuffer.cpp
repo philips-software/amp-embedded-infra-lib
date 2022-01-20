@@ -116,3 +116,36 @@ TEST_F(CyclicBufferTest, PopBeyondEnd)
     buffer.Pop(3);
     EXPECT_EQ((std::vector<uint8_t>{ 7 }), buffer.ContiguousRange());
 }
+
+TEST_F(CyclicBufferTest, ContiguousRangeWithOffsetUntilEnd)
+{
+    buffer.Push(std::vector<uint8_t>{ 1, 2 });
+    EXPECT_EQ((std::vector<uint8_t>{ 2 }), buffer.ContiguousRange(1));
+}
+
+TEST_F(CyclicBufferTest, ContiguousRangeWithOffsetUntilEndWrapped)
+{
+    buffer.Push(std::vector<uint8_t>{ 1, 2, 3, 4 });
+    buffer.Pop(1);
+    buffer.Push(std::vector<uint8_t>{ 5 });
+
+    EXPECT_EQ((std::vector<uint8_t>{ 3, 4 }), buffer.ContiguousRange(1));
+}
+
+TEST_F(CyclicBufferTest, ContiguousRangeWithOffsetBeyondEndWrapped)
+{
+    buffer.Push(std::vector<uint8_t>{ 1, 2, 3, 4 });
+    buffer.Pop(1);
+    buffer.Push(std::vector<uint8_t>{ 5 });
+
+    EXPECT_EQ((std::vector<uint8_t>{ 5 }), buffer.ContiguousRange(3));
+}
+
+TEST_F(CyclicBufferTest, ContiguousRangeWithOffsetBeyondEndWrapped2)
+{
+    buffer.Push(std::vector<uint8_t>{ 1, 2, 3, 4 });
+    buffer.Pop(2);
+    buffer.Push(std::vector<uint8_t>{ 5, 6 });
+
+    EXPECT_EQ((std::vector<uint8_t>{ 6 }), buffer.ContiguousRange(3));
+}
