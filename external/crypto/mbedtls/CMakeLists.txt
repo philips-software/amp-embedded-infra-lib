@@ -4,6 +4,8 @@ FetchContent_Declare(
     GIT_TAG v3.1.0
 )
 
+set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL On)
+
 set(ENABLE_TESTING Off CACHE INTERNAL "")
 set(ENABLE_PROGRAMS Off CACHE INTERNAL "")
 set(GEN_FILES Off CACHE INTERNAL "")
