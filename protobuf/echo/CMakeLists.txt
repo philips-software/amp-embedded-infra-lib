@@ -30,22 +30,33 @@ function(protocol_buffer_echo_cpp target input)
     cmake_path(SET generated_dir_echo "generated/echo")
     cmake_path(ABSOLUTE_PATH generated_dir_echo BASE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} NORMALIZE OUTPUT_VARIABLE generated_dir_echo)
 
-    set(protopath)
+    set_target_properties(${target} PROPERTIES
+        PROTOBUF_INCLUDES "${absolute_directory_input}"
+        EXPORT_PROPERTIES PROTOBUF_INCLUDES
+    )
+
+    # Build a list of protobuf dependencies set on current target.
+    # For each of these targets, get the PROTOBUF_INCLUDES property
+    # for a list of additional paths to .proto files.
     get_target_property(protobuf_dependencies ${target} PROTOBUF_DEPENDENCIES)
-    if (protobuf_dependencies)
-        foreach(dependency ${protobuf_dependencies})
-            get_target_property(path ${dependency} SOURCE_DIR)
-            list(APPEND protopath --proto_path ${path})
-        endforeach()
+    if (NOT protobuf_dependencies)
+        set(protobuf_dependencies)
     endif()
 
-    get_target_property(ECHO_ATTRIBUTES_DIR emil::protobuf.echo_attributes SOURCE_DIR)
-    get_target_property(PROTOBUF_DIR emil::protobuf.libprotobuf SOURCE_DIR)
+    # Include defaults and self. This assumes set_target_properties on self
+    # is done prior to the loop.
+    list(APPEND protobuf_dependencies ${target} emil::protobuf.libprotobuf emil::protobuf.echo_attributes)
 
-    foreach(dependency_path "${absolute_directory_input}" "${PROTOBUF_DIR}/src/google/protobuf" "${ECHO_ATTRIBUTES_DIR}")
-        foreach(path ${dependency_path})
-            list(APPEND protopath "--proto_path=${path}")
-        endforeach()
+    set(protopath)
+    foreach(dependency ${protobuf_dependencies})
+        get_target_property(path ${dependency} PROTOBUF_INCLUDES)
+        if (NOT ${path})
+            message(FATAL_ERROR "Target ${dependency} has no PROTOBUF_INCLUDES property")
+        endif()
+
+        if (NOT "--proto_path ${path}" IN_LIST protopath)
+            list(APPEND protopath --proto_path ${path})
+        endif()
     endforeach()
 
     if (MSVC)
@@ -85,7 +96,7 @@ function(protocol_buffer_echo_cpp target input)
     )
 
     target_link_libraries(${target} PUBLIC
-        protobuf.echo
+        emil::protobuf.echo
     )
 
 endfunction()

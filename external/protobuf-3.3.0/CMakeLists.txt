@@ -104,6 +104,11 @@ if (TARGET_ARCH_X86)
     add_library(protobuf.libprotobuf EXCLUDE_FROM_ALL SHARED)
     add_library(emil::protobuf.libprotobuf ALIAS protobuf.libprotobuf)
 
+    set_target_properties(protobuf.libprotobuf PROPERTIES
+        PROTOBUF_INCLUDES "${CMAKE_CURRENT_LIST_DIR}/src/google/protobuf"
+        EXPORT_PROPERTIES PROTOBUF_INCLUDES
+    )
+
     target_compile_options(protobuf.libprotobuf PRIVATE
         $<$<COMPILE_LANG_AND_ID:CXX,AppleClang,Clang>:-Wno-enum-compare-switch>
         $<$<BOOL:${TARGET_BUILD_WIN}>:
@@ -285,7 +290,6 @@ if (TARGET_ARCH_X86)
 
     target_sources(protobuf.libprotoc PRIVATE
         src/google/protobuf/any.cc
-
         src/google/protobuf/compiler/code_generator.cc
         src/google/protobuf/compiler/code_generator.h
         src/google/protobuf/compiler/command_line_interface.cc

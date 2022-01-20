@@ -18,21 +18,29 @@ function(protocol_buffer_generator)
         set(path_infix)
     endif()
 
-    set(protopath)
+    set_target_properties(${PROTOGEN_TARGET} PROPERTIES
+        PROTOBUF_INCLUDES "${input_parent_path}"
+        EXPORT_PROPERTIES PROTOBUF_INCLUDES
+    )
+
+    # Build a list of protobuf dependencies set on current target.
+    # For each of these targets, get the PROTOBUF_INCLUDES property
+    # for a list of additional paths to .proto files.
     get_target_property(protobuf_dependencies ${PROTOGEN_TARGET} PROTOBUF_DEPENDENCIES)
-    if (protobuf_dependencies)
-        foreach(dependency ${protobuf_dependencies})
-            get_target_property(path ${dependency} SOURCE_DIR)
-            list(APPEND protopath --proto_path ${path})
-        endforeach()
+    if (NOT protobuf_dependencies)
+        set(protobuf_dependencies)
     endif()
 
-    get_target_property(protobuf_dir emil::protobuf.libprotobuf SOURCE_DIR)
+    # Include defaults and self. This assumes set_target_properties on self
+    # is done prior to the loop.
+    list(APPEND protobuf_dependencies ${PROTOGEN_TARGET} emil::protobuf.libprotobuf emil::protobuf.echo_attributes)
 
-    foreach(dependency_path "${input_parent_path}" "${protobuf_dir}/src/google/protobuf" "${PROTOC_DIR}/../../protobuf/echo_attributes")
-        foreach(path ${dependency_path})
-            list(APPEND protopath --proto_path=${path})
-        endforeach()
+    set(protopath)
+    foreach(dependency ${protobuf_dependencies})
+        get_target_property(path ${dependency} PROTOBUF_INCLUDES)
+        if (NOT ${path} IN_LIST protopath)
+            list(APPEND protopath --proto_path ${path})
+        endif()
     endforeach()
 
     if (MSVC)
@@ -83,7 +91,7 @@ function(protocol_buffer_cpp target input)
     protocol_buffer_generator(TARGET ${target} INPUT ${input} GENERATOR cpp GENERATED_POSTFIXES .pb.h .pb.cc)
 
     target_link_libraries(${target} PUBLIC
-        protobuf.libprotobuf
+        emil::protobuf.libprotobuf
     )
 
 endfunction()
