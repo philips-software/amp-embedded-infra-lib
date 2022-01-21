@@ -3,6 +3,7 @@
 
 #include "infra/util/Function.hpp"
 #include "infra/util/Optional.hpp"
+#include <tuple>
 
 namespace infra
 {
@@ -198,6 +199,26 @@ namespace infra
         infra::Function<T&(ConstructionArgs... args)> emplaceFunction;
         infra::Function<void()> destroyFunction;
         T* object = nullptr;
+    };
+
+    template<class... T, class... ConstructionArgs>
+    class CreatorExternal<std::tuple<T...>, void(ConstructionArgs...)>
+        : public CreatorBase<std::tuple<T...>, void(ConstructionArgs...)>
+    {
+    public:
+        explicit CreatorExternal(const infra::Function<std::tuple<T...>(ConstructionArgs...)>& emplaceFunction, const infra::Function<void()>& destroyFunction);
+
+        virtual void Emplace(ConstructionArgs... args) override;
+        virtual void Destroy() override;
+
+    protected:
+        virtual std::tuple<T...>& Get() override;
+        virtual const std::tuple<T...>& Get() const override;
+
+    private:
+        infra::Function<std::tuple<T...>(ConstructionArgs... args)> emplaceFunction;
+        infra::Function<void()> destroyFunction;
+        infra::Optional<std::tuple<T...>> object;
     };
 
     template<class... ConstructionArgs>
@@ -475,6 +496,39 @@ namespace infra
 
     template<class T, class... ConstructionArgs>
     const T& CreatorExternal<T, void(ConstructionArgs...)>::Get() const
+    {
+        return *object;
+    }
+
+    template<class... T, class... ConstructionArgs>
+    CreatorExternal<std::tuple<T...>, void(ConstructionArgs...)>::CreatorExternal(const infra::Function<std::tuple<T...>(ConstructionArgs...)>& emplaceFunction, const infra::Function<void()>& destroyFunction)
+        : emplaceFunction(emplaceFunction)
+        , destroyFunction(destroyFunction)
+    {}
+
+    template<class... T, class... ConstructionArgs>
+    void CreatorExternal<std::tuple<T...>, void(ConstructionArgs...)>::Emplace(ConstructionArgs... args)
+    {
+        assert(object == infra::none);
+        object.Emplace(emplaceFunction(args...));
+    }
+
+    template<class... T, class... ConstructionArgs>
+    void CreatorExternal<std::tuple<T...>, void(ConstructionArgs...)>::Destroy()
+    {
+        assert(object != infra::none);
+        object = infra::none;
+        destroyFunction();
+    }
+
+    template<class... T, class... ConstructionArgs>
+    std::tuple<T...>& CreatorExternal<std::tuple<T...>, void(ConstructionArgs...)>::Get()
+    {
+        return *object;
+    }
+
+    template<class... T, class... ConstructionArgs>
+    const std::tuple<T...>& CreatorExternal<std::tuple<T...>, void(ConstructionArgs...)>::Get() const
     {
         return *object;
     }
