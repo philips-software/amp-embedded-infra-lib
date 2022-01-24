@@ -31,6 +31,7 @@ namespace services
         void Recover();
         void RecoverSector(uint32_t sectorIndex);
         void RecoverEndAddress();
+        void SanitizeSector(uint32_t sectorIndex);
 
         void EraseSectorIfAtStart();
         void FillSectorIfDataDoesNotFit(std::size_t size);
@@ -122,6 +123,7 @@ namespace services
         hal::Flash& flash;
         uint32_t startAddress = 0;
         uint32_t endAddress = 0;
+        uint32_t sanitizeAddress = 0;
         infra::Sequencer sequencer;
         uint32_t sectorIndex = 0;
         mutable infra::ClaimableResource resource;

@@ -113,9 +113,13 @@ namespace services
                         endAddress = startAddress;
                         flash.EraseAll([this]() { sequencer.Continue(); });
                     });
-                sequencer.ElseIf([this]() { return endAddress != startAddress; });
+                sequencer.ElseIf([this]() { return endAddress != startAddress || recoverPhase != RecoverPhase::checkingAllEmpty; });
                     RecoverEndAddress();
                 sequencer.EndIf();
+                sequencer.ForEach(sectorIndex, flash.SectorOfAddress(startAddress),
+                        flash.SectorOfAddress(endAddress) >= flash.SectorOfAddress(startAddress) ? flash.SectorOfAddress(endAddress) : flash.SectorOfAddress(endAddress) + flash.NumberOfSectors());
+                    SanitizeSector(sectorIndex);
+                sequencer.EndForEach(sectorIndex);
                 sequencer.Execute([this]()
                 {
                     claimerRecover.Release();
@@ -250,6 +254,62 @@ namespace services
                     endAddress = flash.StartOfNextSectorCyclical(endAddress);
                 });
             sequencer.EndIf();
+        sequencer.EndWhile();
+    }
+
+    void CyclicStore::SanitizeSector(uint32_t sectorIndex)
+    {
+        sequencer.Execute([this, &sectorIndex]()
+            {
+                sanitizeAddress = flash.AddressOfSector(sectorIndex % flash.NumberOfSectors());
+
+                assert(flash.SectorOfAddress(sanitizeAddress) != flash.SectorOfAddress(endAddress));
+
+                if (sanitizeAddress == startAddress)
+                    startAddress += sizeof(SectorStatus);
+
+                sanitizeAddress += sizeof(SectorStatus);
+            });
+        sequencer.While([this, &sectorIndex]() { return flash.SectorOfAddress(sanitizeAddress) == sectorIndex % flash.NumberOfSectors(); });
+            sequencer.Step([this, &sectorIndex]()
+            {
+                flash.ReadBuffer(infra::MakeByteRange(blockHeader), sanitizeAddress, [this]() { sequencer.Continue(); });
+            });
+            sequencer.Step([this]()
+            {
+                bool continueSequencer = true;
+                auto oldSanitizeAddress = sanitizeAddress;
+
+                if (blockHeader.status == BlockStatus::dataReady || blockHeader.status == BlockStatus::writingData || blockHeader.status == BlockStatus::erased)
+                    sanitizeAddress = (sanitizeAddress + sizeof(blockHeader) + blockHeader.BlockLength()) % flash.TotalSize();
+                else if (blockHeader.status == BlockStatus::writingLength)
+                    sanitizeAddress = (sanitizeAddress + sizeof(blockHeader)) % flash.TotalSize();
+                else if (blockHeader.status == BlockStatus::empty)
+                {
+                    continueSequencer = false;
+                    blockHeader.status = BlockStatus::emptyUntilEnd;
+                    flash.WriteBuffer(infra::MakeByteRange(blockHeader.status), sanitizeAddress, [this]() { sequencer.Continue(); });
+                    sanitizeAddress = flash.StartOfNextSectorCyclical(sanitizeAddress);
+                }
+                else if (blockHeader.status == BlockStatus::emptyUntilEnd)
+                    sanitizeAddress = flash.StartOfNextSectorCyclical(sanitizeAddress);
+                else
+                {
+                    sanitizeAddress = flash.StartOfNextSectorCyclical(sanitizeAddress);
+                    oldSanitizeAddress = sanitizeAddress;
+                }
+
+                if (flash.AddressOffsetInSector(sanitizeAddress) >= flash.SizeOfSector(flash.SectorOfAddress(sanitizeAddress)) - sizeof(blockHeader))
+                    sanitizeAddress = flash.StartOfNextSectorCyclical(sanitizeAddress);
+
+                if (blockHeader.status != BlockStatus::dataReady && startAddress == oldSanitizeAddress)
+                    startAddress = sanitizeAddress;
+
+                assert(sanitizeAddress < flash.TotalSize() - sizeof(blockHeader));
+
+                if (continueSequencer)
+                    infra::EventDispatcher::Instance().Schedule([this]() { sequencer.Continue(); });
+            });
         sequencer.EndWhile();
     }
 
