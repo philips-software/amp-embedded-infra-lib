@@ -4,6 +4,7 @@ endif()
 
 file(READ "${input}" contents HEX)
 string(LENGTH "${contents}" contentsLength)
+math(EXPR contentsLength "${contentsLength} / 2")
 
 string(REGEX REPLACE "(..)" "'\\\\x\\1', " contents "${contents}")
 
