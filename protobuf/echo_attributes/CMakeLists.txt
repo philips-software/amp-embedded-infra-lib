@@ -12,9 +12,9 @@ if (TARGET_ARCH_X86)
                 /wd4800
             >
         >
-
-        $<$<BOOL:${TARGET_BUILD_UNIX}>:-fPIC>
     )
+
+    set_target_properties(protobuf.echo_attributes PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
     target_link_libraries(protobuf.echo_attributes PUBLIC
         protobuf.libprotobuf

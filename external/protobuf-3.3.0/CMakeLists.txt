@@ -30,9 +30,9 @@ if (TARGET_ARCH_X86)
                 /wd4996
             >
         >
-
-        $<$<OR:$<BOOL:${TARGET_BUILD_UNIX}>,$<BOOL:${TARGET_BUILD_DARWIN}>>:-fPIC>
     )
+
+    set_target_properties(protobuf.libprotobuf_lite PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
     target_link_libraries(protobuf.libprotobuf_lite PUBLIC
         $<$<OR:$<BOOL:${TARGET_BUILD_UNIX}>,$<BOOL:${TARGET_BUILD_DARWIN}>>:pthread>
