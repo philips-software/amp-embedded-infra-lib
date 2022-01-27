@@ -43,16 +43,21 @@ public:
         httpConnection->SendResponse(response);
     }
 
-    void CheckHttpResponse(const char* result, const char* body)
+    void CheckHttpResponse(const char* result, const char* body, const char* contentType)
     {
         std::string response = std::string("HTTP/1.1 ") + result + "\r\n" +
             "Content-Length: " + std::to_string(std::strlen(body)) + "\r\n" +
-            "Content-Type: application/json\r\n" +
+            "Content-Type: " + contentType + "\r\n" +
             "\r\n" +
             body;
 
         EXPECT_EQ(std::vector<uint8_t>(response.begin(), response.end()), connection.sentData);
         connection.sentData.clear();
+    }
+
+    void CheckHttpResponse(const char* result, const char* body)
+    {
+        CheckHttpResponse(result, body, "application/json");
     }
 
     testing::StrictMock<services::ConnectionStub> connection;
@@ -117,6 +122,43 @@ public:
 public:
     testing::StrictMock<services::SimpleHttpPageMock> httpPage;
 };
+
+class HttpPageWithContentTest
+    : public HttpServerTest
+{
+public:
+    HttpPageWithContentTest()
+    {
+        httpServer.AddPage(httpPage);
+    }
+
+public:
+    services::HttpPageWithContent httpPage{ "service/path", "<html></html>", "text/html" };
+};
+
+TEST_F(HttpPageWithContentTest, serves_page_for_get_request)
+{
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    infra::ConstByteRange data = infra::MakeStringByteRange("GET /service/path HTTP/1.1 \r\n\r\n");
+    connection.SimulateDataReceived(data);
+    ExecuteAllActions();
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+    connection.AbortAndDestroy();
+    CheckHttpResponse("200 OK", "<html></html>", "text/html");
+}
+
+TEST_F(HttpPageWithContentTest, serves_error_for_other_request)
+{
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    infra::ConstByteRange data = infra::MakeStringByteRange("HEAD /service/path HTTP/1.1 \r\n\r\n");
+    connection.SimulateDataReceived(data);
+    ExecuteAllActions();
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+    connection.AbortAndDestroy();
+    CheckHttpResponse("405 Method not allowed", "{}");
+}
 
 class HttpServerErrorTest
     : public HttpServerWithSimplePageTest
