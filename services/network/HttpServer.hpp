@@ -129,6 +129,25 @@ namespace services
         HttpRequestParser* parser = nullptr;
     };
 
+    class HttpPageWithContent
+        : public SimpleHttpPage
+        , protected SimpleHttpResponse
+    {
+    public:
+        HttpPageWithContent(infra::BoundedConstString path, infra::BoundedConstString body, infra::BoundedConstString contentType);
+
+        // Implementation of SimpleHttpPage
+        virtual bool ServesRequest(const infra::Tokenizer& pathTokens) const override;
+        virtual void RespondToRequest(HttpRequestParser& parser, HttpServerConnection& connection) override;
+
+        // Implementation of SimpleHttpResponse
+        virtual infra::BoundedConstString ContentType() const override;
+
+    private:
+        infra::BoundedConstString path;
+        infra::BoundedConstString contentType;
+    };
+
     class HttpServerConnectionObserver
         : public ConnectionObserver
         , public HttpServerConnection
