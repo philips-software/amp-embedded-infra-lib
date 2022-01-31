@@ -124,6 +124,7 @@ namespace services
         uint32_t startAddress = 0;
         uint32_t endAddress = 0;
         uint32_t sanitizeAddress = 0;
+        uint32_t endSanitizeSector = 0;
         infra::Sequencer sequencer;
         uint32_t sectorIndex = 0;
         mutable infra::ClaimableResource resource;

@@ -116,8 +116,14 @@ namespace services
                 sequencer.ElseIf([this]() { return endAddress != startAddress || recoverPhase != RecoverPhase::checkingAllEmpty; });
                     RecoverEndAddress();
                 sequencer.EndIf();
-                sequencer.ForEach(sectorIndex, flash.SectorOfAddress(startAddress),
-                        flash.SectorOfAddress(endAddress) >= flash.SectorOfAddress(startAddress) ? flash.SectorOfAddress(endAddress) : flash.SectorOfAddress(endAddress) + flash.NumberOfSectors());
+                sequencer.Execute([this]()
+                    {
+                        if (flash.SectorOfAddress(endAddress) >= flash.SectorOfAddress(startAddress))
+                            endSanitizeSector = flash.SectorOfAddress(endAddress);
+                        else
+                            endSanitizeSector = flash.SectorOfAddress(endAddress) + flash.NumberOfSectors();
+                    });
+                sequencer.ForEach(sectorIndex, flash.SectorOfAddress(startAddress), endSanitizeSector);
                     SanitizeSector(sectorIndex);
                 sequencer.EndForEach(sectorIndex);
                 sequencer.Execute([this]()
