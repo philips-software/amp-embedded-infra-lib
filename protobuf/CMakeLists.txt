@@ -1,3 +1,7 @@
+if (NOT EMIL_BUILD_PROTOBUF)
+    return()
+endif()
+
 add_subdirectory(echo)
 add_subdirectory(echo_attributes)
 add_subdirectory(echo_console)
