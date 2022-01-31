@@ -1,3 +1,7 @@
+if (NOT EMIL_BUILD_UPGRADE)
+    return()
+endif()
+
 add_subdirectory(boot_loader)
 add_subdirectory(deploy_pack_to_external)
 add_subdirectory(pack)
