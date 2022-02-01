@@ -16,13 +16,11 @@ if (TARGET_ARCH_X86)
     target_sources(upgrade.pack_builder PRIVATE
         BinaryObject.cpp
         BinaryObject.hpp
-        BuildReferenceUpgradePack.cpp
-        BuildReferenceUpgradePack.hpp
         BuildUpgradePack.cpp
         BuildUpgradePack.hpp
         Elf.hpp
-        ImageAuthenticatorHmac.hpp
         ImageAuthenticatorHmac.cpp
+        ImageAuthenticatorHmac.hpp
         ImageEncryptorAes.cpp
         ImageEncryptorAes.hpp
         ImageEncryptorNone.cpp
