@@ -41,6 +41,8 @@ if (TARGET_ARCH_X86)
         InputHex.cpp
         InputHex.hpp
         SparseVector.hpp
+        SupportedTargets.cpp
+        SupportedTargets.hpp
         UpgradePackBuilder.cpp
         UpgradePackBuilder.hpp
         UpgradePackConfigParser.cpp

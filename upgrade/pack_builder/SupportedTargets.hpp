@@ -1,0 +1,55 @@
+#ifndef UPGRADE_PACK_BUILDER_SUPPORTED_TARGETS_HPP
+#define UPGRADE_PACK_BUILDER_SUPPORTED_TARGETS_HPP
+
+#include <string>
+#include <utility>
+#include <vector>
+
+namespace application
+{
+    class SupportedTargetsBuilder;
+
+    class SupportedTargets
+    {
+    public:
+        using Target = std::string;
+        using TargetWithOffset = std::pair<Target, uint32_t>;
+
+        friend class SupportedTargetsBuilder;
+        static SupportedTargetsBuilder Create();
+
+        auto HexTargets() const { return hex; }
+        auto ElfTargets() const { return elf; }
+        auto BinTargets() const { return bin; }
+        auto MandatoryTargets() const { return mandatory; }
+
+    private:
+        std::vector<Target> hex;
+        std::vector<TargetWithOffset> elf;
+        std::vector<TargetWithOffset> bin;
+
+        std::vector<Target> mandatory;
+    };
+
+    class SupportedTargetsBuilder
+    {
+    public:
+        operator SupportedTargets() const { return std::move(targets); }
+
+        SupportedTargetsBuilder& Mandatory();
+        SupportedTargetsBuilder& Optional();
+
+        SupportedTargetsBuilder& AddHex(SupportedTargets::Target target);
+        SupportedTargetsBuilder& AddElf(SupportedTargets::Target target, uint32_t offset);
+        SupportedTargetsBuilder& AddBin(SupportedTargets::Target target, uint32_t offset);
+
+    private:
+        void AddToMandatoryWhenNecessary(SupportedTargets::Target target);
+
+    private:
+        SupportedTargets targets;
+        bool mandatory{ false };
+    };
+}
+
+#endif

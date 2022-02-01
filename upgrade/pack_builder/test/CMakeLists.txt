@@ -24,5 +24,6 @@ target_sources(upgrade.pack_builder_test PRIVATE
     TestInputBinary.cpp
     TestInputHex.cpp
     TestSparseVector.cpp
+    TestSupportedTargets.cpp
     TestUpgradePackBuilder.cpp
 )
