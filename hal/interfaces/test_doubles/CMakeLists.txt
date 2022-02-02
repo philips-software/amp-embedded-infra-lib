@@ -1,15 +1,12 @@
-
 add_library(hal.interfaces_test_doubles EXCLUDE_FROM_ALL STATIC)
 
-target_link_libraries(hal.interfaces_test_doubles
-    PUBLIC
+target_link_libraries(hal.interfaces_test_doubles PUBLIC
     hal.interfaces
     infra.stream
     gmock
 )
 
-target_sources(hal.interfaces_test_doubles
-    PRIVATE
+target_sources(hal.interfaces_test_doubles PRIVATE
     AnalogToDigitalPinImplMock.hpp
     CommunicationConfiguratorMock.hpp
     DigitalToAnalogPinImplMock.hpp

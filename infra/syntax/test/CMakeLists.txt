@@ -1,18 +1,13 @@
 add_executable(infra.syntax_test)
 gtest_discover_tests(infra.syntax_test AUTO)
 
-target_link_libraries(infra.syntax_test
-    PUBLIC
+target_link_libraries(infra.syntax_test PUBLIC
+    gmock_main
     infra.syntax
     infra.syntax_test_doubles
-
-    gtest
-    gmock
-    gmock_main
 )
 
-target_sources(infra.syntax_test
-    PRIVATE
+target_sources(infra.syntax_test PRIVATE
     TestAsn1.cpp
     TestAsn1Formatter.cpp
     TestJson.cpp

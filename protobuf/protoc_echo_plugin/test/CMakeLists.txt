@@ -9,13 +9,11 @@ target_sources(protobuf.protoc_echo_plugin_test PRIVATE
 )
 
 target_link_libraries(protobuf.protoc_echo_plugin_test PUBLIC
-    protobuf.protoc_echo_plugin_lib
+    gmock_main
     infra.event_test_helper
     infra.util_test_helper
+    protobuf.protoc_echo_plugin_lib
     services.network_test_doubles
-    gtest
-    gmock
-    gmock_main
 )
 
 if (TARGET_BUILD_WIN)
