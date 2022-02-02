@@ -18,11 +18,11 @@ namespace application
         friend class SupportedTargetsBuilder;
         static SupportedTargetsBuilder Create();
 
-        auto CmdTargets() const { return cmd; }
-        auto HexTargets() const { return hex; }
-        auto ElfTargets() const { return elf; }
-        auto BinTargets() const { return bin; }
-        auto MandatoryTargets() const { return mandatory; }
+        const auto& CmdTargets() const { return cmd; }
+        const auto& HexTargets() const { return hex; }
+        const auto& ElfTargets() const { return elf; }
+        const auto& BinTargets() const { return bin; }
+        const auto& MandatoryTargets() const { return mandatory; }
 
     private:
         std::vector<Target> cmd;

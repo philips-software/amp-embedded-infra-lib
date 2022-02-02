@@ -21,14 +21,14 @@ namespace application
         if (std::any_of(targets.HexTargets().cbegin(), targets.HexTargets().cend(), [targetName](auto& string) { return string == targetName; }))
             return std::make_unique<InputHex>(targetName, fileName, fileSystem, imageSecurity);
 
-        for (const auto& target : targets.ElfTargets())
-            if (target.first == targetName)
-                return std::make_unique<InputElf>(targetName, fileName, target.second, fileSystem, imageSecurity);
+        for (const auto& [name, offset] : targets.ElfTargets())
+            if (name == targetName)
+                return std::make_unique<InputElf>(targetName, fileName, offset, fileSystem, imageSecurity);
 
-        for (const auto& target : targets.BinTargets())
-            if (target.first == targetName)
-                return std::make_unique<InputBinary>(targetName, fileName, target.second, fileSystem, imageSecurity);
+        for (const auto& [name, offset] : targets.BinTargets())
+            if (name == targetName)
+                return std::make_unique<InputBinary>(targetName, fileName, offset, fileSystem, imageSecurity);
 
-        throw std::runtime_error((std::string("Unknown target: ") + targetName).c_str());
+        throw UnknownTargetException(targetName);
     }
 }

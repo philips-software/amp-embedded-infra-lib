@@ -7,6 +7,15 @@
 
 namespace application
 {
+    class UnknownTargetException
+        : public std::runtime_error
+    {
+    public:
+        UnknownTargetException(const std::string& target)
+            : std::runtime_error(std::string("Unknown target '") + target + "'")
+        {}
+    };
+
     class UpgradePackInputFactory
         : public InputFactory
     {

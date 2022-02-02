@@ -108,27 +108,16 @@ namespace application
         builder.WriteUpgradePack(outputFilename, fileSystem);
     }
 
-    void UpgradePackBuilderFacade::ShowUsage(int argc, const char* argv[], const SupportedTargets& targets) const
-    {
-        std::cout << "Arguments: ";
-        for (int i = 0; i != argc; ++i)
-            std::cout << " " << argv[i];
-        std::cout << std::endl;
-        std::cout << "Invalid number of arguments" << std::endl;
-        std::cout << argv[0] << " OutputFile [-Target1 InputFile1] [-Target2 InputFile2] [-Target3 InputFile3] [-Target4 InputFile4] ..." << std::endl;
-        std::cout << "Supported Targets: " << targets << std::endl;
-    }
-
     void UpgradePackBuilderFacade::ShowUsage(const TargetAndFiles& targetAndFiles, const BuildOptions& buildOptions, const SupportedTargets& targets) const
     {
-        std::cout << "Wrong usage" << std::endl;
+        std::cout << "Incorrect usage" << std::endl;
 
-        std::cout << "Given targets: ";
+        std::cout << "Provided targets: ";
         for (auto target : targetAndFiles)
             std::cout << " " << target.first;
         std::cout << std::endl;
 
-        std::cout << "Given options: ";
+        std::cout << "Provided options: ";
         for (auto option : buildOptions)
             std::cout << " " << option.first;
         std::cout << std::endl;

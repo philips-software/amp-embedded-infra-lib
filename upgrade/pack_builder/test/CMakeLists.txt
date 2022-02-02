@@ -26,4 +26,5 @@ target_sources(upgrade.pack_builder_test PRIVATE
     TestSparseVector.cpp
     TestSupportedTargets.cpp
     TestUpgradePackBuilder.cpp
+    TestUpgradePackInputFactory.cpp
 )

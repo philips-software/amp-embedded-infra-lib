@@ -36,7 +36,6 @@ namespace application
         void TryBuild(const SupportedTargets& targets, const std::string& outputFilename, const TargetAndFiles& targetAndFiles, const BuildOptions& buildOptions, infra::JsonObject& configuration,
             infra::ConstByteRange aesKey, infra::ConstByteRange ecDsa224PublicKey, infra::ConstByteRange ecDsa224PrivateKey);
 
-        void ShowUsage(int argc, const char* argv[], const SupportedTargets& targets) const;
         void ShowUsage(const TargetAndFiles& targetAndFiles, const BuildOptions& buildOptions, const SupportedTargets& targets) const;
 
     protected:
