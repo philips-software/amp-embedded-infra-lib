@@ -14,31 +14,38 @@ namespace application
         return *this;
     }
 
-    SupportedTargetsBuilder& SupportedTargetsBuilder::AddHex(SupportedTargets::Target target)
+    SupportedTargetsBuilder& SupportedTargetsBuilder::AddCmd(const SupportedTargets::Target& target)
     {
         AddToMandatoryWhenNecessary(target);
-        targets.hex.push_back(target);
+        targets.cmd.emplace_back(target);
         return *this;
     }
 
-    SupportedTargetsBuilder& SupportedTargetsBuilder::AddElf(SupportedTargets::Target target, uint32_t offset)
+    SupportedTargetsBuilder& SupportedTargetsBuilder::AddHex(const SupportedTargets::Target& target)
     {
         AddToMandatoryWhenNecessary(target);
-        targets.elf.push_back(std::make_pair(target, offset));
+        targets.hex.emplace_back(target);
         return *this;
     }
 
-    SupportedTargetsBuilder& SupportedTargetsBuilder::AddBin(SupportedTargets::Target target, uint32_t offset)
+    SupportedTargetsBuilder& SupportedTargetsBuilder::AddElf(const SupportedTargets::Target& target, uint32_t offset)
     {
         AddToMandatoryWhenNecessary(target);
-        targets.bin.push_back(std::make_pair(target, offset));
+        targets.elf.emplace_back(std::make_pair(target, offset));
         return *this;
     }
 
-    void SupportedTargetsBuilder::AddToMandatoryWhenNecessary(SupportedTargets::Target target)
+    SupportedTargetsBuilder& SupportedTargetsBuilder::AddBin(const SupportedTargets::Target& target, uint32_t offset)
+    {
+        AddToMandatoryWhenNecessary(target);
+        targets.bin.emplace_back(std::make_pair(target, offset));
+        return *this;
+    }
+
+    void SupportedTargetsBuilder::AddToMandatoryWhenNecessary(const SupportedTargets::Target& target)
     {
         if (mandatory)
-            targets.mandatory.push_back(target);
+            targets.mandatory.emplace_back(target);
     }
 
     SupportedTargetsBuilder SupportedTargets::Create()

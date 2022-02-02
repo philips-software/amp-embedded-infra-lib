@@ -1,5 +1,5 @@
-#ifndef UPGRADE_PACK_BUILD_LIBRARY_UPGRADE_PACK_BUILDER_HPP
-#define UPGRADE_PACK_BUILD_LIBRARY_UPGRADE_PACK_BUILDER_HPP
+#ifndef UPGRADE_UPGRADE_PACK_BUILDER_HPP
+#define UPGRADE_UPGRADE_PACK_BUILDER_HPP
 
 #include "hal/interfaces/FileSystem.hpp"
 #include "infra/util/MemoryRange.hpp"

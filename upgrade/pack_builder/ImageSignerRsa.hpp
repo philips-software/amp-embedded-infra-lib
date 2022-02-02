@@ -1,5 +1,5 @@
-#ifndef UPGRADE_PACK_BUILD_LIBRARY_IMAGE_SIGNER_RSA_HPP
-#define UPGRADE_PACK_BUILD_LIBRARY_IMAGE_SIGNER_RSA_HPP
+#ifndef UPGRADE_IMAGE_SIGNER_RSA_HPP
+#define UPGRADE_IMAGE_SIGNER_RSA_HPP
 
 #include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
 #include "upgrade/pack/KeyDefinitions.hpp"

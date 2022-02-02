@@ -1,5 +1,5 @@
-#ifndef UPGRADE_PACK_BUILDER_SUPPORTED_TARGETS_HPP
-#define UPGRADE_PACK_BUILDER_SUPPORTED_TARGETS_HPP
+#ifndef UPGRADE_SUPPORTED_TARGETS_HPP
+#define UPGRADE_SUPPORTED_TARGETS_HPP
 
 #include <string>
 #include <utility>
@@ -18,12 +18,14 @@ namespace application
         friend class SupportedTargetsBuilder;
         static SupportedTargetsBuilder Create();
 
+        auto CmdTargets() const { return cmd; }
         auto HexTargets() const { return hex; }
         auto ElfTargets() const { return elf; }
         auto BinTargets() const { return bin; }
         auto MandatoryTargets() const { return mandatory; }
 
     private:
+        std::vector<Target> cmd;
         std::vector<Target> hex;
         std::vector<TargetWithOffset> elf;
         std::vector<TargetWithOffset> bin;
@@ -39,12 +41,13 @@ namespace application
         SupportedTargetsBuilder& Mandatory();
         SupportedTargetsBuilder& Optional();
 
-        SupportedTargetsBuilder& AddHex(SupportedTargets::Target target);
-        SupportedTargetsBuilder& AddElf(SupportedTargets::Target target, uint32_t offset);
-        SupportedTargetsBuilder& AddBin(SupportedTargets::Target target, uint32_t offset);
+        SupportedTargetsBuilder& AddCmd(const SupportedTargets::Target& target);
+        SupportedTargetsBuilder& AddHex(const SupportedTargets::Target& target);
+        SupportedTargetsBuilder& AddElf(const SupportedTargets::Target& target, uint32_t offset);
+        SupportedTargetsBuilder& AddBin(const SupportedTargets::Target& target, uint32_t offset);
 
     private:
-        void AddToMandatoryWhenNecessary(SupportedTargets::Target target);
+        void AddToMandatoryWhenNecessary(const SupportedTargets::Target& target);
 
     private:
         SupportedTargets targets;

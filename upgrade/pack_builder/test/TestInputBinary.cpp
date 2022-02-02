@@ -2,6 +2,7 @@
 #include "hal/interfaces/test_doubles/FileSystemStub.hpp"
 #include "upgrade/pack_builder/InputBinary.hpp"
 #include "upgrade/pack_builder/test/ImageSecurityNone.hpp"
+#include "upgrade/pack_builder/test_helper/ZeroFilledString.hpp"
 #include <algorithm>
 
 class TestInputBinary
@@ -18,31 +19,9 @@ public:
     application::InputBinary input;
 };
 
-class ZeroFilledString
-{
-public:
-    ZeroFilledString(std::size_t length, const std::string& contents)
-        : length(length)
-        , contents(contents)
-    {
-        assert(contents.size() <= length);
-    }
-
-    bool operator==(const char* other) const
-    {
-        return std::equal(contents.begin(), contents.end(), other)
-            && std::all_of(other + contents.size(), other + length, [](char i){ return i == 0; });
-    }
-
-private:
-    std::size_t length;
-    std::string contents;
-};
-
 TEST_F(TestInputBinary, ImageSize)
 {
     std::vector<uint8_t> image = input.Image();
-    application::ImageHeaderPrologue& header = reinterpret_cast<application::ImageHeaderPrologue&>(image.front());
 
     EXPECT_EQ(28, image.size());
 }

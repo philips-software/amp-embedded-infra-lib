@@ -35,6 +35,8 @@ if (TARGET_ARCH_X86)
         Input.hpp
         InputBinary.cpp
         InputBinary.hpp
+        InputCommand.cpp
+        InputCommand.hpp
         InputElf.cpp
         InputElf.hpp
         InputFactory.hpp
@@ -52,6 +54,7 @@ if (TARGET_ARCH_X86)
     )
 
     if (BUILD_TESTING)
+        add_subdirectory(test_helper)
         add_subdirectory(test)
     endif()
 endif()

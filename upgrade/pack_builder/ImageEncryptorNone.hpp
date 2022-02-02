@@ -1,5 +1,5 @@
-#ifndef UPGRADE_PACK_BUILDER_IMAGE_ENCRYPTOR_NONE_HPP
-#define UPGRADE_PACK_BUILDER_IMAGE_ENCRYPTOR_NONE_HPP
+#ifndef UPGRADE_IMAGE_ENCRYPTOR_NONE_HPP
+#define UPGRADE_IMAGE_ENCRYPTOR_NONE_HPP
 
 #include "upgrade/pack_builder/ImageSecurity.hpp"
 #include <cstdint>

@@ -1,5 +1,5 @@
-#ifndef PACK_BUILDER_CONFIG_PARSER_HPP
-#define PACK_BUILDER_CONFIG_PARSER_HPP
+#ifndef UPGRADE_UPGRADE_PACK_CONFIG_PARSER_HPP
+#define UPGRADE_UPGRADE_PACK_CONFIG_PARSER_HPP
 
 #include "infra/syntax/Json.hpp"
 
@@ -16,6 +16,7 @@ namespace application
                 : std::runtime_error(message)
             {}
         };
+
     public:
         UpgradePackConfigParser(infra::JsonObject& json);
 
@@ -32,10 +33,10 @@ namespace application
     private:
         void CheckValidJsonObject(infra::JsonObject& jsonObject);
         void CheckMandatoryKeys();
-     
+
     private:
         infra::JsonObject& json;
     };
 }
 
-#endif  // !PACK_BUILDER_CONFIG_PARSER_HPP
+#endif
