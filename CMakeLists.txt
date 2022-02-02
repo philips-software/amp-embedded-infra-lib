@@ -25,6 +25,7 @@ option(EMIL_BUILD_EXAMPLES "Enable build of the examples" ${EMIL_DEFAULTOPT})
 cmake_dependent_option(EMIL_ENABLE_COVERAGE "Enable compiler flags for code coverage measurements" Off "EMIL_BUILD_TESTS" Off)
 
 option(EMIL_BUILD_PROTOBUF "Enable build of protobuf and echo-rpc library." On)
+cmake_dependent_option(EMIL_BUILD_UPGRADE_PACK_KEYS "Enable build of upgrade.pack_keys library" On "EMIL_BUILD_PROTOBUF" Off)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
