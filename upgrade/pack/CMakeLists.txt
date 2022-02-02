@@ -11,8 +11,10 @@ target_link_libraries(upgrade.pack INTERFACE
     infra.util
 )
 
-add_library(upgrade.pack_keys EXCLUDE_FROM_ALL STATIC)
-add_library(emil::pack_keys ALIAS upgrade.pack_keys)
-install(TARGETS upgrade.pack_keys EXPORT emilUpgradeTargets)
+if (EMIL_BUILD_UPGRADE_PACK_KEYS)
+    add_library(upgrade.pack_keys EXCLUDE_FROM_ALL STATIC)
+    add_library(emil::pack_keys ALIAS upgrade.pack_keys)
+    install(TARGETS upgrade.pack_keys EXPORT emilUpgradeTargets)
 
-protocol_buffer_echo_cpp(upgrade.pack_keys UpgradeKeys.proto)
+    protocol_buffer_echo_cpp(upgrade.pack_keys UpgradeKeys.proto)
+endif()
