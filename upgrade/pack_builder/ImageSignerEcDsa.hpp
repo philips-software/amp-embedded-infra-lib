@@ -34,7 +34,6 @@ namespace application
         infra::ConstByteRange publicKey;
         infra::ConstByteRange privateKey;
         static hal::SynchronousRandomDataGenerator* randomDataGenerator;
-        std::string keyFileName;
         std::array<uint8_t, 32> hash;
         std::array<uint8_t, keyLength / 8 * 2> signature;
     };

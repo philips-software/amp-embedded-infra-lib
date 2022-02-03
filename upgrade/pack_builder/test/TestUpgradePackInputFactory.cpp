@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "hal/interfaces/test_doubles/FileSystemStub.hpp"
 #include "infra/util/Function.hpp"
-#include "upgrade/pack_builder/test/ImageSecurityNone.hpp"
+#include "upgrade/pack_builder/ImageEncryptorNone.hpp"
 #include "upgrade/pack_builder/UpgradePackInputFactory.hpp"
 
 class TestUpgradePackInputFactory
@@ -20,13 +20,13 @@ public:
                 .AddHex("hex")
                 .AddElf("elf", 5678);
         })
-        , factory(fileSystem, targets, security)
+        , factory(fileSystem, targets, encryptor)
     {}
 
     hal::FileSystemStub fileSystem;
     application::SupportedTargets targets;
     infra::Execute execute;
-    application::ImageSecurityNone security;
+    application::ImageEncryptorNone encryptor;
     application::UpgradePackInputFactory factory;
 };
 

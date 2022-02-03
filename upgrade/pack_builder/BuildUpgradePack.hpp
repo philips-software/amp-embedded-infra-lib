@@ -13,9 +13,18 @@ namespace application
     using TargetAndFiles = std::vector<std::pair<std::string, std::string>>;
     using BuildOptions = std::vector<std::pair<std::string, std::string>>;
 
-    int BuildUpgradePack(const application::UpgradePackBuilder::HeaderInfo& headerInfo, const SupportedTargets& targets, const std::string& outputFilename,
-        const TargetAndFiles& targetAndFiles, const BuildOptions& buildOptions, infra::JsonObject& configuration, infra::ConstByteRange aesKey,
-        infra::ConstByteRange ecDsa224PublicKey, infra::ConstByteRange ecDsa224PrivateKey);
+    struct DefaultKeyMaterial
+    {
+        infra::ConstByteRange aesKey;
+        infra::ConstByteRange ecDsa224PublicKey;
+        infra::ConstByteRange ecDsa224PrivateKey;
+    };
+
+    void BuildUpgradePack(const application::UpgradePackBuilder::HeaderInfo& headerInfo, const SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets,
+        const std::string& outputFilename, const BuildOptions& buildOptions, infra::JsonObject& configuration, const DefaultKeyMaterial& keys);
+
+    void BuildUpgradePack(const application::UpgradePackBuilder::HeaderInfo& headerInfo, const SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets,
+        const std::string& outputFilename);
 
     class UpgradePackBuilderFacade
     {
@@ -23,26 +32,20 @@ namespace application
         explicit UpgradePackBuilderFacade(const application::UpgradePackBuilder::HeaderInfo& headerInfo);
         virtual ~UpgradePackBuilderFacade() = default;
 
-        void Build(const SupportedTargets& targets, const std::string& outputFilename, const TargetAndFiles& targetAndFiles, const BuildOptions& buildOptions, infra::JsonObject& configuration,
-            infra::ConstByteRange aesKey, infra::ConstByteRange ecDsa224PublicKey, infra::ConstByteRange ecDsa224PrivateKey);
+        void Build(const SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, const std::string& outputFilename,
+            const BuildOptions& buildOptions, infra::JsonObject& configuration, const DefaultKeyMaterial& keys);
 
-        int Result() const;
+        void Build(const SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, const std::string& outputFilename);
 
     protected:
-        virtual void PreBuilder(const TargetAndFiles& targetAndFiles, const BuildOptions& buildOptions, infra::JsonObject& configuration);
+        virtual void PreBuilder(const TargetAndFiles& requestedTargets, const BuildOptions& buildOptions, infra::JsonObject& configuration);
         virtual void PostBuilder(UpgradePackBuilder& builder, ImageSigner& signer, const BuildOptions& buildOptions);
 
     private:
-        void TryBuild(const SupportedTargets& targets, const std::string& outputFilename, const TargetAndFiles& targetAndFiles, const BuildOptions& buildOptions, infra::JsonObject& configuration,
-            infra::ConstByteRange aesKey, infra::ConstByteRange ecDsa224PublicKey, infra::ConstByteRange ecDsa224PrivateKey);
-
-        void ShowUsage(const TargetAndFiles& targetAndFiles, const BuildOptions& buildOptions, const SupportedTargets& targets) const;
+        std::vector<std::unique_ptr<application::Input>> CreateInputs(const SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, InputFactory& factory);
 
     protected:
         UpgradePackBuilder::HeaderInfo headerInfo;
-
-    private:
-        int result = 0;
     };
 }
 

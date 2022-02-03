@@ -12,14 +12,12 @@ target_link_libraries(upgrade.pack_builder_test PUBLIC
 )
 
 target_sources(upgrade.pack_builder_test PRIVATE
-    ImageSecurityNone.cpp
-    ImageSecurityNone.hpp
     TestBinaryObject.cpp
     TestConfigParser.cpp
     TestImageAuthenticatorHmac.cpp
     TestImageEncryptorAes.cpp
     TestImageSignerEcDsa.cpp
-    TestImageSignerRsa.cpp
+    TestImageSignerHashOnly.cpp
     TestInputBinary.cpp
     TestInputCommand.cpp
     TestInputHex.cpp

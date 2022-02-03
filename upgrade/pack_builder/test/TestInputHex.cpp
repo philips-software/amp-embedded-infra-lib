@@ -1,7 +1,8 @@
 #include "gtest/gtest.h"
 #include "hal/interfaces/test_doubles/FileSystemStub.hpp"
+#include "upgrade/pack/UpgradePackHeader.hpp"
 #include "upgrade/pack_builder/InputHex.hpp"
-#include "upgrade/pack_builder/test/ImageSecurityNone.hpp"
+#include "upgrade/pack_builder/ImageEncryptorNone.hpp"
 #include <algorithm>
 
 class TestInputHex
@@ -10,11 +11,11 @@ class TestInputHex
 public:
     TestInputHex()
         : fileSystem("fileName", std::vector<std::string>{ ":020000040001f9", ":0100000001fe", ":00000001FF" })
-        , input("main", "fileName", fileSystem, imageSecurity)
+        , input("main", "fileName", fileSystem, encryptor)
     {}
 
     hal::FileSystemStub fileSystem;
-    application::ImageSecurityNone imageSecurity;
+    application::ImageEncryptorNone encryptor;
     application::InputHex input;
 };
 

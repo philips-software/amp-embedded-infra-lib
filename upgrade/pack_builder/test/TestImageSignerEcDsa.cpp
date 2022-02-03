@@ -35,7 +35,13 @@ public:
     } };
 };
 
-TEST_F(TestImageSignerEcDsa, Sign)
+TEST_F(TestImageSignerEcDsa, should_report_algorithm_details)
+{
+    EXPECT_EQ(1, signer.SignatureMethod());
+    EXPECT_EQ(56, signer.SignatureLength());
+}
+
+TEST_F(TestImageSignerEcDsa, should_sign_image)
 {
     std::vector<uint8_t> signature = signer.ImageSignature(std::vector<uint8_t>{ 0, 1, 2, 3 });
     EXPECT_EQ(56, signature.size());

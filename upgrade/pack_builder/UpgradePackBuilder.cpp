@@ -1,6 +1,5 @@
 #include "upgrade/pack/UpgradePackHeader.hpp"
 #include "upgrade/pack_builder/UpgradePackBuilder.hpp"
-#include "upgrade/pack_builder/ImageSignerRsa.hpp"
 #include <algorithm>
 #include <cassert>
 

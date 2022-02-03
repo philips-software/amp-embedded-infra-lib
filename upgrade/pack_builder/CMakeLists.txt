@@ -29,8 +29,8 @@ if (TARGET_ARCH_X86)
         ImageSigner.hpp
         ImageSignerEcDsa.cpp
         ImageSignerEcDsa.hpp
-        ImageSignerRsa.cpp
-        ImageSignerRsa.hpp
+        ImageSignerHashOnly.cpp
+        ImageSignerHashOnly.hpp
         Input.cpp
         Input.hpp
         InputBinary.cpp

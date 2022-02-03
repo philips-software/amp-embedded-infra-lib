@@ -1,9 +1,19 @@
 #include "gtest/gtest.h"
 #include "hal/interfaces/test_doubles/FileSystemStub.hpp"
 #include "upgrade/pack_builder/InputBinary.hpp"
-#include "upgrade/pack_builder/test/ImageSecurityNone.hpp"
+#include "upgrade/pack_builder/ImageEncryptorNone.hpp"
 #include "upgrade/pack_builder/test_helper/ZeroFilledString.hpp"
 #include <algorithm>
+
+namespace application
+{
+    struct ImageHeaderNoSecurity
+    {
+        ImageHeaderPrologue header;
+        uint32_t destinationAddress;
+        uint32_t binaryLength;
+    };
+}
 
 class TestInputBinary
     : public testing::Test
@@ -11,11 +21,11 @@ class TestInputBinary
 public:
     TestInputBinary()
         : fileSystem("fileName", std::vector<uint8_t>{ 1, 2, 3, 4 })
-        , input("main", "fileName", 4321, fileSystem, imageSecurity)
+        , input("main", "fileName", 4321, fileSystem, encryptor)
     {}
 
     hal::FileSystemStub fileSystem;
-    application::ImageSecurityNone imageSecurity;
+    application::ImageEncryptorNone encryptor;
     application::InputBinary input;
 };
 
@@ -113,8 +123,8 @@ TEST_F(TestInputBinaryWithEncryptionAndMac, Image)
 
 TEST(TestInputBinaryConstructionWithVector, Construction)
 {
-    application::ImageSecurityNone imageSecurity;
-    application::InputBinary input("main", std::vector<uint8_t>{1, 2, 3, 4}, 4321, imageSecurity);
+    application::ImageEncryptorNone encryptor;
+    application::InputBinary input("main", std::vector<uint8_t>{1, 2, 3, 4}, 4321, encryptor);
 
     std::vector<uint8_t> image = input.Image();
     application::ImageHeaderPrologue& header = reinterpret_cast<application::ImageHeaderPrologue&>(image.front());
