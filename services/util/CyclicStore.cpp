@@ -126,6 +126,7 @@ namespace services
                 sequencer.ForEach(sectorIndex, flash.SectorOfAddress(startAddress), endSanitizeSector);
                     SanitizeSector(sectorIndex);
                 sequencer.EndForEach(sectorIndex);
+                UpdateStartAddressInLastSector();
                 sequencer.Execute([this]()
                 {
                     claimerRecover.Release();
@@ -319,6 +320,38 @@ namespace services
         sequencer.EndWhile();
     }
 
+    void CyclicStore::UpdateStartAddressInLastSector()
+    {
+        sequencer.Execute([this]()
+            {
+                sanitizeAddress = startAddress;
+            });
+        sequencer.While([this]() { return sanitizeAddress == startAddress && flash.SectorOfAddress(startAddress) == flash.SectorOfAddress(endAddress) && startAddress < endAddress; });
+            sequencer.Step([this]()
+                {
+                    if (flash.AddressOffsetInSector(sanitizeAddress) == 0)
+                        sanitizeAddress += sizeof(SectorStatus);
+
+                    flash.ReadBuffer(infra::MakeByteRange(blockHeader), sanitizeAddress, [this]() { sequencer.Continue(); });
+                });
+            sequencer.Execute([this]()
+                {
+                    if (blockHeader.status == BlockStatus::writingData || blockHeader.status == BlockStatus::erased)
+                    {
+                        sanitizeAddress = (sanitizeAddress + sizeof(blockHeader) + blockHeader.BlockLength()) % flash.TotalSize();
+                        startAddress = sanitizeAddress;
+                    }
+                    else if (blockHeader.status == BlockStatus::writingLength)
+                    {
+                        sanitizeAddress = (sanitizeAddress + sizeof(blockHeader)) % flash.TotalSize();
+                        startAddress = sanitizeAddress;
+                    }
+                    else
+                        sanitizeAddress = flash.StartOfNextSectorCyclical(sanitizeAddress);
+                });
+        sequencer.EndWhile();
+    }
+
     void CyclicStore::EraseSectorIfAtStart()
     {
         sequencer.If([this]() { return flash.AddressOffsetInSector(endAddress) == 0; });
@@ -330,7 +363,7 @@ namespace services
             {
                 flash.ReadBuffer(infra::MakeByteRange(sectorStatus), flash.StartOfNextSectorCyclical(endAddress), [this]() { sequencer.Continue(); });
             });
-            sequencer.If([this]() { return sectorStatus == SectorStatus::used; });
+            sequencer.If([this]() { return sectorStatus == SectorStatus::used && flash.SectorOfAddress(startAddress) == flash.SectorOfAddress(endAddress); });
                 sequencer.Step([this]()
                 {
                     for (auto& iterator: iterators)
@@ -491,7 +524,7 @@ namespace services
                         sequencer.Else();
                             sequencer.Execute([this]()
                             {
-                                address = store.flash.StartOfNextSectorCyclical(address);
+                                UpdateAddress(store.flash.StartOfNextSectorCyclical(address));
                             });
                         sequencer.EndIf();
                     IncreaseAddressForNonData();
@@ -536,7 +569,7 @@ namespace services
     {
         if (store.flash.SectorOfAddress(address) == sectorIndex)
         {
-            address = store.flash.StartOfNextSectorCyclical(address);
+            UpdateAddress(store.flash.StartOfNextSectorCyclical(address));
             firstSectorToRead = true;
         }
 
@@ -551,6 +584,11 @@ namespace services
 
     void CyclicStore::Iterator::ReadSectorStatusIfAtStart()
     {
+        sequencer.Execute([this]()
+            {
+                if (store.flash.SectorOfAddress(address) != store.flash.SectorOfAddress(address + sizeof(blockHeader) - 1))
+                    UpdateAddress(store.flash.StartOfNextSector(address));
+            });
         sequencer.If([this]() { return store.flash.AtStartOfSector(address); });
             sequencer.Step([this]()
             {
@@ -559,7 +597,7 @@ namespace services
             sequencer.Execute([this]()
             {
                 if (sectorStatus != SectorStatus::empty)
-                    address += sizeof(sectorStatus);
+                    UpdateAddress(address + sizeof(sectorStatus));
 
                 if (sectorStatus == SectorStatus::firstInCycle)
                 {
@@ -579,12 +617,19 @@ namespace services
         sequencer.Step([this]()
         {
             store.flash.ReadBuffer(infra::MakeByteRange(blockHeader), address, [this]() { sequencer.Continue(); });
+        });
+        sequencer.Execute([this]()
+        {
+            uint32_t newAddress;
             if (store.flash.SectorOfAddress(address + sizeof(blockHeader)) == store.flash.SectorOfAddress(address))
-                address += sizeof(blockHeader);
+                newAddress = address + sizeof(blockHeader);
             else
-            {
-                address = store.flash.StartOfNextSectorCyclical(address);
-            }
+                newAddress = store.flash.StartOfNextSectorCyclical(address);
+
+            if (blockHeader.status == BlockStatus::dataReady)
+                address = newAddress;
+            else
+                UpdateAddress(newAddress);
         });
     }
 
@@ -596,9 +641,7 @@ namespace services
             store.flash.ReadBuffer(readBuffer, address, [this]() { sequencer.Continue(); });
             addressPreviousBlockHeader = address - sizeof(blockHeader);
             previousErased = false;
-            address += blockHeader.BlockLength();
-            if (address == store.flash.TotalSize())
-                address = 0;
+            address = (address + blockHeader.BlockLength()) % store.flash.TotalSize();
             found = true;
         });
     }
@@ -610,6 +653,9 @@ namespace services
             blockHeader.status = BlockStatus::erased;
             previousErased = true;
             store.flash.WriteBuffer(infra::MakeByteRange(blockHeader.status), addressPreviousBlockHeader, [this]() { sequencer.Continue(); });
+
+            if (addressPreviousBlockHeader == store.startAddress || addressPreviousBlockHeader == store.startAddress + 1)   // For start of the sector, the block header starts 1 byte beyond startAddress
+                store.startAddress = address;
         });
     }
 
@@ -619,25 +665,33 @@ namespace services
             sequencer.Execute([this]()
             {
                 if (!store.flash.AtStartOfSector(address))
-                    address = store.flash.StartOfNextSectorCyclical(address);
+                    UpdateAddress(store.flash.StartOfNextSectorCyclical(address));
             });
         sequencer.ElseIf([this]() { return blockHeader.status == BlockStatus::empty; });
             sequencer.Execute([this]()
             {
                 reachedEnd = true;
-                address -= sizeof(blockHeader);
+                UpdateAddress(address - sizeof(blockHeader));
             });
         sequencer.ElseIf([this]() { return blockHeader.status == BlockStatus::writingLength; });
             // Do nothing
         sequencer.ElseIf([this]() { return blockHeader.status == BlockStatus::writingData || blockHeader.status == BlockStatus::erased; });
             sequencer.Execute([this]()
             {
-                address += blockHeader.BlockLength();
+                UpdateAddress(address + blockHeader.BlockLength());
             });
         sequencer.Else();
             sequencer.Execute([this]()
             {
-                address = store.flash.StartOfNextSectorCyclical(address);
+                UpdateAddress(store.flash.StartOfNextSectorCyclical(address));
             });
+    }
+
+    void CyclicStore::Iterator::UpdateAddress(uint32_t newAddress)
+    {
+        if (store.startAddress == address)
+            store.startAddress = newAddress;
+
+        address = newAddress;
     }
 }

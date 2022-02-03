@@ -32,6 +32,7 @@ namespace services
         void RecoverSector(uint32_t sectorIndex);
         void RecoverEndAddress();
         void SanitizeSector(uint32_t sectorIndex);
+        void UpdateStartAddressInLastSector();
 
         void EraseSectorIfAtStart();
         void FillSectorIfDataDoesNotFit(std::size_t size);
@@ -99,6 +100,7 @@ namespace services
             void ReadData();
             void ErasePreviousData();
             void IncreaseAddressForNonData();
+            void UpdateAddress(uint32_t newAddress);
 
         private:
             const CyclicStore& store;
@@ -121,7 +123,7 @@ namespace services
 
     private:
         hal::Flash& flash;
-        uint32_t startAddress = 0;
+        mutable uint32_t startAddress = 0;  // In startAddress the starting point for reading is cached; this is not observable behaviour but a performance optimization. Therefore it is mutable.
         uint32_t endAddress = 0;
         uint32_t sanitizeAddress = 0;
         uint32_t endSanitizeSector = 0;
