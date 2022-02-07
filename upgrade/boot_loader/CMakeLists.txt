@@ -37,10 +37,10 @@ target_sources(upgrade.boot_loader PRIVATE
     Verifier.hpp
     VerifierEcDsa.cpp
     VerifierEcDsa.hpp
+    VerifierHashOnly.cpp
+    VerifierHashOnly.hpp
     VerifierNone.cpp
     VerifierNone.hpp
-    VerifierRsa.cpp
-    VerifierRsa.hpp
 )
 
 if (BUILD_TESTING)

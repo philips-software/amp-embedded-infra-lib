@@ -16,4 +16,6 @@ target_sources(upgrade.boot_loader_test PRIVATE
     TestImageUpgraderSkip.cpp
     TestPackUpgrader.cpp
     TestSecondStageToRamLoader.cpp
+    TestVerifierEcDsa.cpp
+    TestVerifierHashOnly.cpp
 )
