@@ -36,7 +36,7 @@ namespace application
     class SupportedTargetsBuilder
     {
     public:
-        operator SupportedTargets() const { return std::move(targets); }
+        operator SupportedTargets() const { return targets; }
 
         SupportedTargetsBuilder& Mandatory();
         SupportedTargetsBuilder& Optional();

@@ -11,7 +11,7 @@ namespace application
         : public std::runtime_error
     {
     public:
-        UnknownTargetException(const std::string& target)
+        explicit UnknownTargetException(const std::string& target)
             : std::runtime_error(std::string("Unknown target '") + target + "'")
         {}
     };

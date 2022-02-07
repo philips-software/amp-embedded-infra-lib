@@ -10,6 +10,9 @@ namespace application
     {
     public:
         virtual bool IsValid(hal::SynchronousFlash& flash, const hal::SynchronousFlash::Range& signature, const hal::SynchronousFlash::Range& data) const override;
+
+    protected:
+        std::array<uint8_t, 32> Hash(hal::SynchronousFlash& flash, const hal::SynchronousFlash::Range& data) const;
     };
 }
 

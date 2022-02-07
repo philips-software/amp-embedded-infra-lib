@@ -31,14 +31,14 @@ namespace application
     SupportedTargetsBuilder& SupportedTargetsBuilder::AddElf(const SupportedTargets::Target& target, uint32_t offset)
     {
         AddToMandatoryWhenNecessary(target);
-        targets.elf.emplace_back(std::make_pair(target, offset));
+        targets.elf.emplace_back(target, offset);
         return *this;
     }
 
     SupportedTargetsBuilder& SupportedTargetsBuilder::AddBin(const SupportedTargets::Target& target, uint32_t offset)
     {
         AddToMandatoryWhenNecessary(target);
-        targets.bin.emplace_back(std::make_pair(target, offset));
+        targets.bin.emplace_back(target, offset);
         return *this;
     }
 

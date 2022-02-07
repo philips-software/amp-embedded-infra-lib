@@ -1,12 +1,12 @@
 #ifndef UPGRADE_VERIFIER_EC_DSA_HPP
 #define UPGRADE_VERIFIER_EC_DSA_HPP
 
-#include "upgrade/boot_loader/Verifier.hpp"
+#include "upgrade/boot_loader/VerifierHashOnly.hpp"
 
 namespace application
 {
     class VerifierEcDsa
-        : public Verifier
+        : public VerifierHashOnly
     {
     public:
         explicit VerifierEcDsa(infra::ConstByteRange key);
