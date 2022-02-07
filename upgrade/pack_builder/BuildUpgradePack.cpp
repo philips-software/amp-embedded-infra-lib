@@ -20,7 +20,7 @@ namespace application
             : std::runtime_error
         {
             MissingTargetException(const std::string& target)
-                : std::runtime_error("Missing target: " + target)
+                : std::runtime_error("Missing mandatory target: " + target)
             {}
         };
     }
