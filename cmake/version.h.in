@@ -8,8 +8,6 @@
 //
 // Refer to https://semver.org/spec/v2.0.0.html for
 // semantics on version numbers.
-//
-// This file was generated at ${GENERATOR_TIMESTAMP}
 
 #include <cstdint>
 
@@ -19,7 +17,6 @@ namespace ${CMAKE_PROJECT_NAME}
     {
         static const char* VERSION [[maybe_unused]] = "${${CMAKE_PROJECT_NAME}_VERSION_STRING}";
         static const char* VERSION_FULL [[maybe_unused]] = "${${CMAKE_PROJECT_NAME}_VERSION_STRING_FULL}";
-        static const char* GENERATION_DATE [[maybe_unused]] = "${GENERATOR_TIMESTAMP}";
 
         static const uint16_t VERSION_MAJOR = ${VERSION_MAJOR};
         static const uint16_t VERSION_MINOR = ${VERSION_MINOR};
