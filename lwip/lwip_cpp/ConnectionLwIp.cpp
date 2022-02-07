@@ -108,15 +108,23 @@ namespace services
 
     void ConnectionLwIp::CloseAndDestroy()
     {
-        DisableCallbacks();
+        closing = true;
 
-        err_t result = tcp_close(control);
-        if (result != ERR_OK)
-            AbortAndDestroy();
-        else
+        if (IsAttached())
+            Detach();
+
+        if (!PendingSend())
         {
-            control = nullptr;  // tcp_close frees the pcb
-            ResetOwnership();
+            DisableCallbacks();
+
+            err_t result = tcp_close(control);
+            if (result != ERR_OK)
+                AbortAndDestroy();
+            else
+            {
+                control = nullptr; // tcp_close frees the pcb
+                ResetOwnership();
+            }
         }
     }
 
@@ -170,6 +178,9 @@ namespace services
             tcp_output(control);
             sendBuffers.push_back(buffer);
             sendBuffer.clear();
+
+            if (closing)
+                CloseAndDestroy();
         }
         else
         {
@@ -194,6 +205,8 @@ namespace services
                 self->sendBufferForStream = infra::ByteRange();
                 if (self->IsAttached())
                     self->Observer().SendStreamAvailable(std::move(stream));
+                if (self->closing)
+                    self->CloseAndDestroy();
             }, SharedFromThis());
 
             requestedSendSize = 0;
@@ -306,6 +319,9 @@ namespace services
 
         if (requestedSendSize != 0)
             TryAllocateSendStream();
+
+        if (closing)
+            CloseAndDestroy();
 
         return ERR_OK;
     }
