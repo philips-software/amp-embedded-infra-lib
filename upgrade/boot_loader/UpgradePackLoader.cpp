@@ -37,16 +37,12 @@ namespace application
         else if (!verifier.IsValid(upgradePackFlash, signature, signedContents))
             MarkAsError(upgradeErrorCodeInvalidSignature);
         else
-        {
-            for (std::size_t imageIndex = 0; imageIndex != headerEpilogue.numberOfImages; ++imageIndex)
-                if (ImageFound(decryptor))
-                    return true;
-        }
+            return PostLoadActions(headerEpilogue.numberOfImages, decryptor);
 
         return false;
     }
 
-    bool UpgradePackLoader::ImageFound(Decryptor& decryptor)
+    bool UpgradePackLoader::PostLoadActions([[maybe_unused]] uint32_t numberOfImages, [[maybe_unused]] Decryptor& decryptor)
     {
         return true;
     }

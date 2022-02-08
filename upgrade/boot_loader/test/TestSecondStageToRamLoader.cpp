@@ -155,6 +155,23 @@ TEST_F(SecondStageToRamLoaderTest, NoUpgrade)
     EXPECT_FALSE(secondStageToRamLoader.Load(decryptorSpy, verifierSpy));
 }
 
+TEST_F(SecondStageToRamLoaderTest, second_stage_not_loaded_when_ram_is_too_small)
+{
+    UpgradePackHeaderNoSecurity header(CreateReadyToDeployHeader(1));
+
+    const std::vector<uint8_t> secondStageImage { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 5, 8, 13, 21 };
+    application::ImageHeaderPrologue secondStageImageHeader(CreateImageHeader("boot2nd", secondStageImage.size()));
+
+    infra::ByteOutputStream stream(upgradePackFlash.sectors[0]);
+    stream << header << secondStageImageHeader << infra::ConstByteRange(secondStageImage);
+
+    application::SecondStageToRamLoader secondStageToRamLoader(upgradePackFlash, "test product", infra::ByteRange());
+    EXPECT_FALSE(secondStageToRamLoader.Load(decryptorSpy, verifierSpy));
+    application::UpgradePackHeaderPrologue& prologue = reinterpret_cast<application::UpgradePackHeaderPrologue&>(upgradePackFlash.sectors[0][0]);
+    EXPECT_FALSE(static_cast<uint8_t>(prologue.status) & ~static_cast<uint8_t>(application::UpgradePackStatus::invalid));
+    EXPECT_EQ(application::upgradeErrorCodeNoOrIncorrectSecondStageFound, prologue.errorCode);
+}
+
 TEST_F(SecondStageToRamLoaderTest, load_second_stage_when_readyToDeploy)
 {
     UpgradePackHeaderNoSecurity header(CreateReadyToDeployHeader(1));

@@ -11,8 +11,7 @@ namespace application
     public:
         SecondStageToRamLoader(hal::SynchronousFlash& upgradePackFlash, const char* product, infra::ByteRange ram);
 
-        virtual bool Load(Decryptor& decryptor, const Verifier& verifier);
-        virtual bool ImageFound(Decryptor& decryptor) override;
+        virtual bool PostLoadActions(uint32_t numberOfImages, Decryptor& decryptor) override;
 
     private:
         infra::ByteRange ram;

@@ -14,7 +14,7 @@ namespace application
         UpgradePackLoader(hal::SynchronousFlash& upgradePackFlash, const char* product);
 
         virtual bool Load(Decryptor& decryptor, const Verifier& verifier);
-        virtual bool ImageFound(Decryptor& decryptor);
+        virtual bool PostLoadActions(uint32_t numberOfImages, Decryptor& decryptor);
 
     protected:
         void MarkAsError(uint32_t errorCode);

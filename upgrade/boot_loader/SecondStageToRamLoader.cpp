@@ -9,47 +9,46 @@ namespace application
         , ram(ram)
     {}
 
-    bool SecondStageToRamLoader::Load(Decryptor& decryptor, const Verifier& verifier)
+    bool SecondStageToRamLoader::PostLoadActions(uint32_t numberOfImages, Decryptor& decryptor)
     {
-        if (UpgradePackLoader::Load(decryptor, verifier))
-            return true;
-        else
-            MarkAsError(upgradeErrorCodeNoOrIncorrectSecondStageFound);
-
-        return false;
-    }
-
-    bool SecondStageToRamLoader::ImageFound(Decryptor& decryptor)
-    {
-        ImageHeaderPrologue imageHeader;
-        upgradePackFlash.ReadBuffer(infra::MakeByteRange(imageHeader), address);
-
-        if (std::strncmp(imageHeader.targetName.data(), "boot2nd", ImageHeaderPrologue().targetName.size()) == 0)
+        for (uint32_t imageIndex = 0; imageIndex != numberOfImages; ++imageIndex)
         {
-            address += sizeof(imageHeader);
+            ImageHeaderPrologue imageHeader;
+            upgradePackFlash.ReadBuffer(infra::MakeByteRange(imageHeader), address);
 
-            infra::ByteRange decryptorState = decryptor.StateBuffer();
-            upgradePackFlash.ReadBuffer(decryptorState, address);
-            decryptor.Reset();
-            address += decryptorState.size();
+            if (std::strncmp(imageHeader.targetName.data(), "boot2nd", ImageHeaderPrologue().targetName.size()) == 0)
+            {
+                address += sizeof(imageHeader);
 
-            ImageHeaderEpilogue imageHeaderEpilogue;
-            upgradePackFlash.ReadBuffer(infra::MakeByteRange(imageHeaderEpilogue), address);
-            address += sizeof(imageHeaderEpilogue);
+                infra::ByteRange decryptorState = decryptor.StateBuffer();
+                upgradePackFlash.ReadBuffer(decryptorState, address);
+                decryptor.Reset();
+                address += decryptorState.size();
 
-            decryptor.DecryptPart(infra::MakeByteRange(imageHeaderEpilogue));
+                ImageHeaderEpilogue imageHeaderEpilogue;
+                upgradePackFlash.ReadBuffer(infra::MakeByteRange(imageHeaderEpilogue), address);
+                address += sizeof(imageHeaderEpilogue);
 
-            uint32_t imageSize = imageHeader.lengthOfHeaderAndImage - sizeof(imageHeader) - decryptorState.size() - sizeof(imageHeaderEpilogue);
-            if (imageSize > ram.size())
-                return false;
+                decryptor.DecryptPart(infra::MakeByteRange(imageHeaderEpilogue));
 
-            ram.shrink_from_back_to(imageSize);
-            upgradePackFlash.ReadBuffer(ram, address);
+                uint32_t imageSize = imageHeader.lengthOfHeaderAndImage - sizeof(imageHeader) - decryptorState.size() - sizeof(imageHeaderEpilogue);
+                if (imageSize > ram.size())
+                    break;
 
-            return decryptor.DecryptAndAuthenticate(ram);
+                ram.shrink_from_back_to(imageSize);
+                upgradePackFlash.ReadBuffer(ram, address);
+
+                if (decryptor.DecryptAndAuthenticate(ram))
+                    return true;
+                else
+                    break;
+            }
+
+            address += imageHeader.lengthOfHeaderAndImage;
         }
 
-        address += imageHeader.lengthOfHeaderAndImage;
+        MarkAsError(upgradeErrorCodeNoOrIncorrectSecondStageFound);
+
         return false;
     }
 }
