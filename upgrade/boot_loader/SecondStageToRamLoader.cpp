@@ -4,50 +4,22 @@
 
 namespace application
 {
-    SecondStageToRamLoader::SecondStageToRamLoader(hal::SynchronousFlash& upgradePackFlash, const char* product)
-        : upgradePackFlash(upgradePackFlash)
-        , product(product)
+    SecondStageToRamLoader::SecondStageToRamLoader(hal::SynchronousFlash& upgradePackFlash, const char* product, infra::ByteRange ram)
+        : UpgradePackLoader(upgradePackFlash, product)
+        , ram(ram)
     {}
 
-    bool SecondStageToRamLoader::Load(infra::ByteRange ram, Decryptor& decryptor, const Verifier& verifier, bool override)
+    bool SecondStageToRamLoader::Load(Decryptor& decryptor, const Verifier& verifier)
     {
-        UpgradePackHeaderPrologue headerPrologue;
-        upgradePackFlash.ReadBuffer(infra::MakeByteRange(headerPrologue), address);
-        address += sizeof(UpgradePackHeaderPrologue);
-
-        bool sanity = (override || headerPrologue.status == UpgradePackStatus::readyToDeploy || headerPrologue.status == UpgradePackStatus::deployStarted) && headerPrologue.magic == upgradePackMagic;
-
-        if (!sanity)
-            return false;
-
-        hal::SynchronousFlash::Range signature(address, address + headerPrologue.signatureLength);
-        address += headerPrologue.signatureLength;
-
-        hal::SynchronousFlash::Range signedContents(address, address + headerPrologue.signedContentsLength);
-
-        UpgradePackHeaderEpilogue headerEpilogue;
-        upgradePackFlash.ReadBuffer(infra::MakeByteRange(headerEpilogue), address);
-        address += sizeof(UpgradePackHeaderEpilogue);
-
-        if (headerEpilogue.headerVersion != 1)
-            MarkAsError(upgradeErrorCodeUnknownHeaderVersion);
-        else if (std::strcmp(product, headerEpilogue.productName.data()) != 0)
-            MarkAsError(upgradeErrorCodeUnknownProductName);
-        else if (!verifier.IsValid(upgradePackFlash, signature, signedContents))
-            MarkAsError(upgradeErrorCodeInvalidSignature);
+        if (UpgradePackLoader::Load(decryptor, verifier))
+            return true;
         else
-        {
-            for (std::size_t imageIndex = 0; imageIndex != headerEpilogue.numberOfImages; ++imageIndex)
-                if (TryLoadImage(ram, decryptor))
-                    return true;
-
             MarkAsError(upgradeErrorCodeNoOrIncorrectSecondStageFound);
-        }
 
         return false;
     }
 
-    bool SecondStageToRamLoader::TryLoadImage(infra::ByteRange ram, Decryptor& decryptor)
+    bool SecondStageToRamLoader::ImageFound(Decryptor& decryptor)
     {
         ImageHeaderPrologue imageHeader;
         upgradePackFlash.ReadBuffer(infra::MakeByteRange(imageHeader), address);
@@ -79,12 +51,5 @@ namespace application
 
         address += imageHeader.lengthOfHeaderAndImage;
         return false;
-    }
-
-    void SecondStageToRamLoader::MarkAsError(uint32_t errorCode)
-    {
-        static const UpgradePackStatus statusError = UpgradePackStatus::invalid;
-        upgradePackFlash.WriteBuffer(infra::MakeByteRange(statusError), 0);
-        upgradePackFlash.WriteBuffer(infra::MakeByteRange(errorCode), 4);
     }
 }

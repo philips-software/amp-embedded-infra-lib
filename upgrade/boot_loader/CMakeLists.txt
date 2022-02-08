@@ -34,13 +34,13 @@ target_sources(upgrade.boot_loader PRIVATE
     PackUpgrader.hpp
     SecondStageToRamLoader.cpp
     SecondStageToRamLoader.hpp
+    UpgradePackLoader.cpp
+    UpgradePackLoader.hpp
     Verifier.hpp
     VerifierEcDsa.cpp
     VerifierEcDsa.hpp
     VerifierHashOnly.cpp
     VerifierHashOnly.hpp
-    VerifierNone.cpp
-    VerifierNone.hpp
 )
 
 if (BUILD_TESTING)

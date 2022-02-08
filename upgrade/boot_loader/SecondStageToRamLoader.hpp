@@ -1,27 +1,21 @@
 #ifndef UPGRADE_SECOND_STAGE_TO_RAM_LOADER_HPP
 #define UPGRADE_SECOND_STAGE_TO_RAM_LOADER_HPP
 
-#include "hal/synchronous_interfaces/SynchronousFlash.hpp"
-#include "upgrade/boot_loader/Decryptor.hpp"
-#include "upgrade/boot_loader/Verifier.hpp"
+#include "upgrade/boot_loader/UpgradePackLoader.hpp"
 
 namespace application
 {
     class SecondStageToRamLoader
+        : public UpgradePackLoader
     {
     public:
-        SecondStageToRamLoader(hal::SynchronousFlash& upgradePackFlash, const char* product);
+        SecondStageToRamLoader(hal::SynchronousFlash& upgradePackFlash, const char* product, infra::ByteRange ram);
 
-        bool Load(infra::ByteRange ram, Decryptor& decryptor, const Verifier& verifier, bool override = false);
-        void MarkAsError(uint32_t errorCode);
-
-    private:
-        bool TryLoadImage(infra::ByteRange ram, Decryptor& decryptor);
+        virtual bool Load(Decryptor& decryptor, const Verifier& verifier);
+        virtual bool ImageFound(Decryptor& decryptor) override;
 
     private:
-        hal::SynchronousFlash& upgradePackFlash;
-        const char* product;
-        uint32_t address = 0;
+        infra::ByteRange ram;
     };
 }
 

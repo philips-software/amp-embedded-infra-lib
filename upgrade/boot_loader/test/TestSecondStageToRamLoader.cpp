@@ -105,7 +105,6 @@ class SecondStageToRamLoaderTest
 public:
     SecondStageToRamLoaderTest()
         : upgradePackFlash(1, 512)
-        , secondStageToRamLoader(upgradePackFlash, "test product")
     {}
 
     void AssignZeroFilledString(const std::string& from, infra::MemoryRange<char> to) const
@@ -146,14 +145,14 @@ public:
 
 public:
     hal::SynchronousFlashStub upgradePackFlash;
-    application::SecondStageToRamLoader secondStageToRamLoader;
     DecryptorSpy decryptorSpy;
     VerifierSpy verifierSpy;
 };
 
 TEST_F(SecondStageToRamLoaderTest, NoUpgrade)
 {
-    EXPECT_FALSE(secondStageToRamLoader.Load(infra::ByteRange(), decryptorSpy, verifierSpy));
+    application::SecondStageToRamLoader secondStageToRamLoader(upgradePackFlash, "test product", infra::ByteRange());
+    EXPECT_FALSE(secondStageToRamLoader.Load(decryptorSpy, verifierSpy));
 }
 
 TEST_F(SecondStageToRamLoaderTest, load_second_stage_when_readyToDeploy)
@@ -169,7 +168,8 @@ TEST_F(SecondStageToRamLoaderTest, load_second_stage_when_readyToDeploy)
     std::vector<uint8_t> expectedRam(secondStageImage.begin() + 8, secondStageImage.end());
     std::vector<uint8_t> ram(expectedRam.size(), 0);
 
-    EXPECT_TRUE(secondStageToRamLoader.Load(ram, decryptorSpy, verifierSpy));
+    application::SecondStageToRamLoader secondStageToRamLoader(upgradePackFlash, "test product", ram);
+    EXPECT_TRUE(secondStageToRamLoader.Load(decryptorSpy, verifierSpy));
     EXPECT_EQ(expectedRam, ram);
 }
 
@@ -187,7 +187,8 @@ TEST_F(SecondStageToRamLoaderTest, load_second_stage_when_deployStarted)
     std::vector<uint8_t> expectedRam(secondStageImage.begin() + 8, secondStageImage.end());
     std::vector<uint8_t> ram(expectedRam.size(), 0);
 
-    EXPECT_TRUE(secondStageToRamLoader.Load(ram, decryptorSpy, verifierSpy));
+    application::SecondStageToRamLoader secondStageToRamLoader(upgradePackFlash, "test product", ram);
+    EXPECT_TRUE(secondStageToRamLoader.Load(decryptorSpy, verifierSpy));
     EXPECT_EQ(expectedRam, ram);
 }
 
@@ -205,25 +206,8 @@ TEST_F(SecondStageToRamLoaderTest, dont_load_second_stage_when_not_ready_to_depl
     std::vector<uint8_t> expectedRam(secondStageImage.begin() + 8, secondStageImage.end());
     std::vector<uint8_t> ram(expectedRam.size(), 0);
 
-    EXPECT_FALSE(secondStageToRamLoader.Load(ram, decryptorSpy, verifierSpy));
-}
-
-TEST_F(SecondStageToRamLoaderTest, load_second_stage_when_status_is_overridden)
-{
-    UpgradePackHeaderNoSecurity header(CreateReadyToDeployHeader(1));
-    header.prologue.status = application::UpgradePackStatus::downloaded;
-
-    const std::vector<uint8_t> secondStageImage{ 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 5, 8, 13, 21 };
-    application::ImageHeaderPrologue secondStageImageHeader(CreateImageHeader("boot2nd", secondStageImage.size()));
-
-    infra::ByteOutputStream stream(upgradePackFlash.sectors[0]);
-    stream << header << secondStageImageHeader << infra::ConstByteRange(secondStageImage);
-
-    std::vector<uint8_t> expectedRam(secondStageImage.begin() + 8, secondStageImage.end());
-    std::vector<uint8_t> ram(expectedRam.size(), 0);
-
-    EXPECT_TRUE(secondStageToRamLoader.Load(ram, decryptorSpy, verifierSpy, true));
-    EXPECT_EQ(expectedRam, ram);
+    application::SecondStageToRamLoader secondStageToRamLoader(upgradePackFlash, "test product", ram);
+    EXPECT_FALSE(secondStageToRamLoader.Load(decryptorSpy, verifierSpy));
 }
 
 TEST_F(SecondStageToRamLoaderTest, WhenHeaderVersionIncorrectSecondStageDoesNotLoad)
@@ -240,7 +224,8 @@ TEST_F(SecondStageToRamLoaderTest, WhenHeaderVersionIncorrectSecondStageDoesNotL
     std::vector<uint8_t> expectedRam(secondStageImage.begin() + 8, secondStageImage.end());
     std::vector<uint8_t> ram(expectedRam.size(), 0);
 
-    EXPECT_FALSE(secondStageToRamLoader.Load(ram, decryptorSpy, verifierSpy));
+    application::SecondStageToRamLoader secondStageToRamLoader(upgradePackFlash, "test product", ram);
+    EXPECT_FALSE(secondStageToRamLoader.Load(decryptorSpy, verifierSpy));
 
     application::UpgradePackHeaderPrologue& prologue = reinterpret_cast<application::UpgradePackHeaderPrologue&>(upgradePackFlash.sectors[0][0]);
     EXPECT_FALSE(static_cast<uint8_t>(prologue.status) & ~static_cast<uint8_t>(application::UpgradePackStatus::invalid));
@@ -263,7 +248,8 @@ TEST_F(SecondStageToRamLoaderTest, LoadSecondStageAsSecondImage)
     std::vector<uint8_t> expectedRam(secondStageImage.begin() + 8, secondStageImage.end());
     std::vector<uint8_t> ram(expectedRam.size(), 0);
 
-    secondStageToRamLoader.Load(ram, decryptorSpy, verifierSpy);
+    application::SecondStageToRamLoader secondStageToRamLoader(upgradePackFlash, "test product", ram);
+    secondStageToRamLoader.Load(decryptorSpy, verifierSpy);
     EXPECT_EQ(expectedRam, ram);
 }
 
@@ -280,7 +266,8 @@ TEST_F(SecondStageToRamLoaderTest, DecryptSecondStage)
     std::vector<uint8_t> expectedRam(secondStageImage.begin() + 8, secondStageImage.end());
     std::vector<uint8_t> ram(expectedRam.size(), 0);
 
-    secondStageToRamLoader.Load(ram, decryptorSpy, verifierSpy);
+    application::SecondStageToRamLoader secondStageToRamLoader(upgradePackFlash, "test product", ram);
+    secondStageToRamLoader.Load(decryptorSpy, verifierSpy);
     EXPECT_EQ(expectedRam, decryptorSpy.data);
 }
 
@@ -301,7 +288,9 @@ TEST_F(SecondStageToRamLoaderTest, AuthenticateSecondStage)
     EXPECT_CALL(decryptorMock, ResetMock());
     EXPECT_CALL(decryptorMock, DecryptPartMock(0, 0));
     EXPECT_CALL(decryptorMock, DecryptAndAuthenticateMock(infra::ByteRange(ram))).WillOnce(testing::Return(true));
-    EXPECT_TRUE(secondStageToRamLoader.Load(ram, decryptorMock, verifierSpy));
+
+    application::SecondStageToRamLoader secondStageToRamLoader(upgradePackFlash, "test product", ram);
+    EXPECT_TRUE(secondStageToRamLoader.Load(decryptorMock, verifierSpy));
 }
 
 TEST_F(SecondStageToRamLoaderTest, InvalidSecondStageDoesNotAuthenticate)
@@ -321,7 +310,9 @@ TEST_F(SecondStageToRamLoaderTest, InvalidSecondStageDoesNotAuthenticate)
     EXPECT_CALL(decryptorMock, ResetMock());
     EXPECT_CALL(decryptorMock, DecryptPartMock(0, 0));
     EXPECT_CALL(decryptorMock, DecryptAndAuthenticateMock(infra::ByteRange(ram))).WillOnce(testing::Return(false));
-    EXPECT_FALSE(secondStageToRamLoader.Load(ram, decryptorMock, verifierSpy));
+
+    application::SecondStageToRamLoader secondStageToRamLoader(upgradePackFlash, "test product", ram);
+    EXPECT_FALSE(secondStageToRamLoader.Load(decryptorMock, verifierSpy));
 
     application::UpgradePackHeaderPrologue& prologue = reinterpret_cast<application::UpgradePackHeaderPrologue&>(upgradePackFlash.sectors[0][0]);
     EXPECT_FALSE(static_cast<uint8_t>(prologue.status) & ~static_cast<uint8_t>(application::UpgradePackStatus::invalid));
@@ -349,7 +340,8 @@ TEST_F(SecondStageToRamLoaderTest, DecryptSecondStageWithState)
     EXPECT_CALL(decryptorMock, DecryptPartMock(0, 0));
     EXPECT_CALL(decryptorMock, DecryptAndAuthenticateMock(infra::ByteRange(ram))).WillOnce(testing::Return(true));
 
-    secondStageToRamLoader.Load(ram, decryptorMock, verifierSpy);
+    application::SecondStageToRamLoader secondStageToRamLoader(upgradePackFlash, "test product", ram);
+    secondStageToRamLoader.Load(decryptorMock, verifierSpy);
     EXPECT_EQ(decryptorState, writtenDecryptorState);
 }
 
@@ -373,7 +365,8 @@ TEST_F(SecondStageToRamLoaderTest, VerifierIsGivenSignature)
     infra::ByteOutputStream stream(upgradePackFlash.sectors[0]);
     stream << header;
 
-    secondStageToRamLoader.Load(infra::ByteRange(), decryptorSpy, verifierSpy);
+    application::SecondStageToRamLoader secondStageToRamLoader(upgradePackFlash, "test product", infra::ByteRange());
+    secondStageToRamLoader.Load(decryptorSpy, verifierSpy);
     EXPECT_TRUE(infra::ContentsEqual(infra::MakeConstByteRange(header.signature), infra::ByteRange(verifierSpy.signature)));
 }
 
@@ -388,7 +381,8 @@ TEST_F(SecondStageToRamLoaderTest, VerifierChecksContents)
     infra::ByteOutputStream stream(upgradePackFlash.sectors[0]);
     stream << header << secondStageImageHeader << infra::ConstByteRange(secondStageImage);
 
-    secondStageToRamLoader.Load(infra::ByteRange(), decryptorSpy, verifierSpy);
+    application::SecondStageToRamLoader secondStageToRamLoader(upgradePackFlash, "test product", infra::ByteRange());
+    secondStageToRamLoader.Load(decryptorSpy, verifierSpy);
     infra::ByteRange signedData = stream.Writer().Processed();
     signedData.pop_front(sizeof(application::UpgradePackHeaderPrologue));
     EXPECT_TRUE(infra::ContentsEqual(signedData, infra::ByteRange(verifierSpy.data)));
@@ -406,7 +400,9 @@ TEST_F(SecondStageToRamLoaderTest, UpgradeFailsWhenVerificationFails)
 
     VerifierMock verifierMock;
     EXPECT_CALL(verifierMock, IsValidMock()).WillOnce(testing::Return(false));
-    EXPECT_FALSE(secondStageToRamLoader.Load(infra::ByteRange(), decryptorSpy, verifierMock));
+
+    application::SecondStageToRamLoader secondStageToRamLoader(upgradePackFlash, "test product", infra::ByteRange());
+    EXPECT_FALSE(secondStageToRamLoader.Load(decryptorSpy, verifierMock));
 
     application::UpgradePackHeaderPrologue& prologue = reinterpret_cast<application::UpgradePackHeaderPrologue&>(upgradePackFlash.sectors[0][0]);
     EXPECT_FALSE(static_cast<uint8_t>(prologue.status) & ~static_cast<uint8_t>(application::UpgradePackStatus::invalid));
@@ -424,7 +420,8 @@ TEST_F(SecondStageToRamLoaderTest, WhenProductNameIsIncorrectPackIsMarkedAsError
     infra::ByteOutputStream stream(upgradePackFlash.sectors[0]);
     stream << header << secondStageImageHeader << infra::ConstByteRange(secondStageImage);
 
-    EXPECT_FALSE(secondStageToRamLoader.Load(infra::ByteRange(), decryptorSpy, verifierSpy));
+    application::SecondStageToRamLoader secondStageToRamLoader(upgradePackFlash, "test product", infra::ByteRange());
+    EXPECT_FALSE(secondStageToRamLoader.Load(decryptorSpy, verifierSpy));
     EXPECT_FALSE(upgradePackFlash.sectors[0][0] & ~static_cast<uint8_t>(application::UpgradePackStatus::invalid));
 
     application::UpgradePackHeaderPrologue& prologue = reinterpret_cast<application::UpgradePackHeaderPrologue&>(upgradePackFlash.sectors[0][0]);
