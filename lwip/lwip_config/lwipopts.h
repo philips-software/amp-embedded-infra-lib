@@ -38,6 +38,8 @@ uint32_t StaticLwIpRand();
 #define CHECKSUM_CHECK_TCP 0
 
 #define LWIP_NETIF_HOSTNAME 1
+#define LWIP_NETIF_EXT_STATUS_CALLBACK 1
+#define SO_REUSE 1
 
 #ifdef __cplusplus
 }

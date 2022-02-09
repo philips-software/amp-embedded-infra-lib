@@ -24,10 +24,10 @@ namespace services
         if (currentReceiveBufferFirst)
             pbuf_free(currentReceiveBufferFirst);
 
+        netif_set_link_down(&netInterface);
+
         for (auto group = netif_igmp_data(&netInterface); group != nullptr; group = group->next)
             SetIgmpMacFilter(&group->group_address, NETIF_DEL_MAC_FILTER);
-
-        netif_set_link_down(&netInterface);
     }
 
     infra::ByteRange LightweightIpOverEthernet::RequestReceiveBuffer()

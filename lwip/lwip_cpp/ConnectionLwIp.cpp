@@ -527,6 +527,7 @@ namespace services
     {
         tcp_accepted(listenPort);
         services::GlobalTracer().Trace() << "ListenerLwIp::Accept accepted new connection from " << Convert(newPcb->remote_ip);
+        ip_set_option(newPcb, SOF_REUSEADDR);
         PurgeBacklog();
         if (!backlog.full())
         {
@@ -656,6 +657,7 @@ namespace services
     err_t ConnectorLwIp::Connected()
     {
         services::GlobalTracer().Trace() << "ConnectorLwIp::Connected connection established";
+        ip_set_option(control, SOF_REUSEADDR);
         infra::SharedPtr<ConnectionLwIp> connection = connectionAllocator.Allocate(factory, control);
         if (connection)
         {

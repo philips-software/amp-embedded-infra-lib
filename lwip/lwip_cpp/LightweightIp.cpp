@@ -1,12 +1,19 @@
 #include "lwip/lwip_cpp/LightweightIp.hpp"
 #include "lwip/init.h"
 #ifndef ESP_PLATFORM
-	#include "lwip/timeouts.h"
+    #include "lwip/timeouts.h"
 #endif
+
+namespace
+{
+    hal::SynchronousRandomDataGenerator* randomDataGenerator = nullptr;
+}
 
 extern "C" uint32_t StaticLwIpRand()
 {
-    return services::LightweightIp::Instance().Rand();
+    uint32_t result;
+    randomDataGenerator->GenerateRandomData(infra::MakeByteRange(result));
+    return result;
 }
 
 namespace services
@@ -15,25 +22,35 @@ namespace services
     {
         IPv4Address Convert(ip_addr_t address)
         {
-            return{ ip4_addr1(&address.u_addr.ip4), ip4_addr2(&address.u_addr.ip4), ip4_addr3(&address.u_addr.ip4), ip4_addr4(&address.u_addr.ip4), };
+            return {
+                ip4_addr1(&address.u_addr.ip4),
+                ip4_addr2(&address.u_addr.ip4),
+                ip4_addr3(&address.u_addr.ip4),
+                ip4_addr4(&address.u_addr.ip4),
+            };
         }
     }
 
-    LightweightIp::LightweightIp(AllocatorListenerLwIp& listenerAllocator, infra::BoundedList<ConnectorLwIp>& connectors, AllocatorConnectionLwIp& connectionAllocator, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    infra::IntrusiveList<LightweightIp> LightweightIp::instances;
+    netif_ext_callback_t LightweightIp::instanceCallback;
+
+    LightweightIp::LightweightIp(AllocatorListenerLwIp& listenerAllocator, infra::BoundedList<ConnectorLwIp>& connectors, AllocatorConnectionLwIp& connectionAllocator,
+        hal::SynchronousRandomDataGenerator& randomDataGenerator, infra::CreatorBase<services::Stoppable, void(LightweightIp& lightweightIp)>& connectedCreator)
         : ConnectionFactoryLwIp(listenerAllocator, connectors, connectionAllocator)
-        , randomDataGenerator(randomDataGenerator)
+        , connectedCreator(connectedCreator)
     {
+        ::randomDataGenerator = &randomDataGenerator;
 #if NO_SYS
         lwip_init();
         sysCheckTimer.Start(std::chrono::milliseconds(50), [this]() { sys_check_timeouts(); }, infra::triggerImmediately);
 #endif
+
+        RegisterInstance();
     }
 
-    uint32_t LightweightIp::Rand()
+    LightweightIp::~LightweightIp()
     {
-        uint32_t result;
-        randomDataGenerator.GenerateRandomData(infra::MakeByteRange(result));
-        return result;
+        DeregisterInstance();
     }
 
     bool LightweightIp::PendingSend() const
@@ -49,5 +66,73 @@ namespace services
     IPv4InterfaceAddresses LightweightIp::GetIPv4InterfaceAddresses() const
     {
         return { Convert(netif_default->ip_addr), Convert(netif_default->netmask), Convert(netif_default->gw) };
+    }
+
+    void LightweightIp::RegisterInstance()
+    {
+        if (instances.empty())
+            netif_add_ext_callback(&instanceCallback, &InstanceCallback);
+
+        instances.push_back(*this);
+    }
+
+    void LightweightIp::DeregisterInstance()
+    {
+        instances.erase(*this);
+
+        if (instances.empty())
+            netif_remove_ext_callback(&instanceCallback);
+    }
+
+    void LightweightIp::InstanceCallback(netif* netif, netif_nsc_reason_t reason, const netif_ext_callback_args_t* args)
+    {
+        for (auto& instance : instances)
+            instance.ExtCallback(reason, args);
+    }
+
+    void LightweightIp::ExtCallback(netif_nsc_reason_t reason, const netif_ext_callback_args_t* args)
+    {
+        bool linkUp = (netif_default->flags & NETIF_FLAG_LINK_UP) != 0;
+
+        auto newIpv4Address = GetIPv4Address();
+
+        if (!linkUp)
+            newIpv4Address = IPv4Address();
+
+        if ((reason & (LWIP_NSC_IPV4_SETTINGS_CHANGED | LWIP_NSC_LINK_CHANGED)) != 0 && ipv4Address != newIpv4Address)
+        {
+            ipv4Address = newIpv4Address;
+
+            if (ipv4Address == IPv4Address())
+            {
+                if (connected != infra::none && !stopping)
+                {
+                    stopping = true;
+                    (*connected)->Stop([this]() { OnStopped(); });
+                }
+            }
+            else
+            {
+                if (!stopping)
+                {
+                    connected.Emplace(connectedCreator, *this);
+                    starting = false;
+                }
+                else
+                    starting = true;
+            }
+        }
+    }
+
+    void LightweightIp::OnStopped()
+    {
+        connected = infra::none;
+        stopping = false;
+
+        if (starting)
+        {
+            connected.Emplace(connectedCreator, *this);
+            starting = false;
+        }
     }
 }
