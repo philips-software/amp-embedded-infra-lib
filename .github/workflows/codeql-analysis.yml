@@ -15,7 +15,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - uses: shogo82148/actions-setup-perl@v1
       - uses: seanmiddleditch/gha-setup-ninja@v3
       - uses: hendrikmuhs/ccache-action@v1
       - name: Initialize CodeQL
