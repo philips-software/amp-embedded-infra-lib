@@ -32,6 +32,8 @@ namespace services
         std::vector<uint8_t> sentData;
         std::string SentDataAsString() const;
 
+        void Reset();
+
     private:
         class StreamWriterStub
             : public infra::StreamWriter

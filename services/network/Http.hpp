@@ -39,6 +39,7 @@ namespace services
         NotModified = 304,
         UseProxy = 305,
         TemporaryRedirect = 307,
+        PermanentRedirect = 308,
         BadRequest = 400,
         Unauthorized = 401,
         PaymentRequired = 402,
@@ -131,6 +132,7 @@ namespace services
     public:
         virtual void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine) = 0;
         virtual void HeaderAvailable(HttpHeader header) = 0;
+        virtual void HeaderParsingDone(bool error) = 0;
     };
 
     class HttpHeaderParser
@@ -140,29 +142,25 @@ namespace services
         ~HttpHeaderParser();
 
         void DataReceived(infra::StreamReaderWithRewinding& reader);
-        bool Done() const;
-        bool Error() const;
 
     private:
-        void ParseStatusLine(infra::StreamReaderWithRewinding& reader);
+        void ParseStatusLine(infra::StreamReaderWithRewinding& reader, bool& error);
         bool HttpVersionValid(infra::BoundedConstString httpVersion);
 
         void ParseHeaders(infra::StreamReaderWithRewinding& reader);
         HttpHeader HeaderFromString(infra::BoundedConstString header);
 
-        void SetError();
-
     private:
         HttpHeaderParserObserver& observer;
-        bool done = false;
-        bool error = false;
         bool statusParsed = false;
         HttpStatusCode statusCode;
         bool* destroyed = nullptr;
     };
 
     infra::BoundedConstString SchemeFromUrl(infra::BoundedConstString url);
+    infra::BoundedConstString HostAndPortFromUrl(infra::BoundedConstString url);
     infra::BoundedConstString HostFromUrl(infra::BoundedConstString url);
+    infra::Optional<uint16_t> PortFromUrl(infra::BoundedConstString url);
     infra::BoundedConstString PathFromUrl(infra::BoundedConstString url);
 
     infra::BoundedConstString HttpVerbToString(HttpVerb verb);
