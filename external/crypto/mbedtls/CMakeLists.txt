@@ -1,14 +1,7 @@
-set(patch_command)
-if (NOT mbedtls_PATCH_APPLIED)
-    set(patch_command "PATCH_COMMAND git apply ${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt-disable-package-config-option.patch")
-    set(mbedtls_PATCH_APPLIED True CACHE INTERNAL "")
-endif()
-
 FetchContent_Declare(
     mbedtls
-    GIT_REPOSITORY https://github.com/ARMmbed/mbedtls
-    GIT_TAG v3.1.0
-    ${patch_command}
+    GIT_REPOSITORY https://github.com/philips-forks/mbedtls
+    GIT_TAG 40b2dcdec50da1342425e5dfd215a12252a9b653 # v3.1.0 + 2869c67d6351c9bd62a8fc36f2654b5477cbdccf cherry-picked on top
 )
 
 set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL On)
