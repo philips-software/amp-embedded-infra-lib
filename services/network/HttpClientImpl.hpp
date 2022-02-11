@@ -275,6 +275,9 @@ namespace services
         virtual void Patch(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         virtual void Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
 
+    protected:
+        virtual void Redirecting(infra::BoundedConstString url) {}
+
     private:
         // Implementation of HttpClientObserverFactory
         virtual infra::BoundedConstString Hostname() const override;
@@ -282,6 +285,7 @@ namespace services
         virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> client)>&& createdObserver) override;
         virtual void ConnectionFailed(ConnectFailReason reason) override;
 
+    protected:
         // Implementation of HttpHeaderParserObserver
         virtual void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine) override;
         virtual void HeaderAvailable(HttpHeader header) override;

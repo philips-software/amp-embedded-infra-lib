@@ -38,6 +38,43 @@ namespace services
         infra::SharedOptional<TracingWriter> tracingWriter;
     };
 
+    class TracingHttpClientImplWithRedirection
+        : public HttpClientImplWithRedirection
+    {
+    public:
+        template<std::size_t MaxSize>
+            using WithRedirectionUrlSize = infra::WithStorage<TracingHttpClientImplWithRedirection, infra::BoundedString::WithStorage<MaxSize>>;
+
+        TracingHttpClientImplWithRedirection(infra::BoundedString redirectedUrlStorage, infra::BoundedConstString hostname, ConnectionFactoryWithNameResolver& connectionFactory, Tracer& tracer);
+
+        // Implementation of ConnectionObserver
+        virtual void DataReceived() override;
+        virtual void Attached() override;
+        virtual void Detaching() override;
+        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+
+        // Implementation of HttpClientImplWithRedirection
+        virtual void Redirecting(infra::BoundedConstString url) override;
+
+    private:
+        class TracingWriter
+        {
+        public:
+            TracingWriter(infra::SharedPtr<infra::StreamWriter>&& writer, services::Tracer& tracer);
+
+            infra::StreamWriter& Writer();
+
+        private:
+            infra::SharedPtr<infra::StreamWriter> writer;
+            TracingStreamWriter tracingWriter;
+        };
+
+    private:
+        Tracer& tracer;
+
+        infra::SharedOptional<TracingWriter> tracingWriter;
+    };
+
     template<class HttpClient = HttpClientImpl, class... Args>
     class TracingHttpClientConnectorImpl
         : public HttpClientConnectorImpl<HttpClient, Args...>

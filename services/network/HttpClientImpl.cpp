@@ -678,6 +678,8 @@ namespace services
 
     void HttpClientImplWithRedirection::Redirect()
     {
+        Redirecting(redirectedUrlStorage);
+
         redirectedHostname = HostFromUrl(redirectedUrlStorage);
         redirectedPort = PortFromUrl(redirectedUrlStorage).ValueOr(PortFromScheme(SchemeFromUrl(redirectedUrlStorage)).ValueOr(80));
         redirectedPath = PathFromUrl(redirectedUrlStorage);
