@@ -112,8 +112,31 @@ if (EMIL_BUILD_EXAMPLES)
 endif()
 
 if (EMIL_GENERATE_PACKAGE_CONFIG)
+    function(generate_export_targets name)
+        # Generate and install export file
+        install(EXPORT emil${name}Targets
+            FILE emil${name}Targets.cmake
+            NAMESPACE emil::
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/emil
+        )
+
+        # Generate the export targets for the build tree
+        export(EXPORT emil${name}Targets
+            FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/emil${name}Targets.cmake"
+            NAMESPACE emil::
+        )
+    endfunction()
+
+    if (TARGET_ARCH_X86)
+        list(APPEND hostTargets ProtobufHost UpgradeHost)
+    endif()
+
+    foreach(target IN LISTS hostTargets ITEMS Crypto Infra Hal Lwip Protobuf Services Upgrade)
+        generate_export_targets(${target})
+    endforeach()
+
     write_basic_package_version_file(
-        "${CMAKE_BINARY_DIR}/emilConfigVersion.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake/emilConfigVersion.cmake"
         COMPATIBILITY AnyNewerVersion
         # When cross-compiling for a 32-bit architecture and re-using host tooling from a 64-bit architecture
         # ARCH_INDEPENDENT is necessary here. See: https://cmake.org/cmake/help/latest/module/CMakePackageConfigHelpers.html.
@@ -121,14 +144,14 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
     )
 
     configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in
-        "${CMAKE_BINARY_DIR}/emilConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake/emilConfig.cmake"
         INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/emil
         NO_CHECK_REQUIRED_COMPONENTS_MACRO
     )
 
     install(FILES
-        "${CMAKE_BINARY_DIR}/emilConfig.cmake"
-        "${CMAKE_BINARY_DIR}/emilConfigVersion.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake/emilConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake/emilConfigVersion.cmake"
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/emil
     )
 endif()
