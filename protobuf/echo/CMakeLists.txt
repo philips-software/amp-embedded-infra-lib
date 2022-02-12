@@ -21,7 +21,7 @@ endif()
 function(protocol_buffer_echo_cpp target input)
 
     if (CMAKE_CROSSCOMPILING)
-        find_package(emil COMPONENTS ProtobufHost)
+        find_package(emil COMPONENTS ProtobufHost REQUIRED)
     endif()
 
     cmake_path(ABSOLUTE_PATH input NORMALIZE OUTPUT_VARIABLE absolute_input)
