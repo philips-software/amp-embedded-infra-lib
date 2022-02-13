@@ -7,7 +7,7 @@
 // - Insertions and deletions are done in O(log(n)) time
 // - Finding an element takes O(log(n)) time
 
-#include "IntrusiveBinarySearchTree.hpp"
+#include "infra/util/IntrusiveBinarySearchTree.hpp"
 #include <algorithm>
 #include <cstdlib>
 #include <iterator>
