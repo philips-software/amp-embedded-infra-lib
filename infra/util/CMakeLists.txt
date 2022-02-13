@@ -7,10 +7,6 @@ target_include_directories(infra.util PUBLIC
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
-target_link_libraries(infra.util PUBLIC
-    infra.stream
-)
-
 target_sources(infra.util PRIVATE
     Aligned.hpp
     Allocator.hpp
