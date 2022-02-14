@@ -129,6 +129,39 @@ TEST(ProxyCreatorTest, CreateVoidByCreatorExternal)
     EXPECT_CALL(destruction, callback());
 }
 
+TEST(ProxyCreatorTest, CreateTuplePeripheralByCreatorExternal)
+{
+    infra::MockCallback<void()> construction;
+    infra::MockCallback<void()> destruction;
+
+    struct X
+    {
+        PeripheralWithTwoParameters peripheral1{ 5, 6 };
+        PeripheralWithTwoParameters peripheral2{ 7, 8 };
+    } x;
+
+    infra::CreatorExternal<std::tuple<PeripheralInterface&, PeripheralInterface&>, void()> creator(
+        [&x, &construction]() -> std::tuple<PeripheralInterface&, PeripheralInterface&>
+        {
+            construction.callback();
+            return std::make_tuple(std::ref(x.peripheral1), std::ref(x.peripheral2));
+        }, [&destruction]()
+        {
+            destruction.callback();
+        });
+
+    EXPECT_CALL(construction, callback());
+    infra::ProxyCreator<std::tuple<PeripheralInterface&, PeripheralInterface&>, void()> creatorProxy(creator);
+
+    EXPECT_CALL(x.peripheral1, SendMock());
+    std::get<0>(*creatorProxy).Send();
+
+    EXPECT_CALL(x.peripheral2, SendMock());
+    std::get<1>(*creatorProxy).Send();
+
+    EXPECT_CALL(destruction, callback());
+}
+
 TEST(DelayedProxyCreatorTest, CreatePeripheral)
 {
     infra::Creator<PeripheralInterface, Peripheral, void()> creator;
