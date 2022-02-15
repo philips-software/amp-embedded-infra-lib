@@ -25,7 +25,12 @@ namespace hal
 
     UartWindows::~UartWindows()
     {
-        running = false;
+        {
+            std::unique_lock<std::mutex> lock(mutex);
+            running = false;
+            receivedDataSet.notify_all();
+        }
+
         if (readThread.joinable())
             readThread.join();
         CloseHandle(handle);
