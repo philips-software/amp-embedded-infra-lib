@@ -1,6 +1,5 @@
 if (TARGET_ARCH_X86)
     add_library(hal.generic EXCLUDE_FROM_ALL STATIC)
-    add_library(emil::hal.generic ALIAS hal.generic)
     install(TARGETS hal.generic EXPORT emilHalTargets)
 
     target_link_libraries(hal.generic PUBLIC

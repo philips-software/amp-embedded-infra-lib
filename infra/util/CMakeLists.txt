@@ -1,5 +1,4 @@
 add_library(infra.util EXCLUDE_FROM_ALL STATIC)
-add_library(emil::infra.util ALIAS infra.util)
 install(TARGETS infra.util EXPORT emilInfraTargets)
 
 target_include_directories(infra.util PUBLIC

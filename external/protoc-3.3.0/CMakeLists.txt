@@ -33,7 +33,7 @@ function(protocol_buffer_generator)
 
     # Include defaults and self. This assumes set_target_properties on self
     # is done prior to the loop.
-    list(APPEND protobuf_dependencies ${PROTOGEN_TARGET} emil::protobuf.libprotobuf emil::protobuf.echo_attributes)
+    list(APPEND protobuf_dependencies ${PROTOGEN_TARGET} ${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.libprotobuf ${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.echo_attributes)
 
     set(protopath)
     foreach(dependency ${protobuf_dependencies})
@@ -91,7 +91,7 @@ function(protocol_buffer_cpp target input)
     protocol_buffer_generator(TARGET ${target} INPUT ${input} GENERATOR cpp GENERATED_POSTFIXES .pb.h .pb.cc)
 
     target_link_libraries(${target} PUBLIC
-        emil::protobuf.libprotobuf
+        protobuf.libprotobuf
     )
 
 endfunction()

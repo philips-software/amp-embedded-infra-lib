@@ -1,6 +1,5 @@
 if (TARGET_ARCH_X86)
     add_library(protobuf.libprotobuf_lite EXCLUDE_FROM_ALL STATIC)
-    add_library(emil::protobuf.libprotobuf_lite ALIAS protobuf.libprotobuf_lite)
 
     target_compile_definitions(protobuf.libprotobuf_lite
         PUBLIC
@@ -102,7 +101,6 @@ if (TARGET_ARCH_X86)
     endif()
 
     add_library(protobuf.libprotobuf EXCLUDE_FROM_ALL SHARED)
-    add_library(emil::protobuf.libprotobuf ALIAS protobuf.libprotobuf)
 
     set_target_properties(protobuf.libprotobuf PROPERTIES
         PROTOBUF_INCLUDES "${CMAKE_CURRENT_LIST_DIR}/src/google/protobuf"
@@ -251,7 +249,6 @@ if (TARGET_ARCH_X86)
     )
 
     add_library(protobuf.libprotoc EXCLUDE_FROM_ALL STATIC)
-    add_library(emil::protobuf.libprotoc ALIAS protobuf.libprotoc)
 
     target_compile_options(protobuf.libprotoc PRIVATE
         $<$<COMPILE_LANG_AND_ID:CXX,AppleClang,Clang>:-Wno-enum-compare-switch>
@@ -410,6 +407,6 @@ if (TARGET_ARCH_X86)
         protobuf.libprotobuf_lite
         protobuf.libprotobuf
         protobuf.libprotoc
-        EXPORT emilProtobufHostTargets
+        EXPORT emilProtobufTargets
     )
 endif()

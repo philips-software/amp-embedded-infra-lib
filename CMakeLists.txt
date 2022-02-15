@@ -23,7 +23,18 @@ endif()
 option(EMIL_BUILD_TESTS "Enable build of the tests" ${EMIL_DEFAULTOPT})
 option(EMIL_BUILD_EXAMPLES "Enable build of the examples" ${EMIL_DEFAULTOPT})
 cmake_dependent_option(EMIL_ENABLE_COVERAGE "Enable compiler flags for code coverage measurements" Off "EMIL_BUILD_TESTS" Off)
+
+# The next few options control the install and export behaviour.
+# When package config generation is enabled the prefix can be set
+# with the EMIL_PACKAGE_CONFIG_EXPORT_NAMESPACE (default emil::).
+# The EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE controls the namespace
+# used for all targets that are used during the build (mostly for
+# code generation). In the default scenario this is empty, using
+# targets of the current build. When doing a 'cross-build' this
+# should be set to the export name of the 'host' build.
 option(EMIL_GENERATE_PACKAGE_CONFIG "Enable generation of package configuration and install files" On)
+set(EMIL_PACKAGE_CONFIG_EXPORT_NAMESPACE "emil::" CACHE STRING "Namespace used for exported targets")
+set(EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE "" CACHE STRING "Namespace used to reference imported targets")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
@@ -116,22 +127,18 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
         # Generate and install export file
         install(EXPORT emil${name}Targets
             FILE emil${name}Targets.cmake
-            NAMESPACE emil::
+            NAMESPACE ${EMIL_PACKAGE_CONFIG_EXPORT_NAMESPACE}
             DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/emil
         )
 
         # Generate the export targets for the build tree
         export(EXPORT emil${name}Targets
             FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/emil${name}Targets.cmake"
-            NAMESPACE emil::
+            NAMESPACE ${EMIL_PACKAGE_CONFIG_EXPORT_NAMESPACE}
         )
     endfunction()
 
-    if (TARGET_ARCH_X86)
-        list(APPEND hostTargets ProtobufHost UpgradeHost)
-    endif()
-
-    foreach(target IN LISTS hostTargets ITEMS Crypto Infra Hal Lwip Protobuf Services Upgrade)
+    foreach(target IN ITEMS Crypto Infra Hal Lwip Protobuf Services Upgrade)
         generate_export_targets(${target})
     endforeach()
 

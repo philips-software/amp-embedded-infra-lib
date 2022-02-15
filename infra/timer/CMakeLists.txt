@@ -1,5 +1,4 @@
 add_library(infra.timer EXCLUDE_FROM_ALL STATIC)
-add_library(emil::infra.timer ALIAS infra.timer)
 install(TARGETS infra.timer EXPORT emilInfraTargets)
 
 target_link_libraries(infra.timer PUBLIC

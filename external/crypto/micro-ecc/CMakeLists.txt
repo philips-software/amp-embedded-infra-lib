@@ -1,5 +1,4 @@
 add_library(crypto.micro_ecc EXCLUDE_FROM_ALL STATIC)
-add_library(emil::crypto.micro_ecc ALIAS crypto.micro_ecc)
 install(TARGETS crypto.micro_ecc EXPORT emilCryptoTargets)
 
 target_include_directories(crypto.micro_ecc PUBLIC

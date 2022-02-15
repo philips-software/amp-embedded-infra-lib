@@ -1,5 +1,4 @@
 add_library(services.tracer EXCLUDE_FROM_ALL STATIC)
-add_library(emil::services.tracer ALIAS services.tracer)
 install(TARGETS services.tracer EXPORT emilServicesTargets)
 
 target_link_libraries(services.tracer PUBLIC

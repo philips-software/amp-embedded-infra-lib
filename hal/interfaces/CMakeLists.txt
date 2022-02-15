@@ -1,5 +1,4 @@
 add_library(hal.interfaces EXCLUDE_FROM_ALL STATIC)
-add_library(emil::hal.interfaces ALIAS hal.interfaces)
 install(TARGETS hal.interfaces EXPORT emilHalTargets)
 
 target_include_directories(hal.interfaces PUBLIC

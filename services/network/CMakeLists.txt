@@ -1,5 +1,4 @@
 add_library(services.network EXCLUDE_FROM_ALL STATIC)
-add_library(emil::services.network ALIAS services.network)
 install(TARGETS services.network EXPORT emilServicesTargets)
 
 target_link_libraries(services.network PUBLIC

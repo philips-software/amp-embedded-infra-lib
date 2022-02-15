@@ -1,5 +1,4 @@
 add_library(services.synchronous_util EXCLUDE_FROM_ALL STATIC)
-add_library(emil::services.synchronous_util ALIAS services.synchronous_util)
 install(TARGETS services.synchronous_util EXPORT emilServicesTargets)
 
 target_link_libraries(services.synchronous_util PUBLIC

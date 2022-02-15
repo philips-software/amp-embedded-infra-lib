@@ -1,7 +1,6 @@
 if (TARGET_ARCH_X86)
     add_library(protobuf.echo_attributes EXCLUDE_FROM_ALL STATIC)
-    add_library(emil::protobuf.echo_attributes ALIAS protobuf.echo_attributes)
-    install(TARGETS protobuf.echo_attributes EXPORT emilProtobufHostTargets)
+    install(TARGETS protobuf.echo_attributes EXPORT emilProtobufTargets)
 
     target_compile_options(protobuf.echo_attributes PRIVATE
         $<$<BOOL:${TARGET_BUILD_WIN}>:

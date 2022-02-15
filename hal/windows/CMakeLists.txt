@@ -1,6 +1,5 @@
 if (TARGET_BUILD_WIN)
     add_library(hal.windows EXCLUDE_FROM_ALL STATIC)
-    add_library(emil::hal.windows ALIAS hal.windows)
     install(TARGETS hal.windows EXPORT emilHalTargets)
 
     target_link_libraries(hal.windows PUBLIC

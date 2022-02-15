@@ -1,7 +1,6 @@
 if (TARGET_ARCH_X86)
     add_executable(protobuf.protoc_echo_plugin_csharp)
-    add_executable(emil::protobuf.protoc_echo_plugin_csharp ALIAS protobuf.protoc_echo_plugin_csharp)
-    install(TARGETS protobuf.protoc_echo_plugin_csharp EXPORT emilProtobufHostTargets)
+    install(TARGETS protobuf.protoc_echo_plugin_csharp EXPORT emilProtobufTargets)
 
     target_compile_options(protobuf.protoc_echo_plugin_csharp PRIVATE
         $<$<BOOL:${TARGET_BUILD_WIN}>:

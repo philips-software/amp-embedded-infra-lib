@@ -1,5 +1,4 @@
 add_library(hal.synchronous_interfaces EXCLUDE_FROM_ALL STATIC)
-add_library(emil::hal.synchronous_interfaces ALIAS hal.synchronous_interfaces)
 install(TARGETS hal.synchronous_interfaces EXPORT emilHalTargets)
 
 target_include_directories(hal.synchronous_interfaces PUBLIC

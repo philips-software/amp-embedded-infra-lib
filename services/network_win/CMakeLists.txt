@@ -1,6 +1,5 @@
 if (TARGET_BUILD_WIN)
     add_library(services.network_win EXCLUDE_FROM_ALL STATIC)
-    add_library(emil::services.network_win ALIAS services.network_win)
     install(TARGETS services.network_win EXPORT emilServicesTargets)
 
     target_link_libraries(services.network_win PUBLIC

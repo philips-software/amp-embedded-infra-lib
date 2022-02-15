@@ -1,6 +1,5 @@
 if (TARGET_BUILD_UNIX OR TARGET_BUILD_DARWIN)
     add_library(services.network_bsd EXCLUDE_FROM_ALL STATIC)
-    add_library(emil::services.network_bsd ALIAS services.network_bsd)
     install(TARGETS services.network_bsd EXPORT emilServicesTargets)
 
     target_link_libraries(services.network_bsd PUBLIC services.network)

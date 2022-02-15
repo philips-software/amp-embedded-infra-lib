@@ -8,7 +8,6 @@ else()
     add_library(lwip.lwip_conf EXCLUDE_FROM_ALL INTERFACE)
 endif()
 
-add_library(emil::lwip.lwip_conf ALIAS lwip.lwip_conf)
 install(TARGETS lwip.lwip_conf EXPORT emilLwipTargets)
 
 target_include_directories(lwip.lwip_conf INTERFACE

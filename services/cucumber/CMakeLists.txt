@@ -1,5 +1,4 @@
 add_library(services.cucumber EXCLUDE_FROM_ALL STATIC)
-add_library(emil::services.cucumber ALIAS services.cucumber)
 install(TARGETS services.cucumber EXPORT emilServicesTargets)
 
 target_link_libraries(services.cucumber PUBLIC

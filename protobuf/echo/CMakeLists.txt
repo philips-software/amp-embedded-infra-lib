@@ -1,5 +1,4 @@
 add_library(protobuf.echo EXCLUDE_FROM_ALL STATIC)
-add_library(emil::protobuf.echo ALIAS protobuf.echo)
 install(TARGETS protobuf.echo EXPORT emilProtobufTargets)
 
 target_link_libraries(protobuf.echo PUBLIC
@@ -21,7 +20,7 @@ endif()
 function(protocol_buffer_echo_cpp target input)
 
     if (CMAKE_CROSSCOMPILING)
-        find_package(emil COMPONENTS ProtobufHost REQUIRED)
+        find_package(emil COMPONENTS Infra Hal Crypto Services Protobuf REQUIRED)
     endif()
 
     cmake_path(ABSOLUTE_PATH input NORMALIZE OUTPUT_VARIABLE absolute_input)
@@ -45,7 +44,7 @@ function(protocol_buffer_echo_cpp target input)
 
     # Include defaults and self. This assumes set_target_properties on self
     # is done prior to the loop.
-    list(APPEND protobuf_dependencies ${target} emil::protobuf.libprotobuf emil::protobuf.echo_attributes)
+    list(APPEND protobuf_dependencies ${target} ${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.libprotobuf ${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.echo_attributes)
 
     set(protopath)
     foreach(dependency ${protobuf_dependencies})
@@ -76,10 +75,10 @@ function(protocol_buffer_echo_cpp target input)
     add_custom_command(
         OUTPUT ${generated_files}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${generated_dir_echo}
-        COMMAND ${CMAKE_COMMAND} -E env "\"PATH=$<TARGET_FILE_DIR:emil::protobuf.libprotobuf>;\"" ${protoc_compiler_binary} ${protopath} --error_format=${error_format} --plugin=protoc-gen-cpp-infra=$<TARGET_FILE:emil::protobuf.protoc_echo_plugin> --cpp-infra_out="${generated_dir_echo}" ${absolute_input}
-        COMMAND ${CMAKE_COMMAND} -E env "\"PATH=$<TARGET_FILE_DIR:emil::protobuf.libprotobuf>;\"" ${protoc_compiler_binary} ${protopath} --error_format=${error_format} --descriptor_set_out="${generated_dir_echo}/${source_base}.pb" --include_imports ${absolute_input}
+        COMMAND ${CMAKE_COMMAND} -E env "\"PATH=$<TARGET_FILE_DIR:${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.libprotobuf>;\"" ${protoc_compiler_binary} ${protopath} --error_format=${error_format} --plugin=protoc-gen-cpp-infra=$<TARGET_FILE:${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.protoc_echo_plugin> --cpp-infra_out="${generated_dir_echo}" ${absolute_input}
+        COMMAND ${CMAKE_COMMAND} -E env "\"PATH=$<TARGET_FILE_DIR:${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.libprotobuf>;\"" ${protoc_compiler_binary} ${protopath} --error_format=${error_format} --descriptor_set_out="${generated_dir_echo}/${source_base}.pb" --include_imports ${absolute_input}
         MAIN_DEPENDENCY "${absolute_input}"
-        DEPENDS emil::protobuf.protoc_echo_plugin
+        DEPENDS ${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.protoc_echo_plugin
     )
 
     target_sources(${target} PRIVATE
@@ -92,7 +91,7 @@ function(protocol_buffer_echo_cpp target input)
     )
 
     target_link_libraries(${target} PUBLIC
-        emil::protobuf.echo
+        protobuf.echo
     )
 
 endfunction()
