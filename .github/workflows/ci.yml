@@ -44,7 +44,7 @@ jobs:
       - run: |
           cmake -B Build-Host -G Ninja -DCMAKE_BUILD_TYPE=Release -DEMIL_BUILD_TESTS=Off -DEMIL_BUILD_EXAMPLES=Off -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build Build-Host --config Release
-          cmake -B Build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_PREFIX_PATH=${{ github.workspace }}/Build-Host -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-gcc.cmake
+          cmake -B Build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_PREFIX_PATH=${{ github.workspace }}/Build-Host -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-gcc.cmake -DEMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE="emil::"
           cmake --build Build --config Release
   static_analysis:
     name: Static Analysis
