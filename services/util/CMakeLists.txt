@@ -1,6 +1,9 @@
 ccola_component(util static_library)
 
     ccola_sources(
+        Aes.hpp
+        AesMbedTls.cpp
+        AesMbedTls.hpp
         ConfigurationStore.cpp
         ConfigurationStore.hpp
         CyclicStore.cpp
@@ -42,6 +45,9 @@ ccola_component(util static_library)
         MessageCommunicationWindowed.hpp
         RepeatingButton.cpp
         RepeatingButton.hpp
+        Sha256.hpp
+        Sha256MbedTls.cpp
+        Sha256MbedTls.hpp
         SignalLed.cpp
         SignalLed.hpp
         SpiMasterWithChipSelect.cpp
