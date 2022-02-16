@@ -198,7 +198,7 @@ namespace services
     void ConnectionMbedTls::RequestSendStream(std::size_t sendSize)
     {
         assert(requestedSendSize == 0);
-        assert(sendSize != 0 && sendSize <= MaxSendStreamSize());
+        really_assert(sendSize != 0 && sendSize <= MaxSendStreamSize());
         requestedSendSize = sendSize;
         TryAllocateSendStream();
     }
@@ -255,12 +255,14 @@ namespace services
 
     void ConnectionMbedTls::TryAllocateSendStream()
     {
-        assert(streamWriter.Allocatable());
-        if (!sending)
+        if (!sending && requestedSendSize != 0)
         {
-            infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object)
+            assert(streamWriter.Allocatable());
+            auto requestedSize = requestedSendSize;
+
+            infra::EventDispatcherWithWeakPtr::Instance().Schedule([requestedSize](const infra::SharedPtr<ConnectionMbedTls>& object)
             {
-                infra::SharedPtr<StreamWriterMbedTls> stream = object->streamWriter.Emplace(*object);
+                infra::SharedPtr<StreamWriterMbedTls> stream = object->streamWriter.Emplace(*object, requestedSize);
                 if (object->Connection::IsAttached())
                     object->Observer().SendStreamAvailable(std::move(stream));
             }, SharedFromThis());
@@ -373,8 +375,7 @@ namespace services
             }
         }
 
-        if (requestedSendSize != 0)
-            TryAllocateSendStream();
+        TryAllocateSendStream();
     }
 
     int ConnectionMbedTls::StaticGenerateRandomData(void* data, unsigned char* output, std::size_t size)
@@ -393,8 +394,8 @@ namespace services
         reinterpret_cast<ConnectionMbedTls*>(context)->TlsLog(level, file, line, message);
     }
 
-    ConnectionMbedTls::StreamWriterMbedTls::StreamWriterMbedTls(ConnectionMbedTls& connection)
-        : infra::BoundedVectorStreamWriter(connection.sendBuffer)
+    ConnectionMbedTls::StreamWriterMbedTls::StreamWriterMbedTls(ConnectionMbedTls& connection, uint32_t size)
+        : infra::LimitedStreamWriter::WithOutput<infra::BoundedVectorStreamWriter>(infra::inPlace, connection.sendBuffer, size)
         , connection(connection)
     {}
 
