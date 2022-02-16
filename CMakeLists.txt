@@ -67,6 +67,7 @@ endif()
 
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Generic")
     enable_language(ASM)
+    set(CMAKE_EXECUTABLE_SUFFIX .elf PARENT_SCOPE)
 endif()
 
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR
