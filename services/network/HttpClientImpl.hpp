@@ -20,6 +20,8 @@ namespace services
     public:
         HttpClientImpl(infra::BoundedConstString hostname);
 
+        void Retarget(infra::BoundedConstString hostname);
+
         // Implementation of HttpClient
         virtual void Get(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         virtual void Head(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
@@ -48,13 +50,16 @@ namespace services
         // Implementation of HttpHeaderParserObserver
         virtual void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine) override;
         virtual void HeaderAvailable(HttpHeader header) override;
+        virtual void HeaderParsingDone(bool error) override;
+
+        void BodyComplete();
 
     private:
         void ExpectResponse();
         void HandleData();
         void BodyReceived();
         void BodyReaderDestroyed();
-        void BodyComplete();
+        void Reset();
         bool ReadChunkLength();
         void ExecuteRequest(HttpVerb verb, infra::BoundedConstString requestTarget, const HttpHeaders headers);
         void ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers);
@@ -159,6 +164,8 @@ namespace services
         infra::BoundedConstString hostname;
         HttpStatusCode statusCode = HttpStatusCode::OK;
         infra::Optional<uint32_t> contentLength;
+        bool headerParsingDone = false;
+        bool headerParsingError = false;
         bool chunkedEncoding = false;
         bool firstChunk = true;
         infra::Optional<BodyReader> bodyReader;
@@ -174,101 +181,24 @@ namespace services
         , public services::ClientConnectionObserverFactory
     {
     public:
-        HttpClientConnectorImpl(services::ConnectionFactory& connectionFactory, services::IPAddress address, Args&&... args)
-            : address(address)
-            , connectionFactory(connectionFactory)
-            , client([this]() { TryConnectWaiting(); })
-            , args(std::forward<Args>(args)...)
-        {}
+        HttpClientConnectorImpl(services::ConnectionFactory& connectionFactory, services::IPAddress address, Args&&... args);
 
         // Implementation of ClientConnectionObserverFactory
-        virtual services::IPAddress Address() const override
-        {
-            return address;
-        }
-
-        virtual uint16_t Port() const override
-        {
-            return 443;
-        }
-
-        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override
-        {
-            assert(clientObserverFactory != nullptr);
-            auto httpClientPtr = InvokeEmplace(infra::MakeIndexSequence<sizeof...(Args)>{});
-
-            clientObserverFactory->ConnectionEstablished([&httpClientPtr, &createdObserver](infra::SharedPtr<services::HttpClientObserver> observer) {
-                if (observer)
-                {
-                    createdObserver(httpClientPtr);
-                    httpClientPtr->Attach(observer);
-                }
-            });
-
-            clientObserverFactory = nullptr;
-        }
-
-        virtual void ConnectionFailed(ConnectFailReason reason) override
-        {
-            assert(clientObserverFactory != nullptr);
-
-            switch (reason)
-            {
-            case ConnectFailReason::refused:
-                clientObserverFactory->ConnectionFailed(services::HttpClientObserverFactory::ConnectFailReason::refused);
-                break;
-            case ConnectFailReason::connectionAllocationFailed:
-                clientObserverFactory->ConnectionFailed(services::HttpClientObserverFactory::ConnectFailReason::connectionAllocationFailed);
-                break;
-            default:
-                std::abort();
-            }
-
-            clientObserverFactory = nullptr;
-            TryConnectWaiting();
-        }
+        virtual services::IPAddress Address() const override;
+        virtual uint16_t Port() const override;
+        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
+        virtual void ConnectionFailed(ConnectFailReason reason) override;
 
         // Implementation of HttpClientConnector
-        virtual void Connect(services::HttpClientObserverFactory& factory) override
-        {
-            waitingClientObserverFactories.push_back(factory);
-            TryConnectWaiting();
-        }
-
-        virtual void CancelConnect(services::HttpClientObserverFactory& factory) override
-        {
-            if (clientObserverFactory == &factory)
-            {
-                connectionFactory.CancelConnect(*this);
-                clientObserverFactory = nullptr;
-            }
-            else
-                waitingClientObserverFactories.erase(factory);
-
-            TryConnectWaiting();
-        }
+        virtual void Connect(services::HttpClientObserverFactory& factory) override;
+        virtual void CancelConnect(services::HttpClientObserverFactory& factory) override;
 
     private:
         void TryConnectWaiting();
 
     private:
         template<std::size_t... I>
-        infra::SharedPtr<HttpClient> InvokeEmplace(infra::IndexSequence<I...>)
-        {
-            ipAddress.Storage().clear();
-            if (address.Is<services::IPv4Address>())
-            {
-                auto& addr = address.Get<services::IPv4Address>();
-                ipAddress << addr[0] << '.' << addr[1] << '.' << addr[2] << '.' << addr[3];
-            }
-            else
-            {
-                auto& addr = address.Get<services::IPv6Address>();
-                ipAddress << addr[0] << '.' << addr[1] << '.' << addr[2] << '.' << addr[3] << '.' << addr[4] << '.' << addr[5] << '.' << addr[6] << '.' << addr[7];
-            }
-
-            return client.Emplace(ipAddress.Storage(), std::get<I>(args)...);
-        }
+        infra::SharedPtr<HttpClient> InvokeEmplace(infra::IndexSequence<I...>);
 
     private:
         services::IPAddress address;
@@ -280,17 +210,6 @@ namespace services
         services::HttpClientObserverFactory* clientObserverFactory = nullptr;
         infra::IntrusiveList<services::HttpClientObserverFactory> waitingClientObserverFactories;
     };
-
-    template<class HttpClient, class... Args>
-    void HttpClientConnectorImpl<HttpClient, Args...>::TryConnectWaiting()
-    {
-        if (clientObserverFactory == nullptr && client.Allocatable() && !waitingClientObserverFactories.empty())
-        {
-            clientObserverFactory = &waitingClientObserverFactories.front();
-            waitingClientObserverFactories.pop_front();
-            connectionFactory.Connect(*this);
-        }
-    }
 
     template<class HttpClient = HttpClientImpl, class... Args>
     class HttpClientConnectorWithNameResolverImpl
@@ -324,6 +243,246 @@ namespace services
 
         HttpClientObserverFactory* clientObserverFactory = nullptr;
         infra::IntrusiveList<HttpClientObserverFactory> waitingClientObserverFactories;
+    };
+
+    class HttpClientImplWithRedirection
+        : public HttpClientImpl
+        , private ClientConnectionObserverFactoryWithNameResolver
+    {
+    public:
+        template<std::size_t MaxSize>
+            using WithRedirectionUrlSize = infra::WithStorage<HttpClientImplWithRedirection, infra::BoundedString::WithStorage<MaxSize>>;
+
+        HttpClientImplWithRedirection(infra::BoundedString redirectedUrlStorage, infra::BoundedConstString hostname, ConnectionFactoryWithNameResolver& connectionFactory);
+        ~HttpClientImplWithRedirection();
+
+        // Implementation of ConnectionObserver
+        virtual void Attached() override;
+        virtual void Detaching() override;
+
+        // Implementation of HttpClient
+        virtual void Get(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        virtual void Head(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        virtual void Connect(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        virtual void Options(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        virtual void Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        virtual void Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) override;
+        virtual void Post(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        virtual void Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        virtual void Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) override;
+        virtual void Put(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        virtual void Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        virtual void Patch(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        virtual void Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+
+    protected:
+        virtual void Redirecting(infra::BoundedConstString url) {}
+
+    private:
+        // Implementation of HttpClientObserverFactory
+        virtual infra::BoundedConstString Hostname() const override;
+        virtual uint16_t Port() const override;
+        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> client)>&& createdObserver) override;
+        virtual void ConnectionFailed(ConnectFailReason reason) override;
+
+    protected:
+        // Implementation of HttpHeaderParserObserver
+        virtual void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine) override;
+        virtual void HeaderAvailable(HttpHeader header) override;
+        virtual void HeaderParsingDone(bool error) override;
+
+    private:
+        void Redirect();
+        void RedirectFailed();
+        infra::Optional<uint16_t> PortFromScheme(infra::BoundedConstString scheme) const;
+
+    private:
+        class Query
+        {
+        public:
+            Query() = default;
+            Query(const Query& other) = delete;
+            Query& operator=(const Query& other) = delete;
+            virtual ~Query() = default;
+
+            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) = 0;
+        };
+
+        class QueryGet
+            : public Query
+        {
+        public:
+            QueryGet(HttpHeaders headers);
+
+            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+
+        private:
+            HttpHeaders headers;
+        };
+
+        class QueryHead
+            : public Query
+        {
+        public:
+            QueryHead(HttpHeaders headers);
+
+            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+
+        private:
+            HttpHeaders headers;
+        };
+
+        class QueryConnect
+            : public Query
+        {
+        public:
+            QueryConnect(HttpHeaders headers);
+
+            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+
+        private:
+            HttpHeaders headers;
+        };
+
+        class QueryOptions
+            : public Query
+        {
+        public:
+            QueryOptions(HttpHeaders headers);
+
+            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+
+        private:
+            HttpHeaders headers;
+        };
+
+        class QueryPost1
+            : public Query
+        {
+        public:
+            QueryPost1(infra::BoundedConstString content, HttpHeaders headers);
+
+            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+
+        private:
+            infra::BoundedConstString content;
+            HttpHeaders headers;
+        };
+
+        class QueryPost2
+            : public Query
+        {
+        public:
+            QueryPost2(std::size_t contentSize, HttpHeaders headers);
+
+            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+
+        private:
+            std::size_t contentSize;
+            HttpHeaders headers;
+        };
+
+        class QueryPost3
+            : public Query
+        {
+        public:
+            QueryPost3(HttpHeaders headers);
+
+            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+
+        private:
+            HttpHeaders headers;
+        };
+
+        class QueryPut1
+            : public Query
+        {
+        public:
+            QueryPut1(infra::BoundedConstString content, HttpHeaders headers);
+
+            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+
+        private:
+            infra::BoundedConstString content;
+            HttpHeaders headers;
+        };
+
+        class QueryPut2
+            : public Query
+        {
+        public:
+            QueryPut2(std::size_t contentSize, HttpHeaders headers);
+
+            virtual void Execute(HttpClient & client, infra::BoundedConstString requestTarget) override;
+
+        private:
+            std::size_t contentSize;
+            HttpHeaders headers;
+        };
+
+        class QueryPut3
+            : public Query
+        {
+        public:
+            QueryPut3(HttpHeaders headers);
+
+            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+
+        private:
+            HttpHeaders headers;
+        };
+
+        class QueryPatch1
+            : public Query
+        {
+        public:
+            QueryPatch1(infra::BoundedConstString content, HttpHeaders headers);
+
+            virtual void Execute(HttpClient & client, infra::BoundedConstString requestTarget) override;
+
+        private:
+            infra::BoundedConstString content;
+            HttpHeaders headers;
+        };
+
+        class QueryPatch2
+            : public Query
+        {
+        public:
+            QueryPatch2(HttpHeaders headers);
+
+            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+
+        private:
+            HttpHeaders headers;
+        };
+
+        class QueryDelete
+            : public Query
+        {
+        public:
+            QueryDelete(infra::BoundedConstString content, HttpHeaders headers);
+
+            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+
+        private:
+            infra::BoundedConstString content;
+            HttpHeaders headers;
+        };
+
+    private:
+        infra::BoundedString redirectedUrlStorage;
+        ConnectionFactoryWithNameResolver& connectionFactory;
+        infra::BoundedConstString redirectedHostname;
+        uint16_t redirectedPort;
+        infra::BoundedConstString redirectedPath;
+        infra::SharedPtr<HttpClientImplWithRedirection> self;
+        uint8_t redirectionCount = 0;
+        uint8_t maxRedirection = 10;
+
+        bool redirecting = false;
+        bool connecting = false;
+        infra::Optional<infra::PolymorphicVariant<Query, QueryGet, QueryHead, QueryConnect, QueryOptions, QueryPost1, QueryPost2, QueryPost3, QueryPut1, QueryPut2, QueryPut3, QueryPatch1, QueryPatch2, QueryDelete>> query;
     };
 
     ////    Implementation    ////
@@ -427,6 +586,116 @@ namespace services
             connectionFactory.Connect(*this);
         }
     }
+
+    template<class HttpClient, class... Args>
+    HttpClientConnectorImpl<HttpClient, Args...>::HttpClientConnectorImpl(services::ConnectionFactory& connectionFactory, services::IPAddress address, Args&&... args)
+        : address(address)
+        , connectionFactory(connectionFactory)
+        , client([this]() { TryConnectWaiting(); })
+        , args(std::forward<Args>(args)...)
+    {}
+
+    template<class HttpClient, class... Args>
+    services::IPAddress HttpClientConnectorImpl<HttpClient, Args...>::Address() const
+    {
+        return address;
+    }
+
+    template<class HttpClient, class... Args>
+    uint16_t HttpClientConnectorImpl<HttpClient, Args...>::Port() const
+    {
+        return 443;
+    }
+
+    template<class HttpClient, class... Args>
+    void HttpClientConnectorImpl<HttpClient, Args...>::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
+    {
+        assert(clientObserverFactory != nullptr);
+        auto httpClientPtr = InvokeEmplace(infra::MakeIndexSequence<sizeof...(Args)>{});
+
+        clientObserverFactory->ConnectionEstablished([&httpClientPtr, &createdObserver](infra::SharedPtr<services::HttpClientObserver> observer) {
+            if (observer)
+            {
+                createdObserver(httpClientPtr);
+                httpClientPtr->Attach(observer);
+            }
+            });
+
+        clientObserverFactory = nullptr;
+    }
+
+    template<class HttpClient, class... Args>
+    void HttpClientConnectorImpl<HttpClient, Args...>::ConnectionFailed(ConnectFailReason reason)
+    {
+        assert(clientObserverFactory != nullptr);
+
+        switch (reason)
+        {
+            case ConnectFailReason::refused:
+                clientObserverFactory->ConnectionFailed(services::HttpClientObserverFactory::ConnectFailReason::refused);
+                break;
+            case ConnectFailReason::connectionAllocationFailed:
+                clientObserverFactory->ConnectionFailed(services::HttpClientObserverFactory::ConnectFailReason::connectionAllocationFailed);
+                break;
+            default:
+                std::abort();
+        }
+
+        clientObserverFactory = nullptr;
+        TryConnectWaiting();
+    }
+
+    template<class HttpClient, class... Args>
+    void HttpClientConnectorImpl<HttpClient, Args...>::Connect(services::HttpClientObserverFactory& factory)
+    {
+        waitingClientObserverFactories.push_back(factory);
+        TryConnectWaiting();
+    }
+
+    template<class HttpClient, class... Args>
+    void HttpClientConnectorImpl<HttpClient, Args...>::CancelConnect(services::HttpClientObserverFactory& factory)
+    {
+        if (clientObserverFactory == &factory)
+        {
+            connectionFactory.CancelConnect(*this);
+            clientObserverFactory = nullptr;
+        }
+        else
+            waitingClientObserverFactories.erase(factory);
+
+        TryConnectWaiting();
+    }
+
+    template<class HttpClient, class... Args>
+    template<std::size_t... I>
+    infra::SharedPtr<HttpClient> HttpClientConnectorImpl<HttpClient, Args...>::InvokeEmplace(infra::IndexSequence<I...>)
+    {
+        ipAddress.Storage().clear();
+        if (address.Is<services::IPv4Address>())
+        {
+            auto& addr = address.Get<services::IPv4Address>();
+            ipAddress << addr[0] << '.' << addr[1] << '.' << addr[2] << '.' << addr[3];
+        }
+        else
+        {
+            auto& addr = address.Get<services::IPv6Address>();
+            ipAddress << addr[0] << '.' << addr[1] << '.' << addr[2] << '.' << addr[3] << '.' << addr[4] << '.' << addr[5] << '.' << addr[6] << '.' << addr[7];
+        }
+
+        return client.Emplace(ipAddress.Storage(), std::get<I>(args)...);
+    }
+
+    template<class HttpClient, class... Args>
+    void HttpClientConnectorImpl<HttpClient, Args...>::TryConnectWaiting()
+    {
+        if (clientObserverFactory == nullptr && client.Allocatable() && !waitingClientObserverFactories.empty())
+        {
+            clientObserverFactory = &waitingClientObserverFactories.front();
+            waitingClientObserverFactories.pop_front();
+            connectionFactory.Connect(*this);
+        }
+    }
+
 }
 
 #endif

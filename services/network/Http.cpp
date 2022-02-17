@@ -146,29 +146,20 @@ namespace services
         bool localDestroyed = false;
         destroyed = &localDestroyed;
 
+        bool statusLineError = false;
         if (!statusParsed)
-            ParseStatusLine(reader);
+            ParseStatusLine(reader, statusLineError);
 
         if (localDestroyed)
             return;
 
         destroyed = nullptr;
 
-        if (!Error())
+        if (!statusLineError)
             ParseHeaders(reader);
     }
 
-    bool HttpHeaderParser::Done() const
-    {
-        return done;
-    }
-
-    bool HttpHeaderParser::Error() const
-    {
-        return error;
-    }
-
-    void HttpHeaderParser::ParseStatusLine(infra::StreamReaderWithRewinding& reader)
+    void HttpHeaderParser::ParseStatusLine(infra::StreamReaderWithRewinding& reader, bool& error)
     {
         infra::TextInputStream::WithErrorPolicy stream(reader);
         infra::BoundedString::WithStorage<512> headerBuffer;
@@ -192,7 +183,10 @@ namespace services
                 observer.StatusAvailable(statusCode, statusLine);
             }
             else
-                SetError();
+            {
+                error = true;
+                observer.HeaderParsingDone(true);
+            }
         }
     }
 
@@ -206,7 +200,7 @@ namespace services
     {
         infra::TextInputStream::WithErrorPolicy stream(reader);
         infra::BoundedString::WithStorage<512> headerBuffer;
-        while (!done && !stream.Empty())
+        while (!stream.Empty())
         {
             auto start = reader.ConstructSaveMarker();
 
@@ -221,7 +215,7 @@ namespace services
 
                 if (headerLine.empty() && headerBuffer.size() > crlfPos)
                 {
-                    done = true;
+                    observer.HeaderParsingDone(false);
                     return;
                 }
 
@@ -229,7 +223,10 @@ namespace services
                 observer.HeaderAvailable(header);
             }
             else if (headerBuffer.full())
-                SetError();
+            {
+                observer.HeaderParsingDone(true);
+                return;
+            }
             else
             {
                 reader.Rewind(start);
@@ -244,12 +241,6 @@ namespace services
         return{ tokenizer.Token(0), infra::TrimLeft(tokenizer.TokenAndRest(1)) };
     }
 
-    void HttpHeaderParser::SetError()
-    {
-        done = true;
-        error = true;
-    }
-
     infra::BoundedConstString SchemeFromUrl(infra::BoundedConstString url)
     {
         auto schemeEnd = url.find("://");
@@ -259,10 +250,40 @@ namespace services
             return url.substr(0, schemeEnd);
     }
 
-    infra::BoundedConstString HostFromUrl(infra::BoundedConstString url)
+    infra::BoundedConstString HostAndPortFromUrl(infra::BoundedConstString url)
     {
         auto schemeEnd = SchemeEndPositionFromUrl(url);
         return url.substr(schemeEnd, url.find_first_of("/?", schemeEnd) - schemeEnd);
+    }
+
+    infra::BoundedConstString HostFromUrl(infra::BoundedConstString url)
+    {
+        auto hostAndPort = HostAndPortFromUrl(url);
+        auto hostAndUserinfo = hostAndPort.substr(0, hostAndPort.find(':'));
+
+        auto atPosition = hostAndUserinfo.find('@');
+        if (atPosition != infra::BoundedConstString::npos)
+            return hostAndUserinfo.substr(atPosition + 1);
+        else
+            return hostAndUserinfo;
+    }
+
+    infra::Optional<uint16_t> PortFromUrl(infra::BoundedConstString url)
+    {
+        auto hostAndPort = HostAndPortFromUrl(url);
+        auto colonPosition = hostAndPort.find(':');
+        if (colonPosition == infra::BoundedConstString::npos)
+            return infra::none;
+
+        auto portString = hostAndPort.substr(colonPosition + 1);
+        infra::StringInputStream stream(portString, infra::softFail);
+        uint16_t port;
+        stream >> port;
+
+        if (stream.Failed())
+            return infra::none;
+
+        return infra::MakeOptional(port);
     }
 
     infra::BoundedConstString PathFromUrl(infra::BoundedConstString url)
