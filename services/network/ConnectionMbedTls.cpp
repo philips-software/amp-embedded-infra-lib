@@ -602,7 +602,11 @@ namespace services
     void ConnectionFactoryWithNameResolverForTls::CancelConnect(ClientConnectionObserverFactoryWithNameResolver& factory)
     {
         if (clientConnectionFactory == &factory)
+        {
             connectionFactoryWithNameResolver.CancelConnect(*this);
+            clientConnectionFactory = nullptr;
+            TryConnect();
+        }
         else
             waitingConnects.erase(factory);
     }

@@ -47,9 +47,16 @@ namespace services
         if (waitingActions.has_element(factory))
             waitingActions.erase(factory);
         else
+        {
             for (auto& action : actions)
                 if (action.Remove(factory))
+                {
+                    actions.remove(action);
                     break;
+                }
+
+            CheckNameLookup();
+        }
     }
 
     void ConnectionFactoryWithNameResolverImpl::NameLookupFailed()
