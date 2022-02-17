@@ -5,20 +5,17 @@
 
 namespace services
 {
-    class Aes
+    class Aes128Ctr
     {
     public:
-        Aes() {}
-        virtual ~Aes() {}
+        Aes128Ctr() = default;
+        Aes128Ctr(const Aes128Ctr& other) = delete;
+        Aes128Ctr& operator=(const Aes128Ctr& other) = delete;
+        virtual ~Aes128Ctr() = default;
 
-        virtual void AddKey(const std::array<uint8_t, 16>& key) = 0;
-        virtual void Encrypt(std::array<uint8_t, 16>& iv, infra::ConstByteRange input, infra::ByteRange output) = 0;
-        virtual void Decrypt(std::array<uint8_t, 16>& iv, infra::ConstByteRange input, infra::ByteRange output) = 0;
-
-    protected:
-        Aes(const Aes& other) = delete;
-        Aes& operator=(const Aes& other) = delete;
+        virtual void SetKey(const std::array<uint8_t, 16>& key) = 0;
+        virtual void Encrypt(std::array<uint8_t, 16>& counter, infra::ConstByteRange input, infra::ByteRange output) = 0;
     };
-}  //! namespace services
+}
 
 #endif  //! SERVICES_AES_HPP

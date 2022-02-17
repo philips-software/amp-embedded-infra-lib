@@ -8,14 +8,13 @@ namespace services
     class Sha256
     {
     public:
-        virtual void Calculate(infra::ConstByteRange input, std::array<uint8_t, 32>& output) = 0;
-
-    protected:
         Sha256() = default;
         Sha256(const Sha256& other) = delete;
         Sha256& operator=(const Sha256& other) = delete;
         virtual ~Sha256() = default;
+
+        virtual std::array<uint8_t, 32> Calculate(infra::ConstByteRange input) const = 0;
     };
-}  //! namespace services
+}
 
 #endif  //! SERVICES_SHA256_HPP
