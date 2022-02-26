@@ -337,6 +337,30 @@ TEST(BoundedVectorTest, TestEraseRange)
     EXPECT_EQ(expectedVector, vector);
 }
 
+TEST(BoundedVectorTest, TestErase)
+{
+    int range[3] = { 0, 1, 2 };
+    infra::BoundedVector<int>::WithMaxSize<5> vector(range, range + 3);
+
+    EXPECT_EQ(1, infra::erase(vector, 1));
+
+    int expectedRange[5] = { 0, 2 };
+    infra::BoundedVector<int>::WithMaxSize<5> expectedVector(expectedRange, expectedRange + 2);
+    EXPECT_EQ(expectedVector, vector);
+}
+
+TEST(BoundedVectorTest, TestEraseIf)
+{
+    int range[3] = { 0, 1, 2 };
+    infra::BoundedVector<int>::WithMaxSize<5> vector(range, range + 3);
+
+    EXPECT_EQ(1, infra::erase_if(vector, [](auto x) { return x == 1; }));
+
+    int expectedRange[5] = { 0, 2 };
+    infra::BoundedVector<int>::WithMaxSize<5> expectedVector(expectedRange, expectedRange + 2);
+    EXPECT_EQ(expectedVector, vector);
+}
+
 TEST(BoundedVectorTest, TestSwap)
 {
     int range1[3] = { 0, 1, 2};
@@ -494,3 +518,4 @@ TEST(BoundedVectorTest, unknown_size_reference_can_be_taken)
     vector1[0] = 4;
     EXPECT_EQ(4, vector2[0]);
 }
+
