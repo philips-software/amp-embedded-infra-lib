@@ -97,13 +97,19 @@ namespace services
         return waiting;
     }
 
+    services::IPVersions MdnsQueryImpl::IpVersion() const
+    {
+        return ipVersion;
+    }
+
     void MdnsQueryImpl::SetWaiting(bool waiting)
     {
         this->waiting = waiting;
     }
 
-    void MdnsQueryImpl::Ask()
+    void MdnsQueryImpl::Ask(services::IPVersions ipVersion)
     {
+        this->ipVersion = ipVersion;
         mdnsClient.ActiveQuerySingleShot(*this);
     }
 
@@ -130,14 +136,16 @@ namespace services
     MdnsClient::MdnsClient(DatagramFactory& datagramFactory, Multicast& multicast)
         : datagramFactory(datagramFactory)
         , multicast(multicast)
-        , datagramExchange(datagramFactory.Listen(*this, mdnsPort, IPVersions::ipv4))
+        , datagramExchange(datagramFactory.Listen(*this, mdnsPort, IPVersions::both))
     {
         multicast.JoinMulticastGroup(datagramExchange, mdnsMulticastAddressIpv4);
+        multicast.JoinMulticastGroup(datagramExchange, mdnsMulticastAddressIpv6);
     }
 
     MdnsClient::~MdnsClient()
     {
         multicast.LeaveMulticastGroup(datagramExchange, mdnsMulticastAddressIpv4);
+        multicast.LeaveMulticastGroup(datagramExchange, mdnsMulticastAddressIpv6);
     }
 
     void MdnsClient::RegisterQuery(MdnsQuery& query)
@@ -285,7 +293,12 @@ namespace services
 
         std::size_t querySize = sizeof(DnsRecordHeader) + hostnameSize + hostnameCopy.size() + 1 + sizeof(DnsQuestionFooter);
 
-        mdnsClient.datagramExchange->RequestSendStream(querySize, MakeUdpSocket(mdnsMulticastAddressIpv4, mdnsPort));
+        if (query.IpVersion() == services::IPVersions::ipv4)
+            mdnsClient.datagramExchange->RequestSendStream(querySize, MakeUdpSocket(mdnsMulticastAddressIpv4, mdnsPort));
+        else if (query.IpVersion() == services::IPVersions::ipv6)
+            mdnsClient.datagramExchange->RequestSendStream(querySize, MakeUdpSocket(mdnsMulticastAddressIpv6, mdnsPort));
+        else
+            std::abort();
     }
 
     MdnsClient::AnswerParser::AnswerParser(MdnsClient& client, infra::StreamReaderWithRewinding& reader)
