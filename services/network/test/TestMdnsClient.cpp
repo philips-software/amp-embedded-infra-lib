@@ -57,7 +57,7 @@ public:
 
     void ExpectActiveQueryStarted(services::IPVersions ipVersion = services::IPVersions::ipv4)
     {
-        EXPECT_CALL(*datagramExchange, RequestSendStream(testing::_, testing::_)).WillOnce([&ipVersion] (std::size_t sendSize, services::UdpSocket remote)
+        EXPECT_CALL(*datagramExchange, RequestSendStream(testing::_, testing::_)).WillOnce([ipVersion] (std::size_t sendSize, services::UdpSocket remote)
             {
                 if (ipVersion == services::IPVersions::ipv6)
                     ASSERT_TRUE(remote.Is<services::Udpv6Socket>());
