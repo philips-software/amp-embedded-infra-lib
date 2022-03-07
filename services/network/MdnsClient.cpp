@@ -97,14 +97,19 @@ namespace services
         return waiting;
     }
 
+    void MdnsQueryImpl::SetWaiting(bool waiting)
+    {
+        this->waiting = waiting;
+    }
+
     services::IPVersions MdnsQueryImpl::IpVersion() const
     {
         return ipVersion;
     }
 
-    void MdnsQueryImpl::SetWaiting(bool waiting)
+    void MdnsQueryImpl::SetIpVersion(services::IPVersions ipVersion)
     {
-        this->waiting = waiting;
+        this->ipVersion = ipVersion;
     }
 
     void MdnsQueryImpl::Ask(services::IPVersions ipVersion)
@@ -113,9 +118,9 @@ namespace services
         mdnsClient.ActiveQuerySingleShot(*this);
     }
 
-    void MdnsQueryImpl::CheckAnswer(infra::BoundedString& hostname, DnsRecordPayload& payload, infra::ConstByteRange data)
+    void MdnsQueryImpl::CheckAnswer(services::IPVersions ipVersion, infra::BoundedString& hostname, DnsRecordPayload& payload, infra::ConstByteRange data)
     {
-        if (hostname == dnsHostname && payload.type == dnsType && payload.class_ == DnsClass::dnsClassIn)
+        if (this->ipVersion == ipVersion && hostname == dnsHostname && payload.type == dnsType && payload.class_ == DnsClass::dnsClassIn)
         {
             processingQuery = true;
             queryHit(data);
@@ -175,7 +180,9 @@ namespace services
         if (GetPort(from) != mdnsPort)
             return;
 
-        AnswerParser answer(*this, *reader);
+        auto ipVersion = GetVersion(from);
+
+        AnswerParser answer(*this, ipVersion, *reader);
     }
 
     void MdnsClient::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -301,9 +308,10 @@ namespace services
             std::abort();
     }
 
-    MdnsClient::AnswerParser::AnswerParser(MdnsClient& client, infra::StreamReaderWithRewinding& reader)
+    MdnsClient::AnswerParser::AnswerParser(MdnsClient& client, services::IPVersions ipVersion, infra::StreamReaderWithRewinding& reader)
         : client(client)
         , reader(reader)
+        , ipVersion(ipVersion)
     {
         Parse();
     }
@@ -363,7 +371,7 @@ namespace services
         else
             for (auto& query : client.queries)
                 if (isAnswer)
-                    query.CheckAnswer(reconstructedHostname, payload, data);
+                    query.CheckAnswer(ipVersion, reconstructedHostname, payload, data);
                 else
                     query.CheckAdditionalRecord(reconstructedHostname, payload, data);
     }

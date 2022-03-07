@@ -266,6 +266,7 @@ public:
     void QueryAaaa(infra::Function<void(infra::ConstByteRange data)>& callback)
     {
         queryAaaa.Emplace(client, services::DnsType::dnsTypeAAAA, "_instance", callback);
+        queryAaaa->SetIpVersion(services::IPVersions::ipv6);
     }
 
     void QueryPtr(infra::Function<void(infra::ConstByteRange data)>& callback)
@@ -542,12 +543,12 @@ TEST_F(MdnsClientTest, receiving_matching_answer_to_active_query_results_in_data
 
     ExpectActiveQueryStarted();
     queryA->Ask();
-    queryAaaa->Ask();
+    queryAaaa->Ask(services::IPVersions::ipv6);
     queryPtr->Ask();
     queryTxt->Ask();
     querySrv->Ask();
 
-    ExpectActiveQueryStarted();
+    ExpectActiveQueryStarted(services::IPVersions::ipv6);
     auto aQuestion = AQuestion();
     SendStreamAvailableAndExpectQuestion(aQuestion);
     EXPECT_CALL(callback, callback(services::DnsType::dnsTypeA));
