@@ -300,12 +300,18 @@ namespace services
 
         std::size_t querySize = sizeof(DnsRecordHeader) + hostnameSize + hostnameCopy.size() + 1 + sizeof(DnsQuestionFooter);
 
-        if (query.IpVersion() == services::IPVersions::ipv4)
+        switch (query.IpVersion())
+        {
+        case services::IPVersions::ipv4:
             mdnsClient.datagramExchange->RequestSendStream(querySize, MakeUdpSocket(mdnsMulticastAddressIpv4, mdnsPort));
-        else if (query.IpVersion() == services::IPVersions::ipv6)
+            break;
+        case services::IPVersions::ipv6:
             mdnsClient.datagramExchange->RequestSendStream(querySize, MakeUdpSocket(mdnsMulticastAddressIpv6, mdnsPort));
-        else
+            break;
+        default:
             std::abort();
+            break;
+        }
     }
 
     MdnsClient::AnswerParser::AnswerParser(MdnsClient& client, services::IPVersions ipVersion, infra::StreamReaderWithRewinding& reader)
