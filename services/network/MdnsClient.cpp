@@ -114,7 +114,7 @@ namespace services
 
     void MdnsQueryImpl::Ask(services::IPVersions ipVersion)
     {
-        this->ipVersion = ipVersion;
+        SetIpVersion(ipVersion);
         mdnsClient.ActiveQuerySingleShot(*this);
     }
 
