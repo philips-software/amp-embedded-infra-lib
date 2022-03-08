@@ -69,7 +69,7 @@ target_sources(services.util PRIVATE
     WritableConfiguration.hpp
 )
 
-if (BUILD_TESTING)
+if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
     add_subdirectory(test_doubles)
 endif()

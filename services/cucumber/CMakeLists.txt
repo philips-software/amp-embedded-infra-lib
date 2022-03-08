@@ -29,6 +29,6 @@ target_sources(services.cucumber PRIVATE
     TracingCucumberWireProtocolServer.hpp
 )
 
-if (BUILD_TESTING)
+if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
 endif()

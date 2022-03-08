@@ -44,7 +44,7 @@ if (TARGET_ARCH_X86)
         Main.cpp
     )
 
-    if (BUILD_TESTING)
+    if (EMIL_BUILD_TESTS)
         add_subdirectory(test)
     endif()
 

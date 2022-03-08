@@ -35,7 +35,7 @@ if (TARGET_ARCH_X86)
     )
 endif()
 
-if (BUILD_TESTING)
+if (EMIL_BUILD_TESTS)
     add_subdirectory(test_doubles)
     add_subdirectory(test)
 endif()

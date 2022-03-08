@@ -47,7 +47,7 @@ target_sources(hal.interfaces PRIVATE
     $<$<BOOL:${TARGET_ARCH_X86}>:FileSystem.hpp>
 )
 
-if (BUILD_TESTING)
+if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
     add_subdirectory(test_doubles)
 endif()

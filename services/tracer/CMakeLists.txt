@@ -32,6 +32,6 @@ target_sources(services.tracer PRIVATE
     TracingOutputStream.hpp
 )
 
-if (BUILD_TESTING)
+if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
 endif()

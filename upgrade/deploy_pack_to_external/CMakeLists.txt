@@ -12,6 +12,6 @@ target_sources(upgrade.deploy_pack_to_external PRIVATE
     DeployPackToExternal.hpp
 )
 
-if (BUILD_TESTING)
+if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
 endif()
