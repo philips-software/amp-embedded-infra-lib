@@ -2,8 +2,6 @@ add_library(services.cucumber EXCLUDE_FROM_ALL STATIC)
 install(TARGETS services.cucumber EXPORT emilServicesTargets)
 
 target_link_libraries(services.cucumber PUBLIC
-    infra.event
-    infra.stream
     infra.syntax
     infra.timer
     hal.synchronous_interfaces

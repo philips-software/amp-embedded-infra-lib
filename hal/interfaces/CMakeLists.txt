@@ -7,7 +7,6 @@ target_include_directories(hal.interfaces PUBLIC
 )
 
 target_link_libraries(hal.interfaces PUBLIC
-    infra.util
     infra.event
     $<$<BOOL:${TARGET_BUILD_UNIX}>:stdc++fs>
 )

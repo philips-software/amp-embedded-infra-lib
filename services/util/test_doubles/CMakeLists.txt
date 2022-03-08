@@ -1,6 +1,6 @@
 add_library(services.services_test_doubles EXCLUDE_FROM_ALL STATIC)
 
-target_link_libraries(services.services_test_doubles PUBLIC
+target_link_libraries(services.services_test_doubles PRIVATE
     gmock
     services.util
 )

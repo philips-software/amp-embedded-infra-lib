@@ -5,7 +5,6 @@ target_link_libraries(upgrade.boot_loader_test PUBLIC
     gmock_main
     upgrade.boot_loader
     upgrade.boot_loader_test_doubles
-    infra.stream
     hal.synchronous_interfaces_test_doubles
 )
 

@@ -6,9 +6,7 @@ target_link_libraries(upgrade.boot_loader PUBLIC
     crypto.micro_ecc
     crypto.tiny_aes128
     hal.synchronous_interfaces
-    infra.stream
     infra.syntax
-    infra.util
     services.synchronous_util
     upgrade.pack
 )

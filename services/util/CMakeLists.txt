@@ -3,8 +3,6 @@ install(TARGETS services.util EXPORT emilServicesTargets)
 
 target_link_libraries(services.util PUBLIC
     hal.interfaces
-    infra.util
-    infra.stream
     infra.syntax
     mbedcrypto
 )

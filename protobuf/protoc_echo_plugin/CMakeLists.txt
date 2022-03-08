@@ -17,8 +17,6 @@ if (TARGET_ARCH_X86)
     )
 
     target_link_libraries(protobuf.protoc_echo_plugin_lib PUBLIC
-        protobuf.libprotobuf
-        protobuf.libprotoc
         protobuf.echo_attributes
     )
 

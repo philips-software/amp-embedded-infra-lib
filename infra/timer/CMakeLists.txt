@@ -3,7 +3,6 @@ install(TARGETS infra.timer EXPORT emilInfraTargets)
 
 target_link_libraries(infra.timer PUBLIC
     infra.event
-    infra.util
 )
 
 target_sources(infra.timer PRIVATE

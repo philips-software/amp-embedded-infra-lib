@@ -2,8 +2,6 @@ add_library(services.network EXCLUDE_FROM_ALL STATIC)
 install(TARGETS services.network EXPORT emilServicesTargets)
 
 target_link_libraries(services.network PUBLIC
-    infra.event
-    infra.stream
     infra.syntax
     infra.timer
     hal.synchronous_interfaces

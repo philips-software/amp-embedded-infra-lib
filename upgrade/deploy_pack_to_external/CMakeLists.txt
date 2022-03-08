@@ -3,7 +3,6 @@ install(TARGETS upgrade.deploy_pack_to_external EXPORT emilUpgradeTargets)
 
 target_link_libraries(upgrade.deploy_pack_to_external PUBLIC
     hal.interfaces
-    infra.util
     services.util
     upgrade.pack
 )

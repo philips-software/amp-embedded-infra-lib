@@ -1,5 +1,4 @@
 add_library(upgrade.pack INTERFACE)
-install(TARGETS upgrade.pack EXPORT emilUpgradeTargets)
 
 target_include_directories(upgrade.pack INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>"
@@ -11,6 +10,7 @@ target_link_libraries(upgrade.pack INTERFACE
 )
 
 add_library(upgrade.pack_keys EXCLUDE_FROM_ALL STATIC)
-install(TARGETS upgrade.pack_keys EXPORT emilUpgradeTargets)
+
+install(TARGETS upgrade.pack_keys upgrade.pack EXPORT emilUpgradeTargets)
 
 protocol_buffer_echo_cpp(upgrade.pack_keys UpgradeKeys.proto)

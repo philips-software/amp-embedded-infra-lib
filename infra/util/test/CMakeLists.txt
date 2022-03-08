@@ -49,8 +49,7 @@ target_sources(infra.util_test PRIVATE
 )
 
 if (TARGET_BUILD_WIN)
-    target_sources(infra.util_test
-        PRIVATE
+    target_sources(infra.util_test PRIVATE
         TestNatvis.cpp
     )
 endif()
