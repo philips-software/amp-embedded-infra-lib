@@ -22,9 +22,9 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build and Test
         run: |
-          cmake -B Build -DCMAKE_BUILD_TYPE=Debug
-          cmake --build Build --config Debug
-          pushd Build && ctest -Q -C Debug -T Test --no-compress-output --output-on-failure
+          cmake --preset Build-Test
+          cmake --build --preset Build-Test
+          ctest --preset Build-Test --quiet --no-compress-output --output-on-failure
   embedded_build:
     name: Embedded Build
     runs-on: ubuntu-latest
@@ -42,10 +42,10 @@ jobs:
         with:
           key: ${{ matrix.gcc }}
       - run: |
-          cmake -B Build-Host -G Ninja -DCMAKE_BUILD_TYPE=Release -DEMIL_BUILD_TESTS=Off -DEMIL_BUILD_EXAMPLES=Off -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          cmake --build Build-Host --config Release
-          cmake -B Build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_PREFIX_PATH=${{ github.workspace }}/Build-Host -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-gcc.cmake -DEMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE="emil::"
-          cmake --build Build --config Release
+          cmake --preset Build-Host -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake --build --preset Build-Host
+          cmake --preset Build-Embedded -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake --build --preset Build-Embedded
   static_analysis:
     name: Static Analysis
     runs-on: ubuntu-latest
@@ -76,9 +76,9 @@ jobs:
       - uses: hendrikmuhs/ccache-action@v1
       - name: Build
         run: |
-          cmake -B Build -G Ninja -DEMIL_ENABLE_COVERAGE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build Build --config Debug
-          pushd Build && ctest -Q -C Debug -T Test --no-compress-output --output-on-failure && popd
+          cmake --preset Build-Coverage -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build --preset Build-Coverage
+          ctest --preset Build-Coverage --quiet --no-compress-output --output-on-failure
           gcovr --sonarqube=coverage.xml --exclude-lines-by-pattern '.*assert\(.*\);|.*really_assert\(.*\);' --exclude-unreachable-branches --exclude-throw-branches -j 2 --exclude=.*/generated/.* --exclude=.*/examples/.* --exclude=.*/external/.* --exclude=.*/lwip/.* --exclude=.*/tracing/.* --exclude=.*/test/.*
       - name: Analysis
         env:

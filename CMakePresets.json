@@ -9,38 +9,79 @@
     {
       "name": "defaults",
       "hidden": true,
-      "binaryDir": "${sourceDir}/out/build/${presetName}",
-      "installDir": "${sourceDir}/out/install/${presetName}",
-      "generator": "Ninja Multi-Config"
+      "binaryDir": "${sourceDir}/${presetName}",
+      "installDir": "${sourceDir}/${presetName}",
+      "generator": "Ninja"
     },
     {
-      "name": "lib",
-      "displayName": "library",
-      "description": "builds embeddedinfralib as a library",
+      "name": "Build-Test",
+      "displayName": "test config",
+      "description": "configures embeddedinfralib for testing",
       "inherits": "defaults",
       "cacheVariables": {
-        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/../toolchain/gcc.toolchain.cmake"
+        "CMAKE_BUILD_TYPE": "Debug"
       }
     },
     {
-      "name": "host",
-      "displayName": "host",
-      "description": "builds embeddedinfralib and tooling for host",
-      "inherits": "defaults"
+      "name": "Build-Coverage",
+      "displayName": "coverage config",
+      "description": "configures embeddedinfralib for coverage",
+      "inherits": "Build-Test",
+      "cacheVariables": {
+        "EMIL_ENABLE_COVERAGE": "ON",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "Build-Host",
+      "displayName": "host config",
+      "description": "configures embeddedinfralib for tooling",
+      "inherits": "defaults",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "EMIL_BUILD_TESTS": "Off",
+        "EMIL_BUILD_EXAMPLES": "Off"
+      }
+    },
+    {
+      "name": "Build-Embedded",
+      "displayName": "embedded config",
+      "description": "configures embeddedinfralib for target libraries",
+      "inherits": "defaults",
+      "toolchainFile": "${sourceDir}/cmake/toolchain-arm-gcc.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_PREFIX_PATH": "${sourceDir}/Build-Host",
+        "EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE": "emil::"
+      }
     }
   ],
   "buildPresets": [
     {
-      "name": "all",
-      "configuration": "Debug",
-      "configurePreset": "host"
+      "name": "Build-Test",
+      "configurePreset": "Build-Test"
+    },
+    {
+      "name": "Build-Coverage",
+      "configurePreset": "Build-Coverage"
+    },
+    {
+      "name": "Build-Host",
+      "configurePreset": "Build-Host"
+    },
+    {
+      "name": "Build-Embedded",
+      "configurePreset": "Build-Embedded"
     }
   ],
   "testPresets": [
     {
-      "name": "unit tests",
-      "configuration": "Debug",
-      "configurePreset": "host"
+      "name": "Unit-Test",
+      "configurePreset": "Build-Test"
+    },
+    {
+      "name": "Coverage-Test",
+      "configurePreset": "Build-Coverage"
     }
   ]
 }
