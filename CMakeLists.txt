@@ -36,6 +36,8 @@ option(EMIL_GENERATE_PACKAGE_CONFIG "Enable generation of package configuration 
 set(EMIL_PACKAGE_CONFIG_EXPORT_NAMESPACE "${PROJECT_NAME}::" CACHE STRING "Namespace used for exported targets")
 set(EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE "" CACHE STRING "Namespace used to reference imported targets")
 
+option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of emil" On)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 
