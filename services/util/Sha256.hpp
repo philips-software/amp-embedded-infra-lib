@@ -17,4 +17,4 @@ namespace services
     };
 }
 
-#endif  //! SERVICES_SHA256_HPP
+#endif

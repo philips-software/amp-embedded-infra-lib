@@ -1,7 +1,6 @@
 #ifndef SERVICES_SHA256_MBEDTLS_HPP
 #define SERVICES_SHA256_MBEDTLS_HPP
 
-#include "mbedtls/sha256.h"
 #include "services/util/Sha256.hpp"
 
 namespace services
@@ -14,4 +13,4 @@ namespace services
     };
 }
 
-#endif  //! SERVICES_SHA256_MBEDTLS_HPP
+#endif
