@@ -202,7 +202,7 @@ namespace services
 
     private:
         services::IPAddress address;
-        infra::StringOutputStream::WithStorage<31> ipAddress;
+        infra::StringOutputStream::WithStorage<47> ipAddress;
         services::ConnectionFactory& connectionFactory;
         infra::NotifyingSharedOptional<HttpClient> client;
         std::tuple<Args...> args;
