@@ -32,7 +32,7 @@ namespace application
         UpgradePackBuilder(const HeaderInfo& headerInfo, std::vector<std::unique_ptr<Input>>&& inputs, ImageSigner& signer);
 
         std::vector<uint8_t>& UpgradePack();
-        void WriteUpgradePack(const std::string& fileName, hal::FileSystem& fileSystem);
+        void WriteUpgradePack(const hal::filesystem::path& fileName, hal::FileSystem& fileSystem);
 
     private:
         void CreateUpgradePack();

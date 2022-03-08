@@ -6,7 +6,7 @@
 
 namespace application
 {
-    enum class UpgradePackStatus: uint8_t
+    enum class UpgradePackStatus : uint8_t
     {
         empty = 0xff,                   // 1111.1111
         downloaded = 0xfe,              // 1111.1110
