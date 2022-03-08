@@ -8,7 +8,6 @@ if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 endif()
 
 include(FetchContent)
-include(CMakeDependentOption)
 
 # When building EmIL by itself the examples and tests will be built
 # by-default. When consuming EmIL as a dependency the tests and
@@ -22,7 +21,7 @@ endif()
 
 option(EMIL_BUILD_TESTS "Enable build of the tests" ${EMIL_DEFAULTOPT})
 option(EMIL_BUILD_EXAMPLES "Enable build of the examples" ${EMIL_DEFAULTOPT})
-cmake_dependent_option(EMIL_ENABLE_COVERAGE "Enable compiler flags for code coverage measurements" Off "EMIL_BUILD_TESTS" Off)
+option(EMIL_ENABLE_COVERAGE "Enable compiler flags for code coverage measurements" Off)
 
 # The next few options control the install and export behaviour.
 # When package config generation is enabled the prefix can be set
@@ -39,25 +38,25 @@ set(EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE "" CACHE STRING "Namespace used to refe
 option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of emil" On)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED true)
+set(CMAKE_CXX_STANDARD_REQUIRED On)
 
-set_directory_properties(PROPERTY USE_FOLDERS ON)
+set_directory_properties(PROPERTY USE_FOLDERS On)
 
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-    set(TARGET_BUILD_WIN ON)
-    set(TARGET_ARCH_X86 ON)
+    set(TARGET_BUILD_WIN On)
+    set(TARGET_ARCH_X86 On)
 
     add_compile_options(/EHsc)
 endif()
 
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
-    set(TARGET_BUILD_UNIX ON)
-    set(TARGET_ARCH_X86 ON)
+    set(TARGET_BUILD_UNIX On)
+    set(TARGET_ARCH_X86 On)
 endif()
 
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
-    set(TARGET_BUILD_DARWIN ON)
-    set(TARGET_ARCH_X86 ON)
+    set(TARGET_BUILD_DARWIN On)
+    set(TARGET_ARCH_X86 On)
 
     # Suppress warnings about *.a files having no symbols on Darwin.
     # The warning is emitted when *.cpp.o contains no operational code.
@@ -87,7 +86,7 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR
             GIT_TAG        release-1.11.0
         )
         # For Windows: Prevent overriding the parent project's compiler/linker settings
-        set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+        set(gtest_force_shared_crt On CACHE BOOL "" FORCE)
         FetchContent_MakeAvailable(googletest)
 
         set_target_properties(gtest gtest_main gmock gmock_main PROPERTIES FOLDER External/GoogleTest)
