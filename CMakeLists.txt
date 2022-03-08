@@ -3,17 +3,54 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 project(emil LANGUAGES C CXX VERSION 2.0.0)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED On)
+
+set_directory_properties(PROPERTY USE_FOLDERS On)
+
+include(CMakePackageConfigHelpers)
+include(emil_version_generator)
+include(FetchContent)
+include(GNUInstallDirs)  # included to supply proper defaults to install(...) commands
+
 if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set(EMIL_STANDALONE On)
 endif()
 
-include(FetchContent)
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(TARGET_BUILD_WIN On)
+    set(TARGET_ARCH_X86 On)
+
+    add_compile_options(/EHsc)
+endif()
+
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(TARGET_BUILD_UNIX On)
+    set(TARGET_ARCH_X86 On)
+endif()
+
+if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(TARGET_BUILD_DARWIN On)
+    set(TARGET_ARCH_X86 On)
+
+    # Suppress warnings about *.a files having no symbols on Darwin.
+    # The warning is emitted when *.cpp.o contains no operational code.
+    set(CMAKE_C_ARCHIVE_CREATE   "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
+    set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
+    set(CMAKE_C_ARCHIVE_FINISH   "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
+    set(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
+endif()
+
+if (CMAKE_SYSTEM_NAME STREQUAL "Generic")
+    enable_language(ASM)
+    set(CMAKE_EXECUTABLE_SUFFIX .elf PARENT_SCOPE)
+endif()
 
 # When building EmIL by itself the examples and tests will be built
 # by-default. When consuming EmIL as a dependency the tests and
 # examples are disabled. This behavior can be overridden by below
 # options.
-if (EMIL_STANDALONE)
+if (EMIL_STANDALONE AND TARGET_ARCH_X86)
     set(EMIL_DEFAULTOPT On)
 else()
     set(EMIL_DEFAULTOPT Off)
@@ -35,51 +72,15 @@ option(EMIL_GENERATE_PACKAGE_CONFIG "Enable generation of package configuration 
 set(EMIL_PACKAGE_CONFIG_EXPORT_NAMESPACE "${PROJECT_NAME}::" CACHE STRING "Namespace used for exported targets")
 set(EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE "" CACHE STRING "Namespace used to reference imported targets")
 
-option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of emil" On)
+option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of EmIL" On)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED On)
-
-set_directory_properties(PROPERTY USE_FOLDERS On)
-
-if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-    set(TARGET_BUILD_WIN On)
-    set(TARGET_ARCH_X86 On)
-
-    add_compile_options(/EHsc)
-endif()
-
-if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
-    set(TARGET_BUILD_UNIX On)
-    set(TARGET_ARCH_X86 On)
-endif()
-
-if("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
-    set(TARGET_BUILD_DARWIN On)
-    set(TARGET_ARCH_X86 On)
-
-    # Suppress warnings about *.a files having no symbols on Darwin.
-    # The warning is emitted when *.cpp.o contains no operational code.
-    set(CMAKE_C_ARCHIVE_CREATE   "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
-    set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
-    set(CMAKE_C_ARCHIVE_FINISH   "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
-    set(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
-endif()
-
-if("${CMAKE_SYSTEM_NAME}" STREQUAL "Generic")
-    enable_language(ASM)
-    set(CMAKE_EXECUTABLE_SUFFIX .elf PARENT_SCOPE)
-endif()
-
-if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR
-   "${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin" OR
-   "${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+if (TARGET_ARCH_X86)
     add_compile_definitions(EMIL_HOST_BUILD)
 
     if (EMIL_BUILD_TESTS)
         include(CTest)
         include(GoogleTest)
-    
+
         FetchContent_Declare(
             googletest
             GIT_REPOSITORY https://github.com/google/googletest.git
@@ -106,10 +107,6 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR
         endif()
     endif()
 endif()
-
-include(CMakePackageConfigHelpers)
-include(GNUInstallDirs)  # included to supply proper defaults to install(...) commands
-include(emil_version_generator)
 
 add_version_header_target(generated.version_header)
 
