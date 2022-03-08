@@ -858,3 +858,384 @@ TEST_F(HttpClientTest, chunk_extensions_are_ignored)
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\n")));
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("Transfer-Encoding:chunked\r\n\r\n4;name=val\r\nWiki\r\n6\r\npedia \r\nE\r\nin \r\n\r\nchunks.\r\n0\r\n\r\n")));
 }
+
+class HttpClientImplWithRedirectionTest
+    : public testing::Test
+    , public infra::EventDispatcherWithWeakPtrFixture
+{
+public:
+    HttpClientImplWithRedirectionTest()
+    {
+        EXPECT_CALL(factory, Hostname()).WillRepeatedly(testing::Return("localhost"));
+        EXPECT_CALL(factory, Port()).WillRepeatedly(testing::Return(80));
+        EXPECT_CALL(connectionFactory, Connect(testing::Ref(connector)));
+        connector.Connect(factory);
+    }
+
+    ~HttpClientImplWithRedirectionTest()
+    {
+        EXPECT_CALL(client, Detaching()).Times(testing::AnyNumber());
+    }
+
+    void Connect()
+    {
+        EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::HttpClientObserver> client)>&& createdClient)
+            {
+                EXPECT_CALL(client, Attached());
+                createdClient(clientPtr);
+            }));
+
+        connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
+            {
+                connection.Attach(connectionObserver);
+            });
+    }
+
+    void GetAndRedirect(infra::BoundedConstString redirection, infra::BoundedConstString hostname, uint16_t port)
+    {
+        Connect();
+        client.Subject().Get("/api/thing");
+        CheckContentAndRedirect("GET /api/thing HTTP/1.1\r\nHost:localhost\r\n\r\n", redirection, hostname, port);
+    }
+
+    void HeadAndRedirect(infra::BoundedConstString redirection, infra::BoundedConstString hostname, uint16_t port)
+    {
+        Connect();
+        client.Subject().Head("/api/thing");
+        CheckContentAndRedirect("HEAD /api/thing HTTP/1.1\r\nHost:localhost\r\n\r\n", redirection, hostname, port);
+    }
+
+    void ConnectAndRedirect(infra::BoundedConstString redirection, infra::BoundedConstString hostname, uint16_t port)
+    {
+        Connect();
+        client.Subject().Connect("/api/thing");
+        CheckContentAndRedirect("CONNECT /api/thing HTTP/1.1\r\nHost:localhost\r\n\r\n", redirection, hostname, port);
+    }
+
+    void OptionsAndRedirect(infra::BoundedConstString redirection, infra::BoundedConstString hostname, uint16_t port)
+    {
+        Connect();
+        client.Subject().Options("/api/thing");
+        CheckContentAndRedirect("OPTIONS /api/thing HTTP/1.1\r\nHost:localhost\r\n\r\n", redirection, hostname, port);
+    }
+
+    void PostAndRedirect(infra::BoundedConstString redirection, infra::BoundedConstString hostname, uint16_t port)
+    {
+        Connect();
+        client.Subject().Post("/api/thing", "content");
+        CheckContentAndRedirect("POST /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:7\r\n\r\ncontent", redirection, hostname, port);
+    }
+
+    void PostWithStreamAndRedirect(infra::BoundedConstString redirection, infra::BoundedConstString hostname, uint16_t port)
+    {
+        Connect();
+        FillContent();
+        client.Subject().Post("/api/thing");
+        CheckContentAndRedirect("POST /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:7\r\n\r\ncontent", redirection, hostname, port);
+    }
+
+    void PostWithContentSizeAndRedirect(infra::BoundedConstString redirection, infra::BoundedConstString hostname, uint16_t port)
+    {
+        Connect();
+        FillStream();
+        client.Subject().Post("/api/thing", 7);
+        CheckContentAndRedirect("POST /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:7\r\n\r\ncontent", redirection, hostname, port);
+    }
+
+    void PutAndRedirect(infra::BoundedConstString redirection, infra::BoundedConstString hostname, uint16_t port)
+    {
+        Connect();
+        client.Subject().Put("/api/thing", "content");
+        CheckContentAndRedirect("PUT /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:7\r\n\r\ncontent", redirection, hostname, port);
+    }
+
+    void PutWithStreamAndRedirect(infra::BoundedConstString redirection, infra::BoundedConstString hostname, uint16_t port)
+    {
+        Connect();
+        FillContent();
+        client.Subject().Put("/api/thing");
+        CheckContentAndRedirect("PUT /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:7\r\n\r\ncontent", redirection, hostname, port);
+    }
+
+    void PutWithContentSizeAndRedirect(infra::BoundedConstString redirection, infra::BoundedConstString hostname, uint16_t port)
+    {
+        Connect();
+        FillStream();
+        client.Subject().Put("/api/thing", 7);
+        CheckContentAndRedirect("PUT /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:7\r\n\r\ncontent", redirection, hostname, port);
+    }
+
+    void PatchAndRedirect(infra::BoundedConstString redirection, infra::BoundedConstString hostname, uint16_t port)
+    {
+        Connect();
+        client.Subject().Patch("/api/thing", "content");
+        CheckContentAndRedirect("PATCH /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:7\r\n\r\ncontent", redirection, hostname, port);
+    }
+
+    void PatchWithStreamAndRedirect(infra::BoundedConstString redirection, infra::BoundedConstString hostname, uint16_t port)
+    {
+        Connect();
+        FillContent();
+        client.Subject().Patch("/api/thing");
+        CheckContentAndRedirect("PATCH /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:7\r\n\r\ncontent", redirection, hostname, port);
+    }
+
+    void DeleteAndRedirect(infra::BoundedConstString redirection, infra::BoundedConstString hostname, uint16_t port)
+    {
+        Connect();
+        client.Subject().Delete("/api/thing", "content");
+        CheckContentAndRedirect("DELETE /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:7\r\n\r\ncontent", redirection, hostname, port);
+    }
+
+    void CheckContentAndRedirect(infra::BoundedConstString content, infra::BoundedConstString redirection, infra::BoundedConstString hostname, uint16_t port)
+    {
+        ExecuteAllActions();
+        EXPECT_EQ(content, connection.SentDataAsString());
+
+        EXPECT_CALL(connection, AbortAndDestroyMock());
+        EXPECT_CALL(connectionFactory, Connect(testing::_)).WillOnce(testing::Invoke([this, hostname, port](services::ClientConnectionObserverFactoryWithNameResolver& factory)
+            {
+                EXPECT_EQ(hostname, factory.Hostname());
+                EXPECT_EQ(port, factory.Port());
+                clientConnectionObserverFactory = &factory;
+            }));
+
+        connection.SimulateDataReceived(infra::StringAsByteRange(redirection));
+        ExecuteAllActions();
+    }
+
+    void FillContent()
+    {
+        EXPECT_CALL(client, FillContent(testing::_)).WillRepeatedly(testing::Invoke([](infra::StreamWriter& writer)
+            {
+                infra::TextOutputStream::WithErrorPolicy stream(writer);
+                stream << "content";
+            }));
+    }
+
+    void FillStream()
+    {
+        EXPECT_CALL(client, SendStreamAvailable(testing::_)).WillRepeatedly(testing::Invoke([](infra::SharedPtr<infra::StreamWriter>&& writer)
+            {
+                infra::TextOutputStream::WithErrorPolicy stream(*writer);
+                stream << "content";
+            }));
+    }
+
+    void ConnectionRefused()
+    {
+        EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::NotFound));
+        EXPECT_CALL(client, BodyComplete());
+        EXPECT_CALL(client, Detaching());
+        clientConnectionObserverFactory->ConnectionFailed(services::ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason::refused);
+    }
+
+    void CheckRedirection(infra::BoundedConstString request, infra::BoundedConstString response)
+    {
+        clientConnectionObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
+            {
+                connection.Attach(connectionObserver);
+            });
+
+        connection.Reset();
+
+        ExecuteAllActions();
+        EXPECT_EQ(request, connection.SentDataAsString());
+
+        EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
+        EXPECT_CALL(connection, AckReceivedMock());
+        EXPECT_CALL(client, BodyComplete());
+        connection.SimulateDataReceived(infra::StringAsByteRange(response));
+        ExecuteAllActions();
+    }
+
+    testing::StrictMock<services::HttpClientObserverMock> client;
+    testing::StrictMock<services::ConnectionFactoryWithNameResolverMock> connectionFactory;
+    testing::StrictMock<services::HttpClientObserverFactoryMock> factory;
+    services::HttpClientConnectorWithNameResolverImpl<services::HttpClientImplWithRedirection::WithRedirectionUrlSize<256>, services::ConnectionFactoryWithNameResolver&> connector{ connectionFactory, connectionFactory };
+    testing::StrictMock<services::ConnectionStubWithAckReceivedMock> connection;
+    infra::SharedPtr<services::Connection> connectionPtr{ infra::UnOwnedSharedPtr(connection) };
+    infra::SharedPtr<services::HttpClientObserver> clientPtr{ infra::UnOwnedSharedPtr(client) };
+    services::ClientConnectionObserverFactoryWithNameResolver* clientConnectionObserverFactory = nullptr;
+};
+
+TEST_F(HttpClientImplWithRedirectionTest, Get_request_is_executed)
+{
+    Connect();
+    client.Subject().Get("/api/thing");
+
+    ExecuteAllActions();
+    EXPECT_EQ("GET /api/thing HTTP/1.1\r\nHost:localhost\r\n\r\n", connection.SentDataAsString());
+
+    EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
+    EXPECT_CALL(connection, AckReceivedMock());
+    EXPECT_CALL(client, BodyComplete());
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n")));
+    ExecuteAllActions();
+}
+
+TEST_F(HttpClientImplWithRedirectionTest, Get_request_is_forwarded_but_connection_fails)
+{
+    GetAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress/newpath\r\n\r\n", "newaddress", 80);
+    ConnectionRefused();
+}
+
+TEST_F(HttpClientImplWithRedirectionTest, Get_request_is_forwarded_https)
+{
+    GetAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:https://newaddress/newpath\r\n\r\n", "newaddress", 443);
+    ConnectionRefused();
+}
+
+TEST_F(HttpClientImplWithRedirectionTest, Get_request_is_forwarded_unknown_scheme)
+{
+    GetAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:unknown://newaddress/newpath\r\n\r\n", "newaddress", 80);
+    ConnectionRefused();
+}
+
+TEST_F(HttpClientImplWithRedirectionTest, Get_request_is_forwarded_to_port)
+{
+    GetAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress:1234/newpath\r\n\r\n", "newaddress", 1234);
+    ConnectionRefused();
+}
+
+TEST_F(HttpClientImplWithRedirectionTest, Get_request_is_forwarded_to_port_with_ignored_username)
+{
+    GetAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://user@newaddress:1234/newpath\r\n\r\n", "newaddress", 1234);
+    ConnectionRefused();
+}
+
+TEST_F(HttpClientImplWithRedirectionTest, redirect_fails_after_status_error)
+{
+    GetAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress/newpath\r\n\r\n", "newaddress", 80);
+
+    clientConnectionObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver) {
+        connection.Attach(connectionObserver);
+    });
+
+    connection.Reset();
+
+    ExecuteAllActions();
+    EXPECT_EQ("GET /newpath HTTP/1.1\r\nHost:newaddress\r\n\r\n", connection.SentDataAsString());
+
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+    EXPECT_CALL(connection, AckReceivedMock());
+    EXPECT_CALL(client, Detaching());
+
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.0blabla 200 Success\r\nContent-Length:0\r\n\r\n")));
+    ExecuteAllActions();
+}
+
+TEST_F(HttpClientImplWithRedirectionTest, redirect_fails_after_incorrect_version)
+{
+    GetAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress/newpath\r\n\r\n", "newaddress", 80);
+
+    clientConnectionObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver) {
+        connection.Attach(connectionObserver);
+    });
+
+    connection.Reset();
+
+    ExecuteAllActions();
+    EXPECT_EQ("GET /newpath HTTP/1.1\r\nHost:newaddress\r\n\r\n", connection.SentDataAsString());
+
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+    EXPECT_CALL(connection, AckReceivedMock());
+    EXPECT_CALL(client, Detaching());
+
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/5.0 200 Success\r\nContent-Length:0\r\n\r\n")));
+    ExecuteAllActions();
+}
+
+TEST_F(HttpClientImplWithRedirectionTest, redirect_fails_after_headers_too_long)
+{
+    Connect();
+    client.Subject().Get("/api/thing");
+
+    ExecuteAllActions();
+    EXPECT_EQ("GET /api/thing HTTP/1.1\r\nHost:localhost\r\n\r\n", connection.SentDataAsString());
+
+    EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::NotFound));
+    EXPECT_CALL(client, BodyComplete());
+    EXPECT_CALL(connection, AckReceivedMock());
+
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress/newpath\r\nheader:012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789\r\n\r\n\r\n")));
+    ExecuteAllActions();
+}
+
+TEST_F(HttpClientImplWithRedirectionTest, Get_request_is_forwarded)
+{
+    GetAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress/newpath\r\n\r\n", "newaddress", 80);
+    CheckRedirection("GET /newpath HTTP/1.1\r\nHost:newaddress\r\n\r\n", "HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n");
+}
+
+TEST_F(HttpClientImplWithRedirectionTest, Head_request_is_forwarded)
+{
+    HeadAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress/newpath\r\n\r\n", "newaddress", 80);
+    CheckRedirection("HEAD /newpath HTTP/1.1\r\nHost:newaddress\r\n\r\n", "HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n");
+}
+
+TEST_F(HttpClientImplWithRedirectionTest, Connect_request_is_forwarded)
+{
+    ConnectAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress/newpath\r\n\r\n", "newaddress", 80);
+    CheckRedirection("CONNECT /newpath HTTP/1.1\r\nHost:newaddress\r\n\r\n", "HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n");
+}
+
+TEST_F(HttpClientImplWithRedirectionTest, Options_request_is_forwarded)
+{
+    OptionsAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress/newpath\r\n\r\n", "newaddress", 80);
+    CheckRedirection("OPTIONS /newpath HTTP/1.1\r\nHost:newaddress\r\n\r\n", "HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n");
+}
+
+TEST_F(HttpClientImplWithRedirectionTest, Post_request_is_forwarded)
+{
+    PostAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress/newpath\r\n\r\n", "newaddress", 80);
+    CheckRedirection("POST /newpath HTTP/1.1\r\nHost:newaddress\r\nContent-Length:7\r\n\r\ncontent", "HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n");
+}
+
+TEST_F(HttpClientImplWithRedirectionTest, Post_request_with_stream_is_forwarded)
+{
+    PostWithStreamAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress/newpath\r\n\r\n", "newaddress", 80);
+    CheckRedirection("POST /newpath HTTP/1.1\r\nHost:newaddress\r\nContent-Length:7\r\n\r\ncontent", "HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n");
+}
+
+TEST_F(HttpClientImplWithRedirectionTest, Post_request_with_content_size_is_forwarded)
+{
+    PostWithContentSizeAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress/newpath\r\n\r\n", "newaddress", 80);
+    CheckRedirection("POST /newpath HTTP/1.1\r\nHost:newaddress\r\nContent-Length:7\r\n\r\ncontent", "HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n");
+}
+
+TEST_F(HttpClientImplWithRedirectionTest, Put_request_is_forwarded)
+{
+    PutAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress/newpath\r\n\r\n", "newaddress", 80);
+    CheckRedirection("PUT /newpath HTTP/1.1\r\nHost:newaddress\r\nContent-Length:7\r\n\r\ncontent", "HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n");
+}
+
+TEST_F(HttpClientImplWithRedirectionTest, Put_request_with_stream_is_forwarded)
+{
+    PutWithStreamAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress/newpath\r\n\r\n", "newaddress", 80);
+    CheckRedirection("PUT /newpath HTTP/1.1\r\nHost:newaddress\r\nContent-Length:7\r\n\r\ncontent", "HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n");
+}
+
+TEST_F(HttpClientImplWithRedirectionTest, Put_request_with_content_size_is_forwarded)
+{
+    PutWithContentSizeAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress/newpath\r\n\r\n", "newaddress", 80);
+    CheckRedirection("PUT /newpath HTTP/1.1\r\nHost:newaddress\r\nContent-Length:7\r\n\r\ncontent", "HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n");
+}
+
+TEST_F(HttpClientImplWithRedirectionTest, Patch_request_is_forwarded)
+{
+    PatchAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress/newpath\r\n\r\n", "newaddress", 80);
+    CheckRedirection("PATCH /newpath HTTP/1.1\r\nHost:newaddress\r\nContent-Length:7\r\n\r\ncontent", "HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n");
+}
+
+TEST_F(HttpClientImplWithRedirectionTest, Patch_request_with_stream_is_forwarded)
+{
+    PatchWithStreamAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress/newpath\r\n\r\n", "newaddress", 80);
+    CheckRedirection("PATCH /newpath HTTP/1.1\r\nHost:newaddress\r\nContent-Length:7\r\n\r\ncontent", "HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n");
+}
+
+TEST_F(HttpClientImplWithRedirectionTest, Delete_request_is_forwarded)
+{
+    DeleteAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress/newpath\r\n\r\n", "newaddress", 80);
+    CheckRedirection("DELETE /newpath HTTP/1.1\r\nHost:newaddress\r\nContent-Length:7\r\n\r\ncontent", "HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n");
+}

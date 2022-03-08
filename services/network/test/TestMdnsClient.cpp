@@ -22,11 +22,12 @@ public:
     ~MdnsClientTest()
     {
         ExpectLeaveMulticastIpv4();
+        ExpectLeaveMulticastIpv6();
     }
 
-    void ExpectListenIpv4()
+    void ExpectListenBoth()
     {
-        EXPECT_CALL(factory, Listen(testing::_, mdnsPort, services::IPVersions::ipv4)).WillOnce(testing::Invoke([this](services::DatagramExchangeObserver& observer, uint16_t port, services::IPVersions versions) {
+        EXPECT_CALL(factory, Listen(testing::_, mdnsPort, services::IPVersions::both)).WillOnce(testing::Invoke([this](services::DatagramExchangeObserver& observer, uint16_t port, services::IPVersions versions) {
             auto ptr = datagramExchange.Emplace();
             observer.Attach(*ptr);
 
@@ -39,14 +40,30 @@ public:
         EXPECT_CALL(multicast, JoinMulticastGroup(testing::_, mdnsMulticastAddressIpv4.Get<services::IPv4Address>()));
     }
 
+    void ExpectJoinMulticastIpv6()
+    {
+        EXPECT_CALL(multicast, JoinMulticastGroup(testing::_, mdnsMulticastAddressIpv6.Get<services::IPv6Address>()));
+    }
+
     void ExpectLeaveMulticastIpv4()
     {
         EXPECT_CALL(multicast, LeaveMulticastGroup(testing::_, mdnsMulticastAddressIpv4.Get<services::IPv4Address>()));
     }
 
-    void ExpectActiveQueryStarted()
+    void ExpectLeaveMulticastIpv6()
     {
-        EXPECT_CALL(*datagramExchange, RequestSendStream(testing::_, testing::_));
+        EXPECT_CALL(multicast, LeaveMulticastGroup(testing::_, mdnsMulticastAddressIpv6.Get<services::IPv6Address>()));
+    }
+
+    void ExpectActiveQueryStarted(services::IPVersions ipVersion = services::IPVersions::ipv4)
+    {
+        EXPECT_CALL(*datagramExchange, RequestSendStream(testing::_, testing::_)).WillOnce([ipVersion] (std::size_t sendSize, services::UdpSocket remote)
+            {
+                if (ipVersion == services::IPVersions::ipv6)
+                    ASSERT_TRUE(remote.Is<services::Udpv6Socket>());
+                else
+                    ASSERT_TRUE(remote.Is<services::Udpv4Socket>());
+            });
     }
 
     void DataReceived(const std::vector<uint8_t>& data, services::IPv4Address address = services::IPv4Address{ 1, 2, 3, 4 }, uint16_t port = mdnsPort)
@@ -249,6 +266,7 @@ public:
     void QueryAaaa(infra::Function<void(infra::ConstByteRange data)>& callback)
     {
         queryAaaa.Emplace(client, services::DnsType::dnsTypeAAAA, "_instance", callback);
+        queryAaaa->SetIpVersion(services::IPVersions::ipv6);
     }
 
     void QueryPtr(infra::Function<void(infra::ConstByteRange data)>& callback)
@@ -313,8 +331,9 @@ public:
     infra::SharedOptional<testing::StrictMock<services::DatagramExchangeMock>> datagramExchange;
     infra::Execute execute{ [this]
     {
-        ExpectListenIpv4();
+        ExpectListenBoth();
         ExpectJoinMulticastIpv4();
+        ExpectJoinMulticastIpv6();
     } };
     services::MdnsClient client{ factory, multicast };
 
@@ -372,6 +391,17 @@ TEST_F(MdnsClientTest, query_asking_starts_active_query)
 
     ExpectActiveQueryStarted();
     queryPtr->Ask();
+
+    auto question = PtrQuestion();
+    SendStreamAvailableAndExpectQuestion(question);
+}
+
+TEST_F(MdnsClientTest, query_asking_over_ipv6_starts_active_query)
+{
+    QueryPtr(queryPtrCallback);
+
+    ExpectActiveQueryStarted(services::IPVersions::ipv6);
+    queryPtr->Ask(services::IPVersions::ipv6);
 
     auto question = PtrQuestion();
     SendStreamAvailableAndExpectQuestion(question);
@@ -513,12 +543,12 @@ TEST_F(MdnsClientTest, receiving_matching_answer_to_active_query_results_in_data
 
     ExpectActiveQueryStarted();
     queryA->Ask();
-    queryAaaa->Ask();
+    queryAaaa->Ask(services::IPVersions::ipv6);
     queryPtr->Ask();
     queryTxt->Ask();
     querySrv->Ask();
 
-    ExpectActiveQueryStarted();
+    ExpectActiveQueryStarted(services::IPVersions::ipv6);
     auto aQuestion = AQuestion();
     SendStreamAvailableAndExpectQuestion(aQuestion);
     EXPECT_CALL(callback, callback(services::DnsType::dnsTypeA));

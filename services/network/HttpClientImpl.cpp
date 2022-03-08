@@ -11,6 +11,13 @@ namespace services
         , nextState(infra::InPlaceType<SendingStateRequest>(), *this)
     {}
 
+    void HttpClientImpl::Retarget(infra::BoundedConstString hostname)
+    {
+        this->hostname = hostname;
+        Reset();
+        AbortAndDestroy();
+    }
+
     void HttpClientImpl::Get(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
         ExecuteRequest(HttpVerb::get, requestTarget, headers);
@@ -95,10 +102,10 @@ namespace services
     {
         infra::WeakPtr<HttpClientImpl> self = infra::StaticPointerCast<HttpClientImpl>(services::ConnectionObserver::Subject().ObserverPtr());
         bodyReaderAccess.SetAction([self]()
-        {
-            if (auto sharedSelf = self.lock())
-                sharedSelf->BodyReaderDestroyed();
-        });
+            {
+                if (auto sharedSelf = self.lock())
+                    sharedSelf->BodyReaderDestroyed();
+            });
     }
 
     void HttpClientImpl::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -150,6 +157,12 @@ namespace services
             Observer().HeaderAvailable(header);
     }
 
+    void HttpClientImpl::HeaderParsingDone(bool error)
+    {
+        headerParsingDone = true;
+        headerParsingError = error;
+    }
+
     void HttpClientImpl::ExpectResponse()
     {
         response.Emplace(static_cast<HttpHeaderParserObserver&>(*this));
@@ -157,7 +170,7 @@ namespace services
 
     void HttpClientImpl::HandleData()
     {
-        if (!response->Done())
+        if (!headerParsingDone)
         {
             reader = ConnectionObserver::Subject().ReceiveStream();
 
@@ -165,13 +178,17 @@ namespace services
 
             response->DataReceived(*reader);
 
-            if (!self.lock())   // DataReceived may close the connection
+            if (!self.lock() || !ConnectionObserver::IsAttached()) // DataReceived may close the connection
+            {
+                if (!ConnectionObserver::IsAttached())
+                    reader = nullptr;
                 return;
+            }
 
             ConnectionObserver::Subject().AckReceived();
             reader = nullptr;
 
-            if (response->Done())
+            if (headerParsingDone)
             {
                 if (contentLength == infra::none && (statusCode == HttpStatusCode::Continue
                     || statusCode == HttpStatusCode::SwitchingProtocols
@@ -181,9 +198,9 @@ namespace services
             }
         }
 
-        if (response->Done())
+        if (headerParsingDone)
         {
-            if (!response->Error() && contentLength != infra::none)
+            if (!headerParsingError && contentLength != infra::none)
                 BodyReceived();
             else
                 AbortAndDestroy();
@@ -227,10 +244,17 @@ namespace services
 
     void HttpClientImpl::BodyComplete()
     {
+        Reset();
+        Observer().BodyComplete();
+    }
+
+    void HttpClientImpl::Reset()
+    {
         contentLength = infra::none;
         firstChunk = true;
+        headerParsingDone = false;
+        headerParsingError = false;
         response = infra::none;
-        Observer().BodyComplete();
     }
 
     bool HttpClientImpl::ReadChunkLength()
@@ -389,13 +413,13 @@ namespace services
         forwardStreamPtr = std::move(writer);
         auto available = forwardStreamPtr->Available();
         forwardStreamAccess.SetAction([this, available]()
-        {
-            contentSize -= available - forwardStreamPtr->Available();
+            {
+                contentSize -= available - forwardStreamPtr->Available();
 
-            forwardStreamPtr = nullptr;
+                forwardStreamPtr = nullptr;
 
-            Activate();
-        });
+                Activate();
+            });
 
         client.Observer().SendStreamAvailable(forwardStreamAccess.MakeShared(*forwardStreamPtr));
     }
@@ -450,5 +474,366 @@ namespace services
     std::size_t HttpClientImpl::SendingStateForwardFillContent::WindowWriter::Available() const
     {
         return std::numeric_limits<std::size_t>::max();
+    }
+
+    HttpClientImplWithRedirection::HttpClientImplWithRedirection(infra::BoundedString redirectedUrlStorage, infra::BoundedConstString hostname, ConnectionFactoryWithNameResolver& connectionFactory)
+        : HttpClientImpl(hostname)
+        , redirectedUrlStorage(redirectedUrlStorage)
+        , connectionFactory(connectionFactory)
+    {}
+
+    HttpClientImplWithRedirection::~HttpClientImplWithRedirection()
+    {
+        if (connecting)
+            connectionFactory.CancelConnect(*this);
+    }
+
+    void HttpClientImplWithRedirection::Attached()
+    {
+        if (!redirecting)
+            HttpClientImpl::Attached();
+        else
+            (*query)->Execute(*this, redirectedPath);
+    }
+
+    void HttpClientImplWithRedirection::Detaching()
+    {
+        if (!redirecting)
+            HttpClientImpl::Detaching();
+    }
+
+    void HttpClientImplWithRedirection::Get(infra::BoundedConstString requestTarget, HttpHeaders headers)
+    {
+        if (query == infra::none)
+            query.Emplace(infra::InPlaceType<QueryGet>(), headers);
+
+        HttpClientImpl::Get(requestTarget, headers);
+    }
+
+    void HttpClientImplWithRedirection::Head(infra::BoundedConstString requestTarget, HttpHeaders headers)
+    {
+        if (query == infra::none)
+            query.Emplace(infra::InPlaceType<QueryHead>(), headers);
+
+        HttpClientImpl::Head(requestTarget, headers);
+    }
+
+    void HttpClientImplWithRedirection::Connect(infra::BoundedConstString requestTarget, HttpHeaders headers)
+    {
+        if (query == infra::none)
+            query.Emplace(infra::InPlaceType<QueryConnect>(), headers);
+
+        HttpClientImpl::Connect(requestTarget, headers);
+    }
+
+    void HttpClientImplWithRedirection::Options(infra::BoundedConstString requestTarget, HttpHeaders headers)
+    {
+        if (query == infra::none)
+            query.Emplace(infra::InPlaceType<QueryOptions>(), headers);
+
+        HttpClientImpl::Options(requestTarget, headers);
+    }
+
+    void HttpClientImplWithRedirection::Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
+    {
+        if (query == infra::none)
+            query.Emplace(infra::InPlaceType<QueryPost1>(), content, headers);
+
+        HttpClientImpl::Post(requestTarget, content, headers);
+    }
+
+    void HttpClientImplWithRedirection::Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers)
+    {
+        if (query == infra::none)
+            query.Emplace(infra::InPlaceType<QueryPost2>(), contentSize, headers);
+
+        HttpClientImpl::Post(requestTarget, contentSize, headers);
+    }
+
+    void HttpClientImplWithRedirection::Post(infra::BoundedConstString requestTarget, HttpHeaders headers)
+    {
+        if (query == infra::none)
+            query.Emplace(infra::InPlaceType<QueryPost3>(), headers);
+
+        HttpClientImpl::Post(requestTarget, headers);
+    }
+
+    void HttpClientImplWithRedirection::Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
+    {
+        if (query == infra::none)
+            query.Emplace(infra::InPlaceType<QueryPut1>(), content, headers);
+
+        HttpClientImpl::Put(requestTarget, content, headers);
+    }
+
+    void HttpClientImplWithRedirection::Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers)
+    {
+        if (query == infra::none)
+            query.Emplace(infra::InPlaceType<QueryPut2>(), contentSize, headers);
+
+        HttpClientImpl::Put(requestTarget, contentSize, headers);
+    }
+
+    void HttpClientImplWithRedirection::Put(infra::BoundedConstString requestTarget, HttpHeaders headers)
+    {
+        if (query == infra::none)
+            query.Emplace(infra::InPlaceType<QueryPut3>(), headers);
+
+        HttpClientImpl::Put(requestTarget, headers);
+    }
+
+    void HttpClientImplWithRedirection::Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
+    {
+        if (query == infra::none)
+            query.Emplace(infra::InPlaceType<QueryPatch1>(), content, headers);
+
+        HttpClientImpl::Patch(requestTarget, content, headers);
+    }
+
+    void HttpClientImplWithRedirection::Patch(infra::BoundedConstString requestTarget, HttpHeaders headers)
+    {
+        if (query == infra::none)
+            query.Emplace(infra::InPlaceType<QueryPatch2>(), headers);
+
+        HttpClientImpl::Patch(requestTarget, headers);
+    }
+
+    void HttpClientImplWithRedirection::Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
+    {
+        if (query == infra::none)
+            query.Emplace(infra::InPlaceType<QueryDelete>(), content, headers);
+
+        HttpClientImpl::Delete(requestTarget, content, headers);
+    }
+
+    infra::BoundedConstString HttpClientImplWithRedirection::Hostname() const
+    {
+        return redirectedHostname;
+    }
+
+    uint16_t HttpClientImplWithRedirection::Port() const
+    {
+        return redirectedPort;
+    }
+
+    void HttpClientImplWithRedirection::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> client)>&& createdObserver)
+    {
+        connecting = false;
+        createdObserver(std::move(self));
+        redirecting = false;
+    }
+
+    void HttpClientImplWithRedirection::ConnectionFailed(ConnectFailReason reason)
+    {
+        connecting = false;
+        redirecting = false;
+        RedirectFailed();
+        self = nullptr;
+    }
+
+    void HttpClientImplWithRedirection::StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine)
+    {
+        switch (code)
+        {
+            case HttpStatusCode::MovedPermanently: // 301
+            case HttpStatusCode::SeeOther: // 303
+            case HttpStatusCode::TemporaryRedirect: // 307
+            case HttpStatusCode::PermanentRedirect: // 308
+                if (redirectionCount != maxRedirection)
+                {
+                    ++redirectionCount;
+                    redirecting = true;
+                    break;
+                }
+                [[fallthrough]];
+            default:
+                HttpClientImpl::StatusAvailable(code, statusLine);
+                break;
+        }
+    }
+
+    void HttpClientImplWithRedirection::HeaderAvailable(HttpHeader header)
+    {
+        if (redirecting)
+        {
+            if (infra::CaseInsensitiveCompare(header.Field(), "Location"))
+                redirectedUrlStorage.assign(header.Value().substr(0, redirectedUrlStorage.max_size()));
+        }
+        else
+            HttpClientImpl::HeaderAvailable(header);
+    }
+
+    void HttpClientImplWithRedirection::HeaderParsingDone(bool error)
+    {
+        if (redirecting)
+        {
+            if (!error)
+                Redirect();
+            else
+                RedirectFailed();
+        }
+        else
+            HttpClientImpl::HeaderParsingDone(error);
+    }
+
+    void HttpClientImplWithRedirection::Redirect()
+    {
+        Redirecting(redirectedUrlStorage);
+
+        redirectedHostname = HostFromUrl(redirectedUrlStorage);
+        redirectedPort = PortFromUrl(redirectedUrlStorage).ValueOr(PortFromScheme(SchemeFromUrl(redirectedUrlStorage)).ValueOr(80));
+        redirectedPath = PathFromUrl(redirectedUrlStorage);
+
+        self = infra::StaticPointerCast<HttpClientImplWithRedirection>(Subject().ObserverPtr());
+
+        Retarget(Hostname());
+
+        connecting = true;
+        connectionFactory.Connect(*this);
+    }
+
+    void HttpClientImplWithRedirection::RedirectFailed()
+    {
+        infra::WeakPtr<services::ConnectionObserver> localSelf = services::ConnectionObserver::IsAttached() ? services::ConnectionObserver::Subject().ObserverPtr() : nullptr;
+
+        HttpClientImpl::StatusAvailable(HttpStatusCode::NotFound, "Redirection failed");
+
+        if (localSelf.lock() || (self != nullptr && HttpClient::IsAttached()))
+            HttpClientImpl::HeaderParsingDone(true);
+
+        if (localSelf.lock() || (self != nullptr && HttpClient::IsAttached()))
+            HttpClientImpl::BodyComplete();
+    }
+
+    infra::Optional<uint16_t> HttpClientImplWithRedirection::PortFromScheme(infra::BoundedConstString scheme) const
+    {
+        if (infra::CaseInsensitiveCompare(scheme, "http"))
+            return infra::MakeOptional<uint16_t>(80);
+        if (infra::CaseInsensitiveCompare(scheme, "https"))
+            return infra::MakeOptional<uint16_t>(443);
+        return infra::none;
+    }
+
+    HttpClientImplWithRedirection::QueryGet::QueryGet(HttpHeaders headers)
+        : headers(headers)
+    {}
+
+    void HttpClientImplWithRedirection::QueryGet::Execute(HttpClient& client, infra::BoundedConstString requestTarget)
+    {
+        client.Get(requestTarget, headers);
+    }
+
+    HttpClientImplWithRedirection::QueryHead::QueryHead(HttpHeaders headers)
+        : headers(headers)
+    {}
+
+    void HttpClientImplWithRedirection::QueryHead::Execute(HttpClient& client, infra::BoundedConstString requestTarget)
+    {
+        client.Head(requestTarget, headers);
+    }
+
+    HttpClientImplWithRedirection::QueryConnect::QueryConnect(HttpHeaders headers)
+        : headers(headers)
+    {}
+
+    void HttpClientImplWithRedirection::QueryConnect::Execute(HttpClient& client, infra::BoundedConstString requestTarget)
+    {
+        client.Connect(requestTarget, headers);
+    }
+
+    HttpClientImplWithRedirection::QueryOptions::QueryOptions(HttpHeaders headers)
+        : headers(headers)
+    {}
+
+    void HttpClientImplWithRedirection::QueryOptions::Execute(HttpClient& client, infra::BoundedConstString requestTarget)
+    {
+        client.Options(requestTarget, headers);
+    }
+
+    HttpClientImplWithRedirection::QueryPost1::QueryPost1(infra::BoundedConstString content, HttpHeaders headers)
+        : content(content)
+        , headers(headers)
+    {}
+
+    void HttpClientImplWithRedirection::QueryPost1::Execute(HttpClient& client, infra::BoundedConstString requestTarget)
+    {
+        client.Post(requestTarget, content, headers);
+    }
+
+    HttpClientImplWithRedirection::QueryPost2::QueryPost2(std::size_t contentSize, HttpHeaders headers)
+        : contentSize(contentSize)
+        , headers(headers)
+    {}
+
+    void HttpClientImplWithRedirection::QueryPost2::Execute(HttpClient& client, infra::BoundedConstString requestTarget)
+    {
+        client.Post(requestTarget, contentSize, headers);
+    }
+
+    HttpClientImplWithRedirection::QueryPost3::QueryPost3(HttpHeaders headers)
+        : headers(headers)
+    {}
+
+    void HttpClientImplWithRedirection::QueryPost3::Execute(HttpClient& client, infra::BoundedConstString requestTarget)
+    {
+        client.Post(requestTarget, headers);
+    }
+
+    HttpClientImplWithRedirection::QueryPut1::QueryPut1(infra::BoundedConstString content, HttpHeaders headers)
+        : content(content)
+        , headers(headers)
+    {}
+
+    void HttpClientImplWithRedirection::QueryPut1::Execute(HttpClient& client, infra::BoundedConstString requestTarget)
+    {
+        client.Put(requestTarget, content, headers);
+    }
+
+    HttpClientImplWithRedirection::QueryPut2::QueryPut2(std::size_t contentSize, HttpHeaders headers)
+        : contentSize(contentSize)
+        , headers(headers)
+    {}
+
+    void HttpClientImplWithRedirection::QueryPut2::Execute(HttpClient& client, infra::BoundedConstString requestTarget)
+    {
+        client.Put(requestTarget, contentSize, headers);
+    }
+
+    HttpClientImplWithRedirection::QueryPut3::QueryPut3(HttpHeaders headers)
+        : headers(headers)
+    {}
+
+    void HttpClientImplWithRedirection::QueryPut3::Execute(HttpClient& client, infra::BoundedConstString requestTarget)
+    {
+        client.Put(requestTarget, headers);
+    }
+
+    HttpClientImplWithRedirection::QueryPatch1::QueryPatch1(infra::BoundedConstString content, HttpHeaders headers)
+        : headers(headers)
+        , content(content)
+    {}
+
+    void HttpClientImplWithRedirection::QueryPatch1::Execute(HttpClient& client, infra::BoundedConstString requestTarget)
+    {
+        client.Patch(requestTarget, content, headers);
+    }
+
+    HttpClientImplWithRedirection::QueryPatch2::QueryPatch2(HttpHeaders headers)
+        : headers(headers)
+    {}
+
+    void HttpClientImplWithRedirection::QueryPatch2::Execute(HttpClient& client, infra::BoundedConstString requestTarget)
+    {
+        client.Patch(requestTarget, headers);
+    }
+
+    HttpClientImplWithRedirection::QueryDelete::QueryDelete(infra::BoundedConstString content, HttpHeaders headers)
+        : headers(headers)
+        , content(content)
+    {}
+
+    void HttpClientImplWithRedirection::QueryDelete::Execute(HttpClient& client, infra::BoundedConstString requestTarget)
+    {
+        client.Delete(requestTarget, content, headers);
     }
 }

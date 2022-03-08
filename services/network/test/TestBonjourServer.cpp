@@ -499,7 +499,7 @@ TEST_F(BonjourServerTest, second_question_while_first_is_busy_is_ignored)
     ExecuteAllActions();
 }
 
-TEST_F(BonjourServerTest, aaaa_query_is_declined_when_no_ipv4_address_is_available)
+TEST_F(BonjourServerTest, aaaa_query_is_declined_when_no_ipv6_address_is_available)
 {
     ExpectResponse(infra::ConstructBin()
         .Value<services::DnsRecordHeader>({ 0x0200, 0x8000, 0, 1, 0, 0 })

@@ -56,6 +56,17 @@ namespace services
         return{ sentData.begin(), sentData.end() };
     }
 
+    void ConnectionStub::Reset()
+    {
+        sentData.clear();
+        {
+            auto streamReader = ReceiveStream();
+            while (!streamReader->Empty())
+                streamReader->ExtractContiguousRange(std::numeric_limits<std::size_t>::max());
+            this->streamReader->ConsumeRead();
+        }
+    }
+
     ConnectionStub::StreamWriterStub::StreamWriterStub(ConnectionStub& connection, std::size_t size)
         : connection(connection)
         , size(size)

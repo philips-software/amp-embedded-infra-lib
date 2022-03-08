@@ -1,13 +1,10 @@
 add_library(services.util EXCLUDE_FROM_ALL STATIC)
 install(TARGETS services.util EXPORT emilServicesTargets)
 
-target_link_libraries(services.util PUBLIC
-    hal.interfaces
-    infra.syntax
-    mbedcrypto
-)
-
 target_sources(services.util PRIVATE
+    Aes.hpp
+    AesMbedTls.cpp
+    AesMbedTls.hpp
     ConfigurationStore.cpp
     ConfigurationStore.hpp
     CyclicStore.cpp
@@ -49,6 +46,9 @@ target_sources(services.util PRIVATE
     MessageCommunicationWindowed.hpp
     RepeatingButton.cpp
     RepeatingButton.hpp
+    Sha256.hpp
+    Sha256MbedTls.cpp
+    Sha256MbedTls.hpp
     SignalLed.cpp
     SignalLed.hpp
     SpiMasterWithChipSelect.cpp

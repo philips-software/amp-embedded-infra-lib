@@ -102,14 +102,25 @@ namespace services
         this->waiting = waiting;
     }
 
-    void MdnsQueryImpl::Ask()
+    services::IPVersions MdnsQueryImpl::IpVersion() const
     {
+        return ipVersion;
+    }
+
+    void MdnsQueryImpl::SetIpVersion(services::IPVersions ipVersion)
+    {
+        this->ipVersion = ipVersion;
+    }
+
+    void MdnsQueryImpl::Ask(services::IPVersions ipVersion)
+    {
+        SetIpVersion(ipVersion);
         mdnsClient.ActiveQuerySingleShot(*this);
     }
 
-    void MdnsQueryImpl::CheckAnswer(infra::BoundedString& hostname, DnsRecordPayload& payload, infra::ConstByteRange data)
+    void MdnsQueryImpl::CheckAnswer(services::IPVersions ipVersion, infra::BoundedString& hostname, DnsRecordPayload& payload, infra::ConstByteRange data)
     {
-        if (hostname == dnsHostname && payload.type == dnsType && payload.class_ == DnsClass::dnsClassIn)
+        if (this->ipVersion == ipVersion && hostname == dnsHostname && payload.type == dnsType && payload.class_ == DnsClass::dnsClassIn)
         {
             processingQuery = true;
             queryHit(data);
@@ -130,14 +141,16 @@ namespace services
     MdnsClient::MdnsClient(DatagramFactory& datagramFactory, Multicast& multicast)
         : datagramFactory(datagramFactory)
         , multicast(multicast)
-        , datagramExchange(datagramFactory.Listen(*this, mdnsPort, IPVersions::ipv4))
+        , datagramExchange(datagramFactory.Listen(*this, mdnsPort, IPVersions::both))
     {
         multicast.JoinMulticastGroup(datagramExchange, mdnsMulticastAddressIpv4);
+        multicast.JoinMulticastGroup(datagramExchange, mdnsMulticastAddressIpv6);
     }
 
     MdnsClient::~MdnsClient()
     {
         multicast.LeaveMulticastGroup(datagramExchange, mdnsMulticastAddressIpv4);
+        multicast.LeaveMulticastGroup(datagramExchange, mdnsMulticastAddressIpv6);
     }
 
     void MdnsClient::RegisterQuery(MdnsQuery& query)
@@ -167,7 +180,9 @@ namespace services
         if (GetPort(from) != mdnsPort)
             return;
 
-        AnswerParser answer(*this, *reader);
+        auto ipVersion = GetVersion(from);
+
+        AnswerParser answer(*this, ipVersion, *reader);
     }
 
     void MdnsClient::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -285,12 +300,24 @@ namespace services
 
         std::size_t querySize = sizeof(DnsRecordHeader) + hostnameSize + hostnameCopy.size() + 1 + sizeof(DnsQuestionFooter);
 
-        mdnsClient.datagramExchange->RequestSendStream(querySize, MakeUdpSocket(mdnsMulticastAddressIpv4, mdnsPort));
+        switch (query.IpVersion())
+        {
+        case services::IPVersions::ipv4:
+            mdnsClient.datagramExchange->RequestSendStream(querySize, MakeUdpSocket(mdnsMulticastAddressIpv4, mdnsPort));
+            break;
+        case services::IPVersions::ipv6:
+            mdnsClient.datagramExchange->RequestSendStream(querySize, MakeUdpSocket(mdnsMulticastAddressIpv6, mdnsPort));
+            break;
+        default:
+            std::abort();
+            break;
+        }
     }
 
-    MdnsClient::AnswerParser::AnswerParser(MdnsClient& client, infra::StreamReaderWithRewinding& reader)
+    MdnsClient::AnswerParser::AnswerParser(MdnsClient& client, services::IPVersions ipVersion, infra::StreamReaderWithRewinding& reader)
         : client(client)
         , reader(reader)
+        , ipVersion(ipVersion)
     {
         Parse();
     }
@@ -350,7 +377,7 @@ namespace services
         else
             for (auto& query : client.queries)
                 if (isAnswer)
-                    query.CheckAnswer(reconstructedHostname, payload, data);
+                    query.CheckAnswer(ipVersion, reconstructedHostname, payload, data);
                 else
                     query.CheckAdditionalRecord(reconstructedHostname, payload, data);
     }
