@@ -33,7 +33,7 @@ cmake_dependent_option(EMIL_ENABLE_COVERAGE "Enable compiler flags for code cove
 # targets of the current build. When doing a 'cross-build' this
 # should be set to the export name of the 'host' build.
 option(EMIL_GENERATE_PACKAGE_CONFIG "Enable generation of package configuration and install files" On)
-set(EMIL_PACKAGE_CONFIG_EXPORT_NAMESPACE "emil::" CACHE STRING "Namespace used for exported targets")
+set(EMIL_PACKAGE_CONFIG_EXPORT_NAMESPACE "${PROJECT_NAME}::" CACHE STRING "Namespace used for exported targets")
 set(EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE "" CACHE STRING "Namespace used to reference imported targets")
 
 set(CMAKE_CXX_STANDARD 17)
@@ -144,7 +144,7 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
     endforeach()
 
     write_basic_package_version_file(
-        "${CMAKE_CURRENT_BINARY_DIR}/cmake/emilConfigVersion.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}ConfigVersion.cmake"
         COMPATIBILITY AnyNewerVersion
         # When cross-compiling for a 32-bit architecture and re-using host tooling from a 64-bit architecture
         # ARCH_INDEPENDENT is necessary here. See: https://cmake.org/cmake/help/latest/module/CMakePackageConfigHelpers.html.
@@ -152,14 +152,14 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
     )
 
     configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in
-        "${CMAKE_CURRENT_BINARY_DIR}/cmake/emilConfig.cmake"
-        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/emil
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}Config.cmake"
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
         NO_CHECK_REQUIRED_COMPONENTS_MACRO
     )
 
     install(FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/cmake/emilConfig.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/cmake/emilConfigVersion.cmake"
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/emil
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}Config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}ConfigVersion.cmake"
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
     )
 endif()
