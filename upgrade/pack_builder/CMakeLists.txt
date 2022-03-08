@@ -50,7 +50,7 @@ if (TARGET_ARCH_X86)
         UpgradePackInputFactory.hpp
     )
 
-    if (BUILD_TESTING)
+    if (EMIL_BUILD_TESTS)
         add_subdirectory(test_helper)
         add_subdirectory(test)
     endif()
