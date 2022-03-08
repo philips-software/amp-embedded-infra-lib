@@ -4,6 +4,7 @@
 #include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
 #include "infra/stream/BoundedDequeInputStream.hpp"
 #include "infra/stream/BoundedVectorOutputStream.hpp"
+#include "infra/stream/LimitedOutputStream.hpp"
 #include "infra/util/BoundedList.hpp"
 #include "infra/util/SharedObjectAllocatorFixedSize.hpp"
 #include "infra/util/SharedOptional.hpp"
@@ -92,10 +93,10 @@ namespace services
 
     private:
         class StreamWriterMbedTls
-            : public infra::BoundedVectorStreamWriter
+            : public infra::LimitedStreamWriter::WithOutput<infra::BoundedVectorStreamWriter>
         {
         public:
-            explicit StreamWriterMbedTls(ConnectionMbedTls& connection);
+            explicit StreamWriterMbedTls(ConnectionMbedTls& connection, uint32_t size);
             ~StreamWriterMbedTls();
 
         private:

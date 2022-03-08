@@ -65,7 +65,7 @@ namespace services
             virtual void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
             virtual std::size_t Available() const override;
             virtual std::size_t ConstructSaveMarker() const override;
-            virtual std::size_t GetProcessedBytesSince(std::size_t marker) const;
+            virtual std::size_t GetProcessedBytesSince(std::size_t marker) const override;
             virtual infra::ByteRange SaveState(std::size_t marker) override;
             virtual void RestoreState(infra::ByteRange range) override;
             virtual infra::ByteRange Overwrite(std::size_t marker) override;

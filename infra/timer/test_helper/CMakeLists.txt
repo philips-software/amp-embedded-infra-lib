@@ -1,15 +1,13 @@
-ccola_component(timer_test_helper x86: static_library other: skip)
+add_library(infra.timer_test_helper EXCLUDE_FROM_ALL STATIC)
 
-    ccola_sources(
-        ClockFixture.cpp
-        ClockFixture.hpp
-        PerfectTimerService.cpp
-        PerfectTimerService.hpp
-    )
+target_link_libraries(infra.timer_test_helper PRIVATE
+    infra.timer
+    infra.util_test_helper
+)
 
-    ccola_dependencies(
-        timer
-        util_test_helper
-    )
-
-ccola_end_component()
+target_sources(infra.timer_test_helper PRIVATE
+    ClockFixture.cpp
+    ClockFixture.hpp
+    PerfectTimerService.cpp
+    PerfectTimerService.hpp
+)

@@ -1,38 +1,37 @@
-ccola_component(tracer static_library)
+add_library(services.tracer EXCLUDE_FROM_ALL STATIC)
+install(TARGETS services.tracer EXPORT emilServicesTargets)
 
-    ccola_sources(
-        GlobalTracer.cpp
-        GlobalTracer.hpp
-        StreamWriterOnSerialCommunication.cpp
-        StreamWriterOnSerialCommunication.hpp
-        StreamWriterOnSynchronousSerialCommunication.cpp
-        StreamWriterOnSynchronousSerialCommunication.hpp
-        Tracer.cpp
-        Tracer.hpp
-        TracerOnIoOutputInfrastructure.cpp
-        TracerOnIoOutputInfrastructure.hpp
-        TracerWithDateTime.cpp
-        TracerWithDateTime.hpp
-        TracerWithTime.cpp
-        TracerWithTime.hpp
-        TracerAdapterPrintf.cpp
-        TracerAdapterPrintf.hpp
-        TracingFlash.cpp
-        TracingFlash.hpp
-        TracingInputStream.cpp
-        TracingInputStream.hpp
-        TracingOutputStream.cpp
-        TracingOutputStream.hpp
-    )
-
-    ccola_dependencies(
-        hal.interfaces
-        hal.synchronous_interfaces
-        infra.stream
-    )
-
-ccola_end_component()
-
-ccola_subdirectories(
-    test
+target_link_libraries(services.tracer PUBLIC
+    hal.interfaces
+    hal.synchronous_interfaces
+    infra.stream
 )
+
+target_sources(services.tracer PRIVATE
+    GlobalTracer.cpp
+    GlobalTracer.hpp
+    StreamWriterOnSerialCommunication.cpp
+    StreamWriterOnSerialCommunication.hpp
+    StreamWriterOnSynchronousSerialCommunication.cpp
+    StreamWriterOnSynchronousSerialCommunication.hpp
+    Tracer.cpp
+    Tracer.hpp
+    TracerOnIoOutputInfrastructure.cpp
+    TracerOnIoOutputInfrastructure.hpp
+    TracerWithDateTime.cpp
+    TracerWithDateTime.hpp
+    TracerWithTime.cpp
+    TracerWithTime.hpp
+    TracerAdapterPrintf.cpp
+    TracerAdapterPrintf.hpp
+    TracingFlash.cpp
+    TracingFlash.hpp
+    TracingInputStream.cpp
+    TracingInputStream.hpp
+    TracingOutputStream.cpp
+    TracingOutputStream.hpp
+)
+
+if (EMIL_BUILD_TESTS)
+    add_subdirectory(test)
+endif()

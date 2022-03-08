@@ -31,7 +31,7 @@ namespace infra
 
         void Pop(std::size_t numToPop);
 
-        MemoryRange<T> ContiguousRange() const;
+        MemoryRange<T> ContiguousRange(size_t offset = 0) const;
 
     private:
         MemoryRange<T> storage;
@@ -135,14 +135,22 @@ namespace infra
     }
 
     template<class T>
-    MemoryRange<T> CyclicBuffer<T>::ContiguousRange() const
+    MemoryRange<T> CyclicBuffer<T>::ContiguousRange(size_t offset) const
     {
-        if (isFull || front > back)
-            return MemoryRange<T>(front, storage.end());
-        else
-            return MemoryRange<T>(front, back);
-    }
+        assert(offset == 0 || offset < Size());
 
+        if (Empty())
+            return MemoryRange<T>();
+
+        auto offsetFront = front + offset;
+        if (offsetFront >= storage.end())
+            offsetFront = storage.begin() + (offsetFront - storage.end());
+        
+        if (offsetFront >= back)
+            return MemoryRange<T>(offsetFront, storage.end());
+        else
+            return MemoryRange<T>(offsetFront, back);
+    }
 }
 
 #endif

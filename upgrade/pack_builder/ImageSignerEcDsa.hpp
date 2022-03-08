@@ -1,5 +1,5 @@
-#ifndef UPGRADE_PACK_BUILD_LIBRARY_IMAGE_SIGNER_EC_DSA_HPP
-#define UPGRADE_PACK_BUILD_LIBRARY_IMAGE_SIGNER_EC_DSA_HPP
+#ifndef UPGRADE_IMAGE_SIGNER_EC_DSA_HPP
+#define UPGRADE_IMAGE_SIGNER_EC_DSA_HPP
 
 #include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
 #include "infra/util/ByteRange.hpp"
@@ -34,7 +34,6 @@ namespace application
         infra::ConstByteRange publicKey;
         infra::ConstByteRange privateKey;
         static hal::SynchronousRandomDataGenerator* randomDataGenerator;
-        std::string keyFileName;
         std::array<uint8_t, 32> hash;
         std::array<uint8_t, keyLength / 8 * 2> signature;
     };

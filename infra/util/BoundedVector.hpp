@@ -134,6 +134,12 @@ namespace infra
         void swap(BoundedVector<T>& x, BoundedVector<T>& y);
 
     template<class T>
+        typename BoundedVector<T>::size_type erase(BoundedVector<T>& c, const T& value);
+
+    template<class T, class Pred>
+        typename BoundedVector<T>::size_type erase_if(BoundedVector<T>& c, Pred pred);
+
+    template<class T>
         MemoryRange<T> MakeRange(infra::BoundedVector<T>& container);
     template<class T>
         MemoryRange<const T> MakeRange(const infra::BoundedVector<T>& container);
@@ -654,6 +660,36 @@ namespace infra
     void swap(BoundedVector<T>& x, BoundedVector<T>& y)
     {
         x.swap(y);
+    }
+
+    template<class T>
+    typename BoundedVector<T>::size_type erase(BoundedVector<T>& c, const T& value)
+    {
+        return erase_if(c, [&value](const auto& v) { return v == value; });
+    }
+
+    template<class T, class Pred>
+    typename BoundedVector<T>::size_type erase_if(BoundedVector<T>& c, Pred pred)
+    {
+        auto in = c.begin();
+        auto out = c.begin();
+        while (in != c.end())
+        {
+            if (pred(*in))
+                ++in;
+            else
+            {
+                if (in != out)
+                    *out = std::move(*in);
+
+                ++in;
+                ++out;
+            }
+        }
+
+        auto result = c.end() - out;
+        c.erase(out, c.end());
+        return result;
     }
 
     template<class T>

@@ -156,7 +156,7 @@ namespace services
             case IPVersions::ipv6:
                 return IP6_ADDR_ANY;
             case IPVersions::both:
-                return IP_ADDR_ANY;
+                return IP_ANY_TYPE;
             default:
                 std::abort();
         }

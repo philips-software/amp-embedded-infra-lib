@@ -12,21 +12,40 @@ env:
   CMAKE_BUILD_PARALLEL_LEVEL: 2
   GTEST_COLOR: 1
 jobs:
-  build_test:
-    name: Build & Test
+  host_build_test:
+    name: Host Build & Test
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
       - name: Build and Test
         run: |
-          cmake -E make_directory Build && cd Build
-          cmake .. -DCCOLA_INSTALL_DIR=Install -DCMAKE_BUILD_TYPE=Debug
-          cmake --build .
-          ctest -C Debug -T Test --no-compress-output --output-on-failure
+          cmake -B Build -DCMAKE_BUILD_TYPE=Debug
+          cmake --build Build --config Debug
+          pushd Build && ctest -Q -C Debug -T Test --no-compress-output --output-on-failure
+  embedded_build:
+    name: Embedded Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        gcc: ["5-2016-q3", "6-2017-q2", "7-2018-q2", "8-2019-q3"]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install GNU Arm Embedded Toolchain ${{ matrix.gcc }}
+        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        with:
+          release: ${{ matrix.gcc }}
+      - uses: seanmiddleditch/gha-setup-ninja@v3
+      - uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: ${{ matrix.gcc }}
+      - run: |
+          cmake -B Build-Host -G Ninja -DCMAKE_BUILD_TYPE=Release -DEMIL_BUILD_TESTS=Off -DEMIL_BUILD_EXAMPLES=Off -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake --build Build-Host --config Release
+          cmake -B Build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_PREFIX_PATH=${{ github.workspace }}/Build-Host -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-gcc.cmake -DEMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE="emil::"
+          cmake --build Build --config Release
   static_analysis:
     name: Static Analysis
     runs-on: ubuntu-latest
@@ -35,8 +54,7 @@ jobs:
       SONAR_SERVER_URL: "https://sonarcloud.io"
       BUILD_WRAPPER_OUT_DIR: build_wrapper_output
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
         with:
           fetch-depth: 0 # Disable shallow clone to enable blame information
       - uses: seanmiddleditch/gha-setup-ninja@v3
@@ -55,13 +73,13 @@ jobs:
           unzip -qqo "sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip"
           echo "${PWD}/build-wrapper-linux-x86" >> $GITHUB_PATH
           echo "${PWD}/sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-linux/bin" >> $GITHUB_PATH
+      - uses: hendrikmuhs/ccache-action@v1
       - name: Build
         run: |
-          cmake -E make_directory Build
-          cmake -S . -B Build -G Ninja -DCCOLA_INSTALL_DIR=Install -DCCOLA_ENABLE_COVERAGE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
-          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build Build/ --config Debug
-          pushd Build && ctest -C Debug -T Test --no-compress-output --output-on-failure && popd
-          gcovr --sonarqube=coverage.xml --exclude-unreachable-branches --exclude-throw-branches -j 2 --exclude=.*/generated/.* --exclude=.*/examples/.* --exclude=.*/external/.* --exclude=.*/lwip/.* --exclude=.*/tracing/.* --exclude=.*/test/.*
+          cmake -B Build -G Ninja -DEMIL_ENABLE_COVERAGE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build Build --config Debug
+          pushd Build && ctest -Q -C Debug -T Test --no-compress-output --output-on-failure && popd
+          gcovr --sonarqube=coverage.xml --exclude-lines-by-pattern '.*assert\(.*\);|.*really_assert\(.*\);' --exclude-unreachable-branches --exclude-throw-branches -j 2 --exclude=.*/generated/.* --exclude=.*/examples/.* --exclude=.*/external/.* --exclude=.*/lwip/.* --exclude=.*/tracing/.* --exclude=.*/test/.*
       - name: Analysis
         env:
           # to get access to secrets.SONAR_TOKEN, provide GITHUB_TOKEN

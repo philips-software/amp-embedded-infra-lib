@@ -1,11 +1,7 @@
-ccola_package(arg_parser)
+if (TARGET_ARCH_X86)
+    add_library(arg_parser.args EXCLUDE_FROM_ALL INTERFACE)
 
-    ccola_component(args x86: source other: noncompile)
-
-        ccola_sources(
-            args.hxx
-        )
-
-    ccola_end_component()
-
-ccola_end_package()
+    target_include_directories(arg_parser.args INTERFACE
+        ${CMAKE_CURRENT_LIST_DIR}
+    )
+endif()

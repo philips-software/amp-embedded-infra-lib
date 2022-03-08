@@ -1,19 +1,29 @@
-ccola_component(echo_attributes x86: static_library other: skip)
+if (TARGET_ARCH_X86)
+    add_library(protobuf.echo_attributes EXCLUDE_FROM_ALL STATIC)
+    install(TARGETS protobuf.echo_attributes EXPORT emilProtobufTargets)
 
-    ccola_compile_options(
-    win:
-        /wd4018 /wd4251 /wd4273 /wd4800
+    target_compile_options(protobuf.echo_attributes PRIVATE
+        $<$<BOOL:${TARGET_BUILD_WIN}>:
+            $<$<CXX_COMPILER_ID:MSVC>:
+                /wd4018
+                /wd4251
+                /wd4273
+                /wd4800
+            >
+        >
     )
 
-    ccola_definitions(LIBPROTOC_EXPORTS)
+    set_target_properties(protobuf.echo_attributes PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-    protocol_buffer_cpp(EchoAttributes.proto)
-    protocol_buffer_csharp(EchoAttributes.proto)
-    protocol_buffer_java(EchoAttributes.proto)
-
-    ccola_dependencies(
-        libprotobuf
-        libprotoc
+    target_link_libraries(protobuf.echo_attributes PUBLIC
+        protobuf.libprotoc
     )
 
-ccola_end_component()
+    target_compile_definitions(protobuf.echo_attributes PRIVATE
+        LIBPROTOC_EXPORTS
+    )
+
+    protocol_buffer_cpp(protobuf.echo_attributes ${CMAKE_CURRENT_LIST_DIR}/EchoAttributes.proto)
+    protocol_buffer_csharp(protobuf.echo_attributes ${CMAKE_CURRENT_LIST_DIR}/EchoAttributes.proto)
+    protocol_buffer_java(protobuf.echo_attributes ${CMAKE_CURRENT_LIST_DIR}/EchoAttributes.proto)
+endif()

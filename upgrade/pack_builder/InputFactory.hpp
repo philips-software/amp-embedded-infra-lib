@@ -1,5 +1,5 @@
-#ifndef UPGRADE_PACK_BUILDER_LIBRARY_INPUT_FACTORY_HPP
-#define UPGRADE_PACK_BUILDER_LIBRARY_INPUT_FACTORY_HPP
+#ifndef UPGRADE_INPUT_FACTORY_HPP
+#define UPGRADE_INPUT_FACTORY_HPP
 
 #include "upgrade/pack_builder/Input.hpp"
 #include <memory>

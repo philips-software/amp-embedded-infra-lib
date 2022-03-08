@@ -1,27 +1,28 @@
-ccola_component(pack_builder_test gmock_test)
+add_executable(upgrade.pack_builder_test)
+gtest_discover_tests(upgrade.pack_builder_test AUTO)
 
-    ccola_sources(
-        ImageSecurityNone.cpp
-        ImageSecurityNone.hpp
-        TestBinaryObject.cpp
-        TestConfigParser.cpp
-        TestImageAuthenticatorHmac.cpp
-        TestImageEncryptorAes.cpp
-        TestImageSecurityXteaHmac.cpp
-        TestImageSignerEcDsa.cpp
-        TestImageSignerRsa.cpp
-        TestInputBinary.cpp
-        TestInputHex.cpp
-        TestSparseVector.cpp
-        TestUpgradePackBuilder.cpp
-    )
+target_link_libraries(upgrade.pack_builder_test PUBLIC
+    gmock_main
+    hal.synchronous_interfaces_test_doubles
+    hal.interfaces_test_doubles
+    infra.syntax
+    infra.timer_test_helper
+    upgrade.pack_builder
+    upgrade.pack_builder_test_helper
+)
 
-    ccola_dependencies(
-        pack_builder
-        infra.timer_test_helper
-        hal.synchronous_test_doubles
-        hal.test_doubles
-        infra.syntax
-    )
-
-ccola_end_component()
+target_sources(upgrade.pack_builder_test PRIVATE
+    TestBinaryObject.cpp
+    TestConfigParser.cpp
+    TestImageAuthenticatorHmac.cpp
+    TestImageEncryptorAes.cpp
+    TestImageSignerEcDsa.cpp
+    TestImageSignerHashOnly.cpp
+    TestInputBinary.cpp
+    TestInputCommand.cpp
+    TestInputHex.cpp
+    TestSparseVector.cpp
+    TestSupportedTargets.cpp
+    TestUpgradePackBuilder.cpp
+    TestUpgradePackInputFactory.cpp
+)

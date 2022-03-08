@@ -1,4 +1,4 @@
-#include "generated/proto_cpp/EchoAttributes.pb.h"
+#include "generated/EchoAttributes.pb.h"
 #include "google/protobuf/compiler/cpp/cpp_helpers.h"
 #include "google/protobuf/stubs/strutil.h"
 #include "protobuf/protoc_echo_plugin/EchoObjects.hpp"
@@ -268,7 +268,7 @@ namespace application
         ComputeMaxMessageSize();
     }
 
-    infra::Optional<uint32_t> EchoMessage::MaxMessageSize() const
+    std::optional<uint32_t> EchoMessage::MaxMessageSize() const
     {
         return maxMessageSize;
     }

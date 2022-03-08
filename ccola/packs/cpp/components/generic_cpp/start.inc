@@ -1,5 +1,0 @@
-set(CCOLA_COMPONENT_BINARY_NAME ${CCOLA_COMPONENT_NAME})
-ccola_make_absolute(CCOLA_COMPONENT_GENERIC_CPP_INFO "${CCOLA_PACK_DIR_cpp}/components/generic_cpp/generic_cpp.inc.conf")
-ccola_make_absolute(CCOLA_COMPONENT_GENERIC_CPP_PUBLIC_INFO "${CCOLA_PACK_DIR_cpp}/components/generic_cpp/generic_cpp_public.inc.conf")
-ccola_inheritable_include_directories(../..)
-ccola_include_directories(${CCOLA_DIR}/platforms ${CCOLA_GLOBAL_INCLUDE_DIRECTORIES})

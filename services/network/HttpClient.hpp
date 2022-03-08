@@ -30,7 +30,7 @@ namespace services
         ~HttpClientObserverFactory() = default;
 
     public:
-        enum ConnectFailReason
+        enum class ConnectFailReason
         {
             refused,
             connectionAllocationFailed,

@@ -1,10 +1,12 @@
-ccola_component(tiny_aes128 static_library)
+add_library(crypto.tiny_aes128 EXCLUDE_FROM_ALL STATIC)
+install(TARGETS crypto.tiny_aes128 EXPORT emilCryptoTargets)
 
-    ccola_inheritable_include_directories(.)
+target_include_directories(crypto.tiny_aes128 PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/../../>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)
 
-    ccola_sources(
-        TinyAes.c
-        TinyAes.h
-    )
-
-ccola_end_component()
+target_sources(crypto.tiny_aes128 PRIVATE
+    TinyAes.c
+    TinyAes.h
+)

@@ -1,13 +1,31 @@
-ccola_component(protoc_echo_plugin_lib x86: static_library other: skip)
+if (TARGET_ARCH_X86)
+    add_library(protobuf.protoc_echo_plugin_lib EXCLUDE_FROM_ALL STATIC)
 
-    ccola_compile_options(
-    win:
-        /wd4018 /wd4251 /wd4273 /wd4800
+    target_compile_options(protobuf.protoc_echo_plugin_lib PRIVATE
+        $<$<BOOL:${TARGET_BUILD_WIN}>:
+            $<$<CXX_COMPILER_ID:MSVC>:
+                /wd4018
+                /wd4251
+                /wd4273
+                /wd4800
+            >
+        >
     )
 
-    ccola_inheritable_definitions(LIBPROTOC_EXPORTS)
+    target_compile_definitions(protobuf.protoc_echo_plugin_lib PRIVATE
+        LIBPROTOC_EXPORTS
+    )
 
-    ccola_sources(
+    target_link_libraries(protobuf.protoc_echo_plugin_lib PUBLIC
+        protobuf.echo_attributes
+    )
+
+    target_include_directories(protobuf.protoc_echo_plugin_lib PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/../../>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+    )
+
+    target_sources(protobuf.protoc_echo_plugin_lib PRIVATE
         CppFormatter.cpp
         CppFormatter.hpp
         EchoObjects.cpp
@@ -16,28 +34,23 @@ ccola_component(protoc_echo_plugin_lib x86: static_library other: skip)
         ProtoCEchoPlugin.hpp
     )
 
-    ccola_dependencies(
-        libprotobuf
-        libprotoc
-        echo_attributes
-        infra.stream
+    add_executable(protobuf.protoc_echo_plugin)
+
+    target_link_libraries(protobuf.protoc_echo_plugin PUBLIC
+        protobuf.protoc_echo_plugin_lib
     )
 
-ccola_end_component()
-
-ccola_component(protoc_echo_plugin x86: executable other: skip)
-
-    ccola_compile_options(
-    win:
-        /wd4018 /wd4251 /wd4273 /wd4800
-    )
-
-    ccola_sources(
+    target_sources(protobuf.protoc_echo_plugin PRIVATE
         Main.cpp
     )
 
-    ccola_dependencies(
-        protoc_echo_plugin_lib
-    )
+    if (EMIL_BUILD_TESTS)
+        add_subdirectory(test)
+    endif()
 
-ccola_end_component()
+    install(TARGETS
+        protobuf.protoc_echo_plugin_lib
+        protobuf.protoc_echo_plugin
+        EXPORT emilProtobufTargets
+    )
+endif()

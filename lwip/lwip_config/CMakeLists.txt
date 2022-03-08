@@ -1,15 +1,16 @@
-ccola_component(lwip_conf static_library)
+if (TARGET_BUILD_CORTEX)
+    add_library(lwip.lwip_conf EXCLUDE_FROM_ALL STATIC)
 
-    ccola_inheritable_include_directories(
-        .
-    )
-
-    ccola_sources(
-        arch/cc.h
-        arch/perf.h
-        lwipopts.h
-    win?noncompile=true
+    target_sources(lwip.lwip_conf PRIVATE
         sys_now.cpp
     )
+else()
+    add_library(lwip.lwip_conf EXCLUDE_FROM_ALL INTERFACE)
+endif()
 
-ccola_end_component()
+install(TARGETS lwip.lwip_conf EXPORT emilLwipTargets)
+
+target_include_directories(lwip.lwip_conf INTERFACE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)

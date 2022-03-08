@@ -1,18 +1,16 @@
-ccola_component(pack source)
+add_library(upgrade.pack INTERFACE)
 
-    ccola_sources(
-        UpgradePackHeader.hpp
-        KeyDefinitions.hpp
-    )
+target_include_directories(upgrade.pack INTERFACE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)
 
-    ccola_dependencies(
-        infra.util
-    )
+target_link_libraries(upgrade.pack INTERFACE
+    infra.util
+)
 
-ccola_end_component()
+add_library(upgrade.pack_keys EXCLUDE_FROM_ALL STATIC)
 
-ccola_component(pack_keys static_library)
+install(TARGETS upgrade.pack_keys upgrade.pack EXPORT emilUpgradeTargets)
 
-    protocol_buffer_echo_cpp(UpgradeKeys.proto)
-
-ccola_end_component()
+protocol_buffer_echo_cpp(upgrade.pack_keys UpgradeKeys.proto)

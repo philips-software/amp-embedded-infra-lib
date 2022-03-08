@@ -454,6 +454,30 @@ namespace services
             RespondToRequest(*parser, *connection);
     }
 
+    HttpPageWithContent::HttpPageWithContent(infra::BoundedConstString path, infra::BoundedConstString body, infra::BoundedConstString contentType)
+        : SimpleHttpResponse(http_responses::ok, body)
+        , path(path)
+        , contentType(contentType)
+    {}
+
+    bool HttpPageWithContent::ServesRequest(const infra::Tokenizer& pathTokens) const
+    {
+        return pathTokens.TokenAndRest(0) == path;
+    }
+
+    void HttpPageWithContent::RespondToRequest(HttpRequestParser& parser, HttpServerConnection& connection)
+    {
+        if (parser.Verb() == HttpVerb::get)
+            connection.SendResponse(*this);
+        else
+            connection.SendResponse(HttpResponseMethodNotAllowed::Instance());
+    }
+
+    infra::BoundedConstString HttpPageWithContent::ContentType() const
+    {
+        return contentType;
+    }
+
     DefaultHttpServer::DefaultHttpServer(infra::BoundedString& buffer, ConnectionFactory& connectionFactory, uint16_t port)
         : SingleConnectionListener(connectionFactory, port, { connectionCreator })
         , buffer(buffer)

@@ -1,12 +1,12 @@
-#ifndef UPGRADE_PACK_UPGRADE_PACK_HEADER_HPP
-#define UPGRADE_PACK_UPGRADE_PACK_HEADER_HPP
+#ifndef UPGRADE_UPGRADE_PACK_HEADER_HPP
+#define UPGRADE_UPGRADE_PACK_HEADER_HPP
 
 #include <array>
 #include <cstdint>
 
 namespace application
 {
-    enum class UpgradePackStatus: uint8_t
+    enum class UpgradePackStatus : uint8_t
     {
         empty = 0xff,                   // 1111.1111
         downloaded = 0xfe,              // 1111.1110
@@ -40,8 +40,8 @@ namespace application
         uint32_t errorCode;             // Set by the boot loaders upon detection of an error. 0-999 is reserved by the reference boot loaders.
         uint32_t signedContentsLength;
 
-        uint16_t signatureMethod;       // Identifier that indicates the signature method chosen. 1 = RSA.
-        uint16_t signatureLength;       // Size of the signature. 128 for RSA
+        uint16_t signatureMethod;       // Identifier that indicates the signature method chosen. 1 = ECDSA.
+        uint16_t signatureLength;       // Size of the signature. 56 for ECDSA.
     };
 
     static_assert(sizeof(UpgradePackHeaderPrologue) == 16, "Incorrect size");
@@ -52,10 +52,10 @@ namespace application
         uint16_t headerLength;                  // sizeof(UpgradePackHeaderPrologue) + signatureLength + sizeof(UpgradePackHeaderEpilogue)
         uint32_t numberOfImages;
         std::array<char, 64> productName;       // Product-specific name, checked by bootloader in order to avoid
-                                                // flashing a multicooker with air purifier firmware
+                                                // flashing product 'A' with product 'B' firmware
         std::array<char, 64> productVersion;    // Product-specific version string
-        std::array<char, 64> componentName;     // HSDP component name
-        uint32_t componentVersion;              // HSDP component version
+        std::array<char, 64> componentName;     // Component name
+        uint32_t componentVersion;              // Component version
     };
 
     static_assert(sizeof(UpgradePackHeaderEpilogue) == 204, "Incorrect size");
@@ -65,8 +65,8 @@ namespace application
         uint32_t lengthOfHeaderAndImage;    // sizeof(ImageHeaderPrologue) + binaryLength rounded up to multiple of 4,
                                             // filled out with zeros.
         std::array<char, 8> targetName;     // Indication for which upgrader to use. Some targetNames may be product-specific.
-                                            // Generic: "boot1st", "boot2nd", "wifi", filled out with zeros.
-        uint32_t encryptionAndMacMethod;    // Identifier that indicates the encryption and MAC method chosen. 1 = aes, 2 = xtea/hmac.
+                                            // Generic: "boot1st", "boot2nd", "app", filled out with zeros.
+        uint32_t encryptionAndMacMethod;    // Identifier that indicates the encryption and MAC method chosen. 1 = aes.
         //uint8_t[depends on encryptionAndMacMethod] macAndIV;
         //// Start of encryption/mac
     };

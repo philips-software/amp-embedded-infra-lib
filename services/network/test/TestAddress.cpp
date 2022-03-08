@@ -1,5 +1,5 @@
+#include "services/network/Address.hpp"
 #include "gmock/gmock.h"
-#include "network/Address.hpp"
 
 namespace
 {
@@ -42,4 +42,3 @@ TEST_F(AddressTest, ParseIpAddress)
     EXPECT_EQ(infra::none, services::ParseIpAddress("111.122.133."));
     EXPECT_EQ(infra::none, services::ParseIpAddress("1111:2222:3333:4444:5555:6666:7777:"));
 }
-

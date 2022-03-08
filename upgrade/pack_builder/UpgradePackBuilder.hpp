@@ -1,5 +1,5 @@
-#ifndef UPGRADE_PACK_BUILD_LIBRARY_UPGRADE_PACK_BUILDER_HPP
-#define UPGRADE_PACK_BUILD_LIBRARY_UPGRADE_PACK_BUILDER_HPP
+#ifndef UPGRADE_UPGRADE_PACK_BUILDER_HPP
+#define UPGRADE_UPGRADE_PACK_BUILDER_HPP
 
 #include "hal/interfaces/FileSystem.hpp"
 #include "infra/util/MemoryRange.hpp"
@@ -32,7 +32,7 @@ namespace application
         UpgradePackBuilder(const HeaderInfo& headerInfo, std::vector<std::unique_ptr<Input>>&& inputs, ImageSigner& signer);
 
         std::vector<uint8_t>& UpgradePack();
-        void WriteUpgradePack(const std::string& fileName, hal::FileSystem& fileSystem);
+        void WriteUpgradePack(const hal::filesystem::path& fileName, hal::FileSystem& fileSystem);
 
     private:
         void CreateUpgradePack();

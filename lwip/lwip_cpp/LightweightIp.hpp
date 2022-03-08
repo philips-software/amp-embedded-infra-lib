@@ -2,11 +2,12 @@
 #define LWIP_LIGHTWEIGHT_IP_HPP
 
 #include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
-#include "infra/util/InterfaceConnector.hpp"
+#include "infra/util/ProxyCreator.hpp"
 #include "lwip/lwip_cpp/ConnectionLwIp.hpp"
 #include "lwip/lwip_cpp/DatagramLwIp.hpp"
 #include "lwip/lwip_cpp/MulticastLwIp.hpp"
 #include "services/network/ConnectionStatus.hpp"
+#include "services/util/Stoppable.hpp"
 
 namespace services
 {
@@ -16,7 +17,7 @@ namespace services
         , public MulticastLwIp
         , public IPv4Info
         , public ConnectionStatus
-        , public infra::InterfaceConnector<LightweightIp>
+        , public infra::IntrusiveList<LightweightIp>::NodeType
     {
     public:
         template<std::size_t MaxListeners, std::size_t MaxConnectors, std::size_t MaxConnections>
@@ -25,9 +26,9 @@ namespace services
                 infra::BoundedList<ConnectorLwIp>::WithMaxSize<MaxConnectors>>,
                 AllocatorConnectionLwIp::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxConnections>>;
 
-        LightweightIp(AllocatorListenerLwIp& listenerAllocator, infra::BoundedList<ConnectorLwIp>& connectors, AllocatorConnectionLwIp& connectionAllocator, hal::SynchronousRandomDataGenerator& randomDataGenerator);
-
-        uint32_t Rand();
+        LightweightIp(AllocatorListenerLwIp& listenerAllocator, infra::BoundedList<ConnectorLwIp>& connectors, AllocatorConnectionLwIp& connectionAllocator,
+            hal::SynchronousRandomDataGenerator& randomDataGenerator, infra::CreatorBase<services::Stoppable, void(LightweightIp& lightweightIp)>& connectedCreator);
+        ~LightweightIp();
 
         //Implementation of ConnectionStatus
         virtual bool PendingSend() const override;
@@ -37,8 +38,25 @@ namespace services
         virtual IPv4InterfaceAddresses GetIPv4InterfaceAddresses() const override;
 
     private:
-        hal::SynchronousRandomDataGenerator& randomDataGenerator;
+        void RegisterInstance();
+        void DeregisterInstance();
+        static void InstanceCallback(netif* netif, netif_nsc_reason_t reason, const netif_ext_callback_args_t* args);
+
+        void ExtCallback(netif_nsc_reason_t reason, const netif_ext_callback_args_t* args);
+        void OnStopped();
+
+    private:
         infra::TimerRepeating sysCheckTimer;
+
+        services::IPv4Address ipv4Address;
+
+        infra::CreatorBase<services::Stoppable, void(LightweightIp& lightweightIp)>& connectedCreator;
+        infra::Optional<infra::ProxyCreator<services::Stoppable, void(LightweightIp& lightweightIp)>> connected;
+        bool stopping = false;
+        bool starting = false;
+
+        static infra::IntrusiveList<LightweightIp> instances;
+        static netif_ext_callback_t instanceCallback;
     };
 }
 

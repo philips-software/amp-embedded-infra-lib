@@ -1,12 +1,12 @@
-ccola_component(test_doubles_test gmock_test)
+add_executable(hal.interfaces_test_doubles_test)
+gtest_discover_tests(hal.interfaces_test_doubles_test AUTO)
 
-    ccola_sources(
-        TestI2cRegisterAccessMock.cpp
-    )
+target_link_libraries(hal.interfaces_test_doubles_test PUBLIC
+    gmock_main
+    hal.interfaces_test_doubles
+    infra.event_test_helper
+)
 
-    ccola_dependencies(
-        test_doubles
-        infra.event_test_helper
-    )
-
-ccola_end_component()
+target_sources(hal.interfaces_test_doubles_test PRIVATE
+    TestI2cRegisterAccessMock.cpp
+)

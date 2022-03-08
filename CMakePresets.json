@@ -1,0 +1,46 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "defaults",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "generator": "Ninja Multi-Config"
+    },
+    {
+      "name": "lib",
+      "displayName": "library",
+      "description": "builds embeddedinfralib as a library",
+      "inherits": "defaults",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/../toolchain/gcc.toolchain.cmake"
+      }
+    },
+    {
+      "name": "host",
+      "displayName": "host",
+      "description": "builds embeddedinfralib and tooling for host",
+      "inherits": "defaults"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "all",
+      "configuration": "Debug",
+      "configurePreset": "host"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "unit tests",
+      "configuration": "Debug",
+      "configurePreset": "host"
+    }
+  ]
+}

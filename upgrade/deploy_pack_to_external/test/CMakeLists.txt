@@ -1,13 +1,13 @@
-ccola_component(deploy_pack_to_external_test gmock_test)
+add_executable(upgrade.deploy_pack_to_external_test)
+gtest_discover_tests(upgrade.deploy_pack_to_external_test AUTO)
 
-    ccola_sources(
-        TestDeployPackToExternal.cpp
-    )
+target_link_libraries(upgrade.deploy_pack_to_external_test PUBLIC
+    gmock_main
+    hal.interfaces_test_doubles
+    infra.timer_test_helper
+    upgrade.deploy_pack_to_external
+)
 
-    ccola_dependencies(
-        deploy_pack_to_external
-        hal.test_doubles
-        infra.timer_test_helper
-    )
-
-ccola_end_component()
+target_sources(upgrade.deploy_pack_to_external_test PRIVATE
+    TestDeployPackToExternal.cpp
+)

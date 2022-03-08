@@ -61,7 +61,14 @@ TEST(StaticStorageTest, TestInheritanceTree)
     infra::StaticStorageForInheritanceTree<A, B, C> c;
 
     EXPECT_EQ(sizeof(b), 2 * sizeof(void*));
-    EXPECT_EQ(sizeof(c), 3 * sizeof(uint64_t));
+
+    struct Helper
+    {
+        void* a;
+        uint64_t b;
+        void* c;
+    };
+    EXPECT_EQ(sizeof(c), sizeof(Helper));
 
     b.Construct<B>();
     c.Construct<C>(5);

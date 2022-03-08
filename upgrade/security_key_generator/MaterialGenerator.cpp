@@ -1,8 +1,5 @@
 #include "upgrade/security_key_generator/MaterialGenerator.hpp"
 #include "crypto/micro-ecc/uECC.h"
-#include "mbedtls/ctr_drbg.h"
-#include "mbedtls/entropy.h"
-#include "mbedtls/pk_internal.h"
 #include <fstream>
 #include <iomanip>
 #include <string>
@@ -75,7 +72,7 @@ namespace application
         PrintVector(file, "aesKey", aesKey);
         PrintVector(file, "ecDsa224PublicKey", ecDsa224PublicKey);
 
-        file << R"(#ifdef CCOLA_HOST_BUILD
+        file << R"(#ifdef EMIL_HOST_BUILD
 // Private keys are only available in the upgrade builder, which is compiled only on the host.
 // So when compiling for any embedded platform, these keys are not included
 

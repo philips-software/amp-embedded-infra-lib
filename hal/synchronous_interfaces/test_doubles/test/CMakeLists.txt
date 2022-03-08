@@ -1,11 +1,11 @@
-ccola_component(synchronous_test_doubles_test gmock_test)
+add_executable(hal.synchronous_interfaces_test_doubles_test)
+gtest_discover_tests(hal.synchronous_interfaces_test_doubles_test AUTO)
 
-    ccola_sources(
-        TestSynchronousFixedRandomDataGenerator.cpp
-    )
+target_link_libraries(hal.synchronous_interfaces_test_doubles_test PUBLIC
+    gmock_main
+    hal.synchronous_interfaces_test_doubles
+)
 
-    ccola_dependencies(
-        synchronous_test_doubles
-    )
-
-ccola_end_component()
+target_sources(hal.synchronous_interfaces_test_doubles_test PRIVATE
+    TestSynchronousFixedRandomDataGenerator.cpp
+)

@@ -1,5 +1,5 @@
-#ifndef UPGRADE_PACK_BUILDER_LIBRARY_ELF_HPP
-#define UPGRADE_PACK_BUILDER_LIBRARY_ELF_HPP
+#ifndef UPGRADE_ELF_HPP
+#define UPGRADE_ELF_HPP
 
 #include <cstdint>
 
@@ -53,6 +53,5 @@ struct elf_section_header_t
 	uint32_t allingment;
 	uint32_t entry_size;
 };
-
 
 #endif

@@ -66,7 +66,7 @@ namespace services
             std::array<uint8_t, 16> second;
         } result;
 
-        auto res = mbedtls_sha256_ret(reinterpret_cast<const unsigned char*>(name.begin()), name.size(), result.first.data(), 0);
+        auto res = mbedtls_sha256(reinterpret_cast<const unsigned char*>(name.begin()), name.size(), result.first.data(), 0);
         assert(res == 0);
 
         return result.first;

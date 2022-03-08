@@ -127,6 +127,7 @@ namespace services
         pbuf* receivedData = nullptr;
         std::size_t consumed = 0;
         bool dataReceivedScheduled = false;
+        bool closing = false;
 
         infra::SharedPtr<void> self;
     };

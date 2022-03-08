@@ -1,24 +1,24 @@
-ccola_component(protoc_echo_plugin_test gmock_test)
+add_executable(protobuf.protoc_echo_plugin_test)
+gtest_discover_tests(protobuf.protoc_echo_plugin_test AUTO)
 
-    ccola_compile_options(
-    win:
-        /wd4018 /wd4251 /wd4273 /wd4800
+protocol_buffer_echo_cpp(protobuf.protoc_echo_plugin_test TestMessages.proto)
+
+target_sources(protobuf.protoc_echo_plugin_test PRIVATE
+    TestCppFormatter.cpp
+    TestProtoCEchoPlugin.cpp
+)
+
+target_link_libraries(protobuf.protoc_echo_plugin_test PUBLIC
+    gmock_main
+    infra.event_test_helper
+    infra.util_test_helper
+    protobuf.protoc_echo_plugin_lib
+    services.network_test_doubles
+)
+
+if (TARGET_BUILD_WIN)
+    add_custom_command(TARGET protobuf.protoc_echo_plugin_test PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:protobuf.protoc_echo_plugin_test> $<TARGET_FILE_DIR:protobuf.protoc_echo_plugin_test>
+        COMMAND_EXPAND_LISTS
     )
-
-	protocol_buffer_csharp(TestMessages.proto)
-	protocol_buffer_java(TestMessages.proto)
-	protocol_buffer_echo_cpp(TestMessages.proto)
-
-    ccola_sources(
-        TestCppFormatter.cpp
-        TestProtoCEchoPlugin.cpp
-    )
-
-    ccola_dependencies(
-        protoc_echo_plugin_lib
-        infra.event_test_helper
-        infra.util_test_helper
-        services.network_test_doubles
-    )
-
-ccola_end_component()
+endif()

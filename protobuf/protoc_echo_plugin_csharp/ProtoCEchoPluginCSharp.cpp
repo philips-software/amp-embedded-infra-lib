@@ -1,4 +1,4 @@
-#include "generated/proto_cpp/EchoAttributes.pb.h"
+#include "generated/EchoAttributes.pb.h"
 #include "google/protobuf/compiler/cpp/cpp_helpers.h"
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"

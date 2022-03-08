@@ -14,7 +14,7 @@
 namespace services
 {
     class LightweightIpOverEthernet
-        : hal::EthernetMacObserver
+        : private hal::EthernetMacObserver
     {
     public:
         LightweightIpOverEthernet(hal::EthernetMac& ethernet, netif& netInterface);

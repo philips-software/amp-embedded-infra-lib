@@ -1,23 +1,13 @@
-ccola_component(http_server x86: executable other: skip)
+add_executable(examples.http_server)
+target_sources(examples.http_server PRIVATE TimeHttpPage.cpp TimeHttpPage.hpp)
+target_link_libraries(examples.http_server PUBLIC hal.generic)
 
-    ccola_add_version_header_dependency()
+if (TARGET_BUILD_WIN)
+    target_sources(examples.http_server PRIVATE MainWin.cpp)
+    target_link_libraries(examples.http_server PUBLIC services.network_win)
+endif()
 
-    ccola_sources(
-        TimeHttpPage.cpp
-        TimeHttpPage.hpp
-	win:
-        MainWin.cpp
-	unix:
-		MainUnix.cpp
-    )
-
-    ccola_dependencies(
-        infra.util
-        hal.generic
-	win:
-		services.network_win
-	unix:
-		services.network_bsd
-    )
-
-ccola_end_component()
+if (TARGET_BUILD_UNIX OR TARGET_BUILD_DARWIN)
+    target_sources(examples.http_server PRIVATE MainUnix.cpp)
+    target_link_libraries(examples.http_server PUBLIC services.network_bsd)
+endif()

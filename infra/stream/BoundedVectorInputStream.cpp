@@ -23,9 +23,11 @@ namespace infra
 
     uint8_t BoundedVectorInputStreamReader::Peek(StreamErrorPolicy& errorPolicy)
     {
-        uint8_t element = 0;
-        Extract(MakeByteRange(element), errorPolicy);
-        return element;
+        errorPolicy.ReportResult(!Empty());
+        if (!Empty())
+            return container[offset];
+        else
+            return 0;
     }
 
     ConstByteRange BoundedVectorInputStreamReader::ExtractContiguousRange(std::size_t max)

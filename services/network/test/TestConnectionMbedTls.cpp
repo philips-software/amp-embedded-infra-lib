@@ -2,8 +2,7 @@
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
-#include "mbedtls/config.h"
-#include "mbedtls/certs.h"
+#include "services/network/test_doubles/Certificates.hpp"
 #include "services/network/ConnectionMbedTls.hpp"
 #include "services/network/test_doubles/ConnectionLoopBack.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
@@ -18,11 +17,11 @@ public:
         : connectionFactory(network, serverCertificates, randomDataGenerator)
         , thisListener(infra::UnOwnedSharedPtr(*this))
     {
-        serverCertificates.AddCertificateAuthority(infra::BoundedConstString(mbedtls_test_ca_crt, mbedtls_test_ca_crt_len));
-        serverCertificates.AddOwnCertificate(infra::BoundedConstString(mbedtls_test_srv_crt, mbedtls_test_srv_crt_len), infra::BoundedConstString(mbedtls_test_srv_key, mbedtls_test_srv_key_len));
+        serverCertificates.AddCertificateAuthority(services::testCaCertificate);
+        serverCertificates.AddOwnCertificate(services::testServerCertificate, services::testServerKey, randomDataGenerator);
 
-        clientCertificates.AddCertificateAuthority(infra::BoundedConstString(mbedtls_test_ca_crt, mbedtls_test_ca_crt_len));
-        clientCertificates.AddOwnCertificate(infra::BoundedConstString(mbedtls_test_cli_crt, mbedtls_test_cli_crt_len), infra::BoundedConstString(mbedtls_test_cli_key, mbedtls_test_cli_key_len));
+        clientCertificates.AddCertificateAuthority(services::testCaCertificate);
+        clientCertificates.AddOwnCertificate(services::testClientCertificate, services::testClientKey, randomDataGenerator);
     }
 
     services::ServerConnectionObserverFactoryMock serverObserverFactory;

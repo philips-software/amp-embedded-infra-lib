@@ -1,8 +1,0 @@
-set(executable_path "${executable_path}")
-set(generation_command "${CMAKE_COMMAND}")
-if(CMAKE_CONFIGURATION_TYPES)
-    set(generation_args "--build;${CCOLA_BUILD_DIR};--config;RelWithDebInfo;--;/maxcpucount")
-else()
-    set(generation_args "--build;${CCOLA_BUILD_DIR}")
-endif()
-set(dependencies "${dependencies}")

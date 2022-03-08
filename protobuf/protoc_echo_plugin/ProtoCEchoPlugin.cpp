@@ -1,4 +1,4 @@
-#include "generated/proto_cpp/EchoAttributes.pb.h"
+#include "generated/EchoAttributes.pb.h"
 #include "google/protobuf/compiler/cpp/cpp_helpers.h"
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -568,7 +568,7 @@ namespace application
 
     void MessageGenerator::GenerateMaxMessageSize()
     {
-        if (message->MaxMessageSize() != infra::none)
+        if (message->MaxMessageSize() != std::nullopt)
         {
             auto fields = std::make_shared<Access>("public");
             fields->Add(std::make_shared<DataMember>("maxMessageSize", "static const uint32_t", google::protobuf::SimpleItoa(*message->MaxMessageSize())));

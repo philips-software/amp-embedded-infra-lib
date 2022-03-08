@@ -7,7 +7,7 @@
 #include "infra/util/ReverseRange.hpp"
 #include "infra/util/Variant.hpp"
 
-#ifdef CCOLA_HOST_BUILD
+#ifdef EMIL_HOST_BUILD
 #include <string>
 #endif
 
@@ -65,7 +65,7 @@ namespace infra
 
         void ToString(infra::BoundedString& result) const;
         void AppendTo(infra::BoundedString& result) const;
-#ifdef CCOLA_HOST_BUILD
+#ifdef EMIL_HOST_BUILD
         std::string ToStdString() const;
 #endif
 

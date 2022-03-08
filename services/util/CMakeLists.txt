@@ -1,72 +1,75 @@
-ccola_component(util static_library)
+add_library(services.util EXCLUDE_FROM_ALL STATIC)
+install(TARGETS services.util EXPORT emilServicesTargets)
 
-    ccola_sources(
-        ConfigurationStore.cpp
-        ConfigurationStore.hpp
-        CyclicStore.cpp
-        CyclicStore.hpp
-        DebouncedButton.cpp
-        DebouncedButton.hpp
-        DebugLed.cpp
-        DebugLed.hpp
-        FlashAlign.cpp
-        FlashAlign.hpp
-        FlashDelayedInit.cpp
-        FlashDelayedInit.hpp
-        FlashMultipleAccess.cpp
-        FlashMultipleAccess.hpp
-        FlashQuadSpi.cpp
-        FlashQuadSpi.hpp
-        FlashQuadSpiCypressFll.cpp
-        FlashQuadSpiCypressFll.hpp
-        FlashQuadSpiMicronN25q.cpp
-        FlashQuadSpiMicronN25q.hpp
-        FlashQuadSpiSingleSpeed.cpp
-        FlashQuadSpiSingleSpeed.hpp
-        FlashSpi.cpp
-        FlashSpi.hpp
-        FlashRegion.cpp
-        FlashRegion.hpp
-        GpioPinInverted.cpp
-        GpioPinInverted.hpp
-        I2cMultipleAccess.cpp
-        I2cMultipleAccess.hpp
-        LowPowerSerialCommunication.cpp
-        LowPowerSerialCommunication.hpp
-        LowPowerSpiMaster.cpp
-        LowPowerSpiMaster.hpp
-        MessageCommunication.hpp
-        MessageCommunicationCobs.cpp
-        MessageCommunicationCobs.hpp
-        MessageCommunicationWindowed.cpp
-        MessageCommunicationWindowed.hpp
-        RepeatingButton.cpp
-        RepeatingButton.hpp
-        SignalLed.cpp
-        SignalLed.hpp
-        SpiMasterWithChipSelect.cpp
-        SpiMasterWithChipSelect.hpp
-        SpiMultipleAccess.cpp
-        SpiMultipleAccess.hpp
-        Stoppable.hpp
-        Terminal.cpp
-        Terminal.hpp
-        TimeWithLocalization.cpp
-        TimeWithLocalization.hpp
-        WritableConfiguration.hpp
-    )
-
-    ccola_dependencies(
-        hal.interfaces
-        infra.util
-        infra.stream
-        infra.syntax
-        crypto.mbed_tls
-    )
-
-ccola_end_component()
-
-ccola_subdirectories(
-    test_doubles
-    test
+target_link_libraries(services.util PUBLIC
+    hal.interfaces
+    infra.syntax
+    mbedcrypto
 )
+
+target_sources(services.util PRIVATE
+    Aes.hpp
+    AesMbedTls.cpp
+    AesMbedTls.hpp
+    ConfigurationStore.cpp
+    ConfigurationStore.hpp
+    CyclicStore.cpp
+    CyclicStore.hpp
+    DebouncedButton.cpp
+    DebouncedButton.hpp
+    DebugLed.cpp
+    DebugLed.hpp
+    FlashAlign.cpp
+    FlashAlign.hpp
+    FlashDelayedInit.cpp
+    FlashDelayedInit.hpp
+    FlashMultipleAccess.cpp
+    FlashMultipleAccess.hpp
+    FlashQuadSpi.cpp
+    FlashQuadSpi.hpp
+    FlashQuadSpiCypressFll.cpp
+    FlashQuadSpiCypressFll.hpp
+    FlashQuadSpiMicronN25q.cpp
+    FlashQuadSpiMicronN25q.hpp
+    FlashQuadSpiSingleSpeed.cpp
+    FlashQuadSpiSingleSpeed.hpp
+    FlashSpi.cpp
+    FlashSpi.hpp
+    FlashRegion.cpp
+    FlashRegion.hpp
+    GpioPinInverted.cpp
+    GpioPinInverted.hpp
+    I2cMultipleAccess.cpp
+    I2cMultipleAccess.hpp
+    LowPowerSerialCommunication.cpp
+    LowPowerSerialCommunication.hpp
+    LowPowerSpiMaster.cpp
+    LowPowerSpiMaster.hpp
+    MessageCommunication.hpp
+    MessageCommunicationCobs.cpp
+    MessageCommunicationCobs.hpp
+    MessageCommunicationWindowed.cpp
+    MessageCommunicationWindowed.hpp
+    RepeatingButton.cpp
+    RepeatingButton.hpp
+    Sha256.hpp
+    Sha256MbedTls.cpp
+    Sha256MbedTls.hpp
+    SignalLed.cpp
+    SignalLed.hpp
+    SpiMasterWithChipSelect.cpp
+    SpiMasterWithChipSelect.hpp
+    SpiMultipleAccess.cpp
+    SpiMultipleAccess.hpp
+    Stoppable.hpp
+    Terminal.cpp
+    Terminal.hpp
+    TimeWithLocalization.cpp
+    TimeWithLocalization.hpp
+    WritableConfiguration.hpp
+)
+
+if (EMIL_BUILD_TESTS)
+    add_subdirectory(test)
+    add_subdirectory(test_doubles)
+endif()

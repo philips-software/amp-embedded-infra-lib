@@ -25,7 +25,8 @@ namespace services
         virtual services::DnsType DnsType() const = 0;
         virtual bool IsWaiting() const = 0;
         virtual void SetWaiting(bool waiting) = 0;
-        virtual void CheckAnswer(infra::BoundedString& hostname, DnsRecordPayload& payload, infra::ConstByteRange data) = 0;
+        virtual services::IPVersions IpVersion() const = 0;
+        virtual void CheckAnswer(services::IPVersions ipVersion, infra::BoundedString& hostname, DnsRecordPayload& payload, infra::ConstByteRange data) = 0;
         virtual void CheckAdditionalRecord(infra::BoundedString& hostname, DnsRecordPayload& payload, infra::ConstByteRange data) = 0;
         virtual void EndOfAnswerNotification() = 0;
     };
@@ -45,16 +46,19 @@ namespace services
 
         ~MdnsQueryImpl();
 
+        void SetIpVersion(services::IPVersions ipVersion);
+
         // Implementation of MdnsQuery
         virtual infra::BoundedConstString DnsHostname() const override;
         virtual services::DnsType DnsType() const override;
         virtual bool IsWaiting() const override;
+        virtual services::IPVersions IpVersion() const override;
         virtual void SetWaiting(bool waiting) override;
-        virtual void CheckAnswer(infra::BoundedString& hostname, DnsRecordPayload& payload, infra::ConstByteRange data) override;
+        virtual void CheckAnswer(services::IPVersions ipVersion, infra::BoundedString& hostname, DnsRecordPayload& payload, infra::ConstByteRange data) override;
         virtual void CheckAdditionalRecord(infra::BoundedString& hostname, DnsRecordPayload& payload, infra::ConstByteRange data) override;
         virtual void EndOfAnswerNotification() override;
 
-        void Ask();
+        void Ask(services::IPVersions ipVersion = services::IPVersions::ipv4);
 
     private:
         MdnsClient& mdnsClient;
@@ -64,6 +68,7 @@ namespace services
         infra::Function<void(infra::BoundedString hostname, DnsRecordPayload payload, infra::ConstByteRange data)> queryAdditionalRecordHit;
         bool processingQuery = false;
         bool waiting = false;
+        services::IPVersions ipVersion = services::IPVersions::ipv4;
     };
 
     class MdnsClient
@@ -110,7 +115,7 @@ namespace services
         class AnswerParser
         {
         public:
-            AnswerParser(MdnsClient& client, infra::StreamReaderWithRewinding& reader);
+            AnswerParser(MdnsClient& client, services::IPVersions ipVersion, infra::StreamReaderWithRewinding& reader);
 
         private:
             void Parse();
@@ -120,6 +125,7 @@ namespace services
 
         private:
             MdnsClient& client;
+            services::IPVersions ipVersion;
             infra::StreamReaderWithRewinding& reader;
             infra::DataInputStream::WithErrorPolicy stream{ reader, infra::noFail };
             std::size_t startMarker{ reader.ConstructSaveMarker() };

@@ -2,7 +2,7 @@
 
 extern "C"
 {
-    #include "TinyAes.h"
+#include "crypto/tiny-aes128/TinyAes.h"
 }
 
 namespace application

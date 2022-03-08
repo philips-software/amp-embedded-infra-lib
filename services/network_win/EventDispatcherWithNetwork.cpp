@@ -230,25 +230,26 @@ namespace services
         for (auto& weakConnection : connections)
         {
             if (infra::SharedPtr<ConnectionWin> connection = weakConnection)
-            {
-                connection->UpdateEventFlags();
-                events.push_back(connection->event);
-                functions.push_back([weakConnection]()
+                if (connection->socket != 0)
                 {
-                    if (infra::SharedPtr<ConnectionWin> connection = weakConnection)
+                    connection->UpdateEventFlags();
+                    events.push_back(connection->event);
+                    functions.push_back([weakConnection]()
                     {
-                        WSANETWORKEVENTS networkEvents;
-                        WSAEnumNetworkEvents(connection->socket, connection->event, &networkEvents);
+                        if (infra::SharedPtr<ConnectionWin> connection = weakConnection)
+                        {
+                            WSANETWORKEVENTS networkEvents;
+                            WSAEnumNetworkEvents(connection->socket, connection->event, &networkEvents);
 
-                        if ((networkEvents.lNetworkEvents & FD_READ) != 0)
-                            connection->Receive();
-                        if ((networkEvents.lNetworkEvents & FD_WRITE) != 0)
-                            connection->Send();
-                        if ((networkEvents.lNetworkEvents & FD_CLOSE) != 0)
-                            connection->Receive();
-                    }
-                });
-            }
+                            if ((networkEvents.lNetworkEvents & FD_READ) != 0)
+                                connection->Receive();
+                            if ((networkEvents.lNetworkEvents & FD_WRITE) != 0)
+                                connection->Send();
+                            if ((networkEvents.lNetworkEvents & FD_CLOSE) != 0)
+                                connection->Receive();
+                        }
+                    });
+                }
         }
 
         for (auto& weakDatagram : datagrams)

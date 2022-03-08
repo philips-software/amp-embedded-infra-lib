@@ -13,29 +13,24 @@ namespace services
         infra::TextOutputStream::WithErrorPolicy stream(*writer);
         formatter.FormatResponse(stream);
 
-        buffer.clear();
         writer = nullptr;
     }
 
     void CucumberWireProtocolConnectionObserver::DataReceived()
     {
+        buffer.clear();
+
         infra::SharedPtr<infra::StreamReader> reader = Subject().ReceiveStream();
         infra::TextInputStream::WithErrorPolicy stream(*reader);
 
         auto available = stream.Available();
-        if (available > buffer.max_size() - buffer.size())
-        {
-            while (!stream.Empty())
-                stream.ContiguousRange();
 
-            Subject().AckReceived();
-            // Report error buffer overflow.
-        }
-        else if (available > 0)
+        really_assert(available <= buffer.max_size());
+
+        if (available > 0)
         {
-            buffer.resize(buffer.size() + available);
-            auto justReceived = buffer.substr(buffer.size() - available);
-            stream >> justReceived;
+            buffer.resize(available);
+            stream >> buffer;
             Subject().AckReceived();
 
             if (parser.Valid(buffer))

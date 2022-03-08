@@ -1,5 +1,5 @@
+#include "upgrade/pack/UpgradePackHeader.hpp"
 #include "upgrade/pack_builder/UpgradePackBuilder.hpp"
-#include "upgrade/pack_builder/ImageSignerRsa.hpp"
 #include <algorithm>
 #include <cassert>
 
@@ -22,7 +22,7 @@ namespace application
         return upgradePack;
     }
 
-    void UpgradePackBuilder::WriteUpgradePack(const std::string& fileName, hal::FileSystem& fileSystem)
+    void UpgradePackBuilder::WriteUpgradePack(const hal::filesystem::path& fileName, hal::FileSystem& fileSystem)
     {
         assert(!upgradePack.empty());
 
@@ -71,9 +71,9 @@ namespace application
 
     void UpgradePackBuilder::AddImages()
     {
-        for (const std::unique_ptr<Input>& input : inputs)
+        for (const auto& input : inputs)
         {
-            std::vector<uint8_t> image = input->Image();
+            const auto& image = input->Image();
             upgradePack.insert(upgradePack.end(), image.begin(), image.end());
         }
     }

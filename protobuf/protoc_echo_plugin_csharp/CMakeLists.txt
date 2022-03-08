@@ -1,23 +1,22 @@
-ccola_component(protoc_echo_plugin_csharp x86: executable other: skip)
+if (TARGET_ARCH_X86)
+    add_executable(protobuf.protoc_echo_plugin_csharp)
+    install(TARGETS protobuf.protoc_echo_plugin_csharp EXPORT emilProtobufTargets)
 
-    ccola_compile_options(
-    win:
-        /wd4018 /wd4251 /wd4273 /wd4800
+    target_compile_options(protobuf.protoc_echo_plugin_csharp PRIVATE
+        $<$<BOOL:${TARGET_BUILD_WIN}>:
+            $<$<CXX_COMPILER_ID:MSVC>:
+                /wd4273
+            >
+        >
     )
 
-    ccola_inheritable_definitions(LIBPROTOC_EXPORTS)
+    target_link_libraries(protobuf.protoc_echo_plugin_csharp PUBLIC
+        protobuf.protoc_echo_plugin_lib
+    )
 
-    ccola_sources(
+    target_sources(protobuf.protoc_echo_plugin_csharp PRIVATE
         Main.cpp
         ProtoCEchoPluginCSharp.cpp
         ProtoCEchoPluginCSharp.hpp
     )
-
-    ccola_dependencies(
-        libprotobuf
-        libprotoc
-        echo_attributes
-        infra.stream
-    )
-
-ccola_end_component()
+endif()

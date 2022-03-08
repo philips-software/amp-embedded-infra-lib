@@ -434,10 +434,12 @@ TEST_F(CyclicStoreTest, RecoverFromAllDifferentGoodScenarios)
     const std::vector<uint8_t> first = { 0xfc, 0xf8, 1, 0, 55 };
     const std::vector<uint8_t> empty = { 0xff, 0xff, 0xff, 0xff, 0xff };
     const std::vector<uint8_t> used = { 0xfe, 0xf8, 1, 0, 44 };
+    const std::vector<uint8_t> usedWithSpaceLeft = { 0xfe, 0xf8, 1, 0, 44, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
+    const std::vector<uint8_t> usedWithSpaceLeftWritten = { 0xfe, 0xf8, 1, 0, 44, 0xf8, 1, 0, 66, 0xff, 0xff, 0xff, 0xff, 0xff };
     const std::vector<uint8_t> written = { 0xfe, 0xf8, 1, 0, 66 };
     const std::vector<uint8_t> usedAsFirst = { 0xfc, 0xf8, 1, 0, 44 };
 
-    const std::array<Scenario, 10> scenarios = { {
+    const std::array<Scenario, 11> scenarios = { {
         {
             std::vector<uint8_t>{ 55 },
             std::vector<std::vector<uint8_t>>{ first, empty },
@@ -487,6 +489,11 @@ TEST_F(CyclicStoreTest, RecoverFromAllDifferentGoodScenarios)
             std::vector<uint8_t>{ 44 },
             std::vector<std::vector<uint8_t>>{ used, used, empty, used, used },
             std::vector<std::vector<uint8_t>>{ used, used, written, usedAsFirst, used }
+        },
+        {
+            std::vector<uint8_t>{ 55 },
+            std::vector<std::vector<uint8_t>>{ used, usedWithSpaceLeft, first },
+            std::vector<std::vector<uint8_t>>{ used, usedWithSpaceLeftWritten, first }
         }
     } };
 

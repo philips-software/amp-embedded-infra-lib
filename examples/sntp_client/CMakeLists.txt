@@ -1,16 +1,5 @@
-ccola_component(sntp_client win: executable other: skip)
-
-    ccola_add_version_header_dependency()
-
-    ccola_sources(
-        MainWin.cpp
-    )
-
-    ccola_dependencies(
-        infra.util
-		services.util
-        services.network_win
-        hal.generic
-    )
-
-ccola_end_component()
+if (TARGET_BUILD_WIN)
+    add_executable(examples.sntp_client)
+    target_sources(examples.sntp_client PRIVATE MainWin.cpp)
+    target_link_libraries(examples.sntp_client PUBLIC hal.generic services.network_win services.util)
+endif()

@@ -1,5 +1,5 @@
-#ifndef UPGRADE_PACK_BUILDER_LIBRARY_INPUT_BINARY_HPP
-#define UPGRADE_PACK_BUILDER_LIBRARY_INPUT_BINARY_HPP
+#ifndef UPGRADE_INPUT_BINARY_HPP
+#define UPGRADE_INPUT_BINARY_HPP
 
 #include "hal/interfaces/FileSystem.hpp"
 #include "upgrade/pack/UpgradePackHeader.hpp"

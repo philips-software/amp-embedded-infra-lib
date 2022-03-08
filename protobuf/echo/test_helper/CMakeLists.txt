@@ -1,12 +1,10 @@
-ccola_component(test_helper static_library)
+add_library(protobuf.test_helper EXCLUDE_FROM_ALL STATIC)
 
-    ccola_sources(
-        EchoSingleLoopback.cpp
-        EchoSingleLoopback.hpp
-    )
+target_link_libraries(protobuf.test_helper PUBLIC
+    protobuf.echo
+)
 
-    ccola_dependencies(
-        protobuf.echo
-    )
-
-ccola_end_component()
+target_sources(protobuf.test_helper PRIVATE
+    EchoSingleLoopback.cpp
+    EchoSingleLoopback.hpp
+)

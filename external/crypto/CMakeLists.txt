@@ -1,9 +1,5 @@
-ccola_package(crypto)
-
-	ccola_subdirectories(
-		micro-ecc
-		mbedtls-2.13.0
-		tiny-aes128
-	)
-
-ccola_end_package()
+if (EMIL_INCLUDE_MBEDTLS)
+    add_subdirectory(mbedtls)
+endif()
+add_subdirectory(micro-ecc)
+add_subdirectory(tiny-aes128)
