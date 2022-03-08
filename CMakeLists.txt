@@ -110,7 +110,7 @@ endif()
 
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)  # included to supply proper defaults to install(...) commands
-include(version)
+include(emil_version_generator)
 
 add_version_header_target(generated.version_header)
 
