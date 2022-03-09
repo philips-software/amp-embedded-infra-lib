@@ -3,7 +3,12 @@
 #include "infra/util/ReallyAssert.hpp"
 #include "mbedtls/oid.h"
 #include "mbedtls/pk.h"
+#include "mbedtls/version.h"
 #include "services/network/CertificatesMbedTls.hpp"
+
+#if MBEDTLS_VERSION_MAJOR < 3
+    #define MBEDTLS_PRIVATE(member) member
+#endif
 
 namespace
 {
@@ -56,7 +61,12 @@ namespace services
     {
         int result = mbedtls_x509_crt_parse(&ownCertificate, reinterpret_cast<const unsigned char*>(certificate.data()), certificate.size());
         really_assert(result == 0);
-        result = mbedtls_pk_parse_key(&privateKey, reinterpret_cast<const unsigned char*>(key.data()), key.size(), nullptr, 0, &RandomDataGeneratorWrapper, &randomDataGenerator);
+
+        #if MBEDTLS_VERSION_MAJOR < 3
+            result = mbedtls_pk_parse_key(&privateKey, reinterpret_cast<const unsigned char*>(key.data()), key.size(), nullptr, 0);
+        #else
+            result = mbedtls_pk_parse_key(&privateKey, reinterpret_cast<const unsigned char*>(key.data()), key.size(), nullptr, 0, &RandomDataGeneratorWrapper, &randomDataGenerator);
+        #endif
         really_assert(result == 0);
     }
 
@@ -64,7 +74,12 @@ namespace services
     {
         int result = mbedtls_x509_crt_parse(&ownCertificate, reinterpret_cast<const unsigned char*>(certificate.begin()), certificate.size());
         really_assert(result == 0);
-        result = mbedtls_pk_parse_key(&privateKey, reinterpret_cast<const unsigned char*>(key.begin()), key.size(), nullptr, 0, &RandomDataGeneratorWrapper, &randomDataGenerator);
+
+        #if MBEDTLS_VERSION_MAJOR < 3
+            result = mbedtls_pk_parse_key(&privateKey, reinterpret_cast<const unsigned char*>(key.begin()), key.size(), nullptr, 0);
+        #else
+            result = mbedtls_pk_parse_key(&privateKey, reinterpret_cast<const unsigned char*>(key.begin()), key.size(), nullptr, 0, &RandomDataGeneratorWrapper, &randomDataGenerator);
+        #endif
         really_assert(result == 0);
     }
 
