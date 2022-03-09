@@ -1,4 +1,4 @@
-add_library(infra.stream EXCLUDE_FROM_ALL STATIC)
+add_library(infra.stream ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 install(TARGETS infra.stream EXPORT emilInfraTargets)
 
 target_link_libraries(infra.stream PUBLIC

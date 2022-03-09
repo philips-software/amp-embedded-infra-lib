@@ -1,4 +1,4 @@
-add_library(upgrade.deploy_pack_to_external EXCLUDE_FROM_ALL STATIC)
+add_library(upgrade.deploy_pack_to_external ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 install(TARGETS upgrade.deploy_pack_to_external EXPORT emilUpgradeTargets)
 
 target_link_libraries(upgrade.deploy_pack_to_external PUBLIC

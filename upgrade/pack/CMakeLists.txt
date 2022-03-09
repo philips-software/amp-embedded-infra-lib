@@ -9,7 +9,7 @@ target_link_libraries(upgrade.pack INTERFACE
     infra.util
 )
 
-add_library(upgrade.pack_keys EXCLUDE_FROM_ALL STATIC)
+add_library(upgrade.pack_keys ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
 install(TARGETS upgrade.pack_keys upgrade.pack EXPORT emilUpgradeTargets)
 

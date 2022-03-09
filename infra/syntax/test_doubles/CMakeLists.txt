@@ -1,4 +1,4 @@
-add_library(infra.syntax_test_doubles EXCLUDE_FROM_ALL INTERFACE)
+add_library(infra.syntax_test_doubles ${EMIL_EXCLUDE_FROM_ALL} INTERFACE)
 
 target_link_libraries(infra.syntax_test_doubles INTERFACE
     infra.syntax

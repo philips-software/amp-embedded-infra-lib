@@ -1,4 +1,4 @@
-add_library(lwip.lwip_cpp EXCLUDE_FROM_ALL STATIC)
+add_library(lwip.lwip_cpp ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 install(TARGETS lwip.lwip_cpp EXPORT emilLwipTargets)
 
 target_link_libraries(lwip.lwip_cpp PUBLIC

@@ -1,4 +1,4 @@
-add_library(services.util EXCLUDE_FROM_ALL STATIC)
+add_library(services.util ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 install(TARGETS services.util EXPORT emilServicesTargets)
 
 target_link_libraries(services.util PUBLIC

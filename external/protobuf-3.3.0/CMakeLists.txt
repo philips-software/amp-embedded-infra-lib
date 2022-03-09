@@ -1,5 +1,5 @@
 if (TARGET_ARCH_X86)
-    add_library(protobuf.libprotobuf_lite EXCLUDE_FROM_ALL STATIC)
+    add_library(protobuf.libprotobuf_lite ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
     target_compile_definitions(protobuf.libprotobuf_lite
         PUBLIC
@@ -100,7 +100,7 @@ if (TARGET_ARCH_X86)
         )
     endif()
 
-    add_library(protobuf.libprotobuf EXCLUDE_FROM_ALL SHARED)
+    add_library(protobuf.libprotobuf ${EMIL_EXCLUDE_FROM_ALL} SHARED)
 
     set_target_properties(protobuf.libprotobuf PROPERTIES
         PROTOBUF_INCLUDES "${CMAKE_CURRENT_LIST_DIR}/src/google/protobuf"
@@ -248,7 +248,7 @@ if (TARGET_ARCH_X86)
         src/google/protobuf/wrappers.pb.h
     )
 
-    add_library(protobuf.libprotoc EXCLUDE_FROM_ALL STATIC)
+    add_library(protobuf.libprotoc ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
     target_compile_options(protobuf.libprotoc PRIVATE
         $<$<COMPILE_LANG_AND_ID:CXX,AppleClang,Clang>:-Wno-enum-compare-switch>

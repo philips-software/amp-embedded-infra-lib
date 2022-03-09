@@ -1,4 +1,4 @@
-add_library(protobuf.echo EXCLUDE_FROM_ALL STATIC)
+add_library(protobuf.echo ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 install(TARGETS protobuf.echo EXPORT emilProtobufTargets)
 
 target_link_libraries(protobuf.echo PUBLIC
