@@ -10,8 +10,7 @@
       "name": "defaults",
       "hidden": true,
       "binaryDir": "${sourceDir}/${presetName}",
-      "installDir": "${sourceDir}/${presetName}",
-      "generator": "Ninja"
+      "installDir": "${sourceDir}/${presetName}"
     },
     {
       "name": "Build-Test",
@@ -30,7 +29,8 @@
       "cacheVariables": {
         "EMIL_ENABLE_COVERAGE": "ON",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
+      },
+      "generator": "Ninja"
     },
     {
       "name": "Build-Host",
@@ -41,7 +41,8 @@
         "CMAKE_BUILD_TYPE": "Release",
         "EMIL_BUILD_TESTS": "Off",
         "EMIL_BUILD_EXAMPLES": "Off"
-      }
+      },
+      "generator": "Ninja"
     },
     {
       "name": "Build-Embedded",
@@ -53,35 +54,8 @@
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_PREFIX_PATH": "${sourceDir}/Build-Host",
         "EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE": "emil::"
-      }
-    }
-  ],
-  "buildPresets": [
-    {
-      "name": "Build-Test",
-      "configurePreset": "Build-Test"
-    },
-    {
-      "name": "Build-Coverage",
-      "configurePreset": "Build-Coverage"
-    },
-    {
-      "name": "Build-Host",
-      "configurePreset": "Build-Host"
-    },
-    {
-      "name": "Build-Embedded",
-      "configurePreset": "Build-Embedded"
-    }
-  ],
-  "testPresets": [
-    {
-      "name": "Unit-Test",
-      "configurePreset": "Build-Test"
-    },
-    {
-      "name": "Coverage-Test",
-      "configurePreset": "Build-Coverage"
+      },
+      "generator": "Ninja"
     }
   ]
 }
