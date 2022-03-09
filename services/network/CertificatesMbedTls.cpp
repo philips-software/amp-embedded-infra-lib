@@ -217,7 +217,13 @@ namespace services
                 unsigned char signature[MBEDTLS_MPI_MAX_SIZE];
                 size_t signatureLength = 0;
 
-                if (mbedtls_pk_sign(&privateKey, ownCertificate.MBEDTLS_PRIVATE(sig_md), hash, 0, signature, sizeof(signature), &signatureLength, &RandomDataGeneratorWrapper, &randomDataGenerator) != 0)
+                #if MBEDTLS_VERSION_MAJOR < 3
+                    auto result = mbedtls_pk_sign(&privateKey, ownCertificate.sig_md, hash, 0, signature, &signatureLength, &RandomDataGeneratorWrapper, &randomDataGenerator);
+                #else
+                    auto result = mbedtls_pk_sign(&privateKey, ownCertificate.MBEDTLS_PRIVATE(sig_md), hash, 0, signature, sizeof(signature), &signatureLength, &RandomDataGeneratorWrapper, &randomDataGenerator);
+                #endif
+
+                if (result != 0)
                     std::abort();
 
                 X509AddAlgorithm(certificateSequence, ownCertificate.sig_oid);

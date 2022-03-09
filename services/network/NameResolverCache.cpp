@@ -1,5 +1,5 @@
-#include "mbedtls/sha256.h"
 #include "services/network/NameResolverCache.hpp"
+#include "services/util/Sha256MbedTls.hpp"
 
 namespace services
 {
@@ -60,16 +60,20 @@ namespace services
 
     std::array<uint8_t, 16> NameResolverCache::Hash(infra::BoundedConstString name) const
     {
-        struct
+        union
         {
-            std::array<uint8_t, 16> first;
-            std::array<uint8_t, 16> second;
+            struct
+            {
+                std::array<uint8_t, 16> first;
+                std::array<uint8_t, 16> second;
+            } hash_parts;
+            std::array<uint8_t, 32> hash;
         } result;
 
-        auto res = mbedtls_sha256(reinterpret_cast<const unsigned char*>(name.begin()), name.size(), result.first.data(), 0);
-        assert(res == 0);
+        Sha256MbedTls sha256;
+        result.hash = sha256.Calculate(infra::StringAsByteRange(name));
 
-        return result.first;
+        return result.hash_parts.first;
     }
 
     void NameResolverCache::TryResolveNext()

@@ -6,6 +6,7 @@ target_link_libraries(services.network PUBLIC
     infra.timer
     hal.synchronous_interfaces
     services.tracer
+    services.util
     mbedtls
 )
 
