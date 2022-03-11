@@ -1,12 +1,13 @@
-#include "mbedtls/sha256.h"
+//#include "mbedtls/sha256.h"
 #include "services/util/ConfigurationStore.hpp"
 
 namespace services
 {
-    ConfigurationBlobFlash::ConfigurationBlobFlash(infra::ByteRange blob, infra::ByteRange verificationBuffer, hal::Flash& flash)
+    ConfigurationBlobFlash::ConfigurationBlobFlash(infra::ByteRange blob, infra::ByteRange verificationBuffer, hal::Flash& flash, services::Sha256& sha256)
         : blob(blob)
         , verificationBuffer(verificationBuffer)
         , flash(flash)
+        , sha256(sha256)
     {
         really_assert(blob.size() <= flash.TotalSize());
     }
@@ -75,8 +76,9 @@ namespace services
         if (header.size + sizeof(Header) > blob.size())
             return false;
 
-        std::array<uint8_t, 32> messageHash;
-        mbedtls_sha256(blob.begin() + sizeof(header.hash), std::min<std::size_t>(header.size + sizeof(header.size), blob.size() - sizeof(header.hash)), messageHash.data(), 0);
+        infra::MemoryRange input = infra::MemoryRange(blob.begin() + sizeof(header.hash), blob.begin() + std::min<std::size_t>(header.size + sizeof(header.size), blob.size() - sizeof(header.hash)));
+
+        auto messageHash = sha256.Calculate(infra::MakeConstByteRange(input));
 
         return infra::Head(infra::MakeRange(messageHash), sizeof(header.hash)) == header.hash;
     }
@@ -87,8 +89,9 @@ namespace services
         header.size = currentSize;
         infra::Copy(infra::MakeByteRange(header), infra::Head(blob, sizeof(header)));
 
-        std::array<uint8_t, 32> messageHash;
-        mbedtls_sha256(blob.begin() + sizeof(header.hash), currentSize + sizeof(header.size), messageHash.data(), 0);
+        infra::MemoryRange input = infra::MemoryRange(blob.begin() + sizeof(header.hash), blob.begin() + currentSize + sizeof(header.size));
+
+        auto messageHash = sha256.Calculate(infra::MakeConstByteRange(input));
 
         infra::Copy(infra::Head(infra::MakeRange(messageHash), sizeof(header.hash)), infra::MakeRange(header.hash));
         infra::Copy(infra::MakeByteRange(header), infra::Head(blob, sizeof(header)));
