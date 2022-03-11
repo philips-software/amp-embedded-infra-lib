@@ -10,7 +10,7 @@ namespace services
         : public Sha256
     {
     public:
-        std::array<uint8_t, 32> Calculate(infra::ConstByteRange input) const override;
+        std::array<uint8_t, 32> Calculate(infra::ConstByteRange input) override;
     };
 }
 
