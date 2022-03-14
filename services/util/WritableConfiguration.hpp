@@ -6,8 +6,8 @@
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/syntax/ProtoParser.hpp"
-#include "services/util/Sha256.hpp"
 #include "infra/event/EventDispatcher.hpp"
+#include "services/util/Sha256.hpp"
 
 namespace services
 {
@@ -138,9 +138,6 @@ namespace services
         valid = false;
         if (header.size + sizeof(Header) <= memory.size())
         {
-            //std::array<uint8_t, 32> messageHash;
-            //mbedtls_sha256(memory.begin() + sizeof(header.hash), std::min<std::size_t>(header.size + sizeof(header.size), memory.size() - sizeof(header.hash)), messageHash.data(), 0);
-
             infra::MemoryRange input = infra::MemoryRange(memory.begin() + sizeof(header.hash), memory.begin() + std::min<std::size_t>(header.size + sizeof(header.size), memory.size() - sizeof(header.hash)));
 
             auto messageHash = sha256.Calculate(infra::MakeConstByteRange(input));
