@@ -75,9 +75,8 @@ namespace services
         if (header.size + sizeof(Header) > blob.size())
             return false;
 
-        infra::MemoryRange input = infra::MemoryRange(blob.begin() + sizeof(header.hash), blob.begin() + std::min<std::size_t>(header.size + sizeof(header.size), blob.size() - sizeof(header.hash)));
-
-        auto messageHash = sha256.Calculate(infra::MakeConstByteRange(input));
+        infra::MemoryRange input = infra::MemoryRange(blob.begin() + sizeof(header.hash), blob.begin() + sizeof(header.hash) + std::min<std::size_t>(header.size + sizeof(header.size), blob.size() - sizeof(header.hash)));
+        auto messageHash = sha256.Calculate(input);
 
         return infra::Head(infra::MakeRange(messageHash), sizeof(header.hash)) == header.hash;
     }
@@ -88,9 +87,8 @@ namespace services
         header.size = currentSize;
         infra::Copy(infra::MakeByteRange(header), infra::Head(blob, sizeof(header)));
 
-        infra::MemoryRange input = infra::MemoryRange(blob.begin() + sizeof(header.hash), blob.begin() + currentSize + sizeof(header.size));
-
-        auto messageHash = sha256.Calculate(infra::MakeConstByteRange(input));
+        infra::MemoryRange input = infra::MemoryRange(blob.begin() + sizeof(header.hash), blob.begin() + sizeof(header.hash) + currentSize + sizeof(header.size));
+        auto messageHash = sha256.Calculate(input);
 
         infra::Copy(infra::Head(infra::MakeRange(messageHash), sizeof(header.hash)), infra::MakeRange(header.hash));
         infra::Copy(infra::MakeByteRange(header), infra::Head(blob, sizeof(header)));
