@@ -138,7 +138,7 @@ namespace services
         valid = false;
         if (header.size + sizeof(Header) <= memory.size())
         {
-            infra::MemoryRange input = infra::MemoryRange(memory.begin() + sizeof(header.hash), memory.begin() + sizeof(header.hash) + std::min<std::size_t>(header.size + sizeof(Header::size), memory.size() - sizeof(Header::hash)));
+            auto input = infra::Head(infra::DiscardHead(memory, sizeof(header.hash)), header.size + sizeof(Header::size));
             auto messageHash = sha256.Calculate(input);
 
             if (infra::Head(infra::MakeRange(messageHash), sizeof(header.hash)) == header.hash)
@@ -171,7 +171,7 @@ namespace services
         header.size = stream.SaveMarker() - marker;
         headerProxy = header;
 
-        infra::MemoryRange input = infra::MemoryRange(storage.begin() + sizeof(header.hash), storage.begin() + sizeof(header.hash) + std::min<std::size_t>(header.size + sizeof(Header::size), storage.size() - sizeof(Header::hash)));
+        auto input = infra::Head(infra::DiscardHead(storage, sizeof(header.hash)), header.size + sizeof(Header::size));
         auto messageHash = sha256.Calculate(input);
 
         infra::Copy(infra::Head(infra::MakeRange(messageHash), sizeof(Header::hash)), infra::MakeRange(header.hash));

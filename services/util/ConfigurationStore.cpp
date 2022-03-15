@@ -75,7 +75,7 @@ namespace services
         if (header.size + sizeof(Header) > blob.size())
             return false;
 
-        infra::MemoryRange input = infra::MemoryRange(blob.begin() + sizeof(header.hash), blob.begin() + sizeof(header.hash) + std::min<std::size_t>(header.size + sizeof(header.size), blob.size() - sizeof(header.hash)));
+        auto input = infra::Head(infra::DiscardHead(blob, sizeof(header.hash)), header.size + sizeof(Header::size));
         auto messageHash = sha256.Calculate(input);
 
         return infra::Head(infra::MakeRange(messageHash), sizeof(header.hash)) == header.hash;
@@ -87,7 +87,7 @@ namespace services
         header.size = currentSize;
         infra::Copy(infra::MakeByteRange(header), infra::Head(blob, sizeof(header)));
 
-        infra::MemoryRange input = infra::MemoryRange(blob.begin() + sizeof(header.hash), blob.begin() + sizeof(header.hash) + currentSize + sizeof(header.size));
+        auto input = infra::Head(infra::DiscardHead(blob, sizeof(header.hash)), currentSize + sizeof(header.size));
         auto messageHash = sha256.Calculate(input);
 
         infra::Copy(infra::Head(infra::MakeRange(messageHash), sizeof(header.hash)), infra::MakeRange(header.hash));
