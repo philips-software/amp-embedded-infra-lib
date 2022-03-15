@@ -56,7 +56,7 @@ else()
     set(EMIL_DEFAULTOPT Off)
 endif()
 
-# When building EmIL by itself all do not exclude any targets from all
+# When building EmIL by itself do not exclude any targets from all
 # Libraries will only be excluded from all when EmIL is a consumed as a dependency.
 if (EMIL_STANDALONE)
     set(EMIL_EXCLUDE_FROM_ALL "")
