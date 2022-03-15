@@ -3,8 +3,7 @@ name: CodeQL Analysis
 
 on:
   push:
-    branches:
-      - develop
+    branches: [develop, modern-cmake]
   pull_request:
     types: [opened, synchronize, reopened]
 
