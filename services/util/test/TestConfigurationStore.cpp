@@ -6,6 +6,7 @@
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/util/ConfigurationStore.hpp"
+#include "services/util/Sha256MbedTls.hpp"
 
 namespace
 {
@@ -42,7 +43,7 @@ class ConfigurationBlobTest
 public:
     ConfigurationBlobTest()
         : flash(1, 20)
-        , configurationBlob(flash)
+        , configurationBlob(flash, sha256)
     {}
 
     MOCK_METHOD1(OnLoaded, void(bool success));
@@ -64,6 +65,7 @@ public:
     }
 
 public:
+    services::Sha256MbedTls sha256;
     testing::StrictMock<hal::CleanFlashMock> flash;
 
     infra::ByteRange buffer;
@@ -138,7 +140,7 @@ TEST_F(ConfigurationBlobTest, Write_writes_to_flash)
 
     std::array<uint8_t, 8> data = { 1, 2, 3, 4, 5, 6, 7, 0 };
     infra::Copy(data, configurationBlob.MaxBlob());
-    
+
     infra::ConstByteRange writeBuffer;
     EXPECT_CALL(flash, WriteBuffer(testing::_, 0, testing::_)).WillOnce(testing::DoAll(testing::SaveArg<0>(&writeBuffer), testing::SaveArg<2>(&onWriteDone)));
     infra::VerifyingFunctionMock<void()> writeDone;
@@ -200,7 +202,7 @@ public:
 
     infra::ByteRange buffer;
     services::ConfigurationBlobReadOnlyMemory configurationBlob;
-}; 
+};
 
 TEST_F(ConfigurationBlobMemoryTest, recover_from_flash)
 {
@@ -641,7 +643,7 @@ public:
 
     void ConstructConfigurationStore()
     {
-        configurationStore.Emplace(flashFactoryDefault, flashBlob1, flashBlob2, [this]() { OnLoadFactoryDefault(); }, [this](bool isFactoryDefault) { OnRecovered(isFactoryDefault); });
+        configurationStore.Emplace(flashFactoryDefault, flashBlob1, flashBlob2, sha256, [this]() { OnLoadFactoryDefault(); }, [this](bool isFactoryDefault) { OnRecovered(isFactoryDefault); });
     }
 
     MOCK_METHOD0(OnLoadFactoryDefault, void());
@@ -671,6 +673,7 @@ public:
     };
 
 public:
+    services::Sha256MbedTls sha256;
     hal::FlashStub flashFactoryDefault;
     hal::FlashStub flashBlob1;
     hal::FlashStub flashBlob2;
@@ -875,7 +878,7 @@ public:
 
     void ConstructConfigurationStore()
     {
-        configurationStore.Emplace(factoryDefault, flashBlob1, flashBlob2, [this](bool isFactoryDefault) { OnRecovered(isFactoryDefault); });
+        configurationStore.Emplace(factoryDefault, flashBlob1, flashBlob2, sha256, [this](bool isFactoryDefault) { OnRecovered(isFactoryDefault); });
     }
 
     MOCK_METHOD1(OnRecovered, void(bool isFactoryDefault));
@@ -904,6 +907,7 @@ public:
     };
 
 public:
+    services::Sha256MbedTls sha256;
     const std::array<uint8_t, 24> factoryDefault{ {
             0x0a, 0x00, 0x00, 0x00, 0x0a, 0x08, 0x04, 0x03,
             0x02, 0x01, 0x08, 0x07, 0x06, 0x05, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff } };
