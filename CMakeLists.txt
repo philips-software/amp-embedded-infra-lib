@@ -21,7 +21,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set(TARGET_BUILD_WIN On)
     set(TARGET_ARCH_X86 On)
 
-    add_compile_options(/EHsc)
+    add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/EHsc>)
 endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
