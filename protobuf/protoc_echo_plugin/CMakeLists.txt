@@ -1,5 +1,5 @@
 if (TARGET_ARCH_X86)
-    add_library(protobuf.protoc_echo_plugin_lib EXCLUDE_FROM_ALL STATIC)
+    add_library(protobuf.protoc_echo_plugin_lib ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
     target_compile_options(protobuf.protoc_echo_plugin_lib PRIVATE
         $<$<BOOL:${TARGET_BUILD_WIN}>:

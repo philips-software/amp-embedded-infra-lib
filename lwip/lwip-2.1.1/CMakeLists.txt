@@ -1,4 +1,4 @@
-add_library(lwip.lwip EXCLUDE_FROM_ALL STATIC)
+add_library(lwip.lwip ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 install(TARGETS lwip.lwip EXPORT emilLwipTargets)
 
 target_include_directories(lwip.lwip PUBLIC

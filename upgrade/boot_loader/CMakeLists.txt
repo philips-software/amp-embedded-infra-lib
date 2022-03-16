@@ -1,4 +1,4 @@
-add_library(upgrade.boot_loader EXCLUDE_FROM_ALL STATIC)
+add_library(upgrade.boot_loader ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 install(TARGETS upgrade.boot_loader EXPORT emilUpgradeTargets)
 
 target_link_libraries(upgrade.boot_loader PUBLIC

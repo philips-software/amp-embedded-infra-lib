@@ -1,4 +1,4 @@
-add_library(infra.timer EXCLUDE_FROM_ALL STATIC)
+add_library(infra.timer ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 install(TARGETS infra.timer EXPORT emilInfraTargets)
 
 target_link_libraries(infra.timer PUBLIC

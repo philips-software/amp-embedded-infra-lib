@@ -1,4 +1,4 @@
-add_library(services.synchronous_util EXCLUDE_FROM_ALL STATIC)
+add_library(services.synchronous_util ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 install(TARGETS services.synchronous_util EXPORT emilServicesTargets)
 
 target_link_libraries(services.synchronous_util PUBLIC

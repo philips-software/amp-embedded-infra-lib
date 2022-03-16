@@ -1,4 +1,4 @@
-add_library(hal.interfaces_test_doubles EXCLUDE_FROM_ALL STATIC)
+add_library(hal.interfaces_test_doubles ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
 target_link_libraries(hal.interfaces_test_doubles PRIVATE
     hal.interfaces

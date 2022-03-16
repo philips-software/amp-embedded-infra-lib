@@ -56,6 +56,15 @@ else()
     set(EMIL_DEFAULTOPT Off)
 endif()
 
+# When building EmIL by itself do not exclude any targets from all
+# Libraries will only be excluded from all when EmIL is a consumed as a dependency.
+if (EMIL_STANDALONE)
+    set(EMIL_EXCLUDE_FROM_ALL "")
+else()
+    set(EMIL_EXCLUDE_FROM_ALL "EXCLUDE_FROM_ALL")
+endif()
+
+
 option(EMIL_BUILD_TESTS "Enable build of the tests" ${EMIL_DEFAULTOPT})
 option(EMIL_BUILD_EXAMPLES "Enable build of the examples" ${EMIL_DEFAULTOPT})
 option(EMIL_ENABLE_COVERAGE "Enable compiler flags for code coverage measurements" Off)

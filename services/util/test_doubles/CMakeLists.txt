@@ -1,6 +1,6 @@
-add_library(services.services_test_doubles EXCLUDE_FROM_ALL STATIC)
+add_library(services.services_test_doubles ${EMIL_EXCLUDE_FROM_ALL} INTERFACE)
 
-target_link_libraries(services.services_test_doubles PRIVATE
+target_link_libraries(services.services_test_doubles INTERFACE
     gmock
     services.util
 )
