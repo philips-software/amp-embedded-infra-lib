@@ -51,7 +51,7 @@ if (TARGET_ARCH_X86)
     )
 
     if (EMIL_BUILD_TESTS)
-        add_subdirectory(test_helper)
         add_subdirectory(test)
     endif()
+    add_subdirectory(test_helper)
 endif()

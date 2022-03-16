@@ -79,8 +79,8 @@ endif()
 
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
-    add_subdirectory(test_helper)
 endif()
+add_subdirectory(test_helper)
 
 function(emil_transform_file_to_string input name namespace output)
 

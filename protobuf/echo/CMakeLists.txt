@@ -12,9 +12,7 @@ target_sources(protobuf.echo PRIVATE
     EchoInstantiation.hpp
 )
 
-if (EMIL_BUILD_TESTS)
-    add_subdirectory(test_helper)
-endif()
+add_subdirectory(test_helper)
 
 function(protocol_buffer_echo_cpp target input)
 
