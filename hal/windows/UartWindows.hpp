@@ -49,7 +49,7 @@ namespace hal
                 space = SPACEPARITY
             };
 
-            UartWindowsConfig(){}
+            UartWindowsConfig() {}
 
             UartWindowsConfig(uint32_t newbaudRate, RtsFlowControl newFlowControlRts)
                 : baudRate(newbaudRate)
