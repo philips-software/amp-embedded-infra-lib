@@ -9,8 +9,7 @@
     {
       "name": "defaults",
       "hidden": true,
-      "binaryDir": "${sourceDir}/${presetName}",
-      "installDir": "${sourceDir}/${presetName}"
+      "binaryDir": "${sourceDir}/${presetName}"
     },
     {
       "name": "Build-Test",
