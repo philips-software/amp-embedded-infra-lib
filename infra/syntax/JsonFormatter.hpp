@@ -14,7 +14,7 @@ namespace infra
 
     class JsonArrayFormatter;
     class JsonStringStream;
-
+    
     class JsonObjectFormatter
     {
     public:
@@ -40,11 +40,12 @@ namespace infra
         void Add(JsonString tagName, JsonString tag);
         void Add(JsonString tagName, const JsonObject& tag);
         void Add(JsonString tagName, const JsonArray& tag);
-        void Add(JsonString tagName, const infra::JsonValue& tag);
+        void Add(JsonString tagName, const JsonValue& tag);
         void Add(const infra::JsonKeyValue& keyValue);
         void AddMilliFloat(const char* tagName, uint32_t intValue, uint32_t milliFractionalValue);
         void AddSubObject(const char* tagName, infra::BoundedConstString json);
-        JsonObjectFormatter SubObject(infra::BoundedConstString tagName);
+        JsonObjectFormatter SubObject(const char* tagName);
+        JsonObjectFormatter SubObject(JsonString tagName);
         JsonArrayFormatter SubArray(infra::BoundedConstString tagName);
         JsonStringStream AddString(const char* tagName);
         infra::TextOutputStream AddObject(const char* tagName);
@@ -59,8 +60,7 @@ namespace infra
         bool empty = true;
     };
 
-    void NestedMerge(infra::JsonObjectFormatter& formatter, infra::JsonObject& jsonObject, infra::MemoryRange<infra::BoundedConstString>& jsonPath, infra::JsonValue& jsonValue);
-    void Merge(infra::JsonObjectFormatter& formatter, infra::JsonObject& jsonConfig, infra::BoundedConstString& jsonPath, infra::JsonValue& jsonValue);
+    void Merge(infra::JsonObjectFormatter& formatter, infra::JsonObject& object, infra::BoundedConstString& path, infra::JsonValue& valueToMerge);
 
     class JsonArrayFormatter
     {

@@ -411,10 +411,10 @@ TEST(JsonObjectFormatter, merge_single_key_int_value_pair)
     infra::BoundedString::WithStorage<64> string;
     {
         infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
-        Merge(formatter, jsonConfigObj, jsonPath, jsonValue);
+        infra::Merge(formatter, jsonConfigObj, jsonPath, jsonValue);
     }
     
-    EXPECT_EQ("{ \"path1\":5 }", string);
+    EXPECT_EQ(R"({ "path1":5 })", string);
 }
 
 TEST(JsonObjectFormatter, merge_single_key_string_value_pair)
@@ -426,10 +426,10 @@ TEST(JsonObjectFormatter, merge_single_key_string_value_pair)
     infra::BoundedString::WithStorage<64> string;
     {
         infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
-        Merge(formatter, jsonConfigObj, jsonPath, jsonValue);
+        infra::Merge(formatter, jsonConfigObj, jsonPath, jsonValue);
     }
 
-    EXPECT_EQ("{ \"path1\":\"string\" }", string);
+    EXPECT_EQ(R"({ "path1":"string" })", string);
 }
 
 TEST(JsonObjectFormatter, merge_missing_key_string_value_pair)
@@ -441,10 +441,10 @@ TEST(JsonObjectFormatter, merge_missing_key_string_value_pair)
     infra::BoundedString::WithStorage<64> string;
     {
         infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
-        Merge(formatter, jsonConfigObj, jsonPath, jsonValue);
+        infra::Merge(formatter, jsonConfigObj, jsonPath, jsonValue);
     }
 
-    EXPECT_EQ("{ \"path1\":{ \"path2\":5, \"path3\":\"string\" } }", string);
+    EXPECT_EQ(R"({ "path1":{ "path2":5, "path3":"string" } })", string);
 }
 
 TEST(JsonObjectFormatter, merge_key_empty_value_pair)
@@ -456,10 +456,10 @@ TEST(JsonObjectFormatter, merge_key_empty_value_pair)
     infra::BoundedString::WithStorage<64> string;
     {
         infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
-        Merge(formatter, jsonConfigObj, jsonPath, jsonValue);
+        infra::Merge(formatter, jsonConfigObj, jsonPath, jsonValue);
     }
 
-    EXPECT_EQ("{ \"path1\":{} }", string);
+    EXPECT_EQ(R"({ "path1":{} })", string);
 }
 
 TEST(JsonObjectFormatter, merge_key_string_value_in_max_depth_5)
@@ -471,7 +471,7 @@ TEST(JsonObjectFormatter, merge_key_string_value_in_max_depth_5)
     infra::BoundedString::WithStorage<128> string;
     {
         infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
-        Merge(formatter, jsonConfigObj, jsonPath, jsonValue);
+        infra::Merge(formatter, jsonConfigObj, jsonPath, jsonValue);
     }
 
     EXPECT_EQ(R"({ "path1":{ "path2":{ "path3":{ "path4":{ "path5":"strings" } } } } })", string);
@@ -491,7 +491,7 @@ TEST(JsonObjectFormatter, merge_key_value_with_nested_depth_3)
     infra::JsonObject jsonConfigObj{ jsonConfig };
     {
         infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
-        Merge(formatter, jsonConfigObj, jsonPath, jsonObj);
+        infra::Merge(formatter, jsonConfigObj, jsonPath, jsonObj);
     }
     infra::JsonObject jsonObjectModified{ string };
     std::string jsonConfigFinal = "{ \"version\": 2, \"image_components\": { \"application\": \"Install/components/stcellular.cellular_cn_sequans_develop_low_power/stm32f767-Release/bin/stcellular.cellular_cn_sequans_develop_low_power.elf\" }, \"customization\": {"

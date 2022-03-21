@@ -121,6 +121,50 @@ namespace infra
         return string.substr(0, start);
     }
 
+    void NestedMerge(infra::JsonObjectFormatter& formatter, infra::JsonObject& object, infra::MemoryRange<infra::BoundedConstString>& pathTokens, const infra::JsonValue& valueToMerge)
+    {
+        for (auto it = object.begin(); it != object.end(); ++it)
+        {
+            if (!pathTokens.empty() && pathTokens.size() == 1 && it->key == pathTokens.front())
+            {
+                pathTokens.clear();
+                formatter.Add(it->key, valueToMerge);
+            }
+            else if (!pathTokens.empty() && it->key == pathTokens.front() && it->value.Is<infra::JsonObject>())
+            {
+                pathTokens.pop_front();
+                infra::JsonObjectFormatter subObjectFormatter{ formatter.SubObject(it->key) };
+                infra::JsonObject valueJsonObj = it->value.Get<infra::JsonObject>();
+                infra::NestedMerge(subObjectFormatter, valueJsonObj, pathTokens, valueToMerge);
+            }
+            else
+            {
+                formatter.Add(it->key, it->value);
+            }
+        }
+
+        if (pathTokens.size() == 1 && !object.HasKey(pathTokens.front()))
+        {
+            formatter.Add(infra::JsonString(pathTokens.front()), valueToMerge);
+            pathTokens.clear();
+        }
+    }
+
+    void Merge(infra::JsonObjectFormatter& formatter, infra::JsonObject& object, infra::BoundedConstString& path, infra::JsonValue& valueToMerge)
+    {
+        infra::BoundedVector<infra::BoundedConstString>::WithMaxSize<5> jsonPathTokens;
+        std::size_t startPos = 0;
+        std::size_t endPos = 0;
+        while (endPos != std::string::npos)
+        {
+            endPos = path.find("/", startPos);
+            infra::BoundedConstString token = path.substr(startPos, endPos - startPos);
+            jsonPathTokens.push_back(token);
+            startPos = endPos + 1;
+        }
+        infra::NestedMerge(formatter, object, infra::MakeRange(jsonPathTokens), valueToMerge);
+    }
+
     JsonObjectFormatter::JsonObjectFormatter(infra::TextOutputStream& stream)
         : stream(&stream)
     {
@@ -247,12 +291,14 @@ namespace infra
             std::abort();
     }
 
-    void JsonObjectFormatter::Add(JsonString key, const infra::JsonValue& value)
+    void JsonObjectFormatter::Add(JsonString key, const JsonValue& value)
     {
         if (value.Is<bool>())
             Add(key, value.Get<bool>());
         else if (value.Is<int32_t>())
             Add(key, value.Get<int32_t>());
+        else if (value.Is<JsonFloat>())
+            AddMilliFloat(key.Raw().begin(), value.Get<JsonFloat>().IntValue(), value.Get<JsonFloat>().NanoFractionalValue());
         else if (value.Is<JsonString>())
             Add(key, value.Get<JsonString>());
         else if (value.Is<JsonObject>())
@@ -275,10 +321,18 @@ namespace infra
         *stream << '"' << tagName << R"(":)" << json;
     }
 
-    JsonObjectFormatter JsonObjectFormatter::SubObject(infra::BoundedConstString tagName)
+    JsonObjectFormatter JsonObjectFormatter::SubObject(const char* tagName)
     {
         InsertSeparation();
         *stream << '"' << tagName << R"(":)";
+
+        return JsonObjectFormatter(*stream);
+    }
+
+    JsonObjectFormatter JsonObjectFormatter::SubObject(infra::JsonString tagName)
+    {
+        InsertSeparation();
+        *stream << '"' << tagName.Raw() << R"(":)";
 
         return JsonObjectFormatter(*stream);
     }
@@ -319,56 +373,7 @@ namespace infra
 
         empty = false;
     }
-
     
-void NestedMerge(infra::JsonObjectFormatter& formatter, infra::JsonObject& jsonObject, infra::MemoryRange<infra::BoundedConstString>& jsonPath, infra::JsonValue& jsonValue)
-    {
-        infra::JsonObjectIterator jsonObjectIt = jsonObject.begin();
-        for (jsonObjectIt; jsonObjectIt != jsonObject.end(); jsonObjectIt++)
-        {
-            if (!jsonPath.empty() && jsonPath.size() == 1 && jsonObjectIt->key == jsonPath.front())
-            {
-                jsonPath.clear();
-                formatter.Add(jsonObjectIt->key, jsonValue);
-            }
-            else if (!jsonPath.empty() && jsonObjectIt->key == jsonPath.front() && jsonObjectIt->value.Is<infra::JsonObject>())
-            {
-                jsonPath.pop_front();
-                infra::BoundedString::WithStorage<512> key;
-                jsonObjectIt->key.ToString(key);
-                infra::JsonObjectFormatter subObjectFormatter{ formatter.SubObject(key) };
-                infra::JsonObject valueJsonObj = jsonObjectIt->value.Get<infra::JsonObject>();
-                NestedMerge(subObjectFormatter, valueJsonObj, jsonPath, jsonValue);
-            }
-            else
-            {
-                formatter.Add(jsonObjectIt->key, jsonObjectIt->value);
-            }
-        }
-        if (jsonPath.size() == 1 && !jsonObject.HasKey(jsonPath.front()))
-        {
-            formatter.Add(infra::JsonString(jsonPath.front()), jsonValue);
-            jsonPath.clear();
-        }
-    }
-
-    void Merge(infra::JsonObjectFormatter& formatter, infra::JsonObject& jsonConfig, infra::BoundedConstString& jsonPath, infra::JsonValue& jsonValue)
-    {
-        infra::BoundedVector<infra::BoundedConstString>::WithMaxSize<5> jsonPathToken;
-        std::size_t startPos = 0;
-        std::size_t endPos = 0;
-        while (endPos != std::string::npos)
-        {
-            endPos = jsonPath.find("/", startPos);
-            infra::BoundedConstString token = jsonPath.substr(startPos, endPos - startPos);
-            jsonPathToken.push_back(token);
-            startPos = endPos + 1;
-        }
-
-        infra::JsonObjectIterator jsonObjectIt = jsonConfig.begin();
-        NestedMerge(formatter, jsonConfig, infra::MakeRange(jsonPathToken), jsonValue);
-    }
-
     JsonArrayFormatter::JsonArrayFormatter(infra::TextOutputStream& stream)
         : stream(&stream)
     {
