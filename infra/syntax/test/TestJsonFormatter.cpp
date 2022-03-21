@@ -401,3 +401,104 @@ TEST(JsonArrayFormatter, output_is_truncated_on_small_output_string)
 
     EXPECT_EQ(R"([)", string);
 }
+
+TEST(JsonObjectFormatter, merge_single_key_int_value_pair)
+{
+    infra::BoundedConstString jsonPath = "path1";
+    infra::JsonValue jsonValue = 5;
+    std::string mainJsonConfig = R"({"path1":6})";
+    infra::JsonObject jsonConfigObj{ mainJsonConfig };
+    infra::BoundedString::WithStorage<64> string;
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        Merge(formatter, jsonConfigObj, jsonPath, jsonValue);
+    }
+    
+    EXPECT_EQ("{ \"path1\":5 }", string);
+}
+
+TEST(JsonObjectFormatter, merge_single_key_string_value_pair)
+{
+    infra::BoundedConstString jsonPath = "path1";
+    infra::JsonValue jsonValue{ infra::JsonString("string") };
+    std::string mainJsonConfig = R"({"path1":6})";
+    infra::JsonObject jsonConfigObj{ mainJsonConfig };
+    infra::BoundedString::WithStorage<64> string;
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        Merge(formatter, jsonConfigObj, jsonPath, jsonValue);
+    }
+
+    EXPECT_EQ("{ \"path1\":\"string\" }", string);
+}
+
+TEST(JsonObjectFormatter, merge_missing_key_string_value_pair)
+{
+    infra::BoundedConstString jsonPath = "path1/path3";
+    infra::JsonValue jsonValue{ infra::JsonString("string") };
+    std::string mainJsonConfig = R"({"path1":{"path2" : 5}})";
+    infra::JsonObject jsonConfigObj{ mainJsonConfig };
+    infra::BoundedString::WithStorage<64> string;
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        Merge(formatter, jsonConfigObj, jsonPath, jsonValue);
+    }
+
+    EXPECT_EQ("{ \"path1\":{ \"path2\":5, \"path3\":\"string\" } }", string);
+}
+
+TEST(JsonObjectFormatter, merge_key_empty_value_pair)
+{
+    infra::BoundedConstString jsonPath = "path1";
+    infra::JsonValue jsonValue{ infra::JsonObject("{}") };
+    std::string mainJsonConfig = R"({"path1":{"path2" : 5, "path3": "string"}})";
+    infra::JsonObject jsonConfigObj{ mainJsonConfig };
+    infra::BoundedString::WithStorage<64> string;
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        Merge(formatter, jsonConfigObj, jsonPath, jsonValue);
+    }
+
+    EXPECT_EQ("{ \"path1\":{} }", string);
+}
+
+TEST(JsonObjectFormatter, merge_key_string_value_in_max_depth_5)
+{
+    infra::BoundedConstString jsonPath = "path1/path2/path3/path4/path5";
+    infra::JsonValue jsonValue{ infra::JsonString("strings") };
+    std::string mainJsonConfig = R"({ "path1":{ "path2":{ "path3":{ "path4":{ "path5":"string"}}}}})";
+    infra::JsonObject jsonConfigObj{ mainJsonConfig };
+    infra::BoundedString::WithStorage<128> string;
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        Merge(formatter, jsonConfigObj, jsonPath, jsonValue);
+    }
+
+    EXPECT_EQ(R"({ "path1":{ "path2":{ "path3":{ "path4":{ "path5":"strings" } } } } })", string);
+}
+
+TEST(JsonObjectFormatter, merge_key_value_with_nested_depth_3)
+{
+    infra::BoundedConstString jsonPath = "customization/static_configuration/plugin_manager_config";
+    infra::JsonValue jsonObj = infra::JsonObject("{\"max_retries\": 2,\"backoff_mins_max_retries_failed\" : 30,\"retry_attach_timeout_mins\" : 1,\"timeout_detach_mins\" : 2}");
+    std::string jsonConfig = "{ \"version\": 2, \"image_components\": { \"application\": \"Install/components/stcellular.cellular_cn_sequans_develop_low_power/stm32f767-Release/bin/stcellular.cellular_cn_sequans_develop_low_power.elf\" }, \"customization\": {"
+        "\"static_configuration\": { \"app_version\": \"v2.0\", \"power_manager_config\":{ \"power_state_after_timeout\" : \"poweroff\", \"timeout_low_power_mins\" : 1 }, \"plugin_manager_config\": { \"max_retries\": 2, \"backoff_mins_max_retries_failed\" : 30,"
+		"\"retry_attach_timeout_mins\" : 1, \"timeout_detach_mins\" : 1 }, \"certificate_connect\" : \"Source/ConnectivityToolKit/hsdp_connect/ccn-ca-certificates-connect.pem\", \"certificate_data\" : \"Source/ConnectivityToolKit/hsdp_connect/ccn-ca-certificates-data.pem\","
+		"\"hsdp_connect\": { \"regions\": [ { \"name\": \"EU\", \"iam_url\": \"iam-client-test.eu-west.philips-healthsuite.com\", \"discovery_url\": \"discovery-client-test.eu01.connect.hsdp.io/client-test/core/discovery\", \"ca_certificates\": \"Source/ConnectivityToolKit/hsdp_connect/ccn-ca-certificates.pem\","
+		"\"bootstrap_credentials\": { \"username\": \"7671746a4d3849f4aea\", \"password\": \"r2!S7y0qr.G3Hw-K\" } } ], \"device_group_name\": \"DeviceGroupName\", \"device_type_name\": \"OculusDev01\", \"hsdp_iam_proxy_enabled\": false, \"device_purpose\": \"dev\"} }	} }";
+
+    infra::BoundedString::WithStorage<3000> string;
+    infra::JsonObject jsonConfigObj{ jsonConfig };
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        Merge(formatter, jsonConfigObj, jsonPath, jsonObj);
+    }
+    infra::JsonObject jsonObjectModified{ string };
+    std::string jsonConfigFinal = "{ \"version\": 2, \"image_components\": { \"application\": \"Install/components/stcellular.cellular_cn_sequans_develop_low_power/stm32f767-Release/bin/stcellular.cellular_cn_sequans_develop_low_power.elf\" }, \"customization\": {"
+                             "\"static_configuration\": { \"app_version\": \"v2.0\", \"power_manager_config\":{ \"power_state_after_timeout\" : \"poweroff\", \"timeout_low_power_mins\" : 1 }, \"plugin_manager_config\": { \"max_retries\": 2, \"backoff_mins_max_retries_failed\" : 30,"
+                             "\"retry_attach_timeout_mins\" : 1, \"timeout_detach_mins\" : 2 }, \"certificate_connect\" : \"Source/ConnectivityToolKit/hsdp_connect/ccn-ca-certificates-connect.pem\", \"certificate_data\" : \"Source/ConnectivityToolKit/hsdp_connect/ccn-ca-certificates-data.pem\","
+                             "\"hsdp_connect\": { \"regions\": [ { \"name\": \"EU\", \"iam_url\": \"iam-client-test.eu-west.philips-healthsuite.com\", \"discovery_url\": \"discovery-client-test.eu01.connect.hsdp.io/client-test/core/discovery\", \"ca_certificates\": \"Source/ConnectivityToolKit/hsdp_connect/ccn-ca-certificates.pem\","
+                             "\"bootstrap_credentials\": { \"username\": \"7671746a4d3849f4aea\", \"password\": \"r2!S7y0qr.G3Hw-K\" } } ], \"device_group_name\": \"DeviceGroupName\", \"device_type_name\": \"OculusDev01\", \"hsdp_iam_proxy_enabled\": false, \"device_purpose\": \"dev\" } } } }";
+    infra::JsonObject jsonObjectFinal{ jsonConfigFinal };
+    EXPECT_EQ(jsonObjectModified, jsonObjectFinal);
+}
