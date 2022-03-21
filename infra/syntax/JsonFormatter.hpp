@@ -60,7 +60,7 @@ namespace infra
         bool empty = true;
     };
 
-    void Merge(infra::JsonObjectFormatter& formatter, infra::JsonObject& object, infra::BoundedConstString& path, infra::JsonValue& valueToMerge);
+    void Merge(infra::JsonObjectFormatter& formatter, infra::JsonObject& object, infra::BoundedConstString path,const infra::JsonValue& valueToMerge);
 
     class JsonArrayFormatter
     {
