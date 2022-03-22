@@ -67,14 +67,14 @@ namespace infra
             }
         }
 
-        void NestedMerge(infra::JsonObjectFormatter& formatter, infra::BoundedConstString key, infra::BoundedConstString path, const infra::JsonValue& valueToMerge)
+        void NestedInsert(infra::JsonObjectFormatter& formatter, infra::BoundedConstString key, infra::BoundedConstString path, const infra::JsonValue& valueToMerge)
         {
             infra::JsonObjectFormatter subObjectFormatter{ formatter.SubObject(key) };
             infra::BoundedConstString nextKey = path.substr(0, path.find("/"));
             if (nextKey.size() == path.size())
                 subObjectFormatter.Add(infra::JsonString(nextKey), valueToMerge);
             else
-                NestedMerge(subObjectFormatter, nextKey, path.substr(nextKey.size() + 1), valueToMerge);
+                NestedInsert(subObjectFormatter, nextKey, path.substr(nextKey.size() + 1), valueToMerge);
         } 
     }
 
@@ -170,7 +170,7 @@ namespace infra
             if (pathRemaining.empty())
                 formatter.Add(infra::JsonString(token), valueToMerge);
             else
-                NestedMerge(formatter, token, pathRemaining, valueToMerge);
+                NestedInsert(formatter, token, pathRemaining, valueToMerge);
         }
     }
 

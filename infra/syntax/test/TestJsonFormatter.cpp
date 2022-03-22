@@ -495,41 +495,41 @@ infra::JsonValue JsonObj(infra::BoundedConstString value)
     return infra::JsonValue(infra::InPlaceType<infra::JsonObject>(), infra::JsonObject(value));
 }
 
-TEST(JsonObjectFormatter, merge_single_key_int_value_pair)
+TEST(JsonObjectFormatter, replace_single_int)
 {
     EXPECT_EQ(R"({ "a":5 })", Merged(R"({"a":6})", "a", JsonInt(5)));
 }
 
-TEST(JsonObjectFormatter, merge_key_empty_value_pair)
+TEST(JsonObjectFormatter, override_json_path_with_empty_json)
 {
     EXPECT_EQ(R"({ "x":{} })"
         , Merged(R"({"x":{"a":5, "b":"string"}})", "x", JsonObj("{}")));
 }
  
-TEST(JsonObjectFormatter, replace_int_value_by_string_value)
+TEST(JsonObjectFormatter, replace_int_by_string)
 {
     EXPECT_EQ(R"({ "a":"string" })"
         , Merged(R"({"a":6})", "a", JsonStr("string")));
 }
 
-TEST(JsonObjectFormatter, replace_nested_int_value_by_string_value)
+TEST(JsonObjectFormatter, jsonObject_replaces_int_at_a_missing_path)
 {
     EXPECT_EQ(R"({ "a":{ "y":"string" } })", Merged(R"({"a":6})", "a/y", JsonStr("string")));
 }
 
-TEST(JsonObjectFormatter, replace_int_while_other_keys_remain_the_same)
+TEST(JsonObjectFormatter, replace_int_while_other_keyvalue_pairs_remain_the_same)
 {
     EXPECT_EQ(R"({ "a":[true, false], "b":"value2", "c":-2, "d":56.002 })"
         , Merged(R"({ "a":[true, false], "b":"value2", "c":5, "d":56.2 })", "c", JsonInt(-2)));
 }
 
-TEST(JsonObjectFormatter, merge_key_jsonObject_value_pair_into_nested_json_depth_1)
+TEST(JsonObjectFormatter, replace_empty_jsonObject_with_new_jsonObject)
 {
     EXPECT_EQ(R"({ "key":{"nested":"value"} })"
         , Merged(R"({ "key":{} })", "key", JsonObj(R"({"nested":"value"})")));
 }
 
-TEST(JsonObjectFormatter, merge_key_string_value_pair_into_nested_json_depth_2)
+TEST(JsonObjectFormatter, replace_string_value_in_nested_json_object_of_depth_2)
 {
     EXPECT_EQ(R"({ "a":-2, "b":"value2", "c":5, "d":{ "x":{ "y":"string" } } })"
         , Merged(R"({ "a":-2, "b":"value2", "c":5, "d":{"x":{ "y":"value6" } } })", "d/x/y", JsonStr("string")));
@@ -541,7 +541,7 @@ TEST(JsonObjectFormatter, key_gets_added_when_it_is_missing_from_the_nested_obje
         , Merged(R"({"path":{"x" : 5}})", "path/y", JsonStr("string")));
 }
 
-TEST(JsonObjectFormatter, merge_missing_full_path_and_key_string_value_pair_into_nested_json)
+TEST(JsonObjectFormatter, long_path_keyvalue_gets_added_when_it_is_missing)
 {
     EXPECT_EQ(R"({ "a":-2, "b":"value2", "c":5, "d":{"x":{ "y":"value9" } }, "key1":{ "key2":{ "key3":"string" } } })"
         , Merged(R"({ "a":-2, "b":"value2", "c":5, "d":{"x":{ "y":"value9" } } })", "key1/key2/key3", JsonStr("string")));
