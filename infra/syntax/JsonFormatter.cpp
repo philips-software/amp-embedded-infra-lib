@@ -159,7 +159,10 @@ namespace infra
                     infra::Merge(subObjectFormatter, valueJsonObj, pathRemaining, valueToMerge);
                 }
                 else
-                    infra::Merge(subObjectFormatter, infra::JsonObject("{}"), pathRemaining, valueToMerge);  
+                {
+                    infra::JsonObject valueJsonObj = infra::JsonObject("{}");
+                    infra::Merge(subObjectFormatter, valueJsonObj, pathRemaining, valueToMerge); 
+                }
             }
             else
                 formatter.Add(kv.key, kv.value);
