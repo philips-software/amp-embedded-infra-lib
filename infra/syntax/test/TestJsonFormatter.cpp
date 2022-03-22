@@ -482,60 +482,48 @@ std::string Merged(infra::BoundedConstString objectString, infra::BoundedConstSt
 
 TEST(JsonObjectFormatter, merge_single_key_int_value_pair)
 {
-    EXPECT_EQ(R"({ "key1":5 })"
-        , Merged(R"({"key1":6})", "key1", infra::JsonValue(infra::InPlaceType<int32_t>(), 5)));
+    EXPECT_EQ(R"({ "a":5 })"
+        , Merged(R"({"a":6})", "a", infra::JsonValue(infra::InPlaceType<int32_t>(), 5)));
 }
 
 TEST(JsonObjectFormatter, merge_key_empty_value_pair)
 {
-    EXPECT_EQ(R"({ "key1":{} })"
-        , Merged(R"({"key1":{"key2":5, "key3":"string"}})", "key1", infra::JsonValue(infra::InPlaceType<infra::JsonObject>(), infra::JsonObject("{}"))));
+    EXPECT_EQ(R"({ "x":{} })"
+        , Merged(R"({"x":{"a":5, "b":"string"}})", "x", infra::JsonValue(infra::InPlaceType<infra::JsonObject>(), infra::JsonObject("{}"))));
 }
  
 TEST(JsonObjectFormatter, replace_int_value_by_string_value_at_path)
 {
-    EXPECT_EQ(R"({ "key1":"string" })"
-        , Merged(R"({"key1":6})", "key1", infra::JsonValue(infra::InPlaceType<infra::JsonString>(), infra::JsonString("string"))));
+    EXPECT_EQ(R"({ "a":"string" })"
+        , Merged(R"({"a":6})", "a", infra::JsonValue(infra::InPlaceType<infra::JsonString>(), infra::JsonString("string"))));
 }
 
-TEST(JsonObjectFormatter, merge_key_int_value_pair)
+TEST(JsonObjectFormatter, replace_int_while_other_keys_remain_the_same)
 {
-    EXPECT_EQ(R"({ "key1":-2, "key2":"value2", "key3":5, "key4":56.002 })"
-        , Merged(R"({ "key1":6, "key2":"value2", "key3":5, "key4":56.2 })", "key1", infra::JsonValue(infra::InPlaceType<int32_t>(), -2)));
+    EXPECT_EQ(R"({ "a":[true, false], "b":"value2", "c":-2, "d":56.002 })"
+        , Merged(R"({ "a":[true, false], "b":"value2", "c":5, "d":56.2 })", "c", infra::JsonValue(infra::InPlaceType<int32_t>(), -2)));
 }
 
 TEST(JsonObjectFormatter, merge_key_jsonObject_value_pair_into_nested_json_depth_1)
 {
-    EXPECT_EQ(R"({ "key1":-2, "key2":"value2", "key3":5, "key4":{"key5":"value5"} })"
-        , Merged(R"({ "key1":-2, "key2":"value2", "key3":5, "key4":{} })", "key4", infra::JsonValue(infra::InPlaceType<infra::JsonObject>(), infra::JsonObject(R"({"key5":"value5"})"))));
+    EXPECT_EQ(R"({ "key":{"nested":"value"} })"
+        , Merged(R"({ "key":{} })", "key", infra::JsonValue(infra::InPlaceType<infra::JsonObject>(), infra::JsonObject(R"({"nested":"value"})"))));
 }
 
 TEST(JsonObjectFormatter, merge_key_string_value_pair_into_nested_json_depth_2)
 {
-    EXPECT_EQ(R"({ "key1":-2, "key2":"value2", "key3":5, "key4":{ "key5":{ "key6":"string" } } })"
-        , Merged(R"({ "key1":-2, "key2":"value2", "key3":5, "key4":{"key5":{ "key6":"value6" } } })", "key4/key5/key6", infra::JsonValue(infra::InPlaceType<infra::JsonString>(), infra::JsonString("string"))));
+    EXPECT_EQ(R"({ "a":-2, "b":"value2", "c":5, "d":{ "x":{ "y":"string" } } })"
+        , Merged(R"({ "a":-2, "b":"value2", "c":5, "d":{"x":{ "y":"value6" } } })", "d/x/y", infra::JsonValue(infra::InPlaceType<infra::JsonString>(), infra::JsonString("string"))));
 }
 
-TEST(JsonObjectFormatter, merge_key_string_value_in_depth_6)
+TEST(JsonObjectFormatter, key_gets_added_when_it_is_missing_from_the_nested_object)
 {
-    EXPECT_EQ(R"({ "path1":{ "path2":{ "path3":{ "path4":{ "path5":{ "path6":"strings" } } } } } })"
-        , Merged(R"({ "path1":{ "path2":{ "path3":{ "path4":{ "path5":{ "path6":"string"}}}}})", "path1/path2/path3/path4/path5/path6", infra::JsonValue(infra::InPlaceType<infra::JsonString>(), infra::JsonString("strings"))));
-}
-
-TEST(JsonObjectFormatter, merge_into_nested_missing_last_key_value_pair)
-{
-    EXPECT_EQ(R"({ "path1":{ "path2":5, "path3":"string" } })"
-        , Merged(R"({"path1":{"path2" : 5}})", "path1/path3", infra::JsonValue(infra::InPlaceType<infra::JsonString>(), infra::JsonString("string"))));
+    EXPECT_EQ(R"({ "path":{ "x":5, "y":"string" } })"
+        , Merged(R"({"path":{"x" : 5}})", "path/y", infra::JsonValue(infra::InPlaceType<infra::JsonString>(), infra::JsonString("string"))));
 }
 
 TEST(JsonObjectFormatter, merge_missing_full_path_and_key_string_value_pair_into_nested_json)
 {
-    EXPECT_EQ(R"({ "key1":-2, "key2":"value2", "key3":5, "key7":{"key8":{ "key9":"value9" } }, "key4":{ "key5":{ "key6":"string" } } })"
-        , Merged(R"({ "key1":-2, "key2":"value2", "key3":5, "key7":{"key8":{ "key9":"value9" } } })", "key4/key5/key6", infra::JsonValue(infra::InPlaceType<infra::JsonString>(), infra::JsonString("string"))));
-}
-
-TEST(JsonObjectFormatter, merge_missing_path_with_backslash_and_key_string_value_pair_into_nested_json)
-{
-    EXPECT_EQ(R"({ "key1":-2, "key2":"value2", "key3":5, "key7":{"key8":{ "key9":"value9" } }, "key4":{ "key5":{ "key6":"string" } } })"
-        , Merged(R"({ "key1":-2, "key2":"value2", "key3":5, "key7":{"key8":{ "key9":"value9" } } })", "/key4/key5/key6", infra::JsonValue(infra::InPlaceType<infra::JsonString>(), infra::JsonString("string"))));
+    EXPECT_EQ(R"({ "a":-2, "b":"value2", "c":5, "d":{"x":{ "y":"value9" } }, "key1":{ "key2":{ "key3":"string" } } })"
+        , Merged(R"({ "a":-2, "b":"value2", "c":5, "d":{"x":{ "y":"value9" } } })", "key1/key2/key3", infra::JsonValue(infra::InPlaceType<infra::JsonString>(), infra::JsonString("string"))));
 }

@@ -66,6 +66,16 @@ namespace infra
                 }
             }
         }
+
+        void NestedMerge(infra::JsonObjectFormatter& formatter, infra::BoundedConstString key, infra::BoundedConstString path, const infra::JsonValue& valueToMerge)
+        {
+            infra::JsonObjectFormatter subObjectFormatter{ formatter.SubObject(key) };
+            infra::BoundedConstString nextKey = path.substr(0, path.find("/"));
+            if (nextKey.size() == path.size())
+                subObjectFormatter.Add(infra::JsonString(nextKey), valueToMerge);
+            else
+                NestedMerge(subObjectFormatter, nextKey, path.substr(nextKey.size() + 1), valueToMerge);
+        } 
     }
 
     std::size_t JsonEscapedStringSize(infra::BoundedConstString string)
@@ -121,19 +131,6 @@ namespace infra
         return string.substr(0, start);
     }
 
-    void NestedMerge(infra::JsonObjectFormatter& formatter, infra::BoundedConstString key, infra::BoundedConstString path, const infra::JsonValue& valueToMerge)
-    {
-        infra::JsonObjectFormatter subObjectFormatter{ formatter.SubObject(key) };
-        infra::BoundedConstString nextKey, pathRemaining;
-        nextKey = path.substr(0, path.find("/"));
-        if (path.find("/") != infra::BoundedConstString::npos)
-            pathRemaining = path.substr(path.find("/") + 1, path.size() - key.size() - 1);
-        if (pathRemaining.empty())
-            subObjectFormatter.Add(infra::JsonString(nextKey), valueToMerge);
-        else
-            NestedMerge(subObjectFormatter, nextKey, pathRemaining, valueToMerge);
-    }
-
     void Merge(infra::JsonObjectFormatter& formatter, infra::JsonObject& object, infra::BoundedConstString path, const infra::JsonValue& valueToMerge)
     {
         infra::BoundedConstString token, pathRemaining;
@@ -141,28 +138,27 @@ namespace infra
         if (!path.empty())
         {
             token = path.substr(0, path.find("/"));
-            if (path.find("/") != infra::BoundedConstString::npos)
-                pathRemaining = path.substr(path.find("/") + 1, path.size() - token.size() - 1);
+            if (path.size() != token.size())
+                pathRemaining = path.substr(token.size() + 1);
         }
         
-        for (auto it = object.begin(); it != object.end(); ++it)
+        auto kv = *object.begin();
+        for (auto kv : object)
         {
-            if (pathRemaining.empty() && it->key == token)
+            if (pathRemaining.empty() && kv.key == token)
             {
                 token.clear();
-                formatter.Add(it->key, valueToMerge);
+                formatter.Add(kv.key, valueToMerge);
             }
-            else if (!pathRemaining.empty() && it->key == token && it->value.Is<infra::JsonObject>())
+            else if (!pathRemaining.empty() && kv.key == token && kv.value.Is<infra::JsonObject>())
             {
                 token.clear();
-                infra::JsonObjectFormatter subObjectFormatter{ formatter.SubObject(it->key) };
-                infra::JsonObject valueJsonObj = it->value.Get<infra::JsonObject>();
+                infra::JsonObjectFormatter subObjectFormatter{ formatter.SubObject(kv.key) };
+                infra::JsonObject valueJsonObj = kv.value.Get<infra::JsonObject>();
                 infra::Merge(subObjectFormatter, valueJsonObj, pathRemaining, valueToMerge);
             }
             else
-            {
-                formatter.Add(it->key, it->value);
-            }
+                formatter.Add(kv.key, kv.value);
         }
 
         if (!token.empty() && !object.HasKey(token))
