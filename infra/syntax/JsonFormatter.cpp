@@ -142,7 +142,6 @@ namespace infra
                 pathRemaining = path.substr(token.size() + 1);
         }
         
-        auto kv = *object.begin();
         for (auto kv : object)
         {
             if (pathRemaining.empty() && kv.key == token)
@@ -150,12 +149,17 @@ namespace infra
                 token.clear();
                 formatter.Add(kv.key, valueToMerge);
             }
-            else if (!pathRemaining.empty() && kv.key == token && kv.value.Is<infra::JsonObject>())
+            else if (!pathRemaining.empty() && kv.key == token)
             {
                 token.clear();
                 infra::JsonObjectFormatter subObjectFormatter{ formatter.SubObject(kv.key) };
-                infra::JsonObject valueJsonObj = kv.value.Get<infra::JsonObject>();
-                infra::Merge(subObjectFormatter, valueJsonObj, pathRemaining, valueToMerge);
+                if (kv.value.Is<infra::JsonObject>())
+                {
+                    infra::JsonObject valueJsonObj = kv.value.Get<infra::JsonObject>();
+                    infra::Merge(subObjectFormatter, valueJsonObj, pathRemaining, valueToMerge);
+                }
+                else
+                    infra::Merge(subObjectFormatter, infra::JsonObject("{}"), pathRemaining, valueToMerge);  
             }
             else
                 formatter.Add(kv.key, kv.value);
