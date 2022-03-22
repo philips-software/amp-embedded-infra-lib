@@ -14,7 +14,7 @@ namespace infra
 
     class JsonArrayFormatter;
     class JsonStringStream;
-
+    
     class JsonObjectFormatter
     {
     public:
@@ -40,10 +40,13 @@ namespace infra
         void Add(JsonString tagName, JsonString tag);
         void Add(JsonString tagName, const JsonObject& tag);
         void Add(JsonString tagName, const JsonArray& tag);
+        void Add(JsonString tagName, const JsonValue& tag);
         void Add(const infra::JsonKeyValue& keyValue);
         void AddMilliFloat(const char* tagName, uint32_t intValue, uint32_t milliFractionalValue);
+        void AddMilliFloat(infra::JsonString tagName, uint32_t intValue, uint32_t milliFractionalValue);
         void AddSubObject(const char* tagName, infra::BoundedConstString json);
-        JsonObjectFormatter SubObject(infra::BoundedConstString tagName);
+        JsonObjectFormatter SubObject(const char* tagName);
+        JsonObjectFormatter SubObject(JsonString tagName);
         JsonArrayFormatter SubArray(infra::BoundedConstString tagName);
         JsonStringStream AddString(const char* tagName);
         infra::TextOutputStream AddObject(const char* tagName);
@@ -57,6 +60,8 @@ namespace infra
         infra::TextOutputStream* stream;
         bool empty = true;
     };
+
+    void Merge(infra::JsonObjectFormatter& formatter, infra::JsonObject& object, infra::BoundedConstString path,const infra::JsonValue& valueToMerge);
 
     class JsonArrayFormatter
     {
