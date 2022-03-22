@@ -43,6 +43,7 @@ namespace infra
         void Add(JsonString tagName, const JsonValue& tag);
         void Add(const infra::JsonKeyValue& keyValue);
         void AddMilliFloat(const char* tagName, uint32_t intValue, uint32_t milliFractionalValue);
+        void AddMilliFloat(infra::JsonString tagName, uint32_t intValue, uint32_t milliFractionalValue);
         void AddSubObject(const char* tagName, infra::BoundedConstString json);
         JsonObjectFormatter SubObject(const char* tagName);
         JsonObjectFormatter SubObject(JsonString tagName);

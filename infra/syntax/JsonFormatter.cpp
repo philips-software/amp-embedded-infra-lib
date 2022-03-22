@@ -121,6 +121,19 @@ namespace infra
         return string.substr(0, start);
     }
 
+    void NestedMerge(infra::JsonObjectFormatter& formatter, infra::BoundedConstString key, infra::BoundedConstString path, const infra::JsonValue& valueToMerge)
+    {
+        infra::JsonObjectFormatter subObjectFormatter{ formatter.SubObject(key) };
+        infra::BoundedConstString nextKey, pathRemaining;
+        nextKey = path.substr(0, path.find("/"));
+        if (path.find("/") != infra::BoundedConstString::npos)
+            pathRemaining = path.substr(path.find("/") + 1, path.size() - key.size() - 1);
+        if (pathRemaining.empty())
+            subObjectFormatter.Add(infra::JsonString(nextKey), valueToMerge);
+        else
+            NestedMerge(subObjectFormatter, nextKey, pathRemaining, valueToMerge);
+    }
+
     void Merge(infra::JsonObjectFormatter& formatter, infra::JsonObject& object, infra::BoundedConstString path, const infra::JsonValue& valueToMerge)
     {
         infra::BoundedConstString token, pathRemaining;
@@ -152,10 +165,12 @@ namespace infra
             }
         }
 
-        if (!token.empty() && pathRemaining.empty() && !object.HasKey(token))
+        if (!token.empty() && !object.HasKey(token))
         {
-            formatter.Add(infra::JsonString(token), valueToMerge);
-            token.clear();
+            if (pathRemaining.empty())
+                formatter.Add(infra::JsonString(token), valueToMerge);
+            else
+                NestedMerge(formatter, token, pathRemaining, valueToMerge);
         }
     }
 
@@ -292,7 +307,7 @@ namespace infra
         else if (value.Is<int32_t>())
             Add(key, value.Get<int32_t>());
         else if (value.Is<JsonFloat>())
-            AddMilliFloat(key.Raw().begin(), value.Get<JsonFloat>().IntValue(), value.Get<JsonFloat>().NanoFractionalValue());
+            AddMilliFloat(key, value.Get<JsonFloat>().IntValue(), value.Get<JsonFloat>().NanoFractionalValue());
         else if (value.Is<JsonString>())
             Add(key, value.Get<JsonString>());
         else if (value.Is<JsonObject>())
@@ -307,6 +322,12 @@ namespace infra
     {
         InsertSeparation();
         *stream << '"' << tagName << R"(":)" << intValue << '.' << infra::Width(3, '0') << milliFractionalValue;
+    }
+
+    void JsonObjectFormatter::AddMilliFloat(infra::JsonString tagName, uint32_t intValue, uint32_t milliFractionalValue)
+    {
+        InsertSeparation();
+        *stream << '"' << tagName.Raw() << R"(":)" << intValue << '.' << infra::Width(3, '0') << milliFractionalValue;
     }
 
     void JsonObjectFormatter::AddSubObject(const char* tagName, infra::BoundedConstString json)

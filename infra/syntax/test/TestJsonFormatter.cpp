@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+#include "infra/stream/StdStringOutputStream.hpp"
 #include "infra/syntax/JsonFormatter.hpp"
 
 TEST(BasicUsageTest, format_json_object)
@@ -223,6 +224,72 @@ TEST(JsonObjectFormatter, add_json_value_array)
     EXPECT_EQ(R"({ "tag":[] })", string);
 }
 
+TEST(JsonObjectFormatter, add_key_jsonstring_value_bool)
+{
+    infra::BoundedString::WithStorage<64> string;
+
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        formatter.Add(infra::JsonString{ "tag"}, infra::JsonValue(infra::InPlaceType<bool>(), false));
+    }
+    EXPECT_EQ(R"({ "tag":false })", string);
+}
+
+TEST(JsonObjectFormatter, add_key_jsonstring_value_Int)
+{
+    infra::BoundedString::WithStorage<64> string;
+
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        formatter.Add(infra::JsonString{ "tag" }, infra::JsonValue(infra::InPlaceType<int32_t>(), -2));
+    }
+    EXPECT_EQ(R"({ "tag":-2 })", string);
+}
+
+TEST(JsonObjectFormatter, add_key_jsonstring_value_JsonFloat)
+{
+    infra::BoundedString::WithStorage<64> string;
+
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        formatter.Add(infra::JsonString{ "tag" }, infra::JsonValue(infra::InPlaceType<infra::JsonFloat>(), infra::JsonFloat{55,300}));
+    }
+    EXPECT_EQ(R"({ "tag":55.300 })", string);
+}
+
+TEST(JsonObjectFormatter, add_key_jsonstring_value_JsonString)
+{
+    infra::BoundedString::WithStorage<64> string;
+
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        formatter.Add(infra::JsonString{ "tag" }, infra::JsonValue(infra::InPlaceType<infra::JsonString>(), infra::JsonString{ "String" }));
+    }
+    EXPECT_EQ(R"({ "tag":"String" })", string);
+}
+
+TEST(JsonObjectFormatter, add_key_jsonstring_value_JsonObject)
+{
+    infra::BoundedString::WithStorage<64> string;
+
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        formatter.Add(infra::JsonString{ "tag" }, infra::JsonValue(infra::InPlaceType<infra::JsonObject>(), infra::JsonObject{ "{}" }));
+    }
+    EXPECT_EQ(R"({ "tag":{} })", string);
+}
+
+TEST(JsonObjectFormatter, add_key_jsonstring_value_JsonArray)
+{
+    infra::BoundedString::WithStorage<64> string;
+
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        formatter.Add(infra::JsonString{ "tag" }, infra::JsonValue(infra::InPlaceType<infra::JsonArray>(), infra::JsonArray{ "[]" }));
+    }
+    EXPECT_EQ(R"({ "tag":[] })", string);
+}
+
 TEST(JsonObjectFormatter, output_is_truncated_on_small_output_string)
 {
     infra::BoundedString::WithStorage<1> string;
@@ -402,103 +469,73 @@ TEST(JsonArrayFormatter, output_is_truncated_on_small_output_string)
     EXPECT_EQ(R"([)", string);
 }
 
+std::string Merged(infra::BoundedConstString objectString, infra::BoundedConstString path, const infra::JsonValue& value)
+{
+    infra::StdStringOutputStream::WithStorage stream;
+    {
+        infra::JsonObjectFormatter formatter(stream);
+        infra::JsonObject object(objectString);
+        Merge(formatter, object, path, value);
+    }
+    return stream.Storage();
+}
+
 TEST(JsonObjectFormatter, merge_single_key_int_value_pair)
 {
-    infra::BoundedConstString jsonPath = "path1";
-    infra::JsonValue jsonValue = 5;
-    std::string mainJsonConfig = R"({"path1":6})";
-    infra::JsonObject jsonConfigObj{ mainJsonConfig };
-    infra::BoundedString::WithStorage<64> string;
-    {
-        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
-        infra::Merge(formatter, jsonConfigObj, jsonPath, jsonValue);
-    }
-    
-    EXPECT_EQ(R"({ "path1":5 })", string);
-}
-
-TEST(JsonObjectFormatter, merge_single_key_string_value_pair)
-{
-    infra::BoundedConstString jsonPath = "path1";
-    infra::JsonValue jsonValue{ infra::JsonString("string") };
-    std::string mainJsonConfig = R"({"path1":6})";
-    infra::JsonObject jsonConfigObj{ mainJsonConfig };
-    infra::BoundedString::WithStorage<64> string;
-    {
-        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
-        infra::Merge(formatter, jsonConfigObj, jsonPath, jsonValue);
-    }
-
-    EXPECT_EQ(R"({ "path1":"string" })", string);
-}
-
-TEST(JsonObjectFormatter, merge_missing_key_string_value_pair)
-{
-    infra::BoundedConstString jsonPath = "path1/path3";
-    infra::JsonValue jsonValue{ infra::JsonString("string") };
-    std::string mainJsonConfig = R"({"path1":{"path2" : 5}})";
-    infra::JsonObject jsonConfigObj{ mainJsonConfig };
-    infra::BoundedString::WithStorage<64> string;
-    {
-        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
-        infra::Merge(formatter, jsonConfigObj, jsonPath, jsonValue);
-    }
-
-    EXPECT_EQ(R"({ "path1":{ "path2":5, "path3":"string" } })", string);
+    EXPECT_EQ(R"({ "key1":5 })"
+        , Merged(R"({"key1":6})", "key1", infra::JsonValue(infra::InPlaceType<int32_t>(), 5)));
 }
 
 TEST(JsonObjectFormatter, merge_key_empty_value_pair)
 {
-    infra::BoundedConstString jsonPath = "path1";
-    infra::JsonValue jsonValue{ infra::JsonObject("{}") };
-    std::string mainJsonConfig = R"({"path1":{"path2" : 5, "path3": "string"}})";
-    infra::JsonObject jsonConfigObj{ mainJsonConfig };
-    infra::BoundedString::WithStorage<64> string;
-    {
-        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
-        infra::Merge(formatter, jsonConfigObj, jsonPath, jsonValue);
-    }
-
-    EXPECT_EQ(R"({ "path1":{} })", string);
+    EXPECT_EQ(R"({ "key1":{} })"
+        , Merged(R"({"key1":{"key2":5, "key3":"string"}})", "key1", infra::JsonValue(infra::InPlaceType<infra::JsonObject>(), infra::JsonObject("{}"))));
+}
+ 
+TEST(JsonObjectFormatter, replace_int_value_by_string_value_at_path)
+{
+    EXPECT_EQ(R"({ "key1":"string" })"
+        , Merged(R"({"key1":6})", "key1", infra::JsonValue(infra::InPlaceType<infra::JsonString>(), infra::JsonString("string"))));
 }
 
-TEST(JsonObjectFormatter, merge_key_string_value_in_max_depth_5)
+TEST(JsonObjectFormatter, merge_key_int_value_pair)
 {
-    infra::BoundedConstString jsonPath = "path1/path2/path3/path4/path5";
-    infra::JsonValue jsonValue{ infra::JsonString("strings") };
-    std::string mainJsonConfig = R"({ "path1":{ "path2":{ "path3":{ "path4":{ "path5":"string"}}}}})";
-    infra::JsonObject jsonConfigObj{ mainJsonConfig };
-    infra::BoundedString::WithStorage<128> string;
-    {
-        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
-        infra::Merge(formatter, jsonConfigObj, jsonPath, jsonValue);
-    }
-
-    EXPECT_EQ(R"({ "path1":{ "path2":{ "path3":{ "path4":{ "path5":"strings" } } } } })", string);
+    EXPECT_EQ(R"({ "key1":-2, "key2":"value2", "key3":5, "key4":56.002 })"
+        , Merged(R"({ "key1":6, "key2":"value2", "key3":5, "key4":56.2 })", "key1", infra::JsonValue(infra::InPlaceType<int32_t>(), -2)));
 }
 
-TEST(JsonObjectFormatter, merge_key_value_with_nested_depth_3)
+TEST(JsonObjectFormatter, merge_key_jsonObject_value_pair_into_nested_json_depth_1)
 {
-    infra::BoundedConstString jsonPath = "customization/static_configuration/plugin_manager_config";
-    infra::JsonValue jsonObj = infra::JsonObject("{\"max_retries\": 2,\"backoff_mins_max_retries_failed\" : 30,\"retry_attach_timeout_mins\" : 1,\"timeout_detach_mins\" : 2}");
-    std::string jsonConfig = "{ \"version\": 2, \"image_components\": { \"application\": \"Install/components/stcellular.cellular_cn_sequans_develop_low_power/stm32f767-Release/bin/stcellular.cellular_cn_sequans_develop_low_power.elf\" }, \"customization\": {"
-        "\"static_configuration\": { \"app_version\": \"v2.0\", \"power_manager_config\":{ \"power_state_after_timeout\" : \"poweroff\", \"timeout_low_power_mins\" : 1 }, \"plugin_manager_config\": { \"max_retries\": 2, \"backoff_mins_max_retries_failed\" : 30,"
-		"\"retry_attach_timeout_mins\" : 1, \"timeout_detach_mins\" : 1 }, \"certificate_connect\" : \"Source/ConnectivityToolKit/hsdp_connect/ccn-ca-certificates-connect.pem\", \"certificate_data\" : \"Source/ConnectivityToolKit/hsdp_connect/ccn-ca-certificates-data.pem\","
-		"\"hsdp_connect\": { \"regions\": [ { \"name\": \"EU\", \"iam_url\": \"iam-client-test.eu-west.philips-healthsuite.com\", \"discovery_url\": \"discovery-client-test.eu01.connect.hsdp.io/client-test/core/discovery\", \"ca_certificates\": \"Source/ConnectivityToolKit/hsdp_connect/ccn-ca-certificates.pem\","
-		"\"bootstrap_credentials\": { \"username\": \"7671746a4d3849f4aea\", \"password\": \"r2!S7y0qr.G3Hw-K\" } } ], \"device_group_name\": \"DeviceGroupName\", \"device_type_name\": \"OculusDev01\", \"hsdp_iam_proxy_enabled\": false, \"device_purpose\": \"dev\"} }	} }";
+    EXPECT_EQ(R"({ "key1":-2, "key2":"value2", "key3":5, "key4":{"key5":"value5"} })"
+        , Merged(R"({ "key1":-2, "key2":"value2", "key3":5, "key4":{} })", "key4", infra::JsonValue(infra::InPlaceType<infra::JsonObject>(), infra::JsonObject(R"({"key5":"value5"})"))));
+}
 
-    infra::BoundedString::WithStorage<3000> string;
-    infra::JsonObject jsonConfigObj{ jsonConfig };
-    {
-        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
-        infra::Merge(formatter, jsonConfigObj, jsonPath, jsonObj);
-    }
-    infra::JsonObject jsonObjectModified{ string };
-    std::string jsonConfigFinal = "{ \"version\": 2, \"image_components\": { \"application\": \"Install/components/stcellular.cellular_cn_sequans_develop_low_power/stm32f767-Release/bin/stcellular.cellular_cn_sequans_develop_low_power.elf\" }, \"customization\": {"
-                             "\"static_configuration\": { \"app_version\": \"v2.0\", \"power_manager_config\":{ \"power_state_after_timeout\" : \"poweroff\", \"timeout_low_power_mins\" : 1 }, \"plugin_manager_config\": { \"max_retries\": 2, \"backoff_mins_max_retries_failed\" : 30,"
-                             "\"retry_attach_timeout_mins\" : 1, \"timeout_detach_mins\" : 2 }, \"certificate_connect\" : \"Source/ConnectivityToolKit/hsdp_connect/ccn-ca-certificates-connect.pem\", \"certificate_data\" : \"Source/ConnectivityToolKit/hsdp_connect/ccn-ca-certificates-data.pem\","
-                             "\"hsdp_connect\": { \"regions\": [ { \"name\": \"EU\", \"iam_url\": \"iam-client-test.eu-west.philips-healthsuite.com\", \"discovery_url\": \"discovery-client-test.eu01.connect.hsdp.io/client-test/core/discovery\", \"ca_certificates\": \"Source/ConnectivityToolKit/hsdp_connect/ccn-ca-certificates.pem\","
-                             "\"bootstrap_credentials\": { \"username\": \"7671746a4d3849f4aea\", \"password\": \"r2!S7y0qr.G3Hw-K\" } } ], \"device_group_name\": \"DeviceGroupName\", \"device_type_name\": \"OculusDev01\", \"hsdp_iam_proxy_enabled\": false, \"device_purpose\": \"dev\" } } } }";
-    infra::JsonObject jsonObjectFinal{ jsonConfigFinal };
-    EXPECT_EQ(jsonObjectModified, jsonObjectFinal);
+TEST(JsonObjectFormatter, merge_key_string_value_pair_into_nested_json_depth_2)
+{
+    EXPECT_EQ(R"({ "key1":-2, "key2":"value2", "key3":5, "key4":{ "key5":{ "key6":"string" } } })"
+        , Merged(R"({ "key1":-2, "key2":"value2", "key3":5, "key4":{"key5":{ "key6":"value6" } } })", "key4/key5/key6", infra::JsonValue(infra::InPlaceType<infra::JsonString>(), infra::JsonString("string"))));
+}
+
+TEST(JsonObjectFormatter, merge_key_string_value_in_depth_6)
+{
+    EXPECT_EQ(R"({ "path1":{ "path2":{ "path3":{ "path4":{ "path5":{ "path6":"strings" } } } } } })"
+        , Merged(R"({ "path1":{ "path2":{ "path3":{ "path4":{ "path5":{ "path6":"string"}}}}})", "path1/path2/path3/path4/path5/path6", infra::JsonValue(infra::InPlaceType<infra::JsonString>(), infra::JsonString("strings"))));
+}
+
+TEST(JsonObjectFormatter, merge_into_nested_missing_last_key_value_pair)
+{
+    EXPECT_EQ(R"({ "path1":{ "path2":5, "path3":"string" } })"
+        , Merged(R"({"path1":{"path2" : 5}})", "path1/path3", infra::JsonValue(infra::InPlaceType<infra::JsonString>(), infra::JsonString("string"))));
+}
+
+TEST(JsonObjectFormatter, merge_missing_full_path_and_key_string_value_pair_into_nested_json)
+{
+    EXPECT_EQ(R"({ "key1":-2, "key2":"value2", "key3":5, "key7":{"key8":{ "key9":"value9" } }, "key4":{ "key5":{ "key6":"string" } } })"
+        , Merged(R"({ "key1":-2, "key2":"value2", "key3":5, "key7":{"key8":{ "key9":"value9" } } })", "key4/key5/key6", infra::JsonValue(infra::InPlaceType<infra::JsonString>(), infra::JsonString("string"))));
+}
+
+TEST(JsonObjectFormatter, merge_missing_path_with_backslash_and_key_string_value_pair_into_nested_json)
+{
+    EXPECT_EQ(R"({ "key1":-2, "key2":"value2", "key3":5, "key7":{"key8":{ "key9":"value9" } }, "key4":{ "key5":{ "key6":"string" } } })"
+        , Merged(R"({ "key1":-2, "key2":"value2", "key3":5, "key7":{"key8":{ "key9":"value9" } } })", "/key4/key5/key6", infra::JsonValue(infra::InPlaceType<infra::JsonString>(), infra::JsonString("string"))));
 }
