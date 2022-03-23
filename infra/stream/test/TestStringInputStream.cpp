@@ -168,6 +168,33 @@ TEST(StringInputStreamTest, FromBase64_with_insufficient_input_reports_error)
     EXPECT_TRUE(stream.ErrorPolicy().Failed());
 }
 
+TEST(StringInputStreamTest, Base64DecodedSize)
+{
+    auto size = Base64DecodedSize(infra::BoundedConstString("YWJj"));
+    EXPECT_EQ(3, size);
+}
+
+TEST(StringInputStreamTest, Base64DecodedSize_with_one_pads)
+{
+    auto size = Base64DecodedSize(infra::BoundedConstString("YWI="));
+    EXPECT_EQ(2, size);
+}
+
+TEST(StringInputStreamTest, Base64DecodedSize_with_two_pads)
+{
+    auto size = Base64DecodedSize(infra::BoundedConstString("YQ=="));
+    EXPECT_EQ(1, size);
+}
+
+TEST(StringInputStreamTest, Base64DecodedSize_with_insufficient_input_reports_null)
+{
+    auto size = Base64DecodedSize(infra::BoundedConstString("YQ="));
+    EXPECT_EQ(0, size);
+
+    size = Base64DecodedSize(infra::BoundedConstString(""));
+    EXPECT_EQ(0, size);
+}
+
 TEST(StringInputStreamTest, Rewind)
 {
     infra::BoundedString::WithStorage<10> string("abcd");

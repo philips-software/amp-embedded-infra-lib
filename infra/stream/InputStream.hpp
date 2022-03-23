@@ -228,6 +228,8 @@ namespace infra
     FromHexHelper FromHex(infra::ByteRange data);
     FromBase64Helper FromBase64(infra::ByteRange data);
 
+    size_t Base64DecodedSize(infra::BoundedConstString encodedContents);
+
     ////    Implementation    ////
 
     template<class Data>
