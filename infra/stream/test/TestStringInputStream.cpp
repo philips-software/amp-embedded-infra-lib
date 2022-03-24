@@ -170,29 +170,28 @@ TEST(StringInputStreamTest, FromBase64_with_insufficient_input_reports_error)
 
 TEST(StringInputStreamTest, Base64DecodedSize)
 {
-    auto size = Base64DecodedSize(infra::BoundedConstString("YWJj"));
-    EXPECT_EQ(3, size);
+    EXPECT_EQ(3, Base64DecodedSize(infra::BoundedConstString("YWJj")));
 }
 
 TEST(StringInputStreamTest, Base64DecodedSize_with_one_pads)
 {
-    auto size = Base64DecodedSize(infra::BoundedConstString("YWI="));
-    EXPECT_EQ(2, size);
+    EXPECT_EQ(2, Base64DecodedSize(infra::BoundedConstString("YWI=")));
 }
 
 TEST(StringInputStreamTest, Base64DecodedSize_with_two_pads)
 {
-    auto size = Base64DecodedSize(infra::BoundedConstString("YQ=="));
-    EXPECT_EQ(1, size);
+    EXPECT_EQ(1, Base64DecodedSize(infra::BoundedConstString("YQ==")));
+}
+
+TEST(StringInputStreamTest, Base64DecodedSize_with_bigger_input)
+{
+    EXPECT_EQ(5, Base64DecodedSize(infra::BoundedConstString("YWJjZGU=")));
 }
 
 TEST(StringInputStreamTest, Base64DecodedSize_with_insufficient_input_reports_null)
 {
-    auto size = Base64DecodedSize(infra::BoundedConstString("YQ="));
-    EXPECT_EQ(0, size);
-
-    size = Base64DecodedSize(infra::BoundedConstString(""));
-    EXPECT_EQ(0, size);
+    EXPECT_EQ(0, Base64DecodedSize(infra::BoundedConstString("YQ=")));
+    EXPECT_EQ(0, Base64DecodedSize(infra::BoundedConstString("")));
 }
 
 TEST(StringInputStreamTest, Rewind)
