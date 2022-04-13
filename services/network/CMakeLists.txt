@@ -67,6 +67,8 @@ ccola_component(network static_library)
         SingleConnectionListener.hpp
         SntpClient.cpp
         SntpClient.hpp
+        SsdpDeviceDiscovery.cpp
+        SsdpDeviceDiscovery.hpp
         StreamEcho.cpp
         StreamEcho.hpp
         TracingConnectionFactoryWithNameResolver.cpp
