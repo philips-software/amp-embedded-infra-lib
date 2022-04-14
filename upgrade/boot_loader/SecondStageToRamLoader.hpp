@@ -4,6 +4,7 @@
 #include "hal/synchronous_interfaces/SynchronousFlash.hpp"
 #include "upgrade/boot_loader/Decryptor.hpp"
 #include "upgrade/boot_loader/Verifier.hpp"
+#include "upgrade/pack/UpgradePackHeader.hpp"
 
 namespace application
 {
@@ -14,6 +15,11 @@ namespace application
 
         bool Load(infra::ByteRange ram, Decryptor& decryptor, const Verifier& verifier, bool override = false);
         void MarkAsError(uint32_t errorCode);
+
+    protected:
+        virtual UpgradePackStatus ReadStatus();
+        virtual void WriteStatus(UpgradePackStatus status);
+        virtual void WriteError(uint32_t errorCode);
 
     private:
         bool TryLoadImage(infra::ByteRange ram, Decryptor& decryptor);
