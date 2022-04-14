@@ -90,9 +90,9 @@ namespace application
 
     UpgradePackStatus SecondStageToRamLoader::ReadStatus()
     {
-        UpgradePackHeaderPrologue headerPrologue;
-        upgradePackFlash.ReadBuffer(infra::MakeByteRange(headerPrologue), 0);
-        return headerPrologue.status;
+        UpgradePackStatus status;
+        upgradePackFlash.ReadBuffer(infra::MakeByteRange(status), 0);
+        return status;
     }
 
     void SecondStageToRamLoader::WriteStatus(UpgradePackStatus status)
