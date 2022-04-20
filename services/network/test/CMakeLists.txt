@@ -23,6 +23,7 @@ ccola_component(network_test gmock_test)
         TestSerialServer.cpp
         TestSingleConnectionListener.cpp
         TestSntpClient.cpp
+        TestSsdpDeviceDiscovery.cpp
         TestWebSocketClient.cpp
         TestWebSocketClientConnectionObserver.cpp
         TestWebSocketIntegration.cpp
