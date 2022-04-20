@@ -106,17 +106,7 @@ namespace services
         this->ipVersion = ipVersion;
         this->maxWaitResponseTime = maxWaitResponseTime;
 
-        switch (ipVersion)
-        {
-        case IPVersions::ipv4:
-            discoverExchange->RequestSendStream(200, services::Udpv4Socket{ ssdpMulticastAddressIpv4, ssdpPort });
-            break;
-        case IPVersions::ipv6:
-            discoverExchange->RequestSendStream(200, services::Udpv6Socket{ ssdpMulticastAddressIpv6, ssdpPort });
-            break;
-        default:
-            std::abort();
-        }
+        discoverExchange->RequestSendStream(200, MakeSsdpUdpSocket(ipVersion));
     }
 
     void SsdpDeviceDiscovery::ActiveDiscovery::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, services::UdpSocket from)
@@ -127,16 +117,38 @@ namespace services
     void SsdpDeviceDiscovery::ActiveDiscovery::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         infra::TextOutputStream::WithErrorPolicy stream(*writer);
-        stream << "M-SEARCH * HTTP/1.1\r\n";
-
-        if (ipVersion == IPVersions::ipv4)
-            stream << "HOST: " << ssdpMulticastAddressIpv4 << ":" << ssdpPort << "\r\n";
-        else
-            stream << "HOST: [" << ssdpMulticastAddressIpv6 << "]:" << ssdpPort << "\r\n";
 
         stream 
+            << "M-SEARCH * HTTP/1.1\r\n"
+            << "HOST: " << AsCanonicalFormIp(GetSsdpMulticastAddress(ipVersion)) << ":" << ssdpPort << "\r\n"
             << "MAN: \"ssdp:discover\"\r\n"
             << "ST: " << discovery.searchTarget << "\r\n"
             << "MX: "<< maxWaitResponseTime << "\r\n";
+    }
+
+    UdpSocket SsdpDeviceDiscovery::ActiveDiscovery::MakeSsdpUdpSocket(IPVersions ipVersion)
+    {
+        switch (ipVersion)
+        {
+        case IPVersions::ipv4:
+            return Udpv4Socket{ ssdpMulticastAddressIpv4, ssdpPort };
+        case IPVersions::ipv6:
+            return Udpv6Socket{ ssdpMulticastAddressIpv6, ssdpPort }; 
+        default:
+            std::abort();
+        }
+    }
+
+    IPAddress SsdpDeviceDiscovery::ActiveDiscovery::GetSsdpMulticastAddress(IPVersions ipVersion)
+    {
+        switch (ipVersion)
+        {
+        case IPVersions::ipv4:
+            return ssdpMulticastAddressIpv4;
+        case IPVersions::ipv6:
+            return ssdpMulticastAddressIpv6; 
+        default:
+            std::abort();
+        }
     }
 }

@@ -73,6 +73,9 @@ namespace services
             virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, services::UdpSocket from) override;
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
+            UdpSocket MakeSsdpUdpSocket(IPVersions ipVersion);
+            IPAddress GetSsdpMulticastAddress(IPVersions ipVersion);
+
         private:
             SsdpDeviceDiscovery& discovery;
             infra::SharedPtr<services::DatagramExchange> discoverExchange;
