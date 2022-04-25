@@ -3,6 +3,7 @@
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/util/InterfaceConnector.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
+#include "services/util/Sha256MbedTls.hpp"
 #include "services/util/WritableConfiguration.hpp"
 
 namespace
@@ -47,10 +48,11 @@ class FlashReadingWritableConfigurationTest
 public:
     void ConstructConfiguration()
     {
-        configuration.Emplace(flash);
+        configuration.Emplace(flash, sha256);
     }
 
     hal::FlashStub flash{ 1, 16 };
+    services::Sha256MbedTls sha256;
     infra::Optional<services::FlashReadingWritableConfiguration<DataProxy, DataProxy>> configuration;
 
     testing::StrictMock<Data> data;
@@ -60,7 +62,7 @@ TEST_F(FlashReadingWritableConfigurationTest, asynchronous_read_data)
 {
     ConstructConfiguration();
     EXPECT_FALSE(configuration->Valid());
-    
+
     flash.sectors[0] = { 0xee, 0x1d, 0xef, 0x7e, 0x34, 0x12, 0x66, 0x4d, 0x01, 0x00, 0x00, 0x00, 0x0f, 0xff, 0xff, 0xff };
     EXPECT_CALL(data, Deserialize(testing::_)).WillOnce(testing::Invoke([](infra::ProtoParser& parser)
     {
@@ -110,10 +112,11 @@ public:
 
     void ConstructConfiguration(infra::ConstByteRange flashRegion)
     {
-        configuration.Emplace(flash, flashRegion);
+        configuration.Emplace(flash, sha256, flashRegion);
     }
 
     hal::FlashStub flash{ 1, 16 };
+    services::Sha256MbedTls sha256;
     infra::Optional<services::MemoryMappedWritableConfiguration<DataProxy, DataProxy>> configuration;
 
     testing::StrictMock<Data> data;
