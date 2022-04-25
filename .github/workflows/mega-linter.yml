@@ -17,6 +17,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  formatter:
+    name: Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: DoozyX/clang-format-lint-action@v0.12
+        with:
+          inplace: true
+          extensions: "cpp,hpp"
+      - uses: EndBug/add-and-commit@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          committer_name: GitHub Actions
+          committer_email: github-actions[bot]@users.noreply.github.com
+          message: "[Formatting Bot] clang-format changes"
   linter:
     name: Linter
     runs-on: ubuntu-latest
