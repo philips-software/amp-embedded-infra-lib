@@ -125,7 +125,7 @@ namespace services
 
         private:
             MdnsClient& client;
-            services::IPVersions& ipVersion;
+            services::IPVersions ipVersion;
             infra::StreamReaderWithRewinding& reader;
             infra::DataInputStream::WithErrorPolicy stream{ reader, infra::noFail };
             std::size_t startMarker{ reader.ConstructSaveMarker() };

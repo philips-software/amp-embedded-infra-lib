@@ -310,7 +310,6 @@ namespace services
             break;
         default:
             std::abort();
-            break;
         }
     }
 
