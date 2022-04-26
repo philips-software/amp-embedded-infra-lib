@@ -6,7 +6,10 @@
 
 namespace infra
 {
-    MATCHER_P(ContentsEqual, x, negation ? "Contents not equal" : "Contents are equal") { return infra::ContentsEqual(infra::MakeRange(x), arg); }
+    MATCHER_P(ContentsEqual, x, negation ? "Contents not equal" : "Contents are equal")
+    {
+        return infra::ContentsEqual(infra::MakeRange(x), arg);
+    }
 }
 
 #endif

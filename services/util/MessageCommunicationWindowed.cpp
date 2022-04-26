@@ -1,7 +1,7 @@
+#include "services/util/MessageCommunicationWindowed.hpp"
 #include "infra/event/EventDispatcher.hpp"
 #include "infra/stream/BoundedDequeOutputStream.hpp"
 #include "infra/util/PostAssign.hpp"
-#include "services/util/MessageCommunicationWindowed.hpp"
 
 namespace services
 {
@@ -45,8 +45,7 @@ namespace services
                 break;
         }
 
-        infra::EventDispatcher::Instance().Schedule([this]()
-        {
+        infra::EventDispatcher::Instance().Schedule([this]() {
             SetNextState();
         });
     }
@@ -80,14 +79,12 @@ namespace services
             {
                 if (!notificationScheduled.exchange(true))
                 {
-                    infra::EventDispatcher::Instance().Schedule([this]()
-                    {
+                    infra::EventDispatcher::Instance().Schedule([this]() {
                         infra::DataInputStream::WithReader<detail::AtomicDequeReader> stream(receivedData, infra::softFail);
                         auto size = stream.Extract<uint16_t>();
                         if (!stream.Failed() && stream.Available() >= size)
                         {
-                            reader.OnAllocatable([this, size]()
-                            {
+                            reader.OnAllocatable([this, size]() {
                                 receivedData.Pop(size);
                                 releasedWindowBuffer += size + 2;
                                 if (!EvaluateReceiveMessage())

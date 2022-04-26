@@ -33,7 +33,7 @@ namespace infra
     };
 
     class StreamWriterDummy
-      : public StreamWriter
+        : public StreamWriter
     {
     public:
         StreamWriterDummy();
@@ -69,7 +69,7 @@ namespace infra
     {
     public:
         template<class Writer>
-            class WithWriter;
+        class WithWriter;
         class WithErrorPolicy;
 
         using OutputStream::OutputStream;
@@ -77,9 +77,9 @@ namespace infra
         TextOutputStream operator<<(Text);
 
         template<class Data>
-            DataOutputStream& operator<<(const Data& data);
+        DataOutputStream& operator<<(const Data& data);
         template<class Data>
-            DataOutputStream& operator<<(MemoryRange<Data> data);
+        DataOutputStream& operator<<(MemoryRange<Data> data);
     };
 
     class TextOutputStream
@@ -87,7 +87,7 @@ namespace infra
     {
     public:
         template<class Writer>
-            class WithWriter;
+        class WithWriter;
         class WithErrorPolicy;
 
         TextOutputStream(StreamWriter& writer, StreamErrorPolicy& errorPolicy);
@@ -127,7 +127,7 @@ namespace infra
         }
 
         template<class... Args>
-            void Format(const char* format, Args&&... arguments);
+        void Format(const char* format, Args&&... arguments);
 
     private:
         class FormatterBase
@@ -142,7 +142,6 @@ namespace infra
 
         public:
             virtual void Stream(TextOutputStream& stream) = 0;
-
         };
 
         template<class T>
@@ -161,7 +160,7 @@ namespace infra
         };
 
         template<class T>
-            Formatter<T> MakeFormatter(T&& argument);
+        Formatter<T> MakeFormatter(T&& argument);
 
     private:
         void OutputAsDecimal(uint64_t v, bool negative);
@@ -169,20 +168,22 @@ namespace infra
         void OutputAsHexadecimal(uint64_t v, bool negative);
 
         template<class... Formatters>
-            void FormatHelper(const char* format, Formatters&&... formatters);
+        void FormatHelper(const char* format, Formatters&&... formatters);
         void FormatArgs(const char* format, infra::MemoryRange<FormatterBase*> formatters);
         void OutputOptionalPadding(size_t paddingSize);
 
     private:
         enum class Radix
         {
-            dec, bin, hex
+            dec,
+            bin,
+            hex
         };
 
-        Radix radix {Radix::dec};
-        Width width {0};
+        Radix radix{ Radix::dec };
+        Width width{ 0 };
     };
-    
+
     template<class TheWriter>
     class DataOutputStream::WithWriter
         : private detail::StorageHolder<TheWriter, WithWriter<TheWriter>>
@@ -190,11 +191,11 @@ namespace infra
     {
     public:
         template<class... Args>
-            WithWriter(Args&&... args);
+        WithWriter(Args&&... args);
         template<class Storage, class... Args>
-            WithWriter(Storage&& storage, SoftFail, Args&&... args);
+        WithWriter(Storage&& storage, SoftFail, Args&&... args);
         template<class Storage, class... Args>
-            WithWriter(Storage&& storage, NoFail, Args&&... args);
+        WithWriter(Storage&& storage, NoFail, Args&&... args);
         WithWriter(const WithWriter& other);
         WithWriter& operator=(const WithWriter& other) = delete;
         ~WithWriter() = default;
@@ -226,11 +227,11 @@ namespace infra
     {
     public:
         template<class... Args>
-            WithWriter(Args&&... args);
+        WithWriter(Args&&... args);
         template<class Storage, class... Args>
-            WithWriter(Storage&& storage, SoftFail, Args&&... args);
+        WithWriter(Storage&& storage, SoftFail, Args&&... args);
         template<class Storage, class... Args>
-            WithWriter(Storage&& storage, NoFail, Args&&... args);
+        WithWriter(Storage&& storage, NoFail, Args&&... args);
         WithWriter(const WithWriter& other);
         WithWriter& operator=(const WithWriter& other) = delete;
         ~WithWriter() = default;

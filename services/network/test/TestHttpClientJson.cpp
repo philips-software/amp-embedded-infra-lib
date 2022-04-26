@@ -36,7 +36,9 @@ public:
 
     testing::StrictMock<services::HttpClientConnectorMock> httpClientConnector;
     services::HttpClientObserverFactory* httpClientObserverFactory = nullptr;
-    infra::Execute execute{ [this]() { EXPECT_CALL(httpClientConnector, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&httpClientObserverFactory)); } };
+    infra::Execute execute{ [this]() {
+        EXPECT_CALL(httpClientConnector, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&httpClientObserverFactory));
+    } };
     infra::BoundedString::WithStorage<64> url{ "https://hostname/path" };
     services::HttpClientJson::JsonParserCreator<32, 64, 5> jsonParserCreator;
     testing::StrictMock<HttpClientJsonMock> controller{ url, services::HttpClientJson::ConnectionInfo{ jsonParserCreator, 443, httpClientConnector } };
@@ -112,12 +114,10 @@ TEST_F(HttpClientJsonTest, ParseError_reports_Error)
     auto readerPtr(infra::UnOwnedSharedPtr(reader));
     EXPECT_CALL(reader, Empty()).WillOnce(testing::Return(false));
     EXPECT_CALL(reader, ExtractContiguousRange(testing::_)).WillOnce(testing::Return(infra::MakeStringByteRange(R"({ ] })")));
-    EXPECT_CALL(jsonObjectVisitor, ParseError()).WillOnce(testing::Invoke([this]()
-    {
+    EXPECT_CALL(jsonObjectVisitor, ParseError()).WillOnce(testing::Invoke([this]() {
         controller.ContentError();
     }));
-    EXPECT_CALL(httpClient, Close()).WillOnce(testing::Invoke([this, &readerPtr]()
-    {
+    EXPECT_CALL(httpClient, Close()).WillOnce(testing::Invoke([this, &readerPtr]() {
         controller.Detaching();
         EXPECT_TRUE(readerPtr == nullptr);
     }));

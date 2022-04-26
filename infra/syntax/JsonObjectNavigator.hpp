@@ -104,17 +104,17 @@ namespace infra
         bool operator/(JsonBoolNavigatorToken token) const;
 
         template<class Result>
-            Result operator/(JsonTransformObjectNavigatorToken<Result> token) const;
+        Result operator/(JsonTransformObjectNavigatorToken<Result> token) const;
         template<class Result>
-            infra::Optional<Result> operator/(JsonTransformOptionalObjectNavigatorToken<Result> token) const;
+        infra::Optional<Result> operator/(JsonTransformOptionalObjectNavigatorToken<Result> token) const;
         template<class Result>
-            Result operator/(JsonTransformArrayNavigatorToken<Result> token) const;
+        Result operator/(JsonTransformArrayNavigatorToken<Result> token) const;
         template<class Result>
-            infra::Optional<Result> operator/(JsonTransformOptionalArrayNavigatorToken<Result> token) const;
+        infra::Optional<Result> operator/(JsonTransformOptionalArrayNavigatorToken<Result> token) const;
         template<class Result>
-            Result operator/(JsonTransformStringNavigatorToken<Result> token) const;
+        Result operator/(JsonTransformStringNavigatorToken<Result> token) const;
         template<class Result>
-            infra::Optional<Result> operator/(JsonTransformOptionalStringNavigatorToken<Result> token) const;
+        infra::Optional<Result> operator/(JsonTransformOptionalStringNavigatorToken<Result> token) const;
 
     protected:
         mutable infra::JsonObject object;
@@ -136,17 +136,17 @@ namespace infra
         infra::Optional<bool> operator/(JsonBoolNavigatorToken token) const;
 
         template<class Result>
-            infra::Optional<Result> operator/(JsonTransformObjectNavigatorToken<Result> token) const;
+        infra::Optional<Result> operator/(JsonTransformObjectNavigatorToken<Result> token) const;
         template<class Result>
-            infra::Optional<Result> operator/(JsonTransformOptionalObjectNavigatorToken<Result> token) const;
+        infra::Optional<Result> operator/(JsonTransformOptionalObjectNavigatorToken<Result> token) const;
         template<class Result>
-            infra::Optional<Result> operator/(JsonTransformArrayNavigatorToken<Result> token) const;
+        infra::Optional<Result> operator/(JsonTransformArrayNavigatorToken<Result> token) const;
         template<class Result>
-            infra::Optional<Result> operator/(JsonTransformOptionalArrayNavigatorToken<Result> token) const;
+        infra::Optional<Result> operator/(JsonTransformOptionalArrayNavigatorToken<Result> token) const;
         template<class Result>
-            infra::Optional<Result> operator/(JsonTransformStringNavigatorToken<Result> token) const;
+        infra::Optional<Result> operator/(JsonTransformStringNavigatorToken<Result> token) const;
         template<class Result>
-            infra::Optional<Result> operator/(JsonTransformOptionalStringNavigatorToken<Result> token) const;
+        infra::Optional<Result> operator/(JsonTransformOptionalStringNavigatorToken<Result> token) const;
 
     protected:
         infra::Optional<JsonObjectNavigator> navigator;
@@ -189,7 +189,7 @@ namespace infra
     {
         auto subObject = object.GetOptionalObject(token.name);
         if (subObject == infra::none)
-            return{};
+            return {};
 
         return infra::MakeOptional(token.transformation(*subObject));
     }
@@ -209,7 +209,7 @@ namespace infra
     {
         auto subArray = object.GetOptionalArray(token.name);
         if (subArray == infra::none)
-            return{};
+            return {};
 
         return infra::MakeOptional(token.transformation(*subArray));
     }
@@ -229,7 +229,7 @@ namespace infra
     {
         auto member = object.GetOptionalString(token.name);
         if (member == infra::none)
-            return{};
+            return {};
 
         return infra::MakeOptional(token.transformation(member->ToStdString()));
     }
@@ -240,7 +240,7 @@ namespace infra
         if (navigator != infra::none)
             return infra::MakeOptional(*navigator / token);
         else
-            return{};
+            return {};
     }
 
     template<class Result>
@@ -249,7 +249,7 @@ namespace infra
         if (navigator != infra::none)
             return infra::MakeOptional(*navigator / token);
         else
-            return{};
+            return {};
     }
 
     template<class Result>
@@ -258,7 +258,7 @@ namespace infra
         if (navigator != infra::none)
             return infra::MakeOptional(*navigator / token);
         else
-            return{};
+            return {};
     }
 
     template<class Result>
@@ -267,7 +267,7 @@ namespace infra
         if (navigator != infra::none)
             return infra::MakeOptional(*navigator / token);
         else
-            return{};
+            return {};
     }
 
     template<class Result>
@@ -276,7 +276,7 @@ namespace infra
         if (navigator != infra::none)
             return infra::MakeOptional(*navigator / token);
         else
-            return{};
+            return {};
     }
 
     template<class Result>
@@ -285,7 +285,7 @@ namespace infra
         if (navigator != infra::none)
             return infra::MakeOptional(*navigator / token);
         else
-            return{};
+            return {};
     }
 }
 

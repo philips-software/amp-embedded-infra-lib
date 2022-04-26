@@ -3,8 +3,8 @@
 
 #include "hal/interfaces/FileSystem.hpp"
 #include "infra/util/MemoryRange.hpp"
-#include "upgrade/pack_builder/Input.hpp"
 #include "upgrade/pack_builder/ImageSigner.hpp"
+#include "upgrade/pack_builder/Input.hpp"
 #include <memory>
 #include <vector>
 

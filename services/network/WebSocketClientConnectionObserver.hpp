@@ -211,7 +211,7 @@ namespace services
         struct Creators
         {
             infra::CreatorBase<Stoppable, void(WebSocketClientObserverFactory& clientObserverFactory,
-                HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)>& httpClientInitiationCreator;
+                                              HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)>& httpClientInitiationCreator;
         };
 
         WebSocketClientFactorySingleConnection(hal::SynchronousRandomDataGenerator& randomDataGenerator, const Creators& creators);

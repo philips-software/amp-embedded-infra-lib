@@ -4,10 +4,10 @@
 #include "hal/interfaces/SerialCommunication.hpp"
 #include <atomic>
 #include <mutex>
-#include <thread>
-#include <winsock2.h>
-#include <windows.h>
 #include <setupapi.h>
+#include <thread>
+#include <windows.h>
+#include <winsock2.h>
 
 namespace hal
 {
@@ -28,8 +28,7 @@ namespace hal
     class UartWindows
         : public SerialCommunication
     {
-    public: 
-
+    public:
         struct UartWindowsConfig
         {
             enum class RtsFlowControl
@@ -49,7 +48,8 @@ namespace hal
                 space = SPACEPARITY
             };
 
-            UartWindowsConfig() {}
+            UartWindowsConfig()
+            {}
 
             UartWindowsConfig(uint32_t newbaudRate, RtsFlowControl newFlowControlRts)
                 : baudRate(newbaudRate)
@@ -60,7 +60,10 @@ namespace hal
             RtsFlowControl flowControlRts = RtsFlowControl::RtsControlDisable;
             Parity parity = Parity::none;
         };
-        struct DeviceName {};
+
+        struct DeviceName
+        {};
+
         static const DeviceName deviceName;
 
         UartWindows(const std::string& portName, UartWindowsConfig config = UartWindowsConfig());
@@ -80,7 +83,7 @@ namespace hal
         infra::Function<void(infra::ConstByteRange data)> onReceivedData;
 
         void* handle = nullptr;
-        std::atomic<bool> running{true};
+        std::atomic<bool> running{ true };
         std::mutex mutex;
         std::condition_variable receivedDataSet;
         std::thread readThread;

@@ -37,8 +37,7 @@ namespace services
     {
         this->onDone = onDone;
         this->buffer = buffer;
-        flash.ReadBuffer(buffer, address, [this, address]()
-        {
+        flash.ReadBuffer(buffer, address, [this, address]() {
             tracer.Trace() << "Flash ReadBuffer from 0x" << infra::hex << address << ": " << infra::AsHex(this->buffer);
             this->onDone();
         });

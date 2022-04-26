@@ -1,5 +1,5 @@
-#include "mbedtls/sha1.h"
 #include "services/network/HttpPageWebSocket.hpp"
+#include "mbedtls/sha1.h"
 #include "services/network/HttpErrors.hpp"
 
 namespace services
@@ -13,7 +13,7 @@ namespace services
     {
         return pathTokens.TokenAndRest(0) == path;
     }
-    
+
     void HttpPageWebSocket::RespondToRequest(services::HttpRequestParser& parser, services::HttpServerConnection& connection)
     {
         if (parser.Header("Upgrade") == "websocket" && infra::CaseInsensitiveCompare(parser.Header("Connection"), "Upgrade") && !parser.Header("Sec-WebSocket-Key").empty())

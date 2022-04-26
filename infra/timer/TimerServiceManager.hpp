@@ -12,7 +12,7 @@ namespace infra
     public:
         void RegisterTimerService(TimerService& timerService);
         void UnregisterTimerService(TimerService& timerService);
-            
+
         TimerService& GetTimerService(uint32_t id);
 
     private:

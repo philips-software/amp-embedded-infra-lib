@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 
@@ -27,7 +27,12 @@ TEST(AutoResetFunctionTest, ReAssignDuringInvoke)
     infra::MockCallback<void()> a;
     infra::MockCallback<void()> b;
     infra::AutoResetFunction<void(), 3 * sizeof(void*)> f;
-    f = [&a, &b, &f]() { f = [&b]() { b.callback(); }; a.callback(); };
+    f = [&a, &b, &f]() {
+        f = [&b]() {
+            b.callback();
+        };
+        a.callback();
+    };
 
     EXPECT_CALL(a, callback());
     EXPECT_CALL(b, callback());

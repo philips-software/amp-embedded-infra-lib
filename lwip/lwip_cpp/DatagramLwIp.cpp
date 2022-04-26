@@ -1,5 +1,5 @@
-#include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "lwip/lwip_cpp/DatagramLwIp.hpp"
+#include "infra/event/EventDispatcherWithWeakPtr.hpp"
 
 namespace services
 {
@@ -175,7 +175,8 @@ namespace services
                 GetObserver().DataReceived(reader.Emplace(buffer), Udpv4Socket{ IPv4Address{ ip4_addr1(ip_2_ip4(address)), ip4_addr2(ip_2_ip4(address)), ip4_addr3(ip_2_ip4(address)), ip4_addr4(ip_2_ip4(address)) }, port });
             else
                 GetObserver().DataReceived(reader.Emplace(buffer), Udpv6Socket{ IPv6Address{ IP6_ADDR_BLOCK1(ip_2_ip6(address)), IP6_ADDR_BLOCK2(ip_2_ip6(address)), IP6_ADDR_BLOCK3(ip_2_ip6(address)), IP6_ADDR_BLOCK4(ip_2_ip6(address)),
-                    IP6_ADDR_BLOCK5(ip_2_ip6(address)), IP6_ADDR_BLOCK6(ip_2_ip6(address)), IP6_ADDR_BLOCK7(ip_2_ip6(address)), IP6_ADDR_BLOCK8(ip_2_ip6(address)) }, port });
+                                                                                    IP6_ADDR_BLOCK5(ip_2_ip6(address)), IP6_ADDR_BLOCK6(ip_2_ip6(address)), IP6_ADDR_BLOCK7(ip_2_ip6(address)), IP6_ADDR_BLOCK8(ip_2_ip6(address)) },
+                                                                       port });
         }
         else
             pbuf_free(buffer);
@@ -220,14 +221,15 @@ namespace services
         }
 
         infra::ConstByteRange result = infra::Head(infra::ConstByteRange(reinterpret_cast<const uint8_t*>(currentBuffer->payload) + offset,
-            reinterpret_cast<const uint8_t*>(currentBuffer->payload) + currentBuffer->len), max);
+                                                       reinterpret_cast<const uint8_t*>(currentBuffer->payload) + currentBuffer->len),
+            max);
         bufferOffset += static_cast<uint16_t>(result.size());
         return result;
     }
 
     infra::ConstByteRange DatagramExchangeLwIP::UdpReader::PeekContiguousRange(std::size_t start)
     {
-        infra::ConstByteRange result(reinterpret_cast<const uint8_t*>(buffer->payload) + bufferOffset + start, 
+        infra::ConstByteRange result(reinterpret_cast<const uint8_t*>(buffer->payload) + bufferOffset + start,
             reinterpret_cast<const uint8_t*>(buffer->payload) + buffer->len);
         return result;
     }
@@ -337,11 +339,11 @@ namespace services
         , stream([this]() { this->datagramExchange.state.Emplace<StateIdle>(this->datagramExchange); })
         , streamPtr(stream.Emplace(datagramExchange.control, buffer, remote))
     {
-        infra::EventDispatcherWithWeakPtr::Instance().Schedule([this](const infra::SharedPtr<DatagramExchange>& datagramExchange)
-        {
+        infra::EventDispatcherWithWeakPtr::Instance().Schedule([this](const infra::SharedPtr<DatagramExchange>& datagramExchange) {
             if (datagramExchange->HasObserver())
                 datagramExchange->GetObserver().SendStreamAvailable(infra::SharedPtr<UdpWriter>(std::move(streamPtr)));
-        }, datagramExchange.SharedFromThis());
+        },
+            datagramExchange.SharedFromThis());
     }
 
     DatagramExchangeLwIP::StateBufferAllocated::~StateBufferAllocated()

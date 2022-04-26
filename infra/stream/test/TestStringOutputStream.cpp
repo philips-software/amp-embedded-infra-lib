@@ -10,7 +10,9 @@ namespace
 {
     struct MyObject
     {
-        explicit MyObject(int) {}
+        explicit MyObject(int)
+        {}
+
         MyObject(const MyObject& other) = delete;
         MyObject& operator=(const MyObject& other) = delete;
 
@@ -107,7 +109,7 @@ TEST(StringOutputStreamTest, stream_int8_with_leading_zeroes)
 {
     infra::StringOutputStream::WithStorage<10> stream;
 
-    stream << infra::Width(5,'0') << int8_t(127);
+    stream << infra::Width(5, '0') << int8_t(127);
 
     EXPECT_EQ("00127", stream.Storage());
 }
@@ -179,7 +181,13 @@ TEST(StringOutputStreamTest, stream_enum_value)
 {
     infra::StringOutputStream::WithStorage<20> stream;
 
-    enum E { a, b, c };
+    enum E
+    {
+        a,
+        b,
+        c
+    };
+
     E e = E::b;
 
     stream << e;
@@ -216,7 +224,7 @@ TEST(StringOutputStreamTest, stream_hex_with_leading_zeroes)
 {
     infra::StringOutputStream::WithStorage<10> stream;
 
-    stream << infra::hex << infra::Width(4,'0') << uint8_t(0x1A);
+    stream << infra::hex << infra::Width(4, '0') << uint8_t(0x1A);
     EXPECT_EQ("001a", stream.Storage());
 }
 
@@ -274,7 +282,8 @@ TEST(StringOutputStreamTest, overflow_twice)
 {
     infra::StringOutputStream::WithStorage<2> stream(infra::softFail);
 
-    stream << "abc" << "def";
+    stream << "abc"
+           << "def";
     EXPECT_EQ("ab", stream.Storage());
     EXPECT_TRUE(stream.Failed());
 }

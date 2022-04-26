@@ -1,7 +1,7 @@
 #include "gmock/gmock.h"
+#include "infra/stream/test/StreamMock.hpp"
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/SharedOptional.hpp"
-#include "infra/stream/test/StreamMock.hpp"
 #include "services/network/HttpClientAuthentication.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/network/test_doubles/HttpClientMock.hpp"
@@ -13,11 +13,11 @@ namespace
     {
     public:
         template<std::size_t MaxHeaders>
-            using WithMaxHeaders = infra::WithStorage<HttpClientAuthentication, infra::BoundedVector<services::HttpHeader>::WithMaxSize<MaxHeaders>>;
+        using WithMaxHeaders = infra::WithStorage<HttpClientAuthentication, infra::BoundedVector<services::HttpHeader>::WithMaxSize<MaxHeaders>>;
 
         using services::HttpClientAuthentication::HttpClientAuthentication;
 
-        MOCK_METHOD2(Authenticate, void(infra::BoundedConstString scheme, infra::BoundedConstString value) );
+        MOCK_METHOD2(Authenticate, void(infra::BoundedConstString scheme, infra::BoundedConstString value));
         MOCK_CONST_METHOD0(AuthenticationHeader, infra::BoundedConstString());
         MOCK_CONST_METHOD0(Retry, bool());
         MOCK_METHOD0(Reset, void());

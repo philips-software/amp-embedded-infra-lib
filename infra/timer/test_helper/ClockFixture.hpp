@@ -3,8 +3,8 @@
 
 #include "gmock/gmock.h"
 #include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
-#include "infra/timer/test_helper/PerfectTimerService.hpp"
 #include "infra/timer/TimerService.hpp"
+#include "infra/timer/test_helper/PerfectTimerService.hpp"
 
 namespace infra
 {

@@ -1,5 +1,5 @@
-#include "infra/util/Function.hpp"
 #include "infra/syntax/JsonStreamingParser.hpp"
+#include "infra/util/Function.hpp"
 #include <cctype>
 
 namespace infra
@@ -153,49 +153,50 @@ namespace infra
                             while (!data.empty() && std::isspace(data.front()))
                                 data.pop_front();
                         }
-                        else switch (c)
-                        {
-                            case ':':
-                                FoundToken(Token::colon);
-                                break;
-                            case ',':
-                                FoundToken(Token::comma);
-                                break;
-                            case '{':
-                                FoundToken(Token::leftBrace);
-                                break;
-                            case '}':
-                                FoundToken(Token::rightBrace);
-                                break;
-                            case '[':
-                                FoundToken(Token::leftBracket);
-                                break;
-                            case ']':
-                                FoundToken(Token::rightBracket);
-                                break;
-                            case '"':
-                                tokenState = TokenState::stringOpen;
-                                break;
-                            case '-':
-                                tokenState = TokenState::numberOpen;
-                                tokenNumber = 0;
-                                tokenSign = -1;
-                                break;
-                            default:
-                                if (std::isalpha(c))
-                                {
-                                    tokenState = TokenState::identifierOpen;
-                                    valueBuffer = c;
-                                }
-                                else if (std::isdigit(c))
-                                {
+                        else
+                            switch (c)
+                            {
+                                case ':':
+                                    FoundToken(Token::colon);
+                                    break;
+                                case ',':
+                                    FoundToken(Token::comma);
+                                    break;
+                                case '{':
+                                    FoundToken(Token::leftBrace);
+                                    break;
+                                case '}':
+                                    FoundToken(Token::rightBrace);
+                                    break;
+                                case '[':
+                                    FoundToken(Token::leftBracket);
+                                    break;
+                                case ']':
+                                    FoundToken(Token::rightBracket);
+                                    break;
+                                case '"':
+                                    tokenState = TokenState::stringOpen;
+                                    break;
+                                case '-':
                                     tokenState = TokenState::numberOpen;
-                                    tokenNumber = c - '0';
-                                    tokenSign = 1;
-                                }
-                                else
-                                    FoundToken(Token::error);
-                        }
+                                    tokenNumber = 0;
+                                    tokenSign = -1;
+                                    break;
+                                default:
+                                    if (std::isalpha(c))
+                                    {
+                                        tokenState = TokenState::identifierOpen;
+                                        valueBuffer = c;
+                                    }
+                                    else if (std::isdigit(c))
+                                    {
+                                        tokenState = TokenState::numberOpen;
+                                        tokenNumber = c - '0';
+                                        tokenSign = 1;
+                                    }
+                                    else
+                                        FoundToken(Token::error);
+                            }
                         break;
                     case TokenState::stringOpen:
                     case TokenState::stringOverflowOpen:
@@ -308,15 +309,32 @@ namespace infra
     {
         switch (c)
         {
-            case '"': AddToValueBuffer('"', saveValue, true); break;
-            case '\\': AddToValueBuffer('\\', saveValue, true); break;
-            case 'b': AddToValueBuffer('\b', saveValue, true); break;
-            case 'f': AddToValueBuffer('\f', saveValue, true); break;
-            case 'n': AddToValueBuffer('\n', saveValue, true); break;
-            case 'r': AddToValueBuffer('\r', saveValue, true); break;
-            case 't': AddToValueBuffer('\t', saveValue, true); break;
-            case 'u': tokenState = TokenState::unicodeValueOpen; break;
-            default: AddToValueBuffer(c, saveValue, true);
+            case '"':
+                AddToValueBuffer('"', saveValue, true);
+                break;
+            case '\\':
+                AddToValueBuffer('\\', saveValue, true);
+                break;
+            case 'b':
+                AddToValueBuffer('\b', saveValue, true);
+                break;
+            case 'f':
+                AddToValueBuffer('\f', saveValue, true);
+                break;
+            case 'n':
+                AddToValueBuffer('\n', saveValue, true);
+                break;
+            case 'r':
+                AddToValueBuffer('\r', saveValue, true);
+                break;
+            case 't':
+                AddToValueBuffer('\t', saveValue, true);
+                break;
+            case 'u':
+                tokenState = TokenState::unicodeValueOpen;
+                break;
+            default:
+                AddToValueBuffer(c, saveValue, true);
         }
     }
 
@@ -358,8 +376,7 @@ namespace infra
     {
         bool destructed = false;
         destructedIndication = &destructed;
-        infra::ExecuteOnDestruction::WithExtraSize<3 * sizeof(void*)> execute([this, &destructed, &data]()
-        {
+        infra::ExecuteOnDestruction::WithExtraSize<3 * sizeof(void*)> execute([this, &destructed, &data]() {
             if (!destructed)
                 destructedIndication = nullptr;
         });
@@ -556,8 +573,7 @@ namespace infra
     {
         bool destructed = false;
         destructedIndication = &destructed;
-        infra::ExecuteOnDestruction::WithExtraSize<3 * sizeof(void*)> execute([this, &destructed, &data]()
-        {
+        infra::ExecuteOnDestruction::WithExtraSize<3 * sizeof(void*)> execute([this, &destructed, &data]() {
             if (!destructed)
                 destructedIndication = nullptr;
         });

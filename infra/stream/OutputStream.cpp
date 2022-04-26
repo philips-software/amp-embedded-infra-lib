@@ -64,12 +64,12 @@ namespace infra
     {
         return writer.Available();
     }
-    
+
     StreamWriter& OutputStream::Writer() const
     {
         return writer;
     }
-    
+
     StreamErrorPolicy& OutputStream::ErrorPolicy() const
     {
         return errorPolicy;
@@ -82,7 +82,7 @@ namespace infra
 
     TextOutputStream& TextOutputStream::operator<<(const char* zeroTerminatedString)
     {
-        const auto len = std::strlen(zeroTerminatedString); //NOSONAR
+        const auto len = std::strlen(zeroTerminatedString); // NOSONAR
         OutputOptionalPadding(len);
         Writer().Insert(ReinterpretCastByteRange(MakeRange(zeroTerminatedString, zeroTerminatedString + len)), ErrorPolicy());
         return *this;
@@ -200,7 +200,7 @@ namespace infra
     TextOutputStream& TextOutputStream::operator<<(uint64_t v)
     {
         switch (radix)
-            {
+        {
             case Radix::dec:
                 OutputAsDecimal(v, false);
                 break;
@@ -227,7 +227,7 @@ namespace infra
         *this << static_cast<uint32_t>(v);
         v -= static_cast<uint32_t>(v);
         *this << ".";
-        *this << Width(3,'0') << static_cast<uint32_t>(v * 1000);
+        *this << Width(3, '0') << static_cast<uint32_t>(v * 1000);
         return *this;
     }
 

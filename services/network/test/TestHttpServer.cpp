@@ -46,10 +46,10 @@ public:
     void CheckHttpResponse(const char* result, const char* body, const char* contentType)
     {
         std::string response = std::string("HTTP/1.1 ") + result + "\r\n" +
-            "Content-Length: " + std::to_string(std::strlen(body)) + "\r\n" +
-            "Content-Type: " + contentType + "\r\n" +
-            "\r\n" +
-            body;
+                               "Content-Length: " + std::to_string(std::strlen(body)) + "\r\n" +
+                               "Content-Type: " + contentType + "\r\n" +
+                               "\r\n" +
+                               body;
 
         EXPECT_EQ(std::vector<uint8_t>(response.begin(), response.end()), connection.sentData);
         connection.sentData.clear();
@@ -69,7 +69,7 @@ public:
     services::HttpServerConnection* httpConnection;
 
     infra::StringInputStreamReader emptyReader{ "" };
-    infra::SharedPtr<infra::StreamReaderWithRewinding> emptyReaderPtr { infra::UnOwnedSharedPtr(emptyReader) };
+    infra::SharedPtr<infra::StreamReaderWithRewinding> emptyReaderPtr{ infra::UnOwnedSharedPtr(emptyReader) };
 };
 
 class HttpServerWithSimplePageTest
@@ -327,7 +327,7 @@ TEST_F(HttpServerWithSimplePageTest, split_message_is_accepted)
     std::string rest = R"({"other":"param"})";
 
     ExpectPageServerRequest(services::HttpVerb::get, std::string("GET /path") +
-        " HTTP/1.1\r\nAccept-Encoding: identity\r\nHost: 192.168.1.56\r\nContent-Length: " + std::to_string(rest.size()) + "\r\nContent-Type: application-json\r\n\r\n");
+                                                         " HTTP/1.1\r\nAccept-Encoding: identity\r\nHost: 192.168.1.56\r\nContent-Length: " + std::to_string(rest.size()) + "\r\nContent-Type: application-json\r\n\r\n");
 
     connection.SimulateDataReceived(infra::MakeStringByteRange(rest));
     ExecuteAllActions();
@@ -344,9 +344,9 @@ TEST_F(HttpServerWithSimplePageTest, send_100_response_when_expect_100_in_header
     ExecuteAllActions();
 
     std::string expectedResponseFirstPart = std::string("HTTP/1.1 ") + "100 Continue" + "\r\n" +
-        "Content-Length: 0" + "\r\n" +
-        "Content-Type: application/json\r\n" +
-        "Strict-Transport-Security: max-age=31536000\r\n\r\n";
+                                            "Content-Length: 0" + "\r\n" +
+                                            "Content-Type: application/json\r\n" +
+                                            "Strict-Transport-Security: max-age=31536000\r\n\r\n";
 
     std::vector<uint8_t> responseFirstPart = connection.sentData;
     responseFirstPart.erase(responseFirstPart.begin() + expectedResponseFirstPart.size(), responseFirstPart.end());
@@ -369,8 +369,7 @@ TEST_F(HttpServerWithSimplePageTest, split_response_when_not_enough_available_in
     EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
     EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(true));
     EXPECT_CALL(connection, AckReceived()).Times(2);
-    EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(testing::Invoke([this](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
-    {
+    EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(testing::Invoke([this](services::HttpRequestParser& parser, services::HttpServerConnection& connection) {
         httpConnection = &connection;
         SendResponse("200 OK", "application/text", "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789");
     }));
@@ -470,10 +469,9 @@ TEST_F(HttpServerWithSimplePageTest, when_responding_early_to_a_request_next_req
     for (int i = 0; i != 2; ++i)
     {
         EXPECT_CALL(page, ServesRequest(testing::_)).WillOnce(testing::Return(true));
-        EXPECT_CALL(page, RequestReceived(testing::_, testing::_)).WillOnce(testing::Invoke([this](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
-            {
-                connection.SendResponse(services::httpResponseOk);
-            }));
+        EXPECT_CALL(page, RequestReceived(testing::_, testing::_)).WillOnce(testing::Invoke([this](services::HttpRequestParser& parser, services::HttpServerConnection& connection) {
+            connection.SendResponse(services::httpResponseOk);
+        }));
 
         infra::ConstByteRange data = infra::MakeStringByteRange("PUT /path HTTP/1.1 \r\nContent-Length: 8\r\n\r\ndatadata");
         connection.SimulateDataReceived(data);

@@ -15,10 +15,10 @@ public:
             fileSystem.WriteBinaryFile("elf_file", std::vector<uint8_t>{ 'E', 'L', 'F', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
 
             targets = application::SupportedTargets::Create()
-                .AddCmd("cmd")
-                .AddBin("bin", 1234)
-                .AddHex("hex")
-                .AddElf("elf", 5678);
+                          .AddCmd("cmd")
+                          .AddBin("bin", 1234)
+                          .AddHex("hex")
+                          .AddElf("elf", 5678);
         })
         , factory(fileSystem, targets, encryptor)
     {}

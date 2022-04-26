@@ -1,8 +1,8 @@
 #ifndef SERVICES_FLASH_QUAD_SPI_CYPRESS_FLL_HPP
 #define SERVICES_FLASH_QUAD_SPI_CYPRESS_FLL_HPP
 
-#include "services/util/FlashQuadSpi.hpp"
 #include "hal/interfaces/FlashId.hpp"
+#include "services/util/FlashQuadSpi.hpp"
 
 namespace services
 {

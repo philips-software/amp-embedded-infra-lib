@@ -16,7 +16,8 @@ namespace application
         address += sizeof(UpgradePackHeaderPrologue);
 
         bool isSane = (headerPrologue.status == UpgradePackStatus::readyToDeploy ||
-                       headerPrologue.status == UpgradePackStatus::deployStarted) && headerPrologue.magic == upgradePackMagic;
+                          headerPrologue.status == UpgradePackStatus::deployStarted) &&
+                      headerPrologue.magic == upgradePackMagic;
 
         if (!isSane)
             return false;

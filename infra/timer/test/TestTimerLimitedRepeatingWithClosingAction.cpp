@@ -16,10 +16,8 @@ TEST_F(TimerLimitedRepeatingWithClosingActionTest, TimerIsExecuted)
     EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(2)));
     EXPECT_CALL(extra, callback()).With(After(std::chrono::seconds(3)));
 
-    infra::TimerLimitedRepeatingWithClosingAction timer(2, std::chrono::seconds(1)
-        , [&callback]() { callback.callback(); }
-        , [&extra]() { extra.callback(); }
-    );
+    infra::TimerLimitedRepeatingWithClosingAction timer(
+        2, std::chrono::seconds(1), [&callback]() { callback.callback(); }, [&extra]() { extra.callback(); });
 
     ForwardTime(std::chrono::seconds(5));
 }
@@ -50,10 +48,8 @@ TEST_F(TimerLimitedRepeatingWithClosingActionTest, ResolutionIsTakenIntoAccount)
     EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(3)));
     EXPECT_CALL(extra, callback()).With(After(std::chrono::seconds(4)));
 
-    infra::TimerLimitedRepeatingWithClosingAction timer(2, std::chrono::seconds(1)
-        , [&callback]() { callback.callback(); }
-        , [&extra]() { extra.callback(); }
-    );
+    infra::TimerLimitedRepeatingWithClosingAction timer(
+        2, std::chrono::seconds(1), [&callback]() { callback.callback(); }, [&extra]() { extra.callback(); });
 
     ForwardTime(std::chrono::seconds(5));
 }

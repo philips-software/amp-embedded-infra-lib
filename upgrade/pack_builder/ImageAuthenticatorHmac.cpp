@@ -1,6 +1,6 @@
+#include "upgrade/pack_builder/ImageAuthenticatorHmac.hpp"
 #include "mbedtls/md.h"
 #include "mbedtls/sha256.h"
-#include "upgrade/pack_builder/ImageAuthenticatorHmac.hpp"
 
 namespace application
 {

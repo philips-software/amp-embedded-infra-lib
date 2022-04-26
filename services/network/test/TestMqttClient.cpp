@@ -1,3 +1,4 @@
+#include "gmock/gmock.h"
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
@@ -7,7 +8,6 @@
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/network/test_doubles/ConnectionStub.hpp"
 #include "services/network/test_doubles/MqttMock.hpp"
-#include "gmock/gmock.h"
 #include <deque>
 
 class ConnectionStubWithSendStreamControl

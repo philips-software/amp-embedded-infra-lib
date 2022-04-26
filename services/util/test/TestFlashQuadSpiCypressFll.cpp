@@ -13,7 +13,7 @@ public:
         : flash(spiStub, onInitialized)
     {
         EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandEnterQpi), {}, {}, 0 },
-            infra::ConstByteRange(), hal::QuadSpi::Lines::SingleSpeed()));
+                                 infra::ConstByteRange(), hal::QuadSpi::Lines::SingleSpeed()));
 
         ForwardTime(std::chrono::milliseconds(100));
         testing::Mock::VerifyAndClear(&spiStub);
@@ -28,9 +28,9 @@ public:
 };
 
 #define EXPECT_ENABLE_WRITE() EXPECT_CALL(spiStub, SendDataMock( \
-    hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandWriteEnable), {}, {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()))
+                                                       hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandWriteEnable), {}, {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()))
 #define EXPECT_POLL_WRITE_DONE() EXPECT_CALL(spiStub, PollStatusMock( \
-    hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandReadStatusRegister), {}, {}, 0 }, 1, 0, 1, hal::QuadSpi::Lines::QuadSpeed()))
+                                                          hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandReadStatusRegister), {}, {}, 0 }, 1, 0, 1, hal::QuadSpi::Lines::QuadSpeed()))
 
 TEST_F(FlashQuadSpiCypressFllTest, Construction)
 {
@@ -48,7 +48,7 @@ TEST_F(FlashQuadSpiCypressFllTest, ReadData)
     std::array<uint8_t, 4> buffer;
     flash.ReadBuffer(buffer, 0, [this]() { finished.callback(); });
     ExecuteAllActions();
-    
+
     EXPECT_EQ(receiveData, buffer);
 }
 
@@ -62,7 +62,7 @@ TEST_F(FlashQuadSpiCypressFllTest, ReadDataAtNonZeroAddress)
     std::array<uint8_t, 4> buffer;
     flash.ReadBuffer(buffer, 0 + 0x123456, [this]() { finished.callback(); });
     ExecuteAllActions();
-    
+
     EXPECT_EQ(receiveData, buffer);
 }
 

@@ -1,6 +1,6 @@
+#include "services/util/MessageCommunicationCobs.hpp"
 #include "infra/stream/BoundedVectorInputStream.hpp"
 #include "infra/stream/LimitedInputStream.hpp"
-#include "services/util/MessageCommunicationCobs.hpp"
 
 namespace services
 {
@@ -121,8 +121,7 @@ namespace services
     {
         frameSize = FindDelimiter() + 1;
 
-        serial.SendData(infra::MakeByteRange(frameSize), [this]()
-        {
+        serial.SendData(infra::MakeByteRange(frameSize), [this]() {
             --frameSize;
             if (frameSize != 0)
                 serial.SendData(infra::Head(dataToSend, frameSize), [this]() { SendFrameDone(); });

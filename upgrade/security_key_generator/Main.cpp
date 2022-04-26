@@ -1,8 +1,8 @@
+#include "external/args/args.hxx"
+#include "hal/generic/FileSystemGeneric.hpp"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "upgrade/security_key_generator/MaterialGenerator.hpp"
 #include <iostream>
-#include "external/args/args.hxx"
-#include "hal/generic/FileSystemGeneric.hpp"
 
 void GenerateUpgradeKeys(args::Subparser& p)
 {
@@ -18,7 +18,7 @@ void GenerateUpgradeKeys(args::Subparser& p)
 
     if (format.Get() == "proto")
         generator.WriteKeysProto(outputFile.Get().empty() ? "Keys.bin" : outputFile.Get());
-    else if  (format.Get() == "cpp")
+    else if (format.Get() == "cpp")
         generator.WriteKeys(outputFile.Get().empty() ? "Keys.cpp" : outputFile.Get());
     else
         throw std::runtime_error("Invalid output format.");
@@ -47,8 +47,8 @@ int main(int argc, char* argv[])
     args::ArgumentParser parser("\"" + toolname + "\"" + " is a tool used to generate and convert upgrade keys.");
 
     args::Group commands(parser, "Commands:");
-    args::Command generateKeysCommand(commands, "generate_keys", "Generate upgrade keys and save in protobuf format to the specified output file[Keys.bin].", [&](args::Subparser &p) { GenerateUpgradeKeys(p); });
-    args::Command convertKeysCommand(commands, "convert_keys", "Convert upgrade keys from the provided cpp file and save in protobuf format to the specified output file[Keys.bin].", [&](args::Subparser &p) { ConvertUpgradeKeys(p); });
+    args::Command generateKeysCommand(commands, "generate_keys", "Generate upgrade keys and save in protobuf format to the specified output file[Keys.bin].", [&](args::Subparser& p) { GenerateUpgradeKeys(p); });
+    args::Command convertKeysCommand(commands, "convert_keys", "Convert upgrade keys from the provided cpp file and save in protobuf format to the specified output file[Keys.bin].", [&](args::Subparser& p) { ConvertUpgradeKeys(p); });
 
     args::Group arguments(parser, "Optional arguments:");
     args::HelpFlag help(arguments, "help", "Display this help menu.", { 'h', "help" });

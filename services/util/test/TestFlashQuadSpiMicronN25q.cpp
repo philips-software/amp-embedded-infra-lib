@@ -13,9 +13,9 @@ public:
         : flash(spiStub, onInitialized)
     {
         EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiMicronN25q::commandWriteEnable), {}, {}, 0 },
-            infra::ConstByteRange(), hal::QuadSpi::Lines::SingleSpeed()));
+                                 infra::ConstByteRange(), hal::QuadSpi::Lines::SingleSpeed()));
         EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiMicronN25q::commandWriteEnhancedVolatileRegister), {}, {}, 0 },
-            infra::MakeByteRange(services::FlashQuadSpiMicronN25q::volatileRegisterForQuadSpeed), hal::QuadSpi::Lines::SingleSpeed()));
+                                 infra::MakeByteRange(services::FlashQuadSpiMicronN25q::volatileRegisterForQuadSpeed), hal::QuadSpi::Lines::SingleSpeed()));
 
         ForwardTime(std::chrono::milliseconds(1));
         testing::Mock::VerifyAndClear(&spiStub);
@@ -30,9 +30,9 @@ public:
 };
 
 #define EXPECT_ENABLE_WRITE() EXPECT_CALL(spiStub, SendDataMock( \
-    hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiMicronN25q::commandWriteEnable), {}, {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()))
+                                                       hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiMicronN25q::commandWriteEnable), {}, {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()))
 #define EXPECT_POLL_WRITE_DONE() EXPECT_CALL(spiStub, PollStatusMock( \
-    hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiMicronN25q::commandReadStatusRegister), {}, {}, 0 }, 1, 0, 1, hal::QuadSpi::Lines::QuadSpeed()))
+                                                          hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiMicronN25q::commandReadStatusRegister), {}, {}, 0 }, 1, 0, 1, hal::QuadSpi::Lines::QuadSpeed()))
 
 TEST_F(FlashQuadSpiMicronN25qTest, Construction)
 {
@@ -50,7 +50,7 @@ TEST_F(FlashQuadSpiMicronN25qTest, ReadData)
     std::array<uint8_t, 4> buffer;
     flash.ReadBuffer(buffer, 0, [this]() { finished.callback(); });
     ExecuteAllActions();
-    
+
     EXPECT_EQ(receiveData, buffer);
 }
 
@@ -64,7 +64,7 @@ TEST_F(FlashQuadSpiMicronN25qTest, ReadDataAtNonZeroAddress)
     std::array<uint8_t, 4> buffer;
     flash.ReadBuffer(buffer, 0 + 0x123456, [this]() { finished.callback(); });
     ExecuteAllActions();
-    
+
     EXPECT_EQ(receiveData, buffer);
 }
 

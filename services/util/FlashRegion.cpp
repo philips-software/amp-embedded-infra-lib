@@ -1,5 +1,5 @@
-#include "infra/util/ReallyAssert.hpp"
 #include "services/util/FlashRegion.hpp"
+#include "infra/util/ReallyAssert.hpp"
 
 namespace services
 {

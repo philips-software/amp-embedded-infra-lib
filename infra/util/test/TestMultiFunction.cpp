@@ -49,7 +49,9 @@ TEST(MultiFunctionTest, reassign_multi_function)
     infra::VerifyingFunctionMock<void(bool)> m(true);
 
     infra::MultiFunction<void()>::And<void(bool)> f([]() {});
-    f = [&](bool v) { m.callback(v); };
+    f = [&](bool v) {
+        m.callback(v);
+    };
     f(true);
 }
 

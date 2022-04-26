@@ -13,11 +13,10 @@ class LlmnrResponderTest
 public:
     LlmnrResponderTest()
         : datagramExchangePtr(infra::UnOwnedSharedPtr(datagramExchange))
-        , execute([this]()
-            {
-                EXPECT_CALL(factory, Listen(testing::Ref(responder), 5355, services::IPVersions::ipv4)).WillOnce(testing::Return(datagramExchangePtr));
-                EXPECT_CALL(multicast, JoinMulticastGroup(datagramExchangePtr, services::IPv4Address{ 224, 0, 0, 252 }));
-            })
+        , execute([this]() {
+            EXPECT_CALL(factory, Listen(testing::Ref(responder), 5355, services::IPVersions::ipv4)).WillOnce(testing::Return(datagramExchangePtr));
+            EXPECT_CALL(multicast, JoinMulticastGroup(datagramExchangePtr, services::IPv4Address{ 224, 0, 0, 252 }));
+        })
         , responder(factory, multicast, ipv4Info, "name")
     {}
 
@@ -47,7 +46,8 @@ TEST_F(LlmnrResponderTest, request_record_a)
     infra::ByteOutputStreamWriter::WithStorage<512> response;
     responder.SendStreamAvailable(infra::UnOwnedSharedPtr(response));
     EXPECT_EQ((std::array<uint8_t, 38>{ 1, 2, 0x80, 0, 0, 1, 0, 1, 0, 0, 0, 0, 4, 'n', 'a', 'm', 'e', 0, 0, 1, 0, 1,
-        0xc0, 0x0c, 0, 1, 0, 1, 0, 0, 0, 30, 0, 4, 5, 6, 7, 8 }), response.Processed());
+                  0xc0, 0x0c, 0, 1, 0, 1, 0, 0, 0, 30, 0, 4, 5, 6, 7, 8 }),
+        response.Processed());
 }
 
 TEST_F(LlmnrResponderTest, query_for_someone_else_is_not_answered)

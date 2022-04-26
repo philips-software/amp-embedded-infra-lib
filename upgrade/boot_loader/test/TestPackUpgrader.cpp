@@ -1,9 +1,9 @@
 #include "gmock/gmock.h"
-#include "infra/stream/ByteOutputStream.hpp"
 #include "hal/synchronous_interfaces/test_doubles/SynchronousFlashStub.hpp"
+#include "infra/stream/ByteOutputStream.hpp"
 #include "upgrade/boot_loader/DecryptorNone.hpp"
-#include "upgrade/pack/UpgradePackHeader.hpp"
 #include "upgrade/boot_loader/PackUpgrader.hpp"
+#include "upgrade/pack/UpgradePackHeader.hpp"
 
 class ImageUpgraderMock
     : public application::ImageUpgrader
@@ -236,7 +236,6 @@ TEST_F(PackUpgraderTest, HasImage_finds_image)
     EXPECT_TRUE(packUpgrader.HasImage("image"));
     EXPECT_FALSE(packUpgrader.HasImage("nomage"));
 }
-
 
 TEST_F(PackUpgraderTest, HasImage_finds_second_image)
 {

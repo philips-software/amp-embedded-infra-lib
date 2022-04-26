@@ -1,5 +1,5 @@
-#include "infra/stream/StringOutputStream.hpp"
 #include "infra/syntax/Json.hpp"
+#include "infra/stream/StringOutputStream.hpp"
 #include <cctype>
 
 namespace
@@ -38,15 +38,21 @@ namespace infra
 
             switch (*next++)
             {
-                case '"':  return '"';
-                case '\\': return '\\';
-                case 'b': return '\b';
-                case 'f': return '\f';
-                case 'n': return '\n';
-                case 'r': return '\r';
-                case 't': return '\t';
-                case 'u':
-                {
+                case '"':
+                    return '"';
+                case '\\':
+                    return '\\';
+                case 'b':
+                    return '\b';
+                case 'f':
+                    return '\f';
+                case 'n':
+                    return '\n';
+                case 'r':
+                    return '\r';
+                case 't':
+                    return '\t';
+                case 'u': {
                     char result = 0;
 
                     for (int skipCode = 0; skipCode != 4 && next != end; ++skipCode, ++next)
@@ -72,7 +78,8 @@ namespace infra
 
                     return result;
                 }
-                default: return *std::prev(next);
+                default:
+                    return *std::prev(next);
             }
         }
         else
@@ -882,8 +889,7 @@ namespace infra
 
         if (token.Is<JsonToken::RightBrace>())
             return infra::MakeOptional(token.Get<JsonToken::RightBrace>());
-        return
-            infra::none;
+        return infra::none;
     }
 
     infra::Optional<JsonToken::RightBracket> JsonIterator::SearchArrayEnd()

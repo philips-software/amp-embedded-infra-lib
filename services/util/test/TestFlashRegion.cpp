@@ -13,7 +13,7 @@ public:
         , regionImpl(flashStub, 2, 2)
         , region(&regionImpl)
     {
-        flashStub.sectors = std::vector<std::vector<uint8_t>> {{ 0xff }, { 0xff, 0xff }, { 0xff, 0xff, 0xff }, { 0xff, 0xff, 0xff, 0xff } };
+        flashStub.sectors = std::vector<std::vector<uint8_t>>{ { 0xff }, { 0xff, 0xff }, { 0xff, 0xff, 0xff }, { 0xff, 0xff, 0xff, 0xff } };
     }
 
     hal::FlashStub flashStub;

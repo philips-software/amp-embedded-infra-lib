@@ -8,11 +8,21 @@ namespace
         {
             switch (c)
             {
-            case '<':  stream << "&lt;"; break;
-            case '>':  stream << "&gt;"; break;
-            case '&':  stream << "&amp;"; break;
-            case '\'': stream << "&apos;"; break;
-            case '"':  stream << "&quot;"; break;
+                case '<':
+                    stream << "&lt;";
+                    break;
+                case '>':
+                    stream << "&gt;";
+                    break;
+                case '&':
+                    stream << "&amp;";
+                    break;
+                case '\'':
+                    stream << "&apos;";
+                    break;
+                case '"':
+                    stream << "&quot;";
+                    break;
             }
         }
 

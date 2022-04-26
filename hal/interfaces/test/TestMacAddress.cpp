@@ -1,6 +1,6 @@
+#include "gtest/gtest.h"
 #include "hal/interfaces/MacAddress.hpp"
 #include "infra/stream/StringOutputStream.hpp"
-#include "gtest/gtest.h"
 
 TEST(MacAddressTest, toStream)
 {

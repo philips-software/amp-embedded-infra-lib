@@ -531,7 +531,7 @@ TEST_F(CppFormatterTest, EnumDeclaration_prints_header)
 
 TEST_F(CppFormatterTest, EnumDeclaration_prints_no_source)
 {
-    application::EnumDeclaration declaration("name", { {"m1", 0}, {"m2", 1} });
+    application::EnumDeclaration declaration("name", { { "m1", 0 }, { "m2", 1 } });
     declaration.PrintSource(*printer, "scope");
     ExpectPrinted("");
 }

@@ -194,6 +194,7 @@ TEST(OptionalTest, TestConstructWithInitializerList)
         X(std::initializer_list<bool>)
         {}
     };
+
     infra::Optional<X> o;
     o.Emplace({ true });
     EXPECT_TRUE(static_cast<bool>(o));
@@ -203,7 +204,10 @@ TEST(OptionalTest, TestIndirect)
 {
     struct X
     {
-        X(): x(true) {}
+        X()
+            : x(true)
+        {}
+
         bool x;
     };
 

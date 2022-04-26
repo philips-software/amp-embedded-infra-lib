@@ -9,7 +9,7 @@ public:
         : services::CucumberStep(stepName, "")
     {}
 
-    void Invoke(infra::JsonArray& arguments) final 
+    void Invoke(infra::JsonArray& arguments) final
     {
         invokeArguments = &arguments;
     };

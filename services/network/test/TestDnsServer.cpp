@@ -1,9 +1,9 @@
+#include "gmock/gmock.h"
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/util/Function.hpp"
 #include "services/network/DnsServer.hpp"
 #include "services/network/test_doubles/DatagramMock.hpp"
-#include "gmock/gmock.h"
 
 class DnsServerTest
     : public testing::Test

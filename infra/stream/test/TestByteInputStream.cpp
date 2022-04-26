@@ -10,7 +10,7 @@ public:
         : reader(data)
     {}
 
-    std::array<uint8_t, 8> data{{1, 2, 3, 4, 5, 6, 7, 8}};
+    std::array<uint8_t, 8> data{ { 1, 2, 3, 4, 5, 6, 7, 8 } };
     infra::ByteInputStreamReader reader;
     infra::StreamErrorPolicy errorPolicy;
 };
@@ -25,7 +25,7 @@ TEST_F(ByteInputStreamReaderTest, Extract)
 {
     std::array<uint8_t, 4> result;
     reader.Extract(result, errorPolicy);
-    EXPECT_EQ((std::array<uint8_t, 4>{{1, 2, 3, 4}}), result);
+    EXPECT_EQ((std::array<uint8_t, 4>{ { 1, 2, 3, 4 } }), result);
 }
 
 TEST_F(ByteInputStreamReaderTest, Peek)
@@ -35,19 +35,19 @@ TEST_F(ByteInputStreamReaderTest, Peek)
 
 TEST_F(ByteInputStreamReaderTest, ExtractContiguousRange)
 {
-    EXPECT_EQ((std::array<uint8_t, 8>{{1, 2, 3, 4, 5, 6, 7, 8}}), reader.ExtractContiguousRange(16));
+    EXPECT_EQ((std::array<uint8_t, 8>{ { 1, 2, 3, 4, 5, 6, 7, 8 } }), reader.ExtractContiguousRange(16));
 }
 
 TEST_F(ByteInputStreamReaderTest, PeekContiguousRange_from_start_position)
 {
-    EXPECT_EQ((std::array<uint8_t, 8>{ {1, 2, 3, 4, 5, 6, 7, 8}}), reader.PeekContiguousRange(0));
+    EXPECT_EQ((std::array<uint8_t, 8>{ { 1, 2, 3, 4, 5, 6, 7, 8 } }), reader.PeekContiguousRange(0));
 
-    EXPECT_EQ((std::array<uint8_t, 2>{ {7, 8}}), reader.PeekContiguousRange(6));
+    EXPECT_EQ((std::array<uint8_t, 2>{ { 7, 8 } }), reader.PeekContiguousRange(6));
 }
 
 TEST_F(ByteInputStreamReaderTest, ExtractContiguousRange_limited_by_max)
 {
-    EXPECT_EQ((std::array<uint8_t, 2>{{1, 2}}), reader.ExtractContiguousRange(2));
+    EXPECT_EQ((std::array<uint8_t, 2>{ { 1, 2 } }), reader.ExtractContiguousRange(2));
 }
 
 TEST_F(ByteInputStreamReaderTest, Rewind)
@@ -57,41 +57,41 @@ TEST_F(ByteInputStreamReaderTest, Rewind)
     auto marker = reader.ConstructSaveMarker();
     reader.ExtractContiguousRange(2);
     reader.Rewind(marker);
-    EXPECT_EQ((std::array<uint8_t, 2>{ {3, 4}}), reader.ExtractContiguousRange(2));
+    EXPECT_EQ((std::array<uint8_t, 2>{ { 3, 4 } }), reader.ExtractContiguousRange(2));
 }
 
 TEST_F(ByteInputStreamReaderTest, ResetRange)
 {
     std::array<uint8_t, 2> result;
     reader.Extract(result, errorPolicy);
-    ASSERT_EQ((std::array<uint8_t, 2>{ {1 , 2 }}), result);
+    ASSERT_EQ((std::array<uint8_t, 2>{ { 1, 2 } }), result);
 
     std::array<uint8_t, 4> newData{ { 5, 6, 7, 8 } };
     reader.ResetRange(newData);
 
     reader.Extract(result, errorPolicy);
-    EXPECT_EQ((std::array<uint8_t, 2>{ { 5, 6 }}), result);
+    EXPECT_EQ((std::array<uint8_t, 2>{ { 5, 6 } }), result);
 }
 
 TEST(ByteInputStreamTest, construct_with_range)
 {
-    std::array<uint8_t, 4> data{{1, 2, 3, 4}};
+    std::array<uint8_t, 4> data{ { 1, 2, 3, 4 } };
     infra::ByteInputStream stream(data);
-    EXPECT_EQ((std::array<uint8_t, 4>{{1, 2, 3, 4}}), stream.ContiguousRange(16));
+    EXPECT_EQ((std::array<uint8_t, 4>{ { 1, 2, 3, 4 } }), stream.ContiguousRange(16));
 }
 
 TEST(ByteInputStreamTest, construct_softFail_with_range)
 {
-    std::array<uint8_t, 4> data{{1, 2, 3, 4}};
+    std::array<uint8_t, 4> data{ { 1, 2, 3, 4 } };
     infra::ByteInputStream stream(data, infra::softFail);
-    EXPECT_EQ((std::array<uint8_t, 4>{{1, 2, 3, 4}}), stream.ContiguousRange(16));
+    EXPECT_EQ((std::array<uint8_t, 4>{ { 1, 2, 3, 4 } }), stream.ContiguousRange(16));
 }
 
 TEST(ByteInputStreamTest, construct_noFail_with_range)
 {
     std::array<uint8_t, 4> data{ { 1, 2, 3, 4 } };
     infra::ByteInputStream stream(data, infra::noFail);
-    EXPECT_EQ((std::array<uint8_t, 4>{ {1, 2, 3, 4}}), stream.ContiguousRange(16));
+    EXPECT_EQ((std::array<uint8_t, 4>{ { 1, 2, 3, 4 } }), stream.ContiguousRange(16));
 }
 
 TEST(ByteInputStreamTest, StreamFromRange)
@@ -103,7 +103,10 @@ TEST(ByteInputStreamTest, StreamFromRange)
         uint8_t a;
         uint8_t b;
 
-        bool operator==(const To& other) const { return a == other.a && b == other.b; };
+        bool operator==(const To& other) const
+        {
+            return a == other.a && b == other.b;
+        };
     } to = { 4, 5 };
 
     infra::ByteInputStream stream(from);
@@ -128,5 +131,5 @@ TEST(ByteInputStreamTest, StreamToMemoryRange)
     infra::ByteInputStream stream(buffer);
     stream >> to;
 
-    EXPECT_EQ((std::array<uint8_t, 2>{{ 2, 3 }}), to);
+    EXPECT_EQ((std::array<uint8_t, 2>{ { 2, 3 } }), to);
 }
