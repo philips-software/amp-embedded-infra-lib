@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: philips-forks/clang-format-lint-action@090bc4646106264906423bf1abbfa28b1dfa94ba
+      - uses: philips-forks/clang-format-lint-action@aac70b3f63717109130080e1318bded095d89751
         with:
           clangFormatVersion: 14
           inplace: true
