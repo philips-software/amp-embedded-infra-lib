@@ -1,0 +1,6 @@
+excludePaths:
+ - .*external.*
+ - .*googlemock.*
+ - .*googletest.*
+ - .*test_doubles.*
+ - .*test_helper.*
