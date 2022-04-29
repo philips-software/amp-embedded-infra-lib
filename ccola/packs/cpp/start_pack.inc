@@ -600,6 +600,11 @@ if(${CCOLA_PROCESSOR_FAMILY} STREQUAL "stm32f7xx")
 	execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory "${CCOLA_PACK_DIR_cpp}/LaunchDummySTM32F7" "${CCOLA_BUILD_DIR}/LaunchDummySTM32F7")
 endif()
 
+if(${CCOLA_PROCESSOR_FAMILY} STREQUAL "stm32wbxx")
+	execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${CCOLA_BUILD_DIR}/LaunchDummySTM32WB55")
+	execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory "${CCOLA_PACK_DIR_cpp}/LaunchDummySTM32WB55" "${CCOLA_BUILD_DIR}/LaunchDummySTM32WB55")
+endif()
+
 if(DEFINED CCOLA_OPTIMIZE)
 	ccola_optimize(${CCOLA_OPTIMIZE})
 endif()
