@@ -64,10 +64,10 @@ else()
     set(EMIL_EXCLUDE_FROM_ALL "EXCLUDE_FROM_ALL")
 endif()
 
-
 option(EMIL_BUILD_TESTS "Enable build of the tests" ${EMIL_DEFAULTOPT})
 option(EMIL_BUILD_EXAMPLES "Enable build of the examples" ${EMIL_DEFAULTOPT})
 option(EMIL_ENABLE_COVERAGE "Enable compiler flags for code coverage measurements" Off)
+option(EMIL_ENABLE_MUTATION_TESTING "Enable compiler flags for mutation testing" Off)
 
 # The next few options control the install and export behaviour.
 # When package config generation is enabled the prefix can be set
@@ -112,6 +112,17 @@ if (TARGET_ARCH_X86)
                 link_libraries(gcov)
             else()
                 add_link_options(--coverage)
+            endif()
+        endif()
+
+        if (EMIL_ENABLE_MUTATION_TESTING)
+            if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+                add_compile_options(
+                    -g -O0 -grecord-command-line -fprofile-instr-generate -fcoverage-mapping
+                    -fexperimental-new-pass-manager -fpass-plugin=/usr/lib/mull-ir-frontend-12
+                )
+            else()
+                message(FATAL_ERROR "Mutation testing is currently only supported for Clang/LLVM; not for ${CMAKE_CXX_COMPILER_ID}")
             endif()
         endif()
     endif()
