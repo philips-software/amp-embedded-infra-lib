@@ -1,5 +1,5 @@
 add_executable(services.tracer_test)
-gtest_discover_tests(services.tracer_test AUTO)
+emil_add_test(services.tracer_test)
 
 target_link_libraries(services.tracer_test PUBLIC
     gmock_main

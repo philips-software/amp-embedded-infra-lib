@@ -68,6 +68,7 @@ option(EMIL_BUILD_TESTS "Enable build of the tests" ${EMIL_DEFAULTOPT})
 option(EMIL_BUILD_EXAMPLES "Enable build of the examples" ${EMIL_DEFAULTOPT})
 option(EMIL_ENABLE_COVERAGE "Enable compiler flags for code coverage measurements" Off)
 option(EMIL_ENABLE_MUTATION_TESTING "Enable compiler flags for mutation testing" Off)
+option(EMIL_ENABLE_TEST_AUTO_DISCOVERY "Enable auto-discovery of tests in test executables; this creates one CTest command per test-case and can be slow on some platforms" Off)
 
 # The next few options control the install and export behaviour.
 # When package config generation is enabled the prefix can be set
@@ -127,6 +128,18 @@ if (TARGET_ARCH_X86)
         endif()
     endif()
 endif()
+
+function(emil_add_test target)
+    if (EMIL_BUILD_TESTS)
+        if (EMIL_TEST_AUTO_DISCOVERY)
+            gtest_discover_tests(${target}} AUTO)
+        elseif(EMIL_ENABLE_MUTATION_TESTING)
+            add_test(NAME ${target} COMMAND mull-runner-12 $<TARGET_FILE:${target}>)
+        else()
+            add_test(NAME ${target} COMMAND ${target})
+        endif()
+    endif()
+endfunction()
 
 add_version_header_target(generated.version_header)
 
