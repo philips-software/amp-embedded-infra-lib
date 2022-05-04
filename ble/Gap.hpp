@@ -5,28 +5,28 @@
 
 namespace ble
 {
-    class GapPeripheralObserver;
+    class GapPeripheral;
 
-    class GapPeripheral
-        : public infra::Subject<GapPeripheralObserver>
+    enum class GapPeripheralState
     {
-    public:
-        enum class State
-        {
-            Standby,
-            Advertising,
-            Connected
-        };
-
-        virtual void Advertise() = 0;
-        virtual void Standby() = 0;
+        Standby,
+        Advertising,
+        Connected
     };
 
     class GapPeripheralObserver
         : public infra::SingleObserver<GapPeripheralObserver, GapPeripheral>
     {
     public:
-        virtual void State(GapPeripheral::State state) = 0;
+        virtual void State(GapPeripheralState state) = 0;
+    };
+
+    class GapPeripheral
+        : public infra::Subject<GapPeripheralObserver>
+    {
+    public:
+        virtual void Advertise() = 0;
+        virtual void Standby() = 0;
     };
 }
 
