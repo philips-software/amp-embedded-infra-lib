@@ -45,8 +45,6 @@ namespace services
         virtual void ReadFlashId(infra::ByteRange buffer) override;
 
     private:
-        std::array<uint8_t, 3> ConvertAddress(uint32_t address) const;
-
         void WriteEnable();
         void PageProgram();
         void EraseSomeSectors(uint32_t endIndex);
