@@ -10,6 +10,7 @@ namespace services
     struct SynchronousFlashSpiConfig
     {
         uint32_t numberOfSubSectors = 512;
+        bool extendedAddressing = false;
     };
 
     class SynchronousFlashSpi
@@ -19,12 +20,12 @@ namespace services
     public:
         using Config = SynchronousFlashSpiConfig;
 
-        static const uint8_t commandPageProgram;
-        static const uint8_t commandReadData;
+        static const uint8_t commandPageProgram[2];
+        static const uint8_t commandReadData[2];
+        static const uint8_t commandEraseSubSector[2];
+        static const uint8_t commandEraseSector[2];
         static const uint8_t commandReadStatusRegister;
         static const uint8_t commandWriteEnable;
-        static const uint8_t commandEraseSubSector;
-        static const uint8_t commandEraseSector;
         static const uint8_t commandEraseBulk;
         static const uint8_t commandReadId;
 
@@ -44,8 +45,6 @@ namespace services
         virtual void ReadFlashId(infra::ByteRange buffer) override;
 
     private:
-        std::array<uint8_t, 3> ConvertAddress(uint32_t address) const;
-
         void WriteEnable();
         void PageProgram();
         void EraseSomeSectors(uint32_t endIndex);
@@ -55,6 +54,8 @@ namespace services
         void HoldWhileWriteInProgress();
         uint8_t ReadStatusRegister();
 
+        infra::ByteRange InstructionAndAddress(const uint8_t instruction[], uint32_t address);
+
     private:
         hal::SynchronousSpi& spi;
         Config config;
@@ -62,11 +63,7 @@ namespace services
         uint32_t address = 0;
         uint32_t sectorIndex = 0;
 
-        struct InstructionAndAddress
-        {
-            uint8_t instruction = 0;
-            std::array<uint8_t, 3> address = {};
-        } instructionAndAddress;
+        std::array<uint8_t, 5> instructionAndAddressBuffer;
     };
 }
 

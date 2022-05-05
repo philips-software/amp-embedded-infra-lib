@@ -16,3 +16,7 @@ ccola_component(synchronous_util static_library)
     )
 
 ccola_end_component()
+
+ccola_subdirectories(
+    test
+)
