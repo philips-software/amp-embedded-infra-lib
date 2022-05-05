@@ -56,7 +56,7 @@ TEST_F(SynchronousFlashSpiTest3ByteAddressing, ReadBuffer)
     std::array<uint8_t, 8> buffer;
     flashSpi.ReadBuffer(buffer, 0x123456);
 
-    ASSERT_THAT(buffer, testing::ElementsAre(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07));
+    EXPECT_THAT(buffer, testing::ElementsAre(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07));
 }
 
 TEST_F(SynchronousFlashSpiTest3ByteAddressing, EraseSectors)
@@ -80,7 +80,7 @@ TEST_F(SynchronousFlashSpiTest3ByteAddressing, ReadFlashId)
     std::array<uint8_t, 3> flashId;
     flashSpi.ReadFlashId(flashId);
 
-    ASSERT_THAT(flashId, testing::ElementsAre(0x01, 0x02, 0x03));
+    EXPECT_THAT(flashId, testing::ElementsAre(0x01, 0x02, 0x03));
 }
 
 class SynchronousFlashSpiTest4ByteAddressing : public SynchronousFlashSpiTest
@@ -110,7 +110,7 @@ TEST_F(SynchronousFlashSpiTest4ByteAddressing, ReadBuffer)
     std::array<uint8_t, 8> buffer;
     flashSpi.ReadBuffer(buffer, 0x12345678);
 
-    ASSERT_THAT(buffer, testing::ElementsAre(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07));
+    EXPECT_THAT(buffer, testing::ElementsAre(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07));
 }
 
 TEST_F(SynchronousFlashSpiTest4ByteAddressing, EraseSectors)
@@ -134,6 +134,6 @@ TEST_F(SynchronousFlashSpiTest4ByteAddressing, ReadFlashId)
     std::array<uint8_t, 3> flashId;
     flashSpi.ReadFlashId(flashId);
 
-    ASSERT_THAT(flashId, testing::ElementsAre(0x01, 0x02, 0x03));
+    EXPECT_THAT(flashId, testing::ElementsAre(0x01, 0x02, 0x03));
 }
 

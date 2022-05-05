@@ -33,7 +33,6 @@ namespace services
     void SynchronousFlashSpi::ReadBuffer(infra::ByteRange buffer, uint32_t address)
     {
         infra::ByteRange instructionAndAddress = InstructionAndAddress(commandReadData, address);
-
         spi.SendData(instructionAndAddress, hal::SynchronousSpi::continueSession);
         spi.ReceiveData(buffer, hal::SynchronousSpi::stop);
     }
@@ -66,12 +65,14 @@ namespace services
             instructionAndAddressBuffer[4] = static_cast<uint8_t>(address);
             return infra::ByteRange(instructionAndAddressBuffer.data(), instructionAndAddressBuffer.data() + 5);
         }
-        
-        instructionAndAddressBuffer[0] = instruction[0];
-        instructionAndAddressBuffer[1] = static_cast<uint8_t>(address >> 16);
-        instructionAndAddressBuffer[2] = static_cast<uint8_t>(address >> 8);
-        instructionAndAddressBuffer[3] = static_cast<uint8_t>(address);
-        return infra::ByteRange(instructionAndAddressBuffer.data(), instructionAndAddressBuffer.data() + 4);
+        else
+        {
+            instructionAndAddressBuffer[0] = instruction[0];
+            instructionAndAddressBuffer[1] = static_cast<uint8_t>(address >> 16);
+            instructionAndAddressBuffer[2] = static_cast<uint8_t>(address >> 8);
+            instructionAndAddressBuffer[3] = static_cast<uint8_t>(address);
+            return infra::ByteRange(instructionAndAddressBuffer.data(), instructionAndAddressBuffer.data() + 4);
+        }
     }
 
     void SynchronousFlashSpi::WriteEnable()
@@ -85,7 +86,8 @@ namespace services
         infra::ConstByteRange currentBuffer = infra::Head(buffer, sizePage - AddressOffsetInSector(address) % sizePage);
         buffer.pop_front(currentBuffer.size());
 
-        spi.SendData(InstructionAndAddress(commandPageProgram, address), hal::SynchronousSpi::continueSession);
+        infra::ByteRange instructionAndAddress = InstructionAndAddress(commandPageProgram, address);
+        spi.SendData(instructionAndAddress, hal::SynchronousSpi::continueSession);
         spi.SendData(currentBuffer, hal::SynchronousSpi::stop);
 
         address += currentBuffer.size();
