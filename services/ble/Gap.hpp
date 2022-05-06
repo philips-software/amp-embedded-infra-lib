@@ -18,6 +18,8 @@ namespace ble
         : public infra::SingleObserver<GapPeripheralObserver, GapPeripheral>
     {
     public:
+        using infra::SingleObserver<GapPeripheralObserver, GapPeripheral>::SingleObserver;
+
         virtual void State(GapPeripheralState state) = 0;
     };
 
