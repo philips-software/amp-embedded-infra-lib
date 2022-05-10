@@ -1,9 +1,9 @@
 mutators:
- - cxx_add_to_sub
+  - cxx_add_to_sub
 excludePaths:
- - .*/external/.*
- - .*/googlemock/.*
- - .*/googletest/.*
- - .*/test_doubles/.*
- - .*/test_helper/.*
- - .*/test/.*
+  - .*/external/.*
+  - .*/googlemock/.*
+  - .*/googletest/.*
+  - .*/test_doubles/.*
+  - .*/test_helper/.*
+  - .*/test/.*
