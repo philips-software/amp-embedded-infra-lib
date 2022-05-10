@@ -29,7 +29,6 @@ namespace services
         : public infra::Subject<GapPeripheralObserver>
     {
     public:
-        virtual void SetPublicAddress(hal::MacAddress address) = 0;
         virtual hal::MacAddress GetPublicAddress() const = 0;
         virtual void SetAdvertisementData(infra::ConstByteRange data) = 0;
         virtual void SetScanResponseData(infra::ConstByteRange data) = 0;
