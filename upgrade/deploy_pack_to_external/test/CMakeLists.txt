@@ -1,5 +1,5 @@
 add_executable(upgrade.deploy_pack_to_external_test)
-gtest_discover_tests(upgrade.deploy_pack_to_external_test AUTO)
+emil_add_test(upgrade.deploy_pack_to_external_test)
 
 target_link_libraries(upgrade.deploy_pack_to_external_test PUBLIC
     gmock_main

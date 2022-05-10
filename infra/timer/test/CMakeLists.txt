@@ -1,5 +1,5 @@
 add_executable(infra.timer_test)
-gtest_discover_tests(infra.timer_test AUTO)
+emil_add_test(infra.timer_test)
 
 target_link_libraries(infra.timer_test PUBLIC
     gmock_main

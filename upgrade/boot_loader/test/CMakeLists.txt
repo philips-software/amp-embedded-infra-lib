@@ -1,5 +1,5 @@
 add_executable(upgrade.boot_loader_test)
-gtest_discover_tests(upgrade.boot_loader_test AUTO)
+emil_add_test(upgrade.boot_loader_test)
 
 target_link_libraries(upgrade.boot_loader_test PUBLIC
     gmock_main
