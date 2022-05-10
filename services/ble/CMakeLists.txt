@@ -1,6 +1,7 @@
 ccola_component(ble source)
 
     ccola_sources(
+        CoreSpec.hpp
         Gap.hpp
     )
 

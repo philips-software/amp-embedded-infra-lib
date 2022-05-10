@@ -3,11 +3,10 @@
 
 #include "infra/util/Observer.hpp"
 #include "hal/interfaces/MacAddress.hpp"
+#include "CoreSpec.hpp"
 
-namespace ble
+namespace services
 {
-    constexpr uint8_t maxAdvertisementSize = 31;
-
     class GapPeripheral;
 
     enum class GapPeripheralState
@@ -31,8 +30,9 @@ namespace ble
     {
     public:
         virtual void SetPublicAddress(hal::MacAddress address) = 0;
-        virtual hal::MacAddress GetPublicAddress() = 0;
-        virtual void SetAdvertisementData(infra::ByteRange data) = 0;
+        virtual hal::MacAddress GetPublicAddress() const = 0;
+        virtual void SetAdvertisementData(infra::ConstByteRange data) = 0;
+        virtual void SetScanResponseData(infra::ConstByteRange data) = 0;
         virtual void Advertise() = 0;
         virtual void Standby() = 0;
     };
