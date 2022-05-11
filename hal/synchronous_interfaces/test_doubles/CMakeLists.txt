@@ -9,6 +9,8 @@ ccola_component(synchronous_test_doubles x86: static_library other: noncompile)
         SynchronousRandomDataGeneratorMock.hpp
         SynchronousSerialCommunicationMock.cpp
         SynchronousSerialCommunicationMock.hpp
+        SynchronousSpiMock.cpp
+        SynchronousSpiMock.hpp
         TimeKeeperMock.hpp
     )
 

@@ -2,12 +2,12 @@
 
 namespace services
 {
-    const uint8_t SynchronousFlashSpi::commandPageProgram = 0x02;
-    const uint8_t SynchronousFlashSpi::commandReadData = 0x03;
+    const uint8_t SynchronousFlashSpi::commandPageProgram[2] = { 0x02, 0x12 };  // 3-byte addressing, 4-byte addressing
+    const uint8_t SynchronousFlashSpi::commandReadData[2] = { 0x03, 0x13 };
+    const uint8_t SynchronousFlashSpi::commandEraseSubSector[2] = { 0x20, 0x21 };
+    const uint8_t SynchronousFlashSpi::commandEraseSector[2] = { 0xd8, 0xdc };
     const uint8_t SynchronousFlashSpi::commandReadStatusRegister = 0x05;
     const uint8_t SynchronousFlashSpi::commandWriteEnable = 0x06;
-    const uint8_t SynchronousFlashSpi::commandEraseSubSector = 0x20;
-    const uint8_t SynchronousFlashSpi::commandEraseSector = 0xd8;
     const uint8_t SynchronousFlashSpi::commandEraseBulk = 0xc7;
     const uint8_t SynchronousFlashSpi::commandReadId = 0x9f;
 
@@ -32,9 +32,8 @@ namespace services
 
     void SynchronousFlashSpi::ReadBuffer(infra::ByteRange buffer, uint32_t address)
     {
-        instructionAndAddress.instruction = commandReadData;
-        instructionAndAddress.address = ConvertAddress(address);
-        spi.SendData(infra::MakeByteRange(instructionAndAddress), hal::SynchronousSpi::continueSession);
+        infra::ByteRange instructionAndAddress = InstructionAndAddress(commandReadData, address);
+        spi.SendData(instructionAndAddress, hal::SynchronousSpi::continueSession);
         spi.ReceiveData(buffer, hal::SynchronousSpi::stop);
     }
 
@@ -55,14 +54,25 @@ namespace services
         spi.ReceiveData(buffer, hal::SynchronousSpi::stop);
     }
 
-    std::array<uint8_t, 3> SynchronousFlashSpi::ConvertAddress(uint32_t address) const
+    infra::ByteRange SynchronousFlashSpi::InstructionAndAddress(const uint8_t instruction[], uint32_t address)
     {
-        uint32_t linearAddress = address;
-        std::array<uint8_t, 3> result;
-        result[0] = static_cast<uint8_t>(linearAddress >> 16);
-        result[1] = static_cast<uint8_t>(linearAddress >> 8);
-        result[2] = static_cast<uint8_t>(linearAddress);
-        return result;
+        if (config.extendedAddressing)
+        {
+            instructionAndAddressBuffer[0] = instruction[1];
+            instructionAndAddressBuffer[1] = static_cast<uint8_t>(address >> 24);
+            instructionAndAddressBuffer[2] = static_cast<uint8_t>(address >> 16);
+            instructionAndAddressBuffer[3] = static_cast<uint8_t>(address >> 8);
+            instructionAndAddressBuffer[4] = static_cast<uint8_t>(address);
+            return infra::ByteRange(instructionAndAddressBuffer.data(), instructionAndAddressBuffer.data() + 5);
+        }
+        else
+        {
+            instructionAndAddressBuffer[0] = instruction[0];
+            instructionAndAddressBuffer[1] = static_cast<uint8_t>(address >> 16);
+            instructionAndAddressBuffer[2] = static_cast<uint8_t>(address >> 8);
+            instructionAndAddressBuffer[3] = static_cast<uint8_t>(address);
+            return infra::ByteRange(instructionAndAddressBuffer.data(), instructionAndAddressBuffer.data() + 4);
+        }
     }
 
     void SynchronousFlashSpi::WriteEnable()
@@ -76,9 +86,8 @@ namespace services
         infra::ConstByteRange currentBuffer = infra::Head(buffer, sizePage - AddressOffsetInSector(address) % sizePage);
         buffer.pop_front(currentBuffer.size());
 
-        instructionAndAddress.instruction = commandPageProgram;
-        instructionAndAddress.address = ConvertAddress(address);
-        spi.SendData(infra::MakeByteRange(instructionAndAddress), hal::SynchronousSpi::continueSession);
+        infra::ByteRange instructionAndAddress = InstructionAndAddress(commandPageProgram, address);
+        spi.SendData(instructionAndAddress, hal::SynchronousSpi::continueSession);
         spi.SendData(currentBuffer, hal::SynchronousSpi::stop);
 
         address += currentBuffer.size();
@@ -105,25 +114,19 @@ namespace services
 
     void SynchronousFlashSpi::SendEraseSubSector(uint32_t subSectorIndex)
     {
-        instructionAndAddress.instruction = commandEraseSubSector;
-        instructionAndAddress.address = ConvertAddress(AddressOfSector(subSectorIndex));
-
-        spi.SendData(infra::MakeByteRange(instructionAndAddress), hal::SynchronousSpi::stop);
+        infra::ByteRange instructionAndAddress = InstructionAndAddress(commandEraseSubSector, AddressOfSector(subSectorIndex));
+        spi.SendData(instructionAndAddress, hal::SynchronousSpi::stop);
     }
 
     void SynchronousFlashSpi::SendEraseSector(uint32_t subSectorIndex)
     {
-        instructionAndAddress.instruction = commandEraseSector;
-        instructionAndAddress.address = ConvertAddress(AddressOfSector(subSectorIndex));
-
-        spi.SendData(infra::MakeByteRange(instructionAndAddress), hal::SynchronousSpi::stop);
+        infra::ByteRange instructionAndAddress = InstructionAndAddress(commandEraseSector, AddressOfSector(subSectorIndex));
+        spi.SendData(instructionAndAddress, hal::SynchronousSpi::stop);
     }
 
     void SynchronousFlashSpi::SendEraseBulk()
     {
-        instructionAndAddress.instruction = commandEraseBulk;
-
-        spi.SendData(infra::MakeByteRange(instructionAndAddress.instruction), hal::SynchronousSpi::stop);
+        spi.SendData(infra::MakeByteRange(commandEraseBulk), hal::SynchronousSpi::stop);
     }
 
     void SynchronousFlashSpi::HoldWhileWriteInProgress()
