@@ -17,4 +17,6 @@ target_sources(hal.synchronous_interfaces_test_doubles PRIVATE
     SynchronousEncryptorMock.hpp
 )
 
-add_subdirectory(test)
+if (EMIL_BUILD_TESTS)
+    add_subdirectory(test)
+endif()

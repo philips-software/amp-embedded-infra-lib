@@ -28,6 +28,6 @@ target_sources(hal.synchronous_interfaces PRIVATE
     TimeService.hpp
 )
 
-if (EMIL_BUILD_TESTS)
+if (BUILD_TESTING)
     add_subdirectory(test_doubles)
 endif()
