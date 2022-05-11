@@ -23,7 +23,5 @@ if (TARGET_ARCH_X86)
         LIBPROTOC_EXPORTS
     )
 
-    protocol_buffer_cpp(protobuf.echo_attributes ${CMAKE_CURRENT_LIST_DIR}/EchoAttributes.proto)
-    protocol_buffer_csharp(protobuf.echo_attributes ${CMAKE_CURRENT_LIST_DIR}/EchoAttributes.proto)
-    protocol_buffer_java(protobuf.echo_attributes ${CMAKE_CURRENT_LIST_DIR}/EchoAttributes.proto)
+    protocol_buffer_all(protobuf.echo_attributes ${CMAKE_CURRENT_LIST_DIR}/EchoAttributes.proto)
 endif()
