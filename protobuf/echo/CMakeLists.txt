@@ -12,7 +12,7 @@ target_sources(protobuf.echo PRIVATE
     EchoInstantiation.hpp
 )
 
-if(BUILD_TESTING)
+if (BUILD_TESTING)
     add_subdirectory(test_helper)
 endif()
 
