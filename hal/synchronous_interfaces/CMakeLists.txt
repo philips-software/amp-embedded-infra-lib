@@ -1,4 +1,4 @@
-add_library(hal.synchronous_interfaces EXCLUDE_FROM_ALL STATIC)
+add_library(hal.synchronous_interfaces ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 install(TARGETS hal.synchronous_interfaces EXPORT emilHalTargets)
 
 target_include_directories(hal.synchronous_interfaces PUBLIC
@@ -28,6 +28,6 @@ target_sources(hal.synchronous_interfaces PRIVATE
     TimeService.hpp
 )
 
-if (EMIL_BUILD_TESTS)
+if (BUILD_TESTING)
     add_subdirectory(test_doubles)
 endif()

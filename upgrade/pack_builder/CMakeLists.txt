@@ -1,5 +1,5 @@
 if (TARGET_ARCH_X86)
-    add_library(upgrade.pack_builder EXCLUDE_FROM_ALL STATIC)
+    add_library(upgrade.pack_builder ${EMIL_EXCLUDE_FROM_ALL} STATIC)
     install(TARGETS upgrade.pack_builder EXPORT emilUpgradeTargets)
 
     target_link_libraries(upgrade.pack_builder PUBLIC
@@ -51,7 +51,10 @@ if (TARGET_ARCH_X86)
     )
 
     if (EMIL_BUILD_TESTS)
-        add_subdirectory(test_helper)
         add_subdirectory(test)
+    endif()
+
+    if (BUILD_TESTING)
+        add_subdirectory(test_helper)
     endif()
 endif()

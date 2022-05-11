@@ -1,4 +1,4 @@
-add_library(services.network EXCLUDE_FROM_ALL STATIC)
+add_library(services.network ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 install(TARGETS services.network EXPORT emilServicesTargets)
 
 target_link_libraries(services.network PUBLIC
@@ -6,6 +6,7 @@ target_link_libraries(services.network PUBLIC
     infra.timer
     hal.synchronous_interfaces
     services.tracer
+    services.util
     mbedtls
 )
 
@@ -107,5 +108,8 @@ endif()
 
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
+endif()
+
+if (BUILD_TESTING)
     add_subdirectory(test_doubles)
 endif()

@@ -1,4 +1,4 @@
-add_library(hal.interfaces EXCLUDE_FROM_ALL STATIC)
+add_library(hal.interfaces ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 install(TARGETS hal.interfaces EXPORT emilHalTargets)
 
 target_include_directories(hal.interfaces PUBLIC
@@ -49,5 +49,8 @@ target_sources(hal.interfaces PRIVATE
 
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
+endif()
+
+if (BUILD_TESTING)
     add_subdirectory(test_doubles)
 endif()

@@ -1,4 +1,4 @@
-add_library(infra.timer_test_helper EXCLUDE_FROM_ALL STATIC)
+add_library(infra.timer_test_helper ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
 target_link_libraries(infra.timer_test_helper PRIVATE
     infra.timer

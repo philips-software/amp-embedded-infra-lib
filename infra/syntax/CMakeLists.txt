@@ -1,4 +1,4 @@
-add_library(infra.syntax EXCLUDE_FROM_ALL STATIC)
+add_library(infra.syntax ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 install(TARGETS infra.syntax EXPORT emilInfraTargets)
 
 target_link_libraries(infra.syntax PUBLIC
@@ -36,6 +36,9 @@ if (TARGET_ARCH_X86)
 endif()
 
 if (EMIL_BUILD_TESTS)
-    add_subdirectory(test_doubles)
     add_subdirectory(test)
+endif()
+
+if (BUILD_TESTING)
+    add_subdirectory(test_doubles)
 endif()

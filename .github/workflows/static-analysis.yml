@@ -1,0 +1,68 @@
+---
+name: Static Analysis
+
+on:
+  push:
+    branches: [develop, modern-cmake]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  sonar:
+    name: SonarCloud
+    runs-on: ubuntu-latest
+    env:
+      SONAR_SCANNER_VERSION: 4.6.1.2450
+      SONAR_SERVER_URL: "https://sonarcloud.io"
+      BUILD_WRAPPER_OUT_DIR: build_wrapper_output
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # Disable shallow clone to enable blame information
+      - uses: seanmiddleditch/gha-setup-ninja@v3
+      - uses: actions/setup-python@v1
+      - uses: BSFishy/pip-action@v1
+        with:
+          packages: gcovr==5.0
+      - name: Install Sonar Scanner
+        env:
+          SONAR_SCANNER_URL: https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip
+          SONAR_WRAPPER_URL: ${{ env.SONAR_SERVER_URL }}/static/cpp/build-wrapper-linux-x86.zip
+        run: |
+          wget -qN "${{ env.SONAR_WRAPPER_URL }}"
+          wget -qN "${{ env.SONAR_SCANNER_URL }}"
+          unzip -qqo build-wrapper-linux-x86.zip
+          unzip -qqo "sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip"
+          echo "${PWD}/build-wrapper-linux-x86" >> $GITHUB_PATH
+          echo "${PWD}/sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-linux/bin" >> $GITHUB_PATH
+      - uses: hendrikmuhs/ccache-action@v1
+      - name: Build
+        run: |
+          cmake --preset Build-Coverage -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build Build-Coverage
+          ctest --test-dir Build-Coverage --quiet --no-compress-output --output-on-failure
+          gcovr --sonarqube=coverage.xml --exclude-lines-by-pattern '.*assert\(.*\);|.*really_assert\(.*\);' --exclude-unreachable-branches --exclude-throw-branches -j 2 --exclude=.*/generated/.* --exclude=.*/examples/.* --exclude=.*/external/.* --exclude=.*/lwip/.* --exclude=.*/tracing/.* --exclude=.*/test/.*
+      - name: Analysis
+        env:
+          # to get access to secrets.SONAR_TOKEN, provide GITHUB_TOKEN
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          export SONAR_PROJECT_VERSION=`grep -m 1 -o '".*"' Build/[Vv]ersion.h | tr -d '"'`
+          sonar-scanner -D sonar.host.url="${{ env.SONAR_SERVER_URL }}" -D sonar.cfamily.build-wrapper-output="${{ env.BUILD_WRAPPER_OUT_DIR }}"
+  codeql:
+    name: CodeQL
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: seanmiddleditch/gha-setup-ninja@v3
+      - uses: hendrikmuhs/ccache-action@v1
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
+        with:
+          languages: cpp
+      - run: |
+          cmake -B Build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake --build Build
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v1

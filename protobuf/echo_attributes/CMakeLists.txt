@@ -1,5 +1,5 @@
 if (TARGET_ARCH_X86)
-    add_library(protobuf.echo_attributes EXCLUDE_FROM_ALL STATIC)
+    add_library(protobuf.echo_attributes ${EMIL_EXCLUDE_FROM_ALL} STATIC)
     install(TARGETS protobuf.echo_attributes EXPORT emilProtobufTargets)
 
     target_compile_options(protobuf.echo_attributes PRIVATE
@@ -23,7 +23,5 @@ if (TARGET_ARCH_X86)
         LIBPROTOC_EXPORTS
     )
 
-    protocol_buffer_cpp(protobuf.echo_attributes ${CMAKE_CURRENT_LIST_DIR}/EchoAttributes.proto)
-    protocol_buffer_csharp(protobuf.echo_attributes ${CMAKE_CURRENT_LIST_DIR}/EchoAttributes.proto)
-    protocol_buffer_java(protobuf.echo_attributes ${CMAKE_CURRENT_LIST_DIR}/EchoAttributes.proto)
+    protocol_buffer_all(protobuf.echo_attributes ${CMAKE_CURRENT_LIST_DIR}/EchoAttributes.proto)
 endif()

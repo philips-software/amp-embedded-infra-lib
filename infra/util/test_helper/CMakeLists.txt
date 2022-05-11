@@ -1,4 +1,4 @@
-add_library(infra.util_test_helper EXCLUDE_FROM_ALL INTERFACE)
+add_library(infra.util_test_helper ${EMIL_EXCLUDE_FROM_ALL} INTERFACE)
 
 target_link_libraries(infra.util_test_helper INTERFACE
     gmock

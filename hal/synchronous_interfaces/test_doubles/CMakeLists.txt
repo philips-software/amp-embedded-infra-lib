@@ -1,4 +1,4 @@
-add_library(hal.synchronous_interfaces_test_doubles EXCLUDE_FROM_ALL STATIC)
+add_library(hal.synchronous_interfaces_test_doubles ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
 target_link_libraries(hal.synchronous_interfaces_test_doubles PUBLIC
     hal.synchronous_interfaces
@@ -17,4 +17,6 @@ target_sources(hal.synchronous_interfaces_test_doubles PRIVATE
     SynchronousEncryptorMock.hpp
 )
 
-add_subdirectory(test)
+if (EMIL_BUILD_TESTS)
+    add_subdirectory(test)
+endif()

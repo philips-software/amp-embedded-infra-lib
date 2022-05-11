@@ -1,7 +1,14 @@
-if (TARGET_ARCH_X86)
-    add_library(arg_parser.args EXCLUDE_FROM_ALL INTERFACE)
+FetchContent_Declare(
+    args
+    GIT_REPOSITORY https://github.com/philips-forks/args
+    GIT_TAG 730dfbc4bc2e4149c22e0f606bf00420b65aeaeb
+)
 
-    target_include_directories(arg_parser.args INTERFACE
-        ${CMAKE_CURRENT_LIST_DIR}
-    )
-endif()
+set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL On)
+
+set(ARGS_BUILD_EXAMPLE Off CACHE INTERNAL "")
+set(ARGS_BUILD_UNITTESTS Off CACHE INTERNAL "")
+
+FetchContent_MakeAvailable(args)
+
+set_target_properties(args PROPERTIES FOLDER External/args)

@@ -1,4 +1,4 @@
-add_library(infra.event EXCLUDE_FROM_ALL STATIC)
+add_library(infra.event ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 install(TARGETS infra.event EXPORT emilInfraTargets)
 
 target_link_libraries(infra.event
@@ -24,5 +24,8 @@ target_sources(infra.event PRIVATE
 
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
+endif()
+
+if (BUILD_TESTING)
     add_subdirectory(test_helper)
 endif()
