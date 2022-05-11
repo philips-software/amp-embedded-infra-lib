@@ -1,5 +1,5 @@
 add_executable(services.network_test)
-gtest_discover_tests(services.network_test AUTO)
+emil_add_test(services.network_test)
 
 target_link_libraries(services.network_test PUBLIC
     gmock_main

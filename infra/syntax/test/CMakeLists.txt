@@ -1,5 +1,5 @@
 add_executable(infra.syntax_test)
-gtest_discover_tests(infra.syntax_test AUTO)
+emil_add_test(infra.syntax_test)
 
 target_link_libraries(infra.syntax_test PUBLIC
     gmock_main

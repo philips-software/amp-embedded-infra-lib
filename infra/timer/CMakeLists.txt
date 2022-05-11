@@ -35,5 +35,8 @@ target_sources(infra.timer PRIVATE
 
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
+endif()
+
+if (BUILD_TESTING)
     add_subdirectory(test_helper)
 endif()

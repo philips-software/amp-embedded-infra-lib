@@ -92,22 +92,22 @@ namespace infra
 
         explicit operator bool() const { return functions.Which() != 0; }
 
-        bool operator==(const nullptr_t) const
+        bool operator==(const std::nullptr_t) const
         {
             return functions.Which() == 0;
         }
 
-        friend bool operator==(const nullptr_t, const MultiFunctionHelper<F...>& f)
+        friend bool operator==(const std::nullptr_t, const MultiFunctionHelper<F...>& f)
         {
             return f.functions.Which() == 0;
         }
 
-        bool operator!=(const nullptr_t) const
+        bool operator!=(const std::nullptr_t) const
         {
             return functions.Which() != 0;
         }
 
-        friend bool operator!=(const nullptr_t, const MultiFunctionHelper<F...>& f)
+        friend bool operator!=(const std::nullptr_t, const MultiFunctionHelper<F...>& f)
         {
             return f.functions.Which() != 0;
         }

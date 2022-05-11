@@ -3,7 +3,7 @@ if (TARGET_ARCH_X86)
     install(TARGETS upgrade.security_key_generator EXPORT emilUpgradeTargets)
 
     target_link_libraries(upgrade.security_key_generator PUBLIC
-        arg_parser.args
+        args
         mbedcrypto
         hal.generic
         upgrade.pack_keys

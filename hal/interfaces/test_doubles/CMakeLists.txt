@@ -35,4 +35,6 @@ target_sources(hal.interfaces_test_doubles PRIVATE
     SpiMock.hpp
 )
 
-add_subdirectory(test)
+if (EMIL_BUILD_TESTS)
+    add_subdirectory(test)
+endif()

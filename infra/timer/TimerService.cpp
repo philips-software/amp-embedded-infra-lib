@@ -51,15 +51,35 @@ namespace infra
     {
         holdUpdate = true;
 
-        for (timerIterator = scheduledTimers.begin(); timerIterator != scheduledTimers.end(); )
+        bool more = true;
+        while (more)
         {
-            infra::IntrusiveForwardList<Timer>::iterator currentIterator = timerIterator;
-            ++timerIterator;
+            more = false;
 
-            if (currentIterator->NextTrigger() <= time)
+            infra::Timer* earliest = nullptr;
+
+            for (timerIterator = scheduledTimers.begin(); timerIterator != scheduledTimers.end();)
             {
-                infra::Function<void()> action = currentIterator->Action();
-                currentIterator->ComputeNextTriggerTime();
+                infra::IntrusiveForwardList<Timer>::iterator currentIterator = timerIterator;
+                ++timerIterator;
+
+                if (currentIterator->NextTrigger() <= time)
+                {
+                    if (earliest == nullptr)
+                        earliest = &*currentIterator;
+                    else
+                    {
+                        more = true;
+                        if (earliest->NextTrigger() > currentIterator->NextTrigger())
+                            earliest = &*currentIterator;
+                    }
+                }
+            }
+
+            if (earliest != nullptr)
+            {
+                infra::Function<void()> action = earliest->Action();
+                earliest->ComputeNextTriggerTime();
                 action();
             }
         }

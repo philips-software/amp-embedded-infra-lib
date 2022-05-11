@@ -1,5 +1,5 @@
 add_executable(services.cucumber_test)
-gtest_discover_tests(services.cucumber_test AUTO)
+emil_add_test(services.cucumber_test)
 
 target_link_libraries(services.cucumber_test PUBLIC
     gmock_main

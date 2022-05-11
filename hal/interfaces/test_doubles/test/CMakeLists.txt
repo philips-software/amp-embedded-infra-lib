@@ -1,5 +1,5 @@
 add_executable(hal.interfaces_test_doubles_test)
-gtest_discover_tests(hal.interfaces_test_doubles_test AUTO)
+emil_add_test(hal.interfaces_test_doubles_test)
 
 target_link_libraries(hal.interfaces_test_doubles_test PUBLIC
     gmock_main
