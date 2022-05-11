@@ -1,5 +1,5 @@
 add_executable(protobuf.protoc_echo_plugin_test)
-gtest_discover_tests(protobuf.protoc_echo_plugin_test AUTO)
+emil_add_test(protobuf.protoc_echo_plugin_test)
 
 protocol_buffer_echo_cpp(protobuf.protoc_echo_plugin_test TestMessages.proto)
 

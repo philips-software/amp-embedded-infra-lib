@@ -1,5 +1,5 @@
 add_executable(infra.util_test)
-gtest_discover_tests(infra.util_test AUTO)
+emil_add_test(infra.util_test)
 
 target_link_libraries(infra.util_test PUBLIC
     gmock_main
