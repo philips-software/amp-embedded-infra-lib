@@ -165,9 +165,8 @@ namespace infra
     template<class T>
     T QueueForOneReaderOneIrqWriter<T>::operator[](size_t position) const
     {
-        size_t size = Size();
-        assert(size > 0);
-        assert(position < size);
+        assert(Size() > 0);
+        assert(position < Size());
 
         T* begin = contentsBegin;
         if (begin + position >= buffer.end())
