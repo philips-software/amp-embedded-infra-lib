@@ -37,7 +37,7 @@ namespace services
             ManufacturerSpecificData = 0xffu
         };
 
-        typedef AdvDataType ScanRespDataType;
+        using ScanRespDataType = AdvDataType;
 
         enum class AdvFlags : uint8_t
         {
@@ -54,7 +54,7 @@ namespace services
 
     class GapPeripheral;
 
-    enum class GapPeripheralState
+    enum class GapPeripheralState : uint8_t
     {
         Standby,
         Advertising,
