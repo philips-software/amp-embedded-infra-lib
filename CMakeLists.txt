@@ -80,7 +80,11 @@ option(EMIL_ENABLE_TEST_AUTO_DISCOVERY "Enable auto-discovery of tests in test e
 # should be set to the export name of the 'host' build.
 option(EMIL_GENERATE_PACKAGE_CONFIG "Enable generation of package configuration and install files" On)
 set(EMIL_PACKAGE_CONFIG_EXPORT_NAMESPACE "${PROJECT_NAME}::" CACHE STRING "Namespace used for exported targets")
-set(EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE "" CACHE STRING "Namespace used to reference imported targets")
+if (CMAKE_CROSSCOMPILING)
+    set(EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE "${PROJECT_NAME}::" CACHE STRING "Namespace used to reference imported targets")
+else()
+    set(EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE "" CACHE STRING "Namespace used to reference imported targets")
+endif()
 
 option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of EmIL" On)
 
