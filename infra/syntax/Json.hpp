@@ -369,7 +369,10 @@ namespace infra
     private:
         friend class JsonObject;
 
+    public:
         JsonObjectIterator();
+
+    private:
         JsonObjectIterator(JsonObject& object);
 
     public:
@@ -427,7 +430,10 @@ namespace infra
         template<class T>
             friend class JsonValueArrayIterator;
 
+    public:
         JsonArrayIterator();
+
+    private:
         explicit JsonArrayIterator(JsonArray& jsonArray);
 
     public:
