@@ -9,14 +9,6 @@ namespace services
     class Gap
     {
     public:
-        using AdvIntMultiplier = uint16_t;
-
-        enum class AdvType : uint8_t
-        {
-            AdvInd,
-            AdvNonconnInd
-        };
-
         enum class AdvDataType : uint8_t
         {
             Flags = 0x01u,
@@ -40,7 +32,7 @@ namespace services
             Appearance = 0x19u,
             AdvertisingInterval = 0x1au,
             LeRole = 0x1cu,
-            ServSolicit32BitUuidList = 0x1fu,
+            ServSolicit_32BitUuidList = 0x1fu,
             Uri = 0x24u,
             ManufacturerSpecificData = 0xffu
         };
@@ -86,7 +78,7 @@ namespace services
         virtual hal::MacAddress GetPublicAddress() const = 0;
         virtual void SetAdvertisementData(infra::ConstByteRange data) = 0;
         virtual void SetScanResponseData(infra::ConstByteRange data) = 0;
-        virtual void Advertise(AdvType type, AdvIntMultiplier multiplier) = 0;
+        virtual void Advertise() = 0;
         virtual void Standby() = 0;
     };
 }
