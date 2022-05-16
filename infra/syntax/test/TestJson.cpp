@@ -65,14 +65,14 @@ TEST(JsonTokenizerTest, get_int_token)
 {
     infra::JsonTokenizer tokenizer("42");
 
-    EXPECT_EQ(infra::JsonToken::Token(infra::JsonToken::Integer(42)), tokenizer.Token());
+    EXPECT_EQ(infra::JsonToken::Token(infra::JsonBiggerInt(42, false)), tokenizer.Token());
 }
 
 TEST(JsonTokenizerTest, get_negative_int_token)
 {
     infra::JsonTokenizer tokenizer("-42");
 
-    EXPECT_EQ(infra::JsonToken::Token(infra::JsonToken::Integer(-42)), tokenizer.Token());
+    EXPECT_EQ(infra::JsonToken::Token(infra::JsonBiggerInt(42, true)), tokenizer.Token());
 }
 
 TEST(JsonTokenizerTest, skip_whitespace_before_end)
@@ -250,6 +250,54 @@ TEST(JsonObjectIteratorTest, get_integer_value_from_iterator)
     infra::JsonObjectIterator iterator(object.begin());
 
     EXPECT_EQ(42, iterator->value.Get<int32_t>());
+}
+
+TEST(JsonObjectIteratorTest, get_maximum_integer_value_from_iterator)
+{
+    infra::JsonObject object(R"({ "key" : 2147483647 })");
+    infra::JsonObjectIterator iterator(object.begin());
+
+    EXPECT_EQ(2147483647, iterator->value.Get<int32_t>());
+}
+
+TEST(JsonObjectIteratorTest, get_minimum_integer_value_from_iterator)
+{
+    infra::JsonObject object(R"({ "key" : -2147483648 })");
+    infra::JsonObjectIterator iterator(object.begin());
+
+    EXPECT_EQ(-static_cast<int64_t>(2147483648), iterator->value.Get<int32_t>());
+}
+
+TEST(JsonObjectIteratorTest, get_bigger_integer_value_from_iterator)
+{
+    infra::JsonObject object(R"({ "key" : 123456789012 })");
+    infra::JsonObjectIterator iterator(object.begin());
+
+    EXPECT_EQ(infra::JsonBiggerInt(123456789012, false), iterator->value.Get<infra::JsonBiggerInt>());
+}
+
+TEST(JsonObjectIteratorTest, get_maximum_bigger_integer_value_from_iterator)
+{
+    infra::JsonObject object(R"({ "key" : 18446744073709551615 })");
+    infra::JsonObjectIterator iterator(object.begin());
+
+    EXPECT_EQ(infra::JsonBiggerInt(18446744073709551615, false), iterator->value.Get<infra::JsonBiggerInt>());
+}
+
+TEST(JsonObjectIteratorTest, get_minimum_bigger_integer_value_from_iterator)
+{
+    infra::JsonObject object(R"({ "key" : -18446744073709551615 })");
+    infra::JsonObjectIterator iterator(object.begin());
+
+    EXPECT_EQ(infra::JsonBiggerInt(18446744073709551615, true), iterator->value.Get<infra::JsonBiggerInt>());
+}
+
+TEST(JsonObjectIteratorTest, get_negative_bigger_integer_value_from_iterator)
+{
+    infra::JsonObject object(R"({ "key" : -123456789012 })");
+    infra::JsonObjectIterator iterator(object.begin());
+
+    EXPECT_EQ(infra::JsonBiggerInt(123456789012, true), iterator->value.Get<infra::JsonBiggerInt>());
 }
 
 TEST(JsonObjectIteratorTest, get_float_value_from_iterator)
