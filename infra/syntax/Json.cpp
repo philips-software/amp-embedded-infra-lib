@@ -281,6 +281,31 @@ namespace infra
         return nanoFractionalValue;
     }
 
+    JsonBiggerInt::JsonBiggerInt(uint64_t value, bool negative)
+        : value(value)
+        , negative(negative)
+    {}
+
+    bool JsonBiggerInt::operator==(const JsonBiggerInt& other) const
+    {
+        return value == other.value && negative == other.negative;
+    }
+
+    bool JsonBiggerInt::operator!=(const JsonBiggerInt& other) const
+    {
+        return !(*this == other);
+    }
+
+    uint64_t JsonBiggerInt::Value() const
+    {
+        return value;
+    }
+
+    bool JsonBiggerInt::Negative() const
+    {
+        return negative;
+    }
+
     infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, JsonString value)
     {
         for (auto c : value)
@@ -441,25 +466,6 @@ namespace infra
             return value.Raw();
         }
 
-        Integer::Integer(int32_t value)
-            : value(value)
-        {}
-
-        bool Integer::operator==(const Integer& other) const
-        {
-            return value == other.value;
-        }
-
-        bool Integer::operator!=(const Integer& other) const
-        {
-            return value != other.value;
-        }
-
-        int32_t Integer::Value() const
-        {
-            return value;
-        }
-
         Boolean::Boolean(bool value)
             : value(value)
         {}
@@ -578,14 +584,11 @@ namespace infra
 
         infra::BoundedConstString integer = objectString.substr(tokenStart, parseIndex - tokenStart);
 
-        int32_t value = 0;
+        uint64_t value = 0;
         for (std::size_t index = sign ? 1 : 0; index < integer.size(); ++index)
             value = value * 10 + integer[index] - '0';
 
-        if (sign)
-            value *= -1;
-
-        return JsonToken::Integer(value);
+        return JsonBiggerInt(value, sign);
     }
 
     JsonToken::Token JsonTokenizer::TryCreateIdentifierToken()
@@ -817,7 +820,7 @@ namespace infra
     {
         if (token.Is<JsonToken::String>())
             return infra::MakeOptional(JsonValue(token.Get<JsonToken::String>().Value()));
-        else if (token.Is<JsonToken::Integer>())
+        else if (token.Is<JsonBiggerInt>())
             return ReadIntegerOrFloat(token);
         else if (token.Is<JsonToken::Boolean>())
             return infra::MakeOptional(JsonValue(token.Get<JsonToken::Boolean>().Value()));
@@ -836,14 +839,20 @@ namespace infra
         if (tokenizer.Token().Is<JsonToken::Dot>())
         {
             auto fractional = tokenizer.Token();
-            if (fractional.Is<JsonToken::Integer>() && fractional.Get<JsonToken::Integer>().Value() >= 0)
-                return infra::MakeOptional(JsonValue(JsonFloat(token.Get<JsonToken::Integer>().Value(), fractional.Get<JsonToken::Integer>().Value())));
+            if (fractional.Is<JsonBiggerInt>() && !fractional.Get<JsonBiggerInt>().Negative())
+                return infra::MakeOptional(JsonValue(JsonFloat(static_cast<int32_t>(token.Get<JsonBiggerInt>().Value() * (token.Get<JsonBiggerInt>().Negative() ? -1 : 1)),
+                    static_cast<uint32_t>(fractional.Get<JsonBiggerInt>().Value()))));
 
             return infra::none;
         }
 
         tokenizer = current;
-        return infra::MakeOptional(JsonValue(token.Get<JsonToken::Integer>().Value()));
+
+        if ((!token.Get<JsonBiggerInt>().Negative() && token.Get<JsonBiggerInt>().Value() <= std::numeric_limits<int32_t>::max())
+            || (token.Get<JsonBiggerInt>().Negative() && token.Get<JsonBiggerInt>().Value() <= static_cast<uint64_t>(-static_cast<int64_t>(std::numeric_limits<int32_t>::min()))))
+            return infra::MakeOptional(JsonValue(static_cast<int32_t>(token.Get<JsonBiggerInt>().Value() * (token.Get<JsonBiggerInt>().Negative() ? -1 : 1))));
+        else
+            return infra::MakeOptional(JsonValue(token.Get<JsonBiggerInt>()));
     }
 
     infra::Optional<JsonValue> JsonIterator::ReadObjectValue(JsonToken::Token token)
@@ -1259,8 +1268,11 @@ namespace infra
                 stream << '"' << token.RawValue() << '"';
             }
 
-            void operator()(infra::JsonToken::Integer token)
+            void operator()(infra::JsonBiggerInt token)
             {
+                if (token.Negative())
+                    stream << '-';
+
                 stream << token.Value();
             }
 

@@ -92,6 +92,23 @@ namespace infra
         uint32_t nanoFractionalValue = 0;
     };
 
+    class JsonBiggerInt
+    {
+    public:
+        JsonBiggerInt() = default;
+        JsonBiggerInt(uint64_t value, bool negative);
+
+        bool operator==(const JsonBiggerInt& other) const;
+        bool operator!=(const JsonBiggerInt& other) const;
+
+        uint64_t Value() const;
+        bool Negative() const;
+
+    private:
+        uint64_t value = 0;
+        bool negative = false;
+    };
+
     namespace JsonToken
     {
         class End
@@ -200,20 +217,6 @@ namespace infra
             JsonString value;
         };
 
-        class Integer
-        {
-        public:
-            explicit Integer(int32_t value);
-
-            bool operator==(const Integer& other) const;
-            bool operator!=(const Integer& other) const;
-
-            int32_t Value() const;
-
-        private:
-            int32_t value;
-        };
-
         class Boolean
         {
         public:
@@ -228,7 +231,7 @@ namespace infra
             bool value;
         };
 
-        using Token = infra::Variant<End, Error, Colon, Comma, Dot, LeftBrace, RightBrace, LeftBracket, RightBracket, String, Integer, Boolean>;
+        using Token = infra::Variant<End, Error, Colon, Comma, Dot, LeftBrace, RightBrace, LeftBracket, RightBracket, String, JsonBiggerInt, Boolean>;
     }
 
     class JsonTokenizer
@@ -257,7 +260,7 @@ namespace infra
     class JsonObject;
     class JsonArray;
 
-    using JsonValue = infra::Variant<bool, int32_t, JsonString, JsonFloat, JsonObject, JsonArray>;
+    using JsonValue = infra::Variant<bool, int32_t, JsonBiggerInt, JsonString, JsonFloat, JsonObject, JsonArray>;
 
     class JsonObject
     {
@@ -369,7 +372,10 @@ namespace infra
     private:
         friend class JsonObject;
 
+    public:
         JsonObjectIterator();
+
+    private:
         JsonObjectIterator(JsonObject& object);
 
     public:
@@ -427,7 +433,10 @@ namespace infra
         template<class T>
             friend class JsonValueArrayIterator;
 
+    public:
         JsonArrayIterator();
+
+    private:
         explicit JsonArrayIterator(JsonArray& jsonArray);
 
     public:

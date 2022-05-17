@@ -48,9 +48,10 @@ TEST(JsonObjectFormatter, add_int)
         formatter.Add("intTag", 0);
         formatter.Add("uint32Tag", static_cast<uint32_t>(5));
         formatter.Add("int64Tag", static_cast<int64_t>(-10));
+        formatter.Add("bigger", infra::JsonBiggerInt(4, true));
     }
 
-    EXPECT_EQ(R"({ "intTag":0, "uint32Tag":5, "int64Tag":-10 })", string);
+    EXPECT_EQ(R"({ "intTag":0, "uint32Tag":5, "int64Tag":-10, "bigger":-4 })", string);
 }
 
 TEST(JsonObjectFormatter, add_const_char_ptr)
@@ -394,9 +395,10 @@ TEST(JsonArrayFormatter, add_int)
         formatter.Add(0);
         formatter.Add(static_cast<uint32_t>(5));
         formatter.Add(static_cast<int64_t>(-10));
+        formatter.Add(infra::JsonBiggerInt(4, true));
     }
 
-    EXPECT_EQ(R"([ 0, 5, -10 ])", string);
+    EXPECT_EQ(R"([ 0, 5, -10, -4 ])", string);
 }
 
 TEST(JsonArrayFormatter, add_const_char_ptr)
