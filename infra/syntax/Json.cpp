@@ -301,7 +301,6 @@ namespace infra
         return value;
     }
 
-
     bool JsonBiggerInt::Negative() const
     {
         return negative;
