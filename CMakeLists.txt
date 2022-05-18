@@ -42,7 +42,6 @@ ccola_project()
         upgrade
         lwip
         examples
-        ble
     )
 
 ccola_end_project()

@@ -8,6 +8,7 @@ ccola_package(services)
         network_bsd
         synchronous_util
         cucumber
+        ble
     )
 
 ccola_end_package()
