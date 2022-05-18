@@ -48,7 +48,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          export SONAR_PROJECT_VERSION=`grep -m 1 -o '".*"' Build/[Vv]ersion.h | tr -d '"'`
+          export SONAR_PROJECT_VERSION=`grep -m 1 -o '".*"' Build-Coverage/*/generated/[Vv]ersion.h | tr -d '"'`
           sonar-scanner -D sonar.host.url="${{ env.SONAR_SERVER_URL }}" -D sonar.cfamily.build-wrapper-output="${{ env.BUILD_WRAPPER_OUT_DIR }}"
   codeql:
     name: CodeQL
