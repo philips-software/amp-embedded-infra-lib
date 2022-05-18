@@ -13,47 +13,47 @@ namespace services
 
         enum class AdvType : uint8_t
         {
-            AdvInd,
-            AdvNonconnInd
+            advInd,
+            advNonconnInd
         };
 
         enum class AdvDataType : uint8_t
         {
-            Flags = 0x01u,
-            IncmpltList16BitServUuid = 0x02u,
-            CmpltList16BitServUuid = 0x03u,
-            IncmpltList32BitServUuid = 0x04u,
-            CmpltList32BitServUuid = 0x05u,
-            IncmpltList128BitServUuid = 0x06u,
-            CmpltList128BitServUuid = 0x07u,
-            ShortenedLocalName = 0x08u,
-            CompleteLocalName = 0x09u,
-            TxPowerLevel = 0x0au,
-            ClassOfDevice = 0x0du,
-            SecMgrTkValue = 0x10u,
-            SecMgrOobFlags = 0x11u,
-            SlaveConnInterval = 0x12u,
-            ServSolicit16BitUuidList = 0x14u,
-            ServSolicit128BitUuidList = 0x15u,
-            ServiceData = 0x16u,
-            PublicTargetAddress = 0x17u,
-            Appearance = 0x19u,
-            AdvertisingInterval = 0x1au,
-            LeRole = 0x1cu,
-            ServSolicit32BitUuidList = 0x1fu,
-            Uri = 0x24u,
-            ManufacturerSpecificData = 0xffu
+            flags = 0x01u,
+            incmpltList16BitServUuid = 0x02u,
+            cmpltList16BitServUuid = 0x03u,
+            incmpltList32BitServUuid = 0x04u,
+            cmpltList32BitServUuid = 0x05u,
+            incmpltList128BitServUuid = 0x06u,
+            cmpltList128BitServUuid = 0x07u,
+            shortenedLocalName = 0x08u,
+            completeLocalName = 0x09u,
+            txPowerLevel = 0x0au,
+            classOfDevice = 0x0du,
+            secMgrTkValue = 0x10u,
+            secMgrOobFlags = 0x11u,
+            slaveConnInterval = 0x12u,
+            servSolicit16BitUuidList = 0x14u,
+            servSolicit128BitUuidList = 0x15u,
+            serviceData = 0x16u,
+            publicTargetAddress = 0x17u,
+            appearance = 0x19u,
+            advertisingInterval = 0x1au,
+            leRole = 0x1cu,
+            servSolicit32BitUuidList = 0x1fu,
+            uri = 0x24u,
+            manufacturerSpecificData = 0xffu
         };
 
         using ScanRespDataType = AdvDataType;
 
         enum class AdvFlags : uint8_t
         {
-            LeLimitedDiscMode = 0x01u,
-            LeGeneralDiscMode = 0x02u,
-            BrEdrNotSupported = 0x04u,
-            LeBrEdrController = 0x08u,
-            LeBrEdrHost = 0x10u
+            leLimitedDiscMode = 0x01u,
+            leGeneralDiscMode = 0x02u,
+            brEdrNotSupported = 0x04u,
+            leBrEdrController = 0x08u,
+            leBrEdrHost = 0x10u
         };
 
         static constexpr uint8_t maxAdvertisementSize = 31;
