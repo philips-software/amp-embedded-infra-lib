@@ -9,55 +9,35 @@ namespace services
     class Gap
     {
     public:
-        using AdvIntMultiplier = uint16_t;
+        using AdvertisementIntervalMultiplier = uint16_t;
 
-        enum class AdvType : uint8_t
+        enum class AdvertisementType : uint8_t
         {
             advInd,
             advNonconnInd
         };
 
-        enum class AdvDataType : uint8_t
+        enum class AdvertisementDataType : uint8_t
         {
             flags = 0x01u,
-            incmpltList16BitServUuid = 0x02u,
-            cmpltList16BitServUuid = 0x03u,
-            incmpltList32BitServUuid = 0x04u,
-            cmpltList32BitServUuid = 0x05u,
-            incmpltList128BitServUuid = 0x06u,
-            cmpltList128BitServUuid = 0x07u,
-            shortenedLocalName = 0x08u,
             completeLocalName = 0x09u,
-            txPowerLevel = 0x0au,
-            classOfDevice = 0x0du,
-            secMgrTkValue = 0x10u,
-            secMgrOobFlags = 0x11u,
-            slaveConnInterval = 0x12u,
-            servSolicit16BitUuidList = 0x14u,
-            servSolicit128BitUuidList = 0x15u,
-            serviceData = 0x16u,
             publicTargetAddress = 0x17u,
-            appearance = 0x19u,
-            advertisingInterval = 0x1au,
-            leRole = 0x1cu,
-            servSolicit32BitUuidList = 0x1fu,
-            uri = 0x24u,
             manufacturerSpecificData = 0xffu
         };
 
-        using ScanRespDataType = AdvDataType;
+        using ScanResponseDataType = AdvertisementDataType;
 
-        enum class AdvFlags : uint8_t
+        enum class AdvertisementFlags : uint8_t
         {
-            leLimitedDiscMode = 0x01u,
-            leGeneralDiscMode = 0x02u,
+            leLimitedDiscoverableMode = 0x01u,
+            leGeneralDiscoverableMode = 0x02u,
             brEdrNotSupported = 0x04u,
             leBrEdrController = 0x08u,
             leBrEdrHost = 0x10u
         };
 
-        static constexpr uint8_t maxAdvertisementSize = 31;
-        static constexpr uint8_t maxScanResponseSize = 31;
+        static constexpr uint8_t maxAdvertisementDataSize = 31;
+        static constexpr uint8_t maxScanResponseDataSize = 31;
     };
 
     class GapPeripheral;
@@ -86,7 +66,7 @@ namespace services
         virtual hal::MacAddress GetPublicAddress() const = 0;
         virtual void SetAdvertisementData(infra::ConstByteRange data) = 0;
         virtual void SetScanResponseData(infra::ConstByteRange data) = 0;
-        virtual void Advertise(AdvType type, AdvIntMultiplier multiplier) = 0;
+        virtual void Advertise(AdvertisementType type, AdvertisementIntervalMultiplier multiplier) = 0;
         virtual void Standby() = 0;
     };
 }
