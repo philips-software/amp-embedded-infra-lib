@@ -26,8 +26,8 @@
       "description": "configures embeddedinfralib for coverage",
       "inherits": "Build-Test",
       "cacheVariables": {
-        "EMIL_ENABLE_COVERAGE": "ON",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "EMIL_ENABLE_COVERAGE": "On",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "On"
       },
       "generator": "Ninja"
     },
@@ -51,10 +51,28 @@
       "toolchainFile": "${sourceDir}/cmake/toolchain-arm-gcc.cmake",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_PREFIX_PATH": "${sourceDir}/Build-Host",
-        "EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE": "emil::"
+        "CMAKE_PREFIX_PATH": "${sourceDir}/Build-Host"
       },
       "generator": "Ninja"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
     }
   ]
 }
