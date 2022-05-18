@@ -59,7 +59,7 @@
   "testPresets": [
     {
       "name": "default",
-      "configurePreset": "default",
+      "configurePreset": "Build-Test",
       "output": {
         "outputOnFailure": true
       },
