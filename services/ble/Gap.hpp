@@ -1,5 +1,5 @@
-#ifndef BLE_INTERFACES_HPP
-#define BLE_INTERFACES_HPP
+#ifndef SERVICES_GAP_HPP
+#define SERVICES_GAP_HPP
 
 #include "hal/interfaces/MacAddress.hpp"
 #include "infra/util/Observer.hpp"

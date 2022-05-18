@@ -245,6 +245,24 @@ namespace infra
         *stream << '"' << tagName.Raw() << R"(":)" << tag;
     }
 
+    void JsonObjectFormatter::Add(const char* tagName, JsonBiggerInt tag)
+    {
+        InsertSeparation();
+        *stream << '"' << tagName << R"(":)";
+        if (tag.Negative())
+            *stream << "-";
+        *stream << tag.Value();
+    }
+
+    void JsonObjectFormatter::Add(JsonString tagName, JsonBiggerInt tag)
+    {
+        InsertSeparation();
+        *stream << '"' << tagName << R"(":)";
+        if (tag.Negative())
+            *stream << "-";
+        *stream << tag.Value();
+    }
+
     void JsonObjectFormatter::Add(const char* tagName, const char* tag)
     {
         InsertSeparation();
@@ -440,6 +458,14 @@ namespace infra
     {
         InsertSeparation();
         *stream << tag;
+    }
+
+    void JsonArrayFormatter::Add(JsonBiggerInt tag)
+    {
+        InsertSeparation();
+        if (tag.Negative())
+            *stream << "-";
+        *stream << tag.Value();
     }
 
     void JsonArrayFormatter::Add(const char* tag)

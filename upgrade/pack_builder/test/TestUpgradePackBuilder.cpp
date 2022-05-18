@@ -60,13 +60,22 @@ TEST_F(TestUpgradePackBuilder, Construction)
     application::UpgradePackBuilder upgradePackBuilder(headerInfo, std::move(inputs), signer);
 }
 
-TEST_F(TestUpgradePackBuilder, Status)
+TEST_F(TestUpgradePackBuilder, StatusDefault)
 {
     application::UpgradePackBuilder upgradePackBuilder(headerInfo, std::move(inputs), signer);
     std::vector<uint8_t> upgradePack = upgradePackBuilder.UpgradePack();
     const application::UpgradePackHeaderPrologue& prologue = reinterpret_cast<const application::UpgradePackHeaderPrologue&>(upgradePack.front());
 
     EXPECT_EQ(application::UpgradePackStatus::readyToDeploy, prologue.status);
+}
+
+TEST_F(TestUpgradePackBuilder, Status)
+{
+    application::UpgradePackBuilder upgradePackBuilder(headerInfo, std::move(inputs), signer, application::UpgradePackStatus::downloaded);
+    std::vector<uint8_t> upgradePack = upgradePackBuilder.UpgradePack();
+    const application::UpgradePackHeaderPrologue& prologue = reinterpret_cast<const application::UpgradePackHeaderPrologue&>(upgradePack.front());
+
+    EXPECT_EQ(application::UpgradePackStatus::downloaded, prologue.status);
 }
 
 TEST_F(TestUpgradePackBuilder, Magic)
