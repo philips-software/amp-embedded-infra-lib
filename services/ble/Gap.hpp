@@ -9,47 +9,35 @@ namespace services
     class Gap
     {
     public:
-        enum class AdvDataType : uint8_t
+        using AdvertisementIntervalMultiplier = uint16_t;
+
+        enum class AdvertisementType : uint8_t
         {
-            Flags = 0x01u,
-            IncmpltList16BitServUuid = 0x02u,
-            CmpltList16BitServUuid = 0x03u,
-            IncmpltList32BitServUuid = 0x04u,
-            CmpltList32BitServUuid = 0x05u,
-            IncmpltList128BitServUuid = 0x06u,
-            CmpltList128BitServUuid = 0x07u,
-            ShortenedLocalName = 0x08u,
-            CompleteLocalName = 0x09u,
-            TxPowerLevel = 0x0au,
-            ClassOfDevice = 0x0du,
-            SecMgrTkValue = 0x10u,
-            SecMgrOobFlags = 0x11u,
-            SlaveConnInterval = 0x12u,
-            ServSolicit16BitUuidList = 0x14u,
-            ServSolicit128BitUuidList = 0x15u,
-            ServiceData = 0x16u,
-            PublicTargetAddress = 0x17u,
-            Appearance = 0x19u,
-            AdvertisingInterval = 0x1au,
-            LeRole = 0x1cu,
-            ServSolicit_32BitUuidList = 0x1fu,
-            Uri = 0x24u,
-            ManufacturerSpecificData = 0xffu
+            advInd,
+            advNonconnInd
         };
 
-        using ScanRespDataType = AdvDataType;
-
-        enum class AdvFlags : uint8_t
+        enum class AdvertisementDataType : uint8_t
         {
-            LeLimitedDiscMode = 0x01u,
-            LeGeneralDiscMode = 0x02u,
-            BrEdrNotSupported = 0x04u,
-            LeBrEdrController = 0x08u,
-            LeBrEdrHost = 0x10u
+            flags = 0x01u,
+            completeLocalName = 0x09u,
+            publicTargetAddress = 0x17u,
+            manufacturerSpecificData = 0xffu
         };
 
-        static constexpr uint8_t maxAdvertisementSize = 31;
-        static constexpr uint8_t maxScanResponseSize = 31;
+        using ScanResponseDataType = AdvertisementDataType;
+
+        enum class AdvertisementFlags : uint8_t
+        {
+            leLimitedDiscoverableMode = 0x01u,
+            leGeneralDiscoverableMode = 0x02u,
+            brEdrNotSupported = 0x04u,
+            leBrEdrController = 0x08u,
+            leBrEdrHost = 0x10u
+        };
+
+        static constexpr uint8_t maxAdvertisementDataSize = 31;
+        static constexpr uint8_t maxScanResponseDataSize = 31;
     };
 
     class GapPeripheral;
@@ -78,7 +66,7 @@ namespace services
         virtual hal::MacAddress GetPublicAddress() const = 0;
         virtual void SetAdvertisementData(infra::ConstByteRange data) = 0;
         virtual void SetScanResponseData(infra::ConstByteRange data) = 0;
-        virtual void Advertise() = 0;
+        virtual void Advertise(AdvertisementType type, AdvertisementIntervalMultiplier multiplier) = 0;
         virtual void Standby() = 0;
     };
 }
