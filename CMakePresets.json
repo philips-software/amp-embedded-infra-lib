@@ -76,6 +76,11 @@
       "configurePreset": "Coverage"
     },
     {
+      "name": "MutationTesting",
+      "configuration": "Debug",
+      "configurePreset": "MutationTesting"
+    },
+    {
       "name": "Host-Debug",
       "configuration": "Debug",
       "configurePreset": "Host"
