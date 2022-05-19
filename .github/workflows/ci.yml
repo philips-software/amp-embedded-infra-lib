@@ -20,7 +20,7 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Build and Test
         run: |
           cmake -E make_directory Build && cd Build
@@ -36,7 +36,7 @@ jobs:
       BUILD_WRAPPER_OUT_DIR: build_wrapper_output
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0 # Disable shallow clone to enable blame information
       - uses: seanmiddleditch/gha-setup-ninja@v3
