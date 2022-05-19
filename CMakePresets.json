@@ -59,7 +59,7 @@
       "toolchainFile": "${sourceDir}/cmake/toolchain-arm-gcc.cmake",
       "cacheVariables": {
         "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo;MinSizeRel",
-        "CMAKE_PREFIX_PATH": "${sourceDir}/Build-Host"
+        "CMAKE_PREFIX_PATH": "${sourceDir}/Build/Host"
       },
       "generator": "Ninja Multi-Config"
     }
