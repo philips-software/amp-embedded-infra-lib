@@ -126,6 +126,8 @@ if (TARGET_ARCH_X86)
                     -g -O0 -grecord-command-line -fprofile-instr-generate -fcoverage-mapping
                     -fexperimental-new-pass-manager -fpass-plugin=/usr/lib/mull-ir-frontend-12
                 )
+
+                add_link_options(-fprofile-instr-generate)
             else()
                 message(FATAL_ERROR "Mutation testing is currently only supported for Clang/LLVM; not for ${CMAKE_CXX_COMPILER_ID}")
             endif()
