@@ -581,9 +581,7 @@ namespace infra
             return 0;
 
         auto size = encodedContents.size() / 4 * 3;
-        if (*(encodedContents.end() - 1) == '=')
-            --size;
-        if (*(encodedContents.end() - 2) == '=')
+        for (auto it = encodedContents.crbegin(); *it == '=' && it != encodedContents.crend(); ++it)
             --size;
 
         return size;
