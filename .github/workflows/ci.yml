@@ -30,6 +30,7 @@ jobs:
     strategy:
       matrix:
         gcc: ["5-2016-q3", "6-2017-q2", "7-2018-q2", "8-2019-q3"]
+        configuration: ["RelWithDebInfo"]
     steps:
       - uses: actions/checkout@v2
       - name: Install GNU Arm Embedded Toolchain ${{ matrix.gcc }}
@@ -39,9 +40,9 @@ jobs:
       - uses: seanmiddleditch/gha-setup-ninja@v3
       - uses: hendrikmuhs/ccache-action@v1
         with:
-          key: ${{ matrix.gcc }}
+          key: ${{ matrix.gcc }}-${{ matrix.configuration }}
       - run: |
           cmake --preset Host -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          cmake --build --preset Host
+          cmake --build --preset Host-${{ matrix.configuration }}
           cmake --preset Embedded -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          cmake --build --preset Embedded
+          cmake --build --preset Embedded-${{ matrix.configuration }}
