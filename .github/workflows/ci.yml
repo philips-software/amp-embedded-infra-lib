@@ -22,7 +22,7 @@ jobs:
       - name: Build and Test
         run: |
           cmake --preset ContinuousIntegration
-          cmake --preset ContinuousIntegration --build
+          cmake --build --preset ContinuousIntegration
           ctest --preset ContinuousIntegration
   embedded_build:
     name: Embedded Build
@@ -42,6 +42,6 @@ jobs:
           key: ${{ matrix.gcc }}
       - run: |
           cmake --preset Host -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          cmake --preset Host --build
+          cmake --build --preset Host
           cmake --preset Embedded -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          cmake --preset Embedded --build
+          cmake --build --preset Embedded
