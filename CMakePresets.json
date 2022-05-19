@@ -71,8 +71,18 @@
       "configurePreset": "ContinuousIntegration"
     },
     {
+      "name": "Coverage",
+      "configuration": "Debug",
+      "configurePreset": "Coverage"
+    },
+    {
       "name": "Host-Debug",
       "configuration": "Debug",
+      "configurePreset": "Host"
+    },
+    {
+      "name": "Host-Release",
+      "configuration": "Release",
       "configurePreset": "Host"
     },
     {
@@ -88,6 +98,11 @@
     {
       "name": "Embedded-Debug",
       "configuration": "Debug",
+      "configurePreset": "Embedded"
+    },
+    {
+      "name": "Embedded-Release",
+      "configuration": "Release",
       "configurePreset": "Embedded"
     },
     {
