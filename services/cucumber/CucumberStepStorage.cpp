@@ -34,19 +34,15 @@ namespace
     std::size_t SkipBooleanArgument(Iterator& iterator, Iterator end)
     {
         std::size_t skippedSize = 0;
+        const infra::BoundedConstString trueString{ "true" };
+        const infra::BoundedConstString falseString{ "false" };
 
-        if (*iterator == 't')
-        {
-            if (*++iterator == 'r' && *++iterator == 'u' && *++iterator == 'e')
-                skippedSize = 4;
-        }
-        else if (*iterator == 'f')
-        {
-            if (*++iterator == 'a' && *++iterator == 'l' && *++iterator == 's' && *++iterator == 'e')
-                skippedSize = 5;
-        }
+        if (infra::BoundedConstString(iterator, trueString.size()) == trueString)
+            skippedSize = trueString.size();
+        else if (infra::BoundedConstString(iterator, falseString.size()) == falseString)
+            skippedSize = falseString.size();
 
-        ++iterator;
+        iterator += skippedSize;
 
         return skippedSize;
     }
@@ -84,21 +80,21 @@ namespace services
         {
             if (*stepNameIterator != *nameToMatchIterator)
             {
-                constexpr auto intMarker = "%d";
-                constexpr auto boolMarker = "%b";
-                constexpr auto stringMarker = R"('%s')";
+                const infra::BoundedConstString intMarker{ "%d" };
+                const infra::BoundedConstString boolMarker{ "%b" };
+                const infra::BoundedConstString stringMarker{ R"('%s')" };
 
-                if (infra::BoundedConstString(stepNameIterator - 1, std::strlen(stringMarker)) == stringMarker)
+                if (infra::BoundedConstString(stepNameIterator - 1, stringMarker.size()) == stringMarker)
                 {
                     sizeOffset += SkipStringArgument(nameToMatchIterator, nameToMatch.end());
                     sizeOffset -= SkipMarker(stepNameIterator, stepName.end());
                 }
-                else if (infra::BoundedConstString(stepNameIterator, std::strlen(intMarker)) == intMarker)
+                else if (infra::BoundedConstString(stepNameIterator, intMarker.size()) == intMarker)
                 {
                     sizeOffset += SkipIntegerArgument(nameToMatchIterator, nameToMatch.end());
                     sizeOffset -= SkipMarker(stepNameIterator, stepName.end());
                 }
-                else if (infra::BoundedConstString(stepNameIterator, std::strlen(boolMarker)) == boolMarker)
+                else if (infra::BoundedConstString(stepNameIterator, boolMarker.size()) == boolMarker)
                 {
                     sizeOffset += SkipBooleanArgument(nameToMatchIterator, nameToMatch.end());
                     sizeOffset -= SkipMarker(stepNameIterator, stepName.end());
