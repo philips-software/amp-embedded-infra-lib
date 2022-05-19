@@ -9,22 +9,20 @@
     {
       "name": "defaults",
       "hidden": true,
-      "binaryDir": "${sourceDir}/${presetName}"
+      "binaryDir": "${sourceDir}/Build/${presetName}"
     },
     {
-      "name": "Build-Test",
-      "displayName": "test config",
-      "description": "configures embeddedinfralib for testing",
+      "name": "ContinuousIntegration",
+      "displayName": "Configuration for Continuous Integration",
       "inherits": "defaults",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
     },
     {
-      "name": "Build-Coverage",
-      "displayName": "coverage config",
-      "description": "configures embeddedinfralib for coverage",
-      "inherits": "Build-Test",
+      "name": "Coverage",
+      "displayName": "Configuration for Code Coverage",
+      "inherits": "ContinuousIntegration",
       "cacheVariables": {
         "EMIL_ENABLE_COVERAGE": "On",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "On"
@@ -32,40 +30,108 @@
       "generator": "Ninja"
     },
     {
-      "name": "Build-Host",
-      "displayName": "host config",
-      "description": "configures embeddedinfralib for tooling",
-      "inherits": "defaults",
+      "name": "MutationTesting",
+      "displayName": "Configuration for Mutation Testing",
+      "inherits": "ContinuousIntegration",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "EMIL_BUILD_TESTS": "Off",
-        "EMIL_BUILD_EXAMPLES": "Off"
+        "EMIL_ENABLE_MUTATION_TESTING": "On",
+        "CMAKE_C_COMPILER": "clang-12",
+        "CMAKE_CXX_COMPILER": "clang++-12",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "On"
       },
       "generator": "Ninja"
     },
     {
-      "name": "Build-Embedded",
-      "displayName": "embedded config",
-      "description": "configures embeddedinfralib for target libraries",
+      "name": "Host",
+      "displayName": "Configuration for Host Tooling",
+      "inherits": "defaults",
+      "cacheVariables": {
+        "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo;MinSizeRel",
+        "EMIL_BUILD_TESTS": "Off",
+        "EMIL_BUILD_EXAMPLES": "Off"
+      },
+      "generator": "Ninja Multi-Config"
+    },
+    {
+      "name": "Embedded",
+      "displayName": "Configuration for Embedded",
       "inherits": "defaults",
       "toolchainFile": "${sourceDir}/cmake/toolchain-arm-gcc.cmake",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo;MinSizeRel",
         "CMAKE_PREFIX_PATH": "${sourceDir}/Build-Host"
       },
-      "generator": "Ninja"
+      "generator": "Ninja Multi-Config"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "ContinuousIntegration",
+      "configuration": "Debug",
+      "configurePreset": "ContinuousIntegration"
+    },
+    {
+      "name": "Host-Debug",
+      "configuration": "Debug",
+      "configurePreset": "Host"
+    },
+    {
+      "name": "Host-RelWithDebInfo",
+      "configuration": "RelWithDebInfo",
+      "configurePreset": "Host"
+    },
+    {
+      "name": "Host-MinSizeRel",
+      "configuration": "MinSizeRel",
+      "configurePreset": "Host"
+    },
+    {
+      "name": "Embedded-Debug",
+      "configuration": "Debug",
+      "configurePreset": "Embedded"
+    },
+    {
+      "name": "Embedded-RelWithDebInfo",
+      "configuration": "RelWithDebInfo",
+      "configurePreset": "Embedded"
+    },
+    {
+      "name": "Embedded-MinSizeRel",
+      "configuration": "MinSizeRel",
+      "configurePreset": "Embedded"
     }
   ],
   "testPresets": [
     {
-      "name": "default",
-      "configurePreset": "Build-Test",
+      "name": "defaults",
+      "hidden": true,
       "output": {
         "outputOnFailure": true
       },
       "execution": {
         "noTestsAction": "error",
         "stopOnFailure": true
+      }
+    },
+    {
+      "name": "ContinuousIntegration",
+      "configurePreset": "ContinuousIntegration",
+      "configuration": "Debug",
+      "inherits": "defaults"
+    },
+    {
+      "name": "Coverage",
+      "configurePreset": "Coverage",
+      "configuration": "Debug",
+      "inherits": "defaults"
+    },
+    {
+      "name": "MutationTesting",
+      "configurePreset": "MutationTesting",
+      "configuration": "Debug",
+      "inherits": "defaults",
+      "output": {
+        "verbosity": "verbose"
       }
     }
   ]

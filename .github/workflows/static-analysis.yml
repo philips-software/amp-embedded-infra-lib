@@ -38,9 +38,9 @@ jobs:
       - uses: hendrikmuhs/ccache-action@v1
       - name: Build
         run: |
-          cmake --preset Build-Coverage -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build Build-Coverage
-          ctest --test-dir Build-Coverage --quiet --no-compress-output --output-on-failure
+          cmake --preset Coverage -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --preset Coverage --build
+          ctest --preset Coverage
           gcovr --sonarqube=coverage.xml --exclude-lines-by-pattern '.*assert\(.*\);|.*really_assert\(.*\);' --exclude-unreachable-branches --exclude-throw-branches -j 2 --exclude=.*/generated/.* --exclude=.*/examples/.* --exclude=.*/external/.* --exclude=.*/lwip/.* --exclude=.*/tracing/.* --exclude=.*/test/.*
       - name: Analysis
         env:
@@ -48,7 +48,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          export SONAR_PROJECT_VERSION=`grep -m 1 -o '".*"' Build-Coverage/*/generated/[Vv]ersion.h | tr -d '"'`
+          export SONAR_PROJECT_VERSION=`grep -m 1 -o '".*"' Build/Coverage/*/generated/[Vv]ersion.h | tr -d '"'`
           sonar-scanner -D sonar.host.url="${{ env.SONAR_SERVER_URL }}" -D sonar.cfamily.build-wrapper-output="${{ env.BUILD_WRAPPER_OUT_DIR }}"
   codeql:
     name: CodeQL
@@ -62,7 +62,7 @@ jobs:
         with:
           languages: cpp
       - run: |
-          cmake -B Build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          cmake --build Build
+          cmake --preset ContinuousIntegration -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake --preset ContinuousIntegration --build
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v1

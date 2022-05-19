@@ -21,9 +21,9 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build and Test
         run: |
-          cmake --preset Build-Test
-          cmake --build Build-Test
-          ctest --test-dir Build-Test --quiet --no-compress-output --output-on-failure
+          cmake --preset ContinuousIntegration
+          cmake --preset ContinuousIntegration --build
+          ctest --preset ContinuousIntegration
   embedded_build:
     name: Embedded Build
     runs-on: ubuntu-latest
@@ -41,7 +41,7 @@ jobs:
         with:
           key: ${{ matrix.gcc }}
       - run: |
-          cmake --preset Build-Host -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          cmake --build Build-Host
-          cmake --preset Build-Embedded -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          cmake --build Build-Embedded
+          cmake --preset Host -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake --preset Host --build
+          cmake --preset Embedded -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake --preset Embedded --build
