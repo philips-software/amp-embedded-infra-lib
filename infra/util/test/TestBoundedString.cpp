@@ -728,6 +728,17 @@ TEST(BoundedStringTest, TestByteRangeAsString)
     EXPECT_EQ(boundedConstString[3], '\0');
 }
 
+TEST(BoundedStringTest, TestStdStringAsByteRange)
+{
+    std::string string{ "abc" };
+    const auto data = infra::StdStringAsByteRange(string);
+
+    EXPECT_EQ(3, data.size());
+    EXPECT_EQ('a', data[0]);
+    EXPECT_EQ('b', data[1]);
+    EXPECT_EQ('c', data[2]);
+}
+
 TEST(BoundedStringTest, TestPrintTo1)
 {
     std::ostringstream stream;
