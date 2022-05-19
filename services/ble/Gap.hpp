@@ -9,7 +9,9 @@ namespace services
     class Gap
     {
     public:
-        using AdvertisementIntervalMultiplier = uint16_t;
+        using AdvertisementIntervalMultiplier = uint16_t; // Interval = Multiplier * 0.625 ms.
+        static constexpr AdvertisementIntervalMultiplier advertisementIntervalMultiplierMin = 0x20u; // 20 ms
+        static constexpr AdvertisementIntervalMultiplier advertisementIntervalMultiplierMax = 0x4000u; // 10240 ms
 
         enum class AdvertisementType : uint8_t
         {
