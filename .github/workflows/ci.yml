@@ -8,6 +8,7 @@ on:
     types: [opened, synchronize, reopened]
 
 env:
+  CMAKE_BUILD_PARALLEL_LEVEL: 2
   GTEST_COLOR: 1
 jobs:
   host_build_test:
