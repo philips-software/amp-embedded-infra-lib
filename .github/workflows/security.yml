@@ -1,5 +1,5 @@
 ---
-name: Scorecards supply-chain security
+name: Security
 
 on:
   branch_protection_rule:
@@ -12,7 +12,7 @@ permissions: read-all
 
 jobs:
   analysis:
-    name: Scorecards analysis
+    name: OSSF Scorecards
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -26,10 +26,10 @@ jobs:
       - name: Analysis
         uses: ossf/scorecard-action@c1aec4ac820532bab364f02a81873c555a0ba3a1 # v1.0.4
         with:
-          results_file: results.sarif
+          results_file: scorecards.sarif
           results_format: sarif
           repo_token: ${{ secrets.SCORECARD_READ_TOKEN }}
           publish_results: true
       - uses: github/codeql-action/upload-sarif@5f532563584d71fdef14ee64d17bafb34f751ce5 # v1.0.26
         with:
-          sarif_file: results.sarif
+          sarif_file: scorecards.sarif
