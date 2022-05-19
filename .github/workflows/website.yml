@@ -22,7 +22,7 @@ jobs:
           antora_generator: "antora-site-generator-lunr"
           antora_docsearch_enabled: "true"
       - name: Store Antora Site
-        uses: actions/upload-artifact@v1.0.0
+        uses: actions/upload-artifact@v3
         with:
           name: antora
           path: "${{ github.workspace }}/build/${{ env.SITE_DIR }}"
