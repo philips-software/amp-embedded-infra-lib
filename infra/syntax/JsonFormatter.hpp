@@ -22,9 +22,9 @@ namespace infra
 
         explicit JsonObjectFormatter(infra::TextOutputStream& stream);
         JsonObjectFormatter(const JsonObjectFormatter& other) = delete;
-        JsonObjectFormatter(JsonObjectFormatter&& other);
+        JsonObjectFormatter(JsonObjectFormatter&& other) noexcept;
         JsonObjectFormatter& operator=(const JsonObjectFormatter& other) = delete;
-        JsonObjectFormatter& operator=(JsonObjectFormatter&& other);
+        JsonObjectFormatter& operator=(JsonObjectFormatter&& other) noexcept;
         ~JsonObjectFormatter();
 
         void Add(const char* tagName, bool tag);
@@ -72,9 +72,9 @@ namespace infra
 
         explicit JsonArrayFormatter(infra::TextOutputStream& stream);
         JsonArrayFormatter(const JsonArrayFormatter& other) = delete;
-        JsonArrayFormatter(JsonArrayFormatter&& other);
+        JsonArrayFormatter(JsonArrayFormatter&& other) noexcept;
         JsonArrayFormatter& operator=(const JsonArrayFormatter& other) = delete;
-        JsonArrayFormatter& operator=(JsonArrayFormatter&& other);
+        JsonArrayFormatter& operator=(JsonArrayFormatter&& other) noexcept;
         ~JsonArrayFormatter();
 
         void Add(bool tag);
@@ -103,9 +103,9 @@ namespace infra
     public:
         explicit JsonStringStream(infra::TextOutputStream& stream);
         JsonStringStream(const JsonStringStream& other) = delete;
-        JsonStringStream(JsonStringStream&& other);
+        JsonStringStream(JsonStringStream&& other) noexcept;
         JsonStringStream& operator=(const JsonStringStream& other) = delete;
-        JsonStringStream& operator=(JsonStringStream&& other);
+        JsonStringStream& operator=(JsonStringStream&& other) noexcept;
         ~JsonStringStream();
 
     private:

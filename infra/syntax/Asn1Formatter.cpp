@@ -180,14 +180,14 @@ namespace infra
         , sizeMarker(sizeMarker)
     {}
 
-    Asn1ContainerFormatter::Asn1ContainerFormatter(Asn1ContainerFormatter&& other)
+    Asn1ContainerFormatter::Asn1ContainerFormatter(Asn1ContainerFormatter&& other) noexcept
         : Asn1Formatter(other.stream)
         , sizeMarker(other.sizeMarker)
     {
         other.sizeMarker = std::numeric_limits<std::size_t>::max();
     }
 
-    Asn1ContainerFormatter& Asn1ContainerFormatter::operator=(Asn1ContainerFormatter&& other)
+    Asn1ContainerFormatter& Asn1ContainerFormatter::operator=(Asn1ContainerFormatter&& other) noexcept
     {
         sizeMarker = other.sizeMarker;
         other.sizeMarker = std::numeric_limits<std::size_t>::max();

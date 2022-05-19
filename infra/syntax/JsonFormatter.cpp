@@ -183,13 +183,13 @@ namespace infra
         *this->stream << "{ ";
     }
 
-    JsonObjectFormatter::JsonObjectFormatter(JsonObjectFormatter&& other)
+    JsonObjectFormatter::JsonObjectFormatter(JsonObjectFormatter&& other) noexcept
         : stream(other.stream)
     {
         other.stream = nullptr;
     }
 
-    JsonObjectFormatter& JsonObjectFormatter::operator=(JsonObjectFormatter&& other)
+    JsonObjectFormatter& JsonObjectFormatter::operator=(JsonObjectFormatter&& other) noexcept
     {
         stream = other.stream;
         other.stream = nullptr;
@@ -416,13 +416,13 @@ namespace infra
         *this->stream << "[ ";
     }
 
-    JsonArrayFormatter::JsonArrayFormatter(JsonArrayFormatter&& other)
+    JsonArrayFormatter::JsonArrayFormatter(JsonArrayFormatter&& other) noexcept
         : stream(other.stream)
     {
         other.stream = nullptr;
     }
 
-    JsonArrayFormatter& JsonArrayFormatter::operator=(JsonArrayFormatter&& other)
+    JsonArrayFormatter& JsonArrayFormatter::operator=(JsonArrayFormatter&& other) noexcept
     {
         stream = other.stream;
         other.stream = nullptr;
@@ -515,13 +515,13 @@ namespace infra
         : TextOutputStream(stream)
     {}
 
-    JsonStringStream::JsonStringStream(JsonStringStream&& other)
+    JsonStringStream::JsonStringStream(JsonStringStream&& other) noexcept
         : TextOutputStream(std::move(other))
     {
         other.owned = false;
     }
 
-    JsonStringStream& JsonStringStream::operator=(JsonStringStream&& other)
+    JsonStringStream& JsonStringStream::operator=(JsonStringStream&& other) noexcept
     {
         owned = other.owned;
         other.owned = false;

@@ -13,7 +13,7 @@ namespace infra
     public:
         ProtoLengthDelimitedFormatter(ProtoFormatter& formatter, uint32_t fieldNumber);
         ProtoLengthDelimitedFormatter(const ProtoLengthDelimitedFormatter& other) = delete;
-        ProtoLengthDelimitedFormatter(ProtoLengthDelimitedFormatter&& other);
+        ProtoLengthDelimitedFormatter(ProtoLengthDelimitedFormatter&& other) noexcept;
         ProtoLengthDelimitedFormatter& operator=(const ProtoLengthDelimitedFormatter& other) = delete;
         ~ProtoLengthDelimitedFormatter();
 

@@ -86,13 +86,13 @@ namespace infra
             *stream << "</" << tagName << ">";
     }
 
-    XmlTagFormatter::XmlTagFormatter(XmlTagFormatter&& other)
+    XmlTagFormatter::XmlTagFormatter(XmlTagFormatter&& other) noexcept
         : stream(other.stream)
     {
         other.stream = infra::none;
     }
 
-    XmlTagFormatter& XmlTagFormatter::operator=(XmlTagFormatter&& other)
+    XmlTagFormatter& XmlTagFormatter::operator=(XmlTagFormatter&& other) noexcept
     {
         stream = other.stream;
         other.stream = infra::none;

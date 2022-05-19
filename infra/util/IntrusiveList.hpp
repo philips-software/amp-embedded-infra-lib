@@ -61,9 +61,9 @@ namespace infra
         template<class InputIterator>
             IntrusiveList(InputIterator first, InputIterator last);
         IntrusiveList(const IntrusiveList&) = delete;
-        IntrusiveList(IntrusiveList&& other);
+        IntrusiveList(IntrusiveList&& other) noexcept;
         IntrusiveList& operator=(const IntrusiveList&) = delete;
-        IntrusiveList& operator=(IntrusiveList&& other);
+        IntrusiveList& operator=(IntrusiveList&& other) noexcept;
         ~IntrusiveList();
 
     public:
@@ -106,7 +106,7 @@ namespace infra
         template<class InputIterator>
             void assign(InputIterator first, InputIterator last);
 
-        void swap(IntrusiveList& other);
+        void swap(IntrusiveList& other) noexcept;
 
         void clear();
 
@@ -125,7 +125,7 @@ namespace infra
     };
 
     template<class T>
-        void swap(IntrusiveList<T>& x, IntrusiveList<T>& y);
+        void swap(IntrusiveList<T>& x, IntrusiveList<T>& y) noexcept;
 
     namespace detail
     {
@@ -188,7 +188,7 @@ namespace infra
     }
 
     template<class T>
-    IntrusiveList<T>::IntrusiveList(IntrusiveList&& other)
+    IntrusiveList<T>::IntrusiveList(IntrusiveList&& other) noexcept
         : numberOfElements(0)
         , beginNode(&endNode)
     {
@@ -196,7 +196,7 @@ namespace infra
     }
 
     template<class T>
-    IntrusiveList<T>& IntrusiveList<T>::operator=(IntrusiveList&& other)
+    IntrusiveList<T>& IntrusiveList<T>::operator=(IntrusiveList&& other) noexcept
     {
         clear();
         numberOfElements = other.numberOfElements;
@@ -428,7 +428,7 @@ namespace infra
     }
 
     template<class T>
-    void IntrusiveList<T>::swap(IntrusiveList& other)
+    void IntrusiveList<T>::swap(IntrusiveList& other) noexcept
     {
         using std::swap;
         std::swap(endNode, other.endNode);
@@ -491,7 +491,7 @@ namespace infra
     }
 
     template<class T>
-    void swap(IntrusiveList<T>& x, IntrusiveList<T>& y)
+    void swap(IntrusiveList<T>& x, IntrusiveList<T>& y) noexcept
     {
         x.swap(y);
     }

@@ -47,8 +47,8 @@ namespace infra
         explicit ClaimerBase(ClaimableResource& resource);
         ClaimerBase(const ClaimerBase& other) = delete;
         ClaimerBase& operator=(const ClaimerBase& other) = delete;
-        ClaimerBase(ClaimerBase&& other);
-        ClaimerBase& operator=(ClaimerBase&& other);
+        ClaimerBase(ClaimerBase&& other) noexcept;
+        ClaimerBase& operator=(ClaimerBase&& other) noexcept;
 
     protected:
         ~ClaimerBase();

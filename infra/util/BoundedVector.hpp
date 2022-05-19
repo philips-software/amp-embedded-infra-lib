@@ -47,7 +47,7 @@ namespace infra
         ~BoundedVector();
 
         BoundedVector& operator=(const BoundedVector& other);
-        BoundedVector& operator=(BoundedVector&& other);
+        BoundedVector& operator=(BoundedVector&& other) noexcept;
         void AssignFromStorage(const BoundedVector& other);
         void AssignFromStorage(BoundedVector&& other);
 
@@ -105,7 +105,7 @@ namespace infra
         iterator erase(iterator position);
         iterator erase(iterator first, iterator last);
 
-        void swap(BoundedVector& other);
+        void swap(BoundedVector& other) noexcept;
 
         void clear();
 
@@ -131,7 +131,7 @@ namespace infra
     };
 
     template<class T>
-        void swap(BoundedVector<T>& x, BoundedVector<T>& y);
+        void swap(BoundedVector<T>& x, BoundedVector<T>& y) noexcept;
 
     template<class T>
         MemoryRange<T> MakeRange(infra::BoundedVector<T>& container);
@@ -208,7 +208,7 @@ namespace infra
     }
 
     template<class T>
-    BoundedVector<T>& BoundedVector<T>::operator=(BoundedVector<T>&& other)
+    BoundedVector<T>& BoundedVector<T>::operator=(BoundedVector<T>&& other) noexcept
     {
         clear();
 
@@ -542,7 +542,7 @@ namespace infra
     }
 
     template<class T>
-    void BoundedVector<T>::swap(BoundedVector& other)
+    void BoundedVector<T>::swap(BoundedVector& other) noexcept
     {
         using std::swap;
 
@@ -651,7 +651,7 @@ namespace infra
     }
 
     template<class T>
-    void swap(BoundedVector<T>& x, BoundedVector<T>& y)
+    void swap(BoundedVector<T>& x, BoundedVector<T>& y) noexcept
     {
         x.swap(y);
     }

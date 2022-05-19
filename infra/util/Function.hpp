@@ -174,7 +174,7 @@ namespace infra
     extern const infra::Function<void()> emptyFunction;
 
     template<std::size_t ExtraSize, class Result, class... Args>
-        void swap(Function<Result(Args...), ExtraSize>& x, Function<Result(Args...), ExtraSize>& y);
+        void swap(Function<Result(Args...), ExtraSize>& x, Function<Result(Args...), ExtraSize>& y) noexcept;
 
     template<std::size_t ExtraSize, class Result, class... Args>
         bool operator==(const Function<Result(Args...), ExtraSize>& f, std::nullptr_t);
@@ -430,7 +430,7 @@ namespace infra
     }
 
     template<std::size_t ExtraSize, class Result, class... Args>
-    void swap(Function<Result(Args...), ExtraSize>& x, Function<Result(Args...), ExtraSize>& y)
+    void swap(Function<Result(Args...), ExtraSize>& x, Function<Result(Args...), ExtraSize>& y) noexcept
     {
         x.Swap(y);
     }

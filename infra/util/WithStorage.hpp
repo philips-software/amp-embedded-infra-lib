@@ -31,12 +31,12 @@ namespace infra
             WithStorage(std::initializer_list<T> initializerList, Args&&... args);
 
         WithStorage(const WithStorage& other);
-        WithStorage(WithStorage&& other);
+        WithStorage(WithStorage&& other) noexcept;
 
         ~WithStorage() = default;
 
         WithStorage& operator=(const WithStorage& other);
-        WithStorage& operator=(WithStorage&& other);
+        WithStorage& operator=(WithStorage&& other) noexcept;
 
         template<class T>
             WithStorage& operator=(T&& value);
@@ -44,7 +44,12 @@ namespace infra
         const StorageType& Storage() const;
         StorageType& Storage();
 
-        friend void swap(WithStorage& x, WithStorage& y) { using std::swap; swap(static_cast<Base&>(x), static_cast<Base&>(y)); }
+        friend void swap(WithStorage& x, WithStorage& y) noexcept
+        {
+            using std::swap;
+            
+            swap(static_cast<Base&>(x), static_cast<Base&>(y));
+        }
     };
 
 #ifdef _MSC_VER
@@ -94,7 +99,7 @@ namespace infra
     {}
 
     template<class Base, class StorageType>
-    WithStorage<Base, StorageType>::WithStorage(WithStorage&& other)
+    WithStorage<Base, StorageType>::WithStorage(WithStorage&& other) noexcept
         : detail::StorageHolder<StorageType, Base>()
         , Base(detail::StorageHolder<StorageType, Base>::storage, std::move(other))
     {}
@@ -107,7 +112,7 @@ namespace infra
     }
 
     template<class Base, class StorageType>
-    WithStorage<Base, StorageType>& WithStorage<Base, StorageType>::operator=(WithStorage&& other)
+    WithStorage<Base, StorageType>& WithStorage<Base, StorageType>::operator=(WithStorage&& other) noexcept
     {
         this->AssignFromStorage(std::move(other));
         return *this;
