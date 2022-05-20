@@ -25,6 +25,7 @@
       "inherits": "ContinuousIntegration",
       "cacheVariables": {
         "EMIL_ENABLE_COVERAGE": "On",
+        "EMIL_ENABLE_TEST_AUTO_DISCOVERY": "On",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "On"
       },
       "generator": "Ninja"
