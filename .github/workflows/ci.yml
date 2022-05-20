@@ -40,7 +40,7 @@ jobs:
         with:
           fetch-depth: 0 # Disable shallow clone to enable blame information
       - uses: seanmiddleditch/gha-setup-ninja@v3
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v3
       - uses: BSFishy/pip-action@v1
         with:
           packages: gcovr==5.0
