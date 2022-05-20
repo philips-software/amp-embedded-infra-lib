@@ -137,7 +137,7 @@ endif()
 
 function(emil_add_test target)
     if (EMIL_BUILD_TESTS)
-        if (EMIL_TEST_AUTO_DISCOVERY)
+        if (EMIL_ENABLE_TEST_AUTO_DISCOVERY)
             gtest_discover_tests(${target}} AUTO)
         elseif(EMIL_ENABLE_MUTATION_TESTING)
             add_test(NAME ${target} COMMAND mull-runner-12 $<TARGET_FILE:${target}>)
