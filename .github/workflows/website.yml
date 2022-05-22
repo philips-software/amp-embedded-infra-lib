@@ -35,7 +35,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Retrieve Antora Site
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v3
         with:
           name: antora
           path: "${{ github.workspace }}/${{ env.SITE_DIR }}"
