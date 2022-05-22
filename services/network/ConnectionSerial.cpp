@@ -22,7 +22,7 @@ namespace services
                 if (!receiveQueue.Full())
                     receiveQueue.AddFromInterrupt(byte);
                 else
-                    abort();
+                    std::abort();
         });
     }
 

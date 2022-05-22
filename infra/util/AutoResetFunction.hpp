@@ -19,7 +19,7 @@ namespace infra
         AutoResetFunction() = default;
         explicit AutoResetFunction(std::nullptr_t);
         AutoResetFunction(const AutoResetFunction& other) = delete;
-        AutoResetFunction(AutoResetFunction&& other);
+        AutoResetFunction(AutoResetFunction&& other) noexcept;
 
         template<class F>
             AutoResetFunction(F f);
@@ -27,7 +27,7 @@ namespace infra
         ~AutoResetFunction() = default;
 
         AutoResetFunction& operator=(const AutoResetFunction& other) = delete;
-        AutoResetFunction& operator=(AutoResetFunction&& other);
+        AutoResetFunction& operator=(AutoResetFunction&& other) noexcept;
         AutoResetFunction& operator=(std::nullptr_t);
 
         explicit operator bool() const;
@@ -43,7 +43,7 @@ namespace infra
     };
 
     template<std::size_t ExtraSize, class Result, class... Args>
-        void swap(AutoResetFunction<Result(Args...), ExtraSize>& x, AutoResetFunction<Result(Args...), ExtraSize>& y);
+        void swap(AutoResetFunction<Result(Args...), ExtraSize>& x, AutoResetFunction<Result(Args...), ExtraSize>& y) noexcept;
 
     template<std::size_t ExtraSize, class Result, class... Args>
         bool operator==(const AutoResetFunction<Result(Args...), ExtraSize>& f, std::nullptr_t);
@@ -61,7 +61,7 @@ namespace infra
     {}
 
     template<std::size_t ExtraSize, class Result, class... Args>
-    AutoResetFunction<Result(Args...), ExtraSize>::AutoResetFunction(AutoResetFunction&& other)
+    AutoResetFunction<Result(Args...), ExtraSize>::AutoResetFunction(AutoResetFunction&& other) noexcept
         : function(other.function)
     {
         other.function = nullptr;
@@ -81,7 +81,7 @@ namespace infra
     }
 
     template<std::size_t ExtraSize, class Result, class... Args>
-    AutoResetFunction<Result(Args...), ExtraSize>& AutoResetFunction<Result(Args...), ExtraSize>::operator=(AutoResetFunction&& other)
+    AutoResetFunction<Result(Args...), ExtraSize>& AutoResetFunction<Result(Args...), ExtraSize>::operator=(AutoResetFunction&& other) noexcept
     {
         function = other.function;
         other.function = nullptr;
@@ -121,7 +121,7 @@ namespace infra
     }
 
     template<std::size_t ExtraSize, class Result, class... Args>
-    void swap(AutoResetFunction<Result(Args...), ExtraSize>& x, AutoResetFunction<Result(Args...), ExtraSize>& y)
+    void swap(AutoResetFunction<Result(Args...), ExtraSize>& x, AutoResetFunction<Result(Args...), ExtraSize>& y) noexcept
     {
         x.Swap(y);
     }

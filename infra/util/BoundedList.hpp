@@ -61,7 +61,7 @@ namespace infra
         ~BoundedList();
 
         BoundedList& operator=(const BoundedList& other);
-        BoundedList& operator=(BoundedList&& other);
+        BoundedList& operator=(BoundedList&& other) noexcept;
         void AssignFromStorage(const BoundedList& other);
         void AssignFromStorage(BoundedList&& other);
 
@@ -108,7 +108,7 @@ namespace infra
         void erase_all_after(iterator position);
         void remove(reference value);
 
-        void swap(BoundedList& other);
+        void swap(BoundedList& other) noexcept;
 
         void clear();
 
@@ -141,7 +141,7 @@ namespace infra
     };
 
     template<class T>
-        void swap(BoundedList<T>& x, BoundedList<T>& y);
+        void swap(BoundedList<T>& x, BoundedList<T>& y) noexcept;
 
     namespace detail
     {
@@ -249,7 +249,7 @@ namespace infra
     }
 
     template<class T>
-    BoundedList<T>& BoundedList<T>::operator=(BoundedList&& other)
+    BoundedList<T>& BoundedList<T>::operator=(BoundedList&& other) noexcept
     {
         clear();
         move_from_range(other.begin(), other.end());
@@ -616,7 +616,7 @@ namespace infra
     }
 
     template<class T>
-    void BoundedList<T>::swap(BoundedList& other)
+    void BoundedList<T>::swap(BoundedList& other) noexcept
     {
         using std::swap;
 
@@ -761,7 +761,7 @@ namespace infra
     }
 
     template<class T>
-    void swap(BoundedList<T>& x, BoundedList<T>& y)
+    void swap(BoundedList<T>& x, BoundedList<T>& y) noexcept
     {
         x.swap(y);
     }

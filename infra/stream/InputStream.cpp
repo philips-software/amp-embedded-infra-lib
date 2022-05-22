@@ -574,4 +574,16 @@ namespace infra
     {
         return FromBase64Helper(data);
     }
+
+    std::size_t Base64DecodedSize(infra::BoundedConstString encodedContents)
+    {
+        if (encodedContents.size() < 4)
+            return 0;
+
+        auto size = encodedContents.size() / 4 * 3;
+        for (auto it = encodedContents.crbegin(); *it == '=' && it != encodedContents.crend(); ++it)
+            --size;
+
+        return size;
+    }
 }

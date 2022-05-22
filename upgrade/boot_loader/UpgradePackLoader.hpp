@@ -18,6 +18,9 @@ namespace application
 
     protected:
         void MarkAsError(uint32_t errorCode);
+        virtual UpgradePackStatus ReadStatus();
+        virtual void WriteStatus(UpgradePackStatus status);
+        virtual void WriteError(uint32_t errorCode);
 
     protected:
         hal::SynchronousFlash& upgradePackFlash;

@@ -15,3 +15,7 @@ target_sources(services.synchronous_util PRIVATE
     SynchronousFlashSpi.hpp
     SynchronousSpiMasterWithChipSelect.hpp
 )
+
+if (EMIL_BUILD_TESTS)
+    add_subdirectory(test)
+endif()

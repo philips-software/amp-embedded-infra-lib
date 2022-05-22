@@ -36,6 +36,7 @@ target_sources(services.network_test PRIVATE
     TestSerialServer.cpp
     TestSingleConnectionListener.cpp
     TestSntpClient.cpp
+    TestSsdpDeviceDiscovery.cpp
     TestWebSocketClient.cpp
     TestWebSocketClientConnectionObserver.cpp
     TestWebSocketIntegration.cpp

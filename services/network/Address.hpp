@@ -99,6 +99,19 @@ namespace infra
     infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::IPv6Address& address);
     infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::IPv6AddressNetworkOrder& address);
     infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::IPAddress& address);
+
+    class AsCanonicalFormIpHelper
+    {
+    public:
+        explicit AsCanonicalFormIpHelper(const services::IPAddress& address);
+
+        friend infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const AsCanonicalFormIpHelper& AsCanonicalFormIpHelper);
+
+    private:
+        const services::IPAddress& address;
+    };
+
+    AsCanonicalFormIpHelper AsCanonicalFormIp(const services::IPAddress& address);
 }
 
 #endif

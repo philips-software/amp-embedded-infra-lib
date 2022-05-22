@@ -191,7 +191,7 @@ namespace infra
         void resize(size_type count);
         void resize(size_type count, char ch);
         void shrink(size_type count);
-        void swap(BoundedStringBase& other);
+        void swap(BoundedStringBase& other) noexcept;
 
     public:
         template<class U>
@@ -321,7 +321,7 @@ namespace infra
         std::string operator+(const std::string& lhs, const BoundedStringBase<T>& rhs);
 
     template<class T>
-        void swap(BoundedStringBase<T>& lhs, BoundedStringBase<T>& rhs);
+        void swap(BoundedStringBase<T>& lhs, BoundedStringBase<T>& rhs) noexcept;
 
     template<class T>
         BoundedStringBase<T> TrimLeft(BoundedStringBase<T> string);
@@ -1096,7 +1096,7 @@ namespace infra
     }
 
     template<class T>
-    void BoundedStringBase<T>::swap(BoundedStringBase<T>& other)
+    void BoundedStringBase<T>::swap(BoundedStringBase<T>& other) noexcept
     {
         using std::swap;
 
@@ -1647,7 +1647,7 @@ namespace infra
     }
 
     template<class T>
-    void swap(BoundedStringBase<T>& lhs, BoundedStringBase<T>& rhs)
+    void swap(BoundedStringBase<T>& lhs, BoundedStringBase<T>& rhs) noexcept
     {
         lhs.swap(rhs);
     }

@@ -11,6 +11,7 @@ target_link_libraries(services.util_test PUBLIC
 )
 
 target_sources(services.util_test PRIVATE
+    TestAesMbedTls.cpp
     TestConfigurationStore.cpp
     TestCyclicStore.cpp
     TestDebouncedButton.cpp

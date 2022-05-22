@@ -6,8 +6,8 @@
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/syntax/ProtoParser.hpp"
-#include "mbedtls/sha256.h"
 #include "infra/event/EventDispatcher.hpp"
+#include "services/util/Sha256.hpp"
 
 namespace services
 {
@@ -46,7 +46,7 @@ namespace services
         : public WritableConfigurationReaderWriter<T, TRef>
     {
     public:
-        WritableConfiguration(hal::Flash& flash);
+        WritableConfiguration(hal::Flash& flash, services::Sha256& sha256);
 
         virtual bool Valid() const override;
         virtual const TRef& Get() const override;
@@ -66,6 +66,7 @@ namespace services
 
     protected:
         hal::Flash& flash;
+        services::Sha256& sha256;
         TRef value;
         bool valid = false;
 
@@ -77,7 +78,7 @@ namespace services
         : public WritableConfiguration<T, TRef>
     {
     public:
-        MemoryMappedWritableConfiguration(hal::Flash& flash, infra::ConstByteRange memory);
+        MemoryMappedWritableConfiguration(hal::Flash& flash, services::Sha256& sha256, infra::ConstByteRange memory);
 
         virtual void Read(const infra::Function<void()>& onDone) override;
 
@@ -99,7 +100,7 @@ namespace services
         : public WritableConfiguration<T, TRef>
     {
     public:
-        FlashReadingWritableConfiguration(hal::Flash& flash);
+        FlashReadingWritableConfiguration(hal::Flash& flash, services::Sha256& sha256);
 
         virtual void Read(const infra::Function<void()>& onDone) override;
         virtual void Write(const T& newValue, const infra::Function<void()>& onDone) override;
@@ -111,8 +112,9 @@ namespace services
     ////    Implementation    ////
 
     template<class T, class TRef>
-    WritableConfiguration<T, TRef>::WritableConfiguration(hal::Flash& flash)
+    WritableConfiguration<T, TRef>::WritableConfiguration(hal::Flash& flash, services::Sha256& sha256)
         : flash(flash)
+        , sha256(sha256)
     {}
 
     template<class T, class TRef>
@@ -136,8 +138,8 @@ namespace services
         valid = false;
         if (header.size + sizeof(Header) <= memory.size())
         {
-            std::array<uint8_t, 32> messageHash;
-            mbedtls_sha256(memory.begin() + sizeof(header.hash), std::min<std::size_t>(header.size + sizeof(header.size), memory.size() - sizeof(header.hash)), messageHash.data(), 0);
+            auto input = infra::Head(infra::DiscardHead(memory, sizeof(header.hash)), header.size + sizeof(Header::size));
+            auto messageHash = sha256.Calculate(input);
 
             if (infra::Head(infra::MakeRange(messageHash), sizeof(header.hash)) == header.hash)
             {
@@ -168,8 +170,10 @@ namespace services
         Header header;
         header.size = stream.SaveMarker() - marker;
         headerProxy = header;
-        std::array<uint8_t, 32> messageHash;
-        mbedtls_sha256(storage.begin() + sizeof(Header::hash), std::min<std::size_t>(header.size + sizeof(Header::size), storage.size() - sizeof(Header::hash)), messageHash.data(), 0);
+
+        auto input = infra::Head(infra::DiscardHead(storage, sizeof(header.hash)), header.size + sizeof(Header::size));
+        auto messageHash = sha256.Calculate(input);
+
         infra::Copy(infra::Head(infra::MakeRange(messageHash), sizeof(Header::hash)), infra::MakeRange(header.hash));
         headerProxy = header;
 
@@ -183,8 +187,8 @@ namespace services
     }
 
     template<class T, class TRef>
-    MemoryMappedWritableConfiguration<T, TRef>::MemoryMappedWritableConfiguration(hal::Flash& flash, infra::ConstByteRange memory)
-        : WritableConfiguration<T, TRef>(flash)
+    MemoryMappedWritableConfiguration<T, TRef>::MemoryMappedWritableConfiguration(hal::Flash& flash, services::Sha256& sha256, infra::ConstByteRange memory)
+        : WritableConfiguration<T, TRef>(flash, sha256)
         , memory(memory)
     {
         this->LoadConfiguration(memory);
@@ -216,8 +220,8 @@ namespace services
     }
 
     template<class T, class TRef>
-    FlashReadingWritableConfiguration<T, TRef>::FlashReadingWritableConfiguration(hal::Flash& flash)
-        : WritableConfiguration<T, TRef>(flash)
+    FlashReadingWritableConfiguration<T, TRef>::FlashReadingWritableConfiguration(hal::Flash& flash, services::Sha256& sha256)
+        : WritableConfiguration<T, TRef>(flash, sha256)
     {}
 
     template<class T, class TRef>

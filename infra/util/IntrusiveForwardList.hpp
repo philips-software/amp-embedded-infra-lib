@@ -38,9 +38,9 @@ namespace infra
         template<class InputIterator>
             IntrusiveForwardList(InputIterator first, InputIterator last);
         IntrusiveForwardList(const IntrusiveForwardList& other) = delete;
-        IntrusiveForwardList(IntrusiveForwardList&& other);
+        IntrusiveForwardList(IntrusiveForwardList&& other) noexcept;
         IntrusiveForwardList& operator=(const IntrusiveForwardList& other) = delete;
-        IntrusiveForwardList& operator=(IntrusiveForwardList&& other);
+        IntrusiveForwardList& operator=(IntrusiveForwardList&& other) noexcept;
         ~IntrusiveForwardList();
 
     public:
@@ -71,7 +71,7 @@ namespace infra
         template<class InputIterator>
             void assign(InputIterator first, InputIterator last);
 
-        void swap(IntrusiveForwardList& other);
+        void swap(IntrusiveForwardList& other) noexcept;
 
         void clear();
 
@@ -88,7 +88,7 @@ namespace infra
     };
 
     template<class T>
-        void swap(IntrusiveForwardList<T>& x, IntrusiveForwardList<T>& y);
+        void swap(IntrusiveForwardList<T>& x, IntrusiveForwardList<T>& y) noexcept;
 
     namespace detail
     {
@@ -175,14 +175,14 @@ namespace infra
     }
 
     template<class T>
-    IntrusiveForwardList<T>::IntrusiveForwardList(IntrusiveForwardList&& other)
+    IntrusiveForwardList<T>::IntrusiveForwardList(IntrusiveForwardList&& other) noexcept
         : beginNode(other.beginNode)
     {
         other.beginNode = nullptr;
     }
 
     template<class T>
-    IntrusiveForwardList<T>& IntrusiveForwardList<T>::operator=(IntrusiveForwardList&& other)
+    IntrusiveForwardList<T>& IntrusiveForwardList<T>::operator=(IntrusiveForwardList&& other) noexcept
     {
         beginNode = other.beginNode;
         other.beginNode = nullptr;
@@ -327,7 +327,7 @@ namespace infra
     }
 
     template<class T>
-    void IntrusiveForwardList<T>::swap(IntrusiveForwardList& other)
+    void IntrusiveForwardList<T>::swap(IntrusiveForwardList& other) noexcept
     {
         std::swap(beginNode, other.beginNode);
     }
@@ -387,7 +387,7 @@ namespace infra
     }
 
     template<class T>
-    void swap(IntrusiveForwardList<T>& x, IntrusiveForwardList<T>& y)
+    void swap(IntrusiveForwardList<T>& x, IntrusiveForwardList<T>& y) noexcept
     {
         x.swap(y);
     }

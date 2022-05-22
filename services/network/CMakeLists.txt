@@ -77,6 +77,8 @@ target_sources(services.network PRIVATE
     SingleConnectionListener.hpp
     SntpClient.cpp
     SntpClient.hpp
+    SsdpDeviceDiscovery.cpp
+    SsdpDeviceDiscovery.hpp
     StreamEcho.cpp
     StreamEcho.hpp
     TracingConnectionFactoryWithNameResolver.cpp

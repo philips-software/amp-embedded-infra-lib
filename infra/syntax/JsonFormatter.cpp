@@ -1,4 +1,5 @@
 #include "infra/syntax/JsonFormatter.hpp"
+#include "infra/util/BoundedVector.hpp"
 #include <tuple>
 
 namespace infra
@@ -65,6 +66,16 @@ namespace infra
                 }
             }
         }
+
+        void NestedInsert(infra::JsonObjectFormatter& formatter, infra::BoundedConstString key, infra::BoundedConstString path, const infra::JsonValue& valueToMerge)
+        {
+            infra::JsonObjectFormatter subObjectFormatter{ formatter.SubObject(key) };
+            infra::BoundedConstString nextKey = path.substr(0, path.find("/"));
+            if (nextKey.size() == path.size())
+                subObjectFormatter.Add(infra::JsonString(nextKey), valueToMerge);
+            else
+                NestedInsert(subObjectFormatter, nextKey, path.substr(nextKey.size() + 1), valueToMerge);
+        } 
     }
 
     std::size_t JsonEscapedStringSize(infra::BoundedConstString string)
@@ -120,19 +131,65 @@ namespace infra
         return string.substr(0, start);
     }
 
+    void Merge(infra::JsonObjectFormatter& formatter, infra::JsonObject& object, infra::BoundedConstString path, const infra::JsonValue& valueToMerge)
+    {
+        infra::BoundedConstString token, pathRemaining;
+
+        if (!path.empty())
+        {
+            token = path.substr(0, path.find("/"));
+            if (path.size() != token.size())
+                pathRemaining = path.substr(token.size() + 1);
+        }
+        
+        for (auto kv : object)
+        {
+            if (pathRemaining.empty() && kv.key == token)
+            {
+                token.clear();
+                formatter.Add(kv.key, valueToMerge);
+            }
+            else if (!pathRemaining.empty() && kv.key == token)
+            {
+                token.clear();
+                infra::JsonObjectFormatter subObjectFormatter{ formatter.SubObject(kv.key) };
+                if (kv.value.Is<infra::JsonObject>())
+                {
+                    infra::JsonObject valueJsonObj = kv.value.Get<infra::JsonObject>();
+                    infra::Merge(subObjectFormatter, valueJsonObj, pathRemaining, valueToMerge);
+                }
+                else
+                {
+                    infra::JsonObject valueJsonObj = infra::JsonObject("{}");
+                    infra::Merge(subObjectFormatter, valueJsonObj, pathRemaining, valueToMerge); 
+                }
+            }
+            else
+                formatter.Add(kv.key, kv.value);
+        }
+
+        if (!token.empty() && !object.HasKey(token))
+        {
+            if (pathRemaining.empty())
+                formatter.Add(infra::JsonString(token), valueToMerge);
+            else
+                NestedInsert(formatter, token, pathRemaining, valueToMerge);
+        }
+    }
+
     JsonObjectFormatter::JsonObjectFormatter(infra::TextOutputStream& stream)
         : stream(&stream)
     {
         *this->stream << "{ ";
     }
 
-    JsonObjectFormatter::JsonObjectFormatter(JsonObjectFormatter&& other)
+    JsonObjectFormatter::JsonObjectFormatter(JsonObjectFormatter&& other) noexcept
         : stream(other.stream)
     {
         other.stream = nullptr;
     }
 
-    JsonObjectFormatter& JsonObjectFormatter::operator=(JsonObjectFormatter&& other)
+    JsonObjectFormatter& JsonObjectFormatter::operator=(JsonObjectFormatter&& other) noexcept
     {
         stream = other.stream;
         other.stream = nullptr;
@@ -186,6 +243,24 @@ namespace infra
     {
         InsertSeparation();
         *stream << '"' << tagName.Raw() << R"(":)" << tag;
+    }
+
+    void JsonObjectFormatter::Add(const char* tagName, JsonBiggerInt tag)
+    {
+        InsertSeparation();
+        *stream << '"' << tagName << R"(":)";
+        if (tag.Negative())
+            *stream << "-";
+        *stream << tag.Value();
+    }
+
+    void JsonObjectFormatter::Add(JsonString tagName, JsonBiggerInt tag)
+    {
+        InsertSeparation();
+        *stream << '"' << tagName << R"(":)";
+        if (tag.Negative())
+            *stream << "-";
+        *stream << tag.Value();
     }
 
     void JsonObjectFormatter::Add(const char* tagName, const char* tag)
@@ -246,10 +321,34 @@ namespace infra
             std::abort();
     }
 
+    void JsonObjectFormatter::Add(JsonString key, const JsonValue& value)
+    {
+        if (value.Is<bool>())
+            Add(key, value.Get<bool>());
+        else if (value.Is<int32_t>())
+            Add(key, value.Get<int32_t>());
+        else if (value.Is<JsonFloat>())
+            AddMilliFloat(key, value.Get<JsonFloat>().IntValue(), value.Get<JsonFloat>().NanoFractionalValue());
+        else if (value.Is<JsonString>())
+            Add(key, value.Get<JsonString>());
+        else if (value.Is<JsonObject>())
+            Add(key, value.Get<JsonObject>());
+        else if (value.Is<JsonArray>())
+            Add(key, value.Get<JsonArray>());
+        else
+            std::abort();
+    }
+
     void JsonObjectFormatter::AddMilliFloat(const char* tagName, uint32_t intValue, uint32_t milliFractionalValue)
     {
         InsertSeparation();
         *stream << '"' << tagName << R"(":)" << intValue << '.' << infra::Width(3, '0') << milliFractionalValue;
+    }
+
+    void JsonObjectFormatter::AddMilliFloat(infra::JsonString tagName, uint32_t intValue, uint32_t milliFractionalValue)
+    {
+        InsertSeparation();
+        *stream << '"' << tagName.Raw() << R"(":)" << intValue << '.' << infra::Width(3, '0') << milliFractionalValue;
     }
 
     void JsonObjectFormatter::AddSubObject(const char* tagName, infra::BoundedConstString json)
@@ -258,10 +357,18 @@ namespace infra
         *stream << '"' << tagName << R"(":)" << json;
     }
 
-    JsonObjectFormatter JsonObjectFormatter::SubObject(infra::BoundedConstString tagName)
+    JsonObjectFormatter JsonObjectFormatter::SubObject(const char* tagName)
     {
         InsertSeparation();
         *stream << '"' << tagName << R"(":)";
+
+        return JsonObjectFormatter(*stream);
+    }
+
+    JsonObjectFormatter JsonObjectFormatter::SubObject(infra::JsonString tagName)
+    {
+        InsertSeparation();
+        *stream << '"' << tagName.Raw() << R"(":)";
 
         return JsonObjectFormatter(*stream);
     }
@@ -302,20 +409,20 @@ namespace infra
 
         empty = false;
     }
-
+    
     JsonArrayFormatter::JsonArrayFormatter(infra::TextOutputStream& stream)
         : stream(&stream)
     {
         *this->stream << "[ ";
     }
 
-    JsonArrayFormatter::JsonArrayFormatter(JsonArrayFormatter&& other)
+    JsonArrayFormatter::JsonArrayFormatter(JsonArrayFormatter&& other) noexcept
         : stream(other.stream)
     {
         other.stream = nullptr;
     }
 
-    JsonArrayFormatter& JsonArrayFormatter::operator=(JsonArrayFormatter&& other)
+    JsonArrayFormatter& JsonArrayFormatter::operator=(JsonArrayFormatter&& other) noexcept
     {
         stream = other.stream;
         other.stream = nullptr;
@@ -351,6 +458,14 @@ namespace infra
     {
         InsertSeparation();
         *stream << tag;
+    }
+
+    void JsonArrayFormatter::Add(JsonBiggerInt tag)
+    {
+        InsertSeparation();
+        if (tag.Negative())
+            *stream << "-";
+        *stream << tag.Value();
     }
 
     void JsonArrayFormatter::Add(const char* tag)
@@ -400,13 +515,13 @@ namespace infra
         : TextOutputStream(stream)
     {}
 
-    JsonStringStream::JsonStringStream(JsonStringStream&& other)
+    JsonStringStream::JsonStringStream(JsonStringStream&& other) noexcept
         : TextOutputStream(std::move(other))
     {
         other.owned = false;
     }
 
-    JsonStringStream& JsonStringStream::operator=(JsonStringStream&& other)
+    JsonStringStream& JsonStringStream::operator=(JsonStringStream&& other) noexcept
     {
         owned = other.owned;
         other.owned = false;

@@ -18,6 +18,10 @@ namespace application
 
         void MarkAsError(uint32_t errorCode);
 
+    protected:
+        virtual void WriteStatus(UpgradePackStatus status);
+        virtual void WriteError(uint32_t errorCode);
+
     private:
         bool TryUpgradeImage(infra::MemoryRange<ImageUpgrader*> imageUpgraders);
         bool IsImage(uint32_t& imageAddress, const char* imageName) const;

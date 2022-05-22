@@ -90,7 +90,7 @@ namespace infra
         SharedPtr(std::nullptr_t);
         SharedPtr(detail::SharedPtrControl* control, T* object);
         SharedPtr(const SharedPtr& other);
-        SharedPtr(SharedPtr&& other);
+        SharedPtr(SharedPtr&& other) noexcept;
         template<class U>
         SharedPtr(const WeakPtr<U>& other);
         template<class U>
@@ -98,7 +98,7 @@ namespace infra
         template<class U>
         SharedPtr(SharedPtr<U>&& other);
         SharedPtr& operator=(const SharedPtr& other);
-        SharedPtr& operator=(SharedPtr&& other);
+        SharedPtr& operator=(SharedPtr&& other) noexcept;
         SharedPtr& operator=(const WeakPtr<T>& other);
         SharedPtr& operator=(std::nullptr_t);
         ~SharedPtr();
@@ -150,14 +150,14 @@ namespace infra
         WeakPtr() = default;
         WeakPtr(std::nullptr_t);
         WeakPtr(const WeakPtr<T>& other);
-        WeakPtr(WeakPtr<T>&& other);
+        WeakPtr(WeakPtr<T>&& other) noexcept;
         template<class U>
             WeakPtr(const WeakPtr<U>& other);
         template<class U>
             WeakPtr(WeakPtr<U>&& other);
         WeakPtr(const SharedPtr<T>& sharedPtr);
         WeakPtr& operator=(const WeakPtr<T>& other);
-        WeakPtr& operator=(WeakPtr<T>&& other);
+        WeakPtr& operator=(WeakPtr<T>&& other) noexcept;
         WeakPtr& operator=(const SharedPtr<T>& sharedPtr);
         WeakPtr& operator=(std::nullptr_t);
         ~WeakPtr();
@@ -251,7 +251,7 @@ namespace infra
     }
 
     template<class T>
-    SharedPtr<T>::SharedPtr(SharedPtr&& other)
+    SharedPtr<T>::SharedPtr(SharedPtr&& other) noexcept
     {
         Reset(other.control, other.object);
         other.Reset(nullptr, nullptr);
@@ -290,7 +290,7 @@ namespace infra
     }
 
     template<class T>
-    SharedPtr<T>& SharedPtr<T>::operator=(SharedPtr&& other)
+    SharedPtr<T>& SharedPtr<T>::operator=(SharedPtr&& other) noexcept
     {
         Reset(other.control, other.object);
         other.Reset(nullptr, nullptr);
@@ -431,7 +431,7 @@ namespace infra
     }
 
     template<class T>
-    WeakPtr<T>::WeakPtr(WeakPtr&& other)
+    WeakPtr<T>::WeakPtr(WeakPtr&& other) noexcept
     {
         Reset(other.control, other.object);
         other.Reset(nullptr, nullptr);
@@ -467,7 +467,7 @@ namespace infra
     }
 
     template<class T>
-    WeakPtr<T>& WeakPtr<T>::operator=(WeakPtr&& other)
+    WeakPtr<T>& WeakPtr<T>::operator=(WeakPtr&& other) noexcept
     {
         Reset(other.control, other.object);
         other.Reset(nullptr, nullptr);
