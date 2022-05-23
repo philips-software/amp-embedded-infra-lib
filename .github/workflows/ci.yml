@@ -18,7 +18,7 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build and Test
         run: |
           cmake --preset ContinuousIntegration
@@ -32,7 +32,7 @@ jobs:
         gcc: ["5-2016-q3", "6-2017-q2", "7-2018-q2", "8-2019-q3"]
         configuration: ["RelWithDebInfo"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install GNU Arm Embedded Toolchain ${{ matrix.gcc }}
         uses: carlosperate/arm-none-eabi-gcc-action@v1
         with:
