@@ -1,13 +1,11 @@
 {
-    // This devcontainer has been set-up to run docker-from-docker scenarios as per
-    // https://github.com/microsoft/vscode-dev-containers/tree/main/containers/docker-from-docker
-    "name": "linux-gcc",
-    "build": { "dockerfile": "Dockerfile" },
-    "runArgs": ["--add-host=host.docker.internal:host-gateway"],
-    "mounts": ["source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"],
-    "extensions": [
-        "ms-vscode.cpptools",
-        "ms-vscode.cmake-tools",
-        "twxs.cmake"
-    ]
+  // This devcontainer has been set-up to run docker-from-docker scenarios as per
+  // https://github.com/microsoft/vscode-dev-containers/tree/main/containers/docker-from-docker
+  "name": "linux-gcc",
+  "build": { "dockerfile": "Dockerfile" },
+  "runArgs": ["--add-host=host.docker.internal:host-gateway"],
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+  ],
+  "extensions": ["ms-vscode.cpptools", "ms-vscode.cmake-tools", "twxs.cmake"]
 }
