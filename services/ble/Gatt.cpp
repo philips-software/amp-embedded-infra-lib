@@ -2,15 +2,15 @@
 
 namespace services
 {
-    GattCharacteristic::GattCharacteristic(const Gatt::Uuid& uuid)
-        : uuid(uuid)
+    GattCharacteristic::GattCharacteristic(const Gatt::Uuid& type)
+        : type(type)
     {
     }
 
-    GattService::GattService(const Gatt::Uuid& uuid, std::initializer_list<GattCharacteristic> characteristics)
-        : uuid(uuid)
+    GattService::GattService(const Gatt::Uuid& type, std::initializer_list<GattCharacteristic> characteristics)
+        : type(type)
     {
-        for (auto& c : characteristics)
+        for (const auto& c : characteristics)
             AddCharacteristic(c);
     }
 
