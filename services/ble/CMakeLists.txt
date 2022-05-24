@@ -1,7 +1,9 @@
-ccola_component(ble source)
+ccola_component(ble static_library)
 
     ccola_sources(
         Gap.hpp
+        Gatt.cpp
+        Gatt.hpp
     )
 
     ccola_dependencies(
@@ -9,3 +11,7 @@ ccola_component(ble source)
     )
 
 ccola_end_component()
+
+ccola_subdirectories(
+    test
+)
