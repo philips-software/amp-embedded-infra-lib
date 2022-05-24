@@ -1,7 +1,8 @@
 #ifndef SERVICES_GATT_HPP
 #define SERVICES_GATT_HPP
 
-#include "infra/util/IntrusiveList.hpp"
+#include "infra/util/ByteRange.hpp"
+#include "infra/util/IntrusiveForwardList.hpp"
 #include "infra/util/Variant.hpp"
 #include "infra/util/WithStorage.hpp"
 
@@ -34,14 +35,19 @@ namespace services
     };
 
     class GattCharacteristic
-        : public infra::IntrusiveList<GattCharacteristic>::NodeType
+        : public infra::IntrusiveForwardList<GattCharacteristic>::NodeType
     {
     public:
-        GattCharacteristic(const Gatt::Uuid& type);
+        template<std::size_t StorageSize>
+            using WithStorage = infra::WithStorage<GattCharacteristic, std::array<uint8_t, StorageSize>>;
+
+        explicit GattCharacteristic(const Gatt::Uuid& type);
+        GattCharacteristic(infra::ByteRange value, const Gatt::Uuid& type);
         GattCharacteristic& operator=(const GattCharacteristic& other) = delete;
         GattCharacteristic(GattCharacteristic& other) = delete;
 
     private:
+        infra::ByteRange value;
         const Gatt::Uuid& type;
         Gatt::Handle handle;
         Gatt::AccessPermission accessPermission{ Gatt::AccessPermission::none };
@@ -52,17 +58,42 @@ namespace services
     class GattService
     {
     public:
-        GattService(const Gatt::Uuid& type, std::initializer_list<GattCharacteristic> characteristics);
+        explicit GattService(const Gatt::Uuid& type);
+        template<class... Characteristics>
+            GattService(const Gatt::Uuid& type, const Characteristics&... characteristics);
         GattService& operator=(const GattService& other) = delete;
         GattService(GattService& other) = delete;
 
         void AddCharacteristic(const GattCharacteristic& characteristic);
 
     private:
+        template <size_t I = 0, typename... Ts>
+        typename std::enable_if<I == sizeof...(Ts), void>::type
+        AddCharacteristic(std::tuple<Ts...> element)
+        {
+            return;
+        }
+
+        template <size_t I = 0, typename... Ts>
+        typename std::enable_if<(I < sizeof...(Ts)), void>::type
+        AddCharacteristic(std::tuple<Ts...> element)
+        {
+            AddCharacteristic(std::get<I>(element));
+            AddCharacteristic<I + 1>(element);
+        }
+
+    private:
         const Gatt::Uuid& type;
         Gatt::Handle handle;
-        infra::IntrusiveList<GattCharacteristic> characteristics;
+        infra::IntrusiveForwardList<GattCharacteristic> characteristics;
     };
+
+    template<class... Characteristics>
+    GattService::GattService(const Gatt::Uuid& type, const Characteristics&... characteristics)
+        : GattService(type)
+    {
+        AddCharacteristic(std::tuple<const Characteristics&...>{characteristics...});
+    }
 }
 
 #endif

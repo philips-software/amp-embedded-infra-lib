@@ -7,15 +7,19 @@ namespace services
     {
     }
 
-    GattService::GattService(const Gatt::Uuid& type, std::initializer_list<GattCharacteristic> characteristics)
+    GattCharacteristic::GattCharacteristic(infra::ByteRange value, const Gatt::Uuid& type)
+        : value(value)
+        , type(type)
+    {
+    }
+
+    GattService::GattService(const Gatt::Uuid& type)
         : type(type)
     {
-        for (const auto& c : characteristics)
-            AddCharacteristic(c);
     }
 
     void GattService::AddCharacteristic(const GattCharacteristic& characteristic)
     {
-        characteristics.push_back(characteristic);
+        characteristics.push_front(characteristic);
     }
 }
