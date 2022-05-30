@@ -2,24 +2,27 @@
 
 namespace services
 {
-    GattCharacteristic::GattCharacteristic(const Gatt::Uuid& type)
+    GattIdentifier::GattIdentifier(const Gatt::Uuid& type)
         : type(type)
+    {}
+
+    const Gatt::Uuid& GattIdentifier::Type() const
     {
+        return type;
     }
 
-    GattCharacteristic::GattCharacteristic(infra::ByteRange value, const Gatt::Uuid& type)
-        : value(value)
-        , type(type)
+    Gatt::Handle& GattIdentifier::Handle() const
     {
-    }
-
-    GattService::GattService(const Gatt::Uuid& type)
-        : type(type)
-    {
+        return handle;
     }
 
     void GattService::AddCharacteristic(const GattCharacteristic& characteristic)
     {
         characteristics.push_front(characteristic);
+    }
+
+    const infra::IntrusiveForwardList<GattCharacteristic>& GattService::Characteristics() const
+    {
+        return characteristics;
     }
 }

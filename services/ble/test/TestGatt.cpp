@@ -1,21 +1,30 @@
 #include "gmock/gmock.h"
 #include "services/ble/Gatt.hpp"
 
+TEST(UuidTest, should_support_uuid16)
+{
+    services::Gatt::Uuid uuid16{services::Gatt::Uuid16{0x180A}};
+
+    EXPECT_EQ(0x180A, uuid16.Get<services::Gatt::Uuid16>());
+    EXPECT_TRUE(uuid16.Is<services::Gatt::Uuid16>());
+}
+
 TEST(GattTest, characteristic_supports_different_uuid_lengths)
 {
-    services::GattCharacteristic a{services::Gatt::Uuid16{std::numeric_limits<services::Gatt::Uuid16>::max()}};
-    services::GattCharacteristic b{services::Gatt::Uuid32{std::numeric_limits<services::Gatt::Uuid32>::max()}};
-    services::GattCharacteristic c{services::Gatt::Uuid128{0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x80,
-                                                           0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x80}};
+    services::GattCharacteristic a{services::Gatt::Uuid16{0x180A}};
+    services::GattCharacteristic b{services::Gatt::Uuid32{}};
+    services::GattCharacteristic c{services::Gatt::Uuid128{}};
+
+    EXPECT_EQ(0x180A, a.Type().Get<services::Gatt::Uuid16>());
 }
 
 TEST(GattTest, should_add_characteristic_to_service)
 {
-    services::GattCharacteristic a{services::Gatt::Uuid16{std::numeric_limits<services::Gatt::Uuid16>::max()}};
-    services::GattCharacteristic::WithStorage<5> b{services::Gatt::Uuid16{0x10}};
+    services::GattCharacteristic a{services::Gatt::Uuid16{0x180A}};
+    services::GattCharacteristic b{services::Gatt::Uuid16{0x180B}};
 
-    services::GattService s{services::Gatt::Uuid16{1}, a, b};
+    services::GattService s{services::Gatt::Uuid16{}, a, b};
 
-    s.AddCharacteristic(services::GattCharacteristic{services::Gatt::Uuid128{0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x80,
-                                                                             0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x80}});
+    EXPECT_FALSE(s.Characteristics().empty());
+    EXPECT_EQ(0x180B, s.Characteristics().front().Type().Get<services::Gatt::Uuid16>());
 }
