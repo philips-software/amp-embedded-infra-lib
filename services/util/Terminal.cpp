@@ -1,3 +1,4 @@
+#include "infra/util/Tokenizer.hpp"
 #include "services/util/Terminal.hpp"
 
 namespace services
@@ -254,5 +255,35 @@ namespace services
     void Terminal::SendBell()
     {
         tracer.Continue() << '\a';
+    }
+
+    bool TerminalCommands::ProcessCommand(infra::BoundedConstString data)
+    {
+        infra::Tokenizer tokenizer(data, ' ');
+        infra::BoundedConstString command = tokenizer.Token(0);
+        infra::BoundedConstString params = tokenizer.TokenAndRest(1);
+
+        auto commands = Commands();
+        auto it = std::find_if(commands.begin(), commands.end(), [command](const Command& entry) { return (command == entry.info.longName) || (command == entry.info.shortName); });
+
+        if (it != commands.end())
+        {
+            it->function(params);
+            return true;
+        }
+        else
+            return false;
+    }
+
+    TerminalWithCommandsImpl::TerminalWithCommandsImpl(hal::SerialCommunication& communication, services::Tracer& tracer)
+        : services::Terminal(communication, tracer)
+    {}
+
+    void TerminalWithCommandsImpl::OnData(infra::BoundedConstString data)
+    {
+        bool commandProcessed = NotifyObservers([data](auto& observer) { return observer.ProcessCommand(data); });
+
+        if (!commandProcessed)
+            Print("Unrecognized command.");
     }
 }
