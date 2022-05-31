@@ -281,7 +281,7 @@ namespace services
 
     void TerminalWithCommandsImpl::OnData(infra::BoundedConstString data)
     {
-        bool commandProcessed = NotifyObservers([data](auto& observer) { return observer.ProcessCommand(data); });
+        bool commandProcessed = NotifyObservers([data](TerminalCommands& observer) { return observer.ProcessCommand(data); });
 
         if (!commandProcessed)
             Print("Unrecognized command.");
