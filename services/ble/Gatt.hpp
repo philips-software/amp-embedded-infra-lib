@@ -1,7 +1,9 @@
 #ifndef SERVICES_GATT_HPP
 #define SERVICES_GATT_HPP
 
+#include "infra/util/ByteRange.hpp"
 #include "infra/util/IntrusiveForwardList.hpp"
+#include "infra/util/Observer.hpp"
 #include "infra/util/Variant.hpp"
 #include <array>
 
@@ -42,31 +44,38 @@ namespace services
         GattIdentifier& operator=(const GattIdentifier& other) = delete;
 
         const Gatt::Uuid& Type() const;
-        Gatt::Handle& Handle() const;
+
+        Gatt::Handle& NativeHandle();
+        Gatt::Handle Handle() const;
 
     private:
         const Gatt::Uuid& type;
-        mutable Gatt::Handle handle;
+        Gatt::Handle handle;
     };
 
+    class GattCharacteristicOperations;
     class GattService;
 
     class GattCharacteristic
         : public infra::IntrusiveForwardList<GattCharacteristic>::NodeType
+        , public infra::Observer<GattCharacteristic, GattCharacteristicOperations>
         , public GattIdentifier
     {
     public:
-        GattCharacteristic(GattService& service, const Gatt::Uuid& type);
+        GattCharacteristic(GattService& service, const Gatt::Uuid& type, uint16_t valueLength);
 
         GattCharacteristic& operator=(const GattCharacteristic& other) = delete;
         GattCharacteristic(GattCharacteristic& other) = delete;
 
-        //GattCharacteristic& operator=(const char* data);
+        GattCharacteristic& operator=(const char* data);
 
         Gatt::Handle ServiceHandle() const;
 
+        uint16_t ValueLength() const;
+
     private:
         const GattService& service;
+        uint16_t valueLength;
         Gatt::AccessPermission accessPermission{ Gatt::AccessPermission::none };
         Gatt::Encryption encryption{ Gatt::Encryption::none };
         bool AuthorizationRequired{ false };
@@ -77,14 +86,12 @@ namespace services
     {
     public:
         using GattIdentifier::GattIdentifier;
-        template<class... Args>
-            GattService(const Gatt::Uuid& type, const Args&... characteristics);
 
         GattService& operator=(const GattService& other) = delete;
         GattService(GattService& other) = delete;
 
         void AddCharacteristic(const GattCharacteristic& characteristic);
-        const infra::IntrusiveForwardList<GattCharacteristic>& Characteristics() const;
+        infra::IntrusiveForwardList<GattCharacteristic>& Characteristics();
 
     private:
         infra::IntrusiveForwardList<GattCharacteristic> characteristics;
@@ -93,8 +100,17 @@ namespace services
     class GattServer
     {
     public:
-        virtual void AddService(const GattService& service) = 0;
-        virtual void AddCharacteristic(const GattCharacteristic& characteristic) = 0;
+        virtual void AddService(GattService& service) = 0;
+        virtual void AddCharacteristic(GattCharacteristic& characteristic) = 0;
+    };
+
+    class GattCharacteristicOperations
+        : public infra::Subject<GattCharacteristic>
+    {
+    public:
+        virtual void Update(const GattCharacteristic& characteristic, infra::ConstByteRange data) const = 0;
+        virtual void Notify(const GattCharacteristic& characteristic) const = 0;
+        virtual void Indicate(const GattCharacteristic& characteristic) const = 0;
     };
 }
 

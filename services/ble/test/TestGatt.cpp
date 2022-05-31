@@ -12,9 +12,9 @@ TEST(UuidTest, should_support_uuid16)
 TEST(GattTest, characteristic_supports_different_uuid_lengths)
 {
     services::GattService s{services::Gatt::Uuid16{}};
-    services::GattCharacteristic a{s, services::Gatt::Uuid16{0x180A}};
-    services::GattCharacteristic b{s, services::Gatt::Uuid32{}};
-    services::GattCharacteristic c{s, services::Gatt::Uuid128{}};
+    services::GattCharacteristic a{s, services::Gatt::Uuid16{0x180A}, 10};
+    services::GattCharacteristic b{s, services::Gatt::Uuid32{}, 10};
+    services::GattCharacteristic c{s, services::Gatt::Uuid128{}, 10};
 
     EXPECT_EQ(0x180A, a.Type().Get<services::Gatt::Uuid16>());
 }
@@ -22,8 +22,8 @@ TEST(GattTest, characteristic_supports_different_uuid_lengths)
 TEST(GattTest, should_add_characteristic_to_service)
 {
     services::GattService s{services::Gatt::Uuid16{}};
-    services::GattCharacteristic a{s, services::Gatt::Uuid16{0x180A}};
-    services::GattCharacteristic b{s, services::Gatt::Uuid16{0x180B}};
+    services::GattCharacteristic a{s, services::Gatt::Uuid16{0x180A}, 10};
+    services::GattCharacteristic b{s, services::Gatt::Uuid16{0x180B}, 10};
 
     EXPECT_FALSE(s.Characteristics().empty());
     EXPECT_EQ(0x180B, s.Characteristics().front().Type().Get<services::Gatt::Uuid16>());
