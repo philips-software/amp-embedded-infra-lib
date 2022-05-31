@@ -49,19 +49,24 @@ namespace services
         mutable Gatt::Handle handle;
     };
 
+    class GattService;
+
     class GattCharacteristic
         : public infra::IntrusiveForwardList<GattCharacteristic>::NodeType
         , public GattIdentifier
     {
     public:
-        using GattIdentifier::GattIdentifier;
+        GattCharacteristic(GattService& service, const Gatt::Uuid& type);
 
         GattCharacteristic& operator=(const GattCharacteristic& other) = delete;
         GattCharacteristic(GattCharacteristic& other) = delete;
 
-        GattCharacteristic& operator=(const char* data);
+        //GattCharacteristic& operator=(const char* data);
+
+        Gatt::Handle ServiceHandle() const;
 
     private:
+        const GattService& service;
         Gatt::AccessPermission accessPermission{ Gatt::AccessPermission::none };
         Gatt::Encryption encryption{ Gatt::Encryption::none };
         bool AuthorizationRequired{ false };
@@ -82,37 +87,14 @@ namespace services
         const infra::IntrusiveForwardList<GattCharacteristic>& Characteristics() const;
 
     private:
-        template <std::size_t I = 0, typename... Ts>
-        typename std::enable_if<I == sizeof...(Ts), void>::type
-        AddCharacteristic(std::tuple<Ts...> element)
-        {
-            return;
-        }
-
-        template <std::size_t I = 0, typename... Ts>
-        typename std::enable_if<(I < sizeof...(Ts)), void>::type
-        AddCharacteristic(std::tuple<Ts...> element)
-        {
-            AddCharacteristic(std::get<I>(element));
-            AddCharacteristic<I + 1>(element);
-        }
-
-    private:
         infra::IntrusiveForwardList<GattCharacteristic> characteristics;
     };
-
-    template<class... Args>
-    GattService::GattService(const Gatt::Uuid& type, const Args&... characteristics)
-        : GattService(type)
-    {
-        AddCharacteristic(std::tuple<const Args&...>{characteristics...});
-    }
 
     class GattServer
     {
     public:
         virtual void AddService(const GattService& service) = 0;
-        virtual void AddCharacteristic(const GattService& service, const GattCharacteristic& characteristic) = 0;
+        virtual void AddCharacteristic(const GattCharacteristic& characteristic) = 0;
     };
 }
 

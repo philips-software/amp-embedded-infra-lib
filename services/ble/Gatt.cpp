@@ -16,6 +16,11 @@ namespace services
         return handle;
     }
 
+    Gatt::Handle GattCharacteristic::ServiceHandle() const
+    {
+        return service.Handle();
+    }
+
     void GattService::AddCharacteristic(const GattCharacteristic& characteristic)
     {
         characteristics.push_front(characteristic);
@@ -24,5 +29,12 @@ namespace services
     const infra::IntrusiveForwardList<GattCharacteristic>& GattService::Characteristics() const
     {
         return characteristics;
+    }
+
+    GattCharacteristic::GattCharacteristic(GattService& service, const Gatt::Uuid& type)
+        : GattIdentifier(type)
+        , service(service)
+    {
+        service.AddCharacteristic(*this);
     }
 }
