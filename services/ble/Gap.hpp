@@ -60,6 +60,12 @@ namespace services
         virtual void State(GapPeripheralState state) = 0;
     };
 
+    class GapPeripheralPairing
+    {
+    public:
+        virtual void AllowPairing(bool allow) = 0;
+    };
+
     class GapPeripheral
         : public Gap
         , public infra::Subject<GapPeripheralObserver>
