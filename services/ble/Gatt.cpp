@@ -11,7 +11,7 @@ namespace services
         return type;
     }
 
-    Gatt::Handle& GattIdentifier::NativeHandle()
+    Gatt::Handle& GattIdentifier::Handle()
     {
         return handle;
     }
@@ -29,12 +29,12 @@ namespace services
         service.AddCharacteristic(*this);
     }
 
-    GattCharacteristic& GattCharacteristic::operator=(const char* data)
+    void GattCharacteristic::Update(infra::ConstByteRange data, infra::Function<void()> onDone)
     {
-        if (Attached())
-            Subject().Update(*this, infra::MakeStringByteRange(data));
+        really_assert(data.size() <= valueLength);
 
-        return *this;
+        if (Attached())
+            Subject().Update(*this, data);
     }
 
     Gatt::Handle GattCharacteristic::ServiceHandle() const
