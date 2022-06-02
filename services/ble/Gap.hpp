@@ -51,6 +51,14 @@ namespace services
         Connected
     };
 
+    class GapBonding
+    {
+    public:
+        virtual void RemoveAllBonds() = 0;
+    };
+
+    class GapPeripheral;
+
     class GapPeripheralObserver
         : public infra::SingleObserver<GapPeripheralObserver, GapPeripheral>
     {
