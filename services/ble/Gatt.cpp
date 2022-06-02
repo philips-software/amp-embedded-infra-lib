@@ -34,12 +34,17 @@ namespace services
         really_assert(data.size() <= valueLength);
 
         if (Attached())
-            Subject().Update(*this, data);
+            GattCharacteristicClientOperationsObserver::Subject().Update(*this, data);
     }
 
     Gatt::Handle GattCharacteristic::ServiceHandle() const
     {
         return service.Handle();
+    }
+
+    Gatt::Handle GattCharacteristic::CharacteristcHandle() const
+    {
+        return Handle();
     }
 
     uint16_t GattCharacteristic::ValueLength() const

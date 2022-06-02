@@ -54,12 +54,51 @@ namespace services
         Gatt::Handle handle;
     };
 
+    class GattCharacteristicSubject;
+
+    class GattCharacteristicObserver
+        : public infra::Observer<GattCharacteristicObserver, GattCharacteristicSubject>
+    {
+    public:
+        using infra::Observer<GattCharacteristicObserver, GattCharacteristicSubject>::Observer;
+
+        virtual void DataReceived(infra::ConstByteRange data) = 0;
+    };
+
+    class GattCharacteristicSubject
+        : public infra::Subject<GattCharacteristicObserver>
+    {};
+
     class GattCharacteristicClientOperations;
+
+    class GattCharacteristicClientOperationsObserver
+        : public infra::Observer<GattCharacteristicClientOperationsObserver, GattCharacteristicClientOperations>
+    {
+    public:
+        using infra::Observer<GattCharacteristicClientOperationsObserver, GattCharacteristicClientOperations>::Observer;
+
+        virtual Gatt::Handle ServiceHandle() const = 0;
+        virtual Gatt::Handle CharacteristcHandle() const = 0;
+    };
+
+    class GattCharacteristicClientOperations
+        : public infra::Subject<GattCharacteristicClientOperationsObserver>
+    {
+    public:
+        // Update 'characteristic' with 'data' towards the
+        // BLE stack and, depending on the configuration of
+        // that 'characteristic', send a notification or indication.
+        // Returns true on success, or false on failure (i.e. BLE
+        // stack indicates an issue with updating or sending data).
+        virtual bool Update(const GattCharacteristicClientOperationsObserver& characteristic, infra::ConstByteRange data) const = 0;
+    };
+
     class GattService;
 
     class GattCharacteristic
         : public infra::IntrusiveForwardList<GattCharacteristic>::NodeType
-        , public infra::Observer<GattCharacteristic, GattCharacteristicClientOperations>
+        , public GattCharacteristicClientOperationsObserver
+        , public GattCharacteristicSubject
         , public GattIdentifier
     {
     public:
@@ -67,7 +106,9 @@ namespace services
 
         void Update(infra::ConstByteRange data, infra::Function<void()> onDone);
 
-        Gatt::Handle ServiceHandle() const;
+        virtual Gatt::Handle ServiceHandle() const;
+        virtual Gatt::Handle CharacteristcHandle() const;
+
         uint16_t ValueLength() const;
 
     private:
@@ -95,18 +136,6 @@ namespace services
     {
     public:
         virtual void AddService(GattService& service) = 0;
-    };
-
-    class GattCharacteristicClientOperations
-        : public infra::Subject<GattCharacteristic>
-    {
-    public:
-        // Update 'characteristic' with 'data' towards the
-        // BLE stack and, depending on the configuration of
-        // that 'characteristic', send a notification or indication.
-        // Returns true on success, or false on failure (i.e. BLE
-        // stack indicates an issue with updating or sending data).
-        virtual bool Update(const GattCharacteristic& characteristic, infra::ConstByteRange data) const = 0;
     };
 }
 

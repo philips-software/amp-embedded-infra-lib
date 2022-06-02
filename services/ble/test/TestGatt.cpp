@@ -5,7 +5,7 @@ class GattCharacteristicClientOperationsMock
     : public services::GattCharacteristicClientOperations
 {
 public:
-    MOCK_CONST_METHOD2(Update, bool(const services::GattCharacteristic& characteristic, infra::ConstByteRange data));
+    MOCK_CONST_METHOD2(Update, bool(const services::GattCharacteristicClientOperationsObserver& characteristic, infra::ConstByteRange data));
 };
 
 TEST(UuidTest, should_support_uuid16)
