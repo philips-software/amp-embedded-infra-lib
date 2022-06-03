@@ -23,6 +23,7 @@ namespace application
         virtual void UpdateBondedDevice(hal::MacAddress address) = 0;
         virtual void RemoveBond(hal::MacAddress address) = 0;
         virtual void RemoveAllBonds() = 0;
+        virtual void RemoveBondIf(infra::Function<bool(hal::MacAddress)> onAddress) = 0;
         virtual uint32_t GetMaxNumberOfBonds() const = 0;
         virtual bool IsBondStored(hal::MacAddress address) = 0;
         virtual void GetBondedDevices(infra::Function<void(hal::MacAddress)> onAddress) = 0;
@@ -32,7 +33,7 @@ namespace application
         : public BondStorageManager
     {
     public:
-        BondStorageManagerImpl(infra::MemoryRange<BondStorage*> bondStorages, uint32_t referenceBondStoragePosition);
+        BondStorageManagerImpl(BondStorage& referencebondStorage, BondStorage& otherbondStorage);
 
         // Implementation of BondStorageManager
         virtual void UpdateBondedDevice(hal::MacAddress address) override;
@@ -44,8 +45,8 @@ namespace application
         void SyncBondStorages();
 
     private:
-        infra::MemoryRange<BondStorage*> bondStorages;
-        BondStorage* referenceStorage = nullptr;
+        BondStorage& referencebondStorage;
+        BondStorage& otherbondStorage;
         uint32_t maxNumberOfBonds;
     };
 }

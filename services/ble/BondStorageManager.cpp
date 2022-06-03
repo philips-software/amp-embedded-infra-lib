@@ -3,37 +3,36 @@
 
 namespace application
 {
-    BondStorageManagerImpl::BondStorageManagerImpl(infra::MemoryRange<BondStorage*> bondStorages, uint32_t referenceBondStoragePosition)
-        : bondStorages(bondStorages)
-        , referenceStorage(bondStorages[referenceBondStoragePosition])
-        , maxNumberOfBonds(referenceStorage->GetMaxNumberOfBonds())
+    BondStorageManagerImpl::BondStorageManagerImpl(BondStorage& referencebondStorage, BondStorage& otherbondStorage)
+        : referencebondStorage(referencebondStorage)
+        , otherbondStorage(otherbondStorage)
+        , maxNumberOfBonds(referencebondStorage.GetMaxNumberOfBonds())
     {
-        for (auto& bondStorage : bondStorages)
-        {
-            bondStorage->BondStorageManagerCreated(*this);
-            if (bondStorage->GetMaxNumberOfBonds() < maxNumberOfBonds)
-                std::abort();
-        }
+        otherbondStorage.BondStorageManagerCreated(*this);
+        referencebondStorage.BondStorageManagerCreated(*this);
+
+        if (otherbondStorage.GetMaxNumberOfBonds() < maxNumberOfBonds)
+            std::abort();
 
         SyncBondStorages();
     }
 
     void BondStorageManagerImpl::UpdateBondedDevice(hal::MacAddress address)
     {
-        for (auto& bondStorage : bondStorages)
-            bondStorage->UpdateBondedDevice(address);
+        referencebondStorage.UpdateBondedDevice(address);
+        otherbondStorage.UpdateBondedDevice(address);
     }
 
     void BondStorageManagerImpl::RemoveBond(hal::MacAddress address)
     {
-        for (auto& bondStorage : bondStorages)
-            bondStorage->RemoveBond(address);
+        referencebondStorage.RemoveBond(address);
+        otherbondStorage.RemoveBond(address);
     }
 
     void BondStorageManagerImpl::RemoveAllBonds()
     {
-        for (auto& bondStorage : bondStorages)
-            bondStorage->RemoveAllBonds();
+        referencebondStorage.RemoveAllBonds();
+        otherbondStorage.RemoveAllBonds();
     }
 
     uint32_t BondStorageManagerImpl::GetMaxNumberOfBonds() const
@@ -43,28 +42,15 @@ namespace application
 
     void BondStorageManagerImpl::SyncBondStorages()
     {
-        for (auto& bondStorage : bondStorages)
+        otherbondStorage.RemoveBondIf([this](hal::MacAddress address)
         {
-            if (bondStorage == referenceStorage)
-                continue;
+            return !referencebondStorage.IsBondStored(address);
+        });
 
-            bondStorage->GetBondedDevices([this, &bondStorage](hal::MacAddress address)
-            {
-                if (!referenceStorage->IsBondStored(address))
-                    bondStorage->RemoveBond(address);
-            });
-        }
-
-        referenceStorage->GetBondedDevices([this](hal::MacAddress address)
+        referencebondStorage.GetBondedDevices([this](hal::MacAddress address)
         {
-            for (auto& bondStorage : bondStorages)
-            {
-                if (bondStorage == referenceStorage)
-                    continue;
-
-                if (!bondStorage->IsBondStored(address))
-                    bondStorage->UpdateBondedDevice(address);
-            }
+            if (!otherbondStorage.IsBondStored(address))
+                otherbondStorage.UpdateBondedDevice(address);
         });
     }
 }
