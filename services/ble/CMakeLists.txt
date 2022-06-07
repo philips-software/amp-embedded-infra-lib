@@ -4,6 +4,8 @@ ccola_component(ble static_library)
         Gap.hpp
         Gatt.cpp
         Gatt.hpp
+        GattCharacteristicImpl.cpp
+        GattCharacteristicImpl.hpp
     )
 
     ccola_dependencies(

@@ -10,64 +10,28 @@
 
 namespace services
 {
-    class Gatt
+    struct GattAttribute
     {
-    public:
         using Uuid16 = uint16_t;
-        using Uuid32 = uint32_t;
         using Uuid128 = std::array<uint8_t, 16>;
-        using Uuid = infra::Variant<services::Gatt::Uuid16, services::Gatt::Uuid32, services::Gatt::Uuid128>;
+        using Uuid = infra::Variant<Uuid16, Uuid128>;
 
         using Handle = uint16_t;
 
-        enum class AccessPermission : uint8_t
-        {
-            none,
-            readable,
-            writeable,
-            readableAndWritable
-        };
-
-        enum class Encryption : uint8_t
-        {
-            none,
-            unauthenticated,
-            autenticated
-        };
+        const Uuid& type;
+        Handle handle;
     };
 
-    class GattIdentifier
-    {
-    public:
-        explicit GattIdentifier(const Gatt::Uuid& type);
-
-        GattIdentifier(GattIdentifier& other) = delete;
-        GattIdentifier& operator=(const GattIdentifier& other) = delete;
-
-        const Gatt::Uuid& Type() const;
-
-        Gatt::Handle& Handle();
-        Gatt::Handle Handle() const;
-
-    private:
-        const Gatt::Uuid& type;
-        Gatt::Handle handle;
-    };
-
-    class GattCharacteristicSubject;
+    class GattCharacteristic;
 
     class GattCharacteristicObserver
-        : public infra::Observer<GattCharacteristicObserver, GattCharacteristicSubject>
+        : public infra::Observer<GattCharacteristicObserver, GattCharacteristic>
     {
     public:
-        using infra::Observer<GattCharacteristicObserver, GattCharacteristicSubject>::Observer;
+        using infra::Observer<GattCharacteristicObserver, GattCharacteristic>::Observer;
 
         virtual void DataReceived(infra::ConstByteRange data) = 0;
     };
-
-    class GattCharacteristicSubject
-        : public infra::Subject<GattCharacteristicObserver>
-    {};
 
     class GattCharacteristicClientOperations;
 
@@ -77,8 +41,8 @@ namespace services
     public:
         using infra::Observer<GattCharacteristicClientOperationsObserver, GattCharacteristicClientOperations>::Observer;
 
-        virtual Gatt::Handle ServiceHandle() const = 0;
-        virtual Gatt::Handle CharacteristcHandle() const = 0;
+        virtual GattAttribute::Handle ServiceHandle() const = 0;
+        virtual GattAttribute::Handle CharacteristicHandle() const = 0;
     };
 
     class GattCharacteristicClientOperations
@@ -93,42 +57,59 @@ namespace services
         virtual bool Update(const GattCharacteristicClientOperationsObserver& characteristic, infra::ConstByteRange data) const = 0;
     };
 
-    class GattService;
-
     class GattCharacteristic
-        : public infra::IntrusiveForwardList<GattCharacteristic>::NodeType
-        , public GattCharacteristicClientOperationsObserver
-        , public GattCharacteristicSubject
-        , public GattIdentifier
+        : public GattCharacteristicClientOperationsObserver
+        , public infra::Subject<GattCharacteristicObserver>
+        , public infra::IntrusiveForwardList<GattCharacteristic>::NodeType
     {
     public:
-        GattCharacteristic(GattService& service, const Gatt::Uuid& type, uint16_t valueLength);
+        enum class AccessPermission : uint8_t
+        {
+            none,
+            readable,
+            writeable,
+            readableAndWritable
+        };
 
-        void Update(infra::ConstByteRange data, infra::Function<void()> onDone);
+        enum class Encryption : uint8_t
+        {
+            none,
+            unauthenticated,
+            autenticated
+        };
 
-        virtual Gatt::Handle ServiceHandle() const;
-        virtual Gatt::Handle CharacteristcHandle() const;
+    public:
+        GattCharacteristic() = default;
+        GattCharacteristic(GattCharacteristic& other) = delete;
+        GattCharacteristic& operator=(const GattCharacteristic& other) = delete;
 
-        uint16_t ValueLength() const;
+        virtual GattAttribute::Uuid Type() const = 0;
 
-    private:
-        const GattService& service;
-        uint16_t valueLength;
-        Gatt::AccessPermission accessPermission{ Gatt::AccessPermission::none };
-        Gatt::Encryption encryption{ Gatt::Encryption::none };
-        bool AuthorizationRequired{ false };
+        virtual GattAttribute::Handle Handle() const = 0;
+        virtual GattAttribute::Handle& Handle() = 0;
+
+        virtual uint16_t ValueLength() const = 0;
+
+        virtual void Update(infra::ConstByteRange data, infra::Function<void()> onDone) = 0;
     };
 
     class GattService
-        : public GattIdentifier
     {
     public:
-        using GattIdentifier::GattIdentifier;
+        GattService(const GattAttribute::Uuid& type);
+        GattService(GattService& other) = delete;
+        GattService& operator=(const GattService& other) = delete;
 
         void AddCharacteristic(const GattCharacteristic& characteristic);
         infra::IntrusiveForwardList<GattCharacteristic>& Characteristics();
 
+        GattAttribute::Uuid Type() const;
+
+        GattAttribute::Handle Handle() const;
+        GattAttribute::Handle& Handle();
+
     private:
+        GattAttribute attribute;
         infra::IntrusiveForwardList<GattCharacteristic> characteristics;
     };
 
