@@ -2,6 +2,7 @@
 #define SERVICES_GATT_HPP
 
 #include "infra/util/ByteRange.hpp"
+#include "infra/util/EnumCast.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/IntrusiveForwardList.hpp"
 #include "infra/util/Observer.hpp"
@@ -18,7 +19,7 @@ namespace services
 
         using Handle = uint16_t;
 
-        const Uuid& type;
+        const Uuid type;
         Handle handle;
     };
 
@@ -63,19 +64,32 @@ namespace services
         , public infra::IntrusiveForwardList<GattCharacteristic>::NodeType
     {
     public:
-        enum class AccessPermission : uint8_t
+        // Values taken from Bluetooth Core Specification
+        // Volume 3, Part G, section 3.3.1.1
+        enum class Properties : uint8_t
         {
-            none,
-            readable,
-            writeable,
-            readableAndWritable
+            none = 0x00,
+            broadcast = 0x01,
+            read = 0x02,
+            writeWithoutResponse = 0x04,
+            write = 0x08,
+            notify = 0x10,
+            indicate = 0x20,
+            signedWrite = 0x40,
+            extended = 0x80
         };
 
-        enum class Encryption : uint8_t
+        // Description in Bluetooth Core Specification
+        // Volume 3, Part F, section 3.2.5
+        enum class Permissions : uint8_t
         {
-            none,
-            unauthenticated,
-            autenticated
+            none = 0x00,
+            authenticatedRead = 0x01,
+            authorizedRead = 0x02,
+            encryptedRead = 0x04,
+            authenticatedWrite = 0x08,
+            authorizedWrite = 0x10,
+            encryptedWrite = 0x20
         };
 
     public:
@@ -84,6 +98,8 @@ namespace services
         GattCharacteristic& operator=(const GattCharacteristic& other) = delete;
 
         virtual GattAttribute::Uuid Type() const = 0;
+        virtual Properties CharacteristicProperties() const = 0;
+        virtual Permissions CharacteristicPermissions() const = 0;
 
         virtual GattAttribute::Handle Handle() const = 0;
         virtual GattAttribute::Handle& Handle() = 0;
@@ -92,6 +108,16 @@ namespace services
 
         virtual void Update(infra::ConstByteRange data, infra::Function<void()> onDone) = 0;
     };
+
+    inline GattCharacteristic::Properties operator|(GattCharacteristic::Properties lhs, GattCharacteristic::Properties rhs)
+    {
+        return static_cast<GattCharacteristic::Properties>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
+    }
+
+    inline GattCharacteristic::Permissions operator|(GattCharacteristic::Permissions lhs, GattCharacteristic::Permissions rhs)
+    {
+        return static_cast<GattCharacteristic::Permissions>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
+    }
 
     class GattService
     {

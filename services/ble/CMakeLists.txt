@@ -6,6 +6,7 @@ ccola_component(ble static_library)
         Gatt.hpp
         GattCharacteristicImpl.cpp
         GattCharacteristicImpl.hpp
+        Uuids.hpp
     )
 
     ccola_dependencies(
