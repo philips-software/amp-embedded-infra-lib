@@ -4,6 +4,10 @@ ccola_component(ble static_library)
         BondStorageManager.cpp
         BondStorageManager.hpp
         Gap.hpp
+        Gatt.cpp
+        Gatt.hpp
+        GattCharacteristicImpl.cpp
+        GattCharacteristicImpl.hpp
     )
 
     ccola_dependencies(
