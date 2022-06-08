@@ -3,17 +3,17 @@
 #include "gmock/gmock.h"
 
 class BondStorageMock
-    : public application::BondStorage
+    : public services::BondStorage
 {
 public:
-    MOCK_METHOD1(BondStorageManagerCreated, void(application::BondStorageManager& manager));
+    MOCK_METHOD1(BondStorageManagerCreated, void(services::BondStorageManager& manager));
     MOCK_METHOD1(UpdateBondedDevice, void(hal::MacAddress address));
     MOCK_METHOD1(RemoveBond, void(hal::MacAddress address));
     MOCK_METHOD0(RemoveAllBonds, void());
     MOCK_METHOD1(RemoveBondIf, void(infra::Function<bool(hal::MacAddress)> onAddress));
     MOCK_CONST_METHOD0(GetMaxNumberOfBonds, uint32_t());
     MOCK_METHOD1(IsBondStored, bool(hal::MacAddress address));
-    MOCK_METHOD1(GetBondedDevices, void(infra::Function<void(hal::MacAddress)> onAddress));
+    MOCK_METHOD1(IterateBondedDevices, void(infra::Function<void(hal::MacAddress)> onAddress));
 };
 
 class BondStorageManagerTest
@@ -45,7 +45,7 @@ public:
             }
         });
 
-        EXPECT_CALL(referenceStorage, GetBondedDevices(testing::_)).WillOnce([this, list](infra::Function<void(hal::MacAddress)> onAddress)
+        EXPECT_CALL(referenceStorage, IterateBondedDevices(testing::_)).WillOnce([this, list](infra::Function<void(hal::MacAddress)> onAddress)
         {
             for(auto address : list)
             {
@@ -69,7 +69,7 @@ TEST_F(BondStorageManagerTest, construction_notifies_bondstorages_of_creation_ch
     ExpectBondStorageManagerCreated();
     ExpectGetMaxNumberOfBonds();
     ExpectSyncBondStoragesEqualList();
-    application::BondStorageManagerImpl bondStorageManager(referenceStorage, otherStorage);
+    services::BondStorageManagerImpl bondStorageManager(referenceStorage, otherStorage);
 }
 
 TEST_F(BondStorageManagerTest, construction_synchronises_empty_bond_storages)
@@ -78,9 +78,9 @@ TEST_F(BondStorageManagerTest, construction_synchronises_empty_bond_storages)
     ExpectGetMaxNumberOfBonds();
 
     EXPECT_CALL(otherStorage, RemoveBondIf(testing::_));
-    EXPECT_CALL(referenceStorage, GetBondedDevices(testing::_));
+    EXPECT_CALL(referenceStorage, IterateBondedDevices(testing::_));
 
-    application::BondStorageManagerImpl bondStorageManager(referenceStorage, otherStorage);
+    services::BondStorageManagerImpl bondStorageManager(referenceStorage, otherStorage);
 }
 
 TEST_F(BondStorageManagerTest, construction_synchronises_empty_reference_bond_storages)
@@ -103,9 +103,9 @@ TEST_F(BondStorageManagerTest, construction_synchronises_empty_reference_bond_st
         EXPECT_EQ(shouldRemove, true);
     });
 
-    EXPECT_CALL(referenceStorage, GetBondedDevices(testing::_));
+    EXPECT_CALL(referenceStorage, IterateBondedDevices(testing::_));
 
-    application::BondStorageManagerImpl bondStorageManager(referenceStorage, otherStorage);
+    services::BondStorageManagerImpl bondStorageManager(referenceStorage, otherStorage);
 }
 
 TEST_F(BondStorageManagerTest, construction_synchronises_empty_other_bond_storages)
@@ -117,7 +117,7 @@ TEST_F(BondStorageManagerTest, construction_synchronises_empty_other_bond_storag
 
     EXPECT_CALL(otherStorage, RemoveBondIf(testing::_));
 
-    EXPECT_CALL(referenceStorage, GetBondedDevices(testing::_)).WillOnce([this, referenceList](infra::Function<void(hal::MacAddress)> onAddress)
+    EXPECT_CALL(referenceStorage, IterateBondedDevices(testing::_)).WillOnce([this, referenceList](infra::Function<void(hal::MacAddress)> onAddress)
     {
         EXPECT_CALL(otherStorage, IsBondStored(infra::CheckByteRangeContents(infra::MakeRange(referenceList.front())))).WillOnce(testing::Return(false));
         EXPECT_CALL(otherStorage, UpdateBondedDevice(infra::CheckByteRangeContents(infra::MakeRange(referenceList.front()))));
@@ -128,7 +128,7 @@ TEST_F(BondStorageManagerTest, construction_synchronises_empty_other_bond_storag
         onAddress(referenceList.back());
     });
 
-    application::BondStorageManagerImpl bondStorageManager(referenceStorage, otherStorage);
+    services::BondStorageManagerImpl bondStorageManager(referenceStorage, otherStorage);
 }
 
 TEST_F(BondStorageManagerTest, construction_synchronises_unequal_bond_storages)
@@ -151,7 +151,7 @@ TEST_F(BondStorageManagerTest, construction_synchronises_unequal_bond_storages)
         EXPECT_EQ(shouldRemove, true);
     });
 
-    EXPECT_CALL(referenceStorage, GetBondedDevices(testing::_)).WillOnce([this, referenceList](infra::Function<void(hal::MacAddress)> onAddress)
+    EXPECT_CALL(referenceStorage, IterateBondedDevices(testing::_)).WillOnce([this, referenceList](infra::Function<void(hal::MacAddress)> onAddress)
     {
         EXPECT_CALL(otherStorage, IsBondStored(infra::CheckByteRangeContents(infra::MakeRange(referenceList.front())))).WillOnce(testing::Return(true));
         onAddress(referenceList.front());
@@ -161,7 +161,7 @@ TEST_F(BondStorageManagerTest, construction_synchronises_unequal_bond_storages)
         onAddress(referenceList.back());
     });
 
-    application::BondStorageManagerImpl bondStorageManager(referenceStorage, otherStorage);
+    services::BondStorageManagerImpl bondStorageManager(referenceStorage, otherStorage);
 }
 
 TEST_F(BondStorageManagerTest, bonded_device_connected_is_forwarded_to_bondstorages)
@@ -169,7 +169,7 @@ TEST_F(BondStorageManagerTest, bonded_device_connected_is_forwarded_to_bondstora
     ExpectBondStorageManagerCreated();
     ExpectGetMaxNumberOfBonds();
     ExpectSyncBondStoragesEqualList();
-    application::BondStorageManagerImpl bondStorageManager(referenceStorage, otherStorage);
+    services::BondStorageManagerImpl bondStorageManager(referenceStorage, otherStorage);
 
     EXPECT_CALL(referenceStorage, UpdateBondedDevice(infra::CheckByteRangeContents(infra::MakeRange(address1))));
     EXPECT_CALL(otherStorage, UpdateBondedDevice(infra::CheckByteRangeContents(infra::MakeRange(address1))));
@@ -181,7 +181,7 @@ TEST_F(BondStorageManagerTest, remove_bond_is_forwarded_to_bondstorages)
     ExpectBondStorageManagerCreated();
     ExpectGetMaxNumberOfBonds();
     ExpectSyncBondStoragesEqualList();
-    application::BondStorageManagerImpl bondStorageManager(referenceStorage, otherStorage);
+    services::BondStorageManagerImpl bondStorageManager(referenceStorage, otherStorage);
 
     EXPECT_CALL(referenceStorage, RemoveBond(infra::CheckByteRangeContents(infra::MakeRange(address1))));
     EXPECT_CALL(otherStorage, RemoveBond(infra::CheckByteRangeContents(infra::MakeRange(address1))));
@@ -193,7 +193,7 @@ TEST_F(BondStorageManagerTest, remove_all_bonds_is_forwarded_to_bondstorages)
     ExpectBondStorageManagerCreated();
     ExpectGetMaxNumberOfBonds();
     ExpectSyncBondStoragesEqualList();
-    application::BondStorageManagerImpl bondStorageManager(referenceStorage, otherStorage);
+    services::BondStorageManagerImpl bondStorageManager(referenceStorage, otherStorage);
 
     EXPECT_CALL(referenceStorage, RemoveAllBonds());
     EXPECT_CALL(otherStorage, RemoveAllBonds());

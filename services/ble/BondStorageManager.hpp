@@ -5,10 +5,13 @@
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/Function.hpp"
 
-namespace application
+namespace services
 {
     class BondStorageManager
     {
+    protected:
+        ~BondStorageManager() = default;
+
     public:
         virtual void UpdateBondedDevice(hal::MacAddress address) = 0;
         virtual void RemoveBond(hal::MacAddress address) = 0;
@@ -18,6 +21,9 @@ namespace application
 
     class BondStorage
     {
+    protected:
+        ~BondStorage() = default;
+
     public:
         virtual void BondStorageManagerCreated(BondStorageManager& manager) = 0;
         virtual void UpdateBondedDevice(hal::MacAddress address) = 0;
@@ -26,7 +32,7 @@ namespace application
         virtual void RemoveBondIf(infra::Function<bool(hal::MacAddress)> onAddress) = 0;
         virtual uint32_t GetMaxNumberOfBonds() const = 0;
         virtual bool IsBondStored(hal::MacAddress address) = 0;
-        virtual void GetBondedDevices(infra::Function<void(hal::MacAddress)> onAddress) = 0;
+        virtual void IterateBondedDevices(infra::Function<void(hal::MacAddress)> onAddress) = 0;
     };
 
     class BondStorageManagerImpl

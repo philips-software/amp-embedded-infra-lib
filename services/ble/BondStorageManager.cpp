@@ -1,7 +1,7 @@
 #include "services/ble/BondStorageManager.hpp"
 #include <algorithm>
 
-namespace application
+namespace services
 {
     BondStorageManagerImpl::BondStorageManagerImpl(BondStorage& referencebondStorage, BondStorage& otherbondStorage)
         : referencebondStorage(referencebondStorage)
@@ -47,7 +47,7 @@ namespace application
             return !referencebondStorage.IsBondStored(address);
         });
 
-        referencebondStorage.GetBondedDevices([this](hal::MacAddress address)
+        referencebondStorage.IterateBondedDevices([this](hal::MacAddress address)
         {
             if (!otherbondStorage.IsBondStored(address))
                 otherbondStorage.UpdateBondedDevice(address);
