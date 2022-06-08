@@ -19,6 +19,16 @@ namespace services
         MOCK_METHOD1(IsBondStored, bool(hal::MacAddress address));
         MOCK_METHOD1(IterateBondedDevices, void(const infra::Function<void(hal::MacAddress)>& onAddress));
     };
+
+    class BondStorageManagerMock
+        : public BondStorageManager
+    {
+    public:
+        MOCK_METHOD1(UpdateBondedDevice, void(hal::MacAddress address));
+        MOCK_METHOD1(RemoveBond, void(hal::MacAddress address));
+        MOCK_METHOD0(RemoveAllBonds, void());
+        MOCK_CONST_METHOD0(GetMaxNumberOfBonds, uint32_t());
+    };
 }
 
 #endif

@@ -1,7 +1,7 @@
 ccola_component(ble_test_doubles source)
 
     ccola_sources(
-        BondStorageMock.hpp
+        BondStorageManagerMock.hpp
     )
 
     ccola_dependencies(
