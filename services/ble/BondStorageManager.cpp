@@ -3,15 +3,15 @@
 
 namespace services
 {
-    BondStorageManagerImpl::BondStorageManagerImpl(BondStorage& referencebondStorage, BondStorage& otherbondStorage)
-        : referencebondStorage(referencebondStorage)
-        , otherbondStorage(otherbondStorage)
-        , maxNumberOfBonds(referencebondStorage.GetMaxNumberOfBonds())
+    BondStorageManagerImpl::BondStorageManagerImpl(BondStorage& referenceBondStorage, BondStorage& otherBondStorage)
+        : referenceBondStorage(referenceBondStorage)
+        , otherBondStorage(otherBondStorage)
+        , maxNumberOfBonds(referenceBondStorage.GetMaxNumberOfBonds())
     {
-        otherbondStorage.BondStorageManagerCreated(*this);
-        referencebondStorage.BondStorageManagerCreated(*this);
+        otherBondStorage.BondStorageManagerCreated(*this);
+        referenceBondStorage.BondStorageManagerCreated(*this);
 
-        if (otherbondStorage.GetMaxNumberOfBonds() < maxNumberOfBonds)
+        if (otherBondStorage.GetMaxNumberOfBonds() < maxNumberOfBonds)
             std::abort();
 
         SyncBondStorages();
@@ -19,20 +19,20 @@ namespace services
 
     void BondStorageManagerImpl::UpdateBondedDevice(hal::MacAddress address)
     {
-        referencebondStorage.UpdateBondedDevice(address);
-        otherbondStorage.UpdateBondedDevice(address);
+        referenceBondStorage.UpdateBondedDevice(address);
+        otherBondStorage.UpdateBondedDevice(address);
     }
 
     void BondStorageManagerImpl::RemoveBond(hal::MacAddress address)
     {
-        referencebondStorage.RemoveBond(address);
-        otherbondStorage.RemoveBond(address);
+        referenceBondStorage.RemoveBond(address);
+        otherBondStorage.RemoveBond(address);
     }
 
     void BondStorageManagerImpl::RemoveAllBonds()
     {
-        referencebondStorage.RemoveAllBonds();
-        otherbondStorage.RemoveAllBonds();
+        referenceBondStorage.RemoveAllBonds();
+        otherBondStorage.RemoveAllBonds();
     }
 
     uint32_t BondStorageManagerImpl::GetMaxNumberOfBonds() const
@@ -42,15 +42,15 @@ namespace services
 
     void BondStorageManagerImpl::SyncBondStorages()
     {
-        otherbondStorage.RemoveBondIf([this](hal::MacAddress address)
-        {
-            return !referencebondStorage.IsBondStored(address);
-        });
+        otherBondStorage.RemoveBondIf([this](hal::MacAddress address)
+            {
+                return !referenceBondStorage.IsBondStored(address);
+            });
 
-        referencebondStorage.IterateBondedDevices([this](hal::MacAddress address)
-        {
-            if (!otherbondStorage.IsBondStored(address))
-                otherbondStorage.UpdateBondedDevice(address);
-        });
+        referenceBondStorage.IterateBondedDevices([this](hal::MacAddress address)
+            {
+                if (!otherBondStorage.IsBondStored(address))
+                    otherBondStorage.UpdateBondedDevice(address);
+            });
     }
 }
