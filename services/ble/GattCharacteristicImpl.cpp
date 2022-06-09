@@ -3,9 +3,19 @@
 namespace services
 {
     GattCharacteristicImpl::GattCharacteristicImpl(GattService& service, const GattAttribute::Uuid& type, uint16_t valueLength)
+        : GattCharacteristicImpl(service, type, valueLength, Properties::read)
+    {}
+
+    GattCharacteristicImpl::GattCharacteristicImpl(GattService& service, const GattAttribute::Uuid& type, uint16_t valueLength, Properties properties)
+        : GattCharacteristicImpl(service, type, valueLength, properties, Permissions::none)
+    {}
+
+    GattCharacteristicImpl::GattCharacteristicImpl(GattService& service, const GattAttribute::Uuid& type, uint16_t valueLength, Properties properties, Permissions permissions)
         : service{service}
         , attribute{type, 0}
         , valueLength{valueLength}
+        , properties{properties}
+        , permissions{permissions}
     {
         service.AddCharacteristic(*this);
     }
@@ -13,6 +23,16 @@ namespace services
     GattAttribute::Uuid GattCharacteristicImpl::Type() const
     {
         return attribute.type;
+    }
+
+    GattCharacteristic::Properties GattCharacteristicImpl::CharacteristicProperties() const
+    {
+        return properties;
+    }
+
+    GattCharacteristic::Permissions GattCharacteristicImpl::CharacteristicPermissions() const
+    {
+        return permissions;
     }
 
     GattAttribute::Handle GattCharacteristicImpl::Handle() const

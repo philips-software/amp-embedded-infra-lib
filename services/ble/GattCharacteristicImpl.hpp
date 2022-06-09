@@ -10,9 +10,13 @@ namespace services
     {
     public:
         GattCharacteristicImpl(GattService& service, const GattAttribute::Uuid& type, uint16_t valueLength);
+        GattCharacteristicImpl(GattService& service, const GattAttribute::Uuid& type, uint16_t valueLength, Properties properties);
+        GattCharacteristicImpl(GattService& service, const GattAttribute::Uuid& type, uint16_t valueLength, Properties properties, Permissions permissions);
 
         // from GattCharacteristic
         virtual GattAttribute::Uuid Type() const;
+        virtual Properties CharacteristicProperties() const;
+        virtual Permissions CharacteristicPermissions() const;
 
         virtual GattAttribute::Handle Handle() const;
         virtual GattAttribute::Handle& Handle();
@@ -29,9 +33,8 @@ namespace services
         const GattService& service;
         GattAttribute attribute;
         uint16_t valueLength;
-        AccessPermission accessPermission{ AccessPermission::none };
-        Encryption encryption{ Encryption::none };
-        bool AuthorizationRequired{ false };
+        Properties properties;
+        Permissions permissions;
     };
 }
 
