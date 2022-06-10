@@ -42,7 +42,17 @@ namespace services
         static constexpr uint8_t maxScanResponseDataSize = 31;
     };
 
-    class GapPeripheral;
+    class GapPeripheralPairing
+    {
+    public:
+        virtual void AllowPairing(bool allow) = 0;
+    };
+
+    class GapPeripheralBonding
+    {
+    public:
+        virtual void RemoveAllBonds() = 0;
+    };
 
     enum class GapPeripheralState : uint8_t
     {
@@ -50,6 +60,8 @@ namespace services
         Advertising,
         Connected
     };
+
+    class GapPeripheral;
 
     class GapPeripheralObserver
         : public infra::SingleObserver<GapPeripheralObserver, GapPeripheral>
