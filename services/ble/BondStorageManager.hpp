@@ -36,7 +36,7 @@ namespace services
         virtual void RemoveAllBonds() = 0;
         virtual void RemoveBondIf(const infra::Function<bool(hal::MacAddress)>& onAddress) = 0;
         virtual uint32_t GetMaxNumberOfBonds() const = 0;
-        virtual bool IsBondStored(hal::MacAddress address) = 0;
+        virtual bool IsBondStored(hal::MacAddress address) const = 0;
         virtual void IterateBondedDevices(const infra::Function<void(hal::MacAddress)>& onAddress) = 0;
     };
 

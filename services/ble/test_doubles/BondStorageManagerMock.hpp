@@ -16,7 +16,7 @@ namespace services
         MOCK_METHOD0(RemoveAllBonds, void());
         MOCK_METHOD1(RemoveBondIf, void(const infra::Function<bool(hal::MacAddress)>& onAddress));
         MOCK_CONST_METHOD0(GetMaxNumberOfBonds, uint32_t());
-        MOCK_METHOD1(IsBondStored, bool(hal::MacAddress address));
+        MOCK_CONST_METHOD1(IsBondStored, bool(hal::MacAddress address));
         MOCK_METHOD1(IterateBondedDevices, void(const infra::Function<void(hal::MacAddress)>& onAddress));
     };
 
