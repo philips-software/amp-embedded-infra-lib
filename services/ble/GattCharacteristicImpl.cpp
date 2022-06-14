@@ -20,11 +20,6 @@ namespace services
         service.AddCharacteristic(*this);
     }
 
-    GattAttribute::Uuid GattCharacteristicImpl::Type() const
-    {
-        return attribute.type;
-    }
-
     GattCharacteristic::Properties GattCharacteristicImpl::CharacteristicProperties() const
     {
         return properties;
@@ -33,6 +28,11 @@ namespace services
     GattCharacteristic::Permissions GattCharacteristicImpl::CharacteristicPermissions() const
     {
         return permissions;
+    }
+
+    GattAttribute::Uuid GattCharacteristicImpl::Type() const
+    {
+        return attribute.type;
     }
 
     GattAttribute::Handle GattCharacteristicImpl::Handle() const
@@ -50,7 +50,7 @@ namespace services
         return valueLength;
     }
 
-    void GattCharacteristicImpl::Update(infra::ConstByteRange data, infra::Function<void()> onDone)
+    void GattCharacteristicImpl::Update(infra::ConstByteRange data, infra::Function<void()> onDone) const
     {
         really_assert(data.size() <= valueLength);
         really_assert(GattCharacteristicClientOperationsObserver::Attached());

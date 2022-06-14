@@ -97,16 +97,16 @@ namespace services
         GattCharacteristic(GattCharacteristic& other) = delete;
         GattCharacteristic& operator=(const GattCharacteristic& other) = delete;
 
-        virtual GattAttribute::Uuid Type() const = 0;
         virtual Properties CharacteristicProperties() const = 0;
         virtual Permissions CharacteristicPermissions() const = 0;
 
+        virtual GattAttribute::Uuid Type() const = 0;
         virtual GattAttribute::Handle Handle() const = 0;
         virtual GattAttribute::Handle& Handle() = 0;
 
         virtual uint16_t ValueLength() const = 0;
 
-        virtual void Update(infra::ConstByteRange data, infra::Function<void()> onDone) = 0;
+        virtual void Update(infra::ConstByteRange data, infra::Function<void()> onDone) const = 0;
     };
 
     inline GattCharacteristic::Properties operator|(GattCharacteristic::Properties lhs, GattCharacteristic::Properties rhs)
@@ -120,17 +120,18 @@ namespace services
     }
 
     class GattService
+        : public infra::IntrusiveForwardList<GattService>::NodeType
     {
     public:
-        GattService(const GattAttribute::Uuid& type);
+        explicit GattService(const GattAttribute::Uuid& type);
         GattService(GattService& other) = delete;
         GattService& operator=(const GattService& other) = delete;
 
         void AddCharacteristic(const GattCharacteristic& characteristic);
         infra::IntrusiveForwardList<GattCharacteristic>& Characteristics();
+        const infra::IntrusiveForwardList<GattCharacteristic>& Characteristics() const;
 
         GattAttribute::Uuid Type() const;
-
         GattAttribute::Handle Handle() const;
         GattAttribute::Handle& Handle();
 
