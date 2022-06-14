@@ -144,6 +144,21 @@ namespace services
     public:
         virtual void AddService(GattService& service) = 0;
     };
+
+    class AttMtuExchange;
+
+    class AttMtuExchangeObserver
+        : public infra::Observer<AttMtuExchangeObserver, AttMtuExchange>
+    {
+    public:
+        using infra::Observer<AttMtuExchangeObserver, AttMtuExchange>::Observer;
+
+        virtual void ExchangedMaxAttMtuSize(uint16_t maxAttMtuSize) = 0;
+    };
+
+    class AttMtuExchange
+        : public infra::Subject<AttMtuExchangeObserver>
+    {};
 }
 
 #endif
