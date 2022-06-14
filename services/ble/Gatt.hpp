@@ -66,39 +66,40 @@ namespace services
     public:
         // Values taken from Bluetooth Core Specification
         // Volume 3, Part G, section 3.3.1.1
-        enum class Properties : uint8_t
+        enum class PropertyFlags : uint8_t
         {
-            none = 0x00,
-            broadcast = 0x01,
-            read = 0x02,
-            writeWithoutResponse = 0x04,
-            write = 0x08,
-            notify = 0x10,
-            indicate = 0x20,
-            signedWrite = 0x40,
-            extended = 0x80
+            none = 0x00u,
+            broadcast = 0x01u,
+            read = 0x02u,
+            writeWithoutResponse = 0x04u,
+            write = 0x08u,
+            notify = 0x10u,
+            indicate = 0x20u,
+            signedWrite = 0x40u,
+            extended = 0x80u
         };
 
         // Description in Bluetooth Core Specification
         // Volume 3, Part F, section 3.2.5
-        enum class Permissions : uint8_t
+        enum class PermissionFlags : uint8_t
         {
-            none = 0x00,
-            authenticatedRead = 0x01,
-            authorizedRead = 0x02,
-            encryptedRead = 0x04,
-            authenticatedWrite = 0x08,
-            authorizedWrite = 0x10,
-            encryptedWrite = 0x20
+            none = 0x00u,
+            authenticatedRead = 0x01u,
+            authorizedRead = 0x02u,
+            encryptedRead = 0x04u,
+            authenticatedWrite = 0x08u,
+            authorizedWrite = 0x10u,
+            encryptedWrite = 0x20u
         };
 
     public:
         GattCharacteristic() = default;
         GattCharacteristic(GattCharacteristic& other) = delete;
         GattCharacteristic& operator=(const GattCharacteristic& other) = delete;
+        virtual ~GattCharacteristic() = default;
 
-        virtual Properties CharacteristicProperties() const = 0;
-        virtual Permissions CharacteristicPermissions() const = 0;
+        virtual PropertyFlags Properties() const = 0;
+        virtual PermissionFlags Permissions() const = 0;
 
         virtual GattAttribute::Uuid Type() const = 0;
         virtual GattAttribute::Handle Handle() const = 0;
@@ -109,14 +110,14 @@ namespace services
         virtual void Update(infra::ConstByteRange data, infra::Function<void()> onDone) const = 0;
     };
 
-    inline GattCharacteristic::Properties operator|(GattCharacteristic::Properties lhs, GattCharacteristic::Properties rhs)
+    inline GattCharacteristic::PropertyFlags operator|(GattCharacteristic::PropertyFlags lhs, GattCharacteristic::PropertyFlags rhs)
     {
-        return static_cast<GattCharacteristic::Properties>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
+        return static_cast<GattCharacteristic::PropertyFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
     }
 
-    inline GattCharacteristic::Permissions operator|(GattCharacteristic::Permissions lhs, GattCharacteristic::Permissions rhs)
+    inline GattCharacteristic::PermissionFlags operator|(GattCharacteristic::PermissionFlags lhs, GattCharacteristic::PermissionFlags rhs)
     {
-        return static_cast<GattCharacteristic::Permissions>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
+        return static_cast<GattCharacteristic::PermissionFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
     }
 
     class GattService
@@ -126,6 +127,7 @@ namespace services
         explicit GattService(const GattAttribute::Uuid& type);
         GattService(GattService& other) = delete;
         GattService& operator=(const GattService& other) = delete;
+        virtual ~GattService() = default;
 
         void AddCharacteristic(const GattCharacteristic& characteristic);
         infra::IntrusiveForwardList<GattCharacteristic>& Characteristics();
