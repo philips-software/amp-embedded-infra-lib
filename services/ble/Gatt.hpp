@@ -59,8 +59,7 @@ namespace services
     };
 
     class GattCharacteristic
-        : public GattCharacteristicClientOperationsObserver
-        , public infra::Subject<GattCharacteristicObserver>
+        : public infra::Subject<GattCharacteristicObserver>
         , public infra::IntrusiveForwardList<GattCharacteristic>::NodeType
     {
     public:
