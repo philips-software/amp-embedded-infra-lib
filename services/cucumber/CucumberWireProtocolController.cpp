@@ -60,14 +60,18 @@ namespace services
 
     void CucumberWireProtocolController::HandleBeginScenarioRequest(CucumberWireProtocolParser& parser)
     {
-        scenarioRequestHandler.BeginScenario();
-        connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize());
+        scenarioRequestHandler.BeginScenario([this]() 
+            {
+                connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize());
+            });
     }
 
     void CucumberWireProtocolController::HandleEndScenarioRequest()
     {
-        scenarioRequestHandler.EndScenario();
-        connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize());
+        scenarioRequestHandler.EndScenario([this]() 
+            {
+                connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize());
+            });
     }
 
     void CucumberWireProtocolController::HandleSnippetTextRequest()
