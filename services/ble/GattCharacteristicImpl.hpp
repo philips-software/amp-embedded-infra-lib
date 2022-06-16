@@ -21,7 +21,7 @@ namespace services
         virtual GattAttribute::Handle Handle() const;
         virtual GattAttribute::Handle& Handle();
         virtual uint16_t ValueLength() const;
-        virtual void Update(infra::ConstByteRange data, infra::Function<void()> onDone) const;
+        virtual void Update(infra::ConstByteRange data, infra::Function<void()> onDone);
 
         // Implementation of GattCharacteristicClientOperationsObserver
         virtual GattAttribute::Handle ServiceHandle() const;

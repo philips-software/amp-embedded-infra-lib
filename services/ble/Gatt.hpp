@@ -106,7 +106,7 @@ namespace services
 
         virtual uint16_t ValueLength() const = 0;
 
-        virtual void Update(infra::ConstByteRange data, infra::Function<void()> onDone) const = 0;
+        virtual void Update(infra::ConstByteRange data, infra::Function<void()> onDone) = 0;
     };
 
     inline GattCharacteristic::PropertyFlags operator|(GattCharacteristic::PropertyFlags lhs, GattCharacteristic::PropertyFlags rhs)

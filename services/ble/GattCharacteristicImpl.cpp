@@ -50,7 +50,7 @@ namespace services
         return valueLength;
     }
 
-    void GattCharacteristicImpl::Update(infra::ConstByteRange data, infra::Function<void()> onDone) const
+    void GattCharacteristicImpl::Update(infra::ConstByteRange data, infra::Function<void()> onDone)
     {
         really_assert(data.size() <= valueLength);
         really_assert(GattCharacteristicClientOperationsObserver::Attached());
