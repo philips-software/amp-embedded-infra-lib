@@ -1,5 +1,4 @@
 #include "services/ble/BondStorageManager.hpp"
-#include <algorithm>
 
 namespace services
 {

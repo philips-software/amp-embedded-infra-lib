@@ -10,22 +10,19 @@ namespace services
     {
     public:
         GattCharacteristicImpl(GattService& service, const GattAttribute::Uuid& type, uint16_t valueLength);
-        GattCharacteristicImpl(GattService& service, const GattAttribute::Uuid& type, uint16_t valueLength, Properties properties);
-        GattCharacteristicImpl(GattService& service, const GattAttribute::Uuid& type, uint16_t valueLength, Properties properties, Permissions permissions);
+        GattCharacteristicImpl(GattService& service, const GattAttribute::Uuid& type, uint16_t valueLength, PropertyFlags properties);
+        GattCharacteristicImpl(GattService& service, const GattAttribute::Uuid& type, uint16_t valueLength, PropertyFlags properties, PermissionFlags permissions);
 
-        // from GattCharacteristic
+        // Implementation of GattCharacteristic
+        virtual PropertyFlags Properties() const;
+        virtual PermissionFlags Permissions() const;
         virtual GattAttribute::Uuid Type() const;
-        virtual Properties CharacteristicProperties() const;
-        virtual Permissions CharacteristicPermissions() const;
-
         virtual GattAttribute::Handle Handle() const;
         virtual GattAttribute::Handle& Handle();
-
         virtual uint16_t ValueLength() const;
-
         virtual void Update(infra::ConstByteRange data, infra::Function<void()> onDone);
 
-        // from GattCharacteristicClientOperationsObserver
+        // Implementation of GattCharacteristicClientOperationsObserver
         virtual GattAttribute::Handle ServiceHandle() const;
         virtual GattAttribute::Handle CharacteristicHandle() const;
 
@@ -33,8 +30,8 @@ namespace services
         const GattService& service;
         GattAttribute attribute;
         uint16_t valueLength;
-        Properties properties;
-        Permissions permissions;
+        PropertyFlags properties;
+        PermissionFlags permissions;
     };
 }
 
