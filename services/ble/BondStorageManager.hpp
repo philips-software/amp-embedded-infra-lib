@@ -12,7 +12,7 @@ namespace services
         BondStorageManager() = default;
         BondStorageManager(const BondStorageManager& other) = delete;
         BondStorageManager& operator=(const BondStorageManager& other) = delete;
-        ~BondStorageManager() = default;
+        virtual ~BondStorageManager() = default;
 
     public:
         virtual void UpdateBondedDevice(hal::MacAddress address) = 0;
@@ -27,7 +27,7 @@ namespace services
         BondStorage() = default;
         BondStorage(const BondStorage& other) = delete;
         BondStorage& operator=(const BondStorage& other) = delete;
-        ~BondStorage() = default;
+        virtual ~BondStorage() = default;
 
     public:
         virtual void BondStorageManagerCreated(BondStorageManager& manager) = 0;
