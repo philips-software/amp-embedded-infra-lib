@@ -7,7 +7,6 @@ namespace services
 {
     class GattCharacteristicImpl
         : public GattCharacteristic
-        , public GattCharacteristicClientOperationsObserver
     {
     public:
         GattCharacteristicImpl(GattService& service, const GattAttribute::Uuid& type, uint16_t valueLength);

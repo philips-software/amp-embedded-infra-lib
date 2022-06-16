@@ -10,6 +10,9 @@ namespace services
         : public GattCharacteristic
     {
     public:
+        MOCK_CONST_METHOD0(ServiceHandle, GattAttribute::Handle());
+        MOCK_CONST_METHOD0(CharacteristicHandle, GattAttribute::Handle());
+
         MOCK_CONST_METHOD0(Properties, PropertyFlags());
         MOCK_CONST_METHOD0(Permissions, PermissionFlags());
         MOCK_CONST_METHOD0(Type, GattAttribute::Uuid());
