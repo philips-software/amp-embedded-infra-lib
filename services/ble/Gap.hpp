@@ -70,6 +70,8 @@ namespace services
 
         static constexpr uint8_t maxAdvertisementDataSize = 31;
         static constexpr uint8_t maxScanResponseDataSize = 31;
+        static constexpr uint16_t connectionInitialMaxTxOctets  = 251;
+        static constexpr uint16_t connectionInitialMaxTxTime = 2120; // (connectionInitialMaxTxOctets + 14) * 8
 
     public:
         virtual hal::MacAddress GetPublicAddress() const = 0;
