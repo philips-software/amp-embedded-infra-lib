@@ -8,8 +8,6 @@ namespace services
     class CucumberScenarioRequestHandler
     {
     public:
-        CucumberScenarioRequestHandler() = default;
-        ~CucumberScenarioRequestHandler() = default;
 
         virtual void BeginScenario(const infra::Function<void()>& onDone) { onDone(); };
         virtual void EndScenario(const infra::Function<void()>& onDone) { onDone(); };
