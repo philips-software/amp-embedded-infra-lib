@@ -22,13 +22,6 @@ namespace infra
     using result_of_t = std::invoke_result_t<F, ArgTypes...>;
 #endif
 
-    template<class T, class U>
-#if __cplusplus < 201703L
-    using is_same_v = typename std::is_same<T, U>::value;
-#else
-    inline constexpr bool is_same_v = std::is_same_v<T, U>;
-#endif
-
     template<bool B, class T = void>
 #if __cplusplus < 201402L
     using enable_if_t = typename enable_if<B, T>::type;
