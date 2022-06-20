@@ -6,6 +6,12 @@ target_include_directories(infra.util PUBLIC
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
+target_compile_options(infra.util PUBLIC
+    $<$<CXX_COMPILER_ID:MSVC>:
+        /Zc:__cplusplus
+    >
+)
+
 target_sources(infra.util PRIVATE
     Aligned.hpp
     Allocator.hpp
@@ -23,6 +29,7 @@ target_sources(infra.util PRIVATE
     BoundedVector.hpp
     ByteRange.hpp
     CompareMembers.hpp
+    Compatibility.hpp
     ConstructBin.cpp
     ConstructBin.hpp
     CrcCcittCalculator.cpp
