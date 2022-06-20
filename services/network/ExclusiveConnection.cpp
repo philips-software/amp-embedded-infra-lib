@@ -106,7 +106,7 @@ namespace services
 
         if (aborting)
             Connection::Observer().Abort();
-        if ((mutex.resource.ClaimsPending() && mutex.cancelConnectionOnNewRequest) || closing)
+        else if ((mutex.resource.ClaimsPending() && mutex.cancelConnectionOnNewRequest) || closing)
             Connection::Observer().Close();
 
     }

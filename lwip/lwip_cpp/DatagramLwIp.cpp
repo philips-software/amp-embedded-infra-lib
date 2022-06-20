@@ -44,7 +44,7 @@ namespace services
     void DatagramExchangeLwIP::Listen(uint16_t port, IPVersions versions)
     {
         control = CreateUdpPcb(versions);
-        assert(control != nullptr);
+        really_assert(control != nullptr);
         ip_set_option(control, SOF_BROADCAST);
         err_t result = udp_bind(control, IpAddrAny(versions), port);
         assert(result == ERR_OK);
@@ -55,7 +55,7 @@ namespace services
     void DatagramExchangeLwIP::Listen(IPVersions versions)
     {
         control = CreateUdpPcb(versions);
-        assert(control != nullptr);
+        really_assert(control != nullptr);
         ip_set_option(control, SOF_BROADCAST);
         err_t result = udp_bind(control, IpAddrAny(versions), 0);
         assert(result == ERR_OK);

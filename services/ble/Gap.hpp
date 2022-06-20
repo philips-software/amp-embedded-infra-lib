@@ -2,11 +2,43 @@
 #define SERVICES_GAP_HPP
 
 #include "hal/interfaces/MacAddress.hpp"
+#include "infra/util/EnumCast.hpp"
 #include "infra/util/Observer.hpp"
 
 namespace services
 {
-    class Gap
+    class GapPeripheralPairing
+    {
+    public:
+        virtual void AllowPairing(bool allow) = 0;
+    };
+
+    class GapPeripheralBonding
+    {
+    public:
+        virtual void RemoveAllBonds() = 0;
+    };
+
+    enum class GapPeripheralState : uint8_t
+    {
+        Standby,
+        Advertising,
+        Connected
+    };
+
+    class GapPeripheral;
+
+    class GapPeripheralObserver
+        : public infra::SingleObserver<GapPeripheralObserver, GapPeripheral>
+    {
+    public:
+        using infra::SingleObserver<GapPeripheralObserver, GapPeripheral>::SingleObserver;
+
+        virtual void State(GapPeripheralState state) = 0;
+    };
+
+    class GapPeripheral
+        : public infra::Subject<GapPeripheralObserver>
     {
     public:
         using AdvertisementIntervalMultiplier = uint16_t; // Interval = Multiplier * 0.625 ms.
@@ -27,8 +59,6 @@ namespace services
             manufacturerSpecificData = 0xffu
         };
 
-        using ScanResponseDataType = AdvertisementDataType;
-
         enum class AdvertisementFlags : uint8_t
         {
             leLimitedDiscoverableMode = 0x01u,
@@ -40,30 +70,9 @@ namespace services
 
         static constexpr uint8_t maxAdvertisementDataSize = 31;
         static constexpr uint8_t maxScanResponseDataSize = 31;
-    };
+        static constexpr uint16_t connectionInitialMaxTxOctets  = 251;
+        static constexpr uint16_t connectionInitialMaxTxTime = 2120; // (connectionInitialMaxTxOctets + 14) * 8
 
-    class GapPeripheral;
-
-    enum class GapPeripheralState : uint8_t
-    {
-        Standby,
-        Advertising,
-        Connected
-    };
-
-    class GapPeripheralObserver
-        : public infra::SingleObserver<GapPeripheralObserver, GapPeripheral>
-    {
-    public:
-        using infra::SingleObserver<GapPeripheralObserver, GapPeripheral>::SingleObserver;
-
-        virtual void State(GapPeripheralState state) = 0;
-    };
-
-    class GapPeripheral
-        : public Gap
-        , public infra::Subject<GapPeripheralObserver>
-    {
     public:
         virtual hal::MacAddress GetPublicAddress() const = 0;
         virtual void SetAdvertisementData(infra::ConstByteRange data) = 0;
@@ -71,6 +80,11 @@ namespace services
         virtual void Advertise(AdvertisementType type, AdvertisementIntervalMultiplier multiplier) = 0;
         virtual void Standby() = 0;
     };
+
+    inline GapPeripheral::AdvertisementFlags operator|(GapPeripheral::AdvertisementFlags lhs, GapPeripheral::AdvertisementFlags rhs)
+    {
+        return static_cast<GapPeripheral::AdvertisementFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
+    }
 }
 
 #endif
