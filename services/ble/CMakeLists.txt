@@ -1,7 +1,7 @@
 add_library(services.ble ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 install(TARGETS services.ble EXPORT emilServicesTargets)
 
-target_link_libraries(services.ble INTERFACE
+target_link_libraries(services.ble PUBLIC
     hal.interfaces
     infra.util
 )
