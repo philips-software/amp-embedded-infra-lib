@@ -1,14 +1,12 @@
-ccola_component(ble_test_doubles x86: source other: noncompile)
+add_library(services.ble_test_doubles ${EMIL_EXCLUDE_FROM_ALL} INTERFACE)
 
-    ccola_sources(
-        BondStorageManagerMock.hpp
-        GapPeripheralMock.hpp
-        GattMock.hpp
-    )
+target_link_libraries(services.ble_test_doubles INTERFACE
+    services.ble
+    gmock
+)
 
-    ccola_dependencies(
-        ble
-        gmock.gmock
-    )
-
-ccola_end_component()
+target_sources(services.ble_test_doubles PRIVATE
+    BondStorageManagerMock.hpp
+    GapPeripheralMock.hpp
+    GattMock.hpp
+)

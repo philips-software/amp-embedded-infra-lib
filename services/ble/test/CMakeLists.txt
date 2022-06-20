@@ -1,13 +1,13 @@
-ccola_component(ble_test gmock_test)
+add_executable(services.ble_test)
+emil_add_test(services.ble_test)
 
-    ccola_sources(
-        TestBondStorageManager.cpp
-        TestGatt.cpp
-    )
+target_link_libraries(services.ble_test PUBLIC
+    gmock_main
+    services.ble
+    services.ble_test_doubles
+)
 
-    ccola_dependencies(
-        ble
-        ble_test_doubles
-    )
-
-ccola_end_component()
+target_sources(services.ble_test PRIVATE
+    TestBondStorageManager.cpp
+    TestGatt.cpp
+)
