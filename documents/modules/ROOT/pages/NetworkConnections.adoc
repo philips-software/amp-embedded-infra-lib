@@ -21,7 +21,7 @@ ConnectionObserver being destructed.
 [plantuml]
 ----
 @startuml
-    !theme sketchy-outline
+    !theme cerulean-outline
 
     class SharedOwnedObserver {
         +bool IsAttached() const

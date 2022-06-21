@@ -1,1 +1,67 @@
 == EmbeddedInfraLib
+
+=== Introduction
+
+EmbeddedInfraLib is a set of C++ libraries and headers that provide heap-less, https://en.wikipedia.org/wiki/Standard_Template_Library[STL] like, infrastructure for embedded software development. It includes, amongst others; a hardware abstraction layer (HAL), a xref:Echo.adoc[remote procedure call] (RPC) implementation, a xref:NetworkConnections.adoc[networking layer], a secure upgrade mechanism and several other re-usable utility classes.
+
+EmbeddedInfraLib is available as https://philips-software.github.io/[Philips Open Source] under a https://choosealicense.com/licenses/mit/[MIT] license.
+
+https://sonarcloud.io/summary/new_code?id=philips-software_embeddedinfralib[image:https://sonarcloud.io/api/project_badges/measure?project=philips-software_embeddedinfralib&metric=ncloc[Lines
+of Code]] https://sonarcloud.io/summary/new_code?id=philips-software_embeddedinfralib[image:https://sonarcloud.io/api/project_badges/measure?project=philips-software_embeddedinfralib&metric=coverage[Coverage]] https://sonarcloud.io/summary/new_code?id=philips-software_embeddedinfralib[image:https://sonarcloud.io/api/project_badges/measure?project=philips-software_embeddedinfralib&metric=reliability_rating[Reliability
+Rating]] https://sonarcloud.io/summary/new_code?id=philips-software_embeddedinfralib[image:https://sonarcloud.io/api/project_badges/measure?project=philips-software_embeddedinfralib&metric=security_rating[Security
+Rating]] https://sonarcloud.io/summary/new_code?id=philips-software_embeddedinfralib[image:https://sonarcloud.io/api/project_badges/measure?project=philips-software_embeddedinfralib&metric=sqale_rating[Maintainability
+Rating]]
+
+=== Decomposition
+
+[plantuml]
+----
+@startuml
+!theme cerulean-outline
+
+    package upgrade {
+        component bootloader
+        component pack_builder
+        component more_upgrade [
+            ...
+        ]
+    }
+
+    package protobuf {
+        component echo
+        component echo_console
+        protoc_echo_plugin
+        services
+        component more_protobuf [
+            ...
+        ]
+    }
+
+    package services {
+        component ble
+        component cucumber
+        component network
+        component tracer
+        component util
+        component more_services [
+            ...
+        ]
+    }
+
+    package hal {
+        component interfaces
+        component synchronous_interfaces
+        component more_hal [
+            ...
+        ]
+    }
+
+    package infra {
+        component event
+        component stream
+        component syntax
+        component timer
+        component util
+    }
+@enduml
+----
