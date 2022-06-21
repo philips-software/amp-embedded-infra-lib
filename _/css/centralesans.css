@@ -1,0 +1,125 @@
+@font-face {
+  font-family: 'CentraleSans-Bold';
+  src: url('../font/fonts/CentraleSansBold.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'CentraleSans-BlackItalic';
+  src: url('../font/fonts/CentraleSansBookItalic.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'CentraleSans-Italic';
+  src: url('../font/fonts/CentraleSansBookItalic.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'CentraleSans-BoldItalic';
+  src: url('../font/fonts/CentraleSansBoldItalic.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'CentraleSans-ExtraBoldItalic';
+  src: url('../font/fonts/CentraleSansBoldItalic.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'CentraleSans-ExtraLightItalic';
+  src: url('../font/fonts/CentraleSansBookItalic.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'CentraleSans-Black';
+  src: url('../font/fonts/CentraleSansBook.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'CentraleSans-ExtraBold';
+  src: url('../font/fonts/CentraleSansBold.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'CentraleSans-ExtraLight';
+  src: url('../font/fonts/CentraleSansXLight.ttf') format('truetype');
+  font-weight: 100 900;
+
+}
+
+@font-face {
+  font-family: 'CentraleSans-MediumItalic';
+  src: url('../font/fonts/CentraleSansLightItalic.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'CentraleSans-SemiBoldItalic';
+  src: url('../font/fonts/CentraleSansBookItalic.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'CentraleSans-SemiBold';
+  src: url('../font/fonts/CentraleSansXBold.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'CentraleSans-LightItalic';
+  src: url('../font/fonts/CentraleSansLightItalic.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'CentraleSans-Regular';
+  src: url('../font/fonts/CentraleSansBook.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'CentraleSans-Medium';
+  src: url('../font/fonts/CentraleSansMedium.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'CentraleSans-Light';
+  src: url('../font/fonts/CentraleSansLight.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'CentraleSans-ThinItalic';
+  src: url('../font/fonts/CentraleSansXLight.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'CentraleSans-Thin';
+  src: url('../font/fonts/CentraleSansXThin.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+}
