@@ -30,8 +30,8 @@ Rating]]
     package protobuf {
         component echo
         component echo_console
-        protoc_echo_plugin
-        services
+        component protoc_echo_plugin
+        component services
         component more_protobuf [
             ...
         ]
