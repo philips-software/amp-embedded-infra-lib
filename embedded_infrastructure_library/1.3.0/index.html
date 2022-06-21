@@ -109,10 +109,83 @@
 </div>
 </div>
 <div class="sect2">
-<h3 id="_decomposition"><a class="anchor" href="#_decomposition"></a>Decomposition</h3>
+<h3 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h3>
 <div class="imageblock plantuml">
 <div class="content">
 <img src="http://www.plantuml.com/plantuml/png/bPDHQiCm38RVSuhi0CiPUeynZA8gYQaj1LdkDaRllYJGm40fH0_6jcJv-t_iIp5GgparRpPHfXP9QoBWTwcM8bFJj4lCW3SOgQtpg72bzdVRNGCbpyB4rlOYbcJ9gfDS6uI-nkIdioY5P_EFlM2DhklszUSsU_ndcbLC-ZguK8IJ76m752wIoADTMsBOgkPKnyXEKI6zHwHo96VdEgddsTStsUN5YZNthhDCzYLwSpAcWEwHQZ4TYThXJegQ8Bbw8Xlf0BwDvOTnKc6f9RmitD3MAqvIHHuK_7TpNqOFoPGW-wm6tvxDCRzs-T5SYA_B5_m3" alt="diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_infra"><a class="anchor" href="#_infra"></a>infra</h3>
+<div class="paragraph">
+<p>The <code>infra</code> package contains the building blocks that all further code is built upon. There are basics concept like <a href="MemoryRange.html" class="page"><code>infra::MemoryRange</code></a> that provides an abstraction for a block of memory and several <a href="Containers.html" class="page">Containers</a> that provide fixed-size alternatives for the well-known standard library containers like: <code>std::vector</code>, <code>std::list</code>, <code>std::queue</code>, etc.</p>
+</div>
+<div class="paragraph">
+<p>In the next few chapters the contents of the components within <code>infra</code> will be described.</p>
+</div>
+<div class="sect3">
+<h4 id="_util"><a class="anchor" href="#_util"></a>util</h4>
+<div class="sect4">
+<h5 id="_infraboundedstring"><a class="anchor" href="#_infraboundedstring"></a>infra::BoundedString</h5>
+<div class="paragraph">
+<p><code>infra::BoundedString</code> is similar to <code>std::string</code> except that it can contain a maximum number of characters, and is not zero-terminated by default (see GitHub issue <a href="https://github.com/philips-software/embeddedinfralib/issues/37">#37</a>).</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">infra::BoundedString::WithStorage&lt;5&gt; string("abc");
+EXPECT_EQ('a', string.front());
+EXPECT_EQ('c', string.back());
+EXPECT_FALSE(string.empty());
+EXPECT_FALSE(string.full());
+EXPECT_EQ(3, string.size());
+EXPECT_EQ(5, string.max_size());</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_infracyclicbuffer"><a class="anchor" href="#_infracyclicbuffer"></a>infra::CyclicBuffer</h5>
+<div class="paragraph">
+<p><code>infra::CyclicBuffer</code> transforms a given chunk of memory into a cyclic buffer. Data can be pushed into this buffer, and popped out again. With ContiguousRange(), the largest block starting at the start can be obtained. This is useful when feeding large blocks to e.g. DMA. In practise, the typedef CyclicByteBuffer will most often be used.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">infra::CyclicBuffer&lt;uint8_t&gt;::WithStorage&lt;4&gt; buffer;
+buffer.Push(std::vector&lt;uint8_t&gt;{ 3, 7, 9 });
+buffer.Pop(2);
+buffer.Push(std::vector&lt;uint8_t&gt;{ 2, 4 });
+
+EXPECT_EQ((std::vector&lt;uint8_t&gt;{ 9, 2 }), buffer.ContiguousRange());
+EXPECT_EQ(3, buffer.Size());
+EXPECT_EQ(1, buffer.Available());</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_infrafunction"><a class="anchor" href="#_infrafunction"></a>infra::Function</h5>
+<div class="paragraph">
+<p><code>infra::Function</code> is similar to <code>std::function</code>. It is an object which can contain any callable function object, e.g. free function pointers and lambda expressions. A Function is declared by providing the function signature and optionally extra storage space for the function. For example, <code>infra::Function&lt;void()&gt; f;</code> declares a function object <code>f</code> that has a void return-type and no parameters. <code>infra::Function&lt;int(char x)&gt; g;</code> declares a function object <code>g</code> that has an <code>int</code> return-type and one parameter of type <code>char</code>.</p>
+</div>
+<div class="paragraph">
+<p>Examples:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">Function&lt;void()&gt; f = [this]() { Trigger(); };
+if (f)
+  f();        // Call the lambda function which calls this-&gt;Trigger
+f = nullptr;  // Clear the function</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Since no heap is used, all data used by the function object must be stored inside Function itself. The amount of data necessary is not known upfront, so the Function is parameterized with an ExtraSize parameter to reserve storage. For example, this lambda expression requires no storage: <code>[]() {}</code> while this expression requires 8 bytes of extra storage on a 32-bit platform: <code>[this, &amp;x]() { DoSomething(x); }</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">Function&lt;void()&gt; f = [this, &amp;x]() { DoSomething(x); }; // Compile error, too much storage is needed
+Function&lt;void(), 2 * sizeof(void*)&gt; g = [this, &amp;x]() { DoSomething(x); }; // Ok.</code></pre>
+</div>
+</div>
 </div>
 </div>
 </div>
