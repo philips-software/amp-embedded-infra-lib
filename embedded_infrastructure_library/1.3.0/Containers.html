@@ -271,25 +271,25 @@ similarly other containers) may be created as a reference to a
 <code>BoundedVector</code> at the point of instantiation of <code>UrlRouter</code>, the choice
 for the maximum number of elements is delayed. For example:</p>
 </div>
-<div class="literalblock">
+<div class="listingblock">
 <div class="content">
-<pre>class UrlRouter
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">class UrlRouter
 {
 public:
     explicit UrlRouter(infra::BoundedVector&lt;PageServer&gt;&amp; storage);
 
 protected:
     infra::BoundedVector&lt;PageServer&gt;&amp; pageServers;
-};</pre>
+};</code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p>The <code>UrlRouter</code> can now be instantiated as follows:</p>
 </div>
-<div class="literalblock">
+<div class="listingblock">
 <div class="content">
-<pre>infra::BoundedVector&lt;PageServer&gt;::WithMaxSize&lt;10&gt; storage;
-UrlRouter router(storage);</pre>
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">infra::BoundedVector&lt;PageServer&gt;::WithMaxSize&lt;10&gt; storage;
+UrlRouter router(storage);</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -299,9 +299,9 @@ the <code>infra::WithStorage</code> helper class to feed a constructed
 <code>BoundedVector</code> to the <code>UrlRouter</code>. Using this <code>WithMaxSize</code> parameter,
 instantiation is simplified to:</p>
 </div>
-<div class="literalblock">
+<div class="listingblock">
 <div class="content">
-<pre>class UrlRouter
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">class UrlRouter
 {
 public:
     template&lt;std::size_t Max&gt;
@@ -313,7 +313,7 @@ protected:
     infra::BoundedVector&lt;PageServer&gt;&amp; pageServers;
 };
 
-UrlRouter::WithMaxSize&lt;10&gt; router;</pre>
+UrlRouter::WithMaxSize&lt;10&gt; router;</code></pre>
 </div>
 </div>
 </div>

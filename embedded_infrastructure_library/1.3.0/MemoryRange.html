@@ -242,9 +242,9 @@ for the last size elements</p></td>
 <p>This example function shows how to use the MemoryRange functions to cut
 up a block of data into smaller pieces:</p>
 </div>
-<div class="literalblock">
+<div class="listingblock">
 <div class="content">
-<pre>void SendInBlocks(infra::ConstByteRange sendData, std::size_t blockSize)
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void SendInBlocks(infra::ConstByteRange sendData, std::size_t blockSize)
 {
     while (!sendData.empty())
     {
@@ -257,7 +257,7 @@ void Example()
 {
     std::array&lt;uint8_t, 256&gt; data = { ... };
     SendInBlocks(data, 16);
-}</pre>
+}</code></pre>
 </div>
 </div>
 </div>
