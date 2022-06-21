@@ -139,7 +139,7 @@ namespace infra
 
     template<class T, class... ConstructionArgs>
     SharedObjectAllocatorFixedSize<T, void(ConstructionArgs...)>::Node::Node(SharedObjectDeleter* allocator)
-        : detail::SharedPtrControl(&*object, allocator)
+        : detail::SharedPtrControl(&*object, allocator)  //NOSONAR
     {}
 }
 
