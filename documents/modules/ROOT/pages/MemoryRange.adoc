@@ -1,3 +1,5 @@
+:source-highlighter: highlight.js
+
 == MemoryRange
 
 Embedded applications regularly handle blocks of memory. Such memory may
@@ -88,7 +90,8 @@ for the last size elements
 This example function shows how to use the MemoryRange functions to cut
 up a block of data into smaller pieces:
 
-....
+[source,cpp]
+----
 void SendInBlocks(infra::ConstByteRange sendData, std::size_t blockSize)
 {
     while (!sendData.empty())
@@ -103,4 +106,4 @@ void Example()
     std::array<uint8_t, 256> data = { ... };
     SendInBlocks(data, 16);
 }
-....
+----
