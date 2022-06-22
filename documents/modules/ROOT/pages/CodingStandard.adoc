@@ -44,7 +44,7 @@ Table 1 shows the different letter case forms used in identifiers:
 | *UPPER_CASE* | Words are separated by underscores.
 | *lower_case* | Words are separated by underscores.
 | *MixedCase*  | The identifier is started with an upper case character; each new word starts with an upper case character. No underscores are used.
-| *cameCase*   | The identifier is started with a lower case character; each new word starts with an upper case character. No underscores are used.
+| *camelCase*  | The identifier is started with a lower case character; each new word starts with an upper case character. No underscores are used.
 |===
 
 ==== Naming Identifiers
@@ -176,7 +176,7 @@ public:
     A& operator=(const A& other);
     ~A();
 
-    void DoThis();		// A new block starts here, so a blank line preceeds here.
+    void DoThis();		// A new block starts here, so a blank line precedes here.
     void DoThat();		// DoThis and DoThat belong together
 
 private:
@@ -211,7 +211,7 @@ if (a)	// <-- correct
 if(a)	// <-- incorrect
 ----
 
-*Rule 26.* The substatements of `if`, `else`, `for`, `while`, and `do` shall not be written on the same line as the `if`, `else`, `for`, `while`, and `do` statements.
+*Rule 26.* The sub-statements of `if`, `else`, `for`, `while`, and `do` shall not be written on the same line as the `if`, `else`, `for`, `while`, and `do` statements.
 
 *Rule 27.* The `case` and `default` clauses inside a `switch` statement shall be indented. Example:
 
@@ -226,7 +226,7 @@ switch (a)
 }
 ----
 
-*Rule 28.* When `for`, `while`, or `do` is followed by an empty substatement, `{}` shall be used in favour of `;`. Example:
+*Rule 28.* When `for`, `while`, or `do` is followed by an empty sub-statement, `{}` shall be used in favour of `;`. Example:
 
 [source,cpp]
 ----
