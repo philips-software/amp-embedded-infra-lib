@@ -1,8 +1,9 @@
+= Coding Standard C++ for Embedded Projects
 :source-highlighter: highlight.js
 
-== Coding Standard C++ for Embedded Projects
+ifndef::sourceRoot[:sourceRoot: {docdir}/../../../..]
 
-=== Introduction and Scope
+== Introduction and Scope
 
 This coding standard defines various aspects of the contents of C++ source files. The goal is to provide a usable standard from which programmers should only deviate in very specific circumstances. Care shall be taken to not restrict programmers in any way but form, so that new techniques and new insights are not obstructed by this standard.
 
@@ -16,16 +17,16 @@ Currently, the structure of files in directories is out of scope, since this is 
 
 Tools and libraries used are out of scope. This standard does not force a choice between tools, e.g. between Google Test and CPPUnit.
 
-=== Principles
+== Principles
 
 Much of writing a standard on coding rules is making arbitrary decisions. For each decision arguments exist why another decision would also work. However, as a complete set of decision, this standard strives to adhere to these principles:
 
 * *Consistency*: At the very least, following this standard should result in consistent-looking code. This is important because our brains are wired to very quickly identify known patterns and discern structure.
 * *Show importance*: Each line of code is constructed by more important and less important parts. Some parts should immediately capture our attention; other parts are details which should minimize interference with more important parts. An example of this is giving business-logic-level classes long names, while giving arguments short names.
 
-=== Definitions
+== Definitions
 
-==== Use of Shall and Should
+=== Use of Shall and Should
 
 While there are exceptions to every rule, deviation of this standard should only happen in very specific circumstances where following this standard would obviously result in sub-optimal and non-Clean Code.
 
@@ -33,7 +34,7 @@ However, not every rule is intended as a hard definition. In the cases where mer
 
 Shall is used instead of must, because it is easier to describe what code should look like than it is to describe programmer's actions. Writing “programmers must create descriptive identifiers” is more tedious to read and write than “identifiers shall be descriptive”.
 
-==== Letter Case
+=== Letter Case
 
 Table 1 shows the different letter case forms used in identifiers:
 
@@ -47,7 +48,7 @@ Table 1 shows the different letter case forms used in identifiers:
 | *camelCase*  | The identifier is started with a lower case character; each new word starts with an upper case character. No underscores are used.
 |===
 
-==== Naming Identifiers
+== Naming Identifiers
 
 *Rule 1.* Table 2 defines the letter case of identifiers:
 
@@ -59,7 +60,7 @@ Table 1 shows the different letter case forms used in identifiers:
 | *Function name* | MixedCase |
 | *Class name* | MixedCase |
 | *Enum name* | MixedCase |
-| *Enum members* | cameCase | Enum members function like variables in the sense that they contain values. Therefore, the follow the Variable name definition.
+| *Enum members* | camelCase | Enum members function like variables in the sense that they contain values. Therefore, the follow the Variable name definition.
 | *Namespace name* | lower_case | Namespace names should be short and only consist of one word.
 | *Template parameter* | MixedCase | Both type and value parameters follow this definition.
 | *Macro names* | UPPER_CASE |
@@ -108,7 +109,7 @@ The word used to indicate destination is spelled `"for"`, not `"4"`; the word us
 
 *Rationale 5.* Project names are never descriptive of functionality. For example, there is nothing descriptive about `"WoodstoveFanAlgorithm"`. Consider `"LogarithmicFanAlgorithm"` or `"StepwiseFanAlgorithm"` instead. Moreover, source code is reused in spin-off projects; project names are either replaced by the new project's name which takes effort, or, more likely, the old project names are kept in the identifiers which leads to confusion and legacy.
 
-==== Horizontal and Vertical Spacing
+== Horizontal and Vertical Spacing
 
 *Rule 12.* Indentation is a multiple of 4 spaces; tabs are not allowed.
 
@@ -293,7 +294,7 @@ BigInteger& operator += (const BigInteger&);	 incorrect
 
 *Rationale 8.* In operator overloading, the name of the `+=` operator is `operator+=`, as one word.
 
-==== Parentheses, Braces, Brackets and Angle Brackets
+== Parentheses, Braces, Brackets and Angle Brackets
 
 *Rule 35.* `return` and `throw` are statements, not a function, therefore their argument shall not be enclosed in `( )`.
 
@@ -397,7 +398,7 @@ class C
 struct Uart: hal::Uart::Name<Uart> {};
 ----
 
-==== Miscellaneous
+== Miscellaneous
 
 *Rule 44.* `#include` statements shall include standard headers in `< >`, and all other headers in `" "`. If a standard C header is needed (such as `<stdlib.h>`), the equivalent C++ header shall be used (`<cstdlib>`). Standard header shall be included after other headers, and (as second ordering criterion) includes shall be alphabetically ordered. Example:
 
@@ -549,7 +550,15 @@ TEST(MyTest, SecondTest)
 }
 ----
 
-==== Appendix: Cheat Sheet
+== Document Revision History
+[cols="10,15,20,40,15", options="header"]
+|====
+| *Revision* | *Release Date* | *Author* | *Description of changes* | *CR/Reason*
+| 6 | 24-Jun-2016 | Richard Peters | Update | -
+| 7 | 22-Jun-2022 | Ron Jaegers | Ported from Word to AsciiDoc | -
+|====
+
+== Appendix: Cheat Sheet
 
 [NOTE]
 This section contains a Cheat Sheet; i.e. nonsensical code written for the purpose of demonstrating the rules. It is not normative: no rules originate from the Cheat Sheet example.
@@ -615,7 +624,7 @@ namespace infra
 ----
 
 [source,cpp]
-.CheatSheet.cpp
+.infra_cheat/CheatSheet.cpp
 ----
 #include "infra_cheat/CheatSheet.hpp"
 #include <cstdlib>
@@ -681,6 +690,11 @@ namespace infra
 }
 ----
 
-==== Appendix: Settings files for development environments
+== Appendix: Settings files for development environments
 
-===== .clang-format
+=== .clang-format
+
+[source,yaml]
+----
+include::{sourceRoot}/.clang-format[]
+----
