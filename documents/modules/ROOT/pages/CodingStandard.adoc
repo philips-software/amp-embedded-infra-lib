@@ -696,5 +696,11 @@ namespace infra
 
 [source,yaml]
 ----
-include::{sourceRoot}/.clang-format[]
+include::.clang-format[]
+include::../.clang-format[]
+include::../../.clang-format[]
+include::../../../.clang-format[]
+include::../../../../.clang-format[]
+include::../../../../../.clang-format[]
+include::../../../../../../.clang-format[]
 ----
