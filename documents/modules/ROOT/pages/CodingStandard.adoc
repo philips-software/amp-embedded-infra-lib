@@ -696,5 +696,5 @@ namespace infra
 
 [source,yaml]
 ----
-include:example$.clang-format
+include::../examples/.clang-format[]
 ----
