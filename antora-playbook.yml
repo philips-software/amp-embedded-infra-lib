@@ -1,6 +1,6 @@
 ---
 site:
-  title: "EmIL: Embedded Infrastructure Library"
+  title: "Embedded Infrastructure Library"
   url: https://philips-software.github.io/embeddedinfralib/
   start_page: embedded_infrastructure_library::index.adoc
 content:
