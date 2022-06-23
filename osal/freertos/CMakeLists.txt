@@ -1,0 +1,20 @@
+FetchContent_Declare(
+    freertos
+    GIT_REPOSITORY https://github.com/FreeRTOS/FreeRTOS-Kernel.git
+    GIT_TAG 90d920466ea2e768e0095ef5a93ff0a0833d9068
+)
+
+set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL On)
+
+if (TARGET_BUILD_UNIX AND CMAKE_COMPILER_IS_GNUCC)
+    cmake_path(SET CONFIG_FILE_DIRECTORY config/posix)
+    set(FREERTOS_PORT GCC_POSIX CACHE STRING "")
+endif()
+
+cmake_path(ABSOLUTE_PATH CONFIG_FILE_DIRECTORY NORMALIZE)
+set(FREERTOS_CONFIG_FILE_DIRECTORY "${CONFIG_FILE_DIRECTORY}" CACHE STRING "")
+
+FetchContent_MakeAvailable(freertos)
+
+set_target_properties(freertos_kernel freertos_kernel_port PROPERTIES FOLDER External/FreeRTOS)
+#install(TARGETS freertos_kernel freertos_kernel_port EXPORT emilOsalTargets)

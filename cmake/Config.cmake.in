@@ -1,6 +1,6 @@
 @PACKAGE_INIT@
 
-set(supported_components Crypto Hal Infra Lwip Protobuf Services Upgrade)
+set(supported_components Crypto Hal Infra Lwip Osal Protobuf Services Upgrade)
 
 foreach(component ${emil_FIND_COMPONENTS})
   if (NOT component IN_LIST supported_components)

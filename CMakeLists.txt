@@ -86,7 +86,9 @@ else()
     set(EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE "" CACHE STRING "Namespace used to reference imported targets")
 endif()
 
+# Enable or disable optional features.
 option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of EmIL" On)
+option(EMIL_INCLUDE_FREERTOS "Include FreeRTOS as part of EmIL" On)
 
 if (TARGET_ARCH_X86)
     add_compile_definitions(EMIL_HOST_BUILD)
@@ -156,6 +158,7 @@ add_subdirectory(services)
 add_subdirectory(protobuf)
 add_subdirectory(upgrade)
 add_subdirectory(lwip)
+add_subdirectory(osal)
 if (EMIL_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
@@ -176,7 +179,7 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
         )
     endfunction()
 
-    foreach(target IN ITEMS Crypto Infra Hal Lwip Protobuf Services Upgrade)
+    foreach(target IN ITEMS Crypto Infra Hal Lwip Osal Protobuf Services Upgrade)
         generate_export_targets(${target})
     endforeach()
 
