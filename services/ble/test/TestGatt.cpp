@@ -14,6 +14,37 @@ namespace
     static constexpr services::GattAttribute::Uuid128 uuid128{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
                                                               0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10};
     static constexpr uint16_t valueSize = 16;
+
+    using GattPropertyFlags = services::GattCharacteristic::PropertyFlags;
+    using GattPermissionFlags = services::GattCharacteristic::PermissionFlags;
+}
+
+TEST(GattTest, service_has_handle_and_type)
+{
+    services::GattService s{uuid16};
+
+    EXPECT_EQ(0x42, s.Type().Get<services::GattAttribute::Uuid16>());
+    EXPECT_EQ(0, s.Handle());
+}
+
+TEST(GattTest, service_handle_is_updated)
+{
+    services::GattService s{uuid16};
+    s.Handle() = 0xAB;
+
+    EXPECT_EQ(0xAB, s.Handle());
+    EXPECT_EQ(0xAB, std::as_const(s).Handle());
+}
+
+TEST(GattTest, characteristic_handles_are_accesible)
+{
+    services::GattService s{uuid16};
+    s.Handle() = 0xAB;
+    services::GattCharacteristicImpl c{s, uuid16, valueSize};
+    c.Handle() = 0xCD;
+
+    EXPECT_EQ(0xAB, c.ServiceHandle());
+    EXPECT_EQ(0xCD, c.CharacteristicHandle());
 }
 
 TEST(GattTest, characteristic_supports_different_uuid_lengths)
@@ -29,7 +60,27 @@ TEST(GattTest, characteristic_supports_different_uuid_lengths)
     }), b.Type().Get<services::GattAttribute::Uuid128>());
 }
 
-TEST(GattTest, should_add_characteristic_to_service)
+TEST(GattTest, characteristic_supports_different_properties)
+{
+    services::GattService s{uuid16};
+    services::GattCharacteristicImpl a{s, uuid16, valueSize, GattPropertyFlags::write | GattPropertyFlags::indicate};
+    services::GattCharacteristicImpl b{s, uuid16, valueSize, GattPropertyFlags::broadcast};
+
+    EXPECT_EQ(GattPropertyFlags::write | GattPropertyFlags::indicate, a.Properties());
+    EXPECT_EQ(GattPropertyFlags::broadcast, b.Properties());
+}
+
+TEST(GattTest, characteristic_supports_different_permissions)
+{
+    services::GattService s{uuid16};
+    services::GattCharacteristicImpl a{s, uuid16, valueSize, GattPropertyFlags::none, GattPermissionFlags::authorizedRead | GattPermissionFlags::encryptedWrite};
+    services::GattCharacteristicImpl b{s, uuid16, valueSize, GattPropertyFlags::none, GattPermissionFlags::authenticatedRead};
+
+    EXPECT_EQ(GattPermissionFlags::authorizedRead | GattPermissionFlags::encryptedWrite, a.Permissions());
+    EXPECT_EQ(GattPermissionFlags::authenticatedRead, b.Permissions());
+}
+
+TEST(GattTest, characteristic_is_added_to_service)
 {
     services::GattService s{uuid16};
     services::GattCharacteristicImpl a{s, uuid16, valueSize};
