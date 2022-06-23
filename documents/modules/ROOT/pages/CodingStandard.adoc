@@ -1,7 +1,7 @@
 = Coding Standard C++ for Embedded Projects
 :source-highlighter: highlight.js
 
-ifndef::sourceRoot[:sourceRoot: {docdir}/../../../..]
+ifndef::sourceRoot[:sourceRoot: {docdir}/../../..]
 
 == Introduction and Scope
 
@@ -39,7 +39,7 @@ Shall is used instead of must, because it is easier to describe what code should
 Table 1 shows the different letter case forms used in identifiers:
 
 .Letter case definitions
-[options="header,footer"]
+[options="header"]
 |===
 | Name and Example | Notes
 | *UPPER_CASE* | Words are separated by underscores.
@@ -53,7 +53,7 @@ Table 1 shows the different letter case forms used in identifiers:
 *Rule 1.* Table 2 defines the letter case of identifiers:
 
 .Identifier letter case
-[options="header,footer"]
+[options="header"]
 |===
 | Identifier | Letter Case | Notes
 | *Variable name* | camelCase | In C++, there is no separate notion of constants, since they are just variables with the `const` and `static` qualifiers. Therefore, they follow the same definition.
@@ -64,8 +64,8 @@ Table 1 shows the different letter case forms used in identifiers:
 | *Namespace name* | lower_case | Namespace names should be short and only consist of one word.
 | *Template parameter* | MixedCase | Both type and value parameters follow this definition.
 | *Macro names* | UPPER_CASE |
-| *Header include guards* | ##NAMESPACE_##UPPPER_CASE##_HPP## | Header include guards are macro names, and are therefore written in UPPER_CASE. In addition to that, to ensure uniqueness the namespace is prepended, e.g. INFRA_FUNCTION_HPP.
-| *File names* | MixedCase##.cpp/.hpp## | The extension .hpp is chosen in favour of .h. Atmel Studio does not apply C++ syntax colouring to .h files.
+| *Header include guards* | __NAMESPACE___UPPPER_CASE___HPP__ | Header include guards are macro names, and are therefore written in UPPER_CASE. In addition to that, to ensure uniqueness the namespace is prepended, e.g. INFRA_FUNCTION_HPP.
+| *File names* | MixedCase__.cpp/.hpp__ | The extension .hpp is chosen in favour of .h. Atmel Studio does not apply C++ syntax colouring to .h files.
 | *Directory names* | lower_case |
 |===
 

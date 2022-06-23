@@ -4,10 +4,12 @@ site:
   url: https://philips-software.github.io/embeddedinfralib/
   start_page: embedded_infrastructure_library::index.adoc
 content:
-  branches: HEAD
   sources:
-    - url: ./
+    - url: .
       start_path: documents
+      branches:
+        - develop
+        - modern-cmake
 ui:
   bundle:
     url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable
