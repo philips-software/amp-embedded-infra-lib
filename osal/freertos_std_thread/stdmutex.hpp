@@ -18,7 +18,7 @@ namespace std
     public:
         typedef xSemaphoreHandle native_handle_type;
 
-        constexpr timed_mutex() noexcept = default;
+        constexpr timed_mutex() = default;
         timed_mutex(const timed_mutex& other) = delete;
         timed_mutex& operator=(const timed_mutex& other) = delete;
 
@@ -74,7 +74,7 @@ namespace std
     public:
         typedef xSemaphoreHandle native_handle_type;
 
-        constexpr recursive_timed_mutex() noexcept = default;
+        constexpr recursive_timed_mutex() = default;
         recursive_timed_mutex(const recursive_timed_mutex& other) = delete;
         recursive_timed_mutex& operator=(const recursive_timed_mutex& other) = delete;
 

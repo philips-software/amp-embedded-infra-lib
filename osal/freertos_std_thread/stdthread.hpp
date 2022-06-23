@@ -9,7 +9,7 @@
 #include <mutex>
 #include "FreeRTOS.h"
 #include "task.h"
-#include "infra_util/Function.hpp"
+#include "infra/util/Function.hpp"
 
 namespace std
 {
