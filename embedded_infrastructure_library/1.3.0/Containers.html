@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Untitled :: EmIL: Embedded Infrastructure Library</title>
+    <title>Containers :: Embedded Infrastructure Library</title>
     <link rel="canonical" href="https://philips-software.github.io/embeddedinfralib/embedded_infrastructure_library/1.3.0/Containers.html">
     <meta name="generator" content="Antora 2.3.4">
     <link rel="stylesheet" href="../../_/css/centralesans.css">
@@ -25,7 +25,7 @@
                     <a class="navbar-brand">
                         <img class="scale-down"  src="../../philips-logo.png" alt="Philips"/>
                     </a>
-                    <a class="navbar-item" href="https://philips-software.github.io/embeddedinfralib">EmIL: Embedded Infrastructure Library</a>
+                    <a class="navbar-item" href="https://philips-software.github.io/embeddedinfralib">Embedded Infrastructure Library</a>
                     <button class="navbar-burger" data-target="topbar-nav">
                         <span></span>
                         <span></span>
@@ -100,11 +100,10 @@
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
+<h1 class="page">Containers</h1>
 <div class="sect1">
-<h2 id="_containers"><a class="anchor" href="#_containers"></a>Containers</h2>
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
 <div class="sectionbody">
-<div class="sect2">
-<h3 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h3>
 <div class="paragraph">
 <p>Containers are used to store a number of elements. While the C++
 standard template library contains several containers like <code>std::vector</code>
@@ -116,10 +115,12 @@ While their storage is not on the heap, the interfaces of these
 containers closely mimic the interfaces of the standard containers.</p>
 </div>
 </div>
+</div>
+<div class="sect1">
+<h2 id="_bounded_containers"><a class="anchor" href="#_bounded_containers"></a>Bounded Containers</h2>
+<div class="sectionbody">
 <div class="sect2">
-<h3 id="_bounded_containers"><a class="anchor" href="#_bounded_containers"></a>Bounded Containers</h3>
-<div class="sect3">
-<h4 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h4>
+<h3 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h3>
 <div class="paragraph">
 <p>The first strategy to deal with storage in containers is by allocating
 memory inside the containers themselves. The size of a container
@@ -258,8 +259,8 @@ position</p></td>
 </tbody>
 </table>
 </div>
-<div class="sect3">
-<h4 id="_references_to_bounded_containers"><a class="anchor" href="#_references_to_bounded_containers"></a>References to Bounded Containers</h4>
+<div class="sect2">
+<h3 id="_references_to_bounded_containers"><a class="anchor" href="#_references_to_bounded_containers"></a>References to Bounded Containers</h3>
 <div class="paragraph">
 <p>Often, the class that holds a container of elements is not the class
 that makes the decision how big that container should be. For example,
@@ -321,8 +322,10 @@ UrlRouter::WithMaxSize&lt;10&gt; router;</code></pre>
 </div>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_intrusive_containers"><a class="anchor" href="#_intrusive_containers"></a>Intrusive Containers</h3>
+</div>
+<div class="sect1">
+<h2 id="_intrusive_containers"><a class="anchor" href="#_intrusive_containers"></a>Intrusive Containers</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>Another approach for storing elements in a container is to not allocate
 additional storage for an object, but to make the user of a container
@@ -377,14 +380,15 @@ behaviour. The provided <code>Intrusive</code> containers are:</p>
 </tbody>
 </table>
 </div>
-<div class="sect2">
-<h3 id="_stdarray"><a class="anchor" href="#_stdarray"></a>std::array</h3>
+</div>
+<div class="sect1">
+<h2 id="_stdarray"><a class="anchor" href="#_stdarray"></a>std::array</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>One standard container of note is <code>std::array&lt;T, Size&gt;</code>. This container
 does not use the heap and has a fixed size. It is a drop-in replacement
 of the C array, with a C++ interface. When a container of a fixed-size
 is needed, <code>std::array</code> should be used.</p>
-</div>
 </div>
 </div>
 </div>

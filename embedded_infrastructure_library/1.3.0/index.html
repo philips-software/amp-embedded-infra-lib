@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Untitled :: EmIL: Embedded Infrastructure Library</title>
+    <title>EmbeddedInfraLib :: Embedded Infrastructure Library</title>
     <link rel="canonical" href="https://philips-software.github.io/embeddedinfralib/embedded_infrastructure_library/1.3.0/index.html">
     <meta name="generator" content="Antora 2.3.4">
     <link rel="stylesheet" href="../../_/css/centralesans.css">
@@ -25,7 +25,7 @@
                     <a class="navbar-brand">
                         <img class="scale-down"  src="../../philips-logo.png" alt="Philips"/>
                     </a>
-                    <a class="navbar-item" href="https://philips-software.github.io/embeddedinfralib">EmIL: Embedded Infrastructure Library</a>
+                    <a class="navbar-item" href="https://philips-software.github.io/embeddedinfralib">Embedded Infrastructure Library</a>
                     <button class="navbar-burger" data-target="topbar-nav">
                         <span></span>
                         <span></span>
@@ -54,6 +54,10 @@
   <button class="nav-toggle"></button>
     <a href="index.html" class="home-link is-current"></a>
   <nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Embedded Infrastructure Library documentation</a></li>
+    <li><a href="index.html">EmbeddedInfraLib</a></li>
+  </ul>
 </nav>
       <div class="edit-this-page"><a href="https://github.com/philips-software/embeddedinfralib/edit/develop/documents/modules/ROOT/pages/index.adoc">Edit this page</a></div>
       </div>
@@ -96,11 +100,10 @@
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
+<h1 class="page">EmbeddedInfraLib</h1>
 <div class="sect1">
-<h2 id="_embeddedinfralib"><a class="anchor" href="#_embeddedinfralib"></a>EmbeddedInfraLib</h2>
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
 <div class="sectionbody">
-<div class="sect2">
-<h3 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h3>
 <div class="paragraph">
 <p>EmbeddedInfraLib is a set of C++ libraries and headers that provide heap-less, <a href="https://en.wikipedia.org/wiki/Standard_Template_Library">STL</a> like, infrastructure for embedded software development. It includes, amongst others; a hardware abstraction layer (HAL), a <a href="Echo.html" class="page">remote procedure call</a> (RPC) implementation, a <a href="NetworkConnections.html" class="page">networking layer</a>, a secure upgrade mechanism and several other re-usable utility classes.</p>
 </div>
@@ -111,26 +114,30 @@
 <p><a href="https://sonarcloud.io/summary/new_code?id=philips-software_embeddedinfralib"><span class="image"><img src="https://sonarcloud.io/api/project_badges/measure?project=philips-software_embeddedinfralib&amp;metric=ncloc" alt="Lines of Code"></span></a> <a href="https://sonarcloud.io/summary/new_code?id=philips-software_embeddedinfralib"><span class="image"><img src="https://sonarcloud.io/api/project_badges/measure?project=philips-software_embeddedinfralib&amp;metric=coverage" alt="Coverage"></span></a> <a href="https://sonarcloud.io/summary/new_code?id=philips-software_embeddedinfralib"><span class="image"><img src="https://sonarcloud.io/api/project_badges/measure?project=philips-software_embeddedinfralib&amp;metric=reliability_rating" alt="Reliability Rating"></span></a> <a href="https://sonarcloud.io/summary/new_code?id=philips-software_embeddedinfralib"><span class="image"><img src="https://sonarcloud.io/api/project_badges/measure?project=philips-software_embeddedinfralib&amp;metric=security_rating" alt="Security Rating"></span></a> <a href="https://sonarcloud.io/summary/new_code?id=philips-software_embeddedinfralib"><span class="image"><img src="https://sonarcloud.io/api/project_badges/measure?project=philips-software_embeddedinfralib&amp;metric=sqale_rating" alt="Maintainability Rating"></span></a></p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h3>
+</div>
+<div class="sect1">
+<h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
+<div class="sectionbody">
 <div class="imageblock plantuml">
 <div class="content">
 <img src="http://www.plantuml.com/plantuml/png/bPDHQiCm38RVSuhi0CiPUeynZA8gYQaj1LdkDaRllYJGm40fH0_6jcJv-t_iIp5GgparRpPHfXP9QoBWTwcM8bFJj4lCW3SOgQtpg72bzdVRNGCbpyB4rlOYbcJ9gfDS6uI-nkIdioY5P_EFlM2DhklszUSsU_ndcbLC-ZguK8IJ76m752wIoADTMsBOgkPKnyXEKI6zHwHo96VdEgddsTStsUN5YZNthhDCzYLwSpAcWEwHQZ4TYThXJegQ8Bbw8Xlf0BwDvOTnKc6f9RmitD3MAqvIHHuK_7TpNqOFoPGW-wm6tvxDCRzs-T5SYA_B5_m3" alt="diagram">
 </div>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_infra"><a class="anchor" href="#_infra"></a>infra</h3>
+</div>
+<div class="sect1">
+<h2 id="_infra"><a class="anchor" href="#_infra"></a>infra</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>The <code>infra</code> package contains the building blocks that all further code is built upon. There are basics concept like <a href="MemoryRange.html" class="page"><code>infra::MemoryRange</code></a> that provides an abstraction for a block of memory and several <a href="Containers.html" class="page">Containers</a> that provide fixed-size alternatives for the well-known standard library containers like: <code>std::vector</code>, <code>std::list</code>, <code>std::queue</code>, etc.</p>
 </div>
 <div class="paragraph">
 <p>In the next few chapters the contents of the components within <code>infra</code> will be described.</p>
 </div>
+<div class="sect2">
+<h3 id="_util"><a class="anchor" href="#_util"></a>util</h3>
 <div class="sect3">
-<h4 id="_util"><a class="anchor" href="#_util"></a>util</h4>
-<div class="sect4">
-<h5 id="_infraboundedstring"><a class="anchor" href="#_infraboundedstring"></a>infra::BoundedString</h5>
+<h4 id="_infraboundedstring"><a class="anchor" href="#_infraboundedstring"></a>infra::BoundedString</h4>
 <div class="paragraph">
 <p><code>infra::BoundedString</code> is similar to <code>std::string</code> except that it can contain a maximum number of characters, and is not zero-terminated by default (see GitHub issue <a href="https://github.com/philips-software/embeddedinfralib/issues/37">#37</a>).</p>
 </div>
@@ -146,8 +153,8 @@ EXPECT_EQ(5, string.max_size());</code></pre>
 </div>
 </div>
 </div>
-<div class="sect4">
-<h5 id="_infracyclicbuffer"><a class="anchor" href="#_infracyclicbuffer"></a>infra::CyclicBuffer</h5>
+<div class="sect3">
+<h4 id="_infracyclicbuffer"><a class="anchor" href="#_infracyclicbuffer"></a>infra::CyclicBuffer</h4>
 <div class="paragraph">
 <p><code>infra::CyclicBuffer</code> transforms a given chunk of memory into a cyclic buffer. Data can be pushed into this buffer, and popped out again. With ContiguousRange(), the largest block starting at the start can be obtained. This is useful when feeding large blocks to e.g. DMA. In practise, the typedef CyclicByteBuffer will most often be used.</p>
 </div>
@@ -164,8 +171,8 @@ EXPECT_EQ(1, buffer.Available());</code></pre>
 </div>
 </div>
 </div>
-<div class="sect4">
-<h5 id="_infrafunction"><a class="anchor" href="#_infrafunction"></a>infra::Function</h5>
+<div class="sect3">
+<h4 id="_infrafunction"><a class="anchor" href="#_infrafunction"></a>infra::Function</h4>
 <div class="paragraph">
 <p><code>infra::Function</code> is similar to <code>std::function</code>. It is an object which can contain any callable function object, e.g. free function pointers and lambda expressions. A Function is declared by providing the function signature and optionally extra storage space for the function. For example, <code>infra::Function&lt;void()&gt; f;</code> declares a function object <code>f</code> that has a void return-type and no parameters. <code>infra::Function&lt;int(char x)&gt; g;</code> declares a function object <code>g</code> that has an <code>int</code> return-type and one parameter of type <code>char</code>.</p>
 </div>
@@ -187,7 +194,6 @@ f = nullptr;  // Clear the function</code></pre>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">Function&lt;void()&gt; f = [this, &amp;x]() { DoSomething(x); }; // Compile error, too much storage is needed
 Function&lt;void(), 2 * sizeof(void*)&gt; g = [this, &amp;x]() { DoSomething(x); }; // Ok.</code></pre>
-</div>
 </div>
 </div>
 </div>

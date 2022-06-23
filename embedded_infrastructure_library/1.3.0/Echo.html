@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Untitled :: EmIL: Embedded Infrastructure Library</title>
+    <title>ECHO (Embedded CHOmmunication) :: Embedded Infrastructure Library</title>
     <link rel="canonical" href="https://philips-software.github.io/embeddedinfralib/embedded_infrastructure_library/1.3.0/Echo.html">
     <meta name="generator" content="Antora 2.3.4">
     <link rel="stylesheet" href="../../_/css/centralesans.css">
@@ -25,7 +25,7 @@
                     <a class="navbar-brand">
                         <img class="scale-down"  src="../../philips-logo.png" alt="Philips"/>
                     </a>
-                    <a class="navbar-item" href="https://philips-software.github.io/embeddedinfralib">EmIL: Embedded Infrastructure Library</a>
+                    <a class="navbar-item" href="https://philips-software.github.io/embeddedinfralib">Embedded Infrastructure Library</a>
                     <button class="navbar-burger" data-target="topbar-nav">
                         <span></span>
                         <span></span>
@@ -100,11 +100,10 @@
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
+<h1 class="page">ECHO (Embedded CHOmmunication)</h1>
 <div class="sect1">
-<h2 id="_echo_embedded_chommunication"><a class="anchor" href="#_echo_embedded_chommunication"></a>ECHO (Embedded CHOmmunication)</h2>
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
 <div class="sectionbody">
-<div class="sect2">
-<h3 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h3>
 <div class="paragraph">
 <p>ECHO is the name of the embedded remote procedure call (RPC) mechanism
 used in the Embedded Infrastructure Library. As an RPC mechanism, it
@@ -130,8 +129,10 @@ Buffers can be found at
 <a href="https://developers.google.com/protocol-buffers/">Protocol Buffers</a>.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_protobuf_messages"><a class="anchor" href="#_protobuf_messages"></a>Protobuf Messages</h3>
+</div>
+<div class="sect1">
+<h2 id="_protobuf_messages"><a class="anchor" href="#_protobuf_messages"></a>Protobuf Messages</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>Since ECHO builds on top of Protobuf, Google’s definition of messages
 and translation of messages to a binary format is used. Protobuf defines
@@ -177,10 +178,12 @@ may be made compliant by design; in any way, the limits may not be
 surpassed, otherwise results of communication are unpredictable.</p>
 </div>
 </div>
+</div>
+<div class="sect1">
+<h2 id="_protobuf_services"><a class="anchor" href="#_protobuf_services"></a>Protobuf Services</h2>
+<div class="sectionbody">
 <div class="sect2">
-<h3 id="_protobuf_services"><a class="anchor" href="#_protobuf_services"></a>Protobuf Services</h3>
-<div class="sect3">
-<h4 id="_conventions"><a class="anchor" href="#_conventions"></a>Conventions</h4>
+<h3 id="_conventions"><a class="anchor" href="#_conventions"></a>Conventions</h3>
 <div class="paragraph">
 <p>A service defined in Protobuf consist of a number of methods. Protobuf
 does not define the encoding/decoding rules, so this document fully
@@ -226,8 +229,8 @@ fields). The <code>Reset</code> method in the example above therefore takes
 function.</p>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_encoding_service_calls"><a class="anchor" href="#_encoding_service_calls"></a>Encoding Service Calls</h4>
+<div class="sect2">
+<h3 id="_encoding_service_calls"><a class="anchor" href="#_encoding_service_calls"></a>Encoding Service Calls</h3>
 <div class="paragraph">
 <p>ECHO uses a reliable data stream to communicate, like TCP, so that
 correct ordering and delivery is guaranteed until a disconnect occurs.
@@ -255,8 +258,10 @@ contents. So it is equivalent to:</p>
 </div>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_adding_support_to_other_languages"><a class="anchor" href="#_adding_support_to_other_languages"></a>Adding Support to Other Languages</h3>
+</div>
+<div class="sect1">
+<h2 id="_adding_support_to_other_languages"><a class="anchor" href="#_adding_support_to_other_languages"></a>Adding Support to Other Languages</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>The Google Protobuf compiler is able to generate code for a number of
 languages, including C++, C#, Java, and Python. This generated code can
@@ -281,8 +286,10 @@ then the compiler plug-in also has to generate code for encoding and
 decoding the individual message.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_appendix_echoattributes_proto"><a class="anchor" href="#_appendix_echoattributes_proto"></a>Appendix: EchoAttributes.proto</h3>
+</div>
+<div class="sect1">
+<h2 id="_appendix_echoattributes_proto"><a class="anchor" href="#_appendix_echoattributes_proto"></a>Appendix: EchoAttributes.proto</h2>
+<div class="sectionbody">
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-protobuf hljs" data-lang="protobuf">syntax = "proto3";
@@ -308,7 +315,6 @@ extend google.protobuf.MethodOptions {
 
 message Nothing {
 }</code></pre>
-</div>
 </div>
 </div>
 </div>

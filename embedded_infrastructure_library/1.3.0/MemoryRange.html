@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Untitled :: EmIL: Embedded Infrastructure Library</title>
+    <title>MemoryRange :: Embedded Infrastructure Library</title>
     <link rel="canonical" href="https://philips-software.github.io/embeddedinfralib/embedded_infrastructure_library/1.3.0/MemoryRange.html">
     <meta name="generator" content="Antora 2.3.4">
     <link rel="stylesheet" href="../../_/css/centralesans.css">
@@ -25,7 +25,7 @@
                     <a class="navbar-brand">
                         <img class="scale-down"  src="../../philips-logo.png" alt="Philips"/>
                     </a>
-                    <a class="navbar-item" href="https://philips-software.github.io/embeddedinfralib">EmIL: Embedded Infrastructure Library</a>
+                    <a class="navbar-item" href="https://philips-software.github.io/embeddedinfralib">Embedded Infrastructure Library</a>
                     <button class="navbar-burger" data-target="topbar-nav">
                         <span></span>
                         <span></span>
@@ -100,8 +100,8 @@
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<div class="sect1">
-<h2 id="_memoryrange"><a class="anchor" href="#_memoryrange"></a>MemoryRange</h2>
+<h1 class="page">MemoryRange</h1>
+<div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
 <p>Embedded applications regularly handle blocks of memory. Such memory may
@@ -135,8 +135,11 @@ it with data, a MemoryRange can be constructed from it by using
 <code>MakeRange</code>, after which the <code>MemoryRange</code> can be used for passing
 around the data.</p>
 </div>
-<div class="sect2">
-<h3 id="_memoryrange_accessors"><a class="anchor" href="#_memoryrange_accessors"></a>MemoryRange Accessors</h3>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_memoryrange_accessors"><a class="anchor" href="#_memoryrange_accessors"></a>MemoryRange Accessors</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>These are the most used accessors of <code>MemoryRange</code>:</p>
 </div>
@@ -191,8 +194,10 @@ from the back until <code>size()</code> == <code>newSize</code></p></td>
 </tbody>
 </table>
 </div>
-<div class="sect2">
-<h3 id="_helper_functions"><a class="anchor" href="#_helper_functions"></a>Helper Functions</h3>
+</div>
+<div class="sect1">
+<h2 id="_helper_functions"><a class="anchor" href="#_helper_functions"></a>Helper Functions</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>In addition to the members of MemoryRange, a number of helper functions
 exist:</p>
@@ -239,8 +244,10 @@ for the last size elements</p></td>
 </tbody>
 </table>
 </div>
-<div class="sect2">
-<h3 id="_example"><a class="anchor" href="#_example"></a>Example</h3>
+</div>
+<div class="sect1">
+<h2 id="_example"><a class="anchor" href="#_example"></a>Example</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>This example function shows how to use the MemoryRange functions to cut
 up a block of data into smaller pieces:</p>
@@ -261,7 +268,6 @@ void Example()
     std::array&lt;uint8_t, 256&gt; data = { ... };
     SendInBlocks(data, 16);
 }</code></pre>
-</div>
 </div>
 </div>
 </div>
