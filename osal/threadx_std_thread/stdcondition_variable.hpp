@@ -134,7 +134,7 @@ namespace std
         cv_status WaitForImpl(unique_lock<mutex>& lock, ULONG duration)
         {
             WaitingEntry entry;
-            tx_semaphore_create(&entry.semaphore, "", 0);
+            tx_semaphore_create(&entry.semaphore, const_cast<char*>(""), 0);
 
             bool timeout;
 

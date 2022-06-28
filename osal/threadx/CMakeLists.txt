@@ -1,6 +1,6 @@
 FetchContent_Declare(
     threadx
-    GIT_REPOSITORY https://github.com/azure-rtos/threadx
+    GIT_REPOSITORY https://github.com/philips-forks/threadx
     GIT_TAG 83b57acde9dddf1c9468f0f3f0bed7a764f73c85
 )
 
@@ -18,6 +18,11 @@ endif()
 
 FetchContent_MakeAvailable(threadx)
 
+target_compile_definitions(threadx PRIVATE TX_INITIALIZE_KERNEL_ENTER_EXTENSION=return\;)
+
+add_library(osal.threadx_osal STATIC Osal.cpp)
+target_link_libraries(osal.threadx_osal PUBLIC infra.util threadx)
+
 if (TARGET_BUILD_UNIX OR TARGET_BUILD_OSX)
-    target_link_libraries(threadx pthread)
+    target_link_libraries(osal.threadx_osal PUBLIC pthread)
 endif()

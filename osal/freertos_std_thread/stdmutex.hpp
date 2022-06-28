@@ -1,6 +1,8 @@
 #ifndef OSAL_FREERTOS_STD_THREAD_MUTEX_HPP
 #define OSAL_FREERTOS_STD_THREAD_MUTEX_HPP
 
+#include "FreeRTOS.h"
+#include "semphr.h"
 #include <cassert>
 #include <chrono>
 #include <exception>
@@ -8,8 +10,6 @@
 #include <system_error>
 #include <tuple>
 #include <type_traits>
-#include "FreeRTOS.h"
-#include "semphr.h"
 
 namespace std
 {
@@ -24,36 +24,36 @@ namespace std
 
         ~timed_mutex()
         {
-            vSemaphoreDelete(mSemaphore);
+            vSemaphoreDelete(handle);
         }
 
         void lock()
         {
-            signed portBASE_TYPE result = xSemaphoreTake(mSemaphore, portMAX_DELAY);
+            auto result [[maybe_unused]] = xSemaphoreTake(handle, portMAX_DELAY);
             assert(result == pdTRUE);
         }
 
         bool try_lock() noexcept
         {
-            return xSemaphoreTake(mSemaphore, 0) == pdTRUE;
+            return xSemaphoreTake(handle, 0) == pdTRUE;
         }
 
         void unlock()
         {
-            signed portBASE_TYPE result = xSemaphoreGive(mSemaphore);
+            auto result [[maybe_unused]] = xSemaphoreGive(handle);
             assert(result == pdTRUE);
         }
 
         native_handle_type native_handle()
         {
-            return mSemaphore;
+            return handle;
         }
 
         template<class Rep, class Period>
         bool try_lock_for(const chrono::duration<Rep, Period>& duration)
         {
-            int adjustForInaccuracies = ratio_less_equal<clock_type::period, Period>::value ? 0 : 1;
-            return xSemaphoreTake(mSemaphore, (chrono::duration_cast<chrono::milliseconds>(duration).count() + adjustForInaccuracies) / portTICK_RATE_MS) == pdTRUE;
+            auto adjustForInaccuracies = ratio_less_equal<clock_type::period, Period>::value ? 0 : 1;
+            return xSemaphoreTake(handle, (chrono::duration_cast<chrono::milliseconds>(duration).count() + adjustForInaccuracies) / portTICK_RATE_MS) == pdTRUE;
         }
 
         template <class Clock, class Duration>
@@ -66,7 +66,7 @@ namespace std
         typedef chrono::high_resolution_clock clock_type;
 
     private:
-        native_handle_type mSemaphore = xSemaphoreCreateMutex();
+        native_handle_type handle = xSemaphoreCreateMutex();
     };
 
     class recursive_timed_mutex
@@ -80,36 +80,36 @@ namespace std
 
         ~recursive_timed_mutex()
         {
-            vSemaphoreDelete(mSemaphore);
+            vSemaphoreDelete(handle);
         }
 
         void lock()
         {
-            signed portBASE_TYPE result = xSemaphoreTakeRecursive(mSemaphore, portMAX_DELAY);
+            auto result [[maybe_unused]] = xSemaphoreTakeRecursive(handle, portMAX_DELAY);
             assert(result == pdTRUE);
         }
 
         bool try_lock() noexcept
         {
-            return xSemaphoreTakeRecursive(mSemaphore, 0) == pdTRUE;
+            return xSemaphoreTakeRecursive(handle, 0) == pdTRUE;
         }
 
         void unlock()
         {
-            signed portBASE_TYPE result = xSemaphoreGiveRecursive(mSemaphore);
+            auto result [[maybe_unused]] = xSemaphoreGiveRecursive(handle);
             assert(result == pdTRUE);
         }
 
         native_handle_type native_handle()
         {
-            return mSemaphore;
+            return handle;
         }
 
         template<class Rep, class Period>
         bool try_lock_for(const chrono::duration<Rep, Period>& duration)
         {
-            int adjustForInaccuracies = ratio_less_equal<clock_type::period, Period>::value ? 0 : 1;
-            return xSemaphoreTakeRecursive(mSemaphore, chrono::duration_cast<clock_type::duration>(duration) + adjustForInaccuracies) == pdTRUE;
+            auto adjustForInaccuracies = ratio_less_equal<clock_type::period, Period>::value ? 0 : 1;
+            return xSemaphoreTakeRecursive(handle, chrono::duration_cast<clock_type::duration>(duration) + adjustForInaccuracies) == pdTRUE;
         }
 
         template <class Clock, class Duration>
@@ -122,7 +122,7 @@ namespace std
         typedef chrono::high_resolution_clock clock_type;
 
     private:
-        native_handle_type mSemaphore = xSemaphoreCreateRecursiveMutex();
+        native_handle_type handle = xSemaphoreCreateRecursiveMutex();
     };
 
     class mutex
@@ -170,25 +170,25 @@ namespace std
         typedef Mutex mutex_type;
 
         explicit lock_guard(mutex_type& mutex)
-            : mMutex(mutex)
+            : mutex(mutex)
         {
-            mMutex.lock();
+            mutex.lock();
         }
 
         lock_guard(mutex_type& mutex, adopt_lock_t)
-            : mMutex(mutex)
+            : mutex(mutex)
         {}
 
         ~lock_guard()
         {
-            mMutex.unlock();
+            mutex.unlock();
         }
 
         lock_guard(const lock_guard&) = delete;
         lock_guard& operator=(const lock_guard&) = delete;
 
     private:
-        mutex_type& mMutex;
+        mutex_type& mutex;
     };
 
     template<typename Mutex>
@@ -197,26 +197,20 @@ namespace std
     public:
         typedef Mutex mutex_type;
 
-        unique_lock() noexcept
-            : mMutex(nullptr)
-            , mOwns(false)
-        { }
+        unique_lock() noexcept = default;
 
         explicit unique_lock(mutex_type& mutex)
             : mMutex(&mutex)
-            , mOwns(false)
         {
             lock();
         }
 
         unique_lock(mutex_type& mutex, defer_lock_t) noexcept
             : mMutex(&mutex)
-            , mOwns(false)
         {}
 
         unique_lock(mutex_type& mutex, try_to_lock_t)
             : mMutex(&mutex)
-            , mOwns(false)
         {
             try_lock();
         }
@@ -229,7 +223,6 @@ namespace std
         template<typename Clock, typename Duration>
         unique_lock(mutex_type& mutex, const chrono::time_point<Clock, Duration>& timePoint)
             : mMutex(&mutex)
-            , mOwns(false)
         {
             try_lock_until(timePoint);
         }
@@ -237,7 +230,6 @@ namespace std
         template<typename Rep, typename Period>
         unique_lock(mutex_type& mutex, const chrono::duration<Rep, Period>& duration)
             : mMutex(&mutex)
-            , mOwns(false)
         {
             try_lock_for(duration);
         }
@@ -351,8 +343,8 @@ namespace std
         }
 
     private:
-        mutex_type* mMutex;
-        bool  mOwns;
+        mutex_type* mMutex = nullptr;
+        bool mOwns = false;
     };
 
     template<typename Mutex>

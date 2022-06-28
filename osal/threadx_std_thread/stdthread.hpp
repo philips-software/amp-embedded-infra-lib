@@ -123,7 +123,7 @@ namespace std
             threadData = new (std::nothrow) ThreadData(stack, std::forward<F>(f), std::forward<Args...>(args)...);
             threadId.threadHandle = &threadData->txThread;
             
-            UINT result = tx_thread_create(threadId.threadHandle, "", &ThreadFunction, reinterpret_cast<ULONG>(threadData), threadData->stack, stackSize, priority, priority, TX_NO_TIME_SLICE, TX_AUTO_START);
+            UINT result = tx_thread_create(threadId.threadHandle, const_cast<char*>(""), &ThreadFunction, reinterpret_cast<ULONG>(threadData), threadData->stack, stackSize, priority, priority, TX_NO_TIME_SLICE, TX_AUTO_START);
             if (result != TX_SUCCESS)
                 std::abort();
         }

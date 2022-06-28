@@ -2,7 +2,6 @@
 #define OSAL_THREADX_STD_THREAD_MUTEX_HPP
 
 #include "tx_api.h"
-#include <atomic>
 #include <cassert>
 #include <chrono>
 #include <exception>
@@ -20,7 +19,7 @@ namespace std
 
         timed_mutex() noexcept
         {
-            tx_mutex_create(&mMutex, "", 1);
+            tx_mutex_create(&handle, const_cast<char*>(""), 1);
         }
 
         timed_mutex(const timed_mutex& other) = delete;
@@ -28,44 +27,36 @@ namespace std
 
         ~timed_mutex()
         {
-            tx_mutex_delete(&mMutex);
+            tx_mutex_delete(&handle);
         }
 
         void lock()
         {
-            UINT result = tx_mutex_get(&mMutex, TX_WAIT_FOREVER);
+            auto result [[maybe_unused]] = tx_mutex_get(&handle, TX_WAIT_FOREVER);
             assert(result == TX_SUCCESS);
-            (void)result;
         }
 
         bool try_lock() noexcept
         {
-            if (tx_mutex_get(&mMutex, TX_NO_WAIT) == TX_SUCCESS)
-                return true;
-            else
-                return false;
+            return tx_mutex_get(&handle, TX_NO_WAIT) == TX_SUCCESS;
         }
 
         void unlock()
         {
-            UINT result = tx_mutex_put(&mMutex);
+            auto result [[maybe_unused]] = tx_mutex_put(&handle);
             assert(result == TX_SUCCESS);
-            (void)result;
         }
 
         native_handle_type native_handle()
         {
-            return mMutex;
+            return handle;
         }
 
         template<class Rep, class Period>
         bool try_lock_for(const chrono::duration<Rep, Period>& duration)
         {
-            int adjustForInaccuracies = ratio_less_equal<clock_type::period, Period>::value ? 0 : 1;
-            if (tx_mutex_get(mMutex, (chrono::duration_cast<chrono::milliseconds>(duration).count() + adjustForInaccuracies) * TX_TIMER_TICKS_PER_SECOND / 1000) == TX_SUCCESS)
-                return true;
-            else
-                return false;
+            auto adjustForInaccuracies = ratio_less_equal<clock_type::period, Period>::value ? 0 : 1;
+            return tx_mutex_get(handle, (chrono::duration_cast<chrono::milliseconds>(duration).count() + adjustForInaccuracies) * TX_TIMER_TICKS_PER_SECOND / 1000) == TX_SUCCESS;
         }
 
         template <class Clock, class Duration>
@@ -78,7 +69,7 @@ namespace std
         typedef chrono::high_resolution_clock clock_type;
 
     private:
-        native_handle_type mMutex;
+        native_handle_type handle;
     };
 
     using recursive_timed_mutex = timed_mutex;

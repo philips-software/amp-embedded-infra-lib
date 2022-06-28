@@ -256,7 +256,6 @@ namespace std
 
     namespace this_thread
     {
-
         inline thread::id get_id() noexcept
         {
             return thread::id(xTaskGetCurrentTaskHandle());
