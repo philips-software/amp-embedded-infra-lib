@@ -30,6 +30,17 @@ namespace services
         return permissions;
     }
 
+     uint8_t GattCharacteristicImpl::GetAttributeCount() const
+     {
+        constexpr uint8_t attributeCountWithoutCCCD = 2;
+        constexpr uint8_t attributeCountWithCCCD = 3;
+        
+        if (static_cast<bool>((properties & (GattCharacteristic::PropertyFlags::notify | GattCharacteristic::PropertyFlags::indicate))))
+            return attributeCountWithCCCD;
+        else 
+            return attributeCountWithoutCCCD;
+     }
+
     GattAttribute::Uuid GattCharacteristicImpl::Type() const
     {
         return attribute.type;
