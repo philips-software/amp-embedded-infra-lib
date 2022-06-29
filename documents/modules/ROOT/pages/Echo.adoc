@@ -1,3 +1,6 @@
+:source-highlighter: highlight.js
+:highlightjs-languages: protobuf
+
 == ECHO (Embedded CHOmmunication)
 
 === Introduction
@@ -157,7 +160,7 @@ decoding the individual message.
 
 === Appendix: EchoAttributes.proto
 
-[source,]
+[source,protobuf]
 ----
 syntax = "proto3";
 
