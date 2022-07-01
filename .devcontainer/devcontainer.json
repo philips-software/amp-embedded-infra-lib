@@ -4,13 +4,13 @@
   "name": "linux-gcc",
   "build": { "dockerfile": "Dockerfile" },
   "runArgs": ["--add-host=host.docker.internal:host-gateway"],
+  "remoteEnv": { "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}" },
   "mounts": [
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
   "extensions": [
     "matepek.vscode-catch2-test-adapter",
     "ms-vscode.cmake-tools",
-    "ms-vscode.cpptools",
-    "twxs.cmake"
+    "ms-vscode.cpptools"
   ]
 }
