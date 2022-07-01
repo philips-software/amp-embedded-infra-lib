@@ -20,5 +20,3 @@ target_sources(osal.threadx_std_thread PRIVATE
     stdthread.hpp
     thread
 )
-
-target_compile_options(osal.threadx_std_thread INTERFACE -fpermissive)

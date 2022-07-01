@@ -18,7 +18,7 @@ namespace osal
         _tx_thread_system_state =  TX_INITIALIZE_IN_PROGRESS;
     }
 
-    [[noreturn]] void Run()
+    void Run()
     {
         _tx_thread_system_state =  TX_INITIALIZE_IS_FINISHED;
 

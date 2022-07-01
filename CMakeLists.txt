@@ -89,7 +89,7 @@ endif()
 # Enable or disable optional features.
 option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of EmIL" On)
 option(EMIL_INCLUDE_FREERTOS "Include FreeRTOS as part of EmIL" Off)
-option(EMIL_INCLUDE_THREADX "Include ThreadX as part of EmIL" On)
+option(EMIL_INCLUDE_THREADX "Include ThreadX as part of EmIL" Off)
 
 if (TARGET_ARCH_X86)
     add_compile_definitions(EMIL_HOST_BUILD)

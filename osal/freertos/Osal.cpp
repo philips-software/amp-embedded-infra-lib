@@ -18,9 +18,8 @@ namespace osal
     void Init()
     {}
 
-    [[noreturn]] void Run()
+    void Run()
     {
         vTaskStartScheduler();
-        __builtin_unreachable();
     }
 }
