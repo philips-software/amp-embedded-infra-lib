@@ -111,21 +111,6 @@ namespace services
         virtual void Update(infra::ConstByteRange data, infra::Function<void()> onDone) = 0;
     };
 
-    inline GattCharacteristic::PropertyFlags operator|(GattCharacteristic::PropertyFlags lhs, GattCharacteristic::PropertyFlags rhs)
-    {
-        return static_cast<GattCharacteristic::PropertyFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
-    }
-
-    inline GattCharacteristic::PropertyFlags operator&(GattCharacteristic::PropertyFlags lhs, GattCharacteristic::PropertyFlags rhs)
-    {
-        return static_cast<GattCharacteristic::PropertyFlags>(infra::enum_cast(lhs) & infra::enum_cast(rhs));
-    }
-
-    inline GattCharacteristic::PermissionFlags operator|(GattCharacteristic::PermissionFlags lhs, GattCharacteristic::PermissionFlags rhs)
-    {
-        return static_cast<GattCharacteristic::PermissionFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
-    }
-
     class GattService
         : public infra::IntrusiveForwardList<GattService>::NodeType
     {
@@ -170,6 +155,21 @@ namespace services
     class AttMtuExchange
         : public infra::Subject<AttMtuExchangeObserver>
     {};
+
+    inline GattCharacteristic::PropertyFlags operator|(GattCharacteristic::PropertyFlags lhs, GattCharacteristic::PropertyFlags rhs)
+    {
+        return static_cast<GattCharacteristic::PropertyFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
+    }
+
+    inline GattCharacteristic::PropertyFlags operator&(GattCharacteristic::PropertyFlags lhs, GattCharacteristic::PropertyFlags rhs)
+    {
+        return static_cast<GattCharacteristic::PropertyFlags>(infra::enum_cast(lhs) & infra::enum_cast(rhs));
+    }
+
+    inline GattCharacteristic::PermissionFlags operator|(GattCharacteristic::PermissionFlags lhs, GattCharacteristic::PermissionFlags rhs)
+    {
+        return static_cast<GattCharacteristic::PermissionFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
+    }
 }
 
 #endif
