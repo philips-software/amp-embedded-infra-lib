@@ -16,6 +16,7 @@ namespace services
         // Implementation of GattCharacteristic
         virtual PropertyFlags Properties() const;
         virtual PermissionFlags Permissions() const;
+        virtual uint8_t GetAttributeCount() const;
         virtual GattAttribute::Uuid Type() const;
         virtual GattAttribute::Handle Handle() const;
         virtual GattAttribute::Handle& Handle();

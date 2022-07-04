@@ -100,6 +100,7 @@ namespace services
 
         virtual PropertyFlags Properties() const = 0;
         virtual PermissionFlags Permissions() const = 0;
+        virtual uint8_t GetAttributeCount() const = 0;
 
         virtual GattAttribute::Uuid Type() const = 0;
         virtual GattAttribute::Handle Handle() const = 0;
@@ -109,16 +110,6 @@ namespace services
 
         virtual void Update(infra::ConstByteRange data, infra::Function<void()> onDone) = 0;
     };
-
-    inline GattCharacteristic::PropertyFlags operator|(GattCharacteristic::PropertyFlags lhs, GattCharacteristic::PropertyFlags rhs)
-    {
-        return static_cast<GattCharacteristic::PropertyFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
-    }
-
-    inline GattCharacteristic::PermissionFlags operator|(GattCharacteristic::PermissionFlags lhs, GattCharacteristic::PermissionFlags rhs)
-    {
-        return static_cast<GattCharacteristic::PermissionFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
-    }
 
     class GattService
         : public infra::IntrusiveForwardList<GattService>::NodeType
@@ -136,6 +127,8 @@ namespace services
         GattAttribute::Uuid Type() const;
         GattAttribute::Handle Handle() const;
         GattAttribute::Handle& Handle();
+
+        uint8_t GetAttributeCount() const;
 
     private:
         GattAttribute attribute;
@@ -162,6 +155,21 @@ namespace services
     class AttMtuExchange
         : public infra::Subject<AttMtuExchangeObserver>
     {};
+
+    inline GattCharacteristic::PropertyFlags operator|(GattCharacteristic::PropertyFlags lhs, GattCharacteristic::PropertyFlags rhs)
+    {
+        return static_cast<GattCharacteristic::PropertyFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
+    }
+
+    inline GattCharacteristic::PropertyFlags operator&(GattCharacteristic::PropertyFlags lhs, GattCharacteristic::PropertyFlags rhs)
+    {
+        return static_cast<GattCharacteristic::PropertyFlags>(infra::enum_cast(lhs) & infra::enum_cast(rhs));
+    }
+
+    inline GattCharacteristic::PermissionFlags operator|(GattCharacteristic::PermissionFlags lhs, GattCharacteristic::PermissionFlags rhs)
+    {
+        return static_cast<GattCharacteristic::PermissionFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
+    }
 }
 
 #endif
