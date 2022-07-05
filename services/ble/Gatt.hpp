@@ -154,12 +154,17 @@ namespace services
     public:
         using infra::Observer<AttMtuExchangeObserver, AttMtuExchange>::Observer;
 
-        virtual void ExchangedMaxAttMtuSize(uint16_t maxAttMtuSize) = 0;
+        virtual void ExchangedMaxAttMtuSize() = 0;
     };
 
     class AttMtuExchange
         : public infra::Subject<AttMtuExchangeObserver>
-    {};
+    {
+    public:
+        virtual uint16_t EffectiveMaxAttMtuSize() const = 0;
+
+        static constexpr uint16_t defaultMaxAttMtuSize = 23;
+    };
 
     inline GattCharacteristic::PropertyFlags operator|(GattCharacteristic::PropertyFlags lhs, GattCharacteristic::PropertyFlags rhs)
     {
