@@ -23,15 +23,22 @@ namespace services
         Handle handle;
     };
 
-    class GattCharacteristic;
+    class GattCharacteristicUpdate;
 
     class GattCharacteristicObserver
-        : public infra::Observer<GattCharacteristicObserver, GattCharacteristic>
+        : public infra::Observer<GattCharacteristicObserver, GattCharacteristicUpdate>
     {
     public:
-        using infra::Observer<GattCharacteristicObserver, GattCharacteristic>::Observer;
+        using infra::Observer<GattCharacteristicObserver, GattCharacteristicUpdate>::Observer;
 
         virtual void DataReceived(infra::ConstByteRange data) = 0;
+    };
+
+    class GattCharacteristicUpdate
+        : public infra::Subject<GattCharacteristicObserver>
+    {
+    public:
+        virtual void Update(infra::ConstByteRange data, infra::Function<void()> onDone) = 0;
     };
 
     class GattCharacteristicClientOperations;
@@ -60,7 +67,7 @@ namespace services
 
     class GattCharacteristic
         : public GattCharacteristicClientOperationsObserver
-        , public infra::Subject<GattCharacteristicObserver>
+        , public GattCharacteristicUpdate
         , public infra::IntrusiveForwardList<GattCharacteristic>::NodeType
     {
     public:
@@ -107,8 +114,6 @@ namespace services
         virtual GattAttribute::Handle& Handle() = 0;
 
         virtual uint16_t ValueLength() const = 0;
-
-        virtual void Update(infra::ConstByteRange data, infra::Function<void()> onDone) = 0;
     };
 
     class GattService
