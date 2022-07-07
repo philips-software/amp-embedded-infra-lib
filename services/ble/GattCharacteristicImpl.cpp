@@ -65,8 +65,8 @@ namespace services
     {
         really_assert(data.size() <= valueLength);
         really_assert(GattCharacteristicClientOperationsObserver::Attached());
-
-        GattCharacteristicClientOperationsObserver::Subject().Update(*this, data);
+        
+        while (!GattCharacteristicClientOperationsObserver::Subject().Update(*this, data));
         onDone();
     }
 
