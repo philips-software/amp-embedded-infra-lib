@@ -34,7 +34,7 @@ namespace services
     public:
         using infra::Observer<GapPeripheralObserver, GapPeripheral>::Observer;
 
-        virtual void State(GapPeripheralState state) = 0;
+        virtual void StateUpdated(GapPeripheralState state) = 0;
     };
 
     class GapPeripheral
