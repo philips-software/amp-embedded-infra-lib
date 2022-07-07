@@ -29,12 +29,12 @@ namespace services
     class GapPeripheral;
 
     class GapPeripheralObserver
-        : public infra::SingleObserver<GapPeripheralObserver, GapPeripheral>
+        : public infra::Observer<GapPeripheralObserver, GapPeripheral>
     {
     public:
-        using infra::SingleObserver<GapPeripheralObserver, GapPeripheral>::SingleObserver;
+        using infra::Observer<GapPeripheralObserver, GapPeripheral>::Observer;
 
-        virtual void State(GapPeripheralState state) = 0;
+        virtual void StateUpdated(GapPeripheralState state) = 0;
     };
 
     class GapPeripheral
