@@ -66,8 +66,15 @@ namespace services
         really_assert(data.size() <= valueLength);
         really_assert(GattCharacteristicClientOperationsObserver::Attached());
         
-        while (!GattCharacteristicClientOperationsObserver::Subject().Update(*this, data));
-        onDone();
+        using UpdateStatus = GattCharacteristicClientOperations::UpdateStatus;
+        UpdateStatus status;
+
+        do
+            status = GattCharacteristicClientOperationsObserver::Subject().Update(*this, data);
+        while (status == UpdateStatus::retry);
+
+        if (status == UpdateStatus::success)
+            onDone();
     }
 
     GattAttribute::Handle GattCharacteristicImpl::ServiceHandle() const

@@ -57,12 +57,20 @@ namespace services
         : public infra::Subject<GattCharacteristicClientOperationsObserver>
     {
     public:
+        enum class UpdateStatus : uint8_t
+        {
+            success,
+            retry,
+            error
+        };
+
         // Update 'characteristic' with 'data' towards the
         // BLE stack and, depending on the configuration of
         // that 'characteristic', send a notification or indication.
-        // Returns true on success, or false on failure (i.e. BLE
-        // stack indicates an issue with updating or sending data).
-        virtual bool Update(const GattCharacteristicClientOperationsObserver& characteristic, infra::ConstByteRange data) const = 0;
+        // Returns success, or retry in transient failure or error 
+        // on unrecoverable failure (i.e. BLE stack indicates an issue 
+        // with updating or sending data).
+        virtual UpdateStatus Update(const GattCharacteristicClientOperationsObserver& characteristic, infra::ConstByteRange data) const = 0;
     };
 
     class GattCharacteristic
