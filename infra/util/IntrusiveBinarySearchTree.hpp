@@ -4,6 +4,7 @@
 // Intrusive binary search tree class, used as base for IntrusiveSet
 
 #include <algorithm>
+#include <cassert>
 #include <cstdlib>
 #include <iterator>
 #include <tuple>
