@@ -366,14 +366,14 @@ namespace infra
     template<class T>
     typename BoundedVector<T>::value_type& BoundedVector<T>::operator[](size_type position)
     {
-        really_assert(position >= 0 && position < size());
+        really_assert(position < size());
         return *storage[position];
     }
 
     template<class T>
     const typename BoundedVector<T>::value_type& BoundedVector<T>::operator[](size_type position) const
     {
-        really_assert(position >= 0 && position < size());
+        really_assert(position < size());
         return *storage[position];
     }
 
