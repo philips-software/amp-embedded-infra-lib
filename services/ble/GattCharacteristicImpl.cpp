@@ -66,7 +66,6 @@ namespace services
         really_assert(data.size() <= valueLength);
         really_assert(GattCharacteristicClientOperationsObserver::Attached());
         
-        using UpdateStatus = GattCharacteristicClientOperations::UpdateStatus;
         UpdateStatus status;
 
         do
