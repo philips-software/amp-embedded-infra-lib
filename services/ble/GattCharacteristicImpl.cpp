@@ -1,5 +1,6 @@
 #include "infra/event/EventDispatcher.hpp"
 #include "services/ble/GattCharacteristicImpl.hpp"
+#include "infra/util/PostAssign.hpp"
 
 namespace services
 {
