@@ -30,11 +30,22 @@ namespace services
         virtual GattAttribute::Handle CharacteristicHandle() const;
 
     private:
+        void UpdateValue();
+    
+    private:
+        struct UpdateContext
+        {
+            infra::Function<void()> onDone;
+            infra::ConstByteRange data;            
+        };
+
+    private:
         const GattService& service;
         GattAttribute attribute;
         uint16_t valueLength;
         PropertyFlags properties;
         PermissionFlags permissions;
+        infra::Optional<UpdateContext> updateContext;
     };
 }
 
