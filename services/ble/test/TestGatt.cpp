@@ -1,11 +1,12 @@
 #include "gmock/gmock.h"
 #include "services/ble/GattCharacteristicImpl.hpp"
+#include "infra/util/test_helper/MockCallback.hpp"
 
 class GattCharacteristicClientOperationsMock
     : public services::GattCharacteristicClientOperations
 {
 public:
-    MOCK_CONST_METHOD2(Update, bool(const services::GattCharacteristicClientOperationsObserver& characteristic, infra::ConstByteRange data));
+    MOCK_CONST_METHOD2(Update, UpdateStatus(const services::GattCharacteristicClientOperationsObserver& characteristic, infra::ConstByteRange data));
 };
 
 namespace
@@ -55,8 +56,25 @@ public:
 
 MATCHER_P(ContentsEqual, x, negation ? "Contents not equal" : "Contents are equal") { return infra::ContentsEqual(infra::MakeStringByteRange(x), arg); }
 
-TEST_F(GattCharacteristicTest, should_update_characteristic)
+TEST_F(GattCharacteristicTest, should_update_characteristic_and_callback_on_success)
 {
-    EXPECT_CALL(operations, Update(testing::Ref(characteristic), ContentsEqual("string")));
-    characteristic.Update(infra::MakeStringByteRange("string"), infra::emptyFunction);
+    infra::MockCallback<void()> callback;
+    EXPECT_CALL(callback, callback);
+    EXPECT_CALL(operations, Update(testing::Ref(characteristic), ContentsEqual("string"))).WillOnce(testing::Return(services::GattCharacteristicClientOperations::UpdateStatus::success));
+    characteristic.Update(infra::MakeStringByteRange("string"), [&callback]() { callback.callback(); });
+}
+
+TEST_F(GattCharacteristicTest, should_update_characteristic_and_not_callback_on_error)
+{
+    infra::MockCallback<void()> callback;
+    EXPECT_CALL(operations, Update(testing::Ref(characteristic), ContentsEqual("string"))).WillOnce(testing::Return(services::GattCharacteristicClientOperations::UpdateStatus::error));
+    characteristic.Update(infra::MakeStringByteRange("string"), [&callback]() { callback.callback(); });
+}
+
+TEST_F(GattCharacteristicTest, should_update_characteristic_and_retry_update_on_retry)
+{
+    infra::MockCallback<void()> callback;
+    EXPECT_CALL(callback, callback);
+    EXPECT_CALL(operations, Update(testing::Ref(characteristic), ContentsEqual("string"))).WillOnce(testing::Return(services::GattCharacteristicClientOperations::UpdateStatus::retry)).WillOnce(testing::Return(services::GattCharacteristicClientOperations::UpdateStatus::success));
+    characteristic.Update(infra::MakeStringByteRange("string"), [&callback]() { callback.callback(); });
 }

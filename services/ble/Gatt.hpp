@@ -57,12 +57,20 @@ namespace services
         : public infra::Subject<GattCharacteristicClientOperationsObserver>
     {
     public:
+        enum class UpdateStatus : uint8_t
+        {
+            success,
+            retry,
+            error
+        };
+
         // Update 'characteristic' with 'data' towards the
         // BLE stack and, depending on the configuration of
         // that 'characteristic', send a notification or indication.
-        // Returns true on success, or false on failure (i.e. BLE
-        // stack indicates an issue with updating or sending data).
-        virtual bool Update(const GattCharacteristicClientOperationsObserver& characteristic, infra::ConstByteRange data) const = 0;
+        // Returns success, or retry in transient failure or error 
+        // on unrecoverable failure (i.e. BLE stack indicates an issue 
+        // with updating or sending data).
+        virtual UpdateStatus Update(const GattCharacteristicClientOperationsObserver& characteristic, infra::ConstByteRange data) const = 0;
     };
 
     class GattCharacteristic
@@ -154,12 +162,18 @@ namespace services
     public:
         using infra::Observer<AttMtuExchangeObserver, AttMtuExchange>::Observer;
 
-        virtual void ExchangedMaxAttMtuSize(uint16_t maxAttMtuSize) = 0;
+        virtual void ExchangedMaxAttMtuSize() = 0;
     };
 
     class AttMtuExchange
         : public infra::Subject<AttMtuExchangeObserver>
-    {};
+    {
+    public:
+        virtual uint16_t EffectiveMaxAttMtuSize() const = 0;
+
+    protected:
+        static constexpr uint16_t defaultMaxAttMtuSize = 23;
+    };
 
     inline GattCharacteristic::PropertyFlags operator|(GattCharacteristic::PropertyFlags lhs, GattCharacteristic::PropertyFlags rhs)
     {

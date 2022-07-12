@@ -13,6 +13,8 @@ namespace services
         GattCharacteristicImpl(GattService& service, const GattAttribute::Uuid& type, uint16_t valueLength, PropertyFlags properties);
         GattCharacteristicImpl(GattService& service, const GattAttribute::Uuid& type, uint16_t valueLength, PropertyFlags properties, PermissionFlags permissions);
 
+        using UpdateStatus = GattCharacteristicClientOperations::UpdateStatus;
+
         // Implementation of GattCharacteristic
         virtual PropertyFlags Properties() const;
         virtual PermissionFlags Permissions() const;
@@ -28,11 +30,22 @@ namespace services
         virtual GattAttribute::Handle CharacteristicHandle() const;
 
     private:
+        void UpdateValue();
+    
+    private:
+        struct UpdateContext
+        {
+            infra::Function<void()> onDone;
+            infra::ConstByteRange data;            
+        };
+
+    private:
         const GattService& service;
         GattAttribute attribute;
         uint16_t valueLength;
         PropertyFlags properties;
         PermissionFlags permissions;
+        infra::Optional<UpdateContext> updateContext;
     };
 }
 
