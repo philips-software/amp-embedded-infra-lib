@@ -36,7 +36,7 @@ namespace services
         struct UpdateContext
         {
             infra::Function<void()> onDone;
-            infra::ConstByteRange data;            
+            infra::ConstByteRange data;
         };
 
     private:
