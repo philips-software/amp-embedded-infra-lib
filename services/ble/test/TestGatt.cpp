@@ -1,6 +1,7 @@
 #include "gmock/gmock.h"
-#include "services/ble/GattCharacteristicImpl.hpp"
+#include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
+#include "services/ble/GattCharacteristicImpl.hpp"
 
 class GattCharacteristicClientOperationsMock
     : public services::GattCharacteristicClientOperations
@@ -42,6 +43,7 @@ TEST(GattTest, should_add_characteristic_to_service)
 
 class GattCharacteristicTest
     : public testing::Test
+    , public infra::EventDispatcherFixture
 {
 public:
     GattCharacteristicTest()
@@ -77,4 +79,5 @@ TEST_F(GattCharacteristicTest, should_update_characteristic_and_retry_update_on_
     EXPECT_CALL(callback, callback);
     EXPECT_CALL(operations, Update(testing::Ref(characteristic), ContentsEqual("string"))).WillOnce(testing::Return(services::GattCharacteristicClientOperations::UpdateStatus::retry)).WillOnce(testing::Return(services::GattCharacteristicClientOperations::UpdateStatus::success));
     characteristic.Update(infra::MakeStringByteRange("string"), [&callback]() { callback.callback(); });
+    ExecuteAllActions();
 }

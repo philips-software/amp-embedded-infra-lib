@@ -1,6 +1,5 @@
 set(CCOLA_CORE cortex-m4)
 set(CCOLA_PROCESSOR_FAMILY stm32wbxx)
-set(CCOLA_PROCESSOR stm32wb55)
 
 include(${CCOLA_DIR}/platforms/platform-cortex-m.inc)
 
