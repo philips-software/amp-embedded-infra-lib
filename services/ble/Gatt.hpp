@@ -2,6 +2,7 @@
 #define SERVICES_GATT_HPP
 
 #include "infra/util/ByteRange.hpp"
+#include "infra/util/Endian.hpp"
 #include "infra/util/EnumCast.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/IntrusiveForwardList.hpp"
@@ -14,7 +15,7 @@ namespace services
     struct GattAttribute
     {
         using Uuid16 = uint16_t;
-        using Uuid128 = std::array<uint8_t, 16>;
+        using Uuid128 = infra::BigEndian<std::array<uint8_t, 16>>;
         using Uuid = infra::Variant<Uuid16, Uuid128>;
 
         using Handle = uint16_t;
