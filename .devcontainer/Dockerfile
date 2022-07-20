@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         clang-tidy-12=1:12.0.0-3ubuntu1~20.04.5 \
         g++-8=8.4.0-3ubuntu2 \
         gcc-8=8.4.0-3ubuntu2 \
+        gdb=8.2.1-2+b3 \
         git=1:2.25.1-1ubuntu3.4 \
         gnupg2=2.2.19-3ubuntu2.1 \
         iwyu=8.0-3build1 \
