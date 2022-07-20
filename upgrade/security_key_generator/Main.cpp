@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
     }
     catch (...)
     {
-        std::cerr << "Unknown error occurred" << std::endl;
+        std::cerr << "Unknown error occured" << std::endl;
         return 1;
     }
 

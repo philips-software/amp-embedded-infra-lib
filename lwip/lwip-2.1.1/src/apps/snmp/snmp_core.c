@@ -29,7 +29,7 @@
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * Author: Christian Simons <christiaan.simons@axon.tv>
+ * Author: Christiaan Simons <christiaan.simons@axon.tv>
  *         Martin Hentschel <info@cl-soft.de>
 */
 
@@ -934,7 +934,7 @@ snmp_get_next_node_instance_from_oid(const u32_t *oid, u8_t oid_len, snmp_valida
       /*
       there is no further (suitable) node inside this MIB, search for the next MIB with following priority
       1. search for inner MIB's (whose root is located inside tree of current MIB)
-      2. search for surrounding MIB's (where the current MIB is the inner MIB) and continue there if any
+      2. search for surrouding MIB's (where the current MIB is the inner MIB) and continue there if any
       3. take the next closest MIB (not being related to the current MIB)
       */
       const struct snmp_mib *next_mib;
@@ -1281,7 +1281,7 @@ snmp_decode_truthvalue(const s32_t *asn1_value, u8_t *bool_value)
  * @param buf points to a buffer where the resulting ASN1 octet string is stored to
  * @param buf_len max length of the bufffer
  * @param bit_value Bit value to encode with Bit0 == LSB
- * @param bit_count Number of possible bits for the bit value (according to rfc we have to send all bits independent from their truth value)
+ * @param bit_count Number of possible bits for the bit value (according to rfc we have to send all bits independant from their truth value)
  * @return number of bytes used from buffer to store the resulting OctetString
  */
 u8_t

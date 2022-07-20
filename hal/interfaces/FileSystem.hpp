@@ -45,7 +45,7 @@
     #error Could not find system header "<filesystem>" or "<experimental/filesystem>"
 #endif
 
-// We previously determined that we need the experimental version
+// We previously determined that we need the exprimental version
 #if INCLUDE_STD_FILESYSTEM_EXPERIMENTAL
     #include <experimental/filesystem>
 

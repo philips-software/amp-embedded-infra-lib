@@ -31,7 +31,7 @@
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * Author: Christian Simons <christiaan.simons@axon.tv>
+ * Author: Christiaan Simons <christiaan.simons@axon.tv>
  *         Martin Hentschel <info@cl-soft.de>
  */
 

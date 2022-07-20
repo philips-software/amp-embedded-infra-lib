@@ -85,7 +85,7 @@ TEST(Asn1ObjectFormatter, add_bignum_zero)
     ASSERT_THAT(stream.Storage(), testing::ElementsAre(0x02, 0x00));
 }
 
-TEST(Asn1ObjectFormatter, add_bignum_using_minimum_amount_of_bytes)
+TEST(Asn1ObjectFormatter, add_bignum_using_minumum_amount_of_bytes)
 {
     infra::ByteOutputStream::WithStorage<5> stream;
     infra::Asn1Formatter formatter(stream);

@@ -8,7 +8,7 @@ var NAVTREE =
     [ "Common pitfalls", "pitfalls.html", null ],
     [ "Reporting bugs", "bugs.html", null ],
     [ "Zero-copy RX", "zerocopyrx.html", null ],
-    [ "System initialization", "sys_init.html", null ],
+    [ "System initalization", "sys_init.html", null ],
     [ "Multithreading", "multithreading.html", null ],
     [ "Optimization hints", "optimization.html", null ],
     [ "Deprecated List", "deprecated.html", null ],

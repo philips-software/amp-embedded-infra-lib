@@ -28,7 +28,7 @@ function(add_version_header_target target_name)
     set_target_properties(${target_name} PROPERTIES VERSION_DIR ${CMAKE_BINARY_DIR}/${target_name})
 endfunction()
 
-function(add_version_header_dependency target_name version_header_target)
+function(add_version_header_depencency target_name version_header_target)
     add_dependencies(${target_name} ${version_header_target})
     get_target_property(version_dir ${version_header_target} VERSION_DIR)
     target_include_directories(${target_name} PRIVATE ${version_dir})

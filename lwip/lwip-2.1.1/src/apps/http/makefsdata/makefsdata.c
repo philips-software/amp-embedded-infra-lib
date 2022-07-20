@@ -21,7 +21,7 @@
 
 /** Makefsdata can generate *all* files deflate-compressed (where file size shrinks).
  * Since nearly all browsers support this, this is a good way to reduce ROM size.
- * To compress the files, "miniz.c" must be downloaded separately.
+ * To compress the files, "miniz.c" must be downloaded seperately.
  */
 #ifndef MAKEFS_SUPPORT_DEFLATE
 #define MAKEFS_SUPPORT_DEFLATE 0
@@ -101,7 +101,7 @@ char serverIDBuffer[1024];
 #define ALIGN_PAYLOAD 1
 /* define this to a type that has the required alignment */
 #define PAYLOAD_ALIGN_TYPE "unsigned int"
-static int payload_alignment_dummy_counter = 0;
+static int payload_alingment_dummy_counter = 0;
 
 #define HEX_BYTES_PER_LINE 16
 
@@ -253,7 +253,7 @@ int main(int argc, char *argv[])
         printf("Excluding files with extensions %s" NEWLINE, exclude_list);
       } else if (strstr(argv[i], "-xc:") == argv[i]) {
         ncompress_list = &argv[i][4];
-        printf("Skipping compression for files with extensions %s" NEWLINE, ncompress_list);
+        printf("Skipping compresion for files with extensions %s" NEWLINE, ncompress_list);
       } else if ((strstr(argv[i], "-?")) || (strstr(argv[i], "-h"))) {
         print_usage();
         exit(0);
@@ -929,7 +929,7 @@ int process_file(FILE *data_file, FILE *struct_file, const char *filename)
 #if ALIGN_PAYLOAD
   /* to force even alignment of array, type 1 */
   fprintf(data_file, "#if FSDATA_FILE_ALIGNMENT==1" NEWLINE);
-  fprintf(data_file, "static const " PAYLOAD_ALIGN_TYPE " dummy_align_%s = %d;" NEWLINE, varname, payload_alignment_dummy_counter++);
+  fprintf(data_file, "static const " PAYLOAD_ALIGN_TYPE " dummy_align_%s = %d;" NEWLINE, varname, payload_alingment_dummy_counter++);
   fprintf(data_file, "#endif" NEWLINE);
 #endif /* ALIGN_PAYLOAD */
   fprintf(data_file, "static const unsigned char FSDATA_ALIGN_PRE data_%s[] FSDATA_ALIGN_POST = {" NEWLINE, varname);
