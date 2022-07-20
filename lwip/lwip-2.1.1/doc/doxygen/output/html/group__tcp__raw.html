@@ -621,7 +621,7 @@ Functions</h2></td></tr>
     <tr><td class="paramname">pcb</td><td>the <a class="el" href="structtcp__pcb.html">tcp_pcb</a> used to establish the connection </td></tr>
     <tr><td class="paramname">ipaddr</td><td>the remote ip address to connect to </td></tr>
     <tr><td class="paramname">port</td><td>the remote tcp port to connect to </td></tr>
-    <tr><td class="paramname">connected</td><td>callback function to call when connected (on error, the err calback will be called) </td></tr>
+    <tr><td class="paramname">connected</td><td>callback function to call when connected (on error, the err callback will be called) </td></tr>
   </table>
   </dd>
 </dl>
@@ -999,7 +999,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Causes all or part of a full-duplex connection of this PCB to be shut down. This doesn't deallocate the PCB unless shutting down both sides! Shutting down both sides is the same as calling tcp_close, so if it succeds (i.e. returns ER_OK), the PCB must not be referenced any more!</p>
+<p>Causes all or part of a full-duplex connection of this PCB to be shut down. This doesn't deallocate the PCB unless shutting down both sides! Shutting down both sides is the same as calling tcp_close, so if it succeeds (i.e. returns ER_OK), the PCB must not be referenced any more!</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">pcb</td><td>PCB to shutdown </td></tr>

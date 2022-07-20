@@ -636,7 +636,7 @@ dhcp6_parse_reply(struct pbuf *p, struct dhcp6 *dhcp6)
       /* overflow */
       return ERR_BUF;
     }
-    /* copy option + length, might be split accross pbufs */
+    /* copy option + length, might be split across pbufs */
     op_len = (u8_t *)pbuf_get_contiguous(p, op_len_buf, 4, 4, offset);
     if (op_len == NULL) {
       /* failed to get option and length */
