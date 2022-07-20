@@ -1,17 +1,18 @@
 #include "infra/timer/TimerService.hpp"
-#include "infra/timer/TimerServiceManager.hpp"
 
 namespace infra
 {
+    infra::IntrusiveForwardList<TimerService> TimerService::timerServices;
+
     TimerService::TimerService(uint32_t id)
         : id(id)
     {
-        TimerServiceManager::Instance().RegisterTimerService(*this);
+        timerServices.push_front(*this);
     }
 
     TimerService::~TimerService()
     {
-        TimerServiceManager::Instance().UnregisterTimerService(*this);
+        timerServices.erase_slow(*this);
     }
 
     uint32_t TimerService::Id() const
@@ -108,6 +109,15 @@ namespace infra
 
     void TimerService::NextTriggerChanged()
     {}
+
+    TimerService& TimerService::GetTimerService(uint32_t id)
+    {
+        for (TimerService& timerService : timerServices)
+            if (timerService.Id() == id)
+                return timerService;
+
+        abort(); // No timer service with the given id found
+    }
 
     void TimerService::ComputeNextTrigger()
     {

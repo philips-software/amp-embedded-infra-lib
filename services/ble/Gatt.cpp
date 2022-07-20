@@ -35,4 +35,15 @@ namespace services
     {
         return characteristics;
     }
+
+    uint8_t GattService::GetAttributeCount() const
+    {
+        constexpr uint8_t serviceAttributeCount = 1;
+
+        uint8_t attributeCount = serviceAttributeCount;
+        for (auto& characteristic : characteristics)
+            attributeCount += characteristic.GetAttributeCount();
+
+        return attributeCount;
+    }
 }

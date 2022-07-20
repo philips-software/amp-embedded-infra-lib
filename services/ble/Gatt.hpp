@@ -2,6 +2,7 @@
 #define SERVICES_GATT_HPP
 
 #include "infra/util/ByteRange.hpp"
+#include "infra/util/Endian.hpp"
 #include "infra/util/EnumCast.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/IntrusiveForwardList.hpp"
@@ -14,7 +15,7 @@ namespace services
     struct GattAttribute
     {
         using Uuid16 = uint16_t;
-        using Uuid128 = std::array<uint8_t, 16>;
+        using Uuid128 = infra::BigEndian<std::array<uint8_t, 16>>;
         using Uuid = infra::Variant<Uuid16, Uuid128>;
 
         using Handle = uint16_t;
@@ -23,15 +24,22 @@ namespace services
         Handle handle;
     };
 
-    class GattCharacteristic;
+    class GattCharacteristicUpdate;
 
     class GattCharacteristicObserver
-        : public infra::Observer<GattCharacteristicObserver, GattCharacteristic>
+        : public infra::Observer<GattCharacteristicObserver, GattCharacteristicUpdate>
     {
     public:
-        using infra::Observer<GattCharacteristicObserver, GattCharacteristic>::Observer;
+        using infra::Observer<GattCharacteristicObserver, GattCharacteristicUpdate>::Observer;
 
         virtual void DataReceived(infra::ConstByteRange data) = 0;
+    };
+
+    class GattCharacteristicUpdate
+        : public infra::Subject<GattCharacteristicObserver>
+    {
+    public:
+        virtual void Update(infra::ConstByteRange data, infra::Function<void()> onDone) = 0;
     };
 
     class GattCharacteristicClientOperations;
@@ -50,17 +58,25 @@ namespace services
         : public infra::Subject<GattCharacteristicClientOperationsObserver>
     {
     public:
+        enum class UpdateStatus : uint8_t
+        {
+            success,
+            retry,
+            error
+        };
+
         // Update 'characteristic' with 'data' towards the
         // BLE stack and, depending on the configuration of
         // that 'characteristic', send a notification or indication.
-        // Returns true on success, or false on failure (i.e. BLE
-        // stack indicates an issue with updating or sending data).
-        virtual bool Update(const GattCharacteristicClientOperationsObserver& characteristic, infra::ConstByteRange data) const = 0;
+        // Returns success, or retry in transient failure or error 
+        // on unrecoverable failure (i.e. BLE stack indicates an issue 
+        // with updating or sending data).
+        virtual UpdateStatus Update(const GattCharacteristicClientOperationsObserver& characteristic, infra::ConstByteRange data) const = 0;
     };
 
     class GattCharacteristic
         : public GattCharacteristicClientOperationsObserver
-        , public infra::Subject<GattCharacteristicObserver>
+        , public GattCharacteristicUpdate
         , public infra::IntrusiveForwardList<GattCharacteristic>::NodeType
     {
     public:
@@ -100,25 +116,14 @@ namespace services
 
         virtual PropertyFlags Properties() const = 0;
         virtual PermissionFlags Permissions() const = 0;
+        virtual uint8_t GetAttributeCount() const = 0;
 
         virtual GattAttribute::Uuid Type() const = 0;
         virtual GattAttribute::Handle Handle() const = 0;
         virtual GattAttribute::Handle& Handle() = 0;
 
         virtual uint16_t ValueLength() const = 0;
-
-        virtual void Update(infra::ConstByteRange data, infra::Function<void()> onDone) = 0;
     };
-
-    inline GattCharacteristic::PropertyFlags operator|(GattCharacteristic::PropertyFlags lhs, GattCharacteristic::PropertyFlags rhs)
-    {
-        return static_cast<GattCharacteristic::PropertyFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
-    }
-
-    inline GattCharacteristic::PermissionFlags operator|(GattCharacteristic::PermissionFlags lhs, GattCharacteristic::PermissionFlags rhs)
-    {
-        return static_cast<GattCharacteristic::PermissionFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
-    }
 
     class GattService
         : public infra::IntrusiveForwardList<GattService>::NodeType
@@ -136,6 +141,8 @@ namespace services
         GattAttribute::Uuid Type() const;
         GattAttribute::Handle Handle() const;
         GattAttribute::Handle& Handle();
+
+        uint8_t GetAttributeCount() const;
 
     private:
         GattAttribute attribute;
@@ -156,12 +163,33 @@ namespace services
     public:
         using infra::Observer<AttMtuExchangeObserver, AttMtuExchange>::Observer;
 
-        virtual void ExchangedMaxAttMtuSize(uint16_t maxAttMtuSize) = 0;
+        virtual void ExchangedMaxAttMtuSize() = 0;
     };
 
     class AttMtuExchange
         : public infra::Subject<AttMtuExchangeObserver>
-    {};
+    {
+    public:
+        virtual uint16_t EffectiveMaxAttMtuSize() const = 0;
+
+    protected:
+        static constexpr uint16_t defaultMaxAttMtuSize = 23;
+    };
+
+    inline GattCharacteristic::PropertyFlags operator|(GattCharacteristic::PropertyFlags lhs, GattCharacteristic::PropertyFlags rhs)
+    {
+        return static_cast<GattCharacteristic::PropertyFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
+    }
+
+    inline GattCharacteristic::PropertyFlags operator&(GattCharacteristic::PropertyFlags lhs, GattCharacteristic::PropertyFlags rhs)
+    {
+        return static_cast<GattCharacteristic::PropertyFlags>(infra::enum_cast(lhs) & infra::enum_cast(rhs));
+    }
+
+    inline GattCharacteristic::PermissionFlags operator|(GattCharacteristic::PermissionFlags lhs, GattCharacteristic::PermissionFlags rhs)
+    {
+        return static_cast<GattCharacteristic::PermissionFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
+    }
 }
 
 #endif

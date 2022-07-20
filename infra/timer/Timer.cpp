@@ -1,16 +1,16 @@
 #include "infra/timer/Timer.hpp"
-#include "infra/timer/TimerServiceManager.hpp"
+#include "infra/timer/TimerService.hpp"
 #include <cassert>
 
 namespace infra
 {
     TimePoint Now(uint32_t timerServiceId)
     {
-        return TimerServiceManager::Instance().GetTimerService(timerServiceId).Now();
+        return TimerService::GetTimerService(timerServiceId).Now();
     }
 
     Timer::Timer(uint32_t timerServiceId)
-        : timerService(TimerServiceManager::Instance().GetTimerService(timerServiceId))
+        : timerService(TimerService::GetTimerService(timerServiceId))
     {}
 
     Timer::~Timer()
