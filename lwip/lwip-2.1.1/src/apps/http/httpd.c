@@ -1185,7 +1185,7 @@ http_check_eof(struct altcp_pcb *pcb, struct http_state *hs)
 
 /** Sub-function of http_send(): This is the normal send-routine for non-ssi files
  *
- * @returns: - 1: data has been written (so call tcp_ouput)
+ * @returns: - 1: data has been written (so call tcp_output)
  *           - 0: no data has been written (no need to call tcp_output)
  */
 static u8_t
@@ -1212,7 +1212,7 @@ http_send_data_nonssi(struct altcp_pcb *pcb, struct http_state *hs)
 #if LWIP_HTTPD_SSI
 /** Sub-function of http_send(): This is the send-routine for ssi files
  *
- * @returns: - 1: data has been written (so call tcp_ouput)
+ * @returns: - 1: data has been written (so call tcp_output)
  *           - 0: no data has been written (no need to call tcp_output)
  */
 static u8_t

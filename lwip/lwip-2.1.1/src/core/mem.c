@@ -688,7 +688,7 @@ mem_free(void *rmem)
 /**
  * Shrink memory returned by mem_malloc().
  *
- * @param rmem pointer to memory allocated by mem_malloc the is to be shrinked
+ * @param rmem pointer to memory allocated by mem_malloc the is to be shrunk
  * @param new_size required size after shrinking (needs to be smaller than or
  *                equal to the previous size)
  * @return for compatibility reasons: is always == rmem, at the moment
@@ -757,7 +757,7 @@ mem_trim(void *rmem, mem_size_t new_size)
     LWIP_ASSERT("invalid next ptr", mem->next != MEM_SIZE_ALIGNED);
     /* remember the old next pointer */
     next = mem2->next;
-    /* create new struct mem which is moved directly after the shrinked mem */
+    /* create new struct mem which is moved directly after the shrunk mem */
     ptr2 = (mem_size_t)(ptr + SIZEOF_STRUCT_MEM + newsize);
     if (lfree == mem2) {
       lfree = ptr_to_mem(ptr2);
@@ -805,7 +805,7 @@ mem_trim(void *rmem, mem_size_t new_size)
   /* else {
     next struct mem is used but size between mem and mem2 is not big enough
     to create another struct mem
-    -> don't do anyhting.
+    -> don't do anything.
     -> the remaining space stays unused since it is too small
   } */
 #if MEM_OVERFLOW_CHECK

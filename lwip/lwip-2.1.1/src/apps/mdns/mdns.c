@@ -1549,7 +1549,7 @@ mdns_announce(struct netif *netif, const ip_addr_t *destination)
 
   announce.dest_port = LWIP_IANA_PORT_MDNS;
   SMEMCPY(&announce.dest_addr, destination, sizeof(announce.dest_addr));
-  mdns_send_outpacket(&announce, DNS_FLAG1_RESPONSE | DNS_FLAG1_AUTHORATIVE);
+  mdns_send_outpacket(&announce, DNS_FLAG1_RESPONSE | DNS_FLAG1_AUTHORITATIVE);
 }
 
 /**
@@ -1765,7 +1765,7 @@ mdns_handle_question(struct mdns_packet *pkt)
     }
   }
 
-  mdns_send_outpacket(&reply, DNS_FLAG1_RESPONSE | DNS_FLAG1_AUTHORATIVE);
+  mdns_send_outpacket(&reply, DNS_FLAG1_RESPONSE | DNS_FLAG1_AUTHORITATIVE);
 
 cleanup:
   if (reply.pbuf) {

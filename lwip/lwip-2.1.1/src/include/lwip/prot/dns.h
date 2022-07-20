@@ -85,7 +85,7 @@ extern "C" {
 #define DNS_FLAG1_OPCODE_STATUS   0x10
 #define DNS_FLAG1_OPCODE_INVERSE  0x08
 #define DNS_FLAG1_OPCODE_STANDARD 0x00
-#define DNS_FLAG1_AUTHORATIVE     0x04
+#define DNS_FLAG1_AUTHORITATIVE     0x04
 #define DNS_FLAG1_TRUNC           0x02
 #define DNS_FLAG1_RD              0x01
 #define DNS_FLAG2_RA              0x80

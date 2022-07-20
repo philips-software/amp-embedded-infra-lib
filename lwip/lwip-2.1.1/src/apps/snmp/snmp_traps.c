@@ -32,7 +32,7 @@
  * This file is part of the lwIP TCP/IP stack.
  *
  * Author: Martin Hentschel
- *         Christiaan Simons <christiaan.simons@axon.tv>
+ *         Christian Simons <christiaan.simons@axon.tv>
  *
  */
 

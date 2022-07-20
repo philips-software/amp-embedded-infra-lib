@@ -30,7 +30,7 @@
  * OF SUCH DAMAGE.
  *
  * Author: Dirk Ziegelmeier <dziegel@gmx.de>
- *         Christiaan Simons <christiaan.simons@axon.tv>
+ *         Christian Simons <christiaan.simons@axon.tv>
  */
 
 #include "lwip/snmp.h"

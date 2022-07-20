@@ -314,7 +314,7 @@ void example_publish(mqtt_client_t *client, void *arg)
   }
 }
 
-/* Called when publish is complete either with sucess or failure */
+/* Called when publish is complete either with success or failure */
 static void mqtt_pub_request_cb(void *arg, err_t result)
 {
   if(result != ERR_OK) {
@@ -930,7 +930,7 @@ Simply call mqtt_disconnect(client)
     <tr><td class="paramname">client</td><td>MQTT client </td></tr>
     <tr><td class="paramname">topic</td><td>topic to subscribe to </td></tr>
     <tr><td class="paramname">qos</td><td>Quality of service, 0 1 or 2 (only used for subscribe) </td></tr>
-    <tr><td class="paramname">cb</td><td>Callback to call when subscribe/unsubscribe reponse is received </td></tr>
+    <tr><td class="paramname">cb</td><td>Callback to call when subscribe/unsubscribe response is received </td></tr>
     <tr><td class="paramname">arg</td><td>User supplied argument to publish callback </td></tr>
     <tr><td class="paramname">sub</td><td>1 for subscribe, 0 for unsubscribe </td></tr>
   </table>

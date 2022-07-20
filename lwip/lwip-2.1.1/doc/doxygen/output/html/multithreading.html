@@ -95,7 +95,7 @@ $(document).ready(function(){initNavTree('multithreading.html','');});
 <li><a class="el" href="sockets_8h.html">sockets.h</a></li>
 <li><a class="el" href="sys_8h.html">sys.h</a></li>
 </ul>
-<p>Additionaly, memory (de-)allocation functions may be called from multiple threads (not ISR!) with NO_SYS=0 since they are protected by <a class="el" href="group__lwip__opts__lock.html#gae85efb3a5fcf8585c94b3c2669978959">SYS_LIGHTWEIGHT_PROT</a> and/or semaphores.</p>
+<p>Additionally, memory (de-)allocation functions may be called from multiple threads (not ISR!) with NO_SYS=0 since they are protected by <a class="el" href="group__lwip__opts__lock.html#gae85efb3a5fcf8585c94b3c2669978959">SYS_LIGHTWEIGHT_PROT</a> and/or semaphores.</p>
 <p>Netconn or Socket API functions are thread safe against the core thread but they are not reentrant at the control block granularity level. That is, a UDP or TCP control block must not be shared among multiple threads without proper locking.</p>
 <p>If <a class="el" href="group__lwip__opts__lock.html#gae85efb3a5fcf8585c94b3c2669978959">SYS_LIGHTWEIGHT_PROT</a> is set to 1 and <a class="el" href="group__lwip__opts__mem.html#ga0a3ef6098813c103e5aba07da76e15e2">LWIP_ALLOW_MEM_FREE_FROM_OTHER_CONTEXT</a> is set to 1, <a class="el" href="group__pbuf.html#gab0dd696fb4b6bc65e548944584f1738b">pbuf_free()</a> may also be called from another thread or an ISR (since only then, mem_free - for PBUF_RAM - may be called from an ISR: otherwise, the HEAP is only protected by semaphores).</p>
 <h2>How to get threading done right </h2>

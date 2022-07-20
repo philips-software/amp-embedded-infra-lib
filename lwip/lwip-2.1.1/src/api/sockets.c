@@ -1964,7 +1964,7 @@ int
 lwip_select(int maxfdp1, fd_set *readset, fd_set *writeset, fd_set *exceptset,
             struct timeval *timeout)
 {
-  u32_t waitres = 0;
+  u32_t waiters = 0;
   int nready;
   fd_set lreadset, lwriteset, lexceptset;
   u32_t msectimeout;
@@ -2088,7 +2088,7 @@ lwip_select(int maxfdp1, fd_set *readset, fd_set *writeset, fd_set *exceptset,
             }
           }
 
-          waitres = sys_arch_sem_wait(SELECT_SEM_PTR(API_SELECT_CB_VAR_REF(select_cb).sem), msectimeout);
+          waiters = sys_arch_sem_wait(SELECT_SEM_PTR(API_SELECT_CB_VAR_REF(select_cb).sem), msectimeout);
 #if LWIP_NETCONN_SEM_PER_THREAD
           waited = 1;
 #endif
@@ -2123,7 +2123,7 @@ lwip_select(int maxfdp1, fd_set *readset, fd_set *writeset, fd_set *exceptset,
       lwip_unlink_select_cb(&API_SELECT_CB_VAR_REF(select_cb));
 
 #if LWIP_NETCONN_SEM_PER_THREAD
-      if (API_SELECT_CB_VAR_REF(select_cb).sem_signalled && (!waited || (waitres == SYS_ARCH_TIMEOUT))) {
+      if (API_SELECT_CB_VAR_REF(select_cb).sem_signalled && (!waited || (waiters == SYS_ARCH_TIMEOUT))) {
         /* don't leave the thread-local semaphore signalled */
         sys_arch_sem_wait(API_SELECT_CB_VAR_REF(select_cb).sem, 1);
       }
@@ -2138,7 +2138,7 @@ lwip_select(int maxfdp1, fd_set *readset, fd_set *writeset, fd_set *exceptset,
         return -1;
       }
 
-      if (waitres == SYS_ARCH_TIMEOUT) {
+      if (waiters == SYS_ARCH_TIMEOUT) {
         /* Timeout */
         LWIP_DEBUGF(SOCKETS_DEBUG, ("lwip_select: timeout expired\n"));
         /* This is OK as the local fdsets are empty and nready is zero,
@@ -2318,7 +2318,7 @@ lwip_poll_dec_sockets_used(struct pollfd *fds, nfds_t nfds)
 int
 lwip_poll(struct pollfd *fds, nfds_t nfds, int timeout)
 {
-  u32_t waitres = 0;
+  u32_t waiters = 0;
   int nready;
   u32_t msectimeout;
 #if LWIP_NETCONN_SEM_PER_THREAD
@@ -2388,7 +2388,7 @@ lwip_poll(struct pollfd *fds, nfds_t nfds, int timeout)
         LWIP_ASSERT("timeout > 0", timeout > 0);
         msectimeout = timeout;
       }
-      waitres = sys_arch_sem_wait(SELECT_SEM_PTR(API_SELECT_CB_VAR_REF(select_cb).sem), msectimeout);
+      waiters = sys_arch_sem_wait(SELECT_SEM_PTR(API_SELECT_CB_VAR_REF(select_cb).sem), msectimeout);
 #if LWIP_NETCONN_SEM_PER_THREAD
       waited = 1;
 #endif
@@ -2401,7 +2401,7 @@ lwip_poll(struct pollfd *fds, nfds_t nfds, int timeout)
     lwip_unlink_select_cb(&API_SELECT_CB_VAR_REF(select_cb));
 
 #if LWIP_NETCONN_SEM_PER_THREAD
-    if (select_cb.sem_signalled && (!waited || (waitres == SYS_ARCH_TIMEOUT))) {
+    if (select_cb.sem_signalled && (!waited || (waiters == SYS_ARCH_TIMEOUT))) {
       /* don't leave the thread-local semaphore signalled */
       sys_arch_sem_wait(API_SELECT_CB_VAR_REF(select_cb).sem, 1);
     }
@@ -2416,7 +2416,7 @@ lwip_poll(struct pollfd *fds, nfds_t nfds, int timeout)
       return -1;
     }
 
-    if (waitres == SYS_ARCH_TIMEOUT) {
+    if (waiters == SYS_ARCH_TIMEOUT) {
       /* Timeout */
       LWIP_DEBUGF(SOCKETS_DEBUG, ("lwip_poll: timeout expired\n"));
       goto return_success;

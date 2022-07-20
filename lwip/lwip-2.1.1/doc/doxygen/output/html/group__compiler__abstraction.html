@@ -429,7 +429,7 @@ or more portable:<br />
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> {printf(<span class="stringliteral">&quot;Assertion \&quot;%s\&quot; failed at line %d in %s\n&quot;</span>, \</div><div class="line">                                     x, __LINE__, __FILE__); fflush(NULL); abort();} <span class="keywordflow">while</span>(0)</div></div><!-- fragment --><p>Platform specific assertion handling.<br />
-Note the default implementation pulls in printf, fflush and abort, which may in turn pull in a lot of standard libary code. In resource-constrained systems, this should be defined to something less resource-consuming. </p>
+Note the default implementation pulls in printf, fflush and abort, which may in turn pull in a lot of standard library code. In resource-constrained systems, this should be defined to something less resource-consuming. </p>
 
 </div>
 </div>
@@ -449,7 +449,7 @@ Note the default implementation pulls in printf, fflush and abort, which may in 
       </table>
 </div><div class="memdoc">
 <p>Platform specific diagnostic output.<br />
-Note the default implementation pulls in printf, which may in turn pull in a lot of standard libary code. In resource-constrained systems, this should be defined to something less resource-consuming. </p>
+Note the default implementation pulls in printf, which may in turn pull in a lot of standard library code. In resource-constrained systems, this should be defined to something less resource-consuming. </p>
 
 </div>
 </div>
