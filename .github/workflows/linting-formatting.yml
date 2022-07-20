@@ -27,7 +27,7 @@ jobs:
           fetch-depth: 0
       - name: Run Linter
         id: ml
-        uses: megalinter/megalinter@v5
+        uses: oxsecurity/megalinter@v6
         env:
           VALIDATE_ALL_CODEBASE: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
