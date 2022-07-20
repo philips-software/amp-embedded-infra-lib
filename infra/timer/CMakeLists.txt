@@ -24,8 +24,6 @@ ccola_component(timer static_library)
         TimerLimitedRepeatingWithClosingAction.hpp
         TimerService.cpp
         TimerService.hpp
-        TimerServiceManager.cpp
-        TimerServiceManager.hpp
     )
 
     ccola_dependencies(
