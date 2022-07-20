@@ -69,7 +69,7 @@
 #define NETB_HFLAG_RESPONSE           0x8000U
 #define NETB_HFLAG_OPCODE             0x7800U
 #define NETB_HFLAG_OPCODE_NAME_QUERY  0x0000U
-#define NETB_HFLAG_AUTHORATIVE        0x0400U
+#define NETB_HFLAG_AUTHORITATIVE        0x0400U
 #define NETB_HFLAG_TRUNCATED          0x0200U
 #define NETB_HFLAG_RECURS_DESIRED     0x0100U
 #define NETB_HFLAG_RECURS_AVAILABLE   0x0080U
@@ -368,7 +368,7 @@ netbiosns_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, const ip_addr_t 
               resp->resp_hdr.trans_id      = netbios_hdr->trans_id;
               resp->resp_hdr.flags         = PP_HTONS(NETB_HFLAG_RESPONSE |
                                                       NETB_HFLAG_OPCODE_NAME_QUERY |
-                                                      NETB_HFLAG_AUTHORATIVE |
+                                                      NETB_HFLAG_AUTHORITATIVE |
                                                       NETB_HFLAG_RECURS_DESIRED);
               resp->resp_hdr.questions     = 0;
               resp->resp_hdr.answerRRs     = PP_HTONS(1);
@@ -412,7 +412,7 @@ netbiosns_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, const ip_addr_t 
               /* copy the query to the response ID */
               resp->answer_hdr.trans_id        = netbios_hdr->trans_id;
               /* acknowledgment of termination */
-              resp->answer_hdr.flags           = PP_HTONS(NETB_HFLAG_RESPONSE | NETB_HFLAG_OPCODE_NAME_QUERY | NETB_HFLAG_AUTHORATIVE);
+              resp->answer_hdr.flags           = PP_HTONS(NETB_HFLAG_RESPONSE | NETB_HFLAG_OPCODE_NAME_QUERY | NETB_HFLAG_AUTHORITATIVE);
               /* resp->answer_hdr.questions       = PP_HTONS(0); done by memset() */
               /* serial number of the answer */
               resp->answer_hdr.answerRRs       = PP_HTONS(1);

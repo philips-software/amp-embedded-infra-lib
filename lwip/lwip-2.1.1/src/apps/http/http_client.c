@@ -718,7 +718,7 @@ typedef struct _httpc_filestate
 static void httpc_fs_result(void *arg, httpc_result_t httpc_result, u32_t rx_content_len,
   u32_t srv_res, err_t err);
 
-/** Initalize http client state for download to file system */
+/** Initialize http client state for download to file system */
 static err_t
 httpc_fs_init(httpc_filestate_t **filestate_out, const char* local_file_name,
               const httpc_connection_t *settings, void* callback_arg)

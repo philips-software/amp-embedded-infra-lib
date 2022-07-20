@@ -15,7 +15,7 @@ namespace services
 
         struct InvokeInfo
         {
-            bool successfull;
+            bool successful;
             infra::Optional<infra::BoundedConstString> failReason;
         };
 

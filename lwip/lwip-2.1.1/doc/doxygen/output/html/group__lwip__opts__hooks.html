@@ -890,7 +890,7 @@ Macros</h2></td></tr>
 <li>optlen: tcp option length</li>
 <li>opt1len: tcp option length 1st part</li>
 <li>opt2: if this is != NULL, tcp options are split among 2 pbufs. In that case, options start at right after the tcp header ('(u8_t*)(hdr + 1)') for the first 'opt1len' bytes and the rest starts at 'opt2'. opt2len can be simply calculated: 'opt2len = optlen - opt1len;'</li>
-<li>p: input packet, p-&gt;payload points to application data (that's why tcp hdr and options are passed in seperately) Return value:</li>
+<li>p: input packet, p-&gt;payload points to application data (that's why tcp hdr and options are passed in separately) Return value:</li>
 <li>ERR_OK: continue input of this packet as normal</li>
 <li>!= ERR_OK: drop this packet for input (don't continue input processing)</li>
 </ul>
