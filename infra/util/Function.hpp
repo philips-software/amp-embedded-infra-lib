@@ -279,7 +279,7 @@ namespace infra
         template<class F>
         void InvokerFunctions<Result(Args...), ExtraSize>::Construct(InvokerFunctionsType& invokerFunctions, F&& f)
         {
-            static_assert(sizeof(F) <= ExtraSize, "Not enough static storage availabe for construction of derived type");
+            static_assert(sizeof(F) <= ExtraSize, "Not enough static storage available for construction of derived type");
             static_assert(std::alignment_of<F>::value <= sizeof(UTIL_FUNCTION_ALIGNMENT), "Alignment of U is larger than alignment of this function");
 
             new (&invokerFunctions.data) F(std::forward<F>(f));

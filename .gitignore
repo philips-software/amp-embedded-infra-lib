@@ -2,7 +2,7 @@
 Debug/
 Release/
 RelWithDebInfo/
-report/
+megalinter-reports/
 [Bb]uild*
 [Ii]nstall
 CMakeSettings.json

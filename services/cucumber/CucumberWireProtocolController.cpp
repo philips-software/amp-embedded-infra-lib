@@ -55,7 +55,7 @@ namespace services
         if (parser.invokeArguments.begin() == parser.invokeArguments.end() && step.HasStringArguments() || MatchStringArguments(parser.invokeId, parser.invokeArguments))
             step.Invoke(parser.invokeArguments);
         else
-            invokeInfo.successfull = false;
+            invokeInfo.successful = false;
     }
 
     void CucumberWireProtocolController::HandleBeginScenarioRequest(CucumberWireProtocolParser& parser)
@@ -94,7 +94,7 @@ namespace services
 
     void CucumberWireProtocolController::InvokeSuccess()
     {
-        invokeInfo.successfull = true;
+        invokeInfo.successful = true;
    	    services::CucumberContext::Instance().TimeoutTimer().Cancel();
         
         connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize());
@@ -102,7 +102,7 @@ namespace services
 
     void CucumberWireProtocolController::InvokeError(infra::BoundedConstString& reason)
     {
-        invokeInfo.successfull = false;
+        invokeInfo.successful = false;
         invokeInfo.failReason = reason;
 
         connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize());
