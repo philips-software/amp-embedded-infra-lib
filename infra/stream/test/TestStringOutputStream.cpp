@@ -470,7 +470,7 @@ TEST(StringOutputStreamTest, overwrite_on_saved_point)
     EXPECT_EQ("adc", stream.Storage());
 }
 
-TEST(StringOutputStreamTest, available_retuns_remaining_space)
+TEST(StringOutputStreamTest, available_returns_remaining_space)
 {
     infra::StringOutputStream::WithStorage<4> sos;
     EXPECT_EQ(4, sos.Available());
