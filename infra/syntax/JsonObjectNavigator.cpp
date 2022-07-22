@@ -55,6 +55,13 @@ namespace infra
         return member->ToStdString();
     }
 
+    infra::Optional<std::string> JsonObjectNavigator::operator/(JsonOptionalStringNavigatorToken token) const
+    {
+        auto member = object.GetOptionalString(token.name);
+
+        return infra::TransformOptional(member, [](auto value) { return value.ToStdString(); });
+    }
+
     int32_t JsonObjectNavigator::operator/(JsonIntegerNavigatorToken token) const
     {
         auto member = object.GetOptionalInteger(token.name);
@@ -119,6 +126,14 @@ namespace infra
             return infra::MakeOptional(*navigator / token);
         else
             return{};
+    }
+
+    infra::Optional<std::string> JsonOptionalObjectNavigator::operator/(JsonOptionalStringNavigatorToken token) const
+    {
+        if (navigator != infra::none)
+            return *navigator / token;
+        else
+            return {};
     }
 
     infra::Optional<int32_t> JsonOptionalObjectNavigator::operator/(JsonIntegerNavigatorToken token) const
