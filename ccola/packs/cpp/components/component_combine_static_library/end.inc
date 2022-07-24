@@ -21,14 +21,19 @@ if(${CCOLA_ARCH} STREQUAL "win")
         list(APPEND depend_list ${depend_lib})
     endforeach()
 
+    string(REPLACE ${CCOLA_SYSTEM_CONFIGURATION} ${CCOLA_SYSTEM_CONFIGURATION}-$<CONFIGURATION> new_lib_path "${lib_path}")
     add_custom_command(
-        OUTPUT ${lib_path}/${lib_name}
+        OUTPUT ${new_lib_path}/${lib_name}
         COMMAND ${CMAKE_COMMAND} -E remove ${lib_path}/${lib_name}
         COMMAND ${lib_tool_path}/${lib_tool} /OUT:${lib_path}/${lib_name} ${depend_list}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${new_lib_path}
+        COMMAND ${CMAKE_COMMAND} -E rename ${lib_path}/${lib_name} ${new_lib_path}/${lib_name}
         DEPENDS ${depend_list}
     )
+    add_custom_target(${CCOLA_COMPONENT_NAME} ALL
+        DEPENDS ${new_lib_path}/${lib_name}
+    )
 else()
-
     string(APPEND mri_script "create ${lib_name}\n")
 
     foreach(item ${CCOLA_COMPONENT_INHERITABLE_LINK_LIBRARIES})
@@ -48,12 +53,11 @@ else()
         COMMAND ${CMAKE_COMMAND} -E remove ${lib_path}/${lib_name}
         COMMAND ${CMAKE_AR} -M < ${ar_script}
         DEPENDS ${dependencies}
-    )    
+    )
+    add_custom_target(${CCOLA_COMPONENT_NAME} ALL
+        DEPENDS ${lib_path}/${lib_name}
+    )
 endif()
-
-add_custom_target(${CCOLA_COMPONENT_NAME} ALL
-    DEPENDS ${lib_path}/${lib_name}
-)
 
 foreach(item ${CCOLA_COMPONENT_DEPENDENCIES})
     add_dependencies(${CCOLA_COMPONENT_NAME} ${item})
@@ -70,13 +74,6 @@ ccola_set_component_properties_for_all_configurations(${CCOLA_COMPONENT_NAME} PD
 set_target_properties(${CCOLA_COMPONENT_NAME} PROPERTIES FOLDER ${CCOLA_PACKAGE_NAME})
 
 if(MSVC_IDE)
-    string(REPLACE ${CCOLA_SYSTEM_CONFIGURATION} ${CCOLA_SYSTEM_CONFIGURATION}-$<CONFIGURATION> new_lib_path "${lib_path}")
-    add_custom_command(
-        TARGET ${CCOLA_COMPONENT_NAME}
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${new_lib_path}
-        COMMAND ${CMAKE_COMMAND} -E rename ${lib_path}/${lib_name} ${new_lib_path}/${lib_name}
-    )
     ccola_inheritable_link_libraries(${new_lib_path}/${lib_name})
 else()
     ccola_inheritable_link_libraries(${lib_path}/${lib_name})
