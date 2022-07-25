@@ -35,6 +35,7 @@ RUN python3 -m pip --no-cache-dir install cmake==3.22.4 \
  && python3 -m pip --no-cache install gcovr==5.0
 
 # Install arm-gcc toolchain
+# hadolint ignore=SC2016
 RUN wget -qO /tmp/gcc-arm-none-eabi.tar.bz2 https://developer.arm.com/-/media/Files/downloads/gnu-rm/8-2019q3/RC1.1/gcc-arm-none-eabi-8-2019-q3-update-linux.tar.bz2 \
  && mkdir /opt/gcc-arm-none-eabi \
  && tar xf /tmp/gcc-arm-none-eabi.tar.bz2 --strip-components=1 -C /opt/gcc-arm-none-eabi \
