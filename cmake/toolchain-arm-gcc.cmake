@@ -1,23 +1,23 @@
-include(CMakeForceCompiler)
-
 set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_SYSTEM_PROCESSOR arm)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
 set(hints_paths)
 
-if(CMAKE_HOST_WIN32)
+if (CMAKE_HOST_WIN32)
     set(X86_PROGRAM_FILES "ProgramFiles(x86)")
     list(APPEND hints_paths "$ENV{${X86_PROGRAM_FILES}}/GNU Tools Arm Embedded/8 2019-q3-update/bin/")
 endif()
 
 find_program(CMAKE_C_COMPILER
     NAMES arm-none-eabi-gcc
-    HINTS ${hints_paths})
+    HINTS ${hints_paths}
+    REQUIRED)
 
 find_program(CMAKE_CXX_COMPILER
     NAMES arm-none-eabi-g++
-    HINTS ${hints_paths})
+    HINTS ${hints_paths}
+    REQUIRED)
 
 find_program(CMAKE_ASM_COMPILER
     NAMES arm-none-eabi-as

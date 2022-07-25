@@ -34,6 +34,13 @@ RUN wget -qO /usr/local/share/ca-certificates/Cisco_Umbrella_Root_CA.crt https:/
 RUN python3 -m pip --no-cache-dir install cmake==3.22.4 \
  && python3 -m pip --no-cache install gcovr==5.0
 
+# Install arm-gcc toolchain
+RUN wget -qO /tmp/gcc-arm-none-eabi.tar.bz2 https://developer.arm.com/-/media/Files/downloads/gnu-rm/8-2019q3/RC1.1/gcc-arm-none-eabi-8-2019-q3-update-linux.tar.bz2 \
+ && mkdir /opt/gcc-arm-none-eabi \
+ && tar xf /tmp/gcc-arm-none-eabi.tar.bz2 --strip-components=1 -C /opt/gcc-arm-none-eabi \
+ && echo 'export PATH=$PATH:/opt/gcc-arm-none-eabi/bin' | tee -a /etc/profile.d/gcc-arm-none-eabi.sh \
+ && rm /tmp/gcc-arm-none-eabi.tar.bz2
+
 # Install mull-cxx mutation testing compiler driver
 RUN wget -qO /tmp/mull.deb https://github.com/mull-project/mull/releases/download/0.18.0/Mull-12-0.18.0-LLVM-12.0-ubuntu-20.04.deb \
  && dpkg -i /tmp/mull.deb \
