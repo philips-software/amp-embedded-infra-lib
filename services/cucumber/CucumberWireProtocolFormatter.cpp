@@ -100,7 +100,7 @@ namespace services
 
     void CucumberWireProtocolFormatter::FormatInvokeResponse(infra::TextOutputStream::WithErrorPolicy& stream)
     {
-        if (controller.invokeInfo.successfull)
+        if (controller.invokeInfo.successful)
             CreateSuccessMessage(stream);
         else
             CreateFailureMessage(stream, "Invoke Failed", *controller.invokeInfo.failReason);
