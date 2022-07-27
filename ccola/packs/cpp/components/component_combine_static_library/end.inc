@@ -21,7 +21,11 @@ if(${CCOLA_ARCH} STREQUAL "win")
         list(APPEND depend_list ${depend_lib})
     endforeach()
 
-    string(REPLACE ${CCOLA_SYSTEM_CONFIGURATION} ${CCOLA_SYSTEM_CONFIGURATION}-$<CONFIGURATION> new_lib_path "${lib_path}")
+    if(MSVC_IDE)
+        string(REPLACE ${CCOLA_SYSTEM_CONFIGURATION} ${CCOLA_SYSTEM_CONFIGURATION}-$<CONFIGURATION> new_lib_path "${lib_path}")
+    else()
+        set(new_lib_path "${lib_path}")
+    endif()
     add_custom_command(
         OUTPUT ${new_lib_path}/${lib_name}
         COMMAND ${CMAKE_COMMAND} -E remove ${lib_path}/${lib_name}
