@@ -5,7 +5,7 @@ namespace osal
     void Init()
     {}
 
-    [[noreturn]] void Run()
+    void Run()
     {
         while (true);
     }
