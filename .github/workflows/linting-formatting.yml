@@ -17,8 +17,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  formatter:
+    name: Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: DoozyX/clang-format-lint-action@2ec1a72dfb593e52255693c9039e6d94984187dc
+        with:
+          clangFormatVersion: 14
+          inplace: true
+          extensions: "cpp,hpp"
   linter:
-    name: Linter
+    name: Linting
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
