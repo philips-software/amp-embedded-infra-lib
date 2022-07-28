@@ -43,7 +43,7 @@ TEST_F(SemaphoreFixture, TestCreation)
 
 TEST_F(SemaphoreFixture, WhenNoOneIsWaitingNotifyOneDoesNothing)
 {
-    // No exceptions, no one is waiting on the variable
+    // No expectations, no one is waiting on the variable
     condition_variable.notify_one();
 }
 
