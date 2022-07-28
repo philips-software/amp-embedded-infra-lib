@@ -9,7 +9,10 @@
     {
       "name": "defaults",
       "hidden": true,
-      "binaryDir": "${sourceDir}/Build/${presetName}"
+      "binaryDir": "${sourceDir}/Build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "On"
+      }
     },
     {
       "name": "ContinuousIntegration",
@@ -25,8 +28,7 @@
       "inherits": "ContinuousIntegration",
       "cacheVariables": {
         "EMIL_ENABLE_COVERAGE": "On",
-        "EMIL_ENABLE_TEST_AUTO_DISCOVERY": "On",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "On"
+        "EMIL_ENABLE_TEST_AUTO_DISCOVERY": "On"
       },
       "generator": "Ninja"
     },
@@ -37,8 +39,7 @@
       "cacheVariables": {
         "EMIL_ENABLE_MUTATION_TESTING": "On",
         "CMAKE_C_COMPILER": "clang-12",
-        "CMAKE_CXX_COMPILER": "clang++-12",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "On"
+        "CMAKE_CXX_COMPILER": "clang++-12"
       },
       "generator": "Ninja"
     },
