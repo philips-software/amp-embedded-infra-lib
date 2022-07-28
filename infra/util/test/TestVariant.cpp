@@ -52,9 +52,7 @@ TEST(VariantTest, TestInPlaceConstruction)
 {
     struct MyStruct
     {
-        MyStruct(int aX, int aY)
-            : x(aX)
-            , y(aY){};
+        MyStruct(int aX, int aY): x(aX), y(aY) {};
 
         int x;
         int y;
@@ -70,9 +68,7 @@ TEST(VariantTest, TestEmplace)
 {
     struct MyStruct
     {
-        MyStruct(int aX, int aY)
-            : x(aX)
-            , y(aY){};
+        MyStruct(int aX, int aY): x(aX), y(aY) {};
 
         bool operator==(const MyStruct& other) const
         {
@@ -259,23 +255,12 @@ struct EmptyVisitor
     {}
 };
 
-struct A
-{};
-
-struct B
-{};
-
-struct C
-{};
-
-struct D
-{};
-
-struct E
-{};
-
-struct F
-{};
+struct A {};
+struct B {};
+struct C {};
+struct D {};
+struct E {};
+struct F {};
 
 TEST(VariantTest, TestRecursiveLoopUnrolling3_1)
 {

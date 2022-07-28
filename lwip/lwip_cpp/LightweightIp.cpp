@@ -1,7 +1,7 @@
 #include "lwip/lwip_cpp/LightweightIp.hpp"
 #include "lwip/init.h"
 #ifndef ESP_PLATFORM
-#include "lwip/timeouts.h"
+    #include "lwip/timeouts.h"
 #endif
 
 namespace
@@ -42,8 +42,7 @@ namespace services
         ::randomDataGenerator = &randomDataGenerator;
 #if NO_SYS
         lwip_init();
-        sysCheckTimer.Start(
-            std::chrono::milliseconds(50), [this]() { sys_check_timeouts(); }, infra::triggerImmediately);
+        sysCheckTimer.Start(std::chrono::milliseconds(50), [this]() { sys_check_timeouts(); }, infra::triggerImmediately);
 #endif
 
         RegisterInstance();

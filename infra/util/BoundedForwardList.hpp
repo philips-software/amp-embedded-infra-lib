@@ -130,7 +130,7 @@ namespace infra
     };
 
     template<class T>
-    void swap(BoundedForwardList<T>& x, BoundedForwardList<T>& y);
+        void swap(BoundedForwardList<T>& x, BoundedForwardList<T>& y);
 
     namespace detail
     {
@@ -151,9 +151,9 @@ namespace infra
             BoundedForwardListIterator();
             explicit BoundedForwardListIterator(NodeType* node);
             template<class T2>
-            BoundedForwardListIterator(const BoundedForwardListIterator<T2>& other);
+                BoundedForwardListIterator(const BoundedForwardListIterator<T2>& other);
             template<class T2>
-            BoundedForwardListIterator& operator=(const BoundedForwardListIterator<T2>& other);
+                BoundedForwardListIterator& operator=(const BoundedForwardListIterator<T2>& other);
 
             T& operator*() const;
             T* operator->() const;
@@ -559,7 +559,8 @@ namespace infra
     template<class T>
     bool BoundedForwardList<T>::operator==(const BoundedForwardList& other) const
     {
-        return size() == other.size() && std::equal(begin(), end(), other.begin());
+        return size() == other.size()
+            && std::equal(begin(), end(), other.begin());
     }
 
     template<class T>

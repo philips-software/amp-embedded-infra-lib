@@ -1,9 +1,9 @@
-#include "protobuf/protoc_echo_plugin/ProtoCEchoPlugin.hpp"
 #include "generated/EchoAttributes.pb.h"
 #include "google/protobuf/compiler/cpp/cpp_helpers.h"
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/stubs/strutil.h"
+#include "protobuf/protoc_echo_plugin/ProtoCEchoPlugin.hpp"
 #include <sstream>
 
 namespace application
@@ -586,7 +586,7 @@ namespace application
             for (auto& field : message->fields)
                 printer.Print("SerializeField($type$(), formatter, $name$, $constant$);\n", "type", field->protoType, "name", field->name, "constant", field->constantName);
         }
-
+     
         return result.str();
     }
 
@@ -608,19 +608,19 @@ namespace application
     {
 )");
 
-                printer.Indent();
-                printer.Indent();
+                printer.Indent(); printer.Indent();
 
                 for (auto& field : message->fields)
                     printer.Print(R"(case $constant$:
     DeserializeField($type$(), parser, field, $name$);
     break;
-)",
-                        "constant", field->constantName, "type", field->protoType, "name", field->name);
+)"
+                        , "constant", field->constantName
+                        , "type", field->protoType
+                        , "name", field->name);
 
-                printer.Outdent();
-                printer.Outdent();
-
+                printer.Outdent(); printer.Outdent();
+        
                 printer.Print(R"(        default:
             if (field.first.Is<infra::ProtoLengthDelimited>())
                 field.first.Get<infra::ProtoLengthDelimited>().SkipEverything();
@@ -843,12 +843,12 @@ namespace application
     {
         auto functions = std::make_shared<Access>("public");
 
-        for (auto& method : service->methods)
+        for (auto& method: service->methods)
         {
             auto serviceMethod = std::make_shared<Function>(method.name, "", "void", Function::fVirtual | Function::fAbstract);
             if (method.parameter)
             {
-                for (auto field : method.parameter->fields)
+                for (auto field: method.parameter->fields)
                 {
                     std::string typeName;
                     ParameterTypeVisitor visitor(typeName);
@@ -877,7 +877,7 @@ namespace application
             auto serviceMethod = std::make_shared<Function>(method.name, ProxyMethodBody(method), "void", 0);
             if (method.parameter)
             {
-                for (auto field : method.parameter->fields)
+                for (auto field: method.parameter->fields)
                 {
                     std::string typeName;
                     ParameterTypeVisitor visitor(typeName);
@@ -945,10 +945,9 @@ switch (methodId)
     {
         $argument$ argument(parser);
         if (!parser.FormatFailed())
-            $name$()",
-                        "name", method.name, "argument", method.parameter->qualifiedName);
+            $name$()", "name", method.name, "argument", method.parameter->qualifiedName);
 
-                    for (auto& field : method.parameter->fields)
+                    for (auto& field: method.parameter->fields)
                     {
                         printer.Print("argument.$field$", "field", field->name);
                         if (&field != &method.parameter->fields.back())
@@ -964,8 +963,7 @@ switch (methodId)
                     printer.Print(R"(    case id$name$:
         $name$();
         break;
-)",
-                        "name", method.name);
+)", "name", method.name);
             }
 
             printer.Print(R"(    default:
@@ -991,14 +989,13 @@ infra::ProtoFormatter formatter(stream);
 formatter.PutVarInt(serviceId);
 {
     infra::ProtoLengthDelimitedFormatter argumentFormatter = formatter.LengthDelimitedFormatter(id$name$);
-)",
-                "name", method.name);
+)", "name", method.name);
 
             if (method.parameter)
             {
                 printer.Print("    $type$(", "type", method.parameter->qualifiedName);
 
-                for (auto& field : method.parameter->fields)
+                for (auto& field: method.parameter->fields)
                 {
                     std::string typeName;
                     ParameterTypeVisitor visitor(typeName);
@@ -1052,7 +1049,7 @@ Rpc().Send();
             currentEntity = newEntity;
         }
 
-        for (auto& enum_ : root.GetFile(*file)->enums)
+        for (auto& enum_: root.GetFile(*file)->enums)
         {
             enumGenerators.emplace_back(std::make_shared<EnumGenerator>(enum_));
             enumGenerators.back()->Run(*currentEntity);
@@ -1068,7 +1065,7 @@ Rpc().Send();
             messageGenerators.back()->Run(*currentEntity);
         }
 
-        for (auto& service : root.GetFile(*file)->services)
+        for (auto& service: root.GetFile(*file)->services)
             serviceGenerators.emplace_back(std::make_shared<ServiceGenerator>(service, *currentEntity));
     }
 
@@ -1084,8 +1081,8 @@ Rpc().Send();
         printer.Print(R"(// Generated by the protocol buffer compiler.  DO NOT EDIT!
 // source: $filename$
 
-)",
-            "filename", file->name());
+)"
+, "filename", file->name());
 
         formatter.PrintSource(printer, "");
     }
@@ -1100,8 +1097,8 @@ Rpc().Send();
 #ifndef echo_$filename_identifier$
 #define echo_$filename_identifier$
 
-)",
-            "filename", file->name(), "filename_identifier", filename_identifier);
+)"
+            , "filename", file->name(), "filename_identifier", filename_identifier);
     }
 
     void EchoGenerator::GenerateBottomHeaderGuard()

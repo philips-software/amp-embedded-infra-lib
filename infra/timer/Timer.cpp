@@ -154,7 +154,7 @@ namespace infra
 
     void TimerRepeating::Start(Duration duration, const infra::Function<void()>& action)
     {
-        SetNextTriggerTime(Now() + Resolution(), action); // Initialize NextTrigger() for ComputeNextTriggerTime
+        SetNextTriggerTime(Now() + Resolution(), action);  // Initialize NextTrigger() for ComputeNextTriggerTime
         SetDuration(duration);
     }
 

@@ -1,6 +1,6 @@
 #include "gmock/gmock.h"
-#include "infra/stream/StringOutputStream.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
+#include "infra/stream/StringOutputStream.hpp"
 #include "services/tracer/TracerWithDateTime.hpp"
 
 class TracerWithDateTimeTestImpl

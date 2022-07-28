@@ -20,7 +20,7 @@ namespace services
         };
 
         template<std::size_t Size>
-        using WithCacheSize = infra::WithStorage<NameResolverCache, infra::BoundedVector<CacheEntry>::WithMaxSize<Size>>;
+            using WithCacheSize = infra::WithStorage<NameResolverCache, infra::BoundedVector<CacheEntry>::WithMaxSize<Size>>;
 
         NameResolverCache(infra::BoundedVector<CacheEntry>& cache, NameResolver& resolver, infra::Duration minimumTtl = std::chrono::minutes(10));
 

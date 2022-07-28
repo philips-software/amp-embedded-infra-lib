@@ -99,10 +99,10 @@ namespace services
             {
                 receiveBuffer.insert(receiveBuffer.end(), buffer.data(), buffer.data() + received);
 
-                infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionBsd>& object) {
+                infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionBsd>& object)
+                {
                     object->Observer().DataReceived();
-                },
-                    SharedFromThis());
+                }, SharedFromThis());
             }
             else
             {
@@ -118,7 +118,8 @@ namespace services
 
         do
         {
-            sent = send(socket, reinterpret_cast<char*>(sendBuffer.contiguous_range(sendBuffer.begin()).begin()), sendBuffer.contiguous_range(sendBuffer.begin()).size(), 0);
+            sent = send(socket, reinterpret_cast<char*>(sendBuffer.contiguous_range(sendBuffer.begin()).begin())
+                , sendBuffer.contiguous_range(sendBuffer.begin()).size(), 0);
 
             if (sent == -1)
             {
@@ -160,11 +161,11 @@ namespace services
         if (sendBuffer.max_size() - sendBuffer.size() >= requestedSendSize)
         {
             auto size = requestedSendSize;
-            infra::EventDispatcherWithWeakPtr::Instance().Schedule([size](const infra::SharedPtr<ConnectionBsd>& object) {
+            infra::EventDispatcherWithWeakPtr::Instance().Schedule([size](const infra::SharedPtr<ConnectionBsd>& object)
+            {
                 infra::SharedPtr<infra::StreamWriter> writer = object->streamWriter.Emplace(*object, size);
                 object->Observer().SendStreamAvailable(std::move(writer));
-            },
-                SharedFromThis());
+            }, SharedFromThis());
 
             requestedSendSize = 0;
         }
@@ -225,11 +226,11 @@ namespace services
         assert(acceptedSocket != -1);
 
         infra::SharedPtr<ConnectionBsd> connection = infra::MakeSharedOnHeap<ConnectionBsd>(network, acceptedSocket);
-        factory.ConnectionAccepted([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver) {
+        factory.ConnectionAccepted([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
+        {
             if (connectionObserver)
                 connection->SetObserver(connectionObserver);
-        },
-            connection->Ipv4Address());
+        }, connection->Ipv4Address());
     }
 
     ConnectorBsd::ConnectorBsd(EventDispatcherWithNetwork& network, services::ClientConnectionObserverFactory& factory)
@@ -262,7 +263,8 @@ namespace services
     {
         infra::WeakPtr<ConnectorBsd> self = SharedFromThis();
         infra::SharedPtr<ConnectionBsd> connection = infra::MakeSharedOnHeap<ConnectionBsd>(network, connectSocket);
-        factory.ConnectionEstablished([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver) {
+        factory.ConnectionEstablished([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
+        {
             if (connectionObserver)
                 connection->SetObserver(connectionObserver);
         });

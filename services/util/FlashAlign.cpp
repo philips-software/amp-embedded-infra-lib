@@ -50,7 +50,7 @@ namespace services
 
         if (remainingAlignedWords)
         {
-            Chunk chunk(address, infra::ConstByteRange(buffer.begin(), buffer.begin() + remainingAlignedWords * align));
+            Chunk chunk(address, infra::ConstByteRange(buffer.begin(), buffer.begin() + remainingAlignedWords*align));
             chunks.push_back(chunk);
 
             address += chunk.data.size();

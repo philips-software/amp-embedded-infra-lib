@@ -1,8 +1,8 @@
 #ifndef PROTOBUF_ECHO_INSTANTIATIONS
 #define PROTOBUF_ECHO_INSTANTIATIONS
 
-#include "infra/util/BoundedVector.hpp"
 #include "protobuf/echo/Echo.hpp"
+#include "infra/util/BoundedVector.hpp"
 #include "services/util/MessageCommunicationCobs.hpp"
 #include "services/util/MessageCommunicationWindowed.hpp"
 
@@ -15,10 +15,7 @@ namespace main_
             : cobs(serialCommunication)
         {}
 
-        operator services::Echo&()
-        {
-            return echo;
-        }
+        operator services::Echo&() { return echo; }
 
         services::MessageCommunicationCobs::WithMaxMessageSize<MessageSize> cobs;
         services::MessageCommunicationWindowed::WithReceiveBuffer<MessageSize> windowed{ cobs };
@@ -44,7 +41,7 @@ namespace main_
         {
             AddForwarder(echoStack, responseId, echo);
         }
-
+    
     private:
         void AddForwarder(services::Echo& forwardFrom, uint32_t id, services::Echo& forwardTo)
         {

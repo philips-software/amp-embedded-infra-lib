@@ -1,5 +1,5 @@
-#include "infra/timer/TimerAlarm.hpp"
 #include "infra/timer/PartitionedTime.hpp"
+#include "infra/timer/TimerAlarm.hpp"
 
 namespace infra
 {

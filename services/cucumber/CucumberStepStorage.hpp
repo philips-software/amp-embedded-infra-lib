@@ -1,4 +1,4 @@
-#ifndef SERVICES_CUCUMBER_STEP_STORAGE_HPP
+#ifndef SERVICES_CUCUMBER_STEP_STORAGE_HPP 
 #define SERVICES_CUCUMBER_STEP_STORAGE_HPP
 
 #include "infra/util/BoundedString.hpp"

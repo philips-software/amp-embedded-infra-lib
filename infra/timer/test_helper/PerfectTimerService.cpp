@@ -1,5 +1,5 @@
-#include "infra/timer/test_helper/PerfectTimerService.hpp"
 #include "infra/event/EventDispatcher.hpp"
+#include "infra/timer/test_helper/PerfectTimerService.hpp"
 #include <cassert>
 
 namespace infra
@@ -11,9 +11,9 @@ namespace infra
     {}
 
     void PerfectTimerService::NextTriggerChanged()
-    {
+    {               
         nextNotification = static_cast<uint32_t>(std::max<std::chrono::milliseconds::rep>(
-            std::chrono::duration_cast<std::chrono::milliseconds>(NextTrigger() - previousTrigger).count(), 0));
+                        std::chrono::duration_cast<std::chrono::milliseconds>(NextTrigger() - previousTrigger).count(), 0));    
     }
 
     TimePoint PerfectTimerService::Now() const

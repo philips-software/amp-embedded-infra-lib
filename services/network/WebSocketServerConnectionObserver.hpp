@@ -22,8 +22,8 @@ namespace services
     {
     public:
         template<std::size_t SendBufferSize, std::size_t ReceiveBufferSize>
-        using WithBufferSizes = infra::WithStorage<infra::WithStorage<WebSocketServerConnectionObserver, infra::BoundedVector<uint8_t>::WithMaxSize<SendBufferSize>>,
-            infra::BoundedDeque<uint8_t>::WithMaxSize<ReceiveBufferSize>>;
+            using WithBufferSizes = infra::WithStorage<infra::WithStorage<WebSocketServerConnectionObserver, infra::BoundedVector<uint8_t>::WithMaxSize<SendBufferSize>>,
+                infra::BoundedDeque<uint8_t>::WithMaxSize<ReceiveBufferSize>>;
 
         WebSocketServerConnectionObserver(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedDeque<uint8_t>& receiveBuffer);
 
@@ -187,8 +187,7 @@ namespace services
     private:
         ReceivingStateThatSendsData* receivingStateThatWantsToSendData = nullptr;
         infra::PolymorphicVariant<ReceivingState, ReceivingStateReceiveHeader, ReceivingStateReceiveData,
-            ReceivingStateClose, ReceivingStatePong>
-            receivingState;
+            ReceivingStateClose, ReceivingStatePong> receivingState;
         infra::PolymorphicVariant<SendingState, SendingStateIdle, SendingStateInternalData, SendingStateExternalData> sendingState;
         infra::BoundedDeque<uint8_t>& receiveBuffer;
         infra::BoundedVector<uint8_t>& sendBuffer;

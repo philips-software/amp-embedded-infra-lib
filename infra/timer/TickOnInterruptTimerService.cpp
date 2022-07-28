@@ -1,5 +1,5 @@
-#include "infra/timer/TickOnInterruptTimerService.hpp"
 #include "infra/event/EventDispatcher.hpp"
+#include "infra/timer/TickOnInterruptTimerService.hpp"
 #include "infra/timer/TimerServiceManager.hpp"
 #include <cassert>
 
@@ -23,7 +23,7 @@ namespace infra
             ticksNextNotification = std::min(static_cast<uint32_t>((durationToNextNotification + resolution - Duration(1)) / resolution), std::numeric_limits<uint32_t>::max() / 2);
         }
         else
-            ticksNextNotification = std::numeric_limits<uint32_t>::max() / 2; // Once in a while, an update must be scheduled to avoid overflowing ticksNextNotification in the case no timers are scheduled
+            ticksNextNotification = std::numeric_limits<uint32_t>::max() / 2;   // Once in a while, an update must be scheduled to avoid overflowing ticksNextNotification in the case no timers are scheduled
     }
 
     TimePoint TickOnInterruptTimerService::Now() const

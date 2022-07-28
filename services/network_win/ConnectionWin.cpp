@@ -95,11 +95,11 @@ namespace services
             {
                 receiveBuffer.insert(receiveBuffer.end(), buffer.data(), buffer.data() + received);
 
-                infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionWin>& object) {
+                infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionWin>& object)
+                {
                     if (object->IsAttached())
                         object->Observer().DataReceived();
-                },
-                    SharedFromThis());
+                }, SharedFromThis());
             }
             else
             {
@@ -115,8 +115,9 @@ namespace services
 
         do
         {
-            UpdateEventFlags(); // If there is something to send, update the flags before calling send, because FD_SEND is an edge-triggered event.
-            sent = send(socket, reinterpret_cast<char*>(sendBuffer.contiguous_range(sendBuffer.begin()).begin()), sendBuffer.contiguous_range(sendBuffer.begin()).size(), 0);
+            UpdateEventFlags();     // If there is something to send, update the flags before calling send, because FD_SEND is an edge-triggered event.
+            sent = send(socket, reinterpret_cast<char*>(sendBuffer.contiguous_range(sendBuffer.begin()).begin())
+                , sendBuffer.contiguous_range(sendBuffer.begin()).size(), 0);
 
             if (sent == SOCKET_ERROR)
             {
@@ -167,14 +168,14 @@ namespace services
         if (sendBuffer.max_size() - sendBuffer.size() >= requestedSendSize)
         {
             auto size = requestedSendSize;
-            infra::EventDispatcherWithWeakPtr::Instance().Schedule([size](const infra::SharedPtr<ConnectionWin>& object) {
+            infra::EventDispatcherWithWeakPtr::Instance().Schedule([size](const infra::SharedPtr<ConnectionWin>& object)
+            {
                 if (object->IsAttached())
                 {
                     infra::SharedPtr<infra::StreamWriter> writer = object->streamWriter.Emplace(*object, size);
                     object->Observer().SendStreamAvailable(std::move(writer));
                 }
-            },
-                SharedFromThis());
+            }, SharedFromThis());
 
             requestedSendSize = 0;
         }
@@ -242,11 +243,11 @@ namespace services
         assert(acceptedSocket != INVALID_SOCKET);
 
         infra::SharedPtr<ConnectionWin> connection = infra::MakeSharedOnHeap<ConnectionWin>(network, acceptedSocket);
-        factory.ConnectionAccepted([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver) {
+        factory.ConnectionAccepted([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
+        {
             if (connectionObserver)
                 connection->SetObserver(connectionObserver);
-        },
-            connection->Ipv4Address());
+        }, connection->Ipv4Address());
     }
 
     ConnectorWin::ConnectorWin(EventDispatcherWithNetwork& network, services::ClientConnectionObserverFactory& factory)
@@ -285,7 +286,8 @@ namespace services
     {
         infra::WeakPtr<ConnectorWin> self = SharedFromThis();
         infra::SharedPtr<ConnectionWin> connection = infra::MakeSharedOnHeap<ConnectionWin>(network, connectSocket);
-        factory.ConnectionEstablished([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver) {
+        factory.ConnectionEstablished([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
+        {
             if (connectionObserver)
                 connection->SetObserver(connectionObserver);
         });

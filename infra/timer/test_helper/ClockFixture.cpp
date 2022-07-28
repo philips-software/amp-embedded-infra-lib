@@ -1,5 +1,5 @@
-#include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/event/EventDispatcher.hpp"
+#include "infra/timer/test_helper/ClockFixture.hpp"
 
 namespace infra
 {

@@ -22,9 +22,7 @@ namespace infra
         using And = MultiFunctionHelper<F..., infra::Function<FOther>>;
 
         MultiFunctionHelper() = default;
-
-        MultiFunctionHelper(std::nullptr_t)
-        {}
+        MultiFunctionHelper(std::nullptr_t) {}
 
         template<class... Args>
         struct IndexOf
@@ -87,15 +85,12 @@ namespace infra
         }
 
         template<class... Args>
-        bool Invocable([[maybe_unused]] Args&&... args)
+        bool Invocable([[maybe_unused]] Args&&...args)
         {
             return functions.Which() == IndexOf<Args...>::Value + 1;
         }
 
-        explicit operator bool() const
-        {
-            return functions.Which() != 0;
-        }
+        explicit operator bool() const { return functions.Which() != 0; }
 
         bool operator==(const std::nullptr_t) const
         {

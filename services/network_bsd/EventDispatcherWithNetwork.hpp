@@ -55,7 +55,7 @@ namespace services
         std::list<ConnectorBsd> connectors;
         std::list<infra::WeakPtr<DatagramBsd>> datagrams;
         int numberOfFileDescriptors = 0;
-        int wakeUpEvent[2]{ 0 };
+        int wakeUpEvent[2] { 0 };
         fd_set readFileDescriptors;
         fd_set writeFileDescriptors;
         fd_set exceptFileDescriptors;

@@ -5,10 +5,10 @@
 #include "infra/util/Tokenizer.hpp"
 #include "protobuf/echo_console/Console.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
-#include "services/network_win/NameLookupWin.hpp"
-#include "services/tracer/GlobalTracer.hpp"
 #include "services/util/MessageCommunicationCobs.hpp"
 #include "services/util/MessageCommunicationWindowed.hpp"
+#include "services/network_win/NameLookupWin.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 #include <deque>
 #include <fstream>
 #include <iostream>
@@ -253,8 +253,7 @@ int main(int argc, char* argv[], const char* env[])
             }
 
             google::protobuf::FileDescriptorSet descriptorSet;
-            if (!descriptorSet.ParseFromIstream(&stream))
-            {
+            if (!descriptorSet.ParseFromIstream(&stream)) {
                 std::cerr << argv[0] << ": Could not parse contents from " << path << std::endl;
                 return 1;
             }
@@ -269,7 +268,8 @@ int main(int argc, char* argv[], const char* env[])
         infra::Optional<ConsoleClient> consoleClient;
         infra::Optional<hal::UartWindows> uart;
         infra::Optional<ConsoleClientUart> consoleClientUart;
-        auto construct = [&]() {
+        auto construct = [&]()
+        {
             if (get(target).substr(0, 3) == "COM")
             {
                 uart.Emplace(get(target));

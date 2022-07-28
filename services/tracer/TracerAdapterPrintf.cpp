@@ -74,15 +74,15 @@ namespace services
     {
         switch (format)
         {
-            case '\0':
-                break;
+            case '\0': break;
             case '%':
                 tracer.Continue() << format;
                 break;
             case 'c':
                 tracer.Continue() << static_cast<const char>(va_arg(*args, int32_t));
                 break;
-            case 's': {
+            case 's':
+            {
                 auto* s = va_arg(*args, char*);
                 tracer.Continue() << (s != nullptr ? s : "(null)");
                 break;

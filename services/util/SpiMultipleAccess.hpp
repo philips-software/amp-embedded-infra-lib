@@ -36,7 +36,7 @@ namespace services
         explicit SpiMultipleAccess(SpiMultipleAccessMaster& master);
 
         virtual void SendAndReceive(infra::ConstByteRange sendData, infra::ByteRange receiveData, hal::SpiAction nextAction, const infra::Function<void()>& onDone) override;
-        virtual void SetChipSelectConfigurator(hal::ChipSelectConfigurator& configurator) override;
+        virtual void SetChipSelectConfigurator(hal::ChipSelectConfigurator& configurator) override; 
         virtual void SetCommunicationConfigurator(hal::CommunicationConfigurator& configurator) override;
         virtual void ResetCommunicationConfigurator() override;
 

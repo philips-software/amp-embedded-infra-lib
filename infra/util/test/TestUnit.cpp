@@ -24,7 +24,7 @@ TEST(UnitTest, ADCUseCase)
     // ADC range is 0 - 65535, which corresponds to 0 - 1.023V
     MicroVolt adcToMicroVoltFactor(1024 * 1000 / 65536);
 
-    int adcResult = 4096; // 1/16 of the ADC range, so corresponds with 0.064V
+    int adcResult = 4096;   // 1/16 of the ADC range, so corresponds with 0.064V
     MilliVolt voltageAdc = adcResult * adcToMicroVoltFactor;
 
     // Assume a resistor of 5K from ADC to ground, and a resistor of 10K from ADC to the measured point.
@@ -35,7 +35,7 @@ TEST(UnitTest, ADCUseCase)
     MilliVolt voltageAcrossResistorToMeasured = currentThroughResistorToGround * resistorAdcToMeasured;
     MilliVolt voltageOfMeasured = voltageAcrossResistorToMeasured + voltageAdc;
 
-    //    voltageOfMeasured = currentThroughResistorToGround * resistorAdcToMeasured + voltageAdc;
+//    voltageOfMeasured = currentThroughResistorToGround * resistorAdcToMeasured + voltageAdc;
 }
 
 TEST(UnitTest, DefaultCreation)
@@ -91,7 +91,7 @@ TEST(UnitTest, ConversionToLargerUnit)
 
     MilliSecond duration(14400000);
     Hour largerDuration(duration);
-
+    
     EXPECT_EQ(4, largerDuration.Value());
 }
 

@@ -1,5 +1,5 @@
-#include "services/util/FlashQuadSpiMicronN25q.hpp"
 #include "infra/event/EventDispatcher.hpp"
+#include "services/util/FlashQuadSpiMicronN25q.hpp"
 
 namespace services
 {
@@ -20,7 +20,8 @@ namespace services
         : FlashQuadSpi(spi, numberOfSectors, commandPageProgram)
         , onInitialized(onInitialized)
     {
-        sequencer.Load([this]() {
+        sequencer.Load([this]()
+        {
             sequencer.Step([this]() { initDelayTimer.Start(std::chrono::milliseconds(1), [this]() { sequencer.Continue(); }); });
             sequencer.Step([this]() { WriteEnableSingleSpeed(); });
             sequencer.Step([this]() { SwitchToQuadSpeed(); });

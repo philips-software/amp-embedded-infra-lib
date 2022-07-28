@@ -60,13 +60,13 @@ namespace services
 
     std::array<uint8_t, 16> NameResolverCache::Hash(infra::BoundedConstString name) const
     {
-        union {
+        union
+        {
             struct
             {
                 std::array<uint8_t, 16> first;
                 std::array<uint8_t, 16> second;
             } hash_parts;
-
             std::array<uint8_t, 32> hash;
         } result;
 
@@ -128,7 +128,7 @@ namespace services
         infra::TimePoint now = infra::Now();
         infra::TimePoint cleanupTime = infra::TimePoint::max();
 
-        for (auto entry = cache.begin(); entry != cache.end();)
+        for (auto entry = cache.begin(); entry != cache.end(); )
         {
             if (entry->validUntil <= now)
                 entry = cache.erase(entry);

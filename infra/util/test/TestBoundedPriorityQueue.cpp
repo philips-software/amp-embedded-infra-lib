@@ -13,7 +13,7 @@ TEST(BoundedPriorityQueueTest, TestConstructedEmpty)
 
 TEST(BoundedPriorityQueueTest, TestConstructionWithRange)
 {
-    int range[3] = { 0, 1, 2 };
+    int range[3] = { 0, 1, 2};
     infra::BoundedPriorityQueue<int, 5> queue(range, range + 3);
 
     EXPECT_EQ(3, queue.size());
@@ -67,7 +67,7 @@ TEST(BoundedPriorityQueueTest, TestMove)
 
 TEST(BoundedPriorityQueueTest, TestPop)
 {
-    int range[3] = { 0, 1, 2 };
+    int range[3] = { 0, 1, 2};
     infra::BoundedPriorityQueue<int, 5> queue(range, range + 3);
 
     queue.pop();
@@ -117,7 +117,7 @@ TEST(BoundedPriorityQueueTest, TestEraseLastElement)
 
 TEST(BoundedPriorityQueueTest, TestBeginAndEnd)
 {
-    int range[3] = { 0, 1, 2 };
+    int range[3] = { 0, 1, 2};
     infra::BoundedPriorityQueue<int, 5> queue(range, range + 3);
 
     EXPECT_EQ(queue.end(), queue.begin() + 3);
@@ -139,9 +139,9 @@ TEST(BoundedPriorityQueueTest, TestFull)
 
 TEST(BoundedPriorityQueueTest, TestSwap)
 {
-    int range1[3] = { 0, 1, 2 };
+    int range1[3] = { 0, 1, 2};
     infra::BoundedPriorityQueue<int, 5> queue1(range1, range1 + 3);
-    int range2[3] = { 3, 4, 5 };
+    int range2[3] = { 3, 4, 5};
     infra::BoundedPriorityQueue<int, 5> queue2(range2, range2 + 3);
 
     swap(queue1, queue2);
@@ -154,9 +154,9 @@ TEST(BoundedPriorityQueueTest, TestSwap)
 
 TEST(BoundedPriorityQueueTest, TestSwapDifferentSizes)
 {
-    int range1[3] = { 0, 1, 2 };
+    int range1[3] = { 0, 1, 2};
     infra::BoundedPriorityQueue<int, 5> queue1(range1, range1 + 3);
-    int range2[2] = { 3, 4 };
+    int range2[2] = { 3, 4};
     infra::BoundedPriorityQueue<int, 5> queue2(range2, range2 + 2);
 
     swap(queue1, queue2);

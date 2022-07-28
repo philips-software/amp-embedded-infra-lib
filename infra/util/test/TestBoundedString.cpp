@@ -28,7 +28,7 @@ TEST(BoundedStringTest, TestConstructFromMemoryRange)
 TEST(BoundedStringTest, TestConstructFromNChars)
 {
     infra::BoundedString::WithStorage<5> string(3, 'a');
-
+    
     EXPECT_EQ('a', string[0]);
     EXPECT_EQ('a', string[1]);
     EXPECT_EQ('a', static_cast<const infra::BoundedString&>(string)[2]);
@@ -525,7 +525,7 @@ TEST(BoundedStringTest, TestCaseInsensitiveCompare)
     infra::BoundedConstString string2("Abc");
 
     EXPECT_FALSE(infra::CaseInsensitiveCompare(string, ""));
-
+    
     EXPECT_TRUE(infra::CaseInsensitiveCompare(string, string2));
     EXPECT_TRUE(infra::CaseInsensitiveCompare(string, "abc"));
     EXPECT_TRUE(infra::CaseInsensitiveCompare(string, "ABC"));

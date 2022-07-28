@@ -1,4 +1,4 @@
-#ifndef SERVICES_CUCUMBER_CONTEXT_HPP
+#ifndef SERVICES_CUCUMBER_CONTEXT_HPP 
 #define SERVICES_CUCUMBER_CONTEXT_HPP
 
 #include "infra/timer/Timer.hpp"
@@ -11,7 +11,7 @@ namespace services
     class CucumberContextValue
     {
     public:
-        CucumberContextValue(infra::BoundedConstString key, void* value);
+        CucumberContextValue(infra::BoundedConstString key, void *value);
         CucumberContextValue& operator=(const CucumberContextValue& other) = default;
         CucumberContextValue(CucumberContextValue& other) = delete;
         virtual ~CucumberContextValue() = default;
@@ -29,9 +29,9 @@ namespace services
         CucumberContext(CucumberContext& other) = delete;
         virtual ~CucumberContext() = default;
 
-        template<class T>
+        template <class T>
         T& Get(infra::BoundedConstString key);
-        void Add(infra::BoundedConstString key, void* value);
+        void Add(infra::BoundedConstString key, void *value);
         void Clear();
         bool Empty() const;
         bool Contains(infra::BoundedConstString key) const;
@@ -39,7 +39,7 @@ namespace services
         infra::TimerSingleShot& TimeoutTimer();
 
     private:
-        infra::BoundedVector<CucumberContextValue>::WithMaxSize<32> storage;
+        infra::BoundedVector<CucumberContextValue>::WithMaxSize<32> storage;     
     };
 
     template<class T>

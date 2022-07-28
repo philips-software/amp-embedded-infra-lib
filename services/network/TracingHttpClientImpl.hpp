@@ -43,7 +43,7 @@ namespace services
     {
     public:
         template<std::size_t MaxSize>
-        using WithRedirectionUrlSize = infra::WithStorage<TracingHttpClientImplWithRedirection, infra::BoundedString::WithStorage<MaxSize>>;
+            using WithRedirectionUrlSize = infra::WithStorage<TracingHttpClientImplWithRedirection, infra::BoundedString::WithStorage<MaxSize>>;
 
         TracingHttpClientImplWithRedirection(infra::BoundedString redirectedUrlStorage, infra::BoundedConstString hostname, ConnectionFactoryWithNameResolver& connectionFactory, Tracer& tracer);
 

@@ -17,7 +17,7 @@ namespace infra
 
     public:
         uint32_t Id() const;
-
+        
         void RegisterTimer(Timer& timer);
         void UnregisterTimer(Timer& timer, TimePoint oldTriggerTime);
         void UpdateTriggerTime(Timer& timer, TimePoint oldTriggerTime);

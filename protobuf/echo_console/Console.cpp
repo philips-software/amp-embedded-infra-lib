@@ -1,5 +1,5 @@
-#include "protobuf/echo_console/Console.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
+#include "protobuf/echo_console/Console.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 #include <cctype>
 #include <iomanip>
@@ -10,8 +10,7 @@ namespace application
 {
     namespace
     {
-        struct Quit
-        {};
+        struct Quit {};
     }
 
     namespace ConsoleToken
@@ -250,9 +249,9 @@ namespace application
         std::size_t tokenStart = parseIndex;
 
         bool escape = false;
-
+        
         std::string stringToken;
-
+        
         while (escape || line[parseIndex] != '"')
         {
             escape = !escape && line[parseIndex] == '\\';
@@ -260,15 +259,15 @@ namespace application
             if (!escape)
                 stringToken.append(1, line[parseIndex]);
 
-            ++parseIndex;
-
+            ++parseIndex;            
+         
             if (parseIndex == line.size())
                 return ConsoleToken::Error(parseIndex);
         }
 
         ++parseIndex;
 
-        return ConsoleToken::String(tokenStart, stringToken);
+        return ConsoleToken::String(tokenStart, stringToken);        
     }
 
     ConsoleToken::Token ConsoleTokenizer::TryCreateIntegerToken()
@@ -332,7 +331,8 @@ namespace application
                 std::unique_lock<std::mutex> lock(mutex);
                 processDone = false;
 
-                infra::EventDispatcher::Instance().Schedule([this, &line]() {
+                infra::EventDispatcher::Instance().Schedule([this, &line]()
+                {
                     if (line == "list")
                         ListInterfaces();
                     else
@@ -569,7 +569,7 @@ namespace application
                 services::GlobalTracer().Continue() << ")";
             }
         }
-
+        
         services::GlobalTracer().Trace();
     }
 
@@ -730,7 +730,7 @@ namespace application
                     services::GlobalTracer().Continue() << ".";
                 services::GlobalTracer().Continue() << part;
             }
-
+            
             services::GlobalTracer().Continue() << " was not found\n";
         }
     }

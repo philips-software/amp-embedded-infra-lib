@@ -132,7 +132,7 @@ TEST(StringInputStreamTest, FromBase64)
     std::array<uint8_t, 3> output;
     stream >> infra::FromBase64(output);
 
-    EXPECT_EQ((std::array<uint8_t, 3>{ 'a', 'b', 'c' }), output);
+    EXPECT_EQ((std::array<uint8_t, 3>{ 'a', 'b', 'c'}), output);
     EXPECT_TRUE(stream.Empty());
 }
 

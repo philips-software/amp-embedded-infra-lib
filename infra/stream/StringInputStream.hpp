@@ -22,6 +22,7 @@ namespace infra
         virtual std::size_t ConstructSaveMarker() const override;
         virtual void Rewind(std::size_t marker) override;
 
+
     private:
         uint32_t offset = 0;
         BoundedConstString string;
@@ -32,7 +33,7 @@ namespace infra
     {
     public:
         template<std::size_t Max>
-        using WithStorage = infra::WithStorage<TextInputStream::WithReader<StringInputStreamReader>, infra::BoundedString::WithStorage<Max>>;
+            using WithStorage = infra::WithStorage<TextInputStream::WithReader<StringInputStreamReader>, infra::BoundedString::WithStorage<Max>>;
 
         StringInputStream(BoundedConstString storage);
         StringInputStream(BoundedConstString storage, const SoftFail&);

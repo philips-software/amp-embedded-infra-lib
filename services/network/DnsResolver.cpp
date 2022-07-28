@@ -392,7 +392,7 @@ namespace services
 
     void DnsResolver::ActiveLookup::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from)
     {
-        this->reader = std::move(reader); // The SharedPtr towards the reader is saved in the ActiveLookup object, so that it is destroyed before datagramExchange is destroyed
+        this->reader = std::move(reader);   // The SharedPtr towards the reader is saved in the ActiveLookup object, so that it is destroyed before datagramExchange is destroyed
         ReplyParser replyParser(*this->reader, hostname);
 
         if (replyParser.AnswerIsForCurrentQuery(from, GetAddress(DnsUdpSocket()), queryId))

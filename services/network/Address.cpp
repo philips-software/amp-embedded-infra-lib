@@ -1,6 +1,6 @@
+#include "infra/util/CompareMembers.hpp"
 #include "services/network/Address.hpp"
 #include "infra/stream/StringInputStream.hpp"
-#include "infra/util/CompareMembers.hpp"
 #include "infra/util/Tokenizer.hpp"
 
 namespace services
@@ -156,7 +156,10 @@ namespace services
 
     bool IPv4InterfaceAddresses::operator==(const IPv4InterfaceAddresses& other) const
     {
-        return infra::Equals()(address, other.address)(netmask, other.netmask)(gateway, other.gateway);
+        return infra::Equals()
+            (address, other.address)
+            (netmask, other.netmask)
+            (gateway, other.gateway);
     }
 
     bool IPv4InterfaceAddresses::operator!=(const IPv4InterfaceAddresses& other) const
@@ -166,7 +169,9 @@ namespace services
 
     bool Ipv4Config::operator==(const Ipv4Config& other) const
     {
-        return infra::Equals()(useDhcp, other.useDhcp)(staticAddresses, other.staticAddresses);
+        return infra::Equals()
+            (useDhcp, other.useDhcp)
+            (staticAddresses, other.staticAddresses);
     }
 
     bool Ipv4Config::operator!=(const Ipv4Config& other) const

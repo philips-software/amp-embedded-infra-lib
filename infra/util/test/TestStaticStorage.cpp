@@ -1,5 +1,5 @@
-#include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "gmock/gmock.h"
 #include "infra/util/StaticStorage.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 
@@ -23,15 +23,8 @@ TEST(StaticStorageTest, TestDestruction)
 
     struct X
     {
-        X()
-        {
-            constructor.callback();
-        }
-
-        ~X()
-        {
-            destructor.callback();
-        }
+        X() { constructor.callback(); }
+        ~X() { destructor.callback(); }
     };
 
     infra::StaticStorage<X> s;
@@ -75,7 +68,6 @@ TEST(StaticStorageTest, TestInheritanceTree)
         uint64_t b;
         void* c;
     };
-
     EXPECT_EQ(sizeof(c), sizeof(Helper));
 
     b.Construct<B>();

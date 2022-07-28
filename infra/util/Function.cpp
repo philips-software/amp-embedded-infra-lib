@@ -2,20 +2,19 @@
 
 namespace infra
 {
-    const infra::Function<void()> emptyFunction = []() {
-    };
+     const infra::Function<void()> emptyFunction = []() {};
 
-    Execute::Execute(Function<void()> f)
-    {
-        f();
-    }
+     Execute::Execute(Function<void()> f)
+     {
+         f();
+     }
 
-    ExecuteOnDestruction::ExecuteOnDestruction(Function<void()> f)
-        : f(f)
-    {}
+     ExecuteOnDestruction::ExecuteOnDestruction(Function<void()> f)
+         : f(f)
+     {}
 
-    ExecuteOnDestruction::~ExecuteOnDestruction()
-    {
-        f();
-    }
+     ExecuteOnDestruction::~ExecuteOnDestruction()
+     {
+         f();
+     }
 }

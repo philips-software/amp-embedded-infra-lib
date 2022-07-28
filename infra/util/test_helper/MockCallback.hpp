@@ -22,7 +22,7 @@ namespace infra
     public:
         MOCK_CONST_METHOD1_T(callback, T(P1));
     };
-
+    
     template<class T, class P1, class P2>
     class MockCallback<T(P1, P2)>
     {
@@ -60,9 +60,7 @@ namespace infra
 
         operator infra::Function<T(), ExtraSize>()
         {
-            return [this]() {
-                return callback();
-            };
+            return [this]() { return callback(); };
         }
     };
 
@@ -79,9 +77,7 @@ namespace infra
 
         operator infra::Function<T(P1), ExtraSize>()
         {
-            return [this](P1 p1) {
-                return callback(p1);
-            };
+            return [this](P1 p1) { return callback(p1); };
         }
     };
 
@@ -98,9 +94,7 @@ namespace infra
 
         operator infra::Function<T(P1, P2), ExtraSize>()
         {
-            return [this](P1 p1, P2 p2) {
-                return callback(p1, p2);
-            };
+            return [this](P1 p1, P2 p2) { return callback(p1, p2); };
         }
     };
 }

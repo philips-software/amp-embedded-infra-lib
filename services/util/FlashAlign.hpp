@@ -1,16 +1,17 @@
 #ifndef SERVICES_FLASH_ALIGN_HPP
 #define SERVICES_FLASH_ALIGN_HPP
 
-#include "infra/util/BoundedDeque.hpp"
 #include "infra/util/ByteRange.hpp"
+#include "infra/util/BoundedDeque.hpp"
 
 namespace services
 {
     class FlashAlign
     {
     public:
+
         template<std::size_t Size>
-        using WithAlignment = infra::WithStorage<infra::WithStorage<FlashAlign, std::array<uint8_t, Size>>, std::array<uint8_t, Size>>;
+            using WithAlignment = infra::WithStorage<infra::WithStorage<FlashAlign, std::array<uint8_t, Size>>, std::array<uint8_t, Size>>;
 
         FlashAlign(infra::ByteRange firstChunk, infra::ByteRange lastChunk);
         void Align(uint32_t address, infra::ConstByteRange buffer);

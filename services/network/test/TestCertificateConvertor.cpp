@@ -63,6 +63,5 @@ TEST(CertificateConvertorTest, should_throw_on_invalid_certificate)
             EXPECT_STREQ("CertificateConvertor::Convert Base64 decoding failed", e.what());
             throw;
         }
-    },
-        std::exception);
+    }, std::exception);
 }

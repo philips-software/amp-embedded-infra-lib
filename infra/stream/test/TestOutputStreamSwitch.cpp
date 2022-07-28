@@ -9,7 +9,7 @@ TEST(OutputStreamSwitchTest, StreamToTextStream)
     infra::ByteOutputStream::WithStorage<2> stream;
 
     stream << infra::text << uint8_t(12);
-    EXPECT_EQ((std::array<uint8_t, 2>{ { '1', '2' } }), stream.Writer().Processed());
+    EXPECT_EQ((std::array<uint8_t, 2>{{ '1', '2' }}), stream.Writer().Processed());
 }
 
 TEST(OutputStreamSwitchTest, TextStreamToStream)
@@ -25,7 +25,7 @@ TEST(OutputStreamSwitchTest, StreamToTextStreamToStream)
     infra::ByteOutputStream::WithStorage<3> stream;
 
     stream << infra::text << uint8_t(12) << infra::data << uint8_t(12);
-    EXPECT_EQ((std::array<uint8_t, 3>{ { '1', '2', 12 } }), stream.Writer().Processed());
+    EXPECT_EQ((std::array<uint8_t, 3>{{ '1', '2', 12 }}), stream.Writer().Processed());
 }
 
 TEST(OutputStreamSwitchTest, StreamFromBoundedString)

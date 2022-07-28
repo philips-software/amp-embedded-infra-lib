@@ -26,7 +26,7 @@ namespace hal
         void SendData(infra::ConstByteRange data, Action nextAction);
         void ReceiveData(infra::ByteRange data, Action nextAction);
         virtual void SendAndReceive(infra::ConstByteRange sendData, infra::ByteRange receiveData, Action nextAction) = 0;
-    };
+    };    
 }
 
 #endif

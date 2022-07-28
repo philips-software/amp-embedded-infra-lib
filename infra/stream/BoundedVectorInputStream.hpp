@@ -11,7 +11,7 @@ namespace infra
     {
     public:
         template<std::size_t Max>
-        using WithStorage = infra::WithStorage<BoundedVectorInputStreamReader, infra::BoundedVector<uint8_t>::WithMaxSize<Max>>;
+            using WithStorage = infra::WithStorage<BoundedVectorInputStreamReader, infra::BoundedVector<uint8_t>::WithMaxSize<Max>>;
 
         explicit BoundedVectorInputStreamReader(infra::BoundedVector<uint8_t>& container);
 
@@ -37,7 +37,7 @@ namespace infra
     {
     public:
         template<std::size_t Max>
-        using WithStorage = infra::WithStorage<DataInputStream::WithReader<BoundedVectorInputStreamReader>, infra::BoundedVector<uint8_t>::WithMaxSize<Max>>;
+            using WithStorage = infra::WithStorage<DataInputStream::WithReader<BoundedVectorInputStreamReader>, infra::BoundedVector<uint8_t>::WithMaxSize<Max>>;
 
         explicit BoundedVectorInputStream(infra::BoundedVector<uint8_t>& storage);
         BoundedVectorInputStream(infra::BoundedVector<uint8_t>& storage, const SoftFail&);

@@ -18,12 +18,7 @@ namespace services
 
     public:
         virtual infra::BoundedConstString Hostname() const = 0;
-
-        virtual IPVersions Versions() const
-        {
-            return IPVersions::ipv4;
-        }
-
+        virtual IPVersions Versions() const { return IPVersions::ipv4; }
         virtual void NameLookupDone(IPAddress address, infra::TimePoint validUntil) = 0;
         virtual void NameLookupFailed() = 0;
     };

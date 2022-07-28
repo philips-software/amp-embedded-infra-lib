@@ -7,13 +7,7 @@
 #include <cstdlib>
 
 #ifdef NDEBUG
-#define really_assert(condition) \
-    if (!(condition))            \
-    {                            \
-        std::abort();            \
-    }                            \
-    else                         \
-        for (; false;)
+#define really_assert(condition) if (!(condition)) { std::abort(); } else for (; false; )
 #else
 #define really_assert(condition) assert(condition)
 #endif

@@ -23,7 +23,7 @@ public:
 
 TEST_F(SpiMultipleAccessTest, FirstSendAndReceiveIsExecuted)
 {
-    std::vector<uint8_t> buffer = { 0 };
+    std::vector<uint8_t> buffer = {0};
 
     EXPECT_CALL(spi, SetChipSelectConfiguratorMock(testing::_));
     EXPECT_CALL(spi, SendAndReceiveMock(buffer, infra::MemoryRange<uint8_t>(buffer), hal::SpiAction::stop, testing::_));

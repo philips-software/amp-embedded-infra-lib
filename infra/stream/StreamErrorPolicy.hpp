@@ -5,13 +5,8 @@
 
 namespace infra
 {
-    extern const struct SoftFail
-    {
-    } softFail;
-
-    extern const struct NoFail
-    {
-    } noFail;
+    extern const struct SoftFail {} softFail;
+    extern const struct NoFail {} noFail;
 
     class StreamErrorPolicy
     {

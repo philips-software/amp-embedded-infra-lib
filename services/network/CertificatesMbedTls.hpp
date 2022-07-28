@@ -46,6 +46,6 @@ namespace services
         mbedtls_x509_crt ownCertificate;
         mbedtls_pk_context privateKey;
     };
-} //! namespace services
+}  //! namespace services
 
-#endif //! SERVICES_CERTIFICATES_MBED_TLS_HPP
+#endif  //! SERVICES_CERTIFICATES_MBED_TLS_HPP

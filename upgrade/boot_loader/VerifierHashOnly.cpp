@@ -1,5 +1,5 @@
-#include "upgrade/boot_loader/VerifierHashOnly.hpp"
 #include "mbedtls/sha256.h"
+#include "upgrade/boot_loader/VerifierHashOnly.hpp"
 
 namespace application
 {

@@ -1,5 +1,5 @@
-#include "hal/interfaces/test_doubles/SpiMock.hpp"
 #include "infra/event/EventDispatcher.hpp"
+#include "hal/interfaces/test_doubles/SpiMock.hpp"
 
 namespace hal
 {

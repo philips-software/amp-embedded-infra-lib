@@ -5,7 +5,7 @@
 //  this class, you can delay construction of an object, or hasten destruction. The storage
 //  needed is allocated inside of the optional. Basically, sizeof(Optional<T>) == sizeof(T) + 1.
 //  It uses pointer-like operations for access. Examples:
-//
+//  
 //  Optional<MyClass> opt(inPlace, 2, 3, 4); // 2, 3, 4 is forwarded to the constructor of MyClass
 //
 //  if (opt)                        // Test whether opt contains a value
@@ -22,17 +22,11 @@
 
 namespace infra
 {
-    extern const struct None
-    {
-    } none;
-
-    extern const struct InPlace
-    {
-    } inPlace;
+    extern const struct None {} none;
+    extern const struct InPlace {} inPlace;
 
     template<class T>
-    struct InPlaceType
-    {};
+        struct InPlaceType {};
 
     template<class T>
     class Optional
@@ -44,9 +38,9 @@ namespace infra
         Optional(Optional&& other);
         Optional(None);
         template<class U>
-        explicit Optional(const Optional<U>& other);
+            explicit Optional(const Optional<U>& other);
         template<class... Args>
-        explicit Optional(InPlace, Args&&... args);
+            explicit Optional(InPlace, Args&&... args);
 
         ~Optional();
 
@@ -57,9 +51,9 @@ namespace infra
         Optional& operator=(T&& value);
 
         template<class... Args>
-        void Emplace(Args&&... args);
+            void Emplace(Args&&... args);
         template<class U, class... Args>
-        void Emplace(std::initializer_list<U> list, Args&&... args);
+            void Emplace(std::initializer_list<U> list, Args&&... args);
 
         const T& operator*() const;
         T& operator*();
@@ -71,46 +65,14 @@ namespace infra
         bool operator!() const;
         bool operator==(const Optional& other) const;
         bool operator!=(const Optional& other) const;
-
-        friend bool operator==(const Optional& x, const None& y)
-        {
-            return !x;
-        }
-
-        friend bool operator!=(const Optional& x, const None& y)
-        {
-            return !(x == y);
-        }
-
-        friend bool operator==(const None& x, const Optional& y)
-        {
-            return y == x;
-        }
-
-        friend bool operator!=(const None& x, const Optional& y)
-        {
-            return y != x;
-        }
-
-        friend bool operator==(const Optional& x, const T& y)
-        {
-            return x && *x == y;
-        }
-
-        friend bool operator!=(const Optional& x, const T& y)
-        {
-            return !(x == y);
-        }
-
-        friend bool operator==(const T& x, const Optional& y)
-        {
-            return y == x;
-        }
-
-        friend bool operator!=(const T& x, const Optional& y)
-        {
-            return y != x;
-        }
+        friend bool operator==(const Optional& x, const None& y) { return !x; }
+        friend bool operator!=(const Optional& x, const None& y) { return !(x == y); }
+        friend bool operator==(const None& x, const Optional& y) { return y == x; }
+        friend bool operator!=(const None& x, const Optional& y) { return y != x; }
+        friend bool operator==(const Optional& x, const T& y) { return x && *x == y; }
+        friend bool operator!=(const Optional& x, const T& y) { return !(x == y); }
+        friend bool operator==(const T& x, const Optional& y) { return y == x; }
+        friend bool operator!=(const T& x, const Optional& y) { return y != x; }
 
         T ValueOr(T&& value) const;
         const T& ValueOr(const T& value) const;
@@ -124,11 +86,11 @@ namespace infra
         StaticStorage<T> data;
     };
 
-    template<class T>
-    Optional<typename std::decay<T>::type> MakeOptional(T&& value);
+    template<class T> 
+        Optional<typename std::decay<T>::type> MakeOptional(T&& value);
 
     template<class T, class F>
-    auto TransformOptional(const infra::Optional<T>& value, F transformation) -> infra::Optional<decltype(transformation(*value))>;
+        auto TransformOptional(const infra::Optional<T>& value, F transformation)->infra::Optional<decltype(transformation(*value))>;
 
     template<class T, std::size_t ExtraSize>
     class OptionalForPolymorphicObjects
@@ -138,23 +100,23 @@ namespace infra
 
         OptionalForPolymorphicObjects(const OptionalForPolymorphicObjects& other) = delete;
         template<class Derived, std::size_t OtherExtraSize>
-        OptionalForPolymorphicObjects(const OptionalForPolymorphicObjects<Derived, OtherExtraSize>& other, typename std::enable_if<std::is_base_of<T, Derived>::value>::type* = 0);
+            OptionalForPolymorphicObjects(const OptionalForPolymorphicObjects<Derived, OtherExtraSize>& other, typename std::enable_if<std::is_base_of<T, Derived>::value>::type* = 0);
         OptionalForPolymorphicObjects(None);
         template<class Derived, class... Args>
-        OptionalForPolymorphicObjects(InPlaceType<Derived>, Args&&... args);
+            OptionalForPolymorphicObjects(InPlaceType<Derived>, Args&&... args);
 
         ~OptionalForPolymorphicObjects();
 
         OptionalForPolymorphicObjects& operator=(const OptionalForPolymorphicObjects& other) = delete;
         template<class Derived, std::size_t OtherExtraSize>
-        typename std::enable_if<std::is_base_of<T, Derived>::value, OptionalForPolymorphicObjects&>::type
-        operator=(const OptionalForPolymorphicObjects<Derived, OtherExtraSize>& other);
+            typename std::enable_if<std::is_base_of<T, Derived>::value, OptionalForPolymorphicObjects&>::type
+            operator=(const OptionalForPolymorphicObjects<Derived, OtherExtraSize>& other);
         OptionalForPolymorphicObjects& operator=(const None&);
         OptionalForPolymorphicObjects& operator=(const T& value);
         OptionalForPolymorphicObjects& operator=(T&& value);
 
         template<class Derived, class... Args>
-        void Emplace(Args&&... args);
+            void Emplace(Args&&... args);
 
         const T& operator*() const;
         T& operator*();
@@ -166,46 +128,14 @@ namespace infra
         bool operator!() const;
         bool operator==(const OptionalForPolymorphicObjects& other) const;
         bool operator!=(const OptionalForPolymorphicObjects& other) const;
-
-        friend bool operator==(const OptionalForPolymorphicObjects& x, const None& y)
-        {
-            return !x;
-        }
-
-        friend bool operator!=(const OptionalForPolymorphicObjects& x, const None& y)
-        {
-            return !(x == y);
-        }
-
-        friend bool operator==(const None& x, const OptionalForPolymorphicObjects& y)
-        {
-            return y == x;
-        }
-
-        friend bool operator!=(const None& x, const OptionalForPolymorphicObjects& y)
-        {
-            return y != x;
-        }
-
-        friend bool operator==(const OptionalForPolymorphicObjects& x, const T& y)
-        {
-            return x && *x == y;
-        }
-
-        friend bool operator!=(const OptionalForPolymorphicObjects& x, const T& y)
-        {
-            return !(x == y);
-        }
-
-        friend bool operator==(const T& x, const OptionalForPolymorphicObjects& y)
-        {
-            return y == x;
-        }
-
-        friend bool operator!=(const T& x, const OptionalForPolymorphicObjects& y)
-        {
-            return y != x;
-        }
+        friend bool operator==(const OptionalForPolymorphicObjects& x, const None& y) { return !x; }
+        friend bool operator!=(const OptionalForPolymorphicObjects& x, const None& y) { return !(x == y); }
+        friend bool operator==(const None& x, const OptionalForPolymorphicObjects& y) { return y == x; }
+        friend bool operator!=(const None& x, const OptionalForPolymorphicObjects& y) { return y != x; }
+        friend bool operator==(const OptionalForPolymorphicObjects& x, const T& y) { return x && *x == y; }
+        friend bool operator!=(const OptionalForPolymorphicObjects& x, const T& y) { return !(x == y); }
+        friend bool operator==(const T& x, const OptionalForPolymorphicObjects& y) { return y == x; }
+        friend bool operator!=(const T& x, const OptionalForPolymorphicObjects& y) { return y != x; }
 
     private:
         void Reset();
@@ -214,7 +144,7 @@ namespace infra
         bool initialized = false;
         StaticStorageForPolymorphicObjects<T, ExtraSize> data;
     };
-
+        
     ////    Implementation    ////
 
     template<class T>
@@ -418,7 +348,7 @@ namespace infra
         }
     }
 
-    template<class T>
+    template<class T> 
     Optional<typename std::decay<T>::type> MakeOptional(T&& value)
     {
         return Optional<typename std::decay<T>::type>(inPlace, std::forward<T>(value));
@@ -435,7 +365,8 @@ namespace infra
 
     template<class T, std::size_t ExtraSize>
     template<class Derived, std::size_t OtherExtraSize>
-    OptionalForPolymorphicObjects<T, ExtraSize>::OptionalForPolymorphicObjects(const OptionalForPolymorphicObjects<Derived, OtherExtraSize>& other, typename std::enable_if<std::is_base_of<T, Derived>::value>::type*)
+    OptionalForPolymorphicObjects<T, ExtraSize>::OptionalForPolymorphicObjects(const OptionalForPolymorphicObjects<Derived, OtherExtraSize>& other
+            , typename std::enable_if<std::is_base_of<T, Derived>::value>::type*)
     {
         if (other)
             Emplace<Derived>(*other);
@@ -461,7 +392,7 @@ namespace infra
     template<class T, std::size_t ExtraSize>
     template<class Derived, std::size_t OtherExtraSize>
     typename std::enable_if<std::is_base_of<T, Derived>::value, OptionalForPolymorphicObjects<T, ExtraSize>&>::type
-    OptionalForPolymorphicObjects<T, ExtraSize>::operator=(const OptionalForPolymorphicObjects<Derived, OtherExtraSize>& other)
+        OptionalForPolymorphicObjects<T, ExtraSize>::operator=(const OptionalForPolymorphicObjects<Derived, OtherExtraSize>& other)
     {
         Reset();
         if (other)

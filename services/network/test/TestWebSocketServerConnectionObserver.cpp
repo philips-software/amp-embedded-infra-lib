@@ -58,7 +58,8 @@ public:
 
     void ExpectDataReceived(const std::vector<uint8_t>& data)
     {
-        EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this, data]() {
+        EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this, data]()
+        {
             CheckDataReceived(data);
         }));
     }
@@ -108,7 +109,7 @@ TEST_F(WebSocketServerConnectionObserverTest, frame_header_not_received_in_one_g
 
 TEST_F(WebSocketServerConnectionObserverTest, frame_payload_not_received_in_one_go)
 {
-    std::array<uint8_t, 8> receiveData1 = { 0x82, 0x85, 0xa5, 0xb5, 0xc5, 0xd5, 0x34, 0x63 };
+    std::array<uint8_t, 8> receiveData1 = { 0x82, 0x85, 0xa5, 0xb5 , 0xc5, 0xd5, 0x34, 0x63 };
     std::array<uint8_t, 2> receiveData2 = { 0xa5, 0x7b };
     std::array<uint8_t, 1> receiveData3 = { 0xc9 };
 
@@ -157,7 +158,8 @@ TEST_F(WebSocketServerConnectionObserverTest, one_full_one_partial_frames_separa
     std::array<uint8_t, 15> receiveData1 = { 0x82, 0x82, 0xa5, 0xa5, 0xa5, 0xa5, 0x34, 0x34, 0x82, 0x82, 0xa5, 0xa5, 0xa5, 0xa5, 0x34 };
     std::array<uint8_t, 1> receiveData2 = { 0x34 };
 
-    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]() {
+    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
+    {
         CheckDataReceived({ 0x91, 0x91 });
         CheckDataReceived({ 0x91 });
     }));
@@ -175,7 +177,8 @@ TEST_F(WebSocketServerConnectionObserverTest, two_partial_in_three_chunks)
 
     connection.SimulateDataReceived(receiveData1);
 
-    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]() {
+    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
+    {
         CheckDataReceived({ 0x91, 0x91 });
         CheckDataReceived({ 0x91 });
     }));
@@ -198,7 +201,8 @@ TEST_F(WebSocketServerConnectionObserverTest, receive_frame_with_larger_payload_
     }
 
     testing::InSequence s;
-    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]() {
+    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
+    {
         CheckDataReceived(std::vector<uint8_t>(512, 0x91));
         CheckDataReceived(std::vector<uint8_t>(8, 0x91));
     }));
@@ -280,11 +284,14 @@ TEST_F(WebSocketServerConnectionObserverTest, send_data_after_first_frame)
 
     webSocket->RequestSendStream(2);
 
-    EXPECT_CALL(connectionObserver, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamWriter> writer) {
-        infra::DataOutputStream::WithErrorPolicy stream(*writer);
-        std::vector<uint8_t> dataToSend{ 0x91, 0x91 };
-        stream << infra::MakeRange(dataToSend);
-    }));
+    EXPECT_CALL(connectionObserver, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke(
+        [this](infra::SharedPtr<infra::StreamWriter> writer)
+        {
+            infra::DataOutputStream::WithErrorPolicy stream(*writer);
+            std::vector<uint8_t> dataToSend{ 0x91, 0x91 };
+            stream << infra::MakeRange(dataToSend);
+        }
+    ));
     ExecuteAllActions();
 
     EXPECT_EQ((std::vector<uint8_t>{ 0x82, 0x02, 0x91, 0x91, 0x82, 0x02, 0x91, 0x91 }), connection.sentData);

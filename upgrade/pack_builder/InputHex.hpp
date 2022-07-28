@@ -1,8 +1,8 @@
 #ifndef UPGRADE_INPUT_HEX_HPP
 #define UPGRADE_INPUT_HEX_HPP
 
-#include "hal/interfaces/FileSystem.hpp"
 #include "upgrade/pack_builder/BinaryObject.hpp"
+#include "hal/interfaces/FileSystem.hpp"
 #include "upgrade/pack_builder/ImageSecurity.hpp"
 #include "upgrade/pack_builder/Input.hpp"
 

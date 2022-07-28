@@ -22,7 +22,7 @@ namespace infra
         AutoResetFunction(AutoResetFunction&& other);
 
         template<class F>
-        AutoResetFunction(F f);
+            AutoResetFunction(F f);
 
         ~AutoResetFunction() = default;
 
@@ -43,16 +43,16 @@ namespace infra
     };
 
     template<std::size_t ExtraSize, class Result, class... Args>
-    void swap(AutoResetFunction<Result(Args...), ExtraSize>& x, AutoResetFunction<Result(Args...), ExtraSize>& y);
+        void swap(AutoResetFunction<Result(Args...), ExtraSize>& x, AutoResetFunction<Result(Args...), ExtraSize>& y);
 
     template<std::size_t ExtraSize, class Result, class... Args>
-    bool operator==(const AutoResetFunction<Result(Args...), ExtraSize>& f, std::nullptr_t);
+        bool operator==(const AutoResetFunction<Result(Args...), ExtraSize>& f, std::nullptr_t);
     template<std::size_t ExtraSize, class Result, class... Args>
-    bool operator==(std::nullptr_t, const AutoResetFunction<Result(Args...), ExtraSize>& f);
+        bool operator==(std::nullptr_t, const AutoResetFunction<Result(Args...), ExtraSize>& f);
     template<std::size_t ExtraSize, class Result, class... Args>
-    bool operator!=(const AutoResetFunction<Result(Args...), ExtraSize>& f, std::nullptr_t);
+        bool operator!=(const AutoResetFunction<Result(Args...), ExtraSize>& f, std::nullptr_t);
     template<std::size_t ExtraSize, class Result, class... Args>
-    bool operator!=(std::nullptr_t, const AutoResetFunction<Result(Args...), ExtraSize>& f);
+        bool operator!=(std::nullptr_t, const AutoResetFunction<Result(Args...), ExtraSize>& f);
 
     ////    Implementation    ////
 

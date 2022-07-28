@@ -1,6 +1,6 @@
-#include "services/network/MqttClientImpl.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "infra/stream/CountingOutputStream.hpp"
+#include "services/network/MqttClientImpl.hpp"
 
 namespace services
 {
@@ -324,7 +324,8 @@ namespace services
             clientConnection.ConnectionObserver::Subject().AckReceived();
             reader = nullptr;
 
-            factory.ConnectionEstablished([this](infra::SharedPtr<MqttClientObserver> observer) {
+            factory.ConnectionEstablished([this](infra::SharedPtr<MqttClientObserver> observer)
+            {
                 if (observer)
                 {
                     auto& clientConnectionCopy = clientConnection;
@@ -514,10 +515,10 @@ namespace services
 
         QueueSendOperation<OperationPubAck>(*this);
 
-        infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<MqttClientImpl>& client) {
+        infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<MqttClientImpl>& client)
+        {
             client->DataReceived();
-        },
-            infra::MakeContainedSharedObject(clientConnection, clientConnection.ConnectionObserver::Subject().ObserverPtr()));
+        }, infra::MakeContainedSharedObject(clientConnection, clientConnection.ConnectionObserver::Subject().ObserverPtr()));
     }
 
     void MqttClientImpl::StateConnected::PopFrontOperation()

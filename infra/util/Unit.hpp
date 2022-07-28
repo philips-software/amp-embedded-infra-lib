@@ -114,7 +114,7 @@ namespace infra
     template<class Unit1, class Unit2, class... OtherUnits>
     struct MultiplyUnits<Unit1, Unit2, OtherUnits...>
     {
-        typedef UnitBase<typename MultiplyUnits<typename MultiplyTwoUnitLists<typename Unit1::UnitList, typename Unit2::UnitList>::Type, OtherUnits...>::Type, typename Unit1::Factor::template Mul<typename Unit2::Factor>> Type;
+        typedef UnitBase<typename MultiplyUnits<typename MultiplyTwoUnitLists<typename Unit1::UnitList, typename Unit2::UnitList>::Type, OtherUnits...>::Type, typename Unit1::Factor::template Mul<typename Unit2::Factor> > Type;
     };
 
     template<class UnitList1, class UnitList2>
@@ -154,19 +154,22 @@ namespace infra
     };
 
     template<class Unit1First, class... Unit1Others, class Unit2First, class... Unit2Others>
-    struct MultiplyTwoUnitLists<List<Unit1First, Unit1Others...>, List<Unit2First, Unit2Others...>, typename std::enable_if<(Unit1First::identifier < Unit2First::identifier)>::type>
+    struct MultiplyTwoUnitLists<List<Unit1First, Unit1Others...>, List<Unit2First, Unit2Others...>
+        , typename std::enable_if<(Unit1First::identifier < Unit2First::identifier)>::type>
     {
         typedef typename ListPushFront<Unit1First, typename MultiplyTwoUnitLists<List<Unit1Others...>, List<Unit2First, Unit2Others...>>::Type>::Type Type;
     };
 
     template<class Unit1First, class... Unit1Others, class Unit2First, class... Unit2Others>
-    struct MultiplyTwoUnitLists<List<Unit1First, Unit1Others...>, List<Unit2First, Unit2Others...>, typename std::enable_if<(Unit1First::identifier > Unit2First::identifier)>::type>
+    struct MultiplyTwoUnitLists<List<Unit1First, Unit1Others...>, List<Unit2First, Unit2Others...>
+        , typename std::enable_if<(Unit1First::identifier > Unit2First::identifier)>::type>
     {
         typedef typename ListPushFront<Unit2First, typename MultiplyTwoUnitLists<List<Unit1First, Unit1Others...>, List<Unit2Others...>>::Type>::Type Type;
     };
 
     template<class Unit1First, class... Unit1Others, class Unit2First, class... Unit2Others>
-    struct MultiplyTwoUnitLists<List<Unit1First, Unit1Others...>, List<Unit2First, Unit2Others...>, typename std::enable_if<(Unit1First::identifier == Unit2First::identifier && Unit1First::dimension + Unit2First::dimension != 0)>::type>
+    struct MultiplyTwoUnitLists<List<Unit1First, Unit1Others...>, List<Unit2First, Unit2Others...>
+        , typename std::enable_if<(Unit1First::identifier == Unit2First::identifier && Unit1First::dimension + Unit2First::dimension != 0)>::type>
     {
         template<class Base1, class Base2>
         struct AddUnit;
@@ -190,7 +193,8 @@ namespace infra
     };
 
     template<class Unit1First, class... Unit1Others, class Unit2First, class... Unit2Others>
-    struct MultiplyTwoUnitLists<List<Unit1First, Unit1Others...>, List<Unit2First, Unit2Others...>, typename std::enable_if<(Unit1First::identifier == Unit2First::identifier && Unit1First::dimension + Unit2First::dimension == 0)>::type>
+    struct MultiplyTwoUnitLists<List<Unit1First, Unit1Others...>, List<Unit2First, Unit2Others...>
+        , typename std::enable_if<(Unit1First::identifier == Unit2First::identifier && Unit1First::dimension + Unit2First::dimension == 0)>::type>
     {
         typedef typename MultiplyTwoUnitLists<List<Unit1Others...>, List<Unit2Others...>>::Type Type;
     };
@@ -212,11 +216,11 @@ namespace infra
         explicit Quantity(StorageType v);
         Quantity(const Quantity& other) = default;
         template<class OtherUnit>
-        Quantity(Quantity<OtherUnit, StorageType> other, typename std::enable_if<UnitSame<OtherUnit, UnitType>::value>::type* = 0);
+            Quantity(Quantity<OtherUnit, StorageType> other, typename std::enable_if<UnitSame<OtherUnit, UnitType>::value>::type* = 0);
 
         Quantity& operator=(const Quantity& other) = default;
         template<class OtherUnit>
-        typename std::enable_if<UnitSame<OtherUnit, UnitType>::value, Quantity&>::type operator=(const Quantity<OtherUnit, StorageType>& other);
+            typename std::enable_if<UnitSame<OtherUnit, UnitType>::value, Quantity&>::type operator=(const Quantity<OtherUnit, StorageType>& other);
 
         StorageType Value() const;
 
@@ -229,9 +233,9 @@ namespace infra
         Quantity<typename UnitType::Inverse, StorageType> InverseDivide(StorageType other);
 
         template<class UnitTypeOther>
-        Quantity<typename UnitType::template Mul<UnitTypeOther>, StorageType> operator*(Quantity<UnitTypeOther, StorageType> other) const;
+            Quantity<typename UnitType::template Mul<UnitTypeOther>, StorageType> operator*(Quantity<UnitTypeOther, StorageType> other) const;
         template<class UnitTypeOther>
-        Quantity<typename UnitType::template Div<UnitTypeOther>, StorageType> operator/(Quantity<UnitTypeOther, StorageType> other) const;
+            Quantity<typename UnitType::template Div<UnitTypeOther>, StorageType> operator/(Quantity<UnitTypeOther, StorageType> other) const;
 
         bool operator==(const Quantity& other) const;
         bool operator!=(const Quantity& other) const;
@@ -242,7 +246,7 @@ namespace infra
 
     private:
         template<class UnitTypeOther, class TypeOther>
-        friend class Quantity;
+            friend class Quantity;
 
         StorageType value;
     };

@@ -30,7 +30,7 @@ namespace services
         if (stratum > 15)
             return false;
 
-        if (timestamps.transmit.seconds == uint32_t{ 0 })
+        if (timestamps.transmit.seconds == uint32_t{0})
             return false;
 
         if (std::chrono::duration_cast<std::chrono::seconds>(timestamps.originate.Convert()) != std::chrono::duration_cast<std::chrono::seconds>(requestTime))
@@ -99,7 +99,7 @@ namespace services
 
         stream << message;
     }
-
+    
     void SntpClient::NotifyTimeUnavailable()
     {
         NotifyObservers([](SntpResultObserver& observer) { observer.TimeUnavailable(); });

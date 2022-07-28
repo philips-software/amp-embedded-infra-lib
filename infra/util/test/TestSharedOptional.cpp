@@ -1,6 +1,6 @@
+#include <gmock/gmock.h>
 #include "infra/util/SharedOptional.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
-#include <gmock/gmock.h>
 
 TEST(SharedOptionalTest, Emplace_returns_SharedPtr)
 {

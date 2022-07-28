@@ -1,6 +1,6 @@
-#include "services/tracer/TracerWithTime.hpp"
 #include "infra/stream/StreamManipulators.hpp"
 #include "infra/timer/Timer.hpp"
+#include "services/tracer/TracerWithTime.hpp"
 
 namespace services
 {
@@ -15,7 +15,7 @@ namespace services
         std::tm* utcTime = gmtime(&now);
         assert(utcTime != nullptr);
 
-        Continue() << utcTime->tm_hour << ':' << utcTime->tm_min << ':' << utcTime->tm_sec << '.'
-                   << infra::Width(6, '0') << std::chrono::duration_cast<std::chrono::microseconds>(nowTimePoint.time_since_epoch()).count() % 1000000 << ' ';
+        Continue() << utcTime->tm_hour << ':' << utcTime->tm_min << ':' << utcTime->tm_sec  << '.'
+            << infra::Width(6, '0') << std::chrono::duration_cast<std::chrono::microseconds>(nowTimePoint.time_since_epoch()).count() % 1000000 << ' ';
     }
 }

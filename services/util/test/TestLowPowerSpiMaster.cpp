@@ -10,15 +10,16 @@ class LowPowerSpiMasterTest
     : public testing::Test
     , public infra::EventDispatcherFixture
 {
-public:
-    LowPowerSpiMasterTest()
-        : lowPowerSpiMaster(spiMock, mainClock)
-    {}
+    public:
+        LowPowerSpiMasterTest()
+            : lowPowerSpiMaster(spiMock, mainClock)
+        {}
 
-    testing::StrictMock<hal::SpiMock> spiMock;
-    infra::MainClockReference mainClock;
-    hal::LowPowerSpiMaster lowPowerSpiMaster;
+        testing::StrictMock<hal::SpiMock> spiMock;
+        infra::MainClockReference mainClock;
+        hal::LowPowerSpiMaster lowPowerSpiMaster;
 };
+
 
 TEST_F(LowPowerSpiMasterTest, construction)
 {
@@ -30,7 +31,7 @@ TEST_F(LowPowerSpiMasterTest, SetChipSelectConfigurator_will_forward_call_downst
     hal::ChipSelectConfiguratorMock configurator;
 
     EXPECT_CALL(spiMock, SetChipSelectConfigurator(testing::Ref(configurator)));
-
+    
     lowPowerSpiMaster.SetChipSelectConfigurator(configurator);
 }
 
@@ -39,7 +40,7 @@ TEST_F(LowPowerSpiMasterTest, SetCommunicationConfigurator_will_forward_call_dow
     hal::CommunicationConfiguratorMock configurator;
 
     EXPECT_CALL(spiMock, SetCommunicationConfigurator(testing::Ref(configurator)));
-
+    
     lowPowerSpiMaster.SetCommunicationConfigurator(configurator);
 }
 
@@ -58,8 +59,8 @@ TEST_F(LowPowerSpiMasterTest, SendAndReceive_will_refere_mainClock_and_release_o
     EXPECT_CALL(spiMock, SendDataMock(testing::_, testing::_));
     EXPECT_CALL(spiMock, ReceiveDataMock(testing::_)).WillOnce(testing::Return(buffer));
 
-    lowPowerSpiMaster.SendAndReceive(buffer, buffer, hal::SpiAction::stop, [&mockOnDone]() { mockOnDone.callback(); });
-
+    lowPowerSpiMaster.SendAndReceive(buffer, buffer, hal::SpiAction::stop, [&mockOnDone]() {mockOnDone.callback(); });
+    
     EXPECT_TRUE(mainClock.IsReferenced());
 
     EXPECT_CALL(mockOnDone, callback());

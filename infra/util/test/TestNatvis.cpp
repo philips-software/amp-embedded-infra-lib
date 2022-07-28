@@ -1,9 +1,9 @@
-#include "gtest/gtest.h"
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/Optional.hpp"
 #include "infra/util/Variant.hpp"
+#include "gtest/gtest.h"
 
 namespace
 {
@@ -49,9 +49,7 @@ TEST(NatvisTest, visualize_BoundedVector)
 TEST(NatvisTest, visualize_Function)
 {
     infra::Function<void()> empty;
-    infra::Function<int()> lambda = [] {
-        return 10;
-    };
+    infra::Function<int()> lambda = [] { return 10; };
     infra::Function<void(void*)> function = free;
 }
 

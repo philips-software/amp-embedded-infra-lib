@@ -40,9 +40,7 @@ public:
 
     testing::StrictMock<services::HttpClientConnectorMock> httpClientConnector;
     services::HttpClientObserverFactory* httpClientObserverFactory = nullptr;
-    infra::Execute execute{ [this]() {
-        EXPECT_CALL(httpClientConnector, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&httpClientObserverFactory));
-    } };
+    infra::Execute execute{ [this]() { EXPECT_CALL(httpClientConnector, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&httpClientObserverFactory)); } };
     infra::BoundedString::WithStorage<64> url{ "https://hostname/path" };
     infra::Optional<testing::StrictMock<HttpClientBasicMock>> controller{ infra::inPlace, url, 443, httpClientConnector };
     testing::StrictMock<infra::MockCallback<void()>> onStopped;
@@ -80,7 +78,8 @@ TEST_F(HttpClientBasicTest, Stop_while_connected_does_not_invoke_Done)
     EXPECT_CALL(*controller, Established());
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.Attach(client); });
 
-    EXPECT_CALL(httpClient, Close()).WillOnce(testing::Invoke([this]() {
+    EXPECT_CALL(httpClient, Close()).WillOnce(testing::Invoke([this]()
+    {
         EXPECT_CALL(onStopped, callback());
         httpClient.Detach();
         controller = infra::none;

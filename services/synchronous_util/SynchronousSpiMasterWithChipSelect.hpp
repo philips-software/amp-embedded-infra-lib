@@ -1,9 +1,9 @@
 #ifndef SERVICES_SYNCHRONOUS_SPI_MASTER_WITH_CHIP_SELECT_HPP
 #define SERVICES_SYNCHRONOUS_SPI_MASTER_WITH_CHIP_SELECT_HPP
 
+#include "hal/synchronous_interfaces/SynchronousSpi.hpp"
 #include "hal/interfaces/Gpio.hpp"
 #include "hal/synchronous_interfaces/SynchronousGpio.hpp"
-#include "hal/synchronous_interfaces/SynchronousSpi.hpp"
 
 namespace services
 {

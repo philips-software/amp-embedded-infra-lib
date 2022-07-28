@@ -141,11 +141,12 @@ TEST(ProxyCreatorTest, CreateTuplePeripheralByCreatorExternal)
     } x;
 
     infra::CreatorExternal<std::tuple<PeripheralInterface&, PeripheralInterface&>, void()> creator(
-        [&x, &construction]() -> std::tuple<PeripheralInterface&, PeripheralInterface&> {
+        [&x, &construction]() -> std::tuple<PeripheralInterface&, PeripheralInterface&>
+        {
             construction.callback();
             return std::make_tuple(std::ref(x.peripheral1), std::ref(x.peripheral2));
-        },
-        [&destruction]() {
+        }, [&destruction]()
+        {
             destruction.callback();
         });
 

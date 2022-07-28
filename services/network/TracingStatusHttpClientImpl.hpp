@@ -18,7 +18,7 @@ namespace services
 
     private:
         friend class TracingStatusHttpClientConnectorImpl;
-
+        
         Tracer& tracer;
     };
 
@@ -27,7 +27,7 @@ namespace services
     {
     public:
         template<std::size_t MaxSize>
-        using WithRedirectionUrlSize = infra::WithStorage<TracingStatusHttpClientImplWithRedirection, infra::BoundedString::WithStorage<MaxSize>>;
+            using WithRedirectionUrlSize = infra::WithStorage<TracingStatusHttpClientImplWithRedirection, infra::BoundedString::WithStorage<MaxSize>>;
 
         TracingStatusHttpClientImplWithRedirection(infra::BoundedString redirectedUrlStorage, infra::BoundedConstString hostname, ConnectionFactoryWithNameResolver& connectionFactory, Tracer& tracer);
 

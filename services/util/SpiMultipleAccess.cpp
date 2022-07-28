@@ -42,7 +42,8 @@ namespace services
     void SpiMultipleAccess::SendAndReceive(infra::ConstByteRange sendData, infra::ByteRange receiveData, hal::SpiAction nextAction, const infra::Function<void()>& onDone)
     {
         if (!claimer.IsClaimed())
-            claimer.Claim([this, sendData, receiveData, nextAction, onDone]() {
+            claimer.Claim([this, sendData, receiveData, nextAction, onDone]()
+            {
                 SendAndReceiveOnClaimed(sendData, receiveData, nextAction, onDone);
             });
         else

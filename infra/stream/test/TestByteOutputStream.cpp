@@ -16,7 +16,7 @@ TEST(ByteOutputStreamTest, StreamToRange)
     infra::ByteOutputStream stream(to);
     stream << from;
 
-    EXPECT_EQ((std::array<uint8_t, 4>{ { 0, 1, 4, 5 } }), to);
+    EXPECT_EQ((std::array<uint8_t, 4>{{ 0, 1, 4, 5 }}), to);
     EXPECT_EQ((std::vector<uint8_t>{ 4, 5 }), stream.Writer().Remaining());
     EXPECT_EQ((std::vector<uint8_t>{ 0, 1 }), stream.Writer().Processed());
 }
@@ -29,7 +29,7 @@ TEST(ByteOutputStreamTest, StreamFromMemoryRange)
     infra::ByteOutputStream stream(buffer);
     stream << infra::ByteRange(from);
 
-    EXPECT_EQ((std::array<uint8_t, 4>{ { 0, 1, 4, 5 } }), buffer);
+    EXPECT_EQ((std::array<uint8_t, 4>{{ 0, 1, 4, 5 }}), buffer);
 }
 
 TEST(ByteOutputStreamTest, WithStorage)
@@ -37,7 +37,7 @@ TEST(ByteOutputStreamTest, WithStorage)
     infra::ByteOutputStream::WithStorage<5> stream;
     stream << uint8_t(1) << uint8_t(2) << uint8_t(3);
 
-    EXPECT_EQ((std::array<uint8_t, 3>{ { 1, 2, 3 } }), stream.Writer().Processed());
+    EXPECT_EQ((std::array<uint8_t, 3>{{ 1, 2, 3 }}), stream.Writer().Processed());
 }
 
 TEST(ByteOutputStreamTest, Reset)
@@ -47,7 +47,7 @@ TEST(ByteOutputStreamTest, Reset)
     stream.Writer().Reset();
     stream << uint8_t(3);
 
-    EXPECT_EQ((std::array<uint8_t, 1>{ { 3 } }), stream.Writer().Processed());
+    EXPECT_EQ((std::array<uint8_t, 1>{ { 3 }}), stream.Writer().Processed());
 }
 
 TEST(ByteOutputStreamTest, Reset_with_new_range)
@@ -69,7 +69,7 @@ TEST(ByteOutputStreamTest, reserve_type)
     stream << uint8_t(3);
     reservedSpace = uint8_t(2);
 
-    EXPECT_EQ((std::array<uint8_t, 3>{ { 1, 2, 3 } }), stream.Writer().Processed());
+    EXPECT_EQ((std::array<uint8_t, 3>{{ 1, 2, 3 }}), stream.Writer().Processed());
 }
 
 TEST(ByteOutputStreamTest, reserve_type_without_space)
@@ -95,7 +95,7 @@ TEST(ByteOutputStreamTest, stream_to_saved_point)
         savedStream << uint8_t(2);
     }
 
-    EXPECT_EQ((std::array<uint8_t, 3>{ { 1, 2, 3 } }), stream.Writer().Processed());
+    EXPECT_EQ((std::array<uint8_t, 3>{{ 1, 2, 3 }}), stream.Writer().Processed());
 }
 
 TEST(ByteOutputStreamTest, overwrite_on_saved_point)
@@ -112,7 +112,7 @@ TEST(ByteOutputStreamTest, overwrite_on_saved_point)
         overwriteStream << uint8_t(4);
     }
 
-    EXPECT_EQ((std::array<uint8_t, 3>{ { 1, 4, 3 } }), stream.Writer().Processed());
+    EXPECT_EQ((std::array<uint8_t, 3>{ { 1, 4, 3 }}), stream.Writer().Processed());
 }
 
 TEST(ByteOutputStreamTest, stream_to_nested_saved_point)
@@ -135,14 +135,14 @@ TEST(ByteOutputStreamTest, stream_to_nested_saved_point)
         }
     }
 
-    EXPECT_EQ((std::array<uint8_t, 5>{ { 1, 2, 3, 4, 5 } }), stream.Writer().Processed());
+    EXPECT_EQ((std::array<uint8_t, 5>{{ 1, 2, 3, 4, 5 }}), stream.Writer().Processed());
 }
 
 TEST(ByteOutputStreamTest, ByteOutputStream_available_returns_streamWriter_available)
 {
     infra::ByteOutputStream::WithStorage<64> stream;
     EXPECT_EQ(64, stream.Available());
-
+    
     uint32_t integer = 33;
     stream << integer;
 
@@ -157,5 +157,5 @@ TEST(ByteOutputStreamTest, overflow_does_not_overwrite_buffer)
     infra::ByteOutputStream stream(infra::Head(infra::MakeRange(buffer), 2), infra::noFail);
     stream << infra::ByteRange(from);
 
-    EXPECT_EQ((std::array<uint8_t, 4>{ { 0, 1, 6, 7 } }), buffer);
+    EXPECT_EQ((std::array<uint8_t, 4>{ { 0, 1, 6, 7 }}), buffer);
 }

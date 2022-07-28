@@ -1,5 +1,5 @@
-#include "upgrade/pack_builder/UpgradePackBuilder.hpp"
 #include "upgrade/pack/UpgradePackHeader.hpp"
+#include "upgrade/pack_builder/UpgradePackBuilder.hpp"
 #include <algorithm>
 #include <cassert>
 
@@ -43,7 +43,7 @@ namespace application
         std::vector<uint8_t> signature = signer.ImageSignature(upgradePack);
 
         UpgradePackHeaderPrologue prologue = {};
-        prologue.status = UpgradePackStatus::readyToDeploy;
+        prologue.status = UpgradePackStatus::readyToDeploy; 
         prologue.magic = upgradePackMagic;
         prologue.errorCode = 0xffffffff;
         prologue.signedContentsLength = upgradePack.size();

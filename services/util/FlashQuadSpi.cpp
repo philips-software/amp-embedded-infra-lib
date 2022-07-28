@@ -1,5 +1,5 @@
-#include "services/util/FlashQuadSpi.hpp"
 #include "infra/event/EventDispatcher.hpp"
+#include "services/util/FlashQuadSpi.hpp"
 
 namespace services
 {
@@ -22,7 +22,8 @@ namespace services
     {
         this->onDone = onDone;
         sectorIndex = beginIndex;
-        sequencer.Load([this, endIndex]() {
+        sequencer.Load([this, endIndex]()
+        {
             sequencer.While([this, endIndex]() { return sectorIndex != endIndex; });
             sequencer.Step([this]() { WriteEnable(); });
             sequencer.Step([this, endIndex]() { EraseSomeSectors(endIndex); });
@@ -34,7 +35,8 @@ namespace services
 
     void FlashQuadSpi::WriteBufferSequence()
     {
-        sequencer.Load([this]() {
+        sequencer.Load([this]()
+        {
             sequencer.While([this]() { return !this->buffer.empty(); });
             sequencer.Step([this]() { WriteEnable(); });
             sequencer.Step([this]() { PageProgram(); });

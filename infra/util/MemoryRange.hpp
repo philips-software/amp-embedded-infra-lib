@@ -4,8 +4,8 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
-#include <cstddef>
 #include <cstdlib>
+#include <cstddef>
 #include <initializer_list>
 #include <type_traits>
 #include <vector>
@@ -19,15 +19,15 @@ namespace infra
         MemoryRange();
         MemoryRange(T* begin, T* end);
         template<class U>
-        MemoryRange(const MemoryRange<U>& other);
+            MemoryRange(const MemoryRange<U>& other);
         template<class T2, std::size_t N>
-        constexpr MemoryRange(const std::array<T2, N>& array);
+            constexpr MemoryRange(const std::array<T2, N>& array);
         template<class T2, std::size_t N>
-        MemoryRange(std::array<T2, N>& array);
+            MemoryRange(std::array<T2, N>& array);
         template<class T2>
-        MemoryRange(const std::vector<T2>& vector);
+            MemoryRange(const std::vector<T2>& vector);
         template<class T2>
-        MemoryRange(std::vector<T2>& vector);
+            MemoryRange(std::vector<T2>& vector);
 
         using value_type = T;
         using pointer = T*;
@@ -50,9 +50,9 @@ namespace infra
 
         T& operator[](size_type index) const;
         template<class U>
-        bool operator==(const MemoryRange<U>& rhs) const;
+            bool operator==(const MemoryRange<U>& rhs) const;
         template<class U>
-        bool operator!=(const MemoryRange<U>& rhs) const;
+            bool operator!=(const MemoryRange<U>& rhs) const;
 
         T& front() const;
         T& back() const;
@@ -72,68 +72,68 @@ namespace infra
     };
 
     template<class T>
-    MemoryRange<T> MakeRange(T* b, T* e);
+        MemoryRange<T> MakeRange(T* b, T* e);
     template<class T, std::size_t N>
-    MemoryRange<T> MakeRange(std::array<T, N>& container);
+        MemoryRange<T> MakeRange(std::array<T, N>& container);
     template<class T, std::size_t N>
-    MemoryRange<const T> MakeRange(const std::array<T, N>& container);
+        MemoryRange<const T> MakeRange(const std::array<T, N>& container);
     template<class T>
-    std::vector<typename std::remove_const<T>::type> MakeVector(MemoryRange<T> range);
+        std::vector<typename std::remove_const<T>::type> MakeVector(MemoryRange<T> range);
     template<class T>
-    MemoryRange<T> MakeRange(std::vector<T>& range);
+        MemoryRange<T> MakeRange(std::vector<T>& range);
     template<class T>
-    MemoryRange<const T> MakeRange(const std::vector<T>& range);
+        MemoryRange<const T> MakeRange(const std::vector<T>& range);
     template<class T>
-    MemoryRange<const T> MakeConst(infra::MemoryRange<T> range);
+        MemoryRange<const T> MakeConst(infra::MemoryRange<T> range);
     template<class T>
-    MemoryRange<T> MakeRangeFromSingleObject(T& object);
+        MemoryRange<T> MakeRangeFromSingleObject(T& object);
 
     template<class T, class U>
-    MemoryRange<T> ReinterpretCastMemoryRange(MemoryRange<U> memoryRange);
+        MemoryRange<T> ReinterpretCastMemoryRange(MemoryRange<U> memoryRange);
     template<class T>
-    MemoryRange<T> ConstCastMemoryRange(MemoryRange<const T> memoryRange);
+        MemoryRange<T> ConstCastMemoryRange(MemoryRange<const T> memoryRange);
     template<class T>
-    MemoryRange<T> VolatileCastMemoryRange(MemoryRange<volatile T> memoryRange);
+        MemoryRange<T> VolatileCastMemoryRange(MemoryRange<volatile T> memoryRange);
 
     template<class T>
-    void Copy(MemoryRange<const typename std::remove_const<T>::type> from, MemoryRange<T> to);
+        void Copy(MemoryRange<const typename std::remove_const<T>::type> from, MemoryRange<T> to);
     template<class T, class U>
-    bool ContentsEqual(MemoryRange<T> x, MemoryRange<U> y);
+        bool ContentsEqual(MemoryRange<T> x, MemoryRange<U> y);
 
     template<class T>
-    MemoryRange<T> IntersectingRange(MemoryRange<T> x, MemoryRange<T> y);
+        MemoryRange<T> IntersectingRange(MemoryRange<T> x, MemoryRange<T> y);
     template<class T>
-    MemoryRange<T> Head(MemoryRange<T> range, std::size_t size);
+        MemoryRange<T> Head(MemoryRange<T> range, std::size_t size);
     template<class T>
-    MemoryRange<T> Tail(MemoryRange<T> range, std::size_t size);
+        MemoryRange<T> Tail(MemoryRange<T> range, std::size_t size);
     template<class T>
-    MemoryRange<T> DiscardHead(MemoryRange<T> range, std::size_t size);
+        MemoryRange<T> DiscardHead(MemoryRange<T> range, std::size_t size);
     template<class T>
-    MemoryRange<T> DiscardTail(MemoryRange<T> range, std::size_t size);
+        MemoryRange<T> DiscardTail(MemoryRange<T> range, std::size_t size);
 
     template<class T>
-    std::pair<MemoryRange<T>, MemoryRange<T>> FindAndSplit(MemoryRange<T> range, typename std::decay<T>::type search);
+        std::pair<MemoryRange<T>, MemoryRange<T>> FindAndSplit(MemoryRange<T> range, typename std::decay<T>::type search);
 
     template<class T, class U>
-    T Convert(MemoryRange<U> range);
+        T Convert(MemoryRange<U> range);
 
     template<class T, class U, std::size_t N>
-    bool operator==(MemoryRange<T> x, const std::array<U, N>& y);
+        bool operator==(MemoryRange<T> x, const std::array<U, N>& y);
     template<class T, class U, std::size_t N>
-    bool operator==(const std::array<U, N>& x, MemoryRange<T> y);
+        bool operator==(const std::array<U, N>& x, MemoryRange<T> y);
     template<class T, class U, std::size_t N>
-    bool operator!=(MemoryRange<T> x, const std::array<U, N>& y);
+        bool operator!=(MemoryRange<T> x, const std::array<U, N>& y);
     template<class T, class U, std::size_t N>
-    bool operator!=(const std::array<U, N>& x, MemoryRange<T> y);
+        bool operator!=(const std::array<U, N>& x, MemoryRange<T> y);
 
     template<class T, class U>
-    bool operator==(MemoryRange<T> x, const std::vector<U>& y);
+        bool operator==(MemoryRange<T> x, const std::vector<U>& y);
     template<class T, class U>
-    bool operator==(const std::vector<U>& x, MemoryRange<T> y);
+        bool operator==(const std::vector<U>& x, MemoryRange<T> y);
     template<class T, class U>
-    bool operator!=(MemoryRange<T> x, const std::vector<U>& y);
+        bool operator!=(MemoryRange<T> x, const std::vector<U>& y);
     template<class T, class U>
-    bool operator!=(const std::vector<U>& x, MemoryRange<T> y);
+        bool operator!=(const std::vector<U>& x, MemoryRange<T> y);
 
     ////    Implementation    ////
 
@@ -307,13 +307,13 @@ namespace infra
     }
 
     template<class T, std::size_t N>
-    MemoryRange<T> MakeRange(T (&data)[N])
+    MemoryRange<T> MakeRange(T(&data)[N])
     {
         return MemoryRange<T>(&data[0], &data[0] + N);
     }
 
     template<class T, std::size_t N>
-    MemoryRange<const T> MakeRange(const T (&data)[N])
+    MemoryRange<const T> MakeRange(const T(&data)[N])
     {
         return MemoryRange<const T>(&data[0], &data[0] + N);
     }
@@ -388,7 +388,8 @@ namespace infra
     template<class T, class U>
     bool ContentsEqual(MemoryRange<T> x, MemoryRange<U> y)
     {
-        return x.size() == y.size() && std::equal(x.begin(), x.end(), y.begin());
+        return x.size() == y.size()
+            && std::equal(x.begin(), x.end(), y.begin());
     }
 
     template<class T>

@@ -1,4 +1,3 @@
-#include "gtest/gtest.h"
 #include "infra/stream/StringInputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
@@ -8,6 +7,7 @@
 #include "services/cucumber/CucumberWireProtocolServer.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/network/test_doubles/ConnectionStub.hpp"
+#include "gtest/gtest.h"
 
 static services::CucumberStepStorage stepStorage;
 static uint8_t val = 42;
@@ -142,7 +142,7 @@ public:
     void CheckFailResponse(infra::BoundedConstString message, infra::BoundedConstString exception)
     {
         std::string response = std::string("[ \"fail\", { \"message\":\"") + message +
-                               std::string("\", \"exception\":\"") + exception + std::string("\" } ]\n");
+            std::string("\", \"exception\":\"") + exception + std::string("\" } ]\n");
         EXPECT_EQ(response, connection.SentDataAsString());
     }
 

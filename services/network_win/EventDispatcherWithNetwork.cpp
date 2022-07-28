@@ -188,7 +188,8 @@ namespace services
         std::vector<std::function<void()>> functions;
 
         events.push_back(wakeUpEvent);
-        functions.push_back([this]() {
+        functions.push_back([this]()
+        {
             BOOL result = WSAResetEvent(wakeUpEvent);
             assert(result == TRUE);
         });
@@ -196,7 +197,8 @@ namespace services
         for (auto& listener : listeners)
         {
             events.push_back(listener.event);
-            functions.push_back([&listener]() {
+            functions.push_back([&listener]()
+            {
                 WSANETWORKEVENTS networkEvents;
                 WSAEnumNetworkEvents(listener.listenSocket, listener.event, &networkEvents);
                 assert((networkEvents.lNetworkEvents & FD_ACCEPT) != 0);
@@ -208,7 +210,8 @@ namespace services
         for (auto& connector : connectors)
         {
             events.push_back(connector.event);
-            functions.push_back([&connector]() {
+            functions.push_back([&connector]()
+            {
                 WSANETWORKEVENTS networkEvents;
                 WSAEnumNetworkEvents(connector.connectSocket, connector.event, &networkEvents);
                 assert((networkEvents.lNetworkEvents & FD_CONNECT) != 0);
@@ -231,7 +234,8 @@ namespace services
                 {
                     connection->UpdateEventFlags();
                     events.push_back(connection->event);
-                    functions.push_back([weakConnection]() {
+                    functions.push_back([weakConnection]()
+                    {
                         if (infra::SharedPtr<ConnectionWin> connection = weakConnection)
                         {
                             WSANETWORKEVENTS networkEvents;
@@ -258,7 +262,8 @@ namespace services
             {
                 datagram->UpdateEventFlags();
                 events.push_back(datagram->event);
-                functions.push_back([weakDatagram]() {
+                functions.push_back([weakDatagram]()
+                {
                     if (infra::SharedPtr<DatagramWin> datagram = weakDatagram)
                     {
                         WSANETWORKEVENTS networkEvents;

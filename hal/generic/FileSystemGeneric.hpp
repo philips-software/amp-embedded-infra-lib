@@ -4,7 +4,7 @@
 #include "hal/interfaces/FileSystem.hpp"
 
 namespace hal
-{
+{    
     class FileSystemGeneric
         : public hal::FileSystem
     {

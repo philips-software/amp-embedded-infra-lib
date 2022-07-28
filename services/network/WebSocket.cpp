@@ -1,7 +1,7 @@
-#include "services/network/WebSocket.hpp"
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/Endian.hpp"
 #include "infra/util/EnumCast.hpp"
+#include "services/network/WebSocket.hpp"
 
 namespace
 {

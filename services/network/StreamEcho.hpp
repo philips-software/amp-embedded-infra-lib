@@ -31,7 +31,7 @@ namespace services
     {
     public:
         template<std::size_t MaxConnections>
-        using WithMaxConnections = infra::WithStorage<StreamEchoServer, AllocatorStreamEchoConnection::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxConnections>>;
+            using WithMaxConnections = infra::WithStorage<StreamEchoServer, AllocatorStreamEchoConnection::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxConnections>>;
 
         StreamEchoServer(AllocatorStreamEchoConnection& allocator, services::ConnectionFactory& listenerFactory, uint16_t port, services::IPVersions versions = services::IPVersions::both);
 

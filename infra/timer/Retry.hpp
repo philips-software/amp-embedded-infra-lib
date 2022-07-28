@@ -38,12 +38,12 @@ namespace infra
     {
         switch (type)
         {
-            case FailureType::intermittentFailure:
-                timer.Start(policy.RetryDelay(true), action);
-                break;
-            case FailureType::permanentFailure:
-                timer.Start(policy.RetryDelay(false), action);
-                break;
+        case FailureType::intermittentFailure:
+            timer.Start(policy.RetryDelay(true), action);
+            break;
+        case FailureType::permanentFailure:
+            timer.Start(policy.RetryDelay(false), action);
+            break;
         }
     }
 

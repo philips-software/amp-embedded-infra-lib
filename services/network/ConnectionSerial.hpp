@@ -1,16 +1,16 @@
 #ifndef SERVICES_CONNECTION_SERIAL_HPP
 #define SERVICES_CONNECTION_SERIAL_HPP
 
-#include "hal/interfaces/SerialCommunication.hpp"
-#include "infra/event/ClaimableResource.hpp"
-#include "infra/event/QueueForOneReaderOneIrqWriter.hpp"
-#include "infra/stream/ByteInputStream.hpp"
-#include "infra/stream/ByteOutputStream.hpp"
-#include "infra/timer/Timer.hpp"
-#include "infra/util/BoundedDeque.hpp"
-#include "infra/util/PolymorphicVariant.hpp"
-#include "infra/util/SharedOptional.hpp"
 #include "services/network/Connection.hpp"
+#include "hal/interfaces/SerialCommunication.hpp"
+#include "infra/timer/Timer.hpp"
+#include "infra/event/QueueForOneReaderOneIrqWriter.hpp"
+#include "infra/stream/ByteOutputStream.hpp"
+#include "infra/util/PolymorphicVariant.hpp"
+#include "infra/event/ClaimableResource.hpp"
+#include "infra/stream/ByteInputStream.hpp"
+#include "infra/util/SharedOptional.hpp"
+#include "infra/util/BoundedDeque.hpp"
 
 namespace services
 {
@@ -22,7 +22,10 @@ namespace services
 
     public:
         template<std::size_t Max>
-        using WithStorage = infra::WithStorage<infra::WithStorage<infra::WithStorage<ConnectionSerial, std::array<uint8_t, Max>>, std::array<uint8_t, Max>>, infra::BoundedDeque<uint8_t>::WithMaxSize<Max>>;
+            using WithStorage = infra::WithStorage<infra::WithStorage<infra::WithStorage<ConnectionSerial
+                , std::array<uint8_t, Max>>
+                , std::array<uint8_t, Max>>
+                , infra::BoundedDeque<uint8_t>::WithMaxSize<Max>>;
 
         ConnectionSerial(infra::ByteRange sendBuffer, infra::ByteRange parseBuffer, infra::BoundedDeque<uint8_t>& receivedDataQueue, hal::SerialCommunication& serialCommunication, infra::Function<void()> onConnected, infra::Function<void()> onDisconnected, size_t minUpdateSize = MessageHeader::HeaderSize + 1);
         ConnectionSerial(const ConnectionSerial& other) = delete;
@@ -253,7 +256,7 @@ namespace services
         private:
             void SendUpdate();
 
-        private:
+            private:
             MessageHeader updateMsg = MessageHeader(MessageType::SizeUpdate);
         };
 
@@ -271,7 +274,7 @@ namespace services
         private:
             MessageHeader contentMsgHeader = MessageHeader(MessageType::Content);
             size_t partialContentSizeBeingSent = 0;
-            std::array<uint8_t, 2> escapedRange = { { 0xf9, 0 } };
+            std::array<uint8_t, 2> escapedRange = {{ 0xf9, 0 }};
         };
 
         class StreamWriterWithCyclicBuffer

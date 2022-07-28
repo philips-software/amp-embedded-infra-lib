@@ -56,7 +56,7 @@ namespace infra
     }
 
     bool ByteInputStreamReader::Empty() const
-    {
+    {  
         return offset == range.size();
     }
 
@@ -65,7 +65,7 @@ namespace infra
         return range.size() - offset;
     }
 
-    std::size_t ByteInputStreamReader::ConstructSaveMarker() const
+    std::size_t  ByteInputStreamReader::ConstructSaveMarker() const
     {
         return offset;
     }

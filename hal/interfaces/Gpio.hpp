@@ -5,14 +5,14 @@
 
 namespace hal
 {
-    enum class InterruptTrigger : uint8_t
+    enum class InterruptTrigger: uint8_t
     {
         risingEdge,
         fallingEdge,
         bothEdges
     };
 
-    enum class PinConfigType : uint8_t
+    enum class PinConfigType: uint8_t
     {
         input,
         output,

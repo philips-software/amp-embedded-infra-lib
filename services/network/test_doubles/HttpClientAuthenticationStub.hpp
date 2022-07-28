@@ -9,7 +9,7 @@ class HttpClientAuthenticationStub
 {
 public:
     template<std::size_t MaxHeaders>
-    using WithMaxHeaders = infra::WithStorage<HttpClientAuthenticationStub, infra::BoundedVector<services::HttpHeader>::WithMaxSize<MaxHeaders>>;
+        using WithMaxHeaders = infra::WithStorage<HttpClientAuthenticationStub, infra::BoundedVector<services::HttpHeader>::WithMaxSize<MaxHeaders>>;
 
     using services::HttpClientAuthentication::HttpClientAuthentication;
 

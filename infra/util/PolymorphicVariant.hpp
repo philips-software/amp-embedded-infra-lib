@@ -15,22 +15,22 @@ namespace infra
         PolymorphicVariant();
         PolymorphicVariant(const PolymorphicVariant& other);
         template<class... T2>
-        explicit PolymorphicVariant(const PolymorphicVariant<T2...>& other);
+            explicit PolymorphicVariant(const PolymorphicVariant<T2...>& other);
         template<class U>
-        explicit PolymorphicVariant(const U& v);
+            explicit PolymorphicVariant(const U& v);
         template<class U, class... Args>
-        PolymorphicVariant(InPlaceType<U>, Args&&... args);
+            PolymorphicVariant(InPlaceType<U>, Args&&... args);
 
         PolymorphicVariant& operator=(const PolymorphicVariant& other);
         template<class... T2>
-        PolymorphicVariant& operator=(const PolymorphicVariant<T2...>& other);
+            PolymorphicVariant& operator=(const PolymorphicVariant<T2...>& other);
         template<class U>
-        PolymorphicVariant& operator=(const U& v);
+            PolymorphicVariant& operator=(const U& v);
 
         ~PolymorphicVariant();
 
         template<class U, class... Args>
-        U& Emplace(Args&&... args);
+            U& Emplace(Args&&... args);
 
         const Base& Get() const;
         Base& Get();
@@ -48,40 +48,40 @@ namespace infra
         bool operator>=(const PolymorphicVariant& other) const;
 
         template<class U>
-        typename std::enable_if<ExistsInTypeList<U, T...>::value, bool>::type operator==(const U& other) const;
+            typename std::enable_if<ExistsInTypeList<U, T...>::value, bool>::type operator==(const U& other) const;
         template<class U>
-        typename std::enable_if<ExistsInTypeList<U, T...>::value, bool>::type operator!=(const U& other) const;
+            typename std::enable_if<ExistsInTypeList<U, T...>::value, bool>::type operator!=(const U& other) const;
         template<class U>
-        typename std::enable_if<ExistsInTypeList<U, T...>::value, bool>::type operator<(const U& other) const;
+            typename std::enable_if<ExistsInTypeList<U, T...>::value, bool>::type operator<(const U& other) const;
         template<class U>
-        typename std::enable_if<ExistsInTypeList<U, T...>::value, bool>::type operator>(const U& other) const;
+            typename std::enable_if<ExistsInTypeList<U, T...>::value, bool>::type operator>(const U& other) const;
         template<class U>
-        typename std::enable_if<ExistsInTypeList<U, T...>::value, bool>::type operator<=(const U& other) const;
+            typename std::enable_if<ExistsInTypeList<U, T...>::value, bool>::type operator<=(const U& other) const;
         template<class U>
-        typename std::enable_if<ExistsInTypeList<U, T...>::value, bool>::type operator>=(const U& other) const;
+            typename std::enable_if<ExistsInTypeList<U, T...>::value, bool>::type operator>=(const U& other) const;
 
     private:
         template<std::size_t Index, class Visitor, class Variant, class Enable>
-        friend struct detail::ApplyVisitorHelper;
+            friend struct detail::ApplyVisitorHelper;
         template<std::size_t Index, class Visitor, class Variant, class Enable>
-        friend struct detail::ApplySameTypeVisitorHelper;
+            friend struct detail::ApplySameTypeVisitorHelper;
 
         template<class Visitor, class Variant>
-        friend typename Visitor::ResultType ApplySameTypeVisitor(Visitor& visitor, Variant& variant1, Variant& variant2);
+            friend typename Visitor::ResultType ApplySameTypeVisitor(Visitor& visitor, Variant& variant1, Variant& variant2);
 
         std::size_t Which() const;
 
         template<std::size_t Index>
-        const typename TypeAtIndex<Index, T...>::Type& GetAtIndex() const;
+            const typename TypeAtIndex<Index, T...>::Type& GetAtIndex() const;
         template<std::size_t Index>
-        typename TypeAtIndex<Index, T...>::Type& GetAtIndex();
+            typename TypeAtIndex<Index, T...>::Type& GetAtIndex();
 
     private:
         template<class Base2, class... T2>
         friend struct detail::ConstructPolymorphicVisitor;
 
         template<class U, class... Args>
-        U& ConstructInEmptyVariant(Args&&... args);
+            U& ConstructInEmptyVariant(Args&&... args);
         void Destruct();
 
     private:
@@ -89,6 +89,7 @@ namespace infra
         StaticStorageForInheritanceTree<Base, T...> storage;
     };
 
+   
     template<class Base, class... T>
     struct MakePolymorphicVariantOver;
 

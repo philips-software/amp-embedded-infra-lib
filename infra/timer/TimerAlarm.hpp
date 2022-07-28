@@ -26,7 +26,7 @@ namespace infra
         TimePoint StartOfDay(TimePoint time) const;
 
     private:
-        Duration durationFromMidnight{};
+        Duration durationFromMidnight {};
     };
 }
 

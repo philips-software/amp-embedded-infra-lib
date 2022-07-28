@@ -1,8 +1,8 @@
-#include "services/network/WebSocketServerConnectionObserver.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "mbedtls/sha1.h"
 #include "services/network/HttpServer.hpp"
+#include "services/network/WebSocketServerConnectionObserver.hpp"
 #include <cassert>
 
 namespace services
@@ -183,7 +183,7 @@ namespace services
         if (sizeToReceive == 0)
             SetNextState();
     }
-
+    
     void WebSocketServerConnectionObserver::ReceivingStateReceiveData::ReceiveData()
     {
         infra::SharedPtr<infra::StreamReader> reader = connection.services::ConnectionObserver::Subject().ReceiveStream();

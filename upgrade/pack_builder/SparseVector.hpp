@@ -4,10 +4,10 @@
 #include <cstdint>
 #include <cstdlib>
 #include <exception>
-#include <iomanip>
 #include <map>
-#include <sstream>
 #include <vector>
+#include <sstream>
+#include <iomanip>
 
 namespace application
 {
@@ -196,7 +196,7 @@ namespace application
 
         std::abort();
     }
-
+    
     template<class T>
     bool SparseVector<T>::operator==(const SparseVector<T>& other) const
     {

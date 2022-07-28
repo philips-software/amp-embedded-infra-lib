@@ -1,9 +1,9 @@
-#include "upgrade/pack_builder/UpgradePackInputFactory.hpp"
+#include <algorithm>
 #include "upgrade/pack_builder/InputBinary.hpp"
 #include "upgrade/pack_builder/InputCommand.hpp"
 #include "upgrade/pack_builder/InputElf.hpp"
 #include "upgrade/pack_builder/InputHex.hpp"
-#include <algorithm>
+#include "upgrade/pack_builder/UpgradePackInputFactory.hpp"
 
 namespace application
 {

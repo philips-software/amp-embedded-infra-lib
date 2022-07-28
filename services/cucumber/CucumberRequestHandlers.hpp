@@ -1,4 +1,4 @@
-#ifndef SERVICES_CUCUMBER_REQUEST_HANDLERS_HPP
+#ifndef SERVICES_CUCUMBER_REQUEST_HANDLERS_HPP 
 #define SERVICES_CUCUMBER_REQUEST_HANDLERS_HPP
 
 namespace services
@@ -8,8 +8,8 @@ namespace services
     public:
         CucumberScenarioRequestHandler() = default;
 
-        void BeginScenario(){};
-        void EndScenario(){};
+        void BeginScenario() {};
+        void EndScenario() {};
     };
 }
 

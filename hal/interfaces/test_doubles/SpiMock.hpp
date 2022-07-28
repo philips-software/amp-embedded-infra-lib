@@ -5,8 +5,8 @@
 #include "hal/interfaces/Spi.hpp"
 #include "infra/util/AutoResetFunction.hpp"
 #include <cstdint>
-#include <utility>
 #include <vector>
+#include <utility>
 
 namespace hal
 {

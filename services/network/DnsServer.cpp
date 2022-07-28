@@ -87,9 +87,9 @@ namespace services
     bool DnsServer::QuestionParser::RequestIncludesOneQuestion() const
     {
         return header.questionsCount == static_cast<uint16_t>(1u) &&
-               header.answersCount == static_cast<uint16_t>(0u) &&
-               header.nameServersCount == static_cast<uint16_t>(0u) &&
-               header.additionalRecordsCount == static_cast<uint16_t>(0u);
+            header.answersCount == static_cast<uint16_t>(0u) &&
+            header.nameServersCount == static_cast<uint16_t>(0u) &&
+            header.additionalRecordsCount == static_cast<uint16_t>(0u);
     }
 
     bool DnsServer::QuestionParser::IsValid() const

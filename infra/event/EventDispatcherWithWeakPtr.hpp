@@ -51,16 +51,16 @@ namespace infra
     public:
         using ActionStorage = StaticStorageForPolymorphicObjects<Action, INFRA_EVENT_DISPATCHER_WITH_WEAK_PTR_FUNCTION_EXTRA_SIZE>;
         template<std::size_t StorageSize, class T = EventDispatcherWithWeakPtrWorker>
-        using WithSize = infra::WithStorage<T, std::array<std::pair<ActionStorage, std::atomic<bool>>, StorageSize>>;
+            using WithSize = infra::WithStorage<T, std::array<std::pair<ActionStorage, std::atomic<bool>>, StorageSize>>;
 
         explicit EventDispatcherWithWeakPtrWorker(MemoryRange<std::pair<ActionStorage, std::atomic<bool>>> scheduledActionsStorage);
 
         virtual void Schedule(const infra::Function<void()>& action) override;
 
         template<class T>
-        void Schedule(const typename std::decay<infra::Function<void(const infra::SharedPtr<T>& object)>>::type& action, const infra::SharedPtr<T>& object);
+            void Schedule(const typename std::decay<infra::Function<void(const infra::SharedPtr<T>& object)>>::type& action, const infra::SharedPtr<T>& object);
         template<class T>
-        void Schedule(const typename std::decay<infra::Function<void(const infra::SharedPtr<T>& object)>>::type& action, const infra::WeakPtr<T>& object);
+            void Schedule(const typename std::decay<infra::Function<void(const infra::SharedPtr<T>& object)>>::type& action, const infra::WeakPtr<T>& object);
 
         virtual void ExecuteFirstAction() override;
         virtual std::size_t MinCapacity() const override;
@@ -93,10 +93,10 @@ namespace infra
         using infra::InterfaceConnector<EventDispatcherWithWeakPtrWorker>::Instance;
 
         template<std::size_t StorageSize>
-        using WithSize = typename T::template WithSize<StorageSize, EventDispatcherWithWeakPtrConnector<T>>;
+            using WithSize = typename T::template WithSize<StorageSize, EventDispatcherWithWeakPtrConnector<T>>;
 
         template<class... ConstructionArgs>
-        explicit EventDispatcherWithWeakPtrConnector(MemoryRange<std::pair<EventDispatcherWithWeakPtrWorker::ActionStorage, std::atomic<bool>>> scheduledActionsStorage, ConstructionArgs&&... args);
+            explicit EventDispatcherWithWeakPtrConnector(MemoryRange<std::pair<EventDispatcherWithWeakPtrWorker::ActionStorage, std::atomic<bool>>> scheduledActionsStorage, ConstructionArgs&&... args);
     };
 
     using EventDispatcherWithWeakPtr = EventDispatcherWithWeakPtrConnector<EventDispatcherWithWeakPtrWorker>;

@@ -88,7 +88,7 @@ namespace hal
             DWORD dw = GetLastError();
             throw PortNotInitialized(name, dw);
         }
-
+            
         PurgeComm(handle, PURGE_TXCLEAR | PURGE_RXCLEAR);
 
         COMMTIMEOUTS commTimeOuts;

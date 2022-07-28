@@ -17,7 +17,7 @@ namespace hal
         virtual void GenerateRandomData(infra::ByteRange result) = 0;
 
         template<class T>
-        T GenerateRandomData();
+            T GenerateRandomData();
     };
 
     template<class T>

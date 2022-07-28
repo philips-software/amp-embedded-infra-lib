@@ -30,10 +30,10 @@ namespace infra
     };
 
     template<class T>
-    using UniquePtr = std::unique_ptr<T, Deallocator>;
+        using UniquePtr = std::unique_ptr<T, Deallocator>;
 
     template<class T>
-    UniquePtr<T> MakeUnique(T* object, AllocatorBase& allocator);
+        UniquePtr<T> MakeUnique(T* object, AllocatorBase& allocator);
 
     template<class T, class ConstructionArgs>
     class Allocator;

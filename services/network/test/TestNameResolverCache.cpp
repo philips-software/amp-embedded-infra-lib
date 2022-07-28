@@ -1,6 +1,6 @@
 #include "gmock/gmock.h"
-#include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
+#include "infra/timer/test_helper/ClockFixture.hpp"
 #include "services/network/NameResolverCache.hpp"
 #include "services/network/test_doubles/NameResolverMock.hpp"
 

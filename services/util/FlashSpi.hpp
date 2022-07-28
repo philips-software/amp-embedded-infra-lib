@@ -1,12 +1,12 @@
 #ifndef SERVICES_FLASH_SPI_HPP
 #define SERVICES_FLASH_SPI_HPP
 
-#include "hal/interfaces/FlashHomogeneous.hpp"
-#include "hal/interfaces/FlashId.hpp"
 #include "hal/interfaces/Spi.hpp"
 #include "infra/timer/Timer.hpp"
 #include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/Sequencer.hpp"
+#include "hal/interfaces/FlashHomogeneous.hpp"
+#include "hal/interfaces/FlashId.hpp"
 
 namespace services
 {

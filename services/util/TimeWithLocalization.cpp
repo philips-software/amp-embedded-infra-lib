@@ -1,7 +1,7 @@
 #include "services/util/TimeWithLocalization.hpp"
-#include "infra/stream/StreamManipulators.hpp"
 #include "infra/stream/StringInputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
+#include "infra/stream/StreamManipulators.hpp"
 #include "infra/timer/PartitionedTime.hpp"
 #include "infra/timer/TimerServiceManager.hpp"
 
@@ -100,7 +100,7 @@ namespace services
     {
         return localTimeWithoutDaylightSavingTimerService.GetCurrentShift() + localTimeTimerService.GetCurrentShift();
     }
-
+    
     infra::Duration TimeWithLocalization::GetOffsetDaylightSaving() const
     {
         return localTimeTimerService.GetCurrentShift();
@@ -132,7 +132,7 @@ infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const infra
     const auto isNegative = duration < infra::Duration::zero();
     const auto d = isNegative ? -duration : duration;
     const auto w02 = infra::Width(2, '0');
-    stream << (isNegative ? '-' : '+') << w02 << static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::hours>(d).count())
-           << infra::resetWidth << ":" << w02 << static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::minutes>(d).count() % 60);
+    stream << (isNegative ? '-' : '+')  << w02 << static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::hours>(d).count())
+           << infra::resetWidth << ":"  << w02 << static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::minutes>(d).count() % 60);
     return stream;
 }

@@ -35,7 +35,7 @@ namespace hal
     {
     public:
         template<class... Args>
-        DacConverter(Args&&... args);
+            DacConverter(Args&&... args);
 
         void SetOutput(infra::Quantity<Unit, Storage> value);
     };

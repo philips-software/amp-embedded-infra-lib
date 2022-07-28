@@ -14,17 +14,17 @@ namespace infra
     typedef MemoryRange<const uint8_t> ConstByteRange;
 
     template<class U>
-    ByteRange ReinterpretCastByteRange(MemoryRange<U> memoryRange);
+        ByteRange ReinterpretCastByteRange(MemoryRange<U> memoryRange);
     template<class U>
-    ConstByteRange ReinterpretCastByteRange(MemoryRange<const U> memoryRange);
+        ConstByteRange ReinterpretCastByteRange(MemoryRange<const U> memoryRange);
     inline ByteRange ConstCastByteRange(ConstByteRange byteRange);
 
     template<class T>
-    ByteRange MakeByteRange(T& v);
+        ByteRange MakeByteRange(T& v);
     template<class T>
-    ConstByteRange MakeConstByteRange(T& v);
+        ConstByteRange MakeConstByteRange(T& v);
     template<class T>
-    ConstByteRange MakeByteRange(const T& v);
+        ConstByteRange MakeByteRange(const T& v);
     ConstByteRange MakeStringByteRange(const char* string);
     ConstByteRange MakeStringByteRange(const std::string& string);
     std::string ByteRangeAsStdString(infra::ConstByteRange range);
@@ -78,7 +78,7 @@ namespace infra
     {
         return ConstCastMemoryRange<uint8_t>(byteRange);
     }
-
+        
     template<class T>
     ByteRange MakeByteRange(T& v)
     {
@@ -99,7 +99,7 @@ namespace infra
 
     inline ConstByteRange MakeStringByteRange(const char* string)
     {
-        return ReinterpretCastByteRange(MakeRange(string, string + std::strlen(string))); // NOSONAR
+        return ReinterpretCastByteRange(MakeRange(string, string + std::strlen(string)));   //NOSONAR
     }
 
     inline ConstByteRange MakeStringByteRange(const std::string& string)

@@ -25,9 +25,9 @@ public:
 };
 
 #define EXPECT_ENABLE_WRITE() EXPECT_CALL(spiStub, SendDataMock( \
-                                                       hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiSingleSpeed::commandWriteEnable), {}, {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::SingleSpeed()))
+    hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiSingleSpeed::commandWriteEnable), {}, {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::SingleSpeed()))
 #define EXPECT_POLL_WRITE_DONE() EXPECT_CALL(spiStub, PollStatusMock( \
-                                                          hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiSingleSpeed::commandReadStatusRegister), {}, {}, 0 }, 1, 0, 1, hal::QuadSpi::Lines::SingleSpeed()))
+    hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiSingleSpeed::commandReadStatusRegister), {}, {}, 0 }, 1, 0, 1, hal::QuadSpi::Lines::SingleSpeed()))
 
 TEST_F(FlashQuadSpiSingleSpeedTest, Construction)
 {
@@ -45,7 +45,7 @@ TEST_F(FlashQuadSpiSingleSpeedTest, ReadData)
     std::array<uint8_t, 4> buffer;
     flash.ReadBuffer(buffer, 0, [this]() { finished.callback(); });
     ExecuteAllActions();
-
+    
     EXPECT_EQ(receiveData, buffer);
 }
 
@@ -59,7 +59,7 @@ TEST_F(FlashQuadSpiSingleSpeedTest, ReadDataAtNonZeroAddress)
     std::array<uint8_t, 4> buffer;
     flash.ReadBuffer(buffer, 0 + 0x123456, [this]() { finished.callback(); });
     ExecuteAllActions();
-
+    
     EXPECT_EQ(receiveData, buffer);
 }
 

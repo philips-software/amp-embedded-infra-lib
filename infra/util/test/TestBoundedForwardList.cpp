@@ -28,7 +28,7 @@ TEST(BoundedForwardListTest, TestConstructionWith2Elements)
 
 TEST(BoundedForwardListTest, TestConstructionWithRange)
 {
-    int range[3] = { 0, 1, 2 };
+    int range[3] = { 0, 1, 2};
     infra::BoundedForwardList<int>::WithMaxSize<5> list(range, range + 3);
 
     EXPECT_EQ(3, list.size());
@@ -100,7 +100,7 @@ TEST(BoundedForwardListTest, TestMove)
 
 TEST(BoundedForwardListTest, TestBeginAndEnd)
 {
-    int range[3] = { 0, 1, 2 };
+    int range[3] = { 0, 1, 2};
     infra::BoundedForwardList<int>::WithMaxSize<5> list(range, range + 3);
 
     EXPECT_EQ(list.end(), std::next(list.begin(), 3));
@@ -119,7 +119,7 @@ TEST(BoundedForwardListTest, TestFull)
 
 TEST(BoundedForwardListTest, TestFront)
 {
-    int range[3] = { 0, 1, 2 };
+    int range[3] = { 0, 1, 2};
     infra::BoundedForwardList<int>::WithMaxSize<5> list(range, range + 3);
 
     EXPECT_EQ(0, list.front());
@@ -127,7 +127,7 @@ TEST(BoundedForwardListTest, TestFront)
 
 TEST(BoundedForwardListTest, TestAssignRange)
 {
-    int range[3] = { 0, 1, 2 };
+    int range[3] = { 0, 1, 2};
     infra::BoundedForwardList<int>::WithMaxSize<5> list(range, range + 3);
 
     int otherRange[2] = { 4, 5 };
@@ -140,7 +140,7 @@ TEST(BoundedForwardListTest, TestAssignRange)
 
 TEST(BoundedForwardListTest, TestAssignN)
 {
-    int range[3] = { 0, 1, 2 };
+    int range[3] = { 0, 1, 2};
     infra::BoundedForwardList<int>::WithMaxSize<5> list(range, range + 3);
 
     list.assign(std::size_t(2), 4);
@@ -181,9 +181,9 @@ TEST(BoundedForwardListTest, TestPopFront)
 
 TEST(BoundedForwardListTest, TestSwap)
 {
-    int range1[3] = { 0, 1, 2 };
+    int range1[3] = { 0, 1, 2};
     infra::BoundedForwardList<int>::WithMaxSize<5> list1(range1, range1 + 3);
-    int range2[3] = { 3, 4, 5 };
+    int range2[3] = { 3, 4, 5};
     infra::BoundedForwardList<int>::WithMaxSize<5> list2(range2, range2 + 3);
 
     swap(list1, list2);
@@ -196,9 +196,9 @@ TEST(BoundedForwardListTest, TestSwap)
 
 TEST(BoundedForwardListTest, TestSwapDifferentSizes)
 {
-    int range1[3] = { 0, 1, 2 };
+    int range1[3] = { 0, 1, 2};
     infra::BoundedForwardList<int>::WithMaxSize<5> list1(range1, range1 + 3);
-    int range2[2] = { 3, 4 };
+    int range2[2] = { 3, 4};
     infra::BoundedForwardList<int>::WithMaxSize<5> list2(range2, range2 + 2);
 
     swap(list1, list2);

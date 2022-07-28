@@ -15,7 +15,7 @@ namespace services
         using JsonParserCreatorBase = infra::CreatorBase<infra::JsonStreamingObjectParser, void(infra::JsonObjectVisitor&)>;
 
         template<std::size_t MaxTagLength, std::size_t MaxValueLength, std::size_t MaxObjectNesting>
-        using JsonParserCreator = JsonParserCreatorBase::WithCreator<infra::JsonStreamingObjectParser::WithBuffers<MaxTagLength, MaxValueLength, MaxObjectNesting>>;
+            using JsonParserCreator = JsonParserCreatorBase::WithCreator<infra::JsonStreamingObjectParser::WithBuffers<MaxTagLength, MaxValueLength, MaxObjectNesting>>;
 
         struct ConnectionInfo
         {
@@ -36,7 +36,7 @@ namespace services
         virtual infra::JsonObjectVisitor& TopJsonObjectVisitor() = 0;
 
         // Implementation of HttpClientObserver
-        virtual void Attached() override; // Default implementation. Override for behaviour other than an HTTP GET request
+        virtual void Attached() override;  // Default implementation. Override for behaviour other than an HTTP GET request
         virtual void Detaching() override;
         virtual void StatusAvailable(services::HttpStatusCode statusCode) override;
         virtual void HeaderAvailable(services::HttpHeader header) override;

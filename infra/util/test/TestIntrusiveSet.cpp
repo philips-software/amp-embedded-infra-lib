@@ -10,9 +10,7 @@ namespace
     struct SetInt
         : infra::IntrusiveSet<SetInt>::NodeType
     {
-        SetInt(int v)
-            : value(v)
-        {}
+        SetInt(int v): value(v) {}
 
         int value;
 
@@ -63,6 +61,7 @@ public:
             os << ")";
         }
     }
+
 };
 
 TEST_F(IntrusiveSetTest, TestConstructedEmpty)
@@ -76,7 +75,7 @@ TEST_F(IntrusiveSetTest, TestConstructedEmpty)
 
 TEST_F(IntrusiveSetTest, TestConstructionWithRange)
 {
-    SetInt range[3] = { 0, 1, 2 };
+    SetInt range[3] = { 0, 1, 2};
     infra::IntrusiveSet<SetInt> set(range, range + 3);
 
     EXPECT_EQ(3, set.size());
@@ -89,7 +88,7 @@ TEST_F(IntrusiveSetTest, TestConstructionWithRange)
 
 TEST_F(IntrusiveSetTest, TestMoveConstruction)
 {
-    SetInt range[3] = { 0, 1, 2 };
+    SetInt range[3] = { 0, 1, 2};
     infra::IntrusiveSet<SetInt> original(range, range + 3);
     infra::IntrusiveSet<SetInt> copy(std::move(original));
 
@@ -102,7 +101,7 @@ TEST_F(IntrusiveSetTest, TestMoveConstruction)
 
 TEST_F(IntrusiveSetTest, TestMoveAssignment)
 {
-    SetInt range[3] = { 0, 1, 2 };
+    SetInt range[3] = { 0, 1, 2};
     infra::IntrusiveSet<SetInt> original(range, range + 3);
     infra::IntrusiveSet<SetInt> copy;
     copy = std::move(original);
@@ -121,16 +120,16 @@ TEST_F(IntrusiveSetTest, IterateAfterMoveAssignment)
     infra::IntrusiveSet<SetInt> copy;
     copy = std::move(original);
 
-    for (SetInt& i : copy)
+    for (SetInt& i: copy)
     {}
 
-    for (SetInt& i : MakeReverseRange(copy))
+    for (SetInt& i: MakeReverseRange(copy))
     {}
 }
 
 TEST_F(IntrusiveSetTest, TestBeginAndEnd)
 {
-    SetInt range[3] = { 0, 1, 2 };
+    SetInt range[3] = { 0, 1, 2};
     infra::IntrusiveSet<SetInt> set(range, range + 3);
 
     EXPECT_EQ(set.end(), std::next(set.begin(), 3));
@@ -142,7 +141,7 @@ TEST_F(IntrusiveSetTest, TestBeginAndEnd)
 
 TEST_F(IntrusiveSetTest, TestFront)
 {
-    SetInt range[3] = { 0, 1, 2 };
+    SetInt range[3] = { 0, 1, 2};
     infra::IntrusiveSet<SetInt> set(range, range + 3);
 
     EXPECT_EQ(SetInt(0), set.front());
@@ -150,7 +149,7 @@ TEST_F(IntrusiveSetTest, TestFront)
 
 TEST_F(IntrusiveSetTest, TestBack)
 {
-    SetInt range[3] = { 0, 1, 2 };
+    SetInt range[3] = { 0, 1, 2};
     infra::IntrusiveSet<SetInt> set(range, range + 3);
 
     EXPECT_EQ(SetInt(2), set.back());
@@ -185,7 +184,7 @@ TEST_F(IntrusiveSetTest, TestNotHasElementForSameValue)
 
 TEST_F(IntrusiveSetTest, TestAssignRange)
 {
-    SetInt range[3] = { 0, 1, 2 };
+    SetInt range[3] = { 0, 1, 2};
     SetInt otherRange[2] = { 4, 5 };
 
     infra::IntrusiveSet<SetInt> set(range, range + 3);
@@ -213,7 +212,7 @@ TEST_F(IntrusiveSetTest, TestAssignN)
 
 TEST_F(IntrusiveSetTest, TestSwap)
 {
-    SetInt range1[3] = { 0, 1, 2 };
+    SetInt range1[3] = { 0, 1, 2};
     SetInt range2[3] = { 3, 4, 5 };
     infra::IntrusiveSet<SetInt> set1(range1, range1 + 3);
     infra::IntrusiveSet<SetInt> set2(range2, range2 + 3);
@@ -232,7 +231,7 @@ TEST_F(IntrusiveSetTest, TestSwap)
 
 TEST_F(IntrusiveSetTest, TestSwapDifferentSizes)
 {
-    SetInt range1[3] = { 0, 1, 2 };
+    SetInt range1[3] = { 0, 1, 2};
     SetInt range2[2] = { 3, 4 };
     infra::IntrusiveSet<SetInt> set1(range1, range1 + 3);
     infra::IntrusiveSet<SetInt> set2(range2, range2 + 2);
@@ -251,7 +250,7 @@ TEST_F(IntrusiveSetTest, TestSwapDifferentSizes)
 
 TEST_F(IntrusiveSetTest, TestClear)
 {
-    SetInt range[3] = { 0, 1, 2 };
+    SetInt range[3] = { 0, 1, 2};
     infra::IntrusiveSet<SetInt> set(range, range + 3);
     set.clear();
 
@@ -450,7 +449,7 @@ TEST_F(IntrusiveSetTest, TestManyInsertionsAndDeletions)
             while (!indices.empty())
             {
                 current = (current + step) % indices.size();
-                // std::cout << "insert size: " << size << ", step: " << step << ", set size: " << set.size() << ", insert: " << indices[current] << std::endl;
+                //std::cout << "insert size: " << size << ", step: " << step << ", set size: " << set.size() << ", insert: " << indices[current] << std::endl;
                 set.insert(elements[indices[current]]);
                 EXPECT_TRUE(set.invariant_holds());
                 indices.erase(indices.begin() + current);
@@ -459,7 +458,7 @@ TEST_F(IntrusiveSetTest, TestManyInsertionsAndDeletions)
             while (!set.empty())
             {
                 current = (current + 2 * step) % set.size();
-                // std::cout << "erase size: " << size << ", step: " << step << ", set size: " << set.size() << ", erase: " << std::next(set.begin(), current)->value << std::endl;
+                //std::cout << "erase size: " << size << ", step: " << step << ", set size: " << set.size() << ", erase: " << std::next(set.begin(), current)->value << std::endl;
                 set.erase(*std::next(set.begin(), current));
                 EXPECT_TRUE(set.invariant_holds());
             }

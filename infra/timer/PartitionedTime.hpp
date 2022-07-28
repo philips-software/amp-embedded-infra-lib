@@ -1,9 +1,9 @@
 #ifndef INFRA_TIMER_PARTITIONED_TIME_HPP
 #define INFRA_TIMER_PARTITIONED_TIME_HPP
 
-#include "infra/timer/Timer.hpp"
 #include <cstdint>
 #include <time.h>
+#include "infra/timer/Timer.hpp"
 
 namespace infra
 {

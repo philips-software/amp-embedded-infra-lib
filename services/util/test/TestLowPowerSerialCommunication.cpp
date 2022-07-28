@@ -6,14 +6,14 @@
 class LowPowerSerialCommunicationTest
     : public testing::Test
 {
-public:
-    LowPowerSerialCommunicationTest()
-        : lowPowerSerialCommunication(serialComm, mainClock)
-    {}
+    public:
+        LowPowerSerialCommunicationTest()
+            : lowPowerSerialCommunication(serialComm, mainClock)
+        {}
 
-    testing::StrictMock<hal::SerialCommunicationMock> serialComm;
-    infra::MainClockReference mainClock;
-    hal::LowPowerSerialCommunication lowPowerSerialCommunication;
+        testing::StrictMock<hal::SerialCommunicationMock> serialComm;
+        infra::MainClockReference mainClock;
+        hal::LowPowerSerialCommunication lowPowerSerialCommunication;
 };
 
 TEST_F(LowPowerSerialCommunicationTest, construction)
@@ -25,8 +25,8 @@ TEST_F(LowPowerSerialCommunicationTest, SendData_should_acquire_mainClock_and_re
 {
     infra::MockCallback<void()> mockActionOnCompletion;
 
-    EXPECT_CALL(serialComm, SendDataMock(std::vector<uint8_t>{ 0xfe, 0xff }));
-    lowPowerSerialCommunication.SendData(std::vector<uint8_t>{ 0xfe, 0xff }, [&mockActionOnCompletion]() { mockActionOnCompletion.callback(); });
+    EXPECT_CALL(serialComm, SendDataMock(std::vector<uint8_t>{ 0xfe, 0xff}));
+    lowPowerSerialCommunication.SendData(std::vector<uint8_t>{ 0xfe, 0xff}, [&mockActionOnCompletion]() { mockActionOnCompletion.callback(); });
     EXPECT_TRUE(mainClock.IsReferenced());
 
     EXPECT_CALL(mockActionOnCompletion, callback());
@@ -35,7 +35,7 @@ TEST_F(LowPowerSerialCommunicationTest, SendData_should_acquire_mainClock_and_re
 }
 
 TEST_F(LowPowerSerialCommunicationTest, ReceiveData_should_forward_callback_registration_to_downStream)
-{
+{   
     infra::ConstByteRange savedData;
     lowPowerSerialCommunication.ReceiveData([&savedData](infra::ConstByteRange data) { savedData = data; });
 

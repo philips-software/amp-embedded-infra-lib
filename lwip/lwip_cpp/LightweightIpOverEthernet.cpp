@@ -1,11 +1,11 @@
-#include "lwip/lwip_cpp/LightweightIpOverEthernet.hpp"
+#include <cstdlib>
+#include <cstring>
 #include "infra/event/EventDispatcher.hpp"
+#include "lwip/lwip_cpp/LightweightIpOverEthernet.hpp"
 #include "lwip/dhcp.h"
 #include "lwip/ethip6.h"
 #include "lwip/igmp.h"
 #include "netif/etharp.h"
-#include <cstdlib>
-#include <cstring>
 
 namespace services
 {
@@ -154,7 +154,8 @@ namespace services
         {
             bool lastOfFrame = buffer->tot_len == buffer->len;
 
-            Subject().SendBuffer(infra::ConstByteRange(static_cast<const uint8_t*>(buffer->payload), static_cast<const uint8_t*>(buffer->payload) + buffer->len), lastOfFrame);
+            Subject().SendBuffer(infra::ConstByteRange(static_cast<const uint8_t*>(buffer->payload), static_cast<const uint8_t*>(buffer->payload) + buffer->len)
+                , lastOfFrame);
 
             if (lastOfFrame)
                 break;

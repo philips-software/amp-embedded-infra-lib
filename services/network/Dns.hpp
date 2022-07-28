@@ -50,7 +50,6 @@ namespace services
     struct DnsQuestionFooter
     {
         DnsQuestionFooter() = default;
-
         DnsQuestionFooter(DnsType type, DnsClass class_)
             : type(infra::enum_cast(type))
             , class_(infra::enum_cast(class_))
@@ -63,7 +62,6 @@ namespace services
     struct DnsRecordPayload
     {
         DnsRecordPayload() = default;
-
         DnsRecordPayload(DnsType type, DnsClass class_, infra::Duration ttl, uint16_t dataLength)
             : type(infra::enum_cast(type))
             , class_(infra::enum_cast(class_))

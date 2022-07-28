@@ -1,9 +1,9 @@
 #ifndef HAL_ETHERNET_HPP
 #define HAL_ETHERNET_HPP
 
-#include "hal/interfaces/MacAddress.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/Observer.hpp"
+#include "hal/interfaces/MacAddress.hpp"
 
 namespace hal
 {

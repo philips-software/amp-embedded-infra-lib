@@ -15,8 +15,7 @@ namespace infra
 
     ACTION_TEMPLATE(SaveRef,
         HAS_1_TEMPLATE_PARAMS(int, k),
-        AND_1_VALUE_PARAMS(pointer))
-    {
+        AND_1_VALUE_PARAMS(pointer)) {
         *pointer = &::std::get<k>(args);
     }
 }

@@ -36,7 +36,7 @@ namespace application
 
         std::vector<std::pair<std::string, std::string>> result;
 
-        for (infra::JsonObjectIterator it = components->begin(); it != components->end(); ++it)
+        for (infra::JsonObjectIterator it = components->begin(); it != components->end() ; ++it)
             if (it->value.Is<infra::JsonString>())
                 result.push_back(std::make_pair(it->key.ToStdString(), it->value.Get<infra::JsonString>().ToStdString()));
             else
@@ -71,7 +71,7 @@ namespace application
     {
         if (!json.HasKey("upgrade_configuration"))
             throw ParseException("ConfigParser error: requested key upgrade_configuration is missing");
-
+        
         if (json.GetOptionalObject("upgrade_configuration") == infra::none)
             throw ParseException("ConfigParser error: upgrade_configuration should be an object");
         else

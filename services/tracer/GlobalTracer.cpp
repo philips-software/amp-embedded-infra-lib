@@ -19,6 +19,7 @@ namespace services
     {
         assert(globalTracerInstance == nullptr);
         globalTracerInstance = &tracer;
+
     }
 
     Tracer& GlobalTracer()

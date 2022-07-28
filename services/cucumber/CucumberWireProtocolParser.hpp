@@ -1,4 +1,4 @@
-#ifndef SERVICES_CUCUMBER_WIRE_PROTOCOL_PARSER_HPP
+#ifndef SERVICES_CUCUMBER_WIRE_PROTOCOL_PARSER_HPP 
 #define SERVICES_CUCUMBER_WIRE_PROTOCOL_PARSER_HPP
 
 #include "infra/stream/StringInputStream.hpp"
@@ -38,7 +38,7 @@ namespace services
         void ParseEndScenarioRequest();
         void ParseSnippetTextRequest();
 
-        template<class T>
+        template <class T>
         T ConvertToIntType(const infra::BoundedString& input);
     };
 

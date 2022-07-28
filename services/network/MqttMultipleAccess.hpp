@@ -1,9 +1,9 @@
 #ifndef SERVICES_MQTT_MULTIPLE_ACCESS_HPP
 #define SERVICES_MQTT_MULTIPLE_ACCESS_HPP
 
+#include "services/network/Mqtt.hpp"
 #include "infra/event/ClaimableResource.hpp"
 #include "infra/util/IntrusiveForwardList.hpp"
-#include "services/network/Mqtt.hpp"
 
 namespace services
 {

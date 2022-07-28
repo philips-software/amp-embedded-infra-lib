@@ -17,15 +17,8 @@ namespace testing
             : internal::MatcherBase<infra::BoundedStringBase<T>>(impl)
         {}
 
-        Matcher(infra::BoundedStringBase<T> s)
-        {
-            *this = Eq(std::string(s.data(), s.size()));
-        }
-
-        Matcher(const char* s)
-        {
-            *this = Eq(std::string(s));
-        }
+        Matcher(infra::BoundedStringBase<T> s) { *this = Eq(std::string(s.data(), s.size())); }
+        Matcher(const char* s) { *this = Eq(std::string(s)); }
     };
 }
 

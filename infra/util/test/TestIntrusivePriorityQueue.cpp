@@ -4,9 +4,7 @@
 struct QueueInt
     : infra::IntrusivePriorityQueue<QueueInt>::NodeType
 {
-    QueueInt(int v)
-        : value(v)
-    {}
+    QueueInt(int v): value(v) {}
 
     int value;
 
@@ -31,7 +29,7 @@ TEST(IntrusivePriorityQueueTest, TestConstructedEmpty)
 
 TEST(IntrusivePriorityQueueTest, TestConstructionWithRange)
 {
-    QueueInt range[3] = { 0, 1, 2 };
+    QueueInt range[3] = { 0, 1, 2};
     infra::IntrusivePriorityQueue<QueueInt> queue(range, range + 3);
 
     EXPECT_EQ(3, queue.size());
@@ -57,7 +55,7 @@ TEST(IntrusivePriorityQueueTest, TestMove)
 
 TEST(IntrusivePriorityQueueTest, TestPop)
 {
-    QueueInt range[3] = { 0, 1, 2 };
+    QueueInt range[3] = { 0, 1, 2};
     infra::IntrusivePriorityQueue<QueueInt> queue(range, range + 3);
 
     queue.pop();
@@ -122,9 +120,9 @@ TEST(IntrusivePriorityQueueTest, TestEraseLastElement)
 
 TEST(IntrusivePriorityQueueTest, TestSwap)
 {
-    QueueInt range1[3] = { 0, 1, 2 };
+    QueueInt range1[3] = { 0, 1, 2};
     infra::IntrusivePriorityQueue<QueueInt> queue1(range1, range1 + 3);
-    QueueInt range2[3] = { 3, 4, 5 };
+    QueueInt range2[3] = { 3, 4, 5};
     infra::IntrusivePriorityQueue<QueueInt> queue2(range2, range2 + 3);
 
     swap(queue1, queue2);

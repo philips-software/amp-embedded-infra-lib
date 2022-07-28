@@ -1,5 +1,5 @@
-#include "protobuf/echo/Echo.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
+#include "protobuf/echo/Echo.hpp"
 
 namespace services
 {
@@ -99,7 +99,8 @@ namespace services
 
         bytes->shrink_from_back_to(processedSize);
 
-        RequestSend([this, &contents]() {
+        RequestSend([this, &contents]()
+        {
             infra::DataOutputStream::WithErrorPolicy stream(services::ServiceProxy::Rpc().SendStreamWriter());
             infra::ProtoFormatter formatter(stream);
             formatter.PutVarInt(ServiceId());
@@ -251,7 +252,7 @@ namespace services
             if (!ProcessMessage(stream))
                 break;
 
-            if (!ServiceBusy()) // The message was not executed when ServiceBusy() is true, so don't ack the received data
+            if (!ServiceBusy())     // The message was not executed when ServiceBusy() is true, so don't ack the received data
                 ConnectionObserver::Subject().AckReceived();
         }
     }

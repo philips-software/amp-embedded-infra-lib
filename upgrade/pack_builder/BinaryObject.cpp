@@ -56,15 +56,17 @@ namespace application
 
         for (uint32_t i = 0; i != header->program_header_entry_count; ++i)
         {
-            const elf_program_header_t* programHeader = reinterpret_cast<const elf_program_header_t*>(&data[header->program_header_offset + header->program_header_entry_size * i]);
+			const elf_program_header_t* programHeader = reinterpret_cast<const elf_program_header_t*>(&data[header->program_header_offset + header->program_header_entry_size * i]);
 
-            if (programHeader->data_size_in_file == 0 || programHeader->type != 0x1)
+            if (programHeader->data_size_in_file == 0
+                || programHeader->type != 0x1)
                 continue;
 
             std::vector<uint8_t> programData(std::next(std::begin(data), programHeader->data_offset), std::next(std::begin(data), programHeader->data_offset + programHeader->data_size_in_file));
-
-            // quick and dirty fix to solve segment offset miscommunication in elf file
-            if (programHeader->data_offset == 0x0 && (programHeader->flags & 0x1) == 1)
+            
+            //quick and dirty fix to solve segment offset miscommunication in elf file
+            if (programHeader->data_offset == 0x0 
+                && (programHeader->flags & 0x1) == 1)
             {
                 for (uint32_t j = 0; j != header->section_header_entry_count; ++j)
                 {
@@ -74,7 +76,7 @@ namespace application
                 }
             }
 
-            for (auto byte : programData)
+            for (auto byte: programData)
             {
                 memory.Insert(byte, offset);
                 ++offset;
@@ -84,7 +86,7 @@ namespace application
 
     void BinaryObject::AddBinary(const std::vector<uint8_t>& data, uint32_t offset, const std::string& fileName)
     {
-        for (auto byte : data)
+        for (auto byte: data)
         {
             memory.Insert(byte, offset);
             ++offset;
@@ -102,7 +104,7 @@ namespace application
         const elf_section_header_t* stringSectionHeader = reinterpret_cast<const elf_section_header_t*>(&data[header->section_header_offset + header->section_header_entry_size * header->string_table_index]);
         uint32_t stringOffset = stringSectionHeader->data_offset + sectionNameOffset;
 
-        return reinterpret_cast<const char*>(&data[stringOffset]);
+        return reinterpret_cast<const char *>(&data[stringOffset]);
     }
 
     void BinaryObject::AddLine(const std::string& line, const std::string& fileName, int lineNumber)
@@ -135,7 +137,7 @@ namespace application
                 throw UnknownRecordException(fileName, lineNumber);
         }
     }
-
+    
     void BinaryObject::VerifyNotEndOfFile(const std::string& fileName, int lineNumber) const
     {
         if (endOfFile)

@@ -25,12 +25,8 @@ namespace infra
         SubjectType& Subject() const;
 
         void Detach();
-
-        virtual void Attached()
-        {}
-
-        virtual void Detaching()
-        {}
+        virtual void Attached() {}
+        virtual void Detaching() {}
 
     private:
         friend SharedOwningSubject<Descendant>;

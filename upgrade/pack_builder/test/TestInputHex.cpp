@@ -1,8 +1,8 @@
 #include "gtest/gtest.h"
 #include "hal/interfaces/test_doubles/FileSystemStub.hpp"
 #include "upgrade/pack/UpgradePackHeader.hpp"
-#include "upgrade/pack_builder/ImageEncryptorNone.hpp"
 #include "upgrade/pack_builder/InputHex.hpp"
+#include "upgrade/pack_builder/ImageEncryptorNone.hpp"
 #include <algorithm>
 
 class TestInputHex

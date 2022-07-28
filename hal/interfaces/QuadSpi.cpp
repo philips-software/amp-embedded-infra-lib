@@ -32,7 +32,11 @@ namespace hal
 
     bool QuadSpi::Lines::operator==(const Lines& other) const
     {
-        return infra::Equals()(instructionLines, other.instructionLines)(addressLines, other.addressLines)(alternateLines, other.alternateLines)(dataLines, other.dataLines);
+        return infra::Equals()
+            (instructionLines, other.instructionLines)
+            (addressLines, other.addressLines)
+            (alternateLines, other.alternateLines)
+            (dataLines, other.dataLines);
     }
 
     bool QuadSpi::Lines::operator!=(const Lines& other) const
@@ -68,7 +72,11 @@ namespace hal
 
     bool QuadSpi::Header::operator==(const Header& other) const
     {
-        return infra::Equals()(instruction, other.instruction)(address, other.address)(alternate, other.alternate)(nofDummyCycles, other.nofDummyCycles);
+        return infra::Equals()
+            (instruction, other.instruction)
+            (address, other.address)
+            (alternate, other.alternate)
+            (nofDummyCycles, other.nofDummyCycles);
     }
 
     bool QuadSpi::Header::operator!=(const Header& other) const

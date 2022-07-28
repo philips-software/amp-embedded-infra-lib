@@ -18,14 +18,14 @@ namespace infra
         AutoResetMultiFunctionHelper(const AutoResetMultiFunctionHelper& other) = delete;
         AutoResetMultiFunctionHelper(AutoResetMultiFunctionHelper&& other);
         template<class F1>
-        AutoResetMultiFunctionHelper(F1&& f);
+            AutoResetMultiFunctionHelper(F1&& f);
 
         AutoResetMultiFunctionHelper& operator=(const AutoResetMultiFunctionHelper& other) = delete;
         AutoResetMultiFunctionHelper& operator=(AutoResetMultiFunctionHelper&& other);
         AutoResetMultiFunctionHelper& operator=(std::nullptr_t);
 
         template<class... Args>
-        typename MultiFunctionHelper<F...>::template ResultOf<Args...>::Type operator()(Args&&... args);
+            typename MultiFunctionHelper<F...>::template ResultOf<Args...>::Type operator()(Args&&... args);
 
         explicit operator bool() const;
 
@@ -36,13 +36,13 @@ namespace infra
     };
 
     template<class... F>
-    bool operator==(const AutoResetMultiFunctionHelper<F...>& f, std::nullptr_t);
+        bool operator==(const AutoResetMultiFunctionHelper<F...>& f, std::nullptr_t);
     template<class... F>
-    bool operator==(std::nullptr_t, const AutoResetMultiFunctionHelper<F...>& f);
+        bool operator==(std::nullptr_t, const AutoResetMultiFunctionHelper<F...>& f);
     template<class... F>
-    bool operator!=(const AutoResetMultiFunctionHelper<F...>& f, std::nullptr_t);
+        bool operator!=(const AutoResetMultiFunctionHelper<F...>& f, std::nullptr_t);
     template<class... F>
-    bool operator!=(std::nullptr_t, const AutoResetMultiFunctionHelper<F...>& f);
+        bool operator!=(std::nullptr_t, const AutoResetMultiFunctionHelper<F...>& f);
 
     template<class F>
     using AutoResetMultiFunction = AutoResetMultiFunctionHelper<infra::Function<F>>;

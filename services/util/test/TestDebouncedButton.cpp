@@ -15,8 +15,7 @@ class DebouncedButtonFixture
 {
 public:
     DebouncedButtonFixture()
-        : debouncedButton(
-              button, [this]() { onPressed.callback(); }, [this]() { onReleased.callback(); })
+        : debouncedButton(button, [this]() { onPressed.callback(); }, [this]() { onReleased.callback(); })
     {}
 
     hal::GpioPinStub button;

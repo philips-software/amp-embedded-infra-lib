@@ -1,8 +1,8 @@
 #ifndef UPGRADE_UPGRADE_PACK_INPUT_FACTORY_HPP
 #define UPGRADE_UPGRADE_PACK_INPUT_FACTORY_HPP
 
-#include "upgrade/pack_builder/ImageSecurity.hpp"
 #include "upgrade/pack_builder/InputFactory.hpp"
+#include "upgrade/pack_builder/ImageSecurity.hpp"
 #include "upgrade/pack_builder/SupportedTargets.hpp"
 
 namespace application

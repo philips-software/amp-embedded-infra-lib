@@ -1,7 +1,7 @@
-#include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "infra/stream/ByteOutputStream.hpp"
+#include "gmock/gmock.h"
 #include "infra/syntax/Asn1Formatter.hpp"
+#include "infra/stream/ByteOutputStream.hpp"
 
 namespace
 {
@@ -158,7 +158,7 @@ TEST(Asn1ObjectFormatter, add_utc_time_1950)
 
     formatter.AddUtcTime(1950, 1, 1, 12, 15, 00);
 
-    std::array<uint8_t, 15> expected = { 0x17, 0x0D, '5', '0', '0', '1', '0', '1', '1', '2', '1', '5', '0', '0', 'Z' };
+    std::array<uint8_t, 15> expected = {0x17, 0x0D, '5', '0', '0', '1', '0', '1', '1', '2', '1', '5', '0', '0', 'Z'};
 
     EXPECT_EQ(expected, stream.Storage());
 }
@@ -188,7 +188,7 @@ TEST(Asn1ObjectFormatter, add_generalized_time)
 }
 
 TEST(Asn1ObjectFormatter, add_time)
-{
+{    
     {
         infra::ByteOutputStream::WithStorage<32> stream;
         infra::Asn1Formatter formatter(stream);

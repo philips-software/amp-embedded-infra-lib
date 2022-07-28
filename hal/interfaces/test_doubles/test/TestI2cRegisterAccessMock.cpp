@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
-#include "hal/interfaces/test_doubles/I2cRegisterAccessMock.hpp"
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
+#include "hal/interfaces/test_doubles/I2cRegisterAccessMock.hpp"
 
 class RegisterAccessMockTest
     : public testing::Test
@@ -38,7 +38,7 @@ TEST_F(RegisterAccessMockTest, ReadRegisterInTwoReads)
 
     uint8_t dataRegister = 3;
     master.SendData(hal::I2cAddress(1), infra::MakeByteRange(dataRegister), hal::Action::repeatedStart, [](hal::Result, uint32_t numberOfBytesSent) {});
-
+    
     std::array<uint8_t, 3> data1;
     std::array<uint8_t, 1> data2;
     master.ReceiveData(hal::I2cAddress(1), infra::MakeByteRange(data1), hal::Action::continueSession, receiveDataDone1Verifier);

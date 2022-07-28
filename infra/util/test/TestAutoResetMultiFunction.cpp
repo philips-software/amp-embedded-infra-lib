@@ -26,11 +26,7 @@ TEST(AutoResetMultiFunctionTest, ReAssignDuringInvoke)
     infra::MockCallback<void()> b;
     infra::AutoResetMultiFunction<void()>::And<void(bool)> f;
 
-    f = [&b, &f]() {
-        f = [&b]() {
-            b.callback();
-        };
-    };
+    f = [&b, &f]() { f = [&b]() { b.callback(); }; };
 
     EXPECT_CALL(b, callback());
 

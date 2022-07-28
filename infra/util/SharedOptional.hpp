@@ -18,7 +18,7 @@ namespace infra
         ~SharedOptional();
 
         template<class... Args>
-        SharedPtr<T> Emplace(Args&&... args);
+            SharedPtr<T> Emplace(Args&&... args);
 
         SharedPtr<T> MakePtr();
 
@@ -48,7 +48,7 @@ namespace infra
     {
     public:
         template<std::size_t NewAllocatableSize>
-        using WithSize = NotifyingSharedOptionalWithSize<T, NewAllocatableSize>;
+            using WithSize = NotifyingSharedOptionalWithSize<T, NewAllocatableSize>;
 
         NotifyingSharedOptionalWithSize() = default;
         explicit NotifyingSharedOptionalWithSize(const infra::Function<void(), AllocatableSize>& onAllocatable);
@@ -63,7 +63,7 @@ namespace infra
     };
 
     template<class T>
-    using NotifyingSharedOptional = NotifyingSharedOptionalWithSize<T, INFRA_DEFAULT_FUNCTION_EXTRA_SIZE>;
+        using NotifyingSharedOptional = NotifyingSharedOptionalWithSize<T, INFRA_DEFAULT_FUNCTION_EXTRA_SIZE>;
 
     ////    Implementation    ////
 
@@ -123,7 +123,7 @@ namespace infra
     {
         return &*object;
     }
-
+    
     template<class T>
     SharedOptional<T>::operator bool() const
     {
@@ -135,7 +135,7 @@ namespace infra
     {
         return !object;
     }
-
+    
     template<class T>
     void SharedOptional<T>::Destruct(const void* object)
     {

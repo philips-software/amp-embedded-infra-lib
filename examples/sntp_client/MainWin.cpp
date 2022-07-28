@@ -2,11 +2,11 @@
 #include "infra/stream/IoOutputStream.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/network/SntpClient.hpp"
+#include "services/util/TimeWithLocalization.hpp"
 #include "services/network_win/ConnectionWin.hpp"
 #include "services/network_win/EventDispatcherWithNetwork.hpp"
 #include "services/network_win/NameLookupWin.hpp"
 #include "services/tracer/Tracer.hpp"
-#include "services/util/TimeWithLocalization.hpp"
 
 struct TimeWithSynchronization
     : public services::SntpResultObserver
@@ -27,8 +27,8 @@ struct TimeWithSynchronization
         timeWithLocalization.Utc().Shift(localClockOffset - timeWithLocalization.Utc().GetCurrentShift());
 
         tracer.Trace() << "Time synchronized; round trip delay was: " << roundTripDelay
-                       << " local offset was: " << localClockOffset
-                       << " new time set to: " << timeWithLocalization.Utc().Now();
+            << " local offset was: " << localClockOffset
+            << " new time set to: " << timeWithLocalization.Utc().Now();
     }
 
     virtual void TimeUnavailable() override

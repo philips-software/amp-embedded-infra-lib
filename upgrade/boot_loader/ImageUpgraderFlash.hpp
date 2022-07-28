@@ -11,7 +11,7 @@ namespace application
     {
     public:
         template<std::size_t Size>
-        using WithBlockSize = infra::WithStorage<ImageUpgraderFlash, std::array<uint8_t, Size>>;
+            using WithBlockSize = infra::WithStorage<ImageUpgraderFlash, std::array<uint8_t, Size>>;
 
         ImageUpgraderFlash(infra::ByteRange buffer, const char* targetName, Decryptor& decryptor, hal::SynchronousFlash& flash, uint32_t destinationAddressOffset);
 

@@ -14,9 +14,9 @@ namespace services
     {
     public:
         template<std::size_t MaxMessageSize>
-        using WithMaxMessageSize = infra::WithStorage<infra::WithStorage<MessageCommunicationCobs,
-                                                          infra::BoundedVector<uint8_t>::WithMaxSize<MaxMessageSize>>,
-            infra::BoundedVector<uint8_t>::WithMaxSize<MaxMessageSize + MaxMessageSize / 254 + 3>>;
+            using WithMaxMessageSize = infra::WithStorage<infra::WithStorage<MessageCommunicationCobs,
+                infra::BoundedVector<uint8_t>::WithMaxSize<MaxMessageSize>>,
+                infra::BoundedVector<uint8_t>::WithMaxSize<MaxMessageSize + MaxMessageSize / 254 + 3>>;
 
         MessageCommunicationCobs(infra::BoundedVector<uint8_t>& sendStorage, infra::BoundedVector<uint8_t>& receivedMessage, hal::SerialCommunication& serial);
 

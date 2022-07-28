@@ -1,11 +1,11 @@
 #ifndef SERVICES_FLASH_QUAD_SPI_HPP
 #define SERVICES_FLASH_QUAD_SPI_HPP
 
-#include "hal/interfaces/FlashHomogeneous.hpp"
 #include "hal/interfaces/QuadSpi.hpp"
 #include "infra/timer/Timer.hpp"
 #include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/Sequencer.hpp"
+#include "hal/interfaces/FlashHomogeneous.hpp"
 
 namespace services
 {

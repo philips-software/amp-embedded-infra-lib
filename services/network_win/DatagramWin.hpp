@@ -8,9 +8,9 @@
 #include "infra/util/SharedObjectAllocator.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "services/network/Datagram.hpp"
-#include <iphlpapi.h>
 #include <list>
 #include <winsock2.h>
+#include <iphlpapi.h>
 
 namespace services
 {

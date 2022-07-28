@@ -155,6 +155,7 @@ TEST_F(IntrusiveBinarySearchTreeTest, InsertSecondNodeLeft)
     tree.insert_in_tree(node0);
 
     EXPECT_EQ("1(0,)", Representation(tree));
+
 }
 
 TEST_F(IntrusiveBinarySearchTreeTest, InsertSecondNodeRight)
@@ -215,7 +216,7 @@ TEST_F(IntrusiveBinarySearchTreeTest, RemoveRootNodeWithLeftChild)
     tree.insert_in_tree(node2);
     tree.insert_in_tree(node1);
     ASSERT_EQ("2(1,)", Representation(tree));
-
+    
     EXPECT_EQ(std::make_tuple(&node1, &node2, &node2.left), tree.remove_from_tree(node2));
     EXPECT_EQ("1", Representation(tree));
 }

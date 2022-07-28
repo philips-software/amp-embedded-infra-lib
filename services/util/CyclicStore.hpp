@@ -88,7 +88,7 @@ namespace services
             Iterator& operator=(const Iterator& other);
 
             void Read(infra::ByteRange buffer, const infra::Function<void(infra::ByteRange result)>& onDone);
-            void ErasePrevious(const infra::Function<void()>& onDone); // Erase the item that just hase been read
+            void ErasePrevious(const infra::Function<void()>& onDone);  // Erase the item that just hase been read
 
             void SectorIsErased(uint32_t sectorIndex);
 
@@ -123,7 +123,7 @@ namespace services
 
     private:
         hal::Flash& flash;
-        mutable uint32_t startAddress = 0; // In startAddress the starting point for reading is cached; this is not observable behaviour but a performance optimization. Therefore it is mutable.
+        mutable uint32_t startAddress = 0;  // In startAddress the starting point for reading is cached; this is not observable behaviour but a performance optimization. Therefore it is mutable.
         uint32_t endAddress = 0;
         uint32_t sanitizeAddress = 0;
         uint32_t endSanitizeSector = 0;
@@ -142,7 +142,7 @@ namespace services
 
         infra::Optional<Iterator> erasingPosition;
 
-        enum class RecoverPhase : uint8_t
+        enum class RecoverPhase: uint8_t
         {
             searchingStartOrEmpty,
             checkingAllUsed,

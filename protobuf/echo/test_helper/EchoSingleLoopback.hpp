@@ -14,7 +14,7 @@ namespace application
         using services::EchoOnStreams::EchoOnStreams;
 
     protected:
-        // Implementation of services::EchoOnStreams
+        //Implementation of services::EchoOnStreams
         virtual void RequestSendStream(std::size_t size) override;
         virtual void BusyServiceDone() override;
 
@@ -23,9 +23,7 @@ namespace application
 
     private:
         std::vector<uint8_t> storage;
-        infra::NotifyingSharedOptional<infra::ByteOutputStreamWriter> sendStream{ [this]() {
-            SendStreamFilled();
-        } };
+        infra::NotifyingSharedOptional<infra::ByteOutputStreamWriter> sendStream{[this]() { SendStreamFilled(); }};
     };
 }
 

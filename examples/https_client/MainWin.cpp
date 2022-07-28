@@ -1,5 +1,5 @@
-#include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "hal/generic/TimerServiceGeneric.hpp"
+#include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "infra/stream/IoOutputStream.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/network/ConnectionMbedTls.hpp"
@@ -44,7 +44,7 @@ namespace application
     {
     public:
         TracingHttpClient(infra::BoundedString url, uint16_t port, services::HttpClientConnector& connector,
-            services::Tracer& tracer)
+                          services::Tracer& tracer)
             : HttpClientBasic(url, port, connector)
             , tracer(tracer)
         {

@@ -16,12 +16,8 @@ namespace services
         virtual void HeaderAvailable(HttpHeader header) = 0;
         virtual void BodyAvailable(infra::SharedPtr<infra::StreamReader>&& reader) = 0;
         virtual void BodyComplete() = 0;
-
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
-        {}
-
-        virtual void FillContent(infra::StreamWriter& writer) const
-        {}
+        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) {}
+        virtual void FillContent(infra::StreamWriter& writer) const {}
     };
 
     class HttpClientObserverFactory
@@ -47,7 +43,7 @@ namespace services
         virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<HttpClientObserver> client)>&& createdClientObserver) = 0;
         virtual void ConnectionFailed(ConnectFailReason reason) = 0;
     };
-
+    
     class HttpClient
         : public infra::SharedOwningSubject<HttpClientObserver>
     {

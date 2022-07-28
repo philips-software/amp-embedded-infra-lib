@@ -61,7 +61,8 @@ public:
 
     void ExpectDataReceived(const std::string& data)
     {
-        EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this, data]() {
+        EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this, data]()
+        {
             CheckDataReceived(data);
         }));
     }
@@ -119,7 +120,8 @@ TEST_F(WebSocketClientConnectionObserverTest, receive_large_frame)
 
 TEST_F(WebSocketClientConnectionObserverTest, rewind_reader)
 {
-    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]() {
+    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
+    {
         auto reader = webSocket->ReceiveStream();
         infra::TextInputStream::WithErrorPolicy stream(*reader);
 
@@ -156,7 +158,8 @@ TEST_F(WebSocketClientConnectionObserverTest, rewind_reader)
 
 TEST_F(WebSocketClientConnectionObserverTest, reconstruct_reader_after_ack)
 {
-    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]() {
+    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
+    {
         {
             auto reader = webSocket->ReceiveStream();
             infra::TextInputStream::WithErrorPolicy stream(*reader);
@@ -202,7 +205,8 @@ TEST_F(WebSocketClientConnectionObserverTest, reconstruct_reader_after_ack)
 
 TEST_F(WebSocketClientConnectionObserverTest, rewind_reader_after_ack)
 {
-    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]() {
+    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
+    {
         {
             auto reader = webSocket->ReceiveStream();
             infra::TextInputStream::WithErrorPolicy stream(*reader);
@@ -238,7 +242,8 @@ TEST_F(WebSocketClientConnectionObserverTest, rewind_reader_after_ack)
 
 TEST_F(WebSocketClientConnectionObserverTest, reconstruct_reader_after_ack_on_frame_boundary)
 {
-    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]() {
+    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
+    {
         {
             auto reader = webSocket->ReceiveStream();
             infra::TextInputStream::WithErrorPolicy stream(*reader);
@@ -268,7 +273,8 @@ TEST_F(WebSocketClientConnectionObserverTest, DataReceived_while_reader_is_const
 {
     auto reader = webSocket->ReceiveStream();
 
-    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this, &reader]() {
+    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this, &reader]()
+    {
         infra::TextInputStream::WithErrorPolicy stream(*reader);
 
         EXPECT_EQ(7, reader->Available());
@@ -283,7 +289,8 @@ TEST_F(WebSocketClientConnectionObserverTest, DataReceived_while_reader_is_const
 
 TEST_F(WebSocketClientConnectionObserverTest, received_part_of_frame)
 {
-    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]() {
+    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
+    {
         auto reader = webSocket->ReceiveStream();
         infra::TextInputStream::WithErrorPolicy stream(*reader);
 
@@ -299,7 +306,8 @@ TEST_F(WebSocketClientConnectionObserverTest, received_part_of_frame)
     connection.SimulateDataReceived(std::vector<uint8_t>{ { 0x82, 0x04, 'a', 'b' } });
     ExecuteAllActions();
 
-    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]() {
+    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
+    {
         auto reader = webSocket->ReceiveStream();
         infra::TextInputStream::WithErrorPolicy stream(*reader);
 
@@ -315,7 +323,8 @@ TEST_F(WebSocketClientConnectionObserverTest, received_part_of_frame)
 
 TEST_F(WebSocketClientConnectionObserverTest, Peek)
 {
-    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]() {
+    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
+    {
         auto reader = webSocket->ReceiveStream();
         infra::TextInputStream::WithErrorPolicy stream(*reader);
 
@@ -332,7 +341,8 @@ TEST_F(WebSocketClientConnectionObserverTest, Peek)
 
 TEST_F(WebSocketClientConnectionObserverTest, PeekContiguousRange)
 {
-    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]() {
+    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
+    {
         auto reader = webSocket->ReceiveStream();
 
         EXPECT_EQ("abcd", infra::ByteRangeAsString(reader->PeekContiguousRange(0)));
@@ -347,7 +357,8 @@ TEST_F(WebSocketClientConnectionObserverTest, PeekContiguousRange)
 
 TEST_F(WebSocketClientConnectionObserverTest, ExtractContiguousRange)
 {
-    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]() {
+    EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
+    {
         auto reader = webSocket->ReceiveStream();
 
         EXPECT_EQ("ab", infra::ByteRangeAsString(reader->ExtractContiguousRange(2)));
@@ -378,7 +389,7 @@ TEST_F(WebSocketClientConnectionObserverTest, send_and_receive_ping_in_two_buffe
 TEST_F(WebSocketClientConnectionObserverTest, send_and_receive_ping_between_data)
 {
     ExpectDataReceived("abcdefg");
-    connection.SimulateDataReceived(std::vector<uint8_t>{ { 0x82, 0x04, 'a', 'b', 'c', 'd', 0x89, 0x04, 'p', 'i', 'n', 'g', 0x82, 0x03, 'e', 'f', 'g' } });
+    connection.SimulateDataReceived(std::vector<uint8_t>{ { 0x82, 0x04, 'a', 'b', 'c', 'd', 0x89, 0x04, 'p', 'i', 'n', 'g', 0x82, 0x03, 'e', 'f', 'g'} });
     ExecuteAllActions();
     EXPECT_EQ((std::vector<uint8_t>{ { 0x8a, 0x84, 0, 0, 0, 0, 'p', 'i', 'n', 'g' } }), connection.sentData);
 }

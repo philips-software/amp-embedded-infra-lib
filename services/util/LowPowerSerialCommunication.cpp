@@ -12,7 +12,7 @@ namespace hal
         mainClock.Refere();
         this->actionOnCompletion = actionOnCompletion;
         serialCommunication.SendData(data, [this]() {
-            this->actionOnCompletion();
+            this->actionOnCompletion(); 
             this->mainClock.Release();
         });
     }

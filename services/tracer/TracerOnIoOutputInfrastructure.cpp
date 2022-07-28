@@ -1,5 +1,5 @@
-#include "services/tracer/TracerOnIoOutputInfrastructure.hpp"
 #include "services/tracer/GlobalTracer.hpp"
+#include "services/tracer/TracerOnIoOutputInfrastructure.hpp"
 
 namespace main_
 {

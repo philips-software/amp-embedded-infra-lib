@@ -80,8 +80,7 @@ TEST_F(TimerTest, RepeatingTimerTriggersImmediately)
     EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(0)));
     EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(1)));
 
-    infra::TimerRepeating timer(
-        std::chrono::seconds(1), [&callback]() { callback.callback(); }, infra::triggerImmediately);
+    infra::TimerRepeating timer(std::chrono::seconds(1), [&callback]() { callback.callback(); }, infra::triggerImmediately);
 
     ForwardTime(std::chrono::seconds(1));
 }
@@ -106,8 +105,7 @@ TEST_F(TimerTest, RepeatingTimerTriggersImmediatelyAfterReset)
     EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(1)));
 
     infra::TimerRepeating timer;
-    timer.Start(
-        std::chrono::seconds(1), [&callback]() { callback.callback(); }, infra::triggerImmediately);
+    timer.Start(std::chrono::seconds(1), [&callback]() { callback.callback(); }, infra::triggerImmediately);
 
     ForwardTime(std::chrono::seconds(1));
 }
@@ -170,7 +168,7 @@ TEST_F(TimerTest, TestTimerCancel)
 {
     testing::StrictMock<infra::MockCallback<void()>> callback;
 
-    infra::TimerSingleShot timer(std::chrono::seconds(1), [&callback]() { callback.callback(); });
+    infra::TimerSingleShot timer(std::chrono::seconds(1), [&callback]() { callback.callback();  });
     timer.Cancel();
 
     ForwardTime(std::chrono::seconds(5));

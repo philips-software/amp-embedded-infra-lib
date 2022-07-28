@@ -108,6 +108,7 @@ namespace services
             Connection::Observer().Abort();
         if ((mutex.resource.ClaimsPending() && mutex.cancelConnectionOnNewRequest) || closing)
             Connection::Observer().Close();
+
     }
 
     ExclusiveConnectionFactory::ExclusiveConnectionFactory(infra::BoundedList<infra::NotifyingSharedOptional<Listener>>& listeners, infra::BoundedList<Connector>& connectors,
@@ -148,13 +149,14 @@ namespace services
         , factory(factory)
         , claimer(connectionFactory.mutex.Resource())
         , listener(connectionFactory.connectionFactory.Listen(port, *this, versions))
-        , access([this]() {
-            if (createdObserver != nullptr)
+        , access([this]()
             {
-                createdObserver = nullptr;
-                claimer.Release();
-            }
-        })
+                if (createdObserver != nullptr)
+                {
+                    createdObserver = nullptr;
+                    claimer.Release();
+                }
+            })
     {}
 
     void ExclusiveConnectionFactory::Listener::ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address)
@@ -165,17 +167,18 @@ namespace services
 
             services::GlobalTracer().Trace() << "ExclusiveConnectionFactory::Listener::ConnectionAccepted claiming";
             auto created = createdObserver.Clone();
-            claimer.Claim([this, address, created]() {
+            claimer.Claim([this, address, created]()
+            {
                 services::GlobalTracer().Trace() << "ExclusiveConnectionFactory::Listener::ConnectionAccepted claim granted";
                 this->createdObserver = created;
                 auto self = access.MakeShared(*this);
-                factory.ConnectionAccepted([self](infra::SharedPtr<ConnectionObserver> connectionObserver) {
+                factory.ConnectionAccepted([self](infra::SharedPtr<ConnectionObserver> connectionObserver)
+                {
                     auto newConnection = self->connectionFactory.mutex.CreateConnection(std::move(self->claimer), self->connectionFactory.cancelConnectionOnNewRequest);
                     self->createdObserver(newConnection);
                     if (newConnection->ConnectionObserver::IsAttached())
                         newConnection->Attach(connectionObserver);
-                },
-                    address);
+                }, address);
             });
         }
     }
@@ -184,19 +187,21 @@ namespace services
         : connectionFactory(connectionFactory)
         , clientFactory(clientFactory)
         , claimer(connectionFactory.mutex.Resource())
-        , access([this]() {
-            if (createdObserver != nullptr)
+        , access([this]()
             {
-                createdObserver = nullptr;
-                claimer.Release();
-            }
+                if (createdObserver != nullptr)
+                {
+                    createdObserver = nullptr;
+                    claimer.Release();
+                }
 
-            this->connectionFactory.connectors.remove(*this);
-        })
+                this->connectionFactory.connectors.remove(*this);
+            })
     {
         connectionFactory.mutex.RequestCloseConnection();
 
-        claimer.Claim([this]() {
+        claimer.Claim([this]()
+        {
             this->connectionFactory.connectionFactory.Connect(*this);
         });
     }
@@ -229,7 +234,8 @@ namespace services
     {
         this->createdObserver = std::move(createdObserver);
         auto self = access.MakeShared(*this);
-        clientFactory.ConnectionEstablished([self](infra::SharedPtr<ConnectionObserver> connectionObserver) {
+        clientFactory.ConnectionEstablished([self](infra::SharedPtr<ConnectionObserver> connectionObserver)
+        {
             auto newConnection = self->connectionFactory.mutex.CreateConnection(std::move(self->claimer), self->connectionFactory.cancelConnectionOnNewRequest);
             self->createdObserver(newConnection);
             if (newConnection->ConnectionObserver::IsAttached())

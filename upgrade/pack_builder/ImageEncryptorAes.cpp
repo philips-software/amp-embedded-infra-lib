@@ -1,8 +1,8 @@
-#include "upgrade/pack_builder/ImageEncryptorAes.hpp"
 #include "mbedtls/aes.h"
+#include "upgrade/pack_builder/ImageEncryptorAes.hpp"
+#include <cassert>
 #include <algorithm>
 #include <array>
-#include <cassert>
 
 extern "C"
 {

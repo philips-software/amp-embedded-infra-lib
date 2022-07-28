@@ -50,7 +50,7 @@ namespace services
 
     public:
         template<std::size_t MaxConnections>
-        using WithMaxConnections = infra::WithStorage<ExclusiveStartingConnectionFactoryMutex, infra::SharedObjectAllocatorFixedSize<ExclusiveStartingConnection, void(ExclusiveStartingConnectionFactoryMutex& mutex)>::WithStorage<MaxConnections>>;
+            using WithMaxConnections = infra::WithStorage<ExclusiveStartingConnectionFactoryMutex, infra::SharedObjectAllocatorFixedSize<ExclusiveStartingConnection, void(ExclusiveStartingConnectionFactoryMutex& mutex)>::WithStorage<MaxConnections>>;
 
         ExclusiveStartingConnectionFactoryMutex(infra::SharedObjectAllocator<ExclusiveStartingConnection, void(ExclusiveStartingConnectionFactoryMutex& mutex)>& connections);
 
@@ -81,7 +81,7 @@ namespace services
     public:
         template<std::size_t NumListeners, std::size_t NumConnectors>
         using WithListenersAndConnectors = infra::WithStorage<infra::WithStorage<ExclusiveStartingConnectionFactory,
-                                                                  infra::BoundedList<infra::NotifyingSharedOptional<Listener>>::WithMaxSize<NumListeners>>,
+            infra::BoundedList<infra::NotifyingSharedOptional<Listener>>::WithMaxSize<NumListeners>>,
             infra::BoundedList<Connector>::WithMaxSize<NumConnectors>>;
 
         ExclusiveStartingConnectionFactory(infra::BoundedList<infra::NotifyingSharedOptional<Listener>>& listeners, infra::BoundedList<Connector>& connectors,
@@ -157,8 +157,8 @@ namespace services
     public:
         template<std::size_t NumListeners, std::size_t NumConnectors, std::size_t NumConnections>
         using WithListenersAndConnectors = infra::WithStorage<infra::WithStorage<infra::WithStorage<ExclusiveStartingConnectionReleaseFactory,
-                                                                                     infra::BoundedList<infra::NotifyingSharedOptional<Listener>>::WithMaxSize<NumListeners>>,
-                                                                  infra::BoundedList<Connector>::WithMaxSize<NumConnectors>>,
+            infra::BoundedList<infra::NotifyingSharedOptional<Listener>>::WithMaxSize<NumListeners>>,
+            infra::BoundedList<Connector>::WithMaxSize<NumConnectors>>,
             infra::BoundedList<infra::NotifyingSharedOptional<ExclusiveStartingConnectionFactoryMutex::ExclusiveStartingConnectionRelease>>::WithMaxSize<NumConnections>>;
 
         ExclusiveStartingConnectionReleaseFactory(infra::BoundedList<infra::NotifyingSharedOptional<Listener>>& listeners, infra::BoundedList<Connector>& connectors,

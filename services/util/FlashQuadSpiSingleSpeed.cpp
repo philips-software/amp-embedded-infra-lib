@@ -1,5 +1,5 @@
-#include "services/util/FlashQuadSpiSingleSpeed.hpp"
 #include "infra/event/EventDispatcher.hpp"
+#include "services/util/FlashQuadSpiSingleSpeed.hpp"
 
 namespace services
 {
@@ -26,7 +26,7 @@ namespace services
 
     void FlashQuadSpiSingleSpeed::PageProgram()
     {
-        hal::QuadSpi::Header pageProgramHeader{ infra::MakeOptional(commandPageProgram), ConvertAddress(address), {}, 0 };
+        hal::QuadSpi::Header pageProgramHeader{ infra::MakeOptional(commandPageProgram), ConvertAddress(address),{}, 0 };
 
         infra::ConstByteRange currentBuffer = infra::Head(buffer, sizePage - AddressOffsetInSector(address) % sizePage);
         buffer.pop_front(currentBuffer.size());

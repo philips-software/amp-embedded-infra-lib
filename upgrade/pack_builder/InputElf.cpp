@@ -1,6 +1,6 @@
+#include "upgrade/pack_builder/InputBinary.hpp"
 #include "upgrade/pack_builder/InputElf.hpp"
 #include "upgrade/pack_builder/Elf.hpp"
-#include "upgrade/pack_builder/InputBinary.hpp"
 
 namespace application
 {

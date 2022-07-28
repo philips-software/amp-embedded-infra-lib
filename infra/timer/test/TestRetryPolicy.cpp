@@ -1,7 +1,7 @@
-#include "gtest/gtest.h"
+#include <cmath>
 #include "infra/timer/RetryPolicy.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
-#include <cmath>
+#include "gtest/gtest.h"
 
 class RetryPolicyTest
     : public testing::Test

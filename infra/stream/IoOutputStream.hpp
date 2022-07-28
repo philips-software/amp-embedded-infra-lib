@@ -1,8 +1,8 @@
 #ifndef INFRA_IO_OUTPUT_STREAM_HPP
 #define INFRA_IO_OUTPUT_STREAM_HPP
 
-#include "infra/stream/OutputStream.hpp"
 #include "infra/stream/StreamManipulators.hpp"
+#include "infra/stream/OutputStream.hpp"
 #include "infra/util/BoundedString.hpp"
 #include <cstdint>
 #include <iostream>
@@ -28,7 +28,7 @@ namespace infra
     {
     public:
         template<std::size_t Max>
-        using WithStorage = infra::WithStorage<TextOutputStream::WithWriter<IoOutputStreamWriter>, BoundedString::WithStorage<Max>>;
+            using WithStorage = infra::WithStorage<TextOutputStream::WithWriter<IoOutputStreamWriter>, BoundedString::WithStorage<Max>>;
 
         using TextOutputStream::WithWriter<IoOutputStreamWriter>::WithWriter;
     };

@@ -1,9 +1,9 @@
-#ifndef SERVICES_CUCUMBER_WIRE_PROTOCOL_FORMATTER_HPP
+#ifndef SERVICES_CUCUMBER_WIRE_PROTOCOL_FORMATTER_HPP 
 #define SERVICES_CUCUMBER_WIRE_PROTOCOL_FORMATTER_HPP
 
-#include "infra/stream/StringInputStream.hpp"
-#include "infra/syntax/JsonFormatter.hpp"
 #include "services/cucumber/CucumberWireProtocolController.hpp"
+#include "infra/syntax/JsonFormatter.hpp"
+#include "infra/stream/StringInputStream.hpp"
 
 namespace services
 {

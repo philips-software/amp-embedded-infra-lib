@@ -29,7 +29,7 @@ namespace infra
     }
 
     void infra::InputStream::Consume(std::size_t amount)
-    {
+    {   
         while (amount > 0)
         {
             auto reduced = reader.ExtractContiguousRange(amount).size();
@@ -43,7 +43,7 @@ namespace infra
 
         errorPolicy.ReportResult(true);
     }
-
+    
     bool InputStream::Failed() const
     {
         return errorPolicy.Failed();
@@ -94,7 +94,7 @@ namespace infra
         Reader().Extract(ReinterpretCastByteRange(text), ErrorPolicy());
         return *this;
     }
-
+    
     TextInputStream& TextInputStream::operator>>(BoundedString& v)
     {
         *this >> MemoryRange<char>(v.begin(), v.end());
