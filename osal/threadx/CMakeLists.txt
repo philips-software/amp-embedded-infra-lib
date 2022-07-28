@@ -1,7 +1,7 @@
 FetchContent_Declare(
     threadx
-    GIT_REPOSITORY https://github.com/philips-forks/threadx
-    GIT_TAG 83b57acde9dddf1c9468f0f3f0bed7a764f73c85
+    GIT_REPOSITORY https://github.com/azure-rtos/threadx
+    GIT_TAG e11c166a4045d80ea74fe917e5608474754f5067
 )
 
 set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL On)
