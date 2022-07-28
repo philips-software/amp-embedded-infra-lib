@@ -43,7 +43,6 @@ endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Generic")
     enable_language(ASM)
-    set(CMAKE_EXECUTABLE_SUFFIX .elf PARENT_SCOPE)
 endif()
 
 # When building EmIL by itself the examples and tests will be built
@@ -204,3 +203,14 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
     )
 endif()
+
+execute_process(COMMAND docker inspect -f "{{ range .Mounts }}{{ if eq .Destination \"/workspaces\" }}{{ .Name }}{{ end }}{{ end }}" $ENV{HOSTNAME} OUTPUT_VARIABLE DOCKER_VOLUME OUTPUT_STRIP_TRAILING_WHITESPACE)
+message("Docker volume: ${DOCKER_VOLUME}")
+message("Remote workspace: $ENV{LOCAL_WORKSPACE_FOLDER}")
+
+add_custom_target(linter
+    COMMAND docker run --rm -v ${DOCKER_VOLUME}:/workspaces -e DEFAULT_WORKSPACE=/workspaces/embeddedinfralib -e APPLY_FIXES=all oxsecurity/megalinter:v6
+    COMMENT "Running linter..."
+    USES_TERMINAL
+    VERBATIM
+)

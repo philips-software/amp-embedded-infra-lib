@@ -1,6 +1,6 @@
 FetchContent_Declare(
     args
-    GIT_REPOSITORY https://github.com/philips-forks/args
+    GIT_REPOSITORY https://github.com/Taywee/args
     GIT_TAG 730dfbc4bc2e4149c22e0f606bf00420b65aeaeb
 )
 

@@ -16,7 +16,8 @@
       "displayName": "Configuration for Continuous Integration",
       "inherits": "defaults",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "On"
       }
     },
     {
@@ -24,9 +25,9 @@
       "displayName": "Configuration for Code Coverage",
       "inherits": "ContinuousIntegration",
       "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "On",
         "EMIL_ENABLE_COVERAGE": "On",
-        "EMIL_ENABLE_TEST_AUTO_DISCOVERY": "On",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "On"
+        "EMIL_ENABLE_TEST_AUTO_DISCOVERY": "On"
       },
       "generator": "Ninja"
     },
@@ -35,10 +36,10 @@
       "displayName": "Configuration for Mutation Testing",
       "inherits": "ContinuousIntegration",
       "cacheVariables": {
-        "EMIL_ENABLE_MUTATION_TESTING": "On",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "On",
         "CMAKE_C_COMPILER": "clang-12",
         "CMAKE_CXX_COMPILER": "clang++-12",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "On"
+        "EMIL_ENABLE_MUTATION_TESTING": "On"
       },
       "generator": "Ninja"
     },
@@ -48,6 +49,7 @@
       "inherits": "defaults",
       "cacheVariables": {
         "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo;MinSizeRel",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "On",
         "EMIL_BUILD_TESTS": "Off",
         "EMIL_BUILD_EXAMPLES": "Off"
       },
@@ -60,6 +62,7 @@
       "toolchainFile": "${sourceDir}/cmake/toolchain-arm-gcc.cmake",
       "cacheVariables": {
         "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo;MinSizeRel",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "On",
         "CMAKE_PREFIX_PATH": "${sourceDir}/Build/Host"
       },
       "generator": "Ninja Multi-Config"

@@ -20,6 +20,14 @@ namespace services
         MOCK_METHOD0(Handle, GattAttribute::Handle&());
         MOCK_CONST_METHOD0(ValueLength, uint16_t());
         MOCK_METHOD2(Update, void(infra::ConstByteRange data, infra::Function<void()> onDone));
+        MOCK_METHOD(uint8_t, GetAttributeCount, (), (const, override));
+    };
+
+    class GattCharacteristicUpdateMock
+        : public GattCharacteristicUpdate
+    {
+    public:
+        MOCK_METHOD2(Update, void(infra::ConstByteRange data, infra::Function<void()> onDone));
     };
 }
 

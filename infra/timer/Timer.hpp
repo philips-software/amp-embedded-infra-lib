@@ -105,9 +105,6 @@ namespace infra
         virtual void ComputeNextTriggerTime() override;
 
     private:
-        void SetDuration(Duration duration);
-
-    private:
         Duration triggerPeriod = Duration();
     };
 }

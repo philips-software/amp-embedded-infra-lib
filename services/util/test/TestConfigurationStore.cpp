@@ -284,7 +284,7 @@ TEST_F(ConfigurationStoreTest, failed_blob_load_is_propagated)
     onEraseDone();
 }
 
-TEST_F(ConfigurationStoreTest, after_succesful_blob_load_configuration_is_available)
+TEST_F(ConfigurationStoreTest, after_successful_blob_load_configuration_is_available)
 {
     EXPECT_CALL(configurationBlob1, Recover(testing::_)).WillOnce(testing::SaveArg<0>(&onRecoverDone));
     configurationStore.Recover([this](bool success) { OnLoaded(success); });
@@ -298,7 +298,7 @@ TEST_F(ConfigurationStoreTest, after_succesful_blob_load_configuration_is_availa
     onEraseDone();
 }
 
-TEST_F(ConfigurationStoreTest, after_succesful_blob_load_from_second_flash_configuration_is_available)
+TEST_F(ConfigurationStoreTest, after_successful_blob_load_from_second_flash_configuration_is_available)
 {
     EXPECT_CALL(configurationBlob1, Recover(testing::_)).WillOnce(testing::SaveArg<0>(&onRecoverDone));
     configurationStore.Recover([this](bool success) { OnLoaded(success); });

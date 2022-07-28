@@ -17,7 +17,7 @@ namespace infra
 
     public:
         uint32_t Id() const;
-        
+
         void RegisterTimer(Timer& timer);
         void UnregisterTimer(Timer& timer, TimePoint oldTriggerTime);
         void UpdateTriggerTime(Timer& timer, TimePoint oldTriggerTime);
@@ -30,6 +30,8 @@ namespace infra
         virtual TimePoint Now() const = 0;
         virtual Duration Resolution() const = 0;
 
+        static TimerService& GetTimerService(uint32_t id);
+
     private:
         void ComputeNextTrigger();
 
@@ -41,6 +43,8 @@ namespace infra
         TimePoint nextTrigger = TimePoint::max();
         bool holdUpdate = false;
         bool updateNeeded = false;
+
+        static infra::IntrusiveForwardList<TimerService> timerServices;
     };
 }
 

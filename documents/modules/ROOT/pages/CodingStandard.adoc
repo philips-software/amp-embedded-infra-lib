@@ -1,7 +1,7 @@
 = Coding Standard C++ for Embedded Projects
 :source-highlighter: highlight.js
 
-ifndef::sourceRoot[:sourceRoot: {docdir}/../../..]
+ifndef::sourceRoot[:sourceRoot: ../../../..]
 
 == Introduction and Scope
 
@@ -696,5 +696,5 @@ namespace infra
 
 [source,yaml]
 ----
-include::{sourceRoot}/.clang-format[]
+include::../examples/.clang-format[]
 ----

@@ -232,8 +232,6 @@ namespace infra
     {
         // See http://www.geeksforgeeks.org/red-black-tree-set-3-delete-2/ for the algorithm
 
-        T& node = const_cast<reference>(value);
-
         T* doubleBlackParent = nullptr;
         T** doubleBlack = nullptr;
 

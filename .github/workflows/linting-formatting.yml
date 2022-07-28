@@ -17,8 +17,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  formatter:
+    name: Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: DoozyX/clang-format-lint-action@2ec1a72dfb593e52255693c9039e6d94984187dc
+        with:
+          clangFormatVersion: 14
+          inplace: true
+          extensions: "cpp,hpp"
   linter:
-    name: Linter
+    name: Linting
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -27,7 +37,7 @@ jobs:
           fetch-depth: 0
       - name: Run Linter
         id: ml
-        uses: megalinter/megalinter@v5
+        uses: oxsecurity/megalinter@v6
         env:
           VALIDATE_ALL_CODEBASE: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -37,8 +47,7 @@ jobs:
         with:
           name: linter
           path: |
-            report
-            mega-linter.log
+            megalinter-reports
       - name: Create PR with fixes
         id: cpr
         if: steps.ml.outputs.has_updated_sources == 1 && (env.APPLY_FIXES_EVENT == 'all' || env.APPLY_FIXES_EVENT == github.event_name) && env.APPLY_FIXES_MODE == 'pull_request' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)

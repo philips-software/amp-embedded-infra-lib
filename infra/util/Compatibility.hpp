@@ -1,6 +1,7 @@
 #ifndef INFRA_COMPATIBILITY_HPP
 #define INFRA_COMPATIBILITY_HPP
 
+#include <iterator>
 #include <type_traits>
 
 // This file contains compatibility wrappers for features that
@@ -8,6 +9,12 @@
 // It tries to provide a homogeneous way to use these features
 // in client-code; while maintaining compatibility across standards
 // from C++11 and higher.
+
+#ifdef __cpp_if_constexpr
+#define IF_CONSTEXPR constexpr
+#else
+#define IF_CONSTEXPR
+#endif
 
 namespace infra
 {
@@ -28,6 +35,16 @@ namespace infra
 #else
     using enable_if_t = std::enable_if_t<B, T>;
 #endif
+
+    template<class Iterator>
+    std::reverse_iterator<Iterator> make_reverse_iterator(Iterator i)
+    {
+#ifdef __cpp_lib_make_reverse_iterator
+        return std::make_reverse_iterator(i);
+#else
+        return std::reverse_iterator<Iterator>(i);
+#endif
+    }
 }
 
 #endif
