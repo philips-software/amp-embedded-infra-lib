@@ -1,4 +1,5 @@
 #include "gtest/gtest.h"
+#include "infra/stream/StdStringOutputStream.hpp"
 #include "infra/syntax/JsonFormatter.hpp"
 
 TEST(BasicUsageTest, format_json_object)
@@ -47,9 +48,10 @@ TEST(JsonObjectFormatter, add_int)
         formatter.Add("intTag", 0);
         formatter.Add("uint32Tag", static_cast<uint32_t>(5));
         formatter.Add("int64Tag", static_cast<int64_t>(-10));
+        formatter.Add("bigger", infra::JsonBiggerInt(4, true));
     }
 
-    EXPECT_EQ(R"({ "intTag":0, "uint32Tag":5, "int64Tag":-10 })", string);
+    EXPECT_EQ(R"({ "intTag":0, "uint32Tag":5, "int64Tag":-10, "bigger":-4 })", string);
 }
 
 TEST(JsonObjectFormatter, add_const_char_ptr)
@@ -223,6 +225,72 @@ TEST(JsonObjectFormatter, add_json_value_array)
     EXPECT_EQ(R"({ "tag":[] })", string);
 }
 
+TEST(JsonObjectFormatter, add_key_jsonstring_value_bool)
+{
+    infra::BoundedString::WithStorage<64> string;
+
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        formatter.Add(infra::JsonString{ "tag"}, infra::JsonValue(infra::InPlaceType<bool>(), false));
+    }
+    EXPECT_EQ(R"({ "tag":false })", string);
+}
+
+TEST(JsonObjectFormatter, add_key_jsonstring_value_Int)
+{
+    infra::BoundedString::WithStorage<64> string;
+
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        formatter.Add(infra::JsonString{ "tag" }, infra::JsonValue(infra::InPlaceType<int32_t>(), -2));
+    }
+    EXPECT_EQ(R"({ "tag":-2 })", string);
+}
+
+TEST(JsonObjectFormatter, add_key_jsonstring_value_JsonFloat)
+{
+    infra::BoundedString::WithStorage<64> string;
+
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        formatter.Add(infra::JsonString{ "tag" }, infra::JsonValue(infra::InPlaceType<infra::JsonFloat>(), infra::JsonFloat{55,300}));
+    }
+    EXPECT_EQ(R"({ "tag":55.300 })", string);
+}
+
+TEST(JsonObjectFormatter, add_key_jsonstring_value_JsonString)
+{
+    infra::BoundedString::WithStorage<64> string;
+
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        formatter.Add(infra::JsonString{ "tag" }, infra::JsonValue(infra::InPlaceType<infra::JsonString>(), infra::JsonString{ "String" }));
+    }
+    EXPECT_EQ(R"({ "tag":"String" })", string);
+}
+
+TEST(JsonObjectFormatter, add_key_jsonstring_value_JsonObject)
+{
+    infra::BoundedString::WithStorage<64> string;
+
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        formatter.Add(infra::JsonString{ "tag" }, infra::JsonValue(infra::InPlaceType<infra::JsonObject>(), infra::JsonObject{ "{}" }));
+    }
+    EXPECT_EQ(R"({ "tag":{} })", string);
+}
+
+TEST(JsonObjectFormatter, add_key_jsonstring_value_JsonArray)
+{
+    infra::BoundedString::WithStorage<64> string;
+
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        formatter.Add(infra::JsonString{ "tag" }, infra::JsonValue(infra::InPlaceType<infra::JsonArray>(), infra::JsonArray{ "[]" }));
+    }
+    EXPECT_EQ(R"({ "tag":[] })", string);
+}
+
 TEST(JsonObjectFormatter, output_is_truncated_on_small_output_string)
 {
     infra::BoundedString::WithStorage<1> string;
@@ -327,9 +395,10 @@ TEST(JsonArrayFormatter, add_int)
         formatter.Add(0);
         formatter.Add(static_cast<uint32_t>(5));
         formatter.Add(static_cast<int64_t>(-10));
+        formatter.Add(infra::JsonBiggerInt(4, true));
     }
 
-    EXPECT_EQ(R"([ 0, 5, -10 ])", string);
+    EXPECT_EQ(R"([ 0, 5, -10, -4 ])", string);
 }
 
 TEST(JsonArrayFormatter, add_const_char_ptr)
@@ -400,4 +469,82 @@ TEST(JsonArrayFormatter, output_is_truncated_on_small_output_string)
     }
 
     EXPECT_EQ(R"([)", string);
+}
+
+std::string Merged(infra::BoundedConstString objectString, infra::BoundedConstString path, const infra::JsonValue& value)
+{
+    infra::StdStringOutputStream::WithStorage stream;
+    {
+        infra::JsonObjectFormatter formatter(stream);
+        infra::JsonObject object(objectString);
+        Merge(formatter, object, path, value);
+    }
+    return stream.Storage();
+}
+
+infra::JsonValue JsonInt(int32_t value)
+{
+    return infra::JsonValue(infra::InPlaceType<int32_t>(), value);
+}
+
+infra::JsonValue JsonStr(infra::BoundedConstString value)
+{
+    return infra::JsonValue(infra::InPlaceType<infra::JsonString>(), infra::JsonString(value));
+}
+
+infra::JsonValue JsonObj(infra::BoundedConstString value)
+{
+    return infra::JsonValue(infra::InPlaceType<infra::JsonObject>(), infra::JsonObject(value));
+}
+
+TEST(JsonObjectFormatter, replace_single_int)
+{
+    EXPECT_EQ(R"({ "a":5 })", Merged(R"({"a":6})", "a", JsonInt(5)));
+}
+
+TEST(JsonObjectFormatter, override_json_path_with_empty_json)
+{
+    EXPECT_EQ(R"({ "x":{} })"
+        , Merged(R"({"x":{"a":5, "b":"string"}})", "x", JsonObj("{}")));
+}
+ 
+TEST(JsonObjectFormatter, replace_int_by_string)
+{
+    EXPECT_EQ(R"({ "a":"string" })"
+        , Merged(R"({"a":6})", "a", JsonStr("string")));
+}
+
+TEST(JsonObjectFormatter, jsonObject_replaces_int_at_a_missing_path)
+{
+    EXPECT_EQ(R"({ "a":{ "y":"string" } })", Merged(R"({"a":6})", "a/y", JsonStr("string")));
+}
+
+TEST(JsonObjectFormatter, replace_int_while_other_keyvalue_pairs_remain_the_same)
+{
+    EXPECT_EQ(R"({ "a":[true, false], "b":"value2", "c":-2, "d":56.002 })"
+        , Merged(R"({ "a":[true, false], "b":"value2", "c":5, "d":56.2 })", "c", JsonInt(-2)));
+}
+
+TEST(JsonObjectFormatter, replace_empty_jsonObject_with_new_jsonObject)
+{
+    EXPECT_EQ(R"({ "key":{"nested":"value"} })"
+        , Merged(R"({ "key":{} })", "key", JsonObj(R"({"nested":"value"})")));
+}
+
+TEST(JsonObjectFormatter, replace_string_value_in_nested_json_object_of_depth_2)
+{
+    EXPECT_EQ(R"({ "a":-2, "b":"value2", "c":5, "d":{ "x":{ "y":"string" } } })"
+        , Merged(R"({ "a":-2, "b":"value2", "c":5, "d":{"x":{ "y":"value6" } } })", "d/x/y", JsonStr("string")));
+}
+
+TEST(JsonObjectFormatter, key_gets_added_when_it_is_missing_from_the_nested_object)
+{
+    EXPECT_EQ(R"({ "path":{ "x":5, "y":"string" } })"
+        , Merged(R"({"path":{"x" : 5}})", "path/y", JsonStr("string")));
+}
+
+TEST(JsonObjectFormatter, long_path_keyvalue_gets_added_when_it_is_missing)
+{
+    EXPECT_EQ(R"({ "a":-2, "b":"value2", "c":5, "d":{"x":{ "y":"value9" } }, "key1":{ "key2":{ "key3":"string" } } })"
+        , Merged(R"({ "a":-2, "b":"value2", "c":5, "d":{"x":{ "y":"value9" } } })", "key1/key2/key3", JsonStr("string")));
 }

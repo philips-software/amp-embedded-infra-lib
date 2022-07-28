@@ -1,0 +1,10 @@
+mutators:
+  - cxx_add_to_sub
+excludePaths:
+  - .*/_deps/.*
+  - .*/external/.*
+  - .*/googlemock/.*
+  - .*/googletest/.*
+  - .*/test_doubles/.*
+  - .*/test_helper/.*
+  - .*/test/.*

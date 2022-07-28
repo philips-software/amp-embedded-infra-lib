@@ -43,7 +43,6 @@ endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Generic")
     enable_language(ASM)
-    set(CMAKE_EXECUTABLE_SUFFIX .elf PARENT_SCOPE)
 endif()
 
 # When building EmIL by itself the examples and tests will be built
@@ -64,10 +63,11 @@ else()
     set(EMIL_EXCLUDE_FROM_ALL "EXCLUDE_FROM_ALL")
 endif()
 
-
 option(EMIL_BUILD_TESTS "Enable build of the tests" ${EMIL_DEFAULTOPT})
 option(EMIL_BUILD_EXAMPLES "Enable build of the examples" ${EMIL_DEFAULTOPT})
 option(EMIL_ENABLE_COVERAGE "Enable compiler flags for code coverage measurements" Off)
+option(EMIL_ENABLE_MUTATION_TESTING "Enable compiler flags for mutation testing" Off)
+option(EMIL_ENABLE_TEST_AUTO_DISCOVERY "Enable auto-discovery of tests in test executables; this creates one CTest command per test-case and can be slow on some platforms" Off)
 
 # The next few options control the install and export behaviour.
 # When package config generation is enabled the prefix can be set
@@ -79,7 +79,11 @@ option(EMIL_ENABLE_COVERAGE "Enable compiler flags for code coverage measurement
 # should be set to the export name of the 'host' build.
 option(EMIL_GENERATE_PACKAGE_CONFIG "Enable generation of package configuration and install files" On)
 set(EMIL_PACKAGE_CONFIG_EXPORT_NAMESPACE "${PROJECT_NAME}::" CACHE STRING "Namespace used for exported targets")
-set(EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE "" CACHE STRING "Namespace used to reference imported targets")
+if (CMAKE_CROSSCOMPILING)
+    set(EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE "${PROJECT_NAME}::" CACHE STRING "Namespace used to reference imported targets")
+else()
+    set(EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE "" CACHE STRING "Namespace used to reference imported targets")
+endif()
 
 option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of EmIL" On)
 
@@ -114,8 +118,33 @@ if (TARGET_ARCH_X86)
                 add_link_options(--coverage)
             endif()
         endif()
+
+        if (EMIL_ENABLE_MUTATION_TESTING)
+            if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+                add_compile_options(
+                    -g -O0 -grecord-command-line -fprofile-instr-generate -fcoverage-mapping
+                    -fexperimental-new-pass-manager -fpass-plugin=/usr/lib/mull-ir-frontend-12
+                )
+
+                add_link_options(-fprofile-instr-generate)
+            else()
+                message(FATAL_ERROR "Mutation testing is currently only supported for Clang/LLVM; not for ${CMAKE_CXX_COMPILER_ID}")
+            endif()
+        endif()
     endif()
 endif()
+
+function(emil_add_test target)
+    if (EMIL_BUILD_TESTS)
+        if (EMIL_ENABLE_TEST_AUTO_DISCOVERY)
+            gtest_discover_tests(${target} AUTO)
+        elseif(EMIL_ENABLE_MUTATION_TESTING)
+            add_test(NAME ${target} COMMAND mull-runner-12 $<TARGET_FILE:${target}>)
+        else()
+            add_test(NAME ${target} COMMAND ${target})
+        endif()
+    endif()
+endfunction()
 
 add_version_header_target(generated.version_header)
 
@@ -170,3 +199,14 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
     )
 endif()
+
+execute_process(COMMAND docker inspect -f "{{ range .Mounts }}{{ if eq .Destination \"/workspaces\" }}{{ .Name }}{{ end }}{{ end }}" $ENV{HOSTNAME} OUTPUT_VARIABLE DOCKER_VOLUME OUTPUT_STRIP_TRAILING_WHITESPACE)
+message("Docker volume: ${DOCKER_VOLUME}")
+message("Remote workspace: $ENV{LOCAL_WORKSPACE_FOLDER}")
+
+add_custom_target(linter
+    COMMAND docker run --rm -v ${DOCKER_VOLUME}:/workspaces -e DEFAULT_WORKSPACE=/workspaces/embeddedinfralib -e APPLY_FIXES=all oxsecurity/megalinter:v6
+    COMMENT "Running linter..."
+    USES_TERMINAL
+    VERBATIM
+)

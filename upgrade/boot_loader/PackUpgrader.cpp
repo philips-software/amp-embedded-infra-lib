@@ -111,20 +111,27 @@ namespace application
 
     void PackUpgrader::MarkAsDeployStarted()
     {
-        static const UpgradePackStatus statusStarted = UpgradePackStatus::deployStarted;
-        upgradePackFlash.WriteBuffer(infra::MakeByteRange(statusStarted), 0);
+        WriteStatus(UpgradePackStatus::deployStarted);
     }
 
     void PackUpgrader::MarkAsDeployed()
     {
-        static const UpgradePackStatus statusDone = UpgradePackStatus::deployed;
-        upgradePackFlash.WriteBuffer(infra::MakeByteRange(statusDone), 0);
+        WriteStatus(UpgradePackStatus::deployed);
     }
 
     void PackUpgrader::MarkAsError(uint32_t errorCode)
     {
-        static const UpgradePackStatus statusError = UpgradePackStatus::invalid;
-        upgradePackFlash.WriteBuffer(infra::MakeByteRange(statusError), 0);
+        WriteStatus(UpgradePackStatus::invalid);
+        WriteError(errorCode);
+    }
+
+    void PackUpgrader::WriteStatus(UpgradePackStatus status)
+    {
+        upgradePackFlash.WriteBuffer(infra::MakeByteRange(status), 0);
+    }
+
+    void PackUpgrader::WriteError(uint32_t errorCode)
+    {
         upgradePackFlash.WriteBuffer(infra::MakeByteRange(errorCode), 4);
     }
 }

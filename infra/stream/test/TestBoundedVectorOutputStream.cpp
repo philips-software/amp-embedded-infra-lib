@@ -40,7 +40,7 @@ TEST(BoundedVectorOutputStreamTest, stream_to_saved_point)
     EXPECT_EQ("a12345c", infra::ByteRangeAsString(infra::MakeRange(stream.Storage())));
 }
 
-TEST(BoundedVectorOutputStreamTest, available_retuns_remaining_space)
+TEST(BoundedVectorOutputStreamTest, available_returns_remaining_space)
 {
     infra::BoundedVectorOutputStream::WithStorage<4> sos;
     EXPECT_EQ(4, sos.Available());

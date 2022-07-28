@@ -365,7 +365,7 @@ namespace services
         pageCountingReader = infra::none;
         pageReader = nullptr;
 
-        if (contentLength != infra::none && contentLength == 0)
+        if (contentLength != infra::none && contentLength == 0 && pageServer != nullptr)
         {
             pageServer->Close();
             pageServer = nullptr;

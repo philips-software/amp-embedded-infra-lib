@@ -138,19 +138,24 @@ namespace services
         processingQuery = false;
     }
 
-    MdnsClient::MdnsClient(DatagramFactory& datagramFactory, Multicast& multicast)
+    MdnsClient::MdnsClient(DatagramFactory& datagramFactory, Multicast& multicast, IPVersions versions)
         : datagramFactory(datagramFactory)
         , multicast(multicast)
-        , datagramExchange(datagramFactory.Listen(*this, mdnsPort, IPVersions::both))
+        , versions(versions)
+        , datagramExchange(datagramFactory.Listen(*this, mdnsPort, versions))
     {
-        multicast.JoinMulticastGroup(datagramExchange, mdnsMulticastAddressIpv4);
-        multicast.JoinMulticastGroup(datagramExchange, mdnsMulticastAddressIpv6);
+        if (versions != IPVersions::ipv6)
+            multicast.JoinMulticastGroup(datagramExchange, mdnsMulticastAddressIpv4);
+        if (versions != IPVersions::ipv4)
+            multicast.JoinMulticastGroup(datagramExchange, mdnsMulticastAddressIpv6);
     }
 
     MdnsClient::~MdnsClient()
     {
-        multicast.LeaveMulticastGroup(datagramExchange, mdnsMulticastAddressIpv4);
-        multicast.LeaveMulticastGroup(datagramExchange, mdnsMulticastAddressIpv6);
+        if (versions != IPVersions::ipv6)
+            multicast.LeaveMulticastGroup(datagramExchange, mdnsMulticastAddressIpv4);
+        if (versions != IPVersions::ipv4)
+            multicast.LeaveMulticastGroup(datagramExchange, mdnsMulticastAddressIpv6);
     }
 
     void MdnsClient::RegisterQuery(MdnsQuery& query)
@@ -302,14 +307,14 @@ namespace services
 
         switch (query.IpVersion())
         {
-        case services::IPVersions::ipv4:
-            mdnsClient.datagramExchange->RequestSendStream(querySize, MakeUdpSocket(mdnsMulticastAddressIpv4, mdnsPort));
-            break;
-        case services::IPVersions::ipv6:
-            mdnsClient.datagramExchange->RequestSendStream(querySize, MakeUdpSocket(mdnsMulticastAddressIpv6, mdnsPort));
-            break;
-        default:
-            std::abort();
+            case services::IPVersions::ipv4:
+                mdnsClient.datagramExchange->RequestSendStream(querySize, MakeUdpSocket(mdnsMulticastAddressIpv4, mdnsPort));
+                break;
+            case services::IPVersions::ipv6:
+                mdnsClient.datagramExchange->RequestSendStream(querySize, MakeUdpSocket(mdnsMulticastAddressIpv6, mdnsPort));
+                break;
+            default:
+                std::abort();
         }
     }
 

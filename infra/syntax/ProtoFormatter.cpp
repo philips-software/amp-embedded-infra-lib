@@ -10,7 +10,7 @@ namespace infra
         marker = formatter.output.SaveMarker();
     }
 
-    ProtoLengthDelimitedFormatter::ProtoLengthDelimitedFormatter(ProtoLengthDelimitedFormatter&& other)
+    ProtoLengthDelimitedFormatter::ProtoLengthDelimitedFormatter(ProtoLengthDelimitedFormatter&& other) noexcept
         : formatter(other.formatter)
         , marker(other.marker)
     {

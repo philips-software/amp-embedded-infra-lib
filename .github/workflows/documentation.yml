@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Build Antora Site
@@ -22,7 +22,7 @@ jobs:
           antora_generator: "antora-site-generator-lunr"
           antora_docsearch_enabled: "true"
       - name: Store Antora Site
-        uses: actions/upload-artifact@v1.0.0
+        uses: actions/upload-artifact@v3
         with:
           name: antora
           path: "${{ github.workspace }}/build/${{ env.SITE_DIR }}"
@@ -33,9 +33,9 @@ jobs:
     name: Publish to GitHub Pages
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Retrieve Antora Site
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v3
         with:
           name: antora
           path: "${{ github.workspace }}/${{ env.SITE_DIR }}"

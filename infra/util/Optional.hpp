@@ -35,7 +35,7 @@ namespace infra
         constexpr Optional() = default;
 
         Optional(const Optional& other);
-        Optional(Optional&& other);
+        Optional(Optional&& other) noexcept;
         Optional(None);
         template<class U>
             explicit Optional(const Optional<U>& other);
@@ -45,7 +45,7 @@ namespace infra
         ~Optional();
 
         Optional& operator=(const Optional& other);
-        Optional& operator=(Optional&& other);
+        Optional& operator=(Optional&& other) noexcept;
         Optional& operator=(const None&);
         Optional& operator=(const T& value);
         Optional& operator=(T&& value);
@@ -155,7 +155,7 @@ namespace infra
     }
 
     template<class T>
-    Optional<T>::Optional(Optional&& other)
+    Optional<T>::Optional(Optional&& other) noexcept
     {
         if (other)
         {
@@ -203,7 +203,7 @@ namespace infra
     }
 
     template<class T>
-    Optional<T>& Optional<T>::operator=(Optional&& other)
+    Optional<T>& Optional<T>::operator=(Optional&& other) noexcept
     {
         Reset();
         if (other)

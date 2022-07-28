@@ -331,7 +331,7 @@ namespace application
                 for (auto& field : field.message->fields)
                     field->Accept(visitor);
 
-                maxMessageSize += fieldMaxMessageSize + MaxVarIntSize((field.number << 3) | 2);
+                maxMessageSize += fieldMaxMessageSize + MaxVarIntSize(fieldMaxMessageSize) + MaxVarIntSize((field.number << 3) | 2);
             }
 
             virtual void VisitBytes(const EchoFieldBytes& field) override

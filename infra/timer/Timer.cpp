@@ -1,16 +1,16 @@
 #include "infra/timer/Timer.hpp"
-#include "infra/timer/TimerServiceManager.hpp"
+#include "infra/timer/TimerService.hpp"
 #include <cassert>
 
 namespace infra
 {
     TimePoint Now(uint32_t timerServiceId)
     {
-        return TimerServiceManager::Instance().GetTimerService(timerServiceId).Now();
+        return TimerService::GetTimerService(timerServiceId).Now();
     }
 
     Timer::Timer(uint32_t timerServiceId)
-        : timerService(TimerServiceManager::Instance().GetTimerService(timerServiceId))
+        : timerService(TimerService::GetTimerService(timerServiceId))
     {}
 
     Timer::~Timer()
@@ -154,8 +154,8 @@ namespace infra
 
     void TimerRepeating::Start(Duration duration, const infra::Function<void()>& action)
     {
-        SetNextTriggerTime(Now() + Resolution(), action);  // Initialize NextTrigger() for ComputeNextTriggerTime
-        SetDuration(duration);
+        triggerPeriod = duration;
+        SetNextTriggerTime(Now() + TriggerPeriod() + Resolution(), action);
     }
 
     void TimerRepeating::Start(Duration duration, const infra::Function<void()>& action, TriggerImmediately)
@@ -175,12 +175,5 @@ namespace infra
         Duration diff = (now - NextTrigger()) % triggerPeriod;
 
         SetNextTriggerTime(now - diff + triggerPeriod, Action());
-    }
-
-    void TimerRepeating::SetDuration(Duration duration)
-    {
-        triggerPeriod = duration;
-
-        ComputeNextTriggerTime();
     }
 }

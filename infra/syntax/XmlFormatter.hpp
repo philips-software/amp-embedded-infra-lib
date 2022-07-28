@@ -31,9 +31,9 @@ namespace infra
     public:
         XmlTagFormatter(infra::TextOutputStream& stream, const char* tagName);
         XmlTagFormatter(const XmlTagFormatter& other) = delete;
-        XmlTagFormatter(XmlTagFormatter&& other);
+        XmlTagFormatter(XmlTagFormatter&& other) noexcept;
         XmlTagFormatter& operator=(const XmlTagFormatter& other) = delete;
-        XmlTagFormatter& operator=(XmlTagFormatter&& other);
+        XmlTagFormatter& operator=(XmlTagFormatter&& other) noexcept;
         ~XmlTagFormatter();
 
         void Attribute(const char* name, infra::BoundedConstString value);

@@ -13,6 +13,7 @@ namespace application
     {
         UpgradePackHeaderPrologue headerPrologue;
         upgradePackFlash.ReadBuffer(infra::MakeByteRange(headerPrologue), address);
+        headerPrologue.status = ReadStatus();
         address += sizeof(UpgradePackHeaderPrologue);
 
         bool isSane = (headerPrologue.status == UpgradePackStatus::readyToDeploy ||
@@ -49,8 +50,24 @@ namespace application
 
     void UpgradePackLoader::MarkAsError(uint32_t errorCode)
     {
-        static const UpgradePackStatus statusError = UpgradePackStatus::invalid;
-        upgradePackFlash.WriteBuffer(infra::MakeByteRange(statusError), 0);
+        WriteStatus(UpgradePackStatus::invalid);
+        WriteError(errorCode);
+    }
+
+    UpgradePackStatus UpgradePackLoader::ReadStatus()
+    {
+        UpgradePackStatus status;
+        upgradePackFlash.ReadBuffer(infra::MakeByteRange(status), 0);
+        return status;
+    }
+
+    void UpgradePackLoader::WriteStatus(UpgradePackStatus status)
+    {
+        upgradePackFlash.WriteBuffer(infra::MakeByteRange(status), 0);
+    }
+
+    void UpgradePackLoader::WriteError(uint32_t errorCode)
+    {
         upgradePackFlash.WriteBuffer(infra::MakeByteRange(errorCode), 4);
     }
 }

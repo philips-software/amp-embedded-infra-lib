@@ -3,6 +3,7 @@
 
 #include "hal/interfaces/FileSystem.hpp"
 #include "infra/util/MemoryRange.hpp"
+#include "upgrade/pack/UpgradePackHeader.hpp"
 #include "upgrade/pack_builder/Input.hpp"
 #include "upgrade/pack_builder/ImageSigner.hpp"
 #include <memory>
@@ -29,7 +30,7 @@ namespace application
         };
 
     public:
-        UpgradePackBuilder(const HeaderInfo& headerInfo, std::vector<std::unique_ptr<Input>>&& inputs, ImageSigner& signer);
+        UpgradePackBuilder(const HeaderInfo& headerInfo, std::vector<std::unique_ptr<Input>>&& inputs, ImageSigner& signer, UpgradePackStatus initialStatus = UpgradePackStatus::readyToDeploy);
 
         std::vector<uint8_t>& UpgradePack();
         void WriteUpgradePack(const hal::filesystem::path& fileName, hal::FileSystem& fileSystem);
@@ -44,6 +45,7 @@ namespace application
 
     private:
         HeaderInfo headerInfo;
+        UpgradePackStatus initialStatus;
         std::vector<std::unique_ptr<Input>> inputs;
         ImageSigner& signer;
         std::vector<uint8_t> upgradePack;

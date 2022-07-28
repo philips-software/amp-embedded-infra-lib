@@ -174,7 +174,7 @@ namespace infra
     extern const infra::Function<void()> emptyFunction;
 
     template<std::size_t ExtraSize, class Result, class... Args>
-        void swap(Function<Result(Args...), ExtraSize>& x, Function<Result(Args...), ExtraSize>& y);
+        void swap(Function<Result(Args...), ExtraSize>& x, Function<Result(Args...), ExtraSize>& y) noexcept;
 
     template<std::size_t ExtraSize, class Result, class... Args>
         bool operator==(const Function<Result(Args...), ExtraSize>& f, std::nullptr_t);
@@ -279,7 +279,7 @@ namespace infra
         template<class F>
         void InvokerFunctions<Result(Args...), ExtraSize>::Construct(InvokerFunctionsType& invokerFunctions, F&& f)
         {
-            static_assert(sizeof(F) <= ExtraSize, "Not enough static storage availabe for construction of derived type");
+            static_assert(sizeof(F) <= ExtraSize, "Not enough static storage available for construction of derived type");
             static_assert(std::alignment_of<F>::value <= sizeof(UTIL_FUNCTION_ALIGNMENT), "Alignment of U is larger than alignment of this function");
 
             new (&invokerFunctions.data) F(std::forward<F>(f));
@@ -430,7 +430,7 @@ namespace infra
     }
 
     template<std::size_t ExtraSize, class Result, class... Args>
-    void swap(Function<Result(Args...), ExtraSize>& x, Function<Result(Args...), ExtraSize>& y)
+    void swap(Function<Result(Args...), ExtraSize>& x, Function<Result(Args...), ExtraSize>& y) noexcept
     {
         x.Swap(y);
     }

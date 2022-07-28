@@ -1,17 +1,18 @@
 #include "infra/timer/TimerService.hpp"
-#include "infra/timer/TimerServiceManager.hpp"
 
 namespace infra
 {
+    infra::IntrusiveForwardList<TimerService> TimerService::timerServices;
+
     TimerService::TimerService(uint32_t id)
         : id(id)
     {
-        TimerServiceManager::Instance().RegisterTimerService(*this);
+        timerServices.push_front(*this);
     }
 
     TimerService::~TimerService()
     {
-        TimerServiceManager::Instance().UnregisterTimerService(*this);
+        timerServices.erase_slow(*this);
     }
 
     uint32_t TimerService::Id() const
@@ -51,15 +52,35 @@ namespace infra
     {
         holdUpdate = true;
 
-        for (timerIterator = scheduledTimers.begin(); timerIterator != scheduledTimers.end(); )
+        bool more = true;
+        while (more)
         {
-            infra::IntrusiveForwardList<Timer>::iterator currentIterator = timerIterator;
-            ++timerIterator;
+            more = false;
 
-            if (currentIterator->NextTrigger() <= time)
+            infra::Timer* earliest = nullptr;
+
+            for (timerIterator = scheduledTimers.begin(); timerIterator != scheduledTimers.end();)
             {
-                infra::Function<void()> action = currentIterator->Action();
-                currentIterator->ComputeNextTriggerTime();
+                infra::IntrusiveForwardList<Timer>::iterator currentIterator = timerIterator;
+                ++timerIterator;
+
+                if (currentIterator->NextTrigger() <= time)
+                {
+                    if (earliest == nullptr)
+                        earliest = &*currentIterator;
+                    else
+                    {
+                        more = true;
+                        if (earliest->NextTrigger() > currentIterator->NextTrigger())
+                            earliest = &*currentIterator;
+                    }
+                }
+            }
+
+            if (earliest != nullptr)
+            {
+                infra::Function<void()> action = earliest->Action();
+                earliest->ComputeNextTriggerTime();
                 action();
             }
         }
@@ -88,6 +109,15 @@ namespace infra
 
     void TimerService::NextTriggerChanged()
     {}
+
+    TimerService& TimerService::GetTimerService(uint32_t id)
+    {
+        for (TimerService& timerService : timerServices)
+            if (timerService.Id() == id)
+                return timerService;
+
+        abort(); // No timer service with the given id found
+    }
 
     void TimerService::ComputeNextTrigger()
     {

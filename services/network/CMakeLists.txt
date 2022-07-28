@@ -77,6 +77,8 @@ target_sources(services.network PRIVATE
     SingleConnectionListener.hpp
     SntpClient.cpp
     SntpClient.hpp
+    SsdpDeviceDiscovery.cpp
+    SsdpDeviceDiscovery.hpp
     StreamEcho.cpp
     StreamEcho.hpp
     TracingConnectionFactoryWithNameResolver.cpp
@@ -108,5 +110,8 @@ endif()
 
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
+endif()
+
+if (BUILD_TESTING)
     add_subdirectory(test_doubles)
 endif()

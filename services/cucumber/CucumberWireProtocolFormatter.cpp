@@ -100,7 +100,7 @@ namespace services
 
     void CucumberWireProtocolFormatter::FormatInvokeResponse(infra::TextOutputStream::WithErrorPolicy& stream)
     {
-        if (controller.invokeInfo.successfull)
+        if (controller.invokeInfo.successful)
             CreateSuccessMessage(stream);
         else
             CreateFailureMessage(stream, "Invoke Failed", *controller.invokeInfo.failReason);
@@ -129,7 +129,7 @@ namespace services
     void CucumberWireProtocolFormatter::AddStringValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, int16_t& offset)
     {
         infra::JsonObjectFormatter subObject(formatter.SubObject());
-        infra::StringOutputStream::WithStorage<32> stringStream;
+        infra::StringOutputStream::WithStorage<128> stringStream;
         for (uint8_t i = 1; nameToMatch[argPos + offset + i] != '\''; ++i)
             stringStream << nameToMatch[argPos + offset + i];
         subObject.Add("val", stringStream.Storage());

@@ -1,3 +1,4 @@
+add_subdirectory(ble)
 add_subdirectory(cucumber)
 add_subdirectory(network_bsd)
 add_subdirectory(network_win)

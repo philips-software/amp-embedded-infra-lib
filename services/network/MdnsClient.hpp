@@ -75,7 +75,7 @@ namespace services
         : private DatagramExchangeObserver
     {
     public:
-        MdnsClient(DatagramFactory& datagramFactory, Multicast& multicast);
+        MdnsClient(DatagramFactory& datagramFactory, Multicast& multicast, IPVersions versions = IPVersions::both);
         ~MdnsClient();
 
         virtual void RegisterQuery(MdnsQuery& query);
@@ -138,6 +138,7 @@ namespace services
     private:
         DatagramFactory& datagramFactory;
         Multicast& multicast;
+        IPVersions versions;
         infra::SharedPtr<DatagramExchange> datagramExchange;
         infra::Optional<ActiveMdnsQuery> activeMdnsQuery;
         infra::IntrusiveList<MdnsQuery> queries;

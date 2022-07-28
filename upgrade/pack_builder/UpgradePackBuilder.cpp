@@ -9,8 +9,9 @@ namespace application
         : runtime_error("Signature does not verify")
     {}
 
-    UpgradePackBuilder::UpgradePackBuilder(const HeaderInfo& headerInfo, std::vector<std::unique_ptr<Input>>&& inputs, ImageSigner& signer)
+    UpgradePackBuilder::UpgradePackBuilder(const HeaderInfo& headerInfo, std::vector<std::unique_ptr<Input>>&& inputs, ImageSigner& signer, UpgradePackStatus initialStatus)
         : headerInfo(headerInfo)
+        , initialStatus(initialStatus)
         , inputs(std::move(inputs))
         , signer(signer)
     {
@@ -43,7 +44,7 @@ namespace application
         std::vector<uint8_t> signature = signer.ImageSignature(upgradePack);
 
         UpgradePackHeaderPrologue prologue = {};
-        prologue.status = UpgradePackStatus::readyToDeploy; 
+        prologue.status = initialStatus; 
         prologue.magic = upgradePackMagic;
         prologue.errorCode = 0xffffffff;
         prologue.signedContentsLength = upgradePack.size();

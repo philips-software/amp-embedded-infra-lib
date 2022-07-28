@@ -1,5 +1,5 @@
 add_executable(upgrade.pack_builder_test)
-gtest_discover_tests(upgrade.pack_builder_test AUTO)
+emil_add_test(upgrade.pack_builder_test)
 
 target_link_libraries(upgrade.pack_builder_test PUBLIC
     gmock_main

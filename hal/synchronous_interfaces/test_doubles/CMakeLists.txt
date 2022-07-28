@@ -6,15 +6,19 @@ target_link_libraries(hal.synchronous_interfaces_test_doubles PUBLIC
 )
 
 target_sources(hal.synchronous_interfaces_test_doubles PRIVATE
-    TimeKeeperMock.hpp
-    SynchronousSerialCommunicationMock.hpp
-    SynchronousSerialCommunicationMock.cpp
-    SynchronousRandomDataGeneratorMock.hpp
-    SynchronousFlashStub.hpp
-    SynchronousFlashStub.cpp
-    SynchronousFixedRandomDataGenerator.hpp
-    SynchronousFixedRandomDataGenerator.cpp
     SynchronousEncryptorMock.hpp
+    SynchronousFixedRandomDataGenerator.cpp
+    SynchronousFixedRandomDataGenerator.hpp
+    SynchronousFlashStub.cpp
+    SynchronousFlashStub.hpp
+    SynchronousRandomDataGeneratorMock.hpp
+    SynchronousSerialCommunicationMock.cpp
+    SynchronousSerialCommunicationMock.hpp
+    SynchronousSpiMock.cpp
+    SynchronousSpiMock.hpp
+    TimeKeeperMock.hpp
 )
 
-add_subdirectory(test)
+if (EMIL_BUILD_TESTS)
+    add_subdirectory(test)
+endif()

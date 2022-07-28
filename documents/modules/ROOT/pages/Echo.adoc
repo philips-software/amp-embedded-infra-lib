@@ -1,6 +1,8 @@
-== ECHO (Embedded CHOmmunication)
+= ECHO (Embedded CHOmmunication)
+:source-highlighter: highlight.js
+:highlightjs-languages: protobuf
 
-=== Introduction
+== Introduction
 
 ECHO is the name of the embedded remote procedure call (RPC) mechanism
 used in the Embedded Infrastructure Library. As an RPC mechanism, it
@@ -23,7 +25,7 @@ services, use the proto3 syntax. Information about Google Protocol
 Buffers can be found at
 https://developers.google.com/protocol-buffers/[Protocol Buffers].
 
-=== Protobuf Messages
+== Protobuf Messages
 
 Since ECHO builds on top of Protobuf, Google’s definition of messages
 and translation of messages to a binary format is used. Protobuf defines
@@ -64,9 +66,9 @@ introspection mechanisms to ensure that the limits are observed, or they
 may be made compliant by design; in any way, the limits may not be
 surpassed, otherwise results of communication are unpredictable.
 
-=== Protobuf Services
+== Protobuf Services
 
-==== Conventions
+=== Conventions
 
 A service defined in Protobuf consist of a number of methods. Protobuf
 does not define the encoding/decoding rules, so this document fully
@@ -108,7 +110,7 @@ fields). The `Reset` method in the example above therefore takes
 `Nothing` as parameter, which results in generation of a `void Reset()`
 function.
 
-==== Encoding Service Calls
+=== Encoding Service Calls
 
 ECHO uses a reliable data stream to communicate, like TCP, so that
 correct ordering and delivery is guaranteed until a disconnect occurs.
@@ -132,7 +134,7 @@ contents. So it is equivalent to:
 
 which is easier for some encoders/decoders.
 
-=== Adding Support to Other Languages
+== Adding Support to Other Languages
 
 The Google Protobuf compiler is able to generate code for a number of
 languages, including C++, C#, Java, and Python. This generated code can
@@ -155,9 +157,9 @@ methods and their parameters. If an unsupported language is targeted,
 then the compiler plug-in also has to generate code for encoding and
 decoding the individual message.
 
-=== Appendix: EchoAttributes.proto
+== Appendix: EchoAttributes.proto
 
-[source,]
+[source,protobuf]
 ----
 syntax = "proto3";
 

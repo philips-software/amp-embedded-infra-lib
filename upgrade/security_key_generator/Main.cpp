@@ -1,8 +1,8 @@
+#include "args.hxx"
+#include "hal/generic/FileSystemGeneric.hpp"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "upgrade/security_key_generator/MaterialGenerator.hpp"
 #include <iostream>
-#include "external/args/args.hxx"
-#include "hal/generic/FileSystemGeneric.hpp"
 
 void GenerateUpgradeKeys(args::Subparser& p)
 {
@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
     }
     catch (...)
     {
-        std::cerr << "Unknown error occured" << std::endl;
+        std::cerr << "Unknown error occurred" << std::endl;
         return 1;
     }
 

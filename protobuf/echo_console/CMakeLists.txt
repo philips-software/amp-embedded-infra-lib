@@ -13,13 +13,13 @@ if (TARGET_BUILD_WIN)
     )
 
     target_link_libraries(protobuf.echo_console PUBLIC
+        args
         protobuf.protoc_echo_plugin_lib
         protobuf.echo
         hal.generic
         hal.windows
         services.network_win
         services.util
-        arg_parser.args
     )
 
     target_sources(protobuf.echo_console PRIVATE

@@ -2,56 +2,112 @@
 #define INFRA_ENDIAN_HPP
 
 #include "infra/util/ByteRange.hpp"
-#include <iterator>
+#include "infra/util/Compatibility.hpp"
+#include <algorithm>
+#include <climits>
+#include <cstdint>
 #include <type_traits>
+#include <utility>
+
+#ifdef __has_include
+#if __has_include(<bit>)
+#include <bit>
+#endif
+#endif
 
 namespace infra
 {
-    // For now, we assume host endianness is little endian
-
     namespace detail
     {
-        // System Workbench's GCC does not yet support std::make_reverse_iterator
-        template<class Iterator>
-        std::reverse_iterator<Iterator> make_reverse_iterator(Iterator i)
+#ifdef __cpp_lib_byteswap
+        template<std::integral T>
+        constexpr T ByteSwap(T value)
         {
-            return std::reverse_iterator<Iterator>(i);
+            return std::byteswap(value);
         }
+#elif __cplusplus >= 201703L
+        constexpr auto mask = static_cast<unsigned char>(-1);
+
+        template<class T, std::size_t... N>
+        constexpr T ByteSwapImpl(T i, std::index_sequence<N...>)
+        {
+            return ((((i >> (N * CHAR_BIT)) & static_cast<T>(mask)) << ((sizeof(T) - 1 - N) * CHAR_BIT)) | ...);
+        };
+
+        template<class T, class U = typename std::make_unsigned<T>::type>
+        constexpr U ByteSwap(T i)
+        {
+            return ByteSwapImpl<U>(i, std::make_index_sequence<sizeof(T)>{});
+        }
+#else
+        constexpr auto mask = static_cast<unsigned char>(-1);
+
+        template<class T>
+        constexpr T ByteSwap(T i, T j = 0u, std::size_t n = 0u)
+        {
+            return n == sizeof(T) ? j : ByteSwap<T>(i >> CHAR_BIT, (j << CHAR_BIT) | (i & static_cast<T>(mask)), n + 1);
+        }
+#endif
     }
 
-    template<class T>
-    T SwapEndian(T value)
-    {
-        static_assert(std::is_standard_layout<T>::value, "T should be standard layout");
+#ifdef __cpp_lib_endian
+    constexpr bool isLittleEndian = std::endian::native == std::endian::little;
+    constexpr bool isBigEndian = std::endian::native == std::endian::big;
+#else
+    namespace detail { constexpr int endianCheck{0x01}; }
+    constexpr bool isLittleEndian = static_cast<const char&>(detail::endianCheck) == 0x01;
+    constexpr bool isBigEndian = !isLittleEndian;
+#endif
 
-        T result;
+    template<class T>
+    constexpr T SwapEndian(T value)
+    {
+        return detail::ByteSwap(value);
+    }
+
+    template<class T, std::size_t N>
+    std::array<T, N> SwapEndian(std::array<T, N> value)
+    {
+        std::array<T, N> result;
         auto valueRange = infra::MakeByteRange(value);
-        std::copy(valueRange.begin(), valueRange.end(), detail::make_reverse_iterator(infra::MakeByteRange(result).end()));
+        std::copy(valueRange.begin(), valueRange.end(), infra::make_reverse_iterator(infra::MakeByteRange(result).end()));
         return result;
     }
 
     template<class T>
-    T FromBigEndian(T value)
+    constexpr T FromBigEndian(T value)
     {
-        return SwapEndian(value);
+        if IF_CONSTEXPR (isLittleEndian)
+            return SwapEndian(value);
+        else if IF_CONSTEXPR (isBigEndian)
+            return value;
     }
 
     template<class T>
-    T ToBigEndian(T value)
+    constexpr T ToBigEndian(T value)
     {
-        return SwapEndian(value);
+        if IF_CONSTEXPR (isLittleEndian)
+            return SwapEndian(value);
+        else if IF_CONSTEXPR (isBigEndian)
+            return value;
     }
 
     template<class T>
-    T FromLittleEndian(T value)
+    constexpr T FromLittleEndian(T value)
     {
-        return value;
+        if IF_CONSTEXPR (isLittleEndian)
+            return value;
+        else if IF_CONSTEXPR (isBigEndian)
+            return SwapEndian(value);
     }
 
     template<class T>
-    T ToLittleEndian(T value)
+    constexpr T ToLittleEndian(T value)
     {
-        return value;
+        if IF_CONSTEXPR (isLittleEndian)
+            return value;
+        else if IF_CONSTEXPR (isBigEndian)
+            return SwapEndian(value);
     }
 
     template<class T>
@@ -60,11 +116,11 @@ namespace infra
     public:
         BigEndian() = default;
 
-        BigEndian(T value)
+        constexpr BigEndian(T value)
             : value(ToBigEndian(value))
         {}
 
-        operator T() const
+        constexpr operator T() const
         {
             return FromBigEndian(value);
         }
@@ -133,11 +189,11 @@ namespace infra
     public:
         LittleEndian() = default;
 
-        LittleEndian(T value)
+        constexpr LittleEndian(T value)
             : value(ToLittleEndian(value))
         {}
 
-        operator T() const
+        constexpr operator T() const
         {
             return FromLittleEndian(value);
         }

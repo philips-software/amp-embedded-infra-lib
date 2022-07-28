@@ -108,6 +108,14 @@ function(protocol_buffer_java target input)
 
 endfunction()
 
+function(protocol_buffer_all target input)
+
+    protocol_buffer_cpp(${target} ${input})
+    protocol_buffer_csharp(${target} ${input})
+    protocol_buffer_java(${target} ${input})
+
+endfunction()
+
 function(protocol_buffer_dependencies target)
 
     set_target_properties(${target} PROPERTIES PROTOBUF_DEPENDENCIES "${ARGN}")

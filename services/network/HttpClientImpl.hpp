@@ -441,8 +441,8 @@ namespace services
             virtual void Execute(HttpClient & client, infra::BoundedConstString requestTarget) override;
 
         private:
-            infra::BoundedConstString content;
             HttpHeaders headers;
+            infra::BoundedConstString content;
         };
 
         class QueryPatch2
@@ -466,8 +466,8 @@ namespace services
             virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
         private:
-            infra::BoundedConstString content;
             HttpHeaders headers;
+            infra::BoundedConstString content;
         };
 
     private:

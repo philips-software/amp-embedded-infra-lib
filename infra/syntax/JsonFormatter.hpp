@@ -14,7 +14,7 @@ namespace infra
 
     class JsonArrayFormatter;
     class JsonStringStream;
-
+    
     class JsonObjectFormatter
     {
     public:
@@ -22,9 +22,9 @@ namespace infra
 
         explicit JsonObjectFormatter(infra::TextOutputStream& stream);
         JsonObjectFormatter(const JsonObjectFormatter& other) = delete;
-        JsonObjectFormatter(JsonObjectFormatter&& other);
+        JsonObjectFormatter(JsonObjectFormatter&& other) noexcept;
         JsonObjectFormatter& operator=(const JsonObjectFormatter& other) = delete;
-        JsonObjectFormatter& operator=(JsonObjectFormatter&& other);
+        JsonObjectFormatter& operator=(JsonObjectFormatter&& other) noexcept;
         ~JsonObjectFormatter();
 
         void Add(const char* tagName, bool tag);
@@ -34,16 +34,21 @@ namespace infra
         void Add(const char* tagName, uint32_t tag);
         void Add(const char* tagName, int64_t tag);
         void Add(JsonString tagName, int64_t tag);
+        void Add(const char* tagName, JsonBiggerInt tag);
+        void Add(JsonString tagName, JsonBiggerInt tag);
         void Add(const char* tagName, const char* tag);
         void Add(const char* tagName, infra::BoundedConstString tag);
         void Add(infra::BoundedConstString tagName, infra::BoundedConstString tag);
         void Add(JsonString tagName, JsonString tag);
         void Add(JsonString tagName, const JsonObject& tag);
         void Add(JsonString tagName, const JsonArray& tag);
+        void Add(JsonString tagName, const JsonValue& tag);
         void Add(const infra::JsonKeyValue& keyValue);
         void AddMilliFloat(const char* tagName, uint32_t intValue, uint32_t milliFractionalValue);
+        void AddMilliFloat(infra::JsonString tagName, uint32_t intValue, uint32_t milliFractionalValue);
         void AddSubObject(const char* tagName, infra::BoundedConstString json);
-        JsonObjectFormatter SubObject(infra::BoundedConstString tagName);
+        JsonObjectFormatter SubObject(const char* tagName);
+        JsonObjectFormatter SubObject(JsonString tagName);
         JsonArrayFormatter SubArray(infra::BoundedConstString tagName);
         JsonStringStream AddString(const char* tagName);
         infra::TextOutputStream AddObject(const char* tagName);
@@ -58,6 +63,8 @@ namespace infra
         bool empty = true;
     };
 
+    void Merge(infra::JsonObjectFormatter& formatter, infra::JsonObject& object, infra::BoundedConstString path,const infra::JsonValue& valueToMerge);
+
     class JsonArrayFormatter
     {
     public:
@@ -65,15 +72,16 @@ namespace infra
 
         explicit JsonArrayFormatter(infra::TextOutputStream& stream);
         JsonArrayFormatter(const JsonArrayFormatter& other) = delete;
-        JsonArrayFormatter(JsonArrayFormatter&& other);
+        JsonArrayFormatter(JsonArrayFormatter&& other) noexcept;
         JsonArrayFormatter& operator=(const JsonArrayFormatter& other) = delete;
-        JsonArrayFormatter& operator=(JsonArrayFormatter&& other);
+        JsonArrayFormatter& operator=(JsonArrayFormatter&& other) noexcept;
         ~JsonArrayFormatter();
 
         void Add(bool tag);
         void Add(int32_t tag);
         void Add(uint32_t tag);
         void Add(int64_t tag);
+        void Add(JsonBiggerInt tag);
         void Add(const char* tag);
         void Add(infra::BoundedConstString tag);
         JsonObjectFormatter SubObject();
@@ -95,9 +103,9 @@ namespace infra
     public:
         explicit JsonStringStream(infra::TextOutputStream& stream);
         JsonStringStream(const JsonStringStream& other) = delete;
-        JsonStringStream(JsonStringStream&& other);
+        JsonStringStream(JsonStringStream&& other) noexcept;
         JsonStringStream& operator=(const JsonStringStream& other) = delete;
-        JsonStringStream& operator=(JsonStringStream&& other);
+        JsonStringStream& operator=(JsonStringStream&& other) noexcept;
         ~JsonStringStream();
 
     private:

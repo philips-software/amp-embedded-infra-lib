@@ -85,9 +85,9 @@ namespace infra
     public:
         Asn1ContainerFormatter(infra::DataOutputStream& stream, std::size_t sizeMarker);
         Asn1ContainerFormatter(const Asn1ContainerFormatter& other) = delete;
-        Asn1ContainerFormatter(Asn1ContainerFormatter&& other);
+        Asn1ContainerFormatter(Asn1ContainerFormatter&& other) noexcept;
         Asn1ContainerFormatter& operator=(const Asn1ContainerFormatter& other) = delete;
-        Asn1ContainerFormatter& operator=(Asn1ContainerFormatter&& other);
+        Asn1ContainerFormatter& operator=(Asn1ContainerFormatter&& other) noexcept;
         ~Asn1ContainerFormatter();
 
     private:

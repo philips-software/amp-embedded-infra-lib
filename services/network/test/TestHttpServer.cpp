@@ -460,6 +460,34 @@ TEST_F(HttpServerTest, connection_is_kept_open_by_page)
     EXPECT_EQ(nullptr, observer.lock());
 }
 
+TEST_F(HttpServerTest, connection_is_kept_open_by_page_after_sending_response)
+{
+    testing::StrictMock<services::ConnectionStubWithAckReceivedMock> connection;
+    infra::SharedPtr<services::ConnectionStub> connectionPtr(infra::UnOwnedSharedPtr(connection));
+    testing::StrictMock<services::HttpPageMock> page;
+    httpServer.AddPage(page);
+
+    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
+
+    infra::WeakPtr<services::ConnectionObserver> observer = connection.ObserverPtr();
+
+    EXPECT_CALL(page, ServesRequest(testing::_)).WillOnce(testing::Return(true));
+    EXPECT_CALL(page, RequestReceived(testing::_, testing::_)).WillOnce(testing::Invoke([this](services::HttpRequestParser& parser, services::HttpServerConnection& connection) {
+        httpConnection = &connection;
+    }));
+    infra::SharedPtr<infra::StreamReaderWithRewinding> savedReader;
+    EXPECT_CALL(page, DataReceived(testing::_)).WillOnce(testing::Invoke([&savedReader](const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader) { savedReader = reader; }));
+    infra::ConstByteRange data = infra::MakeStringByteRange("PUT /path HTTP/1.1 \r\nContent-Length:0\r\n\r\n");
+    connection.SimulateDataReceived(data);
+    EXPECT_CALL(connection, AckReceivedMock());
+    ExecuteAllActions();
+
+    httpConnection->SendResponse(services::httpResponseOk);
+
+    EXPECT_CALL(connection, AckReceivedMock());
+    savedReader = nullptr;
+}
+
 TEST_F(HttpServerWithSimplePageTest, when_responding_early_to_a_request_next_request_is_accepted)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());

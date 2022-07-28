@@ -3,12 +3,11 @@
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/stream/StreamManipulators.hpp"
 #include "infra/timer/PartitionedTime.hpp"
-#include "infra/timer/TimerServiceManager.hpp"
 
 namespace services
 {
     TimeWithLocalization::TimeWithLocalization(uint32_t systemTimerServiceId, uint32_t utcTimerServiceId, uint32_t localTimeWithoutDaylightSavingTimerServiceId, uint32_t localTimeTimerServiceId)
-        : utcTimerService(utcTimerServiceId, infra::TimerServiceManager::Instance().GetTimerService(systemTimerServiceId))
+        : utcTimerService(utcTimerServiceId, infra::TimerService::GetTimerService(systemTimerServiceId))
         , localTimeWithoutDaylightSavingTimerService(localTimeWithoutDaylightSavingTimerServiceId, utcTimerService)
         , localTimeTimerService(localTimeTimerServiceId, localTimeWithoutDaylightSavingTimerService)
     {}

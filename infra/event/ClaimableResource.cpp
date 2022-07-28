@@ -75,7 +75,7 @@ namespace infra
         : resource(resource)
     {}
 
-    ClaimableResource::ClaimerBase::ClaimerBase(ClaimerBase&& other)
+    ClaimableResource::ClaimerBase::ClaimerBase(ClaimerBase&& other) noexcept
         : resource(other.resource)
         , isGranted(other.isGranted)
         , isQueued(other.isQueued)
@@ -87,7 +87,7 @@ namespace infra
             resource.ReplaceClaim(other, *this);
     }
 
-    ClaimableResource::ClaimerBase& ClaimableResource::ClaimerBase::operator=(ClaimerBase&& other)
+    ClaimableResource::ClaimerBase& ClaimableResource::ClaimerBase::operator=(ClaimerBase&& other) noexcept
     {
         assert(&resource == &other.resource);
         ReleaseAllClaims();

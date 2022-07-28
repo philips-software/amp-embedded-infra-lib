@@ -212,4 +212,23 @@ namespace infra
 
         return stream;
     }
+
+    AsCanonicalFormIpHelper::AsCanonicalFormIpHelper(const services::IPAddress& address)
+        : address(address)
+    {}
+
+    TextOutputStream& operator<<(TextOutputStream& stream, const AsCanonicalFormIpHelper& asCanonicalFormIpHelper)
+    {
+        if (services::GetVersion(asCanonicalFormIpHelper.address) == services::IPVersions::ipv4)
+            stream << asCanonicalFormIpHelper.address;
+        else
+            stream << "[" << asCanonicalFormIpHelper.address << "]";
+
+        return stream;
+    }
+
+    AsCanonicalFormIpHelper AsCanonicalFormIp(const services::IPAddress& address)
+    {
+        return AsCanonicalFormIpHelper(address);
+    }
 }

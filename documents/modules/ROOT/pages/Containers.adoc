@@ -1,6 +1,7 @@
-== Containers
+= Containers
+:source-highlighter: highlight.js
 
-=== Introduction
+== Introduction
 
 Containers are used to store a number of elements. While the C++
 standard template library contains several containers like `std::vector`
@@ -11,9 +12,9 @@ containers: the `Bounded` containers and the `Intrusive` containers.
 While their storage is not on the heap, the interfaces of these
 containers closely mimic the interfaces of the standard containers.
 
-=== Bounded Containers
+== Bounded Containers
 
-==== Overview
+=== Overview
 
 The first strategy to deal with storage in containers is by allocating
 memory inside the containers themselves. The size of a container
@@ -85,7 +86,7 @@ position
 |`iterator erase(position)` |Removes an element at the given position
 |===
 
-==== References to Bounded Containers
+=== References to Bounded Containers
 
 Often, the class that holds a container of elements is not the class
 that makes the decision how big that container should be. For example,
@@ -100,7 +101,8 @@ similarly other containers) may be created as a reference to a
 `BoundedVector` at the point of instantiation of `UrlRouter`, the choice
 for the maximum number of elements is delayed. For example:
 
-....
+[source,cpp]
+----
 class UrlRouter
 {
 public:
@@ -109,14 +111,15 @@ public:
 protected:
     infra::BoundedVector<PageServer>& pageServers;
 };
-....
+----
 
 The `UrlRouter` can now be instantiated as follows:
 
-....
+[source,cpp]
+----
 infra::BoundedVector<PageServer>::WithMaxSize<10> storage;
 UrlRouter router(storage);
-....
+----
 
 The `UrlRouter` now uses a `BoundedVector` with a maximum size of 10
 elements. In order to simplify instantiation of the `UrlRouter`, it uses
@@ -124,7 +127,8 @@ the `infra::WithStorage` helper class to feed a constructed
 `BoundedVector` to the `UrlRouter`. Using this `WithMaxSize` parameter,
 instantiation is simplified to:
 
-....
+[source,cpp]
+----
 class UrlRouter
 {
 public:
@@ -138,9 +142,9 @@ protected:
 };
 
 UrlRouter::WithMaxSize<10> router;
-....
+----
 
-=== Intrusive Containers
+== Intrusive Containers
 
 Another approach for storing elements in a container is to not allocate
 additional storage for an object, but to make the user of a container
@@ -175,7 +179,7 @@ behaviour. The provided `Intrusive` containers are:
 |`infra::IntrusiveSet<T, Compare>` |`std::set<T, Compare>`
 |===
 
-=== std::array
+== std::array
 
 One standard container of note is `std::array<T, Size>`. This container
 does not use the heap and has a fixed size. It is a drop-in replacement

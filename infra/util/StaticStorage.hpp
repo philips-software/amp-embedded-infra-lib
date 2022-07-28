@@ -129,7 +129,7 @@ namespace infra
     {
         static_assert(std::is_base_of<T, U>::value, "Constructed type needs to be derived from T");
         static_assert(std::alignment_of<U>::value <= sizeof(AlignAs), "Alignment of U is larger than alignment of this function");
-        static_assert(sizeof(U) <= sizeof(T) + ExtraSize, "Not enough static storage availabe for construction of derived type");
+        static_assert(sizeof(U) <= sizeof(T) + ExtraSize, "Not enough static storage available for construction of derived type");
         dataPtr = new(&data) U(std::forward<Args>(args)...);
     }
 

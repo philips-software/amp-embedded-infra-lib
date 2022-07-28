@@ -1,5 +1,5 @@
 add_executable(services.util_test)
-gtest_discover_tests(services.util_test AUTO)
+emil_add_test(services.util_test)
 
 target_link_libraries(services.util_test PUBLIC
     gmock_main
@@ -11,6 +11,7 @@ target_link_libraries(services.util_test PUBLIC
 )
 
 target_sources(services.util_test PRIVATE
+    TestAesMbedTls.cpp
     TestConfigurationStore.cpp
     TestCyclicStore.cpp
     TestDebouncedButton.cpp

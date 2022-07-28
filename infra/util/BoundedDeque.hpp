@@ -48,7 +48,7 @@ namespace infra
         BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, BoundedDeque&& other);
         BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, std::initializer_list<T> initializerList);
         BoundedDeque& operator=(const BoundedDeque& other);
-        BoundedDeque& operator=(BoundedDeque&& other);
+        BoundedDeque& operator=(BoundedDeque&& other) noexcept;
         BoundedDeque& operator=(std::initializer_list<T> initializerList);
         void AssignFromStorage(const BoundedDeque& other);
         void AssignFromStorage(BoundedDeque&& other);
@@ -112,7 +112,7 @@ namespace infra
         iterator erase(const const_iterator& position);
         iterator erase(const const_iterator& first, const const_iterator& last);
 
-        void swap(BoundedDeque& other);
+        void swap(BoundedDeque& other) noexcept;
 
         void clear();
 
@@ -142,7 +142,7 @@ namespace infra
     };
 
     template<class T>
-    void swap(BoundedDeque<T>& x, BoundedDeque<T>& y);
+    void swap(BoundedDeque<T>& x, BoundedDeque<T>& y) noexcept;
 
     namespace detail
     {
@@ -255,7 +255,7 @@ namespace infra
     }
 
     template<class T>
-    BoundedDeque<T>& BoundedDeque<T>::operator=(BoundedDeque<T>&& other)
+    BoundedDeque<T>& BoundedDeque<T>::operator=(BoundedDeque<T>&& other) noexcept
     {
         clear();
 
@@ -638,7 +638,7 @@ namespace infra
     }
 
     template<class T>
-    void BoundedDeque<T>::swap(BoundedDeque& other)
+    void BoundedDeque<T>::swap(BoundedDeque& other) noexcept
     {
         using std::swap;
 
@@ -769,7 +769,7 @@ namespace infra
     }
 
     template<class T>
-    void swap(BoundedDeque<T>& x, BoundedDeque<T>& y)
+    void swap(BoundedDeque<T>& x, BoundedDeque<T>& y) noexcept
     {
         x.swap(y);
     }

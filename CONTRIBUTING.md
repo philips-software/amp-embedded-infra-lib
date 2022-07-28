@@ -4,11 +4,11 @@ First off, thank you for considering contributing to EmbeddedInfraLib!
 
 Following these guidelines helps to communicate that you respect the time of the developers managing and developing this open source project. In return, they should reciprocate that respect in addressing your issue, assessing changes, and helping you finalize your pull requests.
 
-### Contributing to development
+## Contributing to development
 
 EmbeddedInfraLib is a young open source project and we love to receive contributions from our community — you! There are many ways to contribute, from writing examples, improving the documentation, submitting bug reports and feature requests or writing code which can be incorporated into EmbeddedInfraLib itself.
 
-# Ground Rules
+## Ground Rules
 
 * Be professional, respectful and considerate in your communication with others.
 * As EmbeddedInfraLib core-team we have spent considerate effort to make our components testable; please make sure that you have test coverage for your changes as well. Inspiration can be drawn from existing components.
@@ -21,7 +21,7 @@ EmbeddedInfraLib is a young open source project and we love to receive contribut
 
 We can't stress this enough. Any bugfix that doesn’t include a test proving the existence of the bug being fixed, may be suspect. Ditto for new features that can’t prove they actually work. We’ve found that test-first development really helps make features better architected and identifies potential edge cases earlier instead of later. Writing tests before the implementation is strongly encouraged.
 
-# Your First Contribution
+## Your First Contribution
 
 ### Introduction
 
@@ -59,7 +59,7 @@ Make sure you have all development dependencies installed. E.g. [CMake](https://
 3. In the description field, write down issue number (if submitting code fixing an existing issue) or describe the issue + your fix (if submitting a wholly new bugfix).
 4. Hit ‘submit’! And please be patient - the maintainers will get to you when they can.
 
-# How to report a bug
+## How to report a bug
 
 If you find a security vulnerability, do NOT open an issue. Email one of the [maintainers](CODEOWNERS) instead.
 
@@ -71,7 +71,7 @@ If the answer to either of those two questions are "yes", then you're probably d
 
 When filing an issue, make sure to answer these five questions:
 
-1. What version compiler and compiler version are you using?
+1. What compiler and compiler version are you using?
 2. What operating system and processor architecture are you using?
 3. What did you do?
 4. What did you expect to see?

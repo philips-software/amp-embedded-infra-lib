@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <functional>
 #include <utility>
+#include <cassert>
 
 namespace infra
 {
