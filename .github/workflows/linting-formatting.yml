@@ -22,18 +22,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: philips-forks/clang-format-lint-action@aac70b3f63717109130080e1318bded095d89751
+      - uses: DoozyX/clang-format-lint-action@2ec1a72dfb593e52255693c9039e6d94984187dc
         with:
           clangFormatVersion: 14
           inplace: true
           extensions: "cpp,hpp"
-      - uses: EndBug/add-and-commit@v4
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          committer_name: GitHub Actions
-          committer_email: github-actions[bot]@users.noreply.github.com
-          message: "[Formatting Bot] clang-format changes"
   linter:
     name: Linting
     runs-on: ubuntu-latest
