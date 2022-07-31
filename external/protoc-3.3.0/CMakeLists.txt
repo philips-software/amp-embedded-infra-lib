@@ -119,5 +119,6 @@ endfunction()
 function(protocol_buffer_dependencies target)
 
     set_target_properties(${target} PROPERTIES PROTOBUF_DEPENDENCIES "${ARGN}")
+    target_link_libraries(${target} PUBLIC "${ARGN}")
 
 endfunction()
