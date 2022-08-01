@@ -84,6 +84,10 @@ if (TARGET_BUILD_WIN)
     )
 endif()
 
+if (TARGET_ARCH_X86)
+    target_compile_definitions(infra.util PUBLIC EMIL_HOST_BUILD)
+endif()
+
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
 endif()
