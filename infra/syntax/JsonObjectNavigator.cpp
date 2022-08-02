@@ -6,7 +6,7 @@ namespace infra
         : object(contents)
     {}
 
-    JsonObjectNavigator::JsonObjectNavigator(infra::JsonObject& object)
+    JsonObjectNavigator::JsonObjectNavigator(const infra::JsonObject& object)
         : object(object)
     {}
 
