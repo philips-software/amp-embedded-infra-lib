@@ -68,6 +68,7 @@ option(EMIL_BUILD_EXAMPLES "Enable build of the examples" ${EMIL_DEFAULTOPT})
 option(EMIL_ENABLE_COVERAGE "Enable compiler flags for code coverage measurements" Off)
 option(EMIL_ENABLE_MUTATION_TESTING "Enable compiler flags for mutation testing" Off)
 option(EMIL_ENABLE_TEST_AUTO_DISCOVERY "Enable auto-discovery of tests in test executables; this creates one CTest command per test-case and can be slow on some platforms" Off)
+option(EMIL_ENABLE_DOCKER_TOOLS "Enable shift-left tools (e.g. linters, formatters) that are run using Docker" On)
 
 # The next few options control the install and export behaviour.
 # When package config generation is enabled the prefix can be set
@@ -86,6 +87,10 @@ else()
 endif()
 
 option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of EmIL" On)
+
+if (EMIL_ENABLE_DOCKER_TOOLS)
+    include(emil_docker_tools)
+endif()
 
 if (TARGET_ARCH_X86)
     add_compile_definitions(EMIL_HOST_BUILD)
@@ -197,14 +202,3 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
     )
 endif()
-
-execute_process(COMMAND docker inspect -f "{{ range .Mounts }}{{ if eq .Destination \"/workspaces\" }}{{ .Name }}{{ end }}{{ end }}" $ENV{HOSTNAME} OUTPUT_VARIABLE DOCKER_VOLUME OUTPUT_STRIP_TRAILING_WHITESPACE)
-message("Docker volume: ${DOCKER_VOLUME}")
-message("Remote workspace: $ENV{LOCAL_WORKSPACE_FOLDER}")
-
-add_custom_target(linter
-    COMMAND docker run --rm -v ${DOCKER_VOLUME}:/workspaces -e DEFAULT_WORKSPACE=/workspaces/embeddedinfralib -e APPLY_FIXES=all oxsecurity/megalinter:v6
-    COMMENT "Running linter..."
-    USES_TERMINAL
-    VERBATIM
-)
