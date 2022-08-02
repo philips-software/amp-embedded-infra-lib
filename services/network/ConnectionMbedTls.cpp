@@ -50,7 +50,7 @@ namespace services
         }
         else
         {
-            if (!server)
+            if (!server && clientSession->private_tls_version != 0)
             {
                 result = mbedtls_ssl_set_session(&sslContext, clientSession);
                 assert(result == 0);
@@ -361,6 +361,9 @@ namespace services
 
                 if (!server)
                 {
+                    if (clientSession->private_tls_version == 0)
+                        mbedtls_ssl_session_init(&*clientSession);
+
                     result = mbedtls_ssl_get_session(&sslContext, clientSession);
                     assert(result == 0);
                 }
@@ -512,7 +515,8 @@ namespace services
     ConnectionFactoryMbedTls::~ConnectionFactoryMbedTls()
     {
         mbedtls_ssl_cache_free(&serverCache);
-        mbedtls_ssl_session_free(&clientSession);
+        if (clientSession.private_tls_version != 0)
+            mbedtls_ssl_session_free(&clientSession);
     }
 
     infra::SharedPtr<void> ConnectionFactoryMbedTls::Listen(uint16_t port, ServerConnectionObserverFactory& connectionObserverFactory, IPVersions versions)
@@ -562,8 +566,9 @@ namespace services
     {
         if (address != previousAddress)
         {
-            mbedtls_ssl_session_free(&clientSession);
-            mbedtls_ssl_session_init(&clientSession);
+            if (clientSession.private_tls_version != 0)
+                mbedtls_ssl_session_free(&clientSession);
+            clientSession = mbedtls_ssl_session();
         }
 
         previousAddress = address;
