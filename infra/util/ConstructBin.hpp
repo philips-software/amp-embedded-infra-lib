@@ -1,7 +1,6 @@
 #ifndef INFRA_CONSTRUCT_BIN_HPP
 #define INFRA_CONSTRUCT_BIN_HPP
 
-#include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/util/ByteRange.hpp"
 #include <functional>
 #include <string>
@@ -19,12 +18,12 @@ namespace infra
 
         ConstructBin& Repeat(std::size_t amount, uint8_t v);
         ConstructBin& RepeatString(std::size_t amount, const std::string& v);
-        ConstructBin& TextStream(const std::function<void(infra::TextOutputStream stream)>& callback);
 
         template<class T>
             ConstructBin& Value(T v);
 
-        std::vector<uint8_t> Vector() const;
+        const std::vector<uint8_t>& Vector() const;
+        std::vector<uint8_t>& Vector();
         std::string String() const;
         ConstByteRange Range() const;
 
