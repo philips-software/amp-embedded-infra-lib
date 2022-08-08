@@ -5,6 +5,7 @@ target_link_libraries(services.tracer PUBLIC
     hal.interfaces
     hal.synchronous_interfaces
     infra.stream
+    infra.timer
 )
 
 target_sources(services.tracer PRIVATE

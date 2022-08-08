@@ -29,7 +29,6 @@ namespace hal
         : public SerialCommunication
     {
     public: 
-
         struct UartWindowsConfig
         {
             enum class RtsFlowControl
@@ -49,23 +48,24 @@ namespace hal
                 space = SPACEPARITY
             };
 
-            UartWindowsConfig() {}
+            UartWindowsConfig() = default;
 
-            UartWindowsConfig(uint32_t newbaudRate, RtsFlowControl newFlowControlRts)
-                : baudRate(newbaudRate)
-                , flowControlRts(newFlowControlRts)
+            UartWindowsConfig(uint32_t baudRate, RtsFlowControl flowControl)
+                : baudRate(baudRate)
+                , flowControlRts(flowControl)
             {}
 
             uint32_t baudRate = CBR_115200;
-            RtsFlowControl flowControlRts = RtsFlowControl::RtsControlDisable;
+            RtsFlowControl flowControl = RtsFlowControl::RtsControlDisable;
             Parity parity = Parity::none;
         };
+
         struct DeviceName {};
         static const DeviceName deviceName;
 
         UartWindows(const std::string& portName, UartWindowsConfig config = UartWindowsConfig());
         UartWindows(const std::string& name, DeviceName, UartWindowsConfig config = UartWindowsConfig());
-        ~UartWindows();
+        virtual ~UartWindows();
 
         virtual void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) override;
         virtual void SendData(infra::MemoryRange<const uint8_t> data, infra::Function<void()> actionOnCompletion = infra::emptyFunction) override;

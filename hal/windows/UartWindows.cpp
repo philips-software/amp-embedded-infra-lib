@@ -81,14 +81,14 @@ namespace hal
         dcb.ByteSize = 8;
         dcb.Parity = static_cast<BYTE>(config.parity);
         dcb.StopBits = ONESTOPBIT;
-        dcb.fRtsControl = (uint32_t)config.flowControlRts;
-        dcb.fOutxCtsFlow = config.flowControlRts == UartWindowsConfig::RtsFlowControl::RtsHandshake;
+        dcb.fRtsControl = (uint32_t)config.flowControl;
+        dcb.fOutxCtsFlow = config.flowControl == UartWindowsConfig::RtsFlowControl::RtsHandshake;
         if (!SetCommState(handle, &dcb))
         {
             DWORD dw = GetLastError();
             throw PortNotInitialized(name, dw);
         }
-            
+
         PurgeComm(handle, PURGE_TXCLEAR | PURGE_RXCLEAR);
 
         COMMTIMEOUTS commTimeOuts;

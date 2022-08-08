@@ -9,7 +9,8 @@
 
 namespace hal
 {
-	class SynchronousUartWindows : public SynchronousSerialCommunication
+	class SynchronousUartWindows
+        : public SynchronousSerialCommunication
 	{
 	public:
         struct UartWindowsConfig
@@ -24,7 +25,8 @@ namespace hal
 
             UartWindowsConfig()
                 : baudRate(CBR_115200)
-                , flowControlRts(RtsFlowControl::RtsControlDisable) {}
+                , flowControlRts(RtsFlowControl::RtsControlDisable)
+            {}
 
             UartWindowsConfig(uint32_t newbaudRate, RtsFlowControl newFlowControlRts)
                 : baudRate(newbaudRate)
@@ -45,7 +47,6 @@ namespace hal
         void Open(const std::string& name, UartWindowsConfig config);
 
     private:
-
         void* handle = nullptr;
 	};
 }
