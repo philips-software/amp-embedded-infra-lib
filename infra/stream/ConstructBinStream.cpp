@@ -12,4 +12,10 @@ namespace infra
         helper.callback(infra::StdVectorOutputStream(constructBin.Vector()) << infra::text);
         return constructBin;
     }
+
+    ConstructBin& operator<<(ConstructBin&& constructBin, const TextStreamHelper& helper)
+    {
+        helper.callback(infra::StdVectorOutputStream(constructBin.Vector()) << infra::text);
+        return constructBin;
+    }
 }
