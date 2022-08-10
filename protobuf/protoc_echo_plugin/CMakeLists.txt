@@ -1,8 +1,8 @@
-if (TARGET_ARCH_X86)
+if (EMIL_HOST_BUILD)
     add_library(protobuf.protoc_echo_plugin_lib ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
     target_compile_options(protobuf.protoc_echo_plugin_lib PRIVATE
-        $<$<BOOL:${TARGET_BUILD_WIN}>:
+        $<$<BOOL:${EMIL_BUILD_WIN}>:
             $<$<CXX_COMPILER_ID:MSVC>:
                 /wd4018
                 /wd4251

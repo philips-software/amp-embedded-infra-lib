@@ -1,8 +1,8 @@
-if (TARGET_BUILD_WIN)
+if (EMIL_BUILD_WIN)
     add_executable(protobuf.echo_console)
 
     target_compile_options(protobuf.echo_console PRIVATE
-        $<$<BOOL:${TARGET_BUILD_WIN}>:
+        $<$<BOOL:${EMIL_BUILD_WIN}>:
             $<$<CXX_COMPILER_ID:MSVC>:
                 /wd4018
                 /wd4251

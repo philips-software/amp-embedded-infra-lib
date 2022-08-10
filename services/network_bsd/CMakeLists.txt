@@ -1,4 +1,4 @@
-if (TARGET_BUILD_UNIX OR TARGET_BUILD_DARWIN)
+if (EMIL_BUILD_UNIX OR EMIL_BUILD_DARWIN)
     add_library(services.network_bsd ${EMIL_EXCLUDE_FROM_ALL} STATIC)
     install(TARGETS services.network_bsd EXPORT emilServicesTargets)
 

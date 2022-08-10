@@ -1,18 +1,18 @@
-if (TARGET_ARCH_X86)
+if (EMIL_HOST_BUILD)
     add_library(protobuf.libprotobuf_lite ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
     target_compile_definitions(protobuf.libprotobuf_lite
         PUBLIC
         PROTOBUF_USE_DLLS
-        $<$<BOOL:${TARGET_BUILD_WIN}>:_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING>
+        $<$<BOOL:${EMIL_BUILD_WIN}>:_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING>
 
         PRIVATE
         LIBPROTOBUF_EXPORTS
-        $<$<OR:$<BOOL:${TARGET_BUILD_UNIX}>,$<BOOL:${TARGET_BUILD_DARWIN}>>:HAVE_PTHREAD>
+        $<$<OR:$<BOOL:${EMIL_BUILD_UNIX}>,$<BOOL:${EMIL_BUILD_DARWIN}>>:HAVE_PTHREAD>
     )
 
     target_compile_options(protobuf.libprotobuf_lite PRIVATE
-        $<$<BOOL:${TARGET_BUILD_WIN}>:
+        $<$<BOOL:${EMIL_BUILD_WIN}>:
             $<$<CXX_COMPILER_ID:MSVC>:
                 /wd4018
                 /wd4065
@@ -34,7 +34,7 @@ if (TARGET_ARCH_X86)
     set_target_properties(protobuf.libprotobuf_lite PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
     target_link_libraries(protobuf.libprotobuf_lite PUBLIC
-        $<$<OR:$<BOOL:${TARGET_BUILD_UNIX}>,$<BOOL:${TARGET_BUILD_DARWIN}>>:pthread>
+        $<$<OR:$<BOOL:${EMIL_BUILD_UNIX}>,$<BOOL:${EMIL_BUILD_DARWIN}>>:pthread>
     )
 
     target_include_directories(protobuf.libprotobuf_lite PUBLIC
@@ -86,14 +86,14 @@ if (TARGET_ARCH_X86)
         src/google/protobuf/wire_format_lite.h
     )
 
-    if (TARGET_BUILD_UNIX OR TARGET_BUILD_DARWIN)
+    if (EMIL_BUILD_UNIX OR EMIL_BUILD_DARWIN)
         target_sources(protobuf.libprotobuf_lite PRIVATE
             src/google/protobuf/stubs/atomicops_internals_x86_gcc.cc
             src/google/protobuf/stubs/atomicops_internals_x86_gcc.h
         )
     endif()
 
-    if (TARGET_BUILD_WIN)
+    if (EMIL_BUILD_WIN)
         target_sources(protobuf.libprotobuf_lite PRIVATE
             src/google/protobuf/stubs/atomicops_internals_x86_msvc.cc
             src/google/protobuf/stubs/atomicops_internals_x86_msvc.h
@@ -109,7 +109,7 @@ if (TARGET_ARCH_X86)
 
     target_compile_options(protobuf.libprotobuf PRIVATE
         $<$<COMPILE_LANG_AND_ID:CXX,AppleClang,Clang>:-Wno-enum-compare-switch>
-        $<$<BOOL:${TARGET_BUILD_WIN}>:
+        $<$<BOOL:${EMIL_BUILD_WIN}>:
             $<$<CXX_COMPILER_ID:MSVC>:
                 /wd4018
                 /wd4065
@@ -252,7 +252,7 @@ if (TARGET_ARCH_X86)
 
     target_compile_options(protobuf.libprotoc PRIVATE
         $<$<COMPILE_LANG_AND_ID:CXX,AppleClang,Clang>:-Wno-enum-compare-switch>
-        $<$<BOOL:${TARGET_BUILD_WIN}>:
+        $<$<BOOL:${EMIL_BUILD_WIN}>:
             $<$<CXX_COMPILER_ID:MSVC>:
                 /wd4018
                 /wd4065
@@ -272,7 +272,7 @@ if (TARGET_ARCH_X86)
     )
 
     target_link_options(protobuf.libprotoc PRIVATE
-        $<$<BOOL:${TARGET_BUILD_WIN}>:
+        $<$<BOOL:${EMIL_BUILD_WIN}>:
             $<$<CXX_COMPILER_ID:MSVC>:/ignore:4217>
         >
     )

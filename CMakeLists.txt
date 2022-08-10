@@ -18,20 +18,20 @@ if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    set(TARGET_BUILD_WIN On)
-    set(TARGET_ARCH_X86 On)
+    set(EMIL_BUILD_WIN On)
+    set(EMIL_HOST_BUILD On)
 
     add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/EHsc>)
 endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(TARGET_BUILD_UNIX On)
-    set(TARGET_ARCH_X86 On)
+    set(EMIL_BUILD_UNIX On)
+    set(EMIL_HOST_BUILD On)
 endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    set(TARGET_BUILD_DARWIN On)
-    set(TARGET_ARCH_X86 On)
+    set(EMIL_BUILD_DARWIN On)
+    set(EMIL_HOST_BUILD On)
 
     # Suppress warnings about *.a files having no symbols on Darwin.
     # The warning is emitted when *.cpp.o contains no operational code.
@@ -49,7 +49,7 @@ endif()
 # by-default. When consuming EmIL as a dependency the tests and
 # examples are disabled. This behavior can be overridden by below
 # options.
-if (EMIL_STANDALONE AND TARGET_ARCH_X86)
+if (EMIL_STANDALONE AND EMIL_HOST_BUILD)
     set(EMIL_DEFAULTOPT On)
 else()
     set(EMIL_DEFAULTOPT Off)
@@ -92,7 +92,7 @@ if (EMIL_ENABLE_DOCKER_TOOLS)
     include(emil_docker_tools)
 endif()
 
-if (TARGET_ARCH_X86)
+if (EMIL_HOST_BUILD)
     add_compile_definitions(EMIL_HOST_BUILD)
 
     if (EMIL_BUILD_TESTS)
@@ -137,6 +137,13 @@ if (TARGET_ARCH_X86)
             endif()
         endif()
     endif()
+endif()
+
+if (NOT EMIL_STANDALONE)
+    set(EMIL_HOST_BUILD "${EMIL_HOST_BUILD}" PARENT_SCOPE)
+    set(EMIL_BUILD_WIN "${EMIL_BUILD_WIN}" PARENT_SCOPE)
+    set(EMIL_BUILD_UNIX "${EMIL_BUILD_UNIX}" PARENT_SCOPE)
+    set(EMIL_BUILD_DARWIN "${EMIL_BUILD_DARWIN}" PARENT_SCOPE)
 endif()
 
 function(emil_add_test target)

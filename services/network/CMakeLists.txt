@@ -101,7 +101,7 @@ target_sources(services.network PRIVATE
     WiFiNetwork.hpp
 )
 
-if (TARGET_ARCH_X86)
+if (EMIL_HOST_BUILD)
     target_sources(services.network PRIVATE
         CertificateConvertor.cpp
         CertificateConvertor.hpp
