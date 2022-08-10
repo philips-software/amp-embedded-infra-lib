@@ -13,8 +13,6 @@ ccola_component(network static_library)
         ConnectionFactoryWithNameResolver.hpp
         ConnectionMbedTls.cpp
         ConnectionMbedTls.hpp
-        ConnectionSerial.cpp
-        ConnectionSerial.hpp
         ConnectionStatus.hpp
         Datagram.hpp
         Dns.cpp
