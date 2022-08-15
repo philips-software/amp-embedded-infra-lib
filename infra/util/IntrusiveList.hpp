@@ -95,13 +95,13 @@ namespace infra
         const_reference back() const;
 
     public:
-        void push_front(const_reference value);
-        void push_back(const_reference value);
+        void push_front(reference value);
+        void push_back(reference value);
         void pop_front();
         void pop_back();
 
-        void insert(const_iterator position, const_reference value);
-        void erase(const_reference value);
+        void insert(const_iterator position, reference value);
+        void erase(reference value);
 
         template<class InputIterator>
             void assign(InputIterator first, InputIterator last);
@@ -337,9 +337,9 @@ namespace infra
     }
 
     template<class T>
-    void IntrusiveList<T>::push_front(const_reference value)
+    void IntrusiveList<T>::push_front(reference value)
     {
-        NodeType& node = const_cast<reference>(value);
+        NodeType& node = value;
         node.next = beginNode;
         node.previous = nullptr;
 
@@ -351,9 +351,9 @@ namespace infra
     }
 
     template<class T>
-    void IntrusiveList<T>::push_back(const_reference value)
+    void IntrusiveList<T>::push_back(reference value)
     {
-        NodeType& node = const_cast<reference>(value);
+        NodeType& node = value;
         node.next = &endNode;
         node.previous = endNode.previous;
 
@@ -388,9 +388,9 @@ namespace infra
     }
 
     template<class T>
-    void IntrusiveList<T>::insert(const_iterator position, const_reference value)
+    void IntrusiveList<T>::insert(const_iterator position, reference value)
     {
-        NodeType& node = const_cast<reference>(value);
+        NodeType& node = value;
         node.previous = position.node->previous;
         node.next = const_cast<NodeType*>(position.node);
         const_cast<NodeType*>(position.node)->previous = &node;
@@ -402,9 +402,9 @@ namespace infra
     }
 
     template<class T>
-    void IntrusiveList<T>::erase(const_reference value)
+    void IntrusiveList<T>::erase(reference value)
     {
-        NodeType& node = const_cast<reference>(value);
+        NodeType& node = value;
         if (node.previous != nullptr)
             node.previous->next = node.next;
         else if (beginNode != &node)

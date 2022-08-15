@@ -21,7 +21,7 @@ namespace services
         : attribute{type, 0}
     {}
 
-    void GattService::AddCharacteristic(const GattCharacteristic& characteristic)
+    void GattService::AddCharacteristic(GattCharacteristic& characteristic)
     {
         characteristics.push_front(characteristic);
     }

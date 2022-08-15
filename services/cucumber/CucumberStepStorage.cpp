@@ -144,12 +144,12 @@ namespace services
         return *std::next(stepList.begin(), id);
     }
 
-    void CucumberStepStorage::AddStep(const CucumberStep& step)
+    void CucumberStepStorage::AddStep(CucumberStep& step)
     {
         stepList.push_back(step);
     }
 
-    void CucumberStepStorage::DeleteStep(const CucumberStep& step)
+    void CucumberStepStorage::DeleteStep(CucumberStep& step)
     {
         stepList.erase(step);
     }

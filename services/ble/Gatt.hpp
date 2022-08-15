@@ -134,7 +134,7 @@ namespace services
         GattService& operator=(const GattService& other) = delete;
         virtual ~GattService() = default;
 
-        void AddCharacteristic(const GattCharacteristic& characteristic);
+        void AddCharacteristic(GattCharacteristic& characteristic);
         infra::IntrusiveForwardList<GattCharacteristic>& Characteristics();
         const infra::IntrusiveForwardList<GattCharacteristic>& Characteristics() const;
 
