@@ -23,8 +23,6 @@ target_sources(services.network PRIVATE
     ConnectionFactoryWithNameResolver.hpp
     ConnectionMbedTls.cpp
     ConnectionMbedTls.hpp
-    ConnectionSerial.cpp
-    ConnectionSerial.hpp
     ConnectionStatus.hpp
     Datagram.hpp
     Dns.cpp

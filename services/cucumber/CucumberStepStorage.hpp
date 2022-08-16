@@ -34,8 +34,8 @@ namespace services
         services::CucumberStepStorage::Match MatchStep(infra::BoundedConstString nameToMatch);
 
         CucumberStep& GetStep(uint32_t id);
-        void AddStep(const CucumberStep& step);
-        void DeleteStep(const CucumberStep& step);
+        void AddStep(CucumberStep& step);
+        void DeleteStep(CucumberStep& step);
         void ClearStorage();
 
     private:

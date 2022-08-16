@@ -61,10 +61,10 @@ namespace infra
         const_reference front() const;
 
     public:
-        void push_front(const_reference value);
+        void push_front(reference value);
         void pop_front();
 
-        void insert_after(const_iterator position, const_reference value);
+        void insert_after(const_iterator position, reference value);
         void erase_after(const_reference value);
         void erase_slow(const_reference value); // Runs in O(n) time
 
@@ -259,9 +259,9 @@ namespace infra
     }
 
     template<class T>
-    void IntrusiveForwardList<T>::push_front(const_reference value)
+    void IntrusiveForwardList<T>::push_front(reference value)
     {
-        NodeType& node = const_cast<reference>(value);
+        NodeType& node = value;
         node.next = beginNode;
 
         beginNode = &node;
@@ -274,9 +274,9 @@ namespace infra
     }
 
     template<class T>
-    void IntrusiveForwardList<T>::insert_after(const_iterator position, const_reference value)
+    void IntrusiveForwardList<T>::insert_after(const_iterator position, reference value)
     {
-        NodeType& node = const_cast<reference>(value);
+        NodeType& node = value;
         node.next = const_cast<NodeType*>(position.mNode)->next;
         const_cast<NodeType*>(position.mNode)->next = &node;
     }
