@@ -1,4 +1,4 @@
-== Network Connections
+= Network Connections
 
 The data sent over TCP and similar streaming connections are handled via
 Connection and ConnectionObserver objects. A Connection object

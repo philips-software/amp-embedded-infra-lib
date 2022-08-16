@@ -1,6 +1,5 @@
+= MemoryRange
 :source-highlighter: highlight.js
-
-== MemoryRange
 
 Embedded applications regularly handle blocks of memory. Such memory may
 either be typed (for example, consisting of a number of characters) or
@@ -31,7 +30,7 @@ it with data, a MemoryRange can be constructed from it by using
 `MakeRange`, after which the `MemoryRange` can be used for passing
 around the data.
 
-=== MemoryRange Accessors
+== MemoryRange Accessors
 
 These are the most used accessors of `MemoryRange`:
 
@@ -59,7 +58,7 @@ from the front until `size()` == `newSize`
 from the back until `size()` == `newSize`
 |===
 
-=== Helper Functions
+== Helper Functions
 
 In addition to the members of MemoryRange, a number of helper functions
 exist:
@@ -85,7 +84,7 @@ than `range.size()`, otherwise a new range consisting of range except
 for the last size elements
 |===
 
-=== Example
+== Example
 
 This example function shows how to use the MemoryRange functions to cut
 up a block of data into smaller pieces:
