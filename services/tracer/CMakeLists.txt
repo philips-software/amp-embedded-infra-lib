@@ -23,6 +23,8 @@ ccola_component(tracer static_library)
         TracingInputStream.hpp
         TracingOutputStream.cpp
         TracingOutputStream.hpp
+        TracingReset.cpp
+        TracingReset.hpp
     )
 
     ccola_dependencies(
