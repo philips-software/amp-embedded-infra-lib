@@ -37,6 +37,11 @@ namespace infra
         std::string name;
     };
 
+    struct JsonOptionalStringNavigatorToken
+    {
+        std::string name;
+    };
+
     struct JsonIntegerNavigatorToken
     {
         std::string name;
@@ -93,13 +98,14 @@ namespace infra
     {
     public:
         JsonObjectNavigator(const std::string& contents);
-        JsonObjectNavigator(infra::JsonObject& object);
+        JsonObjectNavigator(const infra::JsonObject& object);
 
         JsonObjectNavigator operator/(JsonObjectNavigatorToken token) const;
         JsonOptionalObjectNavigator operator/(JsonOptionalObjectNavigatorToken token) const;
         JsonArrayNavigator operator/(JsonArrayNavigatorToken token) const;
         JsonOptionalArrayNavigator operator/(JsonOptionalArrayNavigatorToken token) const;
         std::string operator/(JsonStringNavigatorToken token) const;
+        infra::Optional<std::string> operator/(JsonOptionalStringNavigatorToken token) const;
         int32_t operator/(JsonIntegerNavigatorToken token) const;
         bool operator/(JsonBoolNavigatorToken token) const;
 
@@ -132,6 +138,7 @@ namespace infra
         JsonOptionalArrayNavigator operator/(JsonArrayNavigatorToken token) const;
         JsonOptionalArrayNavigator operator/(JsonOptionalArrayNavigatorToken token) const;
         infra::Optional<std::string> operator/(JsonStringNavigatorToken token) const;
+        infra::Optional<std::string> operator/(JsonOptionalStringNavigatorToken token) const;
         infra::Optional<int32_t> operator/(JsonIntegerNavigatorToken token) const;
         infra::Optional<bool> operator/(JsonBoolNavigatorToken token) const;
 
@@ -247,7 +254,7 @@ namespace infra
     infra::Optional<Result> JsonOptionalObjectNavigator::operator/(JsonTransformOptionalObjectNavigatorToken<Result> token) const
     {
         if (navigator != infra::none)
-            return infra::MakeOptional(*navigator / token);
+            return *navigator / token;
         else
             return{};
     }

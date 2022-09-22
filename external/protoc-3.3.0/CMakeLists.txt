@@ -2,6 +2,10 @@ set(PROTOC_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL "protoc-3.3.0 director
 
 function(protocol_buffer_generator)
 
+    if (CMAKE_CROSSCOMPILING)
+        find_package(emil COMPONENTS Infra Hal Crypto Services Protobuf REQUIRED)
+    endif()
+
     set(singleArgs TARGET INPUT GENERATOR PATH_INFIX)
     set(multiArgs GENERATED_POSTFIXES)
     cmake_parse_arguments(PARSE_ARGV 0 PROTOGEN "" "${singleArgs}" "${multiArgs}")
@@ -119,5 +123,6 @@ endfunction()
 function(protocol_buffer_dependencies target)
 
     set_target_properties(${target} PROPERTIES PROTOBUF_DEPENDENCIES "${ARGN}")
+    target_link_libraries(${target} PUBLIC "${ARGN}")
 
 endfunction()

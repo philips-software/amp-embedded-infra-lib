@@ -18,20 +18,20 @@ if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    set(TARGET_BUILD_WIN On)
-    set(TARGET_ARCH_X86 On)
+    set(EMIL_BUILD_WIN On)
+    set(EMIL_HOST_BUILD On)
 
     add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/EHsc>)
 endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(TARGET_BUILD_UNIX On)
-    set(TARGET_ARCH_X86 On)
+    set(EMIL_BUILD_UNIX On)
+    set(EMIL_HOST_BUILD On)
 endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    set(TARGET_BUILD_DARWIN On)
-    set(TARGET_ARCH_X86 On)
+    set(EMIL_BUILD_DARWIN On)
+    set(EMIL_HOST_BUILD On)
 
     # Suppress warnings about *.a files having no symbols on Darwin.
     # The warning is emitted when *.cpp.o contains no operational code.
@@ -49,7 +49,7 @@ endif()
 # by-default. When consuming EmIL as a dependency the tests and
 # examples are disabled. This behavior can be overridden by below
 # options.
-if (EMIL_STANDALONE AND TARGET_ARCH_X86)
+if (EMIL_STANDALONE AND EMIL_HOST_BUILD)
     set(EMIL_DEFAULTOPT On)
 else()
     set(EMIL_DEFAULTOPT Off)
@@ -68,6 +68,7 @@ option(EMIL_BUILD_EXAMPLES "Enable build of the examples" ${EMIL_DEFAULTOPT})
 option(EMIL_ENABLE_COVERAGE "Enable compiler flags for code coverage measurements" Off)
 option(EMIL_ENABLE_MUTATION_TESTING "Enable compiler flags for mutation testing" Off)
 option(EMIL_ENABLE_TEST_AUTO_DISCOVERY "Enable auto-discovery of tests in test executables; this creates one CTest command per test-case and can be slow on some platforms" Off)
+option(EMIL_ENABLE_DOCKER_TOOLS "Enable shift-left tools (e.g. linters, formatters) that are run using Docker" On)
 
 # The next few options control the install and export behaviour.
 # When package config generation is enabled the prefix can be set
@@ -90,7 +91,11 @@ option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of EmIL" On)
 option(EMIL_INCLUDE_FREERTOS "Include FreeRTOS as part of EmIL" Off)
 option(EMIL_INCLUDE_THREADX "Include ThreadX as part of EmIL" Off)
 
-if (TARGET_ARCH_X86)
+if (EMIL_ENABLE_DOCKER_TOOLS)
+    include(emil_docker_tools)
+endif()
+
+if (EMIL_HOST_BUILD)
     add_compile_definitions(EMIL_HOST_BUILD)
 
     if (EMIL_BUILD_TESTS)
@@ -137,15 +142,20 @@ if (TARGET_ARCH_X86)
     endif()
 endif()
 
+if (NOT EMIL_STANDALONE)
+    set(EMIL_HOST_BUILD "${EMIL_HOST_BUILD}" PARENT_SCOPE)
+    set(EMIL_BUILD_WIN "${EMIL_BUILD_WIN}" PARENT_SCOPE)
+    set(EMIL_BUILD_UNIX "${EMIL_BUILD_UNIX}" PARENT_SCOPE)
+    set(EMIL_BUILD_DARWIN "${EMIL_BUILD_DARWIN}" PARENT_SCOPE)
+endif()
+
 function(emil_add_test target)
-    if (EMIL_BUILD_TESTS)
-        if (EMIL_ENABLE_TEST_AUTO_DISCOVERY)
-            gtest_discover_tests(${target} AUTO)
-        elseif(EMIL_ENABLE_MUTATION_TESTING)
-            add_test(NAME ${target} COMMAND mull-runner-12 $<TARGET_FILE:${target}>)
-        else()
-            add_test(NAME ${target} COMMAND ${target})
-        endif()
+    if (EMIL_ENABLE_TEST_AUTO_DISCOVERY)
+        gtest_discover_tests(${target} AUTO)
+    elseif(EMIL_ENABLE_MUTATION_TESTING)
+        add_test(NAME ${target} COMMAND mull-runner-12 $<TARGET_FILE:${target}>)
+    else()
+        add_test(NAME ${target} COMMAND ${target})
     endif()
 endfunction()
 
@@ -203,14 +213,3 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
     )
 endif()
-
-execute_process(COMMAND docker inspect -f "{{ range .Mounts }}{{ if eq .Destination \"/workspaces\" }}{{ .Name }}{{ end }}{{ end }}" $ENV{HOSTNAME} OUTPUT_VARIABLE DOCKER_VOLUME OUTPUT_STRIP_TRAILING_WHITESPACE)
-message("Docker volume: ${DOCKER_VOLUME}")
-message("Remote workspace: $ENV{LOCAL_WORKSPACE_FOLDER}")
-
-add_custom_target(linter
-    COMMAND docker run --rm -v ${DOCKER_VOLUME}:/workspaces -e DEFAULT_WORKSPACE=/workspaces/embeddedinfralib -e APPLY_FIXES=all oxsecurity/megalinter:v6
-    COMMENT "Running linter..."
-    USES_TERMINAL
-    VERBATIM
-)

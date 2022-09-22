@@ -1,4 +1,4 @@
-if (TARGET_ARCH_X86)
+if (EMIL_HOST_BUILD)
     add_executable(protobuf.protoc_echo_plugin_java)
     install(TARGETS protobuf.protoc_echo_plugin_java EXPORT emilProtobufTargets)
 

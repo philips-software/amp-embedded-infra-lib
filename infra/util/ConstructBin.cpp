@@ -39,13 +39,12 @@ namespace infra
         return *this;
     }
 
-    ConstructBin& ConstructBin::TextStream(const std::function<void(infra::TextOutputStream stream)>& callback)
+    const std::vector<uint8_t>& ConstructBin::Vector() const
     {
-        callback(infra::StdVectorOutputStream(contents) << infra::text);
-        return *this;
+        return contents;
     }
 
-    std::vector<uint8_t> ConstructBin::Vector() const
+    std::vector<uint8_t>& ConstructBin::Vector()
     {
         return contents;
     }

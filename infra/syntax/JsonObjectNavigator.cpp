@@ -6,7 +6,7 @@ namespace infra
         : object(contents)
     {}
 
-    JsonObjectNavigator::JsonObjectNavigator(infra::JsonObject& object)
+    JsonObjectNavigator::JsonObjectNavigator(const infra::JsonObject& object)
         : object(object)
     {}
 
@@ -53,6 +53,13 @@ namespace infra
             throw std::runtime_error(("String " + token.name + " not found").c_str());
 
         return member->ToStdString();
+    }
+
+    infra::Optional<std::string> JsonObjectNavigator::operator/(JsonOptionalStringNavigatorToken token) const
+    {
+        auto member = object.GetOptionalString(token.name);
+
+        return infra::TransformOptional(member, [](auto value) { return value.ToStdString(); });
     }
 
     int32_t JsonObjectNavigator::operator/(JsonIntegerNavigatorToken token) const
@@ -119,6 +126,14 @@ namespace infra
             return infra::MakeOptional(*navigator / token);
         else
             return{};
+    }
+
+    infra::Optional<std::string> JsonOptionalObjectNavigator::operator/(JsonOptionalStringNavigatorToken token) const
+    {
+        if (navigator != infra::none)
+            return *navigator / token;
+        else
+            return {};
     }
 
     infra::Optional<int32_t> JsonOptionalObjectNavigator::operator/(JsonIntegerNavigatorToken token) const

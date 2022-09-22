@@ -78,10 +78,14 @@ target_sources(infra.util PRIVATE
     WithStorage.hpp
 )
 
-if (TARGET_BUILD_WIN)
+if (EMIL_BUILD_WIN)
     target_sources(infra.util PRIVATE
         infra.util.natvis
     )
+endif()
+
+if (EMIL_HOST_BUILD)
+    target_compile_definitions(infra.util PUBLIC EMIL_HOST_BUILD)
 endif()
 
 if (EMIL_BUILD_TESTS)

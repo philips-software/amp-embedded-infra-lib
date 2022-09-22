@@ -12,7 +12,7 @@ EmbeddedInfraLib is a young open source project and we love to receive contribut
 
 * Be professional, respectful and considerate in your communication with others.
 * As EmbeddedInfraLib core-team we have spent considerate effort to make our components testable; please make sure that you have test coverage for your changes as well. Inspiration can be drawn from existing components.
-* One of the unique selling points of EmbeddedInfraLib is not using any heap; don't use the heap in your changes. This excludes using most components from the standard template library, for which we provide heapless alternatives.
+* One of the unique selling points of EmbeddedInfraLib is not using any heap; don't use the heap in your changes. This excludes using most components from the standard template library, for which we provide heap-less alternatives.
 * Ensure cross-platform compatibility for your changes.
 * Adhere to the [Coding Standard C++ Embedded Projects]; when in doubt, look at the surrounding code that you are changing and stick to the local style.
 * Create issues for any major changes and enhancements that you wish to make. Discuss things transparently and get core-team feedback.
@@ -25,11 +25,11 @@ We can't stress this enough. Any bugfix that doesn’t include a test proving th
 
 ### Introduction
 
-Submitting your first contribution (or Pull Request) can be scary, but we promise you it will be very rewarding! Information on how to proceed can be found on numerous blog posts and websites. A small selection of beginner friendly tutorials:
+Submitting your first contribution (or Pull Request) can be scary, but we promise you it will be rewarding. Information on how to proceed can be found on numerous blog posts and websites. A small selection of beginner friendly tutorials:
 
 **Working on your first Pull Request?** You can learn how from this *free* series [How to Contribute to an Open Source Project on GitHub](https://app.egghead.io/playlists/how-to-contribute-to-an-open-source-project-on-github)
 
-**Contributing to open source for the first time can be scary and a little overwhelming.** Perhaps you’re a [Code Newbie](https://www.codenewbie.org/) or maybe you’ve been coding for a while but haven’t found a project you felt comfortable contributing to. [You can do it! here's how.](https://www.firsttimersonly.com/)
+**Contributing to open source for the first time can be scary and a little overwhelming.** Perhaps you’re a [Code Newbie](https://www.codenewbie.org/) or maybe you’ve been coding for a while but haven’t found a project you felt comfortable contributing to. [You can do it; here's how.](https://www.firsttimersonly.com/)
 
 ### Full example
 
@@ -57,7 +57,7 @@ Make sure you have all development dependencies installed. E.g. [CMake](https://
 1. Push your commit to get it back up to your fork: git push origin HEAD
 2. Visit Github, click handy “Pull request” button that it will make upon noticing your new branch.
 3. In the description field, write down issue number (if submitting code fixing an existing issue) or describe the issue + your fix (if submitting a wholly new bugfix).
-4. Hit ‘submit’! And please be patient - the maintainers will get to you when they can.
+4. Hit ‘submit’. And please be patient - the maintainers will get to you when they can.
 
 ## How to report a bug
 

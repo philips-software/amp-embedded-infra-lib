@@ -18,6 +18,8 @@ target_sources(infra.stream PRIVATE
     ByteInputStream.hpp
     ByteOutputStream.cpp
     ByteOutputStream.hpp
+    ConstructBinStream.cpp
+    ConstructBinStream.hpp
     CountingInputStream.cpp
     CountingInputStream.hpp
     CountingOutputStream.cpp

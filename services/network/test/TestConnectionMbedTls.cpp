@@ -14,8 +14,8 @@ class ConnectionMbedTlsTest
 {
 public:
     ConnectionMbedTlsTest()
-        : connectionFactory(network, serverCertificates, randomDataGenerator)
-        , thisListener(infra::UnOwnedSharedPtr(*this))
+        : thisListener(infra::UnOwnedSharedPtr(*this))
+        , connectionFactory(network, serverCertificates, randomDataGenerator)
     {
         serverCertificates.AddCertificateAuthority(services::testCaCertificate);
         serverCertificates.AddOwnCertificate(services::testServerCertificate, services::testServerKey, randomDataGenerator);

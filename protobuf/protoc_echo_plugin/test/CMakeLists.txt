@@ -16,7 +16,7 @@ target_link_libraries(protobuf.protoc_echo_plugin_test PUBLIC
     services.network_test_doubles
 )
 
-if (TARGET_BUILD_WIN)
+if (EMIL_BUILD_WIN)
     add_custom_command(TARGET protobuf.protoc_echo_plugin_test PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:protobuf.protoc_echo_plugin_test> $<TARGET_FILE_DIR:protobuf.protoc_echo_plugin_test>
         COMMAND_EXPAND_LISTS

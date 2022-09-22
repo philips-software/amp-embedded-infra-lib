@@ -1,5 +1,6 @@
 #include "gmock/gmock.h"
 #include "infra/stream/StdVectorInputStream.hpp"
+#include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/util/ConstructBin.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/SharedOptional.hpp"
