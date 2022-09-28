@@ -359,6 +359,7 @@ namespace services
             case 304: return infra::MakeOptional(HttpStatusCode::NotModified);
             case 305: return infra::MakeOptional(HttpStatusCode::UseProxy);
             case 307: return infra::MakeOptional(HttpStatusCode::TemporaryRedirect);
+            case 308: return infra::MakeOptional(HttpStatusCode::PermanentRedirect);
             case 400: return infra::MakeOptional(HttpStatusCode::BadRequest);
             case 401: return infra::MakeOptional(HttpStatusCode::Unauthorized);
             case 402: return infra::MakeOptional(HttpStatusCode::PaymentRequired);
@@ -408,6 +409,7 @@ namespace services
             case services::HttpStatusCode::NotModified: return "NotModified";
             case services::HttpStatusCode::UseProxy: return "UseProxy";
             case services::HttpStatusCode::TemporaryRedirect: return "TemporaryRedirect";
+            case services::HttpStatusCode::PermanentRedirect: return "PermanentRedirect";
             case services::HttpStatusCode::BadRequest: return "BadRequest";
             case services::HttpStatusCode::Unauthorized: return "Unauthorized";
             case services::HttpStatusCode::PaymentRequired: return "PaymentRequired";
