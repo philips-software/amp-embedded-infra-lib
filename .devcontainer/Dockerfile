@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         gnupg2=2.2.19-3ubuntu2.2 \
         iwyu=8.0-3build1 \
         libllvm12=1:12.0.0-3ubuntu1~20.04.5 \
-        libxml2=2.9.10+dfsg-5ubuntu0.20.04.3 \
+        libxml2=2.9.10+dfsg-5ubuntu0.20.04.4 \
         lsb-release=11.1.0ubuntu2 \
         ninja-build=1.10.0-1build1 \
         python3=3.8.2-0ubuntu2 \
