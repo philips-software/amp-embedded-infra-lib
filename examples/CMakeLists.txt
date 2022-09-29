@@ -1,4 +1,4 @@
-if (TARGET_ARCH_X86)
+if (EMIL_HOST_BUILD)
     add_subdirectory(http_server)
     add_subdirectory(https_client)
     add_subdirectory(serial_net)

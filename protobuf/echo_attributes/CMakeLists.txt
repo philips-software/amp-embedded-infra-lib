@@ -1,9 +1,9 @@
-if (TARGET_ARCH_X86)
+if (EMIL_HOST_BUILD)
     add_library(protobuf.echo_attributes ${EMIL_EXCLUDE_FROM_ALL} STATIC)
     install(TARGETS protobuf.echo_attributes EXPORT emilProtobufTargets)
 
     target_compile_options(protobuf.echo_attributes PRIVATE
-        $<$<BOOL:${TARGET_BUILD_WIN}>:
+        $<$<BOOL:${EMIL_BUILD_WIN}>:
             $<$<CXX_COMPILER_ID:MSVC>:
                 /wd4018
                 /wd4251

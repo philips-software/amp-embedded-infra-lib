@@ -1,4 +1,4 @@
-if (TARGET_BUILD_WIN)
+if (EMIL_BUILD_WIN)
     add_library(hal.windows ${EMIL_EXCLUDE_FROM_ALL} STATIC)
     install(TARGETS hal.windows EXPORT emilHalTargets)
 

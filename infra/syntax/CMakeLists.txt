@@ -26,7 +26,7 @@ target_sources(infra.syntax PRIVATE
     XmlFormatter.hpp
 )
 
-if (TARGET_ARCH_X86)
+if (EMIL_HOST_BUILD)
     target_sources(infra.syntax PRIVATE
         JsonObjectNavigator.cpp
         JsonObjectNavigator.hpp
