@@ -48,8 +48,7 @@ jobs:
           name: linter
           path: |
             megalinter-reports
-      - name: suggester
-        uses: reviewdog/action-suggester@v1.6
+      - uses: reviewdog/action-suggester@v1.6
         with:
           tool_name: MegaLinter
           filter_mode: diff_context
