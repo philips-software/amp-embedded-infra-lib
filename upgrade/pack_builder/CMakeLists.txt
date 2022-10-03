@@ -7,6 +7,7 @@ if (EMIL_HOST_BUILD)
         crypto.micro_ecc
         crypto.tiny_aes128
         hal.interfaces
+        infra.syntax
         upgrade.pack
     )
 
