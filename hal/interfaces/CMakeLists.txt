@@ -8,7 +8,7 @@ target_include_directories(hal.interfaces PUBLIC
 
 target_link_libraries(hal.interfaces PUBLIC
     infra.event
-    $<$<BOOL:${TARGET_BUILD_UNIX}>:stdc++fs>
+    $<$<BOOL:${EMIL_BUILD_UNIX}>:stdc++fs>
 )
 
 target_sources(hal.interfaces PRIVATE
@@ -43,8 +43,8 @@ target_sources(hal.interfaces PRIVATE
     Spi.hpp
     UsbCustomHid.hpp
     UsbLinkLayer.hpp
-    $<$<BOOL:${TARGET_ARCH_X86}>:FileSystem.cpp>
-    $<$<BOOL:${TARGET_ARCH_X86}>:FileSystem.hpp>
+    $<$<BOOL:${EMIL_HOST_BUILD}>:FileSystem.cpp>
+    $<$<BOOL:${EMIL_HOST_BUILD}>:FileSystem.hpp>
 )
 
 if (EMIL_BUILD_TESTS)

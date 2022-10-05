@@ -66,12 +66,12 @@ namespace infra
         bool contains(const_reference value) const;
 
     public:
-        void insert(const_reference value);
+        void insert(reference value);
 
         template<class... Args>
             std::pair<iterator, bool> emplace(Args&&... args);
 
-        void erase(const_reference value);
+        void erase(reference value);
 
         template<class InputIterator>
             void assign(InputIterator first, InputIterator last);
@@ -253,7 +253,7 @@ namespace infra
     }
 
     template<class T>
-    void IntrusiveUnorderedSet<T>::insert(const_reference value)
+    void IntrusiveUnorderedSet<T>::insert(reference value)
     {
         auto& bucket = buckets[HashToBucket(value)];
 
@@ -262,7 +262,7 @@ namespace infra
     }
 
     template<class T>
-    void IntrusiveUnorderedSet<T>::erase(const_reference value)
+    void IntrusiveUnorderedSet<T>::erase(reference value)
     {
         auto& bucket = buckets[HashToBucket(value)];
 

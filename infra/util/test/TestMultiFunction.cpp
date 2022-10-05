@@ -75,3 +75,11 @@ TEST(MultiFunctionTest, multi_function_Invocable)
     EXPECT_TRUE(f.Invocable(true));
     EXPECT_FALSE(f.Invocable());
 }
+
+TEST(MultiFunctionTest, mutable_function)
+{
+    infra::MultiFunction<int()> f([n = 0]() mutable { return ++n; });
+    EXPECT_EQ(1, f());
+    EXPECT_EQ(2, f());
+    EXPECT_EQ(3, f());
+}

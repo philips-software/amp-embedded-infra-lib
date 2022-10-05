@@ -19,7 +19,6 @@ target_sources(services.network_test PRIVATE
     TestCertificateConvertor.cpp
     TestCertificatesMbedTls.cpp
     TestConnectionMbedTls.cpp
-    TestConnectionSerial.cpp
     TestDnsResolver.cpp
     TestDnsServer.cpp
     TestExclusiveConnection.cpp

@@ -1,4 +1,4 @@
-if (TARGET_BUILD_WIN)
+if (EMIL_BUILD_WIN)
     add_executable(examples.serial_net)
     target_sources(examples.serial_net PRIVATE MainWin.cpp)
     target_link_libraries(examples.serial_net PUBLIC hal.generic hal.windows services.network_win services.util)

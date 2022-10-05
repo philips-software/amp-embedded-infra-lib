@@ -259,3 +259,11 @@ TEST(FunctionTest, ExecuteOnDestructionWithSize)
         EXPECT_CALL(m, callback());
     }
 }
+
+TEST(FunctionTest, TestMutable)
+{
+    infra::Function<int()> f([n = 0]() mutable { return ++n; });
+    EXPECT_EQ(1, f());
+    EXPECT_EQ(2, f());
+    EXPECT_EQ(3, f());
+}
