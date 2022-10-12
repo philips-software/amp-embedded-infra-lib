@@ -41,17 +41,18 @@ TEST(JsonObjectFormatter, add_bool)
 
 TEST(JsonObjectFormatter, add_int)
 {
-    infra::BoundedString::WithStorage<64> string;
+    infra::BoundedString::WithStorage<80> string;
 
     {
         infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
         formatter.Add("intTag", 0);
         formatter.Add("uint32Tag", static_cast<uint32_t>(5));
         formatter.Add("int64Tag", static_cast<int64_t>(-10));
+        formatter.Add("uint64Tag", static_cast<uint64_t>(20));
         formatter.Add("bigger", infra::JsonBiggerInt(4, true));
     }
 
-    EXPECT_EQ(R"({ "intTag":0, "uint32Tag":5, "int64Tag":-10, "bigger":-4 })", string);
+    EXPECT_EQ(R"({ "intTag":0, "uint32Tag":5, "int64Tag":-10, "uint64Tag":20, "bigger":-4 })", string);
 }
 
 TEST(JsonObjectFormatter, add_const_char_ptr)
