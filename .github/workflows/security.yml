@@ -24,7 +24,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Analysis
-        uses: ossf/scorecard-action@c1aec4ac820532bab364f02a81873c555a0ba3a1 # v1.0.4
+        uses: ossf/scorecard-action@e363bfca00e752f91de7b7d2a77340e2e523cb18 # v1.0.4
         with:
           results_file: scorecards.sarif
           results_format: sarif
