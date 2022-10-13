@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package gap;
+
+message IoCapabilities
+{
+    enum IoCapabilitiesEnum
+    {
+        None = 0;
+        Display = 1;
+        DisplayYesNo = 2;
+        Keyboard = 3;
+        KeyboardDisplay = 4;
+    }
+
+    IoCapabilitiesEnum ioCaps = 1;
+}
+
+message SecurityLevel
+{
+    enum SecurityLevelEnum
+    {
+        None = 0;
+        UnauthenticatedPairing = 1;
+        AuthenticatedPairing = 2;
+        AuthenticatedPairingWithLE = 3;
+    }
+
+    SecurityLevelEnum level = 1;
+}
+
+message AdvertisementType
+{
+    enum AdvertisementTypeEnum
+    {
+        AdvInd = 0;
+        AdvNonconnInd = 1;
+    }
+
+    AdvertisementTypeEnum type = 1;
+}
