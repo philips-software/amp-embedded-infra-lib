@@ -30,6 +30,8 @@ target_sources(services.tracer PRIVATE
     TracingInputStream.hpp
     TracingOutputStream.cpp
     TracingOutputStream.hpp
+    TracingReset.cpp
+    TracingReset.hpp
 )
 
 if (EMIL_BUILD_TESTS)

@@ -251,6 +251,13 @@ namespace services
         CheckIdleClose();
     }
 
+    void HttpServerConnectionObserver::RequestIsNowInProgress()
+    {
+        idle = false;
+        initialIdle.Cancel();
+        ReceivedHttpRequest(buffer);
+    }
+
     HttpPage* HttpServerConnectionObserver::PageForRequest(const HttpRequestParser& request)
     {
         auto page = HttpPageServer::PageForRequest(request);
@@ -317,13 +324,6 @@ namespace services
         send100Response |= Expect100();
 
         ServePage(std::move(reader));
-    }
-
-    void HttpServerConnectionObserver::RequestIsNowInProgress()
-    {
-        idle = false;
-        initialIdle.Cancel();
-        ReceivedHttpRequest(buffer);
     }
 
     void HttpServerConnectionObserver::ServePage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
