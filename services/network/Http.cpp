@@ -408,6 +408,7 @@ namespace services
             case services::HttpStatusCode::NotModified: return "NotModified";
             case services::HttpStatusCode::UseProxy: return "UseProxy";
             case services::HttpStatusCode::TemporaryRedirect: return "TemporaryRedirect";
+            //case services::HttpStatusCode::PermanentRedirect: return "PermanentRedirect";
             case services::HttpStatusCode::BadRequest: return "BadRequest";
             case services::HttpStatusCode::Unauthorized: return "Unauthorized";
             case services::HttpStatusCode::PaymentRequired: return "PaymentRequired";
@@ -432,6 +433,7 @@ namespace services
             case services::HttpStatusCode::ServiceUnavailable: return "ServiceUnavailable";
             case services::HttpStatusCode::GatewayTimeOut: return "GatewayTimeOut";
             case services::HttpStatusCode::HttpVersionNotSupported: return "HttpVersionNotSupported";
+default: return "";
         }
 
         std::abort();
