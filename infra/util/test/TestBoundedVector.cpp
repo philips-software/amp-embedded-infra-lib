@@ -64,7 +64,6 @@ TEST(BoundedVectorTest, TestConstructionWithConstMemoryRange)
 
 TEST(BoundedVectorTest, TestConstructionWithInitializerList)
 {
-    int range[3] = { 0, 1, 2 };
     infra::BoundedVector<int>::WithMaxSize<5> vector({ 0, 1, 2 });
 
     EXPECT_EQ(3, vector.size());

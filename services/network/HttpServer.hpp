@@ -177,6 +177,7 @@ namespace services
         virtual void ReceivedHttpRequest(infra::BoundedConstString request) {}
 
         virtual void SetIdle();
+        virtual void RequestIsNowInProgress();
 
         // Implementation of HttpPageServer
         virtual HttpPage* PageForRequest(const HttpRequestParser& request) override;
@@ -186,7 +187,6 @@ namespace services
         void ReceivedRequest(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
         void TryHandleRequest(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
         void HandleRequest(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
-        void RequestIsNowInProgress();
         void ServePage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
         void DataReceivedForPage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
         void PageReaderClosed();
