@@ -5,6 +5,7 @@ project(emil LANGUAGES C CXX VERSION 2.0.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-braced-scalar-init")
 
 set_directory_properties(PROPERTY USE_FOLDERS On)
 
