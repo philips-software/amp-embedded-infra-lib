@@ -29,3 +29,5 @@ target_sources(lwip.lwip_cpp PRIVATE
     MulticastLwIp.cpp
     MulticastLwIp.hpp
 )
+
+emil_clangformat_target(lwip.lwip_cpp)
