@@ -35,7 +35,9 @@ TEST_F(InverseLogicPinTest, GpioPinTriggerOnChange)
     infra::MockCallback<void()> callback;
     EXPECT_CALL(callback, callback());
 
-    pin.EnableInterrupt([&callback]() { callback.callback(); }, hal::InterruptTrigger::fallingEdge);
+    pin.EnableInterrupt([&callback]()
+        { callback.callback(); },
+        hal::InterruptTrigger::fallingEdge);
     basePin.SetStubState(true);
 }
 

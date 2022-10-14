@@ -11,10 +11,10 @@ namespace hal
     {
         mainClock.Refere();
         this->actionOnCompletion = actionOnCompletion;
-        serialCommunication.SendData(data, [this]() {
+        serialCommunication.SendData(data, [this]()
+            {
             this->actionOnCompletion(); 
-            this->mainClock.Release();
-        });
+            this->mainClock.Release(); });
     }
 
     void LowPowerSerialCommunication::ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived)

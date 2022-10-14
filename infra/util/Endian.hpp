@@ -54,7 +54,11 @@ namespace infra
     constexpr bool isLittleEndian = std::endian::native == std::endian::little;
     constexpr bool isBigEndian = std::endian::native == std::endian::big;
 #else
-    namespace detail { constexpr int endianCheck{0x01}; }
+    namespace detail
+    {
+        constexpr int endianCheck{ 0x01 };
+    }
+
     constexpr bool isLittleEndian = static_cast<const char&>(detail::endianCheck) == 0x01;
     constexpr bool isBigEndian = !isLittleEndian;
 #endif

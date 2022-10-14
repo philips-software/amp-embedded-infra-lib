@@ -1,11 +1,11 @@
+#include "services/util/Sha256MbedTls.hpp"
 #include "mbedtls/sha256.h"
 #include "mbedtls/version.h"
-#include "services/util/Sha256MbedTls.hpp"
 
 #include <cassert>
 
 #if MBEDTLS_VERSION_MAJOR < 3
-    #define mbedtls_sha256 mbedtls_sha256_ret
+#define mbedtls_sha256 mbedtls_sha256_ret
 #endif
 
 namespace services

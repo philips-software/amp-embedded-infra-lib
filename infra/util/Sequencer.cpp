@@ -50,17 +50,16 @@ namespace infra
         else
             IncreaseCurrentStep();
     }
-    
+
     void Sequencer::If(const infra::Function<bool()>& condition)
     {
         ExecuteWithoutContext([this, condition]()
-        {
+            {
             if (!condition())
             {
                 ExecuteNextStep();
                 ExecuteNextStep();  // Immediately continue with the step after EndIf, Else, or EndWhile
-            }
-        });
+            } });
 
         PushContext();
     }
@@ -70,19 +69,17 @@ namespace infra
         PopContext();
 
         ExecuteWithoutContext([this]()
-        {
+            {
             ExecuteNextStep();
-            ExecuteNextStep();
-        });
+            ExecuteNextStep(); });
 
         ExecuteWithoutContext([this, condition]()
-        {
+            {
             if (!condition())
             {
                 ExecuteNextStep();
                 ExecuteNextStep();  // Immediately continue with the step after EndIf, Else, or EndWhile
-            }
-        });
+            } });
 
         PushContext();
     }
@@ -98,7 +95,8 @@ namespace infra
     {
         PopContext();
 
-        ExecuteWithoutContext([this]() { ExecuteNextStep(); });
+        ExecuteWithoutContext([this]()
+            { ExecuteNextStep(); });
 
         PushContext();
     }
@@ -113,11 +111,10 @@ namespace infra
         PopContext();
 
         ExecuteWithoutContext([this]()
-        {
+            {
             ExecutePreviousStep();
             ExecutePreviousStep();
-            ExecutePreviousStep();
-        });
+            ExecutePreviousStep(); });
     }
 
     void Sequencer::DoWhile()
@@ -132,14 +129,13 @@ namespace infra
         PopContext();
 
         ExecuteWithoutContext([this, condition]()
-        {
+            {
             if (condition())
             {
                 ExecutePreviousStep();
                 ExecutePreviousStep();
                 ExecutePreviousStep();
-            }
-        });
+            } });
     }
 
     void Sequencer::ForEach(uint32_t& variable_, uint32_t from_, uint32_t to_)
@@ -147,7 +143,9 @@ namespace infra
         struct State
         {
             State(uint32_t& variable, uint32_t from, uint32_t to)
-                : variable(variable), from(from), to(to)
+                : variable(variable)
+                , from(from)
+                , to(to)
             {}
 
             uint32_t& variable;
@@ -158,34 +156,31 @@ namespace infra
         State state(variable_, from_, to_);
 
         ExecuteWithoutContext([this, &state]()
-        {
-            state.variable = state.from;
-        });
+            { state.variable = state.from; });
 
         ExecuteWithoutContext([this, &state]()
-        {
+            {
             if (state.variable == state.to)
             {
                 ExecuteNextStep();
                 ExecuteNextStep();  // Immediately continue with the step after EndForEach
-            }
-        });
+            } });
 
         PushContext();
     }
 
     void Sequencer::EndForEach(uint32_t& variable)
     {
-        ExecuteWithoutContext([this, &variable]() { ++variable; });
+        ExecuteWithoutContext([this, &variable]()
+            { ++variable; });
 
         PopContext();
 
         ExecuteWithoutContext([this]()
-        {
+            {
             ExecutePreviousStep();
             ExecutePreviousStep();
-            ExecutePreviousStep();
-        });
+            ExecutePreviousStep(); });
     }
 
     void Sequencer::ExecuteWithoutContext(const Function& action)
@@ -237,7 +232,7 @@ namespace infra
             if (!Finished())
                 ExecuteNextStep();
         }
-        
+
         examine.pop_back();
         if (!examine.empty())
             IncreaseCurrentStep();
@@ -246,5 +241,5 @@ namespace infra
     bool Sequencer::Finished() const
     {
         return execute.empty();
-    }   
+    }
 }

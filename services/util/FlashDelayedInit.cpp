@@ -31,7 +31,10 @@ namespace services
         if (initialized)
             master.WriteBuffer(buffer, address, onDone);
         else
-            onInitialized = [this, buffer, address, onDone]() { master.WriteBuffer(buffer, address, onDone); };
+            onInitialized = [this, buffer, address, onDone]()
+            {
+                master.WriteBuffer(buffer, address, onDone);
+            };
     }
 
     void FlashDelayedInit::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
@@ -39,7 +42,10 @@ namespace services
         if (initialized)
             master.ReadBuffer(buffer, address, onDone);
         else
-            onInitialized = [this, buffer, address, onDone]() { master.ReadBuffer(buffer, address, onDone); };
+            onInitialized = [this, buffer, address, onDone]()
+            {
+                master.ReadBuffer(buffer, address, onDone);
+            };
     }
 
     void FlashDelayedInit::EraseSectors(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone)
@@ -47,7 +53,10 @@ namespace services
         if (initialized)
             master.EraseSectors(beginIndex, endIndex, onDone);
         else
-            onInitialized = [this, beginIndex, endIndex, onDone]() { master.EraseSectors(beginIndex, endIndex, onDone); };
+            onInitialized = [this, beginIndex, endIndex, onDone]()
+            {
+                master.EraseSectors(beginIndex, endIndex, onDone);
+            };
     }
 
     void FlashDelayedInit::Initialized()

@@ -25,15 +25,14 @@ namespace services
     {
         this->onRecovered = onRecovered;
         flash.ReadBuffer(blob, 0, [this]()
-        {
+            {
             if (BlobIsValid())
             {
                 RecoverCurrentSize();
                 this->onRecovered(true);
             }
             else
-                this->onRecovered(false);
-        });
+                this->onRecovered(false); });
     }
 
     void ConfigurationBlobFlash::Write(uint32_t size, const infra::Function<void()>& onDone)
@@ -41,7 +40,8 @@ namespace services
         currentSize = size;
         this->onDone = onDone;
         PrepareBlobForWriting();
-        flash.WriteBuffer(blob, 0, [this]() { Verify(); });
+        flash.WriteBuffer(blob, 0, [this]()
+            { Verify(); });
     }
 
     void ConfigurationBlobFlash::Erase(const infra::Function<void()>& onDone)
@@ -105,12 +105,11 @@ namespace services
     {
         if (currentVerificationIndex != blob.size())
             flash.ReadBuffer(infra::Head(verificationBuffer, blob.size() - currentVerificationIndex), currentVerificationIndex, [this]()
-            {
+                {
                 auto verificationBlock = infra::Head(verificationBuffer, blob.size() - currentVerificationIndex);
                 really_assert(infra::ContentsEqual(verificationBlock, infra::Head(infra::DiscardHead(blob, currentVerificationIndex), verificationBuffer.size())));
                 currentVerificationIndex += verificationBlock.size();
-                VerifyBlock();
-            });
+                VerifyBlock(); });
         else
             onDone();
     }
@@ -206,7 +205,9 @@ namespace services
             ++operationId;
             writeRequested = false;
             writingBlob = true;
-            Serialize(*activeBlob, [this, thisId]() { inactiveBlob->Erase([this, thisId]() { BlobWriteDone(); NotifyObservers([thisId](ConfigurationStoreObserver& observer) { observer.OperationDone(thisId); }); }); });
+            Serialize(*activeBlob, [this, thisId]()
+                { inactiveBlob->Erase([this, thisId]()
+                      { BlobWriteDone(); NotifyObservers([thisId](ConfigurationStoreObserver& observer) { observer.OperationDone(thisId); }); }); });
         }
 
         return thisId;
@@ -217,7 +218,10 @@ namespace services
         uint32_t thisId = operationId;
         ++operationId;
 
-        inactiveBlob->Erase([this, thisId]() { activeBlob->Erase([this, thisId]() { NotifyObservers([thisId](ConfigurationStoreObserver& observer) { observer.OperationDone(thisId); }); }); });
+        inactiveBlob->Erase([this, thisId]()
+            { activeBlob->Erase([this, thisId]()
+                  { NotifyObservers([thisId](ConfigurationStoreObserver& observer)
+                        { observer.OperationDone(thisId); }); }); });
 
         return thisId;
     }
@@ -227,7 +231,7 @@ namespace services
         this->onRecovered = onRecovered;
 
         activeBlob->Recover([this](bool success)
-        {
+            {
             if (success)
             {
                 inactiveBlob->Erase([this]() { OnBlobLoaded(true); });
@@ -239,8 +243,7 @@ namespace services
                 {
                     inactiveBlob->Erase([this, success]() { OnBlobLoaded(success); });
                 });
-            }
-        });
+            } });
     }
 
     void ConfigurationStoreBase::Unlocked()
@@ -278,7 +281,7 @@ namespace services
         this->onRecovered = onRecovered;
 
         factoryDefaultBlob.Recover([this](bool success)
-        {
+            {
             if (!success)
             {
                 this->onLoadFactoryDefault();
@@ -307,8 +310,7 @@ namespace services
                 {
                     this->onRecovered(!success);
                 });
-            }
-        });
+            } });
     }
 
     uint32_t FactoryDefaultConfigurationStoreBase::Write()
@@ -321,6 +323,7 @@ namespace services
         if (onRecovered != nullptr && eraseOperationId <= id)
             onRecovered(true);
 
-        NotifyObservers([id](ConfigurationStoreObserver& observer) { observer.OperationDone(id); });
+        NotifyObservers([id](ConfigurationStoreObserver& observer)
+            { observer.OperationDone(id); });
     }
 }

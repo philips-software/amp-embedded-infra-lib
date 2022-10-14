@@ -51,9 +51,10 @@ TEST_F(FlashSpiTest, ReadData)
     EXPECT_CALL(finished, callback());
 
     std::vector<uint8_t> buffer(4, 0);
-    flash.ReadBuffer(buffer, 0, [this]() { finished.callback(); });
+    flash.ReadBuffer(buffer, 0, [this]()
+        { finished.callback(); });
     ExecuteAllActions();
-    
+
     EXPECT_EQ(receiveData, buffer);
 }
 
@@ -65,7 +66,8 @@ TEST_F(FlashSpiTest, ReadId)
     EXPECT_CALL(finished, callback());
 
     std::vector<uint8_t> buffer(3, 0);
-    flash.ReadFlashId(buffer, [this]() { finished.callback(); });
+    flash.ReadFlashId(buffer, [this]()
+        { finished.callback(); });
     ExecuteAllActions();
 
     EXPECT_EQ(receiveData, buffer);
@@ -80,9 +82,10 @@ TEST_F(FlashSpiTest, ReadDataAtNonZeroAddress)
     EXPECT_CALL(finished, callback());
 
     std::vector<uint8_t> buffer(4, 0);
-    flash.ReadBuffer(buffer, 0 + 0x123456, [this]() { finished.callback(); });
+    flash.ReadBuffer(buffer, 0 + 0x123456, [this]()
+        { finished.callback(); });
     ExecuteAllActions();
-    
+
     EXPECT_EQ(receiveData, buffer);
 }
 
@@ -93,9 +96,10 @@ TEST_F(FlashSpiTest, WriteData)
     EXPECT_CALL(spiMock, SendDataMock(CreateInstructionAndAddress(services::FlashSpi::commandPageProgram, 0), hal::SpiAction::continueSession));
     EXPECT_CALL(spiMock, SendDataMock(sendData, hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandReadStatusRegister), hal::SpiAction::continueSession));
-    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{1}));
+    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 1 }));
 
-    flash.WriteBuffer(sendData, 0, [this]() { finished.callback(); });
+    flash.WriteBuffer(sendData, 0, [this]()
+        { finished.callback(); });
     ExecuteAllActions();
 }
 
@@ -106,10 +110,11 @@ TEST_F(FlashSpiTest, WriteDataFinishesOnFlagPoll)
     EXPECT_CALL(spiMock, SendDataMock(CreateInstructionAndAddress(services::FlashSpi::commandPageProgram, 0), hal::SpiAction::continueSession));
     EXPECT_CALL(spiMock, SendDataMock(sendData, hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandReadStatusRegister), hal::SpiAction::continueSession));
-    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{0}));
+    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 0 }));
     EXPECT_CALL(finished, callback());
 
-    flash.WriteBuffer(sendData, 0, [this]() { finished.callback(); });
+    flash.WriteBuffer(sendData, 0, [this]()
+        { finished.callback(); });
     ExecuteAllActions();
 }
 
@@ -120,7 +125,7 @@ TEST_F(FlashSpiTest, WriteDataAtNonZeroAddress)
     EXPECT_CALL(spiMock, SendDataMock(CreateInstructionAndAddress(services::FlashSpi::commandPageProgram, 0x123456), hal::SpiAction::continueSession));
     EXPECT_CALL(spiMock, SendDataMock(sendData, hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandReadStatusRegister), hal::SpiAction::continueSession));
-    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{1}));
+    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 1 }));
 
     flash.WriteBuffer(sendData, 0 + 0x123456, infra::emptyFunction);
     ExecuteAllActions();
@@ -133,7 +138,7 @@ TEST_F(FlashSpiTest, WhenPageBoundaryIsCrossedFirstPartIsWritten)
     EXPECT_CALL(spiMock, SendDataMock(CreateInstructionAndAddress(services::FlashSpi::commandPageProgram, 254), hal::SpiAction::continueSession));
     EXPECT_CALL(spiMock, SendDataMock(std::vector<uint8_t>{ 1, 2 }, hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandReadStatusRegister), hal::SpiAction::continueSession));
-    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{1}));
+    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 1 }));
 
     flash.WriteBuffer(sendData, 0 + 254, infra::emptyFunction);
     ExecuteAllActions();
@@ -148,12 +153,12 @@ TEST_F(FlashSpiTest, WhenPageBoundaryIsCrossedSecondPartIsWritten)
     EXPECT_CALL(spiMock, SendDataMock(CreateInstructionAndAddress(services::FlashSpi::commandPageProgram, 254), hal::SpiAction::continueSession));
     EXPECT_CALL(spiMock, SendDataMock(std::vector<uint8_t>{ 1, 2 }, hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandReadStatusRegister), hal::SpiAction::continueSession));
-    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{0}));
+    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 0 }));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandWriteEnable), hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstructionAndAddress(services::FlashSpi::commandPageProgram, 256), hal::SpiAction::continueSession));
     EXPECT_CALL(spiMock, SendDataMock(std::vector<uint8_t>{ 3, 4, 5, 6 }, hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandReadStatusRegister), hal::SpiAction::continueSession));
-    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{1}));
+    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 1 }));
 
     flash.WriteBuffer(sendData, 0 + 254, infra::emptyFunction);
     ExecuteAllActions();
@@ -164,9 +169,10 @@ TEST_F(FlashSpiTest, EraseFirstSubSector)
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandWriteEnable), hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstructionAndAddress(services::FlashSpi::commandEraseSubSector, 0), hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandReadStatusRegister), hal::SpiAction::continueSession));
-    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{1}));
+    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 1 }));
 
-    flash.EraseSector(0, [this]() { finished.callback(); });
+    flash.EraseSector(0, [this]()
+        { finished.callback(); });
     ExecuteAllActions();
 }
 
@@ -175,10 +181,11 @@ TEST_F(FlashSpiTest, EraseFirstSubSectorFinishesOnFlagPoll)
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandWriteEnable), hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstructionAndAddress(services::FlashSpi::commandEraseSubSector, 0), hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandReadStatusRegister), hal::SpiAction::continueSession));
-    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{0}));
+    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 0 }));
     EXPECT_CALL(finished, callback());
 
-    flash.EraseSector(0, [this]() { finished.callback(); });
+    flash.EraseSector(0, [this]()
+        { finished.callback(); });
     ExecuteAllActions();
 }
 
@@ -187,9 +194,10 @@ TEST_F(FlashSpiTest, EraseSecondSubSector)
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandWriteEnable), hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstructionAndAddress(services::FlashSpi::commandEraseSubSector, 4096), hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandReadStatusRegister), hal::SpiAction::continueSession));
-    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{1}));
+    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 1 }));
 
-    flash.EraseSector(1, [this]() { finished.callback(); });
+    flash.EraseSector(1, [this]()
+        { finished.callback(); });
     ExecuteAllActions();
 }
 
@@ -198,9 +206,10 @@ TEST_F(FlashSpiTest, EraseMultipleErasesOneSubSector)
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandWriteEnable), hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstructionAndAddress(services::FlashSpi::commandEraseSubSector, 0), hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandReadStatusRegister), hal::SpiAction::continueSession));
-    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{1}));
+    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 1 }));
 
-    flash.EraseSectors(0, 1, [this]() { finished.callback(); });
+    flash.EraseSectors(0, 1, [this]()
+        { finished.callback(); });
     ExecuteAllActions();
 }
 
@@ -211,13 +220,14 @@ TEST_F(FlashSpiTest, EraseMultipleErasesTwoSubSectors)
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandWriteEnable), hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstructionAndAddress(services::FlashSpi::commandEraseSubSector, 0), hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandReadStatusRegister), hal::SpiAction::continueSession));
-    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{0}));
+    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 0 }));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandWriteEnable), hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstructionAndAddress(services::FlashSpi::commandEraseSubSector, 4096), hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandReadStatusRegister), hal::SpiAction::continueSession));
-    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{1}));
+    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 1 }));
 
-    flash.EraseSectors(0, 2, [this]() { finished.callback(); });
+    flash.EraseSectors(0, 2, [this]()
+        { finished.callback(); });
     ExecuteAllActions();
 }
 
@@ -226,9 +236,10 @@ TEST_F(FlashSpiTest, EraseMultipleErasesSector)
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandWriteEnable), hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstructionAndAddress(services::FlashSpi::commandEraseSector, 0), hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandReadStatusRegister), hal::SpiAction::continueSession));
-    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{1}));
+    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 1 }));
 
-    flash.EraseSectors(0, 16, [this]() { finished.callback(); });
+    flash.EraseSectors(0, 16, [this]()
+        { finished.callback(); });
     ExecuteAllActions();
 }
 
@@ -239,17 +250,18 @@ TEST_F(FlashSpiTest, EraseMultipleErasesSubSectorsAndSector)
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandWriteEnable), hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstructionAndAddress(services::FlashSpi::commandEraseSubSector, 61440), hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandReadStatusRegister), hal::SpiAction::continueSession));
-    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{0}));
+    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 0 }));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandWriteEnable), hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstructionAndAddress(services::FlashSpi::commandEraseSector, 65536), hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandReadStatusRegister), hal::SpiAction::continueSession));
-    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{0}));
+    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 0 }));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandWriteEnable), hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstructionAndAddress(services::FlashSpi::commandEraseSubSector, 131072), hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandReadStatusRegister), hal::SpiAction::continueSession));
-    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{1}));
+    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 1 }));
 
-    flash.EraseSectors(15, 33, [this]() { finished.callback(); });
+    flash.EraseSectors(15, 33, [this]()
+        { finished.callback(); });
     ExecuteAllActions();
 }
 
@@ -258,8 +270,9 @@ TEST_F(FlashSpiTest, EraseAllErasesBulk)
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandWriteEnable), hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandEraseBulk), hal::SpiAction::stop));
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandReadStatusRegister), hal::SpiAction::continueSession));
-    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{1}));
+    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 1 }));
 
-    flash.EraseAll([this]() { finished.callback(); });
+    flash.EraseAll([this]()
+        { finished.callback(); });
     ExecuteAllActions();
 }

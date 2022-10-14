@@ -41,10 +41,10 @@ namespace services
         , tracer(tracer)
         , receiveBuffer(receiveBuffer)
         , scenarioRequestHandler(scenarioRequestHandler)
-        , connectionCreator([this](infra::Optional<TracingCucumberWireProtocolConnectionObserver>& value, services::IPAddress address) {
+        , connectionCreator([this](infra::Optional<TracingCucumberWireProtocolConnectionObserver>& value, services::IPAddress address)
+              {
             this->tracer.Trace() << "CucumberWireProtocolServer connection accepted from: " << address;
             this->receiveBuffer.clear();
-            value.Emplace(this->receiveBuffer, this->scenarioRequestHandler, this->tracer);
-        })
+            value.Emplace(this->receiveBuffer, this->scenarioRequestHandler, this->tracer); })
     {}
 }

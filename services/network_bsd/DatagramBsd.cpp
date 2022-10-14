@@ -1,5 +1,5 @@
-#include "infra/stream/StdVectorInputStream.hpp"
 #include "services/network_bsd/DatagramBsd.hpp"
+#include "infra/stream/StdVectorInputStream.hpp"
 #include "services/network_bsd/EventDispatcherWithNetwork.hpp"
 #include <errno.h>
 #include <fcntl.h>
@@ -158,10 +158,10 @@ namespace services
         {
             sendBuffer.Emplace(requestedSendSize, 0);
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<DatagramBsd>& object)
-            {
+                {
                 infra::SharedPtr<infra::StreamWriter> writer = object->streamWriter.Emplace(*object);
-                object->GetObserver().SendStreamAvailable(std::move(writer));
-            }, SharedFromThis());
+                object->GetObserver().SendStreamAvailable(std::move(writer)); },
+                SharedFromThis());
         }
     }
 

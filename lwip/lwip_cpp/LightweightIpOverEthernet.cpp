@@ -1,11 +1,11 @@
-#include <cstdlib>
-#include <cstring>
-#include "infra/event/EventDispatcher.hpp"
 #include "lwip/lwip_cpp/LightweightIpOverEthernet.hpp"
+#include "infra/event/EventDispatcher.hpp"
 #include "lwip/dhcp.h"
 #include "lwip/ethip6.h"
 #include "lwip/igmp.h"
 #include "netif/etharp.h"
+#include <cstdlib>
+#include <cstring>
 
 namespace services
 {
@@ -35,7 +35,8 @@ namespace services
         pbuf* buffer = pbuf_alloc(PBUF_RAW, LWIP_MEM_ALIGN_SIZE(PBUF_POOL_BUFSIZE), PBUF_POOL);
         if (buffer == nullptr)
         {
-            retryAllocationTimer.Start(std::chrono::milliseconds(250), [this]() { Subject().RetryAllocation(); });
+            retryAllocationTimer.Start(std::chrono::milliseconds(250), [this]()
+                { Subject().RetryAllocation(); });
             return infra::ByteRange();
         }
 
@@ -154,8 +155,7 @@ namespace services
         {
             bool lastOfFrame = buffer->tot_len == buffer->len;
 
-            Subject().SendBuffer(infra::ConstByteRange(static_cast<const uint8_t*>(buffer->payload), static_cast<const uint8_t*>(buffer->payload) + buffer->len)
-                , lastOfFrame);
+            Subject().SendBuffer(infra::ConstByteRange(static_cast<const uint8_t*>(buffer->payload), static_cast<const uint8_t*>(buffer->payload) + buffer->len), lastOfFrame);
 
             if (lastOfFrame)
                 break;

@@ -1,6 +1,6 @@
+#include "services/util/MessageCommunicationCobs.hpp"
 #include "infra/stream/BoundedVectorInputStream.hpp"
 #include "infra/stream/LimitedInputStream.hpp"
-#include "services/util/MessageCommunicationCobs.hpp"
 
 namespace services
 {
@@ -13,9 +13,11 @@ namespace services
         : serial(serial)
         , receivedMessage(receivedMessage)
         , sendStorage(sendStorage)
-        , sendStream([this]() { SendStreamFilled(); })
+        , sendStream([this]()
+              { SendStreamFilled(); })
     {
-        serial.ReceiveData([this](infra::ConstByteRange data) { ReceivedDataOnInterrupt(data); });
+        serial.ReceiveData([this](infra::ConstByteRange data)
+            { ReceivedDataOnInterrupt(data); });
     }
 
     infra::SharedPtr<infra::StreamWriter> MessageCommunicationCobs::SendMessageStream(uint16_t size, const infra::Function<void(uint16_t size)>& onSent)
@@ -106,13 +108,15 @@ namespace services
     void MessageCommunicationCobs::SendStreamFilled()
     {
         dataToSend = infra::MakeRange(sendStorage);
-        serial.SendData(infra::MakeByteRange(messageDelimiter), [this]() { SendOrDone(); });
+        serial.SendData(infra::MakeByteRange(messageDelimiter), [this]()
+            { SendOrDone(); });
     }
 
     void MessageCommunicationCobs::SendOrDone()
     {
         if (dataToSend.empty())
-            serial.SendData(infra::MakeByteRange(messageDelimiter), [this]() { onSent(static_cast<uint16_t>(sendStorage.size())); });
+            serial.SendData(infra::MakeByteRange(messageDelimiter), [this]()
+                { onSent(static_cast<uint16_t>(sendStorage.size())); });
         else
             SendFrame();
     }
@@ -122,13 +126,12 @@ namespace services
         frameSize = FindDelimiter() + 1;
 
         serial.SendData(infra::MakeByteRange(frameSize), [this]()
-        {
+            {
             --frameSize;
             if (frameSize != 0)
                 serial.SendData(infra::Head(dataToSend, frameSize), [this]() { SendFrameDone(); });
             else
-                SendFrameDone();
-        });
+                SendFrameDone(); });
     }
 
     void MessageCommunicationCobs::SendFrameDone()

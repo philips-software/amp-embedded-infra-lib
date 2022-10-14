@@ -1,5 +1,5 @@
-#include "services/network/WiFiNetwork.hpp"
 #include "gmock/gmock.h"
+#include "services/network/WiFiNetwork.hpp"
 
 TEST(WiFiNetworkTest, WiFiSecurity_prints_correct_security_type)
 {

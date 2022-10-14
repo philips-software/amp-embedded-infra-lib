@@ -136,4 +136,3 @@ TEST_F(SynchronousFlashSpiTest4ByteAddressing, ReadFlashId)
 
     EXPECT_THAT(flashId, testing::ElementsAre(0x01, 0x02, 0x03));
 }
-

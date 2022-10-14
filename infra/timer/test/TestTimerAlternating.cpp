@@ -21,8 +21,11 @@ TEST_F(TimerAlternatingTest, AlternatingTimer_TriggersCallbackInSuccession)
     EXPECT_CALL(callback2, callback()).With(After(delta1 + delta2));
     EXPECT_CALL(callback2, callback()).With(After(2 * delta1 + 2 * delta2));
 
-    infra::TimerAlternating timer(delta1, [&callback1]() { callback1.callback(); }
-        , delta2, [&callback2]() { callback2.callback(); });
+    infra::TimerAlternating timer(
+        delta1, [&callback1]()
+        { callback1.callback(); },
+        delta2, [&callback2]()
+        { callback2.callback(); });
 
     ForwardTime(std::chrono::seconds(6));
 };
@@ -36,7 +39,11 @@ TEST_F(TimerAlternatingTest, ResolutionIsTakenIntoAccount)
     infra::MockCallback<void()> callback2;
     EXPECT_CALL(callback2, callback()).With(After(std::chrono::seconds(3)));
 
-    infra::TimerAlternating timer(std::chrono::seconds(1), [&callback1]() { callback1.callback(); }, std::chrono::seconds(1), [&callback2]() { callback2.callback(); });
+    infra::TimerAlternating timer(
+        std::chrono::seconds(1), [&callback1]()
+        { callback1.callback(); },
+        std::chrono::seconds(1), [&callback2]()
+        { callback2.callback(); });
 
     ForwardTime(std::chrono::seconds(3));
 }

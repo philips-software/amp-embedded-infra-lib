@@ -40,7 +40,8 @@ public:
         std::vector<uint8_t> result;
 
         std::vector<uint8_t> readDataBuffer(maxSize, 0);
-        iterator.Read(readDataBuffer, [&](infra::ByteRange data) { result.insert(result.end(), data.begin(), data.end()); });
+        iterator.Read(readDataBuffer, [&](infra::ByteRange data)
+            { result.insert(result.end(), data.begin(), data.end()); });
         ExecuteAllActions();
 
         return result;
@@ -54,7 +55,8 @@ TEST_F(CyclicStoreTest, AddFirstItem)
 {
     infra::VerifyingFunctionMock<void()> done;
 
-    AddItem(KeepBytesAlive({ 11, 12 }), [&done]() { done.callback(); });
+    AddItem(KeepBytesAlive({ 11, 12 }), [&done]()
+        { done.callback(); });
 
     EXPECT_EQ((std::vector<uint8_t>{ 0xfc, 0xf8, 2, 0, 11, 12, 0xff, 0xff, 0xff, 0xff }), flash.sectors[0]);
 }
@@ -92,9 +94,10 @@ TEST_F(CyclicStoreTest, FillSector)
     AddItem(KeepBytesAlive({ 11, 12, 13, 14, 15, 16 }));
 
     EXPECT_EQ((std::vector<std::vector<uint8_t>>{
-        { 0xfc, 0xf8, 6, 0, 11, 12, 13, 14, 15, 16 },
-        { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
-    }), flash.sectors);
+                  { 0xfc, 0xf8, 6, 0, 11, 12, 13, 14, 15, 16 },
+                  { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
+              }),
+        flash.sectors);
 }
 
 TEST_F(CyclicStoreTest, AddItemInNewSector)
@@ -103,9 +106,10 @@ TEST_F(CyclicStoreTest, AddItemInNewSector)
     AddItem(KeepBytesAlive({ 21 }));
 
     EXPECT_EQ((std::vector<std::vector<uint8_t>>{
-        { 0xfc, 0xf8, 6, 0, 11, 12, 13, 14, 15, 16 },
-        { 0xfe, 0xf8, 1, 0, 21, 0xff, 0xff, 0xff, 0xff, 0xff },
-    }), flash.sectors);
+                  { 0xfc, 0xf8, 6, 0, 11, 12, 13, 14, 15, 16 },
+                  { 0xfe, 0xf8, 1, 0, 21, 0xff, 0xff, 0xff, 0xff, 0xff },
+              }),
+        flash.sectors);
 }
 
 TEST_F(CyclicStoreTest, FillUnusedSpaceWhenAddingItem)
@@ -114,9 +118,10 @@ TEST_F(CyclicStoreTest, FillUnusedSpaceWhenAddingItem)
     AddItem(KeepBytesAlive({ 21 }));
 
     EXPECT_EQ((std::vector<std::vector<uint8_t>>{
-        { 0xfc, 0xf8, 3, 0, 11, 12, 13, 0x7f, 0xff, 0xff },
-        { 0xfe, 0xf8, 1, 0, 21, 0xff, 0xff, 0xff, 0xff, 0xff },
-    }), flash.sectors);
+                  { 0xfc, 0xf8, 3, 0, 11, 12, 13, 0x7f, 0xff, 0xff },
+                  { 0xfe, 0xf8, 1, 0, 21, 0xff, 0xff, 0xff, 0xff, 0xff },
+              }),
+        flash.sectors);
 }
 
 TEST_F(CyclicStoreTest, FillOneByteOfUnusedSpaceWhenAddingItem)
@@ -125,9 +130,21 @@ TEST_F(CyclicStoreTest, FillOneByteOfUnusedSpaceWhenAddingItem)
     AddItem(KeepBytesAlive({ 21 }));
 
     EXPECT_EQ((std::vector<std::vector<uint8_t>>{
-        { 0xfc, 0xf8, 5, 0, 11, 12, 13, 14, 15, 0x7f, },
-        { 0xfe, 0xf8, 1, 0, 21, 0xff, 0xff, 0xff, 0xff, 0xff },
-    }), flash.sectors);
+                  {
+                      0xfc,
+                      0xf8,
+                      5,
+                      0,
+                      11,
+                      12,
+                      13,
+                      14,
+                      15,
+                      0x7f,
+                  },
+                  { 0xfe, 0xf8, 1, 0, 21, 0xff, 0xff, 0xff, 0xff, 0xff },
+              }),
+        flash.sectors);
 }
 
 TEST_F(CyclicStoreTest, AddFirstItemWhenFlashStopsAfterNSteps)
@@ -146,13 +163,13 @@ TEST_F(CyclicStoreTest, AddFirstItemWhenFlashStopsAfterNSteps)
     }
 
     EXPECT_EQ((std::vector<std::vector<uint8_t>>{
-        { 0xfc, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
-        { 0xfc, 0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
-        { 0xfc, 0xfe,    2,    0, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
-        { 0xfc, 0xfc,    2,    0, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
-        { 0xfc, 0xfc,    2,    0,   11,   12, 0xff, 0xff, 0xff, 0xff },
-        { 0xfc, 0xf8,    2,    0,   11,   12, 0xff, 0xff, 0xff, 0xff }
-    }), flashAfterNSteps);
+                  { 0xfc, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
+                  { 0xfc, 0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
+                  { 0xfc, 0xfe, 2, 0, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
+                  { 0xfc, 0xfc, 2, 0, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
+                  { 0xfc, 0xfc, 2, 0, 11, 12, 0xff, 0xff, 0xff, 0xff },
+                  { 0xfc, 0xf8, 2, 0, 11, 12, 0xff, 0xff, 0xff, 0xff } }),
+        flashAfterNSteps);
 }
 
 TEST_F(CyclicStoreTest, AddItemWhichCausesSectorToBeErased)
@@ -162,9 +179,10 @@ TEST_F(CyclicStoreTest, AddItemWhichCausesSectorToBeErased)
     AddItem(KeepBytesAlive({ 31, 32, 33, 34, 35, 36 }));
 
     EXPECT_EQ((std::vector<std::vector<uint8_t>>{
-        { 0xfe, 0xf8, 6, 0, 31, 32, 33, 34, 35, 36 },
-        { 0xfc, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 },
-    }), flash.sectors);
+                  { 0xfe, 0xf8, 6, 0, 31, 32, 33, 34, 35, 36 },
+                  { 0xfc, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 },
+              }),
+        flash.sectors);
 }
 
 TEST_F(CyclicStoreTest, AddItemOverflowingSectorWhichCausesSectorToBeErased)
@@ -177,9 +195,10 @@ TEST_F(CyclicStoreTest, AddItemOverflowingSectorWhichCausesSectorToBeErased)
     AddItem(KeepBytesAlive({ 31, 32, 33, 34, 35, 36 }));
 
     EXPECT_EQ((std::vector<std::vector<uint8_t>>{
-        { 0xfe, 0xf8, 6, 0, 31, 32, 33, 34, 35, 36, 0xff, 0xff, 0xff, 0xff },
-        { 0xfc, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26, 0x7f, 0xff, 0xff, 0xff },
-    }), flash.sectors);
+                  { 0xfe, 0xf8, 6, 0, 31, 32, 33, 34, 35, 36, 0xff, 0xff, 0xff, 0xff },
+                  { 0xfc, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26, 0x7f, 0xff, 0xff, 0xff },
+              }),
+        flash.sectors);
 }
 
 TEST_F(CyclicStoreTest, ReadFirstItem)
@@ -242,9 +261,10 @@ TEST_F(CyclicStoreTest, ReadSecondItemInNewSector)
     AddItem(KeepBytesAlive({ 21 }));
 
     ASSERT_EQ((std::vector<std::vector<uint8_t>>{
-        { 0xfc, 0xf8, 6, 0, 11, 12, 13, 14, 15, 16 },
-        { 0xfe, 0xf8, 1, 0, 21, 0xff, 0xff, 0xff, 0xff, 0xff },
-    }), flash.sectors);
+                  { 0xfc, 0xf8, 6, 0, 11, 12, 13, 14, 15, 16 },
+                  { 0xfe, 0xf8, 1, 0, 21, 0xff, 0xff, 0xff, 0xff, 0xff },
+              }),
+        flash.sectors);
 
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
     Read(iterator);
@@ -257,9 +277,10 @@ TEST_F(CyclicStoreTest, ReadSecondItemAfterSkipSpace)
     AddItem(KeepBytesAlive({ 21 }));
 
     ASSERT_EQ((std::vector<std::vector<uint8_t>>{
-        { 0xfc, 0xf8, 3, 0, 11, 12, 13, 0x7f, 0xff, 0xff },
-        { 0xfe, 0xf8, 1, 0, 21, 0xff, 0xff, 0xff, 0xff, 0xff },
-    }), flash.sectors);
+                  { 0xfc, 0xf8, 3, 0, 11, 12, 13, 0x7f, 0xff, 0xff },
+                  { 0xfe, 0xf8, 1, 0, 21, 0xff, 0xff, 0xff, 0xff, 0xff },
+              }),
+        flash.sectors);
 
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
     Read(iterator);
@@ -272,9 +293,21 @@ TEST_F(CyclicStoreTest, ReadSecondItemAfterSkipSpaceOfOneByte)
     AddItem(KeepBytesAlive({ 21 }));
 
     ASSERT_EQ((std::vector<std::vector<uint8_t>>{
-        { 0xfc, 0xf8, 5, 0, 11, 12, 13, 14, 15, 0x7f, },
-        { 0xfe, 0xf8, 1, 0, 21, 0xff, 0xff, 0xff, 0xff, 0xff },
-    }), flash.sectors);
+                  {
+                      0xfc,
+                      0xf8,
+                      5,
+                      0,
+                      11,
+                      12,
+                      13,
+                      14,
+                      15,
+                      0x7f,
+                  },
+                  { 0xfe, 0xf8, 1, 0, 21, 0xff, 0xff, 0xff, 0xff, 0xff },
+              }),
+        flash.sectors);
 
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
     Read(iterator);
@@ -305,7 +338,7 @@ TEST_F(CyclicStoreTest, ReadPastEndYieldsEmptyRange)
 
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
     Read(iterator);
-    EXPECT_EQ((std::vector<uint8_t>{ }), Read(iterator));
+    EXPECT_EQ((std::vector<uint8_t>{}), Read(iterator));
 }
 
 TEST_F(CyclicStoreTest, ReadPastEndInAFullFlashYieldsEmptyRange)
@@ -314,7 +347,7 @@ TEST_F(CyclicStoreTest, ReadPastEndInAFullFlashYieldsEmptyRange)
 
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
     Read(iterator);
-    EXPECT_EQ((std::vector<uint8_t>{ }), Read(iterator));
+    EXPECT_EQ((std::vector<uint8_t>{}), Read(iterator));
 }
 
 TEST_F(CyclicStoreTest, ReadWhileAddWaitsForAddToFinish)
@@ -326,7 +359,8 @@ TEST_F(CyclicStoreTest, ReadWhileAddWaitsForAddToFinish)
 
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
     std::vector<uint8_t> readDataBuffer(2, 0);
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
+    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result)
+        { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
 
     EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 11, 12 }));
     ExecuteAllActions();
@@ -338,7 +372,8 @@ TEST_F(CyclicStoreTest, AddWhileClearWaitsforClearToFinish)
 
     infra::MockCallback<void()> done;
     flash.delaySignalEraseDone = true;
-    cyclicStore.Clear([&done]() { done.callback(); });
+    cyclicStore.Clear([&done]()
+        { done.callback(); });
     infra::Function<void()> onEraseDone = flash.onEraseDone;
     ExecuteAllActions();
     flash.delaySignalEraseDone = false;
@@ -359,9 +394,10 @@ TEST_F(CyclicStoreTest, ReadItemAfterCyclicalLogging)
     AddItem(KeepBytesAlive({ 31, 32, 33, 34, 35, 36 }));
 
     ASSERT_EQ((std::vector<std::vector<uint8_t>>{
-        { 0xfe, 0xf8, 6, 0, 31, 32, 33, 34, 35, 36 },
-        { 0xfc, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 },
-    }), flash.sectors);
+                  { 0xfe, 0xf8, 6, 0, 31, 32, 33, 34, 35, 36 },
+                  { 0xfc, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 },
+              }),
+        flash.sectors);
 
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
     EXPECT_EQ((std::vector<uint8_t>{ 21, 22, 23, 24, 25, 26 }), Read(iterator));
@@ -378,24 +414,25 @@ TEST_F(CyclicStoreTest, ClearFirstItemAfterWrapAroundDoesNothing)
     AddItem(KeepBytesAlive({ 31, 32, 33, 34, 35, 36 }));
 
     ASSERT_EQ((std::vector<std::vector<uint8_t>>{
-        { 0xfe, 0xf8, 6, 0, 31, 32, 33, 34, 35, 36 },
-        { 0xfc, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 },
-    }), flash.sectors);
+                  { 0xfe, 0xf8, 6, 0, 31, 32, 33, 34, 35, 36 },
+                  { 0xfc, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 },
+              }),
+        flash.sectors);
 
     iterator.ErasePrevious([]() {});
     ExecuteAllActions();
 
     EXPECT_EQ((std::vector<std::vector<uint8_t>>{
-        { 0xfe, 0xf8, 6, 0, 31, 32, 33, 34, 35, 36 },
-        { 0xfc, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 },
-    }), flash.sectors);
+                  { 0xfe, 0xf8, 6, 0, 31, 32, 33, 34, 35, 36 },
+                  { 0xfc, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 },
+              }),
+        flash.sectors);
 }
 
 TEST_F(CyclicStoreTest, ReadItemAfterCyclicalLogging2)
 {
-    std::vector<std::vector<uint8_t>> sectors =
-        { { 0xfc, 0xf8, 6, 0, 11, 12, 13, 14, 15, 16 },
-          { 0xfe, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 } };
+    std::vector<std::vector<uint8_t>> sectors = { { 0xfc, 0xf8, 6, 0, 11, 12, 13, 14, 15, 16 },
+        { 0xfe, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 } };
     flash.sectors = sectors;
     ReConstructCyclicStore();
 
@@ -405,9 +442,9 @@ TEST_F(CyclicStoreTest, ReadItemAfterCyclicalLogging2)
     AddItem(KeepBytesAlive({ 31, 32, 33, 34, 35, 36 }));
 
     ASSERT_EQ((std::vector<std::vector<uint8_t>>{
-        { 0xfe, 0xf8, 6, 0, 31, 32, 33, 34, 35, 36 },
-        { 0xfc, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 }
-    }), flash.sectors);
+                  { 0xfe, 0xf8, 6, 0, 31, 32, 33, 34, 35, 36 },
+                  { 0xfc, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 } }),
+        flash.sectors);
 
     EXPECT_EQ((std::vector<uint8_t>{ 21, 22, 23, 24, 25, 26 }), Read(iterator));
 }
@@ -439,63 +476,39 @@ TEST_F(CyclicStoreTest, RecoverFromAllDifferentGoodScenarios)
     const std::vector<uint8_t> written = { 0xfe, 0xf8, 1, 0, 66 };
     const std::vector<uint8_t> usedAsFirst = { 0xfc, 0xf8, 1, 0, 44 };
 
-    const std::array<Scenario, 11> scenarios = { {
-        {
-            std::vector<uint8_t>{ 55 },
-            std::vector<std::vector<uint8_t>>{ first, empty },
-            std::vector<std::vector<uint8_t>>{ first, written }
-        },
-        {
-            std::vector<uint8_t>{ 55 },
+    const std::array<Scenario, 11> scenarios = { { { std::vector<uint8_t>{ 55 },
+                                                       std::vector<std::vector<uint8_t>>{ first, empty },
+                                                       std::vector<std::vector<uint8_t>>{ first, written } },
+        { std::vector<uint8_t>{ 55 },
             std::vector<std::vector<uint8_t>>{ first, used, empty },
-            std::vector<std::vector<uint8_t>>{ first, used, written }
-        },
-        {
-            std::vector<uint8_t>{ 55 },
+            std::vector<std::vector<uint8_t>>{ first, used, written } },
+        { std::vector<uint8_t>{ 55 },
             std::vector<std::vector<uint8_t>>{ first, used, empty, empty },
-            std::vector<std::vector<uint8_t>>{ first, used, written, empty }
-        },
-        {
-            std::vector<uint8_t>{ 55 },
+            std::vector<std::vector<uint8_t>>{ first, used, written, empty } },
+        { std::vector<uint8_t>{ 55 },
             std::vector<std::vector<uint8_t>>{ first, used, used },
-            std::vector<std::vector<uint8_t>>{ written, usedAsFirst, used }
-        },
-        {
-            std::vector<uint8_t>{ 44 },
+            std::vector<std::vector<uint8_t>>{ written, usedAsFirst, used } },
+        { std::vector<uint8_t>{ 44 },
             std::vector<std::vector<uint8_t>>{ used, empty, used },
-            std::vector<std::vector<uint8_t>>{ used, written, usedAsFirst }
-        },
-        {
-            std::vector<uint8_t>{ 44 },
-            std::vector<std::vector<uint8_t>>{ empty, used, used},
-            std::vector<std::vector<uint8_t>>{ written, usedAsFirst, used }
-        },
-        {
-            std::vector<uint8_t>{ 44 },
+            std::vector<std::vector<uint8_t>>{ used, written, usedAsFirst } },
+        { std::vector<uint8_t>{ 44 },
+            std::vector<std::vector<uint8_t>>{ empty, used, used },
+            std::vector<std::vector<uint8_t>>{ written, usedAsFirst, used } },
+        { std::vector<uint8_t>{ 44 },
             std::vector<std::vector<uint8_t>>{ used, empty },
-            std::vector<std::vector<uint8_t>>{ usedAsFirst, written }
-        },
-        {
-            std::vector<uint8_t>{ 55 },
+            std::vector<std::vector<uint8_t>>{ usedAsFirst, written } },
+        { std::vector<uint8_t>{ 55 },
             std::vector<std::vector<uint8_t>>{ used, first, used },
-            std::vector<std::vector<uint8_t>>{ used, written, usedAsFirst }
-        },
-        {
-            std::vector<uint8_t>{ 55 },
+            std::vector<std::vector<uint8_t>>{ used, written, usedAsFirst } },
+        { std::vector<uint8_t>{ 55 },
             std::vector<std::vector<uint8_t>>{ used, used, first },
-            std::vector<std::vector<uint8_t>>{ usedAsFirst, used, written }
-        },
-        {
-            std::vector<uint8_t>{ 44 },
+            std::vector<std::vector<uint8_t>>{ usedAsFirst, used, written } },
+        { std::vector<uint8_t>{ 44 },
             std::vector<std::vector<uint8_t>>{ used, used, empty, used, used },
-            std::vector<std::vector<uint8_t>>{ used, used, written, usedAsFirst, used }
-        },
-        {
-            std::vector<uint8_t>{ 55 },
+            std::vector<std::vector<uint8_t>>{ used, used, written, usedAsFirst, used } },
+        { std::vector<uint8_t>{ 55 },
             std::vector<std::vector<uint8_t>>{ used, usedWithSpaceLeft, first },
-            std::vector<std::vector<uint8_t>>{ used, usedWithSpaceLeftWritten, first }
-        }
-    } };
+            std::vector<std::vector<uint8_t>>{ used, usedWithSpaceLeftWritten, first } } } };
 
     for (std::size_t index = 0; index != scenarios.size(); ++index)
     {
@@ -521,18 +534,18 @@ TEST_F(CyclicStoreTest, RecoverAfterRemovedItem)
     Read(iterator);
 
     ASSERT_EQ((std::vector<std::vector<uint8_t>>{
-            { 0xfc, 0xf8, 6, 0, 11, 12, 13, 14, 15, 16 },
-            { 0xfe, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 },
-        }),
+                  { 0xfc, 0xf8, 6, 0, 11, 12, 13, 14, 15, 16 },
+                  { 0xfe, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 },
+              }),
         flash.sectors);
 
     iterator.ErasePrevious([]() {});
     ExecuteAllActions();
 
     ASSERT_EQ((std::vector<std::vector<uint8_t>>{
-            { 0xfc, 0xf0, 6, 0, 11, 12, 13, 14, 15, 16 },
-            { 0xfe, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 },
-        }),
+                  { 0xfc, 0xf0, 6, 0, 11, 12, 13, 14, 15, 16 },
+                  { 0xfe, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 },
+              }),
         flash.sectors);
 
     ReConstructCyclicStore();
@@ -553,18 +566,18 @@ TEST_F(CyclicStoreTest, WriteAfterRecoverAfterRemovedItem)
     Read(iterator);
 
     ASSERT_EQ((std::vector<std::vector<uint8_t>>{
-            { 0xfc, 0xf8, 6, 0, 11, 12, 13, 14, 15, 16, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
-            { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
-        }),
+                  { 0xfc, 0xf8, 6, 0, 11, 12, 13, 14, 15, 16, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
+                  { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
+              }),
         flash.sectors);
 
     iterator.ErasePrevious([]() {});
     ExecuteAllActions();
 
     ASSERT_EQ((std::vector<std::vector<uint8_t>>{
-            { 0xfc, 0xf0, 6, 0, 11, 12, 13, 14, 15, 16, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
-            { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
-        }),
+                  { 0xfc, 0xf0, 6, 0, 11, 12, 13, 14, 15, 16, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
+                  { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
+              }),
         flash.sectors);
 
     ReConstructCyclicStore();
@@ -572,9 +585,9 @@ TEST_F(CyclicStoreTest, WriteAfterRecoverAfterRemovedItem)
     AddItem(KeepBytesAlive({ 31, 32, 33, 34, 35, 36 }));
 
     EXPECT_EQ((std::vector<std::vector<uint8_t>>{
-            { 0xfc, 0xf0, 6, 0, 11, 12, 13, 14, 15, 16, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26, 0xf8, 6, 0, 31, 32, 33, 34, 35, 36, 0xff, 0xff },
-            { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
-        }),
+                  { 0xfc, 0xf0, 6, 0, 11, 12, 13, 14, 15, 16, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26, 0xf8, 6, 0, 31, 32, 33, 34, 35, 36, 0xff, 0xff },
+                  { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
+              }),
         flash.sectors);
 }
 
@@ -621,9 +634,9 @@ TEST_F(CyclicStoreTest, AfterRecoveryItemsAreInsertedAfterCurrentContents)
     AddItem(KeepBytesAlive({ 32 }));
 
     EXPECT_EQ((std::vector<std::vector<uint8_t>>{
-        { 0xfc, 0xf8, 1, 0, 16, 0xf8, 1, 0, 32 },
-        { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }
-    }), flash.sectors);
+                  { 0xfc, 0xf8, 1, 0, 16, 0xf8, 1, 0, 32 },
+                  { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff } }),
+        flash.sectors);
 }
 
 TEST_F(CyclicStoreTest, RecoveryAfterPartialWriteContinuesAtTheCorrectPosition)
@@ -634,12 +647,10 @@ TEST_F(CyclicStoreTest, RecoveryAfterPartialWriteContinuesAtTheCorrectPosition)
         std::vector<uint8_t> flashContentsAfterAdd;
     };
 
-    const std::array<Scenario, 5> scenarios =
-    { {
-        {
-            { 0xfc, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
-            { 0xfc, 0xf8, 1, 0, 22, 0xff, 0xff, 0xff, 0xff, 0xff },
-        },
+    const std::array<Scenario, 5> scenarios = { { {
+                                                      { 0xfc, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
+                                                      { 0xfc, 0xf8, 1, 0, 22, 0xff, 0xff, 0xff, 0xff, 0xff },
+                                                  },
         {
             { 0xfc, 0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
             { 0xfc, 0xfe, 0xff, 0xff, 0xf8, 1, 0, 22, 0xff, 0xff },
@@ -655,8 +666,7 @@ TEST_F(CyclicStoreTest, RecoveryAfterPartialWriteContinuesAtTheCorrectPosition)
         {
             { 0xfc, 0xfc, 2, 0, 11, 12, 0xff, 0xff, 0xff, 0xff },
             { 0xfc, 0xfc, 2, 0, 11, 12, 0xf8, 1, 0, 22 },
-        }
-    } };
+        } } };
 
     for (std::size_t index = 0; index != scenarios.size(); ++index)
     {
@@ -671,12 +681,9 @@ TEST_F(CyclicStoreTest, RecoveryAfterPartialWriteContinuesAtTheCorrectPosition)
 
 TEST_F(CyclicStoreTest, RecoveryAfterCorruptionContinuesAtTheNextSector)
 {
-    const std::array<std::vector<uint8_t>, 3> scenarios =
-    { {
-        { 0xfc, 0xaa, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
+    const std::array<std::vector<uint8_t>, 3> scenarios = { { { 0xfc, 0xaa, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
         { 0xfc, 0xf8, 0xaa, 0, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
-        { 0xfc, 0xfc, 2, 0, 11, 12, 0xaa, 0xff, 0xff, 0xff }
-    } };
+        { 0xfc, 0xfc, 2, 0, 11, 12, 0xaa, 0xff, 0xff, 0xff } } };
 
     const std::vector<uint8_t> nextSector = { 0xfe, 0xf8, 1, 0, 22, 0xff, 0xff, 0xff, 0xff, 0xff };
 
@@ -694,12 +701,11 @@ TEST_F(CyclicStoreTest, RecoveryAfterCorruptionContinuesAtTheNextSector)
 
 TEST_F(CyclicStoreTest, ReadSkipsIncompleteData)
 {
-    const std::array<std::vector<uint8_t>, 4> scenarios =
-    { {
-            { 0xfc, 0xfe, 0xff, 0xff, 0xf8, 1, 0, 22, 0xff, 0xff },
-            { 0xfc, 0xfe, 2, 0, 0xf8, 1, 0, 22, 0xff, 0xff },
-            { 0xfc, 0xfc, 2, 0, 0xff, 0xff, 0xf8, 1, 0, 22 },
-            { 0xfc, 0xfc, 2, 0, 11, 12, 0xf8, 1, 0, 22 },
+    const std::array<std::vector<uint8_t>, 4> scenarios = { {
+        { 0xfc, 0xfe, 0xff, 0xff, 0xf8, 1, 0, 22, 0xff, 0xff },
+        { 0xfc, 0xfe, 2, 0, 0xf8, 1, 0, 22, 0xff, 0xff },
+        { 0xfc, 0xfc, 2, 0, 0xff, 0xff, 0xf8, 1, 0, 22 },
+        { 0xfc, 0xfc, 2, 0, 11, 12, 0xf8, 1, 0, 22 },
     } };
 
     for (std::size_t index = 0; index != scenarios.size(); ++index)
@@ -715,12 +721,9 @@ TEST_F(CyclicStoreTest, ReadSkipsIncompleteData)
 
 TEST_F(CyclicStoreTest, OnCorruptDataReadSkipsToNextSector)
 {
-    const std::array<std::vector<uint8_t>, 3> scenarios =
-    { {
-        { 0xfc, 0xaa, 0xf8, 1, 0, 22 },
+    const std::array<std::vector<uint8_t>, 3> scenarios = { { { 0xfc, 0xaa, 0xf8, 1, 0, 22 },
         { 0xfc, 0xf8, 0xaa, 0, 0xf8, 1, 0, 22 },
-        { 0xfc, 0xfc, 2, 0, 11, 12, 0xaa, 0xf8, 1, 0, 22 }
-    } };
+        { 0xfc, 0xfc, 2, 0, 11, 12, 0xaa, 0xf8, 1, 0, 22 } } };
 
     flash.sectors[1] = { 0xfe, 0xf8, 1, 0, 33 };
 
@@ -741,9 +744,10 @@ TEST_F(CyclicStoreTest, WhenSectorIsErasedIteratorIsMovedForward)
     AddItem(KeepBytesAlive({ 21, 22, 23, 24, 25, 26 }));
 
     ASSERT_EQ((std::vector<std::vector<uint8_t>>{
-        { 0xfc, 0xf8, 6, 0, 11, 12, 13, 14, 15, 16 },
-        { 0xfe, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 },
-    }), flash.sectors);
+                  { 0xfc, 0xf8, 6, 0, 11, 12, 13, 14, 15, 16 },
+                  { 0xfe, 0xf8, 6, 0, 21, 22, 23, 24, 25, 26 },
+              }),
+        flash.sectors);
 
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
 
@@ -761,7 +765,8 @@ TEST_F(CyclicStoreTest, TestParallelAddAndClear)
     std::vector<uint8_t> readDataBuffer(6, 0);
 
     EXPECT_CALL(mock, callback(std::vector<uint8_t>{}));
-    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result) { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
+    iterator.Read(readDataBuffer, [&mock](infra::ByteRange result)
+        { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
 
     cyclicStore.Add(KeepBytesAlive({ 11, 12, 13, 14, 15, 16 }), infra::emptyFunction);
     cyclicStore.Clear(infra::emptyFunction);
@@ -816,8 +821,8 @@ TEST_F(CyclicStoreTest, when_iterator_is_at_the_end_of_flash_newly_added_item_is
 
     cyclicStore.Add(KeepBytesAlive({ 11, 12, 13, 14, 15, 16 }), infra::emptyFunction);
     EXPECT_EQ((std::vector<uint8_t>{ 11, 12, 13, 14, 15, 16 }), Read(iterator));
-    
-    EXPECT_EQ((std::vector<uint8_t>{ }), Read(iterator));
+
+    EXPECT_EQ((std::vector<uint8_t>{}), Read(iterator));
 
     cyclicStore.Add(KeepBytesAlive({ 21, 22, 23, 24, 25, 26 }), infra::emptyFunction);
     EXPECT_EQ((std::vector<uint8_t>{ 21, 22, 23, 24, 25, 26 }), Read(iterator));

@@ -29,9 +29,7 @@ namespace services
         this->onSent = onSent;
         if (!claimer.IsClaimed())
             claimer.Claim([this, address, data, nextAction, onSent]()
-            {
-                SendDataOnClaimed(address, data, nextAction);
-            });
+                { SendDataOnClaimed(address, data, nextAction); });
         else
             SendDataOnClaimed(address, data, nextAction);
     }
@@ -39,11 +37,10 @@ namespace services
     void I2cMultipleAccess::SendDataOnClaimed(hal::I2cAddress address, infra::ConstByteRange data, hal::Action nextAction)
     {
         master.SendData(address, data, nextAction, [this, nextAction](hal::Result result, uint32_t numberOfBytesSent)
-        {
+            {
             if (nextAction == hal::Action::stop)
                 claimer.Release();
-            this->onSent(result, numberOfBytesSent);
-        });
+            this->onSent(result, numberOfBytesSent); });
     }
 
     void I2cMultipleAccess::ReceiveData(hal::I2cAddress address, infra::ByteRange data, hal::Action nextAction, infra::Function<void(hal::Result)> onReceived)
@@ -51,9 +48,7 @@ namespace services
         this->onReceived = onReceived;
         if (!claimer.IsClaimed())
             claimer.Claim([this, address, data, nextAction, onReceived]()
-            {
-                ReceiveDataOnClaimed(address, data, nextAction);
-            });
+                { ReceiveDataOnClaimed(address, data, nextAction); });
         else
             ReceiveDataOnClaimed(address, data, nextAction);
     }
@@ -61,10 +56,9 @@ namespace services
     void I2cMultipleAccess::ReceiveDataOnClaimed(hal::I2cAddress address, infra::ByteRange data, hal::Action nextAction)
     {
         master.ReceiveData(address, data, nextAction, [this, nextAction](hal::Result result)
-        {
+            {
             if (nextAction == hal::Action::stop)
                 claimer.Release();
-            this->onReceived(result);
-        });
+            this->onReceived(result); });
     }
 }

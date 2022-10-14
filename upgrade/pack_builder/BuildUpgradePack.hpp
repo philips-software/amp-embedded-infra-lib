@@ -5,8 +5,8 @@
 #include "infra/util/ByteRange.hpp"
 #include "upgrade/pack_builder/UpgradePackBuilder.hpp"
 #include "upgrade/pack_builder/UpgradePackInputFactory.hpp"
-#include <vector>
 #include <utility>
+#include <vector>
 
 namespace application
 {

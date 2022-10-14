@@ -15,7 +15,9 @@ namespace services
 
     void CucumberContext::Add(infra::BoundedConstString key, void* value)
     {
-        storage.erase(std::remove_if(storage.begin(), storage.end(), [key](auto& var) { return var.key == key; }), storage.end());
+        storage.erase(std::remove_if(storage.begin(), storage.end(), [key](auto& var)
+                          { return var.key == key; }),
+            storage.end());
         storage.emplace_back(key, value);
     }
 
@@ -31,6 +33,7 @@ namespace services
 
     bool CucumberContext::Contains(infra::BoundedConstString key) const
     {
-        return std::any_of(storage.begin(), storage.end(), [key](auto& var) { return var.key == key; });
+        return std::any_of(storage.begin(), storage.end(), [key](auto& var)
+            { return var.key == key; });
     }
 }

@@ -2,7 +2,7 @@
 
 namespace services
 {
-    const uint8_t SynchronousFlashSpi::commandPageProgram[2] = { 0x02, 0x12 };  // 3-byte addressing, 4-byte addressing
+    const uint8_t SynchronousFlashSpi::commandPageProgram[2] = { 0x02, 0x12 }; // 3-byte addressing, 4-byte addressing
     const uint8_t SynchronousFlashSpi::commandReadData[2] = { 0x03, 0x13 };
     const uint8_t SynchronousFlashSpi::commandEraseSubSector[2] = { 0x20, 0x21 };
     const uint8_t SynchronousFlashSpi::commandEraseSector[2] = { 0xd8, 0xdc };

@@ -1,5 +1,5 @@
-#include "infra/event/EventDispatcher.hpp"
 #include "services/network/ExclusiveStartingConnection.hpp"
+#include "infra/event/EventDispatcher.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 
 namespace services
@@ -33,10 +33,9 @@ namespace services
 
         if (!stopping)
             infra::EventDispatcher::Instance().Schedule([this]()
-            {
+                {
                 starting = false;
-                TryAllocateConnection();
-            });
+                TryAllocateConnection(); });
     }
 
     void ExclusiveStartingConnectionFactoryMutex::TryAllocateConnection()
@@ -55,7 +54,8 @@ namespace services
             else
             {
                 services::GlobalTracer().Trace() << "ExclusiveStartingConnectionFactoryMutex::TryAllocateConnection did not yet allocate connection";
-                connections.OnAllocatable([this]() { TryAllocateConnection(); });
+                connections.OnAllocatable([this]()
+                    { TryAllocateConnection(); });
             }
         }
     }
@@ -116,7 +116,8 @@ namespace services
         assert(!listeners.full());
         listeners.emplace_back();
         auto& index = listeners.back();
-        listeners.back().OnAllocatable([this, &index]() { listeners.remove(index); });
+        listeners.back().OnAllocatable([this, &index]()
+            { listeners.remove(index); });
         return listeners.back().Emplace(*this, port, factory, versions);
     }
 
@@ -140,9 +141,7 @@ namespace services
         , factory(factory)
         , listener(connectionFactory.connectionFactory.Listen(port, *this, versions))
         , access([this]()
-            {
-                connection = nullptr;
-            })
+              { connection = nullptr; })
     {}
 
     ExclusiveStartingConnectionFactory::Listener::~Listener()
@@ -171,22 +170,21 @@ namespace services
         auto self = access.MakeShared(*this);
 
         factory.ConnectionAccepted([self](infra::SharedPtr<ConnectionObserver> connectionObserver)
-        {
+            {
             self->connection->ResetStarting();
             self->createdObserver(self->connection);
             if (self->connection->ConnectionObserver::IsAttached())
-                self->connection->Attach(connectionObserver);
-        }, address);
+                self->connection->Attach(connectionObserver); },
+            address);
     }
 
     ExclusiveStartingConnectionFactory::Connector::Connector(ExclusiveStartingConnectionFactory& connectionFactory, ClientConnectionObserverFactory& clientFactory)
         : connectionFactory(connectionFactory)
         , clientFactory(clientFactory)
         , access([this]()
-        {
+              {
             createdObserver = nullptr;
-            this->connectionFactory.connectors.remove(*this);
-        })
+            this->connectionFactory.connectors.remove(*this); })
     {
         connectionFactory.connectionFactory.Connect(*this);
     }
@@ -222,9 +220,7 @@ namespace services
         auto self = access.MakeShared(*this);
 
         clientFactory.ConnectionEstablished([self](infra::SharedPtr<ConnectionObserver> connectionObserver)
-        {
-            self->createdObserver(connectionObserver);
-        });
+            { self->createdObserver(connectionObserver); });
     }
 
     void ExclusiveStartingConnectionFactory::Connector::ConnectionFailed(ConnectFailReason reason)
@@ -249,7 +245,8 @@ namespace services
         assert(!listeners.full());
         listeners.emplace_back();
         auto& index = listeners.back();
-        listeners.back().OnAllocatable([this, &index]() { listeners.remove(index); });
+        listeners.back().OnAllocatable([this, &index]()
+            { listeners.remove(index); });
         return listeners.back().Emplace(*this, port, factory, versions);
     }
 
@@ -273,13 +270,12 @@ namespace services
         , factory(factory)
         , listener(connectionFactory.connectionFactory.Listen(port, *this, versions))
         , access([this]()
-            {
+              {
                 if (createdObserver != nullptr)
                 {
                     createdObserver = nullptr;
                     this->connectionFactory.mutex.Started();
-                }
-            })
+                } })
     {}
 
     void ExclusiveStartingConnectionReleaseFactory::Listener::ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address)
@@ -287,25 +283,24 @@ namespace services
         this->createdObserver = std::move(createdObserver);
         auto self = access.MakeShared(*this);
         factory.ConnectionAccepted([self](const infra::SharedPtr<ConnectionObserver>& connectionObserver)
-        {
+            {
             auto& connectionFactory = self->connectionFactory;
             connectionFactory.connections.emplace_back();
             auto& index = connectionFactory.connections.back();
             connectionFactory.connections.back().OnAllocatable([&connectionFactory, &index]() { connectionFactory.connections.remove(index); });
             auto connection = connectionFactory.connections.back().Emplace(connectionFactory.mutex);
             self->createdObserver(connection);
-            connection->Attach(connectionObserver);
-        }, address);
+            connection->Attach(connectionObserver); },
+            address);
     }
 
     ExclusiveStartingConnectionReleaseFactory::Connector::Connector(ExclusiveStartingConnectionReleaseFactory& connectionFactory, ClientConnectionObserverFactory& clientFactory)
         : connectionFactory(connectionFactory)
         , clientFactory(clientFactory)
         , access([this]()
-            {
+              {
                 createdObserver = nullptr;
-                connection = nullptr;
-            })
+                connection = nullptr; })
     {
         services::GlobalTracer().Trace() << "ExclusiveStartingConnectionReleaseFactory::Connector::Connector queueing connection";
         connectionFactory.mutex.QueueConnection(*this);
@@ -353,7 +348,7 @@ namespace services
         this->createdObserver = std::move(createdObserver);
         auto self = access.MakeShared(*this);
         clientFactory.ConnectionEstablished([self](const infra::SharedPtr<ConnectionObserver>& connectionObserver)
-        {
+            {
             auto& connectionFactory = self->connectionFactory;
             connectionFactory.connections.emplace_back();
             auto& index = connectionFactory.connections.back();
@@ -370,8 +365,7 @@ namespace services
             self->access.SetAction([thisPtr]()
             {
                 thisPtr->connectionFactory.connectors.remove(*thisPtr);
-            });
-        });
+            }); });
     }
 
     void ExclusiveStartingConnectionReleaseFactory::Connector::ConnectionFailed(ConnectFailReason reason)

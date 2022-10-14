@@ -3,8 +3,10 @@
 namespace services
 {
     CucumberWireProtocolController::CucumberWireProtocolController(ConnectionObserver& connectionObserver, CucumberScenarioRequestHandler& scenarioRequestHandler)
-        : invokeSuccess([this]() { InvokeSuccess(); })
-        , invokeError([this](infra::BoundedConstString& reason) { InvokeError(reason); })
+        : invokeSuccess([this]()
+              { InvokeSuccess(); })
+        , invokeError([this](infra::BoundedConstString& reason)
+              { InvokeError(reason); })
         , connectionObserver(connectionObserver)
         , scenarioRequestHandler(scenarioRequestHandler)
     {
@@ -19,26 +21,26 @@ namespace services
     {
         switch (parser.requestType)
         {
-        case CucumberWireProtocolParser::RequestType::StepMatches:
-            HandleStepMatchRequest(parser);
-            break;
-        case CucumberWireProtocolParser::RequestType::Invoke:
-            HandleInvokeRequest(parser);
-            break;
-        case CucumberWireProtocolParser::RequestType::BeginScenario:
-            HandleBeginScenarioRequest(parser);
-            break;
-        case CucumberWireProtocolParser::RequestType::EndScenario:
-            HandleEndScenarioRequest();
-            break;
-        case CucumberWireProtocolParser::RequestType::SnippetText:
-            HandleSnippetTextRequest();
-            break;
-        case CucumberWireProtocolParser::RequestType::Invalid:
-            HandleInvalidRequest();
-            break;
-        default:
-            break;
+            case CucumberWireProtocolParser::RequestType::StepMatches:
+                HandleStepMatchRequest(parser);
+                break;
+            case CucumberWireProtocolParser::RequestType::Invoke:
+                HandleInvokeRequest(parser);
+                break;
+            case CucumberWireProtocolParser::RequestType::BeginScenario:
+                HandleBeginScenarioRequest(parser);
+                break;
+            case CucumberWireProtocolParser::RequestType::EndScenario:
+                HandleEndScenarioRequest();
+                break;
+            case CucumberWireProtocolParser::RequestType::SnippetText:
+                HandleSnippetTextRequest();
+                break;
+            case CucumberWireProtocolParser::RequestType::Invalid:
+                HandleInvalidRequest();
+                break;
+            default:
+                break;
         }
     }
 
@@ -60,18 +62,14 @@ namespace services
 
     void CucumberWireProtocolController::HandleBeginScenarioRequest(CucumberWireProtocolParser& parser)
     {
-        scenarioRequestHandler.BeginScenario([this]() 
-            {
-                connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize());
-            });
+        scenarioRequestHandler.BeginScenario([this]()
+            { connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize()); });
     }
 
     void CucumberWireProtocolController::HandleEndScenarioRequest()
     {
-        scenarioRequestHandler.EndScenario([this]() 
-            {
-                connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize());
-            });
+        scenarioRequestHandler.EndScenario([this]()
+            { connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize()); });
     }
 
     void CucumberWireProtocolController::HandleSnippetTextRequest()
@@ -95,8 +93,8 @@ namespace services
     void CucumberWireProtocolController::InvokeSuccess()
     {
         invokeInfo.successful = true;
-   	    services::CucumberContext::Instance().TimeoutTimer().Cancel();
-        
+        services::CucumberContext::Instance().TimeoutTimer().Cancel();
+
         connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize());
     }
 

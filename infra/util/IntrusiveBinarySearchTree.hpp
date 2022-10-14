@@ -155,7 +155,7 @@ namespace infra
             IntrusiveBinarySearchTreeIterator();
             IntrusiveBinarySearchTreeIterator(const T* node, const TreeType& tree);
             template<class T2>
-                explicit IntrusiveBinarySearchTreeIterator(const IntrusiveBinarySearchTreeIterator<T2, Compare>& other);
+            explicit IntrusiveBinarySearchTreeIterator(const IntrusiveBinarySearchTreeIterator<T2, Compare>& other);
 
             template<class T2>
             IntrusiveBinarySearchTreeIterator& operator=(const IntrusiveBinarySearchTreeIterator<T2, Compare>& other);
@@ -691,7 +691,7 @@ namespace infra
             value.nextInOrder->previousInOrder = value.previousInOrder;
 
         value.nextInOrder = nullptr;
-        value.previousInOrder = nullptr;            
+        value.previousInOrder = nullptr;
     }
 
     template<class T, class Compare>
@@ -714,8 +714,7 @@ namespace infra
     template<class T, class Compare>
     bool IntrusiveBinarySearchTree<T, Compare>::operator==(const IntrusiveBinarySearchTree& other) const
     {
-        return size() == other.size()
-            && std::equal(begin(), end(), other.begin());
+        return size() == other.size() && std::equal(begin(), end(), other.begin());
     }
 
     template<class T, class Compare>
@@ -842,7 +841,6 @@ namespace infra
             else
                 node = &tree->back();
 
-
             return *this;
         }
 
@@ -858,8 +856,7 @@ namespace infra
         template<class T2>
         bool IntrusiveBinarySearchTreeIterator<T, Compare>::operator==(const IntrusiveBinarySearchTreeIterator<T2, Compare>& other) const
         {
-            return node == other.node
-                && tree == other.tree;
+            return node == other.node && tree == other.tree;
         }
 
         template<class T, class Compare>

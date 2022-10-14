@@ -53,14 +53,14 @@ TEST_F(SignalLedTest, TurnOffAfterPeriod)
 
 TEST_F(SignalLedTest, TurnOnAndOffPeriodically)
 {
-    signalLed.Set(0xb, 4);  // binary: 1011
+    signalLed.Set(0xb, 4); // binary: 1011
 
     ForwardTime(std::chrono::seconds(8));
     EXPECT_EQ((std::vector<hal::PinChange>{
-        { std::chrono::seconds(0), true },
-        { std::chrono::seconds(2), false },
-        { std::chrono::seconds(3), true },
-        { std::chrono::seconds(6), false },
-        { std::chrono::seconds(7), true }
-        }), led.PinChanges());
+                  { std::chrono::seconds(0), true },
+                  { std::chrono::seconds(2), false },
+                  { std::chrono::seconds(3), true },
+                  { std::chrono::seconds(6), false },
+                  { std::chrono::seconds(7), true } }),
+        led.PinChanges());
 }

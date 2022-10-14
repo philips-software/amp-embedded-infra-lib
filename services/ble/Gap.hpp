@@ -41,8 +41,8 @@ namespace services
         : public infra::Subject<GapPeripheralObserver>
     {
     public:
-        using AdvertisementIntervalMultiplier = uint16_t; // Interval = Multiplier * 0.625 ms.
-        static constexpr AdvertisementIntervalMultiplier advertisementIntervalMultiplierMin = 0x20u; // 20 ms
+        using AdvertisementIntervalMultiplier = uint16_t;                                              // Interval = Multiplier * 0.625 ms.
+        static constexpr AdvertisementIntervalMultiplier advertisementIntervalMultiplierMin = 0x20u;   // 20 ms
         static constexpr AdvertisementIntervalMultiplier advertisementIntervalMultiplierMax = 0x4000u; // 10240 ms
 
         enum class AdvertisementType : uint8_t
@@ -70,7 +70,7 @@ namespace services
 
         static constexpr uint8_t maxAdvertisementDataSize = 31;
         static constexpr uint8_t maxScanResponseDataSize = 31;
-        static constexpr uint16_t connectionInitialMaxTxOctets  = 251;
+        static constexpr uint16_t connectionInitialMaxTxOctets = 251;
         static constexpr uint16_t connectionInitialMaxTxTime = 2120; // (connectionInitialMaxTxOctets + 14) * 8
 
     public:

@@ -1,14 +1,14 @@
 #ifndef INFRA_QUEUE_FOR_ONE_READER_ONE_IRQ_WRITER_HPP
 #define INFRA_QUEUE_FOR_ONE_READER_ONE_IRQ_WRITER_HPP
 
+#include "infra/event/EventDispatcher.hpp"
+#include "infra/stream/InputStream.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/WithStorage.hpp"
 #include <array>
 #include <atomic>
-#include <cstdint>
 #include <cassert>
-#include "infra/event/EventDispatcher.hpp"
-#include "infra/stream/InputStream.hpp"
+#include <cstdint>
 
 namespace infra
 {
@@ -19,7 +19,7 @@ namespace infra
         static_assert(std::is_trivial<T>::value, "Trivial type required");
 
         template<std::size_t Size>
-            using WithStorage = infra::WithStorage<QueueForOneReaderOneIrqWriter<T>, std::array<T, Size + 1>>;
+        using WithStorage = infra::WithStorage<QueueForOneReaderOneIrqWriter<T>, std::array<T, Size + 1>>;
 
         class StreamReader;
 
@@ -36,7 +36,7 @@ namespace infra
         std::size_t Size() const;
         std::size_t EmptySize() const;
 
-        T operator [] (size_t position) const;
+        T operator[](size_t position) const;
 
     private:
         bool Full(const T* begin, const T* end) const;
@@ -144,11 +144,10 @@ namespace infra
     template<class T>
     bool QueueForOneReaderOneIrqWriter<T>::Full(const T* begin, const T* end) const
     {
-        return (end == buffer.end() - 1 || begin == end + 1)
-            && (end != buffer.end() - 1 || begin == buffer.begin());
+        return (end == buffer.end() - 1 || begin == end + 1) && (end != buffer.end() - 1 || begin == buffer.begin());
     }
 
-    template <class T>
+    template<class T>
     T QueueForOneReaderOneIrqWriter<T>::Get()
     {
         assert(!Empty());
@@ -236,7 +235,8 @@ namespace infra
     void QueueForOneReaderOneIrqWriter<T>::NotifyDataAvailable()
     {
         if (!Empty() && !notificationScheduled.exchange(true))
-            infra::EventDispatcher::Instance().Schedule([this]() { DataAvailable(); });
+            infra::EventDispatcher::Instance().Schedule([this]()
+                { DataAvailable(); });
     }
 
     template<class T>

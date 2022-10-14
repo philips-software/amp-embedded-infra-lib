@@ -13,6 +13,7 @@ namespace services
         static const uint16_t dnsPort = 53;
 
         using DnsEntry = std::pair<infra::BoundedConstString, services::IPAddress>;
+
         struct DnsEntries
         {
             infra::MemoryRange<const DnsEntry> entries;

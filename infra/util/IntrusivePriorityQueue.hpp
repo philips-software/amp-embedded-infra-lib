@@ -6,10 +6,10 @@
 // - Insertions and deletions are done in O(log(n)) time
 // - Finding the largest element takes O(1) time
 
+#include <cassert>
 #include <cstdlib>
 #include <functional>
 #include <utility>
-#include <cassert>
 
 namespace infra
 {
@@ -32,8 +32,8 @@ namespace infra
 
     public:
         explicit IntrusivePriorityQueue(const Compare& comp = Compare());
-        template <class InputIterator>
-            IntrusivePriorityQueue(InputIterator first, InputIterator last, const Compare& comp = Compare());
+        template<class InputIterator>
+        IntrusivePriorityQueue(InputIterator first, InputIterator last, const Compare& comp = Compare());
         IntrusivePriorityQueue(const IntrusivePriorityQueue&) = delete;
         IntrusivePriorityQueue(IntrusivePriorityQueue&& other);
         IntrusivePriorityQueue& operator=(const IntrusivePriorityQueue&) = delete;
@@ -77,7 +77,7 @@ namespace infra
 
         private:
             template<class, class>
-                friend class infra::IntrusivePriorityQueue;
+            friend class infra::IntrusivePriorityQueue;
 
             T* up;
             T* left;
@@ -93,7 +93,7 @@ namespace infra
     {}
 
     template<class T, class Compare>
-    template <class InputIterator>
+    template<class InputIterator>
     IntrusivePriorityQueue<T, Compare>::IntrusivePriorityQueue(InputIterator first, InputIterator last, const Compare& comp)
         : compare(comp)
     {

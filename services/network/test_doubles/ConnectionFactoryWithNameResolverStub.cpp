@@ -7,18 +7,18 @@ namespace services
         , address(address)
     {}
 
-     void ConnectionFactoryWithNameResolverStub::Connect(services::ClientConnectionObserverFactoryWithNameResolver& factory)
+    void ConnectionFactoryWithNameResolverStub::Connect(services::ClientConnectionObserverFactoryWithNameResolver& factory)
     {
         client = &factory;
         connectionFactory.Connect(*this);
     }
 
-     void ConnectionFactoryWithNameResolverStub::CancelConnect(services::ClientConnectionObserverFactoryWithNameResolver& factory)
+    void ConnectionFactoryWithNameResolverStub::CancelConnect(services::ClientConnectionObserverFactoryWithNameResolver& factory)
     {
         connectionFactory.CancelConnect(*this);
     }
 
-     services::IPAddress ConnectionFactoryWithNameResolverStub::Address() const
+    services::IPAddress ConnectionFactoryWithNameResolverStub::Address() const
     {
         return address;
     }
@@ -36,6 +36,6 @@ namespace services
     void ConnectionFactoryWithNameResolverStub::ConnectionFailed(ConnectFailReason reason)
     {
         client->ConnectionFailed(reason == ConnectFailReason::connectionAllocationFailed ? services::ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason::connectionAllocationFailed
-            : services::ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason::refused);
+                                                                                         : services::ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason::refused);
     }
 }

@@ -1,5 +1,5 @@
-#ifndef SERVICES_CUCUMBER_WIRE_PROTOCOL_CONTROLLER_HPP 
-#define SERVICES_CUCUMBER_WIRE_PROTOCOL_CONTROLLER_HPP 
+#ifndef SERVICES_CUCUMBER_WIRE_PROTOCOL_CONTROLLER_HPP
+#define SERVICES_CUCUMBER_WIRE_PROTOCOL_CONTROLLER_HPP
 
 #include "services/cucumber/CucumberRequestHandlers.hpp"
 #include "services/cucumber/CucumberStepStorage.hpp"

@@ -21,7 +21,10 @@ class RepeatingButtonFixture
 public:
     RepeatingButtonFixture()
     {
-        repeatingButton.Emplace(button, [this]() { callback.callback(); }, config);
+        repeatingButton.Emplace(
+            button, [this]()
+            { callback.callback(); },
+            config);
     }
 };
 
@@ -90,7 +93,10 @@ TEST_F(RepeatingButtonFixtureBase, NonDefaultTimings)
     config.debounceDuration = std::chrono::milliseconds(20);
     config.initialDelay = std::chrono::seconds(2);
     config.successiveDelay = std::chrono::seconds(1);
-    repeatingButton.Emplace(button, [this]() { callback.callback(); }, config);
+    repeatingButton.Emplace(
+        button, [this]()
+        { callback.callback(); },
+        config);
 
     EXPECT_CALL(callback, callback()).With(After(std::chrono::milliseconds(0)));
     EXPECT_CALL(callback, callback()).With(After(std::chrono::milliseconds(2000)));

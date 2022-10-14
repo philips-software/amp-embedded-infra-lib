@@ -37,11 +37,11 @@ TEST_F(CyclicBufferTest, PushRange)
 
 TEST_F(CyclicBufferTest, PushEmptyRange)
 {
-    buffer.Push(std::vector<uint8_t>{ });
+    buffer.Push(std::vector<uint8_t>{});
 
     EXPECT_TRUE(buffer.Empty());
     EXPECT_FALSE(buffer.Full());
-    EXPECT_EQ((std::vector<uint8_t>{ }), buffer.ContiguousRange());
+    EXPECT_EQ((std::vector<uint8_t>{}), buffer.ContiguousRange());
 }
 
 TEST_F(CyclicBufferTest, PushFull)

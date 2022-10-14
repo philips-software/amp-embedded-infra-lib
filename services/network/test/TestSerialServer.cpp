@@ -34,7 +34,10 @@ public:
     testing::StrictMock<services::ConnectionFactoryMock> connectionFactoryMock;
     testing::StrictMock<hal::SerialCommunicationMock> serialCommunicationMock;
     services::ServerConnectionObserverFactory* serverConnectionObserverFactory;
-    infra::Execute execute{ [this] { EXPECT_CALL(connectionFactoryMock, Listen(9000, testing::_, services::IPVersions::both)).WillOnce(testing::DoAll(infra::SaveRef<1>(&serverConnectionObserverFactory), testing::Return(nullptr))); } };
+    infra::Execute execute{ [this]
+        {
+            EXPECT_CALL(connectionFactoryMock, Listen(9000, testing::_, services::IPVersions::both)).WillOnce(testing::DoAll(infra::SaveRef<1>(&serverConnectionObserverFactory), testing::Return(nullptr)));
+        } };
     services::SerialServer::WithBuffer<128> serialServer{ serialCommunicationMock, connectionFactoryMock, 9000 };
 };
 

@@ -18,7 +18,7 @@ namespace services
     }
 
     GattService::GattService(const GattAttribute::Uuid& type)
-        : attribute{type, 0}
+        : attribute{ type, 0 }
     {}
 
     void GattService::AddCharacteristic(GattCharacteristic& characteristic)

@@ -3,8 +3,8 @@
 
 #include "gmock/gmock.h"
 #include "infra/stream/BoundedDequeInputStream.hpp"
-#include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/stream/LimitedOutputStream.hpp"
+#include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "services/network/Connection.hpp"
 #include <vector>

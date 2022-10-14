@@ -23,7 +23,8 @@ TEST(CountingInputStreamTest, Extract_but_fails)
     infra::StreamErrorPolicy errorPolicy(infra::noFail);
 
     std::array<uint8_t, 4> data;
-    EXPECT_CALL(reader, Extract(infra::MakeRange(data), testing::_)).WillOnce(testing::Invoke([](infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) { errorPolicy.ReportResult(false); }));
+    EXPECT_CALL(reader, Extract(infra::MakeRange(data), testing::_)).WillOnce(testing::Invoke([](infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy)
+        { errorPolicy.ReportResult(false); }));
     countingReader.Extract(data, errorPolicy);
 
     EXPECT_EQ(0, countingReader.TotalRead());
@@ -59,7 +60,7 @@ TEST(CountingInputStreamTest, PeekContiguousRange)
     testing::StrictMock<infra::StreamReaderMock> reader;
     infra::CountingStreamReader countingReader(reader);
 
-    std::array<uint8_t, 2> data{{1, 2}};
+    std::array<uint8_t, 2> data{ { 1, 2 } };
     EXPECT_CALL(reader, PeekContiguousRange(7)).WillOnce(testing::Return(infra::MakeRange(data)));
     EXPECT_EQ(infra::MakeRange(data), countingReader.PeekContiguousRange(7));
 
@@ -112,7 +113,8 @@ TEST(CountingStreamReaderWithRewindingTest, Extract_but_fails)
     infra::StreamErrorPolicy errorPolicy(infra::noFail);
 
     std::array<uint8_t, 4> data;
-    EXPECT_CALL(reader, Extract(infra::MakeRange(data), testing::_)).WillOnce(testing::Invoke([](infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) { errorPolicy.ReportResult(false); }));
+    EXPECT_CALL(reader, Extract(infra::MakeRange(data), testing::_)).WillOnce(testing::Invoke([](infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy)
+        { errorPolicy.ReportResult(false); }));
     countingReader.Extract(data, errorPolicy);
 
     EXPECT_EQ(0, countingReader.TotalRead());
@@ -148,7 +150,7 @@ TEST(CountingStreamReaderWithRewindingTest, PeekContiguousRange)
     testing::StrictMock<infra::StreamReaderWithRewindingMock> reader;
     infra::CountingStreamReaderWithRewinding countingReader(reader);
 
-    std::array<uint8_t, 2> data{{1, 2}};
+    std::array<uint8_t, 2> data{ { 1, 2 } };
     EXPECT_CALL(reader, PeekContiguousRange(7)).WillOnce(testing::Return(infra::MakeRange(data)));
     EXPECT_EQ(infra::MakeRange(data), countingReader.PeekContiguousRange(7));
 

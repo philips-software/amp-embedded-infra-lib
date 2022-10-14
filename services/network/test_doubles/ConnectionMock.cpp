@@ -5,8 +5,7 @@ namespace services
     void ConnectionFactoryMock::NewConnection(ServerConnectionObserverFactory& serverConnectionObserverFactory, Connection& connection, services::IPAddress address)
     {
         serverConnectionObserverFactory.ConnectionAccepted([&connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-        {
-            connection.Attach(connectionObserver);
-        }, address);
+            { connection.Attach(connectionObserver); },
+            address);
     }
 }

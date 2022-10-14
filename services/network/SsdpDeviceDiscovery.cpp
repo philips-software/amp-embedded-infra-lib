@@ -118,24 +118,24 @@ namespace services
     {
         infra::TextOutputStream::WithErrorPolicy stream(*writer);
 
-        stream 
+        stream
             << "M-SEARCH * HTTP/1.1\r\n"
             << "HOST: " << AsCanonicalFormIp(GetSsdpMulticastAddress(ipVersion)) << ":" << ssdpPort << "\r\n"
             << "MAN: \"ssdp:discover\"\r\n"
             << "ST: " << discovery.searchTarget << "\r\n"
-            << "MX: "<< maxWaitResponseTime << "\r\n";
+            << "MX: " << maxWaitResponseTime << "\r\n";
     }
 
     UdpSocket SsdpDeviceDiscovery::ActiveDiscovery::MakeSsdpUdpSocket(IPVersions ipVersion)
     {
         switch (ipVersion)
         {
-        case IPVersions::ipv4:
-            return Udpv4Socket{ ssdpMulticastAddressIpv4, ssdpPort };
-        case IPVersions::ipv6:
-            return Udpv6Socket{ ssdpMulticastAddressIpv6, ssdpPort }; 
-        default:
-            std::abort();
+            case IPVersions::ipv4:
+                return Udpv4Socket{ ssdpMulticastAddressIpv4, ssdpPort };
+            case IPVersions::ipv6:
+                return Udpv6Socket{ ssdpMulticastAddressIpv6, ssdpPort };
+            default:
+                std::abort();
         }
     }
 
@@ -143,12 +143,12 @@ namespace services
     {
         switch (ipVersion)
         {
-        case IPVersions::ipv4:
-            return ssdpMulticastAddressIpv4;
-        case IPVersions::ipv6:
-            return ssdpMulticastAddressIpv6; 
-        default:
-            std::abort();
+            case IPVersions::ipv4:
+                return ssdpMulticastAddressIpv4;
+            case IPVersions::ipv6:
+                return ssdpMulticastAddressIpv6;
+            default:
+                std::abort();
         }
     }
 }

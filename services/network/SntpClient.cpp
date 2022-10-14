@@ -30,7 +30,7 @@ namespace services
         if (stratum > 15)
             return false;
 
-        if (timestamps.transmit.seconds == uint32_t{0})
+        if (timestamps.transmit.seconds == uint32_t{ 0 })
             return false;
 
         if (std::chrono::duration_cast<std::chrono::seconds>(timestamps.originate.Convert()) != std::chrono::duration_cast<std::chrono::seconds>(requestTime))
@@ -99,10 +99,11 @@ namespace services
 
         stream << message;
     }
-    
+
     void SntpClient::NotifyTimeUnavailable()
     {
-        NotifyObservers([](SntpResultObserver& observer) { observer.TimeUnavailable(); });
+        NotifyObservers([](SntpResultObserver& observer)
+            { observer.TimeUnavailable(); });
     }
 
     void SntpClient::NotifyKissOfDeath(NtpMessage& message)
@@ -110,11 +111,14 @@ namespace services
         auto kissCode = infra::ByteRangeAsString(infra::MakeByteRange(message.referenceIdentifier));
 
         if (kissCode == "DENY")
-            NotifyObservers([](SntpResultObserver& observer) { observer.KissOfDeath(SntpResultObserver::KissCode::deny); });
+            NotifyObservers([](SntpResultObserver& observer)
+                { observer.KissOfDeath(SntpResultObserver::KissCode::deny); });
         else if (kissCode == "RSTR")
-            NotifyObservers([](SntpResultObserver& observer) { observer.KissOfDeath(SntpResultObserver::KissCode::restrict); });
+            NotifyObservers([](SntpResultObserver& observer)
+                { observer.KissOfDeath(SntpResultObserver::KissCode::restrict); });
         else if (kissCode == "RATE")
-            NotifyObservers([](SntpResultObserver& observer) { observer.KissOfDeath(SntpResultObserver::KissCode::rateExceeded); });
+            NotifyObservers([](SntpResultObserver& observer)
+                { observer.KissOfDeath(SntpResultObserver::KissCode::rateExceeded); });
         else
             NotifyTimeUnavailable();
     }
@@ -130,7 +134,8 @@ namespace services
         auto roundTripDelay = (t4 - t1) - (t3 - t2);
         auto localClockOffset = ((t2 - t1) + (t3 - t4)) / 2;
 
-        NotifyObservers([roundTripDelay, localClockOffset](SntpResultObserver& observer) { observer.TimeAvailable(roundTripDelay, localClockOffset); });
+        NotifyObservers([roundTripDelay, localClockOffset](SntpResultObserver& observer)
+            { observer.TimeAvailable(roundTripDelay, localClockOffset); });
     }
 
     SntpClient::NtpHeader SntpClient::CreateNtpHeader(NtpLeapIndicator leapIndicator, uint8_t versionNumber, NtpMode mode)

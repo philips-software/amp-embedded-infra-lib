@@ -1,11 +1,11 @@
 #include "gmock/gmock.h"
 #include "hal/synchronous_interfaces/test_doubles/SynchronousRandomDataGeneratorMock.hpp"
-#include "infra/util/test_helper/MockHelpers.hpp"
-#include "infra/util/test_helper/VariantPrintTo.hpp"
-#include "infra/util/Tokenizer.hpp"
 #include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/stream/test/StreamMock.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
+#include "infra/util/Tokenizer.hpp"
+#include "infra/util/test_helper/MockHelpers.hpp"
+#include "infra/util/test_helper/VariantPrintTo.hpp"
 #include "services/network/DnsResolver.hpp"
 #include "services/network/test_doubles/DatagramMock.hpp"
 #include "services/network/test_doubles/NameResolverMock.hpp"
@@ -17,7 +17,8 @@ class DnsResolverTest
 public:
     DnsResolverTest()
     {
-        EXPECT_CALL(randomDataGenerator, GenerateRandomData(testing::_)).WillRepeatedly(testing::Invoke([](infra::ByteRange result) { std::fill(result.begin(), result.end(), 9); }));
+        EXPECT_CALL(randomDataGenerator, GenerateRandomData(testing::_)).WillRepeatedly(testing::Invoke([](infra::ByteRange result)
+            { std::fill(result.begin(), result.end(), 9); }));
     }
 
     auto&& ExpectRequestSendStream(services::NameResolverResultMock& result, infra::BoundedConstString hostname, services::IPAddress dnsServer)
@@ -28,7 +29,8 @@ public:
 
     void ExpectAndRespondToRequestSendStream(services::NameResolverResultMock& result, infra::BoundedConstString hostname, services::IPAddress dnsServer)
     {
-        ExpectRequestSendStream(result, hostname, dnsServer).WillOnce(testing::Invoke([this, &result, hostname](std::size_t sendSize, services::UdpSocket remote) {
+        ExpectRequestSendStream(result, hostname, dnsServer).WillOnce(testing::Invoke([this, &result, hostname](std::size_t sendSize, services::UdpSocket remote)
+            {
             EXPECT_CALL(writer, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 9, 9, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0 } }), testing::_));
 
             infra::Tokenizer tokenizer(hostname, '.');
@@ -40,8 +42,7 @@ public:
 
             EXPECT_CALL(writer, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 0 } }), testing::_));
             EXPECT_CALL(writer, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 0, 1, 0, 1 } }), testing::_));
-            datagramExchangeObserver->SendStreamAvailable(infra::UnOwnedSharedPtr(writer));
-        }));
+            datagramExchangeObserver->SendStreamAvailable(infra::UnOwnedSharedPtr(writer)); }));
     }
 
     void Lookup(services::NameResolverResultMock& result)
@@ -53,10 +54,9 @@ public:
     {
         currentHostname = hostname;
         EXPECT_CALL(datagramFactory, Listen(testing::_, services::IPVersions::both)).WillOnce(testing::Invoke([this](services::DatagramExchangeObserver& observer, services::IPVersions versions)
-        {
+            {
             datagramExchangeObserver = &observer;
-            return infra::UnOwnedSharedPtr(datagram);
-        }));
+            return infra::UnOwnedSharedPtr(datagram); }));
         ExpectAndRespondToRequestSendStream(result, hostname, dnsServer);
     }
 
@@ -177,7 +177,7 @@ public:
 
     std::vector<uint8_t> MakeDnsResponseWithCNameWithInnerReference(infra::BoundedConstString hostname, infra::BoundedConstString alias)
     {
-        std::vector<uint8_t>  nameStart(ConvertDns(hostname.substr(0, hostname.find('.'))));
+        std::vector<uint8_t> nameStart(ConvertDns(hostname.substr(0, hostname.find('.'))));
         nameStart.pop_back();
         std::vector<uint8_t> nameWithInnerReference(Concatenate({ nameStart, { 0xc0, 21 } }));
         return Concatenate({ MakeHeader(1), MakeQuestion(hostname), MakeAnswerCName(nameWithInnerReference, alias) });
@@ -185,7 +185,7 @@ public:
 
     std::vector<uint8_t> MakeDnsResponseWithSecondCNameWithInnerReference(infra::BoundedConstString hostname, infra::BoundedConstString alias)
     {
-        std::vector<uint8_t>  nameStart(ConvertDns("other"));
+        std::vector<uint8_t> nameStart(ConvertDns("other"));
         nameStart.pop_back();
         std::vector<uint8_t> nameWithInnerReference(Concatenate({ nameStart, { 0xc0, 21 } }));
         return Concatenate({ MakeHeader(2), MakeQuestion(hostname), MakeAnswerCName(nameWithInnerReference, alias), MakeReferenceAnswerCName(alias) });
@@ -298,7 +298,7 @@ public:
     {
         auto result = MakeDnsResponseWithClass2(hostname, address);
 
-        result[7] = 2;  // 2 answers
+        result[7] = 2; // 2 answers
 
         std::vector<uint8_t> nameReference{ { 0xc0, 0x0c } };
         std::vector<uint8_t> resourceInner{ { 0, 1, 0, 1, 0, 1, 0, 30, 0, 4 } };

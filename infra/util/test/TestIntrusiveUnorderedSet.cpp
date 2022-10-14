@@ -5,7 +5,9 @@
 struct SetInt
     : infra::IntrusiveUnorderedSet<SetInt>::WithBuckets<4>::NodeType
 {
-    SetInt(int v): value(v) {}
+    SetInt(int v)
+        : value(v)
+    {}
 
     int value;
 
@@ -44,7 +46,7 @@ TEST(IntrusiveUnorderedSetTest, TestConstructedEmpty)
 
 TEST(IntrusiveUnorderedSetTest, TestConstructionWithRange)
 {
-    SetInt range[3] = { 0, 1, 2};
+    SetInt range[3] = { 0, 1, 2 };
     infra::IntrusiveUnorderedSet<SetInt>::WithBuckets<4> set(range, range + 3);
 
     EXPECT_TRUE(SetEquals(set, infra::MakeRange(range)));
@@ -52,7 +54,7 @@ TEST(IntrusiveUnorderedSetTest, TestConstructionWithRange)
 
 TEST(IntrusiveUnorderedSetTest, TestMoveConstruction)
 {
-    SetInt range[3] = { 0, 1, 2};
+    SetInt range[3] = { 0, 1, 2 };
     infra::IntrusiveUnorderedSet<SetInt>::WithBuckets<4> original(range, range + 3);
     infra::IntrusiveUnorderedSet<SetInt>::WithBuckets<4> copy(std::move(original));
 
@@ -62,7 +64,7 @@ TEST(IntrusiveUnorderedSetTest, TestMoveConstruction)
 
 TEST(IntrusiveUnorderedSetTest, TestMoveAssignment)
 {
-    SetInt range[3] = { 0, 1, 2};
+    SetInt range[3] = { 0, 1, 2 };
     infra::IntrusiveUnorderedSet<SetInt>::WithBuckets<4> original(range, range + 3);
     infra::IntrusiveUnorderedSet<SetInt>::WithBuckets<4> copy;
     copy = std::move(original);
@@ -87,7 +89,7 @@ TEST(IntrusiveUnorderedSetTest, IterateAfterMoveAssignment)
     infra::IntrusiveUnorderedSet<SetInt>::WithBuckets<4> copy;
     copy = std::move(original);
 
-    for (SetInt& i: copy)
+    for (SetInt& i : copy)
     {}
 
     for (SetInt& i : infra::MakeReverseRange(copy))
@@ -96,7 +98,7 @@ TEST(IntrusiveUnorderedSetTest, IterateAfterMoveAssignment)
 
 TEST(IntrusiveUnorderedSetTest, TestBeginAndEnd)
 {
-    SetInt range[3] = { 0, 1, 2};
+    SetInt range[3] = { 0, 1, 2 };
     infra::IntrusiveUnorderedSet<SetInt>::WithBuckets<4> set(range, range + 3);
 
     EXPECT_EQ(set.end(), std::next(set.begin(), 3));
@@ -111,7 +113,6 @@ TEST(IntrusiveUnorderedSetTest, TestBeginAndEnd)
     EXPECT_EQ(set2.cbegin(), set2.begin());
     EXPECT_EQ(set2.cend(), set2.end());
 }
-
 
 TEST(IntrusiveUnorderedSetTest, TestRBeginAndREnd)
 {
@@ -158,7 +159,7 @@ TEST(IntrusiveUnorderedSetTest, TestContains)
 
 TEST(IntrusiveUnorderedSetTest, TestAssignRange)
 {
-    SetInt range[3] = { 0, 1, 2};
+    SetInt range[3] = { 0, 1, 2 };
     infra::IntrusiveUnorderedSet<SetInt>::WithBuckets<4> set(range, range + 3);
 
     SetInt otherRange[2] = { 4, 5 };
@@ -180,30 +181,30 @@ TEST(IntrusiveUnorderedSetTest, TestAssignN)
 
 TEST(IntrusiveUnorderedSetTest, TestSwap)
 {
-    SetInt range1[3] = { 0, 1, 2};
+    SetInt range1[3] = { 0, 1, 2 };
     infra::IntrusiveUnorderedSet<SetInt>::WithBuckets<4> set1(range1, range1 + 3);
-    SetInt range2[3] = { 3, 4, 5};
+    SetInt range2[3] = { 3, 4, 5 };
     infra::IntrusiveUnorderedSet<SetInt>::WithBuckets<4> set2(range2, range2 + 3);
 
     swap(set1, set2);
 
-    SetInt range1Copy[3] = { 0, 1, 2};
-    SetInt range2Copy[3] = { 3, 4, 5};
+    SetInt range1Copy[3] = { 0, 1, 2 };
+    SetInt range2Copy[3] = { 3, 4, 5 };
     EXPECT_TRUE(SetEquals(set1, infra::MakeRange(range2Copy)));
     EXPECT_TRUE(SetEquals(set2, infra::MakeRange(range1Copy)));
 }
 
 TEST(IntrusiveUnorderedSetTest, TestSwapDifferentSizes)
 {
-    SetInt range1[3] = { 0, 1, 2};
+    SetInt range1[3] = { 0, 1, 2 };
     infra::IntrusiveUnorderedSet<SetInt>::WithBuckets<4> set1(range1, range1 + 3);
-    SetInt range2[2] = { 3, 4};
+    SetInt range2[2] = { 3, 4 };
     infra::IntrusiveUnorderedSet<SetInt>::WithBuckets<4> set2(range2, range2 + 2);
 
     swap(set1, set2);
 
-    SetInt range1Copy[3] = { 0, 1, 2};
-    SetInt range2Copy[2] = { 3, 4};
+    SetInt range1Copy[3] = { 0, 1, 2 };
+    SetInt range2Copy[2] = { 3, 4 };
     EXPECT_TRUE(SetEquals(set1, infra::MakeRange(range2Copy)));
     EXPECT_TRUE(SetEquals(set2, infra::MakeRange(range1Copy)));
 }
@@ -225,7 +226,7 @@ TEST(IntrusiveUnorderedSetTest, TestSwapDifferentBucketSizes)
 
 TEST(IntrusiveUnorderedSetTest, TestClear)
 {
-    SetInt range[3] = { 0, 1, 2};
+    SetInt range[3] = { 0, 1, 2 };
     infra::IntrusiveUnorderedSet<SetInt>::WithBuckets<4> set(range, range + 3);
     set.clear();
 
@@ -235,7 +236,7 @@ TEST(IntrusiveUnorderedSetTest, TestClear)
 
 TEST(IntrusiveUnorderedSetTest, TestInsert)
 {
-    SetInt range[3] = { 0, 1, 2};
+    SetInt range[3] = { 0, 1, 2 };
     infra::IntrusiveUnorderedSet<SetInt>::WithBuckets<4> set(range, range + 3);
 
     SetInt i2(2);
@@ -246,7 +247,7 @@ TEST(IntrusiveUnorderedSetTest, TestInsert)
 
 TEST(IntrusiveUnorderedSetTest, TestErase)
 {
-    SetInt range[3] = { 0, 1, 2};
+    SetInt range[3] = { 0, 1, 2 };
     infra::IntrusiveUnorderedSet<SetInt>::WithBuckets<4> set(range, range + 3);
     set.erase(range[1]);
 
@@ -259,7 +260,7 @@ TEST(IntrusiveUnorderedSetTest, TestManyInsertErase)
     SetInt range[25] = { 0, 13, 18, 1, 19, 2, 14, 3, 21, 4, 5, 25, 6, 33, 7, 17, 16, 8, 15, 9, 30, 10, 29, 11, 12 };
     infra::IntrusiveUnorderedSet<SetInt>::WithBuckets<4> set(range, range + 25);
 
-    for (auto& v: range)
+    for (auto& v : range)
         set.erase(v);
 
     EXPECT_TRUE(set.empty());
@@ -267,7 +268,7 @@ TEST(IntrusiveUnorderedSetTest, TestManyInsertErase)
 
 TEST(IntrusiveUnorderedSetTest, TestDoubleErase)
 {
-    SetInt range[3] = { 0, 1, 2};
+    SetInt range[3] = { 0, 1, 2 };
     infra::IntrusiveUnorderedSet<SetInt>::WithBuckets<4> set(range, range + 3);
     set.erase(range[1]);
     set.erase(range[1]);

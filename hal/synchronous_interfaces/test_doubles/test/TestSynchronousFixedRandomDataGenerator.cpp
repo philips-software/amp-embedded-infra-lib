@@ -1,5 +1,5 @@
-#include "hal/synchronous_interfaces/test_doubles/SynchronousFixedRandomDataGenerator.hpp"
 #include "gtest/gtest.h"
+#include "hal/synchronous_interfaces/test_doubles/SynchronousFixedRandomDataGenerator.hpp"
 
 class SynchronousFixedRandomDataGeneratorTest
     : public testing::Test

@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "hal/interfaces/test_doubles/FileSystemStub.hpp"
-#include "upgrade/pack_builder/InputBinary.hpp"
 #include "upgrade/pack_builder/ImageEncryptorNone.hpp"
+#include "upgrade/pack_builder/InputBinary.hpp"
 #include "upgrade/pack_builder/test_helper/ZeroFilledString.hpp"
 #include <algorithm>
 
@@ -73,7 +73,7 @@ TEST_F(TestInputBinary, Image)
     std::vector<uint8_t> image = input.Image();
     image.erase(image.begin(), image.begin() + sizeof(application::ImageHeaderPrologue) + 8);
 
-    EXPECT_EQ((std::vector<uint8_t>{1, 2, 3, 4}), image);
+    EXPECT_EQ((std::vector<uint8_t>{ 1, 2, 3, 4 }), image);
 }
 
 class ImageSecurityStub
@@ -124,7 +124,7 @@ TEST_F(TestInputBinaryWithEncryptionAndMac, Image)
 TEST(TestInputBinaryConstructionWithVector, Construction)
 {
     application::ImageEncryptorNone encryptor;
-    application::InputBinary input("main", std::vector<uint8_t>{1, 2, 3, 4}, 4321, encryptor);
+    application::InputBinary input("main", std::vector<uint8_t>{ 1, 2, 3, 4 }, 4321, encryptor);
 
     std::vector<uint8_t> image = input.Image();
     application::ImageHeaderPrologue& header = reinterpret_cast<application::ImageHeaderPrologue&>(image.front());

@@ -11,7 +11,7 @@ namespace infra
     {
     public:
         template<class T>
-            using WithInput = infra::WithStorage<LimitedStreamReader, T>;
+        using WithInput = infra::WithStorage<LimitedStreamReader, T>;
 
         LimitedStreamReader(StreamReader& input, uint32_t length);
         LimitedStreamReader(const LimitedStreamReader& other);
@@ -37,7 +37,7 @@ namespace infra
     {
     public:
         template<class T>
-            using WithInput = infra::WithStorage<LimitedStreamReaderWithRewinding, T>;
+        using WithInput = infra::WithStorage<LimitedStreamReaderWithRewinding, T>;
 
         LimitedStreamReaderWithRewinding(StreamReaderWithRewinding& input, uint32_t length);
         LimitedStreamReaderWithRewinding(const LimitedStreamReaderWithRewinding& other);

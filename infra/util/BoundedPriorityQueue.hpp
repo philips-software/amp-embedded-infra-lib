@@ -23,8 +23,8 @@ namespace infra
 
     public:
         explicit BoundedPriorityQueue(const Compare& comp = Compare());
-        template <class InputIterator>
-            BoundedPriorityQueue(InputIterator first, InputIterator last, const Compare& comp = Compare());
+        template<class InputIterator>
+        BoundedPriorityQueue(InputIterator first, InputIterator last, const Compare& comp = Compare());
         BoundedPriorityQueue(const BoundedPriorityQueue& other);
         BoundedPriorityQueue(BoundedPriorityQueue&& other);
 
@@ -63,7 +63,7 @@ namespace infra
         void erase(iterator position);
 
         template<class... Args>
-            void emplace(Args&&... args);
+        void emplace(Args&&... args);
 
         void swap(BoundedPriorityQueue& x);
 
@@ -125,7 +125,7 @@ namespace infra
     {}
 
     template<class T, std::size_t Max, class Compare>
-    template <class InputIterator>
+    template<class InputIterator>
     BoundedPriorityQueue<T, Max, Compare>::BoundedPriorityQueue(InputIterator first, InputIterator last, const Compare& comp)
         : values(first, last)
         , compare(comp)

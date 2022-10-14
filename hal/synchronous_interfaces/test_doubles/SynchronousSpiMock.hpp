@@ -1,8 +1,8 @@
 #ifndef SYNCHRONOUS_SPI_MOCK_HPP
 #define SYNCHRONOUS_SPI_MOCK_HPP
 
-#include "hal/synchronous_interfaces/SynchronousSpi.hpp"
 #include "gmock/gmock.h"
+#include "hal/synchronous_interfaces/SynchronousSpi.hpp"
 
 namespace hal
 {

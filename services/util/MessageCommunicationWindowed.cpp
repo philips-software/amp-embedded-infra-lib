@@ -1,7 +1,7 @@
+#include "services/util/MessageCommunicationWindowed.hpp"
 #include "infra/event/EventDispatcher.hpp"
 #include "infra/stream/BoundedDequeOutputStream.hpp"
 #include "infra/util/PostAssign.hpp"
-#include "services/util/MessageCommunicationWindowed.hpp"
 
 namespace services
 {
@@ -46,9 +46,7 @@ namespace services
         }
 
         infra::EventDispatcher::Instance().Schedule([this]()
-        {
-            SetNextState();
-        });
+            { SetNextState(); });
     }
 
     void MessageCommunicationWindowed::ReceivedMessage(infra::StreamReader& reader)
@@ -81,7 +79,7 @@ namespace services
                 if (!notificationScheduled.exchange(true))
                 {
                     infra::EventDispatcher::Instance().Schedule([this]()
-                    {
+                        {
                         infra::DataInputStream::WithReader<detail::AtomicDequeReader> stream(receivedData, infra::softFail);
                         auto size = stream.Extract<uint16_t>();
                         if (!stream.Failed() && stream.Available() >= size)
@@ -103,8 +101,7 @@ namespace services
                         }
 
                         notificationScheduled = false;
-                        EvaluateReceiveMessage();
-                    });
+                        EvaluateReceiveMessage(); });
 
                     return true;
                 }
@@ -163,7 +160,8 @@ namespace services
         : communication(communication)
     {
         communication.sending = true;
-        auto writer = communication.MessageCommunicationReceiveOnInterruptObserver::Subject().SendMessageStream(3, [this](uint16_t) { OnSent(); });
+        auto writer = communication.MessageCommunicationReceiveOnInterruptObserver::Subject().SendMessageStream(3, [this](uint16_t)
+            { OnSent(); });
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
         stream << PacketInit(communication.AvailableWindow());
 
@@ -186,7 +184,8 @@ namespace services
     {
         assert(communication.receivedData.Empty());
         communication.sending = true;
-        auto writer = communication.MessageCommunicationReceiveOnInterruptObserver::Subject().SendMessageStream(3, [this](uint16_t) { OnSent(); });
+        auto writer = communication.MessageCommunicationReceiveOnInterruptObserver::Subject().SendMessageStream(3, [this](uint16_t)
+            { OnSent(); });
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
         stream << PacketInitResponse(communication.AvailableWindow());
 
@@ -219,7 +218,8 @@ namespace services
         : communication(communication)
     {
         communication.sending = true;
-        auto writer = communication.MessageCommunicationReceiveOnInterruptObserver::Subject().SendMessageStream(*communication.requestedSendMessageSize + 1, [this](uint16_t sent) { OnSent(sent); });
+        auto writer = communication.MessageCommunicationReceiveOnInterruptObserver::Subject().SendMessageStream(*communication.requestedSendMessageSize + 1, [this](uint16_t sent)
+            { OnSent(sent); });
 
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
         stream << Operation::message;
@@ -244,7 +244,8 @@ namespace services
         : communication(communication)
     {
         communication.sending = true;
-        auto writer = communication.MessageCommunicationReceiveOnInterruptObserver::Subject().SendMessageStream(3, [this](uint16_t sent) { OnSent(); });
+        auto writer = communication.MessageCommunicationReceiveOnInterruptObserver::Subject().SendMessageStream(3, [this](uint16_t sent)
+            { OnSent(); });
 
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
         stream << PacketReleaseWindow(communication.releasedWindow.exchange(0));

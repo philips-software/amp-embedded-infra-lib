@@ -1,8 +1,8 @@
 #ifndef SERVICES_TRACER_ADAPTER_PRINTF_HPP
 #define SERVICES_TRACER_ADAPTER_PRINTF_HPP
 
-#include <cstdarg>
 #include "services/tracer/Tracer.hpp"
+#include <cstdarg>
 
 namespace services
 {

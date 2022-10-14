@@ -1,5 +1,5 @@
-#include "infra/stream/StringOutputStream.hpp"
 #include "infra/syntax/Json.hpp"
+#include "infra/stream/StringOutputStream.hpp"
 #include <cctype>
 
 namespace
@@ -38,15 +38,21 @@ namespace infra
 
             switch (*next++)
             {
-                case '"':  return '"';
-                case '\\': return '\\';
-                case 'b': return '\b';
-                case 'f': return '\f';
-                case 'n': return '\n';
-                case 'r': return '\r';
-                case 't': return '\t';
-                case 'u':
-                {
+                case '"':
+                    return '"';
+                case '\\':
+                    return '\\';
+                case 'b':
+                    return '\b';
+                case 'f':
+                    return '\f';
+                case 'n':
+                    return '\n';
+                case 'r':
+                    return '\r';
+                case 't':
+                    return '\t';
+                case 'u': {
                     char result = 0;
 
                     for (int skipCode = 0; skipCode != 4 && next != end; ++skipCode, ++next)
@@ -72,7 +78,8 @@ namespace infra
 
                     return result;
                 }
-                default: return *std::prev(next);
+                default:
+                    return *std::prev(next);
             }
         }
         else
@@ -848,8 +855,7 @@ namespace infra
 
         tokenizer = current;
 
-        if ((!token.Get<JsonBiggerInt>().Negative() && token.Get<JsonBiggerInt>().Value() <= std::numeric_limits<int32_t>::max())
-            || (token.Get<JsonBiggerInt>().Negative() && token.Get<JsonBiggerInt>().Value() <= static_cast<uint64_t>(-static_cast<int64_t>(std::numeric_limits<int32_t>::min()))))
+        if ((!token.Get<JsonBiggerInt>().Negative() && token.Get<JsonBiggerInt>().Value() <= std::numeric_limits<int32_t>::max()) || (token.Get<JsonBiggerInt>().Negative() && token.Get<JsonBiggerInt>().Value() <= static_cast<uint64_t>(-static_cast<int64_t>(std::numeric_limits<int32_t>::min()))))
             return infra::MakeOptional(JsonValue(static_cast<int32_t>(token.Get<JsonBiggerInt>().Value() * (token.Get<JsonBiggerInt>().Negative() ? -1 : 1))));
         else
             return infra::MakeOptional(JsonValue(token.Get<JsonBiggerInt>()));
@@ -891,8 +897,7 @@ namespace infra
 
         if (token.Is<JsonToken::RightBrace>())
             return infra::MakeOptional(token.Get<JsonToken::RightBrace>());
-        return
-            infra::none;
+        return infra::none;
     }
 
     infra::Optional<JsonToken::RightBracket> JsonIterator::SearchArrayEnd()

@@ -1,10 +1,10 @@
 #include "gmock/gmock.h"
+#include "hal/interfaces/test_doubles/FlashStub.hpp"
 #include "hal/interfaces/test_doubles/GpioStub.hpp"
-#include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
+#include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/Optional.hpp"
-#include "hal/interfaces/test_doubles/FlashStub.hpp"
 #include "upgrade/deploy_pack_to_external/DeployPackToExternal.hpp"
 #include "upgrade/pack/UpgradePackHeader.hpp"
 
@@ -18,7 +18,7 @@ namespace
             : application::DeployPackToExternalObserver(deploy)
         {}
 
-        //using application::DeployPackToExternalObserver::DeployPackToExternalObserver;
+        // using application::DeployPackToExternalObserver::DeployPackToExternalObserver;
 
         MOCK_METHOD0(NotDeployable, void());
         MOCK_METHOD0(DoesntFit, void());

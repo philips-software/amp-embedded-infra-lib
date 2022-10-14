@@ -90,9 +90,9 @@ TEST_F(TerminalTest, echo_printable_characters)
     EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'A' } }), testing::_));
     EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'Z' } }), testing::_));
     EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '~' } }), testing::_));
-    
+
     communication.dataReceived(std::vector<uint8_t>{ ' ', 'A', 'Z', '~' });
-    
+
     ExecuteAllActions();
 }
 
@@ -127,7 +127,7 @@ TEST_F(TerminalTest, echo_carriage_return_line_feed_and_prompt_on_carriage_retur
 TEST_F(TerminalTest, ignore_unparsed_escaped_data)
 {
     communication.dataReceived(std::vector<uint8_t>{ 27, ';', '[', 'O', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' });
-    
+
     ExecuteAllActions();
 }
 
@@ -320,11 +320,11 @@ TEST_F(TerminalHistoryTest, move_backward_in_history)
 {
     EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r' } }), testing::_));
     EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
-    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'e', 'f', 'g'} }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'e', 'f', 'g' } }), testing::_));
 
     EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r' } }), testing::_));
     EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
-    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'a', 'b', 'c', 'd'} }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'a', 'b', 'c', 'd' } }), testing::_));
 
     EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\a' } }), testing::_));
 

@@ -1,7 +1,7 @@
 #ifndef INFRA_WITH_STORAGE_HPP
 #define INFRA_WITH_STORAGE_HPP
 
-#include "infra/util/Optional.hpp"  // For InPlace
+#include "infra/util/Optional.hpp" // For InPlace
 #include <utility>
 
 namespace infra
@@ -9,26 +9,26 @@ namespace infra
     namespace detail
     {
         template<class StorageType, class Base>
-            class StorageHolder;
+        class StorageHolder;
     }
 
 #ifdef _MSC_VER
-#pragma warning (push)
-#pragma warning (disable: 4503)
+#pragma warning(push)
+#pragma warning(disable : 4503)
 #endif
 
     template<class Base, class StorageType>
     class WithStorage
-        : private detail::StorageHolder<StorageType, Base>    // Inherit from StorageHolder so that the storage gets constructed before the base
+        : private detail::StorageHolder<StorageType, Base> // Inherit from StorageHolder so that the storage gets constructed before the base
         , public Base
     {
     public:
         template<class StorageArg, class... Args>
-            WithStorage(InPlace, StorageArg&& storageArg, Args&&... args);
+        WithStorage(InPlace, StorageArg&& storageArg, Args&&... args);
         template<class... Args>
-            WithStorage(Args&&... args);
+        WithStorage(Args&&... args);
         template<class T, class... Args>
-            WithStorage(std::initializer_list<T> initializerList, Args&&... args);
+        WithStorage(std::initializer_list<T> initializerList, Args&&... args);
 
         WithStorage(const WithStorage& other);
         WithStorage(WithStorage&& other) noexcept;
@@ -39,7 +39,7 @@ namespace infra
         WithStorage& operator=(WithStorage&& other) noexcept;
 
         template<class T>
-            WithStorage& operator=(T&& value);
+        WithStorage& operator=(T&& value);
 
         const StorageType& Storage() const;
         StorageType& Storage();
@@ -47,13 +47,13 @@ namespace infra
         friend void swap(WithStorage& x, WithStorage& y) noexcept
         {
             using std::swap;
-            
+
             swap(static_cast<Base&>(x), static_cast<Base&>(y));
         }
     };
 
 #ifdef _MSC_VER
-#pragma warning (pop)
+#pragma warning(pop)
 #endif
 
     namespace detail
@@ -65,7 +65,7 @@ namespace infra
             StorageHolder() = default;
 
             template<class Arg0, class... Args>
-                StorageHolder(Arg0&& arg0, Args&&... args);
+            StorageHolder(Arg0&& arg0, Args&&... args);
 
             StorageType storage;
         };

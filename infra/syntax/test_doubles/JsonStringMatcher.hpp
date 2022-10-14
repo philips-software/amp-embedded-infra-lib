@@ -23,11 +23,24 @@ namespace testing
         {}
 
         template<class M, class = typename std::remove_reference<M>::type::is_gtest_matcher>
-            Matcher(M&& m) : internal::MatcherBase<infra::JsonString>(std::forward<M>(m)) {}
+        Matcher(M&& m)
+            : internal::MatcherBase<infra::JsonString>(std::forward<M>(m))
+        {}
 
-        Matcher(infra::JsonString s) { *this = Eq(s.ToStdString()); }
-        Matcher(const char* s) { *this = Eq(infra::BoundedConstString(s)); }
-        Matcher(infra::BoundedConstString s) { *this = Eq(s); }
+        Matcher(infra::JsonString s)
+        {
+            *this = Eq(s.ToStdString());
+        }
+
+        Matcher(const char* s)
+        {
+            *this = Eq(infra::BoundedConstString(s));
+        }
+
+        Matcher(infra::BoundedConstString s)
+        {
+            *this = Eq(s);
+        }
     };
 }
 

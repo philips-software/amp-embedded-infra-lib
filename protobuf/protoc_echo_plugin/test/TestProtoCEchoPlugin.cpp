@@ -3,9 +3,9 @@
 #include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
-#include "infra/util/test_helper/MockCallback.hpp"
 #include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/syntax/ProtoParser.hpp"
+#include "infra/util/test_helper/MockCallback.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 
 TEST(ProtoCEchoPluginTest, serialize_int32)
@@ -464,7 +464,8 @@ TEST_F(EchoTest, invoke_service_proxy_method)
 
     testing::StrictMock<infra::MockCallback<void()>> onGranted;
     EXPECT_CALL(connection, RequestSendStream(18));
-    service.RequestSend([&onGranted]() { onGranted.callback(); });
+    service.RequestSend([&onGranted]()
+        { onGranted.callback(); });
 
     infra::ByteOutputStreamWriter::WithStorage<128> writer;
     auto writerPtr = infra::UnOwnedSharedPtr(writer);

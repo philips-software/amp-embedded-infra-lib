@@ -12,7 +12,7 @@ namespace services
     {
     public:
         template<std::size_t StorageSize>
-            using WithStorage = infra::WithStorage<StreamWriterOnSerialCommunication, std::array<uint8_t, StorageSize>>;
+        using WithStorage = infra::WithStorage<StreamWriterOnSerialCommunication, std::array<uint8_t, StorageSize>>;
 
         StreamWriterOnSerialCommunication(infra::ByteRange bufferStorage, hal::SerialCommunication& communication);
 

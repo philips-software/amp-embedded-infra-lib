@@ -31,7 +31,7 @@ namespace services
 
     private:
         void UpdateValue();
-    
+
     private:
         struct UpdateContext
         {

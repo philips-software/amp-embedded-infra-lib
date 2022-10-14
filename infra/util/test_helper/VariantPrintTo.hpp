@@ -4,7 +4,8 @@
 #include "gtest/gtest-printers.h"
 #include "infra/util/Variant.hpp"
 
-namespace infra {
+namespace infra
+{
     using testing::internal::PrintTo;
 
     struct PrintToVisitor

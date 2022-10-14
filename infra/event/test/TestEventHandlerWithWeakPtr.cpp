@@ -1,9 +1,9 @@
-#include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include "infra/event/EventDispatcher.hpp"
 #include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
-#include "infra/util/test_helper/MockCallback.hpp"
 #include "infra/util/SharedObjectAllocatorFixedSize.hpp"
+#include "infra/util/test_helper/MockCallback.hpp"
 
 class EventDispatcherWithWeakPtrTest
     : public testing::Test
@@ -15,7 +15,8 @@ TEST_F(EventDispatcherWithWeakPtrTest, TestSchedule)
     infra::MockCallback<void()> callback;
     EXPECT_CALL(callback, callback());
 
-    infra::EventDispatcher::Instance().Schedule([&callback, this]() { callback.callback(); });
+    infra::EventDispatcher::Instance().Schedule([&callback, this]()
+        { callback.callback(); });
     ExecuteAllActions();
 }
 
@@ -24,8 +25,10 @@ TEST_F(EventDispatcherWithWeakPtrTest, TestScheduleTwice)
     infra::MockCallback<void()> callback;
     EXPECT_CALL(callback, callback()).Times(2);
 
-    infra::EventDispatcher::Instance().Schedule([&callback, this]() { callback.callback(); });
-    infra::EventDispatcher::Instance().Schedule([&callback, this]() { callback.callback(); });
+    infra::EventDispatcher::Instance().Schedule([&callback, this]()
+        { callback.callback(); });
+    infra::EventDispatcher::Instance().Schedule([&callback, this]()
+        { callback.callback(); });
     ExecuteAllActions();
 }
 
@@ -36,8 +39,10 @@ TEST_F(EventDispatcherWithWeakPtrTest, TestExecuteOneEvent)
     EXPECT_CALL(callback, callback()).Times(0);
     ExecuteFirstAction();
 
-    infra::EventDispatcher::Instance().Schedule([&callback, this]() { callback.callback(); });
-    infra::EventDispatcher::Instance().Schedule([&callback, this]() { callback.callback(); });
+    infra::EventDispatcher::Instance().Schedule([&callback, this]()
+        { callback.callback(); });
+    infra::EventDispatcher::Instance().Schedule([&callback, this]()
+        { callback.callback(); });
 
     EXPECT_CALL(callback, callback()).Times(1);
     ExecuteFirstAction();
@@ -53,7 +58,9 @@ TEST_F(EventDispatcherWithWeakPtrTest, TestScheduleSharedPtr)
 
     infra::SharedObjectAllocatorFixedSize<int, void()>::WithStorage<2> allocator;
     infra::SharedPtr<int> object = allocator.Allocate();
-    infra::EventDispatcherWithWeakPtr::Instance().Schedule([&callback, this](const infra::SharedPtr<int>& object) { callback.callback(); }, object);
+    infra::EventDispatcherWithWeakPtr::Instance().Schedule([&callback, this](const infra::SharedPtr<int>& object)
+        { callback.callback(); },
+        object);
     ExecuteAllActions();
 }
 
@@ -63,7 +70,9 @@ TEST_F(EventDispatcherWithWeakPtrTest, TestScheduleDestructedSharedPtr)
 
     infra::SharedObjectAllocatorFixedSize<int, void()>::WithStorage<2> allocator;
     infra::SharedPtr<int> object = allocator.Allocate();
-    infra::EventDispatcherWithWeakPtr::Instance().Schedule([&callback, this](const infra::SharedPtr<int>& object) { callback.callback(); }, object);
+    infra::EventDispatcherWithWeakPtr::Instance().Schedule([&callback, this](const infra::SharedPtr<int>& object)
+        { callback.callback(); },
+        object);
     object = nullptr;
     ExecuteAllActions();
 }
