@@ -11,3 +11,5 @@ target_sources(services.ble_test PRIVATE
     TestBondStorageManager.cpp
     TestGatt.cpp
 )
+
+emil_clangformat_target(services.ble_test)

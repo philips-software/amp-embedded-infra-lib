@@ -37,3 +37,5 @@ target_sources(services.util_test PRIVATE
     TestTimeWithLocalization.cpp
     TestWritableConfiguration.cpp
 )
+
+emil_clangformat_target(services.util_test)

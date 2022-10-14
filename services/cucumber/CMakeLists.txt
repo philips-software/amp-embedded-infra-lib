@@ -29,6 +29,8 @@ target_sources(services.cucumber PRIVATE
     TracingCucumberWireProtocolServer.hpp
 )
 
+emil_clangformat_target(services.cucumber)
+
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
 endif()
