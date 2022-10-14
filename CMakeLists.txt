@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED On)
 set_directory_properties(PROPERTY USE_FOLDERS On)
 
 include(CMakePackageConfigHelpers)
+include(emil_clang_tools)
 include(emil_version_generator)
 include(FetchContent)
 include(GNUInstallDirs)  # included to supply proper defaults to install(...) commands
