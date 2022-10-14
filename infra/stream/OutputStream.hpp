@@ -502,7 +502,7 @@ namespace infra
     template<class T>
     JoinHelper<T> Join(BoundedConstString string, MemoryRange<T> range)
     {
-        return { string, range, [](auto& stream, const auto& obj) { stream << obj; } };
+        return { string, range, [](TextOutputStream& stream, const T& obj) { stream << obj; } };
     }
 }
 
