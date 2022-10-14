@@ -9,3 +9,5 @@ target_link_libraries(hal.synchronous_interfaces_test_doubles_test PUBLIC
 target_sources(hal.synchronous_interfaces_test_doubles_test PRIVATE
     TestSynchronousFixedRandomDataGenerator.cpp
 )
+
+emil_clangformat_target(hal.synchronous_interfaces_test_doubles_test)

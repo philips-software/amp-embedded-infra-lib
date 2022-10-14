@@ -15,3 +15,5 @@ target_sources(hal.interfaces_test PRIVATE
     TestMacAddress.cpp
     TestQuadSpi.cpp
 )
+
+emil_clangformat_target(hal.interfaces_test)
