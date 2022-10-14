@@ -53,3 +53,5 @@ if (EMIL_BUILD_WIN)
         TestNatvis.cpp
     )
 endif()
+
+emil_clangformat_target(infra.util_test)

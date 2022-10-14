@@ -18,3 +18,5 @@ target_sources(infra.timer_test PRIVATE
     TestTimerLimitedRepeating.cpp
     TestTimerLimitedRepeatingWithClosingAction.cpp
 )
+
+emil_clangformat_target(infra.timer_test)

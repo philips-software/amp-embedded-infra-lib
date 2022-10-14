@@ -35,6 +35,8 @@ if (EMIL_HOST_BUILD)
     )
 endif()
 
+emil_clangformat_target(infra.syntax)
+
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
 endif()
