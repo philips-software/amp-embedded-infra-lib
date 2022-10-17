@@ -55,7 +55,7 @@ namespace infra
         };
 
         template<class T, typename std::enable_if<IntegralOrEnum<T>::value, T>::type* = nullptr>
-        TextOutputStream& Add(const char* tagName, T v)
+        void Add(const char* tagName, T v)
         {
             using type = typename infra::NormalizedIntegralType<T>::type;
 
@@ -63,7 +63,7 @@ namespace infra
         }
 
         template<class T, typename std::enable_if<IntegralOrEnum<T>::value, T>::type* = nullptr>
-        TextOutputStream& Add(JsonString tagName, T v)
+        void Add(JsonString tagName, T v)
         {
             using type = typename infra::NormalizedIntegralType<T>::type;
 
