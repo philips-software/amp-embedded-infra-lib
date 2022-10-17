@@ -1,5 +1,5 @@
-#include "infra/util/Compatibility.hpp"
 #include "upgrade/boot_loader/UpgradePackLoader.hpp"
+#include "infra/util/Compatibility.hpp"
 #include "upgrade/pack/UpgradePackHeader.hpp"
 #include <cstring>
 
