@@ -8,7 +8,7 @@
 
 EmIL requires:
 - A recent C++ compiler that supports C++17 at minimum (for a host build it should support std::filesystem).
-- CMake 3.21 or higher.
+- CMake 3.24.1 or higher.
 
 EmIL is know to build under the following configurations:
 - Windows from Visual Studio 2017 onwards.

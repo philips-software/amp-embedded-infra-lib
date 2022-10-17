@@ -9,6 +9,7 @@ target_include_directories(infra.util PUBLIC
 target_compile_options(infra.util PUBLIC
     $<$<CXX_COMPILER_ID:MSVC>:
         /Zc:__cplusplus
+        /wd4068 # Disable unknown pragma warning
     >
 )
 

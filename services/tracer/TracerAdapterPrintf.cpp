@@ -88,7 +88,6 @@ namespace services
                 break;
             }
             case 'd':
-                [[fallthrough]];
             case 'i':
                 if (lengthSpecifier >= 2)
                     tracer.Continue() << va_arg(*args, int64_t);
@@ -104,7 +103,6 @@ namespace services
             case 'p':
                 tracer.Continue() << "0x";
             case 'X':
-                [[fallthrough]];
             case 'x':
                 if (lengthSpecifier >= 2)
                     tracer.Continue() << infra::hex << width << va_arg(*args, uint64_t);

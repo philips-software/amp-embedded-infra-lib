@@ -138,10 +138,13 @@ namespace infra
         }
     }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
     template<class T, class... ConstructionArgs>
     SharedObjectAllocatorFixedSize<T, void(ConstructionArgs...)>::Node::Node(SharedObjectDeleter* allocator)
         : detail::SharedPtrControl(&*object, allocator) // NOSONAR
     {}
+#pragma GCC diagnostic pop
 }
 
 #endif

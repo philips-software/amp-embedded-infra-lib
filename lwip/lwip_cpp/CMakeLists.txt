@@ -17,6 +17,10 @@ else()
     )
 endif()
 
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL AppleClang)
+    target_compile_options(lwip.lwip_cpp PRIVATE -Wno-macro-redefined)
+endif()
+
 target_sources(lwip.lwip_cpp PRIVATE
     ConnectionLwIp.cpp
     ConnectionLwIp.hpp

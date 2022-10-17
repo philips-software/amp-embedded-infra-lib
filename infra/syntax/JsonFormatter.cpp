@@ -262,6 +262,18 @@ namespace infra
         *stream << '"' << tagName.Raw() << R"(":)" << tag;
     }
 
+    void JsonObjectFormatter::Add(const char* tagName, uint64_t tag)
+    {
+        InsertSeparation();
+        *stream << '"' << tagName << R"(":)" << tag;
+    }
+
+    void JsonObjectFormatter::Add(JsonString tagName, uint64_t tag)
+    {
+        InsertSeparation();
+        *stream << '"' << tagName.Raw() << R"(":)" << tag;
+    }
+
     void JsonObjectFormatter::Add(const char* tagName, JsonBiggerInt tag)
     {
         InsertSeparation();

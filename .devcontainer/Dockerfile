@@ -31,8 +31,8 @@ RUN wget -qO /usr/local/share/ca-certificates/Cisco_Umbrella_Root_CA.crt https:/
 
 # Install some tools via pip to get more recent versions
 RUN python3 -m pip --no-cache-dir install cmake==3.24.1 \
- && python3 -m pip --no-cache install gcovr==5.0 \
- && python3 -m pip --no-cache install clang-format==14.0.6
+ && python3 -m pip --no-cache-dir install gcovr==5.0 \
+ && python3 -m pip --no-cache-dir install clang-format==14.0.6
 
 # Install arm-gcc toolchain
 # hadolint ignore=SC2016
