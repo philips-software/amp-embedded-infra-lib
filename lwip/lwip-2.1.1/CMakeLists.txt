@@ -10,10 +10,6 @@ target_link_libraries(lwip.lwip PUBLIC
     lwip.lwip_conf
 )
 
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL AppleClang)
-    target_compile_options(lwip.lwip PRIVATE -Wno-macro-redefined)
-endif()
-
 target_sources(lwip.lwip PRIVATE
     src/api/api_lib.c
     src/api/api_msg.c

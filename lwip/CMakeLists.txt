@@ -4,3 +4,7 @@ if (NOT LWIP_ALTERNATIVE_DEPEND)
 endif()
 
 add_subdirectory(lwip_cpp)
+
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL AppleClang)
+    target_compile_options(lwip.lwip PRIVATE -Wno-macro-redefined)
+endif()
