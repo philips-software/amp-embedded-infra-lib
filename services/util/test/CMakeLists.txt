@@ -1,7 +1,7 @@
 add_executable(services.util_test)
 emil_add_test(services.util_test)
 
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
+if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang|AppleClang")
     target_compile_options(services.util_test PRIVATE -Wno-braced-scalar-init)
 endif()
 
