@@ -9,59 +9,20 @@ namespace infra
 {
     namespace detail
     {
-        template<std::size_t N>
-        struct SignedInteger;
+        // clang-format off
+        template<std::size_t N> struct SignedInteger;
+        template<> struct SignedInteger<8> { using type = int8_t; };
+        template<> struct SignedInteger<16> { using type = int16_t; };
+        template<> struct SignedInteger<32> { using type = int32_t; };
+        template<> struct SignedInteger<64> { using type = int64_t; };
 
-        template<>
-        struct SignedInteger<8>
-        {
-            using type = int8_t;
-        };
+        template<std::size_t N> struct UnsignedInteger;
+        template<> struct UnsignedInteger<8> { using type = uint8_t; };
+        template<> struct UnsignedInteger<16> { using type = uint16_t; };
+        template<> struct UnsignedInteger<32> { using type = uint32_t; };
+        template<> struct UnsignedInteger<64> { using type = uint64_t; };
 
-        template<>
-        struct SignedInteger<16>
-        {
-            using type = int16_t;
-        };
-
-        template<>
-        struct SignedInteger<32>
-        {
-            using type = int32_t;
-        };
-
-        template<>
-        struct SignedInteger<64>
-        {
-            using type = int64_t;
-        };
-
-        template<std::size_t N>
-        struct UnsignedInteger;
-
-        template<>
-        struct UnsignedInteger<8>
-        {
-            using type = uint8_t;
-        };
-
-        template<>
-        struct UnsignedInteger<16>
-        {
-            using type = uint16_t;
-        };
-
-        template<>
-        struct UnsignedInteger<32>
-        {
-            using type = uint32_t;
-        };
-
-        template<>
-        struct UnsignedInteger<64>
-        {
-            using type = uint64_t;
-        };
+        // clang-format on
 
         template<class T>
         struct NormalizedSignedInteger
