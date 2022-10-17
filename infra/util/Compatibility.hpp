@@ -25,9 +25,9 @@
 // error when __has_cpp_attribute is given a scoped attribute in C mode.
 #define EMIL_FALLTHROUGH [[clang::fallthrough]]
 #else
+// gcc recognizes fall through comments as can be seen on:
 // https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wimplicit-fallthrough
-#define EMIL_FALLTHROUGH // Fallthrough
-// GCC recognizes fallthrough comment
+#define EMIL_FALLTHROUGH /* fall through */
 #endif
 
 #if __cplusplus > 201402L && __has_cpp_attribute(maybe_unused)
