@@ -126,7 +126,7 @@ namespace services
         CreateSuccessMessage(stream);
     }
 
-    void CucumberWireProtocolFormatter::AddStringValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, int16_t& offset)
+    void CucumberWireProtocolFormatter::AddStringValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, std::size_t& argPos, int16_t& offset)
     {
         infra::JsonObjectFormatter subObject(formatter.SubObject());
         infra::StringOutputStream::WithStorage<128> stringStream;
@@ -138,7 +138,7 @@ namespace services
         ++argPos;
     }
 
-    void CucumberWireProtocolFormatter::AddDigitValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, int16_t& offset)
+    void CucumberWireProtocolFormatter::AddDigitValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, std::size_t& argPos, int16_t& offset)
     {
         infra::JsonObjectFormatter subObject(formatter.SubObject());
         infra::StringOutputStream::WithStorage<10> digitStream;
@@ -150,7 +150,7 @@ namespace services
         ++argPos;
     }
 
-    void CucumberWireProtocolFormatter::AddBooleanValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, int16_t& offset)
+    void CucumberWireProtocolFormatter::AddBooleanValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, std::size_t& argPos, int16_t& offset)
     {
         infra::JsonObjectFormatter subObject(formatter.SubObject());
         infra::StringOutputStream::WithStorage<5> boolStream;
@@ -169,9 +169,9 @@ namespace services
         stepMatchArgumentsBuffer.clear();
         {
             infra::JsonArrayFormatter::WithStringStream arguments(infra::inPlace, stepMatchArgumentsBuffer);
-            uint32_t strArgPos = controller.storageMatch.step->StepName().find(R"('%s')", 0);
-            uint32_t intArgPos = controller.storageMatch.step->StepName().find("%d", 0);
-            uint32_t boolArgPos = controller.storageMatch.step->StepName().find("%b", 0);
+            auto strArgPos = controller.storageMatch.step->StepName().find(R"('%s')", 0);
+            auto intArgPos = controller.storageMatch.step->StepName().find("%d", 0);
+            auto boolArgPos = controller.storageMatch.step->StepName().find("%b", 0);
             int16_t argOffset = 0;
             while (strArgPos != infra::BoundedString::npos || intArgPos != infra::BoundedString::npos || boolArgPos != infra::BoundedString::npos)
             {

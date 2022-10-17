@@ -1,6 +1,7 @@
 #ifndef INFRA_MULTI_FUNCTION_HPP
 #define INFRA_MULTI_FUNCTION_HPP
 
+#include "infra/util/Compatibility.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/Variant.hpp"
 
@@ -85,7 +86,7 @@ namespace infra
         }
 
         template<class... Args>
-        bool Invocable([[maybe_unused]] Args&&...args)
+        bool Invocable(EMIL_MAYBE_UNUSED Args&&...args)
         {
             return functions.Which() == IndexOf<Args...>::Value + 1;
         }

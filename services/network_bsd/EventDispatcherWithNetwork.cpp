@@ -219,10 +219,12 @@ namespace services
         {
             char dummy;
             if (read(wakeUpEvent[0], &dummy, 1) == -1)
+            {
                 if (errno == EAGAIN)
                     break;
                 else
                     std::abort();
+            }
         }
 
         for (auto& listener : listeners)

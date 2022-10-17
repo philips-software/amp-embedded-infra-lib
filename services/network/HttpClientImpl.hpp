@@ -111,7 +111,7 @@ namespace services
         public:
             SendingStateForwardSendStream(HttpClientImpl& client, std::size_t contentSize);
             SendingStateForwardSendStream(const SendingStateForwardSendStream& other);
-            SendingStateForwardSendStream& operator=(const SendingStateForwardSendStream& other) = default;
+            SendingStateForwardSendStream& operator=(const SendingStateForwardSendStream& other) = delete;
             ~SendingStateForwardSendStream() = default;
 
             virtual void Activate() override;

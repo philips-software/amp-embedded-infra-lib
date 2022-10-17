@@ -31,7 +31,7 @@ RUN wget -qO /usr/local/share/ca-certificates/Cisco_Umbrella_Root_CA.crt https:/
  && update-ca-certificates
 
 # Install cmake via pip to get a recent version; install gcovr
-RUN python3 -m pip --no-cache-dir install cmake==3.22.4 \
+RUN python3 -m pip --no-cache-dir install cmake==3.24.1 \
  && python3 -m pip --no-cache install gcovr==5.0
 
 # Install arm-gcc toolchain
