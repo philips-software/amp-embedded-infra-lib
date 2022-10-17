@@ -30,6 +30,12 @@
 // GCC recognizes fallthrough comment
 #endif
 
+#if __cplusplus > 201402L && __has_cpp_attribute(maybe_unused)
+#define EMIL_MAYBE_UNUSED [[maybe_unused]]
+#else
+#define EMIL_MAYBE_UNUSED
+#endif
+
 namespace infra
 {
     static_assert(__cplusplus != 199711L, "The C++ standard selected is too old, or the /Zc:__cplusplus flag has not been set when using MSVC");
