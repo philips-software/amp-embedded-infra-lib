@@ -27,7 +27,7 @@ jobs:
           clangFormatVersion: 14
           inplace: true
           extensions: "cpp,hpp"
-          exclude: './external'
+          exclude: "./external"
       - uses: reviewdog/action-suggester@v1.6
         with:
           tool_name: clang-format
