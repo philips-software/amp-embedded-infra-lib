@@ -166,7 +166,7 @@ namespace services
 
     bool Ipv4Config::operator==(const Ipv4Config& other) const
     {
-        return infra::Equals()(useDhcp, other.useDhcp)(staticAddresses, other.staticAddresses);
+        return infra::Equals()(useDhcp, other.useDhcp)(addresses, other.addresses);
     }
 
     bool Ipv4Config::operator!=(const Ipv4Config& other) const

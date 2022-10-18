@@ -58,7 +58,7 @@ namespace services
     struct Ipv4Config
     {
         bool useDhcp;
-        IPv4InterfaceAddresses staticAddresses;
+        IPv4InterfaceAddresses addresses;
 
         bool operator==(const Ipv4Config& other) const;
         bool operator!=(const Ipv4Config& other) const;

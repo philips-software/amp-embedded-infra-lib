@@ -174,9 +174,9 @@ namespace services
 
         if (!config.ipConfig.useDhcp)
         {
-            IP4_ADDR(ip_2_ip4(&ipaddr), config.ipConfig.staticAddresses.address[0], config.ipConfig.staticAddresses.address[1], config.ipConfig.staticAddresses.address[2], config.ipConfig.staticAddresses.address[3]);
-            IP4_ADDR(ip_2_ip4(&netmask), config.ipConfig.staticAddresses.netmask[0], config.ipConfig.staticAddresses.netmask[1], config.ipConfig.staticAddresses.netmask[2], config.ipConfig.staticAddresses.netmask[3]);
-            IP4_ADDR(ip_2_ip4(&gw), config.ipConfig.staticAddresses.gateway[0], config.ipConfig.staticAddresses.gateway[1], config.ipConfig.staticAddresses.gateway[2], config.ipConfig.staticAddresses.gateway[3]);
+            IP4_ADDR(ip_2_ip4(&ipaddr), config.ipConfig.addresses.address[0], config.ipConfig.addresses.address[1], config.ipConfig.addresses.address[2], config.ipConfig.addresses.address[3]);
+            IP4_ADDR(ip_2_ip4(&netmask), config.ipConfig.addresses.netmask[0], config.ipConfig.addresses.netmask[1], config.ipConfig.addresses.netmask[2], config.ipConfig.addresses.netmask[3]);
+            IP4_ADDR(ip_2_ip4(&gw), config.ipConfig.addresses.gateway[0], config.ipConfig.addresses.gateway[1], config.ipConfig.addresses.gateway[2], config.ipConfig.addresses.gateway[3]);
         }
 
         netif_add(&netInterface, ip_2_ip4(&ipaddr), ip_2_ip4(&netmask), ip_2_ip4(&gw), this, &LightweightIpOverEthernetFactory::StaticInit, &ethernet_input);
