@@ -22,17 +22,12 @@
 
 namespace infra
 {
-    extern const struct None
-    {
-    } none;
+    // clang-format off
+    extern const struct None {} none;
+    extern const struct InPlace {} inPlace;
+    template<class T> struct InPlaceType {};
 
-    extern const struct InPlace
-    {
-    } inPlace;
-
-    template<class T>
-    struct InPlaceType
-    {};
+    // clang-format on
 
     template<class T>
     class Optional
@@ -72,7 +67,7 @@ namespace infra
         bool operator==(const Optional& other) const;
         bool operator!=(const Optional& other) const;
 
-        friend bool operator==(const Optional& x, const None& y)
+        friend bool operator==(const Optional& x, const None&)
         {
             return !x;
         }
@@ -167,7 +162,7 @@ namespace infra
         bool operator==(const OptionalForPolymorphicObjects& other) const;
         bool operator!=(const OptionalForPolymorphicObjects& other) const;
 
-        friend bool operator==(const OptionalForPolymorphicObjects& x, const None& y)
+        friend bool operator==(const OptionalForPolymorphicObjects& x, const None&)
         {
             return !x;
         }

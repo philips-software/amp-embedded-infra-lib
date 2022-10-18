@@ -43,7 +43,7 @@ namespace services
 #if NO_SYS
         lwip_init();
         sysCheckTimer.Start(
-            std::chrono::milliseconds(50), [this]()
+            std::chrono::milliseconds(50), []()
             { sys_check_timeouts(); },
             infra::triggerImmediately);
 #endif

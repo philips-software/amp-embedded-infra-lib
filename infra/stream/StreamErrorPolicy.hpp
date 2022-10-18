@@ -5,13 +5,11 @@
 
 namespace infra
 {
-    extern const struct SoftFail
-    {
-    } softFail;
+    // clang-format off
+    extern const struct SoftFail {} softFail;
+    extern const struct NoFail {} noFail;
 
-    extern const struct NoFail
-    {
-    } noFail;
+    // clang-format on
 
     class StreamErrorPolicy
     {

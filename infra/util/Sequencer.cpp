@@ -171,7 +171,7 @@ namespace infra
 
     void Sequencer::EndForEach(uint32_t& variable)
     {
-        ExecuteWithoutContext([this, &variable]()
+        ExecuteWithoutContext([&variable]()
             { ++variable; });
 
         PopContext();

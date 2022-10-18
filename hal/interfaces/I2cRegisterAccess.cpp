@@ -24,8 +24,8 @@ namespace hal
         this->writeData = data;
         this->onDone = onDone;
 
-        i2cMaster.SendData(address, infra::MakeByteRange(this->dataRegister), hal::Action::continueSession, [this](hal::Result, uint32_t numberOfBytesSent)
-            { i2cMaster.SendData(address, writeData, hal::Action::stop, [this](hal::Result, uint32_t numberOfBytesSent)
+        i2cMaster.SendData(address, infra::MakeByteRange(this->dataRegister), hal::Action::continueSession, [this](hal::Result, uint32_t)
+            { i2cMaster.SendData(address, writeData, hal::Action::stop, [this](hal::Result, uint32_t)
                   { this->onDone(); }); });
     }
 }
