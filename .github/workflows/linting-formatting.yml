@@ -27,6 +27,11 @@ jobs:
           clangFormatVersion: 14
           inplace: true
           extensions: "cpp,hpp"
+          exclude: './external'
+      - uses: reviewdog/action-suggester@v1.6
+        with:
+          tool_name: clang-format
+          filter_mode: diff_context
   linter:
     name: Linting
     runs-on: ubuntu-latest
