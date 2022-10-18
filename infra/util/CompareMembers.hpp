@@ -22,8 +22,6 @@ namespace infra
     class Equals
     {
     public:
-        Equals();
-
         template<class T>
         Equals& operator()(const T& x, const T& y);
 
@@ -31,14 +29,12 @@ namespace infra
         bool operator!() const;
 
     private:
-        bool equal;
+        bool equal{ true };
     };
 
     class LessThan
     {
     public:
-        LessThan();
-
         template<class T>
         LessThan& operator()(const T& x, const T& y);
 
@@ -46,15 +42,11 @@ namespace infra
         bool operator!() const;
 
     private:
-        bool lessThan;
-        bool equal;
+        bool lessThan{ false };
+        bool equal{ true };
     };
 
     ////    Implementation    ////
-
-    inline Equals::Equals()
-        : equal(true)
-    {}
 
     template<class T>
     inline Equals& Equals::operator()(const T& x, const T& y)
@@ -72,11 +64,6 @@ namespace infra
     {
         return !equal;
     }
-
-    inline LessThan::LessThan()
-        : lessThan(false)
-        , equal(true)
-    {}
 
     template<class T>
     inline LessThan& LessThan::operator()(const T& x, const T& y)

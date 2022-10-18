@@ -9,14 +9,12 @@ namespace infra
     class MainClockReference
     {
     public:
-        MainClockReference();
-
         void Refere();
         void Release();
         bool IsReferenced() const;
 
     private:
-        std::atomic<uint32_t> numReferenced;
+        std::atomic<uint32_t> numReferenced{ 0 };
     };
 
     class LowPowerStrategy

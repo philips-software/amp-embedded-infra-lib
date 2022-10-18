@@ -9,7 +9,7 @@ namespace infra
         : public TimerService
     {
     public:
-        PerfectTimerService(uint32_t id);
+        explicit PerfectTimerService(uint32_t id);
 
         virtual void NextTriggerChanged() override;
         virtual TimePoint Now() const override;
@@ -20,9 +20,8 @@ namespace infra
         void TimeJumped(Duration amount);
 
     private:
-        TimePoint systemTime = TimePoint();
-        Duration resolution;
-
+        TimePoint systemTime;
+        Duration resolution{ std::chrono::milliseconds(0) };
         uint32_t nextNotification;
         infra::TimePoint previousTrigger;
     };

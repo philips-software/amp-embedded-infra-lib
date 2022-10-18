@@ -4,7 +4,6 @@ namespace infra
 {
     TimerLimitedRepeatingWithClosingAction::TimerLimitedRepeatingWithClosingAction(uint32_t timerServiceId)
         : Timer(timerServiceId)
-        , triggerPeriod()
     {}
 
     TimerLimitedRepeatingWithClosingAction::TimerLimitedRepeatingWithClosingAction(int aHowMany, Duration duration, const infra::Function<void()>& aAction, const infra::Function<void()>& aClosingAction, uint32_t timerServiceId)

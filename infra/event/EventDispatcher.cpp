@@ -5,8 +5,6 @@ namespace infra
 {
     EventDispatcherWorkerImpl::EventDispatcherWorkerImpl(MemoryRange<std::pair<infra::Function<void()>, std::atomic<bool>>> scheduledActionsStorage)
         : scheduledActions(scheduledActionsStorage)
-        , scheduledActionsPushIndex(0)
-        , scheduledActionsPopIndex(0)
         , minCapacity(scheduledActions.size())
     {
         for (auto& action : scheduledActions)

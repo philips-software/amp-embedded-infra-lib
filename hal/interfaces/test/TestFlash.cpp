@@ -6,11 +6,7 @@ class FlashAddressTest
     : public testing::Test
 {
 public:
-    FlashAddressTest()
-        : flash(3, 7)
-    {}
-
-    hal::FlashStub flash;
+    hal::FlashStub flash{ 3, 7 };
 };
 
 TEST_F(FlashAddressTest, StartAddress)

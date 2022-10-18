@@ -49,7 +49,7 @@ namespace infra
         std::atomic<T*> contentsEnd;
 
         infra::Function<void()> onDataAvailable;
-        std::atomic_bool notificationScheduled;
+        std::atomic_bool notificationScheduled{ false };
     };
 
     template<class T>
@@ -84,9 +84,7 @@ namespace infra
         , contentsBegin(buffer.begin())
         , contentsEnd(buffer.begin())
         , onDataAvailable(onDataAvailable)
-    {
-        notificationScheduled = false;
-    }
+    {}
 
     template<class T>
     void QueueForOneReaderOneIrqWriter<T>::AddFromInterrupt(T element)

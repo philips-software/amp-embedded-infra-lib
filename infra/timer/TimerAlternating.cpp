@@ -4,7 +4,6 @@ namespace infra
 {
     TimerAlternating::TimerAlternating(uint32_t timerServiceId)
         : Timer(timerServiceId)
-        , index(0)
     {}
 
     TimerAlternating::TimerAlternating(Duration duration1, const infra::Function<void()>& aAction1, Duration duration2, const infra::Function<void()>& aAction2, uint32_t timerServiceId)

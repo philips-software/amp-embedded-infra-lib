@@ -8,8 +8,6 @@ namespace infra
         : TimerService(id)
         , resolution(resolution)
     {
-        ticksProgressed = 0;
-        notificationScheduled = false;
         NextTriggerChanged();
     }
 

@@ -11,7 +11,6 @@
 
 namespace infra
 {
-
     template<class T>
     class CyclicBuffer
     {
@@ -37,7 +36,7 @@ namespace infra
         MemoryRange<T> storage;
         T* front;
         T* back;
-        bool isFull;
+        bool isFull{ false };
     };
 
     typedef CyclicBuffer<uint8_t> CyclicByteBuffer;
@@ -49,7 +48,6 @@ namespace infra
         : storage(aStorage)
         , front(storage.begin())
         , back(storage.begin())
-        , isFull(false)
     {}
 
     template<class T>

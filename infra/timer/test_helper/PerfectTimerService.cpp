@@ -1,13 +1,9 @@
 #include "infra/timer/test_helper/PerfectTimerService.hpp"
-#include "infra/event/EventDispatcher.hpp"
-#include <cassert>
 
 namespace infra
 {
     PerfectTimerService::PerfectTimerService(uint32_t id)
         : TimerService(id)
-        , resolution(std::chrono::milliseconds(0))
-        , systemTime(TimePoint())
     {}
 
     void PerfectTimerService::NextTriggerChanged()

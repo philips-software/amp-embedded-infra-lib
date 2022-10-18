@@ -49,8 +49,8 @@ namespace infra
 
     private:
         infra::MemoryRange<std::pair<infra::Function<void()>, std::atomic<bool>>> scheduledActions;
-        std::atomic<uint32_t> scheduledActionsPushIndex;
-        uint32_t scheduledActionsPopIndex;
+        std::atomic<uint32_t> scheduledActionsPushIndex{ 0 };
+        uint32_t scheduledActionsPopIndex{ 0 };
         std::size_t minCapacity;
     };
 

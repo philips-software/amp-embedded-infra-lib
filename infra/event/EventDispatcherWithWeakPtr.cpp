@@ -5,8 +5,6 @@ namespace infra
 {
     EventDispatcherWithWeakPtrWorker::EventDispatcherWithWeakPtrWorker(MemoryRange<std::pair<ActionStorage, std::atomic<bool>>> scheduledActionsStorage)
         : scheduledActions(scheduledActionsStorage)
-        , scheduledActionsPushIndex(0)
-        , scheduledActionsPopIndex(0)
         , minCapacity(scheduledActions.size())
     {
         for (auto& action : scheduledActions)

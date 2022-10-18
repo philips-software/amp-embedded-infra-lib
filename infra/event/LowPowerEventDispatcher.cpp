@@ -2,10 +2,6 @@
 
 namespace infra
 {
-    MainClockReference::MainClockReference()
-        : numReferenced(0)
-    {}
-
     void MainClockReference::Refere()
     {
         ++numReferenced;

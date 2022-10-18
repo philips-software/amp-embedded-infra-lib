@@ -34,14 +34,14 @@ namespace infra
         typedef std::size_t size_type;
 
     public:
-        IntrusiveForwardList();
+        IntrusiveForwardList() = default;
         template<class InputIterator>
         IntrusiveForwardList(InputIterator first, InputIterator last);
         IntrusiveForwardList(const IntrusiveForwardList& other) = delete;
         IntrusiveForwardList(IntrusiveForwardList&& other) noexcept;
         IntrusiveForwardList& operator=(const IntrusiveForwardList& other) = delete;
         IntrusiveForwardList& operator=(IntrusiveForwardList&& other) noexcept;
-        ~IntrusiveForwardList();
+        ~IntrusiveForwardList() = default;
 
     public:
         iterator begin();
@@ -84,7 +84,7 @@ namespace infra
         bool operator>=(const IntrusiveForwardList& other) const;
 
     private:
-        detail::IntrusiveForwardListNode<T>* beginNode;
+        detail::IntrusiveForwardListNode<T>* beginNode { nullptr };
     };
 
     template<class T>
@@ -163,14 +163,8 @@ namespace infra
     ////    Implementation    ////
 
     template<class T>
-    IntrusiveForwardList<T>::IntrusiveForwardList()
-        : beginNode(nullptr)
-    {}
-
-    template<class T>
     template<class InputIterator>
     IntrusiveForwardList<T>::IntrusiveForwardList(InputIterator first, InputIterator last)
-        : beginNode(nullptr)
     {
         assign(first, last);
     }
@@ -190,10 +184,6 @@ namespace infra
 
         return *this;
     }
-
-    template<class T>
-    IntrusiveForwardList<T>::~IntrusiveForwardList()
-    {}
 
     template<class T>
     typename IntrusiveForwardList<T>::iterator IntrusiveForwardList<T>::begin()

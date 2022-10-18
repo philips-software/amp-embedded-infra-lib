@@ -20,7 +20,7 @@ namespace infra
         class IntrusiveListNode
         {
         protected:
-            IntrusiveListNode();
+            IntrusiveListNode() = default;
 
         public:
             IntrusiveListNode(const IntrusiveListNode& other);
@@ -33,8 +33,8 @@ namespace infra
             template<class>
             friend class infra::IntrusiveList;
 
-            IntrusiveListNode<T>* next;
-            IntrusiveListNode<T>* previous;
+            IntrusiveListNode<T>* next{ nullptr };
+            IntrusiveListNode<T>* previous{ nullptr };
         };
     }
 
@@ -119,7 +119,7 @@ namespace infra
         bool operator>=(const IntrusiveList& other) const;
 
     private:
-        size_type numberOfElements;
+        size_type numberOfElements{ 0 };
         NodeType* beginNode;
         NodeType endNode;
     };
@@ -174,23 +174,20 @@ namespace infra
 
     template<class T>
     IntrusiveList<T>::IntrusiveList()
-        : numberOfElements(0)
-        , beginNode(&endNode)
+        : beginNode(&endNode)
     {}
 
     template<class T>
     template<class InputIterator>
     IntrusiveList<T>::IntrusiveList(InputIterator first, InputIterator last)
-        : numberOfElements(0)
-        , beginNode(&endNode)
+        : beginNode(&endNode)
     {
         assign(first, last);
     }
 
     template<class T>
     IntrusiveList<T>::IntrusiveList(IntrusiveList&& other) noexcept
-        : numberOfElements(0)
-        , beginNode(&endNode)
+        : beginNode(&endNode)
     {
         *this = std::move(other);
     }
@@ -498,15 +495,7 @@ namespace infra
     namespace detail
     {
         template<class T>
-        IntrusiveListNode<T>::IntrusiveListNode()
-            : next(nullptr)
-            , previous(nullptr)
-        {}
-
-        template<class T>
         IntrusiveListNode<T>::IntrusiveListNode(const IntrusiveListNode& other)
-            : next(nullptr)
-            , previous(nullptr)
         {}
 
         template<class T>

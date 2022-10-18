@@ -29,9 +29,6 @@ namespace infra
         std::abort();
     }
 
-    StreamWriterDummy::StreamWriterDummy()
-    {}
-
     void StreamWriterDummy::Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy)
     {}
 
@@ -344,7 +341,7 @@ namespace infra
 
     DataOutputStream::WithErrorPolicy::WithErrorPolicy(StreamWriter& writer, NoFail)
         : DataOutputStream(writer, errorPolicy)
-        , errorPolicy(softFail)
+        , errorPolicy(noFail)
     {}
 
     DataOutputStream::WithErrorPolicy::WithErrorPolicy(const WithErrorPolicy& other)

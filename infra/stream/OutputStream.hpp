@@ -36,8 +36,6 @@ namespace infra
         : public StreamWriter
     {
     public:
-        StreamWriterDummy();
-
         virtual void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy);
         virtual std::size_t Available() const;
     };
