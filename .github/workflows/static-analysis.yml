@@ -38,6 +38,7 @@ jobs:
       - uses: hendrikmuhs/ccache-action@v1
       - name: Build
         run: |
+          sudo apt-get update && sudo apt-get install --no-install-recommends -y xsltproc
           cmake --preset Coverage -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build --preset Coverage
           GTEST_OUTPUT="xml:${PWD}/testresults/" ctest --preset Coverage
