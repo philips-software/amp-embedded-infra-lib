@@ -1,6 +1,6 @@
-#include "gtest/gtest.h"
 #include "infra/util/IntrusiveSet.hpp"
 #include "infra/util/ReverseRange.hpp"
+#include "gtest/gtest.h"
 #include <array>
 #include <functional>
 #include <memory>

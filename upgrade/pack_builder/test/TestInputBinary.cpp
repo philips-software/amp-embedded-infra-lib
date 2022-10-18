@@ -1,8 +1,8 @@
-#include "gtest/gtest.h"
 #include "hal/interfaces/test_doubles/FileSystemStub.hpp"
 #include "upgrade/pack_builder/ImageEncryptorNone.hpp"
 #include "upgrade/pack_builder/InputBinary.hpp"
 #include "upgrade/pack_builder/test_helper/ZeroFilledString.hpp"
+#include "gtest/gtest.h"
 #include <algorithm>
 
 namespace application

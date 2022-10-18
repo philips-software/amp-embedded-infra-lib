@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "upgrade/pack_builder/SupportedTargets.hpp"
+#include "gtest/gtest.h"
 
 TEST(SupportedTargetsTest, should_add_correct_targets)
 {

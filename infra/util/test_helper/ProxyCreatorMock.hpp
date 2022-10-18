@@ -1,8 +1,8 @@
 #ifndef INFRA_PROXY_CREATOR_MOCK_HPP
 #define INFRA_PROXY_CREATOR_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "infra/util/ProxyCreator.hpp"
+#include "gmock/gmock.h"
 
 namespace infra
 {

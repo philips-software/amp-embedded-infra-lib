@@ -1,8 +1,8 @@
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
 #include "infra/event/QueueForOneReaderOneIrqWriter.hpp"
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 class QueueForOneReaderOneIrqWriterTest
     : public testing::Test

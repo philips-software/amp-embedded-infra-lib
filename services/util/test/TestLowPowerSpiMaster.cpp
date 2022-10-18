@@ -1,10 +1,10 @@
-#include "gtest/gtest.h"
 #include "hal/interfaces/test_doubles/CommunicationConfiguratorMock.hpp"
 #include "hal/interfaces/test_doubles/GpioStub.hpp"
 #include "hal/interfaces/test_doubles/SpiMock.hpp"
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "services/util/LowPowerSpiMaster.hpp"
+#include "gtest/gtest.h"
 
 class LowPowerSpiMasterTest
     : public testing::Test

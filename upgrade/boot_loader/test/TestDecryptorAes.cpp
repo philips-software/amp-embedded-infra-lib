@@ -1,6 +1,6 @@
-#include "gmock/gmock.h"
 #include "upgrade/boot_loader/DecryptorAesMbedTls.hpp"
 #include "upgrade/boot_loader/DecryptorAesTiny.hpp"
+#include "gmock/gmock.h"
 
 class DecryptorAesTest
     : public testing::Test

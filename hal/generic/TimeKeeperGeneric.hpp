@@ -3,7 +3,6 @@
 
 #include "hal/synchronous_interfaces/TimeKeeper.hpp"
 #include "infra/timer/Timer.hpp"
-
 #include <stdint.h>
 
 namespace hal

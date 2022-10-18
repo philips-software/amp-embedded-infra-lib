@@ -1,7 +1,7 @@
-#include "gtest/gtest.h"
 #include "infra/stream/BoundedVectorOutputStream.hpp"
 #include "infra/stream/OverwriteStream.hpp"
 #include "infra/stream/SavedMarkerStream.hpp"
+#include "gtest/gtest.h"
 #include <limits>
 
 TEST(BoundedVectorOutputStreamTest, stream_byte)

@@ -1,6 +1,6 @@
-#include "gtest/gtest.h"
 #include "infra/util/BoundedForwardList.hpp"
 #include "infra/util/test_helper/MoveConstructible.hpp"
+#include "gtest/gtest.h"
 #include <functional>
 #include <memory>
 

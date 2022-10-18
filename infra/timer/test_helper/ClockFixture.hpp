@@ -1,10 +1,10 @@
 #ifndef INFRA_CLOCK_FIXTURE_HPP
 #define INFRA_CLOCK_FIXTURE_HPP
 
-#include "gmock/gmock.h"
 #include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
 #include "infra/timer/TimerService.hpp"
 #include "infra/timer/test_helper/PerfectTimerService.hpp"
+#include "gmock/gmock.h"
 
 namespace infra
 {

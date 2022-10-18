@@ -1,4 +1,3 @@
-#include "gmock/gmock.h"
 #include "hal/interfaces/test_doubles/SerialCommunicationMock.hpp"
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/stream/StdVectorInputStream.hpp"
@@ -9,6 +8,7 @@
 #include "infra/util/test_helper/MemoryRangeMatcher.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "services/util/MessageCommunicationCobs.hpp"
+#include "gmock/gmock.h"
 #include <deque>
 
 namespace

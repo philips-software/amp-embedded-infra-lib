@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/stream/Formatter.hpp"
+#include "gtest/gtest.h"
 
 class FormatTest
     : public testing::Test

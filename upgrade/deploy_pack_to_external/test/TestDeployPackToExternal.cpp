@@ -1,4 +1,3 @@
-#include "gmock/gmock.h"
 #include "hal/interfaces/test_doubles/FlashStub.hpp"
 #include "hal/interfaces/test_doubles/GpioStub.hpp"
 #include "infra/stream/ByteInputStream.hpp"
@@ -7,6 +6,7 @@
 #include "infra/util/Optional.hpp"
 #include "upgrade/deploy_pack_to_external/DeployPackToExternal.hpp"
 #include "upgrade/pack/UpgradePackHeader.hpp"
+#include "gmock/gmock.h"
 
 namespace
 {

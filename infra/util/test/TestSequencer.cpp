@@ -1,6 +1,6 @@
+#include "infra/util/Sequencer.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "infra/util/Sequencer.hpp"
 
 class TestSequencer
     : public testing::StrictMock<testing::Test>

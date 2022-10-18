@@ -1,10 +1,10 @@
-#include "gmock/gmock.h"
 #include "infra/stream/test/StreamMock.hpp"
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "services/network/HttpClientAuthentication.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/network/test_doubles/HttpClientMock.hpp"
+#include "gmock/gmock.h"
 
 namespace
 {

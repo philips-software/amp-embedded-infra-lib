@@ -1,6 +1,6 @@
-#include "gmock/gmock.h"
 #include "infra/stream/CountingInputStream.hpp"
 #include "infra/stream/test/StreamMock.hpp"
+#include "gmock/gmock.h"
 
 TEST(CountingInputStreamTest, Extract)
 {

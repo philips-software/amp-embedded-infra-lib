@@ -1,7 +1,7 @@
-#include "gtest/gtest.h"
 #include "hal/interfaces/test_doubles/I2cRegisterAccessMock.hpp"
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
+#include "gtest/gtest.h"
 
 class RegisterAccessMockTest
     : public testing::Test

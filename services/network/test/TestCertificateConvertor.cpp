@@ -1,5 +1,5 @@
-#include "gmock/gmock.h"
 #include "services/network/CertificateConvertor.hpp"
+#include "gmock/gmock.h"
 
 TEST(CertificateConvertorTest, should_convert_certificate_from_pem_to_der)
 {

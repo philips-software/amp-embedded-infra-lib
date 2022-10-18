@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "upgrade/pack_builder/ImageAuthenticatorHmac.hpp"
+#include "gtest/gtest.h"
 #include <array>
 
 class TestImageAuthenticatorHmac

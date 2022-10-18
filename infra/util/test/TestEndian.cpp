@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/util/Endian.hpp"
+#include "gtest/gtest.h"
 
 TEST(EndianTest, SwapEndian_changes_endianness)
 {

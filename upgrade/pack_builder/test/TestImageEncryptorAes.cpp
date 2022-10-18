@@ -1,6 +1,6 @@
-#include "gtest/gtest.h"
 #include "hal/synchronous_interfaces/test_doubles/SynchronousFixedRandomDataGenerator.hpp"
 #include "upgrade/pack_builder/ImageEncryptorAes.hpp"
+#include "gtest/gtest.h"
 
 class ImageEncryptorAesTest
     : public testing::Test

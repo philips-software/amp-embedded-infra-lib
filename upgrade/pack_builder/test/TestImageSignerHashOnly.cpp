@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "upgrade/pack_builder/ImageSignerHashOnly.hpp"
+#include "gtest/gtest.h"
 
 TEST(TestImageSignerHashOnly, should_report_algorithm_details)
 {

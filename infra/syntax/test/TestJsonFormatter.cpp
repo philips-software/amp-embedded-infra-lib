@@ -1,6 +1,6 @@
-#include "gtest/gtest.h"
 #include "infra/stream/StdStringOutputStream.hpp"
 #include "infra/syntax/JsonFormatter.hpp"
+#include "gtest/gtest.h"
 
 TEST(BasicUsageTest, format_json_object)
 {

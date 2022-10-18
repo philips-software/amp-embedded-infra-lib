@@ -1,6 +1,6 @@
-#include "gtest/gtest.h"
 #include "infra/timer/RetryPolicy.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
+#include "gtest/gtest.h"
 #include <cmath>
 
 class RetryPolicyTest

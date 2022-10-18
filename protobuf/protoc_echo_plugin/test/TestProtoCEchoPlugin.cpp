@@ -1,4 +1,3 @@
-#include "gmock/gmock.h"
 #include "generated/echo/TestMessages.pb.hpp"
 #include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
 #include "infra/stream/ByteInputStream.hpp"
@@ -7,6 +6,7 @@
 #include "infra/syntax/ProtoParser.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
+#include "gmock/gmock.h"
 
 TEST(ProtoCEchoPluginTest, serialize_int32)
 {

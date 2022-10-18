@@ -1,9 +1,9 @@
 #ifndef INFRA_JSON_STRING_MATCHER_HPP
 #define INFRA_JSON_STRING_MATCHER_HPP
 
-#include "gmock/gmock.h"
 #include "infra/syntax/Json.hpp"
 #include "infra/util/test_helper/BoundedStringMatcher.hpp"
+#include "gmock/gmock.h"
 
 namespace testing
 {

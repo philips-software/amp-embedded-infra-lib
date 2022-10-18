@@ -1,4 +1,3 @@
-#include "gmock/gmock.h"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
@@ -7,6 +6,7 @@
 #include "services/network/test_doubles/ConnectionLoopBack.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/network/test_doubles/ConnectionStub.hpp"
+#include "gmock/gmock.h"
 
 class ConnectionMbedTlsTest
     : public testing::Test

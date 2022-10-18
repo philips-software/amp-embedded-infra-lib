@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/syntax/JsonObjectNavigator.hpp"
+#include "gtest/gtest.h"
 
 TEST(JsonObjectNavigatorTest, construct_with_string)
 {

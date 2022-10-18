@@ -1,6 +1,5 @@
-#include "gtest/gtest.h"
-
 #include "services/util/FlashAlign.hpp"
+#include "gtest/gtest.h"
 
 class FlashAlign4Bytes : public testing::Test
 {

@@ -1,8 +1,8 @@
-#include "gmock/gmock.h"
 #include "infra/syntax/JsonStreamingParser.hpp"
 #include "infra/syntax/test_doubles/JsonStreamingParserMock.hpp"
 #include "infra/util/test_helper/BoundedStringMatcher.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
+#include "gmock/gmock.h"
 
 namespace
 {

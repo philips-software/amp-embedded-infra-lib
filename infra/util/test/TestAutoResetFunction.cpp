@@ -1,7 +1,7 @@
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
 #include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 TEST(AutoResetFunctionTest, IsInvokeable)
 {

@@ -1,10 +1,10 @@
-#include "gmock/gmock.h"
 #include "hal/interfaces/test_doubles/SerialCommunicationMock.hpp"
 #include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
 #include "infra/stream/OutputStream.hpp"
 #include "infra/util/Optional.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/util/Terminal.hpp"
+#include "gmock/gmock.h"
 #include <vector>
 
 class StreamWriterMock

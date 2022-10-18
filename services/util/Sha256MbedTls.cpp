@@ -2,7 +2,6 @@
 #include "infra/util/Compatibility.hpp"
 #include "mbedtls/sha256.h"
 #include "mbedtls/version.h"
-
 #include <cassert>
 
 #if MBEDTLS_VERSION_MAJOR < 3

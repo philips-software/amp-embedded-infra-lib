@@ -1,6 +1,6 @@
-#include "gtest/gtest.h"
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/ByteRange.hpp"
+#include "gtest/gtest.h"
 
 TEST(BoundedStringTest, TestConstructedEmpty)
 {

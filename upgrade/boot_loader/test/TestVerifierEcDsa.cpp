@@ -1,6 +1,6 @@
-#include "gmock/gmock.h"
 #include "hal/synchronous_interfaces/test_doubles/SynchronousFlashStub.hpp"
 #include "upgrade/boot_loader/VerifierEcDsa.hpp"
+#include "gmock/gmock.h"
 
 class VerifierEcDsaTest
     : public testing::Test

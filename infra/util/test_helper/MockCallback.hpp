@@ -1,8 +1,8 @@
 #ifndef INFRA_MOCK_CALLBACK_HPP
 #define INFRA_MOCK_CALLBACK_HPP
 
-#include "gmock/gmock.h"
 #include "infra/util/Function.hpp"
+#include "gmock/gmock.h"
 
 namespace infra
 {

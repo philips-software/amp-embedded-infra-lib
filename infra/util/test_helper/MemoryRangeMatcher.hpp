@@ -1,8 +1,8 @@
 #ifndef INFRA_MEMORY_RANGE_MATCHER_HPP
 #define INFRA_MEMORY_RANGE_MATCHER_HPP
 
-#include "gmock/gmock.h"
 #include "infra/util/MemoryRange.hpp"
+#include "gmock/gmock.h"
 
 namespace infra
 {

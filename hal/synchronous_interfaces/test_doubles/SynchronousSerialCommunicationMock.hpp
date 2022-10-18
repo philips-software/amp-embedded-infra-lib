@@ -1,8 +1,8 @@
 #ifndef UPGRADE_SYNCHRONOUS_SERIAL_COMMUNICATION_MOCK_HPP
 #define UPGRADE_SYNCHRONOUS_SERIAL_COMMUNICATION_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "hal/synchronous_interfaces/SynchronousSerialCommunication.hpp"
+#include "gmock/gmock.h"
 
 namespace hal
 {

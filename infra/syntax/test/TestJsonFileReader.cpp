@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/syntax/JsonFileReader.hpp"
+#include "gtest/gtest.h"
 
 namespace
 {

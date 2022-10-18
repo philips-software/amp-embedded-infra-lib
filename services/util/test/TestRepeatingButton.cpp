@@ -1,8 +1,8 @@
-#include "gtest/gtest.h"
 #include "hal/interfaces/test_doubles/GpioStub.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "services/util/RepeatingButton.hpp"
+#include "gtest/gtest.h"
 
 class RepeatingButtonFixtureBase
     : public testing::Test

@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/stream/BoundedDequeInputStream.hpp"
+#include "gtest/gtest.h"
 
 class BoundedDequeInputStreamReaderTest
     : public testing::Test

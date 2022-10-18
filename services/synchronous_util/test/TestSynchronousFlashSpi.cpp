@@ -1,6 +1,6 @@
-#include "gtest/gtest.h"
 #include "hal/synchronous_interfaces/test_doubles/SynchronousSpiMock.hpp"
 #include "services/synchronous_util/SynchronousFlashSpi.hpp"
+#include "gtest/gtest.h"
 
 class SynchronousFlashSpiTest
     : public testing::Test

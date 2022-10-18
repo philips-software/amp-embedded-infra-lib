@@ -1,10 +1,10 @@
-#include "gmock/gmock.h"
 #include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/util/ConstructBin.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "services/network/SsdpDeviceDiscovery.hpp"
 #include "services/network/test_doubles/DatagramMock.hpp"
 #include "services/network/test_doubles/MulticastMock.hpp"
+#include "gmock/gmock.h"
 
 namespace
 {

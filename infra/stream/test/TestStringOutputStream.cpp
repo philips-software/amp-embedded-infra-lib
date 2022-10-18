@@ -1,8 +1,8 @@
-#include "gtest/gtest.h"
 #include "infra/stream/OverwriteStream.hpp"
 #include "infra/stream/SavedMarkerStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/util/BoundedString.hpp"
+#include "gtest/gtest.h"
 #include <cstdint>
 #include <limits>
 

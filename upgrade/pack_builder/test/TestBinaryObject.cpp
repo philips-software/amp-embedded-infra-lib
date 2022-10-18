@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "upgrade/pack_builder/BinaryObject.hpp"
+#include "gtest/gtest.h"
 
 TEST(BinaryObjectTest, Hex_AddByte)
 {

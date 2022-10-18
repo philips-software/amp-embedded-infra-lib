@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/util/Variant.hpp"
+#include "gtest/gtest.h"
 #include <cstdint>
 
 TEST(VariantTest, TestEmptyConstruction)

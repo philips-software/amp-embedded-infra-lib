@@ -1,6 +1,6 @@
-#include "gmock/gmock.h"
 #include "infra/util/ProxyCreator.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
+#include "gmock/gmock.h"
 
 class PeripheralInterface
 {

@@ -1,9 +1,9 @@
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/timer/TickOnInterruptTimerService.hpp"
 #include "infra/timer/Timer.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 class BaseTimerServiceTest
     : public testing::Test

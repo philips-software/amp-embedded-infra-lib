@@ -1,7 +1,7 @@
-#include "gmock/gmock.h"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/ble/BondStorageManager.hpp"
 #include "services/ble/test_doubles/BondStorageManagerMock.hpp"
+#include "gmock/gmock.h"
 
 class BondStorageManagerTest
     : public testing::Test

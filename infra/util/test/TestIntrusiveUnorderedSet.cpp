@@ -1,6 +1,6 @@
-#include "gtest/gtest.h"
 #include "infra/util/IntrusiveUnorderedSet.hpp"
 #include "infra/util/ReverseRange.hpp"
+#include "gtest/gtest.h"
 
 struct SetInt
     : infra::IntrusiveUnorderedSet<SetInt>::WithBuckets<4>::NodeType

@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "hal/interfaces/Can.hpp"
+#include "gtest/gtest.h"
 
 TEST(CanTest, generate_11_bit_id)
 {

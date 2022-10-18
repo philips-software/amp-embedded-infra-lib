@@ -1,8 +1,8 @@
-#include "gtest/gtest.h"
 #include "hal/interfaces/test_doubles/FileSystemStub.hpp"
 #include "infra/util/Function.hpp"
 #include "upgrade/pack_builder/ImageEncryptorNone.hpp"
 #include "upgrade/pack_builder/UpgradePackInputFactory.hpp"
+#include "gtest/gtest.h"
 
 class TestUpgradePackInputFactory
     : public testing::Test

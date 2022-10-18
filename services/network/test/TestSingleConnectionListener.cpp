@@ -1,8 +1,8 @@
-#include "gmock/gmock.h"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/network/SingleConnectionListener.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
+#include "gmock/gmock.h"
 
 class SingleConnectionListenerTest
     : public testing::Test

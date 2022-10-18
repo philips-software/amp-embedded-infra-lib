@@ -1,4 +1,3 @@
-#include "gmock/gmock.h"
 #include "hal/synchronous_interfaces/test_doubles/SynchronousRandomDataGeneratorMock.hpp"
 #include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/stream/test/StreamMock.hpp"
@@ -9,6 +8,7 @@
 #include "services/network/DnsResolver.hpp"
 #include "services/network/test_doubles/DatagramMock.hpp"
 #include "services/network/test_doubles/NameResolverMock.hpp"
+#include "gmock/gmock.h"
 
 class DnsResolverTest
     : public testing::TestWithParam<int>

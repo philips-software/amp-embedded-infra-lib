@@ -1,5 +1,5 @@
-#include "gmock/gmock.h"
 #include "services/cucumber/CucumberWireProtocolParser.hpp"
+#include "gmock/gmock.h"
 
 class StepStub
     : public services::CucumberStep

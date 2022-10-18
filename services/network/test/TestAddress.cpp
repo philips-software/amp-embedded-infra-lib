@@ -1,5 +1,5 @@
-#include "gmock/gmock.h"
 #include "services/network/Address.hpp"
+#include "gmock/gmock.h"
 
 TEST(AddressTest, ParseIpv4Address)
 {

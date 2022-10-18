@@ -1,4 +1,3 @@
-#include "gmock/gmock.h"
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
@@ -8,6 +7,7 @@
 #include "services/network/BonjourServer.hpp"
 #include "services/network/test_doubles/DatagramMock.hpp"
 #include "services/network/test_doubles/MulticastMock.hpp"
+#include "gmock/gmock.h"
 
 namespace
 {

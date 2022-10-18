@@ -1,6 +1,6 @@
-#include "gmock/gmock.h"
 #include "hal/synchronous_interfaces/test_doubles/SynchronousFlashStub.hpp"
 #include "upgrade/boot_loader/VerifierHashOnly.hpp"
+#include "gmock/gmock.h"
 
 TEST(VerifierHashOnlyTest, incorrect_hash_size_is_invalid)
 {

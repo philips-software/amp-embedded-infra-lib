@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/stream/ByteInputStream.hpp"
+#include "gtest/gtest.h"
 #include <array>
 
 class ByteInputStreamReaderTest

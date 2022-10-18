@@ -1,8 +1,8 @@
 #ifndef NETWORK_HTTP_REQUEST_PARSER_STUB_HPP
 #define NETWORK_HTTP_REQUEST_PARSER_STUB_HPP
 
-#include "gmock/gmock.h"
 #include "services/network/HttpRequestParser.hpp"
+#include "gmock/gmock.h"
 #include <string>
 #include <utility>
 #include <vector>

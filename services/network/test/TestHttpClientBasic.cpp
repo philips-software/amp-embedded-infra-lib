@@ -1,4 +1,3 @@
-#include "gmock/gmock.h"
 #include "infra/stream/test/StreamMock.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/BoundedStringMatcher.hpp"
@@ -6,6 +5,7 @@
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/network/HttpClientBasic.hpp"
 #include "services/network/test_doubles/HttpClientMock.hpp"
+#include "gmock/gmock.h"
 
 class HttpClientBasicMock
     : public services::HttpClientBasic

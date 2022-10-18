@@ -1,4 +1,3 @@
-#include "gmock/gmock.h"
 #include "hal/synchronous_interfaces/test_doubles/SynchronousFixedRandomDataGenerator.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/ProxyCreatorMock.hpp"
@@ -12,6 +11,7 @@
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/network/test_doubles/HttpClientMock.hpp"
 #include "services/util/test_doubles/StoppableMock.hpp"
+#include "gmock/gmock.h"
 
 namespace
 {

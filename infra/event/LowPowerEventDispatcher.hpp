@@ -2,7 +2,6 @@
 #define LOW_POWER_EVENT_DISPATCHER
 
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
-
 #include <atomic>
 
 namespace infra

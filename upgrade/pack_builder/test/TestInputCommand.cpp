@@ -1,7 +1,7 @@
-#include "gtest/gtest.h"
 #include "upgrade/pack/UpgradePackHeader.hpp"
 #include "upgrade/pack_builder/InputCommand.hpp"
 #include "upgrade/pack_builder/test_helper/ZeroFilledString.hpp"
+#include "gtest/gtest.h"
 
 class TestInputCommand
     : public testing::Test

@@ -1,8 +1,8 @@
 #ifndef INFRA_BOUNDED_STRING_MATCHER_HPP
 #define INFRA_BOUNDED_STRING_MATCHER_HPP
 
-#include "gmock/gmock.h"
 #include "infra/util/BoundedString.hpp"
+#include "gmock/gmock.h"
 
 namespace testing
 {

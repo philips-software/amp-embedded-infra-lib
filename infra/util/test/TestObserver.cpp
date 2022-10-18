@@ -1,6 +1,6 @@
+#include "infra/util/Observer.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "infra/util/Observer.hpp"
 
 class MySubject;
 

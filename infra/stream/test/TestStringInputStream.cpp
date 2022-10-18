@@ -1,6 +1,6 @@
-#include "gtest/gtest.h"
 #include "infra/stream/StringInputStream.hpp"
 #include "infra/util/BoundedString.hpp"
+#include "gtest/gtest.h"
 #include <cstdint>
 
 TEST(StringInputStreamTest, ExtractDecimal)

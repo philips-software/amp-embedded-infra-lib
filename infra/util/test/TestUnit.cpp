@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/util/Unit.hpp"
+#include "gtest/gtest.h"
 
 typedef infra::Quantity<infra::Meter, int> Meter;
 typedef infra::Quantity<infra::MilliMeter, int> MilliMeter;

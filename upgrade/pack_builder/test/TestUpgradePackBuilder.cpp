@@ -1,6 +1,6 @@
-#include "gtest/gtest.h"
 #include "upgrade/pack/UpgradePackHeader.hpp"
 #include "upgrade/pack_builder/UpgradePackBuilder.hpp"
+#include "gtest/gtest.h"
 
 class ImageSignerNone
     : public application::ImageSigner

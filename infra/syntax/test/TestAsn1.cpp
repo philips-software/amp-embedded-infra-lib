@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/syntax/Asn1.hpp"
+#include "gtest/gtest.h"
 
 TEST(Asn1Test, get_integer)
 {

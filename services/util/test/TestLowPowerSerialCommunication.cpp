@@ -1,7 +1,7 @@
-#include "gtest/gtest.h"
 #include "hal/interfaces/test_doubles/SerialCommunicationMock.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "services/util/LowPowerSerialCommunication.hpp"
+#include "gtest/gtest.h"
 
 class LowPowerSerialCommunicationTest
     : public testing::Test

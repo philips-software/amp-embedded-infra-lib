@@ -1,9 +1,9 @@
-#include "gmock/gmock.h"
 #include "hal/synchronous_interfaces/test_doubles/SynchronousFlashStub.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "upgrade/boot_loader/DecryptorNone.hpp"
 #include "upgrade/boot_loader/PackUpgrader.hpp"
 #include "upgrade/pack/UpgradePackHeader.hpp"
+#include "gmock/gmock.h"
 
 class ImageUpgraderMock
     : public application::ImageUpgrader

@@ -1,9 +1,9 @@
 #ifndef INFRA_STREAM_READER_MOCK
 #define INFRA_STREAM_READER_MOCK
 
-#include "gmock/gmock.h"
 #include "infra/stream/InputStream.hpp"
 #include "infra/stream/OutputStream.hpp"
+#include "gmock/gmock.h"
 
 namespace infra
 {

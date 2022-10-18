@@ -1,4 +1,3 @@
-#include "gmock/gmock.h"
 #include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/StdStringOutputStream.hpp"
@@ -8,6 +7,7 @@
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/network/test_doubles/ConnectionStub.hpp"
 #include "services/network/test_doubles/HttpClientMock.hpp"
+#include "gmock/gmock.h"
 
 TEST(HttpTest, parse_components_from_url)
 {

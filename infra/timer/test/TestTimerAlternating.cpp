@@ -1,7 +1,7 @@
-#include "gtest/gtest.h"
 #include "infra/timer/TimerAlternating.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
+#include "gtest/gtest.h"
 
 class TimerAlternatingTest
     : public testing::Test

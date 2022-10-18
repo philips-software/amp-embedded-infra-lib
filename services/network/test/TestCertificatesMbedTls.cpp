@@ -1,7 +1,7 @@
-#include "gmock/gmock.h"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "services/network/CertificatesMbedTls.hpp"
 #include "services/network/test_doubles/Certificates.hpp"
+#include "gmock/gmock.h"
 
 bool operator==(const mbedtls_x509_time& lhs, const mbedtls_x509_time& rhs)
 {

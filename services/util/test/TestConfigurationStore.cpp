@@ -1,4 +1,3 @@
-#include "gmock/gmock.h"
 #include "hal/interfaces/test_doubles/FlashMock.hpp"
 #include "hal/interfaces/test_doubles/FlashStub.hpp"
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
@@ -7,6 +6,7 @@
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/util/ConfigurationStore.hpp"
 #include "services/util/Sha256MbedTls.hpp"
+#include "gmock/gmock.h"
 
 namespace
 {

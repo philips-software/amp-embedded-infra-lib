@@ -1,8 +1,8 @@
-#include "gmock/gmock.h"
 #include "hal/interfaces/test_doubles/QuadSpiStub.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "services/util/FlashQuadSpiMicronN25q.hpp"
+#include "gmock/gmock.h"
 
 class FlashQuadSpiMicronN25qTest
     : public testing::Test

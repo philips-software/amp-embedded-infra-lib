@@ -1,9 +1,9 @@
-#include "gtest/gtest.h"
 #include "hal/interfaces/test_doubles/FlashStub.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/LifetimeHelper.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "services/util/CyclicStore.hpp"
+#include "gtest/gtest.h"
 
 class CyclicStoreTest
     : public testing::Test

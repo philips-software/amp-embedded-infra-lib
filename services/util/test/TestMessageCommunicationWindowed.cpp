@@ -1,4 +1,3 @@
-#include "gmock/gmock.h"
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
@@ -6,6 +5,7 @@
 #include "infra/util/ConstructBin.hpp"
 #include "infra/util/Endian.hpp"
 #include "services/util/MessageCommunicationWindowed.hpp"
+#include "gmock/gmock.h"
 #include <deque>
 
 namespace

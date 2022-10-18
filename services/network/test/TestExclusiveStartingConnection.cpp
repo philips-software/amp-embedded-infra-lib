@@ -1,8 +1,8 @@
-#include "gmock/gmock.h"
 #include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/network/ExclusiveStartingConnection.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
+#include "gmock/gmock.h"
 
 class ExclusiveStartingConnectionTest
     : public testing::Test

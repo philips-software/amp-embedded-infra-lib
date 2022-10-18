@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "services/util/AesMbedTls.hpp"
+#include "gtest/gtest.h"
 
 class Aes128CtrMbedTlsTest
     : public testing::Test

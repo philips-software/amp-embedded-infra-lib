@@ -1,4 +1,3 @@
-#include "gmock/gmock.h"
 #include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/util/ConstructBin.hpp"
@@ -8,6 +7,7 @@
 #include "services/network/MdnsClient.hpp"
 #include "services/network/test_doubles/DatagramMock.hpp"
 #include "services/network/test_doubles/MulticastMock.hpp"
+#include "gmock/gmock.h"
 
 namespace
 {

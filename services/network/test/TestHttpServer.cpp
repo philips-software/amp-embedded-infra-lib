@@ -1,4 +1,3 @@
-#include "gmock/gmock.h"
 #include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/StringInputStream.hpp"
@@ -9,6 +8,7 @@
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/network/test_doubles/ConnectionStub.hpp"
 #include "services/network/test_doubles/HttpServerMock.hpp"
+#include "gmock/gmock.h"
 
 class HttpServerTest
     : public testing::Test

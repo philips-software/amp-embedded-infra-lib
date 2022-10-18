@@ -1,7 +1,7 @@
-#include "gmock/gmock.h"
 #include "hal/interfaces/test_doubles/FileSystemStub.hpp"
 #include "infra/util/BoundedString.hpp"
 #include "upgrade/pack_builder/UpgradePackConfigParser.hpp"
+#include "gmock/gmock.h"
 #include <climits>
 
 namespace

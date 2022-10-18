@@ -1,8 +1,8 @@
-#include "gmock/gmock.h"
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/network/ExclusiveConnection.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
+#include "gmock/gmock.h"
 
 class ExclusiveConnectionTest
     : public testing::Test

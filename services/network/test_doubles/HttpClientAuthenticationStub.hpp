@@ -1,8 +1,8 @@
 #ifndef SERVICES_NETWORK_HTTP_CLIENT_AUTHENTICATION_STUB_HPP
 #define SERVICES_NETWORK_HTTP_CLIENT_AUTHENTICATION_STUB_HPP
 
-#include "gmock/gmock.h"
 #include "services/network/HttpClientAuthentication.hpp"
+#include "gmock/gmock.h"
 
 class HttpClientAuthenticationStub
     : public services::HttpClientAuthentication
