@@ -16,7 +16,7 @@ jobs:
       SONAR_SERVER_URL: "https://sonarcloud.io"
       BUILD_WRAPPER_OUT_DIR: build_wrapper_output
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
         with:
           fetch-depth: 0 # Disable shallow clone to enable blame information
       - uses: seanmiddleditch/gha-setup-ninja@v3
@@ -59,7 +59,7 @@ jobs:
     name: CodeQL
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
       - uses: seanmiddleditch/gha-setup-ninja@v3
       - uses: hendrikmuhs/ccache-action@v1
       - name: Initialize CodeQL
