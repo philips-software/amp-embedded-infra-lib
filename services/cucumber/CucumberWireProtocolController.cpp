@@ -9,9 +9,13 @@ namespace services
         really_assert(CucumberContext::InstanceSet());
 
         CucumberContext::Instance().onSuccess = [this]()
-              { InvokeSuccess(); };
+        {
+            InvokeSuccess();
+        };
         CucumberContext::Instance().onFailure = [this](infra::BoundedConstString& reason)
-              { InvokeError(reason); };
+        {
+            InvokeError(reason);
+        };
     }
 
     void CucumberWireProtocolController::HandleRequest(CucumberWireProtocolParser& parser)

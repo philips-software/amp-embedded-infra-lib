@@ -3,8 +3,8 @@
 
 #include "infra/timer/Timer.hpp"
 #include "infra/util/BoundedString.hpp"
-#include "infra/util/InterfaceConnector.hpp"
 #include "infra/util/Function.hpp"
+#include "infra/util/InterfaceConnector.hpp"
 
 namespace services
 {
