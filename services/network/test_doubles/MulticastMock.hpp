@@ -1,8 +1,8 @@
 #ifndef NETWORK_MULTICAST_MOCK_HPP
 #define NETWORK_MULTICAST_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "services/network/Multicast.hpp"
+#include "gmock/gmock.h"
 
 namespace services
 {

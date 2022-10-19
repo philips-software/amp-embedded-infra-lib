@@ -9,7 +9,8 @@ namespace infra
         std::size_t EscapedCharacterSize(char c)
         {
             std::array<char, 7> shouldBeEscaped = { '"', '\\', '\b', '\f', '\n', '\r', '\t' };
-            if (std::any_of(shouldBeEscaped.begin(), shouldBeEscaped.end(), [c](char shouldBeEscaped) { return c == shouldBeEscaped; }))
+            if (std::any_of(shouldBeEscaped.begin(), shouldBeEscaped.end(), [c](char shouldBeEscaped)
+                    { return c == shouldBeEscaped; }))
                 return 2;
             else
                 return 6;
@@ -19,14 +20,30 @@ namespace infra
         {
             switch (c)
             {
-            case '"':  stream << "\\\""; break;
-            case '\\': stream << "\\\\"; break;
-            case '\b': stream << "\\b"; break;
-            case '\f': stream << "\\f"; break;
-            case '\n': stream << "\\n"; break;
-            case '\r': stream << "\\r"; break;
-            case '\t': stream << "\\t"; break;
-            default:   stream << "\\u" << infra::hex << infra::Width(4, '0') << static_cast<uint8_t>(c); break;
+                case '"':
+                    stream << "\\\"";
+                    break;
+                case '\\':
+                    stream << "\\\\";
+                    break;
+                case '\b':
+                    stream << "\\b";
+                    break;
+                case '\f':
+                    stream << "\\f";
+                    break;
+                case '\n':
+                    stream << "\\n";
+                    break;
+                case '\r':
+                    stream << "\\r";
+                    break;
+                case '\t':
+                    stream << "\\t";
+                    break;
+                default:
+                    stream << "\\u" << infra::hex << infra::Width(4, '0') << static_cast<uint8_t>(c);
+                    break;
             }
         }
 
@@ -75,7 +92,7 @@ namespace infra
                 subObjectFormatter.Add(infra::JsonString(nextKey), valueToMerge);
             else
                 NestedInsert(subObjectFormatter, nextKey, path.substr(nextKey.size() + 1), valueToMerge);
-        } 
+        }
     }
 
     std::size_t JsonEscapedStringSize(infra::BoundedConstString string)
@@ -141,7 +158,7 @@ namespace infra
             if (path.size() != token.size())
                 pathRemaining = path.substr(token.size() + 1);
         }
-        
+
         for (auto kv : object)
         {
             if (pathRemaining.empty() && kv.key == token)
@@ -161,7 +178,7 @@ namespace infra
                 else
                 {
                     infra::JsonObject valueJsonObj = infra::JsonObject("{}");
-                    infra::Merge(subObjectFormatter, valueJsonObj, pathRemaining, valueToMerge); 
+                    infra::Merge(subObjectFormatter, valueJsonObj, pathRemaining, valueToMerge);
                 }
             }
             else
@@ -421,7 +438,7 @@ namespace infra
 
         empty = false;
     }
-    
+
     JsonArrayFormatter::JsonArrayFormatter(infra::TextOutputStream& stream)
         : stream(&stream)
     {

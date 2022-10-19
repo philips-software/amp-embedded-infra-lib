@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/stream/StdStringOutputStream.hpp"
+#include "gtest/gtest.h"
 #include <cstdint>
 
 TEST(StdStringOuputStreamTest, StdStringOutputStream)

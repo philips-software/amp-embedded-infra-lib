@@ -2,11 +2,11 @@
 #define SERVICES_MEMORY_MAPPED_STATIC_CONFIGURATION_HPP
 
 #include "hal/interfaces/Flash.hpp"
+#include "infra/event/EventDispatcher.hpp"
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/syntax/ProtoParser.hpp"
-#include "infra/event/EventDispatcher.hpp"
 #include "services/util/Sha256.hpp"
 
 namespace services
@@ -177,7 +177,9 @@ namespace services
         infra::Copy(infra::Head(infra::MakeRange(messageHash), sizeof(Header::hash)), infra::MakeRange(header.hash));
         headerProxy = header;
 
-        flash.EraseAll([this, &streamWriter]() { flash.WriteBuffer(streamWriter.Processed(), 0, [this]() { this->Read(this->onDone); }); });
+        flash.EraseAll([this, &streamWriter]()
+            { flash.WriteBuffer(streamWriter.Processed(), 0, [this]()
+                  { this->Read(this->onDone); }); });
     }
 
     template<class T, class TRef>
@@ -199,10 +201,9 @@ namespace services
     {
         this->onDone = onDone;
         infra::EventDispatcher::Instance().Schedule([this]()
-        {
+            {
             this->LoadConfiguration(memory);
-            this->onDone();
-        });
+            this->onDone(); });
     }
 
     template<class T, class TRef>
@@ -210,7 +211,8 @@ namespace services
     {
         this->onWriteDone = onDone;
         streamWriter = std::make_shared<infra::ByteOutputStreamWriter::WithStorage<T::maxMessageSize + sizeof(typename WritableConfiguration<T, TRef>::Header)>>();
-        this->WriteConfiguration(newValue, *streamWriter, [this]() { this->streamWriter = nullptr; this->onWriteDone(); });
+        this->WriteConfiguration(newValue, *streamWriter, [this]()
+            { this->streamWriter = nullptr; this->onWriteDone(); });
     }
 
     template<class T, class TRef>
@@ -229,10 +231,9 @@ namespace services
     {
         this->onDone = onDone;
         this->flash.ReadBuffer(streamWriter.Storage(), 0, [this]()
-        {
+            {
             this->LoadConfiguration(streamWriter.Storage());
-            this->onDone();
-        });
+            this->onDone(); });
     }
 
     template<class T, class TRef>

@@ -2,8 +2,8 @@
 #define SERVICES_SSDP_DEVICE_DISCOVERY_HPP
 
 #include "services/network/Datagram.hpp"
-#include "services/network/Multicast.hpp"
 #include "services/network/Http.hpp"
+#include "services/network/Multicast.hpp"
 
 namespace services
 {
@@ -14,7 +14,7 @@ namespace services
     {
     public:
         using SingleObserver<SsdpResponseObserver, SsdpDeviceDiscovery>::SingleObserver;
-    
+
         virtual void Response(IPAddress& address) = 0;
     };
 
@@ -82,7 +82,7 @@ namespace services
             IPVersions ipVersion;
             uint8_t maxWaitResponseTime;
         };
-    
+
     private:
         DatagramFactory& datagramFactory;
         Multicast& multicast;

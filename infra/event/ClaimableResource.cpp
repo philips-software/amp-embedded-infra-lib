@@ -30,7 +30,8 @@ namespace infra
         EnqueueClaimer(claimer, urgent);
 
         if (currentClaim == nullptr)
-            infra::EventDispatcher::Instance().Schedule([this]() { ReEvaluateClaim(); });
+            infra::EventDispatcher::Instance().Schedule([this]()
+                { ReEvaluateClaim(); });
     }
 
     void ClaimableResource::RemoveClaim(ClaimerBase& claimer)
@@ -38,7 +39,8 @@ namespace infra
         if (currentClaim == &claimer)
         {
             currentClaim = nullptr;
-            infra::EventDispatcher::Instance().Schedule([this]() { ReEvaluateClaim(); });
+            infra::EventDispatcher::Instance().Schedule([this]()
+                { ReEvaluateClaim(); });
         }
         else if (!pendingClaims.empty())
             DequeueClaimer(claimer);

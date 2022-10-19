@@ -11,7 +11,8 @@ namespace services
     public:
         struct Config
         {
-            Config() {}
+            Config()
+            {}
 
             infra::Duration initialDelay = std::chrono::milliseconds(500);
             infra::Duration successiveDelay = std::chrono::milliseconds(250);

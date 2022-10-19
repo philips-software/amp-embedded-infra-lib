@@ -21,17 +21,22 @@ jobs:
     name: Formatting
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
       - uses: DoozyX/clang-format-lint-action@2ec1a72dfb593e52255693c9039e6d94984187dc
         with:
           clangFormatVersion: 14
           inplace: true
           extensions: "cpp,hpp"
+          exclude: "./external"
+      - uses: reviewdog/action-suggester@v1.6
+        with:
+          tool_name: clang-format
+          filter_mode: diff_context
   linter:
     name: Linting
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
         with:
           fetch-depth: 0
       - uses: oxsecurity/megalinter@v6

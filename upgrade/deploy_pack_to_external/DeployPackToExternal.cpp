@@ -7,7 +7,8 @@ namespace application
         , to(to_)
         , header()
     {
-        sequencer.Load([this]() {
+        sequencer.Load([this]()
+            {
             sequencer.Step([this]() { from.ReadBuffer(infra::MakeByteRange(header), 0, [this]() { sequencer.Continue(); }); });
             sequencer.Execute([this]() { sizeToDo = header.signedContentsLength + sizeof(UpgradePackHeaderPrologue) + header.signatureLength; });
             sequencer.If([this]() { return header.status != UpgradePackStatus::readyToDeploy; });
@@ -39,7 +40,6 @@ namespace application
                 sequencer.Execute([this]() { GetObserver().Done(); });
             sequencer.Else();
                 sequencer.Execute([this]() { GetObserver().DoesntFit(); });
-            sequencer.EndIf();
-        });
+            sequencer.EndIf(); });
     }
 }

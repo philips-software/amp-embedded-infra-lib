@@ -1,7 +1,8 @@
 #include "infra/stream/Formatter.hpp"
 #include "gtest/gtest.h"
 
-class FormatTest : public testing::Test
+class FormatTest
+    : public testing::Test
 {
 protected:
     template<typename... Args>
@@ -216,8 +217,6 @@ namespace
         TestFormatObject() = default;
         TestFormatObject(const TestFormatObject&) = delete;
         TestFormatObject& operator=(const TestFormatObject&) = delete;
-        TestFormatObject(TestFormatObject&& other) noexcept {}
-        TestFormatObject& operator=(TestFormatObject&& other) noexcept { return *this; }
         ~TestFormatObject() = default;
 
         int v{ 9 };

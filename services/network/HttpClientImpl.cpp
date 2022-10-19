@@ -105,8 +105,7 @@ namespace services
         bodyReaderAccess.SetAction([self]()
             {
                 if (auto sharedSelf = self.lock())
-                    sharedSelf->BodyReaderDestroyed();
-            });
+                    sharedSelf->BodyReaderDestroyed(); });
     }
 
     void HttpClientImpl::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -191,10 +190,7 @@ namespace services
 
             if (headerParsingDone)
             {
-                if (contentLength == infra::none && (statusCode == HttpStatusCode::Continue
-                    || statusCode == HttpStatusCode::SwitchingProtocols
-                    || statusCode == HttpStatusCode::NoContent
-                    || statusCode == HttpStatusCode::NotModified))
+                if (contentLength == infra::none && (statusCode == HttpStatusCode::Continue || statusCode == HttpStatusCode::SwitchingProtocols || statusCode == HttpStatusCode::NoContent || statusCode == HttpStatusCode::NotModified))
                     contentLength = 0;
             }
         }
@@ -419,8 +415,7 @@ namespace services
 
                 forwardStreamPtr = nullptr;
 
-                Activate();
-            });
+                Activate(); });
 
         client.Observer().SendStreamAvailable(forwardStreamAccess.MakeShared(*forwardStreamPtr));
     }
@@ -636,8 +631,8 @@ namespace services
     {
         switch (code)
         {
-            case HttpStatusCode::MovedPermanently: // 301
-            case HttpStatusCode::SeeOther: // 303
+            case HttpStatusCode::MovedPermanently:  // 301
+            case HttpStatusCode::SeeOther:          // 303
             case HttpStatusCode::TemporaryRedirect: // 307
             case HttpStatusCode::PermanentRedirect: // 308
                 if (redirectionCount != maxRedirection)

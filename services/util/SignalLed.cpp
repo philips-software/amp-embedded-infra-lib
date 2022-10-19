@@ -4,7 +4,8 @@ namespace services
 {
     SignalLed::SignalLed(hal::GpioPin& led, uint32_t pattern, uint8_t length, infra::Duration duration)
         : led(led)
-        , timer(duration, [this]() { OnTimer(); })
+        , timer(duration, [this]()
+              { OnTimer(); })
     {
         Set(pattern, length);
     }

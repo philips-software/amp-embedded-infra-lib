@@ -28,4 +28,5 @@ if (EMIL_BUILD_WIN)
         Main.cpp
     )
 
+    emil_clangformat_target(protobuf.echo_console)
 endif()

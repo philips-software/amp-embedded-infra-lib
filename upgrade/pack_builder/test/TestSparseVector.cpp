@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "upgrade/pack_builder/SparseVector.hpp"
+#include "gtest/gtest.h"
 
 class SparseVectorTest
     : public testing::Test

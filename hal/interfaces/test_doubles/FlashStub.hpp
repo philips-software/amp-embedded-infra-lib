@@ -12,7 +12,6 @@ namespace hal
     using FlashStub = FlashStubBase<uint32_t>;
     using FlashStub64 = FlashStubBase<uint64_t>;
 
-
     template<class T>
     class FlashStubBase
         : public hal::FlashBase<T>

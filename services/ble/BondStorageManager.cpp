@@ -42,14 +42,11 @@ namespace services
     void BondStorageManagerImpl::SyncBondStorages()
     {
         otherBondStorage.RemoveBondIf([this](hal::MacAddress address)
-            {
-                return !referenceBondStorage.IsBondStored(address);
-            });
+            { return !referenceBondStorage.IsBondStored(address); });
 
         referenceBondStorage.IterateBondedDevices([this](hal::MacAddress address)
             {
                 if (!otherBondStorage.IsBondStored(address))
-                    otherBondStorage.UpdateBondedDevice(address);
-            });
+                    otherBondStorage.UpdateBondedDevice(address); });
     }
 }

@@ -24,7 +24,7 @@ namespace infra
     private:
         TimePoint triggerStart;
         Duration triggerPeriod;
-        int howMany = 0;
+        int howMany{ 0 };
         infra::Function<void()> action;
         infra::Function<void()> closingAction;
     };

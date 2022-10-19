@@ -1,6 +1,6 @@
-#include "gtest/gtest.h"
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/test_helper/MoveConstructible.hpp"
+#include "gtest/gtest.h"
 #include <functional>
 #include <memory>
 
@@ -28,7 +28,7 @@ TEST(BoundedVectorTest, TestConstructionWith2Elements)
 
 TEST(BoundedVectorTest, TestConstructionWithRange)
 {
-    int range[3] = { 0, 1, 2};
+    int range[3] = { 0, 1, 2 };
     infra::BoundedVector<int>::WithMaxSize<5> vector(range, range + 3);
 
     EXPECT_EQ(3, vector.size());
@@ -124,7 +124,7 @@ TEST(BoundedVectorTest, TestMove)
 
 TEST(BoundedVectorTest, TestBeginAndEnd)
 {
-    int range[3] = { 0, 1, 2};
+    int range[3] = { 0, 1, 2 };
     infra::BoundedVector<int>::WithMaxSize<5> vector(range, range + 3);
 
     EXPECT_EQ(vector.end(), vector.begin() + 3);
@@ -185,7 +185,7 @@ TEST(BoundedVectorTest, TestFull)
 
 TEST(BoundedVectorTest, TestFront)
 {
-    int range[3] = { 0, 1, 2};
+    int range[3] = { 0, 1, 2 };
     infra::BoundedVector<int>::WithMaxSize<5> vector(range, range + 3);
 
     EXPECT_EQ(0, vector.front());
@@ -194,7 +194,7 @@ TEST(BoundedVectorTest, TestFront)
 
 TEST(BoundedVectorTest, TestBack)
 {
-    int range[3] = { 0, 1, 2};
+    int range[3] = { 0, 1, 2 };
     infra::BoundedVector<int>::WithMaxSize<5> vector(range, range + 3);
 
     EXPECT_EQ(2, vector.back());
@@ -211,7 +211,7 @@ TEST(BoundedVectorTest, TestData)
 
 TEST(BoundedVectorTest, TestAssignRange)
 {
-    int range[3] = { 0, 1, 2};
+    int range[3] = { 0, 1, 2 };
     infra::BoundedVector<int>::WithMaxSize<5> vector(range, range + 3);
 
     int otherRange[2] = { 4, 5 };
@@ -224,7 +224,7 @@ TEST(BoundedVectorTest, TestAssignRange)
 
 TEST(BoundedVectorTest, TestAssignN)
 {
-    int range[3] = { 0, 1, 2};
+    int range[3] = { 0, 1, 2 };
     infra::BoundedVector<int>::WithMaxSize<5> vector(range, range + 3);
 
     vector.assign(std::size_t(2), 4);
@@ -253,7 +253,7 @@ TEST(BoundedVectorTest, TestPopBack)
 
 TEST(BoundedVectorTest, TestInsertOneInTheMiddle)
 {
-    int range[3] = { 0, 1, 2};
+    int range[3] = { 0, 1, 2 };
     infra::BoundedVector<int>::WithMaxSize<5> vector(range, range + 3);
 
     vector.insert(vector.begin() + 1, 5);
@@ -265,7 +265,7 @@ TEST(BoundedVectorTest, TestInsertOneInTheMiddle)
 
 TEST(BoundedVectorTest, TestInsertOneAtTheEnd)
 {
-    int range[3] = { 0, 1, 2};
+    int range[3] = { 0, 1, 2 };
     infra::BoundedVector<int>::WithMaxSize<5> vector(range, range + 3);
 
     vector.insert(vector.end(), 5);
@@ -277,7 +277,7 @@ TEST(BoundedVectorTest, TestInsertOneAtTheEnd)
 
 TEST(BoundedVectorTest, TestInsertManyInTheMiddle)
 {
-    int range[3] = { 0, 1, 2};
+    int range[3] = { 0, 1, 2 };
     infra::BoundedVector<int>::WithMaxSize<5> vector(range, range + 3);
 
     vector.insert(vector.begin() + 2, std::size_t(2), 5);
@@ -289,7 +289,7 @@ TEST(BoundedVectorTest, TestInsertManyInTheMiddle)
 
 TEST(BoundedVectorTest, TestInsertManyAtTheFront)
 {
-    int range[3] = { 0, 1, 2};
+    int range[3] = { 0, 1, 2 };
     infra::BoundedVector<int>::WithMaxSize<5> vector(range, range + 3);
 
     vector.insert(vector.begin(), std::size_t(2), 5);
@@ -301,7 +301,7 @@ TEST(BoundedVectorTest, TestInsertManyAtTheFront)
 
 TEST(BoundedVectorTest, TestInsertRange)
 {
-    int range[3] = { 0, 1, 2};
+    int range[3] = { 0, 1, 2 };
     infra::BoundedVector<int>::WithMaxSize<5> vector(range, range + 3);
 
     int insertRange[2] = { 5, 6 };
@@ -314,7 +314,7 @@ TEST(BoundedVectorTest, TestInsertRange)
 
 TEST(BoundedVectorTest, TestEraseOne)
 {
-    int range[3] = { 0, 1, 2};
+    int range[3] = { 0, 1, 2 };
     infra::BoundedVector<int>::WithMaxSize<5> vector(range, range + 3);
 
     vector.erase(vector.begin() + 1);
@@ -326,7 +326,7 @@ TEST(BoundedVectorTest, TestEraseOne)
 
 TEST(BoundedVectorTest, TestEraseRange)
 {
-    int range[3] = { 0, 1, 2};
+    int range[3] = { 0, 1, 2 };
     infra::BoundedVector<int>::WithMaxSize<5> vector(range, range + 3);
 
     vector.erase(vector.begin() + 1, vector.begin() + 3);
@@ -353,7 +353,8 @@ TEST(BoundedVectorTest, TestEraseIf)
     int range[3] = { 0, 1, 2 };
     infra::BoundedVector<int>::WithMaxSize<5> vector(range, range + 3);
 
-    EXPECT_EQ(1, infra::erase_if(vector, [](auto x) { return x == 1; }));
+    EXPECT_EQ(1, infra::erase_if(vector, [](auto x)
+                     { return x == 1; }));
 
     int expectedRange[5] = { 0, 2 };
     infra::BoundedVector<int>::WithMaxSize<5> expectedVector(expectedRange, expectedRange + 2);
@@ -362,9 +363,9 @@ TEST(BoundedVectorTest, TestEraseIf)
 
 TEST(BoundedVectorTest, TestSwap)
 {
-    int range1[3] = { 0, 1, 2};
+    int range1[3] = { 0, 1, 2 };
     infra::BoundedVector<int>::WithMaxSize<5> vector1(range1, range1 + 3);
-    int range2[3] = { 3, 4, 5};
+    int range2[3] = { 3, 4, 5 };
     infra::BoundedVector<int>::WithMaxSize<5> vector2(range2, range2 + 3);
 
     infra::swap(vector1, vector2);
@@ -377,9 +378,9 @@ TEST(BoundedVectorTest, TestSwap)
 
 TEST(BoundedVectorTest, TestSwapLargerWithSmaller)
 {
-    int range1[3] = { 0, 1, 2};
+    int range1[3] = { 0, 1, 2 };
     infra::BoundedVector<int>::WithMaxSize<5> vector1(range1, range1 + 3);
-    int range2[2] = { 3, 4};
+    int range2[2] = { 3, 4 };
     infra::BoundedVector<int>::WithMaxSize<5> vector2(range2, range2 + 2);
 
     infra::swap(vector1, vector2);
@@ -517,4 +518,3 @@ TEST(BoundedVectorTest, unknown_size_reference_can_be_taken)
     vector1[0] = 4;
     EXPECT_EQ(4, vector2[0]);
 }
-

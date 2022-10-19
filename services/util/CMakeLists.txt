@@ -22,8 +22,6 @@ target_sources(services.util PRIVATE
     DebugLed.hpp
     FlashAlign.cpp
     FlashAlign.hpp
-    FlashDelayedInit.cpp
-    FlashDelayedInit.hpp
     FlashMultipleAccess.cpp
     FlashMultipleAccess.hpp
     FlashQuadSpi.cpp
@@ -69,6 +67,8 @@ target_sources(services.util PRIVATE
     TimeWithLocalization.hpp
     WritableConfiguration.hpp
 )
+
+emil_clangformat_target(services.util)
 
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)

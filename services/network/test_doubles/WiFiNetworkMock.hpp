@@ -1,9 +1,9 @@
 #ifndef SERVICES_WIFI_NETWORK_MOCK_HPP
 #define SERVICES_WIFI_NETWORK_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "infra/util/test_helper/BoundedStringMatcher.hpp"
 #include "services/network/WiFiNetwork.hpp"
+#include "gmock/gmock.h"
 
 namespace services
 {

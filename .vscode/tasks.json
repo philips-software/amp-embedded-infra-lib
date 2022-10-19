@@ -1,0 +1,25 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "cmake",
+      "label": "Linter",
+      "command": "build",
+      "targets": ["lint"],
+      "preset": "${command:cmake.activeBuildPresetName}",
+      "group": "build",
+      "problemMatcher": [],
+      "detail": "Run aggregated linters on the entire codebase"
+    },
+    {
+      "type": "cmake",
+      "label": "Formatter",
+      "command": "build",
+      "targets": ["clangformat"],
+      "preset": "${command:cmake.activeBuildPresetName}",
+      "group": "build",
+      "problemMatcher": [],
+      "detail": "Run formatter on entire codebase"
+    }
+  ]
+}

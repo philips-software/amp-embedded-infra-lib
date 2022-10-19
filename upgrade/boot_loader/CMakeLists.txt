@@ -40,6 +40,8 @@ target_sources(upgrade.boot_loader PRIVATE
     VerifierHashOnly.hpp
 )
 
+emil_clangformat_target(upgrade.boot_loader)
+
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
 endif()

@@ -2,11 +2,11 @@
 #define LWIP_DATAGRAM_LW_IP_HPP
 
 #include "infra/timer/Timer.hpp"
+#include "infra/util/PolymorphicVariant.hpp"
 #include "infra/util/SharedObjectAllocatorFixedSize.hpp"
 #include "infra/util/SharedOptional.hpp"
-#include "infra/util/PolymorphicVariant.hpp"
-#include "lwip/udp.h"
 #include "lwip/lwip_cpp/ConnectionLwIp.hpp"
+#include "lwip/udp.h"
 #include "services/network/Datagram.hpp"
 
 namespace services

@@ -1,5 +1,5 @@
-#include "infra/event/EventDispatcher.hpp"
 #include "services/util/FlashQuadSpiMicronN25q.hpp"
+#include "infra/event/EventDispatcher.hpp"
 
 namespace services
 {
@@ -21,12 +21,11 @@ namespace services
         , onInitialized(onInitialized)
     {
         sequencer.Load([this]()
-        {
+            {
             sequencer.Step([this]() { initDelayTimer.Start(std::chrono::milliseconds(1), [this]() { sequencer.Continue(); }); });
             sequencer.Step([this]() { WriteEnableSingleSpeed(); });
             sequencer.Step([this]() { SwitchToQuadSpeed(); });
-            sequencer.Step([this]() { infra::EventDispatcher::Instance().Schedule([this]() { this->onInitialized(); }); });
-        });
+            sequencer.Step([this]() { infra::EventDispatcher::Instance().Schedule([this]() { this->onInitialized(); }); }); });
     }
 
     void FlashQuadSpiMicronN25q::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
@@ -39,19 +38,22 @@ namespace services
     void FlashQuadSpiMicronN25q::WriteEnableSingleSpeed()
     {
         static const hal::QuadSpi::Header writeEnableHeader{ infra::MakeOptional(commandWriteEnable), {}, {}, 0 };
-        spi.SendData(writeEnableHeader, {}, hal::QuadSpi::Lines::SingleSpeed(), [this]() { sequencer.Continue(); });
+        spi.SendData(writeEnableHeader, {}, hal::QuadSpi::Lines::SingleSpeed(), [this]()
+            { sequencer.Continue(); });
     }
 
     void FlashQuadSpiMicronN25q::SwitchToQuadSpeed()
     {
         static const hal::QuadSpi::Header writeVolatileRegisterHeader{ infra::MakeOptional(commandWriteEnhancedVolatileRegister), {}, {}, 0 };
-        spi.SendData(writeVolatileRegisterHeader, infra::MakeByteRange(volatileRegisterForQuadSpeed), hal::QuadSpi::Lines::SingleSpeed(), [this]() { sequencer.Continue(); });
+        spi.SendData(writeVolatileRegisterHeader, infra::MakeByteRange(volatileRegisterForQuadSpeed), hal::QuadSpi::Lines::SingleSpeed(), [this]()
+            { sequencer.Continue(); });
     }
 
     void FlashQuadSpiMicronN25q::WriteEnable()
     {
         static const hal::QuadSpi::Header writeEnableHeader{ infra::MakeOptional(commandWriteEnable), {}, {}, 0 };
-        spi.SendData(writeEnableHeader, {}, hal::QuadSpi::Lines::QuadSpeed(), [this]() { sequencer.Continue(); });
+        spi.SendData(writeEnableHeader, {}, hal::QuadSpi::Lines::QuadSpeed(), [this]()
+            { sequencer.Continue(); });
     }
 
     void FlashQuadSpiMicronN25q::EraseSomeSectors(uint32_t endIndex)
@@ -76,24 +78,28 @@ namespace services
     void FlashQuadSpiMicronN25q::SendEraseSubSector(uint32_t subSectorIndex)
     {
         hal::QuadSpi::Header eraseSubSectorHeader{ infra::MakeOptional(commandEraseSubSector), ConvertAddress(AddressOfSector(subSectorIndex)), {}, 0 };
-        spi.SendData(eraseSubSectorHeader, {}, hal::QuadSpi::Lines::QuadSpeed(), [this]() { sequencer.Continue(); });
+        spi.SendData(eraseSubSectorHeader, {}, hal::QuadSpi::Lines::QuadSpeed(), [this]()
+            { sequencer.Continue(); });
     }
 
     void FlashQuadSpiMicronN25q::SendEraseSector(uint32_t subSectorIndex)
     {
         hal::QuadSpi::Header eraseSectorHeader{ infra::MakeOptional(commandEraseSector), ConvertAddress(AddressOfSector(subSectorIndex)), {}, 0 };
-        spi.SendData(eraseSectorHeader, {}, hal::QuadSpi::Lines::QuadSpeed(), [this]() { sequencer.Continue(); });
+        spi.SendData(eraseSectorHeader, {}, hal::QuadSpi::Lines::QuadSpeed(), [this]()
+            { sequencer.Continue(); });
     }
 
     void FlashQuadSpiMicronN25q::SendEraseBulk()
     {
         static const hal::QuadSpi::Header eraseBulkHeader{ infra::MakeOptional(commandEraseBulk), {}, {}, 0 };
-        spi.SendData(eraseBulkHeader, {}, hal::QuadSpi::Lines::QuadSpeed(), [this]() { sequencer.Continue(); });
+        spi.SendData(eraseBulkHeader, {}, hal::QuadSpi::Lines::QuadSpeed(), [this]()
+            { sequencer.Continue(); });
     }
 
     void FlashQuadSpiMicronN25q::HoldWhileWriteInProgress()
     {
         static const hal::QuadSpi::Header pollWriteInProgressHeader{ infra::MakeOptional(commandReadStatusRegister), {}, {}, 0 };
-        spi.PollStatus(pollWriteInProgressHeader, 1, 0, statusFlagWriteInProgress, hal::QuadSpi::Lines::QuadSpeed(), [this]() { sequencer.Continue(); });
+        spi.PollStatus(pollWriteInProgressHeader, 1, 0, statusFlagWriteInProgress, hal::QuadSpi::Lines::QuadSpeed(), [this]()
+            { sequencer.Continue(); });
     }
 }

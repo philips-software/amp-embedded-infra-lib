@@ -20,7 +20,7 @@ namespace services
             ParseSnippetTextRequest();
         else
             requestType = RequestType::Invalid;
-    }   
+    }
 
     bool CucumberWireProtocolParser::Valid(infra::BoundedConstString inputString)
     {

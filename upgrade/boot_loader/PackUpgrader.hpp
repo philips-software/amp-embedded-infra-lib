@@ -1,9 +1,9 @@
 #ifndef UPGRADE_PACK_UPGRADER_HPP
 #define UPGRADE_PACK_UPGRADER_HPP
 
-#include "upgrade/boot_loader/ImageUpgrader.hpp"
-#include "infra/util/ByteRange.hpp"
 #include "hal/synchronous_interfaces/SynchronousFlash.hpp"
+#include "infra/util/ByteRange.hpp"
+#include "upgrade/boot_loader/ImageUpgrader.hpp"
 #include "upgrade/pack/UpgradePackHeader.hpp"
 
 namespace application

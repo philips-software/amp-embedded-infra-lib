@@ -17,6 +17,8 @@ target_sources(services.ble PRIVATE
     Uuids.hpp
 )
 
+emil_clangformat_target(services.ble)
+
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
 endif()

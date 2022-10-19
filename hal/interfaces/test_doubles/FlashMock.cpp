@@ -55,7 +55,9 @@ namespace hal
     {
         EXPECT_CALL(*this, NumberOfSectors()).WillRepeatedly(testing::Return(numberOfSectors));
         EXPECT_CALL(*this, SizeOfSector(testing::_)).WillRepeatedly(testing::Return(sizeOfEachSector));
-        EXPECT_CALL(*this, SectorOfAddress(testing::_)).WillRepeatedly(testing::Invoke([sizeOfEachSector](uint32_t address) { return address % sizeOfEachSector; }));
-        EXPECT_CALL(*this, AddressOfSector(testing::_)).WillRepeatedly(testing::Invoke([sizeOfEachSector](uint32_t sectorIndex) { return sectorIndex * sizeOfEachSector; }));
+        EXPECT_CALL(*this, SectorOfAddress(testing::_)).WillRepeatedly(testing::Invoke([sizeOfEachSector](uint32_t address)
+            { return address % sizeOfEachSector; }));
+        EXPECT_CALL(*this, AddressOfSector(testing::_)).WillRepeatedly(testing::Invoke([sizeOfEachSector](uint32_t sectorIndex)
+            { return sectorIndex * sizeOfEachSector; }));
     }
 }

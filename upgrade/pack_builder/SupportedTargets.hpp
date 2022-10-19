@@ -18,11 +18,30 @@ namespace application
         friend class SupportedTargetsBuilder;
         static SupportedTargetsBuilder Create();
 
-        const auto& CmdTargets() const { return cmd; }
-        const auto& HexTargets() const { return hex; }
-        const auto& ElfTargets() const { return elf; }
-        const auto& BinTargets() const { return bin; }
-        const auto& MandatoryTargets() const { return mandatory; }
+        const auto& CmdTargets() const
+        {
+            return cmd;
+        }
+
+        const auto& HexTargets() const
+        {
+            return hex;
+        }
+
+        const auto& ElfTargets() const
+        {
+            return elf;
+        }
+
+        const auto& BinTargets() const
+        {
+            return bin;
+        }
+
+        const auto& MandatoryTargets() const
+        {
+            return mandatory;
+        }
 
     private:
         std::vector<Target> cmd;
@@ -36,7 +55,10 @@ namespace application
     class SupportedTargetsBuilder
     {
     public:
-        operator SupportedTargets() const { return targets; }
+        operator SupportedTargets() const
+        {
+            return targets;
+        }
 
         SupportedTargetsBuilder& Mandatory();
         SupportedTargetsBuilder& Optional();

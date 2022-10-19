@@ -51,6 +51,8 @@ if (EMIL_HOST_BUILD)
         UpgradePackInputFactory.hpp
     )
 
+    emil_clangformat_target(upgrade.pack_builder)
+
     if (EMIL_BUILD_TESTS)
         add_subdirectory(test)
     endif()

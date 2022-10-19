@@ -1,5 +1,5 @@
-#include "mbedtls/sha256.h"
 #include "upgrade/pack_builder/ImageSignerHashOnly.hpp"
+#include "mbedtls/sha256.h"
 
 namespace application
 {

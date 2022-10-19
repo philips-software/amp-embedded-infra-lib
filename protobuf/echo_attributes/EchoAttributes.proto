@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option java_package = "com.philips.emil.protobufEcho";
+option java_package = "com.philips.emil.ProtobufEcho";
 option java_outer_classname = "EchoAttributesProto";
 
 import "google/protobuf/descriptor.proto";

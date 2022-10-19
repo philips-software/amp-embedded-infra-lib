@@ -1,5 +1,5 @@
-#include "infra/event/EventDispatcher.hpp"
 #include "services/util/FlashSpi.hpp"
+#include "infra/event/EventDispatcher.hpp"
 
 namespace services
 {
@@ -27,14 +27,13 @@ namespace services
         this->buffer = buffer;
         this->address = address;
         sequencer.Load([this]()
-        {
+            {
             sequencer.While([this]() { return !this->buffer.empty(); });
                 sequencer.Step([this]() { WriteEnable(); });
                 sequencer.Step([this]() { PageProgram(); });
                 HoldWhileWriteInProgress();
             sequencer.EndWhile();
-            sequencer.Execute([this]() { infra::EventDispatcher::Instance().Schedule([this]() { this->onDone(); }); });
-        });
+            sequencer.Execute([this]() { infra::EventDispatcher::Instance().Schedule([this]() { this->onDone(); }); }); });
     }
 
     void FlashSpi::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
@@ -45,12 +44,8 @@ namespace services
         instructionAndAddress.address = ConvertAddress(address);
 
         spi.SendData(infra::MakeByteRange(instructionAndAddress), hal::SpiAction::continueSession, [this]()
-        {
-            spi.ReceiveData(readBuffer, hal::SpiAction::stop, [this]()
-            {
-                this->onDone();
-            });
-        });
+            { spi.ReceiveData(readBuffer, hal::SpiAction::stop, [this]()
+                  { this->onDone(); }); });
     }
 
     void FlashSpi::EraseSectors(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone)
@@ -58,14 +53,13 @@ namespace services
         this->onDone = onDone;
         sectorIndex = beginIndex;
         sequencer.Load([this, endIndex]()
-        {
+            {
             sequencer.While([this, endIndex]() { return sectorIndex != endIndex; });
                 sequencer.Step([this]() { WriteEnable(); });
                 sequencer.Step([this, endIndex]() { EraseSomeSectors(endIndex); });
                 HoldWhileWriteInProgress();
             sequencer.EndWhile();
-            sequencer.Execute([this]() { infra::EventDispatcher::Instance().Schedule([this]() { this->onDone(); }); });
-        });
+            sequencer.Execute([this]() { infra::EventDispatcher::Instance().Schedule([this]() { this->onDone(); }); }); });
     }
 
     void FlashSpi::ReadFlashId(infra::ByteRange buffer, infra::Function<void()> onDone)
@@ -74,12 +68,8 @@ namespace services
         readBuffer = buffer;
 
         spi.SendData(infra::MakeByteRange(commandReadId), hal::SpiAction::continueSession, [this]()
-        {
-            spi.ReceiveData(readBuffer, hal::SpiAction::stop, [this]()
-            {
-                this->onDone();
-            });
-        });
+            { spi.ReceiveData(readBuffer, hal::SpiAction::stop, [this]()
+                  { this->onDone(); }); });
     }
 
     std::array<uint8_t, 3> FlashSpi::ConvertAddress(uint32_t address) const
@@ -97,9 +87,7 @@ namespace services
         static const uint8_t command = commandWriteEnable;
 
         spi.SendData(infra::MakeByteRange(command), hal::SpiAction::stop, [this]()
-        {
-            sequencer.Continue();
-        });
+            { sequencer.Continue(); });
     }
 
     void FlashSpi::PageProgram()
@@ -109,16 +97,12 @@ namespace services
 
         instructionAndAddress.instruction = commandPageProgram;
         instructionAndAddress.address = ConvertAddress(address);
-        
+
         address += writeBuffer.size();
 
         spi.SendData(infra::MakeByteRange(instructionAndAddress), hal::SpiAction::continueSession, [this]()
-        {
-            spi.SendData(writeBuffer, hal::SpiAction::stop, [this]()
-            {
-                sequencer.Continue();
-            });
-        });
+            { spi.SendData(writeBuffer, hal::SpiAction::stop, [this]()
+                  { sequencer.Continue(); }); });
     }
 
     void FlashSpi::EraseSomeSectors(uint32_t endIndex)
@@ -146,9 +130,7 @@ namespace services
         instructionAndAddress.address = ConvertAddress(AddressOfSector(subSectorIndex));
 
         spi.SendData(infra::MakeByteRange(instructionAndAddress), hal::SpiAction::stop, [this]()
-        {
-            sequencer.Continue();
-        });
+            { sequencer.Continue(); });
     }
 
     void FlashSpi::SendEraseSector(uint32_t subSectorIndex)
@@ -157,9 +139,7 @@ namespace services
         instructionAndAddress.address = ConvertAddress(AddressOfSector(subSectorIndex));
 
         spi.SendData(infra::MakeByteRange(instructionAndAddress), hal::SpiAction::stop, [this]()
-        {
-            sequencer.Continue();
-        });
+            { sequencer.Continue(); });
     }
 
     void FlashSpi::SendEraseBulk()
@@ -167,17 +147,20 @@ namespace services
         instructionAndAddress.instruction = commandEraseBulk;
 
         spi.SendData(infra::MakeByteRange(instructionAndAddress.instruction), hal::SpiAction::stop, [this]()
-        {
-            sequencer.Continue();
-        });
+            { sequencer.Continue(); });
     }
 
     void FlashSpi::HoldWhileWriteInProgress()
     {
-        sequencer.Step([this]() { ReadStatusRegister(); });
-        sequencer.While([this]() { return (statusRegister & 1) == 1; });
-            sequencer.Step([this]() { delayTimer.Start(std::chrono::milliseconds(1), [this]() { sequencer.Continue(); }); });
-            sequencer.Step([this]() { ReadStatusRegister(); });
+        sequencer.Step([this]()
+            { ReadStatusRegister(); });
+        sequencer.While([this]()
+            { return (statusRegister & 1) == 1; });
+        sequencer.Step([this]()
+            { delayTimer.Start(std::chrono::milliseconds(1), [this]()
+                  { sequencer.Continue(); }); });
+        sequencer.Step([this]()
+            { ReadStatusRegister(); });
         sequencer.EndWhile();
     }
 
@@ -186,11 +169,7 @@ namespace services
         static const uint8_t instruction = commandReadStatusRegister;
 
         spi.SendData(infra::MakeByteRange(instruction), hal::SpiAction::continueSession, [this]()
-        {
-            spi.ReceiveData(infra::MakeByteRange(statusRegister), hal::SpiAction::stop, [this]()
-            {
-                sequencer.Continue();
-            });
-        });
+            { spi.ReceiveData(infra::MakeByteRange(statusRegister), hal::SpiAction::stop, [this]()
+                  { sequencer.Continue(); }); });
     }
 }

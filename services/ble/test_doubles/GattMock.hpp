@@ -1,8 +1,8 @@
 #ifndef SERVICES_GATT_MOCK_HPP
 #define SERVICES_GATT_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "services/ble/Gatt.hpp"
+#include "gmock/gmock.h"
 
 namespace services
 {

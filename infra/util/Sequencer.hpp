@@ -16,7 +16,7 @@ namespace infra
         using Function = infra::Function<void(), INFRA_SEQUENCER_FUNCTION_EXTRA_SIZE>;
 
         void Load(const Function& newSequence);
-        
+
         void Step(const Function& action);
         void Execute(const Function& action);
         void If(const infra::Function<bool()>& condition);

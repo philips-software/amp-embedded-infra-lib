@@ -15,7 +15,7 @@ namespace infra
 
     class JsonArrayFormatter;
     class JsonStringStream;
-    
+
     class JsonObjectFormatter
     {
     public:
@@ -89,7 +89,7 @@ namespace infra
         bool empty = true;
     };
 
-    void Merge(infra::JsonObjectFormatter& formatter, infra::JsonObject& object, infra::BoundedConstString path,const infra::JsonValue& valueToMerge);
+    void Merge(infra::JsonObjectFormatter& formatter, infra::JsonObject& object, infra::BoundedConstString path, const infra::JsonValue& valueToMerge);
 
     class JsonArrayFormatter
     {

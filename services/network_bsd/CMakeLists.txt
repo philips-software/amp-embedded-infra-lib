@@ -14,4 +14,6 @@ if (EMIL_BUILD_UNIX OR EMIL_BUILD_DARWIN)
         NameLookupBsd.cpp
         NameLookupBsd.hpp
     )
+
+    emil_clangformat_target(services.network_bsd)
 endif()

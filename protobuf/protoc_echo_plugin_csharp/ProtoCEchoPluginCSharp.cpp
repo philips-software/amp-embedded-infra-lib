@@ -1,9 +1,9 @@
+#include "protobuf/protoc_echo_plugin_csharp/ProtoCEchoPluginCSharp.hpp"
 #include "generated/EchoAttributes.pb.h"
 #include "google/protobuf/compiler/cpp/cpp_helpers.h"
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/stubs/strutil.h"
-#include "protobuf/protoc_echo_plugin_csharp/ProtoCEchoPluginCSharp.hpp"
 #include <sstream>
 
 namespace application
@@ -12,44 +12,56 @@ namespace application
     {
         std::string UnderscoresToCamelCase(const std::string& input,
             bool cap_next_letter,
-            bool preserve_period = true) {
+            bool preserve_period = true)
+        {
             std::string result;
             // Note:  I distrust ctype.h due to locales.
-            for (int i = 0; i < input.size(); i++) {
-                if ('a' <= input[i] && input[i] <= 'z') {
-                    if (cap_next_letter) {
+            for (int i = 0; i < input.size(); i++)
+            {
+                if ('a' <= input[i] && input[i] <= 'z')
+                {
+                    if (cap_next_letter)
+                    {
                         result += input[i] + ('A' - 'a');
                     }
-                    else {
+                    else
+                    {
                         result += input[i];
                     }
                     cap_next_letter = false;
                 }
-                else if ('A' <= input[i] && input[i] <= 'Z') {
-                    if (i == 0 && !cap_next_letter) {
+                else if ('A' <= input[i] && input[i] <= 'Z')
+                {
+                    if (i == 0 && !cap_next_letter)
+                    {
                         // Force first letter to lower-case unless explicitly told to
                         // capitalize it.
                         result += input[i] + ('a' - 'A');
                     }
-                    else {
+                    else
+                    {
                         // Capital letters after the first are left as-is.
                         result += input[i];
                     }
                     cap_next_letter = false;
                 }
-                else if ('0' <= input[i] && input[i] <= '9') {
+                else if ('0' <= input[i] && input[i] <= '9')
+                {
                     result += input[i];
                     cap_next_letter = true;
                 }
-                else {
+                else
+                {
                     cap_next_letter = true;
-                    if (input[i] == '.' && preserve_period) {
+                    if (input[i] == '.' && preserve_period)
+                    {
                         result += '.';
                     }
                 }
             }
             // Add a trailing "_" if the name should be altered.
-            if (input[input.size() - 1] == '#') {
+            if (input[input.size() - 1] == '#')
+            {
                 result += '_';
             }
             return result;
@@ -101,7 +113,8 @@ namespace application
     {
         printer.Print(R"(        const int serviceId = $id$;
 
-)", "id", google::protobuf::SimpleItoa(serviceId));
+)",
+            "id", google::protobuf::SimpleItoa(serviceId));
 
         for (int i = 0; i != service.method_count(); ++i)
         {
@@ -134,7 +147,8 @@ namespace application
         printer.Print(R"(    public class $name$
         : Service
     {
-)", "name", service.name());
+)",
+            "name", service.name());
     }
 
     void CSharpServiceGenerator::GenerateDelegates()
@@ -157,7 +171,8 @@ namespace application
             : base(echo, serviceId)
         {}
 
-)", "name", service.name());
+)",
+            "name", service.name());
     }
 
     void CSharpServiceGenerator::GenerateHandle()
@@ -178,15 +193,16 @@ namespace application
                     $method$?.Invoke(parameter);
                     break;
                 }
-)", "method_type", service.method(i)->name(), "method", service.method(i)->name(), "parameter_type", QualifiedName(*service.method(i)->input_type()));
+)",
+                    "method_type", service.method(i)->name(), "method", service.method(i)->name(), "parameter_type", QualifiedName(*service.method(i)->input_type()));
             else
                 printer.Print(R"(                case id$method_type$:
                 {
                     $method$?.Invoke();
                     break;
                 }
-)", "method_type", service.method(i)->name(), "method", service.method(i)->name());
-
+)",
+                    "method_type", service.method(i)->name(), "method", service.method(i)->name());
         }
 
         printer.Print(R"(            }
@@ -219,7 +235,8 @@ namespace application
         printer.Print(R"(    public class $name$Proxy
         : ServiceProxy
     {
-)", "name", service.name());
+)",
+            "name", service.name());
     }
 
     void CSharpServiceProxyGenerator::GenerateConstructor()
@@ -228,7 +245,8 @@ namespace application
             : base(echo)
         {}
 
-)", "name", service.name());
+)",
+            "name", service.name());
     }
 
     void CSharpServiceProxyGenerator::GenerateMethods()
@@ -237,16 +255,19 @@ namespace application
         {
             if (service.method(i)->input_type()->full_name() != Nothing::descriptor()->full_name())
                 printer.Print(R"(        public void $method$(global::$parameter_type$ parameter)
-)", "method", service.method(i)->name(), "parameter_type", QualifiedName(*service.method(i)->input_type()));
+)",
+                    "method", service.method(i)->name(), "parameter_type", QualifiedName(*service.method(i)->input_type()));
             else
                 printer.Print(R"(        public void $method$()
-)", "method", service.method(i)->name());
+)",
+                    "method", service.method(i)->name());
             printer.Print(R"(        {
             var stream = echo.GetOutputStream();
 
             stream.WriteInt32(serviceId);
             stream.WriteUInt32(pb.WireFormat.MakeTag(id$method$, pb.WireFormat.WireType.LengthDelimited));
-)", "method", service.method(i)->name());
+)",
+                "method", service.method(i)->name());
             if (service.method(i)->input_type()->full_name() != Nothing::descriptor()->full_name())
                 printer.Print(R"(            stream.WriteMessage(parameter);
 )");
@@ -280,7 +301,8 @@ using pb = Google.Protobuf;
 
 namespace IntegrationTestFramework.ProtobufEcho
 {
-)", "filename", file->name());
+)",
+            "filename", file->name());
 
         for (int i = 0; i != file->service_count(); ++i)
         {

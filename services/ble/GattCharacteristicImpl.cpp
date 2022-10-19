@@ -1,5 +1,5 @@
-#include "infra/event/EventDispatcher.hpp"
 #include "services/ble/GattCharacteristicImpl.hpp"
+#include "infra/event/EventDispatcher.hpp"
 #include "infra/util/PostAssign.hpp"
 
 namespace services
@@ -13,11 +13,11 @@ namespace services
     {}
 
     GattCharacteristicImpl::GattCharacteristicImpl(GattService& service, const GattAttribute::Uuid& type, uint16_t valueLength, PropertyFlags properties, PermissionFlags permissions)
-        : service{service}
-        , attribute{type, 0}
-        , valueLength{valueLength}
-        , properties{properties}
-        , permissions{permissions}
+        : service{ service }
+        , attribute{ type, 0 }
+        , valueLength{ valueLength }
+        , properties{ properties }
+        , permissions{ permissions }
     {
         service.AddCharacteristic(*this);
     }
@@ -32,16 +32,16 @@ namespace services
         return permissions;
     }
 
-     uint8_t GattCharacteristicImpl::GetAttributeCount() const
-     {
+    uint8_t GattCharacteristicImpl::GetAttributeCount() const
+    {
         constexpr uint8_t attributeCountWithoutCCCD = 2;
         constexpr uint8_t attributeCountWithCCCD = 3;
-        
+
         if ((properties & (GattCharacteristic::PropertyFlags::notify | GattCharacteristic::PropertyFlags::indicate)) == GattCharacteristic::PropertyFlags::none)
             return attributeCountWithoutCCCD;
-        else 
+        else
             return attributeCountWithCCCD;
-     }
+    }
 
     GattAttribute::Uuid GattCharacteristicImpl::Type() const
     {
@@ -67,8 +67,8 @@ namespace services
     {
         really_assert(data.size() <= valueLength);
         really_assert(GattCharacteristicClientOperationsObserver::Attached());
-        
-        updateContext.Emplace(UpdateContext{onDone, data});
+
+        updateContext.Emplace(UpdateContext{ onDone, data });
         UpdateValue();
     }
 
@@ -85,11 +85,12 @@ namespace services
     void GattCharacteristicImpl::UpdateValue()
     {
         auto status = GattCharacteristicClientOperationsObserver::Subject().Update(*this, updateContext->data);
-        
+
         if (status == UpdateStatus::success)
             infra::PostAssign(updateContext, infra::none)->onDone();
         else if (status == UpdateStatus::retry)
-            infra::EventDispatcher::Instance().Schedule([this](){ UpdateValue(); });
+            infra::EventDispatcher::Instance().Schedule([this]()
+                { UpdateValue(); });
         else
             updateContext = infra::none;
     }

@@ -1,8 +1,8 @@
 #ifndef SYNCHRONOUS_HAL_ENCRYPTOR_MOCK_HPP
 #define SYNCHRONOUS_HAL_ENCRYPTOR_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "hal/synchronous_interfaces/SynchronousEncryptor.hpp"
+#include "gmock/gmock.h"
 
 namespace hal
 {

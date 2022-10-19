@@ -35,6 +35,8 @@ target_sources(hal.interfaces_test_doubles PRIVATE
     SpiMock.hpp
 )
 
+emil_clangformat_target(hal.interfaces_test_doubles)
+
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
 endif()

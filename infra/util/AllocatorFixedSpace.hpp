@@ -15,6 +15,7 @@ namespace infra
         : public Allocator<T, void(ConstructionArgs...)>
     {
         static_assert(sizeof(T) == sizeof(StaticStorage<T>), "sizeof(StaticStorage) must be equal to sizeof(T) else reinterpret_cast will fail");
+
     public:
         ~AllocatorFixedSpace();
 
@@ -43,7 +44,7 @@ namespace infra
     {
         assert(FreeListSize() == elements.size());
     }
-        
+
     template<class T, std::size_t NumberOfElements, class... ConstructionArgs>
     UniquePtr<T> AllocatorFixedSpace<T, NumberOfElements, void(ConstructionArgs...)>::Allocate(ConstructionArgs... args)
     {

@@ -1,8 +1,8 @@
 #ifndef UPGRADE_IMAGE_UPGRADER_HPP
 #define UPGRADE_IMAGE_UPGRADER_HPP
 
-#include "upgrade/boot_loader/Decryptor.hpp"
 #include "hal/synchronous_interfaces/SynchronousFlash.hpp"
+#include "upgrade/boot_loader/Decryptor.hpp"
 
 namespace application
 {

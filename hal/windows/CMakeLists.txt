@@ -20,4 +20,6 @@ if (EMIL_BUILD_WIN)
         UartWindows.cpp
         UartWindows.hpp
     )
+
+    emil_clangformat_target(hal.windows)
 endif()

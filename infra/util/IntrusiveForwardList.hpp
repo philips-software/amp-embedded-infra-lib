@@ -11,10 +11,10 @@ namespace infra
     namespace detail
     {
         template<class T>
-            class IntrusiveForwardListNode;
+        class IntrusiveForwardListNode;
 
         template<class T>
-            class IntrusiveForwardListIterator;
+        class IntrusiveForwardListIterator;
     }
 
     template<class T>
@@ -34,14 +34,14 @@ namespace infra
         typedef std::size_t size_type;
 
     public:
-        IntrusiveForwardList();
+        IntrusiveForwardList() = default;
         template<class InputIterator>
-            IntrusiveForwardList(InputIterator first, InputIterator last);
+        IntrusiveForwardList(InputIterator first, InputIterator last);
         IntrusiveForwardList(const IntrusiveForwardList& other) = delete;
         IntrusiveForwardList(IntrusiveForwardList&& other) noexcept;
         IntrusiveForwardList& operator=(const IntrusiveForwardList& other) = delete;
         IntrusiveForwardList& operator=(IntrusiveForwardList&& other) noexcept;
-        ~IntrusiveForwardList();
+        ~IntrusiveForwardList() = default;
 
     public:
         iterator begin();
@@ -69,7 +69,7 @@ namespace infra
         void erase_slow(const_reference value); // Runs in O(n) time
 
         template<class InputIterator>
-            void assign(InputIterator first, InputIterator last);
+        void assign(InputIterator first, InputIterator last);
 
         void swap(IntrusiveForwardList& other) noexcept;
 
@@ -84,11 +84,11 @@ namespace infra
         bool operator>=(const IntrusiveForwardList& other) const;
 
     private:
-        detail::IntrusiveForwardListNode<T>* beginNode;
+        detail::IntrusiveForwardListNode<T>* beginNode{ nullptr };
     };
 
     template<class T>
-        void swap(IntrusiveForwardList<T>& x, IntrusiveForwardList<T>& y) noexcept;
+    void swap(IntrusiveForwardList<T>& x, IntrusiveForwardList<T>& y) noexcept;
 
     namespace detail
     {
@@ -114,9 +114,9 @@ namespace infra
 
         private:
             template<class>
-                friend class infra::detail::IntrusiveForwardListIterator;
+            friend class infra::detail::IntrusiveForwardListIterator;
             template<class>
-                friend class infra::IntrusiveForwardList;
+            friend class infra::IntrusiveForwardList;
 
             IntrusiveForwardListNode<T>* next;
         };
@@ -134,10 +134,10 @@ namespace infra
             IntrusiveForwardListIterator();
             explicit IntrusiveForwardListIterator(const IntrusiveForwardListNode<typename std::remove_const<T>::type>* node);
             template<class T2>
-                IntrusiveForwardListIterator(const IntrusiveForwardListIterator<T2>& other);
+            IntrusiveForwardListIterator(const IntrusiveForwardListIterator<T2>& other);
 
             template<class T2>
-                IntrusiveForwardListIterator& operator=(const IntrusiveForwardListIterator<T2>& other);
+            IntrusiveForwardListIterator& operator=(const IntrusiveForwardListIterator<T2>& other);
 
             T& operator*() const;
             T* operator->() const;
@@ -146,30 +146,25 @@ namespace infra
             IntrusiveForwardListIterator operator++(int);
 
             template<class T2>
-                bool operator==(const IntrusiveForwardListIterator<T2>& other) const;
+            bool operator==(const IntrusiveForwardListIterator<T2>& other) const;
             template<class T2>
-                bool operator!=(const IntrusiveForwardListIterator<T2>& other) const;
+            bool operator!=(const IntrusiveForwardListIterator<T2>& other) const;
 
         private:
             template<class>
-                friend class infra::detail::IntrusiveForwardListIterator;
+            friend class infra::detail::IntrusiveForwardListIterator;
             template<class>
-                friend class infra::IntrusiveForwardList;
+            friend class infra::IntrusiveForwardList;
 
             const IntrusiveForwardListNode<typename std::remove_const<T>::type>* mNode;
         };
     }
-    ////    Implementation    ////
 
-    template<class T>
-    IntrusiveForwardList<T>::IntrusiveForwardList()
-        : beginNode(nullptr)
-    {}
+    ////    Implementation    ////
 
     template<class T>
     template<class InputIterator>
     IntrusiveForwardList<T>::IntrusiveForwardList(InputIterator first, InputIterator last)
-        : beginNode(nullptr)
     {
         assign(first, last);
     }
@@ -189,10 +184,6 @@ namespace infra
 
         return *this;
     }
-
-    template<class T>
-    IntrusiveForwardList<T>::~IntrusiveForwardList()
-    {}
 
     template<class T>
     typename IntrusiveForwardList<T>::iterator IntrusiveForwardList<T>::begin()

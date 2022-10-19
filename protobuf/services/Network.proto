@@ -3,7 +3,7 @@ syntax = "proto3";
 import "EchoAttributes.proto";
 
 package network;
-option java_package = "com.philips.emil.protobufEcho";
+option java_package = "com.philips.emil.ProtobufEcho";
 option java_outer_classname = "NetworkProto";
 
 message IpConfig

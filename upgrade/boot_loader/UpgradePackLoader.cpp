@@ -1,5 +1,5 @@
-#include "infra/util/Compatibility.hpp"
 #include "upgrade/boot_loader/UpgradePackLoader.hpp"
+#include "infra/util/Compatibility.hpp"
 #include "upgrade/pack/UpgradePackHeader.hpp"
 #include <cstring>
 
@@ -18,7 +18,8 @@ namespace application
         address += sizeof(UpgradePackHeaderPrologue);
 
         bool isSane = (headerPrologue.status == UpgradePackStatus::readyToDeploy ||
-                       headerPrologue.status == UpgradePackStatus::deployStarted) && headerPrologue.magic == upgradePackMagic;
+                          headerPrologue.status == UpgradePackStatus::deployStarted) &&
+                      headerPrologue.magic == upgradePackMagic;
 
         if (!isSane)
             return false;

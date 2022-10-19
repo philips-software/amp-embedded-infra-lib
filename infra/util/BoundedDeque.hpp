@@ -43,7 +43,7 @@ namespace infra
         explicit BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage);
         BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, size_type n, const value_type& value = value_type());
         template<class InputIterator>
-            BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, InputIterator first, InputIterator last);
+        BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, InputIterator first, InputIterator last);
         BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, const BoundedDeque& other);
         BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, BoundedDeque&& other);
         BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, std::initializer_list<T> initializerList);
@@ -105,7 +105,7 @@ namespace infra
         iterator insert(const const_iterator& position, const value_type& value);
         iterator insert(const const_iterator& position, size_type n, const value_type& value);
         template<class InputIterator>
-            iterator insert(const const_iterator& position, InputIterator first, const InputIterator& last);
+        iterator insert(const const_iterator& position, InputIterator first, const InputIterator& last);
         iterator insert(const const_iterator& position, T&& val);
         iterator insert(const const_iterator& position, std::initializer_list<T> initializerList);
 
@@ -159,9 +159,9 @@ namespace infra
             BoundedDequeIterator() = delete;
             BoundedDequeIterator(DequeType* deque, std::size_t offset);
             template<class DequeType2, class T2>
-                BoundedDequeIterator(const BoundedDequeIterator<DequeType2, T2>& other);
+            BoundedDequeIterator(const BoundedDequeIterator<DequeType2, T2>& other);
             template<class DequeType2, class T2>
-                BoundedDequeIterator& operator=(const BoundedDequeIterator<DequeType2, T2>& other);
+            BoundedDequeIterator& operator=(const BoundedDequeIterator<DequeType2, T2>& other);
 
             T& operator*() const;
             T* operator->() const;
@@ -178,21 +178,21 @@ namespace infra
             std::ptrdiff_t operator-(BoundedDequeIterator other) const;
 
             template<class DequeType2, class T2>
-                bool operator==(const BoundedDequeIterator<DequeType2, T2>& other) const;
+            bool operator==(const BoundedDequeIterator<DequeType2, T2>& other) const;
             template<class DequeType2, class T2>
-                bool operator!=(const BoundedDequeIterator<DequeType2, T2>& other) const;
+            bool operator!=(const BoundedDequeIterator<DequeType2, T2>& other) const;
             template<class DequeType2, class T2>
-                bool operator<(const BoundedDequeIterator<DequeType2, T2>& other) const;
+            bool operator<(const BoundedDequeIterator<DequeType2, T2>& other) const;
             template<class DequeType2, class T2>
-                bool operator>(const BoundedDequeIterator<DequeType2, T2>& other) const;
+            bool operator>(const BoundedDequeIterator<DequeType2, T2>& other) const;
             template<class DequeType2, class T2>
-                bool operator<=(const BoundedDequeIterator<DequeType2, T2>& other) const;
+            bool operator<=(const BoundedDequeIterator<DequeType2, T2>& other) const;
             template<class DequeType2, class T2>
-                bool operator>=(const BoundedDequeIterator<DequeType2, T2>& other) const;
+            bool operator>=(const BoundedDequeIterator<DequeType2, T2>& other) const;
 
         private:
             template<class, class>
-                friend class BoundedDequeIterator;
+            friend class BoundedDequeIterator;
             friend DequeType;
 
             std::size_t index;
@@ -680,7 +680,7 @@ namespace infra
         size_type element_index = position - begin();
         move_up(element_index, 1);
         storage[index(element_index)].Construct(std::forward<Args>(args)...);
-        
+
         return iterator(this, element_index);
     }
 

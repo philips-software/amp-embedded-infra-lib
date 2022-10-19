@@ -26,7 +26,8 @@ namespace services
             communicating = true;
 
             uint32_t size = buffer.ContiguousRange().size();
-            communication.SendData(buffer.ContiguousRange(), [this, size]() { CommunicationDone(size); });
+            communication.SendData(buffer.ContiguousRange(), [this, size]()
+                { CommunicationDone(size); });
         }
     }
 

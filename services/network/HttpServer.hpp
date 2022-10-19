@@ -1,9 +1,9 @@
 #ifndef DI_COMM_HTTP_SERVER_HPP
 #define DI_COMM_HTTP_SERVER_HPP
 
-#include "infra/timer/Timer.hpp"
 #include "infra/stream/CountingInputStream.hpp"
 #include "infra/stream/LimitedInputStream.hpp"
+#include "infra/timer/Timer.hpp"
 #include "infra/util/IntrusiveForwardList.hpp"
 #include "infra/util/ProxyCreator.hpp"
 #include "infra/util/SharedOptional.hpp"
@@ -155,7 +155,7 @@ namespace services
     {
     public:
         template<::size_t BufferSize>
-            using WithBuffer = infra::WithStorage<HttpServerConnectionObserver, infra::BoundedString::WithStorage<BufferSize>>;
+        using WithBuffer = infra::WithStorage<HttpServerConnectionObserver, infra::BoundedString::WithStorage<BufferSize>>;
 
         HttpServerConnectionObserver(infra::BoundedString& buffer, HttpPageServer& httpServer);
 
@@ -173,8 +173,11 @@ namespace services
         virtual void TakeOverConnection(ConnectionObserver& newObserver) override;
 
     protected:
-        virtual void SendingHttpResponse(infra::BoundedConstString response) {}
-        virtual void ReceivedHttpRequest(infra::BoundedConstString request) {}
+        virtual void SendingHttpResponse(infra::BoundedConstString response)
+        {}
+
+        virtual void ReceivedHttpRequest(infra::BoundedConstString request)
+        {}
 
         virtual void SetIdle();
         virtual void RequestIsNowInProgress();
@@ -227,7 +230,7 @@ namespace services
     {
     public:
         template<::size_t BufferSize>
-            using WithBuffer = infra::WithStorage<DefaultHttpServer, infra::BoundedString::WithStorage<BufferSize>>;
+        using WithBuffer = infra::WithStorage<DefaultHttpServer, infra::BoundedString::WithStorage<BufferSize>>;
 
         DefaultHttpServer(infra::BoundedString& buffer, ConnectionFactory& connectionFactory, uint16_t port);
 

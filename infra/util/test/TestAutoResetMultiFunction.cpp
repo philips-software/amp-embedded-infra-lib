@@ -1,11 +1,12 @@
-#include "gtest/gtest.h"
 #include "infra/util/AutoResetMultiFunction.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
+#include "gtest/gtest.h"
 
 TEST(AutoResetMultiFunctionTest, IsInvokeable)
 {
     infra::MockCallback<void()> m;
-    infra::AutoResetMultiFunction<void()>::And<void(bool)> f([&m]() { m.callback(); });
+    infra::AutoResetMultiFunction<void()>::And<void(bool)> f([&m]()
+        { m.callback(); });
 
     EXPECT_CALL(m, callback());
     f();
@@ -14,7 +15,8 @@ TEST(AutoResetMultiFunctionTest, IsInvokeable)
 TEST(AutoResetMultiFunctionTest, IsResetAfterInvoke)
 {
     infra::MockCallback<void()> m;
-    infra::AutoResetMultiFunction<void()>::And<void(bool)>::And<void(int)> f([&m]() { m.callback(); });
+    infra::AutoResetMultiFunction<void()>::And<void(bool)>::And<void(int)> f([&m]()
+        { m.callback(); });
 
     EXPECT_CALL(m, callback());
     f();
@@ -26,7 +28,13 @@ TEST(AutoResetMultiFunctionTest, ReAssignDuringInvoke)
     infra::MockCallback<void()> b;
     infra::AutoResetMultiFunction<void()>::And<void(bool)> f;
 
-    f = [&b, &f]() { f = [&b]() { b.callback(); }; };
+    f = [&b, &f]()
+    {
+        f = [&b]()
+        {
+            b.callback();
+        };
+    };
 
     EXPECT_CALL(b, callback());
 
@@ -50,7 +58,8 @@ TEST(AutoResetMultiFunctionTest, TestConstructedEmptyByNullptr)
 TEST(AutoResetMultiFunctionTest, TestMoveAssign)
 {
     infra::MockCallback<void()> m;
-    infra::AutoResetMultiFunction<void()>::And<void(bool)> f([&m]() { m.callback(); });
+    infra::AutoResetMultiFunction<void()>::And<void(bool)> f([&m]()
+        { m.callback(); });
     infra::AutoResetMultiFunction<void()>::And<void(bool)> f2;
     f2 = std::move(f);
     EXPECT_FALSE(static_cast<bool>(f));
@@ -61,7 +70,8 @@ TEST(AutoResetMultiFunctionTest, TestMoveAssign)
 TEST(AutoResetMultiFunctionTest, TestAssignNullptr)
 {
     infra::MockCallback<void()> m;
-    infra::AutoResetMultiFunction<void()>::And<void(bool)> f([&m]() { m.callback(); });
+    infra::AutoResetMultiFunction<void()>::And<void(bool)> f([&m]()
+        { m.callback(); });
     f = nullptr;
     EXPECT_FALSE(f);
 }
@@ -69,7 +79,8 @@ TEST(AutoResetMultiFunctionTest, TestAssignNullptr)
 TEST(AutoResetMultiFunctionTest, TestClone)
 {
     infra::MockCallback<void(int)> m;
-    infra::AutoResetMultiFunction<void(int)> f([&m](int x) { m.callback(x); });
+    infra::AutoResetMultiFunction<void(int)> f([&m](int x)
+        { m.callback(x); });
 
     EXPECT_CALL(m, callback(1));
     f.Clone()(1);
@@ -78,14 +89,16 @@ TEST(AutoResetMultiFunctionTest, TestClone)
 
 TEST(AutoResetMultiFunctionTest, TestReturnValue)
 {
-    infra::AutoResetMultiFunction<int()> f([]() { return 1; });
+    infra::AutoResetMultiFunction<int()> f([]()
+        { return 1; });
     EXPECT_EQ(1, f());
 }
 
 TEST(AutoResetMultiFunctionTest, TestParameter)
 {
     infra::MockCallback<void(int)> m;
-    infra::AutoResetMultiFunction<void(int)> f([&m](int x) { m.callback(x); });
+    infra::AutoResetMultiFunction<void(int)> f([&m](int x)
+        { m.callback(x); });
     EXPECT_CALL(m, callback(1));
     f(1);
 }

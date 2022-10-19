@@ -20,6 +20,8 @@ target_sources(infra.event PRIVATE
     SystemStateManager.hpp
 )
 
+emil_clangformat_target(infra.event)
+
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
 endif()

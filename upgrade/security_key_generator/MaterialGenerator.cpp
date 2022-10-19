@@ -1,12 +1,12 @@
 #include "upgrade/security_key_generator/MaterialGenerator.hpp"
 #include "crypto/micro-ecc/uECC.h"
+#include "generated/echo/UpgradeKeys.pb.hpp"
+#include "hal/generic/FileSystemGeneric.hpp"
+#include "infra/stream/StdVectorOutputStream.hpp"
+#include "infra/syntax/ProtoFormatter.hpp"
 #include <fstream>
 #include <iomanip>
 #include <string>
-#include "infra/syntax/ProtoFormatter.hpp"
-#include "hal/generic/FileSystemGeneric.hpp"
-#include "infra/stream/StdVectorOutputStream.hpp"
-#include "generated/echo/UpgradeKeys.pb.hpp"
 
 namespace application
 {
@@ -64,7 +64,6 @@ namespace application
         if (!file)
             throw std::runtime_error((std::string("Cannot open/create: ") + fileName).c_str());
 
-
         file << R"(#include "upgrade_keys/Keys.hpp"
 
 )";
@@ -90,7 +89,7 @@ namespace application
             throw std::runtime_error("Keys are not generated or imported.");
 
         upgrade_keys::keys keysProto;
-        
+
         infra::MemoryRange<uint8_t> aesKeyRange(aesKey);
         keysProto.aesKey.symmetricKey.assign(aesKeyRange);
 

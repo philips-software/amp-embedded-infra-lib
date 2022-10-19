@@ -1,6 +1,6 @@
-#include "gmock/gmock.h"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/syntax/ProtoFormatter.hpp"
+#include "gmock/gmock.h"
 
 TEST(ProtoFormatterTest, PutVarInt_as_single_byte)
 {

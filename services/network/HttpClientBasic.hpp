@@ -6,7 +6,9 @@
 
 namespace services
 {
-    struct NoAutoConnect {};
+    struct NoAutoConnect
+    {};
+
     extern const NoAutoConnect noAutoConnect;
 
     class HttpClientBasic

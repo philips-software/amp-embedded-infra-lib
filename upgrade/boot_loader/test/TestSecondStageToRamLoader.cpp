@@ -1,9 +1,9 @@
-#include "gmock/gmock.h"
+#include "hal/synchronous_interfaces/test_doubles/SynchronousFlashStub.hpp"
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "upgrade/boot_loader/SecondStageToRamLoader.hpp"
-#include "hal/synchronous_interfaces/test_doubles/SynchronousFlashStub.hpp"
 #include "upgrade/pack/UpgradePackHeader.hpp"
+#include "gmock/gmock.h"
 #include <algorithm>
 
 class DecryptorSpy
@@ -159,7 +159,7 @@ TEST_F(SecondStageToRamLoaderTest, second_stage_not_loaded_when_ram_is_too_small
 {
     UpgradePackHeaderNoSecurity header(CreateReadyToDeployHeader(1));
 
-    const std::vector<uint8_t> secondStageImage { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 5, 8, 13, 21 };
+    const std::vector<uint8_t> secondStageImage{ 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 5, 8, 13, 21 };
     application::ImageHeaderPrologue secondStageImageHeader(CreateImageHeader("boot2nd", secondStageImage.size()));
 
     infra::ByteOutputStream stream(upgradePackFlash.sectors[0]);
@@ -176,7 +176,7 @@ TEST_F(SecondStageToRamLoaderTest, load_second_stage_when_readyToDeploy)
 {
     UpgradePackHeaderNoSecurity header(CreateReadyToDeployHeader(1));
 
-    const std::vector<uint8_t> secondStageImage { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 5, 8, 13, 21 };
+    const std::vector<uint8_t> secondStageImage{ 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 5, 8, 13, 21 };
     application::ImageHeaderPrologue secondStageImageHeader(CreateImageHeader("boot2nd", secondStageImage.size()));
 
     infra::ByteOutputStream stream(upgradePackFlash.sectors[0]);
@@ -365,6 +365,7 @@ TEST_F(SecondStageToRamLoaderTest, DecryptSecondStageWithState)
 TEST_F(SecondStageToRamLoaderTest, VerifierIsGivenSignature)
 {
     UpgradePackHeaderNoSecurity headerNoSecurity(CreateReadyToDeployHeader(1));
+
     struct UpgradePackHeader
     {
         application::UpgradePackHeaderPrologue prologue;

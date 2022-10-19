@@ -10,9 +10,8 @@ class DnsServerTest
 {
 public:
     DnsServerTest()
-        : execute([this] {
-            EXPECT_CALL(factory, Listen(testing::Ref(server), 53, services::IPVersions::ipv4)).WillOnce(testing::Return(datagramExchangePtr));
-        })
+        : execute([this]
+              { EXPECT_CALL(factory, Listen(testing::Ref(server), 53, services::IPVersions::ipv4)).WillOnce(testing::Return(datagramExchangePtr)); })
     {}
 
     void DataReceived(const std::vector<uint8_t>& data)

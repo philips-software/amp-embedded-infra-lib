@@ -29,3 +29,5 @@ target_sources(services.network_test_doubles PRIVATE
     SntpMock.hpp
     WiFiNetworkMock.hpp
 )
+
+emil_clangformat_target(services.network_test_doubles)

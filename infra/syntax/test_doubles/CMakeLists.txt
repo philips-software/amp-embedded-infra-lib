@@ -9,3 +9,5 @@ target_sources(infra.syntax_test_doubles PRIVATE
     JsonStreamingParserMock.hpp
     JsonStringMatcher.hpp
 )
+
+emil_clangformat_target(infra.syntax_test_doubles)

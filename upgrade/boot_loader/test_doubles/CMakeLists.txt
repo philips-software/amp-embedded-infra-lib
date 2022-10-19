@@ -9,3 +9,5 @@ target_sources(upgrade.boot_loader_test_doubles PRIVATE
     MockDecryptor.cpp
     MockDecryptor.hpp
 )
+
+emil_clangformat_target(upgrade.boot_loader_test_doubles)

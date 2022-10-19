@@ -23,7 +23,7 @@ namespace hal
         virtual void SetChipSelectConfigurator(ChipSelectConfigurator& configurator) override;
         virtual void SetCommunicationConfigurator(CommunicationConfigurator& configurator) override;
         virtual void ResetCommunicationConfigurator() override;
-    
+
     private:
         infra::MainClockReference& mainClock;
         hal::SpiMaster& spiMaster;

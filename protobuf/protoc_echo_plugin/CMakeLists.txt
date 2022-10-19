@@ -34,6 +34,8 @@ if (EMIL_HOST_BUILD)
         ProtoCEchoPlugin.hpp
     )
 
+    emil_clangformat_target(protobuf.protoc_echo_plugin_lib)
+
     add_executable(protobuf.protoc_echo_plugin)
 
     target_link_libraries(protobuf.protoc_echo_plugin PUBLIC
@@ -43,6 +45,8 @@ if (EMIL_HOST_BUILD)
     target_sources(protobuf.protoc_echo_plugin PRIVATE
         Main.cpp
     )
+
+    emil_clangformat_target(protobuf.protoc_echo_plugin)
 
     if (EMIL_BUILD_TESTS)
         add_subdirectory(test)

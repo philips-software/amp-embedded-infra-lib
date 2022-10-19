@@ -10,3 +10,5 @@ target_sources(infra.event_test_helper PRIVATE
     EventDispatcherFixture.hpp
     EventDispatcherWithWeakPtrFixture.hpp
 )
+
+emil_clangformat_target(infra.event_test_helper)

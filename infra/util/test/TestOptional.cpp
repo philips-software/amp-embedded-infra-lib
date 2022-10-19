@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/util/Optional.hpp"
+#include "gtest/gtest.h"
 
 namespace infra
 {
@@ -194,6 +194,7 @@ TEST(OptionalTest, TestConstructWithInitializerList)
         X(std::initializer_list<bool>)
         {}
     };
+
     infra::Optional<X> o;
     o.Emplace({ true });
     EXPECT_TRUE(static_cast<bool>(o));
@@ -203,7 +204,10 @@ TEST(OptionalTest, TestIndirect)
 {
     struct X
     {
-        X(): x(true) {}
+        X()
+            : x(true)
+        {}
+
         bool x;
     };
 
@@ -223,8 +227,10 @@ TEST(OptionalTest, TestTransformOptional)
 {
     infra::Optional<bool> o = infra::MakeOptional(true);
     infra::Optional<bool> empty;
-    EXPECT_EQ(infra::MakeOptional(5), infra::TransformOptional(infra::MakeOptional(true), [](bool value) { return 5; }));
-    EXPECT_EQ(infra::none, infra::TransformOptional(empty, [](bool value) { return 5; }));
+    EXPECT_EQ(infra::MakeOptional(5), infra::TransformOptional(infra::MakeOptional(true), [](bool value)
+                                          { return 5; }));
+    EXPECT_EQ(infra::none, infra::TransformOptional(empty, [](bool value)
+                               { return 5; }));
 }
 
 TEST(OptionalTest, ValueOrGivesStoredWhenAvailable)

@@ -43,9 +43,9 @@ namespace services
         : SingleConnectionListener(connectionFactory, port, { connectionCreator })
         , receiveBuffer(receiveBuffer)
         , scenarioRequestHandler(scenarioRequestHandler)
-        , connectionCreator([this](infra::Optional<CucumberWireProtocolConnectionObserver>& value, services::IPAddress address) {
+        , connectionCreator([this](infra::Optional<CucumberWireProtocolConnectionObserver>& value, services::IPAddress address)
+              {
             this->receiveBuffer.clear();
-            value.Emplace(this->receiveBuffer, this->scenarioRequestHandler);
-        })
+            value.Emplace(this->receiveBuffer, this->scenarioRequestHandler); })
     {}
 }

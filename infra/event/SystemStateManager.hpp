@@ -80,8 +80,11 @@ namespace infra
         const SystemStateBase* currentState = nullptr;
     };
 
-    struct StateInitializing: SystemState<StateInitializing> {};
-    struct StateRunning: SystemState<StateRunning> {};
+    struct StateInitializing : SystemState<StateInitializing>
+    {};
+
+    struct StateRunning : SystemState<StateRunning>
+    {};
 
     static const std::array<SystemStateBase, 2> simpleStateSequence = { StateInitializing(), StateRunning() };
 

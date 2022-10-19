@@ -1,8 +1,8 @@
 #ifndef SERVICES_STOPPABLE_MOCK_HPP
 #define SERVICES_STOPPABLE_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "services/util/Stoppable.hpp"
+#include "gmock/gmock.h"
 
 namespace services
 {

@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/syntax/JsonFileReader.hpp"
+#include "gtest/gtest.h"
 
 namespace
 {
@@ -108,4 +108,3 @@ TEST_F(TestJsonFileReader, read_invalid_nested_json_throws_exception)
         },
         std::exception);
 }
-

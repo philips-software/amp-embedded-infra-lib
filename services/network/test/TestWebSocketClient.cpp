@@ -1,6 +1,6 @@
-#include "gmock/gmock.h"
 #include "infra/stream/ByteInputStream.hpp"
 #include "services/network/WebSocket.hpp"
+#include "gmock/gmock.h"
 
 class WebSocketClientTest
     : public testing::Test

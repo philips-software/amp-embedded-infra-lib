@@ -1,9 +1,9 @@
 #ifndef HAL_SERIAL_COMMUNICATION_MOCK_HPP
 #define HAL_SERIAL_COMMUNICATION_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "hal/interfaces/SerialCommunication.hpp"
 #include "infra/util/AutoResetFunction.hpp"
+#include "gmock/gmock.h"
 
 namespace hal
 {

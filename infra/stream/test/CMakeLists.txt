@@ -24,3 +24,5 @@ target_sources(infra.stream_test PRIVATE
     TestStringInputStream.cpp
     TestStringOutputStream.cpp
 )
+
+emil_clangformat_target(infra.stream_test)

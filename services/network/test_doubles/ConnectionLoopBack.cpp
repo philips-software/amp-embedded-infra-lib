@@ -1,5 +1,5 @@
-#include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "services/network/test_doubles/ConnectionLoopBack.hpp"
+#include "infra/event/EventDispatcherWithWeakPtr.hpp"
 
 namespace services
 {
@@ -64,13 +64,13 @@ namespace services
         {
             auto size = requestedSendSize;
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([this, size](const infra::SharedPtr<ConnectionLoopBack>& loopBack)
-            {
+                {
                 if (IsAttached())
                 {
                     infra::SharedPtr<infra::StreamWriter> writer = streamWriter.Emplace(*this, size);
                     Observer().SendStreamAvailable(std::move(writer));
-                }
-            }, loopBack.SharedFromThis());
+                } },
+                loopBack.SharedFromThis());
 
             requestedSendSize = 0;
         }
@@ -89,10 +89,10 @@ namespace services
 
             ConnectionLoopBackPeer& connection = this->connection;
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([&connection](const infra::SharedPtr<ConnectionLoopBack>& loopBack)
-            {
+                {
                 if (connection.peer.IsAttached())
-                    connection.peer.Observer().DataReceived();
-            }, connection.loopBack.SharedFromThis());
+                    connection.peer.Observer().DataReceived(); },
+                connection.loopBack.SharedFromThis());
         }
     }
 
@@ -151,13 +151,13 @@ namespace services
     void ConnectionLoopBackConnector::Connect()
     {
         infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionLoopBackConnector>& object)
-        {
+            {
             auto listener = object->loopBackFactory.listeners.find(object->connectionObserverFactory.Port());
             if (listener != object->loopBackFactory.listeners.end())
                 listener->second->Accept(object->connectionObserverFactory);
             else
-                object->connectionObserverFactory.ConnectionFailed(services::ClientConnectionObserverFactory::ConnectFailReason::refused);
-        }, SharedFromThis());
+                object->connectionObserverFactory.ConnectionFailed(services::ClientConnectionObserverFactory::ConnectFailReason::refused); },
+            SharedFromThis());
     }
 
     void ConnectionLoopBackListener::Accept(ClientConnectionObserverFactory& clientObserverFactory)
@@ -172,7 +172,7 @@ namespace services
         Info info{ infra::MakeSharedOnHeap<ConnectionLoopBack>(), clientObserverFactory };
 
         connectionObserverFactory.ConnectionAccepted([&info](infra::SharedPtr<services::ConnectionObserver> serverObserver)
-        {
+            {
             if (serverObserver)
             {
                 info.serverObserver = serverObserver;
@@ -184,8 +184,8 @@ namespace services
                 });
             }
             else
-                info.clientObserverFactory.ConnectionFailed(services::ClientConnectionObserverFactory::ConnectFailReason::connectionAllocationFailed);
-        }, services::IPv4AddressLocalHost());
+                info.clientObserverFactory.ConnectionFailed(services::ClientConnectionObserverFactory::ConnectFailReason::connectionAllocationFailed); },
+            services::IPv4AddressLocalHost());
     }
 
     ConnectionLoopBackFactory::~ConnectionLoopBackFactory()
