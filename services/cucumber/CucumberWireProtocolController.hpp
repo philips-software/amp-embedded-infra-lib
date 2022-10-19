@@ -34,8 +34,6 @@ namespace services
         void HandleInvalidRequest();
 
     public:
-        infra::Function<void()> invokeSuccess;
-        infra::Function<void(infra::BoundedConstString&)> invokeError;
         InvokeInfo invokeInfo;
         CucumberStepStorage::Match storageMatch;
         infra::BoundedString::WithStorage<256> nameToMatchString;

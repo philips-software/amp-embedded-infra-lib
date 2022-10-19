@@ -3,18 +3,15 @@
 namespace services
 {
     CucumberWireProtocolController::CucumberWireProtocolController(ConnectionObserver& connectionObserver, CucumberScenarioRequestHandler& scenarioRequestHandler)
-        : invokeSuccess([this]()
-              { InvokeSuccess(); })
-        , invokeError([this](infra::BoundedConstString& reason)
-              { InvokeError(reason); })
-        , connectionObserver(connectionObserver)
+        : connectionObserver(connectionObserver)
         , scenarioRequestHandler(scenarioRequestHandler)
     {
-        if (CucumberContext::InstanceSet())
-        {
-            CucumberContext::Instance().Add("InvokeSuccess", &invokeSuccess);
-            CucumberContext::Instance().Add("InvokeError", &invokeError);
-        }
+        really_assert(CucumberContext::InstanceSet());
+
+        CucumberContext::Instance().onSuccess = [this]()
+              { InvokeSuccess(); };
+        CucumberContext::Instance().onFailure = [this](infra::BoundedConstString& reason)
+              { InvokeError(reason); };
     }
 
     void CucumberWireProtocolController::HandleRequest(CucumberWireProtocolParser& parser)

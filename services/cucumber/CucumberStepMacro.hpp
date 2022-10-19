@@ -1,6 +1,7 @@
 #ifndef SERVICES_CUCUMBER_STEP_MACRO_HPP
 #define SERVICES_CUCUMBER_STEP_MACRO_HPP
 
+#include "services/cucumber/CucumberContext.hpp"
 #include "services/cucumber/CucumberStep.hpp"
 #include "services/cucumber/CucumberStepStorage.hpp"
 #include <initializer_list>
@@ -93,14 +94,12 @@ namespace detail
                                                                                                              \
             void Success()                                                                                   \
             {                                                                                                \
-                assert(Context().Contains("InvokeSuccess"));                                                 \
-                Context().Get<infra::Function<void()>>("InvokeSuccess")();                                   \
+                Context().onSuccess();                                                                       \
             }                                                                                                \
                                                                                                              \
             void Error(infra::BoundedConstString failReason)                                                 \
             {                                                                                                \
-                assert(Context().Contains("InvokeError"));                                                   \
-                Context().Get<infra::Function<void(infra::BoundedConstString&)>>("InvokeError")(failReason); \
+                Context().onFailure(failReason);                                                             \
             }                                                                                                \
         };                                                                                                   \
                                                                                                              \

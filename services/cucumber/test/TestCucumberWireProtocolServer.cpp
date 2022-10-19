@@ -10,7 +10,6 @@
 #include "gtest/gtest.h"
 
 static services::CucumberStepStorage stepStorage;
-static uint8_t val = 42;
 
 GIVEN("a duplicate feature")
 {
@@ -78,20 +77,6 @@ GIVEN("sentence with '%s' and %d digit")
         Error("Incorrect Arguments");
 }
 
-GIVEN("a value is stored")
-{
-    Context().Add("key0", &val);
-    Success();
-}
-
-GIVEN("a value is used")
-{
-    if (Context().Get<uint8_t>("key0") == 42)
-        Success();
-    else
-        Error("Value not equal");
-}
-
 GIVEN("nothing happens for %d seconds")
 {
     if (ContainsStringArgument(0))
@@ -139,19 +124,19 @@ public:
         ExecuteAllActions();
     }
 
-    void CheckFailResponse(infra::BoundedConstString message, infra::BoundedConstString exception)
+    void CheckFailResponse(infra::BoundedConstString message, infra::BoundedConstString exception) const
     {
         std::string response = std::string("[ \"fail\", { \"message\":\"") + message +
                                std::string("\", \"exception\":\"") + exception + std::string("\" } ]\n");
         EXPECT_EQ(response, connection.SentDataAsString());
     }
 
-    void CheckSuccessResponse()
+    void CheckSuccessResponse() const
     {
         EXPECT_EQ("[ \"success\", [  ] ]\n", connection.SentDataAsString());
     }
 
-    void CheckSuccessResponse(int id, infra::BoundedConstString arguments, infra::BoundedConstString location)
+    void CheckSuccessResponse(int id, infra::BoundedConstString arguments, infra::BoundedConstString location) const
     {
         std::string response = std::string("[ \"success\", [ { \"id\":\"") + std::to_string(id) + std::string("\", \"args\":") + arguments + std::string(", \"source\":\"") + location + std::string("\" } ] ]\n");
         EXPECT_EQ(response, connection.SentDataAsString());
@@ -204,7 +189,7 @@ TEST_F(CucumberWireProtocolServerTest, should_respond_to_invalid_input_with_fail
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(CucumberWireProtocolServerTest, DISABLED_test_step_parsing_arguments)
+TEST_F(CucumberWireProtocolServerTest, test_step_parsing_arguments)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     ReceiveData("[\"step_matches\",{\"name_to_match\":\"the WiFi network 'CoCoCo' is seen within 10 minutes and 30 seconds\"}]");
@@ -214,7 +199,7 @@ TEST_F(CucumberWireProtocolServerTest, DISABLED_test_step_parsing_arguments)
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(CucumberWireProtocolServerTest, DISABLED_test_step_parsing_arguments_2)
+TEST_F(CucumberWireProtocolServerTest, test_step_parsing_arguments_2)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     ReceiveData("[\"step_matches\",{\"name_to_match\":\"the WiFi network 'CoCoCo' is seen within 10 minutes 'CoCoCo2' is seen within 30 seconds\"}]");
@@ -261,7 +246,7 @@ TEST_F(CucumberWireProtocolServerTest, should_respond_to_step_match_request_with
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(CucumberWireProtocolServerTest, DISABLED_should_respond_to_step_match_request_with_arguments_with_success)
+TEST_F(CucumberWireProtocolServerTest, should_respond_to_step_match_request_with_arguments_with_success)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     ReceiveData("[\"step_matches\",{\"name_to_match\":\"the WiFi network 'CoCoCo' is seen within 60 minutes\"}]");
@@ -271,7 +256,7 @@ TEST_F(CucumberWireProtocolServerTest, DISABLED_should_respond_to_step_match_req
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(CucumberWireProtocolServerTest, DISABLED_should_respond_to_non_matching_substring_of_step_request_with_success)
+TEST_F(CucumberWireProtocolServerTest, should_respond_to_non_matching_substring_of_step_request_with_success)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     ReceiveData("[\"step_matches\",{\"name_to_match\":\"the WiFi network 'CoCoCo' is seen within 60 minutes\"}]");
@@ -290,7 +275,7 @@ TEST_F(CucumberWireProtocolServerTest, should_respond_to_non_matching_substring_
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(CucumberWireProtocolServerTest, DISABLED_should_respond_to_long_matching_string_of_step_request_with_success)
+TEST_F(CucumberWireProtocolServerTest, should_respond_to_long_matching_string_of_step_request_with_success)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     ReceiveData("[\"step_matches\",{\"name_to_match\":\"the WiFi network 'CoCoCo' is seen within 10 minutes and 30 seconds\"}]");
@@ -300,7 +285,7 @@ TEST_F(CucumberWireProtocolServerTest, DISABLED_should_respond_to_long_matching_
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(CucumberWireProtocolServerTest, DISABLED_should_respond_to_invoke_request_with_invalid_field_table_with_fail)
+TEST_F(CucumberWireProtocolServerTest, should_respond_to_invoke_request_with_invalid_field_table_with_fail)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     auto match = services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network");
@@ -310,7 +295,7 @@ TEST_F(CucumberWireProtocolServerTest, DISABLED_should_respond_to_invoke_request
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(CucumberWireProtocolServerTest, DISABLED_should_respond_to_invoke_request_with_onecollumn_argument_table_with_fail)
+TEST_F(CucumberWireProtocolServerTest, should_respond_to_invoke_request_with_onecollumn_argument_table_with_fail)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     auto match = services::CucumberStepStorage::Instance().MatchStep("a network is available");
@@ -320,7 +305,7 @@ TEST_F(CucumberWireProtocolServerTest, DISABLED_should_respond_to_invoke_request
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(CucumberWireProtocolServerTest, DISABLED_test_invoke_request_table_parsing)
+TEST_F(CucumberWireProtocolServerTest, test_invoke_request_table_parsing)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     auto match = services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network");
@@ -330,7 +315,7 @@ TEST_F(CucumberWireProtocolServerTest, DISABLED_test_invoke_request_table_parsin
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(CucumberWireProtocolServerTest, DISABLED_test_invoke_request_string_arguments_parsing)
+TEST_F(CucumberWireProtocolServerTest, test_invoke_request_string_arguments_parsing)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     auto match = services::CucumberStepStorage::Instance().MatchStep("the WiFi network '%s' is seen within %d minutes");
@@ -340,7 +325,7 @@ TEST_F(CucumberWireProtocolServerTest, DISABLED_test_invoke_request_string_argum
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(CucumberWireProtocolServerTest, DISABLED_test_invoke_request_string_arguments_with_table_parsing)
+TEST_F(CucumberWireProtocolServerTest, test_invoke_request_string_arguments_with_table_parsing)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     auto match = services::CucumberStepStorage::Instance().MatchStep("the WiFi network '%s' is seen within %d minutes");
@@ -350,7 +335,7 @@ TEST_F(CucumberWireProtocolServerTest, DISABLED_test_invoke_request_string_argum
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(CucumberWireProtocolServerTest, DISABLED_should_respond_to_invoke_request_with_success)
+TEST_F(CucumberWireProtocolServerTest, should_respond_to_invoke_request_with_success)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     auto match = services::CucumberStepStorage::Instance().MatchStep("a step");
@@ -360,7 +345,7 @@ TEST_F(CucumberWireProtocolServerTest, DISABLED_should_respond_to_invoke_request
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(CucumberWireProtocolServerTest, DISABLED_should_respond_to_invoke_request_with_arguments_with_success)
+TEST_F(CucumberWireProtocolServerTest, should_respond_to_invoke_request_with_arguments_with_success)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     auto match = services::CucumberStepStorage::Instance().MatchStep("the WiFi network 'HOMELAN' is seen within 10 minutes");
@@ -370,7 +355,7 @@ TEST_F(CucumberWireProtocolServerTest, DISABLED_should_respond_to_invoke_request
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(CucumberWireProtocolServerTest, DISABLED_should_respond_to_invoke_request_with_table_with_success)
+TEST_F(CucumberWireProtocolServerTest, should_respond_to_invoke_request_with_table_with_success)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     auto match = services::CucumberStepStorage::Instance().MatchStep("the Node connects to that network");
@@ -380,7 +365,7 @@ TEST_F(CucumberWireProtocolServerTest, DISABLED_should_respond_to_invoke_request
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(CucumberWireProtocolServerTest, DISABLED_should_respond_to_invoke_request_with_arguments_and_table_list_with_success)
+TEST_F(CucumberWireProtocolServerTest, should_respond_to_invoke_request_with_arguments_and_table_list_with_success)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     auto match = services::CucumberStepStorage::Instance().MatchStep("sentence with 'argument' and 35 digit");
@@ -417,20 +402,7 @@ TEST_F(CucumberWireProtocolServerTest, should_respond_to_snippet_text_request_wi
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
-TEST_F(CucumberWireProtocolServerTest, DISABLED_test_context_storage)
-{
-    connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
-
-    auto match = services::CucumberStepStorage::Instance().MatchStep("a value is stored");
-    InvokeStep(match.id, "[]");
-    EXPECT_TRUE(context.Contains("key0"));
-
-    match = services::CucumberStepStorage::Instance().MatchStep("a value is used");
-    InvokeStep(match.id, "[]");
-    EXPECT_CALL(connection, AbortAndDestroyMock());
-}
-
-TEST_F(CucumberWireProtocolServerTest, DISABLED_test_timout_timer)
+TEST_F(CucumberWireProtocolServerTest, test_timout_timer)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
     auto match = services::CucumberStepStorage::Instance().MatchStep("nothing happens for 30 seconds");
