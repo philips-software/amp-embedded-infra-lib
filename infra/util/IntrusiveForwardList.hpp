@@ -84,7 +84,7 @@ namespace infra
         bool operator>=(const IntrusiveForwardList& other) const;
 
     private:
-        detail::IntrusiveForwardListNode<T>* beginNode { nullptr };
+        detail::IntrusiveForwardListNode<T>* beginNode{ nullptr };
     };
 
     template<class T>
