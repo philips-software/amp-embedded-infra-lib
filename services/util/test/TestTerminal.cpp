@@ -2,6 +2,7 @@
 #include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
 #include "infra/stream/OutputStream.hpp"
 #include "infra/util/Optional.hpp"
+#include "infra/util/test_helper/MockCallback.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/util/Terminal.hpp"
 #include "gmock/gmock.h"
@@ -22,26 +23,57 @@ public:
     MOCK_METHOD1(Overwrite, infra::ByteRange(std::size_t marker));
 };
 
-class TerminalTest
+class TerminalTestBase
     : public testing::Test
     , public infra::EventDispatcherWithWeakPtrFixture
 {
-public:
-    TerminalTest()
-        : stream(streamWriterMock)
-        , tracer(stream)
-    {
-        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
-        terminal.Emplace(communication, tracer);
-    }
-
 protected:
     StreamWriterMock streamWriterMock;
-    infra::TextOutputStream::WithErrorPolicy stream;
-    services::Tracer tracer;
+    infra::TextOutputStream::WithErrorPolicy stream{ streamWriterMock };
+    services::Tracer tracer{ stream };
     testing::StrictMock<hal::SerialCommunicationMock> communication;
-    infra::Optional<services::Terminal> terminal;
+    infra::Execute execute{ [this]()
+        {
+            EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
+        } };
     testing::InSequence s;
+};
+
+class TerminalTest
+    : public TerminalTestBase
+{
+protected:
+    services::Terminal terminal{ communication, tracer };
+};
+
+class TerminalCommandsStub
+    : public services::TerminalCommands
+{
+public:
+    TerminalCommandsStub(services::TerminalWithCommands& terminal)
+        : services::TerminalCommands(terminal)
+    {}
+
+    virtual infra::MemoryRange<const Command> Commands() override
+    {
+        static const std::array<Command, 1> commands = { { { { "long", "l", "long command description" },
+            [this]([[maybe_unused]] const infra::BoundedConstString& params)
+            {
+                command.callback();
+            } } } };
+
+        return infra::MakeRange(commands);
+    }
+
+    infra::MockCallback<void()> command;
+};
+
+class TerminalWithCommandsTest
+    : public TerminalTestBase
+{
+protected:
+    services::TerminalWithCommandsImpl terminal{ communication, tracer };
+    TerminalCommandsStub commands{ terminal };
 };
 
 class TerminalNavigationTest
@@ -342,6 +374,30 @@ TEST_F(TerminalHistoryTest, move_forward_past_end_prints_prompt)
     EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ 14, 14 });
+
+    ExecuteAllActions();
+}
+
+TEST_F(TerminalWithCommandsTest, execute_predefined_command)
+{
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'l' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r', '\n' } }), testing::_));
+    EXPECT_CALL(commands.command, callback());
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
+
+    communication.dataReceived(std::vector<uint8_t>{ 'l', '\r' });
+
+    ExecuteAllActions();
+}
+
+TEST_F(TerminalWithCommandsTest, unrecognized_command_is_reported)
+{
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { ' ' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r', '\n' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'U', 'n', 'r', 'e', 'c', 'o', 'g', 'n', 'i', 'z', 'e', 'd', ' ', 'c', 'o', 'm', 'm', 'a', 'n', 'd', '.' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
+
+    communication.dataReceived(std::vector<uint8_t>{ ' ', '\r' });
 
     ExecuteAllActions();
 }
