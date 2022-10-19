@@ -12,9 +12,3 @@ TEST(ZeroFilledString, should_compare_false_to_different_contents)
     std::string compare{ 'f', 'o', 'o', 0, 'f' };
     EXPECT_FALSE(ZeroFilledString(5, "foo") == compare.c_str());
 }
-
-TEST(ZeroFilledString, should_compare_false_to_different_size)
-{
-    std::string compare{ 'f', 'o', 'o' };
-    EXPECT_FALSE(ZeroFilledString(5, "foo") == compare.c_str());
-}
