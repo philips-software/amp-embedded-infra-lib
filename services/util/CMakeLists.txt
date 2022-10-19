@@ -22,8 +22,6 @@ target_sources(services.util PRIVATE
     DebugLed.hpp
     FlashAlign.cpp
     FlashAlign.hpp
-    FlashDelayedInit.cpp
-    FlashDelayedInit.hpp
     FlashMultipleAccess.cpp
     FlashMultipleAccess.hpp
     FlashQuadSpi.cpp
