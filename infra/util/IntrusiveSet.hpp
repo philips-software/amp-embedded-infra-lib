@@ -329,7 +329,7 @@ namespace infra
                     this->left_rotate(*doubleBlackParent);
                 }
                 else
-                    abort();
+                    std::abort();
 
                 doubleBlackParent = nullptr;
             }
@@ -374,7 +374,7 @@ namespace infra
                 }
             }
             else
-                abort();
+                std::abort();
         }
 
         if (this->RootNode() != nullptr)
