@@ -8,67 +8,80 @@ namespace services
 
     void HttpClientAuthentication::Get(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
-        Request(headers, [this, requestTarget]() {  Subject().Get(requestTarget, infra::MakeRange(headersWithAuthorization)); });
+        Request(headers, [this, requestTarget]()
+            { Subject().Get(requestTarget, infra::MakeRange(headersWithAuthorization)); });
     }
 
     void HttpClientAuthentication::Head(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
-        Request(headers, [this, requestTarget]() {  Subject().Head(requestTarget, infra::MakeRange(headersWithAuthorization)); });
+        Request(headers, [this, requestTarget]()
+            { Subject().Head(requestTarget, infra::MakeRange(headersWithAuthorization)); });
     }
 
     void HttpClientAuthentication::Connect(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
-        Request(headers, [this, requestTarget]() {  Subject().Connect(requestTarget, infra::MakeRange(headersWithAuthorization)); });
+        Request(headers, [this, requestTarget]()
+            { Subject().Connect(requestTarget, infra::MakeRange(headersWithAuthorization)); });
     }
 
     void HttpClientAuthentication::Options(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
-        Request(headers, [this, requestTarget]() {  Subject().Options(requestTarget, infra::MakeRange(headersWithAuthorization)); });
+        Request(headers, [this, requestTarget]()
+            { Subject().Options(requestTarget, infra::MakeRange(headersWithAuthorization)); });
     }
 
     void HttpClientAuthentication::Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
     {
-        Request(headers, [this, requestTarget, content]() {  Subject().Post(requestTarget, content, infra::MakeRange(headersWithAuthorization)); });
+        Request(headers, [this, requestTarget, content]()
+            { Subject().Post(requestTarget, content, infra::MakeRange(headersWithAuthorization)); });
     }
 
     void HttpClientAuthentication::Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers)
     {
-        Request(headers, [this, requestTarget, contentSize]() {  Subject().Post(requestTarget, contentSize, infra::MakeRange(headersWithAuthorization)); });
+        Request(headers, [this, requestTarget, contentSize]()
+            { Subject().Post(requestTarget, contentSize, infra::MakeRange(headersWithAuthorization)); });
     }
 
     void HttpClientAuthentication::Post(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
-        Request(headers, [this, requestTarget]() {  Subject().Post(requestTarget, infra::MakeRange(headersWithAuthorization)); });
+        Request(headers, [this, requestTarget]()
+            { Subject().Post(requestTarget, infra::MakeRange(headersWithAuthorization)); });
     }
 
     void HttpClientAuthentication::Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
     {
-        Request(headers, [this, requestTarget, content]() {  Subject().Put(requestTarget, content, infra::MakeRange(headersWithAuthorization)); });
+        Request(headers, [this, requestTarget, content]()
+            { Subject().Put(requestTarget, content, infra::MakeRange(headersWithAuthorization)); });
     }
 
     void HttpClientAuthentication::Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers)
     {
-        Request(headers, [this, requestTarget, contentSize]() {  Subject().Put(requestTarget, contentSize, infra::MakeRange(headersWithAuthorization)); });
+        Request(headers, [this, requestTarget, contentSize]()
+            { Subject().Put(requestTarget, contentSize, infra::MakeRange(headersWithAuthorization)); });
     }
 
     void HttpClientAuthentication::Put(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
-        Request(headers, [this, requestTarget]() {  Subject().Put(requestTarget, infra::MakeRange(headersWithAuthorization)); });
+        Request(headers, [this, requestTarget]()
+            { Subject().Put(requestTarget, infra::MakeRange(headersWithAuthorization)); });
     }
 
     void HttpClientAuthentication::Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
     {
-        Request(headers, [this, requestTarget, content]() {  Subject().Patch(requestTarget, content, infra::MakeRange(headersWithAuthorization)); });
+        Request(headers, [this, requestTarget, content]()
+            { Subject().Patch(requestTarget, content, infra::MakeRange(headersWithAuthorization)); });
     }
 
     void HttpClientAuthentication::Patch(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
-        Request(headers, [this, requestTarget]() {  Subject().Patch(requestTarget, infra::MakeRange(headersWithAuthorization)); });
+        Request(headers, [this, requestTarget]()
+            { Subject().Patch(requestTarget, infra::MakeRange(headersWithAuthorization)); });
     }
 
     void HttpClientAuthentication::Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
     {
-        Request(headers, [this, requestTarget, content]() {  Subject().Delete(requestTarget, content, infra::MakeRange(headersWithAuthorization)); });
+        Request(headers, [this, requestTarget, content]()
+            { Subject().Delete(requestTarget, content, infra::MakeRange(headersWithAuthorization)); });
     }
 
     void HttpClientAuthentication::AckReceived()
@@ -206,10 +219,9 @@ namespace services
     void HttpClientAuthenticationConnector::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<HttpClientObserver> client)>&& createdClientObserver)
     {
         factory->ConnectionEstablished([this, &createdClientObserver](infra::SharedPtr<HttpClientObserver> client)
-        {
+            {
             createdClientObserver(infra::MakeContainedSharedObject(clientAuthentication, client));
-            clientAuthentication.Attach(client);
-        });
+            clientAuthentication.Attach(client); });
 
         factory = nullptr;
     }

@@ -1,7 +1,7 @@
-#include "gtest/gtest.h"
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/MemoryRange.hpp"
+#include "gtest/gtest.h"
 
 TEST(MemoryRangeTest, TestConstructedEmpty)
 {
@@ -302,13 +302,13 @@ TEST(MemoryRangeTest, TestMakeRangeFromContainer)
 
 TEST(MemoryRangeTest, TestMakeVectorFromRange)
 {
-    std::array<uint8_t, 3> array { 2, 3, 4 };
-    EXPECT_EQ((std::vector<uint8_t>{ 2, 3, 4}), infra::MakeVector(infra::ConstByteRange(array)));
+    std::array<uint8_t, 3> array{ 2, 3, 4 };
+    EXPECT_EQ((std::vector<uint8_t>{ 2, 3, 4 }), infra::MakeVector(infra::ConstByteRange(array)));
 }
 
 TEST(MemoryRangeTest, ConstCasts)
 {
-    std::array<uint8_t, 3> array { 2, 3, 4 };
+    std::array<uint8_t, 3> array{ 2, 3, 4 };
 
     EXPECT_EQ(array, infra::ConstCastByteRange(infra::MakeRange(array)));
     EXPECT_EQ(array, infra::ConstCastByteRange(infra::MakeConst(infra::MakeRange(array))));

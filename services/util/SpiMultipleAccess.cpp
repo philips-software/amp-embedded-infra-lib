@@ -43,9 +43,7 @@ namespace services
     {
         if (!claimer.IsClaimed())
             claimer.Claim([this, sendData, receiveData, nextAction, onDone]()
-            {
-                SendAndReceiveOnClaimed(sendData, receiveData, nextAction, onDone);
-            });
+                { SendAndReceiveOnClaimed(sendData, receiveData, nextAction, onDone); });
         else
             SendAndReceiveOnClaimed(sendData, receiveData, nextAction, onDone);
     }

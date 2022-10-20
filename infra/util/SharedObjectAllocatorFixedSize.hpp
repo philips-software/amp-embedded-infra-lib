@@ -17,6 +17,7 @@ namespace infra
         , private SharedObjectDeleter
     {
         static_assert(sizeof(T) == sizeof(StaticStorage<T>), "sizeof(StaticStorage) must be equal to sizeof(T) else reinterpret_cast will fail");
+
     private:
         struct Node
             : public detail::SharedPtrControl
@@ -29,7 +30,7 @@ namespace infra
 
     public:
         template<std::size_t NumberOfElements>
-            using WithStorage = infra::WithStorage<SharedObjectAllocatorFixedSize, typename infra::BoundedVector<Node>::template WithMaxSize<NumberOfElements>>;
+        using WithStorage = infra::WithStorage<SharedObjectAllocatorFixedSize, typename infra::BoundedVector<Node>::template WithMaxSize<NumberOfElements>>;
 
         explicit SharedObjectAllocatorFixedSize(infra::BoundedVector<Node>& elements);
         SharedObjectAllocatorFixedSize(const SharedObjectAllocatorFixedSize& other) = delete;
@@ -137,10 +138,15 @@ namespace infra
         }
     }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
+
     template<class T, class... ConstructionArgs>
     SharedObjectAllocatorFixedSize<T, void(ConstructionArgs...)>::Node::Node(SharedObjectDeleter* allocator)
-        : detail::SharedPtrControl(&*object, allocator)  //NOSONAR
+        : detail::SharedPtrControl(&*object, allocator) // NOSONAR
     {}
+
+#pragma GCC diagnostic pop
 }
 
 #endif

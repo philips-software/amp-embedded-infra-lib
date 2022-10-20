@@ -1,10 +1,10 @@
-#include "gmock/gmock.h"
+#include "infra/stream/StdVectorOutputStream.hpp"
+#include "infra/util/ConstructBin.hpp"
+#include "infra/util/SharedOptional.hpp"
 #include "services/network/SsdpDeviceDiscovery.hpp"
 #include "services/network/test_doubles/DatagramMock.hpp"
 #include "services/network/test_doubles/MulticastMock.hpp"
-#include "infra/stream/StdVectorOutputStream.hpp"
-#include "infra/util/SharedOptional.hpp"
-#include "infra/util/ConstructBin.hpp"
+#include "gmock/gmock.h"
 
 namespace
 {
@@ -25,19 +25,19 @@ public:
 
     void ExpectListenBoth()
     {
-        EXPECT_CALL(factory, Listen(testing::_, ssdpPort, services::IPVersions::both)).WillOnce(testing::Invoke([this](services::DatagramExchangeObserver& observer, uint16_t port, services::IPVersions versions) {
+        EXPECT_CALL(factory, Listen(testing::_, ssdpPort, services::IPVersions::both)).WillOnce(testing::Invoke([this](services::DatagramExchangeObserver& observer, uint16_t port, services::IPVersions versions)
+            {
             auto ptr = datagramExchange.Emplace();
             observer.Attach(*ptr);
 
-            return ptr;
-        }));
+            return ptr; }));
 
-        EXPECT_CALL(factory, Listen(testing::_, services::IPVersions::both)).WillOnce(testing::Invoke([this](services::DatagramExchangeObserver& observer, services::IPVersions versions) {
+        EXPECT_CALL(factory, Listen(testing::_, services::IPVersions::both)).WillOnce(testing::Invoke([this](services::DatagramExchangeObserver& observer, services::IPVersions versions)
+            {
             auto ptr = datagramExchangeActiveDiscovery.Emplace();
             observer.Attach(*ptr);
 
-            return ptr;
-        }));
+            return ptr; }));
     }
 
     void ExpectJoinMulticastIpv4()
@@ -62,36 +62,25 @@ public:
 
     void ExpectActiveQueryStarted(services::IPVersions ipVersion)
     {
-        EXPECT_CALL(*datagramExchangeActiveDiscovery, RequestSendStream(testing::_, testing::_)).WillOnce([ipVersion] (std::size_t sendSize, services::UdpSocket remote)
+        EXPECT_CALL(*datagramExchangeActiveDiscovery, RequestSendStream(testing::_, testing::_)).WillOnce([ipVersion](std::size_t sendSize, services::UdpSocket remote)
             {
                 ASSERT_EQ(sendSize, 200);
 
                 if (ipVersion == services::IPVersions::ipv6)
                     ASSERT_TRUE(remote.Is<services::Udpv6Socket>());
                 else
-                    ASSERT_TRUE(remote.Is<services::Udpv4Socket>());
-            });
+                    ASSERT_TRUE(remote.Is<services::Udpv4Socket>()); });
     }
 
     std::vector<uint8_t> DiscoveryRequestIPv4(std::string searchTarget, std::string maxWaitResponseTime)
     {
-        return infra::ConstructBin()
-            ("M-SEARCH * HTTP/1.1\r\n")
-            ("HOST: 239.255.255.250:1900\r\n")
-            ("MAN: \"ssdp:discover\"\r\n")
-            ("ST: ")(searchTarget)("\r\n")
-            ("MX: ")(maxWaitResponseTime)("\r\n")
+        return infra::ConstructBin()("M-SEARCH * HTTP/1.1\r\n")("HOST: 239.255.255.250:1900\r\n")("MAN: \"ssdp:discover\"\r\n")("ST: ")(searchTarget)("\r\n")("MX: ")(maxWaitResponseTime)("\r\n")
             .Vector();
     }
 
     std::vector<uint8_t> DiscoveryRequestIPv6(std::string searchTarget, std::string maxWaitResponseTime)
     {
-        return infra::ConstructBin()
-            ("M-SEARCH * HTTP/1.1\r\n")
-            ("HOST: [ff02:0:0:0:0:0:0:c]:1900\r\n")
-            ("MAN: \"ssdp:discover\"\r\n")
-            ("ST: ")(searchTarget)("\r\n")
-            ("MX: ")(maxWaitResponseTime)("\r\n")
+        return infra::ConstructBin()("M-SEARCH * HTTP/1.1\r\n")("HOST: [ff02:0:0:0:0:0:0:c]:1900\r\n")("MAN: \"ssdp:discover\"\r\n")("ST: ")(searchTarget)("\r\n")("MX: ")(maxWaitResponseTime)("\r\n")
             .Vector();
     }
 
@@ -108,12 +97,12 @@ public:
     infra::SharedOptional<testing::StrictMock<services::DatagramExchangeMock>> datagramExchange;
     infra::SharedOptional<testing::StrictMock<services::DatagramExchangeMock>> datagramExchangeActiveDiscovery;
     infra::Execute execute{ [this]
-    {
-        ExpectListenBoth();
-        ExpectJoinMulticastIpv4();
-        ExpectJoinMulticastIpv6();
-    } };
-    services::SsdpDeviceDiscovery ssdpDeviceDiscovery{factory, multicast};
+        {
+            ExpectListenBoth();
+            ExpectJoinMulticastIpv4();
+            ExpectJoinMulticastIpv6();
+        } };
+    services::SsdpDeviceDiscovery ssdpDeviceDiscovery{ factory, multicast };
 };
 
 TEST_F(SsdpDeviceDiscoveryTest, ssdp_discover_on_ipv4_starts_active_query)

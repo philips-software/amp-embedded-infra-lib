@@ -6,6 +6,7 @@
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/Optional.hpp"
 #include "infra/util/WithStorage.hpp"
+#include <type_traits>
 
 namespace infra
 {
@@ -14,7 +15,7 @@ namespace infra
 
     class JsonArrayFormatter;
     class JsonStringStream;
-    
+
     class JsonObjectFormatter
     {
     public:
@@ -34,6 +35,8 @@ namespace infra
         void Add(const char* tagName, uint32_t tag);
         void Add(const char* tagName, int64_t tag);
         void Add(JsonString tagName, int64_t tag);
+        void Add(const char* tagName, uint64_t tag);
+        void Add(JsonString tagName, uint64_t tag);
         void Add(const char* tagName, JsonBiggerInt tag);
         void Add(JsonString tagName, JsonBiggerInt tag);
         void Add(const char* tagName, const char* tag);
@@ -44,6 +47,29 @@ namespace infra
         void Add(JsonString tagName, const JsonArray& tag);
         void Add(JsonString tagName, const JsonValue& tag);
         void Add(const infra::JsonKeyValue& keyValue);
+
+        template<class T>
+        struct IntegralOrEnum
+        {
+            static constexpr bool value = std::is_integral<T>::value || std::is_enum<T>::value;
+        };
+
+        template<class T, typename std::enable_if<IntegralOrEnum<T>::value, T>::type* = nullptr>
+        void Add(const char* tagName, T v)
+        {
+            using type = typename infra::NormalizedIntegralType<T>::type;
+
+            return Add(tagName, static_cast<type>(v));
+        }
+
+        template<class T, typename std::enable_if<IntegralOrEnum<T>::value, T>::type* = nullptr>
+        void Add(JsonString tagName, T v)
+        {
+            using type = typename infra::NormalizedIntegralType<T>::type;
+
+            return Add(tagName, static_cast<type>(v));
+        }
+
         void AddMilliFloat(const char* tagName, uint32_t intValue, uint32_t milliFractionalValue);
         void AddMilliFloat(infra::JsonString tagName, uint32_t intValue, uint32_t milliFractionalValue);
         void AddSubObject(const char* tagName, infra::BoundedConstString json);
@@ -63,7 +89,7 @@ namespace infra
         bool empty = true;
     };
 
-    void Merge(infra::JsonObjectFormatter& formatter, infra::JsonObject& object, infra::BoundedConstString path,const infra::JsonValue& valueToMerge);
+    void Merge(infra::JsonObjectFormatter& formatter, infra::JsonObject& object, infra::BoundedConstString path, const infra::JsonValue& valueToMerge);
 
     class JsonArrayFormatter
     {

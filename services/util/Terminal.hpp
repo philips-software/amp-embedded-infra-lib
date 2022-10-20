@@ -3,10 +3,10 @@
 
 #include "hal/interfaces/SerialCommunication.hpp"
 #include "infra/event/QueueForOneReaderOneIrqWriter.hpp"
-#include "services/tracer/Tracer.hpp"
 #include "infra/util/BoundedDeque.hpp"
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/Observer.hpp"
+#include "services/tracer/Tracer.hpp"
 
 namespace services
 {
@@ -16,7 +16,9 @@ namespace services
         explicit Terminal(hal::SerialCommunication& communication, services::Tracer& tracer);
 
         void Print(const char* message);
-        virtual void OnData(infra::BoundedConstString data) {}
+
+        virtual void OnData(infra::BoundedConstString data)
+        {}
 
     private:
         void HandleInput();

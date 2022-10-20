@@ -1,6 +1,10 @@
 add_executable(services.util_test)
 emil_add_test(services.util_test)
 
+if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang|AppleClang")
+    target_compile_options(services.util_test PRIVATE -Wno-braced-scalar-init)
+endif()
+
 target_link_libraries(services.util_test PUBLIC
     gmock_main
     services.tracer
@@ -37,3 +41,5 @@ target_sources(services.util_test PRIVATE
     TestTimeWithLocalization.cpp
     TestWritableConfiguration.cpp
 )
+
+emil_clangformat_target(services.util_test)

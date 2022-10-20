@@ -18,7 +18,7 @@ namespace infra
     {
     public:
         template<std::size_t Max>
-            using WithMaxSize = infra::WithStorage<BoundedVector<T>, std::array<StaticStorage<T>, Max>>;
+        using WithMaxSize = infra::WithStorage<BoundedVector<T>, std::array<StaticStorage<T>, Max>>;
 
         typedef T value_type;
         typedef T& reference;
@@ -39,9 +39,9 @@ namespace infra
         BoundedVector(infra::MemoryRange<infra::StaticStorage<T>> storage, infra::MemoryRange<typename std::remove_const<T>::type> initData);
         BoundedVector(infra::MemoryRange<infra::StaticStorage<T>> storage, infra::MemoryRange<const T> initData);
         template<class InputIterator>
-            BoundedVector(infra::MemoryRange<infra::StaticStorage<T>> storage, InputIterator first, InputIterator last);
+        BoundedVector(infra::MemoryRange<infra::StaticStorage<T>> storage, InputIterator first, InputIterator last);
         template<class U>
-            BoundedVector(infra::MemoryRange<infra::StaticStorage<T>> storage, std::initializer_list<U> initializerList);
+        BoundedVector(infra::MemoryRange<infra::StaticStorage<T>> storage, std::initializer_list<U> initializerList);
         BoundedVector(infra::MemoryRange<infra::StaticStorage<T>> storage, const BoundedVector& other);
         BoundedVector(infra::MemoryRange<infra::StaticStorage<T>> storage, BoundedVector&& other);
         ~BoundedVector();
@@ -83,14 +83,14 @@ namespace infra
         const value_type& front() const;
         value_type& back();
         const value_type& back() const;
-        value_type* data(); 
+        value_type* data();
         const value_type* data() const;
 
     public:
         void assign(infra::MemoryRange<typename std::remove_const<T>::type> initData);
         void assign(infra::MemoryRange<const T> initData);
         template<class InputIterator>
-            void assign(InputIterator first, InputIterator last);
+        void assign(InputIterator first, InputIterator last);
         void assign(size_type n, const value_type& value);
 
         void push_back(const value_type& value);
@@ -100,7 +100,7 @@ namespace infra
         iterator insert(iterator position, const value_type& value);
         void insert(iterator position, size_type n, const value_type& value);
         template<class InputIterator>
-            void insert(iterator position, InputIterator first, InputIterator last);
+        void insert(iterator position, InputIterator first, InputIterator last);
 
         iterator erase(iterator position);
         iterator erase(iterator first, iterator last);
@@ -110,9 +110,9 @@ namespace infra
         void clear();
 
         template<class... Args>
-            iterator emplace(const_iterator position, Args&&... args);
+        iterator emplace(const_iterator position, Args&&... args);
         template<class... Args>
-            void emplace_back(Args&&... args);
+        void emplace_back(Args&&... args);
 
     public:
         bool operator==(const BoundedVector& other) const;
@@ -131,18 +131,18 @@ namespace infra
     };
 
     template<class T>
-        void swap(BoundedVector<T>& x, BoundedVector<T>& y) noexcept;
+    void swap(BoundedVector<T>& x, BoundedVector<T>& y) noexcept;
 
     template<class T>
-        typename BoundedVector<T>::size_type erase(BoundedVector<T>& c, const T& value);
+    typename BoundedVector<T>::size_type erase(BoundedVector<T>& c, const T& value);
 
     template<class T, class Pred>
-        typename BoundedVector<T>::size_type erase_if(BoundedVector<T>& c, Pred pred);
+    typename BoundedVector<T>::size_type erase_if(BoundedVector<T>& c, Pred pred);
 
     template<class T>
-        MemoryRange<T> MakeRange(infra::BoundedVector<T>& container);
+    MemoryRange<T> MakeRange(infra::BoundedVector<T>& container);
     template<class T>
-        MemoryRange<const T> MakeRange(const infra::BoundedVector<T>& container);
+    MemoryRange<const T> MakeRange(const infra::BoundedVector<T>& container);
 
     //// Implementation ////
 
@@ -297,7 +297,6 @@ namespace infra
     {
         return const_reverse_iterator(begin());
     }
-
 
     template<class T>
     typename BoundedVector<T>::const_iterator BoundedVector<T>::cbegin() const
@@ -603,8 +602,7 @@ namespace infra
     template<class T>
     bool BoundedVector<T>::operator==(const BoundedVector<T>& other) const
     {
-        return size() == other.size()
-            && std::equal(begin(), end(), other.begin());
+        return size() == other.size() && std::equal(begin(), end(), other.begin());
     }
 
     template<class T>
@@ -665,7 +663,8 @@ namespace infra
     template<class T>
     typename BoundedVector<T>::size_type erase(BoundedVector<T>& c, const T& value)
     {
-        return erase_if(c, [&value](const auto& v) { return v == value; });
+        return erase_if(c, [&value](const auto& v)
+            { return v == value; });
     }
 
     template<class T, class Pred>

@@ -20,3 +20,5 @@ target_sources(infra.syntax_test PRIVATE
     TestProtoParser.cpp
     TestXmlFormatter.cpp
 )
+
+emil_clangformat_target(infra.syntax_test)

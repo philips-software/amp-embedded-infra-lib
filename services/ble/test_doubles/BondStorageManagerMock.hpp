@@ -1,8 +1,8 @@
 #ifndef SERVICES_BOND_STORAGE_MOCK_HPP
 #define SERVICES_BOND_STORAGE_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "services/ble/BondStorageManager.hpp"
+#include "gmock/gmock.h"
 
 namespace services
 {

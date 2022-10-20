@@ -1,7 +1,7 @@
-#include <cmath>
 #include "infra/timer/RetryPolicy.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "gtest/gtest.h"
+#include <cmath>
 
 class RetryPolicyTest
     : public testing::Test
@@ -69,4 +69,17 @@ TEST_F(RetryPolicyTest, should_return_initial_retry_delay_after_waiting_for_maxi
     ForwardTime(std::chrono::minutes(4));
 
     ASSERT_EQ(std::chrono::minutes(1), policy.RetryDelay(true));
+}
+
+TEST_F(RetryPolicyTest, should_return_fixed_interval)
+{
+    infra::RetryPolicyFixedInterval policy(std::chrono::minutes(1));
+
+    EXPECT_EQ(std::chrono::minutes(1), policy.RetryDelay(true));
+    EXPECT_EQ(std::chrono::minutes(1), policy.RetryDelay(false));
+
+    policy.Reset();
+
+    EXPECT_EQ(std::chrono::minutes(1), policy.RetryDelay(true));
+    EXPECT_EQ(std::chrono::minutes(1), policy.RetryDelay(false));
 }

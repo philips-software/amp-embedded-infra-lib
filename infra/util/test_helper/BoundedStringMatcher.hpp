@@ -1,8 +1,8 @@
 #ifndef INFRA_BOUNDED_STRING_MATCHER_HPP
 #define INFRA_BOUNDED_STRING_MATCHER_HPP
 
-#include "gmock/gmock.h"
 #include "infra/util/BoundedString.hpp"
+#include "gmock/gmock.h"
 
 namespace testing
 {
@@ -22,10 +22,19 @@ namespace testing
         {}
 
         template<class M, class = typename std::remove_reference<M>::type::is_gtest_matcher>
-            Matcher(M&& m) : internal::MatcherBase<infra::BoundedStringBase<T>>(std::forward<M>(m)) {}
+        Matcher(M&& m)
+            : internal::MatcherBase<infra::BoundedStringBase<T>>(std::forward<M>(m))
+        {}
 
-        Matcher(infra::BoundedStringBase<T> s) { *this = Eq(std::string(s.data(), s.size())); }
-        Matcher(const char* s) { *this = Eq(std::string(s)); }
+        Matcher(infra::BoundedStringBase<T> s)
+        {
+            *this = Eq(std::string(s.data(), s.size()));
+        }
+
+        Matcher(const char* s)
+        {
+            *this = Eq(std::string(s));
+        }
     };
 
     template<std::size_t Size>
@@ -44,10 +53,19 @@ namespace testing
         {}
 
         template<class M, class = typename std::remove_reference<M>::type::is_gtest_matcher>
-            Matcher(M&& m) : internal::MatcherBase<infra::BoundedStringBase<char>::WithStorage<Size>>(std::forward<M>(m)) {}
+        Matcher(M&& m)
+            : internal::MatcherBase<infra::BoundedStringBase<char>::WithStorage<Size>>(std::forward<M>(m))
+        {}
 
-        Matcher(infra::BoundedStringBase<char>::WithStorage<Size> s) { *this = Eq(std::string(s.data(), s.size())); }
-        Matcher(const char* s) { *this = Eq(std::string(s)); }
+        Matcher(infra::BoundedStringBase<char>::WithStorage<Size> s)
+        {
+            *this = Eq(std::string(s.data(), s.size()));
+        }
+
+        Matcher(const char* s)
+        {
+            *this = Eq(std::string(s));
+        }
     };
 
     template<std::size_t Size>

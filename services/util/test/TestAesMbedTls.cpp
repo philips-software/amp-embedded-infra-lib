@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "services/util/AesMbedTls.hpp"
+#include "gtest/gtest.h"
 
 class Aes128CtrMbedTlsTest
     : public testing::Test
@@ -22,8 +22,8 @@ TEST_F(Aes128CtrMbedTlsTest, should_encrypt_input)
     aes128CtrMbedTls.Encrypt(counter, infra::MakeConstByteRange(input), infra::MakeByteRange(output));
 
     EXPECT_EQ((std::array<uint8_t, 4>{
-        0xc7, 0xa3, 0x38, 0x33
-    }), output);
+                  0xc7, 0xa3, 0x38, 0x33 }),
+        output);
 }
 
 TEST_F(Aes128CtrMbedTlsTest, should_return_different_result_for_same_input)
@@ -32,6 +32,6 @@ TEST_F(Aes128CtrMbedTlsTest, should_return_different_result_for_same_input)
     aes128CtrMbedTls.Encrypt(counter, infra::MakeConstByteRange(input), infra::MakeByteRange(output));
 
     EXPECT_EQ((std::array<uint8_t, 4>{
-        0x72, 0x44, 0x10, 0x91
-    }), output);
+                  0x72, 0x44, 0x10, 0x91 }),
+        output);
 }

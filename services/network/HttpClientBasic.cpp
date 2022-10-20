@@ -20,7 +20,8 @@ namespace services
 
     HttpClientBasic::HttpClientBasic(infra::BoundedString url, uint16_t port, services::HttpClientConnector& httpClientConnector, infra::Duration timeoutDuration, NoAutoConnect)
         : httpClientConnector(httpClientConnector)
-        , sharedAccess([this]() { Expire(); })
+        , sharedAccess([this]()
+              { Expire(); })
         , url(url)
         , port(port)
         , timeoutDuration(timeoutDuration)
@@ -98,7 +99,8 @@ namespace services
         if (state == State::connected)
         {
             state = State::closing;
-            sharedAccess.SetAction([this]() { ReportError(true); });
+            sharedAccess.SetAction([this]()
+                { ReportError(true); });
         }
     }
 
@@ -138,12 +140,14 @@ namespace services
 
     void HttpClientBasic::StartTimeout()
     {
-        timeoutTimer.Start(timeoutDuration, [this]() { Timeout(); });
+        timeoutTimer.Start(timeoutDuration, [this]()
+            { Timeout(); });
     }
 
     void HttpClientBasic::Timeout()
     {
-        sharedAccess.SetAction([this]() { ReportError(true); });
+        sharedAccess.SetAction([this]()
+            { ReportError(true); });
         Close();
     }
 

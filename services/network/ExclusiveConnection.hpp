@@ -56,7 +56,10 @@ namespace services
 
         infra::ClaimableResource resource;
         Claimer currentClaimer{ resource };
-        infra::NotifyingSharedOptional<ExclusiveConnection> exclusiveConnection{ [this]() { currentClaimer.Release(); } };
+        infra::NotifyingSharedOptional<ExclusiveConnection> exclusiveConnection{ [this]()
+            {
+                currentClaimer.Release();
+            } };
         bool cancelConnectionOnNewRequest;
     };
 
@@ -70,7 +73,7 @@ namespace services
     public:
         template<std::size_t NumListeners, std::size_t NumConnectors>
         using WithListenersAndConnectors = infra::WithStorage<infra::WithStorage<ExclusiveConnectionFactory,
-            infra::BoundedList<infra::NotifyingSharedOptional<Listener>>::WithMaxSize<NumListeners>>,
+                                                                  infra::BoundedList<infra::NotifyingSharedOptional<Listener>>::WithMaxSize<NumListeners>>,
             infra::BoundedList<Connector>::WithMaxSize<NumConnectors>>;
 
         ExclusiveConnectionFactory(infra::BoundedList<infra::NotifyingSharedOptional<Listener>>& listeners, infra::BoundedList<Connector>& connectors,

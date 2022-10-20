@@ -1,10 +1,10 @@
-#ifndef HAL_WINDOWS_FILE_SYSTEM_GENERIC_HPP
-#define HAL_WINDOWS_FILE_SYSTEM_GENERIC_HPP
+#ifndef HAL_GENERIC_FILE_SYSTEM_GENERIC_HPP
+#define HAL_GENERIC_FILE_SYSTEM_GENERIC_HPP
 
 #include "hal/interfaces/FileSystem.hpp"
 
 namespace hal
-{    
+{
     class FileSystemGeneric
         : public hal::FileSystem
     {

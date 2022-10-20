@@ -16,6 +16,26 @@
 #define IF_CONSTEXPR
 #endif
 
+#if __cplusplus > 201402L && __has_cpp_attribute(fallthrough)
+#define EMIL_FALLTHROUGH [[fallthrough]]
+#elif __has_cpp_attribute(gnu::fallthrough)
+#define EMIL_FALLTHROUGH [[gnu::fallthrough]]
+#elif __cplusplus && __has_cpp_attribute(clang::fallthrough)
+// Workaround for llvm.org/PR23435, since clang 3.6 and below emit a spurious
+// error when __has_cpp_attribute is given a scoped attribute in C mode.
+#define EMIL_FALLTHROUGH [[clang::fallthrough]]
+#else
+// gcc recognizes fall through comments as can be seen on:
+// https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wimplicit-fallthrough
+#define EMIL_FALLTHROUGH /* fall through */
+#endif
+
+#if __cplusplus > 201402L && __has_cpp_attribute(maybe_unused)
+#define EMIL_MAYBE_UNUSED [[maybe_unused]]
+#else
+#define EMIL_MAYBE_UNUSED
+#endif
+
 namespace infra
 {
     static_assert(__cplusplus != 199711L, "The C++ standard selected is too old, or the /Zc:__cplusplus flag has not been set when using MSVC");

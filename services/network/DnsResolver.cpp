@@ -53,12 +53,14 @@ namespace services
 
     void DnsResolver::NameLookupSuccess(NameResolverResult& nameLookup, IPAddress address, infra::TimePoint validUntil)
     {
-        NameLookupDone([&nameLookup, &address, &validUntil]() { nameLookup.NameLookupDone(address, validUntil); });
+        NameLookupDone([&nameLookup, &address, &validUntil]()
+            { nameLookup.NameLookupDone(address, validUntil); });
     }
 
     void DnsResolver::NameLookupFailed(NameResolverResult& nameLookup)
     {
-        NameLookupDone([&nameLookup]() { nameLookup.NameLookupFailed(); });
+        NameLookupDone([&nameLookup]()
+            { nameLookup.NameLookupFailed(); });
     }
 
     void DnsResolver::NameLookupCancelled()
@@ -392,7 +394,7 @@ namespace services
 
     void DnsResolver::ActiveLookup::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from)
     {
-        this->reader = std::move(reader);   // The SharedPtr towards the reader is saved in the ActiveLookup object, so that it is destroyed before datagramExchange is destroyed
+        this->reader = std::move(reader); // The SharedPtr towards the reader is saved in the ActiveLookup object, so that it is destroyed before datagramExchange is destroyed
         ReplyParser replyParser(*this->reader, hostname);
 
         if (replyParser.AnswerIsForCurrentQuery(from, GetAddress(DnsUdpSocket()), queryId))
@@ -416,7 +418,8 @@ namespace services
         stream << infra::text << hostnameParts;
         stream << footer;
 
-        timeoutTimer.Start(responseTimeout, [this]() { ResolveNextAttempt(); });
+        timeoutTimer.Start(responseTimeout, [this]()
+            { ResolveNextAttempt(); });
     }
 
     void DnsResolver::ActiveLookup::ResolveNextAttempt()

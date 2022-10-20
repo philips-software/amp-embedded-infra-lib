@@ -1,6 +1,6 @@
-#include "gmock/gmock.h"
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/syntax/ProtoParser.hpp"
+#include "gmock/gmock.h"
 
 TEST(ProtoParserTest, GetVarInt_from_a_single_byte)
 {
@@ -145,7 +145,7 @@ TEST(ProtoParserTest, SkipEverything_skips_LengthDelimited)
     infra::ProtoParser::Field field = parser.GetField();
 
     field.first.Get<infra::ProtoLengthDelimited>().SkipEverything();
-    
+
     field = parser.GetField();
     EXPECT_EQ(5, field.first.Get<uint64_t>());
     EXPECT_EQ(1, field.second);

@@ -4,10 +4,12 @@ namespace services
 {
     SerialServerConnectionObserver::SerialServerConnectionObserver(const infra::ByteRange receiveBuffer, hal::SerialCommunication& serialCommunication)
         : receiveBuffer(receiveBuffer)
-        , receiveQueue(receiveBuffer, [this] { SerialDataReceived(); })
+        , receiveQueue(receiveBuffer, [this]
+              { SerialDataReceived(); })
         , serialCommunication(serialCommunication)
     {
-        serialCommunication.ReceiveData([this](infra::ConstByteRange buffer) { receiveQueue.AddFromInterrupt(buffer); });
+        serialCommunication.ReceiveData([this](infra::ConstByteRange buffer)
+            { receiveQueue.AddFromInterrupt(buffer); });
     }
 
     void SerialServerConnectionObserver::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -31,10 +33,9 @@ namespace services
         infra::DataInputStream::WithErrorPolicy stream(*streamReader);
 
         serialCommunication.SendData(stream.ContiguousRange(), [this]
-        {
+            {
             ConnectionObserver::Subject().AckReceived();
-            streamReader = nullptr;
-        });
+            streamReader = nullptr; });
     }
 
     void SerialServerConnectionObserver::SerialDataReceived()
@@ -51,8 +52,6 @@ namespace services
         , receiveBuffer(receiveBuffer)
         , serialCommunication(serialCommunication)
         , connectionCreator([this](infra::Optional<SerialServerConnectionObserver>& value, services::IPAddress address)
-          {
-              value.Emplace(this->receiveBuffer, this->serialCommunication);
-          })
+              { value.Emplace(this->receiveBuffer, this->serialCommunication); })
     {}
 }

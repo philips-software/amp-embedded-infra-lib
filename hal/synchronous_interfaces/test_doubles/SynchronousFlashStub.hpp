@@ -1,8 +1,8 @@
 #ifndef SYNCHRONOUS_HAL_SYNCHRONOUS_FLASH_STUB_HPP
 #define SYNCHRONOUS_HAL_SYNCHRONOUS_FLASH_STUB_HPP
 
-#include "infra/util/Optional.hpp"
 #include "hal/synchronous_interfaces/SynchronousFlash.hpp"
+#include "infra/util/Optional.hpp"
 
 namespace hal
 {

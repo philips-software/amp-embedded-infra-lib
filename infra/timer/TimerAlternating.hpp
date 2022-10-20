@@ -22,9 +22,9 @@ namespace infra
         virtual void ComputeNextTriggerTime() override;
 
     private:
-        std::array<Duration, 2> durations = {};
+        std::array<Duration, 2> durations{};
         std::array<infra::Function<void()>, 2> scheduledTriggers;
-        std::size_t index;
+        std::size_t index{ 0 };
 
         TimePoint triggerStart;
     };

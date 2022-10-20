@@ -1,10 +1,11 @@
-#include "gmock/gmock.h"
 #include "hal/interfaces/test_doubles/FileSystemStub.hpp"
 #include "infra/util/BoundedString.hpp"
 #include "upgrade/pack_builder/UpgradePackConfigParser.hpp"
+#include "gmock/gmock.h"
 #include <climits>
 
-namespace {
+namespace
+{
     static const std::string completeConfig =
         R"({
             "output_filename": "output/goes/here",
@@ -245,7 +246,7 @@ TEST_F(TestConfigParser, GetUpgradeConfiguration_throws_exception_when_upgrade_c
 {
     configJson.Emplace(R"( { "components":{} } )");
     application::UpgradePackConfigParser parser(*configJson);
-    
+
     try
     {
         parser.GetUpgradeConfiguration();

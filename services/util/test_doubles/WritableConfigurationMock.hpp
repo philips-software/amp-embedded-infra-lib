@@ -1,8 +1,8 @@
 #ifndef SERVICES_WRITABLE_STATIC_CONFIGURATION_MOCK_HPP
 #define SERVICES_WRITABLE_STATIC_CONFIGURATION_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "services/util/WritableConfiguration.hpp"
+#include "gmock/gmock.h"
 
 namespace services
 {

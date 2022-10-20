@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/syntax/JsonInputStream.hpp"
+#include "gtest/gtest.h"
 
 class JsonInputStreamTest
     : public testing::Test

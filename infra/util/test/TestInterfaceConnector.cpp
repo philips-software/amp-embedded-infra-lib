@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/util/InterfaceConnector.hpp"
+#include "gtest/gtest.h"
 
 class ITestSingleton
     : public infra::InterfaceConnector<ITestSingleton>
@@ -12,7 +12,8 @@ class TestSingleton
     : public ITestSingleton
 {
 public:
-    virtual void f() override {}
+    virtual void f() override
+    {}
 };
 
 TEST(InterfaceConnectorTest, TestConstruction)

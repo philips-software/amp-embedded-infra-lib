@@ -1,9 +1,9 @@
-#ifndef SERVICES_CUCUMBER_WIRE_PROTOCOL_FORMATTER_HPP 
+#ifndef SERVICES_CUCUMBER_WIRE_PROTOCOL_FORMATTER_HPP
 #define SERVICES_CUCUMBER_WIRE_PROTOCOL_FORMATTER_HPP
 
-#include "services/cucumber/CucumberWireProtocolController.hpp"
-#include "infra/syntax/JsonFormatter.hpp"
 #include "infra/stream/StringInputStream.hpp"
+#include "infra/syntax/JsonFormatter.hpp"
+#include "services/cucumber/CucumberWireProtocolController.hpp"
 
 namespace services
 {
@@ -25,9 +25,9 @@ namespace services
         void FormatBeginScenarioResponse(infra::TextOutputStream::WithErrorPolicy& stream);
         void FormatEndScenarioResponse(infra::TextOutputStream::WithErrorPolicy& stream);
 
-        void AddStringValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, int16_t& offset);
-        void AddDigitValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, int16_t& offset);
-        void AddBooleanValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, int16_t& offset);
+        void AddStringValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, std::size_t& argPos, int16_t& offset);
+        void AddDigitValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, std::size_t& argPos, int16_t& offset);
+        void AddBooleanValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, std::size_t& argPos, int16_t& offset);
 
         infra::JsonArray FormatStepArguments(const infra::BoundedString& nameToMatch);
 

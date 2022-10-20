@@ -19,6 +19,8 @@ target_sources(hal.synchronous_interfaces_test_doubles PRIVATE
     TimeKeeperMock.hpp
 )
 
+emil_clangformat_target(hal.synchronous_interfaces_test_doubles)
+
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
 endif()

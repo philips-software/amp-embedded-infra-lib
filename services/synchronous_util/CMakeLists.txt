@@ -16,6 +16,8 @@ target_sources(services.synchronous_util PRIVATE
     SynchronousSpiMasterWithChipSelect.hpp
 )
 
+emil_clangformat_target(services.synchronous_util)
+
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
 endif()

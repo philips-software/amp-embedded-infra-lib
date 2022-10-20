@@ -8,6 +8,8 @@ target_sources(protobuf.protoc_echo_plugin_test PRIVATE
     TestProtoCEchoPlugin.cpp
 )
 
+emil_clangformat_target(protobuf.protoc_echo_plugin_test)
+
 target_link_libraries(protobuf.protoc_echo_plugin_test PUBLIC
     gmock_main
     infra.event_test_helper

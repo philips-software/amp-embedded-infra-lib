@@ -8,3 +8,5 @@ target_sources(protobuf.test_helper PRIVATE
     EchoSingleLoopback.cpp
     EchoSingleLoopback.hpp
 )
+
+emil_clangformat_target(protobuf.test_helper)

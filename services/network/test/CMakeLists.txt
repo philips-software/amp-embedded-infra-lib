@@ -1,6 +1,10 @@
 add_executable(services.network_test)
 emil_add_test(services.network_test)
 
+if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang|AppleClang")
+    target_compile_options(services.network_test PRIVATE -Wno-braced-scalar-init)
+endif()
+
 target_link_libraries(services.network_test PUBLIC
     gmock_main
     services.network
@@ -42,3 +46,5 @@ target_sources(services.network_test PRIVATE
     TestWebSocketServerConnectionObserver.cpp
     TestWiFiNetwork.cpp
 )
+
+emil_clangformat_target(services.network_test)

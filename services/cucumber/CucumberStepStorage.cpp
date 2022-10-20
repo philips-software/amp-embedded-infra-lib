@@ -26,7 +26,7 @@ namespace
             ++iterator;
             ++skippedSize;
         }
-        
+
         return skippedSize;
     }
 
@@ -114,7 +114,7 @@ namespace services
         Match matchResult{};
         uint8_t nrStepMatches = 0;
         uint8_t count = 0;
- 
+
         for (auto& step : stepList)
         {
             if (MatchesStepName(step, nameToMatch))

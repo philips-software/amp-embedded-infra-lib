@@ -52,7 +52,7 @@ namespace infra
 
     infra::ByteRange BoundedDequeStreamWriter::Overwrite(std::size_t marker)
     {
-        std::abort();   // The requested range may be split in the deque
+        std::abort(); // The requested range may be split in the deque
     }
 
     BoundedDequeOutputStream::BoundedDequeOutputStream(BoundedDeque<uint8_t>& storage)

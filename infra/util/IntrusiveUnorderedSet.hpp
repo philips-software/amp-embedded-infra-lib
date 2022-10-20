@@ -30,12 +30,12 @@ namespace infra
 
     public:
         template<std::size_t B>
-            using WithBuckets = infra::WithStorage<IntrusiveUnorderedSet<T>, std::array<std::pair<iterator, iterator>, B>>;
+        using WithBuckets = infra::WithStorage<IntrusiveUnorderedSet<T>, std::array<std::pair<iterator, iterator>, B>>;
 
     public:
         explicit IntrusiveUnorderedSet(infra::MemoryRange<std::pair<iterator, iterator>> buckets);
         template<class InputIterator>
-            IntrusiveUnorderedSet(infra::MemoryRange<std::pair<iterator, iterator>> buckets, InputIterator first, InputIterator last);
+        IntrusiveUnorderedSet(infra::MemoryRange<std::pair<iterator, iterator>> buckets, InputIterator first, InputIterator last);
         IntrusiveUnorderedSet(const IntrusiveUnorderedSet& other) = delete;
         IntrusiveUnorderedSet(infra::MemoryRange<std::pair<iterator, iterator>> buckets, IntrusiveUnorderedSet&& other);
         IntrusiveUnorderedSet& operator=(const IntrusiveUnorderedSet& other) = delete;
@@ -69,12 +69,12 @@ namespace infra
         void insert(reference value);
 
         template<class... Args>
-            std::pair<iterator, bool> emplace(Args&&... args);
+        std::pair<iterator, bool> emplace(Args&&... args);
 
         void erase(reference value);
 
         template<class InputIterator>
-            void assign(InputIterator first, InputIterator last);
+        void assign(InputIterator first, InputIterator last);
 
         void clear();
 
@@ -94,7 +94,7 @@ namespace infra
     };
 
     template<class T>
-        void swap(IntrusiveUnorderedSet<T>& x, IntrusiveUnorderedSet<T>& y);
+    void swap(IntrusiveUnorderedSet<T>& x, IntrusiveUnorderedSet<T>& y);
 
     ////    Implementation    ////
 

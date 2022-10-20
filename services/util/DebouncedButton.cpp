@@ -9,7 +9,9 @@ namespace services
         , onPressed(onPressed)
         , onReleased(onReleased)
     {
-        this->buttonPin.EnableInterrupt([this]() { ButtonChanged(); }, hal::InterruptTrigger::bothEdges);
+        this->buttonPin.EnableInterrupt([this]()
+            { ButtonChanged(); },
+            hal::InterruptTrigger::bothEdges);
     }
 
     DebouncedButton::~DebouncedButton()
@@ -36,7 +38,8 @@ namespace services
     {
         if (!debounceEnd.Armed())
         {
-            debounceEnd.Start(debounceDuration, [this]() { DebounceEnd(); });
+            debounceEnd.Start(debounceDuration, [this]()
+                { DebounceEnd(); });
             announcedPressed = true;
             onPressed();
         }
@@ -46,7 +49,8 @@ namespace services
     {
         if (!debounceEnd.Armed())
         {
-            debounceEnd.Start(debounceDuration, [this]() { DebounceEnd(); });
+            debounceEnd.Start(debounceDuration, [this]()
+                { DebounceEnd(); });
             announcedPressed = false;
             onReleased();
         }

@@ -61,7 +61,7 @@ Make sure you have all development dependencies installed. E.g. [CMake](https://
 
 ## How to report a bug
 
-If you find a security vulnerability, do NOT open an issue. Email one of the [maintainers](CODEOWNERS) instead.
+If you find a security vulnerability, do NOT open an issue. Email one of the [maintainers](.github/CODEOWNERS) instead.
 
 In order to determine whether you are dealing with a security issue, ask yourself these two questions:
 * Can I access something that's not mine, or something I shouldn't have access to?

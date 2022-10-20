@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.21)
+cmake_minimum_required (VERSION 3.24)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 project(emil LANGUAGES C CXX VERSION 2.0.0)
@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED On)
 set_directory_properties(PROPERTY USE_FOLDERS On)
 
 include(CMakePackageConfigHelpers)
+include(emil_clang_tools)
 include(emil_version_generator)
 include(FetchContent)
 include(GNUInstallDirs)  # included to supply proper defaults to install(...) commands
@@ -63,6 +64,7 @@ else()
     set(EMIL_EXCLUDE_FROM_ALL "EXCLUDE_FROM_ALL")
 endif()
 
+option(CMAKE_COMPILE_WARNING_AS_ERROR "Enable warnings-as-error" ON)
 option(EMIL_BUILD_TESTS "Enable build of the tests" ${EMIL_DEFAULTOPT})
 option(EMIL_BUILD_EXAMPLES "Enable build of the examples" ${EMIL_DEFAULTOPT})
 option(EMIL_ENABLE_COVERAGE "Enable compiler flags for code coverage measurements" Off)
@@ -105,7 +107,7 @@ if (EMIL_HOST_BUILD)
         FetchContent_Declare(
             googletest
             GIT_REPOSITORY https://github.com/google/googletest.git
-            GIT_TAG        release-1.11.0
+            GIT_TAG        release-1.12.1
         )
         # For Windows: Prevent overriding the parent project's compiler/linker settings
         set(gtest_force_shared_crt On CACHE BOOL "" FORCE)

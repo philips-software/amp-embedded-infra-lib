@@ -1,8 +1,8 @@
 #ifndef NETWORK_ADDRESS_MOCK_HPP
 #define NETWORK_ADDRESS_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "services/network/Address.hpp"
+#include "gmock/gmock.h"
 
 namespace services
 {

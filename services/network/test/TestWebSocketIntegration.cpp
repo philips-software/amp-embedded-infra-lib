@@ -1,10 +1,9 @@
-#include "gmock/gmock.h"
 #include "hal/synchronous_interfaces/test_doubles/SynchronousFixedRandomDataGenerator.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/ProxyCreatorMock.hpp"
 #include "services/network/HttpClientImpl.hpp"
-#include "services/network/HttpServer.hpp"
 #include "services/network/HttpPageWebSocket.hpp"
+#include "services/network/HttpServer.hpp"
 #include "services/network/WebSocketClientConnectionObserver.hpp"
 #include "services/network/WebSocketServerConnectionObserver.hpp"
 #include "services/network/test_doubles/ConnectionFactoryWithNameResolverStub.hpp"
@@ -12,6 +11,7 @@
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/network/test_doubles/HttpClientMock.hpp"
 #include "services/util/test_doubles/StoppableMock.hpp"
+#include "gmock/gmock.h"
 
 namespace
 {
@@ -47,15 +47,12 @@ TEST_F(WebSocketIntegrationTest, integration)
 
     EXPECT_CALL(serverObserverFactory, ConnectionAcceptedMock(testing::_, testing::_))
         .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver, services::IPAddress address)
-    {
-        createdObserver(httpServerConnectionPtr);
-    }));
+            { createdObserver(httpServerConnectionPtr); }));
 
     services::ConnectionFactoryWithNameResolverStub connectionFactoryWithNameResolver(network, services::IPv4AddressLocalHost());
     hal::SynchronousFixedRandomDataGenerator randomDataGenerator({ 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4 });
     services::HttpClientConnectorWithNameResolverImpl<> clientConnector(connectionFactoryWithNameResolver);
-    infra::Creator<services::Stoppable, services::HttpClientWebSocketInitiation, void(services::WebSocketClientObserverFactory& clientObserverFactory,
-        services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)> httpClientInitiationCreator(
+    infra::Creator<services::Stoppable, services::HttpClientWebSocketInitiation, void(services::WebSocketClientObserverFactory & clientObserverFactory, services::HttpClientWebSocketInitiationResult & result, hal::SynchronousRandomDataGenerator & randomDataGenerator)> httpClientInitiationCreator(
         [&clientConnector](infra::Optional<services::HttpClientWebSocketInitiation>& value, services::WebSocketClientObserverFactory& clientObserverFactory,
             services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)
         {
@@ -69,11 +66,10 @@ TEST_F(WebSocketIntegrationTest, integration)
     EXPECT_CALL(clientObserverFactory, Port()).WillRepeatedly(testing::Return(5));
     infra::SharedOptional<testing::StrictMock<services::ConnectionObserverFullMock>> clientConnection;
     EXPECT_CALL(clientObserverFactory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this, &clientConnection](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> client)>&& createdClient)
-    {
+        {
         auto clientConnectionPtr = clientConnection.Emplace();
         EXPECT_CALL(*clientConnection, Attached());
-        createdClient(clientConnectionPtr);
-    }));
+        createdClient(clientConnectionPtr); }));
     webSocketClientFactory.Connect(clientObserverFactory);
     ExecuteAllActions();
 
@@ -84,7 +80,7 @@ TEST_F(WebSocketIntegrationTest, integration)
 
     // Send data from client to server
     EXPECT_CALL(*clientConnection, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke([this, &serverConnection](const infra::SharedPtr<infra::StreamWriter>& writer)
-    {
+        {
         infra::TextOutputStream::WithErrorPolicy stream(*writer);
         stream << "Hello!";
 
@@ -95,14 +91,13 @@ TEST_F(WebSocketIntegrationTest, integration)
             infra::BoundedString::WithStorage<6> receivedText(6);
             inputStream >> receivedText;
             EXPECT_EQ("Hello!", receivedText);
-        }));
-    }));
+        })); }));
     clientConnection->Subject().RequestSendStream(512);
     ExecuteAllActions();
 
     // Send data from server to client
     EXPECT_CALL(*serverConnection, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke([this, &clientConnection](const infra::SharedPtr<infra::StreamWriter>& writer)
-    {
+        {
         infra::TextOutputStream::WithErrorPolicy stream(*writer);
         stream << "Howdy!";
 
@@ -113,8 +108,7 @@ TEST_F(WebSocketIntegrationTest, integration)
             infra::BoundedString::WithStorage<6> receivedText(6);
             inputStream >> receivedText;
             EXPECT_EQ("Howdy!", receivedText);
-        }));
-    }));
+        })); }));
     serverConnection->Subject().RequestSendStream(512);
     ExecuteAllActions();
 

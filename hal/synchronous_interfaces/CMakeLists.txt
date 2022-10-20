@@ -28,6 +28,8 @@ target_sources(hal.synchronous_interfaces PRIVATE
     TimeService.hpp
 )
 
+emil_clangformat_target(hal.synchronous_interfaces)
+
 if (BUILD_TESTING)
     add_subdirectory(test_doubles)
 endif()

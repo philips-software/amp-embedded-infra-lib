@@ -82,14 +82,12 @@ namespace services
             case 'c':
                 tracer.Continue() << static_cast<const char>(va_arg(*args, int32_t));
                 break;
-            case 's':
-            {
+            case 's': {
                 auto* s = va_arg(*args, char*);
                 tracer.Continue() << (s != nullptr ? s : "(null)");
                 break;
             }
             case 'd':
-                [[fallthrough]];
             case 'i':
                 if (lengthSpecifier >= 2)
                     tracer.Continue() << va_arg(*args, int64_t);
@@ -105,7 +103,6 @@ namespace services
             case 'p':
                 tracer.Continue() << "0x";
             case 'X':
-                [[fallthrough]];
             case 'x':
                 if (lengthSpecifier >= 2)
                     tracer.Continue() << infra::hex << width << va_arg(*args, uint64_t);

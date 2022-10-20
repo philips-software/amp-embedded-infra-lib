@@ -1,9 +1,9 @@
+#include "protobuf/protoc_echo_plugin_java/ProtoCEchoPluginJava.hpp"
 #include "generated/EchoAttributes.pb.h"
 #include "google/protobuf/compiler/cpp/cpp_helpers.h"
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/stubs/strutil.h"
-#include "protobuf/protoc_echo_plugin_java/ProtoCEchoPluginJava.hpp"
 #include <sstream>
 
 namespace application
@@ -12,44 +12,56 @@ namespace application
     {
         std::string UnderscoresToCamelCase(const std::string& input,
             bool cap_next_letter,
-            bool preserve_period = true) {
+            bool preserve_period = true)
+        {
             std::string result;
             // Note:  I distrust ctype.h due to locales.
-            for (int i = 0; i < input.size(); i++) {
-                if ('a' <= input[i] && input[i] <= 'z') {
-                    if (cap_next_letter) {
+            for (int i = 0; i < input.size(); i++)
+            {
+                if ('a' <= input[i] && input[i] <= 'z')
+                {
+                    if (cap_next_letter)
+                    {
                         result += input[i] + ('A' - 'a');
                     }
-                    else {
+                    else
+                    {
                         result += input[i];
                     }
                     cap_next_letter = false;
                 }
-                else if ('A' <= input[i] && input[i] <= 'Z') {
-                    if (i == 0 && !cap_next_letter) {
+                else if ('A' <= input[i] && input[i] <= 'Z')
+                {
+                    if (i == 0 && !cap_next_letter)
+                    {
                         // Force first letter to lower-case unless explicitly told to
                         // capitalize it.
                         result += input[i] + ('a' - 'A');
                     }
-                    else {
+                    else
+                    {
                         // Capital letters after the first are left as-is.
                         result += input[i];
                     }
                     cap_next_letter = false;
                 }
-                else if ('0' <= input[i] && input[i] <= '9') {
+                else if ('0' <= input[i] && input[i] <= '9')
+                {
                     result += input[i];
                     cap_next_letter = true;
                 }
-                else {
+                else
+                {
                     cap_next_letter = true;
-                    if (input[i] == '.' && preserve_period) {
+                    if (input[i] == '.' && preserve_period)
+                    {
                         result += '.';
                     }
                 }
             }
             // Add a trailing "_" if the name should be altered.
-            if (input[input.size() - 1] == '#') {
+            if (input[input.size() - 1] == '#')
+            {
                 result += '_';
             }
             return result;
@@ -99,7 +111,8 @@ namespace application
     {
         printer.Print(R"(        final static int serviceId = $id$;
 
-)", "id", google::protobuf::SimpleItoa(serviceId));
+)",
+            "id", google::protobuf::SimpleItoa(serviceId));
 
         for (int i = 0; i != service.method_count(); ++i)
         {
@@ -130,7 +143,8 @@ namespace application
     void JavaServiceGenerator::GenerateClassHeader()
     {
         printer.Print(R"(    public static abstract class $name$ extends Service {
-)", "name", service.name());
+)",
+            "name", service.name());
     }
 
     void JavaServiceGenerator::GenerateConstructor()
@@ -139,7 +153,8 @@ namespace application
             super(echo, serviceId);
         }
 
-)", "name", service.name());
+)",
+            "name", service.name());
     }
 
     void JavaServiceGenerator::GenerateHandle()
@@ -156,13 +171,14 @@ namespace application
                     $parameter_type$ param$parameter_nr$ = $parameter_type$.newBuilder().mergeFrom(stream).build();
                     $method$(param$parameter_nr$);
                     break;
-)", "method_type", service.method(i)->name(), "method", UnderscoresToCamelCase(service.method(i)->name(), false), "parameter_type", QualifiedName(*service.method(i)->input_type()), "parameter_nr", google::protobuf::SimpleItoa(i));
+)",
+                    "method_type", service.method(i)->name(), "method", UnderscoresToCamelCase(service.method(i)->name(), false), "parameter_type", QualifiedName(*service.method(i)->input_type()), "parameter_nr", google::protobuf::SimpleItoa(i));
             else
                 printer.Print(R"(                case id$method_type$:
                     $method$();
                     break;
-)", "method_type", service.method(i)->name(), "method", UnderscoresToCamelCase(service.method(i)->name(), false));
-
+)",
+                    "method_type", service.method(i)->name(), "method", UnderscoresToCamelCase(service.method(i)->name(), false));
         }
 
         printer.Print(R"(            }
@@ -170,19 +186,21 @@ namespace application
 )");
     }
 
-    void JavaServiceGenerator::GenerateAbstractMethods() {
+    void JavaServiceGenerator::GenerateAbstractMethods()
+    {
         for (int i = 0; i != service.method_count(); ++i)
         {
             if (service.method(i)->input_type()->full_name() != Nothing::descriptor()->full_name())
                 printer.Print(R"(
         public abstract void $method$($parameter$ parameter);
-)", "method", UnderscoresToCamelCase(service.method(i)->name(), false), "parameter", QualifiedName(*service.method(i)->input_type()));
+)",
+                    "method", UnderscoresToCamelCase(service.method(i)->name(), false), "parameter", QualifiedName(*service.method(i)->input_type()));
             else
                 printer.Print(R"(
         public abstract void $method$();
-)", "method", UnderscoresToCamelCase(service.method(i)->name(), false));
+)",
+                    "method", UnderscoresToCamelCase(service.method(i)->name(), false));
         }
-
     }
 
     void JavaServiceGenerator::GenerateClassFooter()
@@ -208,7 +226,8 @@ namespace application
     void JavaServiceProxyGenerator::GenerateClassHeader()
     {
         printer.Print(R"(    public static class $name$Proxy extends ServiceProxy {
-)", "name", service.name());
+)",
+            "name", service.name());
     }
 
     void JavaServiceProxyGenerator::GenerateConstructor()
@@ -217,7 +236,8 @@ namespace application
             super(echo);
         }
 
-)", "name", service.name());
+)",
+            "name", service.name());
     }
 
     void JavaServiceProxyGenerator::GenerateMethods()
@@ -226,16 +246,19 @@ namespace application
         {
             if (service.method(i)->input_type()->full_name() != Nothing::descriptor()->full_name())
                 printer.Print(R"(        public void $method$($parameter_type$ parameter) throws IOException
-)", "method", UnderscoresToCamelCase(service.method(i)->name(), false), "parameter_type", QualifiedName(*service.method(i)->input_type()));
+)",
+                    "method", UnderscoresToCamelCase(service.method(i)->name(), false), "parameter_type", QualifiedName(*service.method(i)->input_type()));
             else
                 printer.Print(R"(        public void $method$() throws IOException
-)", "method", UnderscoresToCamelCase(service.method(i)->name(), false));
+)",
+                    "method", UnderscoresToCamelCase(service.method(i)->name(), false));
             printer.Print(R"(        {
             CodedOutputStream stream = echo.getOutputStream();
 
             stream.writeInt32NoTag(serviceId);
             stream.writeTag(id$method$, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-)", "method", service.method(i)->name());
+)",
+                "method", service.method(i)->name());
             if (service.method(i)->input_type()->full_name() != Nothing::descriptor()->full_name())
                 printer.Print(R"(            stream.writeMessageNoTag(parameter);
 )");
@@ -273,7 +296,8 @@ public class $basename$Services {
 
     private $basename$Services() {}
 
-)", "filename", file->name(), "basename", google::protobuf::compiler::cpp::StripProto(file->name()));
+)",
+            "filename", file->name(), "basename", google::protobuf::compiler::cpp::StripProto(file->name()));
 
         for (int i = 0; i != file->service_count(); ++i)
         {

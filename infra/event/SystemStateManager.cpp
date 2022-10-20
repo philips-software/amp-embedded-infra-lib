@@ -1,5 +1,5 @@
-#include "infra/event/EventDispatcher.hpp"
 #include "infra/event/SystemStateManager.hpp"
+#include "infra/event/EventDispatcher.hpp"
 
 namespace infra
 {
@@ -30,7 +30,8 @@ namespace infra
 
     void SystemStateParticipant::ReachedState()
     {
-        infra::EventDispatcher::Instance().Schedule([this]() { systemStateManager.ReachedState(*this); });
+        infra::EventDispatcher::Instance().Schedule([this]()
+            { systemStateManager.ReachedState(*this); });
     }
 
     void SystemStateManager::RunStates(infra::MemoryRange<const SystemStateBase> states)
@@ -78,7 +79,7 @@ namespace infra
         if (participantsInPreviousState.empty())
             GoToNextState();
         else
-            for (SystemStateParticipant& participant: participantsInPreviousState)
+            for (SystemStateParticipant& participant : participantsInPreviousState)
                 participant.RequestState(*currentState);
     }
 }

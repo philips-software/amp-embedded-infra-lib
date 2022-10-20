@@ -7,6 +7,7 @@ if (EMIL_HOST_BUILD)
         crypto.micro_ecc
         crypto.tiny_aes128
         hal.interfaces
+        infra.syntax
         upgrade.pack
     )
 
@@ -49,6 +50,8 @@ if (EMIL_HOST_BUILD)
         UpgradePackInputFactory.cpp
         UpgradePackInputFactory.hpp
     )
+
+    emil_clangformat_target(upgrade.pack_builder)
 
     if (EMIL_BUILD_TESTS)
         add_subdirectory(test)

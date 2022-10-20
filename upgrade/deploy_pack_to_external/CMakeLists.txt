@@ -12,6 +12,8 @@ target_sources(upgrade.deploy_pack_to_external PRIVATE
     DeployPackToExternal.hpp
 )
 
+emil_clangformat_target(upgrade.deploy_pack_to_external)
+
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
 endif()

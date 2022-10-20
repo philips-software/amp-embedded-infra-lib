@@ -9,7 +9,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates=20211016~20.04.1 \
         ccache=3.7.7-1 \
         clang-12=1:12.0.0-3ubuntu1~20.04.5 \
-        clang-format-12=1:12.0.0-3ubuntu1~20.04.5 \
         clang-tidy-12=1:12.0.0-3ubuntu1~20.04.5 \
         g++-8=8.4.0-3ubuntu2 \
         gcc-8=8.4.0-3ubuntu2 \
@@ -18,7 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         gnupg2=2.2.19-3ubuntu2.2 \
         iwyu=8.0-3build1 \
         libllvm12=1:12.0.0-3ubuntu1~20.04.5 \
-        libxml2=2.9.10+dfsg-5ubuntu0.20.04.3 \
+        libxml2=2.9.10+dfsg-5ubuntu0.20.04.4 \
         lsb-release=11.1.0ubuntu2 \
         ninja-build=1.10.0-1build1 \
         python3=3.8.2-0ubuntu2 \
@@ -30,9 +29,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN wget -qO /usr/local/share/ca-certificates/Cisco_Umbrella_Root_CA.crt https://www.cisco.com/security/pki/certs/ciscoumbrellaroot.pem \
  && update-ca-certificates
 
-# Install cmake via pip to get a recent version; install gcovr
-RUN python3 -m pip --no-cache-dir install cmake==3.22.4 \
- && python3 -m pip --no-cache install gcovr==5.0
+# Install some tools via pip to get more recent versions
+RUN python3 -m pip --no-cache-dir install cmake==3.24.1 \
+ && python3 -m pip --no-cache-dir install gcovr==5.0 \
+ && python3 -m pip --no-cache-dir install clang-format==14.0.6
 
 # Install arm-gcc toolchain
 # hadolint ignore=SC2016
@@ -57,5 +57,4 @@ RUN wget -qO - "https://download.docker.com/linux/$(lsb_release -is | tr '[:uppe
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 10 \
  && update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-8 20 \
  && update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-8 20 \
- && update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-12 10 \
  && update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-12 10

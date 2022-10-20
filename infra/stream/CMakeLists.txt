@@ -62,6 +62,8 @@ target_sources(infra.stream PRIVATE
     StringOutputStream.hpp
 )
 
+emil_clangformat_target(infra.stream)
+
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
 endif()

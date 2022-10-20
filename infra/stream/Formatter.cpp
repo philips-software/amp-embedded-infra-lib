@@ -22,17 +22,17 @@ namespace infra
         {
             switch (format[i])
             {
-            case '<':
-                align = FormatAlign::left;
-                break;
-            case '^':
-                align = FormatAlign::center;
-                break;
-            case '>':
-                align = FormatAlign::right;
-                break;
-            default:
-                break;
+                case '<':
+                    align = FormatAlign::left;
+                    break;
+                case '^':
+                    align = FormatAlign::center;
+                    break;
+                case '>':
+                    align = FormatAlign::right;
+                    break;
+                default:
+                    break;
             }
 
             if (align != FormatAlign::nothing)
@@ -75,14 +75,14 @@ namespace infra
         std::size_t count = 0;
         switch (spec.align)
         {
-        case FormatAlign::right:
-            count = width - text.size();
-            break;
-        case FormatAlign::center:
-            count = (width - text.size()) / 2;
-            break;
-        default:
-            break;
+            case FormatAlign::right:
+                count = width - text.size();
+                break;
+            case FormatAlign::center:
+                count = (width - text.size()) / 2;
+                break;
+            default:
+                break;
         }
         width -= count;
         for (; count > 0; --count)
@@ -100,27 +100,27 @@ namespace infra
         const std::size_t SignSize = 1;
         const auto size = std::numeric_limits<uint64_t>::digits + SignSize;
         BoundedString::WithStorage<size> buffer;
-        auto index(size-1);
+        auto index(size - 1);
 
         decltype(value) divider{};
         switch (spec.type)
         {
-        case 'x':
-        case 'X':
-            divider = 16;
-            break;
-        case 'o':
-            divider = 8;
-            break;
-        case 'b':
-            divider = 2;
-            break;
-        case 'd':
-        case '\0':
-            divider = 10;
-            break;
-        default:
-            break;
+            case 'x':
+            case 'X':
+                divider = 16;
+                break;
+            case 'o':
+                divider = 8;
+                break;
+            case 'b':
+                divider = 2;
+                break;
+            case 'd':
+            case '\0':
+                divider = 10;
+                break;
+            default:
+                break;
         }
         const auto isValid = divider != 0;
         stream.ErrorPolicy().ReportResult(isValid);
@@ -139,7 +139,7 @@ namespace infra
         if (spec.align == FormatAlign::nothing)
             spec.align = FormatAlign::right;
 
-        RawFormat(stream, BoundedConstString(&buffer[index], size-index), spec);
+        RawFormat(stream, BoundedConstString(&buffer[index], size - index), spec);
     }
 
     void FormatterBase::SignedInteger(TextOutputStream& stream, int64_t value, FormatSpec& spec) const

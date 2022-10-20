@@ -1,8 +1,8 @@
-#include "gmock/gmock.h"
 #include "infra/syntax/JsonStreamingParser.hpp"
 #include "infra/syntax/test_doubles/JsonStreamingParserMock.hpp"
 #include "infra/util/test_helper/BoundedStringMatcher.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
+#include "gmock/gmock.h"
 
 namespace
 {
@@ -40,9 +40,7 @@ TEST_F(JsonStreamingObjectParserTest, feed_empty_object)
 TEST_F(JsonStreamingObjectParserTest, delete_on_Close)
 {
     EXPECT_CALL(visitor, Close()).WillOnce(testing::Invoke([this]()
-    {
-        DeleteValue(parser);
-    }));
+        { DeleteValue(parser); }));
     parser.Feed("{}");
 
     new (&parser) decltype(parser){ visitor };
@@ -164,9 +162,7 @@ TEST_F(JsonStreamingObjectParserTest, VisitString_twice)
 TEST_F(JsonStreamingObjectParserTest, destruct_parser_during_callback)
 {
     EXPECT_CALL(visitor, VisitString("a", "b")).WillOnce(testing::Invoke([this](infra::BoundedConstString, infra::BoundedConstString)
-    {
-        DeleteValue(parser);
-    }));
+        { DeleteValue(parser); }));
     parser.Feed(R"({ "a" : "b", "a" : "b")");
 
     new (&parser) decltype(parser){ visitor };
@@ -188,10 +184,9 @@ TEST_F(JsonStreamingObjectParserTest, VisitObject)
 TEST_F(JsonStreamingObjectParserTest, delete_on_VisitObject)
 {
     EXPECT_CALL(visitor, VisitObject("a", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString tag, infra::JsonSubObjectParser& parser)
-    {
+        {
         DeleteValue(this->parser);
-        return nullptr;
-    }));
+        return nullptr; }));
     parser.Feed(R"({ "a" : {)");
 
     new (&parser) decltype(parser){ visitor };
@@ -227,17 +222,14 @@ TEST_F(JsonStreamingObjectParserTest, nested_visitor_invokes_SemanticError)
 {
     infra::JsonSubObjectParser* nestedParser = nullptr;
     EXPECT_CALL(visitor, VisitObject("a", testing::_)).WillOnce(testing::Invoke([&nestedParser, this](infra::BoundedConstString tag, infra::JsonSubObjectParser& subObjectParser)
-    {
+        {
         nestedParser = &subObjectParser;
-        return &nestedVisitor;
-    }));
+        return &nestedVisitor; }));
     parser.Feed(R"({ "a" : {)");
 
     EXPECT_CALL(visitor, SemanticError());
     EXPECT_CALL(nestedVisitor, VisitString("a", "b")).WillOnce(testing::Invoke([nestedParser](infra::BoundedConstString tag, infra::BoundedConstString value)
-    {
-        nestedParser->SemanticError();
-    }));
+        { nestedParser->SemanticError(); }));
     parser.Feed(R"("a" : "b")");
 }
 
@@ -247,9 +239,7 @@ TEST_F(JsonStreamingObjectParserTest, propagation_stops_when_parser_is_deleted_i
     parser.Feed(R"({ "a" : {)");
 
     EXPECT_CALL(nestedVisitor, ParseError()).WillOnce(testing::Invoke([this]()
-    {
-        infra::ReConstruct(parser, visitor);
-    }));
+        { infra::ReConstruct(parser, visitor); }));
     parser.Feed("{ ^");
 }
 
@@ -257,28 +247,22 @@ TEST_F(JsonStreamingObjectParserWith3LevelsTest, propagation_stops_when_parser_i
 {
     infra::JsonSubObjectParser* nestedParser = nullptr;
     EXPECT_CALL(visitor, VisitObject("a", testing::_)).WillOnce(testing::Invoke([&nestedParser, this](infra::BoundedConstString tag, infra::JsonSubObjectParser& subObjectParser)
-    {
+        {
         nestedParser = &subObjectParser;
-        return &nestedVisitor;
-    }));
+        return &nestedVisitor; }));
     parser.Feed(R"({ "a" : {)");
 
     testing::StrictMock<infra::JsonObjectVisitorMock> nestedVisitor2;
     EXPECT_CALL(nestedVisitor, VisitObject("a", testing::_)).WillOnce(testing::Invoke([&nestedParser, this, &nestedVisitor2](infra::BoundedConstString tag, infra::JsonSubObjectParser& subObjectParser)
-    {
+        {
         nestedParser = &subObjectParser;
-        return &nestedVisitor2;
-    }));
+        return &nestedVisitor2; }));
     parser.Feed(R"("a" : {)");
 
     EXPECT_CALL(nestedVisitor, SemanticError()).WillOnce(testing::Invoke([this]()
-    {
-        infra::ReConstruct(parser, visitor);
-    }));
+        { infra::ReConstruct(parser, visitor); }));
     EXPECT_CALL(nestedVisitor2, VisitString("a", "b")).WillOnce(testing::Invoke([nestedParser](infra::BoundedConstString tag, infra::BoundedConstString value)
-    {
-        nestedParser->SemanticError();
-    }));
+        { nestedParser->SemanticError(); }));
     parser.Feed(R"("a" : "b")");
 }
 
@@ -330,10 +314,9 @@ TEST_F(JsonStreamingObjectParserTest, when_nested_visitor_is_null_subarray_is_sk
 TEST_F(JsonStreamingObjectParserTest, delete_on_VisitArray)
 {
     EXPECT_CALL(visitor, VisitArray("a", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString tag, infra::JsonSubArrayParser& parser)
-    {
+        {
         DeleteValue(this->parser);
-        return nullptr;
-    }));
+        return nullptr; }));
     parser.Feed(R"({ "a" : [)");
 
     new (&parser) decltype(parser){ visitor };
@@ -387,10 +370,9 @@ public:
     JsonStreamingObjectParserArrayTest()
     {
         EXPECT_CALL(visitor, VisitArray("a", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString tag, infra::JsonSubArrayParser& subArrayParser)
-        {
+            {
             nestedParser = &subArrayParser;
-            return &arrayVisitor;
-        }));
+            return &arrayVisitor; }));
         parser.Feed(R"({ "a" : [)");
     }
 
@@ -422,9 +404,7 @@ TEST_F(JsonStreamingObjectParserArrayTest, nested_array_visitor_invokes_Semantic
 {
     EXPECT_CALL(visitor, SemanticError());
     EXPECT_CALL(arrayVisitor, VisitString("a")).WillOnce(testing::Invoke([this](infra::BoundedConstString value)
-    {
-        nestedParser->SemanticError();
-    }));
+        { nestedParser->SemanticError(); }));
     parser.Feed(R"("a" : "b")");
 }
 
@@ -458,9 +438,7 @@ TEST_F(JsonStreamingObjectParserArrayTest, close_array)
 TEST_F(JsonStreamingObjectParserArrayTest, delete_on_Close)
 {
     EXPECT_CALL(arrayVisitor, Close()).WillOnce(testing::Invoke([this]()
-    {
-        DeleteValue(parser);
-    }));
+        { DeleteValue(parser); }));
     parser.Feed(R"(])");
 
     new (&parser) decltype(parser){ visitor };
@@ -498,10 +476,9 @@ TEST_F(JsonStreamingObjectParserArrayTest, VisitObject)
 TEST_F(JsonStreamingObjectParserArrayTest, delete_on_VisitObject)
 {
     EXPECT_CALL(arrayVisitor, VisitObject(testing::_)).WillOnce(testing::Invoke([this](infra::JsonSubObjectParser&)
-    {
+        {
         DeleteValue(parser);
-        return nullptr;
-    }));
+        return nullptr; }));
     parser.Feed(R"({)");
 
     new (&parser) decltype(parser){ visitor };
@@ -520,10 +497,9 @@ TEST_F(JsonStreamingObjectParserArrayTest, VisitArray)
 TEST_F(JsonStreamingObjectParserArrayTest, delete_on_VisitArray)
 {
     EXPECT_CALL(arrayVisitor, VisitArray(testing::_)).WillOnce(testing::Invoke([this](infra::JsonSubArrayParser&)
-    {
+        {
         DeleteValue(parser);
-        return nullptr;
-    }));
+        return nullptr; }));
     parser.Feed(R"([)");
 
     new (&parser) decltype(parser){ visitor };

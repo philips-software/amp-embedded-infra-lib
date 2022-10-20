@@ -11,4 +11,6 @@ if (EMIL_HOST_BUILD)
         ProtoCEchoPluginJava.cpp
         ProtoCEchoPluginJava.hpp
     )
+
+    emil_clangformat_target(protobuf.protoc_echo_plugin_java)
 endif()

@@ -2,11 +2,12 @@
 name: Security
 
 on:
+  workflow_dispatch:
   branch_protection_rule:
   schedule:
     - cron: "33 8 * * 6"
   push:
-    branches: [develop]
+    branches: [modern-cmake]
 
 permissions: read-all
 
@@ -16,20 +17,20 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       security-events: write
+      id-token: write
       actions: read
       contents: read
-
     steps:
-      - uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846 # v3.0.0
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
         with:
           persist-credentials: false
       - name: Analysis
-        uses: ossf/scorecard-action@c1aec4ac820532bab364f02a81873c555a0ba3a1 # v1.0.4
+        uses: ossf/scorecard-action@99c53751e09b9529366343771cc321ec74e9bd3d
         with:
           results_file: scorecards.sarif
           results_format: sarif
           repo_token: ${{ secrets.SCORECARD_READ_TOKEN }}
           publish_results: true
-      - uses: github/codeql-action/upload-sarif@5f532563584d71fdef14ee64d17bafb34f751ce5 # v1.0.26
+      - uses: github/codeql-action/upload-sarif@5f532563584d71fdef14ee64d17bafb34f751ce5
         with:
           sarif_file: scorecards.sarif

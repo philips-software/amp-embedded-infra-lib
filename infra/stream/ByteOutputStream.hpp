@@ -26,18 +26,18 @@ namespace infra
     {
     public:
         template<std::size_t Max>
-            using WithStorage = infra::WithStorage<ByteOutputStreamWriter, std::array<uint8_t, Max>>;
+        using WithStorage = infra::WithStorage<ByteOutputStreamWriter, std::array<uint8_t, Max>>;
 
         explicit ByteOutputStreamWriter(ByteRange range);
 
-        ByteRange Processed() const;   // Invariant: Processed() ++ Remaining() == range
+        ByteRange Processed() const; // Invariant: Processed() ++ Remaining() == range
         ByteRange Remaining() const;
 
         void Reset();
         void Reset(ByteRange range);
 
         template<class T>
-            ReservedProxy<T> Reserve(StreamErrorPolicy& errorPolicy);
+        ReservedProxy<T> Reserve(StreamErrorPolicy& errorPolicy);
 
     protected:
         virtual void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy) override;
@@ -61,7 +61,7 @@ namespace infra
     {
     public:
         template<std::size_t Max>
-            using WithStorage = infra::WithStorage<ByteOutputStream::WithWriter<ByteOutputStreamWriter>, std::array<uint8_t, Max>>;
+        using WithStorage = infra::WithStorage<ByteOutputStream::WithWriter<ByteOutputStreamWriter>, std::array<uint8_t, Max>>;
 
         ByteOutputStream(ByteRange storage);
         ByteOutputStream(ByteRange storage, const SoftFail&);

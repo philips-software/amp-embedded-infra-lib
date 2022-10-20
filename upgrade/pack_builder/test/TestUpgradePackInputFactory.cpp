@@ -1,8 +1,8 @@
-#include "gtest/gtest.h"
 #include "hal/interfaces/test_doubles/FileSystemStub.hpp"
 #include "infra/util/Function.hpp"
 #include "upgrade/pack_builder/ImageEncryptorNone.hpp"
 #include "upgrade/pack_builder/UpgradePackInputFactory.hpp"
+#include "gtest/gtest.h"
 
 class TestUpgradePackInputFactory
     : public testing::Test
@@ -10,7 +10,8 @@ class TestUpgradePackInputFactory
 public:
     TestUpgradePackInputFactory()
         : fileSystem("bin_file", std::vector<uint8_t>{})
-        , execute([this] {
+        , execute([this]
+              {
             fileSystem.WriteFile("hex_file", std::vector<std::string>{ ":020000040001f9", ":0100000001fe", ":00000001FF" });
             fileSystem.WriteBinaryFile("elf_file", std::vector<uint8_t>{ 'E', 'L', 'F', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
 
@@ -18,8 +19,7 @@ public:
                 .AddCmd("cmd")
                 .AddBin("bin", 1234)
                 .AddHex("hex")
-                .AddElf("elf", 5678);
-        })
+                .AddElf("elf", 5678); })
         , factory(fileSystem, targets, encryptor)
     {}
 

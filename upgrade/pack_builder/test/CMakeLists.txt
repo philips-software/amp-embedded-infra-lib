@@ -26,3 +26,5 @@ target_sources(upgrade.pack_builder_test PRIVATE
     TestUpgradePackBuilder.cpp
     TestUpgradePackInputFactory.cpp
 )
+
+emil_clangformat_target(upgrade.pack_builder_test)

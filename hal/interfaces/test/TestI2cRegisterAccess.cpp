@@ -1,8 +1,8 @@
-#include "gmock/gmock.h"
 #include "hal/interfaces/I2cRegisterAccess.hpp"
 #include "hal/interfaces/test_doubles/I2cMock.hpp"
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
+#include "gmock/gmock.h"
 #include <vector>
 
 class I2cRegisterAccessTest
@@ -31,7 +31,8 @@ TEST_F(I2cRegisterAccessTest, TestReadRegister)
     EXPECT_CALL(master, ReceiveDataMock(slaveAddress, hal::Action::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 5, 6, 7 }));
 
     std::array<uint8_t, 3> data;
-    registerAccess.ReadRegister(3, infra::MakeByteRange(data), [&callback]() { callback.callback(); });
+    registerAccess.ReadRegister(3, infra::MakeByteRange(data), [&callback]()
+        { callback.callback(); });
 
     ExecuteAllActions();
 
@@ -46,7 +47,8 @@ TEST_F(I2cRegisterAccessTest, TestWriteRegister)
     EXPECT_CALL(master, SendDataMock(slaveAddress, hal::Action::stop, std::vector<uint8_t>{ 5, 6, 7 }));
 
     std::array<uint8_t, 3> data{ 5, 6, 7 };
-    registerAccess.WriteRegister(3, infra::MakeByteRange(data), [&callback]() { callback.callback(); });
+    registerAccess.WriteRegister(3, infra::MakeByteRange(data), [&callback]()
+        { callback.callback(); });
 
     ExecuteAllActions();
 }

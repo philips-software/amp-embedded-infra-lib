@@ -25,7 +25,9 @@ namespace infra
 
     class TimerService;
 
-    struct TriggerImmediately {};
+    struct TriggerImmediately
+    {};
+
     const TriggerImmediately triggerImmediately;
 
     const uint32_t systemTimerServiceId = 0;

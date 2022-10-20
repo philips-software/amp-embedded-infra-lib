@@ -1,7 +1,7 @@
+#include "services/network/WebSocket.hpp"
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/Endian.hpp"
 #include "infra/util/EnumCast.hpp"
-#include "services/network/WebSocket.hpp"
 
 namespace
 {
@@ -92,7 +92,8 @@ namespace services
             OnAllocatable(connection);
         else
         {
-            webSocketConnectionObserver.OnAllocatable([this, &connection]() { OnAllocatable(connection); });
+            webSocketConnectionObserver.OnAllocatable([this, &connection]()
+                { OnAllocatable(connection); });
             if (webSocketConnectionObserver)
                 (*webSocketConnectionObserver)->Close();
         }

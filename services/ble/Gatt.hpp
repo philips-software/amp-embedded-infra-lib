@@ -68,8 +68,8 @@ namespace services
         // Update 'characteristic' with 'data' towards the
         // BLE stack and, depending on the configuration of
         // that 'characteristic', send a notification or indication.
-        // Returns success, or retry in transient failure or error 
-        // on unrecoverable failure (i.e. BLE stack indicates an issue 
+        // Returns success, or retry in transient failure or error
+        // on unrecoverable failure (i.e. BLE stack indicates an issue
         // with updating or sending data).
         virtual UpdateStatus Update(const GattCharacteristicClientOperationsObserver& characteristic, infra::ConstByteRange data) const = 0;
     };

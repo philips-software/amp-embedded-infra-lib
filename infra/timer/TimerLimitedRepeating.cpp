@@ -4,7 +4,6 @@ namespace infra
 {
     TimerLimitedRepeating::TimerLimitedRepeating(uint32_t timerServiceId)
         : Timer(timerServiceId)
-        , triggerPeriod()
     {}
 
     TimerLimitedRepeating::TimerLimitedRepeating(int aHowMany, Duration duration, const infra::Function<void()>& aAction, uint32_t timerServiceId)

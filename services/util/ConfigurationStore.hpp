@@ -42,9 +42,9 @@ namespace services
 
     public:
         template<std::size_t Size, std::size_t VerificationSize = 256>
-            using WithStorage = infra::WithStorage<infra::WithStorage<ConfigurationBlobFlash,
-                std::array<uint8_t, Size + sizeof(Header)>>,
-                std::array<uint8_t, VerificationSize>>;
+        using WithStorage = infra::WithStorage<infra::WithStorage<ConfigurationBlobFlash,
+                                                   std::array<uint8_t, Size + sizeof(Header)>>,
+            std::array<uint8_t, VerificationSize>>;
 
         ConfigurationBlobFlash(infra::ByteRange blob, infra::ByteRange verificationBuffer, hal::Flash& flash, services::Sha256& sha256);
 
@@ -146,7 +146,7 @@ namespace services
     public:
         ConfigurationStoreAccess(ConfigurationStoreInterface& configurationStore, T& configuration);
         template<class U>
-            ConfigurationStoreAccess(const ConfigurationStoreAccess<U>& other);
+        ConfigurationStoreAccess(const ConfigurationStoreAccess<U>& other);
 
         T& operator*();
         const T& operator*() const;
@@ -156,13 +156,13 @@ namespace services
         uint32_t Write();
 
         template<class U>
-            ConfigurationStoreAccess<U> Configuration(U& member) const;
+        ConfigurationStoreAccess<U> Configuration(U& member) const;
 
         ConfigurationStoreInterface& Interface();
 
     private:
         template<class U>
-            friend class ConfigurationStoreAccess;
+        friend class ConfigurationStoreAccess;
 
         ConfigurationStoreInterface& configurationStore;
         T& configuration;
@@ -183,7 +183,7 @@ namespace services
         virtual void Deserialize(ConfigurationBlob& blob) = 0;
 
         template<class T>
-            ConfigurationStoreAccess<T> Access(T& configuration);
+        ConfigurationStoreAccess<T> Access(T& configuration);
 
         virtual void Unlocked() override;
 
@@ -219,7 +219,7 @@ namespace services
     {
     public:
         template<std::size_t VerificationSize = 256>
-            class WithBlobs;
+        class WithBlobs;
 
         ConfigurationStoreImpl(ConfigurationBlob& blob1, ConfigurationBlob& blob2);
 
@@ -277,9 +277,9 @@ namespace services
     {
     public:
         template<std::size_t VerificationSize = 256>
-            class WithBlobs;
+        class WithBlobs;
         template<std::size_t VerificationSize = 256>
-            class WithReadOnlyDefaultAndBlobs;
+        class WithReadOnlyDefaultAndBlobs;
 
         FactoryDefaultConfigurationStore(ConfigurationBlob& blobFactoryDefault, ConfigurationBlob& blob1, ConfigurationBlob& blob2);
         FactoryDefaultConfigurationStore(const FactoryDefaultConfigurationStore& other) = delete;
@@ -294,7 +294,7 @@ namespace services
         virtual void Unlocked() override;
 
         template<class U>
-            ConfigurationStoreAccess<U> Access(U& configuration);
+        ConfigurationStoreAccess<U> Access(U& configuration);
 
     private:
         ConfigurationStoreImpl<T> configurationStore;
@@ -306,8 +306,7 @@ namespace services
         : public FactoryDefaultConfigurationStore<T>
     {
     public:
-        WithBlobs(hal::Flash& flashFactoryDefault, hal::Flash& flashFirst, hal::Flash& flashSecond, services::Sha256& sha256
-            , const infra::Function<void()>& onLoadFactoryDefault, const infra::Function<void(bool isFactoryDefault)>& onRecovered);
+        WithBlobs(hal::Flash& flashFactoryDefault, hal::Flash& flashFirst, hal::Flash& flashSecond, services::Sha256& sha256, const infra::Function<void()>& onLoadFactoryDefault, const infra::Function<void(bool isFactoryDefault)>& onRecovered);
 
     private:
         ConfigurationBlobFlash::WithStorage<T::maxMessageSize, VerificationSize> factoryDefaultBlob;
@@ -321,8 +320,7 @@ namespace services
         : public FactoryDefaultConfigurationStore<T>
     {
     public:
-        WithReadOnlyDefaultAndBlobs(infra::ConstByteRange factoryDefault, hal::Flash& flashFirst, hal::Flash& flashSecond, services::Sha256& sha256
-            , const infra::Function<void(bool isFactoryDefault)>& onRecovered);
+        WithReadOnlyDefaultAndBlobs(infra::ConstByteRange factoryDefault, hal::Flash& flashFirst, hal::Flash& flashSecond, services::Sha256& sha256, const infra::Function<void(bool isFactoryDefault)>& onRecovered);
 
     private:
         ConfigurationBlobReadOnlyMemory factoryDefaultBlob;
@@ -496,7 +494,7 @@ namespace services
     template<class T>
     ConfigurationStoreInterface& FactoryDefaultConfigurationStore<T>::Interface()
     {
-        return configurationStore;  // Identifiers returned by Write() are maintained by configurationStore, so that is the object that observers must attach to
+        return configurationStore; // Identifiers returned by Write() are maintained by configurationStore, so that is the object that observers must attach to
     }
 
     template<class T>
@@ -519,8 +517,7 @@ namespace services
 
     template<class T>
     template<std::size_t VerificationSize>
-    FactoryDefaultConfigurationStore<T>::WithBlobs<VerificationSize>::WithBlobs(hal::Flash& flashFactoryDefault, hal::Flash& flashFirst, hal::Flash& flashSecond, services::Sha256& sha256
-        , const infra::Function<void()>& onLoadFactoryDefault, const infra::Function<void(bool isFactoryDefault)>& onRecovered)
+    FactoryDefaultConfigurationStore<T>::WithBlobs<VerificationSize>::WithBlobs(hal::Flash& flashFactoryDefault, hal::Flash& flashFirst, hal::Flash& flashSecond, services::Sha256& sha256, const infra::Function<void()>& onLoadFactoryDefault, const infra::Function<void(bool isFactoryDefault)>& onRecovered)
         : FactoryDefaultConfigurationStore(factoryDefaultBlob, blob1, blob2)
         , factoryDefaultBlob(flashFactoryDefault, sha256)
         , blob1(factoryDefaultBlob.Blob(), factoryDefaultBlob.VerificationBuffer(), flashFirst, sha256)
@@ -531,14 +528,15 @@ namespace services
 
     template<class T>
     template<std::size_t VerificationSize>
-    FactoryDefaultConfigurationStore<T>::WithReadOnlyDefaultAndBlobs<VerificationSize>::WithReadOnlyDefaultAndBlobs(infra::ConstByteRange factoryDefault, hal::Flash& flashFirst, hal::Flash& flashSecond, services::Sha256& sha256
-        , const infra::Function<void(bool isFactoryDefault)>& onRecovered)
+    FactoryDefaultConfigurationStore<T>::WithReadOnlyDefaultAndBlobs<VerificationSize>::WithReadOnlyDefaultAndBlobs(infra::ConstByteRange factoryDefault, hal::Flash& flashFirst, hal::Flash& flashSecond, services::Sha256& sha256, const infra::Function<void(bool isFactoryDefault)>& onRecovered)
         : FactoryDefaultConfigurationStore(factoryDefaultBlob, blob1, blob2)
         , factoryDefaultBlob(factoryDefault)
         , blob1(flashFirst, sha256)
         , blob2(blob1.Blob(), blob1.VerificationBuffer(), flashSecond, sha256)
     {
-        Recover([]() { std::abort(); }, onRecovered);
+        Recover([]()
+            { std::abort(); },
+            onRecovered);
     }
 }
 

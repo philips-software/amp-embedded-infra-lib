@@ -1,8 +1,8 @@
 #ifndef HAL_GPIO_MOCK_HPP
 #define HAL_GPIO_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "hal/interfaces/Gpio.hpp"
+#include "gmock/gmock.h"
 
 namespace hal
 {

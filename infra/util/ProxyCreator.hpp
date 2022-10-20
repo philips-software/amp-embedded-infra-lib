@@ -87,7 +87,7 @@ namespace infra
     {
     public:
         template<class Concrete>
-            using WithCreator = Creator<T, Concrete, void(ConstructionArgs...)>;
+        using WithCreator = Creator<T, Concrete, void(ConstructionArgs...)>;
 
         using ProxyCreator = infra::ProxyCreator<T, void(ConstructionArgs...)>;
 
@@ -338,7 +338,10 @@ namespace infra
     template<class T, class U, class... ConstructionArgs>
     Creator<T, U, void(ConstructionArgs...)>::Creator()
     {
-        emplaceFunction = [](infra::Optional<U>& object, ConstructionArgs... args) { object.Emplace(args...); };
+        emplaceFunction = [](infra::Optional<U>& object, ConstructionArgs... args)
+        {
+            object.Emplace(args...);
+        };
     }
 
     template<class T, class U, class... ConstructionArgs>
@@ -410,7 +413,10 @@ namespace infra
     template<class U, class... ConstructionArgs>
     Creator<void, U, void(ConstructionArgs...)>::Creator()
     {
-        emplaceFunction = [](infra::Optional<U>& object, ConstructionArgs... args) { object.Emplace(args...); };
+        emplaceFunction = [](infra::Optional<U>& object, ConstructionArgs... args)
+        {
+            object.Emplace(args...);
+        };
     }
 
     template<class U, class... ConstructionArgs>

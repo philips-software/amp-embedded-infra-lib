@@ -1,9 +1,9 @@
 #ifndef NETWORK_HTTP_MOCK_HPP
 #define NETWORK_HTTP_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "infra/util/test_helper/BoundedStringMatcher.hpp"
 #include "services/network/HttpClient.hpp"
+#include "gmock/gmock.h"
 
 namespace services
 {
@@ -52,7 +52,7 @@ namespace services
         MOCK_METHOD3(Patch, void(infra::BoundedConstString, infra::BoundedConstString, HttpHeaders));
         MOCK_METHOD2(Patch, void(infra::BoundedConstString, HttpHeaders));
         MOCK_METHOD3(Delete, void(infra::BoundedConstString, infra::BoundedConstString, HttpHeaders));
-        
+
         MOCK_METHOD0(AckReceived, void());
         MOCK_METHOD0(Close, void());
 
