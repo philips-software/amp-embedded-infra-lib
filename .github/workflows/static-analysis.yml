@@ -7,6 +7,9 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+permissions:
+  contents: read
+
 jobs:
   sonar:
     name: SonarCloud
@@ -19,9 +22,9 @@ jobs:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
         with:
           fetch-depth: 0 # Disable shallow clone to enable blame information
-      - uses: seanmiddleditch/gha-setup-ninja@v3
-      - uses: actions/setup-python@v4
-      - uses: BSFishy/pip-action@v1
+      - uses: seanmiddleditch/gha-setup-ninja@16b940825621068d98711680b6c3ff92201f8fc0
+      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984
+      - uses: BSFishy/pip-action@8f2d471d809dc20b6ada98c91910b6ae6243f318
         with:
           packages: gcovr==5.0
       - name: Install Sonar Scanner
@@ -35,7 +38,7 @@ jobs:
           unzip -qqo "sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip"
           echo "${PWD}/build-wrapper-linux-x86" >> "$GITHUB_PATH"
           echo "${PWD}/sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-linux/bin" >> "$GITHUB_PATH"
-      - uses: hendrikmuhs/ccache-action@v1
+      - uses: hendrikmuhs/ccache-action@1ed7eb5b4b2afeceab143d0caa0d7fa87c33047b
       - name: Build
         run: |
           sudo apt-get update && sudo apt-get install --no-install-recommends -y xsltproc
@@ -58,16 +61,18 @@ jobs:
   codeql:
     name: CodeQL
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
-      - uses: seanmiddleditch/gha-setup-ninja@v3
-      - uses: hendrikmuhs/ccache-action@v1
+      - uses: seanmiddleditch/gha-setup-ninja@16b940825621068d98711680b6c3ff92201f8fc0
+      - uses: hendrikmuhs/ccache-action@1ed7eb5b4b2afeceab143d0caa0d7fa87c33047b
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@cc7986c02bac29104a72998e67239bb5ee2ee110
         with:
           languages: cpp
       - run: |
           cmake --preset ContinuousIntegration -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build --preset ContinuousIntegration
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@cc7986c02bac29104a72998e67239bb5ee2ee110
