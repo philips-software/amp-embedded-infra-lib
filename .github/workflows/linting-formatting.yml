@@ -19,8 +19,9 @@ jobs:
     name: Formatting
     runs-on: ubuntu-latest
     permissions:
-      checks: write  # for reviewdog/action-suggester to report issues using checks
-      contents: read  # for actions/checkout to fetch code
+      checks: write
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
       - uses: DoozyX/clang-format-lint-action@2ec1a72dfb593e52255693c9039e6d94984187dc
@@ -37,8 +38,9 @@ jobs:
     name: Linting
     runs-on: ubuntu-latest
     permissions:
-      checks: write  # for reviewdog/action-suggester to report issues using checks
-      contents: read  # for actions/checkout to fetch code
+      checks: write
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
         with:
