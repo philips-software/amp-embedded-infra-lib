@@ -7,10 +7,8 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
-env:
-  APPLY_FIXES: all
-  APPLY_FIXES_EVENT: pull_request
-  APPLY_FIXES_MODE: commit
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
@@ -20,40 +18,52 @@ jobs:
   formatter:
     name: Formatting
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        with:
+          persist-credentials: false
       - uses: DoozyX/clang-format-lint-action@2ec1a72dfb593e52255693c9039e6d94984187dc
         with:
           clangFormatVersion: 14
           inplace: true
           extensions: "cpp,hpp"
           exclude: "./external"
-      - uses: reviewdog/action-suggester@v1.6
+      - uses: reviewdog/action-suggester@8f83d27e749053b2029600995c115026a010408e
         with:
           tool_name: clang-format
           filter_mode: diff_context
   linter:
     name: Linting
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
         with:
           fetch-depth: 0
-      - uses: oxsecurity/megalinter@v6
+          persist-credentials: false
+      - uses: oxsecurity/megalinter@9092dbeb8bc5fd5f2c8e0c2e467252687ec2ec19
         env:
+          APPLY_FIXES: all
           VALIDATE_ALL_CODEBASE: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: github/codeql-action/upload-sarif@v2
+      - uses: github/codeql-action/upload-sarif@cc7986c02bac29104a72998e67239bb5ee2ee110
         if: ${{ success() }} || ${{ failure() }}
         with:
           sarif_file: megalinter-reports/megalinter-report.sarif
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb
         if: ${{ success() }} || ${{ failure() }}
         with:
           name: linter
           path: |
             megalinter-reports
-      - uses: reviewdog/action-suggester@v1.6
+      - uses: reviewdog/action-suggester@8f83d27e749053b2029600995c115026a010408e
         with:
           tool_name: MegaLinter
           filter_mode: diff_context
