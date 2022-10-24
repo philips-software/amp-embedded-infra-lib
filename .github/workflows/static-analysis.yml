@@ -22,6 +22,7 @@ jobs:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
         with:
           fetch-depth: 0 # Disable shallow clone to enable blame information
+          persist-credentials: false
       - uses: seanmiddleditch/gha-setup-ninja@16b940825621068d98711680b6c3ff92201f8fc0
       - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984
       - uses: BSFishy/pip-action@8f2d471d809dc20b6ada98c91910b6ae6243f318
@@ -65,6 +66,8 @@ jobs:
       security-events: write
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        with:
+          persist-credentials: false
       - uses: seanmiddleditch/gha-setup-ninja@16b940825621068d98711680b6c3ff92201f8fc0
       - uses: hendrikmuhs/ccache-action@1ed7eb5b4b2afeceab143d0caa0d7fa87c33047b
       - name: Initialize CodeQL

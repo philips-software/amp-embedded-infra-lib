@@ -18,6 +18,7 @@ jobs:
         uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Build Antora Site
         uses: philips-forks/antora-site-action@0c58ca8552165764e9d1d0c2216403cd6c2520b9
         with:
@@ -31,7 +32,7 @@ jobs:
           path: "${{ github.workspace }}/build/${{ env.SITE_DIR }}"
   deploy_antora:
     permissions:
-      contents: write # for peaceiris/actions-gh-pages to push pages branch
+      contents: write
     runs-on: ubuntu-latest
     needs: build_antora
     if: ${{ github.ref == 'refs/heads/modern-cmake' }}
