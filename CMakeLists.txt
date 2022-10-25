@@ -96,6 +96,7 @@ if (EMIL_HOST_BUILD)
     add_compile_definitions(EMIL_HOST_BUILD)
 
     if (EMIL_BUILD_TESTS)
+        include(CTest)
         emil_enable_testing()
     endif()
 endif()

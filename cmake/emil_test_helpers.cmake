@@ -2,7 +2,6 @@ option(EMIL_ENABLE_COVERAGE "Enable compiler flags for code coverage measurement
 option(EMIL_ENABLE_MUTATION_TESTING "Enable compiler flags for mutation testing" Off)
 
 function(emil_enable_testing)
-    include(CTest)
     include(GoogleTest)
 
     FetchContent_Declare(
