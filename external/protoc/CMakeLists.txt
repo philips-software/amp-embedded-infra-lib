@@ -3,7 +3,7 @@ function(emil_fetch_protocol_buffer_compiler)
 
     if (CMAKE_HOST_WIN32)
         FetchContent_Declare(protoc
-            URL https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_version}/protoc-${protobuf_version}-win64.zip
+            URL https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_version}/protoc-${protobuf_version}-win32.zip
         )
     elseif (CMAKE_HOST_APPLE)
         FetchContent_Declare(protoc
