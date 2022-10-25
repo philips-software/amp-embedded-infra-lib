@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         g++-8=8.4.0-3ubuntu2 \
         gcc-8=8.4.0-3ubuntu2 \
         gdb=9.2-0ubuntu1~20.04.1 \
-        git=1:2.25.1-1ubuntu3.5 \
+        git=1:2.25.1-1ubuntu3.6 \
         gnupg2=2.2.19-3ubuntu2.2 \
         iwyu=8.0-3build1 \
         libllvm12=1:12.0.0-3ubuntu1~20.04.5 \
