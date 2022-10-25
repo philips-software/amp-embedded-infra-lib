@@ -366,7 +366,7 @@ namespace services
                 if (!server)
                 {
                     if (clientSession->private_tls_version == 0)
-                        mbedtls_ssl_session_init(&*clientSession);
+                        mbedtls_ssl_session_init(clientSession);
 
                     result = mbedtls_ssl_get_session(&sslContext, clientSession);
                     assert(result == 0);
