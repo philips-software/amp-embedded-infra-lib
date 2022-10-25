@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.24)
+cmake_minimum_required(VERSION 3.24)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 project(emil LANGUAGES C CXX VERSION 2.0.0)
@@ -12,6 +12,7 @@ include(CMakePackageConfigHelpers)
 include(emil_clang_tools)
 include(emil_test_helpers)
 include(emil_version_generator)
+include(emil_xsltproc)
 include(FetchContent)
 include(GNUInstallDirs)  # included to supply proper defaults to install(...) commands
 
