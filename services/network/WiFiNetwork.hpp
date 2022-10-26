@@ -40,8 +40,24 @@ namespace services
     const uint8_t MaxSsidSize{ 32 };
     using SsidString = infra::BoundedString::WithStorage<MaxSsidSize>;
 
-    using IPAddresses = services::IPv4InterfaceAddresses;
-    using IpConfig = services::Ipv4Config;
+    struct IPAddresses
+    {
+        services::IPAddress address;
+        services::IPAddress netmask;
+        services::IPAddress gateway;
+
+        bool operator==(const IPAddresses& other) const;
+        bool operator!=(const IPAddresses& other) const;
+    };
+
+    struct IpConfig
+    {
+        bool useDhcp;
+        IPAddresses addresses;
+
+        bool operator==(const IpConfig& other) const;
+        bool operator!=(const IpConfig& other) const;
+    };
 
     enum class WiFiJoiningStatus
     {
