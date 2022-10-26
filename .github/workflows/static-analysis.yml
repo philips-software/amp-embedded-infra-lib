@@ -39,7 +39,7 @@ jobs:
           unzip -qqo "sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip"
           echo "${PWD}/build-wrapper-linux-x86" >> "$GITHUB_PATH"
           echo "${PWD}/sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-linux/bin" >> "$GITHUB_PATH"
-      - uses: hendrikmuhs/ccache-action@1ed7eb5b4b2afeceab143d0caa0d7fa87c33047b
+      - uses: hendrikmuhs/ccache-action@621a41397ed83711c72862638d9ff6e63fca3041
       - name: Build
         run: |
           sudo apt-get update && sudo apt-get install --no-install-recommends -y xsltproc
@@ -69,7 +69,7 @@ jobs:
         with:
           persist-credentials: false
       - uses: seanmiddleditch/gha-setup-ninja@16b940825621068d98711680b6c3ff92201f8fc0
-      - uses: hendrikmuhs/ccache-action@1ed7eb5b4b2afeceab143d0caa0d7fa87c33047b
+      - uses: hendrikmuhs/ccache-action@621a41397ed83711c72862638d9ff6e63fca3041
       - name: Initialize CodeQL
         uses: github/codeql-action/init@cc7986c02bac29104a72998e67239bb5ee2ee110
         with:
