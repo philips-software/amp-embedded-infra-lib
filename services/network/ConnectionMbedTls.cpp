@@ -10,6 +10,7 @@ namespace services
         , randomDataGenerator(randomDataGenerator)
         , server(parameters.parameters.Is<ServerParameters>())
         , clientSession(parameters.parameters.Is<ClientParameters>() ? &parameters.parameters.Get<ClientParameters>().clientSession : nullptr)
+        , clientSessionObtained(parameters.parameters.Is<ClientParameters>() ? &parameters.parameters.Get<ClientParameters>().clientSessionObtained : nullptr)
         , receiveReader([this]()
               { keepAliveForReader = nullptr; })
     {
@@ -51,7 +52,7 @@ namespace services
         }
         else
         {
-            if (!server && clientSession->private_tls_version != 0)
+            if (!server && *clientSessionObtained)
             {
                 result = mbedtls_ssl_set_session(&sslContext, clientSession);
                 assert(result == 0);
@@ -365,10 +366,11 @@ namespace services
 
                 if (!server)
                 {
-                    if (clientSession->private_tls_version == 0)
+                    if (!*clientSessionObtained)
                         mbedtls_ssl_session_init(clientSession);
 
                     result = mbedtls_ssl_get_session(&sslContext, clientSession);
+                    *clientSessionObtained = true;
                     assert(result == 0);
                 }
             }
@@ -516,8 +518,11 @@ namespace services
     ConnectionFactoryMbedTls::~ConnectionFactoryMbedTls()
     {
         mbedtls_ssl_cache_free(&serverCache);
-        if (clientSession.private_tls_version != 0)
+        if (clientSessionObtained)
+        {
             mbedtls_ssl_session_free(&clientSession);
+            clientSessionObtained = false;
+        }
     }
 
     infra::SharedPtr<void> ConnectionFactoryMbedTls::Listen(uint16_t port, ServerConnectionObserverFactory& connectionObserverFactory, IPVersions versions)
@@ -567,14 +572,17 @@ namespace services
     {
         if (address != previousAddress)
         {
-            if (clientSession.private_tls_version != 0)
+            if (clientSessionObtained)
+            {
                 mbedtls_ssl_session_free(&clientSession);
+                clientSessionObtained = false;
+            }
             clientSession = mbedtls_ssl_session();
         }
 
         previousAddress = address;
 
-        return connectionAllocator.Allocate(std::move(createdObserver), certificates, randomDataGenerator, { ConnectionMbedTls::ClientParameters{ clientSession, certificateValidation } });
+        return connectionAllocator.Allocate(std::move(createdObserver), certificates, randomDataGenerator, { ConnectionMbedTls::ClientParameters{ clientSession, clientSessionObtained, certificateValidation } });
     }
 
     void ConnectionFactoryMbedTls::Remove(ConnectionMbedTlsConnector& connector)
