@@ -8,6 +8,8 @@ ccola_component(ble static_library)
         Gatt.hpp
         GattCharacteristicImpl.cpp
         GattCharacteristicImpl.hpp
+        PersistingBondStorage.cpp
+        PersistingBondStorage.hpp
         Uuids.hpp
     )
 
