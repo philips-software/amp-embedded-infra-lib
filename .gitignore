@@ -1,8 +1,5 @@
 .vs
-Debug/
-Release/
-RelWithDebInfo/
 megalinter-reports/
+reports/
 [Bb]uild*
-[Ii]nstall
 CMakeSettings.json

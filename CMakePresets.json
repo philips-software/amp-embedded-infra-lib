@@ -38,7 +38,8 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang-12",
         "CMAKE_CXX_COMPILER": "clang++-12",
-        "EMIL_ENABLE_MUTATION_TESTING": "On"
+        "EMIL_ENABLE_MUTATION_TESTING": "On",
+        "EMIL_MUTATION_TESTING_RUNNER_ARGUMENTS": "--reporters Elements --report-dir ${sourceDir}/reports/mull/"
       },
       "generator": "Ninja"
     },
