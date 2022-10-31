@@ -27,11 +27,13 @@ jobs:
       - uses: BSFishy/pip-action@8f2d471d809dc20b6ada98c91910b6ae6243f318
         with:
           packages: gcovr==5.0
-      - name: Install Sonar Scanner
+      - name: Install Sonar Scanner & Mull
         run: |
           wget -qN "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip"
           unzip -qqo "sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip"
           echo "${PWD}/sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-linux/bin" >> "$GITHUB_PATH"
+          wget -qN https://github.com/mull-project/mull/releases/download/0.18.0/Mull-12-0.18.0-LLVM-12.0-ubuntu-20.04.deb
+          dpkg -i Mull-12-0.18.0-LLVM-12.0-ubuntu-20.04.deb
       - uses: hendrikmuhs/ccache-action@621a41397ed83711c72862638d9ff6e63fca3041
         with:
           max-size: 2G
