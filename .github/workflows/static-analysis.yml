@@ -34,12 +34,10 @@ jobs:
           echo "${PWD}/sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-linux/bin" >> "$GITHUB_PATH"
       - uses: hendrikmuhs/ccache-action@621a41397ed83711c72862638d9ff6e63fca3041
       - name: Build & Collect Coverage
-        env:
-          GTEST_OUTPUT: "xml:${PWD}/testresults/"
         run: |
           cmake --preset Coverage -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build --preset Coverage
-          ctest --preset Coverage
+          GTEST_OUTPUT="xml:${PWD}/testresults/" ctest --preset Coverage
           gcovr --sonarqube=coverage.xml --exclude-lines-by-pattern '.*assert\(.*\);|.*really_assert\(.*\);|.*std::abort();' --exclude-unreachable-branches --exclude-throw-branches -j 2 --exclude=.*/generated/.* --exclude=.*/examples/.* --exclude=.*/external/.* --exclude=.*/lwip/.* --exclude=.*/tracing/.* --exclude=.*/test/.*
       - name: Convert Results
         run: |
