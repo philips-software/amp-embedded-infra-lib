@@ -60,7 +60,8 @@ namespace services
 
     std::array<uint8_t, 16> NameResolverCache::Hash(infra::BoundedConstString name) const
     {
-        union {
+        union
+        {
             struct
             {
                 std::array<uint8_t, 16> first;

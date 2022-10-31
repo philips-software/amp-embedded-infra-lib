@@ -61,7 +61,7 @@ jobs:
           key: ${{ matrix.gcc }}-${{ matrix.configuration }}
       - run: |
           echo "::add-matcher::.github/matchers/gcc-problem-matcher.json"
-          cmake --preset Host -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake --preset Host -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build --preset Host-${{ matrix.configuration }}
-          cmake --preset Embedded -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake --preset Embedded -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build --preset Embedded-${{ matrix.configuration }}
