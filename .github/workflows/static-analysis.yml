@@ -69,11 +69,11 @@ jobs:
       - uses: seanmiddleditch/gha-setup-ninja@16b940825621068d98711680b6c3ff92201f8fc0
       - uses: hendrikmuhs/ccache-action@621a41397ed83711c72862638d9ff6e63fca3041
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@cc7986c02bac29104a72998e67239bb5ee2ee110
+        uses: github/codeql-action/init@ec3cf9c605b848da5f1e41e8452719eb1ccfb9a6
         with:
           languages: cpp
       - run: |
           cmake --preset ContinuousIntegration -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build --preset ContinuousIntegration
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@cc7986c02bac29104a72998e67239bb5ee2ee110
+        uses: github/codeql-action/analyze@ec3cf9c605b848da5f1e41e8452719eb1ccfb9a6

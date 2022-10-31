@@ -8,7 +8,7 @@ function(emil_clangformat_setup prefix)
         endforeach()
 
         add_custom_target(${prefix}_clangformat
-            COMMAND ${CLANGFORMAT} -style=file -i ${clangformat_sources}
+            COMMAND ${CLANGFORMAT} -style=file:${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../.clang-format -i ${clangformat_sources}
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
             COMMENT "Formatting ${prefix} with ${CLANGFORMAT} ..."
         )
