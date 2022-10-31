@@ -52,7 +52,8 @@ namespace infra
                     return '\r';
                 case 't':
                     return '\t';
-                case 'u': {
+                case 'u':
+                {
                     char result = 0;
 
                     for (int skipCode = 0; skipCode != 4 && next != end; ++skipCode, ++next)
