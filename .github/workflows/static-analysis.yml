@@ -30,7 +30,7 @@ jobs:
       - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984
       - uses: BSFishy/pip-action@8f2d471d809dc20b6ada98c91910b6ae6243f318
         with:
-          packages: gcovr==5.0
+          packages: gcovr==5.2
       - name: Install Sonar Scanner & Mull
         run: |
           wget -qN "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip"
