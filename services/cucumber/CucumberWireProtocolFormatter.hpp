@@ -25,16 +25,16 @@ namespace services
         void FormatBeginScenarioResponse(infra::TextOutputStream::WithErrorPolicy& stream);
         void FormatEndScenarioResponse(infra::TextOutputStream::WithErrorPolicy& stream);
 
-        void AddStringValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, int16_t& offset);
-        void AddDigitValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, int16_t& offset);
-        void AddBooleanValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, int16_t& offset);
+        void AddStringValue(infra::JsonArrayFormatter& formatter, infra::BoundedConstString nameToMatch, uint32_t& argPos, int16_t& offset);
+        void AddDigitValue(infra::JsonArrayFormatter& formatter, infra::BoundedConstString nameToMatch, uint32_t& argPos, int16_t& offset);
+        void AddBooleanValue(infra::JsonArrayFormatter& formatter, infra::BoundedConstString nameToMatch, uint32_t& argPos, int16_t& offset);
 
-        infra::JsonArray FormatStepArguments(const infra::BoundedString& nameToMatch);
+        infra::JsonArray FormatStepArguments(infra::BoundedConstString nameToMatch);
 
     private:
         CucumberWireProtocolParser& parser;
         CucumberWireProtocolController& controller;
-        infra::BoundedString::WithStorage<512> stepMatchArgumentsBuffer;
+        infra::BoundedString::WithStorage<1024> stepMatchArgumentsBuffer;
     };
 }
 
