@@ -29,7 +29,9 @@
                     end
                 ),
                 filePath: (
-                    if $projectRoot then
+                    if $ARGS.named["workspace"] != null then
+                        $file.key | sub("^" + $ARGS.named["workspace"] + "/"; "")
+                    elif $projectRoot then
                         $file.key | sub("^" + $projectRoot + "/"; "")
                     else
                         $file.key
