@@ -53,7 +53,7 @@ jobs:
           sudo apt-get update && sudo apt-get install --no-install-recommends -y xsltproc jq
           { echo '<testExecutions version="1">'; xsltproc .github/formatters/gtest-to-generic-execution.xslt testresults/*.xml; echo '</testExecutions>'; } | tee execution.xml > /dev/null
           jq -s 'reduce .[] as $item ({}; . * $item)' reports/mull/*.json > reports/mull/merged-mutation.json
-          jq --arg workspace "${{ GITHUB_WORKSPACE }}" -f .github/formatters/mutation-report-to-generic-issue.jq reports/mull/merged-mutation.json > mutation-sonar.json
+          jq --arg workspace "${{ env.GITHUB_WORKSPACE }}" -f .github/formatters/mutation-report-to-generic-issue.jq reports/mull/merged-mutation.json > mutation-sonar.json
           cp Build/Coverage/compile_commands.json compile_commands.json
       - name: Run Analysis
         # skip the analysis step for dependabot PRs since dependabot does not have access to secrets
