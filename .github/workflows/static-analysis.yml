@@ -40,7 +40,7 @@ jobs:
           sudo dpkg -i Mull-12-0.18.0-LLVM-12.0-ubuntu-20.04.deb
       - uses: hendrikmuhs/ccache-action@621a41397ed83711c72862638d9ff6e63fca3041
         with:
-          key: ${{ env.GITHUB_JOB }}
+          key: ${{ github.job }}
           max-size: 2G
       - name: Build & Collect Coverage
         run: |
@@ -83,7 +83,7 @@ jobs:
       - uses: seanmiddleditch/gha-setup-ninja@16b940825621068d98711680b6c3ff92201f8fc0
       - uses: hendrikmuhs/ccache-action@621a41397ed83711c72862638d9ff6e63fca3041
         with:
-          key: ${{ env.GITHUB_JOB }}
+          key: ${{ github.job }}
       - uses: github/codeql-action/init@ec3cf9c605b848da5f1e41e8452719eb1ccfb9a6
         with:
           languages: cpp
