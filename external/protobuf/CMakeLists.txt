@@ -15,6 +15,7 @@ if (EMIL_HOST_BUILD)
     set(protobuf_BUILD_TESTS Off CACHE INTERNAL "")
     set(protobuf_BUILD_PROTOBUF_BINARIES Off CACHE INTERNAL "")
     set(protobuf_BUILD_LIBPROTOC On CACHE INTERNAL "")
+    set(protobuf_MSVC_STATIC_RUNTIME Off CACHE INTERNAL "")
     set(protobuf_WITH_ZLIB Off CACHE INTERNAL "")
 
     FetchContent_MakeAvailable(protobuf)
