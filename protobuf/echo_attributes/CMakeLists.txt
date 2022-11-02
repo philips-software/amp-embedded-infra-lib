@@ -3,7 +3,7 @@ if (EMIL_HOST_BUILD)
     install(TARGETS protobuf.echo_attributes EXPORT emilProtobufTargets)
 
     set_target_properties(protobuf.echo_attributes PROPERTIES POSITION_INDEPENDENT_CODE ON)
-    
+
     target_link_libraries(protobuf.echo_attributes PUBLIC
         ${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}libprotoc
     )
