@@ -1,17 +1,6 @@
 if (EMIL_HOST_BUILD)
     add_library(protobuf.protoc_echo_plugin_lib ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
-    target_compile_options(protobuf.protoc_echo_plugin_lib PRIVATE
-        $<$<BOOL:${EMIL_BUILD_WIN}>:
-            $<$<CXX_COMPILER_ID:MSVC>:
-                /wd4018
-                /wd4251
-                /wd4273
-                /wd4800
-            >
-        >
-    )
-
     target_compile_definitions(protobuf.protoc_echo_plugin_lib PRIVATE
         LIBPROTOC_EXPORTS
     )
