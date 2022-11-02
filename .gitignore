@@ -1,5 +1,6 @@
 .vs
-megalinter-reports/
-reports/
 [Bb]uild*
+megalinter-reports/
+out/
+reports/
 CMakeSettings.json
