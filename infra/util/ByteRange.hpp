@@ -99,7 +99,7 @@ namespace infra
 
     inline ConstByteRange MakeStringByteRange(const char* string)
     {
-        return ReinterpretCastByteRange(MakeRange(string, string + std::strlen(string))); // NOSONAR
+        return ReinterpretCastByteRange(MakeRange(string, string + std::strlen(string))); //NOSONAR
     }
 
     inline ConstByteRange MakeStringByteRange(const std::string& string)
