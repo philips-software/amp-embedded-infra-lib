@@ -1,6 +1,6 @@
 #include "protobuf/protoc_echo_plugin/EchoObjects.hpp"
 #include "generated/EchoAttributes.pb.h"
-#include "google/protobuf/compiler/cpp/cpp_helpers.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/stubs/strutil.h"
 
 namespace application

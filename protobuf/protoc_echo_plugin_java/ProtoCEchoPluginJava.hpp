@@ -4,6 +4,7 @@
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
+#include <memory>
 
 namespace application
 {
@@ -82,7 +83,7 @@ namespace application
         ~JavaEchoGenerator() = default;
 
     private:
-        google::protobuf::scoped_ptr<google::protobuf::io::ZeroCopyOutputStream> stream;
+        std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> stream;
         google::protobuf::io::Printer printer;
     };
 }

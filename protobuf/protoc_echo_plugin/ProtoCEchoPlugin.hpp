@@ -5,6 +5,7 @@
 #include "google/protobuf/io/printer.h"
 #include "protobuf/protoc_echo_plugin/CppFormatter.hpp"
 #include "protobuf/protoc_echo_plugin/EchoObjects.hpp"
+#include <memory>
 
 namespace application
 {
@@ -183,7 +184,7 @@ namespace application
         void GenerateBottomHeaderGuard();
 
     private:
-        google::protobuf::scoped_ptr<google::protobuf::io::ZeroCopyOutputStream> stream;
+        std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> stream;
         google::protobuf::io::Printer printer;
         Entities formatter;
         const google::protobuf::FileDescriptor* file;
