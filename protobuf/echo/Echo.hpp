@@ -3,6 +3,7 @@
 
 #include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/syntax/ProtoParser.hpp"
+#include "infra/util/Compatibility.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/Optional.hpp"
 #include "services/network/Connection.hpp"
@@ -198,7 +199,7 @@ namespace services
         : public infra::IntrusiveList<ServiceProxy>::NodeType
     {
     public:
-        ServiceProxy(Echo& echo, uint32_t id, uint32_t maxMessageSize);
+        ServiceProxy(Echo& echo, EMIL_MAYBE_UNUSED uint32_t serviceId, uint32_t maxMessageSize);
 
         Echo& Rpc();
         void RequestSend(infra::Function<void()> onGranted);
@@ -207,7 +208,6 @@ namespace services
 
     private:
         Echo& echo;
-        uint32_t serviceId;
         uint32_t maxMessageSize;
         infra::Function<void()> onGranted;
     };

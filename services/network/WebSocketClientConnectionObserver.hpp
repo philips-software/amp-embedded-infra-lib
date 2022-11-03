@@ -247,7 +247,6 @@ namespace services
         private:
             WebSocketClientObserverFactory& clientObserverFactory;
             WebSocketClientInitiationResult& result;
-            hal::SynchronousRandomDataGenerator& randomDataGenerator;
 
         private:
             infra::ProxyCreator<decltype(Creators::httpClientInitiationCreator)> initiationClient;

@@ -45,9 +45,8 @@ namespace services
         return echo;
     }
 
-    ServiceProxy::ServiceProxy(Echo& echo, uint32_t id, uint32_t maxMessageSize)
+    ServiceProxy::ServiceProxy(Echo& echo, EMIL_MAYBE_UNUSED uint32_t serviceId, uint32_t maxMessageSize)
         : echo(echo)
-        , serviceId(id)
         , maxMessageSize(maxMessageSize)
     {}
 
@@ -99,7 +98,7 @@ namespace services
 
         bytes->shrink_from_back_to(processedSize);
 
-        RequestSend([this, &contents]()
+        RequestSend([this]()
             {
             infra::DataOutputStream::WithErrorPolicy stream(services::ServiceProxy::Rpc().SendStreamWriter());
             infra::ProtoFormatter formatter(stream);
@@ -173,7 +172,7 @@ namespace services
 
     void EchoOnStreams::AttachService(Service& service)
     {
-        for (auto& s : services)
+        for (const auto& s : services)
             if (s.ServiceId() == service.ServiceId())
                 std::abort();
 
