@@ -45,7 +45,7 @@ namespace services
         return echo;
     }
 
-    ServiceProxy::ServiceProxy(Echo& echo, EMIL_MAYBE_UNUSED uint32_t serviceId, uint32_t maxMessageSize)
+    ServiceProxy::ServiceProxy(Echo& echo, uint32_t maxMessageSize)
         : echo(echo)
         , maxMessageSize(maxMessageSize)
     {}
@@ -73,7 +73,7 @@ namespace services
 
     ServiceForwarder::ServiceForwarder(infra::ByteRange messageBuffer, Echo& echo, uint32_t id, Echo& forwardTo)
         : Service(echo, id)
-        , ServiceProxy(forwardTo, id, messageBuffer.size())
+        , ServiceProxy(forwardTo, messageBuffer.size())
         , messageBuffer(messageBuffer)
     {}
 

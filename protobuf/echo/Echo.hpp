@@ -199,7 +199,7 @@ namespace services
         : public infra::IntrusiveList<ServiceProxy>::NodeType
     {
     public:
-        ServiceProxy(Echo& echo, EMIL_MAYBE_UNUSED uint32_t serviceId, uint32_t maxMessageSize);
+        ServiceProxy(Echo& echo, uint32_t maxMessageSize);
 
         Echo& Rpc();
         void RequestSend(infra::Function<void()> onGranted);
