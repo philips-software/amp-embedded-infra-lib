@@ -290,7 +290,7 @@ namespace infra
 
     template<class T>
     template<class U>
-    SharedPtr<T>::SharedPtr(SharedPtr<U>&& other)
+    SharedPtr<T>::SharedPtr(SharedPtr<U>&& other) noexcept
     {
         Reset(other.control, other.object);
         other.Reset(nullptr, nullptr);
@@ -462,7 +462,7 @@ namespace infra
 
     template<class T>
     template<class U>
-    WeakPtr<T>::WeakPtr(WeakPtr<U>&& other)
+    WeakPtr<T>::WeakPtr(WeakPtr<U>&& other) noexcept
     {
         Reset(other.control, other.object);
         other.Reset(nullptr, nullptr);

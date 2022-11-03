@@ -196,7 +196,7 @@ namespace infra
     }
 
     template<class T>
-    BoundedVector<T>::BoundedVector(infra::MemoryRange<infra::StaticStorage<T>> storage, BoundedVector&& other)
+    BoundedVector<T>::BoundedVector(infra::MemoryRange<infra::StaticStorage<T>> storage, BoundedVector&& other) noexcept
         : storage(storage)
         , numAllocated(other.numAllocated)
     {
@@ -233,7 +233,7 @@ namespace infra
     }
 
     template<class T>
-    void BoundedVector<T>::AssignFromStorage(BoundedVector&& other)
+    void BoundedVector<T>::AssignFromStorage(BoundedVector&& other) noexcept
     {
         *this = std::move(other);
     }
