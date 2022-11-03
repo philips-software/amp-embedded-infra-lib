@@ -43,13 +43,13 @@ namespace infra
         template<class U>
         BoundedVector(infra::MemoryRange<infra::StaticStorage<T>> storage, std::initializer_list<U> initializerList);
         BoundedVector(infra::MemoryRange<infra::StaticStorage<T>> storage, const BoundedVector& other);
-        BoundedVector(infra::MemoryRange<infra::StaticStorage<T>> storage, BoundedVector&& other);
+        BoundedVector(infra::MemoryRange<infra::StaticStorage<T>> storage, BoundedVector&& other) noexcept;
         ~BoundedVector();
 
         BoundedVector& operator=(const BoundedVector& other);
         BoundedVector& operator=(BoundedVector&& other) noexcept;
         void AssignFromStorage(const BoundedVector& other);
-        void AssignFromStorage(BoundedVector&& other);
+        void AssignFromStorage(BoundedVector&& other) noexcept;
 
     public:
         iterator begin();

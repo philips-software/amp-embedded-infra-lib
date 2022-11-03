@@ -45,13 +45,13 @@ namespace infra
         template<class InputIterator>
         BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, InputIterator first, InputIterator last);
         BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, const BoundedDeque& other);
-        BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, BoundedDeque&& other);
+        BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, BoundedDeque&& other) noexcept;
         BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, std::initializer_list<T> initializerList);
         BoundedDeque& operator=(const BoundedDeque& other);
         BoundedDeque& operator=(BoundedDeque&& other) noexcept;
         BoundedDeque& operator=(std::initializer_list<T> initializerList);
         void AssignFromStorage(const BoundedDeque& other);
-        void AssignFromStorage(BoundedDeque&& other);
+        void AssignFromStorage(BoundedDeque&& other) noexcept;
         ~BoundedDeque();
 
     public:
@@ -230,7 +230,7 @@ namespace infra
     }
 
     template<class T>
-    BoundedDeque<T>::BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, BoundedDeque&& other)
+    BoundedDeque<T>::BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, BoundedDeque&& other) noexcept
         : storage(storage)
         , numAllocated(other.numAllocated)
     {
@@ -282,7 +282,7 @@ namespace infra
     }
 
     template<class T>
-    void BoundedDeque<T>::AssignFromStorage(BoundedDeque&& other)
+    void BoundedDeque<T>::AssignFromStorage(BoundedDeque&& other) noexcept
     {
         *this = std::move(other);
     }

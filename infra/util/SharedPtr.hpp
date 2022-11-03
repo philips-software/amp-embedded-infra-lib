@@ -96,7 +96,7 @@ namespace infra
         template<class U>
         SharedPtr(const SharedPtr<U>& other);
         template<class U>
-        SharedPtr(SharedPtr<U>&& other);
+        SharedPtr(SharedPtr<U>&& other) noexcept;
         SharedPtr& operator=(const SharedPtr& other);
         SharedPtr& operator=(SharedPtr&& other) noexcept;
         SharedPtr& operator=(const WeakPtr<T>& other);
@@ -162,7 +162,7 @@ namespace infra
         template<class U>
         WeakPtr(const WeakPtr<U>& other);
         template<class U>
-        WeakPtr(WeakPtr<U>&& other);
+        WeakPtr(WeakPtr<U>&& other) noexcept;
         WeakPtr(const SharedPtr<T>& sharedPtr);
         WeakPtr& operator=(const WeakPtr<T>& other);
         WeakPtr& operator=(WeakPtr<T>&& other) noexcept;
