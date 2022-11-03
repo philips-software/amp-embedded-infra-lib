@@ -1,5 +1,6 @@
 option(EMIL_ENABLE_COVERAGE "Enable compiler flags for code coverage measurements" Off)
 option(EMIL_ENABLE_MUTATION_TESTING "Enable compiler flags for mutation testing" Off)
+set(EMIL_MUTATION_TESTING_RUNNER_ARGUMENTS "" CACHE STRING "Additional arguments for the mutation testing runner")
 
 function(emil_enable_testing)
     include(GoogleTest)
@@ -45,7 +46,7 @@ endfunction()
 
 function(emil_add_test target)
     if (EMIL_ENABLE_MUTATION_TESTING)
-        add_test(NAME ${target} COMMAND mull-runner-12 $<TARGET_FILE:${target}>)
+        add_test(NAME ${target} COMMAND mull-runner-12 ${EMIL_MUTATION_TESTING_RUNNER_ARGUMENTS} $<TARGET_FILE:${target}>)
     else()
         add_test(NAME ${target} COMMAND ${target})
     endif()

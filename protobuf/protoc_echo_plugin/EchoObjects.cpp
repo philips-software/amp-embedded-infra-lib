@@ -392,7 +392,7 @@ namespace application
 
             maxMessageSize = max;
         }
-        catch (NoMaxMessageSize&) // NOSONAR
+        catch (NoMaxMessageSize&) //NOSONAR
         {}
     }
 

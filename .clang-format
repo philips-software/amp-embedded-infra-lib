@@ -53,13 +53,13 @@ BreakConstructorInitializers: BeforeComma
 BreakAfterJavaFieldAnnotations: false
 BreakStringLiterals: true
 ColumnLimit: 0
-CommentPragmas: "^ IWYU pragma:"
+CommentPragmas: "^ IWYU pragma:|^NOSONAR"
 QualifierAlignment: Leave
 CompactNamespaces: false
 ConstructorInitializerIndentWidth: 4
 ContinuationIndentWidth: 4
 Cpp11BracedListStyle: false
-DeriveLineEnding: true
+DeriveLineEnding: false
 DerivePointerAlignment: false
 EmptyLineAfterAccessModifier: Never
 EmptyLineBeforeAccessModifier: LogicalBlock
@@ -154,7 +154,7 @@ SpaceBeforeSquareBrackets: false
 BitFieldColonSpacing: Both
 Standard: Latest
 TabWidth: 4
-UseCRLF: false
+UseCRLF: true
 UseTab: Never
 WhitespaceSensitiveMacros:
   - STRINGIZE
