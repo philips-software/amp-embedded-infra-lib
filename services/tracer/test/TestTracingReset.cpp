@@ -10,7 +10,7 @@ TEST(TracingResetTest, reset_traces_reason)
     services::Tracer tracer(stream);
     services::TracingReset tracingReset(reset, tracer);
 
-    EXPECT_CALL(reset, ResetModule("Upgrade"));
+    EXPECT_CALL(reset, ResetModule(testing::_));
 
     tracingReset.ResetModule("Upgrade");
     EXPECT_EQ("\r\nReset module: Upgrade\r\n...\r\n...", stream.Storage());
