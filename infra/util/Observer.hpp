@@ -36,6 +36,20 @@ namespace infra
 
     private:
         SubjectType* subject = nullptr;
+
+    public:
+        class DelayedAttachDetach
+        {
+        public:
+            DelayedAttachDetach(Observer<Descendant, SubjectType_>& observer, SubjectType& subject);
+            DelayedAttachDetach(const DelayedAttachDetach& other) = delete;
+            DelayedAttachDetach& operator=(const DelayedAttachDetach& other) = delete;
+            ~DelayedAttachDetach();
+
+        private:
+            Observer<Descendant, SubjectType_>& observer;
+            SubjectType& subject;
+        };
     };
 
     template<class Descendant, class SubjectType_>
@@ -63,6 +77,20 @@ namespace infra
 
     private:
         SubjectType* subject = nullptr;
+
+    public:
+        class DelayedAttachDetach
+        {
+        public:
+            DelayedAttachDetach(SingleObserver<Descendant, SubjectType_>& observer, SubjectType& subject);
+            DelayedAttachDetach(const DelayedAttachDetach& other) = delete;
+            DelayedAttachDetach& operator=(const DelayedAttachDetach& other) = delete;
+            ~DelayedAttachDetach();
+
+        private:
+            SingleObserver<Descendant, SubjectType_>& observer;
+            SubjectType& subject;
+        };
     };
 
     template<class ObserverType_>
@@ -166,6 +194,20 @@ namespace infra
     }
 
     template<class Descendant, class SubjectType_>
+    Observer<Descendant, SubjectType_>::DelayedAttachDetach::DelayedAttachDetach(Observer<Descendant, SubjectType_>& observer, SubjectType& subject)
+        : observer(observer)
+        , subject(subject)
+    {
+        observer.Attach(subject);
+    }
+
+    template<class Descendant, class SubjectType_>
+    Observer<Descendant, SubjectType_>::DelayedAttachDetach::~DelayedAttachDetach()
+    {
+        observer.Detach();
+    }
+
+    template<class Descendant, class SubjectType_>
     SingleObserver<Descendant, SubjectType_>::SingleObserver(SubjectType& subject)
     {
         Attach(subject);
@@ -204,6 +246,20 @@ namespace infra
         if (Attached())
             static_cast<infra::Subject<Descendant>*>(this->subject)->UnregisterObserver(this);
         subject = nullptr;
+    }
+
+    template<class Descendant, class SubjectType_>
+    SingleObserver<Descendant, SubjectType_>::DelayedAttachDetach::DelayedAttachDetach(SingleObserver<Descendant, SubjectType_>& observer, SubjectType& subject)
+        : observer(observer)
+        , subject(subject)
+    {
+        observer.Attach(subject);
+    }
+
+    template<class Descendant, class SubjectType_>
+    SingleObserver<Descendant, SubjectType_>::DelayedAttachDetach::~DelayedAttachDetach()
+    {
+        observer.Detach();
     }
 
     template<class ObserverType>
