@@ -1,8 +1,6 @@
 #ifndef HAL_RESET_HPP
 #define HAL_RESET_HPP
 
-#include "infra/util/BoundedString.hpp"
-
 namespace hal
 {
     class Reset

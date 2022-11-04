@@ -16,6 +16,7 @@ target_sources(services.tracer_test PRIVATE
     TestTracerAdapterPrintf.cpp
     TestTracerWithDateTime.cpp
     TestTracerWithTime.cpp
+    TestTracingReset.cpp
 )
 
 emil_clangformat_target(services.tracer_test)
