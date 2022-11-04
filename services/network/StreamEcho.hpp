@@ -39,7 +39,6 @@ namespace services
         virtual void ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, services::IPAddress address) override;
 
     private:
-        services::ConnectionFactory& listenerFactory;
         AllocatorStreamEchoConnection& allocator;
         infra::SharedPtr<void> listenPort;
     };

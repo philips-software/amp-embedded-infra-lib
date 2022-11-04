@@ -36,7 +36,7 @@ namespace infra
         ResultType Invoke(const std::tuple<Args...>& args);
 
         infra::Function<Result(Args...), ExtraSize> Clone() const;
-        void Swap(AutoResetFunction& other);
+        void Swap(AutoResetFunction& other) noexcept;
 
     private:
         Function<Result(Args...), ExtraSize> function;
@@ -115,7 +115,7 @@ namespace infra
     }
 
     template<std::size_t ExtraSize, class Result, class... Args>
-    void AutoResetFunction<Result(Args...), ExtraSize>::Swap(AutoResetFunction& other)
+    void AutoResetFunction<Result(Args...), ExtraSize>::Swap(AutoResetFunction& other) noexcept
     {
         function.Swap(other.function);
     }

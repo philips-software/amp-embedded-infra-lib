@@ -11,8 +11,7 @@ namespace services
     }
 
     SsdpDeviceDiscovery::SsdpDeviceDiscovery(DatagramFactory& datagramFactory, Multicast& multicast)
-        : datagramFactory(datagramFactory)
-        , multicast(multicast)
+        : multicast(multicast)
         , datagramExchange(datagramFactory.Listen(*this, ssdpPort, IPVersions::both))
         , activeDiscovery(*this, datagramFactory)
     {

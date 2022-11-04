@@ -51,7 +51,6 @@ namespace services
 
         private:
             BonjourServer& server;
-            uint16_t queryId;
             infra::StreamWriter& writer;
             infra::DataOutputStream::WithErrorPolicy stream{ writer };
 

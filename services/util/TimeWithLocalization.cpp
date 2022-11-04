@@ -27,14 +27,6 @@ namespace services
         return localTimeTimerService;
     }
 
-    tm* TimeWithLocalization::GetTm(infra::TimePoint timePoint)
-    {
-        auto timeAsTimeType = std::chrono::system_clock::to_time_t(timePoint);
-        auto timeAsGmTime = std::gmtime(&timeAsTimeType);
-        assert(timeAsGmTime != nullptr);
-        return timeAsGmTime;
-    }
-
     infra::Optional<infra::TimePoint> TimeWithLocalization::TimePointFromString(infra::BoundedConstString timePointString)
     {
         uint16_t year = 0;

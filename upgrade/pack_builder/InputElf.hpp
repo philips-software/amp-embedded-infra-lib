@@ -21,7 +21,6 @@ namespace application
 
     private:
         const ImageSecurity& imageSecurity;
-        uint32_t offset;
         application::BinaryObject contents;
     };
 }

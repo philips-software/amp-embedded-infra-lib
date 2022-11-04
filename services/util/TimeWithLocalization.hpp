@@ -38,8 +38,6 @@ namespace services
         infra::Duration GetOffsetTimezone() const;
         infra::Duration GetOffsetDaylightSaving() const;
 
-        static tm* GetTm(infra::TimePoint timePoint);
-
     private:
         infra::DerivedTimerService utcTimerService;
         infra::DerivedTimerService localTimeWithoutDaylightSavingTimerService;

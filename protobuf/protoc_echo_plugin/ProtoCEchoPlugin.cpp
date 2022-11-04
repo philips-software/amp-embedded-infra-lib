@@ -833,7 +833,7 @@ namespace application
         auto constructors = std::make_shared<Access>("public");
         auto constructor = std::make_shared<Constructor>(service->name + "Proxy", "", 0);
         constructor->Parameter("services::Echo& echo");
-        constructor->Initializer("services::ServiceProxy(echo, serviceId, maxMessageSize)");
+        constructor->Initializer("services::ServiceProxy(echo, maxMessageSize)");
 
         constructors->Add(constructor);
         serviceProxyFormatter->Add(constructors);

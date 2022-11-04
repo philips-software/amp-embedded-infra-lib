@@ -57,7 +57,6 @@ namespace services
 
     private:
         hal::SpiMaster& spi;
-        uint32_t numberOfSubSectors = 0;
         infra::Sequencer sequencer;
         infra::TimerSingleShot delayTimer;
         infra::AutoResetFunction<void()> onDone;

@@ -84,7 +84,6 @@ namespace services
         };
 
     private:
-        DatagramFactory& datagramFactory;
         Multicast& multicast;
         infra::SharedPtr<DatagramExchange> datagramExchange;
         ActiveDiscovery activeDiscovery;

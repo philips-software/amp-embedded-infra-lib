@@ -41,8 +41,7 @@ namespace services
     }
 
     StreamEchoServer::StreamEchoServer(AllocatorStreamEchoConnection& allocator, services::ConnectionFactory& listenerFactory, uint16_t port, services::IPVersions versions)
-        : listenerFactory(listenerFactory)
-        , allocator(allocator)
+        : allocator(allocator)
     {
         listenPort = listenerFactory.Listen(port, *this, versions);
     }

@@ -5,25 +5,23 @@ namespace infra
 {
     struct MoveConstructible
     {
-        MoveConstructible(int a)
+        explicit MoveConstructible(int a)
             : x(a)
         {}
 
         MoveConstructible(const MoveConstructible& other) = delete;
 
-        MoveConstructible(MoveConstructible&& other)
+        MoveConstructible(MoveConstructible&& other) noexcept
             : x(other.x)
         {}
 
         MoveConstructible& operator=(const MoveConstructible& other) = delete;
 
-        MoveConstructible& operator=(MoveConstructible&& other)
+        MoveConstructible& operator=(MoveConstructible&& other) noexcept
         {
             x = other.x;
             return *this;
         }
-
-        int x;
 
         bool operator==(const MoveConstructible& other) const
         {
@@ -34,6 +32,8 @@ namespace infra
         {
             return x < other.x;
         }
+
+        int x;
     };
 }
 

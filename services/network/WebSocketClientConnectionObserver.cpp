@@ -551,7 +551,6 @@ namespace services
         WebSocketClientInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator, const Creators& creators)
         : clientObserverFactory(clientObserverFactory)
         , result(result)
-        , randomDataGenerator(randomDataGenerator)
         , initiationClient(creators.httpClientInitiationCreator, clientObserverFactory, *this, randomDataGenerator)
     {}
 
