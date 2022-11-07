@@ -510,3 +510,47 @@ TEST(StringOutputStreamTest, Reset_with_new_storage)
 
     EXPECT_EQ("14", newString);
 }
+
+TEST(StringOutputStreamTest, stream_join_range)
+{
+    infra::StringOutputStream::WithStorage<10> stream;
+    std::array<infra::BoundedConstString, 3> array{"ab", "cd", "ef"};
+
+    stream << infra::Join("; ", infra::MakeRange(array));
+
+    EXPECT_EQ("ab; cd; ef", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, stream_join_range_empty)
+{
+    infra::StringOutputStream::WithStorage<10> stream;
+    std::array<infra::BoundedConstString, 0> array{};
+
+    stream << infra::Join("; ", infra::MakeRange(array));
+
+    EXPECT_EQ("", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, stream_join_range_single_entry)
+{
+    infra::StringOutputStream::WithStorage<10> stream;
+    std::array<infra::BoundedConstString, 1> array{"qwerty"};
+
+    stream << infra::Join("; ", infra::MakeRange(array));
+
+    EXPECT_EQ("qwerty", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, stream_join_custom_range)
+{
+    std::array<const std::pair<infra::BoundedConstString, infra::BoundedConstString>, 3> array{
+        std::pair{ "b1", "xyz1" },
+        std::pair{ "b2", "xyz2" },
+        std::pair{ "b3", "xyz3" }
+    };
+    infra::StringOutputStream::WithStorage<50> stream;
+
+    stream << infra::Join(";", infra::MakeRange(array), [](auto& stream, const auto& obj) { stream << "'" << obj.first << "'?'" << obj.second << "'"; });
+
+    EXPECT_EQ(R"('b1'?'xyz1';'b2'?'xyz2';'b3'?'xyz3')", stream.Storage());
+}
