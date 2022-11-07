@@ -44,6 +44,17 @@
       "generator": "Ninja"
     },
     {
+      "name": "Fuzzing",
+      "displayName": "Configuration for Fuzzing",
+      "inherits": "ContinuousIntegration",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang-12",
+        "CMAKE_CXX_COMPILER": "clang++-12",
+        "EMIL_ENABLE_FUZZING": "On"
+      },
+      "generator": "Ninja"
+    },
+    {
       "name": "Host",
       "displayName": "Configuration for Host Tooling",
       "inherits": "defaults",
@@ -81,6 +92,11 @@
       "name": "MutationTesting",
       "configuration": "Debug",
       "configurePreset": "MutationTesting"
+    },
+    {
+      "name": "Fuzzing",
+      "configuration": "Debug",
+      "configurePreset": "Fuzzing"
     },
     {
       "name": "Host-Debug",
