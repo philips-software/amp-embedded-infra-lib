@@ -11,10 +11,12 @@ namespace services
 
     void TracerWithTime::InsertHeader()
     {
-        auto nowTimePoint = infra::Now();
-        infra::PartitionedTime partitioned(nowTimePoint);
+        auto now = infra::Now();
+        infra::PartitionedTime partitioned(now);
 
-        Continue() << partitioned.hours << ':' << partitioned.minutes << ':' << partitioned.seconds << '.'
-                   << infra::Width(6, '0') << std::chrono::duration_cast<std::chrono::microseconds>(nowTimePoint.time_since_epoch()).count() % 1000000 << ' ';
+        Continue() << infra::Width(2, '0') << partitioned.hours << infra::resetWidth << ':'
+                   << infra::Width(2, '0') << partitioned.minutes << infra::resetWidth << ':'
+                   << infra::Width(2, '0') << partitioned.seconds << infra::resetWidth << ':'
+                   << infra::Width(6, '0') << std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count() % 1000000 << ' ';
     }
 }

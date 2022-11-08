@@ -198,3 +198,12 @@ TEST_F(TimerTest, TestTimerIsNotArmedAfterCancel)
 
     EXPECT_FALSE(timer.Armed());
 }
+
+TEST_F(TimerTest, TestPrintTo)
+{
+    ForwardTime(std::chrono::hours(1) + std::chrono::minutes(10) + std::chrono::seconds(20));
+    std::ostringstream stream;
+    PrintTo(infra::Now(), &stream);
+
+    EXPECT_EQ("1970-01-01T01:10:20.000000", stream.str());
+}

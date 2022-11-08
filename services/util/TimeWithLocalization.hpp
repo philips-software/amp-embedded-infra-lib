@@ -45,7 +45,7 @@ namespace services
     };
 }
 
-infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const infra::TimePoint& timePoint);
-infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const infra::Duration& duration);
+infra::TextOutputStream operator<<(infra::TextOutputStream stream, const infra::TimePoint& timePoint);
+infra::TextOutputStream operator<<(infra::TextOutputStream stream, const infra::Duration& duration);
 
 #endif
