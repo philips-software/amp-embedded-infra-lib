@@ -59,7 +59,7 @@ CompactNamespaces: false
 ConstructorInitializerIndentWidth: 4
 ContinuationIndentWidth: 4
 Cpp11BracedListStyle: false
-DeriveLineEnding: false
+DeriveLineEnding: true
 DerivePointerAlignment: false
 EmptyLineAfterAccessModifier: Never
 EmptyLineBeforeAccessModifier: LogicalBlock
@@ -154,7 +154,7 @@ SpaceBeforeSquareBrackets: false
 BitFieldColonSpacing: Both
 Standard: Latest
 TabWidth: 4
-UseCRLF: true
+UseCRLF: false
 UseTab: Never
 WhitespaceSensitiveMacros:
   - STRINGIZE
