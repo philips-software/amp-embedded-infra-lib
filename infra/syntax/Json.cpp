@@ -553,6 +553,9 @@ namespace infra
         ++parseIndex;
         std::size_t tokenStart = parseIndex;
 
+        if (parseIndex == objectString.size())
+            return JsonToken::Error();
+
         bool escape = false;
         while (escape || objectString[parseIndex] != '"')
         {

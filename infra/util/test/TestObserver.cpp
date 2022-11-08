@@ -77,6 +77,21 @@ TEST(ObserverTest, construct_observer_with_subject)
     EXPECT_EQ(&subject, &observer.Subject());
 }
 
+TEST(ObserverTest, construct_observer_with_delayed_subject)
+{
+    MySubject subject;
+
+    MyObserver observer;
+
+    {
+        MyObserver::DelayedAttachDetach delayed(observer, subject);
+        EXPECT_TRUE(observer.Attached());
+        EXPECT_EQ(&subject, &observer.Subject());
+    }
+
+    EXPECT_FALSE(observer.Attached());
+}
+
 TEST(ObserverTest, notify_one_observer)
 {
     MySubject subject;
@@ -158,6 +173,22 @@ TEST(SingleObserverTest, ConstructWithRegistration)
     MySingleObserver observer(subject);
     EXPECT_TRUE(observer.Attached());
     EXPECT_TRUE(subject.HasObserver());
+}
+
+TEST(SingleObserverTest, ConstructWithDelayedRegistration)
+{
+    MySingleSubject subject;
+
+    MySingleObserver observer;
+
+    {
+        MySingleObserver::DelayedAttachDetach delayed(observer, subject);
+        EXPECT_TRUE(observer.Attached());
+        EXPECT_TRUE(subject.HasObserver());
+    }
+
+    EXPECT_FALSE(observer.Attached());
+    EXPECT_FALSE(subject.HasObserver());
 }
 
 TEST(SingleObserverTest, NotifyObserver)
