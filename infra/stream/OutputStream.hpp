@@ -5,9 +5,9 @@
 #include "infra/stream/StreamManipulators.hpp"
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/ByteRange.hpp"
+#include "infra/util/Function.hpp"
 #include "infra/util/IntegerNormalization.hpp"
 #include "infra/util/Optional.hpp"
-#include "infra/util/Function.hpp"
 #include <type_traits>
 
 namespace infra
@@ -470,9 +470,9 @@ namespace infra
 
     template<class T>
     JoinHelper<T>::JoinHelper(BoundedConstString string, infra::MemoryRange<T> range, const FunctionType& conversionFunction)
-        : string{string}
-        , range{range}
-        , conversionFunction{conversionFunction}
+        : string{ string }
+        , range{ range }
+        , conversionFunction{ conversionFunction }
     {}
 
     template<class T>
@@ -501,7 +501,10 @@ namespace infra
     template<class T>
     JoinHelper<T> Join(BoundedConstString string, MemoryRange<T> range)
     {
-        return { string, range, [](TextOutputStream& stream, const T& obj) { stream << obj; } };
+        return { string, range, [](TextOutputStream& stream, const T& obj)
+            {
+                stream << obj;
+            } };
     }
 }
 

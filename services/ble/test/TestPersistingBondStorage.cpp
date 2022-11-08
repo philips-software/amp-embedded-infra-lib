@@ -13,10 +13,10 @@ public:
 
 public:
     testing::StrictMock<services::ConfigurationStoreInterfaceMock> configurationStore;
-    infra::BoundedVector<uint8_t>::WithMaxSize<3> flashStorage{{ 1, 2, 3 }};
-    std::array<uint8_t, 3> ramStorage{{ 4, 5, 6 }};
+    infra::BoundedVector<uint8_t>::WithMaxSize<3> flashStorage{ { 1, 2, 3 } };
+    std::array<uint8_t, 3> ramStorage{ { 4, 5, 6 } };
 
-    services::PersistingBondStorage persistingBondStorage{{configurationStore, flashStorage}, infra::MakeByteRange(ramStorage)};
+    services::PersistingBondStorage persistingBondStorage{ { configurationStore, flashStorage }, infra::MakeByteRange(ramStorage) };
 };
 
 TEST_F(PersistingBondStorageTest, construct_updates_ram_with_flash_storage)
@@ -26,7 +26,7 @@ TEST_F(PersistingBondStorageTest, construct_updates_ram_with_flash_storage)
 
 TEST_F(PersistingBondStorageTest, update_updates_flash_with_ram_storage)
 {
-    ramStorage = {7, 8, 9};
+    ramStorage = { 7, 8, 9 };
 
     EXPECT_CALL(configurationStore, Write());
     persistingBondStorage.Update();

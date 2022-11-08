@@ -514,7 +514,7 @@ TEST(StringOutputStreamTest, Reset_with_new_storage)
 TEST(StringOutputStreamTest, stream_join_range)
 {
     infra::StringOutputStream::WithStorage<10> stream;
-    std::array<infra::BoundedConstString, 3> array{"ab", "cd", "ef"};
+    std::array<infra::BoundedConstString, 3> array{ "ab", "cd", "ef" };
 
     stream << infra::Join("; ", infra::MakeRange(array));
 
@@ -534,7 +534,7 @@ TEST(StringOutputStreamTest, stream_join_range_empty)
 TEST(StringOutputStreamTest, stream_join_range_single_entry)
 {
     infra::StringOutputStream::WithStorage<10> stream;
-    std::array<infra::BoundedConstString, 1> array{"qwerty"};
+    std::array<infra::BoundedConstString, 1> array{ "qwerty" };
 
     stream << infra::Join("; ", infra::MakeRange(array));
 
@@ -550,7 +550,8 @@ TEST(StringOutputStreamTest, stream_join_custom_range)
     };
     infra::StringOutputStream::WithStorage<50> stream;
 
-    stream << infra::Join(";", infra::MakeRange(array), [](auto& stream, const auto& obj) { stream << "'" << obj.first << "'?'" << obj.second << "'"; });
+    stream << infra::Join(";", infra::MakeRange(array), [](auto& stream, const auto& obj)
+        { stream << "'" << obj.first << "'?'" << obj.second << "'"; });
 
     EXPECT_EQ(R"('b1'?'xyz1';'b2'?'xyz2';'b3'?'xyz3')", stream.Storage());
 }
