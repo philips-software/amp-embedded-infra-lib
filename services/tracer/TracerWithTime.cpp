@@ -16,7 +16,7 @@ namespace services
 
         Continue() << infra::Width(2, '0') << partitioned.hours << infra::resetWidth << ':'
                    << infra::Width(2, '0') << partitioned.minutes << infra::resetWidth << ':'
-                   << infra::Width(2, '0') << partitioned.seconds << infra::resetWidth << ':'
+                   << infra::Width(2, '0') << partitioned.seconds << infra::resetWidth << '.'
                    << infra::Width(6, '0') << std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count() % 1000000 << ' ';
     }
 }
