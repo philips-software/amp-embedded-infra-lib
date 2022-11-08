@@ -6,6 +6,9 @@ namespace services
         : flashStorage(flashStorage)
         , ramStorage(ramStorage)
     {
+        if (flashStorage->empty())
+            flashStorage->resize(ramStorage.size(), 0);
+
         infra::Copy(infra::MakeRange(*flashStorage), ramStorage);
     }
 
