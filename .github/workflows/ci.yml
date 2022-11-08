@@ -29,7 +29,7 @@ jobs:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
         with:
           persist-credentials: false
-      - uses: hendrikmuhs/ccache-action@621a41397ed83711c72862638d9ff6e63fca3041
+      - uses: hendrikmuhs/ccache-action@657bab9aeb32eb6d913c2e6882efad4bb7536d94
         with:
           key: ${{ github.job }}-${{ matrix.os }}
           variant: sccache
@@ -63,7 +63,7 @@ jobs:
         with:
           release: ${{ matrix.gcc }}
       - uses: seanmiddleditch/gha-setup-ninja@16b940825621068d98711680b6c3ff92201f8fc0
-      - uses: hendrikmuhs/ccache-action@621a41397ed83711c72862638d9ff6e63fca3041
+      - uses: hendrikmuhs/ccache-action@657bab9aeb32eb6d913c2e6882efad4bb7536d94
         with:
           key: ${{ matrix.gcc }}-${{ matrix.configuration }}
       - run: |
