@@ -1,14 +1,14 @@
-#include "services/ble/BondStorageManager.hpp"
+#include "services/ble/BondStorageSynchronizer.hpp"
 
 namespace services
 {
-    BondStorageManagerImpl::BondStorageManagerImpl(BondStorage& referenceBondStorage, BondStorage& otherBondStorage)
+    BondStorageSynchronizerImpl::BondStorageSynchronizerImpl(BondStorage& referenceBondStorage, BondStorage& otherBondStorage)
         : referenceBondStorage(referenceBondStorage)
         , otherBondStorage(otherBondStorage)
         , maxNumberOfBonds(referenceBondStorage.GetMaxNumberOfBonds())
     {
-        otherBondStorage.BondStorageManagerCreated(*this);
-        referenceBondStorage.BondStorageManagerCreated(*this);
+        otherBondStorage.BondStorageSynchronizerCreated(*this);
+        referenceBondStorage.BondStorageSynchronizerCreated(*this);
 
         if (otherBondStorage.GetMaxNumberOfBonds() < maxNumberOfBonds)
             std::abort();
@@ -16,30 +16,30 @@ namespace services
         SyncBondStorages();
     }
 
-    void BondStorageManagerImpl::UpdateBondedDevice(hal::MacAddress address)
+    void BondStorageSynchronizerImpl::UpdateBondedDevice(hal::MacAddress address)
     {
         referenceBondStorage.UpdateBondedDevice(address);
         otherBondStorage.UpdateBondedDevice(address);
     }
 
-    void BondStorageManagerImpl::RemoveBond(hal::MacAddress address)
+    void BondStorageSynchronizerImpl::RemoveBond(hal::MacAddress address)
     {
         referenceBondStorage.RemoveBond(address);
         otherBondStorage.RemoveBond(address);
     }
 
-    void BondStorageManagerImpl::RemoveAllBonds()
+    void BondStorageSynchronizerImpl::RemoveAllBonds()
     {
         referenceBondStorage.RemoveAllBonds();
         otherBondStorage.RemoveAllBonds();
     }
 
-    uint32_t BondStorageManagerImpl::GetMaxNumberOfBonds() const
+    uint32_t BondStorageSynchronizerImpl::GetMaxNumberOfBonds() const
     {
         return maxNumberOfBonds;
     }
 
-    void BondStorageManagerImpl::SyncBondStorages()
+    void BondStorageSynchronizerImpl::SyncBondStorages()
     {
         otherBondStorage.RemoveBondIf([this](hal::MacAddress address)
             {

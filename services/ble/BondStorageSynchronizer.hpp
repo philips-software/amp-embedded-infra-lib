@@ -1,18 +1,18 @@
-#ifndef SERVICES_BOND_STORAGE_MANAGER_HPP
-#define SERVICES_BOND_STORAGE_MANAGER_HPP
+#ifndef SERVICES_BOND_STORAGE_SYNCHRONIZER_HPP
+#define SERVICES_BOND_STORAGE_SYNCHRONIZER_HPP
 
 #include "hal/interfaces/MacAddress.hpp"
 #include "infra/util/Function.hpp"
 
 namespace services
 {
-    class BondStorageManager
+    class BondStorageSynchronizer
     {
     protected:
-        BondStorageManager() = default;
-        BondStorageManager(const BondStorageManager& other) = delete;
-        BondStorageManager& operator=(const BondStorageManager& other) = delete;
-        virtual ~BondStorageManager() = default;
+        BondStorageSynchronizer() = default;
+        BondStorageSynchronizer(const BondStorageSynchronizer& other) = delete;
+        BondStorageSynchronizer& operator=(const BondStorageSynchronizer& other) = delete;
+        virtual ~BondStorageSynchronizer() = default;
 
     public:
         virtual void UpdateBondedDevice(hal::MacAddress address) = 0;
@@ -30,7 +30,7 @@ namespace services
         virtual ~BondStorage() = default;
 
     public:
-        virtual void BondStorageManagerCreated(BondStorageManager& manager) = 0;
+        virtual void BondStorageSynchronizerCreated(BondStorageSynchronizer& manager) = 0;
         virtual void UpdateBondedDevice(hal::MacAddress address) = 0;
         virtual void RemoveBond(hal::MacAddress address) = 0;
         virtual void RemoveAllBonds() = 0;
@@ -40,13 +40,13 @@ namespace services
         virtual void IterateBondedDevices(const infra::Function<void(hal::MacAddress)>& onAddress) = 0;
     };
 
-    class BondStorageManagerImpl
-        : public BondStorageManager
+    class BondStorageSynchronizerImpl
+        : public BondStorageSynchronizer
     {
     public:
-        BondStorageManagerImpl(BondStorage& referenceBondStorage, BondStorage& otherBondStorage);
+        BondStorageSynchronizerImpl(BondStorage& referenceBondStorage, BondStorage& otherBondStorage);
 
-        // Implementation of BondStorageManager
+        // Implementation of BondStorageSynchronizer
         virtual void UpdateBondedDevice(hal::MacAddress address) override;
         virtual void RemoveBond(hal::MacAddress address) override;
         virtual void RemoveAllBonds() override;

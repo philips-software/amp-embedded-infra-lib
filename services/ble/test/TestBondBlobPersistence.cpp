@@ -1,14 +1,14 @@
 #include "gmock/gmock.h"
-#include "services/ble/PersistingBondStorage.hpp"
+#include "services/ble/BondBlobPersistence.hpp"
 #include "services/util/test_doubles/ConfigurationStoreMock.hpp"
 
-class PersistingBondStorageTest
+class BondBlobPersistenceTest
     : public testing::Test
 {
 public:
     void Construct()
     {
-        persistingBondStorage.Emplace(flashStorageAccess, infra::MakeByteRange(ramStorage));
+        bondBlobPersistence.Emplace(flashStorageAccess, infra::MakeByteRange(ramStorage));
     }
 
     void FillStorages(std::vector<uint8_t> flashData, std::array<uint8_t, 3> ramData)
@@ -35,29 +35,29 @@ public:
     services::ConfigurationStoreAccess<infra::BoundedVector<uint8_t>> flashStorageAccess{configurationStore, flashStorage};
     std::array<uint8_t, 3> ramStorage{ 0, 0, 0 };
 
-    infra::Optional<services::PersistingBondStorage> persistingBondStorage;
+    infra::Optional<services::BondBlobPersistence> bondBlobPersistence;
 };
 
-TEST_F(PersistingBondStorageTest, construct_updates_ram_with_empty_flash_storage)
+TEST_F(BondBlobPersistenceTest, construct_updates_ram_with_empty_flash_storage)
 {
     Construct();
     ExpectStoragesEqual({ 0, 0, 0 });
 }
 
-TEST_F(PersistingBondStorageTest, construct_updates_ram_with_flash_storage)
+TEST_F(BondBlobPersistenceTest, construct_updates_ram_with_flash_storage)
 {
     FillStoragesAndConstruct({ 1, 2, 3 }, { 4, 5, 6 });
     ExpectStoragesEqual({ 1, 2, 3 });
 }
 
-TEST_F(PersistingBondStorageTest, update_updates_flash_with_ram_storage)
+TEST_F(BondBlobPersistenceTest, update_updates_flash_with_ram_storage)
 {
     FillStoragesAndConstruct({ 1, 2, 3 }, { 4, 5, 6 });
 
     ramStorage = { 7, 8, 9 };
 
     EXPECT_CALL(configurationStore, Write());
-    persistingBondStorage->Update();
+    bondBlobPersistence->Update();
 
     ExpectStoragesEqual({ 7, 8, 9 });
 }

@@ -1,9 +1,9 @@
 ccola_component(ble_test gmock_test)
 
     ccola_sources(
-        TestBondStorageManager.cpp
+        TestBondBlobPersistence.cpp
+        TestBondStorageSynchronizer.cpp
         TestGatt.cpp
-        TestPersistingBondStorage.cpp
     )
 
     ccola_dependencies(
