@@ -6,8 +6,8 @@ namespace application
 {
     InputElf::InputElf(const std::string& targetName, const std::string& fileName, uint32_t offset, hal::FileSystem& fileSystem, const ImageSecurity& imageSecurity)
         : Input(targetName)
-        , offset(offset)
         , imageSecurity(imageSecurity)
+        , offset(offset)
     {
         contents.AddElf(fileSystem.ReadBinaryFile(fileName), offset, fileName);
     }
