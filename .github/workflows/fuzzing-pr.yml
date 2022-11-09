@@ -2,7 +2,7 @@
 name: Pull-Request Fuzzing
 
 on:
-  workflow-dispatch:
+  workflow_dispatch:
   pull_request:
 
 permissions:
