@@ -1,5 +1,4 @@
 option(EMIL_ENABLE_COVERAGE "Enable compiler flags for code coverage measurements" Off)
-option(EMIL_ENABLE_FUZZING "Enable compiler flags for fuzzing" Off)
 option(EMIL_ENABLE_MUTATION_TESTING "Enable compiler flags for mutation testing" Off)
 set(EMIL_MUTATION_TESTING_RUNNER_ARGUMENTS "" CACHE STRING "Additional arguments for the mutation testing runner")
 
@@ -43,17 +42,14 @@ function(emil_enable_testing)
             message(FATAL_ERROR "Mutation testing is currently only supported for Clang/LLVM; not for ${CMAKE_CXX_COMPILER_ID}")
         endif()
     endif()
+endfunction()
 
-    if (EMIL_ENABLE_FUZZING)
-        if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-            add_compile_options(
-                -g -O1 -fsanitize=fuzzer-no-link
-            )
-
-            add_link_options(-fsanitize=fuzzer-no-link)
-        else()
-            message(FATAL_ERROR "Fuzzing is currently only supported for Clang/LLVM; not for ${CMAKE_CXX_COMPILER_ID}")
-        endif()
+function(emil_enable_fuzzing)
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        add_compile_options(-g -O1 -fsanitize=fuzzer-no-link)
+        add_link_options(-fsanitize=fuzzer-no-link)
+    else()
+        message(FATAL_ERROR "Fuzzing is currently only supported for Clang/LLVM; not for ${CMAKE_CXX_COMPILER_ID}")
     endif()
 endfunction()
 

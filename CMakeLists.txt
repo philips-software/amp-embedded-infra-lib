@@ -10,6 +10,7 @@ set_directory_properties(PROPERTY USE_FOLDERS On)
 
 include(CMakePackageConfigHelpers)
 include(emil_clang_tools)
+include(emil_docker_tools)
 include(emil_test_helpers)
 include(emil_version_generator)
 include(emil_xsltproc)
@@ -67,8 +68,9 @@ else()
 endif()
 
 option(CMAKE_COMPILE_WARNING_AS_ERROR "Enable warnings-as-error" ON)
-option(EMIL_BUILD_TESTS "Enable build of the tests" ${EMIL_DEFAULTOPT})
-option(EMIL_BUILD_EXAMPLES "Enable build of the examples" ${EMIL_DEFAULTOPT})
+option(EMIL_BUILD_TESTS "Enable building the tests" ${EMIL_DEFAULTOPT})
+option(EMIL_BUILD_EXAMPLES "Enable building the examples" ${EMIL_DEFAULTOPT})
+option(EMIL_ENABLE_FUZZING "Enable building the fuzzing targets" Off)
 option(EMIL_ENABLE_DOCKER_TOOLS "Enable shift-left tools (e.g. linters, formatters) that are run using Docker" On)
 
 # The next few options control the install and export behaviour.
@@ -90,7 +92,7 @@ endif()
 option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of EmIL" On)
 
 if (EMIL_ENABLE_DOCKER_TOOLS)
-    include(emil_docker_tools)
+    emil_enable_docker_tools()
 endif()
 
 if (EMIL_HOST_BUILD)
@@ -99,6 +101,11 @@ if (EMIL_HOST_BUILD)
     if (EMIL_BUILD_TESTS)
         include(CTest)
         emil_enable_testing()
+    endif()
+
+    if (EMIL_ENABLE_FUZZING)
+        set(EMIL_EXCLUDE_FROM_ALL "EXCLUDE_FROM_ALL")
+        emil_enable_fuzzing()
     endif()
 endif()
 

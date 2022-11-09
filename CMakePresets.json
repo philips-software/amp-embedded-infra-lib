@@ -19,7 +19,8 @@
       "displayName": "Configuration for Continuous Integration",
       "inherits": "defaults",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
+        "CMAKE_BUILD_TYPE": "Debug",
+        "EMIL_ENABLE_DOCKER_TOOLS": "Off"
       }
     },
     {
@@ -48,8 +49,10 @@
       "displayName": "Configuration for Fuzzing",
       "inherits": "ContinuousIntegration",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang-12",
-        "CMAKE_CXX_COMPILER": "clang++-12",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "EMIL_BUILD_TESTS": "Off",
+        "EMIL_BUILD_EXAMPLES": "Off",
         "EMIL_ENABLE_FUZZING": "On"
       },
       "generator": "Ninja"
