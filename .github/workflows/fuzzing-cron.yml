@@ -24,7 +24,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           fuzz-seconds: 600
-          mode: "prune"
+          mode: prune
           storage-repo: https://${{ secrets.METRICS_TOKEN }}@github.com/philips-software/amp-embedded-infra-lib-metrics.git
   fuzz_coverage:
     runs-on: ubuntu-latest
