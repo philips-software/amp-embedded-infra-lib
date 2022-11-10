@@ -42,7 +42,7 @@ namespace services
         requestType = RequestType::StepMatches;
         infra::JsonArrayIterator iterator(input.begin());
         iterator++;
-        nameToMatch = iterator->Get<infra::JsonObject>();
+        nameToMatch.Emplace(iterator->Get<infra::JsonObject>().GetString("name_to_match").Raw());
     }
 
     void CucumberWireProtocolParser::ParseInvokeRequest(infra::JsonArray& input)

@@ -1,7 +1,7 @@
 ccola_component(ble_test_doubles x86: source other: noncompile)
 
     ccola_sources(
-        BondStorageManagerMock.hpp
+        BondStorageSynchronizerMock.hpp
         GapPeripheralMock.hpp
         GattMock.hpp
     )

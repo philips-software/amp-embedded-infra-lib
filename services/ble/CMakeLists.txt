@@ -1,15 +1,15 @@
 ccola_component(ble static_library)
 
     ccola_sources(
-        BondStorageManager.cpp
-        BondStorageManager.hpp
+        BondBlobPersistence.cpp
+        BondBlobPersistence.hpp
+        BondStorageSynchronizer.cpp
+        BondStorageSynchronizer.hpp
         Gap.hpp
         Gatt.cpp
         Gatt.hpp
         GattCharacteristicImpl.cpp
         GattCharacteristicImpl.hpp
-        PersistingBondStorage.cpp
-        PersistingBondStorage.hpp
         Uuids.hpp
     )
 
