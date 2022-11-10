@@ -1,5 +1,6 @@
 #include "services/tracer/TracerWithTime.hpp"
 #include "infra/stream/StreamManipulators.hpp"
+#include "infra/timer/PartitionedTime.hpp"
 #include "infra/timer/Timer.hpp"
 
 namespace services
@@ -10,12 +11,12 @@ namespace services
 
     void TracerWithTime::InsertHeader()
     {
-        infra::TimePoint nowTimePoint = infra::Now();
-        time_t now = std::chrono::system_clock::to_time_t(nowTimePoint);
-        std::tm* utcTime = gmtime(&now);
-        assert(utcTime != nullptr);
+        auto now = infra::Now();
+        infra::PartitionedTime partitioned(now);
 
-        Continue() << utcTime->tm_hour << ':' << utcTime->tm_min << ':' << utcTime->tm_sec << '.'
-                   << infra::Width(6, '0') << std::chrono::duration_cast<std::chrono::microseconds>(nowTimePoint.time_since_epoch()).count() % 1000000 << ' ';
+        Continue() << infra::Width(2, '0') << partitioned.hours << infra::resetWidth << ':'
+                   << infra::Width(2, '0') << partitioned.minutes << infra::resetWidth << ':'
+                   << infra::Width(2, '0') << partitioned.seconds << infra::resetWidth << '.'
+                   << infra::Width(6, '0') << std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count() % 1000000 << ' ';
     }
 }

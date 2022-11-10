@@ -14,6 +14,8 @@ target_sources(services.ble PRIVATE
     Gatt.hpp
     GattCharacteristicImpl.cpp
     GattCharacteristicImpl.hpp
+    PersistingBondStorage.cpp
+    PersistingBondStorage.hpp
     Uuids.hpp
 )
 

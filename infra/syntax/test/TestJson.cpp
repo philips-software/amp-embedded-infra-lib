@@ -670,6 +670,15 @@ TEST(JsonObjectIteratorTest, get_multiple_values_from_iterator)
     EXPECT_EQ(R"({ "subobject" })", (*iterator++).Get<infra::JsonObject>().ObjectString());
 }
 
+TEST(JsonObjectIteratorTest, only_string_open)
+{
+    infra::JsonObject object(R"({")");
+    for (auto j : object)
+    {}
+
+    EXPECT_TRUE(object.Error());
+}
+
 TEST(JsonArrayTest, empty_array_construction)
 {
     infra::JsonArray jsonArray(R"([ ])");

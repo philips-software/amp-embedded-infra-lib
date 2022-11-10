@@ -37,10 +37,10 @@ namespace infra
         template<class InputIterator>
         IntrusiveUnorderedSet(infra::MemoryRange<std::pair<iterator, iterator>> buckets, InputIterator first, InputIterator last);
         IntrusiveUnorderedSet(const IntrusiveUnorderedSet& other) = delete;
-        IntrusiveUnorderedSet(infra::MemoryRange<std::pair<iterator, iterator>> buckets, IntrusiveUnorderedSet&& other);
+        IntrusiveUnorderedSet(infra::MemoryRange<std::pair<iterator, iterator>> buckets, IntrusiveUnorderedSet&& other) noexcept;
         IntrusiveUnorderedSet& operator=(const IntrusiveUnorderedSet& other) = delete;
-        IntrusiveUnorderedSet& operator=(IntrusiveUnorderedSet&& other);
-        void AssignFromStorage(IntrusiveUnorderedSet&& other);
+        IntrusiveUnorderedSet& operator=(IntrusiveUnorderedSet&& other) noexcept;
+        void AssignFromStorage(IntrusiveUnorderedSet&& other) noexcept;
 
     public:
         iterator begin();
@@ -78,7 +78,7 @@ namespace infra
 
         void clear();
 
-        void swap(IntrusiveUnorderedSet& other);
+        void swap(IntrusiveUnorderedSet& other) noexcept;
 
     public:
         bool operator==(const IntrusiveUnorderedSet& other) const;
@@ -94,7 +94,7 @@ namespace infra
     };
 
     template<class T>
-    void swap(IntrusiveUnorderedSet<T>& x, IntrusiveUnorderedSet<T>& y);
+    void swap(IntrusiveUnorderedSet<T>& x, IntrusiveUnorderedSet<T>& y) noexcept;
 
     ////    Implementation    ////
 
@@ -114,14 +114,14 @@ namespace infra
     }
 
     template<class T>
-    IntrusiveUnorderedSet<T>::IntrusiveUnorderedSet(infra::MemoryRange<std::pair<iterator, iterator>> buckets, IntrusiveUnorderedSet&& other)
+    IntrusiveUnorderedSet<T>::IntrusiveUnorderedSet(infra::MemoryRange<std::pair<iterator, iterator>> buckets, IntrusiveUnorderedSet&& other) noexcept
         : buckets(buckets)
     {
         *this = std::move(other);
     }
 
     template<class T>
-    IntrusiveUnorderedSet<T>& IntrusiveUnorderedSet<T>::operator=(IntrusiveUnorderedSet&& other)
+    IntrusiveUnorderedSet<T>& IntrusiveUnorderedSet<T>::operator=(IntrusiveUnorderedSet&& other) noexcept
     {
         values.clear();
         InitializeBuckets();
@@ -139,7 +139,7 @@ namespace infra
     }
 
     template<class T>
-    void IntrusiveUnorderedSet<T>::AssignFromStorage(IntrusiveUnorderedSet&& other)
+    void IntrusiveUnorderedSet<T>::AssignFromStorage(IntrusiveUnorderedSet&& other) noexcept
     {
         *this = std::move(other);
     }
@@ -285,7 +285,7 @@ namespace infra
     }
 
     template<class T>
-    void IntrusiveUnorderedSet<T>::swap(IntrusiveUnorderedSet& other)
+    void IntrusiveUnorderedSet<T>::swap(IntrusiveUnorderedSet& other) noexcept
     {
         if (buckets.size() == other.buckets.size())
         {
@@ -359,7 +359,7 @@ namespace infra
     }
 
     template<class T>
-    void swap(IntrusiveUnorderedSet<T>& x, IntrusiveUnorderedSet<T>& y)
+    void swap(IntrusiveUnorderedSet<T>& x, IntrusiveUnorderedSet<T>& y) noexcept
     {
         x.swap(y);
     }

@@ -3,14 +3,14 @@
 
 #include "infra/timer/Timer.hpp"
 #include <cstdint>
-#include <time.h>
+#include <ctime>
 
 namespace infra
 {
     struct PartitionedTime
     {
-        PartitionedTime(infra::TimePoint time);
-        PartitionedTime(time_t unixTime);
+        explicit PartitionedTime(infra::TimePoint time);
+        explicit PartitionedTime(time_t unixTime);
         PartitionedTime(uint16_t years, uint8_t months, uint8_t days, uint8_t hours, uint8_t minutes, int8_t seconds);
 
         time_t ToTimeT() const;

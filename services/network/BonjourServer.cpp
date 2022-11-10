@@ -94,7 +94,6 @@ namespace services
 
     BonjourServer::Answer::Answer(BonjourServer& server, uint16_t queryId, infra::StreamWriter& writer, uint16_t answersCount, uint16_t additionalRecordsCount)
         : server(server)
-        , queryId(queryId)
         , writer(writer)
         , answersCount(answersCount)
         , additionalRecordsCount(additionalRecordsCount)

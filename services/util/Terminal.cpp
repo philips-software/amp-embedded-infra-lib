@@ -4,8 +4,7 @@
 namespace services
 {
     Terminal::Terminal(hal::SerialCommunication& communication, services::Tracer& tracer)
-        : communication(communication)
-        , tracer(tracer)
+        : tracer(tracer)
         , queue([this]
               { HandleInput(); })
     {

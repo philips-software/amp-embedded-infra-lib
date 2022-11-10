@@ -5,6 +5,7 @@
 #include "infra/stream/StreamManipulators.hpp"
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/ByteRange.hpp"
+#include "infra/util/Function.hpp"
 #include "infra/util/IntegerNormalization.hpp"
 #include "infra/util/Optional.hpp"
 #include <type_traits>
@@ -305,6 +306,34 @@ namespace infra
         ByteRange range;
     };
 
+    template<class T>
+    class JoinHelper;
+
+    template<class T>
+    TextOutputStream& operator<<(TextOutputStream& stream, const JoinHelper<T>& joinHelper);
+
+    template<class T>
+    class JoinHelper
+    {
+    public:
+        using FunctionType = Function<void(TextOutputStream&, const T&)>;
+
+        JoinHelper(BoundedConstString string, MemoryRange<T> range, const FunctionType& conversionFunction);
+
+        friend TextOutputStream& operator<< <>(TextOutputStream& stream, const JoinHelper<T>& joinHelper);
+
+    private:
+        BoundedConstString string;
+        MemoryRange<T> range;
+        FunctionType conversionFunction;
+    };
+
+    template<class T>
+    JoinHelper<T> Join(BoundedConstString string, MemoryRange<T> range, const typename JoinHelper<T>::FunctionType& func);
+
+    template<class T>
+    JoinHelper<T> Join(BoundedConstString string, MemoryRange<T> range);
+
     ////    Implementation    ////
 
     template<class Data>
@@ -437,6 +466,45 @@ namespace infra
             Copy(infra::MakeByteRange(data), range);
 
         return *this;
+    }
+
+    template<class T>
+    JoinHelper<T>::JoinHelper(BoundedConstString string, infra::MemoryRange<T> range, const FunctionType& conversionFunction)
+        : string{ string }
+        , range{ range }
+        , conversionFunction{ conversionFunction }
+    {}
+
+    template<class T>
+    TextOutputStream& operator<<(TextOutputStream& stream, const JoinHelper<T>& joinHelper)
+    {
+        if (!joinHelper.range.empty())
+        {
+            for (const auto& obj : DiscardTail(joinHelper.range, 1))
+            {
+                joinHelper.conversionFunction(stream, obj);
+                stream << joinHelper.string;
+            }
+
+            joinHelper.conversionFunction(stream, joinHelper.range.back());
+        }
+
+        return stream;
+    }
+
+    template<class T>
+    JoinHelper<T> Join(BoundedConstString string, MemoryRange<T> range, const typename JoinHelper<T>::FunctionType& conversionFunction)
+    {
+        return { string, range, conversionFunction };
+    }
+
+    template<class T>
+    JoinHelper<T> Join(BoundedConstString string, MemoryRange<T> range)
+    {
+        return { string, range, [](TextOutputStream& stream, const T& obj)
+            {
+                stream << obj;
+            } };
     }
 }
 

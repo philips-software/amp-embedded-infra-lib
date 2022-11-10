@@ -37,6 +37,10 @@ endif()
 
 emil_clangformat_target(infra.syntax)
 
+if (EMIL_ENABLE_FUZZING)
+    add_subdirectory(fuzz)
+endif()
+
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
 endif()

@@ -114,7 +114,7 @@ namespace infra
         ResultType operator()(Args... args) const;
         ResultType Invoke(const std::tuple<Args...>& args) const;
 
-        void Swap(Function& other);
+        void Swap(Function& other) noexcept;
 
     private:
         template<class F>
@@ -350,7 +350,7 @@ namespace infra
     }
 
     template<std::size_t ExtraSize, class Result, class... Args>
-    void Function<Result(Args...), ExtraSize>::Swap(Function& other)
+    void Function<Result(Args...), ExtraSize>::Swap(Function& other) noexcept
     {
         using std::swap;
 

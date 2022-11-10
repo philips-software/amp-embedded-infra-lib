@@ -21,11 +21,6 @@ namespace infra
         struct IntrusiveSetNode
             : IntrusiveBinarySearchTreeNode<T>
         {
-            IntrusiveSetNode();
-            IntrusiveSetNode(const IntrusiveSetNode& other);
-
-            IntrusiveSetNode& operator=(const IntrusiveSetNode& other);
-
             enum class Colour
             {
                 red,
@@ -61,10 +56,10 @@ namespace infra
         template<class InputIterator>
         IntrusiveSet(InputIterator first, InputIterator last, const Compare& comp = Compare());
         IntrusiveSet(const IntrusiveSet&) = delete;
-        IntrusiveSet(IntrusiveSet&& other);
+        IntrusiveSet(IntrusiveSet&& other) noexcept;
         IntrusiveSet& operator=(const IntrusiveSet&) = delete;
-        IntrusiveSet& operator=(IntrusiveSet&& other);
-        ~IntrusiveSet();
+        IntrusiveSet& operator=(IntrusiveSet&& other) noexcept;
+        ~IntrusiveSet() = default;
 
     public:
         // For test purposes
@@ -77,14 +72,14 @@ namespace infra
         template<class InputIterator>
         void assign(InputIterator first, InputIterator last);
 
-        void swap(IntrusiveSet& other);
+        void swap(IntrusiveSet& other) noexcept;
 
     private:
         bool invariant_holds_for_each_path(const_reference node, bool mustBeBlack, std::size_t blackLevels) const;
     };
 
     template<class T, class Compare>
-    void swap(IntrusiveSet<T, Compare>& node, IntrusiveSet<T, Compare>& uncle);
+    void swap(IntrusiveSet<T, Compare>& node, IntrusiveSet<T, Compare>& uncle) noexcept;
 
     ////    Implementation    ////
 
@@ -102,22 +97,18 @@ namespace infra
     }
 
     template<class T, class Compare>
-    IntrusiveSet<T, Compare>::IntrusiveSet(IntrusiveSet&& other)
+    IntrusiveSet<T, Compare>::IntrusiveSet(IntrusiveSet&& other) noexcept
     {
         *this = std::move(other);
     }
 
     template<class T, class Compare>
-    IntrusiveSet<T, Compare>& IntrusiveSet<T, Compare>::operator=(IntrusiveSet&& other)
+    IntrusiveSet<T, Compare>& IntrusiveSet<T, Compare>::operator=(IntrusiveSet&& other) noexcept
     {
         static_cast<IntrusiveBinarySearchTree<T, Compare>&>(*this) = std::move(static_cast<IntrusiveBinarySearchTree<T, Compare>&>(other));
 
         return *this;
     }
-
-    template<class T, class Compare>
-    IntrusiveSet<T, Compare>::~IntrusiveSet()
-    {}
 
     template<class T, class Compare>
     bool IntrusiveSet<T, Compare>::invariant_holds() const
@@ -391,34 +382,16 @@ namespace infra
     }
 
     template<class T, class Compare>
-    void IntrusiveSet<T, Compare>::swap(IntrusiveSet& other)
+    void IntrusiveSet<T, Compare>::swap(IntrusiveSet& other) noexcept
     {
         IntrusiveBinarySearchTree<T, Compare>::swap(other);
     }
 
     template<class T, class Compare>
-    void swap(IntrusiveSet<T, Compare>& node, IntrusiveSet<T, Compare>& uncle)
+    void swap(IntrusiveSet<T, Compare>& node, IntrusiveSet<T, Compare>& uncle) noexcept
     {
         node.swap(uncle);
     }
-
-    namespace detail
-    {
-        template<class T>
-        IntrusiveSetNode<T>::IntrusiveSetNode()
-        {}
-
-        template<class T>
-        IntrusiveSetNode<T>::IntrusiveSetNode(const IntrusiveSetNode& other)
-        {}
-
-        template<class T>
-        IntrusiveSetNode<T>& IntrusiveSetNode<T>::operator=(const IntrusiveSetNode& other)
-        {
-            return *this;
-        }
-    }
-
 }
 
 #endif
