@@ -1,5 +1,6 @@
-.vs
-[Bb]uild*
+.cache/
+.vs/
+[Bb]uild/
 megalinter-reports/
 out/
 reports/

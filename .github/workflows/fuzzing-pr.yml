@@ -1,0 +1,38 @@
+---
+name: Pull-Request Fuzzing
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  fuzz_pr:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.ref }}-${{ matrix.sanitizer }}-${{ github.workflow }}
+      cancel-in-progress: true
+    strategy:
+      fail-fast: false
+      matrix:
+        sanitizer: [undefined]
+    steps:
+      - name: Build Fuzzers (${{ matrix.sanitizer }})
+        id: build
+        uses: google/clusterfuzzlite/actions/build_fuzzers@1e163f06cba7820da5154ac9fe1a32d7fe6f73a3
+        with:
+          language: c++
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          sanitizer: ${{ matrix.sanitizer }}
+          storage-repo: https://${{ secrets.METRICS_TOKEN }}@github.com/philips-software/amp-embedded-infra-lib-metrics.git
+      - name: Run Fuzzers (${{ matrix.sanitizer }})
+        id: run
+        uses: google/clusterfuzzlite/actions/run_fuzzers@1e163f06cba7820da5154ac9fe1a32d7fe6f73a3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          fuzz-seconds: 300
+          mode: code-change
+          sanitizer: ${{ matrix.sanitizer }}
+          storage-repo: https://${{ secrets.METRICS_TOKEN }}@github.com/philips-software/amp-embedded-infra-lib-metrics.git
