@@ -32,17 +32,14 @@ public:
 public:
     testing::StrictMock<services::ConfigurationStoreInterfaceMock> configurationStore;
     infra::BoundedVector<uint8_t>::WithMaxSize<3> flashStorage;
-    services::ConfigurationStoreAccess<infra::BoundedVector<uint8_t>> flashStorageAccess{configurationStore, flashStorage};
+    infra::Execute execute{[this]() { flashStorage.resize(flashStorage.max_size(), 0); } };
+    infra::ByteRange flashStorageRange{flashStorage.begin(), flashStorage.end()};
+    services::ConfigurationStoreAccess<infra::ByteRange> flashStorageAccess{configurationStore, flashStorageRange};
     std::array<uint8_t, 3> ramStorage{ 0, 0, 0 };
 
     infra::Optional<services::BondBlobPersistence> bondBlobPersistence;
 };
 
-TEST_F(BondBlobPersistenceTest, construct_updates_ram_with_empty_flash_storage)
-{
-    Construct();
-    ExpectStoragesEqual({ 0, 0, 0 });
-}
 
 TEST_F(BondBlobPersistenceTest, construct_updates_ram_with_flash_storage)
 {

@@ -8,12 +8,12 @@ namespace services
     class BondBlobPersistence
     {
     public:
-        BondBlobPersistence(services::ConfigurationStoreAccess<infra::BoundedVector<uint8_t>> flashStorage, infra::ByteRange ramStorage);
+        BondBlobPersistence(services::ConfigurationStoreAccess<infra::ByteRange> flashStorage, infra::ByteRange ramStorage);
 
         void Update();
 
     private:
-        services::ConfigurationStoreAccess<infra::BoundedVector<uint8_t>> flashStorage;
+        services::ConfigurationStoreAccess<infra::ByteRange> flashStorage;
         infra::ByteRange ramStorage;
     };
 }
