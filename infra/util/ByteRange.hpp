@@ -37,7 +37,7 @@ namespace infra
         for (uint8_t& e : infra::Head(range, 8))
         {
             *os << static_cast<int>(e);
-            if (std::distance(range.begin(), &e) != range.size() - 1)
+            if (std::distance(range.begin(), &e) != static_cast<int32_t>(range.size()) - 1)
                 *os << ", ";
         }
         if (range.size() > 8)
@@ -51,7 +51,7 @@ namespace infra
         for (const uint8_t& e : infra::Head(range, 8))
         {
             *os << static_cast<int>(e);
-            if (std::distance(range.begin(), &e) != range.size() - 1)
+            if (std::distance(range.begin(), &e) != static_cast<int32_t>(range.size()) - 1)
                 *os << ", ";
         }
         if (range.size() > 8)
