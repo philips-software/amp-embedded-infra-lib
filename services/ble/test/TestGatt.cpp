@@ -96,7 +96,7 @@ public:
         characteristic.Attach(operations);
     }
 
-    services::GattCharacteristicClientOperationsMock operations;
+    testing::StrictMock<services::GattCharacteristicClientOperationsMock> operations;
     services::GattService service{uuid16};
     services::GattCharacteristicImpl characteristic{service, uuid16, valueSize};
 };
