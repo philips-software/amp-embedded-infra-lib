@@ -2,13 +2,7 @@
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "services/ble/GattCharacteristicImpl.hpp"
-
-class GattCharacteristicClientOperationsMock
-    : public services::GattCharacteristicClientOperations
-{
-public:
-    MOCK_CONST_METHOD2(Update, UpdateStatus(const services::GattCharacteristicClientOperationsObserver& characteristic, infra::ConstByteRange data));
-};
+#include "services/ble/test_doubles/GattMock.hpp"
 
 namespace
 {
@@ -102,7 +96,7 @@ public:
         characteristic.Attach(operations);
     }
 
-    GattCharacteristicClientOperationsMock operations;
+    testing::StrictMock<services::GattCharacteristicClientOperationsMock> operations;
     services::GattService service{uuid16};
     services::GattCharacteristicImpl characteristic{service, uuid16, valueSize};
 };
