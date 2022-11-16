@@ -10,11 +10,22 @@ namespace services
     class CucumberWireProtocolFormatter
     {
     public:
-        CucumberWireProtocolFormatter(CucumberWireProtocolParser& parser, CucumberWireProtocolController& controller);
+        explicit CucumberWireProtocolFormatter(CucumberWireProtocolController& controller);
 
-        void FormatResponse(infra::TextOutputStream::WithErrorPolicy& stream);
+        void FormatResponse(CucumberWireProtocolParser::RequestType requestType, infra::TextOutputStream::WithErrorPolicy& stream);
 
     private:
+        struct PositionAndOffset
+        {
+            std::size_t x;
+            int16_t offset;
+
+            std::size_t MatchPosition() const
+            {
+                return x + offset;
+            }
+        };
+
         void CreateSuccessMessage(infra::TextOutputStream::WithErrorPolicy& stream);
         void CreateSuccessMessage(infra::TextOutputStream::WithErrorPolicy& stream, uint32_t id, const infra::JsonArray& arguments, infra::BoundedConstString sourceLocation);
         void CreateFailureMessage(infra::TextOutputStream::WithErrorPolicy& stream, infra::BoundedConstString failMessage, infra::BoundedConstString exceptionType);
@@ -25,16 +36,17 @@ namespace services
         void FormatBeginScenarioResponse(infra::TextOutputStream::WithErrorPolicy& stream);
         void FormatEndScenarioResponse(infra::TextOutputStream::WithErrorPolicy& stream);
 
-        void AddStringValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, std::size_t& argPos, int16_t& offset);
-        void AddDigitValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, std::size_t& argPos, int16_t& offset);
-        void AddBooleanValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, std::size_t& argPos, int16_t& offset);
+        void AddStringValue(infra::JsonArrayFormatter& formatter, infra::BoundedConstString nameToMatch, std::size_t& argPos, int16_t& offset);
+        PositionAndOffset AddStringValue(infra::JsonArrayFormatter& formatter, infra::BoundedConstString nameToMatch, PositionAndOffset previous);
 
-        infra::JsonArray FormatStepArguments(const infra::BoundedString& nameToMatch);
+        void AddDigitValue(infra::JsonArrayFormatter& formatter, infra::BoundedConstString nameToMatch, std::size_t& argPos, int16_t& offset);
+        void AddBooleanValue(infra::JsonArrayFormatter& formatter, infra::BoundedConstString nameToMatch, std::size_t& argPos, int16_t& offset);
+
+        infra::JsonArray FormatStepArguments(infra::BoundedConstString nameToMatch);
 
     private:
-        CucumberWireProtocolParser& parser;
         CucumberWireProtocolController& controller;
-        infra::BoundedString::WithStorage<512> stepMatchArgumentsBuffer;
+        infra::BoundedString::WithStorage<1024> stepMatchArgumentsBuffer;
     };
 }
 

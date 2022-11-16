@@ -5,14 +5,14 @@ namespace services
     CucumberWireProtocolConnectionObserver::CucumberWireProtocolConnectionObserver(infra::BoundedString& buffer, CucumberScenarioRequestHandler& scenarioRequestHandler)
         : buffer(buffer)
         , controller(*this, scenarioRequestHandler)
-        , formatter(parser, controller)
     {}
 
     void CucumberWireProtocolConnectionObserver::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         infra::TextOutputStream::WithErrorPolicy stream(*writer);
-        formatter.FormatResponse(stream);
+        services::CucumberWireProtocolFormatter formatter(controller);
 
+        formatter.FormatResponse(parser.requestType, stream);
         writer = nullptr;
     }
 
@@ -24,7 +24,6 @@ namespace services
         infra::TextInputStream::WithErrorPolicy stream(*reader);
 
         auto available = stream.Available();
-
         really_assert(available <= buffer.max_size());
 
         if (available > 0)

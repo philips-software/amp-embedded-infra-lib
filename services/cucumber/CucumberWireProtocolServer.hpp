@@ -19,10 +19,8 @@ namespace services
 
     private:
         infra::BoundedString& buffer;
-
         CucumberWireProtocolParser parser;
         CucumberWireProtocolController controller;
-        CucumberWireProtocolFormatter formatter;
     };
 
     class CucumberWireProtocolServer

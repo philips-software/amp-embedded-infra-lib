@@ -5,7 +5,7 @@ namespace services
     void CucumberWireProtocolParser::ParseRequest(infra::BoundedConstString inputString)
     {
         infra::JsonArray input(inputString);
-        infra::JsonArrayIterator iterator(input.begin());
+        auto iterator(input.begin());
         const auto& request = iterator->Get<infra::JsonString>();
 
         if (request == "step_matches")
@@ -40,15 +40,15 @@ namespace services
     void CucumberWireProtocolParser::ParseStepMatchRequest(infra::JsonArray& input)
     {
         requestType = RequestType::StepMatches;
-        infra::JsonArrayIterator iterator(input.begin());
+        auto iterator(input.begin());
         iterator++;
-        nameToMatch = iterator->Get<infra::JsonObject>();
+        nameToMatch = iterator->Get<infra::JsonObject>().GetString("name_to_match").Raw();
     }
 
     void CucumberWireProtocolParser::ParseInvokeRequest(infra::JsonArray& input)
     {
         requestType = RequestType::Invoke;
-        infra::JsonArrayIterator iterator(input.begin());
+        auto iterator(input.begin());
         iterator++;
         infra::BoundedString::WithStorage<6> idString;
         iterator->Get<infra::JsonObject>().GetString("id").ToString(idString);
@@ -58,7 +58,7 @@ namespace services
 
     void CucumberWireProtocolParser::ParseBeginScenarioRequest(infra::JsonArray& input)
     {
-        infra::JsonArrayIterator iterator(input.begin());
+        auto iterator(input.begin());
         if (++iterator != input.end())
             scenarioTags.Emplace(std::move(iterator->Get<infra::JsonObject>()));
         else

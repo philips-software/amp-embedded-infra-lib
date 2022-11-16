@@ -23,7 +23,7 @@ namespace services
         };
 
         RequestType requestType;
-        infra::JsonObject nameToMatch;
+        infra::BoundedConstString nameToMatch;
         uint32_t invokeId;
         infra::JsonArray invokeArguments;
         infra::Optional<infra::JsonObject> scenarioTags;

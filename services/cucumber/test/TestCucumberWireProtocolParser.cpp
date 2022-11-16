@@ -5,7 +5,7 @@ class StepStub
     : public services::CucumberStep
 {
 public:
-    StepStub(infra::BoundedConstString stepName)
+    explicit StepStub(infra::BoundedConstString stepName)
         : services::CucumberStep(stepName, "")
     {}
 

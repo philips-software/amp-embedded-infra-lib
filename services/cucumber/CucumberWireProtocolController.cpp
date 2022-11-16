@@ -23,7 +23,7 @@ namespace services
         switch (parser.requestType)
         {
             case CucumberWireProtocolParser::RequestType::StepMatches:
-                HandleStepMatchRequest(parser);
+                HandleStepMatchRequest(parser.nameToMatch);
                 break;
             case CucumberWireProtocolParser::RequestType::Invoke:
                 HandleInvokeRequest(parser);
@@ -45,10 +45,10 @@ namespace services
         }
     }
 
-    void CucumberWireProtocolController::HandleStepMatchRequest(CucumberWireProtocolParser& parser)
+    void CucumberWireProtocolController::HandleStepMatchRequest(infra::BoundedConstString nameToMatch)
     {
-        parser.nameToMatch.GetString("name_to_match").ToString(nameToMatchString);
-        storageMatch = CucumberStepStorage::Instance().MatchStep(nameToMatchString);
+        storageMatch = CucumberStepStorage::Instance().MatchStep(nameToMatch);
+        nameToMatchString = nameToMatch;
         connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize());
     }
 
@@ -83,7 +83,7 @@ namespace services
         connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize());
     }
 
-    bool CucumberWireProtocolController::MatchStringArguments(uint8_t id, infra::JsonArray& arguments)
+    bool CucumberWireProtocolController::MatchStringArguments(uint32_t id, infra::JsonArray& arguments)
     {
         uint8_t validStringCount = 0;
         for (const auto& string : JsonStringArray(arguments))
