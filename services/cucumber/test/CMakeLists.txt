@@ -16,6 +16,7 @@ target_link_libraries(services.cucumber_test PUBLIC
 target_sources(services.cucumber_test PRIVATE
     TestCucumberWireProtocolParser.cpp
     TestCucumberWireProtocolServer.cpp
+    TestSteps.cpp
 )
 
 emil_clangformat_target(services.cucumber_test)

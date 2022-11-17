@@ -1,6 +1,68 @@
 #include "services/cucumber/CucumberStep.hpp"
 #include "infra/stream/StringInputStream.hpp"
 
+namespace
+{
+    template<class Iterator>
+    std::size_t SkipStringArgument(Iterator& iterator, Iterator end)
+    {
+        std::size_t skippedSize = 0;
+
+        while (iterator != end && *iterator != '\'')
+        {
+            ++iterator;
+            ++skippedSize;
+        }
+
+        return skippedSize;
+    }
+
+    template<class Iterator>
+    std::size_t SkipIntegerArgument(Iterator& iterator, Iterator end)
+    {
+        std::size_t skippedSize = 0;
+
+        while (iterator != end && *iterator >= '0' && *iterator <= '9')
+        {
+            ++iterator;
+            ++skippedSize;
+        }
+
+        return skippedSize;
+    }
+
+    template<class Iterator>
+    std::size_t SkipBooleanArgument(Iterator& iterator, Iterator end)
+    {
+        std::size_t skippedSize = 0;
+        const infra::BoundedConstString trueString{ "true" };
+        const infra::BoundedConstString falseString{ "false" };
+
+        if (infra::BoundedConstString(iterator, trueString.size()) == trueString)
+            skippedSize = trueString.size();
+        else if (infra::BoundedConstString(iterator, falseString.size()) == falseString)
+            skippedSize = falseString.size();
+
+        iterator += skippedSize;
+
+        return skippedSize;
+    }
+
+    template<class Iterator>
+    std::size_t SkipMarker(Iterator& iterator, Iterator end)
+    {
+        std::size_t skippedSize = 0;
+
+        while (iterator != end && (*iterator == '%' || *iterator == 's' || *iterator == 'd' || *iterator == 'b'))
+        {
+            ++iterator;
+            ++skippedSize;
+        }
+
+        return skippedSize;
+    }
+}
+
 namespace services
 {
     CucumberStep::CucumberStep(infra::BoundedConstString stepName, infra::BoundedConstString sourceLocation)
@@ -26,6 +88,47 @@ namespace services
     infra::BoundedConstString CucumberStep::SourceLocation() const
     {
         return sourceLocation;
+    }
+
+    bool CucumberStep::Matches(infra::BoundedConstString name) const
+    {
+        std::size_t sizeOffset = 0;
+        auto nameToMatchIterator = name.begin();
+
+        for (auto stepNameIterator = stepName.begin(); stepNameIterator != stepName.end();)
+        {
+            if (*stepNameIterator != *nameToMatchIterator)
+            {
+                const infra::BoundedConstString intMarker{ "%d" };
+                const infra::BoundedConstString boolMarker{ "%b" };
+                const infra::BoundedConstString stringMarker{ R"('%s')" };
+
+                if (infra::BoundedConstString(stepNameIterator - 1, stringMarker.size()) == stringMarker)
+                {
+                    sizeOffset += SkipStringArgument(nameToMatchIterator, name.end());
+                    sizeOffset -= SkipMarker(stepNameIterator, stepName.end());
+                }
+                else if (infra::BoundedConstString(stepNameIterator, intMarker.size()) == intMarker)
+                {
+                    sizeOffset += SkipIntegerArgument(nameToMatchIterator, name.end());
+                    sizeOffset -= SkipMarker(stepNameIterator, stepName.end());
+                }
+                else if (infra::BoundedConstString(stepNameIterator, boolMarker.size()) == boolMarker)
+                {
+                    sizeOffset += SkipBooleanArgument(nameToMatchIterator, name.end());
+                    sizeOffset -= SkipMarker(stepNameIterator, stepName.end());
+                }
+                else
+                    return false;
+            }
+            else
+            {
+                ++stepNameIterator;
+                ++nameToMatchIterator;
+            }
+        }
+
+        return stepName.size() + sizeOffset == name.size();
     }
 
     void CucumberStep::SkipOverStringArguments(infra::JsonArrayIterator& iterator) const

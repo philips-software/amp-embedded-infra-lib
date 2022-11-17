@@ -18,7 +18,7 @@ public:
 bool CheckStepMatcher(infra::BoundedString stepString, infra::BoundedString matchString)
 {
     StepStub step{ stepString };
-    return services::CucumberStepStorage::Instance().MatchesStepName(step, matchString);
+    return step.Matches(matchString);
 }
 
 TEST(CucumberStepMatcherTest, should_match_input_for_matching_steps)

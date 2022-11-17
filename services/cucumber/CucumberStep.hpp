@@ -22,6 +22,8 @@ namespace services
         infra::BoundedConstString StepName() const;
         infra::BoundedConstString SourceLocation() const;
 
+        bool Matches(infra::BoundedConstString name) const;
+
         bool ContainsTableArgument(infra::BoundedConstString fieldName) const;
         infra::JsonArray GetTable() const;
         infra::Optional<infra::JsonString> GetTableArgument(infra::BoundedConstString fieldName) const;

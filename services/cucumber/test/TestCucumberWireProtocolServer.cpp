@@ -1,95 +1,11 @@
-#include "infra/stream/StringInputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
-#include "services/cucumber/CucumberStepMacro.hpp"
 #include "services/cucumber/CucumberWireProtocolServer.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/network/test_doubles/ConnectionStub.hpp"
 #include "gtest/gtest.h"
-
-static services::CucumberStepStorage stepStorage;
-
-GIVEN("a duplicate feature")
-{
-    Success();
-}
-
-GIVEN("a duplicate feature")
-{
-    Success();
-}
-
-GIVEN("a step")
-{
-    Success();
-}
-
-GIVEN("the WiFi network '%s' is seen within %d minutes")
-{
-    if (ContainsStringArgument(0) && ContainsStringArgument(1))
-        Success();
-    else
-        Error("Incorrect Arguments");
-}
-
-GIVEN("the WiFi network '%s' is seen within %d minutes and %d seconds")
-{
-    if (ContainsStringArgument(0) && ContainsStringArgument(1) && ContainsStringArgument(2))
-        Success();
-    else
-        Error("Incorrect Arguments");
-}
-
-GIVEN("the WiFi network '%s' is seen within %d minutes '%s' is seen within %d seconds")
-{
-    if (ContainsStringArgument(0) && ContainsStringArgument(1) && ContainsStringArgument(2) && ContainsStringArgument(3))
-        Success();
-    else
-        Error("Incorrect Arguments");
-}
-
-GIVEN("the Node connects to that network")
-{
-    if (ContainsTableArgument("ssid") && ContainsTableArgument("foobar") && ContainsTableArgument("WLAN"))
-        Success();
-    else
-        Error("Incorrect Arguments");
-}
-
-GIVEN("a network is available")
-{
-    if (ContainsTableArgument("field") && ContainsTableArgument("ssid") && ContainsTableArgument("key"))
-        Success();
-    else
-        Error("Incorrect Arguments");
-}
-
-GIVEN("sentence with '%s' and %d digit")
-{
-    if (ContainsStringArgument(0) && ContainsStringArgument(1))
-        if (ContainsTableArgument("field") && ContainsTableArgument("ssid") && ContainsTableArgument("key"))
-            Success();
-        else
-            Error("Incorrect Arguments");
-    else
-        Error("Incorrect Arguments");
-}
-
-GIVEN("nothing happens for %d seconds")
-{
-    if (ContainsStringArgument(0))
-    {
-        infra::BoundedString::WithStorage<2> secondsString;
-        GetStringArgument(0)->ToString(secondsString);
-        infra::StringInputStream secondsStream(secondsString);
-        uint32_t seconds;
-        secondsStream >> seconds;
-        Context().TimeoutTimer().Start(std::chrono::seconds(seconds), [=]()
-            { Success(); });
-    }
-}
 
 class CucumberStepMock
     : public services::CucumberStep
@@ -195,7 +111,7 @@ TEST_F(CucumberWireProtocolServerTest, test_step_parsing_arguments)
     ReceiveData("[\"step_matches\",{\"name_to_match\":\"the WiFi network 'foobar' is seen within 10 minutes and 30 seconds\"}]");
 
     auto match = services::CucumberStepStorage::Instance().MatchStep("the WiFi network '%s' is seen within %d minutes and %d seconds");
-    CheckSuccessResponse(match.id, "[ { \"val\":\"foobar\", \"pos\":18 }, { \"val\":\"10\", \"pos\":41 }, { \"val\":\"30\", \"pos\":56 } ]", "TestCucumberWireProtocolServer.cpp:37");
+    CheckSuccessResponse(match.id, "[ { \"val\":\"foobar\", \"pos\":18 }, { \"val\":\"10\", \"pos\":41 }, { \"val\":\"30\", \"pos\":56 } ]", "TestSteps.cpp:26");
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
@@ -205,7 +121,7 @@ TEST_F(CucumberWireProtocolServerTest, test_step_parsing_arguments_2)
     ReceiveData("[\"step_matches\",{\"name_to_match\":\"the WiFi network 'foobar' is seen within 10 minutes 'foobar2' is seen within 30 seconds\"}]");
 
     auto match = services::CucumberStepStorage::Instance().MatchStep("the WiFi network '%s' is seen within %d minutes '%s' is seen within %d seconds");
-    CheckSuccessResponse(match.id, "[ { \"val\":\"foobar\", \"pos\":18 }, { \"val\":\"10\", \"pos\":41 }, { \"val\":\"foobar2\", \"pos\":53 }, { \"val\":\"30\", \"pos\":77 } ]", "TestCucumberWireProtocolServer.cpp:45");
+    CheckSuccessResponse(match.id, "[ { \"val\":\"foobar\", \"pos\":18 }, { \"val\":\"10\", \"pos\":41 }, { \"val\":\"foobar2\", \"pos\":53 }, { \"val\":\"30\", \"pos\":77 } ]", "TestSteps.cpp:34");
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
@@ -242,7 +158,7 @@ TEST_F(CucumberWireProtocolServerTest, should_respond_to_step_match_request_with
     ReceiveData("[\"step_matches\",{\"name_to_match\":\"a step\"}]");
 
     auto match = services::CucumberStepStorage::Instance().MatchStep("a step");
-    CheckSuccessResponse(match.id, "[]", "TestCucumberWireProtocolServer.cpp:24");
+    CheckSuccessResponse(match.id, "[]", "TestSteps.cpp:13");
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
@@ -252,7 +168,7 @@ TEST_F(CucumberWireProtocolServerTest, should_respond_to_step_match_request_with
     ReceiveData("[\"step_matches\",{\"name_to_match\":\"the WiFi network 'foobar' is seen within 60 minutes\"}]");
 
     auto match = services::CucumberStepStorage::Instance().MatchStep("the WiFi network '%s' is seen within %d minutes");
-    CheckSuccessResponse(match.id, "[ { \"val\":\"foobar\", \"pos\":18 }, { \"val\":\"60\", \"pos\":41 } ]", "TestCucumberWireProtocolServer.cpp:29");
+    CheckSuccessResponse(match.id, "[ { \"val\":\"foobar\", \"pos\":18 }, { \"val\":\"60\", \"pos\":41 } ]", "TestSteps.cpp:18");
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
@@ -262,7 +178,7 @@ TEST_F(CucumberWireProtocolServerTest, should_respond_to_non_matching_substring_
     ReceiveData("[\"step_matches\",{\"name_to_match\":\"the WiFi network 'foobar' is seen within 60 minutes\"}]");
 
     auto match = services::CucumberStepStorage::Instance().MatchStep("the WiFi network 'foobar' is seen within 60 minutes");
-    CheckSuccessResponse(match.id, "[ { \"val\":\"foobar\", \"pos\":18 }, { \"val\":\"60\", \"pos\":41 } ]", "TestCucumberWireProtocolServer.cpp:29");
+    CheckSuccessResponse(match.id, "[ { \"val\":\"foobar\", \"pos\":18 }, { \"val\":\"60\", \"pos\":41 } ]", "TestSteps.cpp:18");
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 
@@ -281,7 +197,7 @@ TEST_F(CucumberWireProtocolServerTest, should_respond_to_long_matching_string_of
     ReceiveData("[\"step_matches\",{\"name_to_match\":\"the WiFi network 'foobar' is seen within 10 minutes and 30 seconds\"}]");
 
     auto match = services::CucumberStepStorage::Instance().MatchStep("the WiFi network '%s' is seen within %d minutes and %d seconds");
-    CheckSuccessResponse(match.id, "[ { \"val\":\"foobar\", \"pos\":18 }, { \"val\":\"10\", \"pos\":41 }, { \"val\":\"30\", \"pos\":56 } ]", "TestCucumberWireProtocolServer.cpp:37");
+    CheckSuccessResponse(match.id, "[ { \"val\":\"foobar\", \"pos\":18 }, { \"val\":\"10\", \"pos\":41 }, { \"val\":\"30\", \"pos\":56 } ]", "TestSteps.cpp:26");
     EXPECT_CALL(connection, AbortAndDestroyMock());
 }
 

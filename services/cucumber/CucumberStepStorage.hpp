@@ -9,12 +9,7 @@ namespace services
     class CucumberStepStorage
     {
     public:
-        CucumberStepStorage() = default;
-        CucumberStepStorage& operator=(const CucumberStepStorage& other) = delete;
-        CucumberStepStorage(CucumberStepStorage& other) = delete;
-        virtual ~CucumberStepStorage() = default;
-
-        enum class StepMatchResult
+        enum class StepMatchResult : uint8_t
         {
             Success,
             Fail,
@@ -30,16 +25,19 @@ namespace services
 
         static CucumberStepStorage& Instance();
 
-        bool MatchesStepName(CucumberStep& step, infra::BoundedConstString stepName);
-        services::CucumberStepStorage::Match MatchStep(infra::BoundedConstString nameToMatch);
+        services::CucumberStepStorage::Match MatchStep(infra::BoundedConstString stepText);
 
         CucumberStep& GetStep(uint32_t id);
         void AddStep(CucumberStep& step);
-        void DeleteStep(CucumberStep& step);
-        void ClearStorage();
+
+    protected:
+        CucumberStepStorage() = default;
+        CucumberStepStorage& operator=(const CucumberStepStorage& other) = delete;
+        CucumberStepStorage(CucumberStepStorage& other) = delete;
+        virtual ~CucumberStepStorage() = default;
 
     private:
-        infra::IntrusiveList<CucumberStep> stepList;
+        infra::IntrusiveList<CucumberStep> steps;
     };
 }
 
