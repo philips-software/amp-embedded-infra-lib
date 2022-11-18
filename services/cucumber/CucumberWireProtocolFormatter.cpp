@@ -81,7 +81,7 @@ namespace services
         switch (controller.storageMatch.result)
         {
             case CucumberStepStorage::StepMatchResult::found:
-                if (controller.storageMatch.step->HasStringArguments())
+                if (controller.storageMatch.step->HasArguments())
                     CreateSuccessMessage(stream, controller.storageMatch.id, FormatStepArguments(controller.nameToMatchString), controller.storageMatch.step->SourceLocation());
                 else
                     CreateSuccessMessage(stream, controller.storageMatch.id, infra::JsonArray("[]"), controller.storageMatch.step->SourceLocation());

@@ -1,24 +1,18 @@
 #include "services/cucumber/CucumberWireProtocolParser.hpp"
 #include "gmock/gmock.h"
 
-class StepStub
-    : public services::CucumberStep
+namespace
 {
-public:
-    explicit StepStub(infra::BoundedConstString stepName)
-        : services::CucumberStep(stepName, "")
-    {}
-
-    void Invoke(infra::JsonArray& arguments) final
+    class CucumberStepStub
+        : public services::CucumberStep
     {
-        invokeArguments = &arguments;
-    };
-};
+    public:
+        explicit CucumberStepStub(infra::BoundedConstString step)
+            : services::CucumberStep(step, "")
+        {}
 
-bool CheckStepMatcher(infra::BoundedString stepString, infra::BoundedString matchString)
-{
-    StepStub step{ stepString };
-    return step.Matches(matchString);
+        void Invoke(infra::JsonArray& arguments) const override {}
+    };
 }
 
 TEST(CucumberStepMatcherTest, should_match_input_for_matching_steps)
@@ -44,8 +38,11 @@ TEST(CucumberStepMatcherTest, should_match_input_for_matching_steps)
         std::make_pair("", "")
     };
 
-    for (const auto& stepAndMatch : testVectors)
-        EXPECT_TRUE(CheckStepMatcher(stepAndMatch.first, stepAndMatch.second));
+    for (const auto& [step, match] : testVectors)
+    {
+        CucumberStepStub s{ step };
+        EXPECT_TRUE(s.Matches(match));
+    }
 }
 
 TEST(CucumberStepMatcherTest, should_not_match_input_for_non_matching_steps)
@@ -59,86 +56,89 @@ TEST(CucumberStepMatcherTest, should_not_match_input_for_non_matching_steps)
         std::make_pair("%b step", "maybe step")
     };
 
-    for (const auto& stepAndMatch : testVectors)
-        EXPECT_FALSE(CheckStepMatcher(stepAndMatch.first, stepAndMatch.second));
+    for (const auto& [step, match] : testVectors)
+    {
+        CucumberStepStub s{ step };
+        EXPECT_FALSE(s.Matches(match));
+    }
 }
 
 TEST(CucumberStepMatcherTest, should_report_if_step_has_arguments)
 {
-    StepStub withArguments{ "I am here for an argument '%s'" };
-    EXPECT_TRUE(withArguments.HasStringArguments());
+    CucumberStepStub withArguments{ "I am here for an argument '%s'" };
+    EXPECT_TRUE(withArguments.HasArguments());
 
-    StepStub withoutArguments{ "Me too!" };
-    EXPECT_FALSE(withoutArguments.HasStringArguments());
+    CucumberStepStub withoutArguments{ "Me too!" };
+    EXPECT_FALSE(withoutArguments.HasArguments());
 }
 
 TEST(CucumberStepMatcherTest, should_report_correct_argument_count)
 {
-    StepStub withArguments{ "I am here for an argument '%s', %d, %b" };
+    CucumberStepStub withArguments{ "I am here for an argument '%s', %d, %b" };
     EXPECT_EQ(3, withArguments.NrArguments());
 
-    StepStub withoutArguments{ "Me too!" };
+    CucumberStepStub withoutArguments{ "Me too!" };
     EXPECT_EQ(0, withoutArguments.NrArguments());
 }
 
 TEST(CucumberStepMatcherTest, get_table_argument)
 {
-    StepStub withTableArgument{ "I am here for a table argument" };
+    CucumberStepStub withTableArgument{ "I am here for a table argument" };
     infra::JsonArray arguments(R"([[["field","value"]]])");
     withTableArgument.Invoke(arguments);
     infra::BoundedString::WithStorage<5> argument;
-    withTableArgument.GetTableArgument("field")->ToString(argument);
+    withTableArgument.GetTableArgument(arguments, "field")->ToString(argument);
     EXPECT_EQ("value", argument);
 }
 
 TEST(CucumberStepMatcherTest, get_string_argument)
 {
-    StepStub withStingArgument{ "I am here for a string argument '%s'" };
+    CucumberStepStub withStingArgument{ "I am here for a string argument '%s'" };
     infra::JsonArray arguments(R"([ "abc" ])");
     withStingArgument.Invoke(arguments);
     infra::BoundedString::WithStorage<3> argument;
-    withStingArgument.GetStringArgument(0)->ToString(argument);
+    withStingArgument.GetStringArgument(arguments, 0)->ToString(argument);
     EXPECT_EQ("abc", argument);
 }
 
 TEST(CucumberStepMatcherTest, get_unsigned_integer_argument)
 {
-    StepStub withUIntegerArgument{ "I am here for an unsigned integer argument %d" };
+    CucumberStepStub withUIntegerArgument{ "I am here for an unsigned integer argument %d" };
     infra::JsonArray arguments(R"([ "5" ])");
     withUIntegerArgument.Invoke(arguments);
-    auto argument = withUIntegerArgument.GetUIntegerArgument(0);
+    auto argument = withUIntegerArgument.GetUIntegerArgument(arguments, 0);
     EXPECT_EQ(5, *argument);
 }
 
 TEST(CucumberStepMatcherTest, get_boolean_argument)
 {
-    StepStub withBooleanArgument{ "I am here for an boolean argument %b and %b" };
+    CucumberStepStub withBooleanArgument{ "I am here for an boolean argument %b and %b" };
     infra::JsonArray arguments(R"([ "true", "false" ])");
     withBooleanArgument.Invoke(arguments);
-    auto argument = withBooleanArgument.GetBooleanArgument(0);
+    auto argument = withBooleanArgument.GetBooleanArgument(arguments, 0);
     EXPECT_EQ(true, *argument);
-    argument = withBooleanArgument.GetBooleanArgument(1);
+    argument = withBooleanArgument.GetBooleanArgument(arguments, 1);
     EXPECT_EQ(false, *argument);
 }
 
 TEST(CucumberStepMatcherTest, get_all_arguments)
 {
-    StepStub withDifferingArguments{ "I am here for an unsigned integer argument %d, string argument '%s', boolean argument %b, and table argument" };
+    CucumberStepStub withDifferingArguments{ "I am here for an unsigned integer argument %d, string argument '%s', boolean argument %b, and table argument" };
     infra::JsonArray arguments(R"([ "5", "abc", "true", [["field","value"]] ])");
     withDifferingArguments.Invoke(arguments);
 
-    auto uIntegerArgument = withDifferingArguments.GetUIntegerArgument(0);
+    auto uIntegerArgument = withDifferingArguments.GetUIntegerArgument(arguments, 0);
     EXPECT_EQ(5, *uIntegerArgument);
 
     infra::BoundedString::WithStorage<3> stringArgument;
-    withDifferingArguments.GetStringArgument(1)->ToString(stringArgument);
+    withDifferingArguments.GetStringArgument(arguments, 1)->ToString(stringArgument);
     EXPECT_EQ("abc", stringArgument);
 
-    auto booleanArgument = withDifferingArguments.GetBooleanArgument(2);
+    auto booleanArgument = withDifferingArguments.GetBooleanArgument(arguments, 2);
     EXPECT_EQ(true, *booleanArgument);
 
     infra::BoundedString::WithStorage<5> tableArgument;
-    withDifferingArguments.GetTableArgument("field")->ToString(tableArgument);
+    withDifferingArguments.GetTableArgument(arguments, "field")->ToString(tableArgument);
     EXPECT_EQ("value", tableArgument);
 }
 

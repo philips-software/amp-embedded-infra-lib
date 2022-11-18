@@ -15,7 +15,7 @@ public:
         : CucumberStep("Mock Step", "")
     {}
 
-    MOCK_METHOD1(Invoke, void(infra::JsonArray& arguments));
+    MOCK_CONST_METHOD1(Invoke, void(infra::JsonArray& arguments));
 };
 
 class CucumberWireProtocolServerTest

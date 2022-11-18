@@ -87,8 +87,8 @@ namespace services
 
     void CucumberWireProtocolConnectionObserver::HandleInvokeRequest(CucumberWireProtocolParser& parser)
     {
-        CucumberStep& step = CucumberStepStorage::Instance().GetStep(parser.invokeId);
-        if (parser.invokeArguments.begin() == parser.invokeArguments.end() && step.HasStringArguments() || MatchStringArguments(parser.invokeId, parser.invokeArguments))
+        auto& step = CucumberStepStorage::Instance().GetStep(parser.invokeId);
+        if (parser.invokeArguments.begin() == parser.invokeArguments.end() && step.HasArguments() || MatchStringArguments(parser.invokeId, parser.invokeArguments))
             step.Invoke(parser.invokeArguments);
         else
             invokeInfo.successful = false;

@@ -1,6 +1,7 @@
 #ifndef SERVICES_CUCUMBER_STEP_MACRO_HPP
 #define SERVICES_CUCUMBER_STEP_MACRO_HPP
 
+#include "infra/util/Compatibility.hpp"
 #include "services/cucumber/CucumberContext.hpp"
 #include "services/cucumber/CucumberStep.hpp"
 #include "services/cucumber/CucumberStepStorage.hpp"
@@ -83,21 +84,15 @@ namespace detail
             }                                                                                  \
                                                                                                \
         public:                                                                                \
-            virtual void Invoke(infra::JsonArray& arguments) override                          \
-            {                                                                                  \
-                invokeArguments = &arguments;                                                  \
-                Execute();                                                                     \
-            }                                                                                  \
+            void Invoke(infra::JsonArray& arguments) const override;                           \
                                                                                                \
         private:                                                                               \
-            void Execute();                                                                    \
-                                                                                               \
-            void Success()                                                                     \
+            void Success() const                                                               \
             {                                                                                  \
                 Context().onSuccess();                                                         \
             }                                                                                  \
                                                                                                \
-            void Error(infra::BoundedConstString failReason)                                   \
+            void Error(infra::BoundedConstString failReason) const                             \
             {                                                                                  \
                 Context().onFailure(failReason);                                               \
             }                                                                                  \
@@ -106,6 +101,6 @@ namespace detail
         static CLASSNAME VARNAME;                                                              \
     }                                                                                          \
                                                                                                \
-    void CLASSNAME::Execute()
+    void CLASSNAME::Invoke(infra::JsonArray& arguments) const
 
 #endif

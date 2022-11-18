@@ -70,7 +70,7 @@ namespace services
         , sourceLocation(sourceLocation)
     {}
 
-    services::CucumberContext& CucumberStep::Context()
+    services::CucumberContext& CucumberStep::Context() const
     {
         return services::CucumberContext::Instance();
     }
@@ -126,33 +126,33 @@ namespace services
         return stepName.size() + sizeOffset == name.size();
     }
 
-    void CucumberStep::SkipOverStringArguments(infra::JsonArrayIterator& iterator) const
+    void CucumberStep::SkipOverArguments(infra::JsonArrayIterator& iterator) const
     {
         uint32_t nrArgs = NrArguments();
-        if (HasStringArguments())
+        if (nrArgs != 0)
             for (uint8_t stringArgumentCount = 0; stringArgumentCount < nrArgs; ++stringArgumentCount)
                 ++iterator;
     }
 
-    bool CucumberStep::ContainsTableArgument(infra::BoundedConstString fieldName) const
+    bool CucumberStep::ContainsTableArgument(infra::JsonArray& arguments, infra::BoundedConstString fieldName) const
     {
-        return GetTableArgument(fieldName) != infra::none;
+        return GetTableArgument(arguments, fieldName) != infra::none;
     }
 
-    infra::JsonArray CucumberStep::GetTable() const
+    infra::JsonArray CucumberStep::GetTable(infra::JsonArray& arguments) const
     {
-        auto argumentIterator(invokeArguments->begin());
-        SkipOverStringArguments(argumentIterator);
+        auto argumentIterator(arguments.begin());
+        SkipOverArguments(argumentIterator);
         return argumentIterator->Get<infra::JsonArray>();
     }
 
-    infra::Optional<infra::JsonString> CucumberStep::GetTableArgument(infra::BoundedConstString fieldName) const
+    infra::Optional<infra::JsonString> CucumberStep::GetTableArgument(infra::JsonArray& arguments, infra::BoundedConstString fieldName) const
     {
-        auto argumentIterator(invokeArguments->begin());
-        SkipOverStringArguments(argumentIterator);
+        auto argumentIterator(arguments.begin());
+        SkipOverArguments(argumentIterator);
 
-        if (argumentIterator != invokeArguments->end())
-            for (auto rowIterator = argumentIterator->Get<infra::JsonArray>().begin(); rowIterator != invokeArguments->end(); ++rowIterator)
+        if (argumentIterator != arguments.end())
+            for (auto rowIterator = argumentIterator->Get<infra::JsonArray>().begin(); rowIterator != arguments.end(); ++rowIterator)
                 if (fieldName == rowIterator->Get<infra::JsonArray>().begin()->Get<infra::JsonString>())
                 {
                     auto collumnIterator = rowIterator->Get<infra::JsonArray>().begin();
@@ -163,14 +163,14 @@ namespace services
         return infra::none;
     }
 
-    bool CucumberStep::HasStringArguments() const
+    bool CucumberStep::HasArguments() const
     {
         return StepName().find(R"('%s')") != infra::BoundedString::npos || StepName().find("%d") != infra::BoundedString::npos || StepName().find("%b") != infra::BoundedString::npos;
     }
 
-    bool CucumberStep::ContainsStringArgument(uint8_t index) const
+    bool CucumberStep::ContainsArgument(infra::JsonArray& arguments, uint8_t index) const
     {
-        return GetStringArgument(index) != infra::none;
+        return GetStringArgument(arguments, index) != infra::none;
     }
 
     uint16_t CucumberStep::NrArguments() const
@@ -194,31 +194,33 @@ namespace services
             ++nrArguments;
             boolArgPos = StepName().find("%b", ++boolArgPos);
         }
+
         return nrArguments;
     }
 
-    uint16_t CucumberStep::NrFields() const
+    uint16_t CucumberStep::NrFields(infra::JsonArray& arguments) const
     {
         uint16_t nrFields = 0;
-        auto argumentIterator(invokeArguments->begin());
-        SkipOverStringArguments(argumentIterator);
+        auto argumentIterator(arguments.begin());
+        SkipOverArguments(argumentIterator);
 
-        if (argumentIterator != invokeArguments->end())
+        if (argumentIterator != arguments.end())
         {
             ++nrFields;
-            for (auto rowIterator = argumentIterator->Get<infra::JsonArray>().begin(); rowIterator != invokeArguments->end(); ++rowIterator)
+            for (auto rowIterator = argumentIterator->Get<infra::JsonArray>().begin(); rowIterator != arguments.end(); ++rowIterator)
                 ++nrFields;
         }
+
         return nrFields;
     }
 
-    infra::Optional<infra::JsonString> CucumberStep::GetStringArgument(uint8_t argumentNumber) const
+    infra::Optional<infra::JsonString> CucumberStep::GetStringArgument(infra::JsonArray& arguments, uint8_t argumentNumber) const
     {
-        if (invokeArguments->begin() != invokeArguments->end())
+        if (arguments.begin() != arguments.end())
         {
-            auto argumentIterator(invokeArguments->begin());
+            auto argumentIterator(arguments.begin());
             uint8_t argumentCount = 0;
-            while (argumentIterator != invokeArguments->end() && argumentCount != argumentNumber)
+            while (argumentIterator != arguments.end() && argumentCount != argumentNumber)
             {
                 ++argumentIterator;
                 ++argumentCount;
@@ -229,9 +231,9 @@ namespace services
         return infra::none;
     }
 
-    infra::Optional<uint32_t> CucumberStep::GetUIntegerArgument(uint8_t argumentNumber) const
+    infra::Optional<uint32_t> CucumberStep::GetUIntegerArgument(infra::JsonArray& arguments, uint8_t argumentNumber) const
     {
-        auto optionalStringArgument = GetStringArgument(argumentNumber);
+        auto optionalStringArgument = GetStringArgument(arguments, argumentNumber);
 
         if (optionalStringArgument)
         {
@@ -246,9 +248,9 @@ namespace services
         return infra::none;
     }
 
-    infra::Optional<bool> CucumberStep::GetBooleanArgument(uint8_t argumentNumber) const
+    infra::Optional<bool> CucumberStep::GetBooleanArgument(infra::JsonArray& arguments, uint8_t argumentNumber) const
     {
-        auto optionalStringArgument = GetStringArgument(argumentNumber);
+        auto optionalStringArgument = GetStringArgument(arguments, argumentNumber);
 
         if (optionalStringArgument)
         {

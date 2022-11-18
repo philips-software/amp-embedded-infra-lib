@@ -37,7 +37,7 @@ namespace services
         return matchResult;
     }
 
-    CucumberStep& CucumberStepStorage::GetStep(uint32_t id)
+    const CucumberStep& CucumberStepStorage::GetStep(uint32_t id)
     {
         really_assert(id < steps.size());
         return *std::next(steps.begin(), id);

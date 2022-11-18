@@ -20,14 +20,14 @@ namespace services
         {
             StepMatchResult result;
             uint32_t id;
-            CucumberStep* step;
+            const CucumberStep* step;
         };
 
         static CucumberStepStorage& Instance();
 
         services::CucumberStepStorage::StepMatch MatchStep(infra::BoundedConstString stepText);
 
-        CucumberStep& GetStep(uint32_t id);
+        const CucumberStep& GetStep(uint32_t id);
         void AddStep(CucumberStep& step);
 
     protected:

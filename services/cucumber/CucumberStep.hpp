@@ -22,26 +22,24 @@ namespace services
 
         bool Matches(infra::BoundedConstString name) const;
 
-        bool ContainsTableArgument(infra::BoundedConstString fieldName) const;
-        infra::JsonArray GetTable() const;
-        infra::Optional<infra::JsonString> GetTableArgument(infra::BoundedConstString fieldName) const;
-        infra::Optional<infra::JsonString> GetStringArgument(uint8_t argumentNumber) const;
-        infra::Optional<uint32_t> GetUIntegerArgument(uint8_t argumentNumber) const;
-        infra::Optional<bool> GetBooleanArgument(uint8_t argumentNumber) const;
-        bool HasStringArguments() const;
-        bool ContainsStringArgument(uint8_t index) const;
+        bool ContainsTableArgument(infra::JsonArray& arguments, infra::BoundedConstString fieldName) const;
+        infra::JsonArray GetTable(infra::JsonArray& arguments) const;
+        infra::Optional<infra::JsonString> GetTableArgument(infra::JsonArray& arguments, infra::BoundedConstString fieldName) const;
+        infra::Optional<infra::JsonString> GetStringArgument(infra::JsonArray& arguments, uint8_t argumentNumber) const;
+        infra::Optional<uint32_t> GetUIntegerArgument(infra::JsonArray& arguments, uint8_t argumentNumber) const;
+        infra::Optional<bool> GetBooleanArgument(infra::JsonArray& arguments, uint8_t argumentNumber) const;
+        bool HasArguments() const;
+        bool ContainsArgument(infra::JsonArray& arguments, uint8_t index) const;
         uint16_t NrArguments() const;
-        uint16_t NrFields() const;
+        uint16_t NrFields(infra::JsonArray& arguments) const;
 
-        virtual void Invoke(infra::JsonArray& arguments) = 0;
-        services::CucumberContext& Context();
-
-    protected:
-        infra::JsonArray* invokeArguments = nullptr;
+        virtual void Invoke(infra::JsonArray& arguments) const = 0;
+        services::CucumberContext& Context() const;
 
     private:
-        void SkipOverStringArguments(infra::JsonArrayIterator& iterator) const;
+        void SkipOverArguments(infra::JsonArrayIterator& iterator) const;
 
+    private:
         infra::BoundedConstString stepName;
         infra::BoundedConstString sourceLocation;
     };

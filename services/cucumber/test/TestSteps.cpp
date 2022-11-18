@@ -17,7 +17,7 @@ GIVEN("a step")
 
 GIVEN("the WiFi network '%s' is seen within %d minutes")
 {
-    if (ContainsStringArgument(0) && ContainsStringArgument(1))
+    if (ContainsArgument(arguments, 0) && ContainsArgument(arguments, 1))
         Success();
     else
         Error("Incorrect Arguments");
@@ -25,7 +25,7 @@ GIVEN("the WiFi network '%s' is seen within %d minutes")
 
 GIVEN("the WiFi network '%s' is seen within %d minutes and %d seconds")
 {
-    if (ContainsStringArgument(0) && ContainsStringArgument(1) && ContainsStringArgument(2))
+    if (ContainsArgument(arguments, 0) && ContainsArgument(arguments, 1) && ContainsArgument(arguments, 2))
         Success();
     else
         Error("Incorrect Arguments");
@@ -33,7 +33,7 @@ GIVEN("the WiFi network '%s' is seen within %d minutes and %d seconds")
 
 GIVEN("the WiFi network '%s' is seen within %d minutes '%s' is seen within %d seconds")
 {
-    if (ContainsStringArgument(0) && ContainsStringArgument(1) && ContainsStringArgument(2) && ContainsStringArgument(3))
+    if (ContainsArgument(arguments, 0) && ContainsArgument(arguments, 1) && ContainsArgument(arguments, 2) && ContainsArgument(arguments, 3))
         Success();
     else
         Error("Incorrect Arguments");
@@ -41,7 +41,7 @@ GIVEN("the WiFi network '%s' is seen within %d minutes '%s' is seen within %d se
 
 GIVEN("the Node connects to that network")
 {
-    if (ContainsTableArgument("ssid") && ContainsTableArgument("foobar") && ContainsTableArgument("WLAN"))
+    if (ContainsTableArgument(arguments, "ssid") && ContainsTableArgument(arguments, "foobar") && ContainsTableArgument(arguments, "WLAN"))
         Success();
     else
         Error("Incorrect Arguments");
@@ -49,7 +49,7 @@ GIVEN("the Node connects to that network")
 
 GIVEN("a network is available")
 {
-    if (ContainsTableArgument("field") && ContainsTableArgument("ssid") && ContainsTableArgument("key"))
+    if (ContainsTableArgument(arguments, "field") && ContainsTableArgument(arguments, "ssid") && ContainsTableArgument(arguments, "key"))
         Success();
     else
         Error("Incorrect Arguments");
@@ -57,8 +57,8 @@ GIVEN("a network is available")
 
 GIVEN("sentence with '%s' and %d digit")
 {
-    if (ContainsStringArgument(0) && ContainsStringArgument(1))
-        if (ContainsTableArgument("field") && ContainsTableArgument("ssid") && ContainsTableArgument("key"))
+    if (ContainsArgument(arguments, 0) && ContainsArgument(arguments, 1))
+        if (ContainsTableArgument(arguments, "field") && ContainsTableArgument(arguments, "ssid") && ContainsTableArgument(arguments, "key"))
             Success();
         else
             Error("Incorrect Arguments");
@@ -68,7 +68,7 @@ GIVEN("sentence with '%s' and %d digit")
 
 GIVEN("nothing happens for %d seconds")
 {
-    auto timeout = GetUIntegerArgument(0);
+    auto timeout = GetUIntegerArgument(arguments, 0);
 
     if (timeout)
         Context().TimeoutTimer().Start(std::chrono::seconds(*timeout), [this]()

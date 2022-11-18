@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 - Updated MbedTLS to v3.1.0
 - services/network; Camel-Cased HTTP headers
+- services/cucumber; refactored step interface. A step defined with the step macros (GIVEN, WHEN, THEN) now have a parameter arguments instead of the state invokeArguments
 
 ### Fixed
 
