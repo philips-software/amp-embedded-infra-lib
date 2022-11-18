@@ -11,12 +11,12 @@ namespace services
     public:
         enum class StepMatchResult : uint8_t
         {
-            Success,
-            Fail,
-            Duplicate
+            found,
+            notFound,
+            duplicate
         };
 
-        struct Match
+        struct StepMatch
         {
             StepMatchResult result;
             uint32_t id;
@@ -25,7 +25,7 @@ namespace services
 
         static CucumberStepStorage& Instance();
 
-        services::CucumberStepStorage::Match MatchStep(infra::BoundedConstString stepText);
+        services::CucumberStepStorage::StepMatch MatchStep(infra::BoundedConstString stepText);
 
         CucumberStep& GetStep(uint32_t id);
         void AddStep(CucumberStep& step);

@@ -8,9 +8,9 @@ namespace services
         return instance;
     }
 
-    services::CucumberStepStorage::Match CucumberStepStorage::MatchStep(infra::BoundedConstString stepText)
+    services::CucumberStepStorage::StepMatch CucumberStepStorage::MatchStep(infra::BoundedConstString stepText)
     {
-        Match matchResult;
+        StepMatch matchResult;
         uint8_t numberOfMatches = 0;
         uint8_t stepId = 0;
 
@@ -25,12 +25,12 @@ namespace services
         }
 
         if (numberOfMatches == 0)
-            matchResult.result = StepMatchResult::Fail;
+            matchResult.result = StepMatchResult::notFound;
         else if (numberOfMatches > 1)
-            matchResult.result = StepMatchResult::Duplicate;
+            matchResult.result = StepMatchResult::duplicate;
         else
         {
-            matchResult.result = StepMatchResult::Success;
+            matchResult.result = StepMatchResult::found;
             matchResult.step = &GetStep(matchResult.id);
         }
 

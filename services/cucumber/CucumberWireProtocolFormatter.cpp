@@ -80,20 +80,20 @@ namespace services
     {
         switch (controller.storageMatch.result)
         {
-            case CucumberStepStorage::StepMatchResult::Success:
+            case CucumberStepStorage::StepMatchResult::found:
                 if (controller.storageMatch.step->HasStringArguments())
                     CreateSuccessMessage(stream, controller.storageMatch.id, FormatStepArguments(controller.nameToMatchString), controller.storageMatch.step->SourceLocation());
                 else
                     CreateSuccessMessage(stream, controller.storageMatch.id, infra::JsonArray("[]"), controller.storageMatch.step->SourceLocation());
                 break;
-            case CucumberStepStorage::StepMatchResult::Fail:
+            case CucumberStepStorage::StepMatchResult::notFound:
                 CreateFailureMessage(stream, "Step not Matched", "Exception.Step.NotFound");
                 break;
-            case CucumberStepStorage::StepMatchResult::Duplicate:
+            case CucumberStepStorage::StepMatchResult::duplicate:
                 CreateFailureMessage(stream, "Duplicate Step", "Exception.Step.Duplicate");
                 break;
             default:
-                break;
+                std::abort();
         }
     }
 

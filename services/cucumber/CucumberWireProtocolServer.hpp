@@ -40,7 +40,7 @@ namespace services
 
     public:
         InvokeInfo invokeInfo;
-        CucumberStepStorage::Match storageMatch;
+        CucumberStepStorage::StepMatch storageMatch;
         infra::BoundedString::WithStorage<256> nameToMatchString;
 
     private:
