@@ -559,13 +559,17 @@ namespace infra
     template<class T>
     SharedPtr<T> EnableSharedFromThis<T>::SharedFromThis()
     {
-        return weakPtr;
+        auto result = weakPtr.lock();
+        really_assert(result);
+        return result;
     }
 
     template<class T>
     SharedPtr<const T> EnableSharedFromThis<T>::SharedFromThis() const
     {
-        return weakPtr;
+        auto result = weakPtr.lock();
+        really_assert(result);
+        return result;
     }
 
     template<class T>
