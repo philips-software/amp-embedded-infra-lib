@@ -1,7 +1,8 @@
 #ifndef SERVICES_CUCUMBER_WIRE_PROTOCOL_SERVER_HPP
 #define SERVICES_CUCUMBER_WIRE_PROTOCOL_SERVER_HPP
 
-#include "services/cucumber/CucumberWireProtocolFormatter.hpp"
+#include "services/cucumber/CucumberRequestHandlers.hpp"
+#include "services/cucumber/CucumberWireProtocolParser.hpp"
 #include "services/network/Connection.hpp"
 #include "services/network/SingleConnectionListener.hpp"
 
@@ -17,10 +18,35 @@ namespace services
         void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         void DataReceived() override;
 
+        struct InvokeInfo
+        {
+            bool successful;
+            infra::Optional<infra::BoundedConstString> failReason;
+        };
+
+        void HandleRequest(CucumberWireProtocolParser& parser);
+        void InvokeSuccess();
+        void InvokeError(infra::BoundedConstString& reason);
+
+    private:
+        bool MatchStringArguments(uint32_t id, infra::JsonArray& arguments);
+
+        void HandleStepMatchRequest(infra::BoundedConstString nameToMatch);
+        void HandleInvokeRequest(CucumberWireProtocolParser& parser);
+        void HandleBeginScenarioRequest(CucumberWireProtocolParser& parser);
+        void HandleEndScenarioRequest();
+        void HandleSnippetTextRequest();
+        void HandleInvalidRequest();
+
+    public:
+        InvokeInfo invokeInfo;
+        CucumberStepStorage::Match storageMatch;
+        infra::BoundedString::WithStorage<256> nameToMatchString;
+
     private:
         infra::BoundedString& buffer;
+        CucumberScenarioRequestHandler& scenarioRequestHandler;
         CucumberWireProtocolParser parser;
-        CucumberWireProtocolController controller;
     };
 
     class CucumberWireProtocolServer

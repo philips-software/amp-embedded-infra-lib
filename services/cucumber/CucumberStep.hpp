@@ -13,11 +13,9 @@ namespace services
     {
     public:
         CucumberStep(infra::BoundedConstString stepName, infra::BoundedConstString sourceLocation);
-        virtual ~CucumberStep() = default;
         CucumberStep& operator=(const CucumberStep& other) = delete;
         CucumberStep(CucumberStep& other) = delete;
-
-        bool operator==(const CucumberStep& other) const;
+        virtual ~CucumberStep() = default;
 
         infra::BoundedConstString StepName() const;
         infra::BoundedConstString SourceLocation() const;

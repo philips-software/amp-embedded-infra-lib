@@ -2,7 +2,7 @@
 
 namespace services
 {
-    CucumberWireProtocolFormatter::CucumberWireProtocolFormatter(CucumberWireProtocolController& controller)
+    CucumberWireProtocolFormatter::CucumberWireProtocolFormatter(CucumberWireProtocolConnectionObserver& controller)
         : controller(controller)
     {}
 
@@ -127,7 +127,7 @@ namespace services
 
     void CucumberWireProtocolFormatter::AddStringValue(infra::JsonArrayFormatter& formatter, infra::BoundedConstString nameToMatch, std::size_t& argPos, int16_t& offset)
     {
-        PositionAndOffset input { argPos, offset };
+        PositionAndOffset input{ argPos, offset };
         auto result = AddStringValue(formatter, nameToMatch, input);
         argPos = result.x;
         offset = result.offset;

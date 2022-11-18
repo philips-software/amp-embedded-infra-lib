@@ -3,14 +3,14 @@
 
 #include "infra/stream/StringInputStream.hpp"
 #include "infra/syntax/JsonFormatter.hpp"
-#include "services/cucumber/CucumberWireProtocolController.hpp"
+#include "services/cucumber/CucumberWireProtocolServer.hpp"
 
 namespace services
 {
     class CucumberWireProtocolFormatter
     {
     public:
-        explicit CucumberWireProtocolFormatter(CucumberWireProtocolController& controller);
+        explicit CucumberWireProtocolFormatter(CucumberWireProtocolConnectionObserver& controller);
 
         void FormatResponse(CucumberWireProtocolParser::RequestType requestType, infra::TextOutputStream::WithErrorPolicy& stream);
 
@@ -45,7 +45,7 @@ namespace services
         infra::JsonArray FormatStepArguments(infra::BoundedConstString nameToMatch);
 
     private:
-        CucumberWireProtocolController& controller;
+        CucumberWireProtocolConnectionObserver& controller;
         infra::BoundedString::WithStorage<1024> stepMatchArgumentsBuffer;
     };
 }

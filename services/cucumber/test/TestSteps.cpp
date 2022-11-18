@@ -1,11 +1,11 @@
 #include "services/cucumber/CucumberStepMacro.hpp"
 
-GIVEN("a duplicate feature")
+GIVEN("a duplicate step")
 {
     Success();
 }
 
-GIVEN("a duplicate feature")
+GIVEN("a duplicate step")
 {
     Success();
 }

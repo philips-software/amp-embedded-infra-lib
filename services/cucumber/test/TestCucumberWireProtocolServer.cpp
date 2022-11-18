@@ -146,7 +146,7 @@ TEST_F(CucumberWireProtocolServerTest, should_respond_request_with_arguments_in_
 TEST_F(CucumberWireProtocolServerTest, should_respond_to_duplicate_step_match_request_with_fail)
 {
     connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, connection, services::IPv4AddressLocalHost());
-    ReceiveData("[\"step_matches\",{\"name_to_match\":\"a duplicate feature\"}]");
+    ReceiveData("[\"step_matches\",{\"name_to_match\":\"a duplicate step\"}]");
 
     CheckFailResponse("Duplicate Step", "Exception.Step.Duplicate");
     EXPECT_CALL(connection, AbortAndDestroyMock());

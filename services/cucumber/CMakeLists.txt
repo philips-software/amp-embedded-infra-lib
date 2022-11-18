@@ -17,8 +17,6 @@ target_sources(services.cucumber PRIVATE
     CucumberStepMacro.hpp
     CucumberStepStorage.cpp
     CucumberStepStorage.hpp
-    CucumberWireProtocolController.cpp
-    CucumberWireProtocolController.hpp
     CucumberWireProtocolFormatter.cpp
     CucumberWireProtocolFormatter.hpp
     CucumberWireProtocolParser.cpp
