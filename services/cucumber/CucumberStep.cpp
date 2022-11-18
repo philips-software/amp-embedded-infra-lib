@@ -98,7 +98,7 @@ namespace services
                 const infra::BoundedConstString boolMarker{ "%b" };
                 const infra::BoundedConstString stringMarker{ R"('%s')" };
 
-                if (infra::BoundedConstString(stepNameIterator - 1, stringMarker.size()) == stringMarker)
+                if (stepNameIterator != stepName.begin() && infra::BoundedConstString(stepNameIterator - 1, stringMarker.size()) == stringMarker)
                 {
                     sizeOffset += SkipStringArgument(nameToMatchIterator, name.end());
                     sizeOffset -= SkipMarker(stepNameIterator, stepName.end());
