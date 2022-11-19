@@ -11,7 +11,8 @@ namespace
             : services::CucumberStep(step, "")
         {}
 
-        void Invoke(infra::JsonArray& arguments) const override {}
+        void Invoke(infra::JsonArray& arguments) const override
+        {}
     };
 }
 

@@ -19,7 +19,7 @@ namespace services
         struct StepMatch
         {
             StepMatchResult result;
-            uint32_t id;
+            std::size_t id;
             const CucumberStep* step;
         };
 
@@ -27,7 +27,7 @@ namespace services
 
         services::CucumberStepStorage::StepMatch MatchStep(infra::BoundedConstString stepText);
 
-        const CucumberStep& GetStep(uint32_t id);
+        const CucumberStep& GetStep(std::size_t id);
         void AddStep(CucumberStep& step);
 
     protected:

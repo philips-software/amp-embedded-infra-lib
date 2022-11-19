@@ -10,34 +10,30 @@ namespace services
 
     services::CucumberStepStorage::StepMatch CucumberStepStorage::MatchStep(infra::BoundedConstString stepText)
     {
-        StepMatch matchResult;
-        uint8_t numberOfMatches = 0;
-        uint8_t stepId = 0;
+        std::size_t numberOfMatches = 0;
+        std::size_t stepIndex = 0;
+        std::size_t stepId = 0;
 
         for (const auto& step : steps)
         {
             if (step.Matches(stepText))
             {
-                matchResult.id = stepId;
-                numberOfMatches++;
+                stepId = stepIndex;
+                ++numberOfMatches;
             }
-            stepId++;
+
+            ++stepIndex;
         }
 
         if (numberOfMatches == 0)
-            matchResult.result = StepMatchResult::notFound;
+            return { StepMatchResult::notFound, 0, nullptr };
         else if (numberOfMatches > 1)
-            matchResult.result = StepMatchResult::duplicate;
+            return { StepMatchResult::duplicate, 0, nullptr };
         else
-        {
-            matchResult.result = StepMatchResult::found;
-            matchResult.step = &GetStep(matchResult.id);
-        }
-
-        return matchResult;
+            return { StepMatchResult::found, stepId, &GetStep(stepId) };
     }
 
-    const CucumberStep& CucumberStepStorage::GetStep(uint32_t id)
+    const CucumberStep& CucumberStepStorage::GetStep(std::size_t id)
     {
         really_assert(id < steps.size());
         return *std::next(steps.begin(), id);
