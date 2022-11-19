@@ -73,10 +73,10 @@ namespace infra
     {}
 
     JsonSubParser::JsonSubParser(infra::BoundedString tagBuffer, infra::BoundedString valueBuffer,
-        char& subObjects)
+        infra::BoundedVector<infra::PolymorphicVariant<JsonSubParser, JsonSubObjectParser, JsonSubArrayParser>>& subObjects)
         : tagBuffer(tagBuffer)
         , valueBuffer(valueBuffer)
-        , subObjects(reinterpret_cast<infra::BoundedVector<infra::PolymorphicVariant<JsonSubParser, JsonSubObjectParser, JsonSubArrayParser>>&>(subObjects))
+        , subObjects(subObjects)
     {}
 
     JsonSubParser::~JsonSubParser()
@@ -352,14 +352,14 @@ namespace infra
     }
 
     JsonSubObjectParser::JsonSubObjectParser(infra::BoundedString tagBuffer, infra::BoundedString valueBuffer,
-        char& subObjects, JsonObjectVisitor& visitor)
+        infra::BoundedVector<infra::PolymorphicVariant<JsonSubParser, JsonSubObjectParser, JsonSubArrayParser>>& subObjects, JsonObjectVisitor& visitor)
         : JsonSubParser(tagBuffer, valueBuffer, subObjects)
         , visitor(&visitor)
         , state(State::init)
     {}
 
     JsonSubObjectParser::JsonSubObjectParser(infra::BoundedString tagBuffer, infra::BoundedString valueBuffer,
-        char& subObjects)
+        infra::BoundedVector<infra::PolymorphicVariant<JsonSubParser, JsonSubObjectParser, JsonSubArrayParser>>& subObjects)
         : JsonSubParser(tagBuffer, valueBuffer, subObjects)
         , state(State::initialOpen)
     {
@@ -423,7 +423,7 @@ namespace infra
                     state = State::skipNestedObject;
                 else
                 {
-                    subObjects.emplace_back(infra::InPlaceType<JsonSubObjectParser>(), tagBuffer, valueBuffer, reinterpret_cast<char&>(subObjects));
+                    subObjects.emplace_back(infra::InPlaceType<JsonSubObjectParser>(), tagBuffer, valueBuffer, subObjects);
                     auto nestedVisitor = visitor->VisitObject(tagBuffer, static_cast<JsonSubObjectParser&>(*subObjects.back()));
                     if (destructed)
                         return;
@@ -449,7 +449,7 @@ namespace infra
                     state = State::skipNestedArray;
                 else
                 {
-                    subObjects.emplace_back(infra::InPlaceType<JsonSubArrayParser>(), tagBuffer, valueBuffer, reinterpret_cast<char&>(subObjects));
+                    subObjects.emplace_back(infra::InPlaceType<JsonSubArrayParser>(), tagBuffer, valueBuffer, subObjects);
                     auto nestedVisitor = visitor->VisitArray(tagBuffer, static_cast<JsonSubArrayParser&>(*subObjects.back()));
                     if (destructed)
                         return;
@@ -553,13 +553,14 @@ namespace infra
     }
 
     JsonSubArrayParser::JsonSubArrayParser(infra::BoundedString tagBuffer, infra::BoundedString valueBuffer,
-        char& subObjects, JsonArrayVisitor& visitor)
+        infra::BoundedVector<infra::PolymorphicVariant<JsonSubParser, JsonSubObjectParser, JsonSubArrayParser>>& subObjects, JsonArrayVisitor& visitor)
         : JsonSubParser(tagBuffer, valueBuffer, subObjects)
         , visitor(&visitor)
         , state(State::init)
     {}
 
-    JsonSubArrayParser::JsonSubArrayParser(infra::BoundedString tagBuffer, infra::BoundedString valueBuffer, char& subObjects)
+    JsonSubArrayParser::JsonSubArrayParser(infra::BoundedString tagBuffer,
+        infra::BoundedString valueBuffer, infra::BoundedVector<infra::PolymorphicVariant<JsonSubParser, JsonSubObjectParser, JsonSubArrayParser>>& subObjects)
         : JsonSubParser(tagBuffer, valueBuffer, subObjects)
     {}
 
@@ -632,7 +633,7 @@ namespace infra
                     state = State::skipNestedObject;
                 else
                 {
-                    subObjects.emplace_back(infra::InPlaceType<JsonSubObjectParser>(), tagBuffer, valueBuffer, reinterpret_cast<char&>(subObjects));
+                    subObjects.emplace_back(infra::InPlaceType<JsonSubObjectParser>(), tagBuffer, valueBuffer, subObjects);
                     auto nestedVisitor = visitor->VisitObject(static_cast<JsonSubObjectParser&>(*subObjects.back()));
                     if (destructed)
                         return;
@@ -657,7 +658,7 @@ namespace infra
                     state = State::skipNestedArray;
                 else
                 {
-                    subObjects.emplace_back(infra::InPlaceType<JsonSubArrayParser>(), tagBuffer, valueBuffer, reinterpret_cast<char&>(subObjects));
+                    subObjects.emplace_back(infra::InPlaceType<JsonSubArrayParser>(), tagBuffer, valueBuffer, subObjects);
                     auto nestedVisitor = visitor->VisitArray(static_cast<JsonSubArrayParser&>(*subObjects.back()));
                     if (destructed)
                         return;
@@ -742,8 +743,8 @@ namespace infra
     }
 
     JsonStreamingObjectParser::JsonStreamingObjectParser(infra::BoundedString tagBuffer, infra::BoundedString valueBuffer,
-        char& subObjects, JsonObjectVisitor& visitor)
-        : subObjects(reinterpret_cast<infra::BoundedVector<infra::PolymorphicVariant<JsonSubParser, JsonSubObjectParser, JsonSubArrayParser>>&>(subObjects))
+        infra::BoundedVector<infra::PolymorphicVariant<JsonSubParser, JsonSubObjectParser, JsonSubArrayParser>>& subObjects, JsonObjectVisitor& visitor)
+        : subObjects(subObjects)
     {
         this->subObjects.emplace_back(infra::InPlaceType<JsonSubObjectParser>(), tagBuffer, valueBuffer, subObjects, visitor);
     }
@@ -757,8 +758,8 @@ namespace infra
     }
 
     JsonStreamingArrayParser::JsonStreamingArrayParser(infra::BoundedString tagBuffer, infra::BoundedString valueBuffer,
-        char& subObjects, JsonArrayVisitor& visitor)
-        : subObjects(reinterpret_cast<infra::BoundedVector<infra::PolymorphicVariant<JsonSubParser, JsonSubObjectParser, JsonSubArrayParser>>&>(subObjects))
+        infra::BoundedVector<infra::PolymorphicVariant<JsonSubParser, JsonSubObjectParser, JsonSubArrayParser>>& subObjects, JsonArrayVisitor& visitor)
+        : subObjects(subObjects)
     {
         this->subObjects.emplace_back(infra::InPlaceType<JsonSubArrayParser>(), tagBuffer, valueBuffer, subObjects, visitor);
     }
