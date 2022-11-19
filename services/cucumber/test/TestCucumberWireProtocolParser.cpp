@@ -151,12 +151,6 @@ public:
     services::CucumberWireProtocolParser parser;
 };
 
-TEST_F(CucumberWireProtocolParserTest, test_valid_input)
-{
-    EXPECT_TRUE(parser.Valid(R"(["request", {"argument":"argument"}])"));
-    EXPECT_FALSE(parser.Valid("invalid input"));
-}
-
 TEST_F(CucumberWireProtocolParserTest, should_parse_begin_scenario_tags)
 {
     parser.ParseRequest(R"(["begin_scenario",{"tags":["tag1","tag2"]}])");
