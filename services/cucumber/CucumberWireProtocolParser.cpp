@@ -19,13 +19,13 @@ namespace services
     void CucumberWireProtocolParser::VisitString(infra::BoundedConstString value)
     {
         if (value == "step_matches")
-            ;
+            requestType = RequestType::StepMatches;
         else if (value == "begin_scenario")
-            ;
+            requestType = RequestType::BeginScenario;
         else if (value == "end_scenario")
             requestType = RequestType::EndScenario;
         else if (value == "invoke")
-            ;
+            requestType = RequestType::Invoke;
         else if (value == "snippet_text")
             requestType = RequestType::SnippetText;
         else
@@ -49,7 +49,6 @@ namespace services
 
     void CucumberWireProtocolParser::ParseStepMatchRequest(infra::JsonArray& input)
     {
-        requestType = RequestType::StepMatches;
         auto iterator(input.begin());
         iterator++;
         nameToMatch = iterator->Get<infra::JsonObject>().GetString("name_to_match").Raw();
@@ -57,7 +56,6 @@ namespace services
 
     void CucumberWireProtocolParser::ParseInvokeRequest(infra::JsonArray& input)
     {
-        requestType = RequestType::Invoke;
         auto iterator(input.begin());
         iterator++;
         infra::BoundedString::WithStorage<6> idString;
@@ -73,6 +71,5 @@ namespace services
             scenarioTags.Emplace(std::move(iterator->Get<infra::JsonObject>()));
         else
             scenarioTags = infra::none;
-        requestType = RequestType::BeginScenario;
     }
 }

@@ -89,8 +89,8 @@ namespace services
 
     void CucumberWireProtocolConnectionObserver::HandleInvokeRequest(CucumberWireProtocolParser& parser)
     {
-        auto& step = CucumberStepStorage::Instance().GetStep(parser.invokeId);
-        if (parser.invokeArguments.begin() == parser.invokeArguments.end() && step.HasArguments() || MatchStringArguments(parser.invokeId, parser.invokeArguments))
+        const auto& step = CucumberStepStorage::Instance().GetStep(parser.invokeId);
+        if (MatchArguments(parser.invokeId, parser.invokeArguments))
             step.Invoke(parser.invokeArguments);
         else
             invokeInfo.successful = false;
@@ -118,12 +118,12 @@ namespace services
         Subject().RequestSendStream(Subject().MaxSendStreamSize());
     }
 
-    bool CucumberWireProtocolConnectionObserver::MatchStringArguments(uint32_t id, infra::JsonArray& arguments)
+    bool CucumberWireProtocolConnectionObserver::MatchArguments(std::size_t id, infra::JsonArray& arguments) const
     {
-        uint8_t validStringCount = 0;
+        std::size_t validArgumentCount = 0;
         for (const auto& string : JsonStringArray(arguments))
-            validStringCount++;
-        return CucumberStepStorage::Instance().GetStep(id).NrArguments() == validStringCount;
+            ++validArgumentCount;
+        return CucumberStepStorage::Instance().GetStep(id).NrArguments() == validArgumentCount;
     }
 
     void CucumberWireProtocolConnectionObserver::InvokeSuccess()
