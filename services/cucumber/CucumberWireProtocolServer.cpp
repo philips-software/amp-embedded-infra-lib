@@ -6,6 +6,7 @@ namespace services
     CucumberWireProtocolConnectionObserver::CucumberWireProtocolConnectionObserver(infra::BoundedString& buffer, CucumberScenarioRequestHandler& scenarioRequestHandler)
         : buffer(buffer)
         , scenarioRequestHandler(scenarioRequestHandler)
+        , streamingParser(parser)
     {
         really_assert(CucumberContext::InstanceSet());
 
@@ -43,6 +44,7 @@ namespace services
         {
             buffer.resize(available);
             stream >> buffer;
+            streamingParser.Feed(buffer);
             Subject().AckReceived();
 
             if (parser.Valid(buffer))

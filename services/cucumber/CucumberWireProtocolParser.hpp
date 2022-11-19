@@ -2,16 +2,15 @@
 #define SERVICES_CUCUMBER_WIRE_PROTOCOL_PARSER_HPP
 
 #include "infra/stream/StringInputStream.hpp"
-#include "services/cucumber/CucumberContext.hpp"
-#include "services/cucumber/CucumberStepStorage.hpp"
+#include "infra/syntax/Json.hpp"
+#include "infra/syntax/JsonStreamingParser.hpp"
 
 namespace services
 {
     class CucumberWireProtocolParser
+        : public infra::JsonArrayVisitor
     {
     public:
-        CucumberWireProtocolParser() = default;
-
         enum class RequestType
         {
             StepMatches,
@@ -31,12 +30,13 @@ namespace services
         void ParseRequest(infra::BoundedConstString inputString);
         bool Valid(infra::BoundedConstString inputString);
 
+        // Implementation of JsonArrayVisitor
+        void VisitString(infra::BoundedConstString value) override;
+
     private:
         void ParseStepMatchRequest(infra::JsonArray& input);
         void ParseInvokeRequest(infra::JsonArray& input);
         void ParseBeginScenarioRequest(infra::JsonArray& input);
-        void ParseEndScenarioRequest();
-        void ParseSnippetTextRequest();
 
         template<class T>
         T ConvertToIntType(const infra::BoundedString& input);

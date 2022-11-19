@@ -1,4 +1,5 @@
 #include "services/cucumber/CucumberWireProtocolParser.hpp"
+#include "services/cucumber/CucumberStep.hpp"
 #include "gmock/gmock.h"
 
 namespace

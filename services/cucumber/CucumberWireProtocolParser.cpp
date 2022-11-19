@@ -12,14 +12,8 @@ namespace services
             ParseStepMatchRequest(input);
         else if (request == "begin_scenario")
             ParseBeginScenarioRequest(input);
-        else if (request == "end_scenario")
-            ParseEndScenarioRequest();
         else if (request == "invoke")
             ParseInvokeRequest(input);
-        else if (request == "snippet_text")
-            ParseSnippetTextRequest();
-        else
-            requestType = RequestType::Invalid;
     }
 
     bool CucumberWireProtocolParser::Valid(infra::BoundedConstString inputString)
@@ -35,6 +29,22 @@ namespace services
         }
 
         return true;
+    }
+
+    void CucumberWireProtocolParser::VisitString(infra::BoundedConstString value)
+    {
+        if (value == "step_matches")
+            ;
+        else if (value == "begin_scenario")
+            ;
+        else if (value == "end_scenario")
+            requestType = RequestType::EndScenario;
+        else if (value == "invoke")
+            ;
+        else if (value == "snippet_text")
+            requestType = RequestType::SnippetText;
+        else
+            requestType = RequestType::Invalid;
     }
 
     void CucumberWireProtocolParser::ParseStepMatchRequest(infra::JsonArray& input)
@@ -64,15 +74,5 @@ namespace services
         else
             scenarioTags = infra::none;
         requestType = RequestType::BeginScenario;
-    }
-
-    void CucumberWireProtocolParser::ParseEndScenarioRequest()
-    {
-        requestType = RequestType::EndScenario;
-    }
-
-    void CucumberWireProtocolParser::ParseSnippetTextRequest()
-    {
-        requestType = RequestType::SnippetText;
     }
 }

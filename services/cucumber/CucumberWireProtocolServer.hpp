@@ -1,8 +1,10 @@
 #ifndef SERVICES_CUCUMBER_WIRE_PROTOCOL_SERVER_HPP
 #define SERVICES_CUCUMBER_WIRE_PROTOCOL_SERVER_HPP
 
+#include "infra/syntax/JsonStreamingParser.hpp"
 #include "services/cucumber/CucumberRequestHandlers.hpp"
 #include "services/cucumber/CucumberWireProtocolParser.hpp"
+#include "services/cucumber/CucumberStepStorage.hpp"
 #include "services/network/Connection.hpp"
 #include "services/network/SingleConnectionListener.hpp"
 
@@ -47,6 +49,9 @@ namespace services
         infra::BoundedString& buffer;
         CucumberScenarioRequestHandler& scenarioRequestHandler;
         CucumberWireProtocolParser parser;
+
+    private:
+        infra::JsonStreamingArrayParser::WithBuffers<32, 512, 2> streamingParser;
     };
 
     class CucumberWireProtocolServer
