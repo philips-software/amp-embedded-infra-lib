@@ -47,7 +47,7 @@ namespace services
             streamingParser.Feed(buffer);
             Subject().AckReceived();
 
-            if (parser.Valid(buffer))
+            if (parser.requestType != CucumberWireProtocolParser::RequestType::Invalid)
                 parser.ParseRequest(buffer);
             HandleRequest(parser);
         }

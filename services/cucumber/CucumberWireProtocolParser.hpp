@@ -28,10 +28,12 @@ namespace services
         infra::Optional<infra::JsonObject> scenarioTags;
 
         void ParseRequest(infra::BoundedConstString inputString);
-        bool Valid(infra::BoundedConstString inputString);
 
         // Implementation of JsonArrayVisitor
         void VisitString(infra::BoundedConstString value) override;
+        void ParseError() override;
+        void SemanticError() override;
+        void StringOverflow() override;
 
     private:
         void ParseStepMatchRequest(infra::JsonArray& input);

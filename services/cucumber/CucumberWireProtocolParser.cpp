@@ -16,21 +16,6 @@ namespace services
             ParseInvokeRequest(input);
     }
 
-    bool CucumberWireProtocolParser::Valid(infra::BoundedConstString inputString)
-    {
-        infra::JsonArray input(inputString);
-        for (const auto& value : input)
-        {}
-
-        if (input.Error())
-        {
-            requestType = RequestType::Invalid;
-            return false;
-        }
-
-        return true;
-    }
-
     void CucumberWireProtocolParser::VisitString(infra::BoundedConstString value)
     {
         if (value == "step_matches")
@@ -45,6 +30,21 @@ namespace services
             requestType = RequestType::SnippetText;
         else
             requestType = RequestType::Invalid;
+    }
+
+    void CucumberWireProtocolParser::ParseError()
+    {
+        requestType = RequestType::Invalid;
+    }
+
+    void CucumberWireProtocolParser::SemanticError()
+    {
+        requestType = RequestType::Invalid;
+    }
+
+    void CucumberWireProtocolParser::StringOverflow()
+    {
+        requestType = RequestType::Invalid;
     }
 
     void CucumberWireProtocolParser::ParseStepMatchRequest(infra::JsonArray& input)
