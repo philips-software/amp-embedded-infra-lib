@@ -66,7 +66,7 @@ namespace main_
         {}
 
         services::CucumberContext context;
-        services::CucumberScenarioRequestHandler defaultScenarioRequestHandler;
+        services::CucumberScenarioRequestHandlerDefault defaultScenarioRequestHandler;
         services::TracingCucumberWireProtocolServer::WithBuffer<BufferSize> server;
     };
 }

@@ -70,7 +70,7 @@ public:
     services::ServerConnectionObserverFactory* serverConnectionObserverFactory = nullptr;
     infra::Execute execute;
     testing::StrictMock<CucumberStepMock> cucumberStepMock;
-    services::CucumberScenarioRequestHandler scenarioHandler;
+    services::CucumberScenarioRequestHandlerDefault scenarioHandler;
     services::CucumberContext context;
     services::CucumberWireProtocolServer::WithBuffer<512> cucumberServer;
 };

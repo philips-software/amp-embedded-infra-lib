@@ -2,7 +2,7 @@
 #define SERVICES_CUCUMBER_WIRE_PROTOCOL_SERVER_HPP
 
 #include "infra/syntax/JsonStreamingParser.hpp"
-#include "services/cucumber/CucumberRequestHandlers.hpp"
+#include "services/cucumber/CucumberRequestHandler.hpp"
 #include "services/cucumber/CucumberStepStorage.hpp"
 #include "services/cucumber/CucumberWireProtocolParser.hpp"
 #include "services/network/Connection.hpp"
@@ -79,12 +79,12 @@ namespace main_
             : server(connectionFactory, port, defaultScenarioRequestHandler)
         {}
 
-        CucumberInfrastructure(services::ConnectionFactory& connectionFactory, uint16_t port, services::CucumberScenarioRequestHandler scenarioRequestHandler)
+        CucumberInfrastructure(services::ConnectionFactory& connectionFactory, uint16_t port, services::CucumberScenarioRequestHandler& scenarioRequestHandler)
             : server(connectionFactory, port, scenarioRequestHandler)
         {}
 
         services::CucumberContext context;
-        services::CucumberScenarioRequestHandler defaultScenarioRequestHandler;
+        services::CucumberScenarioRequestHandlerDefault defaultScenarioRequestHandler;
         services::CucumberWireProtocolServer::WithBuffer<BufferSize> server;
     };
 }
