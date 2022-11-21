@@ -87,9 +87,10 @@ namespace infra
     {
     public:
         template<class Concrete>
-            using WithCreator = Creator<T, Concrete, void(ConstructionArgs...)>;
+        using WithCreator = Creator<T, Concrete, void(ConstructionArgs...)>;
 
         using ProxyCreator = infra::ProxyCreator<T, void(ConstructionArgs...)>;
+        using DelayedProxyCreator = infra::DelayedProxyCreator<T, void(ConstructionArgs...)>;
 
     protected:
         CreatorBase() = default;
@@ -107,7 +108,7 @@ namespace infra
         friend class infra::ProxyCreator;
 
         template<class T2, class ConstructionArgs2>
-        friend class DelayedProxyCreator;
+        friend class infra::DelayedProxyCreator;
     };
 
     template<class... ConstructionArgs>
