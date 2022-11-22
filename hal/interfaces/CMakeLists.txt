@@ -8,6 +8,7 @@ ccola_component(interfaces static_library)
         AnalogToDigitalPin.hpp
         AsyncGpio.cpp
         AsyncGpio.hpp
+        BackupRam.hpp
         Can.cpp
         Can.hpp
         CommunicationConfigurator.hpp
