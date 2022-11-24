@@ -20,7 +20,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: Build Antora Site
-        uses: philips-forks/antora-site-action@0c58ca8552165764e9d1d0c2216403cd6c2520b9
+        uses: philips-forks/antora-site-action@ef15f74e055960099ec1bf58f4f8148d1f07a0c2
         with:
           antora_playbook: antora-playbook.yml
           antora_generator: "antora-site-generator-lunr"
