@@ -85,17 +85,6 @@ namespace detail
                                                                                                \
         public:                                                                                \
             void Invoke(infra::JsonArray& arguments) const override;                           \
-                                                                                               \
-        private:                                                                               \
-            void Success() const                                                               \
-            {                                                                                  \
-                Context().onSuccess();                                                         \
-            }                                                                                  \
-                                                                                               \
-            void Error(infra::BoundedConstString failReason) const                             \
-            {                                                                                  \
-                Context().onFailure(failReason);                                               \
-            }                                                                                  \
         };                                                                                     \
                                                                                                \
         static CLASSNAME VARNAME;                                                              \

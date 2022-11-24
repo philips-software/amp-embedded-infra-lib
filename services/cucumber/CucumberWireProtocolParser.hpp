@@ -21,7 +21,7 @@ namespace services
             Invalid
         };
 
-        RequestType requestType;
+        RequestType requestType{ RequestType::Invalid };
         infra::BoundedConstString nameToMatch;
         uint32_t invokeId;
         infra::JsonArray invokeArguments;

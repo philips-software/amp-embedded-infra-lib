@@ -36,6 +36,17 @@ namespace services
         virtual void Invoke(infra::JsonArray& arguments) const = 0;
         services::CucumberContext& Context() const;
 
+    protected:
+        void Success() const
+        {
+            Context().onSuccess();
+        }
+
+        void Error(infra::BoundedConstString failReason) const
+        {
+            Context().onFailure(failReason);
+        }
+
     private:
         void SkipOverArguments(infra::JsonArrayIterator& iterator) const;
 

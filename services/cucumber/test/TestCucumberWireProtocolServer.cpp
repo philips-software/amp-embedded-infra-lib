@@ -1,6 +1,4 @@
-#include "infra/stream/StringOutputStream.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
-#include "infra/util/test_helper/MockCallback.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/cucumber/CucumberWireProtocolServer.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
@@ -12,7 +10,7 @@ class CucumberStepMock
 {
 public:
     CucumberStepMock()
-        : CucumberStep("Mock Step", "")
+        : CucumberStep("", "")
     {}
 
     MOCK_CONST_METHOD1(Invoke, void(infra::JsonArray& arguments));
