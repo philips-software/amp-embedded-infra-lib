@@ -30,8 +30,8 @@ namespace services
 
         static CucumberStepStorage& Instance();
 
-        bool MatchesStepName(CucumberStep& step, infra::BoundedConstString stepName);
-        services::CucumberStepStorage::Match MatchStep(infra::BoundedConstString nameToMatch);
+        bool MatchesStepName(CucumberStep& step, const infra::BoundedString& stepName);
+        services::CucumberStepStorage::Match MatchStep(const infra::BoundedString& nameToMatch);
 
         CucumberStep& GetStep(uint32_t id);
         void AddStep(CucumberStep& step);

@@ -44,7 +44,8 @@ namespace services
 
     void CucumberWireProtocolController::HandleStepMatchRequest(CucumberWireProtocolParser& parser)
     {
-        storageMatch = CucumberStepStorage::Instance().MatchStep(*(parser.nameToMatch));
+        parser.nameToMatch.GetString("name_to_match").ToString(nameToMatchString);
+        storageMatch = CucumberStepStorage::Instance().MatchStep(nameToMatchString);
         connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize());
     }
 
