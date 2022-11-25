@@ -41,8 +41,8 @@ namespace services
         : public infra::Subject<GapPeripheralObserver>
     {
     public:
-        using AdvertisementIntervalMultiplier = uint16_t; // Interval = Multiplier * 0.625 ms.
-        static constexpr AdvertisementIntervalMultiplier advertisementIntervalMultiplierMin = 0x20u; // 20 ms
+        using AdvertisementIntervalMultiplier = uint16_t;                                              // Interval = Multiplier * 0.625 ms.
+        static constexpr AdvertisementIntervalMultiplier advertisementIntervalMultiplierMin = 0x20u;   // 20 ms
         static constexpr AdvertisementIntervalMultiplier advertisementIntervalMultiplierMax = 0x4000u; // 10240 ms
 
         enum class AdvertisementType : uint8_t
@@ -54,6 +54,7 @@ namespace services
         enum class AdvertisementDataType : uint8_t
         {
             flags = 0x01u,
+            completeListOf128BitUuids = 0x07u,
             completeLocalName = 0x09u,
             publicTargetAddress = 0x17u,
             manufacturerSpecificData = 0xffu
@@ -70,7 +71,7 @@ namespace services
 
         static constexpr uint8_t maxAdvertisementDataSize = 31;
         static constexpr uint8_t maxScanResponseDataSize = 31;
-        static constexpr uint16_t connectionInitialMaxTxOctets  = 251;
+        static constexpr uint16_t connectionInitialMaxTxOctets = 251;
         static constexpr uint16_t connectionInitialMaxTxTime = 2120; // (connectionInitialMaxTxOctets + 14) * 8
 
     public:
@@ -79,6 +80,24 @@ namespace services
         virtual void SetScanResponseData(infra::ConstByteRange data) = 0;
         virtual void Advertise(AdvertisementType type, AdvertisementIntervalMultiplier multiplier) = 0;
         virtual void Standby() = 0;
+    };
+
+    class GapPeripheralDecorator
+        : public GapPeripheralObserver
+        , public GapPeripheral
+    {
+    public:
+        using GapPeripheralObserver::GapPeripheralObserver;
+
+        // Implementation of GapPeripheralObserver
+        virtual void StateUpdated(GapPeripheralState state) override;
+
+        // Implementation of GapPeripheral
+        virtual hal::MacAddress GetPublicAddress() const override;
+        virtual void SetAdvertisementData(infra::ConstByteRange data) override;
+        virtual void SetScanResponseData(infra::ConstByteRange data) override;
+        virtual void Advertise(AdvertisementType type, AdvertisementIntervalMultiplier multiplier) override;
+        virtual void Standby() override;
     };
 
     inline GapPeripheral::AdvertisementFlags operator|(GapPeripheral::AdvertisementFlags lhs, GapPeripheral::AdvertisementFlags rhs)
