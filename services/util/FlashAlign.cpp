@@ -31,7 +31,7 @@ namespace services
             std::fill(firstChunk.begin(), firstChunk.end(), 0xff);
 
             uint8_t bytesToAdd = std::min<uint32_t>(align - nrPrependBytes, buffer.size());
-            std::copy(reinterpret_cast<const uint8_t*>(&buffer.front()), reinterpret_cast<const uint8_t*>(&buffer.front()) + bytesToAdd, firstChunk.begin() + nrPrependBytes);
+            std::copy(&buffer.front(), &buffer.front() + bytesToAdd, firstChunk.begin() + nrPrependBytes);
 
             buffer.pop_front(bytesToAdd);
 
@@ -65,7 +65,7 @@ namespace services
         if (!buffer.empty())
         {
             std::fill(lastChunk.begin(), lastChunk.end(), 0xff);
-            std::copy(reinterpret_cast<const uint8_t*>(&buffer.front()), reinterpret_cast<const uint8_t*>(&buffer.front()) + buffer.size(), lastChunk.begin());
+            std::copy(&buffer.front(), &buffer.front() + buffer.size(), lastChunk.begin());
 
             Chunk chunk(address, lastChunk);
             chunks.push_back(chunk);
