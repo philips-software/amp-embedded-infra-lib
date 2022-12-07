@@ -377,7 +377,7 @@ namespace infra
     template<class... T>
     struct MakeVariantOver<List<T...>>
     {
-        typedef Variant<T...> Type;
+        using Type = Variant<T...>;
     };
 
 }

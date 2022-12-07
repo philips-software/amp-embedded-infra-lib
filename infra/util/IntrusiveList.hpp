@@ -42,19 +42,19 @@ namespace infra
     class IntrusiveList
     {
     public:
-        typedef detail::IntrusiveListNode<T> NodeType;
+        using NodeType = detail::IntrusiveListNode<T>;
 
-        typedef T value_type;
-        typedef T& reference;
-        typedef const T& const_reference;
-        typedef T* pointer;
-        typedef const T* const_pointer;
-        typedef detail::IntrusiveListIterator<T> iterator;
-        typedef detail::IntrusiveListIterator<const T> const_iterator;
-        typedef std::reverse_iterator<iterator> reverse_iterator;
-        typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-        typedef typename std::iterator_traits<iterator>::difference_type difference_type;
-        typedef std::size_t size_type;
+        using value_type = T;
+        using reference = T&;
+        using const_reference = const T&;
+        using pointer = T*;
+        using const_pointer = const T*;
+        using iterator = detail::IntrusiveListIterator<T>;
+        using const_iterator = detail::IntrusiveListIterator<const T>;
+        using reverse_iterator = std::reverse_iterator<iterator>;
+        using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+        using difference_type = typename std::iterator_traits<iterator>::difference_type;
+        using size_type = std::size_t;
 
     public:
         IntrusiveList();
