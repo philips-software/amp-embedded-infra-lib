@@ -33,7 +33,7 @@ jobs:
         with:
           key: ${{ github.job }}-${{ matrix.os }}
           variant: sccache
-      - uses: lukka/run-cmake@e265d767c12ee0dc03becaa1d55155db4beb45f6
+      - uses: lukka/run-cmake@8997c3a96bcb3de493d1f2527cb46fd7348ca764
         with:
           configurePreset: "ContinuousIntegration"
           buildPreset: "ContinuousIntegration"

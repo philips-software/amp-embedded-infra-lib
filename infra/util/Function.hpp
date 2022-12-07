@@ -55,6 +55,9 @@ namespace infra
         struct InvokerFunctions<Result(Args...), ExtraSize>
         {
             using InvokerFunctionsType = InvokerFunctions<Result(Args...), ExtraSize>;
+            using FunctionType = Function<Result(Args...), ExtraSize>;
+
+            InvokerFunctions();
 
             // A hand-crafted Virtual Method Table is used so that the destruct and copyStruct functions
             // do not need to be implemented for trivial types (such as most lambdas), which saves space
@@ -68,8 +71,6 @@ namespace infra
                 Destructor destruct;
                 CopyConstructor copyConstruct;
             };
-
-            const VirtualMethodTable* virtualMethodTable = nullptr;
 
             using StorageType = typename std::aligned_storage<ExtraSize, std::alignment_of<UTIL_FUNCTION_ALIGNMENT>::value>::type;
             StorageType data;
@@ -86,7 +87,11 @@ namespace infra
             static const VirtualMethodTable* StaticVirtualMethodTable(typename std::enable_if<!std::is_trivially_copy_constructible<F>::value || !std::is_trivially_destructible<F>::value>::type* = nullptr);
             template<class F>
             static void Construct(InvokerFunctionsType& invokerFunctions, F&& f);
+
+            const VirtualMethodTable* virtualMethodTable;
         };
+
+        const InvokerFunctions<void(), INFRA_DEFAULT_FUNCTION_EXTRA_SIZE>::VirtualMethodTable* GetAbortOnExecuteSentinelTable();
     }
 
     template<std::size_t ExtraSize, class Result, class... Args>
@@ -123,6 +128,8 @@ namespace infra
         void Clear();
         bool Initialized() const;
 
+        static const typename detail::InvokerFunctions<Result(Args...), ExtraSize>::VirtualMethodTable* ReinterpretAbortOnExecuteSentinelTable();
+
     private:
         using StorageType = detail::InvokerFunctions<Result(Args...), ExtraSize>;
 
@@ -133,6 +140,7 @@ namespace infra
 
         template<class F, std::size_t ExtraSize2>
         friend class Function;
+        friend StorageType;
     };
 
     class Execute
@@ -234,6 +242,11 @@ namespace infra
     {
 
         template<std::size_t ExtraSize, class Result, class... Args>
+        InvokerFunctions<Result(Args...), ExtraSize>::InvokerFunctions()
+            : virtualMethodTable{ FunctionType::ReinterpretAbortOnExecuteSentinelTable() }
+        {}
+
+        template<std::size_t ExtraSize, class Result, class... Args>
         template<class F>
         Result InvokerFunctions<Result(Args...), ExtraSize>::StaticInvoke(const InvokerFunctionsType& invokerFunctions, Args... args)
         {
@@ -245,7 +258,7 @@ namespace infra
         void InvokerFunctions<Result(Args...), ExtraSize>::StaticDestruct(InvokerFunctionsType& invokerFunctions)
         {
             reinterpret_cast<F&>(invokerFunctions.data).~F();
-            invokerFunctions.virtualMethodTable = nullptr;
+            invokerFunctions.virtualMethodTable = FunctionType::ReinterpretAbortOnExecuteSentinelTable();
         }
 
         template<std::size_t ExtraSize, class Result, class... Args>
@@ -286,6 +299,7 @@ namespace infra
             std::memset(reinterpret_cast<char*>(&invokerFunctions.data) + sizeof(F), 0, ExtraSize - sizeof(F));
             invokerFunctions.virtualMethodTable = StaticVirtualMethodTable<F>();
         }
+
     }
 
     template<std::size_t ExtraSize, class Result, class... Args>
@@ -364,13 +378,13 @@ namespace infra
         {
             CopyConstruct(invokerFunctions, other.invokerFunctions);
             Destruct(invokerFunctions);
-            invokerFunctions.virtualMethodTable = nullptr;
+            invokerFunctions.virtualMethodTable = ReinterpretAbortOnExecuteSentinelTable();
         }
         else if (other.Initialized())
         {
             CopyConstruct(other.invokerFunctions, invokerFunctions);
             Destruct(other.invokerFunctions);
-            other.invokerFunctions.virtualMethodTable = nullptr;
+            other.invokerFunctions.virtualMethodTable = ReinterpretAbortOnExecuteSentinelTable();
         }
     }
 
@@ -419,14 +433,20 @@ namespace infra
         if (Initialized())
         {
             Destruct(invokerFunctions);
-            invokerFunctions.virtualMethodTable = nullptr;
+            invokerFunctions.virtualMethodTable = ReinterpretAbortOnExecuteSentinelTable();
         }
     }
 
     template<std::size_t ExtraSize, class Result, class... Args>
     bool Function<Result(Args...), ExtraSize>::Initialized() const
     {
-        return invokerFunctions.virtualMethodTable != nullptr;
+        return invokerFunctions.virtualMethodTable != ReinterpretAbortOnExecuteSentinelTable();
+    }
+
+    template<std::size_t ExtraSize, class Result, class... Args>
+    const typename Function<Result(Args...), ExtraSize>::StorageType::VirtualMethodTable* Function<Result(Args...), ExtraSize>::ReinterpretAbortOnExecuteSentinelTable()
+    {
+        return reinterpret_cast<const typename StorageType::VirtualMethodTable*>(detail::GetAbortOnExecuteSentinelTable());
     }
 
     template<std::size_t ExtraSize, class Result, class... Args>
