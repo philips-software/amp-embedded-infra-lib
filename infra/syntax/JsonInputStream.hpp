@@ -29,7 +29,7 @@ namespace infra
         : public TextInputStream::WithReader<JsonInputStreamReader>
     {
     public:
-        JsonInputStream(JsonString storage);
+        explicit JsonInputStream(JsonString storage);
         JsonInputStream(JsonString storage, const SoftFail&);
         JsonInputStream(JsonString storage, const NoFail&);
     };

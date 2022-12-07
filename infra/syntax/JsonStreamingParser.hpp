@@ -253,7 +253,7 @@ namespace infra
         : public Buffers<MaxTagLength, MaxValueLength, MaxObjectNesting>
         , public JsonStreamingObjectParser
     {
-        WithBuffers(JsonObjectVisitor& visitor);
+        explicit WithBuffers(JsonObjectVisitor& visitor);
     };
 
     template<std::size_t MaxTagLength, std::size_t MaxValueLength, std::size_t MaxObjectNesting>
@@ -261,14 +261,14 @@ namespace infra
         : public Buffers<MaxTagLength, MaxValueLength, MaxObjectNesting>
         , public JsonStreamingArrayParser
     {
-        WithBuffers(JsonArrayVisitor& visitor);
+        explicit WithBuffers(JsonArrayVisitor& visitor);
     };
 
     class JsonObjectVisitorDecorator
         : public JsonObjectVisitor
     {
     protected:
-        JsonObjectVisitorDecorator(JsonObjectVisitor& decorated);
+        explicit JsonObjectVisitorDecorator(JsonObjectVisitor& decorated);
 
     public:
         virtual void VisitString(infra::BoundedConstString tag, infra::BoundedConstString value) override;

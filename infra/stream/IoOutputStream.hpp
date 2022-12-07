@@ -14,7 +14,7 @@ namespace infra
     {
     public:
         IoOutputStreamWriter() = default;
-        IoOutputStreamWriter(std::ostream& stream);
+        explicit IoOutputStreamWriter(std::ostream& stream);
 
         virtual void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy) override;
         virtual std::size_t Available() const override;
