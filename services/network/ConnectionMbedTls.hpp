@@ -244,7 +244,7 @@ namespace services
         , public ClientConnectionObserverFactoryWithNameResolver
     {
     public:
-        ConnectionFactoryWithNameResolverForTls(ConnectionFactoryWithNameResolver& connectionFactoryWithNameResolver);
+        explicit ConnectionFactoryWithNameResolverForTls(ConnectionFactoryWithNameResolver& connectionFactoryWithNameResolver);
 
         // Implementation of ConnectionFactoryWithNameResolver
         virtual void Connect(ClientConnectionObserverFactoryWithNameResolver& factory) override;

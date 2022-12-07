@@ -235,7 +235,7 @@ namespace services
         , public infra::EnableSharedFromThis<EchoOnStreams>
     {
     public:
-        EchoOnStreams(EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
+        explicit EchoOnStreams(EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
 
         // Implementation of Echo
         virtual void RequestSend(ServiceProxy& serviceProxy) override;

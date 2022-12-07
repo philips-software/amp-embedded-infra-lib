@@ -31,7 +31,7 @@ namespace services
         : public HttpRequestParser
     {
     public:
-        HttpRequestParserImpl(infra::BoundedString& data);
+        explicit HttpRequestParserImpl(infra::BoundedString& data);
 
         virtual bool HeadersComplete() const override;
         virtual bool Valid() const override;

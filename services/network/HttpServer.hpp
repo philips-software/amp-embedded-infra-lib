@@ -35,7 +35,7 @@ namespace services
     class HttpResponseHeaderBuilder
     {
     public:
-        HttpResponseHeaderBuilder(infra::TextOutputStream& output);
+        explicit HttpResponseHeaderBuilder(infra::TextOutputStream& output);
         HttpResponseHeaderBuilder(infra::TextOutputStream& output, infra::BoundedConstString result);
 
         void AddHeader(infra::BoundedConstString key, infra::BoundedConstString value);
