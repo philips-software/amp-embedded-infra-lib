@@ -3,11 +3,11 @@
 
 #include "hal/synchronous_interfaces/TimeKeeper.hpp"
 #include "infra/timer/Timer.hpp"
-#include <stdint.h>
 
 namespace hal
 {
-    class TimeKeeperGeneric : public hal::TimeKeeper
+    class TimeKeeperGeneric
+        : public hal::TimeKeeper
     {
     public:
         explicit TimeKeeperGeneric(infra::Duration duration);
@@ -17,7 +17,7 @@ namespace hal
 
     private:
         const infra::Duration duration;
-        infra::TimePoint startTime;
+        infra::TimePoint startTime{ infra::Now() };
     };
 }
 
