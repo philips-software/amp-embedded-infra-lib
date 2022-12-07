@@ -10,8 +10,8 @@
 
 namespace infra
 {
-    typedef MemoryRange<uint8_t> ByteRange;
-    typedef MemoryRange<const uint8_t> ConstByteRange;
+    using ByteRange = MemoryRange<uint8_t>;
+    using ConstByteRange = MemoryRange<const uint8_t>;
 
     template<class U>
     ByteRange ReinterpretCastByteRange(MemoryRange<U> memoryRange);

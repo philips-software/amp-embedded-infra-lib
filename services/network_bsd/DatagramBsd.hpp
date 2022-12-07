@@ -45,7 +45,7 @@ namespace services
             : public infra::ByteOutputStreamWriter
         {
         public:
-            StreamWriterBsd(DatagramBsd& connection);
+            explicit StreamWriterBsd(DatagramBsd& connection);
             ~StreamWriterBsd();
 
         private:

@@ -85,7 +85,7 @@ namespace services
         };
 
     public:
-        ConfigurationBlobReadOnlyMemory(infra::ConstByteRange data);
+        explicit ConfigurationBlobReadOnlyMemory(infra::ConstByteRange data);
 
         virtual infra::ConstByteRange CurrentBlob() override;
         virtual infra::ByteRange MaxBlob() override;
@@ -123,7 +123,7 @@ namespace services
         class LockGuard
         {
         public:
-            LockGuard(ConfigurationStoreInterface& store);
+            explicit LockGuard(ConfigurationStoreInterface& store);
             LockGuard(const LockGuard& other);
             LockGuard& operator=(const LockGuard& other);
             ~LockGuard();
@@ -146,7 +146,7 @@ namespace services
     public:
         ConfigurationStoreAccess(ConfigurationStoreInterface& configurationStore, T& configuration);
         template<class U>
-        ConfigurationStoreAccess(const ConfigurationStoreAccess<U>& other);
+        explicit ConfigurationStoreAccess(const ConfigurationStoreAccess<U>& other);
 
         T& operator*();
         const T& operator*() const;

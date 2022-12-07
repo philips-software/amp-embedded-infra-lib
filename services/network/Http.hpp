@@ -138,7 +138,7 @@ namespace services
     class HttpHeaderParser
     {
     public:
-        HttpHeaderParser(HttpHeaderParserObserver& observer);
+        explicit HttpHeaderParser(HttpHeaderParserObserver& observer);
         ~HttpHeaderParser();
 
         void DataReceived(infra::StreamReaderWithRewinding& reader);

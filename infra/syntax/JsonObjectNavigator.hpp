@@ -97,7 +97,7 @@ namespace infra
     class JsonObjectNavigator
     {
     public:
-        JsonObjectNavigator(const std::string& contents);
+        explicit JsonObjectNavigator(const std::string& contents);
         JsonObjectNavigator(const infra::JsonObject& object);
 
         JsonObjectNavigator operator/(JsonObjectNavigatorToken token) const;

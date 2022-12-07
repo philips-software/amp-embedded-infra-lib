@@ -33,7 +33,7 @@ namespace infra
     public:
         using WithStorage = infra::WithStorage<TextInputStream::WithReader<StdStringInputStreamReader>, std::string>;
 
-        StdStringInputStream(const std::string& storage);
+        explicit StdStringInputStream(const std::string& storage);
         StdStringInputStream(const std::string& storage, const SoftFail&);
         StdStringInputStream(const std::string& storage, const NoFail&);
     };

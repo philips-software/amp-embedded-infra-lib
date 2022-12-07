@@ -1223,7 +1223,7 @@ namespace infra
             : public infra::StaticVisitor<void>
         {
         public:
-            CopyVisitor(infra::TextOutputStream& stream)
+            explicit CopyVisitor(infra::TextOutputStream& stream)
                 : stream(stream)
             {}
 

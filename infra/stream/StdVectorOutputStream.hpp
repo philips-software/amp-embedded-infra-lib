@@ -36,7 +36,7 @@ namespace infra
     public:
         using WithStorage = infra::WithStorage<DataOutputStream::WithWriter<StdVectorOutputStreamWriter>, std::vector<uint8_t>>;
 
-        StdVectorOutputStream(std::vector<uint8_t>& vector);
+        explicit StdVectorOutputStream(std::vector<uint8_t>& vector);
         StdVectorOutputStream(std::vector<uint8_t>& vector, const SoftFail&);
         StdVectorOutputStream(std::vector<uint8_t>& vector, const NoFail&);
     };

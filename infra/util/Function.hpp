@@ -201,14 +201,14 @@ namespace infra
     template<>
     struct PrintParameterNames<>
     {
-        PrintParameterNames(std::ostream* os)
+        explicit PrintParameterNames(std::ostream* os)
         {}
     };
 
     template<class Arg>
     struct PrintParameterNames<Arg>
     {
-        PrintParameterNames(std::ostream* os)
+        explicit PrintParameterNames(std::ostream* os)
         {
             *os << typeid(Arg).name();
         }
@@ -217,7 +217,7 @@ namespace infra
     template<class Arg, class Arg2, class... Args>
     struct PrintParameterNames<Arg, Arg2, Args...>
     {
-        PrintParameterNames(std::ostream* os)
+        explicit PrintParameterNames(std::ostream* os)
         {
             *os << typeid(Arg).name() << ", ";
 

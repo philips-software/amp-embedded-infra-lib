@@ -376,7 +376,7 @@ namespace infra
         JsonObjectIterator();
 
     private:
-        JsonObjectIterator(JsonObject& object);
+        explicit JsonObjectIterator(JsonObject& object);
 
     public:
         bool operator==(const JsonObjectIterator& other) const;

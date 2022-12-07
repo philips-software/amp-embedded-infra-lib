@@ -344,7 +344,7 @@ namespace infra
     template<class Base, class... T>
     struct MakePolymorphicVariantOver<Base, List<T...>>
     {
-        typedef PolymorphicVariant<Base, T...> Type;
+        using Type = PolymorphicVariant<Base, T...>;
     };
 
 }

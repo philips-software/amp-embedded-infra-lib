@@ -26,17 +26,17 @@ namespace infra
         template<std::size_t Max>
         using WithMaxSize = infra::WithStorage<BoundedDeque<T>, std::array<StaticStorage<T>, Max>>;
 
-        typedef T value_type;
-        typedef T& reference;
-        typedef const T& const_reference;
-        typedef T* pointer;
-        typedef const T* const_pointer;
-        typedef detail::BoundedDequeIterator<BoundedDeque<T>, T> iterator;
-        typedef detail::BoundedDequeIterator<const BoundedDeque<T>, const T> const_iterator;
-        typedef std::reverse_iterator<iterator> reverse_iterator;
-        typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-        typedef typename std::iterator_traits<iterator>::difference_type difference_type;
-        typedef std::size_t size_type;
+        using value_type = T;
+        using reference = T&;
+        using const_reference = const T&;
+        using pointer = T*;
+        using const_pointer = const T*;
+        using iterator = detail::BoundedDequeIterator<BoundedDeque<T>, T>;
+        using const_iterator = detail::BoundedDequeIterator<const BoundedDeque<T>, const T>;
+        using reverse_iterator = std::reverse_iterator<iterator>;
+        using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+        using difference_type = typename std::iterator_traits<iterator>::difference_type;
+        using size_type = std::size_t;
 
     public:
         BoundedDeque() = default;

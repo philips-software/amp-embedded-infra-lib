@@ -42,7 +42,7 @@ namespace infra
         template<std::size_t Max>
         using WithStorage = infra::WithStorage<DataOutputStream::WithWriter<BoundedVectorStreamWriter>, BoundedVector<uint8_t>::WithMaxSize<Max>>;
 
-        BoundedVectorOutputStream(BoundedVector<uint8_t>& storage);
+        explicit BoundedVectorOutputStream(BoundedVector<uint8_t>& storage);
         BoundedVectorOutputStream(BoundedVector<uint8_t>& storage, const SoftFail&);
         BoundedVectorOutputStream(BoundedVector<uint8_t>& storage, const NoFail&);
     };

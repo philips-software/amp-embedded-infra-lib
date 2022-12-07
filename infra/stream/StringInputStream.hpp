@@ -34,7 +34,7 @@ namespace infra
         template<std::size_t Max>
         using WithStorage = infra::WithStorage<TextInputStream::WithReader<StringInputStreamReader>, infra::BoundedString::WithStorage<Max>>;
 
-        StringInputStream(BoundedConstString storage);
+        explicit StringInputStream(BoundedConstString storage);
         StringInputStream(BoundedConstString storage, const SoftFail&);
         StringInputStream(BoundedConstString storage, const NoFail&);
     };

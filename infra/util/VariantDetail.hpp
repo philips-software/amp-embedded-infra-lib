@@ -17,7 +17,7 @@ namespace infra
         ~StaticVisitor() = default;
 
     public:
-        typedef R ResultType;
+        using ResultType = R;
     };
 
     template<class... T>

@@ -18,7 +18,7 @@ namespace services
         , protected HttpHeaderParserObserver
     {
     public:
-        HttpClientImpl(infra::BoundedConstString hostname);
+        explicit HttpClientImpl(infra::BoundedConstString hostname);
 
         void Retarget(infra::BoundedConstString hostname);
 
@@ -82,7 +82,7 @@ namespace services
         class SendingState
         {
         public:
-            SendingState(HttpClientImpl& client);
+            explicit SendingState(HttpClientImpl& client);
             virtual ~SendingState() = default;
 
             virtual void Activate() = 0;
@@ -99,7 +99,7 @@ namespace services
             : public SendingState
         {
         public:
-            SendingStateRequest(HttpClientImpl& client);
+            explicit SendingStateRequest(HttpClientImpl& client);
 
             virtual void Activate() override;
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
@@ -313,7 +313,7 @@ namespace services
             : public Query
         {
         public:
-            QueryGet(HttpHeaders headers);
+            explicit QueryGet(HttpHeaders headers);
 
             virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
@@ -325,7 +325,7 @@ namespace services
             : public Query
         {
         public:
-            QueryHead(HttpHeaders headers);
+            explicit QueryHead(HttpHeaders headers);
 
             virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
@@ -337,7 +337,7 @@ namespace services
             : public Query
         {
         public:
-            QueryConnect(HttpHeaders headers);
+            explicit QueryConnect(HttpHeaders headers);
 
             virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
@@ -349,7 +349,7 @@ namespace services
             : public Query
         {
         public:
-            QueryOptions(HttpHeaders headers);
+            explicit QueryOptions(HttpHeaders headers);
 
             virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
@@ -387,7 +387,7 @@ namespace services
             : public Query
         {
         public:
-            QueryPost3(HttpHeaders headers);
+            explicit QueryPost3(HttpHeaders headers);
 
             virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
@@ -425,7 +425,7 @@ namespace services
             : public Query
         {
         public:
-            QueryPut3(HttpHeaders headers);
+            explicit QueryPut3(HttpHeaders headers);
 
             virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
@@ -450,7 +450,7 @@ namespace services
             : public Query
         {
         public:
-            QueryPatch2(HttpHeaders headers);
+            explicit QueryPatch2(HttpHeaders headers);
 
             virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
