@@ -1,4 +1,5 @@
 #include "services/synchronous_util/SynchronousFlashQuadSpi.hpp"
+#include <limits>
 
 namespace services
 {
