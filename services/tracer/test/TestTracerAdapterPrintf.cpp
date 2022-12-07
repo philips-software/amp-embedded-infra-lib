@@ -37,12 +37,6 @@ TEST_F(TracerAdapterPrintfTest, print_newline_to_tracer)
     EXPECT_EQ("\r\n", stream.Storage());
 }
 
-TEST_F(TracerAdapterPrintfTest, null_character_prints_nothing)
-{
-    Print("\0");
-    EXPECT_EQ("", stream.Storage());
-}
-
 TEST_F(TracerAdapterPrintfTest, print_format_string_to_tracer)
 {
     Print("Hello, Tracer!");
