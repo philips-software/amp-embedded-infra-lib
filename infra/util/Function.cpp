@@ -2,6 +2,22 @@
 
 namespace infra
 {
+    namespace detail
+    {
+        namespace
+        {
+            constexpr auto abortOnExecute = []()
+            {
+                std::abort();
+            };
+        }
+
+        const InvokerFunctions<void(), INFRA_DEFAULT_FUNCTION_EXTRA_SIZE>::VirtualMethodTable* GetAbortOnExecuteSentinelTable()
+        {
+            return InvokerFunctions<void(), INFRA_DEFAULT_FUNCTION_EXTRA_SIZE>::template StaticVirtualMethodTable<decltype(abortOnExecute)>();
+        }
+    }
+
     const infra::Function<void()> emptyFunction = []() {
     };
 
