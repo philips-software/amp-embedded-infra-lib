@@ -1,12 +1,8 @@
+#include "examples/network_example/Network.hpp"
 #include "hal/generic/TimerServiceGeneric.hpp"
-#include "infra/stream/IoOutputStream.hpp"
-#include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/network/SntpClient.hpp"
 #include "services/util/TimeWithLocalization.hpp"
-#include "services/network_win/ConnectionWin.hpp"
-#include "services/network_win/EventDispatcherWithNetwork.hpp"
-#include "services/network_win/NameLookupWin.hpp"
-#include "services/tracer/Tracer.hpp"
+#include "services/tracer/TracerOnIoOutputInfrastructure.hpp"
 
 struct TimeWithSynchronization
     : public services::SntpResultObserver
@@ -62,15 +58,13 @@ struct TimeWithSynchronization
     services::Tracer& tracer;
 };
 
-int main(int argc, const char* argv[], const char* env[])
+int Main(main_::Network& network, int argc, const char* argv[], const char* env[])
 {
-    static services::EventDispatcherWithNetwork eventDispatcherWithNetwork;
     static hal::TimerServiceGeneric timerService;
-    static infra::IoOutputStream ioOutputStream;
-    static services::Tracer tracer(ioOutputStream);
+    static main_::TracerOnIoOutputInfrastructure tracer;
+    static TimeWithSynchronization time(network.DatagramFactory(), network.NameResolver(), tracer.tracer);
 
-    static services::NameLookupWin nameLookup;
-    static TimeWithSynchronization time(eventDispatcherWithNetwork, nameLookup, tracer);
+    network.Run();
 
-    eventDispatcherWithNetwork.Run();
+    return 0;
 }

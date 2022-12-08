@@ -14,17 +14,19 @@
 
 namespace services
 {
-    class EventDispatcherWithNetwork;
-
     class DatagramBsd
         : public services::DatagramExchange
         , public infra::EnableSharedFromThis<DatagramBsd>
     {
     public:
-        DatagramBsd(EventDispatcherWithNetwork& network, uint16_t port, DatagramExchangeObserver& observer);
-        DatagramBsd(EventDispatcherWithNetwork& network, DatagramExchangeObserver& observer);
-        DatagramBsd(EventDispatcherWithNetwork& network, UdpSocket remote, DatagramExchangeObserver& observer);
-        DatagramBsd(EventDispatcherWithNetwork& network, uint16_t localPort, UdpSocket remote, DatagramExchangeObserver& observer);
+        DatagramBsd(uint16_t port, DatagramExchangeObserver& observer);
+        DatagramBsd(DatagramExchangeObserver& observer);
+        DatagramBsd(UdpSocket remote, DatagramExchangeObserver& observer);
+        DatagramBsd(uint16_t localPort, UdpSocket remote, DatagramExchangeObserver& observer);
+        DatagramBsd(IPAddress localAddress, DatagramExchangeObserver& observer);
+        DatagramBsd(IPAddress localAddress, uint16_t localPort, DatagramExchangeObserver& observer);
+        DatagramBsd(IPAddress localAddress, UdpSocket remote, DatagramExchangeObserver& observer);
+        DatagramBsd(UdpSocket local, UdpSocket remote, DatagramExchangeObserver& observer);
         ~DatagramBsd();
 
         virtual void RequestSendStream(std::size_t sendSize) override;
@@ -34,9 +36,12 @@ namespace services
         void Send();
         void TrySend();
 
+        void JoinMulticastGroup(IPv4Address multicastAddress);
+        void LeaveMulticastGroup(IPv4Address multicastAddress);
+
     private:
         void InitSocket();
-        void BindLocal(uint16_t port);
+        void BindLocal(UdpSocket local);
         void BindRemote(UdpSocket remote);
         void TryAllocateSendStream();
 
@@ -55,8 +60,8 @@ namespace services
     private:
         friend class EventDispatcherWithNetwork;
 
-        EventDispatcherWithNetwork& network;
         int socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        IPv4Address localAddress{};
         infra::Optional<UdpSocket> connectedTo;
 
         infra::Optional<infra::BoundedVector<uint8_t>::WithMaxSize<508>> sendBuffer;
@@ -65,9 +70,10 @@ namespace services
         std::size_t requestedSendSize = 0;
         UdpSocket requestedTo;
         bool trySend = false;
+        infra::SharedPtr<DatagramBsd> self;
     };
 
-    using AllocatorDatagramBsd = infra::SharedObjectAllocator<DatagramBsd, void(EventDispatcherWithNetwork&, int)>;
+    using AllocatorDatagramBsd = infra::SharedObjectAllocator<DatagramBsd, void(int)>;
 }
 
 #endif

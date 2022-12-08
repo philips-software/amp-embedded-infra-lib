@@ -14,21 +14,19 @@
 
 namespace services
 {
-    class EventDispatcherWithNetwork;
-
     class DatagramWin
         : public services::DatagramExchange
         , public infra::EnableSharedFromThis<DatagramWin>
     {
     public:
-        DatagramWin(EventDispatcherWithNetwork& network, uint16_t port, DatagramExchangeObserver& observer);
-        DatagramWin(EventDispatcherWithNetwork& network, DatagramExchangeObserver& observer);
-        DatagramWin(EventDispatcherWithNetwork& network, UdpSocket remote, DatagramExchangeObserver& observer);
-        DatagramWin(EventDispatcherWithNetwork& network, uint16_t localPort, UdpSocket remote, DatagramExchangeObserver& observer);
-        DatagramWin(EventDispatcherWithNetwork& network, IPAddress localAddress, DatagramExchangeObserver& observer);
-        DatagramWin(EventDispatcherWithNetwork& network, IPAddress localAddress, uint16_t localPort, DatagramExchangeObserver& observer);
-        DatagramWin(EventDispatcherWithNetwork& network, IPAddress localAddress, UdpSocket remote, DatagramExchangeObserver& observer);
-        DatagramWin(EventDispatcherWithNetwork& network, UdpSocket local, UdpSocket remote, DatagramExchangeObserver& observer);
+        DatagramWin(uint16_t port, DatagramExchangeObserver& observer);
+        DatagramWin(DatagramExchangeObserver& observer);
+        DatagramWin(UdpSocket remote, DatagramExchangeObserver& observer);
+        DatagramWin(uint16_t localPort, UdpSocket remote, DatagramExchangeObserver& observer);
+        DatagramWin(IPAddress localAddress, DatagramExchangeObserver& observer);
+        DatagramWin(IPAddress localAddress, uint16_t localPort, DatagramExchangeObserver& observer);
+        DatagramWin(IPAddress localAddress, UdpSocket remote, DatagramExchangeObserver& observer);
+        DatagramWin(UdpSocket local, UdpSocket remote, DatagramExchangeObserver& observer);
         ~DatagramWin();
 
         virtual void RequestSendStream(std::size_t sendSize) override;
@@ -63,7 +61,6 @@ namespace services
     private:
         friend class EventDispatcherWithNetwork;
 
-        EventDispatcherWithNetwork& network;
         SOCKET socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
         WSAEVENT event = WSACreateEvent();
         IPv4Address localAddress{};
