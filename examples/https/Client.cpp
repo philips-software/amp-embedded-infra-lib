@@ -73,12 +73,12 @@ namespace application
                 tracer.Trace() << infra::ByteRangeAsString(stream.ContiguousRange());
         }
 
-        virtual void Done()
+        virtual void Done() override
         {
             tracer.Trace() << "Done";
         }
 
-        virtual void Error(bool intermittentFailure)
+        virtual void Error(bool intermittentFailure) override
         {
             tracer.Trace() << "Error";
         }
