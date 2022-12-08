@@ -38,6 +38,7 @@ namespace services
         infra::Function<void(infra::BoundedConstString&)> invokeError;
         InvokeInfo invokeInfo;
         CucumberStepStorage::Match storageMatch;
+        infra::BoundedString::WithStorage<1024> nameToMatchString;
 
     private:
         ConnectionObserver& connectionObserver;
