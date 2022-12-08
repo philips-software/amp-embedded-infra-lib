@@ -130,7 +130,7 @@ namespace services
     {
         infra::JsonObjectFormatter subObject(formatter.SubObject());
         infra::StringOutputStream::WithStorage<1024> stringStream;
-        for (uint8_t i = 1; nameToMatch[argPos + offset + i] != '\''; ++i)
+        for (uint16_t i = 1; nameToMatch[argPos + offset + i] != '\''; ++i)
             stringStream << nameToMatch[argPos + offset + i];
         subObject.Add("val", stringStream.Storage());
         subObject.Add("pos", argPos + offset + 1);
