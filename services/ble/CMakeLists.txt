@@ -5,6 +5,7 @@ ccola_component(ble static_library)
         BondBlobPersistence.hpp
         BondStorageSynchronizer.cpp
         BondStorageSynchronizer.hpp
+        Gap.cpp
         Gap.hpp
         Gatt.cpp
         Gatt.hpp
