@@ -1,6 +1,6 @@
 #include "examples/network_example/Network.hpp"
-#include "hal/generic/TimerServiceGeneric.hpp"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
+#include "hal/generic/TimerServiceGeneric.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/network/ConnectionMbedTls.hpp"
 #include "services/network/HttpClientBasic.hpp"

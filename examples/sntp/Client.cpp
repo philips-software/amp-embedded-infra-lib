@@ -1,8 +1,8 @@
 #include "examples/network_example/Network.hpp"
 #include "hal/generic/TimerServiceGeneric.hpp"
 #include "services/network/SntpClient.hpp"
-#include "services/util/TimeWithLocalization.hpp"
 #include "services/tracer/TracerOnIoOutputInfrastructure.hpp"
+#include "services/util/TimeWithLocalization.hpp"
 
 struct TimeWithSynchronization
     : public services::SntpResultObserver
