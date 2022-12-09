@@ -7,7 +7,7 @@ if (EMIL_BUILD_WIN)
         protobuf.echo
         hal.generic
         hal.windows
-        services.network_win
+        services.network_instantiations
         services.util
     )
 

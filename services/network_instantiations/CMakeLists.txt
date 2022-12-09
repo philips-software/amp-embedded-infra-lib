@@ -1,6 +1,11 @@
 if (EMIL_HOST_BUILD)
     add_library(services.network_instantiations ${EMIL_EXCLUDE_FROM_ALL} STATIC)
-    target_sources(services.network_instantiations PRIVATE NetworkAdapter.cpp NetworkAdapter.hpp)
+    target_sources(services.network_instantiations PRIVATE
+        NameLookup.cpp
+        NameLookup.hpp
+        NetworkAdapter.cpp
+        NetworkAdapter.hpp
+    )
 
     if (EMIL_BUILD_WIN)
         target_link_libraries(services.network_instantiations PUBLIC services.network_win)

@@ -11,8 +11,6 @@ if (EMIL_BUILD_UNIX OR EMIL_BUILD_DARWIN)
         DatagramBsd.hpp
         EventDispatcherWithNetwork.cpp
         EventDispatcherWithNetwork.hpp
-        NameLookup.cpp
-        NameLookup.hpp
     )
 
     emil_clangformat_target(services.network_bsd)

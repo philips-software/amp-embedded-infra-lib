@@ -5,7 +5,7 @@
 #include "infra/util/Tokenizer.hpp"
 #include "protobuf/echo_console/Console.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
-#include "services/network_win/NameLookup.hpp"
+#include "services/network_instantiations/NameLookup.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 #include "services/util/MessageCommunicationCobs.hpp"
 #include "services/util/MessageCommunicationWindowed.hpp"

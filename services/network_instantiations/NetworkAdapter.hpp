@@ -1,14 +1,14 @@
 #ifndef SERVICES_NETWORK_INSTANTIATIONS_HPP
 #define SERVICES_NETWORK_INSTANTIATIONS_HPP
 
+#include "services/network_instantiations/NameLookup.hpp"
+
 #ifdef EMIL_NETWORK_WIN
 #include "services/network_win/EventDispatcherWithNetwork.hpp"
-#include "services/network_win/NameLookup.hpp"
 #endif
 
 #ifdef EMIL_NETWORK_BSD
 #include "services/network_bsd/EventDispatcherWithNetwork.hpp"
-#include "services/network_bsd/NameLookup.hpp"
 #endif
 
 namespace main_

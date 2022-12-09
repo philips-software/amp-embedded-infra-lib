@@ -1,5 +1,5 @@
-#ifndef SERVICES_NAME_LOOKUP_BSD_HPP
-#define SERVICES_NAME_LOOKUP_BSD_HPP
+#ifndef SERVICES_NAME_LOOKUP_HPP
+#define SERVICES_NAME_LOOKUP_HPP
 
 #include "services/network/NameResolver.hpp"
 #include <condition_variable>
