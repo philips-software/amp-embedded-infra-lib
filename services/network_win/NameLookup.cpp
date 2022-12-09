@@ -1,17 +1,15 @@
-#include "services/network_bsd/NameLookupBsd.hpp"
 #include "infra/event/EventDispatcher.hpp"
-#include <netdb.h>
-#include <sys/socket.h>
-#include <sys/types.h>
+#include "services/network_win/NameLookup.hpp"
+#include <winsock2.h>
+#include <ws2tcpip.h>
 
 namespace services
 {
-    NameLookupBsd::NameLookupBsd()
-        : lookupThread([this]()
-              { Run(); })
+    NameLookup::NameLookup()
+        : lookupThread([this]() { Run(); })
     {}
 
-    NameLookupBsd::~NameLookupBsd()
+    NameLookup::~NameLookup()
     {
         {
             std::lock_guard<std::mutex> lock(mutex);
@@ -23,7 +21,7 @@ namespace services
         lookupThread.join();
     }
 
-    void NameLookupBsd::Lookup(NameResolverResult& result)
+    void NameLookup::Lookup(NameResolverResult& result)
     {
         assert(result.Versions() != IPVersions::ipv6);
         std::lock_guard<std::mutex> lock(mutex);
@@ -31,13 +29,13 @@ namespace services
         condition.notify_one();
     }
 
-    void NameLookupBsd::CancelLookup(NameResolverResult& result)
+    void NameLookup::CancelLookup(NameResolverResult& result)
     {
         std::lock_guard<std::mutex> lock(mutex);
         nameLookup.erase(result);
     }
 
-    void NameLookupBsd::Run()
+    void NameLookup::Run()
     {
         std::unique_lock<std::mutex> lock(mutex);
 
@@ -57,7 +55,7 @@ namespace services
         }
     }
 
-    void NameLookupBsd::LookupIPv4()
+    void NameLookup::LookupIPv4()
     {
         std::string terminatedHostname{ currentLookup->Hostname().begin(), currentLookup->Hostname().end() };
         terminatedHostname.push_back('\0');
@@ -69,21 +67,22 @@ namespace services
                 if (entry->ai_family == AF_INET)
                 {
                     sockaddr_in* address = reinterpret_cast<sockaddr_in*>(entry->ai_addr);
-                    auto ipv4Address = services::ConvertFromUint32(ntohl(address->sin_addr.s_addr));
+                    auto ipv4Address = services::IPv4Address{ address->sin_addr.s_net, address->sin_addr.s_host, address->sin_addr.s_lh, address->sin_addr.s_impno };
                     infra::EventDispatcher::Instance().Schedule([this, ipv4Address]()
-                        {
+                    {
                         std::lock_guard<std::mutex> lock(mutex);
                         if (&nameLookup.front() == currentLookup)
                         {
                             nameLookup.pop_front();
                             currentLookup->NameLookupDone(ipv4Address, infra::Now() + std::chrono::minutes(5));
                         }
-                        condition.notify_one(); });
+                        condition.notify_one();
+                    });
                     return;
                 }
 
         infra::EventDispatcher::Instance().Schedule([this]()
-            {
+        {
             std::unique_lock<std::mutex> lock(mutex);
             if (&nameLookup.front() == currentLookup)
             {
@@ -92,6 +91,7 @@ namespace services
                 lock.unlock();
                 lookup->NameLookupFailed();
             }
-            condition.notify_one(); });
+            condition.notify_one();
+        });
     }
 }

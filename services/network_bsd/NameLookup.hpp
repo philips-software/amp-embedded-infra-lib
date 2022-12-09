@@ -1,5 +1,5 @@
-#ifndef SERVICES_NAME_LOOKUP_WIN_HPP
-#define SERVICES_NAME_LOOKUP_WIN_HPP
+#ifndef SERVICES_NAME_LOOKUP_BSD_HPP
+#define SERVICES_NAME_LOOKUP_BSD_HPP
 
 #include "services/network/NameResolver.hpp"
 #include <condition_variable>
@@ -8,12 +8,12 @@
 
 namespace services
 {
-    class NameLookupWin
+    class NameLookup
         : public NameResolver
     {
     public:
-        NameLookupWin();
-        ~NameLookupWin();
+        NameLookup();
+        ~NameLookup();
 
         virtual void Lookup(NameResolverResult& result) override;
         virtual void CancelLookup(NameResolverResult& result) override;

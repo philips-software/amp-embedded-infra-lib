@@ -15,8 +15,8 @@ if (EMIL_BUILD_WIN)
         DatagramWin.hpp
         EventDispatcherWithNetwork.cpp
         EventDispatcherWithNetwork.hpp
-        NameLookupWin.cpp
-        NameLookupWin.hpp
+        NameLookup.cpp
+        NameLookup.hpp
     )
 
     emil_clangformat_target(services.network_win)

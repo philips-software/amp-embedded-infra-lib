@@ -1,6 +1,6 @@
-#include "examples/network_example/Network.hpp"
 #include "hal/generic/TimerServiceGeneric.hpp"
 #include "services/network/SntpClient.hpp"
+#include "services/network_instantiations/NetworkAdapter.hpp"
 #include "services/util/TimeWithLocalization.hpp"
 #include "services/tracer/TracerOnIoOutputInfrastructure.hpp"
 
@@ -58,10 +58,11 @@ struct TimeWithSynchronization
     services::Tracer& tracer;
 };
 
-int Main(main_::Network& network, int argc, const char* argv[], const char* env[])
+int main(int argc, const char* argv[], const char* env[])
 {
     static hal::TimerServiceGeneric timerService;
     static main_::TracerOnIoOutputInfrastructure tracer;
+    static main_::NetworkAdapter network;
     static TimeWithSynchronization time(network.DatagramFactory(), network.NameResolver(), tracer.tracer);
 
     network.Run();

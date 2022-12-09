@@ -1,10 +1,10 @@
-#include "examples/network_example/Network.hpp"
 #include "hal/generic/TimerServiceGeneric.hpp"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/network/ConnectionMbedTls.hpp"
 #include "services/network/HttpClientBasic.hpp"
 #include "services/network/HttpClientImpl.hpp"
+#include "services/network_instantiations/NetworkAdapter.hpp"
 #include "services/tracer/TracerOnIoOutputInfrastructure.hpp"
 
 namespace
@@ -88,11 +88,12 @@ namespace application
     };
 }
 
-int Main(main_::Network& network, int argc, const char* argv[], const char* env[])
+int main(int argc, const char* argv[], const char* env[])
 {
     static hal::TimerServiceGeneric timerService;
     static hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
     static main_::TracerOnIoOutputInfrastructure tracer;
+    static main_::NetworkAdapter network;
     static services::CertificatesMbedTls certificates;
 
     certificates.AddCertificateAuthority(infra::BoundedConstString(starfieldClass2Ca, sizeof(starfieldClass2Ca)));

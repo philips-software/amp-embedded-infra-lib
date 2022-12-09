@@ -1,8 +1,9 @@
-#include "examples/network_example/Network.hpp"
 #include "services/network/BonjourServer.hpp"
+#include "services/network_instantiations/NetworkAdapter.hpp"
 
-extern "C" int Main(main_::Network& network, int argc, const char* argv[], const char* env[])
+int main(int argc, const char* argv[], const char* env[])
 {
+    static main_::NetworkAdapter network;
     static infra::BoundedString::WithStorage<32> name{ "discovery" };
     static services::DnsHostnameInPartsHelper<1> text{ services::DnsHostnameInParts(name) };
     static services::IPv4Address ip{ 127, 0, 0, 1 };

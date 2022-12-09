@@ -7,7 +7,7 @@
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/util/MessageCommunicationCobs.hpp"
 #include "services/util/MessageCommunicationWindowed.hpp"
-#include "services/network_win/NameLookupWin.hpp"
+#include "services/network_win/NameLookup.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 #include <deque>
 #include <fstream>
@@ -263,7 +263,7 @@ int main(int argc, char* argv[], const char* env[])
         }
 
         application::Console console(root);
-        services::NameLookupWin nameLookup;
+        services::NameLookup nameLookup;
         services::ConnectionFactoryWithNameResolverImpl::WithStorage<4> connectionFactory(console.ConnectionFactory(), nameLookup);
         infra::Optional<ConsoleClient> consoleClient;
         infra::Optional<hal::UartWindows> uart;
