@@ -1,7 +1,6 @@
+#include "examples/network_example/Network.hpp"
 #include "services/network_bsd/EventDispatcherWithNetwork.hpp"
-#include "examples/network_example/Network.hpp"
 #include "services/network_bsd/NameLookupBsd.hpp"
-#include "examples/network_example/Network.hpp"
 class NetworkAdapter
     : public main_::Network
 {
