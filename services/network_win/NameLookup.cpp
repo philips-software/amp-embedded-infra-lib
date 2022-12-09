@@ -1,12 +1,13 @@
-#include "infra/event/EventDispatcher.hpp"
 #include "services/network_win/NameLookup.hpp"
+#include "infra/event/EventDispatcher.hpp"
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
 namespace services
 {
     NameLookup::NameLookup()
-        : lookupThread([this]() { Run(); })
+        : lookupThread([this]()
+              { Run(); })
     {}
 
     NameLookup::~NameLookup()

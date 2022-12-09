@@ -5,10 +5,10 @@
 #include "infra/util/Tokenizer.hpp"
 #include "protobuf/echo_console/Console.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
-#include "services/util/MessageCommunicationCobs.hpp"
-#include "services/util/MessageCommunicationWindowed.hpp"
 #include "services/network_win/NameLookup.hpp"
 #include "services/tracer/GlobalTracer.hpp"
+#include "services/util/MessageCommunicationCobs.hpp"
+#include "services/util/MessageCommunicationWindowed.hpp"
 #include <deque>
 #include <fstream>
 #include <iostream>
