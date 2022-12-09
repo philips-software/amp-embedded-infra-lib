@@ -1,6 +1,7 @@
 #include "examples/network_example/Network.hpp"
 #include "services/network_win/EventDispatcherWithNetwork.hpp"
 #include "services/network_win/NameLookupWin.hpp"
+
 class NetworkAdapter
     : public main_::Network
 {
