@@ -27,7 +27,7 @@ jobs:
           fetch-depth: 0 # Disable shallow clone to enable blame information
           persist-credentials: false
       - uses: seanmiddleditch/gha-setup-ninja@16b940825621068d98711680b6c3ff92201f8fc0
-      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984
+      - uses: actions/setup-python@2c3dd9e7e29afd70cc0950079bde6c979d1f69f9
       - uses: BSFishy/pip-action@8f2d471d809dc20b6ada98c91910b6ae6243f318
         with:
           packages: gcovr==5.2
@@ -85,10 +85,10 @@ jobs:
       - uses: hendrikmuhs/ccache-action@657bab9aeb32eb6d913c2e6882efad4bb7536d94
         with:
           key: ${{ github.job }}
-      - uses: github/codeql-action/init@b2a92eb56d8cb930006a1c6ed86b0782dd8a4297
+      - uses: github/codeql-action/init@a669cc5936cc5e1b6a362ec1ff9e410dc570d190
         with:
           languages: cpp
       - run: |
           cmake --preset ContinuousIntegration -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build --preset ContinuousIntegration
-      - uses: github/codeql-action/analyze@b2a92eb56d8cb930006a1c6ed86b0782dd8a4297
+      - uses: github/codeql-action/analyze@a669cc5936cc5e1b6a362ec1ff9e410dc570d190
