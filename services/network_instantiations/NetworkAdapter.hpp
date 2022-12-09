@@ -1,11 +1,6 @@
 #ifndef SERVICES_NETWORK_INSTANTIATIONS_HPP
 #define SERVICES_NETWORK_INSTANTIATIONS_HPP
 
-#include "services/network/Connection.hpp"
-#include "services/network/Datagram.hpp"
-#include "services/network/Multicast.hpp"
-#include "services/network/NameResolver.hpp"
-
 #ifdef EMIL_NETWORK_WIN
 #include "services/network_win/EventDispatcherWithNetwork.hpp"
 #include "services/network_win/NameLookup.hpp"
