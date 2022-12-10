@@ -1,11 +1,9 @@
 #include "args.hxx"
-#include "hal/windows/UartWindows.hpp"
 #include "infra/stream/IoOutputStream.hpp"
 #include "infra/syntax/Json.hpp"
 #include "infra/util/Tokenizer.hpp"
 #include "protobuf/echo_console/Console.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
-#include "services/network_instantiations/NameLookup.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 #include "services/util/MessageCommunicationCobs.hpp"
 #include "services/util/MessageCommunicationWindowed.hpp"
@@ -13,7 +11,9 @@
 #include <fstream>
 #include <iostream>
 
-#undef GetObject
+#ifdef ECHO_CONSOLE_WITH_UART
+#include "hal/windows/UartWindows.hpp"
+#endif
 
 class ConsoleClientUart
     : public application::ConsoleObserver
@@ -243,7 +243,7 @@ int main(int argc, char* argv[], const char* env[])
 
         application::EchoRoot root;
 
-        for (auto path : paths)
+        for (const auto& path : paths)
         {
             std::ifstream stream(path, std::ios::binary);
             if (!stream)
@@ -263,17 +263,24 @@ int main(int argc, char* argv[], const char* env[])
         }
 
         application::Console console(root);
-        services::NameLookup nameLookup;
-        services::ConnectionFactoryWithNameResolverImpl::WithStorage<4> connectionFactory(console.ConnectionFactory(), nameLookup);
+        services::ConnectionFactoryWithNameResolverImpl::WithStorage<4> connectionFactory(console.ConnectionFactory(), console.NameResolver());
         infra::Optional<ConsoleClient> consoleClient;
+#ifdef ECHO_CONSOLE_WITH_UART
         infra::Optional<hal::UartWindows> uart;
         infra::Optional<ConsoleClientUart> consoleClientUart;
+#endif
+
         auto construct = [&]()
         {
             if (get(target).substr(0, 3) == "COM")
             {
+#ifdef ECHO_CONSOLE_WITH_UART
                 uart.Emplace(get(target));
                 consoleClientUart.Emplace(console, *uart);
+#else
+                std::cerr << "UART target not supported on this platform.";
+                return 1;
+#endif
             }
             else
                 consoleClient.Emplace(connectionFactory, console, get(target), services::GlobalTracer());

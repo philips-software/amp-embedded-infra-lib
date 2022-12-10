@@ -179,6 +179,7 @@ namespace application
 
         void Run();
         services::ConnectionFactory& ConnectionFactory();
+        services::NameResolver& NameResolver();
         void DataReceived(infra::StreamReader& reader);
 
         struct IncompletePacket {};

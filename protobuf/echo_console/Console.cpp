@@ -357,6 +357,11 @@ namespace application
         return network.ConnectionFactory();
     }
 
+    services::NameResolver& Console::NameResolver()
+    {
+        return network.NameResolver();
+    }
+
     void Console::DataReceived(infra::StreamReader& reader)
     {
         infra::DataInputStream::WithErrorPolicy data(reader, infra::softFail);
