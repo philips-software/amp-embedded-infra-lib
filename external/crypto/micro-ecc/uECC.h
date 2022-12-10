@@ -23,7 +23,9 @@ platform. */
 
 /* Optimization level; trade speed for code size.
    Larger values produce code that is faster but larger.
-   Currently supported values are 0 - 3; 0 is unusably slow for most applications. */
+   Currently supported values are 0 - 4; 0 is unusably slow for most applications.
+   Optimization level 4 currently only has an effect ARM platforms where more than one
+   curve is enabled. */
 #ifndef uECC_OPTIMIZATION_LEVEL
     #define uECC_OPTIMIZATION_LEVEL 2
 #endif
@@ -33,6 +35,21 @@ used for (scalar) squaring instead of the generic multiplication function. This 
 faster somewhat faster, but increases the code size. */
 #ifndef uECC_SQUARE_FUNC
     #define uECC_SQUARE_FUNC 0
+#endif
+
+/* uECC_VLI_NATIVE_LITTLE_ENDIAN - If enabled (defined as nonzero), this will switch to native
+little-endian format for *all* arrays passed in and out of the public API. This includes public
+and private keys, shared secrets, signatures and message hashes.
+Using this switch reduces the amount of call stack memory used by uECC, since less intermediate
+translations are required.
+Note that this will *only* work on native little-endian processors and it will treat the uint8_t
+arrays passed into the public API as word arrays, therefore requiring the provided byte arrays
+to be word aligned on architectures that do not support unaligned accesses.
+IMPORTANT: Keys and signatures generated with uECC_VLI_NATIVE_LITTLE_ENDIAN=1 are incompatible
+with keys and signatures generated with uECC_VLI_NATIVE_LITTLE_ENDIAN=0; all parties must use
+the same endianness. */
+#ifndef uECC_VLI_NATIVE_LITTLE_ENDIAN
+    #define uECC_VLI_NATIVE_LITTLE_ENDIAN 0
 #endif
 
 /* Curve support selection. Set to 0 to remove that curve. */
@@ -112,6 +129,24 @@ Inputs:
 */
 void uECC_set_rng(uECC_RNG_Function rng_function);
 
+/* uECC_get_rng() function.
+
+Returns the function that will be used to generate random bytes.
+*/
+uECC_RNG_Function uECC_get_rng(void);
+
+/* uECC_curve_private_key_size() function.
+
+Returns the size of a private key for the curve in bytes.
+*/
+int uECC_curve_private_key_size(uECC_Curve curve);
+
+/* uECC_curve_public_key_size() function.
+
+Returns the size of a public key for the curve in bytes.
+*/
+int uECC_curve_public_key_size(uECC_Curve curve);
+
 /* uECC_make_key() function.
 Create a public/private key pair.
 
@@ -122,8 +157,8 @@ Outputs:
     private_key - Will be filled in with the private key. Must be as long as the curve order; this
                   is typically the same as the curve size, except for secp160r1. For example, if the
                   curve is secp256r1, private_key must be 32 bytes long.
-                  
-                  For secp160r1, private_key must be 21 bytes long! Note that the first byte will 
+
+                  For secp160r1, private_key must be 21 bytes long! Note that the first byte will
                   almost always be 0 (there is about a 1 in 2^80 chance of it being non-zero).
 
 Returns 1 if the key pair was generated successfully, 0 if an error occurred.
@@ -131,7 +166,9 @@ Returns 1 if the key pair was generated successfully, 0 if an error occurred.
 int uECC_make_key(uint8_t *public_key, uint8_t *private_key, uECC_Curve curve);
 
 /* uECC_shared_secret() function.
-Compute a shared secret given your secret key and someone else's public key.
+Compute a shared secret given your secret key and someone else's public key. If the public key
+is not from a trusted source and has not been previously verified, you should verify it first
+using uECC_valid_public_key().
 Note: It is recommended that you hash the result of uECC_shared_secret() before using it for
 symmetric encryption or HMAC.
 
@@ -230,7 +267,7 @@ int uECC_sign(const uint8_t *private_key,
 This is used to pass in an arbitrary hash function to uECC_sign_deterministic().
 The structure will be used for multiple hash computations; each time a new hash
 is computed, init_hash() will be called, followed by one or more calls to
-update_hash(), and finally a call to finish_hash() to prudoce the resulting hash.
+update_hash(), and finally a call to finish_hash() to produce the resulting hash.
 
 The intention is that you will create a structure that includes uECC_HashContext
 followed by any hash-specific data. For example:
@@ -265,11 +302,11 @@ void finish_SHA256(uECC_HashContext *base, uint8_t *hash_result) {
 }
 */
 typedef struct uECC_HashContext {
-    void (*init_hash)(struct uECC_HashContext *context);
-    void (*update_hash)(struct uECC_HashContext *context,
+    void (*init_hash)(const struct uECC_HashContext *context);
+    void (*update_hash)(const struct uECC_HashContext *context,
                         const uint8_t *message,
                         unsigned message_size);
-    void (*finish_hash)(struct uECC_HashContext *context, uint8_t *hash_result);
+    void (*finish_hash)(const struct uECC_HashContext *context, uint8_t *hash_result);
     unsigned block_size; /* Hash function block size in bytes, eg 64 for SHA-256. */
     unsigned result_size; /* Hash function result size in bytes, eg 32 for SHA-256. */
     uint8_t *tmp; /* Must point to a buffer of at least (2 * result_size + block_size) bytes. */
@@ -281,7 +318,7 @@ Generate an ECDSA signature for a given hash value, using a deterministic algori
 this function; however, if the RNG is defined it will improve resistance to side-channel
 attacks.
 
-Usage: Compute a hash of the data you wish to sign (SHA-2 is recommended) and pass it in to
+Usage: Compute a hash of the data you wish to sign (SHA-2 is recommended) and pass it to
 this function along with your private key and a hash context. Note that the message_hash
 does not need to be computed with the same hash function used by hash_context.
 
@@ -299,7 +336,7 @@ Returns 1 if the signature generated successfully, 0 if an error occurred.
 int uECC_sign_deterministic(const uint8_t *private_key,
                             const uint8_t *message_hash,
                             unsigned hash_size,
-                            uECC_HashContext *hash_context,
+                            const uECC_HashContext *hash_context,
                             uint8_t *signature,
                             uECC_Curve curve);
 
@@ -317,7 +354,7 @@ Inputs:
 
 Returns 1 if the signature is valid, 0 if it is invalid.
 */
-int uECC_verify(const uint8_t *private_key,
+int uECC_verify(const uint8_t *public_key,
                 const uint8_t *message_hash,
                 unsigned hash_size,
                 const uint8_t *signature,

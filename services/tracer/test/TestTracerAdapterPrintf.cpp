@@ -31,6 +31,12 @@ public:
     services::TracerAdapterPrintf adapter;
 };
 
+TEST_F(TracerAdapterPrintfTest, print_newline_to_tracer)
+{
+    Print("\n");
+    EXPECT_EQ("\r\n", stream.Storage());
+}
+
 TEST_F(TracerAdapterPrintfTest, print_format_string_to_tracer)
 {
     Print("Hello, Tracer!");
@@ -119,6 +125,12 @@ TEST_F(TracerAdapterPrintfTest, print_int_in_hex_with_X_to_tracer)
 {
     Print("%X", 0x123A);
     EXPECT_EQ("123a", stream.Storage());
+}
+
+TEST_F(TracerAdapterPrintfTest, print_pointer_with_p_to_tracer)
+{
+    Print("%p", 0x123A);
+    EXPECT_EQ("0x123a", stream.Storage());
 }
 
 TEST_F(TracerAdapterPrintfTest, print_multiple_values)

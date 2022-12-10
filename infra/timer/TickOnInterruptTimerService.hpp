@@ -22,6 +22,7 @@ namespace infra
         void SystemTickInterrupt();
 
     private:
+        void CalculateNextTrigger();
         void ProcessTicks();
 
     private:

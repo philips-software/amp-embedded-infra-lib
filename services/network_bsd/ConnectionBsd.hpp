@@ -58,7 +58,7 @@ namespace services
             : public infra::BoundedDequeInputStreamReader
         {
         public:
-            StreamReaderBsd(ConnectionBsd& connection);
+            explicit StreamReaderBsd(ConnectionBsd& connection);
 
             void ConsumeRead();
 

@@ -10,6 +10,8 @@ permissions:
 
 jobs:
   fuzz_pr:
+    # skip fuzzing for dependabot PRs since dependabot does not have access to secrets
+    if: ${{ github.actor != 'dependabot[bot]' }}
     runs-on: ubuntu-latest
     concurrency:
       group: ${{ github.ref }}-${{ matrix.sanitizer }}-${{ github.workflow }}

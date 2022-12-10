@@ -4,9 +4,7 @@ namespace hal
 {
     TimeKeeperGeneric::TimeKeeperGeneric(infra::Duration duration)
         : duration(duration)
-    {
-        Reset();
-    }
+    {}
 
     bool TimeKeeperGeneric::Timeout()
     {

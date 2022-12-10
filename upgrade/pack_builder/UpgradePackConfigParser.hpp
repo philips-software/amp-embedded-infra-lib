@@ -12,13 +12,13 @@ namespace application
             : public std::runtime_error
         {
         public:
-            ParseException(const std::string& message)
+            explicit ParseException(const std::string& message)
                 : std::runtime_error(message)
             {}
         };
 
     public:
-        UpgradePackConfigParser(infra::JsonObject& json);
+        explicit UpgradePackConfigParser(infra::JsonObject& json);
 
         std::vector<std::pair<std::string, std::string>> GetComponents();
         std::vector<std::pair<std::string, std::string>> GetOptions();

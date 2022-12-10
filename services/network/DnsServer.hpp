@@ -36,7 +36,7 @@ namespace services
         class QuestionParser
         {
         public:
-            QuestionParser(infra::StreamReaderWithRewinding& reader);
+            explicit QuestionParser(infra::StreamReaderWithRewinding& reader);
 
             bool RequestIncludesOneQuestion() const;
             bool IsValid() const;

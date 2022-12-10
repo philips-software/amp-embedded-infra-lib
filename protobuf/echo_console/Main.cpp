@@ -5,10 +5,10 @@
 #include "infra/util/Tokenizer.hpp"
 #include "protobuf/echo_console/Console.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
+#include "services/network_instantiations/NameLookup.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 #include "services/util/MessageCommunicationCobs.hpp"
 #include "services/util/MessageCommunicationWindowed.hpp"
-#include "services/network_win/NameLookupWin.hpp"
-#include "services/tracer/GlobalTracer.hpp"
 #include <deque>
 #include <fstream>
 #include <iostream>
@@ -263,7 +263,7 @@ int main(int argc, char* argv[], const char* env[])
         }
 
         application::Console console(root);
-        services::NameLookupWin nameLookup;
+        services::NameLookup nameLookup;
         services::ConnectionFactoryWithNameResolverImpl::WithStorage<4> connectionFactory(console.ConnectionFactory(), nameLookup);
         infra::Optional<ConsoleClient> consoleClient;
         infra::Optional<hal::UartWindows> uart;

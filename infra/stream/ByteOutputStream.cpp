@@ -47,7 +47,7 @@ namespace infra
 
     std::size_t ByteOutputStreamWriter::GetProcessedBytesSince(std::size_t marker) const
     {
-        return static_cast<std::size_t>(offset - marker);
+        return offset - marker;
     }
 
     infra::ByteRange ByteOutputStreamWriter::SaveState(std::size_t marker)

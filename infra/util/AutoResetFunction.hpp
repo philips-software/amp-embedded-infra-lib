@@ -13,7 +13,7 @@ namespace infra
     class AutoResetFunction<Result(Args...), ExtraSize>
     {
     public:
-        typedef Result ResultType;
+        using ResultType = Result;
 
     public:
         AutoResetFunction() = default;

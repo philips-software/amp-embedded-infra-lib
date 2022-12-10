@@ -282,7 +282,7 @@ namespace application
             : public EchoFieldVisitor
         {
         public:
-            GenerateMaxMessageSizeVisitor(uint32_t& maxMessageSize)
+            explicit GenerateMaxMessageSizeVisitor(uint32_t& maxMessageSize)
                 : maxMessageSize(maxMessageSize)
             {}
 
