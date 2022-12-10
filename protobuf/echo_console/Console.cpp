@@ -267,7 +267,7 @@ namespace application
 
         ++parseIndex;
 
-        return ConsoleToken::String(tokenStart, stringToken);        
+        return ConsoleToken::String(tokenStart, stringToken);
     }
 
     ConsoleToken::Token ConsoleTokenizer::TryCreateIntegerToken()
@@ -354,7 +354,7 @@ namespace application
 
     services::ConnectionFactory& Console::ConnectionFactory()
     {
-        return eventDispatcherWithNetwork;
+        return network.ConnectionFactory();
     }
 
     void Console::DataReceived(infra::StreamReader& reader)
@@ -550,7 +550,7 @@ namespace application
     {
         try
         {
-            eventDispatcherWithNetwork.Run();
+            network.Run();
         }
         catch (Quit&)
         {}

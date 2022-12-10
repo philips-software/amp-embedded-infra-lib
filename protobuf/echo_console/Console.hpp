@@ -5,8 +5,7 @@
 #include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/syntax/ProtoParser.hpp"
 #include "protobuf/protoc_echo_plugin/EchoObjects.hpp"
-#include "services/network_win/ConnectionWin.hpp"
-#include "services/network_win/EventDispatcherWithNetwork.hpp"
+#include "services/network_instantiations/NetworkAdapter.hpp"
 #include <thread>
 
 namespace application
@@ -231,7 +230,7 @@ namespace application
 
     private:
         EchoRoot& root;
-        services::EventDispatcherWithNetwork eventDispatcherWithNetwork;
+        main_::NetworkAdapter network;
         hal::TimerServiceGeneric timerService{ infra::systemTimerServiceId };
         std::thread eventDispatcherThread;
         bool quit = false;
