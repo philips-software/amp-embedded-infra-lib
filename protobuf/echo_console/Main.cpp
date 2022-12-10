@@ -278,8 +278,7 @@ int main(int argc, char* argv[], const char* env[])
                 uart.Emplace(get(target));
                 consoleClientUart.Emplace(console, *uart);
 #else
-                std::cerr << "UART target not supported on this platform.";
-                return 1;
+                throw std::runtime_error("UART target not supported on this platform.");
 #endif
             }
             else
