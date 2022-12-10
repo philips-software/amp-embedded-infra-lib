@@ -19,7 +19,7 @@ namespace services
         BindLocal(Udpv4Socket{ IPv4Address{}, 0 });
     }
 
-    DatagramWin::DatagramWin(UdpSocket remote, DatagramExchangeObserver& observer)
+    DatagramWin::DatagramWin(const UdpSocket& remote, DatagramExchangeObserver& observer)
     {
         observer.Attach(*this);
         InitSocket();
@@ -27,7 +27,7 @@ namespace services
         BindRemote(remote);
     }
 
-    DatagramWin::DatagramWin(uint16_t localPort, UdpSocket remote, DatagramExchangeObserver& observer)
+    DatagramWin::DatagramWin(uint16_t localPort, const UdpSocket& remote, DatagramExchangeObserver& observer)
     {
         observer.Attach(*this);
         InitSocket();
@@ -49,7 +49,7 @@ namespace services
         BindLocal(MakeUdpSocket(localAddress, localPort));
     }
 
-    DatagramWin::DatagramWin(IPAddress localAddress, UdpSocket remote, DatagramExchangeObserver& observer)
+    DatagramWin::DatagramWin(IPAddress localAddress, const UdpSocket& remote, DatagramExchangeObserver& observer)
     {
         observer.Attach(*this);
         InitSocket();
@@ -57,7 +57,7 @@ namespace services
         BindRemote(remote);
     }
 
-    DatagramWin::DatagramWin(UdpSocket local, UdpSocket remote, DatagramExchangeObserver& observer)
+    DatagramWin::DatagramWin(const UdpSocket& local, const UdpSocket& remote, DatagramExchangeObserver& observer)
     {
         observer.Attach(*this);
         InitSocket();
@@ -196,7 +196,7 @@ namespace services
         UpdateEventFlags();
     }
 
-    void DatagramWin::BindLocal(UdpSocket local)
+    void DatagramWin::BindLocal(const UdpSocket& local)
     {
         localAddress = local.Get<Udpv4Socket>().first;
         sockaddr_in address{};
@@ -208,7 +208,7 @@ namespace services
         assert(result == 0);
     }
 
-    void DatagramWin::BindRemote(UdpSocket remote)
+    void DatagramWin::BindRemote(const UdpSocket& remote)
     {
         sockaddr_in address{};
         address.sin_family = AF_INET;

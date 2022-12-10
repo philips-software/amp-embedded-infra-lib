@@ -22,7 +22,7 @@ namespace services
         BindLocal(Udpv4Socket{ IPv4Address{}, 0 });
     }
 
-    DatagramBsd::DatagramBsd(UdpSocket remote, DatagramExchangeObserver& observer)
+    DatagramBsd::DatagramBsd(const UdpSocket& remote, DatagramExchangeObserver& observer)
     {
         observer.Attach(*this);
         InitSocket();
@@ -30,7 +30,7 @@ namespace services
         BindRemote(remote);
     }
 
-    DatagramBsd::DatagramBsd(uint16_t localPort, UdpSocket remote, DatagramExchangeObserver& observer)
+    DatagramBsd::DatagramBsd(uint16_t localPort, const UdpSocket& remote, DatagramExchangeObserver& observer)
     {
         observer.Attach(*this);
         InitSocket();
@@ -52,7 +52,7 @@ namespace services
         BindLocal(MakeUdpSocket(localAddress, localPort));
     }
 
-    DatagramBsd::DatagramBsd(IPAddress localAddress, UdpSocket remote, DatagramExchangeObserver& observer)
+    DatagramBsd::DatagramBsd(IPAddress localAddress, const UdpSocket& remote, DatagramExchangeObserver& observer)
     {
         observer.Attach(*this);
         InitSocket();
@@ -60,7 +60,7 @@ namespace services
         BindRemote(remote);
     }
 
-    DatagramBsd::DatagramBsd(UdpSocket local, UdpSocket remote, DatagramExchangeObserver& observer)
+    DatagramBsd::DatagramBsd(const UdpSocket& local, const UdpSocket& remote, DatagramExchangeObserver& observer)
     {
         observer.Attach(*this);
         InitSocket();
@@ -183,7 +183,7 @@ namespace services
             std::abort();
     }
 
-    void DatagramBsd::BindLocal(UdpSocket local)
+    void DatagramBsd::BindLocal(const UdpSocket& local)
     {
         localAddress = local.Get<Udpv4Socket>().first;
         sockaddr_in address{};
@@ -194,7 +194,7 @@ namespace services
         assert(result == 0);
     }
 
-    void DatagramBsd::BindRemote(UdpSocket remote)
+    void DatagramBsd::BindRemote(const UdpSocket& remote)
     {
         sockaddr_in address{};
         address.sin_family = AF_INET;

@@ -20,13 +20,13 @@ namespace services
     {
     public:
         DatagramBsd(uint16_t port, DatagramExchangeObserver& observer);
-        DatagramBsd(DatagramExchangeObserver& observer);
-        DatagramBsd(UdpSocket remote, DatagramExchangeObserver& observer);
-        DatagramBsd(uint16_t localPort, UdpSocket remote, DatagramExchangeObserver& observer);
+        explicit DatagramBsd(DatagramExchangeObserver& observer);
+        DatagramBsd(const UdpSocket& remote, DatagramExchangeObserver& observer);
+        DatagramBsd(uint16_t localPort, const UdpSocket& remote, DatagramExchangeObserver& observer);
         DatagramBsd(IPAddress localAddress, DatagramExchangeObserver& observer);
         DatagramBsd(IPAddress localAddress, uint16_t localPort, DatagramExchangeObserver& observer);
-        DatagramBsd(IPAddress localAddress, UdpSocket remote, DatagramExchangeObserver& observer);
-        DatagramBsd(UdpSocket local, UdpSocket remote, DatagramExchangeObserver& observer);
+        DatagramBsd(IPAddress localAddress, const UdpSocket& remote, DatagramExchangeObserver& observer);
+        DatagramBsd(const UdpSocket& local, const UdpSocket& remote, DatagramExchangeObserver& observer);
         ~DatagramBsd();
 
         virtual void RequestSendStream(std::size_t sendSize) override;
@@ -41,8 +41,8 @@ namespace services
 
     private:
         void InitSocket();
-        void BindLocal(UdpSocket local);
-        void BindRemote(UdpSocket remote);
+        void BindLocal(const UdpSocket& local);
+        void BindRemote(const UdpSocket& remote);
         void TryAllocateSendStream();
 
     private:

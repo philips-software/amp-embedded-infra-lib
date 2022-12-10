@@ -76,8 +76,8 @@ namespace services
             for (; entry != nullptr; entry = entry->ai_next)
                 if (entry->ai_family == AF_INET)
                 {
-                    sockaddr_in* address = reinterpret_cast<sockaddr_in*>(entry->ai_addr);
-                    auto ipv4Address = services::ConvertFromUint32(ntohl(address->sin_addr.s_addr));
+                    const auto address = reinterpret_cast<sockaddr_in*>(entry->ai_addr);
+                    const auto ipv4Address = services::ConvertFromUint32(ntohl(address->sin_addr.s_addr));
                     infra::EventDispatcher::Instance().Schedule([this, ipv4Address]()
                     {
                         std::lock_guard<std::mutex> lock(mutex);

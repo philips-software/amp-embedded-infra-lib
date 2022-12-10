@@ -20,13 +20,13 @@ namespace services
     {
     public:
         DatagramWin(uint16_t port, DatagramExchangeObserver& observer);
-        DatagramWin(DatagramExchangeObserver& observer);
-        DatagramWin(UdpSocket remote, DatagramExchangeObserver& observer);
-        DatagramWin(uint16_t localPort, UdpSocket remote, DatagramExchangeObserver& observer);
+        explicit DatagramWin(DatagramExchangeObserver& observer);
+        DatagramWin(const UdpSocket& remote, DatagramExchangeObserver& observer);
+        DatagramWin(uint16_t localPort, const UdpSocket& remote, DatagramExchangeObserver& observer);
         DatagramWin(IPAddress localAddress, DatagramExchangeObserver& observer);
         DatagramWin(IPAddress localAddress, uint16_t localPort, DatagramExchangeObserver& observer);
-        DatagramWin(IPAddress localAddress, UdpSocket remote, DatagramExchangeObserver& observer);
-        DatagramWin(UdpSocket local, UdpSocket remote, DatagramExchangeObserver& observer);
+        DatagramWin(IPAddress localAddress, const UdpSocket& remote, DatagramExchangeObserver& observer);
+        DatagramWin(const UdpSocket& local, const UdpSocket& remote, DatagramExchangeObserver& observer);
         ~DatagramWin();
 
         virtual void RequestSendStream(std::size_t sendSize) override;
@@ -42,8 +42,8 @@ namespace services
 
     private:
         void InitSocket();
-        void BindLocal(UdpSocket local);
-        void BindRemote(UdpSocket remote);
+        void BindLocal(const UdpSocket& local);
+        void BindRemote(const UdpSocket& remote);
         void TryAllocateSendStream();
 
     private:
