@@ -19,7 +19,9 @@ namespace services
     ConnectionBsd::ConnectionBsd(EventDispatcherWithNetwork& network, int socket)
         : network(network)
         , socket(socket)
-    {}
+    {
+        SetNonBlocking(socket);
+    }
 
     ConnectionBsd::~ConnectionBsd()
     {
@@ -35,6 +37,7 @@ namespace services
     {
         assert(requestedSendSize == 0);
         assert(sendSize != 0 && sendSize <= MaxSendStreamSize());
+
         requestedSendSize = sendSize;
         TryAllocateSendStream();
     }
@@ -220,7 +223,7 @@ namespace services
 
     void ListenerBsd::Accept()
     {
-        auto acceptedSocket = accept(listenSocket, NULL, NULL);
+        auto acceptedSocket = accept(listenSocket, nullptr, nullptr);
         assert(acceptedSocket != -1);
 
         infra::SharedPtr<ConnectionBsd> connection = infra::MakeSharedOnHeap<ConnectionBsd>(network, acceptedSocket);

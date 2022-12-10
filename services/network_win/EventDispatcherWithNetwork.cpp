@@ -81,7 +81,7 @@ namespace services
     infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Listen(DatagramExchangeObserver& observer, uint16_t port, IPVersions versions)
     {
         assert(versions != IPVersions::ipv6);
-        auto result = infra::MakeSharedOnHeap<DatagramWin>(*this, port, observer);
+        auto result = infra::MakeSharedOnHeap<DatagramWin>(port, observer);
         RegisterDatagram(result);
         return result;
     }
@@ -89,49 +89,49 @@ namespace services
     infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Listen(DatagramExchangeObserver& observer, IPVersions versions)
     {
         assert(versions != IPVersions::ipv6);
-        auto result = infra::MakeSharedOnHeap<DatagramWin>(*this, observer);
+        auto result = infra::MakeSharedOnHeap<DatagramWin>(observer);
         RegisterDatagram(result);
         return result;
     }
 
     infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Connect(DatagramExchangeObserver& observer, UdpSocket remote)
     {
-        auto result = infra::MakeSharedOnHeap<DatagramWin>(*this, remote, observer);
+        auto result = infra::MakeSharedOnHeap<DatagramWin>(remote, observer);
         RegisterDatagram(result);
         return result;
     }
 
     infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Connect(DatagramExchangeObserver& observer, uint16_t localPort, UdpSocket remote)
     {
-        auto result = infra::MakeSharedOnHeap<DatagramWin>(*this, localPort, remote, observer);
+        auto result = infra::MakeSharedOnHeap<DatagramWin>(localPort, remote, observer);
         RegisterDatagram(result);
         return result;
     }
 
     infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Listen(DatagramExchangeObserver& observer, IPAddress localAddress, uint16_t port, IPVersions versions)
     {
-        auto result = infra::MakeSharedOnHeap<DatagramWin>(*this, localAddress, port, observer);
+        auto result = infra::MakeSharedOnHeap<DatagramWin>(localAddress, port, observer);
         RegisterDatagram(result);
         return result;
     }
 
     infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Listen(DatagramExchangeObserver& observer, IPAddress localAddress, IPVersions versions)
     {
-        auto result = infra::MakeSharedOnHeap<DatagramWin>(*this, localAddress, observer);
+        auto result = infra::MakeSharedOnHeap<DatagramWin>(localAddress, observer);
         RegisterDatagram(result);
         return result;
     }
 
     infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Connect(DatagramExchangeObserver& observer, IPAddress localAddress, UdpSocket remote)
     {
-        auto result = infra::MakeSharedOnHeap<DatagramWin>(*this, localAddress, remote, observer);
+        auto result = infra::MakeSharedOnHeap<DatagramWin>(localAddress, remote, observer);
         RegisterDatagram(result);
         return result;
     }
 
     infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Connect(DatagramExchangeObserver& observer, UdpSocket local, UdpSocket remote)
     {
-        auto result = infra::MakeSharedOnHeap<DatagramWin>(*this, local, remote, observer);
+        auto result = infra::MakeSharedOnHeap<DatagramWin>(local, remote, observer);
         RegisterDatagram(result);
         return result;
     }

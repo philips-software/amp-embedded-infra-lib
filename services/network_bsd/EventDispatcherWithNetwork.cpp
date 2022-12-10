@@ -88,7 +88,7 @@ namespace services
     infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Listen(DatagramExchangeObserver& observer, uint16_t port, IPVersions versions)
     {
         assert(versions != IPVersions::ipv6);
-        auto result = infra::MakeSharedOnHeap<DatagramBsd>(*this, port, observer);
+        auto result = infra::MakeSharedOnHeap<DatagramBsd>(port, observer);
         RegisterDatagram(result);
         return result;
     }
@@ -96,55 +96,39 @@ namespace services
     infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Listen(DatagramExchangeObserver& observer, IPVersions versions)
     {
         assert(versions != IPVersions::ipv6);
-        auto result = infra::MakeSharedOnHeap<DatagramBsd>(*this, observer);
+        auto result = infra::MakeSharedOnHeap<DatagramBsd>(observer);
         RegisterDatagram(result);
         return result;
     }
 
     infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Connect(DatagramExchangeObserver& observer, UdpSocket remote)
     {
-        auto result = infra::MakeSharedOnHeap<DatagramBsd>(*this, remote, observer);
+        auto result = infra::MakeSharedOnHeap<DatagramBsd>(remote, observer);
         RegisterDatagram(result);
         return result;
     }
 
     infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Connect(DatagramExchangeObserver& observer, uint16_t localPort, UdpSocket remote)
     {
-        auto result = infra::MakeSharedOnHeap<DatagramBsd>(*this, localPort, remote, observer);
+        auto result = infra::MakeSharedOnHeap<DatagramBsd>(localPort, remote, observer);
         RegisterDatagram(result);
         return result;
     }
 
     void EventDispatcherWithNetwork::JoinMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv4Address multicastAddress)
     {
-        auto datagramIterator = std::find(datagrams.begin(), datagrams.end(), datagramExchange);
+        auto datagram = std::find(datagrams.begin(), datagrams.end(), datagramExchange);
 
-        if (datagramIterator != datagrams.end())
-        {
-            auto datagram = datagramIterator->lock();
-
-            struct ip_mreq multicastRequest;
-            multicastRequest.imr_interface.s_addr = htonl(INADDR_ANY);
-            multicastRequest.imr_multiaddr.s_addr = htonl(services::ConvertToUint32(multicastAddress));
-
-            setsockopt(datagram->socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
-        }
+        if (datagram != datagrams.end())
+            datagram->lock()->JoinMulticastGroup(multicastAddress);
     }
 
     void EventDispatcherWithNetwork::LeaveMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv4Address multicastAddress)
     {
-        auto datagramIterator = std::find(datagrams.begin(), datagrams.end(), datagramExchange);
+        auto datagram = std::find(datagrams.begin(), datagrams.end(), datagramExchange);
 
-        if (datagramIterator != datagrams.end())
-        {
-            auto datagram = datagramIterator->lock();
-
-            struct ip_mreq multicastRequest;
-            multicastRequest.imr_interface.s_addr = htonl(INADDR_ANY);
-            multicastRequest.imr_multiaddr.s_addr = htonl(services::ConvertToUint32(multicastAddress));
-
-            setsockopt(datagram->socket, IPPROTO_IP, IP_DROP_MEMBERSHIP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
-        }
+        if (datagram != datagrams.end())
+            datagram->lock()->LeaveMulticastGroup(multicastAddress);
     }
 
     void EventDispatcherWithNetwork::JoinMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv6Address multicastAddress)
@@ -209,7 +193,7 @@ namespace services
         int result = 0;
         do
         {
-            result = select(numberOfFileDescriptors + 1, &readFileDescriptors, &writeFileDescriptors, nullptr, nullptr);
+            result = select(numberOfFileDescriptors + 1, &readFileDescriptors, &writeFileDescriptors, &exceptFileDescriptors, nullptr);
         } while (result == -1 && errno == EINTR);
 
         if (result == -1)
@@ -257,7 +241,7 @@ namespace services
                 if (FD_ISSET(datagram->socket, &readFileDescriptors))
                     datagram->Receive();
                 if (FD_ISSET(datagram->socket, &writeFileDescriptors))
-                    datagram->Send();
+                    datagram->TrySend();
             }
         }
 

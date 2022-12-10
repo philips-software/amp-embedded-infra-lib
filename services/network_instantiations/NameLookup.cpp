@@ -1,15 +1,25 @@
+#include "services/network_instantiations/NameLookup.hpp"
 #include "infra/event/EventDispatcher.hpp"
-#include "services/network_win/NameLookupWin.hpp"
+
+#ifdef EMIL_NETWORK_WIN
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#endif
+
+#ifdef EMIL_NETWORK_BSD
+#include <netdb.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#endif
 
 namespace services
 {
-    NameLookupWin::NameLookupWin()
-        : lookupThread([this]() { Run(); })
+    NameLookup::NameLookup()
+        : lookupThread([this]()
+              { Run(); })
     {}
 
-    NameLookupWin::~NameLookupWin()
+    NameLookup::~NameLookup()
     {
         {
             std::lock_guard<std::mutex> lock(mutex);
@@ -21,7 +31,7 @@ namespace services
         lookupThread.join();
     }
 
-    void NameLookupWin::Lookup(NameResolverResult& result)
+    void NameLookup::Lookup(NameResolverResult& result)
     {
         assert(result.Versions() != IPVersions::ipv6);
         std::lock_guard<std::mutex> lock(mutex);
@@ -29,13 +39,13 @@ namespace services
         condition.notify_one();
     }
 
-    void NameLookupWin::CancelLookup(NameResolverResult& result)
+    void NameLookup::CancelLookup(NameResolverResult& result)
     {
         std::lock_guard<std::mutex> lock(mutex);
         nameLookup.erase(result);
     }
 
-    void NameLookupWin::Run()
+    void NameLookup::Run()
     {
         std::unique_lock<std::mutex> lock(mutex);
 
@@ -55,7 +65,7 @@ namespace services
         }
     }
 
-    void NameLookupWin::LookupIPv4()
+    void NameLookup::LookupIPv4()
     {
         std::string terminatedHostname{ currentLookup->Hostname().begin(), currentLookup->Hostname().end() };
         terminatedHostname.push_back('\0');
@@ -66,8 +76,8 @@ namespace services
             for (; entry != nullptr; entry = entry->ai_next)
                 if (entry->ai_family == AF_INET)
                 {
-                    sockaddr_in* address = reinterpret_cast<sockaddr_in*>(entry->ai_addr);
-                    auto ipv4Address = services::IPv4Address{ address->sin_addr.s_net, address->sin_addr.s_host, address->sin_addr.s_lh, address->sin_addr.s_impno };
+                    const auto address = reinterpret_cast<sockaddr_in*>(entry->ai_addr);
+                    const auto ipv4Address = services::ConvertFromUint32(ntohl(address->sin_addr.s_addr));
                     infra::EventDispatcher::Instance().Schedule([this, ipv4Address]()
                     {
                         std::lock_guard<std::mutex> lock(mutex);
