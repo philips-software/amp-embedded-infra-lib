@@ -1,5 +1,6 @@
 if (EMIL_HOST_BUILD)
     add_executable(protobuf.echo_console)
+    install(TARGETS protobuf.echo_console EXPORT emilProtobufTargets)
 
     target_link_libraries(protobuf.echo_console PUBLIC
         args
