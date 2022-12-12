@@ -19,12 +19,12 @@ namespace application
             : index(index)
         {}
 
-        bool End::operator==(const End& other) const
+        bool End::operator==(const End&) const
         {
             return true;
         }
 
-        bool End::operator!=(const End& other) const
+        bool End::operator!=(const End&) const
         {
             return false;
         }
@@ -33,12 +33,12 @@ namespace application
             : index(index)
         {}
 
-        bool Error::operator==(const Error& other) const
+        bool Error::operator==(const Error&) const
         {
             return true;
         }
 
-        bool Error::operator!=(const Error& other) const
+        bool Error::operator!=(const Error&) const
         {
             return false;
         }
@@ -47,12 +47,12 @@ namespace application
             : index(index)
         {}
 
-        bool Comma::operator==(const Comma& other) const
+        bool Comma::operator==(const Comma&) const
         {
             return true;
         }
 
-        bool Comma::operator!=(const Comma& other) const
+        bool Comma::operator!=(const Comma&) const
         {
             return false;
         }
@@ -61,12 +61,12 @@ namespace application
             : index(index)
         {}
 
-        bool Dot::operator==(const Dot& other) const
+        bool Dot::operator==(const Dot&) const
         {
             return true;
         }
 
-        bool Dot::operator!=(const Dot& other) const
+        bool Dot::operator!=(const Dot&) const
         {
             return false;
         }
@@ -583,7 +583,7 @@ namespace application
         struct ListFieldVisitor
             : public EchoFieldVisitor
         {
-            ListFieldVisitor(Console& console)
+            explicit ListFieldVisitor(Console& console)
                 : console(console)
             {}
 
@@ -800,11 +800,11 @@ namespace application
         struct TokenVisitor
             : public infra::StaticVisitor<Console::MessageTokens::MessageTokenValue>
         {
-            TokenVisitor(MethodInvocation& invocation)
+            explicit TokenVisitor(MethodInvocation& invocation)
                 : invocation(invocation)
             {}
 
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::End value)
+            MessageTokens::MessageTokenValue operator()(ConsoleToken::End)
             {
                 std::abort();
             }
@@ -824,7 +824,7 @@ namespace application
                 throw ConsoleExceptions::SyntaxError{ value.index };
             }
 
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::LeftBrace value)
+            MessageTokens::MessageTokenValue operator()(ConsoleToken::LeftBrace)
             {
                 invocation.currentToken = invocation.tokenizer.Token();
                 return invocation.ProcessMessage();
@@ -835,7 +835,7 @@ namespace application
                 throw ConsoleExceptions::SyntaxError{ value.index };
             }
 
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::LeftBracket value)
+            MessageTokens::MessageTokenValue operator()(ConsoleToken::LeftBracket)
             {
                 invocation.currentToken = invocation.tokenizer.Token();
                 return MessageTokens::MessageTokenValue(invocation.ProcessArray());
