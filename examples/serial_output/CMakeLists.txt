@@ -1,15 +1,16 @@
 add_executable(examples.serial_output)
-target_link_libraries(examples.serial_output PUBLIC
+target_sources(examples.serial_output PRIVATE Main.cpp)
+target_link_libraries(examples.serial_output PRIVATE
     args
     hal.generic
     infra.stream
     services.tracer
 )
 
-if (TARGET_BUILD_WIN)
+if (EMIL_BUILD_WIN)
+    target_link_libraries(examples.serial_output PRIVATE hal.windows)
 endif()
 
-if (TARGET_BUILD_UNIX OR TARGET_BUILD_DARWIN)
-    target_sources(examples.serial_output PRIVATE MainUnix.cpp)
-    target_link_libraries(examples.serial_output PUBLIC hal.unix)
+if (EMIL_BUILD_UNIX OR EMIL_BUILD_DARWIN)
+    target_link_libraries(examples.serial_output PRIVATE hal.unix)
 endif()

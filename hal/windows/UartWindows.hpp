@@ -52,7 +52,7 @@ namespace hal
 
             UartWindowsConfig(uint32_t baudRate, RtsFlowControl flowControl)
                 : baudRate(baudRate)
-                , flowControlRts(flowControl)
+                , flowControl(flowControl)
             {}
 
             uint32_t baudRate = CBR_115200;

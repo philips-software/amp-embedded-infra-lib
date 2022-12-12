@@ -6,6 +6,10 @@ if (TARGET_BUILD_DARWIN OR TARGET_BUILD_UNIX)
         hal.interfaces
     )
 
+    target_compile_definitions(hal.unix PUBLIC
+        EMIL_HAL_UNIX
+    )
+
     target_sources(hal.unix PRIVATE
         UartUnix.cpp
         UartUnix.hpp
