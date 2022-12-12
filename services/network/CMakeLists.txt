@@ -23,8 +23,6 @@ target_sources(services.network PRIVATE
     ConnectionFactoryWithNameResolver.hpp
     ConnectionMbedTls.cpp
     ConnectionMbedTls.hpp
-    ConnectionSerial.cpp
-    ConnectionSerial.hpp
     ConnectionStatus.hpp
     Datagram.hpp
     Dns.cpp
@@ -101,7 +99,9 @@ target_sources(services.network PRIVATE
     WiFiNetwork.hpp
 )
 
-if (TARGET_ARCH_X86)
+emil_clangformat_target(services.network)
+
+if (EMIL_HOST_BUILD)
     target_sources(services.network PRIVATE
         CertificateConvertor.cpp
         CertificateConvertor.hpp

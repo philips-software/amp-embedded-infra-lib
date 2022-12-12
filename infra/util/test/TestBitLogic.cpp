@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/util/BitLogic.hpp"
+#include "gtest/gtest.h"
 
 TEST(BitLogicTest, Bit)
 {

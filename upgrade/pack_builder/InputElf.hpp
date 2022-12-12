@@ -1,8 +1,8 @@
 #ifndef UPGRADE_INPUT_ELF_HPP
 #define UPGRADE_INPUT_ELF_HPP
 
-#include "upgrade/pack_builder/BinaryObject.hpp"
 #include "hal/interfaces/FileSystem.hpp"
+#include "upgrade/pack_builder/BinaryObject.hpp"
 #include "upgrade/pack_builder/ImageSecurity.hpp"
 #include "upgrade/pack_builder/Input.hpp"
 
@@ -21,7 +21,6 @@ namespace application
 
     private:
         const ImageSecurity& imageSecurity;
-        uint32_t offset;
         application::BinaryObject contents;
     };
 }

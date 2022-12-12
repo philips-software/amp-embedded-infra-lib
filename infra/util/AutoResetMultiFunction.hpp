@@ -16,16 +16,16 @@ namespace infra
         AutoResetMultiFunctionHelper() = default;
         explicit AutoResetMultiFunctionHelper(std::nullptr_t);
         AutoResetMultiFunctionHelper(const AutoResetMultiFunctionHelper& other) = delete;
-        AutoResetMultiFunctionHelper(AutoResetMultiFunctionHelper&& other);
+        AutoResetMultiFunctionHelper(AutoResetMultiFunctionHelper&& other) noexcept;
         template<class F1>
-            AutoResetMultiFunctionHelper(F1&& f);
+        AutoResetMultiFunctionHelper(F1&& f);
 
         AutoResetMultiFunctionHelper& operator=(const AutoResetMultiFunctionHelper& other) = delete;
-        AutoResetMultiFunctionHelper& operator=(AutoResetMultiFunctionHelper&& other);
+        AutoResetMultiFunctionHelper& operator=(AutoResetMultiFunctionHelper&& other) noexcept;
         AutoResetMultiFunctionHelper& operator=(std::nullptr_t);
 
         template<class... Args>
-            typename MultiFunctionHelper<F...>::template ResultOf<Args...>::Type operator()(Args&&... args);
+        typename MultiFunctionHelper<F...>::template ResultOf<Args...>::Type operator()(Args&&... args);
 
         explicit operator bool() const;
 
@@ -36,13 +36,13 @@ namespace infra
     };
 
     template<class... F>
-        bool operator==(const AutoResetMultiFunctionHelper<F...>& f, std::nullptr_t);
+    bool operator==(const AutoResetMultiFunctionHelper<F...>& f, std::nullptr_t);
     template<class... F>
-        bool operator==(std::nullptr_t, const AutoResetMultiFunctionHelper<F...>& f);
+    bool operator==(std::nullptr_t, const AutoResetMultiFunctionHelper<F...>& f);
     template<class... F>
-        bool operator!=(const AutoResetMultiFunctionHelper<F...>& f, std::nullptr_t);
+    bool operator!=(const AutoResetMultiFunctionHelper<F...>& f, std::nullptr_t);
     template<class... F>
-        bool operator!=(std::nullptr_t, const AutoResetMultiFunctionHelper<F...>& f);
+    bool operator!=(std::nullptr_t, const AutoResetMultiFunctionHelper<F...>& f);
 
     template<class F>
     using AutoResetMultiFunction = AutoResetMultiFunctionHelper<infra::Function<F>>;
@@ -54,7 +54,7 @@ namespace infra
     {}
 
     template<class... F>
-    AutoResetMultiFunctionHelper<F...>::AutoResetMultiFunctionHelper(AutoResetMultiFunctionHelper&& other)
+    AutoResetMultiFunctionHelper<F...>::AutoResetMultiFunctionHelper(AutoResetMultiFunctionHelper&& other) noexcept
         : multiFunction(other.multiFunction)
     {
         other.multiFunction = nullptr;
@@ -74,7 +74,7 @@ namespace infra
     }
 
     template<class... F>
-    AutoResetMultiFunctionHelper<F...>& AutoResetMultiFunctionHelper<F...>::operator=(AutoResetMultiFunctionHelper&& other)
+    AutoResetMultiFunctionHelper<F...>& AutoResetMultiFunctionHelper<F...>::operator=(AutoResetMultiFunctionHelper&& other) noexcept
     {
         multiFunction = other.multiFunction;
         other.multiFunction = nullptr;

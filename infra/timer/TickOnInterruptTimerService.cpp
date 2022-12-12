@@ -1,5 +1,5 @@
-#include "infra/event/EventDispatcher.hpp"
 #include "infra/timer/TickOnInterruptTimerService.hpp"
+#include "infra/event/EventDispatcher.hpp"
 #include <cassert>
 
 namespace infra
@@ -8,21 +8,12 @@ namespace infra
         : TimerService(id)
         , resolution(resolution)
     {
-        ticksProgressed = 0;
-        notificationScheduled = false;
-        NextTriggerChanged();
+        CalculateNextTrigger();
     }
 
     void TickOnInterruptTimerService::NextTriggerChanged()
     {
-        infra::TimePoint nextTrigger = NextTrigger();
-        if (nextTrigger != infra::TimePoint::max())
-        {
-            auto durationToNextNotification = nextTrigger > systemTime ? nextTrigger - systemTime : Duration();
-            ticksNextNotification = std::min(static_cast<uint32_t>((durationToNextNotification + resolution - Duration(1)) / resolution), std::numeric_limits<uint32_t>::max() / 2);
-        }
-        else
-            ticksNextNotification = std::numeric_limits<uint32_t>::max() / 2;   // Once in a while, an update must be scheduled to avoid overflowing ticksNextNotification in the case no timers are scheduled
+        CalculateNextTrigger();
     }
 
     TimePoint TickOnInterruptTimerService::Now() const
@@ -52,7 +43,20 @@ namespace infra
     {
         ++ticksProgressed;
         if (ticksProgressed >= ticksNextNotification && !notificationScheduled.exchange(true))
-            infra::EventDispatcher::Instance().Schedule([this]() { ProcessTicks(); });
+            infra::EventDispatcher::Instance().Schedule([this]()
+                { ProcessTicks(); });
+    }
+
+    void TickOnInterruptTimerService::CalculateNextTrigger()
+    {
+        infra::TimePoint nextTrigger = NextTrigger();
+        if (nextTrigger != infra::TimePoint::max())
+        {
+            auto durationToNextNotification = nextTrigger > systemTime ? nextTrigger - systemTime : Duration();
+            ticksNextNotification = std::min(static_cast<uint32_t>((durationToNextNotification + resolution - Duration(1)) / resolution), std::numeric_limits<uint32_t>::max() / 2);
+        }
+        else
+            ticksNextNotification = std::numeric_limits<uint32_t>::max() / 2; // Once in a while, an update must be scheduled to avoid overflowing ticksNextNotification in the case no timers are scheduled
     }
 
     void TickOnInterruptTimerService::ProcessTicks()
@@ -67,6 +71,7 @@ namespace infra
         // event immediately.
         bool reschedule = notificationScheduled = ticksProgressed >= ticksNextNotification;
         if (reschedule)
-            infra::EventDispatcher::Instance().Schedule([this]() { ProcessTicks(); });
+            infra::EventDispatcher::Instance().Schedule([this]()
+                { ProcessTicks(); });
     }
 }

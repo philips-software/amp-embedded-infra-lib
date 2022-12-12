@@ -12,7 +12,7 @@ namespace infra
     template<class Front_, class... Tail>
     struct Front
     {
-        typedef Front_ Type;
+        using Type = Front_;
     };
 
     template<class U, class... List>
@@ -73,6 +73,7 @@ namespace infra
     struct ExistsInTypeList<U, U, Tail...>
         : std::integral_constant<bool, true>
     {};
+
     template<class U>
     struct ExistsInTypeList<U>
         : std::integral_constant<bool, false>
@@ -91,13 +92,13 @@ namespace infra
     template<std::size_t Index, class Front, class... Tail>
     struct TypeAtIndex<Index, Front, Tail...>
     {
-        typedef typename TypeAtIndex<Index - 1, Tail...>::Type Type;
+        using Type = typename TypeAtIndex<Index - 1, Tail...>::Type;
     };
 
     template<class Front, class... Tail>
     struct TypeAtIndex<0, Front, Tail...>
     {
-        typedef Front Type;
+        using Type = Front;
     };
 
     template<class Front, class... Tail>
@@ -124,32 +125,32 @@ namespace infra
     struct MaxAlignmentType<Front, Tail...>
         : std::integral_constant<std::size_t, Max<std::alignment_of<Front>::value, MaxAlignmentOfTypes<Tail...>::value>::value>
     {
-        typedef typename MaxAlignmentType<Tail...>::Type MaxAlignmentTypeOfTail;
-        typedef typename std::conditional<(sizeof(Front) > sizeof(MaxAlignmentTypeOfTail)), Front, MaxAlignmentTypeOfTail>::type Type;
+        using MaxAlignmentTypeOfTail = typename MaxAlignmentType<Tail...>::Type;
+        using Type = typename std::conditional<(sizeof(Front) > sizeof(MaxAlignmentTypeOfTail)), Front, MaxAlignmentTypeOfTail>::type;
     };
 
     template<class Front>
     struct MaxAlignmentType<Front>
     {
-        typedef Front Type;
+        using Type = Front;
     };
 
     template<class... ListA, class... ListB>
     struct ListJoin<List<ListA...>, List<ListB...>>
     {
-        typedef List<ListA..., ListB...> Type;
+        using Type = List<ListA..., ListB...>;
     };
 
     template<class... ListElements, class... Elements>
     struct ListPushBack<List<ListElements...>, Elements...>
     {
-        typedef List<ListElements..., Elements...> Type;
+        using Type = List<ListElements..., Elements...>;
     };
 
     template<class Element, class... ListElements>
     struct ListPushFront<Element, List<ListElements...>>
     {
-        typedef List<Element, ListElements...> Type;
+        using Type = List<Element, ListElements...>;
     };
 
     template<class Element>
@@ -170,10 +171,10 @@ namespace infra
     struct CanCallHelper
     {
         template<class ResultType, class... Args>
-            static decltype(std::declval<ResultType>()(std::declval<Args>()...), std::true_type()) f(int);
+        static decltype(std::declval<ResultType>()(std::declval<Args>()...), std::true_type()) f(int);
 
         template<class ResultType, class... Args>
-            static std::false_type f(...);
+        static std::false_type f(...);
     };
 
     template<class ResultType, class... Args>

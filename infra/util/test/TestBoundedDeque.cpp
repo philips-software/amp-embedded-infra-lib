@@ -1,6 +1,6 @@
-#include "gtest/gtest.h"
 #include "infra/util/BoundedDeque.hpp"
 #include "infra/util/test_helper/MoveConstructible.hpp"
+#include "gtest/gtest.h"
 #include <memory>
 
 TEST(BoundedDequeTest, TestConstructedEmpty)
@@ -795,7 +795,6 @@ TEST(BoundedDequeTest, TestLessThanWrapped)
 {
     int range1[3] = { 0, 1, 2 };
     infra::BoundedDeque<int>::WithMaxSize<5> deque1(range1, range1 + 3);
-    int range2[3] = { 0, 4, 5 };
     infra::BoundedDeque<int>::WithMaxSize<5> deque2;
     deque2.push_front(0);
     deque2.push_back(4);

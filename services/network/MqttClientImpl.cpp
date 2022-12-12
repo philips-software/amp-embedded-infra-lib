@@ -1,6 +1,6 @@
+#include "services/network/MqttClientImpl.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "infra/stream/CountingOutputStream.hpp"
-#include "services/network/MqttClientImpl.hpp"
 
 namespace services
 {
@@ -282,7 +282,8 @@ namespace services
         , clientId(clientId)
         , username(username)
         , password(password)
-        , timeout(std::chrono::minutes(1), [this]() { Timeout(); })
+        , timeout(std::chrono::minutes(1), [this]()
+              { Timeout(); })
     {}
 
     void MqttClientImpl::StateConnecting::Connected()
@@ -325,7 +326,7 @@ namespace services
             reader = nullptr;
 
             factory.ConnectionEstablished([this](infra::SharedPtr<MqttClientObserver> observer)
-            {
+                {
                 if (observer)
                 {
                     auto& clientConnectionCopy = clientConnection;
@@ -337,8 +338,7 @@ namespace services
                 {
                     signaledFailure = true; // The factory already got a ConnectionEstablished, so it should not get a ConnectionFailed
                     clientConnection.Abort();
-                }
-            });
+                } });
         }
         else
             clientConnection.Abort();
@@ -516,9 +516,8 @@ namespace services
         QueueSendOperation<OperationPubAck>(*this);
 
         infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<MqttClientImpl>& client)
-        {
-            client->DataReceived();
-        }, infra::MakeContainedSharedObject(clientConnection, clientConnection.ConnectionObserver::Subject().ObserverPtr()));
+            { client->DataReceived(); },
+            infra::MakeContainedSharedObject(clientConnection, clientConnection.ConnectionObserver::Subject().ObserverPtr()));
     }
 
     void MqttClientImpl::StateConnected::PopFrontOperation()
@@ -539,7 +538,8 @@ namespace services
 
     void MqttClientImpl::StateConnected::StartPing()
     {
-        pingTimer.Start(clientConnection.pingInterval, [this]() { SendPing(); });
+        pingTimer.Start(clientConnection.pingInterval, [this]()
+            { SendPing(); });
     }
 
     void MqttClientImpl::StateConnected::SendPing()
@@ -559,7 +559,8 @@ namespace services
     void MqttClientImpl::StateConnected::StartWaitForPingReply()
     {
         waitingForPingReply = true;
-        pingTimer.Start(clientConnection.operationTimeout, [this]() { PingReplyTimeout(); });
+        pingTimer.Start(clientConnection.operationTimeout, [this]()
+            { PingReplyTimeout(); });
     }
 
     void MqttClientImpl::StateConnected::PingReplyTimeout()
@@ -586,7 +587,8 @@ namespace services
         infra::DataOutputStream::WithErrorPolicy stream(writer);
         MqttFormatter formatter(stream);
 
-        connectedState.operationTimeout.Start(connectedState.ClientConnection().operationTimeout, [this]() { connectedState.ClientConnection().Abort(); });
+        connectedState.operationTimeout.Start(connectedState.ClientConnection().operationTimeout, [this]()
+            { connectedState.ClientConnection().Abort(); });
 
         formatter.MessagePublish(connectedState.ClientConnection().Observer(), connectedState.GeneratePacketIdentifier());
     }
@@ -612,7 +614,8 @@ namespace services
         infra::DataOutputStream::WithErrorPolicy stream(writer);
         MqttFormatter formatter(stream);
 
-        connectedState.operationTimeout.Start(connectedState.ClientConnection().operationTimeout, [this]() { connectedState.ClientConnection().Abort(); });
+        connectedState.operationTimeout.Start(connectedState.ClientConnection().operationTimeout, [this]()
+            { connectedState.ClientConnection().Abort(); });
 
         formatter.MessageSubscribe(connectedState.ClientConnection().Observer());
     }

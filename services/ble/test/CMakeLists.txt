@@ -10,4 +10,7 @@ target_link_libraries(services.ble_test PUBLIC
 target_sources(services.ble_test PRIVATE
     TestBondStorageManager.cpp
     TestGatt.cpp
+    TestPersistingBondStorage.cpp
 )
+
+emil_clangformat_target(services.ble_test)

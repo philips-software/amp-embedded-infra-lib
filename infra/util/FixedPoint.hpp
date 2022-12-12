@@ -3,9 +3,14 @@
 
 namespace infra
 {
-    struct Scaled {};
+    struct Scaled
+    {};
+
     const Scaled scaled;
-    struct Unscaled {};
+
+    struct Unscaled
+    {};
+
     const Unscaled unscaled;
 
     template<class T, T Factor>
@@ -51,82 +56,236 @@ namespace infra
     {}
 
     template<class T, T Factor>
-    T FixedPoint<T, Factor>::AsUnscaled() const { return value; }
-    template<class T, T Factor>
-    T FixedPoint<T, Factor>::IntegerPart() const { return value / Factor; }
-    template<class T, T Factor>
-    T FixedPoint<T, Factor>::FractionalPart() const { return value % Factor; }
-    template<class T, T Factor>
-    T FixedPoint<T, Factor>::Rounded() const { return value >= 0 ? (value + Factor / 2) / Factor : (value - Factor / 2) / Factor; }
+    T FixedPoint<T, Factor>::AsUnscaled() const
+    {
+        return value;
+    }
 
     template<class T, T Factor>
-    FixedPoint<T, Factor>& FixedPoint<T, Factor>::operator+=(const FixedPoint& x) { value += x.value; return *this; }
-    template<class T, T Factor>
-    FixedPoint<T, Factor>& FixedPoint<T, Factor>::operator-=(const FixedPoint& x) { value -= x.value; return *this; }
-    template<class T, T Factor>
-    FixedPoint<T, Factor>& FixedPoint<T, Factor>::operator*=(const FixedPoint& x) { value *= x.value; value /= Factor; return *this; }
-    template<class T, T Factor>
-    FixedPoint<T, Factor>& FixedPoint<T, Factor>::operator/=(const FixedPoint& x) { value *= Factor; value /= x.value; return *this; }
-    template<class T, T Factor>
-    FixedPoint<T, Factor>& FixedPoint<T, Factor>::operator*=(T x) { value *= x; return *this; }
-    template<class T, T Factor>
-    FixedPoint<T, Factor>& FixedPoint<T, Factor>::operator/=(T x) { value /= x; return *this; }
-    template<class T, T Factor>
-    FixedPoint<T, Factor> FixedPoint<T, Factor>::operator-() const { FixedPoint result; result.value = -value; return result; }
+    T FixedPoint<T, Factor>::IntegerPart() const
+    {
+        return value / Factor;
+    }
 
     template<class T, T Factor>
-    FixedPoint<T, Factor> operator+(FixedPoint<T, Factor> x, const FixedPoint<T, Factor>& y) { return x += y; }
-    template<class T, T Factor>
-    FixedPoint<T, Factor> operator-(FixedPoint<T, Factor> x, const FixedPoint<T, Factor>& y) { return x -= y; }
-    template<class T, T Factor>
-    FixedPoint<T, Factor> operator*(FixedPoint<T, Factor> x, const FixedPoint<T, Factor>& y) { return x *= y; }
-    template<class T, T Factor>
-    FixedPoint<T, Factor> operator/(FixedPoint<T, Factor> x, const FixedPoint<T, Factor>& y) { return x /= y; }
-    template<class T, T Factor>
-    FixedPoint<T, Factor> operator*(FixedPoint<T, Factor> x, T y) { return x *= y; }
-    template<class T, T Factor>
-    FixedPoint<T, Factor> operator*(T x, FixedPoint<T, Factor> y) { return y *= x; }
-    template<class T, T Factor>
-    FixedPoint<T, Factor> operator/(FixedPoint<T, Factor> x, T y) { return x /= y; }
-    template<class T, T Factor>
-    FixedPoint<T, Factor> operator/(T x, FixedPoint<T, Factor> y) { return FixedPoint<T, Factor>(scaled, x) /= y; }
+    T FixedPoint<T, Factor>::FractionalPart() const
+    {
+        return value % Factor;
+    }
 
     template<class T, T Factor>
-    bool operator==(const FixedPoint<T, Factor>& x, const FixedPoint<T, Factor>& y) { return x.AsUnscaled() == y.AsUnscaled(); }
+    T FixedPoint<T, Factor>::Rounded() const
+    {
+        return value >= 0 ? (value + Factor / 2) / Factor : (value - Factor / 2) / Factor;
+    }
+
     template<class T, T Factor>
-    bool operator!=(const FixedPoint<T, Factor>& x, const FixedPoint<T, Factor>& y) { return !(x == y); }
+    FixedPoint<T, Factor>& FixedPoint<T, Factor>::operator+=(const FixedPoint& x)
+    {
+        value += x.value;
+        return *this;
+    }
+
     template<class T, T Factor>
-    bool operator<(const FixedPoint<T, Factor>& x, const FixedPoint<T, Factor>& y) { return x.AsUnscaled() < y.AsUnscaled(); }
+    FixedPoint<T, Factor>& FixedPoint<T, Factor>::operator-=(const FixedPoint& x)
+    {
+        value -= x.value;
+        return *this;
+    }
+
     template<class T, T Factor>
-    bool operator>(const FixedPoint<T, Factor>& x, const FixedPoint<T, Factor>& y) { return y < x; }
+    FixedPoint<T, Factor>& FixedPoint<T, Factor>::operator*=(const FixedPoint& x)
+    {
+        value *= x.value;
+        value /= Factor;
+        return *this;
+    }
+
     template<class T, T Factor>
-    bool operator<=(const FixedPoint<T, Factor>& x, const FixedPoint<T, Factor>& y) { return !(y < x); }
+    FixedPoint<T, Factor>& FixedPoint<T, Factor>::operator/=(const FixedPoint& x)
+    {
+        value *= Factor;
+        value /= x.value;
+        return *this;
+    }
+
     template<class T, T Factor>
-    bool operator>=(const FixedPoint<T, Factor>& x, const FixedPoint<T, Factor>& y) { return !(x < y); }
+    FixedPoint<T, Factor>& FixedPoint<T, Factor>::operator*=(T x)
+    {
+        value *= x;
+        return *this;
+    }
+
     template<class T, T Factor>
-    bool operator==(const FixedPoint<T, Factor>& x, const T& y) { return x.AsUnscaled() == y * Factor; }
+    FixedPoint<T, Factor>& FixedPoint<T, Factor>::operator/=(T x)
+    {
+        value /= x;
+        return *this;
+    }
+
     template<class T, T Factor>
-    bool operator!=(const FixedPoint<T, Factor>& x, const T& y) { return x.AsUnscaled() != y * Factor; }
+    FixedPoint<T, Factor> FixedPoint<T, Factor>::operator-() const
+    {
+        FixedPoint result;
+        result.value = -value;
+        return result;
+    }
+
     template<class T, T Factor>
-    bool operator<(const FixedPoint<T, Factor>& x, const T& y) { return x.AsUnscaled() < y * Factor; }
+    FixedPoint<T, Factor> operator+(FixedPoint<T, Factor> x, const FixedPoint<T, Factor>& y)
+    {
+        return x += y;
+    }
+
     template<class T, T Factor>
-    bool operator>(const FixedPoint<T, Factor>& x, const T& y) { return x.AsUnscaled() > y * Factor; }
+    FixedPoint<T, Factor> operator-(FixedPoint<T, Factor> x, const FixedPoint<T, Factor>& y)
+    {
+        return x -= y;
+    }
+
     template<class T, T Factor>
-    bool operator<=(const FixedPoint<T, Factor>& x, const T& y) { return x.AsUnscaled() <= y * Factor; }
+    FixedPoint<T, Factor> operator*(FixedPoint<T, Factor> x, const FixedPoint<T, Factor>& y)
+    {
+        return x *= y;
+    }
+
     template<class T, T Factor>
-    bool operator>=(const FixedPoint<T, Factor>& x, const T& y) { return x.AsUnscaled() >= y * Factor; }
+    FixedPoint<T, Factor> operator/(FixedPoint<T, Factor> x, const FixedPoint<T, Factor>& y)
+    {
+        return x /= y;
+    }
+
     template<class T, T Factor>
-    bool operator==(const T& x, const FixedPoint<T, Factor>& y) { return x * Factor == y.AsUnscaled(); }
+    FixedPoint<T, Factor> operator*(FixedPoint<T, Factor> x, T y)
+    {
+        return x *= y;
+    }
+
     template<class T, T Factor>
-    bool operator!=(const T& x, const FixedPoint<T, Factor>& y) { return x * Factor != y.AsUnscaled(); }
+    FixedPoint<T, Factor> operator*(T x, FixedPoint<T, Factor> y)
+    {
+        return y *= x;
+    }
+
     template<class T, T Factor>
-    bool operator<(const T& x, const FixedPoint<T, Factor>& y) { return x * Factor < y.AsUnscaled(); }
+    FixedPoint<T, Factor> operator/(FixedPoint<T, Factor> x, T y)
+    {
+        return x /= y;
+    }
+
     template<class T, T Factor>
-    bool operator>(const T& x, const FixedPoint<T, Factor>& y) { return x * Factor > y.AsUnscaled(); }
+    FixedPoint<T, Factor> operator/(T x, FixedPoint<T, Factor> y)
+    {
+        return FixedPoint<T, Factor>(scaled, x) /= y;
+    }
+
     template<class T, T Factor>
-    bool operator<=(const T& x, const FixedPoint<T, Factor>& y) { return x * Factor <= y.AsUnscaled(); }
+    bool operator==(const FixedPoint<T, Factor>& x, const FixedPoint<T, Factor>& y)
+    {
+        return x.AsUnscaled() == y.AsUnscaled();
+    }
+
     template<class T, T Factor>
-    bool operator>=(const T& x, const FixedPoint<T, Factor>& y) { return x * Factor >= y.AsUnscaled(); }
+    bool operator!=(const FixedPoint<T, Factor>& x, const FixedPoint<T, Factor>& y)
+    {
+        return !(x == y);
+    }
+
+    template<class T, T Factor>
+    bool operator<(const FixedPoint<T, Factor>& x, const FixedPoint<T, Factor>& y)
+    {
+        return x.AsUnscaled() < y.AsUnscaled();
+    }
+
+    template<class T, T Factor>
+    bool operator>(const FixedPoint<T, Factor>& x, const FixedPoint<T, Factor>& y)
+    {
+        return y < x;
+    }
+
+    template<class T, T Factor>
+    bool operator<=(const FixedPoint<T, Factor>& x, const FixedPoint<T, Factor>& y)
+    {
+        return !(y < x);
+    }
+
+    template<class T, T Factor>
+    bool operator>=(const FixedPoint<T, Factor>& x, const FixedPoint<T, Factor>& y)
+    {
+        return !(x < y);
+    }
+
+    template<class T, T Factor>
+    bool operator==(const FixedPoint<T, Factor>& x, const T& y)
+    {
+        return x.AsUnscaled() == y * Factor;
+    }
+
+    template<class T, T Factor>
+    bool operator!=(const FixedPoint<T, Factor>& x, const T& y)
+    {
+        return x.AsUnscaled() != y * Factor;
+    }
+
+    template<class T, T Factor>
+    bool operator<(const FixedPoint<T, Factor>& x, const T& y)
+    {
+        return x.AsUnscaled() < y * Factor;
+    }
+
+    template<class T, T Factor>
+    bool operator>(const FixedPoint<T, Factor>& x, const T& y)
+    {
+        return x.AsUnscaled() > y * Factor;
+    }
+
+    template<class T, T Factor>
+    bool operator<=(const FixedPoint<T, Factor>& x, const T& y)
+    {
+        return x.AsUnscaled() <= y * Factor;
+    }
+
+    template<class T, T Factor>
+    bool operator>=(const FixedPoint<T, Factor>& x, const T& y)
+    {
+        return x.AsUnscaled() >= y * Factor;
+    }
+
+    template<class T, T Factor>
+    bool operator==(const T& x, const FixedPoint<T, Factor>& y)
+    {
+        return x * Factor == y.AsUnscaled();
+    }
+
+    template<class T, T Factor>
+    bool operator!=(const T& x, const FixedPoint<T, Factor>& y)
+    {
+        return x * Factor != y.AsUnscaled();
+    }
+
+    template<class T, T Factor>
+    bool operator<(const T& x, const FixedPoint<T, Factor>& y)
+    {
+        return x * Factor < y.AsUnscaled();
+    }
+
+    template<class T, T Factor>
+    bool operator>(const T& x, const FixedPoint<T, Factor>& y)
+    {
+        return x * Factor > y.AsUnscaled();
+    }
+
+    template<class T, T Factor>
+    bool operator<=(const T& x, const FixedPoint<T, Factor>& y)
+    {
+        return x * Factor <= y.AsUnscaled();
+    }
+
+    template<class T, T Factor>
+    bool operator>=(const T& x, const FixedPoint<T, Factor>& y)
+    {
+        return x * Factor >= y.AsUnscaled();
+    }
 }
 
 #endif

@@ -17,7 +17,7 @@ namespace infra
         ~StaticVisitor() = default;
 
     public:
-        typedef R ResultType;
+        using ResultType = R;
     };
 
     template<class... T>
@@ -40,7 +40,7 @@ namespace infra
             typename Visitor::ResultType operator()(Visitor& visitor, const Variant& variant1, const Variant& variant2);
 
             template<class T>
-                typename Visitor::ResultType VisitSecond(Visitor& visitor, const T& v1, const Variant& variant2);
+            typename Visitor::ResultType VisitSecond(Visitor& visitor, const T& v1, const Variant& variant2);
         };
 
         template<std::size_t Index, class Visitor, class Variant, class Enable = void>
@@ -56,7 +56,7 @@ namespace infra
             explicit ConstructVisitor(Variant<T...>& aVariant);
 
             template<class T2>
-                void operator()(const T2& v);
+            void operator()(const T2& v);
 
         private:
             Variant<T...>& variant;
@@ -69,7 +69,7 @@ namespace infra
             explicit CopyVisitor(Variant<T...>& aVariant);
 
             template<class T2>
-                void operator()(const T2& v);
+            void operator()(const T2& v);
 
         private:
             Variant<T...>& variant;
@@ -79,25 +79,25 @@ namespace infra
             : StaticVisitor<void>
         {
             template<class T>
-                void operator()(T& x);
+            void operator()(T& x);
         };
 
         struct EqualVisitor
             : public StaticVisitor<bool>
         {
             template<class T>
-                bool operator()(const T& x, const T& y) const;
+            bool operator()(const T& x, const T& y) const;
             template<class T, class U>
-                bool operator()(const T& x, const U& y) const;
+            bool operator()(const T& x, const U& y) const;
         };
 
         struct LessThanVisitor
             : StaticVisitor<bool>
         {
             template<class T>
-                bool operator()(const T& x, const T& y) const;
+            bool operator()(const T& x, const T& y) const;
             template<class T, class U>
-                bool operator()(const T& x, const U& y) const;
+            bool operator()(const T& x, const U& y) const;
         };
 
         template<class... Args>
@@ -110,7 +110,7 @@ namespace infra
             explicit ConstructPolymorphicVisitor(PolymorphicVariant<Base, T...>& aVariant);
 
             template<class T2>
-                void operator()(const T2& v);
+            void operator()(const T2& v);
 
         private:
             PolymorphicVariant<Base, T...>& variant;
@@ -123,7 +123,7 @@ namespace infra
             explicit CopyPolymorphicVisitor(PolymorphicVariant<Base, T...>& aVariant);
 
             template<class T2>
-                void operator()(const T2& v);
+            void operator()(const T2& v);
 
         private:
             PolymorphicVariant<Base, T...>& variant;
@@ -183,7 +183,7 @@ namespace infra
         {
             std::abort();
         }
-        
+
         template<std::size_t Index, class Visitor, class Variant>
         typename Visitor::ResultType ApplyVisitorHelper<Index, Visitor, Variant, typename std::enable_if<Index + 1 == Variant::size>::type>::operator()(Visitor& visitor, Variant& variant)
         {
@@ -231,7 +231,7 @@ namespace infra
             typename Visitor::ResultType operator()(Visitor& visitor, const Variant& variant1, const Variant& variant2);
 
             template<class T>
-                typename Visitor::ResultType VisitSecond(Visitor& visitor, const T& v1, const Variant& variant2);
+            typename Visitor::ResultType VisitSecond(Visitor& visitor, const T& v1, const Variant& variant2);
         };
 
         template<std::size_t Index, class Visitor, class Variant>
@@ -240,7 +240,7 @@ namespace infra
             typename Visitor::ResultType operator()(Visitor& visitor, const Variant& variant1, const Variant& variant2);
 
             template<class T>
-                typename Visitor::ResultType VisitSecond(Visitor& visitor, const T& v1, const Variant& variant2);
+            typename Visitor::ResultType VisitSecond(Visitor& visitor, const T& v1, const Variant& variant2);
         };
 
         template<std::size_t Index, class Visitor, class Variant>
@@ -249,7 +249,7 @@ namespace infra
             typename Visitor::ResultType operator()(Visitor& visitor, const Variant& variant1, const Variant& variant2);
 
             template<class T>
-                typename Visitor::ResultType VisitSecond(Visitor& visitor, const T& v1, const Variant& variant2);
+            typename Visitor::ResultType VisitSecond(Visitor& visitor, const T& v1, const Variant& variant2);
         };
 
         template<std::size_t Index, class Visitor, class Variant>
@@ -258,7 +258,7 @@ namespace infra
             typename Visitor::ResultType operator()(Visitor& visitor, const Variant& variant1, const Variant& variant2);
 
             template<class T>
-                typename Visitor::ResultType VisitSecond(Visitor& visitor, const T& v1, const Variant& variant2);
+            typename Visitor::ResultType VisitSecond(Visitor& visitor, const T& v1, const Variant& variant2);
         };
 
         template<std::size_t Index, class Visitor, class Variant>

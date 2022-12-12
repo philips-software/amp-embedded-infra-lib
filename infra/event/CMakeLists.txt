@@ -1,11 +1,9 @@
 add_library(infra.event ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 install(TARGETS infra.event EXPORT emilInfraTargets)
 
-target_link_libraries(infra.event
-    PUBLIC
-        infra.util
-    PRIVATE
-        infra.stream
+target_link_libraries(infra.event PUBLIC
+    infra.util
+    infra.stream
 )
 
 target_sources(infra.event PRIVATE
@@ -21,6 +19,8 @@ target_sources(infra.event PRIVATE
     SystemStateManager.cpp
     SystemStateManager.hpp
 )
+
+emil_clangformat_target(infra.event)
 
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)

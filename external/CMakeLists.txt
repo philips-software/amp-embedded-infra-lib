@@ -1,5 +1,4 @@
 add_subdirectory(args)
 add_subdirectory(crypto)
-add_subdirectory(protobuf-3.3.0)
-add_subdirectory(protoc-3.3.0)
-add_subdirectory(xsltproc)
+add_subdirectory(protobuf)
+add_subdirectory(protoc)

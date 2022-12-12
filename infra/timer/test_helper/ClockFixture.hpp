@@ -1,10 +1,10 @@
 #ifndef INFRA_CLOCK_FIXTURE_HPP
 #define INFRA_CLOCK_FIXTURE_HPP
 
-#include "gmock/gmock.h"
 #include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
-#include "infra/timer/test_helper/PerfectTimerService.hpp"
 #include "infra/timer/TimerService.hpp"
+#include "infra/timer/test_helper/PerfectTimerService.hpp"
+#include "gmock/gmock.h"
 
 namespace infra
 {
@@ -12,7 +12,7 @@ namespace infra
         : public EventDispatcherWithWeakPtrFixture
     {
     public:
-        ClockFixture(uint32_t timerSericeId = systemTimerServiceId);
+        explicit ClockFixture(uint32_t timerSericeId = systemTimerServiceId);
         ClockFixture(const ClockFixture&) = delete;
         ClockFixture& operator=(const ClockFixture&) = delete;
         ~ClockFixture();
@@ -34,7 +34,7 @@ namespace infra
     class ClockFixture::TimeMatcherHelper
     {
     public:
-        TimeMatcherHelper(infra::TimePoint expectedCallTime);
+        explicit TimeMatcherHelper(infra::TimePoint expectedCallTime);
 
         template<class... Args>
         operator testing::Matcher<testing::tuple<Args...>>() const
@@ -53,7 +53,7 @@ namespace infra
             : public testing::MatcherInterface<const std::tuple<Args...>&>
         {
         public:
-            TimeMatcher(infra::TimePoint expectedCallTime);
+            explicit TimeMatcher(infra::TimePoint expectedCallTime);
 
             virtual bool MatchAndExplain(const std::tuple<Args...>& x, testing::MatchResultListener* listener) const override;
             virtual void DescribeTo(std::ostream* os) const override;

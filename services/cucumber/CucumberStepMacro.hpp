@@ -1,11 +1,12 @@
-#ifndef SERVICES_CUCUMBER_STEP_MACRO_HPP 
+#ifndef SERVICES_CUCUMBER_STEP_MACRO_HPP
 #define SERVICES_CUCUMBER_STEP_MACRO_HPP
 
-#include <initializer_list>
+#include "services/cucumber/CucumberContext.hpp"
 #include "services/cucumber/CucumberStep.hpp"
 #include "services/cucumber/CucumberStepStorage.hpp"
+#include <initializer_list>
 
-#define CONCAT_(x, y) x ## y
+#define CONCAT_(x, y) x##y
 #define CONCAT(x, y) CONCAT_(x, y)
 
 #define STRINGIZE(x) STRINGIZE_(x)
@@ -64,49 +65,47 @@ namespace detail
     }
 }
 
-#define DEFINESTEP(NAME)                                                                                 \
-namespace                                                                                                \
-{                                                                                                        \
-    constexpr auto SOURCE_FILE = detail::Filename(__FILE__);                                             \
-    constexpr char SOURCE_LINE[] = STRINGIZE(__LINE__);                                                  \
-    constexpr auto SOURCE_LOCATION = detail::Concatenate(SOURCE_FILE.c, ":", SOURCE_LINE);               \
-                                                                                                         \
-    class CLASSNAME                                                                                      \
-        : public services::CucumberStep                                                                  \
-    {                                                                                                    \
-    public:                                                                                              \
-        CLASSNAME()                                                                                      \
-            : services::CucumberStep(NAME, SOURCE_LOCATION.c)                                            \
-        {                                                                                                \
-            services::CucumberStepStorage::Instance().AddStep(*this);                                    \
-        }                                                                                                \
-                                                                                                         \
-    public:                                                                                              \
-        virtual void Invoke(infra::JsonArray& arguments) override                                        \
-        {                                                                                                \
-            invokeArguments = &arguments;                                                                \
-            Execute();                                                                                   \
-        }                                                                                                \
-                                                                                                         \
-    private:                                                                                             \
-        void Execute();                                                                                  \
-                                                                                                         \
-        void Success()                                                                                   \
-        {                                                                                                \
-            assert(Context().Contains("InvokeSuccess"));                                                 \
-            Context().Get<infra::Function<void()>>("InvokeSuccess")();                                   \
-        }                                                                                                \
-                                                                                                         \
-        void Error(infra::BoundedConstString failReason)                                                 \
-        {                                                                                                \
-            assert(Context().Contains("InvokeError"));                                                   \
-            Context().Get<infra::Function<void(infra::BoundedConstString&)>>("InvokeError")(failReason); \
-        }                                                                                                \
-    };                                                                                                   \
-                                                                                                         \
-    static CLASSNAME VARNAME;                                                                            \
-}                                                                                                        \
-                                                                                                         \
-void CLASSNAME::Execute()
+#define DEFINESTEP(NAME)                                                                       \
+    namespace                                                                                  \
+    {                                                                                          \
+        constexpr auto SOURCE_FILE = detail::Filename(__FILE__);                               \
+        constexpr char SOURCE_LINE[] = STRINGIZE(__LINE__);                                    \
+        constexpr auto SOURCE_LOCATION = detail::Concatenate(SOURCE_FILE.c, ":", SOURCE_LINE); \
+                                                                                               \
+        class CLASSNAME                                                                        \
+            : public services::CucumberStep                                                    \
+        {                                                                                      \
+        public:                                                                                \
+            CLASSNAME()                                                                        \
+                : services::CucumberStep(NAME, SOURCE_LOCATION.c)                              \
+            {                                                                                  \
+                services::CucumberStepStorage::Instance().AddStep(*this);                      \
+            }                                                                                  \
+                                                                                               \
+        public:                                                                                \
+            virtual void Invoke(infra::JsonArray& arguments) override                          \
+            {                                                                                  \
+                invokeArguments = &arguments;                                                  \
+                Execute();                                                                     \
+            }                                                                                  \
+                                                                                               \
+        private:                                                                               \
+            void Execute();                                                                    \
+                                                                                               \
+            void Success()                                                                     \
+            {                                                                                  \
+                Context().onSuccess();                                                         \
+            }                                                                                  \
+                                                                                               \
+            void Error(infra::BoundedConstString failReason)                                   \
+            {                                                                                  \
+                Context().onFailure(failReason);                                               \
+            }                                                                                  \
+        };                                                                                     \
+                                                                                               \
+        static CLASSNAME VARNAME;                                                              \
+    }                                                                                          \
+                                                                                               \
+    void CLASSNAME::Execute()
 
 #endif

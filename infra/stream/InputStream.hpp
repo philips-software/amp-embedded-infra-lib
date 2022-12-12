@@ -68,7 +68,7 @@ namespace infra
     {
     public:
         template<class Reader>
-            class WithReader;
+        class WithReader;
         class WithErrorPolicy;
 
         using InputStream::InputStream;
@@ -76,10 +76,10 @@ namespace infra
         TextInputStream operator>>(Text);
         DataInputStream& operator>>(ByteRange range);
         template<class Data>
-            DataInputStream& operator>>(Data& data);
+        DataInputStream& operator>>(Data& data);
 
         template<class Data>
-            Data Extract();
+        Data Extract();
     };
 
     class TextInputStream
@@ -87,7 +87,7 @@ namespace infra
     {
     public:
         template<class Reader>
-            class WithReader;
+        class WithReader;
         class WithErrorPolicy;
 
         using InputStream::InputStream;
@@ -136,11 +136,11 @@ namespace infra
     {
     public:
         template<class... Args>
-            WithReader(Args&&... args);
+        explicit WithReader(Args&&... args);
         template<class Storage, class... Args>
-            WithReader(Storage&& storage, const SoftFail&, Args&&... args);
+        WithReader(Storage&& storage, const SoftFail&, Args&&... args);
         template<class Storage, class... Args>
-            WithReader(Storage&& storage, const NoFail&, Args&&... args);
+        WithReader(Storage&& storage, const NoFail&, Args&&... args);
         WithReader(const WithReader& other);
         WithReader& operator=(const WithReader& other) = delete;
         ~WithReader() = default;
@@ -155,7 +155,7 @@ namespace infra
         : public DataInputStream
     {
     public:
-        WithErrorPolicy(StreamReader& reader);
+        explicit WithErrorPolicy(StreamReader& reader);
         WithErrorPolicy(StreamReader& reader, SoftFail);
         WithErrorPolicy(StreamReader& reader, NoFail);
         WithErrorPolicy(const WithErrorPolicy& other);
@@ -172,11 +172,11 @@ namespace infra
     {
     public:
         template<class... Args>
-            WithReader(Args&&... args);
+        explicit WithReader(Args&&... args);
         template<class Storage, class... Args>
-            WithReader(Storage&& storage, const SoftFail&, Args&&... args);
+        WithReader(Storage&& storage, const SoftFail&, Args&&... args);
         template<class Storage, class... Args>
-            WithReader(Storage&& storage, const NoFail&, Args&&... args);
+        WithReader(Storage&& storage, const NoFail&, Args&&... args);
         WithReader(const WithReader& other);
         WithReader& operator=(const WithReader& other) = delete;
         ~WithReader() = default;
@@ -191,7 +191,7 @@ namespace infra
         : public TextInputStream
     {
     public:
-        WithErrorPolicy(StreamReader& writer);
+        explicit WithErrorPolicy(StreamReader& writer);
         WithErrorPolicy(StreamReader& writer, SoftFail);
         WithErrorPolicy(StreamReader& writer, NoFail);
         WithErrorPolicy(const WithErrorPolicy& other);

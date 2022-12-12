@@ -20,7 +20,7 @@ namespace services
             friend infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const DnsBitmap& bitmap)
             {
                 stream << infra::data << BitReverse(static_cast<uint8_t>(bitmap.bitmap)) << BitReverse(static_cast<uint8_t>(bitmap.bitmap >> 8))
-                    << BitReverse(static_cast<uint8_t>(bitmap.bitmap >> 16)) << BitReverse(static_cast<uint8_t>(bitmap.bitmap >> 24));
+                       << BitReverse(static_cast<uint8_t>(bitmap.bitmap >> 16)) << BitReverse(static_cast<uint8_t>(bitmap.bitmap >> 24));
                 return stream;
             }
 
@@ -94,7 +94,6 @@ namespace services
 
     BonjourServer::Answer::Answer(BonjourServer& server, uint16_t queryId, infra::StreamWriter& writer, uint16_t answersCount, uint16_t additionalRecordsCount)
         : server(server)
-        , queryId(queryId)
         , writer(writer)
         , answersCount(answersCount)
         , additionalRecordsCount(additionalRecordsCount)
@@ -262,7 +261,7 @@ namespace services
         : server(server)
         , reader(reader)
     {
-        CreateAnswer(countingWriter);   // First fill the answersCount and additionalRecordsCount fields
+        CreateAnswer(countingWriter); // First fill the answersCount and additionalRecordsCount fields
         reader.Rewind(startMarker);
         CreateAnswer(writer);
         reader.Rewind(startMarker);
@@ -329,10 +328,10 @@ namespace services
         {
             switch (static_cast<DnsType>(static_cast<uint16_t>(footer.type)))
             {
-                case  DnsType::dnsTypeA:
+                case DnsType::dnsTypeA:
                     answer->AddAAnswer();
                     break;
-                case  DnsType::dnsTypeAAAA:
+                case DnsType::dnsTypeAAAA:
                     answer->AddAaaaAnswer();
                     break;
                 case DnsType::dnsTypePtr:
@@ -377,11 +376,7 @@ namespace services
 
     bool BonjourServer::QuestionParser::IsFooterValid() const
     {
-        if (footer.type != infra::enum_cast(DnsType::dnsTypeA)
-            && footer.type != infra::enum_cast(DnsType::dnsTypeAAAA)
-            && footer.type != infra::enum_cast(DnsType::dnsTypePtr)
-            && footer.type != infra::enum_cast(DnsType::dnsTypeSrv)
-            && footer.type != infra::enum_cast(DnsType::dnsTypeTxt))
+        if (footer.type != infra::enum_cast(DnsType::dnsTypeA) && footer.type != infra::enum_cast(DnsType::dnsTypeAAAA) && footer.type != infra::enum_cast(DnsType::dnsTypePtr) && footer.type != infra::enum_cast(DnsType::dnsTypeSrv) && footer.type != infra::enum_cast(DnsType::dnsTypeTxt))
             return false;
 
         if (footer.class_ != infra::enum_cast(DnsClass::dnsClassIn))
@@ -505,7 +500,7 @@ namespace services
 
         waitingReader = nullptr;
     }
-    
+
     BonjourServer::StateAnnounce::StateAnnounce(BonjourServer& server)
         : server(server)
     {}

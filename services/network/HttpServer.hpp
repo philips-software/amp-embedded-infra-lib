@@ -1,9 +1,9 @@
-#ifndef DI_COMM_HTTP_SERVER_HPP
-#define DI_COMM_HTTP_SERVER_HPP
+#ifndef SERVICES_HTTP_SERVER_HPP
+#define SERVICES_HTTP_SERVER_HPP
 
-#include "infra/timer/Timer.hpp"
 #include "infra/stream/CountingInputStream.hpp"
 #include "infra/stream/LimitedInputStream.hpp"
+#include "infra/timer/Timer.hpp"
 #include "infra/util/IntrusiveForwardList.hpp"
 #include "infra/util/ProxyCreator.hpp"
 #include "infra/util/SharedOptional.hpp"
@@ -35,7 +35,7 @@ namespace services
     class HttpResponseHeaderBuilder
     {
     public:
-        HttpResponseHeaderBuilder(infra::TextOutputStream& output);
+        explicit HttpResponseHeaderBuilder(infra::TextOutputStream& output);
         HttpResponseHeaderBuilder(infra::TextOutputStream& output, infra::BoundedConstString result);
 
         void AddHeader(infra::BoundedConstString key, infra::BoundedConstString value);
@@ -155,7 +155,7 @@ namespace services
     {
     public:
         template<::size_t BufferSize>
-            using WithBuffer = infra::WithStorage<HttpServerConnectionObserver, infra::BoundedString::WithStorage<BufferSize>>;
+        using WithBuffer = infra::WithStorage<HttpServerConnectionObserver, infra::BoundedString::WithStorage<BufferSize>>;
 
         HttpServerConnectionObserver(infra::BoundedString& buffer, HttpPageServer& httpServer);
 
@@ -173,10 +173,14 @@ namespace services
         virtual void TakeOverConnection(ConnectionObserver& newObserver) override;
 
     protected:
-        virtual void SendingHttpResponse(infra::BoundedConstString response) {}
-        virtual void ReceivedHttpRequest(infra::BoundedConstString request) {}
+        virtual void SendingHttpResponse(infra::BoundedConstString response)
+        {}
+
+        virtual void ReceivedHttpRequest(infra::BoundedConstString request)
+        {}
 
         virtual void SetIdle();
+        virtual void RequestIsNowInProgress();
 
         // Implementation of HttpPageServer
         virtual HttpPage* PageForRequest(const HttpRequestParser& request) override;
@@ -186,7 +190,6 @@ namespace services
         void ReceivedRequest(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
         void TryHandleRequest(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
         void HandleRequest(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
-        void RequestIsNowInProgress();
         void ServePage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
         void DataReceivedForPage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
         void PageReaderClosed();
@@ -227,7 +230,7 @@ namespace services
     {
     public:
         template<::size_t BufferSize>
-            using WithBuffer = infra::WithStorage<DefaultHttpServer, infra::BoundedString::WithStorage<BufferSize>>;
+        using WithBuffer = infra::WithStorage<DefaultHttpServer, infra::BoundedString::WithStorage<BufferSize>>;
 
         DefaultHttpServer(infra::BoundedString& buffer, ConnectionFactory& connectionFactory, uint16_t port);
 

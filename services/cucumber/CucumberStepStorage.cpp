@@ -26,7 +26,7 @@ namespace
             ++iterator;
             ++skippedSize;
         }
-        
+
         return skippedSize;
     }
 
@@ -114,7 +114,7 @@ namespace services
         Match matchResult{};
         uint8_t nrStepMatches = 0;
         uint8_t count = 0;
- 
+
         for (auto& step : stepList)
         {
             if (MatchesStepName(step, nameToMatch))
@@ -144,12 +144,12 @@ namespace services
         return *std::next(stepList.begin(), id);
     }
 
-    void CucumberStepStorage::AddStep(const CucumberStep& step)
+    void CucumberStepStorage::AddStep(CucumberStep& step)
     {
         stepList.push_back(step);
     }
 
-    void CucumberStepStorage::DeleteStep(const CucumberStep& step)
+    void CucumberStepStorage::DeleteStep(CucumberStep& step)
     {
         stepList.erase(step);
     }

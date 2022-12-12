@@ -1,6 +1,6 @@
+#include "services/network/ConnectionMbedTls.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "services/network/CertificatesMbedTls.hpp"
-#include "services/network/ConnectionMbedTls.hpp"
 
 namespace services
 {
@@ -10,7 +10,9 @@ namespace services
         , randomDataGenerator(randomDataGenerator)
         , server(parameters.parameters.Is<ServerParameters>())
         , clientSession(parameters.parameters.Is<ClientParameters>() ? &parameters.parameters.Get<ClientParameters>().clientSession : nullptr)
-        , receiveReader([this]() { keepAliveForReader = nullptr; })
+        , clientSessionObtained(parameters.parameters.Is<ClientParameters>() ? &parameters.parameters.Get<ClientParameters>().clientSessionObtained : nullptr)
+        , receiveReader([this]()
+              { keepAliveForReader = nullptr; })
     {
         mbedtls_ssl_init(&sslContext);
         mbedtls_ssl_config_init(&sslConfig);
@@ -50,7 +52,7 @@ namespace services
         }
         else
         {
-            if (!server && clientSession->private_tls_version != 0)
+            if (!server && *clientSessionObtained)
             {
                 result = mbedtls_ssl_set_session(&sslContext, clientSession);
                 assert(result == 0);
@@ -64,8 +66,7 @@ namespace services
 
     int ConnectionMbedTls::GetAuthMode(const ParametersWorkaround& parameters) const
     {
-        auto certificateValidation = server ? parameters.parameters.Get<ServerParameters>().certificateValidation :
-            parameters.parameters.Get<ClientParameters>().certificateValidation;
+        auto certificateValidation = server ? parameters.parameters.Get<ServerParameters>().certificateValidation : parameters.parameters.Get<ClientParameters>().certificateValidation;
 
         switch (certificateValidation)
         {
@@ -123,7 +124,7 @@ namespace services
             receiveBuffer.resize(receiveBuffer.max_size());
             infra::ByteRange buffer = receiveBuffer.contiguous_range(receiveBuffer.begin() + newBufferStart);
 
-            int result = mbedtls_ssl_read(&sslContext, reinterpret_cast<unsigned char*>(buffer.begin()), buffer.size());
+            int result = mbedtls_ssl_read(&sslContext, buffer.begin(), buffer.size());
             if (result == MBEDTLS_ERR_SSL_WANT_WRITE || result == MBEDTLS_ERR_SSL_WANT_READ)
             {
                 receiveBuffer.resize(newBufferStart);
@@ -134,7 +135,7 @@ namespace services
                 receiveBuffer.resize(newBufferStart);
                 break;
             }
-            else if (result == MBEDTLS_ERR_SSL_BAD_INPUT_DATA)  // Precondition failure
+            else if (result == MBEDTLS_ERR_SSL_BAD_INPUT_DATA) // Precondition failure
             {
                 TlsReadFailure(result);
                 std::abort();
@@ -154,11 +155,11 @@ namespace services
         {
             dataReceivedScheduled = true;
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object)
-            {
+                {
                 object->dataReceivedScheduled = false;
                 if (object->Connection::IsAttached())
-                    object->Observer().DataReceived();
-            }, SharedFromThis());
+                    object->Observer().DataReceived(); },
+                SharedFromThis());
         }
     }
 
@@ -261,11 +262,11 @@ namespace services
             auto requestedSize = requestedSendSize;
 
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([requestedSize](const infra::SharedPtr<ConnectionMbedTls>& object)
-            {
+                {
                 infra::SharedPtr<StreamWriterMbedTls> stream = object->streamWriter.Emplace(*object, requestedSize);
                 if (object->Connection::IsAttached())
-                    object->Observer().SendStreamAvailable(std::move(stream));
-            }, SharedFromThis());
+                    object->Observer().SendStreamAvailable(std::move(stream)); },
+                SharedFromThis());
 
             requestedSendSize = 0;
         }
@@ -279,12 +280,12 @@ namespace services
 
     int ConnectionMbedTls::StaticSslSend(void* context, const unsigned char* buffer, std::size_t size)
     {
-        return reinterpret_cast<ConnectionMbedTls*>(context)->SslSend(infra::ConstByteRange(reinterpret_cast<const uint8_t*>(buffer), reinterpret_cast<const uint8_t*>(buffer) + size));
+        return reinterpret_cast<ConnectionMbedTls*>(context)->SslSend(infra::ConstByteRange(buffer, buffer + size));
     }
 
-    int ConnectionMbedTls::StaticSslReceive(void *context, unsigned char* buffer, size_t size)
+    int ConnectionMbedTls::StaticSslReceive(void* context, unsigned char* buffer, size_t size)
     {
-        return reinterpret_cast<ConnectionMbedTls*>(context)->SslReceive(infra::ByteRange(reinterpret_cast<uint8_t*>(buffer), reinterpret_cast<uint8_t*>(buffer) + size));
+        return reinterpret_cast<ConnectionMbedTls*>(context)->SslReceive(infra::ByteRange(buffer, buffer + size));
     }
 
     int ConnectionMbedTls::SslSend(infra::ConstByteRange buffer)
@@ -300,11 +301,11 @@ namespace services
             {
                 flushScheduled = true;
                 infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object)
-                {
+                    {
                     object->flushScheduled = false;
                     object->encryptedSendWriter = nullptr;
-                    object->TryAllocateEncryptedSendStream();
-                }, SharedFromThis());
+                    object->TryAllocateEncryptedSendStream(); },
+                    SharedFromThis());
             }
 
             return buffer.size();
@@ -323,7 +324,9 @@ namespace services
 
         if (!streamBuffer.empty())
         {
-            infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object) { object->TrySend(); }, SharedFromThis());
+            infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object)
+                { object->TrySend(); },
+                SharedFromThis());
             return streamBuffer.size();
         }
         else
@@ -336,11 +339,11 @@ namespace services
         {
             infra::ConstByteRange range = infra::MakeRange(sendBuffer);
             int result = initialHandshake
-                ? mbedtls_ssl_handshake(&sslContext)
-                : mbedtls_ssl_write(&sslContext, reinterpret_cast<const unsigned char*>(range.begin()), range.size());
+                             ? mbedtls_ssl_handshake(&sslContext)
+                             : mbedtls_ssl_write(&sslContext, range.begin(), range.size());
             if (result == MBEDTLS_ERR_SSL_WANT_WRITE || result == MBEDTLS_ERR_SSL_WANT_READ)
                 return;
-            else if (result == MBEDTLS_ERR_SSL_BAD_INPUT_DATA)  // Precondition failure
+            else if (result == MBEDTLS_ERR_SSL_BAD_INPUT_DATA) // Precondition failure
             {
                 TlsWriteFailure(result);
                 std::abort();
@@ -352,7 +355,9 @@ namespace services
                 // Since TrySend may be invoked from the destructor of StreamWriterMbedTls, and since ConnectionMbedTls holds the storage of that stream writer,
                 // we may not directly abort the connection here, since that would result in the stream writer not being able to be deallocted.
                 // Instead, schedule the abort.
-                infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object) { object->ConnectionObserver::Subject().AbortAndDestroy(); }, SharedFromThis());
+                infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object)
+                    { object->ConnectionObserver::Subject().AbortAndDestroy(); },
+                    SharedFromThis());
                 return;
             }
             else if (initialHandshake)
@@ -361,10 +366,11 @@ namespace services
 
                 if (!server)
                 {
-                    if (clientSession->private_tls_version == 0)
-                        mbedtls_ssl_session_init(&*clientSession);
+                    if (!*clientSessionObtained)
+                        mbedtls_ssl_session_init(clientSession);
 
                     result = mbedtls_ssl_get_session(&sslContext, clientSession);
+                    *clientSessionObtained = true;
                     assert(result == 0);
                 }
             }
@@ -383,7 +389,7 @@ namespace services
 
     int ConnectionMbedTls::StaticGenerateRandomData(void* data, unsigned char* output, std::size_t size)
     {
-        reinterpret_cast<ConnectionMbedTls*>(data)->GenerateRandomData(infra::ByteRange(reinterpret_cast<uint8_t*>(output), reinterpret_cast<uint8_t*>(output) + size));
+        reinterpret_cast<ConnectionMbedTls*>(data)->GenerateRandomData(infra::ByteRange(output, output + size));
         return 0;
     }
 
@@ -435,9 +441,8 @@ namespace services
         if (connection)
         {
             factory.ConnectionAccepted([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-            {
-                connection->CreatedObserver(connectionObserver);
-            }, address);
+                { connection->CreatedObserver(connectionObserver); },
+                address);
         }
         else
             creationFailed(nullptr);
@@ -473,9 +478,7 @@ namespace services
         if (connection)
         {
             clientFactory.ConnectionEstablished([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-            {
-                connection->CreatedObserver(connectionObserver);
-            });
+                { connection->CreatedObserver(connectionObserver); });
 
             factory.Remove(*this);
         }
@@ -515,8 +518,11 @@ namespace services
     ConnectionFactoryMbedTls::~ConnectionFactoryMbedTls()
     {
         mbedtls_ssl_cache_free(&serverCache);
-        if (clientSession.private_tls_version != 0)
+        if (clientSessionObtained)
+        {
             mbedtls_ssl_session_free(&clientSession);
+            clientSessionObtained = false;
+        }
     }
 
     infra::SharedPtr<void> ConnectionFactoryMbedTls::Listen(uint16_t port, ServerConnectionObserverFactory& connectionObserverFactory, IPVersions versions)
@@ -566,14 +572,17 @@ namespace services
     {
         if (address != previousAddress)
         {
-            if (clientSession.private_tls_version != 0)
+            if (clientSessionObtained)
+            {
                 mbedtls_ssl_session_free(&clientSession);
+                clientSessionObtained = false;
+            }
             clientSession = mbedtls_ssl_session();
         }
 
         previousAddress = address;
 
-        return connectionAllocator.Allocate(std::move(createdObserver), certificates, randomDataGenerator, { ConnectionMbedTls::ClientParameters{ clientSession, certificateValidation } });
+        return connectionAllocator.Allocate(std::move(createdObserver), certificates, randomDataGenerator, { ConnectionMbedTls::ClientParameters{ clientSession, clientSessionObtained, certificateValidation } });
     }
 
     void ConnectionFactoryMbedTls::Remove(ConnectionMbedTlsConnector& connector)
@@ -632,11 +641,10 @@ namespace services
     {
         assert(clientConnectionFactory != nullptr);
         clientConnectionFactory->ConnectionEstablished([this, &createdObserver](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-        {
+            {
             createdObserver(connectionObserver);
             if (connectionObserver->IsAttached())
-                static_cast<ConnectionWithHostname&>(connectionObserver->Subject()).SetHostname(Hostname());
-        });
+                static_cast<ConnectionWithHostname&>(connectionObserver->Subject()).SetHostname(Hostname()); });
         clientConnectionFactory = nullptr;
         TryConnect();
     }

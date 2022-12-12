@@ -50,6 +50,7 @@ namespace services
     struct DnsQuestionFooter
     {
         DnsQuestionFooter() = default;
+
         DnsQuestionFooter(DnsType type, DnsClass class_)
             : type(infra::enum_cast(type))
             , class_(infra::enum_cast(class_))
@@ -62,6 +63,7 @@ namespace services
     struct DnsRecordPayload
     {
         DnsRecordPayload() = default;
+
         DnsRecordPayload(DnsType type, DnsClass class_, infra::Duration ttl, uint16_t dataLength)
             : type(infra::enum_cast(type))
             , class_(infra::enum_cast(class_))
@@ -111,7 +113,7 @@ namespace services
         : public DnsHostnameParts
     {
     public:
-        DnsHostnamePartsString(infra::BoundedConstString hostname);
+        explicit DnsHostnamePartsString(infra::BoundedConstString hostname);
 
         virtual infra::BoundedConstString Current() const override;
         virtual void ConsumeCurrent() override;
@@ -161,7 +163,7 @@ namespace services
         : public DnsHostnameParts
     {
     public:
-        DnsHostnameInPartsHelper(infra::BoundedConstString part);
+        explicit DnsHostnameInPartsHelper(infra::BoundedConstString part);
         DnsHostnameInPartsHelper(const std::array<infra::BoundedConstString, S - 1>& parts, infra::BoundedConstString part);
         DnsHostnameInPartsHelper(const DnsHostnameInPartsHelper& other);
         DnsHostnameInPartsHelper& operator=(const DnsHostnameInPartsHelper& other) = delete;
@@ -186,7 +188,7 @@ namespace services
     class DnsPartsWithoutTerminationHelper
     {
     public:
-        DnsPartsWithoutTerminationHelper(const DnsHostnameParts& parts);
+        explicit DnsPartsWithoutTerminationHelper(const DnsHostnameParts& parts);
 
         friend infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const DnsPartsWithoutTerminationHelper& dnsParts);
         friend infra::TextOutputStream& operator<<(infra::TextOutputStream&& stream, const DnsPartsWithoutTerminationHelper& dnsParts);

@@ -24,13 +24,13 @@ namespace infra
         else
         {
             errorPolicy.ReportResult(true);
-            return static_cast<uint8_t>(vector.begin()[offset]);
+            return vector.begin()[offset];
         }
     }
 
     ConstByteRange StdVectorInputStreamReader::ExtractContiguousRange(std::size_t max)
     {
-        ConstByteRange result(reinterpret_cast<const uint8_t*>(vector.data()) + offset, reinterpret_cast<const uint8_t*>(vector.data()) + vector.size());
+        ConstByteRange result(vector.data() + offset, vector.data() + vector.size());
         result.shrink_from_back_to(max);
         offset += result.size();
         return result;
@@ -38,7 +38,7 @@ namespace infra
 
     ConstByteRange StdVectorInputStreamReader::PeekContiguousRange(std::size_t start)
     {
-        ConstByteRange result(reinterpret_cast<const uint8_t*>(vector.data()) + offset + start, reinterpret_cast<const uint8_t*>(vector.size()));
+        ConstByteRange result(vector.data() + offset + start, vector.data() + vector.size());
 
         return result;
     }

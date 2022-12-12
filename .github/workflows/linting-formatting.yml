@@ -7,10 +7,8 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
-env:
-  APPLY_FIXES: all
-  APPLY_FIXES_EVENT: pull_request
-  APPLY_FIXES_MODE: commit
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
@@ -20,54 +18,51 @@ jobs:
   formatter:
     name: Formatting
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
-      - uses: actions/checkout@v2
-      - uses: DoozyX/clang-format-lint-action@2ec1a72dfb593e52255693c9039e6d94984187dc
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        with:
+          persist-credentials: false
+      - uses: DoozyX/clang-format-lint-action@c3b2c943e924028b93a707a5b1b017976ab8d50c
         with:
           clangFormatVersion: 14
           inplace: true
           extensions: "cpp,hpp"
+          exclude: "./external"
+      - uses: reviewdog/action-suggester@8f83d27e749053b2029600995c115026a010408e
+        with:
+          tool_name: clang-format
+          filter_mode: diff_context
   linter:
     name: Linting
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      security-events: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
         with:
           fetch-depth: 0
-      - name: Run Linter
-        id: ml
-        uses: oxsecurity/megalinter@v6
+          persist-credentials: false
+      - uses: oxsecurity/megalinter@e7a797f9d8354b35d6580620b2af79efa0748ddf
         env:
+          APPLY_FIXES: all
           VALIDATE_ALL_CODEBASE: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload Linter artifacts
+      - uses: github/codeql-action/upload-sarif@a669cc5936cc5e1b6a362ec1ff9e410dc570d190
         if: ${{ success() }} || ${{ failure() }}
-        uses: actions/upload-artifact@v3
+        with:
+          sarif_file: megalinter-reports/megalinter-report.sarif
+      - uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb
+        if: ${{ success() }} || ${{ failure() }}
         with:
           name: linter
           path: |
             megalinter-reports
-      - name: Create PR with fixes
-        id: cpr
-        if: steps.ml.outputs.has_updated_sources == 1 && (env.APPLY_FIXES_EVENT == 'all' || env.APPLY_FIXES_EVENT == github.event_name) && env.APPLY_FIXES_MODE == 'pull_request' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
-        uses: peter-evans/create-pull-request@v4
+      - uses: reviewdog/action-suggester@8f83d27e749053b2029600995c115026a010408e
         with:
-          token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
-          commit-message: "[Linting Bot] Fix linting errors"
-          title: "[Linting Bot] Fix linting errors"
-          labels: bot
-      - name: Output PR details
-        if: steps.ml.outputs.has_updated_sources == 1 && (env.APPLY_FIXES_EVENT == 'all' || env.APPLY_FIXES_EVENT == github.event_name) && env.APPLY_FIXES_MODE == 'pull_request' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
-        run: |
-          echo "Pull-Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
-          echo "Pull-Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
-      - name: Prepare Commit
-        if: steps.ml.outputs.has_updated_sources == 1 && (env.APPLY_FIXES_EVENT == 'all' || env.APPLY_FIXES_EVENT == github.event_name) && env.APPLY_FIXES_MODE == 'commit' && github.ref != 'refs/heads/master' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
-        run: sudo chown -Rc $UID .git/
-      - name: Commit and Push fixes
-        if: steps.ml.outputs.has_updated_sources == 1 && (env.APPLY_FIXES_EVENT == 'all' || env.APPLY_FIXES_EVENT == github.event_name) && env.APPLY_FIXES_MODE == 'commit' && github.ref != 'refs/heads/master' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          branch: ${{ github.event.pull_request.head.ref || github.head_ref || github.ref }}
-          commit_message: "[Linting Bot] Fix linting errors"
+          tool_name: MegaLinter
+          filter_mode: diff_context

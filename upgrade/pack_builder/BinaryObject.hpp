@@ -1,9 +1,9 @@
 #ifndef UPGRADE_BINARY_OBJECT_HPP
 #define UPGRADE_BINARY_OBJECT_HPP
 
-#include <string>
-#include "upgrade/pack_builder/SparseVector.hpp"
 #include "upgrade/pack_builder/Elf.hpp"
+#include "upgrade/pack_builder/SparseVector.hpp"
+#include <string>
 
 namespace application
 {

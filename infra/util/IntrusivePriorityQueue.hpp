@@ -6,10 +6,10 @@
 // - Insertions and deletions are done in O(log(n)) time
 // - Finding the largest element takes O(1) time
 
+#include <cassert>
 #include <cstdlib>
 #include <functional>
 #include <utility>
-#include <cassert>
 
 namespace infra
 {
@@ -32,12 +32,12 @@ namespace infra
 
     public:
         explicit IntrusivePriorityQueue(const Compare& comp = Compare());
-        template <class InputIterator>
-            IntrusivePriorityQueue(InputIterator first, InputIterator last, const Compare& comp = Compare());
+        template<class InputIterator>
+        IntrusivePriorityQueue(InputIterator first, InputIterator last, const Compare& comp = Compare());
         IntrusivePriorityQueue(const IntrusivePriorityQueue&) = delete;
-        IntrusivePriorityQueue(IntrusivePriorityQueue&& other);
+        IntrusivePriorityQueue(IntrusivePriorityQueue&& other) noexcept;
         IntrusivePriorityQueue& operator=(const IntrusivePriorityQueue&) = delete;
-        IntrusivePriorityQueue& operator=(IntrusivePriorityQueue&& other);
+        IntrusivePriorityQueue& operator=(IntrusivePriorityQueue&& other) noexcept;
 
     public:
         bool empty() const;
@@ -51,7 +51,7 @@ namespace infra
         void clear();
         void erase(const T& value);
 
-        void swap(IntrusivePriorityQueue& x);
+        void swap(IntrusivePriorityQueue& x) noexcept;
 
     private:
         void SwapChildAndParentNodes(T& child, T& parent);
@@ -77,7 +77,7 @@ namespace infra
 
         private:
             template<class, class>
-                friend class infra::IntrusivePriorityQueue;
+            friend class infra::IntrusivePriorityQueue;
 
             T* up;
             T* left;
@@ -93,7 +93,7 @@ namespace infra
     {}
 
     template<class T, class Compare>
-    template <class InputIterator>
+    template<class InputIterator>
     IntrusivePriorityQueue<T, Compare>::IntrusivePriorityQueue(InputIterator first, InputIterator last, const Compare& comp)
         : compare(comp)
     {
@@ -102,7 +102,7 @@ namespace infra
     }
 
     template<class T, class Compare>
-    IntrusivePriorityQueue<T, Compare>::IntrusivePriorityQueue(IntrusivePriorityQueue&& other)
+    IntrusivePriorityQueue<T, Compare>::IntrusivePriorityQueue(IntrusivePriorityQueue&& other) noexcept
         : topNode(other.topNode)
         , numberOfElements(other.numberOfElements)
         , compare(std::move(other.compare))
@@ -112,7 +112,7 @@ namespace infra
     }
 
     template<class T, class Compare>
-    IntrusivePriorityQueue<T, Compare>& IntrusivePriorityQueue<T, Compare>::operator=(IntrusivePriorityQueue&& other)
+    IntrusivePriorityQueue<T, Compare>& IntrusivePriorityQueue<T, Compare>::operator=(IntrusivePriorityQueue&& other) noexcept
     {
         compare = std::move(other.compare);
         topNode = other.topNode;
@@ -288,7 +288,7 @@ namespace infra
     }
 
     template<class T, class Compare>
-    void IntrusivePriorityQueue<T, Compare>::swap(IntrusivePriorityQueue& other)
+    void IntrusivePriorityQueue<T, Compare>::swap(IntrusivePriorityQueue& other) noexcept
     {
         using std::swap;
         swap(topNode, other.topNode);

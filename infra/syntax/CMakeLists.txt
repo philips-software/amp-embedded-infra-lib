@@ -26,13 +26,19 @@ target_sources(infra.syntax PRIVATE
     XmlFormatter.hpp
 )
 
-if (TARGET_ARCH_X86)
+if (EMIL_HOST_BUILD)
     target_sources(infra.syntax PRIVATE
         JsonObjectNavigator.cpp
         JsonObjectNavigator.hpp
         JsonFileReader.cpp
         JsonFileReader.hpp
     )
+endif()
+
+emil_clangformat_target(infra.syntax)
+
+if (EMIL_ENABLE_FUZZING)
+    add_subdirectory(fuzz)
 endif()
 
 if (EMIL_BUILD_TESTS)

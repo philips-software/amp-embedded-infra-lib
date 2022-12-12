@@ -1,16 +1,12 @@
-#include "gtest/gtest.h"
 #include "hal/interfaces/Flash.hpp"
 #include "hal/interfaces/test_doubles/FlashStub.hpp"
+#include "gtest/gtest.h"
 
 class FlashAddressTest
     : public testing::Test
 {
 public:
-    FlashAddressTest()
-        : flash(3, 7)
-    {}
-
-    hal::FlashStub flash;
+    hal::FlashStub flash{ 3, 7 };
 };
 
 TEST_F(FlashAddressTest, StartAddress)

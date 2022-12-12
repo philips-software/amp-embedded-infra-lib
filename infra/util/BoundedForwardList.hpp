@@ -56,13 +56,13 @@ namespace infra
         BoundedForwardList(infra::MemoryRange<infra::StaticStorage<detail::BoundedForwardListNode<T>>> storage, InputIterator first, InputIterator last);
         BoundedForwardList(infra::MemoryRange<infra::StaticStorage<detail::BoundedForwardListNode<T>>> storage, std::initializer_list<T> initializerList);
         BoundedForwardList(infra::MemoryRange<infra::StaticStorage<detail::BoundedForwardListNode<T>>> storage, const BoundedForwardList& other);
-        BoundedForwardList(infra::MemoryRange<infra::StaticStorage<detail::BoundedForwardListNode<T>>> storage, BoundedForwardList&& other);
+        BoundedForwardList(infra::MemoryRange<infra::StaticStorage<detail::BoundedForwardListNode<T>>> storage, BoundedForwardList&& other) noexcept;
         ~BoundedForwardList();
 
         BoundedForwardList& operator=(const BoundedForwardList& other);
-        BoundedForwardList& operator=(BoundedForwardList&& other);
+        BoundedForwardList& operator=(BoundedForwardList&& other) noexcept;
         void AssignFromStorage(const BoundedForwardList& other);
-        void AssignFromStorage(BoundedForwardList&& other);
+        void AssignFromStorage(BoundedForwardList&& other) noexcept;
 
     public:
         iterator begin();
@@ -100,7 +100,7 @@ namespace infra
         void erase_slow(iterator position);
         void erase_all_after(iterator position);
 
-        void swap(BoundedForwardList& other);
+        void swap(BoundedForwardList& other) noexcept;
 
         void clear();
 
@@ -130,7 +130,7 @@ namespace infra
     };
 
     template<class T>
-        void swap(BoundedForwardList<T>& x, BoundedForwardList<T>& y);
+    void swap(BoundedForwardList<T>& x, BoundedForwardList<T>& y) noexcept;
 
     namespace detail
     {
@@ -151,9 +151,9 @@ namespace infra
             BoundedForwardListIterator();
             explicit BoundedForwardListIterator(NodeType* node);
             template<class T2>
-                BoundedForwardListIterator(const BoundedForwardListIterator<T2>& other);
+            BoundedForwardListIterator(const BoundedForwardListIterator<T2>& other);
             template<class T2>
-                BoundedForwardListIterator& operator=(const BoundedForwardListIterator<T2>& other);
+            BoundedForwardListIterator& operator=(const BoundedForwardListIterator<T2>& other);
 
             T& operator*() const;
             T* operator->() const;
@@ -213,7 +213,7 @@ namespace infra
     }
 
     template<class T>
-    BoundedForwardList<T>::BoundedForwardList(infra::MemoryRange<infra::StaticStorage<detail::BoundedForwardListNode<T>>> storage, BoundedForwardList&& other)
+    BoundedForwardList<T>::BoundedForwardList(infra::MemoryRange<infra::StaticStorage<detail::BoundedForwardListNode<T>>> storage, BoundedForwardList&& other) noexcept
         : storage(storage)
     {
         move_from_range(other.begin(), other.end());
@@ -240,7 +240,7 @@ namespace infra
     }
 
     template<class T>
-    BoundedForwardList<T>& BoundedForwardList<T>::operator=(BoundedForwardList&& other)
+    BoundedForwardList<T>& BoundedForwardList<T>::operator=(BoundedForwardList&& other) noexcept
     {
         clear();
         move_from_range(other.begin(), other.end());
@@ -255,7 +255,7 @@ namespace infra
     }
 
     template<class T>
-    void BoundedForwardList<T>::AssignFromStorage(BoundedForwardList&& other)
+    void BoundedForwardList<T>::AssignFromStorage(BoundedForwardList&& other) noexcept
     {
         *this = std::move(other);
     }
@@ -489,7 +489,7 @@ namespace infra
     }
 
     template<class T>
-    void BoundedForwardList<T>::swap(BoundedForwardList& other)
+    void BoundedForwardList<T>::swap(BoundedForwardList& other) noexcept
     {
         using std::swap;
 
@@ -559,8 +559,7 @@ namespace infra
     template<class T>
     bool BoundedForwardList<T>::operator==(const BoundedForwardList& other) const
     {
-        return size() == other.size()
-            && std::equal(begin(), end(), other.begin());
+        return size() == other.size() && std::equal(begin(), end(), other.begin());
     }
 
     template<class T>
@@ -625,14 +624,13 @@ namespace infra
     }
 
     template<class T>
-    void swap(BoundedForwardList<T>& x, BoundedForwardList<T>& y)
+    void swap(BoundedForwardList<T>& x, BoundedForwardList<T>& y) noexcept
     {
         x.swap(y);
     }
 
     namespace detail
     {
-
         template<class T>
         BoundedForwardListIterator<T>::BoundedForwardListIterator()
             : mNode(0)

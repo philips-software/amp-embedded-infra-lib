@@ -14,6 +14,7 @@ namespace infra
     TextStreamHelper TextStream(const std::function<void(infra::TextOutputStream stream)>& callback);
 
     ConstructBin& operator<<(ConstructBin& constructBin, const TextStreamHelper& helper);
+    ConstructBin& operator<<(ConstructBin&& constructBin, const TextStreamHelper& helper);
 }
 
 #endif

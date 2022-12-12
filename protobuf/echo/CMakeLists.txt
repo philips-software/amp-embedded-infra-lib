@@ -12,6 +12,8 @@ target_sources(protobuf.echo PRIVATE
     EchoInstantiation.hpp
 )
 
+emil_clangformat_target(protobuf.echo)
+
 if (BUILD_TESTING)
     add_subdirectory(test_helper)
 endif()

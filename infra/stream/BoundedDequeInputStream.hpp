@@ -11,7 +11,7 @@ namespace infra
     {
     public:
         template<std::size_t Max>
-            using WithStorage = infra::WithStorage<BoundedDequeInputStreamReader, infra::BoundedDeque<uint8_t>::WithMaxSize<Max>>;
+        using WithStorage = infra::WithStorage<BoundedDequeInputStreamReader, infra::BoundedDeque<uint8_t>::WithMaxSize<Max>>;
 
         explicit BoundedDequeInputStreamReader(infra::BoundedDeque<uint8_t>& container);
 
@@ -37,9 +37,9 @@ namespace infra
     {
     public:
         template<std::size_t Max>
-            using WithStorage = infra::WithStorage<DataInputStream::WithReader<BoundedDequeInputStreamReader>, infra::BoundedDeque<uint8_t>::WithMaxSize<Max>>;
+        using WithStorage = infra::WithStorage<DataInputStream::WithReader<BoundedDequeInputStreamReader>, infra::BoundedDeque<uint8_t>::WithMaxSize<Max>>;
 
-        BoundedDequeInputStream(infra::BoundedDeque<uint8_t>& storage);
+        explicit BoundedDequeInputStream(infra::BoundedDeque<uint8_t>& storage);
         BoundedDequeInputStream(infra::BoundedDeque<uint8_t>& storage, const SoftFail&);
         BoundedDequeInputStream(infra::BoundedDeque<uint8_t>& storage, const NoFail&);
     };

@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/util/AllocatorFixedSpace.hpp"
+#include "gtest/gtest.h"
 
 class FixedSpaceAllocatorTest
     : public testing::Test

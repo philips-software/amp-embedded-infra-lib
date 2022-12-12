@@ -39,10 +39,12 @@ namespace services
         struct ClientParameters
         {
             mbedtls_ssl_session& clientSession;
+            bool& clientSessionObtained;
             CertificateValidation certificateValidation;
         };
 
         using Parameters = infra::Variant<ServerParameters, ClientParameters>;
+
         struct ParametersWorkaround
         {
             Parameters parameters;
@@ -83,7 +85,7 @@ namespace services
         void TryAllocateSendStream();
         void TryAllocateEncryptedSendStream();
         static int StaticSslSend(void* context, const unsigned char* buffer, std::size_t size);
-        static int StaticSslReceive(void *context, unsigned char* buffer, size_t size);
+        static int StaticSslReceive(void* context, unsigned char* buffer, size_t size);
         int SslSend(infra::ConstByteRange buffer);
         int SslReceive(infra::ByteRange buffer);
         void TrySend();
@@ -120,6 +122,7 @@ namespace services
         hal::SynchronousRandomDataGenerator& randomDataGenerator;
         bool server;
         mbedtls_ssl_session* clientSession = nullptr;
+        bool* clientSessionObtained = nullptr;
         mbedtls_ssl_context sslContext;
         mbedtls_ssl_config sslConfig;
         mbedtls_ctr_drbg_context ctr_drbg;
@@ -197,7 +200,7 @@ namespace services
     };
 
 #ifdef _MSC_VER
-#pragma warning(disable:4503)
+#pragma warning(disable : 4503)
 #endif
 
     class ConnectionFactoryMbedTls
@@ -205,10 +208,7 @@ namespace services
     {
     public:
         template<std::size_t MaxConnections, std::size_t MaxListeners, std::size_t MaxConnectors>
-            using WithMaxConnectionsListenersAndConnectors = infra::WithStorage<infra::WithStorage<infra::WithStorage<ConnectionFactoryMbedTls
-                , AllocatorConnectionMbedTls::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxConnections>>
-                , AllocatorConnectionMbedTlsListener::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxListeners>>
-                , infra::BoundedList<ConnectionMbedTlsConnector>::WithMaxSize<MaxConnectors>>;
+        using WithMaxConnectionsListenersAndConnectors = infra::WithStorage<infra::WithStorage<infra::WithStorage<ConnectionFactoryMbedTls, AllocatorConnectionMbedTls::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxConnections>>, AllocatorConnectionMbedTlsListener::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxListeners>>, infra::BoundedList<ConnectionMbedTlsConnector>::WithMaxSize<MaxConnectors>>;
 
         ConnectionFactoryMbedTls(AllocatorConnectionMbedTls& connectionAllocator, AllocatorConnectionMbedTlsListener& listenerAllocator, infra::BoundedList<ConnectionMbedTlsConnector>& connectors,
             ConnectionFactory& factory, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, ConnectionMbedTls::CertificateValidation certificateValidation = ConnectionMbedTls::CertificateValidation::Default);
@@ -234,6 +234,7 @@ namespace services
         hal::SynchronousRandomDataGenerator& randomDataGenerator;
         mbedtls_ssl_cache_context serverCache;
         mbedtls_ssl_session clientSession = {};
+        bool clientSessionObtained = false;
         IPAddress previousAddress;
         ConnectionMbedTls::CertificateValidation certificateValidation;
     };
@@ -243,7 +244,7 @@ namespace services
         , public ClientConnectionObserverFactoryWithNameResolver
     {
     public:
-        ConnectionFactoryWithNameResolverForTls(ConnectionFactoryWithNameResolver& connectionFactoryWithNameResolver);
+        explicit ConnectionFactoryWithNameResolverForTls(ConnectionFactoryWithNameResolver& connectionFactoryWithNameResolver);
 
         // Implementation of ConnectionFactoryWithNameResolver
         virtual void Connect(ClientConnectionObserverFactoryWithNameResolver& factory) override;

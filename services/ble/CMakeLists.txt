@@ -14,8 +14,12 @@ target_sources(services.ble PRIVATE
     Gatt.hpp
     GattCharacteristicImpl.cpp
     GattCharacteristicImpl.hpp
+    PersistingBondStorage.cpp
+    PersistingBondStorage.hpp
     Uuids.hpp
 )
+
+emil_clangformat_target(services.ble)
 
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)

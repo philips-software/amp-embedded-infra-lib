@@ -1,7 +1,7 @@
-#include "generated/EchoAttributes.pb.h"
-#include "google/protobuf/compiler/cpp/cpp_helpers.h"
-#include "google/protobuf/stubs/strutil.h"
 #include "protobuf/protoc_echo_plugin/EchoObjects.hpp"
+#include "generated/EchoAttributes.pb.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/stubs/strutil.h"
 
 namespace application
 {
@@ -275,12 +275,14 @@ namespace application
 
     void EchoMessage::ComputeMaxMessageSize()
     {
-        struct NoMaxMessageSize {};
+        struct NoMaxMessageSize
+        {};
+
         class GenerateMaxMessageSizeVisitor
             : public EchoFieldVisitor
         {
         public:
-            GenerateMaxMessageSizeVisitor(uint32_t& maxMessageSize)
+            explicit GenerateMaxMessageSizeVisitor(uint32_t& maxMessageSize)
                 : maxMessageSize(maxMessageSize)
             {}
 
@@ -390,7 +392,7 @@ namespace application
 
             maxMessageSize = max;
         }
-        catch (NoMaxMessageSize&)   //NOSONAR
+        catch (NoMaxMessageSize&) //NOSONAR
         {}
     }
 
@@ -453,7 +455,7 @@ namespace application
     }
 
     EchoFieldUnboundedString::EchoFieldUnboundedString(const google::protobuf::FieldDescriptor& descriptor)
-        : EchoField("services::ProtoUnboundedString" , descriptor)
+        : EchoField("services::ProtoUnboundedString", descriptor)
     {}
 
     void EchoFieldUnboundedString::Accept(EchoFieldVisitor& visitor) const

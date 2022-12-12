@@ -299,9 +299,9 @@ namespace infra
 
     private:
         template<class T>
-            T GetValue(infra::BoundedConstString key);
+        T GetValue(infra::BoundedConstString key);
         template<class T>
-            infra::Optional<T> GetOptionalValue(infra::BoundedConstString key);
+        infra::Optional<T> GetOptionalValue(infra::BoundedConstString key);
 
     private:
         infra::BoundedConstString objectString;
@@ -376,7 +376,7 @@ namespace infra
         JsonObjectIterator();
 
     private:
-        JsonObjectIterator(JsonObject& object);
+        explicit JsonObjectIterator(JsonObject& object);
 
     public:
         bool operator==(const JsonObjectIterator& other) const;
@@ -431,7 +431,7 @@ namespace infra
         friend class JsonArray;
 
         template<class T>
-            friend class JsonValueArrayIterator;
+        friend class JsonValueArrayIterator;
 
     public:
         JsonArrayIterator();

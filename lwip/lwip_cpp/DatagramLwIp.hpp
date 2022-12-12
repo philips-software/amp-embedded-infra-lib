@@ -2,11 +2,11 @@
 #define LWIP_DATAGRAM_LW_IP_HPP
 
 #include "infra/timer/Timer.hpp"
+#include "infra/util/PolymorphicVariant.hpp"
 #include "infra/util/SharedObjectAllocatorFixedSize.hpp"
 #include "infra/util/SharedOptional.hpp"
-#include "infra/util/PolymorphicVariant.hpp"
-#include "lwip/udp.h"
 #include "lwip/lwip_cpp/ConnectionLwIp.hpp"
+#include "lwip/udp.h"
 #include "services/network/Datagram.hpp"
 
 namespace services
@@ -16,7 +16,7 @@ namespace services
         , public infra::EnableSharedFromThis<DatagramExchangeLwIP>
     {
     public:
-        DatagramExchangeLwIP(DatagramExchangeObserver& observer);
+        explicit DatagramExchangeLwIP(DatagramExchangeObserver& observer);
         ~DatagramExchangeLwIP();
 
         void Listen(uint16_t port, IPVersions versions);
@@ -39,7 +39,7 @@ namespace services
             : public infra::StreamReaderWithRewinding
         {
         public:
-            UdpReader(pbuf* buffer);
+            explicit UdpReader(pbuf* buffer);
             ~UdpReader();
 
             virtual void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
@@ -86,7 +86,7 @@ namespace services
             : public StateBase
         {
         public:
-            StateIdle(DatagramExchangeLwIP& datagramExchange);
+            explicit StateIdle(DatagramExchangeLwIP& datagramExchange);
 
             virtual void RequestSendStream(std::size_t sendSize) override;
             virtual void RequestSendStream(std::size_t sendSize, UdpSocket remote) override;

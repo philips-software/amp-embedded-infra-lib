@@ -1,4 +1,4 @@
-if (TARGET_ARCH_X86)
+if (EMIL_HOST_BUILD)
     add_executable(upgrade.security_key_generator)
     install(TARGETS upgrade.security_key_generator EXPORT emilUpgradeTargets)
 
@@ -15,4 +15,6 @@ if (TARGET_ARCH_X86)
         MaterialGenerator.cpp
         MaterialGenerator.hpp
     )
+
+    emil_clangformat_target(upgrade.security_key_generator)
 endif()

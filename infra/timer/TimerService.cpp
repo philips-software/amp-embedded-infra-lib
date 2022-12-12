@@ -94,7 +94,7 @@ namespace infra
     {
         holdUpdate = true;
 
-        for (timerIterator = scheduledTimers.begin(); timerIterator != scheduledTimers.end(); )
+        for (timerIterator = scheduledTimers.begin(); timerIterator != scheduledTimers.end();)
             timerIterator++->Jumped(from, to);
 
         holdUpdate = false;

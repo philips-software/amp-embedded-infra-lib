@@ -1,5 +1,0 @@
-if (TARGET_BUILD_WIN)
-    add_executable(examples.sntp_client)
-    target_sources(examples.sntp_client PRIVATE MainWin.cpp)
-    target_link_libraries(examples.sntp_client PUBLIC hal.generic services.network_win services.util)
-endif()

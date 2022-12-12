@@ -216,7 +216,7 @@ namespace infra
     {
     public:
         template<std::size_t MaxTagLength, std::size_t MaxValueLength, std::size_t MaxObjectNesting>
-            struct WithBuffers;
+        struct WithBuffers;
 
         JsonStreamingObjectParser(infra::BoundedString tagBuffer, infra::BoundedString valueBuffer, char& subObjects, JsonObjectVisitor& visitor);
 
@@ -230,9 +230,9 @@ namespace infra
     {
     public:
         template<std::size_t MaxTagLength, std::size_t MaxValueLength, std::size_t MaxObjectNesting>
-            struct WithBuffers;
+        struct WithBuffers;
 
-            JsonStreamingArrayParser(infra::BoundedString tagBuffer, infra::BoundedString valueBuffer, char& subObjects, JsonArrayVisitor& visitor);
+        JsonStreamingArrayParser(infra::BoundedString tagBuffer, infra::BoundedString valueBuffer, char& subObjects, JsonArrayVisitor& visitor);
 
         void Feed(infra::BoundedConstString data);
 
@@ -253,7 +253,7 @@ namespace infra
         : public Buffers<MaxTagLength, MaxValueLength, MaxObjectNesting>
         , public JsonStreamingObjectParser
     {
-        WithBuffers(JsonObjectVisitor& visitor);
+        explicit WithBuffers(JsonObjectVisitor& visitor);
     };
 
     template<std::size_t MaxTagLength, std::size_t MaxValueLength, std::size_t MaxObjectNesting>
@@ -261,14 +261,14 @@ namespace infra
         : public Buffers<MaxTagLength, MaxValueLength, MaxObjectNesting>
         , public JsonStreamingArrayParser
     {
-        WithBuffers(JsonArrayVisitor& visitor);
+        explicit WithBuffers(JsonArrayVisitor& visitor);
     };
 
     class JsonObjectVisitorDecorator
         : public JsonObjectVisitor
     {
     protected:
-        JsonObjectVisitorDecorator(JsonObjectVisitor& decorated);
+        explicit JsonObjectVisitorDecorator(JsonObjectVisitor& decorated);
 
     public:
         virtual void VisitString(infra::BoundedConstString tag, infra::BoundedConstString value) override;
@@ -292,15 +292,15 @@ namespace infra
     template<std::size_t MaxTagLength, std::size_t MaxValueLength, std::size_t MaxObjectNesting>
     JsonStreamingObjectParser::WithBuffers<MaxTagLength, MaxValueLength, MaxObjectNesting>::WithBuffers(JsonObjectVisitor& visitor)
         : JsonStreamingObjectParser(this->tagBufferStorage, this->valueBufferStorage,
-            reinterpret_cast<char&>(static_cast<infra::BoundedVector<infra::PolymorphicVariant<JsonSubParser, JsonSubObjectParser, JsonSubArrayParser>>&>(this->subObjectsStorage)),
-            visitor)
+              reinterpret_cast<char&>(static_cast<infra::BoundedVector<infra::PolymorphicVariant<JsonSubParser, JsonSubObjectParser, JsonSubArrayParser>>&>(this->subObjectsStorage)),
+              visitor)
     {}
 
     template<std::size_t MaxTagLength, std::size_t MaxValueLength, std::size_t MaxObjectNesting>
     JsonStreamingArrayParser::WithBuffers<MaxTagLength, MaxValueLength, MaxObjectNesting>::WithBuffers(JsonArrayVisitor& visitor)
         : JsonStreamingArrayParser(this->tagBufferStorage, this->valueBufferStorage,
-            reinterpret_cast<char&>(static_cast<infra::BoundedVector<infra::PolymorphicVariant<JsonSubParser, JsonSubObjectParser, JsonSubArrayParser>>&>(this->subObjectsStorage)),
-            visitor)
+              reinterpret_cast<char&>(static_cast<infra::BoundedVector<infra::PolymorphicVariant<JsonSubParser, JsonSubObjectParser, JsonSubArrayParser>>&>(this->subObjectsStorage)),
+              visitor)
     {}
 }
 

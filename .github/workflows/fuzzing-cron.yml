@@ -1,0 +1,47 @@
+---
+name: Fuzzing Cron Tasks
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *" # Once a day at midnight
+
+permissions:
+  contents: read
+
+jobs:
+  fuzz_prune:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build Fuzzers
+        id: build
+        uses: google/clusterfuzzlite/actions/build_fuzzers@1e163f06cba7820da5154ac9fe1a32d7fe6f73a3
+        with:
+          language: c++
+          sanitizer: coverage
+      - name: Run Fuzzers
+        id: run
+        uses: google/clusterfuzzlite/actions/run_fuzzers@1e163f06cba7820da5154ac9fe1a32d7fe6f73a3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          fuzz-seconds: 600
+          mode: prune
+          storage-repo: https://${{ secrets.METRICS_TOKEN }}@github.com/philips-software/amp-embedded-infra-lib-metrics.git
+  fuzz_coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build Fuzzers
+        id: build
+        uses: google/clusterfuzzlite/actions/build_fuzzers@1e163f06cba7820da5154ac9fe1a32d7fe6f73a3
+        with:
+          language: c++
+          sanitizer: coverage
+      - name: Run Fuzzers
+        id: run
+        uses: google/clusterfuzzlite/actions/run_fuzzers@1e163f06cba7820da5154ac9fe1a32d7fe6f73a3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          fuzz-seconds: 600
+          mode: coverage
+          sanitizer: coverage
+          storage-repo: https://${{ secrets.METRICS_TOKEN }}@github.com/philips-software/amp-embedded-infra-lib-metrics.git

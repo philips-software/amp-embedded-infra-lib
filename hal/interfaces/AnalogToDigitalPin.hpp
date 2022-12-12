@@ -35,7 +35,7 @@ namespace hal
     {
     public:
         template<class... Args>
-            AnalogToDigitalPinConverter(Args&&... args);
+        AnalogToDigitalPinConverter(Args&&... args);
 
         void Measure(const infra::Function<void(infra::Quantity<Unit, Storage> value)>& onDone);
 
@@ -56,9 +56,7 @@ namespace hal
     {
         this->onDone = onDone;
         Impl::Measure([this](int32_t value)
-        {
-            this->onDone(infra::Quantity<Conversion, Storage>(value));
-        });
+            { this->onDone(infra::Quantity<Conversion, Storage>(value)); });
     }
 }
 

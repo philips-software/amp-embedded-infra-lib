@@ -1,7 +1,7 @@
 #include "services/util/TimeWithLocalization.hpp"
+#include "infra/stream/StreamManipulators.hpp"
 #include "infra/stream/StringInputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
-#include "infra/stream/StreamManipulators.hpp"
 #include "infra/timer/PartitionedTime.hpp"
 
 namespace services
@@ -25,14 +25,6 @@ namespace services
     infra::DerivedTimerService& TimeWithLocalization::Local()
     {
         return localTimeTimerService;
-    }
-
-    tm* TimeWithLocalization::GetTm(infra::TimePoint timePoint)
-    {
-        auto timeAsTimeType = std::chrono::system_clock::to_time_t(timePoint);
-        auto timeAsGmTime = std::gmtime(&timeAsTimeType);
-        assert(timeAsGmTime != nullptr);
-        return timeAsGmTime;
     }
 
     infra::Optional<infra::TimePoint> TimeWithLocalization::TimePointFromString(infra::BoundedConstString timePointString)
@@ -99,7 +91,7 @@ namespace services
     {
         return localTimeWithoutDaylightSavingTimerService.GetCurrentShift() + localTimeTimerService.GetCurrentShift();
     }
-    
+
     infra::Duration TimeWithLocalization::GetOffsetDaylightSaving() const
     {
         return localTimeTimerService.GetCurrentShift();
@@ -111,7 +103,7 @@ namespace services
     }
 }
 
-infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const infra::TimePoint& timePoint)
+infra::TextOutputStream operator<<(infra::TextOutputStream stream, const infra::TimePoint& timePoint)
 {
     auto time = infra::PartitionedTime(std::chrono::system_clock::to_time_t(timePoint));
 
@@ -126,12 +118,12 @@ infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const infra
     return stream;
 }
 
-infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const infra::Duration& duration)
+infra::TextOutputStream operator<<(infra::TextOutputStream stream, const infra::Duration& duration)
 {
     const auto isNegative = duration < infra::Duration::zero();
     const auto d = isNegative ? -duration : duration;
     const auto w02 = infra::Width(2, '0');
-    stream << (isNegative ? '-' : '+')  << w02 << static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::hours>(d).count())
-           << infra::resetWidth << ":"  << w02 << static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::minutes>(d).count() % 60);
+    stream << (isNegative ? '-' : '+') << w02 << static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::hours>(d).count())
+           << infra::resetWidth << ":" << w02 << static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::minutes>(d).count() % 60);
     return stream;
 }

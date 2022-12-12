@@ -60,7 +60,7 @@ Table 1 shows the different letter case forms used in identifiers:
 | *Function name* | MixedCase |
 | *Class name* | MixedCase |
 | *Enum name* | MixedCase |
-| *Enum members* | camelCase | Enum members function like variables in the sense that they contain values. Therefore, the follow the Variable name definition.
+| *Enum members* | camelCase | Enum members function like variables in the sense that they contain values. Therefore, they follow the Variable name definition.
 | *Namespace name* | lower_case | Namespace names should be short and only consist of one word.
 | *Template parameter* | MixedCase | Both type and value parameters follow this definition.
 | *Macro names* | UPPER_CASE |
@@ -696,5 +696,5 @@ namespace infra
 
 [source,yaml]
 ----
-include::../examples/.clang-format[]
+include::example$clangformat.yaml[]
 ----

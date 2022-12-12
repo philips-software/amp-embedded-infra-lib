@@ -88,15 +88,15 @@ namespace infra
     template<class T>
     struct DecayFormatType
     {
-        typedef typename std::remove_reference<T>::type PlainType;
+        using PlainType = typename std::remove_reference<T>::type;
         using type = typename std::conditional<
             std::is_integral<PlainType>::value,
             PlainType const,
-            PlainType const &>::type;
+            PlainType const&>::type;
     };
 
     template<std::size_t N>
-    struct DecayFormatType<const char(&)[N]>
+    struct DecayFormatType<const char (&)[N]>
     {
         using type = const char*;
     };
@@ -141,12 +141,11 @@ namespace infra
     class FormatHelper
     {
     public:
-       explicit FormatHelper(const char* format, Args&&... args)
+        explicit FormatHelper(const char* format, Args&&... args)
             : format(format)
             , args(std::forward<Args>(args)...)
             , formatters{ MakeFormatter() }
         {}
-
 
         friend TextOutputStream& operator<<(TextOutputStream& stream, FormatHelper&& f)
         {
@@ -164,7 +163,7 @@ namespace infra
         template<std::size_t... Is>
         std::vector<FormatterBase*> Make(std::index_sequence<Is...>)
         {
-            return{ &std::get<Is>(args)... };
+            return { &std::get<Is>(args)... };
         }
 
         std::vector<FormatterBase*> MakeFormatter()
@@ -173,7 +172,7 @@ namespace infra
         };
 
         const char* format;
-        std::tuple<Args ...> args;
+        std::tuple<Args...> args;
         std::vector<FormatterBase*> formatters{ sizeof...(Args), nullptr };
         uint32_t autoIndex{};
     };

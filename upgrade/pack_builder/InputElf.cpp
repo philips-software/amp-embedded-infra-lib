@@ -1,12 +1,11 @@
-#include "upgrade/pack_builder/InputBinary.hpp"
 #include "upgrade/pack_builder/InputElf.hpp"
 #include "upgrade/pack_builder/Elf.hpp"
+#include "upgrade/pack_builder/InputBinary.hpp"
 
 namespace application
 {
     InputElf::InputElf(const std::string& targetName, const std::string& fileName, uint32_t offset, hal::FileSystem& fileSystem, const ImageSecurity& imageSecurity)
         : Input(targetName)
-        , offset(offset)
         , imageSecurity(imageSecurity)
     {
         contents.AddElf(fileSystem.ReadBinaryFile(fileName), offset, fileName);

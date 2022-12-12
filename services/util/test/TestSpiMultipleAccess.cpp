@@ -1,8 +1,8 @@
-#include "gtest/gtest.h"
 #include "hal/interfaces/test_doubles/CommunicationConfiguratorMock.hpp"
 #include "hal/interfaces/test_doubles/SpiMock.hpp"
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "services/util/SpiMultipleAccess.hpp"
+#include "gtest/gtest.h"
 
 class SpiMultipleAccessTest
     : public testing::Test
@@ -23,7 +23,7 @@ public:
 
 TEST_F(SpiMultipleAccessTest, FirstSendAndReceiveIsExecuted)
 {
-    std::vector<uint8_t> buffer = {0};
+    std::vector<uint8_t> buffer = { 0 };
 
     EXPECT_CALL(spi, SetChipSelectConfiguratorMock(testing::_));
     EXPECT_CALL(spi, SendAndReceiveMock(buffer, infra::MemoryRange<uint8_t>(buffer), hal::SpiAction::stop, testing::_));

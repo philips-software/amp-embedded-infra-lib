@@ -1,16 +1,17 @@
+#include "services/network/WebSocketClientConnectionObserver.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "infra/stream/SavedMarkerStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/util/Endian.hpp"
 #include "mbedtls/sha1.h"
 #include "services/network/HttpServer.hpp"
-#include "services/network/WebSocketClientConnectionObserver.hpp"
 #include <cassert>
 
 namespace services
 {
     WebSocketClientConnectionObserver::WebSocketClientConnectionObserver(infra::BoundedConstString path)
-        : streamWriter([this]() { StreamWriterAllocatable(); })
+        : streamWriter([this]()
+              { StreamWriterAllocatable(); })
     {}
 
     void WebSocketClientConnectionObserver::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -531,9 +532,7 @@ namespace services
 
         initiation = infra::none;
         factory.ConnectionEstablished([webSocketConnection](infra::SharedPtr<ConnectionObserver> connectionObserver)
-        {
-            webSocketConnection->Attach(connectionObserver);
-        });
+            { webSocketConnection->Attach(connectionObserver); });
     }
 
     void WebSocketClientFactorySingleConnection::InitiationError(WebSocketClientObserverFactory::ConnectFailReason reason)
@@ -552,14 +551,14 @@ namespace services
         WebSocketClientInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator, const Creators& creators)
         : clientObserverFactory(clientObserverFactory)
         , result(result)
-        , randomDataGenerator(randomDataGenerator)
         , initiationClient(creators.httpClientInitiationCreator, clientObserverFactory, *this, randomDataGenerator)
     {}
 
     void WebSocketClientFactorySingleConnection::WebSocketClientInitiation::CancelConnect(const infra::Function<void()>& onDone)
     {
         onStopped = onDone;
-        initiationClient->Stop([this]() { auto onDone = onStopped; result.InitiationCancelled(); onDone(); });
+        initiationClient->Stop([this]()
+            { auto onDone = onStopped; result.InitiationCancelled(); onDone(); });
     }
 
     WebSocketClientObserverFactory& WebSocketClientFactorySingleConnection::WebSocketClientInitiation::Factory()

@@ -11,7 +11,7 @@ namespace services
         , public HttpClientObserver
     {
     public:
-        HttpClientAuthentication(infra::BoundedVector<HttpHeader>& headersWithAuthorization);
+        explicit HttpClientAuthentication(infra::BoundedVector<HttpHeader>& headersWithAuthorization);
 
         // Implementation of HttpClient
         virtual void Get(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;

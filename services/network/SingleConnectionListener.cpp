@@ -20,7 +20,9 @@ namespace services
         this->createdObserver = std::move(createdObserver);
         this->address = address;
 
-        Stop([this]() { CreateObserver(); }, false);
+        Stop([this]()
+            { CreateObserver(); },
+            false);
     }
 
     void SingleConnectionListener::Stop(const infra::Function<void()>& onDone, bool force)

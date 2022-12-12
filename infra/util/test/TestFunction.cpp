@@ -1,7 +1,7 @@
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
 #include "infra/util/Function.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 TEST(FunctionTest, TestConstructedEmpty)
 {
@@ -17,7 +17,7 @@ TEST(FunctionTest, TestConstructedEmptyByNullptr)
 
 TEST(FunctionTest, TestConstructedNotEmpty)
 {
-    infra::Function<void()> f([]() {} );
+    infra::Function<void()> f([]() {});
     EXPECT_TRUE(static_cast<bool>(f));
 }
 
@@ -41,7 +41,8 @@ TEST(FunctionTest, TestConstructedWithTheEmptyFunction)
 TEST(FunctionTest, TestCall)
 {
     infra::MockCallback<void()> m;
-    infra::Function<void()> f([&m]() { m.callback(); } );
+    infra::Function<void()> f([&m]()
+        { m.callback(); });
     EXPECT_CALL(m, callback());
     f();
 }
@@ -49,7 +50,8 @@ TEST(FunctionTest, TestCall)
 TEST(FunctionTest, TestInvoke0)
 {
     infra::MockCallback<void()> m;
-    infra::Function<void()> f([&m]() { m.callback(); });
+    infra::Function<void()> f([&m]()
+        { m.callback(); });
     EXPECT_CALL(m, callback());
     f.Invoke(std::make_tuple());
 }
@@ -57,7 +59,8 @@ TEST(FunctionTest, TestInvoke0)
 TEST(FunctionTest, TestInvoke1)
 {
     infra::MockCallback<void(int)> m;
-    infra::Function<void(int)> f([&m](int x) { m.callback(x); });
+    infra::Function<void(int)> f([&m](int x)
+        { m.callback(x); });
     EXPECT_CALL(m, callback(1));
     f.Invoke(std::make_tuple(1));
 }
@@ -65,7 +68,8 @@ TEST(FunctionTest, TestInvoke1)
 TEST(FunctionTest, TestInvoke2)
 {
     infra::MockCallback<void(int, int)> m;
-    infra::Function<void(int, int)> f([&m](int x, int y) { m.callback(x, y); });
+    infra::Function<void(int, int)> f([&m](int x, int y)
+        { m.callback(x, y); });
     EXPECT_CALL(m, callback(1, 2));
     f.Invoke(std::make_tuple(1, 2));
 }
@@ -73,7 +77,8 @@ TEST(FunctionTest, TestInvoke2)
 TEST(FunctionTest, TestInvoke3)
 {
     infra::MockCallback<void(int, int, int)> m;
-    infra::Function<void(int, int, int)> f([&m](int x, int y, int z) { m.callback(x, y, z); });
+    infra::Function<void(int, int, int)> f([&m](int x, int y, int z)
+        { m.callback(x, y, z); });
     EXPECT_CALL(m, callback(1, 2, 3));
     f.Invoke(std::make_tuple(1, 2, 3));
 }
@@ -88,7 +93,8 @@ TEST(FunctionTest, TestCopyConstructedFromEmptyFunction)
 TEST(FunctionTest, TestCopyConstruct)
 {
     infra::MockCallback<void()> m;
-    infra::Function<void()> f([&m]() { m.callback(); } );
+    infra::Function<void()> f([&m]()
+        { m.callback(); });
     infra::Function<void()> f2(f);
     EXPECT_TRUE(static_cast<bool>(f));
     EXPECT_CALL(m, callback());
@@ -98,7 +104,8 @@ TEST(FunctionTest, TestCopyConstruct)
 TEST(FunctionTest, TestCopyConstructTwice)
 {
     infra::MockCallback<void()> m;
-    infra::Function<void()> f([&m]() { m.callback(); });
+    infra::Function<void()> f([&m]()
+        { m.callback(); });
     infra::Function<void()> f2(f);
     infra::Function<void()> f3(f2);
     EXPECT_TRUE(static_cast<bool>(f));
@@ -117,7 +124,8 @@ TEST(FunctionTest, TestCopyAssignFromEmptyFunction)
 TEST(FunctionTest, TestCopyAssign)
 {
     infra::MockCallback<void()> m;
-    infra::Function<void()> f([&m]() { m.callback(); } );
+    infra::Function<void()> f([&m]()
+        { m.callback(); });
     infra::Function<void()> f2;
     f2 = f;
     EXPECT_TRUE(static_cast<bool>(f));
@@ -128,7 +136,8 @@ TEST(FunctionTest, TestCopyAssign)
 TEST(FunctionTest, TestAssignNullptr)
 {
     infra::MockCallback<void()> m;
-    infra::Function<void()> f([&m]() { m.callback(); } );
+    infra::Function<void()> f([&m]()
+        { m.callback(); });
     f = nullptr;
     EXPECT_FALSE(static_cast<bool>(f));
 }
@@ -137,7 +146,10 @@ TEST(FunctionTest, TestAssign)
 {
     infra::MockCallback<void()> m;
     infra::Function<void()> f;
-    f = [&m]() { m.callback(); };
+    f = [&m]()
+    {
+        m.callback();
+    };
     EXPECT_CALL(m, callback());
     f();
 }
@@ -145,7 +157,8 @@ TEST(FunctionTest, TestAssign)
 TEST(FunctionTest, TestSwapFilledEmpty)
 {
     infra::MockCallback<void()> m;
-    infra::Function<void()> f([&m]() { m.callback(); } );
+    infra::Function<void()> f([&m]()
+        { m.callback(); });
     infra::Function<void()> f2;
     swap(f, f2);
     EXPECT_FALSE(static_cast<bool>(f));
@@ -156,7 +169,8 @@ TEST(FunctionTest, TestSwapFilledEmpty)
 TEST(FunctionTest, TestSwapFilledFilled)
 {
     infra::MockCallback<void()> m;
-    infra::Function<void()> f([&m]() { m.callback(); });
+    infra::Function<void()> f([&m]()
+        { m.callback(); });
     infra::Function<void()> f2(infra::emptyFunction);
     swap(f, f2);
     EXPECT_TRUE(static_cast<bool>(f));
@@ -168,7 +182,8 @@ TEST(FunctionTest, TestSwapEmptyFilled)
 {
     infra::MockCallback<void()> m;
     infra::Function<void()> f;
-    infra::Function<void()> f2([&m]() { m.callback(); });
+    infra::Function<void()> f2([&m]()
+        { m.callback(); });
     swap(f, f2);
     EXPECT_FALSE(static_cast<bool>(f2));
     EXPECT_CALL(m, callback());
@@ -187,14 +202,16 @@ TEST(FunctionTest, TestSwapEmptyEmpty)
 
 TEST(FunctionTest, TestReturnValue)
 {
-    infra::Function<int()> f([]() { return 1; } );
+    infra::Function<int()> f([]()
+        { return 1; });
     EXPECT_EQ(1, f());
 }
 
 TEST(FunctionTest, TestParameter)
 {
     infra::MockCallback<void(int)> m;
-    infra::Function<void(int)> f([&m](int x) { m.callback(x); } );
+    infra::Function<void(int)> f([&m](int x)
+        { m.callback(x); });
     EXPECT_CALL(m, callback(1));
     f(1);
 }
@@ -202,10 +219,12 @@ TEST(FunctionTest, TestParameter)
 TEST(FunctionProxyTest, TestProxy)
 {
     infra::MockCallback<void()> m;
-    infra::Function<void(), 40> p([&m]() { m.callback(); } );
+    infra::Function<void(), 40> p([&m]()
+        { m.callback(); });
 
     EXPECT_CALL(m, callback());
-    infra::Function<void(), sizeof(void*)> f([&p]() { p(); });
+    infra::Function<void(), sizeof(void*)> f([&p]()
+        { p(); });
     f();
 }
 
@@ -226,7 +245,8 @@ TEST(FunctionTest, Execute)
 {
     infra::MockCallback<void()> m;
     EXPECT_CALL(m, callback());
-    infra::Execute execute([&m]() { m.callback(); });
+    infra::Execute execute([&m]()
+        { m.callback(); });
 }
 
 TEST(FunctionTest, ExecuteWithSize)
@@ -234,7 +254,8 @@ TEST(FunctionTest, ExecuteWithSize)
     infra::MockCallback<void()> m;
     EXPECT_CALL(m, callback());
     int a, b, c;
-    infra::Execute::WithExtraSize<4 * sizeof(void*)> execute([&m, a, b, c]() { m.callback(); });
+    infra::Execute::WithExtraSize<4 * sizeof(void*)> execute([&m, a, b, c]()
+        { m.callback(); });
 }
 
 TEST(FunctionTest, ExecuteOnDestruction)
@@ -242,7 +263,8 @@ TEST(FunctionTest, ExecuteOnDestruction)
     infra::MockCallback<void()> m;
 
     {
-        infra::ExecuteOnDestruction execute([&m]() { m.callback(); });
+        infra::ExecuteOnDestruction execute([&m]()
+            { m.callback(); });
 
         EXPECT_CALL(m, callback());
     }
@@ -254,8 +276,18 @@ TEST(FunctionTest, ExecuteOnDestructionWithSize)
     int a, b, c;
 
     {
-        infra::ExecuteOnDestruction::WithExtraSize<4 * sizeof(void*)> execute([&m, a, b, c]() { m.callback(); });
+        infra::ExecuteOnDestruction::WithExtraSize<4 * sizeof(void*)> execute([&m, a, b, c]()
+            { m.callback(); });
 
         EXPECT_CALL(m, callback());
     }
+}
+
+TEST(FunctionTest, TestMutable)
+{
+    infra::Function<int()> f([n = 0]() mutable
+        { return ++n; });
+    EXPECT_EQ(1, f());
+    EXPECT_EQ(2, f());
+    EXPECT_EQ(3, f());
 }

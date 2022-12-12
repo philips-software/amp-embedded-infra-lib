@@ -2,12 +2,12 @@
 #define SERVICES_MQTT_IMPL_HPP
 
 #include "infra/timer/Timer.hpp"
+#include "infra/util/BoundedDeque.hpp"
 #include "infra/util/Endian.hpp"
 #include "infra/util/PolymorphicVariant.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/network/Mqtt.hpp"
-#include "infra/util/BoundedDeque.hpp"
 
 namespace services
 {
@@ -59,10 +59,11 @@ namespace services
         {
         private:
             template<PacketType packetType>
-                struct InPlaceType {};
+            struct InPlaceType
+            {};
 
         public:
-            MqttFormatter(infra::DataOutputStream stream);
+            explicit MqttFormatter(infra::DataOutputStream stream);
 
             void MessageConnect(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password, infra::Duration keepAlive);
             static std::size_t MessageSizeConnect(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password);
@@ -91,7 +92,7 @@ namespace services
         class MqttParser
         {
         public:
-            MqttParser(infra::DataInputStream stream);
+            explicit MqttParser(infra::DataInputStream stream);
 
             PacketType GetPacketType() const;
             size_t GetPacketSize() const;
@@ -109,16 +110,16 @@ namespace services
         struct PacketConnect
         {
             infra::BigEndian<uint16_t> protocolNameLength = 4;
-            std::array<char, 4> protocolName{{ 'M', 'Q', 'T', 'T' }};
+            std::array<char, 4> protocolName{ { 'M', 'Q', 'T', 'T' } };
             uint8_t protocolLevel = 4;
-            uint8_t connectFlags = 0x02;    // clean session, no will
+            uint8_t connectFlags = 0x02; // clean session, no will
             infra::BigEndian<uint16_t> keepAlive = 0;
         };
 
         class StateBase
         {
         public:
-            StateBase(MqttClientImpl& clientConnection);
+            explicit StateBase(MqttClientImpl& clientConnection);
             StateBase(const StateBase& other) = delete;
             StateBase& operator=(const StateBase& other) = delete;
             virtual ~StateBase() = default;
@@ -167,7 +168,7 @@ namespace services
             : public StateBase
         {
         public:
-            StateConnected(MqttClientImpl& clientConnection);
+            explicit StateConnected(MqttClientImpl& clientConnection);
 
             virtual void Detaching() override;
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
@@ -202,8 +203,12 @@ namespace services
 
                 virtual void SendStreamAvailable(infra::StreamWriter& writer) = 0;
                 virtual std::size_t MessageSize(const MqttClientObserver& message) = 0;
-                virtual void HandlePubAck() {}
-                virtual void HandleSubAck() {}
+
+                virtual void HandlePubAck()
+                {}
+
+                virtual void HandleSubAck()
+                {}
             };
 
             class OperationPublish
@@ -240,7 +245,7 @@ namespace services
                 : public OperationBase
             {
             public:
-                OperationPubAck(StateConnected& connectedState);
+                explicit OperationPubAck(StateConnected& connectedState);
 
                 virtual void SendStreamAvailable(infra::StreamWriter& writer) override;
                 virtual std::size_t MessageSize(const MqttClientObserver& message) override;
@@ -253,7 +258,7 @@ namespace services
                 : public OperationBase
             {
             public:
-                OperationPing(StateConnected& connectedState);
+                explicit OperationPing(StateConnected& connectedState);
 
                 virtual void SendStreamAvailable(infra::StreamWriter& writer) override;
                 virtual std::size_t MessageSize(const MqttClientObserver& message) override;
@@ -316,7 +321,7 @@ namespace services
         virtual uint16_t Port() const override;
         virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
         virtual void ConnectionFailed(ConnectFailReason reason) override;
-        
+
     private:
         infra::BoundedConstString hostname;
         uint16_t port;

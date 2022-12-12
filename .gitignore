@@ -1,8 +1,7 @@
-.vs
-Debug/
-Release/
-RelWithDebInfo/
+.cache/
+.vs/
+[Bb]uild/
 megalinter-reports/
-[Bb]uild*
-[Ii]nstall
+out/
+reports/
 CMakeSettings.json

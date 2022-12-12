@@ -13,6 +13,7 @@ namespace services
         static const uint16_t dnsPort = 53;
 
         using DnsEntry = std::pair<infra::BoundedConstString, services::IPAddress>;
+
         struct DnsEntries
         {
             infra::MemoryRange<const DnsEntry> entries;
@@ -35,7 +36,7 @@ namespace services
         class QuestionParser
         {
         public:
-            QuestionParser(infra::StreamReaderWithRewinding& reader);
+            explicit QuestionParser(infra::StreamReaderWithRewinding& reader);
 
             bool RequestIncludesOneQuestion() const;
             bool IsValid() const;

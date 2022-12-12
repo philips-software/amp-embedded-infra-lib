@@ -1,15 +1,13 @@
-#include "gmock/gmock.h"
 #include "infra/stream/StringOutputStream.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 #include "services/tracer/Tracer.hpp"
+#include "gmock/gmock.h"
 
 class TracerTestImpl
     : public services::Tracer
 {
 public:
-    TracerTestImpl(infra::TextOutputStream& stream)
-        : services::Tracer(stream)
-    {}
+    using services::Tracer::Tracer;
 
     MOCK_METHOD0(InsertHeader, void());
 };

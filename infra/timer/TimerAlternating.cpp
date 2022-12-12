@@ -4,7 +4,6 @@ namespace infra
 {
     TimerAlternating::TimerAlternating(uint32_t timerServiceId)
         : Timer(timerServiceId)
-        , index(0)
     {}
 
     TimerAlternating::TimerAlternating(Duration duration1, const infra::Function<void()>& aAction1, Duration duration2, const infra::Function<void()>& aAction2, uint32_t timerServiceId)
@@ -36,6 +35,6 @@ namespace infra
         index = (index + 1) & 1;
 
         triggerStart += durations[index];
-        SetNextTriggerTime(triggerStart, infra::emptyFunction);     // Dummy function, this is overruled in Action()
+        SetNextTriggerTime(triggerStart, infra::emptyFunction); // Dummy function, this is overruled in Action()
     }
 }

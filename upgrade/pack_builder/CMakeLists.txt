@@ -1,4 +1,4 @@
-if (TARGET_ARCH_X86)
+if (EMIL_HOST_BUILD)
     add_library(upgrade.pack_builder ${EMIL_EXCLUDE_FROM_ALL} STATIC)
     install(TARGETS upgrade.pack_builder EXPORT emilUpgradeTargets)
 
@@ -7,6 +7,7 @@ if (TARGET_ARCH_X86)
         crypto.micro_ecc
         crypto.tiny_aes128
         hal.interfaces
+        infra.syntax
         upgrade.pack
     )
 
@@ -49,6 +50,8 @@ if (TARGET_ARCH_X86)
         UpgradePackInputFactory.cpp
         UpgradePackInputFactory.hpp
     )
+
+    emil_clangformat_target(upgrade.pack_builder)
 
     if (EMIL_BUILD_TESTS)
         add_subdirectory(test)

@@ -1,8 +1,8 @@
-#include "gtest/gtest.h"
 #include "hal/interfaces/test_doubles/GpioStub.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "services/util/DebouncedButton.hpp"
+#include "gtest/gtest.h"
 
 class DebouncedButtonFixtureBase
 {
@@ -15,7 +15,11 @@ class DebouncedButtonFixture
 {
 public:
     DebouncedButtonFixture()
-        : debouncedButton(button, [this]() { onPressed.callback(); }, [this]() { onReleased.callback(); })
+        : debouncedButton(
+              button, [this]()
+              { onPressed.callback(); },
+              [this]()
+              { onReleased.callback(); })
     {}
 
     hal::GpioPinStub button;

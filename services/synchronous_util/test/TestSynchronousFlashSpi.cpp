@@ -1,6 +1,6 @@
-#include "gtest/gtest.h"
 #include "hal/synchronous_interfaces/test_doubles/SynchronousSpiMock.hpp"
 #include "services/synchronous_util/SynchronousFlashSpi.hpp"
+#include "gtest/gtest.h"
 
 class SynchronousFlashSpiTest
     : public testing::Test
@@ -136,4 +136,3 @@ TEST_F(SynchronousFlashSpiTest4ByteAddressing, ReadFlashId)
 
     EXPECT_THAT(flashId, testing::ElementsAre(0x01, 0x02, 0x03));
 }
-

@@ -7,9 +7,17 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
 env:
   CMAKE_BUILD_PARALLEL_LEVEL: 2
   GTEST_COLOR: 1
+
 jobs:
   host_build_test:
     name: Host Build & Test
@@ -18,31 +26,49 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
     steps:
-      - uses: actions/checkout@v3
-      - name: Build and Test
-        run: |
-          cmake --preset ContinuousIntegration
-          cmake --build --preset ContinuousIntegration
-          ctest --preset ContinuousIntegration
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        with:
+          persist-credentials: false
+      - uses: hendrikmuhs/ccache-action@657bab9aeb32eb6d913c2e6882efad4bb7536d94
+        with:
+          key: ${{ github.job }}-${{ matrix.os }}
+          variant: sccache
+      - uses: lukka/run-cmake@8997c3a96bcb3de493d1f2527cb46fd7348ca764
+        with:
+          configurePreset: "ContinuousIntegration"
+          buildPreset: "ContinuousIntegration"
+          testPreset: "ContinuousIntegration"
+          configurePresetCmdString: "['--preset', '$[env.CONFIGURE_PRESET_NAME]', '-D', 'CMAKE_C_COMPILER_LAUNCHER=sccache', '-D', 'CMAKE_CXX_COMPILER_LAUNCHER=sccache']"
   embedded_build:
     name: Embedded Build
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        gcc: ["5-2016-q3", "6-2017-q2", "7-2018-q2", "8-2019-q3"]
-        configuration: ["RelWithDebInfo"]
+        gcc:
+          [
+            "5-2016-q3",
+            "6-2017-q2",
+            "7-2018-q2",
+            "8-2019-q3",
+            "9-2020-q2",
+            "10.3-2021.10",
+          ]
+        configuration: ["RelWithDebInfo", "Release"]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        with:
+          persist-credentials: false
       - name: Install GNU Arm Embedded Toolchain ${{ matrix.gcc }}
-        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        uses: carlosperate/arm-none-eabi-gcc-action@2ff22aeffd30b95d7238914a6a83e57069a18d40
         with:
           release: ${{ matrix.gcc }}
-      - uses: seanmiddleditch/gha-setup-ninja@v3
-      - uses: hendrikmuhs/ccache-action@v1
+      - uses: seanmiddleditch/gha-setup-ninja@16b940825621068d98711680b6c3ff92201f8fc0
+      - uses: hendrikmuhs/ccache-action@657bab9aeb32eb6d913c2e6882efad4bb7536d94
         with:
           key: ${{ matrix.gcc }}-${{ matrix.configuration }}
       - run: |
-          cmake --preset Host -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          echo "::add-matcher::.github/matchers/gcc-problem-matcher.json"
+          cmake --preset Host -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build --preset Host-${{ matrix.configuration }}
-          cmake --preset Embedded -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake --preset Embedded -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build --preset Embedded-${{ matrix.configuration }}

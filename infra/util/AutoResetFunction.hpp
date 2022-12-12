@@ -13,7 +13,7 @@ namespace infra
     class AutoResetFunction<Result(Args...), ExtraSize>
     {
     public:
-        typedef Result ResultType;
+        using ResultType = Result;
 
     public:
         AutoResetFunction() = default;
@@ -22,7 +22,7 @@ namespace infra
         AutoResetFunction(AutoResetFunction&& other) noexcept;
 
         template<class F>
-            AutoResetFunction(F f);
+        AutoResetFunction(F f);
 
         ~AutoResetFunction() = default;
 
@@ -36,23 +36,23 @@ namespace infra
         ResultType Invoke(const std::tuple<Args...>& args);
 
         infra::Function<Result(Args...), ExtraSize> Clone() const;
-        void Swap(AutoResetFunction& other);
+        void Swap(AutoResetFunction& other) noexcept;
 
     private:
         Function<Result(Args...), ExtraSize> function;
     };
 
     template<std::size_t ExtraSize, class Result, class... Args>
-        void swap(AutoResetFunction<Result(Args...), ExtraSize>& x, AutoResetFunction<Result(Args...), ExtraSize>& y) noexcept;
+    void swap(AutoResetFunction<Result(Args...), ExtraSize>& x, AutoResetFunction<Result(Args...), ExtraSize>& y) noexcept;
 
     template<std::size_t ExtraSize, class Result, class... Args>
-        bool operator==(const AutoResetFunction<Result(Args...), ExtraSize>& f, std::nullptr_t);
+    bool operator==(const AutoResetFunction<Result(Args...), ExtraSize>& f, std::nullptr_t);
     template<std::size_t ExtraSize, class Result, class... Args>
-        bool operator==(std::nullptr_t, const AutoResetFunction<Result(Args...), ExtraSize>& f);
+    bool operator==(std::nullptr_t, const AutoResetFunction<Result(Args...), ExtraSize>& f);
     template<std::size_t ExtraSize, class Result, class... Args>
-        bool operator!=(const AutoResetFunction<Result(Args...), ExtraSize>& f, std::nullptr_t);
+    bool operator!=(const AutoResetFunction<Result(Args...), ExtraSize>& f, std::nullptr_t);
     template<std::size_t ExtraSize, class Result, class... Args>
-        bool operator!=(std::nullptr_t, const AutoResetFunction<Result(Args...), ExtraSize>& f);
+    bool operator!=(std::nullptr_t, const AutoResetFunction<Result(Args...), ExtraSize>& f);
 
     ////    Implementation    ////
 
@@ -115,7 +115,7 @@ namespace infra
     }
 
     template<std::size_t ExtraSize, class Result, class... Args>
-    void AutoResetFunction<Result(Args...), ExtraSize>::Swap(AutoResetFunction& other)
+    void AutoResetFunction<Result(Args...), ExtraSize>::Swap(AutoResetFunction& other) noexcept
     {
         function.Swap(other.function);
     }

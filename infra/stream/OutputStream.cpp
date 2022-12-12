@@ -29,9 +29,6 @@ namespace infra
         std::abort();
     }
 
-    StreamWriterDummy::StreamWriterDummy()
-    {}
-
     void StreamWriterDummy::Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy)
     {}
 
@@ -64,12 +61,12 @@ namespace infra
     {
         return writer.Available();
     }
-    
+
     StreamWriter& OutputStream::Writer() const
     {
         return writer;
     }
-    
+
     StreamErrorPolicy& OutputStream::ErrorPolicy() const
     {
         return errorPolicy;
@@ -200,7 +197,7 @@ namespace infra
     TextOutputStream& TextOutputStream::operator<<(uint64_t v)
     {
         switch (radix)
-            {
+        {
             case Radix::dec:
                 OutputAsDecimal(v, false);
                 break;
@@ -227,7 +224,7 @@ namespace infra
         *this << static_cast<uint32_t>(v);
         v -= static_cast<uint32_t>(v);
         *this << ".";
-        *this << Width(3,'0') << static_cast<uint32_t>(v * 1000);
+        *this << Width(3, '0') << static_cast<uint32_t>(v * 1000);
         return *this;
     }
 
@@ -344,7 +341,7 @@ namespace infra
 
     DataOutputStream::WithErrorPolicy::WithErrorPolicy(StreamWriter& writer, NoFail)
         : DataOutputStream(writer, errorPolicy)
-        , errorPolicy(softFail)
+        , errorPolicy(noFail)
     {}
 
     DataOutputStream::WithErrorPolicy::WithErrorPolicy(const WithErrorPolicy& other)

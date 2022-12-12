@@ -1,8 +1,8 @@
 #ifndef NETWORK_HTTP_REQUEST_PARSER_STUB_HPP
 #define NETWORK_HTTP_REQUEST_PARSER_STUB_HPP
 
-#include "gmock/gmock.h"
 #include "services/network/HttpRequestParser.hpp"
+#include "gmock/gmock.h"
 #include <string>
 #include <utility>
 #include <vector>
@@ -28,14 +28,30 @@ namespace services
             , contentLength(body.size())
         {}
 
-        virtual bool HeadersComplete() const override { return true; }
-        virtual bool Valid() const override { return true; }
-        virtual HttpVerb Verb() const override { return verb; }
-        virtual const infra::Tokenizer& PathTokens() const override { return pathTokens; }
+        virtual bool HeadersComplete() const override
+        {
+            return true;
+        }
+
+        virtual bool Valid() const override
+        {
+            return true;
+        }
+
+        virtual HttpVerb Verb() const override
+        {
+            return verb;
+        }
+
+        virtual const infra::Tokenizer& PathTokens() const override
+        {
+            return pathTokens;
+        }
+
         virtual infra::BoundedConstString Header(infra::BoundedConstString name) const override
         {
             for (auto& header : headers)
-                if(header.first == name)
+                if (header.first == name)
                     return header.second;
 
             return infra::BoundedConstString();
@@ -47,8 +63,15 @@ namespace services
                 enumerator(header.first, header.second);
         }
 
-        virtual infra::BoundedString& BodyBuffer() override { return body; }
-        virtual infra::Optional<uint32_t> ContentLength() const { return infra::MakeOptional(contentLength); }
+        virtual infra::BoundedString& BodyBuffer() override
+        {
+            return body;
+        }
+
+        virtual infra::Optional<uint32_t> ContentLength() const
+        {
+            return infra::MakeOptional(contentLength);
+        }
 
         HttpVerb verb;
         infra::BoundedConstString path;

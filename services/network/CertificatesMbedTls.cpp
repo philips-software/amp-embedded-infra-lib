@@ -1,20 +1,20 @@
+#include "services/network/CertificatesMbedTls.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/util/ReallyAssert.hpp"
 #include "mbedtls/oid.h"
 #include "mbedtls/pk.h"
 #include "mbedtls/version.h"
-#include "services/network/CertificatesMbedTls.hpp"
 
 #if MBEDTLS_VERSION_MAJOR < 3
-    #define MBEDTLS_PRIVATE(member) member
+#define MBEDTLS_PRIVATE(member) member
 #endif
 
 namespace
 {
     int RandomDataGeneratorWrapper(void* data, unsigned char* output, std::size_t size)
     {
-        reinterpret_cast<hal::SynchronousRandomDataGenerator*>(data)->GenerateRandomData(infra::ByteRange(reinterpret_cast<uint8_t*>(output), reinterpret_cast<uint8_t*>(output) + size));
+        reinterpret_cast<hal::SynchronousRandomDataGenerator*>(data)->GenerateRandomData(infra::ByteRange(output, output + size));
         return 0;
     }
 
@@ -47,7 +47,7 @@ namespace services
 
     void CertificatesMbedTls::AddCertificateAuthority(infra::ConstByteRange certificate)
     {
-        int result = mbedtls_x509_crt_parse(&caCertificates, reinterpret_cast<const unsigned char*>(certificate.begin()), certificate.size());
+        int result = mbedtls_x509_crt_parse(&caCertificates, certificate.begin(), certificate.size());
         really_assert(result == 0);
     }
 
@@ -62,24 +62,24 @@ namespace services
         int result = mbedtls_x509_crt_parse(&ownCertificate, reinterpret_cast<const unsigned char*>(certificate.data()), certificate.size());
         really_assert(result == 0);
 
-        #if MBEDTLS_VERSION_MAJOR < 3
-            result = mbedtls_pk_parse_key(&privateKey, reinterpret_cast<const unsigned char*>(key.data()), key.size(), nullptr, 0);
-        #else
-            result = mbedtls_pk_parse_key(&privateKey, reinterpret_cast<const unsigned char*>(key.data()), key.size(), nullptr, 0, &RandomDataGeneratorWrapper, &randomDataGenerator);
-        #endif
+#if MBEDTLS_VERSION_MAJOR < 3
+        result = mbedtls_pk_parse_key(&privateKey, reinterpret_cast<const unsigned char*>(key.data()), key.size(), nullptr, 0);
+#else
+        result = mbedtls_pk_parse_key(&privateKey, reinterpret_cast<const unsigned char*>(key.data()), key.size(), nullptr, 0, &RandomDataGeneratorWrapper, &randomDataGenerator);
+#endif
         really_assert(result == 0);
     }
 
     void CertificatesMbedTls::AddOwnCertificate(infra::ConstByteRange certificate, infra::ConstByteRange key, hal::SynchronousRandomDataGenerator& randomDataGenerator)
     {
-        int result = mbedtls_x509_crt_parse(&ownCertificate, reinterpret_cast<const unsigned char*>(certificate.begin()), certificate.size());
+        int result = mbedtls_x509_crt_parse(&ownCertificate, certificate.begin(), certificate.size());
         really_assert(result == 0);
 
-        #if MBEDTLS_VERSION_MAJOR < 3
-            result = mbedtls_pk_parse_key(&privateKey, reinterpret_cast<const unsigned char*>(key.begin()), key.size(), nullptr, 0);
-        #else
-            result = mbedtls_pk_parse_key(&privateKey, reinterpret_cast<const unsigned char*>(key.begin()), key.size(), nullptr, 0, &RandomDataGeneratorWrapper, &randomDataGenerator);
-        #endif
+#if MBEDTLS_VERSION_MAJOR < 3
+        result = mbedtls_pk_parse_key(&privateKey, reinterpret_cast<const unsigned char*>(key.begin()), key.size(), nullptr, 0);
+#else
+        result = mbedtls_pk_parse_key(&privateKey, key.begin(), key.size(), nullptr, 0, &RandomDataGeneratorWrapper, &randomDataGenerator);
+#endif
         really_assert(result == 0);
     }
 
@@ -217,11 +217,11 @@ namespace services
                 unsigned char signature[MBEDTLS_MPI_MAX_SIZE];
                 size_t signatureLength = 0;
 
-                #if MBEDTLS_VERSION_MAJOR < 3
-                    auto result = mbedtls_pk_sign(&privateKey, ownCertificate.sig_md, hash, 0, signature, &signatureLength, &RandomDataGeneratorWrapper, &randomDataGenerator);
-                #else
-                    auto result = mbedtls_pk_sign(&privateKey, ownCertificate.MBEDTLS_PRIVATE(sig_md), hash, 0, signature, sizeof(signature), &signatureLength, &RandomDataGeneratorWrapper, &randomDataGenerator);
-                #endif
+#if MBEDTLS_VERSION_MAJOR < 3
+                auto result = mbedtls_pk_sign(&privateKey, ownCertificate.sig_md, hash, 0, signature, &signatureLength, &RandomDataGeneratorWrapper, &randomDataGenerator);
+#else
+                auto result = mbedtls_pk_sign(&privateKey, ownCertificate.MBEDTLS_PRIVATE(sig_md), hash, 0, signature, sizeof(signature), &signatureLength, &RandomDataGeneratorWrapper, &randomDataGenerator);
+#endif
 
                 if (result != 0)
                     std::abort();

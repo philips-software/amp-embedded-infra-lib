@@ -26,32 +26,32 @@ namespace infra
         template<std::size_t Max>
         using WithMaxSize = infra::WithStorage<BoundedDeque<T>, std::array<StaticStorage<T>, Max>>;
 
-        typedef T value_type;
-        typedef T& reference;
-        typedef const T& const_reference;
-        typedef T* pointer;
-        typedef const T* const_pointer;
-        typedef detail::BoundedDequeIterator<BoundedDeque<T>, T> iterator;
-        typedef detail::BoundedDequeIterator<const BoundedDeque<T>, const T> const_iterator;
-        typedef std::reverse_iterator<iterator> reverse_iterator;
-        typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-        typedef typename std::iterator_traits<iterator>::difference_type difference_type;
-        typedef std::size_t size_type;
+        using value_type = T;
+        using reference = T&;
+        using const_reference = const T&;
+        using pointer = T*;
+        using const_pointer = const T*;
+        using iterator = detail::BoundedDequeIterator<BoundedDeque<T>, T>;
+        using const_iterator = detail::BoundedDequeIterator<const BoundedDeque<T>, const T>;
+        using reverse_iterator = std::reverse_iterator<iterator>;
+        using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+        using difference_type = typename std::iterator_traits<iterator>::difference_type;
+        using size_type = std::size_t;
 
     public:
         BoundedDeque() = default;
         explicit BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage);
         BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, size_type n, const value_type& value = value_type());
         template<class InputIterator>
-            BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, InputIterator first, InputIterator last);
+        BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, InputIterator first, InputIterator last);
         BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, const BoundedDeque& other);
-        BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, BoundedDeque&& other);
+        BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, BoundedDeque&& other) noexcept;
         BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, std::initializer_list<T> initializerList);
         BoundedDeque& operator=(const BoundedDeque& other);
         BoundedDeque& operator=(BoundedDeque&& other) noexcept;
         BoundedDeque& operator=(std::initializer_list<T> initializerList);
         void AssignFromStorage(const BoundedDeque& other);
-        void AssignFromStorage(BoundedDeque&& other);
+        void AssignFromStorage(BoundedDeque&& other) noexcept;
         ~BoundedDeque();
 
     public:
@@ -105,7 +105,7 @@ namespace infra
         iterator insert(const const_iterator& position, const value_type& value);
         iterator insert(const const_iterator& position, size_type n, const value_type& value);
         template<class InputIterator>
-            iterator insert(const const_iterator& position, InputIterator first, const InputIterator& last);
+        iterator insert(const const_iterator& position, InputIterator first, const InputIterator& last);
         iterator insert(const const_iterator& position, T&& val);
         iterator insert(const const_iterator& position, std::initializer_list<T> initializerList);
 
@@ -159,9 +159,9 @@ namespace infra
             BoundedDequeIterator() = delete;
             BoundedDequeIterator(DequeType* deque, std::size_t offset);
             template<class DequeType2, class T2>
-                BoundedDequeIterator(const BoundedDequeIterator<DequeType2, T2>& other);
+            BoundedDequeIterator(const BoundedDequeIterator<DequeType2, T2>& other);
             template<class DequeType2, class T2>
-                BoundedDequeIterator& operator=(const BoundedDequeIterator<DequeType2, T2>& other);
+            BoundedDequeIterator& operator=(const BoundedDequeIterator<DequeType2, T2>& other);
 
             T& operator*() const;
             T* operator->() const;
@@ -178,21 +178,21 @@ namespace infra
             std::ptrdiff_t operator-(BoundedDequeIterator other) const;
 
             template<class DequeType2, class T2>
-                bool operator==(const BoundedDequeIterator<DequeType2, T2>& other) const;
+            bool operator==(const BoundedDequeIterator<DequeType2, T2>& other) const;
             template<class DequeType2, class T2>
-                bool operator!=(const BoundedDequeIterator<DequeType2, T2>& other) const;
+            bool operator!=(const BoundedDequeIterator<DequeType2, T2>& other) const;
             template<class DequeType2, class T2>
-                bool operator<(const BoundedDequeIterator<DequeType2, T2>& other) const;
+            bool operator<(const BoundedDequeIterator<DequeType2, T2>& other) const;
             template<class DequeType2, class T2>
-                bool operator>(const BoundedDequeIterator<DequeType2, T2>& other) const;
+            bool operator>(const BoundedDequeIterator<DequeType2, T2>& other) const;
             template<class DequeType2, class T2>
-                bool operator<=(const BoundedDequeIterator<DequeType2, T2>& other) const;
+            bool operator<=(const BoundedDequeIterator<DequeType2, T2>& other) const;
             template<class DequeType2, class T2>
-                bool operator>=(const BoundedDequeIterator<DequeType2, T2>& other) const;
+            bool operator>=(const BoundedDequeIterator<DequeType2, T2>& other) const;
 
         private:
             template<class, class>
-                friend class BoundedDequeIterator;
+            friend class BoundedDequeIterator;
             friend DequeType;
 
             std::size_t index;
@@ -230,7 +230,7 @@ namespace infra
     }
 
     template<class T>
-    BoundedDeque<T>::BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, BoundedDeque&& other)
+    BoundedDeque<T>::BoundedDeque(infra::MemoryRange<infra::StaticStorage<T>> storage, BoundedDeque&& other) noexcept
         : storage(storage)
         , numAllocated(other.numAllocated)
     {
@@ -282,7 +282,7 @@ namespace infra
     }
 
     template<class T>
-    void BoundedDeque<T>::AssignFromStorage(BoundedDeque&& other)
+    void BoundedDeque<T>::AssignFromStorage(BoundedDeque&& other) noexcept
     {
         *this = std::move(other);
     }
@@ -680,7 +680,7 @@ namespace infra
         size_type element_index = position - begin();
         move_up(element_index, 1);
         storage[index(element_index)].Construct(std::forward<Args>(args)...);
-        
+
         return iterator(this, element_index);
     }
 

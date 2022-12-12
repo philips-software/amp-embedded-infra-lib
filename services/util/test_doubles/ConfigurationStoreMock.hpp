@@ -1,8 +1,8 @@
 #ifndef SERVICES_CONFIGURATION_STORE_MOCK_HPP
 #define SERVICES_CONFIGURATION_STORE_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "services/util/ConfigurationStore.hpp"
+#include "gmock/gmock.h"
 
 namespace services
 {

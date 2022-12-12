@@ -67,6 +67,7 @@ namespace services
                 std::array<uint8_t, 16> first;
                 std::array<uint8_t, 16> second;
             } hash_parts;
+
             std::array<uint8_t, 32> hash;
         } result;
 
@@ -89,12 +90,14 @@ namespace services
     {
         validUntil = std::max(infra::Now() + minimumTtl, validUntil);
         TryAddToCache(result.Hostname(), address, validUntil);
-        NameLookupDone([&result, &address, &validUntil]() { result.NameLookupDone(address, validUntil); });
+        NameLookupDone([&result, &address, &validUntil]()
+            { result.NameLookupDone(address, validUntil); });
     }
 
     void NameResolverCache::NameLookupFailed(NameResolverResult& result)
     {
-        NameLookupDone([&result]() { result.NameLookupFailed(); });
+        NameLookupDone([&result]()
+            { result.NameLookupFailed(); });
     }
 
     void NameResolverCache::NameLookupCancelled()
@@ -128,7 +131,7 @@ namespace services
         infra::TimePoint now = infra::Now();
         infra::TimePoint cleanupTime = infra::TimePoint::max();
 
-        for (auto entry = cache.begin(); entry != cache.end(); )
+        for (auto entry = cache.begin(); entry != cache.end();)
         {
             if (entry->validUntil <= now)
                 entry = cache.erase(entry);
@@ -139,7 +142,8 @@ namespace services
             }
         }
 
-        cleanupTimer.Start(cleanupTime, [this]() { Cleanup(); });
+        cleanupTimer.Start(cleanupTime, [this]()
+            { Cleanup(); });
     }
 
     NameResolverCache::ActiveLookup::ActiveLookup(NameResolverCache& nameResolverCache, NameResolverResult& resolving)

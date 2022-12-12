@@ -39,11 +39,11 @@ namespace infra
 
     ConstByteRange infra::BoundedVectorInputStreamReader::PeekContiguousRange(std::size_t start)
     {
-        return{ container.begin() + offset + start, container.end() };
+        return { container.begin() + offset + start, container.end() };
     }
 
     bool BoundedVectorInputStreamReader::Empty() const
-    {  
+    {
         return offset == container.size();
     }
 
@@ -52,7 +52,7 @@ namespace infra
         return container.size() - offset;
     }
 
-    std::size_t  BoundedVectorInputStreamReader::ConstructSaveMarker() const
+    std::size_t BoundedVectorInputStreamReader::ConstructSaveMarker() const
     {
         return offset;
     }

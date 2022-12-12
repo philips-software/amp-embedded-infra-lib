@@ -1,7 +1,7 @@
 #ifndef SERVICES_WI_FI_NETWORK_HPP
 #define SERVICES_WI_FI_NETWORK_HPP
 
-#include "hal/interfaces/Ethernet.hpp"
+#include "hal/interfaces/MacAddress.hpp"
 #include "infra/timer/Timer.hpp"
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/Observer.hpp"

@@ -11,12 +11,12 @@ namespace infra
     {
     public:
         template<std::size_t Size>
-            using WithStorage = infra::WithStorage<BoundedVectorStreamWriter, BoundedVector<uint8_t>::WithMaxSize<Size>>;
+        using WithStorage = infra::WithStorage<BoundedVectorStreamWriter, BoundedVector<uint8_t>::WithMaxSize<Size>>;
 
         explicit BoundedVectorStreamWriter(BoundedVector<uint8_t>& vector);
 
         template<class T>
-            ReservedProxy<T> Reserve(StreamErrorPolicy& errorPolicy);
+        ReservedProxy<T> Reserve(StreamErrorPolicy& errorPolicy);
 
         void Reset();
         void Reset(BoundedVector<uint8_t>& newVector);
@@ -40,9 +40,9 @@ namespace infra
     {
     public:
         template<std::size_t Max>
-            using WithStorage = infra::WithStorage<DataOutputStream::WithWriter<BoundedVectorStreamWriter>, BoundedVector<uint8_t>::WithMaxSize<Max>>;
+        using WithStorage = infra::WithStorage<DataOutputStream::WithWriter<BoundedVectorStreamWriter>, BoundedVector<uint8_t>::WithMaxSize<Max>>;
 
-        BoundedVectorOutputStream(BoundedVector<uint8_t>& storage);
+        explicit BoundedVectorOutputStream(BoundedVector<uint8_t>& storage);
         BoundedVectorOutputStream(BoundedVector<uint8_t>& storage, const SoftFail&);
         BoundedVectorOutputStream(BoundedVector<uint8_t>& storage, const NoFail&);
     };

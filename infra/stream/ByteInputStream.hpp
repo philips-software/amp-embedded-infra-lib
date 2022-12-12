@@ -11,13 +11,13 @@ namespace infra
     {
     public:
         template<std::size_t Max>
-            using WithStorage = infra::WithStorage<ByteInputStreamReader, std::array<uint8_t, Max>>;
+        using WithStorage = infra::WithStorage<ByteInputStreamReader, std::array<uint8_t, Max>>;
 
         explicit ByteInputStreamReader(ConstByteRange range);
 
         void ResetRange(ConstByteRange newRange);
 
-        ConstByteRange Processed() const;   // Invariant: Processed() ++ Remaining() == range
+        ConstByteRange Processed() const; // Invariant: Processed() ++ Remaining() == range
         ConstByteRange Remaining() const;
 
     public:
@@ -40,9 +40,9 @@ namespace infra
     {
     public:
         template<std::size_t Max>
-            using WithStorage = infra::WithStorage<DataInputStream::WithReader<ByteInputStreamReader>, std::array<uint8_t, Max>>;
+        using WithStorage = infra::WithStorage<DataInputStream::WithReader<ByteInputStreamReader>, std::array<uint8_t, Max>>;
 
-        ByteInputStream(ConstByteRange storage);
+        explicit ByteInputStream(ConstByteRange storage);
         ByteInputStream(ConstByteRange storage, const SoftFail&);
         ByteInputStream(ConstByteRange storage, const NoFail&);
     };

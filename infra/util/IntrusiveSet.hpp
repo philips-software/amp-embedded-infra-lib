@@ -21,11 +21,6 @@ namespace infra
         struct IntrusiveSetNode
             : IntrusiveBinarySearchTreeNode<T>
         {
-            IntrusiveSetNode();
-            IntrusiveSetNode(const IntrusiveSetNode& other);
-
-            IntrusiveSetNode& operator=(const IntrusiveSetNode& other);
-
             enum class Colour
             {
                 red,
@@ -52,19 +47,19 @@ namespace infra
         typedef typename IntrusiveBinarySearchTree<T, Compare>::const_reverse_iterator const_reverse_iterator;
         typedef typename IntrusiveBinarySearchTree<T, Compare>::difference_type difference_type;
         typedef typename IntrusiveBinarySearchTree<T, Compare>::size_type size_type;
-    
+
         typedef detail::IntrusiveSetNode<T> NodeType;
         typedef typename NodeType::Colour Colour;
-        
+
     public:
         explicit IntrusiveSet(const Compare& compare = Compare());
         template<class InputIterator>
-            IntrusiveSet(InputIterator first, InputIterator last, const Compare& comp = Compare());
+        IntrusiveSet(InputIterator first, InputIterator last, const Compare& comp = Compare());
         IntrusiveSet(const IntrusiveSet&) = delete;
-        IntrusiveSet(IntrusiveSet&& other);
+        IntrusiveSet(IntrusiveSet&& other) noexcept;
         IntrusiveSet& operator=(const IntrusiveSet&) = delete;
-        IntrusiveSet& operator=(IntrusiveSet&& other);
-        ~IntrusiveSet();
+        IntrusiveSet& operator=(IntrusiveSet&& other) noexcept;
+        ~IntrusiveSet() = default;
 
     public:
         // For test purposes
@@ -75,16 +70,16 @@ namespace infra
         void erase(const_reference value);
 
         template<class InputIterator>
-            void assign(InputIterator first, InputIterator last);
+        void assign(InputIterator first, InputIterator last);
 
-        void swap(IntrusiveSet& other);
+        void swap(IntrusiveSet& other) noexcept;
 
     private:
         bool invariant_holds_for_each_path(const_reference node, bool mustBeBlack, std::size_t blackLevels) const;
     };
 
     template<class T, class Compare>
-        void swap(IntrusiveSet<T, Compare>& node, IntrusiveSet<T, Compare>& uncle);
+    void swap(IntrusiveSet<T, Compare>& node, IntrusiveSet<T, Compare>& uncle) noexcept;
 
     ////    Implementation    ////
 
@@ -102,22 +97,18 @@ namespace infra
     }
 
     template<class T, class Compare>
-    IntrusiveSet<T, Compare>::IntrusiveSet(IntrusiveSet&& other)
+    IntrusiveSet<T, Compare>::IntrusiveSet(IntrusiveSet&& other) noexcept
     {
         *this = std::move(other);
     }
 
     template<class T, class Compare>
-    IntrusiveSet<T, Compare>& IntrusiveSet<T, Compare>::operator=(IntrusiveSet&& other)
+    IntrusiveSet<T, Compare>& IntrusiveSet<T, Compare>::operator=(IntrusiveSet&& other) noexcept
     {
         static_cast<IntrusiveBinarySearchTree<T, Compare>&>(*this) = std::move(static_cast<IntrusiveBinarySearchTree<T, Compare>&>(other));
 
         return *this;
     }
-
-    template<class T, class Compare>
-    IntrusiveSet<T, Compare>::~IntrusiveSet()
-    {}
 
     template<class T, class Compare>
     bool IntrusiveSet<T, Compare>::invariant_holds() const
@@ -159,8 +150,7 @@ namespace infra
             return blackLevels == 0;
 
         mustBeBlack = node.colour == Colour::red;
-        return ((!node.left && blackLevels == 0) || (node.left && invariant_holds_for_each_path(*node.left, mustBeBlack, blackLevels)))
-            && ((!node.right && blackLevels == 0) || (node.right && invariant_holds_for_each_path(*node.right, mustBeBlack, blackLevels)));
+        return ((!node.left && blackLevels == 0) || (node.left && invariant_holds_for_each_path(*node.left, mustBeBlack, blackLevels))) && ((!node.right && blackLevels == 0) || (node.right && invariant_holds_for_each_path(*node.right, mustBeBlack, blackLevels)));
     }
 
     template<class T, class Compare>
@@ -249,8 +239,8 @@ namespace infra
             {
                 bool firstRed = replacement && replacement->colour == Colour::red;
                 bool secondRed = oldReplacementParent == &value
-                                    ? twoChildren ? *oldReplacement && (*oldReplacement)->colour == Colour::red : value.colour == Colour::red
-                                    : *oldReplacement && (*oldReplacement)->colour == Colour::red;
+                                     ? twoChildren ? *oldReplacement && (*oldReplacement)->colour == Colour::red : value.colour == Colour::red
+                                     : *oldReplacement && (*oldReplacement)->colour == Colour::red;
 
                 if (!firstRed && !secondRed)
                 {
@@ -290,8 +280,7 @@ namespace infra
         {
             T* doubleBlackSibling = &doubleBlackParent->left == doubleBlack ? doubleBlackParent->right : doubleBlackParent->left;
 
-            if (doubleBlackSibling->colour == Colour::black
-                && ((doubleBlackSibling->left && doubleBlackSibling->left->colour == Colour::red) || (doubleBlackSibling->right && doubleBlackSibling->right->colour == Colour::red)))
+            if (doubleBlackSibling->colour == Colour::black && ((doubleBlackSibling->left && doubleBlackSibling->left->colour == Colour::red) || (doubleBlackSibling->right && doubleBlackSibling->right->colour == Colour::red)))
             {
                 T** redNephew = (doubleBlackSibling->left && doubleBlackSibling->left->colour == Colour::red) ? &doubleBlackSibling->left : &doubleBlackSibling->right;
                 (*redNephew)->colour = Colour::black;
@@ -331,12 +320,11 @@ namespace infra
                     this->left_rotate(*doubleBlackParent);
                 }
                 else
-                    abort();
+                    std::abort();
 
                 doubleBlackParent = nullptr;
             }
-            else if (doubleBlackSibling->colour == Colour::black
-                && (!doubleBlackSibling->left || doubleBlackSibling->left->colour == Colour::black) && (!doubleBlackSibling->right || doubleBlackSibling->right->colour == Colour::black))
+            else if (doubleBlackSibling->colour == Colour::black && (!doubleBlackSibling->left || doubleBlackSibling->left->colour == Colour::black) && (!doubleBlackSibling->right || doubleBlackSibling->right->colour == Colour::black))
             {
                 // Step 3.2 b
                 doubleBlackSibling->colour = Colour::red;
@@ -377,7 +365,7 @@ namespace infra
                 }
             }
             else
-                abort();
+                std::abort();
         }
 
         if (this->RootNode() != nullptr)
@@ -394,34 +382,16 @@ namespace infra
     }
 
     template<class T, class Compare>
-    void IntrusiveSet<T, Compare>::swap(IntrusiveSet& other)
+    void IntrusiveSet<T, Compare>::swap(IntrusiveSet& other) noexcept
     {
         IntrusiveBinarySearchTree<T, Compare>::swap(other);
     }
 
     template<class T, class Compare>
-    void swap(IntrusiveSet<T, Compare>& node, IntrusiveSet<T, Compare>& uncle)
+    void swap(IntrusiveSet<T, Compare>& node, IntrusiveSet<T, Compare>& uncle) noexcept
     {
         node.swap(uncle);
     }
-
-    namespace detail
-    {
-        template<class T>
-        IntrusiveSetNode<T>::IntrusiveSetNode()
-        {}
-
-        template<class T>
-        IntrusiveSetNode<T>::IntrusiveSetNode(const IntrusiveSetNode& other)
-        {}
-
-        template<class T>
-        IntrusiveSetNode<T>& IntrusiveSetNode<T>::operator=(const IntrusiveSetNode& other)
-        {
-            return *this;
-        }
-    }
-
 }
 
 #endif

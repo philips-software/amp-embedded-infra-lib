@@ -1,4 +1,5 @@
 #include "services/tracer/TracerAdapterPrintf.hpp"
+#include "infra/util/Compatibility.hpp"
 
 namespace services
 {
@@ -84,12 +85,11 @@ namespace services
                 break;
             case 's':
             {
-                auto* s = va_arg(*args, char*);
+                const auto* s = va_arg(*args, char*);
                 tracer.Continue() << (s != nullptr ? s : "(null)");
                 break;
             }
             case 'd':
-                [[fallthrough]];
             case 'i':
                 if (lengthSpecifier >= 2)
                     tracer.Continue() << va_arg(*args, int64_t);
@@ -104,8 +104,8 @@ namespace services
                 break;
             case 'p':
                 tracer.Continue() << "0x";
+                EMIL_FALLTHROUGH;
             case 'X':
-                [[fallthrough]];
             case 'x':
                 if (lengthSpecifier >= 2)
                     tracer.Continue() << infra::hex << width << va_arg(*args, uint64_t);

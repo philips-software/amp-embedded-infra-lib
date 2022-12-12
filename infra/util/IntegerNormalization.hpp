@@ -9,6 +9,7 @@ namespace infra
 {
     namespace detail
     {
+        // clang-format off
         template<std::size_t N> struct SignedInteger;
         template<> struct SignedInteger<8> { using type = int8_t; };
         template<> struct SignedInteger<16> { using type = int16_t; };
@@ -20,6 +21,8 @@ namespace infra
         template<> struct UnsignedInteger<16> { using type = uint16_t; };
         template<> struct UnsignedInteger<32> { using type = uint32_t; };
         template<> struct UnsignedInteger<64> { using type = uint64_t; };
+
+        // clang-format on
 
         template<class T>
         struct NormalizedSignedInteger

@@ -51,7 +51,6 @@ namespace services
 
         private:
             BonjourServer& server;
-            uint16_t queryId;
             infra::StreamWriter& writer;
             infra::DataOutputStream::WithErrorPolicy stream{ writer };
 
@@ -111,7 +110,7 @@ namespace services
             : public State
         {
         public:
-            StateIdle(BonjourServer& server);
+            explicit StateIdle(BonjourServer& server);
 
             virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
@@ -125,7 +124,7 @@ namespace services
             : public State
         {
         public:
-            StateAnnounce(BonjourServer& server);
+            explicit StateAnnounce(BonjourServer& server);
 
             virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
 
@@ -140,7 +139,7 @@ namespace services
             : public StateAnnounce
         {
         public:
-            StateAnnounceIPv4(BonjourServer& server);
+            explicit StateAnnounceIPv4(BonjourServer& server);
 
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         };
@@ -149,7 +148,7 @@ namespace services
             : public StateAnnounce
         {
         public:
-            StateAnnounceIPv6(BonjourServer& server);
+            explicit StateAnnounceIPv6(BonjourServer& server);
 
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         };

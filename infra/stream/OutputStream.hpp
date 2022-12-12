@@ -5,6 +5,7 @@
 #include "infra/stream/StreamManipulators.hpp"
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/ByteRange.hpp"
+#include "infra/util/Function.hpp"
 #include "infra/util/IntegerNormalization.hpp"
 #include "infra/util/Optional.hpp"
 #include <type_traits>
@@ -33,11 +34,9 @@ namespace infra
     };
 
     class StreamWriterDummy
-      : public StreamWriter
+        : public StreamWriter
     {
     public:
-        StreamWriterDummy();
-
         virtual void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy);
         virtual std::size_t Available() const;
     };
@@ -69,7 +68,7 @@ namespace infra
     {
     public:
         template<class Writer>
-            class WithWriter;
+        class WithWriter;
         class WithErrorPolicy;
 
         using OutputStream::OutputStream;
@@ -77,9 +76,9 @@ namespace infra
         TextOutputStream operator<<(Text);
 
         template<class Data>
-            DataOutputStream& operator<<(const Data& data);
+        DataOutputStream& operator<<(const Data& data);
         template<class Data>
-            DataOutputStream& operator<<(MemoryRange<Data> data);
+        DataOutputStream& operator<<(MemoryRange<Data> data);
     };
 
     class TextOutputStream
@@ -87,7 +86,7 @@ namespace infra
     {
     public:
         template<class Writer>
-            class WithWriter;
+        class WithWriter;
         class WithErrorPolicy;
 
         TextOutputStream(StreamWriter& writer, StreamErrorPolicy& errorPolicy);
@@ -127,7 +126,7 @@ namespace infra
         }
 
         template<class... Args>
-            void Format(const char* format, Args&&... arguments);
+        void Format(const char* format, Args&&... arguments);
 
     private:
         class FormatterBase
@@ -142,7 +141,6 @@ namespace infra
 
         public:
             virtual void Stream(TextOutputStream& stream) = 0;
-
         };
 
         template<class T>
@@ -161,7 +159,7 @@ namespace infra
         };
 
         template<class T>
-            Formatter<T> MakeFormatter(T&& argument);
+        Formatter<T> MakeFormatter(T&& argument);
 
     private:
         void OutputAsDecimal(uint64_t v, bool negative);
@@ -169,20 +167,22 @@ namespace infra
         void OutputAsHexadecimal(uint64_t v, bool negative);
 
         template<class... Formatters>
-            void FormatHelper(const char* format, Formatters&&... formatters);
+        void FormatHelper(const char* format, Formatters&&... formatters);
         void FormatArgs(const char* format, infra::MemoryRange<FormatterBase*> formatters);
         void OutputOptionalPadding(size_t paddingSize);
 
     private:
         enum class Radix
         {
-            dec, bin, hex
+            dec,
+            bin,
+            hex
         };
 
-        Radix radix {Radix::dec};
-        Width width {0};
+        Radix radix{ Radix::dec };
+        Width width{ 0 };
     };
-    
+
     template<class TheWriter>
     class DataOutputStream::WithWriter
         : private detail::StorageHolder<TheWriter, WithWriter<TheWriter>>
@@ -190,11 +190,11 @@ namespace infra
     {
     public:
         template<class... Args>
-            WithWriter(Args&&... args);
+        explicit WithWriter(Args&&... args);
         template<class Storage, class... Args>
-            WithWriter(Storage&& storage, SoftFail, Args&&... args);
+        WithWriter(Storage&& storage, SoftFail, Args&&... args);
         template<class Storage, class... Args>
-            WithWriter(Storage&& storage, NoFail, Args&&... args);
+        WithWriter(Storage&& storage, NoFail, Args&&... args);
         WithWriter(const WithWriter& other);
         WithWriter& operator=(const WithWriter& other) = delete;
         ~WithWriter() = default;
@@ -209,7 +209,7 @@ namespace infra
         : public DataOutputStream
     {
     public:
-        WithErrorPolicy(StreamWriter& writer);
+        explicit WithErrorPolicy(StreamWriter& writer);
         WithErrorPolicy(StreamWriter& writer, SoftFail);
         WithErrorPolicy(StreamWriter& writer, NoFail);
         WithErrorPolicy(const WithErrorPolicy& other);
@@ -226,11 +226,11 @@ namespace infra
     {
     public:
         template<class... Args>
-            WithWriter(Args&&... args);
+        explicit WithWriter(Args&&... args);
         template<class Storage, class... Args>
-            WithWriter(Storage&& storage, SoftFail, Args&&... args);
+        WithWriter(Storage&& storage, SoftFail, Args&&... args);
         template<class Storage, class... Args>
-            WithWriter(Storage&& storage, NoFail, Args&&... args);
+        WithWriter(Storage&& storage, NoFail, Args&&... args);
         WithWriter(const WithWriter& other);
         WithWriter& operator=(const WithWriter& other) = delete;
         ~WithWriter() = default;
@@ -245,7 +245,7 @@ namespace infra
         : public TextOutputStream
     {
     public:
-        WithErrorPolicy(StreamWriter& writer);
+        explicit WithErrorPolicy(StreamWriter& writer);
         WithErrorPolicy(StreamWriter& writer, SoftFail);
         WithErrorPolicy(StreamWriter& writer, NoFail);
         WithErrorPolicy(const WithErrorPolicy& other);
@@ -305,6 +305,34 @@ namespace infra
     private:
         ByteRange range;
     };
+
+    template<class T>
+    class JoinHelper;
+
+    template<class T>
+    TextOutputStream& operator<<(TextOutputStream& stream, const JoinHelper<T>& joinHelper);
+
+    template<class T>
+    class JoinHelper
+    {
+    public:
+        using FunctionType = Function<void(TextOutputStream&, const T&)>;
+
+        JoinHelper(BoundedConstString string, MemoryRange<T> range, const FunctionType& conversionFunction);
+
+        friend TextOutputStream& operator<< <>(TextOutputStream& stream, const JoinHelper<T>& joinHelper);
+
+    private:
+        BoundedConstString string;
+        MemoryRange<T> range;
+        FunctionType conversionFunction;
+    };
+
+    template<class T>
+    JoinHelper<T> Join(BoundedConstString string, MemoryRange<T> range, const typename JoinHelper<T>::FunctionType& func);
+
+    template<class T>
+    JoinHelper<T> Join(BoundedConstString string, MemoryRange<T> range);
 
     ////    Implementation    ////
 
@@ -438,6 +466,45 @@ namespace infra
             Copy(infra::MakeByteRange(data), range);
 
         return *this;
+    }
+
+    template<class T>
+    JoinHelper<T>::JoinHelper(BoundedConstString string, infra::MemoryRange<T> range, const FunctionType& conversionFunction)
+        : string{ string }
+        , range{ range }
+        , conversionFunction{ conversionFunction }
+    {}
+
+    template<class T>
+    TextOutputStream& operator<<(TextOutputStream& stream, const JoinHelper<T>& joinHelper)
+    {
+        if (!joinHelper.range.empty())
+        {
+            for (const auto& obj : DiscardTail(joinHelper.range, 1))
+            {
+                joinHelper.conversionFunction(stream, obj);
+                stream << joinHelper.string;
+            }
+
+            joinHelper.conversionFunction(stream, joinHelper.range.back());
+        }
+
+        return stream;
+    }
+
+    template<class T>
+    JoinHelper<T> Join(BoundedConstString string, MemoryRange<T> range, const typename JoinHelper<T>::FunctionType& conversionFunction)
+    {
+        return { string, range, conversionFunction };
+    }
+
+    template<class T>
+    JoinHelper<T> Join(BoundedConstString string, MemoryRange<T> range)
+    {
+        return { string, range, [](TextOutputStream& stream, const T& obj)
+            {
+                stream << obj;
+            } };
     }
 }
 

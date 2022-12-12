@@ -7,11 +7,6 @@
 #include <chrono>
 #include <cstdlib>
 
-#ifdef EMIL_HOST_BUILD
-#include <ctime>
-#include <iomanip>
-#endif
-
 // Classes in this header file:
 //
 //      - Timer                 : Base class for all timers
@@ -25,7 +20,9 @@ namespace infra
 
     class TimerService;
 
-    struct TriggerImmediately {};
+    struct TriggerImmediately
+    {};
+
     const TriggerImmediately triggerImmediately;
 
     const uint32_t systemTimerServiceId = 0;
@@ -63,7 +60,7 @@ namespace infra
         void UpdateTriggerTime(TimePoint oldTriggerTime);
 
         using UnalignedTimePoint = std::array<uint32_t, 2>;
-        static_assert(sizeof(UnalignedTimePoint) == sizeof(TimePoint), "Incorrect size of UnalignedPoint");
+        static_assert(sizeof(UnalignedTimePoint) == sizeof(TimePoint), "Incorrect size of UnalignedTimePoint");
         UnalignedTimePoint Convert(TimePoint point) const;
         TimePoint Convert(UnalignedTimePoint point) const;
 
@@ -113,19 +110,7 @@ namespace infra
 namespace std
 {
     // gtest uses PrintTo to display the contents of TimePoint
-    inline void PrintTo(infra::TimePoint p, std::ostream* os)
-    {
-        std::time_t now_c = std::chrono::system_clock::to_time_t(p);
-        std::tm tm = *gmtime(&now_c);
-#if !defined(__clang__) && defined(__GNUC__) && __GNUC__ <= 4
-        char formattedTime[24];
-        if (strftime(formattedTime, sizeof(formattedTime), "%F %T.] ", &tm) > 0)
-            *os << formattedTime;
-#else
-        uint64_t fractional = std::chrono::duration_cast<std::chrono::nanoseconds>(p - std::chrono::time_point_cast<std::chrono::seconds>(p)).count();
-        *os << std::put_time(&tm, "%F %T.") << std::setw(9) << std::setfill('0') << fractional;
-#endif
-    }
+    void PrintTo(infra::TimePoint p, std::ostream* os);
 }
 #endif
 

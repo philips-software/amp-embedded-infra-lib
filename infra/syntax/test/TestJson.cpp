@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "infra/syntax/Json.hpp"
+#include "gtest/gtest.h"
 
 TEST(BasicUsageTest, object_with_some_values)
 {
@@ -668,6 +668,15 @@ TEST(JsonObjectIteratorTest, get_multiple_values_from_iterator)
     EXPECT_EQ("value", (iterator++)->Get<infra::JsonString>());
     EXPECT_EQ(true, (iterator++)->Get<bool>());
     EXPECT_EQ(R"({ "subobject" })", (*iterator++).Get<infra::JsonObject>().ObjectString());
+}
+
+TEST(JsonObjectIteratorTest, only_string_open)
+{
+    infra::JsonObject object(R"({")");
+    for (auto j : object)
+    {}
+
+    EXPECT_TRUE(object.Error());
 }
 
 TEST(JsonArrayTest, empty_array_construction)

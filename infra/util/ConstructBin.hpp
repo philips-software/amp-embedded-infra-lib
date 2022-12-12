@@ -20,7 +20,7 @@ namespace infra
         ConstructBin& RepeatString(std::size_t amount, const std::string& v);
 
         template<class T>
-            ConstructBin& Value(T v);
+        ConstructBin& Value(T v);
 
         const std::vector<uint8_t>& Vector() const;
         std::vector<uint8_t>& Vector();

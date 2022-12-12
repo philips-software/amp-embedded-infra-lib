@@ -1,19 +1,19 @@
 #include "args.hxx"
-#include "hal/windows/UartWindows.hpp"
 #include "infra/stream/IoOutputStream.hpp"
 #include "infra/syntax/Json.hpp"
 #include "infra/util/Tokenizer.hpp"
 #include "protobuf/echo_console/Console.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 #include "services/util/MessageCommunicationCobs.hpp"
 #include "services/util/MessageCommunicationWindowed.hpp"
-#include "services/network_win/NameLookupWin.hpp"
-#include "services/tracer/GlobalTracer.hpp"
 #include <deque>
 #include <fstream>
 #include <iostream>
 
-#undef GetObject
+#ifdef ECHO_CONSOLE_WITH_UART
+#include "hal/windows/UartWindows.hpp"
+#endif
 
 class ConsoleClientUart
     : public application::ConsoleObserver
@@ -24,12 +24,12 @@ public:
     ~ConsoleClientUart();
 
     // Implementation of ConsoleObserver
-    virtual void Send(const std::string& message) override;
+    void Send(const std::string& message) override;
 
 private:
     // Implementation of MessageCommunicationObserver
-    virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-    virtual void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
+    void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+    void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
 
 private:
     void CheckDataToBeSent();
@@ -90,15 +90,15 @@ class ConsoleClientConnection
     , public application::ConsoleObserver
 {
 public:
-    ConsoleClientConnection(application::Console& console);
+    explicit ConsoleClientConnection(application::Console& console);
 
     // Implementation of ConnectionObserver
-    virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-    virtual void DataReceived() override;
-    virtual void Attached() override;
+    void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+    void DataReceived() override;
+    void Attached() override;
 
     // Implementation of ConsoleObserver
-    virtual void Send(const std::string& message) override;
+    void Send(const std::string& message) override;
 
 private:
     void CheckDataToBeSent();
@@ -164,17 +164,16 @@ class ConsoleClient
     : public services::ClientConnectionObserverFactoryWithNameResolver
 {
 public:
-    ConsoleClient(services::ConnectionFactoryWithNameResolver& connectionFactory, application::Console& console, std::string hostname, services::Tracer& tracer);
+    ConsoleClient(services::ConnectionFactoryWithNameResolver& connectionFactory, application::Console& console, const std::string& hostname, services::Tracer& tracer);
     ~ConsoleClient();
 
 protected:
-    virtual infra::BoundedConstString Hostname() const override;
-    virtual uint16_t Port() const override;
-    virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
-    virtual void ConnectionFailed(services::ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason reason) override;
+    infra::BoundedConstString Hostname() const override;
+    uint16_t Port() const override;
+    void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
+    void ConnectionFailed(services::ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason reason) override;
 
 private:
-    services::ConnectionFactoryWithNameResolver& connectionFactory;
     infra::SharedOptional<ConsoleClientConnection> consoleClientConnection;
     infra::SharedPtr<void> connector;
     application::Console& console;
@@ -182,9 +181,8 @@ private:
     services::Tracer& tracer;
 };
 
-ConsoleClient::ConsoleClient(services::ConnectionFactoryWithNameResolver& connectionFactory, application::Console& console, std::string hostname, services::Tracer& tracer)
-    : connectionFactory(connectionFactory)
-    , console(console)
+ConsoleClient::ConsoleClient(services::ConnectionFactoryWithNameResolver& connectionFactory, application::Console& console, const std::string& hostname, services::Tracer& tracer)
+    : console(console)
     , hostname(hostname)
     , tracer(tracer)
 {
@@ -243,7 +241,7 @@ int main(int argc, char* argv[], const char* env[])
 
         application::EchoRoot root;
 
-        for (auto path : paths)
+        for (const auto& path : paths)
         {
             std::ifstream stream(path, std::ios::binary);
             if (!stream)
@@ -263,22 +261,30 @@ int main(int argc, char* argv[], const char* env[])
         }
 
         application::Console console(root);
-        services::NameLookupWin nameLookup;
-        services::ConnectionFactoryWithNameResolverImpl::WithStorage<4> connectionFactory(console.ConnectionFactory(), nameLookup);
+        services::ConnectionFactoryWithNameResolverImpl::WithStorage<4> connectionFactory(console.ConnectionFactory(), console.NameResolver());
         infra::Optional<ConsoleClient> consoleClient;
+#ifdef ECHO_CONSOLE_WITH_UART
         infra::Optional<hal::UartWindows> uart;
         infra::Optional<ConsoleClientUart> consoleClientUart;
+#endif
+
         auto construct = [&]()
         {
             if (get(target).substr(0, 3) == "COM")
             {
+#ifdef ECHO_CONSOLE_WITH_UART
                 uart.Emplace(get(target));
                 consoleClientUart.Emplace(console, *uart);
+#else
+                throw std::runtime_error("UART target not supported on this platform.");
+#endif
             }
             else
                 consoleClient.Emplace(connectionFactory, console, get(target), services::GlobalTracer());
         };
-        infra::EventDispatcher::Instance().Schedule([&]() { construct(); });
+
+        infra::EventDispatcher::Instance().Schedule([&construct]()
+            { construct(); });
         console.Run();
     }
     catch (const args::Help&)

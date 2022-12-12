@@ -1,8 +1,8 @@
-#include "gtest/gtest.h"
 #include "infra/stream/OverwriteStream.hpp"
 #include "infra/stream/SavedMarkerStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/util/BoundedString.hpp"
+#include "gtest/gtest.h"
 #include <cstdint>
 #include <limits>
 
@@ -10,7 +10,9 @@ namespace
 {
     struct MyObject
     {
-        explicit MyObject(int) {}
+        explicit MyObject(int)
+        {}
+
         MyObject(const MyObject& other) = delete;
         MyObject& operator=(const MyObject& other) = delete;
 
@@ -107,7 +109,7 @@ TEST(StringOutputStreamTest, stream_int8_with_leading_zeroes)
 {
     infra::StringOutputStream::WithStorage<10> stream;
 
-    stream << infra::Width(5,'0') << int8_t(127);
+    stream << infra::Width(5, '0') << int8_t(127);
 
     EXPECT_EQ("00127", stream.Storage());
 }
@@ -179,7 +181,13 @@ TEST(StringOutputStreamTest, stream_enum_value)
 {
     infra::StringOutputStream::WithStorage<20> stream;
 
-    enum E { a, b, c };
+    enum E
+    {
+        a,
+        b,
+        c
+    };
+
     E e = E::b;
 
     stream << e;
@@ -216,7 +224,7 @@ TEST(StringOutputStreamTest, stream_hex_with_leading_zeroes)
 {
     infra::StringOutputStream::WithStorage<10> stream;
 
-    stream << infra::hex << infra::Width(4,'0') << uint8_t(0x1A);
+    stream << infra::hex << infra::Width(4, '0') << uint8_t(0x1A);
     EXPECT_EQ("001a", stream.Storage());
 }
 
@@ -274,7 +282,8 @@ TEST(StringOutputStreamTest, overflow_twice)
 {
     infra::StringOutputStream::WithStorage<2> stream(infra::softFail);
 
-    stream << "abc" << "def";
+    stream << "abc"
+           << "def";
     EXPECT_EQ("ab", stream.Storage());
     EXPECT_TRUE(stream.Failed());
 }
@@ -500,4 +509,49 @@ TEST(StringOutputStreamTest, Reset_with_new_storage)
     stream << uint8_t(14);
 
     EXPECT_EQ("14", newString);
+}
+
+TEST(StringOutputStreamTest, stream_join_range)
+{
+    infra::StringOutputStream::WithStorage<10> stream;
+    std::array<infra::BoundedConstString, 3> array{ "ab", "cd", "ef" };
+
+    stream << infra::Join("; ", infra::MakeRange(array));
+
+    EXPECT_EQ("ab; cd; ef", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, stream_join_range_empty)
+{
+    infra::StringOutputStream::WithStorage<10> stream;
+    std::array<infra::BoundedConstString, 0> array{};
+
+    stream << infra::Join("; ", infra::MakeRange(array));
+
+    EXPECT_EQ("", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, stream_join_range_single_entry)
+{
+    infra::StringOutputStream::WithStorage<10> stream;
+    std::array<infra::BoundedConstString, 1> array{ "qwerty" };
+
+    stream << infra::Join("; ", infra::MakeRange(array));
+
+    EXPECT_EQ("qwerty", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, stream_join_custom_range)
+{
+    std::array<const std::pair<infra::BoundedConstString, infra::BoundedConstString>, 3> array{
+        std::pair{ "b1", "xyz1" },
+        std::pair{ "b2", "xyz2" },
+        std::pair{ "b3", "xyz3" }
+    };
+    infra::StringOutputStream::WithStorage<50> stream;
+
+    stream << infra::Join(";", infra::MakeRange(array), [](auto& stream, const auto& obj)
+        { stream << "'" << obj.first << "'?'" << obj.second << "'"; });
+
+    EXPECT_EQ(R"('b1'?'xyz1';'b2'?'xyz2';'b3'?'xyz3')", stream.Storage());
 }

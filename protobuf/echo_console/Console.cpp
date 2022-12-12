@@ -19,12 +19,12 @@ namespace application
             : index(index)
         {}
 
-        bool End::operator==(const End& other) const
+        bool End::operator==(const End&) const
         {
             return true;
         }
 
-        bool End::operator!=(const End& other) const
+        bool End::operator!=(const End&) const
         {
             return false;
         }
@@ -33,12 +33,12 @@ namespace application
             : index(index)
         {}
 
-        bool Error::operator==(const Error& other) const
+        bool Error::operator==(const Error&) const
         {
             return true;
         }
 
-        bool Error::operator!=(const Error& other) const
+        bool Error::operator!=(const Error&) const
         {
             return false;
         }
@@ -47,12 +47,12 @@ namespace application
             : index(index)
         {}
 
-        bool Comma::operator==(const Comma& other) const
+        bool Comma::operator==(const Comma&) const
         {
             return true;
         }
 
-        bool Comma::operator!=(const Comma& other) const
+        bool Comma::operator!=(const Comma&) const
         {
             return false;
         }
@@ -61,12 +61,12 @@ namespace application
             : index(index)
         {}
 
-        bool Dot::operator==(const Dot& other) const
+        bool Dot::operator==(const Dot&) const
         {
             return true;
         }
 
-        bool Dot::operator!=(const Dot& other) const
+        bool Dot::operator!=(const Dot&) const
         {
             return false;
         }
@@ -267,7 +267,7 @@ namespace application
 
         ++parseIndex;
 
-        return ConsoleToken::String(tokenStart, stringToken);        
+        return ConsoleToken::String(tokenStart, stringToken);
     }
 
     ConsoleToken::Token ConsoleTokenizer::TryCreateIntegerToken()
@@ -354,23 +354,28 @@ namespace application
 
     services::ConnectionFactory& Console::ConnectionFactory()
     {
-        return eventDispatcherWithNetwork;
+        return network.ConnectionFactory();
+    }
+
+    services::NameResolver& Console::NameResolver()
+    {
+        return network.NameResolver();
     }
 
     void Console::DataReceived(infra::StreamReader& reader)
     {
         infra::DataInputStream::WithErrorPolicy data(reader, infra::softFail);
         infra::ProtoParser parser(data);
-        uint32_t serviceId = static_cast<uint32_t>(parser.GetVarInt());
+        auto serviceId = static_cast<uint32_t>(parser.GetVarInt());
         auto field = parser.GetField();
 
         if (data.Failed())
             throw IncompletePacket();
 
-        for (auto& service : root.services)
+        for (const auto& service : root.services)
             if (service->serviceId == serviceId)
             {
-                for (auto& method : service->methods)
+                for (const auto& method : service->methods)
                     if (method.methodId == field.second)
                     {
                         MethodReceived(*service, method, field.first.Get<infra::ProtoLengthDelimited>().Parser());
@@ -425,47 +430,47 @@ namespace application
                 , console(console)
             {}
 
-            virtual void VisitInt64(const EchoFieldInt64& field) override
+            void VisitInt64(const EchoFieldInt64& field) override
             {
                 std::cout << static_cast<int32_t>(fieldData.Get<uint64_t>());
             }
 
-            virtual void VisitUint64(const EchoFieldUint64& field) override
+            void VisitUint64(const EchoFieldUint64& field) override
             {
                 std::cout << static_cast<int32_t>(fieldData.Get<uint64_t>());
             }
 
-            virtual void VisitInt32(const EchoFieldInt32& field) override
+            void VisitInt32(const EchoFieldInt32& field) override
             {
                 std::cout << static_cast<int32_t>(fieldData.Get<uint64_t>());
             }
 
-            virtual void VisitFixed64(const EchoFieldFixed64& field) override
+            void VisitFixed64(const EchoFieldFixed64& field) override
             {
                 std::cout << fieldData.Get<uint64_t>();
             }
 
-            virtual void VisitFixed32(const EchoFieldFixed32& field) override
+            void VisitFixed32(const EchoFieldFixed32& field) override
             {
                 std::cout << fieldData.Get<uint32_t>();
             }
 
-            virtual void VisitBool(const EchoFieldBool& field) override
+            void VisitBool(const EchoFieldBool& field) override
             {
                 std::cout << (fieldData.Get<uint64_t>() == 0 ? "false" : "true");
             }
 
-            virtual void VisitString(const EchoFieldString& field) override
+            void VisitString(const EchoFieldString& field) override
             {
                 std::cout << fieldData.Get<infra::ProtoLengthDelimited>().GetStdString();
             }
 
-            virtual void VisitUnboundedString(const EchoFieldUnboundedString& field) override
+            void VisitUnboundedString(const EchoFieldUnboundedString& field) override
             {
                 std::cout << fieldData.Get<infra::ProtoLengthDelimited>().GetStdString();
             }
 
-            virtual void VisitMessage(const EchoFieldMessage& field) override
+            void VisitMessage(const EchoFieldMessage& field) override
             {
                 std::cout << "{ ";
                 infra::ProtoParser messageParser = fieldData.Get<infra::ProtoLengthDelimited>().Parser();
@@ -473,7 +478,7 @@ namespace application
                 std::cout << " }";
             }
 
-            virtual void VisitBytes(const EchoFieldBytes& field) override
+            void VisitBytes(const EchoFieldBytes& field) override
             {
                 std::vector<uint8_t> bytes = fieldData.Get<infra::ProtoLengthDelimited>().GetUnboundedBytes();
 
@@ -483,7 +488,7 @@ namespace application
                 std::cout << "]";
             }
 
-            virtual void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
+            void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
             {
                 std::vector<uint8_t> bytes = fieldData.Get<infra::ProtoLengthDelimited>().GetUnboundedBytes();
 
@@ -493,33 +498,33 @@ namespace application
                 std::cout << "]";
             }
 
-            virtual void VisitUint32(const EchoFieldUint32& field) override
+            void VisitUint32(const EchoFieldUint32& field) override
             {
                 std::cout << fieldData.Get<uint64_t>();
             }
 
-            virtual void VisitEnum(const EchoFieldEnum& field) override
+            void VisitEnum(const EchoFieldEnum& field) override
             {
                 std::cout << fieldData.Get<uint64_t>();
             }
 
-            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            void VisitSFixed64(const EchoFieldSFixed64& field) override
             {
                 std::cout << static_cast<int64_t>(fieldData.Get<uint64_t>());
             }
 
-            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            void VisitSFixed32(const EchoFieldSFixed32& field) override
             {
                 std::cout << static_cast<int32_t>(fieldData.Get<uint32_t>());
             }
 
-            virtual void VisitRepeated(const EchoFieldRepeated& field) override
+            void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 PrintFieldVisitor visitor(fieldData, parser, console);
                 field.type->Accept(visitor);
             }
 
-            virtual void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
+            void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
             {
                 PrintFieldVisitor visitor(fieldData, parser, console);
                 field.type->Accept(visitor);
@@ -536,12 +541,12 @@ namespace application
         field.Accept(visitor);
     }
 
-    void Console::MethodNotFound(const EchoService& service, uint32_t methodId)
+    void Console::MethodNotFound(const EchoService& service, uint32_t methodId) const
     {
         std::cout << "Received unknown method call for service " << service.name << " with id " << methodId << std::endl;
     }
 
-    void Console::ServiceNotFound(uint32_t serviceId, uint32_t methodId)
+    void Console::ServiceNotFound(uint32_t serviceId, uint32_t methodId) const
     {
         std::cout << "Received method call " << methodId << " for unknown service " << serviceId << std::endl;
     }
@@ -550,7 +555,7 @@ namespace application
     {
         try
         {
-            eventDispatcherWithNetwork.Run();
+            network.Run();
         }
         catch (Quit&)
         {}
@@ -558,10 +563,10 @@ namespace application
 
     void Console::ListInterfaces()
     {
-        for (auto service : root.services)
+        for (const auto& service : root.services)
         {
             services::GlobalTracer().Trace() << service->name;
-            for (auto& method : service->methods)
+            for (const auto& method : service->methods)
             {
                 services::GlobalTracer().Trace() << "    " << method.name << "(";
                 if (method.parameter != nullptr)
@@ -578,95 +583,95 @@ namespace application
         struct ListFieldVisitor
             : public EchoFieldVisitor
         {
-            ListFieldVisitor(Console& console)
+            explicit ListFieldVisitor(Console& console)
                 : console(console)
             {}
 
-            virtual void VisitInt64(const EchoFieldInt64& field) override
+            void VisitInt64(const EchoFieldInt64& field) override
             {
                 services::GlobalTracer().Continue() << "int64";
             }
 
-            virtual void VisitUint64(const EchoFieldUint64& field) override
+            void VisitUint64(const EchoFieldUint64& field) override
             {
                 services::GlobalTracer().Continue() << "uint64";
             }
 
-            virtual void VisitInt32(const EchoFieldInt32& field) override
+            void VisitInt32(const EchoFieldInt32& field) override
             {
                 services::GlobalTracer().Continue() << "int32";
             }
 
-            virtual void VisitFixed64(const EchoFieldFixed64& field) override
+            void VisitFixed64(const EchoFieldFixed64& field) override
             {
                 services::GlobalTracer().Continue() << "fixed64";
             }
 
-            virtual void VisitFixed32(const EchoFieldFixed32& field) override
+            void VisitFixed32(const EchoFieldFixed32& field) override
             {
                 services::GlobalTracer().Continue() << "fixed32";
             }
 
-            virtual void VisitBool(const EchoFieldBool& field) override
+            void VisitBool(const EchoFieldBool& field) override
             {
                 services::GlobalTracer().Continue() << "bool";
             }
 
-            virtual void VisitString(const EchoFieldString& field) override
+            void VisitString(const EchoFieldString& field) override
             {
                 services::GlobalTracer().Continue() << "string[" << field.maxStringSize << "]";
             }
 
-            virtual void VisitUnboundedString(const EchoFieldUnboundedString& field) override
+            void VisitUnboundedString(const EchoFieldUnboundedString& field) override
             {
                 services::GlobalTracer().Continue() << "string";
             }
 
-            virtual void VisitMessage(const EchoFieldMessage& field) override
+            void VisitMessage(const EchoFieldMessage& field) override
             {
                 services::GlobalTracer().Continue() << "{ ";
                 console.ListFields(*field.message);
                 services::GlobalTracer().Continue() << " }";
             }
 
-            virtual void VisitBytes(const EchoFieldBytes& field) override
+            void VisitBytes(const EchoFieldBytes& field) override
             {
                 services::GlobalTracer().Continue() << "bytes[" << field.maxBytesSize << "]";
             }
 
-            virtual void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
+            void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
             {
                 services::GlobalTracer().Continue() << "bytes";
             }
 
-            virtual void VisitUint32(const EchoFieldUint32& field) override
+            void VisitUint32(const EchoFieldUint32& field) override
             {
                 services::GlobalTracer().Continue() << "uint32";
             }
 
-            virtual void VisitEnum(const EchoFieldEnum& field) override
+            void VisitEnum(const EchoFieldEnum& field) override
             {
                 services::GlobalTracer().Continue() << field.type->name;
             }
 
-            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            void VisitSFixed64(const EchoFieldSFixed64& field) override
             {
                 services::GlobalTracer().Continue() << "sfixed64";
             }
 
-            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            void VisitSFixed32(const EchoFieldSFixed32& field) override
             {
                 services::GlobalTracer().Continue() << "sfixed32";
             }
 
-            virtual void VisitRepeated(const EchoFieldRepeated& field) override
+            void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 ListFieldVisitor visitor(console);
                 field.type->Accept(visitor);
                 services::GlobalTracer().Continue() << "[" << field.maxArraySize << "] ";
             }
 
-            virtual void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
+            void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
             {
                 ListFieldVisitor visitor(console);
                 field.type->Accept(visitor);
@@ -677,7 +682,7 @@ namespace application
 
         ListFieldVisitor visitor(*this);
 
-        for (auto field : message.fields)
+        for (auto& field : message.fields)
         {
             field->Accept(visitor);
             services::GlobalTracer().Continue() << " " << field->name;
@@ -686,7 +691,7 @@ namespace application
         }
     }
 
-    void Console::Process(const std::string& line)
+    void Console::Process(const std::string& line) const
     {
         try
         {
@@ -724,7 +729,7 @@ namespace application
         {
             services::GlobalTracer().Trace() << "Method ";
 
-            for (auto& part : error.method)
+            for (const auto& part : error.method)
             {
                 if (&part != &error.method.front())
                     services::GlobalTracer().Continue() << ".";
@@ -735,7 +740,7 @@ namespace application
         }
     }
 
-    std::pair<std::shared_ptr<const EchoService>, const EchoMethod&> Console::SearchMethod(MethodInvocation& methodInvocation)
+    std::pair<std::shared_ptr<const EchoService>, const EchoMethod&> Console::SearchMethod(MethodInvocation& methodInvocation) const
     {
         for (auto service : root.services)
             for (auto& method : service->methods)
@@ -795,11 +800,11 @@ namespace application
         struct TokenVisitor
             : public infra::StaticVisitor<Console::MessageTokens::MessageTokenValue>
         {
-            TokenVisitor(MethodInvocation& invocation)
+            explicit TokenVisitor(MethodInvocation& invocation)
                 : invocation(invocation)
             {}
 
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::End value)
+            MessageTokens::MessageTokenValue operator()(ConsoleToken::End)
             {
                 std::abort();
             }
@@ -819,7 +824,7 @@ namespace application
                 throw ConsoleExceptions::SyntaxError{ value.index };
             }
 
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::LeftBrace value)
+            MessageTokens::MessageTokenValue operator()(ConsoleToken::LeftBrace)
             {
                 invocation.currentToken = invocation.tokenizer.Token();
                 return invocation.ProcessMessage();
@@ -830,7 +835,7 @@ namespace application
                 throw ConsoleExceptions::SyntaxError{ value.index };
             }
 
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::LeftBracket value)
+            MessageTokens::MessageTokenValue operator()(ConsoleToken::LeftBracket)
             {
                 invocation.currentToken = invocation.tokenizer.Token();
                 return MessageTokens::MessageTokenValue(invocation.ProcessArray());
@@ -934,7 +939,7 @@ namespace application
                 , methodInvocation(methodInvocation)
             {}
 
-            virtual void VisitInt64(const EchoFieldInt64& field) override
+            void VisitInt64(const EchoFieldInt64& field) override
             {
                 if (!value.Is<int64_t>())
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
@@ -942,7 +947,7 @@ namespace application
                 formatter.PutVarIntField(value.Get<int64_t>(), field.number);
             }
 
-            virtual void VisitUint64(const EchoFieldUint64& field) override
+            void VisitUint64(const EchoFieldUint64& field) override
             {
                 if (!value.Is<int64_t>())
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
@@ -950,7 +955,7 @@ namespace application
                 formatter.PutVarIntField(value.Get<int64_t>(), field.number);
             }
 
-            virtual void VisitInt32(const EchoFieldInt32& field) override
+            void VisitInt32(const EchoFieldInt32& field) override
             {
                 if (!value.Is<int64_t>())
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
@@ -958,7 +963,7 @@ namespace application
                 formatter.PutVarIntField(value.Get<int64_t>(), field.number);
             }
 
-            virtual void VisitFixed32(const EchoFieldFixed32& field) override
+            void VisitFixed32(const EchoFieldFixed32& field) override
             {
                 if (!value.Is<int64_t>())
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
@@ -966,7 +971,7 @@ namespace application
                 formatter.PutFixed32Field(static_cast<uint32_t>(value.Get<int64_t>()), field.number);
             }
 
-            virtual void VisitFixed64(const EchoFieldFixed64& field) override
+            void VisitFixed64(const EchoFieldFixed64& field) override
             {
                 if (!value.Is<int64_t>())
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
@@ -974,7 +979,7 @@ namespace application
                 formatter.PutFixed64Field(static_cast<uint64_t>(value.Get<int64_t>()), field.number);
             }
 
-            virtual void VisitBool(const EchoFieldBool& field) override
+            void VisitBool(const EchoFieldBool& field) override
             {
                 if (!value.Is<bool>())
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
@@ -982,7 +987,7 @@ namespace application
                 formatter.PutVarIntField(value.Get<bool>(), field.number);
             }
 
-            virtual void VisitString(const EchoFieldString& field) override
+            void VisitString(const EchoFieldString& field) override
             {
                 if (!value.Is<std::string>())
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
@@ -990,7 +995,7 @@ namespace application
                 formatter.PutStringField(infra::BoundedConstString(value.Get<std::string>().data(), value.Get<std::string>().size()), field.number);
             }
 
-            virtual void VisitUnboundedString(const EchoFieldUnboundedString& field) override
+            void VisitUnboundedString(const EchoFieldUnboundedString& field) override
             {
                 if (!value.Is<std::string>())
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
@@ -998,7 +1003,7 @@ namespace application
                 formatter.PutStringField(infra::BoundedConstString(value.Get<std::string>().data(), value.Get<std::string>().size()), field.number);
             }
 
-            virtual void VisitEnum(const EchoFieldEnum& field) override
+            void VisitEnum(const EchoFieldEnum& field) override
             {
                 if (!value.Is<int64_t>())
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
@@ -1006,7 +1011,7 @@ namespace application
                 formatter.PutVarIntField(value.Get<int64_t>(), field.number);
             }
 
-            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            void VisitSFixed32(const EchoFieldSFixed32& field) override
             {
                 if (!value.Is<int64_t>())
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
@@ -1014,7 +1019,7 @@ namespace application
                 formatter.PutFixed32Field(static_cast<uint32_t>(value.Get<int64_t>()), field.number);
             }
 
-            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            void VisitSFixed64(const EchoFieldSFixed64& field) override
             {
                 if (!value.Is<int64_t>())
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
@@ -1022,7 +1027,7 @@ namespace application
                 formatter.PutFixed64Field(static_cast<uint64_t>(value.Get<int64_t>()), field.number);
             }
 
-            virtual void VisitMessage(const EchoFieldMessage& field) override
+            void VisitMessage(const EchoFieldMessage& field) override
             {
                 if (!value.Is<MessageTokens>())
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
@@ -1030,7 +1035,7 @@ namespace application
                 methodInvocation.EncodeMessage(*field.message, value.Get<MessageTokens>(), valueIndex, formatter);
             }
 
-            virtual void VisitBytes(const EchoFieldBytes& field) override
+            void VisitBytes(const EchoFieldBytes& field) override
             {
                 if (!value.Is<std::vector<MessageTokens>>())
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
@@ -1050,7 +1055,7 @@ namespace application
                 formatter.PutBytesField(infra::MakeRange(bytes), field.number);
             }
 
-            virtual void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
+            void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
             {
                 if (!value.Is<std::vector<MessageTokens>>())
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
@@ -1070,7 +1075,7 @@ namespace application
                 formatter.PutBytesField(infra::MakeRange(bytes), field.number);
             }
 
-            virtual void VisitUint32(const EchoFieldUint32& field) override
+            void VisitUint32(const EchoFieldUint32& field) override
             {
                 if (!value.Is<int64_t>())
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
@@ -1078,7 +1083,7 @@ namespace application
                 formatter.PutVarIntField(value.Get<int64_t>(), field.number);
             }
 
-            virtual void VisitRepeated(const EchoFieldRepeated& field) override
+            void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 if (!value.Is<std::vector<MessageTokens>>())
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
@@ -1097,7 +1102,7 @@ namespace application
                 }
             }
 
-            virtual void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
+            void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
             {
                 if (!value.Is<std::vector<MessageTokens>>())
                     throw ConsoleExceptions::IncorrectType{ valueIndex };

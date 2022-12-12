@@ -31,27 +31,28 @@ public:
     void ExpectSendData(const std::vector<uint8_t>& v)
     {
         EXPECT_CALL(serial, SendData(testing::_, testing::_)).WillOnce(testing::Invoke([this, v](infra::ConstByteRange data, infra::Function<void()> onDone)
-        {
+            {
             EXPECT_EQ(v, data);
-            onSent = onDone;
-        }));
+            onSent = onDone; }));
     }
 
     void ExpectReceivedMessage(const std::vector<uint8_t>& expected)
     {
         EXPECT_CALL(observer, ReceivedMessageOnInterrupt(testing::_)).WillOnce(testing::Invoke([this, expected](infra::StreamReader& reader)
-        {
+            {
             infra::DataInputStream::WithErrorPolicy stream(reader);
             std::vector<uint8_t> data(stream.Available(), 0);
             stream >> infra::MakeRange(data);
 
-            EXPECT_EQ(expected, data);
-        }));
+            EXPECT_EQ(expected, data); }));
     }
 
     testing::StrictMock<hal::SerialCommunicationCleanMock> serial;
     infra::Function<void(infra::ConstByteRange data)> receiveData;
-    infra::Execute execute{ [this]() { EXPECT_CALL(serial, ReceiveData(testing::_)).WillOnce(testing::SaveArg<0>(&receiveData)); } };
+    infra::Execute execute{ [this]()
+        {
+            EXPECT_CALL(serial, ReceiveData(testing::_)).WillOnce(testing::SaveArg<0>(&receiveData));
+        } };
     services::MessageCommunicationCobs::WithMaxMessageSize<280> communication{ serial };
     testing::StrictMock<MessageCommunicationReceiveOnInterruptObserverMock> observer{ communication };
     infra::Function<void()> onSent;
@@ -65,7 +66,8 @@ TEST_F(MessageCommunicationCobsTest, construction)
 TEST_F(MessageCommunicationCobsTest, send_data)
 {
     testing::StrictMock<infra::MockCallback<void(uint16_t size)>> callback;
-    auto writer = communication.SendMessageStream(4, [&](uint16_t size) { callback.callback(size); });
+    auto writer = communication.SendMessageStream(4, [&](uint16_t size)
+        { callback.callback(size); });
     infra::DataOutputStream::WithErrorPolicy stream(*writer);
     stream << infra::ConstructBin()({ 1, 2, 3, 4 }).Range();
 
@@ -88,7 +90,8 @@ TEST_F(MessageCommunicationCobsTest, send_data)
 TEST_F(MessageCommunicationCobsTest, send_data_with_0)
 {
     testing::StrictMock<infra::MockCallback<void(uint16_t size)>> callback;
-    auto writer = communication.SendMessageStream(4, [&](uint16_t size) { callback.callback(size); });
+    auto writer = communication.SendMessageStream(4, [&](uint16_t size)
+        { callback.callback(size); });
     infra::DataOutputStream::WithErrorPolicy stream(*writer);
     stream << infra::ConstructBin()({ 1, 0, 3, 4 }).Range();
 
@@ -98,13 +101,13 @@ TEST_F(MessageCommunicationCobsTest, send_data_with_0)
     ExpectSendData({ 2 });
     onSent();
 
-    ExpectSendData({ 1 });      // Data 1
+    ExpectSendData({ 1 }); // Data 1
     onSent();
 
-    ExpectSendData({ 3 });      // Stuffing
+    ExpectSendData({ 3 }); // Stuffing
     onSent();
 
-    ExpectSendData({ 3, 4 });   // Data 3, 4
+    ExpectSendData({ 3, 4 }); // Data 3, 4
     onSent();
 
     ExpectSendData({ 0 });
@@ -117,7 +120,8 @@ TEST_F(MessageCommunicationCobsTest, send_data_with_0)
 TEST_F(MessageCommunicationCobsTest, send_data_ending_with_0)
 {
     testing::StrictMock<infra::MockCallback<void(uint16_t size)>> callback;
-    auto writer = communication.SendMessageStream(3, [&](uint16_t size) { callback.callback(size); });
+    auto writer = communication.SendMessageStream(3, [&](uint16_t size)
+        { callback.callback(size); });
     infra::DataOutputStream::WithErrorPolicy stream(*writer);
     stream << infra::ConstructBin()({ 5, 6, 0 }).Range();
 
@@ -127,10 +131,10 @@ TEST_F(MessageCommunicationCobsTest, send_data_ending_with_0)
     ExpectSendData({ 3 });
     onSent();
 
-    ExpectSendData({ 5, 6 });      // Data 1
+    ExpectSendData({ 5, 6 }); // Data 1
     onSent();
 
-    ExpectSendData({ 1 });      // Stuffing
+    ExpectSendData({ 1 }); // Stuffing
     onSent();
 
     ExpectSendData({ 0 });
@@ -143,7 +147,8 @@ TEST_F(MessageCommunicationCobsTest, send_data_ending_with_0)
 TEST_F(MessageCommunicationCobsTest, send_large_data)
 {
     testing::StrictMock<infra::MockCallback<void(uint16_t size)>> callback;
-    auto writer = communication.SendMessageStream(280, [&](uint16_t size) { callback.callback(size); });
+    auto writer = communication.SendMessageStream(280, [&](uint16_t size)
+        { callback.callback(size); });
     infra::DataOutputStream::WithErrorPolicy stream(*writer);
     stream << infra::ConstructBin()(std::vector<uint8_t>(280, 3)).Range();
 
@@ -156,7 +161,7 @@ TEST_F(MessageCommunicationCobsTest, send_large_data)
     ExpectSendData(std::vector<uint8_t>(254, 3));
     onSent();
 
-    ExpectSendData({ 27 });      // Stuffing
+    ExpectSendData({ 27 }); // Stuffing
     onSent();
 
     ExpectSendData(std::vector<uint8_t>(26, 3));

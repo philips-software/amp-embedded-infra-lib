@@ -1,5 +1,4 @@
 function(protocol_buffer_echo_generator target input)
-
     if (CMAKE_CROSSCOMPILING)
         find_package(emil COMPONENTS Infra Hal Crypto Services Protobuf REQUIRED)
     endif()
@@ -23,7 +22,7 @@ function(protocol_buffer_echo_generator target input)
 
     # Include defaults and self. This assumes set_target_properties on self
     # is done prior to the loop.
-    list(APPEND protobuf_dependencies ${target} ${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.libprotobuf ${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.echo_attributes)
+    list(APPEND protobuf_dependencies ${target} ${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.echo_attributes)
 
     set(protopath)
     foreach(dependency ${protobuf_dependencies})
@@ -45,20 +44,10 @@ function(protocol_buffer_echo_generator target input)
         set(error_format "gcc" PARENT_SCOPE)
     endif()
 
-    if (CMAKE_HOST_WIN32)
-        set(protoc_compiler_binary ${PROTOC_DIR}/bin/protoc.exe PARENT_SCOPE)
-    elseif (CMAKE_HOST_APPLE)
-        set(protoc_compiler_binary ${PROTOC_DIR}/bin/protoc-osx-x86_64 PARENT_SCOPE)
-    elseif (CMAKE_HOST_UNIX)
-        set(protoc_compiler_binary ${PROTOC_DIR}/bin/protoc-linux-x86_64 PARENT_SCOPE)
-    else ()
-        message(FATAL_ERROR "No suitable proto compiler found for ${CMAKE_HOST_SYSTEM_NAME}")
-    endif()
-
+    emil_fetch_protocol_buffer_compiler()
 endfunction()
 
 function(protocol_buffer_echo_cpp target input)
-
     protocol_buffer_echo_generator(${target} ${input})
 
     cmake_path(SET generated_dir_echo "generated/echo")
@@ -69,8 +58,8 @@ function(protocol_buffer_echo_cpp target input)
     add_custom_command(
         OUTPUT ${generated_files}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${generated_dir_echo}
-        COMMAND ${CMAKE_COMMAND} -E env "\"PATH=$<TARGET_FILE_DIR:${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.libprotobuf>;\"" ${protoc_compiler_binary} ${protopath} --error_format=${error_format} --plugin=protoc-gen-cpp-infra=$<TARGET_FILE:${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.protoc_echo_plugin> --cpp-infra_out="${generated_dir_echo}" ${absolute_input}
-        COMMAND ${CMAKE_COMMAND} -E env "\"PATH=$<TARGET_FILE_DIR:${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.libprotobuf>;\"" ${protoc_compiler_binary} ${protopath} --error_format=${error_format} --descriptor_set_out="${generated_dir_echo}/${source_base}.pb" --include_imports ${absolute_input}
+        COMMAND ${CMAKE_COMMAND} -E env "\"PATH=$<TARGET_FILE_DIR:${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}libprotobuf>;\"" ${EMIL_PROTOC_COMPILER_BINARY} ${protopath} --error_format=${error_format} --plugin=protoc-gen-cpp-infra=$<TARGET_FILE:${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.protoc_echo_plugin> --cpp-infra_out="${generated_dir_echo}" ${absolute_input}
+        COMMAND ${CMAKE_COMMAND} -E env "\"PATH=$<TARGET_FILE_DIR:${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}libprotobuf>;\"" ${EMIL_PROTOC_COMPILER_BINARY} ${protopath} --error_format=${error_format} --descriptor_set_out="${generated_dir_echo}/${source_base}.pb" --include_imports ${absolute_input}
         MAIN_DEPENDENCY "${absolute_input}"
         DEPENDS ${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.protoc_echo_plugin
     )
@@ -87,11 +76,9 @@ function(protocol_buffer_echo_cpp target input)
     target_link_libraries(${target} PUBLIC
         protobuf.echo
     )
-
 endfunction()
 
 function(protocol_buffer_echo_csharp target input)
-
     protocol_buffer_echo_generator(${target} ${input})
 
     cmake_path(SET generated_dir_echo "generated")
@@ -103,15 +90,12 @@ function(protocol_buffer_echo_csharp target input)
         TARGET ${target}
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${generated_dir_echo}
-        COMMAND ${CMAKE_COMMAND} -E env "\"PATH=$<TARGET_FILE_DIR:${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.libprotobuf>;\"" ${protoc_compiler_binary} ${protopath} --error_format=${error_format} --plugin=protoc-gen-csharp-echo=$<TARGET_FILE:${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.protoc_echo_plugin_csharp> --csharp-echo_out="${generated_dir_echo}" ${absolute_input}
-        
+        COMMAND ${CMAKE_COMMAND} -E env "\"PATH=$<TARGET_FILE_DIR:${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}libprotobuf>;\"" ${EMIL_PROTOC_COMPILER_BINARY} ${protopath} --error_format=${error_format} --plugin=protoc-gen-csharp-echo=$<TARGET_FILE:${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.protoc_echo_plugin_csharp> --csharp-echo_out="${generated_dir_echo}" ${absolute_input}
         BYPRODUCTS ${generated_files}
     )
-
 endfunction()
 
 function(protocol_buffer_echo_java target input)
-
     protocol_buffer_echo_generator(${target} ${input})
 
     cmake_path(SET java_dir "generated/com/philips/cococo/protobufEcho")
@@ -126,17 +110,13 @@ function(protocol_buffer_echo_java target input)
         TARGET ${target}
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${generated_dir_echo}
-        COMMAND ${CMAKE_COMMAND} -E env "\"PATH=$<TARGET_FILE_DIR:${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.libprotobuf>;\"" ${protoc_compiler_binary} ${protopath} --error_format=${error_format} --plugin=protoc-gen-java-echo=$<TARGET_FILE:${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.protoc_echo_plugin_java> --java-echo_out="${java_dir}" ${absolute_input}
-        
+        COMMAND ${CMAKE_COMMAND} -E env "\"PATH=$<TARGET_FILE_DIR:${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}libprotobuf>;\"" ${EMIL_PROTOC_COMPILER_BINARY} ${protopath} --error_format=${error_format} --plugin=protoc-gen-java-echo=$<TARGET_FILE:${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.protoc_echo_plugin_java> --java-echo_out="${java_dir}" ${absolute_input}
         BYPRODUCTS ${generated_files}
     )
-
 endfunction()
 
 function(protocol_buffer_echo_all target input)
-
     protocol_buffer_echo_cpp(${target} ${input})
     protocol_buffer_echo_csharp(${target} ${input})
     protocol_buffer_echo_java(${target} ${input})
-
 endfunction()

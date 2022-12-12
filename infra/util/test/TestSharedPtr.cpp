@@ -1,8 +1,8 @@
-#include "gmock/gmock.h"
-#include "infra/util/SharedPtr.hpp"
 #include "infra/util/SharedObjectAllocatorFixedSize.hpp"
-#include "infra/util/test_helper/MonitoredConstructionObject.hpp"
+#include "infra/util/SharedPtr.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
+#include "infra/util/test_helper/MonitoredConstructionObject.hpp"
+#include "gmock/gmock.h"
 
 namespace
 {
@@ -416,7 +416,8 @@ TEST_F(SharedPtrTest, construct_AccessedBySharedPtr)
     } object;
 
     infra::MockCallback<void()> cb;
-    infra::AccessedBySharedPtr sharedObject([&cb]() { cb.callback(); });
+    infra::AccessedBySharedPtr sharedObject([&cb]()
+        { cb.callback(); });
 
     {
         infra::WeakPtr<Object> weakObject(sharedObject.MakeShared(object));
@@ -436,7 +437,8 @@ TEST_F(SharedPtrTest, construct_AccessedBySharedPtr_and_set_action_later)
     infra::MockCallback<void()> cb;
     infra::AccessedBySharedPtr sharedObject;
 
-    sharedObject.SetAction([&cb]() { cb.callback(); });
+    sharedObject.SetAction([&cb]()
+        { cb.callback(); });
 
     {
         infra::WeakPtr<Object> weakObject(sharedObject.MakeShared(object));

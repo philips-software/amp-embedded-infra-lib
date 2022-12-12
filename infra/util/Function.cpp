@@ -2,19 +2,36 @@
 
 namespace infra
 {
-     const infra::Function<void()> emptyFunction = []() {};
+    namespace detail
+    {
+        namespace
+        {
+            constexpr auto abortOnExecute = []()
+            {
+                std::abort();
+            };
+        }
 
-     Execute::Execute(Function<void()> f)
-     {
-         f();
-     }
+        const InvokerFunctions<void(), INFRA_DEFAULT_FUNCTION_EXTRA_SIZE>::VirtualMethodTable* GetAbortOnExecuteSentinelTable()
+        {
+            return InvokerFunctions<void(), INFRA_DEFAULT_FUNCTION_EXTRA_SIZE>::template StaticVirtualMethodTable<decltype(abortOnExecute)>();
+        }
+    }
 
-     ExecuteOnDestruction::ExecuteOnDestruction(Function<void()> f)
-         : f(f)
-     {}
+    const infra::Function<void()> emptyFunction = []() {
+    };
 
-     ExecuteOnDestruction::~ExecuteOnDestruction()
-     {
-         f();
-     }
+    Execute::Execute(Function<void()> f)
+    {
+        f();
+    }
+
+    ExecuteOnDestruction::ExecuteOnDestruction(Function<void()> f)
+        : f(f)
+    {}
+
+    ExecuteOnDestruction::~ExecuteOnDestruction()
+    {
+        f();
+    }
 }

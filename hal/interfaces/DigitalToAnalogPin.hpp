@@ -1,8 +1,8 @@
 #ifndef HAL_DIGITAL_TO_ANALOG_PIN_HPP
 #define HAL_DIGITAL_TO_ANALOG_PIN_HPP
 
-#include <stdint.h>
 #include "infra/util/Unit.hpp"
+#include <stdint.h>
 
 namespace hal
 {

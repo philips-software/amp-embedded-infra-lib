@@ -1,11 +1,11 @@
-#include <cstdlib>
-#include <cstring>
-#include "infra/event/EventDispatcher.hpp"
 #include "lwip/lwip_cpp/LightweightIpOverEthernet.hpp"
+#include "infra/event/EventDispatcher.hpp"
 #include "lwip/dhcp.h"
 #include "lwip/ethip6.h"
 #include "lwip/igmp.h"
 #include "netif/etharp.h"
+#include <cstdlib>
+#include <cstring>
 
 namespace services
 {
@@ -35,7 +35,8 @@ namespace services
         pbuf* buffer = pbuf_alloc(PBUF_RAW, LWIP_MEM_ALIGN_SIZE(PBUF_POOL_BUFSIZE), PBUF_POOL);
         if (buffer == nullptr)
         {
-            retryAllocationTimer.Start(std::chrono::milliseconds(250), [this]() { Subject().RetryAllocation(); });
+            retryAllocationTimer.Start(std::chrono::milliseconds(250), [this]()
+                { Subject().RetryAllocation(); });
             return infra::ByteRange();
         }
 
@@ -154,8 +155,7 @@ namespace services
         {
             bool lastOfFrame = buffer->tot_len == buffer->len;
 
-            Subject().SendBuffer(infra::ConstByteRange(static_cast<const uint8_t*>(buffer->payload), static_cast<const uint8_t*>(buffer->payload) + buffer->len)
-                , lastOfFrame);
+            Subject().SendBuffer(infra::ConstByteRange(static_cast<const uint8_t*>(buffer->payload), static_cast<const uint8_t*>(buffer->payload) + buffer->len), lastOfFrame);
 
             if (lastOfFrame)
                 break;
@@ -174,9 +174,9 @@ namespace services
 
         if (!config.ipConfig.useDhcp)
         {
-            IP4_ADDR(ip_2_ip4(&ipaddr), config.ipConfig.staticAddresses.address[0], config.ipConfig.staticAddresses.address[1], config.ipConfig.staticAddresses.address[2], config.ipConfig.staticAddresses.address[3]);
-            IP4_ADDR(ip_2_ip4(&netmask), config.ipConfig.staticAddresses.netmask[0], config.ipConfig.staticAddresses.netmask[1], config.ipConfig.staticAddresses.netmask[2], config.ipConfig.staticAddresses.netmask[3]);
-            IP4_ADDR(ip_2_ip4(&gw), config.ipConfig.staticAddresses.gateway[0], config.ipConfig.staticAddresses.gateway[1], config.ipConfig.staticAddresses.gateway[2], config.ipConfig.staticAddresses.gateway[3]);
+            IP4_ADDR(ip_2_ip4(&ipaddr), config.ipConfig.addresses.address[0], config.ipConfig.addresses.address[1], config.ipConfig.addresses.address[2], config.ipConfig.addresses.address[3]);
+            IP4_ADDR(ip_2_ip4(&netmask), config.ipConfig.addresses.netmask[0], config.ipConfig.addresses.netmask[1], config.ipConfig.addresses.netmask[2], config.ipConfig.addresses.netmask[3]);
+            IP4_ADDR(ip_2_ip4(&gw), config.ipConfig.addresses.gateway[0], config.ipConfig.addresses.gateway[1], config.ipConfig.addresses.gateway[2], config.ipConfig.addresses.gateway[3]);
         }
 
         netif_add(&netInterface, ip_2_ip4(&ipaddr), ip_2_ip4(&netmask), ip_2_ip4(&gw), this, &LightweightIpOverEthernetFactory::StaticInit, &ethernet_input);

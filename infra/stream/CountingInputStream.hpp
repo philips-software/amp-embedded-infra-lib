@@ -10,7 +10,7 @@ namespace infra
         , private infra::StreamErrorPolicy
     {
     public:
-        CountingStreamReader(infra::StreamReader& reader);
+        explicit CountingStreamReader(infra::StreamReader& reader);
 
         uint32_t TotalRead() const;
 
@@ -38,7 +38,7 @@ namespace infra
         , private infra::StreamErrorPolicy
     {
     public:
-        CountingStreamReaderWithRewinding(infra::StreamReaderWithRewinding& reader);
+        explicit CountingStreamReaderWithRewinding(infra::StreamReaderWithRewinding& reader);
 
         uint32_t TotalRead() const;
 

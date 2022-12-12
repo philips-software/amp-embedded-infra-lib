@@ -10,7 +10,7 @@
 #include <utility>
 
 #ifdef __has_include
-#if __has_include(<bit>)
+#if __has_include(<bit>) && __cplusplus > 202002L
 #include <bit>
 #endif
 #endif
@@ -54,7 +54,11 @@ namespace infra
     constexpr bool isLittleEndian = std::endian::native == std::endian::little;
     constexpr bool isBigEndian = std::endian::native == std::endian::big;
 #else
-    namespace detail { constexpr int endianCheck{0x01}; }
+    namespace detail
+    {
+        constexpr int endianCheck{ 0x01 };
+    }
+
     constexpr bool isLittleEndian = static_cast<const char&>(detail::endianCheck) == 0x01;
     constexpr bool isBigEndian = !isLittleEndian;
 #endif

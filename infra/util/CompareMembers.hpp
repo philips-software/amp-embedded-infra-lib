@@ -2,14 +2,14 @@
 #define INFRA_COMPARE_MEMBERS_HPP
 
 // This file contains classes which make comparison of objects with many datamembers easier. It is used like this:
-// 
+//
 // bool operator==(const MyClass& x, const MyClass& y)
 // {
 //     return infra::Equals()
 //         (x.a, y.a)
 //         (x.b, y.b);
 // }
-// 
+//
 // bool operator<(const MyClass& x, const MyClass& y)
 // {
 //     return infra::LessThan()
@@ -22,39 +22,31 @@ namespace infra
     class Equals
     {
     public:
-        Equals();
-
         template<class T>
-            Equals& operator()(const T& x, const T& y);
+        Equals& operator()(const T& x, const T& y);
 
         operator bool() const;
         bool operator!() const;
 
     private:
-        bool equal;
+        bool equal{ true };
     };
 
     class LessThan
     {
     public:
-        LessThan();
-
         template<class T>
-            LessThan& operator()(const T& x, const T& y);
+        LessThan& operator()(const T& x, const T& y);
 
         operator bool() const;
         bool operator!() const;
 
     private:
-        bool lessThan;
-        bool equal;
+        bool lessThan{ false };
+        bool equal{ true };
     };
 
     ////    Implementation    ////
-
-    inline Equals::Equals()
-        : equal(true)
-    {}
 
     template<class T>
     inline Equals& Equals::operator()(const T& x, const T& y)
@@ -72,11 +64,6 @@ namespace infra
     {
         return !equal;
     }
-
-    inline LessThan::LessThan()
-        : lessThan(false)
-        , equal(true)
-    {}
 
     template<class T>
     inline LessThan& LessThan::operator()(const T& x, const T& y)

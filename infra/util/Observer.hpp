@@ -37,6 +37,20 @@ namespace infra
 
     private:
         SubjectType* subject = nullptr;
+
+    public:
+        class DelayedAttachDetach
+        {
+        public:
+            DelayedAttachDetach(Observer<Descendant, SubjectType_>& observer, SubjectType& subject);
+            DelayedAttachDetach(const DelayedAttachDetach& other) = delete;
+            DelayedAttachDetach& operator=(const DelayedAttachDetach& other) = delete;
+            ~DelayedAttachDetach();
+
+        private:
+            Observer<Descendant, SubjectType_>& observer;
+            SubjectType& subject;
+        };
     };
 
     template<class Descendant, class SubjectType_>
@@ -64,6 +78,20 @@ namespace infra
 
     private:
         SubjectType* subject = nullptr;
+
+    public:
+        class DelayedAttachDetach
+        {
+        public:
+            DelayedAttachDetach(SingleObserver<Descendant, SubjectType_>& observer, SubjectType& subject);
+            DelayedAttachDetach(const DelayedAttachDetach& other) = delete;
+            DelayedAttachDetach& operator=(const DelayedAttachDetach& other) = delete;
+            ~DelayedAttachDetach();
+
+        private:
+            SingleObserver<Descendant, SubjectType_>& observer;
+            SubjectType& subject;
+        };
     };
 
     template<class ObserverType_>
@@ -85,13 +113,13 @@ namespace infra
 
     public:
         template<class F>
-            void NotifyObservers(F callback, infra::enable_if_t<std::is_same<infra::result_of_t<F, ObserverType_&>, void>::value>* = nullptr) const;
+        void NotifyObservers(F callback, infra::enable_if_t<std::is_same<infra::result_of_t<F, ObserverType_&>, void>::value>* = nullptr) const;
         template<class F>
-            void NotifyObservers(F callback, infra::enable_if_t<std::is_same<infra::result_of_t<F, ObserverType_&>, void>::value>* = nullptr);
+        void NotifyObservers(F callback, infra::enable_if_t<std::is_same<infra::result_of_t<F, ObserverType_&>, void>::value>* = nullptr);
         template<class F>
-            bool NotifyObservers(F callback, infra::enable_if_t<!std::is_same<infra::result_of_t<F, ObserverType_&>, void>::value>* = nullptr) const;
+        bool NotifyObservers(F callback, infra::enable_if_t<!std::is_same<infra::result_of_t<F, ObserverType_&>, void>::value>* = nullptr) const;
         template<class F>
-            bool NotifyObservers(F callback, infra::enable_if_t<!std::is_same<infra::result_of_t<F, ObserverType_&>, void>::value>* = nullptr);
+        bool NotifyObservers(F callback, infra::enable_if_t<!std::is_same<infra::result_of_t<F, ObserverType_&>, void>::value>* = nullptr);
 
     private:
         IntrusiveList<Observer<ObserverType_, SubjectType>> observers;
@@ -118,7 +146,7 @@ namespace infra
         bool HasObserver() const;
         ObserverType& GetObserver() const;
         template<class F>
-            void NotifyObservers(F callback) const;
+        void NotifyObservers(F callback) const;
 
     private:
         SingleObserver<ObserverType_, ObserverSubjectType>* observer = nullptr;
@@ -167,6 +195,20 @@ namespace infra
     }
 
     template<class Descendant, class SubjectType_>
+    Observer<Descendant, SubjectType_>::DelayedAttachDetach::DelayedAttachDetach(Observer<Descendant, SubjectType_>& observer, SubjectType& subject)
+        : observer(observer)
+        , subject(subject)
+    {
+        observer.Attach(subject);
+    }
+
+    template<class Descendant, class SubjectType_>
+    Observer<Descendant, SubjectType_>::DelayedAttachDetach::~DelayedAttachDetach()
+    {
+        observer.Detach();
+    }
+
+    template<class Descendant, class SubjectType_>
     SingleObserver<Descendant, SubjectType_>::SingleObserver(SubjectType& subject)
     {
         Attach(subject);
@@ -207,6 +249,20 @@ namespace infra
         subject = nullptr;
     }
 
+    template<class Descendant, class SubjectType_>
+    SingleObserver<Descendant, SubjectType_>::DelayedAttachDetach::DelayedAttachDetach(SingleObserver<Descendant, SubjectType_>& observer, SubjectType& subject)
+        : observer(observer)
+        , subject(subject)
+    {
+        observer.Attach(subject);
+    }
+
+    template<class Descendant, class SubjectType_>
+    SingleObserver<Descendant, SubjectType_>::DelayedAttachDetach::~DelayedAttachDetach()
+    {
+        observer.Detach();
+    }
+
     template<class ObserverType>
     Subject<ObserverType, void>::~Subject()
     {
@@ -217,7 +273,7 @@ namespace infra
     template<class F>
     void Subject<ObserverType, void>::NotifyObservers(F callback, infra::enable_if_t<std::is_same<infra::result_of_t<F, ObserverType&>, void>::value>*) const
     {
-        for (typename IntrusiveList<Observer<ObserverType, SubjectType>>::const_iterator i = observers.begin(); i != observers.end(); )
+        for (typename IntrusiveList<Observer<ObserverType, SubjectType>>::const_iterator i = observers.begin(); i != observers.end();)
         {
             const Observer<ObserverType, SubjectType>& observer = *i;
             ++i;
@@ -241,7 +297,7 @@ namespace infra
     template<class F>
     bool Subject<ObserverType, void>::NotifyObservers(F callback, infra::enable_if_t<!std::is_same<infra::result_of_t<F, ObserverType&>, void>::value>*) const
     {
-        for (typename IntrusiveList<Observer<ObserverType, SubjectType>>::const_iterator i = observers.begin(); i != observers.end(); )
+        for (typename IntrusiveList<Observer<ObserverType, SubjectType>>::const_iterator i = observers.begin(); i != observers.end();)
         {
             const Observer<ObserverType, SubjectType>& observer = *i;
             ++i;
@@ -298,8 +354,8 @@ namespace infra
         return static_cast<ObserverType&>(*observer);
     }
 
-    template <class ObserverType, class Helper>
-    template <class F>
+    template<class ObserverType, class Helper>
+    template<class F>
     void Subject<ObserverType, Helper>::NotifyObservers(F callback) const
     {
         if (observer != nullptr)

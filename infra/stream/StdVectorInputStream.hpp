@@ -26,7 +26,7 @@ namespace infra
         virtual void Rewind(std::size_t marker) override;
 
     private:
-        uint32_t offset = 0;
+        std::size_t offset = 0;
         const std::vector<uint8_t>& vector;
     };
 
@@ -36,7 +36,7 @@ namespace infra
     public:
         using WithStorage = infra::WithStorage<DataInputStream::WithReader<StdVectorInputStreamReader>, std::vector<uint8_t>>;
 
-        StdVectorInputStream(std::vector<uint8_t>& storage);
+        explicit StdVectorInputStream(std::vector<uint8_t>& storage);
         StdVectorInputStream(std::vector<uint8_t>& storage, const SoftFail&);
         StdVectorInputStream(std::vector<uint8_t>& storage, const NoFail&);
     };

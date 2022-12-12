@@ -161,27 +161,5 @@ decoding the individual message.
 
 [source,protobuf]
 ----
-syntax = "proto3";
-
-option java_package = "com.philips.emil.protobufEcho";
-option java_outer_classname = "EchoAttributesProto";
-
-import "google/protobuf/descriptor.proto";
-
-extend google.protobuf.FieldOptions {
-  uint32 string_size = 50000;
-  uint32 bytes_size = 50001;
-  uint32 array_size = 50002;
-}
-
-extend google.protobuf.ServiceOptions {
-  uint32 service_id = 50000;
-}
-
-extend google.protobuf.MethodOptions {
-  uint32 method_id = 50000;
-}
-
-message Nothing {
-}
+include::example$echoattributes.proto[]
 ----

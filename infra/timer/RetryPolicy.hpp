@@ -41,10 +41,12 @@ namespace infra
         : public RetryPolicy
     {
     public:
-        RetryPolicyFixedInterval(infra::Duration delay);
+        explicit RetryPolicyFixedInterval(infra::Duration delay);
 
         infra::Duration RetryDelay(bool intermittentFailure) override;
-        void Reset() override {}
+
+        void Reset() override
+        {}
 
     private:
         infra::Duration retryDelay;

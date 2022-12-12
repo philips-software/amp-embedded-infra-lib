@@ -48,8 +48,10 @@ target_sources(infra.util_test PRIVATE
     TestVariant.cpp
 )
 
-if (TARGET_BUILD_WIN)
+if (EMIL_BUILD_WIN)
     target_sources(infra.util_test PRIVATE
         TestNatvis.cpp
     )
 endif()
+
+emil_clangformat_target(infra.util_test)

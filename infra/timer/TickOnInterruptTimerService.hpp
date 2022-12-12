@@ -22,15 +22,16 @@ namespace infra
         void SystemTickInterrupt();
 
     private:
+        void CalculateNextTrigger();
         void ProcessTicks();
 
     private:
         TimePoint systemTime = TimePoint();
         Duration resolution;
 
-        std::atomic<uint32_t> ticksNextNotification;
-        std::atomic<uint32_t> ticksProgressed;
-        std::atomic_bool notificationScheduled;
+        std::atomic<uint32_t> ticksNextNotification{ 0 };
+        std::atomic<uint32_t> ticksProgressed{ 0 };
+        std::atomic_bool notificationScheduled{ false };
     };
 }
 

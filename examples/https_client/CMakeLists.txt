@@ -1,5 +1,0 @@
-if (TARGET_BUILD_WIN)
-    add_executable(examples.https_client)
-    target_sources(examples.https_client PRIVATE MainWin.cpp)
-    target_link_libraries(examples.https_client PUBLIC hal.generic services.network_win)
-endif()

@@ -2,8 +2,8 @@
 #define SERVICES_CONNECTION_BSD_HPP
 
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
-#include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/BoundedDequeInputStream.hpp"
+#include "infra/stream/ByteOutputStream.hpp"
 #include "infra/util/IntrusiveList.hpp"
 #include "infra/util/SharedObjectAllocator.hpp"
 #include "infra/util/SharedOptional.hpp"
@@ -58,7 +58,7 @@ namespace services
             : public infra::BoundedDequeInputStreamReader
         {
         public:
-            StreamReaderBsd(ConnectionBsd& connection);
+            explicit StreamReaderBsd(ConnectionBsd& connection);
 
             void ConsumeRead();
 

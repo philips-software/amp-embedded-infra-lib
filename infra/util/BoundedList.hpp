@@ -37,7 +37,7 @@ namespace infra
     {
     public:
         template<std::size_t Max>
-            using WithMaxSize = infra::WithStorage<BoundedList<T>, std::array<StaticStorage<detail::BoundedListNode<T>>, Max>>;
+        using WithMaxSize = infra::WithStorage<BoundedList<T>, std::array<StaticStorage<detail::BoundedListNode<T>>, Max>>;
 
         using value_type = T;
         using reference = T&;
@@ -54,16 +54,16 @@ namespace infra
         explicit BoundedList(infra::MemoryRange<infra::StaticStorage<detail::BoundedListNode<T>>> storage);
         BoundedList(infra::MemoryRange<infra::StaticStorage<detail::BoundedListNode<T>>> storage, size_type n, const value_type& value = value_type());
         template<class InputIterator>
-            BoundedList(infra::MemoryRange<infra::StaticStorage<detail::BoundedListNode<T>>> storage, InputIterator first, InputIterator last);
+        BoundedList(infra::MemoryRange<infra::StaticStorage<detail::BoundedListNode<T>>> storage, InputIterator first, InputIterator last);
         BoundedList(infra::MemoryRange<infra::StaticStorage<detail::BoundedListNode<T>>> storage, std::initializer_list<T> initializerList);
         BoundedList(infra::MemoryRange<infra::StaticStorage<detail::BoundedListNode<T>>> storage, const BoundedList& other);
-        BoundedList(infra::MemoryRange<infra::StaticStorage<detail::BoundedListNode<T>>> storage, BoundedList&& other);
+        BoundedList(infra::MemoryRange<infra::StaticStorage<detail::BoundedListNode<T>>> storage, BoundedList&& other) noexcept;
         ~BoundedList();
 
         BoundedList& operator=(const BoundedList& other);
         BoundedList& operator=(BoundedList&& other) noexcept;
         void AssignFromStorage(const BoundedList& other);
-        void AssignFromStorage(BoundedList&& other);
+        void AssignFromStorage(BoundedList&& other) noexcept;
 
     public:
         iterator begin();
@@ -99,10 +99,10 @@ namespace infra
         void insert(iterator position, value_type&& value);
 
         template<class InputIterator>
-            void assign(InputIterator first, InputIterator last);
+        void assign(InputIterator first, InputIterator last);
         void assign(size_type n, const value_type& value);
         template<class InputIterator>
-            void move_from_range(InputIterator first, InputIterator last);
+        void move_from_range(InputIterator first, InputIterator last);
 
         void erase(iterator position);
         void erase_all_after(iterator position);
@@ -113,9 +113,9 @@ namespace infra
         void clear();
 
         template<class... Args>
-            void emplace_front(Args&&... args);
+        void emplace_front(Args&&... args);
         template<class... Args>
-            void emplace_back(Args&&... args);
+        void emplace_back(Args&&... args);
 
     public:
         bool operator==(const BoundedList& other) const;
@@ -130,7 +130,7 @@ namespace infra
 
     private:
         NodeType* AllocateNode();
-        
+
     private:
         infra::MemoryRange<infra::StaticStorage<detail::BoundedListNode<T>>> storage;
         size_type numAllocated = 0;
@@ -141,7 +141,7 @@ namespace infra
     };
 
     template<class T>
-        void swap(BoundedList<T>& x, BoundedList<T>& y) noexcept;
+    void swap(BoundedList<T>& x, BoundedList<T>& y) noexcept;
 
     namespace detail
     {
@@ -163,9 +163,9 @@ namespace infra
             BoundedListIterator() = default;
             BoundedListIterator(NodeType* node, const ContainerType* container);
             template<class T2>
-                BoundedListIterator(const BoundedListIterator<T2, U>& other);
+            BoundedListIterator(const BoundedListIterator<T2, U>& other);
             template<class T2>
-                BoundedListIterator& operator=(const BoundedListIterator<T2, U>& other);
+            BoundedListIterator& operator=(const BoundedListIterator<T2, U>& other);
 
             T& operator*() const;
             T* operator->() const;
@@ -176,9 +176,9 @@ namespace infra
             BoundedListIterator operator--(int);
 
             template<class T2>
-                bool operator==(const BoundedListIterator<T2, U>& other) const;
+            bool operator==(const BoundedListIterator<T2, U>& other) const;
             template<class T2>
-                bool operator!=(const BoundedListIterator<T2, U>& other) const;
+            bool operator!=(const BoundedListIterator<T2, U>& other) const;
 
             NodeType* node = nullptr;
             const ContainerType* container = nullptr;
@@ -186,7 +186,7 @@ namespace infra
     }
 
     ////    Implementation    ////
- 
+
     template<class T>
     BoundedList<T>::BoundedList(infra::MemoryRange<infra::StaticStorage<detail::BoundedListNode<T>>> storage)
         : storage(storage)
@@ -222,7 +222,7 @@ namespace infra
     }
 
     template<class T>
-    BoundedList<T>::BoundedList(infra::MemoryRange<infra::StaticStorage<detail::BoundedListNode<T>>> storage, BoundedList&& other)
+    BoundedList<T>::BoundedList(infra::MemoryRange<infra::StaticStorage<detail::BoundedListNode<T>>> storage, BoundedList&& other) noexcept
         : storage(storage)
     {
         move_from_range(other.begin(), other.end());
@@ -264,7 +264,7 @@ namespace infra
     }
 
     template<class T>
-    void BoundedList<T>::AssignFromStorage(BoundedList&& other)
+    void BoundedList<T>::AssignFromStorage(BoundedList&& other) noexcept
     {
         *this = std::move(other);
     }
@@ -395,7 +395,7 @@ namespace infra
     void BoundedList<T>::pop_front()
     {
         firstNode->storage.Destruct();
-            
+
         NodeType* oldStart = firstNode;
         firstNode = firstNode->next;
 
@@ -476,7 +476,7 @@ namespace infra
             node->storage.Construct(value);
 
             node->next = position.node;
-            
+
             if (node->next != nullptr)
             {
                 node->previous = node->next->previous;
@@ -707,8 +707,7 @@ namespace infra
     template<class T>
     bool BoundedList<T>::operator==(const BoundedList& other) const
     {
-        return size() == other.size()
-            && std::equal(begin(), end(), other.begin());
+        return size() == other.size() && std::equal(begin(), end(), other.begin());
     }
 
     template<class T>
