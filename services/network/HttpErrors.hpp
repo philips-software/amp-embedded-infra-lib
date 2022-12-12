@@ -1,5 +1,5 @@
-#ifndef DI_COMM_HTTP_ERRORS_HPP
-#define DI_COMM_HTTP_ERRORS_HPP
+#ifndef SERVICES_HTTP_ERRORS_HPP
+#define SERVICES_HTTP_ERRORS_HPP
 
 #include "services/network/HttpServer.hpp"
 

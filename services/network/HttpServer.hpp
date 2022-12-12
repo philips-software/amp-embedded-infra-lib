@@ -1,5 +1,5 @@
-#ifndef DI_COMM_HTTP_SERVER_HPP
-#define DI_COMM_HTTP_SERVER_HPP
+#ifndef SERVICES_HTTP_SERVER_HPP
+#define SERVICES_HTTP_SERVER_HPP
 
 #include "infra/stream/CountingInputStream.hpp"
 #include "infra/stream/LimitedInputStream.hpp"
