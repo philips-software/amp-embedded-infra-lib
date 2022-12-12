@@ -15,7 +15,7 @@ namespace application
         class End
         {
         public:
-            End(std::size_t index);
+            explicit End(std::size_t index);
 
             bool operator==(const End& other) const;
             bool operator!=(const End& other) const;
@@ -26,7 +26,7 @@ namespace application
         class Error
         {
         public:
-            Error(std::size_t index);
+            explicit Error(std::size_t index);
 
             bool operator==(const Error& other) const;
             bool operator!=(const Error& other) const;
@@ -37,7 +37,7 @@ namespace application
         class Comma
         {
         public:
-            Comma(std::size_t index);
+            explicit Comma(std::size_t index);
 
             bool operator==(const Comma& other) const;
             bool operator!=(const Comma& other) const;
@@ -48,7 +48,7 @@ namespace application
         class Dot
         {
         public:
-            Dot(std::size_t index);
+            explicit Dot(std::size_t index);
 
             bool operator==(const Dot& other) const;
             bool operator!=(const Dot& other) const;
@@ -103,7 +103,7 @@ namespace application
         class String
         {
         public:
-            explicit String(std::size_t index, const std::string& value);
+            String(std::size_t index, const std::string& value);
 
             bool operator==(const String& other) const;
             bool operator!=(const String& other) const;
@@ -115,7 +115,7 @@ namespace application
         class Integer
         {
         public:
-            explicit Integer(std::size_t index, int32_t value);
+            Integer(std::size_t index, int32_t value);
 
             bool operator==(const Integer& other) const;
             bool operator!=(const Integer& other) const;
@@ -127,7 +127,7 @@ namespace application
         class Boolean
         {
         public:
-            explicit Boolean(std::size_t index, bool value);
+            Boolean(std::size_t index, bool value);
 
             bool operator==(const Boolean& other) const;
             bool operator!=(const Boolean& other) const;
@@ -221,13 +221,13 @@ namespace application
         void MethodReceived(const EchoService& service, const EchoMethod& method, infra::ProtoParser&& parser);
         void PrintMessage(const EchoMessage& message, infra::ProtoParser& parser);
         void PrintField(infra::Variant<uint32_t, uint64_t, infra::ProtoLengthDelimited>& fieldData, const EchoField& field, infra::ProtoParser& parser);
-        void MethodNotFound(const EchoService& service, uint32_t methodId);
-        void ServiceNotFound(uint32_t serviceId, uint32_t methodId);
+        void MethodNotFound(const EchoService& service, uint32_t methodId) const;
+        void ServiceNotFound(uint32_t serviceId, uint32_t methodId) const;
         void RunEventDispatcher();
         void ListInterfaces();
         void ListFields(const EchoMessage& message);
         void Process(const std::string& line);
-        std::pair<std::shared_ptr<const EchoService>, const EchoMethod&> SearchMethod(MethodInvocation& methodInvocation);
+        std::pair<std::shared_ptr<const EchoService>, const EchoMethod&> SearchMethod(MethodInvocation& methodInvocation) const;
 
     private:
         EchoRoot& root;

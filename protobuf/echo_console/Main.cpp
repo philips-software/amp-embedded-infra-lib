@@ -90,7 +90,7 @@ class ConsoleClientConnection
     , public application::ConsoleObserver
 {
 public:
-    ConsoleClientConnection(application::Console& console);
+    explicit ConsoleClientConnection(application::Console& console);
 
     // Implementation of ConnectionObserver
     virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
@@ -164,7 +164,7 @@ class ConsoleClient
     : public services::ClientConnectionObserverFactoryWithNameResolver
 {
 public:
-    ConsoleClient(services::ConnectionFactoryWithNameResolver& connectionFactory, application::Console& console, std::string hostname, services::Tracer& tracer);
+    ConsoleClient(services::ConnectionFactoryWithNameResolver& connectionFactory, application::Console& console, const std::string& hostname, services::Tracer& tracer);
     ~ConsoleClient();
 
 protected:
@@ -174,7 +174,6 @@ protected:
     virtual void ConnectionFailed(services::ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason reason) override;
 
 private:
-    services::ConnectionFactoryWithNameResolver& connectionFactory;
     infra::SharedOptional<ConsoleClientConnection> consoleClientConnection;
     infra::SharedPtr<void> connector;
     application::Console& console;
@@ -182,9 +181,8 @@ private:
     services::Tracer& tracer;
 };
 
-ConsoleClient::ConsoleClient(services::ConnectionFactoryWithNameResolver& connectionFactory, application::Console& console, std::string hostname, services::Tracer& tracer)
-    : connectionFactory(connectionFactory)
-    , console(console)
+ConsoleClient::ConsoleClient(services::ConnectionFactoryWithNameResolver& connectionFactory, application::Console& console, const std::string& hostname, services::Tracer& tracer)
+    : console(console)
     , hostname(hostname)
     , tracer(tracer)
 {
@@ -284,7 +282,8 @@ int main(int argc, char* argv[], const char* env[])
             else
                 consoleClient.Emplace(connectionFactory, console, get(target), services::GlobalTracer());
         };
-        infra::EventDispatcher::Instance().Schedule([&]() { construct(); });
+
+        infra::EventDispatcher::Instance().Schedule([&construct]() { construct(); });
         console.Run();
     }
     catch (const args::Help&)
