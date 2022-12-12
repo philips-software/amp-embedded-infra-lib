@@ -1,4 +1,4 @@
-if (TARGET_BUILD_DARWIN OR TARGET_BUILD_UNIX)
+if (EMIL_BUILD_UNIX OR EMIL_BUILD_DARWIN)
     add_library(hal.unix ${EMIL_EXCLUDE_FROM_ALL} STATIC)
     install(TARGETS hal.unix EXPORT emilHalTargets)
 
