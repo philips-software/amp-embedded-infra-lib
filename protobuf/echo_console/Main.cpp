@@ -283,7 +283,8 @@ int main(int argc, char* argv[], const char* env[])
                 consoleClient.Emplace(connectionFactory, console, get(target), services::GlobalTracer());
         };
 
-        infra::EventDispatcher::Instance().Schedule([&construct]() { construct(); });
+        infra::EventDispatcher::Instance().Schedule([&construct]()
+            { construct(); });
         console.Run();
     }
     catch (const args::Help&)
