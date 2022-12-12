@@ -24,12 +24,12 @@ public:
     ~ConsoleClientUart();
 
     // Implementation of ConsoleObserver
-    virtual void Send(const std::string& message) override;
+    void Send(const std::string& message) override;
 
 private:
     // Implementation of MessageCommunicationObserver
-    virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-    virtual void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
+    void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+    void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
 
 private:
     void CheckDataToBeSent();
@@ -93,12 +93,12 @@ public:
     explicit ConsoleClientConnection(application::Console& console);
 
     // Implementation of ConnectionObserver
-    virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-    virtual void DataReceived() override;
-    virtual void Attached() override;
+    void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+    void DataReceived() override;
+    void Attached() override;
 
     // Implementation of ConsoleObserver
-    virtual void Send(const std::string& message) override;
+    void Send(const std::string& message) override;
 
 private:
     void CheckDataToBeSent();
@@ -168,10 +168,10 @@ public:
     ~ConsoleClient();
 
 protected:
-    virtual infra::BoundedConstString Hostname() const override;
-    virtual uint16_t Port() const override;
-    virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
-    virtual void ConnectionFailed(services::ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason reason) override;
+    infra::BoundedConstString Hostname() const override;
+    uint16_t Port() const override;
+    void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
+    void ConnectionFailed(services::ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason reason) override;
 
 private:
     infra::SharedOptional<ConsoleClientConnection> consoleClientConnection;

@@ -691,7 +691,7 @@ namespace application
         }
     }
 
-    void Console::Process(const std::string& line)
+    void Console::Process(const std::string& line) const
     {
         try
         {

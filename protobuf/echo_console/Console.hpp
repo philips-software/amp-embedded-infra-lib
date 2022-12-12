@@ -175,7 +175,7 @@ namespace application
         : public infra::Subject<ConsoleObserver>
     {
     public:
-        Console(EchoRoot& root);
+        explicit Console(EchoRoot& root);
 
         void Run();
         services::ConnectionFactory& ConnectionFactory();
@@ -195,7 +195,7 @@ namespace application
         class MethodInvocation
         {
         public:
-            MethodInvocation(const std::string& line);
+            explicit MethodInvocation(const std::string& line);
 
             void EncodeParameters(std::shared_ptr<const EchoMessage> message, std::size_t lineSize, infra::ProtoFormatter& formatter);
 
@@ -226,7 +226,7 @@ namespace application
         void RunEventDispatcher();
         void ListInterfaces();
         void ListFields(const EchoMessage& message);
-        void Process(const std::string& line);
+        void Process(const std::string& line) const;
         std::pair<std::shared_ptr<const EchoService>, const EchoMethod&> SearchMethod(MethodInvocation& methodInvocation) const;
 
     private:
