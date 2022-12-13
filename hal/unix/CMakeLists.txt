@@ -9,12 +9,6 @@ if (EMIL_BUILD_UNIX OR EMIL_BUILD_DARWIN)
     target_compile_definitions(hal.unix PUBLIC
         EMIL_HAL_UNIX
     )
-    
-    if (EMIL_BUILD_UNIX)
-        target_compile_definitions(hal.unix PRIVATE
-            EMIL_OS_UNIX
-        )
-    endif()
 
     if (EMIL_BUILD_DARWIN)
         target_compile_definitions(hal.unix PRIVATE

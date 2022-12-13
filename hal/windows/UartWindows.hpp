@@ -28,7 +28,7 @@ namespace hal
     class UartWindows
         : public SerialCommunication
     {
-    public: 
+    public:
         struct UartWindowsConfig
         {
             enum class RtsFlowControl
@@ -80,7 +80,7 @@ namespace hal
         infra::Function<void(infra::ConstByteRange data)> onReceivedData;
 
         void* handle = nullptr;
-        std::atomic<bool> running{true};
+        std::atomic<bool> running{ true };
         std::mutex mutex;
         std::condition_variable receivedDataSet;
         std::thread readThread;

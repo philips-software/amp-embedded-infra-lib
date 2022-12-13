@@ -1,13 +1,12 @@
 #include "hal/unix/UartUnix.hpp"
-#ifdef EMIL_OS_UNIX
-#include <asm/termbits.h>
-#endif
 #ifdef EMIL_OS_DARWIN
 #include <IOKit/serial/ioss.h>
+#else
+#include <asm/termbits.h>
 #endif
+#include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include <fcntl.h>
 
 namespace hal
 {
@@ -101,19 +100,20 @@ namespace hal
 
 #ifdef EMIL_OS_DARWIN
         if (tcsetattr(fileDescriptor, TCSANOW, &settings) != 0)
-          throw std::runtime_error("Could not set port configuration");
+            throw std::runtime_error("Could not set port configuration");
 
         if (darwinSetSpeed)
         {
             if (ioctl(fileDescriptor, IOSSIOSPEED, &bitrate) == -1)
-              throw std::runtime_error("Could not set custom baudrate");
+                throw std::runtime_error("Could not set custom baudrate");
         }
 #else
         if (ioctl(fileDescriptor, TCSETS2, &settings) == -1)
-            throw std::runtime_error("Could not set port configuration");;
+            throw std::runtime_error("Could not set port configuration");
 #endif
 
-        readThread = std::thread([this]() { Read(); });
+        readThread = std::thread([this]()
+            { Read(); });
     }
 
     void UartUnix::Read()

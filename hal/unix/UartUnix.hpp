@@ -26,9 +26,9 @@ namespace hal
         void Read();
 
     private:
-        int fileDescriptor{-1};
+        int fileDescriptor{ -1 };
         uint8_t buffer;
-        std::atomic<bool> running{true};
+        std::atomic<bool> running{ true };
         std::mutex mutex;
         std::condition_variable receivedDataSet;
         std::thread readThread;
