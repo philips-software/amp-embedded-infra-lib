@@ -6,7 +6,6 @@
 #include <IOKit/serial/ioss.h>
 #endif
 #include <sys/ioctl.h>
-#include <termios.h>
 #include <unistd.h>
 #include <fcntl.h>
 
@@ -52,21 +51,25 @@ namespace hal
     void UartUnix::Open(const std::string& portName)
     {
         speed_t bitrate = 115200;
-        fileDescriptor = open(portName.c_str(), O_RDWR | O_NOCTTY);
+        fileDescriptor = open(portName.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK);
 
         if (fileDescriptor == -1)
-            throw std::runtime_error("Could not open port");
+            throw std::runtime_error(std::string("Could not open port (" + portName + "): ") + strerror(errno));
 
         if (ioctl(fileDescriptor, TIOCEXCL) == -1)
-            throw std::runtime_error("Failed to get exclusive access to port");
+            throw std::runtime_error("Failed to get exclusive access to port (" + portName + ")");
+
+        if (fcntl(fileDescriptor, F_SETFL, 0) == -1)
+            throw std::runtime_error("Failed to clear O_NONBLOCK");
 
 #ifdef EMIL_OS_DARWIN
         struct termios settings;
         if (tcgetattr(fileDescriptor, &settings) != 0)
-          throw std::runtime_error("Could not get port configuration");
+            throw std::runtime_error("Could not get port configuration");
 #else
         struct termios2 settings;
-        ioctl(fileDescriptor, TCGETS2, &settings);
+        if (ioctl(fileDescriptor, TCGETS2, &settings) == -1)
+            throw std::runtime_error("Could not get port configuration");
 #endif
 
         settings.c_cflag &= ~CSIZE;
