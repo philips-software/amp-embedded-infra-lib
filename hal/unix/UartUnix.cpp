@@ -1,6 +1,12 @@
 #include "hal/unix/UartUnix.hpp"
+#ifdef EMIL_OS_UNIX
 #include <asm/termbits.h>
+#endif
+#ifdef EMIL_OS_DARWIN
+#include <IOKit/serial/ioss.h>
+#endif
 #include <sys/ioctl.h>
+#include <termios.h>
 #include <unistd.h>
 #include <fcntl.h>
 
@@ -45,13 +51,23 @@ namespace hal
 
     void UartUnix::Open(const std::string& portName)
     {
-        fileDescriptor = open(portName.c_str(), O_RDWR);
+        speed_t bitrate = 115200;
+        fileDescriptor = open(portName.c_str(), O_RDWR | O_NOCTTY);
 
         if (fileDescriptor == -1)
             throw std::runtime_error("Could not open port");
 
+        if (ioctl(fileDescriptor, TIOCEXCL) == -1)
+            throw std::runtime_error("Failed to get exclusive access to port");
+
+#ifdef EMIL_OS_DARWIN
+        struct termios settings;
+        if (tcgetattr(fileDescriptor, &settings) != 0)
+          throw std::runtime_error("Could not get port configuration");
+#else
         struct termios2 settings;
         ioctl(fileDescriptor, TCGETS2, &settings);
+#endif
 
         settings.c_cflag &= ~CSIZE;
         settings.c_cflag |= CS8;
@@ -59,11 +75,16 @@ namespace hal
         settings.c_cflag &= ~CSTOPB;
         settings.c_cflag &= ~CRTSCTS;
         settings.c_cflag |= CREAD | CLOCAL;
+
+#ifdef EMIL_OS_DARWIN
+        bool darwinSetSpeed = true;
+#else
         settings.c_cflag &= ~CBAUD;
         settings.c_cflag |= CBAUDEX;
 
-        settings.c_ispeed = 115200;
-        settings.c_ospeed = 115200;
+        settings.c_ispeed = bitrate;
+        settings.c_ospeed = bitrate;
+#endif
 
         settings.c_oflag = 0;
         settings.c_oflag &= ~OPOST;
@@ -72,16 +93,22 @@ namespace hal
         settings.c_cc[VMIN] = 0;
 
         settings.c_iflag &= ~(IXON | IXOFF | IXANY);
-        settings.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL);
+        settings.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL);
+        settings.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHONL | ISIG);
 
-        settings.c_lflag &= ~ICANON;
-        settings.c_lflag &= ~ECHO;
+#ifdef EMIL_OS_DARWIN
+        if (tcsetattr(fileDescriptor, TCSANOW, &settings) != 0)
+          throw std::runtime_error("Could not set port configuration");
 
-        settings.c_lflag &= ~ECHOE;
-        settings.c_lflag &= ~ECHONL;
-        settings.c_lflag &= ~ISIG;
-
-        ioctl(fileDescriptor, TCSETS2, &settings);
+        if (darwinSetSpeed)
+        {
+            if (ioctl(fileDescriptor, IOSSIOSPEED, &bitrate) == -1)
+              throw std::runtime_error("Could not set custom baudrate");
+        }
+#else
+        if (ioctl(fileDescriptor, TCSETS2, &settings) == -1)
+            throw std::runtime_error("Could not set port configuration");;
+#endif
 
         readThread = std::thread([this]() { Read(); });
     }
