@@ -18,7 +18,7 @@ namespace hal
             : public std::runtime_error
         {
         public:
-            UartNotFound(const std::string& portName);
+            explicit UartNotFound(const std::string& portName);
         };
 
         std::string PhysicalDeviceObjectNameForDeviceDescription(const std::string& deviceDescription) const;

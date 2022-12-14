@@ -13,7 +13,10 @@ if (EMIL_HOST_BUILD)
 
     if (EMIL_BUILD_WIN)
         target_link_libraries(protobuf.echo_console PRIVATE hal.windows)
-        target_compile_definitions(protobuf.echo_console PRIVATE ECHO_CONSOLE_WITH_UART)
+    endif()
+
+    if (EMIL_BUILD_UNIX OR EMIL_BUILD_DARWIN)
+        target_link_libraries(protobuf.echo_console PRIVATE hal.unix)
     endif()
 
     target_sources(protobuf.echo_console PRIVATE
