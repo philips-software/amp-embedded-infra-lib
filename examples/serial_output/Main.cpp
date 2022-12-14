@@ -30,7 +30,8 @@ int main(int argc, const char* argv[], const char* env[])
         hal::UartUnix uart(port);
 #endif
 
-        auto runLogger = [&](std::ostream& stream) {
+        auto runLogger = [&](std::ostream& stream)
+        {
             uart.ReceiveData([&stream](infra::ConstByteRange data)
                 { stream << infra::ByteRangeAsStdString(data); });
             eventDispatcher.Run();
@@ -40,7 +41,7 @@ int main(int argc, const char* argv[], const char* env[])
             runLogger(std::cout);
         else
         {
-            std::ofstream fileStream{output, std::ios::binary};
+            std::ofstream fileStream{ output, std::ios::binary };
             runLogger(fileStream);
         }
     }

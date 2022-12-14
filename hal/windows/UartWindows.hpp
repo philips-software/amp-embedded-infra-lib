@@ -60,7 +60,9 @@ namespace hal
             Parity parity = Parity::none;
         };
 
-        struct DeviceName {};
+        struct DeviceName
+        {};
+
         static const DeviceName deviceName;
 
         UartWindows(const std::string& portName, UartWindowsConfig config = UartWindowsConfig());

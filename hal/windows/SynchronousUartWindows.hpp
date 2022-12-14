@@ -6,13 +6,15 @@
 #include <winsock2.h>
 #include <windows.h>
 #include <setupapi.h>
+#include <windows.h>
+#include <winsock2.h>
 
 namespace hal
 {
-	class SynchronousUartWindows
+    class SynchronousUartWindows
         : public SynchronousSerialCommunication
-	{
-	public:
+    {
+    public:
         struct UartWindowsConfig
         {
             enum class RtsFlowControl
@@ -48,7 +50,7 @@ namespace hal
 
     private:
         void* handle = nullptr;
-	};
+    };
 }
 
 #endif
