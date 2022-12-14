@@ -5,7 +5,6 @@
 #include <asm/termbits.h>
 #endif
 #include <fcntl.h>
-#include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 
