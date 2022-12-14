@@ -1,6 +1,6 @@
 #include "infra/stream/StdVectorInputStream.hpp"
-#include "services/network_win/DatagramWin.hpp"
-#include "services/network_win/EventDispatcherWithNetwork.hpp"
+#include "services/network_instantiations/DatagramWin.hpp"
+#include "services/network_instantiations/EventDispatcherWithNetworkWin.hpp"
 #include <ws2tcpip.h>
 
 namespace services

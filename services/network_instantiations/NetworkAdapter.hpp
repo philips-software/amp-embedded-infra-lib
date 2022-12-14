@@ -4,11 +4,11 @@
 #include "services/network_instantiations/NameLookup.hpp"
 
 #ifdef EMIL_NETWORK_WIN
-#include "services/network_win/EventDispatcherWithNetwork.hpp"
+#include "services/network_instantiations/EventDispatcherWithNetworkWin.hpp"
 #endif
 
 #ifdef EMIL_NETWORK_BSD
-#include "services/network_bsd/EventDispatcherWithNetwork.hpp"
+#include "services/network_instantiations/EventDispatcherWithNetworkBsd.hpp"
 #endif
 
 namespace main_

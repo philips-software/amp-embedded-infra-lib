@@ -1,5 +1,5 @@
-#include "services/network_win/ConnectionWin.hpp"
-#include "services/network_win/EventDispatcherWithNetwork.hpp"
+#include "services/network_instantiations/ConnectionWin.hpp"
+#include "services/network_instantiations/EventDispatcherWithNetworkWin.hpp"
 
 namespace services
 {

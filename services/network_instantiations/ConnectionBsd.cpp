@@ -1,5 +1,5 @@
-#include "services/network_bsd/ConnectionBsd.hpp"
-#include "services/network_bsd/EventDispatcherWithNetwork.hpp"
+#include "services/network_instantiations/ConnectionBsd.hpp"
+#include "services/network_instantiations/EventDispatcherWithNetworkBsd.hpp"
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/socket.h>
