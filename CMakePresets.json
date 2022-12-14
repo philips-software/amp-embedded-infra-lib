@@ -1,10 +1,5 @@
 {
   "version": 3,
-  "cmakeMinimumRequired": {
-    "major": 3,
-    "minor": 24,
-    "patch": 0
-  },
   "configurePresets": [
     {
       "name": "defaults",
@@ -21,6 +16,17 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "EMIL_ENABLE_DOCKER_TOOLS": "Off"
+      }
+    },
+    {
+      "name": "Package",
+      "displayName": "Configuration for CPack package generation",
+      "inherits": "defaults",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "MinSizeRel",
+        "EMIL_ENABLE_DOCKER_TOOLS": "Off",
+        "EMIL_BUILD_TESTS": "Off",
+        "EMIL_BUILD_EXAMPLES": "Off"
       }
     },
     {
@@ -85,6 +91,12 @@
       "name": "ContinuousIntegration",
       "configuration": "Debug",
       "configurePreset": "ContinuousIntegration"
+    },
+    {
+      "name": "Package",
+      "configuration": "MinSizeRel",
+      "configurePreset": "Package",
+      "targets": [ "package", "package_source" ]
     },
     {
       "name": "Coverage",

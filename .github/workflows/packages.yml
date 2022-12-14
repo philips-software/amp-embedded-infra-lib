@@ -30,11 +30,9 @@ jobs:
           variant: sccache
       - uses: lukka/run-cmake@8997c3a96bcb3de493d1f2527cb46fd7348ca764
         with:
-          configurePreset: "Host"
-          buildPreset: "Host-MinSizeRel"
+          configurePreset: "Package"
+          buildPreset: "Package"
           configurePresetCmdString: "['--preset', '$[env.CONFIGURE_PRESET_NAME]', '-D', 'CMAKE_C_COMPILER_LAUNCHER=sccache', '-D', 'CMAKE_CXX_COMPILER_LAUNCHER=sccache']"
-      - run: cmake --build --preset Host-MinSizeRel --target package
-      - run: cmake --build --preset Host-MinSizeRel --target package_source
       - uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb
         with:
           name: Packages ${{ matrix.os }}
