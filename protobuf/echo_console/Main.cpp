@@ -1,4 +1,9 @@
 #include "args.hxx"
+#ifdef EMIL_HAL_WINDOWS
+#include "hal/windows/UartWindows.hpp"
+#else
+#include "hal/unix/UartUnix.hpp"
+#endif
 #include "infra/stream/IoOutputStream.hpp"
 #include "infra/syntax/Json.hpp"
 #include "infra/util/Tokenizer.hpp"
@@ -10,10 +15,6 @@
 #include <deque>
 #include <fstream>
 #include <iostream>
-
-#ifdef ECHO_CONSOLE_WITH_UART
-#include "hal/windows/UartWindows.hpp"
-#endif
 
 class ConsoleClientUart
     : public application::ConsoleObserver
@@ -263,21 +264,19 @@ int main(int argc, char* argv[], const char* env[])
         application::Console console(root);
         services::ConnectionFactoryWithNameResolverImpl::WithStorage<4> connectionFactory(console.ConnectionFactory(), console.NameResolver());
         infra::Optional<ConsoleClient> consoleClient;
-#ifdef ECHO_CONSOLE_WITH_UART
+#ifdef EMIL_HAL_WINDOWS
         infra::Optional<hal::UartWindows> uart;
-        infra::Optional<ConsoleClientUart> consoleClientUart;
+#else
+        infra::Optional<hal::UartUnix> uart;
 #endif
+        infra::Optional<ConsoleClientUart> consoleClientUart;
 
         auto construct = [&]()
         {
-            if (get(target).substr(0, 3) == "COM")
+            if (get(target).substr(0, 3) == "COM" || get(target).substr(0, 4) == "/dev")
             {
-#ifdef ECHO_CONSOLE_WITH_UART
                 uart.Emplace(get(target));
                 consoleClientUart.Emplace(console, *uart);
-#else
-                throw std::runtime_error("UART target not supported on this platform.");
-#endif
             }
             else
                 consoleClient.Emplace(connectionFactory, console, get(target), services::GlobalTracer());

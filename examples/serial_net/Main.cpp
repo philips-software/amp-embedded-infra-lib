@@ -1,10 +1,14 @@
 #include "hal/generic/TimerServiceGeneric.hpp"
 #include "hal/interfaces/FileSystem.hpp"
+#ifdef EMIL_HAL_WINDOWS
 #include "hal/windows/UartWindows.hpp"
+#else
+#include "hal/unix/UartUnix.hpp"
+#endif
 #include "infra/stream/IoOutputStream.hpp"
 #include "infra/util/Tokenizer.hpp"
 #include "services/network/SerialServer.hpp"
-#include "services/network_win/EventDispatcherWithNetwork.hpp"
+#include "services/network_instantiations/NetworkAdapter.hpp"
 #include "services/tracer/Tracer.hpp"
 
 struct SerialBridge
@@ -14,7 +18,11 @@ struct SerialBridge
         , serialServer(serialPort, connectionFactory, port)
     {}
 
+#ifdef EMIL_HAL_WINDOWS
     hal::UartWindows serialPort;
+#else
+    hal::UartUnix serialPort;
+#endif
     services::SerialServer::WithBuffer<512> serialServer;
 };
 
@@ -30,7 +38,7 @@ void ShowUsage(services::Tracer& tracer, const std::string& program)
 
 int main(int argc, const char* argv[], const char* env[])
 {
-    static services::EventDispatcherWithNetwork eventDispatcherWithNetwork;
+    static main_::NetworkAdapter network;
     static hal::TimerServiceGeneric timerService;
     static infra::IoOutputStream ioOutputStream;
     static services::Tracer tracer(ioOutputStream);
@@ -50,7 +58,7 @@ int main(int argc, const char* argv[], const char* env[])
                 std::string comPort{ tokenizer.Token(0).begin(), tokenizer.Token(0).end() };
                 std::string networkPort{ tokenizer.Token(1).begin(), tokenizer.Token(1).end() };
 
-                serialBridges.emplace_back(comPort, eventDispatcherWithNetwork, std::atoi(networkPort.c_str()));
+                serialBridges.emplace_back(comPort, network.ConnectionFactory(), std::atoi(networkPort.c_str()));
             }
             else
                 ShowUsage(tracer, argv[0]);
@@ -59,5 +67,5 @@ int main(int argc, const char* argv[], const char* env[])
             ShowUsage(tracer, argv[0]);
     }
 
-    eventDispatcherWithNetwork.Run();
+    network.Run();
 }
