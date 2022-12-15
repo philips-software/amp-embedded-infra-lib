@@ -85,10 +85,10 @@ jobs:
       - uses: hendrikmuhs/ccache-action@657bab9aeb32eb6d913c2e6882efad4bb7536d94
         with:
           key: ${{ github.job }}
-      - uses: github/codeql-action/init@a669cc5936cc5e1b6a362ec1ff9e410dc570d190
+      - uses: github/codeql-action/init@959cbb7472c4d4ad70cdfe6f4976053fe48ab394
         with:
           languages: cpp
       - run: |
           cmake --preset ContinuousIntegration -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build --preset ContinuousIntegration
-      - uses: github/codeql-action/analyze@a669cc5936cc5e1b6a362ec1ff9e410dc570d190
+      - uses: github/codeql-action/analyze@959cbb7472c4d4ad70cdfe6f4976053fe48ab394
