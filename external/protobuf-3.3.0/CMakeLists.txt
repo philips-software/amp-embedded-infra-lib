@@ -8,6 +8,7 @@ ccola_package(protobuf)
             PROTOBUF_USE_DLLS
         win:
             _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING
+            _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
         )
 
         ccola_definitions(
