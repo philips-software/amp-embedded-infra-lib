@@ -59,7 +59,7 @@ namespace application
 
         for (auto targetAndAddress : supportedBinaryTargets)
             if (targetAndAddress.first == targetName)
-                return std::make_unique<InputBinary>(targetName, fileName, targetAndAddress.second, fileSystem, imageSecurity);
+                return std::make_unique<InputBinary>(targetName, fileName, (address)? *address: targetAndAddress.second, fileSystem, imageSecurity);
 
         for (auto target : otherTargets)
             if (target->TargetName() == targetName)
