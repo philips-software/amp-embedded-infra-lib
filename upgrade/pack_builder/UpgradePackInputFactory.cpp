@@ -48,7 +48,7 @@ namespace application
         , otherTargets(otherTargets)
     {}
 
-    std::unique_ptr<Input> UpgradePackInputFactory::CreateInput(const std::string& targetName, const std::string& fileName)
+    std::unique_ptr<Input> UpgradePackInputFactory::CreateInput(const std::string& targetName, const std::string& fileName, infra::Optional<uint32_t> address)
     {
         if (std::any_of(supportedHexTargets.begin(), supportedHexTargets.end(), [targetName](auto& string) { return string == targetName; }))
             return std::make_unique<InputHex>(targetName, fileName, fileSystem, imageSecurity);

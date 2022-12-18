@@ -88,7 +88,7 @@ namespace application
 
         std::vector<std::unique_ptr<application::Input>> inputs;
         for (auto targetAndFile : targetAndFiles)
-            inputs.push_back(inputFactory.CreateInput(targetAndFile.first, targetAndFile.second));
+            inputs.push_back(inputFactory.CreateInput(std::get<0>(targetAndFile), std::get<1>(targetAndFile), std::get<2>(targetAndFile)));
 
         for (auto mandatoryTarget : mandatoryTargets)
         {
@@ -138,7 +138,7 @@ namespace application
 
         std::cout << "Given targets: ";
         for (auto target : targetAndFiles)
-            std::cout << " " << target.first;
+            std::cout << " " << std::get<0>(target);
         std::cout << std::endl;
 
         std::cout << "Given options: ";
