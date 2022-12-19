@@ -2,8 +2,8 @@
 #define SERVICES_EVENT_DISPATCHER_WITH_NETWORK_HPP
 
 #include "services/network/Multicast.hpp"
-#include "services/network_win/ConnectionWin.hpp"
-#include "services/network_win/DatagramWin.hpp"
+#include "services/network_instantiations/ConnectionWin.hpp"
+#include "services/network_instantiations/DatagramWin.hpp"
 
 namespace services
 {
