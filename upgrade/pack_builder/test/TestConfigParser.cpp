@@ -134,7 +134,7 @@ TEST_F(TestConfigParser, GetComponents_returns_component_list_when_components_ob
     application::UpgradePackConfigParser parser(*configJson);
 
     std::vector<std::tuple<std::string, std::string, infra::Optional<uint32_t>>> componentsList;
-    componentsList.push_back(std::make_tuple("component", "path", infra::Optional<uint32_t>{}));
+    componentsList.push_back(std::make_tuple("component", "path", infra::none));
 
     EXPECT_EQ(componentsList, parser.GetComponents());
 }
@@ -157,8 +157,8 @@ TEST_F(TestConfigParser, GetComponents_returns_component_list_when_components_ob
     application::UpgradePackConfigParser parser(*configJson);
 
     std::vector<std::tuple<std::string, std::string, infra::Optional<uint32_t>>> componentsList;
-    componentsList.push_back(std::make_tuple("boot1st", "first_stage_bootloader.bin", infra::Optional<uint32_t>{}));
-    componentsList.push_back(std::make_tuple("lut", "look_up_table.bin", infra::Optional<uint32_t>{}));
+    componentsList.push_back(std::make_tuple("boot1st", "first_stage_bootloader.bin", infra::none));
+    componentsList.push_back(std::make_tuple("lut", "look_up_table.bin", infra::none));
     uint32_t blobAddress = 0x01234abc;
     componentsList.push_back(std::make_tuple("blob", "blob.bin", infra::MakeOptional(blobAddress)));
     uint32_t filesysAddress = 0x56789def;

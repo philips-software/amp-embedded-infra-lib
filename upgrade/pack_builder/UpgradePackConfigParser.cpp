@@ -51,7 +51,7 @@ namespace application
 
         for (infra::JsonObjectIterator it = components->begin(); it != components->end() ; ++it)
             if (it->value.Is<infra::JsonString>())
-                result.push_back(std::make_tuple(it->key.ToStdString(), it->value.Get<infra::JsonString>().ToStdString(), infra::Optional<uint32_t>{}));
+                result.push_back(std::make_tuple(it->key.ToStdString(), it->value.Get<infra::JsonString>().ToStdString(), infra::none));
             else if (it->value.Is<infra::JsonObject>())
                 {
                     auto component = it->value.Get<infra::JsonObject>();
