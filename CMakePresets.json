@@ -96,7 +96,7 @@
       "name": "Package",
       "configuration": "MinSizeRel",
       "configurePreset": "Package",
-      "targets": [ "package" ]
+      "targets": ["package"]
     },
     {
       "name": "Coverage",

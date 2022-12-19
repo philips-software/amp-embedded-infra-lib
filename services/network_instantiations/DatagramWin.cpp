@@ -1,5 +1,5 @@
-#include "infra/stream/StdVectorInputStream.hpp"
 #include "services/network_instantiations/DatagramWin.hpp"
+#include "infra/stream/StdVectorInputStream.hpp"
 #include "services/network_instantiations/EventDispatcherWithNetworkWin.hpp"
 #include <ws2tcpip.h>
 
