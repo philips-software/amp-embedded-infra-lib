@@ -11,7 +11,14 @@ namespace {
             "components": {
                 "boot1st": "first_stage_bootloader.bin",
                 "lut": "look_up_table.bin",
-                "filesys": "filesystem.bin"
+                "blob": {
+                    "path": "blob.bin",
+                    "address": "01234abc"
+                },
+                "filesys": {
+                    "path": "filesystem.bin",
+                    "address": "56789def"
+                }
             },
             "upgrade_configuration": {
                 "product_name": "product name",
@@ -33,21 +40,6 @@ public:
     infra::Optional<infra::JsonObject> configJson;
 };
 
-TEST_F(TestConfigParser, parse_config_file_with_invalid_json_throws_exception)
-{
-    configJson.Emplace(R"( { invalid )");
-
-    try
-    {
-        application::UpgradePackConfigParser parser(*configJson);
-        FAIL() << "Expected ConfigParser::ParseException";
-    }
-    catch (const application::UpgradePackConfigParser::ParseException& ex)
-    {
-        EXPECT_EQ(std::string("ConfigParser error: invalid JSON"), ex.what());
-    }
-}
-
 TEST_F(TestConfigParser, parse_config_file_with_missing_required_key_throws_exception)
 {
     configJson.Emplace(R"({ "key": "value" })");
@@ -66,29 +58,13 @@ TEST_F(TestConfigParser, parse_config_file_with_missing_required_key_throws_exce
 TEST_F(TestConfigParser, GetComponents_returns_empty_component_list_when_components_object_is_empty)
 {
     configJson.Emplace(R"({ "components": {} })");
-    std::vector<std::pair<std::string, std::string>> emptyComponentsList;
+    std::vector<std::tuple<std::string, std::string, infra::Optional<uint32_t>>> emptyComponentsList;
 
     application::UpgradePackConfigParser parser(*configJson);
     EXPECT_EQ(emptyComponentsList, parser.GetComponents());
 }
 
-TEST_F(TestConfigParser, non_string_component_value_throws_exception)
-{
-    configJson.Emplace(R"({ "components": { "invalid component":{} } })");
-    application::UpgradePackConfigParser parser(*configJson);
-
-    try
-    {
-        parser.GetComponents();
-        FAIL() << "Expected ConfigParser::ParseException";
-    }
-    catch (const application::UpgradePackConfigParser::ParseException& ex)
-    {
-        EXPECT_EQ(std::string("ConfigParser error: invalid value for component: invalid component"), ex.what());
-    }
-}
-
-TEST_F(TestConfigParser, GetComponents_returns_empty_component_list_when_components_is_not_an_object)
+TEST_F(TestConfigParser, GetComponents_throws_exception_when_components_is_not_an_object)
 {
     configJson.Emplace(R"({ "components": "value" })");
     application::UpgradePackConfigParser parser(*configJson);
@@ -104,16 +80,123 @@ TEST_F(TestConfigParser, GetComponents_returns_empty_component_list_when_compone
     }
 }
 
-TEST_F(TestConfigParser, GetComponents_returns_component_list_when_components_object_is_not_empty)
+TEST_F(TestConfigParser, GetComponents_throws_exception_when_components_object_does_not_contain_path_and_address_key)
+{
+    configJson.Emplace(R"({ "components": { "empty component":{} } })");
+    application::UpgradePackConfigParser parser(*configJson);
+
+    try
+    {
+        parser.GetComponents();
+        FAIL() << "Expected ConfigParser::ParseException";
+    }
+    catch (const application::UpgradePackConfigParser::ParseException& ex)
+    {
+        EXPECT_EQ(std::string("ConfigParser error: object component 'empty component' does not contain both the 'path' and 'address' key"), ex.what());
+    }
+}
+
+TEST_F(TestConfigParser, GetComponents_throws_exception_when_components_object_does_not_contain_path_key)
+{
+    configJson.Emplace(R"({ "components": { "component":{"addresss": "0123abcd"} } })");
+    application::UpgradePackConfigParser parser(*configJson);
+
+    try
+    {
+        parser.GetComponents();
+        FAIL() << "Expected ConfigParser::ParseException";
+    }
+    catch (const application::UpgradePackConfigParser::ParseException& ex)
+    {
+        EXPECT_EQ(std::string("ConfigParser error: object component 'component' does not contain both the 'path' and 'address' key"), ex.what());
+    }
+}
+
+TEST_F(TestConfigParser, GetComponents_throws_exception_when_components_object_does_not_contain_address_key)
+{
+    configJson.Emplace(R"({ "components": { "component":{"path": "path.bin"} } })");
+    application::UpgradePackConfigParser parser(*configJson);
+
+    try
+    {
+        parser.GetComponents();
+        FAIL() << "Expected ConfigParser::ParseException";
+    }
+    catch (const application::UpgradePackConfigParser::ParseException& ex)
+    {
+        EXPECT_EQ(std::string("ConfigParser error: object component 'component' does not contain both the 'path' and 'address' key"), ex.what());
+    }
+}
+
+TEST_F(TestConfigParser, GetComponents_returns_component_list_when_components_object_contains_string_components)
+{
+    configJson.Emplace(R"({ "components": { "component": "path" } })");
+    application::UpgradePackConfigParser parser(*configJson);
+
+    std::vector<std::tuple<std::string, std::string, infra::Optional<uint32_t>>> componentsList;
+    componentsList.push_back(std::make_tuple("component", "path", infra::none));
+
+    EXPECT_EQ(componentsList, parser.GetComponents());
+}
+
+TEST_F(TestConfigParser, GetComponents_returns_component_list_when_components_object_contains_valid_object_components)
+{
+    configJson.Emplace(R"({ "components": { "component": { "path": "path.bin", "address": "0123abcd" } } })");
+    application::UpgradePackConfigParser parser(*configJson);
+
+    std::vector<std::tuple<std::string, std::string, infra::Optional<uint32_t>>> componentsList;
+    uint32_t address = 0x0123abcd;
+    componentsList.push_back(std::make_tuple("component", "path.bin", infra::MakeOptional(address)));
+
+    EXPECT_EQ(componentsList, parser.GetComponents());
+}
+
+TEST_F(TestConfigParser, GetComponents_returns_component_list_when_components_object_contains_string_and_valid_object_components)
 {
     configJson.Emplace(infra::BoundedConstString(completeConfig.c_str()));
-    std::vector<std::pair<std::string, std::string>> componentsList;
-    componentsList.push_back(std::pair<std::string, std::string>("boot1st", "first_stage_bootloader.bin"));
-    componentsList.push_back(std::pair<std::string, std::string>("lut", "look_up_table.bin"));
-    componentsList.push_back(std::pair<std::string, std::string>("filesys", "filesystem.bin"));
-
     application::UpgradePackConfigParser parser(*configJson);
-    ASSERT_EQ(componentsList, parser.GetComponents());
+
+    std::vector<std::tuple<std::string, std::string, infra::Optional<uint32_t>>> componentsList;
+    componentsList.push_back(std::make_tuple("boot1st", "first_stage_bootloader.bin", infra::none));
+    componentsList.push_back(std::make_tuple("lut", "look_up_table.bin", infra::none));
+    uint32_t blobAddress = 0x01234abc;
+    componentsList.push_back(std::make_tuple("blob", "blob.bin", infra::MakeOptional(blobAddress)));
+    uint32_t filesysAddress = 0x56789def;
+    componentsList.push_back(std::make_tuple("filesys", "filesystem.bin", infra::MakeOptional(filesysAddress)));
+
+    EXPECT_EQ(componentsList, parser.GetComponents());
+}
+
+TEST_F(TestConfigParser, GetComponents_throws_exception_when_components_object_contains_too_large_address)
+{
+    configJson.Emplace(R"({ "components": { "component": { "path": "path.bin", "address": "0123abcde" } } })");
+    application::UpgradePackConfigParser parser(*configJson);
+
+    try
+    {
+        parser.GetComponents();
+        FAIL() << "Expected ConfigParser::ParseException";
+    }
+    catch (const application::UpgradePackConfigParser::ParseException& ex)
+    {
+        EXPECT_EQ(std::string("ConfigParser error: object component 'component' contains key 'address' with too large value"), ex.what());
+    }
+}
+
+TEST_F(TestConfigParser, GetComponents_throws_exception_when_components_object_contains_invalid_address)
+{
+    configJson.Emplace(R"({ "components": { "component": { "path": "path.bin", "address": "0x123456" } } })");
+    application::UpgradePackConfigParser parser(*configJson);
+
+    try
+    {
+        parser.GetComponents();
+        FAIL() << "Expected ConfigParser::ParseException";
+    }
+    catch (const application::UpgradePackConfigParser::ParseException& ex)
+    {
+        EXPECT_EQ(std::string("ConfigParser error: object component 'component' contains key 'address' with invalid string value"), ex.what());
+    }
 }
 
 TEST_F(TestConfigParser, GetOptions_returns_empty_options_list_when_options_are_not_included)

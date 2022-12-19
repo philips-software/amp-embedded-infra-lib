@@ -1,22 +1,12 @@
 #include "UpgradePackConfigParser.hpp"
+#include "infra/stream/StdStringInputStream.hpp"
 
 namespace application
 {
     UpgradePackConfigParser::UpgradePackConfigParser(infra::JsonObject& json)
         : json(json)
     {
-        CheckValidJsonObject(json);
         CheckMandatoryKeys();
-    }
-
-    void UpgradePackConfigParser::CheckValidJsonObject(infra::JsonObject& jsonObject)
-    {
-        for (auto it : jsonObject)
-            if (it.value.Is<infra::JsonObject>())
-                CheckValidJsonObject(it.value.Get<infra::JsonObject>());
-
-        if (jsonObject.Error())
-            throw ParseException("ConfigParser error: invalid JSON");
     }
 
     void UpgradePackConfigParser::CheckMandatoryKeys()
@@ -27,18 +17,49 @@ namespace application
                 throw ParseException("ConfigParser error: required key " + key + " missing");
     }
 
-    std::vector<std::pair<std::string, std::string>> UpgradePackConfigParser::GetComponents()
+    std::pair<std::string, infra::Optional<uint32_t>> UpgradePackConfigParser::ExtractDataFromObjectComponent(const std::string& key, infra::JsonObject& value)
     {
-        infra::Optional<infra::JsonObject> components = json.GetOptionalObject("components");
+        auto jsonStringpath = value.GetOptionalString("path");
+        auto jsonStringAddress = value.GetOptionalString("address");
+
+        if (jsonStringpath == infra::none || jsonStringAddress == infra::none)
+            throw ParseException(std::string("ConfigParser error: object component '" + key + "' does not contain both the 'path' and 'address' key"));
+
+        auto stdStringAddress = jsonStringAddress->ToStdString();
+        infra::StdStringInputStream stream(stdStringAddress, infra::softFail);
+
+        if (stream.Available() > 8)
+            throw ParseException(std::string("ConfigParser error: object component '" + key + "' contains key 'address' with too large value"));
+
+        uint32_t address;
+        stream >> infra::hex >> address;
+
+        if (stream.Failed() || !stream.Empty())
+            throw ParseException(std::string("ConfigParser error: object component '" + key + "' contains key 'address' with invalid string value"));
+
+        return std::make_pair(jsonStringpath->ToStdString(), infra::MakeOptional(address));
+    }
+
+    std::vector<std::tuple<std::string, std::string, infra::Optional<uint32_t>>> UpgradePackConfigParser::GetComponents()
+    {
+        auto components = json.GetOptionalObject("components");
 
         if (components == infra::none)
             throw ParseException(std::string("ConfigParser error: components list should be an object"));
 
-        std::vector<std::pair<std::string, std::string>> result;
+        std::vector<std::tuple<std::string, std::string, infra::Optional<uint32_t>>> result;
 
         for (infra::JsonObjectIterator it = components->begin(); it != components->end() ; ++it)
             if (it->value.Is<infra::JsonString>())
-                result.push_back(std::make_pair(it->key.ToStdString(), it->value.Get<infra::JsonString>().ToStdString()));
+                result.push_back(std::make_tuple(it->key.ToStdString(), it->value.Get<infra::JsonString>().ToStdString(), infra::none));
+            else if (it->value.Is<infra::JsonObject>())
+            {
+                auto component = it->value.Get<infra::JsonObject>();
+                auto key = it->key.ToStdString();
+                auto [path, address] = ExtractDataFromObjectComponent(key, component);
+
+                result.push_back(std::make_tuple(key, path, address));
+            }
             else
                 throw ParseException("ConfigParser error: invalid value for component: " + it->key.ToStdString());
 
