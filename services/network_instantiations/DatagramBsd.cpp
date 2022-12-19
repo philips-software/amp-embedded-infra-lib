@@ -1,6 +1,6 @@
-#include "services/network_bsd/DatagramBsd.hpp"
+#include "services/network_instantiations/DatagramBsd.hpp"
 #include "infra/stream/StdVectorInputStream.hpp"
-#include "services/network_bsd/EventDispatcherWithNetwork.hpp"
+#include "services/network_instantiations/EventDispatcherWithNetworkBsd.hpp"
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/socket.h>

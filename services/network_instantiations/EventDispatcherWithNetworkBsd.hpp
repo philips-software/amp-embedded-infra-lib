@@ -2,8 +2,8 @@
 #define SERVICES_EVENT_DISPATCHER_WITH_NETWORK_HPP
 
 #include "services/network/Multicast.hpp"
-#include "services/network_bsd/ConnectionBsd.hpp"
-#include "services/network_bsd/DatagramBsd.hpp"
+#include "services/network_instantiations/ConnectionBsd.hpp"
+#include "services/network_instantiations/DatagramBsd.hpp"
 #include <sys/select.h>
 
 namespace services
