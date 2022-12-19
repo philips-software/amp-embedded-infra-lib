@@ -53,13 +53,13 @@ namespace application
             if (it->value.Is<infra::JsonString>())
                 result.push_back(std::make_tuple(it->key.ToStdString(), it->value.Get<infra::JsonString>().ToStdString(), infra::none));
             else if (it->value.Is<infra::JsonObject>())
-                {
-                    auto component = it->value.Get<infra::JsonObject>();
-                    auto key = it->key.ToStdString();
-                    auto [path, address] = ExtractDataFromObjectComponent(key, component);
+            {
+                auto component = it->value.Get<infra::JsonObject>();
+                auto key = it->key.ToStdString();
+                auto [path, address] = ExtractDataFromObjectComponent(key, component);
 
-                    result.push_back(std::make_tuple(key, path, address));
-                }
+                result.push_back(std::make_tuple(key, path, address));
+            }
             else
                 throw ParseException("ConfigParser error: invalid value for component: " + it->key.ToStdString());
 
