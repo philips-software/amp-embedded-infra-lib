@@ -31,7 +31,7 @@ namespace application
 
     private:
         void CheckMandatoryKeys();
-        std::pair<std::string, infra::Optional<uint32_t>> ExtractDataFromComponentObject(std::string key, infra::JsonObject& value);
+        std::pair<std::string, infra::Optional<uint32_t>> ExtractDataFromObjectComponent(const std::string& key, infra::JsonObject& value);
      
     private:
         infra::JsonObject& json;

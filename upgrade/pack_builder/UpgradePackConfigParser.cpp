@@ -17,7 +17,7 @@ namespace application
                 throw ParseException("ConfigParser error: required key " + key + " missing");
     }
 
-    std::pair<std::string, infra::Optional<uint32_t>> UpgradePackConfigParser::ExtractDataFromComponentObject(std::string key, infra::JsonObject& value)
+    std::pair<std::string, infra::Optional<uint32_t>> UpgradePackConfigParser::ExtractDataFromObjectComponent(const std::string& key, infra::JsonObject& value)
     {
         auto jsonStringpath = value.GetOptionalString("path");
         auto jsonStringAddress = value.GetOptionalString("address");
@@ -56,7 +56,7 @@ namespace application
                 {
                     auto component = it->value.Get<infra::JsonObject>();
                     auto key = it->key.ToStdString();
-                    auto [path, address] = ExtractDataFromComponentObject(key, component);
+                    auto [path, address] = ExtractDataFromObjectComponent(key, component);
 
                     result.push_back(std::make_tuple(key, path, address));
                 }
