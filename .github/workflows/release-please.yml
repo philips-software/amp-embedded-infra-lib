@@ -17,6 +17,8 @@ jobs:
   release_please:
     name: Create Release
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     outputs:
       releases_created: ${{ steps.release.outputs.releases_created }}
       upload_url: ${{ steps.release.outputs.upload_url }}
@@ -28,8 +30,6 @@ jobs:
           app_base64_private_key: ${{ secrets.FOREST_RELEASER_APP_PRIVATE_KEY_BASE64 }}
           auth_type: installation
       - uses: google-github-actions/release-please-action@af1990728f970ad54c88e130c02a1521988127a2 # v3.7.0
-        permissions:
-          pull-requests: write
         id: release
         with:
           command: manifest
@@ -56,11 +56,6 @@ jobs:
           configurePreset: "Package"
           buildPreset: "Package"
           configurePresetCmdString: "['--preset', '$[env.CONFIGURE_PRESET_NAME]', '-D', 'CMAKE_C_COMPILER_LAUNCHER=sccache', '-D', 'CMAKE_CXX_COMPILER_LAUNCHER=sccache']"
-      - uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb
-        with:
-          name: Packages ${{ matrix.os }}
-          path: |
-            Build/**/emil-*.*
       - uses: nanoufo/action-upload-artifacts-and-release-assets@034844649dcccc3e46d5044227de7f0cf58438b7 # v1.4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
