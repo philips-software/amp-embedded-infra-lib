@@ -3,7 +3,7 @@ name: Create Release
 
 on:
   push:
-    branch: [modern-cmake]
+    branches: [modern-cmake]
   workflow_dispatch:
 
 permissions:
