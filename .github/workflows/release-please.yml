@@ -3,7 +3,7 @@ name: Create Release
 
 on:
   push:
-    #branches: [modern-cmake]
+    branches: [modern-cmake]
   workflow_dispatch:
 
 permissions:
@@ -33,7 +33,6 @@ jobs:
           command: manifest
           #token: ${{ steps.token.outputs.token }}
           token: ${{ secrets.AUTOMATIC_RELEASE_TOKEN }}
-          default-branch: feature/automatic-release
   build_upload_packages:
     name: Build & Upload Packages
     needs: release_please
