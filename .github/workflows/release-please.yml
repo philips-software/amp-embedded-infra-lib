@@ -1,0 +1,68 @@
+---
+name: Create Release
+
+on:
+  push:
+    branch: [modern-cmake]
+  workflow-dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  release_please:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      upload_url: ${{ steps.release.outputs.upload_url }}
+    steps:
+      - uses: philips-software/app-token-action@a37926571e4cec6f219e06727136efdd073d8657 # v1.1.2
+        id: token
+        with:
+          app_id: ${{ secrets.FOREST_RELEASER_APP_ID }}
+          app_base64_private_key: ${{ secrets.FOREST_RELEASER_APP_PRIVATE_KEY_BASE64 }}
+          auth_type: installation
+      - uses: google-github-actions/release-please-action@af1990728f970ad54c88e130c02a1521988127a2 # v3.7.0
+        id: release
+        with:
+          release-type: manifest
+          token: ${{ steps.token.outputs.token }}
+  build_upload_packages:
+    name: Build & Upload Packages
+    needs: release_please
+    if: ${{ needs.release_please.outputs.releases_created }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        with:
+          persist-credentials: false
+      - uses: hendrikmuhs/ccache-action@657bab9aeb32eb6d913c2e6882efad4bb7536d94
+        with:
+          key: ${{ github.job }}-${{ matrix.os }}
+          variant: sccache
+      - uses: lukka/run-cmake@8997c3a96bcb3de493d1f2527cb46fd7348ca764
+        with:
+          configurePreset: "Package"
+          buildPreset: "Package"
+          configurePresetCmdString: "['--preset', '$[env.CONFIGURE_PRESET_NAME]', '-D', 'CMAKE_C_COMPILER_LAUNCHER=sccache', '-D', 'CMAKE_CXX_COMPILER_LAUNCHER=sccache']"
+      - uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb
+        with:
+          name: Packages ${{ matrix.os }}
+          path: |
+            Build/**/emil-*.*
+      - uses: nanoufo/action-upload-artifacts-and-release-assets@034844649dcccc3e46d5044227de7f0cf58438b7 # v1.4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path: |
+            Build/**/emil-*.*
+          upload-release-files: true
+          release-upload-url: ${{ needs.release_please.outputs.upload_url }}
