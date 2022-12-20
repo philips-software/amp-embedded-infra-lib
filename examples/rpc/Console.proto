@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+import "EchoAttributes.proto";
+
+package examples;
+option java_package = "com.philips.emil.protobufEcho";
+option java_outer_classname = "ConsoleProto";
+
+message Message
+{
+    string message = 2 [(string_size) = 128];
+}
+
+service Console
+{
+    option (service_id) = 1;
+
+    rpc Write(Message) returns (Nothing) { option (method_id) = 1; }
+}
