@@ -6,9 +6,6 @@ on:
     #branches: [modern-cmake]
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
   cancel-in-progress: true
@@ -17,9 +14,6 @@ jobs:
   release_please:
     name: Create Release
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
     outputs:
       releases_created: ${{ steps.release.outputs.releases_created }}
       upload_url: ${{ steps.release.outputs.upload_url }}
