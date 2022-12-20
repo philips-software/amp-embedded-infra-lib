@@ -222,7 +222,7 @@ namespace services
         virtual void RequestSendStream(std::size_t size) = 0;
         virtual void BusyServiceDone() = 0;
 
-        void ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents);
+        virtual void ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents);
         void SetStreamWriter(infra::SharedPtr<infra::StreamWriter>&& writer);
         bool ServiceBusy() const;
         bool ProcessMessage(infra::DataInputStream& stream);

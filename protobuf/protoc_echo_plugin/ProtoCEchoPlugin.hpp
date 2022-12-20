@@ -166,6 +166,27 @@ namespace application
         Class* serviceProxyFormatter;
     };
 
+    class TracingServiceGenerator
+    {
+    public:
+        TracingServiceGenerator(const std::shared_ptr<const EchoService>& service, Entities& formatter);
+        TracingServiceGenerator(const TracingServiceGenerator& other) = delete;
+        TracingServiceGenerator& operator=(const TracingServiceGenerator& other) = delete;
+        ~TracingServiceGenerator() = default;
+
+    private:
+        void GenerateServiceConstructors();
+        void GenerateServiceFunctions();
+        void GenerateFieldConstants();
+        void GenerateDataMembers();
+
+        std::string TraceMethodBody() const;
+
+    private:
+        std::shared_ptr<const EchoService> service;
+        Class* serviceFormatter;
+    };
+
     class EchoGenerator
     {
     public:
@@ -192,6 +213,31 @@ namespace application
         std::vector<std::shared_ptr<MessageGenerator>> messageGenerators;
         std::vector<std::shared_ptr<MessageReferenceGenerator>> messageReferenceGenerators;
         std::vector<std::shared_ptr<ServiceGenerator>> serviceGenerators;
+    };
+
+    class TracingEchoGenerator
+    {
+    public:
+        TracingEchoGenerator(google::protobuf::compiler::GeneratorContext* generatorContext, const std::string& name, const google::protobuf::FileDescriptor* file);
+        TracingEchoGenerator(const TracingEchoGenerator& other) = delete;
+        TracingEchoGenerator& operator=(const TracingEchoGenerator& other) = delete;
+        ~TracingEchoGenerator() = default;
+
+    public:
+        void GenerateHeader();
+        void GenerateSource();
+
+    private:
+        void GenerateTopHeaderGuard();
+        void GenerateBottomHeaderGuard();
+
+    private:
+        google::protobuf::scoped_ptr<google::protobuf::io::ZeroCopyOutputStream> stream;
+        google::protobuf::io::Printer printer;
+        Entities formatter;
+        const google::protobuf::FileDescriptor* file;
+
+        std::vector<std::shared_ptr<TracingServiceGenerator>> serviceGenerators;
     };
 }
 
