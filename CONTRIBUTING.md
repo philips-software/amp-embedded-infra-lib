@@ -1,18 +1,18 @@
-# Contributing to EmbeddedInfraLib
+# Contributing to amp-embedded-infra-lib
 
-First off, thank you for considering contributing to EmbeddedInfraLib!
+First off, thank you for considering contributing to amp-embedded-infra-lib!
 
 Following these guidelines helps to communicate that you respect the time of the developers managing and developing this open source project. In return, they should reciprocate that respect in addressing your issue, assessing changes, and helping you finalize your pull requests.
 
 ## Contributing to development
 
-EmbeddedInfraLib is a young open source project and we love to receive contributions from our community — you! There are many ways to contribute, from writing examples, improving the documentation, submitting bug reports and feature requests or writing code which can be incorporated into EmbeddedInfraLib itself.
+amp-embedded-infra-lib is a young open source project and we love to receive contributions from our community — you! There are many ways to contribute, from writing examples, improving the documentation, submitting bug reports and feature requests or writing code which can be incorporated into amp-embedded-infra-lib itself.
 
 ## Ground Rules
 
 * Be professional, respectful and considerate in your communication with others.
-* As EmbeddedInfraLib core-team we have spent considerate effort to make our components testable; please make sure that you have test coverage for your changes as well. Inspiration can be drawn from existing components.
-* One of the unique selling points of EmbeddedInfraLib is not using any heap; don't use the heap in your changes. This excludes using most components from the standard template library, for which we provide heap-less alternatives.
+* As amp-embedded-infra-lib core-team we have spent considerate effort to make our components testable; please make sure that you have test coverage for your changes as well. Inspiration can be drawn from existing components.
+* One of the unique selling points of amp-embedded-infra-lib is not using any heap; don't use the heap in your changes. This excludes using most components from the standard template library, for which we provide heap-less alternatives.
 * Ensure cross-platform compatibility for your changes.
 * Adhere to the [Coding Standard C++ Embedded Projects]; when in doubt, look at the surrounding code that you are changing and stick to the local style.
 * Create issues for any major changes and enhancements that you wish to make. Discuss things transparently and get core-team feedback.
@@ -37,9 +37,9 @@ Make sure you have all development dependencies installed. E.g. [CMake](https://
 
 #### Preparing your Fork
 
-1. Click ‘Fork’ on Github, creating e.g. yourname/EmbeddedInfraLib.
-2. Clone your project: git clone git@github.com:yourname/EmbeddedInfraLib.
-3. ```cd EmbeddedInfraLib```.
+1. Click ‘Fork’ on Github, creating e.g. yourname/amp-embedded-infra-lib.
+2. Clone your project: git clone git@github.com:yourname/amp-embedded-infra-lib.
+3. ```cd amp-embedded-infra-lib```.
 4. Create the build directory ```cmake -E make_directory Build```.
 5. Configure the project with CMake ```cmake ..```.
 6. Build the project ```cd .. && cmake --build Build```.

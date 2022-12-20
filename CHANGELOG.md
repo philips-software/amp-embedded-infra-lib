@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD024 -->
 
-# EmbeddedInfraLib Changelog
+# amp-embedded-infra-lib Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -11,7 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### Removed
 
-- Removed ccola in favor of 'modern'-CMake. EmbeddedInfraLib can now be consumed using FetchContent.
+- Removed ccola in favor of 'modern'-CMake. amp-embedded-infra-lib can now be consumed using FetchContent.
 
 ### Changed
 
@@ -50,8 +50,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## [1.2.0]
 
-- Initial open source version of EmbeddedInfraLib
+- Initial open source version of amp-embedded-infra-lib
 
-[Unreleased]: https://github.com/philips-software/embeddedinfralib/compare/v1.3.0...HEAD
-[1.3.0]: https://github.com/philips-software/embeddedinfralib/compare/v1.2.0...v1.3.0
-[1.2.0]: https://github.com/philips-software/embeddedinfralib/releases/tag/v1.2.0
+[Unreleased]: https://github.com/philips-software/amp-embedded-infra-lib/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/philips-software/amp-embedded-infra-lib/compare/v1.2.0...v1.3.0
+[1.2.0]: https://github.com/philips-software/amp-embedded-infra-lib/releases/tag/v1.2.0
