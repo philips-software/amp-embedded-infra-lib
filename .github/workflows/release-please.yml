@@ -32,6 +32,7 @@ jobs:
         with:
           command: manifest
           token: ${{ steps.token.outputs.token }}
+          default-branch: feature/automatic-release
   build_upload_packages:
     name: Build & Upload Packages
     needs: release_please
