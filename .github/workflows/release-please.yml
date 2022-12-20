@@ -28,6 +28,8 @@ jobs:
           app_base64_private_key: ${{ secrets.FOREST_RELEASER_APP_PRIVATE_KEY_BASE64 }}
           auth_type: installation
       - uses: google-github-actions/release-please-action@af1990728f970ad54c88e130c02a1521988127a2 # v3.7.0
+        permissions:
+          pull-requests: write
         id: release
         with:
           command: manifest
