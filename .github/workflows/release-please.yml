@@ -6,13 +6,15 @@ on:
     #branches: [modern-cmake]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
   cancel-in-progress: true
 
 jobs:
   release_please:
-    permissions: write-all
     name: Create Release
     runs-on: ubuntu-latest
     outputs:
@@ -29,7 +31,8 @@ jobs:
         id: release
         with:
           command: manifest
-          token: ${{ steps.token.outputs.token }}
+          #token: ${{ steps.token.outputs.token }}
+          token: ${{ secrets.AUTOMATIC_RELEASE_TOKEN }}
           default-branch: feature/automatic-release
   build_upload_packages:
     name: Build & Upload Packages
