@@ -1108,34 +1108,35 @@ switch (methodId)
                         printer.Print("        $argument$ argument(parser);\n", "argument", method.parameter->qualifiedName);
                     printer.Print(R"(        if (!parser.FormatFailed())
         {
-            tracer.Trace() << "servicename.$name$(";
+            tracer.Continue() << "$servicename$.$name$(";
 )", "servicename", service->name, "name", method.name);
 
                     if (method.parameter)
                         for (auto& field : method.parameter->fields)
                         {
-                            printer.Print("            services::PrintField(argument.$field$, tracer);\n", "field", field->name);
                             if (&field != &method.parameter->fields.front())
-                                printer.Print(R"(            tracer.Continue() << ", ";)");
+                                printer.Print(R"(            tracer.Continue() << ", ";
+)");
+                            printer.Print("            services::PrintField(argument.$field$, tracer);\n", "field", field->name);
                         }
 
                     printer.Print(R"_(            tracer.Continue() << ")";
         }
         else
-            tracer.Trace() << "servicename.$name$(parse error)";
+            tracer.Continue() << "$servicename$.$name$(parse error)";
         break;
     }
 )_", "servicename", service->name, "name", method.name);
                 }
 
                 printer.Print(R"(    default:
-        tracer.Trace() << "$servicename$ method " << methodId << " not found";
+        tracer.Continue() << "$servicename$ method " << methodId << " not found";
 )", "servicename", service->name);
 
                 printer.Print("}\n");
             }
             else
-                printer.Print(R"(tracer.Trace() << "$servicename$ method " << methodId << " not found";\n)", "name", service->name);
+                printer.Print(R"(tracer.Continue() << "$servicename$ method " << methodId << " not found";\n)", "name", service->name);
         }
 
         return result.str();

@@ -1,7 +1,9 @@
 #ifndef PROTOBUF_TRACING_ECHO_HPP
 #define PROTOBUF_TRACING_ECHO_HPP
 
+#include "infra/stream/BoundedVectorOutputStream.hpp"
 #include "infra/util/IntrusiveForwardList.hpp"
+#include "infra/util/SharedOptional.hpp"
 #include "protobuf/echo/Echo.hpp"
 #include "services/tracer/Tracer.hpp"
 #include <type_traits>
@@ -31,14 +33,42 @@ namespace services
         void RemoveServiceTracer(ServiceTracer& service);
 
     protected:
-        virtual void ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents) override;
+        virtual void ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, infra::StreamReaderWithRewinding& reader) override;
+        virtual void SetStreamWriter(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
     private:
+        void SendingData(infra::ConstByteRange range) const;
+        void SendingMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents) const;
         const ServiceTracer* FindService(uint32_t serviceId) const;
+
+    private:
+        class TracingWriter
+            : public infra::StreamWriter
+        {
+        public:
+            TracingWriter(infra::SharedPtr<infra::StreamWriter>&& delegate, TracingEchoOnConnection& echo);
+            ~TracingWriter();
+
+            virtual void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
+            virtual std::size_t Available() const override;
+            virtual std::size_t ConstructSaveMarker() const override;
+            virtual std::size_t GetProcessedBytesSince(std::size_t marker) const override;
+            virtual infra::ByteRange SaveState(std::size_t marker) override;
+            virtual void RestoreState(infra::ByteRange range) override;
+            virtual infra::ByteRange Overwrite(std::size_t marker) override;
+
+        private:
+            TracingEchoOnConnection& echo;
+            infra::SharedPtr<infra::StreamWriter> delegate;
+            infra::BoundedVectorStreamWriter::WithStorage<1024> writer;
+            infra::ByteRange savedRange;
+        };
 
     private:
         services::Tracer& tracer;
         infra::IntrusiveForwardList<ServiceTracer> services;
+
+        infra::SharedOptional<TracingWriter> tracingWriter;
     };
 
     void PrintField(bool value, services::Tracer& tracer);
