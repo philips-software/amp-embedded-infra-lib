@@ -1,5 +1,4 @@
 {
-  "bootstrap-sha": "d0e9a69c4ccc9bb4eb5b384da5c890b47aa7a394",
   "plugins": ["sentence-case"],
   "packages": {
     ".": {

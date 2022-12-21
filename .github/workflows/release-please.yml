@@ -2,9 +2,9 @@
 name: Create Release
 
 on:
-  push:
-    #branches: [modern-cmake]
   workflow_dispatch:
+  push:
+    branches: [modern-cmake]
 
 permissions:
   contents: read
@@ -36,7 +36,7 @@ jobs:
   build_upload_packages:
     name: Build & Upload Packages
     needs: release_please
-    #if: ${{ needs.release_please.outputs.releases_created }}
+    if: ${{ needs.release_please.outputs.releases_created }}
     permissions:
       contents: write
     runs-on: ${{ matrix.os }}
@@ -62,5 +62,5 @@ jobs:
         with:
           path: |
             Build/**/emil-*.zip
-          #upload-release-files: true
-          #release-upload-url: ${{ needs.release_please.outputs.upload_url }}
+          upload-release-files: true
+          release-upload-url: ${{ needs.release_please.outputs.upload_url }}
