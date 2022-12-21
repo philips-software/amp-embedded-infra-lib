@@ -1,4 +1,4 @@
-This EmbeddedInfraLib Project is in general licensed under the following MIT license except the files named underneath (see corresponding notice files below)
+This amp-embedded-infra-lib Project is in general licensed under the following MIT license except the files named underneath (see corresponding notice files below)
 
     The MIT License (MIT) Copyright © [2018] Koninklijke Philips N.V, https://www.philips.com
 

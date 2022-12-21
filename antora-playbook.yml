@@ -1,7 +1,7 @@
 ---
 site:
   title: "Embedded Infrastructure Library"
-  url: https://philips-software.github.io/embeddedinfralib/
+  url: https://philips-software.github.io/amp-embedded-infra-lib/
   start_page: embedded_infrastructure_library::index.adoc
 content:
   sources:
