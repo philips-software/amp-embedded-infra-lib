@@ -3,7 +3,7 @@ name: Create Release
 
 on:
   push:
-    branches: [modern-cmake]
+    #branches: [modern-cmake]
   workflow_dispatch:
 
 permissions:
@@ -36,7 +36,9 @@ jobs:
   build_upload_packages:
     name: Build & Upload Packages
     needs: release_please
-    if: ${{ needs.release_please.outputs.releases_created }}
+    #if: ${{ needs.release_please.outputs.releases_created }}
+    permissions:
+      contents: write
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -59,6 +61,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           path: |
-            Build/**/emil-*.*
+            Build/**/emil-*.zip
           upload-release-files: true
           release-upload-url: ${{ needs.release_please.outputs.upload_url }}
