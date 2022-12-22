@@ -1055,7 +1055,7 @@ Rpc().Send();
 
         auto handle = std::make_shared<Function>("TraceMethod", TraceMethodBody(), "void", Function::fVirtual | Function::fOverride | Function::fConst);
         handle->Parameter("uint32_t methodId");
-        handle->Parameter("const infra::ProtoLengthDelimited& contents");
+        handle->Parameter("infra::ProtoLengthDelimited& contents");
         handle->Parameter("services::Tracer& tracer");
         functions->Add(handle);
 
@@ -1092,8 +1092,7 @@ Rpc().Send();
 
             if (!service->methods.empty())
             {
-                printer.Print(R"(auto contentsCopy(contents);
-infra::ProtoParser parser(contentsCopy.Parser());
+                printer.Print(R"(infra::ProtoParser parser(contents.Parser());
 
 switch (methodId)
 {

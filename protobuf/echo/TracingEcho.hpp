@@ -17,7 +17,7 @@ namespace services
         ServiceTracer(uint32_t serviceId);
 
         uint32_t ServiceId() const;
-        virtual void TraceMethod(uint32_t methodId, const infra::ProtoLengthDelimited& contents, services::Tracer& tracer) const = 0;
+        virtual void TraceMethod(uint32_t methodId, infra::ProtoLengthDelimited& contents, services::Tracer& tracer) const = 0;
 
     private:
         uint32_t serviceId;
@@ -62,6 +62,7 @@ namespace services
             infra::SharedPtr<infra::StreamWriter> delegate;
             infra::BoundedVectorStreamWriter::WithStorage<1024> writer;
             infra::ByteRange savedRange;
+            infra::ByteRange savedDelegateRange;
         };
 
     private:

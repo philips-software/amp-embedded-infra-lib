@@ -35,8 +35,11 @@ namespace services
         {
             auto marker = reader.ConstructSaveMarker();
 
+            infra::DataInputStream::WithErrorPolicy stream(reader, infra::noFail);
+            infra::ProtoLengthDelimited contentsCopy(stream, stream.ErrorPolicy(), contents.Available());
+
             tracer.Trace() << "< ";
-            service->TraceMethod(methodId, contents, tracer);
+            service->TraceMethod(methodId, contentsCopy, tracer);
 
             reader.Rewind(marker);
         }
@@ -58,21 +61,15 @@ namespace services
         infra::ProtoParser parser(stream, formatErrorPolicy);
         uint32_t serviceId = static_cast<uint32_t>(parser.GetVarInt());
         infra::ProtoParser::Field message = parser.GetField();
-        if (stream.Failed())
+        if (stream.Failed() || formatErrorPolicy.Failed() || !message.first.Is<infra::ProtoLengthDelimited>())
         {
             tracer.Trace() << "> Malformed message";
             return;
         }
 
-        if (formatErrorPolicy.Failed() || !message.first.Is<infra::ProtoLengthDelimited>())
-            errorPolicy.MessageFormatError();
-        else
-        {
-            SendingMethod(serviceId, message.second, message.first.Get<infra::ProtoLengthDelimited>());
-
-            if (stream.Failed() || formatErrorPolicy.Failed())
-                errorPolicy.MessageFormatError();
-        }
+        SendingMethod(serviceId, message.second, message.first.Get<infra::ProtoLengthDelimited>());
+        if (stream.Failed() || formatErrorPolicy.Failed())
+            tracer.Continue() << "... Malformed message";
     }
 
     void TracingEchoOnConnection::SendingMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents) const
@@ -131,17 +128,18 @@ namespace services
     infra::ByteRange TracingEchoOnConnection::TracingWriter::SaveState(std::size_t marker)
     {
         savedRange = writer.SaveState(writer.ConstructSaveMarker() - (delegate->ConstructSaveMarker() - marker));
-        return delegate->SaveState(marker);
+        savedDelegateRange = delegate->SaveState(marker);
+        return savedDelegateRange;
     }
 
     void TracingEchoOnConnection::TracingWriter::RestoreState(infra::ByteRange range)
     {
-        auto restoreSize = savedRange.size() - range.size();
+        auto restoreSize = savedDelegateRange.size() - range.size();
         auto from = infra::ByteRange(range.begin() - restoreSize, range.begin());
-        infra::Copy(from, infra::Head(savedRange, restoreSize));
-        savedRange = infra::DiscardHead(savedRange, restoreSize);
 
-        writer.RestoreState(savedRange);
+        infra::Copy(from, infra::Head(savedRange, restoreSize));
+        writer.RestoreState(infra::DiscardHead(savedRange, restoreSize));
+
         savedRange = infra::ByteRange();
         delegate->RestoreState(range);
     }
