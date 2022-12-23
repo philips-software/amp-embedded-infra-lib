@@ -47,7 +47,7 @@ macro(protocol_buffer_echo_cpp input)
         endif()
 
         add_custom_command(
-            OUTPUT "${generated_dir_echo}/${source_base}.pb.cpp" "${generated_dir_echo}/${source_base}.pb.hpp" "${generated_dir_echo}/${source_base}.pb"
+            OUTPUT "${generated_dir_echo}/${source_base}.pb.cpp" "${generated_dir_echo}/${source_base}.pb.hpp" "${generated_dir_echo}/Tracing${source_base}.pb.cpp" "${generated_dir_echo}/Tracing${source_base}.pb.hpp" "${generated_dir_echo}/${source_base}.pb"
             COMMAND ${CMAKE_COMMAND} -E make_directory ${generated_dir_echo}
             COMMAND ${CMAKE_COMMAND} -E env "\"PATH=${extra_path};\"" ${protoc_compiler_binary} ${protopath} --error_format=${error_format} --plugin=protoc-gen-cpp-infra=${protoc_echo_plugin_path} --cpp-infra_out="${generated_dir_echo}" ${absolute_input}
             COMMAND ${CMAKE_COMMAND} -E env "\"PATH=${extra_path};\"" ${protoc_compiler_binary} ${protopath} --error_format=${error_format} --descriptor_set_out="${generated_dir_echo}/${source_base}.pb" --include_imports ${absolute_input}
@@ -55,8 +55,8 @@ macro(protocol_buffer_echo_cpp input)
             DEPENDS "${protoc_echo_plugin_path}"
         )
 
-        ccola_sources("${generated_dir_echo}/${source_base}.pb.cpp" "${generated_dir_echo}/${source_base}.pb.hpp")
-        ccola_set_source_group("Generated Files" "${generated_dir_echo}/${source_base}.pb.cpp" "${generated_dir_echo}/${source_base}.pb.hpp")
+        ccola_sources("${generated_dir_echo}/${source_base}.pb.cpp" "${generated_dir_echo}/${source_base}.pb.hpp" "${generated_dir_echo}/Tracing${source_base}.pb.cpp" "${generated_dir_echo}/Tracing${source_base}.pb.hpp")
+        ccola_set_source_group("Generated Files" "${generated_dir_echo}/${source_base}.pb.cpp" "${generated_dir_echo}/${source_base}.pb.hpp" "${generated_dir_echo}/Tracing${source_base}.pb.cpp" "${generated_dir_echo}/Tracing${source_base}.pb.hpp")
         ccola_inheritable_include_directories("${CMAKE_CURRENT_BINARY_DIR}")
         ccola_public_property(proto "${CMAKE_CURRENT_SOURCE_DIR}")
 

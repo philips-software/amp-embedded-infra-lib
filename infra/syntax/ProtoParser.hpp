@@ -18,6 +18,7 @@ namespace infra
         ProtoLengthDelimited(const ProtoLengthDelimited& other);
         ~ProtoLengthDelimited() = default;
 
+        uint32_t Available() const;
         void SkipEverything();
         ProtoParser Parser();
         void GetString(infra::BoundedString& string);

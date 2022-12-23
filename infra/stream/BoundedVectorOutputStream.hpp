@@ -21,7 +21,7 @@ namespace infra
         void Reset();
         void Reset(BoundedVector<uint8_t>& newVector);
 
-    private:
+    public:
         virtual void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy) override;
         virtual std::size_t Available() const override;
 

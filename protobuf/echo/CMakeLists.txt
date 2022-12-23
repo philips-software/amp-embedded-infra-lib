@@ -4,6 +4,8 @@ ccola_component(echo static_library)
         Echo.cpp
         Echo.hpp
         EchoInstantiation.hpp
+        TracingEcho.cpp
+        TracingEcho.hpp
     )
 
     ccola_dependencies(

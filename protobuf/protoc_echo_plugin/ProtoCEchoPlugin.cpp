@@ -238,6 +238,10 @@ namespace application
             headerGenerator.GenerateHeader();
             EchoGenerator sourceGenerator(generatorContext, basename + ".cpp", file);
             sourceGenerator.GenerateSource();
+            TracingEchoGenerator tracingHeaderGenerator(generatorContext, "Tracing" + basename + ".hpp", file);
+            tracingHeaderGenerator.GenerateHeader();
+            TracingEchoGenerator tracingSourceGenerator(generatorContext, "Tracing" + basename + ".cpp", file);
+            tracingSourceGenerator.GenerateSource();
 
             return true;
         }
@@ -1017,6 +1021,126 @@ Rpc().Send();
         return result.str();
     }
 
+    TracingServiceGenerator::TracingServiceGenerator(const std::shared_ptr<const EchoService>& service, Entities& formatter)
+        : service(service)
+    {
+        auto serviceClass = std::make_shared<Class>(service->name + "Tracer");
+        serviceClass->Parent("public services::ServiceTracer");
+        serviceFormatter = serviceClass.get();
+        formatter.Add(serviceClass);
+
+        GenerateServiceConstructors();
+        GenerateServiceFunctions();
+        GenerateFieldConstants();
+        GenerateDataMembers();
+    }
+
+    void TracingServiceGenerator::GenerateServiceConstructors()
+    {
+        auto constructors = std::make_shared<Access>("public");
+        auto constructor = std::make_shared<Constructor>(service->name + "Tracer", "tracingEcho.AddServiceTracer(*this);\n", 0);
+        constructor->Parameter("services::TracingEchoOnConnection& tracingEcho");
+        constructor->Initializer("services::ServiceTracer(serviceId)");
+        constructor->Initializer("tracingEcho(tracingEcho)");
+        constructors->Add(constructor);
+
+        constructors->Add(std::make_shared<Constructor>("~" + service->name + "Tracer", "tracingEcho.RemoveServiceTracer(*this);\n", 0));
+
+        serviceFormatter->Add(constructors);
+    }
+
+    void TracingServiceGenerator::GenerateServiceFunctions()
+    {
+        auto functions = std::make_shared<Access>("public");
+
+        auto handle = std::make_shared<Function>("TraceMethod", TraceMethodBody(), "void", Function::fVirtual | Function::fOverride | Function::fConst);
+        handle->Parameter("uint32_t methodId");
+        handle->Parameter("infra::ProtoLengthDelimited& contents");
+        handle->Parameter("services::Tracer& tracer");
+        functions->Add(handle);
+
+        serviceFormatter->Add(functions);
+    }
+
+    void TracingServiceGenerator::GenerateFieldConstants()
+    {
+        auto fields = std::make_shared<Access>("public");
+
+        fields->Add(std::make_shared<DataMember>("serviceId", "static const uint32_t", google::protobuf::SimpleItoa(service->serviceId)));
+
+        for (auto& method : service->methods)
+            fields->Add(std::make_shared<DataMember>("id" + method.name, "static const uint32_t", google::protobuf::SimpleItoa(method.methodId)));
+
+        serviceFormatter->Add(fields);
+    }
+
+    void TracingServiceGenerator::GenerateDataMembers()
+    {
+        auto dataMembers = std::make_shared<Access>("public");
+
+        dataMembers->Add(std::make_shared<DataMember>("tracingEcho", "services::TracingEchoOnConnection&"));
+
+        serviceFormatter->Add(dataMembers);
+    }
+
+    std::string TracingServiceGenerator::TraceMethodBody() const
+    {
+        std::ostringstream result;
+        {
+            google::protobuf::io::OstreamOutputStream stream(&result);
+            google::protobuf::io::Printer printer(&stream, '$', nullptr);
+
+            if (!service->methods.empty())
+            {
+                printer.Print(R"(infra::ProtoParser parser(contents.Parser());
+
+switch (methodId)
+{
+)");
+
+                for (auto& method : service->methods)
+                {
+                    printer.Print(R"(    case id$name$:
+    {
+)", "name", method.name);
+                    if (method.parameter)
+                        printer.Print("        $argument$ argument(parser);\n", "argument", method.parameter->qualifiedName);
+                    printer.Print(R"(        if (!parser.FormatFailed())
+        {
+            tracer.Continue() << "$servicename$.$name$(";
+)", "servicename", service->name, "name", method.name);
+
+                    if (method.parameter)
+                        for (auto& field : method.parameter->fields)
+                        {
+                            if (&field != &method.parameter->fields.front())
+                                printer.Print(R"(            tracer.Continue() << ", ";
+)");
+                            printer.Print("            services::PrintField(argument.$field$, tracer);\n", "field", field->name);
+                        }
+
+                    printer.Print(R"_(            tracer.Continue() << ")";
+        }
+        else
+            tracer.Continue() << "$servicename$.$name$(parse error)";
+        break;
+    }
+)_", "servicename", service->name, "name", method.name);
+                }
+
+                printer.Print(R"(    default:
+        tracer.Continue() << "$servicename$ method " << methodId << " not found";
+)", "servicename", service->name);
+
+                printer.Print("}\n");
+            }
+            else
+                printer.Print(R"(tracer.Continue() << "$servicename$ method " << methodId << " not found";\n)", "name", service->name);
+        }
+
+        return result.str();
+    }
+
     EchoGenerator::EchoGenerator(google::protobuf::compiler::GeneratorContext* generatorContext, const std::string& name, const google::protobuf::FileDescriptor* file)
         : stream(generatorContext->Open(name))
         , printer(stream.get(), '$', nullptr)
@@ -1102,6 +1226,73 @@ Rpc().Send();
     }
 
     void EchoGenerator::GenerateBottomHeaderGuard()
+    {
+        printer.Print("\n#endif\n");
+    }
+
+    TracingEchoGenerator::TracingEchoGenerator(google::protobuf::compiler::GeneratorContext* generatorContext, const std::string& name, const google::protobuf::FileDescriptor* file)
+        : stream(generatorContext->Open(name))
+        , printer(stream.get(), '$', nullptr)
+        , formatter(true)
+        , file(file)
+    {
+        EchoRoot root(*file);
+
+        auto includesByHeader = std::make_shared<IncludesByHeader>();
+        includesByHeader->Path("generated/echo/" + root.GetFile(*file)->name + ".pb.hpp");
+        includesByHeader->Path("protobuf/echo/TracingEcho.hpp");
+        formatter.Add(includesByHeader);
+
+        auto includesBySource = std::make_shared<IncludesBySource>();
+        includesBySource->Path("generated/echo/Tracing" + root.GetFile(*file)->name + ".pb.hpp");
+        formatter.Add(includesBySource);
+
+        Entities* currentEntity = &formatter;
+        for (auto& package : root.GetFile(*file)->packageParts)
+        {
+            auto newNamespace = std::make_shared<Namespace>(package);
+            auto newEntity = newNamespace.get();
+            currentEntity->Add(newNamespace);
+            currentEntity = newEntity;
+        }
+
+        for (auto& service : root.GetFile(*file)->services)
+            serviceGenerators.emplace_back(std::make_shared<TracingServiceGenerator>(service, *currentEntity));
+    }
+
+    void TracingEchoGenerator::GenerateHeader()
+    {
+        GenerateTopHeaderGuard();
+        formatter.PrintHeader(printer);
+        GenerateBottomHeaderGuard();
+    }
+
+    void TracingEchoGenerator::GenerateSource()
+    {
+        printer.Print(R"(// Generated by the protocol buffer compiler.  DO NOT EDIT!
+// source: $filename$
+
+)"
+, "filename", file->name());
+
+        formatter.PrintSource(printer, "");
+    }
+
+    void TracingEchoGenerator::GenerateTopHeaderGuard()
+    {
+        std::string filename_identifier = google::protobuf::compiler::cpp::FilenameIdentifier(file->name());
+
+        printer.Print(R"(// Generated by the protocol buffer compiler.  DO NOT EDIT!
+// source: $filename$
+
+#ifndef echo_tracing_$filename_identifier$
+#define echo_tracing_$filename_identifier$
+
+)"
+, "filename", file->name(), "filename_identifier", filename_identifier);
+    }
+
+    void TracingEchoGenerator::GenerateBottomHeaderGuard()
     {
         printer.Print("\n#endif\n");
     }
