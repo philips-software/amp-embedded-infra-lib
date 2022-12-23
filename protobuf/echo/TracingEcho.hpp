@@ -100,9 +100,22 @@ namespace services
     template<class T>
     void PrintField(const T& value, services::Tracer& tracer, typename T::template Type<0>* = 0)
     {
-        tracer.Continue() << "(";
+        tracer.Continue() << "{";
         PrintSubFields<0>(value, tracer);
-        tracer.Continue() << ")";
+        tracer.Continue() << "}";
+    }
+
+    template<class T>
+    void PrintField(const infra::BoundedVector<T>& value, services::Tracer& tracer, typename T::template Type<0>* = 0)
+    {
+        tracer.Continue() << "[";
+        for (auto& v : value)
+        {
+            if (&v != &value.front())
+                tracer.Continue() << ", ";
+            PrintField(v, tracer);
+        }
+        tracer.Continue() << "]";
     }
 }
 
