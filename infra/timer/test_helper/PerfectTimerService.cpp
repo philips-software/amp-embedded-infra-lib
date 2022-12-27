@@ -6,8 +6,8 @@ namespace infra
 {
     PerfectTimerService::PerfectTimerService(uint32_t id)
         : TimerService(id)
-        , resolution(std::chrono::milliseconds(0))
         , systemTime(TimePoint())
+        , resolution(std::chrono::milliseconds(0))
     {}
 
     void PerfectTimerService::NextTriggerChanged()

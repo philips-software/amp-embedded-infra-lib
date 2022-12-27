@@ -19,7 +19,7 @@ namespace application
     public:
         UpgradePackConfigParser(infra::JsonObject& json);
 
-        std::vector<std::pair<std::string, std::string>> GetComponents();
+        std::vector<std::tuple<std::string, std::string, infra::Optional<uint32_t>>> GetComponents();
         std::vector<std::pair<std::string, std::string>> GetOptions();
         infra::JsonObject GetUpgradeConfiguration();
         std::string GetOutputFilename();
@@ -30,8 +30,8 @@ namespace application
         uint32_t GetComponentVersion();
 
     private:
-        void CheckValidJsonObject(infra::JsonObject& jsonObject);
         void CheckMandatoryKeys();
+        std::pair<std::string, infra::Optional<uint32_t>> ExtractDataFromObjectComponent(const std::string& key, infra::JsonObject& value);
      
     private:
         infra::JsonObject& json;

@@ -1,6 +1,8 @@
 syntax = "proto3";
 
 package gap;
+option java_package = "com.philips.cococo.protobufEcho";
+option java_outer_classname = "GapProto";
 
 message IoCapabilities
 {

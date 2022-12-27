@@ -40,7 +40,7 @@ namespace application
             const std::vector<std::pair<std::string, uint32_t>>& supportedBinaryTargets,
             hal::FileSystem& fileSystem, const ImageSecurity& imageSecurity, const std::vector<NoFileInputFactory*>& otherTargets);
 
-        virtual std::unique_ptr<Input> CreateInput(const std::string& targetName, const std::string& fileName) override;
+        virtual std::unique_ptr<Input> CreateInput(const std::string& targetName, const std::string& fileName, infra::Optional<uint32_t> address) override;
 
     private:
         std::vector<std::string> supportedHexTargets;
