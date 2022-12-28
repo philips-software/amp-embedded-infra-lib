@@ -552,10 +552,11 @@ namespace services
             services::GlobalTracer().Trace() << "ListenerLwIp::ProcessBacklog processing new connection";
 
             this->self = SharedFromThis();
-            auto self = access.MakeShared(*this);
+            auto self = access.MakeShared(*this, infra::noSharedFromThis);
 
-            auto connection = self->backlog.front();
-            factory.ConnectionAccepted([self](infra::SharedPtr<services::ConnectionObserver> connectionObserver) {
+            auto connection = backlog.front();
+            factory.ConnectionAccepted([self](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
+            {
                 auto connection = self->backlog.front();
                 self->backlog.pop_front();
 
