@@ -24,7 +24,6 @@ namespace services
     protected:
         void Connect();
         void Connect(infra::BoundedString url);
-        void Close();
         void ContentError();
 
         infra::BoundedString Url() const;
@@ -49,6 +48,7 @@ namespace services
         virtual void ConnectionFailed(ConnectFailReason reason) override;
 
     private:
+        void Close();
         void StartTimeout();
         void Timeout();
         void Expire();
