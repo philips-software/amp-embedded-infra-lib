@@ -141,6 +141,10 @@ namespace infra
             friend SharedPtr<U> MakeContainedSharedObject(U& object, const SharedPtr<V>& container);
         template<class U, class V>
             friend SharedPtr<U> MakeContainedSharedObject(U& object, SharedPtr<V>&& container);
+        template<class U, class V>
+            friend SharedPtr<U> MakeContainedSharedObject(U& object, const SharedPtr<V>& container, NoSharedFromThis);
+        template<class U, class V>
+            friend SharedPtr<U> MakeContainedSharedObject(U& object, SharedPtr<V>&& container, NoSharedFromThis);
 
     private:
         detail::SharedPtrControl* control = nullptr;
@@ -230,9 +234,6 @@ namespace infra
 
     template<class T>
     SharedPtr<T> UnOwnedSharedPtr(T& object);
-
-    template<class T, class U>
-    SharedPtr<T> MakeContainedSharedObject(T& object, const SharedPtr<U>& container);
 
     template<class T, class... Args>
     SharedPtr<T> MakeSharedOnHeap(Args&&... args);
@@ -685,6 +686,20 @@ namespace infra
     SharedPtr<T> MakeContainedSharedObject(T& object, SharedPtr<U>&& container)
     {
         SharedPtr<T> result(container.control, &object);
+        container = nullptr;
+        return result;
+    }
+
+    template<class T, class U>
+    SharedPtr<T> MakeContainedSharedObject(T& object, const SharedPtr<U>& container, NoSharedFromThis)
+    {
+        return SharedPtr<T>(container.control, &object, noSharedFromThis);
+    }
+
+    template<class T, class U>
+    SharedPtr<T> MakeContainedSharedObject(T& object, SharedPtr<U>&& container, NoSharedFromThis)
+    {
+        SharedPtr<T> result(container.control, &object, noSharedFromThis);
         container = nullptr;
         return result;
     }
