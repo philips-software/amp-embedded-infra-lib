@@ -42,6 +42,8 @@ target_sources(services.network PRIVATE
     HttpClientAuthentication.hpp
     HttpClientBasic.cpp
     HttpClientBasic.hpp
+    HttpClientCachedConnection.cpp
+    HttpClientCachedConnection.hpp
     HttpClientImpl.cpp
     HttpClientImpl.hpp
     HttpClientJson.cpp
