@@ -140,7 +140,6 @@ TEST_F(HttpClientBasicTest, Stop_while_done)
     EXPECT_CALL(*controller, Done());
     EXPECT_CALL(httpClient, Close());
     httpClient.Observer().BodyComplete();
-    httpClient.Observer().Detaching();
     httpClient.Detach();
 
     EXPECT_CALL(onStopped, callback());
@@ -190,7 +189,6 @@ TEST_F(HttpClientBasicTest, Stop_after_ClosingConnection)
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.Attach(client); });
 
     EXPECT_CALL(*controller, Error(true));
-    httpClient.Observer().Detaching();
     httpClient.Detach();
 
     EXPECT_CALL(onStopped, callback());
