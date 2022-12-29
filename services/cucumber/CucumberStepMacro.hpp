@@ -72,36 +72,17 @@ namespace                                                                       
     constexpr auto SOURCE_LOCATION = detail::Concatenate(SOURCE_FILE.c, ":", SOURCE_LINE);               \
                                                                                                          \
     class CLASSNAME                                                                                      \
-        : public services::CucumberStep                                                                  \
+        : public services::CucumberStepProgress                                                          \
     {                                                                                                    \
     public:                                                                                              \
         CLASSNAME()                                                                                      \
-            : services::CucumberStep(NAME, SOURCE_LOCATION.c)                                            \
+            : services::CucumberStepProgress(NAME, SOURCE_LOCATION.c)                                    \
         {                                                                                                \
             services::CucumberStepStorage::Instance().AddStep(*this);                                    \
         }                                                                                                \
                                                                                                          \
-    public:                                                                                              \
-        virtual void Invoke(infra::JsonArray& arguments) override                                        \
-        {                                                                                                \
-            invokeArguments = &arguments;                                                                \
-            Execute();                                                                                   \
-        }                                                                                                \
-                                                                                                         \
     private:                                                                                             \
-        void Execute();                                                                                  \
-                                                                                                         \
-        void Success()                                                                                   \
-        {                                                                                                \
-            assert(Context().Contains("InvokeSuccess"));                                                 \
-            Context().Get<infra::Function<void()>>("InvokeSuccess")();                                   \
-        }                                                                                                \
-                                                                                                         \
-        void Error(infra::BoundedConstString failReason)                                                 \
-        {                                                                                                \
-            assert(Context().Contains("InvokeError"));                                                   \
-            Context().Get<infra::Function<void(infra::BoundedConstString&)>>("InvokeError")(failReason); \
-        }                                                                                                \
+        virtual void Execute() override;                                                                 \
     };                                                                                                   \
                                                                                                          \
     static CLASSNAME VARNAME;                                                                            \
