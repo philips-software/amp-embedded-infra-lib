@@ -1,34 +1,34 @@
 ccola_component(network_test gmock_test)
 
     ccola_sources(
-        #TestAddress.cpp
-        #TestBonjourServer.cpp
-        #TestCertificateConvertor.cpp
-        #TestCertificatesMbedTls.cpp
-        #TestConnectionMbedTls.cpp
-        #TestDnsResolver.cpp
-        #TestDnsServer.cpp
-        #TestExclusiveConnection.cpp
-        #TestExclusiveStartingConnection.cpp
-        #TestHttpClient.cpp
-        #TestHttpClientAuthentication.cpp
-        #TestHttpClientBasic.cpp
+        TestAddress.cpp
+        TestBonjourServer.cpp
+        TestCertificateConvertor.cpp
+        TestCertificatesMbedTls.cpp
+        TestConnectionMbedTls.cpp
+        TestDnsResolver.cpp
+        TestDnsServer.cpp
+        TestExclusiveConnection.cpp
+        TestExclusiveStartingConnection.cpp
+        TestHttpClient.cpp
+        TestHttpClientAuthentication.cpp
+        TestHttpClientBasic.cpp
         TestHttpClientCachedConnection.cpp
-        #TestHttpClientJson.cpp
-        #TestHttpServer.cpp
-        #TestLlmnrResponder.cpp
-        #TestMdnsClient.cpp
-        #TestMqttClient.cpp
-        #TestNameResolverCache.cpp
-        #TestSerialServer.cpp
-        #TestSingleConnectionListener.cpp
-        #TestSntpClient.cpp
-        #TestSsdpDeviceDiscovery.cpp
-        #TestWebSocketClient.cpp
-        #TestWebSocketClientConnectionObserver.cpp
-        #TestWebSocketIntegration.cpp
-        #TestWebSocketServerConnectionObserver.cpp
-        #TestWiFiNetwork.cpp
+        TestHttpClientJson.cpp
+        TestHttpServer.cpp
+        TestLlmnrResponder.cpp
+        TestMdnsClient.cpp
+        TestMqttClient.cpp
+        TestNameResolverCache.cpp
+        TestSerialServer.cpp
+        TestSingleConnectionListener.cpp
+        TestSntpClient.cpp
+        TestSsdpDeviceDiscovery.cpp
+        TestWebSocketClient.cpp
+        TestWebSocketClientConnectionObserver.cpp
+        TestWebSocketIntegration.cpp
+        TestWebSocketServerConnectionObserver.cpp
+        TestWiFiNetwork.cpp
     )
 
     ccola_dependencies(
