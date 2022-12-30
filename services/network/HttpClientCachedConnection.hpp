@@ -16,7 +16,7 @@ namespace services
         , public HttpClientObserver
     {
     public:
-        HttpClientCachedConnection(HttpClientCachedConnectionConnector& connector);
+        HttpClientCachedConnection(HttpClientCachedConnectionConnector& connector, infra::AutoResetFunction<void(infra::SharedPtr<HttpClientObserver> client)>&& createdObserver);
 
         bool Idle() const;
 
@@ -54,7 +54,10 @@ namespace services
         virtual void FillContent(infra::StreamWriter& writer) const override;
 
     private:
+        friend class HttpClientCachedConnectionConnector;
+
         HttpClientCachedConnectionConnector& connector;
+        infra::AutoResetFunction<void(infra::SharedPtr<HttpClientObserver> client)> createdObserver;
         bool idle = true;
     };
 
@@ -89,7 +92,7 @@ namespace services
         void TryRetargetConnection();
         void ClientPtrExpired();
         bool SameHost() const;
-        std::array<uint8_t, 32> GenerateHostAndPortHash(const HttpClientObserverFactory& factory) const;
+        Sha256::Digest GenerateHostAndPortHash(const HttpClientObserverFactory& factory) const;
 
     private:
         HttpClientConnector& delegate;
@@ -101,7 +104,7 @@ namespace services
         infra::Optional<HttpClientCachedConnection> client;
         infra::AccessedBySharedPtr clientPtr{ [this]() { ClientPtrExpired(); } };
 
-        std::array<uint8_t, 32> hostAndPortHash{};
+        Sha256::Digest hostAndPortHash{};
 
         infra::Duration disconnectTimeout;
         infra::TimerSingleShot disconnectTimer;

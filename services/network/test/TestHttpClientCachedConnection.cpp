@@ -39,7 +39,7 @@ public:
     {
         InitiateConnectAndForwardToDelegate(factory, hostname, port);
 
-        EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::HttpClientObserver> client)>&& createdClientObserver)
+        EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](auto&& createdClientObserver)
             {
                 auto observer = clientObserver.Emplace();
                 EXPECT_CALL(*observer, Attached());
@@ -287,7 +287,7 @@ TEST_F(HttpClientCachedConnectionTest, second_request_on_same_connection)
     EXPECT_CALL(*clientObserver, Detaching());
     clientObserver->Detach();
 
-    EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::HttpClientObserver> client)>&& createdClientObserver)
+    EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](auto&& createdClientObserver)
         {
             auto observer = clientObserver.Emplace();
             EXPECT_CALL(*observer, Attached());
