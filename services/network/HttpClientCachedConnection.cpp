@@ -3,8 +3,9 @@
 
 namespace services
 {
-    HttpClientCachedConnection::HttpClientCachedConnection(HttpClientCachedConnectionConnector& connector)
+    HttpClientCachedConnection::HttpClientCachedConnection(HttpClientCachedConnectionConnector& connector, infra::AutoResetFunction<void(infra::SharedPtr<HttpClientObserver> client)>&& createdObserver)
         : connector(connector)
+        , createdObserver(std::move(createdObserver))
     {}
 
     bool HttpClientCachedConnection::Idle() const
@@ -171,7 +172,7 @@ namespace services
         else
             waitingClientObserverFactories.erase(factory);
 
-        TryConnectWaiting();
+        infra::EventDispatcher::Instance().Schedule([this]() { TryConnectWaiting(); });
     }
 
     infra::BoundedConstString HttpClientCachedConnectionConnector::Hostname() const
@@ -187,14 +188,16 @@ namespace services
     void HttpClientCachedConnectionConnector::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<HttpClientObserver> client)>&& createdObserver)
     {
         assert(clientObserverFactory != nullptr);
-        client.Emplace(*this);
+        // createdObserver is stored temporarily (until it is invoked) inside the client, so that if the lambda passed to ConnectionEstablished
+        // is discarded instead of used, then createdObserver is discarded automatically as well.
+        client.Emplace(*this, std::move(createdObserver));
         auto httpClientPtr = clientPtr.MakeShared(*client);
 
-        clientObserverFactory->ConnectionEstablished([&httpClientPtr, &createdObserver](infra::SharedPtr<HttpClientObserver> observer)
+        clientObserverFactory->ConnectionEstablished([httpClientPtr](infra::SharedPtr<HttpClientObserver> observer)
             {
                 if (observer != nullptr)
                 {
-                    createdObserver(httpClientPtr);
+                    httpClientPtr->createdObserver(httpClientPtr);
                     httpClientPtr->Attach(observer);
                 }
             });
@@ -283,13 +286,13 @@ namespace services
         return GenerateHostAndPortHash(*clientObserverFactory) == hostAndPortHash;
     }
 
-    std::array<uint8_t, 32> HttpClientCachedConnectionConnector::GenerateHostAndPortHash(const HttpClientObserverFactory& factory) const
+    Sha256::Digest HttpClientCachedConnectionConnector::GenerateHostAndPortHash(const HttpClientObserverFactory& factory) const
     {
-        std::array<uint8_t, 32> hostHash = hasher.Calculate(infra::StringAsByteRange(factory.Hostname()));
+        Sha256::Digest hostHash = hasher.Calculate(infra::StringAsByteRange(factory.Hostname()));
         auto port = factory.Port();
-        std::array<uint8_t, 32> portHash = hasher.Calculate(infra::MakeByteRange(port));
+        Sha256::Digest portHash = hasher.Calculate(infra::MakeByteRange(port));
 
-        std::array<uint8_t, 32> result;
+        Sha256::Digest result;
 
         for (int i = 0; i != result.size(); ++i)
             result[i] = hostHash[i] ^ portHash[i];
