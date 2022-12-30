@@ -284,7 +284,6 @@ namespace services
 
     void ConnectorWin::Connected()
     {
-        infra::WeakPtr<ConnectorWin> self = SharedFromThis();
         infra::SharedPtr<ConnectionWin> connection = infra::MakeSharedOnHeap<ConnectionWin>(network, connectSocket);
         factory.ConnectionEstablished([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
         {
@@ -297,7 +296,6 @@ namespace services
 
     void ConnectorWin::Failed()
     {
-        infra::WeakPtr<ConnectorWin> self = SharedFromThis();
         factory.ConnectionFailed(services::ClientConnectionObserverFactory::ConnectFailReason::refused);
 
         network.DeregisterConnector(*this);
