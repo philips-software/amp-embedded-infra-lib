@@ -13,7 +13,9 @@ namespace services
         Sha256& operator=(const Sha256& other) = delete;
         virtual ~Sha256() = default;
 
-        virtual std::array<uint8_t, 32> Calculate(infra::ConstByteRange input) const = 0;
+        using Digest = std::array<uint8_t, 32>;
+
+        virtual Digest Calculate(infra::ConstByteRange input) const = 0;
     };
 }
 
