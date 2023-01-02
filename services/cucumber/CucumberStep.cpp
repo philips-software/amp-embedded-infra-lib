@@ -28,7 +28,13 @@ namespace services
         return sourceLocation;
     }
 
-    void CucumberStep::SkipOverStringArguments(infra::JsonArrayIterator& iterator) const
+    void CucumberStepArguments::Invoke(infra::JsonArray& arguments)
+    {
+        invokeArguments = &arguments;
+        Execute();
+    }
+
+    void CucumberStepArguments::SkipOverStringArguments(infra::JsonArrayIterator& iterator) const
     {
         uint32_t nrArgs = NrArguments();
         if (HasStringArguments())
@@ -36,19 +42,19 @@ namespace services
                 ++iterator;
     }
 
-    bool CucumberStep::ContainsTableArgument(infra::BoundedConstString fieldName) const
+    bool CucumberStepArguments::ContainsTableArgument(infra::BoundedConstString fieldName) const
     {
         return GetTableArgument(fieldName) != infra::none;
     }
 
-    infra::JsonArray CucumberStep::GetTable() const
+    infra::JsonArray CucumberStepArguments::GetTable() const
     {
         infra::JsonArrayIterator argumentIterator(invokeArguments->begin());
         SkipOverStringArguments(argumentIterator);
         return argumentIterator->Get<infra::JsonArray>();
     }
 
-    infra::Optional<infra::JsonString> CucumberStep::GetTableArgument(infra::BoundedConstString fieldName) const
+    infra::Optional<infra::JsonString> CucumberStepArguments::GetTableArgument(infra::BoundedConstString fieldName) const
     {
         infra::JsonArrayIterator argumentIterator(invokeArguments->begin());
         SkipOverStringArguments(argumentIterator);
@@ -65,17 +71,17 @@ namespace services
         return infra::none;
     }
 
-    bool CucumberStep::HasStringArguments() const
+    bool CucumberStepArguments::HasStringArguments() const
     {
         return StepName().find(R"('%s')") != infra::BoundedString::npos || StepName().find("%d") != infra::BoundedString::npos || StepName().find("%b") != infra::BoundedString::npos;
     }
 
-    bool CucumberStep::ContainsStringArgument(uint8_t index) const
+    bool CucumberStepArguments::ContainsStringArgument(uint8_t index) const
     {
         return GetStringArgument(index) != infra::none;
     }
 
-    uint16_t CucumberStep::NrArguments() const
+    uint16_t CucumberStepArguments::NrArguments() const
     {
         uint8_t nrArguments = 0;
         size_t strArgPos = StepName().find(R"('%s')", 0);
@@ -99,7 +105,7 @@ namespace services
         return nrArguments;
     }
 
-    uint16_t CucumberStep::NrFields() const
+    uint16_t CucumberStepArguments::NrFields() const
     {
         uint16_t nrFields = 0;
         infra::JsonArrayIterator argumentIterator(invokeArguments->begin());
@@ -114,7 +120,7 @@ namespace services
         return nrFields;
     }
 
-    infra::Optional<infra::JsonString> CucumberStep::GetStringArgument(uint8_t argumentNumber) const
+    infra::Optional<infra::JsonString> CucumberStepArguments::GetStringArgument(uint8_t argumentNumber) const
     {
         if (invokeArguments->begin() != invokeArguments->end())
         {
@@ -131,7 +137,7 @@ namespace services
         return infra::none;
     }
 
-    infra::Optional<uint32_t> CucumberStep::GetUIntegerArgument(uint8_t argumentNumber) const
+    infra::Optional<uint32_t> CucumberStepArguments::GetUIntegerArgument(uint8_t argumentNumber) const
     {
         auto optionalStringArgument = GetStringArgument(argumentNumber);
 
@@ -148,7 +154,7 @@ namespace services
         return infra::none;
     }
 
-    infra::Optional<bool> CucumberStep::GetBooleanArgument(uint8_t argumentNumber) const
+    infra::Optional<bool> CucumberStepArguments::GetBooleanArgument(uint8_t argumentNumber) const
     {
         auto optionalStringArgument = GetStringArgument(argumentNumber);
 
@@ -160,5 +166,17 @@ namespace services
         }
 
         return infra::none;
+    }
+
+    void CucumberStepProgress::Success()
+    {
+        assert(Context().Contains("InvokeSuccess"));
+        Context().Get<infra::Function<void()>>("InvokeSuccess")();
+    }
+
+    void CucumberStepProgress::Error(infra::BoundedConstString failReason)
+    {
+        assert(Context().Contains("InvokeError"));
+        Context().Get<infra::Function<void(infra::BoundedConstString&)>>("InvokeError")(failReason);
     }
 }
