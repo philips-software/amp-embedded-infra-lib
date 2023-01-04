@@ -3,9 +3,7 @@
 namespace services
 {
     CucumberWireProtocolController::CucumberWireProtocolController(ConnectionObserver& connectionObserver, CucumberScenarioRequestHandler& scenarioRequestHandler)
-        : invokeSuccess([this]() { InvokeSuccess(); })
-        , invokeError([this](infra::BoundedConstString& reason) { InvokeError(reason); })
-        , connectionObserver(connectionObserver)
+        : connectionObserver(connectionObserver)
         , scenarioRequestHandler(scenarioRequestHandler)
     {
         if (CucumberContext::InstanceSet())
@@ -52,8 +50,21 @@ namespace services
     void CucumberWireProtocolController::HandleInvokeRequest(CucumberWireProtocolParser& parser)
     {
         CucumberStep& step = CucumberStepStorage::Instance().GetStep(parser.invokeId);
+        
         if (parser.invokeArguments.begin() == parser.invokeArguments.end() && step.HasStringArguments() || MatchStringArguments(parser.invokeId, parser.invokeArguments))
+        {
+            invokeSuccess = [this]() {
+                invokeError = nullptr;
+                InvokeSuccess();
+            };
+
+            invokeError = [this](infra::BoundedConstString& reason) {
+                invokeSuccess = nullptr;
+                InvokeError(reason);
+            };
+
             step.Invoke(parser.invokeArguments);
+        }
         else
             invokeInfo.successfull = false;
     }
@@ -103,6 +114,7 @@ namespace services
     void CucumberWireProtocolController::InvokeError(infra::BoundedConstString& reason)
     {
         invokeInfo.successfull = false;
+        services::CucumberContext::Instance().TimeoutTimer().Cancel();
         invokeInfo.failReason = reason;
 
         connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize());
