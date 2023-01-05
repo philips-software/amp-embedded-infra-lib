@@ -171,13 +171,26 @@ namespace services
 
     void CucumberStepProgress::Success()
     {
+        if (!std::exchange(isActive, false))
+            std::abort();
+
         assert(Context().Contains("InvokeSuccess"));
         Context().Get<infra::AutoResetFunction<void()>>("InvokeSuccess")();
     }
 
     void CucumberStepProgress::Error(infra::BoundedConstString failReason)
     {
+        if (!std::exchange(isActive, false))
+            std::abort();
+
         assert(Context().Contains("InvokeError"));
         Context().Get<infra::AutoResetFunction<void(infra::BoundedConstString&)>>("InvokeError")(failReason);
+    }
+
+    void CucumberStepProgress::Invoke(infra::JsonArray& arguments)
+    {
+        isActive = true;
+
+        CucumberStepArguments::Invoke(arguments);
     }
 }

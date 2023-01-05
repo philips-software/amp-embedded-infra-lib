@@ -80,6 +80,10 @@ namespace services
 
         virtual void Success();
         virtual void Error(infra::BoundedConstString failReason);
+
+        virtual void Invoke(infra::JsonArray& arguments) override;
+
+        bool isActive{false};
     };
 }
 
