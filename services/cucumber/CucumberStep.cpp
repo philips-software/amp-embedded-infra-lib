@@ -1,5 +1,6 @@
 #include "services/cucumber/CucumberStep.hpp"
 #include "infra/stream/StringInputStream.hpp"
+#include "infra/util/AutoResetFunction.hpp"
 
 namespace services
 {
@@ -170,13 +171,26 @@ namespace services
 
     void CucumberStepProgress::Success()
     {
+        if (!std::exchange(isActive, false))
+            std::abort();
+
         assert(Context().Contains("InvokeSuccess"));
-        Context().Get<infra::Function<void()>>("InvokeSuccess")();
+        Context().Get<infra::AutoResetFunction<void()>>("InvokeSuccess")();
     }
 
     void CucumberStepProgress::Error(infra::BoundedConstString failReason)
     {
+        if (!std::exchange(isActive, false))
+            std::abort();
+
         assert(Context().Contains("InvokeError"));
-        Context().Get<infra::Function<void(infra::BoundedConstString&)>>("InvokeError")(failReason);
+        Context().Get<infra::AutoResetFunction<void(infra::BoundedConstString&)>>("InvokeError")(failReason);
+    }
+
+    void CucumberStepProgress::Invoke(infra::JsonArray& arguments)
+    {
+        isActive = true;
+
+        CucumberStepArguments::Invoke(arguments);
     }
 }
