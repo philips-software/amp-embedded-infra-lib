@@ -36,7 +36,7 @@ namespace services
     public:
         InvokeInfo invokeInfo;
         CucumberStepStorage::Match storageMatch;
-        infra::BoundedString::WithStorage<256> nameToMatchString;
+        infra::BoundedString::WithStorage<1024> nameToMatchString;
 
     private:
         ConnectionObserver& connectionObserver;
