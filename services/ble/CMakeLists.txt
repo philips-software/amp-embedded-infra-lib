@@ -11,6 +11,7 @@ target_sources(services.ble PRIVATE
     BondBlobPersistence.hpp
     BondStorageSynchronizer.cpp
     BondStorageSynchronizer.hpp
+    Gap.cpp
     Gap.hpp
     Gatt.cpp
     Gatt.hpp
