@@ -92,14 +92,16 @@ GIVEN("nothing happens for %d seconds")
 }
 
 class CucumberStepMock
-    : public services::CucumberStep
+    : public services::CucumberStepArguments
 {
 public:
     CucumberStepMock()
-        : CucumberStep("Mock Step", "")
+        : CucumberStepArguments("Mock Step", "")
     {}
 
     MOCK_METHOD1(Invoke, void(infra::JsonArray& arguments));
+
+    virtual void Execute() override {}
 };
 
 class CucumberWireProtocolServerTest

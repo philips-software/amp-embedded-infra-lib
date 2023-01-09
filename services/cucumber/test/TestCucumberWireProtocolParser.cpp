@@ -1,18 +1,15 @@
-#include "services/cucumber/CucumberWireProtocolParser.hpp"
 #include "gmock/gmock.h"
+#include "services/cucumber/CucumberWireProtocolParser.hpp"
 
 class StepStub
-    : public services::CucumberStep
+    : public services::CucumberStepProgress
 {
 public:
     StepStub(infra::BoundedConstString stepName)
-        : services::CucumberStep(stepName, "")
+        : services::CucumberStepProgress(stepName, "")
     {}
 
-    void Invoke(infra::JsonArray& arguments) final
-    {
-        invokeArguments = &arguments;
-    };
+    virtual void Execute() override{};
 };
 
 bool CheckStepMatcher(infra::BoundedString stepString, infra::BoundedString matchString)

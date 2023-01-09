@@ -16,6 +16,8 @@ namespace infra
     template<class T>
     class WeakPtr;
 
+    extern const struct NoSharedFromThis {} noSharedFromThis;
+
     class SharedObjectDeleter
     {
     protected:
@@ -71,6 +73,7 @@ namespace infra
         WeakPtr<const T> WeakFromThis() const;
 
         void MakeShared(SharedPtr<T> sharedPtr);
+        void ResetSharedFromThis();
 
     public:
         using EnableSharedFromThisType = T;
@@ -89,6 +92,7 @@ namespace infra
         SharedPtr() = default;
         SharedPtr(std::nullptr_t);
         SharedPtr(detail::SharedPtrControl* control, T* object);
+        SharedPtr(detail::SharedPtrControl* control, T* object, NoSharedFromThis);
         SharedPtr(const SharedPtr& other);
         SharedPtr(SharedPtr&& other) noexcept;
         template<class U>
@@ -145,6 +149,10 @@ namespace infra
         friend SharedPtr<U> MakeContainedSharedObject(U& object, const SharedPtr<V>& container);
         template<class U, class V>
         friend SharedPtr<U> MakeContainedSharedObject(U& object, SharedPtr<V>&& container);
+        template<class U, class V>
+        friend SharedPtr<U> MakeContainedSharedObject(U& object, const SharedPtr<V>& container, NoSharedFromThis);
+        template<class U, class V>
+        friend SharedPtr<U> MakeContainedSharedObject(U& object, SharedPtr<V>&& container, NoSharedFromThis);
 
     private:
         detail::SharedPtrControl* control = nullptr;
@@ -222,6 +230,8 @@ namespace infra
 
         template<class T>
         SharedPtr<T> MakeShared(T& value);
+        template<class T>
+        SharedPtr<T> MakeShared(T& value, NoSharedFromThis);
 
         void SetAction(const infra::Function<void(), ExtraSize>& newOnUnReferenced);
 
@@ -241,9 +251,6 @@ namespace infra
     template<class T>
     SharedPtr<T> UnOwnedSharedPtr(T& object);
 
-    template<class T, class U>
-    SharedPtr<T> MakeContainedSharedObject(T& object, const SharedPtr<U>& container);
-
     template<class T, class... Args>
     SharedPtr<T> MakeSharedOnHeap(Args&&... args);
 
@@ -258,6 +265,12 @@ namespace infra
     {
         Reset(control, object);
         detail::MakeSharedFromThis(this);
+    }
+
+    template<class T>
+    SharedPtr<T>::SharedPtr(detail::SharedPtrControl* control, T* object, NoSharedFromThis)
+    {
+        Reset(control, object);
     }
 
     template<class T>
@@ -402,7 +415,7 @@ namespace infra
         if (sharedPtr == nullptr)
             return nullptr;
 
-        return SharedPtr<U>(sharedPtr.control, static_cast<U*>(sharedPtr.object));
+        return SharedPtr<U>(sharedPtr.control, static_cast<U*>(sharedPtr.object), noSharedFromThis);
     }
 
     template<class U, class T>
@@ -411,7 +424,7 @@ namespace infra
         if (sharedPtr == nullptr)
             return nullptr;
 
-        SharedPtr<U> result(sharedPtr.control, static_cast<U*>(sharedPtr.object));
+        SharedPtr<U> result(sharedPtr.control, static_cast<U*>(sharedPtr.object), noSharedFromThis);
         sharedPtr.Reset(nullptr, nullptr);
         return result;
     }
@@ -422,7 +435,7 @@ namespace infra
         if (sharedPtr == nullptr)
             return nullptr;
 
-        return SharedPtr<typename std::remove_const<T>::type>(sharedPtr.control, const_cast<typename std::remove_const<T>::type*>(sharedPtr.object));
+        return SharedPtr<typename std::remove_const<T>::type>(sharedPtr.control, const_cast<typename std::remove_const<T>::type*>(sharedPtr.object), noSharedFromThis);
     }
 
     template<class T>
@@ -431,7 +444,7 @@ namespace infra
         if (sharedPtr == nullptr)
             return nullptr;
 
-        SharedPtr<typename std::remove_const<T>::type> result(sharedPtr.control, const_cast<typename std::remove_const<T>::type*>(sharedPtr.object));
+        SharedPtr<typename std::remove_const<T>::type> result(sharedPtr.control, const_cast<typename std::remove_const<T>::type*>(sharedPtr.object), noSharedFromThis);
         sharedPtr.Reset(nullptr, nullptr);
         return result;
     }
@@ -575,13 +588,17 @@ namespace infra
     template<class T>
     SharedPtr<T> EnableSharedFromThis<T>::SharedFromThis()
     {
-        return weakPtr;
+        auto result = weakPtr.lock();
+        really_assert(result);
+        return result;
     }
 
     template<class T>
     SharedPtr<const T> EnableSharedFromThis<T>::SharedFromThis() const
     {
-        return weakPtr;
+        auto result = weakPtr.lock();
+        really_assert(result);
+        return result;
     }
 
     template<class T>
@@ -599,7 +616,14 @@ namespace infra
     template<class T>
     void EnableSharedFromThis<T>::MakeShared(SharedPtr<T> sharedPtr)
     {
+        really_assert(!weakPtr.lock());
         weakPtr = sharedPtr;
+    }
+
+    template<class T>
+    void EnableSharedFromThis<T>::ResetSharedFromThis()
+    {
+        weakPtr = nullptr;
     }
 
     namespace detail
@@ -629,6 +653,13 @@ namespace infra
     SharedPtr<T> AccessedBySharedPtrWithExtraSize<ExtraSize>::MakeShared(T& value)
     {
         return SharedPtr<T>(&control, &value);
+    }
+
+    template<std::size_t ExtraSize>
+    template<class T>
+    SharedPtr<T> AccessedBySharedPtrWithExtraSize<ExtraSize>::MakeShared(T& value, NoSharedFromThis)
+    {
+        return SharedPtr<T>(&control, &value, noSharedFromThis);
     }
 
     template<std::size_t ExtraSize>
@@ -671,6 +702,20 @@ namespace infra
     SharedPtr<T> MakeContainedSharedObject(T& object, SharedPtr<U>&& container)
     {
         SharedPtr<T> result(container.control, &object);
+        container = nullptr;
+        return result;
+    }
+
+    template<class T, class U>
+    SharedPtr<T> MakeContainedSharedObject(T& object, const SharedPtr<U>& container, NoSharedFromThis)
+    {
+        return SharedPtr<T>(container.control, &object, noSharedFromThis);
+    }
+
+    template<class T, class U>
+    SharedPtr<T> MakeContainedSharedObject(T& object, SharedPtr<U>&& container, NoSharedFromThis)
+    {
+        SharedPtr<T> result(container.control, &object, noSharedFromThis);
         container = nullptr;
         return result;
     }
