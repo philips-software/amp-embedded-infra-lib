@@ -16,7 +16,6 @@ target_sources(services.ble PRIVATE
     Gatt.hpp
     GattCharacteristicImpl.cpp
     GattCharacteristicImpl.hpp
-    Uuids.hpp
 )
 
 emil_clangformat_target(services.ble)
