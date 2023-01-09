@@ -38,7 +38,7 @@ jobs:
           configurePreset: "ContinuousIntegration"
           buildPreset: "ContinuousIntegration"
           testPreset: "ContinuousIntegration"
-          configurePresetCmdString: "['--preset', '$[env.CONFIGURE_PRESET_NAME]', '-D', 'CMAKE_C_COMPILER_LAUNCHER=sccache', '-D', 'CMAKE_CXX_COMPILER_LAUNCHER=sccache']"
+          configurePresetAdditionalArgs: ["-DCMAKE_C_COMPILER_LAUNCHER=sccache", "-DCMAKE_CXX_COMPILER_LAUNCHER=sccache"]
   embedded_build:
     name: Embedded Build
     runs-on: ubuntu-latest
