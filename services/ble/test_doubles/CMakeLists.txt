@@ -6,7 +6,7 @@ target_link_libraries(services.ble_test_doubles INTERFACE
 )
 
 target_sources(services.ble_test_doubles PRIVATE
-    BondStorageManagerMock.hpp
+    BondStorageSynchronizerMock.hpp
     GapPeripheralMock.hpp
     GattMock.hpp
 )

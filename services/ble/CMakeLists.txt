@@ -7,15 +7,15 @@ target_link_libraries(services.ble PUBLIC
 )
 
 target_sources(services.ble PRIVATE
-    BondStorageManager.cpp
-    BondStorageManager.hpp
+    BondBlobPersistence.cpp
+    BondBlobPersistence.hpp
+    BondStorageSynchronizer.cpp
+    BondStorageSynchronizer.hpp
     Gap.hpp
     Gatt.cpp
     Gatt.hpp
     GattCharacteristicImpl.cpp
     GattCharacteristicImpl.hpp
-    PersistingBondStorage.cpp
-    PersistingBondStorage.hpp
     Uuids.hpp
 )
 
