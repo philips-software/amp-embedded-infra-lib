@@ -13,6 +13,7 @@ ccola_component(network_test gmock_test)
         TestHttpClient.cpp
         TestHttpClientAuthentication.cpp
         TestHttpClientBasic.cpp
+        TestHttpClientCachedConnection.cpp
         TestHttpClientJson.cpp
         TestHttpServer.cpp
         TestLlmnrResponder.cpp

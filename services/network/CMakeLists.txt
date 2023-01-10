@@ -32,6 +32,8 @@ ccola_component(network static_library)
         HttpClientAuthentication.hpp
         HttpClientBasic.cpp
         HttpClientBasic.hpp
+        HttpClientCachedConnection.cpp
+        HttpClientCachedConnection.hpp
         HttpClientImpl.cpp
         HttpClientImpl.hpp
         HttpClientJson.cpp
@@ -73,6 +75,8 @@ ccola_component(network static_library)
         TracingConnectionFactoryWithNameResolver.hpp
         TracingConnectionMbedTls.cpp
         TracingConnectionMbedTls.hpp
+        TracingHttpClientCachedConnection.cpp
+        TracingHttpClientCachedConnection.hpp
         TracingHttpClientImpl.cpp
         TracingHttpClientImpl.hpp
         TracingMqttClientImpl.cpp
