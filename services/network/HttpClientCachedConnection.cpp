@@ -191,9 +191,8 @@ namespace services
         // createdObserver is stored temporarily (until it is invoked) inside the client, so that if the lambda passed to ConnectionEstablished
         // is discarded instead of used, then createdObserver is discarded automatically as well.
         client.Emplace(*this, std::move(createdObserver));
-        auto httpClientPtr = clientPtr.MakeShared(*client);
 
-        clientObserverFactory->ConnectionEstablished([httpClientPtr](infra::SharedPtr<HttpClientObserver> observer)
+        clientObserverFactory->ConnectionEstablished([httpClientPtr = clientPtr.MakeShared(*client)](infra::SharedPtr<HttpClientObserver> observer)
             {
                 if (observer != nullptr)
                 {
@@ -215,9 +214,7 @@ namespace services
 
     void HttpClientCachedConnectionConnector::RetargetConnection()
     {
-        auto httpClientPtr = clientPtr.MakeShared(*client);
-
-        clientObserverFactory->ConnectionEstablished([httpClientPtr](infra::SharedPtr<HttpClientObserver> observer)
+        clientObserverFactory->ConnectionEstablished([httpClientPtr = clientPtr.MakeShared(*client)](infra::SharedPtr<HttpClientObserver> observer)
             {
                 if (observer)
                     httpClientPtr->Attach(observer);
