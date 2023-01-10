@@ -47,7 +47,7 @@ jobs:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
         with:
           persist-credentials: false
-      - uses: hendrikmuhs/ccache-action@657bab9aeb32eb6d913c2e6882efad4bb7536d94
+      - uses: hendrikmuhs/ccache-action@9e5eadb5f2bf73131c6453d8b22492ae92b96923 # v1.2.6
         with:
           key: ${{ github.job }}-${{ matrix.os }}
           variant: sccache
