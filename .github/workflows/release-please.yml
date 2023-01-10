@@ -56,7 +56,7 @@ jobs:
           configurePreset: "Package"
           buildPreset: "Package"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
-      - uses: nanoufo/action-upload-artifacts-and-release-assets@034844649dcccc3e46d5044227de7f0cf58438b7 # v1.4
+      - uses: nanoufo/action-upload-artifacts-and-release-assets@1adad6c4773f492fd802907560790a7b7b1ac457 # v1.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
