@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED On)
 set_directory_properties(PROPERTY USE_FOLDERS On)
 
 include(CMakePackageConfigHelpers)
+include(emil_antora)
 include(emil_clang_tools)
 include(emil_docker_tools)
 include(emil_test_helpers)
@@ -90,6 +91,7 @@ else()
 endif()
 
 option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of EmIL" On)
+set(EMIL_EXTERNAL_LWIP_TARGET "" CACHE STRING "Specify an external LWIP target")
 
 if (EMIL_ENABLE_DOCKER_TOOLS)
     emil_enable_docker_tools()
