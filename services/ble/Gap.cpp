@@ -4,7 +4,8 @@ namespace services
 {
     void GapPeripheralDecorator::StateUpdated(GapPeripheralState state)
     {
-        GapPeripheralObserver::SubjectType::NotifyObservers([&state](auto& obs) { obs.StateUpdated(state); });
+        GapPeripheralObserver::SubjectType::NotifyObservers([&state](auto& obs)
+            { obs.StateUpdated(state); });
     }
 
     hal::MacAddress GapPeripheralDecorator::GetPublicAddress() const

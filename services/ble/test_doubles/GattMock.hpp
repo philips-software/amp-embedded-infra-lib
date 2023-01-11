@@ -19,7 +19,7 @@ namespace services
     public:
         MOCK_CONST_METHOD2(Update, UpdateStatus(const services::GattCharacteristicClientOperationsObserver& characteristic, infra::ConstByteRange data));
     };
-    
+
     class GattCharacteristicMock
         : public GattCharacteristic
     {

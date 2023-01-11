@@ -1,6 +1,6 @@
-#include "gmock/gmock.h"
 #include "services/ble/BondBlobPersistence.hpp"
 #include "services/util/test_doubles/ConfigurationStoreMock.hpp"
+#include "gmock/gmock.h"
 
 class BondBlobPersistenceTest
     : public testing::Test
@@ -32,14 +32,16 @@ public:
 public:
     testing::StrictMock<services::ConfigurationStoreInterfaceMock> configurationStore;
     infra::BoundedVector<uint8_t>::WithMaxSize<3> flashStorage;
-    infra::Execute execute{[this]() { flashStorage.resize(flashStorage.max_size(), 0); } };
-    infra::ByteRange flashStorageRange{flashStorage.begin(), flashStorage.end()};
-    services::ConfigurationStoreAccess<infra::ByteRange> flashStorageAccess{configurationStore, flashStorageRange};
+    infra::Execute execute{ [this]()
+        {
+            flashStorage.resize(flashStorage.max_size(), 0);
+        } };
+    infra::ByteRange flashStorageRange{ flashStorage.begin(), flashStorage.end() };
+    services::ConfigurationStoreAccess<infra::ByteRange> flashStorageAccess{ configurationStore, flashStorageRange };
     std::array<uint8_t, 3> ramStorage{ 0, 0, 0 };
 
     infra::Optional<services::BondBlobPersistence> bondBlobPersistence;
 };
-
 
 TEST_F(BondBlobPersistenceTest, construct_updates_ram_with_flash_storage)
 {

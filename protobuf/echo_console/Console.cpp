@@ -1,5 +1,5 @@
-#include "infra/stream/ByteOutputStream.hpp"
 #include "protobuf/echo_console/Console.hpp"
+#include "infra/stream/ByteOutputStream.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 #include <cctype>
 #include <iomanip>
@@ -10,7 +10,8 @@ namespace application
 {
     namespace
     {
-        struct Quit {};
+        struct Quit
+        {};
     }
 
     namespace ConsoleToken
@@ -249,9 +250,9 @@ namespace application
         std::size_t tokenStart = parseIndex;
 
         bool escape = false;
-        
+
         std::string stringToken;
-        
+
         while (escape || line[parseIndex] != '"')
         {
             escape = !escape && line[parseIndex] == '\\';
@@ -259,8 +260,8 @@ namespace application
             if (!escape)
                 stringToken.append(1, line[parseIndex]);
 
-            ++parseIndex;            
-         
+            ++parseIndex;
+
             if (parseIndex == line.size())
                 return ConsoleToken::Error(parseIndex);
         }
@@ -314,7 +315,8 @@ namespace application
 
     Console::Console(EchoRoot& root)
         : root(root)
-        , eventDispatcherThread([this]() { RunEventDispatcher(); })
+        , eventDispatcherThread([this]()
+              { RunEventDispatcher(); })
     {}
 
     void Console::Run()
@@ -332,7 +334,7 @@ namespace application
                 processDone = false;
 
                 infra::EventDispatcher::Instance().Schedule([this, &line]()
-                {
+                    {
                     if (line == "list")
                         ListInterfaces();
                     else
@@ -340,15 +342,15 @@ namespace application
 
                     std::unique_lock<std::mutex> lock(mutex);
                     processDone = true;
-                    condition.notify_all();
-                });
+                    condition.notify_all(); });
 
                 while (!processDone)
                     condition.wait(lock);
             }
         }
 
-        infra::EventDispatcher::Instance().Schedule([]() { throw Quit(); });
+        infra::EventDispatcher::Instance().Schedule([]()
+            { throw Quit(); });
         eventDispatcherThread.join();
     }
 
@@ -574,7 +576,7 @@ namespace application
                 services::GlobalTracer().Continue() << ")";
             }
         }
-        
+
         services::GlobalTracer().Trace();
     }
 
@@ -735,7 +737,7 @@ namespace application
                     services::GlobalTracer().Continue() << ".";
                 services::GlobalTracer().Continue() << part;
             }
-            
+
             services::GlobalTracer().Continue() << " was not found\n";
         }
     }

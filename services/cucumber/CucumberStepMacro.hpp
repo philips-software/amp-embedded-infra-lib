@@ -1,11 +1,11 @@
-#ifndef SERVICES_CUCUMBER_STEP_MACRO_HPP 
+#ifndef SERVICES_CUCUMBER_STEP_MACRO_HPP
 #define SERVICES_CUCUMBER_STEP_MACRO_HPP
 
-#include <initializer_list>
 #include "services/cucumber/CucumberStep.hpp"
 #include "services/cucumber/CucumberStepStorage.hpp"
+#include <initializer_list>
 
-#define CONCAT_(x, y) x ## y
+#define CONCAT_(x, y) x##y
 #define CONCAT(x, y) CONCAT_(x, y)
 
 #define STRINGIZE(x) STRINGIZE_(x)
@@ -64,30 +64,30 @@ namespace detail
     }
 }
 
-#define DEFINESTEP(NAME)                                                                                 \
-namespace                                                                                                \
-{                                                                                                        \
-    constexpr auto SOURCE_FILE = detail::Filename(__FILE__);                                             \
-    constexpr char SOURCE_LINE[] = STRINGIZE(__LINE__);                                                  \
-    constexpr auto SOURCE_LOCATION = detail::Concatenate(SOURCE_FILE.c, ":", SOURCE_LINE);               \
-                                                                                                         \
-    class CLASSNAME                                                                                      \
-        : public services::CucumberStepProgress                                                          \
-    {                                                                                                    \
-    public:                                                                                              \
-        CLASSNAME()                                                                                      \
-            : services::CucumberStepProgress(NAME, SOURCE_LOCATION.c)                                    \
-        {                                                                                                \
-            services::CucumberStepStorage::Instance().AddStep(*this);                                    \
-        }                                                                                                \
-                                                                                                         \
-    private:                                                                                             \
-        virtual void Execute() override;                                                                 \
-    };                                                                                                   \
-                                                                                                         \
-    static CLASSNAME VARNAME;                                                                            \
-}                                                                                                        \
-                                                                                                         \
-void CLASSNAME::Execute()
+#define DEFINESTEP(NAME)                                                                       \
+    namespace                                                                                  \
+    {                                                                                          \
+        constexpr auto SOURCE_FILE = detail::Filename(__FILE__);                               \
+        constexpr char SOURCE_LINE[] = STRINGIZE(__LINE__);                                    \
+        constexpr auto SOURCE_LOCATION = detail::Concatenate(SOURCE_FILE.c, ":", SOURCE_LINE); \
+                                                                                               \
+        class CLASSNAME                                                                        \
+            : public services::CucumberStepProgress                                            \
+        {                                                                                      \
+        public:                                                                                \
+            CLASSNAME()                                                                        \
+                : services::CucumberStepProgress(NAME, SOURCE_LOCATION.c)                      \
+            {                                                                                  \
+                services::CucumberStepStorage::Instance().AddStep(*this);                      \
+            }                                                                                  \
+                                                                                               \
+        private:                                                                               \
+            virtual void Execute() override;                                                   \
+        };                                                                                     \
+                                                                                               \
+        static CLASSNAME VARNAME;                                                              \
+    }                                                                                          \
+                                                                                               \
+    void CLASSNAME::Execute()
 
 #endif

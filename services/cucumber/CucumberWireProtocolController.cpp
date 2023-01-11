@@ -55,15 +55,17 @@ namespace services
     void CucumberWireProtocolController::HandleInvokeRequest(CucumberWireProtocolParser& parser)
     {
         CucumberStep& step = CucumberStepStorage::Instance().GetStep(parser.invokeId);
-        
+
         if (parser.invokeArguments.begin() == parser.invokeArguments.end() && step.HasStringArguments() || MatchStringArguments(parser.invokeId, parser.invokeArguments))
         {
-            invokeSuccess = [this]() {
+            invokeSuccess = [this]()
+            {
                 invokeError = nullptr;
                 InvokeSuccess();
             };
 
-            invokeError = [this](infra::BoundedConstString& reason) {
+            invokeError = [this](infra::BoundedConstString& reason)
+            {
                 invokeSuccess = nullptr;
                 InvokeError(reason);
             };

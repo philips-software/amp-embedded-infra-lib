@@ -101,7 +101,8 @@ public:
 
     MOCK_METHOD1(Invoke, void(infra::JsonArray& arguments));
 
-    virtual void Execute() override {}
+    virtual void Execute() override
+    {}
 };
 
 class CucumberWireProtocolServerTest

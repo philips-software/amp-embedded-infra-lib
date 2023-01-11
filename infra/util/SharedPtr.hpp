@@ -16,7 +16,9 @@ namespace infra
     template<class T>
     class WeakPtr;
 
-    extern const struct NoSharedFromThis {} noSharedFromThis;
+    extern const struct NoSharedFromThis
+    {
+    } noSharedFromThis;
 
     class SharedObjectDeleter
     {

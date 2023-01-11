@@ -1,5 +1,5 @@
-#include "infra/stream/ByteInputStream.hpp"
 #include "protobuf/echo/TracingEcho.hpp"
+#include "infra/stream/ByteInputStream.hpp"
 
 namespace services
 {
