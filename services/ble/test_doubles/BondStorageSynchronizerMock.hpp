@@ -1,7 +1,7 @@
-#ifndef SERVICES_BOND_STORAGE_MOCK_HPP
-#define SERVICES_BOND_STORAGE_MOCK_HPP
+#ifndef SERVICES_BOND_STORAGE_MOCK_SYNCHRONIZER_HPP
+#define SERVICES_BOND_STORAGE_MOCK_SYNCHRONIZER_HPP
 
-#include "services/ble/BondStorageManager.hpp"
+#include "services/ble/BondStorageSynchronizer.hpp"
 #include "gmock/gmock.h"
 
 namespace services
@@ -10,7 +10,7 @@ namespace services
         : public BondStorage
     {
     public:
-        MOCK_METHOD1(BondStorageManagerCreated, void(BondStorageManager& manager));
+        MOCK_METHOD1(BondStorageSynchronizerCreated, void(BondStorageSynchronizer& manager));
         MOCK_METHOD1(UpdateBondedDevice, void(hal::MacAddress address));
         MOCK_METHOD1(RemoveBond, void(hal::MacAddress address));
         MOCK_METHOD0(RemoveAllBonds, void());
@@ -20,8 +20,8 @@ namespace services
         MOCK_METHOD1(IterateBondedDevices, void(const infra::Function<void(hal::MacAddress)>& onAddress));
     };
 
-    class BondStorageManagerMock
-        : public BondStorageManager
+    class BondStorageSynchronizerMock
+        : public BondStorageSynchronizer
     {
     public:
         MOCK_METHOD1(UpdateBondedDevice, void(hal::MacAddress address));

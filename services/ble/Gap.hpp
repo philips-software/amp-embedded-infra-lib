@@ -54,6 +54,7 @@ namespace services
         enum class AdvertisementDataType : uint8_t
         {
             flags = 0x01u,
+            completeListOf128BitUuids = 0x07u,
             completeLocalName = 0x09u,
             publicTargetAddress = 0x17u,
             manufacturerSpecificData = 0xffu
@@ -79,6 +80,24 @@ namespace services
         virtual void SetScanResponseData(infra::ConstByteRange data) = 0;
         virtual void Advertise(AdvertisementType type, AdvertisementIntervalMultiplier multiplier) = 0;
         virtual void Standby() = 0;
+    };
+
+    class GapPeripheralDecorator
+        : public GapPeripheralObserver
+        , public GapPeripheral
+    {
+    public:
+        using GapPeripheralObserver::GapPeripheralObserver;
+
+        // Implementation of GapPeripheralObserver
+        virtual void StateUpdated(GapPeripheralState state) override;
+
+        // Implementation of GapPeripheral
+        virtual hal::MacAddress GetPublicAddress() const override;
+        virtual void SetAdvertisementData(infra::ConstByteRange data) override;
+        virtual void SetScanResponseData(infra::ConstByteRange data) override;
+        virtual void Advertise(AdvertisementType type, AdvertisementIntervalMultiplier multiplier) override;
+        virtual void Standby() override;
     };
 
     inline GapPeripheral::AdvertisementFlags operator|(GapPeripheral::AdvertisementFlags lhs, GapPeripheral::AdvertisementFlags rhs)

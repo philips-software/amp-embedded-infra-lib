@@ -31,5 +31,14 @@ endfunction()
 
 function(emil_clangformat_target target)
     get_target_property(target_sources ${target} SOURCES)
-    emil_clangformat_setup(${target} ${target_sources})
+
+    set(non_generated_target_sources)
+    foreach(source ${target_sources})
+        get_source_file_property(generated ${source} GENERATED)
+        if(NOT generated)
+            list(APPEND non_generated_target_sources ${source})
+        endif()
+    endforeach()
+
+    emil_clangformat_setup(${target} ${non_generated_target_sources})
 endfunction()

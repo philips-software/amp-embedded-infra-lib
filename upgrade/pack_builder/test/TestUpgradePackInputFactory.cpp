@@ -32,29 +32,29 @@ public:
 
 TEST_F(TestUpgradePackInputFactory, create_Input_for_Command_target)
 {
-    auto input = factory.CreateInput("cmd", "");
+    auto input = factory.CreateInput("cmd", "", infra::none);
     EXPECT_EQ("cmd", input->TargetName());
 }
 
 TEST_F(TestUpgradePackInputFactory, create_Input_for_Bin_target)
 {
-    auto input = factory.CreateInput("bin", "bin_file");
+    auto input = factory.CreateInput("bin", "bin_file", infra::none);
     EXPECT_EQ("bin", input->TargetName());
 }
 
 TEST_F(TestUpgradePackInputFactory, create_Input_for_Hex_target)
 {
-    auto input = factory.CreateInput("hex", "hex_file");
+    auto input = factory.CreateInput("hex", "hex_file", infra::none);
     EXPECT_EQ("hex", input->TargetName());
 }
 
 TEST_F(TestUpgradePackInputFactory, create_Input_for_Elf_target)
 {
-    auto input = factory.CreateInput("elf", "elf_file");
+    auto input = factory.CreateInput("elf", "elf_file", infra::none);
     EXPECT_EQ("elf", input->TargetName());
 }
 
 TEST_F(TestUpgradePackInputFactory, throws_for_unknown_target)
 {
-    EXPECT_THROW(factory.CreateInput("unknown", ""), application::UnknownTargetException);
+    EXPECT_THROW(factory.CreateInput("unknown", "", infra::none), application::UnknownTargetException);
 }

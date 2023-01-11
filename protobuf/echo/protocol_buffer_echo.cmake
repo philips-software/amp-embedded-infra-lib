@@ -53,7 +53,7 @@ function(protocol_buffer_echo_cpp target input)
     cmake_path(SET generated_dir_echo "generated/echo")
     cmake_path(ABSOLUTE_PATH generated_dir_echo BASE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} NORMALIZE OUTPUT_VARIABLE generated_dir_echo)
 
-    set(generated_files "${generated_dir_echo}/${source_base}.pb.cpp" "${generated_dir_echo}/${source_base}.pb.hpp" "${generated_dir_echo}/${source_base}.pb")
+    set(generated_files "${generated_dir_echo}/${source_base}.pb.cpp" "${generated_dir_echo}/${source_base}.pb.hpp" "${generated_dir_echo}/Tracing${source_base}.pb.cpp" "${generated_dir_echo}/Tracing${source_base}.pb.hpp" "${generated_dir_echo}/${source_base}.pb")
 
     add_custom_command(
         OUTPUT ${generated_files}

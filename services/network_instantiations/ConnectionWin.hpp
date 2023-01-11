@@ -109,7 +109,6 @@ namespace services
 
     class ConnectorWin
         : public infra::IntrusiveList<ConnectorWin>::NodeType
-        , public infra::EnableSharedFromThis<ConnectorWin>
     {
     public:
         ConnectorWin(EventDispatcherWithNetwork& network, services::ClientConnectionObserverFactory& factory);

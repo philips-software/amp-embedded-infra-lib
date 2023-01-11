@@ -252,7 +252,8 @@ int main(int argc, char* argv[], const char* env[])
             }
 
             google::protobuf::FileDescriptorSet descriptorSet;
-            if (!descriptorSet.ParseFromIstream(&stream)) {
+            if (!descriptorSet.ParseFromIstream(&stream))
+            {
                 std::cerr << argv[0] << ": Could not parse contents from " << path << std::endl;
                 return 1;
             }

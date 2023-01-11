@@ -1,7 +1,6 @@
 #ifndef SERVICES_CUCUMBER_STEP_MACRO_HPP
 #define SERVICES_CUCUMBER_STEP_MACRO_HPP
 
-#include "services/cucumber/CucumberContext.hpp"
 #include "services/cucumber/CucumberStep.hpp"
 #include "services/cucumber/CucumberStepStorage.hpp"
 #include <initializer_list>
@@ -73,34 +72,17 @@ namespace detail
         constexpr auto SOURCE_LOCATION = detail::Concatenate(SOURCE_FILE.c, ":", SOURCE_LINE); \
                                                                                                \
         class CLASSNAME                                                                        \
-            : public services::CucumberStep                                                    \
+            : public services::CucumberStepProgress                                            \
         {                                                                                      \
         public:                                                                                \
             CLASSNAME()                                                                        \
-                : services::CucumberStep(NAME, SOURCE_LOCATION.c)                              \
+                : services::CucumberStepProgress(NAME, SOURCE_LOCATION.c)                      \
             {                                                                                  \
                 services::CucumberStepStorage::Instance().AddStep(*this);                      \
             }                                                                                  \
                                                                                                \
-        public:                                                                                \
-            virtual void Invoke(infra::JsonArray& arguments) override                          \
-            {                                                                                  \
-                invokeArguments = &arguments;                                                  \
-                Execute();                                                                     \
-            }                                                                                  \
-                                                                                               \
         private:                                                                               \
-            void Execute();                                                                    \
-                                                                                               \
-            void Success()                                                                     \
-            {                                                                                  \
-                Context().onSuccess();                                                         \
-            }                                                                                  \
-                                                                                               \
-            void Error(infra::BoundedConstString failReason)                                   \
-            {                                                                                  \
-                Context().onFailure(failReason);                                               \
-            }                                                                                  \
+            virtual void Execute() override;                                                   \
         };                                                                                     \
                                                                                                \
         static CLASSNAME VARNAME;                                                              \

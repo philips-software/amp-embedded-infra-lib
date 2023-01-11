@@ -106,7 +106,6 @@ namespace services
 
     class ConnectorBsd
         : public infra::IntrusiveList<ConnectorBsd>::NodeType
-        , public infra::EnableSharedFromThis<ConnectorBsd>
     {
     public:
         ConnectorBsd(EventDispatcherWithNetwork& network, services::ClientConnectionObserverFactory& factory);
