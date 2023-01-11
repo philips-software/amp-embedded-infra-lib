@@ -63,7 +63,7 @@ namespace services
             {};
 
         public:
-            MqttFormatter(infra::DataOutputStream stream);
+            explicit MqttFormatter(infra::DataOutputStream stream);
 
             void MessageConnect(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password, infra::Duration keepAlive);
             static std::size_t MessageSizeConnect(infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password);
@@ -92,7 +92,7 @@ namespace services
         class MqttParser
         {
         public:
-            MqttParser(infra::DataInputStream stream);
+            explicit MqttParser(infra::DataInputStream stream);
 
             PacketType GetPacketType() const;
             size_t GetPacketSize() const;
@@ -119,7 +119,7 @@ namespace services
         class StateBase
         {
         public:
-            StateBase(MqttClientImpl& clientConnection);
+            explicit StateBase(MqttClientImpl& clientConnection);
             StateBase(const StateBase& other) = delete;
             StateBase& operator=(const StateBase& other) = delete;
             virtual ~StateBase() = default;
@@ -168,7 +168,7 @@ namespace services
             : public StateBase
         {
         public:
-            StateConnected(MqttClientImpl& clientConnection);
+            explicit StateConnected(MqttClientImpl& clientConnection);
 
             virtual void Detaching() override;
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
@@ -245,7 +245,7 @@ namespace services
                 : public OperationBase
             {
             public:
-                OperationPubAck(StateConnected& connectedState);
+                explicit OperationPubAck(StateConnected& connectedState);
 
                 virtual void SendStreamAvailable(infra::StreamWriter& writer) override;
                 virtual std::size_t MessageSize(const MqttClientObserver& message) override;
@@ -258,7 +258,7 @@ namespace services
                 : public OperationBase
             {
             public:
-                OperationPing(StateConnected& connectedState);
+                explicit OperationPing(StateConnected& connectedState);
 
                 virtual void SendStreamAvailable(infra::StreamWriter& writer) override;
                 virtual std::size_t MessageSize(const MqttClientObserver& message) override;

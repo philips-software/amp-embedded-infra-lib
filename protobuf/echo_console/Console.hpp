@@ -5,8 +5,7 @@
 #include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/syntax/ProtoParser.hpp"
 #include "protobuf/protoc_echo_plugin/EchoObjects.hpp"
-#include "services/network_win/ConnectionWin.hpp"
-#include "services/network_win/EventDispatcherWithNetwork.hpp"
+#include "services/network_instantiations/NetworkAdapter.hpp"
 #include <thread>
 
 namespace application
@@ -16,7 +15,7 @@ namespace application
         class End
         {
         public:
-            End(std::size_t index);
+            explicit End(std::size_t index);
 
             bool operator==(const End& other) const;
             bool operator!=(const End& other) const;
@@ -27,7 +26,7 @@ namespace application
         class Error
         {
         public:
-            Error(std::size_t index);
+            explicit Error(std::size_t index);
 
             bool operator==(const Error& other) const;
             bool operator!=(const Error& other) const;
@@ -38,7 +37,7 @@ namespace application
         class Comma
         {
         public:
-            Comma(std::size_t index);
+            explicit Comma(std::size_t index);
 
             bool operator==(const Comma& other) const;
             bool operator!=(const Comma& other) const;
@@ -49,7 +48,7 @@ namespace application
         class Dot
         {
         public:
-            Dot(std::size_t index);
+            explicit Dot(std::size_t index);
 
             bool operator==(const Dot& other) const;
             bool operator!=(const Dot& other) const;
@@ -104,7 +103,7 @@ namespace application
         class String
         {
         public:
-            explicit String(std::size_t index, const std::string& value);
+            String(std::size_t index, const std::string& value);
 
             bool operator==(const String& other) const;
             bool operator!=(const String& other) const;
@@ -116,7 +115,7 @@ namespace application
         class Integer
         {
         public:
-            explicit Integer(std::size_t index, int32_t value);
+            Integer(std::size_t index, int32_t value);
 
             bool operator==(const Integer& other) const;
             bool operator!=(const Integer& other) const;
@@ -128,7 +127,7 @@ namespace application
         class Boolean
         {
         public:
-            explicit Boolean(std::size_t index, bool value);
+            Boolean(std::size_t index, bool value);
 
             bool operator==(const Boolean& other) const;
             bool operator!=(const Boolean& other) const;
@@ -176,13 +175,15 @@ namespace application
         : public infra::Subject<ConsoleObserver>
     {
     public:
-        Console(EchoRoot& root);
+        explicit Console(EchoRoot& root);
 
         void Run();
         services::ConnectionFactory& ConnectionFactory();
+        services::NameResolver& NameResolver();
         void DataReceived(infra::StreamReader& reader);
 
-        struct IncompletePacket {};
+        struct IncompletePacket
+        {};
 
     private:
         struct MessageTokens
@@ -195,7 +196,7 @@ namespace application
         class MethodInvocation
         {
         public:
-            MethodInvocation(const std::string& line);
+            explicit MethodInvocation(const std::string& line);
 
             void EncodeParameters(std::shared_ptr<const EchoMessage> message, std::size_t lineSize, infra::ProtoFormatter& formatter);
 
@@ -221,17 +222,17 @@ namespace application
         void MethodReceived(const EchoService& service, const EchoMethod& method, infra::ProtoParser&& parser);
         void PrintMessage(const EchoMessage& message, infra::ProtoParser& parser);
         void PrintField(infra::Variant<uint32_t, uint64_t, infra::ProtoLengthDelimited>& fieldData, const EchoField& field, infra::ProtoParser& parser);
-        void MethodNotFound(const EchoService& service, uint32_t methodId);
-        void ServiceNotFound(uint32_t serviceId, uint32_t methodId);
+        void MethodNotFound(const EchoService& service, uint32_t methodId) const;
+        void ServiceNotFound(uint32_t serviceId, uint32_t methodId) const;
         void RunEventDispatcher();
         void ListInterfaces();
         void ListFields(const EchoMessage& message);
-        void Process(const std::string& line);
-        std::pair<std::shared_ptr<const EchoService>, const EchoMethod&> SearchMethod(MethodInvocation& methodInvocation);
+        void Process(const std::string& line) const;
+        std::pair<std::shared_ptr<const EchoService>, const EchoMethod&> SearchMethod(MethodInvocation& methodInvocation) const;
 
     private:
         EchoRoot& root;
-        services::EventDispatcherWithNetwork eventDispatcherWithNetwork;
+        main_::NetworkAdapter network;
         hal::TimerServiceGeneric timerService{ infra::systemTimerServiceId };
         std::thread eventDispatcherThread;
         bool quit = false;

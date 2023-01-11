@@ -25,12 +25,12 @@ namespace infra
 
     std::size_t StdVectorOutputStreamWriter::GetProcessedBytesSince(std::size_t marker) const
     {
-        return static_cast<std::size_t>(vector.size() - marker);
+        return vector.size() - marker;
     }
 
     infra::ByteRange StdVectorOutputStreamWriter::SaveState(std::size_t marker)
     {
-        savedState.push_back(std::vector<uint8_t>(vector.begin() + marker, vector.end()));
+        savedState.emplace_back(vector.begin() + marker, vector.end());
 
         vector.erase(vector.begin() + marker, vector.end());
         vector.insert(vector.end(), saveSize, 0);

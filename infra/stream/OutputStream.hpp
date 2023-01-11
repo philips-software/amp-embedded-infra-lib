@@ -190,7 +190,7 @@ namespace infra
     {
     public:
         template<class... Args>
-        WithWriter(Args&&... args);
+        explicit WithWriter(Args&&... args);
         template<class Storage, class... Args>
         WithWriter(Storage&& storage, SoftFail, Args&&... args);
         template<class Storage, class... Args>
@@ -209,7 +209,7 @@ namespace infra
         : public DataOutputStream
     {
     public:
-        WithErrorPolicy(StreamWriter& writer);
+        explicit WithErrorPolicy(StreamWriter& writer);
         WithErrorPolicy(StreamWriter& writer, SoftFail);
         WithErrorPolicy(StreamWriter& writer, NoFail);
         WithErrorPolicy(const WithErrorPolicy& other);
@@ -226,7 +226,7 @@ namespace infra
     {
     public:
         template<class... Args>
-        WithWriter(Args&&... args);
+        explicit WithWriter(Args&&... args);
         template<class Storage, class... Args>
         WithWriter(Storage&& storage, SoftFail, Args&&... args);
         template<class Storage, class... Args>
@@ -245,7 +245,7 @@ namespace infra
         : public TextOutputStream
     {
     public:
-        WithErrorPolicy(StreamWriter& writer);
+        explicit WithErrorPolicy(StreamWriter& writer);
         WithErrorPolicy(StreamWriter& writer, SoftFail);
         WithErrorPolicy(StreamWriter& writer, NoFail);
         WithErrorPolicy(const WithErrorPolicy& other);

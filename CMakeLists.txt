@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-project(emil LANGUAGES C CXX VERSION 2.0.0)
+project(emil LANGUAGES C CXX VERSION 2.1.0) # x-release-please-version
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
@@ -15,7 +15,7 @@ include(emil_test_helpers)
 include(emil_version_generator)
 include(emil_xsltproc)
 include(FetchContent)
-include(GNUInstallDirs)  # included to supply proper defaults to install(...) commands
+include(GNUInstallDirs) # included to supply proper defaults to install(...) commands
 
 if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set(EMIL_STANDALONE On)
@@ -169,4 +169,20 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
         "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}ConfigVersion.cmake"
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
     )
+
+    set(CPACK_GENERATOR "ZIP")
+    set(CPACK_SOURCE_IGNORE_FILES ".vs/;.git/;Build/")
+    set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
+    set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+    set(CPACK_PACKAGE_VENDOR "Koninklijke Philips N.V")
+    set(CPACK_PACKAGE_DESCRIPTION "${PROJECT_DESCRIPTION}")
+    set(CPACK_DEBIAN_PACKAGE_NAME "${CPACK_PACKAGE_NAME}")
+    set(CPACK_RPM_PACKAGE_NAME "${CPACK_PACKAGE_NAME}")
+    set(CPACK_PACKAGE_HOMEPAGE_URL "${PROJECT_HOMEPAGE_URL}")
+    set(CPACK_PACKAGE_MAINTAINER "${CPACK_PACKAGE_VENDOR}")
+    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${CPACK_PACKAGE_VENDOR}")
+    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md")
+    set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+
+    include(CPack)
 endif()

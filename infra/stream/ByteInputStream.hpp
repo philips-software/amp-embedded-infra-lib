@@ -42,7 +42,7 @@ namespace infra
         template<std::size_t Max>
         using WithStorage = infra::WithStorage<DataInputStream::WithReader<ByteInputStreamReader>, std::array<uint8_t, Max>>;
 
-        ByteInputStream(ConstByteRange storage);
+        explicit ByteInputStream(ConstByteRange storage);
         ByteInputStream(ConstByteRange storage, const SoftFail&);
         ByteInputStream(ConstByteRange storage, const NoFail&);
     };

@@ -15,18 +15,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
         with:
           fetch-depth: 0
           persist-credentials: false
       - name: Build Antora Site
-        uses: philips-forks/antora-site-action@0c58ca8552165764e9d1d0c2216403cd6c2520b9
+        uses: philips-forks/antora-site-action@ef15f74e055960099ec1bf58f4f8148d1f07a0c2
         with:
           antora_playbook: antora-playbook.yml
           antora_generator: "antora-site-generator-lunr"
           antora_docsearch_enabled: "true"
       - name: Store Antora Site
-        uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
         with:
           name: antora
           path: "${{ github.workspace }}/build/${{ env.SITE_DIR }}"
@@ -39,14 +39,14 @@ jobs:
     name: Publish to GitHub Pages
     steps:
       - name: Checkout
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
       - name: Retrieve Antora Site
-        uses: actions/download-artifact@9782bd6a9848b53b110e712e20e42d89988822b7
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
         with:
           name: antora
           path: "${{ github.workspace }}/${{ env.SITE_DIR }}"
       - name: Publish to GitHub Pages
-        uses: peaceiris/actions-gh-pages@de7ea6f8efb354206b205ef54722213d99067935
+        uses: peaceiris/actions-gh-pages@64b46b4226a4a12da2239ba3ea5aa73e3163c75b # v3.9.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ${{ env.SITE_DIR }}

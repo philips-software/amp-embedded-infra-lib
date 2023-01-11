@@ -84,7 +84,7 @@ namespace services
             : public infra::StreamReaderWithRewinding
         {
         public:
-            StreamReaderLwIp(ConnectionLwIp& connection);
+            explicit StreamReaderLwIp(ConnectionLwIp& connection);
 
             void ConsumeRead();
 

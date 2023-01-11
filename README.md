@@ -1,8 +1,8 @@
 <div align="center">
 
-# EmbeddedInfraLib (EmIL)
+# amp-embedded-infra-lib (EmIL)
 
-[![Continuous Integration](https://github.com/philips-software/embeddedinfralib/workflows/Continuous%20Integration/badge.svg)](https://github.com/philips-software/embeddedinfralib/actions) [![Linting & Formatting](https://github.com/philips-software/amp-embedded-infra-lib/actions/workflows/linting-formatting.yml/badge.svg)](https://github.com/philips-software/amp-embedded-infra-lib/actions/workflows/linting-formatting.yml) [![Static Analysis](https://github.com/philips-software/amp-embedded-infra-lib/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/philips-software/amp-embedded-infra-lib/actions/workflows/static-analysis.yml)
+[![Continuous Integration](https://github.com/philips-software/amp-embedded-infra-lib/workflows/Continuous%20Integration/badge.svg)](https://github.com/philips-software/amp-embedded-infra-lib/actions) [![Linting & Formatting](https://github.com/philips-software/amp-embedded-infra-lib/actions/workflows/linting-formatting.yml/badge.svg)](https://github.com/philips-software/amp-embedded-infra-lib/actions/workflows/linting-formatting.yml) [![Static Analysis](https://github.com/philips-software/amp-embedded-infra-lib/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/philips-software/amp-embedded-infra-lib/actions/workflows/static-analysis.yml)
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=philips-software_embeddedinfralib&metric=alert_status)](https://sonarcloud.io/dashboard?id=philips-software_embeddedinfralib) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=philips-software_embeddedinfralib&metric=coverage)](https://sonarcloud.io/dashboard?id=philips-software_embeddedinfralib) [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=philips-software_embeddedinfralib&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=philips-software_embeddedinfralib)
 
@@ -10,7 +10,7 @@
 
 </div>
 
-**Description**: EmbeddedInfraLib is a set of C++ libraries and headers that provide heap-less, STL like, infrastructure for embedded software development.
+**Description**: amp-embedded-infra-lib is a set of C++ libraries and headers that provide heap-less, STL like, infrastructure for embedded software development.
 
 ## Dependencies
 
@@ -50,8 +50,12 @@ Documentation is available on [philips-software.github.io/amp-embedded-infra-lib
 
 ## Contributing
 
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
+
+amp-embedded-infra-lib uses semantic versioning and conventional commits.
+
 Please refer to our [Contributing](CONTRIBUTING.md) guide when you want to contribute to this project.
 
 ## License
 
-EmbeddedInfraLib is licenced under the [MIT](https://choosealicense.com/licenses/mit/) license. See [LICENSE file](LICENSE.md).
+amp-embedded-infra-lib is licenced under the [MIT](https://choosealicense.com/licenses/mit/) license. See [LICENSE file](LICENSE.md).

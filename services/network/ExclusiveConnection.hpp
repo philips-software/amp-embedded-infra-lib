@@ -27,7 +27,7 @@ namespace services
             , public ConnectionObserver
         {
         public:
-            ExclusiveConnection(ExclusiveConnectionFactoryMutex& mutex);
+            explicit ExclusiveConnection(ExclusiveConnectionFactoryMutex& mutex);
 
             // Implementation of Connection
             virtual void RequestSendStream(std::size_t sendSize) override;

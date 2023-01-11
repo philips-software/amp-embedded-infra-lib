@@ -6,12 +6,15 @@
 #include <winsock2.h>
 #include <windows.h>
 #include <setupapi.h>
+#include <windows.h>
+#include <winsock2.h>
 
 namespace hal
 {
-	class SynchronousUartWindows : public SynchronousSerialCommunication
-	{
-	public:
+    class SynchronousUartWindows
+        : public SynchronousSerialCommunication
+    {
+    public:
         struct UartWindowsConfig
         {
             enum class RtsFlowControl
@@ -24,7 +27,8 @@ namespace hal
 
             UartWindowsConfig()
                 : baudRate(CBR_115200)
-                , flowControlRts(RtsFlowControl::RtsControlDisable) {}
+                , flowControlRts(RtsFlowControl::RtsControlDisable)
+            {}
 
             UartWindowsConfig(uint32_t newbaudRate, RtsFlowControl newFlowControlRts)
                 : baudRate(newbaudRate)
@@ -45,9 +49,8 @@ namespace hal
         void Open(const std::string& name, UartWindowsConfig config);
 
     private:
-
         void* handle = nullptr;
-	};
+    };
 }
 
 #endif

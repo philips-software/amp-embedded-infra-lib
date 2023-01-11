@@ -83,7 +83,7 @@ namespace services
             infra::CreatorBase<services::ConnectionObserver, void()>& connectionCreator;
         };
 
-        WebSocketObserverFactoryImpl(const Creators& creators);
+        explicit WebSocketObserverFactoryImpl(const Creators& creators);
 
         virtual void CreateWebSocketObserver(services::Connection& connection) override;
         virtual void CancelCreation() override;

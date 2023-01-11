@@ -22,7 +22,7 @@ namespace application
     class EnumGenerator
     {
     public:
-        EnumGenerator(const std::shared_ptr<const EchoEnum>& enum_);
+        explicit EnumGenerator(const std::shared_ptr<const EchoEnum>& enum_);
         EnumGenerator(const EnumGenerator& other) = delete;
         EnumGenerator& operator=(const EnumGenerator& other) = delete;
         ~EnumGenerator() = default;
@@ -36,7 +36,7 @@ namespace application
     class MessageEnumGenerator
     {
     public:
-        MessageEnumGenerator(const std::shared_ptr<const EchoMessage>& message);
+        explicit MessageEnumGenerator(const std::shared_ptr<const EchoMessage>& message);
         MessageEnumGenerator(const MessageEnumGenerator& other) = delete;
         MessageEnumGenerator& operator=(const MessageEnumGenerator& other) = delete;
         ~MessageEnumGenerator() = default;

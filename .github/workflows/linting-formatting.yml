@@ -22,10 +22,10 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
         with:
           persist-credentials: false
-      - uses: DoozyX/clang-format-lint-action@2ec1a72dfb593e52255693c9039e6d94984187dc
+      - uses: DoozyX/clang-format-lint-action@c3b2c943e924028b93a707a5b1b017976ab8d50c
         with:
           clangFormatVersion: 14
           inplace: true
@@ -43,20 +43,20 @@ jobs:
       pull-requests: write
       security-events: write
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: oxsecurity/megalinter@9092dbeb8bc5fd5f2c8e0c2e467252687ec2ec19
+      - uses: oxsecurity/megalinter@e7a797f9d8354b35d6580620b2af79efa0748ddf
         env:
           APPLY_FIXES: all
           VALIDATE_ALL_CODEBASE: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: github/codeql-action/upload-sarif@c3b6fce4ee2ca25bc1066aa3bf73962fda0e8898
+      - uses: github/codeql-action/upload-sarif@959cbb7472c4d4ad70cdfe6f4976053fe48ab394
         if: ${{ success() }} || ${{ failure() }}
         with:
           sarif_file: megalinter-reports/megalinter-report.sarif
-      - uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb
+      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
         if: ${{ success() }} || ${{ failure() }}
         with:
           name: linter

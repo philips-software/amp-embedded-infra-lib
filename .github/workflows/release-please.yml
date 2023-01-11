@@ -1,0 +1,66 @@
+---
+name: Create Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [modern-cmake]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  release_please:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      upload_url: ${{ steps.release.outputs.upload_url }}
+    steps:
+      - uses: philips-software/app-token-action@a37926571e4cec6f219e06727136efdd073d8657 # v1.1.2
+        id: token
+        with:
+          app_id: ${{ secrets.FOREST_RELEASER_APP_ID }}
+          app_base64_private_key: ${{ secrets.FOREST_RELEASER_APP_PRIVATE_KEY_BASE64 }}
+          auth_type: installation
+      - uses: google-github-actions/release-please-action@5c07f8be172b1f6e90f9c35baf8184461b91b85f # v3.7.1
+        id: release
+        with:
+          command: manifest
+          #token: ${{ steps.token.outputs.token }}
+          token: ${{ secrets.AUTOMATIC_RELEASE_TOKEN }}
+  build_upload_packages:
+    name: Build & Upload Packages
+    needs: release_please
+    if: ${{ needs.release_please.outputs.releases_created }}
+    permissions:
+      contents: write
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+        with:
+          persist-credentials: false
+      - uses: hendrikmuhs/ccache-action@9e5eadb5f2bf73131c6453d8b22492ae92b96923 # v1.2.6
+        with:
+          key: ${{ github.job }}-${{ matrix.os }}
+          variant: sccache
+      - uses: lukka/run-cmake@71d20a810daaf5340669b8cce5c9fe583780e147
+        with:
+          configurePreset: "Package"
+          buildPreset: "Package"
+          configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
+      - uses: nanoufo/action-upload-artifacts-and-release-assets@1adad6c4773f492fd802907560790a7b7b1ac457 # v1.6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path: |
+            Build/**/emil-*.zip
+          upload-release-files: true
+          release-upload-url: ${{ needs.release_please.outputs.upload_url }}

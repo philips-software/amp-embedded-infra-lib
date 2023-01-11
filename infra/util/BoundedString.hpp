@@ -443,7 +443,7 @@ namespace infra
 
     template<class T>
     BoundedStringBase<T>::BoundedStringBase(std::string& s)
-        : range(const_cast<char*>(s.data()), const_cast<char*>(s.data()) + s.size())
+        : range(s.data(), s.data() + s.size())
         , length(s.size())
     {}
 

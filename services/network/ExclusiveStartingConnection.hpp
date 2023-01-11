@@ -17,7 +17,7 @@ namespace services
             : public ConnectionWithHostnameDecorator
         {
         public:
-            ExclusiveStartingConnection(ExclusiveStartingConnectionFactoryMutex& mutex);
+            explicit ExclusiveStartingConnection(ExclusiveStartingConnectionFactoryMutex& mutex);
             ~ExclusiveStartingConnection();
 
             void ResetStarting();
@@ -30,7 +30,7 @@ namespace services
             : public ConnectionWithHostnameDecorator
         {
         public:
-            ExclusiveStartingConnectionRelease(ExclusiveStartingConnectionFactoryMutex& mutex);
+            explicit ExclusiveStartingConnectionRelease(ExclusiveStartingConnectionFactoryMutex& mutex);
             ~ExclusiveStartingConnectionRelease();
 
             // Implementation of ConnectionObserver
@@ -52,7 +52,7 @@ namespace services
         template<std::size_t MaxConnections>
         using WithMaxConnections = infra::WithStorage<ExclusiveStartingConnectionFactoryMutex, infra::SharedObjectAllocatorFixedSize<ExclusiveStartingConnection, void(ExclusiveStartingConnectionFactoryMutex& mutex)>::WithStorage<MaxConnections>>;
 
-        ExclusiveStartingConnectionFactoryMutex(infra::SharedObjectAllocator<ExclusiveStartingConnection, void(ExclusiveStartingConnectionFactoryMutex& mutex)>& connections);
+        explicit ExclusiveStartingConnectionFactoryMutex(infra::SharedObjectAllocator<ExclusiveStartingConnection, void(ExclusiveStartingConnectionFactoryMutex& mutex)>& connections);
 
         void Stop(const infra::Function<void()>& onDone);
 

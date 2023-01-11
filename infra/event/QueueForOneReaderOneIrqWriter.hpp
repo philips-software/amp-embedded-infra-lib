@@ -57,7 +57,7 @@ namespace infra
         : public StreamReaderWithRewinding
     {
     public:
-        StreamReader(QueueForOneReaderOneIrqWriter<T>& queue);
+        explicit StreamReader(QueueForOneReaderOneIrqWriter<T>& queue);
 
         void Commit(); // Invalidates save markers, rewinding is not possible to points before Commit()
 

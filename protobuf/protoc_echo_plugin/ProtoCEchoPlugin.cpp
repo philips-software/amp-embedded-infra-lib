@@ -14,7 +14,7 @@ namespace application
             : public EchoFieldVisitor
         {
         public:
-            StorageTypeVisitor(std::string& result)
+            explicit StorageTypeVisitor(std::string& result)
                 : result(result)
             {}
 

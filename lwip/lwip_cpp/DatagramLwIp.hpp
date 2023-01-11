@@ -16,7 +16,7 @@ namespace services
         , public infra::EnableSharedFromThis<DatagramExchangeLwIP>
     {
     public:
-        DatagramExchangeLwIP(DatagramExchangeObserver& observer);
+        explicit DatagramExchangeLwIP(DatagramExchangeObserver& observer);
         ~DatagramExchangeLwIP();
 
         void Listen(uint16_t port, IPVersions versions);
@@ -39,7 +39,7 @@ namespace services
             : public infra::StreamReaderWithRewinding
         {
         public:
-            UdpReader(pbuf* buffer);
+            explicit UdpReader(pbuf* buffer);
             ~UdpReader();
 
             virtual void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
@@ -86,7 +86,7 @@ namespace services
             : public StateBase
         {
         public:
-            StateIdle(DatagramExchangeLwIP& datagramExchange);
+            explicit StateIdle(DatagramExchangeLwIP& datagramExchange);
 
             virtual void RequestSendStream(std::size_t sendSize) override;
             virtual void RequestSendStream(std::size_t sendSize, UdpSocket remote) override;
