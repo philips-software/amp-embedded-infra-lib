@@ -59,8 +59,8 @@ namespace services
         infra::ByteInputStream stream(range, infra::noFail);
         infra::StreamErrorPolicy formatErrorPolicy(infra::softFail);
         infra::ProtoParser parser(stream, formatErrorPolicy);
-        uint32_t serviceId = static_cast<uint32_t>(parser.GetVarInt());
-        infra::ProtoParser::Field message = parser.GetField();
+        auto serviceId = static_cast<uint32_t>(parser.GetVarInt());
+        auto message = parser.GetField();
         if (stream.Failed() || formatErrorPolicy.Failed() || !message.first.Is<infra::ProtoLengthDelimited>())
         {
             tracer.Trace() << "> Malformed message";

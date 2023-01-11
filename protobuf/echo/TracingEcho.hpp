@@ -14,7 +14,7 @@ namespace services
         : public infra::IntrusiveForwardList<ServiceTracer>::NodeType
     {
     public:
-        ServiceTracer(uint32_t serviceId);
+        explicit ServiceTracer(uint32_t serviceId);
 
         uint32_t ServiceId() const;
         virtual void TraceMethod(uint32_t methodId, infra::ProtoLengthDelimited& contents, services::Tracer& tracer) const = 0;

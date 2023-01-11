@@ -16,9 +16,10 @@ namespace infra
     template<class T>
     class WeakPtr;
 
-    extern const struct NoSharedFromThis
-    {
-    } noSharedFromThis;
+    // clang-format off
+    extern const struct NoSharedFromThis {} noSharedFromThis;
+
+    // clang-format on
 
     class SharedObjectDeleter
     {
