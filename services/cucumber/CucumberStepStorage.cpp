@@ -70,7 +70,7 @@ namespace services
         return instance;
     }
 
-    bool CucumberStepStorage::MatchesStepName(CucumberStep& step, const infra::BoundedString& nameToMatch)
+    bool CucumberStepStorage::MatchesStepName(CucumberStep& step, infra::BoundedConstString nameToMatch)
     {
         std::size_t sizeOffset = 0;
         auto stepName = step.StepName();
@@ -109,7 +109,7 @@ namespace services
         return stepName.size() + sizeOffset == nameToMatch.size();
     }
 
-    services::CucumberStepStorage::Match CucumberStepStorage::MatchStep(const infra::BoundedString& nameToMatch)
+    services::CucumberStepStorage::Match CucumberStepStorage::MatchStep(infra::BoundedConstString nameToMatch)
     {
         Match matchResult{};
         uint8_t nrStepMatches = 0;
