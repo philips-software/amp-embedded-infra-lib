@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED On)
 set_directory_properties(PROPERTY USE_FOLDERS On)
 
 include(CMakePackageConfigHelpers)
+include(emil_antora)
 include(emil_clang_tools)
 include(emil_docker_tools)
 include(emil_test_helpers)
