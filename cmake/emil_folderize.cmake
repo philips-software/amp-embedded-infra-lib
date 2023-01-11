@@ -1,6 +1,6 @@
 # Three helper functions are introduced, the main helper function is folderize_all_targets()
 # Using this function, all targets which have a name of the format package.target have their
-# FOLDER property set to package, so that in Visual Studio those targets are combined into folders.
+# FOLDER property set to package, so that in supported IDEs those targets are combined into folders.
 
 function(get_subdirectories foundDirectories topDir)
     set(found)
