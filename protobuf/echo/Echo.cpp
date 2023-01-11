@@ -184,7 +184,7 @@ namespace services
         services.erase(service);
     }
 
-    void EchoOnStreams::ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents)
+    void EchoOnStreams::ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, infra::StreamReaderWithRewinding& reader)
     {
         for (auto& service : services)
             if (service.ServiceId() == serviceId)
@@ -215,8 +215,9 @@ namespace services
         return serviceBusy != infra::none;
     }
 
-    bool EchoOnStreams::ProcessMessage(infra::DataInputStream& stream)
+    bool EchoOnStreams::ProcessMessage(infra::StreamReaderWithRewinding& reader)
     {
+        infra::DataInputStream::WithErrorPolicy stream(reader, infra::softFail);
         infra::StreamErrorPolicy formatErrorPolicy(infra::softFail);
         infra::ProtoParser parser(stream, formatErrorPolicy);
         uint32_t serviceId = static_cast<uint32_t>(parser.GetVarInt());
@@ -228,7 +229,7 @@ namespace services
             errorPolicy.MessageFormatError();
         else
         {
-            ExecuteMethod(serviceId, message.second, message.first.Get<infra::ProtoLengthDelimited>());
+            ExecuteMethod(serviceId, message.second, message.first.Get<infra::ProtoLengthDelimited>(), reader);
 
             if (stream.Failed() || formatErrorPolicy.Failed())
                 errorPolicy.MessageFormatError();
@@ -246,10 +247,9 @@ namespace services
     {
         while (!ServiceBusy())
         {
-            infra::SharedPtr<infra::StreamReader> reader = ConnectionObserver::Subject().ReceiveStream();
-            infra::DataInputStream::WithErrorPolicy stream(*reader, infra::softFail);
+            infra::SharedPtr<infra::StreamReaderWithRewinding> reader = ConnectionObserver::Subject().ReceiveStream();
 
-            if (!ProcessMessage(stream))
+            if (!ProcessMessage(*reader))
                 break;
 
             if (!ServiceBusy()) // The message was not executed when ServiceBusy() is true, so don't ack the received data
@@ -302,8 +302,7 @@ namespace services
 
     void EchoOnMessageCommunication::ProcessMessage()
     {
-        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::softFail);
-        if (!EchoOnStreams::ProcessMessage(stream))
+        if (!EchoOnStreams::ProcessMessage(*reader))
             errorPolicy.MessageFormatError();
     }
 }

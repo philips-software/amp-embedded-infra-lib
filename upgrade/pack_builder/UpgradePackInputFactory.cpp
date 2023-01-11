@@ -13,7 +13,7 @@ namespace application
         , imageSecurity(imageSecurity)
     {}
 
-    std::unique_ptr<Input> UpgradePackInputFactory::CreateInput(const std::string& targetName, const std::string& fileName)
+    std::unique_ptr<Input> UpgradePackInputFactory::CreateInput(const std::string& targetName, const std::string& fileName, infra::Optional<uint32_t> address)
     {
         if (std::any_of(targets.CmdTargets().cbegin(), targets.CmdTargets().cend(), [targetName](const auto& string)
                 { return string == targetName; }))
@@ -29,7 +29,7 @@ namespace application
 
         for (const auto& [name, offset] : targets.BinTargets())
             if (name == targetName)
-                return std::make_unique<InputBinary>(targetName, fileName, offset, fileSystem, imageSecurity);
+                return std::make_unique<InputBinary>(targetName, fileName, (address) ? *address : offset, fileSystem, imageSecurity);
 
         throw UnknownTargetException(targetName);
     }

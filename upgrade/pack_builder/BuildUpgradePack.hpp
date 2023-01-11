@@ -10,7 +10,7 @@
 
 namespace application
 {
-    using TargetAndFiles = std::vector<std::pair<std::string, std::string>>;
+    using TargetAndFiles = std::vector<std::tuple<std::string, std::string, infra::Optional<uint32_t>>>;
     using BuildOptions = std::vector<std::pair<std::string, std::string>>;
 
     struct DefaultKeyMaterial

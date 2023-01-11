@@ -76,8 +76,8 @@ namespace application
     {
         std::vector<std::unique_ptr<application::Input>> inputs;
 
-        for (const auto& [target, file] : requestedTargets)
-            inputs.push_back(factory.CreateInput(target, file));
+        for (const auto& [target, file, address] : requestedTargets)
+            inputs.push_back(factory.CreateInput(target, file, address));
 
         for (const auto& mandatoryTarget : supportedTargets.MandatoryTargets())
         {

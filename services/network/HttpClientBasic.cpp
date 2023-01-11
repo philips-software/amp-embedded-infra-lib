@@ -61,17 +61,20 @@ namespace services
     void HttpClientBasic::Close()
     {
         assert(HttpClientObserver::IsAttached());
-        assert(state == State::connected);
+        assert(state == State::connected || state == State::closing);
 
-        state = State::closing;
-        timeoutTimer.Cancel();
-        HttpClientObserver::Subject().Close();
+        if (state == State::connected)
+        {
+            state = State::closing;
+            timeoutTimer.Cancel();
+            HttpClientObserver::Subject().Close();
+        }
     }
 
     void HttpClientBasic::ContentError()
     {
-        if (!infra::PostAssign(contentError, true))
-            Close();
+        contentError = true;
+        Close();
     }
 
     infra::BoundedString HttpClientBasic::Url() const
