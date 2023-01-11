@@ -126,7 +126,7 @@ namespace services
         CreateSuccessMessage(stream);
     }
 
-    void CucumberWireProtocolFormatter::AddStringValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, int16_t& offset)
+    void CucumberWireProtocolFormatter::AddStringValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, std::size_t& argPos, int16_t& offset)
     {
         infra::JsonObjectFormatter subObject(formatter.SubObject());
         infra::StringOutputStream::WithStorage<1024> stringStream;
@@ -138,7 +138,7 @@ namespace services
         ++argPos;
     }
 
-    void CucumberWireProtocolFormatter::AddDigitValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, int16_t& offset)
+    void CucumberWireProtocolFormatter::AddDigitValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, std::size_t& argPos, int16_t& offset)
     {
         infra::JsonObjectFormatter subObject(formatter.SubObject());
         infra::StringOutputStream::WithStorage<10> digitStream;
@@ -150,7 +150,7 @@ namespace services
         ++argPos;
     }
 
-    void CucumberWireProtocolFormatter::AddBooleanValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, uint32_t& argPos, int16_t& offset)
+    void CucumberWireProtocolFormatter::AddBooleanValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, std::size_t& argPos, int16_t& offset)
     {
         infra::JsonObjectFormatter subObject(formatter.SubObject());
         infra::StringOutputStream::WithStorage<5> boolStream;
