@@ -125,18 +125,21 @@ namespace services
 
     void HttpClientCachedConnection::HeaderAvailable(HttpHeader header)
     {
-        Observer().HeaderAvailable(header);
+        if (HttpClient::IsAttached())
+            Observer().HeaderAvailable(header);
     }
 
     void HttpClientCachedConnection::BodyAvailable(infra::SharedPtr<infra::StreamReader>&& reader)
     {
-        Observer().BodyAvailable(std::move(reader));
+        if (HttpClient::IsAttached())
+            Observer().BodyAvailable(std::move(reader));
     }
 
     void HttpClientCachedConnection::BodyComplete()
     {
         idle = true;
-        Observer().BodyComplete();
+        if (HttpClient::IsAttached())
+            Observer().BodyComplete();
     }
 
     void HttpClientCachedConnection::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
