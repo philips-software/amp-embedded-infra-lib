@@ -333,3 +333,24 @@ TEST_F(HttpClientCachedConnectionTest, connection_times_out)
     EXPECT_CALL(clientSubject, Close()).WillOnce([this]() { clientSubject.Detach(); });
     ForwardTime(std::chrono::minutes(1));
 }
+
+TEST_F(HttpClientCachedConnectionTest, connection_is_closed_during_StatusAvailable)
+{
+    CreateConnection(factory);
+
+    EXPECT_CALL(*clientObserver, StatusAvailable(services::HttpStatusCode::BadRequest)).WillOnce(testing::Invoke([this](services::HttpStatusCode)
+        {
+            EXPECT_CALL(*clientObserver, Detaching());
+            clientObserver->Detach();
+        }));
+    clientSubject.Observer().StatusAvailable(services::HttpStatusCode::BadRequest);
+
+    clientSubject.Observer().HeaderAvailable(services::HttpHeader("field", "value"));
+
+    infra::SharedOptional<infra::StreamReaderMock> reader;
+    clientSubject.Observer().BodyAvailable(reader.Emplace());
+
+    clientSubject.Observer().BodyComplete();
+
+    clientSubject.Detach();
+}
