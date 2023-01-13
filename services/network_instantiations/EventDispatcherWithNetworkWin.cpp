@@ -189,29 +189,27 @@ namespace services
 
         events.push_back(wakeUpEvent);
         functions.push_back([this]()
-        {
+            {
             BOOL result = WSAResetEvent(wakeUpEvent);
-            assert(result == TRUE);
-        });
+            assert(result == TRUE); });
 
         for (auto& listener : listeners)
         {
             events.push_back(listener.event);
             functions.push_back([&listener]()
-            {
+                {
                 WSANETWORKEVENTS networkEvents;
                 WSAEnumNetworkEvents(listener.listenSocket, listener.event, &networkEvents);
                 assert((networkEvents.lNetworkEvents & FD_ACCEPT) != 0);
 
-                listener.Accept();
-            });
+                listener.Accept(); });
         }
 
         for (auto& connector : connectors)
         {
             events.push_back(connector.event);
             functions.push_back([&connector]()
-            {
+                {
                 WSANETWORKEVENTS networkEvents;
                 WSAEnumNetworkEvents(connector.connectSocket, connector.event, &networkEvents);
                 assert((networkEvents.lNetworkEvents & FD_CONNECT) != 0);
@@ -219,8 +217,7 @@ namespace services
                 if (networkEvents.iErrorCode[FD_CONNECT_BIT] != 0)
                     connector.Failed();
                 else
-                    connector.Connected();
-            });
+                    connector.Connected(); });
         }
 
         for (auto& weakConnection : connections)
@@ -235,7 +232,7 @@ namespace services
                     connection->UpdateEventFlags();
                     events.push_back(connection->event);
                     functions.push_back([weakConnection]()
-                    {
+                        {
                         if (infra::SharedPtr<ConnectionWin> connection = weakConnection)
                         {
                             WSANETWORKEVENTS networkEvents;
@@ -247,8 +244,7 @@ namespace services
                                 connection->Send();
                             if ((networkEvents.lNetworkEvents & FD_CLOSE) != 0)
                                 connection->Receive();
-                        }
-                    });
+                        } });
                 }
         }
 
@@ -263,7 +259,7 @@ namespace services
                 datagram->UpdateEventFlags();
                 events.push_back(datagram->event);
                 functions.push_back([weakDatagram]()
-                {
+                    {
                     if (infra::SharedPtr<DatagramWin> datagram = weakDatagram)
                     {
                         WSANETWORKEVENTS networkEvents;
@@ -273,8 +269,7 @@ namespace services
                             datagram->Receive();
                         if ((networkEvents.lNetworkEvents & FD_WRITE) != 0)
                             datagram->Send();
-                    }
-                });
+                    } });
             }
         }
 
@@ -289,8 +284,11 @@ namespace services
         else
             std::abort();
 
-        connections.remove_if([](const infra::WeakPtr<ConnectionWin>& connection) { return connection.lock() == nullptr; });
-        datagrams.remove_if([](const infra::WeakPtr<DatagramWin>& datagram) { return datagram.lock() == nullptr; });
-        datagramsMultiple.remove_if([](const infra::WeakPtr<DatagramExchangeMultiple>& datagram) { return datagram.lock() == nullptr; });
+        connections.remove_if([](const infra::WeakPtr<ConnectionWin>& connection)
+            { return connection.lock() == nullptr; });
+        datagrams.remove_if([](const infra::WeakPtr<DatagramWin>& datagram)
+            { return datagram.lock() == nullptr; });
+        datagramsMultiple.remove_if([](const infra::WeakPtr<DatagramExchangeMultiple>& datagram)
+            { return datagram.lock() == nullptr; });
     }
 }

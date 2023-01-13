@@ -2,8 +2,8 @@
 #define SERVICES_CONNECTION_WIN_HPP
 
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
-#include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/BoundedDequeInputStream.hpp"
+#include "infra/stream/ByteOutputStream.hpp"
 #include "infra/util/IntrusiveList.hpp"
 #include "infra/util/SharedObjectAllocator.hpp"
 #include "infra/util/SharedOptional.hpp"
@@ -29,7 +29,7 @@ namespace services
         virtual void AckReceived() override;
         virtual void CloseAndDestroy() override;
         virtual void AbortAndDestroy() override;
-        
+
         IPv4Address Ipv4Address() const;
         void SetObserver(infra::SharedPtr<services::ConnectionObserver> connectionObserver);
 

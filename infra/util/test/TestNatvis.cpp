@@ -49,7 +49,10 @@ TEST(NatvisTest, visualize_BoundedVector)
 TEST(NatvisTest, visualize_Function)
 {
     infra::Function<void()> empty;
-    infra::Function<int()> lambda = [] { return 10; };
+    infra::Function<int()> lambda = []
+    {
+        return 10;
+    };
     infra::Function<void(void*)> function = free;
 }
 
