@@ -12,6 +12,7 @@
 // clang-format off
 #include <winsock2.h>
 #include <iphlpapi.h>
+
 // clang-format on
 
 namespace services
