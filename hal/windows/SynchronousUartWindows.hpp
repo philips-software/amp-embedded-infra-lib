@@ -6,6 +6,7 @@
 #include <winsock2.h>
 #include <windows.h>
 #include <setupapi.h>
+
 // clang-format on
 
 namespace hal
