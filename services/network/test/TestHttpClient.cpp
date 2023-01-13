@@ -199,7 +199,7 @@ TEST_F(HttpClientTest, Close_propagates_to_Connection)
 
     EXPECT_CALL(connection, CloseAndDestroyMock());
     EXPECT_CALL(client, Detaching());
-    client.Subject().Close();
+    client.Subject().CloseConnection();
 }
 
 TEST_F(HttpClientTest, AckReceived_propagates_to_Connection)
@@ -581,7 +581,7 @@ TEST_F(HttpClientTest, Close_while_DataAvailable_is_handled)
         {
         EXPECT_CALL(connection, CloseAndDestroyMock());
         EXPECT_CALL(client, Detaching());
-        client.Subject().Close(); }));
+        client.Subject().CloseConnection(); }));
 
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\n")));
 }
@@ -600,7 +600,7 @@ TEST_F(HttpClientTest, Close_while_BodyAvailable_is_handled)
         reader = nullptr;
         EXPECT_CALL(connection, CloseAndDestroyMock());
         EXPECT_CALL(client, Detaching());
-        client.Subject().Close(); }));
+        client.Subject().CloseConnection(); }));
 
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\n")));
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("Content-Length:8\r\n\r\nbody\r\ndata")));
@@ -652,7 +652,7 @@ TEST_F(HttpClientTest, closed_before_reader_is_reset)
         {
         EXPECT_CALL(connection, CloseAndDestroyMock());
         EXPECT_CALL(client, Detaching());
-        client.Subject().Close();
+        client.Subject().CloseConnection();
         reader = nullptr; }));
 
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\n")));
@@ -848,6 +848,22 @@ TEST_F(HttpClientTest, chunk_extensions_are_ignored)
 
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\n")));
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("Transfer-Encoding:chunked\r\n\r\n4;name=val\r\nWiki\r\n6\r\npedia \r\nE\r\nin \r\n\r\nchunks.\r\n0\r\n\r\n")));
+}
+
+TEST_F(HttpClientTest, Close_is_forwarded_to_observer)
+{
+    Connect();
+    EXPECT_CALL(client, CloseRequested());
+    connection.Observer().Close();
+}
+
+TEST_F(HttpClientTest, Close_results_in_CloseAndAbort_when_no_observer_is_attached)
+{
+    Connect();
+    EXPECT_CALL(client, Detaching());
+    client.Detach();
+    EXPECT_CALL(connection, CloseAndDestroyMock());
+    connection.Observer().Close();
 }
 
 class HttpClientImplWithRedirectionTest
