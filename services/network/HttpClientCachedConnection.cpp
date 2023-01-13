@@ -96,7 +96,7 @@ namespace services
         Subject().AckReceived();
     }
 
-    void HttpClientCachedConnection::Close()
+    void HttpClientCachedConnection::CloseConnection()
     {
         if (HttpClient::IsAttached())
             HttpClient::Detach();
@@ -107,6 +107,17 @@ namespace services
         return Subject().GetConnection();
     }
 
+    void HttpClientCachedConnection::CloseRequested()
+    {
+        if (HttpClient::IsAttached())
+        {
+            closeRequested = true;
+            Observer().CloseRequested();
+        }
+        else
+            HttpClientObserver::Subject().CloseConnection();
+    }
+
     void HttpClientCachedConnection::Detaching()
     {
         if (HttpClient::IsAttached())
@@ -115,7 +126,10 @@ namespace services
 
     void HttpClientCachedConnection::DetachingObserver()
     {
-        connector.DetachingObserver();
+        if (closeRequested)
+            HttpClientObserver::Subject().CloseConnection();
+        else
+            connector.DetachingObserver();
     }
 
     void HttpClientCachedConnection::StatusAvailable(HttpStatusCode statusCode)
@@ -229,7 +243,7 @@ namespace services
     void HttpClientCachedConnectionConnector::Connect()
     {
         if (client != infra::none && client->HttpClientObserver::IsAttached())
-            client->HttpClientObserver::Subject().Close();
+            client->HttpClientObserver::Subject().CloseConnection();
 
         hostAndPortHash = GenerateHostAndPortHash(*clientObserverFactory);
         delegate.Connect(*this);
@@ -246,7 +260,7 @@ namespace services
     void HttpClientCachedConnectionConnector::DisconnectTimeout()
     {
         if (client != infra::none && !client->HttpClient::IsAttached() && client->HttpClientObserver::IsAttached())
-            client->HttpClientObserver::Subject().Close();
+            client->HttpClientObserver::Subject().CloseConnection();
     };
 
     void HttpClientCachedConnectionConnector::TryConnectWaiting()

@@ -214,7 +214,7 @@ TEST_F(HttpClientCachedConnectionTest, other_normal_usage)
     EXPECT_EQ(&connection, &clientObserver->Subject().GetConnection());
 
     EXPECT_CALL(*clientObserver, Detaching());
-    clientObserver->Subject().Close();
+    clientObserver->Subject().CloseConnection();
 
     clientSubject.Detach();
 }
@@ -305,7 +305,7 @@ TEST_F(HttpClientCachedConnectionTest, second_request_but_for_different_host)
     clientObserver->Detach();
 
     ExpectHostnameAndPort("host2", 10);
-    EXPECT_CALL(clientSubject, Close()).WillOnce([this]() { clientSubject.Detach(); });
+    EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]() { clientSubject.Detach(); });
     CreateConnection(factory, "host2", 10);
     CloseConnection();
 }
@@ -318,7 +318,7 @@ TEST_F(HttpClientCachedConnectionTest, second_request_but_for_different_port)
     clientObserver->Detach();
 
     ExpectHostnameAndPort("host", 9);
-    EXPECT_CALL(clientSubject, Close()).WillOnce([this]() { clientSubject.Detach(); });
+    EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]() { clientSubject.Detach(); });
     CreateConnection(factory, "host", 9);
     CloseConnection();
 }
@@ -330,7 +330,7 @@ TEST_F(HttpClientCachedConnectionTest, connection_times_out)
     EXPECT_CALL(*clientObserver, Detaching());
     clientObserver->Detach();
 
-    EXPECT_CALL(clientSubject, Close()).WillOnce([this]() { clientSubject.Detach(); });
+    EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]() { clientSubject.Detach(); });
     ForwardTime(std::chrono::minutes(1));
 }
 
@@ -353,4 +353,50 @@ TEST_F(HttpClientCachedConnectionTest, connection_is_closed_during_StatusAvailab
     clientSubject.Observer().BodyComplete();
 
     clientSubject.Detach();
+}
+
+TEST_F(HttpClientCachedConnectionTest, Close_is_forwarded_to_client)
+{
+    CreateConnection(factory);
+
+    EXPECT_CALL(*clientObserver, CloseRequested());
+    clientSubject.Observer().CloseRequested();
+
+    EXPECT_CALL(clientSubject, CloseConnection());
+    EXPECT_CALL(*clientObserver, Detaching());
+    clientSubject.Detach();
+}
+
+TEST_F(HttpClientCachedConnectionTest, after_Close_when_no_client_is_connected_connection_is_closed_immediately)
+{
+    CreateConnection(factory);
+
+    FinishRequest();
+    EXPECT_CALL(*clientObserver, Detaching());
+    clientObserver->Detach();
+
+    EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]() { clientSubject.Detach(); });
+    clientSubject.Observer().CloseRequested();
+}
+
+TEST_F(HttpClientCachedConnectionTest, after_handling_one_close_request_next_request_obeys_timeout)
+{
+    CreateConnection(factory);
+
+    FinishRequest();
+    EXPECT_CALL(*clientObserver, Detaching());
+    clientObserver->Detach();
+
+    EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]() { clientSubject.Detach(); });
+    clientSubject.Observer().CloseRequested();
+
+    // New request
+
+    CreateConnection(factory);
+    FinishRequest();
+    EXPECT_CALL(*clientObserver, Detaching());
+    clientObserver->Detach();
+
+    EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]() { clientSubject.Detach(); });
+    ForwardTime(std::chrono::minutes(1));
 }

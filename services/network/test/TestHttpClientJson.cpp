@@ -67,7 +67,7 @@ TEST_F(HttpClientJsonTest, unsuccessful_status_is_reported)
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.Attach(client); });
 
     EXPECT_CALL(controller, Error(false));
-    EXPECT_CALL(httpClient, Close());
+    EXPECT_CALL(httpClient, CloseConnection());
     httpClient.Observer().StatusAvailable(services::HttpStatusCode::BadRequest);
 }
 
@@ -79,7 +79,7 @@ TEST_F(HttpClientJsonTest, non_JSON_content_is_rejected)
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.Attach(client); });
 
     EXPECT_CALL(controller, Error(false));
-    EXPECT_CALL(httpClient, Close());
+    EXPECT_CALL(httpClient, CloseConnection());
     httpClient.Observer().HeaderAvailable(services::HttpHeader{ "content-type", "application/text" });
 }
 
@@ -97,7 +97,7 @@ TEST_F(HttpClientJsonTest, feed_json_data)
     EXPECT_CALL(jsonObjectVisitor, Close());
     httpClient.Observer().BodyAvailable(infra::UnOwnedSharedPtr(reader));
     EXPECT_CALL(controller, Done());
-    EXPECT_CALL(httpClient, Close());
+    EXPECT_CALL(httpClient, CloseConnection());
     httpClient.Observer().BodyComplete();
 }
 
@@ -116,7 +116,7 @@ TEST_F(HttpClientJsonTest, ParseError_reports_Error)
     {
         controller.ContentError();
     }));
-    EXPECT_CALL(httpClient, Close()).WillOnce(testing::Invoke([this, &readerPtr]()
+    EXPECT_CALL(httpClient, CloseConnection()).WillOnce(testing::Invoke([this, &readerPtr]()
     {
         controller.Detaching();
         EXPECT_TRUE(readerPtr == nullptr);
@@ -137,6 +137,6 @@ TEST_F(HttpClientJsonTest, ContentError_during_parsing_closes_connection)
     EXPECT_CALL(reader, ExtractContiguousRange(testing::_)).WillOnce(testing::Return(infra::MakeStringByteRange(R"({ "entry": "value")")));
     EXPECT_CALL(jsonObjectVisitor, VisitString("entry", "value")).WillOnce(testing::Invoke([this](infra::BoundedConstString, infra::BoundedConstString) { controller.ContentError(); }));
     EXPECT_CALL(controller, Error(false));
-    EXPECT_CALL(httpClient, Close());
+    EXPECT_CALL(httpClient, CloseConnection());
     httpClient.Observer().BodyAvailable(infra::UnOwnedSharedPtr(reader));
 }

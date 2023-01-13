@@ -65,7 +65,7 @@ TEST_F(HttpClientBasicTest, Stop_while_connected_results_in_Close)
     EXPECT_CALL(*controller, Established());
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.Attach(client); });
 
-    EXPECT_CALL(httpClient, Close());
+    EXPECT_CALL(httpClient, CloseConnection());
     controller->Cancel([this]() { onStopped.callback(); });
 
     EXPECT_CALL(onStopped, callback());
@@ -78,7 +78,7 @@ TEST_F(HttpClientBasicTest, Stop_while_connected_does_not_invoke_Done)
     EXPECT_CALL(*controller, Established());
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.Attach(client); });
 
-    EXPECT_CALL(httpClient, Close()).WillOnce(testing::Invoke([this]()
+    EXPECT_CALL(httpClient, CloseConnection()).WillOnce(testing::Invoke([this]()
     {
         EXPECT_CALL(onStopped, callback());
         httpClient.Detach();
@@ -94,7 +94,7 @@ TEST_F(HttpClientBasicTest, second_Stop_while_connected_does_not_result_in_secon
     EXPECT_CALL(*controller, Established());
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.Attach(client); });
 
-    EXPECT_CALL(httpClient, Close());
+    EXPECT_CALL(httpClient, CloseConnection());
     controller->Cancel([this]() { onStopped.callback(); });
 
     testing::StrictMock<infra::MockCallback<void()>> onStopped2;
@@ -110,7 +110,7 @@ TEST_F(HttpClientBasicTest, Stop_while_connected_stops_timeout_timer)
     EXPECT_CALL(*controller, Established());
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.Attach(client); });
 
-    EXPECT_CALL(httpClient, Close());
+    EXPECT_CALL(httpClient, CloseConnection());
     EXPECT_CALL(onStopped, callback());
     controller->Cancel([this]() { onStopped.callback(); });
 
@@ -122,7 +122,7 @@ TEST_F(HttpClientBasicTest, Stop_while_almost_done)
     EXPECT_CALL(*controller, Established());
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.Attach(client); });
 
-    EXPECT_CALL(httpClient, Close());
+    EXPECT_CALL(httpClient, CloseConnection());
     httpClient.Observer().BodyComplete();
 
     controller->Cancel([this]() { onStopped.callback(); });
@@ -138,7 +138,7 @@ TEST_F(HttpClientBasicTest, Stop_while_done)
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.Attach(client); });
 
     EXPECT_CALL(*controller, Done());
-    EXPECT_CALL(httpClient, Close());
+    EXPECT_CALL(httpClient, CloseConnection());
     httpClient.Observer().BodyComplete();
     httpClient.Detach();
 
@@ -153,7 +153,7 @@ TEST_F(HttpClientBasicTest, connection_times_out)
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.Attach(client); });
 
     EXPECT_CALL(*controller, Error(true));
-    EXPECT_CALL(httpClient, Close());
+    EXPECT_CALL(httpClient, CloseConnection());
     ForwardTime(std::chrono::minutes(1));
 }
 
@@ -163,7 +163,7 @@ TEST_F(HttpClientBasicTest, timer_resets_after_BodyComplete)
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.Attach(client); });
 
     EXPECT_CALL(*controller, Done());
-    EXPECT_CALL(httpClient, Close());
+    EXPECT_CALL(httpClient, CloseConnection());
     httpClient.Observer().BodyComplete();
 
     ForwardTime(std::chrono::minutes(1));
@@ -202,7 +202,7 @@ TEST_F(HttpClientBasicTest, ContentError_calls_stop_only_once)
     httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { httpClient.Attach(client); });
 
     EXPECT_CALL(*controller, Error(false));
-    EXPECT_CALL(httpClient, Close());
+    EXPECT_CALL(httpClient, CloseConnection());
     controller->GenerateContentError();
     controller->GenerateContentError();
 }

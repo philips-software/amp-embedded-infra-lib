@@ -23,6 +23,7 @@ namespace services
         MOCK_METHOD0(BodyComplete, void());
         MOCK_METHOD1(SendStreamAvailable, void(infra::SharedPtr<infra::StreamWriter>&& writer));
         MOCK_CONST_METHOD1(FillContent, void(infra::StreamWriter& writer));
+        MOCK_METHOD0(CloseRequested, void());
     };
 
     class HttpClientObserverFactoryMock
@@ -52,9 +53,9 @@ namespace services
         MOCK_METHOD3(Patch, void(infra::BoundedConstString, infra::BoundedConstString, HttpHeaders));
         MOCK_METHOD2(Patch, void(infra::BoundedConstString, HttpHeaders));
         MOCK_METHOD3(Delete, void(infra::BoundedConstString, infra::BoundedConstString, HttpHeaders));
-        
+
         MOCK_METHOD0(AckReceived, void());
-        MOCK_METHOD0(Close, void());
+        MOCK_METHOD0(CloseConnection, void());
 
         MOCK_METHOD0(GetConnection, Connection&());
     };

@@ -135,7 +135,7 @@ namespace services
         {
             state = State::closing;
             timeoutTimer.Cancel();
-            HttpClientObserver::Subject().Close();
+            HttpClientObserver::Subject().CloseConnection();
         }
     }
 
