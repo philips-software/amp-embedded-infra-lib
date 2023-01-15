@@ -362,7 +362,6 @@ TEST_F(HttpClientCachedConnectionTest, Close_is_forwarded_to_client)
     EXPECT_CALL(*clientObserver, CloseRequested());
     clientSubject.Observer().CloseRequested();
 
-    EXPECT_CALL(clientSubject, CloseConnection());
     EXPECT_CALL(*clientObserver, Detaching());
     clientSubject.Detach();
 }

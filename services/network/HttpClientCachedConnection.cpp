@@ -98,7 +98,7 @@ namespace services
 
     void HttpClientCachedConnection::CloseConnection()
     {
-        if (HttpClient::IsAttached())
+        if (HttpClient::IsAttached() && !detachingObserver)
             HttpClient::Detach();
     }
 
@@ -109,7 +109,7 @@ namespace services
 
     void HttpClientCachedConnection::CloseRequested()
     {
-        if (HttpClient::IsAttached())
+        if (HttpClient::IsAttached() && !detachingObserver)
         {
             closeRequested = true;
             Observer().CloseRequested();
@@ -120,13 +120,17 @@ namespace services
 
     void HttpClientCachedConnection::Detaching()
     {
-        if (HttpClient::IsAttached())
+        detaching = true;
+
+        if (HttpClient::IsAttached() && !detachingObserver)
             HttpClient::Detach();
     }
 
     void HttpClientCachedConnection::DetachingObserver()
     {
-        if (closeRequested)
+        detachingObserver = true;
+
+        if (!detaching && closeRequested)
             HttpClientObserver::Subject().CloseConnection();
         else
             connector.DetachingObserver();
@@ -233,7 +237,7 @@ namespace services
     {
         clientObserverFactory->ConnectionEstablished([httpClientPtr = clientPtr.MakeShared(*client)](infra::SharedPtr<HttpClientObserver> observer)
             {
-                if (observer)
+                if (observer != nullptr)
                     httpClientPtr->Attach(observer);
             });
 
@@ -289,7 +293,7 @@ namespace services
 
     void HttpClientCachedConnectionConnector::ClientPtrExpired()
     {
-        if (client != infra::none && client->HttpClient::IsAttached())
+        if (client != infra::none && client->HttpClient::IsAttached() && !client->detachingObserver)
             client->HttpClient::Detach();
 
         TryConnectWaiting();

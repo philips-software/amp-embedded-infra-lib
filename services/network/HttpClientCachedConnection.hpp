@@ -61,6 +61,8 @@ namespace services
         infra::AutoResetFunction<void(infra::SharedPtr<HttpClientObserver> client)> createdObserver;
         bool idle = true;
         bool closeRequested = false;
+        bool detaching = false;
+        bool detachingObserver = false;
     };
 
     class HttpClientCachedConnectionConnector
