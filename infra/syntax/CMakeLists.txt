@@ -35,8 +35,6 @@ if (EMIL_HOST_BUILD)
     )
 endif()
 
-emil_clangformat_target(infra.syntax)
-
 if (EMIL_ENABLE_FUZZING)
     add_subdirectory(fuzz)
 endif()

@@ -18,5 +18,3 @@ target_sources(upgrade.boot_loader_test PRIVATE
     TestVerifierEcDsa.cpp
     TestVerifierHashOnly.cpp
 )
-
-emil_clangformat_target(upgrade.boot_loader_test)

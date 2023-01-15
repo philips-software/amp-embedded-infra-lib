@@ -11,5 +11,3 @@ target_link_libraries(upgrade.deploy_pack_to_external_test PUBLIC
 target_sources(upgrade.deploy_pack_to_external_test PRIVATE
     TestDeployPackToExternal.cpp
 )
-
-emil_clangformat_target(upgrade.deploy_pack_to_external_test)

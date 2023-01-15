@@ -14,8 +14,6 @@ target_sources(upgrade.pack PRIVATE
     UpgradePackHeader.hpp
 )
 
-emil_clangformat_target(upgrade.pack)
-
 add_library(upgrade.pack_keys ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
 install(TARGETS upgrade.pack_keys upgrade.pack EXPORT emilUpgradeTargets)

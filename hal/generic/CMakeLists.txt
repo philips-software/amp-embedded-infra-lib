@@ -18,6 +18,4 @@ if (EMIL_HOST_BUILD)
         TimerServiceGeneric.cpp
         TimerServiceGeneric.hpp
     )
-
-    emil_clangformat_target(hal.generic)
 endif()

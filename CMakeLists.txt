@@ -10,9 +10,9 @@ set_directory_properties(PROPERTY USE_FOLDERS On)
 
 include(CMakePackageConfigHelpers)
 include(emil_antora)
+include(emil_folderize)
 include(emil_clang_tools)
 include(emil_docker_tools)
-include(emil_folderize)
 include(emil_test_helpers)
 include(emil_version_generator)
 include(emil_xsltproc)
@@ -188,3 +188,7 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
 
     include(CPack)
 endif()
+
+#if (EMIL_STANDALONE)
+    emil_clangformat_directory(${CMAKE_CURRENT_LIST_DIR} emil)
+#endif()

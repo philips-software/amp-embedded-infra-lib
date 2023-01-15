@@ -17,5 +17,3 @@ target_sources(services.cucumber_test PRIVATE
     TestCucumberWireProtocolParser.cpp
     TestCucumberWireProtocolServer.cpp
 )
-
-emil_clangformat_target(services.cucumber_test)

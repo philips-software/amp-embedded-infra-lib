@@ -10,5 +10,3 @@ target_sources(services.util_test_doubles PRIVATE
     StoppableMock.hpp
     WritableConfigurationMock.hpp
 )
-
-emil_clangformat_target(services.util_test_doubles)

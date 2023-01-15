@@ -14,5 +14,3 @@ target_sources(infra.event_test PRIVATE
     TestQueueForOneReaderOneIrqWriter.cpp
     TestSystemStateManager.cpp
 )
-
-emil_clangformat_target(infra.event_test)

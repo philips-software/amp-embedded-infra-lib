@@ -31,8 +31,6 @@ target_sources(infra.timer PRIVATE
     TimerService.hpp
 )
 
-emil_clangformat_target(infra.timer)
-
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
 endif()
