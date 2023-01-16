@@ -297,6 +297,29 @@ TEST_F(HttpClientCachedConnectionTest, second_request_on_same_connection)
     CloseConnection();
 }
 
+TEST_F(HttpClientCachedConnectionTest, CloseConnection_on_second_request)
+{
+    CreateConnection(factory);
+    FinishRequest();
+    EXPECT_CALL(*clientObserver, Detaching());
+    clientObserver->Detach();
+
+    EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](auto&& createdClientObserver)
+        {
+            auto observer = clientObserver.Emplace();
+            EXPECT_CALL(*observer, Attached());
+            createdClientObserver(observer);
+        }));
+    InitiateConnect(factory, "host", 10);
+
+    auto clientObserverPtr = clientObserver.MakePtr();
+    EXPECT_CALL(*clientObserver, Detaching());
+    clientObserver->Subject().CloseConnection();
+    testing::Mock::VerifyAndClearExpectations(&*clientObserverPtr);
+
+    clientSubject.Detach();
+}
+
 TEST_F(HttpClientCachedConnectionTest, second_request_but_for_different_host)
 {
     CreateConnection(factory);
