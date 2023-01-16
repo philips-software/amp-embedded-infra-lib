@@ -189,6 +189,4 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
     include(CPack)
 endif()
 
-if (EMIL_STANDALONE)
-    emil_clangformat_directory(${CMAKE_CURRENT_LIST_DIR} emil)
-endif()
+emil_clangformat_directories(emil DIRECTORIES ${CMAKE_CURRENT_LIST_DIR})

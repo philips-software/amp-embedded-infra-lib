@@ -4,8 +4,11 @@ function(emil_exclude_from_clang_format target)
     set_target_properties(${target} PROPERTIES EXCLUDE_FROM_CLANG_FORMAT TRUE)
 endfunction()
 
-function(emil_clangformat_directory directory prefix)
-    emil_get_subdirectories(subdirectories ${directory})
+function(emil_clangformat_directories prefix directories)
+    set(multiValueArgs DIRECTORIES)
+    cmake_parse_arguments(PARSE_ARGV 1 MY "" "" "${multiValueArgs}")
+
+    emil_get_subdirectories(subdirectories DIRECTORIES ${MY_DIRECTORIES})
     emil_get_targets_from_directories(targets DIRECTORIES ${subdirectories})
 
     set(non_generated_target_sources)
