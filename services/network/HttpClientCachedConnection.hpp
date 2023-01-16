@@ -43,6 +43,7 @@ namespace services
         virtual void Detaching() override;
 
         // Implementation of SharedOwnedSubject via HttpClient
+        virtual void AttachedObserver() override;
         virtual void DetachingObserver() override;
 
     public:

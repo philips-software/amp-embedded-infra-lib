@@ -126,6 +126,11 @@ namespace services
             HttpClient::Detach();
     }
 
+    void HttpClientCachedConnection::AttachedObserver()
+    {
+        detachingObserver = false;
+    }
+
     void HttpClientCachedConnection::DetachingObserver()
     {
         detachingObserver = true;
