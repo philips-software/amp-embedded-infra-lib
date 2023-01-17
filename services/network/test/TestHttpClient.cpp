@@ -2,6 +2,7 @@
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/StdStringOutputStream.hpp"
 #include "infra/stream/test/StreamMock.hpp"
+#include "infra/util/test_helper/MockCallback.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/network/HttpClientImpl.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
@@ -864,6 +865,28 @@ TEST_F(HttpClientTest, Close_results_in_CloseAndAbort_when_no_observer_is_attach
     client.Detach();
     EXPECT_CALL(connection, CloseAndDestroyMock());
     connection.Observer().Close();
+}
+
+TEST_F(HttpClientTest, Stop_while_closed)
+{
+    Connect();
+
+    EXPECT_CALL(connection, CloseAndDestroyMock());
+    EXPECT_CALL(client, Detaching());
+    client.Subject().CloseConnection();
+
+    infra::VerifyingFunctionMock<void()> onDone;
+    connector.Stop([&]() { onDone.callback(); });
+}
+
+TEST_F(HttpClientTest, Stop_while_connection_open)
+{
+    Connect();
+
+    infra::VerifyingFunctionMock<void()> onDone;
+    EXPECT_CALL(connection, CloseAndDestroyMock());
+    EXPECT_CALL(client, Detaching());
+    connector.Stop([&]() { onDone.callback(); });
 }
 
 class HttpClientImplWithRedirectionTest

@@ -184,6 +184,8 @@ namespace services
     public:
         HttpClientConnectorImpl(services::ConnectionFactory& connectionFactory, services::IPAddress address, Args&&... args);
 
+        void Stop(const infra::Function<void()>& onDone);
+
         // Implementation of ClientConnectionObserverFactory
         virtual services::IPAddress Address() const override;
         virtual uint16_t Port() const override;
@@ -219,6 +221,8 @@ namespace services
     {
     public:
         HttpClientConnectorWithNameResolverImpl(ConnectionFactoryWithNameResolver& connectionFactory, Args&&... args);
+
+        void Stop(const infra::Function<void()>& onDone);
 
         // Implementation of ClientConnectionObserverFactoryWithNameResolver
         virtual infra::BoundedConstString Hostname() const override;
@@ -498,6 +502,19 @@ namespace services
     {}
 
     template<class HttpClient, class... Args>
+    void HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::Stop(const infra::Function<void()>& onDone)
+    {
+        if (client.Allocatable())
+            onDone();
+        else
+        {
+            client.OnAllocatable(onDone);
+            if (client)
+                client->CloseConnection();
+        }
+    }
+
+    template<class HttpClient, class... Args>
     infra::BoundedConstString HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::Hostname() const
     {
         return clientObserverFactory->Hostname();
@@ -540,17 +557,17 @@ namespace services
 
         switch (reason)
         {
-            case ConnectFailReason::refused:
-                clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::refused);
-                break;
-            case ConnectFailReason::connectionAllocationFailed:
-                clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::connectionAllocationFailed);
-                break;
-            case ConnectFailReason::nameLookupFailed:
-                clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::nameLookupFailed);
-                break;
-            default:
-                std::abort();
+        case ConnectFailReason::refused:
+            clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::refused);
+            break;
+        case ConnectFailReason::connectionAllocationFailed:
+            clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::connectionAllocationFailed);
+            break;
+        case ConnectFailReason::nameLookupFailed:
+            clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::nameLookupFailed);
+            break;
+        default:
+            std::abort();
         }
 
         clientObserverFactory = nullptr;
@@ -597,6 +614,19 @@ namespace services
               { TryConnectWaiting(); })
         , args(std::forward<Args>(args)...)
     {}
+
+    template<class HttpClient, class... Args>
+    void HttpClientConnectorImpl<HttpClient, Args...>::Stop(const infra::Function<void()>& onDone)
+    {
+        if (client.Allocatable())
+            onDone();
+        else
+        {
+            client.OnAllocatable(onDone);
+            if (client)
+                client->CloseConnection();
+        }
+    }
 
     template<class HttpClient, class... Args>
     services::IPAddress HttpClientConnectorImpl<HttpClient, Args...>::Address() const

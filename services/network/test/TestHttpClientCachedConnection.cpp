@@ -4,6 +4,7 @@
 #include "infra/stream/test/StreamMock.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/SharedOptional.hpp"
+#include "infra/util/test_helper/MockCallback.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/network/HttpClientCachedConnection.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
@@ -421,4 +422,23 @@ TEST_F(HttpClientCachedConnectionTest, after_handling_one_close_request_next_req
 
     EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]() { clientSubject.Detach(); });
     ForwardTime(std::chrono::minutes(1));
+}
+
+TEST_F(HttpClientCachedConnectionTest, Stop_while_closed)
+{
+    CreateConnection(factory);
+    CloseConnection();
+
+    infra::VerifyingFunctionMock<void()> onDone;
+    connector.Stop([&]() { onDone.callback(); });
+}
+
+TEST_F(HttpClientCachedConnectionTest, Stop_while_connection_open)
+{
+    CreateConnection(factory);
+
+    infra::VerifyingFunctionMock<void()> onDone;
+    EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]() { clientSubject.Detach(); });
+    EXPECT_CALL(*clientObserver, Detaching());
+    connector.Stop([&]() { onDone.callback(); });
 }

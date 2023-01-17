@@ -77,6 +77,8 @@ namespace services
         virtual void Connect(HttpClientObserverFactory& factory) override;
         virtual void CancelConnect(HttpClientObserverFactory& factory) override;
 
+        void Stop(const infra::Function<void()>& onDone);
+
     private:
         // Implementation of HttpClientObserverFactory
         virtual infra::BoundedConstString Hostname() const override;
