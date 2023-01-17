@@ -36,8 +36,6 @@ target_sources(services.tracer PRIVATE
     TracingReset.hpp
 )
 
-emil_clangformat_target(services.tracer)
-
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
 endif()

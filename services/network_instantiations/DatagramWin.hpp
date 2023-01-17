@@ -9,8 +9,11 @@
 #include "infra/util/SharedOptional.hpp"
 #include "services/network/Datagram.hpp"
 #include <list>
+// clang-format off
 #include <winsock2.h>
 #include <iphlpapi.h>
+
+// clang-format on
 
 namespace services
 {

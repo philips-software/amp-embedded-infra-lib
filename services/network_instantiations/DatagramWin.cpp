@@ -123,7 +123,7 @@ namespace services
 
     void DatagramWin::Send()
     {
-        UpdateEventFlags();     // If there is something to send, update the flags before calling send, because FD_SEND is an edge-triggered event.
+        UpdateEventFlags(); // If there is something to send, update the flags before calling send, because FD_SEND is an edge-triggered event.
         sockaddr_in address{};
         address.sin_family = AF_INET;
         address.sin_addr.s_addr = htonl(services::ConvertToUint32(requestedTo.Get<Udpv4Socket>().first));
@@ -229,10 +229,10 @@ namespace services
             sendBuffer.Emplace(requestedSendSize, 0);
             requestedSendSize = 0;
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<DatagramWin>& object)
-            {
+                {
                 infra::SharedPtr<infra::StreamWriter> writer = object->streamWriter.Emplace(*object);
-                object->GetObserver().SendStreamAvailable(std::move(writer));
-            }, SharedFromThis());
+                object->GetObserver().SendStreamAvailable(std::move(writer)); },
+                SharedFromThis());
         }
     }
 

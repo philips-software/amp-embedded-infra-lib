@@ -2,12 +2,15 @@
 #define HAL_UART_WINDOWS_HPP
 
 #include "hal/interfaces/SerialCommunication.hpp"
+// clang-format off
 #include <atomic>
 #include <mutex>
 #include <thread>
 #include <winsock2.h>
 #include <windows.h>
 #include <setupapi.h>
+
+// clang-format on
 
 namespace hal
 {

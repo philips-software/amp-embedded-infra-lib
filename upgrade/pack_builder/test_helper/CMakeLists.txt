@@ -8,8 +8,6 @@ target_include_directories(upgrade.pack_builder_test_helper INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/../../..>"
 )
 
-emil_clangformat_target(upgrade.pack_builder_test_helper)
-
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
 endif()

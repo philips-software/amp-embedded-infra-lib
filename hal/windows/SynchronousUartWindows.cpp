@@ -2,18 +2,18 @@
 
 namespace hal
 {
-	SynchronousUartWindows::SynchronousUartWindows(const std::string& name, UartWindowsConfig config)
-	{
-		Open(R"(\\.\)" + name, config);
-	}
+    SynchronousUartWindows::SynchronousUartWindows(const std::string& name, UartWindowsConfig config)
+    {
+        Open(R"(\\.\)" + name, config);
+    }
 
-	SynchronousUartWindows::~SynchronousUartWindows()
-	{
+    SynchronousUartWindows::~SynchronousUartWindows()
+    {
         CloseHandle(handle);
     }
 
-	void SynchronousUartWindows::SendData(infra::ConstByteRange data)
-	{
+    void SynchronousUartWindows::SendData(infra::ConstByteRange data)
+    {
         DWORD bytesWritten = 0;
         WriteFile(handle, data.begin(), data.size(), &bytesWritten, nullptr);
     }
@@ -23,14 +23,14 @@ namespace hal
         DWORD bytesRead = 0;
         ReadFile(handle, data.begin(), data.size(), &bytesRead, nullptr);
         return data.size() == bytesRead;
-	}
+    }
 
-	void SynchronousUartWindows::Open(const std::string& name, UartWindowsConfig config)
-	{
-		handle = CreateFile(name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
+    void SynchronousUartWindows::Open(const std::string& name, UartWindowsConfig config)
+    {
+        handle = CreateFile(name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
 
-		if (handle == INVALID_HANDLE_VALUE)
-			throw std::runtime_error("Unable to open port " + name);
+        if (handle == INVALID_HANDLE_VALUE)
+            throw std::runtime_error("Unable to open port " + name);
 
         DCB dcb;
         SecureZeroMemory(&dcb, sizeof(DCB));
@@ -53,5 +53,5 @@ namespace hal
         commTimeOuts.WriteTotalTimeoutMultiplier = 0;
         commTimeOuts.WriteTotalTimeoutConstant = 0;
         SetCommTimeouts(handle, &commTimeOuts);
-	}
+    }
 }

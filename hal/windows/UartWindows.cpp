@@ -99,7 +99,8 @@ namespace hal
         commTimeOuts.WriteTotalTimeoutConstant = 0;
         SetCommTimeouts(handle, &commTimeOuts);
 
-        readThread = std::thread([this]() { ReadThread(); });
+        readThread = std::thread([this]()
+            { ReadThread(); });
         SetThreadPriority(readThread.native_handle(), GetThreadPriority(readThread.native_handle()) + 1);
     }
 

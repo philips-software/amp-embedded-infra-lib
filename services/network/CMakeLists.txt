@@ -99,8 +99,6 @@ target_sources(services.network PRIVATE
     WiFiNetwork.hpp
 )
 
-emil_clangformat_target(services.network)
-
 if (EMIL_HOST_BUILD)
     target_sources(services.network PRIVATE
         CertificateConvertor.cpp

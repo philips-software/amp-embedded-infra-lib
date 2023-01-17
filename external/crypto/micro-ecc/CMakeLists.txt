@@ -22,3 +22,5 @@ target_sources(crypto.micro_ecc PRIVATE
     uECC.c
     uECC.h
 )
+
+emil_exclude_from_clang_format(crypto.micro_ecc)

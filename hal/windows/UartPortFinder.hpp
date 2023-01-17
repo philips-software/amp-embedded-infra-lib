@@ -1,7 +1,9 @@
 #ifndef HAL_UART_PORTFINDER_HPP
 #define HAL_UART_PORTFINDER_HPP
 
+// clang-format off
 #include <winsock2.h>
+// clang-format on
 #include <setupapi.h>
 #include <stdexcept>
 #include <string>
