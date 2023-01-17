@@ -24,6 +24,4 @@ if (EMIL_HOST_BUILD)
         Console.hpp
         Main.cpp
     )
-
-    emil_clangformat_target(protobuf.echo_console)
 endif()

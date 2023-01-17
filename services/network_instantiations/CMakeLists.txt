@@ -47,6 +47,4 @@ if (EMIL_HOST_BUILD)
 
         target_compile_definitions(services.network_instantiations PUBLIC EMIL_NETWORK_BSD)
     endif()
-
-    emil_clangformat_target(services.network_instantiations)
 endif()

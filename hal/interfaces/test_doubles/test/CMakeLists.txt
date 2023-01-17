@@ -10,5 +10,3 @@ target_link_libraries(hal.interfaces_test_doubles_test PUBLIC
 target_sources(hal.interfaces_test_doubles_test PRIVATE
     TestI2cRegisterAccessMock.cpp
 )
-
-emil_clangformat_target(hal.interfaces_test_doubles_test)

@@ -19,8 +19,6 @@ target_sources(services.ble PRIVATE
     GattCharacteristicImpl.hpp
 )
 
-emil_clangformat_target(services.ble)
-
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
 endif()

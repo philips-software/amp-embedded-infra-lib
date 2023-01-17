@@ -46,5 +46,3 @@ target_sources(services.network_test PRIVATE
     TestWebSocketServerConnectionObserver.cpp
     TestWiFiNetwork.cpp
 )
-
-emil_clangformat_target(services.network_test)

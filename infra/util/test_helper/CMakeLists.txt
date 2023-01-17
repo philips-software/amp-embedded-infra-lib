@@ -17,5 +17,3 @@ target_sources(infra.util_test_helper PRIVATE
     ProxyCreatorMock.hpp
     VariantPrintTo.hpp
 )
-
-emil_clangformat_target(infra.util_test_helper)

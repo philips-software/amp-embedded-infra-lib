@@ -15,6 +15,4 @@ if (EMIL_HOST_BUILD)
         MaterialGenerator.cpp
         MaterialGenerator.hpp
     )
-
-    emil_clangformat_target(upgrade.security_key_generator)
 endif()
