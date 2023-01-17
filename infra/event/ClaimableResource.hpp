@@ -34,10 +34,12 @@ namespace infra
         void ReplaceClaim(ClaimerBase& claimerOld, ClaimerBase& claimerNew);
         void EnqueueClaimer(ClaimerBase& claimer, bool urgent);
         void DequeueClaimer(ClaimerBase& claimer);
+        void ScheduleReEvaluateClaim();
 
     private:
         infra::IntrusiveList<ClaimerBase> pendingClaims;
         ClaimerBase* currentClaim = nullptr;
+        bool reEvaluateClaimScheduled = false;
     };
 
     class ClaimableResource::ClaimerBase
