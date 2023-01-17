@@ -201,6 +201,19 @@ namespace services
         infra::EventDispatcher::Instance().Schedule([this]() { TryConnectWaiting(); });
     }
 
+    void HttpClientCachedConnectionConnector::Stop(const infra::Function<void()>& onDone)
+    {
+        if (!clientPtr.Referenced())
+            onDone();
+        else
+        {
+            clientPtr.SetAction(onDone);
+
+            if (client != infra::none && client->HttpClientObserver::IsAttached() && !client->detaching)
+                client->HttpClientObserver::Subject().CloseConnection();
+        }
+    }
+
     infra::BoundedConstString HttpClientCachedConnectionConnector::Hostname() const
     {
         return clientObserverFactory->Hostname();
