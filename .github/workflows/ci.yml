@@ -62,7 +62,7 @@ jobs:
         uses: carlosperate/arm-none-eabi-gcc-action@48db4484a55750df7a0ccca63347fcdea6534d78
         with:
           release: ${{ matrix.gcc }}
-      - uses: seanmiddleditch/gha-setup-ninja@16b940825621068d98711680b6c3ff92201f8fc0
+      - run: sudo apt-get update && sudo apt-get install ninja-build
       - uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
         with:
           key: ${{ matrix.gcc }}-${{ matrix.configuration }}
