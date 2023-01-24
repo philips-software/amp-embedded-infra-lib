@@ -7,10 +7,13 @@ if (EMIL_HOST_BUILD)
 
     set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL On)
 
-    if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang|AppleClang")
+    add_compile_options(
         # Disable warning on invalid use of [[noreturn]] and on deprecation of sprintf
-        add_compile_options(-Wno-invalid-noreturn -Wno-deprecated-declarations)
-    endif()
+        # -Wno-invalid-noreturn should be removed when https://github.com/protocolbuffers/protobuf/issues/9817 is fixed
+        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-deprecated-declarations$<SEMICOLON>-Wno-invalid-noreturn>
+        # Disable string overflow warning
+        $<$<CXX_COMPILER_ID:GNU>:-Wno-stringop-overflow>
+    )
 
     set(protobuf_BUILD_TESTS Off CACHE INTERNAL "")
     set(protobuf_BUILD_PROTOBUF_BINARIES Off CACHE INTERNAL "")
@@ -23,12 +26,6 @@ if (EMIL_HOST_BUILD)
     function(add_protobuf_target_properties)
         foreach(target ${ARGN})
             set_target_properties(${target} PROPERTIES FOLDER External/Protobuf)
-            if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
-                # There are some warnings that can't be ignored on GCC
-                # Disable warning-as-error for these targets completely
-                set_target_properties(${target} PROPERTIES COMPILE_WARNING_AS_ERROR Off)
-            endif()
-
             install(TARGETS ${target} EXPORT emilProtobufTargets)
         endforeach()
     endfunction()
