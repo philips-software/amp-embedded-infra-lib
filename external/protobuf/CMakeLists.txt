@@ -26,6 +26,13 @@ if (EMIL_HOST_BUILD)
     function(add_protobuf_target_properties)
         foreach(target ${ARGN})
             set_target_properties(${target} PROPERTIES FOLDER External/Protobuf)
+            if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
+                # The "invalid noreturn" warning can't be ignored on GCC
+                # Disable warning-as-error for these targets completely
+                # This should be re-evaluated when https://github.com/protocolbuffers/protobuf/issues/9817 is fixed
+                set_target_properties(${target} PROPERTIES COMPILE_WARNING_AS_ERROR Off)
+            endif()
+
             install(TARGETS ${target} EXPORT emilProtobufTargets)
         endforeach()
     endfunction()
