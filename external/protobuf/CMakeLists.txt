@@ -2,7 +2,7 @@ if (EMIL_HOST_BUILD)
     FetchContent_Declare(
         protobuf
         GIT_REPOSITORY https://github.com/protocolbuffers/protobuf
-        GIT_TAG 90b73ac3f0b10320315c2ca0d03a5a9b095d2f66 # v21.9
+        GIT_TAG f0dc78d7e6e331b8c6bb2d5283e06aa26883ca7c # v21.12
     )
 
     set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL On)

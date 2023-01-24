@@ -1,5 +1,5 @@
 function(emil_fetch_protocol_buffer_compiler)
-    set(protobuf_version "21.9")
+    set(protobuf_version "21.12")
 
     if (CMAKE_HOST_WIN32)
         FetchContent_Declare(protoc
