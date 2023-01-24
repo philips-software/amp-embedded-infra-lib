@@ -7,11 +7,6 @@ if (EMIL_HOST_BUILD)
 
     set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL On)
 
-    if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang|AppleClang")
-        # Disable warning on invalid use of [[noreturn]]
-        add_compile_options(-Wno-invalid-noreturn)
-    endif()
-
     set(protobuf_BUILD_TESTS Off CACHE INTERNAL "")
     set(protobuf_BUILD_PROTOBUF_BINARIES Off CACHE INTERNAL "")
     set(protobuf_BUILD_LIBPROTOC On CACHE INTERNAL "")
@@ -19,6 +14,12 @@ if (EMIL_HOST_BUILD)
     set(protobuf_WITH_ZLIB Off CACHE INTERNAL "")
 
     FetchContent_MakeAvailable(protobuf)
+
+    if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang|AppleClang")
+        # Disable warning on invalid use of [[noreturn]]
+        add_compile_options(-Wno-invalid-noreturn)
+        set_source_files_properties(${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/strutil.cc PROPERTIES COMPILE_OPTIONS -Wno-deprecated-declarations)
+    endif()
 
     function(add_protobuf_target_properties)
         foreach(target ${ARGN})
