@@ -23,8 +23,8 @@ struct TimeWithSynchronization
         timeWithLocalization.Utc().Shift(localClockOffset - timeWithLocalization.Utc().GetCurrentShift());
 
         tracer.Trace() << "Time synchronized; round trip delay was: " << roundTripDelay
-            << " local offset was: " << localClockOffset
-            << " new time set to: " << timeWithLocalization.Utc().Now();
+                       << " local offset was: " << localClockOffset
+                       << " new time set to: " << timeWithLocalization.Utc().Now();
     }
 
     virtual void TimeUnavailable() override

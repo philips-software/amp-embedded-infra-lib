@@ -42,7 +42,7 @@ namespace application
     {
     public:
         TracingHttpClient(infra::BoundedString url, uint16_t port, services::HttpClientConnector& connector,
-                          services::Tracer& tracer)
+            services::Tracer& tracer)
             : HttpClientBasic(url, port, connector)
             , tracer(tracer)
         {
