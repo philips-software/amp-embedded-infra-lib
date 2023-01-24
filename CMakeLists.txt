@@ -69,7 +69,7 @@ else()
     set(EMIL_EXCLUDE_FROM_ALL "EXCLUDE_FROM_ALL")
 endif()
 
-option(CMAKE_COMPILE_WARNING_AS_ERROR "Enable warnings-as-error" ON)
+option(CMAKE_COMPILE_WARNING_AS_ERROR "Enable warnings-as-error" On)
 option(EMIL_BUILD_TESTS "Enable building the tests" ${EMIL_DEFAULTOPT})
 option(EMIL_BUILD_EXAMPLES "Enable building the examples" ${EMIL_DEFAULTOPT})
 option(EMIL_ENABLE_FUZZING "Enable building the fuzzing targets" Off)
