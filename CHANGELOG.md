@@ -7,6 +7,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [2.2.1](https://github.com/philips-software/amp-embedded-infra-lib/compare/amp-embedded-infra-lib-v2.2.0...amp-embedded-infra-lib-v2.2.1) (2023-01-25)
+
+
+### Bug Fixes
+
+* Use gh cli to publish release assets ([#184](https://github.com/philips-software/amp-embedded-infra-lib/issues/184)) ([9de4c45](https://github.com/philips-software/amp-embedded-infra-lib/commit/9de4c453be231feea5f973968ad908355d8c6e43))
+
 ## [2.2.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/amp-embedded-infra-lib-v2.1.0...amp-embedded-infra-lib-v2.2.0) (2023-01-24)
 
 
