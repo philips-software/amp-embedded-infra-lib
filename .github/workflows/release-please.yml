@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       releases_created: ${{ steps.release.outputs.releases_created }}
-      upload_url: ${{ steps.release.outputs.upload_url }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
       - uses: philips-software/app-token-action@a37926571e4cec6f219e06727136efdd073d8657 # v1.1.2
         id: token
@@ -44,7 +44,7 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
     steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           persist-credentials: false
       - uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
@@ -56,11 +56,6 @@ jobs:
           configurePreset: "Package"
           buildPreset: "Package"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
-      - uses: nanoufo/action-upload-artifacts-and-release-assets@1adad6c4773f492fd802907560790a7b7b1ac457 # v1.6
+      - run: gh release upload ${{ needs.release_please.outputs.tag_name }} Build/**/emil-*.zip --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          path: |
-            Build/**/emil-*.zip
-          upload-release-files: true
-          release-upload-url: ${{ needs.release_please.outputs.upload_url }}
