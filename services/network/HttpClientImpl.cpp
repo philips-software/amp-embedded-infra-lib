@@ -88,7 +88,7 @@ namespace services
         ConnectionObserver::Subject().AckReceived();
     }
 
-    void HttpClientImpl::Close()
+    void HttpClientImpl::CloseConnection()
     {
         ConnectionObserver::Subject().CloseAndDestroy();
     }
@@ -124,6 +124,14 @@ namespace services
             else
                 AbortAndDestroy();
         }
+    }
+
+    void HttpClientImpl::Close()
+    {
+        if (HttpClient::IsAttached())
+            Observer().CloseRequested();
+        else
+            ConnectionObserver::Subject().CloseAndDestroy();
     }
 
     void HttpClientImpl::Detaching()

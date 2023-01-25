@@ -96,9 +96,9 @@ namespace services
         Subject().AckReceived();
     }
 
-    void HttpClientCachedConnection::Close()
+    void HttpClientCachedConnection::CloseConnection()
     {
-        if (HttpClient::IsAttached())
+        if (HttpClient::IsAttached() && !detachingObserver)
             HttpClient::Detach();
     }
 
@@ -107,15 +107,38 @@ namespace services
         return Subject().GetConnection();
     }
 
+    void HttpClientCachedConnection::CloseRequested()
+    {
+        if (HttpClient::IsAttached() && !detachingObserver)
+        {
+            closeRequested = true;
+            Observer().CloseRequested();
+        }
+        else
+            HttpClientObserver::Subject().CloseConnection();
+    }
+
     void HttpClientCachedConnection::Detaching()
     {
-        if (HttpClient::IsAttached())
+        detaching = true;
+
+        if (HttpClient::IsAttached() && !detachingObserver)
             HttpClient::Detach();
+    }
+
+    void HttpClientCachedConnection::AttachedObserver()
+    {
+        detachingObserver = false;
     }
 
     void HttpClientCachedConnection::DetachingObserver()
     {
-        connector.DetachingObserver();
+        detachingObserver = true;
+
+        if (!detaching && closeRequested)
+            HttpClientObserver::Subject().CloseConnection();
+        else
+            connector.DetachingObserver();
     }
 
     void HttpClientCachedConnection::StatusAvailable(HttpStatusCode statusCode)
@@ -178,6 +201,19 @@ namespace services
         infra::EventDispatcher::Instance().Schedule([this]() { TryConnectWaiting(); });
     }
 
+    void HttpClientCachedConnectionConnector::Stop(const infra::Function<void()>& onDone)
+    {
+        if (!clientPtr.Referenced())
+            onDone();
+        else
+        {
+            clientPtr.SetAction(onDone);
+
+            if (client != infra::none && client->HttpClientObserver::IsAttached() && !client->detaching)
+                client->HttpClientObserver::Subject().CloseConnection();
+        }
+    }
+
     infra::BoundedConstString HttpClientCachedConnectionConnector::Hostname() const
     {
         return clientObserverFactory->Hostname();
@@ -219,7 +255,7 @@ namespace services
     {
         clientObserverFactory->ConnectionEstablished([httpClientPtr = clientPtr.MakeShared(*client)](infra::SharedPtr<HttpClientObserver> observer)
             {
-                if (observer)
+                if (observer != nullptr)
                     httpClientPtr->Attach(observer);
             });
 
@@ -229,7 +265,7 @@ namespace services
     void HttpClientCachedConnectionConnector::Connect()
     {
         if (client != infra::none && client->HttpClientObserver::IsAttached())
-            client->HttpClientObserver::Subject().Close();
+            client->HttpClientObserver::Subject().CloseConnection();
 
         hostAndPortHash = GenerateHostAndPortHash(*clientObserverFactory);
         delegate.Connect(*this);
@@ -246,7 +282,7 @@ namespace services
     void HttpClientCachedConnectionConnector::DisconnectTimeout()
     {
         if (client != infra::none && !client->HttpClient::IsAttached() && client->HttpClientObserver::IsAttached())
-            client->HttpClientObserver::Subject().Close();
+            client->HttpClientObserver::Subject().CloseConnection();
     };
 
     void HttpClientCachedConnectionConnector::TryConnectWaiting()
@@ -275,7 +311,7 @@ namespace services
 
     void HttpClientCachedConnectionConnector::ClientPtrExpired()
     {
-        if (client != infra::none && client->HttpClient::IsAttached())
+        if (client != infra::none && client->HttpClient::IsAttached() && !client->detachingObserver)
             client->HttpClient::Detach();
 
         TryConnectWaiting();

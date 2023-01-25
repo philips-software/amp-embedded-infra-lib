@@ -18,7 +18,7 @@ namespace services
         using Claimer = infra::ClaimableResource::Claimer::WithSize<sizeof(void*) + sizeof(IPAddress) + sizeof(infra::AutoResetFunction<void()>)>;
 
         infra::ClaimableResource& Resource();
-        infra::SharedPtr<ExclusiveConnection> CreateConnection(Claimer&& claimer, bool cancelConnectionOnNewRequest);
+        infra::SharedPtr<ExclusiveConnection> CreateConnection(Claimer&& claimer);
         void RequestCloseConnection();
 
     private:
@@ -57,7 +57,6 @@ namespace services
         infra::ClaimableResource resource;
         Claimer currentClaimer{ resource };
         infra::NotifyingSharedOptional<ExclusiveConnection> exclusiveConnection{ [this]() { currentClaimer.Release(); } };
-        bool cancelConnectionOnNewRequest;
     };
 
     class ExclusiveConnectionFactory
@@ -74,7 +73,7 @@ namespace services
             infra::BoundedList<Connector>::WithMaxSize<NumConnectors>>;
 
         ExclusiveConnectionFactory(infra::BoundedList<infra::NotifyingSharedOptional<Listener>>& listeners, infra::BoundedList<Connector>& connectors,
-            ExclusiveConnectionFactoryMutex& mutex, ConnectionFactory& connectionFactory, bool cancelConnectionOnNewRequest);
+            ExclusiveConnectionFactoryMutex& mutex, ConnectionFactory& connectionFactory);
 
         // Implementation of ConnectionFactory
         virtual infra::SharedPtr<void> Listen(uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions = IPVersions::both) override;
@@ -127,7 +126,6 @@ namespace services
         infra::BoundedList<infra::NotifyingSharedOptional<Listener>>& listeners;
         infra::BoundedList<Connector>& connectors;
         ConnectionFactory& connectionFactory;
-        bool cancelConnectionOnNewRequest;
     };
 }
 

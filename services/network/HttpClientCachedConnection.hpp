@@ -35,13 +35,15 @@ namespace services
         virtual void Patch(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         virtual void Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
         virtual void AckReceived() override;
-        virtual void Close() override;
+        virtual void CloseConnection() override;
         virtual Connection& GetConnection() override;
 
         // Implementation of SharedOwnedObserver via HttpClientObserver
+        virtual void CloseRequested() override;
         virtual void Detaching() override;
 
         // Implementation of SharedOwnedSubject via HttpClient
+        virtual void AttachedObserver() override;
         virtual void DetachingObserver() override;
 
     public:
@@ -59,6 +61,9 @@ namespace services
         HttpClientCachedConnectionConnector& connector;
         infra::AutoResetFunction<void(infra::SharedPtr<HttpClientObserver> client)> createdObserver;
         bool idle = true;
+        bool closeRequested = false;
+        bool detaching = false;
+        bool detachingObserver = false;
     };
 
     class HttpClientCachedConnectionConnector
@@ -72,6 +77,8 @@ namespace services
         virtual void Connect(HttpClientObserverFactory& factory) override;
         virtual void CancelConnect(HttpClientObserverFactory& factory) override;
 
+        void Stop(const infra::Function<void()>& onDone);
+
     private:
         // Implementation of HttpClientObserverFactory
         virtual infra::BoundedConstString Hostname() const override;
@@ -81,7 +88,7 @@ namespace services
 
     protected:
         friend class HttpClientCachedConnection;
-        
+
         virtual void RetargetConnection();
         virtual void Connect();
         virtual void DetachingObserver();

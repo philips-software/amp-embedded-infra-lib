@@ -76,9 +76,9 @@ namespace services
         Subject().AckReceived();
     }
 
-    void HttpClientAuthentication::Close()
+    void HttpClientAuthentication::CloseConnection()
     {
-        Subject().Close();
+        Subject().CloseConnection();
     }
 
     Connection& HttpClientAuthentication::GetConnection()

@@ -37,13 +37,14 @@ namespace services
         virtual void Patch(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         virtual void Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
         virtual void AckReceived() override;
-        virtual void Close() override;
+        virtual void CloseConnection() override;
         virtual Connection& GetConnection() override;
 
         // Implementation of ConnectionObserver
         virtual void Attached() override;
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void DataReceived() override;
+        virtual void Close() override;
         virtual void Detaching() override;
 
     protected:
@@ -183,6 +184,8 @@ namespace services
     public:
         HttpClientConnectorImpl(services::ConnectionFactory& connectionFactory, services::IPAddress address, Args&&... args);
 
+        void Stop(const infra::Function<void()>& onDone);
+
         // Implementation of ClientConnectionObserverFactory
         virtual services::IPAddress Address() const override;
         virtual uint16_t Port() const override;
@@ -219,6 +222,8 @@ namespace services
     public:
         HttpClientConnectorWithNameResolverImpl(ConnectionFactoryWithNameResolver& connectionFactory, Args&&... args);
 
+        void Stop(const infra::Function<void()>& onDone);
+
         // Implementation of ClientConnectionObserverFactoryWithNameResolver
         virtual infra::BoundedConstString Hostname() const override;
         virtual uint16_t Port() const override;
@@ -234,7 +239,7 @@ namespace services
 
     private:
         template<std::size_t... I>
-            infra::SharedPtr<HttpClient> InvokeEmplace(infra::IndexSequence<I...>);
+        infra::SharedPtr<HttpClient> InvokeEmplace(infra::IndexSequence<I...>);
 
     private:
         ConnectionFactoryWithNameResolver& connectionFactory;
@@ -251,7 +256,7 @@ namespace services
     {
     public:
         template<std::size_t MaxSize>
-            using WithRedirectionUrlSize = infra::WithStorage<HttpClientImplWithRedirection, infra::BoundedString::WithStorage<MaxSize>>;
+        using WithRedirectionUrlSize = infra::WithStorage<HttpClientImplWithRedirection, infra::BoundedString::WithStorage<MaxSize>>;
 
         HttpClientImplWithRedirection(infra::BoundedString redirectedUrlStorage, infra::BoundedConstString hostname, ConnectionFactoryWithNameResolver& connectionFactory);
         ~HttpClientImplWithRedirection();
@@ -413,7 +418,7 @@ namespace services
         public:
             QueryPut2(std::size_t contentSize, HttpHeaders headers);
 
-            virtual void Execute(HttpClient & client, infra::BoundedConstString requestTarget) override;
+            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
         private:
             std::size_t contentSize;
@@ -438,7 +443,7 @@ namespace services
         public:
             QueryPatch1(infra::BoundedConstString content, HttpHeaders headers);
 
-            virtual void Execute(HttpClient & client, infra::BoundedConstString requestTarget) override;
+            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
         private:
             HttpHeaders headers;
@@ -495,6 +500,19 @@ namespace services
     {}
 
     template<class HttpClient, class... Args>
+    void HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::Stop(const infra::Function<void()>& onDone)
+    {
+        if (client.Allocatable())
+            onDone();
+        else
+        {
+            client.OnAllocatable(onDone);
+            if (client)
+                client->CloseConnection();
+        }
+    }
+
+    template<class HttpClient, class... Args>
     infra::BoundedConstString HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::Hostname() const
     {
         return clientObserverFactory->Hostname();
@@ -520,13 +538,13 @@ namespace services
         auto httpClientPtr = InvokeEmplace(infra::MakeIndexSequence<sizeof...(Args)>{});
 
         clientObserverFactory->ConnectionEstablished([&httpClientPtr, &createdObserver](infra::SharedPtr<HttpClientObserver> observer)
-        {
-            if (observer)
             {
-                createdObserver(httpClientPtr);
-                httpClientPtr->Attach(observer);
-            }
-        });
+                if (observer)
+                {
+                    createdObserver(httpClientPtr);
+                    httpClientPtr->Attach(observer);
+                }
+            });
 
         clientObserverFactory = nullptr;
     }
@@ -538,17 +556,17 @@ namespace services
 
         switch (reason)
         {
-            case ConnectFailReason::refused:
-                clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::refused);
-                break;
-            case ConnectFailReason::connectionAllocationFailed:
-                clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::connectionAllocationFailed);
-                break;
-            case ConnectFailReason::nameLookupFailed:
-                clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::nameLookupFailed);
-                break;
-            default:
-                std::abort();
+        case ConnectFailReason::refused:
+            clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::refused);
+            break;
+        case ConnectFailReason::connectionAllocationFailed:
+            clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::connectionAllocationFailed);
+            break;
+        case ConnectFailReason::nameLookupFailed:
+            clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::nameLookupFailed);
+            break;
+        default:
+            std::abort();
         }
 
         clientObserverFactory = nullptr;
@@ -594,6 +612,19 @@ namespace services
         , client([this]() { TryConnectWaiting(); })
         , args(std::forward<Args>(args)...)
     {}
+
+    template<class HttpClient, class... Args>
+    void HttpClientConnectorImpl<HttpClient, Args...>::Stop(const infra::Function<void()>& onDone)
+    {
+        if (client.Allocatable())
+            onDone();
+        else
+        {
+            client.OnAllocatable(onDone);
+            if (client)
+                client->CloseConnection();
+        }
+    }
 
     template<class HttpClient, class... Args>
     services::IPAddress HttpClientConnectorImpl<HttpClient, Args...>::Address() const
