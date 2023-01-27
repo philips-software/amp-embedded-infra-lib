@@ -16,7 +16,8 @@ TEST(MacAddressTest, fromStream)
     infra::StringInputStream stream{ "98:87:76:65:54:43" };
 
     hal::MacAddress mac{};
-    stream >> infra::ToMacAddress(mac);
+    auto streamToMac = infra::ToMacAddress(mac); 
+    stream >> streamToMac;
 
     hal::MacAddress expected{ 0x98, 0x87, 0x76, 0x65, 0x54, 0x43 };
     EXPECT_EQ(mac, expected);
