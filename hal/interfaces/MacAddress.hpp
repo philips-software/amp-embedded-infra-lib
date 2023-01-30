@@ -29,8 +29,8 @@ namespace infra
     public:
         explicit AsMacAddressWriterHelper(hal::MacAddress& macAddress);
 
-        friend TextInputStream& operator>>(TextInputStream& stream, AsMacAddressWriterHelper& asMacAddressHelper);
-        friend TextInputStream& operator>>(TextInputStream&& stream, AsMacAddressWriterHelper& asMacAddressHelper);
+        friend TextInputStream& operator>>(TextInputStream& stream, AsMacAddressWriterHelper asMacAddressHelper);
+        friend TextInputStream& operator>>(TextInputStream&& stream, AsMacAddressWriterHelper asMacAddressHelper);
 
     private:
         hal::MacAddress& macAddress;
