@@ -39,7 +39,7 @@ namespace infra
         return stream << asMacAddressHelper;
     }
 
-    TextInputStream& operator>>(TextInputStream& stream, AsMacAddressWriterHelper& asMacAddressHelper)
+    TextInputStream& operator>>(TextInputStream& stream, AsMacAddressWriterHelper asMacAddressHelper)
     {
         auto& mac = asMacAddressHelper.macAddress;
         const auto w02 = Width(2, '0');
@@ -47,7 +47,7 @@ namespace infra
         return stream;
     }
 
-    TextInputStream& operator>>(TextInputStream&& stream, AsMacAddressWriterHelper& asMacAddressHelper)
+    TextInputStream& operator>>(TextInputStream&& stream, AsMacAddressWriterHelper asMacAddressHelper)
     {
         return stream >> asMacAddressHelper;
     }
