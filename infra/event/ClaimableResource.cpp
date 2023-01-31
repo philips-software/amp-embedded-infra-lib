@@ -75,8 +75,11 @@ namespace infra
 
     void ClaimableResource::ScheduleReEvaluateClaim()
     {
-        reEvaluateClaimScheduled = true;
-        infra::EventDispatcher::Instance().Schedule([this]() { ReEvaluateClaim(); });
+        if (!reEvaluateClaimScheduled)
+        {
+            reEvaluateClaimScheduled = true;
+            infra::EventDispatcher::Instance().Schedule([this]() { ReEvaluateClaim(); });
+        }
     }
 
     ClaimableResource::ClaimerBase::ClaimerBase(ClaimableResource& resource)
