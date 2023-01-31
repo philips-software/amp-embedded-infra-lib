@@ -7,11 +7,11 @@ function(emil_fetch_protocol_buffer_compiler)
         )
     elseif (CMAKE_HOST_APPLE)
         FetchContent_Declare(protoc
-            URL https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_version}/protoc-${protobuf_version}-osx-x86_64.zip
+            URL https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_version}/protoc-${protobuf_version}-osx-${CMAKE_HOST_SYSTEM_PROCESSOR}.zip
         )
     elseif (CMAKE_HOST_UNIX)
         FetchContent_Declare(protoc
-            URL https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_version}/protoc-${protobuf_version}-linux-x86_64.zip
+            URL https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_version}/protoc-${protobuf_version}-linux-${CMAKE_HOST_SYSTEM_PROCESSOR}.zip
         )
     else()
         message(FATAL_ERROR "No suitable proto compiler found for ${CMAKE_HOST_SYSTEM_NAME}")
