@@ -22,8 +22,8 @@ namespace main_
         const application::SupportedTargets& supportedTargets;
 
         args::ArgumentParser parser;
-        args::HelpFlag help{ parser, "help", "Display this help menu", {'h', "help"} };
-        args::ValueFlag<std::string> outputFile{ parser, "filename", "Output file name", {'o', "output"}, args::Options::Required };
+        args::HelpFlag help{ parser, "help", "Display this help menu", { 'h', "help" } };
+        args::ValueFlag<std::string> outputFile{ parser, "filename", "Output file name", { 'o', "output" }, args::Options::Required };
         args::Group targetGroup{ parser, "Supported Targets" };
         std::list<args::ValueFlag<std::string>> targets;
     };

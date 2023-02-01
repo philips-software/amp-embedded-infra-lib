@@ -53,7 +53,7 @@ namespace main_
         {
             UpgradePackBuilderFacade(header).Build(supportedTargets, requestedTargets, args::get(outputFile));
         }
-        catch(const std::exception& e)
+        catch (const std::exception& e)
         {
             std::cerr << e.what() << std::endl;
             return 1;
@@ -65,7 +65,8 @@ namespace main_
     args::Options UpgradePackBuilderApplication::OptionsForTarget(const std::string& target)
     {
         bool mandatory = std::any_of(supportedTargets.MandatoryTargets().cbegin(), supportedTargets.MandatoryTargets().cend(),
-            [&](const auto& s) { return s == target; });
+            [&](const auto& s)
+            { return s == target; });
         return mandatory ? args::Options::Required : args::Options::None;
     }
 
