@@ -1,4 +1,3 @@
-#include "gmock/gmock.h"
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/StdStringOutputStream.hpp"
 #include "infra/stream/test/StreamMock.hpp"
@@ -10,6 +9,7 @@
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/network/test_doubles/HttpClientMock.hpp"
 #include "services/util/Sha256MbedTls.hpp"
+#include "gmock/gmock.h"
 
 class HttpClientCachedConnectionTest
     : public testing::Test
@@ -44,9 +44,9 @@ public:
             {
                 auto observer = clientObserver.Emplace();
                 EXPECT_CALL(*observer, Attached());
-                createdClientObserver(observer);
-            }));
-        connectingFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client) { clientSubject.Attach(client); });
+                createdClientObserver(observer); }));
+        connectingFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client)
+            { clientSubject.Attach(client); });
     }
 
     void FinishRequest()
@@ -292,8 +292,7 @@ TEST_F(HttpClientCachedConnectionTest, second_request_on_same_connection)
         {
             auto observer = clientObserver.Emplace();
             EXPECT_CALL(*observer, Attached());
-            createdClientObserver(observer);
-        }));
+            createdClientObserver(observer); }));
     InitiateConnect(factory, "host", 10);
     CloseConnection();
 }
@@ -309,8 +308,7 @@ TEST_F(HttpClientCachedConnectionTest, CloseConnection_on_second_request)
         {
             auto observer = clientObserver.Emplace();
             EXPECT_CALL(*observer, Attached());
-            createdClientObserver(observer);
-        }));
+            createdClientObserver(observer); }));
     InitiateConnect(factory, "host", 10);
 
     auto clientObserverPtr = clientObserver.MakePtr();
@@ -329,7 +327,8 @@ TEST_F(HttpClientCachedConnectionTest, second_request_but_for_different_host)
     clientObserver->Detach();
 
     ExpectHostnameAndPort("host2", 10);
-    EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]() { clientSubject.Detach(); });
+    EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]()
+        { clientSubject.Detach(); });
     CreateConnection(factory, "host2", 10);
     CloseConnection();
 }
@@ -342,7 +341,8 @@ TEST_F(HttpClientCachedConnectionTest, second_request_but_for_different_port)
     clientObserver->Detach();
 
     ExpectHostnameAndPort("host", 9);
-    EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]() { clientSubject.Detach(); });
+    EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]()
+        { clientSubject.Detach(); });
     CreateConnection(factory, "host", 9);
     CloseConnection();
 }
@@ -354,7 +354,8 @@ TEST_F(HttpClientCachedConnectionTest, connection_times_out)
     EXPECT_CALL(*clientObserver, Detaching());
     clientObserver->Detach();
 
-    EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]() { clientSubject.Detach(); });
+    EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]()
+        { clientSubject.Detach(); });
     ForwardTime(std::chrono::minutes(1));
 }
 
@@ -365,8 +366,7 @@ TEST_F(HttpClientCachedConnectionTest, connection_is_closed_during_StatusAvailab
     EXPECT_CALL(*clientObserver, StatusAvailable(services::HttpStatusCode::BadRequest)).WillOnce(testing::Invoke([this](services::HttpStatusCode)
         {
             EXPECT_CALL(*clientObserver, Detaching());
-            clientObserver->Detach();
-        }));
+            clientObserver->Detach(); }));
     clientSubject.Observer().StatusAvailable(services::HttpStatusCode::BadRequest);
 
     clientSubject.Observer().HeaderAvailable(services::HttpHeader("field", "value"));
@@ -398,7 +398,8 @@ TEST_F(HttpClientCachedConnectionTest, after_Close_when_no_client_is_connected_c
     EXPECT_CALL(*clientObserver, Detaching());
     clientObserver->Detach();
 
-    EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]() { clientSubject.Detach(); });
+    EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]()
+        { clientSubject.Detach(); });
     clientSubject.Observer().CloseRequested();
 }
 
@@ -410,7 +411,8 @@ TEST_F(HttpClientCachedConnectionTest, after_handling_one_close_request_next_req
     EXPECT_CALL(*clientObserver, Detaching());
     clientObserver->Detach();
 
-    EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]() { clientSubject.Detach(); });
+    EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]()
+        { clientSubject.Detach(); });
     clientSubject.Observer().CloseRequested();
 
     // New request
@@ -420,7 +422,8 @@ TEST_F(HttpClientCachedConnectionTest, after_handling_one_close_request_next_req
     EXPECT_CALL(*clientObserver, Detaching());
     clientObserver->Detach();
 
-    EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]() { clientSubject.Detach(); });
+    EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]()
+        { clientSubject.Detach(); });
     ForwardTime(std::chrono::minutes(1));
 }
 
@@ -430,7 +433,8 @@ TEST_F(HttpClientCachedConnectionTest, Stop_while_closed)
     CloseConnection();
 
     infra::VerifyingFunctionMock<void()> onDone;
-    connector.Stop([&]() { onDone.callback(); });
+    connector.Stop([&]()
+        { onDone.callback(); });
 }
 
 TEST_F(HttpClientCachedConnectionTest, Stop_while_connection_open)
@@ -438,7 +442,9 @@ TEST_F(HttpClientCachedConnectionTest, Stop_while_connection_open)
     CreateConnection(factory);
 
     infra::VerifyingFunctionMock<void()> onDone;
-    EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]() { clientSubject.Detach(); });
+    EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]()
+        { clientSubject.Detach(); });
     EXPECT_CALL(*clientObserver, Detaching());
-    connector.Stop([&]() { onDone.callback(); });
+    connector.Stop([&]()
+        { onDone.callback(); });
 }

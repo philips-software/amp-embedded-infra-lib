@@ -1,5 +1,5 @@
-#include "infra/event/EventDispatcher.hpp"
 #include "services/network/HttpClientCachedConnection.hpp"
+#include "infra/event/EventDispatcher.hpp"
 
 namespace services
 {
@@ -185,7 +185,8 @@ namespace services
     {
         waitingClientObserverFactories.push_back(factory);
 
-        infra::EventDispatcher::Instance().Schedule([this]() { TryConnectWaiting(); });
+        infra::EventDispatcher::Instance().Schedule([this]()
+            { TryConnectWaiting(); });
     }
 
     void HttpClientCachedConnectionConnector::CancelConnect(HttpClientObserverFactory& factory)
@@ -198,7 +199,8 @@ namespace services
         else
             waitingClientObserverFactories.erase(factory);
 
-        infra::EventDispatcher::Instance().Schedule([this]() { TryConnectWaiting(); });
+        infra::EventDispatcher::Instance().Schedule([this]()
+            { TryConnectWaiting(); });
     }
 
     void HttpClientCachedConnectionConnector::Stop(const infra::Function<void()>& onDone)
@@ -237,8 +239,7 @@ namespace services
                 {
                     httpClientPtr->createdObserver(httpClientPtr);
                     httpClientPtr->Attach(observer);
-                }
-            });
+                } });
 
         clientObserverFactory = nullptr;
     }
@@ -256,8 +257,7 @@ namespace services
         clientObserverFactory->ConnectionEstablished([httpClientPtr = clientPtr.MakeShared(*client)](infra::SharedPtr<HttpClientObserver> observer)
             {
                 if (observer != nullptr)
-                    httpClientPtr->Attach(observer);
-            });
+                    httpClientPtr->Attach(observer); });
 
         clientObserverFactory = nullptr;
     }
@@ -274,9 +274,11 @@ namespace services
     void HttpClientCachedConnectionConnector::DetachingObserver()
     {
         if (clientObserverFactory == nullptr && client != infra::none && !disconnectTimer.Armed())
-            disconnectTimer.Start(disconnectTimeout, [this]() { DisconnectTimeout(); });
+            disconnectTimer.Start(disconnectTimeout, [this]()
+                { DisconnectTimeout(); });
 
-        infra::EventDispatcher::Instance().Schedule([this]() { TryConnectWaiting(); });
+        infra::EventDispatcher::Instance().Schedule([this]()
+            { TryConnectWaiting(); });
     }
 
     void HttpClientCachedConnectionConnector::DisconnectTimeout()

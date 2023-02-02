@@ -109,7 +109,10 @@ namespace services
         infra::IntrusiveList<HttpClientObserverFactory> waitingClientObserverFactories;
 
         infra::Optional<HttpClientCachedConnection> client;
-        infra::AccessedBySharedPtr clientPtr{ [this]() { ClientPtrExpired(); } };
+        infra::AccessedBySharedPtr clientPtr{ [this]()
+            {
+                ClientPtrExpired();
+            } };
 
         Sha256::Digest hostAndPortHash{};
 

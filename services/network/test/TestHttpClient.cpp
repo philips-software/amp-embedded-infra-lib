@@ -876,7 +876,8 @@ TEST_F(HttpClientTest, Stop_while_closed)
     client.Subject().CloseConnection();
 
     infra::VerifyingFunctionMock<void()> onDone;
-    connector.Stop([&]() { onDone.callback(); });
+    connector.Stop([&]()
+        { onDone.callback(); });
 }
 
 TEST_F(HttpClientTest, Stop_while_connection_open)
@@ -886,7 +887,8 @@ TEST_F(HttpClientTest, Stop_while_connection_open)
     infra::VerifyingFunctionMock<void()> onDone;
     EXPECT_CALL(connection, CloseAndDestroyMock());
     EXPECT_CALL(client, Detaching());
-    connector.Stop([&]() { onDone.callback(); });
+    connector.Stop([&]()
+        { onDone.callback(); });
 }
 
 class HttpClientImplWithRedirectionTest

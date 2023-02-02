@@ -557,17 +557,17 @@ namespace services
 
         switch (reason)
         {
-        case ConnectFailReason::refused:
-            clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::refused);
-            break;
-        case ConnectFailReason::connectionAllocationFailed:
-            clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::connectionAllocationFailed);
-            break;
-        case ConnectFailReason::nameLookupFailed:
-            clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::nameLookupFailed);
-            break;
-        default:
-            std::abort();
+            case ConnectFailReason::refused:
+                clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::refused);
+                break;
+            case ConnectFailReason::connectionAllocationFailed:
+                clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::connectionAllocationFailed);
+                break;
+            case ConnectFailReason::nameLookupFailed:
+                clientObserverFactory->ConnectionFailed(HttpClientObserverFactory::ConnectFailReason::nameLookupFailed);
+                break;
+            default:
+                std::abort();
         }
 
         clientObserverFactory = nullptr;

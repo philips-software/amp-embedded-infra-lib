@@ -78,7 +78,8 @@ namespace infra
         if (!reEvaluateClaimScheduled)
         {
             reEvaluateClaimScheduled = true;
-            infra::EventDispatcher::Instance().Schedule([this]() { ReEvaluateClaim(); });
+            infra::EventDispatcher::Instance().Schedule([this]()
+                { ReEvaluateClaim(); });
         }
     }
 
