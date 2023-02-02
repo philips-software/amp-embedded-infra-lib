@@ -195,3 +195,7 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
 endif()
 
 emil_clangformat_directories(emil DIRECTORIES .)
+
+if (EMIL_STANDALONE)
+    emil_folderize_all_targets()
+endif()
