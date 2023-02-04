@@ -140,7 +140,7 @@ namespace hal
         infra::Optional<std::string> matchingDeviceId;
         infra::Optional<std::vector<std::string>> hardwareIds;
 
-        for (auto& key : keys)
+        for (const DEVPROPKEY& key : keys)
         {
             DEVPROPTYPE propType;
 
