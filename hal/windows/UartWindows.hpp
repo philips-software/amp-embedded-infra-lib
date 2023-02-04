@@ -4,6 +4,7 @@
 #include "hal/interfaces/SerialCommunication.hpp"
 // clang-format off
 #include <atomic>
+#include <condition_variable>
 #include <mutex>
 #include <thread>
 #include <winsock2.h>
