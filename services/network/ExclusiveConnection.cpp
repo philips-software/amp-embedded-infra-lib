@@ -8,10 +8,8 @@ namespace services
         return resource;
     }
 
-    infra::SharedPtr<ExclusiveConnectionFactoryMutex::ExclusiveConnection> ExclusiveConnectionFactoryMutex::CreateConnection(ExclusiveConnectionFactoryMutex::Claimer&& claimer,
-        bool cancelConnectionOnNewRequest)
+    infra::SharedPtr<ExclusiveConnectionFactoryMutex::ExclusiveConnection> ExclusiveConnectionFactoryMutex::CreateConnection(ExclusiveConnectionFactoryMutex::Claimer&& claimer)
     {
-        this->cancelConnectionOnNewRequest = cancelConnectionOnNewRequest;
         really_assert(exclusiveConnection.Allocatable());
         currentClaimer = std::move(claimer);
         return exclusiveConnection.Emplace(*this);
@@ -19,7 +17,7 @@ namespace services
 
     void ExclusiveConnectionFactoryMutex::RequestCloseConnection()
     {
-        if (exclusiveConnection && cancelConnectionOnNewRequest)
+        if (exclusiveConnection)
             exclusiveConnection->Close();
     }
 
@@ -106,17 +104,16 @@ namespace services
 
         if (aborting)
             Connection::Observer().Abort();
-        else if ((mutex.resource.ClaimsPending() && mutex.cancelConnectionOnNewRequest) || closing)
+        else if (mutex.resource.ClaimsPending() || closing)
             Connection::Observer().Close();
     }
 
     ExclusiveConnectionFactory::ExclusiveConnectionFactory(infra::BoundedList<infra::NotifyingSharedOptional<Listener>>& listeners, infra::BoundedList<Connector>& connectors,
-        ExclusiveConnectionFactoryMutex& mutex, ConnectionFactory& connectionFactory, bool cancelConnectionOnNewRequest)
+        ExclusiveConnectionFactoryMutex& mutex, ConnectionFactory& connectionFactory)
         : mutex(mutex)
         , listeners(listeners)
         , connectors(connectors)
         , connectionFactory(connectionFactory)
-        , cancelConnectionOnNewRequest(cancelConnectionOnNewRequest)
     {}
 
     infra::SharedPtr<void> ExclusiveConnectionFactory::Listen(uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions)
@@ -173,7 +170,7 @@ namespace services
                 auto self = access.MakeShared(*this);
                 factory.ConnectionAccepted([self](infra::SharedPtr<ConnectionObserver> connectionObserver)
                 {
-                    auto newConnection = self->connectionFactory.mutex.CreateConnection(std::move(self->claimer), self->connectionFactory.cancelConnectionOnNewRequest);
+                    auto newConnection = self->connectionFactory.mutex.CreateConnection(std::move(self->claimer));
                     self->createdObserver(newConnection);
                     if (newConnection->ConnectionObserver::IsAttached())
                         newConnection->Attach(connectionObserver);
@@ -231,7 +228,7 @@ namespace services
         auto self = access.MakeShared(*this);
         clientFactory.ConnectionEstablished([self](infra::SharedPtr<ConnectionObserver> connectionObserver)
             {
-            auto newConnection = self->connectionFactory.mutex.CreateConnection(std::move(self->claimer), self->connectionFactory.cancelConnectionOnNewRequest);
+            auto newConnection = self->connectionFactory.mutex.CreateConnection(std::move(self->claimer));
             self->createdObserver(newConnection);
             if (newConnection->ConnectionObserver::IsAttached())
                 newConnection->Attach(connectionObserver); });

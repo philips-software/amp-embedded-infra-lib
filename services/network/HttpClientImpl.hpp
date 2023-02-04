@@ -37,13 +37,14 @@ namespace services
         virtual void Patch(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         virtual void Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
         virtual void AckReceived() override;
-        virtual void Close() override;
+        virtual void CloseConnection() override;
         virtual Connection& GetConnection() override;
 
         // Implementation of ConnectionObserver
         virtual void Attached() override;
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void DataReceived() override;
+        virtual void Close() override;
         virtual void Detaching() override;
 
     protected:
@@ -183,6 +184,8 @@ namespace services
     public:
         HttpClientConnectorImpl(services::ConnectionFactory& connectionFactory, services::IPAddress address, Args&&... args);
 
+        void Stop(const infra::Function<void()>& onDone);
+
         // Implementation of ClientConnectionObserverFactory
         virtual services::IPAddress Address() const override;
         virtual uint16_t Port() const override;
@@ -218,6 +221,8 @@ namespace services
     {
     public:
         HttpClientConnectorWithNameResolverImpl(ConnectionFactoryWithNameResolver& connectionFactory, Args&&... args);
+
+        void Stop(const infra::Function<void()>& onDone);
 
         // Implementation of ClientConnectionObserverFactoryWithNameResolver
         virtual infra::BoundedConstString Hostname() const override;
@@ -497,6 +502,19 @@ namespace services
     {}
 
     template<class HttpClient, class... Args>
+    void HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::Stop(const infra::Function<void()>& onDone)
+    {
+        if (client.Allocatable())
+            onDone();
+        else
+        {
+            client.OnAllocatable(onDone);
+            if (client)
+                client->CloseConnection();
+        }
+    }
+
+    template<class HttpClient, class... Args>
     infra::BoundedConstString HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::Hostname() const
     {
         return clientObserverFactory->Hostname();
@@ -596,6 +614,19 @@ namespace services
               { TryConnectWaiting(); })
         , args(std::forward<Args>(args)...)
     {}
+
+    template<class HttpClient, class... Args>
+    void HttpClientConnectorImpl<HttpClient, Args...>::Stop(const infra::Function<void()>& onDone)
+    {
+        if (client.Allocatable())
+            onDone();
+        else
+        {
+            client.OnAllocatable(onDone);
+            if (client)
+                client->CloseConnection();
+        }
+    }
 
     template<class HttpClient, class... Args>
     services::IPAddress HttpClientConnectorImpl<HttpClient, Args...>::Address() const

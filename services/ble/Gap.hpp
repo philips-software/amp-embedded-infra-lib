@@ -75,7 +75,7 @@ namespace services
         static constexpr uint16_t connectionInitialMaxTxTime = 2120; // (connectionInitialMaxTxOctets + 14) * 8
 
     public:
-        virtual hal::MacAddress GetPublicAddress() const = 0;
+        virtual hal::MacAddress GetResolvableAddress() const = 0;
         virtual void SetAdvertisementData(infra::ConstByteRange data) = 0;
         virtual void SetScanResponseData(infra::ConstByteRange data) = 0;
         virtual void Advertise(AdvertisementType type, AdvertisementIntervalMultiplier multiplier) = 0;
@@ -93,7 +93,7 @@ namespace services
         virtual void StateUpdated(GapPeripheralState state) override;
 
         // Implementation of GapPeripheral
-        virtual hal::MacAddress GetPublicAddress() const override;
+        virtual hal::MacAddress GetResolvableAddress() const override;
         virtual void SetAdvertisementData(infra::ConstByteRange data) override;
         virtual void SetScanResponseData(infra::ConstByteRange data) override;
         virtual void Advertise(AdvertisementType type, AdvertisementIntervalMultiplier multiplier) override;

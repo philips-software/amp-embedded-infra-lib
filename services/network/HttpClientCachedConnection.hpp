@@ -1,17 +1,24 @@
-#ifndef SERVICES_NETWORK_HTTP_CLIENT_AUTHENTICATION_HPP
-#define SERVICES_NETWORK_HTTP_CLIENT_AUTHENTICATION_HPP
+#ifndef SERVICES_HTTP_CLIENT_CACHED_CONNECTION_HPP
+#define SERVICES_HTTP_CLIENT_CACHED_CONNECTION_HPP
 
-#include "infra/util/BoundedVector.hpp"
+#include "infra/timer/Timer.hpp"
+#include "infra/util/Optional.hpp"
+#include "infra/util/SharedPtr.hpp"
 #include "services/network/HttpClient.hpp"
+#include "services/util/Sha256.hpp"
 
 namespace services
 {
-    class HttpClientAuthentication
+    class HttpClientCachedConnectionConnector;
+
+    class HttpClientCachedConnection
         : public HttpClient
         , public HttpClientObserver
     {
     public:
-        explicit HttpClientAuthentication(infra::BoundedVector<HttpHeader>& headersWithAuthorization);
+        HttpClientCachedConnection(HttpClientCachedConnectionConnector& connector, infra::AutoResetFunction<void(infra::SharedPtr<HttpClientObserver> client)>&& createdObserver);
+
+        bool Idle() const;
 
         // Implementation of HttpClient
         virtual void Get(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
@@ -31,6 +38,15 @@ namespace services
         virtual void CloseConnection() override;
         virtual Connection& GetConnection() override;
 
+        // Implementation of SharedOwnedObserver via HttpClientObserver
+        virtual void CloseRequested() override;
+        virtual void Detaching() override;
+
+        // Implementation of SharedOwnedSubject via HttpClient
+        virtual void AttachedObserver() override;
+        virtual void DetachingObserver() override;
+
+    public:
         // Implementation of HttpClientObserver
         virtual void StatusAvailable(HttpStatusCode statusCode) override;
         virtual void HeaderAvailable(HttpHeader header) override;
@@ -38,47 +54,70 @@ namespace services
         virtual void BodyComplete() override;
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         virtual void FillContent(infra::StreamWriter& writer) const override;
-        virtual void Detaching() override;
-
-    protected:
-        virtual void Authenticate(infra::BoundedConstString scheme, infra::BoundedConstString value) = 0;
-        virtual infra::BoundedConstString AuthenticationHeader() const = 0;
-        virtual bool Retry() const = 0;
-        virtual void Reset() = 0;
 
     private:
-        void Request(HttpHeaders headers, const infra::Function<void(), sizeof(void*) + 2 * sizeof(infra::BoundedConstString)>& newRequest);
-        void MakeHeaders(HttpHeaders headers);
-        void Authenticate(infra::BoundedConstString headerValue);
+        friend class HttpClientCachedConnectionConnector;
 
-    private:
-        infra::Function<void(), sizeof(void*) + 2 * sizeof(infra::BoundedConstString)> request;
-        bool unauthorized = false;
-        infra::BoundedVector<HttpHeader>& headersWithAuthorization;
+        HttpClientCachedConnectionConnector& connector;
+        infra::AutoResetFunction<void(infra::SharedPtr<HttpClientObserver> client)> createdObserver;
+        bool idle = true;
+        bool closeRequested = false;
+        bool detaching = false;
+        bool detachingObserver = false;
     };
 
-    class HttpClientAuthenticationConnector
+    class HttpClientCachedConnectionConnector
         : public HttpClientConnector
         , private HttpClientObserverFactory
     {
     public:
-        HttpClientAuthenticationConnector(HttpClientConnector& connector, HttpClientAuthentication& clientAuthentication);
+        HttpClientCachedConnectionConnector(HttpClientConnector& delegate, const Sha256& hasher, infra::Duration disconnectTimeout = std::chrono::minutes(1));
 
         // Implementation of HttpClientConnector
         virtual void Connect(HttpClientObserverFactory& factory) override;
         virtual void CancelConnect(HttpClientObserverFactory& factory) override;
 
+        void Stop(const infra::Function<void()>& onDone);
+
     private:
         // Implementation of HttpClientObserverFactory
         virtual infra::BoundedConstString Hostname() const override;
         virtual uint16_t Port() const override;
-        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<HttpClientObserver> client)>&& createdClientObserver) override;
+        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<HttpClientObserver> client)>&& createdObserver) override;
         virtual void ConnectionFailed(ConnectFailReason reason) override;
 
+    protected:
+        friend class HttpClientCachedConnection;
+
+        virtual void RetargetConnection();
+        virtual void Connect();
+        virtual void DetachingObserver();
+        virtual void DisconnectTimeout();
+
     private:
-        HttpClientConnector& connector;
-        HttpClientAuthentication& clientAuthentication;
-        HttpClientObserverFactory* factory = nullptr;
+        void TryConnectWaiting();
+        void TryRetargetConnection();
+        void ClientPtrExpired();
+        bool SameHost() const;
+        Sha256::Digest GenerateHostAndPortHash(const HttpClientObserverFactory& factory) const;
+
+    private:
+        HttpClientConnector& delegate;
+        const Sha256& hasher;
+
+        HttpClientObserverFactory* clientObserverFactory = nullptr;
+        infra::IntrusiveList<HttpClientObserverFactory> waitingClientObserverFactories;
+
+        infra::Optional<HttpClientCachedConnection> client;
+        infra::AccessedBySharedPtr clientPtr{ [this]()
+            {
+                ClientPtrExpired();
+            } };
+
+        Sha256::Digest hostAndPortHash{};
+
+        infra::Duration disconnectTimeout;
+        infra::TimerSingleShot disconnectTimer;
     };
 }
 

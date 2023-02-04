@@ -8,9 +8,9 @@ namespace services
             { obs.StateUpdated(state); });
     }
 
-    hal::MacAddress GapPeripheralDecorator::GetPublicAddress() const
+    hal::MacAddress GapPeripheralDecorator::GetResolvableAddress() const
     {
-        return GapPeripheralObserver::Subject().GetPublicAddress();
+        return GapPeripheralObserver::Subject().GetResolvableAddress();
     }
 
     void GapPeripheralDecorator::SetAdvertisementData(infra::ConstByteRange data)
