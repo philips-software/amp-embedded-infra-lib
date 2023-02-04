@@ -1,6 +1,7 @@
 #include "hal/windows/UartPortFinder.hpp"
 #include "infra/util/Optional.hpp"
 #include <devpkey.h>
+#include <devpropdef.h>
 #include <initguid.h>
 #include <sstream>
 
