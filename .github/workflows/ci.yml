@@ -41,7 +41,7 @@ jobs:
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
   host_build_gcc_windows:
     # Configure preset Host uses Ninja Multi-Config, which uses GCC on windows-latest, while ContinuousIntegration uses no explicit generator, which uses MSVC on windows
-    name: Host Build & Test
+    name: Host Build for GCC on Windows
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
