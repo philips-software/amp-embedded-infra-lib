@@ -151,15 +151,15 @@ namespace hal
             auto result = SetupDiGetDevicePropertyW(deviceInformationSet, &deviceInfo, &key, &propType, buffer.data(), buffer.size(), &bufferSize, 0);
             assert(result == TRUE);
 
-            if (key == DEVPKEY_Device_DeviceDesc && propType == DEVPROP_TYPE_STRING)
+            if (IsEqualDevPropKey(key, DEVPKEY_Device_DeviceDesc) && propType == DEVPROP_TYPE_STRING)
                 deviceDescription = ConvertMbcsToUtf8(ConvertBufferToString(buffer));
-            if (key == DEVPKEY_Device_FriendlyName && propType == DEVPROP_TYPE_STRING)
+            if (IsEqualDevPropKey(key, DEVPKEY_Device_FriendlyName) && propType == DEVPROP_TYPE_STRING)
                 friendlyName = ConvertMbcsToUtf8(ConvertBufferToString(buffer));
-            if (key == DEVPKEY_Device_PDOName && propType == DEVPROP_TYPE_STRING)
+            if (IsEqualDevPropKey(key, DEVPKEY_Device_PDOName) && propType == DEVPROP_TYPE_STRING)
                 physicalDeviceObjectName = ConvertMbcsToUtf8(ConvertBufferToString(buffer));
-            if (key == DEVPKEY_Device_MatchingDeviceId && propType == DEVPROP_TYPE_STRING)
+            if (IsEqualDevPropKey(key, DEVPKEY_Device_MatchingDeviceId) && propType == DEVPROP_TYPE_STRING)
                 matchingDeviceId = ConvertMbcsToUtf8(ConvertBufferToString(buffer));
-            if (key == DEVPKEY_Device_HardwareIds && propType == DEVPROP_TYPE_STRING_LIST)
+            if (IsEqualDevPropKey(key, DEVPKEY_Device_HardwareIds) && propType == DEVPROP_TYPE_STRING_LIST)
                 hardwareIds = ConvertMbcsToUtf8(ConvertBufferToStringList(buffer));
         }
 
