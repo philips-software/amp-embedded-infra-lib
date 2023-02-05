@@ -17,6 +17,8 @@
 
 namespace services
 {
+    class EventDispatcherWithNetwork;
+
     class DatagramWin
         : public services::DatagramExchange
         , public infra::EnableSharedFromThis<DatagramWin>
