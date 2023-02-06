@@ -51,7 +51,7 @@ jobs:
         with:
           key: ${{ github.job }}-${{ matrix.os }}
           variant: sccache
-      - uses: lukka/run-cmake@2d1ee0acb9c4f656ec9128fc7387d82ac4539816
+      - uses: lukka/run-cmake@2d1ee0acb9c4f656ec9128fc7387d82ac4539816 # v10.3
         with:
           configurePreset: "Package"
           buildPreset: "Package"
