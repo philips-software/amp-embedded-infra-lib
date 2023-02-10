@@ -13,7 +13,7 @@ function(emil_exclude_directory_from_clang_format directory)
     endforeach()
 endfunction()
 
-function(emil_clangformat_directories prefix directories)
+function(emil_clangformat_directories postfix directories)
     set(multiValueArgs DIRECTORIES)
     cmake_parse_arguments(PARSE_ARGV 1 MY "" "" "${multiValueArgs}")
 
@@ -50,7 +50,7 @@ function(emil_clangformat_directories prefix directories)
 
     find_program(CLANGFORMAT clang-format)
     if (CLANGFORMAT)
-        add_custom_target(${prefix}_clangformat)
+        add_custom_target(clangformat_${postfix})
 
         set(run_cmd)
         if (CMAKE_HOST_WIN32)
@@ -65,10 +65,10 @@ function(emil_clangformat_directories prefix directories)
             string(LENGTH "${clangformat_sources}" size)
             if (${size} GREATER 7000)
                 add_custom_command(
-                    TARGET ${prefix}_clangformat POST_BUILD
+                    TARGET clangformat_${postfix} POST_BUILD
                     COMMAND ${run_cmd} ${CLANGFORMAT} -style=file:${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../.clang-format -i ${clangformat_sources}
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-                    COMMENT "Formatting ${prefix} with ${CLANGFORMAT} ..."
+                    COMMENT "Formatting ${postfix} with ${CLANGFORMAT} ..."
                 )
                 set(clangformat_sources)
             endif()
@@ -76,14 +76,14 @@ function(emil_clangformat_directories prefix directories)
 
         if (clangformat_sources)
             add_custom_command(
-                TARGET ${prefix}_clangformat POST_BUILD
+                TARGET clangformat_${postfix} POST_BUILD
                 COMMAND ${run_cmd} ${CLANGFORMAT} -style=file:${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../.clang-format -i ${clangformat_sources}
                 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-                COMMENT "Formatting ${prefix} with ${CLANGFORMAT} ..."
+                COMMENT "Formatting ${postfix} with ${CLANGFORMAT} ..."
             )
         endif()
     else()
-        add_custom_target(${prefix}_clangformat
+        add_custom_target(clangformat_${postfix}
             COMMAND ${CMAKE_COMMAND} -E echo "clang-format not found; skipping formatting"
         )
     endif()
