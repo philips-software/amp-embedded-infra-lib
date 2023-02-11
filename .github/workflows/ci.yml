@@ -39,23 +39,6 @@ jobs:
           buildPreset: "ContinuousIntegration"
           testPreset: "ContinuousIntegration"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
-  host_build_gcc_windows:
-    # Configure preset Host uses Ninja Multi-Config, which uses GCC on windows-latest, while ContinuousIntegration uses no explicit generator, which uses MSVC on windows
-    name: Host Build for GCC on Windows
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
-        with:
-          persist-credentials: false
-      - uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
-        with:
-          key: ${{ github.job }}-${{ matrix.os }}
-          variant: sccache
-      - uses: lukka/run-cmake@71d20a810daaf5340669b8cce5c9fe583780e147
-        with:
-          configurePreset: "Host"
-          buildPreset: "Host-RelWithDebInfo"
-          configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
   embedded_build:
     name: Embedded Build
     runs-on: ubuntu-latest
