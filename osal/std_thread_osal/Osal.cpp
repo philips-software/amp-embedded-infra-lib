@@ -7,6 +7,7 @@ namespace osal
 
     void Run()
     {
-        while (true);
+        while (true)
+            ;
     }
 }
