@@ -7,9 +7,7 @@ class TracerTestImpl
     : public services::Tracer
 {
 public:
-    TracerTestImpl(infra::TextOutputStream& stream)
-        : services::Tracer(stream)
-    {}
+    using services::Tracer::Tracer;
 
     MOCK_METHOD0(InsertHeader, void());
 };

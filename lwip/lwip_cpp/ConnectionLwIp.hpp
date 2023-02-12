@@ -84,7 +84,7 @@ namespace services
             : public infra::StreamReaderWithRewinding
         {
         public:
-            StreamReaderLwIp(ConnectionLwIp& connection);
+            explicit StreamReaderLwIp(ConnectionLwIp& connection);
 
             void ConsumeRead();
 
@@ -135,7 +135,7 @@ namespace services
     using AllocatorConnectionLwIp = infra::SharedObjectAllocator<ConnectionLwIp, void(ConnectionFactoryLwIp&, tcp_pcb*)>;
 
     class ListenerLwIp
-        : infra::EnableSharedFromThis<ListenerLwIp>
+        : public infra::EnableSharedFromThis<ListenerLwIp>
     {
     public:
         template<std::size_t Size>

@@ -55,7 +55,6 @@ namespace services
 
     private:
         TerminalState state;
-        hal::SerialCommunication& communication;
         services::Tracer& tracer;
         infra::QueueForOneReaderOneIrqWriter<uint8_t>::WithStorage<32> queue;
         infra::BoundedString::WithStorage<256> buffer;

@@ -7,7 +7,7 @@ if (EMIL_HOST_BUILD)
         hal.synchronous_interfaces
         $<$<OR:$<BOOL:${EMIL_BUILD_UNIX}>,$<BOOL:${EMIL_BUILD_DARWIN}>>:pthread>
     )
-    
+
     target_sources(hal.generic PRIVATE
         FileSystemGeneric.cpp
         FileSystemGeneric.hpp
@@ -18,6 +18,4 @@ if (EMIL_HOST_BUILD)
         TimerServiceGeneric.cpp
         TimerServiceGeneric.hpp
     )
-
-    emil_clangformat_target(hal.generic)
 endif()

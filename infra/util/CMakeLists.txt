@@ -85,8 +85,6 @@ if (EMIL_BUILD_WIN)
     )
 endif()
 
-emil_clangformat_target(infra.util)
-
 if (EMIL_HOST_BUILD)
     target_compile_definitions(infra.util PUBLIC EMIL_HOST_BUILD)
 endif()

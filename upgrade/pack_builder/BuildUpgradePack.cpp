@@ -19,7 +19,7 @@ namespace application
         struct MissingTargetException
             : std::runtime_error
         {
-            MissingTargetException(const std::string& target)
+            explicit MissingTargetException(const std::string& target)
                 : std::runtime_error("Missing mandatory target: " + target)
             {}
         };
@@ -76,13 +76,13 @@ namespace application
     {
         std::vector<std::unique_ptr<application::Input>> inputs;
 
-        for (const auto& [target, file] : requestedTargets)
-            inputs.push_back(factory.CreateInput(target, file));
+        for (const auto& [target, file, address] : requestedTargets)
+            inputs.push_back(factory.CreateInput(target, file, address));
 
         for (const auto& mandatoryTarget : supportedTargets.MandatoryTargets())
         {
             bool found = false;
-            for (auto& input : inputs)
+            for (const auto& input : inputs)
                 if (input->TargetName() == mandatoryTarget)
                     found = true;
 

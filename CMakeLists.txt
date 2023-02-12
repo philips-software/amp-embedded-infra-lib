@@ -1,7 +1,7 @@
-cmake_minimum_required (VERSION 3.24)
+cmake_minimum_required(VERSION 3.24)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-project(emil LANGUAGES C CXX VERSION 2.0.0)
+project(emil LANGUAGES C CXX VERSION 2.2.1) # x-release-please-version
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
@@ -9,10 +9,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED On)
 set_directory_properties(PROPERTY USE_FOLDERS On)
 
 include(CMakePackageConfigHelpers)
+include(emil_antora)
+include(emil_folderize)
 include(emil_clang_tools)
+include(emil_docker_tools)
+include(emil_test_helpers)
 include(emil_version_generator)
+include(emil_xsltproc)
 include(FetchContent)
-include(GNUInstallDirs)  # included to supply proper defaults to install(...) commands
+include(GNUInstallDirs) # included to supply proper defaults to install(...) commands
 
 if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set(EMIL_STANDALONE On)
@@ -64,12 +69,10 @@ else()
     set(EMIL_EXCLUDE_FROM_ALL "EXCLUDE_FROM_ALL")
 endif()
 
-option(CMAKE_COMPILE_WARNING_AS_ERROR "Enable warnings-as-error" ON)
-option(EMIL_BUILD_TESTS "Enable build of the tests" ${EMIL_DEFAULTOPT})
-option(EMIL_BUILD_EXAMPLES "Enable build of the examples" ${EMIL_DEFAULTOPT})
-option(EMIL_ENABLE_COVERAGE "Enable compiler flags for code coverage measurements" Off)
-option(EMIL_ENABLE_MUTATION_TESTING "Enable compiler flags for mutation testing" Off)
-option(EMIL_ENABLE_TEST_AUTO_DISCOVERY "Enable auto-discovery of tests in test executables; this creates one CTest command per test-case and can be slow on some platforms" Off)
+option(CMAKE_COMPILE_WARNING_AS_ERROR "Enable warnings-as-error" On)
+option(EMIL_BUILD_TESTS "Enable building the tests" ${EMIL_DEFAULTOPT})
+option(EMIL_BUILD_EXAMPLES "Enable building the examples" ${EMIL_DEFAULTOPT})
+option(EMIL_ENABLE_FUZZING "Enable building the fuzzing targets" Off)
 option(EMIL_ENABLE_DOCKER_TOOLS "Enable shift-left tools (e.g. linters, formatters) that are run using Docker" On)
 
 # The next few options control the install and export behaviour.
@@ -92,9 +95,10 @@ endif()
 option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of EmIL" On)
 option(EMIL_INCLUDE_FREERTOS "Include FreeRTOS as part of EmIL" Off)
 option(EMIL_INCLUDE_THREADX "Include ThreadX as part of EmIL" Off)
+set(EMIL_EXTERNAL_LWIP_TARGET "" CACHE STRING "Specify an external LWIP target")
 
 if (EMIL_ENABLE_DOCKER_TOOLS)
-    include(emil_docker_tools)
+    emil_enable_docker_tools()
 endif()
 
 if (EMIL_HOST_BUILD)
@@ -102,45 +106,12 @@ if (EMIL_HOST_BUILD)
 
     if (EMIL_BUILD_TESTS)
         include(CTest)
-        include(GoogleTest)
+        emil_enable_testing()
+    endif()
 
-        FetchContent_Declare(
-            googletest
-            GIT_REPOSITORY https://github.com/google/googletest.git
-            GIT_TAG        release-1.12.1
-        )
-        # For Windows: Prevent overriding the parent project's compiler/linker settings
-        set(gtest_force_shared_crt On CACHE BOOL "" FORCE)
-        FetchContent_MakeAvailable(googletest)
-
-        set_target_properties(gtest gtest_main gmock gmock_main PROPERTIES FOLDER External/GoogleTest)
-        mark_as_advanced(BUILD_GMOCK BUILD_GTEST BUILD_SHARED_LIBS gmock_build_tests gtest_build_samples test_build_tests gtest_disable_pthreads gtest_force_shared_crt gtest_hide_internal_symbols)
-
-        if (EMIL_ENABLE_COVERAGE)
-            add_compile_options(
-                -g -O0 --coverage -fprofile-arcs -ftest-coverage -fno-inline
-                $<$<COMPILE_LANGUAGE:CXX>:-fno-elide-constructors>
-            )
-
-            if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
-                link_libraries(gcov)
-            else()
-                add_link_options(--coverage)
-            endif()
-        endif()
-
-        if (EMIL_ENABLE_MUTATION_TESTING)
-            if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-                add_compile_options(
-                    -g -O0 -grecord-command-line -fprofile-instr-generate -fcoverage-mapping
-                    -fexperimental-new-pass-manager -fpass-plugin=/usr/lib/mull-ir-frontend-12
-                )
-
-                add_link_options(-fprofile-instr-generate)
-            else()
-                message(FATAL_ERROR "Mutation testing is currently only supported for Clang/LLVM; not for ${CMAKE_CXX_COMPILER_ID}")
-            endif()
-        endif()
+    if (EMIL_ENABLE_FUZZING)
+        set(EMIL_EXCLUDE_FROM_ALL "EXCLUDE_FROM_ALL")
+        emil_enable_fuzzing()
     endif()
 endif()
 
@@ -151,15 +122,10 @@ if (NOT EMIL_STANDALONE)
     set(EMIL_BUILD_DARWIN "${EMIL_BUILD_DARWIN}" PARENT_SCOPE)
 endif()
 
-function(emil_add_test target)
-    if (EMIL_ENABLE_TEST_AUTO_DISCOVERY)
-        gtest_discover_tests(${target} AUTO)
-    elseif(EMIL_ENABLE_MUTATION_TESTING)
-        add_test(NAME ${target} COMMAND mull-runner-12 $<TARGET_FILE:${target}>)
-    else()
-        add_test(NAME ${target} COMMAND ${target})
-    endif()
-endfunction()
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # Suppress warnings about parameter passing for argument of type '...' changed in GCC 7.1
+    add_compile_options(-Wno-psabi)
+endif()
 
 add_version_header_target(generated.version_header)
 
@@ -214,4 +180,26 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
         "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}ConfigVersion.cmake"
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
     )
+
+    set(CPACK_GENERATOR "ZIP")
+    set(CPACK_SOURCE_IGNORE_FILES ".vs/;.git/;Build/")
+    set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
+    set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+    set(CPACK_PACKAGE_VENDOR "Koninklijke Philips N.V")
+    set(CPACK_PACKAGE_DESCRIPTION "${PROJECT_DESCRIPTION}")
+    set(CPACK_DEBIAN_PACKAGE_NAME "${CPACK_PACKAGE_NAME}")
+    set(CPACK_RPM_PACKAGE_NAME "${CPACK_PACKAGE_NAME}")
+    set(CPACK_PACKAGE_HOMEPAGE_URL "${PROJECT_HOMEPAGE_URL}")
+    set(CPACK_PACKAGE_MAINTAINER "${CPACK_PACKAGE_VENDOR}")
+    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${CPACK_PACKAGE_VENDOR}")
+    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md")
+    set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+
+    include(CPack)
+endif()
+
+emil_clangformat_directories(emil DIRECTORIES .)
+
+if (EMIL_STANDALONE)
+    emil_folderize_all_targets()
 endif()

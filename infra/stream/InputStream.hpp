@@ -136,7 +136,7 @@ namespace infra
     {
     public:
         template<class... Args>
-        WithReader(Args&&... args);
+        explicit WithReader(Args&&... args);
         template<class Storage, class... Args>
         WithReader(Storage&& storage, const SoftFail&, Args&&... args);
         template<class Storage, class... Args>
@@ -155,7 +155,7 @@ namespace infra
         : public DataInputStream
     {
     public:
-        WithErrorPolicy(StreamReader& reader);
+        explicit WithErrorPolicy(StreamReader& reader);
         WithErrorPolicy(StreamReader& reader, SoftFail);
         WithErrorPolicy(StreamReader& reader, NoFail);
         WithErrorPolicy(const WithErrorPolicy& other);
@@ -172,7 +172,7 @@ namespace infra
     {
     public:
         template<class... Args>
-        WithReader(Args&&... args);
+        explicit WithReader(Args&&... args);
         template<class Storage, class... Args>
         WithReader(Storage&& storage, const SoftFail&, Args&&... args);
         template<class Storage, class... Args>
@@ -191,7 +191,7 @@ namespace infra
         : public TextInputStream
     {
     public:
-        WithErrorPolicy(StreamReader& writer);
+        explicit WithErrorPolicy(StreamReader& writer);
         WithErrorPolicy(StreamReader& writer, SoftFail);
         WithErrorPolicy(StreamReader& writer, NoFail);
         WithErrorPolicy(const WithErrorPolicy& other);

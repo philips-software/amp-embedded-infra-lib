@@ -10,7 +10,7 @@ namespace infra
         : public StreamWriter
     {
     public:
-        StreamWriterFile(const char* path);
+        explicit StreamWriterFile(const char* path);
         ~StreamWriterFile();
 
         virtual void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy) override;

@@ -10,9 +10,9 @@ target_sources(protobuf.echo PRIVATE
     Echo.cpp
     Echo.hpp
     EchoInstantiation.hpp
+    TracingEcho.cpp
+    TracingEcho.hpp
 )
-
-emil_clangformat_target(protobuf.echo)
 
 if (BUILD_TESTING)
     add_subdirectory(test_helper)

@@ -27,14 +27,6 @@ namespace services
         return localTimeTimerService;
     }
 
-    tm* TimeWithLocalization::GetTm(infra::TimePoint timePoint)
-    {
-        auto timeAsTimeType = std::chrono::system_clock::to_time_t(timePoint);
-        auto timeAsGmTime = std::gmtime(&timeAsTimeType);
-        assert(timeAsGmTime != nullptr);
-        return timeAsGmTime;
-    }
-
     infra::Optional<infra::TimePoint> TimeWithLocalization::TimePointFromString(infra::BoundedConstString timePointString)
     {
         uint16_t year = 0;
@@ -111,7 +103,7 @@ namespace services
     }
 }
 
-infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const infra::TimePoint& timePoint)
+infra::TextOutputStream operator<<(infra::TextOutputStream stream, const infra::TimePoint& timePoint)
 {
     auto time = infra::PartitionedTime(std::chrono::system_clock::to_time_t(timePoint));
 
@@ -126,7 +118,7 @@ infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const infra
     return stream;
 }
 
-infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const infra::Duration& duration)
+infra::TextOutputStream operator<<(infra::TextOutputStream stream, const infra::Duration& duration)
 {
     const auto isNegative = duration < infra::Duration::zero();
     const auto d = isNegative ? -duration : duration;

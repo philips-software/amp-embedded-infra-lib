@@ -34,9 +34,11 @@ namespace services
         void HandleInvalidRequest();
 
     public:
+        infra::AutoResetFunction<void()> invokeSuccess;
+        infra::AutoResetFunction<void(infra::BoundedConstString&)> invokeError;
         InvokeInfo invokeInfo;
         CucumberStepStorage::Match storageMatch;
-        infra::BoundedString::WithStorage<256> nameToMatchString;
+        infra::BoundedString::WithStorage<1024> nameToMatchString;
 
     private:
         ConnectionObserver& connectionObserver;

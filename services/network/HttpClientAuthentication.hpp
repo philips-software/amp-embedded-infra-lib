@@ -11,7 +11,7 @@ namespace services
         , public HttpClientObserver
     {
     public:
-        HttpClientAuthentication(infra::BoundedVector<HttpHeader>& headersWithAuthorization);
+        explicit HttpClientAuthentication(infra::BoundedVector<HttpHeader>& headersWithAuthorization);
 
         // Implementation of HttpClient
         virtual void Get(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
@@ -28,7 +28,7 @@ namespace services
         virtual void Patch(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         virtual void Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
         virtual void AckReceived() override;
-        virtual void Close() override;
+        virtual void CloseConnection() override;
         virtual Connection& GetConnection() override;
 
         // Implementation of HttpClientObserver

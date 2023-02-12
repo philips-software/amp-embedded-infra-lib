@@ -7,9 +7,17 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
 env:
   CMAKE_BUILD_PARALLEL_LEVEL: 2
   GTEST_COLOR: 1
+
 jobs:
   host_build_test:
     name: Host Build & Test
@@ -18,33 +26,49 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
-      - name: Build and Test
-        run: |
-          echo "::add-matcher::.github/matchers/gcc-problem-matcher.json"
-          echo "::add-matcher::.github/matchers/msvc-problem-matcher.json"
-          cmake --preset ContinuousIntegration
-          cmake --build --preset ContinuousIntegration
-          ctest --preset ContinuousIntegration
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          persist-credentials: false
+      - uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
+        with:
+          key: ${{ github.job }}-${{ matrix.os }}
+          variant: sccache
+      - uses: lukka/run-cmake@2d1ee0acb9c4f656ec9128fc7387d82ac4539816 # v10.3
+        with:
+          configurePreset: "ContinuousIntegration"
+          buildPreset: "ContinuousIntegration"
+          testPreset: "ContinuousIntegration"
+          configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
   embedded_build:
     name: Embedded Build
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        gcc: ["5-2016-q3", "6-2017-q2", "7-2018-q2", "8-2019-q3"]
-        configuration: ["RelWithDebInfo"]
+        gcc:
+          [
+            "5-2016-q3",
+            "6-2017-q2",
+            "7-2018-q2",
+            "8-2019-q3",
+            "9-2020-q2",
+            "10.3-2021.10",
+          ]
+        configuration: ["RelWithDebInfo", "Release"]
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+        with:
+          persist-credentials: false
       - name: Install GNU Arm Embedded Toolchain ${{ matrix.gcc }}
-        uses: carlosperate/arm-none-eabi-gcc-action@v1
+        uses: carlosperate/arm-none-eabi-gcc-action@48db4484a55750df7a0ccca63347fcdea6534d78
         with:
           release: ${{ matrix.gcc }}
-      - uses: seanmiddleditch/gha-setup-ninja@v3
-      - uses: hendrikmuhs/ccache-action@v1
+      - run: sudo apt-get update && sudo apt-get install ninja-build
+      - uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
         with:
           key: ${{ matrix.gcc }}-${{ matrix.configuration }}
       - run: |
-          cmake --preset Host -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          echo "::add-matcher::.github/matchers/gcc-problem-matcher.json"
+          cmake --preset Host -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build --preset Host-${{ matrix.configuration }}
-          cmake --preset Embedded -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake --preset Embedded -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build --preset Embedded-${{ matrix.configuration }}

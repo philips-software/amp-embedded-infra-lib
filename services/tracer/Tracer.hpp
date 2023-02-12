@@ -13,8 +13,8 @@ namespace services
         Tracer& operator=(const Tracer& other) = delete;
         virtual ~Tracer() = default;
 
-        infra::TextOutputStream Trace();
-        infra::TextOutputStream Continue();
+        virtual infra::TextOutputStream Trace();
+        virtual infra::TextOutputStream Continue();
 
     protected:
         virtual void InsertHeader();

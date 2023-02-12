@@ -67,7 +67,7 @@ namespace infra
     int PartitionedTime::WeekDay() const
     {
         auto unixTime = ToTimeT();
-        int days = static_cast<int>((unixTime >= 0) ? (unixTime / (24 * 60 * 60)) : ((unixTime - (24 * 60 * 60 - 1)) / (24 * 60 * 60)));
-        return days >= -4 ? (days + 4) % 7 : (days + 5) % 7 + 6;
+        auto day = static_cast<int>((unixTime >= 0) ? (unixTime / (24 * 60 * 60)) : ((unixTime - (24 * 60 * 60 - 1)) / (24 * 60 * 60)));
+        return day >= -4 ? (day + 4) % 7 : (day + 5) % 7 + 6;
     }
 }

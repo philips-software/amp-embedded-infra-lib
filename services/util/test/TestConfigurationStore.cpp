@@ -446,7 +446,7 @@ TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_accesses_part_of_a_confi
 
     Data data;
 
-    services::ConfigurationStoreAccess<Data> access(configurationStore, data);
+    services::ConfigurationStoreAccess access(configurationStore, data);
 
     (*access).x = 5;
     EXPECT_EQ(5, data.x);
@@ -468,7 +468,7 @@ TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_writes_ConfigurationStor
 
     Data data;
 
-    services::ConfigurationStoreAccess<Data> access(configurationStore, data);
+    services::ConfigurationStoreAccess access(configurationStore, data);
 
     DontRecover();
 
@@ -666,12 +666,6 @@ class FactoryDefaultConfigurationStoreIntegrationTest
     , public infra::EventDispatcherFixture
 {
 public:
-    FactoryDefaultConfigurationStoreIntegrationTest()
-        : flashFactoryDefault(1, 32)
-        , flashBlob1(1, 32)
-        , flashBlob2(1, 32)
-    {}
-
     void ConstructConfigurationStore()
     {
         configurationStore.Emplace(
@@ -709,9 +703,9 @@ public:
 
 public:
     services::Sha256MbedTls sha256;
-    hal::FlashStub flashFactoryDefault;
-    hal::FlashStub flashBlob1;
-    hal::FlashStub flashBlob2;
+    hal::FlashStub flashFactoryDefault{ 1, 32 };
+    hal::FlashStub flashBlob1{ 1, 32 };
+    hal::FlashStub flashBlob2{ 1, 32 };
     infra::Optional<services::FactoryDefaultConfigurationStore<Data>::WithBlobs<>> configurationStore;
 };
 

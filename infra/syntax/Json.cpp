@@ -52,7 +52,8 @@ namespace infra
                     return '\r';
                 case 't':
                     return '\t';
-                case 'u': {
+                case 'u':
+                {
                     char result = 0;
 
                     for (int skipCode = 0; skipCode != 4 && next != end; ++skipCode, ++next)
@@ -559,6 +560,9 @@ namespace infra
     {
         ++parseIndex;
         std::size_t tokenStart = parseIndex;
+
+        if (parseIndex == objectString.size())
+            return JsonToken::Error();
 
         bool escape = false;
         while (escape || objectString[parseIndex] != '"')
@@ -1219,7 +1223,7 @@ namespace infra
             : public infra::StaticVisitor<void>
         {
         public:
-            CopyVisitor(infra::TextOutputStream& stream)
+            explicit CopyVisitor(infra::TextOutputStream& stream)
                 : stream(stream)
             {}
 

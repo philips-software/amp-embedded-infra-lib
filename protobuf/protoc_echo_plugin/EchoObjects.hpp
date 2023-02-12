@@ -17,7 +17,7 @@ namespace application
     class EchoField
     {
     public:
-        EchoField(const google::protobuf::FieldDescriptor& descriptor);
+        explicit EchoField(const google::protobuf::FieldDescriptor& descriptor);
         EchoField(const std::string& protoType, const google::protobuf::FieldDescriptor& descriptor);
         EchoField(const EchoField& other) = delete;
         EchoField& operator=(const EchoField& other) = delete;
@@ -37,7 +37,7 @@ namespace application
     class EchoEnum
     {
     public:
-        EchoEnum(const google::protobuf::EnumDescriptor& descriptor);
+        explicit EchoEnum(const google::protobuf::EnumDescriptor& descriptor);
 
         const google::protobuf::EnumDescriptor& descriptor;
         std::string name;
@@ -75,7 +75,7 @@ namespace application
         : public EchoField
     {
     public:
-        EchoFieldInt32(const google::protobuf::FieldDescriptor& descriptor);
+        explicit EchoFieldInt32(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -84,7 +84,7 @@ namespace application
         : public EchoField
     {
     public:
-        EchoFieldInt64(const google::protobuf::FieldDescriptor& descriptor);
+        explicit EchoFieldInt64(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -93,7 +93,7 @@ namespace application
         : public EchoField
     {
     public:
-        EchoFieldFixed32(const google::protobuf::FieldDescriptor& descriptor);
+        explicit EchoFieldFixed32(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -102,7 +102,7 @@ namespace application
         : public EchoField
     {
     public:
-        EchoFieldFixed64(const google::protobuf::FieldDescriptor& descriptor);
+        explicit EchoFieldFixed64(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -111,7 +111,7 @@ namespace application
         : public EchoField
     {
     public:
-        EchoFieldSFixed32(const google::protobuf::FieldDescriptor& descriptor);
+        explicit EchoFieldSFixed32(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -120,7 +120,7 @@ namespace application
         : public EchoField
     {
     public:
-        EchoFieldSFixed64(const google::protobuf::FieldDescriptor& descriptor);
+        explicit EchoFieldSFixed64(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -129,7 +129,7 @@ namespace application
         : public EchoField
     {
     public:
-        EchoFieldBool(const google::protobuf::FieldDescriptor& descriptor);
+        explicit EchoFieldBool(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -138,7 +138,7 @@ namespace application
         : public EchoField
     {
     public:
-        EchoFieldString(const google::protobuf::FieldDescriptor& descriptor);
+        explicit EchoFieldString(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
 
@@ -149,7 +149,7 @@ namespace application
         : public EchoField
     {
     public:
-        EchoFieldUnboundedString(const google::protobuf::FieldDescriptor& descriptor);
+        explicit EchoFieldUnboundedString(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -170,7 +170,7 @@ namespace application
         : public EchoField
     {
     public:
-        EchoFieldBytes(const google::protobuf::FieldDescriptor& descriptor);
+        explicit EchoFieldBytes(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
 
@@ -181,7 +181,7 @@ namespace application
         : public EchoField
     {
     public:
-        EchoFieldUnboundedBytes(const google::protobuf::FieldDescriptor& descriptor);
+        explicit EchoFieldUnboundedBytes(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -190,7 +190,7 @@ namespace application
         : public EchoField
     {
     public:
-        EchoFieldUint32(const google::protobuf::FieldDescriptor& descriptor);
+        explicit EchoFieldUint32(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -199,7 +199,7 @@ namespace application
         : public EchoField
     {
     public:
-        EchoFieldUint64(const google::protobuf::FieldDescriptor& descriptor);
+        explicit EchoFieldUint64(const google::protobuf::FieldDescriptor& descriptor);
 
         virtual void Accept(EchoFieldVisitor& visitor) const override;
     };
@@ -276,7 +276,7 @@ namespace application
     {
     public:
         EchoRoot() = default;
-        EchoRoot(const google::protobuf::FileDescriptor& rootFile);
+        explicit EchoRoot(const google::protobuf::FileDescriptor& rootFile);
 
         void AddDescriptorSet(const google::protobuf::FileDescriptorSet& descriptorSet);
 

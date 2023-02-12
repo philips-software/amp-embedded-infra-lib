@@ -10,5 +10,3 @@ target_link_libraries(services.synchronous_util_test PUBLIC
 target_sources(services.synchronous_util_test PRIVATE
     TestSynchronousFlashSpi.cpp
 )
-
-emil_clangformat_target(services.synchronous_util_test)

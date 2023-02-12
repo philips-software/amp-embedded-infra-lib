@@ -47,7 +47,7 @@ namespace infra
 
     void ProtoFormatter::PutSignedVarInt(uint64_t value)
     {
-        static const bool isArithmeticRightShift = (static_cast<signed int>(-1) >> 1) == static_cast<signed int>(-1);
+        static const bool isArithmeticRightShift = (-1 >> 1) == -1;
         static_assert(isArithmeticRightShift, "");
         PutVarInt((value << 1) ^ (static_cast<int64_t>(value) >> 63));
     }

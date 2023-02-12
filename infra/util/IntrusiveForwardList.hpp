@@ -21,17 +21,17 @@ namespace infra
     class IntrusiveForwardList
     {
     public:
-        typedef detail::IntrusiveForwardListNode<T> NodeType;
+        using NodeType = detail::IntrusiveForwardListNode<T>;
 
-        typedef T value_type;
-        typedef T& reference;
-        typedef const T& const_reference;
-        typedef T* pointer;
-        typedef const T* const_pointer;
-        typedef detail::IntrusiveForwardListIterator<T> iterator;
-        typedef detail::IntrusiveForwardListIterator<const T> const_iterator;
-        typedef typename std::iterator_traits<iterator>::difference_type difference_type;
-        typedef std::size_t size_type;
+        using value_type = T;
+        using reference = T&;
+        using const_reference = const T&;
+        using pointer = T*;
+        using const_pointer = const T*;
+        using iterator = detail::IntrusiveForwardListIterator<T>;
+        using const_iterator = detail::IntrusiveForwardListIterator<const T>;
+        using difference_type = typename std::iterator_traits<iterator>::difference_type;
+        using size_type = std::size_t;
 
     public:
         IntrusiveForwardList() = default;

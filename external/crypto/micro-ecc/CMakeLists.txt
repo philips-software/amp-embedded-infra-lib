@@ -12,12 +12,15 @@ target_compile_options(crypto.micro_ecc PUBLIC
 )
 
 target_sources(crypto.micro_ecc PRIVATE
-    asm_arm.inc
+    asm_arm_mult_square_umaal.inc
     asm_arm_mult_square.inc
+    asm_arm.inc
     curve-specific.inc
     platform-specific.inc
     types.h
+    uECC_vli.h
     uECC.c
     uECC.h
-    uECC_vli.h
 )
+
+emil_exclude_from_clang_format(crypto.micro_ecc)

@@ -21,8 +21,8 @@ namespace infra
         class IntrusiveBinarySearchTreeNode
         {
         public:
-            IntrusiveBinarySearchTreeNode();
-            IntrusiveBinarySearchTreeNode(const IntrusiveBinarySearchTreeNode& other);
+            IntrusiveBinarySearchTreeNode() = default;
+            IntrusiveBinarySearchTreeNode(const IntrusiveBinarySearchTreeNode& other) = default;
             ~IntrusiveBinarySearchTreeNode();
 
             IntrusiveBinarySearchTreeNode& operator=(const IntrusiveBinarySearchTreeNode& other);
@@ -60,9 +60,9 @@ namespace infra
     public:
         explicit IntrusiveBinarySearchTree(Compare compare = Compare());
         IntrusiveBinarySearchTree(const IntrusiveBinarySearchTree&) = delete;
-        IntrusiveBinarySearchTree(IntrusiveBinarySearchTree&& other);
+        IntrusiveBinarySearchTree(IntrusiveBinarySearchTree&& other) noexcept;
         IntrusiveBinarySearchTree& operator=(const IntrusiveBinarySearchTree&) = delete;
-        IntrusiveBinarySearchTree& operator=(IntrusiveBinarySearchTree&& other);
+        IntrusiveBinarySearchTree& operator=(IntrusiveBinarySearchTree&& other) noexcept;
         ~IntrusiveBinarySearchTree();
 
     public:
@@ -111,7 +111,7 @@ namespace infra
 
         void clear();
 
-        void swap(IntrusiveBinarySearchTree& other);
+        void swap(IntrusiveBinarySearchTree& other) noexcept;
 
     public:
         bool operator==(const IntrusiveBinarySearchTree& other) const;
@@ -136,7 +136,7 @@ namespace infra
     };
 
     template<class T, class Compare>
-    void swap(IntrusiveBinarySearchTree<T, Compare>& node, IntrusiveBinarySearchTree<T, Compare>& uncle);
+    void swap(IntrusiveBinarySearchTree<T, Compare>& node, IntrusiveBinarySearchTree<T, Compare>& uncle) noexcept;
 
     namespace detail
     {
@@ -152,7 +152,7 @@ namespace infra
 
             using TreeType = IntrusiveBinarySearchTree<typename std::remove_const<T>::type, Compare>;
 
-            IntrusiveBinarySearchTreeIterator();
+            IntrusiveBinarySearchTreeIterator() = default;
             IntrusiveBinarySearchTreeIterator(const T* node, const TreeType& tree);
             template<class T2>
             explicit IntrusiveBinarySearchTreeIterator(const IntrusiveBinarySearchTreeIterator<T2, Compare>& other);
@@ -192,13 +192,13 @@ namespace infra
     {}
 
     template<class T, class Compare>
-    IntrusiveBinarySearchTree<T, Compare>::IntrusiveBinarySearchTree(IntrusiveBinarySearchTree&& other)
+    IntrusiveBinarySearchTree<T, Compare>::IntrusiveBinarySearchTree(IntrusiveBinarySearchTree&& other) noexcept
     {
         *this = std::move(other);
     }
 
     template<class T, class Compare>
-    IntrusiveBinarySearchTree<T, Compare>& IntrusiveBinarySearchTree<T, Compare>::operator=(IntrusiveBinarySearchTree&& other)
+    IntrusiveBinarySearchTree<T, Compare>& IntrusiveBinarySearchTree<T, Compare>::operator=(IntrusiveBinarySearchTree&& other) noexcept
     {
         clear();
 
@@ -702,7 +702,7 @@ namespace infra
     }
 
     template<class T, class Compare>
-    void IntrusiveBinarySearchTree<T, Compare>::swap(IntrusiveBinarySearchTree& other)
+    void IntrusiveBinarySearchTree<T, Compare>::swap(IntrusiveBinarySearchTree& other) noexcept
     {
         std::swap(numberOfNodes, other.numberOfNodes);
         std::swap(rootNode, other.rootNode);
@@ -748,21 +748,13 @@ namespace infra
     }
 
     template<class T, class Compare>
-    void swap(IntrusiveBinarySearchTree<T, Compare>& node, IntrusiveBinarySearchTree<T, Compare>& uncle)
+    void swap(IntrusiveBinarySearchTree<T, Compare>& node, IntrusiveBinarySearchTree<T, Compare>& uncle) noexcept
     {
         node.swap(uncle);
     }
 
     namespace detail
     {
-        template<class T>
-        IntrusiveBinarySearchTreeNode<T>::IntrusiveBinarySearchTreeNode()
-        {}
-
-        template<class T>
-        IntrusiveBinarySearchTreeNode<T>::IntrusiveBinarySearchTreeNode(const IntrusiveBinarySearchTreeNode& other)
-        {}
-
         template<class T>
         IntrusiveBinarySearchTreeNode<T>::~IntrusiveBinarySearchTreeNode()
         {
@@ -778,10 +770,6 @@ namespace infra
         {
             return *this;
         }
-
-        template<class T, class Compare>
-        IntrusiveBinarySearchTreeIterator<T, Compare>::IntrusiveBinarySearchTreeIterator()
-        {}
 
         template<class T, class Compare>
         IntrusiveBinarySearchTreeIterator<T, Compare>::IntrusiveBinarySearchTreeIterator(const T* node, const TreeType& tree)
@@ -866,7 +854,6 @@ namespace infra
             return !(*this == other);
         }
     }
-
 }
 
 #endif

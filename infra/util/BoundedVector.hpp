@@ -20,17 +20,17 @@ namespace infra
         template<std::size_t Max>
         using WithMaxSize = infra::WithStorage<BoundedVector<T>, std::array<StaticStorage<T>, Max>>;
 
-        typedef T value_type;
-        typedef T& reference;
-        typedef const T& const_reference;
-        typedef T* pointer;
-        typedef const T* const_pointer;
-        typedef T* iterator;
-        typedef const T* const_iterator;
-        typedef std::reverse_iterator<iterator> reverse_iterator;
-        typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-        typedef typename std::iterator_traits<iterator>::difference_type difference_type;
-        typedef std::size_t size_type;
+        using value_type = T;
+        using reference = T&;
+        using const_reference = const T&;
+        using pointer = T*;
+        using const_pointer = const T*;
+        using iterator = T*;
+        using const_iterator = const T*;
+        using reverse_iterator = std::reverse_iterator<iterator>;
+        using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+        using difference_type = typename std::iterator_traits<iterator>::difference_type;
+        using size_type = std::size_t;
 
     public:
         BoundedVector(const BoundedVector& other) = delete;
@@ -43,13 +43,13 @@ namespace infra
         template<class U>
         BoundedVector(infra::MemoryRange<infra::StaticStorage<T>> storage, std::initializer_list<U> initializerList);
         BoundedVector(infra::MemoryRange<infra::StaticStorage<T>> storage, const BoundedVector& other);
-        BoundedVector(infra::MemoryRange<infra::StaticStorage<T>> storage, BoundedVector&& other);
+        BoundedVector(infra::MemoryRange<infra::StaticStorage<T>> storage, BoundedVector&& other) noexcept;
         ~BoundedVector();
 
         BoundedVector& operator=(const BoundedVector& other);
         BoundedVector& operator=(BoundedVector&& other) noexcept;
         void AssignFromStorage(const BoundedVector& other);
-        void AssignFromStorage(BoundedVector&& other);
+        void AssignFromStorage(BoundedVector&& other) noexcept;
 
     public:
         iterator begin();
@@ -196,7 +196,7 @@ namespace infra
     }
 
     template<class T>
-    BoundedVector<T>::BoundedVector(infra::MemoryRange<infra::StaticStorage<T>> storage, BoundedVector&& other)
+    BoundedVector<T>::BoundedVector(infra::MemoryRange<infra::StaticStorage<T>> storage, BoundedVector&& other) noexcept
         : storage(storage)
         , numAllocated(other.numAllocated)
     {
@@ -233,7 +233,7 @@ namespace infra
     }
 
     template<class T>
-    void BoundedVector<T>::AssignFromStorage(BoundedVector&& other)
+    void BoundedVector<T>::AssignFromStorage(BoundedVector&& other) noexcept
     {
         *this = std::move(other);
     }

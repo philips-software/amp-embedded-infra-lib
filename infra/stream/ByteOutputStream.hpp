@@ -63,7 +63,7 @@ namespace infra
         template<std::size_t Max>
         using WithStorage = infra::WithStorage<ByteOutputStream::WithWriter<ByteOutputStreamWriter>, std::array<uint8_t, Max>>;
 
-        ByteOutputStream(ByteRange storage);
+        explicit ByteOutputStream(ByteRange storage);
         ByteOutputStream(ByteRange storage, const SoftFail&);
         ByteOutputStream(ByteRange storage, const NoFail&);
     };

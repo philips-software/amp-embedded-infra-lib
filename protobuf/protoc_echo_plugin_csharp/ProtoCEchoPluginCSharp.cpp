@@ -1,6 +1,6 @@
 #include "protobuf/protoc_echo_plugin_csharp/ProtoCEchoPluginCSharp.hpp"
 #include "generated/EchoAttributes.pb.h"
-#include "google/protobuf/compiler/cpp/cpp_helpers.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/stubs/strutil.h"

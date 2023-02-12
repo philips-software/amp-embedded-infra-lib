@@ -1,5 +1,5 @@
-#ifndef DI_COMM_HTTP_REQUEST_PARSER_HPP
-#define DI_COMM_HTTP_REQUEST_PARSER_HPP
+#ifndef SERVICES_HTTP_REQUEST_PARSER_HPP
+#define SERVICES_HTTP_REQUEST_PARSER_HPP
 
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/Function.hpp"
@@ -31,7 +31,7 @@ namespace services
         : public HttpRequestParser
     {
     public:
-        HttpRequestParserImpl(infra::BoundedString& data);
+        explicit HttpRequestParserImpl(infra::BoundedString& data);
 
         virtual bool HeadersComplete() const override;
         virtual bool Valid() const override;

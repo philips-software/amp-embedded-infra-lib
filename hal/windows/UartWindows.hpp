@@ -2,12 +2,15 @@
 #define HAL_UART_WINDOWS_HPP
 
 #include "hal/interfaces/SerialCommunication.hpp"
+// clang-format off
 #include <atomic>
 #include <mutex>
 #include <thread>
 #include <winsock2.h>
 #include <windows.h>
 #include <setupapi.h>
+
+// clang-format on
 
 namespace hal
 {
@@ -28,8 +31,7 @@ namespace hal
     class UartWindows
         : public SerialCommunication
     {
-    public: 
-
+    public:
         struct UartWindowsConfig
         {
             enum class RtsFlowControl
@@ -49,23 +51,26 @@ namespace hal
                 space = SPACEPARITY
             };
 
-            UartWindowsConfig() {}
+            UartWindowsConfig() = default;
 
-            UartWindowsConfig(uint32_t newbaudRate, RtsFlowControl newFlowControlRts)
-                : baudRate(newbaudRate)
-                , flowControlRts(newFlowControlRts)
+            UartWindowsConfig(uint32_t baudRate, RtsFlowControl flowControl)
+                : baudRate(baudRate)
+                , flowControl(flowControl)
             {}
 
             uint32_t baudRate = CBR_115200;
-            RtsFlowControl flowControlRts = RtsFlowControl::RtsControlDisable;
+            RtsFlowControl flowControl = RtsFlowControl::RtsControlDisable;
             Parity parity = Parity::none;
         };
-        struct DeviceName {};
+
+        struct DeviceName
+        {};
+
         static const DeviceName deviceName;
 
         UartWindows(const std::string& portName, UartWindowsConfig config = UartWindowsConfig());
         UartWindows(const std::string& name, DeviceName, UartWindowsConfig config = UartWindowsConfig());
-        ~UartWindows();
+        virtual ~UartWindows();
 
         virtual void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) override;
         virtual void SendData(infra::MemoryRange<const uint8_t> data, infra::Function<void()> actionOnCompletion = infra::emptyFunction) override;
@@ -80,7 +85,7 @@ namespace hal
         infra::Function<void(infra::ConstByteRange data)> onReceivedData;
 
         void* handle = nullptr;
-        std::atomic<bool> running{true};
+        std::atomic<bool> running{ true };
         std::mutex mutex;
         std::condition_variable receivedDataSet;
         std::thread readThread;

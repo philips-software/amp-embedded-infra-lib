@@ -49,6 +49,26 @@ namespace services
         }
     }
 
+    bool IPAddresses::operator==(const IPAddresses& other) const
+    {
+        return infra::Equals()(address, other.address)(netmask, other.netmask)(gateway, other.gateway);
+    }
+
+    bool IPAddresses::operator!=(const IPAddresses& other) const
+    {
+        return !(*this == other);
+    }
+
+    bool IpConfig::operator==(const IpConfig& other) const
+    {
+        return infra::Equals()(useDhcp, other.useDhcp)(addresses, other.addresses);
+    }
+
+    bool IpConfig::operator!=(const IpConfig& other) const
+    {
+        return !(*this == other);
+    }
+
     WiFiNetworkScanNetworksResultObserver::Network::Network(infra::BoundedConstString ssid, int32_t signalStrength, const WiFiSecurity& security)
         : ssid(ssid)
         , signalStrength(signalStrength)

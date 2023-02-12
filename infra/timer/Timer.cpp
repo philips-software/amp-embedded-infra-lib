@@ -2,6 +2,11 @@
 #include "infra/timer/TimerService.hpp"
 #include <cassert>
 
+#ifdef EMIL_HOST_BUILD
+#include "infra/timer/PartitionedTime.hpp"
+#include <iomanip>
+#endif
+
 namespace infra
 {
     TimePoint Now(uint32_t timerServiceId)
@@ -177,3 +182,24 @@ namespace infra
         SetNextTriggerTime(now - diff + triggerPeriod, Action());
     }
 }
+
+#ifdef EMIL_HOST_BUILD
+namespace std
+{
+    void PrintTo(infra::TimePoint p, std::ostream* os)
+    {
+        infra::PartitionedTime partitioned(p);
+        auto previousFill = os->fill('0');
+
+        *os << partitioned.years << '-'
+            << std::setw(2) << static_cast<int>(partitioned.months) << '-'
+            << std::setw(2) << static_cast<int>(partitioned.days) << 'T'
+            << std::setw(2) << static_cast<int>(partitioned.hours) << ':'
+            << std::setw(2) << static_cast<int>(partitioned.minutes) << ':'
+            << std::setw(2) << static_cast<int>(partitioned.seconds) << '.'
+            << std::setw(6) << std::chrono::duration_cast<std::chrono::microseconds>(p.time_since_epoch()).count() % 1000000;
+
+        os->fill(previousFill);
+    }
+}
+#endif

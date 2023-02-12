@@ -68,8 +68,6 @@ target_sources(services.util PRIVATE
     WritableConfiguration.hpp
 )
 
-emil_clangformat_target(services.util)
-
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
 endif()

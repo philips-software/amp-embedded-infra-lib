@@ -45,9 +45,8 @@ namespace services
         return echo;
     }
 
-    ServiceProxy::ServiceProxy(Echo& echo, uint32_t id, uint32_t maxMessageSize)
+    ServiceProxy::ServiceProxy(Echo& echo, uint32_t maxMessageSize)
         : echo(echo)
-        , serviceId(id)
         , maxMessageSize(maxMessageSize)
     {}
 
@@ -74,7 +73,7 @@ namespace services
 
     ServiceForwarder::ServiceForwarder(infra::ByteRange messageBuffer, Echo& echo, uint32_t id, Echo& forwardTo)
         : Service(echo, id)
-        , ServiceProxy(forwardTo, id, messageBuffer.size())
+        , ServiceProxy(forwardTo, messageBuffer.size())
         , messageBuffer(messageBuffer)
     {}
 
@@ -99,7 +98,7 @@ namespace services
 
         bytes->shrink_from_back_to(processedSize);
 
-        RequestSend([this, &contents]()
+        RequestSend([this]()
             {
             infra::DataOutputStream::WithErrorPolicy stream(services::ServiceProxy::Rpc().SendStreamWriter());
             infra::ProtoFormatter formatter(stream);
@@ -173,7 +172,7 @@ namespace services
 
     void EchoOnStreams::AttachService(Service& service)
     {
-        for (auto& s : services)
+        for (const auto& s : services)
             if (s.ServiceId() == service.ServiceId())
                 std::abort();
 
@@ -185,7 +184,7 @@ namespace services
         services.erase(service);
     }
 
-    void EchoOnStreams::ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents)
+    void EchoOnStreams::ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, infra::StreamReaderWithRewinding& reader)
     {
         for (auto& service : services)
             if (service.ServiceId() == serviceId)
@@ -216,8 +215,9 @@ namespace services
         return serviceBusy != infra::none;
     }
 
-    bool EchoOnStreams::ProcessMessage(infra::DataInputStream& stream)
+    bool EchoOnStreams::ProcessMessage(infra::StreamReaderWithRewinding& reader)
     {
+        infra::DataInputStream::WithErrorPolicy stream(reader, infra::softFail);
         infra::StreamErrorPolicy formatErrorPolicy(infra::softFail);
         infra::ProtoParser parser(stream, formatErrorPolicy);
         uint32_t serviceId = static_cast<uint32_t>(parser.GetVarInt());
@@ -229,7 +229,7 @@ namespace services
             errorPolicy.MessageFormatError();
         else
         {
-            ExecuteMethod(serviceId, message.second, message.first.Get<infra::ProtoLengthDelimited>());
+            ExecuteMethod(serviceId, message.second, message.first.Get<infra::ProtoLengthDelimited>(), reader);
 
             if (stream.Failed() || formatErrorPolicy.Failed())
                 errorPolicy.MessageFormatError();
@@ -247,10 +247,9 @@ namespace services
     {
         while (!ServiceBusy())
         {
-            infra::SharedPtr<infra::StreamReader> reader = ConnectionObserver::Subject().ReceiveStream();
-            infra::DataInputStream::WithErrorPolicy stream(*reader, infra::softFail);
+            infra::SharedPtr<infra::StreamReaderWithRewinding> reader = ConnectionObserver::Subject().ReceiveStream();
 
-            if (!ProcessMessage(stream))
+            if (!ProcessMessage(*reader))
                 break;
 
             if (!ServiceBusy()) // The message was not executed when ServiceBusy() is true, so don't ack the received data
@@ -303,8 +302,7 @@ namespace services
 
     void EchoOnMessageCommunication::ProcessMessage()
     {
-        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::softFail);
-        if (!EchoOnStreams::ProcessMessage(stream))
+        if (!EchoOnStreams::ProcessMessage(*reader))
             errorPolicy.MessageFormatError();
     }
 }

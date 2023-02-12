@@ -3,6 +3,7 @@
 
 #include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/syntax/ProtoParser.hpp"
+#include "infra/util/Compatibility.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/Optional.hpp"
 #include "services/network/Connection.hpp"
@@ -198,7 +199,7 @@ namespace services
         : public infra::IntrusiveList<ServiceProxy>::NodeType
     {
     public:
-        ServiceProxy(Echo& echo, uint32_t id, uint32_t maxMessageSize);
+        ServiceProxy(Echo& echo, uint32_t maxMessageSize);
 
         Echo& Rpc();
         void RequestSend(infra::Function<void()> onGranted);
@@ -207,7 +208,6 @@ namespace services
 
     private:
         Echo& echo;
-        uint32_t serviceId;
         uint32_t maxMessageSize;
         infra::Function<void()> onGranted;
     };
@@ -235,7 +235,7 @@ namespace services
         , public infra::EnableSharedFromThis<EchoOnStreams>
     {
     public:
-        EchoOnStreams(EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
+        explicit EchoOnStreams(EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
 
         // Implementation of Echo
         virtual void RequestSend(ServiceProxy& serviceProxy) override;
@@ -249,10 +249,10 @@ namespace services
         virtual void RequestSendStream(std::size_t size) = 0;
         virtual void BusyServiceDone() = 0;
 
-        void ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents);
-        void SetStreamWriter(infra::SharedPtr<infra::StreamWriter>&& writer);
+        virtual void ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, infra::StreamReaderWithRewinding& reader);
+        virtual void SetStreamWriter(infra::SharedPtr<infra::StreamWriter>&& writer);
         bool ServiceBusy() const;
-        bool ProcessMessage(infra::DataInputStream& stream);
+        bool ProcessMessage(infra::StreamReaderWithRewinding& reader);
 
     protected:
         EchoErrorPolicy& errorPolicy;

@@ -57,13 +57,13 @@ namespace infra
         BoundedList(infra::MemoryRange<infra::StaticStorage<detail::BoundedListNode<T>>> storage, InputIterator first, InputIterator last);
         BoundedList(infra::MemoryRange<infra::StaticStorage<detail::BoundedListNode<T>>> storage, std::initializer_list<T> initializerList);
         BoundedList(infra::MemoryRange<infra::StaticStorage<detail::BoundedListNode<T>>> storage, const BoundedList& other);
-        BoundedList(infra::MemoryRange<infra::StaticStorage<detail::BoundedListNode<T>>> storage, BoundedList&& other);
+        BoundedList(infra::MemoryRange<infra::StaticStorage<detail::BoundedListNode<T>>> storage, BoundedList&& other) noexcept;
         ~BoundedList();
 
         BoundedList& operator=(const BoundedList& other);
         BoundedList& operator=(BoundedList&& other) noexcept;
         void AssignFromStorage(const BoundedList& other);
-        void AssignFromStorage(BoundedList&& other);
+        void AssignFromStorage(BoundedList&& other) noexcept;
 
     public:
         iterator begin();
@@ -222,7 +222,7 @@ namespace infra
     }
 
     template<class T>
-    BoundedList<T>::BoundedList(infra::MemoryRange<infra::StaticStorage<detail::BoundedListNode<T>>> storage, BoundedList&& other)
+    BoundedList<T>::BoundedList(infra::MemoryRange<infra::StaticStorage<detail::BoundedListNode<T>>> storage, BoundedList&& other) noexcept
         : storage(storage)
     {
         move_from_range(other.begin(), other.end());
@@ -264,7 +264,7 @@ namespace infra
     }
 
     template<class T>
-    void BoundedList<T>::AssignFromStorage(BoundedList&& other)
+    void BoundedList<T>::AssignFromStorage(BoundedList&& other) noexcept
     {
         *this = std::move(other);
     }

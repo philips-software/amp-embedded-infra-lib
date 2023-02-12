@@ -7,9 +7,9 @@ target_link_libraries(lwip.lwip_cpp PUBLIC
     hal.interfaces
 )
 
-if (LWIP_ALTERNATIVE_DEPEND)
+if (EMIL_EXTERNAL_LWIP_TARGET)
     target_link_libraries(lwip.lwip_cpp PUBLIC
-        ${LWIP_ALTERNATIVE_DEPEND}
+        ${EMIL_EXTERNAL_LWIP_TARGET}
     )
 else()
     target_link_libraries(lwip.lwip_cpp PUBLIC
@@ -33,5 +33,3 @@ target_sources(lwip.lwip_cpp PRIVATE
     MulticastLwIp.cpp
     MulticastLwIp.hpp
 )
-
-emil_clangformat_target(lwip.lwip_cpp)

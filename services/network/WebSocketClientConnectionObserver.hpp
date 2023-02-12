@@ -56,7 +56,7 @@ namespace services
         , public services::Connection
     {
     public:
-        WebSocketClientConnectionObserver(infra::BoundedConstString path);
+        explicit WebSocketClientConnectionObserver(infra::BoundedConstString path);
 
         // Implementation of ConnectionObserver
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
@@ -101,7 +101,7 @@ namespace services
             : public infra::StreamReaderWithRewinding
         {
         public:
-            FrameReader(WebSocketClientConnectionObserver& client);
+            explicit FrameReader(WebSocketClientConnectionObserver& client);
 
             virtual void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
             virtual uint8_t Peek(infra::StreamErrorPolicy& errorPolicy) override;
@@ -247,7 +247,6 @@ namespace services
         private:
             WebSocketClientObserverFactory& clientObserverFactory;
             WebSocketClientInitiationResult& result;
-            hal::SynchronousRandomDataGenerator& randomDataGenerator;
 
         private:
             infra::ProxyCreator<decltype(Creators::httpClientInitiationCreator)> initiationClient;

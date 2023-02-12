@@ -3,6 +3,7 @@ add_library(hal.interfaces_test_doubles ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 target_link_libraries(hal.interfaces_test_doubles PRIVATE
     hal.interfaces
     infra.stream
+    infra.timer
     gmock
 )
 
@@ -34,8 +35,6 @@ target_sources(hal.interfaces_test_doubles PRIVATE
     SpiMock.cpp
     SpiMock.hpp
 )
-
-emil_clangformat_target(hal.interfaces_test_doubles)
 
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)

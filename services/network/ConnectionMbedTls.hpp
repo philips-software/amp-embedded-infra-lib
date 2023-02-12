@@ -39,6 +39,7 @@ namespace services
         struct ClientParameters
         {
             mbedtls_ssl_session& clientSession;
+            bool& clientSessionObtained;
             CertificateValidation certificateValidation;
         };
 
@@ -121,6 +122,7 @@ namespace services
         hal::SynchronousRandomDataGenerator& randomDataGenerator;
         bool server;
         mbedtls_ssl_session* clientSession = nullptr;
+        bool* clientSessionObtained = nullptr;
         mbedtls_ssl_context sslContext;
         mbedtls_ssl_config sslConfig;
         mbedtls_ctr_drbg_context ctr_drbg;
@@ -232,6 +234,7 @@ namespace services
         hal::SynchronousRandomDataGenerator& randomDataGenerator;
         mbedtls_ssl_cache_context serverCache;
         mbedtls_ssl_session clientSession = {};
+        bool clientSessionObtained = false;
         IPAddress previousAddress;
         ConnectionMbedTls::CertificateValidation certificateValidation;
     };
@@ -241,7 +244,7 @@ namespace services
         , public ClientConnectionObserverFactoryWithNameResolver
     {
     public:
-        ConnectionFactoryWithNameResolverForTls(ConnectionFactoryWithNameResolver& connectionFactoryWithNameResolver);
+        explicit ConnectionFactoryWithNameResolverForTls(ConnectionFactoryWithNameResolver& connectionFactoryWithNameResolver);
 
         // Implementation of ConnectionFactoryWithNameResolver
         virtual void Connect(ClientConnectionObserverFactoryWithNameResolver& factory) override;

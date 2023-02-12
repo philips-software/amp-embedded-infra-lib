@@ -1,17 +1,6 @@
 if (EMIL_HOST_BUILD)
     add_library(protobuf.protoc_echo_plugin_lib ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
-    target_compile_options(protobuf.protoc_echo_plugin_lib PRIVATE
-        $<$<BOOL:${EMIL_BUILD_WIN}>:
-            $<$<CXX_COMPILER_ID:MSVC>:
-                /wd4018
-                /wd4251
-                /wd4273
-                /wd4800
-            >
-        >
-    )
-
     target_compile_definitions(protobuf.protoc_echo_plugin_lib PRIVATE
         LIBPROTOC_EXPORTS
     )
@@ -34,8 +23,6 @@ if (EMIL_HOST_BUILD)
         ProtoCEchoPlugin.hpp
     )
 
-    emil_clangformat_target(protobuf.protoc_echo_plugin_lib)
-
     add_executable(protobuf.protoc_echo_plugin)
 
     target_link_libraries(protobuf.protoc_echo_plugin PUBLIC
@@ -45,8 +32,6 @@ if (EMIL_HOST_BUILD)
     target_sources(protobuf.protoc_echo_plugin PRIVATE
         Main.cpp
     )
-
-    emil_clangformat_target(protobuf.protoc_echo_plugin)
 
     if (EMIL_BUILD_TESTS)
         add_subdirectory(test)

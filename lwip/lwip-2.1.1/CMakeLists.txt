@@ -215,3 +215,5 @@ target_sources(lwip.lwip PRIVATE
     src/netif/ppp/utils.c
     src/netif/ppp/vj.c
 )
+
+emil_exclude_from_clang_format(lwip.lwip)

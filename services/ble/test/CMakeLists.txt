@@ -8,8 +8,8 @@ target_link_libraries(services.ble_test PUBLIC
 )
 
 target_sources(services.ble_test PRIVATE
-    TestBondStorageManager.cpp
+    TestBondBlobPersistence.cpp
+    TestBondStorageSynchronizer.cpp
+    TestGap.cpp
     TestGatt.cpp
 )
-
-emil_clangformat_target(services.ble_test)

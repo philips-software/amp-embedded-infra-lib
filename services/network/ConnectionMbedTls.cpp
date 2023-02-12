@@ -10,6 +10,7 @@ namespace services
         , randomDataGenerator(randomDataGenerator)
         , server(parameters.parameters.Is<ServerParameters>())
         , clientSession(parameters.parameters.Is<ClientParameters>() ? &parameters.parameters.Get<ClientParameters>().clientSession : nullptr)
+        , clientSessionObtained(parameters.parameters.Is<ClientParameters>() ? &parameters.parameters.Get<ClientParameters>().clientSessionObtained : nullptr)
         , receiveReader([this]()
               { keepAliveForReader = nullptr; })
     {
@@ -51,7 +52,7 @@ namespace services
         }
         else
         {
-            if (!server && clientSession->private_tls_version != 0)
+            if (!server && *clientSessionObtained)
             {
                 result = mbedtls_ssl_set_session(&sslContext, clientSession);
                 assert(result == 0);
@@ -123,7 +124,7 @@ namespace services
             receiveBuffer.resize(receiveBuffer.max_size());
             infra::ByteRange buffer = receiveBuffer.contiguous_range(receiveBuffer.begin() + newBufferStart);
 
-            int result = mbedtls_ssl_read(&sslContext, reinterpret_cast<unsigned char*>(buffer.begin()), buffer.size());
+            int result = mbedtls_ssl_read(&sslContext, buffer.begin(), buffer.size());
             if (result == MBEDTLS_ERR_SSL_WANT_WRITE || result == MBEDTLS_ERR_SSL_WANT_READ)
             {
                 receiveBuffer.resize(newBufferStart);
@@ -279,12 +280,12 @@ namespace services
 
     int ConnectionMbedTls::StaticSslSend(void* context, const unsigned char* buffer, std::size_t size)
     {
-        return reinterpret_cast<ConnectionMbedTls*>(context)->SslSend(infra::ConstByteRange(reinterpret_cast<const uint8_t*>(buffer), reinterpret_cast<const uint8_t*>(buffer) + size));
+        return reinterpret_cast<ConnectionMbedTls*>(context)->SslSend(infra::ConstByteRange(buffer, buffer + size));
     }
 
     int ConnectionMbedTls::StaticSslReceive(void* context, unsigned char* buffer, size_t size)
     {
-        return reinterpret_cast<ConnectionMbedTls*>(context)->SslReceive(infra::ByteRange(reinterpret_cast<uint8_t*>(buffer), reinterpret_cast<uint8_t*>(buffer) + size));
+        return reinterpret_cast<ConnectionMbedTls*>(context)->SslReceive(infra::ByteRange(buffer, buffer + size));
     }
 
     int ConnectionMbedTls::SslSend(infra::ConstByteRange buffer)
@@ -339,7 +340,7 @@ namespace services
             infra::ConstByteRange range = infra::MakeRange(sendBuffer);
             int result = initialHandshake
                              ? mbedtls_ssl_handshake(&sslContext)
-                             : mbedtls_ssl_write(&sslContext, reinterpret_cast<const unsigned char*>(range.begin()), range.size());
+                             : mbedtls_ssl_write(&sslContext, range.begin(), range.size());
             if (result == MBEDTLS_ERR_SSL_WANT_WRITE || result == MBEDTLS_ERR_SSL_WANT_READ)
                 return;
             else if (result == MBEDTLS_ERR_SSL_BAD_INPUT_DATA) // Precondition failure
@@ -365,10 +366,11 @@ namespace services
 
                 if (!server)
                 {
-                    if (clientSession->private_tls_version == 0)
-                        mbedtls_ssl_session_init(&*clientSession);
+                    if (!*clientSessionObtained)
+                        mbedtls_ssl_session_init(clientSession);
 
                     result = mbedtls_ssl_get_session(&sslContext, clientSession);
+                    *clientSessionObtained = true;
                     assert(result == 0);
                 }
             }
@@ -387,7 +389,7 @@ namespace services
 
     int ConnectionMbedTls::StaticGenerateRandomData(void* data, unsigned char* output, std::size_t size)
     {
-        reinterpret_cast<ConnectionMbedTls*>(data)->GenerateRandomData(infra::ByteRange(reinterpret_cast<uint8_t*>(output), reinterpret_cast<uint8_t*>(output) + size));
+        reinterpret_cast<ConnectionMbedTls*>(data)->GenerateRandomData(infra::ByteRange(output, output + size));
         return 0;
     }
 
@@ -516,8 +518,11 @@ namespace services
     ConnectionFactoryMbedTls::~ConnectionFactoryMbedTls()
     {
         mbedtls_ssl_cache_free(&serverCache);
-        if (clientSession.private_tls_version != 0)
+        if (clientSessionObtained)
+        {
             mbedtls_ssl_session_free(&clientSession);
+            clientSessionObtained = false;
+        }
     }
 
     infra::SharedPtr<void> ConnectionFactoryMbedTls::Listen(uint16_t port, ServerConnectionObserverFactory& connectionObserverFactory, IPVersions versions)
@@ -567,14 +572,17 @@ namespace services
     {
         if (address != previousAddress)
         {
-            if (clientSession.private_tls_version != 0)
+            if (clientSessionObtained)
+            {
                 mbedtls_ssl_session_free(&clientSession);
+                clientSessionObtained = false;
+            }
             clientSession = mbedtls_ssl_session();
         }
 
         previousAddress = address;
 
-        return connectionAllocator.Allocate(std::move(createdObserver), certificates, randomDataGenerator, { ConnectionMbedTls::ClientParameters{ clientSession, certificateValidation } });
+        return connectionAllocator.Allocate(std::move(createdObserver), certificates, randomDataGenerator, { ConnectionMbedTls::ClientParameters{ clientSession, clientSessionObtained, certificateValidation } });
     }
 
     void ConnectionFactoryMbedTls::Remove(ConnectionMbedTlsConnector& connector)

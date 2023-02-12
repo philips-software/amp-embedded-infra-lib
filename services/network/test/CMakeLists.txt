@@ -30,6 +30,7 @@ target_sources(services.network_test PRIVATE
     TestHttpClient.cpp
     TestHttpClientAuthentication.cpp
     TestHttpClientBasic.cpp
+    TestHttpClientCachedConnection.cpp
     TestHttpClientJson.cpp
     TestHttpServer.cpp
     TestLlmnrResponder.cpp
@@ -46,5 +47,3 @@ target_sources(services.network_test PRIVATE
     TestWebSocketServerConnectionObserver.cpp
     TestWiFiNetwork.cpp
 )
-
-emil_clangformat_target(services.network_test)

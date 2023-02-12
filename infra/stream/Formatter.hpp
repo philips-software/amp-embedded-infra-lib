@@ -88,7 +88,7 @@ namespace infra
     template<class T>
     struct DecayFormatType
     {
-        typedef typename std::remove_reference<T>::type PlainType;
+        using PlainType = typename std::remove_reference<T>::type;
         using type = typename std::conditional<
             std::is_integral<PlainType>::value,
             PlainType const,

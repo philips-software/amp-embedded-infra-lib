@@ -39,7 +39,7 @@ namespace infra
         bool isFull{ false };
     };
 
-    typedef CyclicBuffer<uint8_t> CyclicByteBuffer;
+    using CyclicByteBuffer = CyclicBuffer<uint8_t>;
 
     ////    Implementation    ////
 

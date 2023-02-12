@@ -3,22 +3,6 @@
 #include "services/tracer/TracerWithDateTime.hpp"
 #include "gmock/gmock.h"
 
-class TracerWithDateTimeTestImpl
-    : public services::TracerWithDateTime
-{
-public:
-    TracerWithDateTimeTestImpl()
-        : services::TracerWithDateTime(stream)
-    {}
-
-    infra::TextOutputStream Continue()
-    {
-        return stream;
-    }
-
-    infra::StringOutputStream::WithStorage<32> stream;
-};
-
 class TracerWithDateTimeTest
     : public testing::Test
     , public infra::ClockFixture
@@ -26,22 +10,11 @@ class TracerWithDateTimeTest
 
 TEST_F(TracerWithDateTimeTest, trace_inserts_date_time)
 {
-    tm timePoint = {};
-    timePoint.tm_sec = 14;
-    timePoint.tm_min = 35;
-    timePoint.tm_hour = 16;
-    timePoint.tm_mday = 12;
-    timePoint.tm_mon = 6;
-    timePoint.tm_year = 116;
+    ForwardTime(std::chrono::hours(1) + std::chrono::minutes(20) + std::chrono::seconds(30) + std::chrono::microseconds(1));
 
-    time_t nullTime = 100000;
-    std::tm* localUtcDiff = gmtime(&nullTime);
-    assert(localUtcDiff != nullptr);
-    time_t diff = mktime(localUtcDiff);
-
-    ForwardTime(std::chrono::seconds(mktime(&timePoint) + nullTime - diff) + std::chrono::microseconds(1));
-    TracerWithDateTimeTestImpl tracer;
+    infra::StringOutputStream::WithStorage<32> stream;
+    services::TracerWithDateTime tracer(stream);
 
     tracer.Trace();
-    EXPECT_EQ("\r\n2016-07-12 16:35:14.000001 ", tracer.stream.Storage());
+    EXPECT_EQ("\r\n1970-01-01T01:20:30.000001 ", stream.Storage());
 }

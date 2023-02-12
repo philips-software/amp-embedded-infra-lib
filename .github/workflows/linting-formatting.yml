@@ -7,10 +7,8 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
-env:
-  APPLY_FIXES: all
-  APPLY_FIXES_EVENT: pull_request
-  APPLY_FIXES_MODE: commit
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
@@ -20,40 +18,51 @@ jobs:
   formatter:
     name: Formatting
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
-      - uses: DoozyX/clang-format-lint-action@2ec1a72dfb593e52255693c9039e6d94984187dc
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          persist-credentials: false
+      - uses: DoozyX/clang-format-lint-action@c3b2c943e924028b93a707a5b1b017976ab8d50c
         with:
           clangFormatVersion: 14
           inplace: true
           extensions: "cpp,hpp"
           exclude: "./external"
-      - uses: reviewdog/action-suggester@v1.6
+      - uses: reviewdog/action-suggester@8f83d27e749053b2029600995c115026a010408e
         with:
           tool_name: clang-format
           filter_mode: diff_context
   linter:
     name: Linting
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      security-events: write
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           fetch-depth: 0
-      - uses: oxsecurity/megalinter@v6
+          persist-credentials: false
+      - uses: oxsecurity/megalinter@e7a797f9d8354b35d6580620b2af79efa0748ddf
         env:
+          APPLY_FIXES: all
           VALIDATE_ALL_CODEBASE: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: github/codeql-action/upload-sarif@v2
+      - uses: github/codeql-action/upload-sarif@39d8d7e78f59cf6b40ac3b9fbebef0c753d7c9e5 # v2.2.2
         if: ${{ success() }} || ${{ failure() }}
         with:
           sarif_file: megalinter-reports/megalinter-report.sarif
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
         if: ${{ success() }} || ${{ failure() }}
         with:
           name: linter
           path: |
             megalinter-reports
-      - uses: reviewdog/action-suggester@v1.6
+      - uses: reviewdog/action-suggester@8f83d27e749053b2029600995c115026a010408e
         with:
           tool_name: MegaLinter
           filter_mode: diff_context

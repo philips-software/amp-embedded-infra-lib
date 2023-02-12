@@ -4,6 +4,8 @@
 
 namespace infra
 {
+    const NoSharedFromThis noSharedFromThis;
+
     namespace detail
     {
         SharedPtrControl::SharedPtrControl(const void* object, SharedObjectDeleter* deleter)

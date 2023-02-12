@@ -10,8 +10,8 @@
 
 namespace infra
 {
-    typedef MemoryRange<uint8_t> ByteRange;
-    typedef MemoryRange<const uint8_t> ConstByteRange;
+    using ByteRange = MemoryRange<uint8_t>;
+    using ConstByteRange = MemoryRange<const uint8_t>;
 
     template<class U>
     ByteRange ReinterpretCastByteRange(MemoryRange<U> memoryRange);
@@ -37,7 +37,7 @@ namespace infra
         for (uint8_t& e : infra::Head(range, 8))
         {
             *os << static_cast<int>(e);
-            if (std::distance(range.begin(), &e) != range.size() - 1)
+            if (std::distance(range.begin(), &e) != static_cast<int32_t>(range.size()) - 1)
                 *os << ", ";
         }
         if (range.size() > 8)
@@ -51,7 +51,7 @@ namespace infra
         for (const uint8_t& e : infra::Head(range, 8))
         {
             *os << static_cast<int>(e);
-            if (std::distance(range.begin(), &e) != range.size() - 1)
+            if (std::distance(range.begin(), &e) != static_cast<int32_t>(range.size()) - 1)
                 *os << ", ";
         }
         if (range.size() > 8)
@@ -99,7 +99,7 @@ namespace infra
 
     inline ConstByteRange MakeStringByteRange(const char* string)
     {
-        return ReinterpretCastByteRange(MakeRange(string, string + std::strlen(string))); // NOSONAR
+        return ReinterpretCastByteRange(MakeRange(string, string + std::strlen(string))); //NOSONAR
     }
 
     inline ConstByteRange MakeStringByteRange(const std::string& string)
