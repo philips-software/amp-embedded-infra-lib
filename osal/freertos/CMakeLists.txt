@@ -6,10 +6,7 @@ FetchContent_Declare(
 
 set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL On)
 
-if (TARGET_BUILD_UNIX OR TARGET_BUILD_OSX)
-    cmake_path(SET CONFIG_FILE_DIRECTORY config/posix)
-    set(FREERTOS_PORT GCC_POSIX CACHE STRING "")
-elseif (TARGET_CORTEX STREQUAL m7)
+if (TARGET_CORTEX STREQUAL m7)
     set(FREERTOS_PORT GCC_ARM_CM7)
 elseif (TARGET_CORTEX STREQUAL m4)
     set(FREERTOS_PORT GCC_ARM_CM4)
@@ -31,7 +28,3 @@ set_target_properties(freertos_kernel freertos_kernel_port PROPERTIES FOLDER Ext
 
 add_library(osal.freertos_osal STATIC Osal.cpp)
 target_link_libraries(osal.freertos_osal PUBLIC infra.util freertos_kernel freertos_kernel_port)
-
-if (TARGET_BUILD_UNIX OR TARGET_BUILD_OSX)
-    target_link_libraries(osal.freertos_osal PUBLIC pthread)
-endif()

@@ -5,20 +5,22 @@ FetchContent_Declare(
 )
 
 set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL On)
+set(CMAKE_COMPILE_WARNING_AS_ERROR Off)
 
-if (TARGET_BUILD_UNIX AND CMAKE_COMPILER_IS_GNUCC)
-    set(THREADX_ARCH linux CACHE STRING "")
-    set(THREADX_TOOLCHAIN gnu CACHE STRING "")
+if (TARGET_CORTEX)
+    set(THREADX_ARCH cortex_${TARGET_CORTEX} CACHE STRING "")
 endif()
 
-if (TARGET_BUILD_WIN AND MSVC)
-    set(THREADX_ARCH win32 CACHE STRING "")
-    set(THREADX_TOOLCHAIN vs_2019 CACHE STRING "")
+if (CMAKE_COMPILER_IS_GNUCC)
+    set(THREADX_TOOLCHAIN gnu CACHE STRING "")
 endif()
 
 FetchContent_MakeAvailable(threadx)
 
-target_compile_definitions(threadx PRIVATE TX_INITIALIZE_KERNEL_ENTER_EXTENSION=return\;)
+target_compile_definitions(threadx PRIVATE "TX_INITIALIZE_KERNEL_ENTER_EXTENSION=return\;")
+get_target_property(COMPILE_DEFINITIONS threadx definitions)
+string(REPLACE TX_INCLUDE_USER_DEFINE_FILE TX_INCLUDE_USER_DEFINE_FILE=1 defitions "${definitions}")
+set_target_properties(threadx PROPERTIES COMPILE_DEFINITIONS "${definitions}")
 
 add_library(osal.threadx_osal STATIC Osal.cpp)
 target_link_libraries(osal.threadx_osal PUBLIC infra.util threadx)
