@@ -80,7 +80,7 @@
       "name": "Embedded",
       "displayName": "Configuration for Embedded",
       "inherits": "defaults",
-      "toolchainFile": "${sourceDir}/cmake/toolchain-arm-gcc.cmake",
+      "toolchainFile": "${sourceDir}/cmake/toolchain-arm-gcc-m4.cmake",
       "cacheVariables": {
         "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo;MinSizeRel",
         "CMAKE_PREFIX_PATH": "${sourceDir}/Build/Host"
