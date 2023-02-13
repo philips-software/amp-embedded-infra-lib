@@ -15,7 +15,7 @@
       "type": "cmake",
       "label": "Formatter",
       "command": "build",
-      "targets": ["emil_clangformat"],
+      "targets": ["clangformat_emil"],
       "preset": "${command:cmake.activeBuildPresetName}",
       "group": "build",
       "problemMatcher": [],
