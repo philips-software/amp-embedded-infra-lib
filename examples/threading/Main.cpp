@@ -4,7 +4,6 @@
 #include <iostream>
 #include <mutex>
 #include <thread>
-#include <iostream>
 
 using namespace std::chrono_literals;
 
