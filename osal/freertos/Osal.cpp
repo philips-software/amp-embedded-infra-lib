@@ -3,8 +3,8 @@
 
 extern "C"
 {
-    #include "FreeRTOS.h"
-    #include "task.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
     void vAssertCalled(const char* const filename, unsigned long line)
     {}

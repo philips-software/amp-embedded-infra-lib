@@ -1,12 +1,16 @@
 #ifndef OSAL_THREADX_STD_THREAD_CONDITION_VARIABLE_HPP
 #define OSAL_THREADX_STD_THREAD_CONDITION_VARIABLE_HPP
 
-#include <chrono>
 #include "stdmutex.hpp"
+#include <chrono>
 
 namespace std
 {
-    enum class cv_status { no_timeout, timeout };
+    enum class cv_status
+    {
+        no_timeout,
+        timeout
+    };
 
     template<typename Lock>
     class Unlock
@@ -29,7 +33,6 @@ namespace std
     private:
         Lock& mLock;
     };
-        
     class condition_variable
     {
     private:

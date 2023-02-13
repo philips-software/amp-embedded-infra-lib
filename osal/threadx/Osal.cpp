@@ -2,9 +2,9 @@
 
 extern "C"
 {
-    #include "tx_api.h"
-    #include "tx_initialize.h"
-    #include "tx_thread.h"
+#include "tx_api.h"
+#include "tx_initialize.h"
+#include "tx_thread.h"
 
     VOID tx_application_define(VOID* first_unused_memory)
     {}
@@ -15,12 +15,12 @@ namespace osal
     void Init()
     {
         tx_kernel_enter();
-        _tx_thread_system_state =  TX_INITIALIZE_IN_PROGRESS;
+        _tx_thread_system_state = TX_INITIALIZE_IN_PROGRESS;
     }
 
     void Run()
     {
-        _tx_thread_system_state =  TX_INITIALIZE_IS_FINISHED;
+        _tx_thread_system_state = TX_INITIALIZE_IS_FINISHED;
 
         TX_PORT_SPECIFIC_PRE_SCHEDULER_INITIALIZATION
 

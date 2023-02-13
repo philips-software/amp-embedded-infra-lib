@@ -59,7 +59,7 @@ namespace std
             return tx_mutex_get(handle, (chrono::duration_cast<chrono::milliseconds>(duration).count() + adjustForInaccuracies) * TX_TIMER_TICKS_PER_SECOND / 1000) == TX_SUCCESS;
         }
 
-        template <class Clock, class Duration>
+        template<class Clock, class Duration>
         bool try_lock_until(const chrono::time_point<Clock, Duration>& timePoint)
         {
             return try_lock_for(timePoint - Clock::now());
@@ -83,8 +83,8 @@ namespace std
         mutex& operator=(const mutex& other) = delete;
         ~mutex() = default;
 
-        using timed_mutex::native_handle_type;
         using timed_mutex::lock;
+        using timed_mutex::native_handle_type;
         using timed_mutex::try_lock;
         using timed_mutex::unlock;
     };
@@ -98,8 +98,8 @@ namespace std
         recursive_mutex& operator=(const recursive_mutex&) = delete;
         ~recursive_mutex() = default;
 
-        using recursive_timed_mutex::native_handle_type;
         using recursive_timed_mutex::lock;
+        using recursive_timed_mutex::native_handle_type;
         using recursive_timed_mutex::try_lock;
         using recursive_timed_mutex::unlock;
     };
@@ -317,7 +317,6 @@ namespace std
         int failed_lock = try_lock(lockn...);
         if (failed_lock != -1)
             return failed_lock + 1;
-        
         l1.release();
         return -1;
     }

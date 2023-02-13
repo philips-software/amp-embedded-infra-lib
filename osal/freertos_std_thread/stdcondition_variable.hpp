@@ -12,7 +12,11 @@
 
 namespace std
 {
-    enum class cv_status { no_timeout, timeout };
+    enum class cv_status
+    {
+        no_timeout,
+        timeout
+    };
 
     template<typename Lock>
     class Unlock

@@ -1,10 +1,10 @@
 #ifndef OSAL_FREERTOS_STD_THREAD_ONCE_HPP
 #define OSAL_FREERTOS_STD_THREAD_ONCE_HPP
 
+#include "stdcondition_variable.hpp"
+#include "stdmutex.hpp"
 #include <atomic>
 #include <utility>
-#include "stdmutex.hpp"
-#include "stdcondition_variable.hpp"
 
 namespace std
 {

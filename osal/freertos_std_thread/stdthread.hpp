@@ -1,15 +1,15 @@
 #ifndef OSAL_FREERTOS_STD_THREAD_THREAD_HPP
 #define OSAL_FREERTOS_STD_THREAD_THREAD_HPP
 
+#include "FreeRTOS.h"
+#include "infra/util/Function.hpp"
+#include "task.h"
 #include <cassert>
-#include <condition_variable>
 #include <chrono>
+#include <condition_variable>
 #include <cstdlib>
 #include <memory>
 #include <mutex>
-#include "FreeRTOS.h"
-#include "task.h"
-#include "infra/util/Function.hpp"
 
 namespace std
 {

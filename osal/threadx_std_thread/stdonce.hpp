@@ -1,8 +1,8 @@
 #ifndef OSAL_THREADX_STD_THREAD_ONCE_HPP
 #define OSAL_THREADX_STD_THREAD_ONCE_HPP
 
-#include "stdmutex.hpp"
 #include "stdcondition_variable.hpp"
+#include "stdmutex.hpp"
 #include <atomic>
 #include <utility>
 
@@ -16,7 +16,7 @@ namespace std
         once_flag& operator=(const once_flag&) = delete;
 
         template<typename _Callable, typename... _Args>
-            friend void call_once(once_flag& __once, _Callable&& __f, _Args&&... __args);
+        friend void call_once(once_flag& __once, _Callable&& __f, _Args&&... __args);
 
     private:
         atomic_bool started = ATOMIC_VAR_INIT(false);
