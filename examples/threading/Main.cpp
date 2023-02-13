@@ -15,7 +15,8 @@ int main()
     std::mutex m;
     std::condition_variable cv;
 
-    std::thread cnt([&] {
+    std::thread cnt([&]
+        {
         while (true)
         {
             ++thread_counter;
