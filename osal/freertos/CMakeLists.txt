@@ -24,7 +24,7 @@ endif()
 FetchContent_MakeAvailable(freertos)
 
 set_target_properties(freertos_kernel freertos_kernel_port PROPERTIES FOLDER External/FreeRTOS)
-#install(TARGETS freertos_kernel freertos_kernel_port EXPORT emilOsalTargets)
+install(TARGETS freertos_kernel freertos_kernel_port EXPORT emilOsalTargets)
 
 add_library(osal.freertos_osal STATIC Osal.cpp)
 target_link_libraries(osal.freertos_osal PUBLIC infra.util freertos_kernel freertos_kernel_port)

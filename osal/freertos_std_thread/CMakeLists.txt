@@ -1,5 +1,5 @@
 add_library(osal.freertos_std_thread INTERFACE)
-#install(TARGETS osal.freertos_std_thread EXPORT emilOsalTargets)
+install(TARGETS osal.freertos_std_thread EXPORT emilOsalTargets)
 
 target_link_libraries(osal.freertos_std_thread INTERFACE
     freertos_kernel
@@ -22,5 +22,5 @@ target_sources(osal.freertos_std_thread PRIVATE
 )
 
 if (EMIL_BUILD_TESTS)
-    #add_subdirectory(test)
+    add_subdirectory(test)
 endif()

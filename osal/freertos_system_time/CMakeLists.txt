@@ -1,5 +1,5 @@
 add_library(osal.freertos_system_time INTERFACE)
-#install(TARGETS osal.freertos_system_time EXPORT emilOsalTargets)
+install(TARGETS osal.freertos_system_time EXPORT emilOsalTargets)
 
 target_link_libraries(osal.freertos_system_time INTERFACE
     freertos_kernel

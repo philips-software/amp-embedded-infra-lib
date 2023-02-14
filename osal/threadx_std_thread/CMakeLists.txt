@@ -1,5 +1,5 @@
 add_library(osal.threadx_std_thread INTERFACE)
-#install(TARGETS osal.threadx_std_thread EXPORT emilOsalTargets)
+install(TARGETS osal.threadx_std_thread EXPORT emilOsalTargets)
 
 target_link_libraries(osal.threadx_std_thread INTERFACE
     threadx
