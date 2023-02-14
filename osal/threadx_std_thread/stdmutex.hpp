@@ -85,7 +85,6 @@ namespace std
 
         using timed_mutex::lock;
         using timed_mutex::native_handle_type;
-        using timed_mutex::native_handle_type;
         using timed_mutex::try_lock;
         using timed_mutex::unlock;
     };
@@ -106,13 +105,16 @@ namespace std
         using recursive_timed_mutex::unlock;
     };
 
-    struct defer_lock_t { };
-    struct try_to_lock_t { };
-    struct adopt_lock_t { };
+    // clang-format off
+    struct defer_lock_t {};
+    struct try_to_lock_t {};
+    struct adopt_lock_t {};
 
-    constexpr defer_lock_t defer_lock { };
-    constexpr try_to_lock_t try_to_lock { };
-    constexpr adopt_lock_t adopt_lock { };
+    constexpr defer_lock_t defer_lock {};
+    constexpr try_to_lock_t try_to_lock {};
+    constexpr adopt_lock_t adopt_lock {};
+
+    // clang-format on
 
     template<typename Mutex>
     class lock_guard

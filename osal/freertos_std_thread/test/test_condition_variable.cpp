@@ -188,8 +188,7 @@ TEST_F(SemaphoreFixture, WhenWaitingTwiceNotifyOneReleasesFirstSemaphore)
         .WillOnce(testing::Invoke([this](xSemaphoreHandle, portTickType)
             {
         condition_variable.notify_one();
-        return false;       // Second semaphore times out
-    } ));
+        return false; })); // Second semaphore times out
 
     EXPECT_CALL(mock, SemaphoreGive(p1));
 
