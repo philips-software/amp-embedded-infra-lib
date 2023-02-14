@@ -85,6 +85,7 @@ namespace std
 
         using timed_mutex::lock;
         using timed_mutex::native_handle_type;
+        using timed_mutex::native_handle_type;
         using timed_mutex::try_lock;
         using timed_mutex::unlock;
     };
@@ -99,6 +100,7 @@ namespace std
         ~recursive_mutex() = default;
 
         using recursive_timed_mutex::lock;
+        using recursive_timed_mutex::native_handle_type;
         using recursive_timed_mutex::native_handle_type;
         using recursive_timed_mutex::try_lock;
         using recursive_timed_mutex::unlock;
