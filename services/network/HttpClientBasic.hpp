@@ -47,9 +47,11 @@ namespace services
         virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::HttpClientObserver> client)>&& createdClientObserver) override;
         virtual void ConnectionFailed(ConnectFailReason reason) override;
 
+    protected:
+        void StartTimeout();
+
     private:
         void Close();
-        void StartTimeout();
         void Timeout();
         void Expire();
         void ReportError(bool intermittentFailure);

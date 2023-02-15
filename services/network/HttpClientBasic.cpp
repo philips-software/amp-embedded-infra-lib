@@ -101,6 +101,8 @@ namespace services
     void HttpClientBasic::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         StartTimeout();
+
+        HttpClientObserver::SendStreamAvailable(std::move(writer));
     }
 
     infra::BoundedConstString HttpClientBasic::Hostname() const
@@ -126,6 +128,11 @@ namespace services
         ReportError(true);
     }
 
+    void HttpClientBasic::StartTimeout()
+    {
+        timeoutTimer.Start(timeoutDuration, [this]() { Timeout(); });
+    }
+
     void HttpClientBasic::Close()
     {
         assert(HttpClientObserver::IsAttached());
@@ -137,11 +144,6 @@ namespace services
             timeoutTimer.Cancel();
             HttpClientObserver::Subject().CloseConnection();
         }
-    }
-
-    void HttpClientBasic::StartTimeout()
-    {
-        timeoutTimer.Start(timeoutDuration, [this]() { Timeout(); });
     }
 
     void HttpClientBasic::Timeout()

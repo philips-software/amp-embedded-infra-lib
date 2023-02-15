@@ -16,9 +16,22 @@ namespace services
         virtual void HeaderAvailable(HttpHeader header) = 0;
         virtual void BodyAvailable(infra::SharedPtr<infra::StreamReader>&& reader) = 0;
         virtual void BodyComplete() = 0;
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) {}
+        // Requests that use chunked encoding will result in SendStreamAvailable being invoked multiple times,
+        // until 0 bytes are written.
+        // If an HTTP redirect is encountered, then a second set of invocations of SendStreamAvailable occurs.
+        // Default behaviour: Use FillContent, which provides static content
+        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+        {
+            if (!fillingContentDone)
+                FillContent(*writer);
+            fillingContentDone = !fillingContentDone;
+        }
+
         virtual void FillContent(infra::StreamWriter& writer) const {}
         virtual void CloseRequested() {} // By default, HTTP Clients finish their request
+
+    private:
+        bool fillingContentDone = false;
     };
 
     class HttpClientObserverFactory
@@ -56,19 +69,13 @@ namespace services
 
         // Full content is given as an argument
         virtual void Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) = 0;
-        // With this overload, the size of the content is given, and the observer receives repeated SendStreamAvailable calls until it provides
-        // enough content to fill the content size
-        virtual void Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) = 0;
-        // No content is given, but the observer receives multiple FillContent calls. Each invocation must fill out the exact same contents.
+        // With this overload, the observer receives repeated SendStreamAvailable calls until it provides no content anymore. Chunked encoding will be used
         virtual void Post(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) = 0;
 
         virtual void Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) = 0;
-        virtual void Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) = 0;
         virtual void Put(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) = 0;
 
-        // Full content is given as an argument
         virtual void Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) = 0;
-        // No content is given, but the observer receives multiple FillContent calls. Each invocation must fill out the exact same contents.
         virtual void Patch(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) = 0;
         virtual void Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) = 0;
 

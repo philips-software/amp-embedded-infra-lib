@@ -106,7 +106,6 @@ namespace services
             Connection::Observer().Abort();
         else if (mutex.resource.ClaimsPending() || closing)
             Connection::Observer().Close();
-
     }
 
     ExclusiveConnectionFactory::ExclusiveConnectionFactory(infra::BoundedList<infra::NotifyingSharedOptional<Listener>>& listeners, infra::BoundedList<Connector>& connectors,
