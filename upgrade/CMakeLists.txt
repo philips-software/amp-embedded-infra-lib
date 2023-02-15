@@ -2,6 +2,7 @@ add_subdirectory(boot_loader)
 add_subdirectory(deploy_pack_to_external)
 add_subdirectory(pack)
 add_subdirectory(pack_builder)
+add_subdirectory(pack_builder_instantiations)
 add_subdirectory(security_key_generator)
 
 function(emil_generate_artifacts)
