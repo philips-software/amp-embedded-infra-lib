@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       releases_created: ${{ steps.release.outputs.releases_created }}
-      upload_url: ${{ steps.release.outputs.upload_url }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
       - uses: philips-software/app-token-action@a37926571e4cec6f219e06727136efdd073d8657 # v1.1.2
         id: token
@@ -27,7 +27,7 @@ jobs:
           app_id: ${{ secrets.FOREST_RELEASER_APP_ID }}
           app_base64_private_key: ${{ secrets.FOREST_RELEASER_APP_PRIVATE_KEY_BASE64 }}
           auth_type: installation
-      - uses: google-github-actions/release-please-action@514bc6cdae71484c998108f2136a8f5e4c62b9b9 # v3.7.3
+      - uses: google-github-actions/release-please-action@d3c71f9a0a55385580de793de58da057b3560862 # v3.7.4
         id: release
         with:
           command: manifest
@@ -44,23 +44,18 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
     steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           persist-credentials: false
       - uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
         with:
           key: ${{ github.job }}-${{ matrix.os }}
           variant: sccache
-      - uses: lukka/run-cmake@71d20a810daaf5340669b8cce5c9fe583780e147
+      - uses: lukka/run-cmake@2d1ee0acb9c4f656ec9128fc7387d82ac4539816 # v10.3
         with:
           configurePreset: "Package"
           buildPreset: "Package"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
-      - uses: nanoufo/action-upload-artifacts-and-release-assets@1adad6c4773f492fd802907560790a7b7b1ac457 # v1.6
+      - run: gh release upload ${{ needs.release_please.outputs.tag_name }} Build/**/emil-*.zip --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          path: |
-            Build/**/emil-*.zip
-          upload-release-files: true
-          release-upload-url: ${{ needs.release_please.outputs.upload_url }}

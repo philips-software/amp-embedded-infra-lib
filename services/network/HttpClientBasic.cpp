@@ -58,19 +58,6 @@ namespace services
         Connect();
     }
 
-    void HttpClientBasic::Close()
-    {
-        assert(HttpClientObserver::IsAttached());
-        assert(state == State::connected || state == State::closing);
-
-        if (state == State::connected)
-        {
-            state = State::closing;
-            timeoutTimer.Cancel();
-            HttpClientObserver::Subject().Close();
-        }
-    }
-
     void HttpClientBasic::ContentError()
     {
         contentError = true;
@@ -139,6 +126,19 @@ namespace services
     void HttpClientBasic::ConnectionFailed(services::HttpClientObserverFactory::ConnectFailReason reason)
     {
         ReportError(true);
+    }
+
+    void HttpClientBasic::Close()
+    {
+        assert(HttpClientObserver::IsAttached());
+        assert(state == State::connected || state == State::closing);
+
+        if (state == State::connected)
+        {
+            state = State::closing;
+            timeoutTimer.Cancel();
+            HttpClientObserver::Subject().CloseConnection();
+        }
     }
 
     void HttpClientBasic::StartTimeout()

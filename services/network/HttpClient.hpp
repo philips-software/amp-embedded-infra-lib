@@ -22,6 +22,9 @@ namespace services
 
         virtual void FillContent(infra::StreamWriter& writer) const
         {}
+
+        virtual void CloseRequested()
+        {} // By default, HTTP Clients finish their request
     };
 
     class HttpClientObserverFactory
@@ -76,7 +79,7 @@ namespace services
         virtual void Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) = 0;
 
         virtual void AckReceived() = 0;
-        virtual void Close() = 0;
+        virtual void CloseConnection() = 0;
 
         virtual Connection& GetConnection() = 0;
     };

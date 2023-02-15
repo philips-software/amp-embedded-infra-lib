@@ -150,8 +150,8 @@ TEST_F(HttpClientAuthenticationTest, AckReceived_is_forwarded)
 
 TEST_F(HttpClientAuthenticationTest, Close_is_forwarded)
 {
-    EXPECT_CALL(httpClient, Close());
-    httpClientObserver->Subject().Close();
+    EXPECT_CALL(httpClient, CloseConnection());
+    httpClientObserver->Subject().CloseConnection();
 }
 
 TEST_F(HttpClientAuthenticationTest, GetConnection_is_forwarded)

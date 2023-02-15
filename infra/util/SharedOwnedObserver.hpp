@@ -26,6 +26,7 @@ namespace infra
 
         void Detach();
 
+    protected:
         virtual void Attached()
         {}
 
@@ -54,6 +55,13 @@ namespace infra
         bool IsAttached() const;
         ObserverType& Observer() const;
         infra::SharedPtr<ObserverType> ObserverPtr() const;
+
+    protected:
+        virtual void AttachedObserver()
+        {}
+
+        virtual void DetachingObserver()
+        {}
 
     private:
         friend ObserverType;
@@ -123,6 +131,7 @@ namespace infra
         this->observer = observer;
         this->observer->subject = static_cast<typename ObserverType::SubjectType*>(this);
         this->observer->Attached();
+        AttachedObserver();
     }
 
     template<class ObserverType>
@@ -130,6 +139,7 @@ namespace infra
     {
         assert(observer != nullptr);
 
+        DetachingObserver();
         observer->Detaching();
         this->observer->subject = nullptr;
         observer = nullptr;

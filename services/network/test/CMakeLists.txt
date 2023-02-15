@@ -30,6 +30,7 @@ target_sources(services.network_test PRIVATE
     TestHttpClient.cpp
     TestHttpClientAuthentication.cpp
     TestHttpClientBasic.cpp
+    TestHttpClientCachedConnection.cpp
     TestHttpClientJson.cpp
     TestHttpServer.cpp
     TestLlmnrResponder.cpp

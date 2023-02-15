@@ -4,6 +4,7 @@
 #include "hal/interfaces/SerialCommunication.hpp"
 // clang-format off
 #include <atomic>
+#include <condition_variable>
 #include <mutex>
 #include <thread>
 #include <winsock2.h>
@@ -28,41 +29,41 @@ namespace hal
         PortNotInitialized(const std::string& portName, DWORD errorCode);
     };
 
+    struct UartWindowsConfig
+    {
+        enum class RtsFlowControl
+        {
+            RtsControlDisable = RTS_CONTROL_DISABLE,
+            RtsControlEnable = RTS_CONTROL_ENABLE,
+            RtsHandshake = RTS_CONTROL_HANDSHAKE,
+            RtsControlToggle = RTS_CONTROL_TOGGLE
+        };
+
+        enum class Parity
+        {
+            none = NOPARITY,
+            even = EVENPARITY,
+            odd = ODDPARITY,
+            mark = MARKPARITY,
+            space = SPACEPARITY
+        };
+
+        UartWindowsConfig() = default;
+
+        UartWindowsConfig(uint32_t baudRate, RtsFlowControl flowControl)
+            : baudRate(baudRate)
+            , flowControl(flowControl)
+        {}
+
+        uint32_t baudRate = CBR_115200;
+        RtsFlowControl flowControl = RtsFlowControl::RtsControlDisable;
+        Parity parity = Parity::none;
+    };
+
     class UartWindows
         : public SerialCommunication
     {
     public:
-        struct UartWindowsConfig
-        {
-            enum class RtsFlowControl
-            {
-                RtsControlDisable = RTS_CONTROL_DISABLE,
-                RtsControlEnable = RTS_CONTROL_ENABLE,
-                RtsHandshake = RTS_CONTROL_HANDSHAKE,
-                RtsControlToggle = RTS_CONTROL_TOGGLE
-            };
-
-            enum class Parity
-            {
-                none = NOPARITY,
-                even = EVENPARITY,
-                odd = ODDPARITY,
-                mark = MARKPARITY,
-                space = SPACEPARITY
-            };
-
-            UartWindowsConfig() = default;
-
-            UartWindowsConfig(uint32_t baudRate, RtsFlowControl flowControl)
-                : baudRate(baudRate)
-                , flowControl(flowControl)
-            {}
-
-            uint32_t baudRate = CBR_115200;
-            RtsFlowControl flowControl = RtsFlowControl::RtsControlDisable;
-            Parity parity = Parity::none;
-        };
-
         struct DeviceName
         {};
 

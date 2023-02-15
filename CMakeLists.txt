@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-project(emil LANGUAGES C CXX VERSION 2.1.0) # x-release-please-version
+project(emil LANGUAGES C CXX VERSION 2.2.1) # x-release-please-version
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
@@ -119,6 +119,11 @@ if (NOT EMIL_STANDALONE)
     set(EMIL_BUILD_DARWIN "${EMIL_BUILD_DARWIN}" PARENT_SCOPE)
 endif()
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # Suppress warnings about parameter passing for argument of type '...' changed in GCC 7.1
+    add_compile_options(-Wno-psabi)
+endif()
+
 add_version_header_target(generated.version_header)
 
 add_subdirectory(external)
@@ -190,3 +195,7 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
 endif()
 
 emil_clangformat_directories(emil DIRECTORIES .)
+
+if (EMIL_STANDALONE)
+    emil_folderize_all_targets()
+endif()
