@@ -100,7 +100,6 @@ namespace std
 
         using recursive_timed_mutex::lock;
         using recursive_timed_mutex::native_handle_type;
-        using recursive_timed_mutex::native_handle_type;
         using recursive_timed_mutex::try_lock;
         using recursive_timed_mutex::unlock;
     };
