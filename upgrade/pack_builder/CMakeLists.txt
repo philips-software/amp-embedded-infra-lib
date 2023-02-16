@@ -14,8 +14,6 @@ if (EMIL_HOST_BUILD)
     target_sources(upgrade.pack_builder PRIVATE
         BinaryObject.cpp
         BinaryObject.hpp
-        BuildUpgradePack.cpp
-        BuildUpgradePack.hpp
         Elf.hpp
         ImageAuthenticatorHmac.cpp
         ImageAuthenticatorHmac.hpp

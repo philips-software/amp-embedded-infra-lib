@@ -1,4 +1,4 @@
-#include "upgrade/pack_builder/BuildUpgradePack.hpp"
+#include "upgrade/pack_builder_instantiations/UpgradePackBuilderFacade.hpp"
 #include "hal/generic/FileSystemGeneric.hpp"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "mbedtls/memory_buffer_alloc.h"
@@ -10,32 +10,16 @@
 #include "upgrade/pack_builder/Input.hpp"
 #include "upgrade/pack_builder/UpgradePackBuilder.hpp"
 #include "upgrade/pack_builder/UpgradePackInputFactory.hpp"
-#include <iostream>
 
-namespace application
+namespace main_
 {
-    namespace
+    struct MissingTargetException
+        : std::runtime_error
     {
-        struct MissingTargetException
-            : std::runtime_error
-        {
-            explicit MissingTargetException(const std::string& target)
-                : std::runtime_error("Missing mandatory target: " + target)
-            {}
-        };
-    }
-
-    void BuildUpgradePack(const application::UpgradePackBuilder::HeaderInfo& headerInfo, const SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets,
-        const std::string& outputFilename, const BuildOptions& buildOptions, infra::JsonObject& configuration, const DefaultKeyMaterial& keys)
-    {
-        return UpgradePackBuilderFacade(headerInfo).Build(supportedTargets, requestedTargets, outputFilename, buildOptions, configuration, keys);
-    }
-
-    void BuildUpgradePack(const application::UpgradePackBuilder::HeaderInfo& headerInfo, const SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets,
-        const std::string& outputFilename)
-    {
-        return UpgradePackBuilderFacade(headerInfo).Build(supportedTargets, requestedTargets, outputFilename);
-    }
+        explicit MissingTargetException(const std::string& target)
+            : std::runtime_error("Missing mandatory target: " + target)
+        {}
+    };
 
     UpgradePackBuilderFacade::UpgradePackBuilderFacade(const application::UpgradePackBuilder::HeaderInfo& headerInfo)
         : headerInfo(headerInfo)
@@ -45,7 +29,7 @@ namespace application
         mbedtls_memory_buffer_alloc_init(memory_buf, sizeof(memory_buf));
     }
 
-    void UpgradePackBuilderFacade::Build(const SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, const std::string& outputFilename,
+    void UpgradePackBuilderFacade::Build(const application::SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, const std::string& outputFilename,
         const BuildOptions& buildOptions, infra::JsonObject& configuration, const DefaultKeyMaterial& keys)
     {
         hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
@@ -61,7 +45,7 @@ namespace application
         builder.WriteUpgradePack(outputFilename, fileSystem);
     }
 
-    void UpgradePackBuilderFacade::Build(const SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, const std::string& outputFilename)
+    void UpgradePackBuilderFacade::Build(const application::SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, const std::string& outputFilename)
     {
         hal::FileSystemGeneric fileSystem;
         application::ImageEncryptorNone encryptor;
@@ -72,7 +56,7 @@ namespace application
         builder.WriteUpgradePack(outputFilename, fileSystem);
     }
 
-    std::vector<std::unique_ptr<application::Input>> UpgradePackBuilderFacade::CreateInputs(const SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, InputFactory& factory)
+    std::vector<std::unique_ptr<application::Input>> UpgradePackBuilderFacade::CreateInputs(const application::SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, application::InputFactory& factory)
     {
         std::vector<std::unique_ptr<application::Input>> inputs;
 
@@ -96,6 +80,6 @@ namespace application
     void UpgradePackBuilderFacade::PreBuilder(const TargetAndFiles& targetAndFiles, const BuildOptions& buildOptions, infra::JsonObject& configuration)
     {}
 
-    void UpgradePackBuilderFacade::PostBuilder(UpgradePackBuilder& builder, ImageSigner& signer, const BuildOptions& buildOptions)
+    void UpgradePackBuilderFacade::PostBuilder(application::UpgradePackBuilder& builder, application::ImageSigner& signer, const BuildOptions& buildOptions)
     {}
 }

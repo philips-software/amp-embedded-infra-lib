@@ -101,7 +101,7 @@ namespace hal
 
         readThread = std::thread([this]()
             { ReadThread(); });
-        SetThreadPriority(readThread.native_handle(), GetThreadPriority(readThread.native_handle()) + 1);
+        SetThreadPriority(reinterpret_cast<HANDLE>(readThread.native_handle()), GetThreadPriority(reinterpret_cast<HANDLE>(readThread.native_handle())) + 1);
     }
 
     void UartWindows::ReadThread()
