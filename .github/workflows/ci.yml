@@ -6,6 +6,7 @@ on:
     branches: [develop, modern-cmake]
   pull_request:
     types: [opened, synchronize, reopened]
+  merge_group:
 
 permissions:
   contents: read
@@ -53,7 +54,7 @@ jobs:
           ]
         configuration: ["RelWithDebInfo", "Release"]
     steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           persist-credentials: false
       - name: Install GNU Arm Embedded Toolchain ${{ matrix.gcc }}
