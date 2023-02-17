@@ -20,7 +20,7 @@ EmIL requires:
 
 EmIL is know to build under the following configurations:
 - Windows from Visual Studio 2017 onwards.
-- Linux from GCC 5.3 onwards.
+- Linux from GCC 7 onwards.
 - OSX from XCode 11 and target platform 10.15 onwards.
 
 ## How to build the software
