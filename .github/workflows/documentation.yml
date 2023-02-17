@@ -3,6 +3,7 @@ name: Build & Publish Documentation
 
 on:
   push:
+  merge_group:
 
 permissions:
   contents: read
