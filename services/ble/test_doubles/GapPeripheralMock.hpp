@@ -1,8 +1,8 @@
 #ifndef SERVICES_GAP_PERIPHERAL_MOCK_HPP
 #define SERVICES_GAP_PERIPHERAL_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "services/ble/Gap.hpp"
+#include "gmock/gmock.h"
 
 namespace services
 {
@@ -13,7 +13,7 @@ namespace services
         MOCK_METHOD(hal::MacAddress, GetResolvableAddress, (), (const));
         MOCK_METHOD(void, SetAdvertisementData, (infra::ConstByteRange data));
         MOCK_METHOD(void, SetScanResponseData, (infra::ConstByteRange data));
-        MOCK_METHOD(void, Advertise, (AdvertisementType type, AdvertisementIntervalMultiplier multiplier));
+        MOCK_METHOD(void, Advertise, (GapAdvertisementType type, AdvertisementIntervalMultiplier multiplier));
         MOCK_METHOD(void, Standby, ());
     };
 }
