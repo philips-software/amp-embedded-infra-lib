@@ -1,4 +1,4 @@
-add_library(osal.std_thread_osal STATIC Osal.cpp ${EMIL_EXCLUDE_FROM_ALL})
+add_library(osal.std_thread_osal ${EMIL_EXCLUDE_FROM_ALL} STATIC Osal.cpp)
 #install(TARGETS osal.std_thread_osal EXPORT emilOsalTargets)
 
 target_include_directories(osal.std_thread_osal PUBLIC

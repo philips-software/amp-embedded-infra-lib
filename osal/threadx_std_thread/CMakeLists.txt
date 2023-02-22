@@ -1,4 +1,4 @@
-add_library(osal.threadx_std_thread INTERFACE ${EMIL_EXCLUDE_FROM_ALL})
+add_library(osal.threadx_std_thread ${EMIL_EXCLUDE_FROM_ALL} INTERFACE)
 #install(TARGETS osal.threadx_std_thread EXPORT emilOsalTargets)
 
 target_link_libraries(osal.threadx_std_thread INTERFACE

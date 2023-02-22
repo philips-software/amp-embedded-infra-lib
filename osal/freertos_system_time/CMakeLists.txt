@@ -1,4 +1,4 @@
-add_library(osal.freertos_system_time INTERFACE ${EMIL_EXCLUDE_FROM_ALL})
+add_library(osal.freertos_system_time ${EMIL_EXCLUDE_FROM_ALL} INTERFACE)
 #install(TARGETS osal.freertos_system_time EXPORT emilOsalTargets)
 
 target_link_libraries(osal.freertos_system_time INTERFACE
