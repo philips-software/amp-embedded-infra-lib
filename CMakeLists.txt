@@ -142,6 +142,13 @@ if (EMIL_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
+emil_exclude_directory_from_clang_format(${CMAKE_BINARY_DIR})
+emil_clangformat_directories(emil DIRECTORIES .)
+
+if (EMIL_STANDALONE)
+    emil_folderize_all_targets()
+endif()
+
 if (EMIL_GENERATE_PACKAGE_CONFIG)
     function(generate_export_targets name)
         # Generate and install export file
@@ -197,10 +204,4 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
     set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 
     include(CPack)
-endif()
-
-emil_clangformat_directories(emil DIRECTORIES .)
-
-if (EMIL_STANDALONE)
-    emil_folderize_all_targets()
 endif()
