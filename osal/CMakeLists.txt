@@ -18,4 +18,4 @@ else()
     endif()
 endif()
 
-install(TARGETS osal.thread EXPORT emilOsalTargets)
+#install(TARGETS osal.thread EXPORT emilOsalTargets)

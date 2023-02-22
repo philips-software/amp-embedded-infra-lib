@@ -56,6 +56,10 @@ find_program(EMIL_DEBUG_TOOL
     NAMES arm-none-eabi-gdb
     HINTS ${hints_paths})
 
+set(CMAKE_ASM_FLAGS_RELEASE "-g" CACHE STRING "" FORCE)
+set(CMAKE_ASM_FLAGS_RELWITHDEBINFO "-g" CACHE STRING "" FORCE)
+set(CMAKE_ASM_FLAGS_MINSIZEREL "" CACHE STRING "" FORCE)
+
 add_link_options(LINKER:--gc-sections,--print-memory-usage)
 add_link_options(-specs=nano.specs -nostartfiles -mthumb)
 

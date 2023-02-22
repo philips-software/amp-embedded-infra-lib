@@ -158,7 +158,7 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
         )
     endfunction()
 
-    foreach(target IN ITEMS Crypto Infra Hal Lwip Protobuf Services Upgrade Osal)
+    foreach(target IN ITEMS Crypto Infra Hal Lwip Protobuf Services Upgrade)
         generate_export_targets(${target})
     endforeach()
 

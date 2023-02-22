@@ -123,4 +123,19 @@ extern void vAssertCalled( const char * const pcFileName,
 
 #define configUSE_MALLOC_FAILED_HOOK    1
 
+#define configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY 5
+
+#ifdef __NVIC_PRIO_BITS
+ /* __BVIC_PRIO_BITS will be specified when CMSIS is being used. */
+#define configPRIO_BITS __NVIC_PRIO_BITS
+#else
+#define configPRIO_BITS 3
+#endif
+#define configLIBRARY_LOWEST_INTERRUPT_PRIORITY 0xf
+#define configKERNEL_INTERRUPT_PRIORITY ( configLIBRARY_LOWEST_INTERRUPT_PRIORITY << (8 - configPRIO_BITS) )
+#define configMAX_SYSCALL_INTERRUPT_PRIORITY ( configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY << (8 - configPRIO_BITS) )
+
+extern uint32_t SystemCoreClock;
+#define configCPU_CLOCK_HZ SystemCoreClock
+
 #endif /* FREERTOS_CONFIG_H */
