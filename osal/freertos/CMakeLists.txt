@@ -1,7 +1,7 @@
 FetchContent_Declare(
     freertos
     GIT_REPOSITORY https://github.com/FreeRTOS/FreeRTOS-Kernel
-    GIT_TAG 8252edec4547afed4e6ada74bd9353b52972894f
+    GIT_TAG def7d2df2b0506d3d249334974f51e427c17a41c # V10.5.1
 )
 
 if (TARGET_CORTEX STREQUAL m7)
@@ -42,7 +42,7 @@ target_link_libraries(osal.freertos_osal PUBLIC
     freertos_kernel_port
 )
 
-install(TARGETS osal.freertos_osal freertos_config freertos_kernel freertos_kernel_port EXPORT emilOsalTargets)
+#install(TARGETS osal.freertos_osal freertos_config freertos_kernel freertos_kernel_port EXPORT emilOsalTargets)
 
 emil_exclude_from_clang_format(freertos_config)
 emil_exclude_from_clang_format(freertos_kernel)
