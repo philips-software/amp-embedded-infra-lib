@@ -29,6 +29,8 @@ namespace services
         };
     }
 
+    MATCHER_P(ContentsEqual, x, negation ? "Contents not equal" : "Contents are equal") { return infra::ContentsEqual(infra::MakeRange(x), infra::MakeRange(arg)); }
+
     TEST_F(GapPeripheralDecoratorTest, forward_all_events_to_observers)
     {
         EXPECT_CALL(gapObserver, StateUpdated(GapPeripheralState::Connected));
@@ -74,13 +76,13 @@ namespace services
     {
         hal::MacAddress macAddress{ 0, 1, 2, 3, 4, 5 };
 
-        EXPECT_CALL(gap, Connect(infra::ContentsEqual(macAddress), services::GapAddressType::Public));
+        EXPECT_CALL(gap, Connect(ContentsEqual(macAddress), services::GapAddressType::Public));
         decorator.Connect(macAddress, services::GapAddressType::Public);
 
         EXPECT_CALL(gap, Disconnect());
         decorator.Disconnect();
 
-        EXPECT_CALL(gap, SetAddress(infra::ContentsEqual(macAddress), GapAddressType::Public));
+        EXPECT_CALL(gap, SetAddress(ContentsEqual(macAddress), GapAddressType::Public));
         decorator.SetAddress(macAddress, GapAddressType::Public);
 
         EXPECT_CALL(gap, StartDeviceDiscovery());
