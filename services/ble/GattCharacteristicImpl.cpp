@@ -36,10 +36,10 @@ namespace services
      {
         constexpr uint8_t attributeCountWithoutCCCD = 2;
         constexpr uint8_t attributeCountWithCCCD = 3;
-        
+
         if ((properties & (GattCharacteristic::PropertyFlags::notify | GattCharacteristic::PropertyFlags::indicate)) == GattCharacteristic::PropertyFlags::none)
             return attributeCountWithoutCCCD;
-        else 
+        else
             return attributeCountWithCCCD;
      }
 
@@ -50,12 +50,12 @@ namespace services
 
     GattAttribute::Handle GattCharacteristicImpl::Handle() const
     {
-        return attribute.handle;
+        return attribute.atrributeHandle;
     }
 
     GattAttribute::Handle& GattCharacteristicImpl::Handle()
     {
-        return attribute.handle;
+        return attribute.atrributeHandle;
     }
 
     uint16_t GattCharacteristicImpl::ValueLength() const
@@ -67,7 +67,7 @@ namespace services
     {
         really_assert(data.size() <= valueLength);
         really_assert(GattCharacteristicClientOperationsObserver::Attached());
-        
+
         updateContext.Emplace(UpdateContext{onDone, data});
         UpdateValue();
     }
@@ -79,13 +79,13 @@ namespace services
 
     GattAttribute::Handle GattCharacteristicImpl::CharacteristicHandle() const
     {
-        return attribute.handle;
+        return attribute.atrributeHandle;
     }
 
     void GattCharacteristicImpl::UpdateValue()
     {
         auto status = GattCharacteristicClientOperationsObserver::Subject().Update(*this, updateContext->data);
-        
+
         if (status == UpdateStatus::success)
             infra::PostAssign(updateContext, infra::none)->onDone();
         else if (status == UpdateStatus::retry)

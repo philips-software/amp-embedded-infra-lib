@@ -15,13 +15,62 @@ namespace services
     struct GattAttribute
     {
         using Uuid16 = uint16_t;
-        using Uuid128 = infra::BigEndian<std::array<uint8_t, 16>>;
+        using Uuid128 = std::array<uint8_t, 16>;
         using Uuid = infra::Variant<Uuid16, Uuid128>;
 
         using Handle = uint16_t;
 
-        const Uuid type;
-        Handle handle;
+        Uuid type;
+        Handle atrributeHandle;
+        Handle groupHandle;
+    };
+
+    struct GattGenericCharacteristic
+    {
+        // Values taken from Bluetooth Core Specification
+        // Volume 3, Part G, section 3.3.1.1
+        enum class PropertyFlags : uint8_t
+        {
+            none = 0x00u,
+            broadcast = 0x01u,
+            read = 0x02u,
+            writeWithoutResponse = 0x04u,
+            write = 0x08u,
+            notify = 0x10u,
+            indicate = 0x20u,
+            signedWrite = 0x40u,
+            extended = 0x80u
+        };
+
+        // Description in Bluetooth Core Specification
+        // Volume 3, Part F, section 3.2.5
+        enum class PermissionFlags : uint8_t
+        {
+            none = 0x00u,
+            authenticatedRead = 0x01u,
+            authorizedRead = 0x02u,
+            encryptedRead = 0x04u,
+            authenticatedWrite = 0x08u,
+            authorizedWrite = 0x10u,
+            encryptedWrite = 0x20u
+        };
+
+        GattAttribute::Uuid type;
+        GattAttribute::Handle handle;
+        GattAttribute::Handle valueHandle;
+        PropertyFlags properties;
+    };
+
+    struct GattDescriptor
+    {
+        const uint32_t CharacteristicUserDescription = 0x2901;
+        const uint32_t ClientCharacteristicConfiguration = 0x2902;
+        const uint32_t ServerCharacteristicConfiguration = 0x2903;
+        const uint32_t CharacteristicPresentationFormat = 0x2904;
+        const uint32_t CharacteristicAggregateFormat = 0x2905;
+
+        GattAttribute::Uuid type;
+        GattAttribute::Handle handle;
     };
 
     class GattCharacteristicUpdate;
@@ -68,46 +117,18 @@ namespace services
         // Update 'characteristic' with 'data' towards the
         // BLE stack and, depending on the configuration of
         // that 'characteristic', send a notification or indication.
-        // Returns success, or retry in transient failure or error 
-        // on unrecoverable failure (i.e. BLE stack indicates an issue 
+        // Returns success, or retry in transient failure or error
+        // on unrecoverable failure (i.e. BLE stack indicates an issue
         // with updating or sending data).
         virtual UpdateStatus Update(const GattCharacteristicClientOperationsObserver& characteristic, infra::ConstByteRange data) const = 0;
     };
 
     class GattCharacteristic
         : public GattCharacteristicClientOperationsObserver
+        , public GattGenericCharacteristic
         , public GattCharacteristicUpdate
         , public infra::IntrusiveForwardList<GattCharacteristic>::NodeType
     {
-    public:
-        // Values taken from Bluetooth Core Specification
-        // Volume 3, Part G, section 3.3.1.1
-        enum class PropertyFlags : uint8_t
-        {
-            none = 0x00u,
-            broadcast = 0x01u,
-            read = 0x02u,
-            writeWithoutResponse = 0x04u,
-            write = 0x08u,
-            notify = 0x10u,
-            indicate = 0x20u,
-            signedWrite = 0x40u,
-            extended = 0x80u
-        };
-
-        // Description in Bluetooth Core Specification
-        // Volume 3, Part F, section 3.2.5
-        enum class PermissionFlags : uint8_t
-        {
-            none = 0x00u,
-            authenticatedRead = 0x01u,
-            authorizedRead = 0x02u,
-            encryptedRead = 0x04u,
-            authenticatedWrite = 0x08u,
-            authorizedWrite = 0x10u,
-            encryptedWrite = 0x20u
-        };
-
     public:
         GattCharacteristic() = default;
         GattCharacteristic(GattCharacteristic& other) = delete;
@@ -141,6 +162,8 @@ namespace services
         GattAttribute::Uuid Type() const;
         GattAttribute::Handle Handle() const;
         GattAttribute::Handle& Handle();
+        GattAttribute::Handle GroupHandle() const;
+        GattAttribute::Handle& GroupHandle();
 
         uint8_t GetAttributeCount() const;
 
@@ -153,6 +176,32 @@ namespace services
     {
     public:
         virtual void AddService(GattService& service) = 0;
+    };
+
+    class GattClient;
+
+    class GattClientObserver
+        : public infra::Observer<GattClientObserver, GattClient>
+    {
+    public:
+        using infra::Observer<GattClientObserver, GattClient>::Observer;
+
+        virtual void ServiceDiscovered(const GattAttribute& service) = 0;
+        virtual void CharacteristicDiscovered(const GattGenericCharacteristic& characteristic) = 0;
+        virtual void DescriptorDiscovered(const GattDescriptor& descriptor) = 0;
+
+        virtual void ServiceDiscoveryComplete() = 0;
+        virtual void CharacteristicDiscoveryComplete() = 0;
+        virtual void DescriptorDiscoveryComplete() = 0;
+    };
+
+    class GattClient
+        : public infra::Subject<GattClientObserver>
+    {
+    public:
+        virtual void StartServiceDiscovery() = 0;
+        virtual void StartCharacteristicDiscovery(GattService& service) = 0;
+        virtual void StartDescriptorDiscovery(GattService& service) = 0;
     };
 
     class AttMtuExchange;

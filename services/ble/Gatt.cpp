@@ -9,12 +9,22 @@ namespace services
 
     GattAttribute::Handle GattService::Handle() const
     {
-        return attribute.handle;
+        return attribute.atrributeHandle;
     }
 
     GattAttribute::Handle& GattService::Handle()
     {
-        return attribute.handle;
+        return attribute.atrributeHandle;
+    }
+
+    GattAttribute::Handle GattService::GroupHandle() const
+    {
+        return attribute.groupHandle;
+    }
+
+    GattAttribute::Handle& GattService::GroupHandle()
+    {
+        return attribute.groupHandle;
     }
 
     GattService::GattService(const GattAttribute::Uuid& type)
