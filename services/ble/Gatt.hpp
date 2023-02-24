@@ -21,7 +21,7 @@ namespace services
         using Handle = uint16_t;
 
         Uuid type;
-        Handle atrributeHandle;
+        Handle attributeHandle;
         Handle groupHandle;
     };
 
@@ -42,19 +42,6 @@ namespace services
             extended = 0x80u
         };
 
-        // Description in Bluetooth Core Specification
-        // Volume 3, Part F, section 3.2.5
-        enum class PermissionFlags : uint8_t
-        {
-            none = 0x00u,
-            authenticatedRead = 0x01u,
-            authorizedRead = 0x02u,
-            encryptedRead = 0x04u,
-            authenticatedWrite = 0x08u,
-            authorizedWrite = 0x10u,
-            encryptedWrite = 0x20u
-        };
-
         GattAttribute::Uuid type;
         GattAttribute::Handle handle;
         GattAttribute::Handle valueHandle;
@@ -68,6 +55,19 @@ namespace services
         const uint32_t ServerCharacteristicConfiguration = 0x2903;
         const uint32_t CharacteristicPresentationFormat = 0x2904;
         const uint32_t CharacteristicAggregateFormat = 0x2905;
+
+        // Description in Bluetooth Core Specification
+        // Volume 3, Part F, section 3.2.5
+        enum class PermissionFlags : uint8_t
+        {
+            none = 0x00u,
+            authenticatedRead = 0x01u,
+            authorizedRead = 0x02u,
+            encryptedRead = 0x04u,
+            authenticatedWrite = 0x08u,
+            authorizedWrite = 0x10u,
+            encryptedWrite = 0x20u
+        };
 
         GattAttribute::Uuid type;
         GattAttribute::Handle handle;
@@ -126,6 +126,7 @@ namespace services
     class GattCharacteristic
         : public GattCharacteristicClientOperationsObserver
         , public GattGenericCharacteristic
+        , public GattDescriptor
         , public GattCharacteristicUpdate
         , public infra::IntrusiveForwardList<GattCharacteristic>::NodeType
     {
@@ -200,8 +201,8 @@ namespace services
     {
     public:
         virtual void StartServiceDiscovery() = 0;
-        virtual void StartCharacteristicDiscovery(GattService& service) = 0;
-        virtual void StartDescriptorDiscovery(GattService& service) = 0;
+        virtual void StartCharacteristicDiscovery(GattAttribute& service) = 0;
+        virtual void StartDescriptorDiscovery(GattAttribute& service) = 0;
     };
 
     class AttMtuExchange;
@@ -225,19 +226,19 @@ namespace services
         static constexpr uint16_t defaultMaxAttMtuSize = 23;
     };
 
-    inline GattCharacteristic::PropertyFlags operator|(GattCharacteristic::PropertyFlags lhs, GattCharacteristic::PropertyFlags rhs)
+    inline GattGenericCharacteristic::PropertyFlags operator|(GattGenericCharacteristic::PropertyFlags lhs, GattGenericCharacteristic::PropertyFlags rhs)
     {
-        return static_cast<GattCharacteristic::PropertyFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
+        return static_cast<GattGenericCharacteristic::PropertyFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
     }
 
-    inline GattCharacteristic::PropertyFlags operator&(GattCharacteristic::PropertyFlags lhs, GattCharacteristic::PropertyFlags rhs)
+    inline GattGenericCharacteristic::PropertyFlags operator&(GattGenericCharacteristic::PropertyFlags lhs, GattGenericCharacteristic::PropertyFlags rhs)
     {
-        return static_cast<GattCharacteristic::PropertyFlags>(infra::enum_cast(lhs) & infra::enum_cast(rhs));
+        return static_cast<GattGenericCharacteristic::PropertyFlags>(infra::enum_cast(lhs) & infra::enum_cast(rhs));
     }
 
-    inline GattCharacteristic::PermissionFlags operator|(GattCharacteristic::PermissionFlags lhs, GattCharacteristic::PermissionFlags rhs)
+    inline GattDescriptor::PermissionFlags operator|(GattDescriptor::PermissionFlags lhs, GattDescriptor::PermissionFlags rhs)
     {
-        return static_cast<GattCharacteristic::PermissionFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
+        return static_cast<GattDescriptor::PermissionFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
     }
 }
 

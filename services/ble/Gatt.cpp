@@ -9,12 +9,12 @@ namespace services
 
     GattAttribute::Handle GattService::Handle() const
     {
-        return attribute.atrributeHandle;
+        return attribute.attributeHandle;
     }
 
     GattAttribute::Handle& GattService::Handle()
     {
-        return attribute.atrributeHandle;
+        return attribute.attributeHandle;
     }
 
     GattAttribute::Handle GattService::GroupHandle() const

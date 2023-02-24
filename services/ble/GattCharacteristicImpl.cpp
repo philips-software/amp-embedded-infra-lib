@@ -50,12 +50,12 @@ namespace services
 
     GattAttribute::Handle GattCharacteristicImpl::Handle() const
     {
-        return attribute.atrributeHandle;
+        return attribute.attributeHandle;
     }
 
     GattAttribute::Handle& GattCharacteristicImpl::Handle()
     {
-        return attribute.atrributeHandle;
+        return attribute.attributeHandle;
     }
 
     uint16_t GattCharacteristicImpl::ValueLength() const
@@ -79,7 +79,7 @@ namespace services
 
     GattAttribute::Handle GattCharacteristicImpl::CharacteristicHandle() const
     {
-        return attribute.atrributeHandle;
+        return attribute.attributeHandle;
     }
 
     void GattCharacteristicImpl::UpdateValue()
