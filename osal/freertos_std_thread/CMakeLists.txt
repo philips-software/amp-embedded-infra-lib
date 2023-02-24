@@ -1,4 +1,4 @@
-add_library(osal.freertos_std_thread ${EMIL_EXCLUDE_FROM_ALL}INTERFACE)
+add_library(osal.freertos_std_thread ${EMIL_EXCLUDE_FROM_ALL} INTERFACE)
 #install(TARGETS osal.freertos_std_thread EXPORT emilOsalTargets)
 
 target_link_libraries(osal.freertos_std_thread INTERFACE
