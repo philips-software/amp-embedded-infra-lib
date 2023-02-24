@@ -129,7 +129,7 @@ extern void vAssertCalled( const char * const pcFileName,
  /* __BVIC_PRIO_BITS will be specified when CMSIS is being used. */
 #define configPRIO_BITS __NVIC_PRIO_BITS
 #else
-#define configPRIO_BITS 3
+#define configPRIO_BITS 4
 #endif
 #define configLIBRARY_LOWEST_INTERRUPT_PRIORITY 0xf
 #define configKERNEL_INTERRUPT_PRIORITY ( configLIBRARY_LOWEST_INTERRUPT_PRIORITY << (8 - configPRIO_BITS) )
