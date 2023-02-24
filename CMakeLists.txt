@@ -19,7 +19,7 @@ include(emil_xsltproc)
 include(FetchContent)
 include(GNUInstallDirs) # included to supply proper defaults to install(...) commands
 
-if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     set(EMIL_STANDALONE On)
 endif()
 
