@@ -12,13 +12,6 @@ else()
     message(FATAL_ERROR "Unknown platform")
 endif()
 
-if (CONFIG_FILE_DIRECTORY)
-    cmake_path(ABSOLUTE_PATH CONFIG_FILE_DIRECTORY NORMALIZE)
-    set(FREERTOS_CONFIG_FILE_DIRECTORY "${CONFIG_FILE_DIRECTORY}" CACHE STRING "" FORCE)
-else()
-    set(FREERTOS_CONFIG_FILE_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/config/posix" CACHE STRING "" FORCE)
-endif()
-
 add_library(freertos_config INTERFACE)
 
 target_include_directories(freertos_config INTERFACE
