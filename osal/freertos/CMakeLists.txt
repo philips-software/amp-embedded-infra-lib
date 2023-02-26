@@ -34,7 +34,13 @@ FetchContent_MakeAvailable(freertos)
 set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL Off)
 
 set_target_properties(freertos_config freertos_kernel freertos_kernel_port PROPERTIES FOLDER External/FreeRTOS)
-add_library(osal.freertos_osal ${EMIL_EXCLUDE_FROM_ALL} STATIC Osal.cpp)
+add_library(osal.freertos_osal ${EMIL_EXCLUDE_FROM_ALL} STATIC)
+
+target_sources(osal.freertos_osal PRIVATE
+    LowPowerStrategyFreeRtos.cpp
+    LowPowerStrategyFreeRtos.hpp
+    Osal.cpp
+)
 
 target_link_libraries(osal.freertos_osal PUBLIC
     infra.util
