@@ -16,14 +16,6 @@ extern "C"
     {
         std::abort();
     }
-
-    void xPortPendSVHandler();
-    void xPortSysTickHandler();
-    void vPortSVCHandler();
-
-    [[gnu::naked]] void SVC_Handler() { vPortSVCHandler(); }
-    [[gnu::naked]] void PendSV_Handler() { xPortPendSVHandler(); }
-    [[gnu::naked]] void SysTick_Handler() { xPortSysTickHandler(); };
 }
 
 namespace osal
