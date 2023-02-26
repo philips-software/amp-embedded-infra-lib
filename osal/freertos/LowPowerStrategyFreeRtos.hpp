@@ -15,7 +15,7 @@ namespace hal
         : public infra::LowPowerStrategy
     {
     public:
-        LowPowerStrategyFreeRtos(infra::MainClockReference& mainClock);
+        LowPowerStrategyFreeRtos();
         virtual ~LowPowerStrategyFreeRtos();
 
         virtual void RequestExecution() override;

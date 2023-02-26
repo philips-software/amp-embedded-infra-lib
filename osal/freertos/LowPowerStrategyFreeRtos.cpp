@@ -2,7 +2,7 @@
 
 namespace hal
 {
-    LowPowerStrategyFreeRtos::LowPowerStrategyFreeRtos(infra::MainClockReference& mainClock)
+    LowPowerStrategyFreeRtos::LowPowerStrategyFreeRtos()
         : semaphore(xSemaphoreCreateBinary())
     {}
 
