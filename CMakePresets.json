@@ -92,7 +92,8 @@
       "displayName": "Configuration for Embedded with FreeRTOS",
       "inherits": "Embedded",
       "cacheVariables": {
-        "EMIL_INCLUDE_FREERTOS": "On"
+        "EMIL_INCLUDE_FREERTOS": "On",
+        "FREERTOS_CONFIG_FILE_DIRECTORY": "${sourceDir}/examples/threading/config"
       }
     },
     {
