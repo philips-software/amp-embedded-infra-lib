@@ -76,11 +76,7 @@ jobs:
     name: Embedded Build - RTOS
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        rtos:
-          [
-            "FreeRTOS",
-            "ThreadX"
+        rtos: ["FreeRTOS", "ThreadX"]
           ]
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
