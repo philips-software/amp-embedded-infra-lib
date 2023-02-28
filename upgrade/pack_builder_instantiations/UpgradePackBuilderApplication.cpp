@@ -62,7 +62,7 @@ namespace main_
         return 0;
     }
 
-    args::Options UpgradePackBuilderApplication::OptionsForTarget(const std::string& target)
+    args::Options UpgradePackBuilderApplication::OptionsForTarget(const std::string& target) const
     {
         bool mandatory = std::any_of(supportedTargets.MandatoryTargets().cbegin(), supportedTargets.MandatoryTargets().cend(),
             [&](const auto& s)
