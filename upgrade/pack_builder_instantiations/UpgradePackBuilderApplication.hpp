@@ -14,7 +14,7 @@ namespace main_
         int Main(int argc, const char* argv[]);
 
     private:
-        args::Options OptionsForTarget(const std::string& target);
+        args::Options OptionsForTarget(const std::string& target) const;
         void AddTarget(const std::string& target);
 
     private:

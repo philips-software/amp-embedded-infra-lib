@@ -5,6 +5,7 @@
 #include <devpkey.h>
 #include <devpropdef.h>
 #include <sstream>
+// clang-format on
 
 // clang-format on
 
