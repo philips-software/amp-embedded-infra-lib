@@ -85,6 +85,8 @@ target_sources(services.network PRIVATE
     TracingConnectionFactoryWithNameResolver.hpp
     TracingConnectionMbedTls.cpp
     TracingConnectionMbedTls.hpp
+    TracingHttpClientCachedConnection.cpp
+    TracingHttpClientCachedConnection.hpp
     TracingHttpClientImpl.cpp
     TracingHttpClientImpl.hpp
     TracingMqttClientImpl.cpp
