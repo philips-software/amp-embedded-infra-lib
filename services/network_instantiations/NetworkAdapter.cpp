@@ -22,6 +22,11 @@ namespace main_
         return nameResolver;
     }
 
+    services::EventDispatcherWithNetwork& NetworkAdapter::EventDispatcher()
+    {
+        return network;
+    }
+
     void NetworkAdapter::Run()
     {
         network.Run();

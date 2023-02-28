@@ -1,9 +1,12 @@
+// clang-format off
 #include "hal/windows/UartPortFinder.hpp"
 #include "infra/util/Optional.hpp"
+#include <initguid.h>
 #include <devpkey.h>
 #include <devpropdef.h>
-#include <initguid.h>
 #include <sstream>
+
+// clang-format on
 
 namespace hal
 {
