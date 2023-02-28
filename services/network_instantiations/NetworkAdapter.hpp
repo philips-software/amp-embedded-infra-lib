@@ -20,6 +20,7 @@ namespace main_
         services::DatagramFactory& DatagramFactory();
         services::Multicast& Multicast();
         services::NameResolver& NameResolver();
+        services::EventDispatcherWithNetwork& EventDispatcher();
 
         void Run();
 
