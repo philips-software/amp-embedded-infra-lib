@@ -232,22 +232,64 @@ namespace infra
         *stream << '"' << tagName.Raw() << R"(":)" << (tag ? "true" : "false");
     }
 
+    void JsonObjectFormatter::Add(const char* tagName, int8_t tag)
+    {
+        Add(tagName, static_cast<int64_t>(tag));
+    }
+
+    void JsonObjectFormatter::Add(JsonString tagName, int8_t tag)
+    {
+        Add(tagName, static_cast<int64_t>(tag));
+    }
+
+    void JsonObjectFormatter::Add(const char* tagName, uint8_t tag)
+    {
+        Add(tagName, static_cast<uint64_t>(tag));
+    }
+
+    void JsonObjectFormatter::Add(JsonString tagName, uint8_t tag)
+    {
+        Add(tagName, static_cast<uint64_t>(tag));
+    }
+
+    void JsonObjectFormatter::Add(const char* tagName, int16_t tag)
+    {
+        Add(tagName, static_cast<int64_t>(tag));
+    }
+
+    void JsonObjectFormatter::Add(JsonString tagName, int16_t tag)
+    {
+        Add(tagName, static_cast<int64_t>(tag));
+    }
+
+    void JsonObjectFormatter::Add(const char* tagName, uint16_t tag)
+    {
+        Add(tagName, static_cast<uint64_t>(tag));
+    }
+
+    void JsonObjectFormatter::Add(JsonString tagName, uint16_t tag)
+    {
+        Add(tagName, static_cast<uint64_t>(tag));
+    }
+
     void JsonObjectFormatter::Add(const char* tagName, int32_t tag)
     {
-        InsertSeparation();
-        *stream << '"' << tagName << R"(":)" << tag;
+        Add(tagName, static_cast<int64_t>(tag));
     }
 
     void JsonObjectFormatter::Add(JsonString tagName, int32_t tag)
     {
-        InsertSeparation();
-        *stream << '"' << tagName.Raw() << R"(":)" << tag;
+        Add(tagName, static_cast<int64_t>(tag));
     }
 
     void JsonObjectFormatter::Add(const char* tagName, uint32_t tag)
     {
-        InsertSeparation();
-        *stream << '"' << tagName << R"(":)" << tag;
+        Add(tagName, static_cast<uint64_t>(tag));
+    }
+
+    void JsonObjectFormatter::Add(JsonString tagName, uint32_t tag)
+    {
+        Add(tagName, static_cast<uint64_t>(tag));
     }
 
     void JsonObjectFormatter::Add(const char* tagName, int64_t tag)

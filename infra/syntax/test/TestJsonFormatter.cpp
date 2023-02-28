@@ -4,7 +4,7 @@
 
 TEST(BasicUsageTest, format_json_object)
 {
-    infra::BoundedString::WithStorage<100> response;
+    infra::BoundedString::WithStorage<64> response;
     {
         infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, response);
         formatter.Add("name", "Upgrade 19.2");
@@ -41,18 +41,46 @@ TEST(JsonObjectFormatter, add_bool)
 
 TEST(JsonObjectFormatter, add_int)
 {
-    infra::BoundedString::WithStorage<80> string;
+    infra::BoundedString::WithStorage<164> string;
 
     {
         infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
-        formatter.Add("intTag", 0);
-        formatter.Add("uint32Tag", static_cast<uint32_t>(5));
-        formatter.Add("int64Tag", static_cast<int64_t>(-10));
-        formatter.Add("uint64Tag", static_cast<uint64_t>(20));
-        formatter.Add("bigger", infra::JsonBiggerInt(4, true));
+        formatter.Add("int", -1);
+        formatter.Add("uint", 1u);
+        formatter.Add("int8", static_cast<int8_t>(-8));
+        formatter.Add("uint8", static_cast<uint8_t>(8));
+        formatter.Add("int16", static_cast<int16_t>(-16));
+        formatter.Add("uint16", static_cast<uint16_t>(16));
+        formatter.Add("int32", static_cast<int32_t>(-32));
+        formatter.Add("uint32", static_cast<uint32_t>(32));
+        formatter.Add("int64", static_cast<int64_t>(-64));
+        formatter.Add("uint64", static_cast<uint64_t>(64));
+        formatter.Add("bigger", infra::JsonBiggerInt(128, true));
     }
 
-    EXPECT_EQ(R"({ "intTag":0, "uint32Tag":5, "int64Tag":-10, "uint64Tag":20, "bigger":-4 })", string);
+    EXPECT_EQ(R"({ "int":-1, "uint":1, "int8":-8, "uint8":8, "int16":-16, "uint16":16, "int32":-32, "uint32":32, "int64":-64, "uint64":64, "bigger":-128 })", string);
+}
+
+TEST(JsonObjectFormatter, add_jsonstring_int)
+{
+    infra::BoundedString::WithStorage<164> string;
+
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        formatter.Add(infra::JsonString{ "int" }, -1);
+        formatter.Add(infra::JsonString{ "uint" }, 1u);
+        formatter.Add(infra::JsonString{ "int8" }, static_cast<int8_t>(-8));
+        formatter.Add(infra::JsonString{ "uint8" }, static_cast<uint8_t>(8));
+        formatter.Add(infra::JsonString{ "int16" }, static_cast<int16_t>(-16));
+        formatter.Add(infra::JsonString{ "uint16" }, static_cast<uint16_t>(16));
+        formatter.Add(infra::JsonString{ "int32" }, static_cast<int32_t>(-32));
+        formatter.Add(infra::JsonString{ "uint32" }, static_cast<uint32_t>(32));
+        formatter.Add(infra::JsonString{ "int64" }, static_cast<int64_t>(-64));
+        formatter.Add(infra::JsonString{ "uint64" }, static_cast<uint64_t>(64));
+        formatter.Add(infra::JsonString{ "bigger" }, infra::JsonBiggerInt(128, true));
+    }
+
+    EXPECT_EQ(R"({ "int":-1, "uint":1, "int8":-8, "uint8":8, "int16":-16, "uint16":16, "int32":-32, "uint32":32, "int64":-64, "uint64":64, "bigger":-128 })", string);
 }
 
 TEST(JsonObjectFormatter, add_const_char_ptr)
