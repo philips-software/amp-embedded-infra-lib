@@ -57,16 +57,18 @@ namespace services
     // [NOTE] Volume 3, Part G, section 3.3.3
     struct GattDescriptor
     {
-        // [NOTE] Volume 3, Part G, section 3.3.3.2
-        const uint32_t CharacteristicUserDescription = 0x2901;
         // [NOTE] Volume 3, Part G, section 3.3.3.3
-        const uint32_t ClientCharacteristicConfiguration = 0x2902;
-        // [NOTE] Volume 3, Part G, section 3.3.3.4
-        const uint32_t ServerCharacteristicConfiguration = 0x2903;
-        // [NOTE] Volume 3, Part G, section 3.3.3.5
-        const uint32_t CharacteristicPresentationFormat = 0x2904;
-        // [NOTE] Volume 3, Part G, section 3.3.3.6
-        const uint32_t CharacteristicAggregateFormat = 0x2905;
+        struct ClientCharacteristicConfiguration
+        {
+            const uint16_t attributeType = 0x2902;
+
+            enum class CharacteristicValue : uint16_t
+            {
+                disable = 0x0000,
+                enableNotification = 0x0001,
+                enableIndication = 0x0002,
+            };
+        };
 
         GattAttribute::Uuid type;
         GattAttribute::Handle handle;
@@ -116,6 +118,7 @@ namespace services
     public:
         using infra::Observer<GattClientNotificationObserver, GattClientIndicationNotification>::Observer;
 
+        virtual void ConfigurationCompleted() = 0;
         virtual void NotificationReceived(const GattAttribute::Handle& handle, infra::ConstByteRange data) = 0;
     };
 
@@ -132,11 +135,11 @@ namespace services
         : public infra::Subject<GattClientNotificationObserver>
     {
     public:
-        virtual void EnableNotification() = 0;
-        virtual void DisableNotification() = 0;
+        virtual void EnableNotification(const services::GattCharacteristicDeclaration& characteristic) = 0;
+        virtual void DisableNotification(const services::GattCharacteristicDeclaration& characteristic) = 0;
 
-        virtual void EnableIndication() = 0;
-        virtual void DisableIndication() = 0;
+        virtual void EnableIndication(const services::GattCharacteristicDeclaration& characteristic) = 0;
+        virtual void DisableIndication(const services::GattCharacteristicDeclaration& characteristic) = 0;
     };
 
     class GattClientDataOperation
