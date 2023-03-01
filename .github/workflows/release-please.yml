@@ -57,5 +57,6 @@ jobs:
           buildPreset: "Package"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
       - run: gh release upload ${{ needs.release_please.outputs.tag_name }} Build/**/emil-*.zip --clobber
+        shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
