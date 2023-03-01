@@ -10,17 +10,23 @@
 // in client-code; while maintaining compatibility across standards
 // from C++11 and higher.
 
+#if defined(__cplusplus) && defined(__has_cpp_attribute)
+#define EMIL_HAS_CPP_ATTRIBUTE(attribute) __has_cpp_attribute(attribute)
+#else
+#define EMIL_HAS_CPP_ATTRIBUTE(attribute) (0)
+#endif
+
 #ifdef __cpp_if_constexpr
 #define IF_CONSTEXPR constexpr
 #else
 #define IF_CONSTEXPR
 #endif
 
-#if __cplusplus > 201402L && __has_cpp_attribute(fallthrough)
+#if __cplusplus > 201402L && EMIL_HAS_CPP_ATTRIBUTE(fallthrough)
 #define EMIL_FALLTHROUGH [[fallthrough]]
-#elif __has_cpp_attribute(gnu::fallthrough)
+#elif EMIL_HAS_CPP_ATTRIBUTE(gnu::fallthrough)
 #define EMIL_FALLTHROUGH [[gnu::fallthrough]]
-#elif __cplusplus && __has_cpp_attribute(clang::fallthrough)
+#elif __cplusplus && EMIL_HAS_CPP_ATTRIBUTE(clang::fallthrough)
 // Workaround for llvm.org/PR23435, since clang 3.6 and below emit a spurious
 // error when __has_cpp_attribute is given a scoped attribute in C mode.
 #define EMIL_FALLTHROUGH [[clang::fallthrough]]
@@ -30,7 +36,7 @@
 #define EMIL_FALLTHROUGH /* fall through */
 #endif
 
-#if __cplusplus > 201402L && __has_cpp_attribute(maybe_unused)
+#if __cplusplus > 201402L && EMIL_HAS_CPP_ATTRIBUTE(maybe_unused)
 #define EMIL_MAYBE_UNUSED [[maybe_unused]]
 #else
 #define EMIL_MAYBE_UNUSED
