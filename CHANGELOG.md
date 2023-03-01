@@ -7,14 +7,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
-## [2.2.1](https://github.com/philips-software/amp-embedded-infra-lib/compare/amp-embedded-infra-lib-v2.2.0...amp-embedded-infra-lib-v2.2.1) (2023-01-25)
+## [2.2.1](https://github.com/philips-software/amp-embedded-infra-lib/compare/v2.2.0...v2.2.1) (2023-01-25)
 
 
 ### Bug Fixes
 
 * Use gh cli to publish release assets ([#184](https://github.com/philips-software/amp-embedded-infra-lib/issues/184)) ([9de4c45](https://github.com/philips-software/amp-embedded-infra-lib/commit/9de4c453be231feea5f973968ad908355d8c6e43))
 
-## [2.2.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/amp-embedded-infra-lib-v2.1.0...amp-embedded-infra-lib-v2.2.0) (2023-01-24)
+## [2.2.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v2.1.0...v2.2.0) (2023-01-24)
 
 
 ### Features
@@ -33,7 +33,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Use EMIL_MAYBE_UNUSED ([3d9834d](https://github.com/philips-software/amp-embedded-infra-lib/commit/3d9834d0e334c9472e83b2468071db144488a744))
 * Use EMIL_MAYBE_UNUSED in version file generation ([#177](https://github.com/philips-software/amp-embedded-infra-lib/issues/177)) ([3d9834d](https://github.com/philips-software/amp-embedded-infra-lib/commit/3d9834d0e334c9472e83b2468071db144488a744))
 
-## [2.1.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/amp-embedded-infra-lib-v2.0.0...amp-embedded-infra-lib-v2.1.0) (2022-12-21)
+## [2.1.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v1.3.0...v2.1.0) (2022-12-21)
 
 
 ### Features
@@ -62,7 +62,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ### Bug Fixes
 
 * Convert services/ble/test CMakeLists from ccola to plain CMake ([8c22f65](https://github.com/philips-software/amp-embedded-infra-lib/commit/8c22f65d6d95de109bfa3a9ac12b0a0fffbdc0ec))
-* Convert services/ble/test CMakeLists from ccola to plain CMake ([8afaa3e](https://github.com/philips-software/amp-embedded-infra-lib/commit/8afaa3e5357368d08c3ca292c845dbfa16bf05bc))
 * **devcontainer:** Select correct base image version ([#114](https://github.com/philips-software/amp-embedded-infra-lib/issues/114)) ([041d64b](https://github.com/philips-software/amp-embedded-infra-lib/commit/041d64b00f5f35d8ff2c3550fe7b69f31adfe32a))
 * Flag false positive of cpp:S836 ([01b2599](https://github.com/philips-software/amp-embedded-infra-lib/commit/01b2599075e8b5a1ee1c943260b62f4c7856deb5))
 * Include(CTest) should be called from top-level ([5163094](https://github.com/philips-software/amp-embedded-infra-lib/commit/5163094409620dd6488c89e759e82f2533575035))
@@ -72,23 +71,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 * Sonar cpp:S3519 ([58bcfbd](https://github.com/philips-software/amp-embedded-infra-lib/commit/58bcfbd3380669647a1a62a31332fb28971fb1dd))
 * Sonar cpp:S5018 ([291443f](https://github.com/philips-software/amp-embedded-infra-lib/commit/291443f743ce58607956cdf2fbab232792bc81ac))
 * Sonar cpp:S912 ([3063057](https://github.com/philips-software/amp-embedded-infra-lib/commit/30630579ab98341fc4f3523fed77c398b89a696e))
-* SonarCloud cpp:S3491 ([bfc763e](https://github.com/philips-software/amp-embedded-infra-lib/commit/bfc763e8ccc09b7556d4482901e94dff357fb2e1))
+* Sonar cpp:S3491 ([bfc763e](https://github.com/philips-software/amp-embedded-infra-lib/commit/bfc763e8ccc09b7556d4482901e94dff357fb2e1))
 * **TestJson:** Warning on signed overflow ([45d7ef2](https://github.com/philips-software/amp-embedded-infra-lib/commit/45d7ef2a5d699e9ccb8ff0881fe67562ebafdcda))
-
-## [Unreleased]
-
-### Removed
-
-- Removed ccola in favor of 'modern'-CMake. amp-embedded-infra-lib can now be consumed using FetchContent.
-
-### Changed
-
-- Updated MbedTLS to v3.1.0
-- services/network; Camel-Cased HTTP headers
-
-### Fixed
-
-- services/network; made HTTP header comparison case-insensitive
 
 ## [1.3.0]
 
@@ -119,7 +103,3 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 ## [1.2.0]
 
 - Initial open source version of amp-embedded-infra-lib
-
-[Unreleased]: https://github.com/philips-software/amp-embedded-infra-lib/compare/v1.3.0...HEAD
-[1.3.0]: https://github.com/philips-software/amp-embedded-infra-lib/compare/v1.2.0...v1.3.0
-[1.2.0]: https://github.com/philips-software/amp-embedded-infra-lib/releases/tag/v1.2.0

@@ -1,6 +1,6 @@
-<div align="center">
-
 # amp-embedded-infra-lib (EmIL)
+
+<div align="center">
 
 [![Continuous Integration](https://github.com/philips-software/amp-embedded-infra-lib/workflows/Continuous%20Integration/badge.svg)](https://github.com/philips-software/amp-embedded-infra-lib/actions) [![Linting & Formatting](https://github.com/philips-software/amp-embedded-infra-lib/actions/workflows/linting-formatting.yml/badge.svg)](https://github.com/philips-software/amp-embedded-infra-lib/actions/workflows/linting-formatting.yml) [![Static Analysis](https://github.com/philips-software/amp-embedded-infra-lib/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/philips-software/amp-embedded-infra-lib/actions/workflows/static-analysis.yml)
 
@@ -58,4 +58,4 @@ Please refer to our [Contributing](CONTRIBUTING.md) guide when you want to contr
 
 ## License
 
-amp-embedded-infra-lib is licenced under the [MIT](https://choosealicense.com/licenses/mit/) license. See [LICENSE file](LICENSE.md).
+amp-embedded-infra-lib is licensed under the [MIT](https://choosealicense.com/licenses/mit/) license. See [LICENSE file](LICENSE.md).
