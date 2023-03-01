@@ -5,8 +5,6 @@ namespace infra
 {
     namespace
     {
-        static const char* charactersToEscape = "<>&'\"";
-
         void ReplaceEscapeCharacter(infra::TextOutputStream& stream, char c)
         {
             switch (c)
@@ -31,7 +29,7 @@ namespace infra
 
         void InsertEscapedContent(infra::TextOutputStream& stream, infra::BoundedConstString content)
         {
-            infra::InsertEscapedContent(stream, content, charactersToEscape, ReplaceEscapeCharacter);
+            infra::InsertEscapedContent(stream, content, "<>&'\"", ReplaceEscapeCharacter);
         }
     }
 

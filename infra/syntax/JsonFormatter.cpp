@@ -6,13 +6,13 @@ namespace infra
 {
     namespace
     {
-        static const char* charactersToEscape = "<>&'\"";
+        const char* charactersToEscape = "<>&'\"";
 
         std::size_t EscapedCharacterSize(char c)
         {
             std::array<char, 7> shouldBeEscaped = { '"', '\\', '\b', '\f', '\n', '\r', '\t' };
-            if (std::any_of(shouldBeEscaped.begin(), shouldBeEscaped.end(), [c](char shouldBeEscaped)
-                    { return c == shouldBeEscaped; }))
+            if (std::any_of(shouldBeEscaped.begin(), shouldBeEscaped.end(), [c](char escape)
+                    { return c == escape; }))
                 return 2;
             else
                 return 6;
