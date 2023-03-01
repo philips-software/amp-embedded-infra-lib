@@ -10,6 +10,8 @@ target_sources(infra.syntax PRIVATE
     Asn1.hpp
     Asn1Formatter.cpp
     Asn1Formatter.hpp
+    EscapeCharacterHelper.cpp
+    EscapeCharacterHelper.hpp
     Json.cpp
     Json.hpp
     JsonFormatter.cpp

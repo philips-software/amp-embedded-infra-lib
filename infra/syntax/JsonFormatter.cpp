@@ -1,11 +1,13 @@
 #include "infra/syntax/JsonFormatter.hpp"
+#include "infra/syntax/EscapeCharacterHelper.hpp"
 #include "infra/util/BoundedVector.hpp"
-#include <tuple>
 
 namespace infra
 {
     namespace
     {
+        static const char* charactersToEscape = "<>&'\"";
+
         std::size_t EscapedCharacterSize(char c)
         {
             std::array<char, 7> shouldBeEscaped = { '"', '\\', '\b', '\f', '\n', '\r', '\t' };
@@ -16,7 +18,7 @@ namespace infra
                 return 6;
         }
 
-        void InsertEscapedCharacter(infra::TextOutputStream& stream, char c)
+        void ReplaceEscapeCharacter(infra::TextOutputStream& stream, char c)
         {
             switch (c)
             {
@@ -49,39 +51,12 @@ namespace infra
 
         std::tuple<std::size_t, infra::BoundedConstString> NonEscapedSubString(infra::BoundedConstString string, std::size_t start)
         {
-            std::size_t escape = std::min(string.find_first_of("\"\b\f\n\r\t", start), string.size());
-            infra::BoundedConstString nonEscapedSubString = string.substr(start, escape - start);
-
-            for (std::size_t control = start; control != escape; ++control)
-                if (string[control] < 0x20)
-                {
-                    escape = control;
-                    nonEscapedSubString = string.substr(start, escape - start);
-                    break;
-                }
-
-            return std::make_tuple(escape, nonEscapedSubString);
+            return infra::NonEscapedSubString(string, start, charactersToEscape);
         }
 
-        void InsertEscapedTag(infra::TextOutputStream& stream, infra::BoundedConstString tag)
+        void InsertEscapedContent(infra::TextOutputStream& stream, infra::BoundedConstString content)
         {
-            std::size_t start = 0;
-            while (start != tag.size())
-            {
-                std::size_t escape;
-                infra::BoundedConstString nonEscapedSubString;
-                std::tie(escape, nonEscapedSubString) = NonEscapedSubString(tag, start);
-
-                start = escape;
-                if (!nonEscapedSubString.empty())
-                    stream << nonEscapedSubString;
-                if (escape != tag.size())
-                {
-                    InsertEscapedCharacter(stream, tag[escape]);
-
-                    ++start;
-                }
-            }
+            infra::InsertEscapedContent(stream, content, charactersToEscape, ReplaceEscapeCharacter);
         }
 
         void NestedInsert(infra::JsonObjectFormatter& formatter, infra::BoundedConstString key, infra::BoundedConstString path, const infra::JsonValue& valueToMerge)
@@ -102,9 +77,7 @@ namespace infra
 
         while (start != string.size())
         {
-            std::size_t escape;
-            infra::BoundedConstString nonEscapedSubString;
-            std::tie(escape, nonEscapedSubString) = NonEscapedSubString(string, start);
+            auto [escape, nonEscapedSubString] = NonEscapedSubString(string, start);
 
             start = escape;
             if (!nonEscapedSubString.empty())
@@ -150,7 +123,8 @@ namespace infra
 
     void Merge(infra::JsonObjectFormatter& formatter, infra::JsonObject& object, infra::BoundedConstString path, const infra::JsonValue& valueToMerge)
     {
-        infra::BoundedConstString token, pathRemaining;
+        infra::BoundedConstString token;
+        infra::BoundedConstString pathRemaining;
 
         if (!path.empty())
         {
@@ -177,7 +151,7 @@ namespace infra
                 }
                 else
                 {
-                    infra::JsonObject valueJsonObj = infra::JsonObject("{}");
+                    auto valueJsonObj = infra::JsonObject("{}");
                     infra::Merge(subObjectFormatter, valueJsonObj, pathRemaining, valueToMerge);
                 }
             }
@@ -232,22 +206,64 @@ namespace infra
         *stream << '"' << tagName.Raw() << R"(":)" << (tag ? "true" : "false");
     }
 
+    void JsonObjectFormatter::Add(const char* tagName, int8_t tag)
+    {
+        Add(tagName, static_cast<int64_t>(tag));
+    }
+
+    void JsonObjectFormatter::Add(JsonString tagName, int8_t tag)
+    {
+        Add(tagName, static_cast<int64_t>(tag));
+    }
+
+    void JsonObjectFormatter::Add(const char* tagName, uint8_t tag)
+    {
+        Add(tagName, static_cast<uint64_t>(tag));
+    }
+
+    void JsonObjectFormatter::Add(JsonString tagName, uint8_t tag)
+    {
+        Add(tagName, static_cast<uint64_t>(tag));
+    }
+
+    void JsonObjectFormatter::Add(const char* tagName, int16_t tag)
+    {
+        Add(tagName, static_cast<int64_t>(tag));
+    }
+
+    void JsonObjectFormatter::Add(JsonString tagName, int16_t tag)
+    {
+        Add(tagName, static_cast<int64_t>(tag));
+    }
+
+    void JsonObjectFormatter::Add(const char* tagName, uint16_t tag)
+    {
+        Add(tagName, static_cast<uint64_t>(tag));
+    }
+
+    void JsonObjectFormatter::Add(JsonString tagName, uint16_t tag)
+    {
+        Add(tagName, static_cast<uint64_t>(tag));
+    }
+
     void JsonObjectFormatter::Add(const char* tagName, int32_t tag)
     {
-        InsertSeparation();
-        *stream << '"' << tagName << R"(":)" << tag;
+        Add(tagName, static_cast<int64_t>(tag));
     }
 
     void JsonObjectFormatter::Add(JsonString tagName, int32_t tag)
     {
-        InsertSeparation();
-        *stream << '"' << tagName.Raw() << R"(":)" << tag;
+        Add(tagName, static_cast<int64_t>(tag));
     }
 
     void JsonObjectFormatter::Add(const char* tagName, uint32_t tag)
     {
-        InsertSeparation();
-        *stream << '"' << tagName << R"(":)" << tag;
+        Add(tagName, static_cast<uint64_t>(tag));
+    }
+
+    void JsonObjectFormatter::Add(JsonString tagName, uint32_t tag)
+    {
+        Add(tagName, static_cast<uint64_t>(tag));
     }
 
     void JsonObjectFormatter::Add(const char* tagName, int64_t tag)
@@ -296,7 +312,7 @@ namespace infra
     {
         InsertSeparation();
         *stream << '"' << tagName << R"(":")";
-        InsertEscapedTag(*stream, tag);
+        InsertEscapedContent(*stream, tag);
         *stream << '"';
     }
 
@@ -304,7 +320,7 @@ namespace infra
     {
         InsertSeparation();
         *stream << '"' << tagName << R"(":")";
-        InsertEscapedTag(*stream, tag);
+        InsertEscapedContent(*stream, tag);
         *stream << '"';
     }
 
@@ -312,7 +328,7 @@ namespace infra
     {
         InsertSeparation();
         *stream << '"' << tagName << R"(":")";
-        InsertEscapedTag(*stream, tag);
+        InsertEscapedContent(*stream, tag);
         *stream << '"';
     }
 
@@ -501,7 +517,7 @@ namespace infra
     {
         InsertSeparation();
         *stream << '"';
-        InsertEscapedTag(*stream, tag);
+        InsertEscapedContent(*stream, tag);
         *stream << '"';
     }
 
@@ -509,7 +525,7 @@ namespace infra
     {
         InsertSeparation();
         *stream << '"';
-        InsertEscapedTag(*stream, tag);
+        InsertEscapedContent(*stream, tag);
         *stream << '"';
     }
 
