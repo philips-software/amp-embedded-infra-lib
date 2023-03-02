@@ -137,8 +137,8 @@ namespace services
 
         if (!detaching && closeRequested)
             HttpClientObserver::Subject().CloseConnection();
-        else
-            connector.DetachingObserver();
+
+        connector.DetachingObserver();
     }
 
     void HttpClientCachedConnection::StatusAvailable(HttpStatusCode statusCode)
