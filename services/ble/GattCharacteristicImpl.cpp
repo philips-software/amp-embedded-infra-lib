@@ -1,39 +1,21 @@
-#include "infra/event/EventDispatcher.hpp"
 #include "services/ble/GattCharacteristicImpl.hpp"
+#include "infra/event/EventDispatcher.hpp"
 #include "infra/util/PostAssign.hpp"
 
 namespace services
 {
-    GattCharacteristicImpl::GattCharacteristicImpl(GattService& service, const GattAttribute::Uuid& type, uint16_t valueLength)
-        : GattCharacteristicImpl(service, type, valueLength, PropertyFlags::read)
+    GattCharacteristicImpl::GattCharacteristicImpl(AttAttribute attribute, PropertyFlags properties)
+        : attribute{ attribute }
+        , properties{ properties }
     {}
-
-    GattCharacteristicImpl::GattCharacteristicImpl(GattService& service, const GattAttribute::Uuid& type, uint16_t valueLength, PropertyFlags properties)
-        : GattCharacteristicImpl(service, type, valueLength, properties, PermissionFlags::none)
-    {}
-
-    GattCharacteristicImpl::GattCharacteristicImpl(GattService& service, const GattAttribute::Uuid& type, uint16_t valueLength, PropertyFlags properties, PermissionFlags permissions)
-        : service{service}
-        , attribute{type, 0}
-        , valueLength{valueLength}
-        , properties{properties}
-        , permissions{permissions}
-    {
-        service.AddCharacteristic(*this);
-    }
 
     GattCharacteristic::PropertyFlags GattCharacteristicImpl::Properties() const
     {
         return properties;
     }
 
-    GattCharacteristic::PermissionFlags GattCharacteristicImpl::Permissions() const
+    uint8_t GattCharacteristicImpl::GetAttributeCount() const
     {
-        return permissions;
-    }
-
-     uint8_t GattCharacteristicImpl::GetAttributeCount() const
-     {
         constexpr uint8_t attributeCountWithoutCCCD = 2;
         constexpr uint8_t attributeCountWithCCCD = 3;
 
@@ -41,43 +23,32 @@ namespace services
             return attributeCountWithoutCCCD;
         else
             return attributeCountWithCCCD;
-     }
+    }
 
-    GattAttribute::Uuid GattCharacteristicImpl::Type() const
+    AttAttribute::Uuid GattCharacteristicImpl::Type() const
     {
         return attribute.type;
     }
 
-    GattAttribute::Handle GattCharacteristicImpl::Handle() const
+    AttAttribute::Handle GattCharacteristicImpl::Handle() const
     {
         return attribute.handle;
     }
 
-    GattAttribute::Handle& GattCharacteristicImpl::Handle()
+    AttAttribute::Handle& GattCharacteristicImpl::Handle()
     {
         return attribute.handle;
-    }
-
-    uint16_t GattCharacteristicImpl::ValueLength() const
-    {
-        return valueLength;
     }
 
     void GattCharacteristicImpl::Update(infra::ConstByteRange data, infra::Function<void()> onDone)
     {
-        really_assert(data.size() <= valueLength);
         really_assert(GattCharacteristicClientOperationsObserver::Attached());
 
-        updateContext.Emplace(UpdateContext{onDone, data});
+        updateContext.Emplace(UpdateContext{ onDone, data });
         UpdateValue();
     }
 
-    GattAttribute::Handle GattCharacteristicImpl::ServiceHandle() const
-    {
-        return service.Handle();
-    }
-
-    GattAttribute::Handle GattCharacteristicImpl::CharacteristicHandle() const
+    AttAttribute::Handle GattCharacteristicImpl::CharacteristicHandle() const
     {
         return attribute.handle;
     }
@@ -89,8 +60,92 @@ namespace services
         if (status == UpdateStatus::success)
             infra::PostAssign(updateContext, infra::none)->onDone();
         else if (status == UpdateStatus::retry)
-            infra::EventDispatcher::Instance().Schedule([this](){ UpdateValue(); });
+            infra::EventDispatcher::Instance().Schedule([this]() { UpdateValue(); });
         else
             updateContext = infra::none;
+    }
+
+    GattServerCharacteristic::PermissionFlags GattCharacteristicImpl::Permissions() const
+    {
+        return GattServerCharacteristic::PermissionFlags::none;
+    }
+
+    uint16_t GattCharacteristicImpl::ValueLength() const
+    {
+        return 0;
+    }
+
+    AttAttribute::Handle GattCharacteristicImpl::ServiceGroupHandle() const
+    {
+        return 0;
+    }
+
+    GattClientCharacteristicImpl::GattClientCharacteristicImpl(GattClientService& service, const AttAttribute& attribute)
+        : GattClientCharacteristicImpl(service, attribute, PropertyFlags::none)
+    {}
+
+    GattClientCharacteristicImpl::GattClientCharacteristicImpl(GattClientService& service, const AttAttribute& attribute, PropertyFlags properties)
+        : GattCharacteristicImpl(attribute, properties)
+        , service{ service }
+    {
+        service.AddCharacteristic(*this);
+    }
+
+    AttAttribute::Handle GattClientCharacteristicImpl::ServiceHandle() const
+    {
+        return service.Handle();
+    }
+
+    AttAttribute::Handle GattClientCharacteristicImpl::ServiceGroupHandle() const
+    {
+        return service.EndHandle();
+    }
+
+    void GattClientCharacteristicImpl::Read()
+    {
+    }
+
+    void GattClientCharacteristicImpl::Write(infra::ConstByteRange data)
+    {
+    }
+
+    void GattClientCharacteristicImpl::WriteWithoutResponse(infra::ConstByteRange data)
+    {
+    }
+
+    GattServerCharacteristicImpl::GattServerCharacteristicImpl(GattServerService& service, const AttAttribute::Uuid& type, uint16_t valueLength)
+        : GattServerCharacteristicImpl(service, type, valueLength, PropertyFlags::none, GattServerCharacteristic::PermissionFlags::none)
+    {}
+
+    GattServerCharacteristicImpl::GattServerCharacteristicImpl(GattServerService& service, const AttAttribute::Uuid& type, uint16_t valueLength, PropertyFlags properties)
+        : GattServerCharacteristicImpl(service, type, valueLength, properties, GattServerCharacteristic::PermissionFlags::none)
+    {}
+
+    GattServerCharacteristicImpl::GattServerCharacteristicImpl(GattServerService& service, const AttAttribute::Uuid& type, uint16_t valueLength, PropertyFlags properties, GattServerCharacteristic::PermissionFlags permissions)
+        : GattCharacteristicImpl({ type, 0, 0 }, properties)
+        , service{ service }
+        , valueLength(valueLength)
+        , permissions(permissions)
+    {}
+
+    void GattServerCharacteristicImpl::Update(infra::ConstByteRange data, infra::Function<void()> onDone)
+    {
+        really_assert(data.size() <= valueLength);
+        GattCharacteristicImpl::Update(data, onDone);
+    }
+
+    AttAttribute::Handle GattServerCharacteristicImpl::ServiceHandle() const
+    {
+        return service.Handle();
+    }
+
+    GattServerCharacteristic::PermissionFlags GattServerCharacteristicImpl::Permissions() const
+    {
+        return permissions;
+    }
+
+    uint16_t GattServerCharacteristicImpl::ValueLength() const
+    {
+        return valueLength;
     }
 }

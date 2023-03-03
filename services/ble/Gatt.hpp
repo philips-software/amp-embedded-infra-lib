@@ -12,11 +12,7 @@
 
 namespace services
 {
-    // [NOTE] Do we want to have ATT definitions on this file? If so, shouldn't be renamed to AttAttribute?
-    // Should the struct below be renamed to GattServiceDefinition? According to Volume 3, Part G, section 3.2?
-
-    // Volume 3, Part F
-    struct GattAttribute
+    struct AttAttribute
     {
         using Uuid16 = uint16_t;
         using Uuid128 = std::array<uint8_t, 16>;
@@ -24,131 +20,22 @@ namespace services
 
         using Handle = uint16_t;
 
-        // [NOTE] Volume 3, Part F, section 3.2.1, 3.2.2 and 3.2.3
         Uuid type;
         Handle handle;
-        Handle groupHandle;
+        Handle endHandle;
     };
 
-    // [NOTE] Volume 3, Part G, section 3.3.1
-    struct GattCharacteristicDeclaration
-    {
-        // [NOTE] Values taken from Bluetooth Core Specification
-        // Volume 3, Part G, section 3.3.1.1
-        enum class PropertyFlags : uint8_t
-        {
-            none = 0x00u,
-            broadcast = 0x01u,
-            read = 0x02u,
-            writeWithoutResponse = 0x04u,
-            write = 0x08u,
-            notify = 0x10u,
-            indicate = 0x20u,
-            signedWrite = 0x40u,
-            extended = 0x80u
-        };
-
-        GattAttribute::Uuid type;
-        GattAttribute::Handle handle;
-        GattAttribute::Handle valueHandle;
-        PropertyFlags properties;
-    };
-
-    // [NOTE] Volume 3, Part G, section 3.3.3
-    struct GattDescriptor
-    {
-        // [NOTE] Volume 3, Part G, section 3.3.3.3
-        struct ClientCharacteristicConfiguration
-        {
-            const uint16_t attributeType = 0x2902;
-
-            enum class CharacteristicValue : uint16_t
-            {
-                disable = 0x0000,
-                enableNotification = 0x0001,
-                enableIndication = 0x0002,
-            };
-        };
-
-        GattAttribute::Uuid type;
-        GattAttribute::Handle handle;
-    };
-
-    class GattClientDiscovery;
-
-    class GattClientDiscoveryObserver
-        : public infra::Observer<GattClientDiscoveryObserver, GattClientDiscovery>
+    class GattDescriptor
     {
     public:
-        using infra::Observer<GattClientDiscoveryObserver, GattClientDiscovery>::Observer;
+        explicit GattDescriptor(AttAttribute::Uuid& type, AttAttribute::Handle& handle);
 
-        virtual void ServiceDiscovered(const GattAttribute& service) = 0;
-        virtual void CharacteristicDiscovered(const GattCharacteristicDeclaration& characteristic) = 0;
-        virtual void DescriptorDiscovered(const GattDescriptor& descriptor) = 0;
+        AttAttribute::Uuid& Type() const;
+        AttAttribute::Handle& Handle() const;
 
-        virtual void ServiceDiscoveryComplete() = 0;
-        virtual void CharacteristicDiscoveryComplete() = 0;
-        virtual void DescriptorDiscoveryComplete() = 0;
-    };
-
-    class GattClientDataOperation;
-
-    class GattClientDataOperationObserver
-        : public infra::Observer<GattClientDataOperationObserver, GattClientDataOperation>
-    {
-    public:
-        using infra::Observer<GattClientDataOperationObserver, GattClientDataOperation>::Observer;
-
-        enum class Result
-        {
-            Success,
-            InsufficientAuthentication,
-            UnknownError,
-        };
-
-        virtual void ReadCompleted(Result result, infra::ConstByteRange data) = 0;
-        virtual void WriteCompleted(Result result) = 0;
-    };
-
-    class GattClientIndicationNotification;
-
-    class GattClientNotificationObserver
-        : public infra::Observer<GattClientNotificationObserver, GattClientIndicationNotification>
-    {
-    public:
-        using infra::Observer<GattClientNotificationObserver, GattClientIndicationNotification>::Observer;
-
-        virtual void ConfigurationCompleted() = 0;
-        virtual void NotificationReceived(const GattAttribute::Handle& handle, infra::ConstByteRange data) = 0;
-    };
-
-    class GattClientDiscovery
-        : public infra::Subject<GattClientDiscoveryObserver>
-    {
-    public:
-        virtual void StartServiceDiscovery() = 0;
-        virtual void StartCharacteristicDiscovery(GattAttribute& service) = 0;
-        virtual void StartDescriptorDiscovery(GattAttribute& service) = 0;
-    };
-
-    class GattClientIndicationNotification
-        : public infra::Subject<GattClientNotificationObserver>
-    {
-    public:
-        virtual void EnableNotification(const services::GattCharacteristicDeclaration& characteristic) = 0;
-        virtual void DisableNotification(const services::GattCharacteristicDeclaration& characteristic) = 0;
-
-        virtual void EnableIndication(const services::GattCharacteristicDeclaration& characteristic) = 0;
-        virtual void DisableIndication(const services::GattCharacteristicDeclaration& characteristic) = 0;
-    };
-
-    class GattClientDataOperation
-        : public infra::Subject<GattClientDataOperationObserver>
-    {
-    public:
-        virtual void Read(const GattCharacteristicDeclaration& characteristic) = 0;
-        virtual void Write(const GattCharacteristicDeclaration& characteristic, infra::ConstByteRange data) = 0;
-        virtual void WriteWithoutResponse(const GattCharacteristicDeclaration& characteristic, infra::ConstByteRange data) = 0;
+    private:
+        AttAttribute::Uuid& type;
+        AttAttribute::Handle& handle;
     };
 
     class GattCharacteristicUpdate;
@@ -177,8 +64,9 @@ namespace services
     public:
         using infra::Observer<GattCharacteristicClientOperationsObserver, GattCharacteristicClientOperations>::Observer;
 
-        virtual GattAttribute::Handle ServiceHandle() const = 0;
-        virtual GattAttribute::Handle CharacteristicHandle() const = 0;
+        virtual AttAttribute::Handle ServiceHandle() const = 0;
+        virtual AttAttribute::Handle ServiceGroupHandle() const = 0;
+        virtual AttAttribute::Handle CharacteristicHandle() const = 0;
     };
 
     class GattCharacteristicClientOperations
@@ -203,74 +91,66 @@ namespace services
 
     class GattCharacteristic
         : public GattCharacteristicClientOperationsObserver
-        , public GattCharacteristicDeclaration
-        , public GattDescriptor
         , public GattCharacteristicUpdate
-        , public infra::IntrusiveForwardList<GattCharacteristic>::NodeType
     {
     public:
-        // Description in Bluetooth Core Specification
-        // Volume 3, Part F, section 3.2.5
-        // [NOTE] According to Volue 3, Part G, section 2.5:
-        //    Permission is part of Attribute that cannot be read from of written to using
-        //    the Attribute procotol. It is used by the Server only.
-        enum class PermissionFlags : uint8_t
+        // Values taken from Bluetooth Core Specification
+        // Volume 3, Part G, section 3.3.1.1
+        enum class PropertyFlags : uint8_t
         {
             none = 0x00u,
-            authenticatedRead = 0x01u,
-            authorizedRead = 0x02u,
-            encryptedRead = 0x04u,
-            authenticatedWrite = 0x08u,
-            authorizedWrite = 0x10u,
-            encryptedWrite = 0x20u
+            broadcast = 0x01u,
+            read = 0x02u,
+            writeWithoutResponse = 0x04u,
+            write = 0x08u,
+            notify = 0x10u,
+            indicate = 0x20u,
+            signedWrite = 0x40u,
+            extended = 0x80u
         };
 
+    public:
         GattCharacteristic() = default;
         GattCharacteristic(GattCharacteristic& other) = delete;
         GattCharacteristic& operator=(const GattCharacteristic& other) = delete;
         virtual ~GattCharacteristic() = default;
 
         virtual PropertyFlags Properties() const = 0;
-        virtual PermissionFlags Permissions() const = 0;
         virtual uint8_t GetAttributeCount() const = 0;
 
-        virtual GattAttribute::Uuid Type() const = 0;
-        virtual GattAttribute::Handle Handle() const = 0;
-        virtual GattAttribute::Handle& Handle() = 0;
-
-        virtual uint16_t ValueLength() const = 0;
+        virtual AttAttribute::Uuid Type() const = 0;
+        virtual AttAttribute::Handle Handle() const = 0;
+        virtual AttAttribute::Handle& Handle() = 0;
     };
 
     class GattService
-        : public infra::IntrusiveForwardList<GattService>::NodeType
     {
     public:
-        explicit GattService(const GattAttribute::Uuid& type);
+        GattService(const AttAttribute::Uuid& type)
+            : GattService(type, 0, 0)
+        {}
+
+        GattService(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle endHandle)
+            : type(type)
+            , handle(handle)
+            , endHandle(endHandle)
+        {}
+
         GattService(GattService& other) = delete;
         GattService& operator=(const GattService& other) = delete;
         virtual ~GattService() = default;
 
-        void AddCharacteristic(GattCharacteristic& characteristic);
-        infra::IntrusiveForwardList<GattCharacteristic>& Characteristics();
-        const infra::IntrusiveForwardList<GattCharacteristic>& Characteristics() const;
+        AttAttribute::Uuid Type() const { return type; }
+        AttAttribute::Handle Handle() const { return handle; }
+        AttAttribute::Handle& Handle() { return handle; }
+        AttAttribute::Handle EndHandle() const { return endHandle; }
+        AttAttribute::Handle& EndHandle() { return endHandle; }
+        uint8_t GetAttributeCount() const {}
 
-        GattAttribute::Uuid Type() const;
-        GattAttribute::Handle Handle() const;
-        GattAttribute::Handle& Handle();
-        GattAttribute::Handle GroupHandle() const;
-        GattAttribute::Handle& GroupHandle();
-
-        uint8_t GetAttributeCount() const;
-
-    private:
-        GattAttribute attribute;
-        infra::IntrusiveForwardList<GattCharacteristic> characteristics;
-    };
-
-    class GattServer
-    {
-    public:
-        virtual void AddService(GattService& service) = 0;
+    protected:
+        AttAttribute::Uuid type;
+        AttAttribute::Handle handle;
+        AttAttribute::Handle endHandle;
     };
 
     class AttMtuExchange;
@@ -294,19 +174,14 @@ namespace services
         static constexpr uint16_t defaultMaxAttMtuSize = 23;
     };
 
-    inline GattCharacteristicDeclaration::PropertyFlags operator|(GattCharacteristicDeclaration::PropertyFlags lhs, GattCharacteristicDeclaration::PropertyFlags rhs)
+    inline GattCharacteristic::PropertyFlags operator|(GattCharacteristic::PropertyFlags lhs, GattCharacteristic::PropertyFlags rhs)
     {
-        return static_cast<GattCharacteristicDeclaration::PropertyFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
+        return static_cast<GattCharacteristic::PropertyFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
     }
 
-    inline GattCharacteristicDeclaration::PropertyFlags operator&(GattCharacteristicDeclaration::PropertyFlags lhs, GattCharacteristicDeclaration::PropertyFlags rhs)
+    inline GattCharacteristic::PropertyFlags operator&(GattCharacteristic::PropertyFlags lhs, GattCharacteristic::PropertyFlags rhs)
     {
-        return static_cast<GattCharacteristicDeclaration::PropertyFlags>(infra::enum_cast(lhs) & infra::enum_cast(rhs));
-    }
-
-    inline GattCharacteristic::PermissionFlags operator|(GattCharacteristic::PermissionFlags lhs, GattCharacteristic::PermissionFlags rhs)
-    {
-        return static_cast<GattCharacteristic::PermissionFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
+        return static_cast<GattCharacteristic::PropertyFlags>(infra::enum_cast(lhs) & infra::enum_cast(rhs));
     }
 }
 

@@ -2,58 +2,20 @@
 
 namespace services
 {
-    GattAttribute::Uuid GattService::Type() const
-    {
-        return attribute.type;
-    }
 
-    GattAttribute::Handle GattService::Handle() const
-    {
-        return attribute.handle;
-    }
 
-    GattAttribute::Handle& GattService::Handle()
-    {
-        return attribute.handle;
-    }
-
-    GattAttribute::Handle GattService::GroupHandle() const
-    {
-        return attribute.groupHandle;
-    }
-
-    GattAttribute::Handle& GattService::GroupHandle()
-    {
-        return attribute.groupHandle;
-    }
-
-    GattService::GattService(const GattAttribute::Uuid& type)
-        : attribute{type, 0}
+    GattDescriptor::GattDescriptor(AttAttribute::Uuid& type, AttAttribute::Handle& handle)
+        : type(type)
+        , handle(handle)
     {}
 
-    void GattService::AddCharacteristic(GattCharacteristic& characteristic)
+    AttAttribute::Uuid& GattDescriptor::Type() const
     {
-        characteristics.push_front(characteristic);
+        return type;
     }
 
-    infra::IntrusiveForwardList<GattCharacteristic>& GattService::Characteristics()
+    AttAttribute::Handle& GattDescriptor::Handle() const
     {
-        return characteristics;
-    }
-
-    const infra::IntrusiveForwardList<GattCharacteristic>& GattService::Characteristics() const
-    {
-        return characteristics;
-    }
-
-    uint8_t GattService::GetAttributeCount() const
-    {
-        constexpr uint8_t serviceAttributeCount = 1;
-
-        uint8_t attributeCount = serviceAttributeCount;
-        for (auto& characteristic : characteristics)
-            attributeCount += characteristic.GetAttributeCount();
-
-        return attributeCount;
+        return handle;
     }
 }

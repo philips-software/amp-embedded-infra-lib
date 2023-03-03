@@ -1,51 +1,101 @@
 #ifndef SERVICES_GATT_CHARACTERISTIC_IMPL_HPP
 #define SERVICES_GATT_CHARACTERISTIC_IMPL_HPP
 
-#include "services/ble/Gatt.hpp"
+#include "services/ble/GattClient.hpp"
+#include "services/ble/GattServer.hpp"
 
 namespace services
 {
     class GattCharacteristicImpl
-        : public GattCharacteristic
+        : public GattServerCharacteristic
     {
     public:
-        GattCharacteristicImpl(GattService& service, const GattAttribute::Uuid& type, uint16_t valueLength);
-        GattCharacteristicImpl(GattService& service, const GattAttribute::Uuid& type, uint16_t valueLength, PropertyFlags properties);
-        GattCharacteristicImpl(GattService& service, const GattAttribute::Uuid& type, uint16_t valueLength, PropertyFlags properties, PermissionFlags permissions);
-
         using UpdateStatus = GattCharacteristicClientOperations::UpdateStatus;
+
+        GattCharacteristicImpl(AttAttribute attribute, PropertyFlags properties);
+
+        virtual ~GattCharacteristicImpl() = default;
 
         // Implementation of GattCharacteristic
         virtual PropertyFlags Properties() const;
-        virtual PermissionFlags Permissions() const;
         virtual uint8_t GetAttributeCount() const;
-        virtual GattAttribute::Uuid Type() const;
-        virtual GattAttribute::Handle Handle() const;
-        virtual GattAttribute::Handle& Handle();
-        virtual uint16_t ValueLength() const;
+        virtual AttAttribute::Uuid Type() const;
+        virtual AttAttribute::Handle Handle() const;
+        virtual AttAttribute::Handle& Handle();
         virtual void Update(infra::ConstByteRange data, infra::Function<void()> onDone);
 
         // Implementation of GattCharacteristicClientOperationsObserver
-        virtual GattAttribute::Handle ServiceHandle() const;
-        virtual GattAttribute::Handle CharacteristicHandle() const;
+        virtual AttAttribute::Handle CharacteristicHandle() const;
 
     private:
+        // Implementation of GattServerCharacteristic
+        GattServerCharacteristic::PermissionFlags Permissions() const;
+        uint16_t ValueLength() const;
+
+        // Implementation of GattCharacteristicClientOperationsObserver
+        virtual AttAttribute::Handle ServiceGroupHandle() const;
+
+    protected:
         void UpdateValue();
-    
-    private:
+
+    protected:
         struct UpdateContext
         {
             infra::Function<void()> onDone;
             infra::ConstByteRange data;
         };
 
-    private:
-        const GattService& service;
-        GattAttribute attribute;
-        uint16_t valueLength;
+    protected:
+        AttAttribute attribute;
         PropertyFlags properties;
-        PermissionFlags permissions;
         infra::Optional<UpdateContext> updateContext;
+    };
+
+    class GattClientCharacteristicImpl
+        : public GattCharacteristicImpl
+        , public GattClientCharacteristic
+    {
+    public:
+        using UpdateStatus = GattCharacteristicClientOperations::UpdateStatus;
+
+        GattClientCharacteristicImpl(GattClientService& service, const AttAttribute& attribute);
+        GattClientCharacteristicImpl(GattClientService& service, const AttAttribute& attribute, PropertyFlags properties);
+
+        // Implementation of GattCharacteristicClientOperationsObserver
+        virtual AttAttribute::Handle ServiceHandle() const;
+        virtual AttAttribute::Handle ServiceGroupHandle() const;
+
+        // Implementation of GattClientCharacteristic
+        virtual void Read();
+        virtual void Write(infra::ConstByteRange data);
+        virtual void WriteWithoutResponse(infra::ConstByteRange data);
+
+    private:
+        const GattClientService& service;
+    };
+
+    class GattServerCharacteristicImpl
+        : public GattCharacteristicImpl
+    {
+    public:
+        GattServerCharacteristicImpl(GattServerService& service, const AttAttribute::Uuid& type, uint16_t valueLength);
+        GattServerCharacteristicImpl(GattServerService& service, const AttAttribute::Uuid& type, uint16_t valueLength, PropertyFlags properties);
+        GattServerCharacteristicImpl(GattServerService& service, const AttAttribute::Uuid& type, uint16_t valueLength, PropertyFlags properties, GattServerCharacteristic::PermissionFlags permissions);
+
+        // Implementation of GattCharacteristic
+        virtual void Update(infra::ConstByteRange data, infra::Function<void()> onDone);
+
+        // Implementation of GattServerCharacteristic
+        GattServerCharacteristic::PermissionFlags Permissions() const;
+        uint16_t ValueLength() const;
+
+        // Implementation of GattCharacteristicClientOperationsObserver
+        virtual AttAttribute::Handle ServiceHandle() const;
+
+    private:
+        const GattServerService& service;
+        uint16_t valueLength;
+        PermissionFlags permissions;
     };
 }
 
