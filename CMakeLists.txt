@@ -197,5 +197,6 @@ endif()
 emil_clangformat_directories(emil DIRECTORIES .)
 
 if (EMIL_STANDALONE)
+    emil_generate_antora_docs_target(antora-playbook.yml)
     emil_folderize_all_targets()
 endif()
