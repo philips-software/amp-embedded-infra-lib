@@ -6,6 +6,7 @@
 #include "infra/util/SharedOptional.hpp"
 #include "infra/stream/CountingInputStream.hpp"
 #include "infra/stream/LimitedInputStream.hpp"
+#include "infra/stream/LimitedOutputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "services/network/HttpClient.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
@@ -28,10 +29,8 @@ namespace services
         virtual void Connect(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         virtual void Options(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         virtual void Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
-        virtual void Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) override;
         virtual void Post(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         virtual void Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
-        virtual void Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) override;
         virtual void Put(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         virtual void Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
         virtual void Patch(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
@@ -64,9 +63,7 @@ namespace services
         bool ReadChunkLength();
         void ExecuteRequest(HttpVerb verb, infra::BoundedConstString requestTarget, const HttpHeaders headers);
         void ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers);
-        void ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, std::size_t contentSize, const HttpHeaders headers);
         void ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, const HttpHeaders headers);
-        uint32_t ReadContentSizeFromObserver() const;
         void AbortAndDestroy();
 
     private:
@@ -110,7 +107,7 @@ namespace services
             : public SendingState
         {
         public:
-            SendingStateForwardSendStream(HttpClientImpl& client, std::size_t contentSize);
+            SendingStateForwardSendStream(HttpClientImpl& client);
             SendingStateForwardSendStream(const SendingStateForwardSendStream& other);
             SendingStateForwardSendStream& operator=(const SendingStateForwardSendStream& other) = default;
             ~SendingStateForwardSendStream() = default;
@@ -119,42 +116,23 @@ namespace services
             virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
         private:
-            std::size_t contentSize;
-            infra::AccessedBySharedPtr forwardStreamAccess;
-            infra::SharedPtr<infra::StreamWriter> forwardStreamPtr;
-        };
-
-        class SendingStateForwardFillContent
-            : public SendingState
-        {
-        public:
-            SendingStateForwardFillContent(HttpClientImpl& client, std::size_t contentSize);
-
-            virtual void Activate() override;
-            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-
-        private:
-            class WindowWriter
-                : public infra::StreamWriter
+            class ChunkWriter
+                : public infra::LimitedStreamWriter
             {
             public:
-                WindowWriter(infra::StreamWriter& writer, std::size_t start, std::size_t limit);
-
-                std::size_t Processed() const;
-
-                virtual void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
-                virtual std::size_t Available() const override;
+                ChunkWriter(SendingStateForwardSendStream& state, infra::SharedPtr<infra::StreamWriter>&& writer);
+                ~ChunkWriter();
 
             private:
-                infra::StreamWriter& writer;
+                SendingStateForwardSendStream& state;
+                infra::SharedPtr<infra::StreamWriter> writer;
                 std::size_t start;
-                std::size_t limit;
-                std::size_t processed = 0;
             };
 
         private:
-            std::size_t contentSize;
-            std::size_t processed = 0;
+            infra::NotifyingSharedOptional<ChunkWriter> chunkWriter;
+            bool first = true;
+            bool done = false;
         };
 
     protected:
@@ -172,8 +150,8 @@ namespace services
         infra::Optional<BodyReader> bodyReader;
         infra::AccessedBySharedPtr bodyReaderAccess;
         infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
-        infra::PolymorphicVariant<SendingState, SendingStateRequest, SendingStateForwardSendStream, SendingStateForwardFillContent> sendingState;
-        infra::PolymorphicVariant<SendingState, SendingStateRequest, SendingStateForwardSendStream, SendingStateForwardFillContent> nextState;
+        infra::PolymorphicVariant<SendingState, SendingStateRequest, SendingStateForwardSendStream> sendingState;
+        infra::PolymorphicVariant<SendingState, SendingStateRequest, SendingStateForwardSendStream> nextState;
     };
 
     template<class HttpClient = services::HttpClientImpl, class... Args>
@@ -271,10 +249,8 @@ namespace services
         virtual void Connect(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         virtual void Options(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         virtual void Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
-        virtual void Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) override;
         virtual void Post(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         virtual void Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
-        virtual void Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) override;
         virtual void Put(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         virtual void Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
         virtual void Patch(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
@@ -361,11 +337,11 @@ namespace services
             HttpHeaders headers;
         };
 
-        class QueryPost1
+        class QueryPost
             : public Query
         {
         public:
-            QueryPost1(infra::BoundedConstString content, HttpHeaders headers);
+            QueryPost(infra::BoundedConstString content, HttpHeaders headers);
 
             virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
@@ -374,24 +350,11 @@ namespace services
             HttpHeaders headers;
         };
 
-        class QueryPost2
+        class QueryPostChunked
             : public Query
         {
         public:
-            QueryPost2(std::size_t contentSize, HttpHeaders headers);
-
-            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
-
-        private:
-            std::size_t contentSize;
-            HttpHeaders headers;
-        };
-
-        class QueryPost3
-            : public Query
-        {
-        public:
-            QueryPost3(HttpHeaders headers);
+            QueryPostChunked(HttpHeaders headers);
 
             virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
@@ -399,11 +362,11 @@ namespace services
             HttpHeaders headers;
         };
 
-        class QueryPut1
+        class QueryPut
             : public Query
         {
         public:
-            QueryPut1(infra::BoundedConstString content, HttpHeaders headers);
+            QueryPut(infra::BoundedConstString content, HttpHeaders headers);
 
             virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
@@ -412,24 +375,11 @@ namespace services
             HttpHeaders headers;
         };
 
-        class QueryPut2
+        class QueryPutChunked
             : public Query
         {
         public:
-            QueryPut2(std::size_t contentSize, HttpHeaders headers);
-
-            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
-
-        private:
-            std::size_t contentSize;
-            HttpHeaders headers;
-        };
-
-        class QueryPut3
-            : public Query
-        {
-        public:
-            QueryPut3(HttpHeaders headers);
+            QueryPutChunked(HttpHeaders headers);
 
             virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
@@ -437,11 +387,11 @@ namespace services
             HttpHeaders headers;
         };
 
-        class QueryPatch1
+        class QueryPatch
             : public Query
         {
         public:
-            QueryPatch1(infra::BoundedConstString content, HttpHeaders headers);
+            QueryPatch(infra::BoundedConstString content, HttpHeaders headers);
 
             virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
@@ -450,11 +400,11 @@ namespace services
             infra::BoundedConstString content;
         };
 
-        class QueryPatch2
+        class QueryPatchChunked
             : public Query
         {
         public:
-            QueryPatch2(HttpHeaders headers);
+            QueryPatchChunked(HttpHeaders headers);
 
             virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
@@ -487,7 +437,7 @@ namespace services
 
         bool redirecting = false;
         bool connecting = false;
-        infra::Optional<infra::PolymorphicVariant<Query, QueryGet, QueryHead, QueryConnect, QueryOptions, QueryPost1, QueryPost2, QueryPost3, QueryPut1, QueryPut2, QueryPut3, QueryPatch1, QueryPatch2, QueryDelete>> query;
+        infra::Optional<infra::PolymorphicVariant<Query, QueryGet, QueryHead, QueryConnect, QueryOptions, QueryPost, QueryPostChunked, QueryPut, QueryPutChunked, QueryPatch, QueryPatchChunked, QueryDelete>> query;
     };
 
     ////    Implementation    ////

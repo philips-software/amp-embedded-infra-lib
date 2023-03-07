@@ -19,10 +19,8 @@ namespace services
         virtual void Connect(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         virtual void Options(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         virtual void Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
-        virtual void Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) override;
         virtual void Post(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         virtual void Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
-        virtual void Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) override;
         virtual void Put(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         virtual void Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
         virtual void Patch(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
