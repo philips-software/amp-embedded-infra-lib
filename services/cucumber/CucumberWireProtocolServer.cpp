@@ -12,11 +12,13 @@ namespace services
 
         CucumberContext::Instance().onSuccess = [this]()
         {
+            CucumberContext::Instance().onSuccess = nullptr;
             InvokeSuccess();
         };
 
         CucumberContext::Instance().onFailure = [this](infra::BoundedConstString& reason)
         {
+            CucumberContext::Instance().onFailure = nullptr;
             InvokeError(reason);
         };
     }
@@ -128,14 +130,17 @@ namespace services
 
     void CucumberWireProtocolConnectionObserver::InvokeSuccess()
     {
-        invokeInfo.successful = true;
         services::CucumberContext::Instance().TimeoutTimer().Cancel();
+
+        invokeInfo.successful = true;
 
         Subject().RequestSendStream(Subject().MaxSendStreamSize());
     }
 
     void CucumberWireProtocolConnectionObserver::InvokeError(infra::BoundedConstString& reason)
     {
+        services::CucumberContext::Instance().TimeoutTimer().Cancel();
+
         invokeInfo.successful = false;
         invokeInfo.failReason = reason;
 

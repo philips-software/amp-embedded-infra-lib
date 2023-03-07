@@ -3,7 +3,7 @@
 
 #include "infra/timer/Timer.hpp"
 #include "infra/util/BoundedString.hpp"
-#include "infra/util/Function.hpp"
+#include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/InterfaceConnector.hpp"
 
 namespace services
@@ -14,8 +14,8 @@ namespace services
     public:
         infra::TimerSingleShot& TimeoutTimer();
 
-        infra::Function<void()> onSuccess;
-        infra::Function<void(infra::BoundedConstString&)> onFailure;
+        infra::AutoResetFunction<void()> onSuccess;
+        infra::AutoResetFunction<void(infra::BoundedConstString&)> onFailure;
 
     private:
         infra::TimerSingleShot timeoutTimer;
