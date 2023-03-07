@@ -10,6 +10,8 @@ target_sources(infra.syntax PRIVATE
     Asn1.hpp
     Asn1Formatter.cpp
     Asn1Formatter.hpp
+    EscapeCharacterHelper.cpp
+    EscapeCharacterHelper.hpp
     Json.cpp
     Json.hpp
     JsonFormatter.cpp
@@ -34,8 +36,6 @@ if (EMIL_HOST_BUILD)
         JsonFileReader.hpp
     )
 endif()
-
-emil_clangformat_target(infra.syntax)
 
 if (EMIL_ENABLE_FUZZING)
     add_subdirectory(fuzz)

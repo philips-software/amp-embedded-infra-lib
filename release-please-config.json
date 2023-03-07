@@ -1,0 +1,16 @@
+{
+  "include-component-in-tag": false,
+  "plugins": ["sentence-case"],
+  "packages": {
+    ".": {
+      "release-type": "simple",
+      "package-name": "amp-embedded-infra-lib",
+      "extra-files": [
+        "CMakeLists.txt",
+        "sonar-project.properties",
+        "documents/antora.yml"
+      ]
+    }
+  },
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
+}

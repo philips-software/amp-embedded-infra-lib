@@ -9,5 +9,3 @@ target_link_libraries(upgrade.pack_builder_test_helper_test PUBLIC
 target_sources(upgrade.pack_builder_test_helper_test PRIVATE
     TestZeroFilledString.cpp
 )
-
-emil_clangformat_target(upgrade.pack_builder_test_helper_test)

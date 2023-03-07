@@ -30,9 +30,18 @@ namespace infra
 
         void Add(const char* tagName, bool tag);
         void Add(JsonString tagName, bool tag);
+        void Add(const char* tagName, int8_t tag);
+        void Add(JsonString tagName, int8_t tag);
+        void Add(const char* tagName, uint8_t tag);
+        void Add(JsonString tagName, uint8_t tag);
+        void Add(const char* tagName, int16_t tag);
+        void Add(JsonString tagName, int16_t tag);
+        void Add(const char* tagName, uint16_t tag);
+        void Add(JsonString tagName, uint16_t tag);
         void Add(const char* tagName, int32_t tag);
         void Add(JsonString tagName, int32_t tag);
         void Add(const char* tagName, uint32_t tag);
+        void Add(JsonString tagName, uint32_t tag);
         void Add(const char* tagName, int64_t tag);
         void Add(JsonString tagName, int64_t tag);
         void Add(const char* tagName, uint64_t tag);

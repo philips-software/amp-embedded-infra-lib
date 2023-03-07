@@ -42,6 +42,8 @@ target_sources(services.network PRIVATE
     HttpClientAuthentication.hpp
     HttpClientBasic.cpp
     HttpClientBasic.hpp
+    HttpClientCachedConnection.cpp
+    HttpClientCachedConnection.hpp
     HttpClientImpl.cpp
     HttpClientImpl.hpp
     HttpClientJson.cpp
@@ -83,6 +85,8 @@ target_sources(services.network PRIVATE
     TracingConnectionFactoryWithNameResolver.hpp
     TracingConnectionMbedTls.cpp
     TracingConnectionMbedTls.hpp
+    TracingHttpClientCachedConnection.cpp
+    TracingHttpClientCachedConnection.hpp
     TracingHttpClientImpl.cpp
     TracingHttpClientImpl.hpp
     TracingMqttClientImpl.cpp
@@ -98,8 +102,6 @@ target_sources(services.network PRIVATE
     WiFiNetwork.cpp
     WiFiNetwork.hpp
 )
-
-emil_clangformat_target(services.network)
 
 if (EMIL_HOST_BUILD)
     target_sources(services.network PRIVATE

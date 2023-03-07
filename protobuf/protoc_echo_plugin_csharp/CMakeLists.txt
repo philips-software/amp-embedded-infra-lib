@@ -11,6 +11,4 @@ if (EMIL_HOST_BUILD)
         ProtoCEchoPluginCSharp.cpp
         ProtoCEchoPluginCSharp.hpp
     )
-
-    emil_clangformat_target(protobuf.protoc_echo_plugin_csharp)
 endif()

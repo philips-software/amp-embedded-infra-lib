@@ -1,17 +1,18 @@
 {
   // This devcontainer has been set-up to run docker-from-docker scenarios as per
   // https://github.com/microsoft/vscode-dev-containers/tree/main/containers/docker-from-docker
-  "name": "linux-gcc",
-  "build": { "dockerfile": "Dockerfile" },
+  "name": "amp-devcontainer",
+  "image": "ghcr.io/philips-software/amp-devcontainer:2.2.0",
   "runArgs": ["--add-host=host.docker.internal:host-gateway"],
   "remoteEnv": { "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}" },
   "mounts": [
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
   "extensions": [
+    "llvm-vs-code-extensions.vscode-clangd",
+    "marus25.cortex-debug",
     "matepek.vscode-catch2-test-adapter",
     "ms-vscode.cmake-tools",
-    "ms-vscode.cpptools",
     "SonarSource.sonarlint-vscode"
   ]
 }

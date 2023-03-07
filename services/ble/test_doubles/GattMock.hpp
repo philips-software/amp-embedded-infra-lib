@@ -6,6 +6,20 @@
 
 namespace services
 {
+    class GattServerMock
+        : public GattServer
+    {
+    public:
+        MOCK_METHOD1(AddService, void(GattService& service));
+    };
+
+    class GattCharacteristicClientOperationsMock
+        : public services::GattCharacteristicClientOperations
+    {
+    public:
+        MOCK_CONST_METHOD2(Update, UpdateStatus(const services::GattCharacteristicClientOperationsObserver& characteristic, infra::ConstByteRange data));
+    };
+
     class GattCharacteristicMock
         : public GattCharacteristic
     {

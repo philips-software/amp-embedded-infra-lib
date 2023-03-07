@@ -3,6 +3,7 @@ name: Build & Publish Documentation
 
 on:
   push:
+  merge_group:
 
 permissions:
   contents: read
@@ -15,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -26,7 +27,7 @@ jobs:
           antora_generator: "antora-site-generator-lunr"
           antora_docsearch_enabled: "true"
       - name: Store Antora Site
-        uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
         with:
           name: antora
           path: "${{ github.workspace }}/build/${{ env.SITE_DIR }}"
@@ -39,14 +40,14 @@ jobs:
     name: Publish to GitHub Pages
     steps:
       - name: Checkout
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
       - name: Retrieve Antora Site
-        uses: actions/download-artifact@9782bd6a9848b53b110e712e20e42d89988822b7
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
         with:
           name: antora
           path: "${{ github.workspace }}/${{ env.SITE_DIR }}"
       - name: Publish to GitHub Pages
-        uses: peaceiris/actions-gh-pages@de7ea6f8efb354206b205ef54722213d99067935
+        uses: peaceiris/actions-gh-pages@bd8c6b06eba6b3d25d72b7a1767993c0aeee42e7 # v3.9.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ${{ env.SITE_DIR }}

@@ -6,7 +6,7 @@ set(hints_paths)
 
 if (CMAKE_HOST_WIN32)
     set(X86_PROGRAM_FILES "ProgramFiles(x86)")
-    list(APPEND hints_paths "$ENV{${X86_PROGRAM_FILES}}/GNU Tools Arm Embedded/8 2019-q3-update/bin/")
+    list(APPEND hints_paths "$ENV{${X86_PROGRAM_FILES}}/GNU Arm Embedded Toolchain/10 2021.10/bin/")
 endif()
 
 find_program(CMAKE_C_COMPILER

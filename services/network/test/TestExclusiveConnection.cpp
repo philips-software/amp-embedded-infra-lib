@@ -83,8 +83,7 @@ public:
 
     testing::StrictMock<services::ConnectionFactoryMock> connectionFactory;
     services::ExclusiveConnectionFactoryMutex mutex;
-    services::ExclusiveConnectionFactory::WithListenersAndConnectors<2, 3> exclusive{ mutex, connectionFactory, true };
-    services::ExclusiveConnectionFactory::WithListenersAndConnectors<2, 3> exclusive_dont_close{ mutex, connectionFactory, false };
+    services::ExclusiveConnectionFactory::WithListenersAndConnectors<2, 3> exclusive{ mutex, connectionFactory };
 
     testing::StrictMock<services::ClientConnectionObserverFactoryMock> clientFactory;
     services::ClientConnectionObserverFactory* clientResult = nullptr;
@@ -154,10 +153,11 @@ TEST_F(ExclusiveConnectionTest, construct_one_connection_and_cancel)
 TEST_F(ExclusiveConnectionTest, cancelation_of_unclaimed_connection_results_its_destruction)
 {
     // Build
-    CreateClientConnection(exclusive_dont_close);
+    CreateClientConnection(exclusive);
 
     testing::StrictMock<services::ClientConnectionObserverFactoryMock> clientFactory2;
     services::ClientConnectionObserverFactory* clientResult2 = nullptr;
+    EXPECT_CALL(*connectionObserver, Close());
     exclusive.Connect(clientFactory2);
     ExecuteAllActions();
 
@@ -209,10 +209,11 @@ TEST_F(ExclusiveConnectionTest, constructing_second_connection_results_in_close_
 
 TEST_F(ExclusiveConnectionTest, constructing_second_connection_does_not_result_in_close_on_first_connection)
 {
-    CreateClientConnection(exclusive_dont_close);
+    CreateClientConnection(exclusive);
 
     testing::StrictMock<services::ClientConnectionObserverFactoryMock> clientFactory2;
     services::ClientConnectionObserverFactory* clientResult2 = nullptr;
+    EXPECT_CALL(*connectionObserver, Close());
     exclusive.Connect(clientFactory2);
     ExecuteAllActions();
 

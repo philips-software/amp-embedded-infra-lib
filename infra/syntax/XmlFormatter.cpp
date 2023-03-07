@@ -1,69 +1,38 @@
 #include "infra/syntax/XmlFormatter.hpp"
-
-namespace
-{
-    void InsertPredefinedEntity(infra::TextOutputStream& stream, char c)
-    {
-        switch (c)
-        {
-            case '<':
-                stream << "&lt;";
-                break;
-            case '>':
-                stream << "&gt;";
-                break;
-            case '&':
-                stream << "&amp;";
-                break;
-            case '\'':
-                stream << "&apos;";
-                break;
-            case '"':
-                stream << "&quot;";
-                break;
-        }
-    }
-
-    std::tuple<std::size_t, infra::BoundedConstString> NonEscapedSubString(infra::BoundedConstString string, std::size_t start)
-    {
-        std::size_t escape = std::min(string.find_first_of("<>&'\"", start), string.size());
-        infra::BoundedConstString nonEscapedSubString = string.substr(start, escape - start);
-
-        for (std::size_t control = start; control != escape; ++control)
-            if (string[control] < 0x20)
-            {
-                escape = control;
-                nonEscapedSubString = string.substr(start, escape - start);
-                break;
-            }
-
-        return std::make_tuple(escape, nonEscapedSubString);
-    }
-
-    void InsertEscapedContent(infra::TextOutputStream& stream, infra::BoundedConstString content)
-    {
-        std::size_t start = 0;
-        while (start != content.size())
-        {
-            std::size_t escape;
-            infra::BoundedConstString nonEscapedSubString;
-            std::tie(escape, nonEscapedSubString) = NonEscapedSubString(content, start);
-
-            start = escape;
-            if (!nonEscapedSubString.empty())
-                stream << nonEscapedSubString;
-            if (escape != content.size())
-            {
-                InsertPredefinedEntity(stream, content[escape]);
-
-                ++start;
-            }
-        }
-    }
-}
+#include "infra/syntax/EscapeCharacterHelper.hpp"
 
 namespace infra
 {
+    namespace
+    {
+        void ReplaceEscapeCharacter(infra::TextOutputStream& stream, char c)
+        {
+            switch (c)
+            {
+                case '<':
+                    stream << "&lt;";
+                    break;
+                case '>':
+                    stream << "&gt;";
+                    break;
+                case '&':
+                    stream << "&amp;";
+                    break;
+                case '\'':
+                    stream << "&apos;";
+                    break;
+                case '"':
+                    stream << "&quot;";
+                    break;
+            }
+        }
+
+        void InsertEscapedContent(infra::TextOutputStream& stream, infra::BoundedConstString content)
+        {
+            infra::InsertEscapedContent(stream, content, "<>&'\"", ReplaceEscapeCharacter);
+        }
+    }
+
     XmlFormatter::XmlFormatter(infra::TextOutputStream& stream)
         : stream(infra::inPlace, stream.Writer(), infra::noFail)
     {

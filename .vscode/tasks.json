@@ -15,11 +15,21 @@
       "type": "cmake",
       "label": "Formatter",
       "command": "build",
-      "targets": ["clangformat"],
+      "targets": ["clangformat_emil"],
       "preset": "${command:cmake.activeBuildPresetName}",
       "group": "build",
       "problemMatcher": [],
       "detail": "Run formatter on entire codebase"
+    },
+    {
+      "type": "cmake",
+      "label": "Antora",
+      "command": "build",
+      "targets": ["generate_antora_docs"],
+      "preset": "${command:cmake.activeBuildPresetName}",
+      "group": "build",
+      "problemMatcher": [],
+      "detail": "Generate Antora documentation"
     }
   ]
 }

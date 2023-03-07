@@ -1,7 +1,9 @@
 #ifndef HAL_UART_PORTFINDER_HPP
 #define HAL_UART_PORTFINDER_HPP
 
+// clang-format off
 #include <winsock2.h>
+// clang-format on
 #include <setupapi.h>
 #include <stdexcept>
 #include <string>
@@ -18,7 +20,7 @@ namespace hal
             : public std::runtime_error
         {
         public:
-            UartNotFound(const std::string& portName);
+            explicit UartNotFound(const std::string& portName);
         };
 
         std::string PhysicalDeviceObjectNameForDeviceDescription(const std::string& deviceDescription) const;

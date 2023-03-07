@@ -14,8 +14,6 @@ if (EMIL_HOST_BUILD)
     target_sources(upgrade.pack_builder PRIVATE
         BinaryObject.cpp
         BinaryObject.hpp
-        BuildUpgradePack.cpp
-        BuildUpgradePack.hpp
         Elf.hpp
         ImageAuthenticatorHmac.cpp
         ImageAuthenticatorHmac.hpp
@@ -50,8 +48,6 @@ if (EMIL_HOST_BUILD)
         UpgradePackInputFactory.cpp
         UpgradePackInputFactory.hpp
     )
-
-    emil_clangformat_target(upgrade.pack_builder)
 
     if (EMIL_BUILD_TESTS)
         add_subdirectory(test)

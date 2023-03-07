@@ -10,7 +10,7 @@
 #include <utility>
 
 #ifdef __has_include
-#if __has_include(<bit>)
+#if __has_include(<bit>) && __cplusplus > 202002L
 #include <bit>
 #endif
 #endif

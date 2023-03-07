@@ -8,8 +8,9 @@ if (EMIL_BUILD_WIN)
     )
 
     target_compile_definitions(hal.windows PUBLIC
-        NOMINMAX
         _SETUPAPI_VER=_WIN32_WINNT_LONGHORN
+        EMIL_HAL_WINDOWS
+        NOMINMAX
     )
 
     target_sources(hal.windows PRIVATE
@@ -20,6 +21,4 @@ if (EMIL_BUILD_WIN)
         UartWindows.cpp
         UartWindows.hpp
     )
-
-    emil_clangformat_target(hal.windows)
 endif()

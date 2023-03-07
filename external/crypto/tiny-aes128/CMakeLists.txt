@@ -10,3 +10,5 @@ target_sources(crypto.tiny_aes128 PRIVATE
     TinyAes.c
     TinyAes.h
 )
+
+emil_exclude_from_clang_format(crypto.tiny_aes128)

@@ -20,8 +20,7 @@ namespace application
     void EchoSingleLoopback::SendStreamFilled()
     {
         infra::ByteInputStreamReader reader(infra::MakeRange(storage));
-        infra::DataInputStream::WithErrorPolicy stream(reader, infra::softFail);
-        if (!ProcessMessage(stream))
+        if (!ProcessMessage(reader))
             errorPolicy.MessageFormatError();
     }
 }

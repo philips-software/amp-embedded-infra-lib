@@ -18,6 +18,7 @@ namespace ${CMAKE_PROJECT_NAME}
     {
         static const char* VERSION EMIL_MAYBE_UNUSED = "${${CMAKE_PROJECT_NAME}_VERSION_STRING}";
         static const char* VERSION_FULL EMIL_MAYBE_UNUSED = "${${CMAKE_PROJECT_NAME}_VERSION_STRING_FULL}";
+        static const char* VERSION_GIT_SHA EMIL_MAYBE_UNUSED = "${${CMAKE_PROJECT_NAME}_VERSION_GIT_SHA}";
 
         static const uint16_t VERSION_MAJOR = ${VERSION_MAJOR};
         static const uint16_t VERSION_MINOR = ${VERSION_MINOR};

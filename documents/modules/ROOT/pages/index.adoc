@@ -1,11 +1,11 @@
-= EmbeddedInfraLib
+= amp-embedded-infra-lib
 :source-highlighter: highlight.js
 
 == Introduction
 
-EmbeddedInfraLib is a set of C++ libraries and headers that provide heap-less, https://en.wikipedia.org/wiki/Standard_Template_Library[STL] like, infrastructure for embedded software development. It includes, amongst others; a hardware abstraction layer (HAL), a xref:Echo.adoc[remote procedure call] (RPC) implementation, a xref:NetworkConnections.adoc[networking layer], a secure upgrade mechanism and several other re-usable utility classes.
+amp-embedded-infra-lib is a set of C++ libraries and headers that provide heap-less, https://en.wikipedia.org/wiki/Standard_Template_Library[STL] like, infrastructure for embedded software development. It includes, amongst others; a hardware abstraction layer (HAL), a xref:Echo.adoc[remote procedure call] (RPC) implementation, a xref:NetworkConnections.adoc[networking layer], a secure upgrade mechanism and several other re-usable utility classes.
 
-EmbeddedInfraLib is available as https://philips-software.github.io/[Philips Open Source] under a https://choosealicense.com/licenses/mit/[MIT] license.
+amp-embedded-infra-lib is available as https://philips-software.github.io/[Philips Open Source] under a https://choosealicense.com/licenses/mit/[MIT] license.
 
 https://sonarcloud.io/summary/new_code?id=philips-software_embeddedinfralib[image:https://sonarcloud.io/api/project_badges/measure?project=philips-software_embeddedinfralib&metric=ncloc[Lines
 of Code]] https://sonarcloud.io/summary/new_code?id=philips-software_embeddedinfralib[image:https://sonarcloud.io/api/project_badges/measure?project=philips-software_embeddedinfralib&metric=coverage[Coverage]] https://sonarcloud.io/summary/new_code?id=philips-software_embeddedinfralib[image:https://sonarcloud.io/api/project_badges/measure?project=philips-software_embeddedinfralib&metric=reliability_rating[Reliability

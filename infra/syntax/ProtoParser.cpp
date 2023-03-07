@@ -16,6 +16,11 @@ namespace infra
         , formatErrorPolicy(other.formatErrorPolicy)
     {}
 
+    uint32_t ProtoLengthDelimited::Available() const
+    {
+        return limitedReader.Available();
+    }
+
     void ProtoLengthDelimited::SkipEverything()
     {
         while (!input.Empty())

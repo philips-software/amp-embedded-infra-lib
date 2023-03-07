@@ -1,3 +1,4 @@
-lwip/lwip-*/** linguist-vendored
 external/** linguist-vendored
-*.inc linguist-language=CMake
+documents/supplemental-ui/** linguist-vendored
+lwip/lwip-*/** linguist-vendored
+cmake/** linguist-language=CMake

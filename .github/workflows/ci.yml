@@ -6,6 +6,7 @@ on:
     branches: [develop, modern-cmake]
   pull_request:
     types: [opened, synchronize, reopened]
+  merge_group:
 
 permissions:
   contents: read
@@ -26,19 +27,19 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           persist-credentials: false
-      - uses: hendrikmuhs/ccache-action@657bab9aeb32eb6d913c2e6882efad4bb7536d94
+      - uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
         with:
           key: ${{ github.job }}-${{ matrix.os }}
           variant: sccache
-      - uses: lukka/run-cmake@8997c3a96bcb3de493d1f2527cb46fd7348ca764
+      - uses: lukka/run-cmake@2d1ee0acb9c4f656ec9128fc7387d82ac4539816 # v10.3
         with:
           configurePreset: "ContinuousIntegration"
           buildPreset: "ContinuousIntegration"
           testPreset: "ContinuousIntegration"
-          configurePresetCmdString: "['--preset', '$[env.CONFIGURE_PRESET_NAME]', '-D', 'CMAKE_C_COMPILER_LAUNCHER=sccache', '-D', 'CMAKE_CXX_COMPILER_LAUNCHER=sccache']"
+          configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
   embedded_build:
     name: Embedded Build
     runs-on: ubuntu-latest
@@ -46,8 +47,6 @@ jobs:
       matrix:
         gcc:
           [
-            "5-2016-q3",
-            "6-2017-q2",
             "7-2018-q2",
             "8-2019-q3",
             "9-2020-q2",
@@ -55,15 +54,15 @@ jobs:
           ]
         configuration: ["RelWithDebInfo", "Release"]
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           persist-credentials: false
       - name: Install GNU Arm Embedded Toolchain ${{ matrix.gcc }}
-        uses: carlosperate/arm-none-eabi-gcc-action@2ff22aeffd30b95d7238914a6a83e57069a18d40
+        uses: carlosperate/arm-none-eabi-gcc-action@48db4484a55750df7a0ccca63347fcdea6534d78
         with:
           release: ${{ matrix.gcc }}
-      - uses: seanmiddleditch/gha-setup-ninja@16b940825621068d98711680b6c3ff92201f8fc0
-      - uses: hendrikmuhs/ccache-action@657bab9aeb32eb6d913c2e6882efad4bb7536d94
+      - run: sudo apt-get update && sudo apt-get install ninja-build
+      - uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
         with:
           key: ${{ matrix.gcc }}-${{ matrix.configuration }}
       - run: |

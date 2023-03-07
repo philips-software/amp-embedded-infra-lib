@@ -5,6 +5,7 @@ target_link_libraries(services.tracer PUBLIC
     hal.interfaces
     hal.synchronous_interfaces
     infra.stream
+    infra.timer
     services.util
 )
 
@@ -34,8 +35,6 @@ target_sources(services.tracer PRIVATE
     TracingReset.cpp
     TracingReset.hpp
 )
-
-emil_clangformat_target(services.tracer)
 
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)

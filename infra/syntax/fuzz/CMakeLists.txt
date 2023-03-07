@@ -7,5 +7,3 @@ target_link_libraries(infra.syntax_json_fuzzer PUBLIC
 target_sources(infra.syntax_json_fuzzer PRIVATE
     FuzzJson.cpp
 )
-
-emil_clangformat_target(infra.syntax_json_fuzzer)

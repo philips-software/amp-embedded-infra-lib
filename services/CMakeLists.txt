@@ -1,8 +1,6 @@
 add_subdirectory(ble)
 add_subdirectory(cucumber)
 add_subdirectory(network)
-add_subdirectory(network_bsd)
-add_subdirectory(network_win)
 add_subdirectory(network_instantiations)
 add_subdirectory(synchronous_util)
 add_subdirectory(tracer)

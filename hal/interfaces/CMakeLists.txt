@@ -15,6 +15,7 @@ target_sources(hal.interfaces PRIVATE
     AnalogToDigitalPin.hpp
     AsyncGpio.cpp
     AsyncGpio.hpp
+    BackupRam.hpp
     Can.cpp
     Can.hpp
     CommunicationConfigurator.hpp
@@ -46,8 +47,6 @@ target_sources(hal.interfaces PRIVATE
     $<$<BOOL:${EMIL_HOST_BUILD}>:FileSystem.cpp>
     $<$<BOOL:${EMIL_HOST_BUILD}>:FileSystem.hpp>
 )
-
-emil_clangformat_target(hal.interfaces)
 
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)
