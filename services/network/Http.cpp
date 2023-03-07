@@ -137,7 +137,7 @@ namespace services
         if (contentLengthHeader)
             headerSize += contentLengthHeader->Size() + crlf.size();
         if (chunked)
-            headerSize += sizeof("Transfer-Encoding") + sizeof("chunked") + 1;
+            headerSize += HttpHeader("Transfer-Encoding", "chunked").Size() + crlf.size();
 
         headerSize += hostHeader.Size() + crlf.size();
 
