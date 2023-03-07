@@ -2,8 +2,8 @@
 #define SERVICES_CUCUMBER_CONTEXT_HPP
 
 #include "infra/timer/Timer.hpp"
-#include "infra/util/BoundedString.hpp"
 #include "infra/util/AutoResetFunction.hpp"
+#include "infra/util/BoundedString.hpp"
 #include "infra/util/InterfaceConnector.hpp"
 
 namespace services

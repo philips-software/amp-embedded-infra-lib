@@ -5,6 +5,7 @@
 #include "services/cucumber/CucumberRequestHandler.hpp"
 #include "services/cucumber/CucumberStepStorage.hpp"
 #include "services/cucumber/CucumberWireProtocolParser.hpp"
+#include "services/cucumber/CucumberWireProtocolParser.hpp"
 #include "services/network/Connection.hpp"
 #include "services/network/SingleConnectionListener.hpp"
 
