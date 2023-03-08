@@ -1,0 +1,65 @@
+= Execution Model
+:source-highlighter: highlight.js
+
+== Execution by using an event dispatcher
+
+Embedded Infrastructure Library supports various execution models, but the most important execution model is execution by
+scheduling blocks of work on an event dispatcher. This is a lightweight way of being able to perform multiple tasks
+in parallel, without needing multiple stacks or synchronization.
+
+The event dispatcher is used by scheduling an action by using its `Schedule()` method. `Schedule()` takes a single argument of
+type `infra::Function<void()>`, and is therefore often used in combination with lambda functions. `Schedule()` does not
+execute its action immediately, but pushes it on a queue for later execution. The event dispatcher is typically constantly
+running on the application's main thread, and executes queued actions one after another. This way, a scheduled action is
+completely finished before the next action is started, so in contrast with running actions in different threads no synchronization
+is needed.
+
+An action executed by an event dispatcher should never waste any time; no action should ever sleep, waiting for an external task, such as
+a write towards flash, to finish. Instead, after having started a write towards flash, a new action is scheduled when the write has
+been finished. In the meantime, other actions can execute. This creates a decoupling between various different pieces of business
+logic: while one piece is busy with writing to flash, another piece may be answering an HTTP request, or reading out a temperature
+sensor. No real-time behaviour is guaranteed on the event dispatcher (any real-time behaviour required is implemented outside of
+event dispatchers, by either interrupt handlers or by using threads), but multiple components can flawlessly share execution
+time, with each component making steady progress.
+
+While it is possible to have multiple event dispatchers (when using multiple threads, a specific thread may have its own event
+dispatcher for dedicated tasks), there is one event dispatcher globally available via `infra::EventDispatcher::Instance()`.
+This event dispatcher is used for generic tasks; for example, the `ConfigurationStore` uses the `Flash` interface to read and write
+towards flash; the completion of a read or write action is dispatched on this globally available event dispatcher. A typical
+`main` function will therefore start with declaring an event dispatcher, and end with invoking that event dispatcher's `Run()` method.
+
+=== Support for `infra::WeakPtr`
+
+Objects that are managed by shared pointers may schedule actions to be executed, but it may happen that that object is destroyed before
+that action is executed. In that case, that action should be discarded instead of being executed. `infra::EventDispatcherWithWeakPtr`
+exists to facilitate this usecase. Next to the typical `Schedule()` function that takes an action as parameter, it supports an
+overload that takes a second parameter: an `infra::WeakPtr<T>` towards the object that schedules the action. That parameter is
+converted to a shared pointer just before executing the action: if this conversion succeeds, the object is still alive, and the action
+is executed with that shared pointer as parameter. If the conversion fails, then the object was already expired, and execution of
+that action is skipped.
+
+== Multi-threaded execution
+
+While currently no component in Embedded Infrastructure Library requires the usage of multiple threads, it is perfectly viable
+to use an operating system to start more than one thread. A reason to use multiple threads include having a dedicated thread for
+executing tasks that require real-time behaviour. By separating execution of the event dispatcher and execution of time-critical
+tasks, enough execution time can be guaranteed for real-time behaviour.
+
+Another reason for using multiple threads is when a certain action takes a considerable amount of time, for instance generating
+a certificate takes multiple seconds. Executing that action on the main event dispatcher would delay the execution of other actions;
+a solution to this could be to generate the certificate in its own thread, and its completion can be scheduled on the main event dispatcher.
+
+A thread may have its own event dispatcher. This removes the need for starting and stopping a thread; when a thread-aware event dispatcher is idle,
+it will pause its thread, and it will wake up its thread when new work is scheduled.
+
+== Execution without an event dispatcher
+
+Some applications do not benefit from having an event dispatcher. A boot loader's main focus is to be small and execute one thing;
+it only loads an application and therefore has no need to execute multiple actions in parallel. The small overhead that an event
+dispatcher brings does not bring any benefits, and should therefore not be needed in a boot loader. For this kind of usecase,
+variations of the interfaces for interacting with peripherals exist which work synchronously; they do not need to schedule their
+completion on an event dispatcher, but they complete their activities before returning. While for other libraries this is often
+the default behaviour, for Embedded Infrastructure Library this is the exception.
+
+A number of components in Embedded Infrastructure Library assume the presence of an event dispatcher. This includes any component
+that makes use of an asynchronous interface. Obviously, without an event dispatcher such components cannot be used.
