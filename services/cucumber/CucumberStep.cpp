@@ -220,14 +220,17 @@ namespace services
         {
             auto argumentIterator(arguments.begin());
             uint8_t argumentCount = 0;
+
             while (argumentIterator != arguments.end() && argumentCount != argumentNumber)
             {
                 ++argumentIterator;
                 ++argumentCount;
             }
+
             if (argumentCount == argumentNumber)
                 return infra::MakeOptional(argumentIterator->Get<infra::JsonString>());
         }
+
         return infra::none;
     }
 
