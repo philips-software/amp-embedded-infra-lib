@@ -11,9 +11,10 @@ permissions:
 env:
   SITE_DIR: "site"
 jobs:
-  build_antora:
+  build_antora_site:
     name: Build Antora Documentation
     runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/modern-cmake' }}
     steps:
       - name: Checkout
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
@@ -23,7 +24,7 @@ jobs:
       - name: Build Antora Site
         uses: philips-forks/antora-site-action@ef15f74e055960099ec1bf58f4f8148d1f07a0c2
         with:
-          antora_playbook: antora-playbook.yml
+          antora_playbook: antora-playbook-site.yml
           antora_generator: "antora-site-generator-lunr"
           antora_docsearch_enabled: "true"
       - name: Store Antora Site
@@ -35,7 +36,7 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-latest
-    needs: build_antora
+    needs: build_antora_site
     if: ${{ github.ref == 'refs/heads/modern-cmake' }}
     name: Publish to GitHub Pages
     steps:
@@ -53,3 +54,23 @@ jobs:
           publish_dir: ${{ env.SITE_DIR }}
           user_name: "github-actions[bot]"
           user_email: "github-actions[bot]@users.noreply.github.com"
+  build_antora_branch:
+    name: Build Antora Documentation for the current branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Build Antora Site
+        uses: philips-forks/antora-site-action@ef15f74e055960099ec1bf58f4f8148d1f07a0c2
+        with:
+          antora_playbook: antora-playbook-branch.yml
+          antora_generator: "antora-site-generator-lunr"
+          antora_docsearch_enabled: "true"
+      - name: Store Antora Site
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+        with:
+          name: antora-branch
+          path: "${{ github.workspace }}/build/${{ env.SITE_DIR }}"
