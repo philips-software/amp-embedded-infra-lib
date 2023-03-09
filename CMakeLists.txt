@@ -51,6 +51,10 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Generic")
     enable_language(ASM)
 endif()
 
+if (EMIL_HOST_BUILD)
+    set(CMAKE_POSITION_INDEPENDENT_CODE On)
+endif()
+
 # When building EmIL by itself the examples and tests will be built
 # by-default. When consuming EmIL as a dependency the tests and
 # examples are disabled. This behavior can be overridden by below
