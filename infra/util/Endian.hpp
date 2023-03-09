@@ -32,7 +32,7 @@ namespace infra
         constexpr T ByteSwapImpl(T i, std::index_sequence<N...>)
         {
             return ((((i >> (N * CHAR_BIT)) & static_cast<T>(mask)) << ((sizeof(T) - 1 - N) * CHAR_BIT)) | ...);
-        };
+        }
 
         template<class T, class U = typename std::make_unsigned<T>::type>
         constexpr U ByteSwap(T i)
