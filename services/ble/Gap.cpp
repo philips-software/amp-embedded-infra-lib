@@ -2,14 +2,14 @@
 
 namespace services
 {
-    void GapPeripheralDecorator::StateUpdated(GapPeripheralState state)
+    void GapPeripheralDecorator::StateChanged(GapPeripheralState state)
     {
-        GapPeripheralObserver::SubjectType::NotifyObservers([&state](auto& obs) { obs.StateUpdated(state); });
+        GapPeripheralObserver::SubjectType::NotifyObservers([&state](auto& obs) { obs.StateChanged(state); });
     }
 
-    hal::MacAddress GapPeripheralDecorator::GetResolvableAddress() const
+    GapAddress GapPeripheralDecorator::GetAddress() const
     {
-        return GapPeripheralObserver::Subject().GetResolvableAddress();
+        return GapPeripheralObserver::Subject().GetAddress();
     }
 
     void GapPeripheralDecorator::SetAdvertisementData(infra::ConstByteRange data)
@@ -22,7 +22,7 @@ namespace services
         GapPeripheralObserver::Subject().SetScanResponseData(data);
     }
 
-    void GapPeripheralDecorator::Advertise(AdvertisementType type, AdvertisementIntervalMultiplier multiplier)
+    void GapPeripheralDecorator::Advertise(GapAdvertisementType type, AdvertisementIntervalMultiplier multiplier)
     {
         GapPeripheralObserver::Subject().Advertise(type, multiplier);
     }
