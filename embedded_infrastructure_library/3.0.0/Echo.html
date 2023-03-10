@@ -63,6 +63,7 @@
   <button class="version-menu-toggle" title="Show other versions of page">3.0.0</button>
   <div class="version-menu">
     <a class="version is-current" href="Echo.html">3.0.0</a>
+    <a class="version" href="../2.2.1/Echo.html">2.2.1</a>
     <a class="version" href="../1.3.0/Echo.html">1.3.0</a>
   </div>
 </div>
@@ -299,29 +300,7 @@ decoding the individual message.</p>
 <div class="sectionbody">
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-protobuf hljs" data-lang="protobuf">syntax = "proto3";
-
-option java_package = "com.philips.emil.ProtobufEcho";
-option java_outer_classname = "EchoAttributesProto";
-
-import "google/protobuf/descriptor.proto";
-
-extend google.protobuf.FieldOptions {
-  uint32 string_size = 50000;
-  uint32 bytes_size = 50001;
-  uint32 array_size = 50002;
-}
-
-extend google.protobuf.ServiceOptions {
-  uint32 service_id = 50000;
-}
-
-extend google.protobuf.MethodOptions {
-  uint32 method_id = 50000;
-}
-
-message Nothing {
-}</code></pre>
+<pre class="highlightjs highlight"><code class="language-protobuf hljs" data-lang="protobuf">Unresolved include directive in modules/ROOT/pages/Echo.adoc - include::example$echoattributes.proto[]</code></pre>
 </div>
 </div>
 </div>
