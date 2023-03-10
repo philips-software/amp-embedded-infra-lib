@@ -8,13 +8,13 @@ on:
 permissions:
   contents: read
 
-env:
-  SITE_DIR: "site"
 jobs:
   build_antora_site:
     name: Build Antora Documentation
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/modern-cmake' }}
+    permissions:
+      contents: write
+    #if: ${{ github.ref == 'refs/heads/modern-cmake' }}
     steps:
       - name: Checkout
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
@@ -31,27 +31,12 @@ jobs:
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
         with:
           name: antora
-          path: "${{ github.workspace }}/build/${{ env.SITE_DIR }}"
-  deploy_antora:
-    permissions:
-      contents: write
-    runs-on: ubuntu-latest
-    needs: build_antora_site
-    if: ${{ github.ref == 'refs/heads/modern-cmake' }}
-    name: Publish to GitHub Pages
-    steps:
-      - name: Checkout
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
-      - name: Retrieve Antora Site
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
-        with:
-          name: antora
-          path: "${{ github.workspace }}/${{ env.SITE_DIR }}"
+          path: "${{ github.workspace }}/build/site"
       - name: Publish to GitHub Pages
         uses: peaceiris/actions-gh-pages@bd8c6b06eba6b3d25d72b7a1767993c0aeee42e7 # v3.9.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ${{ env.SITE_DIR }}
+          publish_dir: build/site
           user_name: "github-actions[bot]"
           user_email: "github-actions[bot]@users.noreply.github.com"
   build_antora_branch:
@@ -73,4 +58,4 @@ jobs:
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
         with:
           name: antora-branch
-          path: "${{ github.workspace }}/build/${{ env.SITE_DIR }}"
+          path: "${{ github.workspace }}/build/site
