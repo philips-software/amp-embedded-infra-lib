@@ -20,19 +20,19 @@ namespace services
 
     TEST_F(GapPeripheralDecoratorTest, forward_all_events_to_observers)
     {
-        EXPECT_CALL(gapObserver, StateUpdated(GapPeripheralState::Connected));
-        EXPECT_CALL(gapObserver, StateUpdated(GapPeripheralState::Advertising));
+        EXPECT_CALL(gapObserver, StateChanged(GapPeripheralState::connected));
+        EXPECT_CALL(gapObserver, StateChanged(GapPeripheralState::advertising));
 
         gap.NotifyObservers([](GapPeripheralObserver& obs) {
-            obs.StateUpdated(GapPeripheralState::Connected);
-            obs.StateUpdated(GapPeripheralState::Advertising);
+            obs.StateChanged(GapPeripheralState::connected);
+            obs.StateChanged(GapPeripheralState::advertising);
         });
     }
 
     TEST_F(GapPeripheralDecoratorTest, forward_all_calls_to_subject)
     {
-        EXPECT_CALL(gap, GetResolvableAddress()).WillOnce(testing::Return(hal::MacAddress({ 0, 1, 2, 3, 4, 5 })));
-        EXPECT_THAT(decorator.GetResolvableAddress(), testing::Eq(hal::MacAddress({ 0, 1, 2, 3, 4, 5 })));
+        EXPECT_CALL(gap, GetIdentityAddress()).WillOnce(testing::Return(hal::MacAddress({ 0, 1, 2, 3, 4, 5 })));
+        EXPECT_THAT(decorator.GetIdentityAddress(), testing::Eq(hal::MacAddress({ 0, 1, 2, 3, 4, 5 })));
 
         std::array<uint8_t, 6> data{ 0, 1, 2, 3, 4, 5 };
         EXPECT_CALL(gap, SetAdvertisementData(infra::ContentsEqual(data)));
@@ -41,8 +41,8 @@ namespace services
         EXPECT_CALL(gap, SetScanResponseData(infra::ContentsEqual(data)));
         decorator.SetScanResponseData(data);
 
-        EXPECT_CALL(gap, Advertise(services::GapPeripheral::AdvertisementType::advNonconnInd, 32));
-        decorator.Advertise(services::GapPeripheral::AdvertisementType::advNonconnInd, 32);
+        EXPECT_CALL(gap, Advertise(services::GapAdvertisementType::advNonconnInd, 32));
+        decorator.Advertise(services::GapAdvertisementType::advNonconnInd, 32);
 
         EXPECT_CALL(gap, Standby());
         decorator.Standby();

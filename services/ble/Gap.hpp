@@ -44,7 +44,6 @@ namespace services
 
     struct GapAddress
     {
-
         hal::MacAddress address;
         GapAddressType type;
     };
@@ -53,6 +52,9 @@ namespace services
     {
     public:
         virtual void AllowPairing(bool allow) = 0;
+
+        virtual void SetSecurityMode(GapSecurityMode mode, GapSecurityLevel level) = 0;
+        virtual void SetIoCapabilities(GapIoCapabilities caps) = 0;
 
         virtual void AuthenticateWithPasskey(uint32_t passkey) = 0;
         virtual bool NumericComparisonConfirm(bool accept) = 0;
@@ -133,6 +135,7 @@ namespace services
     public:
 
         virtual GapAddress GetAddress() const = 0;
+        virtual hal::MacAddress GetIdentityAddress() const = 0;
         virtual void SetAdvertisementData(infra::ConstByteRange data) = 0;
         virtual void SetScanResponseData(infra::ConstByteRange data) = 0;
         virtual void Advertise(GapAdvertisementType type, AdvertisementIntervalMultiplier multiplier) = 0;
@@ -151,6 +154,7 @@ namespace services
 
         // Implementation of GapPeripheral
         virtual GapAddress GetAddress() const override;
+        virtual hal::MacAddress GetIdentityAddress() const override;
         virtual void SetAdvertisementData(infra::ConstByteRange data) override;
         virtual void SetScanResponseData(infra::ConstByteRange data) override;
         virtual void Advertise(GapAdvertisementType type, AdvertisementIntervalMultiplier multiplier) override;
