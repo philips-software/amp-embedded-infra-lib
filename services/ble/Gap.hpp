@@ -57,7 +57,7 @@ namespace services
         virtual void SetIoCapabilities(GapIoCapabilities caps) = 0;
 
         virtual void AuthenticateWithPasskey(uint32_t passkey) = 0;
-        virtual bool NumericComparisonConfirm(bool accept) = 0;
+        virtual void NumericComparisonConfirm(bool accept) = 0;
     };
 
     class GapPeripheralBonding;
