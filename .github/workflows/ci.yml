@@ -40,11 +40,6 @@ jobs:
           buildPreset: "ContinuousIntegration"
           testPreset: "ContinuousIntegration"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
-      - run: cmake --build Build/ContinuousIntegration --target package
-      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
-        with:
-          name: Build-${{ matrix.os }}
-          path: "${{ github.workspace }}/Build/**/emil-*.zip"
   embedded_build:
     name: Embedded Build
     runs-on: ubuntu-latest
