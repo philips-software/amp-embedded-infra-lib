@@ -69,30 +69,19 @@ else()
     set(EMIL_EXCLUDE_FROM_ALL "EXCLUDE_FROM_ALL")
 endif()
 
-option(CMAKE_COMPILE_WARNING_AS_ERROR "Enable warnings-as-error" On)
 option(EMIL_BUILD_TESTS "Enable building the tests" ${EMIL_DEFAULTOPT})
 option(EMIL_BUILD_EXAMPLES "Enable building the examples" ${EMIL_DEFAULTOPT})
+option(EMIL_COMPILE_WARNING_AS_ERROR "Enable warnings-as-error" On)
 option(EMIL_ENABLE_FUZZING "Enable building the fuzzing targets" Off)
 option(EMIL_ENABLE_DOCKER_TOOLS "Enable shift-left tools (e.g. linters, formatters) that are run using Docker" On)
-
-# The next few options control the install and export behaviour.
-# When package config generation is enabled the prefix can be set
-# with the EMIL_PACKAGE_CONFIG_EXPORT_NAMESPACE (default emil::).
-# The EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE controls the namespace
-# used for all targets that are used during the build (mostly for
-# code generation). In the default scenario this is empty, using
-# targets of the current build. When doing a 'cross-build' this
-# should be set to the export name of the 'host' build.
 option(EMIL_GENERATE_PACKAGE_CONFIG "Enable generation of package configuration and install files" On)
-set(EMIL_PACKAGE_CONFIG_EXPORT_NAMESPACE "${PROJECT_NAME}::" CACHE STRING "Namespace used for exported targets")
-if (CMAKE_CROSSCOMPILING)
-    set(EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE "${PROJECT_NAME}::" CACHE STRING "Namespace used to reference imported targets")
-else()
-    set(EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE "" CACHE STRING "Namespace used to reference imported targets")
-endif()
 
 option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of EmIL" On)
 set(EMIL_EXTERNAL_LWIP_TARGET "" CACHE STRING "Specify an external LWIP target")
+
+if (EMIL_COMPILE_WARNING_AS_ERROR)
+    set(CMAKE_COMPILE_WARNING_AS_ERROR On)
+endif()
 
 if (EMIL_ENABLE_DOCKER_TOOLS)
     emil_enable_docker_tools()
@@ -142,14 +131,14 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
         # Generate and install export file
         install(EXPORT emil${name}Targets
             FILE emil${name}Targets.cmake
-            NAMESPACE ${EMIL_PACKAGE_CONFIG_EXPORT_NAMESPACE}
+            NAMESPACE "${PROJECT_NAME}::"
             DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/emil
         )
 
         # Generate the export targets for the build tree
         export(EXPORT emil${name}Targets
             FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/emil${name}Targets.cmake"
-            NAMESPACE ${EMIL_PACKAGE_CONFIG_EXPORT_NAMESPACE}
+            NAMESPACE "${PROJECT_NAME}::"
         )
     endfunction()
 

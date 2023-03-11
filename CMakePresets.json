@@ -4,7 +4,7 @@
     {
       "name": "defaults",
       "hidden": true,
-      "binaryDir": "${sourceDir}/Build/${presetName}",
+      "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": "On"
       }
@@ -80,8 +80,7 @@
       "inherits": "defaults",
       "toolchainFile": "${sourceDir}/cmake/toolchain-arm-gcc.cmake",
       "cacheVariables": {
-        "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo;MinSizeRel",
-        "CMAKE_PREFIX_PATH": "${sourceDir}/Build/Host"
+        "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo;MinSizeRel"
       },
       "generator": "Ninja Multi-Config"
     }

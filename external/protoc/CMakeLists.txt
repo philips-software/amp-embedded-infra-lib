@@ -21,17 +21,13 @@ function(emil_fetch_protocol_buffer_compiler)
     FetchContent_MakeAvailable(protoc)
 
     if (CMAKE_HOST_WIN32)
-        set(EMIL_PROTOC_COMPILER_BINARY "${protoc_SOURCE_DIR}/bin/protoc.exe" CACHE INTERNAL "")
-    else()
-        set(EMIL_PROTOC_COMPILER_BINARY "${protoc_SOURCE_DIR}/bin/protoc" CACHE INTERNAL "")
+        set(host_executable_postfix ".exe")
     endif()
+
+    set(EMIL_PROTOC_COMPILER_BINARY "${protoc_SOURCE_DIR}/bin/protoc${host_executable_postfix}" CACHE INTERNAL "")
 endfunction()
 
 function(protocol_buffer_generator)
-    if (CMAKE_CROSSCOMPILING)
-        find_package(emil COMPONENTS Infra Hal Crypto Services Protobuf REQUIRED)
-    endif()
-
     set(singleArgs TARGET INPUT GENERATOR PATH_INFIX)
     set(multiArgs GENERATED_POSTFIXES)
     cmake_parse_arguments(PARSE_ARGV 0 PROTOGEN "" "${singleArgs}" "${multiArgs}")
@@ -63,7 +59,7 @@ function(protocol_buffer_generator)
 
     # Include defaults and self. This assumes set_target_properties on self
     # is done prior to the loop.
-    list(APPEND protobuf_dependencies ${PROTOGEN_TARGET} ${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.echo_attributes)
+    list(APPEND protobuf_dependencies ${PROTOGEN_TARGET} protobuf.echo_attributes)
 
     set(protopath)
     foreach(dependency ${protobuf_dependencies})
@@ -109,10 +105,6 @@ endfunction()
 
 function(protocol_buffer_cpp target input)
     protocol_buffer_generator(TARGET ${target} INPUT ${input} GENERATOR cpp GENERATED_POSTFIXES .pb.h .pb.cc)
-
-    target_link_libraries(${target} PUBLIC
-        protobuf::libprotobuf
-    )
 endfunction()
 
 function(protocol_buffer_csharp target input)
