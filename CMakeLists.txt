@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.24)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
+if (APPLE)
+    set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "OS X target architectures")
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
+endif()
+
 project(emil LANGUAGES C CXX VERSION 3.0.0) # x-release-please-version
 
 set(CMAKE_CXX_STANDARD 17)
