@@ -48,7 +48,19 @@ namespace services
         GapAddressType type;
     };
 
+    class GapPeripheralPairing;
+
+    class GapPeripheralPairingObserver
+        : public infra::Observer<GapPeripheralPairingObserver, GapPeripheralPairing>
+    {
+    public:
+        using infra::Observer<GapPeripheralPairingObserver, GapPeripheralPairing>::Observer;
+
+        virtual void DisplayPasskey(int32_t passkey, bool numericComparison) = 0;
+    };
+
     class GapPeripheralPairing
+        : public infra::Subject<GapPeripheralPairingObserver>
     {
     public:
         virtual void AllowPairing(bool allow) = 0;
@@ -81,7 +93,6 @@ namespace services
         virtual size_t GetMaxNrBonds() const = 0;
         virtual size_t GetNrBonds() const = 0;
     };
-
 
     enum class GapPeripheralState : uint8_t
     {
