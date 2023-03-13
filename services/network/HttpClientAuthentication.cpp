@@ -31,10 +31,6 @@ namespace services
         Request(headers, [this, requestTarget, content]() {  Subject().Post(requestTarget, content, infra::MakeRange(headersWithAuthorization)); });
     }
 
-    void HttpClientAuthentication::Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers)
-    {
-        Request(headers, [this, requestTarget, contentSize]() {  Subject().Post(requestTarget, contentSize, infra::MakeRange(headersWithAuthorization)); });
-    }
 
     void HttpClientAuthentication::Post(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
@@ -44,11 +40,6 @@ namespace services
     void HttpClientAuthentication::Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
     {
         Request(headers, [this, requestTarget, content]() {  Subject().Put(requestTarget, content, infra::MakeRange(headersWithAuthorization)); });
-    }
-
-    void HttpClientAuthentication::Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers)
-    {
-        Request(headers, [this, requestTarget, contentSize]() {  Subject().Put(requestTarget, contentSize, infra::MakeRange(headersWithAuthorization)); });
     }
 
     void HttpClientAuthentication::Put(infra::BoundedConstString requestTarget, HttpHeaders headers)

@@ -12,7 +12,13 @@ namespace services
     {
         really_assert(exclusiveConnection.Allocatable());
         currentClaimer = std::move(claimer);
-        return exclusiveConnection.Emplace(*this);
+
+        auto result = exclusiveConnection.Emplace(*this);
+
+        if (resource.ClaimsPending())
+            RequestCloseConnection();
+
+        return result;
     }
 
     void ExclusiveConnectionFactoryMutex::RequestCloseConnection()
@@ -106,7 +112,6 @@ namespace services
             Connection::Observer().Abort();
         else if (mutex.resource.ClaimsPending() || closing)
             Connection::Observer().Close();
-
     }
 
     ExclusiveConnectionFactory::ExclusiveConnectionFactory(infra::BoundedList<infra::NotifyingSharedOptional<Listener>>& listeners, infra::BoundedList<Connector>& connectors,
