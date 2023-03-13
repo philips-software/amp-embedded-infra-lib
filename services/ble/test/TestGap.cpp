@@ -29,16 +29,19 @@ namespace services
         };
     }
 
-    MATCHER_P(ContentsEqual, x, negation ? "Contents not equal" : "Contents are equal") { return infra::ContentsEqual(infra::MakeRange(x), infra::MakeRange(arg)); }
+    MATCHER_P(ContentsEqual, x, negation ? "Contents not equal" : "Contents are equal")
+    {
+        return infra::ContentsEqual(infra::MakeRange(x), infra::MakeRange(arg));
+    }
 
     TEST_F(GapPeripheralDecoratorTest, forward_all_events_to_observers)
     {
-        EXPECT_CALL(gapObserver, StateUpdated(GapPeripheralState::Connected));
-        EXPECT_CALL(gapObserver, StateUpdated(GapPeripheralState::Advertising));
+        EXPECT_CALL(gapObserver, StateUpdated(GapState::connected));
+        EXPECT_CALL(gapObserver, StateUpdated(GapState::advertising));
 
         gap.NotifyObservers([](GapPeripheralObserver& obs) {
-            obs.StateUpdated(GapPeripheralState::Connected);
-            obs.StateUpdated(GapPeripheralState::Advertising);
+            obs.StateUpdated(GapState::connected);
+            obs.StateUpdated(GapState::advertising);
         });
     }
 
@@ -54,8 +57,8 @@ namespace services
         EXPECT_CALL(gap, SetScanResponseData(infra::ContentsEqual(data)));
         decorator.SetScanResponseData(data);
 
-        EXPECT_CALL(gap, Advertise(services::GapAdvertisementType::AdvNonconnInd, 32));
-        decorator.Advertise(services::GapAdvertisementType::AdvNonconnInd, 32);
+        EXPECT_CALL(gap, Advertise(services::GapAdvertisementType::advNonconnInd, 32));
+        decorator.Advertise(services::GapAdvertisementType::advNonconnInd, 32);
 
         EXPECT_CALL(gap, Standby());
         decorator.Standby();
@@ -63,12 +66,12 @@ namespace services
 
     TEST_F(GapCentralDecoratorTest, forward_all_events_to_observers)
     {
-        EXPECT_CALL(gapObserver, StateUpdated(GapCentralState::Connected));
-        EXPECT_CALL(gapObserver, StateUpdated(GapCentralState::Scanning));
+        EXPECT_CALL(gapObserver, StateUpdated(GapState::connected));
+        EXPECT_CALL(gapObserver, StateUpdated(GapState::scanning));
 
         gap.NotifyObservers([](GapCentralObserver& obs) {
-            obs.StateUpdated(GapCentralState::Connected);
-            obs.StateUpdated(GapCentralState::Scanning);
+            obs.StateUpdated(GapState::connected);
+            obs.StateUpdated(GapState::scanning);
         });
     }
 
@@ -76,14 +79,14 @@ namespace services
     {
         hal::MacAddress macAddress{ 0, 1, 2, 3, 4, 5 };
 
-        EXPECT_CALL(gap, Connect(ContentsEqual(macAddress), services::GapAddressType::Public));
-        decorator.Connect(macAddress, services::GapAddressType::Public);
+        EXPECT_CALL(gap, Connect(ContentsEqual(macAddress), services::GapDeviceAddressType::publicAddress));
+        decorator.Connect(macAddress, services::GapDeviceAddressType::publicAddress);
 
         EXPECT_CALL(gap, Disconnect());
         decorator.Disconnect();
 
-        EXPECT_CALL(gap, SetAddress(ContentsEqual(macAddress), GapAddressType::Public));
-        decorator.SetAddress(macAddress, GapAddressType::Public);
+        EXPECT_CALL(gap, SetAddress(ContentsEqual(macAddress), GapDeviceAddressType::publicAddress));
+        decorator.SetAddress(macAddress, GapDeviceAddressType::publicAddress);
 
         EXPECT_CALL(gap, StartDeviceDiscovery());
         decorator.StartDeviceDiscovery();

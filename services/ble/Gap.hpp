@@ -7,25 +7,78 @@
 
 namespace services
 {
-    enum class GapAddressType : uint8_t
+    enum class GapDeviceAddressType : uint8_t
     {
-        Public,
-        Random
+        publicAddress,
+        randomAddress,
     };
 
     enum class GapAdvertisementType : uint8_t
     {
-        AdvInd,
-        AdvNonconnInd
+        advInd,
+        advNonconnInd
     };
 
-    enum class GapIoCapabilities
+    enum class GapIoCapabilities : uint8_t
     {
-        Display,
-        DisplayYesNo,
-        Keyboard,
-        None,
-        KeyboardDisplay
+        display,
+        displayYesNo,
+        keyboard,
+        none,
+        keyboardDisplay
+    };
+
+    enum class GapState : uint8_t
+    {
+        standby,
+        scanning,
+        advertising,
+        connected
+    };
+
+    enum class GapAuthenticationErrorType : uint8_t
+    {
+        passkeyEntryFailed,
+        authenticationRequirementsNotMet,
+        pairingNotSupported,
+        insufficientEncryptionKeySize,
+        numericComparisonFailed,
+        timeout,
+        unknown,
+    };
+
+    enum class GapAdvertisingEventType : uint8_t
+    {
+        advInd,
+        advDirectInd,
+        advScanInd,
+        advNonconnInd,
+        scanResponse,
+    };
+
+    enum class GapAdvertisingEventAddressType : uint8_t
+    {
+        publicDeviceAddress,
+        randomDeviceAddress,
+        publicIdentityAddress,
+        randomIdentityAddress
+    };
+
+    struct GapConnectionParameters
+    {
+        uint16_t minConnIntMultiplier;
+        uint16_t maxConnIntMultiplier;
+        uint16_t slaveLatency;
+        uint16_t supervisorTimeoutMs;
+    };
+
+    struct GapAdvertisingReport
+    {
+        GapAdvertisingEventType eventType;
+        GapAdvertisingEventAddressType addressType;
+        hal::MacAddress address;
+        infra::ConstByteRange data;
+        int8_t rssi;
     };
 
     class GapPeripheralPairing
@@ -40,13 +93,6 @@ namespace services
         virtual void RemoveAllBonds() = 0;
     };
 
-    enum class GapPeripheralState : uint8_t
-    {
-        Standby,
-        Advertising,
-        Connected
-    };
-
     class GapPeripheral;
 
     class GapPeripheralObserver
@@ -55,7 +101,7 @@ namespace services
     public:
         using infra::Observer<GapPeripheralObserver, GapPeripheral>::Observer;
 
-        virtual void StateUpdated(GapPeripheralState state) = 0;
+        virtual void StateUpdated(GapState state) = 0;
     };
 
     class GapPeripheral
@@ -105,7 +151,7 @@ namespace services
         using GapPeripheralObserver::GapPeripheralObserver;
 
         // Implementation of GapPeripheralObserver
-        virtual void StateUpdated(GapPeripheralState state) override;
+        virtual void StateUpdated(GapState state) override;
 
         // Implementation of GapPeripheral
         virtual hal::MacAddress GetResolvableAddress() const override;
@@ -120,59 +166,6 @@ namespace services
         return static_cast<GapPeripheral::AdvertisementFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
     }
 
-    enum class GapCentralState
-    {
-        Standby,
-        Connected,
-        Disconnected,
-        Scanning,
-    };
-
-    enum class GapCentralAuthenticationStatus
-    {
-        Success,
-        PasskeyEntryFailed,
-        AuthenticationRequirementsNotMet,
-        PairingNotSupported,
-        InsufficientEncryptionKeySize,
-        NumericComparisonFailed,
-        Timeout,
-        Unknown,
-    };
-
-    enum class GapCentralSecurityLevel
-    {
-        None,
-        UnauthenticatedPairing,
-        AuthenticatedPairing,
-        AuthenticatedPairingWithLE
-    };
-
-    enum class GapCentralPairingMode : uint8_t
-    {
-        Pair,
-        Bond,
-        None
-    };
-
-    struct GapCentralConnectionParameters
-    {
-        uint16_t minConnIntMultiplier;
-        uint16_t maxConnIntMultiplier;
-        uint16_t slaveLatency;
-        uint16_t supervisorTimeoutMs;
-    };
-
-    struct GapCentralDiscoveryParameters
-    {
-        hal::MacAddress address;
-        GapAddressType addressType;
-        infra::ConstByteRange data;
-        int8_t rssi;
-        bool isScanResponse;
-        GapAdvertisementType advertisementType;
-    };
-
     class GapCentral;
 
     class GapCentralObserver
@@ -181,18 +174,19 @@ namespace services
     public:
         using infra::Observer<GapCentralObserver, GapCentral>::Observer;
 
-        virtual void AuthenticationComplete(GapCentralAuthenticationStatus status) = 0;
-        virtual void DeviceDiscovered(const GapCentralDiscoveryParameters& deviceDiscovered) = 0;
-        virtual void StateUpdated(GapCentralState state) = 0;
+        virtual void AuthenticationSuccessfullyCompleted() = 0;
+        virtual void AuthenticationFailed(GapAuthenticationErrorType error) = 0;
+        virtual void DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered) = 0;
+        virtual void StateUpdated(GapState state) = 0;
     };
 
     class GapCentral
         : public infra::Subject<GapCentralObserver>
     {
     public:
-        virtual void Connect(hal::MacAddress macAddress, GapAddressType addressType) = 0;
+        virtual void Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType) = 0;
         virtual void Disconnect() = 0;
-        virtual void SetAddress(hal::MacAddress macAddress, GapAddressType addressType) = 0;
+        virtual void SetAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) = 0;
         virtual void StartDeviceDiscovery() = 0;
         virtual void StopDeviceDiscovery() = 0;
     };
@@ -205,14 +199,15 @@ namespace services
         using GapCentralObserver::GapCentralObserver;
 
         // Implementation of GapCentralObserver
-        virtual void AuthenticationComplete(GapCentralAuthenticationStatus status) override;
-        virtual void DeviceDiscovered(const GapCentralDiscoveryParameters& deviceDiscovered) override;
-        virtual void StateUpdated(GapCentralState state) override;
+        virtual void AuthenticationSuccessfullyCompleted() override;
+        virtual void AuthenticationFailed(GapAuthenticationErrorType error) override;
+        virtual void DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered) override;
+        virtual void StateUpdated(GapState state) override;
 
         // Implementation of GapCentral
-        virtual void Connect(hal::MacAddress macAddress, GapAddressType addressType) override;
+        virtual void Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType) override;
         virtual void Disconnect() override;
-        virtual void SetAddress(hal::MacAddress macAddress, GapAddressType addressType) override;
+        virtual void SetAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) override;
         virtual void StartDeviceDiscovery() override;
         virtual void StopDeviceDiscovery() override;
     };

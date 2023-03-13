@@ -12,7 +12,7 @@ namespace services
         using GapPeripheralObserver::GapPeripheralObserver;
 
     public:
-        MOCK_METHOD(void, StateUpdated, (GapPeripheralState state));
+        MOCK_METHOD(void, StateUpdated, (GapState state));
     };
 }
 
