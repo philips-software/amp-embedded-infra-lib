@@ -13,9 +13,61 @@
 
 namespace services
 {
+    class GattCharacteristicUpdate;
+
+    class GattCharacteristicObserver
+        : public infra::Observer<GattCharacteristicObserver, GattCharacteristicUpdate>
+    {
+    public:
+        using infra::Observer<GattCharacteristicObserver, GattCharacteristicUpdate>::Observer;
+
+        virtual void DataReceived(infra::ConstByteRange data) = 0;
+    };
+
+    class GattCharacteristicUpdate
+        : public infra::Subject<GattCharacteristicObserver>
+    {
+    public:
+        virtual void Update(infra::ConstByteRange data, infra::Function<void()> onDone) = 0;
+    };
+
+    class GattCharacteristicClientOperations;
+
+    class GattCharacteristicClientOperationsObserver
+        : public infra::Observer<GattCharacteristicClientOperationsObserver, GattCharacteristicClientOperations>
+    {
+    public:
+        using infra::Observer<GattCharacteristicClientOperationsObserver, GattCharacteristicClientOperations>::Observer;
+
+        virtual AttAttribute::Handle ServiceHandle() const = 0;
+        virtual AttAttribute::Handle CharacteristicHandle() const = 0;
+    };
+
+    class GattCharacteristicClientOperations
+        : public infra::Subject<GattCharacteristicClientOperationsObserver>
+    {
+    public:
+        enum class UpdateStatus : uint8_t
+        {
+            success,
+            retry,
+            error
+        };
+
+        // Update 'characteristic' with 'data' towards the
+        // BLE stack and, depending on the configuration of
+        // that 'characteristic', send a notification or indication.
+        // Returns success, or retry in transient failure or error
+        // on unrecoverable failure (i.e. BLE stack indicates an issue
+        // with updating or sending data).
+        virtual UpdateStatus Update(const GattCharacteristicClientOperationsObserver& characteristic, infra::ConstByteRange data) const = 0;
+    };
+
     class GattServerCharacteristic
         : public infra::IntrusiveForwardList<GattServerCharacteristic>::NodeType
         , public GattCharacteristic
+        , public GattCharacteristicClientOperationsObserver
+        , public GattCharacteristicUpdate
     {
     public:
         // Description in Bluetooth Core Specification
@@ -38,6 +90,7 @@ namespace services
 
         virtual PermissionFlags Permissions() const = 0;
         virtual uint16_t ValueLength() const = 0;
+        virtual uint8_t GetAttributeCount() const = 0;
     };
 
     class GattServerService
@@ -50,9 +103,9 @@ namespace services
         GattServerService& operator=(const GattServerService& other) = delete;
         virtual ~GattServerService() = default;
 
-        void AddCharacteristic(GattServerCharacteristic& characteristic) { characteristics.push_front(characteristic); }
-        infra::IntrusiveForwardList<GattServerCharacteristic>& Characteristics() { return characteristics; }
-        const infra::IntrusiveForwardList<GattServerCharacteristic>& Characteristics() const { return characteristics; }
+        void AddCharacteristic(GattServerCharacteristic& characteristic);
+        infra::IntrusiveForwardList<GattServerCharacteristic>& Characteristics();
+        const infra::IntrusiveForwardList<GattServerCharacteristic>& Characteristics() const;
 
         uint8_t GetAttributeCount() const;
 

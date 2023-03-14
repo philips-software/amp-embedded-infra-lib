@@ -13,7 +13,77 @@
 
 namespace services
 {
-    class GattClientDescriptor
+    class GattClientDataOperation;
+
+    class GattClientDataOperationObserver
+        : public infra::Observer<GattClientDataOperationObserver, GattClientDataOperation>
+    {
+    public:
+        using infra::Observer<GattClientDataOperationObserver, GattClientDataOperation>::Observer;
+
+        virtual void ReadCompleted(infra::ConstByteRange data) = 0;
+        virtual void WriteCompleted() = 0;
+    };
+
+    class GattClientDataOperation
+        : public infra::Subject<GattClientDataOperationObserver>
+    {
+    public:
+        virtual void Read(infra::Function<void(infra::ConstByteRange&)> onDone) = 0;
+        virtual void Write(infra::ConstByteRange data, infra::Function<void()> onDone) = 0;
+        virtual void WriteWithoutResponse(infra::ConstByteRange data) = 0;
+    };
+
+    class GattClientIndicationNotification;
+
+    class GattClientNotificationObserver
+        : public infra::Observer<GattClientNotificationObserver, GattClientIndicationNotification>
+    {
+    public:
+        using infra::Observer<GattClientNotificationObserver, GattClientIndicationNotification>::Observer;
+
+        virtual void ConfigurationCompleted() = 0;
+        virtual void NotificationReceived(const AttAttribute::Handle& handle, infra::ConstByteRange data) = 0;
+    };
+
+    class GattClientIndicationNotification
+        : public infra::Subject<GattClientNotificationObserver>
+    {
+    public:
+        virtual void EnableNotification(infra::Function<void()> onDone) = 0;
+        virtual void DisableNotification(infra::Function<void()> onDone) = 0;
+
+        virtual void EnableIndication(infra::Function<void()> onDone) = 0;
+        virtual void DisableIndication(infra::Function<void()> onDone) = 0;
+    };
+
+    class GattClientCharacteristicOperations;
+
+    class GattClientCharacteristicOperationsObserver
+        : public infra::Observer<GattClientCharacteristicOperationsObserver, GattClientCharacteristicOperations>
+    {
+    public:
+        using infra::Observer<GattClientCharacteristicOperationsObserver, GattClientCharacteristicOperations>::Observer;
+
+        virtual AttAttribute::Handle CharacteristicHandle() const = 0;
+    };
+
+    class GattClientCharacteristicOperations
+        : public infra::Subject<GattClientCharacteristicOperationsObserver>
+    {
+    public:
+        virtual bool Read(const GattClientCharacteristicOperationsObserver& characteristic) const = 0;
+        virtual bool Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data) const = 0;
+        virtual void WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data) const = 0;
+
+        virtual bool EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic) const = 0;
+        virtual bool DisableNotification(const GattClientCharacteristicOperationsObserver& characteristic) const = 0;
+
+        virtual bool EnableIndication(const GattClientCharacteristicOperationsObserver& characteristic) const = 0;
+        virtual bool DisableIndication(const GattClientCharacteristicOperationsObserver& characteristic) const = 0;
+    };
+
+    /* class GattClientDescriptor
     {
     public:
         explicit GattClientDescriptor(AttAttribute::Uuid type, AttAttribute::Handle handle);
@@ -39,16 +109,26 @@ namespace services
     private:
         AttAttribute::Uuid type;
         AttAttribute::Handle handle;
-    };
+    };*/
 
     class GattClientCharacteristic
         : public infra::IntrusiveForwardList<GattClientCharacteristic>::NodeType
         , public GattCharacteristic
+        , public GattClientCharacteristicOperationsObserver
+        , public GattClientDataOperation
+        , public GattClientIndicationNotification
     {
     public:
-        virtual void Read() = 0;
-        virtual void Write(infra::ConstByteRange data) = 0;
-        virtual void WriteWithoutResponse(infra::ConstByteRange data) = 0;
+        GattClientCharacteristic() = default;
+        GattClientCharacteristic(GattClientCharacteristic& other) = delete;
+        GattClientCharacteristic& operator=(const GattClientCharacteristic& other) = delete;
+        virtual ~GattClientCharacteristic() = default;
+
+        /* void AddDescriptor(GattClientCharacteristic& characteristic);
+        const infra::IntrusiveForwardList<GattClientCharacteristic>& Descriptors() const;*/
+
+    private:
+        /* infra::IntrusiveForwardList<GattClientDescriptor> descriptors;*/
     };
 
     class GattClientService
@@ -61,9 +141,9 @@ namespace services
         GattClientService& operator=(const GattClientService& other) = delete;
         virtual ~GattClientService() = default;
 
-        void AddCharacteristic(GattClientCharacteristic& characteristic) { characteristics.push_front(characteristic); }
-        infra::IntrusiveForwardList<GattClientCharacteristic>& Characteristics() { return characteristics; }
-        const infra::IntrusiveForwardList<GattClientCharacteristic>& Characteristics() const { return characteristics; }
+        void AddCharacteristic(GattClientCharacteristic& characteristic);
+        // infra::IntrusiveForwardList<GattClientCharacteristic>& Characteristics();
+        const infra::IntrusiveForwardList<GattClientCharacteristic>& Characteristics() const;
 
     private:
         infra::IntrusiveForwardList<GattClientCharacteristic> characteristics;
@@ -86,37 +166,6 @@ namespace services
         virtual void DescriptorDiscoveryComplete() = 0;
     };
 
-    class GattClientDataOperation;
-
-    class GattClientDataOperationObserver
-        : public infra::Observer<GattClientDataOperationObserver, GattClientDataOperation>
-    {
-    public:
-        using infra::Observer<GattClientDataOperationObserver, GattClientDataOperation>::Observer;
-
-        enum class Result
-        {
-            Success,
-            InsufficientAuthentication,
-            UnknownError,
-        };
-
-        virtual void ReadCompleted(Result result, infra::ConstByteRange data) = 0;
-        virtual void WriteCompleted(Result result) = 0;
-    };
-
-    class GattClientIndicationNotification;
-
-    class GattClientNotificationObserver
-        : public infra::Observer<GattClientNotificationObserver, GattClientIndicationNotification>
-    {
-    public:
-        using infra::Observer<GattClientNotificationObserver, GattClientIndicationNotification>::Observer;
-
-        virtual void ConfigurationCompleted() = 0;
-        virtual void NotificationReceived(const AttAttribute::Handle& handle, infra::ConstByteRange data) = 0;
-    };
-
     class GattClientDiscovery
         : public infra::Subject<GattClientDiscoveryObserver>
     {
@@ -124,26 +173,6 @@ namespace services
         virtual void StartServiceDiscovery() = 0;
         virtual void StartCharacteristicDiscovery(const GattService& service) = 0;
         virtual void StartDescriptorDiscovery(const GattCharacteristic& service) = 0;
-    };
-
-    class GattClientIndicationNotification
-        : public infra::Subject<GattClientNotificationObserver>
-    {
-    public:
-        virtual void EnableNotification(const services::GattCharacteristic& characteristic) = 0;
-        virtual void DisableNotification(const services::GattCharacteristic& characteristic) = 0;
-
-        virtual void EnableIndication(const services::GattCharacteristic& characteristic) = 0;
-        virtual void DisableIndication(const services::GattCharacteristic& characteristic) = 0;
-    };
-
-    class GattClientDataOperation
-        : public infra::Subject<GattClientDataOperationObserver>
-    {
-    public:
-        virtual void Read(const GattCharacteristic& characteristic) = 0;
-        virtual void Write(const GattCharacteristic& characteristic, infra::ConstByteRange data) = 0;
-        virtual void WriteWithoutResponse(const GattCharacteristic& characteristic, infra::ConstByteRange data) = 0;
     };
 }
 

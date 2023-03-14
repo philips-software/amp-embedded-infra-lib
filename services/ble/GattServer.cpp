@@ -16,4 +16,19 @@ namespace services
 
         return attributeCount;
     }
+
+    void GattServerService::AddCharacteristic(GattServerCharacteristic& characteristic)
+    {
+        characteristics.push_front(characteristic);
+    }
+
+    infra::IntrusiveForwardList<GattServerCharacteristic>& GattServerService::Characteristics()
+    {
+        return characteristics;
+    }
+
+    const infra::IntrusiveForwardList<GattServerCharacteristic>& GattServerService::Characteristics() const
+    {
+        return characteristics;
+    }
 }
