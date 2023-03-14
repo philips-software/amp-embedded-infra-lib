@@ -123,16 +123,6 @@ TEST_F(HttpClientCachedConnectionTest, normal_request_Post1)
     CloseConnection();
 }
 
-TEST_F(HttpClientCachedConnectionTest, normal_request_Post2)
-{
-    CreateConnection(factory);
-
-    EXPECT_CALL(clientSubject, Post("target", 10, testing::_));
-    clientObserver->Subject().Post("target", 10);
-
-    CloseConnection();
-}
-
 TEST_F(HttpClientCachedConnectionTest, normal_request_Post3)
 {
     CreateConnection(factory);
@@ -149,16 +139,6 @@ TEST_F(HttpClientCachedConnectionTest, normal_request_Put1)
 
     EXPECT_CALL(clientSubject, Put("target", "content", testing::_));
     clientObserver->Subject().Put("target", "content");
-
-    CloseConnection();
-}
-
-TEST_F(HttpClientCachedConnectionTest, normal_request_Put2)
-{
-    CreateConnection(factory);
-
-    EXPECT_CALL(clientSubject, Put("target", 10, testing::_));
-    clientObserver->Subject().Put("target", 10);
 
     CloseConnection();
 }

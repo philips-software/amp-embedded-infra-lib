@@ -2,7 +2,7 @@
 
 namespace services
 {
-    void GapPeripheralDecorator::StateUpdated(GapPeripheralState state)
+    void GapPeripheralDecorator::StateUpdated(GapState state)
     {
         GapPeripheralObserver::SubjectType::NotifyObservers([&state](auto& obs) { obs.StateUpdated(state); });
     }
@@ -32,22 +32,27 @@ namespace services
         GapPeripheralObserver::Subject().Standby();
     }
 
-    void GapCentralDecorator::AuthenticationComplete(GapCentralAuthenticationStatus status)
+    void GapCentralDecorator::AuthenticationSuccessfullyCompleted()
     {
-        GapCentralObserver::SubjectType::NotifyObservers([&status](auto& obs) { obs.AuthenticationComplete(status); });
+        GapCentralObserver::SubjectType::NotifyObservers([](auto& obs) { obs.AuthenticationSuccessfullyCompleted(); });
     }
 
-    void GapCentralDecorator::DeviceDiscovered(const GapCentralDiscoveryParameters& deviceDiscovered)
+    void GapCentralDecorator::AuthenticationFailed(GapAuthenticationErrorType status)
+    {
+        GapCentralObserver::SubjectType::NotifyObservers([&status](auto& obs) { obs.AuthenticationFailed(status); });
+    }
+
+    void GapCentralDecorator::DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered)
     {
         GapCentralObserver::SubjectType::NotifyObservers([&deviceDiscovered](auto& obs) { obs.DeviceDiscovered(deviceDiscovered); });
     }
 
-    void GapCentralDecorator::StateUpdated(GapCentralState state)
+    void GapCentralDecorator::StateUpdated(GapState state)
     {
         GapCentralObserver::SubjectType::NotifyObservers([&state](auto& obs) { obs.StateUpdated(state); });
     }
 
-    void GapCentralDecorator::Connect(hal::MacAddress macAddress, GapAddressType addressType)
+    void GapCentralDecorator::Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType)
     {
         GapCentralObserver::Subject().Connect(macAddress, addressType);
     }
@@ -57,7 +62,7 @@ namespace services
         GapCentralObserver::Subject().Disconnect();
     }
 
-    void GapCentralDecorator::SetAddress(hal::MacAddress macAddress, GapAddressType addressType)
+    void GapCentralDecorator::SetAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType)
     {
         GapCentralObserver::Subject().SetAddress(macAddress, addressType);
     }

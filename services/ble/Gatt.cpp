@@ -53,5 +53,7 @@ namespace services
     }
 
     uint8_t GattService::GetAttributeCount() const
-    {}
+    {
+        return 0;
+    }
 }

@@ -12,9 +12,10 @@ namespace services
         using GapCentralObserver::GapCentralObserver;
 
     public:
-        MOCK_METHOD(void, AuthenticationComplete, (GapCentralAuthenticationStatus status), (override));
-        MOCK_METHOD(void, DeviceDiscovered, (const GapCentralDiscoveryParameters& deviceDiscovered), (override));
-        MOCK_METHOD(void, StateUpdated, (GapCentralState state), (override));
+        MOCK_METHOD(void, AuthenticationSuccessfullyCompleted, (), (override));
+        MOCK_METHOD(void, AuthenticationFailed, (GapAuthenticationErrorType error), (override));
+        MOCK_METHOD(void, DeviceDiscovered, (const GapAdvertisingReport& deviceDiscovered), (override));
+        MOCK_METHOD(void, StateUpdated, (GapState state), (override));
     };
 }
 

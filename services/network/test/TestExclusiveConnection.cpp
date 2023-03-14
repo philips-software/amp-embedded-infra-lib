@@ -35,7 +35,7 @@ public:
         {
             auto observer = connectionObserver.Emplace();
             EXPECT_CALL(*observer, Attached());
-            EXPECT_CALL(*observer, Close());
+            EXPECT_CALL(*connectionObserver, Close());
             createdObserver(observer);
         }));
     }

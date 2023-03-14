@@ -89,13 +89,6 @@ TEST_F(HttpClientAuthenticationTest, Post_request_is_forwarded_1)
     httpClientObserver->Subject().Post("target", "contents", infra::MakeRange(headers));
 }
 
-TEST_F(HttpClientAuthenticationTest, Post_request_is_forwarded_2)
-{
-    EXPECT_CALL(httpClient, Post("target", 1234, testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString requestTarget, std::size_t contentSize, services::HttpHeaders headers) { CheckHeaders(headers, "header contents"); }));
-    EXPECT_CALL(clientAuthentication, AuthenticationHeader()).WillOnce(testing::Return("header contents"));
-    httpClientObserver->Subject().Post("target", 1234, infra::MakeRange(headers));
-}
-
 TEST_F(HttpClientAuthenticationTest, Post_request_is_forwarded_3)
 {
     EXPECT_CALL(httpClient, Post("target", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString requestTarget, services::HttpHeaders headers) { CheckHeaders(headers, "header contents"); }));
@@ -108,13 +101,6 @@ TEST_F(HttpClientAuthenticationTest, Put_request_is_forwarded_1)
     EXPECT_CALL(httpClient, Put("target", "contents", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString requestTarget, infra::BoundedConstString contents, services::HttpHeaders headers) { CheckHeaders(headers, "header contents"); }));
     EXPECT_CALL(clientAuthentication, AuthenticationHeader()).WillOnce(testing::Return("header contents"));
     httpClientObserver->Subject().Put("target", "contents", infra::MakeRange(headers));
-}
-
-TEST_F(HttpClientAuthenticationTest, Put_request_is_forwarded_2)
-{
-    EXPECT_CALL(httpClient, Put("target", 1234, testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString requestTarget, std::size_t contentSize, services::HttpHeaders headers) { CheckHeaders(headers, "header contents"); }));
-    EXPECT_CALL(clientAuthentication, AuthenticationHeader()).WillOnce(testing::Return("header contents"));
-    httpClientObserver->Subject().Put("target", 1234, infra::MakeRange(headers));
 }
 
 TEST_F(HttpClientAuthenticationTest, Put_request_is_forwarded_3)
