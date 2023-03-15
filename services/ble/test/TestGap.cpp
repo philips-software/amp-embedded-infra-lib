@@ -31,8 +31,13 @@ namespace services
 
     TEST_F(GapPeripheralDecoratorTest, forward_all_calls_to_subject)
     {
-        EXPECT_CALL(gap, GetIdentityAddress()).WillOnce(testing::Return(hal::MacAddress({ 0, 1, 2, 3, 4, 5 })));
-        EXPECT_THAT(decorator.GetIdentityAddress(), testing::Eq(hal::MacAddress({ 0, 1, 2, 3, 4, 5 })));
+        services::GapAddress address = { hal::MacAddress({ 5, 4, 3, 2, 1, 0 }), services::GapAddressType::publicAddress };
+        EXPECT_CALL(gap, GetAddress()).WillOnce(testing::Return(address));
+        EXPECT_THAT(decorator.GetAddress(), testing::Eq(address));
+
+        services::GapAddress identityAddress = {hal::MacAddress({0, 1, 2, 3, 4, 5 }), services::GapAddressType::publicAddress};
+        EXPECT_CALL(gap, GetIdentityAddress()).WillOnce(testing::Return(identityAddress));
+        EXPECT_THAT(decorator.GetIdentityAddress(), testing::Eq(identityAddress));
 
         std::array<uint8_t, 6> data{ 0, 1, 2, 3, 4, 5 };
         EXPECT_CALL(gap, SetAdvertisementData(infra::ContentsEqual(data)));

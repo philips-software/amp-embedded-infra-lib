@@ -12,7 +12,7 @@ namespace services
         using GapPeripheralBondingObserver::GapPeripheralBondingObserver;
 
     public:
-        MOCK_METHOD(void, NrOfBondsChanged, (size_t nrBonds));
+        MOCK_METHOD(void, NumberOfBondsChanged, (size_t nrBonds));
     };
 }
 

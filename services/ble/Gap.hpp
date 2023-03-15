@@ -46,6 +46,11 @@ namespace services
     {
         hal::MacAddress address;
         GapAddressType type;
+
+        bool operator==(GapAddress const& rhs) const 
+        { 
+            return address == rhs.address && type == rhs.type;
+        }
     };
 
     class GapPeripheralPairing;
@@ -80,7 +85,7 @@ namespace services
     public:
         using infra::Observer<GapPeripheralBondingObserver, GapPeripheralBonding>::Observer;
 
-        virtual void NrOfBondsChanged(size_t nrBonds) = 0;
+        virtual void NumberOfBondsChanged(size_t nrBonds) = 0;
     };
 
     class GapPeripheralBonding
@@ -90,8 +95,8 @@ namespace services
         virtual void RemoveAllBonds() = 0;
         virtual void RemoveOldestBond() = 0;
 
-        virtual size_t GetMaxNrBonds() const = 0;
-        virtual size_t GetNrBonds() const = 0;
+        virtual size_t GetMaxNumberOfBonds() const = 0;
+        virtual size_t GetNumberOfBonds() const = 0;
     };
 
     enum class GapPeripheralState : uint8_t
@@ -146,7 +151,7 @@ namespace services
     public:
 
         virtual GapAddress GetAddress() const = 0;
-        virtual hal::MacAddress GetIdentityAddress() const = 0;
+        virtual GapAddress GetIdentityAddress() const = 0;
         virtual void SetAdvertisementData(infra::ConstByteRange data) = 0;
         virtual void SetScanResponseData(infra::ConstByteRange data) = 0;
         virtual void Advertise(GapAdvertisementType type, AdvertisementIntervalMultiplier multiplier) = 0;
@@ -165,7 +170,7 @@ namespace services
 
         // Implementation of GapPeripheral
         virtual GapAddress GetAddress() const override;
-        virtual hal::MacAddress GetIdentityAddress() const override;
+        virtual GapAddress GetIdentityAddress() const override;
         virtual void SetAdvertisementData(infra::ConstByteRange data) override;
         virtual void SetScanResponseData(infra::ConstByteRange data) override;
         virtual void Advertise(GapAdvertisementType type, AdvertisementIntervalMultiplier multiplier) override;

@@ -12,7 +12,7 @@ namespace services
         return GapPeripheralObserver::Subject().GetAddress();
     }
 
-    hal::MacAddress GapPeripheralDecorator::GetIdentityAddress() const
+    GapAddress GapPeripheralDecorator::GetIdentityAddress() const
     {
         return GapPeripheralObserver::Subject().GetIdentityAddress();
     }
