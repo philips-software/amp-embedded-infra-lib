@@ -1,0 +1,6 @@
+#ifndef OSAL_THREADX_STD_THREAD_THREAD
+#define OSAL_THREADX_STD_THREAD_THREAD
+
+#include "stdthread.hpp"
+
+#endif

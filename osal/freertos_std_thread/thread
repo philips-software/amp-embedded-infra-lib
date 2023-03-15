@@ -1,0 +1,6 @@
+#ifndef OSAL_FREERTOS_STD_THREAD_THREAD
+#define OSAL_FREERTOS_STD_THREAD_THREAD
+
+#include "stdthread.hpp"
+
+#endif

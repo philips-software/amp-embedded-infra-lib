@@ -1,4 +1,4 @@
-if (TARGET_BUILD_CORTEX)
+if (TARGET_CORTEX)
     add_library(lwip.lwip_conf ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
     target_sources(lwip.lwip_conf PRIVATE
