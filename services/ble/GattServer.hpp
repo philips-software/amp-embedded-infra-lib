@@ -83,14 +83,19 @@ namespace services
             encryptedWrite = 0x20u
         };
 
-        GattServerCharacteristic() = default;
+        GattServerCharacteristic() = default; // Required by mock...
+        GattServerCharacteristic(const AttAttribute::Uuid& type, const PropertyFlags& properties, const PermissionFlags& permissions, uint16_t valueLength);
         GattServerCharacteristic(GattServerCharacteristic& other) = delete;
         GattServerCharacteristic& operator=(const GattServerCharacteristic& other) = delete;
         virtual ~GattServerCharacteristic() = default;
 
-        virtual PermissionFlags Permissions() const = 0;
-        virtual uint16_t ValueLength() const = 0;
-        virtual uint8_t GetAttributeCount() const = 0;
+        PermissionFlags Permissions() const;
+        uint16_t ValueLength() const;
+        uint8_t GetAttributeCount() const;
+
+    protected:
+        PermissionFlags permissions;
+        uint16_t valueLength;
     };
 
     class GattServerService

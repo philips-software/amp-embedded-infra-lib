@@ -7,8 +7,15 @@ namespace services
     //     , handle(handle)
     //{}
 
-    GattClientService::GattClientService(const AttAttribute::Uuid& type)
-        : GattService(type, 0, 0)
+    GattClientCharacteristic::GattClientCharacteristic(GattClientService& service, const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& valueHandle, const GattCharacteristic::PropertyFlags& properties)
+        : GattCharacteristic(type, handle, valueHandle, properties)
+        , service(service)
+    {
+        service.AddCharacteristic(*this);
+    }
+
+    GattClientService::GattClientService(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& endHandle)
+        : GattService(type, handle, endHandle)
     {}
 
     void GattClientService::AddCharacteristic(GattClientCharacteristic& characteristic)

@@ -33,6 +33,18 @@ namespace services
         AttAttribute::Uuid& Type() const;
         AttAttribute::Handle& Handle() const;
 
+        struct ClientCharacteristicConfiguration
+        {
+            const uint16_t attributeType = 0x2902;
+
+            enum class CharacteristicValue : uint16_t
+            {
+                disable = 0x0000,
+                enableNotification = 0x0001,
+                enableIndication = 0x0002,
+            };
+        };
+
     private:
         AttAttribute::Uuid& type;
         AttAttribute::Handle& handle;
@@ -57,16 +69,27 @@ namespace services
         };
 
     public:
+        GattCharacteristic(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& valueHandle, const PropertyFlags& properties);
         GattCharacteristic() = default;
+
         GattCharacteristic(GattCharacteristic& other) = delete;
         GattCharacteristic& operator=(const GattCharacteristic& other) = delete;
+        GattCharacteristic(GattCharacteristic&& other) = default;
+        GattCharacteristic& operator=(GattCharacteristic&& other) = default;
         virtual ~GattCharacteristic() = default;
 
-        virtual PropertyFlags Properties() const = 0;
+        PropertyFlags Properties() const;
+        PropertyFlags& Properties();
 
-        virtual AttAttribute::Uuid Type() const = 0;
-        virtual AttAttribute::Handle Handle() const = 0;
-        virtual AttAttribute::Handle& Handle() = 0;
+        AttAttribute::Uuid Type() const;
+        AttAttribute::Handle Handle() const;
+        AttAttribute::Handle& Handle();
+        AttAttribute::Handle ValueHandle() const;
+        AttAttribute::Handle& ValueHandle();
+
+    protected:
+        AttAttribute attribute;
+        PropertyFlags properties;
     };
 
     class GattService
@@ -77,6 +100,8 @@ namespace services
 
         GattService(GattService& other) = delete;
         GattService& operator=(const GattService& other) = delete;
+        GattService(GattService&& other) = default;
+        GattService& operator=(GattService&& other) = default;
         virtual ~GattService() = default;
 
         AttAttribute::Uuid Type() const;

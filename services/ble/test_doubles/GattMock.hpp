@@ -29,22 +29,6 @@ namespace services
         MOCK_METHOD2(Update, void(infra::ConstByteRange data, infra::Function<void()> onDone));
     };
 
-    class GattCharacteristicMock
-        : public GattCharacteristic
-    {
-    public:
-        MOCK_CONST_METHOD0(ServiceHandle, AttAttribute::Handle());
-        MOCK_CONST_METHOD0(ServiceGroupHandle, AttAttribute::Handle());
-        MOCK_CONST_METHOD0(CharacteristicHandle, AttAttribute::Handle());
-
-        MOCK_CONST_METHOD0(Properties, PropertyFlags());
-        MOCK_CONST_METHOD0(Type, AttAttribute::Uuid());
-        MOCK_CONST_METHOD0(Handle, AttAttribute::Handle());
-        MOCK_METHOD0(Handle, AttAttribute::Handle&());
-        MOCK_CONST_METHOD0(ValueLength, uint16_t());
-        MOCK_METHOD2(Update, void(infra::ConstByteRange data, infra::Function<void()> onDone));
-    };
-
     class GattServerCharacteristicMock
         : public GattServerCharacteristic
     {
@@ -52,14 +36,7 @@ namespace services
         MOCK_CONST_METHOD0(ServiceHandle, AttAttribute::Handle());
         MOCK_CONST_METHOD0(CharacteristicHandle, AttAttribute::Handle());
 
-        MOCK_CONST_METHOD0(Properties, PropertyFlags());
-        MOCK_CONST_METHOD0(Permissions, PermissionFlags());
-        MOCK_CONST_METHOD0(Type, AttAttribute::Uuid());
-        MOCK_CONST_METHOD0(Handle, AttAttribute::Handle());
-        MOCK_METHOD0(Handle, AttAttribute::Handle&());
-        MOCK_CONST_METHOD0(ValueLength, uint16_t());
         MOCK_METHOD2(Update, void(infra::ConstByteRange data, infra::Function<void()> onDone));
-        MOCK_METHOD(uint8_t, GetAttributeCount, (), (const, override));
     };
 }
 

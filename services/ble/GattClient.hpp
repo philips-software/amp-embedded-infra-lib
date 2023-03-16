@@ -4,7 +4,7 @@
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/Endian.hpp"
 #include "infra/util/EnumCast.hpp"
-#include "infra/util/Function.hpp"
+#include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/IntrusiveForwardList.hpp"
 #include "infra/util/Observer.hpp"
 #include "infra/util/Variant.hpp"
@@ -29,7 +29,7 @@ namespace services
         : public infra::Subject<GattClientDataOperationObserver>
     {
     public:
-        virtual void Read(infra::Function<void(infra::ConstByteRange&)> onDone) = 0;
+        virtual void Read(infra::Function<void(const infra::ConstByteRange&)> onResponse) = 0;
         virtual void Write(infra::ConstByteRange data, infra::Function<void()> onDone) = 0;
         virtual void WriteWithoutResponse(infra::ConstByteRange data) = 0;
     };
@@ -65,69 +65,44 @@ namespace services
     public:
         using infra::Observer<GattClientCharacteristicOperationsObserver, GattClientCharacteristicOperations>::Observer;
 
-        virtual AttAttribute::Handle CharacteristicHandle() const = 0;
+        virtual const AttAttribute::Handle& CharacteristicHandle() const = 0;
+        virtual const GattCharacteristic::PropertyFlags& CharacteristicProperties() const = 0;
     };
 
     class GattClientCharacteristicOperations
         : public infra::Subject<GattClientCharacteristicOperationsObserver>
     {
     public:
-        virtual bool Read(const GattClientCharacteristicOperationsObserver& characteristic) const = 0;
-        virtual bool Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data) const = 0;
+        virtual bool Read(const GattClientCharacteristicOperationsObserver& characteristic, infra::Function<void(const infra::ConstByteRange&)> onDone) const = 0;
+        virtual bool Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, infra::Function<void()> onDone) const = 0;
         virtual void WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data) const = 0;
 
-        virtual bool EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic) const = 0;
-        virtual bool DisableNotification(const GattClientCharacteristicOperationsObserver& characteristic) const = 0;
+        virtual bool EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic, infra::Function<void()> onDone) const = 0;
+        virtual bool DisableNotification(const GattClientCharacteristicOperationsObserver& characteristic, infra::Function<void()> onDone) const = 0;
 
-        virtual bool EnableIndication(const GattClientCharacteristicOperationsObserver& characteristic) const = 0;
-        virtual bool DisableIndication(const GattClientCharacteristicOperationsObserver& characteristic) const = 0;
+        virtual bool EnableIndication(const GattClientCharacteristicOperationsObserver& characteristic, infra::Function<void()> onDone) const = 0;
+        virtual bool DisableIndication(const GattClientCharacteristicOperationsObserver& characteristic, infra::Function<void()> onDone) const = 0;
     };
 
-    /* class GattClientDescriptor
-    {
-    public:
-        explicit GattClientDescriptor(AttAttribute::Uuid type, AttAttribute::Handle handle);
-
-        virtual void EnableNotification() = 0;
-        virtual void DisableNotification() = 0;
-
-        virtual void EnableIndication() = 0;
-        virtual void DisableIndication() = 0;
-
-    private:
-        struct ClientCharacteristicConfiguration
-        {
-            const uint16_t attributeType = 0x2902;
-
-            enum class CharacteristicValue : uint16_t
-            {
-                enableNotification = 0x0001,
-                enableIndication = 0x0002,
-            };
-        };
-
-    private:
-        AttAttribute::Uuid type;
-        AttAttribute::Handle handle;
-    };*/
+    class GattClientService;
 
     class GattClientCharacteristic
         : public infra::IntrusiveForwardList<GattClientCharacteristic>::NodeType
         , public GattCharacteristic
-        , public GattClientCharacteristicOperationsObserver
-        , public GattClientDataOperation
-        , public GattClientIndicationNotification
     {
     public:
-        GattClientCharacteristic() = default;
+        explicit GattClientCharacteristic(GattClientService& service, const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& valueHandle, const GattCharacteristic::PropertyFlags& properties);
         GattClientCharacteristic(GattClientCharacteristic& other) = delete;
         GattClientCharacteristic& operator=(const GattClientCharacteristic& other) = delete;
+        GattClientCharacteristic(GattClientCharacteristic &&) = default;
+        GattClientCharacteristic &operator=(GattClientCharacteristic &&) = default;
         virtual ~GattClientCharacteristic() = default;
 
         /* void AddDescriptor(GattClientCharacteristic& characteristic);
         const infra::IntrusiveForwardList<GattClientCharacteristic>& Descriptors() const;*/
 
-    private:
+    protected:
+        GattClientService& service;
         /* infra::IntrusiveForwardList<GattClientDescriptor> descriptors;*/
     };
 
@@ -136,13 +111,14 @@ namespace services
         , public infra::IntrusiveForwardList<GattClientService>::NodeType
     {
     public:
-        explicit GattClientService(const AttAttribute::Uuid& type);
+        explicit GattClientService(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& endHandle);
         GattClientService(GattClientService& other) = delete;
         GattClientService& operator=(const GattClientService& other) = delete;
+        GattClientService(GattClientService&& other) = default;
+        GattClientService& operator=(GattClientService&& other) = default;
         virtual ~GattClientService() = default;
 
         void AddCharacteristic(GattClientCharacteristic& characteristic);
-        // infra::IntrusiveForwardList<GattClientCharacteristic>& Characteristics();
         const infra::IntrusiveForwardList<GattClientCharacteristic>& Characteristics() const;
 
     private:
@@ -157,9 +133,9 @@ namespace services
     public:
         using infra::Observer<GattClientDiscoveryObserver, GattClientDiscovery>::Observer;
 
-        virtual void ServiceDiscovered(const GattClientService& service) = 0;
-        virtual void CharacteristicDiscovered(const GattCharacteristic& characteristic) = 0;
-        virtual void DescriptorDiscovered(const GattDescriptor& descriptor) = 0;
+        virtual void ServiceDiscovered(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& endHandle) = 0;
+        virtual void CharacteristicDiscovered(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& valueHandle, const GattCharacteristic::PropertyFlags& properties) = 0;
+        virtual void DescriptorDiscovered(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle) = 0;
 
         virtual void ServiceDiscoveryComplete() = 0;
         virtual void CharacteristicDiscoveryComplete() = 0;
@@ -172,7 +148,7 @@ namespace services
     public:
         virtual void StartServiceDiscovery() = 0;
         virtual void StartCharacteristicDiscovery(const GattService& service) = 0;
-        virtual void StartDescriptorDiscovery(const GattCharacteristic& service) = 0;
+        virtual void StartDescriptorDiscovery(const GattCharacteristic& characteristic) = 0;
     };
 }
 

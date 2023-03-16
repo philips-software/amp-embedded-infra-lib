@@ -1,7 +1,7 @@
 #include "gmock/gmock.h"
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
-#include "services/ble/GattCharacteristicImpl.hpp"
+#include "services/ble/GattServerCharacteristicImpl.hpp"
 #include "services/ble/test_doubles/GattMock.hpp"
 
 namespace
