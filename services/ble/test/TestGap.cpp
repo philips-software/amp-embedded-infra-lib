@@ -35,7 +35,7 @@ namespace services
         EXPECT_CALL(gap, GetAddress()).WillOnce(testing::Return(address));
         EXPECT_THAT(decorator.GetAddress(), testing::Eq(address));
 
-        services::GapAddress identityAddress = {hal::MacAddress({0, 1, 2, 3, 4, 5 }), services::GapAddressType::publicAddress};
+        services::GapAddress identityAddress = { hal::MacAddress({0, 1, 2, 3, 4, 5 }), services::GapAddressType::publicAddress };
         EXPECT_CALL(gap, GetIdentityAddress()).WillOnce(testing::Return(identityAddress));
         EXPECT_THAT(decorator.GetIdentityAddress(), testing::Eq(identityAddress));
 

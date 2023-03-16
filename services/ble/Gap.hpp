@@ -49,7 +49,7 @@ namespace services
 
         bool operator==(GapAddress const& rhs) const 
         { 
-            return address == rhs.address && type == rhs.type;
+            return type == rhs.type && address == rhs.address;
         }
     };
 
