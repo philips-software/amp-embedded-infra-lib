@@ -160,7 +160,7 @@ namespace services
     public:
         using infra::Observer<GapPeripheralObserver, GapPeripheral>::Observer;
 
-        virtual void StateUpdated(GapState state) = 0;
+        virtual void StateChanged(GapState state) = 0;
     };
 
     class GapPeripheral
@@ -195,7 +195,6 @@ namespace services
         static constexpr uint16_t connectionInitialMaxTxTime = 2120; // (connectionInitialMaxTxOctets + 14) * 8
 
     public:
-
         virtual GapAddress GetAddress() const = 0;
         virtual GapAddress GetIdentityAddress() const = 0;
         virtual void SetAdvertisementData(infra::ConstByteRange data) = 0;
@@ -212,7 +211,7 @@ namespace services
         using GapPeripheralObserver::GapPeripheralObserver;
 
         // Implementation of GapPeripheralObserver
-        virtual void StateUpdated(GapState state) override;
+        virtual void StateChanged(GapState state) override;
 
         // Implementation of GapPeripheral
         virtual GapAddress GetAddress() const override;
@@ -239,7 +238,7 @@ namespace services
         virtual void AuthenticationSuccessfullyCompleted() = 0;
         virtual void AuthenticationFailed(GapAuthenticationErrorType error) = 0;
         virtual void DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered) = 0;
-        virtual void StateUpdated(GapState state) = 0;
+        virtual void StateChanged(GapState state) = 0;
     };
 
     class GapCentral
@@ -264,7 +263,7 @@ namespace services
         virtual void AuthenticationSuccessfullyCompleted() override;
         virtual void AuthenticationFailed(GapAuthenticationErrorType error) override;
         virtual void DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered) override;
-        virtual void StateUpdated(GapState state) override;
+        virtual void StateChanged(GapState state) override;
 
         // Implementation of GapCentral
         virtual void Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType) override;
