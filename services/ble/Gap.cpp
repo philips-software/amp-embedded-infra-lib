@@ -2,9 +2,9 @@
 
 namespace services
 {
-    void GapPeripheralDecorator::StateUpdated(GapState state)
+    void GapPeripheralDecorator::StateChanged(GapState state)
     {
-        GapPeripheralObserver::SubjectType::NotifyObservers([&state](auto& obs) { obs.StateUpdated(state); });
+        GapPeripheralObserver::SubjectType::NotifyObservers([&state](auto& obs) { obs.StateChanged(state); });
     }
 
     GapAddress GapPeripheralDecorator::GetAddress() const
@@ -52,9 +52,9 @@ namespace services
         GapCentralObserver::SubjectType::NotifyObservers([&deviceDiscovered](auto& obs) { obs.DeviceDiscovered(deviceDiscovered); });
     }
 
-    void GapCentralDecorator::StateUpdated(GapState state)
+    void GapCentralDecorator::StateChanged(GapState state)
     {
-        GapCentralObserver::SubjectType::NotifyObservers([&state](auto& obs) { obs.StateUpdated(state); });
+        GapCentralObserver::SubjectType::NotifyObservers([&state](auto& obs) { obs.StateChanged(state); });
     }
 
     void GapCentralDecorator::Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType)

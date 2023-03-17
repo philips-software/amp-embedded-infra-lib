@@ -15,7 +15,7 @@ namespace services
         MOCK_METHOD(void, AuthenticationSuccessfullyCompleted, (), (override));
         MOCK_METHOD(void, AuthenticationFailed, (GapAuthenticationErrorType error), (override));
         MOCK_METHOD(void, DeviceDiscovered, (const GapAdvertisingReport& deviceDiscovered), (override));
-        MOCK_METHOD(void, StateUpdated, (GapState state), (override));
+        MOCK_METHOD(void, StateChanged, (GapState state), (override));
     };
 }
 
