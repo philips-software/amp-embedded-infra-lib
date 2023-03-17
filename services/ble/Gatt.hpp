@@ -5,7 +5,6 @@
 #include "infra/util/Endian.hpp"
 #include "infra/util/EnumCast.hpp"
 #include "infra/util/Function.hpp"
-#include "infra/util/IntrusiveForwardList.hpp"
 #include "infra/util/Observer.hpp"
 #include "infra/util/Variant.hpp"
 #include <array>
@@ -28,10 +27,16 @@ namespace services
     class GattDescriptor
     {
     public:
-        explicit GattDescriptor(AttAttribute::Uuid& type, AttAttribute::Handle& handle);
+        explicit GattDescriptor(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle);
 
-        AttAttribute::Uuid& Type() const;
-        AttAttribute::Handle& Handle() const;
+        GattDescriptor(GattDescriptor& other) = delete;
+        GattDescriptor& operator=(const GattDescriptor& other) = delete;
+        GattDescriptor(GattDescriptor&& other) = default;
+        GattDescriptor& operator=(GattDescriptor&& other) = default;
+        virtual ~GattDescriptor() = default;
+
+        const AttAttribute::Uuid& Type() const;
+        const AttAttribute::Handle& Handle() const;
 
         struct ClientCharacteristicConfiguration
         {
@@ -45,9 +50,9 @@ namespace services
             };
         };
 
-    private:
-        AttAttribute::Uuid& type;
-        AttAttribute::Handle& handle;
+    protected:
+        const AttAttribute::Uuid& type;
+        const AttAttribute::Handle& handle;
     };
 
     class GattCharacteristic

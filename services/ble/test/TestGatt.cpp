@@ -107,14 +107,14 @@ TEST_F(GattCharacteristicTest, should_update_characteristic_and_callback_on_succ
 {
     infra::MockCallback<void()> callback;
     EXPECT_CALL(callback, callback);
-    EXPECT_CALL(operations, Update(testing::Ref(characteristic), ContentsEqual("string"))).WillOnce(testing::Return(services::GattCharacteristicClientOperations::UpdateStatus::success));
+    EXPECT_CALL(operations, Update(testing::Ref(characteristic), ContentsEqual("string"))).WillOnce(testing::Return(services::GattServerCharacteristicOperations::UpdateStatus::success));
     characteristic.Update(infra::MakeStringByteRange("string"), [&callback]() { callback.callback(); });
 }
 
 TEST_F(GattCharacteristicTest, should_update_characteristic_and_not_callback_on_error)
 {
     infra::MockCallback<void()> callback;
-    EXPECT_CALL(operations, Update(testing::Ref(characteristic), ContentsEqual("string"))).WillOnce(testing::Return(services::GattCharacteristicClientOperations::UpdateStatus::error));
+    EXPECT_CALL(operations, Update(testing::Ref(characteristic), ContentsEqual("string"))).WillOnce(testing::Return(services::GattServerCharacteristicOperations::UpdateStatus::error));
     characteristic.Update(infra::MakeStringByteRange("string"), [&callback]() { callback.callback(); });
 }
 
@@ -122,7 +122,7 @@ TEST_F(GattCharacteristicTest, should_update_characteristic_and_retry_update_on_
 {
     infra::MockCallback<void()> callback;
     EXPECT_CALL(callback, callback);
-    EXPECT_CALL(operations, Update(testing::Ref(characteristic), ContentsEqual("string"))).WillOnce(testing::Return(services::GattCharacteristicClientOperations::UpdateStatus::retry)).WillOnce(testing::Return(services::GattCharacteristicClientOperations::UpdateStatus::success));
+    EXPECT_CALL(operations, Update(testing::Ref(characteristic), ContentsEqual("string"))).WillOnce(testing::Return(services::GattServerCharacteristicOperations::UpdateStatus::retry)).WillOnce(testing::Return(services::GattServerCharacteristicOperations::UpdateStatus::success));
     characteristic.Update(infra::MakeStringByteRange("string"), [&callback]() { callback.callback(); });
     ExecuteAllActions();
 }

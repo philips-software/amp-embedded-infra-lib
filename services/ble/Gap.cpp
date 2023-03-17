@@ -4,7 +4,7 @@ namespace services
 {
     void GapPeripheralDecorator::StateChanged(GapState state)
     {
-        GapPeripheralObserver::SubjectType::NotifyObservers([&state](auto& obs) { obs.StateUpdated(state); });
+        GapPeripheralObserver::SubjectType::NotifyObservers([&state](auto& obs) { obs.StateChanged(state); });
     }
 
     GapAddress GapPeripheralDecorator::GetAddress() const

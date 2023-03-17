@@ -13,38 +13,38 @@
 
 namespace services
 {
-    class GattCharacteristicUpdate;
+    class GattServerCharacteristicUpdate;
 
-    class GattCharacteristicObserver
-        : public infra::Observer<GattCharacteristicObserver, GattCharacteristicUpdate>
+    class GattServerCharacteristicObserver
+        : public infra::Observer<GattServerCharacteristicObserver, GattServerCharacteristicUpdate>
     {
     public:
-        using infra::Observer<GattCharacteristicObserver, GattCharacteristicUpdate>::Observer;
+        using infra::Observer<GattServerCharacteristicObserver, GattServerCharacteristicUpdate>::Observer;
 
         virtual void DataReceived(infra::ConstByteRange data) = 0;
     };
 
-    class GattCharacteristicUpdate
-        : public infra::Subject<GattCharacteristicObserver>
+    class GattServerCharacteristicUpdate
+        : public infra::Subject<GattServerCharacteristicObserver>
     {
     public:
         virtual void Update(infra::ConstByteRange data, infra::Function<void()> onDone) = 0;
     };
 
-    class GattCharacteristicClientOperations;
+    class GattServerCharacteristicOperations;
 
-    class GattCharacteristicClientOperationsObserver
-        : public infra::Observer<GattCharacteristicClientOperationsObserver, GattCharacteristicClientOperations>
+    class GattServerCharacteristicOperationsObserver
+        : public infra::Observer<GattServerCharacteristicOperationsObserver, GattServerCharacteristicOperations>
     {
     public:
-        using infra::Observer<GattCharacteristicClientOperationsObserver, GattCharacteristicClientOperations>::Observer;
+        using infra::Observer<GattServerCharacteristicOperationsObserver, GattServerCharacteristicOperations>::Observer;
 
         virtual AttAttribute::Handle ServiceHandle() const = 0;
         virtual AttAttribute::Handle CharacteristicHandle() const = 0;
     };
 
-    class GattCharacteristicClientOperations
-        : public infra::Subject<GattCharacteristicClientOperationsObserver>
+    class GattServerCharacteristicOperations
+        : public infra::Subject<GattServerCharacteristicOperationsObserver>
     {
     public:
         enum class UpdateStatus : uint8_t
@@ -60,14 +60,14 @@ namespace services
         // Returns success, or retry in transient failure or error
         // on unrecoverable failure (i.e. BLE stack indicates an issue
         // with updating or sending data).
-        virtual UpdateStatus Update(const GattCharacteristicClientOperationsObserver& characteristic, infra::ConstByteRange data) const = 0;
+        virtual UpdateStatus Update(const GattServerCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data) const = 0;
     };
 
     class GattServerCharacteristic
         : public infra::IntrusiveForwardList<GattServerCharacteristic>::NodeType
         , public GattCharacteristic
-        , public GattCharacteristicClientOperationsObserver
-        , public GattCharacteristicUpdate
+        , public GattServerCharacteristicOperationsObserver
+        , public GattServerCharacteristicUpdate
     {
     public:
         // Description in Bluetooth Core Specification
@@ -83,7 +83,7 @@ namespace services
             encryptedWrite = 0x20u
         };
 
-        GattServerCharacteristic() = default; // Required by mock...
+        GattServerCharacteristic() = default;
         GattServerCharacteristic(const AttAttribute::Uuid& type, const PropertyFlags& properties, const PermissionFlags& permissions, uint16_t valueLength);
         GattServerCharacteristic(GattServerCharacteristic& other) = delete;
         GattServerCharacteristic& operator=(const GattServerCharacteristic& other) = delete;

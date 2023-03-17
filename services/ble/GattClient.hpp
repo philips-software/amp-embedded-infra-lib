@@ -1,10 +1,10 @@
 #ifndef SERVICES_GATT_CLIENT_HPP
 #define SERVICES_GATT_CLIENT_HPP
 
+#include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/Endian.hpp"
 #include "infra/util/EnumCast.hpp"
-#include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/IntrusiveForwardList.hpp"
 #include "infra/util/Observer.hpp"
 #include "infra/util/Variant.hpp"
@@ -84,6 +84,24 @@ namespace services
         virtual bool DisableIndication(const GattClientCharacteristicOperationsObserver& characteristic, infra::Function<void()> onDone) const = 0;
     };
 
+    class GattClientCharacteristic;
+
+    class GattClientDescriptor
+        : public infra::IntrusiveForwardList<GattClientDescriptor>::NodeType
+        , public GattDescriptor
+    {
+    public:
+        explicit GattClientDescriptor(GattClientCharacteristic& characteristic, const AttAttribute::Uuid& type, const AttAttribute::Handle& handle);
+        GattClientDescriptor(GattClientDescriptor& other) = delete;
+        GattClientDescriptor& operator=(const GattClientDescriptor& other) = delete;
+        GattClientDescriptor(GattClientDescriptor&& other) = default;
+        GattClientDescriptor& operator=(GattClientDescriptor&& other) = default;
+        virtual ~GattClientDescriptor() = default;
+
+    protected:
+        GattClientCharacteristic& characteristic;
+    };
+
     class GattClientService;
 
     class GattClientCharacteristic
@@ -98,12 +116,12 @@ namespace services
         GattClientCharacteristic &operator=(GattClientCharacteristic &&) = default;
         virtual ~GattClientCharacteristic() = default;
 
-        /* void AddDescriptor(GattClientCharacteristic& characteristic);
-        const infra::IntrusiveForwardList<GattClientCharacteristic>& Descriptors() const;*/
+        void AddDescriptor(GattClientDescriptor& descriptor);
+        const infra::IntrusiveForwardList<GattClientDescriptor>& Descriptors() const;
 
     protected:
         GattClientService& service;
-        /* infra::IntrusiveForwardList<GattClientDescriptor> descriptors;*/
+        infra::IntrusiveForwardList<GattClientDescriptor> descriptors;
     };
 
     class GattClientService

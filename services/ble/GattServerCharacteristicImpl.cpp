@@ -19,7 +19,7 @@ namespace services
 
     void GattServerCharacteristicImpl::Update(infra::ConstByteRange data, infra::Function<void()> onDone)
     {
-        really_assert(GattCharacteristicClientOperationsObserver::Attached());
+        really_assert(GattServerCharacteristicOperationsObserver::Attached());
 
         updateContext.Emplace(UpdateContext{ onDone, data });
         UpdateValue();
@@ -37,11 +37,11 @@ namespace services
 
     void GattServerCharacteristicImpl::UpdateValue()
     {
-        auto status = GattCharacteristicClientOperationsObserver::Subject().Update(*this, updateContext->data);
+        auto status = GattServerCharacteristicOperationsObserver::Subject().Update(*this, updateContext->data);
 
-        if (status == GattCharacteristicClientOperations::UpdateStatus::success)
+        if (status == GattServerCharacteristicOperations::UpdateStatus::success)
             infra::PostAssign(updateContext, infra::none)->onDone();
-        else if (status == GattCharacteristicClientOperations::UpdateStatus::retry)
+        else if (status == GattServerCharacteristicOperations::UpdateStatus::retry)
             infra::EventDispatcher::Instance().Schedule([this]() { UpdateValue(); });
         else
             updateContext = infra::none;

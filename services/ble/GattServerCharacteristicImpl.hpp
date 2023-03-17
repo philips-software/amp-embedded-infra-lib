@@ -17,7 +17,7 @@ namespace services
         // Implementation of GattServerCharacteristic
         virtual void Update(infra::ConstByteRange data, infra::Function<void()> onDone);
 
-        // Implementation of GattCharacteristicClientOperationsObserver
+        // Implementation of GattServerCharacteristicOperationsObserver
         virtual AttAttribute::Handle ServiceHandle() const;
         virtual AttAttribute::Handle CharacteristicHandle() const;
 

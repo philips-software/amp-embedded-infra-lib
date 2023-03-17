@@ -16,14 +16,14 @@ namespace services
     };
 
     class GattCharacteristicClientOperationsMock
-        : public services::GattCharacteristicClientOperations
+        : public services::GattServerCharacteristicOperations
     {
     public:
-        MOCK_CONST_METHOD2(Update, UpdateStatus(const services::GattCharacteristicClientOperationsObserver& characteristic, infra::ConstByteRange data));
+        MOCK_CONST_METHOD2(Update, UpdateStatus(const services::GattServerCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data));
     };
 
     class GattCharacteristicUpdateMock
-        : public GattCharacteristicUpdate
+        : public GattServerCharacteristicUpdate
     {
     public:
         MOCK_METHOD2(Update, void(infra::ConstByteRange data, infra::Function<void()> onDone));
