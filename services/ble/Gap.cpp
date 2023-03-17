@@ -7,9 +7,14 @@ namespace services
         GapPeripheralObserver::SubjectType::NotifyObservers([&state](auto& obs) { obs.StateUpdated(state); });
     }
 
-    hal::MacAddress GapPeripheralDecorator::GetResolvableAddress() const
+    GapAddress GapPeripheralDecorator::GetAddress() const
     {
-        return GapPeripheralObserver::Subject().GetResolvableAddress();
+        return GapPeripheralObserver::Subject().GetAddress();
+    }
+
+    GapAddress GapPeripheralDecorator::GetIdentityAddress() const
+    {
+        return GapPeripheralObserver::Subject().GetIdentityAddress();
     }
 
     void GapPeripheralDecorator::SetAdvertisementData(infra::ConstByteRange data)
