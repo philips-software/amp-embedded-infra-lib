@@ -2,7 +2,6 @@
 #define SERVICES_GATT_MOCK_HPP
 
 #include "services/ble/Gatt.hpp"
-#include "services/ble/GattClient.hpp"
 #include "services/ble/GattServer.hpp"
 #include "gmock/gmock.h"
 
@@ -15,14 +14,14 @@ namespace services
         MOCK_METHOD1(AddService, void(GattServerService& service));
     };
 
-    class GattCharacteristicClientOperationsMock
+    class GattServerCharacteristicOperationsMock
         : public services::GattServerCharacteristicOperations
     {
     public:
         MOCK_CONST_METHOD2(Update, UpdateStatus(const services::GattServerCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data));
     };
 
-    class GattCharacteristicUpdateMock
+    class GattServerCharacteristicUpdateMock
         : public GattServerCharacteristicUpdate
     {
     public:

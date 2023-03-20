@@ -26,7 +26,6 @@ namespace services
         {
             infra::Function<void()> onDone;
             infra::ConstByteRange data;
-            infra::Function<void(infra::ConstByteRange&)> onResponse;
         };
 
     private:

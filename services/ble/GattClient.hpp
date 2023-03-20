@@ -73,15 +73,15 @@ namespace services
         : public infra::Subject<GattClientCharacteristicOperationsObserver>
     {
     public:
-        virtual bool Read(const GattClientCharacteristicOperationsObserver& characteristic, infra::Function<void(const infra::ConstByteRange&)> onDone) const = 0;
-        virtual bool Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, infra::Function<void()> onDone) const = 0;
+        virtual void Read(const GattClientCharacteristicOperationsObserver& characteristic, infra::Function<void(const infra::ConstByteRange&)> onDone) const = 0;
+        virtual void Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, infra::Function<void()> onDone) const = 0;
         virtual void WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data) const = 0;
 
-        virtual bool EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic, infra::Function<void()> onDone) const = 0;
-        virtual bool DisableNotification(const GattClientCharacteristicOperationsObserver& characteristic, infra::Function<void()> onDone) const = 0;
+        virtual void EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic, infra::Function<void()> onDone) const = 0;
+        virtual void DisableNotification(const GattClientCharacteristicOperationsObserver& characteristic, infra::Function<void()> onDone) const = 0;
 
-        virtual bool EnableIndication(const GattClientCharacteristicOperationsObserver& characteristic, infra::Function<void()> onDone) const = 0;
-        virtual bool DisableIndication(const GattClientCharacteristicOperationsObserver& characteristic, infra::Function<void()> onDone) const = 0;
+        virtual void EnableIndication(const GattClientCharacteristicOperationsObserver& characteristic, infra::Function<void()> onDone) const = 0;
+        virtual void DisableIndication(const GattClientCharacteristicOperationsObserver& characteristic, infra::Function<void()> onDone) const = 0;
     };
 
     class GattClientCharacteristic;
@@ -167,6 +167,28 @@ namespace services
         virtual void StartServiceDiscovery() = 0;
         virtual void StartCharacteristicDiscovery(const GattService& service) = 0;
         virtual void StartDescriptorDiscovery(const GattCharacteristic& characteristic) = 0;
+    };
+
+    class GattClientDiscoveryDecorator
+        : public GattClientDiscoveryObserver
+        , public GattClientDiscovery
+    {
+    public:
+        using GattClientDiscoveryObserver::GattClientDiscoveryObserver;
+
+        // Implementation of GattClientDiscoveryObserver
+        virtual void ServiceDiscovered(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& endHandle) override;
+        virtual void CharacteristicDiscovered(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& valueHandle, const GattCharacteristic::PropertyFlags& properties) override;
+        virtual void DescriptorDiscovered(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle) override;
+
+        virtual void ServiceDiscoveryComplete() override;
+        virtual void CharacteristicDiscoveryComplete() override;
+        virtual void DescriptorDiscoveryComplete() override;
+
+        // Implementation of GattClientDiscovery
+        virtual void StartServiceDiscovery() override;
+        virtual void StartCharacteristicDiscovery(const GattService& service) override;
+        virtual void StartDescriptorDiscovery(const GattCharacteristic& characteristic) override;
     };
 }
 

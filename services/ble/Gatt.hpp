@@ -27,7 +27,7 @@ namespace services
     class GattDescriptor
     {
     public:
-        explicit GattDescriptor(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle);
+        explicit GattDescriptor(const AttAttribute::Uuid& type, AttAttribute::Handle handle);
 
         GattDescriptor(GattDescriptor& other) = delete;
         GattDescriptor& operator=(const GattDescriptor& other) = delete;
@@ -52,7 +52,7 @@ namespace services
 
     protected:
         const AttAttribute::Uuid& type;
-        const AttAttribute::Handle& handle;
+        AttAttribute::Handle handle;
     };
 
     class GattCharacteristic
@@ -74,7 +74,7 @@ namespace services
         };
 
     public:
-        GattCharacteristic(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& valueHandle, const PropertyFlags& properties);
+        GattCharacteristic(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, PropertyFlags properties);
         GattCharacteristic() = default;
 
         GattCharacteristic(GattCharacteristic& other) = delete;

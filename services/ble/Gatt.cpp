@@ -2,7 +2,7 @@
 
 namespace services
 {
-    GattDescriptor::GattDescriptor(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle)
+    GattDescriptor::GattDescriptor(const AttAttribute::Uuid& type, AttAttribute::Handle handle)
         : type(type)
         , handle(handle)
     {}
@@ -17,7 +17,7 @@ namespace services
         return handle;
     }
 
-    GattCharacteristic::GattCharacteristic(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& valueHandle, const GattCharacteristic::PropertyFlags& properties)
+    GattCharacteristic::GattCharacteristic(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties)
         : attribute{type, handle, valueHandle}
         , properties(properties)
     {}

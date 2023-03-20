@@ -15,7 +15,9 @@ namespace services
     GattServerCharacteristicImpl::GattServerCharacteristicImpl(GattServerService& service, const AttAttribute::Uuid& type, uint16_t valueLength, PropertyFlags properties, PermissionFlags permissions)
         : GattServerCharacteristic(type, properties, permissions, valueLength)
         , service(service)
-    {}
+    {
+        service.AddCharacteristic(*this);
+    }
 
     void GattServerCharacteristicImpl::Update(infra::ConstByteRange data, infra::Function<void()> onDone)
     {

@@ -3,8 +3,11 @@ ccola_component(ble_test gmock_test)
     ccola_sources(
         TestBondBlobPersistence.cpp
         TestBondStorageSynchronizer.cpp
-        TestGap.cpp
+        TestGapCentral.cpp
+        TestGapPeripheral.cpp
         TestGatt.cpp
+        TestGattClient.cpp
+        TestGattServer.cpp
     )
 
     ccola_dependencies(
