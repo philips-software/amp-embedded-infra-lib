@@ -1,4 +1,5 @@
 #include "args.hxx"
+#include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #ifdef EMIL_HAL_WINDOWS
 #include "hal/windows/UartWindows.hpp"
 #else
@@ -9,6 +10,8 @@
 #include "infra/util/Tokenizer.hpp"
 #include "protobuf/echo_console/Console.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
+#include "services/network/HttpClientImpl.hpp"
+#include "services/network/WebSocketClientConnectionObserver.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 #include "services/util/MessageCommunicationCobs.hpp"
 #include "services/util/MessageCommunicationWindowed.hpp"
@@ -161,14 +164,14 @@ void ConsoleClientConnection::CheckDataToBeSent()
     }
 }
 
-class ConsoleClient
-    : public services::ClientConnectionObserverFactoryWithNameResolver
+class ConsoleClientTcp
+    : private services::ClientConnectionObserverFactoryWithNameResolver
 {
 public:
-    ConsoleClient(services::ConnectionFactoryWithNameResolver& connectionFactory, application::Console& console, const std::string& hostname, services::Tracer& tracer);
-    ~ConsoleClient();
+    ConsoleClientTcp(services::ConnectionFactoryWithNameResolver& connectionFactory, application::Console& console, const std::string& hostname, services::Tracer& tracer);
+    ~ConsoleClientTcp();
 
-protected:
+private:
     infra::BoundedConstString Hostname() const override;
     uint16_t Port() const override;
     void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
@@ -182,7 +185,7 @@ private:
     services::Tracer& tracer;
 };
 
-ConsoleClient::ConsoleClient(services::ConnectionFactoryWithNameResolver& connectionFactory, application::Console& console, const std::string& hostname, services::Tracer& tracer)
+ConsoleClientTcp::ConsoleClientTcp(services::ConnectionFactoryWithNameResolver& connectionFactory, application::Console& console, const std::string& hostname, services::Tracer& tracer)
     : console(console)
     , hostname(hostname)
     , tracer(tracer)
@@ -193,29 +196,93 @@ ConsoleClient::ConsoleClient(services::ConnectionFactoryWithNameResolver& connec
     connectionFactory.Connect(*this);
 }
 
-ConsoleClient::~ConsoleClient()
+ConsoleClientTcp::~ConsoleClientTcp()
 {
     consoleClientConnection->services::ConnectionObserver::Subject().AbortAndDestroy();
 }
 
-infra::BoundedConstString ConsoleClient::Hostname() const
+infra::BoundedConstString ConsoleClientTcp::Hostname() const
 {
     return infra::BoundedConstString(hostname.data(), hostname.size());
 }
 
-uint16_t ConsoleClient::Port() const
+uint16_t ConsoleClientTcp::Port() const
 {
     return 1234;
 }
 
-void ConsoleClient::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
+void ConsoleClientTcp::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
 {
     tracer.Trace() << "Connection established";
     tracer.Trace();
     createdObserver(consoleClientConnection.Emplace(console));
 }
 
-void ConsoleClient::ConnectionFailed(services::ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason reason)
+void ConsoleClientTcp::ConnectionFailed(services::ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason reason)
+{
+    tracer.Trace() << "Connection failed";
+    exit(1);
+}
+
+class ConsoleClientWebSocket
+    : private services::WebSocketClientObserverFactory
+{
+public:
+    ConsoleClientWebSocket(services::ConnectionFactoryWithNameResolver& connectionFactory, application::Console& console,
+        infra::BoundedString url, hal::SynchronousRandomDataGenerator& randomDataGenerator, services::Tracer& tracer);
+
+private:
+    virtual infra::BoundedString Url() const override;
+    virtual uint16_t Port() const override;
+    virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> client)>&& createdClientObserver) override;
+    virtual void ConnectionFailed(ConnectFailReason reason) override;
+
+private:
+    infra::BoundedString url;
+    services::HttpClientConnectorWithNameResolverImpl<> clientConnector;
+    infra::Creator<services::Stoppable, services::HttpClientWebSocketInitiation, void(services::WebSocketClientObserverFactory& clientObserverFactory, services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)> httpClientInitiationCreator;
+    services::WebSocketClientFactorySingleConnection webSocketFactory;
+    services::Tracer& tracer;
+
+    infra::SharedOptional<ConsoleClientConnection> consoleClientConnection;
+    application::Console& console;
+};
+
+ConsoleClientWebSocket::ConsoleClientWebSocket(services::ConnectionFactoryWithNameResolver& connectionFactory, application::Console& console,
+    infra::BoundedString url, hal::SynchronousRandomDataGenerator& randomDataGenerator, services::Tracer& tracer)
+    : url(url)
+    , clientConnector(connectionFactory)
+    , httpClientInitiationCreator(
+          [this](infra::Optional<services::HttpClientWebSocketInitiation>& value, services::WebSocketClientObserverFactory& clientObserverFactory,
+              services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+          {
+              value.Emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
+          })
+    , webSocketFactory(randomDataGenerator, { httpClientInitiationCreator })
+    , tracer(tracer)
+    , console(console)
+{
+    webSocketFactory.Connect(*this);
+}
+
+infra::BoundedString ConsoleClientWebSocket::Url() const
+{
+    return url;
+}
+
+uint16_t ConsoleClientWebSocket::Port() const
+{
+    return 80;
+}
+
+void ConsoleClientWebSocket::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> client)>&& createdClientObserver)
+{
+    tracer.Trace() << "Connection established";
+    tracer.Trace();
+    createdClientObserver(consoleClientConnection.Emplace(console));
+}
+
+void ConsoleClientWebSocket::ConnectionFailed(ConnectFailReason reason)
 {
     tracer.Trace() << "Connection failed";
     exit(1);
@@ -226,6 +293,7 @@ int main(int argc, char* argv[], const char* env[])
     infra::IoOutputStream ioOutputStream;
     services::Tracer tracer(ioOutputStream);
     services::SetGlobalTracerInstance(tracer);
+    hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
 
     std::string toolname = argv[0];
     args::ArgumentParser parser(toolname + " is a tool to communicate with an ECHO server.");
@@ -264,7 +332,8 @@ int main(int argc, char* argv[], const char* env[])
 
         application::Console console(root);
         services::ConnectionFactoryWithNameResolverImpl::WithStorage<4> connectionFactory(console.ConnectionFactory(), console.NameResolver());
-        infra::Optional<ConsoleClient> consoleClient;
+        infra::Optional<ConsoleClientTcp> consoleClientTcp;
+        infra::Optional<ConsoleClientWebSocket> consoleClientWebSocket;
 #ifdef EMIL_HAL_WINDOWS
         infra::Optional<hal::UartWindows> uart;
 #else
@@ -279,8 +348,10 @@ int main(int argc, char* argv[], const char* env[])
                 uart.Emplace(get(target));
                 consoleClientUart.Emplace(console, *uart);
             }
+            else if (services::SchemeFromUrl(get(target)) == "ws")
+                consoleClientWebSocket.Emplace(connectionFactory, console, get(target), randomDataGenerator, tracer);
             else
-                consoleClient.Emplace(connectionFactory, console, get(target), services::GlobalTracer());
+                consoleClientTcp.Emplace(connectionFactory, console, get(target), tracer);
         };
 
         infra::EventDispatcher::Instance().Schedule([&construct]()
