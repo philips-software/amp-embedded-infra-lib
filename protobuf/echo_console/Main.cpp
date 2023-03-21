@@ -135,7 +135,7 @@ void ConsoleClientConnection::DataReceived()
             services::ConnectionObserver::Subject().AckReceived();
         }
     }
-    catch (application::Console::IncompletePacket)
+    catch (application::Console::IncompletePacket&)
     {}
 }
 
