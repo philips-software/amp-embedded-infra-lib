@@ -250,19 +250,21 @@ namespace services
         saddress.sin_port = htons(factory.Port());
         if (connect(connectSocket, reinterpret_cast<sockaddr*>(&saddress), sizeof(saddress)) == -1)
         {
-            if (errno != EWOULDBLOCK)
+            if (errno != EWOULDBLOCK && errno != EINPROGRESS)
                 std::abort();
         }
     }
 
     ConnectorBsd::~ConnectorBsd()
     {
-        close(connectSocket);
+        if (connectSocket != -1)
+            close(connectSocket);
     }
 
     void ConnectorBsd::Connected()
     {
         infra::SharedPtr<ConnectionBsd> connection = infra::MakeSharedOnHeap<ConnectionBsd>(network, connectSocket);
+        connectSocket = -1;
         factory.ConnectionEstablished([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
             {
             if (connectionObserver)
