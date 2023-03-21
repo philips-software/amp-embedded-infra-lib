@@ -2,7 +2,7 @@
 
 namespace services
 {
-    void GapPeripheralDecorator::StateChanged(GapPeripheralState state)
+    void GapPeripheralDecorator::StateChanged(GapState state)
     {
         GapPeripheralObserver::SubjectType::NotifyObservers([&state](auto& obs) { obs.StateChanged(state); });
     }
@@ -35,5 +35,50 @@ namespace services
     void GapPeripheralDecorator::Standby()
     {
         GapPeripheralObserver::Subject().Standby();
+    }
+
+    void GapCentralDecorator::AuthenticationSuccessfullyCompleted()
+    {
+        GapCentralObserver::SubjectType::NotifyObservers([](auto& obs) { obs.AuthenticationSuccessfullyCompleted(); });
+    }
+
+    void GapCentralDecorator::AuthenticationFailed(GapAuthenticationErrorType status)
+    {
+        GapCentralObserver::SubjectType::NotifyObservers([&status](auto& obs) { obs.AuthenticationFailed(status); });
+    }
+
+    void GapCentralDecorator::DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered)
+    {
+        GapCentralObserver::SubjectType::NotifyObservers([&deviceDiscovered](auto& obs) { obs.DeviceDiscovered(deviceDiscovered); });
+    }
+
+    void GapCentralDecorator::StateChanged(GapState state)
+    {
+        GapCentralObserver::SubjectType::NotifyObservers([&state](auto& obs) { obs.StateChanged(state); });
+    }
+
+    void GapCentralDecorator::Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType)
+    {
+        GapCentralObserver::Subject().Connect(macAddress, addressType);
+    }
+
+    void GapCentralDecorator::Disconnect()
+    {
+        GapCentralObserver::Subject().Disconnect();
+    }
+
+    void GapCentralDecorator::SetAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType)
+    {
+        GapCentralObserver::Subject().SetAddress(macAddress, addressType);
+    }
+
+    void GapCentralDecorator::StartDeviceDiscovery()
+    {
+        GapCentralObserver::Subject().StartDeviceDiscovery();
+    }
+
+    void GapCentralDecorator::StopDeviceDiscovery()
+    {
+        GapCentralObserver::Subject().StopDeviceDiscovery();
     }
 }
