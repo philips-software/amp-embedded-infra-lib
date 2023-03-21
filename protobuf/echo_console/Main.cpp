@@ -348,7 +348,7 @@ int main(int argc, char* argv[], const char* env[])
                 uart.Emplace(get(target));
                 consoleClientUart.Emplace(console, *uart);
             }
-            else if (services::SchemeFromUrl(get(target)) == "http")
+            else if (services::SchemeFromUrl(get(target)) == "ws")
                 consoleClientWebSocket.Emplace(connectionFactory, console, get(target), randomDataGenerator, tracer);
             else
                 consoleClientTcp.Emplace(connectionFactory, console, get(target), tracer);
