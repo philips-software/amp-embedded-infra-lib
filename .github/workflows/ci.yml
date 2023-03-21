@@ -45,13 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        gcc:
-          [
-            "7-2018-q2",
-            "8-2019-q3",
-            "9-2020-q2",
-            "10.3-2021.10",
-          ]
+        gcc: ["7-2018-q2", "8-2019-q3", "9-2020-q2", "10.3-2021.10"]
         configuration: ["RelWithDebInfo"]
     steps:
       - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3.4.0
