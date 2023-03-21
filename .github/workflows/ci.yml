@@ -52,7 +52,7 @@ jobs:
             "9-2020-q2",
             "10.3-2021.10",
           ]
-        configuration: ["RelWithDebInfo", "Release"]
+        configuration: ["RelWithDebInfo"]
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
@@ -64,10 +64,34 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install ninja-build
       - uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
         with:
-          key: ${{ matrix.gcc }}-${{ matrix.configuration }}
+          key: ${{ github.job }}-${{ matrix.gcc }}-${{ matrix.configuration }}
       - run: |
           echo "::add-matcher::.github/matchers/gcc-problem-matcher.json"
           cmake --preset Host -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build --preset Host-${{ matrix.configuration }}
           cmake --preset Embedded -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build --preset Embedded-${{ matrix.configuration }}
+  rtos:
+    name: Embedded Build - RTOS
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rtos: ["FreeRTOS", "ThreadX"]
+    steps:
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+        with:
+          persist-credentials: false
+      - name: Install GNU Arm Embedded Toolchain "10.3-2021.10"
+        uses: carlosperate/arm-none-eabi-gcc-action@48db4484a55750df7a0ccca63347fcdea6534d78
+        with:
+          release: "10.3-2021.10"
+      - run: sudo apt-get update && sudo apt-get install ninja-build
+      - uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
+        with:
+          key: ${{ github.job }}-10.3-2021.10-RelWithDebInfo
+      - run: |
+          echo "::add-matcher::.github/matchers/gcc-problem-matcher.json"
+          cmake --preset Host -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake --build --preset Host-RelWithDebInfo
+          cmake --preset Embedded-${{ matrix.rtos }} -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake --build --preset Embedded-${{ matrix.rtos }}-RelWithDebInfo
