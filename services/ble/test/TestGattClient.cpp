@@ -56,7 +56,7 @@ public:
         , characteristicDefinition(service, uuid16, 0x2, 0x3, GattPropertyFlags::write)
         , characteristic(characteristicDefinition)
     {
-        characteristic.Attach(operations);
+        //characteristic.Attach(operations);
     }
 
     testing::StrictMock<services::GattClientCharacteristicOperationsMock> operations;

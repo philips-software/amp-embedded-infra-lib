@@ -4,8 +4,9 @@
 
 namespace services
 {
-    GattClientCharacteristicImpl::GattClientCharacteristicImpl(GattClientCharacteristic& characteristic)
-        : characteristic(characteristic)
+    GattClientCharacteristicImpl::GattClientCharacteristicImpl(const GattClientCharacteristic& characteristic, GattClientCharacteristicOperations& dataOperation)
+        : GattClientCharacteristicOperationsObserver(dataOperation)
+        , characteristic(characteristic)
     {}
 
     void GattClientCharacteristicImpl::Read(infra::Function<void(const infra::ConstByteRange&)> onResponse)
@@ -57,13 +58,29 @@ namespace services
         GattClientCharacteristicOperationsObserver::Subject().DisableIndication(*this, onDone);
     }
 
-    const AttAttribute::Handle& GattClientCharacteristicImpl::CharacteristicHandle() const
+    void GattClientCharacteristicImpl::Update(infra::Function<void(const infra::ConstByteRange&)> onUpdate)
     {
-        return characteristic.Handle();
+        this->onUpdate = onUpdate;
+    }
+
+    const AttAttribute::Handle& GattClientCharacteristicImpl::CharacteristicValueHandle() const
+    {
+        return characteristic.ValueHandle();
     }
 
     const GattCharacteristic::PropertyFlags& GattClientCharacteristicImpl::CharacteristicProperties() const
     {
         return characteristic.Properties();
+    }
+
+    void GattClientCharacteristicImpl::ConfigurationCompleted()
+    {}
+
+    void GattClientCharacteristicImpl::UpdateReceived(const AttAttribute::Handle& handle, infra::ConstByteRange data)
+    {
+        if (handle == characteristic.Handle())
+        {
+            this->onUpdate(data);
+        }
     }
 }

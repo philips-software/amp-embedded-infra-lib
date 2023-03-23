@@ -34,20 +34,20 @@ namespace services
         virtual void WriteWithoutResponse(infra::ConstByteRange data) = 0;
     };
 
-    class GattClientIndicationNotification;
+    class GattClientUpdate;
 
-    class GattClientNotificationObserver
-        : public infra::Observer<GattClientNotificationObserver, GattClientIndicationNotification>
+    class GattClientUpdateObserver
+        : public infra::Observer<GattClientUpdateObserver, GattClientUpdate>
     {
     public:
-        using infra::Observer<GattClientNotificationObserver, GattClientIndicationNotification>::Observer;
+        using infra::Observer<GattClientUpdateObserver, GattClientUpdate>::Observer;
 
         virtual void ConfigurationCompleted() = 0;
-        virtual void NotificationReceived(const AttAttribute::Handle& handle, infra::ConstByteRange data) = 0;
+        virtual void UpdateReceived(const AttAttribute::Handle& handle, infra::ConstByteRange data) = 0;
     };
 
-    class GattClientIndicationNotification
-        : public infra::Subject<GattClientNotificationObserver>
+    class GattClientUpdate
+        : public infra::Subject<GattClientUpdateObserver>
     {
     public:
         virtual void EnableNotification(infra::Function<void()> onDone) = 0;
@@ -55,6 +55,8 @@ namespace services
 
         virtual void EnableIndication(infra::Function<void()> onDone) = 0;
         virtual void DisableIndication(infra::Function<void()> onDone) = 0;
+
+        virtual void Update(infra::Function<void(const infra::ConstByteRange&)> onUpdate) = 0;
     };
 
     class GattClientCharacteristicOperations;
@@ -65,7 +67,7 @@ namespace services
     public:
         using infra::Observer<GattClientCharacteristicOperationsObserver, GattClientCharacteristicOperations>::Observer;
 
-        virtual const AttAttribute::Handle& CharacteristicHandle() const = 0;
+        virtual const AttAttribute::Handle& CharacteristicValueHandle() const = 0;
         virtual const GattCharacteristic::PropertyFlags& CharacteristicProperties() const = 0;
     };
 
@@ -91,15 +93,12 @@ namespace services
         , public GattDescriptor
     {
     public:
-        explicit GattClientDescriptor(GattClientCharacteristic& characteristic, const AttAttribute::Uuid& type, const AttAttribute::Handle& handle);
+        explicit GattClientDescriptor(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle);
         GattClientDescriptor(GattClientDescriptor& other) = delete;
         GattClientDescriptor& operator=(const GattClientDescriptor& other) = delete;
         GattClientDescriptor(GattClientDescriptor&& other) = default;
         GattClientDescriptor& operator=(GattClientDescriptor&& other) = default;
         virtual ~GattClientDescriptor() = default;
-
-    protected:
-        GattClientCharacteristic& characteristic;
     };
 
     class GattClientService;
@@ -109,7 +108,7 @@ namespace services
         , public GattCharacteristic
     {
     public:
-        explicit GattClientCharacteristic(GattClientService& service, const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& valueHandle, const GattCharacteristic::PropertyFlags& properties);
+        explicit GattClientCharacteristic(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& valueHandle, const GattCharacteristic::PropertyFlags& properties);
         GattClientCharacteristic(GattClientCharacteristic& other) = delete;
         GattClientCharacteristic& operator=(const GattClientCharacteristic& other) = delete;
         GattClientCharacteristic(GattClientCharacteristic &&) = default;
@@ -120,7 +119,6 @@ namespace services
         const infra::IntrusiveForwardList<GattClientDescriptor>& Descriptors() const;
 
     protected:
-        GattClientService& service;
         infra::IntrusiveForwardList<GattClientDescriptor> descriptors;
     };
 
@@ -166,7 +164,7 @@ namespace services
     public:
         virtual void StartServiceDiscovery() = 0;
         virtual void StartCharacteristicDiscovery(const GattService& service) = 0;
-        virtual void StartDescriptorDiscovery(const GattCharacteristic& characteristic) = 0;
+        virtual void StartDescriptorDiscovery(const GattService& service) = 0;
     };
 
     class GattClientDiscoveryDecorator
@@ -188,7 +186,7 @@ namespace services
         // Implementation of GattClientDiscovery
         virtual void StartServiceDiscovery() override;
         virtual void StartCharacteristicDiscovery(const GattService& service) override;
-        virtual void StartDescriptorDiscovery(const GattCharacteristic& characteristic) override;
+        virtual void StartDescriptorDiscovery(const GattService& service) override;
     };
 }
 
