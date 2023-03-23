@@ -2,19 +2,13 @@
 
 namespace services
 {
-    GattClientDescriptor::GattClientDescriptor(GattClientCharacteristic& characteristic, const AttAttribute::Uuid& type, const AttAttribute::Handle& handle)
+    GattClientDescriptor::GattClientDescriptor(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle)
         : GattDescriptor(type, handle)
-        , characteristic(characteristic)
-    {
-        characteristic.AddDescriptor(*this);
-    }
+    {}
 
-    GattClientCharacteristic::GattClientCharacteristic(GattClientService& service, const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& valueHandle, const GattCharacteristic::PropertyFlags& properties)
+    GattClientCharacteristic::GattClientCharacteristic(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& valueHandle, const GattCharacteristic::PropertyFlags& properties)
         : GattCharacteristic(type, handle, valueHandle, properties)
-        , service(service)
-    {
-        service.AddCharacteristic(*this);
-    }
+    {}
 
     void GattClientCharacteristic::AddDescriptor(GattClientDescriptor& descriptor)
     {
@@ -80,8 +74,8 @@ namespace services
         GattClientDiscoveryObserver::Subject().StartCharacteristicDiscovery(service);
     }
 
-    void GattClientDiscoveryDecorator::StartDescriptorDiscovery(const GattCharacteristic& characteristic)
+    void GattClientDiscoveryDecorator::StartDescriptorDiscovery(const GattService& service)
     {
-        GattClientDiscoveryObserver::Subject().StartDescriptorDiscovery(characteristic);
+        GattClientDiscoveryObserver::Subject().StartDescriptorDiscovery(service);
     }
 }

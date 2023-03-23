@@ -83,14 +83,15 @@ namespace services
         GattCharacteristic& operator=(GattCharacteristic&& other) = default;
         virtual ~GattCharacteristic() = default;
 
-        PropertyFlags Properties() const;
-        PropertyFlags& Properties();
+        //PropertyFlags Properties() const;
+        const PropertyFlags& Properties() const;
 
-        AttAttribute::Uuid Type() const;
-        AttAttribute::Handle Handle() const;
-        AttAttribute::Handle& Handle();
-        AttAttribute::Handle ValueHandle() const;
-        AttAttribute::Handle& ValueHandle();
+        const AttAttribute::Uuid& Type() const;
+
+        const AttAttribute::Handle& Handle() const;
+        //AttAttribute::Handle& Handle();
+        const AttAttribute::Handle& ValueHandle() const;
+        //AttAttribute::Handle& ValueHandle();
 
     protected:
         AttAttribute attribute;

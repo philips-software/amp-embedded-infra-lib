@@ -7,28 +7,36 @@ namespace services
 {
     class GattClientCharacteristicImpl
         : public GattClientCharacteristicOperationsObserver
+        , public GattClientUpdateObserver
         , public GattClientDataOperation
-        , public GattClientIndicationNotification
+        , public GattClientUpdate
     {
     public:
-        GattClientCharacteristicImpl(GattClientCharacteristic& characteristic);
+        GattClientCharacteristicImpl(const GattClientCharacteristic& characteristic, GattClientCharacteristicOperations& dataOperation);
 
         // Implementation of GattClientCharacteristic
-        virtual void Read(infra::Function<void(const infra::ConstByteRange&)> onResponse);
-        virtual void Write(infra::ConstByteRange data, infra::Function<void()> onDone);
-        virtual void WriteWithoutResponse(infra::ConstByteRange data);
+        virtual void Read(infra::Function<void(const infra::ConstByteRange&)> onResponse) override;
+        virtual void Write(infra::ConstByteRange data, infra::Function<void()> onDone) override;
+        virtual void WriteWithoutResponse(infra::ConstByteRange data) override;
 
-        virtual void EnableNotification(infra::Function<void()> onDone);
-        virtual void DisableNotification(infra::Function<void()> onDone);
-        virtual void EnableIndication(infra::Function<void()> onDone);
-        virtual void DisableIndication(infra::Function<void()> onDone);
+        virtual void EnableNotification(infra::Function<void()> onDone) override;
+        virtual void DisableNotification(infra::Function<void()> onDone) override;
+        virtual void EnableIndication(infra::Function<void()> onDone) override;
+        virtual void DisableIndication(infra::Function<void()> onDone) override;
+
+        virtual void Update(infra::Function<void(const infra::ConstByteRange&)> onUpdate) override;
 
         // Implementation of GattClientCharacteristicOperationsObserver
         virtual const AttAttribute::Handle& CharacteristicHandle() const override;
         virtual const GattCharacteristic::PropertyFlags& CharacteristicProperties() const override;
 
     private:
-        GattClientCharacteristic& characteristic;
+        virtual void ConfigurationCompleted() override;
+        virtual void UpdateReceived(const AttAttribute::Handle& handle, infra::ConstByteRange data) override;
+
+    private:
+        const GattClientCharacteristic& characteristic;
+        infra::Function<void(const infra::ConstByteRange&)> onUpdate;
     };
 }
 

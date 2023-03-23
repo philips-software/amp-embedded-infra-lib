@@ -22,40 +22,40 @@ namespace services
         , properties(properties)
     {}
 
-    GattCharacteristic::PropertyFlags GattCharacteristic::Properties() const
+    /*GattCharacteristic::PropertyFlags GattCharacteristic::Properties() const
+    {
+        return properties;
+    }*/
+
+    const GattCharacteristic::PropertyFlags& GattCharacteristic::Properties() const
     {
         return properties;
     }
 
-    GattCharacteristic::PropertyFlags& GattCharacteristic::Properties()
-    {
-        return properties;
-    }
-
-    AttAttribute::Uuid GattCharacteristic::Type() const
+    const AttAttribute::Uuid& GattCharacteristic::Type() const
     {
         return attribute.type;
     }
 
-    AttAttribute::Handle GattCharacteristic::Handle() const
+    const AttAttribute::Handle& GattCharacteristic::Handle() const
     {
         return attribute.handle;
     }
 
-    AttAttribute::Handle& GattCharacteristic::Handle()
+    /*AttAttribute::Handle& GattCharacteristic::Handle()
     {
         return attribute.handle;
-    }
+    }*/
 
-    AttAttribute::Handle GattCharacteristic::ValueHandle() const
+    const AttAttribute::Handle& GattCharacteristic::ValueHandle() const
     {
         return attribute.endHandle;
     }
 
-    AttAttribute::Handle& GattCharacteristic::ValueHandle()
+    /*AttAttribute::Handle& GattCharacteristic::ValueHandle()
     {
         return attribute.endHandle;
-    }
+    }*/
 
     GattService::GattService(const AttAttribute::Uuid& type)
         : GattService(type, 0, 0)
