@@ -10,6 +10,12 @@
 #include "infra/util/Function.hpp"
 #include <type_traits>
 
+
+namespace
+{
+    extern const char* b64EncodeTable;
+}
+
 namespace infra
 {
     class TextOutputStream;
@@ -277,6 +283,21 @@ namespace infra
 
     private:
         infra::ConstByteRange data;
+    };
+
+    class Base64Encoder
+    {
+    public:
+        Base64Encoder(infra::TextOutputStream& stream);
+        ~Base64Encoder();
+
+        void Encode(infra::ConstByteRange data);
+    
+    private: 
+        infra::TextOutputStream& stream;
+        uint8_t bitIndex = 2;
+        uint8_t encodedByte = 0;
+        uint32_t size = 0;
     };
 
     class AsBase64Helper
