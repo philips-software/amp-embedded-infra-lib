@@ -291,9 +291,22 @@ namespace infra
         infra::ConstByteRange data;
     };
 
+    class AsCombinedBase64Helper
+    {
+    public:
+        explicit AsCombinedBase64Helper(std::initializer_list<infra::ConstByteRange> ranges);
+
+        friend infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const AsCombinedBase64Helper& asBase64Helper);
+        friend infra::TextOutputStream& operator<<(infra::TextOutputStream&& stream, const AsCombinedBase64Helper& asBase64Helper);
+
+    private:
+        std::initializer_list<infra::ConstByteRange> ranges;
+    };
+
     AsAsciiHelper AsAscii(infra::ConstByteRange data);
     AsHexHelper AsHex(infra::ConstByteRange data);
     AsBase64Helper AsBase64(infra::ConstByteRange data);
+    AsCombinedBase64Helper AsBase64(std::initializer_list<infra::ConstByteRange> ranges);
 
     template<class T>
     class ReservedProxy

@@ -460,6 +460,62 @@ namespace infra
         return stream << asBase64Helper;
     }
 
+    infra::AsCombinedBase64Helper::AsCombinedBase64Helper(std::initializer_list<infra::ConstByteRange> ranges)
+        : ranges(ranges)
+    {}
+
+    TextOutputStream& operator<<(TextOutputStream& stream, const AsCombinedBase64Helper& asBase64Helper)
+    {
+        static const char* encodeTable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+        uint8_t bitIndex = 2;
+        uint8_t encodedByte = 0;
+        uint32_t size = 0;
+
+        for (auto range : asBase64Helper.ranges)
+            for (uint8_t byte : range)
+            {
+                encodedByte |= byte >> bitIndex;
+                stream << encodeTable[encodedByte];
+                ++size;
+
+                encodedByte = static_cast<uint8_t>(byte << (8 - bitIndex)) >> 2;
+
+                bitIndex += 2;
+
+                if (bitIndex == 8)
+                {
+                    stream << encodeTable[encodedByte];
+                    ++size;
+                    encodedByte = 0;
+                    bitIndex = 2;
+                }
+            }
+
+        if ((size & 3) != 0)
+        {
+            stream << encodeTable[encodedByte];
+            ++size;
+        }
+        if ((size & 3) != 0)
+        {
+            stream << '=';
+            ++size;
+        }
+        if ((size & 3) != 0)
+        {
+            stream << '=';
+            ++size;
+        }
+
+        return stream;
+    }
+
+    TextOutputStream& operator<<(TextOutputStream&& stream, const AsCombinedBase64Helper& asBase64Helper)
+    {
+        return stream << asBase64Helper;
+    }
+
     AsAsciiHelper AsAscii(ConstByteRange data)
     {
         return AsAsciiHelper(data);
@@ -473,5 +529,10 @@ namespace infra
     AsBase64Helper AsBase64(ConstByteRange data)
     {
         return AsBase64Helper(data);
+    }
+
+    AsCombinedBase64Helper AsBase64(std::initializer_list<infra::ConstByteRange> ranges)
+    {
+        return AsCombinedBase64Helper(ranges);
     }
 }
