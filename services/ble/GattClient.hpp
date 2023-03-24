@@ -26,7 +26,7 @@ namespace services
 
     class GattClientAsyncUpdate
         : public infra::Subject<GattClientUpdateObserver>
-    { };
+    {};
 
     class GattClientCharacteristicOperations;
 
@@ -78,7 +78,8 @@ namespace services
         , public GattClientUpdateObserver
     {
     public:
-        explicit GattClientCharacteristic(GattClientInterface interface, const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& valueHandle, const GattCharacteristic::PropertyFlags& properties);
+        GattClientCharacteristic(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& valueHandle, const GattCharacteristic::PropertyFlags& properties);
+        GattClientCharacteristic(GattClientInterface interface, const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& valueHandle, const GattCharacteristic::PropertyFlags& properties);
         GattClientCharacteristic(GattClientCharacteristic& other) = delete;
         GattClientCharacteristic& operator=(const GattClientCharacteristic& other) = delete;
         virtual ~GattClientCharacteristic() = default;

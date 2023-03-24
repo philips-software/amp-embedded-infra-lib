@@ -7,15 +7,6 @@
 
 namespace services
 {
-#if 0
-    class GattServerCharacteristicUpdateMock
-        : public GattServerCharacteristicUpdate
-    {
-    public:
-        MOCK_METHOD2(Update, void(infra::ConstByteRange data, infra::Function<void()> onDone));
-    };
-#endif
-
     class GattClientCharacteristicOperationsMock
         : public services::GattClientCharacteristicOperations
     {
@@ -28,28 +19,6 @@ namespace services
         MOCK_METHOD(void, DisableNotification, (const GattClientCharacteristicOperationsObserver&, infra::Function<void()>), (const, override));
         MOCK_METHOD(void, EnableIndication, (const GattClientCharacteristicOperationsObserver&, infra::Function<void()>), (const, override));
         MOCK_METHOD(void, DisableIndication, (const GattClientCharacteristicOperationsObserver&, infra::Function<void()>), (const, override));
-    };
-
-    class GattClientCharacteristicMock
-        : public GattClientCharacteristicOperationsObserver
-        , public GattClientDataOperation
-        , public GattClientAsyncUpdate
-    {
-    public:
-        // Implementation of GattClientDataOperation
-        MOCK_METHOD(void, Read, (infra::Function<void(const infra::ConstByteRange&)> onResponse), (override));
-        MOCK_METHOD(void, Write, (infra::ConstByteRange data, infra::Function<void()> onDone), (override));
-        MOCK_METHOD(void, WriteWithoutResponse, (infra::ConstByteRange), (override));
-
-        // Implementation of GattClientAsyncUpdate
-        MOCK_METHOD(void, EnableNotification, (infra::Function<void()>), (override));
-        MOCK_METHOD(void, DisableNotification, (infra::Function<void()>), (override));
-        MOCK_METHOD(void, EnableIndication, (infra::Function<void()>), (override));
-        MOCK_METHOD(void, DisableIndication, (infra::Function<void()>), (override));
-
-        // Implementation of GattClientCharacteristicOperationsObserver
-        MOCK_METHOD(AttAttribute::Handle&, CharacteristicValueHandle, ());
-        MOCK_METHOD(GattCharacteristic::PropertyFlags&, CharacteristicProperties, ());
     };
 
     class GattClientDiscoveryObserverMock

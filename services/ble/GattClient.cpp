@@ -7,11 +7,15 @@ namespace services
     {}
 
     GattClientCharacteristic::GattClientCharacteristic(GattClientInterface interface, const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& valueHandle, const GattCharacteristic::PropertyFlags& properties)
-        : GattCharacteristic(type, handle, valueHandle, properties)
+        : GattClientCharacteristic(type, handle, valueHandle, properties)
     {
         GattClientCharacteristicOperationsObserver::Attach(interface.operations);
         GattClientUpdateObserver::Attach(interface.asyncUpdate);
     }
+
+    GattClientCharacteristic::GattClientCharacteristic(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& valueHandle, const GattCharacteristic::PropertyFlags& properties)
+        : GattCharacteristic(type, handle, valueHandle, properties)
+    { }
 
     void GattClientCharacteristic::AddDescriptor(GattClientDescriptor& descriptor)
     {

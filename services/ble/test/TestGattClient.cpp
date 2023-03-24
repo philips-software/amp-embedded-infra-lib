@@ -60,14 +60,13 @@ class GattClientCharacteristicTest
 public:
     GattClientCharacteristicTest()
         : service(uuid16, 0x1, 0x9)
-        , characteristicDefinition(uuid16, 0x2, 0x3, GattPropertyFlags::write)
-        , characteristic(characteristicDefinition, operations)
+        , characteristic({asyncUpdate, operations}, uuid16, 0x2, 0x3, GattPropertyFlags::write)
     {}
 
+    services::GattClientAsyncUpdate asyncUpdate;
     testing::StrictMock<services::GattClientCharacteristicOperationsMock> operations;
     services::GattClientService service;
-    services::GattClientCharacteristic characteristicDefinition;
-    services::GattClientCharacteristicImpl characteristic;
+    services::GattClientCharacteristic characteristic;
 };
 
 MATCHER_P(ContentsEqual, x, negation ? "Contents not equal" : "Contents are equal")
@@ -185,8 +184,7 @@ TEST_F(GattClientDiscoveryDecoratorTest, forward_descriptors_discovered_event_to
 
 TEST_F(GattClientDiscoveryDecoratorTest, forward_all_calls_to_subject)
 {
-    services::GattClientService service{ uuid16, 0x1, 0x9 };
-    services::GattClientCharacteristic characteristic{ uuid128, 0x2, 0x5, GattPropertyFlags::none };
+    services::GattService service{ uuid16, 0x1, 0x9 };
 
     EXPECT_CALL(gattDiscovery, StartServiceDiscovery());
     decorator.StartServiceDiscovery();
@@ -194,7 +192,6 @@ TEST_F(GattClientDiscoveryDecoratorTest, forward_all_calls_to_subject)
     EXPECT_CALL(gattDiscovery, StartCharacteristicDiscovery(::testing::Ref(service)));
     decorator.StartCharacteristicDiscovery(service);
 
-    // TODO FIX IT.
-    // EXPECT_CALL(gattDiscovery, StartDescriptorDiscovery(::testing::Ref(characteristic)));
-    // decorator.StartDescriptorDiscovery(characteristic);
+    EXPECT_CALL(gattDiscovery, StartDescriptorDiscovery(::testing::Ref(service)));
+    decorator.StartDescriptorDiscovery(service);
 }
