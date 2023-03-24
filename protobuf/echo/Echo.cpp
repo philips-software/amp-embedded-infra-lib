@@ -6,9 +6,8 @@ namespace services
     EchoErrorPolicyAbortOnMessageFormatError echoErrorPolicyAbortOnMessageFormatError;
     EchoErrorPolicyAbort echoErrorPolicyAbort;
 
-    Service::Service(Echo& echo, uint32_t id)
+    Service::Service(Echo& echo)
         : echo(echo)
-        , serviceId(id)
     {
         echo.AttachService(*this);
     }
@@ -24,20 +23,15 @@ namespace services
         Rpc().ServiceDone(*this);
     }
 
-    uint32_t Service::ServiceId() const
-    {
-        return serviceId;
-    }
-
     bool Service::InProgress() const
     {
         return inProgress;
     }
 
-    void Service::HandleMethod(uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy)
+    void Service::HandleMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy)
     {
         inProgress = true;
-        Handle(methodId, contents, errorPolicy);
+        Handle(serviceId, methodId, contents, errorPolicy);
     }
 
     Echo& Service::Rpc()
@@ -72,15 +66,19 @@ namespace services
     }
 
     ServiceForwarder::ServiceForwarder(infra::ByteRange messageBuffer, Echo& echo, uint32_t id, Echo& forwardTo)
-        : Service(echo, id)
+        : Service(echo)
         , ServiceProxy(forwardTo, messageBuffer.size())
         , messageBuffer(messageBuffer)
+        , serviceId(id)
     {}
 
-    void ServiceForwarder::Handle(uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy)
+    bool ServiceForwarder::AcceptsService(uint32_t id) const
     {
-        this->methodId = methodId;
+        return serviceId == id;
+    }
 
+    void ServiceForwarder::Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy)
+    {
         bytes.Emplace(messageBuffer);
         uint32_t processedSize = 0;
 
@@ -98,12 +96,55 @@ namespace services
 
         bytes->shrink_from_back_to(processedSize);
 
-        RequestSend([this]()
+        RequestSend([this, methodId]()
             {
             infra::DataOutputStream::WithErrorPolicy stream(services::ServiceProxy::Rpc().SendStreamWriter());
             infra::ProtoFormatter formatter(stream);
-            formatter.PutVarInt(ServiceId());
-            formatter.PutBytesField(*bytes, this->methodId);
+            formatter.PutVarInt(this->serviceId);
+            formatter.PutBytesField(*bytes, methodId);
+            bytes = infra::none;
+
+            services::ServiceProxy::Rpc().Send();
+            MethodDone(); });
+    }
+
+    ServiceForwarderAll::ServiceForwarderAll(infra::ByteRange messageBuffer, Echo& echo, Echo& forwardTo)
+        : Service(echo)
+        , ServiceProxy(forwardTo, messageBuffer.size())
+        , messageBuffer(messageBuffer)
+    {}
+
+    bool ServiceForwarderAll::AcceptsService(uint32_t id) const
+    {
+        return true;
+    }
+
+    void ServiceForwarderAll::Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy)
+    {
+        this->serviceId = serviceId;
+        bytes.Emplace(messageBuffer);
+        uint32_t processedSize = 0;
+
+        while (true)
+        {
+            infra::ConstByteRange contiguousBytes;
+            contents.GetBytesReference(contiguousBytes);
+
+            if (contiguousBytes.size() == 0)
+                break;
+
+            std::copy(contiguousBytes.begin(), contiguousBytes.end(), bytes->begin() + processedSize);
+            processedSize += contiguousBytes.size();
+        }
+
+        bytes->shrink_from_back_to(processedSize);
+
+        RequestSend([this, methodId]()
+            {
+            infra::DataOutputStream::WithErrorPolicy stream(services::ServiceProxy::Rpc().SendStreamWriter());
+            infra::ProtoFormatter formatter(stream);
+            formatter.PutVarInt(this->serviceId);
+            formatter.PutBytesField(*bytes, methodId);
             bytes = infra::none;
 
             services::ServiceProxy::Rpc().Send();
@@ -161,7 +202,7 @@ namespace services
 
     void EchoOnStreams::ServiceDone(Service& service)
     {
-        if (serviceBusy && *serviceBusy == service.ServiceId())
+        if (serviceBusy && service.AcceptsService(*serviceBusy))
         {
             serviceBusy = infra::none;
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](infra::SharedPtr<EchoOnStreams> echo)
@@ -172,10 +213,6 @@ namespace services
 
     void EchoOnStreams::AttachService(Service& service)
     {
-        for (const auto& s : services)
-            if (s.ServiceId() == service.ServiceId())
-                std::abort();
-
         services.push_back(service);
     }
 
@@ -187,12 +224,12 @@ namespace services
     void EchoOnStreams::ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, infra::StreamReaderWithRewinding& reader)
     {
         for (auto& service : services)
-            if (service.ServiceId() == serviceId)
+            if (service.AcceptsService(serviceId))
             {
                 if (service.InProgress())
                     serviceBusy = serviceId;
                 else
-                    service.HandleMethod(methodId, contents, errorPolicy);
+                    service.HandleMethod(serviceId, methodId, contents, errorPolicy);
 
                 return;
             }

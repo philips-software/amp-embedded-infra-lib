@@ -175,23 +175,23 @@ namespace services
         : public infra::IntrusiveList<Service>::NodeType
     {
     public:
-        Service(Echo& echo, uint32_t id);
+        explicit Service(Echo& echo);
         Service(const Service& other) = delete;
         Service& operator=(const Service& other) = delete;
         ~Service();
 
+        virtual bool AcceptsService(uint32_t id) const = 0;
+
         void MethodDone();
-        uint32_t ServiceId() const;
         bool InProgress() const;
-        void HandleMethod(uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy);
+        void HandleMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy);
 
     protected:
         Echo& Rpc();
-        virtual void Handle(uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy) = 0;
+        virtual void Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy) = 0;
 
     private:
         Echo& echo;
-        uint32_t serviceId;
         bool inProgress = false;
     };
 
@@ -222,12 +222,34 @@ namespace services
         template<std::size_t MaxMessageSize>
         using WithMaxMessageSize = infra::WithStorage<ServiceForwarder, std::array<uint8_t, MaxMessageSize>>;
 
-        virtual void Handle(uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy) override;
+        virtual bool AcceptsService(uint32_t id) const override;
+
+        virtual void Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy) override;
 
     private:
         const infra::ByteRange messageBuffer;
         infra::Optional<infra::ByteRange> bytes;
-        uint32_t methodId;
+        uint32_t serviceId;
+    };
+
+    class ServiceForwarderAll
+        : public services::Service
+        , private services::ServiceProxy
+    {
+    public:
+        ServiceForwarderAll(infra::ByteRange messageBuffer, Echo& echo, Echo& forwardTo);
+
+        template<std::size_t MaxMessageSize>
+        using WithMaxMessageSize = infra::WithStorage<ServiceForwarderAll, std::array<uint8_t, MaxMessageSize>>;
+
+        virtual bool AcceptsService(uint32_t id) const override;
+
+        virtual void Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy) override;
+
+    private:
+        const infra::ByteRange messageBuffer;
+        infra::Optional<infra::ByteRange> bytes;
+        uint32_t serviceId;
     };
 
     class EchoOnStreams
