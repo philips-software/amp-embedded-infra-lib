@@ -15,8 +15,8 @@ namespace hal
                     data += "\n";
                     if (dataReceived)
                         dataReceived(infra::StdStringAsByteRange(data));
-                }
-            }).detach();
+                } })
+            .detach();
     }
 
     void SerialCommunicationConsole::SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion)

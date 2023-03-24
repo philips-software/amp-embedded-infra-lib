@@ -160,7 +160,7 @@ namespace services
 
         for (auto& connector : connectors)
         {
-            AddFileDescriptorToSet(connector.connectSocket, readFileDescriptors);
+            AddFileDescriptorToSet(connector.connectSocket, writeFileDescriptors);
             AddFileDescriptorToSet(connector.connectSocket, exceptFileDescriptors);
         }
 
@@ -217,7 +217,7 @@ namespace services
 
         for (auto& connector : connectors)
         {
-            if (FD_ISSET(connector.connectSocket, &readFileDescriptors))
+            if (FD_ISSET(connector.connectSocket, &writeFileDescriptors))
                 connector.Connected();
             else if (FD_ISSET(connector.connectSocket, &exceptFileDescriptors))
                 connector.Failed();
