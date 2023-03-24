@@ -45,8 +45,8 @@ namespace application
                     std::scoped_lock lock(mutex);
                     dataToBeSent += data;
                     infra::EventDispatcher::Instance().Schedule([this]() { CheckDataToBeSent(); });
-                }
-            }).detach();
+                } })
+            .detach();
     }
 
     void ConsoleClientConnection::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -157,12 +157,11 @@ int main(int argc, const char* argv[], const char* env[])
 
         static services::ConnectionFactoryWithNameResolverImpl::WithStorage<1> connectionFactory(network.ConnectionFactory(), network.NameResolver());
         static services::HttpClientConnectorWithNameResolverImpl<> clientConnector{ connectionFactory };
-        static infra::Creator<services::Stoppable, services::HttpClientWebSocketInitiation, void(services::WebSocketClientObserverFactory& clientObserverFactory, services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)> httpClientInitiationCreator
-        { [](infra::Optional<services::HttpClientWebSocketInitiation>& value, services::WebSocketClientObserverFactory& clientObserverFactory,
-                  services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-              {
-                  value.Emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
-              } };
+        static infra::Creator<services::Stoppable, services::HttpClientWebSocketInitiation, void(services::WebSocketClientObserverFactory & clientObserverFactory, services::HttpClientWebSocketInitiationResult & result, hal::SynchronousRandomDataGenerator & randomDataGenerator)> httpClientInitiationCreator{ [](infra::Optional<services::HttpClientWebSocketInitiation>& value, services::WebSocketClientObserverFactory& clientObserverFactory,
+                                                                                                                                                                                                                                                                                                                        services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+            {
+                value.Emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
+            } };
         static services::WebSocketClientFactorySingleConnection webSocketFactory{ randomDataGenerator, { httpClientInitiationCreator } };
 
         application::ConsoleFactory consoleFactory(get(url), tracer.tracer);
