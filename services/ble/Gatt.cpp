@@ -18,7 +18,7 @@ namespace services
     }
 
     GattCharacteristic::GattCharacteristic(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties)
-        : attribute{type, handle, valueHandle}
+        : attribute{ type, handle, valueHandle }
         , properties(properties)
     {}
 
@@ -42,20 +42,20 @@ namespace services
         return attribute.handle;
     }
 
-    /*AttAttribute::Handle& GattCharacteristic::Handle()
+    AttAttribute::Handle& GattCharacteristic::Handle()
     {
         return attribute.handle;
-    }*/
+    }
 
     const AttAttribute::Handle& GattCharacteristic::ValueHandle() const
     {
         return attribute.endHandle;
     }
 
-    /*AttAttribute::Handle& GattCharacteristic::ValueHandle()
+    AttAttribute::Handle& GattCharacteristic::ValueHandle()
     {
         return attribute.endHandle;
-    }*/
+    }
 
     GattService::GattService(const AttAttribute::Uuid& type)
         : GattService(type, 0, 0)

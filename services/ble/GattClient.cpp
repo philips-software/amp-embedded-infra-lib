@@ -6,13 +6,93 @@ namespace services
         : GattDescriptor(type, handle)
     {}
 
-    GattClientCharacteristic::GattClientCharacteristic(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& valueHandle, const GattCharacteristic::PropertyFlags& properties)
+    GattClientCharacteristic::GattClientCharacteristic(GattClientInterface interface, const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& valueHandle, const GattCharacteristic::PropertyFlags& properties)
         : GattCharacteristic(type, handle, valueHandle, properties)
-    {}
+    {
+        GattClientCharacteristicOperationsObserver::Attach(interface.operations);
+        GattClientUpdateObserver::Attach(interface.asyncUpdate);
+    }
 
     void GattClientCharacteristic::AddDescriptor(GattClientDescriptor& descriptor)
     {
         descriptors.push_front(descriptor);
+    }
+
+    void GattClientCharacteristic::Read(infra::Function<void(const infra::ConstByteRange&)> onResponse)
+    {
+        really_assert(GattClientCharacteristicOperationsObserver::Attached());
+
+        GattClientCharacteristicOperationsObserver::Subject().Read(*this, onResponse);
+    }
+
+    void GattClientCharacteristic::Write(infra::ConstByteRange data, infra::Function<void()> onDone)
+    {
+        really_assert(GattClientCharacteristicOperationsObserver::Attached());
+
+        GattClientCharacteristicOperationsObserver::Subject().Write(*this, data, onDone);
+    }
+
+    void GattClientCharacteristic::WriteWithoutResponse(infra::ConstByteRange data)
+    {
+        really_assert(GattClientCharacteristicOperationsObserver::Attached());
+
+        GattClientCharacteristicOperationsObserver::Subject().WriteWithoutResponse(*this, data);
+    }
+
+    void GattClientCharacteristic::EnableNotification(infra::Function<void()> onDone)
+    {
+        really_assert(GattClientCharacteristicOperationsObserver::Attached());
+
+        GattClientCharacteristicOperationsObserver::Subject().EnableNotification(*this, onDone);
+    }
+
+    void GattClientCharacteristic::DisableNotification(infra::Function<void()> onDone)
+    {
+        really_assert(GattClientCharacteristicOperationsObserver::Attached());
+
+        GattClientCharacteristicOperationsObserver::Subject().DisableNotification(*this, onDone);
+    }
+
+    void GattClientCharacteristic::EnableIndication(infra::Function<void()> onDone)
+    {
+        really_assert(GattClientCharacteristicOperationsObserver::Attached());
+
+        GattClientCharacteristicOperationsObserver::Subject().EnableIndication(*this, onDone);
+    }
+
+    void GattClientCharacteristic::DisableIndication(infra::Function<void()> onDone)
+    {
+        really_assert(GattClientCharacteristicOperationsObserver::Attached());
+
+        GattClientCharacteristicOperationsObserver::Subject().DisableIndication(*this, onDone);
+    }
+
+    void GattClientCharacteristic::UpdateCallback(infra::Function<void(const infra::ConstByteRange&)> onUpdate)
+    {
+        this->onUpdate = onUpdate;
+    }
+
+    void GattClientCharacteristic::UpdateReceived(const AttAttribute::Handle& handle, infra::ConstByteRange data)
+    {
+        for (auto& descriptor : descriptors)
+        {
+            if (descriptor.Handle() == handle)
+            {
+                if (onUpdate)
+                    onUpdate(data);
+            }
+
+        }
+    }
+
+    const AttAttribute::Handle& GattClientCharacteristic::CharacteristicValueHandle() const
+    {
+        return attribute.endHandle;
+    }
+
+    const GattCharacteristic::PropertyFlags& GattClientCharacteristic::CharacteristicProperties() const
+    {
+        return properties;
     }
 
     const infra::IntrusiveForwardList<GattClientDescriptor>& GattClientCharacteristic::Descriptors() const

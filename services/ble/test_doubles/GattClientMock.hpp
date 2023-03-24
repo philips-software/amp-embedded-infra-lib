@@ -33,7 +33,7 @@ namespace services
     class GattClientCharacteristicMock
         : public GattClientCharacteristicOperationsObserver
         , public GattClientDataOperation
-        , public GattClientUpdate
+        , public GattClientAsyncUpdate
     {
     public:
         // Implementation of GattClientDataOperation
@@ -41,7 +41,7 @@ namespace services
         MOCK_METHOD(void, Write, (infra::ConstByteRange data, infra::Function<void()> onDone), (override));
         MOCK_METHOD(void, WriteWithoutResponse, (infra::ConstByteRange), (override));
 
-        // Implementation of GattClientUpdate
+        // Implementation of GattClientAsyncUpdate
         MOCK_METHOD(void, EnableNotification, (infra::Function<void()>), (override));
         MOCK_METHOD(void, DisableNotification, (infra::Function<void()>), (override));
         MOCK_METHOD(void, EnableIndication, (infra::Function<void()>), (override));
