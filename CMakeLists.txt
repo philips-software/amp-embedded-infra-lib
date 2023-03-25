@@ -1,7 +1,12 @@
 cmake_minimum_required(VERSION 3.24)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-project(emil LANGUAGES C CXX VERSION 3.0.0) # x-release-please-version
+if (APPLE)
+    set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "OS X target architectures")
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
+endif()
+
+project(emil LANGUAGES C CXX VERSION 3.1.0) # x-release-please-version
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
@@ -19,7 +24,7 @@ include(emil_xsltproc)
 include(FetchContent)
 include(GNUInstallDirs) # included to supply proper defaults to install(...) commands
 
-if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     set(EMIL_STANDALONE On)
 endif()
 
@@ -75,7 +80,10 @@ option(EMIL_ENABLE_FUZZING "Enable building the fuzzing targets" Off)
 option(EMIL_ENABLE_DOCKER_TOOLS "Enable shift-left tools (e.g. linters, formatters) that are run using Docker" On)
 option(EMIL_GENERATE_PACKAGE_CONFIG "Enable generation of package configuration and install files" On)
 
+# Enable or disable optional features.
 option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of EmIL" On)
+option(EMIL_INCLUDE_FREERTOS "Include FreeRTOS as part of EmIL" Off)
+option(EMIL_INCLUDE_THREADX "Include ThreadX as part of EmIL (Incomplete, experimental)" Off)
 set(EMIL_EXTERNAL_LWIP_TARGET "" CACHE STRING "Specify an external LWIP target")
 
 if (EMIL_ENABLE_DOCKER_TOOLS)
@@ -105,7 +113,8 @@ endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # Suppress warnings about parameter passing for argument of type '...' changed in GCC 7.1
-    add_compile_options(-Wno-psabi)
+    add_compile_options($<$<COMPILE_LANGUAGE:C>:-Wno-psabi>)
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-Wno-psabi>)
 endif()
 
 add_version_header_target(generated.version_header)
@@ -117,8 +126,16 @@ add_subdirectory(services)
 add_subdirectory(protobuf)
 add_subdirectory(upgrade)
 add_subdirectory(lwip)
+add_subdirectory(osal)
 if (EMIL_BUILD_EXAMPLES)
     add_subdirectory(examples)
+endif()
+
+emil_exclude_directory_from_clang_format(${CMAKE_BINARY_DIR})
+emil_clangformat_directories(emil DIRECTORIES .)
+
+if (EMIL_STANDALONE)
+    emil_folderize_all_targets()
 endif()
 
 if (EMIL_GENERATE_PACKAGE_CONFIG)
@@ -176,10 +193,4 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
     set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 
     include(CPack)
-endif()
-
-emil_clangformat_directories(emil DIRECTORIES .)
-
-if (EMIL_STANDALONE)
-    emil_folderize_all_targets()
 endif()

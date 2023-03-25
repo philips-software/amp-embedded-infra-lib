@@ -1,0 +1,7 @@
+#ifndef OSAL_THREADX_STD_THREAD_MUTEX
+#define OSAL_THREADX_STD_THREAD_MUTEX
+
+#include "stdmutex.hpp"
+#include "stdonce.hpp"
+
+#endif
