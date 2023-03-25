@@ -1,25 +1,31 @@
 function(emil_fetch_echo_plugins)
-    set(emil_version "3.1.0") # x-release-please-version
+    FetchContent_GetProperties(echoplugins)
+    if (NOT echoplugins_POPULATED)
+        set(emil_version "3.1.0") # x-release-please-version
 
-    if (CMAKE_HOST_WIN32)
-        set(os_postfix "win64")
-        set(host_executable_postfix ".exe")
-    elseif (CMAKE_HOST_APPLE)
-        set(os_postfix "Darwin")
-    elseif (CMAKE_HOST_UNIX)
-        set(os_postfix "Linux")
-    else()
-        message(FATAL_ERROR "No suitable echo plugin found for ${CMAKE_HOST_SYSTEM_NAME} (${CMAKE_HOST_SYSTEM_PROCESSOR})")
+        if (CMAKE_HOST_WIN32)
+            set(os_postfix "win64")
+            set(host_executable_postfix ".exe")
+        elseif (CMAKE_HOST_APPLE)
+            set(os_postfix "Darwin")
+        elseif (CMAKE_HOST_UNIX)
+            set(os_postfix "Linux")
+        else()
+            message(FATAL_ERROR "No suitable echo plugin found for ${CMAKE_HOST_SYSTEM_NAME} (${CMAKE_HOST_SYSTEM_PROCESSOR})")
+        endif()
+
+        FetchContent_Declare(echoplugins
+            URL https://github.com/philips-software/amp-embedded-infra-lib/releases/download/v${emil_version}/emil-${emil_version}-${os_postfix}.zip
+        )
+        FetchContent_MakeAvailable(echoplugins)
+
+        foreach(plugin IN ITEMS "" "_csharp" "_java")
+            add_executable(protobuf.protoc_echo_plugin${plugin} IMPORTED GLOBAL)
+            set_target_properties(protobuf.protoc_echo_plugin${plugin} PROPERTIES
+                IMPORTED_LOCATION "${echoplugins_SOURCE_DIR}/bin/protobuf.protoc_echo_plugin${plugin}${host_executable_postfix}"
+            )
+        endforeach()
     endif()
-
-    FetchContent_Declare(echoplugins
-        URL https://github.com/philips-software/amp-embedded-infra-lib/releases/download/v${emil_version}/emil-${emil_version}-${os_postfix}.zip
-    )
-    FetchContent_MakeAvailable(echoplugins)
-
-    set(EMIL_ECHO_CPP_COMPILER_BINARY "${echoplugins_SOURCE_DIR}/bin/protobuf.protoc_echo_plugin${host_executable_postfix}" CACHE INTERNAL "")
-    set(EMIL_ECHO_CSHARP_COMPILER_BINARY "${echoplugins_SOURCE_DIR}/bin/protobuf.protoc_echo_plugin_csharp${host_executable_postfix}" CACHE INTERNAL "")
-    set(EMIL_ECHO_JAVA_COMPILER_BINARY "${echoplugins_SOURCE_DIR}/bin/protobuf.protoc_echo_plugin_java${host_executable_postfix}" CACHE INTERNAL "")
 endfunction()
 
 function(protocol_buffer_echo_generator target input)
@@ -79,24 +85,14 @@ function(protocol_buffer_echo_cpp target input)
 
     set(generated_files "${generated_dir_echo}/${source_base}.pb.cpp" "${generated_dir_echo}/${source_base}.pb.hpp" "${generated_dir_echo}/Tracing${source_base}.pb.cpp" "${generated_dir_echo}/Tracing${source_base}.pb.hpp" "${generated_dir_echo}/${source_base}.pb")
 
-    if (EMIL_HOST_BUILD)
-        add_custom_command(
-            OUTPUT ${generated_files}
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${generated_dir_echo}
-            COMMAND ${EMIL_PROTOC_COMPILER_BINARY} ${protopath} --error_format=${error_format} --plugin=protoc-gen-cpp-infra=$<TARGET_FILE:protobuf.protoc_echo_plugin> --cpp-infra_out="${generated_dir_echo}" ${absolute_input}
-            COMMAND ${EMIL_PROTOC_COMPILER_BINARY} ${protopath} --error_format=${error_format} --descriptor_set_out="${generated_dir_echo}/${source_base}.pb" --include_imports ${absolute_input}
-            MAIN_DEPENDENCY "${absolute_input}"
-            DEPENDS protobuf.protoc_echo_plugin
-        )
-    else()
-        add_custom_command(
-            OUTPUT ${generated_files}
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${generated_dir_echo}
-            COMMAND ${EMIL_PROTOC_COMPILER_BINARY} ${protopath} --error_format=${error_format} --plugin=protoc-gen-cpp-infra=${EMIL_ECHO_CPP_COMPILER_BINARY} --cpp-infra_out="${generated_dir_echo}" ${absolute_input}
-            COMMAND ${EMIL_PROTOC_COMPILER_BINARY} ${protopath} --error_format=${error_format} --descriptor_set_out="${generated_dir_echo}/${source_base}.pb" --include_imports ${absolute_input}
-            MAIN_DEPENDENCY "${absolute_input}"
-        )
-    endif()
+    add_custom_command(
+        OUTPUT ${generated_files}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${generated_dir_echo}
+        COMMAND ${EMIL_PROTOC_COMPILER_BINARY} ${protopath} --error_format=${error_format} --plugin=protoc-gen-cpp-infra=$<TARGET_FILE:protobuf.protoc_echo_plugin> --cpp-infra_out="${generated_dir_echo}" ${absolute_input}
+        COMMAND ${EMIL_PROTOC_COMPILER_BINARY} ${protopath} --error_format=${error_format} --descriptor_set_out="${generated_dir_echo}/${source_base}.pb" --include_imports ${absolute_input}
+        MAIN_DEPENDENCY "${absolute_input}"
+        DEPENDS protobuf.protoc_echo_plugin
+    )
 
     target_sources(${target} PRIVATE
         ${generated_files}
@@ -118,20 +114,12 @@ function(protocol_buffer_echo_csharp target input)
     cmake_path(SET generated_dir_echo "generated")
     cmake_path(ABSOLUTE_PATH generated_dir_echo BASE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} NORMALIZE OUTPUT_VARIABLE generated_dir_echo)
 
-    set(generated_files "${generated_dir_echo}/${source_base}.pb.cs")
-
-    if (EMIL_HOST_BUILD)
-        set(compiler_binary $<TARGET_FILE:protobuf.protoc_echo_plugin_csharp>)
-    else()
-        set(compiler_binary ${EMIL_ECHO_CSHARP_COMPILER_BINARY})
-    endif()
-
     add_custom_command(
         TARGET ${target}
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${generated_dir_echo}
-        COMMAND ${EMIL_PROTOC_COMPILER_BINARY} ${protopath} --error_format=${error_format} --plugin=protoc-gen-csharp-echo=${compiler_binary} --csharp-echo_out="${generated_dir_echo}" ${absolute_input}
-        BYPRODUCTS ${generated_files}
+        COMMAND ${EMIL_PROTOC_COMPILER_BINARY} ${protopath} --error_format=${error_format} --plugin=protoc-gen-csharp-echo=$<TARGET_FILE:protobuf.protoc_echo_plugin_csharp> --csharp-echo_out="${generated_dir_echo}" ${absolute_input}
+        BYPRODUCTS "${generated_dir_echo}/${source_base}.pb.cs"
     )
 endfunction()
 
@@ -144,20 +132,12 @@ function(protocol_buffer_echo_java target input)
     cmake_path(ABSOLUTE_PATH java_dir BASE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} NORMALIZE OUTPUT_VARIABLE java_dir)
     cmake_path(ABSOLUTE_PATH generated_dir_echo BASE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} NORMALIZE OUTPUT_VARIABLE generated_dir_echo)
 
-    set(generated_files "${generated_dir_echo}/${source_base}Services.java")
-
-    if (EMIL_HOST_BUILD)
-        set(compiler_binary $<TARGET_FILE:protobuf.protoc_echo_plugin_java>)
-    else()
-        set(compiler_binary ${EMIL_ECHO_JAVA_COMPILER_BINARY})
-    endif()
-
     add_custom_command(
         TARGET ${target}
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${generated_dir_echo}
-        COMMAND ${EMIL_PROTOC_COMPILER_BINARY} ${protopath} --error_format=${error_format} --plugin=protoc-gen-java-echo=${compiler_binary} --java-echo_out="${java_dir}" ${absolute_input}
-        BYPRODUCTS ${generated_files}
+        COMMAND ${EMIL_PROTOC_COMPILER_BINARY} ${protopath} --error_format=${error_format} --plugin=protoc-gen-java-echo=$<TARGET_FILE:protobuf.protoc_echo_plugin_java> --java-echo_out="${java_dir}" ${absolute_input}
+        BYPRODUCTS "${generated_dir_echo}/${source_base}Services.java"
     )
 endfunction()
 
