@@ -1,27 +1,21 @@
 function(emil_fetch_echo_plugins)
-    set(emil_version "3.0.0") # x-release-please-version
+    set(emil_version "3.1.0") # x-release-please-version
 
     if (CMAKE_HOST_WIN32)
-        FetchContent_Declare(echoplugins
-            URL https://github.com/philips-software/amp-embedded-infra-lib/releases/download/v${emil_version}/emil-${emil_version}-win64.zip
-        )
+        set(os_postfix "win64")
+        set(host_executable_postfix ".exe")
     elseif (CMAKE_HOST_APPLE)
-        FetchContent_Declare(echoplugins
-            URL https://github.com/philips-software/amp-embedded-infra-lib/releases/download/v${emil_version}/emil-${emil_version}-Darwin.zip
-        )
+        set(os_postfix "Darwin")
     elseif (CMAKE_HOST_UNIX)
-        FetchContent_Declare(echoplugins
-            URL https://github.com/philips-software/amp-embedded-infra-lib/releases/download/v${emil_version}/emil-${emil_version}-Linux.zip
-        )
+        set(os_postfix "Linux")
     else()
         message(FATAL_ERROR "No suitable echo plugin found for ${CMAKE_HOST_SYSTEM_NAME} (${CMAKE_HOST_SYSTEM_PROCESSOR})")
     endif()
 
+    FetchContent_Declare(echoplugins
+        URL https://github.com/philips-software/amp-embedded-infra-lib/releases/download/v${emil_version}/emil-${emil_version}-${os_postfix}.zip
+    )
     FetchContent_MakeAvailable(echoplugins)
-
-    if (CMAKE_HOST_WIN32)
-        set(host_executable_postfix ".exe")
-    endif()
 
     set(EMIL_ECHO_CPP_COMPILER_BINARY "${echoplugins_SOURCE_DIR}/bin/protobuf.protoc_echo_plugin${host_executable_postfix}" CACHE INTERNAL "")
     set(EMIL_ECHO_CSHARP_COMPILER_BINARY "${echoplugins_SOURCE_DIR}/bin/protobuf.protoc_echo_plugin_csharp${host_executable_postfix}" CACHE INTERNAL "")
