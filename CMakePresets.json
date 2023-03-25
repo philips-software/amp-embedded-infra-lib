@@ -6,7 +6,8 @@
       "hidden": true,
       "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "On"
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "On",
+        "CMAKE_COMPILE_WARNING_AS_ERROR": "On"
       }
     },
     {

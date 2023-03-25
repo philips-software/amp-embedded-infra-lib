@@ -71,17 +71,12 @@ endif()
 
 option(EMIL_BUILD_TESTS "Enable building the tests" ${EMIL_DEFAULTOPT})
 option(EMIL_BUILD_EXAMPLES "Enable building the examples" ${EMIL_DEFAULTOPT})
-option(EMIL_COMPILE_WARNING_AS_ERROR "Enable warnings-as-error" On)
 option(EMIL_ENABLE_FUZZING "Enable building the fuzzing targets" Off)
 option(EMIL_ENABLE_DOCKER_TOOLS "Enable shift-left tools (e.g. linters, formatters) that are run using Docker" On)
 option(EMIL_GENERATE_PACKAGE_CONFIG "Enable generation of package configuration and install files" On)
 
 option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of EmIL" On)
 set(EMIL_EXTERNAL_LWIP_TARGET "" CACHE STRING "Specify an external LWIP target")
-
-if (EMIL_COMPILE_WARNING_AS_ERROR)
-    set(CMAKE_COMPILE_WARNING_AS_ERROR On)
-endif()
 
 if (EMIL_ENABLE_DOCKER_TOOLS)
     emil_enable_docker_tools()
