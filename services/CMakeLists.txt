@@ -1,5 +1,6 @@
 add_subdirectory(ble)
 add_subdirectory(cucumber)
+add_subdirectory(cucumber_wire_proxy)
 add_subdirectory(network)
 add_subdirectory(network_instantiations)
 add_subdirectory(synchronous_util)
