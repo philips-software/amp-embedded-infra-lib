@@ -117,3 +117,7 @@ endif()
 if (BUILD_TESTING)
     add_subdirectory(test_doubles)
 endif()
+
+if (EMIL_HOST_BUILD)
+    add_subdirectory(step_implementations)
+endif()

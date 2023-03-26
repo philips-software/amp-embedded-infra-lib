@@ -1,0 +1,2 @@
+host: <%= ENV['CUCUMBER_WIRE_PROXY_HOST'] || 'host.docker.internal' %>
+port: <%= ENV['CUCUMBER_WIRE_PROXY_PORT'] || 90 %>

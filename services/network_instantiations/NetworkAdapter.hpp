@@ -1,6 +1,7 @@
 #ifndef SERVICES_NETWORK_INSTANTIATIONS_HPP
 #define SERVICES_NETWORK_INSTANTIATIONS_HPP
 
+#include "infra/util/InterfaceConnector.hpp"
 #include "services/network_instantiations/NameLookup.hpp"
 
 #ifdef EMIL_NETWORK_WIN
@@ -14,6 +15,7 @@
 namespace main_
 {
     class NetworkAdapter
+        : public infra::InterfaceConnector<NetworkAdapter>
     {
     public:
         services::ConnectionFactory& ConnectionFactory();
