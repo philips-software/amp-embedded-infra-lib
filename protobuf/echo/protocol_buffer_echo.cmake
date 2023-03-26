@@ -1,4 +1,9 @@
 function(emil_fetch_echo_plugins)
+    if (EMIL_HOST_BUILD)
+        # In a host build we use the built echo plug-ins
+        return()
+    endif()
+
     FetchContent_GetProperties(echoplugins)
     if (NOT echoplugins_POPULATED)
         set(emil_version "3.1.0") # x-release-please-version
@@ -71,10 +76,7 @@ function(protocol_buffer_echo_generator target input)
     endif()
 
     emil_fetch_protocol_buffer_compiler()
-
-    if (NOT EMIL_HOST_BUILD)
-        emil_fetch_echo_plugins()
-    endif()
+    emil_fetch_echo_plugins()
 endfunction()
 
 function(protocol_buffer_echo_cpp target input)
@@ -126,7 +128,7 @@ endfunction()
 function(protocol_buffer_echo_java target input)
     protocol_buffer_echo_generator(${target} ${input})
 
-    cmake_path(SET java_dir "generated/com/philips/cococo/protobufEcho")
+    cmake_path(SET java_dir "generated/com/philips/emil/protobufEcho")
     cmake_path(SET generated_dir_echo "${java_dir}")
 
     cmake_path(ABSOLUTE_PATH java_dir BASE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} NORMALIZE OUTPUT_VARIABLE java_dir)
