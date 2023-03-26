@@ -299,7 +299,7 @@ namespace application
 using ProtobufEcho;
 using pb = Google.Protobuf;
 
-namespace IntegrationTestFramework.ProtobufEcho
+namespace Emil.ProtobufEcho
 {
 )",
             "filename", file->name());

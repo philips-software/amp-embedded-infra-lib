@@ -19,10 +19,10 @@ function(emil_fetch_echo_plugins)
         )
         FetchContent_MakeAvailable(echoplugins)
 
-        foreach(plugin IN ITEMS "" "_csharp" "_java")
-            add_executable(protobuf.protoc_echo_plugin${plugin} IMPORTED GLOBAL)
-            set_target_properties(protobuf.protoc_echo_plugin${plugin} PROPERTIES
-                IMPORTED_LOCATION "${echoplugins_SOURCE_DIR}/bin/protobuf.protoc_echo_plugin${plugin}${host_executable_postfix}"
+        foreach(language IN ITEMS "" "_csharp" "_java")
+            add_executable(protobuf.protoc_echo_plugin${language} IMPORTED GLOBAL)
+            set_target_properties(protobuf.protoc_echo_plugin${language} PROPERTIES
+                IMPORTED_LOCATION "${echoplugins_SOURCE_DIR}/bin/protobuf.protoc_echo_plugin${language}${host_executable_postfix}"
             )
         endforeach()
     endif()

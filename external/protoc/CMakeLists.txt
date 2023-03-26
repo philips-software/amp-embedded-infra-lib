@@ -2,27 +2,21 @@ function(emil_fetch_protocol_buffer_compiler)
     set(protobuf_version "21.12")
 
     if (CMAKE_HOST_WIN32)
-        FetchContent_Declare(protoc
-            URL https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_version}/protoc-${protobuf_version}-win32.zip
-        )
+        set(os_postfix "win32")
+        set(host_executable_postfix ".exe")
     elseif (CMAKE_HOST_APPLE)
-        FetchContent_Declare(protoc
-            URL https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_version}/protoc-${protobuf_version}-osx-universal_binary.zip
-        )
+        set(os_postfix "osx-universal_binary")
     elseif (CMAKE_HOST_UNIX)
         string(REPLACE "aarch64" "aarch_64" protoc_arch ${CMAKE_HOST_SYSTEM_PROCESSOR})
-        FetchContent_Declare(protoc
-            URL https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_version}/protoc-${protobuf_version}-linux-${protoc_arch}.zip
-        )
+        set(os_postfix "linux-${protoc_arch}")
     else()
         message(FATAL_ERROR "No suitable proto compiler found for ${CMAKE_HOST_SYSTEM_NAME} (${CMAKE_HOST_SYSTEM_PROCESSOR})")
     endif()
 
+    FetchContent_Declare(protoc
+        URL https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_version}/protoc-${protobuf_version}-${os_postfix}.zip
+    )
     FetchContent_MakeAvailable(protoc)
-
-    if (CMAKE_HOST_WIN32)
-        set(host_executable_postfix ".exe")
-    endif()
 
     set(EMIL_PROTOC_COMPILER_BINARY "${protoc_SOURCE_DIR}/bin/protoc${host_executable_postfix}" CACHE INTERNAL "")
 endfunction()
