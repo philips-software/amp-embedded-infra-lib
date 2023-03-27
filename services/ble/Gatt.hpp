@@ -73,9 +73,7 @@ namespace services
         GattCharacteristic() = default;
         virtual ~GattCharacteristic() = default;
 
-        // PropertyFlags Properties() const;
         const PropertyFlags& Properties() const;
-
         const AttAttribute::Uuid& Type() const;
 
         const AttAttribute::Handle& Handle() const;

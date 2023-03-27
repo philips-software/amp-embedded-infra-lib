@@ -24,7 +24,7 @@ TEST(GattTest, service_handle_is_updated)
     EXPECT_EQ(0xAB, std::as_const(s).Handle());
 }
 
-/* TEST(GattTest, characteristic_handles_are_accesible)
+TEST(GattTest, characteristic_handles_are_accesible)
 {
     services::GattCharacteristic c;
     c.Handle() = 0xCD;
@@ -32,7 +32,7 @@ TEST(GattTest, service_handle_is_updated)
 
     EXPECT_EQ(0xCD, c.Handle());
     EXPECT_EQ(0xFE, c.ValueHandle());
-}*/
+}
 
 TEST(GattTest, descriptor_handles_are_accesible)
 {

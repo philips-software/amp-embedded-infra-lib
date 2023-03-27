@@ -22,11 +22,6 @@ namespace services
         , properties(properties)
     {}
 
-    /*GattCharacteristic::PropertyFlags GattCharacteristic::Properties() const
-    {
-        return properties;
-    }*/
-
     const GattCharacteristic::PropertyFlags& GattCharacteristic::Properties() const
     {
         return properties;
