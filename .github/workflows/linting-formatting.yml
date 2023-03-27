@@ -23,7 +23,7 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3.4.0
+      - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
         with:
           persist-credentials: false
       - uses: DoozyX/clang-format-lint-action@c3b2c943e924028b93a707a5b1b017976ab8d50c
@@ -44,7 +44,7 @@ jobs:
       pull-requests: write
       security-events: write
     steps:
-      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3.4.0
+      - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
         with:
           fetch-depth: 0
           persist-credentials: false

@@ -27,7 +27,7 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
     steps:
-      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3.4.0
+      - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
         with:
           persist-credentials: false
       - uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
@@ -48,7 +48,7 @@ jobs:
         gcc: ["7-2018-q2", "8-2019-q3", "9-2020-q2", "10.3-2021.10"]
         configuration: ["RelWithDebInfo"]
     steps:
-      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3.4.0
+      - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
         with:
           persist-credentials: false
       - name: Install GNU Arm Embedded Toolchain ${{ matrix.gcc }}
@@ -72,7 +72,7 @@ jobs:
       matrix:
         rtos: ["FreeRTOS", "ThreadX"]
     steps:
-      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3.4.0
+      - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
         with:
           persist-credentials: false
       - name: Install GNU Arm Embedded Toolchain "10.3-2021.10"
