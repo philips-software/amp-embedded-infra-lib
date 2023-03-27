@@ -1,4 +1,5 @@
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
+#include "infra/util/test_helper/MemoryRangeMatcher.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "services/ble/test_doubles/GattClientMock.hpp"
 #include "gmock/gmock.h"
@@ -60,7 +61,7 @@ class GattClientCharacteristicTest
 public:
     GattClientCharacteristicTest()
         : service(uuid16, 0x1, 0x9)
-        , characteristic({asyncUpdate, operations}, uuid16, 0x2, 0x3, GattPropertyFlags::write)
+        , characteristic({ asyncUpdate, operations }, uuid16, 0x2, 0x3, GattPropertyFlags::write)
     {}
 
     services::GattClientAsyncUpdate asyncUpdate;
@@ -68,11 +69,6 @@ public:
     services::GattClientService service;
     services::GattClientCharacteristic characteristic;
 };
-
-MATCHER_P(ContentsEqual, x, negation ? "Contents not equal" : "Contents are equal")
-{
-    return infra::ContentsEqual(infra::MakeStringByteRange(x), arg);
-}
 
 TEST_F(GattClientCharacteristicTest, should_read_characteristic_and_callback_with_data_received)
 {
@@ -85,13 +81,13 @@ TEST_F(GattClientCharacteristicTest, should_write_characteristic_and_callback)
     infra::MockCallback<void()> callback;
     EXPECT_CALL(callback, callback);
 
-    EXPECT_CALL(operations, Write(testing::Ref(characteristic), ContentsEqual("string"), ::testing::_)).WillOnce([](const services::GattClientCharacteristicOperationsObserver&, infra::ConstByteRange, infra::Function<void()> onDone) { onDone(); });
+    EXPECT_CALL(operations, Write(testing::Ref(characteristic), infra::ByteRangeContentsEqual(infra::MakeStringByteRange("string")), ::testing::_)).WillOnce([](const services::GattClientCharacteristicOperationsObserver&, infra::ConstByteRange, infra::Function<void()> onDone) { onDone(); });
     characteristic.Write(infra::MakeStringByteRange("string"), [&callback]() { callback.callback(); });
 }
 
 TEST_F(GattClientCharacteristicTest, should_write_without_response_characteristic)
 {
-    EXPECT_CALL(operations, WriteWithoutResponse(testing::Ref(characteristic), ContentsEqual("string")));
+    EXPECT_CALL(operations, WriteWithoutResponse(testing::Ref(characteristic), infra::ByteRangeContentsEqual(infra::MakeStringByteRange("string"))));
     characteristic.WriteWithoutResponse(infra::MakeStringByteRange("string"));
 }
 

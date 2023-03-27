@@ -20,11 +20,6 @@ namespace services
         };
     }
 
-    MATCHER_P(ContentsEqual, x, negation ? "Contents not equal" : "Contents are equal")
-    {
-        return infra::ContentsEqual(infra::MakeRange(x), infra::MakeRange(arg));
-    }
-
     TEST_F(GapPeripheralDecoratorTest, forward_all_events_to_observers)
     {
         EXPECT_CALL(gapObserver, StateChanged(GapState::connected));
