@@ -23,7 +23,7 @@
       "name": "ContinuousIntegration-VS2019",
       "displayName": "Configuration for testing VS2019",
       "inherits": "ContinuousIntegration",
-      "generator": "Visual Studio 16 2019"
+      "toolset": "v142"
     },
     {
       "name": "Package",
