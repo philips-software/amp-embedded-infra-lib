@@ -89,3 +89,23 @@ jobs:
           cmake --build --preset Host-RelWithDebInfo
           cmake --preset Embedded-${{ matrix.rtos }} -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build --preset Embedded-${{ matrix.rtos }}-RelWithDebInfo
+  host_build_test_vs2019:
+    name: Host Build & Test for VS2019
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest]
+    steps:
+      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3.4.0
+        with:
+          persist-credentials: false
+      - uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
+        with:
+          key: ${{ github.job }}-${{ matrix.os }}-VS2019
+          variant: sccache
+      - uses: lukka/run-cmake@2d1ee0acb9c4f656ec9128fc7387d82ac4539816 # v10.3
+        with:
+          configurePreset: "ContinuousIntegration-VS2019"
+          buildPreset: "ContinuousIntegration-VS2019"
+          testPreset: "ContinuousIntegration-VS2019"
+          configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
