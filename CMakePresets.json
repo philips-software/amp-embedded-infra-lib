@@ -20,12 +20,6 @@
       }
     },
     {
-      "name": "ContinuousIntegration-VS2019",
-      "displayName": "Configuration for testing VS2019",
-      "inherits": "ContinuousIntegration",
-      "toolset": "v142"
-    },
-    {
       "name": "Package",
       "displayName": "Configuration for CPack package generation",
       "inherits": "defaults",
@@ -118,11 +112,6 @@
       "configurePreset": "ContinuousIntegration"
     },
     {
-      "name": "ContinuousIntegration-VS2019",
-      "configuration": "Debug",
-      "configurePreset": "ContinuousIntegration-VS2019"
-    },
-    {
       "name": "Package",
       "configuration": "MinSizeRel",
       "configurePreset": "Package",
@@ -209,12 +198,6 @@
     {
       "name": "ContinuousIntegration",
       "configurePreset": "ContinuousIntegration",
-      "configuration": "Debug",
-      "inherits": "defaults"
-    },
-    {
-      "name": "ContinuousIntegration-VS2019",
-      "configurePreset": "ContinuousIntegration-VS2019",
       "configuration": "Debug",
       "inherits": "defaults"
     },
