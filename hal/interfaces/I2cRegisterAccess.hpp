@@ -7,6 +7,13 @@
 namespace hal
 {
     template<class T>
+    class I2cMasterRegisterAccess;
+
+    using I2cMasterRegisterAccessByte = I2cMasterRegisterAccess<uint8_t>;
+    using I2cMasterRegisterAccessHalfWord = I2cMasterRegisterAccess<uint16_t>;
+    using I2cMasterRegisterAccessWord = I2cMasterRegisterAccess<uint32_t>;
+
+    template<class T>
     class I2cMasterRegisterAccess
     {
     public:

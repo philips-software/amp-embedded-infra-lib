@@ -37,4 +37,5 @@ namespace hal
 
     template class I2cMasterRegisterAccess<uint8_t>;
     template class I2cMasterRegisterAccess<uint16_t>;
+    template class I2cMasterRegisterAccess<uint32_t>;
 }

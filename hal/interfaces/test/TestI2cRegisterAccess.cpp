@@ -18,7 +18,7 @@ public:
     {}
 
     hal::I2cMasterMock master;
-    hal::I2cMasterRegisterAccess<uint8_t> registerAccess;
+    hal::I2cMasterRegisterAccessByte registerAccess;
 };
 
 const hal::I2cAddress I2cRegisterAccessTest::slaveAddress(0x5a);
