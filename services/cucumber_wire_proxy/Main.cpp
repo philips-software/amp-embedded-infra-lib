@@ -37,7 +37,11 @@
 
     PluginHandle LoadPlugin(const hal::filesystem::path& path)
     {
-        return PluginHandle(dlopen(path.c_str(), RTLD_LAZY), &dlclose);
+        auto handle = dlopen(path.c_str(), RTLD_LAZY);
+        if (handle == nullptr)
+            throw std::runtime_error(std::string("Plug-in at path '") + path.string() + "' could not be loaded.");
+
+        return PluginHandle(handle, &dlclose);
     }
 #endif
 
