@@ -1,14 +1,9 @@
 #include "infra/stream/StringInputStream.hpp"
 #include "services/network/CertificateConvertor.hpp"
+#include "infra/util/Base64.hpp"
 
 namespace
 {
-    uint8_t DecodeByte(char base64)
-    {
-        static const char* encodeTable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-        return static_cast<uint8_t>(std::find(&encodeTable[0], &encodeTable[64], base64) - &encodeTable[0]);
-    }
-
     bool ConvertBase64(const std::string& fromString, std::vector<uint8_t>& to)
     {
         uint8_t bitIndex = 0;
@@ -17,7 +12,7 @@ namespace
 
         while (currentChar != fromString.end())
         {
-            uint8_t decodedValue = DecodeByte(*currentChar);
+            uint8_t decodedValue = infra::DecodeBase64Byte(*currentChar);
 
             if (decodedValue < 64)
             {

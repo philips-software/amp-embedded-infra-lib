@@ -2,11 +2,6 @@
 #include <cmath>
 #include <limits>
 
-namespace
-{
-    const char* b64EncodeTable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-}
-
 namespace infra
 {
     std::size_t StreamWriter::ConstructSaveMarker() const
@@ -418,7 +413,7 @@ namespace infra
     {
         if ((size & 3) != 0)
         {
-            stream << b64EncodeTable[encodedByte];
+            stream << _detail::base64EncodeTable[encodedByte];
             ++size;
         }
         if ((size & 3) != 0)
@@ -438,7 +433,7 @@ namespace infra
         for (uint8_t byte : data)
         {
             encodedByte |= byte >> bitIndex;
-            stream << b64EncodeTable[encodedByte];
+            stream << _detail::base64EncodeTable[encodedByte];
             ++size;
 
             encodedByte = static_cast<uint8_t>(byte << (8 - bitIndex)) >> 2;
@@ -447,7 +442,7 @@ namespace infra
 
             if (bitIndex == 8)
             {
-                stream << b64EncodeTable[encodedByte];
+                stream << _detail::base64EncodeTable[encodedByte];
                 ++size;
                 encodedByte = 0;
                 bitIndex = 2;
