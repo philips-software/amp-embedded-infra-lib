@@ -3,13 +3,13 @@
 
 namespace infra
 {
-    namespace _detail
+    namespace detail
     {
-        const char* base64EncodeTable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        const char* base64Table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     }
 
     uint8_t DecodeBase64Byte(char base64)
     {
-        return static_cast<uint8_t>(std::find(&_detail::base64EncodeTable[0], &_detail::base64EncodeTable[64], base64) - &_detail::base64EncodeTable[0]);
+        return static_cast<uint8_t>(std::find(&detail::base64Table[0], &detail::base64Table[64], base64) - &detail::base64Table[0]);
     }
 }

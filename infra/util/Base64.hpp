@@ -1,12 +1,13 @@
 #ifndef INFRA_BASE64_HPP
 #define INFRA_BASE64_HPP
+
 #include <cstdint>
 
 namespace infra
 {
-    namespace _detail
+    namespace detail
     {
-        extern const char* base64EncodeTable;
+        extern const char* base64Table;
     }
 
     uint8_t DecodeBase64Byte(char base64);

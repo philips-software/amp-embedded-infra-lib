@@ -20,18 +20,11 @@ namespace
             return stream;
         }
     };
-
-    void CombinedBase64EncodeResultsIn(std::initializer_list<infra::ConstByteRange> dataRanges, std::string encoded)
+    template <typename T>
+    void Base64EncodeResultsIn(T data, std::string encoded)
     {
         infra::StringOutputStream::WithStorage<64> stream;
-        stream << infra::AsBase64(dataRanges);
-        EXPECT_EQ(encoded, stream.Storage());
-    }
-
-    void Base64EncodeResultsIn(infra::ConstByteRange dataRange, std::string encoded)
-    {
-        infra::StringOutputStream::WithStorage<64> stream;
-        stream << infra::AsBase64(dataRange);
+        stream << infra::AsBase64(data);
         EXPECT_EQ(encoded, stream.Storage());
     }
 }
@@ -401,13 +394,13 @@ TEST(StringOutputStreamTest, stream_byte_range_as_base64)
 
 TEST(StringOutputStreamTest, stream_byte_range_as_combined_base64)
 {
-    CombinedBase64EncodeResultsIn({ infra::ConstByteRange(), std::array<uint8_t, 1>{ 'a' } }, "YQ==");
+    Base64EncodeResultsIn<std::initializer_list<infra::ConstByteRange>>({ infra::ConstByteRange(), std::array<uint8_t, 1>{ 'a' } }, "YQ==");
 
-    CombinedBase64EncodeResultsIn({ std::array<uint8_t, 1>{ 'a' }, std::array<uint8_t, 1>{ 'b' } }, "YWI=");
+    Base64EncodeResultsIn<std::initializer_list<infra::ConstByteRange>>({ std::array<uint8_t, 1>{ 'a' }, std::array<uint8_t, 1>{ 'b' } }, "YWI=");
 
-    CombinedBase64EncodeResultsIn({ std::array<uint8_t, 1>{ 'a' }, std::array<uint8_t, 2>{ 'a', 'b' } }, "YWFi");
+    Base64EncodeResultsIn<std::initializer_list<infra::ConstByteRange>>({ std::array<uint8_t, 1>{ 'a' }, std::array<uint8_t, 2>{ 'a', 'b' } }, "YWFi");
 
-    CombinedBase64EncodeResultsIn({ std::array<uint8_t, 2>{ 'a', 'b' }, std::array<uint8_t, 2>{ 'c', 'd' } }, "YWJjZA==");
+    Base64EncodeResultsIn<std::initializer_list<infra::ConstByteRange>>({ std::array<uint8_t, 2>{ 'a', 'b' }, std::array<uint8_t, 2>{ 'c', 'd' } }, "YWJjZA==");
 
     infra::StringOutputStream::WithStorage<64> stream5;
     stream5 << infra::data << infra::text << infra::AsBase64({ std::array<uint8_t, 1>{ 'a' } });

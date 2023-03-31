@@ -413,7 +413,7 @@ namespace infra
     {
         if ((size & 3) != 0)
         {
-            stream << _detail::base64EncodeTable[encodedByte];
+            stream << detail::base64Table[encodedByte];
             ++size;
         }
         if ((size & 3) != 0)
@@ -433,7 +433,7 @@ namespace infra
         for (uint8_t byte : data)
         {
             encodedByte |= byte >> bitIndex;
-            stream << _detail::base64EncodeTable[encodedByte];
+            stream << detail::base64Table[encodedByte];
             ++size;
 
             encodedByte = static_cast<uint8_t>(byte << (8 - bitIndex)) >> 2;
@@ -442,7 +442,7 @@ namespace infra
 
             if (bitIndex == 8)
             {
-                stream << _detail::base64EncodeTable[encodedByte];
+                stream << detail::base64Table[encodedByte];
                 ++size;
                 encodedByte = 0;
                 bitIndex = 2;
