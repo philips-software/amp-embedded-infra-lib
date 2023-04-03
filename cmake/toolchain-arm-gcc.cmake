@@ -61,7 +61,7 @@ set(CMAKE_ASM_FLAGS_RELWITHDEBINFO "-g" CACHE STRING "" FORCE)
 set(CMAKE_ASM_FLAGS_MINSIZEREL "" CACHE STRING "" FORCE)
 
 add_link_options(LINKER:--gc-sections,--print-memory-usage)
-add_link_options(-specs=nano.specs -nostartfiles -mthumb)
+add_link_options(-specs=nano.specs -mthumb)
 
 add_compile_options($<$<COMPILE_LANGUAGE:C>:-ffunction-sections$<SEMICOLON>-fdata-sections$<SEMICOLON>-mthumb>)
 add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-ffunction-sections$<SEMICOLON>-fdata-sections$<SEMICOLON>-mthumb>)
