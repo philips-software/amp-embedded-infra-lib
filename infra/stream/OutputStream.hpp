@@ -4,6 +4,7 @@
 #include "infra/stream/StreamErrorPolicy.hpp"
 #include "infra/stream/StreamManipulators.hpp"
 #include "infra/util/BoundedString.hpp"
+#include "infra/util/Base64.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/IntegerNormalization.hpp"
 #include "infra/util/Optional.hpp"
@@ -279,6 +280,21 @@ namespace infra
         infra::ConstByteRange data;
     };
 
+    class Base64Encoder
+    {
+    public:
+        Base64Encoder(infra::TextOutputStream& stream);
+        ~Base64Encoder();
+
+        void Encode(infra::ConstByteRange data);
+    
+    private: 
+        infra::TextOutputStream& stream;
+        uint8_t bitIndex = 2;
+        uint8_t encodedByte = 0;
+        uint32_t size = 0;
+    };
+
     class AsBase64Helper
     {
     public:
@@ -291,9 +307,22 @@ namespace infra
         infra::ConstByteRange data;
     };
 
+    class AsCombinedBase64Helper
+    {
+    public:
+        explicit AsCombinedBase64Helper(std::initializer_list<infra::ConstByteRange> ranges);
+
+        friend infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const AsCombinedBase64Helper& asBase64Helper);
+        friend infra::TextOutputStream& operator<<(infra::TextOutputStream&& stream, const AsCombinedBase64Helper& asBase64Helper);
+
+    private:
+        std::initializer_list<infra::ConstByteRange> ranges;
+    };
+
     AsAsciiHelper AsAscii(infra::ConstByteRange data);
     AsHexHelper AsHex(infra::ConstByteRange data);
     AsBase64Helper AsBase64(infra::ConstByteRange data);
+    AsCombinedBase64Helper AsBase64(std::initializer_list<infra::ConstByteRange> ranges);
 
     template<class T>
     class ReservedProxy

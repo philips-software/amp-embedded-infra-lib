@@ -7,6 +7,8 @@ ccola_component(util static_library)
         AllocatorHeap.hpp
         AutoResetFunction.hpp
         AutoResetMultiFunction.hpp
+        Base64.hpp
+        Base64.cpp
         BitLogic.hpp
         BoundedDeque.hpp
         BoundedForwardList.hpp
