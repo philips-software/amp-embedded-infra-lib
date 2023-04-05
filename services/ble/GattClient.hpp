@@ -24,19 +24,19 @@ namespace services
         : public infra::Subject<GattClientStackUpdateObserver>
     {};
 
-    class GattClientUpdate;
+    class GattClientCharacteristicUpdate;
 
-    class GattClientUpdateObserver
-        : public infra::Observer<GattClientUpdateObserver, GattClientUpdate>
+    class GattClientCharacteristicUpdateObserver
+        : public infra::Observer<GattClientCharacteristicUpdateObserver, GattClientCharacteristicUpdate>
     {
     public:
-        using infra::Observer<GattClientUpdateObserver, GattClientUpdate>::Observer;
+        using infra::Observer<GattClientCharacteristicUpdateObserver, GattClientCharacteristicUpdate>::Observer;
 
         virtual void UpdateReceived(infra::ConstByteRange data) = 0;
     };
 
-    class GattClientUpdate
-        : public infra::Subject<GattClientUpdateObserver>
+    class GattClientCharacteristicUpdate
+        : public infra::Subject<GattClientCharacteristicUpdateObserver>
     {};
 
     class GattClientCharacteristicOperations;
@@ -75,7 +75,7 @@ namespace services
         : public infra::IntrusiveForwardList<GattClientCharacteristic>::NodeType
         , public GattCharacteristic
         , public GattClientCharacteristicOperationsObserver
-        , public GattClientUpdate
+        , public GattClientCharacteristicUpdate
         , protected GattClientStackUpdateObserver
     {
     public:

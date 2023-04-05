@@ -11,7 +11,7 @@ namespace services
 
     GattClientCharacteristic::GattClientCharacteristic(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties)
         : GattCharacteristic(type, handle, valueHandle, properties)
-    { }
+    {}
 
     void GattClientCharacteristic::Read(infra::Function<void(const infra::ConstByteRange&)> onResponse)
     {
@@ -67,7 +67,7 @@ namespace services
         constexpr uint8_t offsetCCCD = 1;
 
         if ((handle + offsetCCCD) == Handle())
-            GattClientUpdateObserver::SubjectType::NotifyObservers([&data](auto& obs) { obs.UpdateReceived(data); });
+            GattClientCharacteristicUpdate::SubjectType::NotifyObservers([&data](auto& obs) { obs.UpdateReceived(data); });
     }
 
     AttAttribute::Handle GattClientCharacteristic::CharacteristicValueHandle() const
