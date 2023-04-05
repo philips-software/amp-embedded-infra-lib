@@ -2,23 +2,10 @@
 
 namespace services
 {
-    GattDescriptor::GattDescriptor(const AttAttribute::Uuid& type, AttAttribute::Handle handle)
+    GattCharacteristic::GattCharacteristic(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties)
         : type(type)
         , handle(handle)
-    {}
-
-    const AttAttribute::Uuid& GattDescriptor::Type() const
-    {
-        return type;
-    }
-
-    const AttAttribute::Handle& GattDescriptor::Handle() const
-    {
-        return handle;
-    }
-
-    GattCharacteristic::GattCharacteristic(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties)
-        : attribute{ type, handle, valueHandle }
+        , valueHandle(valueHandle)
         , properties(properties)
     {}
 
@@ -29,27 +16,27 @@ namespace services
 
     const AttAttribute::Uuid& GattCharacteristic::Type() const
     {
-        return attribute.type;
+        return type;
     }
 
-    const AttAttribute::Handle& GattCharacteristic::Handle() const
+    AttAttribute::Handle GattCharacteristic::Handle() const
     {
-        return attribute.handle;
+        return handle;
     }
 
     AttAttribute::Handle& GattCharacteristic::Handle()
     {
-        return attribute.handle;
+        return handle;
     }
 
-    const AttAttribute::Handle& GattCharacteristic::ValueHandle() const
+    AttAttribute::Handle GattCharacteristic::ValueHandle() const
     {
-        return attribute.endHandle;
+        return valueHandle;
     }
 
     AttAttribute::Handle& GattCharacteristic::ValueHandle()
     {
-        return attribute.endHandle;
+        return valueHandle;
     }
 
     GattService::GattService(const AttAttribute::Uuid& type)

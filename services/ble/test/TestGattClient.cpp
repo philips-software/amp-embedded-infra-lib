@@ -64,7 +64,7 @@ public:
         , characteristic({ asyncUpdate, operations }, uuid16, 0x2, 0x3, GattPropertyFlags::write)
     {}
 
-    services::GattClientAsyncUpdate asyncUpdate;
+    services::GattClientStackUpdate asyncUpdate;
     testing::StrictMock<services::GattClientCharacteristicOperationsMock> operations;
     services::GattClientService service;
     services::GattClientCharacteristic characteristic;

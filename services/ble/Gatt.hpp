@@ -18,21 +18,10 @@ namespace services
         using Uuid = infra::Variant<Uuid16, Uuid128>;
 
         using Handle = uint16_t;
-
-        Uuid type;
-        Handle handle;
-        Handle endHandle;
     };
 
-    class GattDescriptor
+    struct GattDescriptor
     {
-    public:
-        explicit GattDescriptor(const AttAttribute::Uuid& type, AttAttribute::Handle handle);
-        virtual ~GattDescriptor() = default;
-
-        const AttAttribute::Uuid& Type() const;
-        const AttAttribute::Handle& Handle() const;
-
         struct ClientCharacteristicConfiguration
         {
             const uint16_t attributeType = 0x2902;
@@ -44,10 +33,6 @@ namespace services
                 enableIndication = 0x0002,
             };
         };
-
-    protected:
-        AttAttribute::Uuid type;
-        AttAttribute::Handle handle;
     };
 
     class GattCharacteristic
@@ -71,18 +56,22 @@ namespace services
     public:
         GattCharacteristic(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, PropertyFlags properties);
         GattCharacteristic() = default;
+        GattCharacteristic(GattCharacteristic& other) = delete;
+        GattCharacteristic& operator=(const GattCharacteristic& other) = delete;
         virtual ~GattCharacteristic() = default;
 
         const PropertyFlags& Properties() const;
         const AttAttribute::Uuid& Type() const;
 
-        const AttAttribute::Handle& Handle() const;
+        AttAttribute::Handle Handle() const;
         AttAttribute::Handle& Handle();
-        const AttAttribute::Handle& ValueHandle() const;
+        AttAttribute::Handle ValueHandle() const;
         AttAttribute::Handle& ValueHandle();
 
     protected:
-        AttAttribute attribute;
+        AttAttribute::Uuid type;
+        AttAttribute::Handle handle;
+        AttAttribute::Handle valueHandle;
         PropertyFlags properties;
     };
 
@@ -91,6 +80,8 @@ namespace services
     public:
         GattService(const AttAttribute::Uuid& type);
         GattService(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle endHandle);
+        GattService(GattService& other) = delete;
+        GattService& operator=(const GattService& other) = delete;
         virtual ~GattService() = default;
 
         AttAttribute::Uuid Type() const;

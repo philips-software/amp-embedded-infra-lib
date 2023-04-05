@@ -11,14 +11,14 @@ namespace services
         : public services::GattClientCharacteristicOperations
     {
     public:
-        MOCK_METHOD(void, Read, (const GattClientCharacteristicOperationsObserver&, infra::Function<void(const infra::ConstByteRange&)>), (const, override));
-        MOCK_METHOD(void, Write, (const GattClientCharacteristicOperationsObserver&, infra::ConstByteRange, infra::Function<void()>), (const, override));
+        MOCK_METHOD(void, Read, (const GattClientCharacteristicOperationsObserver&, const infra::Function<void(const infra::ConstByteRange&)>&), (const, override));
+        MOCK_METHOD(void, Write, (const GattClientCharacteristicOperationsObserver&, infra::ConstByteRange, const infra::Function<void()>&), (const, override));
         MOCK_METHOD(void, WriteWithoutResponse, (const GattClientCharacteristicOperationsObserver&, infra::ConstByteRange), (const, override));
 
-        MOCK_METHOD(void, EnableNotification, (const GattClientCharacteristicOperationsObserver&, infra::Function<void()>), (const, override));
-        MOCK_METHOD(void, DisableNotification, (const GattClientCharacteristicOperationsObserver&, infra::Function<void()>), (const, override));
-        MOCK_METHOD(void, EnableIndication, (const GattClientCharacteristicOperationsObserver&, infra::Function<void()>), (const, override));
-        MOCK_METHOD(void, DisableIndication, (const GattClientCharacteristicOperationsObserver&, infra::Function<void()>), (const, override));
+        MOCK_METHOD(void, EnableNotification, (const GattClientCharacteristicOperationsObserver&, const infra::Function<void()>&), (const, override));
+        MOCK_METHOD(void, DisableNotification, (const GattClientCharacteristicOperationsObserver&, const infra::Function<void()>&), (const, override));
+        MOCK_METHOD(void, EnableIndication, (const GattClientCharacteristicOperationsObserver&, const infra::Function<void()>&), (const, override));
+        MOCK_METHOD(void, DisableIndication, (const GattClientCharacteristicOperationsObserver&, const infra::Function<void()>&), (const, override));
     };
 
     class GattClientDiscoveryObserverMock
@@ -27,9 +27,9 @@ namespace services
         using GattClientDiscoveryObserver::GattClientDiscoveryObserver;
 
     public:
-        MOCK_METHOD(void, ServiceDiscovered, (const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& endHandle), (override));
-        MOCK_METHOD(void, CharacteristicDiscovered, (const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& valueHandle, const GattCharacteristic::PropertyFlags& properties), (override));
-        MOCK_METHOD(void, DescriptorDiscovered, (const AttAttribute::Uuid& type, const AttAttribute::Handle& handle), (override));
+        MOCK_METHOD(void, ServiceDiscovered, (const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle endHandle), (override));
+        MOCK_METHOD(void, CharacteristicDiscovered, (const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties), (override));
+        MOCK_METHOD(void, DescriptorDiscovered, (const AttAttribute::Uuid& type, AttAttribute::Handle handle), (override));
 
         MOCK_METHOD(void, ServiceDiscoveryComplete, (), (override));
         MOCK_METHOD(void, CharacteristicDiscoveryComplete, (), (override));
@@ -40,9 +40,9 @@ namespace services
         : public GattClientDiscovery
     {
     public:
-         MOCK_METHOD(void, StartServiceDiscovery, (), (override));
-         MOCK_METHOD(void, StartCharacteristicDiscovery, (const GattService& service), (override));
-         MOCK_METHOD(void, StartDescriptorDiscovery, (const GattService& service), (override));
+        MOCK_METHOD(void, StartServiceDiscovery, (), (override));
+        MOCK_METHOD(void, StartCharacteristicDiscovery, (const GattService& service), (override));
+        MOCK_METHOD(void, StartDescriptorDiscovery, (const GattService& service), (override));
     };
 }
 

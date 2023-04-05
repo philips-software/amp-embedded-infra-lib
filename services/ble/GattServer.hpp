@@ -7,7 +7,6 @@
 #include "infra/util/Function.hpp"
 #include "infra/util/IntrusiveForwardList.hpp"
 #include "infra/util/Observer.hpp"
-#include "infra/util/Variant.hpp"
 #include "services/ble/Gatt.hpp"
 #include <array>
 
@@ -85,9 +84,6 @@ namespace services
 
         GattServerCharacteristic() = default;
         GattServerCharacteristic(const AttAttribute::Uuid& type, const PropertyFlags& properties, const PermissionFlags& permissions, uint16_t valueLength);
-        GattServerCharacteristic(GattServerCharacteristic& other) = delete;
-        GattServerCharacteristic& operator=(const GattServerCharacteristic& other) = delete;
-        virtual ~GattServerCharacteristic() = default;
 
         PermissionFlags Permissions() const;
         uint16_t ValueLength() const;
@@ -104,11 +100,9 @@ namespace services
     {
     public:
         explicit GattServerService(const AttAttribute::Uuid& type);
-        GattServerService(GattServerService& other) = delete;
-        GattServerService& operator=(const GattServerService& other) = delete;
-        virtual ~GattServerService() = default;
 
         void AddCharacteristic(GattServerCharacteristic& characteristic);
+        void RemoveCharacteristic(GattServerCharacteristic& characteristic);
         infra::IntrusiveForwardList<GattServerCharacteristic>& Characteristics();
         const infra::IntrusiveForwardList<GattServerCharacteristic>& Characteristics() const;
 
@@ -121,6 +115,11 @@ namespace services
     class GattServer
     {
     public:
+        GattServer() = default;
+        GattServer(GattServer& other) = delete;
+        GattServer& operator=(const GattServer& other) = delete;
+        virtual ~GattServer() = default;
+
         virtual void AddService(GattServerService& service) = 0;
     };
 

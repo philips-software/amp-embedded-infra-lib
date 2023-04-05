@@ -19,6 +19,11 @@ namespace services
         service.AddCharacteristic(*this);
     }
 
+    GattServerCharacteristicImpl::~GattServerCharacteristicImpl()
+    {
+        service.RemoveCharacteristic(*this);
+    }
+
     void GattServerCharacteristicImpl::Update(infra::ConstByteRange data, infra::Function<void()> onDone)
     {
         really_assert(GattServerCharacteristicOperationsObserver::Attached());
@@ -34,7 +39,7 @@ namespace services
 
     AttAttribute::Handle GattServerCharacteristicImpl::CharacteristicHandle() const
     {
-        return attribute.handle;
+        return handle;
     }
 
     void GattServerCharacteristicImpl::UpdateValue()

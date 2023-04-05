@@ -2,25 +2,16 @@
 
 namespace services
 {
-    GattClientDescriptor::GattClientDescriptor(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle)
-        : GattDescriptor(type, handle)
-    {}
-
-    GattClientCharacteristic::GattClientCharacteristic(GattClientInterface interface, const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& valueHandle, const GattCharacteristic::PropertyFlags& properties)
+    GattClientCharacteristic::GattClientCharacteristic(GattClientInterface interface, AttAttribute::Uuid type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties)
         : GattClientCharacteristic(type, handle, valueHandle, properties)
     {
         GattClientCharacteristicOperationsObserver::Attach(interface.operations);
-        GattClientUpdateObserver::Attach(interface.asyncUpdate);
+        GattClientStackUpdateObserver::Attach(interface.asyncUpdate);
     }
 
-    GattClientCharacteristic::GattClientCharacteristic(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& valueHandle, const GattCharacteristic::PropertyFlags& properties)
+    GattClientCharacteristic::GattClientCharacteristic(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties)
         : GattCharacteristic(type, handle, valueHandle, properties)
     { }
-
-    void GattClientCharacteristic::AddDescriptor(GattClientDescriptor& descriptor)
-    {
-        descriptors.push_front(descriptor);
-    }
 
     void GattClientCharacteristic::Read(infra::Function<void(const infra::ConstByteRange&)> onResponse)
     {
@@ -71,37 +62,22 @@ namespace services
         GattClientCharacteristicOperationsObserver::Subject().DisableIndication(*this, onDone);
     }
 
-    void GattClientCharacteristic::UpdateCallback(infra::Function<void(const infra::ConstByteRange&)> onUpdate)
+    void GattClientCharacteristic::UpdateReceived(AttAttribute::Handle handle, infra::ConstByteRange data)
     {
-        this->onUpdate = onUpdate;
+        constexpr uint8_t offsetCCCD = 1;
+
+        if ((handle + offsetCCCD) == Handle())
+            GattClientUpdateObserver::SubjectType::NotifyObservers([&data](auto& obs) { obs.UpdateReceived(data); });
     }
 
-    void GattClientCharacteristic::UpdateReceived(const AttAttribute::Handle& handle, infra::ConstByteRange data)
+    AttAttribute::Handle GattClientCharacteristic::CharacteristicValueHandle() const
     {
-        for (auto& descriptor : descriptors)
-        {
-            if (descriptor.Handle() == handle)
-            {
-                if (onUpdate)
-                    onUpdate(data);
-            }
-
-        }
+        return valueHandle;
     }
 
-    const AttAttribute::Handle& GattClientCharacteristic::CharacteristicValueHandle() const
-    {
-        return attribute.endHandle;
-    }
-
-    const GattCharacteristic::PropertyFlags& GattClientCharacteristic::CharacteristicProperties() const
+    GattCharacteristic::PropertyFlags GattClientCharacteristic::CharacteristicProperties() const
     {
         return properties;
-    }
-
-    const infra::IntrusiveForwardList<GattClientDescriptor>& GattClientCharacteristic::Descriptors() const
-    {
-        return descriptors;
     }
 
     GattClientService::GattClientService(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& endHandle)
@@ -118,17 +94,17 @@ namespace services
         return characteristics;
     }
 
-    void GattClientDiscoveryDecorator::ServiceDiscovered(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& endHandle)
+    void GattClientDiscoveryDecorator::ServiceDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle endHandle)
     {
         GattClientDiscoveryObserver::SubjectType::NotifyObservers([&type, &handle, &endHandle](auto& obs) { obs.ServiceDiscovered(type, handle, endHandle); });
     }
 
-    void GattClientDiscoveryDecorator::CharacteristicDiscovered(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& valueHandle, const GattCharacteristic::PropertyFlags& properties)
+    void GattClientDiscoveryDecorator::CharacteristicDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties)
     {
         GattClientDiscoveryObserver::SubjectType::NotifyObservers([&type, &handle, &valueHandle, &properties](auto& obs) { obs.CharacteristicDiscovered(type, handle, valueHandle, properties); });
     }
 
-    void GattClientDiscoveryDecorator::DescriptorDiscovered(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle)
+    void GattClientDiscoveryDecorator::DescriptorDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle)
     {
         GattClientDiscoveryObserver::SubjectType::NotifyObservers([&type, &handle](auto& obs) { obs.DescriptorDiscovered(type, handle); });
     }

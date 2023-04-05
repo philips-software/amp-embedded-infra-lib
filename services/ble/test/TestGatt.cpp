@@ -33,11 +33,3 @@ TEST(GattTest, characteristic_handles_are_accesible)
     EXPECT_EQ(0xCD, c.Handle());
     EXPECT_EQ(0xFE, c.ValueHandle());
 }
-
-TEST(GattTest, descriptor_handles_are_accesible)
-{
-    services::GattDescriptor d(uuid16, 0x56);
-
-    EXPECT_EQ(0x56, d.Handle());
-    EXPECT_EQ(0x42, d.Type().Get<services::AttAttribute::Uuid16>());
-}

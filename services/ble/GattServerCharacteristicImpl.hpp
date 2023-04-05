@@ -1,7 +1,7 @@
 #ifndef SERVICES_GATT_CHARACTERISTIC_IMPL_HPP
 #define SERVICES_GATT_CHARACTERISTIC_IMPL_HPP
 
-#include "services/ble/GattClient.hpp"
+#include "infra/util/Optional.hpp"
 #include "services/ble/GattServer.hpp"
 
 namespace services
@@ -13,6 +13,7 @@ namespace services
         GattServerCharacteristicImpl(GattServerService& service, const AttAttribute::Uuid& type, uint16_t valueLength);
         GattServerCharacteristicImpl(GattServerService& service, const AttAttribute::Uuid& type, uint16_t valueLength, PropertyFlags properties);
         GattServerCharacteristicImpl(GattServerService& service, const AttAttribute::Uuid& type, uint16_t valueLength, PropertyFlags properties, PermissionFlags permissions);
+        virtual ~GattServerCharacteristicImpl();
 
         // Implementation of GattServerCharacteristic
         virtual void Update(infra::ConstByteRange data, infra::Function<void()> onDone);
@@ -32,7 +33,7 @@ namespace services
         void UpdateValue();
 
     private:
-        const GattServerService& service;
+        GattServerService& service;
         uint16_t valueLength;
         PermissionFlags permissions;
         infra::Optional<UpdateContext> updateContext;

@@ -27,7 +27,7 @@ namespace services
 
     MATCHER_P(ObjectContentsEqual, x, negation ? "Contents not equal" : "Contents are equal")
     {
-        return (x.eventType == arg.eventType) && (x.addressType == arg.addressType) && (x.address == arg.address) && (x.rssi == arg.rssi);
+        return x.eventType == arg.eventType && x.addressType == arg.addressType && x.address == arg.address && x.rssi == arg.rssi;
     }
 
     TEST_F(GapCentralDecoratorTest, forward_all_state_changed_events_to_observers)

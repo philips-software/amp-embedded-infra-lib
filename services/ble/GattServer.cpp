@@ -49,6 +49,11 @@ namespace services
         characteristics.push_front(characteristic);
     }
 
+    void GattServerService::RemoveCharacteristic(GattServerCharacteristic& characteristic)
+    {
+        characteristics.erase_slow(characteristic);
+    }
+
     infra::IntrusiveForwardList<GattServerCharacteristic>& GattServerService::Characteristics()
     {
         return characteristics;
