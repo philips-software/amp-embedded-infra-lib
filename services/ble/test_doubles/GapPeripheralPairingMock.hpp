@@ -14,7 +14,7 @@ namespace services
         MOCK_METHOD(void, SetSecurityMode, (GapSecurityMode mode, GapSecurityLevel level));
         MOCK_METHOD(void, SetIoCapabilities, (GapIoCapabilities caps));
         MOCK_METHOD(void, AuthenticateWithPasskey, (uint32_t passkey));
-        MOCK_METHOD(bool, NumericComparisonConfirm, (bool accept));
+        MOCK_METHOD(void, NumericComparisonConfirm, (bool accept));
     };
 }
 
