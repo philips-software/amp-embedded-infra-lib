@@ -19,6 +19,7 @@ function(emil_generate_artifacts)
                 TARGET ${EMIL_TARGET}
                 POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E echo "Generation of bin for target ${EMIL_TARGET} requested, but no EMIL_OBJ_COPY_TOOL is defined"
+                COMMAND ${CMAKE_COMMAND} -E false
             )
         else()
             add_custom_command(
@@ -35,6 +36,7 @@ function(emil_generate_artifacts)
                 TARGET ${EMIL_TARGET}
                 POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E echo "Generation of hex for target ${EMIL_TARGET} requested, but no EMIL_OBJ_COPY_TOOL is defined"
+                COMMAND ${CMAKE_COMMAND} -E false
             )
         else()
             add_custom_command(
@@ -51,6 +53,7 @@ function(emil_generate_artifacts)
                 TARGET ${EMIL_TARGET}
                 POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E echo "Generation of lst for target ${EMIL_TARGET} requested, but no EMIL_OBJ_DUMP_TOOL is defined"
+                COMMAND ${CMAKE_COMMAND} -E false
             )
         else()
             add_custom_command(
