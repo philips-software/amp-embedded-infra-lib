@@ -9,8 +9,12 @@ ccola_component(ble static_library)
         Gap.hpp
         Gatt.cpp
         Gatt.hpp
-        GattCharacteristicImpl.cpp
-        GattCharacteristicImpl.hpp
+        GattClient.cpp
+        GattClient.hpp
+        GattServer.cpp
+        GattServer.hpp
+        GattServerCharacteristicImpl.cpp
+        GattServerCharacteristicImpl.hpp
     )
 
     ccola_dependencies(

@@ -9,7 +9,8 @@ ccola_component(ble_test_doubles x86: source other: noncompile)
         GapPeripheralPairingMock.hpp
         GapPeripheralObserverMock.hpp
         GapPeripheralBondingObserverMock.hpp
-        GattMock.hpp
+        GattClientMock.hpp
+        GattServerMock.hpp
     )
 
     ccola_dependencies(
