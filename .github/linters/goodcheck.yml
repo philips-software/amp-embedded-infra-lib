@@ -1,0 +1,26 @@
+---
+rules:
+  - id: amp.supressions.sonar
+    pattern: ///\s*NOSONAR/
+    glob: "**/*.[c|h]pp"
+    severity: info
+    message: |
+      Try to minimize the use of static-analysis supressions
+
+  - id: amp.supressions.compiler-warning
+    pattern:
+      - /#pragma.*diagnostic ignored.*/
+      - /#pragma warning(.*)/
+    glob: "**/*.[c|h]pp"
+    severity: info
+    message: |
+      Try to minimize the use of warning supressions
+
+  - id: amp.no-pragma-once
+    pattern: /#pragma\s*once/
+    glob: "**/*.hpp"
+    severity: error
+    message: |
+      Do not use #pragma once
+
+exclude_binary: true
