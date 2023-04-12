@@ -42,6 +42,16 @@ namespace infra
         , errorPolicy(errorPolicy)
     {}
 
+    OutputStream::OutputStream(const OutputStream& other)
+        : writer(other.writer)
+        , errorPolicy(other.errorPolicy)
+    {}
+
+    OutputStream::OutputStream(OutputStream&& other)
+        : writer(std::move(other.writer))
+        , errorPolicy(std::move(other.errorPolicy))
+    {}
+
     bool OutputStream::Failed() const
     {
         return errorPolicy.Failed();

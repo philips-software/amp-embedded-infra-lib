@@ -47,6 +47,12 @@ namespace infra
         OutputStream(StreamWriter& writer, StreamErrorPolicy& errorPolicy);
 
     protected:
+        OutputStream(const OutputStream& other);
+        OutputStream(OutputStream&& other);
+
+        OutputStream& operator=(const OutputStream&) = delete;
+        OutputStream& operator=(OutputStream&&) = delete;
+
         ~OutputStream() = default;
 
     public:
