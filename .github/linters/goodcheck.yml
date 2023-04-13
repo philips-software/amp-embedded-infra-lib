@@ -1,20 +1,20 @@
 ---
 rules:
-  - id: amp.supressions.sonar
+  - id: amp.suppressions.sonar
     pattern: ///\s*NOSONAR/
     glob: "**/*.[c|h]pp"
     severity: info
     message: |
-      Try to minimize the use of static-analysis supressions
+      Try to minimize the use of static-analysis suppressions
 
-  - id: amp.supressions.compiler-warning
+  - id: amp.suppressions.compiler-warning
     pattern:
       - /#pragma.*diagnostic ignored.*/
       - /#pragma warning(.*)/
     glob: "**/*.[c|h]pp"
     severity: info
     message: |
-      Try to minimize the use of warning supressions
+      Try to minimize the use of warning suppressions
 
   - id: amp.no-pragma-once
     pattern: /#pragma\s*once/
