@@ -42,6 +42,7 @@ namespace infra
         , errorPolicy(errorPolicy)
     {}
 
+#if defined(_MSC_VER) && _MSC_VER <= 1929
     OutputStream::OutputStream(const OutputStream& other)
         : writer(other.writer)
         , errorPolicy(other.errorPolicy)
@@ -51,6 +52,7 @@ namespace infra
         : writer(std::move(other.writer))
         , errorPolicy(std::move(other.errorPolicy))
     {}
+#endif
 
     bool OutputStream::Failed() const
     {
