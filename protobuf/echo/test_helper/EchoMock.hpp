@@ -1,8 +1,8 @@
 #ifndef PROTOBUF_TEST_HELPER_ECHO_HPP
 #define PROTOBUF_TEST_HELPER_ECHO_HPP
 
-#include "gmock/gmock.h"
 #include "protobuf/echo/Echo.hpp"
+#include "gmock/gmock.h"
 
 namespace services
 {

@@ -4,8 +4,8 @@
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "protobuf/echo/Echo.hpp"
 #include "protobuf/echo/test/ServiceStub.hpp"
-#include "services/network/test_doubles/ConnectionMock.hpp"
 #include "protobuf/echo/test_helper/EchoMock.hpp"
+#include "services/network/test_doubles/ConnectionMock.hpp"
 
 class EchoOnConnectionTest
     : public testing::Test

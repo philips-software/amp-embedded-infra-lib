@@ -2,15 +2,7 @@
 
 namespace services
 {
-    bool TestService1::AcceptsService(uint32_t id) const
-    {
-        return id == serviceId;
-    }
-
-    void TestService1::Method(uint32_t value)
-    {}
-
-    void TestService1::Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, services::EchoErrorPolicy& errorPolicy)
+    void ServiceStub::Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, services::EchoErrorPolicy& errorPolicy)
     {
         infra::ProtoParser parser(contents.Parser());
 

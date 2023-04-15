@@ -8,112 +8,6 @@
 #include "protobuf/echo/test_helper/EchoMock.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 
-namespace
-{
-    class TestService1
-        : public services::Service
-    {
-    public:
-        using services::Service::Service;
-
-    public:
-        virtual bool AcceptsService(uint32_t id) const = 0;
-        virtual void Method(uint32_t value) = 0;
-
-    protected:
-        virtual void Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, services::EchoErrorPolicy& errorPolicy) override;
-
-    public:
-        static const uint32_t serviceId = 1;
-        static const uint32_t idMethod = 1;
-        static const uint32_t maxMessageSize = 18;
-    };
-
-    class TestService1Mock
-        : public TestService1
-    {
-    public:
-        using TestService1::TestService1;
-
-        MOCK_METHOD1(Method, void(uint32_t value));
-    };
-
-    class TestService1Proxy
-        : public services::ServiceProxy
-    {
-    public:
-        TestService1Proxy(services::Echo& echo);
-
-    public:
-        void Method(uint32_t value);
-
-    public:
-        static const uint32_t serviceId = 1;
-        static const uint32_t idMethod = 1;
-        static const uint32_t maxMessageSize = 18;
-    };
-
-    bool TestService1::AcceptsService(uint32_t id) const
-    {
-        return id == serviceId;
-    }
-
-    void TestService1::Method(uint32_t value)
-    {}
-
-    void TestService1::Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, services::EchoErrorPolicy& errorPolicy)
-    {
-        infra::ProtoParser parser(contents.Parser());
-
-        switch (methodId)
-        {
-            uint32_t value;
-
-            case idMethod:
-            {
-                while (!parser.Empty())
-                {
-                    infra::ProtoParser::Field field = parser.GetField();
-
-                    switch (field.second)
-                    {
-                        case 1:
-                            DeserializeField(services::ProtoUInt32(), parser, field, value);
-                            break;
-                        default:
-                            if (field.first.Is<infra::ProtoLengthDelimited>())
-                                field.first.Get<infra::ProtoLengthDelimited>().SkipEverything();
-                            break;
-                    }
-                }
-
-                if (!parser.FormatFailed())
-                    Method(value);
-                break;
-            }
-            default:
-                errorPolicy.MethodNotFound(serviceId, methodId);
-                contents.SkipEverything();
-        }
-    }
-
-    TestService1Proxy::TestService1Proxy(services::Echo& echo)
-        : services::ServiceProxy(echo, maxMessageSize)
-    {}
-
-    void TestService1Proxy::Method(uint32_t value)
-    {
-        infra::DataOutputStream::WithErrorPolicy stream(Rpc().SendStreamWriter());
-        infra::ProtoFormatter formatter(stream);
-        formatter.PutVarInt(serviceId);
-        {
-            infra::ProtoLengthDelimitedFormatter argumentFormatter = formatter.LengthDelimitedFormatter(idMethod);
-            SerializeField(services::ProtoUInt32(), formatter, value, 1);
-        }
-        Rpc().Send();
-    }
-}
-
 class EchoOnMessageCommunicationTest
     : public testing::Test
     , public infra::EventDispatcherWithWeakPtrFixture
@@ -134,7 +28,7 @@ public:
     testing::StrictMock<services::MessageCommunicationMock> messageCommunication;
     services::EchoOnMessageCommunication echo{ messageCommunication, errorPolicy };
 
-    TestService1Proxy serviceProxy{ echo };
+    services::ServiceStubProxy serviceProxy{ echo };
     testing::StrictMock<services::ServiceStub> service{ echo };
 };
 
