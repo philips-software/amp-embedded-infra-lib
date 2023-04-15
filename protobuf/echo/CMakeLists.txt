@@ -19,3 +19,7 @@ if (BUILD_TESTING)
 endif()
 
 include(protocol_buffer_echo.cmake)
+
+if (EMIL_BUILD_TESTS)
+    add_subdirectory(test)
+endif()
