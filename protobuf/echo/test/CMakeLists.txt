@@ -3,6 +3,7 @@ emil_add_test(protobuf.echo_test)
 
 target_sources(protobuf.echo_test PRIVATE
     TestEchoOnConnection.cpp
+    TestEchoOnMessageCommunication.cpp
 )
 
 target_link_libraries(protobuf.echo_test PUBLIC
