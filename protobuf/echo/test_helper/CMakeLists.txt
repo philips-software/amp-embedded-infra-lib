@@ -7,4 +7,5 @@ target_link_libraries(protobuf.test_helper PUBLIC
 target_sources(protobuf.test_helper PRIVATE
     EchoSingleLoopback.cpp
     EchoSingleLoopback.hpp
+    EchoMock.hpp
 )

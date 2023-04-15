@@ -4,29 +4,24 @@
 #include "infra/util/ConstructBin.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "protobuf/echo/Echo.hpp"
+#include "protobuf/echo/test/ServiceStub.hpp"
+#include "protobuf/echo/test_helper/EchoMock.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
-#include "gmock/gmock.h"
 
 namespace
 {
-    class EchoErrorPolicyMock
-        : public services::EchoErrorPolicy
-    {
-    public:
-        MOCK_METHOD0(MessageFormatError, void());
-        MOCK_METHOD1(ServiceNotFound, void(uint32_t serviceId));
-        MOCK_METHOD2(MethodNotFound, void(uint32_t serviceId, uint32_t methodId));
-    };
-
     class TestService1
         : public services::Service
     {
     public:
-        TestService1(services::Echo& echo);
+        using services::Service::Service;
 
     public:
+        virtual bool AcceptsService(uint32_t id) const = 0;
         virtual void Method(uint32_t value) = 0;
-        virtual void Handle(uint32_t methodId, infra::ProtoLengthDelimited& contents, services::EchoErrorPolicy& errorPolicy) override;
+
+    protected:
+        virtual void Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, services::EchoErrorPolicy& errorPolicy) override;
 
     public:
         static const uint32_t serviceId = 1;
@@ -58,14 +53,15 @@ namespace
         static const uint32_t maxMessageSize = 18;
     };
 
-      TestService1::TestService1(services::Echo& echo)
-        : services::Service(echo, serviceId)
-    {}
+    bool TestService1::AcceptsService(uint32_t id) const
+    {
+        return id == serviceId;
+    }
 
     void TestService1::Method(uint32_t value)
     {}
 
-    void TestService1::Handle(uint32_t methodId, infra::ProtoLengthDelimited& contents, services::EchoErrorPolicy& errorPolicy)
+    void TestService1::Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, services::EchoErrorPolicy& errorPolicy)
     {
         infra::ProtoParser parser(contents.Parser());
 
@@ -96,7 +92,7 @@ namespace
                 break;
             }
             default:
-                errorPolicy.MethodNotFound(ServiceId(), methodId);
+                errorPolicy.MethodNotFound(serviceId, methodId);
                 contents.SkipEverything();
         }
     }
@@ -116,14 +112,6 @@ namespace
         }
         Rpc().Send();
     }
-
-    class MessageCommunicationMock
-        : public services::MessageCommunication
-    {
-    public:
-        MOCK_METHOD1(RequestSendMessage, void(uint16_t size));
-        MOCK_CONST_METHOD0(MaxSendMessageSize, std::size_t());
-    };
 }
 
 class EchoOnMessageCommunicationTest
@@ -131,18 +119,23 @@ class EchoOnMessageCommunicationTest
     , public infra::EventDispatcherWithWeakPtrFixture
 {
 public:
+    EchoOnMessageCommunicationTest()
+    {
+        EXPECT_CALL(service, AcceptsService(1)).WillRepeatedly(testing::Return(true));
+    }
+
     void ReceiveMessage(infra::ConstByteRange data)
     {
         infra::ByteInputStreamReader reader{ data };
         messageCommunication.GetObserver().ReceivedMessage(infra::UnOwnedSharedPtr(reader));
     }
 
-    testing::StrictMock<EchoErrorPolicyMock> errorPolicy;
-    testing::StrictMock<MessageCommunicationMock> messageCommunication;
+    testing::StrictMock<services::EchoErrorPolicyMock> errorPolicy;
+    testing::StrictMock<services::MessageCommunicationMock> messageCommunication;
     services::EchoOnMessageCommunication echo{ messageCommunication, errorPolicy };
 
     TestService1Proxy serviceProxy{ echo };
-    testing::StrictMock<TestService1Mock> service{ echo };
+    testing::StrictMock<services::ServiceStub> service{ echo };
 };
 
 TEST_F(EchoOnMessageCommunicationTest, invoke_service_proxy_method)
@@ -192,6 +185,7 @@ TEST_F(EchoOnMessageCommunicationTest, MessageFormatError_is_reported_when_param
 
 TEST_F(EchoOnMessageCommunicationTest, ServiceNotFound_is_reported)
 {
+    EXPECT_CALL(service, AcceptsService(2)).WillOnce(testing::Return(false));
     EXPECT_CALL(errorPolicy, ServiceNotFound(2));
     ReceiveMessage(infra::ConstructBin()({ 2, 10, 2, 8, 5 }).Range());
 }

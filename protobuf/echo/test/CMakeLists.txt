@@ -2,6 +2,8 @@ add_executable(protobuf.echo_test)
 emil_add_test(protobuf.echo_test)
 
 target_sources(protobuf.echo_test PRIVATE
+    ServiceStub.cpp
+    ServiceStub.hpp
     TestEchoOnConnection.cpp
     TestEchoOnMessageCommunication.cpp
 )
