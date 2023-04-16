@@ -6,6 +6,7 @@ target_sources(protobuf.echo_test PRIVATE
     ServiceStub.hpp
     TestEchoOnConnection.cpp
     TestEchoOnMessageCommunication.cpp
+    TestServiceForwarder.cpp
 )
 
 target_link_libraries(protobuf.echo_test PUBLIC
