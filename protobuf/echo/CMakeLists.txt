@@ -15,7 +15,7 @@ target_sources(protobuf.echo PRIVATE
 )
 
 if (BUILD_TESTING)
-    add_subdirectory(test_helper)
+    add_subdirectory(test_doubles)
 endif()
 
 include(protocol_buffer_echo.cmake)
