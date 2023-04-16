@@ -40,8 +40,7 @@ TEST_F(ServiceForwarderAllTest, forward_message)
 
                     EXPECT_EQ((std::vector<uint8_t>{ 1, 42, 5, 1, 2, 3, 4, 5 }), writer.Storage());
                 }));
-            service.HandleMethod(1, 5, contents, errorPolicy);
-        });
+            service.HandleMethod(1, 5, contents, errorPolicy); });
 }
 
 class ServiceForwarderTest
