@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
         with:
           persist-credentials: false
-      - uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
+      - uses: hendrikmuhs/ccache-action@ca3acd2731eef11f1572ccb126356c2f9298d35e # v1.2.9
         with:
           key: ${{ github.job }}-${{ matrix.os }}
           variant: sccache
@@ -56,7 +56,7 @@ jobs:
         with:
           release: ${{ matrix.gcc }}
       - run: sudo apt-get update && sudo apt-get install ninja-build
-      - uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
+      - uses: hendrikmuhs/ccache-action@ca3acd2731eef11f1572ccb126356c2f9298d35e # v1.2.9
         with:
           key: ${{ github.job }}-${{ matrix.gcc }}-${{ matrix.configuration }}
       - uses: lukka/run-cmake@2d1ee0acb9c4f656ec9128fc7387d82ac4539816 # v10.3
@@ -79,7 +79,7 @@ jobs:
         with:
           release: "10.3-2021.10"
       - run: sudo apt-get update && sudo apt-get install ninja-build
-      - uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
+      - uses: hendrikmuhs/ccache-action@ca3acd2731eef11f1572ccb126356c2f9298d35e # v1.2.9
         with:
           key: ${{ github.job }}
       - uses: lukka/run-cmake@2d1ee0acb9c4f656ec9128fc7387d82ac4539816 # v10.3

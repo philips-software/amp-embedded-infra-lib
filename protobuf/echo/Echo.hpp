@@ -11,6 +11,7 @@
 
 namespace services
 {
+    class Echo;
     class Service;
     class ServiceProxy;
 
@@ -160,39 +161,34 @@ namespace services
     extern EchoErrorPolicyAbortOnMessageFormatError echoErrorPolicyAbortOnMessageFormatError;
     extern EchoErrorPolicyAbort echoErrorPolicyAbort;
 
+    class Service
+        : public infra::Observer<Service, Echo>
+    {
+    public:
+        using infra::Observer<Service, Echo>::Observer;
+
+        virtual bool AcceptsService(uint32_t id) const = 0;
+
+        void MethodDone();
+        bool InProgress() const;
+        void HandleMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy);
+
+    protected:
+        Echo& Rpc();
+        virtual void Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy) = 0;
+
+    private:
+        bool inProgress = false;
+    };
+
     class Echo
+        : public infra::Subject<Service>
     {
     public:
         virtual void RequestSend(ServiceProxy& serviceProxy) = 0;
         virtual infra::StreamWriter& SendStreamWriter() = 0;
         virtual void Send() = 0;
         virtual void ServiceDone(Service& service) = 0;
-        virtual void AttachService(Service& service) = 0;
-        virtual void DetachService(Service& service) = 0;
-    };
-
-    class Service
-        : public infra::IntrusiveList<Service>::NodeType
-    {
-    public:
-        Service(Echo& echo, uint32_t id);
-        Service(const Service& other) = delete;
-        Service& operator=(const Service& other) = delete;
-        ~Service();
-
-        void MethodDone();
-        uint32_t ServiceId() const;
-        bool InProgress() const;
-        void HandleMethod(uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy);
-
-    protected:
-        Echo& Rpc();
-        virtual void Handle(uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy) = 0;
-
-    private:
-        Echo& echo;
-        uint32_t serviceId;
-        bool inProgress = false;
     };
 
     class ServiceProxy
@@ -212,24 +208,6 @@ namespace services
         infra::Function<void()> onGranted;
     };
 
-    class ServiceForwarder
-        : public services::Service
-        , private services::ServiceProxy
-    {
-    public:
-        ServiceForwarder(infra::ByteRange messageBuffer, Echo& echo, uint32_t id, Echo& forwardTo);
-
-        template<std::size_t MaxMessageSize>
-        using WithMaxMessageSize = infra::WithStorage<ServiceForwarder, std::array<uint8_t, MaxMessageSize>>;
-
-        virtual void Handle(uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy) override;
-
-    private:
-        const infra::ByteRange messageBuffer;
-        infra::Optional<infra::ByteRange> bytes;
-        uint32_t methodId;
-    };
-
     class EchoOnStreams
         : public Echo
         , public infra::EnableSharedFromThis<EchoOnStreams>
@@ -242,8 +220,6 @@ namespace services
         virtual infra::StreamWriter& SendStreamWriter() override;
         virtual void Send() override;
         virtual void ServiceDone(Service& service) override;
-        virtual void AttachService(Service& service) override;
-        virtual void DetachService(Service& service) override;
 
     protected:
         virtual void RequestSendStream(std::size_t size) = 0;
@@ -258,7 +234,6 @@ namespace services
         EchoErrorPolicy& errorPolicy;
 
     private:
-        infra::IntrusiveList<Service> services;
         infra::SharedPtr<infra::StreamWriter> streamWriter;
         infra::IntrusiveList<ServiceProxy> sendRequesters;
         infra::Optional<uint32_t> serviceBusy;

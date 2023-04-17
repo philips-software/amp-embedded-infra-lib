@@ -1,0 +1,3 @@
+add_executable(examples.websocket_client)
+target_sources(examples.websocket_client PRIVATE Client.cpp)
+target_link_libraries(examples.websocket_client PRIVATE args services.network_instantiations hal.generic)

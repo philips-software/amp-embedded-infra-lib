@@ -29,36 +29,47 @@ namespace main_
     class EchoForwarder
     {
     public:
-        EchoForwarder(services::Echo& echo, hal::SerialCommunication& serialCommunication)
-            : echo(echo)
-            , echoStack(serialCommunication)
+        EchoForwarder(services::Echo& from, services::Echo& to)
+            : from(from)
+            , to(to)
         {}
 
         void AddService(uint32_t serviceId, uint32_t responseId)
         {
-            AddForwarder(echo, serviceId, echoStack);
-            AddForwarder(echoStack, responseId, echo);
+            AddForwarder(from, serviceId, to);
+            AddForwarder(to, responseId, from);
         }
 
         void AddResponse(uint32_t responseId)
         {
-            AddForwarder(echoStack, responseId, echo);
+            AddForwarder(to, responseId, from);
         }
 
     private:
         void AddForwarder(services::Echo& forwardFrom, uint32_t id, services::Echo& forwardTo)
         {
-            assert(!forwarderStorage.full() && !forwarders.full());
-            forwarderStorage.emplace_back();
-            forwarders.emplace_back(forwarderStorage.back(), forwardFrom, id, forwardTo);
+            forwarders.emplace_back(forwardFrom, id, forwardTo);
         }
 
     private:
-        services::Echo& echo;
-        EchoOnSerialCommunication<MessageSize> echoStack;
+        services::Echo& from;
+        services::Echo& to;
 
-        infra::BoundedVector<services::ServiceForwarder>::WithMaxSize<MaxServices> forwarders;
-        typename infra::BoundedVector<std::array<uint8_t, MessageSize>>::template WithMaxSize<MaxServices> forwarderStorage;
+        typename infra::BoundedVector<services::ServiceForwarder::WithMaxMessageSize<MessageSize>>::template WithMaxSize<MaxServices> forwarders;
+    };
+
+    template<std::size_t MessageSize, std::size_t MaxServices>
+    class EchoForwarderToSerial
+        : public EchoForwarder<MessageSize, MaxServices>
+    {
+    public:
+        EchoForwarderToSerial(services::Echo& from, hal::SerialCommunication& toSerial)
+            : EchoForwarder<MessageSize, MaxServices>(from, toSerial)
+            , to(toSerial)
+        {}
+
+    private:
+        EchoOnSerialCommunication<MessageSize> to;
     };
 }
 

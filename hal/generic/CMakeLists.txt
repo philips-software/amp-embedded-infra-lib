@@ -10,6 +10,8 @@ if (EMIL_HOST_BUILD)
     target_sources(hal.generic PRIVATE
         FileSystemGeneric.cpp
         FileSystemGeneric.hpp
+        SerialCommunicationConsole.cpp
+        SerialCommunicationConsole.hpp
         SynchronousRandomDataGeneratorGeneric.cpp
         SynchronousRandomDataGeneratorGeneric.hpp
         TimeKeeperGeneric.cpp
