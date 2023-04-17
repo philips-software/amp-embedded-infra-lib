@@ -1,36 +1,48 @@
 function(emil_fetch_echo_plugins)
+    # This function will first try to use `find_package` to import
+    # echo plug-in executables. If there is an installed version
+    # of emil present those echo plug-ins will be used.
+    # Otherwise the latest emil release will be downloaded and those
+    # echo plug-ins will be used instead.
+    #
+    # (See: https://cmake.org/cmake/help/latest/module/FetchContent.html#commands)
+
     if (EMIL_HOST_BUILD)
         # In a host build we use the built echo plug-ins
         return()
     endif()
 
-    FetchContent_GetProperties(echoplugins)
-    if (NOT echoplugins_POPULATED)
-        set(emil_version "3.1.0") # x-release-please-version
+    set(emil_version "3.1.0") # x-release-please-version
 
-        if (CMAKE_HOST_WIN32)
-            set(os_postfix "win64")
-            set(host_executable_postfix ".exe")
-        elseif (CMAKE_HOST_APPLE)
-            set(os_postfix "Darwin")
-        elseif (CMAKE_HOST_UNIX)
-            set(os_postfix "Linux")
-        else()
-            message(FATAL_ERROR "No suitable echo plugin found for ${CMAKE_HOST_SYSTEM_NAME} (${CMAKE_HOST_SYSTEM_PROCESSOR})")
-        endif()
+    if (CMAKE_HOST_WIN32)
+        set(os_postfix "win64")
+        set(host_executable_postfix ".exe")
+    elseif (CMAKE_HOST_APPLE)
+        set(os_postfix "Darwin")
+    elseif (CMAKE_HOST_UNIX)
+        set(os_postfix "Linux")
+    else()
+        message(FATAL_ERROR "No suitable echo plugin found for ${CMAKE_HOST_SYSTEM_NAME} (${CMAKE_HOST_SYSTEM_PROCESSOR})")
+    endif()
 
-        FetchContent_Declare(echoplugins
-            URL https://github.com/philips-software/amp-embedded-infra-lib/releases/download/v${emil_version}/emil-${emil_version}-${os_postfix}.zip
-        )
-        FetchContent_MakeAvailable(echoplugins)
+    FetchContent_Declare(emil
+        URL https://github.com/philips-software/amp-embedded-infra-lib/releases/download/v${emil_version}/emil-${emil_version}-${os_postfix}.zip
+        FIND_PACKAGE_ARGS COMPONENTS Protobuf
+    )
+    FetchContent_MakeAvailable(emil)
 
-        foreach(language IN ITEMS "" "_csharp" "_java")
+    foreach(language IN ITEMS "" "_csharp" "_java")
+        if (NOT TARGET protobuf.protoc_echo_plugin${language})
+            if (NOT EXISTS "${emil_SOURCE_DIR}/")
+                message(FATAL_ERROR "FetchContent directory '${emil_SOURCE_DIR}' not found")
+            endif()
+
             add_executable(protobuf.protoc_echo_plugin${language} IMPORTED GLOBAL)
             set_target_properties(protobuf.protoc_echo_plugin${language} PROPERTIES
-                IMPORTED_LOCATION "${echoplugins_SOURCE_DIR}/bin/protobuf.protoc_echo_plugin${language}${host_executable_postfix}"
+                IMPORTED_LOCATION "${emil_SOURCE_DIR}/bin/protobuf.protoc_echo_plugin${language}${host_executable_postfix}"
             )
-        endforeach()
-    endif()
+        endif()
+    endforeach()
 endfunction()
 
 function(protocol_buffer_echo_generator target input)

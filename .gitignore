@@ -1,6 +1,7 @@
 .cache/
 .vs/
 [Bb]uild/
+install/
 megalinter-reports/
 out/
 reports/

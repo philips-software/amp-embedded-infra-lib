@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+list(APPEND CMAKE_SYSTEM_PREFIX_PATH "${CMAKE_INSTALL_PREFIX}")
 
 if (APPLE)
     set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "OS X target architectures")
@@ -78,7 +79,7 @@ option(EMIL_BUILD_TESTS "Enable building the tests" ${EMIL_DEFAULTOPT})
 option(EMIL_BUILD_EXAMPLES "Enable building the examples" ${EMIL_DEFAULTOPT})
 option(EMIL_ENABLE_FUZZING "Enable building the fuzzing targets" Off)
 option(EMIL_ENABLE_DOCKER_TOOLS "Enable shift-left tools (e.g. linters, formatters) that are run using Docker" On)
-option(EMIL_GENERATE_PACKAGE_CONFIG "Enable generation of package configuration and install files" On)
+option(EMIL_GENERATE_PACKAGE_CONFIG "Enable generation of package configuration and install files" ${EMIL_DEFAULTOPT})
 
 # Enable or disable optional features.
 option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of EmIL" On)
@@ -143,24 +144,22 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
         # Generate and install export file
         install(EXPORT emil${name}Targets
             FILE emil${name}Targets.cmake
-            NAMESPACE "${PROJECT_NAME}::"
             DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/emil
         )
 
         # Generate the export targets for the build tree
         export(EXPORT emil${name}Targets
             FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/emil${name}Targets.cmake"
-            NAMESPACE "${PROJECT_NAME}::"
         )
     endfunction()
 
-    foreach(target IN ITEMS Crypto Infra Hal Lwip Protobuf Services Upgrade)
+    foreach(target IN ITEMS Protobuf)
         generate_export_targets(${target})
     endforeach()
 
     write_basic_package_version_file(
         "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}ConfigVersion.cmake"
-        COMPATIBILITY AnyNewerVersion
+        COMPATIBILITY SameMajorVersion
         # When cross-compiling for a 32-bit architecture and re-using host tooling from a 64-bit architecture
         # ARCH_INDEPENDENT is necessary here. See: https://cmake.org/cmake/help/latest/module/CMakePackageConfigHelpers.html.
         ARCH_INDEPENDENT

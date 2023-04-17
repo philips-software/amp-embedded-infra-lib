@@ -24,7 +24,6 @@ function(add_mbedtls_target_properties)
         )
 
         set_target_properties(${target} PROPERTIES FOLDER External/MbedTLS)
-        install(TARGETS ${target} EXPORT emilCryptoTargets)
     endforeach()
 endfunction()
 

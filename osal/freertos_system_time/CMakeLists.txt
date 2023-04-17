@@ -1,5 +1,4 @@
 add_library(osal.freertos_system_time ${EMIL_EXCLUDE_FROM_ALL} STATIC)
-#install(TARGETS osal.freertos_system_time EXPORT emilOsalTargets)
 
 target_link_libraries(osal.freertos_system_time PUBLIC
     freertos_kernel

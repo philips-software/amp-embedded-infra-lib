@@ -1,5 +1,4 @@
 add_library(infra.event ${EMIL_EXCLUDE_FROM_ALL} STATIC)
-install(TARGETS infra.event EXPORT emilInfraTargets)
 
 target_link_libraries(infra.event PUBLIC
     infra.util

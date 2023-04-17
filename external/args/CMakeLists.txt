@@ -12,4 +12,3 @@ set(ARGS_BUILD_UNITTESTS Off CACHE INTERNAL "")
 FetchContent_MakeAvailable(args)
 
 set_target_properties(args PROPERTIES FOLDER External/args)
-install(TARGETS args EXPORT emilProtobufTargets)
