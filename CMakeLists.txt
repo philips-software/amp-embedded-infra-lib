@@ -169,7 +169,6 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
     configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in
         "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}Config.cmake"
         INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
-        NO_CHECK_REQUIRED_COMPONENTS_MACRO
     )
 
     install(FILES

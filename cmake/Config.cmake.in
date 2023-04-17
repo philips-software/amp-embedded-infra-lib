@@ -1,11 +1,5 @@
 @PACKAGE_INIT@
 
-set(supported_components Protobuf)
+include("${CMAKE_CURRENT_LIST_DIR}/emilProtobufTargets.cmake")
 
-foreach(component ${emil_FIND_COMPONENTS})
-  if (NOT component IN_LIST supported_components)
-    set(emil_FOUND False)
-    set(emil_NOT_FOUND_MESSAGE "Unsupported component: ${component}")
-  endif()
-  include("${CMAKE_CURRENT_LIST_DIR}/emil${component}Targets.cmake")
-endforeach()
+check_required_components(Protobuf)

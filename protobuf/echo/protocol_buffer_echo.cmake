@@ -22,27 +22,27 @@ function(emil_fetch_echo_plugins)
     elseif (CMAKE_HOST_UNIX)
         set(os_postfix "Linux")
     else()
-        message(FATAL_ERROR "No suitable echo plugin found for ${CMAKE_HOST_SYSTEM_NAME} (${CMAKE_HOST_SYSTEM_PROCESSOR})")
+        message(FATAL_ERROR "No suitable echo plug-in found for ${CMAKE_HOST_SYSTEM_NAME} (${CMAKE_HOST_SYSTEM_PROCESSOR})")
     endif()
 
-    FetchContent_Declare(emil
+    FetchContent_Declare(emil-host
         URL https://github.com/philips-software/amp-embedded-infra-lib/releases/download/v${emil_version}/emil-${emil_version}-${os_postfix}.zip
-        FIND_PACKAGE_ARGS COMPONENTS Protobuf
+        FIND_PACKAGE_ARGS NAMES emil
     )
-    FetchContent_MakeAvailable(emil)
+    FetchContent_MakeAvailable(emil-host)
 
-    foreach(language IN ITEMS "" "_csharp" "_java")
-        if (NOT TARGET protobuf.protoc_echo_plugin${language})
-            if (NOT EXISTS "${emil_SOURCE_DIR}/")
-                message(FATAL_ERROR "FetchContent directory '${emil_SOURCE_DIR}' not found")
+    if (NOT ${emil-host_FOUND})
+        foreach(language IN ITEMS "" "_csharp" "_java")
+            if (NOT TARGET protobuf.protoc_echo_plugin${language})
+                add_executable(protobuf.protoc_echo_plugin${language} IMPORTED GLOBAL)
+                set_target_properties(protobuf.protoc_echo_plugin${language} PROPERTIES
+                    IMPORTED_LOCATION "${emil-host_SOURCE_DIR}/bin/protobuf.protoc_echo_plugin${language}${host_executable_postfix}"
+                )
             endif()
-
-            add_executable(protobuf.protoc_echo_plugin${language} IMPORTED GLOBAL)
-            set_target_properties(protobuf.protoc_echo_plugin${language} PROPERTIES
-                IMPORTED_LOCATION "${emil_SOURCE_DIR}/bin/protobuf.protoc_echo_plugin${language}${host_executable_postfix}"
-            )
-        endif()
-    endforeach()
+        endforeach()
+    else()
+        message(STATUS "Using echo plug-ins from installed location")
+    endif()
 endfunction()
 
 function(protocol_buffer_echo_generator target input)
