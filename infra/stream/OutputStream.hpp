@@ -47,6 +47,24 @@ namespace infra
         OutputStream(StreamWriter& writer, StreamErrorPolicy& errorPolicy);
 
     protected:
+#if defined(_MSC_VER) && _MSC_VER <= 1929
+        /*
+            Visual Studio 2019 version 16.11.2 and lower have an issue
+            with some specific optimizations and OutputStream being
+            trivially copyable. Resulting in unitialized object
+            instances after copying an OutputStream.
+
+            By defining a copy and or move constructor the object
+            becomes non-trivially-copyable and the faulty optimization is not used.
+
+            _MSC_VER 1929 is MSVC++ 14.28 that ships with Visual Studio 2019 version 16.11.2
+        */
+        OutputStream(const OutputStream& other);
+        OutputStream(OutputStream&& other);
+
+        OutputStream& operator=(const OutputStream&) = delete;
+        OutputStream& operator=(OutputStream&&) = delete;
+#endif
         ~OutputStream() = default;
 
     public:
