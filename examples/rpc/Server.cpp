@@ -42,7 +42,7 @@ public:
     void ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, services::IPAddress address) override
     {
         if (connection)
-            connection->::services::EchoOnConnection::Subject().AbortAndDestroy();
+            connection->::services::ConnectionObserver::Subject().AbortAndDestroy();
 
         if (connection.Allocatable())
             createdObserver(connection.Emplace());
