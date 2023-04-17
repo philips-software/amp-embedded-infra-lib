@@ -148,7 +148,6 @@ if (EMIL_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
-emil_exclude_directory_from_clang_format(${CMAKE_BINARY_DIR})
 emil_clangformat_directories(emil DIRECTORIES .)
 
 if (EMIL_STANDALONE)
