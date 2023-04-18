@@ -12,6 +12,11 @@ function(emil_fetch_echo_plugins)
         return()
     endif()
 
+    FetchContent_GetProperties(echoplugin)
+    if (echoplugin_POPULATED)
+        return()
+    endif()
+
     set(emil_version "3.1.0") # x-release-please-version
 
     if (CMAKE_HOST_WIN32)
@@ -25,18 +30,18 @@ function(emil_fetch_echo_plugins)
         message(FATAL_ERROR "No suitable echo plug-in found for ${CMAKE_HOST_SYSTEM_NAME} (${CMAKE_HOST_SYSTEM_PROCESSOR})")
     endif()
 
-    FetchContent_Declare(emil-host
+    FetchContent_Declare(echoplugin
         URL https://github.com/philips-software/amp-embedded-infra-lib/releases/download/v${emil_version}/emil-${emil_version}-${os_postfix}.zip
-        FIND_PACKAGE_ARGS NAMES emil
+        FIND_PACKAGE_ARGS NAMES emil GLOBAL
     )
-    FetchContent_MakeAvailable(emil-host)
+    FetchContent_MakeAvailable(echoplugin)
 
-    if (NOT ${emil-host_FOUND})
+    if (NOT ${echoplugin_FOUND})
         foreach(language IN ITEMS "" "_csharp" "_java")
             if (NOT TARGET protobuf.protoc_echo_plugin${language})
                 add_executable(protobuf.protoc_echo_plugin${language} IMPORTED GLOBAL)
                 set_target_properties(protobuf.protoc_echo_plugin${language} PROPERTIES
-                    IMPORTED_LOCATION "${emil-host_SOURCE_DIR}/bin/protobuf.protoc_echo_plugin${language}${host_executable_postfix}"
+                    IMPORTED_LOCATION "${echoplugin_SOURCE_DIR}/bin/protobuf.protoc_echo_plugin${language}${host_executable_postfix}"
                 )
             endif()
         endforeach()
