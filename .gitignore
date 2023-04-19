@@ -1,6 +1,6 @@
 .cache/
 .vs/
-[Bb]uild/
+build/
 install/
 megalinter-reports/
 out/
