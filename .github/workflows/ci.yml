@@ -59,12 +59,11 @@ jobs:
       - uses: hendrikmuhs/ccache-action@ca3acd2731eef11f1572ccb126356c2f9298d35e # v1.2.9
         with:
           key: ${{ github.job }}-${{ matrix.gcc }}-${{ matrix.configuration }}
-      - run: |
-          echo "::add-matcher::.github/matchers/gcc-problem-matcher.json"
-          cmake --preset Host -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          cmake --build --preset Host-${{ matrix.configuration }}
-          cmake --preset Embedded -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          cmake --build --preset Embedded-${{ matrix.configuration }}
+      - uses: lukka/run-cmake@2d1ee0acb9c4f656ec9128fc7387d82ac4539816 # v10.3
+        with:
+          configurePreset: "Embedded"
+          buildPreset: "Embedded-${{ matrix.configuration }}"
+          configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"
   rtos:
     name: Embedded Build - RTOS
     runs-on: ubuntu-latest
@@ -82,10 +81,9 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install ninja-build
       - uses: hendrikmuhs/ccache-action@ca3acd2731eef11f1572ccb126356c2f9298d35e # v1.2.9
         with:
-          key: ${{ github.job }}-10.3-2021.10-RelWithDebInfo
-      - run: |
-          echo "::add-matcher::.github/matchers/gcc-problem-matcher.json"
-          cmake --preset Host -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          cmake --build --preset Host-RelWithDebInfo
-          cmake --preset Embedded-${{ matrix.rtos }} -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          cmake --build --preset Embedded-${{ matrix.rtos }}-RelWithDebInfo
+          key: ${{ github.job }}
+      - uses: lukka/run-cmake@2d1ee0acb9c4f656ec9128fc7387d82ac4539816 # v10.3
+        with:
+          configurePreset: "Embedded-${{ matrix.rtos }}"
+          buildPreset: "Embedded-${{ matrix.rtos }}-RelWithDebInfo"
+          configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"

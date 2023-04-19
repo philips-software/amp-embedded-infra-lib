@@ -41,8 +41,6 @@ target_link_libraries(osal.freertos_osal PUBLIC
     freertos_kernel_port
 )
 
-#install(TARGETS osal.freertos_osal freertos_config freertos_kernel freertos_kernel_port EXPORT emilOsalTargets)
-
 emil_exclude_from_clang_format(freertos_config)
 emil_exclude_from_clang_format(freertos_kernel)
 emil_exclude_from_clang_format(freertos_kernel_port)

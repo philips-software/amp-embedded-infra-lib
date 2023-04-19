@@ -4,9 +4,11 @@
     {
       "name": "defaults",
       "hidden": true,
-      "binaryDir": "${sourceDir}/Build/${presetName}",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "installDir": "${sourceDir}/install",
       "cacheVariables": {
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "On"
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "On",
+        "CMAKE_COMPILE_WARNING_AS_ERROR": "On"
       }
     },
     {
@@ -82,7 +84,6 @@
       "toolchainFile": "${sourceDir}/cmake/toolchain-arm-gcc-m4-fpv4-sp-d16.cmake",
       "cacheVariables": {
         "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo;MinSizeRel",
-        "CMAKE_PREFIX_PATH": "${sourceDir}/Build/Host",
         "TARGET_CORTEX": "m4"
       },
       "generator": "Ninja Multi-Config"

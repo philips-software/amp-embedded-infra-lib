@@ -1,5 +1,4 @@
 add_library(crypto.micro_ecc ${EMIL_EXCLUDE_FROM_ALL} STATIC)
-install(TARGETS crypto.micro_ecc EXPORT emilCryptoTargets)
 
 target_include_directories(crypto.micro_ecc PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/../../>"

@@ -1,5 +1,4 @@
 add_library(lwip.lwip ${EMIL_EXCLUDE_FROM_ALL} STATIC)
-install(TARGETS lwip.lwip EXPORT emilLwipTargets)
 
 target_include_directories(lwip.lwip PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src/include/>"

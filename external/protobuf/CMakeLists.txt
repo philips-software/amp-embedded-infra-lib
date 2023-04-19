@@ -32,8 +32,6 @@ if (EMIL_HOST_BUILD)
                 # This should be re-evaluated when https://github.com/protocolbuffers/protobuf/issues/9817 is fixed
                 set_target_properties(${target} PROPERTIES COMPILE_WARNING_AS_ERROR Off)
             endif()
-
-            install(TARGETS ${target} EXPORT emilProtobufTargets)
         endforeach()
     endfunction()
 

@@ -1,5 +1,4 @@
 add_library(services.tracer ${EMIL_EXCLUDE_FROM_ALL} STATIC)
-install(TARGETS services.tracer EXPORT emilServicesTargets)
 
 target_link_libraries(services.tracer PUBLIC
     hal.interfaces

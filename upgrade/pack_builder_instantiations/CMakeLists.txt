@@ -1,6 +1,5 @@
 if (EMIL_HOST_BUILD)
     add_library(upgrade.pack_builder_instantiations ${EMIL_EXCLUDE_FROM_ALL} STATIC)
-    install(TARGETS upgrade.pack_builder_instantiations EXPORT emilUpgradeTargets)
 
     target_link_libraries(upgrade.pack_builder_instantiations PUBLIC
         args

@@ -1,6 +1,6 @@
 if (EMIL_HOST_BUILD)
     add_executable(upgrade.security_key_generator)
-    install(TARGETS upgrade.security_key_generator EXPORT emilUpgradeTargets)
+    install(TARGETS upgrade.security_key_generator EXPORT emilUpgradeTargets DESTINATION bin)
 
     target_link_libraries(upgrade.security_key_generator PUBLIC
         args

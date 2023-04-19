@@ -1,6 +1,5 @@
 if (EMIL_HOST_BUILD)
     add_library(services.network_instantiations ${EMIL_EXCLUDE_FROM_ALL} STATIC)
-    install(TARGETS services.network_instantiations EXPORT emilServicesTargets)
 
     target_sources(services.network_instantiations PRIVATE
         NameLookup.cpp
