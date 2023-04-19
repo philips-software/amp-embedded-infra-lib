@@ -157,7 +157,7 @@ int main(int argc, const char* argv[], const char* env[])
 
         static services::ConnectionFactoryWithNameResolverImpl::WithStorage<1> connectionFactory(network.ConnectionFactory(), network.NameResolver());
         static services::HttpClientConnectorWithNameResolverImpl<> clientConnector{ connectionFactory };
-        static infra::Creator<services::Stoppable, services::HttpClientWebSocketInitiation, void(services::WebSocketClientObserverFactory& clientObserverFactory, services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)> httpClientInitiationCreator{ [](infra::Optional<services::HttpClientWebSocketInitiation>& value, services::WebSocketClientObserverFactory& clientObserverFactory,
+        static infra::Creator<services::Stoppable, services::HttpClientWebSocketInitiation, void(services::WebSocketClientObserverFactory & clientObserverFactory, services::HttpClientWebSocketInitiationResult & result, hal::SynchronousRandomDataGenerator & randomDataGenerator)> httpClientInitiationCreator{ [](infra::Optional<services::HttpClientWebSocketInitiation>& value, services::WebSocketClientObserverFactory& clientObserverFactory,
                                                                                                                                                                                                                                                                                                                         services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)
             {
                 value.Emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
