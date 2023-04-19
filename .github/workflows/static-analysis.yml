@@ -6,7 +6,6 @@ on:
     branches: [develop, modern-cmake]
   pull_request:
     types: [opened, synchronize, reopened]
-  merge_group:
 
 permissions:
   contents: read
