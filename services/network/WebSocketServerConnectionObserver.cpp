@@ -55,7 +55,8 @@ namespace services
 
     std::size_t WebSocketServerConnectionObserver::MaxSendStreamSize() const
     {
-        return std::min(sendBuffer.max_size(), Subject().MaxSendStreamSize() - 4);
+        static constexpr uint8_t frameDataSize = 4;
+        return std::min(sendBuffer.max_size(), Subject().MaxSendStreamSize() - frameDataSize);
     }
 
     infra::SharedPtr<infra::StreamReaderWithRewinding> WebSocketServerConnectionObserver::ReceiveStream()
