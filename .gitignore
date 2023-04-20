@@ -1,5 +1,6 @@
 .cache/
 .vs/
+.xwin-cache/
 build/
 install/
 megalinter-reports/
