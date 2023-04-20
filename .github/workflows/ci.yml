@@ -2,8 +2,6 @@
 name: Continuous Integration
 
 on:
-  push:
-    branches: [develop, modern-cmake]
   pull_request:
     types: [opened, synchronize, reopened]
   merge_group:
