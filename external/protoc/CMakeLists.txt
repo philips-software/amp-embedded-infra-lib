@@ -2,36 +2,26 @@ function(emil_fetch_protocol_buffer_compiler)
     set(protobuf_version "21.12")
 
     if (CMAKE_HOST_WIN32)
-        FetchContent_Declare(protoc
-            URL https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_version}/protoc-${protobuf_version}-win32.zip
-        )
+        set(os_postfix "win32")
+        set(host_executable_postfix ".exe")
     elseif (CMAKE_HOST_APPLE)
-        FetchContent_Declare(protoc
-            URL https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_version}/protoc-${protobuf_version}-osx-universal_binary.zip
-        )
+        set(os_postfix "osx-universal_binary")
     elseif (CMAKE_HOST_UNIX)
         string(REPLACE "aarch64" "aarch_64" protoc_arch ${CMAKE_HOST_SYSTEM_PROCESSOR})
-        FetchContent_Declare(protoc
-            URL https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_version}/protoc-${protobuf_version}-linux-${protoc_arch}.zip
-        )
+        set(os_postfix "linux-${protoc_arch}")
     else()
         message(FATAL_ERROR "No suitable proto compiler found for ${CMAKE_HOST_SYSTEM_NAME} (${CMAKE_HOST_SYSTEM_PROCESSOR})")
     endif()
 
+    FetchContent_Declare(protoc
+        URL https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_version}/protoc-${protobuf_version}-${os_postfix}.zip
+    )
     FetchContent_MakeAvailable(protoc)
 
-    if (CMAKE_HOST_WIN32)
-        set(EMIL_PROTOC_COMPILER_BINARY "${protoc_SOURCE_DIR}/bin/protoc.exe" CACHE INTERNAL "")
-    else()
-        set(EMIL_PROTOC_COMPILER_BINARY "${protoc_SOURCE_DIR}/bin/protoc" CACHE INTERNAL "")
-    endif()
+    set(EMIL_PROTOC_COMPILER_BINARY "${protoc_SOURCE_DIR}/bin/protoc${host_executable_postfix}" CACHE INTERNAL "")
 endfunction()
 
 function(protocol_buffer_generator)
-    if (CMAKE_CROSSCOMPILING)
-        find_package(emil COMPONENTS Infra Hal Crypto Services Protobuf REQUIRED)
-    endif()
-
     set(singleArgs TARGET INPUT GENERATOR PATH_INFIX)
     set(multiArgs GENERATED_POSTFIXES)
     cmake_parse_arguments(PARSE_ARGV 0 PROTOGEN "" "${singleArgs}" "${multiArgs}")
@@ -63,7 +53,7 @@ function(protocol_buffer_generator)
 
     # Include defaults and self. This assumes set_target_properties on self
     # is done prior to the loop.
-    list(APPEND protobuf_dependencies ${PROTOGEN_TARGET} ${EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE}protobuf.echo_attributes)
+    list(APPEND protobuf_dependencies ${PROTOGEN_TARGET} protobuf.echo_attributes)
 
     set(protopath)
     foreach(dependency ${protobuf_dependencies})
@@ -109,10 +99,6 @@ endfunction()
 
 function(protocol_buffer_cpp target input)
     protocol_buffer_generator(TARGET ${target} INPUT ${input} GENERATOR cpp GENERATED_POSTFIXES .pb.h .pb.cc)
-
-    target_link_libraries(${target} PUBLIC
-        protobuf::libprotobuf
-    )
 endfunction()
 
 function(protocol_buffer_csharp target input)

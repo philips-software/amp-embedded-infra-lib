@@ -17,5 +17,3 @@ else()
         target_link_libraries(osal.thread INTERFACE osal.threadx_std_thread osal.threadx_osal)
     endif()
 endif()
-
-#install(TARGETS osal.thread EXPORT emilOsalTargets)

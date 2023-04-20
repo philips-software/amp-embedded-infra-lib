@@ -2,8 +2,6 @@
 name: Continuous Integration
 
 on:
-  push:
-    branches: [develop, modern-cmake]
   pull_request:
     types: [opened, synchronize, reopened]
   merge_group:
@@ -27,10 +25,10 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest, windows-2019]
     steps:
-      - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
         with:
           persist-credentials: false
-      - uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
+      - uses: hendrikmuhs/ccache-action@ca3acd2731eef11f1572ccb126356c2f9298d35e # v1.2.9
         with:
           key: ${{ github.job }}-${{ matrix.os }}
           variant: sccache
@@ -48,23 +46,22 @@ jobs:
         gcc: ["7-2018-q2", "8-2019-q3", "9-2020-q2", "10.3-2021.10"]
         configuration: ["RelWithDebInfo"]
     steps:
-      - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
         with:
           persist-credentials: false
       - name: Install GNU Arm Embedded Toolchain ${{ matrix.gcc }}
-        uses: carlosperate/arm-none-eabi-gcc-action@48db4484a55750df7a0ccca63347fcdea6534d78
+        uses: carlosperate/arm-none-eabi-gcc-action@bb9083f435def6b250f6264fa3b49443b76d654e # v1.6.1
         with:
           release: ${{ matrix.gcc }}
       - run: sudo apt-get update && sudo apt-get install ninja-build
-      - uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
+      - uses: hendrikmuhs/ccache-action@ca3acd2731eef11f1572ccb126356c2f9298d35e # v1.2.9
         with:
           key: ${{ github.job }}-${{ matrix.gcc }}-${{ matrix.configuration }}
-      - run: |
-          echo "::add-matcher::.github/matchers/gcc-problem-matcher.json"
-          cmake --preset Host -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          cmake --build --preset Host-${{ matrix.configuration }}
-          cmake --preset Embedded -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          cmake --build --preset Embedded-${{ matrix.configuration }}
+      - uses: lukka/run-cmake@2d1ee0acb9c4f656ec9128fc7387d82ac4539816 # v10.3
+        with:
+          configurePreset: "Embedded"
+          buildPreset: "Embedded-${{ matrix.configuration }}"
+          configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"
   rtos:
     name: Embedded Build - RTOS
     runs-on: ubuntu-latest
@@ -72,20 +69,19 @@ jobs:
       matrix:
         rtos: ["FreeRTOS", "ThreadX"]
     steps:
-      - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
         with:
           persist-credentials: false
       - name: Install GNU Arm Embedded Toolchain "10.3-2021.10"
-        uses: carlosperate/arm-none-eabi-gcc-action@48db4484a55750df7a0ccca63347fcdea6534d78
+        uses: carlosperate/arm-none-eabi-gcc-action@bb9083f435def6b250f6264fa3b49443b76d654e # v1.6.1
         with:
           release: "10.3-2021.10"
       - run: sudo apt-get update && sudo apt-get install ninja-build
-      - uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
+      - uses: hendrikmuhs/ccache-action@ca3acd2731eef11f1572ccb126356c2f9298d35e # v1.2.9
         with:
-          key: ${{ github.job }}-10.3-2021.10-RelWithDebInfo
-      - run: |
-          echo "::add-matcher::.github/matchers/gcc-problem-matcher.json"
-          cmake --preset Host -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          cmake --build --preset Host-RelWithDebInfo
-          cmake --preset Embedded-${{ matrix.rtos }} -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          cmake --build --preset Embedded-${{ matrix.rtos }}-RelWithDebInfo
+          key: ${{ github.job }}
+      - uses: lukka/run-cmake@2d1ee0acb9c4f656ec9128fc7387d82ac4539816 # v10.3
+        with:
+          configurePreset: "Embedded-${{ matrix.rtos }}"
+          buildPreset: "Embedded-${{ matrix.rtos }}-RelWithDebInfo"
+          configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"

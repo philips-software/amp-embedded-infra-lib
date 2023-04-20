@@ -55,7 +55,8 @@ namespace services
 
     std::size_t WebSocketServerConnectionObserver::MaxSendStreamSize() const
     {
-        return sendBuffer.max_size();
+        static constexpr uint8_t frameDataSize = 4;
+        return std::min(sendBuffer.max_size(), Subject().MaxSendStreamSize() - frameDataSize);
     }
 
     infra::SharedPtr<infra::StreamReaderWithRewinding> WebSocketServerConnectionObserver::ReceiveStream()
@@ -137,10 +138,7 @@ namespace services
     void WebSocketServerConnectionObserver::TryAllocateSendStream()
     {
         if (streamWriter.Allocatable() && sendBuffer.empty() && requestedSendSize != 0)
-        {
-            services::Connection::Observer().SendStreamAvailable(streamWriter.Emplace(infra::inPlace, sendBuffer, requestedSendSize));
-            requestedSendSize = 0;
-        }
+            services::Connection::Observer().SendStreamAvailable(streamWriter.Emplace(infra::inPlace, sendBuffer, std::exchange(requestedSendSize, 0)));
     }
 
     void WebSocketServerConnectionObserver::ReceivingState::DataReceived()

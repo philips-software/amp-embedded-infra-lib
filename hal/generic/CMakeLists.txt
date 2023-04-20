@@ -1,6 +1,5 @@
 if (EMIL_HOST_BUILD)
     add_library(hal.generic ${EMIL_EXCLUDE_FROM_ALL} STATIC)
-    install(TARGETS hal.generic EXPORT emilHalTargets)
 
     target_link_libraries(hal.generic PUBLIC
         hal.interfaces
@@ -11,6 +10,8 @@ if (EMIL_HOST_BUILD)
     target_sources(hal.generic PRIVATE
         FileSystemGeneric.cpp
         FileSystemGeneric.hpp
+        SerialCommunicationConsole.cpp
+        SerialCommunicationConsole.hpp
         SynchronousRandomDataGeneratorGeneric.cpp
         SynchronousRandomDataGeneratorGeneric.hpp
         TimeKeeperGeneric.cpp

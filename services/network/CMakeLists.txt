@@ -1,5 +1,4 @@
 add_library(services.network ${EMIL_EXCLUDE_FROM_ALL} STATIC)
-install(TARGETS services.network EXPORT emilServicesTargets)
 
 target_link_libraries(services.network PUBLIC
     infra.syntax

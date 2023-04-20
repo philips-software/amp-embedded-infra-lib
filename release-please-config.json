@@ -8,7 +8,8 @@
       "extra-files": [
         "CMakeLists.txt",
         "sonar-project.properties",
-        "documents/antora.yml"
+        "documents/antora.yml",
+        "protobuf/echo/protocol_buffer_echo.cmake"
       ]
     }
   },
