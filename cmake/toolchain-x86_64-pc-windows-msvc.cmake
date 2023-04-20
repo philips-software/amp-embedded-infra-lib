@@ -4,7 +4,7 @@
 # The recommended way of installing the SDK and CRT is by using xwin (https://github.com/Jake-Shadle/xwin):
 # $ xwin --accept-license splat --preserve-ms-arch-notation
 #
-# xwin patches the SDK and CRT for case-sensitive filesystems; the --presere-ms-arch-notation is
+# xwin patches the SDK and CRT for case-sensitive filesystems; the --preserve-ms-arch-notation is
 # necessary to make the /winsdkdir and /vctoolsdir options of clang work.
 
 set(CMAKE_SYSTEM_NAME Windows)
