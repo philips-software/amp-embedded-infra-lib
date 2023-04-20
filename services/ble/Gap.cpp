@@ -22,9 +22,19 @@ namespace services
         GapPeripheralObserver::Subject().SetAdvertisementData(data);
     }
 
+    infra::ConstByteRange GapPeripheralDecorator::GetAdvertisementData()
+    {
+        return GapPeripheralObserver::Subject().GetAdvertisementData();
+    }
+
     void GapPeripheralDecorator::SetScanResponseData(infra::ConstByteRange data)
     {
         GapPeripheralObserver::Subject().SetScanResponseData(data);
+    }
+
+    infra::ConstByteRange GapPeripheralDecorator::GetScanResponseData()
+    {
+        return GapPeripheralObserver::Subject().GetScanResponseData();
     }
 
     void GapPeripheralDecorator::Advertise(GapAdvertisementType type, AdvertisementIntervalMultiplier multiplier)
