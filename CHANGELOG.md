@@ -7,6 +7,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [3.2.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v3.1.0...v3.2.0) (2023-04-21)
+
+
+### Features
+
+* Add websocket client example ([#235](https://github.com/philips-software/amp-embedded-infra-lib/issues/235)) ([d4aa174](https://github.com/philips-software/amp-embedded-infra-lib/commit/d4aa1740d7ccf2d4468d6afc0c54ed4d256636ce))
+* Downgrade mbedtls to 3.2.1 from 3.3.0 ([#237](https://github.com/philips-software/amp-embedded-infra-lib/issues/237)) ([bdec832](https://github.com/philips-software/amp-embedded-infra-lib/commit/bdec83287eac3f7a27a9a559821584980633fcfc))
+* Workaround OutputStream optimization issue with Visual Studio 2019 ([#258](https://github.com/philips-software/amp-embedded-infra-lib/issues/258)) ([ea3de1e](https://github.com/philips-software/amp-embedded-infra-lib/commit/ea3de1eeaf99649cdbf558cf11c650795662c2e9))
+
+
+### Bug Fixes
+
+* Decouple host and embedded builds ([#225](https://github.com/philips-software/amp-embedded-infra-lib/issues/225)) ([d443b16](https://github.com/philips-software/amp-embedded-infra-lib/commit/d443b165b0b2bc821735aa10e6c2fa392299f1fe))
+* Protobuf/echo/EchoInstantiation: fix compilation errors ([#267](https://github.com/philips-software/amp-embedded-infra-lib/issues/267)) ([9b53dc1](https://github.com/philips-software/amp-embedded-infra-lib/commit/9b53dc1f77f944ce17d060a7d14fb5087f035677))
+
 ## [3.1.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v3.0.0...v3.1.0) (2023-03-23)
 
 
