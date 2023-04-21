@@ -2,7 +2,7 @@
 #define PROTOBUF_ECHO_INSTANTIATIONS
 
 #include "infra/util/BoundedVector.hpp"
-#include "protobuf/echo/Echo.hpp"
+#include "protobuf/echo/ServiceForwarder.hpp"
 #include "services/util/MessageCommunicationCobs.hpp"
 #include "services/util/MessageCommunicationWindowed.hpp"
 
@@ -64,7 +64,7 @@ namespace main_
     {
     public:
         EchoForwarderToSerial(services::Echo& from, hal::SerialCommunication& toSerial)
-            : EchoForwarder<MessageSize, MaxServices>(from, toSerial)
+            : EchoForwarder<MessageSize, MaxServices>(from, to)
             , to(toSerial)
         {}
 
