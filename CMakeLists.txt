@@ -16,6 +16,7 @@ set_directory_properties(PROPERTY USE_FOLDERS On)
 
 include(CMakePackageConfigHelpers)
 include(emil_antora)
+include(emil_build_for)
 include(emil_folderize)
 include(emil_clang_tools)
 include(emil_docker_tools)
