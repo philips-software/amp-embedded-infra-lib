@@ -2,8 +2,6 @@
 name: Linting & Formatting
 
 on:
-  push:
-    branches: [develop, modern-cmake]
   pull_request:
     types: [opened, synchronize, reopened]
   merge_group:
@@ -23,7 +21,7 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3.4.0
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
         with:
           persist-credentials: false
       - uses: DoozyX/clang-format-lint-action@c3b2c943e924028b93a707a5b1b017976ab8d50c
@@ -44,16 +42,16 @@ jobs:
       pull-requests: write
       security-events: write
     steps:
-      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3.4.0
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: oxsecurity/megalinter@e7a797f9d8354b35d6580620b2af79efa0748ddf
+      - uses: oxsecurity/megalinter@93700f8c21c59ea784a32abe23896e49e54463b8 # v6.22.2
         env:
           APPLY_FIXES: all
           VALIDATE_ALL_CODEBASE: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: github/codeql-action/upload-sarif@67a35a08586135a9573f4327e904ecbf517a882d # v2.2.8
+      - uses: github/codeql-action/upload-sarif@b2c19fb9a2a485599ccf4ed5d65527d94bc57226 # v2.3.0
         if: ${{ success() }} || ${{ failure() }}
         with:
           sarif_file: megalinter-reports/megalinter-report.sarif

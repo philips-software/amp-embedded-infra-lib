@@ -6,7 +6,6 @@ on:
     branches: [develop, modern-cmake]
   pull_request:
     types: [opened, synchronize, reopened]
-  merge_group:
 
 permissions:
   contents: read
@@ -23,12 +22,12 @@ jobs:
       SONAR_SCANNER_VERSION: 4.7.0.2747
       SONAR_SERVER_URL: "https://sonarcloud.io"
     steps:
-      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3.4.0
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
         with:
           fetch-depth: 0 # Disable shallow clone to enable blame information
           persist-credentials: false
       - run: sudo apt-get update && sudo apt-get install --no-install-recommends jq ninja-build xsltproc
-      - uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435 # v4.5.0
+      - uses: actions/setup-python@57ded4d7d5e986d7296eab16560982c6dd7c923b # v4.6.0
       - uses: BSFishy/pip-action@8f2d471d809dc20b6ada98c91910b6ae6243f318
         with:
           packages: gcovr==5.2
@@ -39,7 +38,7 @@ jobs:
           echo "${PWD}/sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-linux/bin" >> "$GITHUB_PATH"
           wget -qN https://github.com/mull-project/mull/releases/download/0.18.0/Mull-12-0.18.0-LLVM-12.0-ubuntu-20.04.deb
           sudo dpkg -i Mull-12-0.18.0-LLVM-12.0-ubuntu-20.04.deb
-      - uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
+      - uses: hendrikmuhs/ccache-action@ca3acd2731eef11f1572ccb126356c2f9298d35e # v1.2.9
         with:
           key: ${{ github.job }}
           max-size: 2G
@@ -59,7 +58,7 @@ jobs:
           { echo '<testExecutions version="1">'; xsltproc .github/formatters/gtest-to-generic-execution.xslt testresults/*.xml; echo '</testExecutions>'; } | tee execution.xml > /dev/null
           jq -s 'reduce .[] as $item ({}; . * $item)' reports/mull/*.json > reports/mull/merged-mutation.json
           jq --arg workspace "$GITHUB_WORKSPACE" -f .github/formatters/mutation-report-to-generic-issue.jq reports/mull/merged-mutation.json > mutation-sonar.json
-          cp Build/Coverage/compile_commands.json compile_commands.json
+          cp build/Coverage/compile_commands.json compile_commands.json
       - name: Run Analysis
         # skip the analysis step for dependabot PRs since dependabot does not have access to secrets
         if: ${{ github.actor != 'dependabot[bot]' }}
@@ -74,17 +73,17 @@ jobs:
     permissions:
       security-events: write
     steps:
-      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3.4.0
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
         with:
           persist-credentials: false
       - run: sudo apt-get update && sudo apt-get install ninja-build
-      - uses: hendrikmuhs/ccache-action@fba817f3c0db4f854d7a3ee688241d6754da166e # v1.2.8
+      - uses: hendrikmuhs/ccache-action@ca3acd2731eef11f1572ccb126356c2f9298d35e # v1.2.9
         with:
           key: ${{ github.job }}
-      - uses: github/codeql-action/init@67a35a08586135a9573f4327e904ecbf517a882d # v2.2.8
+      - uses: github/codeql-action/init@b2c19fb9a2a485599ccf4ed5d65527d94bc57226 # v2.3.0
         with:
           languages: cpp
       - run: |
           cmake --preset ContinuousIntegration -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build --preset ContinuousIntegration
-      - uses: github/codeql-action/analyze@67a35a08586135a9573f4327e904ecbf517a882d # v2.2.8
+      - uses: github/codeql-action/analyze@b2c19fb9a2a485599ccf4ed5d65527d94bc57226 # v2.3.0

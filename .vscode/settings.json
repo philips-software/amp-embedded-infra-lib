@@ -1,5 +1,4 @@
 {
-  "cmake.copyCompileCommands": "${workspaceFolder}/Build/compile_commands.json",
-  "sonarlint.pathToCompileCommands": "${workspaceFolder}/Build/compile_commands.json",
-  "C_Cpp.autoAddFileAssociations": false
+  "cmake.copyCompileCommands": "${workspaceFolder}/build/compile_commands.json",
+  "sonarlint.pathToCompileCommands": "${workspaceFolder}/build/compile_commands.json"
 }

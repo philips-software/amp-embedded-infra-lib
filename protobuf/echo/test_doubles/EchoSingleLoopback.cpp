@@ -1,4 +1,4 @@
-#include "protobuf/echo/test_helper/EchoSingleLoopback.hpp"
+#include "protobuf/echo/test_doubles/EchoSingleLoopback.hpp"
 #include "infra/stream/ByteInputStream.hpp"
 
 namespace application

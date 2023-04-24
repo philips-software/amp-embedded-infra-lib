@@ -1,6 +1,5 @@
 if (EMIL_BUILD_WIN)
     add_library(hal.windows ${EMIL_EXCLUDE_FROM_ALL} STATIC)
-    install(TARGETS hal.windows EXPORT emilHalTargets)
 
     target_link_libraries(hal.windows PUBLIC
         hal.interfaces

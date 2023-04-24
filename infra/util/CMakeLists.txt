@@ -1,5 +1,4 @@
 add_library(infra.util ${EMIL_EXCLUDE_FROM_ALL} STATIC)
-install(TARGETS infra.util EXPORT emilInfraTargets)
 
 target_include_directories(infra.util PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/../../>"
