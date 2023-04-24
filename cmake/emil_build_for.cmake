@@ -7,14 +7,14 @@
 # TARGET_MCU_VENDOR: Build the target when building for this vendor
 # TARGET_MCU_FAMILY: Build the target when building for this MCU family
 # TARGET_MCU: Build the target when building for this MCU
-# TARGET_MCU VARIANT: Build the target when building for this MCU variant
+# TARGET_MCU_VARIANT: Build the target when building for this MCU variant
 # BOOL: Build the target when this boolean value evaluates to true
 #
 # PREREQUISITE_BOOL: Build the target only when this boolean value evaluates to true
 # PREREQUISITE_CONFIG: Build the target only when building for this configuration
 #
 # The HOST, TARGET_*, and BOOL properties are ORed together. Its result is ANDed with the PREREQUISITE_* properties.
-# Specifying PREREQUISITE_CONFIG results in a generator expression being ued for EXCLUDE_FROM_ALL
+# Specifying PREREQUISITE_CONFIG results in a generator expression being used for EXCLUDE_FROM_ALL
 #
 # Example:
 # emil_build_for(examples.clicking_scrolling HOST Windows TARGET_MCU stm32f746 PREREQUISITE_BOOL PREVIEW_BUILD_EXAMPLES)
