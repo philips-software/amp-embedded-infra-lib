@@ -16,7 +16,10 @@
 # The HOST, TARGET_*, and BOOL properties are ORed together. Its result is ANDed with the PREREQUISITE_* properties.
 # Specifying PREREQUISITE_CONFIG results in a generator expression being used for EXCLUDE_FROM_ALL
 #
-# Example:
+# Examples:
+# emil_buid_for(target HOST Linux)
+# This will build target only for Linux
+#
 # emil_build_for(examples.clicking_scrolling HOST Windows TARGET_MCU stm32f746 PREREQUISITE_BOOL PREVIEW_BUILD_EXAMPLES)
 # This will build examples.clicking_scrolling for Windows and for stm32f746, but only when building the preview examples
 
