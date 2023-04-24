@@ -32,7 +32,7 @@ jobs:
         with:
           key: ${{ github.job }}-${{ matrix.os }}
           variant: sccache
-      - uses: lukka/run-cmake@2d1ee0acb9c4f656ec9128fc7387d82ac4539816 # v10.3
+      - uses: lukka/run-cmake@e6f2e16eafecbcdd33ac549ff0e39f1d852f3dd6 # v10.4
         with:
           configurePreset: "ContinuousIntegration"
           buildPreset: "ContinuousIntegration"
@@ -57,7 +57,7 @@ jobs:
       - uses: hendrikmuhs/ccache-action@ca3acd2731eef11f1572ccb126356c2f9298d35e # v1.2.9
         with:
           key: ${{ github.job }}-${{ matrix.gcc }}-${{ matrix.configuration }}
-      - uses: lukka/run-cmake@2d1ee0acb9c4f656ec9128fc7387d82ac4539816 # v10.3
+      - uses: lukka/run-cmake@e6f2e16eafecbcdd33ac549ff0e39f1d852f3dd6 # v10.4
         with:
           configurePreset: "Embedded"
           buildPreset: "Embedded-${{ matrix.configuration }}"
@@ -80,7 +80,7 @@ jobs:
       - uses: hendrikmuhs/ccache-action@ca3acd2731eef11f1572ccb126356c2f9298d35e # v1.2.9
         with:
           key: ${{ github.job }}
-      - uses: lukka/run-cmake@2d1ee0acb9c4f656ec9128fc7387d82ac4539816 # v10.3
+      - uses: lukka/run-cmake@e6f2e16eafecbcdd33ac549ff0e39f1d852f3dd6 # v10.4
         with:
           configurePreset: "Embedded-${{ matrix.rtos }}"
           buildPreset: "Embedded-${{ matrix.rtos }}-RelWithDebInfo"
