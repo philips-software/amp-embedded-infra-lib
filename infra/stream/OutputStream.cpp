@@ -49,8 +49,8 @@ namespace infra
     {}
 
     OutputStream::OutputStream(OutputStream&& other)
-        : writer(std::move(other.writer))
-        , errorPolicy(std::move(other.errorPolicy))
+        : writer(other.writer)
+        , errorPolicy(other.errorPolicy)
     {}
 #endif
 
