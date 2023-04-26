@@ -31,6 +31,13 @@ if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     set(EMIL_STANDALONE On)
 endif()
 
+if (MINGW)
+    # When compiling with MINGW, dynamically linking to the standard C++ library results in linking to libstdc++-6.dll.
+    # The libstdc++-6.dll found during runtime is often different than the one with which the application is compiled with,
+    # so instead of linking dynamically, we statically link to the standard C++ library.
+    add_link_options("-static-libstdc++")
+endif()
+
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set(EMIL_BUILD_WIN On)
     set(EMIL_HOST_BUILD On)
