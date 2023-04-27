@@ -16,7 +16,8 @@ jobs:
       contents: write
     if: ${{ github.ref == 'refs/heads/modern-cmake' }}
     steps:
-      - run: npm i asciidoctor asciidoctor-kroki
+      - name: Install kroki
+        run: npm i asciidoctor-kroki
       - name: Checkout
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
