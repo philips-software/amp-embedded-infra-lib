@@ -15,6 +15,6 @@ ui:
   supplemental_files: ./documents/supplemental-ui
 asciidoc:
   attributes:
-    plantuml-server-url: http://www.plantuml.com/plantuml
+    kroki-fetch-diagram: true
   extensions:
-    - asciidoctor-plantuml
+    - asciidoctor-kroki
