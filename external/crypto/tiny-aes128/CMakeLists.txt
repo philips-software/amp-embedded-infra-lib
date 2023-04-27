@@ -1,5 +1,4 @@
 add_library(crypto.tiny_aes128 ${EMIL_EXCLUDE_FROM_ALL} STATIC)
-install(TARGETS crypto.tiny_aes128 EXPORT emilCryptoTargets)
 
 target_include_directories(crypto.tiny_aes128 PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/../../>"

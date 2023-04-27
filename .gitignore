@@ -1,6 +1,8 @@
 .cache/
 .vs/
-[Bb]uild/
+.xwin-cache/
+build/
+install/
 megalinter-reports/
 out/
 reports/

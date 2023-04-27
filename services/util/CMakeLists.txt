@@ -1,17 +1,13 @@
 add_library(services.util ${EMIL_EXCLUDE_FROM_ALL} STATIC)
-install(TARGETS services.util EXPORT emilServicesTargets)
 
 target_link_libraries(services.util PUBLIC
     hal.interfaces
     infra.syntax
     infra.timer
-    mbedcrypto
 )
 
 target_sources(services.util PRIVATE
     Aes.hpp
-    AesMbedTls.cpp
-    AesMbedTls.hpp
     ConfigurationStore.cpp
     ConfigurationStore.hpp
     CyclicStore.cpp
@@ -52,8 +48,6 @@ target_sources(services.util PRIVATE
     RepeatingButton.cpp
     RepeatingButton.hpp
     Sha256.hpp
-    Sha256MbedTls.cpp
-    Sha256MbedTls.hpp
     SignalLed.cpp
     SignalLed.hpp
     SpiMasterWithChipSelect.cpp
@@ -67,6 +61,19 @@ target_sources(services.util PRIVATE
     TimeWithLocalization.hpp
     WritableConfiguration.hpp
 )
+
+if (EMIL_INCLUDE_MBEDTLS)
+    target_link_libraries(services.util PUBLIC
+        mbedcrypto
+    )
+
+    target_sources(services.util PRIVATE
+        AesMbedTls.cpp
+        AesMbedTls.hpp
+        Sha256MbedTls.cpp
+        Sha256MbedTls.hpp
+    )
+endif()
 
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)

@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 3.24)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+list(APPEND CMAKE_PREFIX_PATH "${CMAKE_INSTALL_PREFIX}")
 
-project(emil LANGUAGES C CXX VERSION 2.2.1) # x-release-please-version
+if (APPLE)
+    set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "OS X target architectures")
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
+endif()
+
+project(emil LANGUAGES C CXX VERSION 3.2.0) # x-release-please-version
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
@@ -10,17 +16,26 @@ set_directory_properties(PROPERTY USE_FOLDERS On)
 
 include(CMakePackageConfigHelpers)
 include(emil_antora)
+include(emil_build_for)
 include(emil_folderize)
 include(emil_clang_tools)
 include(emil_docker_tools)
+include(emil_generate_artifacts)
 include(emil_test_helpers)
 include(emil_version_generator)
 include(emil_xsltproc)
 include(FetchContent)
 include(GNUInstallDirs) # included to supply proper defaults to install(...) commands
 
-if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     set(EMIL_STANDALONE On)
+endif()
+
+if (MINGW)
+    # When compiling with MINGW, dynamically linking to the standard C++ library results in linking to libstdc++-6.dll.
+    # The libstdc++-6.dll found during runtime is often different than the one with which the application is compiled with,
+    # so instead of linking dynamically, we statically link to the standard C++ library.
+    add_link_options("-static-libstdc++")
 endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -69,29 +84,16 @@ else()
     set(EMIL_EXCLUDE_FROM_ALL "EXCLUDE_FROM_ALL")
 endif()
 
-option(CMAKE_COMPILE_WARNING_AS_ERROR "Enable warnings-as-error" On)
 option(EMIL_BUILD_TESTS "Enable building the tests" ${EMIL_DEFAULTOPT})
 option(EMIL_BUILD_EXAMPLES "Enable building the examples" ${EMIL_DEFAULTOPT})
 option(EMIL_ENABLE_FUZZING "Enable building the fuzzing targets" Off)
 option(EMIL_ENABLE_DOCKER_TOOLS "Enable shift-left tools (e.g. linters, formatters) that are run using Docker" On)
+option(EMIL_GENERATE_PACKAGE_CONFIG "Enable generation of package configuration and install files" ${EMIL_HOST_BUILD})
 
-# The next few options control the install and export behaviour.
-# When package config generation is enabled the prefix can be set
-# with the EMIL_PACKAGE_CONFIG_EXPORT_NAMESPACE (default emil::).
-# The EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE controls the namespace
-# used for all targets that are used during the build (mostly for
-# code generation). In the default scenario this is empty, using
-# targets of the current build. When doing a 'cross-build' this
-# should be set to the export name of the 'host' build.
-option(EMIL_GENERATE_PACKAGE_CONFIG "Enable generation of package configuration and install files" On)
-set(EMIL_PACKAGE_CONFIG_EXPORT_NAMESPACE "${PROJECT_NAME}::" CACHE STRING "Namespace used for exported targets")
-if (CMAKE_CROSSCOMPILING)
-    set(EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE "${PROJECT_NAME}::" CACHE STRING "Namespace used to reference imported targets")
-else()
-    set(EMIL_PACKAGE_CONFIG_IMPORT_NAMESPACE "" CACHE STRING "Namespace used to reference imported targets")
-endif()
-
+# Enable or disable optional features.
 option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of EmIL" On)
+option(EMIL_INCLUDE_FREERTOS "Include FreeRTOS as part of EmIL" Off)
+option(EMIL_INCLUDE_THREADX "Include ThreadX as part of EmIL (Incomplete, experimental)" Off)
 set(EMIL_EXTERNAL_LWIP_TARGET "" CACHE STRING "Specify an external LWIP target")
 
 if (EMIL_ENABLE_DOCKER_TOOLS)
@@ -121,7 +123,8 @@ endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # Suppress warnings about parameter passing for argument of type '...' changed in GCC 7.1
-    add_compile_options(-Wno-psabi)
+    add_compile_options($<$<COMPILE_LANGUAGE:C>:-Wno-psabi>)
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-Wno-psabi>)
 endif()
 
 add_version_header_target(generated.version_header)
@@ -133,8 +136,16 @@ add_subdirectory(services)
 add_subdirectory(protobuf)
 add_subdirectory(upgrade)
 add_subdirectory(lwip)
+add_subdirectory(osal)
 if (EMIL_BUILD_EXAMPLES)
     add_subdirectory(examples)
+endif()
+
+emil_clangformat_directories(emil DIRECTORIES .)
+
+if (EMIL_STANDALONE)
+    emil_generate_antora_docs_target(antora-playbook-branch.yml)
+    emil_folderize_all_targets()
 endif()
 
 if (EMIL_GENERATE_PACKAGE_CONFIG)
@@ -142,24 +153,22 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
         # Generate and install export file
         install(EXPORT emil${name}Targets
             FILE emil${name}Targets.cmake
-            NAMESPACE ${EMIL_PACKAGE_CONFIG_EXPORT_NAMESPACE}
             DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/emil
         )
 
         # Generate the export targets for the build tree
         export(EXPORT emil${name}Targets
             FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/emil${name}Targets.cmake"
-            NAMESPACE ${EMIL_PACKAGE_CONFIG_EXPORT_NAMESPACE}
         )
     endfunction()
 
-    foreach(target IN ITEMS Crypto Infra Hal Lwip Protobuf Services Upgrade)
+    foreach(target IN ITEMS Protobuf)
         generate_export_targets(${target})
     endforeach()
 
     write_basic_package_version_file(
         "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}ConfigVersion.cmake"
-        COMPATIBILITY AnyNewerVersion
+        COMPATIBILITY SameMajorVersion
         # When cross-compiling for a 32-bit architecture and re-using host tooling from a 64-bit architecture
         # ARCH_INDEPENDENT is necessary here. See: https://cmake.org/cmake/help/latest/module/CMakePackageConfigHelpers.html.
         ARCH_INDEPENDENT
@@ -168,7 +177,6 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
     configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in
         "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}Config.cmake"
         INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
-        NO_CHECK_REQUIRED_COMPONENTS_MACRO
     )
 
     install(FILES
@@ -192,11 +200,4 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
     set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 
     include(CPack)
-endif()
-
-emil_clangformat_directories(emil DIRECTORIES .)
-
-if (EMIL_STANDALONE)
-    emil_generate_antora_docs_target(antora-playbook-branch.yml)
-    emil_folderize_all_targets()
 endif()

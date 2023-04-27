@@ -1,5 +1,4 @@
 add_library(crypto.micro_ecc ${EMIL_EXCLUDE_FROM_ALL} STATIC)
-install(TARGETS crypto.micro_ecc EXPORT emilCryptoTargets)
 
 target_include_directories(crypto.micro_ecc PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/../../>"
@@ -7,7 +6,7 @@ target_include_directories(crypto.micro_ecc PUBLIC
 )
 
 target_compile_options(crypto.micro_ecc PUBLIC
-    $<$<BOOL:${TARGET_BUILD_CORTEX}>:-fomit-frame-pointer>
+    $<$<BOOL:${TARGET_CORTEX}>:-fomit-frame-pointer>
     $<$<CXX_COMPILER_ID:MSVC>:/wd4244>
 )
 

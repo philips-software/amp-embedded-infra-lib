@@ -16,6 +16,4 @@ target_sources(upgrade.pack PRIVATE
 
 add_library(upgrade.pack_keys ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
-install(TARGETS upgrade.pack_keys upgrade.pack EXPORT emilUpgradeTargets)
-
 protocol_buffer_echo_cpp(upgrade.pack_keys UpgradeKeys.proto)

@@ -177,7 +177,7 @@ namespace application
 
     void CSharpServiceGenerator::GenerateHandle()
     {
-        printer.Print(R"(        public override void Handle(int methodId, pb.CodedInputStream stream)
+        printer.Print(R"(        public override void Handle(int methodId, Protobuf.CodedInputStream stream)
         {
             switch (methodId)
             {
@@ -265,7 +265,7 @@ namespace application
             var stream = echo.GetOutputStream();
 
             stream.WriteInt32(serviceId);
-            stream.WriteUInt32(pb.WireFormat.MakeTag(id$method$, pb.WireFormat.WireType.LengthDelimited));
+            stream.WriteUInt32(Protobuf.WireFormat.MakeTag(id$method$, Protobuf.WireFormat.WireType.LengthDelimited));
 )",
                 "method", service.method(i)->name());
             if (service.method(i)->input_type()->full_name() != Nothing::descriptor()->full_name())
@@ -297,9 +297,9 @@ namespace application
 // source: $filename$
 
 using ProtobufEcho;
-using pb = Google.Protobuf;
+using Protobuf = Google.Protobuf;
 
-namespace IntegrationTestFramework.ProtobufEcho
+namespace Emil.ProtobufEcho
 {
 )",
             "filename", file->name());

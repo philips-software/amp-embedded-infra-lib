@@ -4,9 +4,11 @@
     {
       "name": "defaults",
       "hidden": true,
-      "binaryDir": "${sourceDir}/Build/${presetName}",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "installDir": "${sourceDir}/install",
       "cacheVariables": {
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "On"
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "On",
+        "CMAKE_COMPILE_WARNING_AS_ERROR": "On"
       }
     },
     {
@@ -15,7 +17,8 @@
       "inherits": "defaults",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "EMIL_ENABLE_DOCKER_TOOLS": "Off"
+        "EMIL_ENABLE_DOCKER_TOOLS": "Off",
+        "EMIL_BUILD_EXAMPLES": "On"
       }
     },
     {
@@ -78,12 +81,29 @@
       "name": "Embedded",
       "displayName": "Configuration for Embedded",
       "inherits": "defaults",
-      "toolchainFile": "${sourceDir}/cmake/toolchain-arm-gcc.cmake",
+      "toolchainFile": "${sourceDir}/cmake/toolchain-arm-gcc-m4-fpv4-sp-d16.cmake",
       "cacheVariables": {
         "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo;MinSizeRel",
-        "CMAKE_PREFIX_PATH": "${sourceDir}/Build/Host"
+        "TARGET_CORTEX": "m4"
       },
       "generator": "Ninja Multi-Config"
+    },
+    {
+      "name": "Embedded-FreeRTOS",
+      "displayName": "Configuration for Embedded with FreeRTOS",
+      "inherits": "Embedded",
+      "cacheVariables": {
+        "EMIL_INCLUDE_FREERTOS": "On",
+        "FREERTOS_CONFIG_FILE_DIRECTORY": "${sourceDir}/examples/threading/config"
+      }
+    },
+    {
+      "name": "Embedded-ThreadX",
+      "displayName": "Configuration for Embedded with ThreadX",
+      "inherits": "Embedded",
+      "cacheVariables": {
+        "EMIL_INCLUDE_THREADX": "On"
+      }
     }
   ],
   "buildPresets": [
@@ -152,6 +172,16 @@
       "name": "Embedded-MinSizeRel",
       "configuration": "MinSizeRel",
       "configurePreset": "Embedded"
+    },
+    {
+      "name": "Embedded-FreeRTOS-RelWithDebInfo",
+      "configuration": "RelWithDebInfo",
+      "configurePreset": "Embedded-FreeRTOS"
+    },
+    {
+      "name": "Embedded-ThreadX-RelWithDebInfo",
+      "configuration": "RelWithDebInfo",
+      "configurePreset": "Embedded-ThreadX"
     }
   ],
   "testPresets": [

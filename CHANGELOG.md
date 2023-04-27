@@ -7,6 +7,54 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [3.2.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v3.1.0...v3.2.0) (2023-04-21)
+
+
+### Features
+
+* Add websocket client example ([#235](https://github.com/philips-software/amp-embedded-infra-lib/issues/235)) ([d4aa174](https://github.com/philips-software/amp-embedded-infra-lib/commit/d4aa1740d7ccf2d4468d6afc0c54ed4d256636ce))
+* Downgrade mbedtls to 3.2.1 from 3.3.0 ([#237](https://github.com/philips-software/amp-embedded-infra-lib/issues/237)) ([bdec832](https://github.com/philips-software/amp-embedded-infra-lib/commit/bdec83287eac3f7a27a9a559821584980633fcfc))
+* Workaround OutputStream optimization issue with Visual Studio 2019 ([#258](https://github.com/philips-software/amp-embedded-infra-lib/issues/258)) ([ea3de1e](https://github.com/philips-software/amp-embedded-infra-lib/commit/ea3de1eeaf99649cdbf558cf11c650795662c2e9))
+
+
+### Bug Fixes
+
+* Decouple host and embedded builds ([#225](https://github.com/philips-software/amp-embedded-infra-lib/issues/225)) ([d443b16](https://github.com/philips-software/amp-embedded-infra-lib/commit/d443b165b0b2bc821735aa10e6c2fa392299f1fe))
+* Protobuf/echo/EchoInstantiation: fix compilation errors ([#267](https://github.com/philips-software/amp-embedded-infra-lib/issues/267)) ([9b53dc1](https://github.com/philips-software/amp-embedded-infra-lib/commit/9b53dc1f77f944ce17d060a7d14fb5087f035677))
+
+## [3.1.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v3.0.0...v3.1.0) (2023-03-23)
+
+
+### Features
+
+* **echo_console:** Add support for ECHO over websockets over http ([#230](https://github.com/philips-software/amp-embedded-infra-lib/issues/230)) ([b814f0e](https://github.com/philips-software/amp-embedded-infra-lib/commit/b814f0e6a85f2b5a3a70b01c114d2d9f5ef5d78d))
+* **osal:** Add osal ([#82](https://github.com/philips-software/amp-embedded-infra-lib/issues/82)) ([3f5c568](https://github.com/philips-software/amp-embedded-infra-lib/commit/3f5c56868f63ea5d53da39caa63248b6536196b3))
+
+
+### Bug Fixes
+
+* Osx socket implementation ([#232](https://github.com/philips-software/amp-embedded-infra-lib/issues/232)) ([e127311](https://github.com/philips-software/amp-embedded-infra-lib/commit/e127311db5a33ab7110285794e2e728e3a3d4ed3))
+
+## [3.0.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v2.2.1...v3.0.0) (2023-03-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* add upgrade.pack_builder_instantations ([#190](https://github.com/philips-software/amp-embedded-infra-lib/issues/190))
+
+### Features
+
+* Add upgrade.pack_builder_instantations ([#190](https://github.com/philips-software/amp-embedded-infra-lib/issues/190)) ([5b6bf6f](https://github.com/philips-software/amp-embedded-infra-lib/commit/5b6bf6f0ebb6788c9a798a142aee3c15ddb25ee3))
+* Compile on gcc windows ([#194](https://github.com/philips-software/amp-embedded-infra-lib/issues/194)) ([ab191f4](https://github.com/philips-software/amp-embedded-infra-lib/commit/ab191f4c830e7f534aeb7fd9991e112fd26d48c5))
+
+
+### Bug Fixes
+
+* Add check for availability of __has_cpp_attribute ([#218](https://github.com/philips-software/amp-embedded-infra-lib/issues/218)) ([98b5c8d](https://github.com/philips-software/amp-embedded-infra-lib/commit/98b5c8d89e7aab8819a4c2668be8aebe886cf303)), closes [#134](https://github.com/philips-software/amp-embedded-infra-lib/issues/134)
+* Add missing overloads to JsonObjectFormatter ([#212](https://github.com/philips-software/amp-embedded-infra-lib/issues/212)) ([c4047c3](https://github.com/philips-software/amp-embedded-infra-lib/commit/c4047c3f974ba6e35bc5368dfee88ba6baf6ea9e))
+* **external/protoc:** Download protoc for correct host architecture ([#214](https://github.com/philips-software/amp-embedded-infra-lib/issues/214)) ([6ed6bd1](https://github.com/philips-software/amp-embedded-infra-lib/commit/6ed6bd129cb33ce2627b8f5167eced74bc8656b3))
+* **hal/windows:** Correct header sequence for UartPortFinder ([#209](https://github.com/philips-software/amp-embedded-infra-lib/issues/209)) ([d102e2b](https://github.com/philips-software/amp-embedded-infra-lib/commit/d102e2b5a732a9aa53ca17a0244739fc768c45a5))
+
 ## [2.2.1](https://github.com/philips-software/amp-embedded-infra-lib/compare/v2.2.0...v2.2.1) (2023-01-25)
 
 

@@ -826,7 +826,7 @@ namespace application
         auto constructors = std::make_shared<Access>("public");
         auto constructor = std::make_shared<Constructor>(service->name, "", 0);
         constructor->Parameter("services::Echo& echo");
-        constructor->Initializer("services::Service(echo, serviceId)");
+        constructor->Initializer("services::Service(echo)");
 
         constructors->Add(constructor);
         serviceFormatter->Add(constructors);
@@ -863,7 +863,12 @@ namespace application
             functions->Add(serviceMethod);
         }
 
+        auto acceptsService = std::make_shared<Function>("AcceptsService", AcceptsServiceBody(), "bool", Function::fConst | Function::fVirtual | Function::fOverride);
+        acceptsService->Parameter("uint32_t id");
+        functions->Add(acceptsService);
+
         auto handle = std::make_shared<Function>("Handle", HandleBody(), "void", Function::fVirtual | Function::fOverride);
+        handle->Parameter("uint32_t serviceId");
         handle->Parameter("uint32_t methodId");
         handle->Parameter("infra::ProtoLengthDelimited& contents");
         handle->Parameter("services::EchoErrorPolicy& errorPolicy");
@@ -928,6 +933,19 @@ namespace application
         return result;
     }
 
+    std::string ServiceGenerator::AcceptsServiceBody() const
+    {
+        std::ostringstream result;
+        {
+            google::protobuf::io::OstreamOutputStream stream(&result);
+            google::protobuf::io::Printer printer(&stream, '$', nullptr);
+
+            printer.Print("return serviceId == id;");
+        }
+
+        return result.str();
+    }
+
     std::string ServiceGenerator::HandleBody() const
     {
         std::ostringstream result;
@@ -973,7 +991,7 @@ switch (methodId)
             }
 
             printer.Print(R"(    default:
-        errorPolicy.MethodNotFound(ServiceId(), methodId);
+        errorPolicy.MethodNotFound(serviceId, methodId);
         contents.SkipEverything();
 )");
 

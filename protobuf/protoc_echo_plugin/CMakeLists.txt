@@ -24,6 +24,7 @@ if (EMIL_HOST_BUILD)
     )
 
     add_executable(protobuf.protoc_echo_plugin)
+    install(TARGETS protobuf.protoc_echo_plugin EXPORT emilProtobufTargets DESTINATION bin)
 
     target_link_libraries(protobuf.protoc_echo_plugin PUBLIC
         protobuf.protoc_echo_plugin_lib
@@ -36,10 +37,4 @@ if (EMIL_HOST_BUILD)
     if (EMIL_BUILD_TESTS)
         add_subdirectory(test)
     endif()
-
-    install(TARGETS
-        protobuf.protoc_echo_plugin_lib
-        protobuf.protoc_echo_plugin
-        EXPORT emilProtobufTargets
-    )
 endif()
