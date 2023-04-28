@@ -67,7 +67,7 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-latest
-    needs: build_antora
+    needs: build_antora_site
     if: ${{ github.ref == 'refs/heads/modern-cmake' }}
     name: Publish to GitHub Pages
     steps:
