@@ -1,4 +1,3 @@
-#define NOMINMAX
 #include "args.hxx"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "hal/generic/TimerServiceGeneric.hpp"
