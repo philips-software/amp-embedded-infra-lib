@@ -34,7 +34,7 @@ namespace infra
         : public DataInputStream::WithReader<StdVectorInputStreamReader>
     {
     public:
-        using WithStorage = infra::WithStorage<DataInputStream::WithReader<StdVectorInputStreamReader>, std::vector<uint8_t>>;
+        using WithStorage = infra::WithStorage<StdVectorInputStream, std::vector<uint8_t>>;
 
         explicit StdVectorInputStream(std::vector<uint8_t>& storage);
         StdVectorInputStream(std::vector<uint8_t>& storage, const SoftFail&);
