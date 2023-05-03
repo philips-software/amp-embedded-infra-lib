@@ -6,6 +6,7 @@
 namespace services
 {
     const HttpHeaders noHeaders{};
+    const Chunked chunked;
 
     namespace http_responses
     {
@@ -89,6 +90,14 @@ namespace services
         AddContentLength(contentSize);
     }
 
+    HttpRequestFormatter::HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, const HttpHeaders headers, Chunked)
+        : verb(verb)
+        , requestTarget(requestTarget.empty() ? "/" : requestTarget)
+        , hostHeader("Host", hostname)
+        , headers(headers)
+        , chunked(true)
+    {}
+
     std::size_t HttpRequestFormatter::Size() const
     {
         return HttpVerbToString(verb).size() + requestTarget.size() + httpVersion.size() + HeadersSize() + (2 * crlf.size()) + (2 * sp.size()) + content.size();
@@ -105,6 +114,8 @@ namespace services
 
         if (contentLengthHeader)
             stream << *contentLengthHeader << crlf;
+        if (chunked)
+            stream << HttpHeader{ "Transfer-Encoding", "chunked" } << crlf;
 
         stream << crlf;
         stream << content;
@@ -125,6 +136,8 @@ namespace services
 
         if (contentLengthHeader)
             headerSize += contentLengthHeader->Size() + crlf.size();
+        if (chunked)
+            headerSize += HttpHeader("Transfer-Encoding", "chunked").Size() + crlf.size();
 
         headerSize += hostHeader.Size() + crlf.size();
 

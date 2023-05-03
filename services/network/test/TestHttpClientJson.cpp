@@ -121,9 +121,11 @@ TEST_F(HttpClientJsonTest, ParseError_reports_Error)
     EXPECT_CALL(reader, Empty()).WillOnce(testing::Return(false));
     EXPECT_CALL(reader, ExtractContiguousRange(testing::_)).WillOnce(testing::Return(infra::MakeStringByteRange(R"({ ] })")));
     EXPECT_CALL(jsonObjectVisitor, ParseError()).WillOnce(testing::Invoke([this]()
-        { controller.ContentError(); }));
+    {
+        controller.ContentError();
+    }));
     EXPECT_CALL(httpClient, CloseConnection()).WillOnce(testing::Invoke([this, &readerPtr]()
-        {
+    {
         controller.Detaching();
         EXPECT_TRUE(readerPtr == nullptr); }));
     EXPECT_CALL(controller, Error(false));

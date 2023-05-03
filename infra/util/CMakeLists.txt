@@ -19,6 +19,8 @@ target_sources(infra.util PRIVATE
     AllocatorHeap.hpp
     AutoResetFunction.hpp
     AutoResetMultiFunction.hpp
+    Base64.cpp
+    Base64.hpp
     BitLogic.hpp
     BoundedDeque.hpp
     BoundedForwardList.hpp

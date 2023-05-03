@@ -414,22 +414,35 @@ namespace infra
         return stream << asHexHelper;
     }
 
-    AsBase64Helper::AsBase64Helper(ConstByteRange data)
-        : data(data)
+    Base64Encoder::Base64Encoder(infra::TextOutputStream& stream)
+        : stream(stream)
     {}
 
-    TextOutputStream& operator<<(TextOutputStream& stream, const AsBase64Helper& asBase64Helper)
+    Base64Encoder::~Base64Encoder()
     {
-        static const char* encodeTable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        if ((size & 3) != 0)
+        {
+            stream << detail::base64Table[encodedByte];
+            ++size;
+        }
+        if ((size & 3) != 0)
+        {
+            stream << '=';
+            ++size;
+        }
+        if ((size & 3) != 0)
+        {
+            stream << '=';
+            ++size;
+        }
+    }
 
-        uint8_t bitIndex = 2;
-        uint8_t encodedByte = 0;
-        uint32_t size = 0;
-
-        for (uint8_t byte : asBase64Helper.data)
+    void Base64Encoder::Encode(infra::ConstByteRange data)
+    {
+        for (uint8_t byte : data)
         {
             encodedByte |= byte >> bitIndex;
-            stream << encodeTable[encodedByte];
+            stream << detail::base64Table[encodedByte];
             ++size;
 
             encodedByte = static_cast<uint8_t>(byte << (8 - bitIndex)) >> 2;
@@ -438,33 +451,46 @@ namespace infra
 
             if (bitIndex == 8)
             {
-                stream << encodeTable[encodedByte];
+                stream << detail::base64Table[encodedByte];
                 ++size;
                 encodedByte = 0;
                 bitIndex = 2;
             }
         }
+    }
 
-        if ((size & 3) != 0)
-        {
-            stream << encodeTable[encodedByte];
-            ++size;
-        }
-        if ((size & 3) != 0)
-        {
-            stream << '=';
-            ++size;
-        }
-        if ((size & 3) != 0)
-        {
-            stream << '=';
-            ++size;
-        }
+    AsBase64Helper::AsBase64Helper(ConstByteRange data)
+        : data(data)
+    {}
+
+    TextOutputStream& operator<<(TextOutputStream& stream, const AsBase64Helper& asBase64Helper)
+    {
+        Base64Encoder encoder(stream);
+        encoder.Encode(asBase64Helper.data);
 
         return stream;
     }
 
     TextOutputStream& operator<<(TextOutputStream&& stream, const AsBase64Helper& asBase64Helper)
+    {
+        return stream << asBase64Helper;
+    }
+
+    infra::AsCombinedBase64Helper::AsCombinedBase64Helper(std::initializer_list<infra::ConstByteRange> ranges)
+        : ranges(ranges)
+    {}
+
+    TextOutputStream& operator<<(TextOutputStream& stream, const AsCombinedBase64Helper& asBase64Helper)
+    {
+        Base64Encoder encoder(stream);
+
+        for (auto range : asBase64Helper.ranges)
+            encoder.Encode(range);
+
+        return stream;
+    }
+
+    TextOutputStream& operator<<(TextOutputStream&& stream, const AsCombinedBase64Helper& asBase64Helper)
     {
         return stream << asBase64Helper;
     }
@@ -482,5 +508,10 @@ namespace infra
     AsBase64Helper AsBase64(ConstByteRange data)
     {
         return AsBase64Helper(data);
+    }
+
+    AsCombinedBase64Helper AsBase64(std::initializer_list<infra::ConstByteRange> ranges)
+    {
+        return AsCombinedBase64Helper(ranges);
     }
 }
