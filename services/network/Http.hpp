@@ -97,7 +97,9 @@ namespace services
     using HttpHeaders = infra::MemoryRange<const HttpHeader>;
     extern const HttpHeaders noHeaders;
 
-    extern const struct Chunked {} chunked;
+    extern const struct Chunked
+    {
+    } chunked;
 
     class HttpRequestFormatter
     {

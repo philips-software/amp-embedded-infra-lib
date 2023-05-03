@@ -395,9 +395,7 @@ namespace services
     void HttpClientImpl::SendingStateForwardSendStream::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         chunkWriter.OnAllocatable([this]()
-            {
-                Activate();
-            });
+            { Activate(); });
 
         client.Observer().SendStreamAvailable(chunkWriter.Emplace(*this, std::move(writer)));
     }

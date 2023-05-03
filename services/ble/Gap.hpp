@@ -218,7 +218,7 @@ namespace services
         // Implementation of GapPeripheral
         virtual GapAddress GetAddress() const override;
         virtual GapAddress GetIdentityAddress() const override;
-        
+
         virtual void SetAdvertisementData(infra::ConstByteRange data) override;
         virtual infra::ConstByteRange GetAdvertisementData() override;
         virtual void SetScanResponseData(infra::ConstByteRange data) override;

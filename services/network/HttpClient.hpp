@@ -28,8 +28,11 @@ namespace services
             fillingContentDone = !fillingContentDone;
         }
 
-        virtual void FillContent(infra::StreamWriter& writer) const {}
-        virtual void CloseRequested() {} // By default, HTTP Clients finish their request
+        virtual void FillContent(infra::StreamWriter& writer) const
+        {}
+
+        virtual void CloseRequested()
+        {} // By default, HTTP Clients finish their request
 
     private:
         bool fillingContentDone = false;

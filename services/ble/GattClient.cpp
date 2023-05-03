@@ -67,7 +67,8 @@ namespace services
         constexpr uint8_t offsetCCCD = 1;
 
         if ((handle + offsetCCCD) == Handle())
-            GattClientCharacteristicUpdate::SubjectType::NotifyObservers([&data](auto& obs) { obs.UpdateReceived(data); });
+            GattClientCharacteristicUpdate::SubjectType::NotifyObservers([&data](auto& obs)
+                { obs.UpdateReceived(data); });
     }
 
     AttAttribute::Handle GattClientCharacteristic::CharacteristicValueHandle() const
@@ -96,32 +97,38 @@ namespace services
 
     void GattClientDiscoveryDecorator::ServiceDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle endHandle)
     {
-        GattClientDiscoveryObserver::SubjectType::NotifyObservers([&type, &handle, &endHandle](auto& obs) { obs.ServiceDiscovered(type, handle, endHandle); });
+        GattClientDiscoveryObserver::SubjectType::NotifyObservers([&type, &handle, &endHandle](auto& obs)
+            { obs.ServiceDiscovered(type, handle, endHandle); });
     }
 
     void GattClientDiscoveryDecorator::CharacteristicDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties)
     {
-        GattClientDiscoveryObserver::SubjectType::NotifyObservers([&type, &handle, &valueHandle, &properties](auto& obs) { obs.CharacteristicDiscovered(type, handle, valueHandle, properties); });
+        GattClientDiscoveryObserver::SubjectType::NotifyObservers([&type, &handle, &valueHandle, &properties](auto& obs)
+            { obs.CharacteristicDiscovered(type, handle, valueHandle, properties); });
     }
 
     void GattClientDiscoveryDecorator::DescriptorDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle)
     {
-        GattClientDiscoveryObserver::SubjectType::NotifyObservers([&type, &handle](auto& obs) { obs.DescriptorDiscovered(type, handle); });
+        GattClientDiscoveryObserver::SubjectType::NotifyObservers([&type, &handle](auto& obs)
+            { obs.DescriptorDiscovered(type, handle); });
     }
 
     void GattClientDiscoveryDecorator::ServiceDiscoveryComplete()
     {
-        GattClientDiscoveryObserver::SubjectType::NotifyObservers([](auto& obs) { obs.ServiceDiscoveryComplete(); });
+        GattClientDiscoveryObserver::SubjectType::NotifyObservers([](auto& obs)
+            { obs.ServiceDiscoveryComplete(); });
     }
 
     void GattClientDiscoveryDecorator::CharacteristicDiscoveryComplete()
     {
-        GattClientDiscoveryObserver::SubjectType::NotifyObservers([](auto& obs) { obs.CharacteristicDiscoveryComplete(); });
+        GattClientDiscoveryObserver::SubjectType::NotifyObservers([](auto& obs)
+            { obs.CharacteristicDiscoveryComplete(); });
     }
 
     void GattClientDiscoveryDecorator::DescriptorDiscoveryComplete()
     {
-        GattClientDiscoveryObserver::SubjectType::NotifyObservers([](auto& obs) { obs.DescriptorDiscoveryComplete(); });
+        GattClientDiscoveryObserver::SubjectType::NotifyObservers([](auto& obs)
+            { obs.DescriptorDiscoveryComplete(); });
     }
 
     void GattClientDiscoveryDecorator::StartServiceDiscovery()

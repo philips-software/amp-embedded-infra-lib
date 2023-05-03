@@ -50,22 +50,26 @@ namespace services
 
     void GapCentralDecorator::AuthenticationSuccessfullyCompleted()
     {
-        GapCentralObserver::SubjectType::NotifyObservers([](auto& obs) { obs.AuthenticationSuccessfullyCompleted(); });
+        GapCentralObserver::SubjectType::NotifyObservers([](auto& obs)
+            { obs.AuthenticationSuccessfullyCompleted(); });
     }
 
     void GapCentralDecorator::AuthenticationFailed(GapAuthenticationErrorType status)
     {
-        GapCentralObserver::SubjectType::NotifyObservers([&status](auto& obs) { obs.AuthenticationFailed(status); });
+        GapCentralObserver::SubjectType::NotifyObservers([&status](auto& obs)
+            { obs.AuthenticationFailed(status); });
     }
 
     void GapCentralDecorator::DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered)
     {
-        GapCentralObserver::SubjectType::NotifyObservers([&deviceDiscovered](auto& obs) { obs.DeviceDiscovered(deviceDiscovered); });
+        GapCentralObserver::SubjectType::NotifyObservers([&deviceDiscovered](auto& obs)
+            { obs.DeviceDiscovered(deviceDiscovered); });
     }
 
     void GapCentralDecorator::StateChanged(GapState state)
     {
-        GapCentralObserver::SubjectType::NotifyObservers([&state](auto& obs) { obs.StateChanged(state); });
+        GapCentralObserver::SubjectType::NotifyObservers([&state](auto& obs)
+            { obs.StateChanged(state); });
     }
 
     void GapCentralDecorator::Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType)
