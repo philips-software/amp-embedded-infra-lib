@@ -120,7 +120,10 @@ namespace infra
 
         operator infra::Function<T(P1, P2, P3), ExtraSize>()
         {
-            return [this](P1 p1, P2 p2, P3 p3) { return callback(p1, p2, p3); };
+            return [this](P1 p1, P2 p2, P3 p3)
+            {
+                return callback(p1, p2, p3);
+            };
         }
     };
 }

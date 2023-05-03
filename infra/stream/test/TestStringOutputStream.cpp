@@ -22,7 +22,8 @@ namespace
             return stream;
         }
     };
-    template <typename T>
+
+    template<typename T>
     void Base64EncodeResultsIn(T data, std::string encoded)
     {
         infra::StringOutputStream::WithStorage<64> stream;
@@ -290,7 +291,7 @@ TEST(StringOutputStreamTest, overflow_twice)
     infra::StringOutputStream::WithStorage<2> stream(infra::softFail);
 
     stream << "abc"
-        << "def";
+           << "def";
     EXPECT_EQ("ab", stream.Storage());
     EXPECT_TRUE(stream.Failed());
 }

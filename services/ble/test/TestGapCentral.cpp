@@ -36,11 +36,11 @@ namespace services
         EXPECT_CALL(gapObserver, StateChanged(GapState::scanning));
         EXPECT_CALL(gapObserver, StateChanged(GapState::standby));
 
-        gap.NotifyObservers([](GapCentralObserver& obs) {
+        gap.NotifyObservers([](GapCentralObserver& obs)
+            {
             obs.StateChanged(GapState::connected);
             obs.StateChanged(GapState::scanning);
-            obs.StateChanged(GapState::standby);
-        });
+            obs.StateChanged(GapState::standby); });
     }
 
     TEST_F(GapCentralDecoratorTest, forward_device_discovered_event_to_observers)
@@ -49,9 +49,8 @@ namespace services
 
         EXPECT_CALL(gapObserver, DeviceDiscovered(ObjectContentsEqual(deviceDiscovered)));
 
-        gap.NotifyObservers([&deviceDiscovered](GapCentralObserver& obs) {
-            obs.DeviceDiscovered(deviceDiscovered);
-        });
+        gap.NotifyObservers([&deviceDiscovered](GapCentralObserver& obs)
+            { obs.DeviceDiscovered(deviceDiscovered); });
     }
 
     TEST_F(GapCentralDecoratorTest, forward_all_authentication_events_to_observers)
@@ -60,11 +59,11 @@ namespace services
         EXPECT_CALL(gapObserver, AuthenticationFailed(GapAuthenticationErrorType::authenticationRequirementsNotMet));
         EXPECT_CALL(gapObserver, AuthenticationFailed(GapAuthenticationErrorType::unknown));
 
-        gap.NotifyObservers([](GapCentralObserver& obs) {
+        gap.NotifyObservers([](GapCentralObserver& obs)
+            {
             obs.AuthenticationSuccessfullyCompleted();
             obs.AuthenticationFailed(GapAuthenticationErrorType::authenticationRequirementsNotMet);
-            obs.AuthenticationFailed(GapAuthenticationErrorType::unknown);
-        });
+            obs.AuthenticationFailed(GapAuthenticationErrorType::unknown); });
     }
 
     TEST_F(GapCentralDecoratorTest, forward_all_calls_to_subject)

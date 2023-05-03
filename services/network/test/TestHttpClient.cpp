@@ -666,12 +666,11 @@ TEST_F(HttpClientTest, Put_request_with_large_body_is_executed)
     client.Subject().Put("/api/thing");
 
     EXPECT_CALL(client, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamWriter>&& writer)
-    {
+        {
         infra::TextOutputStream::WithErrorPolicy stream(*writer);
         stream << "data";
 
-        EXPECT_CALL(client, SendStreamAvailable(testing::_));
-    }));
+        EXPECT_CALL(client, SendStreamAvailable(testing::_)); }));
     ExecuteAllActions();
 
     EXPECT_EQ("PUT /api/thing HTTP/1.1\r\nHost:localhost\r\nTransfer-Encoding:chunked\r\n\r\n4\r\ndata\r\n0\r\n\r\n", connection.SentDataAsString());
@@ -690,12 +689,11 @@ TEST_F(HttpClientTest, Post_request_with_large_body_is_executed)
     client.Subject().Post("/api/thing");
 
     EXPECT_CALL(client, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamWriter>&& writer)
-    {
+        {
         infra::TextOutputStream::WithErrorPolicy stream(*writer);
         stream << "data";
 
-        EXPECT_CALL(client, SendStreamAvailable(testing::_));
-    }));
+        EXPECT_CALL(client, SendStreamAvailable(testing::_)); }));
     ExecuteAllActions();
 
     EXPECT_EQ("POST /api/thing HTTP/1.1\r\nHost:localhost\r\nTransfer-Encoding:chunked\r\n\r\n4\r\ndata\r\n0\r\n\r\n", connection.SentDataAsString());
@@ -950,16 +948,14 @@ public:
     {
         EXPECT_CALL(client, SendStreamAvailable(testing::_))
             .WillOnce(testing::Invoke([](infra::SharedPtr<infra::StreamWriter>&& writer)
-            {
+                {
                 infra::TextOutputStream::WithErrorPolicy stream(*writer);
-                stream << "content";
-            }))
+                stream << "content"; }))
             .WillOnce(testing::Invoke([](infra::SharedPtr<infra::StreamWriter>&& writer) {}))
             .WillOnce(testing::Invoke([](infra::SharedPtr<infra::StreamWriter>&& writer)
-            {
+                {
                 infra::TextOutputStream::WithErrorPolicy stream(*writer);
-                stream << "content";
-            }))
+                stream << "content"; }))
             .WillOnce(testing::Invoke([](infra::SharedPtr<infra::StreamWriter>&& writer) {}));
     }
 

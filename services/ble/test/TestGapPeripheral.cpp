@@ -25,10 +25,10 @@ namespace services
         EXPECT_CALL(gapObserver, StateChanged(GapState::connected));
         EXPECT_CALL(gapObserver, StateChanged(GapState::advertising));
 
-        gap.NotifyObservers([](GapPeripheralObserver& obs) {
+        gap.NotifyObservers([](GapPeripheralObserver& obs)
+            {
             obs.StateChanged(GapState::connected);
-            obs.StateChanged(GapState::advertising);
-        });
+            obs.StateChanged(GapState::advertising); });
     }
 
     TEST_F(GapPeripheralDecoratorTest, forward_all_calls_to_subject)

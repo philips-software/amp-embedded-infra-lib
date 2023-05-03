@@ -1,8 +1,8 @@
 #ifndef SERVICES_GAP_PERIPHERAL_PAIRING_MOCK_HPP
 #define SERVICES_GAP_PERIPHERAL_PAIRING_MOCK_HPP
 
-#include "gmock/gmock.h"
 #include "services/ble/Gap.hpp"
+#include "gmock/gmock.h"
 
 namespace services
 {

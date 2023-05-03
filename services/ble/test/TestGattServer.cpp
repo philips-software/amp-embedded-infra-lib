@@ -89,14 +89,16 @@ TEST_F(GattServerCharacteristicTest, should_update_characteristic_and_callback_o
     infra::MockCallback<void()> callback;
     EXPECT_CALL(callback, callback);
     EXPECT_CALL(operations, Update(testing::Ref(characteristic), infra::ByteRangeContentsEqual(infra::MakeStringByteRange("string")))).WillOnce(testing::Return(services::GattServerCharacteristicOperations::UpdateStatus::success));
-    characteristic.Update(infra::MakeStringByteRange("string"), [&callback]() { callback.callback(); });
+    characteristic.Update(infra::MakeStringByteRange("string"), [&callback]()
+        { callback.callback(); });
 }
 
 TEST_F(GattServerCharacteristicTest, should_update_characteristic_and_not_callback_on_error)
 {
     infra::MockCallback<void()> callback;
     EXPECT_CALL(operations, Update(testing::Ref(characteristic), infra::ByteRangeContentsEqual(infra::MakeStringByteRange("string")))).WillOnce(testing::Return(services::GattServerCharacteristicOperations::UpdateStatus::error));
-    characteristic.Update(infra::MakeStringByteRange("string"), [&callback]() { callback.callback(); });
+    characteristic.Update(infra::MakeStringByteRange("string"), [&callback]()
+        { callback.callback(); });
 }
 
 TEST_F(GattServerCharacteristicTest, should_update_characteristic_and_retry_update_on_retry)
@@ -104,6 +106,7 @@ TEST_F(GattServerCharacteristicTest, should_update_characteristic_and_retry_upda
     infra::MockCallback<void()> callback;
     EXPECT_CALL(callback, callback);
     EXPECT_CALL(operations, Update(testing::Ref(characteristic), infra::ByteRangeContentsEqual(infra::MakeStringByteRange("string")))).WillOnce(testing::Return(services::GattServerCharacteristicOperations::UpdateStatus::retry)).WillOnce(testing::Return(services::GattServerCharacteristicOperations::UpdateStatus::success));
-    characteristic.Update(infra::MakeStringByteRange("string"), [&callback]() { callback.callback(); });
+    characteristic.Update(infra::MakeStringByteRange("string"), [&callback]()
+        { callback.callback(); });
     ExecuteAllActions();
 }
