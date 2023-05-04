@@ -1,4 +1,5 @@
-add_library(infra.syntax_test_doubles ${EMIL_EXCLUDE_FROM_ALL} INTERFACE)
+add_library(infra.syntax_test_doubles INTERFACE)
+emil_build_for(infra.syntax_test_doubles PREREQUISITE_BOOL BUILD_TESTING)
 
 target_link_libraries(infra.syntax_test_doubles INTERFACE
     infra.syntax

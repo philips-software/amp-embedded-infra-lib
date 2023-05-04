@@ -1,4 +1,5 @@
 add_executable(protobuf.echo_test)
+emil_build_for(protobuf.echo_test PREREQUISITE_BOOL EMIL_BUILD_TESTS)
 emil_add_test(protobuf.echo_test)
 
 target_sources(protobuf.echo_test PRIVATE

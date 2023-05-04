@@ -1,4 +1,5 @@
-add_library(upgrade.boot_loader_test_doubles ${EMIL_EXCLUDE_FROM_ALL} STATIC)
+add_library(upgrade.boot_loader_test_doubles STATIC)
+emil_build_for(upgrade.boot_loader_test_doubles PREREQUISITE_BOOL BUILD_TESTING)
 
 target_link_libraries(upgrade.boot_loader_test_doubles PRIVATE
     gmock

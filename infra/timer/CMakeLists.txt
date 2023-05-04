@@ -30,10 +30,5 @@ target_sources(infra.timer PRIVATE
     TimerService.hpp
 )
 
-if (EMIL_BUILD_TESTS)
-    add_subdirectory(test)
-endif()
-
-if (BUILD_TESTING)
-    add_subdirectory(test_helper)
-endif()
+add_subdirectory(test)
+add_subdirectory(test_helper)

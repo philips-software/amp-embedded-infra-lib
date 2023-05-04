@@ -1,4 +1,5 @@
 add_executable(infra.event_test)
+emil_build_for(infra.event_test PREREQUISITE_BOOL EMIL_BUILD_TESTS)
 emil_add_test(infra.event_test)
 
 target_link_libraries(infra.event_test PUBLIC

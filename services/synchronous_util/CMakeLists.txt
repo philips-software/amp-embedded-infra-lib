@@ -15,6 +15,4 @@ target_sources(services.synchronous_util PRIVATE
     SynchronousSpiMasterWithChipSelect.hpp
 )
 
-if (EMIL_BUILD_TESTS)
-    add_subdirectory(test)
-endif()
+add_subdirectory(test)
