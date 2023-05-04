@@ -195,7 +195,8 @@ TEST_F(HttpClientBasicTest, timer_resets_after_SendStreamAvailable)
 
     ForwardTime(std::chrono::seconds(30));
 
-    httpClient.Observer().SendStreamAvailable(nullptr);
+    infra::StreamWriterMock writer;
+    httpClient.Observer().SendStreamAvailable(infra::UnOwnedSharedPtr(writer));
 
     ForwardTime(std::chrono::seconds(30));
 

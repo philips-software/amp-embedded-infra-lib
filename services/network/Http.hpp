@@ -97,12 +97,17 @@ namespace services
     using HttpHeaders = infra::MemoryRange<const HttpHeader>;
     extern const HttpHeaders noHeaders;
 
+    extern const struct Chunked
+    {
+    } chunked;
+
     class HttpRequestFormatter
     {
     public:
         HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, const HttpHeaders headers);
         HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers);
         HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, std::size_t contentSize, const HttpHeaders headers);
+        HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, const HttpHeaders headers, Chunked);
 
         std::size_t Size() const;
         void Write(infra::TextOutputStream stream) const;
@@ -119,6 +124,7 @@ namespace services
         infra::Optional<HttpHeader> contentLengthHeader;
         HttpHeader hostHeader;
         const HttpHeaders headers;
+        bool chunked = false;
     };
 
     class HttpHeaderParserObserver

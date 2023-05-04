@@ -14,8 +14,12 @@ target_sources(services.ble PRIVATE
     Gap.hpp
     Gatt.cpp
     Gatt.hpp
-    GattCharacteristicImpl.cpp
-    GattCharacteristicImpl.hpp
+    GattClient.cpp
+    GattClient.hpp
+    GattServer.cpp
+    GattServer.hpp
+    GattServerCharacteristicImpl.cpp
+    GattServerCharacteristicImpl.hpp
 )
 
 if (EMIL_BUILD_TESTS)
