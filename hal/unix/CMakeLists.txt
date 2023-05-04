@@ -1,5 +1,5 @@
 add_library(hal.unix STATIC)
-emil_build_for(hal.generic HOST Linux Darwin PREREQUISITE_BOOL EMIL_STANDALONE)
+emil_build_for(hal.unix HOST Linux Darwin PREREQUISITE_BOOL EMIL_STANDALONE)
 
 target_link_libraries(hal.unix PUBLIC
     hal.interfaces

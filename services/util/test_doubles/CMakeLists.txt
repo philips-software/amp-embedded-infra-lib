@@ -1,5 +1,5 @@
 add_library(services.util_test_doubles INTERFACE)
-emil_build_for(services.util_test_doubles PREREQUISITE_BOOL BUILD_TESTING)
+emil_build_for(services.util_test_doubles BOOL BUILD_TESTING)
 
 target_link_libraries(services.util_test_doubles INTERFACE
     gmock

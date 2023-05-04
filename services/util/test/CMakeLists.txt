@@ -1,5 +1,5 @@
 add_executable(services.util_test)
-emil_build_for(services.util_test PREREQUISITE_BOOL EMIL_BUILD_TESTS)
+emil_build_for(services.util_test BOOL EMIL_BUILD_TESTS)
 emil_add_test(services.util_test)
 
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang|AppleClang")

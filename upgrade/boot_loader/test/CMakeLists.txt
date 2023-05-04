@@ -1,5 +1,5 @@
 add_executable(upgrade.boot_loader_test)
-emil_build_for(upgrade.boot_loader_test PREREQUISITE_BOOL EMIL_BUILD_TESTS)
+emil_build_for(upgrade.boot_loader_test BOOL EMIL_BUILD_TESTS)
 emil_add_test(upgrade.boot_loader_test)
 
 target_link_libraries(upgrade.boot_loader_test PUBLIC

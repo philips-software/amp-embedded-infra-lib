@@ -1,5 +1,5 @@
 add_executable(infra.util_test)
-emil_build_for(infra.util_test PREREQUISITE_BOOL EMIL_BUILD_TESTS)
+emil_build_for(infra.util_test BOOL EMIL_BUILD_TESTS)
 emil_add_test(infra.util_test)
 
 target_link_libraries(infra.util_test PUBLIC

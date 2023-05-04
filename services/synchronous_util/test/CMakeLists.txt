@@ -1,5 +1,5 @@
 add_executable(services.synchronous_util_test)
-emil_build_for(services.synchronous_util_test PREREQUISITE_BOOL EMIL_BUILD_TESTS)
+emil_build_for(services.synchronous_util_test BOOL EMIL_BUILD_TESTS)
 emil_add_test(services.synchronous_util_test)
 
 target_link_libraries(services.synchronous_util_test PUBLIC

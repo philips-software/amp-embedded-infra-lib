@@ -1,5 +1,5 @@
 add_library(lwip.lwip_conf STATIC)
-emil_build_for(lwip.lwip_conf PREREQUISITE_BOOL TARGET_CORTEX EMIL_STANDALONE)
+emil_build_for(lwip.lwip_conf BOOL TARGET_CORTEX PREREQUISITE_BOOL EMIL_STANDALONE)
 
 target_include_directories(lwip.lwip_conf INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>"

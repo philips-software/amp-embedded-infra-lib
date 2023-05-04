@@ -1,5 +1,5 @@
 add_executable(hal.synchronous_interfaces_test_doubles_test)
-emil_build_for(hal.synchronous_interfaces_test_doubles_test PREREQUISITE_BOOL EMIL_BUILD_TESTS)
+emil_build_for(hal.synchronous_interfaces_test_doubles_test BOOL EMIL_BUILD_TESTS)
 emil_add_test(hal.synchronous_interfaces_test_doubles_test)
 
 target_link_libraries(hal.synchronous_interfaces_test_doubles_test PUBLIC
