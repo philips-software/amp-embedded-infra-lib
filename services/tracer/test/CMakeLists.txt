@@ -1,4 +1,5 @@
 add_executable(services.tracer_test)
+emil_build_for(services.tracer_test BOOL EMIL_BUILD_TESTS)
 emil_add_test(services.tracer_test)
 
 target_link_libraries(services.tracer_test PUBLIC

@@ -75,10 +75,5 @@ if (EMIL_INCLUDE_MBEDTLS)
     )
 endif()
 
-if (EMIL_BUILD_TESTS)
-    add_subdirectory(test)
-endif()
-
-if (BUILD_TESTING)
-    add_subdirectory(test_doubles)
-endif()
+add_subdirectory(test)
+add_subdirectory(test_doubles)
