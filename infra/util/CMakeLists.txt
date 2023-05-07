@@ -96,7 +96,7 @@ add_subdirectory(test_helper)
 function(emil_transform_file_to_string input name namespace output)
 
     add_custom_command(
-        OUTPUT "generated/${namespace}/${output}.cpp" "generated/${namespace}/${output}.hpp"
+        OUTPUT "${CMAKE_CURRENT_LIST_DIR}/generated/${namespace}/${output}.cpp" "${CMAKE_CURRENT_LIST_DIR}/generated/${namespace}/${output}.hpp"
         COMMAND ${CMAKE_COMMAND} -D script_dir="${CMAKE_CURRENT_FUNCTION_LIST_DIR}" -D list_dir="${CMAKE_CURRENT_LIST_DIR}" -D input="${input}" -D name=${name} -D namespace=${namespace} -D output="${output}" -P "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/transform_file_to_string.cmake"
         DEPENDS ${input} ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/transform_file_to_string.cmake
     )
@@ -106,7 +106,7 @@ endfunction()
 function(emil_target_string_source target input name namespace output)
 
     emil_transform_file_to_string("${input}" ${name} ${namespace} "${output}")
-    target_sources(${target} PRIVATE generated/${namespace}/${output}.cpp generated/${namespace}/${output}.hpp)
+    target_sources(${target} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/generated/${namespace}/${output}.cpp ${CMAKE_CURRENT_LIST_DIR}/generated/${namespace}/${output}.hpp)
     target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 endfunction()
