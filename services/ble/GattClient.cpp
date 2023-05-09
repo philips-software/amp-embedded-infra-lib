@@ -64,9 +64,9 @@ namespace services
 
     void GattClientCharacteristic::UpdateReceived(AttAttribute::Handle handle, infra::ConstByteRange data)
     {
-        constexpr uint8_t offsetCCCD = 1;
+        constexpr uint8_t valueHandleOffset = 1;
 
-        if ((handle + offsetCCCD) == Handle())
+        if (handle == (Handle() + valueHandleOffset))
             GattClientCharacteristicUpdate::SubjectType::NotifyObservers([&data](auto& obs)
                 { obs.UpdateReceived(data); });
     }

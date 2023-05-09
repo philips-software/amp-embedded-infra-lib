@@ -61,14 +61,35 @@ class GattClientCharacteristicTest
 public:
     GattClientCharacteristicTest()
         : service(uuid16, 0x1, 0x9)
-        , characteristic({ asyncUpdate, operations }, uuid16, 0x2, 0x3, GattPropertyFlags::write)
-    {}
+        , characteristic({ asyncUpdate, operations }, uuid16, characteristicHandle, characteristicValueHandle, GattPropertyFlags::write)
+    {
+        gattUpdateObserver.Attach(characteristic);
+    }
+
+    static const services::AttAttribute::Handle characteristicHandle = 0x2;
+    static const services::AttAttribute::Handle characteristicValueHandle = 0x3;
 
     services::GattClientStackUpdate asyncUpdate;
     testing::StrictMock<services::GattClientCharacteristicOperationsMock> operations;
     services::GattClientService service;
     services::GattClientCharacteristic characteristic;
+    testing::StrictMock<services::GattClientCharacteristicUpdateObserverMock> gattUpdateObserver;
 };
+
+TEST_F(GattClientCharacteristicTest, receives_valid_notification_should_notify_observers)
+{
+    EXPECT_CALL(gattUpdateObserver, UpdateReceived(infra::ByteRangeContentsEqual(infra::MakeStringByteRange("string"))));
+    asyncUpdate.NotifyObservers([](auto& observer)
+        { observer.UpdateReceived(characteristicValueHandle, infra::MakeStringByteRange("string")); });
+}
+
+TEST_F(GattClientCharacteristicTest, receives_invalid_notification_should_not_notify_observers)
+{
+    const services::AttAttribute::Handle invalidCharacteristicValueHandle = 0x7;
+
+    asyncUpdate.NotifyObservers([&invalidCharacteristicValueHandle](auto& observer)
+        { observer.UpdateReceived(invalidCharacteristicValueHandle, infra::MakeStringByteRange("string")); });
+}
 
 TEST_F(GattClientCharacteristicTest, should_read_characteristic_and_callback_with_data_received)
 {
