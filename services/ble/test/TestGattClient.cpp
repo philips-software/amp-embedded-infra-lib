@@ -79,14 +79,16 @@ public:
 TEST_F(GattClientCharacteristicTest, receives_valid_notification_should_notify_observers)
 {
     EXPECT_CALL(gattUpdateObserver, UpdateReceived(infra::ByteRangeContentsEqual(infra::MakeStringByteRange("string"))));
-    asyncUpdate.NotifyObservers([](auto& observer) { observer.UpdateReceived(characteristicValueHandle, infra::MakeStringByteRange("string")); });
+    asyncUpdate.NotifyObservers([](auto& observer)
+        { observer.UpdateReceived(characteristicValueHandle, infra::MakeStringByteRange("string")); });
 }
 
 TEST_F(GattClientCharacteristicTest, receives_invalid_notification_should_not_notify_observers)
 {
     const services::AttAttribute::Handle invalidCharacteristicValueHandle = 0x7;
 
-    asyncUpdate.NotifyObservers([&invalidCharacteristicValueHandle](auto& observer) { observer.UpdateReceived(invalidCharacteristicValueHandle, infra::MakeStringByteRange("string")); });
+    asyncUpdate.NotifyObservers([&invalidCharacteristicValueHandle](auto& observer)
+        { observer.UpdateReceived(invalidCharacteristicValueHandle, infra::MakeStringByteRange("string")); });
 }
 
 TEST_F(GattClientCharacteristicTest, should_read_characteristic_and_callback_with_data_received)
