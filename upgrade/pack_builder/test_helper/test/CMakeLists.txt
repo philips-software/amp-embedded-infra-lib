@@ -1,4 +1,5 @@
 add_executable(upgrade.pack_builder_test_helper_test)
+emil_build_for(upgrade.pack_builder_test_helper_test BOOL EMIL_BUILD_TESTS)
 emil_add_test(upgrade.pack_builder_test_helper_test)
 
 target_link_libraries(upgrade.pack_builder_test_helper_test PUBLIC

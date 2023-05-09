@@ -49,7 +49,7 @@ function(generate_xslt target output)
         add_custom_command(
             OUTPUT ${absolute_output}
             COMMAND ${CMAKE_COMMAND} -E make_directory ${absolute_directory}
-            COMMAND ${CMAKE_COMMAND} -E env "PATH=$<SHELL_PATH:$ENV{PATH};${EMIL_PATH_FOR_XSLTPROC}>>" ${xsltproc_program} ${xslt_params} --output "${absolute_output}" ${absolute_inputs}
+            COMMAND ${CMAKE_COMMAND} -E env "PATH=$<SHELL_PATH:$ENV{PATH};${EMIL_PATH_FOR_XSLTPROC}>" ${xsltproc_program} ${xslt_params} --output "${absolute_output}" ${absolute_inputs}
             DEPENDS ${absolute_inputs}
         )
     else()

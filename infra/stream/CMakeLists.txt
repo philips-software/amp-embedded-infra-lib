@@ -61,6 +61,4 @@ target_sources(infra.stream PRIVATE
     StringOutputStream.hpp
 )
 
-if (EMIL_BUILD_TESTS)
-    add_subdirectory(test)
-endif()
+add_subdirectory(test)
