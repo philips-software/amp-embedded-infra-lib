@@ -78,6 +78,19 @@
       "generator": "Ninja Multi-Config"
     },
     {
+      "name": "HostWindows",
+      "displayName": "Configuration for Host Tooling Windows",
+      "inherits": "defaults",
+      "toolchainFile": "${sourceDir}/cmake/toolchain-x86_64-pc-windows-msvc.cmake",
+      "cacheVariables": {
+        "CMAKE_COMPILE_WARNING_AS_ERROR": "Off",
+        "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo;MinSizeRel",
+        "EMIL_BUILD_TESTS": "Off",
+        "EMIL_BUILD_EXAMPLES": "Off"
+      },
+      "generator": "Ninja Multi-Config"
+    },
+    {
       "name": "Embedded",
       "displayName": "Configuration for Embedded",
       "inherits": "defaults",
@@ -152,6 +165,26 @@
       "name": "Host-MinSizeRel",
       "configuration": "MinSizeRel",
       "configurePreset": "Host"
+    },
+    {
+      "name": "HostWindows-Debug",
+      "configuration": "Debug",
+      "configurePreset": "HostWindows"
+    },
+    {
+      "name": "HostWindows-Release",
+      "configuration": "Release",
+      "configurePreset": "HostWindows"
+    },
+    {
+      "name": "HostWindows-RelWithDebInfo",
+      "configuration": "RelWithDebInfo",
+      "configurePreset": "HostWindows"
+    },
+    {
+      "name": "HostWindows-MinSizeRel",
+      "configuration": "MinSizeRel",
+      "configurePreset": "HostWindows"
     },
     {
       "name": "Embedded-Debug",

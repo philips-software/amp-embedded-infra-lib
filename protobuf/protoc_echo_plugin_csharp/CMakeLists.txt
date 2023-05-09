@@ -1,4 +1,4 @@
-if (EMIL_HOST_BUILD)
+if (EMIL_HOST_BUILD AND NOT CMAKE_CROSSCOMPILING)
     add_executable(protobuf.protoc_echo_plugin_csharp)
     install(TARGETS protobuf.protoc_echo_plugin_csharp EXPORT emilProtobufTargets DESTINATION bin)
 
