@@ -24,6 +24,7 @@ if (EMIL_HOST_BUILD)
     )
 
     add_executable(protobuf.protoc_echo_plugin)
+    emil_build_for(protobuf.protoc_echo_plugin BOOL EMIL_STANDALONE)
     install(TARGETS protobuf.protoc_echo_plugin EXPORT emilProtobufTargets DESTINATION bin)
 
     target_link_libraries(protobuf.protoc_echo_plugin PUBLIC

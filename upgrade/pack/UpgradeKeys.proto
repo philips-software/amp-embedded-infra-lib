@@ -17,6 +17,6 @@ message ecDsa224key
 
 message keys
 {
-	aes128key aesKey = 1;
-	ecDsa224key ecDsaKey = 2;
+    aes128key aesKey = 1;
+    ecDsa224key ecDsaKey = 2;
 }
