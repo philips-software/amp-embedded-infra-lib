@@ -1,5 +1,5 @@
 add_executable(protobuf.echo_console)
-emil_build_for(protobuf.echo_console HOST All)
+emil_build_for(protobuf.echo_console HOST All PREREQUISITE_BOOL EMIL_STANDALONE)
 install(TARGETS protobuf.echo_console EXPORT emilProtobufTargets DESTINATION bin)
 
 target_link_libraries(protobuf.echo_console PUBLIC
