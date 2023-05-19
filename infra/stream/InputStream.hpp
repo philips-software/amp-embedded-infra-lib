@@ -137,7 +137,7 @@ namespace infra
     public:
         WithReader();
         template<class Arg>
-        explicit WithReader(Arg&& arg, typename std::enable_if<!std::is_same<WithReader, typename std::remove_cv<typename std::remove_reference<Arg>::type>::type>::value, void*>::type = nullptr);
+        explicit WithReader(Arg&& arg, std::enable_if_t<!std::is_same_v<WithReader, std::remove_cv_t<std::remove_reference_t<Arg>>>, std::nullptr_t> = nullptr);
         template<class Arg0, class Arg1, class... Args>
         explicit WithReader(Arg0&& arg0, Arg1&& arg1, Args&&... args);
         template<class Storage, class... Args>
@@ -176,7 +176,7 @@ namespace infra
     public:
         WithReader();
         template<class Arg>
-        explicit WithReader(Arg&& arg, typename std::enable_if<!std::is_same<WithReader, typename std::remove_cv<typename std::remove_reference<Arg>::type>::type>::value, void*>::type = nullptr);
+        explicit WithReader(Arg&& arg, std::enable_if_t<!std::is_same_v<WithReader, std::remove_cv_t<std::remove_reference_t<Arg>>>, std::nullptr_t> = nullptr);
         template<class Arg0, class Arg1, class... Args>
         explicit WithReader(Arg0&& arg0, Arg1&& arg1, Args&&... args);
         template<class Storage, class... Args>
@@ -261,8 +261,8 @@ namespace infra
 
     template<class TheReader>
     template<class Arg>
-    DataInputStream::WithReader<TheReader>::WithReader(Arg&& arg, typename std::enable_if<!std::is_same<WithReader,
-        typename std::remove_cv<typename std::remove_reference<Arg>::type>::type>::value, void*>::type)
+    DataInputStream::WithReader<TheReader>::WithReader(Arg&& arg, std::enable_if_t<!std::is_same_v<WithReader,
+        std::remove_cv_t<std::remove_reference_t<Arg>>>, std::nullptr_t>)
         : detail::StorageHolder<TheReader, WithReader<TheReader>>(std::forward<Arg>(arg))
         , DataInputStream(this->storage, errorPolicy)
     {}
@@ -310,7 +310,7 @@ namespace infra
 
     template<class TheReader>
     template<class Arg>
-    TextInputStream::WithReader<TheReader>::WithReader(Arg&& arg, typename std::enable_if<!std::is_same<WithReader, typename std::remove_cv<typename std::remove_reference<Arg>::type>::type>::value, void*>::type)
+    TextInputStream::WithReader<TheReader>::WithReader(Arg&& arg, std::enable_if_t<!std::is_same_v<WithReader, std::remove_cv_t<std::remove_reference_t<Arg>>>, std::nullptr_t>)
         : detail::StorageHolder<TheReader, WithReader<TheReader>>(std::forward<Arg>(arg))
         , TextInputStream(this->storage, errorPolicy)
     {}

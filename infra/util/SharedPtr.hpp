@@ -737,7 +737,7 @@ namespace infra
             }
 
             template<class Arg>
-            SharedObjectOnHeap(Arg&& arg, typename std::enable_if<!std::is_same<SharedObjectOnHeap, typename std::remove_cv<typename std::remove_reference<Arg>::type>::type>::value, void*>::type = nullptr)
+            SharedObjectOnHeap(Arg&& arg, std::enable_if_t<!std::is_same_v<SharedObjectOnHeap, std::remove_cv_t<std::remove_reference_t<Arg>>>, std::nullptr_t> = nullptr)
                 : control(&*object, this)
             {
                 object.Construct(std::forward<Arg>(arg));
