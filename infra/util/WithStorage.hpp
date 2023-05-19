@@ -23,10 +23,13 @@ namespace infra
         , public Base
     {
     public:
+        WithStorage();
         template<class StorageArg, class... Args>
         WithStorage(InPlace, StorageArg&& storageArg, Args&&... args);
-        template<class... Args>
-        WithStorage(Args&&... args);
+        template<class Arg>
+        WithStorage(Arg&& arg, typename std::enable_if<!std::is_same<WithStorage, typename std::remove_cv<typename std::remove_reference<Arg>::type>::type>::value, void*>::type = nullptr);
+        template<class Arg0, class Arg1, class... Args>
+        WithStorage(Arg0&& arg0, Arg1&& arg1, Args&&... args);
         template<class T, class... Args>
         WithStorage(std::initializer_list<T> initializerList, Args&&... args);
 
@@ -63,15 +66,21 @@ namespace infra
         {
         public:
             StorageHolder() = default;
-
-            template<class Arg0, class... Args>
-            StorageHolder(Arg0&& arg0, Args&&... args);
+            template<class Arg>
+            StorageHolder(Arg&& arg, typename std::enable_if<!std::is_same<StorageHolder, typename std::remove_cv<typename std::remove_reference<Arg>::type>::type>::value, void*>::type = nullptr);
+            template<class Arg0, class Arg1, class... Args>
+            StorageHolder(Arg0&& arg0, Arg1&& arg1, Args&&... args);
 
             StorageType storage;
         };
     }
 
     ////    Implementation    ////
+
+    template<class Base, class StorageType>
+    WithStorage<Base, StorageType>::WithStorage()
+        : Base(detail::StorageHolder<StorageType, Base>::storage)
+    {}
 
     template<class Base, class StorageType>
     template<class StorageArg, class... Args>
@@ -81,9 +90,15 @@ namespace infra
     {}
 
     template<class Base, class StorageType>
-    template<class... Args>
-    WithStorage<Base, StorageType>::WithStorage(Args&&... args)
-        : Base(detail::StorageHolder<StorageType, Base>::storage, std::forward<Args>(args)...)
+    template<class Arg>
+    WithStorage<Base, StorageType>::WithStorage(Arg&& arg, typename std::enable_if<!std::is_same<WithStorage, typename std::remove_cv<typename std::remove_reference<Arg>::type>::type>::value, void*>::type)
+        : Base(detail::StorageHolder<StorageType, Base>::storage, std::forward<Arg>(arg))
+    {}
+
+    template<class Base, class StorageType>
+    template<class Arg0, class Arg1, class... Args>
+    WithStorage<Base, StorageType>::WithStorage(Arg0&& arg0, Arg1&& arg1, Args&&... args)
+        : Base(detail::StorageHolder<StorageType, Base>::storage, std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::forward<Args>(args)...)
     {}
 
     template<class Base, class StorageType>
@@ -141,9 +156,15 @@ namespace infra
     namespace detail
     {
         template<class StorageType, class Base>
-        template<class Arg0, class... Args>
-        StorageHolder<StorageType, Base>::StorageHolder(Arg0&& arg0, Args&&... args)
-            : storage(std::forward<Arg0>(arg0), std::forward<Args>(args)...)
+        template<class Arg>
+        StorageHolder<StorageType, Base>::StorageHolder(Arg&& arg, typename std::enable_if<!std::is_same<StorageHolder, typename std::remove_cv<typename std::remove_reference<Arg>::type>::type>::value, void*>::type)
+            : storage(std::forward<Arg>(arg))
+        {}
+
+        template<class StorageType, class Base>
+        template<class Arg0, class Arg1, class... Args>
+        StorageHolder<StorageType, Base>::StorageHolder(Arg0&& arg0, Arg1&& arg1, Args&&... args)
+            : storage(std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::forward<Args>(args)...)
         {}
     }
 }

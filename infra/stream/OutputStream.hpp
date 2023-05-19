@@ -208,8 +208,11 @@ namespace infra
         , public DataOutputStream
     {
     public:
-        template<class... Args>
-        explicit WithWriter(Args&&... args);
+        WithWriter();
+        template<class Arg>
+        explicit WithWriter(Arg&& arg, typename std::enable_if<!std::is_same<WithWriter, typename std::remove_cv<typename std::remove_reference<Arg>::type>::type>::value, void*>::type = nullptr);
+        template<class Arg0, class Arg1, class... Args>
+        explicit WithWriter(Arg0&& arg0, Arg1&& arg1, Args&&... args);
         template<class Storage, class... Args>
         WithWriter(Storage&& storage, SoftFail, Args&&... args);
         template<class Storage, class... Args>
@@ -244,8 +247,11 @@ namespace infra
         , public TextOutputStream
     {
     public:
-        template<class... Args>
-        explicit WithWriter(Args&&... args);
+        WithWriter();
+        template<class Arg>
+        explicit WithWriter(Arg&& arg, typename std::enable_if<!std::is_same<WithWriter, typename std::remove_cv<typename std::remove_reference<Arg>::type>::type>::value, void*>::type = nullptr);
+        template<class Arg0, class Arg1, class... Args>
+        explicit WithWriter(Arg0&& arg0, Arg1&& arg1, Args&&... args);
         template<class Storage, class... Args>
         WithWriter(Storage&& storage, SoftFail, Args&&... args);
         template<class Storage, class... Args>
@@ -400,9 +406,21 @@ namespace infra
     }
 
     template<class TheWriter>
-    template<class... Args>
-    DataOutputStream::WithWriter<TheWriter>::WithWriter(Args&&... args)
-        : detail::StorageHolder<TheWriter, WithWriter<TheWriter>>(std::forward<Args>(args)...)
+    DataOutputStream::WithWriter<TheWriter>::WithWriter()
+        : DataOutputStream(this->storage, errorPolicy)
+    {}
+
+    template<class TheWriter>
+    template<class Arg>
+    DataOutputStream::WithWriter<TheWriter>::WithWriter(Arg&& arg, typename std::enable_if<!std::is_same<WithWriter, typename std::remove_cv<typename std::remove_reference<Arg>::type>::type>::value, void*>::type)
+        : detail::StorageHolder<TheWriter, WithWriter<TheWriter>>(std::forward<Arg>(arg))
+        , DataOutputStream(this->storage, errorPolicy)
+    {}
+
+    template<class TheWriter>
+    template<class Arg0, class Arg1, class... Args>
+    DataOutputStream::WithWriter<TheWriter>::WithWriter(Arg0&& arg0, Arg1&& arg1, Args&&... args)
+        : detail::StorageHolder<TheWriter, WithWriter<TheWriter>>(std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::forward<Args>(args)...)
         , DataOutputStream(this->storage, errorPolicy)
     {}
 
@@ -436,9 +454,21 @@ namespace infra
     }
 
     template<class TheWriter>
-    template<class... Args>
-    TextOutputStream::WithWriter<TheWriter>::WithWriter(Args&&... args)
-        : detail::StorageHolder<TheWriter, WithWriter<TheWriter>>(std::forward<Args>(args)...)
+    TextOutputStream::WithWriter<TheWriter>::WithWriter()
+        : TextOutputStream(this->storage, errorPolicy)
+    {}
+
+    template<class TheWriter>
+    template<class Arg>
+    TextOutputStream::WithWriter<TheWriter>::WithWriter(Arg&& arg, typename std::enable_if<!std::is_same<WithWriter, typename std::remove_cv<typename std::remove_reference<Arg>::type>::type>::value, void*>::type)
+        : detail::StorageHolder<TheWriter, WithWriter<TheWriter>>(std::forward<Arg>(arg))
+        , TextOutputStream(this->storage, errorPolicy)
+    {}
+
+    template<class TheWriter>
+    template<class Arg0, class Arg1, class... Args>
+    TextOutputStream::WithWriter<TheWriter>::WithWriter(Arg0&& arg0, Arg1&& arg1, Args&&... args)
+        : detail::StorageHolder<TheWriter, WithWriter<TheWriter>>(std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::forward<Args>(args)...)
         , TextOutputStream(this->storage, errorPolicy)
     {}
 

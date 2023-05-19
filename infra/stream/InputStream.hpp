@@ -135,8 +135,11 @@ namespace infra
         , public DataInputStream
     {
     public:
-        template<class... Args>
-        explicit WithReader(Args&&... args);
+        WithReader();
+        template<class Arg>
+        explicit WithReader(Arg&& arg, typename std::enable_if<!std::is_same<WithReader, typename std::remove_cv<typename std::remove_reference<Arg>::type>::type>::value, void*>::type = nullptr);
+        template<class Arg0, class Arg1, class... Args>
+        explicit WithReader(Arg0&& arg0, Arg1&& arg1, Args&&... args);
         template<class Storage, class... Args>
         WithReader(Storage&& storage, const SoftFail&, Args&&... args);
         template<class Storage, class... Args>
@@ -171,8 +174,11 @@ namespace infra
         , public TextInputStream
     {
     public:
-        template<class... Args>
-        explicit WithReader(Args&&... args);
+        WithReader();
+        template<class Arg>
+        explicit WithReader(Arg&& arg, typename std::enable_if<!std::is_same<WithReader, typename std::remove_cv<typename std::remove_reference<Arg>::type>::type>::value, void*>::type = nullptr);
+        template<class Arg0, class Arg1, class... Args>
+        explicit WithReader(Arg0&& arg0, Arg1&& arg1, Args&&... args);
         template<class Storage, class... Args>
         WithReader(Storage&& storage, const SoftFail&, Args&&... args);
         template<class Storage, class... Args>
@@ -249,9 +255,22 @@ namespace infra
     }
 
     template<class TheReader>
-    template<class... Args>
-    DataInputStream::WithReader<TheReader>::WithReader(Args&&... args)
-        : detail::StorageHolder<TheReader, WithReader<TheReader>>(std::forward<Args>(args)...)
+    DataInputStream::WithReader<TheReader>::WithReader()
+        : DataInputStream(this->storage, errorPolicy)
+    {}
+
+    template<class TheReader>
+    template<class Arg>
+    DataInputStream::WithReader<TheReader>::WithReader(Arg&& arg, typename std::enable_if<!std::is_same<WithReader,
+        typename std::remove_cv<typename std::remove_reference<Arg>::type>::type>::value, void*>::type)
+        : detail::StorageHolder<TheReader, WithReader<TheReader>>(std::forward<Arg>(arg))
+        , DataInputStream(this->storage, errorPolicy)
+    {}
+
+    template<class TheReader>
+    template<class Arg0, class Arg1, class... Args>
+    DataInputStream::WithReader<TheReader>::WithReader(Arg0&& arg0, Arg1&& arg1, Args&&... args)
+        : detail::StorageHolder<TheReader, WithReader<TheReader>>(std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::forward<Args>(args)...)
         , DataInputStream(this->storage, errorPolicy)
     {}
 
@@ -285,9 +304,21 @@ namespace infra
     }
 
     template<class TheReader>
-    template<class... Args>
-    TextInputStream::WithReader<TheReader>::WithReader(Args&&... args)
-        : detail::StorageHolder<TheReader, WithReader<TheReader>>(std::forward<Args>(args)...)
+    TextInputStream::WithReader<TheReader>::WithReader()
+        : TextInputStream(this->storage, errorPolicy)
+    {}
+
+    template<class TheReader>
+    template<class Arg>
+    TextInputStream::WithReader<TheReader>::WithReader(Arg&& arg, typename std::enable_if<!std::is_same<WithReader, typename std::remove_cv<typename std::remove_reference<Arg>::type>::type>::value, void*>::type)
+        : detail::StorageHolder<TheReader, WithReader<TheReader>>(std::forward<Arg>(arg))
+        , TextInputStream(this->storage, errorPolicy)
+    {}
+
+    template<class TheReader>
+    template<class Arg0, class Arg1, class... Args>
+    TextInputStream::WithReader<TheReader>::WithReader(Arg0&& arg0, Arg1&& arg1, Args&&... args)
+        : detail::StorageHolder<TheReader, WithReader<TheReader>>(std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::forward<Args>(args)...)
         , TextInputStream(this->storage, errorPolicy)
     {}
 
