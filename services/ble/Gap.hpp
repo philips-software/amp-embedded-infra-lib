@@ -175,6 +175,7 @@ namespace services
         {
             flags = 0x01u,
             completeListOf128BitUuids = 0x07u,
+            shortenedLocalName = 0x08u,
             completeLocalName = 0x09u,
             publicTargetAddress = 0x17u,
             manufacturerSpecificData = 0xffu
