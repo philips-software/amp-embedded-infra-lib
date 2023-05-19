@@ -34,6 +34,11 @@ namespace main_
             , to(to)
         {}
 
+        void RemoveAllForwarders()
+        {
+            forwarders.clear();
+        }
+
         void AddService(uint32_t serviceId, uint32_t responseId)
         {
             AddForwarder(from, serviceId, to);
@@ -67,6 +72,11 @@ namespace main_
             : EchoForwarder<MessageSize, MaxServices>(from, to)
             , to(toSerial)
         {}
+
+        ~EchoForwarderToSerial()
+        {
+            this->RemoveAllForwarders();
+        }
 
     private:
         EchoOnSerialCommunication<MessageSize> to;
