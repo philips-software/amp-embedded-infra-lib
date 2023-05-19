@@ -262,7 +262,8 @@ namespace infra
     template<class TheReader>
     template<class Arg>
     DataInputStream::WithReader<TheReader>::WithReader(Arg&& arg, typename std::enable_if<!std::is_same<WithReader,
-        typename std::remove_cv<typename std::remove_reference<Arg>::type>::type>::value, void*>::type)
+                                                                                              typename std::remove_cv<typename std::remove_reference<Arg>::type>::type>::value,
+                                                                      void*>::type)
         : detail::StorageHolder<TheReader, WithReader<TheReader>>(std::forward<Arg>(arg))
         , DataInputStream(this->storage, errorPolicy)
     {}
