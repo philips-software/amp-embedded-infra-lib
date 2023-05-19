@@ -401,7 +401,7 @@ namespace services
     {
         std::array<uint8_t, 16> randomData;
         randomDataGenerator.GenerateRandomData(randomData);
-        infra::StringOutputStream::WithWriter stream(webSocketKey);
+        infra::TextOutputStream::WithWriter<infra::StringOutputStreamWriter> stream(webSocketKey);
         stream << infra::AsBase64(randomData);
 
         headers.emplace_back("Content-Length", "0");
