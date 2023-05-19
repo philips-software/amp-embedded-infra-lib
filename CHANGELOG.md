@@ -7,6 +7,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [3.3.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v3.2.0...v3.3.0) (2023-05-19)
+
+
+### Features
+
+* Merge upstream changes ([#279](https://github.com/philips-software/amp-embedded-infra-lib/issues/279)) ([9856f23](https://github.com/philips-software/amp-embedded-infra-lib/commit/9856f2304b818f69926db810aabadbd2c1a82659))
+
+
+### Bug Fixes
+
+* GattClient notification ([#284](https://github.com/philips-software/amp-embedded-infra-lib/issues/284)) ([15ff387](https://github.com/philips-software/amp-embedded-infra-lib/commit/15ff3873f9f57169217c6a4337f9fac7d1b1f032))
+* Remove superfluous &gt; from cmake/emil_xsltproc.cmake ([#276](https://github.com/philips-software/amp-embedded-infra-lib/issues/276)) ([be139b2](https://github.com/philips-software/amp-embedded-infra-lib/commit/be139b22aff7dd5998eba2d7c409302598f988fb))
+
 ## [3.2.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v3.1.0...v3.2.0) (2023-04-21)
 
 
