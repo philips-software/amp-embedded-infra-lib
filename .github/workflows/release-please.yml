@@ -4,7 +4,7 @@ name: Create Release
 on:
   workflow_dispatch:
   push:
-    branches: [modern-cmake]
+    branches: [main]
 
 permissions:
   contents: read
