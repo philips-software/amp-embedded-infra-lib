@@ -63,9 +63,9 @@ namespace infra
         StreamErrorPolicy& errorPolicy;
     };
 
-    template<class Parent, class TheReader>
+    template<class Parent, class ReaderType>
     class InputStreamWithReader
-        : private detail::StorageHolder<TheReader, InputStreamWithReader<Parent, TheReader>>
+        : private detail::StorageHolder<ReaderType, InputStreamWithReader<Parent, ReaderType>>
         , public Parent
     {
     public:
@@ -82,7 +82,7 @@ namespace infra
         InputStreamWithReader& operator=(const InputStreamWithReader& other) = delete;
         ~InputStreamWithReader() = default;
 
-        TheReader& Reader();
+        ReaderType& Reader();
 
     private:
         StreamErrorPolicy errorPolicy;
@@ -216,50 +216,50 @@ namespace infra
         return result;
     }
 
-    template<class Parent, class TheReader>
-    InputStreamWithReader<Parent, TheReader>::InputStreamWithReader()
+    template<class Parent, class ReaderType>
+    InputStreamWithReader<Parent, ReaderType>::InputStreamWithReader()
         : Parent(this->storage, errorPolicy)
     {}
 
-    template<class Parent, class TheReader>
+    template<class Parent, class ReaderType>
     template<class Arg>
-    InputStreamWithReader<Parent, TheReader>::InputStreamWithReader(Arg&& arg, std::enable_if_t<!std::is_same_v<InputStreamWithReader, std::remove_cv_t<std::remove_reference_t<Arg>>>, std::nullptr_t>)
-        : detail::StorageHolder<TheReader, InputStreamWithReader<Parent, TheReader>>(std::forward<Arg>(arg))
+    InputStreamWithReader<Parent, ReaderType>::InputStreamWithReader(Arg&& arg, std::enable_if_t<!std::is_same_v<InputStreamWithReader, std::remove_cv_t<std::remove_reference_t<Arg>>>, std::nullptr_t>)
+        : detail::StorageHolder<ReaderType, InputStreamWithReader<Parent, ReaderType>>(std::forward<Arg>(arg))
         , Parent(this->storage, errorPolicy)
     {}
 
-    template<class Parent, class TheReader>
+    template<class Parent, class ReaderType>
     template<class Arg0, class Arg1, class... Args>
-    InputStreamWithReader<Parent, TheReader>::InputStreamWithReader(Arg0&& arg0, Arg1&& arg1, Args&&... args)
-        : detail::StorageHolder<TheReader, InputStreamWithReader<Parent, TheReader>>(std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::forward<Args>(args)...)
+    InputStreamWithReader<Parent, ReaderType>::InputStreamWithReader(Arg0&& arg0, Arg1&& arg1, Args&&... args)
+        : detail::StorageHolder<ReaderType, InputStreamWithReader<Parent, ReaderType>>(std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::forward<Args>(args)...)
         , Parent(this->storage, errorPolicy)
     {}
 
-    template<class Parent, class TheReader>
+    template<class Parent, class ReaderType>
     template<class Storage, class... Args>
-    InputStreamWithReader<Parent, TheReader>::InputStreamWithReader(Storage&& storage, const SoftFail&, Args&&... args)
-        : detail::StorageHolder<TheReader, InputStreamWithReader<Parent, TheReader>>(std::forward<Storage>(storage), std::forward<Args>(args)...)
+    InputStreamWithReader<Parent, ReaderType>::InputStreamWithReader(Storage&& storage, const SoftFail&, Args&&... args)
+        : detail::StorageHolder<ReaderType, InputStreamWithReader<Parent, ReaderType>>(std::forward<Storage>(storage), std::forward<Args>(args)...)
         , Parent(this->storage, errorPolicy)
         , errorPolicy(softFail)
     {}
 
-    template<class Parent, class TheReader>
+    template<class Parent, class ReaderType>
     template<class Storage, class... Args>
-    InputStreamWithReader<Parent, TheReader>::InputStreamWithReader(Storage&& storage, const NoFail&, Args&&... args)
-        : detail::StorageHolder<TheReader, InputStreamWithReader<Parent, TheReader>>(std::forward<Storage>(storage), std::forward<Args>(args)...)
+    InputStreamWithReader<Parent, ReaderType>::InputStreamWithReader(Storage&& storage, const NoFail&, Args&&... args)
+        : detail::StorageHolder<ReaderType, InputStreamWithReader<Parent, ReaderType>>(std::forward<Storage>(storage), std::forward<Args>(args)...)
         , Parent(this->storage, errorPolicy)
         , errorPolicy(noFail)
     {}
 
-    template<class Parent, class TheReader>
-    InputStreamWithReader<Parent, TheReader>::InputStreamWithReader(const InputStreamWithReader& other)
-        : detail::StorageHolder<TheReader, InputStreamWithReader<Parent, TheReader>>(static_cast<const detail::StorageHolder<TheReader, InputStreamWithReader<Parent, TheReader>>&>(other))
+    template<class Parent, class ReaderType>
+    InputStreamWithReader<Parent, ReaderType>::InputStreamWithReader(const InputStreamWithReader& other)
+        : detail::StorageHolder<ReaderType, InputStreamWithReader<Parent, ReaderType>>(static_cast<const detail::StorageHolder<ReaderType, InputStreamWithReader<Parent, ReaderType>>&>(other))
         , Parent(this->storage, errorPolicy)
         , errorPolicy(other.ErrorPolicy())
     {}
 
-    template<class Parent, class TheReader>
-    TheReader& InputStreamWithReader<Parent, TheReader>::InputStreamWithReader::Reader()
+    template<class Parent, class ReaderType>
+    ReaderType& InputStreamWithReader<Parent, ReaderType>::InputStreamWithReader::Reader()
     {
         return this->storage;
     }

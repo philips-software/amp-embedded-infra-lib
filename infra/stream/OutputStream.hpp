@@ -82,9 +82,9 @@ namespace infra
         StreamErrorPolicy& errorPolicy;
     };
 
-    template<class Parent, class TheWriter>
+    template<class Parent, class WriterType>
     class OutputStreamWithWriter
-        : private detail::StorageHolder<TheWriter, OutputStreamWithWriter<Parent, TheWriter>>
+        : private detail::StorageHolder<WriterType, OutputStreamWithWriter<Parent, WriterType>>
         , public Parent
     {
     public:
@@ -101,7 +101,7 @@ namespace infra
         OutputStreamWithWriter& operator=(const OutputStreamWithWriter& other) = delete;
         ~OutputStreamWithWriter() = default;
 
-        TheWriter& Writer();
+        WriterType& Writer();
 
     private:
         StreamErrorPolicy errorPolicy;
@@ -367,50 +367,50 @@ namespace infra
         return *this;
     }
 
-    template<class Parent, class TheWriter>
-    OutputStreamWithWriter<Parent, TheWriter>::OutputStreamWithWriter()
+    template<class Parent, class WriterType>
+    OutputStreamWithWriter<Parent, WriterType>::OutputStreamWithWriter()
         : Parent(this->storage, errorPolicy)
     {}
 
-    template<class Parent, class TheWriter>
+    template<class Parent, class WriterType>
     template<class Arg>
-    OutputStreamWithWriter<Parent, TheWriter>::OutputStreamWithWriter(Arg&& arg, std::enable_if_t<!std::is_same_v<OutputStreamWithWriter, std::remove_cv_t<std::remove_reference_t<Arg>>>, std::nullptr_t>)
-        : detail::StorageHolder<TheWriter, OutputStreamWithWriter<Parent, TheWriter>>(std::forward<Arg>(arg))
+    OutputStreamWithWriter<Parent, WriterType>::OutputStreamWithWriter(Arg&& arg, std::enable_if_t<!std::is_same_v<OutputStreamWithWriter, std::remove_cv_t<std::remove_reference_t<Arg>>>, std::nullptr_t>)
+        : detail::StorageHolder<WriterType, OutputStreamWithWriter<Parent, WriterType>>(std::forward<Arg>(arg))
         , Parent(this->storage, errorPolicy)
     {}
 
-    template<class Parent, class TheWriter>
+    template<class Parent, class WriterType>
     template<class Arg0, class Arg1, class... Args>
-    OutputStreamWithWriter<Parent, TheWriter>::OutputStreamWithWriter(Arg0&& arg0, Arg1&& arg1, Args&&... args)
-        : detail::StorageHolder<TheWriter, OutputStreamWithWriter<Parent, TheWriter>>(std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::forward<Args>(args)...)
+    OutputStreamWithWriter<Parent, WriterType>::OutputStreamWithWriter(Arg0&& arg0, Arg1&& arg1, Args&&... args)
+        : detail::StorageHolder<WriterType, OutputStreamWithWriter<Parent, WriterType>>(std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::forward<Args>(args)...)
         , Parent(this->storage, errorPolicy)
     {}
 
-    template<class Parent, class TheWriter>
+    template<class Parent, class WriterType>
     template<class Storage, class... Args>
-    OutputStreamWithWriter<Parent, TheWriter>::OutputStreamWithWriter(Storage&& storage, SoftFail, Args&&... args)
-        : detail::StorageHolder<TheWriter, OutputStreamWithWriter<Parent, TheWriter>>(std::forward<Storage>(storage), std::forward<Args>(args)...)
+    OutputStreamWithWriter<Parent, WriterType>::OutputStreamWithWriter(Storage&& storage, SoftFail, Args&&... args)
+        : detail::StorageHolder<WriterType, OutputStreamWithWriter<Parent, WriterType>>(std::forward<Storage>(storage), std::forward<Args>(args)...)
         , Parent(this->storage, errorPolicy)
         , errorPolicy(softFail)
     {}
 
-    template<class Parent, class TheWriter>
+    template<class Parent, class WriterType>
     template<class Storage, class... Args>
-    OutputStreamWithWriter<Parent, TheWriter>::OutputStreamWithWriter(Storage&& storage, NoFail, Args&&... args)
-        : detail::StorageHolder<TheWriter, OutputStreamWithWriter<Parent, TheWriter>>(std::forward<Storage>(storage), std::forward<Args>(args)...)
+    OutputStreamWithWriter<Parent, WriterType>::OutputStreamWithWriter(Storage&& storage, NoFail, Args&&... args)
+        : detail::StorageHolder<WriterType, OutputStreamWithWriter<Parent, WriterType>>(std::forward<Storage>(storage), std::forward<Args>(args)...)
         , Parent(this->storage, errorPolicy)
         , errorPolicy(noFail)
     {}
 
-    template<class Parent, class TheWriter>
-    OutputStreamWithWriter<Parent, TheWriter>::OutputStreamWithWriter(const OutputStreamWithWriter& other)
-        : detail::StorageHolder<TheWriter, OutputStreamWithWriter<Parent, TheWriter>>(static_cast<detail::StorageHolder<TheWriter, OutputStreamWithWriter<Parent, TheWriter>>&>(other))
+    template<class Parent, class WriterType>
+    OutputStreamWithWriter<Parent, WriterType>::OutputStreamWithWriter(const OutputStreamWithWriter& other)
+        : detail::StorageHolder<WriterType, OutputStreamWithWriter<Parent, WriterType>>(static_cast<detail::StorageHolder<WriterType, OutputStreamWithWriter<Parent, WriterType>>&>(other))
         , Parent(this->storage, errorPolicy)
         , errorPolicy(other.ErrorPolicy())
     {}
 
-    template<class Parent, class TheWriter>
-    TheWriter& OutputStreamWithWriter<Parent, TheWriter>::Writer()
+    template<class Parent, class WriterType>
+    WriterType& OutputStreamWithWriter<Parent, WriterType>::Writer()
     {
         return this->storage;
     }
