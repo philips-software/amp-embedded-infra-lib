@@ -64,7 +64,7 @@ namespace infra
     };
 
     template<class Parent, class ReaderType>
-    class InputStreamWithReader
+    class InputStreamWithReader //NOSONAR
         : private detail::StorageHolder<ReaderType, InputStreamWithReader<Parent, ReaderType>>
         , public Parent
     {
@@ -78,7 +78,7 @@ namespace infra
         InputStreamWithReader(Storage&& storage, const SoftFail&, Args&&... args);
         template<class Storage, class... Args>
         InputStreamWithReader(Storage&& storage, const NoFail&, Args&&... args);
-        InputStreamWithReader(const InputStreamWithReader& other); //NOSONAR
+        InputStreamWithReader(const InputStreamWithReader& other);
         InputStreamWithReader& operator=(const InputStreamWithReader& other) = delete;
         ~InputStreamWithReader() = default;
 
@@ -89,14 +89,14 @@ namespace infra
     };
 
     template<class Parent>
-    class InputStreamWithErrorPolicy
+    class InputStreamWithErrorPolicy //NOSONAR
         : public Parent
     {
     public:
         explicit InputStreamWithErrorPolicy(StreamReader& reader);
         InputStreamWithErrorPolicy(StreamReader& reader, SoftFail);
         InputStreamWithErrorPolicy(StreamReader& reader, NoFail);
-        InputStreamWithErrorPolicy(const InputStreamWithErrorPolicy& other); //NOSONAR
+        InputStreamWithErrorPolicy(const InputStreamWithErrorPolicy& other);
         InputStreamWithErrorPolicy& operator=(const InputStreamWithErrorPolicy& other) = delete;
         ~InputStreamWithErrorPolicy() = default;
 
