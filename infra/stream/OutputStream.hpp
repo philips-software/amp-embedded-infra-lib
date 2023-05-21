@@ -83,7 +83,7 @@ namespace infra
     };
 
     template<class Parent, class WriterType>
-    class OutputStreamWithWriter
+    class OutputStreamWithWriter //NOSONAR
         : private detail::StorageHolder<WriterType, OutputStreamWithWriter<Parent, WriterType>>
         , public Parent
     {
@@ -97,7 +97,7 @@ namespace infra
         OutputStreamWithWriter(Storage&& storage, SoftFail, Args&&... args);
         template<class Storage, class... Args>
         OutputStreamWithWriter(Storage&& storage, NoFail, Args&&... args);
-        OutputStreamWithWriter(const OutputStreamWithWriter& other); //NOSONAR
+        OutputStreamWithWriter(const OutputStreamWithWriter& other);
         OutputStreamWithWriter& operator=(const OutputStreamWithWriter& other) = delete;
         ~OutputStreamWithWriter() = default;
 
@@ -108,14 +108,14 @@ namespace infra
     };
 
     template<class Parent>
-    class OutputStreamWithErrorPolicy
+    class OutputStreamWithErrorPolicy //NOSONAR
         : public Parent
     {
     public:
         explicit OutputStreamWithErrorPolicy(StreamWriter& writer);
         OutputStreamWithErrorPolicy(StreamWriter& writer, SoftFail);
         OutputStreamWithErrorPolicy(StreamWriter& writer, NoFail);
-        OutputStreamWithErrorPolicy(const OutputStreamWithErrorPolicy& other); //NOSONAR
+        OutputStreamWithErrorPolicy(const OutputStreamWithErrorPolicy& other);
         OutputStreamWithErrorPolicy& operator=(const OutputStreamWithErrorPolicy& other) = delete;
         ~OutputStreamWithErrorPolicy() = default;
 
