@@ -78,7 +78,7 @@ namespace infra
         InputStreamWithReader(Storage&& storage, const SoftFail&, Args&&... args);
         template<class Storage, class... Args>
         InputStreamWithReader(Storage&& storage, const NoFail&, Args&&... args);
-        InputStreamWithReader(const InputStreamWithReader& other);
+        InputStreamWithReader(const InputStreamWithReader& other); //NOSONAR
         InputStreamWithReader& operator=(const InputStreamWithReader& other) = delete;
         ~InputStreamWithReader() = default;
 
@@ -96,7 +96,8 @@ namespace infra
         explicit InputStreamWithErrorPolicy(StreamReader& reader);
         InputStreamWithErrorPolicy(StreamReader& reader, SoftFail);
         InputStreamWithErrorPolicy(StreamReader& reader, NoFail);
-        InputStreamWithErrorPolicy(const InputStreamWithErrorPolicy& other);
+        InputStreamWithErrorPolicy(const InputStreamWithErrorPolicy& other); //NOSONAR
+        InputStreamWithErrorPolicy& operator=(const InputStreamWithErrorPolicy& other) = delete;
         ~InputStreamWithErrorPolicy() = default;
 
     private:

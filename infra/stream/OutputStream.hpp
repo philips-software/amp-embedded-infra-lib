@@ -97,7 +97,7 @@ namespace infra
         OutputStreamWithWriter(Storage&& storage, SoftFail, Args&&... args);
         template<class Storage, class... Args>
         OutputStreamWithWriter(Storage&& storage, NoFail, Args&&... args);
-        OutputStreamWithWriter(const OutputStreamWithWriter& other);
+        OutputStreamWithWriter(const OutputStreamWithWriter& other); //NOSONAR
         OutputStreamWithWriter& operator=(const OutputStreamWithWriter& other) = delete;
         ~OutputStreamWithWriter() = default;
 
@@ -115,7 +115,8 @@ namespace infra
         explicit OutputStreamWithErrorPolicy(StreamWriter& writer);
         OutputStreamWithErrorPolicy(StreamWriter& writer, SoftFail);
         OutputStreamWithErrorPolicy(StreamWriter& writer, NoFail);
-        OutputStreamWithErrorPolicy(const OutputStreamWithErrorPolicy& other);
+        OutputStreamWithErrorPolicy(const OutputStreamWithErrorPolicy& other); //NOSONAR
+        OutputStreamWithErrorPolicy& operator=(const OutputStreamWithErrorPolicy& other) = delete;
         ~OutputStreamWithErrorPolicy() = default;
 
     private:
