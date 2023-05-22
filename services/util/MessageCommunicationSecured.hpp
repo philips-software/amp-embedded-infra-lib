@@ -58,7 +58,10 @@ namespace services
         infra::BoundedVector<uint8_t>& sendBuffer;
         std::array<uint8_t, blockSize> sendIv;
         infra::SharedPtr<infra::StreamWriter> sendWriter;
-        infra::NotifyingSharedOptional<infra::LimitedStreamWriter::WithOutput<infra::BoundedVectorStreamWriter>> sendBufferWriter{ [this]() { SendMessageStreamReleased(); } };
+        infra::NotifyingSharedOptional<infra::LimitedStreamWriter::WithOutput<infra::BoundedVectorStreamWriter>> sendBufferWriter{ [this]()
+            {
+                SendMessageStreamReleased();
+            } };
         uint16_t requestedSendSize = 0;
 
         mbedtls_gcm_context receiveContext;
