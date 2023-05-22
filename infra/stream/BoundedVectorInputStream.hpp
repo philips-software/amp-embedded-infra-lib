@@ -13,7 +13,7 @@ namespace infra
         template<std::size_t Max>
         using WithStorage = infra::WithStorage<BoundedVectorInputStreamReader, infra::BoundedVector<uint8_t>::WithMaxSize<Max>>;
 
-        explicit BoundedVectorInputStreamReader(infra::BoundedVector<uint8_t>& container);
+        explicit BoundedVectorInputStreamReader(const infra::BoundedVector<uint8_t>& container);
 
         std::size_t Processed() const;
 
@@ -28,7 +28,7 @@ namespace infra
         virtual void Rewind(std::size_t marker) override;
 
     private:
-        infra::BoundedVector<uint8_t>& container;
+        const infra::BoundedVector<uint8_t>& container;
         std::size_t offset = 0;
     };
 

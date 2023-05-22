@@ -5,31 +5,11 @@
 #include "infra/util/ConstructBin.hpp"
 #include "infra/util/Endian.hpp"
 #include "services/util/MessageCommunicationWindowed.hpp"
+#include "services/util/test_doubles/MessageCommunicationMock.hpp"
 #include "gmock/gmock.h"
 #include <deque>
 
-namespace
-{
-    class MessageCommunicationReceiveOnInterruptMock
-        : public services::MessageCommunicationReceiveOnInterrupt
-    {
-    public:
-        MOCK_METHOD2(SendMessageStream, infra::SharedPtr<infra::StreamWriter>(uint16_t size, const infra::Function<void(uint16_t size)>& onSent));
-        MOCK_CONST_METHOD0(MaxSendMessageSize, std::size_t());
-    };
-
-    class MessageCommunicationObserverMock
-        : public services::MessageCommunicationObserver
-    {
-    public:
-        using services::MessageCommunicationObserver::MessageCommunicationObserver;
-
-        MOCK_METHOD1(SendMessageStreamAvailable, void(infra::SharedPtr<infra::StreamWriter>&& writer));
-        MOCK_METHOD1(ReceivedMessage, void(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader));
-    };
-}
-
-class WindowedMessageCommunicationTest
+class MessageCommunicationWindowedTest
     : public testing::Test
     , public infra::EventDispatcherFixture
 {
@@ -133,7 +113,7 @@ public:
             }); }));
     }
 
-    testing::StrictMock<MessageCommunicationReceiveOnInterruptMock> base;
+    testing::StrictMock<services::MessageCommunicationReceiveOnInterruptMock> base;
     std::deque<std::vector<uint8_t>> sentData;
     infra::NotifyingSharedOptional<infra::StdVectorOutputStreamWriter> writer;
     infra::AutoResetFunction<void(uint16_t size)> onSent;
@@ -142,17 +122,17 @@ public:
             ExpectSendMessageStream(3);
         } };
     services::MessageCommunicationWindowed::WithReceiveBuffer<12> communication{ base };
-    testing::StrictMock<MessageCommunicationObserverMock> observer{ communication };
+    testing::StrictMock<services::MessageCommunicationObserverMock> observer{ communication };
 };
 
-TEST_F(WindowedMessageCommunicationTest, construction)
+TEST_F(MessageCommunicationWindowedTest, construction)
 {
     FinishInitialization(4);
     EXPECT_CALL(base, MaxSendMessageSize()).WillOnce(testing::Return(20));
     EXPECT_EQ(19, communication.MaxSendMessageSize());
 }
 
-TEST_F(WindowedMessageCommunicationTest, send_message_after_initialized)
+TEST_F(MessageCommunicationWindowedTest, send_message_after_initialized)
 {
     FinishInitialization(6);
 
@@ -163,7 +143,7 @@ TEST_F(WindowedMessageCommunicationTest, send_message_after_initialized)
     OnSentData(infra::ConstructBin().Value<uint8_t>(4)({ 1, 2, 3, 4 }).Vector());
 }
 
-TEST_F(WindowedMessageCommunicationTest, message_waits_until_window_is_freed)
+TEST_F(MessageCommunicationWindowedTest, message_waits_until_window_is_freed)
 {
     FinishInitialization(2);
 
@@ -176,7 +156,7 @@ TEST_F(WindowedMessageCommunicationTest, message_waits_until_window_is_freed)
     OnSentData(infra::ConstructBin().Value<uint8_t>(4)({ 1, 2, 3, 4 }).Vector());
 }
 
-TEST_F(WindowedMessageCommunicationTest, send_message_while_initializing_waits_for_initialized)
+TEST_F(MessageCommunicationWindowedTest, send_message_while_initializing_waits_for_initialized)
 {
     communication.RequestSendMessage(4);
 
@@ -188,7 +168,7 @@ TEST_F(WindowedMessageCommunicationTest, send_message_while_initializing_waits_f
     OnSentData(infra::ConstructBin().Value<uint8_t>(4)({ 1, 2, 3, 4 }).Vector());
 }
 
-TEST_F(WindowedMessageCommunicationTest, request_sending_new_message_while_previous_is_still_processing)
+TEST_F(MessageCommunicationWindowedTest, request_sending_new_message_while_previous_is_still_processing)
 {
     FinishInitialization(12);
 
@@ -207,7 +187,7 @@ TEST_F(WindowedMessageCommunicationTest, request_sending_new_message_while_previ
     OnSentData(infra::ConstructBin().Value<uint8_t>(4)({ 5, 6 }).Vector());
 }
 
-TEST_F(WindowedMessageCommunicationTest, receive_message_after_initialized)
+TEST_F(MessageCommunicationWindowedTest, receive_message_after_initialized)
 {
     FinishInitialization(6);
 
@@ -218,7 +198,7 @@ TEST_F(WindowedMessageCommunicationTest, receive_message_after_initialized)
     ExecuteAllActions();
 }
 
-TEST_F(WindowedMessageCommunicationTest, received_message_before_initialized_is_discarded)
+TEST_F(MessageCommunicationWindowedTest, received_message_before_initialized_is_discarded)
 {
     ReceivedMessage(infra::ConstructBin().Value<uint8_t>(4)("abcd").Vector());
 
@@ -227,7 +207,7 @@ TEST_F(WindowedMessageCommunicationTest, received_message_before_initialized_is_
     ExecuteAllActions();
 }
 
-TEST_F(WindowedMessageCommunicationTest, received_release_window_before_initialized_is_discarded)
+TEST_F(MessageCommunicationWindowedTest, received_release_window_before_initialized_is_discarded)
 {
     communication.RequestSendMessage(4);
     SendReleaseWindow(6);
@@ -239,7 +219,7 @@ TEST_F(WindowedMessageCommunicationTest, received_release_window_before_initiali
     SendInitResponse(6);
 }
 
-TEST_F(WindowedMessageCommunicationTest, handle_init_request_after_initialization)
+TEST_F(MessageCommunicationWindowedTest, handle_init_request_after_initialization)
 {
     FinishInitialization(4);
 
@@ -248,7 +228,7 @@ TEST_F(WindowedMessageCommunicationTest, handle_init_request_after_initializatio
     OnSentInitResponse(16);
 }
 
-TEST_F(WindowedMessageCommunicationTest, received_init_request_while_sending_message_finishes_message_then_sends_init_response)
+TEST_F(MessageCommunicationWindowedTest, received_init_request_while_sending_message_finishes_message_then_sends_init_response)
 {
     // build
     FinishInitialization(12);
@@ -266,7 +246,7 @@ TEST_F(WindowedMessageCommunicationTest, received_init_request_while_sending_mes
     OnSentInitResponse(16);
 }
 
-TEST_F(WindowedMessageCommunicationTest, increase_window_while_sending)
+TEST_F(MessageCommunicationWindowedTest, increase_window_while_sending)
 {
     // build
     FinishInitialization(6);
@@ -288,7 +268,7 @@ TEST_F(WindowedMessageCommunicationTest, increase_window_while_sending)
     OnSentData(infra::ConstructBin().Value<uint8_t>(4)({ 5, 6 }).Vector());
 }
 
-TEST_F(WindowedMessageCommunicationTest, init_response_while_sending)
+TEST_F(MessageCommunicationWindowedTest, init_response_while_sending)
 {
     // build
     FinishInitialization(6);
@@ -310,7 +290,7 @@ TEST_F(WindowedMessageCommunicationTest, init_response_while_sending)
     OnSentData(infra::ConstructBin().Value<uint8_t>(4)({ 5, 6 }).Vector());
 }
 
-TEST_F(WindowedMessageCommunicationTest, received_init_request_while_sending_init)
+TEST_F(MessageCommunicationWindowedTest, received_init_request_while_sending_init)
 {
     SendInitRequest(4);
 
@@ -320,21 +300,21 @@ TEST_F(WindowedMessageCommunicationTest, received_init_request_while_sending_ini
     OnSentInitResponse(16);
 }
 
-TEST_F(WindowedMessageCommunicationTest, init_response_while_sending_init_is_ignored)
+TEST_F(MessageCommunicationWindowedTest, init_response_while_sending_init_is_ignored)
 {
     SendInitResponse(4);
 
     FinishInitialization(12);
 }
 
-TEST_F(WindowedMessageCommunicationTest, release_window_while_sending_init_is_ignored)
+TEST_F(MessageCommunicationWindowedTest, release_window_while_sending_init_is_ignored)
 {
     SendReleaseWindow(4);
 
     FinishInitialization(12);
 }
 
-TEST_F(WindowedMessageCommunicationTest, requesting_message_while_sending_init_response)
+TEST_F(MessageCommunicationWindowedTest, requesting_message_while_sending_init_response)
 {
     // build
     SendInitRequest(4);
@@ -353,7 +333,7 @@ TEST_F(WindowedMessageCommunicationTest, requesting_message_while_sending_init_r
     OnSentData(infra::ConstructBin().Value<uint8_t>(4)({ 1, 2, 3, 4 }).Vector());
 }
 
-TEST_F(WindowedMessageCommunicationTest, init_request_while_sending_init_response_results_in_new_init_response)
+TEST_F(MessageCommunicationWindowedTest, init_request_while_sending_init_response_results_in_new_init_response)
 {
     // build
     SendInitRequest(4);
@@ -370,7 +350,7 @@ TEST_F(WindowedMessageCommunicationTest, init_request_while_sending_init_respons
     OnSentInitResponse(16);
 }
 
-TEST_F(WindowedMessageCommunicationTest, release_window_while_sending_init_response_is_ignored)
+TEST_F(MessageCommunicationWindowedTest, release_window_while_sending_init_response_is_ignored)
 {
     // build
     SendInitRequest(4);
