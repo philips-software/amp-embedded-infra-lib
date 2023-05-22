@@ -24,9 +24,9 @@ public:
             {
             infra::TextInputStream::WithErrorPolicy stream(*reader);
             EXPECT_EQ(expected.size(), stream.Available());
-            std::string s;
+            infra::BoundedString::WithStorage<256> s;
             s.resize(stream.Available());
-            stream >> infra::BoundedString(s);
+            stream >> s;
             EXPECT_EQ(expected, s); }));
     }
 
