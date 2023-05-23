@@ -2,7 +2,7 @@
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
-#include "protobuf/echo/Echo.hpp"
+#include "protobuf/echo/EchoOnConnection.hpp"
 #include "protobuf/echo/test/ServiceStub.hpp"
 #include "protobuf/echo/test_doubles/EchoMock.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
