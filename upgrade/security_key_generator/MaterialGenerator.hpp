@@ -12,7 +12,6 @@ namespace application
     {
     public:
         explicit MaterialGenerator(hal::SynchronousRandomDataGenerator& randomDataGenerator);
-        ~MaterialGenerator();
 
         static const std::size_t aesKeyLength = 128;
         static const std::size_t hmacKeyLength = 256;

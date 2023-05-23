@@ -30,7 +30,7 @@ jobs:
           inplace: true
           extensions: "cpp,hpp"
           exclude: "./external"
-      - uses: reviewdog/action-suggester@8f83d27e749053b2029600995c115026a010408e
+      - uses: reviewdog/action-suggester@8f83d27e749053b2029600995c115026a010408e # v1.6.0
         with:
           tool_name: clang-format
           filter_mode: diff_context
@@ -55,13 +55,13 @@ jobs:
         if: ${{ success() }} || ${{ failure() }}
         with:
           sarif_file: megalinter-reports/megalinter-report.sarif
-      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         if: ${{ success() }} || ${{ failure() }}
         with:
           name: linter
           path: |
             megalinter-reports
-      - uses: reviewdog/action-suggester@8f83d27e749053b2029600995c115026a010408e
+      - uses: reviewdog/action-suggester@8f83d27e749053b2029600995c115026a010408e # v1.6.0
         with:
           tool_name: MegaLinter
           filter_mode: diff_context

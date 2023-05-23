@@ -7,6 +7,13 @@
 
 namespace services
 {
+    class GattClientCharacteristicUpdateObserverMock
+        : public services::GattClientCharacteristicUpdateObserver
+    {
+    public:
+        MOCK_METHOD(void, UpdateReceived, (infra::ConstByteRange data), (override));
+    };
+
     class GattClientCharacteristicOperationsMock
         : public services::GattClientCharacteristicOperations
     {

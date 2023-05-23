@@ -3,7 +3,7 @@ name: Static Analysis
 
 on:
   push:
-    branches: [develop, modern-cmake]
+    branches: [main]
   pull_request:
     types: [opened, synchronize, reopened]
 
