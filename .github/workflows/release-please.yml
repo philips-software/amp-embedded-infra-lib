@@ -4,7 +4,7 @@ name: Create Release
 on:
   workflow_dispatch:
   push:
-    branches: [modern-cmake]
+    branches: [main]
 
 permissions:
   contents: read
@@ -50,7 +50,7 @@ jobs:
         with:
           key: ${{ github.job }}-${{ matrix.os }}
           variant: sccache
-      - uses: lukka/run-cmake@2d1ee0acb9c4f656ec9128fc7387d82ac4539816 # v10.3
+      - uses: lukka/run-cmake@cdefb26b6a3a359c5f4dbc1a16cf4327d0824774 # v10.5
         with:
           configurePreset: "Package"
           buildPreset: "Package"

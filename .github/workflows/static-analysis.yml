@@ -3,7 +3,7 @@ name: Static Analysis
 
 on:
   push:
-    branches: [develop, modern-cmake]
+    branches: [main]
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -80,10 +80,10 @@ jobs:
       - uses: hendrikmuhs/ccache-action@ca3acd2731eef11f1572ccb126356c2f9298d35e # v1.2.9
         with:
           key: ${{ github.job }}
-      - uses: github/codeql-action/init@7df0ce34898d659f95c0c4a09eaa8d4e32ee64db # v2.2.12
+      - uses: github/codeql-action/init@29b1f65c5e92e24fe6b6647da1eaabe529cec70f # v2.3.3
         with:
           languages: cpp
       - run: |
           cmake --preset ContinuousIntegration -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build --preset ContinuousIntegration
-      - uses: github/codeql-action/analyze@7df0ce34898d659f95c0c4a09eaa8d4e32ee64db # v2.2.12
+      - uses: github/codeql-action/analyze@29b1f65c5e92e24fe6b6647da1eaabe529cec70f # v2.3.3

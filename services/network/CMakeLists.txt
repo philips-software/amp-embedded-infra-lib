@@ -14,6 +14,8 @@ target_sources(services.network PRIVATE
     Address.hpp
     BonjourServer.cpp
     BonjourServer.hpp
+    $<$<BOOL:${EMIL_HOST_BUILD}>:CertificateConvertor.cpp>
+    $<$<BOOL:${EMIL_HOST_BUILD}>:CertificateConvertor.hpp>
     CertificatesMbedTls.cpp
     CertificatesMbedTls.hpp
     Connection.cpp
@@ -69,7 +71,6 @@ target_sources(services.network PRIVATE
     NameResolverCache.cpp
     NameResolverCache.hpp
     Network.hpp
-    ConnectionStatus.hpp
     SerialServer.cpp
     SerialServer.hpp
     SingleConnectionListener.cpp
@@ -109,10 +110,5 @@ if (EMIL_HOST_BUILD)
     )
 endif()
 
-if (EMIL_BUILD_TESTS)
-    add_subdirectory(test)
-endif()
-
-if (BUILD_TESTING)
-    add_subdirectory(test_doubles)
-endif()
+add_subdirectory(test)
+add_subdirectory(test_doubles)

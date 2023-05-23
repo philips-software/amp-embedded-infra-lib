@@ -35,6 +35,4 @@ target_sources(services.tracer PRIVATE
     TracingReset.hpp
 )
 
-if (EMIL_BUILD_TESTS)
-    add_subdirectory(test)
-endif()
+add_subdirectory(test)

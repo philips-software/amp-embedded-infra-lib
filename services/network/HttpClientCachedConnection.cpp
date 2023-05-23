@@ -43,12 +43,6 @@ namespace services
         Subject().Post(requestTarget, content, headers);
     }
 
-    void HttpClientCachedConnection::Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers)
-    {
-        idle = false;
-        Subject().Post(requestTarget, contentSize, headers);
-    }
-
     void HttpClientCachedConnection::Post(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
         idle = false;
@@ -59,12 +53,6 @@ namespace services
     {
         idle = false;
         Subject().Put(requestTarget, content, headers);
-    }
-
-    void HttpClientCachedConnection::Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers)
-    {
-        idle = false;
-        Subject().Put(requestTarget, contentSize, headers);
     }
 
     void HttpClientCachedConnection::Put(infra::BoundedConstString requestTarget, HttpHeaders headers)
@@ -137,8 +125,8 @@ namespace services
 
         if (!detaching && closeRequested)
             HttpClientObserver::Subject().CloseConnection();
-        else
-            connector.DetachingObserver();
+
+        connector.DetachingObserver();
     }
 
     void HttpClientCachedConnection::StatusAvailable(HttpStatusCode statusCode)
