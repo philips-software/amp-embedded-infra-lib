@@ -97,3 +97,48 @@ namespace services
         GapCentralObserver::Subject().StopDeviceDiscovery();
     }
 }
+
+namespace infra
+{
+    TextOutputStream& operator<<(TextOutputStream& stream, const services::GapAdvertisingEventType& eventType)
+    {
+        if (eventType == services::GapAdvertisingEventType::advInd)
+            stream << "ADV_IND";
+        else if (eventType == services::GapAdvertisingEventType::advDirectInd)
+            stream << "ADV_DIRECT_IND";
+        else if (eventType == services::GapAdvertisingEventType::advScanInd)
+            stream << "ADV_SCAN_IND";
+        else if (eventType == services::GapAdvertisingEventType::scanResponse)
+            stream << "SCAN_RESPONSE";
+        else
+        	stream << "ADV_NONCONN_IND";
+
+        return stream;
+    }
+
+    TextOutputStream& operator<<(TextOutputStream& stream, const services::GapAdvertisingEventAddressType& addressType)
+    {
+        if (addressType == services::GapAdvertisingEventAddressType::publicDeviceAddress)
+            stream << "Public Device Address";
+        else if (addressType == services::GapAdvertisingEventAddressType::randomDeviceAddress)
+            stream << "Random Device Address";
+        else
+        	stream << "Random Identity Address";
+
+        return stream;
+    }
+
+    TextOutputStream& operator<<(TextOutputStream& stream, const services::GapState& state)
+    {
+        if (state == services::GapState::standby)
+            stream << "Standby";
+        else if (state == services::GapState::scanning)
+            stream << "Scaanning";
+        else if (state == services::GapState::advertising)
+            stream << "Advertising";
+        else
+        	stream << "Connected";
+
+        return stream;
+    }
+}

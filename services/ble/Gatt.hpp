@@ -1,6 +1,7 @@
 #ifndef SERVICES_GATT_HPP
 #define SERVICES_GATT_HPP
 
+#include "infra/stream/OutputStream.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/Endian.hpp"
 #include "infra/util/EnumCast.hpp"
@@ -127,6 +128,12 @@ namespace services
     {
         return static_cast<GattCharacteristic::PropertyFlags>(infra::enum_cast(lhs) & infra::enum_cast(rhs));
     }
+}
+
+namespace infra
+{
+    TextOutputStream& operator<<(TextOutputStream& stream, const services::AttAttribute::Uuid& uuid);
+    TextOutputStream& operator<<(TextOutputStream& stream, const services::GattCharacteristic::PropertyFlags& properties);
 }
 
 #endif

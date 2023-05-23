@@ -279,4 +279,11 @@ namespace services
     };
 }
 
+namespace infra
+{
+    infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::GapAdvertisingEventType& eventType);
+    infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::GapAdvertisingEventAddressType& addressType);
+    infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::GapState& state);
+}
+
 #endif
