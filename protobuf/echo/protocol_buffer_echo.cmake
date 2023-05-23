@@ -17,7 +17,7 @@ function(emil_fetch_echo_plugins)
         return()
     endif()
 
-    set(emil_version "3.2.0") # x-release-please-version
+    set(emil_version "3.2.0")
 
     if (CMAKE_HOST_WIN32)
         set(os_postfix "win64")
