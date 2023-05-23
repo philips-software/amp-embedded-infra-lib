@@ -12,7 +12,7 @@
 
 namespace services
 {
-    class MessageCommunicationSecured
+    class MessageCommunicationSecured //NOSONAR: "Remove this class' destructor so that the class follows the rule of Zero" but mbedTLS structures need destruction
         : public MessageCommunication
         , private MessageCommunicationObserver
     {
