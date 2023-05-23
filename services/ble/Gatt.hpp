@@ -25,7 +25,8 @@ namespace services
     {
         struct ClientCharacteristicConfiguration
         {
-            const uint16_t attributeType = 0x2902;
+            static const uint8_t valueHandleOffset = 1;
+            static const uint16_t attributeType = 0x2902;
 
             enum class CharacteristicValue : uint16_t
             {
