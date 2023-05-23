@@ -78,10 +78,10 @@
       "generator": "Ninja Multi-Config"
     },
     {
-      "name": "HostWindows",
-      "displayName": "Configuration for Host Tooling Windows",
+      "name": "HostClangMsvc",
+      "displayName": "Configuration for Host Tooling using clang-cl to target Windows",
       "inherits": "defaults",
-      "toolchainFile": "${sourceDir}/cmake/toolchain-x86_64-pc-windows-msvc.cmake",
+      "toolchainFile": "${sourceDir}/cmake/toolchain-clang-x86_64-pc-windows-msvc.cmake",
       "cacheVariables": {
         "CMAKE_COMPILE_WARNING_AS_ERROR": "Off",
         "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo;MinSizeRel",
@@ -167,24 +167,14 @@
       "configurePreset": "Host"
     },
     {
-      "name": "HostWindows-Debug",
+      "name": "HostClangMsvc-Debug",
       "configuration": "Debug",
-      "configurePreset": "HostWindows"
+      "configurePreset": "HostClangMsvc"
     },
     {
-      "name": "HostWindows-Release",
-      "configuration": "Release",
-      "configurePreset": "HostWindows"
-    },
-    {
-      "name": "HostWindows-RelWithDebInfo",
+      "name": "HostClangMsvc-RelWithDebInfo",
       "configuration": "RelWithDebInfo",
-      "configurePreset": "HostWindows"
-    },
-    {
-      "name": "HostWindows-MinSizeRel",
-      "configuration": "MinSizeRel",
-      "configurePreset": "HostWindows"
+      "configurePreset": "HostClangMsvc"
     },
     {
       "name": "Embedded-Debug",
