@@ -25,27 +25,36 @@ namespace main_
         services::EchoOnMessageCommunication echo{ windowed };
     };
 
-    template<std::size_t MessageSize, std::size_t MaxServices>
     class EchoForwarder
     {
+    protected:
+        EchoForwarder() = default;
+        EchoForwarder(const EchoForwarder& other) = delete;
+        EchoForwarder& operator=(const EchoForwarder& other) = delete;
+        ~EchoForwarder() = default;
+
     public:
-        EchoForwarder(services::Echo& from, services::Echo& to)
+        virtual void AddService(uint32_t serviceId, uint32_t responseId) = 0;
+        virtual void AddResponse(uint32_t responseId) = 0;
+    };
+
+    template<std::size_t MessageSize, std::size_t MaxServices>
+    class EchoForwarderImpl
+        : public EchoForwarder
+    {
+    public:
+        EchoForwarderImpl(services::Echo& from, services::Echo& to)
             : from(from)
             , to(to)
         {}
 
-        void RemoveAllForwarders()
-        {
-            forwarders.clear();
-        }
-
-        void AddService(uint32_t serviceId, uint32_t responseId)
+        virtual void AddService(uint32_t serviceId, uint32_t responseId) override
         {
             AddForwarder(from, serviceId, to);
             AddForwarder(to, responseId, from);
         }
 
-        void AddResponse(uint32_t responseId)
+        virtual void AddResponse(uint32_t responseId) override
         {
             AddForwarder(to, responseId, from);
         }
@@ -65,21 +74,27 @@ namespace main_
 
     template<std::size_t MessageSize, std::size_t MaxServices>
     class EchoForwarderToSerial
-        : public EchoForwarder<MessageSize, MaxServices>
+        : public EchoForwarder
     {
     public:
         EchoForwarderToSerial(services::Echo& from, hal::SerialCommunication& toSerial)
-            : EchoForwarder<MessageSize, MaxServices>(from, to)
-            , to(toSerial)
+            : to(toSerial)
+            , echoForwarder(from, to)
         {}
 
-        ~EchoForwarderToSerial()
+        virtual void AddService(uint32_t serviceId, uint32_t responseId) override
         {
-            this->RemoveAllForwarders();
+            echoForwarder.AddService(serviceId, responseId);
+        }
+
+        virtual void AddResponse(uint32_t responseId) override
+        {
+            echoForwarder.AddResponse(responseId);
         }
 
     private:
         EchoOnSerialCommunication<MessageSize> to;
+        EchoForwarderImpl<MessageSize, MaxServices> echoForwarder;
     };
 }
 
