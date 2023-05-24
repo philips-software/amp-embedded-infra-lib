@@ -29,7 +29,7 @@ namespace application
 
         for (const auto& [name, offset] : targets.BinTargets())
             if (name == targetName)
-                return std::make_unique<InputBinary>(targetName, fileName, (address) ? *address : offset, fileSystem, imageSecurity);
+                return std::make_unique<InputBinary>(targetName, fileName, address ? *address : offset, fileSystem, imageSecurity);
 
         throw UnknownTargetException(targetName);
     }
