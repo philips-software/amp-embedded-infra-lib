@@ -8,6 +8,12 @@ class MessageCommunicationSecuredTest
     : public testing::Test
 {
 public:
+    MessageCommunicationSecuredTest()
+    {
+        EXPECT_CALL(upper, Initialized());
+        lower.GetObserver().Initialized();
+    }
+
     void ReceivedMessage(const std::vector<uint8_t>& message)
     {
         lower.GetObserver().ReceivedMessage(reader.Emplace(message));
@@ -61,7 +67,7 @@ public:
     std::array<uint8_t, services::MessageCommunicationSecured::blockSize> iv{ 1, 3 };
 
     testing::StrictMock<services::MessageCommunicationMock> lower;
-    services::MessageCommunicationSecured::WithBuffers<32> secured{ lower, key, iv, key, iv };
+    services::MessageCommunicationSecured::WithBuffers<64> secured{ lower, key, iv, key, iv };
     testing::StrictMock<services::MessageCommunicationObserverMock> upper{ secured };
 
     infra::SharedOptional<infra::StdVectorInputStreamReader> reader;
@@ -96,6 +102,58 @@ TEST_F(MessageCommunicationSecuredTest, same_consecutive_messages_are_encrypted_
     EXPECT_NE(first, second);
 }
 
+TEST_F(MessageCommunicationSecuredTest, key_change_to_default_key_results_in_same_encryption)
+{
+    Send("abcd");
+    auto first = sentData;
+    Receive("abcd");
+
+    secured.SetSendKey(key, iv);
+    secured.SetReceiveKey(key, iv);
+
+    Send("abcd");
+    auto second = sentData;
+    Receive("abcd");
+
+    EXPECT_EQ(first, second);
+}
+
+TEST_F(MessageCommunicationSecuredTest, key_change_to_different_key_results_in_different_encryption)
+{
+    Send("abcd");
+    auto first = sentData;
+    Receive("abcd");
+
+    std::array<uint8_t, services::MessageCommunicationSecured::keySize> key2{ 1, 2, 1 };
+    std::array<uint8_t, services::MessageCommunicationSecured::blockSize> iv2{ 1, 3, 1 };
+    secured.SetSendKey(key2, iv2);
+
+    Send("abcd");
+    auto second = sentData;
+
+    EXPECT_NE(first, second);
+}
+
+TEST_F(MessageCommunicationSecuredTest, initialization_results_in_default_keys)
+{
+    Send("abcd");
+    auto first = sentData;
+    Receive("abcd");
+
+    std::array<uint8_t, services::MessageCommunicationSecured::keySize> key2{ 1, 2, 1 };
+    std::array<uint8_t, services::MessageCommunicationSecured::blockSize> iv2{ 1, 3, 1 };
+    secured.SetSendKey(key2, iv2);
+
+    EXPECT_CALL(upper, Initialized());
+    lower.GetObserver().Initialized();
+
+    Send("abcd");
+    auto second = sentData;
+    Receive("abcd");
+
+    EXPECT_EQ(first, second);
+}
+
 TEST_F(MessageCommunicationSecuredTest, damaged_message_does_not_propagate)
 {
     Send("abcd");
@@ -118,7 +176,7 @@ TEST_F(MessageCommunicationSecuredTest, short_message_does_not_propagate)
 
 TEST_F(MessageCommunicationSecuredTest, different_sizes)
 {
-    for (auto i = 0; i != 33; ++i)
+    for (auto i = 0; i != 34; ++i)
     {
         infra::BoundedConstString message("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
         message.shrink(i);

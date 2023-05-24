@@ -7,21 +7,42 @@ namespace services
         const KeyType& sendKey, const IvType& sendIv, const KeyType& receiveKey, const IvType& receiveIv)
         : MessageCommunicationObserver(delegate)
         , sendBuffer(sendBuffer)
-        , sendIv(sendIv)
+        , initialSendKey(sendKey)
+        , initialSendIv(sendIv)
         , receiveBuffer(receiveBuffer)
-        , receiveIv(receiveIv)
+        , initialReceiveKey(receiveKey)
+        , initialReceiveIv(receiveIv)
     {
         mbedtls_gcm_init(&sendContext);
         mbedtls_gcm_init(&receiveContext);
 
-        mbedtls_gcm_setkey(&sendContext, MBEDTLS_CIPHER_ID_AES, reinterpret_cast<const unsigned char*>(sendKey.data()), sendKey.size() * 8);          //NOSONAR
-        mbedtls_gcm_setkey(&receiveContext, MBEDTLS_CIPHER_ID_AES, reinterpret_cast<const unsigned char*>(receiveKey.data()), receiveKey.size() * 8); //NOSONAR
+        SetSendKey(initialSendKey, initialSendIv);
+        SetReceiveKey(initialReceiveKey, initialReceiveIv);
     }
 
     MessageCommunicationSecured::~MessageCommunicationSecured()
     {
         mbedtls_gcm_free(&receiveContext);
         mbedtls_gcm_free(&sendContext);
+    }
+
+    void MessageCommunicationSecured::SetSendKey(const KeyType& sendKey, const IvType& sendIv)
+    {
+        mbedtls_gcm_setkey(&sendContext, MBEDTLS_CIPHER_ID_AES, reinterpret_cast<const unsigned char*>(sendKey.data()), sendKey.size() * 8); //NOSONAR
+        this->sendIv = sendIv;
+    }
+
+    void MessageCommunicationSecured::SetReceiveKey(const KeyType& receiveKey, const IvType& receiveIv)
+    {
+        mbedtls_gcm_setkey(&receiveContext, MBEDTLS_CIPHER_ID_AES, reinterpret_cast<const unsigned char*>(receiveKey.data()), receiveKey.size() * 8); //NOSONAR
+        this->receiveIv = receiveIv;
+    }
+
+    void MessageCommunicationSecured::Initialized()
+    {
+        SetSendKey(initialSendKey, initialSendIv);
+        SetReceiveKey(initialReceiveKey, initialReceiveIv);
+        GetObserver().Initialized();
     }
 
     void MessageCommunicationSecured::RequestSendMessage(uint16_t size)

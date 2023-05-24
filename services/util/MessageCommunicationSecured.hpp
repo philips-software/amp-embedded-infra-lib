@@ -28,9 +28,11 @@ namespace services
         MessageCommunicationSecured(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, MessageCommunication& delegate, const KeyType& sendKey, const IvType& sendIv, const KeyType& receiveKey, const IvType& receiveIv);
         ~MessageCommunicationSecured();
 
-        void SetKeys();
+        void SetSendKey(const KeyType& sendKey, const IvType& sendIv);
+        void SetReceiveKey(const KeyType& receiveKey, const IvType& receiveIv);
 
         // Implementation of MessageCommunication
+        virtual void Initialized() override;
         virtual void RequestSendMessage(uint16_t size) override;
         virtual std::size_t MaxSendMessageSize() const override;
 
@@ -56,6 +58,8 @@ namespace services
     private:
         mbedtls_gcm_context sendContext;
         infra::BoundedVector<uint8_t>& sendBuffer;
+        std::array<uint8_t, keySize> initialSendKey;
+        std::array<uint8_t, blockSize> initialSendIv;
         std::array<uint8_t, blockSize> sendIv;
         infra::SharedPtr<infra::StreamWriter> sendWriter;
         infra::NotifyingSharedOptional<infra::LimitedStreamWriter::WithOutput<infra::BoundedVectorStreamWriter>> sendBufferWriter{ [this]()
@@ -66,6 +70,8 @@ namespace services
 
         mbedtls_gcm_context receiveContext;
         infra::BoundedVector<uint8_t>& receiveBuffer;
+        std::array<uint8_t, keySize> initialReceiveKey;
+        std::array<uint8_t, blockSize> initialReceiveIv;
         std::array<uint8_t, blockSize> receiveIv;
         infra::SharedOptional<ReceiveBufferReader> receiveBufferReader;
     };

@@ -29,12 +29,14 @@ public:
 
     void SendInitRequest(uint16_t availableWindow)
     {
+        EXPECT_CALL(observer, Initialized());
         ReceivedMessage(infra::ConstructBin().Value<uint8_t>(1).Value<infra::LittleEndian<uint16_t>>(availableWindow).Vector());
         ExecuteAllActions();
     }
 
     void SendInitResponse(uint16_t availableWindow)
     {
+        EXPECT_CALL(observer, Initialized());
         ReceivedMessage(infra::ConstructBin().Value<uint8_t>(2).Value<infra::LittleEndian<uint16_t>>(availableWindow).Vector());
         ExecuteAllActions();
     }

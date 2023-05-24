@@ -7,6 +7,9 @@ namespace services
         , MessageCommunicationObserver(subject)
     {}
 
+    void EchoOnMessageCommunication::Initialized()
+    {}
+
     void EchoOnMessageCommunication::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         SetStreamWriter(std::move(writer));
