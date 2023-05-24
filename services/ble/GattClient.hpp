@@ -9,21 +9,6 @@
 
 namespace services
 {
-    class GattClientStackUpdate;
-
-    class GattClientStackUpdateObserver
-        : public infra::Observer<GattClientStackUpdateObserver, GattClientStackUpdate>
-    {
-    public:
-        using infra::Observer<GattClientStackUpdateObserver, GattClientStackUpdate>::Observer;
-
-        virtual void UpdateReceived(AttAttribute::Handle handle, infra::ConstByteRange data) = 0;
-    };
-
-    class GattClientStackUpdate
-        : public infra::Subject<GattClientStackUpdateObserver>
-    {};
-
     class GattClientCharacteristicUpdate;
 
     class GattClientCharacteristicUpdateObserver
@@ -41,6 +26,15 @@ namespace services
 
     class GattClientCharacteristicOperations;
 
+    class GattClientStackUpdateObserver
+        : public infra::Observer<GattClientStackUpdateObserver, GattClientCharacteristicOperations>
+    {
+    public:
+        using infra::Observer<GattClientStackUpdateObserver, GattClientCharacteristicOperations>::Observer;
+
+        virtual void UpdateReceived(AttAttribute::Handle handle, infra::ConstByteRange data) = 0;
+    };
+
     class GattClientCharacteristicOperationsObserver
         : public infra::Observer<GattClientCharacteristicOperationsObserver, GattClientCharacteristicOperations>
     {
@@ -53,6 +47,7 @@ namespace services
 
     class GattClientCharacteristicOperations
         : public infra::Subject<GattClientCharacteristicOperationsObserver>
+        , public infra::Subject<GattClientStackUpdateObserver>
     {
     public:
         virtual void Read(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead) const = 0;
@@ -65,12 +60,6 @@ namespace services
         virtual void DisableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void()>& onDone) const = 0;
     };
 
-    struct GattClientInterface
-    {
-        GattClientStackUpdate& asyncUpdate;
-        GattClientCharacteristicOperations& operations;
-    };
-
     class GattClientCharacteristic
         : public infra::IntrusiveForwardList<GattClientCharacteristic>::NodeType
         , public GattCharacteristic
@@ -79,8 +68,8 @@ namespace services
         , protected GattClientStackUpdateObserver
     {
     public:
-        GattClientCharacteristic(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties);
-        GattClientCharacteristic(GattClientInterface interface, AttAttribute::Uuid type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties);
+        GattClientCharacteristic(AttAttribute::Uuid type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties);
+        GattClientCharacteristic(GattClientCharacteristicOperations& operations, AttAttribute::Uuid type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties);
 
         virtual void Read(infra::Function<void(const infra::ConstByteRange&)> onResponse);
         virtual void Write(infra::ConstByteRange data, infra::Function<void()> onDone);
