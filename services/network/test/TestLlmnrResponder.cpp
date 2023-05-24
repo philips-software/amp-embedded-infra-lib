@@ -20,7 +20,7 @@ public:
         , responder(factory, multicast, ipv4Info, "name")
     {}
 
-    ~LlmnrResponderTest()
+    ~LlmnrResponderTest() override
     {
         EXPECT_CALL(multicast, LeaveMulticastGroup(datagramExchangePtr, services::IPv4Address{ 224, 0, 0, 252 }));
     }

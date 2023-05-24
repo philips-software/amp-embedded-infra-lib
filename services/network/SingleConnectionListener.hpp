@@ -21,11 +21,11 @@ namespace services
         SingleConnectionListener(ConnectionFactory& connectionFactory, uint16_t port, const Creators& creators);
 
         // Implementation of Stoppable
-        virtual void Stop(const infra::Function<void()>& onDone) override;
+        void Stop(const infra::Function<void()>& onDone) override;
 
     private:
         // Implementation of ServerConnectionObserverFactory
-        virtual void ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address) override;
+        void ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address) override;
 
         void Stop(const infra::Function<void()>& onDone, bool force);
         void CreateObserver();

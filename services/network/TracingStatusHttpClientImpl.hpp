@@ -13,8 +13,8 @@ namespace services
         TracingStatusHttpClientImpl(infra::BoundedConstString hostname, Tracer& tracer);
 
     protected:
-        virtual void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine) override;
-        virtual void Detaching() override;
+        void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine) override;
+        void Detaching() override;
 
     private:
         friend class TracingStatusHttpClientConnectorImpl;
@@ -32,9 +32,9 @@ namespace services
         TracingStatusHttpClientImplWithRedirection(infra::BoundedString redirectedUrlStorage, infra::BoundedConstString hostname, ConnectionFactoryWithNameResolver& connectionFactory, Tracer& tracer);
 
     protected:
-        virtual void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine) override;
-        virtual void Detaching() override;
-        virtual void Redirecting(infra::BoundedConstString url) override;
+        void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine) override;
+        void Detaching() override;
+        void Redirecting(infra::BoundedConstString url) override;
 
     private:
         friend class TracingStatusHttpClientConnectorImpl;

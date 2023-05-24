@@ -14,7 +14,7 @@ class ConnectionStubWithSendStreamControl
     : public services::ConnectionStub
 {
 public:
-    virtual void RequestSendStream(std::size_t sendSize) override
+    void RequestSendStream(std::size_t sendSize) override
     {
         if (autoSendStreamAvailable)
             services::ConnectionStub::RequestSendStream(sendSize);
@@ -57,7 +57,7 @@ public:
         connector.Connect(factory);
     }
 
-    ~MqttClientTest()
+    ~MqttClientTest() override
     {
         EXPECT_CALL(factory, ConnectionFailed(testing::_)).Times(testing::AnyNumber());
         EXPECT_CALL(client, Detaching()).Times(testing::AnyNumber());

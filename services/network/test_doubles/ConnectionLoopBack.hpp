@@ -19,12 +19,12 @@ namespace services
     public:
         ConnectionLoopBackPeer(ConnectionLoopBackPeer& peer, ConnectionLoopBack& loopBack);
 
-        virtual void RequestSendStream(std::size_t sendSize) override;
-        virtual std::size_t MaxSendStreamSize() const override;
-        virtual infra::SharedPtr<infra::StreamReaderWithRewinding> ReceiveStream() override;
-        virtual void AckReceived() override;
-        virtual void CloseAndDestroy() override;
-        virtual void AbortAndDestroy() override;
+        void RequestSendStream(std::size_t sendSize) override;
+        std::size_t MaxSendStreamSize() const override;
+        infra::SharedPtr<infra::StreamReaderWithRewinding> ReceiveStream() override;
+        void AckReceived() override;
+        void CloseAndDestroy() override;
+        void AbortAndDestroy() override;
 
         void SetOwnership(const infra::SharedPtr<ConnectionLoopBack>& owner, const infra::SharedPtr<ConnectionObserver>& observer);
         void ResetOwnership();
@@ -120,9 +120,9 @@ namespace services
         void RegisterListener(uint16_t port, ConnectionLoopBackListener* listener);
         void UnregisterListener(uint16_t port);
 
-        virtual infra::SharedPtr<void> Listen(uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions) override;
-        virtual void Connect(ClientConnectionObserverFactory& factory) override;
-        virtual void CancelConnect(ClientConnectionObserverFactory& factory) override;
+        infra::SharedPtr<void> Listen(uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions) override;
+        void Connect(ClientConnectionObserverFactory& factory) override;
+        void CancelConnect(ClientConnectionObserverFactory& factory) override;
 
     private:
         friend class ConnectionLoopBackConnector;

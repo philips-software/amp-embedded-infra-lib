@@ -6,22 +6,22 @@ class ImageSignerNone
     : public application::ImageSigner
 {
 public:
-    virtual uint16_t SignatureMethod() const override
+    uint16_t SignatureMethod() const override
     {
         return signatureMethod;
     }
 
-    virtual uint16_t SignatureLength() const override
+    uint16_t SignatureLength() const override
     {
         return 8;
     }
 
-    virtual std::vector<uint8_t> ImageSignature(const std::vector<uint8_t>& upgradePack) override
+    std::vector<uint8_t> ImageSignature(const std::vector<uint8_t>& upgradePack) override
     {
         return std::vector<uint8_t>(SignatureLength(), 0);
     }
 
-    virtual bool CheckSignature(const std::vector<uint8_t>& signature, const std::vector<uint8_t>& image) override
+    bool CheckSignature(const std::vector<uint8_t>& signature, const std::vector<uint8_t>& image) override
     {
         return checkSignature;
     }
@@ -39,7 +39,7 @@ public:
         , contents(contents)
     {}
 
-    virtual std::vector<uint8_t> Image() const override
+    std::vector<uint8_t> Image() const override
     {
         return contents;
     }

@@ -13,8 +13,8 @@ namespace services
         TracingMqttClientImpl(MqttClientObserverFactory& factory, infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password, Tracer& tracer, infra::Duration operationTimeout = std::chrono::seconds(30));
         ~TracingMqttClientImpl();
 
-        virtual void Publish() override;
-        virtual void Subscribe() override;
+        void Publish() override;
+        void Subscribe() override;
 
     protected:
         infra::SharedPtr<infra::StreamWriter> ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize) override;

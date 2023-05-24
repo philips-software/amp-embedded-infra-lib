@@ -15,7 +15,7 @@ namespace application
         : public google::protobuf::compiler::CodeGenerator
     {
     public:
-        virtual bool Generate(const google::protobuf::FileDescriptor* file, const std::string& parameter,
+        bool Generate(const google::protobuf::FileDescriptor* file, const std::string& parameter,
             google::protobuf::compiler::GeneratorContext* generatorContext, std::string* error) const override;
     };
 
@@ -76,8 +76,8 @@ namespace application
         void Run(Entities& formatter);
 
     protected:
-        virtual void AddTypeMapType(EchoField& field, Entities& entities) override;
-        virtual std::string MessageSuffix() const override;
+        void AddTypeMapType(EchoField& field, Entities& entities) override;
+        std::string MessageSuffix() const override;
     };
 
     class MessageGenerator
@@ -129,17 +129,17 @@ namespace application
         using MessageGenerator::MessageGenerator;
 
     protected:
-        virtual void GenerateTypeMap(Entities& formatter) override;
-        virtual void GenerateConstructors() override;
-        virtual void GenerateGetters() override;
-        virtual void GenerateNestedMessages(Entities& formatter) override;
-        virtual void GenerateFieldDeclarations() override;
-        virtual void GenerateMaxMessageSize() override;
-        virtual std::string SerializerBody() override;
+        void GenerateTypeMap(Entities& formatter) override;
+        void GenerateConstructors() override;
+        void GenerateGetters() override;
+        void GenerateNestedMessages(Entities& formatter) override;
+        void GenerateFieldDeclarations() override;
+        void GenerateMaxMessageSize() override;
+        std::string SerializerBody() override;
 
-        virtual std::string ClassName() const override;
-        virtual std::string ReferencedName() const override;
-        virtual std::string MessageSuffix() const override;
+        std::string ClassName() const override;
+        std::string ReferencedName() const override;
+        std::string MessageSuffix() const override;
     };
 
     class ServiceGenerator

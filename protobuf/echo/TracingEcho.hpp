@@ -33,8 +33,8 @@ namespace services
         void RemoveServiceTracer(ServiceTracer& service);
 
     protected:
-        virtual void ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, infra::StreamReaderWithRewinding& reader) override;
-        virtual void SetStreamWriter(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, infra::StreamReaderWithRewinding& reader) override;
+        void SetStreamWriter(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
     private:
         void SendingData(infra::ConstByteRange range) const;
@@ -49,13 +49,13 @@ namespace services
             TracingWriter(infra::SharedPtr<infra::StreamWriter>&& delegate, TracingEchoOnConnection& echo);
             ~TracingWriter();
 
-            virtual void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
-            virtual std::size_t Available() const override;
-            virtual std::size_t ConstructSaveMarker() const override;
-            virtual std::size_t GetProcessedBytesSince(std::size_t marker) const override;
-            virtual infra::ByteRange SaveState(std::size_t marker) override;
-            virtual void RestoreState(infra::ByteRange range) override;
-            virtual infra::ByteRange Overwrite(std::size_t marker) override;
+            void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
+            std::size_t Available() const override;
+            std::size_t ConstructSaveMarker() const override;
+            std::size_t GetProcessedBytesSince(std::size_t marker) const override;
+            infra::ByteRange SaveState(std::size_t marker) override;
+            void RestoreState(infra::ByteRange range) override;
+            infra::ByteRange Overwrite(std::size_t marker) override;
 
         private:
             TracingEchoOnConnection& echo;

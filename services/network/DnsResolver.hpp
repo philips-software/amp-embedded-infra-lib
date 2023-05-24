@@ -24,8 +24,8 @@ namespace services
         DnsResolver(DatagramFactory& datagramFactory, const DnsServers& nameServers, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
         // Implementation of NameResolver
-        virtual void Lookup(NameResolverResult& result) override;
-        virtual void CancelLookup(NameResolverResult& result) override;
+        void Lookup(NameResolverResult& result) override;
+        void CancelLookup(NameResolverResult& result) override;
 
     private:
         static const infra::Duration responseTimeout;
@@ -92,8 +92,8 @@ namespace services
 
         private:
             // Implementation of DatagramExchangeObserver
-            virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
-            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+            void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
+            void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
             void ResolveNextAttempt();
             void ResolveRecursion();

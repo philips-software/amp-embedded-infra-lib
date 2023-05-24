@@ -40,16 +40,16 @@ namespace infra
         ReservedProxy<T> Reserve(StreamErrorPolicy& errorPolicy);
 
     protected:
-        virtual void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy) override;
+        void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy) override;
 
     private:
         std::size_t Available() const override;
 
-        virtual std::size_t ConstructSaveMarker() const override;
-        virtual std::size_t GetProcessedBytesSince(std::size_t marker) const override;
-        virtual infra::ByteRange SaveState(std::size_t marker) override;
-        virtual void RestoreState(infra::ByteRange range) override;
-        virtual infra::ByteRange Overwrite(std::size_t marker) override;
+        std::size_t ConstructSaveMarker() const override;
+        std::size_t GetProcessedBytesSince(std::size_t marker) const override;
+        infra::ByteRange SaveState(std::size_t marker) override;
+        void RestoreState(infra::ByteRange range) override;
+        infra::ByteRange Overwrite(std::size_t marker) override;
 
     private:
         ByteRange streamRange;

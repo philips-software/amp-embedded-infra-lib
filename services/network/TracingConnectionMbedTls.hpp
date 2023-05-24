@@ -13,10 +13,10 @@ namespace services
         TracingConnectionMbedTls(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, const ConnectionMbedTls::ParametersWorkaround& parameters, Tracer& tracer);
         ~TracingConnectionMbedTls();
 
-        virtual void TlsInitFailure(int reason) override;
-        virtual void TlsReadFailure(int reason) override;
-        virtual void TlsWriteFailure(int reason) override;
-        virtual void TlsLog(int level, const char* file, int line, const char* message) override;
+        void TlsInitFailure(int reason) override;
+        void TlsReadFailure(int reason) override;
+        void TlsWriteFailure(int reason) override;
+        void TlsLog(int level, const char* file, int line, const char* message) override;
 
     private:
         void LogFailure(const char* what, int reason);
@@ -34,9 +34,9 @@ namespace services
     public:
         AllocatorTracingConnectionMbedTlsAdapter(AllocatorTracingConnectionMbedTls& allocator, Tracer& tracer);
 
-        virtual infra::SharedPtr<ConnectionMbedTls> Allocate(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver,
+        infra::SharedPtr<ConnectionMbedTls> Allocate(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver,
             CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, const ConnectionMbedTls::ParametersWorkaround& parameters) override;
-        virtual void OnAllocatable(infra::AutoResetFunction<void()>&& callback) override;
+        void OnAllocatable(infra::AutoResetFunction<void()>&& callback) override;
 
     private:
         AllocatorTracingConnectionMbedTls& allocator;

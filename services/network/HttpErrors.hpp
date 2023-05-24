@@ -12,9 +12,9 @@ namespace services
         HttpErrorResponse(const char* status, const char* body);
 
     protected:
-        virtual infra::BoundedConstString Status() const override;
-        virtual void WriteBody(infra::TextOutputStream& stream) const override;
-        virtual infra::BoundedConstString ContentType() const override;
+        infra::BoundedConstString Status() const override;
+        void WriteBody(infra::TextOutputStream& stream) const override;
+        infra::BoundedConstString ContentType() const override;
 
     private:
         const char* status;

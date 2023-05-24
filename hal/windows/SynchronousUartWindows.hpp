@@ -42,8 +42,8 @@ namespace hal
         SynchronousUartWindows(const std::string& name, SynchronousUartWindowsConfig config = SynchronousUartWindowsConfig());
         ~SynchronousUartWindows();
 
-        virtual void SendData(infra::ConstByteRange data) override;
-        virtual bool ReceiveData(infra::ByteRange data) override;
+        void SendData(infra::ConstByteRange data) override;
+        bool ReceiveData(infra::ByteRange data) override;
 
     private:
         void Open(const std::string& name, SynchronousUartWindowsConfig config);

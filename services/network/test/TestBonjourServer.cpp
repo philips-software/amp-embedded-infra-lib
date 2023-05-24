@@ -20,7 +20,7 @@ class BonjourServerTest
     , public infra::EventDispatcherFixture
 {
 public:
-    ~BonjourServerTest()
+    ~BonjourServerTest() override
     {
         expectLeave();
     }

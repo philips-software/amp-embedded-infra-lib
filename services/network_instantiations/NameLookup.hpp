@@ -15,8 +15,8 @@ namespace services
         NameLookup();
         ~NameLookup();
 
-        virtual void Lookup(NameResolverResult& result) override;
-        virtual void CancelLookup(NameResolverResult& result) override;
+        void Lookup(NameResolverResult& result) override;
+        void CancelLookup(NameResolverResult& result) override;
 
     private:
         void Run();

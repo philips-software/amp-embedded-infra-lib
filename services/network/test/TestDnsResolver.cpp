@@ -36,11 +36,11 @@ public:
             infra::Tokenizer tokenizer(hostname, '.');
             for (uint32_t i = 0; i != tokenizer.Size(); ++i)
             {
-                EXPECT_CALL(writer, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { static_cast<uint8_t>(tokenizer.Token(i).size()) } }), testing::_));
+                EXPECT_CALL(writer, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ static_cast<uint8_t>(tokenizer.Token(i).size()) }), testing::_));
                 EXPECT_CALL(writer, Insert(infra::CheckByteRangeContents(tokenizer.Token(i)), testing::_));
             }
 
-            EXPECT_CALL(writer, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 0 } }), testing::_));
+            EXPECT_CALL(writer, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ 0 }), testing::_));
             EXPECT_CALL(writer, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 0, 1, 0, 1 } }), testing::_));
             datagramExchangeObserver->SendStreamAvailable(infra::UnOwnedSharedPtr(writer)); }));
     }
@@ -88,7 +88,7 @@ public:
 
         infra::Tokenizer tokenizer(hostname, '.');
         for (uint32_t i = 0; i != tokenizer.Size(); ++i)
-            result = Concatenate({ result, std::vector<uint8_t>{ { static_cast<uint8_t>(tokenizer.Token(i).size()) } }, std::vector<uint8_t>(tokenizer.Token(i).begin(), tokenizer.Token(i).end()) });
+            result = Concatenate({ result, std::vector<uint8_t>{ static_cast<uint8_t>(tokenizer.Token(i).size()) }, std::vector<uint8_t>(tokenizer.Token(i).begin(), tokenizer.Token(i).end()) });
         result.push_back(0);
 
         return result;

@@ -138,8 +138,8 @@ namespace infra
         Creator();
         explicit Creator(infra::Function<void(infra::Optional<U>&, ConstructionArgs...)> emplaceFunction);
 
-        virtual void Emplace(ConstructionArgs... args) override;
-        virtual void Destroy() override;
+        void Emplace(ConstructionArgs... args) override;
+        void Destroy() override;
 
         U& operator*();
         const U& operator*() const;
@@ -147,8 +147,8 @@ namespace infra
         const U* operator->() const;
 
     protected:
-        virtual T& Get() override;
-        virtual const T& Get() const override;
+        T& Get() override;
+        const T& Get() const override;
         U& GetObject();
         const U& GetObject() const;
 
@@ -165,8 +165,8 @@ namespace infra
         Creator();
         explicit Creator(infra::Function<void(infra::Optional<U>&, ConstructionArgs...)> emplaceFunction);
 
-        virtual void Emplace(ConstructionArgs... args) override;
-        virtual void Destroy() override;
+        void Emplace(ConstructionArgs... args) override;
+        void Destroy() override;
 
         U& operator*();
         const U& operator*() const;
@@ -189,12 +189,12 @@ namespace infra
     public:
         explicit CreatorExternal(const infra::Function<T&(ConstructionArgs...)>& emplaceFunction, const infra::Function<void()>& destroyFunction);
 
-        virtual void Emplace(ConstructionArgs... args) override;
-        virtual void Destroy() override;
+        void Emplace(ConstructionArgs... args) override;
+        void Destroy() override;
 
     protected:
-        virtual T& Get() override;
-        virtual const T& Get() const override;
+        T& Get() override;
+        const T& Get() const override;
 
     private:
         infra::Function<T&(ConstructionArgs... args)> emplaceFunction;
@@ -209,12 +209,12 @@ namespace infra
     public:
         explicit CreatorExternal(const infra::Function<std::tuple<T...>(ConstructionArgs...)>& emplaceFunction, const infra::Function<void()>& destroyFunction);
 
-        virtual void Emplace(ConstructionArgs... args) override;
-        virtual void Destroy() override;
+        void Emplace(ConstructionArgs... args) override;
+        void Destroy() override;
 
     protected:
-        virtual std::tuple<T...>& Get() override;
-        virtual const std::tuple<T...>& Get() const override;
+        std::tuple<T...>& Get() override;
+        const std::tuple<T...>& Get() const override;
 
     private:
         infra::Function<std::tuple<T...>(ConstructionArgs... args)> emplaceFunction;
@@ -229,8 +229,8 @@ namespace infra
     public:
         explicit CreatorExternal(const infra::Function<void(ConstructionArgs...)>& emplaceFunction, const infra::Function<void()>& destroyFunction);
 
-        virtual void Emplace(ConstructionArgs... args) override;
-        virtual void Destroy() override;
+        void Emplace(ConstructionArgs... args) override;
+        void Destroy() override;
 
     private:
         infra::Function<void(ConstructionArgs... args)> emplaceFunction;

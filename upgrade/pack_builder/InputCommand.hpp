@@ -11,7 +11,7 @@ namespace application
     public:
         explicit InputCommand(const std::string& targetName);
 
-        virtual std::vector<uint8_t> Image() const;
+        std::vector<uint8_t> Image() const override;
     };
 }
 

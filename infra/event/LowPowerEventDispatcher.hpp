@@ -40,8 +40,8 @@ namespace infra
         LowPowerEventDispatcherWorker(infra::MemoryRange<std::pair<infra::EventDispatcherWithWeakPtrWorker::ActionStorage, std::atomic<bool>>> scheduledActionsStorage, LowPowerStrategy& lowPowerStrategy);
 
     protected:
-        virtual void RequestExecution() override;
-        virtual void Idle() override;
+        void RequestExecution() override;
+        void Idle() override;
 
     private:
         LowPowerStrategy& lowPowerStrategy;

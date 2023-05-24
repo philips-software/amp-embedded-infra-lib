@@ -48,11 +48,11 @@ namespace services
 
         ConfigurationBlobFlash(infra::ByteRange blob, infra::ByteRange verificationBuffer, hal::Flash& flash, services::Sha256& sha256);
 
-        virtual infra::ConstByteRange CurrentBlob() override;
-        virtual infra::ByteRange MaxBlob() override;
-        virtual void Recover(const infra::Function<void(bool success)>& onRecovered) override;
-        virtual void Write(uint32_t size, const infra::Function<void()>& onDone) override;
-        virtual void Erase(const infra::Function<void()>& onDone) override;
+        infra::ConstByteRange CurrentBlob() override;
+        infra::ByteRange MaxBlob() override;
+        void Recover(const infra::Function<void(bool success)>& onRecovered) override;
+        void Write(uint32_t size, const infra::Function<void()>& onDone) override;
+        void Erase(const infra::Function<void()>& onDone) override;
 
         infra::ByteRange Blob();
         infra::ByteRange VerificationBuffer();
@@ -87,11 +87,11 @@ namespace services
     public:
         explicit ConfigurationBlobReadOnlyMemory(infra::ConstByteRange data);
 
-        virtual infra::ConstByteRange CurrentBlob() override;
-        virtual infra::ByteRange MaxBlob() override;
-        virtual void Recover(const infra::Function<void(bool success)>& onRecovered) override;
-        virtual void Write(uint32_t size, const infra::Function<void()>& onDone) override;
-        virtual void Erase(const infra::Function<void()>& onDone) override;
+        infra::ConstByteRange CurrentBlob() override;
+        infra::ByteRange MaxBlob() override;
+        void Recover(const infra::Function<void(bool success)>& onRecovered) override;
+        void Write(uint32_t size, const infra::Function<void()>& onDone) override;
+        void Erase(const infra::Function<void()>& onDone) override;
 
     private:
         infra::ConstByteRange data;
@@ -176,7 +176,7 @@ namespace services
 
     public:
         void Recover(const infra::Function<void(bool success)>& onRecovered);
-        virtual uint32_t Write() override;
+        uint32_t Write() override;
         uint32_t Erase();
 
         virtual void Serialize(ConfigurationBlob& blob, const infra::Function<void()>& onDone) = 0;
@@ -185,7 +185,7 @@ namespace services
         template<class T>
         ConfigurationStoreAccess<T> Access(T& configuration);
 
-        virtual void Unlocked() override;
+        void Unlocked() override;
 
     private:
         void OnBlobLoaded(bool success);
@@ -223,14 +223,14 @@ namespace services
 
         ConfigurationStoreImpl(ConfigurationBlob& blob1, ConfigurationBlob& blob2);
 
-        virtual const T& Configuration() const override;
-        virtual T& Configuration() override;
-        virtual ConfigurationStoreInterface& Interface() override;
-        virtual uint32_t Write() override;
-        virtual ConfigurationStoreBase::LockGuard Lock() override;
+        const T& Configuration() const override;
+        T& Configuration() override;
+        ConfigurationStoreInterface& Interface() override;
+        uint32_t Write() override;
+        ConfigurationStoreBase::LockGuard Lock() override;
 
-        virtual void Serialize(ConfigurationBlob& blob, const infra::Function<void()>& onDone) override;
-        virtual void Deserialize(ConfigurationBlob& blob) override;
+        void Serialize(ConfigurationBlob& blob, const infra::Function<void()>& onDone) override;
+        void Deserialize(ConfigurationBlob& blob) override;
 
     private:
         T configuration;
@@ -257,10 +257,10 @@ namespace services
         FactoryDefaultConfigurationStoreBase(ConfigurationStoreBase& configurationStore, ConfigurationBlob& factoryDefaultBlob);
 
         void Recover(const infra::Function<void()>& onLoadFactoryDefault, const infra::Function<void(bool isFactoryDefault)>& onRecovered);
-        virtual uint32_t Write() override;
+        uint32_t Write() override;
 
     protected:
-        virtual void OperationDone(uint32_t id) override;
+        void OperationDone(uint32_t id) override;
 
     private:
         ConfigurationStoreBase& configurationStore;
@@ -286,12 +286,12 @@ namespace services
         FactoryDefaultConfigurationStore& operator=(const FactoryDefaultConfigurationStore& other) = delete;
         ~FactoryDefaultConfigurationStore();
 
-        virtual const T& Configuration() const override;
-        virtual T& Configuration() override;
-        virtual ConfigurationStoreInterface& Interface() override;
-        virtual uint32_t Write() override;
-        virtual ConfigurationStoreBase::LockGuard Lock() override;
-        virtual void Unlocked() override;
+        const T& Configuration() const override;
+        T& Configuration() override;
+        ConfigurationStoreInterface& Interface() override;
+        uint32_t Write() override;
+        ConfigurationStoreBase::LockGuard Lock() override;
+        void Unlocked() override;
 
         template<class U>
         ConfigurationStoreAccess<U> Access(U& configuration);

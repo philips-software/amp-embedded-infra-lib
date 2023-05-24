@@ -104,22 +104,22 @@ namespace services
     {
     public:
         // Implementation of Connection
-        virtual void RequestSendStream(std::size_t sendSize) override;
-        virtual std::size_t MaxSendStreamSize() const override;
-        virtual infra::SharedPtr<infra::StreamReaderWithRewinding> ReceiveStream() override;
-        virtual void AckReceived() override;
-        virtual void CloseAndDestroy() override;
-        virtual void AbortAndDestroy() override;
-        virtual void SetHostname(infra::BoundedConstString hostname) override;
+        void RequestSendStream(std::size_t sendSize) override;
+        std::size_t MaxSendStreamSize() const override;
+        infra::SharedPtr<infra::StreamReaderWithRewinding> ReceiveStream() override;
+        void AckReceived() override;
+        void CloseAndDestroy() override;
+        void AbortAndDestroy() override;
+        void SetHostname(infra::BoundedConstString hostname) override;
 
         void Attach(const infra::SharedPtr<ConnectionObserver>& observer);
 
         // Implementation of ConnectionObserver
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& streamWriter) override;
-        virtual void DataReceived() override;
-        virtual void Detaching() override;
-        virtual void Close() override;
-        virtual void Abort() override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& streamWriter) override;
+        void DataReceived() override;
+        void Detaching() override;
+        void Close() override;
+        void Abort() override;
 
     private:
         bool closing = false;

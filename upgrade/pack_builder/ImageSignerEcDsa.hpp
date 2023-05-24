@@ -16,10 +16,10 @@ namespace application
     public:
         ImageSignerEcDsa(hal::SynchronousRandomDataGenerator& randomDataGenerator, infra::ConstByteRange publicKey, infra::ConstByteRange privateKey);
 
-        virtual uint16_t SignatureMethod() const override;
-        virtual uint16_t SignatureLength() const override;
-        virtual std::vector<uint8_t> ImageSignature(const std::vector<uint8_t>& image) override;
-        virtual bool CheckSignature(const std::vector<uint8_t>& signature, const std::vector<uint8_t>& image) override;
+        uint16_t SignatureMethod() const override;
+        uint16_t SignatureLength() const override;
+        std::vector<uint8_t> ImageSignature(const std::vector<uint8_t>& image) override;
+        bool CheckSignature(const std::vector<uint8_t>& signature, const std::vector<uint8_t>& image) override;
 
         static const uint16_t signatureMethod = 1;
         static const size_t keyLength = 224;

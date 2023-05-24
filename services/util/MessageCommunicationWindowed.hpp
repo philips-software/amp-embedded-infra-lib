@@ -42,14 +42,14 @@ namespace services
         public:
             explicit AtomicDequeReader(const AtomicDeque& deque);
 
-            virtual void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
-            virtual uint8_t Peek(infra::StreamErrorPolicy& errorPolicy) override;
-            virtual infra::ConstByteRange ExtractContiguousRange(std::size_t max) override;
-            virtual infra::ConstByteRange PeekContiguousRange(std::size_t start) override;
-            virtual bool Empty() const override;
-            virtual std::size_t Available() const override;
-            virtual std::size_t ConstructSaveMarker() const override;
-            virtual void Rewind(std::size_t marker) override;
+            void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
+            uint8_t Peek(infra::StreamErrorPolicy& errorPolicy) override;
+            infra::ConstByteRange ExtractContiguousRange(std::size_t max) override;
+            infra::ConstByteRange PeekContiguousRange(std::size_t start) override;
+            bool Empty() const override;
+            std::size_t Available() const override;
+            std::size_t ConstructSaveMarker() const override;
+            void Rewind(std::size_t marker) override;
 
         private:
             const AtomicDeque& deque;
@@ -62,13 +62,13 @@ namespace services
         public:
             explicit AtomicDequeWriter(AtomicDeque& deque);
 
-            virtual void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
-            virtual std::size_t Available() const override;
-            virtual std::size_t ConstructSaveMarker() const override;
-            virtual std::size_t GetProcessedBytesSince(std::size_t marker) const override;
-            virtual infra::ByteRange SaveState(std::size_t marker) override;
-            virtual void RestoreState(infra::ByteRange range) override;
-            virtual infra::ByteRange Overwrite(std::size_t marker) override;
+            void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
+            std::size_t Available() const override;
+            std::size_t ConstructSaveMarker() const override;
+            std::size_t GetProcessedBytesSince(std::size_t marker) const override;
+            infra::ByteRange SaveState(std::size_t marker) override;
+            void RestoreState(infra::ByteRange range) override;
+            infra::ByteRange Overwrite(std::size_t marker) override;
 
         private:
             AtomicDeque& deque;
@@ -91,12 +91,12 @@ namespace services
         MessageCommunicationWindowed(detail::AtomicDeque& receivedData, MessageCommunicationReceiveOnInterrupt& messageCommunication);
 
         // Implementation of MessageCommunication
-        virtual void RequestSendMessage(uint16_t size) override;
-        virtual std::size_t MaxSendMessageSize() const override;
+        void RequestSendMessage(uint16_t size) override;
+        std::size_t MaxSendMessageSize() const override;
 
     private:
         // Implementation of MessageCommunicationReceiveOnInterruptObserver
-        virtual void ReceivedMessageOnInterrupt(infra::StreamReader& reader) override;
+        void ReceivedMessageOnInterrupt(infra::StreamReader& reader) override;
 
     private:
         void ReceivedMessage(infra::StreamReader& reader);
@@ -152,7 +152,7 @@ namespace services
         public:
             explicit StateSendingInit(MessageCommunicationWindowed& communication);
 
-            virtual void RequestSendMessage(uint16_t size) override;
+            void RequestSendMessage(uint16_t size) override;
 
         private:
             void OnSent();
@@ -167,7 +167,7 @@ namespace services
         public:
             explicit StateSendingInitResponse(MessageCommunicationWindowed& communication);
 
-            virtual void RequestSendMessage(uint16_t size) override;
+            void RequestSendMessage(uint16_t size) override;
 
         private:
             void OnSent();
@@ -182,7 +182,7 @@ namespace services
         public:
             explicit StateOperational(MessageCommunicationWindowed& communication);
 
-            virtual void RequestSendMessage(uint16_t size) override;
+            void RequestSendMessage(uint16_t size) override;
 
         private:
             MessageCommunicationWindowed& communication;
@@ -194,7 +194,7 @@ namespace services
         public:
             explicit StateSendingMessage(MessageCommunicationWindowed& communication);
 
-            virtual void RequestSendMessage(uint16_t size) override;
+            void RequestSendMessage(uint16_t size) override;
 
         private:
             void OnSent(uint16_t sent);
@@ -209,7 +209,7 @@ namespace services
         public:
             explicit StateSendingReleaseWindow(MessageCommunicationWindowed& communication);
 
-            virtual void RequestSendMessage(uint16_t size) override;
+            void RequestSendMessage(uint16_t size) override;
 
         private:
             void OnSent();

@@ -20,8 +20,8 @@ namespace services
     public:
         FlashQuadSpi(hal::QuadSpi& spi, uint32_t numberOfSectors, uint8_t commandPageProgram);
 
-        virtual void WriteBuffer(infra::ConstByteRange buffer, uint32_t address, infra::Function<void()> onDone) override;
-        virtual void EraseSectors(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone) override;
+        void WriteBuffer(infra::ConstByteRange buffer, uint32_t address, infra::Function<void()> onDone) override;
+        void EraseSectors(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone) override;
 
     protected:
         void WriteBufferSequence();

@@ -101,7 +101,7 @@ public:
 
     MOCK_METHOD1(Invoke, void(infra::JsonArray& arguments));
 
-    virtual void Execute() override
+    void Execute() override
     {}
 };
 
@@ -116,7 +116,7 @@ public:
         , cucumberServer(connectionFactoryMock, 1234, scenarioHandler)
     {}
 
-    ~CucumberWireProtocolServerTest()
+    ~CucumberWireProtocolServerTest() override
     {
         cucumberServer.Stop(infra::emptyFunction);
     }

@@ -18,8 +18,8 @@ namespace hal
         virtual ~UartUnix();
 
         // Implementation of hal::SerialCommunication
-        virtual void SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion) override;
-        virtual void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) override;
+        void SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion) override;
+        void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) override;
 
     private:
         void Open(const std::string& portName);

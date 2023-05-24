@@ -18,7 +18,7 @@ public:
         webSocket->Attach(infra::UnOwnedSharedPtr(connectionObserver));
     }
 
-    ~WebSocketServerConnectionObserverTest()
+    ~WebSocketServerConnectionObserverTest() override
     {
         if (connection.IsAttached())
         {

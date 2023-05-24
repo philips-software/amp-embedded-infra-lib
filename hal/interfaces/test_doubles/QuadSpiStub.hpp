@@ -11,9 +11,9 @@ namespace hal
         : public QuadSpi
     {
     public:
-        virtual void SendData(const Header& header, infra::ConstByteRange data, Lines lines, const infra::Function<void()>& actionOnCompletion) override;
-        virtual void ReceiveData(const Header& header, infra::ByteRange data, Lines lines, const infra::Function<void()>& actionOnCompletion) override;
-        virtual void PollStatus(const Header& header, uint8_t nofBytes, uint32_t match, uint32_t mask, Lines lines, const infra::Function<void()>& actionOnCompletion) override;
+        void SendData(const Header& header, infra::ConstByteRange data, Lines lines, const infra::Function<void()>& actionOnCompletion) override;
+        void ReceiveData(const Header& header, infra::ByteRange data, Lines lines, const infra::Function<void()>& actionOnCompletion) override;
+        void PollStatus(const Header& header, uint8_t nofBytes, uint32_t match, uint32_t mask, Lines lines, const infra::Function<void()>& actionOnCompletion) override;
 
         MOCK_METHOD3(SendDataMock, void(const Header&, infra::ConstByteRange, Lines lines));
         MOCK_METHOD2(ReceiveDataMock, infra::ConstByteRange(const Header&, Lines lines));

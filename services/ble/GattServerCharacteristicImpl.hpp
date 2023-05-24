@@ -13,14 +13,14 @@ namespace services
         GattServerCharacteristicImpl(GattServerService& service, const AttAttribute::Uuid& type, uint16_t valueLength);
         GattServerCharacteristicImpl(GattServerService& service, const AttAttribute::Uuid& type, uint16_t valueLength, PropertyFlags properties);
         GattServerCharacteristicImpl(GattServerService& service, const AttAttribute::Uuid& type, uint16_t valueLength, PropertyFlags properties, PermissionFlags permissions);
-        virtual ~GattServerCharacteristicImpl();
+        ~GattServerCharacteristicImpl() override;
 
         // Implementation of GattServerCharacteristic
-        virtual void Update(infra::ConstByteRange data, infra::Function<void()> onDone);
+        void Update(infra::ConstByteRange data, infra::Function<void()> onDone) override;
 
         // Implementation of GattServerCharacteristicOperationsObserver
-        virtual AttAttribute::Handle ServiceHandle() const;
-        virtual AttAttribute::Handle CharacteristicHandle() const;
+        AttAttribute::Handle ServiceHandle() const override;
+        AttAttribute::Handle CharacteristicHandle() const override;
 
     private:
         struct UpdateContext

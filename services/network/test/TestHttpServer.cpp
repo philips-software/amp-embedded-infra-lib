@@ -22,7 +22,7 @@ public:
         , httpServer(connectionFactoryMock, 80)
     {}
 
-    ~HttpServerTest()
+    ~HttpServerTest() override
     {
         httpServer.Stop(infra::emptyFunction);
     }

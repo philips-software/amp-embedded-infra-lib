@@ -54,7 +54,7 @@ public:
         : services::TerminalCommands(terminal)
     {}
 
-    virtual infra::MemoryRange<const Command> Commands() override
+    infra::MemoryRange<const Command> Commands() override
     {
         static const std::array<Command, 1> commands = { { { { "long", "l", "long command description" },
             [this]([[maybe_unused]] const infra::BoundedConstString& params)
@@ -82,10 +82,10 @@ class TerminalNavigationTest
 public:
     TerminalNavigationTest()
     {
-        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'a' } }), testing::_));
-        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'b' } }), testing::_));
-        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'c' } }), testing::_));
-        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'd' } }), testing::_));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ 'a' }), testing::_));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ 'b' }), testing::_));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ 'c' }), testing::_));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ 'd' }), testing::_));
 
         communication.dataReceived(std::vector<uint8_t>{ 'a', 'b', 'c', 'd' });
     }
@@ -97,18 +97,18 @@ class TerminalHistoryTest
 public:
     TerminalHistoryTest()
     {
-        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'a' } }), testing::_));
-        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'b' } }), testing::_));
-        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'c' } }), testing::_));
-        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'd' } }), testing::_));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ 'a' }), testing::_));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ 'b' }), testing::_));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ 'c' }), testing::_));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ 'd' }), testing::_));
         EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r', '\n' } }), testing::_));
         EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
 
         communication.dataReceived(std::vector<uint8_t>{ 'a', 'b', 'c', 'd', '\r' });
 
-        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'e' } }), testing::_));
-        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'f' } }), testing::_));
-        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'g' } }), testing::_));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ 'e' }), testing::_));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ 'f' }), testing::_));
+        EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ 'g' }), testing::_));
         EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r', '\n' } }), testing::_));
         EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
 
@@ -118,10 +118,10 @@ public:
 
 TEST_F(TerminalTest, echo_printable_characters)
 {
-    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { ' ' } }), testing::_));
-    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'A' } }), testing::_));
-    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 'Z' } }), testing::_));
-    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '~' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ ' ' }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ 'A' }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ 'Z' }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ '~' }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ ' ', 'A', 'Z', '~' });
 
@@ -130,8 +130,8 @@ TEST_F(TerminalTest, echo_printable_characters)
 
 TEST_F(TerminalTest, echo_bell_for_nonprintable_characters)
 {
-    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\a' } }), testing::_));
-    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\a' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ '\a' }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ '\a' }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ 31, 128 });
 
@@ -165,7 +165,7 @@ TEST_F(TerminalTest, ignore_unparsed_escaped_data)
 
 TEST_F(TerminalTest, bell_on_invalid_escape_sequence)
 {
-    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\a' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ '\a' }), testing::_));
 
     communication.dataReceived(std::vector<uint8_t>{ 27, 'Z' });
 
@@ -174,7 +174,7 @@ TEST_F(TerminalTest, bell_on_invalid_escape_sequence)
 
 TEST_F(TerminalTest, navigation_with_empty_buffer)
 {
-    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r' } }), testing::_));
+    EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ '\r' }), testing::_));
     EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));
     EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '\r' } }), testing::_));
     EXPECT_CALL(streamWriterMock, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { '>', ' ' } }), testing::_));

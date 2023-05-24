@@ -18,7 +18,7 @@ public:
         webSocket->Attach(infra::UnOwnedSharedPtr(connectionObserver));
     }
 
-    ~WebSocketClientConnectionObserverTest()
+    ~WebSocketClientConnectionObserverTest() override
     {
         if (connection.IsAttached())
         {
@@ -369,7 +369,7 @@ TEST_F(WebSocketClientConnectionObserverTest, send_and_receive_ping_in_two_buffe
 {
     connection.SimulateDataReceived(std::vector<uint8_t>{ { 0x89, 0x04, 'p', 'i', 'n' } });
     ExecuteAllActions();
-    connection.SimulateDataReceived(std::vector<uint8_t>{ { 'g' } });
+    connection.SimulateDataReceived(std::vector<uint8_t>{ 'g' });
     ExecuteAllActions();
     EXPECT_EQ((std::vector<uint8_t>{ { 0x8a, 0x84, 0, 0, 0, 0, 'p', 'i', 'n', 'g' } }), connection.sentData);
 }

@@ -28,7 +28,7 @@ namespace infra
         public:
             explicit ActionFunction(const Function<void()>& function);
 
-            virtual void Execute() override;
+            void Execute() override;
 
         private:
             Function<void()> function;
@@ -41,7 +41,7 @@ namespace infra
         public:
             ActionWithWeakPtr(const infra::Function<void(const infra::SharedPtr<T>& object)>& function, const infra::WeakPtr<T>& object);
 
-            virtual void Execute() override;
+            void Execute() override;
 
         private:
             infra::Function<void(const infra::SharedPtr<T>& object)> function;
@@ -55,16 +55,16 @@ namespace infra
 
         explicit EventDispatcherWithWeakPtrWorker(MemoryRange<std::pair<ActionStorage, std::atomic<bool>>> scheduledActionsStorage);
 
-        virtual void Schedule(const infra::Function<void()>& action) override;
+        void Schedule(const infra::Function<void()>& action) override;
 
         template<class T>
         void Schedule(const typename std::decay<infra::Function<void(const infra::SharedPtr<T>& object)>>::type& action, const infra::SharedPtr<T>& object);
         template<class T>
         void Schedule(const typename std::decay<infra::Function<void(const infra::SharedPtr<T>& object)>>::type& action, const infra::WeakPtr<T>& object);
 
-        virtual void ExecuteFirstAction() override;
-        virtual std::size_t MinCapacity() const override;
-        virtual bool IsIdle() const override;
+        void ExecuteFirstAction() override;
+        std::size_t MinCapacity() const override;
+        bool IsIdle() const override;
 
         void Run();
         void ExecuteAllActions();

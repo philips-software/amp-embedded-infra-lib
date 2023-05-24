@@ -9,11 +9,11 @@ namespace hal
         : public hal::FileSystem
     {
     public:
-        virtual std::vector<std::string> ReadFile(const hal::filesystem::path& path) override;
-        virtual void WriteFile(const hal::filesystem::path& path, const std::vector<std::string>& contents) override;
+        std::vector<std::string> ReadFile(const hal::filesystem::path& path) override;
+        void WriteFile(const hal::filesystem::path& path, const std::vector<std::string>& contents) override;
 
-        virtual std::vector<uint8_t> ReadBinaryFile(const hal::filesystem::path& path) override;
-        virtual void WriteBinaryFile(const hal::filesystem::path& path, const std::vector<uint8_t>& contents) override;
+        std::vector<uint8_t> ReadBinaryFile(const hal::filesystem::path& path) override;
+        void WriteBinaryFile(const hal::filesystem::path& path, const std::vector<uint8_t>& contents) override;
     };
 }
 

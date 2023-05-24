@@ -18,10 +18,10 @@ namespace services
     public:
         explicit SpiMultipleAccessMaster(hal::SpiMaster& master);
 
-        virtual void SendAndReceive(infra::ConstByteRange sendData, infra::ByteRange receiveData, hal::SpiAction nextAction, const infra::Function<void()>& onDone) override;
-        virtual void SetChipSelectConfigurator(hal::ChipSelectConfigurator& configurator) override;
-        virtual void SetCommunicationConfigurator(hal::CommunicationConfigurator& configurator) override;
-        virtual void ResetCommunicationConfigurator() override;
+        void SendAndReceive(infra::ConstByteRange sendData, infra::ByteRange receiveData, hal::SpiAction nextAction, const infra::Function<void()>& onDone) override;
+        void SetChipSelectConfigurator(hal::ChipSelectConfigurator& configurator) override;
+        void SetCommunicationConfigurator(hal::CommunicationConfigurator& configurator) override;
+        void ResetCommunicationConfigurator() override;
 
     private:
         hal::SpiMaster& master;
@@ -35,14 +35,14 @@ namespace services
     public:
         explicit SpiMultipleAccess(SpiMultipleAccessMaster& master);
 
-        virtual void SendAndReceive(infra::ConstByteRange sendData, infra::ByteRange receiveData, hal::SpiAction nextAction, const infra::Function<void()>& onDone) override;
-        virtual void SetChipSelectConfigurator(hal::ChipSelectConfigurator& configurator) override;
-        virtual void SetCommunicationConfigurator(hal::CommunicationConfigurator& configurator) override;
-        virtual void ResetCommunicationConfigurator() override;
+        void SendAndReceive(infra::ConstByteRange sendData, infra::ByteRange receiveData, hal::SpiAction nextAction, const infra::Function<void()>& onDone) override;
+        void SetChipSelectConfigurator(hal::ChipSelectConfigurator& configurator) override;
+        void SetCommunicationConfigurator(hal::CommunicationConfigurator& configurator) override;
+        void ResetCommunicationConfigurator() override;
 
     private:
-        virtual void StartSession() override;
-        virtual void EndSession() override;
+        void StartSession() override;
+        void EndSession() override;
         void SendAndReceiveOnClaimed(infra::ConstByteRange sendData, infra::ByteRange receiveData, hal::SpiAction nextAction, const infra::Function<void()>& onDone);
 
     private:

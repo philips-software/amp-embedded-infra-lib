@@ -145,17 +145,17 @@ namespace services
         : public EchoErrorPolicy
     {
     public:
-        virtual void MessageFormatError() override;
-        virtual void ServiceNotFound(uint32_t serviceId) override;
-        virtual void MethodNotFound(uint32_t serviceId, uint32_t methodId) override;
+        void MessageFormatError() override;
+        void ServiceNotFound(uint32_t serviceId) override;
+        void MethodNotFound(uint32_t serviceId, uint32_t methodId) override;
     };
 
     class EchoErrorPolicyAbort
         : public EchoErrorPolicyAbortOnMessageFormatError
     {
     public:
-        virtual void ServiceNotFound(uint32_t serviceId) override;
-        virtual void MethodNotFound(uint32_t serviceId, uint32_t methodId) override;
+        void ServiceNotFound(uint32_t serviceId) override;
+        void MethodNotFound(uint32_t serviceId, uint32_t methodId) override;
     };
 
     extern EchoErrorPolicyAbortOnMessageFormatError echoErrorPolicyAbortOnMessageFormatError;
@@ -216,10 +216,10 @@ namespace services
         explicit EchoOnStreams(EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
 
         // Implementation of Echo
-        virtual void RequestSend(ServiceProxy& serviceProxy) override;
-        virtual infra::StreamWriter& SendStreamWriter() override;
-        virtual void Send() override;
-        virtual void ServiceDone(Service& service) override;
+        void RequestSend(ServiceProxy& serviceProxy) override;
+        infra::StreamWriter& SendStreamWriter() override;
+        void Send() override;
+        void ServiceDone(Service& service) override;
 
     protected:
         virtual void RequestSendStream(std::size_t size) = 0;
@@ -247,12 +247,12 @@ namespace services
         using EchoOnStreams::EchoOnStreams;
 
         // Implementation of ConnectionObserver
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        virtual void DataReceived() override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void DataReceived() override;
 
     protected:
-        virtual void RequestSendStream(std::size_t size) override;
-        virtual void BusyServiceDone() override;
+        void RequestSendStream(std::size_t size) override;
+        void BusyServiceDone() override;
     };
 
     class EchoOnMessageCommunication
@@ -263,14 +263,14 @@ namespace services
         EchoOnMessageCommunication(MessageCommunication& subject, EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
 
         // Implementation of MessageCommunicationObserver
-        virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        virtual void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
+        void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
 
-        virtual void ServiceDone(Service& service) override;
+        void ServiceDone(Service& service) override;
 
     protected:
-        virtual void RequestSendStream(std::size_t size) override;
-        virtual void BusyServiceDone() override;
+        void RequestSendStream(std::size_t size) override;
+        void BusyServiceDone() override;
 
     private:
         void ProcessMessage();
