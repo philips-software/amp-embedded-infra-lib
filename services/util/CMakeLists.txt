@@ -49,6 +49,8 @@ target_sources(services.util PRIVATE
     MessageCommunication.hpp
     MessageCommunicationCobs.cpp
     MessageCommunicationCobs.hpp
+    MessageCommunicationSymmetricKeyDistribution.cpp
+    MessageCommunicationSymmetricKeyDistribution.hpp
     MessageCommunicationSecured.cpp
     MessageCommunicationSecured.hpp
     MessageCommunicationWindowed.cpp
