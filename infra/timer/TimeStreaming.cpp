@@ -1,5 +1,5 @@
-#include "infra/timer/PartitionedTime.hpp"
 #include "infra/timer/TimeStreaming.hpp"
+#include "infra/timer/PartitionedTime.hpp"
 
 namespace infra
 {
@@ -9,11 +9,11 @@ namespace infra
 
         const auto w02 = Width(2, '0');
         stream << time.years << '-'
-            << w02 << time.months << resetWidth << '-'
-            << w02 << time.days << resetWidth << 'T'
-            << w02 << time.hours << resetWidth << ':'
-            << w02 << time.minutes << resetWidth << ':'
-            << w02 << time.seconds;
+               << w02 << time.months << resetWidth << '-'
+               << w02 << time.days << resetWidth << 'T'
+               << w02 << time.hours << resetWidth << ':'
+               << w02 << time.minutes << resetWidth << ':'
+               << w02 << time.seconds;
 
         return stream;
     }
@@ -24,7 +24,7 @@ namespace infra
         const auto d = isNegative ? -duration : duration;
         const auto w02 = Width(2, '0');
         stream << (isNegative ? '-' : '+') << w02 << static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::hours>(d).count())
-            << resetWidth << ":" << w02 << static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::minutes>(d).count() % 60);
+               << resetWidth << ":" << w02 << static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::minutes>(d).count() % 60);
         return stream;
     }
 }
