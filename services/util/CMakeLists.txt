@@ -1,5 +1,7 @@
 add_library(services.util ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
+protocol_buffer_echo_cpp(services.util MessageCommunicationSecurity.proto)
+
 target_link_libraries(services.util PUBLIC
     hal.interfaces
     infra.syntax
