@@ -1,4 +1,4 @@
-#include "protobuf/echo/EchoOnMessageCommunication.hpp"
+#include "services/util/EchoOnMessageCommunication.hpp"
 
 namespace services
 {

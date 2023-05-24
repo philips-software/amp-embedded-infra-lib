@@ -1,6 +1,6 @@
 #include "generated/echo/Console.pb.hpp"
 #include "hal/generic/TimerServiceGeneric.hpp"
-#include "protobuf/echo/EchoOnConnection.hpp"
+#include "services/network/EchoOnConnection.hpp"
 #include "services/network_instantiations/NetworkAdapter.hpp"
 #include <iostream>
 

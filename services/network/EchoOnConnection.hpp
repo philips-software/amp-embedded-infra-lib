@@ -1,5 +1,5 @@
-#ifndef PROTOBUF_ECHO_ON_CONNECTION_HPP
-#define PROTOBUF_ECHO_ON_CONNECTION_HPP
+#ifndef SERVICES_ECHO_ON_CONNECTION_HPP
+#define SERVICES_ECHO_ON_CONNECTION_HPP
 
 #include "protobuf/echo/Echo.hpp"
 #include "services/network/Connection.hpp"

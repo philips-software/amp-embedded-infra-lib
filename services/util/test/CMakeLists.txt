@@ -8,6 +8,7 @@ endif()
 
 target_link_libraries(services.util_test PUBLIC
     gmock_main
+    protobuf.test_doubles
     services.tracer
     services.util
     hal.interfaces_test_doubles
@@ -21,6 +22,7 @@ target_sources(services.util_test PRIVATE
     TestCyclicStore.cpp
     TestDebouncedButton.cpp
     TestDebugLed.cpp
+    TestEchoOnMessageCommunication.cpp
     TestFlashAlign.cpp
     TestFlashMultipleAccess.cpp
     TestFlashQuadSpiCypressFll.cpp

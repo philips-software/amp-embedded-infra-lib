@@ -3,9 +3,9 @@
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/util/ConstructBin.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
-#include "protobuf/echo/EchoOnMessageCommunication.hpp"
-#include "protobuf/echo/test/ServiceStub.hpp"
 #include "protobuf/echo/test_doubles/EchoMock.hpp"
+#include "protobuf/echo/test_doubles/ServiceStub.hpp"
+#include "services/util/EchoOnMessageCommunication.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 
 class EchoOnMessageCommunicationTest

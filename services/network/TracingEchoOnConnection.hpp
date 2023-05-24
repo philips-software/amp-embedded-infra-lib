@@ -1,8 +1,8 @@
 #ifndef PROTOBUF_TRACING_ECHO_ON_CONNECTION_HPP
 #define PROTOBUF_TRACING_ECHO_ON_CONNECTION_HPP
 
-#include "protobuf/echo/EchoOnConnection.hpp"
 #include "protobuf/echo/TracingEcho.hpp"
+#include "services/network/EchoOnConnection.hpp"
 
 namespace services
 {

@@ -1,9 +1,18 @@
 add_library(services.network ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
+protocol_buffer_echo_cpp(services.network Network.proto)
+protocol_buffer_csharp(services.network Network.proto)
+protocol_buffer_java(services.network Network.proto)
+
+protocol_buffer_echo_cpp(services.network Gap.proto)
+protocol_buffer_csharp(services.network Gap.proto)
+protocol_buffer_java(services.network Gap.proto)
+
 target_link_libraries(services.network PUBLIC
     infra.syntax
     infra.timer
     hal.synchronous_interfaces
+    protobuf.echo
     services.tracer
     services.util
     mbedtls
@@ -32,6 +41,8 @@ target_sources(services.network PRIVATE
     DnsResolver.hpp
     DnsServer.cpp
     DnsServer.hpp
+    EchoOnConnection.cpp
+    EchoOnConnection.hpp
     ExclusiveConnection.cpp
     ExclusiveConnection.hpp
     ExclusiveStartingConnection.cpp
@@ -85,6 +96,8 @@ target_sources(services.network PRIVATE
     TracingConnectionFactoryWithNameResolver.hpp
     TracingConnectionMbedTls.cpp
     TracingConnectionMbedTls.hpp
+    TracingEchoOnConnection.cpp
+    TracingEchoOnConnection.hpp
     TracingHttpClientCachedConnection.cpp
     TracingHttpClientCachedConnection.hpp
     TracingHttpClientImpl.cpp

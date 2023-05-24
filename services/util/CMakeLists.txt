@@ -4,6 +4,7 @@ target_link_libraries(services.util PUBLIC
     hal.interfaces
     infra.syntax
     infra.timer
+    protobuf.echo
 )
 
 target_sources(services.util PRIVATE
@@ -16,6 +17,9 @@ target_sources(services.util PRIVATE
     DebouncedButton.hpp
     DebugLed.cpp
     DebugLed.hpp
+    EchoInstantiation.hpp
+    EchoOnMessageCommunication.cpp
+    EchoOnMessageCommunication.hpp
     FlashAlign.cpp
     FlashAlign.hpp
     FlashMultipleAccess.cpp

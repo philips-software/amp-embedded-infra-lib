@@ -8,17 +8,10 @@ target_link_libraries(protobuf.echo PUBLIC
 target_sources(protobuf.echo PRIVATE
     Echo.cpp
     Echo.hpp
-    EchoInstantiation.hpp
-    EchoOnConnection.cpp
-    EchoOnConnection.hpp
-    EchoOnMessageCommunication.cpp
-    EchoOnMessageCommunication.hpp
     ServiceForwarder.cpp
     ServiceForwarder.hpp
     TracingEcho.cpp
     TracingEcho.hpp
-    TracingEchoOnConnection.cpp
-    TracingEchoOnConnection.hpp
 )
 
 add_subdirectory(test_doubles)

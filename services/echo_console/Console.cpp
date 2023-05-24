@@ -1,4 +1,4 @@
-#include "protobuf/echo_console/Console.hpp"
+#include "services/echo_console/Console.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 #include <cctype>

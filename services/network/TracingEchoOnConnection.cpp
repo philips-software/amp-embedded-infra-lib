@@ -1,4 +1,4 @@
-#include "protobuf/echo/TracingEchoOnConnection.hpp"
+#include "services/network/TracingEchoOnConnection.hpp"
 #include "infra/stream/ByteInputStream.hpp"
 
 namespace services

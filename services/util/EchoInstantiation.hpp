@@ -1,5 +1,5 @@
-#ifndef PROTOBUF_ECHO_INSTANTIATIONS
-#define PROTOBUF_ECHO_INSTANTIATIONS
+#ifndef SERVICES_ECHO_INSTANTIATIONS
+#define SERVICES_ECHO_INSTANTIATIONS
 
 #include "infra/util/BoundedVector.hpp"
 #include "protobuf/echo/ServiceForwarder.hpp"

@@ -1,5 +1,5 @@
-#ifndef PROTOBUF_ECHO_ON_MESSAGE_COMMUNICATION_HPP
-#define PROTOBUF_ECHO_ON_MESSAGE_COMMUNICATION_HPP
+#ifndef SERVICES_ECHO_ON_MESSAGE_COMMUNICATION_HPP
+#define SERVICES_ECHO_ON_MESSAGE_COMMUNICATION_HPP
 
 #include "protobuf/echo/Echo.hpp"
 #include "services/util/MessageCommunication.hpp"

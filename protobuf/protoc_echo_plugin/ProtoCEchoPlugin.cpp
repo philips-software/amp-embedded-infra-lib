@@ -1265,7 +1265,7 @@ switch (methodId)
 
         auto includesByHeader = std::make_shared<IncludesByHeader>();
         includesByHeader->Path("generated/echo/" + root.GetFile(*file)->name + ".pb.hpp");
-        includesByHeader->Path("protobuf/echo/TracingEchoOnConnection.hpp");
+        includesByHeader->Path("services/network/TracingEchoOnConnection.hpp");
         formatter.Add(includesByHeader);
 
         auto includesBySource = std::make_shared<IncludesBySource>();
