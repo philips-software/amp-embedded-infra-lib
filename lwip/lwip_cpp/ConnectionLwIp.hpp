@@ -164,8 +164,6 @@ namespace services
 
     using AllocatorListenerLwIp = infra::SharedObjectAllocator<ListenerLwIp, void(AllocatorConnectionLwIp&, uint16_t, ServerConnectionObserverFactory&, IPVersions, ConnectionFactoryLwIp&)>;
 
-    class ConnectionFactoryLwIp;
-
     class ConnectorLwIp
     {
     public:
