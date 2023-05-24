@@ -15,11 +15,11 @@ namespace application
 
     std::unique_ptr<Input> UpgradePackInputFactory::CreateInput(const std::string& targetName, const std::string& fileName, infra::Optional<uint32_t> address)
     {
-        if (std::any_of(targets.CmdTargets().cbegin(), targets.CmdTargets().cend(), [targetName](const auto& string)
+        if (std::any_of(targets.CmdTargets().cbegin(), targets.CmdTargets().cend(), [&targetName](const auto& string)
                 { return string == targetName; }))
             return std::make_unique<InputCommand>(targetName);
 
-        if (std::any_of(targets.HexTargets().cbegin(), targets.HexTargets().cend(), [targetName](const auto& string)
+        if (std::any_of(targets.HexTargets().cbegin(), targets.HexTargets().cend(), [&targetName](const auto& string)
                 { return string == targetName; }))
             return std::make_unique<InputHex>(targetName, fileName, fileSystem, imageSecurity);
 
