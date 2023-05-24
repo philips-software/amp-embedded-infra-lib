@@ -15,7 +15,6 @@ namespace infra
         explicit ClockFixture(uint32_t timerSericeId = systemTimerServiceId);
         ClockFixture(const ClockFixture&) = delete;
         ClockFixture& operator=(const ClockFixture&) = delete;
-        ~ClockFixture();
 
         // Forward the 'apparent' system time, thereby triggering any timers that were waiting
         void ForwardTime(Duration time);
