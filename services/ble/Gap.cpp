@@ -96,6 +96,39 @@ namespace services
     {
         GapCentralObserver::Subject().StopDeviceDiscovery();
     }
+
+    infra::ConstByteRange GapAdvertisingDataParser::LocalName(infra::ConstByteRange data)
+    {
+        auto localName = ParserAdvertisingData(data, GapAdvertisementDataType::shortenedLocalName);
+
+        if (localName.empty())
+            return ParserAdvertisingData(data, GapAdvertisementDataType::completeLocalName);
+        else
+            return localName;
+    }
+
+    infra::ConstByteRange GapAdvertisingDataParser::ManufacturerSpecificData(infra::ConstByteRange data)
+    {
+        return ParserAdvertisingData(data, GapAdvertisementDataType::manufacturerSpecificData);
+    }
+
+    infra::ConstByteRange GapAdvertisingDataParser::ParserAdvertisingData(infra::ConstByteRange data, GapAdvertisementDataType type)
+    {
+        static constexpr uint8_t lengthOffset = 0;
+        static constexpr uint8_t advertisingTypeOffset = 1;
+        static constexpr uint8_t payloadStartOffset = 2;
+
+        while (!data.empty() && data[lengthOffset] != 0)
+        {
+            infra::ConstByteRange element(data.begin(), data.begin() + data[lengthOffset] + 1);
+            data.shrink_from_front_to(data.size() - (data[lengthOffset] + 1));
+
+            if (element.size() > 1 && (element[advertisingTypeOffset] == static_cast<uint8_t>(type)))
+                return infra::ConstByteRange(element.begin() + payloadStartOffset, element.end());
+        }
+
+        return infra::ConstByteRange();
+    }
 }
 
 namespace infra
