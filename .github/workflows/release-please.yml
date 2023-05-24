@@ -4,14 +4,13 @@ name: Create Release
 on:
   workflow_dispatch:
   push:
-    branches: [modern-cmake]
+    branches: [main]
 
 permissions:
   contents: read
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
-  cancel-in-progress: true
 
 jobs:
   release_please:

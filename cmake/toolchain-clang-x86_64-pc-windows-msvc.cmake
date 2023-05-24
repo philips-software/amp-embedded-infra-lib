@@ -13,6 +13,7 @@ set(CMAKE_SYSTEM_PROCESSOR x86_64)
 set(CMAKE_TRY_COMPILE_CONFIGURATION Release)
 
 set(WINDOWS_SDK_ROOT "/winsdk" CACHE PATH "Path to a Windows SDK and CRT installation")
+set(CMAKE_RC_STANDARD_INCLUDE_DIRECTORIES ${WINDOWS_SDK_ROOT}/sdk/include/um ${WINDOWS_SDK_ROOT}/sdk/include/ucrt ${WINDOWS_SDK_ROOT}/sdk/include/shared)
 
 find_program(CMAKE_C_COMPILER NAMES clang-cl REQUIRED)
 find_program(CMAKE_CXX_COMPILER NAMES clang-cl REQUIRED)

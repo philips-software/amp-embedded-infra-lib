@@ -730,11 +730,24 @@ namespace infra
             : private SharedObjectDeleter
         {
         public:
-            template<class... Args>
-            SharedObjectOnHeap(Args&&... args)
+            SharedObjectOnHeap()
                 : control(&*object, this)
             {
-                object.Construct(std::forward<Args>(args)...);
+                object.Construct();
+            }
+
+            template<class Arg>
+            SharedObjectOnHeap(Arg&& arg, std::enable_if_t<!std::is_same_v<SharedObjectOnHeap, std::remove_cv_t<std::remove_reference_t<Arg>>>, std::nullptr_t> = nullptr)
+                : control(&*object, this)
+            {
+                object.Construct(std::forward<Arg>(arg));
+            }
+
+            template<class Arg0, class Arg1, class... Args>
+            SharedObjectOnHeap(Arg0&& arg0, Arg1&& arg1, Args&&... args)
+                : control(&*object, this)
+            {
+                object.Construct(std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::forward<Args>(args)...);
             }
 
             operator SharedPtr<T>()

@@ -23,7 +23,7 @@ namespace services
         GapPeripheralObserver::Subject().SetAdvertisementData(data);
     }
 
-    infra::ConstByteRange GapPeripheralDecorator::GetAdvertisementData()
+    infra::ConstByteRange GapPeripheralDecorator::GetAdvertisementData() const
     {
         return GapPeripheralObserver::Subject().GetAdvertisementData();
     }
@@ -33,7 +33,7 @@ namespace services
         GapPeripheralObserver::Subject().SetScanResponseData(data);
     }
 
-    infra::ConstByteRange GapPeripheralDecorator::GetScanResponseData()
+    infra::ConstByteRange GapPeripheralDecorator::GetScanResponseData() const
     {
         return GapPeripheralObserver::Subject().GetScanResponseData();
     }

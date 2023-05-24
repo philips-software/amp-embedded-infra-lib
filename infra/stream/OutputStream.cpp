@@ -342,44 +342,6 @@ namespace infra
             Writer().Insert(MakeByteRange(width.padding), ErrorPolicy());
     }
 
-    DataOutputStream::WithErrorPolicy::WithErrorPolicy(StreamWriter& writer)
-        : DataOutputStream(writer, errorPolicy)
-    {}
-
-    DataOutputStream::WithErrorPolicy::WithErrorPolicy(StreamWriter& writer, SoftFail)
-        : DataOutputStream(writer, errorPolicy)
-        , errorPolicy(softFail)
-    {}
-
-    DataOutputStream::WithErrorPolicy::WithErrorPolicy(StreamWriter& writer, NoFail)
-        : DataOutputStream(writer, errorPolicy)
-        , errorPolicy(noFail)
-    {}
-
-    DataOutputStream::WithErrorPolicy::WithErrorPolicy(const WithErrorPolicy& other)
-        : DataOutputStream(other.Writer(), errorPolicy)
-        , errorPolicy(other.ErrorPolicy())
-    {}
-
-    TextOutputStream::WithErrorPolicy::WithErrorPolicy(StreamWriter& writer)
-        : TextOutputStream(writer, errorPolicy)
-    {}
-
-    TextOutputStream::WithErrorPolicy::WithErrorPolicy(StreamWriter& writer, SoftFail)
-        : TextOutputStream(writer, errorPolicy)
-        , errorPolicy(softFail)
-    {}
-
-    TextOutputStream::WithErrorPolicy::WithErrorPolicy(StreamWriter& writer, NoFail)
-        : TextOutputStream(writer, errorPolicy)
-        , errorPolicy(noFail)
-    {}
-
-    TextOutputStream::WithErrorPolicy::WithErrorPolicy(const WithErrorPolicy& other)
-        : TextOutputStream(other.Writer(), errorPolicy)
-        , errorPolicy(other.ErrorPolicy())
-    {}
-
     AsAsciiHelper::AsAsciiHelper(ConstByteRange data)
         : data(data)
     {}

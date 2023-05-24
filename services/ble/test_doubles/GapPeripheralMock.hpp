@@ -13,9 +13,9 @@ namespace services
         MOCK_METHOD(GapAddress, GetAddress, (), (const));
         MOCK_METHOD(GapAddress, GetIdentityAddress, (), (const));
         MOCK_METHOD(void, SetAdvertisementData, (infra::ConstByteRange data));
-        MOCK_METHOD(infra::ConstByteRange, GetAdvertisementData, ());
+        MOCK_METHOD(infra::ConstByteRange, GetAdvertisementData, (), (const));
         MOCK_METHOD(void, SetScanResponseData, (infra::ConstByteRange data));
-        MOCK_METHOD(infra::ConstByteRange, GetScanResponseData, ());
+        MOCK_METHOD(infra::ConstByteRange, GetScanResponseData, (), (const));
         MOCK_METHOD(void, Advertise, (GapAdvertisementType type, AdvertisementIntervalMultiplier multiplier));
         MOCK_METHOD(void, Standby, ());
     };
