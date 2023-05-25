@@ -147,7 +147,7 @@ namespace infra
         else if (eventType == services::GapAdvertisingEventType::scanResponse)
             stream << "SCAN_RESPONSE";
         else
-        	stream << "ADV_NONCONN_IND";
+            stream << "ADV_NONCONN_IND";
 
         return stream;
     }
@@ -159,7 +159,7 @@ namespace infra
         else if (addressType == services::GapAdvertisingEventAddressType::randomDeviceAddress)
             stream << "Random Device Address";
         else
-        	stream << "Random Identity Address";
+            stream << "Random Identity Address";
 
         return stream;
     }
@@ -173,7 +173,7 @@ namespace infra
         else if (state == services::GapState::advertising)
             stream << "Advertising";
         else
-        	stream << "Connected";
+            stream << "Connected";
 
         return stream;
     }
