@@ -32,6 +32,7 @@ public:
 
 private:
     // Implementation of MessageCommunicationObserver
+    void Initialized() override;
     void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
     void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
 
@@ -62,6 +63,9 @@ void ConsoleClientUart::Send(const std::string& message)
     messagesToBeSent.push_back(message);
     CheckDataToBeSent();
 }
+
+void ConsoleClientUart::Initialized()
+{}
 
 void ConsoleClientUart::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
 {
