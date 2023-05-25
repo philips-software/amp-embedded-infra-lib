@@ -23,13 +23,13 @@ public:
         EXPECT_CALL(lower, RequestSendMessage(testing::_)).WillOnce(testing::Invoke([this]()
             {
                 ExpectGenerationOfKeyMaterial({ 4 }, { 5 });
-                LoopbackData();
-            }));
+                LoopbackData(); }));
         lower.GetObserver().Initialized();
     }
 
     void ExpectGenerationOfKeyMaterial(const services::MessageCommunicationSecured::KeyType& key, const services::MessageCommunicationSecured::IvType& iv)
     {
+        // clang-format off
         EXPECT_CALL(randomDataGenerator, GenerateRandomData(testing::_)).WillOnce(testing::Invoke([this, key](infra::ByteRange range)
             {
                 infra::Copy(key, range);
@@ -37,6 +37,7 @@ public:
             {
                 infra::Copy(iv, range);
             }));
+        // clang-format on
     }
 
     void LoopbackData()
@@ -69,8 +70,7 @@ TEST_F(EchoOnMessageCommunicationSymmetricKeyTest, send_and_receive)
     EXPECT_CALL(lower, RequestSendMessage(testing::_)).WillOnce(testing::Invoke([this]()
         {
             EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]() { service.MethodDone(); }));
-            LoopbackData();
-        }));
+            LoopbackData(); }));
 
     serviceProxy.RequestSend([this]()
         { serviceProxy.Method(5); });
@@ -89,6 +89,7 @@ TEST_F(EchoOnMessageCommunicationSymmetricKeyTest, send_while_initializing)
     ExpectGenerationOfKeyMaterial({ 4 }, { 5 });
     LoopbackData();
 
-    EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]() { service.MethodDone(); }));
+    EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]()
+        { service.MethodDone(); }));
     LoopbackData();
 }

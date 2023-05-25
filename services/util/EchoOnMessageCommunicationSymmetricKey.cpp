@@ -49,8 +49,7 @@ namespace services
                 secured.SetSendKey(key, iv);
 
                 initializingSending = false;
-                ReQueueWaitingProxies();
-            });
+                ReQueueWaitingProxies(); });
     }
 
     void EchoOnMessageCommunicationSymmetricKey::ActivateNewKeyMaterial(const infra::BoundedVector<uint8_t>& key, const infra::BoundedVector<uint8_t>& iv)
