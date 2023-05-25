@@ -117,14 +117,17 @@ namespace services
         static constexpr uint8_t lengthOffset = 0;
         static constexpr uint8_t advertisingTypeOffset = 1;
         static constexpr uint8_t payloadStartOffset = 2;
+        static constexpr uint8_t packetOverhead = 2;
 
         while (!data.empty() && data[lengthOffset] != 0)
         {
-            infra::ConstByteRange element(data.begin(), data.begin() + data[lengthOffset] + 1);
-            data.shrink_from_front_to(data.size() - (data[lengthOffset] + 1));
+            auto advertisingType = data[advertisingTypeOffset];
+            auto payloadSize = data[lengthOffset] + 1;
+            infra::ConstByteRange payload(data.begin() + payloadStartOffset, data.begin() + payloadSize);
+            data.shrink_from_front_to(data.size() - payloadSize);
 
-            if (element.size() > 1 && (element[advertisingTypeOffset] == static_cast<uint8_t>(type)))
-                return infra::ConstByteRange(element.begin() + payloadStartOffset, element.end());
+            if (payload.size() > 1 && advertisingType == static_cast<uint8_t>(type))
+                return payload;
         }
 
         return infra::ConstByteRange();

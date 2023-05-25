@@ -97,7 +97,7 @@ namespace services
 
     TEST(GapAdvertisingDataParserTest, get_local_name_using_type_shortenedLocalName)
     {
-        std::array<uint8_t, 5> data{{ 0x07, 0x0A, 0x73, 0x74, 0x72, }};
+        std::array<uint8_t, 5> data{{ 0x04, 0x08, 0x73, 0x74, 0x72 }};
 
         EXPECT_EQ("str", ByteRangeAsStdString(services::GapAdvertisingDataParser::LocalName(infra::MakeConstByteRange(data))));
         EXPECT_EQ(infra::ConstByteRange(), services::GapAdvertisingDataParser::ManufacturerSpecificData(infra::MakeConstByteRange(data)));
@@ -105,7 +105,7 @@ namespace services
 
     TEST(GapAdvertisingDataParserTest, get_local_name_using_type_completeLocalName)
     {
-        std::array<uint8_t, 8> data{{ 0x07, 0x0A, 0x73, 0x74, 0x72, 0x69, 0x6E, 0x67 }};
+        std::array<uint8_t, 8> data{{ 0x07, 0x09, 0x73, 0x74, 0x72, 0x69, 0x6E, 0x67 }};
 
         EXPECT_EQ("string", ByteRangeAsStdString(services::GapAdvertisingDataParser::LocalName(infra::MakeConstByteRange(data))));
         EXPECT_EQ(infra::ConstByteRange(), services::GapAdvertisingDataParser::ManufacturerSpecificData(infra::MakeConstByteRange(data)));
@@ -117,15 +117,15 @@ namespace services
         std::array<uint8_t, 4> payloadParser{{ 0xaa, 0xbb, 0xcc, 0xdd }};
 
         EXPECT_EQ(infra::ConstByteRange(), services::GapAdvertisingDataParser::LocalName(infra::MakeConstByteRange(data)));
-        EXPECT_EQ(infra::MakeConstByteRange(payloadParser), services::GapAdvertisingDataParser::ManufacturerSpecificData(infra::MakeConstByteRange(data)));
+        EXPECT_TRUE(infra::ContentsEqual(infra::MakeConstByteRange(payloadParser), services::GapAdvertisingDataParser::ManufacturerSpecificData(infra::MakeConstByteRange(data))));
     }
 
     TEST(GapAdvertisingDataParserTest, useful_info_after_first_ad_structure)
     {
-        std::array<uint8_t, 23> data{{ 0x02, 0x01, 0x06, 0x08, 0x0A, 0x70, 0x68, 0x69, 0x6C, 0x69, 0x70, 0x73, 0x78, 0x35, 0x02, 0x0a, 0x08, 0x05, 0xff, 0xaa, 0xbb, 0xcc, 0xdd }};
+        std::array<uint8_t, 21> data{{ 0x02, 0x01, 0x06, 0x08, 0x09, 0x70, 0x68, 0x69, 0x6C, 0x69, 0x70, 0x73, 0x02, 0x0a, 0x08, 0x05, 0xff, 0xaa, 0xbb, 0xcc, 0xdd }};
         std::array<uint8_t, 4> payloadParser{{ 0xaa, 0xbb, 0xcc, 0xdd }};
 
         EXPECT_EQ("philips", ByteRangeAsStdString(services::GapAdvertisingDataParser::LocalName(infra::MakeConstByteRange(data))));
-        EXPECT_EQ(infra::MakeConstByteRange(payloadParser), services::GapAdvertisingDataParser::ManufacturerSpecificData(infra::MakeConstByteRange(data)));
+        EXPECT_TRUE(infra::ContentsEqual(infra::MakeConstByteRange(payloadParser), services::GapAdvertisingDataParser::ManufacturerSpecificData(infra::MakeConstByteRange(data))));
     }
 }
