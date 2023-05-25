@@ -12,7 +12,7 @@ namespace services
     public:
         using services::Service::Service;
 
-        MOCK_CONST_METHOD1(AcceptsService, bool(uint32_t id));
+        bool AcceptsService(uint32_t id) const override { return id == serviceId; }
         MOCK_METHOD1(Method, void(uint32_t value));
 
     protected:

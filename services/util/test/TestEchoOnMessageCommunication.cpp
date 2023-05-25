@@ -13,11 +13,6 @@ class EchoOnMessageCommunicationTest
     , public infra::EventDispatcherWithWeakPtrFixture
 {
 public:
-    EchoOnMessageCommunicationTest()
-    {
-        EXPECT_CALL(service, AcceptsService(1)).WillRepeatedly(testing::Return(true));
-    }
-
     void ReceiveMessage(infra::ConstByteRange data)
     {
         infra::ByteInputStreamReader reader{ data };
@@ -79,7 +74,6 @@ TEST_F(EchoOnMessageCommunicationTest, MessageFormatError_is_reported_when_param
 
 TEST_F(EchoOnMessageCommunicationTest, ServiceNotFound_is_reported)
 {
-    EXPECT_CALL(service, AcceptsService(2)).WillOnce(testing::Return(false));
     EXPECT_CALL(errorPolicy, ServiceNotFound(2));
     ReceiveMessage(infra::ConstructBin()({ 2, 10, 2, 8, 5 }).Range());
 }

@@ -98,8 +98,8 @@ namespace services
         if (computedMac != receivedMac)
             return;
 
-        MessageCommunication::GetObserver().ReceivedMessage(receiveBufferReader.Emplace(receiveBuffer, reader));
         IncreaseIv(receiveIv);
+        MessageCommunication::GetObserver().ReceivedMessage(receiveBufferReader.Emplace(receiveBuffer, reader));
     }
 
     void MessageCommunicationSecured::SendMessageStreamReleased()

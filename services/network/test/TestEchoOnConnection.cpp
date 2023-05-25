@@ -15,7 +15,6 @@ public:
     EchoOnConnectionTest()
     {
         connection.Attach(infra::UnOwnedSharedPtr(echo));
-        EXPECT_CALL(service, AcceptsService(1)).WillRepeatedly(testing::Return(true));
     }
 
     testing::StrictMock<services::EchoErrorPolicyMock> errorPolicy;
@@ -136,7 +135,6 @@ TEST_F(EchoOnConnectionTest, ServiceNotFound_is_reported)
     infra::ByteInputStreamReader::WithStorage<0> emptyReader;
     auto emptyReaderPtr = infra::UnOwnedSharedPtr(emptyReader);
     EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr)).WillOnce(testing::Return(emptyReaderPtr));
-    EXPECT_CALL(service, AcceptsService(2)).WillOnce(testing::Return(false));
     EXPECT_CALL(errorPolicy, ServiceNotFound(2));
     EXPECT_CALL(connection, AckReceived());
     connection.Observer().DataReceived();

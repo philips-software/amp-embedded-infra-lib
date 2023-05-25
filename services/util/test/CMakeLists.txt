@@ -23,6 +23,7 @@ target_sources(services.util_test PRIVATE
     TestDebouncedButton.cpp
     TestDebugLed.cpp
     TestEchoOnMessageCommunication.cpp
+    TestEchoOnMessageCommunicationSymmetricKey.cpp
     TestFlashAlign.cpp
     TestFlashMultipleAccess.cpp
     TestFlashQuadSpiCypressFll.cpp

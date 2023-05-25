@@ -940,7 +940,7 @@ namespace application
             google::protobuf::io::OstreamOutputStream stream(&result);
             google::protobuf::io::Printer printer(&stream, '$', nullptr);
 
-            printer.Print("return serviceId == id;");
+            printer.Print("return serviceId == id;\n");
         }
 
         return result.str();

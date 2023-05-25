@@ -4,7 +4,7 @@ import "EchoAttributes.proto";
 
 package message_communication_security;
 
-message symmetricKeyMaterial
+message SymmetricKeyMaterial
 {
     bytes key = 1 [(bytes_size) = 16];
     bytes iv = 2 [(bytes_size) = 16];
@@ -12,7 +12,7 @@ message symmetricKeyMaterial
 
 service SymmetricKeyEstablishment
 {
-    option (service_id) = 1;
+    option (service_id) = 3;
 
-    rpc ActivateNewKeyMaterial(symmetricKeyMaterial) returns (Nothing) { option (method_id) = 1; }
+    rpc ActivateNewKeyMaterial(SymmetricKeyMaterial) returns (Nothing) { option (method_id) = 1; }
 }
