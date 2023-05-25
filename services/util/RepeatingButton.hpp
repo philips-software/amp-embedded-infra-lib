@@ -14,9 +14,9 @@ namespace services
             Config()
             {}
 
-            infra::Duration initialDelay = std::chrono::milliseconds(500);
-            infra::Duration successiveDelay = std::chrono::milliseconds(250);
-            infra::Duration debounceDuration = std::chrono::milliseconds(10);
+            infra::Duration initialDelay{ std::chrono::milliseconds(500) };
+            infra::Duration successiveDelay{ std::chrono::milliseconds(250) };
+            infra::Duration debounceDuration{ std::chrono::milliseconds(10) };
         };
 
         RepeatingButton(hal::GpioPin& buttonPin, infra::Function<void()> aCallback, const Config& config = Config());

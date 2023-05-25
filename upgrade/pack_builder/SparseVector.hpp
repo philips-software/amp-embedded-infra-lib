@@ -12,7 +12,7 @@
 namespace application
 {
     class OverwriteException
-        : std::exception
+        : public std::exception
     {
     public:
         explicit OverwriteException(std::size_t position);

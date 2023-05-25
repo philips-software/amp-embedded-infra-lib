@@ -30,4 +30,5 @@ namespace hal
         infra::AutoResetFunction<void()> onDone;
     };
 }
+
 #endif

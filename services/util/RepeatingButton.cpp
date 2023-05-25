@@ -2,7 +2,6 @@
 
 namespace services
 {
-
     RepeatingButton::RepeatingButton(hal::GpioPin& buttonPin, infra::Function<void()> aCallback, const Config& config)
         : buttonPin(buttonPin)
         , config(config)
