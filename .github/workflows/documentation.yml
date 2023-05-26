@@ -3,7 +3,6 @@ name: Build & Publish Documentation
 
 on:
   push:
-  merge_group:
 
 permissions:
   contents: read
@@ -17,12 +16,11 @@ jobs:
     if: ${{ github.ref == 'refs/heads/modern-cmake' }}
     steps:
       - name: Checkout
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Install kroki
-        run: npm i asciidoctor-kroki
+      - run: npm i asciidoctor-kroki
       - name: Build Antora Site
         uses: philips-forks/antora-site-action@ef15f74e055960099ec1bf58f4f8148d1f07a0c2
         with:
@@ -50,8 +48,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Install kroki
-        run: npm i asciidoctor-kroki
+      - run: npm i asciidoctor-kroki
       - name: Build Antora Site
         uses: philips-forks/antora-site-action@ef15f74e055960099ec1bf58f4f8148d1f07a0c2
         with:
