@@ -38,6 +38,11 @@ jobs:
           buildPreset: "ContinuousIntegration"
           testPreset: "ContinuousIntegration"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
+          buildPresetAdditionalArgs: "['--install']"
+      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        with:
+          name: install
+          path: install
       - name: Upload test logs
         if: ${{ failure() }}
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
@@ -47,6 +52,7 @@ jobs:
   embedded_build:
     name: Embedded Build
     runs-on: ubuntu-latest
+    needs: [host_build_test]
     strategy:
       matrix:
         gcc: ["7-2018-q2", "8-2019-q3", "9-2020-q2", "10.3-2021.10"]
@@ -63,6 +69,10 @@ jobs:
       - uses: hendrikmuhs/ccache-action@ca3acd2731eef11f1572ccb126356c2f9298d35e # v1.2.9
         with:
           key: ${{ github.job }}-${{ matrix.gcc }}-${{ matrix.configuration }}
+      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        with:
+          name: install
+          path: install
       - uses: lukka/run-cmake@cdefb26b6a3a359c5f4dbc1a16cf4327d0824774 # v10.5
         with:
           configurePreset: "Embedded"
@@ -71,6 +81,7 @@ jobs:
   rtos:
     name: Embedded Build - RTOS
     runs-on: ubuntu-latest
+    needs: [host_build_test]
     strategy:
       matrix:
         rtos: ["FreeRTOS", "ThreadX"]
@@ -86,6 +97,10 @@ jobs:
       - uses: hendrikmuhs/ccache-action@ca3acd2731eef11f1572ccb126356c2f9298d35e # v1.2.9
         with:
           key: ${{ github.job }}
+      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        with:
+          name: install
+          path: install
       - uses: lukka/run-cmake@cdefb26b6a3a359c5f4dbc1a16cf4327d0824774 # v10.5
         with:
           configurePreset: "Embedded-${{ matrix.rtos }}"
