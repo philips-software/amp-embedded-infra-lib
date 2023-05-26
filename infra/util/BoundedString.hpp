@@ -46,7 +46,7 @@ namespace infra
         static const size_type npos;
 
     public:
-        BoundedStringBase();
+        BoundedStringBase() = default;
         explicit BoundedStringBase(MemoryRange<T> range);
         BoundedStringBase(MemoryRange<NonConstT> range, size_type count);
         BoundedStringBase(MemoryRange<NonConstT> range, size_type count, char ch);
@@ -372,10 +372,6 @@ namespace infra
 #endif
 
     ////    Implementation    ////
-
-    template<class T>
-    BoundedStringBase<T>::BoundedStringBase()
-    {}
 
     template<class T>
     BoundedStringBase<T>::BoundedStringBase(MemoryRange<T> range)

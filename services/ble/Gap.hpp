@@ -175,6 +175,7 @@ namespace services
         {
             flags = 0x01u,
             completeListOf128BitUuids = 0x07u,
+            shortenedLocalName = 0x08u,
             completeLocalName = 0x09u,
             publicTargetAddress = 0x17u,
             manufacturerSpecificData = 0xffu
@@ -198,9 +199,9 @@ namespace services
         virtual GapAddress GetAddress() const = 0;
         virtual GapAddress GetIdentityAddress() const = 0;
         virtual void SetAdvertisementData(infra::ConstByteRange data) = 0;
-        virtual infra::ConstByteRange GetAdvertisementData() = 0;
+        virtual infra::ConstByteRange GetAdvertisementData() const = 0;
         virtual void SetScanResponseData(infra::ConstByteRange data) = 0;
-        virtual infra::ConstByteRange GetScanResponseData() = 0;
+        virtual infra::ConstByteRange GetScanResponseData() const = 0;
         virtual void Advertise(GapAdvertisementType type, AdvertisementIntervalMultiplier multiplier) = 0;
         virtual void Standby() = 0;
     };
@@ -220,9 +221,9 @@ namespace services
         virtual GapAddress GetIdentityAddress() const override;
 
         virtual void SetAdvertisementData(infra::ConstByteRange data) override;
-        virtual infra::ConstByteRange GetAdvertisementData() override;
+        virtual infra::ConstByteRange GetAdvertisementData() const override;
         virtual void SetScanResponseData(infra::ConstByteRange data) override;
-        virtual infra::ConstByteRange GetScanResponseData() override;
+        virtual infra::ConstByteRange GetScanResponseData() const override;
         virtual void Advertise(GapAdvertisementType type, AdvertisementIntervalMultiplier multiplier) override;
         virtual void Standby() override;
     };

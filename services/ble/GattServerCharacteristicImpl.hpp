@@ -34,8 +34,6 @@ namespace services
 
     private:
         GattServerService& service;
-        uint16_t valueLength;
-        PermissionFlags permissions;
         infra::Optional<UpdateContext> updateContext;
     };
 }

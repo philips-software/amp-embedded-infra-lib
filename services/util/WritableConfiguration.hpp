@@ -132,7 +132,7 @@ namespace services
     template<class T, class TRef>
     void WritableConfiguration<T, TRef>::LoadConfiguration(infra::ConstByteRange memory)
     {
-        infra::ByteInputStream::WithReader stream(memory, infra::noFail);
+        infra::DataInputStream::WithReader<infra::ByteInputStreamReader> stream(memory, infra::noFail);
         auto header = stream.Extract<Header>();
 
         valid = false;
