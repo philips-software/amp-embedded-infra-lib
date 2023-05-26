@@ -47,9 +47,9 @@ int main(int argc, char* argv[])
     args::ArgumentParser parser("\"" + toolname + "\"" + " is a tool used to generate and convert upgrade keys.");
 
     args::Group commands(parser, "Commands:");
-    args::Command generateKeysCommand(commands, "generate_keys", "Generate upgrade keys and save in protobuf format to the specified output file[Keys.bin].", [&](args::Subparser& p)
+    args::Command generateKeysCommand(commands, "generate_keys", "Generate upgrade keys and save in protobuf format to the specified output file[Keys.bin].", [](args::Subparser& p)
         { GenerateUpgradeKeys(p); });
-    args::Command convertKeysCommand(commands, "convert_keys", "Convert upgrade keys from the provided cpp file and save in protobuf format to the specified output file[Keys.bin].", [&](args::Subparser& p)
+    args::Command convertKeysCommand(commands, "convert_keys", "Convert upgrade keys from the provided cpp file and save in protobuf format to the specified output file[Keys.bin].", [](args::Subparser& p)
         { ConvertUpgradeKeys(p); });
 
     args::Group arguments(parser, "Optional arguments:");

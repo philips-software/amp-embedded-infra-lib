@@ -28,7 +28,7 @@ namespace services
                 };
         }
 
-        static tcp_ext_arg_callbacks emptyCallbacks{};
+        tcp_ext_arg_callbacks emptyCallbacks{};
     }
 
     infra::BoundedList<std::array<uint8_t, TCP_MSS>>::WithMaxSize<tcpSndQueueLen> ConnectionLwIp::sendMemoryPool;

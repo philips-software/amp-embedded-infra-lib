@@ -59,17 +59,15 @@ namespace main_
     };
 
     template<std::size_t MessageSize, std::size_t MaxServices>
-    class EchoForwarderToSerial
-        : public EchoForwarder<MessageSize, MaxServices>
+    struct EchoForwarderToSerial
     {
-    public:
         EchoForwarderToSerial(services::Echo& from, hal::SerialCommunication& toSerial)
-            : EchoForwarder<MessageSize, MaxServices>(from, to)
-            , to(toSerial)
+            : to(toSerial)
+            , echoForwarder(from, to)
         {}
 
-    private:
         EchoOnSerialCommunication<MessageSize> to;
+        EchoForwarder<MessageSize, MaxServices> echoForwarder;
     };
 }
 

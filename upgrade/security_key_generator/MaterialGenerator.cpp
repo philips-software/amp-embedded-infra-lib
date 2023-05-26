@@ -21,10 +21,6 @@ namespace application
         materialGenerator = this;
     }
 
-    MaterialGenerator::~MaterialGenerator()
-    {
-    }
-
     void MaterialGenerator::GenerateKeys()
     {
         aesKey.resize(aesKeyLength / 8, 0);

@@ -7,7 +7,7 @@ content:
   sources:
     - url: .
       start_path: documents
-      branches: [develop, modern-cmake]
+      branches: [main]
 ui:
   bundle:
     url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable

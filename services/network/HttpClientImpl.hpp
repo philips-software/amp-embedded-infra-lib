@@ -179,7 +179,7 @@ namespace services
 
     private:
         template<std::size_t... I>
-        infra::SharedPtr<HttpClient> InvokeEmplace(infra::IndexSequence<I...>);
+        infra::SharedPtr<HttpClient> InvokeEmplace(std::index_sequence<I...>);
 
     private:
         services::IPAddress address;
@@ -217,7 +217,7 @@ namespace services
 
     private:
         template<std::size_t... I>
-        infra::SharedPtr<HttpClient> InvokeEmplace(infra::IndexSequence<I...>);
+        infra::SharedPtr<HttpClient> InvokeEmplace(std::index_sequence<I...>);
 
     private:
         ConnectionFactoryWithNameResolver& connectionFactory;
@@ -478,7 +478,7 @@ namespace services
 
     template<class HttpClient, class... Args>
     template<std::size_t... I>
-    infra::SharedPtr<HttpClient> HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::InvokeEmplace(infra::IndexSequence<I...>)
+    infra::SharedPtr<HttpClient> HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::InvokeEmplace(std::index_sequence<I...>)
     {
         return client.Emplace(Hostname(), std::get<I>(args)...);
     }
@@ -487,7 +487,7 @@ namespace services
     void HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
     {
         assert(clientObserverFactory != nullptr);
-        auto httpClientPtr = InvokeEmplace(infra::MakeIndexSequence<sizeof...(Args)>{});
+        auto httpClientPtr = InvokeEmplace(std::make_index_sequence<sizeof...(Args)>{});
 
         clientObserverFactory->ConnectionEstablished([&httpClientPtr, &createdObserver](infra::SharedPtr<HttpClientObserver> observer)
             {
@@ -594,7 +594,7 @@ namespace services
     void HttpClientConnectorImpl<HttpClient, Args...>::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
     {
         assert(clientObserverFactory != nullptr);
-        auto httpClientPtr = InvokeEmplace(infra::MakeIndexSequence<sizeof...(Args)>{});
+        auto httpClientPtr = InvokeEmplace(std::make_index_sequence<sizeof...(Args)>{});
 
         clientObserverFactory->ConnectionEstablished([&httpClientPtr, &createdObserver](infra::SharedPtr<services::HttpClientObserver> observer)
             {
@@ -651,7 +651,7 @@ namespace services
 
     template<class HttpClient, class... Args>
     template<std::size_t... I>
-    infra::SharedPtr<HttpClient> HttpClientConnectorImpl<HttpClient, Args...>::InvokeEmplace(infra::IndexSequence<I...>)
+    infra::SharedPtr<HttpClient> HttpClientConnectorImpl<HttpClient, Args...>::InvokeEmplace(std::index_sequence<I...>)
     {
         ipAddress.Storage().clear();
         if (address.Is<services::IPv4Address>())
