@@ -1,5 +1,6 @@
 #include "infra/stream/test/StreamMock.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
+#include "infra/util/BoundedString.hpp"
 #include "infra/util/test_helper/BoundedStringMatcher.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
@@ -16,6 +17,11 @@ public:
     void GenerateContentError()
     {
         ContentError();
+    }
+
+    infra::BoundedString GetPath()
+    {
+        return Path();
     }
 
     MOCK_METHOD0(Established, void());
@@ -49,6 +55,22 @@ public:
     testing::StrictMock<infra::MockCallback<void()>> onStopped;
     testing::StrictMock<services::HttpClientMock> httpClient;
 };
+
+TEST_F(HttpClientBasicTest, returned_path_split_correctly)
+{
+    auto path = controller->GetPath();
+    infra::BoundedConstString::WithStorage<5> result = "/path";
+    EXPECT_EQ(path, result);
+}
+
+TEST_F(HttpClientBasicTest, returned_path_memory_trimmed_correctly)
+{
+    std::string_view hostnamePart = "https://hostname";
+    auto path = controller->GetPath();
+    EXPECT_EQ(path.end(), url.end());
+    EXPECT_EQ(path.begin(), url.begin() + hostnamePart.size());
+    EXPECT_EQ(path.max_size(), url.max_size() - hostnamePart.size());
+}
 
 TEST_F(HttpClientBasicTest, intermittent_error_is_reported_on_ConnectionFailed)
 {
