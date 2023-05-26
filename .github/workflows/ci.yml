@@ -35,7 +35,7 @@ jobs:
           buildPreset: "ContinuousIntegration"
           testPreset: "ContinuousIntegration"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
-          buildPresetAdditionalArgs: "['--install', 'build/ContinuousIntegration']"
+      - run: cmake --install build/ContinuousIntegration
       - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           name: install
