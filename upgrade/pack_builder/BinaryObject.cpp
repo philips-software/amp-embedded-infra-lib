@@ -6,7 +6,8 @@ namespace
 {
     bool RemainderHasNoData(const infra::StdStringInputStream& stream)
     {
-        return !std::all_of(stream.PeekContiguousRange().begin(), stream.PeekContiguousRange().end(), [](auto c) { return std::isspace(c); });
+        return !std::all_of(stream.PeekContiguousRange().begin(), stream.PeekContiguousRange().end(), [](auto c)
+            { return std::isspace(c); });
     }
 }
 
