@@ -25,36 +25,22 @@ namespace main_
         services::EchoOnMessageCommunication echo{ windowed };
     };
 
+    template<std::size_t MessageSize, std::size_t MaxServices>
     class EchoForwarder
     {
-    protected:
-        EchoForwarder() = default;
-        EchoForwarder(const EchoForwarder& other) = delete;
-        EchoForwarder& operator=(const EchoForwarder& other) = delete;
-        ~EchoForwarder() = default;
-
     public:
-        virtual void AddService(uint32_t serviceId, uint32_t responseId) = 0;
-        virtual void AddResponse(uint32_t responseId) = 0;
-    };
-
-    template<std::size_t MessageSize, std::size_t MaxServices>
-    class EchoForwarderImpl
-        : public EchoForwarder
-    {
-    public:
-        EchoForwarderImpl(services::Echo& from, services::Echo& to)
+        EchoForwarder(services::Echo& from, services::Echo& to)
             : from(from)
             , to(to)
         {}
 
-        virtual void AddService(uint32_t serviceId, uint32_t responseId) override
+        void AddService(uint32_t serviceId, uint32_t responseId)
         {
             AddForwarder(from, serviceId, to);
             AddForwarder(to, responseId, from);
         }
 
-        virtual void AddResponse(uint32_t responseId) override
+        void AddResponse(uint32_t responseId)
         {
             AddForwarder(to, responseId, from);
         }
@@ -73,28 +59,15 @@ namespace main_
     };
 
     template<std::size_t MessageSize, std::size_t MaxServices>
-    class EchoForwarderToSerial
-        : public EchoForwarder
+    struct EchoForwarderToSerial
     {
-    public:
         EchoForwarderToSerial(services::Echo& from, hal::SerialCommunication& toSerial)
             : to(toSerial)
             , echoForwarder(from, to)
         {}
 
-        virtual void AddService(uint32_t serviceId, uint32_t responseId) override
-        {
-            echoForwarder.AddService(serviceId, responseId);
-        }
-
-        virtual void AddResponse(uint32_t responseId) override
-        {
-            echoForwarder.AddResponse(responseId);
-        }
-
-    private:
         EchoOnSerialCommunication<MessageSize> to;
-        EchoForwarderImpl<MessageSize, MaxServices> echoForwarder;
+        EchoForwarder<MessageSize, MaxServices> echoForwarder;
     };
 }
 
