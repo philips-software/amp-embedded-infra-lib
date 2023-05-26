@@ -127,6 +127,15 @@ TEST(BinaryObjectTest, Hex_TooLongRecord)
     EXPECT_THROW(object.AddHex(std::vector<std::string>{ ":0100000001fe0" }, 0, "file"), application::RecordTooLongException);
 }
 
+TEST(BinaryObjectTest, Hex_TrailingLineTerminator)
+{
+    application::BinaryObject object;
+    object.AddHex(std::vector<std::string>{ ":00000001FF\r" }, 0, "file");
+
+    application::SparseVector<uint8_t> expectedMemory;
+    EXPECT_EQ(expectedMemory, object.Memory());
+}
+
 TEST(BinaryObjectTest, Bin_AddByte)
 {
     application::BinaryObject object;
