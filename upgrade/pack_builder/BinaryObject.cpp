@@ -14,7 +14,6 @@ namespace
         };
 
         return !std::all_of(stream.PeekContiguousRange().begin(), stream.PeekContiguousRange().end(), isSpace);
-        ;
     }
 }
 
