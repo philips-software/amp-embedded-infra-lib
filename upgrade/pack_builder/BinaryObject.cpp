@@ -13,7 +13,8 @@ namespace
                 { return (c == space); });
         };
 
-        return !std::all_of(stream.PeekContiguousRange().begin(), stream.PeekContiguousRange().end(), isSpace);;
+        return !std::all_of(stream.PeekContiguousRange().begin(), stream.PeekContiguousRange().end(), isSpace);
+        ;
     }
 }
 
