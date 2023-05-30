@@ -4,10 +4,16 @@
 
 namespace
 {
-    bool RemainderHasNoData(const infra::StdStringInputStream& stream)
+    bool StreamHasNonSpaces(const infra::StdStringInputStream& stream)
     {
-        return !std::all_of(stream.PeekContiguousRange().begin(), stream.PeekContiguousRange().end(), [](auto c)
-            { return std::isspace(c); });
+        static constexpr std::array<uint8_t, 6> spaces{ ' ', '\f', '\n', '\r', '\t', '\v' };
+        auto isSpace = [](uint8_t c)
+        {
+            return std::any_of(spaces.begin(), spaces.end(), [c](auto space)
+                { return (c == space); });
+        };
+
+        return !std::all_of(stream.PeekContiguousRange().begin(), stream.PeekContiguousRange().end(), isSpace);;
     }
 }
 
@@ -188,7 +194,7 @@ namespace application
         if (sum != 0)
             throw IncorrectCrcException(fileName, lineNumber);
 
-        if (!stream.Empty() && RemainderHasNoData(stream))
+        if (!stream.Empty() && StreamHasNonSpaces(stream))
             throw RecordTooLongException(fileName, lineNumber);
     }
 }

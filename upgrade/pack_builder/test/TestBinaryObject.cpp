@@ -131,9 +131,7 @@ TEST(BinaryObjectTest, Hex_TrailingLineTerminator)
 {
     application::BinaryObject object;
     object.AddHex(std::vector<std::string>{ ":00000001FF\r" }, 0, "file");
-
-    application::SparseVector<uint8_t> expectedMemory;
-    EXPECT_EQ(expectedMemory, object.Memory());
+    EXPECT_EQ(application::SparseVector<uint8_t>{}, object.Memory());
 }
 
 TEST(BinaryObjectTest, Bin_AddByte)
