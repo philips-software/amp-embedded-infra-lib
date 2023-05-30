@@ -43,7 +43,6 @@ target_sources(infra.util PRIVATE
     Function.cpp
     Function.hpp
     IntegerNormalization.hpp
-    IntegerSequence.hpp
     InterfaceConnector.hpp
     IntrusiveBinarySearchTree.hpp
     IntrusiveForwardList.hpp
