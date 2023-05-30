@@ -5,6 +5,7 @@
 #include "protobuf/echo/ServiceForwarder.hpp"
 #include "services/util/MessageCommunicationCobs.hpp"
 #include "services/util/MessageCommunicationWindowed.hpp"
+#include "services/util/EchoOnMessageCommunication.hpp"
 
 namespace main_
 {
