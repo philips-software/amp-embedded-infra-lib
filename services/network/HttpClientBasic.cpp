@@ -73,7 +73,7 @@ namespace services
     {
         auto path = services::PathFromUrl(url);
         auto offset = path.empty() ? url.size() : path.begin() - url.begin();
-        return infra::BoundedString(infra::MakeRange(url.begin() + offset, url.begin() + url.max_size() - offset), path.size());
+        return infra::BoundedString(infra::MakeRange(url.begin() + offset, url.begin() + url.max_size()), path.size());
     }
 
     services::HttpHeaders HttpClientBasic::Headers() const
