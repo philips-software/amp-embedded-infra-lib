@@ -34,7 +34,7 @@ namespace services
     private:
         CucumberWireProtocolParser& parser;
         CucumberWireProtocolController& controller;
-        infra::BoundedString::WithStorage<512> stepMatchArgumentsBuffer;
+        infra::BoundedString::WithStorage<1024> stepMatchArgumentsBuffer;
     };
 }
 

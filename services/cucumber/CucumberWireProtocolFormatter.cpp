@@ -129,7 +129,7 @@ namespace services
     void CucumberWireProtocolFormatter::AddStringValue(infra::JsonArrayFormatter& formatter, const infra::BoundedString& nameToMatch, std::size_t& argPos, int16_t& offset)
     {
         infra::JsonObjectFormatter subObject(formatter.SubObject());
-        infra::StringOutputStream::WithStorage<1024> stringStream;
+        infra::StringOutputStream::WithStorage<992> stringStream;
         for (uint16_t i = 1; nameToMatch[argPos + offset + i] != '\''; ++i)
             stringStream << nameToMatch[argPos + offset + i];
         subObject.Add("val", stringStream.Storage());
