@@ -8,7 +8,7 @@
 #include "infra/stream/IoOutputStream.hpp"
 #include "infra/syntax/Json.hpp"
 #include "infra/util/Tokenizer.hpp"
-#include "protobuf/echo_console/Console.hpp"
+#include "services/echo_console/Console.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/network/HttpClientImpl.hpp"
 #include "services/network/WebSocketClientConnectionObserver.hpp"
@@ -25,13 +25,13 @@ class ConsoleClientUart
 {
 public:
     ConsoleClientUart(application::Console& console, hal::SerialCommunication& serial);
-    ~ConsoleClientUart();
 
     // Implementation of ConsoleObserver
     void Send(const std::string& message) override;
 
 private:
     // Implementation of MessageCommunicationObserver
+    void Initialized() override;
     void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
     void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
 
@@ -43,25 +43,22 @@ private:
     services::MessageCommunicationCobs::WithMaxMessageSize<2048> cobs;
     services::MessageCommunicationWindowed::WithReceiveBuffer<2048> windowed{ cobs };
     bool sending = false;
+    services::MessageCommunicationObserver::DelayedAttachDetach delayed{ *this, windowed };
 };
 
 ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::SerialCommunication& serial)
     : application::ConsoleObserver(console)
     , cobs(serial)
-{
-    services::MessageCommunicationObserver::Attach(windowed);
-}
-
-ConsoleClientUart::~ConsoleClientUart()
-{
-    services::MessageCommunicationObserver::Detach();
-}
+{}
 
 void ConsoleClientUart::Send(const std::string& message)
 {
     messagesToBeSent.push_back(message);
     CheckDataToBeSent();
 }
+
+void ConsoleClientUart::Initialized()
+{}
 
 void ConsoleClientUart::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
 {

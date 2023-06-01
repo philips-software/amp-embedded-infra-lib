@@ -30,10 +30,14 @@ namespace services
                 sendInitResponse = true;
                 otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
                 initialized = true;
+                infra::EventDispatcher::Instance().Schedule([this]()
+                    { GetObserver().Initialized(); });
                 break;
             case Operation::initResponse:
                 otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
                 initialized = true;
+                infra::EventDispatcher::Instance().Schedule([this]()
+                    { GetObserver().Initialized(); });
                 break;
             case Operation::releaseWindow:
                 if (initialized)

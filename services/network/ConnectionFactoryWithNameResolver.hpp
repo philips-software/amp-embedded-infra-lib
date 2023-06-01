@@ -14,7 +14,7 @@ namespace services
         ClientConnectionObserverFactoryWithNameResolver() = default;
         ClientConnectionObserverFactoryWithNameResolver(const ClientConnectionObserverFactoryWithNameResolver& other) = delete;
         ClientConnectionObserverFactoryWithNameResolver& operator=(const ClientConnectionObserverFactoryWithNameResolver& other) = delete;
-        ~ClientConnectionObserverFactoryWithNameResolver() = default;
+        virtual ~ClientConnectionObserverFactoryWithNameResolver() = default;
 
     public:
         enum ConnectFailReason
@@ -39,7 +39,7 @@ namespace services
         ConnectionFactoryWithNameResolver() = default;
         ConnectionFactoryWithNameResolver(const ConnectionFactoryWithNameResolver& other) = delete;
         ConnectionFactoryWithNameResolver& operator=(const ConnectionFactoryWithNameResolver& other) = delete;
-        ~ConnectionFactoryWithNameResolver() = default;
+        virtual ~ConnectionFactoryWithNameResolver() = default;
 
     public:
         virtual void Connect(ClientConnectionObserverFactoryWithNameResolver& factory) = 0;
