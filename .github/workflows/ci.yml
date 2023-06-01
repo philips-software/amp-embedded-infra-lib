@@ -96,7 +96,7 @@ jobs:
         with:
           name: emil
       - run: tar -zxvf emil-*.tar.gz
-      - run: rm -rf install && mv emil-* install
+      - run: mkdir install && mv emil-*/* install/
       - uses: lukka/run-cmake@cdefb26b6a3a359c5f4dbc1a16cf4327d0824774 # v10.5
         with:
           configurePreset: "Embedded"
