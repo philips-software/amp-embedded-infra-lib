@@ -1,0 +1,70 @@
+= HAL Interfaces
+
+== Introduction
+
+Interfaces towards several peripherals are a core component of the Embedded Infrastructure Library. The goal of these interfaces is to ease the creation of reusable components that make use of peripherals. The intention is not to give a full abstraction of any microcontroller, or even a full abstraction of a single peripheral of a specific microcontroller. Rather, the interface is geared towards the users of these interfaces. If no real-time restrictions apply, such components must be able to run independently.
+
+In order to maximize independent usage of HAL interfaces, asynchronous interfaces are preferred. Although some tasks (like providing tracing output over a UART or generating random numbers) may benefit from the simplicity of synchronous interfaces, being able to asynchronously access hardware peripherals over a SPI bus enables multiple components accessing multiple devices connected a SPI bus without interfering with each other.
+
+
+== Asynchronous Interfaces
+
+=== Serial Peripheral Interface Master (SPI Master)
+
+The SpiMaster interface provides an interface for a SPI Master peripheral. 
+
+[plantuml]
+----
+@startuml
+    !theme cerulean-outline
+
+    class SpiMaster {
+        +{abstract}void SendAndReceive(sendData, receiveData, nextAction, onDone)
+
+        +void SendData(data, nextAction, onDone)
+        +void ReceiveData(data, nextAction, onDone)
+
+        +{abstract}void SetChipSelectConfigurator(configurator)
+        +{abstract}void SetCommunicationConfigurator(configurator)
+        +{abstract}void ResetCommunicationConfigurator()
+    }
+@enduml
+----
+
+The main functionality of this interface is provided via the `SendAndReceive` method. This function initiates a SPI data exchange. The data in `sendData` is sent, while simultaneously data is received into `receiveData`. `sendData` and `receiveData` need not be of the same length; data exchange will continue until the data of the longest of them have been transferred. After the transfer is complete, the `onDone` completion function is scheduled on the `EventDispatcher`.
+
+The behaviour of the Chip Select line is controlled by `nextAction`. On the first usage of SendAndReceive, Chip Select is pulled low. `nextAction` can be either `stop`, indicating that Chip Select must be released after transfer, or `continue`, indicating that Chi Select must continue to be pulled low until at least the next invocation of `SendAndReceive`. This way, a single SPI transaction can be performed by multiple invocations of `SendAndReceive`.
+
+Two convenience functions exist: `SendData` is used when no data needs to be received and is forwarded to `SendAndReceiveData` with an empty 'receiveData'; `ReceiveData` is similarly forwarded to `SendAndReceiveData` with empty `sendData`.
+
+The methods of the `SpiMaster` may not be used when a transfer is in progress. In order for two or more clients to use the same SPI bus simultaneously, multiple instances of the `SpiMaster` interface must be provided that handle synchronizing requests. The `SpiMultipleAccessMaster` and `SpiMultipleAccess` classes work together to determine which client is next to transfer data, and to which client completion is sent. One `SpiMultipleAccessMaster` object is created which holds the `infra::ClaimableResource` object which is used for granting access; each client gets an instance of `SpiMultipleAccess` that claims the resource held by `SpiMultipleAccessMaster`. The `SpiMultipleAccess` objects use the 
+
+[plantuml]
+----
+@startuml
+
+object SpiMaster
+object SpiMultipleAccessMaster
+object SpiMultipleAccess1
+object SpiMultipleAccess2
+object SpiMasterStm
+object Client1
+object Client2
+
+SpiMaster <|-- SpiMultipleAccessMaster
+SpiMaster <|-- SpiMultipleAccess1
+SpiMaster <|-- SpiMultipleAccess2
+SpiMaster <|-- SpiMasterStm
+SpiMultipleAccess1 -> SpiMultipleAccessMaster
+SpiMultipleAccess2 -> SpiMultipleAccessMaster
+SpiMultipleAccessMaster -> SpiMasterStm
+Client1 -> SpiMultipleAccess1
+Client2 -> SpiMultipleAccess2
+
+@enduml
+----
+
+Clients of the `SpiMaster` interface will get access to one particular hardware peripheral. To select multiple peripherals, multiple instances of the `SpiMaster` interface must be provided, each of them selecting a different hardware peripheral. The specific Chip Select line used for that peripheral is selected by the `SpiMasterWithChipSelect` class. This class, which is present in the `services.util` component, is a decorator class of the `SpiMaster` interface, and controls one Chip Select line. It registers itself with the `SetChipSelectConfigurator` of the delegated `SpiMaster` interface. Implementations of the `SpiMaster` interface (like `SpiMasterStm`) will invoke the `StartSession` and `EndSession` methods of the chip select configurator before and after transfers.
+
+
+

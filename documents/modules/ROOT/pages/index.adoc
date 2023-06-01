@@ -3,7 +3,7 @@
 
 == Introduction
 
-amp-embedded-infra-lib is a set of C++ libraries and headers that provide heap-less, https://en.wikipedia.org/wiki/Standard_Template_Library[STL] like, infrastructure for embedded software development. It includes, amongst others; a hardware abstraction layer (HAL), a xref:Echo.adoc[remote procedure call] (RPC) implementation, a xref:NetworkConnections.adoc[networking layer], a secure upgrade mechanism and several other re-usable utility classes.
+amp-embedded-infra-lib is a set of C++ libraries and headers that provide heap-less, https://en.wikipedia.org/wiki/Standard_Template_Library[STL] like, infrastructure for embedded software development. It includes, amongst others; a xref:HalInterfaces.doc[hardware abstraction layer (HAL)], a xref:Echo.adoc[remote procedure call] (RPC) implementation, a xref:NetworkConnections.adoc[networking layer], a secure upgrade mechanism and several other re-usable utility classes.
 
 amp-embedded-infra-lib is available as https://philips-software.github.io/[Philips Open Source] under a https://choosealicense.com/licenses/mit/[MIT] license.
 
@@ -32,7 +32,6 @@ Rating]]
         component echo
         component echo_console
         component protoc_echo_plugin
-        component services
         component more_protobuf [
             ...
         ]
