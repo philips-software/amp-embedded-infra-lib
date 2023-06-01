@@ -31,10 +31,10 @@ jobs:
           variant: sccache
       - uses: lukka/run-cmake@cdefb26b6a3a359c5f4dbc1a16cf4327d0824774 # v10.5
         with:
-          configurePreset: "ContinuousIntegration"
-          buildPreset: "ContinuousIntegration"
-          testPreset: "ContinuousIntegration"
-          configurePresetAdditionalArgs: "['--target', 'all', 'package', '-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
+          configurePreset: "ContinuousIntegrationWithPackage"
+          buildPreset: "ContinuousIntegrationWithPackage"
+          testPreset: "ContinuousIntegrationWithPackage"
+          configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
       - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           name: emil
