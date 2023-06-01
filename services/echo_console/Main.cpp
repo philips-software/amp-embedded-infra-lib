@@ -25,7 +25,6 @@ class ConsoleClientUart
 {
 public:
     ConsoleClientUart(application::Console& console, hal::SerialCommunication& serial);
-    ~ConsoleClientUart();
 
     // Implementation of ConsoleObserver
     void Send(const std::string& message) override;
@@ -44,19 +43,13 @@ private:
     services::MessageCommunicationCobs::WithMaxMessageSize<2048> cobs;
     services::MessageCommunicationWindowed::WithReceiveBuffer<2048> windowed{ cobs };
     bool sending = false;
+    services::MessageCommunicationObserver::DelayedAttachDetach delayed{ *this, windowed };
 };
 
 ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::SerialCommunication& serial)
     : application::ConsoleObserver(console)
     , cobs(serial)
-{
-    services::MessageCommunicationObserver::Attach(windowed);
-}
-
-ConsoleClientUart::~ConsoleClientUart()
-{
-    services::MessageCommunicationObserver::Detach();
-}
+{}
 
 void ConsoleClientUart::Send(const std::string& message)
 {
