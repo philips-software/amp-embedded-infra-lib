@@ -46,9 +46,9 @@ function(emil_generate_artifacts)
             )
         endif()
     endif()
-    
+
     if (EMIL_LST)
-        if (NOT EMIL_OBJ_COPY_TOOL)
+        if (NOT EMIL_OBJ_DUMP_TOOL)
             add_custom_command(
                 TARGET ${EMIL_TARGET}
                 POST_BUILD
