@@ -34,13 +34,11 @@ jobs:
           configurePreset: "ContinuousIntegration"
           buildPreset: "ContinuousIntegration"
           testPreset: "ContinuousIntegration"
-          configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
-      - run: cmake --install build/ContinuousIntegration
-      - run: tar -cvf install.tar install
+          configurePresetAdditionalArgs: "['--target', 'all', 'package', '-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
       - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
-          name: install
-          path: install.tar
+          name: emil
+          path: build/emil-*.tgz
           if-no-files-found: error
       - name: Upload test logs
         if: ${{ failure() }}
@@ -96,8 +94,8 @@ jobs:
           key: ${{ github.job }}-${{ matrix.gcc }}-${{ matrix.configuration }}
       - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
-          name: install
-      - run: tar -xvf install.tar
+          name: emil
+      - run: tar -zxvf emil-*.tgz
       - uses: lukka/run-cmake@cdefb26b6a3a359c5f4dbc1a16cf4327d0824774 # v10.5
         with:
           configurePreset: "Embedded"
