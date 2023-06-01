@@ -85,12 +85,9 @@ namespace services
             receiveBuffer.resize(receiveBuffer.size() - encrypted.size() + processedSize);
         }
 
-        auto startSize = receiveBuffer.size();
-        std::size_t processedSize = 0;
-        receiveBuffer.resize(receiveBuffer.max_size());
         std::array<uint8_t, blockSize> computedMac;
-        really_assert(mbedtls_gcm_finish(&receiveContext, receiveBuffer.data() + startSize, receiveBuffer.size() - startSize, &processedSize, reinterpret_cast<unsigned char*>(computedMac.data()), computedMac.size()) == 0);
-        receiveBuffer.resize(startSize + processedSize);
+        std::size_t processedSize = 0;
+        really_assert(mbedtls_gcm_finish(&receiveContext, nullptr, 0, &processedSize, reinterpret_cast<unsigned char*>(computedMac.data()), computedMac.size()) == 0);
 
         std::array<uint8_t, blockSize> receivedMac;
         stream >> infra::MakeRange(receivedMac);

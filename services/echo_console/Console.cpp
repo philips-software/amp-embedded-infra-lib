@@ -369,7 +369,7 @@ namespace application
         infra::DataInputStream::WithErrorPolicy data(reader, infra::softFail);
         infra::ProtoParser parser(data);
         auto serviceId = static_cast<uint32_t>(parser.GetVarInt());
-        auto field = parser.GetField();
+        auto [value, methodId] = parser.GetField();
 
         if (data.Failed())
             throw IncompletePacket();
@@ -378,18 +378,18 @@ namespace application
             if (service->serviceId == serviceId)
             {
                 for (const auto& method : service->methods)
-                    if (method.methodId == field.second)
+                    if (method.methodId == methodId)
                     {
-                        MethodReceived(*service, method, field.first.Get<infra::ProtoLengthDelimited>().Parser());
+                        MethodReceived(*service, method, value.Get<infra::ProtoLengthDelimited>().Parser());
 
                         data.Failed();
                         return;
                     }
 
-                MethodNotFound(*service, field.second);
+                MethodNotFound(*service, methodId);
             }
 
-        ServiceNotFound(serviceId, field.second);
+        ServiceNotFound(serviceId, methodId);
     }
 
     void Console::MethodReceived(const EchoService& service, const EchoMethod& method, infra::ProtoParser&& parser)
@@ -410,12 +410,12 @@ namespace application
                 std::cout << ", ";
             first = false;
 
-            auto field = parser.GetField();
+            auto [value, methodId] = parser.GetField();
 
             for (auto& echoField : message.fields)
             {
-                if (echoField->number == field.second)
-                    PrintField(field.first, *echoField, parser);
+                if (echoField->number == methodId)
+                    PrintField(value, *echoField, parser);
             }
         }
     }
@@ -698,14 +698,15 @@ namespace application
         try
         {
             MethodInvocation methodInvocation(line);
-            auto method = SearchMethod(methodInvocation);
+
+            auto [service, method] = SearchMethod(methodInvocation);
             infra::ByteOutputStream::WithStorage<4096> stream;
             infra::ProtoFormatter formatter(stream);
 
-            formatter.PutVarInt(method.first->serviceId);
+            formatter.PutVarInt(service->serviceId);
             {
-                auto subFormatter = formatter.LengthDelimitedFormatter(method.second.methodId);
-                methodInvocation.EncodeParameters(method.second.parameter, line.size(), formatter);
+                auto subFormatter = formatter.LengthDelimitedFormatter(method.methodId);
+                methodInvocation.EncodeParameters(method.parameter, line.size(), formatter);
             }
 
             auto range = infra::ReinterpretCastMemoryRange<char>(stream.Writer().Processed());
@@ -806,59 +807,59 @@ namespace application
                 : invocation(invocation)
             {}
 
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::End)
+            MessageTokens::MessageTokenValue operator()(ConsoleToken::End) const
             {
                 std::abort();
             }
 
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::Error value)
+            MessageTokens::MessageTokenValue operator()(ConsoleToken::Error value) const
             {
                 throw ConsoleExceptions::SyntaxError{ value.index };
             }
 
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::Comma value)
+            MessageTokens::MessageTokenValue operator()(ConsoleToken::Comma value) const
             {
                 throw ConsoleExceptions::SyntaxError{ value.index };
             }
 
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::Dot value)
+            MessageTokens::MessageTokenValue operator()(ConsoleToken::Dot value) const
             {
                 throw ConsoleExceptions::SyntaxError{ value.index };
             }
 
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::LeftBrace)
+            MessageTokens::MessageTokenValue operator()(ConsoleToken::LeftBrace) const
             {
                 invocation.currentToken = invocation.tokenizer.Token();
                 return invocation.ProcessMessage();
             }
 
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::RightBrace value)
+            MessageTokens::MessageTokenValue operator()(ConsoleToken::RightBrace value) const
             {
                 throw ConsoleExceptions::SyntaxError{ value.index };
             }
 
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::LeftBracket)
+            MessageTokens::MessageTokenValue operator()(ConsoleToken::LeftBracket) const
             {
                 invocation.currentToken = invocation.tokenizer.Token();
                 return MessageTokens::MessageTokenValue(invocation.ProcessArray());
             }
 
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::RightBracket value)
+            MessageTokens::MessageTokenValue operator()(ConsoleToken::RightBracket value) const
             {
                 throw ConsoleExceptions::SyntaxError{ value.index };
             }
 
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::String value)
+            MessageTokens::MessageTokenValue operator()(const ConsoleToken::String& value) const
             {
                 return MessageTokens::MessageTokenValue(value.value);
             }
 
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::Integer value)
+            MessageTokens::MessageTokenValue operator()(ConsoleToken::Integer value) const
             {
                 return MessageTokens::MessageTokenValue(value.value);
             }
 
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::Boolean value)
+            MessageTokens::MessageTokenValue operator()(ConsoleToken::Boolean value) const
             {
                 return MessageTokens::MessageTokenValue(value.value);
             }
