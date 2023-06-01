@@ -17,14 +17,14 @@ namespace services
         EchoOnMessageCommunicationSymmetricKey(MessageCommunicationSecured& secured, hal::SynchronousRandomDataGenerator& randomDataGenerator, EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
 
         // Implementation of Echo
-        virtual void RequestSend(ServiceProxy& serviceProxy) override;
+        void RequestSend(ServiceProxy& serviceProxy) override;
 
         // Implementation of MessageCommunicationObserver
-        virtual void Initialized() override;
+        void Initialized() override;
 
     private:
         // Implementation of SymmetricKeyEstablishment
-        virtual void ActivateNewKeyMaterial(const infra::BoundedVector<uint8_t>& key, const infra::BoundedVector<uint8_t>& iv) override;
+        void ActivateNewKeyMaterial(const infra::BoundedVector<uint8_t>& key, const infra::BoundedVector<uint8_t>& iv) override;
 
         void ReQueueWaitingProxies();
 

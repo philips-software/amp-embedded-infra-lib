@@ -14,12 +14,13 @@ namespace services
         using EchoOnStreams::EchoOnStreams;
 
         // Implementation of ConnectionObserver
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        virtual void DataReceived() override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void DataReceived() override;
 
     protected:
-        virtual void RequestSendStream(std::size_t size) override;
-        virtual void BusyServiceDone() override;
+        // Implementation of EchoOnStreams
+        void RequestSendStream(std::size_t size) override;
+        void BusyServiceDone() override;
     };
 }
 

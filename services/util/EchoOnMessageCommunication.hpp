@@ -14,15 +14,15 @@ namespace services
         EchoOnMessageCommunication(MessageCommunication& subject, EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
 
         // Implementation of MessageCommunicationObserver
-        virtual void Initialized() override;
-        virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        virtual void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
+        void Initialized() override;
+        void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
 
-        virtual void ServiceDone(Service& service) override;
+        void ServiceDone(Service& service) override;
 
     protected:
-        virtual void RequestSendStream(std::size_t size) override;
-        virtual void BusyServiceDone() override;
+        void RequestSendStream(std::size_t size) override;
+        void BusyServiceDone() override;
 
     private:
         void ProcessMessage();

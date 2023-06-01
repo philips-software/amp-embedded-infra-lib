@@ -12,7 +12,7 @@
 
 namespace services
 {
-    class MessageCommunicationSecured //NOSONAR: "Remove this class' destructor so that the class follows the rule of Zero" but mbedTLS structures need destruction
+    class MessageCommunicationSecured
         : public MessageCommunication
         , private MessageCommunicationObserver
     {
@@ -32,14 +32,14 @@ namespace services
         void SetReceiveKey(const KeyType& receiveKey, const IvType& receiveIv);
 
         // Implementation of MessageCommunication
-        virtual void Initialized() override;
-        virtual void RequestSendMessage(uint16_t size) override;
-        virtual std::size_t MaxSendMessageSize() const override;
+        void Initialized() override;
+        void RequestSendMessage(uint16_t size) override;
+        std::size_t MaxSendMessageSize() const override;
 
     private:
         // Implementation of MessageCommunicationObserver
-        virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        virtual void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
+        void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
 
         void SendMessageStreamReleased();
         void IncreaseIv(infra::ByteRange iv) const;

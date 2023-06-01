@@ -23,7 +23,7 @@ public:
         EXPECT_CALL(lower, RequestSendMessage(testing::_)).WillOnce(testing::Invoke([this]()
             {
                 ExpectGenerationOfKeyMaterial({ 4 }, { 5 });
-                LoopbackData(); }));
+                LoopBackData(); }));
         lower.GetObserver().Initialized();
     }
 
@@ -40,7 +40,7 @@ public:
         // clang-format on
     }
 
-    void LoopbackData()
+    void LoopBackData()
     {
         std::vector<uint8_t> sentData;
 
@@ -70,7 +70,7 @@ TEST_F(EchoOnMessageCommunicationSymmetricKeyTest, send_and_receive)
     EXPECT_CALL(lower, RequestSendMessage(testing::_)).WillOnce(testing::Invoke([this]()
         {
             EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]() { service.MethodDone(); }));
-            LoopbackData(); }));
+            LoopBackData(); }));
 
     serviceProxy.RequestSend([this]()
         { serviceProxy.Method(5); });
@@ -87,9 +87,9 @@ TEST_F(EchoOnMessageCommunicationSymmetricKeyTest, send_while_initializing)
     EXPECT_CALL(lower, RequestSendMessage(testing::_));
 
     ExpectGenerationOfKeyMaterial({ 4 }, { 5 });
-    LoopbackData();
+    LoopBackData();
 
     EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]()
         { service.MethodDone(); }));
-    LoopbackData();
+    LoopBackData();
 }
