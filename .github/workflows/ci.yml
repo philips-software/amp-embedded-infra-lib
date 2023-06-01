@@ -124,7 +124,8 @@ jobs:
       - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
           name: install
-      - run: tar -xvf install.tar
+      - run: tar -zxvf emil-*.tar.gz
+      - run: mkdir install && mv emil-*/* install/
       - uses: lukka/run-cmake@cdefb26b6a3a359c5f4dbc1a16cf4327d0824774 # v10.5
         with:
           configurePreset: "Embedded-${{ matrix.rtos }}"
