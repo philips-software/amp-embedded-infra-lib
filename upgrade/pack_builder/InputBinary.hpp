@@ -17,7 +17,7 @@ namespace application
         InputBinary(const std::string& targetName, const std::vector<uint8_t>& contents, uint32_t destinationAddress,
             const ImageSecurity& imageSecurity);
 
-        virtual std::vector<uint8_t> Image() const override;
+        std::vector<uint8_t> Image() const override;
 
     private:
         uint32_t destinationAddress;

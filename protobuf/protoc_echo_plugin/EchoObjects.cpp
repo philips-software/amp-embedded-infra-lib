@@ -286,47 +286,47 @@ namespace application
                 : maxMessageSize(maxMessageSize)
             {}
 
-            virtual void VisitInt64(const EchoFieldInt64& field) override
+            void VisitInt64(const EchoFieldInt64& field) override
             {
                 maxMessageSize += MaxVarIntSize(std::numeric_limits<uint64_t>::max()) + MaxVarIntSize((field.number << 3) | 2);
             }
 
-            virtual void VisitUint64(const EchoFieldUint64& field) override
+            void VisitUint64(const EchoFieldUint64& field) override
             {
                 maxMessageSize += MaxVarIntSize(std::numeric_limits<uint64_t>::max()) + MaxVarIntSize((field.number << 3) | 2);
             }
 
-            virtual void VisitInt32(const EchoFieldInt32& field) override
+            void VisitInt32(const EchoFieldInt32& field) override
             {
                 maxMessageSize += MaxVarIntSize(std::numeric_limits<uint32_t>::max()) + MaxVarIntSize((field.number << 3) | 2);
             }
 
-            virtual void VisitFixed64(const EchoFieldFixed64& field) override
+            void VisitFixed64(const EchoFieldFixed64& field) override
             {
                 maxMessageSize += 8 + MaxVarIntSize((field.number << 3) | 2);
             }
 
-            virtual void VisitFixed32(const EchoFieldFixed32& field) override
+            void VisitFixed32(const EchoFieldFixed32& field) override
             {
                 maxMessageSize += 4 + MaxVarIntSize((field.number << 3) | 2);
             }
 
-            virtual void VisitBool(const EchoFieldBool& field) override
+            void VisitBool(const EchoFieldBool& field) override
             {
                 maxMessageSize += MaxVarIntSize(1) + MaxVarIntSize((field.number << 3) | 2);
             }
 
-            virtual void VisitString(const EchoFieldString& field) override
+            void VisitString(const EchoFieldString& field) override
             {
                 maxMessageSize += field.maxStringSize + MaxVarIntSize(field.maxStringSize) + MaxVarIntSize((field.number << 3) | 2);
             }
 
-            virtual void VisitUnboundedString(const EchoFieldUnboundedString& field) override
+            void VisitUnboundedString(const EchoFieldUnboundedString& field) override
             {
                 throw NoMaxMessageSize();
             }
 
-            virtual void VisitMessage(const EchoFieldMessage& field) override
+            void VisitMessage(const EchoFieldMessage& field) override
             {
                 uint32_t fieldMaxMessageSize = 0;
                 GenerateMaxMessageSizeVisitor visitor(fieldMaxMessageSize);
@@ -336,37 +336,37 @@ namespace application
                 maxMessageSize += fieldMaxMessageSize + MaxVarIntSize(fieldMaxMessageSize) + MaxVarIntSize((field.number << 3) | 2);
             }
 
-            virtual void VisitBytes(const EchoFieldBytes& field) override
+            void VisitBytes(const EchoFieldBytes& field) override
             {
                 maxMessageSize += field.maxBytesSize + MaxVarIntSize(field.maxBytesSize) + MaxVarIntSize((field.number << 3) | 2);
             }
 
-            virtual void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
+            void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
             {
                 throw NoMaxMessageSize();
             }
 
-            virtual void VisitUint32(const EchoFieldUint32& field) override
+            void VisitUint32(const EchoFieldUint32& field) override
             {
                 maxMessageSize += MaxVarIntSize(std::numeric_limits<uint32_t>::max()) + MaxVarIntSize((field.number << 3) | 2);
             }
 
-            virtual void VisitEnum(const EchoFieldEnum& field) override
+            void VisitEnum(const EchoFieldEnum& field) override
             {
                 maxMessageSize += MaxVarIntSize(std::numeric_limits<uint32_t>::max()) + MaxVarIntSize((field.number << 3) | 2);
             }
 
-            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            void VisitSFixed64(const EchoFieldSFixed64& field) override
             {
                 maxMessageSize += 8 + MaxVarIntSize((field.number << 3) | 2);
             }
 
-            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            void VisitSFixed32(const EchoFieldSFixed32& field) override
             {
                 maxMessageSize += 4 + MaxVarIntSize((field.number << 3) | 2);
             }
 
-            virtual void VisitRepeated(const EchoFieldRepeated& field) override
+            void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 uint32_t max = 0;
                 GenerateMaxMessageSizeVisitor visitor(max);
@@ -374,7 +374,7 @@ namespace application
                 maxMessageSize = field.maxArraySize * max;
             }
 
-            virtual void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
+            void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
             {
                 throw NoMaxMessageSize();
             }

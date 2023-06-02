@@ -14,8 +14,8 @@ namespace services
 
         void SendInitial();
 
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        virtual void DataReceived() override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void DataReceived() override;
 
     private:
         void TryRequestSendStream();
@@ -36,7 +36,7 @@ namespace services
         StreamEchoServer(AllocatorStreamEchoConnection& allocator, services::ConnectionFactory& listenerFactory, uint16_t port, services::IPVersions versions = services::IPVersions::both);
 
     protected:
-        virtual void ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, services::IPAddress address) override;
+        void ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, services::IPAddress address) override;
 
     private:
         AllocatorStreamEchoConnection& allocator;

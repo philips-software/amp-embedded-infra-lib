@@ -144,17 +144,17 @@ namespace services
         : public EchoErrorPolicy
     {
     public:
-        virtual void MessageFormatError() override;
-        virtual void ServiceNotFound(uint32_t serviceId) override;
-        virtual void MethodNotFound(uint32_t serviceId, uint32_t methodId) override;
+        void MessageFormatError() override;
+        void ServiceNotFound(uint32_t serviceId) override;
+        void MethodNotFound(uint32_t serviceId, uint32_t methodId) override;
     };
 
     class EchoErrorPolicyAbort
         : public EchoErrorPolicyAbortOnMessageFormatError
     {
     public:
-        virtual void ServiceNotFound(uint32_t serviceId) override;
-        virtual void MethodNotFound(uint32_t serviceId, uint32_t methodId) override;
+        void ServiceNotFound(uint32_t serviceId) override;
+        void MethodNotFound(uint32_t serviceId, uint32_t methodId) override;
     };
 
     extern EchoErrorPolicyAbortOnMessageFormatError echoErrorPolicyAbortOnMessageFormatError;
@@ -215,10 +215,10 @@ namespace services
         explicit EchoOnStreams(EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
 
         // Implementation of Echo
-        virtual void RequestSend(ServiceProxy& serviceProxy) override;
-        virtual infra::StreamWriter& SendStreamWriter() override;
-        virtual void Send() override;
-        virtual void ServiceDone(Service& service) override;
+        void RequestSend(ServiceProxy& serviceProxy) override;
+        infra::StreamWriter& SendStreamWriter() override;
+        void Send() override;
+        void ServiceDone(Service& service) override;
 
     protected:
         virtual void RequestSendStream(std::size_t size) = 0;

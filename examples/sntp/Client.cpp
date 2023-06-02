@@ -18,7 +18,7 @@ struct TimeWithSynchronization
     }
 
     // From services::SntpResultObserver
-    virtual void TimeAvailable(infra::Duration roundTripDelay, infra::Duration localClockOffset) override
+    void TimeAvailable(infra::Duration roundTripDelay, infra::Duration localClockOffset) override
     {
         timeWithLocalization.Utc().Shift(localClockOffset - timeWithLocalization.Utc().GetCurrentShift());
 
@@ -27,27 +27,27 @@ struct TimeWithSynchronization
                        << " new time set to: " << timeWithLocalization.Utc().Now();
     }
 
-    virtual void TimeUnavailable() override
+    void TimeUnavailable() override
     {
         tracer.Trace() << "Time failed to synchronize";
     }
 
-    virtual void KissOfDeath(services::SntpResultObserver::KissCode reason) override
+    void KissOfDeath(services::SntpResultObserver::KissCode reason) override
     {}
 
     // From services::NameResolverResult
-    virtual infra::BoundedConstString Hostname() const override
+    infra::BoundedConstString Hostname() const override
     {
         return "pool.ntp.org";
     }
 
-    virtual void NameLookupDone(services::IPAddress address, infra::TimePoint validUntil) override
+    void NameLookupDone(services::IPAddress address, infra::TimePoint validUntil) override
     {
         tracer.Trace() << "Name lookup done; found address " << address;
         sntpClient.RequestTime(address.Get<services::IPv4Address>());
     }
 
-    virtual void NameLookupFailed() override
+    void NameLookupFailed() override
     {
         tracer.Trace() << "Name lookup failed";
     }

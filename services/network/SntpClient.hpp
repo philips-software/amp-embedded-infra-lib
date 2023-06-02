@@ -41,8 +41,8 @@ namespace services
         void RequestTime(const services::IPv4Address& address);
 
         // From DatagramExchangeObserver
-        virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, services::UdpSocket from) override;
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, services::UdpSocket from) override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
     private:
         enum class NtpLeapIndicator : uint8_t

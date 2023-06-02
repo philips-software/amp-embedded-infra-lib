@@ -34,7 +34,7 @@ class IntrusiveBinarySearchTreeTest
     : public testing::Test
 {
 public:
-    ~IntrusiveBinarySearchTreeTest()
+    ~IntrusiveBinarySearchTreeTest() override
     {
         EXPECT_TRUE(tree.invariant_holds());
     }

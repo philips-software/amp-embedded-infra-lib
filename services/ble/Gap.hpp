@@ -214,18 +214,18 @@ namespace services
         using GapPeripheralObserver::GapPeripheralObserver;
 
         // Implementation of GapPeripheralObserver
-        virtual void StateChanged(GapState state) override;
+        void StateChanged(GapState state) override;
 
         // Implementation of GapPeripheral
-        virtual GapAddress GetAddress() const override;
-        virtual GapAddress GetIdentityAddress() const override;
+        GapAddress GetAddress() const override;
+        GapAddress GetIdentityAddress() const override;
 
-        virtual void SetAdvertisementData(infra::ConstByteRange data) override;
-        virtual infra::ConstByteRange GetAdvertisementData() const override;
-        virtual void SetScanResponseData(infra::ConstByteRange data) override;
-        virtual infra::ConstByteRange GetScanResponseData() const override;
-        virtual void Advertise(GapAdvertisementType type, AdvertisementIntervalMultiplier multiplier) override;
-        virtual void Standby() override;
+        void SetAdvertisementData(infra::ConstByteRange data) override;
+        infra::ConstByteRange GetAdvertisementData() const override;
+        void SetScanResponseData(infra::ConstByteRange data) override;
+        infra::ConstByteRange GetScanResponseData() const override;
+        void Advertise(GapAdvertisementType type, AdvertisementIntervalMultiplier multiplier) override;
+        void Standby() override;
     };
 
     inline GapPeripheral::AdvertisementFlags operator|(GapPeripheral::AdvertisementFlags lhs, GapPeripheral::AdvertisementFlags rhs)
@@ -266,17 +266,17 @@ namespace services
         using GapCentralObserver::GapCentralObserver;
 
         // Implementation of GapCentralObserver
-        virtual void AuthenticationSuccessfullyCompleted() override;
-        virtual void AuthenticationFailed(GapAuthenticationErrorType error) override;
-        virtual void DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered) override;
-        virtual void StateChanged(GapState state) override;
+        void AuthenticationSuccessfullyCompleted() override;
+        void AuthenticationFailed(GapAuthenticationErrorType error) override;
+        void DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered) override;
+        void StateChanged(GapState state) override;
 
         // Implementation of GapCentral
-        virtual void Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType) override;
-        virtual void Disconnect() override;
-        virtual void SetAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) override;
-        virtual void StartDeviceDiscovery() override;
-        virtual void StopDeviceDiscovery() override;
+        void Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType) override;
+        void Disconnect() override;
+        void SetAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) override;
+        void StartDeviceDiscovery() override;
+        void StopDeviceDiscovery() override;
     };
 }
 

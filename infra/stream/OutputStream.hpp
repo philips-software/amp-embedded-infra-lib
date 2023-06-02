@@ -38,8 +38,8 @@ namespace infra
         : public StreamWriter
     {
     public:
-        virtual void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy);
-        virtual std::size_t Available() const;
+        void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy) override;
+        std::size_t Available() const override;
     };
 
     class OutputStream
@@ -212,7 +212,7 @@ namespace infra
             Formatter(const Formatter& other) = default;
             Formatter& operator=(const Formatter& other) = default;
 
-            virtual void Stream(TextOutputStream& stream) override;
+            void Stream(TextOutputStream& stream) override;
 
         private:
             T value;

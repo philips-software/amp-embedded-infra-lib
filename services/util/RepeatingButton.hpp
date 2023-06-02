@@ -30,7 +30,7 @@ namespace services
             void Start(infra::Duration initialDelay, infra::Duration successiveDelay, const infra::Function<void()>& action);
 
         protected:
-            virtual void ComputeNextTriggerTime() override;
+            void ComputeNextTriggerTime() override;
 
         private:
             infra::Duration initialDelay = infra::Duration();

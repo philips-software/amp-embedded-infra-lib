@@ -241,8 +241,8 @@ namespace infra
         bool Referenced() const;
 
     private:
-        virtual void Destruct(const void* object) override;
-        virtual void Deallocate(void* control) override;
+        void Destruct(const void* object) override;
+        void Deallocate(void* control) override;
 
     private:
         detail::SharedPtrControl control{ this, this };
@@ -635,8 +635,8 @@ namespace infra
             : public SharedObjectDeleter
         {
         public:
-            virtual void Destruct(const void* object) override;
-            virtual void Deallocate(void* control) override;
+            void Destruct(const void* object) override;
+            void Deallocate(void* control) override;
         };
     }
 
@@ -756,12 +756,12 @@ namespace infra
             }
 
         private:
-            virtual void Destruct(const void* object) override
+            void Destruct(const void* object) override
             {
                 this->object.Destruct();
             }
 
-            virtual void Deallocate(void* control) override
+            void Deallocate(void* control) override
             {
                 delete this;
             }

@@ -16,13 +16,13 @@ namespace infra
         explicit StdVectorOutputStreamWriter(std::vector<uint8_t>& vector, std::size_t saveSize = 1024);
 
     public:
-        virtual void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy) override;
+        void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy) override;
         std::size_t Available() const override;
-        virtual std::size_t ConstructSaveMarker() const override;
-        virtual std::size_t GetProcessedBytesSince(std::size_t marker) const override;
-        virtual infra::ByteRange SaveState(std::size_t marker) override;
-        virtual void RestoreState(infra::ByteRange range) override;
-        virtual infra::ByteRange Overwrite(std::size_t marker) override;
+        std::size_t ConstructSaveMarker() const override;
+        std::size_t GetProcessedBytesSince(std::size_t marker) const override;
+        infra::ByteRange SaveState(std::size_t marker) override;
+        void RestoreState(infra::ByteRange range) override;
+        infra::ByteRange Overwrite(std::size_t marker) override;
 
     private:
         std::vector<uint8_t>& vector;

@@ -13,14 +13,14 @@ namespace services
         ConnectionFactoryWithNameResolverStub(services::ConnectionFactory& connectionFactory, services::IPAddress address);
 
         // Implementation of ConnectionFactoryWithNameResolver
-        virtual void Connect(services::ClientConnectionObserverFactoryWithNameResolver& factory) override;
-        virtual void CancelConnect(services::ClientConnectionObserverFactoryWithNameResolver& factory) override;
+        void Connect(services::ClientConnectionObserverFactoryWithNameResolver& factory) override;
+        void CancelConnect(services::ClientConnectionObserverFactoryWithNameResolver& factory) override;
 
         // Implementation of ClientConnectionObserverFactory
-        virtual services::IPAddress Address() const override;
-        virtual uint16_t Port() const override;
-        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
-        virtual void ConnectionFailed(ConnectFailReason reason) override;
+        services::IPAddress Address() const override;
+        uint16_t Port() const override;
+        void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
+        void ConnectionFailed(ConnectFailReason reason) override;
 
     private:
         services::ConnectionFactory& connectionFactory;

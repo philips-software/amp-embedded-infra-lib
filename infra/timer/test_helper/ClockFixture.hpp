@@ -54,8 +54,8 @@ namespace infra
         public:
             explicit TimeMatcher(infra::TimePoint expectedCallTime);
 
-            virtual bool MatchAndExplain(const std::tuple<Args...>& x, testing::MatchResultListener* listener) const override;
-            virtual void DescribeTo(std::ostream* os) const override;
+            bool MatchAndExplain(const std::tuple<Args...>& x, testing::MatchResultListener* listener) const override;
+            void DescribeTo(std::ostream* os) const override;
 
         private:
             infra::TimePoint expectedCallTime;

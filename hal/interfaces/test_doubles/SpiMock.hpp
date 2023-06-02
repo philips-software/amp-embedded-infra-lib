@@ -14,7 +14,7 @@ namespace hal
         : public SpiMaster
     {
     public:
-        virtual void SendAndReceive(infra::ConstByteRange sendData, infra::ByteRange receiveData, SpiAction nextAction, const infra::Function<void()>& onDone) override;
+        void SendAndReceive(infra::ConstByteRange sendData, infra::ByteRange receiveData, SpiAction nextAction, const infra::Function<void()>& onDone) override;
         MOCK_METHOD1(SetChipSelectConfigurator, void(ChipSelectConfigurator& configurator));
         MOCK_METHOD1(SetCommunicationConfigurator, void(CommunicationConfigurator& configurator));
         MOCK_METHOD0(ResetCommunicationConfigurator, void());
@@ -28,8 +28,8 @@ namespace hal
     {
     public:
         infra::Function<void()> onDone;
-        virtual void SetChipSelectConfigurator(ChipSelectConfigurator& configurator) override;
-        virtual void SendAndReceive(infra::ConstByteRange sendData, infra::ByteRange receiveData, SpiAction nextAction, const infra::Function<void()>& onDone) override;
+        void SetChipSelectConfigurator(ChipSelectConfigurator& configurator) override;
+        void SendAndReceive(infra::ConstByteRange sendData, infra::ByteRange receiveData, SpiAction nextAction, const infra::Function<void()>& onDone) override;
 
         MOCK_METHOD4(SendAndReceiveMock, void(std::vector<uint8_t> sendData, infra::ByteRange receiveData, SpiAction nextAction, const infra::Function<void()>& onDone));
         MOCK_METHOD1(SetChipSelectConfiguratorMock, void(ChipSelectConfigurator& configurator));
@@ -44,7 +44,7 @@ namespace hal
         : public SpiSlave
     {
     public:
-        virtual void SendAndReceive(infra::ConstByteRange sendData, infra::ByteRange receiveData, const infra::Function<void()>& onDone) override;
+        void SendAndReceive(infra::ConstByteRange sendData, infra::ByteRange receiveData, const infra::Function<void()>& onDone) override;
 
         MOCK_METHOD3(SendAndReceiveMock, void(std::vector<uint8_t> sendData, infra::ByteRange receiveData, const infra::Function<void()>& onDone));
         MOCK_METHOD0(CancelTransmission, bool());

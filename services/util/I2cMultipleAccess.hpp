@@ -18,9 +18,9 @@ namespace services
     public:
         explicit I2cMultipleAccessMaster(hal::I2cMaster& master);
 
-        virtual void SendData(hal::I2cAddress address, infra::ConstByteRange data, hal::Action nextAction,
+        void SendData(hal::I2cAddress address, infra::ConstByteRange data, hal::Action nextAction,
             infra::Function<void(hal::Result, uint32_t numberOfBytesSent)> onSent) override;
-        virtual void ReceiveData(hal::I2cAddress address, infra::ByteRange data, hal::Action nextAction,
+        void ReceiveData(hal::I2cAddress address, infra::ByteRange data, hal::Action nextAction,
             infra::Function<void(hal::Result)> onReceived) override;
 
     private:
@@ -33,9 +33,9 @@ namespace services
     public:
         explicit I2cMultipleAccess(I2cMultipleAccessMaster& master);
 
-        virtual void SendData(hal::I2cAddress address, infra::ConstByteRange data, hal::Action nextAction,
+        void SendData(hal::I2cAddress address, infra::ConstByteRange data, hal::Action nextAction,
             infra::Function<void(hal::Result, uint32_t numberOfBytesSent)> onSent) override;
-        virtual void ReceiveData(hal::I2cAddress address, infra::ByteRange data, hal::Action nextAction,
+        void ReceiveData(hal::I2cAddress address, infra::ByteRange data, hal::Action nextAction,
             infra::Function<void(hal::Result)> onReceived) override;
 
     private:

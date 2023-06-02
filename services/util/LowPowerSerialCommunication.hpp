@@ -13,8 +13,8 @@ namespace hal
     public:
         LowPowerSerialCommunication(hal::SerialCommunication& serialCommunication, infra::MainClockReference& mainClockReference);
 
-        virtual void SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion) override;
-        virtual void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) override;
+        void SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion) override;
+        void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) override;
 
     private:
         infra::MainClockReference& mainClock;

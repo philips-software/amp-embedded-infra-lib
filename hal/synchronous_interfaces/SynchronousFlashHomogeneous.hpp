@@ -15,11 +15,11 @@ namespace hal
         ~SynchronousFlashHomogeneous() = default;
 
     public:
-        virtual uint32_t NumberOfSectors() const override;
-        virtual uint32_t SizeOfSector(uint32_t sectorIndex) const override;
+        uint32_t NumberOfSectors() const override;
+        uint32_t SizeOfSector(uint32_t sectorIndex) const override;
 
-        virtual uint32_t SectorOfAddress(uint32_t address) const override;
-        virtual uint32_t AddressOfSector(uint32_t sectorIndex) const override;
+        uint32_t SectorOfAddress(uint32_t address) const override;
+        uint32_t AddressOfSector(uint32_t sectorIndex) const override;
 
     private:
         uint32_t numberOfSectors;

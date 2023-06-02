@@ -109,7 +109,7 @@ public:
         connector.Connect(factory);
     }
 
-    ~HttpClientTest()
+    ~HttpClientTest() override
     {
         EXPECT_CALL(client, Detaching()).Times(testing::AnyNumber());
     }
@@ -840,7 +840,7 @@ public:
         connector.Connect(factory);
     }
 
-    ~HttpClientImplWithRedirectionTest()
+    ~HttpClientImplWithRedirectionTest() override
     {
         EXPECT_CALL(client, Detaching()).Times(testing::AnyNumber());
     }

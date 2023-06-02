@@ -12,9 +12,9 @@ namespace infra
     public:
         TickOnInterruptTimerService(uint32_t id, Duration resolution);
 
-        virtual void NextTriggerChanged() override;
-        virtual TimePoint Now() const override;
-        virtual Duration Resolution() const override;
+        void NextTriggerChanged() override;
+        TimePoint Now() const override;
+        Duration Resolution() const override;
 
         void SetResolution(Duration resolution);
 

@@ -229,10 +229,10 @@ public:
         infra::BoundedString url, hal::SynchronousRandomDataGenerator& randomDataGenerator, services::Tracer& tracer);
 
 private:
-    virtual infra::BoundedString Url() const override;
-    virtual uint16_t Port() const override;
-    virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> client)>&& createdClientObserver) override;
-    virtual void ConnectionFailed(ConnectFailReason reason) override;
+    infra::BoundedString Url() const override;
+    uint16_t Port() const override;
+    void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> client)>&& createdClientObserver) override;
+    void ConnectionFailed(ConnectFailReason reason) override;
 
 private:
     infra::BoundedString url;

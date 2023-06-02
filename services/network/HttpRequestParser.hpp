@@ -33,14 +33,14 @@ namespace services
     public:
         explicit HttpRequestParserImpl(infra::BoundedString& data);
 
-        virtual bool HeadersComplete() const override;
-        virtual bool Valid() const override;
-        virtual HttpVerb Verb() const override;
-        virtual const infra::Tokenizer& PathTokens() const override;
-        virtual infra::BoundedConstString Header(infra::BoundedConstString name) const override;
-        virtual void EnumerateHeaders(const infra::Function<void(infra::BoundedConstString name, infra::BoundedConstString value)>& enumerator) const override;
-        virtual infra::BoundedString& BodyBuffer() override;
-        virtual infra::Optional<uint32_t> ContentLength() const override;
+        bool HeadersComplete() const override;
+        bool Valid() const override;
+        HttpVerb Verb() const override;
+        const infra::Tokenizer& PathTokens() const override;
+        infra::BoundedConstString Header(infra::BoundedConstString name) const override;
+        void EnumerateHeaders(const infra::Function<void(infra::BoundedConstString name, infra::BoundedConstString value)>& enumerator) const override;
+        infra::BoundedString& BodyBuffer() override;
+        infra::Optional<uint32_t> ContentLength() const override;
 
         void SetContentLength(uint32_t length);
 

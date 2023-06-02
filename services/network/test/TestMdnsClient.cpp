@@ -20,7 +20,7 @@ class MdnsClientTest
     : public testing::Test
 {
 public:
-    ~MdnsClientTest()
+    ~MdnsClientTest() override
     {
         ExpectLeaveMulticastIpv4();
         ExpectLeaveMulticastIpv6();

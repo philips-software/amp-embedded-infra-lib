@@ -59,17 +59,17 @@ namespace services
         explicit WebSocketClientConnectionObserver(infra::BoundedConstString path);
 
         // Implementation of ConnectionObserver
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        virtual void DataReceived() override;
-        virtual void Detaching() override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void DataReceived() override;
+        void Detaching() override;
 
         // Implementation of Connection
-        virtual void RequestSendStream(std::size_t sendSize) override;
-        virtual std::size_t MaxSendStreamSize() const override;
-        virtual infra::SharedPtr<infra::StreamReaderWithRewinding> ReceiveStream() override;
-        virtual void AckReceived() override;
-        virtual void CloseAndDestroy() override;
-        virtual void AbortAndDestroy() override;
+        void RequestSendStream(std::size_t sendSize) override;
+        std::size_t MaxSendStreamSize() const override;
+        infra::SharedPtr<infra::StreamReaderWithRewinding> ReceiveStream() override;
+        void AckReceived() override;
+        void CloseAndDestroy() override;
+        void AbortAndDestroy() override;
 
     private:
         void StreamWriterAllocatable();
@@ -103,14 +103,14 @@ namespace services
         public:
             explicit FrameReader(WebSocketClientConnectionObserver& client);
 
-            virtual void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
-            virtual uint8_t Peek(infra::StreamErrorPolicy& errorPolicy) override;
-            virtual infra::ConstByteRange ExtractContiguousRange(std::size_t max) override;
-            virtual infra::ConstByteRange PeekContiguousRange(std::size_t start) override;
-            virtual bool Empty() const override;
-            virtual std::size_t Available() const override;
-            virtual std::size_t ConstructSaveMarker() const override;
-            virtual void Rewind(std::size_t marker) override;
+            void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
+            uint8_t Peek(infra::StreamErrorPolicy& errorPolicy) override;
+            infra::ConstByteRange ExtractContiguousRange(std::size_t max) override;
+            infra::ConstByteRange PeekContiguousRange(std::size_t start) override;
+            bool Empty() const override;
+            std::size_t Available() const override;
+            std::size_t ConstructSaveMarker() const override;
+            void Rewind(std::size_t marker) override;
 
             void AckReceived();
             infra::SharedPtr<infra::StreamReaderWithRewinding> Reader();
@@ -165,18 +165,18 @@ namespace services
         using HttpClientBasic::Detach;
 
         // Implementation of Stoppable
-        virtual void Stop(const infra::Function<void()>& onDone) override;
+        void Stop(const infra::Function<void()>& onDone) override;
 
         // Implementation of HttpClientBasic
-        virtual void Attached() override;
-        virtual services::HttpHeaders Headers() const override;
-        virtual void StatusAvailable(HttpStatusCode statusCode) override;
-        virtual void HeaderAvailable(HttpHeader header) override;
-        virtual void BodyAvailable(infra::SharedPtr<infra::StreamReader>&& reader) override;
-        virtual void BodyComplete() override;
-        virtual void Done() override;
-        virtual void Error(bool intermittentFailure) override;
-        virtual void ConnectionFailed(HttpClientObserverFactory::ConnectFailReason reason) override;
+        void Attached() override;
+        services::HttpHeaders Headers() const override;
+        void StatusAvailable(HttpStatusCode statusCode) override;
+        void HeaderAvailable(HttpHeader header) override;
+        void BodyAvailable(infra::SharedPtr<infra::StreamReader>&& reader) override;
+        void BodyComplete() override;
+        void Done() override;
+        void Error(bool intermittentFailure) override;
+        void ConnectionFailed(HttpClientObserverFactory::ConnectFailReason reason) override;
 
     private:
         WebSocketClientObserverFactory::ConnectFailReason Translate(HttpClientObserverFactory::ConnectFailReason reason) const;
@@ -219,14 +219,14 @@ namespace services
         void Stop(const infra::Function<void()>& onDone);
 
         // Implementation of WebSocketClientConnector
-        virtual void Connect(WebSocketClientObserverFactory& factory) override;
-        virtual void CancelConnect(WebSocketClientObserverFactory& factory, const infra::Function<void()>& onDone) override;
+        void Connect(WebSocketClientObserverFactory& factory) override;
+        void CancelConnect(WebSocketClientObserverFactory& factory, const infra::Function<void()>& onDone) override;
 
     private:
         // Implementation of WebSocketClientInitiationResult
-        virtual void InitiationDone(services::Connection& connection) override;
-        virtual void InitiationError(WebSocketClientObserverFactory::ConnectFailReason reason) override;
-        virtual void InitiationCancelled() override;
+        void InitiationDone(services::Connection& connection) override;
+        void InitiationError(WebSocketClientObserverFactory::ConnectFailReason reason) override;
+        void InitiationCancelled() override;
 
     private:
         class WebSocketClientInitiation
@@ -241,8 +241,8 @@ namespace services
 
         private:
             // Implementation of HttpClientWebSocketInitiationResult
-            virtual void WebSocketInitiationDone(Connection& connection) override;
-            virtual void WebSocketInitiationError(WebSocketClientObserverFactory::ConnectFailReason reason) override;
+            void WebSocketInitiationDone(Connection& connection) override;
+            void WebSocketInitiationError(WebSocketClientObserverFactory::ConnectFailReason reason) override;
 
         private:
             WebSocketClientObserverFactory& clientObserverFactory;

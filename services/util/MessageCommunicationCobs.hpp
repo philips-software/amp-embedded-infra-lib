@@ -21,8 +21,8 @@ namespace services
         MessageCommunicationCobs(infra::BoundedVector<uint8_t>& sendStorage, infra::BoundedVector<uint8_t>& receivedMessage, hal::SerialCommunication& serial);
 
         // Implementation of MessageCommunication
-        virtual infra::SharedPtr<infra::StreamWriter> SendMessageStream(uint16_t size, const infra::Function<void(uint16_t size)>& onSent) override;
-        virtual std::size_t MaxSendMessageSize() const override;
+        infra::SharedPtr<infra::StreamWriter> SendMessageStream(uint16_t size, const infra::Function<void(uint16_t size)>& onSent) override;
+        std::size_t MaxSendMessageSize() const override;
 
     private:
         void ReceivedDataOnInterrupt(infra::ConstByteRange data);

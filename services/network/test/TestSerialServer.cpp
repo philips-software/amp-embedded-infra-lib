@@ -20,7 +20,7 @@ public:
         connectionFactoryMock.NewConnection(*serverConnectionObserverFactory, *connection, services::IPv4AddressLocalHost());
     }
 
-    ~SerialServerTest()
+    ~SerialServerTest() override
     {
         if (connectionPtr != nullptr)
         {
