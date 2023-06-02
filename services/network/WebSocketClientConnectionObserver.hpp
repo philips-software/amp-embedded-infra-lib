@@ -20,7 +20,7 @@ namespace services
         WebSocketClientObserverFactory() = default;
         WebSocketClientObserverFactory(const WebSocketClientObserverFactory& other) = delete;
         WebSocketClientObserverFactory& operator=(const WebSocketClientObserverFactory& other) = delete;
-        ~WebSocketClientObserverFactory() = default;
+        virtual ~WebSocketClientObserverFactory() = default;
 
     public:
         enum ConnectFailReason
@@ -44,7 +44,7 @@ namespace services
         WebSocketClientConnector() = default;
         WebSocketClientConnector(const WebSocketClientConnector& other) = delete;
         WebSocketClientConnector& operator=(const WebSocketClientConnector& other) = delete;
-        ~WebSocketClientConnector() = default;
+        virtual ~WebSocketClientConnector() = default;
 
     public:
         virtual void Connect(WebSocketClientObserverFactory& factory) = 0;
@@ -147,7 +147,7 @@ namespace services
         HttpClientWebSocketInitiationResult() = default;
         HttpClientWebSocketInitiationResult(const HttpClientWebSocketInitiationResult& other) = delete;
         HttpClientWebSocketInitiationResult& operator=(const HttpClientWebSocketInitiationResult& other) = delete;
-        ~HttpClientWebSocketInitiationResult() = default;
+        virtual ~HttpClientWebSocketInitiationResult() = default;
 
     public:
         virtual void WebSocketInitiationDone(Connection& connection) = 0;
@@ -195,7 +195,7 @@ namespace services
         WebSocketClientInitiationResult() = default;
         WebSocketClientInitiationResult(const WebSocketClientInitiationResult& other) = delete;
         WebSocketClientInitiationResult& operator=(const WebSocketClientInitiationResult& other) = delete;
-        ~WebSocketClientInitiationResult() = default;
+        virtual ~WebSocketClientInitiationResult() = default;
 
     public:
         virtual void InitiationDone(services::Connection& connection) = 0;

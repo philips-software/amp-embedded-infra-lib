@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+import "EchoAttributes.proto";
+
+package message_communication_security;
+
+message SymmetricKeyMaterial
+{
+    bytes key = 1 [(bytes_size) = 16];
+    bytes iv = 2 [(bytes_size) = 16];
+}
+
+service SymmetricKeyEstablishment
+{
+    option (service_id) = 3;
+
+    rpc ActivateNewKeyMaterial(SymmetricKeyMaterial) returns (Nothing) { option (method_id) = 1; }
+}

@@ -6,7 +6,6 @@
 #include "infra/util/Compatibility.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/Optional.hpp"
-#include "services/network/Connection.hpp"
 #include "services/util/MessageCommunication.hpp"
 
 namespace services
@@ -237,46 +236,6 @@ namespace services
         infra::SharedPtr<infra::StreamWriter> streamWriter;
         infra::IntrusiveList<ServiceProxy> sendRequesters;
         infra::Optional<uint32_t> serviceBusy;
-    };
-
-    class EchoOnConnection
-        : public EchoOnStreams
-        , public ConnectionObserver
-    {
-    public:
-        using EchoOnStreams::EchoOnStreams;
-
-        // Implementation of ConnectionObserver
-        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        void DataReceived() override;
-
-    protected:
-        void RequestSendStream(std::size_t size) override;
-        void BusyServiceDone() override;
-    };
-
-    class EchoOnMessageCommunication
-        : public EchoOnStreams
-        , public MessageCommunicationObserver
-    {
-    public:
-        EchoOnMessageCommunication(MessageCommunication& subject, EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
-
-        // Implementation of MessageCommunicationObserver
-        void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
-
-        void ServiceDone(Service& service) override;
-
-    protected:
-        void RequestSendStream(std::size_t size) override;
-        void BusyServiceDone() override;
-
-    private:
-        void ProcessMessage();
-
-    private:
-        infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
     };
 
     ////    Implementation    ////

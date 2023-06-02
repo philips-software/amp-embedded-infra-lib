@@ -2,6 +2,7 @@ add_library(infra.timer ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
 target_link_libraries(infra.timer PUBLIC
     infra.event
+    infra.stream
 )
 
 target_sources(infra.timer PRIVATE
@@ -28,6 +29,8 @@ target_sources(infra.timer PRIVATE
     TimerLimitedRepeatingWithClosingAction.hpp
     TimerService.cpp
     TimerService.hpp
+    TimeStreaming.cpp
+    TimeStreaming.hpp
 )
 
 add_subdirectory(test)
