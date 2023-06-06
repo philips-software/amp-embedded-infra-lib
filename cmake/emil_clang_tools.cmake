@@ -6,6 +6,7 @@ endfunction()
 
 function(emil_exclude_directory_from_clang_format directory)
     emil_get_subdirectories(directories DIRECTORIES ${directory})
+    list(APPEND directories ${directory})
     emil_get_targets_from_directories(targets DIRECTORIES ${directories})
 
     foreach(target ${targets})
