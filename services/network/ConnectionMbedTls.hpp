@@ -58,21 +58,21 @@ namespace services
         void CreatedObserver(infra::SharedPtr<services::ConnectionObserver> connectionObserver);
 
         // Implementation of ConnectionObserver
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        virtual void DataReceived() override;
-        virtual void Attached() override;
-        virtual void Detaching() override;
-        virtual void Close() override;
-        virtual void Abort() override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void DataReceived() override;
+        void Attached() override;
+        void Detaching() override;
+        void Close() override;
+        void Abort() override;
 
         // Implementation of ConnectionWithHostname
-        virtual void RequestSendStream(std::size_t sendSize) override;
-        virtual std::size_t MaxSendStreamSize() const override;
-        virtual infra::SharedPtr<infra::StreamReaderWithRewinding> ReceiveStream() override;
-        virtual void AckReceived() override;
-        virtual void CloseAndDestroy() override;
-        virtual void AbortAndDestroy() override;
-        virtual void SetHostname(infra::BoundedConstString hostname) override;
+        void RequestSendStream(std::size_t sendSize) override;
+        std::size_t MaxSendStreamSize() const override;
+        infra::SharedPtr<infra::StreamReaderWithRewinding> ReceiveStream() override;
+        void AckReceived() override;
+        void CloseAndDestroy() override;
+        void AbortAndDestroy() override;
+        void SetHostname(infra::BoundedConstString hostname) override;
 
         virtual void TlsInitFailure(int reason);
         virtual void TlsReadFailure(int reason);
@@ -158,7 +158,7 @@ namespace services
         ConnectionMbedTlsListener(AllocatorConnectionMbedTls& allocator, ServerConnectionObserverFactory& factory,
             CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, mbedtls_ssl_cache_context& serverCache, ConnectionMbedTls::CertificateValidation certificateValidation);
 
-        virtual void ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, services::IPAddress address) override;
+        void ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, services::IPAddress address) override;
 
         void SetListener(infra::SharedPtr<void> listener);
 
@@ -183,10 +183,10 @@ namespace services
     public:
         ConnectionMbedTlsConnector(ConnectionFactoryMbedTls& factory, ConnectionFactory& networkFactory, ClientConnectionObserverFactory& clientFactory);
 
-        virtual IPAddress Address() const override;
-        virtual uint16_t Port() const override;
-        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
-        virtual void ConnectionFailed(ConnectFailReason reason) override;
+        IPAddress Address() const override;
+        uint16_t Port() const override;
+        void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
+        void ConnectionFailed(ConnectFailReason reason) override;
 
     private:
         void CancelConnect();
@@ -214,9 +214,9 @@ namespace services
             ConnectionFactory& factory, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, ConnectionMbedTls::CertificateValidation certificateValidation = ConnectionMbedTls::CertificateValidation::Default);
         ~ConnectionFactoryMbedTls();
 
-        virtual infra::SharedPtr<void> Listen(uint16_t port, ServerConnectionObserverFactory& connectionObserverFactory, IPVersions versions = IPVersions::both) override;
-        virtual void Connect(ClientConnectionObserverFactory& connectionObserverFactory) override;
-        virtual void CancelConnect(ClientConnectionObserverFactory& connectionObserverFactory) override;
+        infra::SharedPtr<void> Listen(uint16_t port, ServerConnectionObserverFactory& connectionObserverFactory, IPVersions versions = IPVersions::both) override;
+        void Connect(ClientConnectionObserverFactory& connectionObserverFactory) override;
+        void CancelConnect(ClientConnectionObserverFactory& connectionObserverFactory) override;
 
         infra::SharedPtr<ConnectionMbedTls> Allocate(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address);
         void Remove(ConnectionMbedTlsConnector& connector);
@@ -247,14 +247,14 @@ namespace services
         explicit ConnectionFactoryWithNameResolverForTls(ConnectionFactoryWithNameResolver& connectionFactoryWithNameResolver);
 
         // Implementation of ConnectionFactoryWithNameResolver
-        virtual void Connect(ClientConnectionObserverFactoryWithNameResolver& factory) override;
-        virtual void CancelConnect(ClientConnectionObserverFactoryWithNameResolver& factory) override;
+        void Connect(ClientConnectionObserverFactoryWithNameResolver& factory) override;
+        void CancelConnect(ClientConnectionObserverFactoryWithNameResolver& factory) override;
 
         // Implementation of ClientConnectionObserverFactoryWithNameResolver
-        virtual infra::BoundedConstString Hostname() const override;
-        virtual uint16_t Port() const override;
-        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
-        virtual void ConnectionFailed(ConnectFailReason reason) override;
+        infra::BoundedConstString Hostname() const override;
+        uint16_t Port() const override;
+        void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
+        void ConnectionFailed(ConnectFailReason reason) override;
 
     private:
         void TryConnect();

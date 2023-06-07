@@ -38,8 +38,7 @@ namespace infra
 
     ConstByteRange StdStringInputStreamReader::PeekContiguousRange(std::size_t start)
     {
-        ConstByteRange result(reinterpret_cast<const uint8_t*>(string.data()) + offset + start, reinterpret_cast<const uint8_t*>(string.size()));
-
+        ConstByteRange result(reinterpret_cast<const uint8_t*>(string.data()) + offset + start, reinterpret_cast<const uint8_t*>(string.data()) + string.size());
         return result;
     }
 

@@ -13,10 +13,10 @@ namespace application
 
         explicit DecryptorAesTiny(infra::ConstByteRange key);
 
-        virtual infra::ByteRange StateBuffer() override;
-        virtual void Reset() override;
-        virtual void DecryptPart(infra::ByteRange data) override;
-        virtual bool DecryptAndAuthenticate(infra::ByteRange data) override;
+        infra::ByteRange StateBuffer() override;
+        void Reset() override;
+        void DecryptPart(infra::ByteRange data) override;
+        bool DecryptAndAuthenticate(infra::ByteRange data) override;
 
     private:
         void IncreaseCounter();

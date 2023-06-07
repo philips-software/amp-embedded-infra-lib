@@ -3,8 +3,8 @@
 
 namespace application
 {
-    template<class C>
-    void ForEach(const C& elements, std::function<void(const typename C::value_type&)> each, std::function<void()> between)
+    template<class C, class Between>
+    void ForEach(const C& elements, std::function<void(const typename C::value_type&)> each, Between between)
     {
         if (!elements.empty())
         {
@@ -288,7 +288,7 @@ namespace application
                 printer.Outdent();
                 printer.Print("}\n");
             }
-        };
+        }
     }
 
     bool Constructor::HasSourceCode() const

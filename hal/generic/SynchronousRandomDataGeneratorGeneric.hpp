@@ -10,7 +10,7 @@ namespace hal
         : public SynchronousRandomDataGenerator
     {
     public:
-        virtual void GenerateRandomData(infra::ByteRange result) override;
+        void GenerateRandomData(infra::ByteRange result) override;
 
     private:
         std::random_device randomDevice;

@@ -3,6 +3,7 @@
 
 #include "infra/stream/OutputStream.hpp"
 #include "infra/timer/DerivedTimerService.hpp"
+#include "infra/timer/TimeStreaming.hpp"
 #include "infra/util/Optional.hpp"
 
 namespace infra
@@ -44,8 +45,5 @@ namespace services
         infra::DerivedTimerService localTimeTimerService;
     };
 }
-
-infra::TextOutputStream operator<<(infra::TextOutputStream stream, const infra::TimePoint& timePoint);
-infra::TextOutputStream operator<<(infra::TextOutputStream stream, const infra::Duration& duration);
 
 #endif

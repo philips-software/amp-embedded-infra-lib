@@ -37,12 +37,12 @@ namespace infra
         SharedObjectAllocatorFixedSize& operator=(const SharedObjectAllocatorFixedSize& other) = delete;
         ~SharedObjectAllocatorFixedSize();
 
-        virtual SharedPtr<T> Allocate(ConstructionArgs... args) override;
-        virtual void OnAllocatable(infra::AutoResetFunction<void()>&& callback) override;
+        SharedPtr<T> Allocate(ConstructionArgs... args) override;
+        void OnAllocatable(infra::AutoResetFunction<void()>&& callback) override;
 
     private:
-        virtual void Destruct(const void* object) override;
-        virtual void Deallocate(void* control) override;
+        void Destruct(const void* object) override;
+        void Deallocate(void* control) override;
 
     private:
         std::size_t FreeListSize() const;

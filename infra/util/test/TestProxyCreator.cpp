@@ -12,7 +12,7 @@ class Peripheral
     : public PeripheralInterface
 {
 public:
-    void Send()
+    void Send() override
     {
         SendMock();
     }
@@ -29,7 +29,7 @@ public:
         , y(y)
     {}
 
-    void Send()
+    void Send() override
     {
         SendMock();
     }

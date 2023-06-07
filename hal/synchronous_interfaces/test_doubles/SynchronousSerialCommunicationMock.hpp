@@ -10,8 +10,8 @@ namespace hal
         : public SynchronousSerialCommunication
     {
     public:
-        virtual void SendData(infra::ConstByteRange data) override;
-        virtual bool ReceiveData(infra::ByteRange data) override;
+        void SendData(infra::ConstByteRange data) override;
+        bool ReceiveData(infra::ByteRange data) override;
 
         using ReceiveDataMockResult = std::pair<bool, std::vector<uint8_t>>;
 

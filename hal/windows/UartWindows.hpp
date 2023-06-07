@@ -73,8 +73,8 @@ namespace hal
         UartWindows(const std::string& name, DeviceName, UartWindowsConfig config = UartWindowsConfig());
         virtual ~UartWindows();
 
-        virtual void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) override;
-        virtual void SendData(infra::MemoryRange<const uint8_t> data, infra::Function<void()> actionOnCompletion = infra::emptyFunction) override;
+        void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) override;
+        void SendData(infra::MemoryRange<const uint8_t> data, infra::Function<void()> actionOnCompletion = infra::emptyFunction) override;
 
     private:
         void Open(const std::string& name, UartWindowsConfig config = UartWindowsConfig());

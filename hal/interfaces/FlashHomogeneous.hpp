@@ -22,11 +22,11 @@ namespace hal
         ~FlashHomogeneousBase() = default;
 
     public:
-        virtual T NumberOfSectors() const override;
-        virtual uint32_t SizeOfSector(T sectorIndex) const override;
+        T NumberOfSectors() const override;
+        uint32_t SizeOfSector(T sectorIndex) const override;
 
-        virtual T SectorOfAddress(T address) const override;
-        virtual T AddressOfSector(T sectorIndex) const override;
+        T SectorOfAddress(T address) const override;
+        T AddressOfSector(T sectorIndex) const override;
 
     private:
         T numberOfSectors;

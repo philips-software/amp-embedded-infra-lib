@@ -50,3 +50,13 @@ TEST(StdStringInputStreamTest, PeekLiteral)
     stream.Consume(1);
     EXPECT_TRUE(stream.Empty());
 }
+
+TEST(StdStringInputStreamTest, PeekContiguousRange_returns_expected_range_size)
+{
+    infra::StdStringInputStream::WithStorage stream(infra::inPlace, "abcdef");
+
+    EXPECT_EQ(6, stream.PeekContiguousRange().size());
+
+    stream.Consume(2);
+    EXPECT_EQ(4, stream.PeekContiguousRange().size());
+}

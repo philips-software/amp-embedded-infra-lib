@@ -35,7 +35,7 @@ public:
         clientAuthentication.Attach(httpClientObserver.MakePtr());
     }
 
-    ~HttpClientAuthenticationTest()
+    ~HttpClientAuthenticationTest() override
     {
         EXPECT_CALL(*httpClientObserver, Detaching());
     }

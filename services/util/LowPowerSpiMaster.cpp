@@ -1,4 +1,4 @@
-#include "LowPowerSpiMaster.hpp"
+#include "services/util/LowPowerSpiMaster.hpp"
 
 namespace hal
 {

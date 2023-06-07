@@ -61,14 +61,14 @@ namespace infra
 
         void Commit(); // Invalidates save markers, rewinding is not possible to points before Commit()
 
-        virtual void Extract(ByteRange range, StreamErrorPolicy& errorPolicy) override;
-        virtual uint8_t Peek(StreamErrorPolicy& errorPolicy) override;
-        virtual ConstByteRange ExtractContiguousRange(std::size_t max) override;
-        virtual ConstByteRange PeekContiguousRange(std::size_t start) override;
-        virtual bool Empty() const override;
-        virtual std::size_t Available() const override;
-        virtual std::size_t ConstructSaveMarker() const override;
-        virtual void Rewind(std::size_t marker) override;
+        void Extract(ByteRange range, StreamErrorPolicy& errorPolicy) override;
+        uint8_t Peek(StreamErrorPolicy& errorPolicy) override;
+        ConstByteRange ExtractContiguousRange(std::size_t max) override;
+        ConstByteRange PeekContiguousRange(std::size_t start) override;
+        bool Empty() const override;
+        std::size_t Available() const override;
+        std::size_t ConstructSaveMarker() const override;
+        void Rewind(std::size_t marker) override;
 
     private:
         QueueForOneReaderOneIrqWriter<T>& queue;

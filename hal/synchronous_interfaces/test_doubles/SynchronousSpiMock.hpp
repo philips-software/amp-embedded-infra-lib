@@ -10,7 +10,7 @@ namespace hal
         : public hal::SynchronousSpi
     {
     public:
-        virtual void SendAndReceive(infra::ConstByteRange sendData, infra::ByteRange receiveData, Action nextAction) override;
+        void SendAndReceive(infra::ConstByteRange sendData, infra::ByteRange receiveData, Action nextAction) override;
 
         MOCK_METHOD2(SendDataMock, void(std::vector<uint8_t> dataSent, Action nextAction));
         MOCK_METHOD1(ReceiveDataMock, std::vector<uint8_t>(Action nextAction));

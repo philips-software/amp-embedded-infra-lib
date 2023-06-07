@@ -41,11 +41,11 @@ namespace services
     public:
         using CucumberStep::CucumberStep;
 
-        virtual void Invoke(infra::JsonArray& arguments) override;
+        void Invoke(infra::JsonArray& arguments) override;
 
-        virtual bool HasStringArguments() const override;
-        virtual uint16_t NrArguments() const override;
-        virtual uint16_t NrFields() const override;
+        bool HasStringArguments() const override;
+        uint16_t NrArguments() const override;
+        uint16_t NrFields() const override;
 
         bool ContainsTableArgument(infra::BoundedConstString fieldName) const;
         infra::JsonArray GetTable() const;
@@ -81,7 +81,7 @@ namespace services
         virtual void Success();
         virtual void Error(infra::BoundedConstString failReason);
 
-        virtual void Invoke(infra::JsonArray& arguments) override;
+        void Invoke(infra::JsonArray& arguments) override;
 
         bool isActive{ false };
     };

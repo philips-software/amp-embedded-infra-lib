@@ -30,22 +30,22 @@ namespace infra
         MOCK_METHOD0(Destructed, void());
 
     protected:
-        virtual T& Get() override
+        T& Get() override
         {
             return createdObject;
         }
 
-        virtual const T& Get() const override
+        const T& Get() const override
         {
             return createdObject;
         }
 
-        virtual void Emplace() override
+        void Emplace() override
         {
             Constructed();
         }
 
-        virtual void Destroy() override
+        void Destroy() override
         {
             Destructed();
         }
@@ -67,22 +67,22 @@ namespace infra
         MOCK_METHOD0(Destructed, void());
 
     protected:
-        virtual T& Get() override
+        T& Get() override
         {
             return createdObject;
         }
 
-        virtual const T& Get() const override
+        const T& Get() const override
         {
             return createdObject;
         }
 
-        virtual void Emplace(ConstructionArg0 arg0) override
+        void Emplace(ConstructionArg0 arg0) override
         {
             Constructed(arg0);
         }
 
-        virtual void Destroy() override
+        void Destroy() override
         {
             Destructed();
         }
@@ -104,22 +104,22 @@ namespace infra
         MOCK_METHOD0(Destructed, void());
 
     protected:
-        virtual T& Get() override
+        T& Get() override
         {
             return createdObject;
         }
 
-        virtual const T& Get() const override
+        const T& Get() const override
         {
             return createdObject;
         }
 
-        virtual void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1) override
+        void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1) override
         {
             Constructed(arg0, arg1);
         }
 
-        virtual void Destroy() override
+        void Destroy() override
         {
             Destructed();
         }
@@ -141,22 +141,22 @@ namespace infra
         MOCK_METHOD0(Destructed, void());
 
     protected:
-        virtual T& Get() override
+        T& Get() override
         {
             return createdObject;
         }
 
-        virtual const T& Get() const override
+        const T& Get() const override
         {
             return createdObject;
         }
 
-        virtual void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2) override
+        void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2) override
         {
             Constructed(arg0, arg1, arg2);
         }
 
-        virtual void Destroy() override
+        void Destroy() override
         {
             Destructed();
         }
@@ -178,22 +178,22 @@ namespace infra
         MOCK_METHOD0(Destructed, void());
 
     protected:
-        virtual T& Get() override
+        T& Get() override
         {
             return createdObject;
         }
 
-        virtual const T& Get() const override
+        const T& Get() const override
         {
             return createdObject;
         }
 
-        virtual void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3) override
+        void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3) override
         {
             Constructed(arg0, arg1, arg2, arg3);
         }
 
-        virtual void Destroy() override
+        void Destroy() override
         {
             Destructed();
         }
@@ -215,22 +215,22 @@ namespace infra
         MOCK_METHOD0(Destructed, void());
 
     protected:
-        virtual T& Get() override
+        T& Get() override
         {
             return createdObject;
         }
 
-        virtual const T& Get() const override
+        const T& Get() const override
         {
             return createdObject;
         }
 
-        virtual void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3, ConstructionArg4 arg4) override
+        void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3, ConstructionArg4 arg4) override
         {
             Constructed(arg0, arg1, arg2, arg3, arg4);
         }
 
-        virtual void Destroy() override
+        void Destroy() override
         {
             Destructed();
         }
@@ -252,22 +252,22 @@ namespace infra
         MOCK_METHOD0(Destructed, void());
 
     protected:
-        virtual T& Get() override
+        T& Get() override
         {
             return createdObject;
         }
 
-        virtual const T& Get() const override
+        const T& Get() const override
         {
             return createdObject;
         }
 
-        virtual void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3, ConstructionArg4 arg4, ConstructionArg5 arg5) override
+        void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3, ConstructionArg4 arg4, ConstructionArg5 arg5) override
         {
             Constructed(arg0, arg1, arg2, arg3, arg4, arg5);
         }
 
-        virtual void Destroy() override
+        void Destroy() override
         {
             Destructed();
         }
@@ -285,12 +285,12 @@ namespace infra
         MOCK_METHOD0(Destructed, void());
 
     protected:
-        virtual void Emplace() override
+        void Emplace() override
         {
             Constructed();
         }
 
-        virtual void Destroy() override
+        void Destroy() override
         {
             Destructed();
         }
@@ -305,12 +305,12 @@ namespace infra
         MOCK_METHOD0(Destructed, void());
 
     protected:
-        virtual void Emplace(ConstructionArg0 arg0) override
+        void Emplace(ConstructionArg0 arg0) override
         {
             Constructed(arg0);
         }
 
-        virtual void Destroy() override
+        void Destroy() override
         {
             Destructed();
         }
@@ -325,12 +325,12 @@ namespace infra
         MOCK_METHOD0(Destructed, void());
 
     protected:
-        virtual void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1) override
+        void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1) override
         {
             Constructed(arg0, arg1);
         }
 
-        virtual void Destroy() override
+        void Destroy() override
         {
             Destructed();
         }
@@ -345,12 +345,12 @@ namespace infra
         MOCK_METHOD0(Destructed, void());
 
     protected:
-        virtual void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2) override
+        void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2) override
         {
             Constructed(arg0, arg1, arg2);
         }
 
-        virtual void Destroy() override
+        void Destroy() override
         {
             Destructed();
         }
@@ -365,12 +365,12 @@ namespace infra
         MOCK_METHOD0(Destructed, void());
 
     protected:
-        virtual void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3) override
+        void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3) override
         {
             Constructed(arg0, arg1, arg2, arg3);
         }
 
-        virtual void Destroy() override
+        void Destroy() override
         {
             Destructed();
         }
@@ -385,12 +385,12 @@ namespace infra
         MOCK_METHOD0(Destructed, void());
 
     protected:
-        virtual void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3, ConstructionArg4 arg4) override
+        void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3, ConstructionArg4 arg4) override
         {
             Constructed(arg0, arg1, arg2, arg3, arg4);
         }
 
-        virtual void Destroy() override
+        void Destroy() override
         {
             Destructed();
         }
@@ -405,12 +405,12 @@ namespace infra
         MOCK_METHOD0(Destructed, void());
 
     protected:
-        virtual void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3, ConstructionArg4 arg4, ConstructionArg5 arg5) override
+        void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3, ConstructionArg4 arg4, ConstructionArg5 arg5) override
         {
             Constructed(arg0, arg1, arg2, arg3, arg4, arg5);
         }
 
-        virtual void Destroy() override
+        void Destroy() override
         {
             Destructed();
         }

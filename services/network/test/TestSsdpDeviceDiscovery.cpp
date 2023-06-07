@@ -17,7 +17,7 @@ class SsdpDeviceDiscoveryTest
     : public testing::Test
 {
 public:
-    ~SsdpDeviceDiscoveryTest()
+    ~SsdpDeviceDiscoveryTest() override
     {
         ExpectLeaveMulticastIpv4();
         ExpectLeaveMulticastIpv6();

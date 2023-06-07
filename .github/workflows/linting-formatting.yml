@@ -46,12 +46,12 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: oxsecurity/megalinter@93700f8c21c59ea784a32abe23896e49e54463b8 # v6.22.2
+      - uses: oxsecurity/megalinter@0d014ffdef3307ca4a4cd1ddf482fc4f05733d7c # v7.0.4
         env:
           APPLY_FIXES: all
           VALIDATE_ALL_CODEBASE: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: github/codeql-action/upload-sarif@29b1f65c5e92e24fe6b6647da1eaabe529cec70f # v2.3.3
+      - uses: github/codeql-action/upload-sarif@83f0fe6c4988d98a455712a27f0255212bba9bd4 # v2.3.6
         if: ${{ success() }} || ${{ failure() }}
         with:
           sarif_file: megalinter-reports/megalinter-report.sarif

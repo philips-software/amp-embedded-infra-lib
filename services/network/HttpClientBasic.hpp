@@ -38,16 +38,16 @@ namespace services
 
     protected:
         // Implementation of HttpClientObserver
-        virtual void Detaching() override;
-        virtual void BodyComplete() override;
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void Detaching() override;
+        void BodyComplete() override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
     protected:
         // Implementation of HttpClientObserverFactory
-        virtual infra::BoundedConstString Hostname() const override;
-        virtual uint16_t Port() const override;
-        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::HttpClientObserver> client)>&& createdClientObserver) override;
-        virtual void ConnectionFailed(ConnectFailReason reason) override;
+        infra::BoundedConstString Hostname() const override;
+        uint16_t Port() const override;
+        void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::HttpClientObserver> client)>&& createdClientObserver) override;
+        void ConnectionFailed(ConnectFailReason reason) override;
 
     protected:
         void StartTimeout();
