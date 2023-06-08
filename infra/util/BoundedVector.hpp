@@ -664,7 +664,9 @@ namespace infra
     typename BoundedVector<T>::size_type erase(BoundedVector<T>& c, const T& value)
     {
         return erase_if(c, [&value](const auto& v)
-            { return v == value; });
+            {
+                return v == value;
+            });
     }
 
     template<class T, class Pred>

@@ -16,7 +16,9 @@ namespace services
 {
     NameLookup::NameLookup()
         : lookupThread([this]()
-              { Run(); })
+              {
+                  Run();
+              })
     {}
 
     NameLookup::~NameLookup()
@@ -80,26 +82,28 @@ namespace services
                     const auto ipv4Address = services::ConvertFromUint32(ntohl(address->sin_addr.s_addr));
                     infra::EventDispatcher::Instance().Schedule([this, ipv4Address]()
                         {
-                        std::lock_guard<std::mutex> lock(mutex);
-                        if (&nameLookup.front() == currentLookup)
-                        {
-                            nameLookup.pop_front();
-                            currentLookup->NameLookupDone(ipv4Address, infra::Now() + std::chrono::minutes(5));
-                        }
-                        condition.notify_one(); });
+                            std::lock_guard<std::mutex> lock(mutex);
+                            if (&nameLookup.front() == currentLookup)
+                            {
+                                nameLookup.pop_front();
+                                currentLookup->NameLookupDone(ipv4Address, infra::Now() + std::chrono::minutes(5));
+                            }
+                            condition.notify_one();
+                        });
                     return;
                 }
 
         infra::EventDispatcher::Instance().Schedule([this]()
             {
-            std::unique_lock<std::mutex> lock(mutex);
-            if (&nameLookup.front() == currentLookup)
-            {
-                nameLookup.pop_front();
-                auto lookup = currentLookup;
-                lock.unlock();
-                lookup->NameLookupFailed();
-            }
-            condition.notify_one(); });
+                std::unique_lock<std::mutex> lock(mutex);
+                if (&nameLookup.front() == currentLookup)
+                {
+                    nameLookup.pop_front();
+                    auto lookup = currentLookup;
+                    lock.unlock();
+                    lookup->NameLookupFailed();
+                }
+                condition.notify_one();
+            });
     }
 }

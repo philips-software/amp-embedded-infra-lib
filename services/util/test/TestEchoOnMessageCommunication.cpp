@@ -32,7 +32,9 @@ TEST_F(EchoOnMessageCommunicationTest, invoke_service_proxy_method)
     testing::StrictMock<infra::MockCallback<void()>> onGranted;
     EXPECT_CALL(messageCommunication, RequestSendMessage(18));
     serviceProxy.RequestSend([&onGranted]()
-        { onGranted.callback(); });
+        {
+            onGranted.callback();
+        });
 
     infra::ByteOutputStreamWriter::WithStorage<128> writer;
     EXPECT_CALL(onGranted, callback());

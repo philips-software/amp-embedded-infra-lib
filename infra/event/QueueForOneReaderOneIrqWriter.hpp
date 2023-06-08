@@ -234,7 +234,9 @@ namespace infra
     {
         if (!Empty() && !notificationScheduled.exchange(true))
             infra::EventDispatcher::Instance().Schedule([this]()
-                { DataAvailable(); });
+                {
+                    DataAvailable();
+                });
     }
 
     template<class T>

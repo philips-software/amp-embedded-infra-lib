@@ -55,7 +55,9 @@ TEST_F(SharedObjectAllocatorFixedSizeTest, invoke_on_allocatable_when_WeakPtrs_e
 
     testing::StrictMock<infra::MockCallback<void()>> callback;
     allocator.OnAllocatable([&]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
 
     {
         infra::WeakPtr<infra::MonitoredConstructionObject> weakObject;

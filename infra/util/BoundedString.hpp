@@ -1661,7 +1661,9 @@ namespace infra
     {
         return lhs.size() == rhs.size() &&
                std::equal(std::begin(lhs), std::end(lhs), std::begin(rhs), [](T a, U b)
-                   { return std::tolower(a) == std::tolower(b); });
+                   {
+                       return std::tolower(a) == std::tolower(b);
+                   });
     }
 
     template<class T>
@@ -1669,7 +1671,9 @@ namespace infra
     {
         return lhs.size() == std::strlen(rhs) && //NOSONAR
                std::equal(std::begin(lhs), std::end(lhs), rhs, [](T a, T b)
-                   { return std::tolower(a) == std::tolower(b); });
+                   {
+                       return std::tolower(a) == std::tolower(b);
+                   });
     }
 
     template<class T>

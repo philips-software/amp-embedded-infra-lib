@@ -60,7 +60,9 @@ namespace infra
         auto member = object.GetOptionalString(token.name);
 
         return infra::TransformOptional(member, [](auto value)
-            { return value.ToStdString(); });
+            {
+                return value.ToStdString();
+            });
     }
 
     int32_t JsonObjectNavigator::operator/(JsonIntegerNavigatorToken token) const

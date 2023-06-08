@@ -12,13 +12,16 @@ int main(int argc, const char* argv[], const char* env[])
     static services::MdnsClient mdns(network.DatagramFactory(), network.Multicast(), services::IPVersions::ipv4);
     static services::MdnsQueryImpl query(mdns, services::DnsType::dnsTypeA, "discovery", [](infra::ConstByteRange data)
         {
-        services::IPv4Address address;
-        infra::Copy(data, infra::MakeByteRange(address));
+            services::IPv4Address address;
+            infra::Copy(data, infra::MakeByteRange(address));
 
-        tracer.tracer.Trace() << "Found mDNS server on: " << address; });
+            tracer.tracer.Trace() << "Found mDNS server on: " << address;
+        });
 
     infra::TimerRepeating queryTimer(std::chrono::seconds(5), []
-        { query.Ask(); });
+        {
+            query.Ask();
+        });
 
     network.Run();
 

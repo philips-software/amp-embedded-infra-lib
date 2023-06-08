@@ -96,7 +96,8 @@ namespace services
         bodyReaderAccess.SetAction([self]()
             {
                 if (auto sharedSelf = self.lock())
-                    sharedSelf->BodyReaderDestroyed(); });
+                    sharedSelf->BodyReaderDestroyed();
+            });
     }
 
     void HttpClientImpl::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -395,7 +396,9 @@ namespace services
     void HttpClientImpl::SendingStateForwardSendStream::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         chunkWriter.OnAllocatable([this]()
-            { Activate(); });
+            {
+                Activate();
+            });
 
         client.Observer().SendStreamAvailable(chunkWriter.Emplace(*this, std::move(writer)));
     }

@@ -17,8 +17,12 @@ namespace hal
         this->onDone = onDone;
 
         i2cMaster.SendData(address, infra::MakeByteRange(this->dataRegister), hal::Action::repeatedStart, [this](hal::Result, uint32_t numberOfBytesSent)
-            { i2cMaster.ReceiveData(address, readData, hal::Action::stop, [this](hal::Result)
-                  { this->onDone(); }); });
+            {
+                i2cMaster.ReceiveData(address, readData, hal::Action::stop, [this](hal::Result)
+                    {
+                        this->onDone();
+                    });
+            });
     }
 
     template<class T>
@@ -29,8 +33,12 @@ namespace hal
         this->onDone = onDone;
 
         i2cMaster.SendData(address, infra::MakeByteRange(this->dataRegister), hal::Action::continueSession, [this](hal::Result, uint32_t)
-            { i2cMaster.SendData(address, writeData, hal::Action::stop, [this](hal::Result, uint32_t)
-                  { this->onDone(); }); });
+            {
+                i2cMaster.SendData(address, writeData, hal::Action::stop, [this](hal::Result, uint32_t)
+                    {
+                        this->onDone();
+                    });
+            });
     }
 
     template class I2cMasterRegisterAccess<uint8_t>;

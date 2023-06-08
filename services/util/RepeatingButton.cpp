@@ -9,7 +9,9 @@ namespace services
         , callback(aCallback)
     {
         this->buttonPin.EnableInterrupt([this]()
-            { ButtonChanged(); },
+            {
+                ButtonChanged();
+            },
             hal::InterruptTrigger::bothEdges);
     }
 
@@ -33,9 +35,13 @@ namespace services
         if (!debounceEnd.Armed())
         {
             debounceEnd.Start(config.debounceDuration, [this]()
-                { DebounceEnd(); });
+                {
+                    DebounceEnd();
+                });
             repeatingFireTimer.Start(config.initialDelay, config.successiveDelay, [this]()
-                { callback(); });
+                {
+                    callback();
+                });
         }
     }
 

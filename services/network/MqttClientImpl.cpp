@@ -283,7 +283,9 @@ namespace services
         , username(username)
         , password(password)
         , timeout(std::chrono::minutes(1), [this]()
-              { Timeout(); })
+              {
+                  Timeout();
+              })
     {}
 
     void MqttClientImpl::StateConnecting::Connected()
@@ -327,18 +329,19 @@ namespace services
 
             factory.ConnectionEstablished([this](infra::SharedPtr<MqttClientObserver> observer)
                 {
-                if (observer)
-                {
-                    auto& clientConnectionCopy = clientConnection;
-                    auto& newState = clientConnection.state.Emplace<StateConnected>(clientConnection);
-                    clientConnectionCopy.Attach(observer);
-                    newState.HandleDataReceived();
-                }
-                else
-                {
-                    signaledFailure = true; // The factory already got a ConnectionEstablished, so it should not get a ConnectionFailed
-                    clientConnection.Abort();
-                } });
+                    if (observer)
+                    {
+                        auto& clientConnectionCopy = clientConnection;
+                        auto& newState = clientConnection.state.Emplace<StateConnected>(clientConnection);
+                        clientConnectionCopy.Attach(observer);
+                        newState.HandleDataReceived();
+                    }
+                    else
+                    {
+                        signaledFailure = true; // The factory already got a ConnectionEstablished, so it should not get a ConnectionFailed
+                        clientConnection.Abort();
+                    }
+                });
         }
         else
             clientConnection.Abort();
@@ -516,7 +519,9 @@ namespace services
         QueueSendOperation<OperationPubAck>(*this);
 
         infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<MqttClientImpl>& client)
-            { client->DataReceived(); },
+            {
+                client->DataReceived();
+            },
             infra::MakeContainedSharedObject(clientConnection, clientConnection.ConnectionObserver::Subject().ObserverPtr()));
     }
 
@@ -539,7 +544,9 @@ namespace services
     void MqttClientImpl::StateConnected::StartPing()
     {
         pingTimer.Start(clientConnection.pingInterval, [this]()
-            { SendPing(); });
+            {
+                SendPing();
+            });
     }
 
     void MqttClientImpl::StateConnected::SendPing()
@@ -560,7 +567,9 @@ namespace services
     {
         waitingForPingReply = true;
         pingTimer.Start(clientConnection.operationTimeout, [this]()
-            { PingReplyTimeout(); });
+            {
+                PingReplyTimeout();
+            });
     }
 
     void MqttClientImpl::StateConnected::PingReplyTimeout()
@@ -588,7 +597,9 @@ namespace services
         MqttFormatter formatter(stream);
 
         connectedState.operationTimeout.Start(connectedState.ClientConnection().operationTimeout, [this]()
-            { connectedState.ClientConnection().Abort(); });
+            {
+                connectedState.ClientConnection().Abort();
+            });
 
         formatter.MessagePublish(connectedState.ClientConnection().Observer(), connectedState.GeneratePacketIdentifier());
     }
@@ -615,7 +626,9 @@ namespace services
         MqttFormatter formatter(stream);
 
         connectedState.operationTimeout.Start(connectedState.ClientConnection().operationTimeout, [this]()
-            { connectedState.ClientConnection().Abort(); });
+            {
+                connectedState.ClientConnection().Abort();
+            });
 
         formatter.MessageSubscribe(connectedState.ClientConnection().Observer());
     }

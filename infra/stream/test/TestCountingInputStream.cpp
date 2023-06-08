@@ -24,7 +24,9 @@ TEST(CountingInputStreamTest, Extract_but_fails)
 
     std::array<uint8_t, 4> data;
     EXPECT_CALL(reader, Extract(infra::MakeRange(data), testing::_)).WillOnce(testing::Invoke([](infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy)
-        { errorPolicy.ReportResult(false); }));
+        {
+            errorPolicy.ReportResult(false);
+        }));
     countingReader.Extract(data, errorPolicy);
 
     EXPECT_EQ(0, countingReader.TotalRead());
@@ -114,7 +116,9 @@ TEST(CountingStreamReaderWithRewindingTest, Extract_but_fails)
 
     std::array<uint8_t, 4> data;
     EXPECT_CALL(reader, Extract(infra::MakeRange(data), testing::_)).WillOnce(testing::Invoke([](infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy)
-        { errorPolicy.ReportResult(false); }));
+        {
+            errorPolicy.ReportResult(false);
+        }));
     countingReader.Extract(data, errorPolicy);
 
     EXPECT_EQ(0, countingReader.TotalRead());

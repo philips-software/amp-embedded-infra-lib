@@ -6,7 +6,9 @@ TEST(AutoResetMultiFunctionTest, IsInvokeable)
 {
     infra::MockCallback<void()> m;
     infra::AutoResetMultiFunction<void()>::And<void(bool)> f([&m]()
-        { m.callback(); });
+        {
+            m.callback();
+        });
 
     EXPECT_CALL(m, callback());
     f();
@@ -16,7 +18,9 @@ TEST(AutoResetMultiFunctionTest, IsResetAfterInvoke)
 {
     infra::MockCallback<void()> m;
     infra::AutoResetMultiFunction<void()>::And<void(bool)>::And<void(int)> f([&m]()
-        { m.callback(); });
+        {
+            m.callback();
+        });
 
     EXPECT_CALL(m, callback());
     f();
@@ -59,7 +63,9 @@ TEST(AutoResetMultiFunctionTest, TestMoveAssign)
 {
     infra::MockCallback<void()> m;
     infra::AutoResetMultiFunction<void()>::And<void(bool)> f([&m]()
-        { m.callback(); });
+        {
+            m.callback();
+        });
     infra::AutoResetMultiFunction<void()>::And<void(bool)> f2;
     f2 = std::move(f);
     EXPECT_FALSE(static_cast<bool>(f));
@@ -71,7 +77,9 @@ TEST(AutoResetMultiFunctionTest, TestAssignNullptr)
 {
     infra::MockCallback<void()> m;
     infra::AutoResetMultiFunction<void()>::And<void(bool)> f([&m]()
-        { m.callback(); });
+        {
+            m.callback();
+        });
     f = nullptr;
     EXPECT_FALSE(f);
 }
@@ -80,7 +88,9 @@ TEST(AutoResetMultiFunctionTest, TestClone)
 {
     infra::MockCallback<void(int)> m;
     infra::AutoResetMultiFunction<void(int)> f([&m](int x)
-        { m.callback(x); });
+        {
+            m.callback(x);
+        });
 
     EXPECT_CALL(m, callback(1));
     f.Clone()(1);
@@ -90,7 +100,9 @@ TEST(AutoResetMultiFunctionTest, TestClone)
 TEST(AutoResetMultiFunctionTest, TestReturnValue)
 {
     infra::AutoResetMultiFunction<int()> f([]()
-        { return 1; });
+        {
+            return 1;
+        });
     EXPECT_EQ(1, f());
 }
 
@@ -98,7 +110,9 @@ TEST(AutoResetMultiFunctionTest, TestParameter)
 {
     infra::MockCallback<void(int)> m;
     infra::AutoResetMultiFunction<void(int)> f([&m](int x)
-        { m.callback(x); });
+        {
+            m.callback(x);
+        });
     EXPECT_CALL(m, callback(1));
     f(1);
 }

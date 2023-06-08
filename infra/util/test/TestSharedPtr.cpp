@@ -417,7 +417,9 @@ TEST_F(SharedPtrTest, construct_AccessedBySharedPtr)
 
     infra::MockCallback<void()> cb;
     infra::AccessedBySharedPtr sharedObject([&cb]()
-        { cb.callback(); });
+        {
+            cb.callback();
+        });
 
     {
         infra::WeakPtr<Object> weakObject(sharedObject.MakeShared(object));
@@ -438,7 +440,9 @@ TEST_F(SharedPtrTest, construct_AccessedBySharedPtr_and_set_action_later)
     infra::AccessedBySharedPtr sharedObject;
 
     sharedObject.SetAction([&cb]()
-        { cb.callback(); });
+        {
+            cb.callback();
+        });
 
     {
         infra::WeakPtr<Object> weakObject(sharedObject.MakeShared(object));

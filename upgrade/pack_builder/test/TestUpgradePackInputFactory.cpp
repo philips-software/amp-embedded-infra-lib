@@ -12,14 +12,15 @@ public:
         : fileSystem("bin_file", std::vector<uint8_t>{})
         , execute([this]
               {
-            fileSystem.WriteFile("hex_file", std::vector<std::string>{ ":020000040001f9", ":0100000001fe", ":00000001FF" });
-            fileSystem.WriteBinaryFile("elf_file", std::vector<uint8_t>{ 'E', 'L', 'F', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
+                  fileSystem.WriteFile("hex_file", std::vector<std::string>{ ":020000040001f9", ":0100000001fe", ":00000001FF" });
+                  fileSystem.WriteBinaryFile("elf_file", std::vector<uint8_t>{ 'E', 'L', 'F', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
 
-            targets = application::SupportedTargets::Create()
-                .AddCmd("cmd")
-                .AddBin("bin", 1234)
-                .AddHex("hex")
-                .AddElf("elf", 5678); })
+                  targets = application::SupportedTargets::Create()
+                                .AddCmd("cmd")
+                                .AddBin("bin", 1234)
+                                .AddHex("hex")
+                                .AddElf("elf", 5678);
+              })
         , factory(fileSystem, targets, encryptor)
     {}
 

@@ -7,9 +7,13 @@ namespace services
         : pin(pin)
         , debugLedTimer(
               offDuration, [this]()
-              { this->pin.Set(true); },
+              {
+                  this->pin.Set(true);
+              },
               onDuration, [this]()
-              { this->pin.Set(false); },
+              {
+                  this->pin.Set(false);
+              },
               timerServiceId)
     {}
 

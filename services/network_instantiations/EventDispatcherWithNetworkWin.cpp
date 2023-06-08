@@ -190,19 +190,21 @@ namespace services
         events.push_back(wakeUpEvent);
         functions.push_back([this]()
             {
-            BOOL result = WSAResetEvent(wakeUpEvent);
-            assert(result == TRUE); });
+                BOOL result = WSAResetEvent(wakeUpEvent);
+                assert(result == TRUE);
+            });
 
         for (auto& listener : listeners)
         {
             events.push_back(listener.event);
             functions.push_back([&listener]()
                 {
-                WSANETWORKEVENTS networkEvents;
-                WSAEnumNetworkEvents(listener.listenSocket, listener.event, &networkEvents);
-                assert((networkEvents.lNetworkEvents & FD_ACCEPT) != 0);
+                    WSANETWORKEVENTS networkEvents;
+                    WSAEnumNetworkEvents(listener.listenSocket, listener.event, &networkEvents);
+                    assert((networkEvents.lNetworkEvents & FD_ACCEPT) != 0);
 
-                listener.Accept(); });
+                    listener.Accept();
+                });
         }
 
         for (auto& connector : connectors)
@@ -210,14 +212,15 @@ namespace services
             events.push_back(connector.event);
             functions.push_back([&connector]()
                 {
-                WSANETWORKEVENTS networkEvents;
-                WSAEnumNetworkEvents(connector.connectSocket, connector.event, &networkEvents);
-                assert((networkEvents.lNetworkEvents & FD_CONNECT) != 0);
+                    WSANETWORKEVENTS networkEvents;
+                    WSAEnumNetworkEvents(connector.connectSocket, connector.event, &networkEvents);
+                    assert((networkEvents.lNetworkEvents & FD_CONNECT) != 0);
 
-                if (networkEvents.iErrorCode[FD_CONNECT_BIT] != 0)
-                    connector.Failed();
-                else
-                    connector.Connected(); });
+                    if (networkEvents.iErrorCode[FD_CONNECT_BIT] != 0)
+                        connector.Failed();
+                    else
+                        connector.Connected();
+                });
         }
 
         for (auto& weakConnection : connections)
@@ -233,18 +236,19 @@ namespace services
                     events.push_back(connection->event);
                     functions.push_back([weakConnection]()
                         {
-                        if (infra::SharedPtr<ConnectionWin> connection = weakConnection)
-                        {
-                            WSANETWORKEVENTS networkEvents;
-                            WSAEnumNetworkEvents(connection->socket, connection->event, &networkEvents);
+                            if (infra::SharedPtr<ConnectionWin> connection = weakConnection)
+                            {
+                                WSANETWORKEVENTS networkEvents;
+                                WSAEnumNetworkEvents(connection->socket, connection->event, &networkEvents);
 
-                            if ((networkEvents.lNetworkEvents & FD_READ) != 0)
-                                connection->Receive();
-                            if ((networkEvents.lNetworkEvents & FD_WRITE) != 0)
-                                connection->Send();
-                            if ((networkEvents.lNetworkEvents & FD_CLOSE) != 0)
-                                connection->Receive();
-                        } });
+                                if ((networkEvents.lNetworkEvents & FD_READ) != 0)
+                                    connection->Receive();
+                                if ((networkEvents.lNetworkEvents & FD_WRITE) != 0)
+                                    connection->Send();
+                                if ((networkEvents.lNetworkEvents & FD_CLOSE) != 0)
+                                    connection->Receive();
+                            }
+                        });
                 }
         }
 
@@ -260,16 +264,17 @@ namespace services
                 events.push_back(datagram->event);
                 functions.push_back([weakDatagram]()
                     {
-                    if (infra::SharedPtr<DatagramWin> datagram = weakDatagram)
-                    {
-                        WSANETWORKEVENTS networkEvents;
-                        WSAEnumNetworkEvents(datagram->socket, datagram->event, &networkEvents);
+                        if (infra::SharedPtr<DatagramWin> datagram = weakDatagram)
+                        {
+                            WSANETWORKEVENTS networkEvents;
+                            WSAEnumNetworkEvents(datagram->socket, datagram->event, &networkEvents);
 
-                        if ((networkEvents.lNetworkEvents & FD_READ) != 0)
-                            datagram->Receive();
-                        if ((networkEvents.lNetworkEvents & FD_WRITE) != 0)
-                            datagram->Send();
-                    } });
+                            if ((networkEvents.lNetworkEvents & FD_READ) != 0)
+                                datagram->Receive();
+                            if ((networkEvents.lNetworkEvents & FD_WRITE) != 0)
+                                datagram->Send();
+                        }
+                    });
             }
         }
 
@@ -285,10 +290,16 @@ namespace services
             std::abort();
 
         connections.remove_if([](const infra::WeakPtr<ConnectionWin>& connection)
-            { return connection.lock() == nullptr; });
+            {
+                return connection.lock() == nullptr;
+            });
         datagrams.remove_if([](const infra::WeakPtr<DatagramWin>& datagram)
-            { return datagram.lock() == nullptr; });
+            {
+                return datagram.lock() == nullptr;
+            });
         datagramsMultiple.remove_if([](const infra::WeakPtr<DatagramExchangeMultiple>& datagram)
-            { return datagram.lock() == nullptr; });
+            {
+                return datagram.lock() == nullptr;
+            });
     }
 }

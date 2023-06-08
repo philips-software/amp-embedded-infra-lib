@@ -52,7 +52,8 @@ TEST_F(BondStorageSynchronizerTest, construction_synchronises_empty_reference_bo
             ASSERT_TRUE(onAddress(otherList.front()));
 
             EXPECT_CALL(referenceStorage, IsBondStored(infra::CheckByteRangeContents(infra::MakeRange(otherList.back())))).WillOnce(testing::Return(false));
-            ASSERT_TRUE(onAddress(otherList.back())); });
+            ASSERT_TRUE(onAddress(otherList.back()));
+        });
 
     EXPECT_CALL(referenceStorage, IterateBondedDevices(testing::_));
 
@@ -73,7 +74,8 @@ TEST_F(BondStorageSynchronizerTest, construction_synchronises_empty_other_bond_s
 
             EXPECT_CALL(otherStorage, IsBondStored(infra::CheckByteRangeContents(infra::MakeRange(referenceList.back())))).WillOnce(testing::Return(false));
             EXPECT_CALL(otherStorage, UpdateBondedDevice(infra::CheckByteRangeContents(infra::MakeRange(referenceList.back()))));
-            onAddress(referenceList.back()); });
+            onAddress(referenceList.back());
+        });
 
     services::BondStorageSynchronizerImpl bondStorageSynchronizer(referenceStorage, otherStorage);
 }
@@ -89,7 +91,8 @@ TEST_F(BondStorageSynchronizerTest, construction_synchronises_unequal_bond_stora
             ASSERT_FALSE(onAddress(otherList.front()));
 
             EXPECT_CALL(referenceStorage, IsBondStored(infra::CheckByteRangeContents(infra::MakeRange(otherList.back())))).WillOnce(testing::Return(false));
-            ASSERT_TRUE(onAddress(otherList.back())); });
+            ASSERT_TRUE(onAddress(otherList.back()));
+        });
 
     EXPECT_CALL(referenceStorage, IterateBondedDevices(testing::_)).WillOnce([this, referenceList](infra::Function<void(hal::MacAddress)> onAddress)
         {
@@ -98,7 +101,8 @@ TEST_F(BondStorageSynchronizerTest, construction_synchronises_unequal_bond_stora
 
             EXPECT_CALL(otherStorage, IsBondStored(infra::CheckByteRangeContents(infra::MakeRange(referenceList.back())))).WillOnce(testing::Return(false));
             EXPECT_CALL(otherStorage, UpdateBondedDevice(infra::CheckByteRangeContents(infra::MakeRange(referenceList.back()))));
-            onAddress(referenceList.back()); });
+            onAddress(referenceList.back());
+        });
 
     services::BondStorageSynchronizerImpl bondStorageSynchronizer(referenceStorage, otherStorage);
 }
@@ -117,7 +121,8 @@ public:
                 {
                     EXPECT_CALL(referenceStorage, IsBondStored(infra::CheckByteRangeContents(infra::MakeRange(address)))).WillOnce(testing::Return(true));
                     onAddress(address);
-                } });
+                }
+            });
 
         EXPECT_CALL(referenceStorage, IterateBondedDevices(testing::_)).WillOnce([this, list](infra::Function<void(hal::MacAddress)> onAddress)
             {
@@ -125,7 +130,8 @@ public:
                 {
                     EXPECT_CALL(otherStorage, IsBondStored(infra::CheckByteRangeContents(infra::MakeRange(address)))).WillOnce(testing::Return(true));
                     onAddress(address);
-                } });
+                }
+            });
     }
 
     infra::Execute execute{ [this]()

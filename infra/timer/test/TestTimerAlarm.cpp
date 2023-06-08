@@ -14,7 +14,9 @@ TEST_F(TimerAlarmTest, TimerAlarmTriggersOnceAfterDuration)
     EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(1)));
 
     infra::TimerAlarm timer(std::chrono::seconds(1), [&callback]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
 
     ForwardTime(std::chrono::seconds(5));
 };
@@ -26,7 +28,9 @@ TEST_F(TimerAlarmTest, TimerAlarmTriggersAgainAfterADay)
     EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(1) + std::chrono::hours(24)));
 
     infra::TimerAlarm timer(std::chrono::seconds(1), [&callback]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
 
     ForwardTime(std::chrono::seconds(5) + std::chrono::hours(24));
 };
@@ -37,7 +41,9 @@ TEST_F(TimerAlarmTest, TimerAlarmTriggersAgainWhenTimeJumpsBack)
     EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(1))).Times(2);
 
     infra::TimerAlarm timer(std::chrono::seconds(1), [&callback]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
 
     ForwardTime(std::chrono::seconds(5));
     JumpForwardTime(-std::chrono::hours(1));
@@ -51,7 +57,9 @@ TEST_F(TimerAlarmTest, TimerAlarmTriggersAgainNextDayEvenWhenTimeJumpedInBetween
     EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(1) + std::chrono::hours(24)));
 
     infra::TimerAlarm timer(std::chrono::seconds(1), [&callback]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
 
     ForwardTime(std::chrono::seconds(5));
     JumpForwardTime(std::chrono::hours(1));
@@ -65,7 +73,9 @@ TEST_F(TimerAlarmTest, TimerAlarmTriggersAgainTodayEvenWhenTimeJumpedInBetween)
     EXPECT_CALL(callback, callback()).With(After(std::chrono::hours(1) + std::chrono::hours(24)));
 
     infra::TimerAlarm timer(std::chrono::hours(1), [&callback]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
 
     ForwardTime(std::chrono::hours(24) + std::chrono::minutes(1));
     JumpForwardTime(std::chrono::minutes(1));
@@ -78,7 +88,9 @@ TEST_F(TimerAlarmTest, TimerAlarmTriggersDayLaterTimeJumpedOverTriggerMoment)
     EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(1) + std::chrono::hours(24)));
 
     infra::TimerAlarm timer(std::chrono::seconds(1), [&callback]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
 
     JumpForwardTime(std::chrono::hours(1));
     ForwardTime(std::chrono::hours(24));

@@ -48,9 +48,13 @@ int main(int argc, char* argv[])
 
     args::Group commands(parser, "Commands:");
     args::Command generateKeysCommand(commands, "generate_keys", "Generate upgrade keys and save in protobuf format to the specified output file[Keys.bin].", [](args::Subparser& p)
-        { GenerateUpgradeKeys(p); });
+        {
+            GenerateUpgradeKeys(p);
+        });
     args::Command convertKeysCommand(commands, "convert_keys", "Convert upgrade keys from the provided cpp file and save in protobuf format to the specified output file[Keys.bin].", [](args::Subparser& p)
-        { ConvertUpgradeKeys(p); });
+        {
+            ConvertUpgradeKeys(p);
+        });
 
     args::Group arguments(parser, "Optional arguments:");
     args::HelpFlag help(arguments, "help", "Display this help menu.", { 'h', "help" });

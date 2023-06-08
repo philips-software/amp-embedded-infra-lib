@@ -47,7 +47,9 @@ TEST_F(FlashQuadSpiCypressFllTest, ReadData)
 
     std::array<uint8_t, 4> buffer;
     flash.ReadBuffer(buffer, 0, [this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     ExecuteAllActions();
 
     EXPECT_EQ(receiveData, buffer);
@@ -62,7 +64,9 @@ TEST_F(FlashQuadSpiCypressFllTest, ReadDataAtNonZeroAddress)
 
     std::array<uint8_t, 4> buffer;
     flash.ReadBuffer(buffer, 0 + 0x123456, [this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     ExecuteAllActions();
 
     EXPECT_EQ(receiveData, buffer);
@@ -76,7 +80,9 @@ TEST_F(FlashQuadSpiCypressFllTest, WriteData)
     EXPECT_POLL_WRITE_DONE();
 
     flash.WriteBuffer(sendData, 0, [this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     ExecuteAllActions();
 }
 
@@ -88,7 +94,9 @@ TEST_F(FlashQuadSpiCypressFllTest, WriteDataFinishesOnFlagPoll)
     EXPECT_POLL_WRITE_DONE();
 
     flash.WriteBuffer(sendData, 0, [this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     ExecuteAllActions();
 
     EXPECT_CALL(finished, callback());
@@ -142,7 +150,9 @@ TEST_F(FlashQuadSpiCypressFllTest, EraseFirstSector)
     EXPECT_POLL_WRITE_DONE();
 
     flash.EraseSector(0, [this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     ExecuteAllActions();
 }
 
@@ -153,7 +163,9 @@ TEST_F(FlashQuadSpiCypressFllTest, EraseFirstSectorFinishesOnFlagPoll)
     EXPECT_POLL_WRITE_DONE();
 
     flash.EraseSector(0, [this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     ExecuteAllActions();
 
     EXPECT_CALL(finished, callback());
@@ -168,7 +180,9 @@ TEST_F(FlashQuadSpiCypressFllTest, EraseSecondSector)
     EXPECT_POLL_WRITE_DONE();
 
     flash.EraseSector(1, [this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     ExecuteAllActions();
 }
 
@@ -179,7 +193,9 @@ TEST_F(FlashQuadSpiCypressFllTest, EraseMultipleErasesSubSector)
     EXPECT_POLL_WRITE_DONE();
 
     flash.EraseSectors(0, 1, [this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     ExecuteAllActions();
 }
 
@@ -195,7 +211,9 @@ TEST_F(FlashQuadSpiCypressFllTest, EraseMultipleErasesTwoSectors)
     EXPECT_POLL_WRITE_DONE();
 
     flash.EraseSectors(0, 2, [this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     spiStub.onDone();
     ExecuteAllActions();
 }
@@ -207,7 +225,9 @@ TEST_F(FlashQuadSpiCypressFllTest, EraseMultipleErasesBlock)
     EXPECT_POLL_WRITE_DONE();
 
     flash.EraseSectors(0, 16, [this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     ExecuteAllActions();
 }
 
@@ -225,7 +245,9 @@ TEST_F(FlashQuadSpiCypressFllTest, EraseMultipleErasesSectorsAndBlock)
     EXPECT_POLL_WRITE_DONE();
 
     flash.EraseSectors(15, 33, [this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     spiStub.onDone();
     spiStub.onDone();
     ExecuteAllActions();
@@ -238,6 +260,8 @@ TEST_F(FlashQuadSpiCypressFllTest, EraseAllErasesChip)
     EXPECT_POLL_WRITE_DONE();
 
     flash.EraseAll([this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     ExecuteAllActions();
 }

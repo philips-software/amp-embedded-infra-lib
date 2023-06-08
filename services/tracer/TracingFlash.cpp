@@ -39,8 +39,9 @@ namespace services
         this->buffer = buffer;
         flash.ReadBuffer(buffer, address, [this, address]()
             {
-            tracer.Trace() << "Flash ReadBuffer from 0x" << infra::hex << address << ": " << infra::AsHex(this->buffer);
-            this->onDone(); });
+                tracer.Trace() << "Flash ReadBuffer from 0x" << infra::hex << address << ": " << infra::AsHex(this->buffer);
+                this->onDone();
+            });
     }
 
     void TracingFlash::EraseSectors(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone)

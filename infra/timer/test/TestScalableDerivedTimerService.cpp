@@ -27,7 +27,9 @@ TEST_F(ScalableDerivedTimerServiceTest, ShiftScalableTimerService)
 
     infra::TimerSingleShot timer(
         std::chrono::seconds(3), [&callback]()
-        { callback.callback(); },
+        {
+            callback.callback();
+        },
         scaleId);
     scalableTimerService.Shift(std::chrono::seconds(1));
 
@@ -44,7 +46,9 @@ TEST_F(ScalableDerivedTimerServiceTest, ScaleScalableTimerService)
     scalableTimerService.Scale(2);
     infra::TimerRepeating timer(
         std::chrono::seconds(2), [&callback]()
-        { callback.callback(); },
+        {
+            callback.callback();
+        },
         scaleId);
 
     ForwardTime(std::chrono::seconds(3));
@@ -58,7 +62,9 @@ TEST_F(ScalableDerivedTimerServiceTest, ScaleAndShiftScalableTimerService)
     scalableTimerService.Scale(2);
     infra::TimerSingleShot timer(
         std::chrono::seconds(4), [&callback]()
-        { callback.callback(); },
+        {
+            callback.callback();
+        },
         scaleId);
     scalableTimerService.Shift(std::chrono::seconds(1));
 
@@ -75,7 +81,9 @@ TEST_F(ScalableDerivedTimerServiceTest, ScaleAndShiftScalableTimerServiceAfterSo
     scalableTimerService.Scale(2);
     infra::TimerSingleShot timer(
         std::chrono::seconds(4), [&callback]()
-        { callback.callback(); },
+        {
+            callback.callback();
+        },
         scaleId);
     scalableTimerService.Shift(std::chrono::seconds(1));
 
@@ -91,7 +99,9 @@ TEST_F(ScalableDerivedTimerServiceTest, ScaleAndScaleBackAfterSomeTimePassed)
     scalableTimerService.Scale(2);
     infra::TimerRepeating timer(
         std::chrono::seconds(2), [&callback]()
-        { callback.callback(); },
+        {
+            callback.callback();
+        },
         scaleId);
     ForwardTime(std::chrono::seconds(1));
     scalableTimerService.Scale(1);

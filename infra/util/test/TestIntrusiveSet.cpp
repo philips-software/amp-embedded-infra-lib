@@ -441,11 +441,15 @@ TEST_F(IntrusiveSetTest, TestManyInsertionsAndDeletions)
             std::vector<SetInt> elements;
             int n = 0;
             std::generate_n(std::back_inserter(elements), size, [&n]()
-                { return n++; });
+                {
+                    return n++;
+                });
             std::vector<std::size_t> indices;
             n = 0;
             std::generate_n(std::back_inserter(indices), size, [&n]()
-                { return n++; });
+                {
+                    return n++;
+                });
 
             infra::IntrusiveSet<SetInt> set;
             int current = 0;

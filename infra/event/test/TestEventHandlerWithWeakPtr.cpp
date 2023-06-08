@@ -16,7 +16,9 @@ TEST_F(EventDispatcherWithWeakPtrTest, TestSchedule)
     EXPECT_CALL(callback, callback());
 
     infra::EventDispatcher::Instance().Schedule([&callback, this]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
     ExecuteAllActions();
 }
 
@@ -26,9 +28,13 @@ TEST_F(EventDispatcherWithWeakPtrTest, TestScheduleTwice)
     EXPECT_CALL(callback, callback()).Times(2);
 
     infra::EventDispatcher::Instance().Schedule([&callback, this]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
     infra::EventDispatcher::Instance().Schedule([&callback, this]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
     ExecuteAllActions();
 }
 
@@ -40,9 +46,13 @@ TEST_F(EventDispatcherWithWeakPtrTest, TestExecuteOneEvent)
     ExecuteFirstAction();
 
     infra::EventDispatcher::Instance().Schedule([&callback, this]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
     infra::EventDispatcher::Instance().Schedule([&callback, this]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
 
     EXPECT_CALL(callback, callback()).Times(1);
     ExecuteFirstAction();
@@ -59,7 +69,9 @@ TEST_F(EventDispatcherWithWeakPtrTest, TestScheduleSharedPtr)
     infra::SharedObjectAllocatorFixedSize<int, void()>::WithStorage<2> allocator;
     infra::SharedPtr<int> object = allocator.Allocate();
     infra::EventDispatcherWithWeakPtr::Instance().Schedule([&callback, this](const infra::SharedPtr<int>& object)
-        { callback.callback(); },
+        {
+            callback.callback();
+        },
         object);
     ExecuteAllActions();
 }
@@ -71,7 +83,9 @@ TEST_F(EventDispatcherWithWeakPtrTest, TestScheduleDestructedSharedPtr)
     infra::SharedObjectAllocatorFixedSize<int, void()>::WithStorage<2> allocator;
     infra::SharedPtr<int> object = allocator.Allocate();
     infra::EventDispatcherWithWeakPtr::Instance().Schedule([&callback, this](const infra::SharedPtr<int>& object)
-        { callback.callback(); },
+        {
+            callback.callback();
+        },
         object);
     object = nullptr;
     ExecuteAllActions();

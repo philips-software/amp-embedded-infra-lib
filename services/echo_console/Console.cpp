@@ -316,7 +316,9 @@ namespace application
     Console::Console(EchoRoot& root)
         : root(root)
         , eventDispatcherThread([this]()
-              { RunEventDispatcher(); })
+              {
+                  RunEventDispatcher();
+              })
     {}
 
     void Console::Run()
@@ -335,14 +337,15 @@ namespace application
 
                 infra::EventDispatcher::Instance().Schedule([this, &line]()
                     {
-                    if (line == "list")
-                        ListInterfaces();
-                    else
-                        Process(line);
+                        if (line == "list")
+                            ListInterfaces();
+                        else
+                            Process(line);
 
-                    std::unique_lock<std::mutex> lock(mutex);
-                    processDone = true;
-                    condition.notify_all(); });
+                        std::unique_lock<std::mutex> lock(mutex);
+                        processDone = true;
+                        condition.notify_all();
+                    });
 
                 while (!processDone)
                     condition.wait(lock);
@@ -350,7 +353,9 @@ namespace application
         }
 
         infra::EventDispatcher::Instance().Schedule([]()
-            { throw Quit(); });
+            {
+                throw Quit();
+            });
         eventDispatcherThread.join();
     }
 

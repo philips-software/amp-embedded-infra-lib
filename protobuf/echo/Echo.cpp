@@ -109,7 +109,9 @@ namespace services
         {
             serviceBusy = infra::none;
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](infra::SharedPtr<EchoOnStreams> echo)
-                { echo->BusyServiceDone(); },
+                {
+                    echo->BusyServiceDone();
+                },
                 SharedFromThis());
         }
     }
@@ -118,17 +120,18 @@ namespace services
     {
         if (!NotifyObservers([this, serviceId, methodId, &contents](auto& service)
                 {
-                if (service.AcceptsService(serviceId))
-                {
-                    if (service.InProgress())
-                        serviceBusy = serviceId;
-                    else
-                        service.HandleMethod(serviceId, methodId, contents, errorPolicy);
+                    if (service.AcceptsService(serviceId))
+                    {
+                        if (service.InProgress())
+                            serviceBusy = serviceId;
+                        else
+                            service.HandleMethod(serviceId, methodId, contents, errorPolicy);
 
-                    return true;
-                }
+                        return true;
+                    }
 
-                return false; }))
+                    return false;
+                }))
         {
             errorPolicy.ServiceNotFound(serviceId);
             contents.SkipEverything();

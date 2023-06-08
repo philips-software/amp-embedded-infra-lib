@@ -57,7 +57,9 @@ public:
 TEST_F(HttpClientAuthenticationTest, Get_request_is_forwarded)
 {
     EXPECT_CALL(httpClient, Get("target", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString requestTarget, services::HttpHeaders headers)
-        { CheckHeaders(headers, "header contents"); }));
+        {
+            CheckHeaders(headers, "header contents");
+        }));
     EXPECT_CALL(clientAuthentication, AuthenticationHeader()).WillOnce(testing::Return("header contents"));
     httpClientObserver->Subject().Get("target", infra::MakeRange(headers));
 }
@@ -65,7 +67,9 @@ TEST_F(HttpClientAuthenticationTest, Get_request_is_forwarded)
 TEST_F(HttpClientAuthenticationTest, Head_request_is_forwarded)
 {
     EXPECT_CALL(httpClient, Head("target", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString requestTarget, services::HttpHeaders headers)
-        { CheckHeaders(headers, "header contents"); }));
+        {
+            CheckHeaders(headers, "header contents");
+        }));
     EXPECT_CALL(clientAuthentication, AuthenticationHeader()).WillOnce(testing::Return("header contents"));
     httpClientObserver->Subject().Head("target", infra::MakeRange(headers));
 }
@@ -73,7 +77,9 @@ TEST_F(HttpClientAuthenticationTest, Head_request_is_forwarded)
 TEST_F(HttpClientAuthenticationTest, Connect_request_is_forwarded)
 {
     EXPECT_CALL(httpClient, Connect("target", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString requestTarget, services::HttpHeaders headers)
-        { CheckHeaders(headers, "header contents"); }));
+        {
+            CheckHeaders(headers, "header contents");
+        }));
     EXPECT_CALL(clientAuthentication, AuthenticationHeader()).WillOnce(testing::Return("header contents"));
     httpClientObserver->Subject().Connect("target", infra::MakeRange(headers));
 }
@@ -81,7 +87,9 @@ TEST_F(HttpClientAuthenticationTest, Connect_request_is_forwarded)
 TEST_F(HttpClientAuthenticationTest, Options_request_is_forwarded)
 {
     EXPECT_CALL(httpClient, Options("target", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString requestTarget, services::HttpHeaders headers)
-        { CheckHeaders(headers, "header contents"); }));
+        {
+            CheckHeaders(headers, "header contents");
+        }));
     EXPECT_CALL(clientAuthentication, AuthenticationHeader()).WillOnce(testing::Return("header contents"));
     httpClientObserver->Subject().Options("target", infra::MakeRange(headers));
 }
@@ -89,7 +97,9 @@ TEST_F(HttpClientAuthenticationTest, Options_request_is_forwarded)
 TEST_F(HttpClientAuthenticationTest, Post_request_is_forwarded_1)
 {
     EXPECT_CALL(httpClient, Post("target", "contents", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString requestTarget, infra::BoundedConstString contents, services::HttpHeaders headers)
-        { CheckHeaders(headers, "header contents"); }));
+        {
+            CheckHeaders(headers, "header contents");
+        }));
     EXPECT_CALL(clientAuthentication, AuthenticationHeader()).WillOnce(testing::Return("header contents"));
     httpClientObserver->Subject().Post("target", "contents", infra::MakeRange(headers));
 }
@@ -97,7 +107,9 @@ TEST_F(HttpClientAuthenticationTest, Post_request_is_forwarded_1)
 TEST_F(HttpClientAuthenticationTest, Post_request_is_forwarded_3)
 {
     EXPECT_CALL(httpClient, Post("target", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString requestTarget, services::HttpHeaders headers)
-        { CheckHeaders(headers, "header contents"); }));
+        {
+            CheckHeaders(headers, "header contents");
+        }));
     EXPECT_CALL(clientAuthentication, AuthenticationHeader()).WillOnce(testing::Return("header contents"));
     httpClientObserver->Subject().Post("target", infra::MakeRange(headers));
 }
@@ -105,7 +117,9 @@ TEST_F(HttpClientAuthenticationTest, Post_request_is_forwarded_3)
 TEST_F(HttpClientAuthenticationTest, Put_request_is_forwarded_1)
 {
     EXPECT_CALL(httpClient, Put("target", "contents", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString requestTarget, infra::BoundedConstString contents, services::HttpHeaders headers)
-        { CheckHeaders(headers, "header contents"); }));
+        {
+            CheckHeaders(headers, "header contents");
+        }));
     EXPECT_CALL(clientAuthentication, AuthenticationHeader()).WillOnce(testing::Return("header contents"));
     httpClientObserver->Subject().Put("target", "contents", infra::MakeRange(headers));
 }
@@ -113,7 +127,9 @@ TEST_F(HttpClientAuthenticationTest, Put_request_is_forwarded_1)
 TEST_F(HttpClientAuthenticationTest, Put_request_is_forwarded_3)
 {
     EXPECT_CALL(httpClient, Put("target", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString requestTarget, services::HttpHeaders headers)
-        { CheckHeaders(headers, "header contents"); }));
+        {
+            CheckHeaders(headers, "header contents");
+        }));
     EXPECT_CALL(clientAuthentication, AuthenticationHeader()).WillOnce(testing::Return("header contents"));
     httpClientObserver->Subject().Put("target", infra::MakeRange(headers));
 }
@@ -121,7 +137,9 @@ TEST_F(HttpClientAuthenticationTest, Put_request_is_forwarded_3)
 TEST_F(HttpClientAuthenticationTest, Delete_request_is_forwarded)
 {
     EXPECT_CALL(httpClient, Delete("target", "contents", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString requestTarget, infra::BoundedConstString contents, services::HttpHeaders headers)
-        { CheckHeaders(headers, "header contents"); }));
+        {
+            CheckHeaders(headers, "header contents");
+        }));
     EXPECT_CALL(clientAuthentication, AuthenticationHeader()).WillOnce(testing::Return("header contents"));
     httpClientObserver->Subject().Delete("target", "contents", infra::MakeRange(headers));
 }
@@ -207,6 +225,8 @@ TEST_F(HttpClientAuthenticationTest, unauthorized_is_retried)
     EXPECT_CALL(clientAuthentication, Retry()).WillOnce(testing::Return(true));
     EXPECT_CALL(clientAuthentication, Reset());
     EXPECT_CALL(httpClient, Get("target", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString requestTarget, services::HttpHeaders headers)
-        { CheckHeaders(headers, "header contents"); }));
+        {
+            CheckHeaders(headers, "header contents");
+        }));
     httpClient.Observer().BodyComplete();
 }

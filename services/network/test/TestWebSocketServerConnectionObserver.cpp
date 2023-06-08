@@ -59,7 +59,9 @@ public:
     void ExpectDataReceived(const std::vector<uint8_t>& data)
     {
         EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this, data]()
-            { CheckDataReceived(data); }));
+            {
+                CheckDataReceived(data);
+            }));
     }
 
     testing::StrictMock<services::ConnectionObserverFullMock> connectionObserver;
@@ -158,8 +160,9 @@ TEST_F(WebSocketServerConnectionObserverTest, one_full_one_partial_frames_separa
 
     EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
         {
-        CheckDataReceived({ 0x91, 0x91 });
-        CheckDataReceived({ 0x91 }); }));
+            CheckDataReceived({ 0x91, 0x91 });
+            CheckDataReceived({ 0x91 });
+        }));
     connection.SimulateDataReceived(receiveData1);
 
     ExpectDataReceived({ 0x91 });
@@ -176,8 +179,9 @@ TEST_F(WebSocketServerConnectionObserverTest, two_partial_in_three_chunks)
 
     EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
         {
-        CheckDataReceived({ 0x91, 0x91 });
-        CheckDataReceived({ 0x91 }); }));
+            CheckDataReceived({ 0x91, 0x91 });
+            CheckDataReceived({ 0x91 });
+        }));
     connection.SimulateDataReceived(receiveData2);
 
     ExpectDataReceived({ 0x91 });
@@ -199,8 +203,9 @@ TEST_F(WebSocketServerConnectionObserverTest, receive_frame_with_larger_payload_
     testing::InSequence s;
     EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
         {
-        CheckDataReceived(std::vector<uint8_t>(512, 0x91));
-        CheckDataReceived(std::vector<uint8_t>(8, 0x91)); }));
+            CheckDataReceived(std::vector<uint8_t>(512, 0x91));
+            CheckDataReceived(std::vector<uint8_t>(8, 0x91));
+        }));
 
     connection.SimulateDataReceived(receiveDataPayload);
 }
@@ -212,7 +217,9 @@ TEST_F(WebSocketServerConnectionObserverTest, receive_close_request_from_client)
 
     connection.SimulateDataReceived(receiveData);
     EXPECT_CALL(connection, CloseAndDestroyMock()).WillOnce(testing::Invoke([this, &sendData]()
-        { EXPECT_EQ(sendData, connection.sentData); }));
+        {
+            EXPECT_EQ(sendData, connection.sentData);
+        }));
     EXPECT_CALL(connectionObserver, Detaching());
     ExecuteAllActions();
 }
@@ -224,7 +231,9 @@ TEST_F(WebSocketServerConnectionObserverTest, receive_wrong_operation_code)
 
     connection.SimulateDataReceived(receiveData);
     EXPECT_CALL(connection, CloseAndDestroyMock()).WillOnce(testing::Invoke([this, &sendData]()
-        { EXPECT_EQ(sendData, connection.sentData); }));
+        {
+            EXPECT_EQ(sendData, connection.sentData);
+        }));
     EXPECT_CALL(connectionObserver, Detaching());
     ExecuteAllActions();
 }
@@ -236,7 +245,9 @@ TEST_F(WebSocketServerConnectionObserverTest, receive_unmasked_frame_from_client
 
     connection.SimulateDataReceived(receiveData);
     EXPECT_CALL(connection, CloseAndDestroyMock()).WillOnce(testing::Invoke([this, &sendData]()
-        { EXPECT_EQ(sendData, connection.sentData); }));
+        {
+            EXPECT_EQ(sendData, connection.sentData);
+        }));
     EXPECT_CALL(connectionObserver, Detaching());
     ExecuteAllActions();
 }
@@ -248,7 +259,9 @@ TEST_F(WebSocketServerConnectionObserverTest, receive_non_zero_rsv)
 
     connection.SimulateDataReceived(receiveData);
     EXPECT_CALL(connection, CloseAndDestroyMock()).WillOnce(testing::Invoke([this, &sendData]()
-        { EXPECT_EQ(sendData, connection.sentData); }));
+        {
+            EXPECT_EQ(sendData, connection.sentData);
+        }));
     EXPECT_CALL(connectionObserver, Detaching());
     ExecuteAllActions();
 }
@@ -287,7 +300,8 @@ TEST_F(WebSocketServerConnectionObserverTest, send_data_after_first_frame)
         {
             infra::DataOutputStream::WithErrorPolicy stream(*writer);
             std::vector<uint8_t> dataToSend{ 0x91, 0x91 };
-            stream << infra::MakeRange(dataToSend); }));
+            stream << infra::MakeRange(dataToSend);
+        }));
     ExecuteAllActions();
 
     EXPECT_EQ((std::vector<uint8_t>{ 0x82, 0x02, 0x91, 0x91, 0x82, 0x02, 0x91, 0x91 }), connection.sentData);
