@@ -30,14 +30,15 @@ namespace services
 
         RequestSend([this, methodId]()
             {
-            infra::DataOutputStream::WithErrorPolicy stream(services::ServiceProxy::Rpc().SendStreamWriter());
-            infra::ProtoFormatter formatter(stream);
-            formatter.PutVarInt(this->forwardingServiceId);
-            formatter.PutBytesField(*bytes, methodId);
-            bytes = infra::none;
+                infra::DataOutputStream::WithErrorPolicy stream(services::ServiceProxy::Rpc().SendStreamWriter());
+                infra::ProtoFormatter formatter(stream);
+                formatter.PutVarInt(this->forwardingServiceId);
+                formatter.PutBytesField(*bytes, methodId);
+                bytes = infra::none;
 
-            services::ServiceProxy::Rpc().Send();
-            MethodDone(); });
+                services::ServiceProxy::Rpc().Send();
+                MethodDone();
+            });
     }
 
     bool ServiceForwarderAll::AcceptsService(uint32_t id) const

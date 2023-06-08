@@ -100,7 +100,9 @@ TEST(ObserverTest, notify_one_observer)
 
     EXPECT_CALL(observer, Callback());
     subject.NotifyObservers([](MyObserver& o)
-        { o.Callback(); });
+        {
+            o.Callback();
+        });
 }
 
 TEST(ObserverTest, notify_two_observers)
@@ -113,7 +115,9 @@ TEST(ObserverTest, notify_two_observers)
     EXPECT_CALL(observer1, Callback());
     EXPECT_CALL(observer2, Callback());
     subject.NotifyObservers([](MyObserver& o)
-        { o.Callback(); });
+        {
+            o.Callback();
+        });
 }
 
 TEST(ObserverTest, notify_two_observers_with_shortcut_call)
@@ -125,7 +129,10 @@ TEST(ObserverTest, notify_two_observers_with_shortcut_call)
 
     EXPECT_CALL(observer1, Callback());
     EXPECT_TRUE(subject.NotifyObservers([](MyObserver& o)
-        { o.Callback(); return true; }));
+        {
+            o.Callback();
+            return true;
+        }));
 }
 
 TEST(ObserverTest, notify_two_observers_without_shortcut_call)
@@ -138,7 +145,10 @@ TEST(ObserverTest, notify_two_observers_without_shortcut_call)
     EXPECT_CALL(observer1, Callback());
     EXPECT_CALL(observer2, Callback());
     EXPECT_FALSE(subject.NotifyObservers([](MyObserver& o)
-        { o.Callback(); return false; }));
+        {
+            o.Callback();
+            return false;
+        }));
 }
 
 TEST(ObserverTest, RegisterAfterConstruction)
@@ -151,7 +161,9 @@ TEST(ObserverTest, RegisterAfterConstruction)
 
     EXPECT_CALL(observer, Callback());
     subject.NotifyObservers([](const MyObserver& o)
-        { const_cast<MyObserver&>(o).Callback(); });
+        {
+            const_cast<MyObserver&>(o).Callback();
+        });
 }
 
 TEST(ObserverTest, Detach)
@@ -163,7 +175,9 @@ TEST(ObserverTest, Detach)
     EXPECT_FALSE(observer.Attached());
 
     subject.NotifyObservers([](MyObserver& o)
-        { o.Callback(); });
+        {
+            o.Callback();
+        });
 }
 
 TEST(SingleObserverTest, ConstructWithoutRegistration)
@@ -204,14 +218,18 @@ TEST(SingleObserverTest, NotifyObserver)
     MySingleObserver observer(subject);
     EXPECT_CALL(observer, Callback());
     subject.NotifyObservers([](MySingleObserver& o)
-        { o.Callback(); });
+        {
+            o.Callback();
+        });
 }
 
 TEST(SingleObserverTest, NotifyWithoutObserver)
 {
     MySingleSubject subject;
     subject.NotifyObservers([](MySingleObserver& o)
-        { o.Callback(); });
+        {
+            o.Callback();
+        });
 }
 
 TEST(SingleObserverTest, RegisterAfterConstruction)

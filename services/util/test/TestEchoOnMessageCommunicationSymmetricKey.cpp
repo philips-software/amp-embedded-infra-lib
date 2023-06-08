@@ -23,7 +23,8 @@ public:
         EXPECT_CALL(lower, RequestSendMessage(testing::_)).WillOnce(testing::Invoke([this]()
             {
                 ExpectGenerationOfKeyMaterial({ 4 }, { 5 });
-                LoopBackData(); }));
+                LoopBackData();
+            }));
         lower.GetObserver().Initialized();
     }
 
@@ -69,11 +70,17 @@ TEST_F(EchoOnMessageCommunicationSymmetricKeyTest, send_and_receive)
 {
     EXPECT_CALL(lower, RequestSendMessage(testing::_)).WillOnce(testing::Invoke([this]()
         {
-            EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]() { service.MethodDone(); }));
-            LoopBackData(); }));
+            EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]()
+                {
+                    service.MethodDone();
+                }));
+            LoopBackData();
+        }));
 
     serviceProxy.RequestSend([this]()
-        { serviceProxy.Method(5); });
+        {
+            serviceProxy.Method(5);
+        });
 }
 
 TEST_F(EchoOnMessageCommunicationSymmetricKeyTest, send_while_initializing)
@@ -82,7 +89,9 @@ TEST_F(EchoOnMessageCommunicationSymmetricKeyTest, send_while_initializing)
     lower.GetObserver().Initialized();
 
     serviceProxy.RequestSend([this]()
-        { serviceProxy.Method(5); });
+        {
+            serviceProxy.Method(5);
+        });
 
     EXPECT_CALL(lower, RequestSendMessage(testing::_));
 
@@ -90,6 +99,8 @@ TEST_F(EchoOnMessageCommunicationSymmetricKeyTest, send_while_initializing)
     LoopBackData();
 
     EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]()
-        { service.MethodDone(); }));
+        {
+            service.MethodDone();
+        }));
     LoopBackData();
 }

@@ -11,7 +11,9 @@ namespace services
 {
     WebSocketClientConnectionObserver::WebSocketClientConnectionObserver(infra::BoundedConstString path)
         : streamWriter([this]()
-              { StreamWriterAllocatable(); })
+              {
+                  StreamWriterAllocatable();
+              })
     {}
 
     void WebSocketClientConnectionObserver::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -532,7 +534,9 @@ namespace services
 
         initiation = infra::none;
         factory.ConnectionEstablished([webSocketConnection](infra::SharedPtr<ConnectionObserver> connectionObserver)
-            { webSocketConnection->Attach(connectionObserver); });
+            {
+                webSocketConnection->Attach(connectionObserver);
+            });
     }
 
     void WebSocketClientFactorySingleConnection::InitiationError(WebSocketClientObserverFactory::ConnectFailReason reason)
@@ -558,7 +562,11 @@ namespace services
     {
         onStopped = onDone;
         initiationClient->Stop([this]()
-            { auto onDone = onStopped; result.InitiationCancelled(); onDone(); });
+            {
+                auto onDone = onStopped;
+                result.InitiationCancelled();
+                onDone();
+            });
     }
 
     WebSocketClientObserverFactory& WebSocketClientFactorySingleConnection::WebSocketClientInitiation::Factory()

@@ -23,7 +23,9 @@ public:
     {
         repeatingButton.Emplace(
             button, [this]()
-            { callback.callback(); },
+            {
+                callback.callback();
+            },
             config);
     }
 };
@@ -95,7 +97,9 @@ TEST_F(RepeatingButtonFixtureBase, NonDefaultTimings)
     config.successiveDelay = std::chrono::seconds(1);
     repeatingButton.Emplace(
         button, [this]()
-        { callback.callback(); },
+        {
+            callback.callback();
+        },
         config);
 
     EXPECT_CALL(callback, callback()).With(After(std::chrono::milliseconds(0)));

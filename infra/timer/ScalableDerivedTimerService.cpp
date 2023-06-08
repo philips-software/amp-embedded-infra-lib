@@ -14,7 +14,9 @@ namespace infra
 
         if (NextTrigger() != TimePoint::max())
             timer.Start(nextTrigger, [this]()
-                { Progressed(ScaleTime(nextTrigger)); });
+                {
+                    Progressed(ScaleTime(nextTrigger));
+                });
         else
             timer.Cancel();
     }

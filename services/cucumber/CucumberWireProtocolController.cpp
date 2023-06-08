@@ -79,13 +79,17 @@ namespace services
     void CucumberWireProtocolController::HandleBeginScenarioRequest(CucumberWireProtocolParser& parser)
     {
         scenarioRequestHandler.BeginScenario([this]()
-            { connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize()); });
+            {
+                connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize());
+            });
     }
 
     void CucumberWireProtocolController::HandleEndScenarioRequest()
     {
         scenarioRequestHandler.EndScenario([this]()
-            { connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize()); });
+            {
+                connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize());
+            });
     }
 
     void CucumberWireProtocolController::HandleSnippetTextRequest()

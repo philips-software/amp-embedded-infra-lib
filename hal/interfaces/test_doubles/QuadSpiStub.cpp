@@ -9,7 +9,9 @@ namespace hal
         onDone = actionOnCompletion;
         SendDataMock(header, data, lines);
         infra::EventDispatcher::Instance().Schedule([this]()
-            { onDone(); });
+            {
+                onDone();
+            });
     }
 
     void QuadSpiStub::ReceiveData(const Header& header, infra::ByteRange data, Lines lines, const infra::Function<void()>& actionOnCompletion)
@@ -19,7 +21,9 @@ namespace hal
         infra::ConstByteRange result = ReceiveDataMock(header, lines);
         std::copy(result.begin(), result.end(), data.begin());
         infra::EventDispatcher::Instance().Schedule([this]()
-            { onDone(); });
+            {
+                onDone();
+            });
     }
 
     void QuadSpiStub::PollStatus(const Header& header, uint8_t nofBytes, uint32_t match, uint32_t mask, Lines lines, const infra::Function<void()>& actionOnCompletion)

@@ -174,7 +174,9 @@ namespace services
         waitingClientObserverFactories.push_back(factory);
 
         infra::EventDispatcher::Instance().Schedule([this]()
-            { TryConnectWaiting(); });
+            {
+                TryConnectWaiting();
+            });
     }
 
     void HttpClientCachedConnectionConnector::CancelConnect(HttpClientObserverFactory& factory)
@@ -188,7 +190,9 @@ namespace services
             waitingClientObserverFactories.erase(factory);
 
         infra::EventDispatcher::Instance().Schedule([this]()
-            { TryConnectWaiting(); });
+            {
+                TryConnectWaiting();
+            });
     }
 
     void HttpClientCachedConnectionConnector::Stop(const infra::Function<void()>& onDone)
@@ -227,7 +231,8 @@ namespace services
                 {
                     httpClientPtr->createdObserver(httpClientPtr);
                     httpClientPtr->Attach(observer);
-                } });
+                }
+            });
 
         clientObserverFactory = nullptr;
     }
@@ -245,7 +250,8 @@ namespace services
         clientObserverFactory->ConnectionEstablished([httpClientPtr = clientPtr.MakeShared(*client)](infra::SharedPtr<HttpClientObserver> observer)
             {
                 if (observer != nullptr)
-                    httpClientPtr->Attach(observer); });
+                    httpClientPtr->Attach(observer);
+            });
 
         clientObserverFactory = nullptr;
     }
@@ -263,10 +269,14 @@ namespace services
     {
         if (clientObserverFactory == nullptr && client != infra::none && !disconnectTimer.Armed())
             disconnectTimer.Start(disconnectTimeout, [this]()
-                { DisconnectTimeout(); });
+                {
+                    DisconnectTimeout();
+                });
 
         infra::EventDispatcher::Instance().Schedule([this]()
-            { TryConnectWaiting(); });
+            {
+                TryConnectWaiting();
+            });
     }
 
     void HttpClientCachedConnectionConnector::DisconnectTimeout()

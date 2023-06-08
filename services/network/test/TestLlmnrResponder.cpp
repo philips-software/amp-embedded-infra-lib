@@ -15,8 +15,9 @@ public:
         : datagramExchangePtr(infra::UnOwnedSharedPtr(datagramExchange))
         , execute([this]()
               {
-                EXPECT_CALL(factory, Listen(testing::Ref(responder), 5355, services::IPVersions::ipv4)).WillOnce(testing::Return(datagramExchangePtr));
-                EXPECT_CALL(multicast, JoinMulticastGroup(datagramExchangePtr, services::IPv4Address{ 224, 0, 0, 252 })); })
+                  EXPECT_CALL(factory, Listen(testing::Ref(responder), 5355, services::IPVersions::ipv4)).WillOnce(testing::Return(datagramExchangePtr));
+                  EXPECT_CALL(multicast, JoinMulticastGroup(datagramExchangePtr, services::IPv4Address{ 224, 0, 0, 252 }));
+              })
         , responder(factory, multicast, ipv4Info, "name")
     {}
 

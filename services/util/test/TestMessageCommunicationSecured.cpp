@@ -28,21 +28,23 @@ public:
     {
         EXPECT_CALL(upper, ReceivedMessage(testing::_)).WillOnce(testing::Invoke([expected](infra::SharedPtr<infra::StreamReader>&& reader)
             {
-            infra::TextInputStream::WithErrorPolicy stream(*reader);
-            EXPECT_EQ(expected.size(), stream.Available());
-            infra::BoundedString::WithStorage<256> s;
-            s.resize(stream.Available());
-            stream >> s;
-            EXPECT_EQ(expected, s); }));
+                infra::TextInputStream::WithErrorPolicy stream(*reader);
+                EXPECT_EQ(expected.size(), stream.Available());
+                infra::BoundedString::WithStorage<256> s;
+                s.resize(stream.Available());
+                stream >> s;
+                EXPECT_EQ(expected, s);
+            }));
     }
 
     void ExpectSendMessageStreamAvailable(infra::BoundedConstString message)
     {
         EXPECT_CALL(upper, SendMessageStreamAvailable(testing::_)).WillOnce(testing::Invoke([message](infra::SharedPtr<infra::StreamWriter>&& writer)
             {
-            infra::TextOutputStream::WithErrorPolicy stream(*writer);
-            EXPECT_EQ(message.size(), stream.Available());
-            stream << message; }));
+                infra::TextOutputStream::WithErrorPolicy stream(*writer);
+                EXPECT_EQ(message.size(), stream.Available());
+                stream << message;
+            }));
     }
 
     void Send(infra::BoundedConstString message)

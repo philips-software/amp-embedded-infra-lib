@@ -59,7 +59,9 @@ TEST_F(LowPowerSpiMasterTest, SendAndReceive_will_refere_mainClock_and_release_o
     EXPECT_CALL(spiMock, ReceiveDataMock(testing::_)).WillOnce(testing::Return(buffer));
 
     lowPowerSpiMaster.SendAndReceive(buffer, buffer, hal::SpiAction::stop, [&mockOnDone]()
-        { mockOnDone.callback(); });
+        {
+            mockOnDone.callback();
+        });
 
     EXPECT_TRUE(mainClock.IsReferenced());
 

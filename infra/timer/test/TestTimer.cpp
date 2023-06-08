@@ -14,7 +14,9 @@ TEST_F(TimerTest, SingleShotTimerTriggersOnceAfterDuration)
     EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(1)));
 
     infra::TimerSingleShot timer(std::chrono::seconds(1), [&callback]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
 
     ForwardTime(std::chrono::seconds(5));
 };
@@ -25,7 +27,9 @@ TEST_F(TimerTest, SingleShotTimerTriggersOnceAfterTime)
     EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(1)));
 
     infra::TimerSingleShot timer(infra::Now() + std::chrono::seconds(1), [&callback]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
 
     ForwardTime(std::chrono::seconds(5));
 };
@@ -35,7 +39,9 @@ TEST_F(TimerTest, SingleShotTimerIsCancellable)
     infra::MockCallback<void(infra::TimePoint)> callback;
 
     infra::TimerSingleShot timer(std::chrono::seconds(1), [this, &callback]()
-        { callback.callback(systemTimerService.Now()); });
+        {
+            callback.callback(systemTimerService.Now());
+        });
 
     timer.Cancel();
 
@@ -49,7 +55,9 @@ TEST_F(TimerTest, SingleShotTimerTakesResolutionIntoAccount)
 
     systemTimerService.SetResolution(std::chrono::seconds(1));
     infra::TimerSingleShot timer(std::chrono::seconds(1), [&callback]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
 
     ForwardTime(std::chrono::seconds(5));
 };
@@ -61,9 +69,13 @@ TEST_F(TimerTest, TwoTimersTriggerInOrder)
     EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(2)));
 
     infra::TimerSingleShot timer1(std::chrono::seconds(1), [&callback]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
     infra::TimerSingleShot timer2(std::chrono::seconds(2), [&callback]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
 
     ForwardTime(std::chrono::seconds(5));
 };
@@ -76,7 +88,9 @@ TEST_F(TimerTest, RepeatingTimerTriggersRepeatedly)
     EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(3)));
 
     infra::TimerRepeating timer(std::chrono::seconds(1), [&callback]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
 
     ForwardTime(std::chrono::seconds(3));
 };
@@ -89,7 +103,9 @@ TEST_F(TimerTest, RepeatingTimerTriggersImmediately)
 
     infra::TimerRepeating timer(
         std::chrono::seconds(1), [&callback]()
-        { callback.callback(); },
+        {
+            callback.callback();
+        },
         infra::triggerImmediately);
 
     ForwardTime(std::chrono::seconds(1));
@@ -104,7 +120,9 @@ TEST_F(TimerTest, RepeatingTimerTriggersRepeatedlyAfterReset)
 
     infra::TimerRepeating timer;
     timer.Start(std::chrono::seconds(1), [&callback]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
 
     ForwardTime(std::chrono::seconds(3));
 };
@@ -118,7 +136,9 @@ TEST_F(TimerTest, RepeatingTimerTriggersImmediatelyAfterReset)
     infra::TimerRepeating timer;
     timer.Start(
         std::chrono::seconds(1), [&callback]()
-        { callback.callback(); },
+        {
+            callback.callback();
+        },
         infra::triggerImmediately);
 
     ForwardTime(std::chrono::seconds(1));
@@ -130,7 +150,9 @@ TEST_F(TimerTest, RepeatingTimerIsCancellable)
     EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(1)));
 
     infra::TimerRepeating timer(std::chrono::seconds(1), [&callback]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
 
     ForwardTime(std::chrono::seconds(1));
     timer.Cancel();
@@ -145,7 +167,9 @@ TEST_F(TimerTest, RepeatingTimerTakesResolutionIntoAccount)
     systemTimerService.SetResolution(std::chrono::milliseconds(50));
 
     infra::TimerRepeating timer(std::chrono::seconds(1), [&callback]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
 
     ForwardTime(std::chrono::seconds(3));
 };
@@ -185,7 +209,9 @@ TEST_F(TimerTest, TestTimerCancel)
     testing::StrictMock<infra::MockCallback<void()>> callback;
 
     infra::TimerSingleShot timer(std::chrono::seconds(1), [&callback]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
     timer.Cancel();
 
     ForwardTime(std::chrono::seconds(5));

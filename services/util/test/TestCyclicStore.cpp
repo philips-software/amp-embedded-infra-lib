@@ -41,7 +41,9 @@ public:
 
         std::vector<uint8_t> readDataBuffer(maxSize, 0);
         iterator.Read(readDataBuffer, [&](infra::ByteRange data)
-            { result.insert(result.end(), data.begin(), data.end()); });
+            {
+                result.insert(result.end(), data.begin(), data.end());
+            });
         ExecuteAllActions();
 
         return result;
@@ -56,7 +58,9 @@ TEST_F(CyclicStoreTest, AddFirstItem)
     infra::VerifyingFunctionMock<void()> done;
 
     AddItem(KeepBytesAlive({ 11, 12 }), [&done]()
-        { done.callback(); });
+        {
+            done.callback();
+        });
 
     EXPECT_EQ((std::vector<uint8_t>{ 0xfc, 0xf8, 2, 0, 11, 12, 0xff, 0xff, 0xff, 0xff }), flash.sectors[0]);
 }
@@ -360,7 +364,9 @@ TEST_F(CyclicStoreTest, ReadWhileAddWaitsForAddToFinish)
     services::CyclicStore::Iterator iterator = cyclicStore.Begin();
     std::vector<uint8_t> readDataBuffer(2, 0);
     iterator.Read(readDataBuffer, [&mock](infra::ByteRange result)
-        { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
+        {
+            mock.callback(std::vector<uint8_t>(result.begin(), result.end()));
+        });
 
     EXPECT_CALL(mock, callback(std::vector<uint8_t>{ 11, 12 }));
     ExecuteAllActions();
@@ -373,7 +379,9 @@ TEST_F(CyclicStoreTest, AddWhileClearWaitsforClearToFinish)
     infra::MockCallback<void()> done;
     flash.delaySignalEraseDone = true;
     cyclicStore.Clear([&done]()
-        { done.callback(); });
+        {
+            done.callback();
+        });
     infra::Function<void()> onEraseDone = flash.onEraseDone;
     ExecuteAllActions();
     flash.delaySignalEraseDone = false;
@@ -766,7 +774,9 @@ TEST_F(CyclicStoreTest, TestParallelAddAndClear)
 
     EXPECT_CALL(mock, callback(std::vector<uint8_t>{}));
     iterator.Read(readDataBuffer, [&mock](infra::ByteRange result)
-        { mock.callback(std::vector<uint8_t>(result.begin(), result.end())); });
+        {
+            mock.callback(std::vector<uint8_t>(result.begin(), result.end()));
+        });
 
     cyclicStore.Add(KeepBytesAlive({ 11, 12, 13, 14, 15, 16 }), infra::emptyFunction);
     cyclicStore.Clear(infra::emptyFunction);

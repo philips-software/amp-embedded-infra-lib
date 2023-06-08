@@ -43,8 +43,12 @@ namespace application
 
                     std::scoped_lock lock(mutex);
                     dataToBeSent += data;
-                    infra::EventDispatcher::Instance().Schedule([this]() { CheckDataToBeSent(); });
-                } })
+                    infra::EventDispatcher::Instance().Schedule([this]()
+                        {
+                            CheckDataToBeSent();
+                        });
+                }
+            })
             .detach();
     }
 

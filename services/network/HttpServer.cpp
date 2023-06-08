@@ -128,11 +128,14 @@ namespace services
         : buffer(buffer)
         , httpServer(httpServer)
         , pageLimitedReader([this]()
-              { PageReaderClosed(); })
+              {
+                  PageReaderClosed();
+              })
         , initialIdle(std::chrono::seconds(10), [this]()
               {
-                idle = true;
-                CheckIdleClose(); })
+                  idle = true;
+                  CheckIdleClose();
+              })
     {}
 
     void HttpServerConnectionObserver::Attached()
@@ -189,7 +192,9 @@ namespace services
         }
 
         pageLimitedReader.OnAllocatable([this]()
-            { keepSelfAlive = nullptr; });
+            {
+                keepSelfAlive = nullptr;
+            });
 
         streamWriter = nullptr;
 
@@ -485,6 +490,8 @@ namespace services
         : SingleConnectionListener(connectionFactory, port, { connectionCreator })
         , buffer(buffer)
         , connectionCreator([this](infra::Optional<HttpServerConnectionObserver>& value, IPAddress address)
-              { value.Emplace(this->buffer, *this); })
+              {
+                  value.Emplace(this->buffer, *this);
+              })
     {}
 }

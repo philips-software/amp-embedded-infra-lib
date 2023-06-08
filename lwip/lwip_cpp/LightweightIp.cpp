@@ -44,7 +44,9 @@ namespace services
         lwip_init();
         sysCheckTimer.Start(
             std::chrono::milliseconds(50), []()
-            { sys_check_timeouts(); },
+            {
+                sys_check_timeouts();
+            },
             infra::triggerImmediately);
 #endif
 
@@ -112,7 +114,9 @@ namespace services
                 {
                     stopping = true;
                     (*connected)->Stop([this]()
-                        { OnStopped(); });
+                        {
+                            OnStopped();
+                        });
                 }
             }
             else

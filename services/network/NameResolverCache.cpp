@@ -91,13 +91,17 @@ namespace services
         validUntil = std::max(infra::Now() + minimumTtl, validUntil);
         TryAddToCache(result.Hostname(), address, validUntil);
         NameLookupDone([&result, &address, &validUntil]()
-            { result.NameLookupDone(address, validUntil); });
+            {
+                result.NameLookupDone(address, validUntil);
+            });
     }
 
     void NameResolverCache::NameLookupFailed(NameResolverResult& result)
     {
         NameLookupDone([&result]()
-            { result.NameLookupFailed(); });
+            {
+                result.NameLookupFailed();
+            });
     }
 
     void NameResolverCache::NameLookupCancelled()
@@ -143,7 +147,9 @@ namespace services
         }
 
         cleanupTimer.Start(cleanupTime, [this]()
-            { Cleanup(); });
+            {
+                Cleanup();
+            });
     }
 
     NameResolverCache::ActiveLookup::ActiveLookup(NameResolverCache& nameResolverCache, NameResolverResult& resolving)

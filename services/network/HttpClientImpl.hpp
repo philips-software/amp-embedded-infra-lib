@@ -447,7 +447,9 @@ namespace services
     HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::HttpClientConnectorWithNameResolverImpl(services::ConnectionFactoryWithNameResolver& connectionFactory, Args&&... args)
         : connectionFactory(connectionFactory)
         , client([this]()
-              { TryConnectWaiting(); })
+              {
+                  TryConnectWaiting();
+              })
         , args(std::forward<Args>(args)...)
     {}
 
@@ -495,7 +497,8 @@ namespace services
                 {
                     createdObserver(httpClientPtr);
                     httpClientPtr->Attach(observer);
-                } });
+                }
+            });
 
         clientObserverFactory = nullptr;
     }
@@ -561,7 +564,9 @@ namespace services
         : address(address)
         , connectionFactory(connectionFactory)
         , client([this]()
-              { TryConnectWaiting(); })
+              {
+                  TryConnectWaiting();
+              })
         , args(std::forward<Args>(args)...)
     {}
 
@@ -598,11 +603,12 @@ namespace services
 
         clientObserverFactory->ConnectionEstablished([&httpClientPtr, &createdObserver](infra::SharedPtr<services::HttpClientObserver> observer)
             {
-            if (observer)
-            {
-                createdObserver(httpClientPtr);
-                httpClientPtr->Attach(observer);
-            } });
+                if (observer)
+                {
+                    createdObserver(httpClientPtr);
+                    httpClientPtr->Attach(observer);
+                }
+            });
 
         clientObserverFactory = nullptr;
     }

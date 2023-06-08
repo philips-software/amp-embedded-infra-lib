@@ -44,7 +44,9 @@ namespace infra
         ++ticksProgressed;
         if (ticksProgressed >= ticksNextNotification && !notificationScheduled.exchange(true))
             infra::EventDispatcher::Instance().Schedule([this]()
-                { ProcessTicks(); });
+                {
+                    ProcessTicks();
+                });
     }
 
     void TickOnInterruptTimerService::CalculateNextTrigger()
@@ -72,6 +74,8 @@ namespace infra
         bool reschedule = notificationScheduled = ticksProgressed >= ticksNextNotification;
         if (reschedule)
             infra::EventDispatcher::Instance().Schedule([this]()
-                { ProcessTicks(); });
+                {
+                    ProcessTicks();
+                });
     }
 }

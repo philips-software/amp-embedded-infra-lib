@@ -38,9 +38,10 @@ namespace services
 
         gap.NotifyObservers([](GapCentralObserver& obs)
             {
-            obs.StateChanged(GapState::connected);
-            obs.StateChanged(GapState::scanning);
-            obs.StateChanged(GapState::standby); });
+                obs.StateChanged(GapState::connected);
+                obs.StateChanged(GapState::scanning);
+                obs.StateChanged(GapState::standby);
+            });
     }
 
     TEST_F(GapCentralDecoratorTest, forward_device_discovered_event_to_observers)
@@ -50,7 +51,9 @@ namespace services
         EXPECT_CALL(gapObserver, DeviceDiscovered(ObjectContentsEqual(deviceDiscovered)));
 
         gap.NotifyObservers([&deviceDiscovered](GapCentralObserver& obs)
-            { obs.DeviceDiscovered(deviceDiscovered); });
+            {
+                obs.DeviceDiscovered(deviceDiscovered);
+            });
     }
 
     TEST_F(GapCentralDecoratorTest, forward_all_authentication_events_to_observers)
@@ -61,9 +64,10 @@ namespace services
 
         gap.NotifyObservers([](GapCentralObserver& obs)
             {
-            obs.AuthenticationSuccessfullyCompleted();
-            obs.AuthenticationFailed(GapAuthenticationErrorType::authenticationRequirementsNotMet);
-            obs.AuthenticationFailed(GapAuthenticationErrorType::unknown); });
+                obs.AuthenticationSuccessfullyCompleted();
+                obs.AuthenticationFailed(GapAuthenticationErrorType::authenticationRequirementsNotMet);
+                obs.AuthenticationFailed(GapAuthenticationErrorType::unknown);
+            });
     }
 
     TEST_F(GapCentralDecoratorTest, forward_all_calls_to_subject)

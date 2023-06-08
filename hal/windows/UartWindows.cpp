@@ -100,7 +100,9 @@ namespace hal
         SetCommTimeouts(handle, &commTimeOuts);
 
         readThread = std::thread([this]()
-            { ReadThread(); });
+            {
+                ReadThread();
+            });
         SetThreadPriority(reinterpret_cast<HANDLE>(readThread.native_handle()), GetThreadPriority(reinterpret_cast<HANDLE>(readThread.native_handle())) + 1);
     }
 

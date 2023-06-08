@@ -60,11 +60,17 @@ namespace application
         if (insertNewlineBetweenEntities)
             ForEach(
                 Filter(entities, [](const std::shared_ptr<Entity>& entity)
-                    { return entity->HasHeaderCode(); }),
+                    {
+                        return entity->HasHeaderCode();
+                    }),
                 [&printer](const std::shared_ptr<Entity>& entity)
-                { entity->PrintHeader(printer); },
+                {
+                    entity->PrintHeader(printer);
+                },
                 [&printer]()
-                { printer.Print("\n"); });
+                {
+                    printer.Print("\n");
+                });
         else
             for (auto& entity : entities)
                 entity->PrintHeader(printer);
@@ -74,11 +80,17 @@ namespace application
     {
         ForEach(
             Filter(entities, [](const std::shared_ptr<Entity>& entity)
-                { return entity->HasSourceCode(); }),
+                {
+                    return entity->HasSourceCode();
+                }),
             [&printer, &scope](const std::shared_ptr<Entity>& entity)
-            { entity->PrintSource(printer, scope); },
+            {
+                entity->PrintSource(printer, scope);
+            },
             [&printer]()
-            { printer.Print("\n"); });
+            {
+                printer.Print("\n");
+            });
     }
 
     bool Entities::EntitiesHaveHeaderCode() const
@@ -136,9 +148,13 @@ namespace application
         std::string res;
         ForEach(
             parents, [&res](const std::string& parent)
-            { res += parent; },
+            {
+                res += parent;
+            },
             [&res]()
-            { res += "\n    , "; });
+            {
+                res += "\n    , ";
+            });
         return res;
     }
 
@@ -236,9 +252,13 @@ namespace application
         std::string res;
         ForEach(
             parameters, [&res](const std::string& parameter)
-            { res += parameter; },
+            {
+                res += parameter;
+            },
             [&res]()
-            { res += ", "; });
+            {
+                res += ", ";
+            });
         return res;
     }
 
@@ -301,9 +321,13 @@ namespace application
         std::string result;
         ForEach(
             parameters, [&result](const std::string& parameter)
-            { result += parameter; },
+            {
+                result += parameter;
+            },
             [&result]()
-            { result += ", "; });
+            {
+                result += ", ";
+            });
         return result;
     }
 

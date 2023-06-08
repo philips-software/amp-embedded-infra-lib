@@ -17,9 +17,10 @@ TEST_F(ServiceForwarderAllTest, accept_any_service)
 {
     echoFrom.NotifyObservers([](auto& service)
         {
-        EXPECT_TRUE(service.AcceptsService(1));
-        EXPECT_TRUE(service.AcceptsService(2));
-        EXPECT_TRUE(service.AcceptsService(3)); });
+            EXPECT_TRUE(service.AcceptsService(1));
+            EXPECT_TRUE(service.AcceptsService(2));
+            EXPECT_TRUE(service.AcceptsService(3));
+        });
 }
 
 TEST_F(ServiceForwarderAllTest, forward_message)
@@ -40,7 +41,8 @@ TEST_F(ServiceForwarderAllTest, forward_message)
 
                     EXPECT_EQ((std::vector<uint8_t>{ 1, 42, 5, 1, 2, 3, 4, 5 }), writer.Storage());
                 }));
-            service.HandleMethod(1, 5, contents, errorPolicy); });
+            service.HandleMethod(1, 5, contents, errorPolicy);
+        });
 }
 
 class ServiceForwarderTest
@@ -57,7 +59,8 @@ TEST_F(ServiceForwarderTest, accept_one_service)
 {
     echoFrom.NotifyObservers([](auto& service)
         {
-        EXPECT_TRUE(service.AcceptsService(1));
-        EXPECT_FALSE(service.AcceptsService(2));
-        EXPECT_FALSE(service.AcceptsService(3)); });
+            EXPECT_TRUE(service.AcceptsService(1));
+            EXPECT_FALSE(service.AcceptsService(2));
+            EXPECT_FALSE(service.AcceptsService(3));
+        });
 }
