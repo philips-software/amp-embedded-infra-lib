@@ -9,7 +9,7 @@ public:
         : services::CucumberStepProgress(stepName, "")
     {}
 
-    virtual void Execute() override{};
+    void Execute() override{};
 };
 
 bool CheckStepMatcher(infra::BoundedString stepString, infra::BoundedString matchString)

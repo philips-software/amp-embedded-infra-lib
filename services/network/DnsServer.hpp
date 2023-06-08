@@ -21,8 +21,8 @@ namespace services
 
         DnsServer(services::DatagramFactory& factory, DnsEntries dnsEntries);
 
-        virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, services::UdpSocket from) override;
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, services::UdpSocket from) override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
     protected:
         virtual infra::Optional<DnsEntry> FindAnswer(infra::BoundedConstString hostname) = 0;
@@ -70,7 +70,7 @@ namespace services
         using DnsServer::DnsServer;
 
     protected:
-        virtual infra::Optional<DnsEntry> FindAnswer(infra::BoundedConstString hostname) override;
+        infra::Optional<DnsEntry> FindAnswer(infra::BoundedConstString hostname) override;
     };
 }
 

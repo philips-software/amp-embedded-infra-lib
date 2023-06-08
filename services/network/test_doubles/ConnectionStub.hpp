@@ -16,12 +16,12 @@ namespace services
         , public infra::EnableSharedFromThis<ConnectionStub>
     {
     public:
-        virtual void RequestSendStream(std::size_t sendSize) override;
-        virtual std::size_t MaxSendStreamSize() const override;
-        virtual infra::SharedPtr<infra::StreamReaderWithRewinding> ReceiveStream() override;
-        virtual void AckReceived() override;
-        virtual void CloseAndDestroy() override;
-        virtual void AbortAndDestroy() override;
+        void RequestSendStream(std::size_t sendSize) override;
+        std::size_t MaxSendStreamSize() const override;
+        infra::SharedPtr<infra::StreamReaderWithRewinding> ReceiveStream() override;
+        void AckReceived() override;
+        void CloseAndDestroy() override;
+        void AbortAndDestroy() override;
 
         MOCK_METHOD0(CloseAndDestroyMock, void());
         MOCK_METHOD0(AbortAndDestroyMock, void());
@@ -42,8 +42,8 @@ namespace services
             explicit StreamWriterStub(ConnectionStub& connection, std::size_t size);
 
         private:
-            virtual void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
-            virtual std::size_t Available() const override;
+            void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
+            std::size_t Available() const override;
 
         private:
             ConnectionStub& connection;
@@ -75,9 +75,9 @@ namespace services
         : public ConnectionStub
     {
     public:
-        virtual void AckReceived() override;
-        virtual void CloseAndDestroy() override;
-        virtual void AbortAndDestroy() override;
+        void AckReceived() override;
+        void CloseAndDestroy() override;
+        void AbortAndDestroy() override;
 
         MOCK_METHOD0(AckReceivedMock, void());
         MOCK_METHOD0(CloseAndDestroyMock, void());
@@ -89,8 +89,8 @@ namespace services
         : public services::ConnectionObserver
     {
     public:
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        virtual void DataReceived() override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void DataReceived() override;
 
         void SendData(const std::vector<uint8_t>& data);
 

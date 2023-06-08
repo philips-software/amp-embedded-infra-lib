@@ -7,6 +7,30 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [4.0.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v3.2.0...v4.0.0) (2023-06-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* security for MessageCommunication ([#294](https://github.com/philips-software/amp-embedded-infra-lib/issues/294))
+
+### Features
+
+* Add documentation ([#223](https://github.com/philips-software/amp-embedded-infra-lib/issues/223)) ([d710807](https://github.com/philips-software/amp-embedded-infra-lib/commit/d7108073d4bc139899bbffd0f46de487d5f591ad))
+* Merge upstream changes ([#279](https://github.com/philips-software/amp-embedded-infra-lib/issues/279)) ([9856f23](https://github.com/philips-software/amp-embedded-infra-lib/commit/9856f2304b818f69926db810aabadbd2c1a82659))
+* Security for MessageCommunication ([#294](https://github.com/philips-software/amp-embedded-infra-lib/issues/294)) ([f6c3f56](https://github.com/philips-software/amp-embedded-infra-lib/commit/f6c3f56e73a8324f87476908a1ef07f243350093))
+
+
+### Bug Fixes
+
+* Correct order of destruction in EchoForwarderToSerial. ([#291](https://github.com/philips-software/amp-embedded-infra-lib/issues/291)) ([3267831](https://github.com/philips-software/amp-embedded-infra-lib/commit/32678313eb79ee84165c358cb392e5915323ab64))
+* CucumberWireProtocolFormatter; max string value size does not fit into stepMatchArgumentsBuffer. ([#311](https://github.com/philips-software/amp-embedded-infra-lib/issues/311)) ([5504202](https://github.com/philips-software/amp-embedded-infra-lib/commit/55042025bfe5c631a2c247a6e90a23d0f437a2fb))
+* Ensure forwarding constructors have constraints ([#290](https://github.com/philips-software/amp-embedded-infra-lib/issues/290)) ([5015938](https://github.com/philips-software/amp-embedded-infra-lib/commit/50159383787e330ea784b684da5f6dfc47b49113))
+* GattClient notification ([#284](https://github.com/philips-software/amp-embedded-infra-lib/issues/284)) ([15ff387](https://github.com/philips-software/amp-embedded-infra-lib/commit/15ff3873f9f57169217c6a4337f9fac7d1b1f032))
+* Line termination mismatch in hex files ([#307](https://github.com/philips-software/amp-embedded-infra-lib/issues/307)) ([47482c3](https://github.com/philips-software/amp-embedded-infra-lib/commit/47482c3b02e76d13437413cfb802e317439a4300))
+* Remove superfluous &gt; from cmake/emil_xsltproc.cmake ([#276](https://github.com/philips-software/amp-embedded-infra-lib/issues/276)) ([be139b2](https://github.com/philips-software/amp-embedded-infra-lib/commit/be139b22aff7dd5998eba2d7c409302598f988fb))
+* Usable memory loss in HttpClientBasic::Path ([#304](https://github.com/philips-software/amp-embedded-infra-lib/issues/304)) ([d5d4abf](https://github.com/philips-software/amp-embedded-infra-lib/commit/d5d4abf32050cf92bf7c55c5eb227007d04d88e3))
+
 ## [3.2.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v3.1.0...v3.2.0) (2023-04-21)
 
 

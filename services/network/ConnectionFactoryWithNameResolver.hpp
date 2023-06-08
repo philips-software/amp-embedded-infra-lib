@@ -14,7 +14,7 @@ namespace services
         ClientConnectionObserverFactoryWithNameResolver() = default;
         ClientConnectionObserverFactoryWithNameResolver(const ClientConnectionObserverFactoryWithNameResolver& other) = delete;
         ClientConnectionObserverFactoryWithNameResolver& operator=(const ClientConnectionObserverFactoryWithNameResolver& other) = delete;
-        ~ClientConnectionObserverFactoryWithNameResolver() = default;
+        virtual ~ClientConnectionObserverFactoryWithNameResolver() = default;
 
     public:
         enum ConnectFailReason
@@ -39,7 +39,7 @@ namespace services
         ConnectionFactoryWithNameResolver() = default;
         ConnectionFactoryWithNameResolver(const ConnectionFactoryWithNameResolver& other) = delete;
         ConnectionFactoryWithNameResolver& operator=(const ConnectionFactoryWithNameResolver& other) = delete;
-        ~ConnectionFactoryWithNameResolver() = default;
+        virtual ~ConnectionFactoryWithNameResolver() = default;
 
     public:
         virtual void Connect(ClientConnectionObserverFactoryWithNameResolver& factory) = 0;
@@ -60,15 +60,15 @@ namespace services
             bool Remove(ClientConnectionObserverFactoryWithNameResolver& clientConnectionFactory);
 
             // Implementation of NameResolverResult
-            virtual infra::BoundedConstString Hostname() const override;
-            virtual void NameLookupDone(IPAddress address, infra::TimePoint validUntil) override;
-            virtual void NameLookupFailed() override;
+            infra::BoundedConstString Hostname() const override;
+            void NameLookupDone(IPAddress address, infra::TimePoint validUntil) override;
+            void NameLookupFailed() override;
 
             // Implementation of ClientConnectionObserverFactory
-            virtual IPAddress Address() const override;
-            virtual uint16_t Port() const override;
-            virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
-            virtual void ConnectionFailed(ConnectFailReason reason) override;
+            IPAddress Address() const override;
+            uint16_t Port() const override;
+            void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
+            void ConnectionFailed(ConnectFailReason reason) override;
 
         private:
             ConnectionFactoryWithNameResolverImpl& connectionFactory;
@@ -84,8 +84,8 @@ namespace services
         ConnectionFactoryWithNameResolverImpl(infra::BoundedList<Action>& actions, ConnectionFactory& connectionFactory, NameResolver& nameLookup);
 
         // Implementation of ConnectionFactoryWithNameResolver
-        virtual void Connect(ClientConnectionObserverFactoryWithNameResolver& factory) override;
-        virtual void CancelConnect(ClientConnectionObserverFactoryWithNameResolver& factory) override;
+        void Connect(ClientConnectionObserverFactoryWithNameResolver& factory) override;
+        void CancelConnect(ClientConnectionObserverFactoryWithNameResolver& factory) override;
 
     protected:
         virtual void NameLookupFailed();

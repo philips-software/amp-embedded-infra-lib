@@ -20,10 +20,10 @@ namespace services
         LightweightIpOverEthernet(hal::EthernetMac& ethernet, netif& netInterface);
         ~LightweightIpOverEthernet();
 
-        virtual infra::ByteRange RequestReceiveBuffer() override;
-        virtual void ReceivedFrame(uint32_t usedBuffers, uint32_t frameSize) override;
-        virtual void ReceivedErrorFrame(uint32_t usedBuffers, uint32_t frameSize) override;
-        virtual void SentFrame() override;
+        infra::ByteRange RequestReceiveBuffer() override;
+        void ReceivedFrame(uint32_t usedBuffers, uint32_t frameSize) override;
+        void ReceivedErrorFrame(uint32_t usedBuffers, uint32_t frameSize) override;
+        void SentFrame() override;
 
         err_t Output(pbuf* p);
         err_t SetMldMacFilter(const ip6_addr_t* group, netif_mac_filter_action action);

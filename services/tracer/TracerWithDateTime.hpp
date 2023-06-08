@@ -12,7 +12,7 @@ namespace services
         explicit TracerWithDateTime(infra::TextOutputStream& stream);
 
     protected:
-        virtual void InsertHeader() override;
+        void InsertHeader() override;
     };
 }
 

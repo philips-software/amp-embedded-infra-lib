@@ -126,6 +126,12 @@
       "configurePreset": "ContinuousIntegration"
     },
     {
+      "name": "ContinuousIntegrationWithPackage",
+      "configuration": "Debug",
+      "configurePreset": "ContinuousIntegration",
+      "targets": ["all", "package"]
+    },
+    {
       "name": "Package",
       "configuration": "MinSizeRel",
       "configurePreset": "Package",

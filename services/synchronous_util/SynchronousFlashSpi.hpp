@@ -38,11 +38,11 @@ namespace services
         SynchronousFlashSpi(hal::SynchronousSpi& spi, const Config& config = Config());
 
     public:
-        virtual void WriteBuffer(infra::ConstByteRange buffer, uint32_t address) override;
-        virtual void ReadBuffer(infra::ByteRange buffer, uint32_t address) override;
-        virtual void EraseSectors(uint32_t beginIndex, uint32_t endIndex) override;
+        void WriteBuffer(infra::ConstByteRange buffer, uint32_t address) override;
+        void ReadBuffer(infra::ByteRange buffer, uint32_t address) override;
+        void EraseSectors(uint32_t beginIndex, uint32_t endIndex) override;
 
-        virtual void ReadFlashId(infra::ByteRange buffer) override;
+        void ReadFlashId(infra::ByteRange buffer) override;
 
     private:
         void WriteEnable();

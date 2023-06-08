@@ -92,11 +92,11 @@ namespace services
         virtual void DisableIndication(infra::Function<void()> onDone);
 
         // Implementation of GattClientCharacteristicOperationsObserver
-        virtual AttAttribute::Handle CharacteristicValueHandle() const override;
-        virtual GattCharacteristic::PropertyFlags CharacteristicProperties() const override;
+        AttAttribute::Handle CharacteristicValueHandle() const override;
+        GattCharacteristic::PropertyFlags CharacteristicProperties() const override;
 
         // Implementation of GattClientStackUpdateObserver
-        virtual void UpdateReceived(AttAttribute::Handle handle, infra::ConstByteRange data) override;
+        void UpdateReceived(AttAttribute::Handle handle, infra::ConstByteRange data) override;
     };
 
     class GattClientService
@@ -147,18 +147,18 @@ namespace services
         using GattClientDiscoveryObserver::GattClientDiscoveryObserver;
 
         // Implementation of GattClientDiscoveryObserver
-        virtual void ServiceDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle endHandle) override;
-        virtual void CharacteristicDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties) override;
-        virtual void DescriptorDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle) override;
+        void ServiceDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle endHandle) override;
+        void CharacteristicDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties) override;
+        void DescriptorDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle) override;
 
-        virtual void ServiceDiscoveryComplete() override;
-        virtual void CharacteristicDiscoveryComplete() override;
-        virtual void DescriptorDiscoveryComplete() override;
+        void ServiceDiscoveryComplete() override;
+        void CharacteristicDiscoveryComplete() override;
+        void DescriptorDiscoveryComplete() override;
 
         // Implementation of GattClientDiscovery
-        virtual void StartServiceDiscovery() override;
-        virtual void StartCharacteristicDiscovery(const GattService& service) override;
-        virtual void StartDescriptorDiscovery(const GattService& service) override;
+        void StartServiceDiscovery() override;
+        void StartCharacteristicDiscovery(const GattService& service) override;
+        void StartDescriptorDiscovery(const GattService& service) override;
     };
 }
 

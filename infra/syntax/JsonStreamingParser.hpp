@@ -39,10 +39,10 @@ namespace infra
         virtual JsonObjectVisitor* VisitObject(infra::BoundedConstString tag, JsonSubObjectParser& parser);
         virtual JsonArrayVisitor* VisitArray(infra::BoundedConstString tag, JsonSubArrayParser& parser);
 
-        virtual void Close() override;
-        virtual void ParseError() override;
-        virtual void SemanticError() override;
-        virtual void StringOverflow() override;
+        void Close() override;
+        void ParseError() override;
+        void SemanticError() override;
+        void StringOverflow() override;
     };
 
     class JsonArrayVisitor
@@ -62,10 +62,10 @@ namespace infra
         virtual JsonObjectVisitor* VisitObject(JsonSubObjectParser& parser);
         virtual JsonArrayVisitor* VisitArray(JsonSubArrayParser& parser);
 
-        virtual void Close() override;
-        virtual void ParseError() override;
-        virtual void SemanticError() override;
-        virtual void StringOverflow() override;
+        void Close() override;
+        void ParseError() override;
+        void SemanticError() override;
+        void StringOverflow() override;
     };
 
     class JsonSubParser
@@ -146,11 +146,11 @@ namespace infra
     public:
         JsonSubObjectParser(infra::BoundedString tagBuffer, infra::BoundedString valueBuffer, infra::BoundedVector<infra::PolymorphicVariant<JsonSubParser, JsonSubObjectParser, JsonSubArrayParser>>& subObjects, JsonObjectVisitor& visitor);
         JsonSubObjectParser(infra::BoundedString tagBuffer, infra::BoundedString valueBuffer, infra::BoundedVector<infra::PolymorphicVariant<JsonSubParser, JsonSubObjectParser, JsonSubArrayParser>>& subObjects);
-        ~JsonSubObjectParser();
+        ~JsonSubObjectParser() override;
 
-        virtual void Feed(infra::MemoryRange<const char>& data) override;
-        virtual JsonVisitor& Visitor() override;
-        virtual void SetVisitor(JsonVisitor& visitor) override;
+        void Feed(infra::MemoryRange<const char>& data) override;
+        JsonVisitor& Visitor() override;
+        void SetVisitor(JsonVisitor& visitor) override;
 
         void SemanticError();
 
@@ -182,11 +182,11 @@ namespace infra
     public:
         JsonSubArrayParser(infra::BoundedString tagBuffer, infra::BoundedString valueBuffer, infra::BoundedVector<infra::PolymorphicVariant<JsonSubParser, JsonSubObjectParser, JsonSubArrayParser>>& subObjects, JsonArrayVisitor& visitor);
         JsonSubArrayParser(infra::BoundedString tagBuffer, infra::BoundedString valueBuffer, infra::BoundedVector<infra::PolymorphicVariant<JsonSubParser, JsonSubObjectParser, JsonSubArrayParser>>& subObjects);
-        ~JsonSubArrayParser();
+        ~JsonSubArrayParser() override;
 
-        virtual void Feed(infra::MemoryRange<const char>& data) override;
-        virtual JsonVisitor& Visitor() override;
-        virtual void SetVisitor(JsonVisitor& visitor) override;
+        void Feed(infra::MemoryRange<const char>& data) override;
+        JsonVisitor& Visitor() override;
+        void SetVisitor(JsonVisitor& visitor) override;
 
         void SemanticError();
 
@@ -269,17 +269,17 @@ namespace infra
         explicit JsonObjectVisitorDecorator(JsonObjectVisitor& decorated);
 
     public:
-        virtual void VisitString(infra::BoundedConstString tag, infra::BoundedConstString value) override;
-        virtual void VisitNumber(infra::BoundedConstString tag, int64_t value) override;
-        virtual void VisitBoolean(infra::BoundedConstString tag, bool value) override;
-        virtual void VisitNull(infra::BoundedConstString tag) override;
-        virtual JsonObjectVisitor* VisitObject(infra::BoundedConstString tag, JsonSubObjectParser& parser) override;
-        virtual JsonArrayVisitor* VisitArray(infra::BoundedConstString tag, JsonSubArrayParser& parser) override;
+        void VisitString(infra::BoundedConstString tag, infra::BoundedConstString value) override;
+        void VisitNumber(infra::BoundedConstString tag, int64_t value) override;
+        void VisitBoolean(infra::BoundedConstString tag, bool value) override;
+        void VisitNull(infra::BoundedConstString tag) override;
+        JsonObjectVisitor* VisitObject(infra::BoundedConstString tag, JsonSubObjectParser& parser) override;
+        JsonArrayVisitor* VisitArray(infra::BoundedConstString tag, JsonSubArrayParser& parser) override;
 
-        virtual void Close() override;
-        virtual void ParseError() override;
-        virtual void SemanticError() override;
-        virtual void StringOverflow() override;
+        void Close() override;
+        void ParseError() override;
+        void SemanticError() override;
+        void StringOverflow() override;
 
     private:
         JsonObjectVisitor& decorated;

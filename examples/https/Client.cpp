@@ -50,22 +50,22 @@ namespace application
 
     private:
         // Implementation of HttpClientBasic
-        virtual void Attached() override
+        void Attached() override
         {
             HttpClientObserver::Subject().Get(Path(), Headers());
         }
 
-        virtual void StatusAvailable(services::HttpStatusCode statusCode) override
+        void StatusAvailable(services::HttpStatusCode statusCode) override
         {
             tracer.Trace() << "Status: " << statusCode;
         }
 
-        virtual void HeaderAvailable(services::HttpHeader header) override
+        void HeaderAvailable(services::HttpHeader header) override
         {
             tracer.Trace() << "Header: " << header;
         }
 
-        virtual void BodyAvailable(infra::SharedPtr<infra::StreamReader>&& reader) override
+        void BodyAvailable(infra::SharedPtr<infra::StreamReader>&& reader) override
         {
             infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
 
@@ -73,12 +73,12 @@ namespace application
                 tracer.Trace() << infra::ByteRangeAsString(stream.ContiguousRange());
         }
 
-        virtual void Done() override
+        void Done() override
         {
             tracer.Trace() << "Done";
         }
 
-        virtual void Error(bool intermittentFailure) override
+        void Error(bool intermittentFailure) override
         {
             tracer.Trace() << "Error";
         }

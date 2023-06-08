@@ -20,7 +20,7 @@ public:
         : infra::SystemStateParticipant(manager)
     {}
 
-    void RequestState(infra::SystemStateBase state)
+    void RequestState(infra::SystemStateBase state) override
     {
         requestedState = state;
     }

@@ -13,7 +13,7 @@ namespace services
     public:
         SynchronousSpiMasterWithChipSelect(hal::SynchronousSpi& spi, hal::GpioPin& chipSelect);
 
-        virtual void SendAndReceive(infra::ConstByteRange sendData, infra::ByteRange receiveData, Action nextAction) override;
+        void SendAndReceive(infra::ConstByteRange sendData, infra::ByteRange receiveData, Action nextAction) override;
 
     private:
         hal::SynchronousSpi& spi;
@@ -26,7 +26,7 @@ namespace services
     public:
         SynchronousSpiMasterWithSynchronousChipSelect(hal::SynchronousSpi& spi, hal::SynchronousOutputPin& chipSelect);
 
-        virtual void SendAndReceive(infra::ConstByteRange sendData, infra::ByteRange receiveData, Action nextAction) override;
+        void SendAndReceive(infra::ConstByteRange sendData, infra::ByteRange receiveData, Action nextAction) override;
 
     private:
         hal::SynchronousSpi& spi;

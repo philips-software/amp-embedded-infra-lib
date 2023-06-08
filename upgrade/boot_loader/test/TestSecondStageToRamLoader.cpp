@@ -10,21 +10,21 @@ class DecryptorSpy
     : public application::Decryptor
 {
 public:
-    virtual infra::ByteRange StateBuffer() override
+    infra::ByteRange StateBuffer() override
     {
         return infra::ByteRange();
     }
 
-    virtual void Reset() override
+    void Reset() override
     {}
 
-    virtual void DecryptPart(infra::ByteRange ram) override
+    void DecryptPart(infra::ByteRange ram) override
     {
         data.resize(ram.size());
         std::copy(ram.begin(), ram.end(), data.begin());
     }
 
-    virtual bool DecryptAndAuthenticate(infra::ByteRange ram) override
+    bool DecryptAndAuthenticate(infra::ByteRange ram) override
     {
         DecryptPart(ram);
 
@@ -38,17 +38,17 @@ class DecryptorMock
     : public application::Decryptor
 {
 public:
-    virtual infra::ByteRange StateBuffer() override
+    infra::ByteRange StateBuffer() override
     {
         return StateBufferMock();
     }
 
-    virtual void Reset() override
+    void Reset() override
     {
         ResetMock();
     }
 
-    virtual void DecryptPart(infra::ByteRange ram) override
+    void DecryptPart(infra::ByteRange ram) override
     {
         uint32_t first;
         uint32_t second;
@@ -57,7 +57,7 @@ public:
         return DecryptPartMock(first, second);
     }
 
-    virtual bool DecryptAndAuthenticate(infra::ByteRange ram) override
+    bool DecryptAndAuthenticate(infra::ByteRange ram) override
     {
         return DecryptAndAuthenticateMock(ram);
     }
@@ -72,7 +72,7 @@ class VerifierSpy
     : public application::Verifier
 {
 public:
-    virtual bool IsValid(hal::SynchronousFlash& upgradePackFlash, const hal::SynchronousFlash::Range& signature, const hal::SynchronousFlash::Range& data) const override
+    bool IsValid(hal::SynchronousFlash& upgradePackFlash, const hal::SynchronousFlash::Range& signature, const hal::SynchronousFlash::Range& data) const override
     {
         this->signature.resize(signature.second - signature.first);
         upgradePackFlash.ReadBuffer(this->signature, signature.first);
@@ -91,7 +91,7 @@ class VerifierMock
     : public application::Verifier
 {
 public:
-    virtual bool IsValid(hal::SynchronousFlash& upgradePackFlash, const hal::SynchronousFlash::Range& signature, const hal::SynchronousFlash::Range& data) const override
+    bool IsValid(hal::SynchronousFlash& upgradePackFlash, const hal::SynchronousFlash::Range& signature, const hal::SynchronousFlash::Range& data) const override
     {
         return IsValidMock();
     }

@@ -17,6 +17,7 @@ namespace services
     public:
         using infra::SingleObserver<MessageCommunicationObserver, MessageCommunication>::SingleObserver;
 
+        virtual void Initialized() = 0;
         virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) = 0;
         virtual void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) = 0;
     };

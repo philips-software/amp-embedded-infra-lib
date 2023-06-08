@@ -37,8 +37,8 @@ namespace application
 
         void Add(std::shared_ptr<Entity>&& newEntity);
 
-        virtual void PrintHeader(google::protobuf::io::Printer& printer) const override;
-        virtual void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+        void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
 
     protected:
         bool EntitiesHaveHeaderCode() const;
@@ -57,8 +57,8 @@ namespace application
 
         void Parent(const std::string& parentName);
 
-        virtual void PrintHeader(google::protobuf::io::Printer& printer) const override;
-        virtual void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+        void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
 
     private:
         std::string Parents() const;
@@ -74,9 +74,9 @@ namespace application
     public:
         explicit Access(const std::string& level);
 
-        virtual void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        void PrintHeader(google::protobuf::io::Printer& printer) const override;
 
-        virtual bool HasSourceCode() const override;
+        bool HasSourceCode() const override;
 
     private:
         std::string level;
@@ -88,11 +88,11 @@ namespace application
     public:
         explicit Namespace(const std::string& name);
 
-        virtual void PrintHeader(google::protobuf::io::Printer& printer) const override;
-        virtual void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+        void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
 
-        virtual bool HasHeaderCode() const override;
-        virtual bool HasSourceCode() const override;
+        bool HasHeaderCode() const override;
+        bool HasSourceCode() const override;
 
     private:
         std::string name;
@@ -111,8 +111,8 @@ namespace application
 
         void Parameter(const std::string& parameter);
 
-        virtual void PrintHeader(google::protobuf::io::Printer& printer) const override;
-        virtual void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+        void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
 
     private:
         std::string Parameters() const;
@@ -138,10 +138,10 @@ namespace application
         void Parameter(const std::string& parameter);
         void Initializer(const std::string& initializer);
 
-        virtual void PrintHeader(google::protobuf::io::Printer& printer) const override;
-        virtual void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+        void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
 
-        virtual bool HasSourceCode() const override;
+        bool HasSourceCode() const override;
 
     private:
         std::string Parameters() const;
@@ -162,8 +162,8 @@ namespace application
     public:
         DataMember(const std::string& name, const std::string& type, const std::string& initializer = std::string());
 
-        virtual void PrintHeader(google::protobuf::io::Printer& printer) const override;
-        virtual void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+        void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
 
     private:
         std::string name;
@@ -177,8 +177,8 @@ namespace application
     public:
         StaticDataMember(const std::string& name, const std::string& type, const std::string& initializer);
 
-        virtual void PrintHeader(google::protobuf::io::Printer& printer) const override;
-        virtual void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+        void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
 
     private:
         std::string name;
@@ -192,8 +192,8 @@ namespace application
     public:
         Using(const std::string& name, const std::string& definition);
 
-        virtual void PrintHeader(google::protobuf::io::Printer& printer) const override;
-        virtual void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+        void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
 
     private:
         std::string name;
@@ -206,8 +206,8 @@ namespace application
     public:
         using Using::Using;
 
-        virtual void PrintHeader(google::protobuf::io::Printer& printer) const override;
-        virtual void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+        void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
 
         void TemplateParameter(const std::string& parameter);
 
@@ -226,8 +226,8 @@ namespace application
 
         void Path(const std::string& path);
 
-        virtual void PrintHeader(google::protobuf::io::Printer& printer) const override;
-        virtual void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+        void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
 
     private:
         std::vector<std::string> paths;
@@ -241,8 +241,8 @@ namespace application
 
         void Path(const std::string& path);
 
-        virtual void PrintHeader(google::protobuf::io::Printer& printer) const override;
-        virtual void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+        void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
 
     private:
         std::vector<std::string> paths;
@@ -254,8 +254,8 @@ namespace application
     public:
         explicit ClassForwardDeclaration(const std::string& name);
 
-        virtual void PrintHeader(google::protobuf::io::Printer& printer) const override;
-        virtual void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+        void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
 
     private:
         std::string name;
@@ -267,8 +267,8 @@ namespace application
     public:
         explicit StructTemplateForwardDeclaration(const std::string& name);
 
-        virtual void PrintHeader(google::protobuf::io::Printer& printer) const override;
-        virtual void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+        void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
 
         void TemplateParameter(const std::string& parameter);
 
@@ -288,8 +288,8 @@ namespace application
 
         void TemplateSpecialization(const std::string& specialization);
 
-        virtual void PrintHeader(google::protobuf::io::Printer& printer) const override;
-        virtual void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+        void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
 
     private:
         std::string Specializations() const;
@@ -305,8 +305,8 @@ namespace application
     public:
         explicit EnumDeclaration(const std::string& name, const std::vector<std::pair<std::string, int>>& members);
 
-        virtual void PrintHeader(google::protobuf::io::Printer& printer) const override;
-        virtual void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+        void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
 
     private:
         std::string name;

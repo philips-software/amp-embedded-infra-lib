@@ -25,8 +25,8 @@ namespace services
         void Connect(uint16_t localPort, UdpSocket remote);
 
         // Implementation of DatagramExchange
-        virtual void RequestSendStream(std::size_t sendSize) override;
-        virtual void RequestSendStream(std::size_t sendSize, UdpSocket to) override;
+        void RequestSendStream(std::size_t sendSize) override;
+        void RequestSendStream(std::size_t sendSize, UdpSocket to) override;
 
     private:
         udp_pcb* CreateUdpPcb(IPVersions versions) const;
@@ -42,14 +42,14 @@ namespace services
             explicit UdpReader(pbuf* buffer);
             ~UdpReader();
 
-            virtual void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
-            virtual uint8_t Peek(infra::StreamErrorPolicy& errorPolicy) override;
-            virtual infra::ConstByteRange ExtractContiguousRange(std::size_t max) override;
-            virtual infra::ConstByteRange PeekContiguousRange(std::size_t start) override;
-            virtual bool Empty() const override;
-            virtual std::size_t Available() const override;
-            virtual std::size_t ConstructSaveMarker() const override;
-            virtual void Rewind(std::size_t marker) override;
+            void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
+            uint8_t Peek(infra::StreamErrorPolicy& errorPolicy) override;
+            infra::ConstByteRange ExtractContiguousRange(std::size_t max) override;
+            infra::ConstByteRange PeekContiguousRange(std::size_t start) override;
+            bool Empty() const override;
+            std::size_t Available() const override;
+            std::size_t ConstructSaveMarker() const override;
+            void Rewind(std::size_t marker) override;
 
         private:
             pbuf* buffer;
@@ -63,8 +63,8 @@ namespace services
             UdpWriter(udp_pcb* control, pbuf* buffer, infra::Optional<UdpSocket> remote);
             ~UdpWriter();
 
-            virtual void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
-            virtual std::size_t Available() const override;
+            void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
+            std::size_t Available() const override;
 
         private:
             udp_pcb* control;
@@ -88,8 +88,8 @@ namespace services
         public:
             explicit StateIdle(DatagramExchangeLwIP& datagramExchange);
 
-            virtual void RequestSendStream(std::size_t sendSize) override;
-            virtual void RequestSendStream(std::size_t sendSize, UdpSocket remote) override;
+            void RequestSendStream(std::size_t sendSize) override;
+            void RequestSendStream(std::size_t sendSize, UdpSocket remote) override;
 
         private:
             DatagramExchangeLwIP& datagramExchange;
@@ -115,7 +115,7 @@ namespace services
         {
         public:
             StateBufferAllocated(DatagramExchangeLwIP& datagramExchange, pbuf* buffer, infra::Optional<UdpSocket> remote);
-            ~StateBufferAllocated();
+            ~StateBufferAllocated() override;
 
         private:
             DatagramExchangeLwIP& datagramExchange;
@@ -135,10 +135,10 @@ namespace services
         : public DatagramFactory
     {
     public:
-        virtual infra::SharedPtr<DatagramExchange> Listen(DatagramExchangeObserver& observer, uint16_t port, IPVersions versions = IPVersions::both) override;
-        virtual infra::SharedPtr<DatagramExchange> Listen(DatagramExchangeObserver& observer, IPVersions versions = IPVersions::both) override;
-        virtual infra::SharedPtr<DatagramExchange> Connect(DatagramExchangeObserver& observer, UdpSocket remote) override;
-        virtual infra::SharedPtr<DatagramExchange> Connect(DatagramExchangeObserver& observer, uint16_t localPort, UdpSocket remote) override;
+        infra::SharedPtr<DatagramExchange> Listen(DatagramExchangeObserver& observer, uint16_t port, IPVersions versions = IPVersions::both) override;
+        infra::SharedPtr<DatagramExchange> Listen(DatagramExchangeObserver& observer, IPVersions versions = IPVersions::both) override;
+        infra::SharedPtr<DatagramExchange> Connect(DatagramExchangeObserver& observer, UdpSocket remote) override;
+        infra::SharedPtr<DatagramExchange> Connect(DatagramExchangeObserver& observer, uint16_t localPort, UdpSocket remote) override;
 
     private:
         AllocatorDatagramExchangeLwIp::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MEMP_NUM_UDP_PCB> allocatorDatagramExchanges;

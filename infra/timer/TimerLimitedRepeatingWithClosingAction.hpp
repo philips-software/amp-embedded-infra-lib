@@ -18,8 +18,8 @@ namespace infra
         void Start(int aHowMany, Duration duration, const infra::Function<void()>& action, const infra::Function<void()>& aClosingAction);
 
     protected:
-        virtual const infra::Function<void()>& Action() const override;
-        virtual void ComputeNextTriggerTime() override;
+        const infra::Function<void()>& Action() const override;
+        void ComputeNextTriggerTime() override;
 
     private:
         TimePoint triggerStart;

@@ -12,7 +12,7 @@ namespace hal
     public:
         explicit SynchronousFixedRandomDataGenerator(const std::vector<uint8_t>& initialData);
 
-        void GenerateRandomData(infra::ByteRange result);
+        void GenerateRandomData(infra::ByteRange result) override;
 
     private:
         std::vector<uint8_t> initialData;

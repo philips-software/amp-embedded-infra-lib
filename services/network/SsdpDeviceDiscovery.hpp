@@ -30,8 +30,8 @@ namespace services
 
     private:
         // Implementation of DatagramExchangeObserver
-        virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, services::UdpSocket from) override;
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, services::UdpSocket from) override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
     private:
         bool SkippedNotify(infra::StreamReaderWithRewinding& reader) const;
@@ -47,9 +47,9 @@ namespace services
 
         private:
             // Implementation of HttpHeaderParserObserver
-            virtual void StatusAvailable(services::HttpStatusCode code, infra::BoundedConstString statusLine) override;
-            virtual void HeaderAvailable(services::HttpHeader header) override;
-            virtual void HeaderParsingDone(bool error) override;
+            void StatusAvailable(services::HttpStatusCode code, infra::BoundedConstString statusLine) override;
+            void HeaderAvailable(services::HttpHeader header) override;
+            void HeaderParsingDone(bool error) override;
 
         private:
             bool valid = true;
@@ -70,8 +70,8 @@ namespace services
 
         private:
             // Implementation of DatagramExchangeObserver
-            virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, services::UdpSocket from) override;
-            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+            void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, services::UdpSocket from) override;
+            void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
             UdpSocket MakeSsdpUdpSocket(IPVersions ipVersion);
             IPAddress GetSsdpMulticastAddress(IPVersions ipVersion);

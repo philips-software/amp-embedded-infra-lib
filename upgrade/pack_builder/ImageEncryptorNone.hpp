@@ -13,8 +13,8 @@ namespace application
     public:
         static const uint32_t encryptionAndMacMethod = 0;
 
-        virtual uint32_t EncryptionAndMacMethod() const override;
-        virtual std::vector<uint8_t> Secure(const std::vector<uint8_t>& data) const override;
+        uint32_t EncryptionAndMacMethod() const override;
+        std::vector<uint8_t> Secure(const std::vector<uint8_t>& data) const override;
     };
 }
 

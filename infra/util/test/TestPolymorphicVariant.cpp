@@ -18,7 +18,7 @@ namespace
         : public State
     {
     public:
-        virtual int Identifier() const override
+        int Identifier() const override
         {
             return identifier;
         }
@@ -31,7 +31,7 @@ namespace
         : public State
     {
     public:
-        virtual int Identifier() const override
+        int Identifier() const override
         {
             return identifier;
         }
@@ -52,7 +52,7 @@ namespace
         : public CopyableState
     {
     public:
-        virtual int Identifier() const override
+        int Identifier() const override
         {
             return identifier;
         }
@@ -65,7 +65,7 @@ namespace
         : public CopyableState
     {
     public:
-        virtual int Identifier() const override
+        int Identifier() const override
         {
             return identifier;
         }
@@ -88,7 +88,7 @@ namespace
             return false;
         }
 
-        virtual int Identifier() const override
+        int Identifier() const override
         {
             return identifier;
         }
@@ -111,7 +111,7 @@ namespace
             return false;
         }
 
-        virtual int Identifier() const override
+        int Identifier() const override
         {
             return identifier;
         }

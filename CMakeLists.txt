@@ -7,7 +7,7 @@ if (APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
 endif()
 
-project(emil LANGUAGES C CXX VERSION 3.2.0) # x-release-please-version
+project(emil LANGUAGES C CXX VERSION 4.0.0) # x-release-please-version
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
@@ -132,8 +132,8 @@ add_version_header_target(generated.version_header)
 add_subdirectory(external)
 add_subdirectory(infra)
 add_subdirectory(hal)
-add_subdirectory(services)
 add_subdirectory(protobuf)
+add_subdirectory(services)
 add_subdirectory(upgrade)
 add_subdirectory(lwip)
 add_subdirectory(osal)
@@ -144,6 +144,7 @@ endif()
 emil_clangformat_directories(emil DIRECTORIES .)
 
 if (EMIL_STANDALONE)
+    emil_generate_antora_docs_target(antora-playbook-branch.yml)
     emil_folderize_all_targets()
 endif()
 
@@ -184,8 +185,8 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
     )
 
-    set(CPACK_GENERATOR "ZIP")
-    set(CPACK_SOURCE_IGNORE_FILES ".vs/;.git/;Build/")
+    set(CPACK_GENERATOR "ZIP;TGZ")
+    set(CPACK_SOURCE_IGNORE_FILES ".vs/;.git/;build/")
     set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
     set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
     set(CPACK_PACKAGE_VENDOR "Koninklijke Philips N.V")

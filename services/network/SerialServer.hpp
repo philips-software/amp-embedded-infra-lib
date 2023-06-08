@@ -15,8 +15,8 @@ namespace services
         SerialServerConnectionObserver(const infra::ByteRange receiveBuffer, hal::SerialCommunication& serialCommunication);
 
         // Implementation of ConnectionObserver
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        virtual void DataReceived() override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void DataReceived() override;
 
     protected:
         virtual void SerialDataReceived();

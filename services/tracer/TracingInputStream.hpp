@@ -12,13 +12,13 @@ namespace services
     public:
         TracingStreamReader(infra::StreamReader& reader, services::Tracer& tracer);
 
-        virtual void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
-        virtual uint8_t Peek(infra::StreamErrorPolicy& errorPolicy) override;
-        virtual infra::ConstByteRange ExtractContiguousRange(std::size_t max) override;
-        virtual infra::ConstByteRange PeekContiguousRange(std::size_t start) override;
+        void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
+        uint8_t Peek(infra::StreamErrorPolicy& errorPolicy) override;
+        infra::ConstByteRange ExtractContiguousRange(std::size_t max) override;
+        infra::ConstByteRange PeekContiguousRange(std::size_t start) override;
 
-        virtual bool Empty() const override;
-        virtual std::size_t Available() const override;
+        bool Empty() const override;
+        std::size_t Available() const override;
 
     private:
         infra::StreamReader& reader;

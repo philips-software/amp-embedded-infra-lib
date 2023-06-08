@@ -20,16 +20,16 @@ namespace services
             infra::Duration operationTimeout = std::chrono::seconds(30), infra::Duration pingInterval = std::chrono::seconds(35));
 
         // Implementation of MqttClient
-        virtual void Publish() override;
-        virtual void Subscribe() override;
-        virtual void NotificationDone() override;
-        virtual void Disconnect() override;
+        void Publish() override;
+        void Subscribe() override;
+        void NotificationDone() override;
+        void Disconnect() override;
 
         // Implementation of ConnectionObserver
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        virtual void DataReceived() override;
-        virtual void Attached() override;
-        virtual void Detaching() override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void DataReceived() override;
+        void Attached() override;
+        void Detaching() override;
 
         void CancellingConnection();
 
@@ -146,11 +146,11 @@ namespace services
         public:
             StateConnecting(MqttClientImpl& clientConnection, MqttClientObserverFactory& factory, infra::BoundedConstString clientId, infra::BoundedConstString username, infra::BoundedConstString password);
 
-            virtual void Connected() override;
-            virtual void Detaching() override;
-            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-            virtual void HandleDataReceived() override;
-            virtual void CancellingConnection() override;
+            void Connected() override;
+            void Detaching() override;
+            void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+            void HandleDataReceived() override;
+            void CancellingConnection() override;
 
         private:
             void Timeout();
@@ -170,13 +170,13 @@ namespace services
         public:
             explicit StateConnected(MqttClientImpl& clientConnection);
 
-            virtual void Detaching() override;
-            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-            virtual void HandleDataReceived() override;
+            void Detaching() override;
+            void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+            void HandleDataReceived() override;
 
-            virtual void Publish() override;
-            virtual void Subscribe() override;
-            virtual void NotificationDone() override;
+            void Publish() override;
+            void Subscribe() override;
+            void NotificationDone() override;
 
         protected:
             MqttClientImpl& ClientConnection() const;
@@ -217,9 +217,9 @@ namespace services
             public:
                 OperationPublish(StateConnected& connectedState, MqttClientObserver& observer);
 
-                virtual void SendStreamAvailable(infra::StreamWriter& writer) override;
-                virtual std::size_t MessageSize(const MqttClientObserver& message) override;
-                virtual void HandlePubAck() override;
+                void SendStreamAvailable(infra::StreamWriter& writer) override;
+                std::size_t MessageSize(const MqttClientObserver& message) override;
+                void HandlePubAck() override;
 
             private:
                 StateConnected& connectedState;
@@ -232,9 +232,9 @@ namespace services
             public:
                 OperationSubscribe(StateConnected& connectedState, MqttClientObserver& observer);
 
-                virtual void SendStreamAvailable(infra::StreamWriter& writer) override;
-                virtual std::size_t MessageSize(const MqttClientObserver& message) override;
-                virtual void HandleSubAck() override;
+                void SendStreamAvailable(infra::StreamWriter& writer) override;
+                std::size_t MessageSize(const MqttClientObserver& message) override;
+                void HandleSubAck() override;
 
             private:
                 StateConnected& connectedState;
@@ -247,8 +247,8 @@ namespace services
             public:
                 explicit OperationPubAck(StateConnected& connectedState);
 
-                virtual void SendStreamAvailable(infra::StreamWriter& writer) override;
-                virtual std::size_t MessageSize(const MqttClientObserver& message) override;
+                void SendStreamAvailable(infra::StreamWriter& writer) override;
+                std::size_t MessageSize(const MqttClientObserver& message) override;
 
             private:
                 StateConnected& connectedState;
@@ -260,8 +260,8 @@ namespace services
             public:
                 explicit OperationPing(StateConnected& connectedState);
 
-                virtual void SendStreamAvailable(infra::StreamWriter& writer) override;
-                virtual std::size_t MessageSize(const MqttClientObserver& message) override;
+                void SendStreamAvailable(infra::StreamWriter& writer) override;
+                std::size_t MessageSize(const MqttClientObserver& message) override;
 
             private:
                 StateConnected& connectedState;
@@ -313,14 +313,14 @@ namespace services
         void Stop(const infra::Function<void()>& onDone);
 
         // Implementation of MqttClientConnector
-        virtual void Connect(MqttClientObserverFactory& factory) override;
-        virtual void CancelConnect() override;
+        void Connect(MqttClientObserverFactory& factory) override;
+        void CancelConnect() override;
 
         // Implementation of ClientConnectionObserverFactoryWithNameResolver
-        virtual infra::BoundedConstString Hostname() const override;
-        virtual uint16_t Port() const override;
-        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
-        virtual void ConnectionFailed(ConnectFailReason reason) override;
+        infra::BoundedConstString Hostname() const override;
+        uint16_t Port() const override;
+        void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
+        void ConnectionFailed(ConnectFailReason reason) override;
 
     private:
         infra::BoundedConstString hostname;
