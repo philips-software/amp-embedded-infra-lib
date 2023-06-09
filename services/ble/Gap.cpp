@@ -124,10 +124,9 @@ namespace services
 
     infra::ConstByteRange GapAdvertisingDataParser::ParserAdvertisingData(infra::ConstByteRange data, GapAdvertisementDataType type)
     {
-        static constexpr uint8_t lengthOffset = 0;
-        static constexpr uint8_t advertisingTypeOffset = 1;
-        static constexpr uint8_t payloadStartOffset = 2;
-        static constexpr uint8_t packetOverhead = 2;
+        const uint8_t lengthOffset = 0;
+        const uint8_t advertisingTypeOffset = 1;
+        const uint8_t payloadStartOffset = 2;
 
         while (!data.empty() && data[lengthOffset] != 0)
         {
