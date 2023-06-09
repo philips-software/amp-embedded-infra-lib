@@ -535,7 +535,9 @@ namespace services
         , blob2(blob1.Blob(), blob1.VerificationBuffer(), flashSecond, sha256)
     {
         Recover([]()
-            { std::abort(); },
+            {
+                std::abort();
+            },
             onRecovered);
     }
 }

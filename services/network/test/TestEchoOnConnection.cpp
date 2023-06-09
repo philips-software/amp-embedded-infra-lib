@@ -30,7 +30,9 @@ TEST_F(EchoOnConnectionTest, invoke_service_proxy_method)
     testing::StrictMock<infra::MockCallback<void()>> onGranted;
     EXPECT_CALL(connection, RequestSendStream(18));
     serviceProxy.RequestSend([&onGranted]()
-        { onGranted.callback(); });
+        {
+            onGranted.callback();
+        });
 
     infra::ByteOutputStreamWriter::WithStorage<128> writer;
     auto writerPtr = infra::UnOwnedSharedPtr(writer);

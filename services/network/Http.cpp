@@ -207,7 +207,9 @@ namespace services
     {
         static const std::array<infra::BoundedConstString, 2> validVersions{ "HTTP/1.0", "HTTP/1.1" };
         return std::any_of(validVersions.begin(), validVersions.end(), [&](infra::BoundedConstString validVersion)
-            { return httpVersion == validVersion; });
+            {
+                return httpVersion == validVersion;
+            });
     }
 
     void HttpHeaderParser::ParseHeaders(infra::StreamReaderWithRewinding& reader)

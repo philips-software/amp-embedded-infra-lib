@@ -54,13 +54,17 @@ namespace services
     void DnsResolver::NameLookupSuccess(NameResolverResult& nameLookup, IPAddress address, infra::TimePoint validUntil)
     {
         NameLookupDone([&nameLookup, &address, &validUntil]()
-            { nameLookup.NameLookupDone(address, validUntil); });
+            {
+                nameLookup.NameLookupDone(address, validUntil);
+            });
     }
 
     void DnsResolver::NameLookupFailed(NameResolverResult& nameLookup)
     {
         NameLookupDone([&nameLookup]()
-            { nameLookup.NameLookupFailed(); });
+            {
+                nameLookup.NameLookupFailed();
+            });
     }
 
     void DnsResolver::NameLookupCancelled()
@@ -419,7 +423,9 @@ namespace services
         stream << footer;
 
         timeoutTimer.Start(responseTimeout, [this]()
-            { ResolveNextAttempt(); });
+            {
+                ResolveNextAttempt();
+            });
     }
 
     void DnsResolver::ActiveLookup::ResolveNextAttempt()

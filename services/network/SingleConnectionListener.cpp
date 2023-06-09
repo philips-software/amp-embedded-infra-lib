@@ -21,7 +21,9 @@ namespace services
         this->address = address;
 
         Stop([this]()
-            { CreateObserver(); },
+            {
+                CreateObserver();
+            },
             false);
     }
 

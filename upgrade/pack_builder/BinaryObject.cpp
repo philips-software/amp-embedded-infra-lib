@@ -7,7 +7,9 @@ namespace
     bool StringHasNonSpaces(const std::string_view string)
     {
         return !std::all_of(string.begin(), string.end(), [](auto c)
-            { return std::isspace(c); });
+            {
+                return std::isspace(c);
+            });
     }
 }
 

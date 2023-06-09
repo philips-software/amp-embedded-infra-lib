@@ -13,9 +13,13 @@ namespace services
         , receiveBuffer(receiveBuffer)
         , sendBuffer(sendBuffer)
         , streamReader([this]()
-              { ReceiveStreamAllocatable(); })
+              {
+                  ReceiveStreamAllocatable();
+              })
         , streamWriter([this]()
-              { SendStreamAllocatable(); })
+              {
+                  SendStreamAllocatable();
+              })
     {}
 
     void WebSocketServerConnectionObserver::Attached()

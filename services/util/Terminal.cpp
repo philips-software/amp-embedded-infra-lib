@@ -6,10 +6,14 @@ namespace services
     Terminal::Terminal(hal::SerialCommunication& communication, services::Tracer& tracer)
         : tracer(tracer)
         , queue([this]
-              { HandleInput(); })
+              {
+                  HandleInput();
+              })
     {
         communication.ReceiveData([this](infra::ConstByteRange data)
-            { queue.AddFromInterrupt(data); });
+            {
+                queue.AddFromInterrupt(data);
+            });
         Print(state.prompt);
     }
 
@@ -266,7 +270,9 @@ namespace services
 
         auto commands = Commands();
         auto it = std::find_if(commands.begin(), commands.end(), [command](const Command& entry)
-            { return (command == entry.info.longName) || (command == entry.info.shortName); });
+            {
+                return (command == entry.info.longName) || (command == entry.info.shortName);
+            });
 
         if (it != commands.end())
         {
@@ -284,7 +290,9 @@ namespace services
     void TerminalWithCommandsImpl::OnData(infra::BoundedConstString data)
     {
         bool commandProcessed = NotifyObservers([data](TerminalCommands& observer)
-            { return observer.ProcessCommand(data); });
+            {
+                return observer.ProcessCommand(data);
+            });
 
         if (!commandProcessed)
             Print("Unrecognized command.");

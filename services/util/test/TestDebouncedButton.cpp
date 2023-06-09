@@ -17,9 +17,13 @@ public:
     DebouncedButtonFixture()
         : debouncedButton(
               button, [this]()
-              { onPressed.callback(); },
+              {
+                  onPressed.callback();
+              },
               [this]()
-              { onReleased.callback(); })
+              {
+                  onReleased.callback();
+              })
     {}
 
     hal::GpioPinStub button;

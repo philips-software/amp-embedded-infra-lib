@@ -566,7 +566,9 @@ TEST(StringOutputStreamTest, stream_join_custom_range)
     infra::StringOutputStream::WithStorage<50> stream;
 
     stream << infra::Join(";", infra::MakeRange(array), [](auto& stream, const auto& obj)
-        { stream << "'" << obj.first << "'?'" << obj.second << "'"; });
+        {
+            stream << "'" << obj.first << "'?'" << obj.second << "'";
+        });
 
     EXPECT_EQ(R"('b1'?'xyz1';'b2'?'xyz2';'b3'?'xyz3')", stream.Storage());
 }

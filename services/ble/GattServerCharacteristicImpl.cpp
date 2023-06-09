@@ -50,7 +50,9 @@ namespace services
             infra::PostAssign(updateContext, infra::none)->onDone();
         else if (status == GattServerCharacteristicOperations::UpdateStatus::retry)
             infra::EventDispatcher::Instance().Schedule([this]()
-                { UpdateValue(); });
+                {
+                    UpdateValue();
+                });
         else
             updateContext = infra::none;
     }

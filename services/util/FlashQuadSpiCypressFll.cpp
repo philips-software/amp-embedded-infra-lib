@@ -21,9 +21,25 @@ namespace services
     {
         sequencer.Load([this]()
             {
-            sequencer.Step([this]() { initDelayTimer.Start(std::chrono::milliseconds(100), [this]() { sequencer.Continue(); }); });
-            sequencer.Step([this]() { SwitchToQuadSpeed(); });
-            sequencer.Step([this]() { infra::EventDispatcher::Instance().Schedule([this]() { this->onInitialized(); }); }); });
+                sequencer.Step([this]()
+                    {
+                        initDelayTimer.Start(std::chrono::milliseconds(100), [this]()
+                            {
+                                sequencer.Continue();
+                            });
+                    });
+                sequencer.Step([this]()
+                    {
+                        SwitchToQuadSpeed();
+                    });
+                sequencer.Step([this]()
+                    {
+                        infra::EventDispatcher::Instance().Schedule([this]()
+                            {
+                                this->onInitialized();
+                            });
+                    });
+            });
     }
 
     void FlashQuadSpiCypressFll::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
@@ -42,14 +58,18 @@ namespace services
     {
         static const hal::QuadSpi::Header enterQpiHeader{ infra::MakeOptional(commandEnterQpi), {}, {}, 0 };
         spi.SendData(enterQpiHeader, {}, hal::QuadSpi::Lines::SingleSpeed(), [this]()
-            { sequencer.Continue(); });
+            {
+                sequencer.Continue();
+            });
     }
 
     void FlashQuadSpiCypressFll::WriteEnable()
     {
         static const hal::QuadSpi::Header writeEnableHeader{ infra::MakeOptional(commandWriteEnable), {}, {}, 0 };
         spi.SendData(writeEnableHeader, {}, hal::QuadSpi::Lines::QuadSpeed(), [this]()
-            { sequencer.Continue(); });
+            {
+                sequencer.Continue();
+            });
     }
 
     void FlashQuadSpiCypressFll::EraseSomeSectors(uint32_t endIndex)
@@ -80,35 +100,45 @@ namespace services
     {
         hal::QuadSpi::Header eraseSectorHeader{ infra::MakeOptional(commandEraseSector), ConvertAddress(AddressOfSector(sectorIndex)), {}, 0 };
         spi.SendData(eraseSectorHeader, {}, hal::QuadSpi::Lines::QuadSpeed(), [this]()
-            { sequencer.Continue(); });
+            {
+                sequencer.Continue();
+            });
     }
 
     void FlashQuadSpiCypressFll::SendEraseHalfBlock(uint32_t sectorIndex)
     {
         hal::QuadSpi::Header eraseHalfBlockHeader{ infra::MakeOptional(commandEraseHalfBlock), ConvertAddress(AddressOfSector(sectorIndex)), {}, 0 };
         spi.SendData(eraseHalfBlockHeader, {}, hal::QuadSpi::Lines::QuadSpeed(), [this]()
-            { sequencer.Continue(); });
+            {
+                sequencer.Continue();
+            });
     }
 
     void FlashQuadSpiCypressFll::SendEraseBlock(uint32_t sectorIndex)
     {
         hal::QuadSpi::Header eraseBlockHeader{ infra::MakeOptional(commandEraseBlock), ConvertAddress(AddressOfSector(sectorIndex)), {}, 0 };
         spi.SendData(eraseBlockHeader, {}, hal::QuadSpi::Lines::QuadSpeed(), [this]()
-            { sequencer.Continue(); });
+            {
+                sequencer.Continue();
+            });
     }
 
     void FlashQuadSpiCypressFll::SendEraseChip()
     {
         static const hal::QuadSpi::Header eraseChipHeader{ infra::MakeOptional(commandEraseChip), {}, {}, 0 };
         spi.SendData(eraseChipHeader, {}, hal::QuadSpi::Lines::QuadSpeed(), [this]()
-            { sequencer.Continue(); });
+            {
+                sequencer.Continue();
+            });
     }
 
     void FlashQuadSpiCypressFll::HoldWhileWriteInProgress()
     {
         static const hal::QuadSpi::Header pollWriteInProgressHeader{ infra::MakeOptional(commandReadStatusRegister), {}, {}, 0 };
         spi.PollStatus(pollWriteInProgressHeader, 1, 0, statusFlagWriteInProgress, hal::QuadSpi::Lines::QuadSpeed(), [this]()
-            { sequencer.Continue(); });
+            {
+                sequencer.Continue();
+            });
     }
 
     void FlashQuadSpiCypressFll::ReadFlashId(infra::ByteRange buffer, infra::Function<void()> onDone)

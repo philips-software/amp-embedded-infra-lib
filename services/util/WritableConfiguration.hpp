@@ -178,8 +178,12 @@ namespace services
         headerProxy = header;
 
         flash.EraseAll([this, &streamWriter]()
-            { flash.WriteBuffer(streamWriter.Processed(), 0, [this]()
-                  { this->Read(this->onDone); }); });
+            {
+                flash.WriteBuffer(streamWriter.Processed(), 0, [this]()
+                    {
+                        this->Read(this->onDone);
+                    });
+            });
     }
 
     template<class T, class TRef>
@@ -202,8 +206,9 @@ namespace services
         this->onDone = onDone;
         infra::EventDispatcher::Instance().Schedule([this]()
             {
-            this->LoadConfiguration(memory);
-            this->onDone(); });
+                this->LoadConfiguration(memory);
+                this->onDone();
+            });
     }
 
     template<class T, class TRef>
@@ -212,7 +217,10 @@ namespace services
         this->onWriteDone = onDone;
         streamWriter = std::make_shared<infra::ByteOutputStreamWriter::WithStorage<T::maxMessageSize + sizeof(typename WritableConfiguration<T, TRef>::Header)>>();
         this->WriteConfiguration(newValue, *streamWriter, [this]()
-            { this->streamWriter = nullptr; this->onWriteDone(); });
+            {
+                this->streamWriter = nullptr;
+                this->onWriteDone();
+            });
     }
 
     template<class T, class TRef>
@@ -232,8 +240,9 @@ namespace services
         this->onDone = onDone;
         this->flash.ReadBuffer(streamWriter.Storage(), 0, [this]()
             {
-            this->LoadConfiguration(streamWriter.Storage());
-            this->onDone(); });
+                this->LoadConfiguration(streamWriter.Storage());
+                this->onDone();
+            });
     }
 
     template<class T, class TRef>

@@ -31,13 +31,17 @@ namespace services
                 otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
                 initialized = true;
                 infra::EventDispatcher::Instance().Schedule([this]()
-                    { GetObserver().Initialized(); });
+                    {
+                        GetObserver().Initialized();
+                    });
                 break;
             case Operation::initResponse:
                 otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
                 initialized = true;
                 infra::EventDispatcher::Instance().Schedule([this]()
-                    { GetObserver().Initialized(); });
+                    {
+                        GetObserver().Initialized();
+                    });
                 break;
             case Operation::releaseWindow:
                 if (initialized)
@@ -50,7 +54,9 @@ namespace services
         }
 
         infra::EventDispatcher::Instance().Schedule([this]()
-            { SetNextState(); });
+            {
+                SetNextState();
+            });
     }
 
     void MessageCommunicationWindowed::ReceivedMessage(infra::StreamReader& reader)
@@ -84,28 +90,29 @@ namespace services
                 {
                     infra::EventDispatcher::Instance().Schedule([this]()
                         {
-                        infra::DataInputStream::WithReader<detail::AtomicDequeReader> stream(receivedData, infra::softFail);
-                        auto size = stream.Extract<uint16_t>();
-                        if (!stream.Failed() && stream.Available() >= size)
-                        {
-                            reader.OnAllocatable([this, size]()
+                            infra::DataInputStream::WithReader<detail::AtomicDequeReader> stream(receivedData, infra::softFail);
+                            auto size = stream.Extract<uint16_t>();
+                            if (!stream.Failed() && stream.Available() >= size)
                             {
-                                receivedData.Pop(size);
-                                releasedWindowBuffer += size + 2;
-                                if (!EvaluateReceiveMessage())
-                                {
-                                    releasedWindow += releasedWindowBuffer;
-                                    releasedWindowBuffer = 0;
-                                    SetNextState();
-                                }
-                            });
-                            receivedData.Pop(2);
+                                reader.OnAllocatable([this, size]()
+                                    {
+                                        receivedData.Pop(size);
+                                        releasedWindowBuffer += size + 2;
+                                        if (!EvaluateReceiveMessage())
+                                        {
+                                            releasedWindow += releasedWindowBuffer;
+                                            releasedWindowBuffer = 0;
+                                            SetNextState();
+                                        }
+                                    });
+                                receivedData.Pop(2);
 
-                            GetObserver().ReceivedMessage(reader.Emplace(infra::inPlace, receivedData, size));
-                        }
+                                GetObserver().ReceivedMessage(reader.Emplace(infra::inPlace, receivedData, size));
+                            }
 
-                        notificationScheduled = false;
-                        EvaluateReceiveMessage(); });
+                            notificationScheduled = false;
+                            EvaluateReceiveMessage();
+                        });
 
                     return true;
                 }
@@ -165,7 +172,9 @@ namespace services
     {
         communication.sending = true;
         auto writer = communication.MessageCommunicationReceiveOnInterruptObserver::Subject().SendMessageStream(3, [this](uint16_t)
-            { OnSent(); });
+            {
+                OnSent();
+            });
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
         stream << PacketInit(communication.AvailableWindow());
 
@@ -189,7 +198,9 @@ namespace services
         assert(communication.receivedData.Empty());
         communication.sending = true;
         auto writer = communication.MessageCommunicationReceiveOnInterruptObserver::Subject().SendMessageStream(3, [this](uint16_t)
-            { OnSent(); });
+            {
+                OnSent();
+            });
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
         stream << PacketInitResponse(communication.AvailableWindow());
 
@@ -223,7 +234,9 @@ namespace services
     {
         communication.sending = true;
         auto writer = communication.MessageCommunicationReceiveOnInterruptObserver::Subject().SendMessageStream(*communication.requestedSendMessageSize + 1, [this](uint16_t sent)
-            { OnSent(sent); });
+            {
+                OnSent(sent);
+            });
 
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
         stream << Operation::message;
@@ -249,7 +262,9 @@ namespace services
     {
         communication.sending = true;
         auto writer = communication.MessageCommunicationReceiveOnInterruptObserver::Subject().SendMessageStream(3, [this](uint16_t sent)
-            { OnSent(); });
+            {
+                OnSent();
+            });
 
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
         stream << PacketReleaseWindow(communication.releasedWindow.exchange(0));

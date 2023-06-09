@@ -352,7 +352,9 @@ int main(int argc, char* argv[], const char* env[])
         };
 
         infra::EventDispatcher::Instance().Schedule([&construct]()
-            { construct(); });
+            {
+                construct();
+            });
         console.Run();
     }
     catch (const args::Help&)

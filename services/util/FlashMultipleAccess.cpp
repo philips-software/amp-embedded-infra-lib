@@ -70,23 +70,38 @@ namespace services
     {
         this->onDone = onDone;
         claimer.Claim([this, buffer, address, onDone]()
-            { master.WriteBuffer(buffer, address, [this]()
-                  { claimer.Release(); this->onDone(); }); });
+            {
+                master.WriteBuffer(buffer, address, [this]()
+                    {
+                        claimer.Release();
+                        this->onDone();
+                    });
+            });
     }
 
     void FlashMultipleAccess::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
         this->onDone = onDone;
         claimer.Claim([this, buffer, address, onDone]()
-            { master.ReadBuffer(buffer, address, [this]()
-                  { claimer.Release(); this->onDone(); }); });
+            {
+                master.ReadBuffer(buffer, address, [this]()
+                    {
+                        claimer.Release();
+                        this->onDone();
+                    });
+            });
     }
 
     void FlashMultipleAccess::EraseSectors(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone)
     {
         this->onDone = onDone;
         claimer.Claim([this, beginIndex, endIndex, onDone]()
-            { master.EraseSectors(beginIndex, endIndex, [this]()
-                  { claimer.Release(); this->onDone(); }); });
+            {
+                master.EraseSectors(beginIndex, endIndex, [this]()
+                    {
+                        claimer.Release();
+                        this->onDone();
+                    });
+            });
     }
 }

@@ -36,7 +36,9 @@ namespace services
         if (buffer == nullptr)
         {
             retryAllocationTimer.Start(std::chrono::milliseconds(250), [this]()
-                { Subject().RetryAllocation(); });
+                {
+                    Subject().RetryAllocation();
+                });
             return infra::ByteRange();
         }
 

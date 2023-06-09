@@ -103,7 +103,9 @@ namespace services
     void SntpClient::NotifyTimeUnavailable()
     {
         NotifyObservers([](SntpResultObserver& observer)
-            { observer.TimeUnavailable(); });
+            {
+                observer.TimeUnavailable();
+            });
     }
 
     void SntpClient::NotifyKissOfDeath(NtpMessage& message)
@@ -112,13 +114,19 @@ namespace services
 
         if (kissCode == "DENY")
             NotifyObservers([](SntpResultObserver& observer)
-                { observer.KissOfDeath(SntpResultObserver::KissCode::deny); });
+                {
+                    observer.KissOfDeath(SntpResultObserver::KissCode::deny);
+                });
         else if (kissCode == "RSTR")
             NotifyObservers([](SntpResultObserver& observer)
-                { observer.KissOfDeath(SntpResultObserver::KissCode::restrict); });
+                {
+                    observer.KissOfDeath(SntpResultObserver::KissCode::restrict);
+                });
         else if (kissCode == "RATE")
             NotifyObservers([](SntpResultObserver& observer)
-                { observer.KissOfDeath(SntpResultObserver::KissCode::rateExceeded); });
+                {
+                    observer.KissOfDeath(SntpResultObserver::KissCode::rateExceeded);
+                });
         else
             NotifyTimeUnavailable();
     }
@@ -135,7 +143,9 @@ namespace services
         auto localClockOffset = ((t2 - t1) + (t3 - t4)) / 2;
 
         NotifyObservers([roundTripDelay, localClockOffset](SntpResultObserver& observer)
-            { observer.TimeAvailable(roundTripDelay, localClockOffset); });
+            {
+                observer.TimeAvailable(roundTripDelay, localClockOffset);
+            });
     }
 
     SntpClient::NtpHeader SntpClient::CreateNtpHeader(NtpLeapIndicator leapIndicator, uint8_t versionNumber, NtpMode mode)
