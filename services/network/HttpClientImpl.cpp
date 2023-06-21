@@ -320,7 +320,7 @@ namespace services
     void HttpClientImpl::ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers)
     {
         request.Emplace(verb, hostname, requestTarget, content, headers);
-        ConnectionObserver::Subject().RequestSendStream(request->Size());
+        ConnectionObserver::Subject().RequestSendStream(std::min(request->Size(), ConnectionObserver::Subject().MaxSendStreamSize()));
     }
 
     void HttpClientImpl::ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, const HttpHeaders headers)
@@ -360,11 +360,21 @@ namespace services
     void HttpClientImpl::SendingStateRequest::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         infra::TextOutputStream::WithErrorPolicy stream(*writer);
-        client.request->Write(stream);
-        client.request = infra::none;
-        writer = nullptr;
+        auto amount = client.request->Write(stream);
+        client.request->Consume(amount);
 
-        NextState();
+        if (client.request->Size() == 0)
+        {
+            client.request = infra::none;
+            writer = nullptr;
+
+            NextState();
+        }
+        else
+        {
+            writer = nullptr;
+            client.ConnectionObserver::Subject().RequestSendStream(std::min(client.request->Size(), client.ConnectionObserver::Subject().MaxSendStreamSize()));
+        }
     }
 
     void HttpClientImpl::SendingStateRequest::Activate()
