@@ -751,9 +751,12 @@ namespace application
     std::pair<std::shared_ptr<const EchoService>, const EchoMethod&> Console::SearchMethod(MethodInvocation& methodInvocation) const
     {
         for (auto service : root.services)
-            for (auto& method : service->methods)
-                if (method.name == methodInvocation.method.back())
-                    return std::pair<std::shared_ptr<const EchoService>, const EchoMethod&>(service, method);
+        {
+            if (methodInvocation.method.size() == 1 || methodInvocation.method.front() == service->name)
+                for (auto& method : service->methods)
+                    if (method.name == methodInvocation.method.back())
+                        return std::pair<std::shared_ptr<const EchoService>, const EchoMethod&>(service, method);
+        }
 
         throw ConsoleExceptions::MethodNotFound{ methodInvocation.method };
     }
@@ -780,7 +783,11 @@ namespace application
         {
             if (!currentToken.Is<ConsoleToken::String>())
                 break;
-            method.push_back(currentToken.Get<ConsoleToken::String>().value);
+            auto stringToken = currentToken.Get<ConsoleToken::String>();
+            method.push_back(stringToken.value);
+
+            if (method.size() > 2)
+                throw ConsoleExceptions::SyntaxError{ stringToken.index };
 
             currentToken = tokenizer.Token();
 
