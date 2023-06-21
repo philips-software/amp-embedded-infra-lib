@@ -1,7 +1,6 @@
 #include "upgrade/pack_builder_instantiations/UpgradePackBuilderFacade.hpp"
 #include "hal/generic/FileSystemGeneric.hpp"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
-#include "mbedtls/memory_buffer_alloc.h"
 #include "upgrade/pack_builder/BinaryObject.hpp"
 #include "upgrade/pack_builder/ImageEncryptorAes.hpp"
 #include "upgrade/pack_builder/ImageEncryptorNone.hpp"
@@ -23,11 +22,7 @@ namespace main_
 
     UpgradePackBuilderFacade::UpgradePackBuilderFacade(const application::UpgradePackBuilder::HeaderInfo& headerInfo)
         : headerInfo(headerInfo)
-    {
-        // Initialize the MbedTLS memory pool
-        unsigned char memory_buf[100000];
-        mbedtls_memory_buffer_alloc_init(memory_buf, sizeof(memory_buf));
-    }
+    {}
 
     void UpgradePackBuilderFacade::Build(const application::SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, const std::string& outputFilename,
         const BuildOptions& buildOptions, infra::JsonObject& configuration, const DefaultKeyMaterial& keys)
