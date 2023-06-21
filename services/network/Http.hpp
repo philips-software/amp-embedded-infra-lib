@@ -125,8 +125,8 @@ namespace services
         infra::Optional<HttpHeader> contentLengthHeader;
         HttpHeader hostHeader;
         const HttpHeaders headers;
-        bool chunked = false;
-        bool sentHeader = false;
+        bool chunked{ false };
+        bool sentHeader{ false };
     };
 
     class HttpHeaderParserObserver
