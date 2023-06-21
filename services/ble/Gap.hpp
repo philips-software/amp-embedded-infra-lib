@@ -92,8 +92,8 @@ namespace services
         };
 
         virtual void DisplayPasskey(int32_t passkey, bool numericComparison) = 0;
-        virtual void PairingSuccessfullyCompleted();
-        virtual void PairingFailed(PairingErrorType error);
+        virtual void PairingSuccessfullyCompleted() = 0;
+        virtual void PairingFailed(PairingErrorType error) = 0;
     };
 
     class GapPairing
@@ -127,8 +127,8 @@ namespace services
 
         virtual void AllowPairing(bool allow) = 0;
 
-        virtual void SetSecurityMode(GapPairing::SecurityMode mode, GapPairing::SecurityLevel level) = 0;
-        virtual void SetIoCapabilities(GapPairing::IoCapabilities caps) = 0;
+        virtual void SetSecurityMode(SecurityMode mode, SecurityLevel level) = 0;
+        virtual void SetIoCapabilities(IoCapabilities caps) = 0;
 
         virtual void AuthenticateWithPasskey(uint32_t passkey) = 0;
         virtual void NumericComparisonConfirm(bool accept) = 0;
