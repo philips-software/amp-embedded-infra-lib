@@ -112,7 +112,7 @@ namespace services
         {
             stream << verb << sp << requestTarget << sp << httpVersion << crlf;
 
-            for (auto&& header : headers)
+            for (const auto& header : headers)
                 stream << header << crlf;
 
             stream << hostHeader << crlf;
