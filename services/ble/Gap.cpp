@@ -50,22 +50,6 @@ namespace services
         GapPeripheralObserver::Subject().Standby();
     }
 
-    void GapCentralDecorator::AuthenticationSuccessfullyCompleted()
-    {
-        GapCentralObserver::SubjectType::NotifyObservers([](auto& obs)
-            {
-                obs.AuthenticationSuccessfullyCompleted();
-            });
-    }
-
-    void GapCentralDecorator::AuthenticationFailed(GapAuthenticationErrorType status)
-    {
-        GapCentralObserver::SubjectType::NotifyObservers([&status](auto& obs)
-            {
-                obs.AuthenticationFailed(status);
-            });
-    }
-
     void GapCentralDecorator::DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered)
     {
         GapCentralObserver::SubjectType::NotifyObservers([&deviceDiscovered](auto& obs)

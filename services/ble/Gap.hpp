@@ -19,32 +19,12 @@ namespace services
         advNonconnInd
     };
 
-    enum class GapIoCapabilities : uint8_t
-    {
-        display,
-        displayYesNo,
-        keyboard,
-        none,
-        keyboardDisplay
-    };
-
     enum class GapState : uint8_t
     {
         standby,
         scanning,
         advertising,
         connected
-    };
-
-    enum class GapAuthenticationErrorType : uint8_t
-    {
-        passkeyEntryFailed,
-        authenticationRequirementsNotMet,
-        pairingNotSupported,
-        insufficientEncryptionKeySize,
-        numericComparisonFailed,
-        timeout,
-        unknown,
     };
 
     enum class GapAdvertisingEventType : uint8_t
@@ -81,20 +61,6 @@ namespace services
         int8_t rssi;
     };
 
-    enum class GapSecurityMode : uint8_t
-    {
-        mode1,
-        mode2
-    };
-
-    enum class GapSecurityLevel : uint8_t
-    {
-        level1,
-        level2,
-        level3,
-        level4,
-    };
-
     struct GapAddress
     {
         hal::MacAddress address;
@@ -106,50 +72,88 @@ namespace services
         }
     };
 
-    class GapPeripheralPairing;
+    class GapPairing;
 
-    class GapPeripheralPairingObserver
-        : public infra::Observer<GapPeripheralPairingObserver, GapPeripheralPairing>
+    class GapPairingObserver
+        : public infra::Observer<GapPairingObserver, GapPairing>
     {
     public:
-        using infra::Observer<GapPeripheralPairingObserver, GapPeripheralPairing>::Observer;
+        using infra::Observer<GapPairingObserver, GapPairing>::Observer;
+
+        enum class PairingErrorType : uint8_t
+        {
+            passkeyEntryFailed,
+            authenticationRequirementsNotMet,
+            pairingNotSupported,
+            insufficientEncryptionKeySize,
+            numericComparisonFailed,
+            timeout,
+            unknown,
+        };
 
         virtual void DisplayPasskey(int32_t passkey, bool numericComparison) = 0;
+        virtual void PairingSuccessfullyCompleted();
+        virtual void PairingFailed(PairingErrorType error);
     };
 
-    class GapPeripheralPairing
-        : public infra::Subject<GapPeripheralPairingObserver>
+    class GapPairing
+        : public infra::Subject<GapPairingObserver>
     {
     public:
+        enum class IoCapabilities : uint8_t
+        {
+            display,
+            displayYesNo,
+            keyboard,
+            none,
+            keyboardDisplay
+        };
+
+        enum class SecurityMode : uint8_t
+        {
+            mode1,
+            mode2
+        };
+
+        enum class SecurityLevel : uint8_t
+        {
+            level1,
+            level2,
+            level3,
+            level4,
+        };
+
+        virtual void Pair() = 0;
+
         virtual void AllowPairing(bool allow) = 0;
 
-        virtual void SetSecurityMode(GapSecurityMode mode, GapSecurityLevel level) = 0;
-        virtual void SetIoCapabilities(GapIoCapabilities caps) = 0;
+        virtual void SetSecurityMode(GapPairing::SecurityMode mode, GapPairing::SecurityLevel level) = 0;
+        virtual void SetIoCapabilities(GapPairing::IoCapabilities caps) = 0;
 
         virtual void AuthenticateWithPasskey(uint32_t passkey) = 0;
         virtual void NumericComparisonConfirm(bool accept) = 0;
     };
 
-    class GapPeripheralBonding;
+    class GapBonding;
 
-    class GapPeripheralBondingObserver
-        : public infra::Observer<GapPeripheralBondingObserver, GapPeripheralBonding>
+    class GapBondingObserver
+        : public infra::Observer<GapBondingObserver, GapBonding>
     {
     public:
-        using infra::Observer<GapPeripheralBondingObserver, GapPeripheralBonding>::Observer;
+        using infra::Observer<GapBondingObserver, GapBonding>::Observer;
 
-        virtual void NumberOfBondsChanged(size_t nrBonds) = 0;
+        virtual void NumberOfBondsChanged(std::size_t nrBonds) = 0;
     };
 
-    class GapPeripheralBonding
-        : public infra::Subject<GapPeripheralBondingObserver>
+    class GapBonding
+        : public infra::Subject<GapBondingObserver>
     {
     public:
         virtual void RemoveAllBonds() = 0;
         virtual void RemoveOldestBond() = 0;
 
-        virtual size_t GetMaxNumberOfBonds() const = 0;
-        virtual size_t GetNumberOfBonds() const = 0;
+        virtual std::size_t GetMaxNumberOfBonds() const = 0;
+        virtual std::size_t GetNumberOfBonds() const = 0;
     };
 
     class GapPeripheral;
@@ -241,8 +245,6 @@ namespace services
     public:
         using infra::Observer<GapCentralObserver, GapCentral>::Observer;
 
-        virtual void AuthenticationSuccessfullyCompleted() = 0;
-        virtual void AuthenticationFailed(GapAuthenticationErrorType error) = 0;
         virtual void DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered) = 0;
         virtual void StateChanged(GapState state) = 0;
     };
@@ -266,8 +268,6 @@ namespace services
         using GapCentralObserver::GapCentralObserver;
 
         // Implementation of GapCentralObserver
-        void AuthenticationSuccessfullyCompleted() override;
-        void AuthenticationFailed(GapAuthenticationErrorType error) override;
         void DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered) override;
         void StateChanged(GapState state) override;
 
