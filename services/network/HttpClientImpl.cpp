@@ -360,8 +360,7 @@ namespace services
     void HttpClientImpl::SendingStateRequest::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         infra::TextOutputStream::WithErrorPolicy stream(*writer);
-        auto amount = client.request->Write(stream);
-        client.request->Consume(amount);
+        client.request->Consume(client.request->Write(stream));
 
         if (client.request->Size() == 0)
         {
