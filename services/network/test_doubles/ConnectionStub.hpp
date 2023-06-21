@@ -30,6 +30,7 @@ namespace services
         void SimulateDataReceived(infra::ConstByteRange data);
 
         std::vector<uint8_t> sentData;
+        std::size_t maxSendStreamSize = 1024;
         std::string SentDataAsString() const;
 
         void Reset();

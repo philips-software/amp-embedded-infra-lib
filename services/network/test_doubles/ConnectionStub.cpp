@@ -18,7 +18,7 @@ namespace services
 
     std::size_t ConnectionStub::MaxSendStreamSize() const
     {
-        return 1024;
+        return maxSendStreamSize;
     }
 
     infra::SharedPtr<infra::StreamReaderWithRewinding> ConnectionStub::ReceiveStream()
