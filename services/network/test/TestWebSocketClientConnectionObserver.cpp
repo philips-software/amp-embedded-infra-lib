@@ -18,7 +18,7 @@ public:
         webSocket->Attach(infra::UnOwnedSharedPtr(connectionObserver));
     }
 
-    ~WebSocketClientConnectionObserverTest()
+    ~WebSocketClientConnectionObserverTest() override
     {
         if (connection.IsAttached())
         {
@@ -62,7 +62,9 @@ public:
     void ExpectDataReceived(const std::string& data)
     {
         EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this, data]()
-            { CheckDataReceived(data); }));
+            {
+                CheckDataReceived(data);
+            }));
     }
 
     testing::StrictMock<services::ConnectionObserverFullMock> connectionObserver;
@@ -120,34 +122,35 @@ TEST_F(WebSocketClientConnectionObserverTest, rewind_reader)
 {
     EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
         {
-        auto reader = webSocket->ReceiveStream();
-        infra::TextInputStream::WithErrorPolicy stream(*reader);
+            auto reader = webSocket->ReceiveStream();
+            infra::TextInputStream::WithErrorPolicy stream(*reader);
 
-        EXPECT_EQ(7, reader->Available());
-        char a, b, b2, c, c2, d, d2, e, e2, f, g;
-        stream >> a;
-        auto save = reader->ConstructSaveMarker();
-        stream >> b;
-        EXPECT_EQ('a', a);
-        EXPECT_EQ('b', b);
+            EXPECT_EQ(7, reader->Available());
+            char a, b, b2, c, c2, d, d2, e, e2, f, g;
+            stream >> a;
+            auto save = reader->ConstructSaveMarker();
+            stream >> b;
+            EXPECT_EQ('a', a);
+            EXPECT_EQ('b', b);
 
-        reader->Rewind(save);
-        stream >> b2;
-        EXPECT_EQ('b', b2);
+            reader->Rewind(save);
+            stream >> b2;
+            EXPECT_EQ('b', b2);
 
-        stream >> c >> d >> e >> f >> g;
-        EXPECT_EQ('c', c);
-        EXPECT_EQ('d', d);
-        EXPECT_EQ('e', e);
-        EXPECT_EQ('f', f);
-        EXPECT_EQ('g', g);
+            stream >> c >> d >> e >> f >> g;
+            EXPECT_EQ('c', c);
+            EXPECT_EQ('d', d);
+            EXPECT_EQ('e', e);
+            EXPECT_EQ('f', f);
+            EXPECT_EQ('g', g);
 
-        reader->Rewind(save);
+            reader->Rewind(save);
 
-        stream >> b2 >> c2 >> d2 >> e2;
-        EXPECT_EQ('c', c2);
-        EXPECT_EQ('d', d2);
-        EXPECT_EQ('e', e2); }));
+            stream >> b2 >> c2 >> d2 >> e2;
+            EXPECT_EQ('c', c2);
+            EXPECT_EQ('d', d2);
+            EXPECT_EQ('e', e2);
+        }));
 
     connection.SimulateDataReceived(std::vector<uint8_t>{ { 0x82, 0x04, 'a', 'b', 'c', 'd', 0x82, 0x03, 'e', 'f', 'g' } });
     ExecuteAllActions();
@@ -157,43 +160,44 @@ TEST_F(WebSocketClientConnectionObserverTest, reconstruct_reader_after_ack)
 {
     EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
         {
-        {
-            auto reader = webSocket->ReceiveStream();
-            infra::TextInputStream::WithErrorPolicy stream(*reader);
+            {
+                auto reader = webSocket->ReceiveStream();
+                infra::TextInputStream::WithErrorPolicy stream(*reader);
 
-            EXPECT_EQ(7, reader->Available());
-            char a, b, c, d, e;
-            stream >> a;
-            webSocket->AckReceived();
-            EXPECT_EQ(6, reader->Available());
+                EXPECT_EQ(7, reader->Available());
+                char a, b, c, d, e;
+                stream >> a;
+                webSocket->AckReceived();
+                EXPECT_EQ(6, reader->Available());
 
-            stream >> b >> c >> d >> e;
-        }
+                stream >> b >> c >> d >> e;
+            }
 
-        {
-            auto reader = webSocket->ReceiveStream();
-            infra::TextInputStream::WithErrorPolicy stream(*reader);
+            {
+                auto reader = webSocket->ReceiveStream();
+                infra::TextInputStream::WithErrorPolicy stream(*reader);
 
-            EXPECT_EQ(6, reader->Available());
-            char b;
-            stream >> b;
-            EXPECT_EQ('b', b);
+                EXPECT_EQ(6, reader->Available());
+                char b;
+                stream >> b;
+                EXPECT_EQ('b', b);
 
-            char c, d, e;
-            stream >> c >> d;
-            webSocket->AckReceived();
-            stream >> e;
-        }
+                char c, d, e;
+                stream >> c >> d;
+                webSocket->AckReceived();
+                stream >> e;
+            }
 
-        {
-            auto reader = webSocket->ReceiveStream();
-            infra::TextInputStream::WithErrorPolicy stream(*reader);
+            {
+                auto reader = webSocket->ReceiveStream();
+                infra::TextInputStream::WithErrorPolicy stream(*reader);
 
-            EXPECT_EQ(3, reader->Available());
-            char e;
-            stream >> e;
-            EXPECT_EQ('e', e);
-        } }));
+                EXPECT_EQ(3, reader->Available());
+                char e;
+                stream >> e;
+                EXPECT_EQ('e', e);
+            }
+        }));
 
     connection.SimulateDataReceived(std::vector<uint8_t>{ { 0x82, 0x04, 'a', 'b', 'c', 'd', 0x82, 0x03, 'e', 'f', 'g' } });
     ExecuteAllActions();
@@ -203,33 +207,34 @@ TEST_F(WebSocketClientConnectionObserverTest, rewind_reader_after_ack)
 {
     EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
         {
-        {
-            auto reader = webSocket->ReceiveStream();
-            infra::TextInputStream::WithErrorPolicy stream(*reader);
+            {
+                auto reader = webSocket->ReceiveStream();
+                infra::TextInputStream::WithErrorPolicy stream(*reader);
 
-            EXPECT_EQ(7, reader->Available());
-            char a, b;
-            stream >> a;
-            EXPECT_EQ('a', a);
-            webSocket->AckReceived();
+                EXPECT_EQ(7, reader->Available());
+                char a, b;
+                stream >> a;
+                EXPECT_EQ('a', a);
+                webSocket->AckReceived();
 
-            stream >> b;
-            EXPECT_EQ('b', b);
-        }
+                stream >> b;
+                EXPECT_EQ('b', b);
+            }
 
-        {
-            auto reader = webSocket->ReceiveStream();
-            infra::TextInputStream::WithErrorPolicy stream(*reader);
+            {
+                auto reader = webSocket->ReceiveStream();
+                infra::TextInputStream::WithErrorPolicy stream(*reader);
 
-            auto save = reader->ConstructSaveMarker();
-            char b, b2;
-            stream >> b;
-            EXPECT_EQ('b', b);
-            reader->Rewind(save);
+                auto save = reader->ConstructSaveMarker();
+                char b, b2;
+                stream >> b;
+                EXPECT_EQ('b', b);
+                reader->Rewind(save);
 
-            stream >> b2;
-            EXPECT_EQ('b', b2);
-        } }));
+                stream >> b2;
+                EXPECT_EQ('b', b2);
+            }
+        }));
 
     connection.SimulateDataReceived(std::vector<uint8_t>{ { 0x82, 0x04, 'a', 'b', 'c', 'd', 0x82, 0x03, 'e', 'f', 'g' } });
     ExecuteAllActions();
@@ -239,25 +244,26 @@ TEST_F(WebSocketClientConnectionObserverTest, reconstruct_reader_after_ack_on_fr
 {
     EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
         {
-        {
-            auto reader = webSocket->ReceiveStream();
-            infra::TextInputStream::WithErrorPolicy stream(*reader);
+            {
+                auto reader = webSocket->ReceiveStream();
+                infra::TextInputStream::WithErrorPolicy stream(*reader);
 
-            EXPECT_EQ(7, reader->Available());
-            char a, b, c, d;
-            stream >> a >> b >> c >> d;
-            webSocket->AckReceived();
-        }
+                EXPECT_EQ(7, reader->Available());
+                char a, b, c, d;
+                stream >> a >> b >> c >> d;
+                webSocket->AckReceived();
+            }
 
-        {
-            auto reader = webSocket->ReceiveStream();
-            infra::TextInputStream::WithErrorPolicy stream(*reader);
+            {
+                auto reader = webSocket->ReceiveStream();
+                infra::TextInputStream::WithErrorPolicy stream(*reader);
 
-            EXPECT_EQ(3, reader->Available());
-            char e;
-            stream >> e;
-            EXPECT_EQ('e', e);
-        } }));
+                EXPECT_EQ(3, reader->Available());
+                char e;
+                stream >> e;
+                EXPECT_EQ('e', e);
+            }
+        }));
 
     connection.SimulateDataReceived(std::vector<uint8_t>{ { 0x82, 0x04, 'a', 'b', 'c', 'd', 0x82, 0x03, 'e', 'f', 'g' } });
     ExecuteAllActions();
@@ -269,12 +275,13 @@ TEST_F(WebSocketClientConnectionObserverTest, DataReceived_while_reader_is_const
 
     EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this, &reader]()
         {
-        infra::TextInputStream::WithErrorPolicy stream(*reader);
+            infra::TextInputStream::WithErrorPolicy stream(*reader);
 
-        EXPECT_EQ(7, reader->Available());
-        char a;
-        stream >> a;
-        EXPECT_EQ('a', a); }));
+            EXPECT_EQ(7, reader->Available());
+            char a;
+            stream >> a;
+            EXPECT_EQ('a', a);
+        }));
 
     connection.SimulateDataReceived(std::vector<uint8_t>{ { 0x82, 0x04, 'a', 'b', 'c', 'd', 0x82, 0x03, 'e', 'f', 'g' } });
     ExecuteAllActions();
@@ -284,29 +291,31 @@ TEST_F(WebSocketClientConnectionObserverTest, received_part_of_frame)
 {
     EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
         {
-        auto reader = webSocket->ReceiveStream();
-        infra::TextInputStream::WithErrorPolicy stream(*reader);
+            auto reader = webSocket->ReceiveStream();
+            infra::TextInputStream::WithErrorPolicy stream(*reader);
 
-        EXPECT_EQ(2, reader->Available());
-        char a;
-        stream >> a;
-        EXPECT_EQ('a', a);
+            EXPECT_EQ(2, reader->Available());
+            char a;
+            stream >> a;
+            EXPECT_EQ('a', a);
 
-        webSocket->AckReceived();
-        EXPECT_EQ(1, reader->Available()); }));
+            webSocket->AckReceived();
+            EXPECT_EQ(1, reader->Available());
+        }));
 
     connection.SimulateDataReceived(std::vector<uint8_t>{ { 0x82, 0x04, 'a', 'b' } });
     ExecuteAllActions();
 
     EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
         {
-        auto reader = webSocket->ReceiveStream();
-        infra::TextInputStream::WithErrorPolicy stream(*reader);
+            auto reader = webSocket->ReceiveStream();
+            infra::TextInputStream::WithErrorPolicy stream(*reader);
 
-        EXPECT_EQ(6, reader->Available());
-        char b;
-        stream >> b;
-        EXPECT_EQ('b', b); }));
+            EXPECT_EQ(6, reader->Available());
+            char b;
+            stream >> b;
+            EXPECT_EQ('b', b);
+        }));
 
     connection.SimulateDataReceived(std::vector<uint8_t>{ { 'c', 'd', 0x82, 0x03, 'e', 'f', 'g' } });
     ExecuteAllActions();
@@ -316,14 +325,15 @@ TEST_F(WebSocketClientConnectionObserverTest, Peek)
 {
     EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
         {
-        auto reader = webSocket->ReceiveStream();
-        infra::TextInputStream::WithErrorPolicy stream(*reader);
+            auto reader = webSocket->ReceiveStream();
+            infra::TextInputStream::WithErrorPolicy stream(*reader);
 
-        EXPECT_EQ('a', reader->Peek(stream.ErrorPolicy()));
-        char a;
-        stream >> a;
-        EXPECT_EQ('a', a);
-        EXPECT_EQ('b', reader->Peek(stream.ErrorPolicy())); }));
+            EXPECT_EQ('a', reader->Peek(stream.ErrorPolicy()));
+            char a;
+            stream >> a;
+            EXPECT_EQ('a', a);
+            EXPECT_EQ('b', reader->Peek(stream.ErrorPolicy()));
+        }));
 
     connection.SimulateDataReceived(std::vector<uint8_t>{ { 0x82, 0x04, 'a', 'b', 'c', 'd', 0x82, 0x03, 'e', 'f', 'g' } });
     ExecuteAllActions();
@@ -333,12 +343,13 @@ TEST_F(WebSocketClientConnectionObserverTest, PeekContiguousRange)
 {
     EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
         {
-        auto reader = webSocket->ReceiveStream();
+            auto reader = webSocket->ReceiveStream();
 
-        EXPECT_EQ("abcd", infra::ByteRangeAsString(reader->PeekContiguousRange(0)));
-        EXPECT_EQ("bcd", infra::ByteRangeAsString(reader->PeekContiguousRange(1)));
-        EXPECT_EQ("efg", infra::ByteRangeAsString(reader->PeekContiguousRange(4)));
-        EXPECT_EQ("fg", infra::ByteRangeAsString(reader->PeekContiguousRange(5))); }));
+            EXPECT_EQ("abcd", infra::ByteRangeAsString(reader->PeekContiguousRange(0)));
+            EXPECT_EQ("bcd", infra::ByteRangeAsString(reader->PeekContiguousRange(1)));
+            EXPECT_EQ("efg", infra::ByteRangeAsString(reader->PeekContiguousRange(4)));
+            EXPECT_EQ("fg", infra::ByteRangeAsString(reader->PeekContiguousRange(5)));
+        }));
 
     connection.SimulateDataReceived(std::vector<uint8_t>{ { 0x82, 0x04, 'a', 'b', 'c', 'd', 0x82, 0x03, 'e', 'f', 'g' } });
     ExecuteAllActions();
@@ -348,11 +359,12 @@ TEST_F(WebSocketClientConnectionObserverTest, ExtractContiguousRange)
 {
     EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
         {
-        auto reader = webSocket->ReceiveStream();
+            auto reader = webSocket->ReceiveStream();
 
-        EXPECT_EQ("ab", infra::ByteRangeAsString(reader->ExtractContiguousRange(2)));
-        EXPECT_EQ("cd", infra::ByteRangeAsString(reader->ExtractContiguousRange(10)));
-        EXPECT_EQ("efg", infra::ByteRangeAsString(reader->ExtractContiguousRange(10))); }));
+            EXPECT_EQ("ab", infra::ByteRangeAsString(reader->ExtractContiguousRange(2)));
+            EXPECT_EQ("cd", infra::ByteRangeAsString(reader->ExtractContiguousRange(10)));
+            EXPECT_EQ("efg", infra::ByteRangeAsString(reader->ExtractContiguousRange(10)));
+        }));
 
     connection.SimulateDataReceived(std::vector<uint8_t>{ { 0x82, 0x04, 'a', 'b', 'c', 'd', 0x82, 0x03, 'e', 'f', 'g' } });
     ExecuteAllActions();
@@ -369,7 +381,7 @@ TEST_F(WebSocketClientConnectionObserverTest, send_and_receive_ping_in_two_buffe
 {
     connection.SimulateDataReceived(std::vector<uint8_t>{ { 0x89, 0x04, 'p', 'i', 'n' } });
     ExecuteAllActions();
-    connection.SimulateDataReceived(std::vector<uint8_t>{ { 'g' } });
+    connection.SimulateDataReceived(std::vector<uint8_t>{ 'g' });
     ExecuteAllActions();
     EXPECT_EQ((std::vector<uint8_t>{ { 0x8a, 0x84, 0, 0, 0, 0, 'p', 'i', 'n', 'g' } }), connection.sentData);
 }

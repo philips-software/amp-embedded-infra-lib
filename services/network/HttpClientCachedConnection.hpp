@@ -21,39 +21,37 @@ namespace services
         bool Idle() const;
 
         // Implementation of HttpClient
-        virtual void Get(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Head(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Connect(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Options(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
-        virtual void Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) override;
-        virtual void Post(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
-        virtual void Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) override;
-        virtual void Put(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
-        virtual void Patch(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
-        virtual void AckReceived() override;
-        virtual void CloseConnection() override;
-        virtual Connection& GetConnection() override;
+        void Get(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Head(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Connect(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Options(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        void Post(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        void Put(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        void Patch(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        void AckReceived() override;
+        void CloseConnection() override;
+        Connection& GetConnection() override;
 
         // Implementation of SharedOwnedObserver via HttpClientObserver
-        virtual void CloseRequested() override;
-        virtual void Detaching() override;
+        void CloseRequested() override;
+        void Detaching() override;
 
         // Implementation of SharedOwnedSubject via HttpClient
-        virtual void AttachedObserver() override;
-        virtual void DetachingObserver() override;
+        void AttachedObserver() override;
+        void DetachingObserver() override;
 
     public:
         // Implementation of HttpClientObserver
-        virtual void StatusAvailable(HttpStatusCode statusCode) override;
-        virtual void HeaderAvailable(HttpHeader header) override;
-        virtual void BodyAvailable(infra::SharedPtr<infra::StreamReader>&& reader) override;
-        virtual void BodyComplete() override;
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        virtual void FillContent(infra::StreamWriter& writer) const override;
+        void StatusAvailable(HttpStatusCode statusCode) override;
+        void HeaderAvailable(HttpHeader header) override;
+        void BodyAvailable(infra::SharedPtr<infra::StreamReader>&& reader) override;
+        void BodyComplete() override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void FillContent(infra::StreamWriter& writer) const override;
 
     private:
         friend class HttpClientCachedConnectionConnector;
@@ -74,17 +72,17 @@ namespace services
         HttpClientCachedConnectionConnector(HttpClientConnector& delegate, const Sha256& hasher, infra::Duration disconnectTimeout = std::chrono::minutes(1));
 
         // Implementation of HttpClientConnector
-        virtual void Connect(HttpClientObserverFactory& factory) override;
-        virtual void CancelConnect(HttpClientObserverFactory& factory) override;
+        void Connect(HttpClientObserverFactory& factory) override;
+        void CancelConnect(HttpClientObserverFactory& factory) override;
 
         void Stop(const infra::Function<void()>& onDone);
 
     private:
         // Implementation of HttpClientObserverFactory
-        virtual infra::BoundedConstString Hostname() const override;
-        virtual uint16_t Port() const override;
-        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<HttpClientObserver> client)>&& createdObserver) override;
-        virtual void ConnectionFailed(ConnectFailReason reason) override;
+        infra::BoundedConstString Hostname() const override;
+        uint16_t Port() const override;
+        void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<HttpClientObserver> client)>&& createdObserver) override;
+        void ConnectionFailed(ConnectFailReason reason) override;
 
     protected:
         friend class HttpClientCachedConnection;

@@ -17,14 +17,18 @@ public:
     DebouncedButtonFixture()
         : debouncedButton(
               button, [this]()
-              { onPressed.callback(); },
+              {
+                  onPressed.callback();
+              },
               [this]()
-              { onReleased.callback(); })
+              {
+                  onReleased.callback();
+              })
     {}
 
     hal::GpioPinStub button;
-    infra::MockCallback<void()> onPressed;
-    infra::MockCallback<void()> onReleased;
+    testing::StrictMock<infra::MockCallback<void()>> onPressed;
+    testing::StrictMock<infra::MockCallback<void()>> onReleased;
     services::DebouncedButton debouncedButton;
 };
 
@@ -71,6 +75,7 @@ TEST_F(DebouncedButtonFixture, onRelease_not_triggered_when_pushed_in_the_deboun
 TEST_F(DebouncedButtonFixture, triggered_again_when_pushed_outside_the_debounce_period)
 {
     EXPECT_CALL(onPressed, callback()).With(After(std::chrono::milliseconds(0)));
+    EXPECT_CALL(onReleased, callback()).With(After(std::chrono::milliseconds(10)));
     EXPECT_CALL(onPressed, callback()).With(After(std::chrono::milliseconds(10)));
 
     button.SetStubState(true);

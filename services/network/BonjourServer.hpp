@@ -17,8 +17,8 @@ namespace services
             infra::Optional<IPv4Address> ipv4Address, infra::Optional<IPv6Address> ipv6Address, uint16_t port, const DnsHostnameParts& text);
         ~BonjourServer();
 
-        virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
     private:
         class Answer
@@ -112,8 +112,8 @@ namespace services
         public:
             explicit StateIdle(BonjourServer& server);
 
-            virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
-            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+            void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
+            void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
         private:
             BonjourServer& server;
@@ -126,7 +126,7 @@ namespace services
         public:
             explicit StateAnnounce(BonjourServer& server);
 
-            virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
+            void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
 
         protected:
             void WriteAnnounceQuery(infra::StreamWriter& writer);
@@ -141,7 +141,7 @@ namespace services
         public:
             explicit StateAnnounceIPv4(BonjourServer& server);
 
-            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+            void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         };
 
         class StateAnnounceIPv6
@@ -150,7 +150,7 @@ namespace services
         public:
             explicit StateAnnounceIPv6(BonjourServer& server);
 
-            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+            void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         };
 
     private:

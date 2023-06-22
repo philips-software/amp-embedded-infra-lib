@@ -16,19 +16,19 @@ namespace services
 
     public:
         // Implementation of SimpleHttpPage
-        virtual bool ServesRequest(const infra::Tokenizer& pathTokens) const override;
-        virtual void RespondToRequest(services::HttpRequestParser& parser, services::HttpServerConnection& connection) override;
+        bool ServesRequest(const infra::Tokenizer& pathTokens) const override;
+        void RespondToRequest(services::HttpRequestParser& parser, services::HttpServerConnection& connection) override;
 
         // Implementation of ConnectionObserver
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& stream) override;
-        virtual void DataReceived() override;
-        virtual void Detaching() override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& stream) override;
+        void DataReceived() override;
+        void Detaching() override;
 
     protected:
         // implementation of HttpResponse
-        virtual infra::BoundedConstString Status() const override;
-        virtual void WriteBody(infra::TextOutputStream& stream) const override;
-        virtual void AddHeaders(HttpResponseHeaderBuilder& builder) const override;
+        infra::BoundedConstString Status() const override;
+        void WriteBody(infra::TextOutputStream& stream) const override;
+        void AddHeaders(HttpResponseHeaderBuilder& builder) const override;
 
     private:
         infra::BoundedConstString path;

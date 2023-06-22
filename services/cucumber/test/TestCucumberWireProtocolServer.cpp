@@ -5,6 +5,93 @@
 #include "services/network/test_doubles/ConnectionStub.hpp"
 #include "gtest/gtest.h"
 
+<<<<<<< HEAD
+=======
+static services::CucumberStepStorage stepStorage;
+
+GIVEN("a duplicate feature")
+{
+    Success();
+}
+
+GIVEN("a duplicate feature")
+{
+    Success();
+}
+
+GIVEN("a step")
+{
+    Success();
+}
+
+GIVEN("the WiFi network '%s' is seen within %d minutes")
+{
+    if (ContainsStringArgument(0) && ContainsStringArgument(1))
+        Success();
+    else
+        Error("Incorrect Arguments");
+}
+
+GIVEN("the WiFi network '%s' is seen within %d minutes and %d seconds")
+{
+    if (ContainsStringArgument(0) && ContainsStringArgument(1) && ContainsStringArgument(2))
+        Success();
+    else
+        Error("Incorrect Arguments");
+}
+
+GIVEN("the WiFi network '%s' is seen within %d minutes '%s' is seen within %d seconds")
+{
+    if (ContainsStringArgument(0) && ContainsStringArgument(1) && ContainsStringArgument(2) && ContainsStringArgument(3))
+        Success();
+    else
+        Error("Incorrect Arguments");
+}
+
+GIVEN("the Node connects to that network")
+{
+    if (ContainsTableArgument("ssid") && ContainsTableArgument("foobar") && ContainsTableArgument("WLAN"))
+        Success();
+    else
+        Error("Incorrect Arguments");
+}
+
+GIVEN("a network is available")
+{
+    if (ContainsTableArgument("field") && ContainsTableArgument("ssid") && ContainsTableArgument("key"))
+        Success();
+    else
+        Error("Incorrect Arguments");
+}
+
+GIVEN("sentence with '%s' and %d digit")
+{
+    if (ContainsStringArgument(0) && ContainsStringArgument(1))
+        if (ContainsTableArgument("field") && ContainsTableArgument("ssid") && ContainsTableArgument("key"))
+            Success();
+        else
+            Error("Incorrect Arguments");
+    else
+        Error("Incorrect Arguments");
+}
+
+GIVEN("nothing happens for %d seconds")
+{
+    if (ContainsStringArgument(0))
+    {
+        infra::BoundedString::WithStorage<2> secondsString;
+        GetStringArgument(0)->ToString(secondsString);
+        infra::StringInputStream secondsStream(secondsString);
+        uint32_t seconds;
+        secondsStream >> seconds;
+        Context().TimeoutTimer().Start(std::chrono::seconds(seconds), [=]()
+            {
+                Success();
+            });
+    }
+}
+
+>>>>>>> origin/main
 class CucumberStepMock
     : public services::CucumberStep
 {
@@ -13,7 +100,14 @@ public:
         : CucumberStep("", "")
     {}
 
+<<<<<<< HEAD
     MOCK_CONST_METHOD1(Invoke, void(infra::JsonArray& arguments));
+=======
+    MOCK_METHOD1(Invoke, void(infra::JsonArray& arguments));
+
+    void Execute() override
+    {}
+>>>>>>> origin/main
 };
 
 class CucumberWireProtocolServerTest
@@ -23,11 +117,13 @@ class CucumberWireProtocolServerTest
 public:
     CucumberWireProtocolServerTest()
         : execute([this]()
-              { EXPECT_CALL(connectionFactoryMock, Listen(1234, testing::_, services::IPVersions::both)).WillOnce(testing::DoAll(infra::SaveRef<1>(&serverConnectionObserverFactory), testing::Return(nullptr))); })
+              {
+                  EXPECT_CALL(connectionFactoryMock, Listen(1234, testing::_, services::IPVersions::both)).WillOnce(testing::DoAll(infra::SaveRef<1>(&serverConnectionObserverFactory), testing::Return(nullptr)));
+              })
         , cucumberServer(connectionFactoryMock, 1234, scenarioHandler)
     {}
 
-    ~CucumberWireProtocolServerTest()
+    ~CucumberWireProtocolServerTest() override
     {
         cucumberServer.Stop(infra::emptyFunction);
     }

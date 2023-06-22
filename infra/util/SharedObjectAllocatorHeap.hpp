@@ -13,8 +13,8 @@ namespace infra
         : public SharedObjectAllocator<T, void(ConstructionArgs...)>
     {
     public:
-        virtual SharedPtr<T> Allocate(ConstructionArgs... args) override;
-        virtual void OnAllocatable(infra::AutoResetFunction<void()>&& callback) override;
+        SharedPtr<T> Allocate(ConstructionArgs... args) override;
+        void OnAllocatable(infra::AutoResetFunction<void()>&& callback) override;
     };
 
     ////    Implementation    ////

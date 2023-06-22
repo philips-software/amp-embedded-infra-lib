@@ -1,9 +1,18 @@
 add_library(services.network ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
+protocol_buffer_echo_cpp(services.network Network.proto)
+protocol_buffer_csharp(services.network Network.proto)
+protocol_buffer_java(services.network Network.proto)
+
+protocol_buffer_echo_cpp(services.network Gap.proto)
+protocol_buffer_csharp(services.network Gap.proto)
+protocol_buffer_java(services.network Gap.proto)
+
 target_link_libraries(services.network PUBLIC
     infra.syntax
     infra.timer
     hal.synchronous_interfaces
+    protobuf.echo
     services.tracer
     services.util
     mbedtls
@@ -14,6 +23,8 @@ target_sources(services.network PRIVATE
     Address.hpp
     BonjourServer.cpp
     BonjourServer.hpp
+    $<$<BOOL:${EMIL_HOST_BUILD}>:CertificateConvertor.cpp>
+    $<$<BOOL:${EMIL_HOST_BUILD}>:CertificateConvertor.hpp>
     CertificatesMbedTls.cpp
     CertificatesMbedTls.hpp
     Connection.cpp
@@ -30,6 +41,8 @@ target_sources(services.network PRIVATE
     DnsResolver.hpp
     DnsServer.cpp
     DnsServer.hpp
+    EchoOnConnection.cpp
+    EchoOnConnection.hpp
     ExclusiveConnection.cpp
     ExclusiveConnection.hpp
     ExclusiveStartingConnection.cpp
@@ -69,7 +82,6 @@ target_sources(services.network PRIVATE
     NameResolverCache.cpp
     NameResolverCache.hpp
     Network.hpp
-    ConnectionStatus.hpp
     SerialServer.cpp
     SerialServer.hpp
     SingleConnectionListener.cpp
@@ -84,6 +96,8 @@ target_sources(services.network PRIVATE
     TracingConnectionFactoryWithNameResolver.hpp
     TracingConnectionMbedTls.cpp
     TracingConnectionMbedTls.hpp
+    TracingEchoOnConnection.cpp
+    TracingEchoOnConnection.hpp
     TracingHttpClientCachedConnection.cpp
     TracingHttpClientCachedConnection.hpp
     TracingHttpClientImpl.cpp
@@ -109,14 +123,6 @@ if (EMIL_HOST_BUILD)
     )
 endif()
 
-if (EMIL_BUILD_TESTS)
-    add_subdirectory(test)
-endif()
-
-if (BUILD_TESTING)
-    add_subdirectory(test_doubles)
-endif()
-
-if (EMIL_HOST_BUILD)
-    add_subdirectory(step_definitions)
-endif()
+add_subdirectory(test)
+add_subdirectory(test_doubles)
+add_subdirectory(step_definitions)

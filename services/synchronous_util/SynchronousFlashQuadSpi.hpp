@@ -16,9 +16,9 @@ namespace services
 
         explicit SynchronousFlashQuadSpi(hal::SynchronousQuadSpi& quadSpi);
 
-        virtual void WriteBuffer(infra::ConstByteRange buffer, uint32_t address) override;
-        virtual void ReadBuffer(infra::ByteRange buffer, uint32_t address) override;
-        virtual void EraseSectors(uint32_t beginIndex, uint32_t endIndex) override;
+        void WriteBuffer(infra::ConstByteRange buffer, uint32_t address) override;
+        void ReadBuffer(infra::ByteRange buffer, uint32_t address) override;
+        void EraseSectors(uint32_t beginIndex, uint32_t endIndex) override;
 
     private:
         void WriteEnable();

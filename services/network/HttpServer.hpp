@@ -74,9 +74,9 @@ namespace services
     public:
         SimpleHttpResponse(infra::BoundedConstString status, infra::BoundedConstString body = infra::BoundedConstString());
 
-        virtual infra::BoundedConstString Status() const override;
-        virtual void WriteBody(infra::TextOutputStream& stream) const override;
-        virtual infra::BoundedConstString ContentType() const override;
+        infra::BoundedConstString Status() const override;
+        void WriteBody(infra::TextOutputStream& stream) const override;
+        infra::BoundedConstString ContentType() const override;
 
     private:
         infra::BoundedConstString status;
@@ -120,9 +120,9 @@ namespace services
         : public HttpPage
     {
     public:
-        virtual void RequestReceived(HttpRequestParser& parser, HttpServerConnection& connection) override;
-        virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
-        virtual void Close() override;
+        void RequestReceived(HttpRequestParser& parser, HttpServerConnection& connection) override;
+        void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
+        void Close() override;
 
         virtual void RespondToRequest(HttpRequestParser& parser, HttpServerConnection& connection) = 0;
 
@@ -139,11 +139,11 @@ namespace services
         HttpPageWithContent(infra::BoundedConstString path, infra::BoundedConstString body, infra::BoundedConstString contentType);
 
         // Implementation of SimpleHttpPage
-        virtual bool ServesRequest(const infra::Tokenizer& pathTokens) const override;
-        virtual void RespondToRequest(HttpRequestParser& parser, HttpServerConnection& connection) override;
+        bool ServesRequest(const infra::Tokenizer& pathTokens) const override;
+        void RespondToRequest(HttpRequestParser& parser, HttpServerConnection& connection) override;
 
         // Implementation of SimpleHttpResponse
-        virtual infra::BoundedConstString ContentType() const override;
+        infra::BoundedConstString ContentType() const override;
 
     private:
         infra::BoundedConstString path;
@@ -162,17 +162,17 @@ namespace services
         HttpServerConnectionObserver(infra::BoundedString& buffer, HttpPageServer& httpServer);
 
         // Implementation of ConnectionObserver
-        virtual void Attached() override;
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        virtual void DataReceived() override;
-        virtual void Detaching() override;
-        virtual void Close() override;
-        virtual void Abort() override;
+        void Attached() override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void DataReceived() override;
+        void Detaching() override;
+        void Close() override;
+        void Abort() override;
 
         // Implementation of HttpServerConnection
-        virtual void SendResponse(const HttpResponse& response) override;
-        virtual void SendResponseWithoutNextRequest(const HttpResponse& response) override;
-        virtual void TakeOverConnection(ConnectionObserver& newObserver) override;
+        void SendResponse(const HttpResponse& response) override;
+        void SendResponseWithoutNextRequest(const HttpResponse& response) override;
+        void TakeOverConnection(ConnectionObserver& newObserver) override;
 
     protected:
         virtual void SendingHttpResponse(infra::BoundedConstString response)
@@ -185,7 +185,7 @@ namespace services
         virtual void RequestIsNowInProgress();
 
         // Implementation of HttpPageServer
-        virtual HttpPage* PageForRequest(const HttpRequestParser& request) override;
+        HttpPage* PageForRequest(const HttpRequestParser& request) override;
 
     private:
         void ReceivedTooMuchData(infra::StreamReader& reader);

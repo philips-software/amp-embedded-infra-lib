@@ -30,20 +30,20 @@ namespace services
             explicit ExclusiveConnection(ExclusiveConnectionFactoryMutex& mutex);
 
             // Implementation of Connection
-            virtual void RequestSendStream(std::size_t sendSize) override;
-            virtual std::size_t MaxSendStreamSize() const override;
-            virtual infra::SharedPtr<infra::StreamReaderWithRewinding> ReceiveStream() override;
-            virtual void AckReceived() override;
-            virtual void CloseAndDestroy() override;
-            virtual void AbortAndDestroy() override;
-            virtual void SetHostname(infra::BoundedConstString hostname) override;
+            void RequestSendStream(std::size_t sendSize) override;
+            std::size_t MaxSendStreamSize() const override;
+            infra::SharedPtr<infra::StreamReaderWithRewinding> ReceiveStream() override;
+            void AckReceived() override;
+            void CloseAndDestroy() override;
+            void AbortAndDestroy() override;
+            void SetHostname(infra::BoundedConstString hostname) override;
 
             // Implementation of ConnectionObserver
-            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& streamWriter) override;
-            virtual void DataReceived() override;
-            virtual void Detaching() override;
-            virtual void Close() override;
-            virtual void Abort() override;
+            void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& streamWriter) override;
+            void DataReceived() override;
+            void Detaching() override;
+            void Close() override;
+            void Abort() override;
 
             void Attach(const infra::SharedPtr<ConnectionObserver>& observer);
 
@@ -79,9 +79,9 @@ namespace services
             ExclusiveConnectionFactoryMutex& mutex, ConnectionFactory& connectionFactory);
 
         // Implementation of ConnectionFactory
-        virtual infra::SharedPtr<void> Listen(uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions = IPVersions::both) override;
-        virtual void Connect(ClientConnectionObserverFactory& factory) override;
-        virtual void CancelConnect(ClientConnectionObserverFactory& factory) override;
+        infra::SharedPtr<void> Listen(uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions = IPVersions::both) override;
+        void Connect(ClientConnectionObserverFactory& factory) override;
+        void CancelConnect(ClientConnectionObserverFactory& factory) override;
 
     private:
         class Listener
@@ -91,7 +91,7 @@ namespace services
             Listener(ExclusiveConnectionFactory& connectionFactory, uint16_t port, ServerConnectionObserverFactory& factory, IPVersions versions);
 
             // Implementation of ServerConnectionObserverFactory
-            virtual void ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address) override;
+            void ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address) override;
 
         private:
             ExclusiveConnectionFactory& connectionFactory;
@@ -111,10 +111,10 @@ namespace services
             bool CancelConnect(ClientConnectionObserverFactory& factory);
 
             // Implementation of ClientConnectionObserverFactory
-            virtual IPAddress Address() const override;
-            virtual uint16_t Port() const override;
-            virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver) override;
-            virtual void ConnectionFailed(ConnectFailReason reason) override;
+            IPAddress Address() const override;
+            uint16_t Port() const override;
+            void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver) override;
+            void ConnectionFailed(ConnectFailReason reason) override;
 
         private:
             ExclusiveConnectionFactory& connectionFactory;

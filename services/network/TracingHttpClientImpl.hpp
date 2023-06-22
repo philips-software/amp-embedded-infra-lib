@@ -14,10 +14,10 @@ namespace services
         TracingHttpClientImpl(infra::BoundedConstString hostname, Tracer& tracer);
 
         // Implementation of ConnectionObserver
-        virtual void DataReceived() override;
-        virtual void Attached() override;
-        virtual void Detaching() override;
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void DataReceived() override;
+        void Attached() override;
+        void Detaching() override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
     private:
         class TracingWriter
@@ -48,13 +48,13 @@ namespace services
         TracingHttpClientImplWithRedirection(infra::BoundedString redirectedUrlStorage, infra::BoundedConstString hostname, ConnectionFactoryWithNameResolver& connectionFactory, Tracer& tracer);
 
         // Implementation of ConnectionObserver
-        virtual void DataReceived() override;
-        virtual void Attached() override;
-        virtual void Detaching() override;
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void DataReceived() override;
+        void Attached() override;
+        void Detaching() override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
         // Implementation of HttpClientImplWithRedirection
-        virtual void Redirecting(infra::BoundedConstString url) override;
+        void Redirecting(infra::BoundedConstString url) override;
 
     private:
         class TracingWriter
@@ -83,8 +83,8 @@ namespace services
         TracingHttpClientConnectorImpl(services::ConnectionFactory& connectionFactory, services::IPAddress address, Args&&... args, services::Tracer& tracer);
 
         // Implementation of ClientConnectionObserverFactory
-        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver) override;
-        virtual void ConnectionFailed(typename HttpClientConnectorImpl<HttpClient, Args...>::ConnectFailReason reason) override;
+        void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver) override;
+        void ConnectionFailed(typename HttpClientConnectorImpl<HttpClient, Args...>::ConnectFailReason reason) override;
 
     private:
         services::Tracer& tracer;
@@ -98,8 +98,8 @@ namespace services
         TracingHttpClientConnectorWithNameResolverImpl(ConnectionFactoryWithNameResolver& connectionFactory, Args&&... args, services::Tracer& tracer);
 
         // Implementation of ClientConnectionObserverFactoryWithNameResolver
-        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver) override;
-        virtual void ConnectionFailed(typename HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::ConnectFailReason reason) override;
+        void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver) override;
+        void ConnectionFailed(typename HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::ConnectFailReason reason) override;
 
     private:
         services::Tracer& tracer;

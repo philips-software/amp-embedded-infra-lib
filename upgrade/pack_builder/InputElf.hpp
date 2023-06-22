@@ -14,7 +14,7 @@ namespace application
     public:
         InputElf(const std::string& targetName, const std::string& fileName, uint32_t offset, hal::FileSystem& fileSystem, const ImageSecurity& imageSecurity);
 
-        virtual std::vector<uint8_t> Image() const override;
+        std::vector<uint8_t> Image() const override;
 
     private:
         std::pair<std::vector<uint8_t>, uint32_t> Linearize(const application::SparseVector<uint8_t>& data) const;

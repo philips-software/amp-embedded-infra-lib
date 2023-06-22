@@ -2,7 +2,7 @@
 # Using this function, all targets which have a name of the format package.target have their
 # FOLDER property set to package, so that in supported IDEs those targets are combined into folders.
 
-function(emil_get_subdirectories foundDirectories topDirs)
+function(emil_get_subdirectories foundDirectories)
     set(multiValueArgs DIRECTORIES)
     cmake_parse_arguments(PARSE_ARGV 1 MY "" "" "${multiValueArgs}")
 
@@ -25,8 +25,8 @@ function(emil_get_subdirectories foundDirectories topDirs)
     set(${foundDirectories} ${found} PARENT_SCOPE)
 endfunction()
 
-function(emil_get_targets_from_directories foundTargets directories)
-    set(multiValueArgs TARGETS DIRECTORIES)
+function(emil_get_targets_from_directories foundTargets)
+    set(multiValueArgs DIRECTORIES)
     cmake_parse_arguments(PARSE_ARGV 1 TARGETS_FROM "" "" "${multiValueArgs}")
 
     foreach(dir ${TARGETS_FROM_DIRECTORIES})

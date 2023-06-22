@@ -5,7 +5,7 @@ class SparseVectorTest
     : public testing::Test
 {
 public:
-    ~SparseVectorTest()
+    ~SparseVectorTest() override
     {
         EXPECT_TRUE(vector.InvariantHolds());
     }

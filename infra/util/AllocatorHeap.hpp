@@ -13,8 +13,8 @@ namespace infra
         : public Allocator<T, void(ConstructionArgs...)>
     {
     public:
-        virtual UniquePtr<T> Allocate(ConstructionArgs... args) override;
-        virtual void Deallocate(void* object) override;
+        UniquePtr<T> Allocate(ConstructionArgs... args) override;
+        void Deallocate(void* object) override;
     };
 
     ////    Implementation    ////

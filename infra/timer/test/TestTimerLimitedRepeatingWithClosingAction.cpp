@@ -18,9 +18,13 @@ TEST_F(TimerLimitedRepeatingWithClosingActionTest, TimerIsExecuted)
 
     infra::TimerLimitedRepeatingWithClosingAction timer(
         2, std::chrono::seconds(1), [&callback]()
-        { callback.callback(); },
+        {
+            callback.callback();
+        },
         [&extra]()
-        { extra.callback(); });
+        {
+            extra.callback();
+        });
 
     ForwardTime(std::chrono::seconds(5));
 }
@@ -53,9 +57,13 @@ TEST_F(TimerLimitedRepeatingWithClosingActionTest, ResolutionIsTakenIntoAccount)
 
     infra::TimerLimitedRepeatingWithClosingAction timer(
         2, std::chrono::seconds(1), [&callback]()
-        { callback.callback(); },
+        {
+            callback.callback();
+        },
         [&extra]()
-        { extra.callback(); });
+        {
+            extra.callback();
+        });
 
     ForwardTime(std::chrono::seconds(5));
 }

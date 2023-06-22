@@ -3,21 +3,16 @@
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/util/ConstructBin.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
-#include "protobuf/echo/Echo.hpp"
-#include "protobuf/echo/test/ServiceStub.hpp"
 #include "protobuf/echo/test_doubles/EchoMock.hpp"
+#include "protobuf/echo/test_doubles/ServiceStub.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
+#include "services/util/EchoOnMessageCommunication.hpp"
 
 class EchoOnMessageCommunicationTest
     : public testing::Test
     , public infra::EventDispatcherWithWeakPtrFixture
 {
 public:
-    EchoOnMessageCommunicationTest()
-    {
-        EXPECT_CALL(service, AcceptsService(1)).WillRepeatedly(testing::Return(true));
-    }
-
     void ReceiveMessage(infra::ConstByteRange data)
     {
         infra::ByteInputStreamReader reader{ data };
@@ -37,7 +32,9 @@ TEST_F(EchoOnMessageCommunicationTest, invoke_service_proxy_method)
     testing::StrictMock<infra::MockCallback<void()>> onGranted;
     EXPECT_CALL(messageCommunication, RequestSendMessage(18));
     serviceProxy.RequestSend([&onGranted]()
-        { onGranted.callback(); });
+        {
+            onGranted.callback();
+        });
 
     infra::ByteOutputStreamWriter::WithStorage<128> writer;
     EXPECT_CALL(onGranted, callback());
@@ -79,7 +76,6 @@ TEST_F(EchoOnMessageCommunicationTest, MessageFormatError_is_reported_when_param
 
 TEST_F(EchoOnMessageCommunicationTest, ServiceNotFound_is_reported)
 {
-    EXPECT_CALL(service, AcceptsService(2)).WillOnce(testing::Return(false));
     EXPECT_CALL(errorPolicy, ServiceNotFound(2));
     ReceiveMessage(infra::ConstructBin()({ 2, 10, 2, 8, 5 }).Range());
 }

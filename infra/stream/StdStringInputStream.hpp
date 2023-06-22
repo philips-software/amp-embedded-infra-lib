@@ -15,12 +15,12 @@ namespace infra
         explicit StdStringInputStreamReader(const std::string& string);
 
     private:
-        virtual void Extract(ByteRange range, StreamErrorPolicy& errorPolicy) override;
-        virtual uint8_t Peek(StreamErrorPolicy& errorPolicy) override;
-        virtual ConstByteRange ExtractContiguousRange(std::size_t max) override;
-        virtual ConstByteRange PeekContiguousRange(std::size_t start) override;
-        virtual bool Empty() const override;
-        virtual std::size_t Available() const override;
+        void Extract(ByteRange range, StreamErrorPolicy& errorPolicy) override;
+        uint8_t Peek(StreamErrorPolicy& errorPolicy) override;
+        ConstByteRange ExtractContiguousRange(std::size_t max) override;
+        ConstByteRange PeekContiguousRange(std::size_t start) override;
+        bool Empty() const override;
+        std::size_t Available() const override;
 
     private:
         uint32_t offset = 0;

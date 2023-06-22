@@ -113,7 +113,9 @@ namespace hal
 #endif
 
         readThread = std::thread([this]()
-            { Read(); });
+            {
+                Read();
+            });
     }
 
     void UartUnix::Read()

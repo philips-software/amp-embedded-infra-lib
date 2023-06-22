@@ -17,9 +17,9 @@ namespace hal
         ~TimerServiceGeneric();
         TimerServiceGeneric& operator=(const TimerServiceGeneric& other) = delete;
 
-        virtual void NextTriggerChanged() override;
-        virtual infra::TimePoint Now() const override;
-        virtual infra::Duration Resolution() const override;
+        void NextTriggerChanged() override;
+        infra::TimePoint Now() const override;
+        infra::Duration Resolution() const override;
 
     private:
         void WaitForTrigger();

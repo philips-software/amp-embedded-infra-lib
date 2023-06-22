@@ -20,7 +20,7 @@ class BonjourServerTest
     , public infra::EventDispatcherFixture
 {
 public:
-    ~BonjourServerTest()
+    ~BonjourServerTest() override
     {
         expectLeave();
     }
@@ -238,11 +238,14 @@ public:
         auto ptr = std::make_shared<Ptr>(Ptr{ *this, data });
 
         EXPECT_CALL(*datagramExchange, RequestSendStream(data.size(), testing::_)).WillOnce(testing::Invoke([ptr](std::size_t sendSize, services::UdpSocket to)
-            { infra::EventDispatcher::Instance().Schedule([ptr]()
-                  {
-                infra::StdVectorOutputStreamWriter::WithStorage response;
-                ptr->self.datagramExchange->GetObserver().SendStreamAvailable(infra::UnOwnedSharedPtr(response));
-                EXPECT_EQ(ptr->data, response.Storage()); }); }));
+            {
+                infra::EventDispatcher::Instance().Schedule([ptr]()
+                    {
+                        infra::StdVectorOutputStreamWriter::WithStorage response;
+                        ptr->self.datagramExchange->GetObserver().SendStreamAvailable(infra::UnOwnedSharedPtr(response));
+                        EXPECT_EQ(ptr->data, response.Storage());
+                    });
+            }));
     }
 
     std::vector<uint8_t> PtrAnswer()
@@ -303,30 +306,30 @@ public:
     {
         EXPECT_CALL(factory, Listen(testing::Ref(server), 5353, services::IPVersions::ipv4)).WillOnce(testing::Invoke([this](services::DatagramExchangeObserver& observer, uint16_t port, services::IPVersions versions)
             {
-            auto ptr = datagramExchange.Emplace();
-            observer.Attach(*ptr);
+                auto ptr = datagramExchange.Emplace();
+                observer.Attach(*ptr);
 
-            ExpectResponse(infra::ConstructBin()
-                .Value<services::DnsRecordHeader>({ 0x0000, 0x8000, 0, 5, 0, 0 })
-                (PtrAnswer())(SrvAnswer())(TxtAnswer())(AAnswer())(NoAaaaAnswer())
-                .Vector());
+                ExpectResponse(infra::ConstructBin()
+                                   .Value<services::DnsRecordHeader>({ 0x0000, 0x8000, 0, 5, 0, 0 })(PtrAnswer())(SrvAnswer())(TxtAnswer())(AAnswer())(NoAaaaAnswer())
+                                   .Vector());
 
-            return ptr; }));
+                return ptr;
+            }));
     }
 
     void ExpectListenIpv6()
     {
         EXPECT_CALL(factory, Listen(testing::Ref(server), 5353, services::IPVersions::ipv6)).WillOnce(testing::Invoke([this](services::DatagramExchangeObserver& observer, uint16_t port, services::IPVersions versions)
             {
-            auto ptr = datagramExchange.Emplace();
-            observer.Attach(*ptr);
+                auto ptr = datagramExchange.Emplace();
+                observer.Attach(*ptr);
 
-            ExpectResponse(infra::ConstructBin()
-                .Value<services::DnsRecordHeader>({ 0x0000, 0x8000, 0, 5, 0, 0 })
-                (PtrAnswer())(SrvAnswer())(TxtAnswer())(NoAAnswer())(AaaaAnswer())
-                .Vector());
+                ExpectResponse(infra::ConstructBin()
+                                   .Value<services::DnsRecordHeader>({ 0x0000, 0x8000, 0, 5, 0, 0 })(PtrAnswer())(SrvAnswer())(TxtAnswer())(NoAAnswer())(AaaaAnswer())
+                                   .Vector());
 
-            return ptr; }));
+                return ptr;
+            }));
     }
 
     void ExpectJoinMulticastIpv4()

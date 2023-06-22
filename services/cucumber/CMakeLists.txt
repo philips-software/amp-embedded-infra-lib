@@ -6,7 +6,7 @@ target_link_libraries(services.cucumber PUBLIC
     infra.syntax
     infra.timer
     hal.synchronous_interfaces
-    services.tracer
+    services.network
 )
 
 target_sources(services.cucumber PRIVATE
@@ -35,6 +35,4 @@ if (EMIL_CUCUMBER_USE_GMOCK)
     target_compile_definitions(services.cucumber PRIVATE EMIL_CUCUMBER_USE_GMOCK)
 endif()
 
-#if (EMIL_BUILD_TESTS)
-#    add_subdirectory(test)
-#endif()
+#add_subdirectory(test)

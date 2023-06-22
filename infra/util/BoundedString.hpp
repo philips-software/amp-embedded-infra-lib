@@ -46,7 +46,7 @@ namespace infra
         static const size_type npos;
 
     public:
-        BoundedStringBase();
+        BoundedStringBase() = default;
         explicit BoundedStringBase(MemoryRange<T> range);
         BoundedStringBase(MemoryRange<NonConstT> range, size_type count);
         BoundedStringBase(MemoryRange<NonConstT> range, size_type count, char ch);
@@ -372,10 +372,6 @@ namespace infra
 #endif
 
     ////    Implementation    ////
-
-    template<class T>
-    BoundedStringBase<T>::BoundedStringBase()
-    {}
 
     template<class T>
     BoundedStringBase<T>::BoundedStringBase(MemoryRange<T> range)
@@ -1665,7 +1661,9 @@ namespace infra
     {
         return lhs.size() == rhs.size() &&
                std::equal(std::begin(lhs), std::end(lhs), std::begin(rhs), [](T a, U b)
-                   { return std::tolower(a) == std::tolower(b); });
+                   {
+                       return std::tolower(a) == std::tolower(b);
+                   });
     }
 
     template<class T>
@@ -1673,7 +1671,9 @@ namespace infra
     {
         return lhs.size() == std::strlen(rhs) && //NOSONAR
                std::equal(std::begin(lhs), std::end(lhs), rhs, [](T a, T b)
-                   { return std::tolower(a) == std::tolower(b); });
+                   {
+                       return std::tolower(a) == std::tolower(b);
+                   });
     }
 
     template<class T>

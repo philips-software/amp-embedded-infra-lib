@@ -2,6 +2,17 @@
 #include "infra/stream/StdStringInputStream.hpp"
 #include <algorithm>
 
+namespace
+{
+    bool StringHasNonSpaces(const std::string_view string)
+    {
+        return !std::all_of(string.begin(), string.end(), [](auto c)
+            {
+                return std::isspace(c);
+            });
+    }
+}
+
 namespace application
 {
     LineException::LineException(const std::string& prependMessage, const std::string& file, int line)
@@ -39,7 +50,7 @@ namespace application
         this->offset = offset;
 
         int lineNumber = 0;
-        for (auto line : data)
+        for (const auto& line : data)
         {
             ++lineNumber;
             if (!line.empty())
@@ -148,7 +159,7 @@ namespace application
             memory.Insert(lineContents.data[i], linearAddress + offset + lineContents.address + i);
     }
 
-    BinaryObject::LineContents::LineContents(std::string line, const std::string& fileName, int lineNumber)
+    BinaryObject::LineContents::LineContents(const std::string& line, const std::string& fileName, int lineNumber)
     {
         infra::StdStringInputStream stream(line, infra::softFail);
 
@@ -178,7 +189,8 @@ namespace application
             throw RecordTooShortException(fileName, lineNumber);
         if (sum != 0)
             throw IncorrectCrcException(fileName, lineNumber);
-        if (!stream.Empty())
+
+        if (!stream.Empty() && StringHasNonSpaces(std::string_view(line).substr(line.size() - stream.Available())))
             throw RecordTooLongException(fileName, lineNumber);
     }
 }

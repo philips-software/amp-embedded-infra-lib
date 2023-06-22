@@ -106,6 +106,26 @@ namespace infra
             };
         }
     };
+
+    template<class T, class P1, class P2, class P3, std::size_t ExtraSize>
+    class VerifyingFunctionMock<T(P1, P2, P3), ExtraSize>
+    {
+    public:
+        VerifyingFunctionMock(P1 p1, P2 p2, P3 p3)
+        {
+            EXPECT_CALL(*this, callback(p1, p2, p3));
+        }
+
+        MOCK_CONST_METHOD3_T(callback, T(P1, P2, P3));
+
+        operator infra::Function<T(P1, P2, P3), ExtraSize>()
+        {
+            return [this](P1 p1, P2 p2, P3 p3)
+            {
+                return callback(p1, p2, p3);
+            };
+        }
+    };
 }
 
 #endif

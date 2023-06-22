@@ -102,16 +102,16 @@ namespace hal
         : public GpioPin
     {
     public:
-        virtual bool Get() const override;
-        virtual bool GetOutputLatch() const override;
-        virtual void Set(bool value) override;
-        virtual void SetAsInput() override;
-        virtual bool IsInput() const override;
-        virtual void Config(PinConfigType config) override;
-        virtual void Config(PinConfigType config, bool startOutputState) override;
-        virtual void ResetConfig() override;
-        virtual void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger) override;
-        virtual void DisableInterrupt() override;
+        bool Get() const override;
+        bool GetOutputLatch() const override;
+        void Set(bool value) override;
+        void SetAsInput() override;
+        bool IsInput() const override;
+        void Config(PinConfigType config) override;
+        void Config(PinConfigType config, bool startOutputState) override;
+        void ResetConfig() override;
+        void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger) override;
+        void DisableInterrupt() override;
     };
 
     extern DummyPin dummyPin;

@@ -33,7 +33,9 @@ int main(int argc, const char* argv[], const char* env[])
         auto runLogger = [&](std::ostream& stream)
         {
             uart.ReceiveData([&stream](infra::ConstByteRange data)
-                { stream << infra::ByteRangeAsStdString(data); });
+                {
+                    stream << infra::ByteRangeAsStdString(data);
+                });
             eventDispatcher.Run();
         };
 

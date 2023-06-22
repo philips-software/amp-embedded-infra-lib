@@ -18,8 +18,8 @@ namespace application
 
         ImageEncryptorAes(hal::SynchronousRandomDataGenerator& randomDataGenerator, infra::ConstByteRange key);
 
-        virtual uint32_t EncryptionAndMacMethod() const override;
-        virtual std::vector<uint8_t> Secure(const std::vector<uint8_t>& data) const override;
+        uint32_t EncryptionAndMacMethod() const override;
+        std::vector<uint8_t> Secure(const std::vector<uint8_t>& data) const override;
 
     private:
         bool CheckDecryption(const std::vector<uint8_t>& original, const std::vector<uint8_t>& encrypted) const;

@@ -1,4 +1,5 @@
 #include "infra/stream/InputStream.hpp"
+#include "infra/util/Base64.hpp"
 #include <cassert>
 
 namespace infra
@@ -410,44 +411,6 @@ namespace infra
         }
     }
 
-    DataInputStream::WithErrorPolicy::WithErrorPolicy(StreamReader& reader)
-        : DataInputStream(reader, errorPolicy)
-    {}
-
-    DataInputStream::WithErrorPolicy::WithErrorPolicy(StreamReader& reader, SoftFail)
-        : DataInputStream(reader, errorPolicy)
-        , errorPolicy(softFail)
-    {}
-
-    DataInputStream::WithErrorPolicy::WithErrorPolicy(StreamReader& reader, NoFail)
-        : DataInputStream(reader, errorPolicy)
-        , errorPolicy(noFail)
-    {}
-
-    DataInputStream::WithErrorPolicy::WithErrorPolicy(const WithErrorPolicy& other)
-        : DataInputStream(other.Reader(), errorPolicy)
-        , errorPolicy(other.ErrorPolicy())
-    {}
-
-    TextInputStream::WithErrorPolicy::WithErrorPolicy(StreamReader& reader)
-        : TextInputStream(reader, errorPolicy)
-    {}
-
-    TextInputStream::WithErrorPolicy::WithErrorPolicy(StreamReader& reader, SoftFail)
-        : TextInputStream(reader, errorPolicy)
-        , errorPolicy(softFail)
-    {}
-
-    TextInputStream::WithErrorPolicy::WithErrorPolicy(StreamReader& reader, NoFail)
-        : TextInputStream(reader, errorPolicy)
-        , errorPolicy(noFail)
-    {}
-
-    TextInputStream::WithErrorPolicy::WithErrorPolicy(const WithErrorPolicy& other)
-        : TextInputStream(other.Reader(), errorPolicy)
-        , errorPolicy(other.ErrorPolicy())
-    {}
-
     namespace
     {
         uint8_t DecodeHexByte(char hex)
@@ -459,13 +422,6 @@ namespace infra
             if (hex >= 'A' && hex <= 'F')
                 return hex - 'A' + 10;
             return 16;
-        }
-
-        uint8_t DecodeBase64Byte(char base64)
-        {
-            static const char* encodeTable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-            return static_cast<uint8_t>(std::find(&encodeTable[0], &encodeTable[64], base64) - &encodeTable[0]);
         }
     }
 

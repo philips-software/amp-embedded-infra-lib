@@ -1,5 +1,5 @@
-#ifndef PROTOBUF_CONSOLE_HPP
-#define PROTOBUF_CONSOLE_HPP
+#ifndef SERVICES_ECHO_CONSOLE_HPP
+#define SERVICES_ECHO_CONSOLE_HPP
 
 #include "hal/generic/TimerServiceGeneric.hpp"
 #include "infra/syntax/ProtoFormatter.hpp"

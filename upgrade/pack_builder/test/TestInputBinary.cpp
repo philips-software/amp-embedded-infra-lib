@@ -80,12 +80,12 @@ class ImageSecurityStub
     : public application::ImageSecurity
 {
 public:
-    uint32_t EncryptionAndMacMethod() const
+    uint32_t EncryptionAndMacMethod() const override
     {
         return 1234;
     }
 
-    std::vector<uint8_t> Secure(const std::vector<uint8_t>& data) const
+    std::vector<uint8_t> Secure(const std::vector<uint8_t>& data) const override
     {
         return std::vector<uint8_t>(data.size() / 2, 55);
     }

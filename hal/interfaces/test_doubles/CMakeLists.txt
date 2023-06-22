@@ -1,4 +1,5 @@
-add_library(hal.interfaces_test_doubles ${EMIL_EXCLUDE_FROM_ALL} STATIC)
+add_library(hal.interfaces_test_doubles STATIC)
+emil_build_for(hal.interfaces_test_doubles BOOL BUILD_TESTING)
 
 target_link_libraries(hal.interfaces_test_doubles PRIVATE
     hal.interfaces
@@ -36,6 +37,4 @@ target_sources(hal.interfaces_test_doubles PRIVATE
     SpiMock.hpp
 )
 
-if (EMIL_BUILD_TESTS)
-    add_subdirectory(test)
-endif()
+add_subdirectory(test)

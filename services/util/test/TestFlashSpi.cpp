@@ -52,7 +52,9 @@ TEST_F(FlashSpiTest, ReadData)
 
     std::vector<uint8_t> buffer(4, 0);
     flash.ReadBuffer(buffer, 0, [this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     ExecuteAllActions();
 
     EXPECT_EQ(receiveData, buffer);
@@ -67,7 +69,9 @@ TEST_F(FlashSpiTest, ReadId)
 
     std::vector<uint8_t> buffer(3, 0);
     flash.ReadFlashId(buffer, [this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     ExecuteAllActions();
 
     EXPECT_EQ(receiveData, buffer);
@@ -83,7 +87,9 @@ TEST_F(FlashSpiTest, ReadDataAtNonZeroAddress)
 
     std::vector<uint8_t> buffer(4, 0);
     flash.ReadBuffer(buffer, 0 + 0x123456, [this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     ExecuteAllActions();
 
     EXPECT_EQ(receiveData, buffer);
@@ -99,7 +105,9 @@ TEST_F(FlashSpiTest, WriteData)
     EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 1 }));
 
     flash.WriteBuffer(sendData, 0, [this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     ExecuteAllActions();
 }
 
@@ -114,7 +122,9 @@ TEST_F(FlashSpiTest, WriteDataFinishesOnFlagPoll)
     EXPECT_CALL(finished, callback());
 
     flash.WriteBuffer(sendData, 0, [this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     ExecuteAllActions();
 }
 
@@ -172,7 +182,9 @@ TEST_F(FlashSpiTest, EraseFirstSubSector)
     EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 1 }));
 
     flash.EraseSector(0, [this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     ExecuteAllActions();
 }
 
@@ -185,7 +197,9 @@ TEST_F(FlashSpiTest, EraseFirstSubSectorFinishesOnFlagPoll)
     EXPECT_CALL(finished, callback());
 
     flash.EraseSector(0, [this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     ExecuteAllActions();
 }
 
@@ -197,7 +211,9 @@ TEST_F(FlashSpiTest, EraseSecondSubSector)
     EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 1 }));
 
     flash.EraseSector(1, [this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     ExecuteAllActions();
 }
 
@@ -209,7 +225,9 @@ TEST_F(FlashSpiTest, EraseMultipleErasesOneSubSector)
     EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 1 }));
 
     flash.EraseSectors(0, 1, [this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     ExecuteAllActions();
 }
 
@@ -227,7 +245,9 @@ TEST_F(FlashSpiTest, EraseMultipleErasesTwoSubSectors)
     EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 1 }));
 
     flash.EraseSectors(0, 2, [this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     ExecuteAllActions();
 }
 
@@ -239,7 +259,9 @@ TEST_F(FlashSpiTest, EraseMultipleErasesSector)
     EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 1 }));
 
     flash.EraseSectors(0, 16, [this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     ExecuteAllActions();
 }
 
@@ -261,7 +283,9 @@ TEST_F(FlashSpiTest, EraseMultipleErasesSubSectorsAndSector)
     EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 1 }));
 
     flash.EraseSectors(15, 33, [this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     ExecuteAllActions();
 }
 
@@ -273,6 +297,8 @@ TEST_F(FlashSpiTest, EraseAllErasesBulk)
     EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 1 }));
 
     flash.EraseAll([this]()
-        { finished.callback(); });
+        {
+            finished.callback();
+        });
     ExecuteAllActions();
 }

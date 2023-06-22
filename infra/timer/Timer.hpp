@@ -82,7 +82,7 @@ namespace infra
         void Start(Duration duration, const infra::Function<void()>& action);
 
     protected:
-        virtual void ComputeNextTriggerTime() override;
+        void ComputeNextTriggerTime() override;
     };
 
     class TimerRepeating
@@ -99,7 +99,7 @@ namespace infra
         Duration TriggerPeriod() const;
 
     protected:
-        virtual void ComputeNextTriggerTime() override;
+        void ComputeNextTriggerTime() override;
 
     private:
         Duration triggerPeriod = Duration();

@@ -12,7 +12,7 @@ namespace services
     public:
         ServiceForwarderBase(infra::ByteRange messageBuffer, Echo& echo, Echo& forwardTo);
 
-        virtual void Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy) override;
+        void Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy) override;
 
     private:
         const infra::ByteRange messageBuffer;
@@ -29,7 +29,7 @@ namespace services
         template<std::size_t MaxMessageSize>
         using WithMaxMessageSize = infra::WithStorage<ServiceForwarderAll, std::array<uint8_t, MaxMessageSize>>;
 
-        virtual bool AcceptsService(uint32_t id) const override;
+        bool AcceptsService(uint32_t id) const override;
     };
 
     class ServiceForwarder
@@ -41,7 +41,7 @@ namespace services
         template<std::size_t MaxMessageSize>
         using WithMaxMessageSize = infra::WithStorage<ServiceForwarder, std::array<uint8_t, MaxMessageSize>>;
 
-        virtual bool AcceptsService(uint32_t id) const override;
+        bool AcceptsService(uint32_t id) const override;
 
     private:
         uint32_t serviceId;

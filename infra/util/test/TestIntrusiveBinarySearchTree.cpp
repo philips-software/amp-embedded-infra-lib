@@ -34,7 +34,7 @@ class IntrusiveBinarySearchTreeTest
     : public testing::Test
 {
 public:
-    ~IntrusiveBinarySearchTreeTest()
+    ~IntrusiveBinarySearchTreeTest() override
     {
         EXPECT_TRUE(tree.invariant_holds());
     }
@@ -612,11 +612,15 @@ TEST_F(IntrusiveBinarySearchTreeTest, TestManyInsertionsAndDeletions)
             std::vector<TestNode> elements;
             int n = 0;
             std::generate_n(std::back_inserter(elements), size, [&n]()
-                { return n++; });
+                {
+                    return n++;
+                });
             std::vector<std::size_t> indices;
             n = 0;
             std::generate_n(std::back_inserter(indices), size, [&n]()
-                { return n++; });
+                {
+                    return n++;
+                });
 
             infra::IntrusiveBinarySearchTree<TestNode> tree;
             int current = 0;

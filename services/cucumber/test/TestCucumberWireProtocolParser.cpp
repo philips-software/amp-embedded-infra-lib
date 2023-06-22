@@ -13,9 +13,19 @@ namespace
             : services::CucumberStep(step, "")
         {}
 
+<<<<<<< HEAD
         void Invoke(infra::JsonArray& arguments) const override
         {}
     };
+=======
+    void Execute() override{};
+};
+
+bool CheckStepMatcher(infra::BoundedString stepString, infra::BoundedString matchString)
+{
+    StepStub step{ stepString };
+    return services::CucumberStepStorage::Instance().MatchesStepName(step, matchString);
+>>>>>>> origin/main
 }
 
 TEST(CucumberStepMatcherTest, should_match_input_for_matching_steps)

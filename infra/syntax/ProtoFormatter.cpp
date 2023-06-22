@@ -21,7 +21,7 @@ namespace infra
     {
         if (marker != std::numeric_limits<std::size_t>::max())
         {
-            uint32_t size = formatter.output.ProcessedBytesSince(marker);
+            auto size = formatter.output.ProcessedBytesSince(marker);
             infra::SavedMarkerDataStream savedStream(formatter.output, marker);
             ProtoFormatter savedFormatter(savedStream);
             savedFormatter.PutVarInt(size);
@@ -48,7 +48,7 @@ namespace infra
     void ProtoFormatter::PutSignedVarInt(uint64_t value)
     {
         static const bool isArithmeticRightShift = (-1 >> 1) == -1;
-        static_assert(isArithmeticRightShift, "");
+        static_assert(isArithmeticRightShift);
         PutVarInt((value << 1) ^ (static_cast<int64_t>(value) >> 63));
     }
 

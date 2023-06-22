@@ -54,13 +54,17 @@ namespace services
     void DnsResolver::NameLookupSuccess(NameResolverResult& nameLookup, IPAddress address, infra::TimePoint validUntil)
     {
         NameLookupDone([&nameLookup, &address, &validUntil]()
-            { nameLookup.NameLookupDone(address, validUntil); });
+            {
+                nameLookup.NameLookupDone(address, validUntil);
+            });
     }
 
     void DnsResolver::NameLookupFailed(NameResolverResult& nameLookup)
     {
         NameLookupDone([&nameLookup]()
-            { nameLookup.NameLookupFailed(); });
+            {
+                nameLookup.NameLookupFailed();
+            });
     }
 
     void DnsResolver::NameLookupCancelled()
@@ -89,7 +93,7 @@ namespace services
         // RFC 5452: Only accept responses from DNS server to which the query is sent
         if (GetAddress(from) != currentNameServer)
             return false;
-        if ((header.flags & header.flagsResponse) == 0)
+        if ((header.flags & DnsRecordHeader::flagsResponse) == 0)
             return false;
         if (header.questionsCount != static_cast<uint16_t>(1))
             return false;
@@ -107,7 +111,7 @@ namespace services
 
     bool DnsResolver::ReplyParser::Error() const
     {
-        return (header.flags & header.flagsErrorMask) != 0;
+        return (header.flags & DnsRecordHeader::flagsErrorMask) != 0;
     }
 
     bool DnsResolver::ReplyParser::Recurse() const
@@ -419,7 +423,9 @@ namespace services
         stream << footer;
 
         timeoutTimer.Start(responseTimeout, [this]()
-            { ResolveNextAttempt(); });
+            {
+                ResolveNextAttempt();
+            });
     }
 
     void DnsResolver::ActiveLookup::ResolveNextAttempt()

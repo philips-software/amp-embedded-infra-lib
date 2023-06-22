@@ -55,11 +55,12 @@ namespace infra
     {
         ExecuteWithoutContext([this, condition]()
             {
-            if (!condition())
-            {
-                ExecuteNextStep();
-                ExecuteNextStep();  // Immediately continue with the step after EndIf, Else, or EndWhile
-            } });
+                if (!condition())
+                {
+                    ExecuteNextStep();
+                    ExecuteNextStep(); // Immediately continue with the step after EndIf, Else, or EndWhile
+                }
+            });
 
         PushContext();
     }
@@ -70,16 +71,18 @@ namespace infra
 
         ExecuteWithoutContext([this]()
             {
-            ExecuteNextStep();
-            ExecuteNextStep(); });
+                ExecuteNextStep();
+                ExecuteNextStep();
+            });
 
         ExecuteWithoutContext([this, condition]()
             {
-            if (!condition())
-            {
-                ExecuteNextStep();
-                ExecuteNextStep();  // Immediately continue with the step after EndIf, Else, or EndWhile
-            } });
+                if (!condition())
+                {
+                    ExecuteNextStep();
+                    ExecuteNextStep(); // Immediately continue with the step after EndIf, Else, or EndWhile
+                }
+            });
 
         PushContext();
     }
@@ -96,7 +99,9 @@ namespace infra
         PopContext();
 
         ExecuteWithoutContext([this]()
-            { ExecuteNextStep(); });
+            {
+                ExecuteNextStep();
+            });
 
         PushContext();
     }
@@ -112,9 +117,10 @@ namespace infra
 
         ExecuteWithoutContext([this]()
             {
-            ExecutePreviousStep();
-            ExecutePreviousStep();
-            ExecutePreviousStep(); });
+                ExecutePreviousStep();
+                ExecutePreviousStep();
+                ExecutePreviousStep();
+            });
     }
 
     void Sequencer::DoWhile()
@@ -130,12 +136,13 @@ namespace infra
 
         ExecuteWithoutContext([this, condition]()
             {
-            if (condition())
-            {
-                ExecutePreviousStep();
-                ExecutePreviousStep();
-                ExecutePreviousStep();
-            } });
+                if (condition())
+                {
+                    ExecutePreviousStep();
+                    ExecutePreviousStep();
+                    ExecutePreviousStep();
+                }
+            });
     }
 
     void Sequencer::ForEach(uint32_t& variable_, uint32_t from_, uint32_t to_)
@@ -156,15 +163,18 @@ namespace infra
         State state(variable_, from_, to_);
 
         ExecuteWithoutContext([this, &state]()
-            { state.variable = state.from; });
+            {
+                state.variable = state.from;
+            });
 
         ExecuteWithoutContext([this, &state]()
             {
-            if (state.variable == state.to)
-            {
-                ExecuteNextStep();
-                ExecuteNextStep();  // Immediately continue with the step after EndForEach
-            } });
+                if (state.variable == state.to)
+                {
+                    ExecuteNextStep();
+                    ExecuteNextStep(); // Immediately continue with the step after EndForEach
+                }
+            });
 
         PushContext();
     }
@@ -172,15 +182,18 @@ namespace infra
     void Sequencer::EndForEach(uint32_t& variable)
     {
         ExecuteWithoutContext([&variable]()
-            { ++variable; });
+            {
+                ++variable;
+            });
 
         PopContext();
 
         ExecuteWithoutContext([this]()
             {
-            ExecutePreviousStep();
-            ExecutePreviousStep();
-            ExecutePreviousStep(); });
+                ExecutePreviousStep();
+                ExecutePreviousStep();
+                ExecutePreviousStep();
+            });
     }
 
     void Sequencer::ExecuteWithoutContext(const Function& action)

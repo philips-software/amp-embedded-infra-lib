@@ -378,8 +378,9 @@ namespace infra
         destructedIndication = &destructed;
         infra::ExecuteOnDestruction::WithExtraSize<3 * sizeof(void*)> execute([this, &destructed, &data]()
             {
-            if (!destructed)
-                destructedIndication = nullptr; });
+                if (!destructed)
+                    destructedIndication = nullptr;
+            });
 
         while (!destructed && !data.empty() && state != State::parseError && state != State::semanticError)
         {
@@ -576,8 +577,9 @@ namespace infra
         destructedIndication = &destructed;
         infra::ExecuteOnDestruction::WithExtraSize<3 * sizeof(void*)> execute([this, &destructed, &data]()
             {
-            if (!destructed)
-                destructedIndication = nullptr; });
+                if (!destructed)
+                    destructedIndication = nullptr;
+            });
 
         while (!destructed && !data.empty() && state != State::parseError && state != State::semanticError)
         {

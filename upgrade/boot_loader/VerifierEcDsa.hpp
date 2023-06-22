@@ -11,7 +11,7 @@ namespace application
     public:
         explicit VerifierEcDsa(infra::ConstByteRange key);
 
-        virtual bool IsValid(hal::SynchronousFlash& flash, const hal::SynchronousFlash::Range& signature, const hal::SynchronousFlash::Range& data) const override;
+        bool IsValid(hal::SynchronousFlash& flash, const hal::SynchronousFlash::Range& signature, const hal::SynchronousFlash::Range& data) const override;
 
     private:
         infra::ConstByteRange key;

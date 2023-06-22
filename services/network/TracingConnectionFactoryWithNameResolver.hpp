@@ -16,8 +16,8 @@ namespace services
         TracingConnectionFactoryWithNameResolver(infra::BoundedList<Action>& actions, ConnectionFactory& connectionFactory, NameResolver& nameLookup, services::Tracer& tracer);
 
     protected:
-        virtual void NameLookupFailed() override;
-        virtual void NameLookupSuccessful(IPAddress address) override;
+        void NameLookupFailed() override;
+        void NameLookupSuccessful(IPAddress address) override;
 
     private:
         services::Tracer& tracer;

@@ -19,6 +19,8 @@ target_sources(infra.util PRIVATE
     AllocatorHeap.hpp
     AutoResetFunction.hpp
     AutoResetMultiFunction.hpp
+    Base64.cpp
+    Base64.hpp
     BitLogic.hpp
     BoundedDeque.hpp
     BoundedForwardList.hpp
@@ -41,7 +43,6 @@ target_sources(infra.util PRIVATE
     Function.cpp
     Function.hpp
     IntegerNormalization.hpp
-    IntegerSequence.hpp
     InterfaceConnector.hpp
     IntrusiveBinarySearchTree.hpp
     IntrusiveForwardList.hpp
@@ -88,13 +89,8 @@ if (EMIL_HOST_BUILD)
     target_compile_definitions(infra.util PUBLIC EMIL_HOST_BUILD)
 endif()
 
-if (EMIL_BUILD_TESTS)
-    add_subdirectory(test)
-endif()
-
-if (BUILD_TESTING)
-    add_subdirectory(test_helper)
-endif()
+add_subdirectory(test)
+add_subdirectory(test_helper)
 
 function(emil_transform_file_to_string input name namespace output)
 

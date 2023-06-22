@@ -1,0 +1,20 @@
+---
+site:
+  title: "Embedded Infrastructure Library"
+  url: https://philips-software.github.io/amp-embedded-infra-lib/
+  start_page: embedded_infrastructure_library::index.adoc
+content:
+  sources:
+    - url: .
+      start_path: documents
+      branches: [.]
+ui:
+  bundle:
+    url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable
+    snapshot: true
+  supplemental_files: ./documents/supplemental-ui
+asciidoc:
+  attributes:
+    kroki-fetch-diagram: true
+  extensions:
+    - asciidoctor-kroki

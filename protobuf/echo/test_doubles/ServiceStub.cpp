@@ -1,4 +1,4 @@
-#include "protobuf/echo/test/ServiceStub.hpp"
+#include "protobuf/echo/test_doubles/ServiceStub.hpp"
 
 namespace services
 {

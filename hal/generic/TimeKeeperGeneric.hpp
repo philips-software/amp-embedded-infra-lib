@@ -12,8 +12,8 @@ namespace hal
     public:
         explicit TimeKeeperGeneric(infra::Duration duration);
 
-        virtual bool Timeout() override;
-        virtual void Reset() override;
+        bool Timeout() override;
+        void Reset() override;
 
     private:
         const infra::Duration duration;

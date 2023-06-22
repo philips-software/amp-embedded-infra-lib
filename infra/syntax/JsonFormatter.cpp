@@ -12,7 +12,9 @@ namespace infra
         {
             std::array<char, 7> shouldBeEscaped = { '"', '\\', '\b', '\f', '\n', '\r', '\t' };
             if (std::any_of(shouldBeEscaped.begin(), shouldBeEscaped.end(), [c](char escape)
-                    { return c == escape; }))
+                    {
+                        return c == escape;
+                    }))
                 return 2;
             else
                 return 6;

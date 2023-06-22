@@ -44,9 +44,10 @@ namespace services
         , tracer(tracer)
         , scenarioRequestHandler(scenarioRequestHandler)
         , connectionCreator([this](infra::Optional<TracingCucumberWireProtocolConnectionObserver>& value, services::IPAddress address)
-              {
-            this->tracer.Trace() << "CucumberWireProtocolServer connection accepted from: " << address;
-            value.Emplace(this->scenarioRequestHandler, this->tracer); })
+            {
+                this->tracer.Trace() << "CucumberWireProtocolServer connection accepted from: " << address;
+                value.Emplace(this->scenarioRequestHandler, this->tracer);
+            })
     {
         CucumberWireProtocolServer::InitializeTestDriver();
     }

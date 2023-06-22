@@ -135,8 +135,9 @@ namespace services
         : SingleConnectionListener(connectionFactory, port, { connectionCreator })
         , scenarioRequestHandler(scenarioRequestHandler)
         , connectionCreator([this](infra::Optional<CucumberWireProtocolConnectionObserver>& value, services::IPAddress address)
-              {
-            value.Emplace(this->scenarioRequestHandler); })
+            {
+                value.Emplace(this->scenarioRequestHandler);
+            })
     {
         InitializeTestDriver();
     }

@@ -7,7 +7,9 @@ TEST(AutoResetFunctionTest, IsInvokeable)
 {
     infra::MockCallback<void()> m;
     infra::AutoResetFunction<void()> f([&m]()
-        { m.callback(); });
+        {
+            m.callback();
+        });
 
     EXPECT_CALL(m, callback());
     f();
@@ -17,7 +19,9 @@ TEST(AutoResetFunctionTest, IsResetAfterInvoke)
 {
     infra::MockCallback<void()> m;
     infra::AutoResetFunction<void()> f([&m]()
-        { m.callback(); });
+        {
+            m.callback();
+        });
 
     EXPECT_CALL(m, callback());
     f();
@@ -62,7 +66,9 @@ TEST(AutoResetFunctionTest, TestMoveAssign)
 {
     infra::MockCallback<void()> m;
     infra::AutoResetFunction<void()> f([&m]()
-        { m.callback(); });
+        {
+            m.callback();
+        });
     infra::AutoResetFunction<void()> f2;
     f2 = std::move(f);
     EXPECT_FALSE(static_cast<bool>(f));
@@ -74,7 +80,9 @@ TEST(AutoResetFunctionTest, TestAssignNullptr)
 {
     infra::MockCallback<void()> m;
     infra::AutoResetFunction<void()> f([&m]()
-        { m.callback(); });
+        {
+            m.callback();
+        });
     f = nullptr;
     EXPECT_FALSE(f);
 }
@@ -83,7 +91,9 @@ TEST(AutoResetFunctionTest, TestInvoke0)
 {
     infra::MockCallback<void()> m;
     infra::AutoResetFunction<void()> f([&m]()
-        { m.callback(); });
+        {
+            m.callback();
+        });
     EXPECT_CALL(m, callback());
     f.Invoke(std::make_tuple());
 }
@@ -92,7 +102,9 @@ TEST(AutoResetFunctionTest, TestInvoke1)
 {
     infra::MockCallback<void(int)> m;
     infra::AutoResetFunction<void(int)> f([&m](int x)
-        { m.callback(x); });
+        {
+            m.callback(x);
+        });
     EXPECT_CALL(m, callback(1));
     f.Invoke(std::make_tuple(1));
 }
@@ -101,7 +113,9 @@ TEST(AutoResetFunctionTest, TestClone)
 {
     infra::MockCallback<void(int)> m;
     infra::AutoResetFunction<void(int)> f([&m](int x)
-        { m.callback(x); });
+        {
+            m.callback(x);
+        });
 
     EXPECT_CALL(m, callback(1));
     f.Clone().Invoke(std::make_tuple(1));
@@ -112,7 +126,9 @@ TEST(AutoResetFunctionTest, TestSwap)
 {
     infra::MockCallback<void()> m;
     infra::AutoResetFunction<void()> f([&m]()
-        { m.callback(); });
+        {
+            m.callback();
+        });
     infra::AutoResetFunction<void()> f2;
     swap(f, f2);
     EXPECT_FALSE(f);
@@ -123,7 +139,9 @@ TEST(AutoResetFunctionTest, TestSwap)
 TEST(AutoResetFunctionTest, TestReturnValue)
 {
     infra::AutoResetFunction<int()> f([]()
-        { return 1; });
+        {
+            return 1;
+        });
     EXPECT_EQ(1, f());
 }
 
@@ -131,7 +149,9 @@ TEST(AutoResetFunctionTest, TestParameter)
 {
     infra::MockCallback<void(int)> m;
     infra::AutoResetFunction<void(int)> f([&m](int x)
-        { m.callback(x); });
+        {
+            m.callback(x);
+        });
     EXPECT_CALL(m, callback(1));
     f(1);
 }

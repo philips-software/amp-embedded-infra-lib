@@ -12,11 +12,15 @@ namespace services
     public:
         using services::Service::Service;
 
-        MOCK_CONST_METHOD1(AcceptsService, bool(uint32_t id));
+        bool AcceptsService(uint32_t id) const override
+        {
+            return id == serviceId;
+        }
+
         MOCK_METHOD1(Method, void(uint32_t value));
 
     protected:
-        virtual void Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, services::EchoErrorPolicy& errorPolicy) override;
+        void Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, services::EchoErrorPolicy& errorPolicy) override;
 
     public:
         static const uint32_t serviceId = 1;

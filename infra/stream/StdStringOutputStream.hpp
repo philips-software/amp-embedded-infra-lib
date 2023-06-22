@@ -17,8 +17,8 @@ namespace infra
         explicit StdStringOutputStreamWriter(std::string& string);
 
     private:
-        virtual void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy) override;
-        virtual std::size_t Available() const override;
+        void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy) override;
+        std::size_t Available() const override;
 
     private:
         std::string& string;

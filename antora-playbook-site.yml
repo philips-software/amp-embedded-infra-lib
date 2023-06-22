@@ -7,9 +7,7 @@ content:
   sources:
     - url: .
       start_path: documents
-      branches:
-        - develop
-        - modern-cmake
+      branches: [main]
 ui:
   bundle:
     url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable
@@ -17,6 +15,6 @@ ui:
   supplemental_files: ./documents/supplemental-ui
 asciidoc:
   attributes:
-    plantuml-server-url: http://www.plantuml.com/plantuml
+    kroki-fetch-diagram: true
   extensions:
-    - asciidoctor-plantuml
+    - asciidoctor-kroki

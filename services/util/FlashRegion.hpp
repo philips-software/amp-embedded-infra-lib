@@ -19,15 +19,15 @@ namespace services
         FlashRegionBase(hal::FlashBase<T>& master, T startSector, T numberOfSectors);
 
     public:
-        virtual T NumberOfSectors() const override;
-        virtual uint32_t SizeOfSector(T sectorIndex) const override;
+        T NumberOfSectors() const override;
+        uint32_t SizeOfSector(T sectorIndex) const override;
 
-        virtual T SectorOfAddress(T address) const override;
-        virtual T AddressOfSector(T sectorIndex) const override;
+        T SectorOfAddress(T address) const override;
+        T AddressOfSector(T sectorIndex) const override;
 
-        virtual void WriteBuffer(infra::ConstByteRange buffer, T address, infra::Function<void()> onDone) override;
-        virtual void ReadBuffer(infra::ByteRange buffer, T address, infra::Function<void()> onDone) override;
-        virtual void EraseSectors(T beginIndex, T endIndex, infra::Function<void()> onDone) override;
+        void WriteBuffer(infra::ConstByteRange buffer, T address, infra::Function<void()> onDone) override;
+        void ReadBuffer(infra::ByteRange buffer, T address, infra::Function<void()> onDone) override;
+        void EraseSectors(T beginIndex, T endIndex, infra::Function<void()> onDone) override;
 
     private:
         hal::FlashBase<T>& master;

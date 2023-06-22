@@ -36,14 +36,14 @@ namespace services
         virtual infra::JsonObjectVisitor& TopJsonObjectVisitor() = 0;
 
         // Implementation of HttpClientObserver
-        virtual void Attached() override; // Default implementation. Override for behaviour other than an HTTP GET request
-        virtual void Detaching() override;
-        virtual void StatusAvailable(services::HttpStatusCode statusCode) override;
-        virtual void HeaderAvailable(services::HttpHeader header) override;
-        virtual void BodyAvailable(infra::SharedPtr<infra::StreamReader>&& reader) override;
+        void Attached() override; // Default implementation. Override for behaviour other than an HTTP GET request
+        void Detaching() override;
+        void StatusAvailable(services::HttpStatusCode statusCode) override;
+        void HeaderAvailable(services::HttpHeader header) override;
+        void BodyAvailable(infra::SharedPtr<infra::StreamReader>&& reader) override;
 
         // Override HttpClient methods
-        virtual void Established() override;
+        void Established() override;
 
     private:
         JsonParserCreatorBase& jsonParserCreator;

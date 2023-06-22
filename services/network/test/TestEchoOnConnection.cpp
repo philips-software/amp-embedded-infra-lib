@@ -2,9 +2,9 @@
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
-#include "protobuf/echo/Echo.hpp"
-#include "protobuf/echo/test/ServiceStub.hpp"
 #include "protobuf/echo/test_doubles/EchoMock.hpp"
+#include "protobuf/echo/test_doubles/ServiceStub.hpp"
+#include "services/network/EchoOnConnection.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 
 class EchoOnConnectionTest
@@ -15,7 +15,6 @@ public:
     EchoOnConnectionTest()
     {
         connection.Attach(infra::UnOwnedSharedPtr(echo));
-        EXPECT_CALL(service, AcceptsService(1)).WillRepeatedly(testing::Return(true));
     }
 
     testing::StrictMock<services::EchoErrorPolicyMock> errorPolicy;
@@ -31,7 +30,9 @@ TEST_F(EchoOnConnectionTest, invoke_service_proxy_method)
     testing::StrictMock<infra::MockCallback<void()>> onGranted;
     EXPECT_CALL(connection, RequestSendStream(18));
     serviceProxy.RequestSend([&onGranted]()
-        { onGranted.callback(); });
+        {
+            onGranted.callback();
+        });
 
     infra::ByteOutputStreamWriter::WithStorage<128> writer;
     auto writerPtr = infra::UnOwnedSharedPtr(writer);
@@ -136,7 +137,6 @@ TEST_F(EchoOnConnectionTest, ServiceNotFound_is_reported)
     infra::ByteInputStreamReader::WithStorage<0> emptyReader;
     auto emptyReaderPtr = infra::UnOwnedSharedPtr(emptyReader);
     EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr)).WillOnce(testing::Return(emptyReaderPtr));
-    EXPECT_CALL(service, AcceptsService(2)).WillOnce(testing::Return(false));
     EXPECT_CALL(errorPolicy, ServiceNotFound(2));
     EXPECT_CALL(connection, AckReceived());
     connection.Observer().DataReceived();

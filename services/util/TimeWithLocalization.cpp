@@ -117,13 +117,3 @@ infra::TextOutputStream operator<<(infra::TextOutputStream stream, const infra::
 
     return stream;
 }
-
-infra::TextOutputStream operator<<(infra::TextOutputStream stream, const infra::Duration& duration)
-{
-    const auto isNegative = duration < infra::Duration::zero();
-    const auto d = isNegative ? -duration : duration;
-    const auto w02 = infra::Width(2, '0');
-    stream << (isNegative ? '-' : '+') << w02 << static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::hours>(d).count())
-           << infra::resetWidth << ":" << w02 << static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::minutes>(d).count() % 60);
-    return stream;
-}
