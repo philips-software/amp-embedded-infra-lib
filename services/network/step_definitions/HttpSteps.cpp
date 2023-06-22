@@ -2,8 +2,8 @@
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/Optional.hpp"
 #include "infra/util/WithStorage.hpp"
-#include "services/cucumber/CucumberStepMacro.hpp"
 #include "services/cucumber/CucumberContext.hpp"
+#include "services/cucumber/CucumberStepMacro.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/network/HttpClientBasic.hpp"
 #include "services/network/HttpClientImpl.hpp"
@@ -75,16 +75,18 @@ struct HttpClientContext
         requestUrl = url;
         std::atomic<bool> running{ true };
 
-        response.onDone = [&running] {
+        response.onDone = [&running]
+        {
             running = false;
         };
 
-        std::thread requestThread([this, &running] {
-            httpClient.Emplace(requestUrl, 80, connector, response);
+        std::thread requestThread([this, &running]
+            {
+                httpClient.Emplace(requestUrl, 80, connector, response);
 
-            while (running)
-            {}
-        });
+                while (running)
+                {}
+            });
 
         requestThread.join();
     }
@@ -113,8 +115,8 @@ THEN("the response status code is %d")
 
 THEN("the response body contains '%s'")
 {
-    //services::CucumberScenarioScope<HttpClientContext> context;
-    //EXPECT_THAT(context->response.body, ::testing::StrEq(GetStringArgument(arguments, 0)->ToStdString()));
-    //EXPECT_EQ(context->response.body, GetStringArgument(arguments, 0)->ToStdString());
+    // services::CucumberScenarioScope<HttpClientContext> context;
+    // EXPECT_THAT(context->response.body, ::testing::StrEq(GetStringArgument(arguments, 0)->ToStdString()));
+    // EXPECT_EQ(context->response.body, GetStringArgument(arguments, 0)->ToStdString());
     EXPECT_THAT(0, ::testing::Eq(1));
 }

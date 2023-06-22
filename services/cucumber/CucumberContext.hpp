@@ -1,8 +1,8 @@
 #ifndef SERVICES_CUCUMBER_CONTEXT_HPP
 #define SERVICES_CUCUMBER_CONTEXT_HPP
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 namespace services
 {
@@ -36,7 +36,7 @@ namespace services
         template<class T>
         std::weak_ptr<T> CucumberContext::Add()
         {
-            auto shared{std::make_shared<T>()};
+            auto shared{ std::make_shared<T>() };
             contexts.push_back(shared);
             return shared;
         }

@@ -262,9 +262,12 @@ namespace services
 
     InvokeResult CucumberStep::Invoke(infra::JsonArray& arguments)
     {
-        try {
+        try
+        {
             StepImplementation(arguments);
-        } catch (const std::exception& e) {
+        }
+        catch (const std::exception& e)
+        {
             return { InvokeStatus::failure, e.what() };
         }
 

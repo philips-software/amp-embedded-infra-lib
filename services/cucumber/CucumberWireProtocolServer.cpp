@@ -104,13 +104,17 @@ namespace services
     void CucumberWireProtocolConnectionObserver::HandleBeginScenarioRequest(CucumberWireProtocolParser& parser)
     {
         scenarioRequestHandler.BeginScenario([this]()
-            { Subject().RequestSendStream(Subject().MaxSendStreamSize()); });
+            {
+                Subject().RequestSendStream(Subject().MaxSendStreamSize());
+            });
     }
 
     void CucumberWireProtocolConnectionObserver::HandleEndScenarioRequest()
     {
         scenarioRequestHandler.EndScenario([this]()
-            { Subject().RequestSendStream(Subject().MaxSendStreamSize()); });
+            {
+                Subject().RequestSendStream(Subject().MaxSendStreamSize());
+            });
     }
 
     void CucumberWireProtocolConnectionObserver::HandleSnippetTextRequest()
@@ -135,9 +139,9 @@ namespace services
         : SingleConnectionListener(connectionFactory, port, { connectionCreator })
         , scenarioRequestHandler(scenarioRequestHandler)
         , connectionCreator([this](infra::Optional<CucumberWireProtocolConnectionObserver>& value, services::IPAddress address)
-            {
-                value.Emplace(this->scenarioRequestHandler);
-            })
+              {
+                  value.Emplace(this->scenarioRequestHandler);
+              })
     {
         InitializeTestDriver();
     }

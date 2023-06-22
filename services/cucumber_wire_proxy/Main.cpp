@@ -8,41 +8,41 @@
 #include <memory>
 
 #if EMIL_BUILD_WIN
-    #include <libloaderapi.h>
+#include <libloaderapi.h>
 
-    struct PluginDeleter
+struct PluginDeleter
+{
+    typedef HMODULE pointer;
+
+    void operator()(HMODULE module)
     {
-        typedef HMODULE pointer;
-
-        void operator()(HMODULE module)
-        {
-            FreeLibrary(module);
-        }
-    };
-
-    using PluginHandle = std::unique_ptr<HMODULE, PluginDeleter>;
-
-    PluginHandle LoadPlugin(const hal::filesystem::path& path)
-    {
-        auto handle = LoadLibraryW(path.c_str());
-        if (handle == nullptr)
-            throw std::runtime_error(std::string("Plug-in at path '") + path.string() + "' could not be loaded.");
-
-        return PluginHandle(handle);
+        FreeLibrary(module);
     }
+};
+
+using PluginHandle = std::unique_ptr<HMODULE, PluginDeleter>;
+
+PluginHandle LoadPlugin(const hal::filesystem::path& path)
+{
+    auto handle = LoadLibraryW(path.c_str());
+    if (handle == nullptr)
+        throw std::runtime_error(std::string("Plug-in at path '") + path.string() + "' could not be loaded.");
+
+    return PluginHandle(handle);
+}
 #else
-    #include <dlfcn.h>
+#include <dlfcn.h>
 
-    using PluginHandle = std::unique_ptr<void, int(*)(void*)>;
+using PluginHandle = std::unique_ptr<void, int (*)(void*)>;
 
-    PluginHandle LoadPlugin(const hal::filesystem::path& path)
-    {
-        auto handle = dlopen(path.c_str(), RTLD_LAZY);
-        if (handle == nullptr)
-            throw std::runtime_error(std::string("Plug-in at path '") + path.string() + "' could not be loaded.");
+PluginHandle LoadPlugin(const hal::filesystem::path& path)
+{
+    auto handle = dlopen(path.c_str(), RTLD_LAZY);
+    if (handle == nullptr)
+        throw std::runtime_error(std::string("Plug-in at path '") + path.string() + "' could not be loaded.");
 
-        return PluginHandle(handle, &dlclose);
-    }
+    return PluginHandle(handle, &dlclose);
+}
 #endif
 
 int main(int argc, const char* argv[], const char* env[])
