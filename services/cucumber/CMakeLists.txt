@@ -1,4 +1,5 @@
-add_library(services.cucumber ${EMIL_EXCLUDE_FROM_ALL} STATIC)
+add_library(services.cucumber STATIC)
+emil_build_for(services.cucumber HOST All)
 
 option(EMIL_CUCUMBER_USE_GMOCK "Use the GoogleTest/GoogleMock adapter in the Cucumber implementation; this allows the use of GoogleMock checks and assertions" On)
 
@@ -28,7 +29,7 @@ target_sources(services.cucumber PRIVATE
     TracingCucumberWireProtocolServer.hpp
 )
 
-if (EMIL_CUCUMBER_USE_GMOCK)
+if (EMIL_CUCUMBER_USE_GMOCK AND EMIL_HOST_BUILD)
     emil_fetch_googletest()
 
     target_link_libraries(services.cucumber PUBLIC GTest::gmock)
