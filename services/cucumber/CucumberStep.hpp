@@ -4,17 +4,38 @@
 #include "infra/syntax/Json.hpp"
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/IntrusiveList.hpp"
-#include "services/cucumber/CucumberContext.hpp"
 
 namespace services
 {
+    enum class InvokeStatus : uint8_t
+    {
+        success,
+        failure,
+        pending
+    };
+
+    struct InvokeResult
+    {
+        InvokeStatus status;
+        infra::BoundedConstString reason;
+
+        bool Success() const
+        {
+            return status == InvokeStatus::success;
+        }
+    };
+
+    static InvokeResult invokeSuccess{ InvokeStatus::success, "" };
+
     class CucumberStep
         : public infra::IntrusiveList<CucumberStep>::NodeType
     {
     public:
         CucumberStep(infra::BoundedConstString stepName, infra::BoundedConstString sourceLocation);
-        CucumberStep& operator=(const CucumberStep& other) = delete;
-        CucumberStep(CucumberStep& other) = delete;
+        CucumberStep& operator=(const CucumberStep&) = delete;
+        CucumberStep& operator=(CucumberStep&&) noexcept = delete;
+        CucumberStep(CucumberStep&) = delete;
+        CucumberStep(CucumberStep&&) noexcept = delete;
         virtual ~CucumberStep() = default;
 
         infra::BoundedConstString StepName() const;
@@ -33,19 +54,9 @@ namespace services
         uint16_t NrArguments() const;
         uint16_t NrFields(infra::JsonArray& arguments) const;
 
-        virtual void Invoke(infra::JsonArray& arguments) const = 0;
-        services::CucumberContext& Context() const;
+        InvokeResult Invoke(infra::JsonArray& arguments);
 
-    protected:
-        void Success() const
-        {
-            Context().onSuccess();
-        }
-
-        void Error(infra::BoundedConstString failReason) const
-        {
-            Context().onFailure(failReason);
-        }
+        virtual void StepImplementation(infra::JsonArray& arguments) = 0;
 
     private:
         void SkipOverArguments(infra::JsonArrayIterator& iterator) const;

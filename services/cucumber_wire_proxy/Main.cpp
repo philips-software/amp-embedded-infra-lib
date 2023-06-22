@@ -49,7 +49,8 @@ int main(int argc, const char* argv[], const char* env[])
 {
     args::ArgumentParser parser(std::string("Cucumber wire proxy ") + emil::generated::VERSION_FULL);
     args::HelpFlag help(parser, "help", "display this help menu.", { 'h', "help" });
-    args::PositionalList<hal::filesystem::path> stepPaths(parser, "steps", "Paths to shared libraries with step implementations");
+    args::Flag enableTracing(parser, "tracing", "enable tracing of wire proxy messages", { 't', "tracing" });
+    args::PositionalList<hal::filesystem::path> stepPaths(parser, "steps", "paths to shared libraries with step implementations");
 
     static hal::TimerServiceGeneric timerService;
     static main_::TracerOnIoOutputInfrastructure tracing;
@@ -63,7 +64,10 @@ int main(int argc, const char* argv[], const char* env[])
         for (const auto& path : stepPaths)
             steps.emplace_back(LoadPlugin(path));
 
-        main_::TracingCucumberInfrastructure<4096> wireServer(network.ConnectionFactory(), 90, tracing.tracer);
+        if (enableTracing)
+            static main_::TracingCucumberInfrastructure wireServer(network.ConnectionFactory(), 90, tracing.tracer);
+        else
+            static main_::CucumberInfrastructure wireServer(network.ConnectionFactory(), 90);
 
         network.Run();
     }

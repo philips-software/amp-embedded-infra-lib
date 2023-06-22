@@ -15,5 +15,4 @@ namespace infra
     {
         return std::numeric_limits<size_t>::max();
     }
-
 }

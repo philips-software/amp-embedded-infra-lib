@@ -33,7 +33,7 @@ namespace services
             return { StepMatchResult::found, stepId, &GetStep(stepId) };
     }
 
-    const CucumberStep& CucumberStepStorage::GetStep(std::size_t id)
+    CucumberStep& CucumberStepStorage::GetStep(std::size_t id)
     {
         really_assert(id < steps.size());
         return *std::next(steps.begin(), id);

@@ -1,14 +1,16 @@
 #include "services/cucumber/TracingCucumberWireProtocolServer.hpp"
+#include "services/cucumber/CucumberWireProtocolServer.hpp"
 
 namespace services
 {
-    TracingCucumberWireProtocolConnectionObserver::TracingCucumberWireProtocolConnectionObserver(infra::BoundedString& receiveBuffer, CucumberScenarioRequestHandler& scenarioRequestHandler, services::Tracer& tracer)
-        : CucumberWireProtocolConnectionObserver::CucumberWireProtocolConnectionObserver(receiveBuffer, scenarioRequestHandler)
+    TracingCucumberWireProtocolConnectionObserver::TracingCucumberWireProtocolConnectionObserver(CucumberScenarioRequestHandler& scenarioRequestHandler, services::Tracer& tracer)
+        : CucumberWireProtocolConnectionObserver::CucumberWireProtocolConnectionObserver(scenarioRequestHandler)
         , tracer(tracer)
     {}
 
     void TracingCucumberWireProtocolConnectionObserver::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
+        tracer.Trace() << "<-- ";
         auto tracingWriterPtr = tracingWriter.Emplace(std::move(writer), tracer);
         CucumberWireProtocolConnectionObserver::SendStreamAvailable(infra::MakeContainedSharedObject(tracingWriterPtr->Writer(), std::move(tracingWriterPtr)));
     }
@@ -18,8 +20,9 @@ namespace services
         auto reader = ConnectionObserver::Subject().ReceiveStream();
         infra::DataInputStream::WithErrorPolicy stream(*reader);
 
+        tracer.Trace() << "--> ";
         while (!stream.Empty())
-            tracer.Trace() << infra::ByteRangeAsString(stream.ContiguousRange());
+            tracer.Continue() << infra::ByteRangeAsString(stream.ContiguousRange());
 
         reader = nullptr;
 
@@ -36,15 +39,15 @@ namespace services
         return tracingWriter;
     }
 
-    TracingCucumberWireProtocolServer::TracingCucumberWireProtocolServer(infra::BoundedString& receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port, CucumberScenarioRequestHandler& scenarioRequestHandler, services::Tracer& tracer)
+    TracingCucumberWireProtocolServer::TracingCucumberWireProtocolServer(services::ConnectionFactory& connectionFactory, uint16_t port, CucumberScenarioRequestHandler& scenarioRequestHandler, services::Tracer& tracer)
         : SingleConnectionListener(connectionFactory, port, { connectionCreator })
         , tracer(tracer)
-        , receiveBuffer(receiveBuffer)
         , scenarioRequestHandler(scenarioRequestHandler)
         , connectionCreator([this](infra::Optional<TracingCucumberWireProtocolConnectionObserver>& value, services::IPAddress address)
               {
             this->tracer.Trace() << "CucumberWireProtocolServer connection accepted from: " << address;
-            this->receiveBuffer.clear();
-            value.Emplace(this->receiveBuffer, this->scenarioRequestHandler, this->tracer); })
-    {}
+            value.Emplace(this->scenarioRequestHandler, this->tracer); })
+    {
+        CucumberWireProtocolServer::InitializeTestDriver();
+    }
 }

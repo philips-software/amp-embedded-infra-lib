@@ -2,7 +2,6 @@
 #define SERVICES_CUCUMBER_STEP_MACRO_HPP
 
 #include "infra/util/Compatibility.hpp"
-#include "services/cucumber/CucumberContext.hpp"
 #include "services/cucumber/CucumberStep.hpp"
 #include "services/cucumber/CucumberStepStorage.hpp"
 #include <initializer_list>
@@ -84,12 +83,12 @@ namespace detail
             }                                                                                  \
                                                                                                \
         public:                                                                                \
-            void Invoke(infra::JsonArray& arguments) const override;                           \
+            void StepImplementation(infra::JsonArray& arguments) override;                     \
         };                                                                                     \
                                                                                                \
         static CLASSNAME VARNAME;                                                              \
     }                                                                                          \
                                                                                                \
-    void CLASSNAME::Invoke(infra::JsonArray& arguments) const
+    void CLASSNAME::StepImplementation(infra::JsonArray& arguments)
 
 #endif

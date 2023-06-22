@@ -53,6 +53,7 @@ namespace services
     {
     protected:
         HttpResponse() = default;
+        HttpResponse(HttpResponse&& other) noexcept = default;
         HttpResponse(const HttpResponse& other) = delete;
         HttpResponse& operator=(const HttpResponse& other) = delete;
         ~HttpResponse() = default;
@@ -103,6 +104,7 @@ namespace services
     {
     protected:
         HttpPage() = default;
+        HttpPage(HttpPage&& other) noexcept = default;
         HttpPage(const HttpPage& other) = delete;
         HttpPage& operator=(const HttpPage& other) = delete;
         ~HttpPage() = default;

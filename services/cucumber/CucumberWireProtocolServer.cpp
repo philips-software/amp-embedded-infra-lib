@@ -1,27 +1,28 @@
 #include "services/cucumber/CucumberWireProtocolServer.hpp"
+#include "infra/stream/StdStringInputStream.hpp"
+#include "infra/util/StaticStorage.hpp"
 #include "services/cucumber/CucumberWireProtocolFormatter.hpp"
+#include "services/cucumber/CucumberWireProtocolParser.hpp"
+
+#if EMIL_CUCUMBER_USE_GMOCK
+#include "gmock/gmock.h"
+
+namespace
+{
+    void InitializeGoogleMock()
+    {
+        ::testing::GTEST_FLAG(throw_on_failure) = true;
+        ::testing::InitGoogleMock();
+    }
+}
+#endif
 
 namespace services
 {
-    CucumberWireProtocolConnectionObserver::CucumberWireProtocolConnectionObserver(infra::BoundedString& buffer, CucumberScenarioRequestHandler& scenarioRequestHandler)
-        : buffer(buffer)
-        , scenarioRequestHandler(scenarioRequestHandler)
+    CucumberWireProtocolConnectionObserver::CucumberWireProtocolConnectionObserver(CucumberScenarioRequestHandler& scenarioRequestHandler)
+        : scenarioRequestHandler(scenarioRequestHandler)
         , streamingParser(parser)
-    {
-        really_assert(CucumberContext::InstanceSet());
-
-        CucumberContext::Instance().onSuccess = [this]()
-        {
-            CucumberContext::Instance().onSuccess = nullptr;
-            InvokeSuccess();
-        };
-
-        CucumberContext::Instance().onFailure = [this](infra::BoundedConstString& reason)
-        {
-            CucumberContext::Instance().onFailure = nullptr;
-            InvokeError(reason);
-        };
-    }
+    {}
 
     void CucumberWireProtocolConnectionObserver::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
@@ -35,9 +36,11 @@ namespace services
     void CucumberWireProtocolConnectionObserver::DataReceived()
     {
         buffer.clear();
+        infra::ReConstruct(parser);
+        infra::ReConstruct(streamingParser, parser);
 
         infra::SharedPtr<infra::StreamReader> reader = Subject().ReceiveStream();
-        infra::TextInputStream::WithErrorPolicy stream(*reader);
+        infra::StdStringInputStream::WithErrorPolicy stream(*reader);
 
         auto available = stream.Available();
         really_assert(available <= buffer.max_size());
@@ -91,11 +94,11 @@ namespace services
 
     void CucumberWireProtocolConnectionObserver::HandleInvokeRequest(CucumberWireProtocolParser& parser)
     {
-        const auto& step = CucumberStepStorage::Instance().GetStep(parser.invokeId);
+        auto& step = CucumberStepStorage::Instance().GetStep(parser.invokeId);
         if (MatchArguments(parser.invokeId, parser.invokeArguments))
-            step.Invoke(parser.invokeArguments);
-        else
-            invokeInfo.successful = false;
+            result = step.Invoke(parser.invokeArguments);
+
+        Subject().RequestSendStream(Subject().MaxSendStreamSize());
     }
 
     void CucumberWireProtocolConnectionObserver::HandleBeginScenarioRequest(CucumberWireProtocolParser& parser)
@@ -128,32 +131,20 @@ namespace services
         return CucumberStepStorage::Instance().GetStep(id).NrArguments() == validArgumentCount;
     }
 
-    void CucumberWireProtocolConnectionObserver::InvokeSuccess()
-    {
-        services::CucumberContext::Instance().TimeoutTimer().Cancel();
-
-        invokeInfo.successful = true;
-
-        Subject().RequestSendStream(Subject().MaxSendStreamSize());
-    }
-
-    void CucumberWireProtocolConnectionObserver::InvokeError(infra::BoundedConstString& reason)
-    {
-        services::CucumberContext::Instance().TimeoutTimer().Cancel();
-
-        invokeInfo.successful = false;
-        invokeInfo.failReason = reason;
-
-        Subject().RequestSendStream(Subject().MaxSendStreamSize());
-    }
-
-    CucumberWireProtocolServer::CucumberWireProtocolServer(infra::BoundedString& receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port, CucumberScenarioRequestHandler& scenarioRequestHandler)
+    CucumberWireProtocolServer::CucumberWireProtocolServer(services::ConnectionFactory& connectionFactory, uint16_t port, CucumberScenarioRequestHandler& scenarioRequestHandler)
         : SingleConnectionListener(connectionFactory, port, { connectionCreator })
-        , receiveBuffer(receiveBuffer)
         , scenarioRequestHandler(scenarioRequestHandler)
         , connectionCreator([this](infra::Optional<CucumberWireProtocolConnectionObserver>& value, services::IPAddress address)
               {
-            this->receiveBuffer.clear();
-            value.Emplace(this->receiveBuffer, this->scenarioRequestHandler); })
-    {}
+            value.Emplace(this->scenarioRequestHandler); })
+    {
+        InitializeTestDriver();
+    }
+
+    void CucumberWireProtocolServer::InitializeTestDriver()
+    {
+#ifdef EMIL_CUCUMBER_USE_GMOCK
+        InitializeGoogleMock();
+#endif
+    }
 }

@@ -11,7 +11,7 @@ namespace services
         : public CucumberWireProtocolConnectionObserver
     {
     public:
-        TracingCucumberWireProtocolConnectionObserver(infra::BoundedString& receiveBuffer, CucumberScenarioRequestHandler& scenarioRequestHandler, services::Tracer& tracer);
+        TracingCucumberWireProtocolConnectionObserver(CucumberScenarioRequestHandler& scenarioRequestHandler, services::Tracer& tracer);
 
         // Implementation of ConnectionObserver
         virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
@@ -39,14 +39,10 @@ namespace services
         : public services::SingleConnectionListener
     {
     public:
-        template<size_t BufferSize>
-        using WithBuffer = infra::WithStorage<TracingCucumberWireProtocolServer, infra::BoundedString::WithStorage<BufferSize>>;
-
-        TracingCucumberWireProtocolServer(infra::BoundedString& receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port, CucumberScenarioRequestHandler& scenarioRequestHandler, services::Tracer& tracer);
+        TracingCucumberWireProtocolServer(services::ConnectionFactory& connectionFactory, uint16_t port, CucumberScenarioRequestHandler& scenarioRequestHandler, services::Tracer& tracer);
 
     private:
         services::Tracer& tracer;
-        infra::BoundedString& receiveBuffer;
         CucumberScenarioRequestHandler& scenarioRequestHandler;
         infra::Creator<services::ConnectionObserver, TracingCucumberWireProtocolConnectionObserver, void(services::IPAddress address)> connectionCreator;
     };
@@ -54,7 +50,6 @@ namespace services
 
 namespace main_
 {
-    template<size_t BufferSize>
     struct TracingCucumberInfrastructure
     {
         TracingCucumberInfrastructure(services::ConnectionFactory& connectionFactory, uint16_t port, services::Tracer& tracer)
@@ -65,9 +60,8 @@ namespace main_
             : server(connectionFactory, port, scenarioRequestHandler, tracer)
         {}
 
-        services::CucumberContext context;
         services::CucumberScenarioRequestHandlerDefault defaultScenarioRequestHandler;
-        services::TracingCucumberWireProtocolServer::WithBuffer<BufferSize> server;
+        services::TracingCucumberWireProtocolServer server;
     };
 }
 

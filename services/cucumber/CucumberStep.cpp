@@ -70,11 +70,6 @@ namespace services
         , sourceLocation(sourceLocation)
     {}
 
-    services::CucumberContext& CucumberStep::Context() const
-    {
-        return services::CucumberContext::Instance();
-    }
-
     infra::BoundedConstString CucumberStep::StepName() const
     {
         return stepName;
@@ -263,5 +258,16 @@ namespace services
         }
 
         return infra::none;
+    }
+
+    InvokeResult CucumberStep::Invoke(infra::JsonArray& arguments)
+    {
+        try {
+            StepImplementation(arguments);
+        } catch (const std::exception& e) {
+            return { InvokeStatus::failure, e.what() };
+        }
+
+        return invokeSuccess;
     }
 }

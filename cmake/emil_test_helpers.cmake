@@ -2,19 +2,23 @@ option(EMIL_ENABLE_COVERAGE "Enable compiler flags for code coverage measurement
 option(EMIL_ENABLE_MUTATION_TESTING "Enable compiler flags for mutation testing" Off)
 set(EMIL_MUTATION_TESTING_RUNNER_ARGUMENTS "" CACHE STRING "Additional arguments for the mutation testing runner")
 
-function(emil_enable_testing)
-    include(GoogleTest)
-
+function(emil_fetch_googletest)
     FetchContent_Declare(
         googletest
-        GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG        release-1.12.1
+        GIT_REPOSITORY https://github.com/google/googletest
+        GIT_TAG        b796f7d44681514f58a683a3a71ff17c94edb0c1 # v1.13.0
     )
 
     set(gtest_force_shared_crt On CACHE BOOL "" FORCE) # For Windows: Prevent overriding the parent project's compiler/linker settings
     set(INSTALL_GTEST Off CACHE BOOL "" FORCE)
 
     FetchContent_MakeAvailable(googletest)
+endfunction()
+
+function(emil_enable_testing)
+    include(GoogleTest)
+
+    emil_fetch_googletest()
 
     set_target_properties(gtest gtest_main gmock gmock_main PROPERTIES FOLDER External/GoogleTest)
     mark_as_advanced(BUILD_GMOCK BUILD_GTEST BUILD_SHARED_LIBS gmock_build_tests gtest_build_samples test_build_tests gtest_disable_pthreads gtest_force_shared_crt gtest_hide_internal_symbols)

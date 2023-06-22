@@ -1,5 +1,7 @@
 add_library(services.cucumber ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
+option(EMIL_CUCUMBER_USE_GMOCK "Use the GoogleTest/GoogleMock adapter in the Cucumber implementation; this allows the use of GoogleMock checks and assertions" On)
+
 target_link_libraries(services.cucumber PUBLIC
     infra.syntax
     infra.timer
@@ -8,7 +10,6 @@ target_link_libraries(services.cucumber PUBLIC
 )
 
 target_sources(services.cucumber PRIVATE
-    CucumberContext.cpp
     CucumberContext.hpp
     CucumberRequestHandler.cpp
     CucumberRequestHandler.hpp
@@ -26,6 +27,13 @@ target_sources(services.cucumber PRIVATE
     TracingCucumberWireProtocolServer.cpp
     TracingCucumberWireProtocolServer.hpp
 )
+
+if (EMIL_CUCUMBER_USE_GMOCK)
+    emil_fetch_googletest()
+
+    target_link_libraries(services.cucumber PUBLIC GTest::gmock)
+    target_compile_definitions(services.cucumber PRIVATE EMIL_CUCUMBER_USE_GMOCK)
+endif()
 
 if (EMIL_BUILD_TESTS)
     add_subdirectory(test)

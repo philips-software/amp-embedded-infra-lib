@@ -95,7 +95,7 @@ namespace infra
         return *this;
     }
 
-    TextInputStream& TextInputStream::operator>>(BoundedString& v)
+    TextInputStream& TextInputStream::operator>>(BoundedString v)
     {
         *this >> MemoryRange<char>(v.begin(), v.end());
         return *this;

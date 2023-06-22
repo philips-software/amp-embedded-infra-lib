@@ -107,7 +107,7 @@ namespace infra
         TextInputStream& operator>>(uint32_t& v);
         TextInputStream& operator>>(uint64_t& v);
         TextInputStream& operator>>(float& v);
-        TextInputStream& operator>>(BoundedString& v);
+        TextInputStream& operator>>(BoundedString v);
         TextInputStream& operator>>(const char* literal);
 
     private:

@@ -1,21 +1,24 @@
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/Optional.hpp"
+#include "infra/util/WithStorage.hpp"
 #include "services/cucumber/CucumberStepMacro.hpp"
+#include "services/cucumber/CucumberContext.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/network/HttpClientBasic.hpp"
 #include "services/network/HttpClientImpl.hpp"
 #include "services/network/HttpServer.hpp"
 #include "services/network_instantiations/NetworkAdapter.hpp"
-#include <vector>
+#include "gmock/gmock.h"
 
 struct HttpResponse
 {
     services::HttpStatusCode status;
     std::vector<services::HttpHeader> headers;
     std::string body;
-    bool complete = false;
-    bool error = false;
+
+    std::function<void()> onDone;
+    std::function<void()> onError;
 };
 
 class InspectingHttpClient
@@ -25,26 +28,25 @@ public:
     InspectingHttpClient(infra::BoundedString url, uint16_t port, services::HttpClientConnector& connector, HttpResponse& response)
         : HttpClientBasic(url, port, connector)
         , response(response)
-    {
-    }
+    {}
 
 private:
-    virtual void Attached() override
+    void Attached() override
     {
         HttpClientObserver::Subject().Get(Path(), Headers());
     }
 
-    virtual void StatusAvailable(services::HttpStatusCode statusCode) override
+    void StatusAvailable(services::HttpStatusCode statusCode) override
     {
         response.status = statusCode;
     }
 
-    virtual void HeaderAvailable(services::HttpHeader header) override
+    void HeaderAvailable(services::HttpHeader header) override
     {
         response.headers.emplace_back(header);
     }
 
-    virtual void BodyAvailable(infra::SharedPtr<infra::StreamReader>&& reader) override
+    void BodyAvailable(infra::SharedPtr<infra::StreamReader>&& reader) override
     {
         infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
 
@@ -52,57 +54,67 @@ private:
             response.body += infra::ByteRangeAsStdString(stream.ContiguousRange());
     }
 
-    virtual void Done() override
+    void Done() override
     {
-        response.complete = true;
+        response.onDone();
     }
 
-    virtual void Error(bool intermittentFailure) override
+    void Error(bool intermittentFailure) override
     {
-        response.error = true;
+        response.onError();
     }
 
 private:
     HttpResponse& response;
 };
 
-struct HttpStepImplementations
+struct HttpClientContext
 {
-    infra::Optional<services::DefaultHttpServer::WithBuffer<2048>> httpServer;
-    std::vector<services::HttpPageWithContent> pages;
+    void HttpRequest(const std::string& url)
+    {
+        requestUrl = url;
+        std::atomic<bool> running{ true };
+
+        response.onDone = [&running] {
+            running = false;
+        };
+
+        std::thread requestThread([this, &running] {
+            httpClient.Emplace(requestUrl, 80, connector, response);
+
+            while (running)
+            {}
+        });
+
+        requestThread.join();
+    }
 
     services::ConnectionFactoryWithNameResolverImpl::WithStorage<1> connectionFactory{ main_::NetworkAdapter::Instance().ConnectionFactory(), main_::NetworkAdapter::Instance().NameResolver() };
     services::HttpClientConnectorWithNameResolverImpl<> connector{ connectionFactory };
     infra::Optional<InspectingHttpClient> httpClient;
+    std::string requestUrl;
     HttpResponse response;
 };
 
-static HttpStepImplementations steps;
-
-GIVEN("I start a http server")
+GIVEN("I make a HTTP request to '%s'")
 {
-    steps.httpServer.Emplace(main_::NetworkAdapter::Instance().ConnectionFactory(), 80);
-    Success();
+    services::CucumberScenarioScope<HttpClientContext> context;
+    context->HttpRequest(GetStringArgument(arguments, 0)->ToStdString());
 }
 
-GIVEN("I add a page with static content")
+WHEN("I receive the HTTP response")
 {
-    //auto content = GetStringArgument(arguments, 0)->ToStdString();
-    static services::HttpPageWithContent page("", "<html></html>", "text/html");
-    Success();
+    services::CucumberScenarioScope<HttpClientContext> context;
 }
 
-WHEN("I make a http request to localhost")
+THEN("the response status code is %d")
 {
-    infra::BoundedString::WithStorage<128> url("localhost");
-    steps.httpClient.Emplace(url, 80, steps.connector, steps.response);
-    Success();
 }
 
-THEN("I check that the response is correct")
+THEN("the response body contains '%s'")
 {
-    if (steps.response.body == "<html></html>")
-        Success();
-    else
-        Error("Content does not match");
+    //services::CucumberScenarioScope<HttpClientContext> context;
+    //EXPECT_THAT(context->response.body, ::testing::StrEq(GetStringArgument(arguments, 0)->ToStdString()));
+    //EXPECT_EQ(context->response.body, GetStringArgument(arguments, 0)->ToStdString());
+    EXPECT_THAT(0, ::testing::Eq(1));
 }

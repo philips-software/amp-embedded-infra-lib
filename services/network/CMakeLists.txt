@@ -118,5 +118,5 @@ if (BUILD_TESTING)
 endif()
 
 if (EMIL_HOST_BUILD)
-    add_subdirectory(step_implementations)
+    add_subdirectory(step_definitions)
 endif()

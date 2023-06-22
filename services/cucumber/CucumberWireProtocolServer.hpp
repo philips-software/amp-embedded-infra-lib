@@ -5,9 +5,9 @@
 #include "services/cucumber/CucumberRequestHandler.hpp"
 #include "services/cucumber/CucumberStepStorage.hpp"
 #include "services/cucumber/CucumberWireProtocolParser.hpp"
-#include "services/cucumber/CucumberWireProtocolParser.hpp"
 #include "services/network/Connection.hpp"
 #include "services/network/SingleConnectionListener.hpp"
+#include <string>
 
 namespace services
 {
@@ -15,21 +15,13 @@ namespace services
         : public services::ConnectionObserver
     {
     public:
-        CucumberWireProtocolConnectionObserver(infra::BoundedString& buffer, CucumberScenarioRequestHandler& scenarioRequestHandler);
+        CucumberWireProtocolConnectionObserver(CucumberScenarioRequestHandler& scenarioRequestHandler);
 
         // Implementation of ConnectionObserver
         void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         void DataReceived() override;
 
-        struct InvokeInfo
-        {
-            bool successful;
-            infra::Optional<infra::BoundedConstString> failReason;
-        };
-
         void HandleRequest(CucumberWireProtocolParser& parser);
-        void InvokeSuccess();
-        void InvokeError(infra::BoundedConstString& reason);
 
     private:
         bool MatchArguments(std::size_t id, infra::JsonArray& arguments) const;
@@ -42,12 +34,12 @@ namespace services
         void HandleInvalidRequest();
 
     public:
-        InvokeInfo invokeInfo;
+        InvokeResult result;
         CucumberStepStorage::StepMatch storageMatch;
         infra::BoundedString::WithStorage<256> nameToMatchString;
 
     private:
-        infra::BoundedString& buffer;
+        std::string buffer;
         CucumberScenarioRequestHandler& scenarioRequestHandler;
         CucumberWireProtocolParser parser;
 
@@ -59,13 +51,11 @@ namespace services
         : public services::SingleConnectionListener
     {
     public:
-        template<size_t BufferSize>
-        using WithBuffer = infra::WithStorage<CucumberWireProtocolServer, infra::BoundedString::WithStorage<BufferSize>>;
+        CucumberWireProtocolServer(services::ConnectionFactory& connectionFactory, uint16_t port, CucumberScenarioRequestHandler& scenarioRequestHandler);
 
-        CucumberWireProtocolServer(infra::BoundedString& receiveBuffer, services::ConnectionFactory& connectionFactory, uint16_t port, CucumberScenarioRequestHandler& scenarioRequestHandler);
+        static void InitializeTestDriver();
 
     private:
-        infra::BoundedString& receiveBuffer;
         CucumberScenarioRequestHandler& scenarioRequestHandler;
         infra::Creator<services::ConnectionObserver, CucumberWireProtocolConnectionObserver, void(services::IPAddress address)> connectionCreator;
     };
@@ -73,7 +63,6 @@ namespace services
 
 namespace main_
 {
-    template<size_t BufferSize>
     struct CucumberInfrastructure
     {
         CucumberInfrastructure(services::ConnectionFactory& connectionFactory, uint16_t port)
@@ -84,9 +73,8 @@ namespace main_
             : server(connectionFactory, port, scenarioRequestHandler)
         {}
 
-        services::CucumberContext context;
         services::CucumberScenarioRequestHandlerDefault defaultScenarioRequestHandler;
-        services::CucumberWireProtocolServer::WithBuffer<BufferSize> server;
+        services::CucumberWireProtocolServer server;
     };
 }
 

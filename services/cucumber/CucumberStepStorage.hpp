@@ -27,7 +27,7 @@ namespace services
 
         services::CucumberStepStorage::StepMatch MatchStep(infra::BoundedConstString stepText);
 
-        const CucumberStep& GetStep(std::size_t id);
+        CucumberStep& GetStep(std::size_t id);
         void AddStep(CucumberStep& step);
 
     protected:
