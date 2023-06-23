@@ -1,4 +1,5 @@
 #include "MacAddress.hpp"
+#include <algorithm>
 
 namespace infra
 {
