@@ -24,7 +24,7 @@ namespace main_
         : std::runtime_error
     {
         explicit IncorrectOrderOfTargetException(const std::string& target)
-            : std::runtime_error("\nIncorrect order of target : " + target)
+            : std::runtime_error("Incorrect order of target : " + target)
         {}
     };
 
@@ -61,15 +61,14 @@ namespace main_
 
     uint8_t UpgradePackBuilderFacade::GetOrder(const std::string& targetName, const std::vector<std::vector<std::string>>& orderedTargets)
     {
-        uint8_t order = 1;
-        for ( auto targets : orderedTargets)
+        uint8_t order = 0;
+        for (auto targets : orderedTargets)
         {
-            auto pos = std::find(targets.begin(), targets.end(), targetName);
+            ++order;
+            auto targetPos = std::find(targets.begin(), targets.end(), targetName);
 
-            if ( pos != targets.end())
+            if (targetPos != targets.end())
                 return order;
-            else 
-                ++order;
         }
         return 0;
     }
@@ -83,7 +82,7 @@ namespace main_
 
         for (const auto& [target, file, address] : requestedTargets)
         {
-            uint8_t orderToAdd = GetOrder(target, orderedTargets);
+            auto orderToAdd = GetOrder(target, orderedTargets);
             if (orderToAdd != 0)
             {
                 if (currentOrderOfTarget > orderToAdd)
