@@ -14,9 +14,16 @@ namespace application
         return *this;
     }
 
+    SupportedTargetsBuilder& SupportedTargetsBuilder::Order(uint8_t order)
+    {
+        this->order = order;
+        return *this;
+    }
+
     SupportedTargetsBuilder& SupportedTargetsBuilder::AddCmd(const SupportedTargets::Target& target)
     {
         AddToMandatoryWhenNecessary(target);
+        AddInOrder(target);
         targets.cmd.emplace_back(target);
         return *this;
     }
@@ -24,6 +31,7 @@ namespace application
     SupportedTargetsBuilder& SupportedTargetsBuilder::AddHex(const SupportedTargets::Target& target)
     {
         AddToMandatoryWhenNecessary(target);
+        AddInOrder(target);
         targets.hex.emplace_back(target);
         return *this;
     }
@@ -31,6 +39,7 @@ namespace application
     SupportedTargetsBuilder& SupportedTargetsBuilder::AddElf(const SupportedTargets::Target& target, uint32_t offset)
     {
         AddToMandatoryWhenNecessary(target);
+        AddInOrder(target);
         targets.elf.emplace_back(target, offset);
         return *this;
     }
@@ -38,6 +47,7 @@ namespace application
     SupportedTargetsBuilder& SupportedTargetsBuilder::AddBin(const SupportedTargets::Target& target, uint32_t offset)
     {
         AddToMandatoryWhenNecessary(target);
+        AddInOrder(target);
         targets.bin.emplace_back(target, offset);
         return *this;
     }
@@ -45,7 +55,22 @@ namespace application
     void SupportedTargetsBuilder::AddToMandatoryWhenNecessary(const SupportedTargets::Target& target)
     {
         if (mandatory)
+        {
             targets.mandatory.emplace_back(target);
+            mandatory = false;
+        }
+    }
+
+    void SupportedTargetsBuilder::AddInOrder(const SupportedTargets::Target& target)
+    {
+        if (order != 0)
+        {
+            if (targets.order.size() < order)
+                targets.order.resize(order);
+
+            targets.order[order - 1].emplace_back(target);
+            order = 0;
+        }
     }
 
     SupportedTargetsBuilder SupportedTargets::Create()

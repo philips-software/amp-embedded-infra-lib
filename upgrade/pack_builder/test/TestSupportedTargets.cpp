@@ -35,3 +35,35 @@ TEST(SupportedTargetsTest, should_add_mandatory_targets)
     EXPECT_EQ(2, targets.HexTargets().size());
     EXPECT_EQ("application", targets.MandatoryTargets()[0]);
 }
+
+TEST(SupportedTargetsTest, should_add_targte_to_mandatory_only_if_specified)
+{
+    application::SupportedTargets targets = application::SupportedTargets::Create()
+                                                .Mandatory()
+                                                .AddHex("application")
+                                                .AddHex("data");
+
+    EXPECT_EQ(1, targets.MandatoryTargets().size());
+    EXPECT_EQ("application", targets.MandatoryTargets()[0]);
+}
+
+TEST(SupportedTargetsTest, should_add_targets_in_order)
+{
+    application::SupportedTargets targets = application::SupportedTargets::Create()
+                                                .Order(2).AddHex("application")
+                                                .Order(1).AddHex("data");
+
+    EXPECT_EQ(2, targets.OrderOfTargets().size());
+    EXPECT_EQ("data", targets.OrderOfTargets()[0][0]);
+    EXPECT_EQ("application", targets.OrderOfTargets()[1][0]);
+}
+
+TEST(SupportedTargetsTest, should_add_target_to_order_only_if_specified)
+{
+    application::SupportedTargets targets = application::SupportedTargets::Create()
+                                                .Order(1).AddHex("data")
+                                                .AddHex("application");
+
+    EXPECT_EQ(1, targets.OrderOfTargets()[0].size());
+    EXPECT_EQ("data", targets.OrderOfTargets()[0][0]);
+}

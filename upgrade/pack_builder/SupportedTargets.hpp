@@ -43,6 +43,11 @@ namespace application
             return mandatory;
         }
 
+        const auto& OrderOfTargets() const
+        {
+            return order;
+        }
+
     private:
         std::vector<Target> cmd;
         std::vector<Target> hex;
@@ -50,6 +55,7 @@ namespace application
         std::vector<TargetWithOffset> bin;
 
         std::vector<Target> mandatory;
+        std::vector<std::vector<Target>> order;
     };
 
     class SupportedTargetsBuilder
@@ -62,6 +68,7 @@ namespace application
 
         SupportedTargetsBuilder& Mandatory();
         SupportedTargetsBuilder& Optional();
+        SupportedTargetsBuilder& Order(uint8_t order);
 
         SupportedTargetsBuilder& AddCmd(const SupportedTargets::Target& target);
         SupportedTargetsBuilder& AddHex(const SupportedTargets::Target& target);
@@ -70,10 +77,12 @@ namespace application
 
     private:
         void AddToMandatoryWhenNecessary(const SupportedTargets::Target& target);
+        void AddInOrder(const SupportedTargets::Target& target);
 
     private:
         SupportedTargets targets;
         bool mandatory{ false };
+        uint8_t order{ 0 };
     };
 }
 
