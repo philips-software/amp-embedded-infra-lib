@@ -20,6 +20,14 @@ namespace main_
         {}
     };
 
+    struct IncorrectOrderOfTargetException
+        : std::runtime_error
+    {
+        explicit IncorrectOrderOfTargetException(const std::string& target)
+            : std::runtime_error("\nIncorrect order of target : " + target)
+        {}
+    };
+
     UpgradePackBuilderFacade::UpgradePackBuilderFacade(const application::UpgradePackBuilder::HeaderInfo& headerInfo)
         : headerInfo(headerInfo)
     {}
@@ -51,12 +59,40 @@ namespace main_
         builder.WriteUpgradePack(outputFilename, fileSystem);
     }
 
+    uint8_t UpgradePackBuilderFacade::GetOrder(const std::string& targetName, const std::vector<std::vector<std::string>>& orderedTargets)
+    {
+        uint8_t order = 1;
+        for ( auto targets : orderedTargets)
+        {
+            auto pos = std::find(targets.begin(), targets.end(), targetName);
+
+            if ( pos != targets.end())
+                return order;
+            else 
+                ++order;
+        }
+        return 0;
+    }
+
     std::vector<std::unique_ptr<application::Input>> UpgradePackBuilderFacade::CreateInputs(const application::SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, application::InputFactory& factory)
     {
         std::vector<std::unique_ptr<application::Input>> inputs;
 
+        uint8_t currentOrderOfTarget = 1;
+        auto orderedTargets = supportedTargets.OrderOfTargets();
+
         for (const auto& [target, file, address] : requestedTargets)
+        {
+            uint8_t orderToAdd = GetOrder(target, orderedTargets);
+            if (orderToAdd != 0)
+            {
+                if (currentOrderOfTarget > orderToAdd)
+                    throw IncorrectOrderOfTargetException(target);
+                else
+                    currentOrderOfTarget = orderToAdd;
+            }
             inputs.push_back(factory.CreateInput(target, file, address));
+        }
 
         for (const auto& mandatoryTarget : supportedTargets.MandatoryTargets())
         {
