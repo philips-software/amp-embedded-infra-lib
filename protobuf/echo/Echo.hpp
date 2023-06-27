@@ -3,6 +3,7 @@
 
 #include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/syntax/ProtoParser.hpp"
+#include "infra/util/BoundedDeque.hpp"
 #include "infra/util/Compatibility.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/Optional.hpp"
@@ -197,7 +198,7 @@ namespace services
         ServiceProxy(Echo& echo, uint32_t maxMessageSize);
 
         Echo& Rpc();
-        void RequestSend(infra::Function<void()> onGranted);
+        virtual void RequestSend(infra::Function<void()> onGranted);
         void GrantSend();
         uint32_t MaxMessageSize() const;
 
@@ -205,6 +206,28 @@ namespace services
         Echo& echo;
         uint32_t maxMessageSize;
         infra::Function<void()> onGranted;
+    };
+
+    template<class TServiceProxy>
+    class ServiceProxyResponseQueue : public TServiceProxy
+    {
+    public:
+        using Container = infra::BoundedDeque<infra::Function<void()>>;
+
+        template<std::size_t Max>
+        using WithStorage = infra::WithStorage<ServiceProxyResponseQueue, typename Container::template WithMaxSize<Max>>;
+
+        template<class... TArgs>
+        explicit ServiceProxyResponseQueue(Container& container, TArgs&&... args);
+
+        void RequestSend(infra::Function<void()> onRequestGranted) override;
+
+    private:
+        void ProcessSendQueue();
+
+        Container& container;
+
+        bool responseInProgress{ false };
     };
 
     class EchoOnStreams
@@ -493,6 +516,42 @@ namespace services
         parser.ReportFormatResult(field.first.Is<infra::ProtoLengthDelimited>());
         if (field.first.Is<infra::ProtoLengthDelimited>())
             field.first.Get<infra::ProtoLengthDelimited>().GetStringReference(value);
+    }
+
+    template<class TServiceProxy>
+    template<class... TArgs>
+    ServiceProxyResponseQueue<TServiceProxy>::ServiceProxyResponseQueue(Container& container, TArgs&&... args)
+        : TServiceProxy{ std::forward<TArgs>(args)... }
+        , container{ container }
+    {}
+
+    template<class TServiceProxy>
+    void ServiceProxyResponseQueue<TServiceProxy>::RequestSend(infra::Function<void()> onRequestGranted)
+    {
+        if (container.full())
+        {
+            return;
+        }
+
+        container.push_back(onRequestGranted);
+        ProcessSendQueue();
+    }
+
+    template<class TServiceProxy>
+    void ServiceProxyResponseQueue<TServiceProxy>::ProcessSendQueue()
+    {
+        if (!responseInProgress && !container.empty())
+        {
+            responseInProgress = true;
+            TServiceProxy::RequestSend([this]
+                {
+                    container.front()();
+                    container.pop_front();
+
+                    responseInProgress = false;
+                    ProcessSendQueue();
+                });
+        }
     }
 }
 
