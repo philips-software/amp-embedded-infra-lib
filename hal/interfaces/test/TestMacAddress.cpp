@@ -21,3 +21,22 @@ TEST(MacAddressTest, fromStream)
     hal::MacAddress expected{ 0x98, 0x87, 0x76, 0x65, 0x54, 0x43 };
     EXPECT_EQ(mac, expected);
 }
+
+TEST(MacAddressTest, toStreamAsLittleEndianMacAddress)
+{
+    infra::StringOutputStream::WithStorage<64> stream;
+    const hal::MacAddress mac = { 0x67, 0x56, 0x45, 0x34, 0x23, 0x12 };
+    stream << infra::AsLittleEndianMacAddress(mac);
+    EXPECT_EQ("12:23:34:45:56:67", stream.Storage());
+}
+
+TEST(MacAddressTest, fromStreamToLittleEndianMacAddress)
+{
+    infra::StringInputStream stream{ "12:23:34:45:56:67" };
+
+    hal::MacAddress mac{};
+    stream >> infra::ToLittleEndianMacAddress(mac);
+
+    hal::MacAddress expected{ 0x67, 0x56, 0x45, 0x34, 0x23, 0x12 };
+    EXPECT_EQ(mac, expected);
+}
