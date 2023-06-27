@@ -13,6 +13,8 @@ TEST(GattTest, service_has_handle_and_type)
 
     EXPECT_EQ(0x42, s.Type().Get<services::AttAttribute::Uuid16>());
     EXPECT_EQ(0, s.Handle());
+    EXPECT_EQ(0, s.EndHandle());
+    EXPECT_EQ(0, s.GetAttributeCount());
 }
 
 TEST(GattTest, service_handle_is_updated)
@@ -27,9 +29,19 @@ TEST(GattTest, service_handle_is_updated)
 TEST(GattTest, characteristic_handles_are_accesible)
 {
     services::GattCharacteristic c;
+
     c.Handle() = 0xCD;
     c.ValueHandle() = 0xFE;
 
     EXPECT_EQ(0xCD, c.Handle());
     EXPECT_EQ(0xFE, c.ValueHandle());
+}
+
+TEST(GattTest, const_characteristic)
+{
+    const services::GattCharacteristic c{ uuid16, 0xCD, 0xFE, services::GattCharacteristic::PropertyFlags::none };
+
+    EXPECT_EQ(0xCD, c.Handle());
+    EXPECT_EQ(0xFE, c.ValueHandle());
+    EXPECT_EQ(services::GattCharacteristic::PropertyFlags::none, c.Properties());
 }
