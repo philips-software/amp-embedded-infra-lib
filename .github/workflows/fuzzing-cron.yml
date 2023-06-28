@@ -12,15 +12,14 @@ permissions:
 jobs:
   fuzz_prune:
     runs-on: ubuntu-latest
+    permissions: read-all
     steps:
       - name: Build Fuzzers
-        id: build
         uses: google/clusterfuzzlite/actions/build_fuzzers@1e163f06cba7820da5154ac9fe1a32d7fe6f73a3
         with:
           language: c++
           sanitizer: coverage
       - name: Run Fuzzers
-        id: run
         uses: google/clusterfuzzlite/actions/run_fuzzers@1e163f06cba7820da5154ac9fe1a32d7fe6f73a3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -31,13 +30,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Build Fuzzers
-        id: build
         uses: google/clusterfuzzlite/actions/build_fuzzers@1e163f06cba7820da5154ac9fe1a32d7fe6f73a3
         with:
           language: c++
           sanitizer: coverage
       - name: Run Fuzzers
-        id: run
         uses: google/clusterfuzzlite/actions/run_fuzzers@1e163f06cba7820da5154ac9fe1a32d7fe6f73a3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
