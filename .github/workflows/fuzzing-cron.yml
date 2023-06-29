@@ -18,7 +18,6 @@ jobs:
         uses: google/clusterfuzzlite/actions/build_fuzzers@1e163f06cba7820da5154ac9fe1a32d7fe6f73a3
         with:
           language: c++
-          sanitizer: coverage
       - name: Run Fuzzers
         uses: google/clusterfuzzlite/actions/run_fuzzers@1e163f06cba7820da5154ac9fe1a32d7fe6f73a3
         with:
