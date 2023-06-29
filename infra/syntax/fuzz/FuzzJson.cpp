@@ -5,7 +5,8 @@
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, std::size_t size)
 {
     FuzzedDataProvider provider(data, size);
-    infra::JsonObject object(provider.ConsumeRandomLengthString());
+    auto objectString = provider.ConsumeRandomLengthString();
+    infra::JsonObject object(objectString);
 
     for (const auto& o : object)
     {}
