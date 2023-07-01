@@ -11,6 +11,7 @@ namespace services
     namespace http_responses
     {
         const char* ok = "200 OK";
+        const char* noContent = "204 No Content";
         const char* badRequest = "400 Bad Request";
         const char* notFound = "404 Not Found";
         const char* conflict = "409 Conflict";

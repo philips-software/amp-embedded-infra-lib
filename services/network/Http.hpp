@@ -69,6 +69,7 @@ namespace services
     namespace http_responses
     {
         extern const char* ok;                  // 200
+        extern const char* noContent;           // 204
         extern const char* badRequest;          // 400
         extern const char* notFound;            // 404
         extern const char* conflict;            // 409
