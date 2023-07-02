@@ -10,15 +10,15 @@ namespace services
 
     namespace http_responses
     {
-        constexpr const char* const ok = "200 OK";
-        constexpr const char* const noContent = "204 No Content";
-        constexpr const char* const badRequest = "400 Bad Request";
-        constexpr const char* const notFound = "404 Not Found";
-        constexpr const char* const conflict = "409 Conflict";
-        constexpr const char* const unprocessableEntity = "422 Unprocessable Entity";
-        constexpr const char* const tooManyRequests = "429 Too Many Requests";
-        constexpr const char* const internalServerError = "500 Internal Server Error";
-        constexpr const char* const notImplemented = "501 Not Implemented";
+        const char* const ok = "200 OK";
+        const char* const noContent = "204 No Content";
+        const char* const badRequest = "400 Bad Request";
+        const char* const notFound = "404 Not Found";
+        const char* const conflict = "409 Conflict";
+        const char* const unprocessableEntity = "422 Unprocessable Entity";
+        const char* const tooManyRequests = "429 Too Many Requests";
+        const char* const internalServerError = "500 Internal Server Error";
+        const char* const notImplemented = "501 Not Implemented";
     }
 
     namespace
