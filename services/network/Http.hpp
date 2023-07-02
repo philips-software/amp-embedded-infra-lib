@@ -68,15 +68,15 @@ namespace services
 
     namespace http_responses
     {
-        extern const char* ok;                  // 200
-        extern const char* noContent;           // 204
-        extern const char* badRequest;          // 400
-        extern const char* notFound;            // 404
-        extern const char* conflict;            // 409
-        extern const char* unprocessableEntity; // 422
-        extern const char* tooManyRequests;     // 429
-        extern const char* internalServerError; // 500
-        extern const char* notImplemented;      // 501
+        extern const char* const ok;                  // 200
+        extern const char* const noContent;           // 204
+        extern const char* const badRequest;          // 400
+        extern const char* const notFound;            // 404
+        extern const char* const conflict;            // 409
+        extern const char* const unprocessableEntity; // 422
+        extern const char* const tooManyRequests;     // 429
+        extern const char* const internalServerError; // 500
+        extern const char* const notImplemented;      // 501
     }
 
     class HttpHeader
