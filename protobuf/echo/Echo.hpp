@@ -226,6 +226,7 @@ namespace services
     private:
         void ProcessSendQueue();
 
+    private:
         Container& container;
 
         bool responseInProgress{ false };
