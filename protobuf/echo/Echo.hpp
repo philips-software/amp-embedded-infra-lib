@@ -208,8 +208,9 @@ namespace services
         infra::Function<void()> onGranted;
     };
 
-    template<class TServiceProxy>
-    class ServiceProxyResponseQueue : public TServiceProxy
+    template<class ServiceProxyType>
+    class ServiceProxyResponseQueue
+        : public ServiceProxyType
     {
     public:
         using Container = infra::BoundedDeque<infra::Function<void()>>;
@@ -217,8 +218,8 @@ namespace services
         template<std::size_t Max>
         using WithStorage = infra::WithStorage<ServiceProxyResponseQueue, typename Container::template WithMaxSize<Max>>;
 
-        template<class... TArgs>
-        explicit ServiceProxyResponseQueue(Container& container, TArgs&&... args);
+        template<class... Args>
+        explicit ServiceProxyResponseQueue(Container& container, Args&&... args);
 
         void RequestSend(infra::Function<void()> onRequestGranted) override;
 
@@ -518,32 +519,30 @@ namespace services
             field.first.Get<infra::ProtoLengthDelimited>().GetStringReference(value);
     }
 
-    template<class TServiceProxy>
-    template<class... TArgs>
-    ServiceProxyResponseQueue<TServiceProxy>::ServiceProxyResponseQueue(Container& container, TArgs&&... args)
-        : TServiceProxy{ std::forward<TArgs>(args)... }
+    template<class ServiceProxyType>
+    template<class... Args>
+    ServiceProxyResponseQueue<ServiceProxyType>::ServiceProxyResponseQueue(Container& container, Args&&... args)
+        : ServiceProxyType{ std::forward<Args>(args)... }
         , container{ container }
     {}
 
-    template<class TServiceProxy>
-    void ServiceProxyResponseQueue<TServiceProxy>::RequestSend(infra::Function<void()> onRequestGranted)
+    template<class ServiceProxyType>
+    void ServiceProxyResponseQueue<ServiceProxyType>::RequestSend(infra::Function<void()> onRequestGranted)
     {
         if (container.full())
-        {
             return;
-        }
 
         container.push_back(onRequestGranted);
         ProcessSendQueue();
     }
 
-    template<class TServiceProxy>
-    void ServiceProxyResponseQueue<TServiceProxy>::ProcessSendQueue()
+    template<class ServiceProxyType>
+    void ServiceProxyResponseQueue<ServiceProxyType>::ProcessSendQueue()
     {
         if (!responseInProgress && !container.empty())
         {
             responseInProgress = true;
-            TServiceProxy::RequestSend([this]
+            ServiceProxyType::RequestSend([this]
                 {
                     container.front()();
                     container.pop_front();
