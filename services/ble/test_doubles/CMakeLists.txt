@@ -13,6 +13,7 @@ target_sources(services.ble_test_doubles PRIVATE
     GapPeripheralMock.hpp
     GapBondingMock.hpp
     GapPairingMock.hpp
+    GapPairingObserverMock.hpp
     GapPeripheralObserverMock.hpp
     GapBondingObserverMock.hpp
     GattClientMock.hpp

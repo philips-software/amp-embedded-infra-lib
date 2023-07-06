@@ -6,10 +6,11 @@
 
 namespace services
 {
-    class GapPeripheralPairingMock
+    class GapPairingMock
         : public GapPairing
     {
     public:
+        MOCK_METHOD(void, Pair, ());
         MOCK_METHOD(void, AllowPairing, (bool allow));
         MOCK_METHOD(void, SetSecurityMode, (SecurityMode mode, SecurityLevel level));
         MOCK_METHOD(void, SetIoCapabilities, (IoCapabilities caps));

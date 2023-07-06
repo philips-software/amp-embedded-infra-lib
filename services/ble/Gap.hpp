@@ -134,6 +134,27 @@ namespace services
         virtual void NumericComparisonConfirm(bool accept) = 0;
     };
 
+    class GapPairingDecorator
+        : public GapPairingObserver
+        , public GapPairing
+    {
+    public:
+        using GapPairingObserver::GapPairingObserver;
+
+        // Implementation of GapPairingObserver
+        void DisplayPasskey(int32_t passkey, bool numericComparison) override;
+        void PairingSuccessfullyCompleted() override;
+        void PairingFailed(PairingErrorType error) override;
+
+        // Implementation of GapPairing
+        void Pair() override;
+        void AllowPairing(bool allow) override;
+        void SetSecurityMode(SecurityMode mode, SecurityLevel level) override;
+        void SetIoCapabilities(IoCapabilities caps) override;
+        void AuthenticateWithPasskey(uint32_t passkey) override;
+        void NumericComparisonConfirm(bool accept) override;
+    };
+
     class GapBonding;
 
     class GapBondingObserver
@@ -154,6 +175,23 @@ namespace services
 
         virtual std::size_t GetMaxNumberOfBonds() const = 0;
         virtual std::size_t GetNumberOfBonds() const = 0;
+    };
+
+    class GapBondingDecorator
+        : public GapBondingObserver
+        , public GapBonding
+    {
+    public:
+        using GapBondingObserver::GapBondingObserver;
+
+        // Implementation of GapBondingObserver
+        void NumberOfBondsChanged(std::size_t nrBonds) override;
+
+        // Implementation of GapBonding
+        void RemoveAllBonds() override;
+        void RemoveOldestBond() override;
+        std::size_t GetMaxNumberOfBonds() const override;
+        std::size_t GetNumberOfBonds() const override;
     };
 
     class GapPeripheral;

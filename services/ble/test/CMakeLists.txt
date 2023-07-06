@@ -12,6 +12,7 @@ target_sources(services.ble_test PRIVATE
     TestBondBlobPersistence.cpp
     TestBondStorageSynchronizer.cpp
     TestGapCentral.cpp
+    TestGapPairing.cpp
     TestGapPeripheral.cpp
     TestGatt.cpp
     TestGattClient.cpp
