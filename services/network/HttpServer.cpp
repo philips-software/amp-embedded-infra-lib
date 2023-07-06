@@ -8,7 +8,7 @@
 
 namespace services
 {
-    SimpleHttpResponse httpResponseOk{ services::http_responses::ok };
+    SimpleHttpResponse httpResponseNoContent{ services::http_responses::noContent };
 
     void HttpPageServer::AddPage(services::HttpPage& page)
     {
@@ -330,7 +330,7 @@ namespace services
     {
         RequestIsNowInProgress();
 
-        send100Response |= Expect100();
+        send100Response = send100Response || Expect100();
 
         ServePage(std::move(reader));
     }

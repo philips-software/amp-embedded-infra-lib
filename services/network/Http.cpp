@@ -10,19 +10,20 @@ namespace services
 
     namespace http_responses
     {
-        const char* ok = "200 OK";
-        const char* badRequest = "400 Bad Request";
-        const char* notFound = "404 Not Found";
-        const char* conflict = "409 Conflict";
-        const char* unprocessableEntity = "422 Unprocessable Entity";
-        const char* tooManyRequests = "429 Too Many Requests";
-        const char* internalServerError = "500 Internal Server Error";
-        const char* notImplemented = "501 Not Implemented";
+        const char* const ok = "200 OK";
+        const char* const noContent = "204 No Content";
+        const char* const badRequest = "400 Bad Request";
+        const char* const notFound = "404 Not Found";
+        const char* const conflict = "409 Conflict";
+        const char* const unprocessableEntity = "422 Unprocessable Entity";
+        const char* const tooManyRequests = "429 Too Many Requests";
+        const char* const internalServerError = "500 Internal Server Error";
+        const char* const notImplemented = "501 Not Implemented";
     }
 
     namespace
     {
-        const char* separator = ":";
+        const char* const separator = ":";
         // Naming is according to rfc7230
         const infra::BoundedConstString httpVersion = "HTTP/1.1";
         const infra::BoundedConstString sp = " ";
