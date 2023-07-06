@@ -59,37 +59,43 @@ namespace main_
         builder.WriteUpgradePack(outputFilename, fileSystem);
     }
 
-    uint8_t UpgradePackBuilderFacade::GetOrder(const std::string& targetName, const std::vector<std::vector<std::string>>& orderedTargets)
+    infra::Optional<uint8_t> UpgradePackBuilderFacade::GetOrder(const std::string& targetName, const std::vector<std::vector<std::string>>& orderedTargets)
     {
-        uint8_t order = 0;
+        infra::Optional<uint8_t> order(infra::inPlace, 0);
         for (auto targets : orderedTargets)
         {
-            ++order;
-            auto targetPos = std::find(targets.begin(), targets.end(), targetName);
+            ++(*order);
+            const auto targetPos = std::find(targets.begin(), targets.end(), targetName);
 
             if (targetPos != targets.end())
                 return order;
         }
-        return 0;
+        return infra::none;
+    }
+    bool UpgradePackBuilderFacade::CheckIfTargetIsInOrder(const std::string& target, const application::SupportedTargets& supportedTargets)
+    {
+        static uint8_t currentOrderOfTarget = 1;
+        static const auto orderedTargets = supportedTargets.OrderOfTargets();
+        const auto orderToAdd = GetOrder(target, orderedTargets);
+        if (orderToAdd)
+        {
+            if (currentOrderOfTarget > *orderToAdd)
+                return false;
+            else
+                currentOrderOfTarget = *orderToAdd;
+        }
+        return true;
     }
 
     std::vector<std::unique_ptr<application::Input>> UpgradePackBuilderFacade::CreateInputs(const application::SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, application::InputFactory& factory)
     {
         std::vector<std::unique_ptr<application::Input>> inputs;
 
-        uint8_t currentOrderOfTarget = 1;
-        auto orderedTargets = supportedTargets.OrderOfTargets();
-
         for (const auto& [target, file, address] : requestedTargets)
         {
-            auto orderToAdd = GetOrder(target, orderedTargets);
-            if (orderToAdd != 0)
-            {
-                if (currentOrderOfTarget > orderToAdd)
-                    throw IncorrectOrderOfTargetException(target);
-                else
-                    currentOrderOfTarget = orderToAdd;
-            }
+            if (!CheckIfTargetIsInOrder(target, supportedTargets))
+                throw IncorrectOrderOfTargetException(target);
+    
             inputs.push_back(factory.CreateInput(target, file, address));
         }
 
