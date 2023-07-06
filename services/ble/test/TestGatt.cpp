@@ -52,13 +52,13 @@ TEST(GattInsertionOperatorPropertyFlagsTest, property_flags_overload_operator)
     infra::StringOutputStream::WithStorage<128> stream;
 
     services::GattCharacteristic::PropertyFlags properties = services::GattCharacteristic::PropertyFlags::broadcast |
-        services::GattCharacteristic::PropertyFlags::read |
-        services::GattCharacteristic::PropertyFlags::writeWithoutResponse |
-        services::GattCharacteristic::PropertyFlags::write |
-        services::GattCharacteristic::PropertyFlags::notify |
-        services::GattCharacteristic::PropertyFlags::indicate |
-        services::GattCharacteristic::PropertyFlags::signedWrite |
-        services::GattCharacteristic::PropertyFlags::extended;
+                                                             services::GattCharacteristic::PropertyFlags::read |
+                                                             services::GattCharacteristic::PropertyFlags::writeWithoutResponse |
+                                                             services::GattCharacteristic::PropertyFlags::write |
+                                                             services::GattCharacteristic::PropertyFlags::notify |
+                                                             services::GattCharacteristic::PropertyFlags::indicate |
+                                                             services::GattCharacteristic::PropertyFlags::signedWrite |
+                                                             services::GattCharacteristic::PropertyFlags::extended;
 
     stream << properties;
 
