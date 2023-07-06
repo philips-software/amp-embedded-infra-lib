@@ -16,7 +16,7 @@ namespace application
 
     SupportedTargetsBuilder& SupportedTargetsBuilder::Order(uint8_t order)
     {
-        this->order = order;
+        this->order.Emplace(order);
         return *this;
     }
 
@@ -63,13 +63,13 @@ namespace application
 
     void SupportedTargetsBuilder::AddInOrder(const SupportedTargets::Target& target)
     {
-        if (order != 0)
+        if (order)
         {
-            if (targets.order.size() < order)
-                targets.order.resize(order);
+            if (targets.order.size() < *order)
+                targets.order.resize(*order);
 
-            targets.order[order - 1].emplace_back(target);
-            order = 0;
+            targets.order[*order - 1].emplace_back(target);
+            order = infra::none;
         }
     }
 
