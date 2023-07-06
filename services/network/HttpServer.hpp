@@ -82,7 +82,7 @@ namespace services
         infra::BoundedConstString body;
     };
 
-    extern SimpleHttpResponse httpResponseOk;
+    extern SimpleHttpResponse httpResponseNoContent;
 
     class HttpServerConnection
     {
