@@ -36,7 +36,8 @@ namespace main_
         virtual void PostBuilder(application::UpgradePackBuilder& builder, application::ImageSigner& signer, const BuildOptions& buildOptions);
 
     private:
-        uint8_t GetOrder(const std::string& targetName, const std::vector<std::vector<std::string>>& orderedTargets);
+        infra::Optional<uint8_t> GetOrder(const std::string& targetName, const std::vector<std::vector<std::string>>& orderedTargets);
+        bool CheckIfTargetIsInOrder(const std::string& target, const application::SupportedTargets& supportedTargets);
         std::vector<std::unique_ptr<application::Input>> CreateInputs(const application::SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, application::InputFactory& factory);
 
     protected:
