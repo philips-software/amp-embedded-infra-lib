@@ -24,7 +24,7 @@ namespace main_
         : std::runtime_error
     {
         explicit IncorrectOrderOfTargetException(const std::string& target)
-            : std::runtime_error("Incorrect order of target : " + target)
+            : std::runtime_error("Incorrect order of target: " + target)
         {}
     };
 
@@ -59,10 +59,10 @@ namespace main_
         builder.WriteUpgradePack(outputFilename, fileSystem);
     }
 
-    infra::Optional<uint8_t> UpgradePackBuilderFacade::GetOrder(const std::string& targetName, const std::vector<std::vector<std::string>>& orderedTargets)
+    infra::Optional<uint8_t> UpgradePackBuilderFacade::GetOrder(const std::string& targetName, const std::vector<std::vector<std::string>>& orderedTargets) const
     {
         infra::Optional<uint8_t> order(infra::inPlace, 0);
-        for (auto targets : orderedTargets)
+        for (const auto& targets : orderedTargets)
         {
             ++(*order);
             const auto targetPos = std::find(targets.begin(), targets.end(), targetName);
@@ -72,10 +72,11 @@ namespace main_
         }
         return infra::none;
     }
+
     bool UpgradePackBuilderFacade::CheckIfTargetIsInOrder(const std::string& target, const application::SupportedTargets& supportedTargets)
     {
         static uint8_t currentOrderOfTarget = 1;
-        static const auto orderedTargets = supportedTargets.OrderOfTargets();
+        static const auto& orderedTargets = supportedTargets.OrderOfTargets();
         const auto orderToAdd = GetOrder(target, orderedTargets);
         if (orderToAdd)
         {
@@ -95,7 +96,6 @@ namespace main_
         {
             if (!CheckIfTargetIsInOrder(target, supportedTargets))
                 throw IncorrectOrderOfTargetException(target);
-    
             inputs.push_back(factory.CreateInput(target, file, address));
         }
 
