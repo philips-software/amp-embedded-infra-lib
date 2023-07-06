@@ -76,12 +76,12 @@ namespace services
 
     std::size_t GapBondingDecorator::GetMaxNumberOfBonds() const
     {
-        return GapBondingObserver::Subject().GetMaxNumberOfBonds();;
+        return GapBondingObserver::Subject().GetMaxNumberOfBonds();
     }
 
     std::size_t GapBondingDecorator::GetNumberOfBonds() const
     {
-        return GapBondingObserver::Subject().GetNumberOfBonds();;
+        return GapBondingObserver::Subject().GetNumberOfBonds();
     }
 
     void GapPeripheralDecorator::StateChanged(GapState state)
