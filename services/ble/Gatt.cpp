@@ -85,7 +85,7 @@ namespace infra
     TextOutputStream& operator<<(TextOutputStream& stream, const services::AttAttribute::Uuid& uuid)
     {
         if (uuid.Is<services::AttAttribute::Uuid16>())
-            stream << "0x" << hex << uuid.Get<services::AttAttribute::Uuid16>();
+            stream << "[" << hex << uuid.Get<services::AttAttribute::Uuid16>() << "]";
         else
             stream << "[" << AsHex(MakeByteRange(uuid.Get<services::AttAttribute::Uuid128>())) << "]";
 

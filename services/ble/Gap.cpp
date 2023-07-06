@@ -109,10 +109,10 @@ namespace services
 
     infra::ConstByteRange GapAdvertisingDataParser::LocalName(infra::ConstByteRange data)
     {
-        auto localName = ParserAdvertisingData(data, GapAdvertisementDataType::shortenedLocalName);
+        auto localName = ParserAdvertisingData(data, GapAdvertisementDataType::completeLocalName);
 
         if (localName.empty())
-            return ParserAdvertisingData(data, GapAdvertisementDataType::completeLocalName);
+            return ParserAdvertisingData(data, GapAdvertisementDataType::shortenedLocalName);
         else
             return localName;
     }
