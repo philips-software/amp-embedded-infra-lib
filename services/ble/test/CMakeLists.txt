@@ -11,6 +11,7 @@ target_link_libraries(services.ble_test PUBLIC
 target_sources(services.ble_test PRIVATE
     TestBondBlobPersistence.cpp
     TestBondStorageSynchronizer.cpp
+    TestGapBonding.cpp
     TestGapCentral.cpp
     TestGapPairing.cpp
     TestGapPeripheral.cpp

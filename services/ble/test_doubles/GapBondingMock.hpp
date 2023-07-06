@@ -6,7 +6,7 @@
 
 namespace services
 {
-    class GapPeripheralBondingMock
+    class GapBondingMock
         : public GapBonding
     {
     public:

@@ -6,7 +6,7 @@
 
 namespace services
 {
-    class GapPeripheralBondingObserverMock
+    class GapBondingObserverMock
         : public GapBondingObserver
     {
         using GapBondingObserver::GapBondingObserver;
