@@ -1,4 +1,5 @@
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
+#include "infra/stream/StringOutputStream.hpp"
 #include "services/ble/Gatt.hpp"
 #include "gmock/gmock.h"
 
@@ -44,4 +45,34 @@ TEST(GattTest, const_characteristic)
     EXPECT_EQ(0xCD, c.Handle());
     EXPECT_EQ(0xFE, c.ValueHandle());
     EXPECT_EQ(services::GattCharacteristic::PropertyFlags::none, c.Properties());
+}
+
+TEST(GattInsertionOperatorPropertyFlagsTest, property_flags_overload_operator)
+{
+    infra::StringOutputStream::WithStorage<128> stream;
+
+    services::GattCharacteristic::PropertyFlags properties = services::GattCharacteristic::PropertyFlags::broadcast |
+        services::GattCharacteristic::PropertyFlags::read |
+        services::GattCharacteristic::PropertyFlags::writeWithoutResponse |
+        services::GattCharacteristic::PropertyFlags::write |
+        services::GattCharacteristic::PropertyFlags::notify |
+        services::GattCharacteristic::PropertyFlags::indicate |
+        services::GattCharacteristic::PropertyFlags::signedWrite |
+        services::GattCharacteristic::PropertyFlags::extended;
+
+    stream << properties;
+
+    EXPECT_EQ("[|broadcast||read||writeWithoutResponse||write||notify||indicate||signedWrite||extended|]", stream.Storage());
+}
+
+TEST(GattInsertionOperatorUuidTest, uuid_overload_operator)
+{
+    infra::StringOutputStream::WithStorage<128> stream;
+
+    services::AttAttribute::Uuid128 uuid128{ { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+        0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10 } };
+
+    stream << "Uuid128: " << uuid128;
+
+    EXPECT_EQ("Uuid128: [100f0e0d0c0b0a090807060504030201]", stream.Storage());
 }

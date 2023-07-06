@@ -167,6 +167,8 @@ namespace infra
             stream << "Public Device Address";
         else if (addressType == services::GapAdvertisingEventAddressType::randomDeviceAddress)
             stream << "Random Device Address";
+        else if (addressType == services::GapAdvertisingEventAddressType::publicIdentityAddress)
+            stream << "Public Identity Address";
         else
             stream << "Random Identity Address";
 
@@ -178,7 +180,7 @@ namespace infra
         if (state == services::GapState::standby)
             stream << "Standby";
         else if (state == services::GapState::scanning)
-            stream << "Scaanning";
+            stream << "Scanning";
         else if (state == services::GapState::advertising)
             stream << "Advertising";
         else

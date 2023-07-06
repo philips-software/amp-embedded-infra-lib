@@ -1,5 +1,6 @@
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/test_helper/MemoryRangeMatcher.hpp"
+#include "infra/stream/StringOutputStream.hpp"
 #include "services/ble/Gap.hpp"
 #include "services/ble/test_doubles/GapCentralMock.hpp"
 #include "services/ble/test_doubles/GapCentralObserverMock.hpp"
@@ -131,5 +132,48 @@ namespace services
 
         EXPECT_EQ("philips", ByteRangeAsStdString(services::GapAdvertisingDataParser::LocalName(infra::MakeConstByteRange(data))));
         EXPECT_TRUE(infra::ContentsEqual(infra::MakeConstByteRange(payloadParser), services::GapAdvertisingDataParser::ManufacturerSpecificData(infra::MakeConstByteRange(data))));
+    }
+
+    TEST(GapInsertionOperatorEventTypeTest, event_type_overload_operator)
+    {
+        infra::StringOutputStream::WithStorage<128> stream;
+
+        services::GapAdvertisingEventType eventTypeAdvInd = services::GapAdvertisingEventType::advInd;
+        services::GapAdvertisingEventType eventTypeAdvDirectInd = services::GapAdvertisingEventType::advDirectInd;
+        services::GapAdvertisingEventType eventTypeAdvScanInd = services::GapAdvertisingEventType::advScanInd;
+        services::GapAdvertisingEventType eventTypeAdvNonconnInd = services::GapAdvertisingEventType::advNonconnInd;
+        services::GapAdvertisingEventType eventTypeScanResponse = services::GapAdvertisingEventType::scanResponse;
+
+        stream << eventTypeAdvInd << " " << eventTypeAdvDirectInd << " " << eventTypeAdvScanInd << " " << eventTypeAdvNonconnInd << " " << eventTypeScanResponse;
+
+        EXPECT_EQ("ADV_IND ADV_DIRECT_IND ADV_SCAN_IND ADV_NONCONN_IND SCAN_RESPONSE", stream.Storage());
+    }
+
+    TEST(GapInsertionOperatorEventAddressTypeTest, address_event_type_overload_operator)
+    {
+        infra::StringOutputStream::WithStorage<128> stream;
+
+        services::GapAdvertisingEventAddressType eventAddressTypePublicDevice = services::GapAdvertisingEventAddressType::publicDeviceAddress;
+        services::GapAdvertisingEventAddressType eventAddressTypeRandomDevice = services::GapAdvertisingEventAddressType::randomDeviceAddress;
+        services::GapAdvertisingEventAddressType eventAddressTypePublicIdentity = services::GapAdvertisingEventAddressType::publicIdentityAddress;
+        services::GapAdvertisingEventAddressType eventAddressTypeRandomIdentity = services::GapAdvertisingEventAddressType::randomIdentityAddress;
+
+        stream << eventAddressTypePublicDevice << " " << eventAddressTypeRandomDevice << " " << eventAddressTypePublicIdentity << " " << eventAddressTypeRandomIdentity;
+
+        EXPECT_EQ("Public Device Address Random Device Address Public Identity Address Random Identity Address", stream.Storage());
+    }
+
+    TEST(GapInsertionOperatorStateTest, state_overload_operator)
+    {
+        infra::StringOutputStream::WithStorage<128> stream;
+
+        services::GapState stateStandby = services::GapState::standby;
+        services::GapState stateScanning = services::GapState::scanning;
+        services::GapState stateAdvertising = services::GapState::advertising;
+        services::GapState stateConnected = services::GapState::connected;
+
+        stream << stateStandby << " " << stateScanning << " " << stateAdvertising << " " << stateConnected;
+
+        EXPECT_EQ("Standby Scanning Advertising Connected", stream.Storage());
     }
 }
