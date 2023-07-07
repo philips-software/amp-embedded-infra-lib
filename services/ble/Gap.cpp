@@ -106,4 +106,86 @@ namespace services
     {
         GapCentralObserver::Subject().StopDeviceDiscovery();
     }
+
+    infra::ConstByteRange GapAdvertisingDataParser::LocalName(infra::ConstByteRange data)
+    {
+        auto localName = ParserAdvertisingData(data, GapAdvertisementDataType::completeLocalName);
+
+        if (localName.empty())
+            return ParserAdvertisingData(data, GapAdvertisementDataType::shortenedLocalName);
+        else
+            return localName;
+    }
+
+    infra::ConstByteRange GapAdvertisingDataParser::ManufacturerSpecificData(infra::ConstByteRange data)
+    {
+        return ParserAdvertisingData(data, GapAdvertisementDataType::manufacturerSpecificData);
+    }
+
+    infra::ConstByteRange GapAdvertisingDataParser::ParserAdvertisingData(infra::ConstByteRange data, GapAdvertisementDataType type)
+    {
+        const uint8_t lengthOffset = 0;
+        const uint8_t advertisingTypeOffset = 1;
+        const uint8_t payloadStartOffset = 2;
+
+        while (!data.empty() && data[lengthOffset] != 0)
+        {
+            auto advertisingType = data[advertisingTypeOffset];
+            auto payloadSize = data[lengthOffset] + 1;
+            infra::ConstByteRange payload(data.begin() + payloadStartOffset, data.begin() + payloadSize);
+            data.shrink_from_front_to(data.size() - payloadSize);
+
+            if (payload.size() > 1 && advertisingType == static_cast<uint8_t>(type))
+                return payload;
+        }
+
+        return infra::ConstByteRange();
+    }
+}
+
+namespace infra
+{
+    TextOutputStream& operator<<(TextOutputStream& stream, const services::GapAdvertisingEventType& eventType)
+    {
+        if (eventType == services::GapAdvertisingEventType::advInd)
+            stream << "ADV_IND";
+        else if (eventType == services::GapAdvertisingEventType::advDirectInd)
+            stream << "ADV_DIRECT_IND";
+        else if (eventType == services::GapAdvertisingEventType::advScanInd)
+            stream << "ADV_SCAN_IND";
+        else if (eventType == services::GapAdvertisingEventType::scanResponse)
+            stream << "SCAN_RESPONSE";
+        else
+            stream << "ADV_NONCONN_IND";
+
+        return stream;
+    }
+
+    TextOutputStream& operator<<(TextOutputStream& stream, const services::GapAdvertisingEventAddressType& addressType)
+    {
+        if (addressType == services::GapAdvertisingEventAddressType::publicDeviceAddress)
+            stream << "Public Device Address";
+        else if (addressType == services::GapAdvertisingEventAddressType::randomDeviceAddress)
+            stream << "Random Device Address";
+        else if (addressType == services::GapAdvertisingEventAddressType::publicIdentityAddress)
+            stream << "Public Identity Address";
+        else
+            stream << "Random Identity Address";
+
+        return stream;
+    }
+
+    TextOutputStream& operator<<(TextOutputStream& stream, const services::GapState& state)
+    {
+        if (state == services::GapState::standby)
+            stream << "Standby";
+        else if (state == services::GapState::scanning)
+            stream << "Scanning";
+        else if (state == services::GapState::advertising)
+            stream << "Advertising";
+        else
+            stream << "Connected";
+
+        return stream;
+    }
 }

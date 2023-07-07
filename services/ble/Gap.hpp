@@ -64,12 +64,26 @@ namespace services
         randomIdentityAddress
     };
 
+    enum class GapAdvertisementDataType : uint8_t
+    {
+        unknownType = 0x00u,
+        flags = 0x01u,
+        completeListOf128BitUuids = 0x07u,
+        shortenedLocalName = 0x08u,
+        completeLocalName = 0x09u,
+        publicTargetAddress = 0x17u,
+        manufacturerSpecificData = 0xffu
+    };
+
     struct GapConnectionParameters
     {
         uint16_t minConnIntMultiplier;
         uint16_t maxConnIntMultiplier;
         uint16_t slaveLatency;
         uint16_t supervisorTimeoutMs;
+
+        static constexpr uint16_t connectionInitialMaxTxOctets = 251;
+        static constexpr uint16_t connectionInitialMaxTxTime = 2120; // (connectionInitialMaxTxOctets + 14) * 8
     };
 
     struct GapAdvertisingReport
@@ -104,6 +118,16 @@ namespace services
         {
             return type == rhs.type && address == rhs.address;
         }
+    };
+
+    class GapAdvertisingDataParser
+    {
+    public:
+        static infra::ConstByteRange LocalName(infra::ConstByteRange data);
+        static infra::ConstByteRange ManufacturerSpecificData(infra::ConstByteRange data);
+
+    private:
+        static infra::ConstByteRange ParserAdvertisingData(infra::ConstByteRange data, GapAdvertisementDataType type);
     };
 
     class GapPeripheralPairing;
@@ -171,16 +195,6 @@ namespace services
         static constexpr AdvertisementIntervalMultiplier advertisementIntervalMultiplierMin = 0x20u;   // 20 ms
         static constexpr AdvertisementIntervalMultiplier advertisementIntervalMultiplierMax = 0x4000u; // 10240 ms
 
-        enum class AdvertisementDataType : uint8_t
-        {
-            flags = 0x01u,
-            completeListOf128BitUuids = 0x07u,
-            shortenedLocalName = 0x08u,
-            completeLocalName = 0x09u,
-            publicTargetAddress = 0x17u,
-            manufacturerSpecificData = 0xffu
-        };
-
         enum class AdvertisementFlags : uint8_t
         {
             leLimitedDiscoverableMode = 0x01u,
@@ -192,8 +206,6 @@ namespace services
 
         static constexpr uint8_t maxAdvertisementDataSize = 31;
         static constexpr uint8_t maxScanResponseDataSize = 31;
-        static constexpr uint16_t connectionInitialMaxTxOctets = 251;
-        static constexpr uint16_t connectionInitialMaxTxTime = 2120; // (connectionInitialMaxTxOctets + 14) * 8
 
     public:
         virtual GapAddress GetAddress() const = 0;
@@ -278,6 +290,13 @@ namespace services
         void StartDeviceDiscovery() override;
         void StopDeviceDiscovery() override;
     };
+}
+
+namespace infra
+{
+    infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::GapAdvertisingEventType& eventType);
+    infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::GapAdvertisingEventAddressType& addressType);
+    infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::GapState& state);
 }
 
 #endif
