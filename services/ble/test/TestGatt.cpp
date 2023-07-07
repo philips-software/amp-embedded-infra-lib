@@ -65,6 +65,17 @@ TEST(GattInsertionOperatorPropertyFlagsTest, property_flags_overload_operator)
     EXPECT_EQ("[|broadcast||read||writeWithoutResponse||write||notify||indicate||signedWrite||extended|]", stream.Storage());
 }
 
+TEST(GattInsertionOperatorPropertyFlagsTest, property_flags_overload_operator_flag_none)
+{
+    infra::StringOutputStream::WithStorage<128> stream;
+
+    services::GattCharacteristic::PropertyFlags properties = services::GattCharacteristic::PropertyFlags::none;
+
+    stream << properties;
+
+    EXPECT_EQ("[]", stream.Storage());
+}
+
 TEST(GattInsertionOperatorUuidTest, uuid_overload_operator)
 {
     infra::StringOutputStream::WithStorage<128> stream;
@@ -72,7 +83,7 @@ TEST(GattInsertionOperatorUuidTest, uuid_overload_operator)
     services::AttAttribute::Uuid128 uuid128{ { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
         0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10 } };
 
-    stream << "Uuid128: " << uuid128;
+    stream << "Uuid16: " << services::AttAttribute::Uuid(uuid16) << ", Uuid128: " << services::AttAttribute::Uuid(uuid128);
 
-    EXPECT_EQ("Uuid128: [100f0e0d0c0b0a090807060504030201]", stream.Storage());
+    EXPECT_EQ("Uuid16: [42], Uuid128: [100f0e0d0c0b0a090807060504030201]", stream.Storage());
 }
