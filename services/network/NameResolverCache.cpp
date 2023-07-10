@@ -60,21 +60,13 @@ namespace services
 
     std::array<uint8_t, 16> NameResolverCache::Hash(infra::BoundedConstString name) const
     {
-        union
-        {
-            struct
-            {
-                std::array<uint8_t, 16> first;
-                std::array<uint8_t, 16> second;
-            } hash_parts;
-
-            std::array<uint8_t, 32> hash;
-        } result;
-
         Sha256MbedTls sha256;
-        result.hash = sha256.Calculate(infra::StringAsByteRange(name));
+        const auto hash = sha256.Calculate(infra::StringAsByteRange(name));
 
-        return result.hash_parts.first;
+        std::array<uint8_t, 16> result;
+        infra::Copy(infra::Head(infra::MakeRange(hash), result.size()), infra::MakeRange(result));
+
+        return result;
     }
 
     void NameResolverCache::TryResolveNext()

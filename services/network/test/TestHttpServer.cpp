@@ -499,7 +499,7 @@ TEST_F(HttpServerTest, connection_is_kept_open_by_page_after_sending_response)
     EXPECT_CALL(connection, AckReceivedMock());
     ExecuteAllActions();
 
-    httpConnection->SendResponse(services::httpResponseOk);
+    httpConnection->SendResponse(services::httpResponseNoContent);
 
     EXPECT_CALL(connection, AckReceivedMock());
     savedReader = nullptr;
@@ -517,7 +517,7 @@ TEST_F(HttpServerWithSimplePageTest, when_responding_early_to_a_request_next_req
         EXPECT_CALL(page, ServesRequest(testing::_)).WillOnce(testing::Return(true));
         EXPECT_CALL(page, RequestReceived(testing::_, testing::_)).WillOnce(testing::Invoke([this](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
             {
-                connection.SendResponse(services::httpResponseOk);
+                connection.SendResponse(services::httpResponseNoContent);
             }));
 
         infra::ConstByteRange data = infra::MakeStringByteRange("PUT /path HTTP/1.1 \r\nContent-Length: 8\r\n\r\ndatadata");
