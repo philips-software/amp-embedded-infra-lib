@@ -95,43 +95,48 @@ namespace services
     TEST(GapAdvertisingDataParserTest, payload_does_not_contain_valid_info)
     {
         std::array<uint8_t, 1> data{ { 0x00 } };
+        services::GapAdvertisingDataParser gapAdvertisingDataParser(infra::MakeConstByteRange(data));
 
-        EXPECT_EQ(infra::ConstByteRange(), services::GapAdvertisingDataParser::LocalName(infra::MakeConstByteRange(data)));
-        EXPECT_EQ(infra::ConstByteRange(), services::GapAdvertisingDataParser::ManufacturerSpecificData(infra::MakeConstByteRange(data)));
+        EXPECT_EQ(infra::ConstByteRange(), gapAdvertisingDataParser.LocalName());
+        EXPECT_EQ(infra::ConstByteRange(), gapAdvertisingDataParser.ManufacturerSpecificData());
     }
 
     TEST(GapAdvertisingDataParserTest, get_local_name_using_type_shortenedLocalName)
     {
         std::array<uint8_t, 5> data{ { 0x04, 0x08, 0x73, 0x74, 0x72 } };
+        services::GapAdvertisingDataParser gapAdvertisingDataParser(infra::MakeConstByteRange(data));
 
-        EXPECT_EQ("str", ByteRangeAsStdString(services::GapAdvertisingDataParser::LocalName(infra::MakeConstByteRange(data))));
-        EXPECT_EQ(infra::ConstByteRange(), services::GapAdvertisingDataParser::ManufacturerSpecificData(infra::MakeConstByteRange(data)));
+        EXPECT_EQ("str", ByteRangeAsStdString(gapAdvertisingDataParser.LocalName()));
+        EXPECT_EQ(infra::ConstByteRange(), gapAdvertisingDataParser.ManufacturerSpecificData());
     }
 
     TEST(GapAdvertisingDataParserTest, get_local_name_using_type_completeLocalName)
     {
         std::array<uint8_t, 8> data{ { 0x07, 0x09, 0x73, 0x74, 0x72, 0x69, 0x6E, 0x67 } };
+        services::GapAdvertisingDataParser gapAdvertisingDataParser(infra::MakeConstByteRange(data));
 
-        EXPECT_EQ("string", ByteRangeAsStdString(services::GapAdvertisingDataParser::LocalName(infra::MakeConstByteRange(data))));
-        EXPECT_EQ(infra::ConstByteRange(), services::GapAdvertisingDataParser::ManufacturerSpecificData(infra::MakeConstByteRange(data)));
+        EXPECT_EQ("string", ByteRangeAsStdString(gapAdvertisingDataParser.LocalName()));
+        EXPECT_EQ(infra::ConstByteRange(), gapAdvertisingDataParser.ManufacturerSpecificData());
     }
 
     TEST(GapAdvertisingDataParserTest, get_manufacturer_specific_data)
     {
         std::array<uint8_t, 6> data{ { 0x05, 0xff, 0xaa, 0xbb, 0xcc, 0xdd } };
         std::array<uint8_t, 4> payloadParser{ { 0xaa, 0xbb, 0xcc, 0xdd } };
+        services::GapAdvertisingDataParser gapAdvertisingDataParser(infra::MakeConstByteRange(data));
 
-        EXPECT_EQ(infra::ConstByteRange(), services::GapAdvertisingDataParser::LocalName(infra::MakeConstByteRange(data)));
-        EXPECT_TRUE(infra::ContentsEqual(infra::MakeConstByteRange(payloadParser), services::GapAdvertisingDataParser::ManufacturerSpecificData(infra::MakeConstByteRange(data))));
+        EXPECT_EQ(infra::ConstByteRange(), gapAdvertisingDataParser.LocalName());
+        EXPECT_TRUE(infra::ContentsEqual(infra::MakeConstByteRange(payloadParser), gapAdvertisingDataParser.ManufacturerSpecificData()));
     }
 
     TEST(GapAdvertisingDataParserTest, useful_info_after_first_ad_structure)
     {
         std::array<uint8_t, 21> data{ { 0x02, 0x01, 0x06, 0x08, 0x09, 0x70, 0x68, 0x69, 0x6C, 0x69, 0x70, 0x73, 0x02, 0x0a, 0x08, 0x05, 0xff, 0xaa, 0xbb, 0xcc, 0xdd } };
         std::array<uint8_t, 4> payloadParser{ { 0xaa, 0xbb, 0xcc, 0xdd } };
+        services::GapAdvertisingDataParser gapAdvertisingDataParser(infra::MakeConstByteRange(data));
 
-        EXPECT_EQ("philips", ByteRangeAsStdString(services::GapAdvertisingDataParser::LocalName(infra::MakeConstByteRange(data))));
-        EXPECT_TRUE(infra::ContentsEqual(infra::MakeConstByteRange(payloadParser), services::GapAdvertisingDataParser::ManufacturerSpecificData(infra::MakeConstByteRange(data))));
+        EXPECT_EQ("philips", ByteRangeAsStdString(gapAdvertisingDataParser.LocalName()));
+        EXPECT_TRUE(infra::ContentsEqual(infra::MakeConstByteRange(payloadParser), gapAdvertisingDataParser.ManufacturerSpecificData()));
     }
 
     TEST(GapInsertionOperatorEventTypeTest, event_type_overload_operator)

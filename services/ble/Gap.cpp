@@ -107,33 +107,38 @@ namespace services
         GapCentralObserver::Subject().StopDeviceDiscovery();
     }
 
-    infra::ConstByteRange GapAdvertisingDataParser::LocalName(infra::ConstByteRange data)
+    GapAdvertisingDataParser::GapAdvertisingDataParser(infra::ConstByteRange data)
+        : data(data)
+    {}
+
+    infra::ConstByteRange GapAdvertisingDataParser::LocalName() const
     {
-        auto localName = ParserAdvertisingData(data, GapAdvertisementDataType::completeLocalName);
+        auto localName = ParserAdvertisingData(GapAdvertisementDataType::completeLocalName);
 
         if (localName.empty())
-            return ParserAdvertisingData(data, GapAdvertisementDataType::shortenedLocalName);
+            return ParserAdvertisingData(GapAdvertisementDataType::shortenedLocalName);
         else
             return localName;
     }
 
-    infra::ConstByteRange GapAdvertisingDataParser::ManufacturerSpecificData(infra::ConstByteRange data)
+    infra::ConstByteRange GapAdvertisingDataParser::ManufacturerSpecificData() const
     {
-        return ParserAdvertisingData(data, GapAdvertisementDataType::manufacturerSpecificData);
+        return ParserAdvertisingData(GapAdvertisementDataType::manufacturerSpecificData);
     }
 
-    infra::ConstByteRange GapAdvertisingDataParser::ParserAdvertisingData(infra::ConstByteRange data, GapAdvertisementDataType type)
+    infra::ConstByteRange GapAdvertisingDataParser::ParserAdvertisingData(GapAdvertisementDataType type) const
     {
         const uint8_t lengthOffset = 0;
         const uint8_t advertisingTypeOffset = 1;
         const uint8_t payloadStartOffset = 2;
+        infra::ConstByteRange searchRange = data;
 
-        while (!data.empty() && data[lengthOffset] != 0)
+        while (!searchRange.empty() && searchRange[lengthOffset] != 0)
         {
-            auto advertisingType = data[advertisingTypeOffset];
-            auto payloadSize = data[lengthOffset] + 1;
-            infra::ConstByteRange payload(data.begin() + payloadStartOffset, data.begin() + payloadSize);
-            data.shrink_from_front_to(data.size() - payloadSize);
+            auto advertisingType = searchRange[advertisingTypeOffset];
+            auto payloadSize = searchRange[lengthOffset] + 1;
+            infra::ConstByteRange payload(searchRange.begin() + payloadStartOffset, searchRange.begin() + payloadSize);
+            searchRange.shrink_from_front_to(searchRange.size() - payloadSize);
 
             if (payload.size() > 1 && advertisingType == static_cast<uint8_t>(type))
                 return payload;

@@ -123,11 +123,16 @@ namespace services
     class GapAdvertisingDataParser
     {
     public:
-        static infra::ConstByteRange LocalName(infra::ConstByteRange data);
-        static infra::ConstByteRange ManufacturerSpecificData(infra::ConstByteRange data);
+        explicit GapAdvertisingDataParser(infra::ConstByteRange data);
+
+        infra::ConstByteRange LocalName() const;
+        infra::ConstByteRange ManufacturerSpecificData() const;
 
     private:
-        static infra::ConstByteRange ParserAdvertisingData(infra::ConstByteRange data, GapAdvertisementDataType type);
+        infra::ConstByteRange data;
+
+    private:
+        infra::ConstByteRange ParserAdvertisingData(GapAdvertisementDataType type) const;
     };
 
     class GapPeripheralPairing;
