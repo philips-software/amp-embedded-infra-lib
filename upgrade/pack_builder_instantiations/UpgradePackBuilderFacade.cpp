@@ -65,7 +65,7 @@ namespace main_
         for (const auto& targets : orderedTargets)
         {
             ++(*order);
-            const auto targetPos = std::find(targets.second.begin() , targets.second.end(), targetName);
+            const auto targetPos = std::find(targets.second.begin(), targets.second.end(), targetName);
 
             if (targetPos != targets.second.end())
                 return order;
