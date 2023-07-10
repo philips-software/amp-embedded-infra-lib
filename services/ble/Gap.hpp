@@ -125,8 +125,8 @@ namespace services
     public:
         explicit GapAdvertisingDataParser(infra::ConstByteRange data);
 
-        infra::ConstByteRange LocalName();
-        infra::ConstByteRange ManufacturerSpecificData();
+        infra::ConstByteRange LocalName() const;
+        infra::ConstByteRange ManufacturerSpecificData() const;
 
     private:
         infra::ConstByteRange data;

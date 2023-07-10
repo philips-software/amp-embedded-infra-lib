@@ -111,7 +111,7 @@ namespace services
         : data(data)
     { }
 
-    infra::ConstByteRange GapAdvertisingDataParser::LocalName()
+    infra::ConstByteRange GapAdvertisingDataParser::LocalName() const
     {
         auto localName = ParserAdvertisingData(GapAdvertisementDataType::completeLocalName);
 
@@ -121,7 +121,7 @@ namespace services
             return localName;
     }
 
-    infra::ConstByteRange GapAdvertisingDataParser::ManufacturerSpecificData()
+    infra::ConstByteRange GapAdvertisingDataParser::ManufacturerSpecificData() const
     {
         return ParserAdvertisingData(GapAdvertisementDataType::manufacturerSpecificData);
     }
