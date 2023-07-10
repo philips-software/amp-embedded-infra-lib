@@ -59,15 +59,15 @@ namespace main_
         builder.WriteUpgradePack(outputFilename, fileSystem);
     }
 
-    infra::Optional<uint8_t> UpgradePackBuilderFacade::GetOrder(const std::string& targetName, const std::vector<std::vector<std::string>>& orderedTargets) const
+    infra::Optional<uint8_t> UpgradePackBuilderFacade::GetOrder(const std::string& targetName, const std::map<uint8_t, std::vector<std::string>>& orderedTargets) const
     {
         infra::Optional<uint8_t> order(infra::inPlace, 0);
         for (const auto& targets : orderedTargets)
         {
             ++(*order);
-            const auto targetPos = std::find(targets.begin(), targets.end(), targetName);
+            const auto targetPos = std::find(targets.second.begin() , targets.second.end(), targetName);
 
-            if (targetPos != targets.end())
+            if (targetPos != targets.second.end())
                 return order;
         }
         return infra::none;

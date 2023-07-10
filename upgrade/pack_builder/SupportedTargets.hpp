@@ -2,6 +2,7 @@
 #define UPGRADE_SUPPORTED_TARGETS_HPP
 
 #include "infra/util/Optional.hpp"
+#include <map>
 #include <string>
 #include <utility>
 #include <vector>
@@ -56,7 +57,7 @@ namespace application
         std::vector<TargetWithOffset> bin;
 
         std::vector<Target> mandatory;
-        std::vector<std::vector<Target>> order;
+        std::map<uint8_t, std::vector<Target>> order;
     };
 
     class SupportedTargetsBuilder
