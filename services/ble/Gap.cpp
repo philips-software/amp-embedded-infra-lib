@@ -109,7 +109,7 @@ namespace services
 
     GapAdvertisingDataParser::GapAdvertisingDataParser(infra::ConstByteRange data)
         : data(data)
-    { }
+    {}
 
     infra::ConstByteRange GapAdvertisingDataParser::LocalName()
     {
