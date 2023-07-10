@@ -65,10 +65,7 @@ namespace application
     {
         if (order)
         {
-            if (targets.order.size() < *order)
-                targets.order.resize(*order);
-
-            targets.order[*order - 1].emplace_back(target);
+            targets.order[*order].emplace_back(target);
             order = infra::none;
         }
     }
