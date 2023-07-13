@@ -4,6 +4,7 @@
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/stubs/strutil.h"
+#include "infra/syntax/ProtoFormatter.hpp"
 #include <sstream>
 
 namespace application
@@ -925,9 +926,9 @@ namespace application
             if (method.parameter && !method.parameter->MaxMessageSize())
                 result = std::numeric_limits<uint32_t>::max();
             else if (method.parameter)
-                result = std::max<uint32_t>(MaxVarIntSize(service->serviceId) + MaxVarIntSize((method.methodId << 3) | 2) + 10 + *method.parameter->MaxMessageSize(), result);
+                result = std::max<uint32_t>(infra::MaxVarIntSize(service->serviceId) + infra::MaxVarIntSize((method.methodId << 3) | 2) + 10 + *method.parameter->MaxMessageSize(), result);
             else
-                result = std::max<uint32_t>(MaxVarIntSize(service->serviceId) + MaxVarIntSize((method.methodId << 3) | 2) + 10, result);
+                result = std::max<uint32_t>(infra::MaxVarIntSize(service->serviceId) + infra::MaxVarIntSize((method.methodId << 3) | 2) + 10, result);
         }
 
         return result;

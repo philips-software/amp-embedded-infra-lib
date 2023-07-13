@@ -198,13 +198,16 @@ namespace services
 
         Echo& Rpc();
         void RequestSend(infra::Function<void()> onGranted);
+        void RequestSend(infra::Function<void()> onGranted, uint32_t requestedSize);
         void GrantSend();
         uint32_t MaxMessageSize() const;
+        uint32_t CurrentRequestedSize() const;
 
     private:
         Echo& echo;
         uint32_t maxMessageSize;
         infra::Function<void()> onGranted;
+        uint32_t currentRequestedSize = 0;
     };
 
     class EchoOnStreams
