@@ -9,8 +9,6 @@
 
 namespace application
 {
-    uint32_t MaxVarIntSize(uint64_t value);
-
     class EchoFieldVisitor;
     class EchoRoot;
 

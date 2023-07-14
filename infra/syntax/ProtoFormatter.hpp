@@ -8,6 +8,8 @@ namespace infra
 {
     class ProtoFormatter;
 
+    uint32_t MaxVarIntSize(uint64_t value);
+
     class ProtoLengthDelimitedFormatter
     {
     public:

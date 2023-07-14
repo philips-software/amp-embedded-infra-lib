@@ -41,6 +41,14 @@ namespace services
     void ServiceProxy::RequestSend(infra::Function<void()> onGranted)
     {
         this->onGranted = onGranted;
+        currentRequestedSize = MaxMessageSize();
+        echo.RequestSend(*this);
+    }
+
+    void ServiceProxy::RequestSend(infra::Function<void()> onGranted, uint32_t requestedSize)
+    {
+        this->onGranted = onGranted;
+        currentRequestedSize = requestedSize;
         echo.RequestSend(*this);
     }
 
@@ -52,6 +60,11 @@ namespace services
     uint32_t ServiceProxy::MaxMessageSize() const
     {
         return maxMessageSize;
+    }
+
+    uint32_t ServiceProxy::CurrentRequestedSize() const
+    {
+        return currentRequestedSize;
     }
 
     void EchoErrorPolicyAbortOnMessageFormatError::MessageFormatError()
@@ -84,7 +97,7 @@ namespace services
         if (sendRequesters.empty() && streamWriter == nullptr)
         {
             sendRequesters.push_back(serviceProxy);
-            RequestSendStream(serviceProxy.MaxMessageSize());
+            RequestSendStream(serviceProxy.CurrentRequestedSize());
         }
         else
             sendRequesters.push_back(serviceProxy);
@@ -100,7 +113,7 @@ namespace services
         streamWriter = nullptr;
 
         if (!sendRequesters.empty())
-            RequestSendStream(sendRequesters.front().MaxMessageSize());
+            RequestSendStream(sendRequesters.front().CurrentRequestedSize());
     }
 
     void EchoOnStreams::ServiceDone(Service& service)
