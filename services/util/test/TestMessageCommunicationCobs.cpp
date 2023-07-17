@@ -28,6 +28,11 @@ class MessageCommunicationCobsTest
     , public infra::EventDispatcherFixture
 {
 public:
+    ~MessageCommunicationCobsTest()
+    {
+        EXPECT_CALL(serial, ReceiveData(testing::_));
+    }
+
     void ExpectSendData(const std::vector<uint8_t>& v)
     {
         EXPECT_CALL(serial, SendData(testing::_, testing::_)).WillOnce(testing::Invoke([this, v](infra::ConstByteRange data, infra::Function<void()> onDone)

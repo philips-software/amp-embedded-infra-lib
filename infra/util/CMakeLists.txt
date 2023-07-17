@@ -105,7 +105,7 @@ endfunction()
 function(emil_target_string_source target input name namespace output)
 
     emil_transform_file_to_string("${input}" ${name} ${namespace} "${output}")
-    target_sources(${target} PRIVATE generated/${namespace}/${output}.cpp generated/${namespace}/${output}.hpp)
+    target_sources(${target} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated/${namespace}/${output}.cpp ${CMAKE_CURRENT_BINARY_DIR}/generated/${namespace}/${output}.hpp)
     target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 endfunction()
@@ -123,7 +123,7 @@ endfunction()
 function(emil_target_range_source target input name namespace output)
 
     emil_transform_file_to_range("${input}" ${name} ${namespace} "${output}")
-    target_sources(${target} PRIVATE generated/${namespace}/${output}.cpp generated/${namespace}/${output}.hpp)
+    target_sources(${target} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated/${namespace}/${output}.cpp ${CMAKE_CURRENT_BINARY_DIR}/generated/${namespace}/${output}.hpp)
     target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 endfunction()

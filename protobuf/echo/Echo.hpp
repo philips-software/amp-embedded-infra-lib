@@ -199,13 +199,16 @@ namespace services
 
         Echo& Rpc();
         virtual void RequestSend(infra::Function<void()> onGranted);
+        virtual void RequestSend(infra::Function<void()> onGranted, uint32_t requestedSize);
         void GrantSend();
         uint32_t MaxMessageSize() const;
+        uint32_t CurrentRequestedSize() const;
 
     private:
         Echo& echo;
         uint32_t maxMessageSize;
         infra::Function<void()> onGranted;
+        uint32_t currentRequestedSize = 0;
     };
 
     template<class ServiceProxyType>
@@ -222,6 +225,7 @@ namespace services
         explicit ServiceProxyResponseQueue(Container& container, Args&&... args);
 
         void RequestSend(infra::Function<void()> onRequestGranted) override;
+        // void RequestSend(infra::Function<void()> onGranted, uint32_t requestedSize) override;
 
     private:
         void ProcessSendQueue();

@@ -3,6 +3,19 @@
 
 namespace infra
 {
+    uint32_t MaxVarIntSize(uint64_t value)
+    {
+        uint32_t result = 1;
+
+        while (value > 127)
+        {
+            value >>= 7;
+            ++result;
+        }
+
+        return result;
+    }
+
     ProtoLengthDelimitedFormatter::ProtoLengthDelimitedFormatter(ProtoFormatter& formatter, uint32_t fieldNumber)
         : formatter(formatter)
     {
