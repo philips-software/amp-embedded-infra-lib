@@ -216,7 +216,12 @@ namespace services
         : public ServiceProxyType
     {
     public:
-        using Request = std::tuple<infra::Function<void()>, uint32_t>;
+        struct Request
+        {
+            infra::Function<void()> onRequestGranted;
+            uint32_t requestedSize;
+        };
+
         using Container = infra::BoundedDeque<Request>;
 
         template<std::size_t Max>
@@ -556,13 +561,13 @@ namespace services
             responseInProgress = true;
             ServiceProxyType::RequestSend([this]
                 {
-                    std::get<infra::Function<void()>>(container.front())();
+                    container.front().onRequestGranted();
                     container.pop_front();
 
                     responseInProgress = false;
                     ProcessSendQueue();
                 },
-                std::get<uint32_t>(container.front()));
+                container.front().requestedSize);
         }
     }
 }
