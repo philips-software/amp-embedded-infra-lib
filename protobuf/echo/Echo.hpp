@@ -216,7 +216,8 @@ namespace services
         : public ServiceProxyType
     {
     public:
-        using Container = infra::BoundedDeque<infra::Function<void()>>;
+        using Request = std::tuple<infra::Function<void()>, uint32_t>;
+        using Container = infra::BoundedDeque<Request>;
 
         template<std::size_t Max>
         using WithStorage = infra::WithStorage<ServiceProxyResponseQueue, typename Container::template WithMaxSize<Max>>;
@@ -225,7 +226,7 @@ namespace services
         explicit ServiceProxyResponseQueue(Container& container, Args&&... args);
 
         void RequestSend(infra::Function<void()> onRequestGranted) override;
-        // void RequestSend(infra::Function<void()> onGranted, uint32_t requestedSize) override;
+        void RequestSend(infra::Function<void()> onRequestGranted, uint32_t requestedSize) override;
 
     private:
         void ProcessSendQueue();
@@ -534,10 +535,16 @@ namespace services
     template<class ServiceProxyType>
     void ServiceProxyResponseQueue<ServiceProxyType>::RequestSend(infra::Function<void()> onRequestGranted)
     {
+        RequestSend(onRequestGranted, ServiceProxyType::MaxMessageSize());
+    }
+
+    template<class ServiceProxyType>
+    void ServiceProxyResponseQueue<ServiceProxyType>::RequestSend(infra::Function<void()> onRequestGranted, uint32_t requestedSize)
+    {
         if (container.full())
             return;
 
-        container.push_back(onRequestGranted);
+        container.push_back({ onRequestGranted, requestedSize });
         ProcessSendQueue();
     }
 
@@ -549,12 +556,13 @@ namespace services
             responseInProgress = true;
             ServiceProxyType::RequestSend([this]
                 {
-                    container.front()();
+                    std::get<infra::Function<void()>>(container.front())();
                     container.pop_front();
 
                     responseInProgress = false;
                     ProcessSendQueue();
-                });
+                },
+                std::get<uint32_t>(container.front()));
         }
     }
 }
