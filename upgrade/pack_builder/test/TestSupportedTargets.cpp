@@ -54,10 +54,11 @@ TEST(SupportedTargetsTest, should_add_targets_in_order)
                                                 .AddHex("application")
                                                 .Order(1)
                                                 .AddHex("data");
+    const auto& orderedTargets = targets.OrderOfTargets();
 
-    EXPECT_EQ(2, targets.OrderOfTargets().size());
-    EXPECT_EQ("data", targets.OrderOfTargets()[0][0]);
-    EXPECT_EQ("application", targets.OrderOfTargets()[1][0]);
+    EXPECT_EQ(2, orderedTargets.size());
+    EXPECT_EQ("data", orderedTargets.at(1).at(0));
+    EXPECT_EQ("application", orderedTargets.at(2).at(0));
 }
 
 TEST(SupportedTargetsTest, should_add_target_to_order_only_if_specified)
@@ -66,7 +67,8 @@ TEST(SupportedTargetsTest, should_add_target_to_order_only_if_specified)
                                                 .Order(1)
                                                 .AddHex("data")
                                                 .AddHex("application");
+    const auto& orderedTargets = targets.OrderOfTargets();
 
-    EXPECT_EQ(1, targets.OrderOfTargets()[0].size());
-    EXPECT_EQ("data", targets.OrderOfTargets()[0][0]);
+    EXPECT_EQ(1, orderedTargets.size());
+    EXPECT_EQ("data", orderedTargets.at(1).at(0));
 }
