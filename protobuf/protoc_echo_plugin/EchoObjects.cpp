@@ -2,6 +2,7 @@
 #include "generated/EchoAttributes.pb.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/stubs/strutil.h"
+#include "infra/syntax/ProtoFormatter.hpp"
 
 namespace application
 {
@@ -90,19 +91,6 @@ namespace application
 
             return namespaceString + descriptor.name() + "Reference";
         }
-    }
-
-    uint32_t MaxVarIntSize(uint64_t value)
-    {
-        uint32_t result = 1;
-
-        while (value > 127)
-        {
-            value >>= 7;
-            ++result;
-        }
-
-        return result;
     }
 
     EchoField::EchoField(const google::protobuf::FieldDescriptor& descriptor)
@@ -288,37 +276,37 @@ namespace application
 
             void VisitInt64(const EchoFieldInt64& field) override
             {
-                maxMessageSize += MaxVarIntSize(std::numeric_limits<uint64_t>::max()) + MaxVarIntSize((field.number << 3) | 2);
+                maxMessageSize += infra::MaxVarIntSize(std::numeric_limits<uint64_t>::max()) + infra::MaxVarIntSize((field.number << 3) | 2);
             }
 
             void VisitUint64(const EchoFieldUint64& field) override
             {
-                maxMessageSize += MaxVarIntSize(std::numeric_limits<uint64_t>::max()) + MaxVarIntSize((field.number << 3) | 2);
+                maxMessageSize += infra::MaxVarIntSize(std::numeric_limits<uint64_t>::max()) + infra::MaxVarIntSize((field.number << 3) | 2);
             }
 
             void VisitInt32(const EchoFieldInt32& field) override
             {
-                maxMessageSize += MaxVarIntSize(std::numeric_limits<uint32_t>::max()) + MaxVarIntSize((field.number << 3) | 2);
+                maxMessageSize += infra::MaxVarIntSize(std::numeric_limits<uint32_t>::max()) + infra::MaxVarIntSize((field.number << 3) | 2);
             }
 
             void VisitFixed64(const EchoFieldFixed64& field) override
             {
-                maxMessageSize += 8 + MaxVarIntSize((field.number << 3) | 2);
+                maxMessageSize += 8 + infra::MaxVarIntSize((field.number << 3) | 2);
             }
 
             void VisitFixed32(const EchoFieldFixed32& field) override
             {
-                maxMessageSize += 4 + MaxVarIntSize((field.number << 3) | 2);
+                maxMessageSize += 4 + infra::MaxVarIntSize((field.number << 3) | 2);
             }
 
             void VisitBool(const EchoFieldBool& field) override
             {
-                maxMessageSize += MaxVarIntSize(1) + MaxVarIntSize((field.number << 3) | 2);
+                maxMessageSize += infra::MaxVarIntSize(1) + infra::MaxVarIntSize((field.number << 3) | 2);
             }
 
             void VisitString(const EchoFieldString& field) override
             {
-                maxMessageSize += field.maxStringSize + MaxVarIntSize(field.maxStringSize) + MaxVarIntSize((field.number << 3) | 2);
+                maxMessageSize += field.maxStringSize + infra::MaxVarIntSize(field.maxStringSize) + infra::MaxVarIntSize((field.number << 3) | 2);
             }
 
             void VisitUnboundedString(const EchoFieldUnboundedString& field) override
@@ -333,12 +321,12 @@ namespace application
                 for (auto& field : field.message->fields)
                     field->Accept(visitor);
 
-                maxMessageSize += fieldMaxMessageSize + MaxVarIntSize(fieldMaxMessageSize) + MaxVarIntSize((field.number << 3) | 2);
+                maxMessageSize += fieldMaxMessageSize + infra::MaxVarIntSize(fieldMaxMessageSize) + infra::MaxVarIntSize((field.number << 3) | 2);
             }
 
             void VisitBytes(const EchoFieldBytes& field) override
             {
-                maxMessageSize += field.maxBytesSize + MaxVarIntSize(field.maxBytesSize) + MaxVarIntSize((field.number << 3) | 2);
+                maxMessageSize += field.maxBytesSize + infra::MaxVarIntSize(field.maxBytesSize) + infra::MaxVarIntSize((field.number << 3) | 2);
             }
 
             void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
@@ -348,22 +336,22 @@ namespace application
 
             void VisitUint32(const EchoFieldUint32& field) override
             {
-                maxMessageSize += MaxVarIntSize(std::numeric_limits<uint32_t>::max()) + MaxVarIntSize((field.number << 3) | 2);
+                maxMessageSize += infra::MaxVarIntSize(std::numeric_limits<uint32_t>::max()) + infra::MaxVarIntSize((field.number << 3) | 2);
             }
 
             void VisitEnum(const EchoFieldEnum& field) override
             {
-                maxMessageSize += MaxVarIntSize(std::numeric_limits<uint32_t>::max()) + MaxVarIntSize((field.number << 3) | 2);
+                maxMessageSize += infra::MaxVarIntSize(std::numeric_limits<uint32_t>::max()) + infra::MaxVarIntSize((field.number << 3) | 2);
             }
 
             void VisitSFixed64(const EchoFieldSFixed64& field) override
             {
-                maxMessageSize += 8 + MaxVarIntSize((field.number << 3) | 2);
+                maxMessageSize += 8 + infra::MaxVarIntSize((field.number << 3) | 2);
             }
 
             void VisitSFixed32(const EchoFieldSFixed32& field) override
             {
-                maxMessageSize += 4 + MaxVarIntSize((field.number << 3) | 2);
+                maxMessageSize += 4 + infra::MaxVarIntSize((field.number << 3) | 2);
             }
 
             void VisitRepeated(const EchoFieldRepeated& field) override
