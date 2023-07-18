@@ -61,21 +61,18 @@ namespace main_
 
     infra::Optional<uint8_t> UpgradePackBuilderFacade::GetOrder(const std::string& targetName, const std::map<uint8_t, std::vector<std::string>>& orderedTargets) const
     {
-        infra::Optional<uint8_t> order(infra::inPlace, 0);
         for (const auto& targets : orderedTargets)
         {
-            ++(*order);
             const auto targetPos = std::find(targets.second.begin(), targets.second.end(), targetName);
-
             if (targetPos != targets.second.end())
-                return order;
+                return infra::MakeOptional(targets.first);
         }
         return infra::none;
     }
 
     bool UpgradePackBuilderFacade::CheckIfTargetIsInOrder(const std::string& target, const application::SupportedTargets& supportedTargets)
     {
-        static uint8_t currentOrderOfTarget = 1;
+        static uint8_t currentOrderOfTarget = 0;
         static const auto& orderedTargets = supportedTargets.OrderOfTargets();
         const auto orderToAdd = GetOrder(target, orderedTargets);
         if (orderToAdd)
