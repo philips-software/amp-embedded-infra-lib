@@ -7,6 +7,7 @@ if (EMIL_HOST_BUILD)
 
     target_link_libraries(protobuf.protoc_echo_plugin_lib PUBLIC
         protobuf.echo_attributes
+        infra.syntax
     )
 
     target_include_directories(protobuf.protoc_echo_plugin_lib PUBLIC

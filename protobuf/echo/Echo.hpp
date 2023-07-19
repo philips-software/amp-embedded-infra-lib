@@ -3,6 +3,7 @@
 
 #include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/syntax/ProtoParser.hpp"
+#include "infra/util/BoundedDeque.hpp"
 #include "infra/util/Compatibility.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/Optional.hpp"
@@ -197,14 +198,48 @@ namespace services
         ServiceProxy(Echo& echo, uint32_t maxMessageSize);
 
         Echo& Rpc();
-        void RequestSend(infra::Function<void()> onGranted);
+        virtual void RequestSend(infra::Function<void()> onGranted);
+        virtual void RequestSend(infra::Function<void()> onGranted, uint32_t requestedSize);
         void GrantSend();
         uint32_t MaxMessageSize() const;
+        uint32_t CurrentRequestedSize() const;
 
     private:
         Echo& echo;
         uint32_t maxMessageSize;
         infra::Function<void()> onGranted;
+        uint32_t currentRequestedSize = 0;
+    };
+
+    template<class ServiceProxyType>
+    class ServiceProxyResponseQueue
+        : public ServiceProxyType
+    {
+    public:
+        struct Request
+        {
+            infra::Function<void()> onRequestGranted;
+            uint32_t requestedSize;
+        };
+
+        using Container = infra::BoundedDeque<Request>;
+
+        template<std::size_t Max>
+        using WithStorage = infra::WithStorage<ServiceProxyResponseQueue, typename Container::template WithMaxSize<Max>>;
+
+        template<class... Args>
+        explicit ServiceProxyResponseQueue(Container& container, Args&&... args);
+
+        void RequestSend(infra::Function<void()> onRequestGranted) override;
+        void RequestSend(infra::Function<void()> onRequestGranted, uint32_t requestedSize) override;
+
+    private:
+        void ProcessSendQueue();
+
+    private:
+        Container& container;
+
+        bool responseInProgress{ false };
     };
 
     class EchoOnStreams
@@ -493,6 +528,47 @@ namespace services
         parser.ReportFormatResult(field.first.Is<infra::ProtoLengthDelimited>());
         if (field.first.Is<infra::ProtoLengthDelimited>())
             field.first.Get<infra::ProtoLengthDelimited>().GetStringReference(value);
+    }
+
+    template<class ServiceProxyType>
+    template<class... Args>
+    ServiceProxyResponseQueue<ServiceProxyType>::ServiceProxyResponseQueue(Container& container, Args&&... args)
+        : ServiceProxyType{ std::forward<Args>(args)... }
+        , container{ container }
+    {}
+
+    template<class ServiceProxyType>
+    void ServiceProxyResponseQueue<ServiceProxyType>::RequestSend(infra::Function<void()> onRequestGranted)
+    {
+        RequestSend(onRequestGranted, ServiceProxyType::MaxMessageSize());
+    }
+
+    template<class ServiceProxyType>
+    void ServiceProxyResponseQueue<ServiceProxyType>::RequestSend(infra::Function<void()> onRequestGranted, uint32_t requestedSize)
+    {
+        if (container.full())
+            return;
+
+        container.push_back({ onRequestGranted, requestedSize });
+        ProcessSendQueue();
+    }
+
+    template<class ServiceProxyType>
+    void ServiceProxyResponseQueue<ServiceProxyType>::ProcessSendQueue()
+    {
+        if (!responseInProgress && !container.empty())
+        {
+            responseInProgress = true;
+            ServiceProxyType::RequestSend([this]
+                {
+                    container.front().onRequestGranted();
+                    container.pop_front();
+
+                    responseInProgress = false;
+                    ProcessSendQueue();
+                },
+                container.front().requestedSize);
+        }
     }
 }
 
