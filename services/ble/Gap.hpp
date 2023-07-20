@@ -117,6 +117,7 @@ namespace services
             insufficientEncryptionKeySize,
             numericComparisonFailed,
             timeout,
+            encryptionFailed,
             unknown,
         };
 
