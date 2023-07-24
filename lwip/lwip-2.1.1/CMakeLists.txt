@@ -1,3 +1,5 @@
+# cmake-dependency-scan pkg:github/lwip-tcpip/lwip@3b53b6e481beed5787017222463626ae17943beb
+
 add_library(lwip.lwip ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
 target_include_directories(lwip.lwip PUBLIC
