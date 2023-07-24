@@ -5,7 +5,8 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
   push:
-    branches: main
+    branches:
+      - main
   merge_group:
 
 permissions:
