@@ -41,6 +41,8 @@ uint32_t StaticLwIpRand();
 #define LWIP_NETIF_EXT_STATUS_CALLBACK 1
 #define SO_REUSE 1
 
+#define LWIP_TCP_PCB_NUM_EXT_ARGS 1
+
 #ifdef __cplusplus
 }
 #endif
