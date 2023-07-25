@@ -1,0 +1,229 @@
+FetchContent_Declare(
+    lwip
+    GIT_REPOSITORY https://github.com/lwip-tcpip/lwip
+    GIT_TAG 3b53b6e481beed5787017222463626ae17943beb # v2.1.1
+)
+
+FetchContent_GetProperties(lwip)
+if (NOT lwip_POPULATED)
+    FetchContent_Populate(lwip)
+endif()
+
+add_library(lwip.lwip ${EMIL_EXCLUDE_FROM_ALL} STATIC)
+
+target_include_directories(lwip.lwip PUBLIC
+    "$<BUILD_INTERFACE:${lwip_SOURCE_DIR}/src/include/>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)
+
+target_link_libraries(lwip.lwip PUBLIC
+    lwip.lwip_conf
+)
+
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL AppleClang)
+    target_compile_options(lwip.lwip PRIVATE -Wno-macro-redefined)
+endif()
+
+target_sources(lwip.lwip PRIVATE
+    ${lwip_SOURCE_DIR}/src/api/api_lib.c
+    ${lwip_SOURCE_DIR}/src/api/api_msg.c
+    ${lwip_SOURCE_DIR}/src/api/err.c
+    ${lwip_SOURCE_DIR}/src/api/if_api.c
+    ${lwip_SOURCE_DIR}/src/api/netbuf.c
+    ${lwip_SOURCE_DIR}/src/api/netdb.c
+    ${lwip_SOURCE_DIR}/src/api/netifapi.c
+    ${lwip_SOURCE_DIR}/src/api/sockets.c
+    ${lwip_SOURCE_DIR}/src/api/tcpip.c
+    ${lwip_SOURCE_DIR}/src/core/altcp.c
+    ${lwip_SOURCE_DIR}/src/core/altcp_alloc.c
+    ${lwip_SOURCE_DIR}/src/core/altcp_tcp.c
+    ${lwip_SOURCE_DIR}/src/core/def.c
+    ${lwip_SOURCE_DIR}/src/core/dns.c
+    ${lwip_SOURCE_DIR}/src/core/inet_chksum.c
+    ${lwip_SOURCE_DIR}/src/core/init.c
+    ${lwip_SOURCE_DIR}/src/core/ip.c
+    ${lwip_SOURCE_DIR}/src/core/mem.c
+    ${lwip_SOURCE_DIR}/src/core/memp.c
+    ${lwip_SOURCE_DIR}/src/core/netif.c
+    ${lwip_SOURCE_DIR}/src/core/pbuf.c
+    ${lwip_SOURCE_DIR}/src/core/raw.c
+    ${lwip_SOURCE_DIR}/src/core/stats.c
+    ${lwip_SOURCE_DIR}/src/core/sys.c
+    ${lwip_SOURCE_DIR}/src/core/tcp.c
+    ${lwip_SOURCE_DIR}/src/core/tcp_in.c
+    ${lwip_SOURCE_DIR}/src/core/tcp_out.c
+    ${lwip_SOURCE_DIR}/src/core/timeouts.c
+    ${lwip_SOURCE_DIR}/src/core/udp.c
+    ${lwip_SOURCE_DIR}/src/core/ipv4/autoip.c
+    ${lwip_SOURCE_DIR}/src/core/ipv4/dhcp.c
+    ${lwip_SOURCE_DIR}/src/core/ipv4/etharp.c
+    ${lwip_SOURCE_DIR}/src/core/ipv4/icmp.c
+    ${lwip_SOURCE_DIR}/src/core/ipv4/igmp.c
+    ${lwip_SOURCE_DIR}/src/core/ipv4/ip4.c
+    ${lwip_SOURCE_DIR}/src/core/ipv4/ip4_addr.c
+    ${lwip_SOURCE_DIR}/src/core/ipv4/ip4_frag.c
+    ${lwip_SOURCE_DIR}/src/core/ipv6/dhcp6.c
+    ${lwip_SOURCE_DIR}/src/core/ipv6/ethip6.c
+    ${lwip_SOURCE_DIR}/src/core/ipv6/icmp6.c
+    ${lwip_SOURCE_DIR}/src/core/ipv6/inet6.c
+    ${lwip_SOURCE_DIR}/src/core/ipv6/ip6.c
+    ${lwip_SOURCE_DIR}/src/core/ipv6/ip6_addr.c
+    ${lwip_SOURCE_DIR}/src/core/ipv6/ip6_frag.c
+    ${lwip_SOURCE_DIR}/src/core/ipv6/mld6.c
+    ${lwip_SOURCE_DIR}/src/core/ipv6/nd6.c
+    ${lwip_SOURCE_DIR}/src/include/lwip/altcp.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/altcp_tcp.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/altcp_tls.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/api.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/arch.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/autoip.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/debug.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/def.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/dhcp.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/dhcp6.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/dns.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/err.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/errno.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/etharp.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/ethip6.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/icmp.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/icmp6.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/if_api.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/igmp.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/inet.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/inet_chksum.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/init.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/ip.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/ip_addr.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/ip4.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/ip4_addr.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/ip4_frag.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/ip6.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/ip6_addr.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/ip6_frag.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/ip6_zone.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/mem.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/memp.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/mld6.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/nd6.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/netbuf.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/netdb.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/netif.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/netifapi.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/opt.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/pbuf.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/raw.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/sio.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/snmp.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/sockets.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/stats.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/sys.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/tcp.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/tcpbase.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/tcpip.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/timeouts.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/udp.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/priv/altcp_priv.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/priv/api_msg.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/priv/memp_priv.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/priv/memp_std.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/priv/mem_priv.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/priv/nd6_priv.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/priv/raw_priv.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/priv/sockets_priv.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/priv/tcp_priv.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/priv/tcpip_priv.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/prot/autoip.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/prot/dhcp.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/prot/dhcp6.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/prot/dns.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/prot/etharp.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/prot/ethernet.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/prot/iana.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/prot/icmp.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/prot/icmp6.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/prot/ieee.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/prot/igmp.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/prot/ip.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/prot/ip4.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/prot/ip6.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/prot/mld6.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/prot/nd6.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/prot/tcp.h
+    ${lwip_SOURCE_DIR}/src/include/lwip/prot/udp.h
+    ${lwip_SOURCE_DIR}/src/include/netif/bridgeif.h
+    ${lwip_SOURCE_DIR}/src/include/netif/bridgeif_opts.h
+    ${lwip_SOURCE_DIR}/src/include/netif/etharp.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ethernet.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ieee802154.h
+    ${lwip_SOURCE_DIR}/src/include/netif/lowpan6.h
+    ${lwip_SOURCE_DIR}/src/include/netif/lowpan6_ble.h
+    ${lwip_SOURCE_DIR}/src/include/netif/lowpan6_common.h
+    ${lwip_SOURCE_DIR}/src/include/netif/lowpan6_opts.h
+    ${lwip_SOURCE_DIR}/src/include/netif/slipif.h
+    ${lwip_SOURCE_DIR}/src/include/netif/zepif.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/ccp.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/chap_ms.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/chap-md5.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/chap-new.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/eap.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/ecp.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/eui64.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/fsm.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/ipcp.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/ipv6cp.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/lcp.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/magic.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/mppe.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/ppp.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/ppp_impl.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/ppp_opts.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/pppapi.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/pppcrypt.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/pppdebug.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/pppoe.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/pppol2tp.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/pppos.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/upap.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/vj.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/polarssl/arc4.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/polarssl/des.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/polarssl/md4.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/polarssl/md5.h
+    ${lwip_SOURCE_DIR}/src/include/netif/ppp/polarssl/sha1.h
+    ${lwip_SOURCE_DIR}/src/netif/bridgeif.c
+    ${lwip_SOURCE_DIR}/src/netif/bridgeif_fdb.c
+    ${lwip_SOURCE_DIR}/src/netif/ethernet.c
+    ${lwip_SOURCE_DIR}/src/netif/lowpan6.c
+    ${lwip_SOURCE_DIR}/src/netif/lowpan6_ble.c
+    ${lwip_SOURCE_DIR}/src/netif/lowpan6_common.c
+    ${lwip_SOURCE_DIR}/src/netif/slipif.c
+    ${lwip_SOURCE_DIR}/src/netif/zepif.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/auth.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/ccp.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/chap_ms.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/chap-md5.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/chap-new.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/demand.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/eap.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/ecp.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/eui64.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/fsm.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/ipcp.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/ipv6cp.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/lcp.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/magic.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/mppe.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/multilink.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/ppp.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/pppapi.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/pppcrypt.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/pppoe.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/pppol2tp.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/pppos.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/upap.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/utils.c
+    ${lwip_SOURCE_DIR}/src/netif/ppp/vj.c
+)
+
+emil_exclude_from_clang_format(lwip.lwip)

@@ -1,9 +1,9 @@
 #include "upgrade/security_key_generator/MaterialGenerator.hpp"
-#include "crypto/micro-ecc/uECC.h"
 #include "generated/echo/UpgradeKeys.pb.hpp"
 #include "hal/generic/FileSystemGeneric.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/syntax/ProtoFormatter.hpp"
+#include "uECC.h"
 #include <fstream>
 #include <iomanip>
 #include <string>
