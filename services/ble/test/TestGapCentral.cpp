@@ -58,20 +58,6 @@ namespace services
             });
     }
 
-    TEST_F(GapCentralDecoratorTest, forward_all_authentication_events_to_observers)
-    {
-        EXPECT_CALL(gapObserver, AuthenticationSuccessfullyCompleted());
-        EXPECT_CALL(gapObserver, AuthenticationFailed(GapAuthenticationErrorType::authenticationRequirementsNotMet));
-        EXPECT_CALL(gapObserver, AuthenticationFailed(GapAuthenticationErrorType::unknown));
-
-        gap.NotifyObservers([](GapCentralObserver& obs)
-            {
-                obs.AuthenticationSuccessfullyCompleted();
-                obs.AuthenticationFailed(GapAuthenticationErrorType::authenticationRequirementsNotMet);
-                obs.AuthenticationFailed(GapAuthenticationErrorType::unknown);
-            });
-    }
-
     TEST_F(GapCentralDecoratorTest, forward_all_calls_to_subject)
     {
         hal::MacAddress macAddress{ 0, 1, 2, 3, 4, 5 };
