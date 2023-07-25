@@ -1,7 +1,7 @@
 FetchContent_Declare(
     threadx
     GIT_REPOSITORY https://github.com/azure-rtos/threadx
-    GIT_TAG e11c166a4045d80ea74fe917e5608474754f5067
+    GIT_TAG e11c166a4045d80ea74fe917e5608474754f5067 # v6.1.11_rel
 )
 
 set(CMAKE_COMPILE_WARNING_AS_ERROR Off)
