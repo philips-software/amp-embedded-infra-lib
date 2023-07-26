@@ -1,5 +1,10 @@
 {
+  "clangd.arguments": ["--query-driver=/**/arm-none-eabi-*"],
   "cmake.copyCompileCommands": "${workspaceFolder}/build/compile_commands.json",
+  "editor.insertSpaces": true,
+  "editor.tabSize": 4,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true,
   "sonarlint.pathToCompileCommands": "${workspaceFolder}/build/compile_commands.json",
-  "clangd.arguments": ["--query-driver=/**/arm-none-eabi-*"]
 }
