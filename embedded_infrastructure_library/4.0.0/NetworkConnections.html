@@ -123,9 +123,49 @@ is closed, the Connection object is destructed, and thereby releases its
 control over its ConnectionObserver, which typically results in the
 ConnectionObserver being destructed.</p>
 </div>
-<div class="imageblock kroki">
+<div class="listingblock kroki-error">
 <div class="content">
-<img src="_images/diag-7571c5dba58175331a5fcb341af1037eb4a414a8.svg" alt="Diagram">
+<pre>@startuml
+    !theme cerulean-outline
+
+    class SharedOwnedObserver {
+        +bool IsAttached() const
+        +SharedOwningSubject&amp; Subject() const
+        +void Detach()
+        +{abstract}void Attached() {}
+        +{abstract}void Detaching() {}
+        -SharedOwningSubject* subject
+    }
+
+    class SharedOwningSubject {
+        -SharedPtr&lt;SharedOwnedObserver&gt; observer
+        +void Attach(const SharedPtr&lt;SharedOwnedObserver&gt;&amp; observer)
+        +void Detach()
+        +bool IsAttached() const
+        +SharedOwnedObserver&amp; Observer() const
+        +SharedPtr&lt;SharedOwnedObserver&gt; ObserverPtr() const
+    }
+
+    class ConnectionObserver{
+        +{abstract}void SendStreamAvailable(SharedPtr&lt;StreamWriter&gt;&amp;&amp; streamWriter)
+        +{abstract}void DataReceived()
+        +{abstract}void Close() {...}
+        +{abstract}void Abort() {...}
+    }
+
+    class Connection {
+        +{abstract}void RequestSendStream(std::size_t sendSize)
+        +{abstract}std::size_t MaxSendStreamSize() const
+        +{abstract}SharedPtr&lt;StreamReaderWithRewinding&gt; ReceiveStream()
+        +{abstract}void AckReceived()
+        +{abstract}void CloseAndDestroy()
+        +{abstract}void AbortAndDestroy()
+    }
+
+    SharedOwnedObserver &lt;|-- ConnectionObserver
+    SharedOwningSubject &lt;|-- Connection
+    SharedOwnedObserver -left- SharedOwningSubject : &lt; owns
+@enduml</pre>
 </div>
 </div>
 <div class="paragraph">
