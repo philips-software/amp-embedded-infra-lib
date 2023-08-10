@@ -1,4 +1,4 @@
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:e808bf977a4c4bfab17c3c41c6c7e8d131a488c5e844296bd515ae5f90930131
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:5be6a533efa0121f7a5382fe9caccb9a2fcda06a0b8a91312e598966712417bf
 
 RUN apt-get update && apt-get upgrade -y --no-install-recommends \
         ninja-build \
