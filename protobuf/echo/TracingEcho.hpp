@@ -49,7 +49,7 @@ namespace services
     {}
 
     template<class T>
-    void PrintField(const T& value, services::Tracer& tracer, typename T::template Type<0>* = 0)
+    void PrintField(const T& value, services::Tracer& tracer, typename std::enable_if<!std::is_enum<T>::value>::type* = 0)
     {
         tracer.Continue() << "{";
         PrintSubFields<0>(value, tracer);
@@ -57,7 +57,7 @@ namespace services
     }
 
     template<class T>
-    void PrintField(const infra::BoundedVector<T>& value, services::Tracer& tracer, typename T::template Type<0>* = 0)
+    void PrintField(const infra::BoundedVector<T>& value, services::Tracer& tracer, typename std::enable_if<!std::is_enum<T>::value>::type* = 0)
     {
         tracer.Continue() << "[";
         for (auto& v : value)
