@@ -54,6 +54,7 @@ target_sources(lwip.lwip PRIVATE
     ${lwip_SOURCE_DIR}/src/core/tcp_out.c
     ${lwip_SOURCE_DIR}/src/core/timeouts.c
     ${lwip_SOURCE_DIR}/src/core/udp.c
+    ${lwip_SOURCE_DIR}/src/core/ipv4/acd.c
     ${lwip_SOURCE_DIR}/src/core/ipv4/autoip.c
     ${lwip_SOURCE_DIR}/src/core/ipv4/dhcp.c
     ${lwip_SOURCE_DIR}/src/core/ipv4/etharp.c
@@ -71,6 +72,7 @@ target_sources(lwip.lwip PRIVATE
     ${lwip_SOURCE_DIR}/src/core/ipv6/ip6_frag.c
     ${lwip_SOURCE_DIR}/src/core/ipv6/mld6.c
     ${lwip_SOURCE_DIR}/src/core/ipv6/nd6.c
+    ${lwip_SOURCE_DIR}/src/include/lwip/acd.h
     ${lwip_SOURCE_DIR}/src/include/lwip/altcp.h
     ${lwip_SOURCE_DIR}/src/include/lwip/altcp_tcp.h
     ${lwip_SOURCE_DIR}/src/include/lwip/altcp_tls.h
