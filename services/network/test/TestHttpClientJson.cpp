@@ -200,12 +200,10 @@ TEST_F(HttpClientJsonTest, close_upon_destructing_reader_in_BodyAvailable)
     testing::StrictMock<infra::StreamReaderMock> reader;
     EXPECT_CALL(reader, Empty()).WillOnce(testing::Return(false)).WillOnce(testing::Return(true));
     EXPECT_CALL(reader, ExtractContiguousRange(testing::_)).WillOnce(testing::Return(infra::MakeStringByteRange(R"({ })")));
-    EXPECT_CALL(jsonObjectVisitor, Close())/*.WillOnce(testing::Invoke([this]()
-        {
-            EXPECT_CALL(controller, Error(testing::_));
-        }));*/;
+    EXPECT_CALL(jsonObjectVisitor, Close());
     infra::AccessedBySharedPtr access([this]()
         {
+            EXPECT_CALL(controller, Error(testing::_));
             httpClient.Detach();
             infra::ReConstruct(controller, url, services::HttpClientJson::ConnectionInfo{ jsonParserCreator, 443, httpClientConnector }, services::noAutoConnect);
         });
