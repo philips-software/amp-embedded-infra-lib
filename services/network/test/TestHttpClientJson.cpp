@@ -164,3 +164,50 @@ TEST_F(HttpClientJsonTest, ContentError_during_parsing_closes_connection)
     EXPECT_CALL(httpClient, CloseConnection());
     httpClient.Observer().BodyAvailable(infra::UnOwnedSharedPtr(reader));
 }
+
+TEST_F(HttpClientJsonTest, close_while_BodyAvailable)
+{
+    EXPECT_CALL(httpClient, Get("/path", testing::_));
+    EXPECT_CALL(controller, Headers()).WillOnce(testing::Return(headersIn));
+    EXPECT_CALL(controller, TopJsonObjectVisitor()).WillOnce(testing::ReturnRef(jsonObjectVisitor));
+    httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client)
+        {
+            httpClient.Attach(client);
+        });
+
+    testing::StrictMock<infra::StreamReaderMock> reader;
+    EXPECT_CALL(reader, Empty()).WillOnce(testing::Return(false));
+    EXPECT_CALL(reader, ExtractContiguousRange(testing::_)).WillOnce(testing::Return(infra::MakeStringByteRange(R"({ })")));
+    EXPECT_CALL(jsonObjectVisitor, Close()).WillOnce(testing::Invoke([this]()
+        {
+            EXPECT_CALL(controller, Error(testing::_));
+            httpClient.Detach();
+            infra::ReConstruct(controller, url, services::HttpClientJson::ConnectionInfo{ jsonParserCreator, 443, httpClientConnector }, services::noAutoConnect);
+        }));
+    httpClient.Observer().BodyAvailable(infra::UnOwnedSharedPtr(reader));
+}
+
+TEST_F(HttpClientJsonTest, close_upon_destructing_reader_in_BodyAvailable)
+{
+    EXPECT_CALL(httpClient, Get("/path", testing::_));
+    EXPECT_CALL(controller, Headers()).WillOnce(testing::Return(headersIn));
+    EXPECT_CALL(controller, TopJsonObjectVisitor()).WillOnce(testing::ReturnRef(jsonObjectVisitor));
+    httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client)
+        {
+            httpClient.Attach(client);
+        });
+
+    testing::StrictMock<infra::StreamReaderMock> reader;
+    EXPECT_CALL(reader, Empty()).WillOnce(testing::Return(false)).WillOnce(testing::Return(true));
+    EXPECT_CALL(reader, ExtractContiguousRange(testing::_)).WillOnce(testing::Return(infra::MakeStringByteRange(R"({ })")));
+    EXPECT_CALL(jsonObjectVisitor, Close())/*.WillOnce(testing::Invoke([this]()
+        {
+            EXPECT_CALL(controller, Error(testing::_));
+        }));*/;
+    infra::AccessedBySharedPtr access([this]()
+        {
+            httpClient.Detach();
+            infra::ReConstruct(controller, url, services::HttpClientJson::ConnectionInfo{ jsonParserCreator, 443, httpClientConnector }, services::noAutoConnect);
+        });
+    httpClient.Observer().BodyAvailable(access.MakeShared(reader));
+}
