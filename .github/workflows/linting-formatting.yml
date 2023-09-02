@@ -21,7 +21,7 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
         with:
           persist-credentials: false
       - uses: DoozyX/clang-format-lint-action@a83a8fb7d371f66da7dd1c4f33a193023899494b # v0.16
@@ -30,7 +30,7 @@ jobs:
           inplace: true
           extensions: "cpp,hpp"
           exclude: "./external"
-      - uses: reviewdog/action-suggester@3f60d0e826f0873905e0eeca522d562a6e67afbd # v1.7.1
+      - uses: reviewdog/action-suggester@a60fde3c0152426868be6dc5bcb7e1c89bba2358 # v1.7.4
         with:
           tool_name: clang-format
           filter_mode: diff_context
@@ -42,16 +42,16 @@ jobs:
       pull-requests: write
       security-events: write
     steps:
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: oxsecurity/megalinter@a7b1a3af0f3bd4de4db855969d27e224005665a6 # v7.1.0
+      - uses: oxsecurity/megalinter@fda6ac3a38be0e969820709ac16e442464e5a035 # v7.3.0
         env:
           APPLY_FIXES: all
           VALIDATE_ALL_CODEBASE: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: github/codeql-action/upload-sarif@1813ca74c3faaa3a2da2070b9b8a0b3e7373a0d8 # v2.21.0
+      - uses: github/codeql-action/upload-sarif@00e563ead9f72a8461b24876bee2d0c2e8bd2ee8 # v2.21.5
         if: ${{ success() }} || ${{ failure() }}
         with:
           sarif_file: megalinter-reports/megalinter-report.sarif
@@ -61,7 +61,7 @@ jobs:
           name: linter
           path: |
             megalinter-reports
-      - uses: reviewdog/action-suggester@3f60d0e826f0873905e0eeca522d562a6e67afbd # v1.7.1
+      - uses: reviewdog/action-suggester@a60fde3c0152426868be6dc5bcb7e1c89bba2358 # v1.7.4
         with:
           tool_name: MegaLinter
           filter_mode: diff_context

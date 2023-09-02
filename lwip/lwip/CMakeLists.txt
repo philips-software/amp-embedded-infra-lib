@@ -1,7 +1,7 @@
 FetchContent_Declare(
     lwip
     GIT_REPOSITORY https://github.com/lwip-tcpip/lwip
-    GIT_TAG 3b53b6e481beed5787017222463626ae17943beb # v2.1.1
+    GIT_TAG 84fde1ebbfe35b3125fc2d89b8a456cbacf148e9 # v2.2.0-rc1
 )
 
 FetchContent_GetProperties(lwip)
@@ -54,6 +54,7 @@ target_sources(lwip.lwip PRIVATE
     ${lwip_SOURCE_DIR}/src/core/tcp_out.c
     ${lwip_SOURCE_DIR}/src/core/timeouts.c
     ${lwip_SOURCE_DIR}/src/core/udp.c
+    ${lwip_SOURCE_DIR}/src/core/ipv4/acd.c
     ${lwip_SOURCE_DIR}/src/core/ipv4/autoip.c
     ${lwip_SOURCE_DIR}/src/core/ipv4/dhcp.c
     ${lwip_SOURCE_DIR}/src/core/ipv4/etharp.c
@@ -71,6 +72,7 @@ target_sources(lwip.lwip PRIVATE
     ${lwip_SOURCE_DIR}/src/core/ipv6/ip6_frag.c
     ${lwip_SOURCE_DIR}/src/core/ipv6/mld6.c
     ${lwip_SOURCE_DIR}/src/core/ipv6/nd6.c
+    ${lwip_SOURCE_DIR}/src/include/lwip/acd.h
     ${lwip_SOURCE_DIR}/src/include/lwip/altcp.h
     ${lwip_SOURCE_DIR}/src/include/lwip/altcp_tcp.h
     ${lwip_SOURCE_DIR}/src/include/lwip/altcp_tls.h
