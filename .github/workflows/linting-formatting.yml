@@ -30,7 +30,7 @@ jobs:
           inplace: true
           extensions: "cpp,hpp"
           exclude: "./external"
-      - uses: reviewdog/action-suggester@a60fde3c0152426868be6dc5bcb7e1c89bba2358 # v1.7.4
+      - uses: reviewdog/action-suggester@39a26a4439d742fc13233e9769dbedcf26b8163a # v1.7.5
         with:
           tool_name: clang-format
           filter_mode: diff_context
@@ -61,7 +61,7 @@ jobs:
           name: linter
           path: |
             megalinter-reports
-      - uses: reviewdog/action-suggester@a60fde3c0152426868be6dc5bcb7e1c89bba2358 # v1.7.4
+      - uses: reviewdog/action-suggester@39a26a4439d742fc13233e9769dbedcf26b8163a # v1.7.5
         with:
           tool_name: MegaLinter
           filter_mode: diff_context
