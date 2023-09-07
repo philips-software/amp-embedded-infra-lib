@@ -13,7 +13,7 @@
     },
     {
       "name": "Host",
-      "displayName": "Configuration for Host Tooling",
+      "displayName": "Configuration for Host Tooling and Tests",
       "inherits": "defaults",
       "cacheVariables": {
         "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo;MinSizeRel",
@@ -23,8 +23,17 @@
       "generator": "Ninja Multi-Config"
     },
     {
+      "name": "Host-Single-Debug",
+      "displayName": "Configuration for Host Tooling and Tests, Single Config Generator, Debug",
+      "inherits": "defaults",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "EMIL_ENABLE_DOCKER_TOOLS": "Off"
+      }
+    },
+    {
       "name": "Host-Single-MinSizeRel",
-      "displayName": "Configuration for Host Tooling",
+      "displayName": "Configuration for Host Tooling and Tests, Single Config Generator, MinSizeRel",
       "inherits": "defaults",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "MinSizeRel",
@@ -109,27 +118,6 @@
   ],
   "buildPresets": [
     {
-      "name": "Package",
-      "configuration": "MinSizeRel",
-      "configurePreset": "Host-Single-MinSizeRel",
-      "targets": [ "package" ]
-    },
-    {
-      "name": "Coverage",
-      "configuration": "Debug",
-      "configurePreset": "Coverage"
-    },
-    {
-      "name": "MutationTesting",
-      "configuration": "Debug",
-      "configurePreset": "MutationTesting"
-    },
-    {
-      "name": "Fuzzing",
-      "configuration": "Debug",
-      "configurePreset": "Fuzzing"
-    },
-    {
       "name": "Host-Debug",
       "configuration": "Debug",
       "configurePreset": "Host"
@@ -154,6 +142,32 @@
       "name": "Host-MinSizeRel",
       "configuration": "MinSizeRel",
       "configurePreset": "Host"
+    },
+    {
+      "name": "Host-Single-Debug",
+      "configuration": "Debug",
+      "configurePreset": "Host-Single-Debug"
+    },
+    {
+      "name": "ReleasePackage",
+      "configuration": "MinSizeRel",
+      "configurePreset": "Host-Single-MinSizeRel",
+      "targets": [ "package" ]
+    },
+    {
+      "name": "Coverage",
+      "configuration": "Debug",
+      "configurePreset": "Coverage"
+    },
+    {
+      "name": "MutationTesting",
+      "configuration": "Debug",
+      "configurePreset": "MutationTesting"
+    },
+    {
+      "name": "Fuzzing",
+      "configuration": "Debug",
+      "configurePreset": "Fuzzing"
     },
     {
       "name": "HostClangMsvc-Debug",
