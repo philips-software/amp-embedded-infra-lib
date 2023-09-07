@@ -23,14 +23,12 @@
       "generator": "Ninja Multi-Config"
     },
     {
-      "name": "Package",
-      "displayName": "Configuration for CPack package generation",
+      "name": "Host-Single-MinSizeRel",
+      "displayName": "Configuration for Host Tooling",
       "inherits": "defaults",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "MinSizeRel",
-        "EMIL_ENABLE_DOCKER_TOOLS": "Off",
-        "EMIL_BUILD_TESTS": "Off",
-        "EMIL_BUILD_EXAMPLES": "Off"
+        "EMIL_ENABLE_DOCKER_TOOLS": "Off"
       }
     },
     {
@@ -113,7 +111,7 @@
     {
       "name": "Package",
       "configuration": "MinSizeRel",
-      "configurePreset": "Package",
+      "configurePreset": "Host-Single-MinSizeRel",
       "targets": [ "package" ]
     },
     {

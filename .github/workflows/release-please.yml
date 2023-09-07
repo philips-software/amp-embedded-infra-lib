@@ -52,7 +52,7 @@ jobs:
           variant: sccache
       - uses: lukka/run-cmake@c2b72aff009141774c5a5fabe74ea46c8c04d9c4 # v10.6
         with:
-          configurePreset: "Package"
+          configurePreset: "Host-Single-MinSizeRel"
           buildPreset: "Package"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
       - run: gh release upload ${{ needs.release_please.outputs.tag_name }} build/**/emil-*.zip --clobber
