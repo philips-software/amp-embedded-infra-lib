@@ -28,6 +28,8 @@
       "inherits": "defaults",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
+        "EMIL_BUILD_TESTS": "On",
+        "EMIL_BUILD_EXAMPLES": "On",
         "EMIL_ENABLE_DOCKER_TOOLS": "Off"
       }
     },
@@ -37,6 +39,8 @@
       "inherits": "defaults",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "MinSizeRel",
+        "EMIL_BUILD_TESTS": "On",
+        "EMIL_BUILD_EXAMPLES": "On",
         "EMIL_ENABLE_DOCKER_TOOLS": "Off"
       }
     },
