@@ -12,14 +12,15 @@
       }
     },
     {
-      "name": "ContinuousIntegration",
-      "displayName": "Configuration for Continuous Integration",
+      "name": "Host",
+      "displayName": "Configuration for Host Tooling",
       "inherits": "defaults",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "EMIL_ENABLE_DOCKER_TOOLS": "Off",
+        "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo;MinSizeRel",
+        "EMIL_BUILD_TESTS": "On",
         "EMIL_BUILD_EXAMPLES": "On"
-      }
+      },
+      "generator": "Ninja Multi-Config"
     },
     {
       "name": "Package",
@@ -35,7 +36,7 @@
     {
       "name": "Coverage",
       "displayName": "Configuration for Code Coverage",
-      "inherits": "ContinuousIntegration",
+      "inherits": "Host",
       "cacheVariables": {
         "EMIL_ENABLE_COVERAGE": "On"
       },
@@ -44,7 +45,7 @@
     {
       "name": "MutationTesting",
       "displayName": "Configuration for Mutation Testing",
-      "inherits": "ContinuousIntegration",
+      "inherits": "Host",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang-12",
         "CMAKE_CXX_COMPILER": "clang++-12",
@@ -56,7 +57,7 @@
     {
       "name": "Fuzzing",
       "displayName": "Configuration for Fuzzing",
-      "inherits": "ContinuousIntegration",
+      "inherits": "Host",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
@@ -65,17 +66,6 @@
         "EMIL_ENABLE_FUZZING": "On"
       },
       "generator": "Ninja"
-    },
-    {
-      "name": "Host",
-      "displayName": "Configuration for Host Tooling",
-      "inherits": "defaults",
-      "cacheVariables": {
-        "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo;MinSizeRel",
-        "EMIL_BUILD_TESTS": "Off",
-        "EMIL_BUILD_EXAMPLES": "Off"
-      },
-      "generator": "Ninja Multi-Config"
     },
     {
       "name": "HostClangMsvc",
@@ -121,21 +111,10 @@
   ],
   "buildPresets": [
     {
-      "name": "ContinuousIntegration",
-      "configuration": "Debug",
-      "configurePreset": "ContinuousIntegration"
-    },
-    {
-      "name": "ContinuousIntegrationWithPackage",
-      "configuration": "Debug",
-      "configurePreset": "ContinuousIntegration",
-      "targets": ["all", "package"]
-    },
-    {
       "name": "Package",
       "configuration": "MinSizeRel",
       "configurePreset": "Package",
-      "targets": ["package"]
+      "targets": [ "package" ]
     },
     {
       "name": "Coverage",
@@ -156,6 +135,12 @@
       "name": "Host-Debug",
       "configuration": "Debug",
       "configurePreset": "Host"
+    },
+    {
+      "name": "Host-Debug-WithPackage",
+      "configuration": "Debug",
+      "configurePreset": "Host",
+      "targets": [ "all", "package" ]
     },
     {
       "name": "Host-Release",
@@ -226,8 +211,8 @@
       }
     },
     {
-      "name": "ContinuousIntegration",
-      "configurePreset": "ContinuousIntegration",
+      "name": "Host",
+      "configurePreset": "Host",
       "configuration": "Debug",
       "inherits": "defaults"
     },
