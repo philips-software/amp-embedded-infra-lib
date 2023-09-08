@@ -130,7 +130,7 @@
       "name": "Host-Debug-WithPackage",
       "configuration": "Debug",
       "configurePreset": "Host",
-      "targets": [ "all", "package" ]
+      "targets": ["all", "package"]
     },
     {
       "name": "Host-Release",
@@ -156,7 +156,7 @@
       "name": "ReleasePackage",
       "configuration": "MinSizeRel",
       "configurePreset": "Host-Single-MinSizeRel",
-      "targets": [ "package" ]
+      "targets": ["package"]
     },
     {
       "name": "Coverage",
