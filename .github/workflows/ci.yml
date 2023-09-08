@@ -65,7 +65,7 @@ jobs:
         with:
           configurePreset: "Host-Single-Debug"
           buildPreset: "Host-Single-Debug"
-          testPreset: "Host"
+          testPreset: "Host-Single-Debug"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
       - name: Upload test logs
         if: ${{ failure() }}

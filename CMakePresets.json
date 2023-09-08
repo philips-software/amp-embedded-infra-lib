@@ -16,9 +16,7 @@
       "displayName": "Configuration for Host Tooling and Tests",
       "inherits": "defaults",
       "cacheVariables": {
-        "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo;MinSizeRel",
-        "EMIL_BUILD_TESTS": "On",
-        "EMIL_BUILD_EXAMPLES": "On"
+        "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo;MinSizeRel"
       },
       "generator": "Ninja Multi-Config"
     },
@@ -28,8 +26,6 @@
       "inherits": "defaults",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "EMIL_BUILD_TESTS": "On",
-        "EMIL_BUILD_EXAMPLES": "On",
         "EMIL_ENABLE_DOCKER_TOOLS": "Off"
       }
     },
@@ -39,8 +35,6 @@
       "inherits": "defaults",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "MinSizeRel",
-        "EMIL_BUILD_TESTS": "On",
-        "EMIL_BUILD_EXAMPLES": "On",
         "EMIL_ENABLE_DOCKER_TOOLS": "Off"
       }
     },
@@ -229,6 +223,12 @@
     {
       "name": "Host",
       "configurePreset": "Host",
+      "configuration": "Debug",
+      "inherits": "defaults"
+    },
+    {
+      "name": "Host-Single-Debug",
+      "configurePreset": "Host-Single-Debug",
       "configuration": "Debug",
       "inherits": "defaults"
     },
