@@ -32,21 +32,21 @@ jobs:
       - uses: seanmiddleditch/gha-setup-ninja@16b940825621068d98711680b6c3ff92201f8fc0 # v3
       - uses: lukka/run-cmake@c2b72aff009141774c5a5fabe74ea46c8c04d9c4 # v10.6
         with:
-          configurePreset: "Host"
-          buildPreset: "Host-Debug-WithPackage"
-          testPreset: "Host"
+          configurePreset: "host"
+          buildPreset: "host-Debug-WithPackage"
+          testPreset: "host"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
       - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           name: emil
-          path: build/Host/emil-*-Linux.tar.gz
+          path: build/host/emil-*-Linux.tar.gz
           if-no-files-found: error
       - name: Upload test logs
         if: ${{ failure() }}
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           name: test-logs
-          path: build/Host/Testing/Temporary/
+          path: build/host/Testing/Temporary/
   host_build_test_windows:
     name: Host Build & Test
     runs-on: ${{ matrix.os }}
@@ -63,16 +63,16 @@ jobs:
           variant: sccache
       - uses: lukka/run-cmake@c2b72aff009141774c5a5fabe74ea46c8c04d9c4 # v10.6
         with:
-          configurePreset: "Host-Single-Debug"
-          buildPreset: "Host-Single-Debug"
-          testPreset: "Host-Single-Debug"
+          configurePreset: "host-single-Debug"
+          buildPreset: "host-single-Debug"
+          testPreset: "host-single-Debug"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
       - name: Upload test logs
         if: ${{ failure() }}
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           name: test-logs
-          path: build/Host/Testing/Temporary/
+          path: build/host/Testing/Temporary/
   embedded_build:
     name: Embedded Build
     runs-on: ubuntu-latest
@@ -100,8 +100,8 @@ jobs:
       - run: mkdir install && mv emil-*/* install/
       - uses: lukka/run-cmake@c2b72aff009141774c5a5fabe74ea46c8c04d9c4 # v10.6
         with:
-          configurePreset: "Embedded"
-          buildPreset: "Embedded-${{ matrix.configuration }}"
+          configurePreset: "embedded"
+          buildPreset: "embedded-${{ matrix.configuration }}"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"
   rtos:
     name: Embedded Build - RTOS
@@ -129,6 +129,6 @@ jobs:
       - run: mkdir install && mv emil-*/* install/
       - uses: lukka/run-cmake@c2b72aff009141774c5a5fabe74ea46c8c04d9c4 # v10.6
         with:
-          configurePreset: "Embedded-${{ matrix.rtos }}"
-          buildPreset: "Embedded-${{ matrix.rtos }}-RelWithDebInfo"
+          configurePreset: "embedded-${{ matrix.rtos }}"
+          buildPreset: "embedded-${{ matrix.rtos }}-RelWithDebInfo"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"
