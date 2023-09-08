@@ -147,7 +147,7 @@
       "configurePreset": "host-single-Debug"
     },
     {
-      "name": "ReleasePackage",
+      "name": "release-package",
       "configuration": "MinSizeRel",
       "configurePreset": "host-single-MinSizeRel",
       "targets": [ "package" ]
