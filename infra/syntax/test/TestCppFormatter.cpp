@@ -1,7 +1,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "infra/syntax/CppFormatter.hpp"
 #include "infra/util/Optional.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
-#include "protobuf/protoc_echo_plugin/CppFormatter.hpp"
 #include "gmock/gmock.h"
 #include <sstream>
 
@@ -515,8 +515,12 @@ TEST_F(CppFormatterTest, IncludesByHeader_prints_header)
 {
     application::IncludesByHeader include;
     include.Path("path");
+    include.PathSystem("system");
+    include.PathMacro("macro");
     include.PrintHeader(*printer);
     ExpectPrinted(R"(#include "path"
+#include <system>
+#include macro
 )");
 }
 
@@ -576,4 +580,18 @@ TEST_F(CppFormatterTest, EnumDeclaration_prints_no_source)
     application::EnumDeclaration declaration("name", { { "m1", 0 }, { "m2", 1 } });
     declaration.PrintSource(*printer, "scope");
     ExpectPrinted("");
+}
+
+TEST_F(CppFormatterTest, Define_prints_header)
+{
+    application::Define declaration("DEF");
+    declaration.PrintHeader(*printer);
+    ExpectPrinted("#define DEF");
+}
+
+TEST_F(CppFormatterTest, Undef_prints_header)
+{
+    application::Undef declaration("DEF");
+    declaration.PrintHeader(*printer);
+    ExpectPrinted("#undef DEF");
 }

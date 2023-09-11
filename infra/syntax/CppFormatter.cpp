@@ -1,4 +1,4 @@
-#include "protobuf/protoc_echo_plugin/CppFormatter.hpp"
+#include "infra/syntax/CppFormatter.hpp"
 #include <functional>
 
 namespace application
@@ -420,44 +420,51 @@ namespace application
         return result;
     }
 
-    IncludesByHeader::IncludesByHeader()
-        : Entity(true, false)
-    {}
-
-    void IncludesByHeader::Path(const std::string& path)
+    void Includes::Path(const std::string& path)
     {
-        paths.push_back(path);
+        paths.emplace_back("\"" + path + "\"");
     }
+
+    void Includes::PathSystem(const std::string& path)
+    {
+        paths.emplace_back("<" + path + ">");
+    }
+
+    void Includes::PathMacro(const std::string& path)
+    {
+        paths.emplace_back(path);
+    }
+
+    void Includes::Print(google::protobuf::io::Printer& printer) const
+    {
+        for (auto& path : paths)
+            printer.Print(R"(#include $path$
+)",
+                "path", path);
+    }
+
+    IncludesByHeader::IncludesByHeader()
+        : Includes(true, false)
+    {}
 
     void IncludesByHeader::PrintHeader(google::protobuf::io::Printer& printer) const
     {
-        for (auto& path : paths)
-            printer.Print(R"(#include "$path$"
-)",
-                "path", path);
+        Print(printer);
     }
 
     void IncludesByHeader::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
     {}
 
     IncludesBySource::IncludesBySource()
-        : Entity(false, true)
+        : Includes(false, true)
     {}
-
-    void IncludesBySource::Path(const std::string& path)
-    {
-        paths.push_back(path);
-    }
 
     void IncludesBySource::PrintHeader(google::protobuf::io::Printer& printer) const
     {}
 
     void IncludesBySource::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
     {
-        for (auto& path : paths)
-            printer.Print(R"(#include "$path$"
-)",
-                "path", path);
+        Print(printer);
     }
 
     ClassForwardDeclaration::ClassForwardDeclaration(const std::string& name)
@@ -570,5 +577,31 @@ namespace application
     }
 
     void EnumDeclaration::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
+    {}
+
+    Define::Define(const std::string& name)
+        : Entity(true, false)
+        , name(name)
+    {}
+
+    void Define::PrintHeader(google::protobuf::io::Printer& printer) const
+    {
+        printer.Print("#define $name$", "name", name);
+    }
+
+    void Define::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
+    {}
+
+    Undef::Undef(const std::string& name)
+        : Entity(true, false)
+        , name(name)
+    {}
+
+    void Undef::PrintHeader(google::protobuf::io::Printer& printer) const
+    {
+        printer.Print("#undef $name$", "name", name);
+    }
+
+    void Undef::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
     {}
 }

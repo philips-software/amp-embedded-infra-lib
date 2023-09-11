@@ -29,10 +29,16 @@ target_sources(infra.syntax PRIVATE
 
 if (EMIL_HOST_BUILD)
     target_sources(infra.syntax PRIVATE
+        CppFormatter.cpp
+        CppFormatter.hpp
         JsonObjectNavigator.cpp
         JsonObjectNavigator.hpp
         JsonFileReader.cpp
         JsonFileReader.hpp
+    )
+
+    target_link_libraries(infra.syntax PUBLIC
+        protobuf::libprotoc
     )
 endif()
 

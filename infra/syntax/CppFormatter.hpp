@@ -1,5 +1,5 @@
-#ifndef PROTOBUF_CPP_FORMATTER_HPP
-#define PROTOBUF_CPP_FORMATTER_HPP
+#ifndef INFRA_CPP_FORMATTER_HPP
+#define INFRA_CPP_FORMATTER_HPP
 
 #include "google/protobuf/io/printer.h"
 #include <memory>
@@ -218,34 +218,41 @@ namespace application
         std::vector<std::string> parameters;
     };
 
-    class IncludesByHeader
+    class Includes
         : public Entity
     {
     public:
-        IncludesByHeader();
+        using Entity::Entity;
 
         void Path(const std::string& path);
+        void PathSystem(const std::string& path);
+        void PathMacro(const std::string& path);
 
-        void PrintHeader(google::protobuf::io::Printer& printer) const override;
-        void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+    protected:
+        void Print(google::protobuf::io::Printer& printer) const;
 
     private:
         std::vector<std::string> paths;
     };
 
+    class IncludesByHeader
+        : public Includes
+    {
+    public:
+        IncludesByHeader();
+
+        void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+    };
+
     class IncludesBySource
-        : public Entity
+        : public Includes
     {
     public:
         IncludesBySource();
 
-        void Path(const std::string& path);
-
         void PrintHeader(google::protobuf::io::Printer& printer) const override;
         void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
-
-    private:
-        std::vector<std::string> paths;
     };
 
     class ClassForwardDeclaration
@@ -311,6 +318,32 @@ namespace application
     private:
         std::string name;
         std::vector<std::pair<std::string, int>> members;
+    };
+
+    class Define
+        : public Entity
+    {
+    public:
+        explicit Define(const std::string& name);
+
+        void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+
+    private:
+        std::string name;
+    };
+
+    class Undef
+        : public Entity
+    {
+    public:
+        explicit Undef(const std::string& name);
+
+        void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+
+    private:
+        std::string name;
     };
 }
 

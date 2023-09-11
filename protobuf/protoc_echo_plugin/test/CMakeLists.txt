@@ -5,7 +5,6 @@ emil_add_test(protobuf.protoc_echo_plugin_test)
 protocol_buffer_echo_cpp(protobuf.protoc_echo_plugin_test TestMessages.proto)
 
 target_sources(protobuf.protoc_echo_plugin_test PRIVATE
-    TestCppFormatter.cpp
     TestProtoCEchoPlugin.cpp
 )
 
