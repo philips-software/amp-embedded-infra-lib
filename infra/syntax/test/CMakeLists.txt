@@ -21,4 +21,5 @@ target_sources(infra.syntax_test PRIVATE
     TestProtoFormatter.cpp
     TestProtoParser.cpp
     TestXmlFormatter.cpp
+    TestXmlNavigator.cpp
 )

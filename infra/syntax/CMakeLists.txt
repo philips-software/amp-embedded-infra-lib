@@ -1,3 +1,13 @@
+if (EMIL_HOST_BUILD)
+    FetchContent_Declare(
+        pugixml
+        GIT_REPOSITORY https://github.com/zeux/pugixml
+        GIT_TAG a0e064336317c9347a91224112af9933598714e9 # v1.13
+    )
+
+    FetchContent_MakeAvailable(pugixml)
+endif()
+
 add_library(infra.syntax ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
 target_link_libraries(infra.syntax PUBLIC
@@ -35,10 +45,13 @@ if (EMIL_HOST_BUILD)
         JsonObjectNavigator.hpp
         JsonFileReader.cpp
         JsonFileReader.hpp
+        XmlNavigator.cpp
+        XmlNavigator.hpp
     )
 
     target_link_libraries(infra.syntax PUBLIC
         protobuf::libprotoc
+        pugixml
     )
 endif()
 
