@@ -18,6 +18,15 @@ jobs:
     steps:
       - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
       - uses: philips-forks/cmake-dependency-submission@72880580a7cafc16145d82268f1892c0ece3da2a # main
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh ext install advanced-security/gh-sbom
+          gh sbom -l -c > sbom.json
+      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        with:
+          name: SBOM
+          path: sbom.json
   dependency-review:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
