@@ -22,7 +22,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh ext install advanced-security/gh-sbom
-          gh sbom -l -c > sbom.json
+          gh sbom
       - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           name: SBOM
