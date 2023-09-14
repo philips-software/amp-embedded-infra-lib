@@ -40,9 +40,7 @@ namespace services
 
     void ServiceProxy::RequestSend(infra::Function<void()> onGranted)
     {
-        this->onGranted = onGranted;
-        currentRequestedSize = MaxMessageSize();
-        echo.RequestSend(*this);
+        RequestSend(onGranted, MaxMessageSize());
     }
 
     void ServiceProxy::RequestSend(infra::Function<void()> onGranted, uint32_t requestedSize)

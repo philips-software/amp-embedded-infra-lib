@@ -11,10 +11,11 @@ target_sources(services.ble_test_doubles PRIVATE
     GapCentralMock.hpp
     GapCentralObserverMock.hpp
     GapPeripheralMock.hpp
-    GapPeripheralBondingMock.hpp
-    GapPeripheralPairingMock.hpp
+    GapBondingMock.hpp
+    GapPairingMock.hpp
+    GapPairingObserverMock.hpp
     GapPeripheralObserverMock.hpp
-    GapPeripheralBondingObserverMock.hpp
+    GapBondingObserverMock.hpp
     GattClientMock.hpp
     GattServerMock.hpp
 )

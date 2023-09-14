@@ -251,8 +251,15 @@ namespace services
                     return;
                 }
 
+                bool localDestroyed = false;
+                destroyed = &localDestroyed;
+
                 auto header = HeaderFromString(headerLine);
                 observer.HeaderAvailable(header);
+
+                if (localDestroyed)
+                    return;
+                destroyed = nullptr;
             }
             else if (headerBuffer.full())
             {
