@@ -331,12 +331,18 @@ namespace application
         {
             auto typeMapSpecialization = std::make_shared<StructTemplateSpecialization>(MessageName() + "TypeMap");
             typeMapSpecialization->TemplateSpecialization(google::protobuf::SimpleItoa(std::distance(message->fields.data(), &field)));
-            typeMapSpecialization->Add(std::make_shared<Using>("ProtoType", field->protoType));
+            AddTypeMapProtoType(*field, *typeMapSpecialization);
             AddTypeMapType(*field, *typeMapSpecialization);
+            AddTypeMapFieldNumber(*field, *typeMapSpecialization);
             typeMapNamespace->Add(typeMapSpecialization);
         }
 
         formatter.Add(typeMapNamespace);
+    }
+
+    void MessageTypeMapGenerator::AddTypeMapProtoType(EchoField& field, Entities& entities)
+    {
+        entities.Add(std::make_shared<Using>("ProtoType", field.protoType));
     }
 
     void MessageTypeMapGenerator::AddTypeMapType(EchoField& field, Entities& entities)
@@ -345,6 +351,11 @@ namespace application
         StorageTypeVisitor visitor(result);
         field.Accept(visitor);
         entities.Add(std::make_shared<Using>("Type", result));
+    }
+
+    void MessageTypeMapGenerator::AddTypeMapFieldNumber(EchoField& field, Entities& entities)
+    {
+        entities.Add(std::make_shared<DataMember>("fieldNumber", "static const uint32_t", google::protobuf::SimpleItoa(field.number)));
     }
 
     std::string MessageTypeMapGenerator::MessageName() const
@@ -369,12 +380,18 @@ namespace application
         {
             auto typeMapSpecialization = std::make_shared<StructTemplateSpecialization>(MessageName() + "TypeMap");
             typeMapSpecialization->TemplateSpecialization(google::protobuf::SimpleItoa(std::distance(message->fields.data(), &field)));
-            typeMapSpecialization->Add(std::make_shared<Using>("ProtoType", field->protoReferenceType));
+            AddTypeMapProtoType(*field, *typeMapSpecialization);
             AddTypeMapType(*field, *typeMapSpecialization);
+            AddTypeMapFieldNumber(*field, *typeMapSpecialization);
             typeMapNamespace->Add(typeMapSpecialization);
         }
 
         formatter.Add(typeMapNamespace);
+    }
+
+    void MessageReferenceTypeMapGenerator::AddTypeMapProtoType(EchoField& field, Entities& entities)
+    {
+        entities.Add(std::make_shared<Using>("ProtoType", field.protoReferenceType));
     }
 
     void MessageReferenceTypeMapGenerator::AddTypeMapType(EchoField& field, Entities& entities)
@@ -482,6 +499,8 @@ namespace application
         auto typeUsing = std::make_shared<UsingTemplate>("Type", "typename " + TypeMapName() + "<fieldIndex>::Type");
         typeUsing->TemplateParameter("std::size_t fieldIndex");
         typeMap->Add(typeUsing);
+        auto fieldNumber = std::make_shared<DataMember>("fieldNumber", "template<std::size_t fieldIndex> static const uint32_t", "typename " + TypeMapName() + "<fieldIndex>::fieldNumber");
+        typeMap->Add(fieldNumber);
 
         classFormatter->Add(typeMap);
     }
