@@ -46,6 +46,7 @@ namespace services
         control = CreateUdpPcb(versions);
         really_assert(control != nullptr);
         ip_set_option(control, SOF_BROADCAST);
+        ip_set_option(control, SOF_REUSEADDR);
         err_t result = udp_bind(control, IpAddrAny(versions), port);
         assert(result == ERR_OK);
 
