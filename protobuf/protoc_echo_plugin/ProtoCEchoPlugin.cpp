@@ -499,7 +499,7 @@ namespace application
         auto typeUsing = std::make_shared<UsingTemplate>("Type", "typename " + TypeMapName() + "<fieldIndex>::Type");
         typeUsing->TemplateParameter("std::size_t fieldIndex");
         typeMap->Add(typeUsing);
-        auto fieldNumber = std::make_shared<DataMember>("fieldNumber", "template<std::size_t fieldIndex> static const uint32_t", "typename " + TypeMapName() + "<fieldIndex>::fieldNumber");
+        auto fieldNumber = std::make_shared<DataMember>("fieldNumber", "template<std::size_t fieldIndex> static const uint32_t", TypeMapName() + "<fieldIndex>::fieldNumber");
         typeMap->Add(fieldNumber);
 
         classFormatter->Add(typeMap);
