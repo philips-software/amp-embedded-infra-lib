@@ -11,7 +11,7 @@ namespace services
     class ProtoMessageBuilderBase
     {
     public:
-        ProtoMessageBuilderBase(infra::BoundedVector<std::pair<uint32_t, infra::Function<void(infra::DataInputStream& stream)>>>& stack);
+        explicit ProtoMessageBuilderBase(infra::BoundedVector<std::pair<uint32_t, infra::Function<void(infra::DataInputStream& stream)>>>& stack);
 
         void Feed(infra::ConstByteRange data);
 
@@ -26,28 +26,28 @@ namespace services
         template<std::size_t I, class Message>
         bool DeserializeSingleField(infra::ProtoParser::PartialField& field, infra::ProtoParser& parser, Message& message);
 
-        void DeserializeField(ProtoBool, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, bool& value);
-        void DeserializeField(ProtoUInt32, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, uint32_t& value);
-        void DeserializeField(ProtoInt32, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, int32_t& value);
-        void DeserializeField(ProtoUInt64, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, uint64_t& value);
-        void DeserializeField(ProtoInt64, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, int64_t& value);
-        void DeserializeField(ProtoFixed32, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, uint32_t& value);
-        void DeserializeField(ProtoFixed64, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, uint64_t& value);
-        void DeserializeField(ProtoSFixed32, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, int32_t& value);
-        void DeserializeField(ProtoSFixed64, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, int64_t& value);
+        void DeserializeField(ProtoBool, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, bool& value) const;
+        void DeserializeField(ProtoUInt32, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, uint32_t& value) const;
+        void DeserializeField(ProtoInt32, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, int32_t& value) const;
+        void DeserializeField(ProtoUInt64, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, uint64_t& value) const;
+        void DeserializeField(ProtoInt64, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, int64_t& value) const;
+        void DeserializeField(ProtoFixed32, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, uint32_t& value) const;
+        void DeserializeField(ProtoFixed64, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, uint64_t& value) const;
+        void DeserializeField(ProtoSFixed32, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, int32_t& value) const;
+        void DeserializeField(ProtoSFixed64, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, int64_t& value) const;
 
         void DeserializeField(ProtoStringBase, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, infra::BoundedString& value);
         void DeserializeField(ProtoUnboundedString, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, std::string& value);
         void DeserializeField(ProtoBytesBase, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, infra::BoundedVector<uint8_t>& value);
 
         template<class Enum>
-        void DeserializeField(ProtoEnum<Enum>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Enum& value);
+        void DeserializeField(ProtoEnum<Enum>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Enum& value) const;
         template<class Message>
         void DeserializeField(ProtoMessage<Message>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Message& value);
         template<class ProtoType, class Type>
-        void DeserializeField(ProtoRepeatedBase<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value);
+        void DeserializeField(ProtoRepeatedBase<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value) const;
         template<class ProtoType, class Type>
-        void DeserializeField(ProtoUnboundedRepeated<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value);
+        void DeserializeField(ProtoUnboundedRepeated<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value) const;
 
         void ConsumeUnknownField(infra::ProtoParser::PartialField& field);
 
@@ -125,7 +125,7 @@ namespace services
     }
 
     template<class Enum>
-    void ProtoMessageBuilderBase::DeserializeField(ProtoEnum<Enum>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Enum& value)
+    void ProtoMessageBuilderBase::DeserializeField(ProtoEnum<Enum>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Enum& value) const
     {
         parser.ReportFormatResult(field.Is<uint64_t>());
         if (field.Is<uint64_t>())
@@ -148,7 +148,7 @@ namespace services
     }
 
     template<class ProtoType, class Type>
-    void ProtoMessageBuilderBase::DeserializeField(ProtoRepeatedBase<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value)
+    void ProtoMessageBuilderBase::DeserializeField(ProtoRepeatedBase<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value) const
     {
         parser.ReportFormatResult(!value.full());
         if (!value.full())
@@ -159,7 +159,7 @@ namespace services
     }
 
     template<class ProtoType, class Type>
-    void ProtoMessageBuilderBase::DeserializeField(ProtoUnboundedRepeated<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value)
+    void ProtoMessageBuilderBase::DeserializeField(ProtoUnboundedRepeated<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value) const
     {
         value.emplace_back();
         DeserializeField(ProtoType(), parser, field, value.back());

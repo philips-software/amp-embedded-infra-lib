@@ -36,47 +36,47 @@ namespace services
         }
     }
 
-    void ProtoMessageBuilderBase::DeserializeField(ProtoBool, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, bool& value)
+    void ProtoMessageBuilderBase::DeserializeField(ProtoBool, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, bool& value) const
     {
         services::DeserializeField(ProtoBool(), parser, field, value);
     }
 
-    void ProtoMessageBuilderBase::DeserializeField(ProtoUInt32, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, uint32_t& value)
+    void ProtoMessageBuilderBase::DeserializeField(ProtoUInt32, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, uint32_t& value) const
     {
         services::DeserializeField(ProtoUInt32(), parser, field, value);
     }
 
-    void ProtoMessageBuilderBase::DeserializeField(ProtoInt32, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, int32_t& value)
+    void ProtoMessageBuilderBase::DeserializeField(ProtoInt32, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, int32_t& value) const
     {
         services::DeserializeField(ProtoInt32(), parser, field, value);
     }
 
-    void ProtoMessageBuilderBase::DeserializeField(ProtoUInt64, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, uint64_t& value)
+    void ProtoMessageBuilderBase::DeserializeField(ProtoUInt64, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, uint64_t& value) const
     {
         services::DeserializeField(ProtoUInt64(), parser, field, value);
     }
 
-    void ProtoMessageBuilderBase::DeserializeField(ProtoInt64, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, int64_t& value)
+    void ProtoMessageBuilderBase::DeserializeField(ProtoInt64, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, int64_t& value) const
     {
         services::DeserializeField(ProtoInt64(), parser, field, value);
     }
 
-    void ProtoMessageBuilderBase::DeserializeField(ProtoFixed32, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, uint32_t& value)
+    void ProtoMessageBuilderBase::DeserializeField(ProtoFixed32, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, uint32_t& value) const
     {
         services::DeserializeField(ProtoFixed32(), parser, field, value);
     }
 
-    void ProtoMessageBuilderBase::DeserializeField(ProtoFixed64, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, uint64_t& value)
+    void ProtoMessageBuilderBase::DeserializeField(ProtoFixed64, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, uint64_t& value) const
     {
         services::DeserializeField(ProtoFixed64(), parser, field, value);
     }
 
-    void ProtoMessageBuilderBase::DeserializeField(ProtoSFixed32, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, int32_t& value)
+    void ProtoMessageBuilderBase::DeserializeField(ProtoSFixed32, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, int32_t& value) const
     {
         services::DeserializeField(ProtoSFixed32(), parser, field, value);
     }
 
-    void ProtoMessageBuilderBase::DeserializeField(ProtoSFixed64, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, int64_t& value)
+    void ProtoMessageBuilderBase::DeserializeField(ProtoSFixed64, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, int64_t& value) const
     {
         services::DeserializeField(ProtoSFixed64(), parser, field, value);
     }
@@ -87,7 +87,7 @@ namespace services
         if (field.Is<infra::PartialProtoLengthDelimited>())
         {
             auto stringSize = field.Get<infra::PartialProtoLengthDelimited>().length;
-            stack.emplace_back(stringSize, [this, &value](infra::DataInputStream& stream)
+            stack.emplace_back(stringSize, [&value](infra::DataInputStream& stream)
                 {
                     while (!stream.Empty())
                         value.append(infra::ByteRangeAsString(stream.ContiguousRange()));
@@ -102,7 +102,7 @@ namespace services
         if (field.Is<infra::PartialProtoLengthDelimited>())
         {
             auto stringSize = field.Get<infra::PartialProtoLengthDelimited>().length;
-            stack.emplace_back(stringSize, [this, &value](infra::DataInputStream& stream)
+            stack.emplace_back(stringSize, [&value](infra::DataInputStream& stream)
                 {
                     while (!stream.Empty())
                         value.append(infra::ByteRangeAsStdString(stream.ContiguousRange()));
@@ -117,7 +117,7 @@ namespace services
         if (field.Is<infra::PartialProtoLengthDelimited>())
         {
             auto bytesSize = field.Get<infra::PartialProtoLengthDelimited>().length;
-            stack.emplace_back(bytesSize, [this, &value](infra::DataInputStream& stream)
+            stack.emplace_back(bytesSize, [&value](infra::DataInputStream& stream)
                 {
                     while (!stream.Empty())
                     {
@@ -134,7 +134,7 @@ namespace services
         if (field.first.Is<infra::PartialProtoLengthDelimited>())
         {
             auto size = field.first.Get<infra::PartialProtoLengthDelimited>().length;
-            stack.emplace_back(size, [this](infra::DataInputStream& stream)
+            stack.emplace_back(size, [](infra::DataInputStream& stream)
                 {
                     while (!stream.Empty())
                         stream.ContiguousRange();

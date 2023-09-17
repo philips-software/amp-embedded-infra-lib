@@ -144,9 +144,9 @@ namespace infra
 
     ProtoParser::Field ProtoParser::GetField()
     {
-        auto partialField = GetPartialField();
-        MakeFullField visitor(input, formatErrorPolicy, partialField.second);
-        return infra::ApplyVisitor(visitor, partialField.first);
+        auto [value, fieldNumber] = GetPartialField();
+        MakeFullField visitor(input, formatErrorPolicy, fieldNumber);
+        return infra::ApplyVisitor(visitor, value);
     }
 
     ProtoParser::PartialField ProtoParser::GetPartialField()
