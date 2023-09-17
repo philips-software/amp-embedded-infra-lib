@@ -56,8 +56,12 @@ namespace services
         : ProtoBytesBase
     {};
 
+    struct ProtoStringBase
+    {};
+
     template<std::size_t Max>
     struct ProtoString
+        : ProtoStringBase
     {};
 
     template<class T>

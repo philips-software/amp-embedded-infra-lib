@@ -75,6 +75,10 @@ message TestRepeatedUInt32 {
   repeated uint32 value = 1 [(array_size) = 10];
 }
 
+message TestUnboundedRepeatedUInt32 {
+  repeated uint32 value = 1;
+}
+
 message TestMessageWithMessageField {
   TestUInt32 message = 1;
 }

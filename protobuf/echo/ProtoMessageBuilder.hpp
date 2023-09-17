@@ -1,40 +1,13 @@
 #ifndef PROTOBUF_PROTO_MESSAGE_BUILDER_HPP
 #define PROTOBUF_PROTO_MESSAGE_BUILDER_HPP
 
-#include "infra/stream/ByteInputStream.hpp"
-#include "infra/stream/LimitedInputStream.hpp"
 #include "infra/syntax/ProtoParser.hpp"
-#include "infra/util/BoundedDeque.hpp"
 #include "infra/util/BoundedVector.hpp"
+#include "protobuf/echo/BufferingStreamReader.hpp"
 #include "protobuf/echo/Proto.hpp"
 
 namespace services
 {
-    class BufferingStreamReader
-        : public infra::StreamReaderWithRewinding
-    {
-    public:
-        BufferingStreamReader(infra::BoundedDeque<uint8_t>& buffer, infra::ConstByteRange& data);
-
-        void ConsumeCurrent();
-        void StoreRemainder();
-
-        // Implementation of StreamReaderWithRewinding
-        void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
-        uint8_t Peek(infra::StreamErrorPolicy& errorPolicy) override;
-        infra::ConstByteRange ExtractContiguousRange(std::size_t max) override;
-        infra::ConstByteRange PeekContiguousRange(std::size_t start) override;
-        bool Empty() const override;
-        std::size_t Available() const override;
-        std::size_t ConstructSaveMarker() const override;
-        void Rewind(std::size_t marker) override;
-
-    private:
-        infra::BoundedDeque<uint8_t>& buffer;
-        infra::ConstByteRange& data;
-        std::size_t index = 0;
-    };
-
     class ProtoMessageBuilderBase
     {
     public:
@@ -63,14 +36,18 @@ namespace services
         void DeserializeField(ProtoSFixed32, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, int32_t& value);
         void DeserializeField(ProtoSFixed64, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, int64_t& value);
 
+        void DeserializeField(ProtoStringBase, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, infra::BoundedString& value);
         void DeserializeField(ProtoUnboundedString, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, std::string& value);
         void DeserializeField(ProtoBytesBase, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, infra::BoundedVector<uint8_t>& value);
 
+        template<class Enum>
+        void DeserializeField(ProtoEnum<Enum>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Enum& value);
         template<class Message>
         void DeserializeField(ProtoMessage<Message>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Message& value);
-
         template<class ProtoType, class Type>
         void DeserializeField(ProtoRepeatedBase<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value);
+        template<class ProtoType, class Type>
+        void DeserializeField(ProtoUnboundedRepeated<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value);
 
         void ConsumeUnknownField(infra::ProtoParser::PartialField& field);
 
@@ -147,6 +124,14 @@ namespace services
         return false;
     }
 
+    template<class Enum>
+    void ProtoMessageBuilderBase::DeserializeField(ProtoEnum<Enum>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Enum& value)
+    {
+        parser.ReportFormatResult(field.Is<uint64_t>());
+        if (field.Is<uint64_t>())
+            value = static_cast<Enum>(field.Get<uint64_t>());
+    }
+
     template<class Message>
     void ProtoMessageBuilderBase::DeserializeField(ProtoMessage<Message>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Message& value)
     {
@@ -171,6 +156,13 @@ namespace services
             value.emplace_back();
             DeserializeField(ProtoType(), parser, field, value.back());
         }
+    }
+
+    template<class ProtoType, class Type>
+    void ProtoMessageBuilderBase::DeserializeField(ProtoUnboundedRepeated<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value)
+    {
+        value.emplace_back();
+        DeserializeField(ProtoType(), parser, field, value.back());
     }
 
     template<class Message>
