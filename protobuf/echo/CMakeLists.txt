@@ -8,6 +8,7 @@ target_link_libraries(protobuf.echo PUBLIC
 target_sources(protobuf.echo PRIVATE
     Echo.cpp
     Echo.hpp
+    Proto.hpp
     ProtoMessageBuilder.cpp
     ProtoMessageBuilder.hpp
     ServiceForwarder.cpp

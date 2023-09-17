@@ -493,6 +493,8 @@ namespace application
     {
         auto typeMap = std::make_shared<Access>("public");
 
+        auto numberOfFields = std::make_shared<DataMember>("numberOfFields", "static const uint32_t", google::protobuf::SimpleItoa(message->fields.size()));
+        typeMap->Add(numberOfFields);
         auto protoTypeUsing = std::make_shared<UsingTemplate>("ProtoType", "typename " + TypeMapName() + "<fieldIndex>::ProtoType");
         protoTypeUsing->TemplateParameter("std::size_t fieldIndex");
         typeMap->Add(protoTypeUsing);
@@ -637,7 +639,7 @@ namespace application
 
                 for (auto& field : message->fields)
                     printer.Print(R"(case $constant$:
-    DeserializeField($type$(), parser, field, $name$);
+    DeserializeField($type$(), parser, field.first, $name$);
     break;
 )",
                         "constant", field->constantName, "type", field->protoType, "name", field->name);
