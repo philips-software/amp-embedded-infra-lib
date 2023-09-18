@@ -2,19 +2,19 @@
 
 namespace services
 {
-    BufferingStreamWriter::BufferingStreamWriter(infra::BoundedDeque<uint8_t>& buffer, infra::ByteRange outputData)
+    BufferingStreamWriter::BufferingStreamWriter(infra::BoundedDeque<uint8_t>& buffer, infra::StreamWriter& output)
         : buffer(buffer)
-        , outputData(outputData)
+        , output(output)
     {
         LoadRemainder();
     }
 
     void BufferingStreamWriter::Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy)
     {
-        if (index < outputData.size())
+        if (index < output.Available())
         {
-            auto first = infra::Head(range, outputData.size() - index);
-            infra::Copy(first, infra::Head(infra::DiscardHead(outputData, index), first.size()));
+            auto first = infra::Head(range, output.Available() - index);
+            output.Insert(first, errorPolicy);
             index += first.size();
             range.pop_front(first.size());
         }
@@ -25,7 +25,7 @@ namespace services
 
     std::size_t BufferingStreamWriter::Available() const
     {
-        return outputData.size() + buffer.size() - index;
+        return output.Available() + buffer.size() - index;
     }
 
     std::size_t BufferingStreamWriter::ConstructSaveMarker() const
@@ -55,14 +55,13 @@ namespace services
 
     void BufferingStreamWriter::LoadRemainder()
     {
-        auto from = infra::Head(buffer.contiguous_range(buffer.begin()), outputData.size());
-        infra::Copy(from, infra::Head(outputData, from.size()));
+        infra::StreamErrorPolicy errorPolicy;
+        auto from = infra::Head(buffer.contiguous_range(buffer.begin()), output.Available());
+        output.Insert(from, errorPolicy);
         buffer.erase(buffer.begin(), buffer.begin() + from.size());
-        outputData.pop_front(from.size());
-        from = infra::Head(buffer.contiguous_range(buffer.begin()), outputData.size());
-        infra::Copy(from, infra::Head(outputData, buffer.size()));
+        from = infra::Head(buffer.contiguous_range(buffer.begin()), output.Available());
+        output.Insert(from, errorPolicy);
         buffer.clear();
-        outputData.pop_front(from.size());
 
         index = 0;
     }

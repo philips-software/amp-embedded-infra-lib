@@ -6,13 +6,13 @@
 
 namespace services
 {
-    // Usage: Any data that does not fit into the outputData is written to the buffer
-    // Any data already present in the buffer is written to the outputData upon construction of BufferingStreamWriter
+    // Usage: Any data that does not fit into the output stream is written to the buffer
+    // Any data already present in the buffer is written to the output stream upon construction of BufferingStreamWriter
     class BufferingStreamWriter
         : public infra::StreamWriter
     {
     public:
-        BufferingStreamWriter(infra::BoundedDeque<uint8_t>& buffer, infra::ByteRange outputData);
+        BufferingStreamWriter(infra::BoundedDeque<uint8_t>& buffer, infra::StreamWriter& output);
 
         // Implementation of StreamWriter
         void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
@@ -28,7 +28,7 @@ namespace services
 
     private:
         infra::BoundedDeque<uint8_t>& buffer;
-        infra::ByteRange outputData;
+        infra::StreamWriter& output;
         std::size_t index = 0;
     };
 }

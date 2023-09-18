@@ -6,7 +6,8 @@ protocol_buffer_echo_cpp(protobuf.echo_test TestMessages.proto)
 
 target_sources(protobuf.echo_test PRIVATE
     TestEchoServiceResponseQueue.cpp
-    TestProtoMessageBuilder.cpp
+    TestProtoMessageReceiver.cpp
+    TestProtoMessageSender.cpp
     TestServiceForwarder.cpp
 )
 
