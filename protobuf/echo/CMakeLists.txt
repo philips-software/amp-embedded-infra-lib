@@ -8,6 +8,8 @@ target_link_libraries(protobuf.echo PUBLIC
 target_sources(protobuf.echo PRIVATE
     BufferingStreamReader.cpp
     BufferingStreamReader.hpp
+    BufferingStreamWriter.cpp
+    BufferingStreamWriter.hpp
     Echo.cpp
     Echo.hpp
     Proto.hpp

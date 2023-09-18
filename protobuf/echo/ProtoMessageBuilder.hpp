@@ -2,8 +2,8 @@
 #define PROTOBUF_PROTO_MESSAGE_BUILDER_HPP
 
 #include "infra/syntax/ProtoParser.hpp"
+#include "infra/util/BoundedDeque.hpp"
 #include "infra/util/BoundedVector.hpp"
-#include "protobuf/echo/BufferingStreamReader.hpp"
 #include "protobuf/echo/Proto.hpp"
 
 namespace services

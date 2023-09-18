@@ -1,4 +1,5 @@
 #include "protobuf/echo/ProtoMessageBuilder.hpp"
+#include "protobuf/echo/BufferingStreamReader.hpp"
 
 namespace services
 {
@@ -10,7 +11,7 @@ namespace services
     {
         BufferingStreamReader reader{ buffer, data };
 
-        while (!data.empty())
+        while (true)
         {
             infra::LimitedStreamReaderWithRewinding limitedReader(reader, stack.back().first);
             infra::DataInputStream::WithErrorPolicy stream{ limitedReader, infra::softFail };
@@ -21,10 +22,7 @@ namespace services
             current.second(stream);
 
             if (stream.Failed() || reader.Empty())
-            {
-                reader.StoreRemainder();
                 break;
-            }
 
             if (&current != &stack.front())
             {

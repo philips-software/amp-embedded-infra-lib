@@ -6,14 +6,14 @@
 
 namespace services
 {
+    // Usage: Everything that is not read from the inputData is stored into the buffer upon destruction of the BufferingStreamReader
+    // Any data already present in the buffer is read first from the reader
     class BufferingStreamReader
         : public infra::StreamReaderWithRewinding
     {
     public:
-        BufferingStreamReader(infra::BoundedDeque<uint8_t>& buffer, infra::ConstByteRange& data);
-
-        void ConsumeCurrent();
-        void StoreRemainder();
+        BufferingStreamReader(infra::BoundedDeque<uint8_t>& buffer, infra::ConstByteRange inputData);
+        ~BufferingStreamReader();
 
         // Implementation of StreamReaderWithRewinding
         void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
@@ -26,8 +26,11 @@ namespace services
         void Rewind(std::size_t marker) override;
 
     private:
+        void StoreRemainder();
+
+    private:
         infra::BoundedDeque<uint8_t>& buffer;
-        infra::ConstByteRange& data;
+        infra::ConstByteRange inputData;
         std::size_t index = 0;
     };
 }
