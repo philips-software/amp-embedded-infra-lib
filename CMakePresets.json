@@ -150,7 +150,7 @@
       "name": "release-package",
       "configuration": "MinSizeRel",
       "configurePreset": "host-single-MinSizeRel",
-      "targets": [ "package" ]
+      "targets": ["package"]
     },
     {
       "name": "coverage",
