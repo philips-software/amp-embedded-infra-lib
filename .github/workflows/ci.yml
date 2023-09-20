@@ -47,12 +47,12 @@ jobs:
         with:
           name: test-logs
           path: build/host/Testing/Temporary/
-  host_build_test_windows:
+  host_build_test:
     name: Host Build & Test
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, windows-2019, macos-latest]
+        os: [macos-latest, windows-latest, windows-2019]
     steps:
       - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
         with:
