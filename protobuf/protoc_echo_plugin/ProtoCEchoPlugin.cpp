@@ -767,7 +767,7 @@ namespace application
             auto functionGet = std::make_shared<Function>("Get", "return " + field->name + ";\n", ClassName() + "::Type<" + google::protobuf::SimpleItoa(index) + ">&", 0);
             functionGet->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
             getters->Add(functionGet);
-            auto functionConstGet = std::make_shared<Function>("Get", "return " + field->name + ";\n", "const " + ClassName() + "::Type<" + google::protobuf::SimpleItoa(index) + ">&", Function::fConst);
+            auto functionConstGet = std::make_shared<Function>("Get", "return " + field->name + ";\n", ClassName() + "::Type<" + google::protobuf::SimpleItoa(index) + ">", Function::fConst);
             functionConstGet->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
             getters->Add(functionConstGet);
         }
