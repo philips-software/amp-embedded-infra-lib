@@ -117,16 +117,6 @@ TEST(ProtoMessageReceiverTest, parse_sfixed32)
     EXPECT_EQ(-1, receiver.message.value);
 }
 
-TEST(ProtoMessageReceiverTest, parse_enum)
-{
-    services::ProtoMessageReceiver<test_messages::TestEnum> receiver;
-
-    std::array<uint8_t, 2> data{ 1 << 3, 1 };
-    receiver.Feed(data);
-
-    EXPECT_EQ(test_messages::Enumeration::val1, receiver.message.e);
-}
-
 TEST(ProtoMessageReceiverTest, parse_sfixed64)
 {
     services::ProtoMessageReceiver<test_messages::TestSFixed64> receiver;
@@ -135,6 +125,16 @@ TEST(ProtoMessageReceiverTest, parse_sfixed64)
     receiver.Feed(data);
 
     EXPECT_EQ(-1, receiver.message.value);
+}
+
+TEST(ProtoMessageReceiverTest, parse_enum)
+{
+    services::ProtoMessageReceiver<test_messages::TestEnum> receiver;
+
+    std::array<uint8_t, 2> data{ 1 << 3, 1 };
+    receiver.Feed(data);
+
+    EXPECT_EQ(test_messages::Enumeration::val1, receiver.message.e);
 }
 
 TEST(ProtoMessageReceiverTest, parse_repeated_uint32)

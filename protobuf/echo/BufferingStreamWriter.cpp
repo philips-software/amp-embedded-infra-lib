@@ -11,13 +11,10 @@ namespace services
 
     void BufferingStreamWriter::Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy)
     {
-        if (index < output.Available())
-        {
-            auto first = infra::Head(range, output.Available() - index);
-            output.Insert(first, errorPolicy);
-            index += first.size();
-            range.pop_front(first.size());
-        }
+        auto first = infra::Head(range, output.Available());
+        output.Insert(first, errorPolicy);
+        index += first.size();
+        range.pop_front(first.size());
 
         buffer.insert(buffer.end(), range.begin(), range.end());
         index += range.size();
@@ -25,7 +22,7 @@ namespace services
 
     std::size_t BufferingStreamWriter::Available() const
     {
-        return output.Available() + buffer.size() - index;
+        return output.Available() + buffer.max_size() - buffer.size();
     }
 
     std::size_t BufferingStreamWriter::ConstructSaveMarker() const
