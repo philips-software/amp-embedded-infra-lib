@@ -86,7 +86,7 @@ namespace services
 
         if (index == I)
         {
-            if (!SerializeField(typename Message::template ProtoType<I>(), formatter, message.Get(std::integral_constant<uint32_t, I>()), Message::fieldNumber<I>, retry))
+            if (!SerializeField(typename Message::template ProtoType<I>(), formatter, message.Get(std::integral_constant<uint32_t, I>()), Message::template fieldNumber<I>, retry))
                 return false;
 
             index = I + 1;
