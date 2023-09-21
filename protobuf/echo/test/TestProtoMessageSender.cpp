@@ -28,6 +28,70 @@ TEST_F(ProtoMessageSenderTest, format_bool)
     ExpectFill({ 1 << 3, 1 }, sender);
 }
 
+TEST_F(ProtoMessageSenderTest, format_uint32)
+{
+    test_messages::TestUInt32 message(5);
+    services::ProtoMessageSender sender{ message };
+
+    ExpectFill({ 1 << 3, 5 }, sender);
+}
+
+TEST_F(ProtoMessageSenderTest, format_int32)
+{
+    test_messages::TestInt32 message(-1);
+    services::ProtoMessageSender sender{ message };
+
+    ExpectFill({ 8, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 1 }, sender);
+}
+
+TEST_F(ProtoMessageSenderTest, format_uint64)
+{
+    test_messages::TestUInt64 message(5);
+    services::ProtoMessageSender sender{ message };
+
+    ExpectFill({ 1 << 3, 5 }, sender);
+}
+
+TEST_F(ProtoMessageSenderTest, format_int64)
+{
+    test_messages::TestInt64 message(-1);
+    services::ProtoMessageSender sender{ message };
+
+    ExpectFill({ 8, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 1 }, sender);
+}
+
+TEST_F(ProtoMessageSenderTest, format_fixed32)
+{
+    test_messages::TestFixed32 message(1020304);
+    services::ProtoMessageSender sender{ message };
+
+    ExpectFill({ 13, 0x90, 0x91, 0x0f, 0 }, sender);
+}
+
+TEST_F(ProtoMessageSenderTest, format_fixed64)
+{
+    test_messages::TestFixed64 message(102030405060708);;
+    services::ProtoMessageSender sender{ message };
+
+    ExpectFill({ 9, 0x64, 0xc8, 0x0c, 0xce, 0xcb, 0x5c, 0x00, 0x00 }, sender);
+}
+
+TEST_F(ProtoMessageSenderTest, format_sfixed32)
+{
+    test_messages::TestSFixed32 message(-1);
+    services::ProtoMessageSender sender{ message };
+
+    ExpectFill({ 13, 0xff, 0xff, 0xff, 0xff }, sender);
+}
+
+TEST_F(ProtoMessageSenderTest, format_sfixed64)
+{
+    test_messages::TestSFixed64 message(-1);
+    services::ProtoMessageSender sender{ message };
+
+    ExpectFill({ 9, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }, sender);
+}
+
 TEST_F(ProtoMessageSenderTest, partially_format_bool)
 {
     test_messages::TestBool message{ true };

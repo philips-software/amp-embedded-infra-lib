@@ -29,6 +29,13 @@ namespace services
 
         bool SerializeField(ProtoBool, infra::ProtoFormatter& formatter, bool value, uint32_t fieldNumber, bool& retry) const;
         bool SerializeField(ProtoUInt32, infra::ProtoFormatter& formatter, uint32_t value, uint32_t fieldNumber, bool& retry) const;
+        bool SerializeField(ProtoInt32, infra::ProtoFormatter& formatter, int32_t value, uint32_t fieldNumber, bool& retry) const;
+        bool SerializeField(ProtoUInt64, infra::ProtoFormatter& formatter, uint64_t value, uint32_t fieldNumber, bool& retry) const;
+        bool SerializeField(ProtoInt64, infra::ProtoFormatter& formatter, int64_t value, uint32_t fieldNumber, bool& retry) const;
+        bool SerializeField(ProtoFixed32, infra::ProtoFormatter& formatter, uint32_t value, uint32_t fieldNumber, bool& retry) const;
+        bool SerializeField(ProtoSFixed32, infra::ProtoFormatter& formatter, int32_t value, uint32_t fieldNumber, bool& retry) const;
+        bool SerializeField(ProtoFixed64, infra::ProtoFormatter& formatter, uint64_t value, uint32_t fieldNumber, bool& retry) const;
+        bool SerializeField(ProtoSFixed64, infra::ProtoFormatter& formatter, int64_t value, uint32_t fieldNumber, bool& retry) const;
 
         bool SerializeField(ProtoStringBase, infra::ProtoFormatter& formatter, const infra::BoundedString& value, uint32_t fieldNumber, bool& retry) const;
         bool SerializeField(ProtoUnboundedString, infra::ProtoFormatter& formatter, const std::string& value, uint32_t fieldNumber, bool& retry) const;

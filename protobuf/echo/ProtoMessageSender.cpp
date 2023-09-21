@@ -37,6 +37,48 @@ namespace services
         return true;
     }
 
+    bool ProtoMessageSenderBase::SerializeField(ProtoInt32, infra::ProtoFormatter& formatter, int32_t value, uint32_t fieldNumber, bool& retry) const
+    {
+        services::SerializeField(ProtoInt32(), formatter, value, fieldNumber);
+        return true;
+    }
+
+    bool ProtoMessageSenderBase::SerializeField(ProtoUInt64, infra::ProtoFormatter& formatter, uint64_t value, uint32_t fieldNumber, bool& retry) const
+    {
+        services::SerializeField(ProtoUInt64(), formatter, value, fieldNumber);
+        return true;
+    }
+
+    bool ProtoMessageSenderBase::SerializeField(ProtoInt64, infra::ProtoFormatter& formatter, int64_t value, uint32_t fieldNumber, bool& retry) const
+    {
+        services::SerializeField(ProtoInt64(), formatter, value, fieldNumber);
+        return true;
+    }
+
+    bool ProtoMessageSenderBase::SerializeField(ProtoFixed32, infra::ProtoFormatter& formatter, uint32_t value, uint32_t fieldNumber, bool& retry) const
+    {
+        services::SerializeField(ProtoFixed32(), formatter, value, fieldNumber);
+        return true;
+    }
+
+    bool ProtoMessageSenderBase::SerializeField(ProtoSFixed32, infra::ProtoFormatter& formatter, int32_t value, uint32_t fieldNumber, bool& retry) const
+    {
+        services::SerializeField(ProtoSFixed32(), formatter, value, fieldNumber);
+        return true;
+    }
+
+    bool ProtoMessageSenderBase::SerializeField(ProtoFixed64, infra::ProtoFormatter& formatter, uint64_t value, uint32_t fieldNumber, bool& retry) const
+    {
+        services::SerializeField(ProtoFixed64(), formatter, value, fieldNumber);
+        return true;
+    }
+
+    bool ProtoMessageSenderBase::SerializeField(ProtoSFixed64, infra::ProtoFormatter& formatter, int64_t value, uint32_t fieldNumber, bool& retry) const
+    {
+        services::SerializeField(ProtoSFixed64(), formatter, value, fieldNumber);
+        return true;
+    }
+
     bool ProtoMessageSenderBase::SerializeField(ProtoStringBase, infra::ProtoFormatter& formatter, const infra::BoundedString& value, uint32_t fieldNumber, bool& retry) const
     {
         formatter.PutVarInt((fieldNumber << 3) | 2);
