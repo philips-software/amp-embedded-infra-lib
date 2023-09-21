@@ -1,7 +1,7 @@
 #include "generated/echo/TestMessages.pb.hpp"
+#include "infra/stream/BoundedVectorOutputStream.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
-#include "infra/stream/BoundedVectorOutputStream.hpp"
 #include "infra/util/ConstructBin.hpp"
 #include "protobuf/echo/ProtoMessageSender.hpp"
 #include <gtest/gtest.h>
@@ -70,7 +70,7 @@ TEST_F(ProtoMessageSenderTest, format_fixed32)
 
 TEST_F(ProtoMessageSenderTest, format_fixed64)
 {
-    test_messages::TestFixed64 message(102030405060708);;
+    test_messages::TestFixed64 message(102030405060708);
     services::ProtoMessageSender sender{ message };
 
     ExpectFill({ 9, 0x64, 0xc8, 0x0c, 0xce, 0xcb, 0x5c, 0x00, 0x00 }, sender);
@@ -158,7 +158,6 @@ TEST_F(ProtoMessageSenderTest, format_bytes)
     services::ProtoMessageSender sender{ message };
 
     ExpectFill({ 10, 2, 5, 6 }, sender);
-
 }
 
 TEST_F(ProtoMessageSenderTest, format_message)
@@ -221,4 +220,3 @@ TEST_F(ProtoMessageSenderTest, format_many_bytes)
     sender.Fill(stream);
     EXPECT_EQ((std::vector<uint8_t>{ 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 }), stream.Storage());
 }
-
