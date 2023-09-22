@@ -32,7 +32,6 @@ namespace services
         {
             auto dataIndex = index - buffer.size();
             auto from = input.ExtractContiguousRange(range.size());
-            //auto from = infra::Head(infra::DiscardHead(inputData, dataIndex), range.size());
             infra::Copy(from, infra::Head(range, from.size()));
             range.pop_front(from.size());
             index += from.size();
