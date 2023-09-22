@@ -7,7 +7,7 @@ namespace services
         : stack(stack)
     {}
 
-    void ProtoMessageReceiverBase::Feed(infra::ConstByteRange data)
+    void ProtoMessageReceiverBase::Feed(infra::StreamReaderWithRewinding& data)
     {
         BufferingStreamReader reader{ buffer, data };
 

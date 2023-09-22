@@ -13,7 +13,7 @@ namespace services
     public:
         explicit ProtoMessageReceiverBase(infra::BoundedVector<std::pair<uint32_t, infra::Function<void(const infra::DataInputStream& stream)>>>& stack);
 
-        void Feed(infra::ConstByteRange data);
+        void Feed(infra::StreamReaderWithRewinding& data);
 
     protected:
         template<class Message>

@@ -12,7 +12,7 @@ namespace services
         : public infra::StreamReaderWithRewinding
     {
     public:
-        BufferingStreamReader(infra::BoundedDeque<uint8_t>& buffer, infra::ConstByteRange inputData);
+        BufferingStreamReader(infra::BoundedDeque<uint8_t>& buffer, infra::StreamReaderWithRewinding& input);
         ~BufferingStreamReader();
 
         // Implementation of StreamReaderWithRewinding
@@ -30,7 +30,7 @@ namespace services
 
     private:
         infra::BoundedDeque<uint8_t>& buffer;
-        infra::ConstByteRange inputData;
+        infra::StreamReaderWithRewinding& input;
         std::size_t index = 0;
     };
 }

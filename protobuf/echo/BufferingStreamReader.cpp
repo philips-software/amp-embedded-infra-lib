@@ -2,9 +2,9 @@
 
 namespace services
 {
-    BufferingStreamReader::BufferingStreamReader(infra::BoundedDeque<uint8_t>& buffer, infra::ConstByteRange inputData)
+    BufferingStreamReader::BufferingStreamReader(infra::BoundedDeque<uint8_t>& buffer, infra::StreamReaderWithRewinding& input)
         : buffer(buffer)
-        , inputData(inputData)
+        , input(input)
     {}
 
     BufferingStreamReader::~BufferingStreamReader()
@@ -31,7 +31,8 @@ namespace services
         if (!range.empty())
         {
             auto dataIndex = index - buffer.size();
-            auto from = infra::Head(infra::DiscardHead(inputData, dataIndex), range.size());
+            auto from = input.ExtractContiguousRange(range.size());
+            //auto from = infra::Head(infra::DiscardHead(inputData, dataIndex), range.size());
             infra::Copy(from, infra::Head(range, from.size()));
             range.pop_front(from.size());
             index += from.size();
@@ -61,23 +62,16 @@ namespace services
             return from;
         }
 
-        auto dataIndex = index - buffer.size();
-        auto from = infra::Head(infra::DiscardHead(inputData, dataIndex), max);
-        index += from.size();
+        auto from = input.ExtractContiguousRange(max);
         return from;
     }
 
     infra::ConstByteRange BufferingStreamReader::PeekContiguousRange(std::size_t start)
     {
         if (index + start < buffer.size())
-        {
-            auto from = buffer.contiguous_range(buffer.begin() + index + start);
-            return from;
-        }
+            return buffer.contiguous_range(buffer.begin() + index + start);
 
-        auto dataIndex = index + start - buffer.size();
-        auto from = infra::DiscardHead(inputData, dataIndex);
-        return from;
+        return input.PeekContiguousRange(start - buffer.size());
     }
 
     bool BufferingStreamReader::Empty() const
@@ -87,7 +81,7 @@ namespace services
 
     std::size_t BufferingStreamReader::Available() const
     {
-        return buffer.size() + inputData.size() - index;
+        return buffer.size() + input.Available();
     }
 
     std::size_t BufferingStreamReader::ConstructSaveMarker() const
@@ -97,13 +91,28 @@ namespace services
 
     void BufferingStreamReader::Rewind(std::size_t marker)
     {
-        index = marker;
+        if (index > buffer.size())
+        {
+            auto rewindAmount = std::min(index - marker, index - buffer.size());
+            input.Rewind(input.ConstructSaveMarker() - rewindAmount);
+            index -= rewindAmount;
+        }
+
+        if (marker < buffer.size())
+        {
+            buffer.resize(marker);
+            index = marker;
+        }
     }
 
     void BufferingStreamReader::StoreRemainder()
     {
         std::size_t bufferDecrease = std::min(buffer.size(), index);
         buffer.erase(buffer.begin(), buffer.begin() + bufferDecrease);
-        buffer.insert(buffer.end(), inputData.begin() + index - bufferDecrease, inputData.end());
+        while (!input.Empty())
+        {
+            auto range = input.ExtractContiguousRange(std::numeric_limits<std::size_t>::max());
+            buffer.insert(buffer.end(), range.begin(), range.end());
+        }
     }
 }
