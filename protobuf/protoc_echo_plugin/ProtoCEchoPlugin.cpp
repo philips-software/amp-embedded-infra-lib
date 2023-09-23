@@ -340,12 +340,12 @@ namespace application
         formatter.Add(typeMapNamespace);
     }
 
-    void MessageTypeMapGenerator::AddTypeMapProtoType(EchoField& field, Entities& entities)
+    void MessageTypeMapGenerator::AddTypeMapProtoType(const EchoField& field, Entities& entities) const
     {
         entities.Add(std::make_shared<Using>("ProtoType", field.protoType));
     }
 
-    void MessageTypeMapGenerator::AddTypeMapType(EchoField& field, Entities& entities)
+    void MessageTypeMapGenerator::AddTypeMapType(const EchoField& field, Entities& entities) const
     {
         std::string result;
         StorageTypeVisitor visitor(result);
@@ -353,7 +353,7 @@ namespace application
         entities.Add(std::make_shared<Using>("Type", result));
     }
 
-    void MessageTypeMapGenerator::AddTypeMapFieldNumber(EchoField& field, Entities& entities)
+    void MessageTypeMapGenerator::AddTypeMapFieldNumber(const EchoField& field, Entities& entities) const
     {
         entities.Add(std::make_shared<DataMember>("fieldNumber", "static const uint32_t", google::protobuf::SimpleItoa(field.number)));
     }
@@ -389,12 +389,12 @@ namespace application
         formatter.Add(typeMapNamespace);
     }
 
-    void MessageReferenceTypeMapGenerator::AddTypeMapProtoType(EchoField& field, Entities& entities)
+    void MessageReferenceTypeMapGenerator::AddTypeMapProtoType(const EchoField& field, Entities& entities) const
     {
         entities.Add(std::make_shared<Using>("ProtoType", field.protoReferenceType));
     }
 
-    void MessageReferenceTypeMapGenerator::AddTypeMapType(EchoField& field, Entities& entities)
+    void MessageReferenceTypeMapGenerator::AddTypeMapType(const EchoField& field, Entities& entities) const
     {
         std::string result;
         ParameterReferenceTypeVisitor visitor(result);

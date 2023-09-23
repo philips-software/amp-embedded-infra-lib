@@ -27,15 +27,15 @@ namespace services
         template<std::size_t I, class Message>
         bool SerializeSingleField(infra::ProtoFormatter& formatter, const Message& message, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter) const;
 
-        bool SerializeField(ProtoBool, infra::ProtoFormatter& formatter, bool value, uint32_t fieldNumber, bool& retry) const;
-        bool SerializeField(ProtoUInt32, infra::ProtoFormatter& formatter, uint32_t value, uint32_t fieldNumber, bool& retry) const;
-        bool SerializeField(ProtoInt32, infra::ProtoFormatter& formatter, int32_t value, uint32_t fieldNumber, bool& retry) const;
-        bool SerializeField(ProtoUInt64, infra::ProtoFormatter& formatter, uint64_t value, uint32_t fieldNumber, bool& retry) const;
-        bool SerializeField(ProtoInt64, infra::ProtoFormatter& formatter, int64_t value, uint32_t fieldNumber, bool& retry) const;
-        bool SerializeField(ProtoFixed32, infra::ProtoFormatter& formatter, uint32_t value, uint32_t fieldNumber, bool& retry) const;
-        bool SerializeField(ProtoSFixed32, infra::ProtoFormatter& formatter, int32_t value, uint32_t fieldNumber, bool& retry) const;
-        bool SerializeField(ProtoFixed64, infra::ProtoFormatter& formatter, uint64_t value, uint32_t fieldNumber, bool& retry) const;
-        bool SerializeField(ProtoSFixed64, infra::ProtoFormatter& formatter, int64_t value, uint32_t fieldNumber, bool& retry) const;
+        bool SerializeField(ProtoBool, infra::ProtoFormatter& formatter, bool value, uint32_t fieldNumber, const bool& retry) const;
+        bool SerializeField(ProtoUInt32, infra::ProtoFormatter& formatter, uint32_t value, uint32_t fieldNumber, const bool& retry) const;
+        bool SerializeField(ProtoInt32, infra::ProtoFormatter& formatter, int32_t value, uint32_t fieldNumber, const bool& retry) const;
+        bool SerializeField(ProtoUInt64, infra::ProtoFormatter& formatter, uint64_t value, uint32_t fieldNumber, const bool& retry) const;
+        bool SerializeField(ProtoInt64, infra::ProtoFormatter& formatter, int64_t value, uint32_t fieldNumber, const bool& retry) const;
+        bool SerializeField(ProtoFixed32, infra::ProtoFormatter& formatter, uint32_t value, uint32_t fieldNumber, const bool& retry) const;
+        bool SerializeField(ProtoSFixed32, infra::ProtoFormatter& formatter, int32_t value, uint32_t fieldNumber, const bool& retry) const;
+        bool SerializeField(ProtoFixed64, infra::ProtoFormatter& formatter, uint64_t value, uint32_t fieldNumber, const bool& retry) const;
+        bool SerializeField(ProtoSFixed64, infra::ProtoFormatter& formatter, int64_t value, uint32_t fieldNumber, const bool& retry) const;
 
         bool SerializeField(ProtoStringBase, infra::ProtoFormatter& formatter, const infra::BoundedString& value, uint32_t fieldNumber, bool& retry) const;
         bool SerializeField(ProtoUnboundedString, infra::ProtoFormatter& formatter, const std::string& value, uint32_t fieldNumber, bool& retry) const;
@@ -60,12 +60,10 @@ namespace services
         : public ProtoMessageSenderBase
     {
     public:
-        ProtoMessageSender(const Message& message);
-
-    public:
-        const Message& message;
+        explicit ProtoMessageSender(const Message& message);
 
     private:
+        const Message& message;
         infra::BoundedVector<std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter), 3 * sizeof(uint8_t*)>>>::WithMaxSize<MessageDepth<services::ProtoMessage<Message>>::value + 1> stack{ { std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter), 3 * sizeof(uint8_t*)>>{ 0, [this](infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter)
             {
                 return FillForMessage(stream, message, index, retry, finalWriter);
@@ -121,7 +119,7 @@ namespace services
         value.Serialize(countingFormatter);
         formatter.PutLengthDelimitedSize(countingStream.Writer().Processed(), fieldNumber);
 
-        stack.emplace_back(0, [this, &value, fieldNumber](infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter)
+        stack.emplace_back(0, [this, &value](infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter)
             {
                 return FillForMessage(stream, value, index, retry, finalWriter);
             });
@@ -131,9 +129,9 @@ namespace services
     }
 
     template<class ProtoType, class Type>
-    bool ProtoMessageSenderBase::SerializeField(ProtoRepeatedBase<ProtoType>, infra::ProtoFormatter& formatter, const infra::BoundedVector<Type>& value, uint32_t fieldNumber, bool& retry) const
+    bool ProtoMessageSenderBase::SerializeField(ProtoRepeatedBase<ProtoType>, infra::ProtoFormatter&, const infra::BoundedVector<Type>& value, uint32_t fieldNumber, bool& retry) const
     {
-        stack.emplace_back(0, [this, &value, fieldNumber](infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter)
+        stack.emplace_back(0, [this, &value, fieldNumber](infra::DataOutputStream& stream, uint32_t& index, const bool&, const infra::StreamWriter& finalWriter)
             {
                 infra::ProtoFormatter formatter{ stream };
 
@@ -152,9 +150,9 @@ namespace services
     }
 
     template<class ProtoType, class Type>
-    bool ProtoMessageSenderBase::SerializeField(ProtoUnboundedRepeated<ProtoType>, infra::ProtoFormatter& formatter, const std::vector<Type>& value, uint32_t fieldNumber, bool& retry) const
+    bool ProtoMessageSenderBase::SerializeField(ProtoUnboundedRepeated<ProtoType>, infra::ProtoFormatter&, const std::vector<Type>& value, uint32_t fieldNumber, bool& retry) const
     {
-        stack.emplace_back(0, [this, &value, fieldNumber](infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter)
+        stack.emplace_back(0, [this, &value, fieldNumber](infra::DataOutputStream& stream, uint32_t& index, const bool&, const infra::StreamWriter& finalWriter)
             {
                 infra::ProtoFormatter formatter{ stream };
 

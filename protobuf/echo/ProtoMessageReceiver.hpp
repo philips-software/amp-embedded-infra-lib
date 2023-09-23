@@ -63,7 +63,6 @@ namespace services
     public:
         ProtoMessageReceiver();
 
-    public:
         Message message;
 
     private:

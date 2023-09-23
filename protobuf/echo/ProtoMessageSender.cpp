@@ -15,9 +15,9 @@ namespace services
         {
             infra::DataOutputStream::WithErrorPolicy stream{ writer };
 
-            auto& current = stack.back();
+            auto& [index, callback] = stack.back();
             bool retry = false;
-            auto result = current.second(stream, current.first, retry, output.Writer());
+            auto result = callback(stream, index, retry, output.Writer());
             if (result)
                 stack.pop_back();
             else if (!retry)
@@ -25,55 +25,55 @@ namespace services
         }
     }
 
-    bool ProtoMessageSenderBase::SerializeField(ProtoBool, infra::ProtoFormatter& formatter, bool value, uint32_t fieldNumber, bool& retry) const
+    bool ProtoMessageSenderBase::SerializeField(ProtoBool, infra::ProtoFormatter& formatter, bool value, uint32_t fieldNumber, [[maybe_unused]] const bool& retry) const
     {
         services::SerializeField(ProtoBool(), formatter, value, fieldNumber);
         return true;
     }
 
-    bool ProtoMessageSenderBase::SerializeField(ProtoUInt32, infra::ProtoFormatter& formatter, uint32_t value, uint32_t fieldNumber, bool& retry) const
+    bool ProtoMessageSenderBase::SerializeField(ProtoUInt32, infra::ProtoFormatter& formatter, uint32_t value, uint32_t fieldNumber, [[maybe_unused]] const bool& retry) const
     {
         services::SerializeField(ProtoUInt32(), formatter, value, fieldNumber);
         return true;
     }
 
-    bool ProtoMessageSenderBase::SerializeField(ProtoInt32, infra::ProtoFormatter& formatter, int32_t value, uint32_t fieldNumber, bool& retry) const
+    bool ProtoMessageSenderBase::SerializeField(ProtoInt32, infra::ProtoFormatter& formatter, int32_t value, uint32_t fieldNumber, [[maybe_unused]] const bool& retry) const
     {
         services::SerializeField(ProtoInt32(), formatter, value, fieldNumber);
         return true;
     }
 
-    bool ProtoMessageSenderBase::SerializeField(ProtoUInt64, infra::ProtoFormatter& formatter, uint64_t value, uint32_t fieldNumber, bool& retry) const
+    bool ProtoMessageSenderBase::SerializeField(ProtoUInt64, infra::ProtoFormatter& formatter, uint64_t value, uint32_t fieldNumber, [[maybe_unused]] const bool& retry) const
     {
         services::SerializeField(ProtoUInt64(), formatter, value, fieldNumber);
         return true;
     }
 
-    bool ProtoMessageSenderBase::SerializeField(ProtoInt64, infra::ProtoFormatter& formatter, int64_t value, uint32_t fieldNumber, bool& retry) const
+    bool ProtoMessageSenderBase::SerializeField(ProtoInt64, infra::ProtoFormatter& formatter, int64_t value, uint32_t fieldNumber, [[maybe_unused]] const bool& retry) const
     {
         services::SerializeField(ProtoInt64(), formatter, value, fieldNumber);
         return true;
     }
 
-    bool ProtoMessageSenderBase::SerializeField(ProtoFixed32, infra::ProtoFormatter& formatter, uint32_t value, uint32_t fieldNumber, bool& retry) const
+    bool ProtoMessageSenderBase::SerializeField(ProtoFixed32, infra::ProtoFormatter& formatter, uint32_t value, uint32_t fieldNumber, [[maybe_unused]] const bool& retry) const
     {
         services::SerializeField(ProtoFixed32(), formatter, value, fieldNumber);
         return true;
     }
 
-    bool ProtoMessageSenderBase::SerializeField(ProtoSFixed32, infra::ProtoFormatter& formatter, int32_t value, uint32_t fieldNumber, bool& retry) const
+    bool ProtoMessageSenderBase::SerializeField(ProtoSFixed32, infra::ProtoFormatter& formatter, int32_t value, uint32_t fieldNumber, [[maybe_unused]] const bool& retry) const
     {
         services::SerializeField(ProtoSFixed32(), formatter, value, fieldNumber);
         return true;
     }
 
-    bool ProtoMessageSenderBase::SerializeField(ProtoFixed64, infra::ProtoFormatter& formatter, uint64_t value, uint32_t fieldNumber, bool& retry) const
+    bool ProtoMessageSenderBase::SerializeField(ProtoFixed64, infra::ProtoFormatter& formatter, uint64_t value, uint32_t fieldNumber, [[maybe_unused]] const bool& retry) const
     {
         services::SerializeField(ProtoFixed64(), formatter, value, fieldNumber);
         return true;
     }
 
-    bool ProtoMessageSenderBase::SerializeField(ProtoSFixed64, infra::ProtoFormatter& formatter, int64_t value, uint32_t fieldNumber, bool& retry) const
+    bool ProtoMessageSenderBase::SerializeField(ProtoSFixed64, infra::ProtoFormatter& formatter, int64_t value, uint32_t fieldNumber, [[maybe_unused]] const bool& retry) const
     {
         services::SerializeField(ProtoSFixed64(), formatter, value, fieldNumber);
         return true;
@@ -84,7 +84,7 @@ namespace services
         formatter.PutVarInt((fieldNumber << 3) | 2);
         formatter.PutVarInt(value.size());
 
-        stack.emplace_back(0, [this, &value, fieldNumber](infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter)
+        stack.emplace_back(0, [&value](infra::DataOutputStream& stream, uint32_t& index, const bool&, const infra::StreamWriter&)
             {
                 auto range = infra::Head(infra::DiscardHead(infra::StringAsByteRange(value), index), stream.Available());
                 stream << range;
@@ -101,7 +101,7 @@ namespace services
         formatter.PutVarInt((fieldNumber << 3) | 2);
         formatter.PutVarInt(value.size());
 
-        stack.emplace_back(0, [this, &value, fieldNumber](infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter)
+        stack.emplace_back(0, [&value](infra::DataOutputStream& stream, uint32_t& index, const bool&, const infra::StreamWriter&)
             {
                 auto range = infra::Head(infra::DiscardHead(infra::StdStringAsByteRange(value), index), stream.Available());
                 stream << range;
@@ -118,7 +118,7 @@ namespace services
         formatter.PutVarInt((fieldNumber << 3) | 2);
         formatter.PutVarInt(value.size());
 
-        stack.emplace_back(0, [this, &value, fieldNumber](infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter)
+        stack.emplace_back(0, [&value](infra::DataOutputStream& stream, uint32_t& index, const bool&, const infra::StreamWriter&)
             {
                 auto range = infra::Head(infra::DiscardHead(infra::MakeRange(value), index), stream.Available());
                 stream << range;

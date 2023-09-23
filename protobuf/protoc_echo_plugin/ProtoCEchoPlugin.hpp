@@ -58,9 +58,9 @@ namespace application
         void Run(Entities& formatter);
 
     protected:
-        virtual void AddTypeMapProtoType(EchoField& field, Entities& entities);
-        virtual void AddTypeMapType(EchoField& field, Entities& entities);
-        void AddTypeMapFieldNumber(EchoField& field, Entities& entities);
+        virtual void AddTypeMapProtoType(const EchoField& field, Entities& entities) const;
+        virtual void AddTypeMapType(const EchoField& field, Entities& entities) const;
+        void AddTypeMapFieldNumber(const EchoField& field, Entities& entities) const;
         std::string MessageName() const;
         virtual std::string MessageSuffix() const;
 
@@ -78,8 +78,8 @@ namespace application
         void Run(Entities& formatter);
 
     protected:
-        void AddTypeMapProtoType(EchoField& field, Entities& entities) override;
-        void AddTypeMapType(EchoField& field, Entities& entities) override;
+        void AddTypeMapProtoType(const EchoField& field, Entities& entities) const override;
+        void AddTypeMapType(const EchoField& field, Entities& entities) const override;
         std::string MessageSuffix() const override;
     };
 
