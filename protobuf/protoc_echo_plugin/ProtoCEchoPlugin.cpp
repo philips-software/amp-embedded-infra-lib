@@ -319,7 +319,7 @@ namespace application
         , prefix(prefix)
     {}
 
-    void MessageTypeMapGenerator::Run(Entities& formatter)
+    void MessageTypeMapGenerator::Run(Entities& formatter) const
     {
         auto typeMapNamespace = std::make_shared<Namespace>("detail");
 
@@ -368,7 +368,7 @@ namespace application
         return "";
     }
 
-    void MessageReferenceTypeMapGenerator::Run(Entities& formatter)
+    void MessageReferenceTypeMapGenerator::Run(Entities& formatter) const
     {
         auto typeMapNamespace = std::make_shared<Namespace>("detail");
 
