@@ -1,6 +1,6 @@
-#include "protobuf/echo/BufferingStreamReader.hpp"
+#include "infra/stream/BufferingStreamReader.hpp"
 
-namespace services
+namespace infra
 {
     BufferingStreamReader::BufferingStreamReader(infra::BoundedDeque<uint8_t>& buffer, infra::StreamReaderWithRewinding& input)
         : buffer(buffer)

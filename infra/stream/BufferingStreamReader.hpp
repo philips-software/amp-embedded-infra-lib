@@ -1,10 +1,10 @@
-#ifndef PROTOBUF_BUFFERING_STREAM_READER_HPP
-#define PROTOBUF_BUFFERING_STREAM_READER_HPP
+#ifndef INFRA_BUFFERING_STREAM_READER_HPP
+#define INFRA_BUFFERING_STREAM_READER_HPP
 
 #include "infra/stream/InputStream.hpp"
 #include "infra/util/BoundedDeque.hpp"
 
-namespace services
+namespace infra
 {
     // Usage: Everything that is not read from the inputData is stored into the buffer upon destruction of the BufferingStreamReader
     // Any data already present in the buffer is read first from the reader

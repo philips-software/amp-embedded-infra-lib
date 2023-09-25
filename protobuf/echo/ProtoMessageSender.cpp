@@ -1,5 +1,5 @@
 #include "protobuf/echo/ProtoMessageSender.hpp"
-#include "protobuf/echo/BufferingStreamWriter.hpp"
+#include "infra/stream/BufferingStreamWriter.hpp"
 
 namespace services
 {
@@ -9,7 +9,7 @@ namespace services
 
     void ProtoMessageSenderBase::Fill(infra::DataOutputStream output)
     {
-        BufferingStreamWriter writer{ buffer, output.Writer() };
+        infra::BufferingStreamWriter writer{ buffer, output.Writer() };
 
         while (!stack.empty())
         {

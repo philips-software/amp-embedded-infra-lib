@@ -1,6 +1,6 @@
-#include "protobuf/echo/BufferingStreamWriter.hpp"
+#include "infra/stream/BufferingStreamWriter.hpp"
 
-namespace services
+namespace infra
 {
     BufferingStreamWriter::BufferingStreamWriter(infra::BoundedDeque<uint8_t>& buffer, infra::StreamWriter& output)
         : buffer(buffer)

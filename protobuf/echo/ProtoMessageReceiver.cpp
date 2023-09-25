@@ -1,5 +1,5 @@
 #include "protobuf/echo/ProtoMessageReceiver.hpp"
-#include "protobuf/echo/BufferingStreamReader.hpp"
+#include "infra/stream/BufferingStreamReader.hpp"
 
 namespace services
 {
@@ -9,7 +9,7 @@ namespace services
 
     void ProtoMessageReceiverBase::Feed(infra::StreamReaderWithRewinding& data)
     {
-        BufferingStreamReader reader{ buffer, data };
+        infra::BufferingStreamReader reader{ buffer, data };
 
         while (true)
         {

@@ -1,10 +1,10 @@
-#ifndef PROTOBUF_BUFFERING_STREAM_WRITER_HPP
-#define PROTOBUF_BUFFERING_STREAM_WRITER_HPP
+#ifndef INFRA_BUFFERING_STREAM_WRITER_HPP
+#define INFRA_BUFFERING_STREAM_WRITER_HPP
 
 #include "infra/stream/OutputStream.hpp"
 #include "infra/util/BoundedDeque.hpp"
 
-namespace services
+namespace infra
 {
     // Usage: Any data that does not fit into the output stream is written to the buffer
     // Any data already present in the buffer is written to the output stream upon construction of BufferingStreamWriter
