@@ -58,8 +58,8 @@ namespace infra
         buffer.erase(buffer.begin(), buffer.begin() + from.size());
         from = infra::Head(buffer.contiguous_range(buffer.begin()), output.Available());
         output.Insert(from, errorPolicy);
-        buffer.clear();
+        buffer.erase(buffer.begin(), buffer.begin() + from.size());
 
-        index = 0;
+        index = buffer.size();
     }
 }

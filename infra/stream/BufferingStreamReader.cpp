@@ -70,7 +70,7 @@ namespace infra
         if (index + start < buffer.size())
             return buffer.contiguous_range(buffer.begin() + index + start);
 
-        return input.PeekContiguousRange(start - buffer.size());
+        return input.PeekContiguousRange(index + start - buffer.size());
     }
 
     bool BufferingStreamReader::Empty() const
@@ -98,10 +98,7 @@ namespace infra
         }
 
         if (marker < buffer.size())
-        {
-            buffer.resize(marker);
             index = marker;
-        }
     }
 
     void BufferingStreamReader::StoreRemainder()
