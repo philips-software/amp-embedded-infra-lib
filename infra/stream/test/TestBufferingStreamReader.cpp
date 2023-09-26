@@ -47,7 +47,7 @@ TEST_F(BufferingStreamReaderTest, Extract_from_buffer)
 {
     std::array<uint8_t, 2> data;
     reader.Extract(data, errorPolicy);
-    EXPECT_EQ((std::array<uint8_t, 2>{ 1, 2}), data);
+    EXPECT_EQ((std::array<uint8_t, 2>{ 1, 2 }), data);
     EXPECT_FALSE(errorPolicy.Failed());
 }
 

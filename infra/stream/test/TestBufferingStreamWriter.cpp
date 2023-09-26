@@ -60,7 +60,7 @@ TEST_F(BufferingStreamWriterTest, GetProcessedBytesSince)
 
 TEST_F(BufferingStreamWriterTest, LoadRemainder_loads_from_buffer)
 {
-    std::array<uint8_t, 2> data{ 1, 2};
+    std::array<uint8_t, 2> data{ 1, 2 };
     buffer.insert(buffer.end(), data.begin(), data.end());
 
     EXPECT_CALL(output, Available()).WillOnce(testing::Return(2)).WillOnce(testing::Return(0));
