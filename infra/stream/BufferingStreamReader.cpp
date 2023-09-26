@@ -30,7 +30,6 @@ namespace infra
 
         if (!range.empty())
         {
-            auto dataIndex = index - buffer.size();
             auto from = input.ExtractContiguousRange(range.size());
             infra::Copy(from, infra::Head(range, from.size()));
             range.pop_front(from.size());
