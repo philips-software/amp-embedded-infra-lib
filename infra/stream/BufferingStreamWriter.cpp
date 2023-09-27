@@ -35,17 +35,17 @@ namespace infra
         return index - marker;
     }
 
-    infra::ByteRange BufferingStreamWriter::SaveState(std::size_t marker)
+    [[noreturn]] infra::ByteRange BufferingStreamWriter::SaveState(std::size_t marker)
     {
         std::abort();
     }
 
-    void BufferingStreamWriter::RestoreState(infra::ByteRange range)
+    [[noreturn]] void BufferingStreamWriter::RestoreState(infra::ByteRange range)
     {
         std::abort();
     }
 
-    infra::ByteRange BufferingStreamWriter::Overwrite(std::size_t marker)
+    [[noreturn]] infra::ByteRange BufferingStreamWriter::Overwrite(std::size_t marker)
     {
         std::abort();
     }
