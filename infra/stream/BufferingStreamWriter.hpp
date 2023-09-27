@@ -19,9 +19,9 @@ namespace infra
         std::size_t Available() const override;
         std::size_t ConstructSaveMarker() const override;
         std::size_t GetProcessedBytesSince(std::size_t marker) const override;
-        infra::ByteRange SaveState(std::size_t marker) override;
-        void RestoreState(infra::ByteRange range) override;
-        infra::ByteRange Overwrite(std::size_t marker) override;
+        [[noreturn]] infra::ByteRange SaveState(std::size_t marker) override;
+        [[noreturn]] void RestoreState(infra::ByteRange range) override;
+        [[noreturn]] infra::ByteRange Overwrite(std::size_t marker) override;
 
     private:
         void LoadRemainder();
