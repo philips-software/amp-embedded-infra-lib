@@ -18,17 +18,11 @@ namespace services
         void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
 
-        void ServiceDone(Service& service) override;
-
     protected:
         void RequestSendStream(std::size_t size) override;
-        void BusyServiceDone() override;
 
     private:
         void ProcessMessage();
-
-    private:
-        infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
     };
 }
 

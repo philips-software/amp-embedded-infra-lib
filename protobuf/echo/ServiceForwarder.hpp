@@ -12,7 +12,7 @@ namespace services
     public:
         ServiceForwarderBase(infra::ByteRange messageBuffer, Echo& echo, Echo& forwardTo);
 
-        void Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy) override;
+        infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, EchoErrorPolicy& errorPolicy) override;
 
     private:
         const infra::ByteRange messageBuffer;

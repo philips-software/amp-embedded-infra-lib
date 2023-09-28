@@ -20,7 +20,7 @@ namespace services
         MOCK_METHOD1(Method, void(uint32_t value));
 
     protected:
-        void Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, services::EchoErrorPolicy& errorPolicy) override;
+        infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, services::EchoErrorPolicy& errorPolicy) override;
 
     public:
         static const uint32_t serviceId = 1;

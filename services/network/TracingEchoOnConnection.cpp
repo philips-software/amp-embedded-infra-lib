@@ -18,32 +18,32 @@ namespace services
         services.erase_slow(service);
     }
 
-    void TracingEchoOnConnection::ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, infra::StreamReaderWithRewinding& reader)
-    {
-        auto service = FindService(serviceId);
+    //void TracingEchoOnConnection::ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, infra::StreamReaderWithRewinding& reader)
+    //{
+    //    auto service = FindService(serviceId);
 
-        if (service != nullptr)
-        {
-            auto marker = reader.ConstructSaveMarker();
+    //    if (service != nullptr)
+    //    {
+    //        auto marker = reader.ConstructSaveMarker();
 
-            infra::DataInputStream::WithErrorPolicy stream(reader, infra::noFail);
-            infra::ProtoLengthDelimited contentsCopy(stream, stream.ErrorPolicy(), contents.Available());
+    //        infra::DataInputStream::WithErrorPolicy stream(reader, infra::noFail);
+    //        infra::ProtoLengthDelimited contentsCopy(stream, stream.ErrorPolicy(), contents.Available());
 
-            tracer.Trace() << "< ";
-            service->TraceMethod(methodId, contentsCopy, tracer);
+    //        tracer.Trace() << "< ";
+    //        service->TraceMethod(methodId, contentsCopy, tracer);
 
-            reader.Rewind(marker);
-        }
-        else
-            tracer.Trace() << "< Unknown service " << serviceId << " method " << methodId;
+    //        reader.Rewind(marker);
+    //    }
+    //    else
+    //        tracer.Trace() << "< Unknown service " << serviceId << " method " << methodId;
 
-        EchoOnConnection::ExecuteMethod(serviceId, methodId, contents, reader);
-    }
+    //    EchoOnConnection::ExecuteMethod(serviceId, methodId, contents, reader);
+    //}
 
-    void TracingEchoOnConnection::SetStreamWriter(infra::SharedPtr<infra::StreamWriter>&& writer)
-    {
-        EchoOnConnection::SetStreamWriter(tracingWriter.Emplace(std::move(writer), *this));
-    }
+    //void TracingEchoOnConnection::SetStreamWriter(infra::SharedPtr<infra::StreamWriter>&& writer)
+    //{
+    //    EchoOnConnection::SetStreamWriter(tracingWriter.Emplace(std::move(writer), *this));
+    //}
 
     void TracingEchoOnConnection::SendingData(infra::ConstByteRange range) const
     {

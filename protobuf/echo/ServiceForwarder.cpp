@@ -8,7 +8,7 @@ namespace services
         , messageBuffer(messageBuffer)
     {}
 
-    void ServiceForwarderBase::Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy)
+    infra::SharedPtr<MethodDeserializer> ServiceForwarderBase::StartMethod(uint32_t serviceId, uint32_t methodId, EchoErrorPolicy& errorPolicy)
     {
         this->forwardingServiceId = serviceId;
         bytes.Emplace(messageBuffer);

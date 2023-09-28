@@ -2,39 +2,48 @@
 
 namespace services
 {
-    void ServiceStub::Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, services::EchoErrorPolicy& errorPolicy)
+    struct Message
     {
-        infra::ProtoParser parser(contents.Parser());
+    public:
+        static const uint32_t numberOfFields = 1;
+        template<std::size_t fieldIndex>
+        using ProtoType = ProtoUInt32;
+        template<std::size_t fieldIndex>
+        using Type = uint32_t;
+        template<std::size_t fieldIndex>
+        static const uint32_t fieldNumber = 1;
 
+    public:
+        uint32_t& Get(std::integral_constant<uint32_t, 0>)
+        {
+            return value;
+        }
+
+        const uint32_t& Get(std::integral_constant<uint32_t, 0>) const
+        {
+            return value;
+        }
+
+    public:
+        Message() = default;
+
+        Message(uint32_t value)
+            : value(value)
+        {}
+
+    public:
+        uint32_t value = 0;
+    };
+
+    infra::SharedPtr<MethodDeserializer> ServiceStub::StartMethod(uint32_t serviceId, uint32_t methodId, services::EchoErrorPolicy& errorPolicy)
+    {
         switch (methodId)
         {
-            uint32_t value;
-
             case idMethod:
-            {
-                while (!parser.Empty())
-                {
-                    infra::ProtoParser::Field field = parser.GetField();
-
-                    switch (field.second)
-                    {
-                        case 1:
-                            DeserializeField(services::ProtoUInt32(), parser, field.first, value);
-                            break;
-                        default:
-                            if (field.first.Is<infra::ProtoLengthDelimited>())
-                                field.first.Get<infra::ProtoLengthDelimited>().SkipEverything();
-                            break;
-                    }
-                }
-
-                if (!parser.FormatFailed())
-                    Method(value);
-                break;
-            }
+                return infra::MakeSharedOnHeap<services::MethodDeserializerImpl<Message, ServiceStub, uint32_t>>(*this, &ServiceStub::Method);
             default:
                 errorPolicy.MethodNotFound(serviceId, methodId);
-                contents.SkipEverything();
+                return infra::MakeSharedOnHeap<services::MethodDeserializerDummy>();
         }
     }
 
@@ -44,13 +53,7 @@ namespace services
 
     void ServiceStubProxy::Method(uint32_t value)
     {
-        infra::DataOutputStream::WithErrorPolicy stream(Rpc().SendStreamWriter());
-        infra::ProtoFormatter formatter(stream);
-        formatter.PutVarInt(serviceId);
-        {
-            infra::ProtoLengthDelimitedFormatter argumentFormatter = formatter.LengthDelimitedFormatter(idMethod);
-            SerializeField(services::ProtoUInt32(), formatter, value, 1);
-        }
-        Rpc().Send();
+        auto serializer = infra::MakeSharedOnHeap<MethodSerializerImpl<Message, uint32_t>>(value);
+        SetSerializer(serializer);
     }
 }

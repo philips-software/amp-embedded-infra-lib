@@ -20,7 +20,16 @@ namespace services
     protected:
         // Implementation of EchoOnStreams
         void RequestSendStream(std::size_t size) override;
-        void BusyServiceDone() override;
+
+    private:
+        infra::SharedPtr<infra::StreamReaderWithRewinding> readerPtr;
+        infra::AccessedBySharedPtr access{
+            [this]()
+            {
+                if (ConnectionObserver::IsAttached())
+                    ConnectionObserver::Subject().AckReceived();
+            }
+        };
     };
 }
 

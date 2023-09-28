@@ -160,7 +160,7 @@ namespace application
 
         uint32_t MaxMessageSize() const;
         std::string AcceptsServiceBody() const;
-        std::string HandleBody() const;
+        std::string StartMethodBody() const;
         std::string ProxyMethodBody(const EchoMethod& method) const;
 
     private:

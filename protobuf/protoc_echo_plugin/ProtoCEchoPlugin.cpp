@@ -870,16 +870,15 @@ namespace application
             functions->Add(serviceMethod);
         }
 
-        auto acceptsService = std::make_shared<Function>("AcceptsService", AcceptsServiceBody(), "bool", Function::fConst | Function::fVirtual | Function::fOverride);
+        auto acceptsService = std::make_shared<Function>("AcceptsService", AcceptsServiceBody(), "bool", Function::fConst | Function::fOverride);
         acceptsService->Parameter("uint32_t id");
         functions->Add(acceptsService);
 
-        auto handle = std::make_shared<Function>("Handle", HandleBody(), "void", Function::fVirtual | Function::fOverride);
-        handle->Parameter("uint32_t serviceId");
-        handle->Parameter("uint32_t methodId");
-        handle->Parameter("infra::ProtoLengthDelimited& contents");
-        handle->Parameter("services::EchoErrorPolicy& errorPolicy");
-        functions->Add(handle);
+        auto startMethod = std::make_shared<Function>("StartMethod", StartMethodBody(), "infra::SharedPtr<services::MethodDeserializer>", Function::fOverride);
+        startMethod->Parameter("uint32_t serviceId");
+        startMethod->Parameter("uint32_t methodId");
+        startMethod->Parameter("services::EchoErrorPolicy& errorPolicy");
+        functions->Add(startMethod);
 
         serviceFormatter->Add(functions);
     }
@@ -953,16 +952,14 @@ namespace application
         return result.str();
     }
 
-    std::string ServiceGenerator::HandleBody() const
+    std::string ServiceGenerator::StartMethodBody() const
     {
         std::ostringstream result;
         {
             google::protobuf::io::OstreamOutputStream stream(&result);
             google::protobuf::io::Printer printer(&stream, '$', nullptr);
 
-            printer.Print(R"(infra::ProtoParser parser(contents.Parser());
-
-switch (methodId)
+            printer.Print(R"(switch (methodId)
 {
 )");
 
@@ -971,23 +968,21 @@ switch (methodId)
                 if (method.parameter)
                 {
                     printer.Print(R"(    case id$name$:
-    {
-        $argument$ argument(parser);
-        if (!parser.FormatFailed())
-            $name$()",
-                        "name", method.name, "argument", method.parameter->qualifiedName);
+        return infra::MakeSharedOnHeap<services::MethodDeserializerImpl<$argument$, $serviceName$)",
+                        "serviceName", service->name, "name", method.name, "argument", method.parameter->qualifiedName);
 
                     for (auto& field : method.parameter->fields)
                     {
-                        printer.Print("argument.$field$", "field", field->name);
-                        if (&field != &method.parameter->fields.back())
-                            printer.Print(", ");
+                        std::string typeName;
+                        ParameterTypeVisitor visitor(typeName);
+                        field->Accept(visitor);
+
+                        printer.Print(", $type$", "type", typeName);
                     }
 
-                    printer.Print(R"();
-        break;
-    }
-)");
+                    printer.Print(R"(>>(*this, &$serviceName$::$name$);
+)",
+                        "serviceName", service->name, "name", method.name);
                 }
                 else
                     printer.Print(R"(    case id$name$:
@@ -999,7 +994,7 @@ switch (methodId)
 
             printer.Print(R"(    default:
         errorPolicy.MethodNotFound(serviceId, methodId);
-        contents.SkipEverything();
+        return infra::MakeSharedOnHeap<services::MethodDeserializerDummy>();
 )");
 
             printer.Print("}\n");
@@ -1015,34 +1010,30 @@ switch (methodId)
             google::protobuf::io::OstreamOutputStream stream(&result);
             google::protobuf::io::Printer printer(&stream, '$', nullptr);
 
-            printer.Print(R"(infra::DataOutputStream::WithErrorPolicy stream(Rpc().SendStreamWriter());
-infra::ProtoFormatter formatter(stream);
-formatter.PutVarInt(serviceId);
-{
-    infra::ProtoLengthDelimitedFormatter argumentFormatter = formatter.LengthDelimitedFormatter(id$name$);
-)",
-                "name", method.name);
+            //auto serializer = infra::MakeSharedOnHeap<MethodSerializerImpl<Message, uint32_t>>(value);
+            //SetSerializer(serializer);
 
-            if (method.parameter)
+            printer.Print(R"(auto serializer = infra::MakeSharedOnHeap<services::MethodSerializerImpl<$type$)", "type", method.parameter->qualifiedName);
+
+            for (auto& field : method.parameter->fields)
             {
-                printer.Print("    $type$(", "type", method.parameter->qualifiedName);
-
-                for (auto& field : method.parameter->fields)
-                {
-                    std::string typeName;
-                    ParameterTypeVisitor visitor(typeName);
-                    field->Accept(visitor);
-                    printer.Print("$field$", "field", field->name);
-                    if (&field != &method.parameter->fields.back())
-                        printer.Print(", ");
-                }
-
-                printer.Print(R"().Serialize(formatter);
-)");
+                std::string typeName;
+                ParameterTypeVisitor visitor(typeName);
+                field->Accept(visitor);
+                printer.Print(", $type$", "type", typeName);
             }
 
-            printer.Print(R"(}
-Rpc().Send();
+            printer.Print(">>(");
+
+            for (auto& field : method.parameter->fields)
+            {
+                printer.Print("$field$", "field", field->name);
+                if (&field != &method.parameter->fields.back())
+                    printer.Print(", ");
+            }
+
+            printer.Print(R"();
+SetSerializer(serializer);
 )");
         }
 
@@ -1081,7 +1072,7 @@ Rpc().Send();
     {
         auto functions = std::make_shared<Access>("public");
 
-        auto handle = std::make_shared<Function>("TraceMethod", TraceMethodBody(), "void", Function::fVirtual | Function::fOverride | Function::fConst);
+        auto handle = std::make_shared<Function>("TraceMethod", TraceMethodBody(), "void", Function::fOverride | Function::fConst);
         handle->Parameter("uint32_t methodId");
         handle->Parameter("infra::ProtoLengthDelimited& contents");
         handle->Parameter("services::Tracer& tracer");

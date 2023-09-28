@@ -1,5 +1,6 @@
 #include "protobuf/echo/Echo.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
+#include "infra/stream/BufferingStreamReader.hpp"
 
 namespace services
 {
@@ -8,19 +9,7 @@ namespace services
 
     void Service::MethodDone()
     {
-        inProgress = false;
         Rpc().ServiceDone(*this);
-    }
-
-    bool Service::InProgress() const
-    {
-        return inProgress;
-    }
-
-    void Service::HandleMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy)
-    {
-        inProgress = true;
-        Handle(serviceId, methodId, contents, errorPolicy);
     }
 
     Echo& Service::Rpc()
@@ -50,9 +39,10 @@ namespace services
         echo.RequestSend(*this);
     }
 
-    void ServiceProxy::GrantSend()
+    infra::SharedPtr<MethodSerializer> ServiceProxy::GrantSend()
     {
         onGranted();
+        return methodSerializer;
     }
 
     uint32_t ServiceProxy::MaxMessageSize() const
@@ -63,6 +53,11 @@ namespace services
     uint32_t ServiceProxy::CurrentRequestedSize() const
     {
         return currentRequestedSize;
+    }
+
+    void ServiceProxy::SetSerializer(const infra::SharedPtr<MethodSerializer>& serializer)
+    {
+        methodSerializer = serializer;
     }
 
     void EchoErrorPolicyAbortOnMessageFormatError::MessageFormatError()
@@ -92,97 +87,123 @@ namespace services
 
     void EchoOnStreams::RequestSend(ServiceProxy& serviceProxy)
     {
-        if (sendRequesters.empty() && streamWriter == nullptr)
-        {
-            sendRequesters.push_back(serviceProxy);
-            RequestSendStream(serviceProxy.CurrentRequestedSize());
-        }
-        else
-            sendRequesters.push_back(serviceProxy);
-    }
+        sendRequesters.push_back(serviceProxy);
 
-    infra::StreamWriter& EchoOnStreams::SendStreamWriter()
-    {
-        return *streamWriter;
-    }
-
-    void EchoOnStreams::Send()
-    {
-        streamWriter = nullptr;
-
-        if (!sendRequesters.empty())
-            RequestSendStream(sendRequesters.front().CurrentRequestedSize());
+        TryGrantSend();
     }
 
     void EchoOnStreams::ServiceDone(Service& service)
     {
-        if (serviceBusy && service.AcceptsService(*serviceBusy))
+        methodDeserializer = nullptr;
+
+        if (readerPtr != nullptr)
+            DataReceived();
+    }
+
+    void EchoOnStreams::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+    {
+        readerPtr = std::move(reader);
+        DataReceived();
+    }
+
+    void EchoOnStreams::TryGrantSend()
+    {
+        if (sendingProxy == nullptr && !sendRequesters.empty())
         {
-            serviceBusy = infra::none;
-            infra::EventDispatcherWithWeakPtr::Instance().Schedule([](infra::SharedPtr<EchoOnStreams> echo)
-                {
-                    echo->BusyServiceDone();
-                },
-                SharedFromThis());
+            sendingProxy = &sendRequesters.front();
+            sendRequesters.pop_front();
+            RequestSendStream(sendingProxy->CurrentRequestedSize());
         }
     }
 
-    void EchoOnStreams::ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, infra::StreamReaderWithRewinding& reader)
+    void EchoOnStreams::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        if (!NotifyObservers([this, serviceId, methodId, &contents](auto& service)
-                {
-                    if (service.AcceptsService(serviceId))
-                    {
-                        if (service.InProgress())
-                            serviceBusy = serviceId;
-                        else
-                            service.HandleMethod(serviceId, methodId, contents, errorPolicy);
+        if (methodSerializer == nullptr)
+            methodSerializer = sendingProxy->GrantSend();
 
-                        return true;
-                    }
+        auto more = methodSerializer->SendStreamAvailable(std::move(writer));
 
-                    return false;
-                }))
-        {
-            errorPolicy.ServiceNotFound(serviceId);
-            contents.SkipEverything();
-        }
-    }
-
-    void EchoOnStreams::SetStreamWriter(infra::SharedPtr<infra::StreamWriter>&& writer)
-    {
-        streamWriter = std::move(writer);
-
-        ServiceProxy& proxy = sendRequesters.front();
-        sendRequesters.pop_front();
-        proxy.GrantSend();
-    }
-
-    bool EchoOnStreams::ServiceBusy() const
-    {
-        return serviceBusy != infra::none;
-    }
-
-    bool EchoOnStreams::ProcessMessage(infra::StreamReaderWithRewinding& reader)
-    {
-        infra::DataInputStream::WithErrorPolicy stream(reader, infra::softFail);
-        infra::StreamErrorPolicy formatErrorPolicy(infra::softFail);
-        infra::ProtoParser parser(stream, formatErrorPolicy);
-        uint32_t serviceId = static_cast<uint32_t>(parser.GetVarInt());
-        infra::ProtoParser::Field message = parser.GetField();
-        if (stream.Failed())
-            return false;
-
-        if (formatErrorPolicy.Failed() || !message.first.Is<infra::ProtoLengthDelimited>())
-            errorPolicy.MessageFormatError();
+        if (more)
+            RequestSendStream(sendingProxy->CurrentRequestedSize());
         else
         {
-            ExecuteMethod(serviceId, message.second, message.first.Get<infra::ProtoLengthDelimited>(), reader);
+            methodSerializer = nullptr;
+            TryGrantSend();
+        }
+    }
 
-            if (stream.Failed() || formatErrorPolicy.Failed())
-                errorPolicy.MessageFormatError();
+    void EchoOnStreams::DataReceived()
+    {
+        infra::BufferingStreamReader bufferedReader{ receiveBuffer, *readerPtr };
+
+        while (methodDeserializer == nullptr || limitedReader != infra::none)
+        {
+            if (limitedReader == infra::none)
+            {
+                infra::DataInputStream::WithErrorPolicy stream(bufferedReader, infra::softFail);
+                infra::StreamErrorPolicy formatErrorPolicy(infra::softFail);
+                infra::ProtoParser parser(stream, formatErrorPolicy);
+                uint32_t serviceId = static_cast<uint32_t>(parser.GetVarInt());
+                auto [contents, methodId] = parser.GetPartialField();
+                if (stream.Failed())
+                {
+                    bufferedReader.Rewind(0);
+                    return;
+                }
+
+                if (formatErrorPolicy.Failed() || !contents.Is<infra::PartialProtoLengthDelimited>())
+                    errorPolicy.MessageFormatError();
+                else
+                {
+                    limitedReader.Emplace(bufferedReader, contents.Get<infra::PartialProtoLengthDelimited>().length);
+                    StartMethod(serviceId, methodId);
+
+                    if (formatErrorPolicy.Failed())
+                        errorPolicy.MessageFormatError();
+                }
+            }
+
+            if (limitedReader != infra::none)
+            {
+                limitedReader->SwitchInput(bufferedReader);
+                methodDeserializer->MethodContents(*limitedReader);
+            }
+
+            if (limitedReader->LimitReached())
+            {
+                limitedReader = infra::none;
+                methodDeserializer->ExecuteMethod();
+            }
         }
 
-        return true;
+        if (methodDeserializer == nullptr)
+            readerPtr = nullptr;
     }
+
+    void EchoOnStreams::StartMethod(uint32_t serviceId, uint32_t methodId)
+    {
+        if (!NotifyObservers([this, serviceId, methodId](auto& service)
+            {
+                if (service.AcceptsService(serviceId))
+                {
+                    methodDeserializer = service.StartMethod(serviceId, methodId, errorPolicy);
+                    return true;
+                }
+
+                return false;
+            }))
+        {
+            errorPolicy.ServiceNotFound(serviceId);
+            methodDeserializer = infra::MakeSharedOnHeap<MethodDeserializerDummy>();
+        }
+    }
+
+    void MethodDeserializerDummy::MethodContents(infra::StreamReaderWithRewinding& reader)
+    {
+        while (!reader.Empty())
+            reader.ExtractContiguousRange(std::numeric_limits<uint32_t>::max());
+    }
+
+    void MethodDeserializerDummy::ExecuteMethod()
+    {}
 }
