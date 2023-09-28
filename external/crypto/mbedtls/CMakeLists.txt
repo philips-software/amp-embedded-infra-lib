@@ -17,6 +17,10 @@ function(add_mbedtls_target_properties)
     foreach(target ${ARGN})
         target_compile_options(${target} PUBLIC
             -DMBEDTLS_CONFIG_FILE="mbedtls/mbedtls_emil_config.h"
+            # see https://github.com/Mbed-TLS/mbedtls/pull/6966
+            # mbedtls sets the -Wdocumentation flag, which is throwing warnings
+            # since clang-15
+            $<$<CXX_COMPILER_ID:Clang>:-Wno-documentation>
         )
 
         target_include_directories(${target} PUBLIC
