@@ -1,7 +1,7 @@
 FetchContent_Declare(
     mbedtls
     GIT_REPOSITORY https://github.com/Mbed-TLS/mbedtls
-    GIT_TAG 72718dd87e087215ce9155a826ee5a66cfbe9631 # v3.4.1
+    GIT_TAG 869298bffeea13b205343361b7a7daf2b210e33d # v3.2.1
 )
 
 set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL On)
@@ -17,6 +17,10 @@ function(add_mbedtls_target_properties)
     foreach(target ${ARGN})
         target_compile_options(${target} PUBLIC
             -DMBEDTLS_CONFIG_FILE="mbedtls/mbedtls_emil_config.h"
+            # see https://github.com/Mbed-TLS/mbedtls/pull/6966
+            # mbedtls sets the -Wdocumentation flag, which is throwing warnings
+            # since clang-15
+            $<$<CXX_COMPILER_ID:Clang>:-Wno-documentation>
         )
 
         target_include_directories(${target} PUBLIC
