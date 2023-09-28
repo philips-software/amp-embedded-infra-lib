@@ -20,7 +20,7 @@ jobs:
       - uses: philips-forks/cmake-dependency-submission@72880580a7cafc16145d82268f1892c0ece3da2a # main
   dependency-review:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: ${{ github.event_name == 'pull_request' }}
     needs: [dependency-submission]
     permissions:
       pull-requests: write
