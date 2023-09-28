@@ -43,7 +43,7 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
     steps:
-      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
         with:
           persist-credentials: false
       - uses: hendrikmuhs/ccache-action@6d1841ec156c39a52b1b23a810da917ab98da1f4 # v1.2.10
@@ -52,8 +52,8 @@ jobs:
           variant: sccache
       - uses: lukka/run-cmake@c2b72aff009141774c5a5fabe74ea46c8c04d9c4 # v10.6
         with:
-          configurePreset: "Package"
-          buildPreset: "Package"
+          configurePreset: "host-single-MinSizeRel"
+          buildPreset: "release-package"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
       - run: gh release upload ${{ needs.release_please.outputs.tag_name }} build/**/emil-*.zip --clobber
         shell: bash
