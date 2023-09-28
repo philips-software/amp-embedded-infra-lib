@@ -16,25 +16,13 @@ namespace infra
     {
         if (index != buffer.size())
         {
-            auto from = infra::Head(buffer.contiguous_range(buffer.begin() + index), range.size());
-            infra::Copy(from, infra::Head(range, from.size()));
-            range.pop_front(from.size());
-            index += from.size();
-
+            Read(infra::Head(buffer.contiguous_range(buffer.begin() + index), range.size()), range);
             // Perhaps the deque just wrapped around, try once more
-            from = infra::Head(buffer.contiguous_range(buffer.begin() + index), range.size());
-            infra::Copy(from, infra::Head(range, from.size()));
-            range.pop_front(from.size());
-            index += from.size();
+            Read(infra::Head(buffer.contiguous_range(buffer.begin() + index), range.size()), range);
         }
 
         if (!range.empty())
-        {
-            auto from = input.ExtractContiguousRange(range.size());
-            infra::Copy(from, infra::Head(range, from.size()));
-            range.pop_front(from.size());
-            index += from.size();
-        }
+            Read(input.ExtractContiguousRange(range.size()), range);
 
         errorPolicy.ReportResult(range.empty());
     }
@@ -60,8 +48,7 @@ namespace infra
             return from;
         }
 
-        auto from = input.ExtractContiguousRange(max);
-        return from;
+        return input.ExtractContiguousRange(max);
     }
 
     infra::ConstByteRange BufferingStreamReader::PeekContiguousRange(std::size_t start)
@@ -98,6 +85,13 @@ namespace infra
 
         if (marker < buffer.size())
             index = marker;
+    }
+
+    void BufferingStreamReader::Read(infra::ConstByteRange from, infra::ByteRange& to)
+    {
+        infra::Copy(from, infra::Head(to, from.size()));
+        to.pop_front(from.size());
+        index += from.size();
     }
 
     void BufferingStreamReader::StoreRemainder()

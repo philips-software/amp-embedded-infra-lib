@@ -368,27 +368,6 @@ namespace application
         return "";
     }
 
-    void MessageReferenceTypeMapGenerator::Run(Entities& formatter) const
-    {
-        auto typeMapNamespace = std::make_shared<Namespace>("detail");
-
-        auto typeMapDeclaration = std::make_shared<StructTemplateForwardDeclaration>(MessageName() + "TypeMap");
-        typeMapDeclaration->TemplateParameter("std::size_t fieldIndex");
-        typeMapNamespace->Add(typeMapDeclaration);
-
-        for (auto& field : message->fields)
-        {
-            auto typeMapSpecialization = std::make_shared<StructTemplateSpecialization>(MessageName() + "TypeMap");
-            typeMapSpecialization->TemplateSpecialization(google::protobuf::SimpleItoa(std::distance(message->fields.data(), &field)));
-            AddTypeMapProtoType(*field, *typeMapSpecialization);
-            AddTypeMapType(*field, *typeMapSpecialization);
-            AddTypeMapFieldNumber(*field, *typeMapSpecialization);
-            typeMapNamespace->Add(typeMapSpecialization);
-        }
-
-        formatter.Add(typeMapNamespace);
-    }
-
     void MessageReferenceTypeMapGenerator::AddTypeMapProtoType(const EchoField& field, Entities& entities) const
     {
         entities.Add(std::make_shared<Using>("ProtoType", field.protoReferenceType));

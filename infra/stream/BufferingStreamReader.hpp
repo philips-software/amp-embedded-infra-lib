@@ -26,6 +26,7 @@ namespace infra
         void Rewind(std::size_t marker) override;
 
     private:
+        void Read(infra::ConstByteRange range, infra::ByteRange& to);
         void StoreRemainder();
 
     private:

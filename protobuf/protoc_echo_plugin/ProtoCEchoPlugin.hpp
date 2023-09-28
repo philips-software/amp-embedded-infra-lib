@@ -55,7 +55,7 @@ namespace application
         MessageTypeMapGenerator& operator=(const MessageTypeMapGenerator& other) = delete;
         ~MessageTypeMapGenerator() = default;
 
-        virtual void Run(Entities& formatter) const;
+        void Run(Entities& formatter) const;
 
     protected:
         virtual void AddTypeMapProtoType(const EchoField& field, Entities& entities) const;
@@ -74,8 +74,6 @@ namespace application
     {
     public:
         using MessageTypeMapGenerator::MessageTypeMapGenerator;
-
-        void Run(Entities& formatter) const override;
 
     protected:
         void AddTypeMapProtoType(const EchoField& field, Entities& entities) const override;
