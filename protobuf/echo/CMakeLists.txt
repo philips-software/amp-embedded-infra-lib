@@ -8,6 +8,11 @@ target_link_libraries(protobuf.echo PUBLIC
 target_sources(protobuf.echo PRIVATE
     Echo.cpp
     Echo.hpp
+    Proto.hpp
+    ProtoMessageReceiver.cpp
+    ProtoMessageReceiver.hpp
+    ProtoMessageSender.cpp
+    ProtoMessageSender.hpp
     ServiceForwarder.cpp
     ServiceForwarder.hpp
     TracingEcho.cpp

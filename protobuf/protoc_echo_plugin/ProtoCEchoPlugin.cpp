@@ -319,7 +319,7 @@ namespace application
         , prefix(prefix)
     {}
 
-    void MessageTypeMapGenerator::Run(Entities& formatter)
+    void MessageTypeMapGenerator::Run(Entities& formatter) const
     {
         auto typeMapNamespace = std::make_shared<Namespace>("detail");
 
@@ -331,20 +331,31 @@ namespace application
         {
             auto typeMapSpecialization = std::make_shared<StructTemplateSpecialization>(MessageName() + "TypeMap");
             typeMapSpecialization->TemplateSpecialization(google::protobuf::SimpleItoa(std::distance(message->fields.data(), &field)));
-            typeMapSpecialization->Add(std::make_shared<Using>("ProtoType", field->protoType));
+            AddTypeMapProtoType(*field, *typeMapSpecialization);
             AddTypeMapType(*field, *typeMapSpecialization);
+            AddTypeMapFieldNumber(*field, *typeMapSpecialization);
             typeMapNamespace->Add(typeMapSpecialization);
         }
 
         formatter.Add(typeMapNamespace);
     }
 
-    void MessageTypeMapGenerator::AddTypeMapType(EchoField& field, Entities& entities)
+    void MessageTypeMapGenerator::AddTypeMapProtoType(const EchoField& field, Entities& entities) const
+    {
+        entities.Add(std::make_shared<Using>("ProtoType", field.protoType));
+    }
+
+    void MessageTypeMapGenerator::AddTypeMapType(const EchoField& field, Entities& entities) const
     {
         std::string result;
         StorageTypeVisitor visitor(result);
         field.Accept(visitor);
         entities.Add(std::make_shared<Using>("Type", result));
+    }
+
+    void MessageTypeMapGenerator::AddTypeMapFieldNumber(const EchoField& field, Entities& entities) const
+    {
+        entities.Add(std::make_shared<DataMember>("fieldNumber", "static const uint32_t", google::protobuf::SimpleItoa(field.number)));
     }
 
     std::string MessageTypeMapGenerator::MessageName() const
@@ -357,27 +368,12 @@ namespace application
         return "";
     }
 
-    void MessageReferenceTypeMapGenerator::Run(Entities& formatter)
+    void MessageReferenceTypeMapGenerator::AddTypeMapProtoType(const EchoField& field, Entities& entities) const
     {
-        auto typeMapNamespace = std::make_shared<Namespace>("detail");
-
-        auto typeMapDeclaration = std::make_shared<StructTemplateForwardDeclaration>(MessageName() + "TypeMap");
-        typeMapDeclaration->TemplateParameter("std::size_t fieldIndex");
-        typeMapNamespace->Add(typeMapDeclaration);
-
-        for (auto& field : message->fields)
-        {
-            auto typeMapSpecialization = std::make_shared<StructTemplateSpecialization>(MessageName() + "TypeMap");
-            typeMapSpecialization->TemplateSpecialization(google::protobuf::SimpleItoa(std::distance(message->fields.data(), &field)));
-            typeMapSpecialization->Add(std::make_shared<Using>("ProtoType", field->protoReferenceType));
-            AddTypeMapType(*field, *typeMapSpecialization);
-            typeMapNamespace->Add(typeMapSpecialization);
-        }
-
-        formatter.Add(typeMapNamespace);
+        entities.Add(std::make_shared<Using>("ProtoType", field.protoReferenceType));
     }
 
-    void MessageReferenceTypeMapGenerator::AddTypeMapType(EchoField& field, Entities& entities)
+    void MessageReferenceTypeMapGenerator::AddTypeMapType(const EchoField& field, Entities& entities) const
     {
         std::string result;
         ParameterReferenceTypeVisitor visitor(result);
@@ -476,12 +472,16 @@ namespace application
     {
         auto typeMap = std::make_shared<Access>("public");
 
+        auto numberOfFields = std::make_shared<DataMember>("numberOfFields", "static const uint32_t", google::protobuf::SimpleItoa(message->fields.size()));
+        typeMap->Add(numberOfFields);
         auto protoTypeUsing = std::make_shared<UsingTemplate>("ProtoType", "typename " + TypeMapName() + "<fieldIndex>::ProtoType");
         protoTypeUsing->TemplateParameter("std::size_t fieldIndex");
         typeMap->Add(protoTypeUsing);
         auto typeUsing = std::make_shared<UsingTemplate>("Type", "typename " + TypeMapName() + "<fieldIndex>::Type");
         typeUsing->TemplateParameter("std::size_t fieldIndex");
         typeMap->Add(typeUsing);
+        auto fieldNumber = std::make_shared<DataMember>("fieldNumber", "template<std::size_t fieldIndex> static const uint32_t", TypeMapName() + "<fieldIndex>::fieldNumber");
+        typeMap->Add(fieldNumber);
 
         classFormatter->Add(typeMap);
     }
@@ -493,9 +493,12 @@ namespace application
         for (auto& field : message->fields)
         {
             auto index = std::distance(message->fields.data(), &field);
-            auto function = std::make_shared<Function>("Get", "return " + field->name + ";\n", ClassName() + "::Type<" + google::protobuf::SimpleItoa(index) + ">&", 0);
-            function->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
-            getters->Add(function);
+            auto functionGet = std::make_shared<Function>("Get", "return " + field->name + ";\n", ClassName() + "::Type<" + google::protobuf::SimpleItoa(index) + ">&", 0);
+            functionGet->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
+            getters->Add(functionGet);
+            auto functionConstGet = std::make_shared<Function>("Get", "return " + field->name + ";\n", "const " + ClassName() + "::Type<" + google::protobuf::SimpleItoa(index) + ">&", Function::fConst);
+            functionConstGet->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
+            getters->Add(functionConstGet);
         }
 
         classFormatter->Add(getters);
@@ -618,7 +621,7 @@ namespace application
 
                 for (auto& field : message->fields)
                     printer.Print(R"(case $constant$:
-    DeserializeField($type$(), parser, field, $name$);
+    DeserializeField($type$(), parser, field.first, $name$);
     break;
 )",
                         "constant", field->constantName, "type", field->protoType, "name", field->name);
@@ -740,9 +743,12 @@ namespace application
         for (auto& field : message->fields)
         {
             auto index = std::distance(message->fields.data(), &field);
-            auto function = std::make_shared<Function>("Get", "return " + field->name + ";\n", ClassName() + "::Type<" + google::protobuf::SimpleItoa(index) + ">&", 0);
-            function->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
-            getters->Add(function);
+            auto functionGet = std::make_shared<Function>("Get", "return " + field->name + ";\n", ClassName() + "::Type<" + google::protobuf::SimpleItoa(index) + ">&", 0);
+            functionGet->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
+            getters->Add(functionGet);
+            auto functionConstGet = std::make_shared<Function>("Get", "return " + field->name + ";\n", ClassName() + "::Type<" + google::protobuf::SimpleItoa(index) + ">", Function::fConst);
+            functionConstGet->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
+            getters->Add(functionConstGet);
         }
 
         classFormatter->Add(getters);
