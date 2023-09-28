@@ -105,7 +105,7 @@ namespace services
             "-----END CERTIFICATE-----\r\n";
 
         const char testClientKeyData[] =
-            "-----BEGIN RSA PRIVATE KEY-----\r\n" //NOSONARB
+            "-----BEGIN RSA PRIVATE KEY-----\r\n" //NOSONAR
             "MIIEowIBAAKCAQEAqNdp/w5eM4io5Ki/amQC8FAuhhdk1H3ELm11MmkYTLXJBsSc\r\n"
             "RCLIdiyM3Ten/I3bZtI0Ak7yvubQnozeBZig3usBBapfOvx5adCSsZfwGjgsqLF+\r\n"
             "zQ2maEd15pHSRPPXBAJ++4ZpxdVkfr0r/ZRIxWJwvyxtK3N0BJfUcop1J2fa3cZx\r\n"
