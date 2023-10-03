@@ -62,8 +62,6 @@ namespace infra
 
         template<class Result>
         Result operator/(XmlTransformObjectNavigatorToken<Result> token) const;
-        //    template<class Result>
-        //    infra::Optional<Result> operator/(XmlTransformOptionalObjectNavigatorToken<Result> token) const;
         template<class Result>
         std::vector<Result> operator/(XmlTransformArrayNavigatorToken<Result> token) const;
 
