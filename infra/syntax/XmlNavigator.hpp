@@ -1,8 +1,8 @@
 #ifndef INFRA_XML_OBJECT_NAVIGATOR_HPP
 #define INFRA_XML_OBJECT_NAVIGATOR_HPP
 
-#include "pugixml.hpp"
 #include "infra/util/Optional.hpp"
+#include "pugixml.hpp"
 #include <functional>
 
 namespace infra
@@ -87,7 +87,7 @@ namespace infra
     {
         std::vector<Result> result;
 
-        for (auto child: node.children(token.name.c_str()))
+        for (auto child : node.children(token.name.c_str()))
             result.push_back(token.transformation(child));
 
         return result;

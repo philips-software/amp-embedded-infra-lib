@@ -28,7 +28,7 @@ namespace infra
 
     std::string XmlNodeNavigator::operator/(XmlStringAttributeNavigatorToken token) const
     {
-        for (auto attribute: node.attributes())
+        for (auto attribute : node.attributes())
             if (attribute.name() == token.name)
                 return attribute.value();
 
@@ -46,7 +46,7 @@ namespace infra
 
     int32_t XmlNodeNavigator::operator/(XmlIntegerAttributeNavigatorToken token) const
     {
-        for (auto attribute: node.attributes())
+        for (auto attribute : node.attributes())
             if (attribute.name() == token.name)
                 return attribute.as_int();
 
@@ -55,7 +55,7 @@ namespace infra
 
     infra::Optional<int32_t> XmlNodeNavigator::operator/(XmlOptionalIntegerAttributeNavigatorToken token) const
     {
-        for (auto attribute: node.attributes())
+        for (auto attribute : node.attributes())
             if (attribute.name() == token.name)
                 return infra::MakeOptional(attribute.as_int());
 
