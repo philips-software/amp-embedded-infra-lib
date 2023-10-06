@@ -5,7 +5,9 @@ if (EMIL_HOST_BUILD)
         GIT_TAG a0e064336317c9347a91224112af9933598714e9 # v1.13
     )
 
+    set (BUILD_TESTING_save ${BUILD_TESTING})
     FetchContent_MakeAvailable(pugixml)
+    set (BUILD_TESTING ${BUILD_TESTING_save} CACHE INTERNAL "")
 endif()
 
 add_library(infra.syntax ${EMIL_EXCLUDE_FROM_ALL} STATIC)
