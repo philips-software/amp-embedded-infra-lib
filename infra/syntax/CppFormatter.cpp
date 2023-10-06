@@ -103,7 +103,10 @@ namespace application
 
     bool Entities::EntitiesHaveSourceCode() const
     {
-        return std::any_of(entities.begin(), entities.end(), [](const auto& entity) { return entity->HasSourceCode(); });
+        return std::any_of(entities.begin(), entities.end(), [](const auto& entity)
+            {
+                return entity->HasSourceCode();
+            });
     }
 
     Class::Class(const std::string& name)
