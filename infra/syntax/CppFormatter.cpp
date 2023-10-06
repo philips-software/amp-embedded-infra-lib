@@ -95,7 +95,10 @@ namespace application
 
     bool Entities::EntitiesHaveHeaderCode() const
     {
-        return std::any_of(entities.begin(), entities.end(), [](const auto& entity) { return entity->HasHeaderCode(); });
+        return std::any_of(entities.begin(), entities.end(), [](const auto& entity)
+            {
+                return entity->HasHeaderCode();
+            });
     }
 
     bool Entities::EntitiesHaveSourceCode() const
