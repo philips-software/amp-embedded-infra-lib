@@ -511,6 +511,52 @@ TEST_F(CppFormatterTest, DataMember_prints_nothing_in_source)
     ExpectPrinted("");
 }
 
+TEST_F(CppFormatterTest, StaticDataMember_prints_header)
+{
+    application::StaticDataMember member("name", "type", "initializer");
+    member.PrintHeader(*printer);
+    ExpectPrinted("static type name;\n");
+}
+
+TEST_F(CppFormatterTest, StaticDataMember_prints_source)
+{
+    application::StaticDataMember member("name", "type", "initializer");
+    member.PrintSource(*printer, "scope::");
+    ExpectPrinted("type scope::name = initializer;\n");
+}
+
+TEST_F(CppFormatterTest, Using_prints_header)
+{
+    application::Using usingDecl("name", "definition");
+    usingDecl.PrintHeader(*printer);
+    ExpectPrinted("using name = definition;\n");
+}
+
+TEST_F(CppFormatterTest, Using_prints_source)
+{
+    application::Using usingDecl("name", "definition");
+    usingDecl.PrintSource(*printer, "scope::");
+    ExpectPrinted("");
+}
+
+TEST_F(CppFormatterTest, UsingTemplate_prints_header)
+{
+    application::UsingTemplate usingDecl("name", "definition");
+    usingDecl.TemplateParameter("T");
+    usingDecl.TemplateParameter("U");
+    usingDecl.PrintHeader(*printer);
+    ExpectPrinted("template<T, U>\nusing name = definition;\n");
+}
+
+TEST_F(CppFormatterTest, UsingTemplate_prints_source)
+{
+    application::UsingTemplate usingDecl("name", "definition");
+    usingDecl.TemplateParameter("T");
+    usingDecl.TemplateParameter("U");
+    usingDecl.PrintSource(*printer, "scope::");
+    ExpectPrinted("");
+}
+
 TEST_F(CppFormatterTest, IncludesByHeader_prints_header)
 {
     application::IncludesByHeader include;
@@ -563,6 +609,42 @@ TEST_F(CppFormatterTest, ClassForwardDeclaration_prints_no_source)
     ExpectPrinted("");
 }
 
+TEST_F(CppFormatterTest, StructTemplateForwardDeclaration_prints_header)
+{
+    application::StructTemplateForwardDeclaration declaration("name");
+    declaration.TemplateParameter("T");
+    declaration.TemplateParameter("U");
+    declaration.PrintHeader(*printer);
+    ExpectPrinted("template<T, U>\nstruct name;\n");
+}
+
+TEST_F(CppFormatterTest, StructTemplateForwardDeclaration_prints_no_source)
+{
+    application::StructTemplateForwardDeclaration declaration("name");
+    declaration.TemplateParameter("T");
+    declaration.TemplateParameter("U");
+    declaration.PrintSource(*printer, "scope");
+    ExpectPrinted("");
+}
+
+TEST_F(CppFormatterTest, StructTemplateSpecialization_prints_header)
+{
+    application::StructTemplateSpecialization declaration("name");
+    declaration.TemplateSpecialization("T");
+    declaration.TemplateSpecialization("U");
+    declaration.PrintHeader(*printer);
+    ExpectPrinted("template<>\nstruct name<T, U>\n{\n};\n");
+}
+
+TEST_F(CppFormatterTest, StructTemplateSpecialization_prints_no_source)
+{
+    application::StructTemplateSpecialization declaration("name");
+    declaration.TemplateSpecialization("T");
+    declaration.TemplateSpecialization("U");
+    declaration.PrintSource(*printer, "scope");
+    ExpectPrinted("");
+}
+
 TEST_F(CppFormatterTest, EnumDeclaration_prints_header)
 {
     application::EnumDeclaration declaration("name", { { "m1", 0 }, { "m2", 1 } });
@@ -589,9 +671,23 @@ TEST_F(CppFormatterTest, Define_prints_header)
     ExpectPrinted("#define DEF");
 }
 
+TEST_F(CppFormatterTest, Define_prints_no_source)
+{
+    application::Define declaration("name");
+    declaration.PrintSource(*printer, "scope");
+    ExpectPrinted("");
+}
+
 TEST_F(CppFormatterTest, Undef_prints_header)
 {
     application::Undef declaration("DEF");
     declaration.PrintHeader(*printer);
     ExpectPrinted("#undef DEF");
+}
+
+TEST_F(CppFormatterTest, Undef_prints_no_source)
+{
+    application::Undef declaration("DEF");
+    declaration.PrintSource(*printer, "scope");
+    ExpectPrinted("");
 }

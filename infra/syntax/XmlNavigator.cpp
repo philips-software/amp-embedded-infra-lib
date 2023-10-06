@@ -5,7 +5,6 @@ namespace infra
 {
     XmlNodeNavigator::XmlNodeNavigator(const std::string& contents)
     {
-        document = pugi::xml_document();
         pugi::xml_parse_result result = document.load_string(contents.c_str());
         if (!result)
             throw std::runtime_error("Document failed to load");
@@ -17,16 +16,16 @@ namespace infra
         : node(node)
     {}
 
-    XmlNodeNavigator XmlNodeNavigator::operator/(XmlNodeNavigatorToken token) const
+    XmlNodeNavigator XmlNodeNavigator::operator/(const XmlNodeNavigatorToken& token) const
     {
         auto child = node.child(token.name.c_str());
         if (child == pugi::xml_node())
             throw std::runtime_error(("Child " + token.name + " not found").c_str());
 
-        return { child };
+        return XmlNodeNavigator{ child };
     }
 
-    std::string XmlNodeNavigator::operator/(XmlStringAttributeNavigatorToken token) const
+    std::string XmlNodeNavigator::operator/(const XmlStringAttributeNavigatorToken& token) const
     {
         for (auto attribute : node.attributes())
             if (attribute.name() == token.name)
@@ -35,7 +34,7 @@ namespace infra
         throw std::runtime_error(("Attribute " + token.name + " not found").c_str());
     }
 
-    infra::Optional<std::string> XmlNodeNavigator::operator/(XmlOptionalStringAttributeNavigatorToken token) const
+    infra::Optional<std::string> XmlNodeNavigator::operator/(const XmlOptionalStringAttributeNavigatorToken& token) const
     {
         for (auto attribute = node.attributes_begin(); attribute != node.attributes_end(); attribute = ++attribute)
             if (attribute->name() == token.name)
@@ -44,7 +43,7 @@ namespace infra
         return infra::none;
     }
 
-    int32_t XmlNodeNavigator::operator/(XmlIntegerAttributeNavigatorToken token) const
+    int32_t XmlNodeNavigator::operator/(const XmlIntegerAttributeNavigatorToken& token) const
     {
         for (auto attribute : node.attributes())
             if (attribute.name() == token.name)
@@ -53,7 +52,7 @@ namespace infra
         throw std::runtime_error(("Attribute " + token.name + " not found").c_str());
     }
 
-    infra::Optional<int32_t> XmlNodeNavigator::operator/(XmlOptionalIntegerAttributeNavigatorToken token) const
+    infra::Optional<int32_t> XmlNodeNavigator::operator/(const XmlOptionalIntegerAttributeNavigatorToken& token) const
     {
         for (auto attribute : node.attributes())
             if (attribute.name() == token.name)

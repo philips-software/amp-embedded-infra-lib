@@ -95,20 +95,12 @@ namespace application
 
     bool Entities::EntitiesHaveHeaderCode() const
     {
-        for (auto& entity : entities)
-            if (entity->HasHeaderCode())
-                return true;
-
-        return false;
+        return std::any_of(entities.begin(), entities.end(), [](const auto& entity) { return entity->HasHeaderCode(); });
     }
 
     bool Entities::EntitiesHaveSourceCode() const
     {
-        for (auto& entity : entities)
-            if (entity->HasSourceCode())
-                return true;
-
-        return false;
+        return std::any_of(entities.begin(), entities.end(), [](const auto& entity) { return entity->HasSourceCode(); });
     }
 
     Class::Class(const std::string& name)
@@ -147,7 +139,7 @@ namespace application
     {
         std::string res;
         ForEach(
-            parents, [&res](const std::string& parent)
+            parents, [&res](std::string_view parent)
             {
                 res += parent;
             },
@@ -251,7 +243,7 @@ namespace application
     {
         std::string res;
         ForEach(
-            parameters, [&res](const std::string& parameter)
+            parameters, [&res](std::string_view parameter)
             {
                 res += parameter;
             },
@@ -320,7 +312,7 @@ namespace application
     {
         std::string result;
         ForEach(
-            parameters, [&result](const std::string& parameter)
+            parameters, [&result](std::string_view parameter)
             {
                 result += parameter;
             },
@@ -522,7 +514,7 @@ namespace application
     void StructTemplateSpecialization::PrintHeader(google::protobuf::io::Printer& printer) const
     {
         printer.Print("template<>\n");
-        printer.Print("struct $name$<$specializations$> {\n", "name", name, "specializations", Specializations());
+        printer.Print("struct $name$<$specializations$>\n{\n", "name", name, "specializations", Specializations());
         printer.Indent();
         Entities::PrintHeader(printer);
         printer.Outdent();

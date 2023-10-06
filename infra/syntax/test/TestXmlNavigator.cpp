@@ -11,6 +11,22 @@ namespace
     infra::XmlIntegerAttributeNavigatorToken integer{ "int" };
     infra::XmlOptionalIntegerAttributeNavigatorToken optionalInt{ "int" };
     infra::XmlOptionalIntegerAttributeNavigatorToken optionalInt2{ "int2" };
+
+    struct Data
+    {
+        std::string str;
+
+        bool operator==(const Data& other) const
+        {
+            return str == other.str;
+        }
+    };
+}
+
+TEST(XmlNavigator, loading_failed)
+{
+    auto document = R"(this is not xml)";
+    EXPECT_THROW(infra::XmlNodeNavigator{ document }, std::runtime_error);
 }
 
 TEST(XmlNavigator, access_node)
@@ -20,13 +36,27 @@ TEST(XmlNavigator, access_node)
     navigator / node;
 }
 
+TEST(XmlNavigator, accessing_missing_node_throws)
+{
+    auto document = R"(<othernode></othernode>)";
+    infra::XmlNodeNavigator navigator{ document };
+    EXPECT_THROW(navigator / node, std::runtime_error);
+}
+
 TEST(XmlNavigator, access_string_attribute)
 {
-    auto document = R"(<node str="text"></node>)";
+    auto document = R"(<node other="x" str="text"></node>)";
     infra::XmlNodeNavigator navigator{ document };
     EXPECT_EQ("text", navigator / node / str);
     EXPECT_EQ("text", *(navigator / node / optionalStr));
     EXPECT_EQ(infra::none, navigator / node / optionalStr2);
+}
+
+TEST(XmlNavigator, accessing_missing_string_throws)
+{
+    auto document = R"(<node></node>)";
+    infra::XmlNodeNavigator navigator{ document };
+    EXPECT_THROW(navigator / node / str, std::exception);
 }
 
 TEST(XmlNavigator, access_integer_attribute)
@@ -38,13 +68,15 @@ TEST(XmlNavigator, access_integer_attribute)
     EXPECT_EQ(infra::none, navigator / node / optionalInt2);
 }
 
+TEST(XmlNavigator, accessing_missing_integer_throws)
+{
+    auto document = R"(<node></node>)";
+    infra::XmlNodeNavigator navigator{ document };
+    EXPECT_THROW(navigator / node / integer, std::runtime_error);
+}
+
 TEST(XmlNavigator, transform_object)
 {
-    struct Data
-    {
-        std::string str;
-    };
-
     infra::XmlTransformObjectNavigatorToken<Data> node{ "node", [](const infra::XmlNodeNavigator& navigator)
         {
             Data result = { navigator / str };
@@ -56,18 +88,34 @@ TEST(XmlNavigator, transform_object)
     EXPECT_EQ("text", (navigator / node).str);
 }
 
+TEST(XmlNavigator, missing_object_throws)
+{
+    infra::XmlTransformObjectNavigatorToken<Data> node{ "node", [](const infra::XmlNodeNavigator& navigator)
+        {
+            Data result = { navigator / str };
+            return result;
+        } };
+
+    auto document = R"(<node></node>)";
+    infra::XmlNodeNavigator navigator{ document };
+    EXPECT_THROW(navigator / node, std::runtime_error);
+}
+
+TEST(XmlNavigator, missing_node_in_navigation_throws)
+{
+    infra::XmlTransformObjectNavigatorToken<Data> node{ "node", [](const infra::XmlNodeNavigator& navigator)
+        {
+            Data result = { navigator / str };
+            return result;
+        } };
+
+    auto document = R"(<othernode></othernode>)";
+    infra::XmlNodeNavigator navigator{ document };
+    EXPECT_THROW(navigator / node, std::runtime_error);
+}
+
 TEST(XmlNavigator, transform_array)
 {
-    struct Data
-    {
-        std::string str;
-
-        bool operator==(const Data& other) const
-        {
-            return str == other.str;
-        }
-    };
-
     infra::XmlTransformArrayNavigatorToken<Data> node{ "node", [](const infra::XmlNodeNavigator& navigator)
         {
             Data result = { navigator / str };

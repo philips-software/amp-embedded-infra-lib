@@ -52,43 +52,43 @@ namespace infra
     {
     public:
         explicit XmlNodeNavigator(const std::string& contents);
-        XmlNodeNavigator(const pugi::xml_node& node);
+        explicit XmlNodeNavigator(const pugi::xml_node& node);
 
-        XmlNodeNavigator operator/(XmlNodeNavigatorToken token) const;
-        std::string operator/(XmlStringAttributeNavigatorToken token) const;
-        infra::Optional<std::string> operator/(XmlOptionalStringAttributeNavigatorToken token) const;
-        int32_t operator/(XmlIntegerAttributeNavigatorToken token) const;
-        infra::Optional<int32_t> operator/(XmlOptionalIntegerAttributeNavigatorToken token) const;
+        XmlNodeNavigator operator/(const XmlNodeNavigatorToken& token) const;
+        std::string operator/(const XmlStringAttributeNavigatorToken& token) const;
+        infra::Optional<std::string> operator/(const XmlOptionalStringAttributeNavigatorToken& token) const;
+        int32_t operator/(const XmlIntegerAttributeNavigatorToken& token) const;
+        infra::Optional<int32_t> operator/(const XmlOptionalIntegerAttributeNavigatorToken& token) const;
 
         template<class Result>
-        Result operator/(XmlTransformObjectNavigatorToken<Result> token) const;
+        Result operator/(const XmlTransformObjectNavigatorToken<Result>& token) const;
         template<class Result>
-        std::vector<Result> operator/(XmlTransformArrayNavigatorToken<Result> token) const;
+        std::vector<Result> operator/(const XmlTransformArrayNavigatorToken<Result>& token) const;
 
-    protected:
-        pugi::xml_document document;
+    private:
+        pugi::xml_document document{ pugi::xml_document() };
         pugi::xml_node node;
     };
 
     //// Implementation    ////
 
     template<class Result>
-    Result XmlNodeNavigator::operator/(XmlTransformObjectNavigatorToken<Result> token) const
+    Result XmlNodeNavigator::operator/(const XmlTransformObjectNavigatorToken<Result>& token) const
     {
         auto child = node.child(token.name.c_str());
         if (child == pugi::xml_node())
             throw std::runtime_error(("Child " + token.name + " not found").c_str());
 
-        return token.transformation(child);
+        return token.transformation(XmlNodeNavigator{ child });
     }
 
     template<class Result>
-    std::vector<Result> XmlNodeNavigator::operator/(XmlTransformArrayNavigatorToken<Result> token) const
+    std::vector<Result> XmlNodeNavigator::operator/(const XmlTransformArrayNavigatorToken<Result>& token) const
     {
         std::vector<Result> result;
 
         for (auto child : node.children(token.name.c_str()))
-            result.push_back(token.transformation(child));
+            result.push_back(token.transformation(XmlNodeNavigator{ child }));
 
         return result;
     }
