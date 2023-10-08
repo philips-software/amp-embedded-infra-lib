@@ -109,6 +109,24 @@ namespace application
             });
     }
 
+    IncludeGuard::IncludeGuard(const std::string& guard)
+        : Entities(true)
+        , guard(guard)
+    {}
+
+    void IncludeGuard::PrintHeader(google::protobuf::io::Printer& printer) const
+    {
+        printer.Print(R"(#ifndef $guard$
+#define $guard$
+
+)",
+            "guard", guard);
+
+        Entities::PrintHeader(printer);
+
+        printer.Print("\n#endif\n");
+    }
+
     Class::Class(const std::string& name)
         : Entities(true)
         , name(name)

@@ -120,6 +120,18 @@ TEST_F(CppFormatterTest, multiple_entities_in_source_separated_with_a_newline)
     ExpectPrinted("a\nb");
 }
 
+TEST_F(CppFormatterTest, IncludeGuard_prints_include_guard)
+{
+    application::IncludeGuard includeGuard("guard");
+    includeGuard.PrintHeader(*printer);
+    ExpectPrinted(R"(#ifndef guard
+#define guard
+
+
+#endif
+)");
+}
+
 TEST_F(CppFormatterTest, Class_prints_class_header)
 {
     application::Class class_("name");

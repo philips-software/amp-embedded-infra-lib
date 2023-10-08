@@ -49,6 +49,18 @@ namespace application
         std::vector<std::shared_ptr<Entity>> entities;
     };
 
+    class IncludeGuard
+        : public Entities
+    {
+    public:
+        explicit IncludeGuard(const std::string& guard);
+
+        void PrintHeader(google::protobuf::io::Printer& printer) const override;
+
+    private:
+        std::string guard;
+    };
+
     class Class
         : public Entities
     {
