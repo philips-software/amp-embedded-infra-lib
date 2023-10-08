@@ -2,12 +2,10 @@ if (EMIL_HOST_BUILD)
     FetchContent_Declare(
         pugixml
         GIT_REPOSITORY https://github.com/zeux/pugixml
-        GIT_TAG a0e064336317c9347a91224112af9933598714e9 # v1.13
+        GIT_TAG ef856bf975f4b1909af1b40ed3d7e28af9263d95 # Unreleased
     )
 
-    set (BUILD_TESTING_save ${BUILD_TESTING})
     FetchContent_MakeAvailable(pugixml)
-    set (BUILD_TESTING ${BUILD_TESTING_save} CACHE INTERNAL "")
 endif()
 
 add_library(infra.syntax ${EMIL_EXCLUDE_FROM_ALL} STATIC)
