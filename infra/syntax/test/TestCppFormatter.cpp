@@ -537,6 +537,34 @@ TEST_F(CppFormatterTest, StaticDataMember_prints_source)
     ExpectPrinted("type scope::name = initializer;\n");
 }
 
+TEST_F(CppFormatterTest, ExternVariable_prints_header)
+{
+    application::ExternVariable member("name", "type", "initializer");
+    member.PrintHeader(*printer);
+    ExpectPrinted("extern type name;\n");
+}
+
+TEST_F(CppFormatterTest, ExternVariable_prints_source)
+{
+    application::ExternVariable member("name", "type", "initializer");
+    member.PrintSource(*printer, "scope::");
+    ExpectPrinted("type name = initializer;\n");
+}
+
+TEST_F(CppFormatterTest, SourceLocalVariable_prints_header)
+{
+    application::SourceLocalVariable member("name", "type", "initializer");
+    member.PrintHeader(*printer);
+    ExpectPrinted("");
+}
+
+TEST_F(CppFormatterTest, SourceLocalVariable_prints_source)
+{
+    application::SourceLocalVariable member("name", "type", "initializer");
+    member.PrintSource(*printer, "scope::");
+    ExpectPrinted("type name = initializer;\n");
+}
+
 TEST_F(CppFormatterTest, Using_prints_header)
 {
     application::Using usingDecl("name", "definition");

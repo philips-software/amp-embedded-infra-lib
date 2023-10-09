@@ -198,6 +198,36 @@ namespace application
         std::string initializer;
     };
 
+    class ExternVariable
+        : public Entity
+    {
+    public:
+        ExternVariable(const std::string& name, const std::string& type, const std::string& initializer);
+
+        void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+
+    private:
+        std::string name;
+        std::string type;
+        std::string initializer;
+    };
+
+    class SourceLocalVariable
+        : public Entity
+    {
+    public:
+        SourceLocalVariable(const std::string& name, const std::string& type, const std::string& initializer);
+
+        void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+
+    private:
+        std::string name;
+        std::string type;
+        std::string initializer;
+    };
+
     class Using
         : public Entity
     {

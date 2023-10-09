@@ -393,6 +393,38 @@ namespace application
         printer.Print("$type$ $scope$$name$ = $initializer$;\n", "type", type, "scope", scope, "name", name, "initializer", initializer);
     }
 
+    ExternVariable::ExternVariable(const std::string& name, const std::string& type, const std::string& initializer)
+        : Entity(true, true)
+        , name(name)
+        , type(type)
+        , initializer(initializer)
+    {}
+
+    void ExternVariable::PrintHeader(google::protobuf::io::Printer& printer) const
+    {
+        printer.Print("extern $type$ $name$;\n", "type", type, "name", name);
+    }
+
+    void ExternVariable::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
+    {
+        printer.Print("$type$ $name$ = $initializer$;\n", "type", type, "scope", scope, "name", name, "initializer", initializer);
+    }
+
+    SourceLocalVariable::SourceLocalVariable(const std::string& name, const std::string& type, const std::string& initializer)
+        : Entity(false, true)
+        , name(name)
+        , type(type)
+        , initializer(initializer)
+    {}
+
+    void SourceLocalVariable::PrintHeader(google::protobuf::io::Printer& printer) const
+    {}
+
+    void SourceLocalVariable::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
+    {
+        printer.Print("$type$ $name$ = $initializer$;\n", "type", type, "scope", scope, "name", name, "initializer", initializer);
+    }
+
     Using::Using(const std::string& name, const std::string& definition)
         : Entity(true, false)
         , name(name)
