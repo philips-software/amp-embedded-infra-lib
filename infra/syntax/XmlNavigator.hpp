@@ -4,6 +4,7 @@
 #include "infra/util/Optional.hpp"
 #include "pugixml.hpp"
 #include <functional>
+#include <stdexcept>
 
 namespace infra
 {
@@ -70,6 +71,13 @@ namespace infra
         pugi::xml_node node;
     };
 
+    class XmlNavigationError
+        : public std::runtime_error
+    {
+    public:
+        using std::runtime_error::runtime_error;
+    };
+
     //// Implementation    ////
 
     template<class Result>
@@ -77,7 +85,7 @@ namespace infra
     {
         auto child = node.child(token.name.c_str());
         if (child == pugi::xml_node())
-            throw std::runtime_error(("Child " + token.name + " not found").c_str());
+            throw XmlNavigationError(("Child " + token.name + " not found").c_str());
 
         return token.transformation(XmlNodeNavigator{ child });
     }

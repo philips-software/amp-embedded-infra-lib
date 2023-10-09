@@ -1,5 +1,4 @@
 #include "infra/syntax/XmlNavigator.hpp"
-#include <stdexcept>
 
 namespace infra
 {
@@ -7,7 +6,7 @@ namespace infra
     {
         pugi::xml_parse_result result = document.load_string(contents.c_str());
         if (!result)
-            throw std::runtime_error("Document failed to load");
+            throw XmlNavigationError("Document failed to load");
 
         node = document;
     }
@@ -20,7 +19,7 @@ namespace infra
     {
         auto child = node.child(token.name.c_str());
         if (child == pugi::xml_node())
-            throw std::runtime_error(("Child " + token.name + " not found").c_str());
+            throw XmlNavigationError(("Child " + token.name + " not found").c_str());
 
         return XmlNodeNavigator{ child };
     }
@@ -31,7 +30,7 @@ namespace infra
             if (attribute.name() == token.name)
                 return attribute.value();
 
-        throw std::runtime_error(("Attribute " + token.name + " not found").c_str());
+        throw XmlNavigationError(("Attribute " + token.name + " not found").c_str());
     }
 
     infra::Optional<std::string> XmlNodeNavigator::operator/(const XmlOptionalStringAttributeNavigatorToken& token) const
@@ -49,7 +48,7 @@ namespace infra
             if (attribute.name() == token.name)
                 return attribute.as_int();
 
-        throw std::runtime_error(("Attribute " + token.name + " not found").c_str());
+        throw XmlNavigationError(("Attribute " + token.name + " not found").c_str());
     }
 
     infra::Optional<int32_t> XmlNodeNavigator::operator/(const XmlOptionalIntegerAttributeNavigatorToken& token) const

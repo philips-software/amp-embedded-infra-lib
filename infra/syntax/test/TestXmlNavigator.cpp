@@ -26,7 +26,7 @@ namespace
 TEST(XmlNavigator, loading_failed)
 {
     auto document = R"(this is not xml)";
-    EXPECT_THROW(infra::XmlNodeNavigator{ document }, std::runtime_error);
+    EXPECT_THROW(infra::XmlNodeNavigator{ document }, infra::XmlNavigationError);
 }
 
 TEST(XmlNavigator, access_node)
@@ -40,7 +40,7 @@ TEST(XmlNavigator, accessing_missing_node_throws)
 {
     auto document = R"(<othernode></othernode>)";
     infra::XmlNodeNavigator navigator{ document };
-    EXPECT_THROW(navigator / node, std::runtime_error);
+    EXPECT_THROW(navigator / node, infra::XmlNavigationError);
 }
 
 TEST(XmlNavigator, access_string_attribute)
@@ -72,7 +72,7 @@ TEST(XmlNavigator, accessing_missing_integer_throws)
 {
     auto document = R"(<node></node>)";
     infra::XmlNodeNavigator navigator{ document };
-    EXPECT_THROW(navigator / node / integer, std::runtime_error);
+    EXPECT_THROW(navigator / node / integer, infra::XmlNavigationError);
 }
 
 TEST(XmlNavigator, transform_object)
@@ -98,7 +98,7 @@ TEST(XmlNavigator, missing_object_throws)
 
     auto document = R"(<node></node>)";
     infra::XmlNodeNavigator navigator{ document };
-    EXPECT_THROW(navigator / node, std::runtime_error);
+    EXPECT_THROW(navigator / node, infra::XmlNavigationError);
 }
 
 TEST(XmlNavigator, missing_node_in_navigation_throws)
@@ -111,7 +111,7 @@ TEST(XmlNavigator, missing_node_in_navigation_throws)
 
     auto document = R"(<othernode></othernode>)";
     infra::XmlNodeNavigator navigator{ document };
-    EXPECT_THROW(navigator / node, std::runtime_error);
+    EXPECT_THROW(navigator / node, infra::XmlNavigationError);
 }
 
 TEST(XmlNavigator, transform_array)
