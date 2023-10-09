@@ -28,16 +28,20 @@ namespace services
 
         bytes->shrink_from_back_to(processedSize);
 
+        uint32_t messageSize = infra::MaxVarIntSize(this->forwardingServiceId) + infra::MaxVarIntSize((methodId << 3) | 2) + infra::MaxVarIntSize(bytes->size()) + bytes->size();
+
         RequestSend([this, methodId]()
             {
-            infra::DataOutputStream::WithErrorPolicy stream(services::ServiceProxy::Rpc().SendStreamWriter());
-            infra::ProtoFormatter formatter(stream);
-            formatter.PutVarInt(this->forwardingServiceId);
-            formatter.PutBytesField(*bytes, methodId);
-            bytes = infra::none;
+                infra::DataOutputStream::WithErrorPolicy stream(services::ServiceProxy::Rpc().SendStreamWriter());
+                infra::ProtoFormatter formatter(stream);
+                formatter.PutVarInt(this->forwardingServiceId);
+                formatter.PutBytesField(*bytes, methodId);
+                bytes = infra::none;
 
-            services::ServiceProxy::Rpc().Send();
-            MethodDone(); });
+                services::ServiceProxy::Rpc().Send();
+                MethodDone();
+            },
+            messageSize);
     }
 
     bool ServiceForwarderAll::AcceptsService(uint32_t id) const

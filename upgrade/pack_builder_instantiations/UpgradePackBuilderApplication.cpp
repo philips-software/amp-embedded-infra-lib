@@ -66,7 +66,9 @@ namespace main_
     {
         bool mandatory = std::any_of(supportedTargets.MandatoryTargets().cbegin(), supportedTargets.MandatoryTargets().cend(),
             [&](const auto& s)
-            { return s == target; });
+            {
+                return s == target;
+            });
         return mandatory ? args::Options::Required : args::Options::None;
     }
 

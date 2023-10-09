@@ -7,9 +7,6 @@ namespace infra
         : systemTimerService(timerSericeId)
     {}
 
-    ClockFixture::~ClockFixture()
-    {}
-
     void ClockFixture::ForwardTime(Duration amount)
     {
         ExecuteAllActions();

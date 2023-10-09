@@ -14,10 +14,19 @@ namespace services
         , receivedMessage(receivedMessage)
         , sendStorage(sendStorage)
         , sendStream([this]()
-              { SendStreamFilled(); })
+              {
+                  SendStreamFilled();
+              })
     {
         serial.ReceiveData([this](infra::ConstByteRange data)
-            { ReceivedDataOnInterrupt(data); });
+            {
+                ReceivedDataOnInterrupt(data);
+            });
+    }
+
+    MessageCommunicationCobs::~MessageCommunicationCobs()
+    {
+        serial.ReceiveData([](infra::ConstByteRange data) {});
     }
 
     infra::SharedPtr<infra::StreamWriter> MessageCommunicationCobs::SendMessageStream(uint16_t size, const infra::Function<void(uint16_t size)>& onSent)
@@ -109,14 +118,18 @@ namespace services
     {
         dataToSend = infra::MakeRange(sendStorage);
         serial.SendData(infra::MakeByteRange(messageDelimiter), [this]()
-            { SendOrDone(); });
+            {
+                SendOrDone();
+            });
     }
 
     void MessageCommunicationCobs::SendOrDone()
     {
         if (dataToSend.empty())
             serial.SendData(infra::MakeByteRange(messageDelimiter), [this]()
-                { onSent(static_cast<uint16_t>(sendStorage.size())); });
+                {
+                    onSent(static_cast<uint16_t>(sendStorage.size()));
+                });
         else
             SendFrame();
     }
@@ -127,11 +140,15 @@ namespace services
 
         serial.SendData(infra::MakeByteRange(frameSize), [this]()
             {
-            --frameSize;
-            if (frameSize != 0)
-                serial.SendData(infra::Head(dataToSend, frameSize), [this]() { SendFrameDone(); });
-            else
-                SendFrameDone(); });
+                --frameSize;
+                if (frameSize != 0)
+                    serial.SendData(infra::Head(dataToSend, frameSize), [this]()
+                        {
+                            SendFrameDone();
+                        });
+                else
+                    SendFrameDone();
+            });
     }
 
     void MessageCommunicationCobs::SendFrameDone()

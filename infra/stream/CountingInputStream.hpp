@@ -15,16 +15,16 @@ namespace infra
         uint32_t TotalRead() const;
 
         // Implementation of StreamReader
-        virtual void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
-        virtual uint8_t Peek(infra::StreamErrorPolicy& errorPolicy) override;
-        virtual infra::ConstByteRange ExtractContiguousRange(std::size_t max) override;
-        virtual infra::ConstByteRange PeekContiguousRange(std::size_t start) override;
-        virtual bool Empty() const override;
-        virtual std::size_t Available() const override;
+        void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
+        uint8_t Peek(infra::StreamErrorPolicy& errorPolicy) override;
+        infra::ConstByteRange ExtractContiguousRange(std::size_t max) override;
+        infra::ConstByteRange PeekContiguousRange(std::size_t start) override;
+        bool Empty() const override;
+        std::size_t Available() const override;
 
         // Implementation of StreamErrorPolicy
-        virtual bool Failed() const override;
-        virtual void ReportResult(bool ok) override;
+        bool Failed() const override;
+        void ReportResult(bool ok) override;
 
     private:
         infra::StreamReader& reader;
@@ -43,18 +43,18 @@ namespace infra
         uint32_t TotalRead() const;
 
         // Implementation of StreamReaderWithRewinding
-        virtual void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
-        virtual uint8_t Peek(infra::StreamErrorPolicy& errorPolicy) override;
-        virtual infra::ConstByteRange ExtractContiguousRange(std::size_t max) override;
-        virtual infra::ConstByteRange PeekContiguousRange(std::size_t start) override;
-        virtual bool Empty() const override;
-        virtual std::size_t Available() const override;
-        virtual std::size_t ConstructSaveMarker() const override;
-        virtual void Rewind(std::size_t marker) override;
+        void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
+        uint8_t Peek(infra::StreamErrorPolicy& errorPolicy) override;
+        infra::ConstByteRange ExtractContiguousRange(std::size_t max) override;
+        infra::ConstByteRange PeekContiguousRange(std::size_t start) override;
+        bool Empty() const override;
+        std::size_t Available() const override;
+        std::size_t ConstructSaveMarker() const override;
+        void Rewind(std::size_t marker) override;
 
         // Implementation of StreamErrorPolicy
-        virtual bool Failed() const override;
-        virtual void ReportResult(bool ok) override;
+        bool Failed() const override;
+        void ReportResult(bool ok) override;
 
     private:
         infra::StreamReaderWithRewinding& reader;

@@ -12,7 +12,7 @@ class TestSingleton
     : public ITestSingleton
 {
 public:
-    virtual void f() override
+    void f() override
     {}
 };
 

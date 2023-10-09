@@ -29,18 +29,18 @@ namespace services
 
     public:
         // Implementation of ConnectionObserver
-        virtual void Attached() override;
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        virtual void DataReceived() override;
-        virtual void Detaching() override;
+        void Attached() override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void DataReceived() override;
+        void Detaching() override;
 
         // Implementation of Connection
-        virtual void RequestSendStream(std::size_t sendSize) override;
-        virtual std::size_t MaxSendStreamSize() const override;
-        virtual infra::SharedPtr<infra::StreamReaderWithRewinding> ReceiveStream() override;
-        virtual void AckReceived() override;
-        virtual void CloseAndDestroy() override;
-        virtual void AbortAndDestroy() override;
+        void RequestSendStream(std::size_t sendSize) override;
+        std::size_t MaxSendStreamSize() const override;
+        infra::SharedPtr<infra::StreamReaderWithRewinding> ReceiveStream() override;
+        void AckReceived() override;
+        void CloseAndDestroy() override;
+        void AbortAndDestroy() override;
 
     private:
         void ReceiveStreamAllocatable();
@@ -81,7 +81,7 @@ namespace services
         public:
             explicit ReceivingStateReceiveHeader(WebSocketServerConnectionObserver& connection);
 
-            virtual void DataReceived() override;
+            void DataReceived() override;
 
         private:
             WebSocketServerConnectionObserver& connection;
@@ -93,7 +93,7 @@ namespace services
         public:
             ReceivingStateReceiveData(WebSocketServerConnectionObserver& connection, const services::WebSocketFrameHeader& header);
 
-            virtual void DataReceived() override;
+            void DataReceived() override;
 
         private:
             void ReceiveData();
@@ -116,7 +116,7 @@ namespace services
         public:
             explicit ReceivingStateClose(WebSocketServerConnectionObserver& connection);
 
-            virtual void Send(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+            void Send(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
         private:
             WebSocketServerConnectionObserver& connection;
@@ -128,7 +128,7 @@ namespace services
         public:
             explicit ReceivingStatePong(WebSocketServerConnectionObserver& connection);
 
-            virtual void Send(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+            void Send(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
         private:
             WebSocketServerConnectionObserver& connection;
@@ -153,8 +153,8 @@ namespace services
         public:
             explicit SendingStateIdle(WebSocketServerConnectionObserver& connection);
 
-            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-            virtual void CheckForSomethingToDo() override;
+            void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+            void CheckForSomethingToDo() override;
 
         private:
             WebSocketServerConnectionObserver& connection;
@@ -166,7 +166,7 @@ namespace services
         public:
             explicit SendingStateInternalData(WebSocketServerConnectionObserver& connection);
 
-            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+            void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
         private:
             WebSocketServerConnectionObserver& connection;
@@ -178,7 +178,7 @@ namespace services
         public:
             explicit SendingStateExternalData(WebSocketServerConnectionObserver& connection);
 
-            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+            void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
         private:
             WebSocketServerConnectionObserver& connection;

@@ -14,31 +14,29 @@ namespace services
         explicit HttpClientAuthentication(infra::BoundedVector<HttpHeader>& headersWithAuthorization);
 
         // Implementation of HttpClient
-        virtual void Get(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Head(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Connect(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Options(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
-        virtual void Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) override;
-        virtual void Post(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
-        virtual void Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) override;
-        virtual void Put(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
-        virtual void Patch(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
-        virtual void AckReceived() override;
-        virtual void CloseConnection() override;
-        virtual Connection& GetConnection() override;
+        void Get(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Head(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Connect(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Options(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        void Post(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        void Put(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        void Patch(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        void AckReceived() override;
+        void CloseConnection() override;
+        Connection& GetConnection() override;
 
         // Implementation of HttpClientObserver
-        virtual void StatusAvailable(HttpStatusCode statusCode) override;
-        virtual void HeaderAvailable(HttpHeader header) override;
-        virtual void BodyAvailable(infra::SharedPtr<infra::StreamReader>&& reader) override;
-        virtual void BodyComplete() override;
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        virtual void FillContent(infra::StreamWriter& writer) const override;
-        virtual void Detaching() override;
+        void StatusAvailable(HttpStatusCode statusCode) override;
+        void HeaderAvailable(HttpHeader header) override;
+        void BodyAvailable(infra::SharedPtr<infra::StreamReader>&& reader) override;
+        void BodyComplete() override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void FillContent(infra::StreamWriter& writer) const override;
+        void Detaching() override;
 
     protected:
         virtual void Authenticate(infra::BoundedConstString scheme, infra::BoundedConstString value) = 0;
@@ -65,15 +63,15 @@ namespace services
         HttpClientAuthenticationConnector(HttpClientConnector& connector, HttpClientAuthentication& clientAuthentication);
 
         // Implementation of HttpClientConnector
-        virtual void Connect(HttpClientObserverFactory& factory) override;
-        virtual void CancelConnect(HttpClientObserverFactory& factory) override;
+        void Connect(HttpClientObserverFactory& factory) override;
+        void CancelConnect(HttpClientObserverFactory& factory) override;
 
     private:
         // Implementation of HttpClientObserverFactory
-        virtual infra::BoundedConstString Hostname() const override;
-        virtual uint16_t Port() const override;
-        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<HttpClientObserver> client)>&& createdClientObserver) override;
-        virtual void ConnectionFailed(ConnectFailReason reason) override;
+        infra::BoundedConstString Hostname() const override;
+        uint16_t Port() const override;
+        void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<HttpClientObserver> client)>&& createdClientObserver) override;
+        void ConnectionFailed(ConnectFailReason reason) override;
 
     private:
         HttpClientConnector& connector;

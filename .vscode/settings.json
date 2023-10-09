@@ -1,4 +1,7 @@
 {
   "cmake.copyCompileCommands": "${workspaceFolder}/build/compile_commands.json",
-  "sonarlint.pathToCompileCommands": "${workspaceFolder}/build/compile_commands.json"
+  "sonarlint.pathToCompileCommands": "${workspaceFolder}/build/compile_commands.json",
+  "clangd.arguments": ["--query-driver=/**/arm-none-eabi-*"],
+  "cmake.statusbar.visibility": "compact",
+  "cmake.useProjectStatusView": false
 }

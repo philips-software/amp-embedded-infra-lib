@@ -1,9 +1,12 @@
 add_library(services.util ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
+protocol_buffer_echo_cpp(services.util MessageCommunicationSecurity.proto)
+
 target_link_libraries(services.util PUBLIC
     hal.interfaces
     infra.syntax
     infra.timer
+    protobuf.echo
 )
 
 target_sources(services.util PRIVATE
@@ -16,6 +19,12 @@ target_sources(services.util PRIVATE
     DebouncedButton.hpp
     DebugLed.cpp
     DebugLed.hpp
+    EchoInstantiation.cpp
+    EchoInstantiation.hpp
+    EchoOnMessageCommunication.cpp
+    EchoOnMessageCommunication.hpp
+    EchoOnMessageCommunicationSymmetricKey.cpp
+    EchoOnMessageCommunicationSymmetricKey.hpp
     FlashAlign.cpp
     FlashAlign.hpp
     FlashMultipleAccess.cpp
@@ -43,6 +52,8 @@ target_sources(services.util PRIVATE
     MessageCommunication.hpp
     MessageCommunicationCobs.cpp
     MessageCommunicationCobs.hpp
+    MessageCommunicationSecured.cpp
+    MessageCommunicationSecured.hpp
     MessageCommunicationWindowed.cpp
     MessageCommunicationWindowed.hpp
     RepeatingButton.cpp
@@ -75,10 +86,5 @@ if (EMIL_INCLUDE_MBEDTLS)
     )
 endif()
 
-if (EMIL_BUILD_TESTS)
-    add_subdirectory(test)
-endif()
-
-if (BUILD_TESTING)
-    add_subdirectory(test_doubles)
-endif()
+add_subdirectory(test)
+add_subdirectory(test_doubles)

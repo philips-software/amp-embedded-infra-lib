@@ -70,10 +70,14 @@ namespace services
         while (!destructed && jsonParser != infra::none && !stream.Empty())
             (*jsonParser)->Feed(infra::ByteRangeAsString(stream.ContiguousRange()));
 
+        // If this object is already destructed, readerPtr cannot be touched anymore
         if (!destructed)
         {
             readerPtr = nullptr;
-            destructedIndication = nullptr;
+
+            // Destroying the reader can lead to destruction, so check again
+            if (!destructed)
+                destructedIndication = nullptr;
         }
     }
 

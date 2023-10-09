@@ -12,7 +12,7 @@ namespace services
     public:
         TracingReset(hal::Reset& reset, services::Tracer& tracer);
 
-        virtual void ResetModule(const char* resetReason) override;
+        void ResetModule(const char* resetReason) override;
 
     private:
         hal::Reset& reset;

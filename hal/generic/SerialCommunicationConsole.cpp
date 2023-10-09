@@ -15,7 +15,8 @@ namespace hal
                     data += "\n";
                     if (dataReceived)
                         dataReceived(infra::StdStringAsByteRange(data));
-                } })
+                }
+            })
             .detach();
     }
 

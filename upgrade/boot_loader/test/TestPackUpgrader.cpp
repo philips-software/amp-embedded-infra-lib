@@ -13,7 +13,7 @@ public:
         : application::ImageUpgrader("upgrader", decryptorNone)
     {}
 
-    virtual uint32_t Upgrade(hal::SynchronousFlash& flash, uint32_t imageAddress, uint32_t imageSize, uint32_t destinationAddress) override
+    uint32_t Upgrade(hal::SynchronousFlash& flash, uint32_t imageAddress, uint32_t imageSize, uint32_t destinationAddress) override
     {
         return UpgradeMock(imageAddress, imageSize, destinationAddress);
     }

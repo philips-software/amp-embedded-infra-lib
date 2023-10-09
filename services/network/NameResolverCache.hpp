@@ -25,8 +25,8 @@ namespace services
         NameResolverCache(infra::BoundedVector<CacheEntry>& cache, NameResolver& resolver, infra::Duration minimumTtl = std::chrono::minutes(10));
 
         // Implementation of NameResolver
-        virtual void Lookup(NameResolverResult& result) override;
-        virtual void CancelLookup(NameResolverResult& result) override;
+        void Lookup(NameResolverResult& result) override;
+        void CancelLookup(NameResolverResult& result) override;
 
     protected:
         virtual void RemoveOneCacheEntry(infra::BoundedVector<CacheEntry>& cache);
@@ -42,10 +42,10 @@ namespace services
             void CancelLookup();
 
         private:
-            virtual infra::BoundedConstString Hostname() const override;
-            virtual IPVersions Versions() const override;
-            virtual void NameLookupDone(IPAddress address, infra::TimePoint validUntil) override;
-            virtual void NameLookupFailed() override;
+            infra::BoundedConstString Hostname() const override;
+            IPVersions Versions() const override;
+            void NameLookupDone(IPAddress address, infra::TimePoint validUntil) override;
+            void NameLookupFailed() override;
 
         private:
             NameResolverCache& nameResolverCache;

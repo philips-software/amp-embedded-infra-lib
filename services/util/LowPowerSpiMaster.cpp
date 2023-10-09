@@ -1,4 +1,4 @@
-#include "LowPowerSpiMaster.hpp"
+#include "services/util/LowPowerSpiMaster.hpp"
 
 namespace hal
 {
@@ -14,8 +14,9 @@ namespace hal
 
         spiMaster.SendAndReceive(sendData, receiveData, nextAction, [this]()
             {
-            this->onDone();
-            this->mainClock.Release(); });
+                this->onDone();
+                this->mainClock.Release();
+            });
     }
 
     void LowPowerSpiMaster::SetChipSelectConfigurator(ChipSelectConfigurator& configurator)

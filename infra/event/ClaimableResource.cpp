@@ -79,7 +79,9 @@ namespace infra
         {
             reEvaluateClaimScheduled = true;
             infra::EventDispatcher::Instance().Schedule([this]()
-                { ReEvaluateClaim(); });
+                {
+                    ReEvaluateClaim();
+                });
         }
     }
 

@@ -33,12 +33,12 @@ public:
             base.Destructed();
         }
 
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& stream) override
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& stream) override
         {
             base.SendStreamAvailable(stream);
         }
 
-        virtual void DataReceived() override
+        void DataReceived() override
         {
             base.DataReceived();
         }
@@ -196,7 +196,9 @@ TEST_F(SingleConnectionListenerTest, Stop_aborts_connection)
     infra::MockCallback<void()> onDone;
     EXPECT_CALL(connection, AbortAndDestroy());
     listener.Stop([&onDone]()
-        { onDone.callback(); });
+        {
+            onDone.callback();
+        });
 
     EXPECT_CALL(connectionObserverMock, Destructed());
     EXPECT_CALL(onDone, callback());

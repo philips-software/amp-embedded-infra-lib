@@ -24,19 +24,34 @@ namespace infra
         hal::MacAddress macAddress;
     };
 
-    class AsMacAddressWriterHelper
+    class ToMacAddressHelper
     {
     public:
-        explicit AsMacAddressWriterHelper(hal::MacAddress& macAddress);
+        explicit ToMacAddressHelper(hal::MacAddress& macAddress);
 
-        friend TextInputStream& operator>>(TextInputStream& stream, AsMacAddressWriterHelper asMacAddressHelper);
-        friend TextInputStream& operator>>(TextInputStream&& stream, AsMacAddressWriterHelper asMacAddressHelper);
+        friend TextInputStream& operator>>(TextInputStream& stream, ToMacAddressHelper asMacAddressHelper);
+        friend TextInputStream& operator>>(TextInputStream&& stream, ToMacAddressHelper asMacAddressHelper);
 
-    private:
+    protected:
+        hal::MacAddress& macAddress;
+    };
+
+    class ToLittleEndianMacAddressHelper
+    {
+    public:
+        explicit ToLittleEndianMacAddressHelper(hal::MacAddress& macAddress);
+
+        friend TextInputStream& operator>>(TextInputStream& stream, ToLittleEndianMacAddressHelper asMacAddressHelper);
+        friend TextInputStream& operator>>(TextInputStream&& stream, ToLittleEndianMacAddressHelper asMacAddressHelper);
+
+    protected:
         hal::MacAddress& macAddress;
     };
 
     AsMacAddressHelper AsMacAddress(hal::MacAddress macAddress);
-    AsMacAddressWriterHelper ToMacAddress(hal::MacAddress& macAddress);
+    ToMacAddressHelper ToMacAddress(hal::MacAddress& macAddress);
+
+    AsMacAddressHelper AsLittleEndianMacAddress(hal::MacAddress macAddress);
+    ToLittleEndianMacAddressHelper ToLittleEndianMacAddress(hal::MacAddress& macAddress);
 }
 #endif

@@ -10,14 +10,15 @@ namespace services
         streamWriterPtr = streamWriter.Emplace(infra::inPlace, sentData, sendSize);
         infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionStub>& object)
             {
-            infra::SharedPtr<infra::StreamWriter> stream = std::move(object->streamWriterPtr);
-            object->Observer().SendStreamAvailable(std::move(stream)); },
+                infra::SharedPtr<infra::StreamWriter> stream = std::move(object->streamWriterPtr);
+                object->Observer().SendStreamAvailable(std::move(stream));
+            },
             SharedFromThis());
     }
 
     std::size_t ConnectionStub::MaxSendStreamSize() const
     {
-        return 1024;
+        return maxSendStreamSize;
     }
 
     infra::SharedPtr<infra::StreamReaderWithRewinding> ConnectionStub::ReceiveStream()

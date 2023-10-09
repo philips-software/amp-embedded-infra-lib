@@ -26,13 +26,14 @@ namespace services
         this->onRecovered = onRecovered;
         flash.ReadBuffer(blob, 0, [this]()
             {
-            if (BlobIsValid())
-            {
-                RecoverCurrentSize();
-                this->onRecovered(true);
-            }
-            else
-                this->onRecovered(false); });
+                if (BlobIsValid())
+                {
+                    RecoverCurrentSize();
+                    this->onRecovered(true);
+                }
+                else
+                    this->onRecovered(false);
+            });
     }
 
     void ConfigurationBlobFlash::Write(uint32_t size, const infra::Function<void()>& onDone)
@@ -41,7 +42,9 @@ namespace services
         this->onDone = onDone;
         PrepareBlobForWriting();
         flash.WriteBuffer(blob, 0, [this]()
-            { Verify(); });
+            {
+                Verify();
+            });
     }
 
     void ConfigurationBlobFlash::Erase(const infra::Function<void()>& onDone)
@@ -106,10 +109,11 @@ namespace services
         if (currentVerificationIndex != blob.size())
             flash.ReadBuffer(infra::Head(verificationBuffer, blob.size() - currentVerificationIndex), currentVerificationIndex, [this]()
                 {
-                auto verificationBlock = infra::Head(verificationBuffer, blob.size() - currentVerificationIndex);
-                really_assert(infra::ContentsEqual(verificationBlock, infra::Head(infra::DiscardHead(blob, currentVerificationIndex), verificationBuffer.size())));
-                currentVerificationIndex += verificationBlock.size();
-                VerifyBlock(); });
+                    auto verificationBlock = infra::Head(verificationBuffer, blob.size() - currentVerificationIndex);
+                    really_assert(infra::ContentsEqual(verificationBlock, infra::Head(infra::DiscardHead(blob, currentVerificationIndex), verificationBuffer.size())));
+                    currentVerificationIndex += verificationBlock.size();
+                    VerifyBlock();
+                });
         else
             onDone();
     }
@@ -206,8 +210,16 @@ namespace services
             writeRequested = false;
             writingBlob = true;
             Serialize(*activeBlob, [this, thisId]()
-                { inactiveBlob->Erase([this, thisId]()
-                      { BlobWriteDone(); NotifyObservers([thisId](ConfigurationStoreObserver& observer) { observer.OperationDone(thisId); }); }); });
+                {
+                    inactiveBlob->Erase([this, thisId]()
+                        {
+                            BlobWriteDone();
+                            NotifyObservers([thisId](ConfigurationStoreObserver& observer)
+                                {
+                                    observer.OperationDone(thisId);
+                                });
+                        });
+                });
         }
 
         return thisId;
@@ -219,9 +231,15 @@ namespace services
         ++operationId;
 
         inactiveBlob->Erase([this, thisId]()
-            { activeBlob->Erase([this, thisId]()
-                  { NotifyObservers([thisId](ConfigurationStoreObserver& observer)
-                        { observer.OperationDone(thisId); }); }); });
+            {
+                activeBlob->Erase([this, thisId]()
+                    {
+                        NotifyObservers([thisId](ConfigurationStoreObserver& observer)
+                            {
+                                observer.OperationDone(thisId);
+                            });
+                    });
+            });
 
         return thisId;
     }
@@ -232,18 +250,25 @@ namespace services
 
         activeBlob->Recover([this](bool success)
             {
-            if (success)
-            {
-                inactiveBlob->Erase([this]() { OnBlobLoaded(true); });
-            }
-            else
-            {
-                std::swap(activeBlob, inactiveBlob);
-                activeBlob->Recover([this](bool success)
+                if (success)
                 {
-                    inactiveBlob->Erase([this, success]() { OnBlobLoaded(success); });
-                });
-            } });
+                    inactiveBlob->Erase([this]()
+                        {
+                            OnBlobLoaded(true);
+                        });
+                }
+                else
+                {
+                    std::swap(activeBlob, inactiveBlob);
+                    activeBlob->Recover([this](bool success)
+                        {
+                            inactiveBlob->Erase([this, success]()
+                                {
+                                    OnBlobLoaded(success);
+                                });
+                        });
+                }
+            });
     }
 
     void ConfigurationStoreBase::Unlocked()
@@ -282,35 +307,36 @@ namespace services
 
         factoryDefaultBlob.Recover([this](bool success)
             {
-            if (!success)
-            {
-                this->onLoadFactoryDefault();
-
-                factoryDefaultBlob.Erase([this]()
+                if (!success)
                 {
-                    configurationStore.Serialize(factoryDefaultBlob, [this]()
-                    {
-                        configurationStore.Recover([this](bool success)
+                    this->onLoadFactoryDefault();
+
+                    factoryDefaultBlob.Erase([this]()
                         {
-                            if (success)
-                                this->onRecovered(false);
-                            else
-                                eraseOperationId = configurationStore.Erase();
+                            configurationStore.Serialize(factoryDefaultBlob, [this]()
+                                {
+                                    configurationStore.Recover([this](bool success)
+                                        {
+                                            if (success)
+                                                this->onRecovered(false);
+                                            else
+                                                eraseOperationId = configurationStore.Erase();
+                                        });
+                                });
                         });
-                    });
-                });
-            }
-            else
-            {
-                configurationStore.Deserialize(factoryDefaultBlob);
-
-                this->onLoadFactoryDefault = nullptr;
-
-                configurationStore.Recover([this](bool success)
+                }
+                else
                 {
-                    this->onRecovered(!success);
-                });
-            } });
+                    configurationStore.Deserialize(factoryDefaultBlob);
+
+                    this->onLoadFactoryDefault = nullptr;
+
+                    configurationStore.Recover([this](bool success)
+                        {
+                            this->onRecovered(!success);
+                        });
+                }
+            });
     }
 
     uint32_t FactoryDefaultConfigurationStoreBase::Write()
@@ -324,6 +350,8 @@ namespace services
             onRecovered(true);
 
         NotifyObservers([id](ConfigurationStoreObserver& observer)
-            { observer.OperationDone(id); });
+            {
+                observer.OperationDone(id);
+            });
     }
 }

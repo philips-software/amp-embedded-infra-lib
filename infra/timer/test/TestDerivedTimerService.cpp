@@ -27,7 +27,9 @@ TEST_F(DerivedTimerServiceTest, ShiftScalableTimerService)
 
     infra::TimerSingleShot timer(
         std::chrono::seconds(3), [&callback]()
-        { callback.callback(); },
+        {
+            callback.callback();
+        },
         scaleId);
     EXPECT_EQ(std::chrono::seconds(0), scalableTimerService.GetCurrentShift());
     scalableTimerService.Shift(std::chrono::seconds(2));

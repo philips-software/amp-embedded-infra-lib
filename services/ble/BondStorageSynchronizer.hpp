@@ -47,10 +47,10 @@ namespace services
         BondStorageSynchronizerImpl(BondStorage& referenceBondStorage, BondStorage& otherBondStorage);
 
         // Implementation of BondStorageSynchronizer
-        virtual void UpdateBondedDevice(hal::MacAddress address) override;
-        virtual void RemoveBond(hal::MacAddress address) override;
-        virtual void RemoveAllBonds() override;
-        virtual uint32_t GetMaxNumberOfBonds() const override;
+        void UpdateBondedDevice(hal::MacAddress address) override;
+        void RemoveBond(hal::MacAddress address) override;
+        void RemoveAllBonds() override;
+        uint32_t GetMaxNumberOfBonds() const override;
 
     private:
         void SyncBondStorages();

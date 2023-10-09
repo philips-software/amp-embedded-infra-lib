@@ -1,4 +1,5 @@
 add_executable(services.network_test)
+emil_build_for(services.network_test BOOL EMIL_BUILD_TESTS)
 emil_add_test(services.network_test)
 
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang|AppleClang")
@@ -14,6 +15,7 @@ target_link_libraries(services.network_test PUBLIC
     hal.generic
     hal.interfaces_test_doubles
     hal.synchronous_interfaces_test_doubles
+    protobuf.test_doubles
     services.util
 )
 
@@ -25,6 +27,7 @@ target_sources(services.network_test PRIVATE
     TestConnectionMbedTls.cpp
     TestDnsResolver.cpp
     TestDnsServer.cpp
+    TestEchoOnConnection.cpp
     TestExclusiveConnection.cpp
     TestExclusiveStartingConnection.cpp
     TestHttpClient.cpp

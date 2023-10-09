@@ -4,7 +4,7 @@ target_link_libraries(services.cucumber PUBLIC
     infra.syntax
     infra.timer
     hal.synchronous_interfaces
-    services.tracer
+    services.network
 )
 
 target_sources(services.cucumber PRIVATE
@@ -28,6 +28,4 @@ target_sources(services.cucumber PRIVATE
     TracingCucumberWireProtocolServer.hpp
 )
 
-if (EMIL_BUILD_TESTS)
-    add_subdirectory(test)
-endif()
+add_subdirectory(test)

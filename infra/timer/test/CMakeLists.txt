@@ -1,4 +1,5 @@
 add_executable(infra.timer_test)
+emil_build_for(infra.timer_test BOOL EMIL_BUILD_TESTS)
 emil_add_test(infra.timer_test)
 
 target_link_libraries(infra.timer_test PUBLIC

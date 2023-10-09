@@ -110,7 +110,7 @@ namespace services
         TerminalWithCommandsImpl(hal::SerialCommunication& communication, services::Tracer& tracer);
 
     private:
-        virtual void OnData(infra::BoundedConstString data) override;
+        void OnData(infra::BoundedConstString data) override;
     };
 }
 

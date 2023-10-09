@@ -45,7 +45,8 @@ namespace services
         , scenarioRequestHandler(scenarioRequestHandler)
         , connectionCreator([this](infra::Optional<CucumberWireProtocolConnectionObserver>& value, services::IPAddress address)
               {
-            this->receiveBuffer.clear();
-            value.Emplace(this->receiveBuffer, this->scenarioRequestHandler); })
+                  this->receiveBuffer.clear();
+                  value.Emplace(this->receiveBuffer, this->scenarioRequestHandler);
+              })
     {}
 }

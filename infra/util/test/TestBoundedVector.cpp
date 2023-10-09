@@ -354,7 +354,9 @@ TEST(BoundedVectorTest, TestEraseIf)
     infra::BoundedVector<int>::WithMaxSize<5> vector(range, range + 3);
 
     EXPECT_EQ(1, infra::erase_if(vector, [](auto x)
-                     { return x == 1; }));
+                     {
+                         return x == 1;
+                     }));
 
     int expectedRange[5] = { 0, 2 };
     infra::BoundedVector<int>::WithMaxSize<5> expectedVector(expectedRange, expectedRange + 2);

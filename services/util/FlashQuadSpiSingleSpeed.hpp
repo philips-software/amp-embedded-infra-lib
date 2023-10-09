@@ -23,18 +23,18 @@ namespace services
         FlashQuadSpiSingleSpeed(hal::QuadSpi& spi, infra::Function<void()> onInitialized, uint32_t numberOfSectors = 4096);
 
     public:
-        virtual void ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone) override;
+        void ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone) override;
 
     protected:
-        virtual void PageProgram() override;
+        void PageProgram() override;
 
     private:
-        virtual void WriteEnable() override;
-        virtual void EraseSomeSectors(uint32_t endIndex) override;
+        void WriteEnable() override;
+        void EraseSomeSectors(uint32_t endIndex) override;
         void SendEraseSector(uint32_t sectorIndex);
         void SendEraseBlock(uint32_t sectorIndex);
         void SendEraseChip();
-        virtual void HoldWhileWriteInProgress() override;
+        void HoldWhileWriteInProgress() override;
 
     private:
         infra::Function<void()> onInitialized;

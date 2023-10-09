@@ -54,7 +54,7 @@ namespace services
         : public services::ConnectionObserver
     {
     public:
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override
         {
             SendStreamAvailable(writer);
         }
@@ -69,7 +69,7 @@ namespace services
     public:
         using ConnectionObserver::ConnectionObserver;
 
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override
         {
             SendStreamAvailable(writer);
         }
@@ -97,7 +97,7 @@ namespace services
         : public services::ServerConnectionObserverFactory
     {
     public:
-        void ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, services::IPAddress address)
+        void ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, services::IPAddress address) override
         {
             ConnectionAcceptedMock(createdObserver.Clone(), address);
         }
@@ -109,7 +109,7 @@ namespace services
         : public services::ClientConnectionObserverFactory
     {
     public:
-        void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
+        void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override
         {
             ConnectionEstablishedMock(createdObserver.Clone());
         }

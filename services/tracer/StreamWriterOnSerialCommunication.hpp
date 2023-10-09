@@ -16,8 +16,8 @@ namespace services
 
         StreamWriterOnSerialCommunication(infra::ByteRange bufferStorage, hal::SerialCommunication& communication);
 
-        virtual void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
-        virtual std::size_t Available() const override;
+        void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
+        std::size_t Available() const override;
 
     private:
         void TrySend();

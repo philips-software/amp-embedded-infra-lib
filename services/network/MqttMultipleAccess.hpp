@@ -23,13 +23,13 @@ namespace services
         void ReleaseActive();
 
         // Implementation of MqttClientObserver
-        virtual void Attached() override;
-        virtual void Detaching() override;
-        virtual void PublishDone() override;
-        virtual void SubscribeDone() override;
-        virtual infra::SharedPtr<infra::StreamWriter> ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize) override;
-        virtual void FillTopic(infra::StreamWriter& writer) const override;
-        virtual void FillPayload(infra::StreamWriter& writer) const override;
+        void Attached() override;
+        void Detaching() override;
+        void PublishDone() override;
+        void SubscribeDone() override;
+        infra::SharedPtr<infra::StreamWriter> ReceivedNotification(infra::BoundedConstString topic, uint32_t payloadSize) override;
+        void FillTopic(infra::StreamWriter& writer) const override;
+        void FillPayload(infra::StreamWriter& writer) const override;
 
     private:
         infra::IntrusiveForwardList<MqttMultipleAccess> accesses;
@@ -45,10 +45,10 @@ namespace services
         ~MqttMultipleAccess();
 
         // Implementation of MqttClient
-        virtual void Publish() override;
-        virtual void Subscribe() override;
-        virtual void NotificationDone() override;
-        virtual void Disconnect() override;
+        void Publish() override;
+        void Subscribe() override;
+        void NotificationDone() override;
+        void Disconnect() override;
 
         void Attached();
         void Detaching();

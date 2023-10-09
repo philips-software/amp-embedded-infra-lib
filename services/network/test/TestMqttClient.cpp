@@ -14,7 +14,7 @@ class ConnectionStubWithSendStreamControl
     : public services::ConnectionStub
 {
 public:
-    virtual void RequestSendStream(std::size_t sendSize) override
+    void RequestSendStream(std::size_t sendSize) override
     {
         if (autoSendStreamAvailable)
             services::ConnectionStub::RequestSendStream(sendSize);
@@ -57,7 +57,7 @@ public:
         connector.Connect(factory);
     }
 
-    ~MqttClientTest()
+    ~MqttClientTest() override
     {
         EXPECT_CALL(factory, ConnectionFailed(testing::_)).Times(testing::AnyNumber());
         EXPECT_CALL(client, Detaching()).Times(testing::AnyNumber());
@@ -66,14 +66,17 @@ public:
     void Connect()
     {
         connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-            { connection.Attach(connectionObserver); });
+            {
+                connection.Attach(connectionObserver);
+            });
 
         ExecuteAllActions();
 
         EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::MqttClientObserver> client)>&& createdClient)
             {
-            EXPECT_CALL(client, Attached());
-            createdClient(clientPtr); }));
+                EXPECT_CALL(client, Attached());
+                createdClient(clientPtr);
+            }));
         connection.SimulateDataReceived(std::vector<uint8_t>{ 0x20, 0x00, 0x00, 0x00 });
         ExecuteAllActions();
 
@@ -84,16 +87,18 @@ public:
     {
         EXPECT_CALL(client, FillTopic(testing::_)).WillRepeatedly(testing::Invoke([topic](infra::StreamWriter& writer)
             {
-            infra::TextOutputStream::WithErrorPolicy stream(writer);
-            stream << topic; }));
+                infra::TextOutputStream::WithErrorPolicy stream(writer);
+                stream << topic;
+            }));
     }
 
     void FillPayload(infra::BoundedConstString payload)
     {
         EXPECT_CALL(client, FillPayload(testing::_)).WillRepeatedly(testing::Invoke([payload](infra::StreamWriter& writer)
             {
-            infra::TextOutputStream::WithErrorPolicy stream(writer);
-            stream << payload; }));
+                infra::TextOutputStream::WithErrorPolicy stream(writer);
+                stream << payload;
+            }));
     }
 
     void ExpectClosingConnection()
@@ -137,14 +142,16 @@ public:
 
         EXPECT_CALL(client, ReceivedNotification(topic, payload.size())).WillOnce(testing::Invoke([this](infra::BoundedConstString topic, uint32_t payloadSize) -> infra::SharedPtr<infra::StreamWriter>
             {
-            notificationPayloadStream.OnAllocatable([this]() {
-                EXPECT_EQ(expectedNotificationPayload.front(), notificationPayload);
-                expectedNotificationPayload.pop_front();
-            });
+                notificationPayloadStream.OnAllocatable([this]()
+                    {
+                        EXPECT_EQ(expectedNotificationPayload.front(), notificationPayload);
+                        expectedNotificationPayload.pop_front();
+                    });
 
-            notificationPayload.clear();
-            auto stream = notificationPayloadStream.Emplace(notificationPayload);
-            return infra::MakeContainedSharedObject(stream->Writer(), stream); }));
+                notificationPayload.clear();
+                auto stream = notificationPayloadStream.Emplace(notificationPayload);
+                return infra::MakeContainedSharedObject(stream->Writer(), stream);
+            }));
     }
 
     testing::StrictMock<services::ConnectionFactoryWithNameResolverMock> connectionFactory;
@@ -177,7 +184,9 @@ TEST_F(MqttClientTest, connection_fully_established_results_in_mqtt_initializing
     testing::StrictMock<services::ConnectionMock> connection;
     EXPECT_CALL(connection, RequestSendStream(testing::_));
     connector.ConnectionEstablished([&](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-        { connection.Attach(connectionObserver); });
+        {
+            connection.Attach(connectionObserver);
+        });
 
     EXPECT_CALL(factory, ConnectionFailed(testing::_));
 }
@@ -190,7 +199,9 @@ TEST_F(MqttClientTest, CancelConnect_while_mqtt_is_initializing)
     testing::StrictMock<services::ConnectionMock> connection;
     EXPECT_CALL(connection, RequestSendStream(testing::_));
     connector.ConnectionEstablished([&](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-        { connection.Attach(connectionObserver); });
+        {
+            connection.Attach(connectionObserver);
+        });
 
     connector.CancelConnect();
 }
@@ -210,7 +221,9 @@ TEST_F(MqttClientTest, connection_failed_propagates_to_MqttClientFactory)
 TEST_F(MqttClientTest, after_connected_connect_message_is_sent)
 {
     connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-        { connection.Attach(connectionObserver); });
+        {
+            connection.Attach(connectionObserver);
+        });
 
     ExecuteAllActions();
 
@@ -223,14 +236,17 @@ TEST_F(MqttClientTest, after_connected_connect_message_is_sent)
 TEST_F(MqttClientTest, after_conack_MqttClient_is_connected)
 {
     connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-        { connection.Attach(connectionObserver); });
+        {
+            connection.Attach(connectionObserver);
+        });
 
     ExecuteAllActions();
 
     EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::MqttClientObserver> client)>&& createdClient)
         {
-        EXPECT_CALL(client, Attached());
-        createdClient(clientPtr); }));
+            EXPECT_CALL(client, Attached());
+            createdClient(clientPtr);
+        }));
 
     connection.SimulateDataReceived(std::vector<uint8_t>{ 0x20, 0x00 });
     ExecuteAllActions();
@@ -242,7 +258,9 @@ TEST_F(MqttClientTest, after_conack_MqttClient_is_connected)
 TEST_F(MqttClientTest, partial_conack_is_ignored)
 {
     connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-        { connection.Attach(connectionObserver); });
+        {
+            connection.Attach(connectionObserver);
+        });
 
     ExecuteAllActions();
 
@@ -256,7 +274,9 @@ TEST_F(MqttClientTest, partial_conack_is_ignored)
 TEST_F(MqttClientTest, invalid_response_results_in_ConnectionFailed)
 {
     connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-        { connection.Attach(connectionObserver); });
+        {
+            connection.Attach(connectionObserver);
+        });
 
     ExecuteAllActions();
 
@@ -269,7 +289,9 @@ TEST_F(MqttClientTest, invalid_response_results_in_ConnectionFailed)
 TEST_F(MqttClientTest, timeout_results_in_ConnectionFailed)
 {
     connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-        { connection.Attach(connectionObserver); });
+        {
+            connection.Attach(connectionObserver);
+        });
 
     ExecuteAllActions();
 
@@ -281,12 +303,16 @@ TEST_F(MqttClientTest, timeout_results_in_ConnectionFailed)
 TEST_F(MqttClientTest, client_observer_allocation_failure_results_in_connection_aborted)
 {
     connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-        { connection.Attach(connectionObserver); });
+        {
+            connection.Attach(connectionObserver);
+        });
 
     ExecuteAllActions();
 
     EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::MqttClientObserver> client)>&& createdClient)
-        { createdClient(nullptr); }));
+        {
+            createdClient(nullptr);
+        }));
     EXPECT_CALL(connection, AbortAndDestroyMock());
     connection.SimulateDataReceived(std::vector<uint8_t>{ 0x20, 0x00, 0x00, 0x00 });
 }

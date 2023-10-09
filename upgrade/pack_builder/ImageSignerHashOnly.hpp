@@ -13,10 +13,10 @@ namespace application
         : public ImageSigner
     {
     public:
-        virtual uint16_t SignatureMethod() const override;
-        virtual uint16_t SignatureLength() const override;
-        virtual std::vector<uint8_t> ImageSignature(const std::vector<uint8_t>& image) override;
-        virtual bool CheckSignature(const std::vector<uint8_t>& signature, const std::vector<uint8_t>& image) override;
+        uint16_t SignatureMethod() const override;
+        uint16_t SignatureLength() const override;
+        std::vector<uint8_t> ImageSignature(const std::vector<uint8_t>& image) override;
+        bool CheckSignature(const std::vector<uint8_t>& signature, const std::vector<uint8_t>& image) override;
 
     private:
         void CalculateSha256(const std::vector<uint8_t>& image);

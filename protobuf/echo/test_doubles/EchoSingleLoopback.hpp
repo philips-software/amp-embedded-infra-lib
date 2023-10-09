@@ -15,8 +15,8 @@ namespace application
 
     protected:
         // Implementation of services::EchoOnStreams
-        virtual void RequestSendStream(std::size_t size) override;
-        virtual void BusyServiceDone() override;
+        void RequestSendStream(std::size_t size) override;
+        void BusyServiceDone() override;
 
     private:
         void SendStreamFilled();

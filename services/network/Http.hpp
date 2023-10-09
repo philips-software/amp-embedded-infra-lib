@@ -68,14 +68,15 @@ namespace services
 
     namespace http_responses
     {
-        extern const char* ok;                  // 200
-        extern const char* badRequest;          // 400
-        extern const char* notFound;            // 404
-        extern const char* conflict;            // 409
-        extern const char* unprocessableEntity; // 422
-        extern const char* tooManyRequests;     // 429
-        extern const char* internalServerError; // 500
-        extern const char* notImplemented;      // 501
+        extern const char* const ok;                  // 200
+        extern const char* const noContent;           // 204
+        extern const char* const badRequest;          // 400
+        extern const char* const notFound;            // 404
+        extern const char* const conflict;            // 409
+        extern const char* const unprocessableEntity; // 422
+        extern const char* const tooManyRequests;     // 429
+        extern const char* const internalServerError; // 500
+        extern const char* const notImplemented;      // 501
     }
 
     class HttpHeader
@@ -97,15 +98,21 @@ namespace services
     using HttpHeaders = infra::MemoryRange<const HttpHeader>;
     extern const HttpHeaders noHeaders;
 
+    extern const struct Chunked
+    {
+    } chunked;
+
     class HttpRequestFormatter
     {
     public:
         HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, const HttpHeaders headers);
         HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers);
         HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, std::size_t contentSize, const HttpHeaders headers);
+        HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, const HttpHeaders headers, Chunked);
 
         std::size_t Size() const;
-        void Write(infra::TextOutputStream stream) const;
+        std::size_t Write(infra::TextOutputStream stream) const;
+        void Consume(std::size_t amount);
 
     private:
         void AddContentLength(std::size_t size);
@@ -119,6 +126,8 @@ namespace services
         infra::Optional<HttpHeader> contentLengthHeader;
         HttpHeader hostHeader;
         const HttpHeaders headers;
+        bool chunked{ false };
+        bool sentHeader{ false };
     };
 
     class HttpHeaderParserObserver

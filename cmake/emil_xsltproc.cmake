@@ -7,11 +7,7 @@ function(emil_fetch_xsltproc)
         FetchContent_MakeAvailable(xsltproc libxml2 iconv zlib)
 
         set(EMIL_XSLTPROC_PATH "${xsltproc_SOURCE_DIR}/bin/" CACHE INTERNAL "")
-
-        set(path "$ENV{PATH}")
-        list(APPEND path "${libxml2_SOURCE_DIR}/bin" "${iconv_SOURCE_DIR}/bin" "${zlib_SOURCE_DIR}/bin")
-        string(REPLACE ";" "\\;" path "${path}")
-        set(EMIL_PATH_FOR_XSLTPROC "${path}" CACHE INTERNAL "")
+        set(EMIL_PATH_FOR_XSLTPROC "${libxml2_SOURCE_DIR}/bin;${iconv_SOURCE_DIR}/bin;${zlib_SOURCE_DIR}/bin" CACHE INTERNAL "")
     endif()
 endfunction()
 
@@ -53,7 +49,7 @@ function(generate_xslt target output)
         add_custom_command(
             OUTPUT ${absolute_output}
             COMMAND ${CMAKE_COMMAND} -E make_directory ${absolute_directory}
-            COMMAND ${CMAKE_COMMAND} -E env PATH=${EMIL_PATH_FOR_XSLTPROC} ${xsltproc_program} ${xslt_params} --output "${absolute_output}" ${absolute_inputs}
+            COMMAND ${CMAKE_COMMAND} -E env "PATH=$<SHELL_PATH:$ENV{PATH};${EMIL_PATH_FOR_XSLTPROC}>" ${xsltproc_program} ${xslt_params} --output "${absolute_output}" ${absolute_inputs}
             DEPENDS ${absolute_inputs}
         )
     else()

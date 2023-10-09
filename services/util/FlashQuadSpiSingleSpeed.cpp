@@ -15,7 +15,9 @@ namespace services
         : FlashQuadSpi(spi, numberOfSectors, commandPageProgram)
         , onInitialized(onInitialized)
         , initDelayTimer(std::chrono::milliseconds(100), [this]()
-              { this->onInitialized(); })
+              {
+                  this->onInitialized();
+              })
     {}
 
     void FlashQuadSpiSingleSpeed::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
@@ -34,14 +36,18 @@ namespace services
         address += currentBuffer.size();
 
         spi.SendData(pageProgramHeader, currentBuffer, hal::QuadSpi::Lines::SingleSpeed(), [this]()
-            { sequencer.Continue(); });
+            {
+                sequencer.Continue();
+            });
     }
 
     void FlashQuadSpiSingleSpeed::WriteEnable()
     {
         static const hal::QuadSpi::Header writeEnableHeader{ infra::MakeOptional(commandWriteEnable), {}, {}, 0 };
         spi.SendData(writeEnableHeader, {}, hal::QuadSpi::Lines::SingleSpeed(), [this]()
-            { sequencer.Continue(); });
+            {
+                sequencer.Continue();
+            });
     }
 
     void FlashQuadSpiSingleSpeed::EraseSomeSectors(uint32_t endIndex)
@@ -67,27 +73,35 @@ namespace services
     {
         hal::QuadSpi::Header eraseSectorHeader{ infra::MakeOptional(commandEraseSector), ConvertAddress(AddressOfSector(sectorIndex)), {}, 0 };
         spi.SendData(eraseSectorHeader, {}, hal::QuadSpi::Lines::SingleSpeed(), [this]()
-            { sequencer.Continue(); });
+            {
+                sequencer.Continue();
+            });
     }
 
     void FlashQuadSpiSingleSpeed::SendEraseBlock(uint32_t sectorIndex)
     {
         hal::QuadSpi::Header eraseBlockHeader{ infra::MakeOptional(commandEraseBlock), ConvertAddress(AddressOfSector(sectorIndex)), {}, 0 };
         spi.SendData(eraseBlockHeader, {}, hal::QuadSpi::Lines::SingleSpeed(), [this]()
-            { sequencer.Continue(); });
+            {
+                sequencer.Continue();
+            });
     }
 
     void FlashQuadSpiSingleSpeed::SendEraseChip()
     {
         static const hal::QuadSpi::Header eraseChipHeader{ infra::MakeOptional(commandEraseChip), {}, {}, 0 };
         spi.SendData(eraseChipHeader, {}, hal::QuadSpi::Lines::SingleSpeed(), [this]()
-            { sequencer.Continue(); });
+            {
+                sequencer.Continue();
+            });
     }
 
     void FlashQuadSpiSingleSpeed::HoldWhileWriteInProgress()
     {
         static const hal::QuadSpi::Header pollWriteInProgressHeader{ infra::MakeOptional(commandReadStatusRegister), {}, {}, 0 };
         spi.PollStatus(pollWriteInProgressHeader, 1, 0, statusFlagWriteInProgress, hal::QuadSpi::Lines::SingleSpeed(), [this]()
-            { sequencer.Continue(); });
+            {
+                sequencer.Continue();
+            });
     }
 }

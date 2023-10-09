@@ -115,14 +115,14 @@ namespace services
     public:
         explicit DnsHostnamePartsString(infra::BoundedConstString hostname);
 
-        virtual infra::BoundedConstString Current() const override;
-        virtual void ConsumeCurrent() override;
-        virtual bool Empty() const override;
-        virtual std::size_t StreamedSize() const override;
+        infra::BoundedConstString Current() const override;
+        void ConsumeCurrent() override;
+        bool Empty() const override;
+        std::size_t StreamedSize() const override;
         std::size_t NumberOfRemainingTokens() const;
 
     protected:
-        virtual void StreamWithoutTermination(infra::TextOutputStream& stream) const override;
+        void StreamWithoutTermination(infra::TextOutputStream& stream) const override;
 
     private:
         infra::Tokenizer hostnameTokens;
@@ -137,14 +137,14 @@ namespace services
         DnsHostnamePartsStream(const DnsHostnamePartsStream& other);
         ~DnsHostnamePartsStream() = default;
 
-        virtual infra::BoundedConstString Current() const override;
-        virtual void ConsumeCurrent() override;
-        virtual bool Empty() const override;
-        virtual std::size_t StreamedSize() const override;
+        infra::BoundedConstString Current() const override;
+        void ConsumeCurrent() override;
+        bool Empty() const override;
+        std::size_t StreamedSize() const override;
         void ConsumeStream();
 
     protected:
-        virtual void StreamWithoutTermination(infra::TextOutputStream& stream) const override;
+        void StreamWithoutTermination(infra::TextOutputStream& stream) const override;
 
     private:
         void DestructiveStream(infra::TextOutputStream& stream);
@@ -168,15 +168,15 @@ namespace services
         DnsHostnameInPartsHelper(const DnsHostnameInPartsHelper& other);
         DnsHostnameInPartsHelper& operator=(const DnsHostnameInPartsHelper& other) = delete;
 
-        virtual infra::BoundedConstString Current() const override;
-        virtual void ConsumeCurrent() override;
-        virtual bool Empty() const override;
-        virtual std::size_t StreamedSize() const override;
+        infra::BoundedConstString Current() const override;
+        void ConsumeCurrent() override;
+        bool Empty() const override;
+        std::size_t StreamedSize() const override;
 
         DnsHostnameInPartsHelper<S + 1> operator()(infra::BoundedConstString nextPart) const;
 
     protected:
-        virtual void StreamWithoutTermination(infra::TextOutputStream& stream) const override;
+        void StreamWithoutTermination(infra::TextOutputStream& stream) const override;
 
     private:
         std::array<infra::BoundedConstString, S> parts;

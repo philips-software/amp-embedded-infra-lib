@@ -4,6 +4,7 @@
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/stubs/strutil.h"
+#include "infra/syntax/ProtoFormatter.hpp"
 #include <sstream>
 
 namespace application
@@ -18,82 +19,82 @@ namespace application
                 : result(result)
             {}
 
-            virtual void VisitInt64(const EchoFieldInt64& field) override
+            void VisitInt64(const EchoFieldInt64& field) override
             {
                 result = "int64_t";
             }
 
-            virtual void VisitUint64(const EchoFieldUint64& field) override
+            void VisitUint64(const EchoFieldUint64& field) override
             {
                 result = "uint64_t";
             }
 
-            virtual void VisitInt32(const EchoFieldInt32& field) override
+            void VisitInt32(const EchoFieldInt32& field) override
             {
                 result = "int32_t";
             }
 
-            virtual void VisitFixed64(const EchoFieldFixed64& field) override
+            void VisitFixed64(const EchoFieldFixed64& field) override
             {
                 result = "uint64_t";
             }
 
-            virtual void VisitFixed32(const EchoFieldFixed32& field) override
+            void VisitFixed32(const EchoFieldFixed32& field) override
             {
                 result = "uint32_t";
             }
 
-            virtual void VisitBool(const EchoFieldBool& field) override
+            void VisitBool(const EchoFieldBool& field) override
             {
                 result = "bool";
             }
 
-            virtual void VisitString(const EchoFieldString& field) override
+            void VisitString(const EchoFieldString& field) override
             {
                 result = "infra::BoundedString::WithStorage<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">";
             }
 
-            virtual void VisitUnboundedString(const EchoFieldUnboundedString& field) override
+            void VisitUnboundedString(const EchoFieldUnboundedString& field) override
             {
                 result = "std::string";
             }
 
-            virtual void VisitEnum(const EchoFieldEnum& field) override
+            void VisitEnum(const EchoFieldEnum& field) override
             {
                 result = field.type->qualifiedDetailName;
             }
 
-            virtual void VisitSFixed64(const EchoFieldSFixed64& field) override
+            void VisitSFixed64(const EchoFieldSFixed64& field) override
             {
                 result = "int64_t";
             }
 
-            virtual void VisitSFixed32(const EchoFieldSFixed32& field) override
+            void VisitSFixed32(const EchoFieldSFixed32& field) override
             {
                 result = "int32_t";
             }
 
-            virtual void VisitMessage(const EchoFieldMessage& field) override
+            void VisitMessage(const EchoFieldMessage& field) override
             {
                 result = field.message->qualifiedDetailName;
             }
 
-            virtual void VisitBytes(const EchoFieldBytes& field) override
+            void VisitBytes(const EchoFieldBytes& field) override
             {
                 result = "infra::BoundedVector<uint8_t>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxBytesSize) + ">";
             }
 
-            virtual void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
+            void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
             {
                 result = "std::vector<uint8_t>";
             }
 
-            virtual void VisitUint32(const EchoFieldUint32& field) override
+            void VisitUint32(const EchoFieldUint32& field) override
             {
                 result = "uint32_t";
             }
 
-            virtual void VisitRepeated(const EchoFieldRepeated& field) override
+            void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 std::string r;
                 StorageTypeVisitor visitor(r);
@@ -101,7 +102,7 @@ namespace application
                 result = "infra::BoundedVector<" + r + ">::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">";
             }
 
-            virtual void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
+            void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
             {
                 std::string r;
                 StorageTypeVisitor visitor(r);
@@ -119,27 +120,27 @@ namespace application
         public:
             using StorageTypeVisitor::StorageTypeVisitor;
 
-            virtual void VisitString(const EchoFieldString& field) override
+            void VisitString(const EchoFieldString& field) override
             {
                 result = "infra::BoundedConstString";
             }
 
-            virtual void VisitMessage(const EchoFieldMessage& field) override
+            void VisitMessage(const EchoFieldMessage& field) override
             {
                 result = field.message->qualifiedDetailReferenceName;
             }
 
-            virtual void VisitBytes(const EchoFieldBytes& field) override
+            void VisitBytes(const EchoFieldBytes& field) override
             {
                 result = "infra::ConstByteRange";
             }
 
-            virtual void VisitEnum(const EchoFieldEnum& field) override
+            void VisitEnum(const EchoFieldEnum& field) override
             {
                 result = field.type->name;
             }
 
-            virtual void VisitRepeated(const EchoFieldRepeated& field) override
+            void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 std::string r;
                 ReferenceStorageTypeVisitor visitor(r);
@@ -154,37 +155,37 @@ namespace application
         public:
             using StorageTypeVisitor::StorageTypeVisitor;
 
-            virtual void VisitString(const EchoFieldString& field) override
+            void VisitString(const EchoFieldString& field) override
             {
                 result = "infra::BoundedConstString";
             }
 
-            virtual void VisitUnboundedString(const EchoFieldUnboundedString& field) override
+            void VisitUnboundedString(const EchoFieldUnboundedString& field) override
             {
                 result = "const std::string&";
             }
 
-            virtual void VisitMessage(const EchoFieldMessage& field) override
+            void VisitMessage(const EchoFieldMessage& field) override
             {
                 result = "const " + field.message->qualifiedName + "&";
             }
 
-            virtual void VisitBytes(const EchoFieldBytes& field) override
+            void VisitBytes(const EchoFieldBytes& field) override
             {
                 result = "const infra::BoundedVector<uint8_t>&";
             }
 
-            virtual void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
+            void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
             {
                 result = "const std::vector<uint8_t>&";
             }
 
-            virtual void VisitEnum(const EchoFieldEnum& field) override
+            void VisitEnum(const EchoFieldEnum& field) override
             {
                 result = field.type->qualifiedDetailName;
             }
 
-            virtual void VisitRepeated(const EchoFieldRepeated& field) override
+            void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 std::string r;
                 StorageTypeVisitor visitor(r);
@@ -192,7 +193,7 @@ namespace application
                 result = "const infra::BoundedVector<" + r + ">&";
             }
 
-            virtual void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
+            void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
             {
                 std::string r;
                 StorageTypeVisitor visitor(r);
@@ -207,17 +208,17 @@ namespace application
         public:
             using ParameterTypeVisitor::ParameterTypeVisitor;
 
-            virtual void VisitMessage(const EchoFieldMessage& field) override
+            void VisitMessage(const EchoFieldMessage& field) override
             {
                 result = "const " + field.message->qualifiedDetailReferenceName + "&";
             }
 
-            virtual void VisitBytes(const EchoFieldBytes& field) override
+            void VisitBytes(const EchoFieldBytes& field) override
             {
                 result = "infra::ConstByteRange";
             }
 
-            virtual void VisitRepeated(const EchoFieldRepeated& field) override
+            void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 std::string r;
                 ReferenceStorageTypeVisitor visitor(r);
@@ -318,7 +319,7 @@ namespace application
         , prefix(prefix)
     {}
 
-    void MessageTypeMapGenerator::Run(Entities& formatter)
+    void MessageTypeMapGenerator::Run(Entities& formatter) const
     {
         auto typeMapNamespace = std::make_shared<Namespace>("detail");
 
@@ -330,20 +331,31 @@ namespace application
         {
             auto typeMapSpecialization = std::make_shared<StructTemplateSpecialization>(MessageName() + "TypeMap");
             typeMapSpecialization->TemplateSpecialization(google::protobuf::SimpleItoa(std::distance(message->fields.data(), &field)));
-            typeMapSpecialization->Add(std::make_shared<Using>("ProtoType", field->protoType));
+            AddTypeMapProtoType(*field, *typeMapSpecialization);
             AddTypeMapType(*field, *typeMapSpecialization);
+            AddTypeMapFieldNumber(*field, *typeMapSpecialization);
             typeMapNamespace->Add(typeMapSpecialization);
         }
 
         formatter.Add(typeMapNamespace);
     }
 
-    void MessageTypeMapGenerator::AddTypeMapType(EchoField& field, Entities& entities)
+    void MessageTypeMapGenerator::AddTypeMapProtoType(const EchoField& field, Entities& entities) const
+    {
+        entities.Add(std::make_shared<Using>("ProtoType", field.protoType));
+    }
+
+    void MessageTypeMapGenerator::AddTypeMapType(const EchoField& field, Entities& entities) const
     {
         std::string result;
         StorageTypeVisitor visitor(result);
         field.Accept(visitor);
         entities.Add(std::make_shared<Using>("Type", result));
+    }
+
+    void MessageTypeMapGenerator::AddTypeMapFieldNumber(const EchoField& field, Entities& entities) const
+    {
+        entities.Add(std::make_shared<DataMember>("fieldNumber", "static const uint32_t", google::protobuf::SimpleItoa(field.number)));
     }
 
     std::string MessageTypeMapGenerator::MessageName() const
@@ -356,27 +368,12 @@ namespace application
         return "";
     }
 
-    void MessageReferenceTypeMapGenerator::Run(Entities& formatter)
+    void MessageReferenceTypeMapGenerator::AddTypeMapProtoType(const EchoField& field, Entities& entities) const
     {
-        auto typeMapNamespace = std::make_shared<Namespace>("detail");
-
-        auto typeMapDeclaration = std::make_shared<StructTemplateForwardDeclaration>(MessageName() + "TypeMap");
-        typeMapDeclaration->TemplateParameter("std::size_t fieldIndex");
-        typeMapNamespace->Add(typeMapDeclaration);
-
-        for (auto& field : message->fields)
-        {
-            auto typeMapSpecialization = std::make_shared<StructTemplateSpecialization>(MessageName() + "TypeMap");
-            typeMapSpecialization->TemplateSpecialization(google::protobuf::SimpleItoa(std::distance(message->fields.data(), &field)));
-            typeMapSpecialization->Add(std::make_shared<Using>("ProtoType", field->protoReferenceType));
-            AddTypeMapType(*field, *typeMapSpecialization);
-            typeMapNamespace->Add(typeMapSpecialization);
-        }
-
-        formatter.Add(typeMapNamespace);
+        entities.Add(std::make_shared<Using>("ProtoType", field.protoReferenceType));
     }
 
-    void MessageReferenceTypeMapGenerator::AddTypeMapType(EchoField& field, Entities& entities)
+    void MessageReferenceTypeMapGenerator::AddTypeMapType(const EchoField& field, Entities& entities) const
     {
         std::string result;
         ParameterReferenceTypeVisitor visitor(result);
@@ -475,12 +472,16 @@ namespace application
     {
         auto typeMap = std::make_shared<Access>("public");
 
+        auto numberOfFields = std::make_shared<DataMember>("numberOfFields", "static const uint32_t", google::protobuf::SimpleItoa(message->fields.size()));
+        typeMap->Add(numberOfFields);
         auto protoTypeUsing = std::make_shared<UsingTemplate>("ProtoType", "typename " + TypeMapName() + "<fieldIndex>::ProtoType");
         protoTypeUsing->TemplateParameter("std::size_t fieldIndex");
         typeMap->Add(protoTypeUsing);
         auto typeUsing = std::make_shared<UsingTemplate>("Type", "typename " + TypeMapName() + "<fieldIndex>::Type");
         typeUsing->TemplateParameter("std::size_t fieldIndex");
         typeMap->Add(typeUsing);
+        auto fieldNumber = std::make_shared<DataMember>("fieldNumber", "template<std::size_t fieldIndex> static const uint32_t", TypeMapName() + "<fieldIndex>::fieldNumber");
+        typeMap->Add(fieldNumber);
 
         classFormatter->Add(typeMap);
     }
@@ -492,9 +493,12 @@ namespace application
         for (auto& field : message->fields)
         {
             auto index = std::distance(message->fields.data(), &field);
-            auto function = std::make_shared<Function>("Get", "return " + field->name + ";\n", ClassName() + "::Type<" + google::protobuf::SimpleItoa(index) + ">&", 0);
-            function->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
-            getters->Add(function);
+            auto functionGet = std::make_shared<Function>("Get", "return " + field->name + ";\n", ClassName() + "::Type<" + google::protobuf::SimpleItoa(index) + ">&", 0);
+            functionGet->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
+            getters->Add(functionGet);
+            auto functionConstGet = std::make_shared<Function>("Get", "return " + field->name + ";\n", "const " + ClassName() + "::Type<" + google::protobuf::SimpleItoa(index) + ">&", Function::fConst);
+            functionConstGet->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
+            getters->Add(functionConstGet);
         }
 
         classFormatter->Add(getters);
@@ -617,7 +621,7 @@ namespace application
 
                 for (auto& field : message->fields)
                     printer.Print(R"(case $constant$:
-    DeserializeField($type$(), parser, field, $name$);
+    DeserializeField($type$(), parser, field.first, $name$);
     break;
 )",
                         "constant", field->constantName, "type", field->protoType, "name", field->name);
@@ -739,9 +743,12 @@ namespace application
         for (auto& field : message->fields)
         {
             auto index = std::distance(message->fields.data(), &field);
-            auto function = std::make_shared<Function>("Get", "return " + field->name + ";\n", ClassName() + "::Type<" + google::protobuf::SimpleItoa(index) + ">&", 0);
-            function->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
-            getters->Add(function);
+            auto functionGet = std::make_shared<Function>("Get", "return " + field->name + ";\n", ClassName() + "::Type<" + google::protobuf::SimpleItoa(index) + ">&", 0);
+            functionGet->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
+            getters->Add(functionGet);
+            auto functionConstGet = std::make_shared<Function>("Get", "return " + field->name + ";\n", ClassName() + "::Type<" + google::protobuf::SimpleItoa(index) + ">", Function::fConst);
+            functionConstGet->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
+            getters->Add(functionConstGet);
         }
 
         classFormatter->Add(getters);
@@ -925,9 +932,9 @@ namespace application
             if (method.parameter && !method.parameter->MaxMessageSize())
                 result = std::numeric_limits<uint32_t>::max();
             else if (method.parameter)
-                result = std::max<uint32_t>(MaxVarIntSize(service->serviceId) + MaxVarIntSize((method.methodId << 3) | 2) + 10 + *method.parameter->MaxMessageSize(), result);
+                result = std::max<uint32_t>(infra::MaxVarIntSize(service->serviceId) + infra::MaxVarIntSize((method.methodId << 3) | 2) + 10 + *method.parameter->MaxMessageSize(), result);
             else
-                result = std::max<uint32_t>(MaxVarIntSize(service->serviceId) + MaxVarIntSize((method.methodId << 3) | 2) + 10, result);
+                result = std::max<uint32_t>(infra::MaxVarIntSize(service->serviceId) + infra::MaxVarIntSize((method.methodId << 3) | 2) + 10, result);
         }
 
         return result;
@@ -940,7 +947,7 @@ namespace application
             google::protobuf::io::OstreamOutputStream stream(&result);
             google::protobuf::io::Printer printer(&stream, '$', nullptr);
 
-            printer.Print("return serviceId == id;");
+            printer.Print("return serviceId == id;\n");
         }
 
         return result.str();
@@ -1265,7 +1272,7 @@ switch (methodId)
 
         auto includesByHeader = std::make_shared<IncludesByHeader>();
         includesByHeader->Path("generated/echo/" + root.GetFile(*file)->name + ".pb.hpp");
-        includesByHeader->Path("protobuf/echo/TracingEcho.hpp");
+        includesByHeader->Path("services/network/TracingEchoOnConnection.hpp");
         formatter.Add(includesByHeader);
 
         auto includesBySource = std::make_shared<IncludesBySource>();

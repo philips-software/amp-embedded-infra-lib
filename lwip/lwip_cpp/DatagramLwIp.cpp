@@ -46,6 +46,7 @@ namespace services
         control = CreateUdpPcb(versions);
         really_assert(control != nullptr);
         ip_set_option(control, SOF_BROADCAST);
+        ip_set_option(control, SOF_REUSEADDR);
         err_t result = udp_bind(control, IpAddrAny(versions), port);
         assert(result == ERR_OK);
 
@@ -325,7 +326,9 @@ namespace services
         , sendSize(sendSize)
         , remote(remote)
         , allocateTimer(std::chrono::milliseconds(50), [this]()
-              { TryAllocateBuffer(); })
+              {
+                  TryAllocateBuffer();
+              })
     {}
 
     void DatagramExchangeLwIP::StateWaitingForBuffer::TryAllocateBuffer()
@@ -338,13 +341,16 @@ namespace services
     DatagramExchangeLwIP::StateBufferAllocated::StateBufferAllocated(DatagramExchangeLwIP& datagramExchange, pbuf* buffer, infra::Optional<UdpSocket> remote)
         : datagramExchange(datagramExchange)
         , stream([this]()
-              { this->datagramExchange.state.Emplace<StateIdle>(this->datagramExchange); })
+              {
+                  this->datagramExchange.state.Emplace<StateIdle>(this->datagramExchange);
+              })
         , streamPtr(stream.Emplace(datagramExchange.control, buffer, remote))
     {
         infra::EventDispatcherWithWeakPtr::Instance().Schedule([this](const infra::SharedPtr<DatagramExchange>& datagramExchange)
             {
-            if (datagramExchange->HasObserver())
-                datagramExchange->GetObserver().SendStreamAvailable(infra::SharedPtr<UdpWriter>(std::move(streamPtr))); },
+                if (datagramExchange->HasObserver())
+                    datagramExchange->GetObserver().SendStreamAvailable(infra::SharedPtr<UdpWriter>(std::move(streamPtr)));
+            },
             datagramExchange.SharedFromThis());
     }
 

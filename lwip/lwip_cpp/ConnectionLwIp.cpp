@@ -28,7 +28,7 @@ namespace services
                 };
         }
 
-        static tcp_ext_arg_callbacks emptyCallbacks{};
+        tcp_ext_arg_callbacks emptyCallbacks{};
     }
 
     infra::BoundedList<std::array<uint8_t, TCP_MSS>>::WithMaxSize<tcpSndQueueLen> ConnectionLwIp::sendMemoryPool;
@@ -38,7 +38,9 @@ namespace services
         : factory(factory)
         , control(control)
         , streamReader([this]()
-              { keepAliveForReader = nullptr; })
+              {
+                  keepAliveForReader = nullptr;
+              })
     {
         factory.connections.push_front(*this);
         assert(control != nullptr);
@@ -187,7 +189,9 @@ namespace services
         {
             sendBuffer = buffer;
             retrySendTimer.Start(std::chrono::milliseconds(50), [this]()
-                { SendBuffer(sendBuffer); });
+                {
+                    SendBuffer(sendBuffer);
+                });
         }
     }
 
@@ -203,12 +207,13 @@ namespace services
             sendBufferForStream = infra::Head(infra::ByteRange(sendMemoryPool.back()), requestedSendSize);
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionLwIp>& self)
                 {
-                infra::SharedPtr<infra::StreamWriter> stream = self->streamWriter.Emplace(*self, self->sendBufferForStream);
-                self->sendBufferForStream = infra::ByteRange();
-                if (self->IsAttached())
-                    self->Observer().SendStreamAvailable(std::move(stream));
-                if (self->closing)
-                    self->CloseAndDestroy(); },
+                    infra::SharedPtr<infra::StreamWriter> stream = self->streamWriter.Emplace(*self, self->sendBufferForStream);
+                    self->sendBufferForStream = infra::ByteRange();
+                    if (self->IsAttached())
+                        self->Observer().SendStreamAvailable(std::move(stream));
+                    if (self->closing)
+                        self->CloseAndDestroy();
+                },
                 SharedFromThis());
 
             requestedSendSize = 0;
@@ -272,9 +277,10 @@ namespace services
                 dataReceivedScheduled = true;
                 infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionLwIp>& self)
                     {
-                    self->dataReceivedScheduled = false;
-                    if (self->IsAttached())
-                        self->Observer().DataReceived(); },
+                        self->dataReceivedScheduled = false;
+                        if (self->IsAttached())
+                            self->Observer().DataReceived();
+                    },
                     SharedFromThis());
             }
             return ERR_OK;
@@ -498,7 +504,9 @@ namespace services
         : allocator(allocator)
         , factory(factory)
         , access([this]()
-              { TryProcessBacklog(); })
+              {
+                  TryProcessBacklog();
+              })
         , connectionFactory(connectionFactory)
     {
         tcp_pcb* pcb = tcp_new();
@@ -577,14 +585,15 @@ namespace services
             auto connection = backlog.front();
             factory.ConnectionAccepted([self](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
                 {
-                auto connection = self->backlog.front();
-                self->backlog.pop_front();
+                    auto connection = self->backlog.front();
+                    self->backlog.pop_front();
 
-                if (connectionObserver && connection->control != nullptr)
-                {
-                    connection->SetSelfOwnership(connectionObserver);
-                    connection->Attach(connectionObserver);
-                } },
+                    if (connectionObserver && connection->control != nullptr)
+                    {
+                        connection->SetSelfOwnership(connectionObserver);
+                        connection->Attach(connectionObserver);
+                    }
+                },
                 connection->IpAddress());
 
             infra::WeakPtr<ConnectionLwIp> weakConnection = connection;
@@ -668,11 +677,12 @@ namespace services
             ResetControl();
             clientFactory.ConnectionEstablished([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
                 {
-                if (connectionObserver && connection->control != nullptr)
-                {
-                    connection->SetSelfOwnership(connectionObserver);
-                    connection->Attach(connectionObserver);
-                } });
+                    if (connectionObserver && connection->control != nullptr)
+                    {
+                        connection->SetSelfOwnership(connectionObserver);
+                        connection->Attach(connectionObserver);
+                    }
+                });
 
             infra::WeakPtr<ConnectionLwIp> weakConnection = connection;
             connection = nullptr;
@@ -758,7 +768,9 @@ namespace services
     bool ConnectionFactoryLwIp::PendingSend() const
     {
         return std::any_of(connections.begin(), connections.end(), [](auto& c)
-            { return c.PendingSend(); });
+            {
+                return c.PendingSend();
+            });
     }
 
     void ConnectionFactoryLwIp::TryConnect()

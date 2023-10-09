@@ -7,6 +7,7 @@ if (EMIL_HOST_BUILD)
 
     target_link_libraries(protobuf.protoc_echo_plugin_lib PUBLIC
         protobuf.echo_attributes
+        infra.syntax
     )
 
     target_include_directories(protobuf.protoc_echo_plugin_lib PUBLIC
@@ -23,18 +24,19 @@ if (EMIL_HOST_BUILD)
         ProtoCEchoPlugin.hpp
     )
 
-    add_executable(protobuf.protoc_echo_plugin)
-    install(TARGETS protobuf.protoc_echo_plugin EXPORT emilProtobufTargets DESTINATION bin)
+    if (NOT CMAKE_CROSSCOMPILING)
+        add_executable(protobuf.protoc_echo_plugin)
+        emil_build_for(protobuf.protoc_echo_plugin BOOL EMIL_STANDALONE)
+        install(TARGETS protobuf.protoc_echo_plugin EXPORT emilProtobufTargets DESTINATION bin)
 
-    target_link_libraries(protobuf.protoc_echo_plugin PUBLIC
-        protobuf.protoc_echo_plugin_lib
-    )
+        target_link_libraries(protobuf.protoc_echo_plugin PUBLIC
+            protobuf.protoc_echo_plugin_lib
+        )
 
-    target_sources(protobuf.protoc_echo_plugin PRIVATE
-        Main.cpp
-    )
-
-    if (EMIL_BUILD_TESTS)
-        add_subdirectory(test)
+        target_sources(protobuf.protoc_echo_plugin PRIVATE
+            Main.cpp
+        )
     endif()
 endif()
+
+add_subdirectory(test)

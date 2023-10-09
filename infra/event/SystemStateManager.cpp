@@ -31,7 +31,9 @@ namespace infra
     void SystemStateParticipant::ReachedState()
     {
         infra::EventDispatcher::Instance().Schedule([this]()
-            { systemStateManager.ReachedState(*this); });
+            {
+                systemStateManager.ReachedState(*this);
+            });
     }
 
     void SystemStateManager::RunStates(infra::MemoryRange<const SystemStateBase> states)

@@ -3,6 +3,19 @@
 
 namespace infra
 {
+    uint32_t MaxVarIntSize(uint64_t value)
+    {
+        uint32_t result = 1;
+
+        while (value > 127)
+        {
+            value >>= 7;
+            ++result;
+        }
+
+        return result;
+    }
+
     ProtoLengthDelimitedFormatter::ProtoLengthDelimitedFormatter(ProtoFormatter& formatter, uint32_t fieldNumber)
         : formatter(formatter)
     {
@@ -21,7 +34,7 @@ namespace infra
     {
         if (marker != std::numeric_limits<std::size_t>::max())
         {
-            uint32_t size = formatter.output.ProcessedBytesSince(marker);
+            auto size = formatter.output.ProcessedBytesSince(marker);
             infra::SavedMarkerDataStream savedStream(formatter.output, marker);
             ProtoFormatter savedFormatter(savedStream);
             savedFormatter.PutVarInt(size);
@@ -48,7 +61,7 @@ namespace infra
     void ProtoFormatter::PutSignedVarInt(uint64_t value)
     {
         static const bool isArithmeticRightShift = (-1 >> 1) == -1;
-        static_assert(isArithmeticRightShift, "");
+        static_assert(isArithmeticRightShift);
         PutVarInt((value << 1) ^ (static_cast<int64_t>(value) >> 63));
     }
 
@@ -115,6 +128,12 @@ namespace infra
     {
         PutVarInt((fieldNumber << 3) | 2);
         PutBytes(bytes);
+    }
+
+    void ProtoFormatter::PutLengthDelimitedSize(std::size_t size, uint32_t fieldNumber)
+    {
+        PutVarInt((fieldNumber << 3) | 2);
+        PutVarInt(size);
     }
 
     ProtoLengthDelimitedFormatter ProtoFormatter::LengthDelimitedFormatter(uint32_t fieldNumber)

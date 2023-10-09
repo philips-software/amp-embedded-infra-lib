@@ -18,7 +18,7 @@ public:
     {}
 
     hal::I2cMasterMock master;
-    hal::I2cMasterRegisterAccess registerAccess;
+    hal::I2cMasterRegisterAccessByte registerAccess;
 };
 
 const hal::I2cAddress I2cRegisterAccessTest::slaveAddress(0x5a);
@@ -32,7 +32,9 @@ TEST_F(I2cRegisterAccessTest, TestReadRegister)
 
     std::array<uint8_t, 3> data;
     registerAccess.ReadRegister(3, infra::MakeByteRange(data), [&callback]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
 
     ExecuteAllActions();
 
@@ -48,7 +50,9 @@ TEST_F(I2cRegisterAccessTest, TestWriteRegister)
 
     std::array<uint8_t, 3> data{ 5, 6, 7 };
     registerAccess.WriteRegister(3, infra::MakeByteRange(data), [&callback]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
 
     ExecuteAllActions();
 }

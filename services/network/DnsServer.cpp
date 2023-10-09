@@ -5,7 +5,7 @@ namespace
 {
     // Since we repeat the question in the answer we can use a pointer to the name
     // in the answer record. The name starts after the DnsRecordHeader.
-    static const std::array<uint8_t, 2> rnameCompression{ 0xC0, sizeof(services::DnsRecordHeader) };
+    const std::array<uint8_t, 2> rnameCompression{ 0xC0, sizeof(services::DnsRecordHeader) };
 
     infra::BoundedConstString StripLeadingWww(infra::BoundedConstString hostname)
     {

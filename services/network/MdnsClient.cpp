@@ -320,8 +320,8 @@ namespace services
 
     MdnsClient::AnswerParser::AnswerParser(MdnsClient& client, services::IPVersions ipVersion, infra::StreamReaderWithRewinding& reader)
         : client(client)
-        , reader(reader)
         , ipVersion(ipVersion)
+        , reader(reader)
     {
         Parse();
     }

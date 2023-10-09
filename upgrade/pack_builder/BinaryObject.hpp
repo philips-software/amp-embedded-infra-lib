@@ -68,7 +68,7 @@ namespace application
     private:
         struct LineContents
         {
-            LineContents(std::string line, const std::string& fileName, int lineNumber);
+            LineContents(const std::string& line, const std::string& fileName, int lineNumber);
 
             uint8_t recordType;
             uint16_t address;

@@ -10,9 +10,9 @@ namespace hal
         : public hal::I2cMaster
     {
     public:
-        virtual void SendData(hal::I2cAddress address, infra::ConstByteRange data, hal::Action nextAction,
+        void SendData(hal::I2cAddress address, infra::ConstByteRange data, hal::Action nextAction,
             infra::Function<void(hal::Result, uint32_t numberOfBytesSent)> onSent) override;
-        virtual void ReceiveData(hal::I2cAddress address, infra::ByteRange data, hal::Action nextAction,
+        void ReceiveData(hal::I2cAddress address, infra::ByteRange data, hal::Action nextAction,
             infra::Function<void(hal::Result)> onReceived) override;
 
         MOCK_METHOD1(ReadRegisterMock, std::vector<uint8_t>(uint8_t dataRegister));

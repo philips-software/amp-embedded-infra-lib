@@ -18,7 +18,9 @@ public:
     bool operator==(const char* other) const
     {
         return std::equal(contents.begin(), contents.end(), other) && std::all_of(other + contents.size(), other + length, [](char i)
-                                                                          { return i == 0; });
+                                                                          {
+                                                                              return i == 0;
+                                                                          });
     }
 
 private:

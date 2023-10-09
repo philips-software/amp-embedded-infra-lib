@@ -7,7 +7,7 @@ if (APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
 endif()
 
-project(emil LANGUAGES C CXX VERSION 3.1.0) # x-release-please-version
+project(emil LANGUAGES C CXX VERSION 4.0.0) # x-release-please-version
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
@@ -16,6 +16,7 @@ set_directory_properties(PROPERTY USE_FOLDERS On)
 
 include(CMakePackageConfigHelpers)
 include(emil_antora)
+include(emil_build_for)
 include(emil_folderize)
 include(emil_clang_tools)
 include(emil_docker_tools)
@@ -28,6 +29,13 @@ include(GNUInstallDirs) # included to supply proper defaults to install(...) com
 
 if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     set(EMIL_STANDALONE On)
+endif()
+
+if (MINGW)
+    # When compiling with MINGW, dynamically linking to the standard C++ library results in linking to libstdc++-6.dll.
+    # The libstdc++-6.dll found during runtime is often different than the one with which the application is compiled with,
+    # so instead of linking dynamically, we statically link to the standard C++ library.
+    add_link_options("-static-libstdc++")
 endif()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -124,8 +132,8 @@ add_version_header_target(generated.version_header)
 add_subdirectory(external)
 add_subdirectory(infra)
 add_subdirectory(hal)
-add_subdirectory(services)
 add_subdirectory(protobuf)
+add_subdirectory(services)
 add_subdirectory(upgrade)
 add_subdirectory(lwip)
 add_subdirectory(osal)
@@ -136,6 +144,7 @@ endif()
 emil_clangformat_directories(emil DIRECTORIES .)
 
 if (EMIL_STANDALONE)
+    emil_generate_antora_docs_target(antora-playbook-branch.yml)
     emil_folderize_all_targets()
 endif()
 
@@ -176,8 +185,8 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
     )
 
-    set(CPACK_GENERATOR "ZIP")
-    set(CPACK_SOURCE_IGNORE_FILES ".vs/;.git/;Build/")
+    set(CPACK_GENERATOR "ZIP;TGZ")
+    set(CPACK_SOURCE_IGNORE_FILES ".vs/;.git/;build/")
     set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
     set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
     set(CPACK_PACKAGE_VENDOR "Koninklijke Philips N.V")

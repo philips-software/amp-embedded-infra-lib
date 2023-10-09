@@ -74,11 +74,15 @@ TEST_F(ConnectionMbedTlsTest, create_connection)
     infra::SharedOptional<services::ConnectionObserverMock> observer2;
     EXPECT_CALL(serverObserverFactory, ConnectionAcceptedMock(testing::_, testing::_))
         .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver, services::IPAddress address)
-            { createdObserver(observer1.Emplace()); }));
+            {
+                createdObserver(observer1.Emplace());
+            }));
     EXPECT_CALL(clientObserverFactory, Address());
     EXPECT_CALL(clientObserverFactory, ConnectionEstablishedMock(testing::_))
         .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver)
-            { createdObserver(observer2.Emplace()); }));
+            {
+                createdObserver(observer2.Emplace());
+            }));
     ExecuteAllActions();
     observer1->Subject().AbortAndDestroy();
     EXPECT_CALL(clientObserverFactory, Destructor);
@@ -97,11 +101,15 @@ TEST_F(ConnectionMbedTlsTest, send_and_receive_data)
     infra::SharedOptional<services::ConnectionObserverStub> observer2;
     EXPECT_CALL(serverObserverFactory, ConnectionAcceptedMock(testing::_, testing::_))
         .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver, services::IPAddress address)
-            { createdObserver(observer1.Emplace()); }));
+            {
+                createdObserver(observer1.Emplace());
+            }));
     EXPECT_CALL(clientObserverFactory, Address());
     EXPECT_CALL(clientObserverFactory, ConnectionEstablishedMock(testing::_))
         .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver)
-            { createdObserver(observer2.Emplace()); }));
+            {
+                createdObserver(observer2.Emplace());
+            }));
     ExecuteAllActions();
 
     observer2->SendData(std::vector<uint8_t>{ 1, 2, 3, 4 });
@@ -130,11 +138,15 @@ TEST_F(ConnectionMbedTlsTest, reopen_connection)
         infra::SharedOptional<services::ConnectionObserverStub> observer2;
         EXPECT_CALL(serverObserverFactory, ConnectionAcceptedMock(testing::_, testing::_))
             .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver, services::IPAddress address)
-                { createdObserver(observer1.Emplace()); }));
+                {
+                    createdObserver(observer1.Emplace());
+                }));
         EXPECT_CALL(clientObserverFactory, Address());
         EXPECT_CALL(clientObserverFactory, ConnectionEstablishedMock(testing::_))
             .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver)
-                { createdObserver(observer2.Emplace()); }));
+                {
+                    createdObserver(observer2.Emplace());
+                }));
         ExecuteAllActions();
 
         observer1->Subject().AbortAndDestroy();
@@ -148,11 +160,15 @@ TEST_F(ConnectionMbedTlsTest, reopen_connection)
         infra::SharedOptional<services::ConnectionObserverStub> observer2;
         EXPECT_CALL(serverObserverFactory, ConnectionAcceptedMock(testing::_, testing::_))
             .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver, services::IPAddress address)
-                { createdObserver(observer1.Emplace()); }));
+                {
+                    createdObserver(observer1.Emplace());
+                }));
         EXPECT_CALL(clientObserverFactory, Address());
         EXPECT_CALL(clientObserverFactory, ConnectionEstablishedMock(testing::_))
             .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver)
-                { createdObserver(observer2.Emplace()); }));
+                {
+                    createdObserver(observer2.Emplace());
+                }));
         ExecuteAllActions();
 
         observer1->Subject().AbortAndDestroy();

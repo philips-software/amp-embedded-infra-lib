@@ -18,11 +18,13 @@ public:
     HttpServerTest()
         : connectionPtr(infra::UnOwnedSharedPtr(connection))
         , execute([this]()
-              { EXPECT_CALL(connectionFactoryMock, Listen(80, testing::_, services::IPVersions::both)).WillOnce(testing::DoAll(infra::SaveRef<1>(&serverConnectionObserverFactory), testing::Return(nullptr))); })
+              {
+                  EXPECT_CALL(connectionFactoryMock, Listen(80, testing::_, services::IPVersions::both)).WillOnce(testing::DoAll(infra::SaveRef<1>(&serverConnectionObserverFactory), testing::Return(nullptr)));
+              })
         , httpServer(connectionFactoryMock, 80)
     {}
 
-    ~HttpServerTest()
+    ~HttpServerTest() override
     {
         httpServer.Stop(infra::emptyFunction);
     }
@@ -40,7 +42,9 @@ public:
         EXPECT_CALL(response, ContentType()).WillOnce(testing::Return(contentType));
         EXPECT_CALL(response, AddHeaders(testing::_));
         EXPECT_CALL(response, WriteBody(testing::_)).WillOnce(testing::Invoke([body](infra::TextOutputStream& stream)
-            { stream << body; }));
+            {
+                stream << body;
+            }));
         EXPECT_CALL(response, Status()).WillOnce(testing::Return(status));
         httpConnection->SendResponse(response);
     }
@@ -88,8 +92,9 @@ public:
         EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(true));
         EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(testing::Invoke([this, verb](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
             {
-            EXPECT_EQ(verb, parser.Verb());
-            httpConnection = &connection; }));
+                EXPECT_EQ(verb, parser.Verb());
+                httpConnection = &connection;
+            }));
         infra::ConstByteRange data = infra::MakeStringByteRange(request);
         connection.SimulateDataReceived(data);
         ExecuteAllActions();
@@ -100,9 +105,10 @@ public:
         EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(true));
         EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(testing::Invoke([this, verb, body](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
             {
-            EXPECT_EQ(verb, parser.Verb());
-            EXPECT_EQ(body, parser.BodyBuffer());
-            httpConnection = &connection; }));
+                EXPECT_EQ(verb, parser.Verb());
+                EXPECT_EQ(body, parser.BodyBuffer());
+                httpConnection = &connection;
+            }));
         infra::ConstByteRange data = infra::MakeStringByteRange(request);
         connection.SimulateDataReceived(data);
         ExecuteAllActions();
@@ -113,9 +119,10 @@ public:
         EXPECT_CALL(httpPage, ServesRequest(testing::_)).WillOnce(testing::Return(true));
         EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(testing::Invoke([this, verb, header](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
             {
-            EXPECT_EQ(verb, parser.Verb());
-            EXPECT_EQ(header.Value(), parser.Header(header.Field()));
-            httpConnection = &connection; }));
+                EXPECT_EQ(verb, parser.Verb());
+                EXPECT_EQ(header.Value(), parser.Header(header.Field()));
+                httpConnection = &connection;
+            }));
         infra::ConstByteRange data = infra::MakeStringByteRange(request);
         connection.SimulateDataReceived(data);
         ExecuteAllActions();
@@ -373,8 +380,9 @@ TEST_F(HttpServerWithSimplePageTest, split_response_when_not_enough_available_in
     EXPECT_CALL(connection, AckReceived()).Times(2);
     EXPECT_CALL(httpPage, RespondToRequest(testing::_, testing::_)).WillOnce(testing::Invoke([this](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
         {
-        httpConnection = &connection;
-        SendResponse("200 OK", "application/text", "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"); }));
+            httpConnection = &connection;
+            SendResponse("200 OK", "application/text", "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789");
+        }));
 
     infra::StringOutputStream::WithStorage<80> stream1;
     connection.Observer().SendStreamAvailable(infra::UnOwnedSharedPtr(stream1.Writer()));
@@ -441,10 +449,14 @@ TEST_F(HttpServerTest, connection_is_kept_open_by_page)
 
     EXPECT_CALL(page, ServesRequest(testing::_)).WillOnce(testing::Return(true));
     EXPECT_CALL(page, RequestReceived(testing::_, testing::_)).WillOnce(testing::Invoke([this](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
-        { httpConnection = &connection; }));
+        {
+            httpConnection = &connection;
+        }));
     infra::SharedPtr<infra::StreamReaderWithRewinding> savedReader;
     EXPECT_CALL(page, DataReceived(testing::_)).WillOnce(testing::Invoke([&savedReader](const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader)
-        { savedReader = reader; }));
+        {
+            savedReader = reader;
+        }));
     EXPECT_CALL(page, Close());
     infra::ConstByteRange data = infra::MakeStringByteRange("PUT /path HTTP/1.1 \r\n\r\n0");
     connection.SimulateDataReceived(data);
@@ -474,16 +486,20 @@ TEST_F(HttpServerTest, connection_is_kept_open_by_page_after_sending_response)
 
     EXPECT_CALL(page, ServesRequest(testing::_)).WillOnce(testing::Return(true));
     EXPECT_CALL(page, RequestReceived(testing::_, testing::_)).WillOnce(testing::Invoke([this](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
-        { httpConnection = &connection; }));
+        {
+            httpConnection = &connection;
+        }));
     infra::SharedPtr<infra::StreamReaderWithRewinding> savedReader;
     EXPECT_CALL(page, DataReceived(testing::_)).WillOnce(testing::Invoke([&savedReader](const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader)
-        { savedReader = reader; }));
+        {
+            savedReader = reader;
+        }));
     infra::ConstByteRange data = infra::MakeStringByteRange("PUT /path HTTP/1.1 \r\nContent-Length:0\r\n\r\n");
     connection.SimulateDataReceived(data);
     EXPECT_CALL(connection, AckReceivedMock());
     ExecuteAllActions();
 
-    httpConnection->SendResponse(services::httpResponseOk);
+    httpConnection->SendResponse(services::httpResponseNoContent);
 
     EXPECT_CALL(connection, AckReceivedMock());
     savedReader = nullptr;
@@ -500,7 +516,9 @@ TEST_F(HttpServerWithSimplePageTest, when_responding_early_to_a_request_next_req
     {
         EXPECT_CALL(page, ServesRequest(testing::_)).WillOnce(testing::Return(true));
         EXPECT_CALL(page, RequestReceived(testing::_, testing::_)).WillOnce(testing::Invoke([this](services::HttpRequestParser& parser, services::HttpServerConnection& connection)
-            { connection.SendResponse(services::httpResponseOk); }));
+            {
+                connection.SendResponse(services::httpResponseNoContent);
+            }));
 
         infra::ConstByteRange data = infra::MakeStringByteRange("PUT /path HTTP/1.1 \r\nContent-Length: 8\r\n\r\ndatadata");
         connection.SimulateDataReceived(data);

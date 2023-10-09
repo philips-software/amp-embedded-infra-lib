@@ -1,4 +1,5 @@
 add_executable(infra.stream_test)
+emil_build_for(infra.stream_test BOOL EMIL_BUILD_TESTS)
 emil_add_test(infra.stream_test)
 
 target_link_libraries(infra.stream_test PUBLIC
@@ -11,6 +12,8 @@ target_sources(infra.stream_test PRIVATE
     StreamMock.hpp
     TestBoundedDequeInputStream.cpp
     TestBoundedVectorOutputStream.cpp
+    TestBufferingStreamReader.cpp
+    TestBufferingStreamWriter.cpp
     TestByteInputStream.cpp
     TestByteOutputStream.cpp
     TestCountingInputStream.cpp

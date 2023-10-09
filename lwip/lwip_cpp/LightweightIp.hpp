@@ -28,14 +28,14 @@ namespace services
 
         LightweightIp(AllocatorListenerLwIp& listenerAllocator, infra::BoundedList<ConnectorLwIp>& connectors, AllocatorConnectionLwIp& connectionAllocator,
             hal::SynchronousRandomDataGenerator& randomDataGenerator, infra::CreatorBase<services::Stoppable, void(LightweightIp& lightweightIp)>& connectedCreator);
-        ~LightweightIp();
+        ~LightweightIp() override;
 
         // Implementation of ConnectionStatus
-        virtual bool PendingSend() const override;
+        bool PendingSend() const override;
 
         // Implementation of IPv4Info
-        virtual IPv4Address GetIPv4Address() const override;
-        virtual IPv4InterfaceAddresses GetIPv4InterfaceAddresses() const override;
+        IPv4Address GetIPv4Address() const override;
+        IPv4InterfaceAddresses GetIPv4InterfaceAddresses() const override;
 
     private:
         void RegisterInstance();

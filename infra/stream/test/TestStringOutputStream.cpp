@@ -22,6 +22,14 @@ namespace
             return stream;
         }
     };
+
+    template<typename T>
+    void Base64EncodeResultsIn(T data, std::string encoded)
+    {
+        infra::StringOutputStream::WithStorage<64> stream;
+        stream << infra::AsBase64(data);
+        EXPECT_EQ(encoded, stream.Storage());
+    }
 }
 
 TEST(StringOutputStreamTest, stream_byte)
@@ -381,24 +389,31 @@ TEST(StringOutputStreamTest, stream_byte_range_as_hex)
 
 TEST(StringOutputStreamTest, stream_byte_range_as_base64)
 {
-    infra::StringOutputStream::WithStorage<64> stream1;
-    stream1 << infra::AsBase64(std::array<uint8_t, 1>{ 'a' });
-    EXPECT_EQ("YQ==", stream1.Storage());
+    Base64EncodeResultsIn(std::array<uint8_t, 1>{ 'a' }, "YQ==");
 
-    infra::StringOutputStream::WithStorage<64> stream2;
-    stream2 << infra::AsBase64(std::array<uint8_t, 2>{ 'a', 'b' });
-    EXPECT_EQ("YWI=", stream2.Storage());
+    Base64EncodeResultsIn(std::array<uint8_t, 2>{ 'a', 'b' }, "YWI=");
 
-    infra::StringOutputStream::WithStorage<64> stream3;
-    stream3 << infra::AsBase64(std::array<uint8_t, 3>{ 'a', 'b', 'c' });
-    EXPECT_EQ("YWJj", stream3.Storage());
+    Base64EncodeResultsIn(std::array<uint8_t, 3>{ 'a', 'b', 'c' }, "YWJj");
 
-    infra::StringOutputStream::WithStorage<64> stream4;
-    stream4 << infra::AsBase64(std::array<uint8_t, 4>{ 'a', 'b', 'c', 'd' });
-    EXPECT_EQ("YWJjZA==", stream4.Storage());
+    Base64EncodeResultsIn(std::array<uint8_t, 4>{ 'a', 'b', 'c', 'd' }, "YWJjZA==");
 
     infra::StringOutputStream::WithStorage<64> stream5;
     stream5 << infra::data << infra::text << infra::AsBase64(std::array<uint8_t, 1>{ 'a' });
+    EXPECT_EQ("YQ==", stream5.Storage());
+}
+
+TEST(StringOutputStreamTest, stream_byte_range_as_combined_base64)
+{
+    Base64EncodeResultsIn<std::initializer_list<infra::ConstByteRange>>({ infra::ConstByteRange(), std::array<uint8_t, 1>{ 'a' } }, "YQ==");
+
+    Base64EncodeResultsIn<std::initializer_list<infra::ConstByteRange>>({ std::array<uint8_t, 1>{ 'a' }, std::array<uint8_t, 1>{ 'b' } }, "YWI=");
+
+    Base64EncodeResultsIn<std::initializer_list<infra::ConstByteRange>>({ std::array<uint8_t, 1>{ 'a' }, std::array<uint8_t, 2>{ 'a', 'b' } }, "YWFi");
+
+    Base64EncodeResultsIn<std::initializer_list<infra::ConstByteRange>>({ std::array<uint8_t, 2>{ 'a', 'b' }, std::array<uint8_t, 2>{ 'c', 'd' } }, "YWJjZA==");
+
+    infra::StringOutputStream::WithStorage<64> stream5;
+    stream5 << infra::data << infra::text << infra::AsBase64({ std::array<uint8_t, 1>{ 'a' } });
     EXPECT_EQ("YQ==", stream5.Storage());
 }
 
@@ -551,7 +566,9 @@ TEST(StringOutputStreamTest, stream_join_custom_range)
     infra::StringOutputStream::WithStorage<50> stream;
 
     stream << infra::Join(";", infra::MakeRange(array), [](auto& stream, const auto& obj)
-        { stream << "'" << obj.first << "'?'" << obj.second << "'"; });
+        {
+            stream << "'" << obj.first << "'?'" << obj.second << "'";
+        });
 
     EXPECT_EQ(R"('b1'?'xyz1';'b2'?'xyz2';'b3'?'xyz3')", stream.Storage());
 }

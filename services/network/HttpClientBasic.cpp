@@ -21,7 +21,9 @@ namespace services
     HttpClientBasic::HttpClientBasic(infra::BoundedString url, uint16_t port, services::HttpClientConnector& httpClientConnector, infra::Duration timeoutDuration, NoAutoConnect)
         : httpClientConnector(httpClientConnector)
         , sharedAccess([this]()
-              { Expire(); })
+              {
+                  Expire();
+              })
         , url(url)
         , port(port)
         , timeoutDuration(timeoutDuration)
@@ -73,7 +75,7 @@ namespace services
     {
         auto path = services::PathFromUrl(url);
         auto offset = path.empty() ? url.size() : path.begin() - url.begin();
-        return infra::BoundedString(infra::MakeRange(url.begin() + offset, url.begin() + url.max_size() - offset), path.size());
+        return infra::BoundedString(infra::MakeRange(url.begin() + offset, url.begin() + url.max_size()), path.size());
     }
 
     services::HttpHeaders HttpClientBasic::Headers() const
@@ -90,7 +92,9 @@ namespace services
         {
             state = State::closing;
             sharedAccess.SetAction([this]()
-                { ReportError(true); });
+                {
+                    ReportError(true);
+                });
         }
     }
 
@@ -103,6 +107,8 @@ namespace services
     void HttpClientBasic::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         StartTimeout();
+
+        HttpClientObserver::SendStreamAvailable(std::move(writer));
     }
 
     infra::BoundedConstString HttpClientBasic::Hostname() const
@@ -128,6 +134,14 @@ namespace services
         ReportError(true);
     }
 
+    void HttpClientBasic::StartTimeout()
+    {
+        timeoutTimer.Start(timeoutDuration, [this]()
+            {
+                Timeout();
+            });
+    }
+
     void HttpClientBasic::Close()
     {
         assert(HttpClientObserver::IsAttached());
@@ -141,16 +155,12 @@ namespace services
         }
     }
 
-    void HttpClientBasic::StartTimeout()
-    {
-        timeoutTimer.Start(timeoutDuration, [this]()
-            { Timeout(); });
-    }
-
     void HttpClientBasic::Timeout()
     {
         sharedAccess.SetAction([this]()
-            { ReportError(true); });
+            {
+                ReportError(true);
+            });
         Close();
     }
 

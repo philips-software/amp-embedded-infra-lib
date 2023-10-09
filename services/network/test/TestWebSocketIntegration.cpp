@@ -47,7 +47,9 @@ TEST_F(WebSocketIntegrationTest, integration)
 
     EXPECT_CALL(serverObserverFactory, ConnectionAcceptedMock(testing::_, testing::_))
         .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver, services::IPAddress address)
-            { createdObserver(httpServerConnectionPtr); }));
+            {
+                createdObserver(httpServerConnectionPtr);
+            }));
 
     services::ConnectionFactoryWithNameResolverStub connectionFactoryWithNameResolver(network, services::IPv4AddressLocalHost());
     hal::SynchronousFixedRandomDataGenerator randomDataGenerator({ 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4 });
@@ -67,9 +69,10 @@ TEST_F(WebSocketIntegrationTest, integration)
     infra::SharedOptional<testing::StrictMock<services::ConnectionObserverFullMock>> clientConnection;
     EXPECT_CALL(clientObserverFactory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this, &clientConnection](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> client)>&& createdClient)
         {
-        auto clientConnectionPtr = clientConnection.Emplace();
-        EXPECT_CALL(*clientConnection, Attached());
-        createdClient(clientConnectionPtr); }));
+            auto clientConnectionPtr = clientConnection.Emplace();
+            EXPECT_CALL(*clientConnection, Attached());
+            createdClient(clientConnectionPtr);
+        }));
     webSocketClientFactory.Connect(clientObserverFactory);
     ExecuteAllActions();
 
@@ -81,34 +84,36 @@ TEST_F(WebSocketIntegrationTest, integration)
     // Send data from client to server
     EXPECT_CALL(*clientConnection, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke([this, &serverConnection](const infra::SharedPtr<infra::StreamWriter>& writer)
         {
-        infra::TextOutputStream::WithErrorPolicy stream(*writer);
-        stream << "Hello!";
+            infra::TextOutputStream::WithErrorPolicy stream(*writer);
+            stream << "Hello!";
 
-        EXPECT_CALL(*serverConnection, DataReceived()).WillOnce(testing::Invoke([this, &serverConnection]()
-        {
-            auto reader = serverConnection->Subject().ReceiveStream();
-            infra::TextInputStream::WithErrorPolicy inputStream(*reader);
-            infra::BoundedString::WithStorage<6> receivedText(6);
-            inputStream >> receivedText;
-            EXPECT_EQ("Hello!", receivedText);
-        })); }));
+            EXPECT_CALL(*serverConnection, DataReceived()).WillOnce(testing::Invoke([this, &serverConnection]()
+                {
+                    auto reader = serverConnection->Subject().ReceiveStream();
+                    infra::TextInputStream::WithErrorPolicy inputStream(*reader);
+                    infra::BoundedString::WithStorage<6> receivedText(6);
+                    inputStream >> receivedText;
+                    EXPECT_EQ("Hello!", receivedText);
+                }));
+        }));
     clientConnection->Subject().RequestSendStream(512);
     ExecuteAllActions();
 
     // Send data from server to client
     EXPECT_CALL(*serverConnection, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke([this, &clientConnection](const infra::SharedPtr<infra::StreamWriter>& writer)
         {
-        infra::TextOutputStream::WithErrorPolicy stream(*writer);
-        stream << "Howdy!";
+            infra::TextOutputStream::WithErrorPolicy stream(*writer);
+            stream << "Howdy!";
 
-        EXPECT_CALL(*clientConnection, DataReceived()).WillOnce(testing::Invoke([this, &clientConnection]()
-        {
-            auto reader = clientConnection->Subject().ReceiveStream();
-            infra::TextInputStream::WithErrorPolicy inputStream(*reader);
-            infra::BoundedString::WithStorage<6> receivedText(6);
-            inputStream >> receivedText;
-            EXPECT_EQ("Howdy!", receivedText);
-        })); }));
+            EXPECT_CALL(*clientConnection, DataReceived()).WillOnce(testing::Invoke([this, &clientConnection]()
+                {
+                    auto reader = clientConnection->Subject().ReceiveStream();
+                    infra::TextInputStream::WithErrorPolicy inputStream(*reader);
+                    infra::BoundedString::WithStorage<6> receivedText(6);
+                    inputStream >> receivedText;
+                    EXPECT_EQ("Howdy!", receivedText);
+                }));
+        }));
     serverConnection->Subject().RequestSendStream(512);
     ExecuteAllActions();
 

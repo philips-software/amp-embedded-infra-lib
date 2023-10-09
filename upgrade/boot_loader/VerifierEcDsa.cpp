@@ -1,6 +1,6 @@
 #include "upgrade/boot_loader/VerifierEcDsa.hpp"
-#include "crypto/micro-ecc/uECC.h"
 #include "mbedtls/sha256.h"
+#include "uECC.h"
 
 namespace application
 {

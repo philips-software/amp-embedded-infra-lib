@@ -40,7 +40,13 @@ namespace services
 
     void ServiceProxy::RequestSend(infra::Function<void()> onGranted)
     {
+        RequestSend(onGranted, MaxMessageSize());
+    }
+
+    void ServiceProxy::RequestSend(infra::Function<void()> onGranted, uint32_t requestedSize)
+    {
         this->onGranted = onGranted;
+        currentRequestedSize = requestedSize;
         echo.RequestSend(*this);
     }
 
@@ -52,6 +58,11 @@ namespace services
     uint32_t ServiceProxy::MaxMessageSize() const
     {
         return maxMessageSize;
+    }
+
+    uint32_t ServiceProxy::CurrentRequestedSize() const
+    {
+        return currentRequestedSize;
     }
 
     void EchoErrorPolicyAbortOnMessageFormatError::MessageFormatError()
@@ -84,7 +95,7 @@ namespace services
         if (sendRequesters.empty() && streamWriter == nullptr)
         {
             sendRequesters.push_back(serviceProxy);
-            RequestSendStream(serviceProxy.MaxMessageSize());
+            RequestSendStream(serviceProxy.CurrentRequestedSize());
         }
         else
             sendRequesters.push_back(serviceProxy);
@@ -100,7 +111,7 @@ namespace services
         streamWriter = nullptr;
 
         if (!sendRequesters.empty())
-            RequestSendStream(sendRequesters.front().MaxMessageSize());
+            RequestSendStream(sendRequesters.front().CurrentRequestedSize());
     }
 
     void EchoOnStreams::ServiceDone(Service& service)
@@ -109,7 +120,9 @@ namespace services
         {
             serviceBusy = infra::none;
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](infra::SharedPtr<EchoOnStreams> echo)
-                { echo->BusyServiceDone(); },
+                {
+                    echo->BusyServiceDone();
+                },
                 SharedFromThis());
         }
     }
@@ -118,17 +131,18 @@ namespace services
     {
         if (!NotifyObservers([this, serviceId, methodId, &contents](auto& service)
                 {
-                if (service.AcceptsService(serviceId))
-                {
-                    if (service.InProgress())
-                        serviceBusy = serviceId;
-                    else
-                        service.HandleMethod(serviceId, methodId, contents, errorPolicy);
+                    if (service.AcceptsService(serviceId))
+                    {
+                        if (service.InProgress())
+                            serviceBusy = serviceId;
+                        else
+                            service.HandleMethod(serviceId, methodId, contents, errorPolicy);
 
-                    return true;
-                }
+                        return true;
+                    }
 
-                return false; }))
+                    return false;
+                }))
         {
             errorPolicy.ServiceNotFound(serviceId);
             contents.SkipEverything();
@@ -170,73 +184,5 @@ namespace services
         }
 
         return true;
-    }
-
-    void EchoOnConnection::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
-    {
-        SetStreamWriter(std::move(writer));
-    }
-
-    void EchoOnConnection::DataReceived()
-    {
-        while (!ServiceBusy())
-        {
-            infra::SharedPtr<infra::StreamReaderWithRewinding> reader = ConnectionObserver::Subject().ReceiveStream();
-
-            if (!ProcessMessage(*reader))
-                break;
-
-            if (!ServiceBusy()) // The message was not executed when ServiceBusy() is true, so don't ack the received data
-                ConnectionObserver::Subject().AckReceived();
-        }
-    }
-
-    void EchoOnConnection::RequestSendStream(std::size_t size)
-    {
-        ConnectionObserver::Subject().RequestSendStream(size);
-    }
-
-    void EchoOnConnection::BusyServiceDone()
-    {
-        DataReceived();
-    }
-
-    EchoOnMessageCommunication::EchoOnMessageCommunication(MessageCommunication& subject, EchoErrorPolicy& errorPolicy)
-        : EchoOnStreams(errorPolicy)
-        , MessageCommunicationObserver(subject)
-    {}
-
-    void EchoOnMessageCommunication::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
-    {
-        SetStreamWriter(std::move(writer));
-    }
-
-    void EchoOnMessageCommunication::ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
-    {
-        this->reader = std::move(reader);
-        ProcessMessage();
-    }
-
-    void EchoOnMessageCommunication::ServiceDone(Service& service)
-    {
-        reader = nullptr;
-        EchoOnStreams::ServiceDone(service);
-    }
-
-    void EchoOnMessageCommunication::RequestSendStream(std::size_t size)
-    {
-        MessageCommunicationObserver::Subject().RequestSendMessage(static_cast<uint16_t>(size));
-    }
-
-    void EchoOnMessageCommunication::BusyServiceDone()
-    {
-        // In this class, services are never busy, so BusyServiceDone() is never invoked
-        std::abort();
-    }
-
-    void EchoOnMessageCommunication::ProcessMessage()
-    {
-        if (!EchoOnStreams::ProcessMessage(*reader))
-            errorPolicy.MessageFormatError();
     }
 }
