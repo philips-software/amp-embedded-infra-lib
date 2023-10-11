@@ -1,4 +1,5 @@
 #include "services/util/MessageCommunicationSecured.hpp"
+#include "mbedtls/version.h"
 #include <algorithm>
 
 namespace services
