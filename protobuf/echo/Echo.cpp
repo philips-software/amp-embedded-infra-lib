@@ -128,6 +128,7 @@ namespace services
             RequestSendStream(sendingProxy->CurrentRequestedSize());
         else
         {
+            sendingProxy = nullptr;
             methodSerializer = nullptr;
             TryGrantSend();
         }
