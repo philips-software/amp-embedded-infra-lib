@@ -31,6 +31,11 @@ namespace services
             : value(value)
         {}
 
+        void Serialize(infra::ProtoFormatter& formatter) const
+        {
+            SerializeField(services::ProtoInt32(), formatter, value, 1);
+        }
+
     public:
         uint32_t value = 0;
     };
@@ -43,7 +48,7 @@ namespace services
                 return infra::MakeSharedOnHeap<services::MethodDeserializerImpl<Message, ServiceStub, uint32_t>>(*this, &ServiceStub::Method);
             default:
                 errorPolicy.MethodNotFound(serviceId, methodId);
-                return infra::MakeSharedOnHeap<services::MethodDeserializerDummy>();
+                return infra::MakeSharedOnHeap<services::MethodDeserializerDummy>(Rpc());
         }
     }
 
@@ -53,7 +58,7 @@ namespace services
 
     void ServiceStubProxy::Method(uint32_t value)
     {
-        auto serializer = infra::MakeSharedOnHeap<MethodSerializerImpl<Message, uint32_t>>(value);
+        auto serializer = infra::MakeSharedOnHeap<MethodSerializerImpl<Message, uint32_t>>(serviceId, idMethod, value);
         SetSerializer(serializer);
     }
 }

@@ -9,12 +9,16 @@ namespace services
 
     void EchoOnConnection::DataReceived()
     {
-        readerPtr = ConnectionObserver::Subject().ReceiveStream();
-        EchoOnStreams::DataReceived(access.MakeShared(*readerPtr));
+        EchoOnStreams::DataReceived(ConnectionObserver::Subject().ReceiveStream());
     }
 
     void EchoOnConnection::RequestSendStream(std::size_t size)
     {
         ConnectionObserver::Subject().RequestSendStream(std::min(size, ConnectionObserver::Subject().MaxSendStreamSize()));
+    }
+
+    void EchoOnConnection::AckReceived()
+    {
+        ConnectionObserver::Subject().AckReceived();
     }
 }

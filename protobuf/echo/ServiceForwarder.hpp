@@ -6,18 +6,32 @@
 namespace services
 {
     class ServiceForwarderBase
-        : public services::Service
-        , private services::ServiceProxy
+        : public Service
+        , private ServiceProxy
+        , private MethodDeserializer
+        , private MethodSerializer
     {
     public:
         ServiceForwarderBase(infra::ByteRange messageBuffer, Echo& echo, Echo& forwardTo);
 
+        // Implementation of Service
         infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, EchoErrorPolicy& errorPolicy) override;
+
+    private:
+        // Implementation of MethodDeserializer
+        void MethodContents(infra::StreamReaderWithRewinding& reader) override;
+        void ExecuteMethod() override;
+        bool Failed() const override;
+
+        // Implementation of MethodSerializer
+        bool SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
     private:
         const infra::ByteRange messageBuffer;
         infra::Optional<infra::ByteRange> bytes;
         uint32_t forwardingServiceId;
+        uint32_t forwardingMethodId;
+        uint32_t processedSize;
     };
 
     class ServiceForwarderAll

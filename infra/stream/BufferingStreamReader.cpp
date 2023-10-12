@@ -48,7 +48,9 @@ namespace infra
             return from;
         }
 
-        return input.ExtractContiguousRange(max);
+        auto result = input.ExtractContiguousRange(max);
+        index += result.size();
+        return result;
     }
 
     infra::ConstByteRange BufferingStreamReader::PeekContiguousRange(std::size_t start)

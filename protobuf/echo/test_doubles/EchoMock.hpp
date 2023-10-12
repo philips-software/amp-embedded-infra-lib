@@ -13,7 +13,7 @@ namespace services
         MOCK_METHOD1(RequestSend, void(ServiceProxy& serviceProxy));
         MOCK_METHOD0(SendStreamWriter, infra::StreamWriter&());
         MOCK_METHOD0(Send, void());
-        MOCK_METHOD1(ServiceDone, void(Service& service));
+        MOCK_METHOD0(ServiceDone, void());
     };
 
     class EchoErrorPolicyMock

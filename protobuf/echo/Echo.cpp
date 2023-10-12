@@ -1,6 +1,5 @@
 #include "protobuf/echo/Echo.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
-#include "infra/stream/BufferingStreamReader.hpp"
 
 namespace services
 {
@@ -9,7 +8,7 @@ namespace services
 
     void Service::MethodDone()
     {
-        Rpc().ServiceDone(*this);
+        Rpc().ServiceDone();
     }
 
     Echo& Service::Rpc()
@@ -92,7 +91,7 @@ namespace services
         TryGrantSend();
     }
 
-    void EchoOnStreams::ServiceDone(Service& service)
+    void EchoOnStreams::ServiceDone()
     {
         methodDeserializer = nullptr;
 
@@ -102,7 +101,9 @@ namespace services
 
     void EchoOnStreams::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
+        assert(readerPtr == nullptr);
         readerPtr = std::move(reader);
+        bufferedReader.Emplace(receiveBuffer, *readerPtr);
         DataReceived();
     }
 
@@ -134,28 +135,29 @@ namespace services
 
     void EchoOnStreams::DataReceived()
     {
-        infra::BufferingStreamReader bufferedReader{ receiveBuffer, *readerPtr };
-
-        while (methodDeserializer == nullptr || limitedReader != infra::none)
+        while (readerPtr != nullptr && methodDeserializer == nullptr)
         {
             if (limitedReader == infra::none)
             {
-                infra::DataInputStream::WithErrorPolicy stream(bufferedReader, infra::softFail);
+                auto start = bufferedReader->ConstructSaveMarker();
+                infra::DataInputStream::WithErrorPolicy stream(*bufferedReader, infra::softFail);
                 infra::StreamErrorPolicy formatErrorPolicy(infra::softFail);
                 infra::ProtoParser parser(stream, formatErrorPolicy);
                 uint32_t serviceId = static_cast<uint32_t>(parser.GetVarInt());
                 auto [contents, methodId] = parser.GetPartialField();
                 if (stream.Failed())
                 {
-                    bufferedReader.Rewind(0);
-                    return;
+                    bufferedReader->Rewind(start);
+                    bufferedReader = infra::none;
+                    readerPtr = nullptr;
+                    break;
                 }
 
                 if (formatErrorPolicy.Failed() || !contents.Is<infra::PartialProtoLengthDelimited>())
                     errorPolicy.MessageFormatError();
                 else
                 {
-                    limitedReader.Emplace(bufferedReader, contents.Get<infra::PartialProtoLengthDelimited>().length);
+                    limitedReader.Emplace(*bufferedReader, contents.Get<infra::PartialProtoLengthDelimited>().length);
                     StartMethod(serviceId, methodId);
 
                     if (formatErrorPolicy.Failed())
@@ -165,19 +167,26 @@ namespace services
 
             if (limitedReader != infra::none)
             {
-                limitedReader->SwitchInput(bufferedReader);
+                limitedReader->SwitchInput(*bufferedReader);
                 methodDeserializer->MethodContents(*limitedReader);
-            }
 
-            if (limitedReader->LimitReached())
-            {
-                limitedReader = infra::none;
-                methodDeserializer->ExecuteMethod();
+                AckReceived();
+
+                if (limitedReader->LimitReached())
+                {
+                    limitedReader = infra::none;
+                    if (methodDeserializer->Failed())
+                    {
+                        errorPolicy.MessageFormatError();
+                        methodDeserializer = nullptr;
+                    }
+                    else
+                        methodDeserializer->ExecuteMethod();
+                }
             }
+            else
+                AckReceived();
         }
-
-        if (methodDeserializer == nullptr)
-            readerPtr = nullptr;
     }
 
     void EchoOnStreams::StartMethod(uint32_t serviceId, uint32_t methodId)
@@ -194,9 +203,13 @@ namespace services
             }))
         {
             errorPolicy.ServiceNotFound(serviceId);
-            methodDeserializer = infra::MakeSharedOnHeap<MethodDeserializerDummy>();
+            methodDeserializer = infra::MakeSharedOnHeap<MethodDeserializerDummy>(*this);
         }
     }
+
+    MethodDeserializerDummy::MethodDeserializerDummy(Echo& echo)
+        : echo(echo)
+    {}
 
     void MethodDeserializerDummy::MethodContents(infra::StreamReaderWithRewinding& reader)
     {
@@ -205,5 +218,12 @@ namespace services
     }
 
     void MethodDeserializerDummy::ExecuteMethod()
-    {}
+    {
+        echo.ServiceDone();
+    }
+
+    bool MethodDeserializerDummy::Failed() const
+    {
+        return false;
+    }
 }

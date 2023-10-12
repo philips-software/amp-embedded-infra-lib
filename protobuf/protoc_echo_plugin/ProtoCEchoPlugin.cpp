@@ -994,7 +994,7 @@ namespace application
 
             printer.Print(R"(    default:
         errorPolicy.MethodNotFound(serviceId, methodId);
-        return infra::MakeSharedOnHeap<services::MethodDeserializerDummy>();
+        return infra::MakeSharedOnHeap<services::MethodDeserializerDummy>(Rpc());
 )");
 
             printer.Print("}\n");
@@ -1010,9 +1010,6 @@ namespace application
             google::protobuf::io::OstreamOutputStream stream(&result);
             google::protobuf::io::Printer printer(&stream, '$', nullptr);
 
-            //auto serializer = infra::MakeSharedOnHeap<MethodSerializerImpl<Message, uint32_t>>(value);
-            //SetSerializer(serializer);
-
             printer.Print(R"(auto serializer = infra::MakeSharedOnHeap<services::MethodSerializerImpl<$type$)", "type", method.parameter->qualifiedName);
 
             for (auto& field : method.parameter->fields)
@@ -1023,14 +1020,10 @@ namespace application
                 printer.Print(", $type$", "type", typeName);
             }
 
-            printer.Print(">>(");
+            printer.Print(">>(serviceId, $methodId$", "methodId", google::protobuf::SimpleItoa(method.methodId));
 
             for (auto& field : method.parameter->fields)
-            {
-                printer.Print("$field$", "field", field->name);
-                if (&field != &method.parameter->fields.back())
-                    printer.Print(", ");
-            }
+                printer.Print(", $field$", "field", field->name);
 
             printer.Print(R"();
 SetSerializer(serializer);

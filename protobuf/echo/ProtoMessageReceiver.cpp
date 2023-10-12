@@ -21,7 +21,13 @@ namespace services
             auto& current = stack.back();
             current.second(stream);
 
-            if (stream.Failed() || reader.Empty())
+            if (stream.Failed())
+            {
+                failed = true;
+                break;
+            }
+
+            if (reader.Empty())
                 break;
 
             if (&current != &stack.front())
@@ -32,6 +38,11 @@ namespace services
                     stack.pop_back();
             }
         }
+    }
+
+    bool ProtoMessageReceiverBase::Failed() const
+    {
+        return failed;
     }
 
     void ProtoMessageReceiverBase::DeserializeField(ProtoBool, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, bool& value) const

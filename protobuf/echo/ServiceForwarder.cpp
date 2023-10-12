@@ -10,38 +10,60 @@ namespace services
 
     infra::SharedPtr<MethodDeserializer> ServiceForwarderBase::StartMethod(uint32_t serviceId, uint32_t methodId, EchoErrorPolicy& errorPolicy)
     {
-        this->forwardingServiceId = serviceId;
+        forwardingServiceId = serviceId;
+        forwardingMethodId = methodId;
+        processedSize = 0;
         bytes.Emplace(messageBuffer);
-        uint32_t processedSize = 0;
 
+        return infra::UnOwnedSharedPtr(static_cast<MethodDeserializer&>(*this));
+    }
+
+    void ServiceForwarderBase::MethodContents(infra::StreamReaderWithRewinding& reader)
+    {
         while (true)
         {
-            infra::ConstByteRange contiguousBytes;
-            contents.GetBytesReference(contiguousBytes);
+            infra::ConstByteRange contiguousBytes = reader.ExtractContiguousRange(std::numeric_limits<uint32_t>::max());
 
-            if (contiguousBytes.size() == 0)
+            if (contiguousBytes.empty())
                 break;
 
             std::copy(contiguousBytes.begin(), contiguousBytes.end(), bytes->begin() + processedSize);
             processedSize += contiguousBytes.size();
         }
+    }
 
+    void ServiceForwarderBase::ExecuteMethod()
+    {
         bytes->shrink_from_back_to(processedSize);
 
-        uint32_t messageSize = infra::MaxVarIntSize(this->forwardingServiceId) + infra::MaxVarIntSize((methodId << 3) | 2) + infra::MaxVarIntSize(bytes->size()) + bytes->size();
+        SetSerializer(infra::UnOwnedSharedPtr(static_cast<MethodSerializer&>(*this)));
 
-        RequestSend([this, methodId]()
-            {
-                infra::DataOutputStream::WithErrorPolicy stream(services::ServiceProxy::Rpc().SendStreamWriter());
-                infra::ProtoFormatter formatter(stream);
-                formatter.PutVarInt(this->forwardingServiceId);
-                formatter.PutBytesField(*bytes, methodId);
-                bytes = infra::none;
+        uint32_t messageSize = infra::MaxVarIntSize(forwardingServiceId) + infra::MaxVarIntSize((forwardingMethodId << 3) | 2) + infra::MaxVarIntSize(bytes->size()) + bytes->size();
 
-                services::ServiceProxy::Rpc().Send();
-                MethodDone();
-            },
-            messageSize);
+        //todo
+        //RequestSend([this]()
+        //    {
+        //        infra::DataOutputStream::WithErrorPolicy stream(ServiceProxy::Rpc().SendStreamWriter());
+        //        infra::ProtoFormatter formatter(stream);
+        //        formatter.PutVarInt(forwardingServiceId);
+        //        formatter.PutBytesField(*bytes, forwardingMethodId);
+        //        bytes = infra::none;
+
+        //        ServiceProxy::Rpc().Send();
+        //        MethodDone();
+        //    },
+        //    messageSize);
+    }
+
+    bool ServiceForwarderBase::Failed() const
+    {
+        return false;
+    }
+
+    bool ServiceForwarderBase::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+    {
+        return false;
+        //todo
     }
 
     bool ServiceForwarderAll::AcceptsService(uint32_t id) const

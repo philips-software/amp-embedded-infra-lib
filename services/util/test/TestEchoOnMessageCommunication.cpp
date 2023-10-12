@@ -2,11 +2,22 @@
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/util/ConstructBin.hpp"
+#include "infra/util/SharedOptional.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "protobuf/echo/test_doubles/EchoMock.hpp"
 #include "protobuf/echo/test_doubles/ServiceStub.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/util/EchoOnMessageCommunication.hpp"
+
+namespace services
+{
+    class MethodSerializerMock
+        : public MethodSerializer
+    {
+    public:
+        MOCK_METHOD(bool, SendStreamAvailable, (infra::SharedPtr<infra::StreamWriter>&& writer), (override));
+    };
+}
 
 class EchoOnMessageCommunicationTest
     : public testing::Test
@@ -25,35 +36,32 @@ public:
 
     services::ServiceStubProxy serviceProxy{ echo };
     testing::StrictMock<services::ServiceStub> service{ echo };
+
+    infra::SharedOptional<testing::StrictMock<services::MethodSerializerMock>> serializer;
 };
 
 TEST_F(EchoOnMessageCommunicationTest, invoke_service_proxy_method)
 {
-    testing::StrictMock<infra::MockCallback<void()>> onGranted;
+    EXPECT_CALL(messageCommunication, MaxSendMessageSize()).WillOnce(testing::Return(1000));
     EXPECT_CALL(messageCommunication, RequestSendMessage(18));
-    serviceProxy.RequestSend([&onGranted]()
+    serviceProxy.RequestSend([this]()
         {
-            onGranted.callback();
+            serviceProxy.Method(5);
         });
 
     infra::ByteOutputStreamWriter::WithStorage<128> writer;
-    EXPECT_CALL(onGranted, callback());
     messageCommunication.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer));
 
-    serviceProxy.Method(5);
     EXPECT_EQ((std::vector<uint8_t>{ 1, 10, 2, 8, 5 }), (std::vector<uint8_t>(writer.Storage().begin(), writer.Storage().begin() + 5)));
 }
 
 TEST_F(EchoOnMessageCommunicationTest, service_method_is_invoked)
 {
-    EXPECT_CALL(service, Method(5));
+    EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]()
+        {
+            service.MethodDone();
+        }));
     ReceiveMessage(infra::ConstructBin()({ 1, 10, 2, 8, 5 }).Range());
-}
-
-TEST_F(EchoOnMessageCommunicationTest, on_partial_MessageFormatError_is_reported)
-{
-    EXPECT_CALL(errorPolicy, MessageFormatError());
-    ReceiveMessage(infra::ConstructBin()({ 1, 10, 2, 8 }).Range());
 }
 
 TEST_F(EchoOnMessageCommunicationTest, MessageFormatError_is_reported_when_message_is_not_a_LengthDelimited)
@@ -71,7 +79,7 @@ TEST_F(EchoOnMessageCommunicationTest, MessageFormatError_is_reported_when_messa
 TEST_F(EchoOnMessageCommunicationTest, MessageFormatError_is_reported_when_parameter_in_message_is_of_incorrect_type)
 {
     EXPECT_CALL(errorPolicy, MessageFormatError());
-    ReceiveMessage(infra::ConstructBin()({ 1, 10, 2, 13, 5, 0, 0, 0 }).Range());
+    ReceiveMessage(infra::ConstructBin()({ 1, 10, 5, 13, 5, 0, 0, 0 }).Range());
 }
 
 TEST_F(EchoOnMessageCommunicationTest, ServiceNotFound_is_reported)

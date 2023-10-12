@@ -19,7 +19,9 @@ namespace services
         void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
 
     protected:
+        // Implementation of EchoOnStreams
         void RequestSendStream(std::size_t size) override;
+        void AckReceived() override;
 
     private:
         void ProcessMessage();

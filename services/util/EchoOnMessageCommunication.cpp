@@ -24,4 +24,7 @@ namespace services
     {
         MessageCommunicationObserver::Subject().RequestSendMessage(static_cast<uint16_t>(std::min(size, MessageCommunicationObserver::Subject().MaxSendMessageSize())));
     }
+
+    void EchoOnMessageCommunication::AckReceived()
+    {}
 }

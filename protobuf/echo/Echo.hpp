@@ -1,6 +1,8 @@
 #ifndef PROTOBUF_ECHO_HPP
 #define PROTOBUF_ECHO_HPP
 
+#include "infra/stream/BufferingStreamReader.hpp"
+#include "infra/stream/CountingOutputStream.hpp"
 #include "infra/stream/LimitedInputStream.hpp"
 #include "infra/util/BoundedDeque.hpp"
 #include "infra/util/Compatibility.hpp"
@@ -58,6 +60,7 @@ namespace services
 
         virtual void MethodContents(infra::StreamReaderWithRewinding& reader) = 0;
         virtual void ExecuteMethod() = 0;
+        virtual bool Failed() const = 0;
     };
 
     class MethodSerializer
@@ -113,7 +116,7 @@ namespace services
     {
     public:
         virtual void RequestSend(ServiceProxy& serviceProxy) = 0;
-        virtual void ServiceDone(Service& service) = 0;
+        virtual void ServiceDone() = 0;
     };
 
     template<class ServiceProxyType>
@@ -156,10 +159,11 @@ namespace services
 
         // Implementation of Echo
         void RequestSend(ServiceProxy& serviceProxy) override;
-        void ServiceDone(Service& service) override;
+        void ServiceDone() override;
 
     protected:
         virtual void RequestSendStream(std::size_t size) = 0;
+        virtual void AckReceived() = 0;
         void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer);
 
         void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
@@ -176,11 +180,14 @@ namespace services
         infra::IntrusiveList<ServiceProxy> sendRequesters;
         ServiceProxy* sendingProxy = nullptr;
         infra::SharedPtr<MethodSerializer> methodSerializer;
+        uint32_t sendingServiceId;
+        uint32_t sendingMethodId;
 
         infra::SharedPtr<infra::StreamReaderWithRewinding> readerPtr;
         infra::Optional<infra::LimitedStreamReaderWithRewinding> limitedReader;
         infra::SharedPtr<MethodDeserializer> methodDeserializer;
         infra::BoundedDeque<uint8_t>::WithMaxSize<32> receiveBuffer;
+        infra::Optional<infra::BufferingStreamReader> bufferedReader;
     };
 
     template<class Message, class Service, class... Args>
@@ -192,6 +199,7 @@ namespace services
 
         void MethodContents(infra::StreamReaderWithRewinding& reader) override;
         void ExecuteMethod() override;
+        bool Failed() const override;
 
     private:
         template<std::size_t... I>
@@ -207,8 +215,14 @@ namespace services
         : public MethodDeserializer
     {
     public:
+        MethodDeserializerDummy(Echo& echo);
+
         void MethodContents(infra::StreamReaderWithRewinding& reader) override;
         void ExecuteMethod() override;
+        bool Failed() const override;
+
+    private:
+        Echo& echo;
     };
 
     template<class Message, class... Args>
@@ -216,11 +230,14 @@ namespace services
         : public MethodSerializer
     {
     public:
-        MethodSerializerImpl(Args... args);
+        MethodSerializerImpl(uint32_t serviceId, uint32_t methodId, Args... args);
 
         bool SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
     private:
+        uint32_t serviceId;
+        uint32_t methodId;
+        bool headerSent = false;
         Message message;
         ProtoMessageSender<Message> sender{ message };
     };
@@ -287,6 +304,12 @@ namespace services
     }
 
     template<class Message, class Service, class... Args>
+    bool MethodDeserializerImpl<Message, Service, Args...>::Failed() const
+    {
+        return receiver.Failed();
+    }
+
+    template<class Message, class Service, class... Args>
     template<std::size_t... I>
     void MethodDeserializerImpl<Message, Service, Args...>::Execute(std::index_sequence<I...>)
     {
@@ -294,14 +317,30 @@ namespace services
     }
 
     template<class Message, class... Args>
-    MethodSerializerImpl<Message, Args...>::MethodSerializerImpl(Args... args)
-        : message(args...)
+    MethodSerializerImpl<Message, Args...>::MethodSerializerImpl(uint32_t serviceId, uint32_t methodId, Args... args)
+        : serviceId(serviceId)
+        , methodId(methodId)
+        , message(args...)
     {}
 
     template<class Message, class... Args>
     bool MethodSerializerImpl<Message, Args...>::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         infra::DataOutputStream::WithErrorPolicy stream(*writer, infra::softFail);
+
+        if (!headerSent)
+        {
+            infra::DataOutputStream::WithWriter<infra::CountingStreamWriter> countingStream;
+            infra::ProtoFormatter countingFormatter{ countingStream };
+            message.Serialize(countingFormatter);
+
+            infra::ProtoFormatter formatter(stream);
+            formatter.PutVarInt(serviceId);
+            formatter.PutLengthDelimitedSize(countingStream.Writer().Processed(), methodId);
+
+            headerSent = true;
+        }
+
         sender.Fill(stream);
         return stream.Failed();
     }
