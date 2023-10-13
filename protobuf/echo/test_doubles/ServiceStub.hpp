@@ -38,9 +38,9 @@ namespace services
         void Method(uint32_t value);
 
     public:
-        static const uint32_t serviceId = 1;
-        static const uint32_t idMethod = 1;
-        static const uint32_t maxMessageSize = 18;
+        static constexpr uint32_t serviceId = 1;
+        static constexpr uint32_t idMethod = 1;
+        static constexpr uint32_t maxMessageSize = 18;
     };
 }
 

@@ -46,7 +46,7 @@ namespace services
                 auto key = randomDataGenerator.GenerateRandomData<MessageCommunicationSecured::KeyType>();
                 auto iv = randomDataGenerator.GenerateRandomData<MessageCommunicationSecured::IvType>();
                 SymmetricKeyEstablishmentProxy::ActivateNewKeyMaterial(Convert(key), Convert(iv));
-                secured.SetSendKey(key, iv);
+                secured.SetNextSendKey(key, iv);
 
                 initializingSending = false;
                 ReQueueWaitingProxies();
