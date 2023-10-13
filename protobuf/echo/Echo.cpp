@@ -194,15 +194,15 @@ namespace services
     void EchoOnStreams::StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size)
     {
         if (!NotifyObservers([this, serviceId, methodId, size](auto& service)
-            {
-                if (service.AcceptsService(serviceId))
                 {
-                    methodDeserializer = service.StartMethod(serviceId, methodId, size, errorPolicy);
-                    return true;
-                }
+                    if (service.AcceptsService(serviceId))
+                    {
+                        methodDeserializer = service.StartMethod(serviceId, methodId, size, errorPolicy);
+                        return true;
+                    }
 
-                return false;
-            }))
+                    return false;
+                }))
         {
             errorPolicy.ServiceNotFound(serviceId);
             methodDeserializer = infra::MakeSharedOnHeap<MethodDeserializerDummy>(*this);

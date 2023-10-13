@@ -15,7 +15,7 @@ namespace services
         : public MethodSerializer
     {
     public:
-        MOCK_METHOD(bool, SendStreamAvailable, (infra::SharedPtr<infra::StreamWriter>&& writer), (override));
+        MOCK_METHOD(bool, SendStreamAvailable, (infra::SharedPtr<infra::StreamWriter> && writer), (override));
     };
 }
 

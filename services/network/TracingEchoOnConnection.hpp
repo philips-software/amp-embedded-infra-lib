@@ -17,8 +17,8 @@ namespace services
 
     protected:
         // Implementation of EchoOnConnection
-        //void ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, infra::StreamReaderWithRewinding& reader) override;
-        //void SetStreamWriter(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        // void ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, infra::StreamReaderWithRewinding& reader) override;
+        // void SetStreamWriter(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
     private:
         void SendingData(infra::ConstByteRange range) const;

@@ -18,9 +18,9 @@ namespace services
         services.erase_slow(service);
     }
 
-    //void TracingEchoOnConnection::ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, infra::StreamReaderWithRewinding& reader)
+    // void TracingEchoOnConnection::ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, infra::StreamReaderWithRewinding& reader)
     //{
-    //    auto service = FindService(serviceId);
+    //     auto service = FindService(serviceId);
 
     //    if (service != nullptr)
     //    {
@@ -40,10 +40,10 @@ namespace services
     //    EchoOnConnection::ExecuteMethod(serviceId, methodId, contents, reader);
     //}
 
-    //void TracingEchoOnConnection::SetStreamWriter(infra::SharedPtr<infra::StreamWriter>&& writer)
+    // void TracingEchoOnConnection::SetStreamWriter(infra::SharedPtr<infra::StreamWriter>&& writer)
     //{
-    //    EchoOnConnection::SetStreamWriter(tracingWriter.Emplace(std::move(writer), *this));
-    //}
+    //     EchoOnConnection::SetStreamWriter(tracingWriter.Emplace(std::move(writer), *this));
+    // }
 
     void TracingEchoOnConnection::SendingData(infra::ConstByteRange range) const
     {

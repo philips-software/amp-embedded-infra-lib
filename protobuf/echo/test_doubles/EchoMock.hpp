@@ -10,7 +10,7 @@ namespace services
         : public services::Echo
     {
     public:
-        MOCK_METHOD(void, RequestSend, (ServiceProxy& serviceProxy), (override));
+        MOCK_METHOD(void, RequestSend, (ServiceProxy & serviceProxy), (override));
         MOCK_METHOD(void, ServiceDone, (), (override));
     };
 
