@@ -84,6 +84,11 @@ namespace services
         : errorPolicy(errorPolicy)
     {}
 
+    EchoOnStreams::~EchoOnStreams()
+    {
+        readerAccess.SetAction(nullptr);
+    }
+
     void EchoOnStreams::RequestSend(ServiceProxy& serviceProxy)
     {
         sendRequesters.push_back(serviceProxy);
@@ -136,7 +141,7 @@ namespace services
 
     void EchoOnStreams::DataReceived()
     {
-        while (readerPtr != nullptr && methodDeserializer == nullptr)
+        while (readerPtr != nullptr && methodDeserializer == nullptr && !readerAccess.Referenced())
         {
             if (limitedReader == infra::none)
             {
@@ -159,7 +164,7 @@ namespace services
                 else
                 {
                     limitedReader.Emplace(*bufferedReader, contents.Get<infra::PartialProtoLengthDelimited>().length);
-                    StartMethod(serviceId, methodId);
+                    StartMethod(serviceId, methodId, contents.Get<infra::PartialProtoLengthDelimited>().length);
 
                     if (formatErrorPolicy.Failed())
                         errorPolicy.MessageFormatError();
@@ -169,34 +174,30 @@ namespace services
             if (limitedReader != infra::none)
             {
                 limitedReader->SwitchInput(*bufferedReader);
-                methodDeserializer->MethodContents(*limitedReader);
+                readerAccess.SetAction(infra::emptyFunction);
+                methodDeserializer->MethodContents(readerAccess.MakeShared(*limitedReader));
 
-                AckReceived();
-
-                if (limitedReader->LimitReached())
-                {
-                    limitedReader = infra::none;
-                    if (methodDeserializer->Failed())
-                    {
-                        errorPolicy.MessageFormatError();
-                        methodDeserializer = nullptr;
-                    }
-                    else
-                        methodDeserializer->ExecuteMethod();
-                }
+                if (readerAccess.Referenced())
+                    readerAccess.SetAction([this]()
+                        {
+                            ReaderDone();
+                            DataReceived();
+                        });
+                else
+                    ReaderDone();
             }
             else
                 AckReceived();
         }
     }
 
-    void EchoOnStreams::StartMethod(uint32_t serviceId, uint32_t methodId)
+    void EchoOnStreams::StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size)
     {
-        if (!NotifyObservers([this, serviceId, methodId](auto& service)
+        if (!NotifyObservers([this, serviceId, methodId, size](auto& service)
             {
                 if (service.AcceptsService(serviceId))
                 {
-                    methodDeserializer = service.StartMethod(serviceId, methodId, errorPolicy);
+                    methodDeserializer = service.StartMethod(serviceId, methodId, size, errorPolicy);
                     return true;
                 }
 
@@ -208,14 +209,31 @@ namespace services
         }
     }
 
+    void EchoOnStreams::ReaderDone()
+    {
+        AckReceived();
+
+        if (limitedReader->LimitReached())
+        {
+            limitedReader = infra::none;
+            if (methodDeserializer->Failed())
+            {
+                errorPolicy.MessageFormatError();
+                methodDeserializer = nullptr;
+            }
+            else
+                methodDeserializer->ExecuteMethod();
+        }
+    }
+
     MethodDeserializerDummy::MethodDeserializerDummy(Echo& echo)
         : echo(echo)
     {}
 
-    void MethodDeserializerDummy::MethodContents(infra::StreamReaderWithRewinding& reader)
+    void MethodDeserializerDummy::MethodContents(const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader)
     {
-        while (!reader.Empty())
-            reader.ExtractContiguousRange(std::numeric_limits<uint32_t>::max());
+        while (!reader->Empty())
+            reader->ExtractContiguousRange(std::numeric_limits<uint32_t>::max());
     }
 
     void MethodDeserializerDummy::ExecuteMethod()

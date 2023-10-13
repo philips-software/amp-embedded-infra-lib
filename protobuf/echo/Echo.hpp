@@ -58,7 +58,7 @@ namespace services
         MethodDeserializer& operator=(const MethodDeserializer& other) = delete;
         virtual ~MethodDeserializer() = default;
 
-        virtual void MethodContents(infra::StreamReaderWithRewinding& reader) = 0;
+        virtual void MethodContents(const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader) = 0;
         virtual void ExecuteMethod() = 0;
         virtual bool Failed() const = 0;
     };
@@ -83,7 +83,7 @@ namespace services
         virtual bool AcceptsService(uint32_t id) const = 0;
 
         void MethodDone();
-        virtual infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, EchoErrorPolicy& errorPolicy) = 0;
+        virtual infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, EchoErrorPolicy& errorPolicy) = 0;
 
     protected:
         Echo& Rpc();
@@ -156,6 +156,7 @@ namespace services
     {
     public:
         explicit EchoOnStreams(EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
+        ~EchoOnStreams();
 
         // Implementation of Echo
         void RequestSend(ServiceProxy& serviceProxy) override;
@@ -172,7 +173,8 @@ namespace services
         void TryGrantSend();
 
         void DataReceived();
-        void StartMethod(uint32_t serviceId, uint32_t methodId);
+        void StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size);
+        void ReaderDone();
 
     private:
         EchoErrorPolicy& errorPolicy;
@@ -188,6 +190,7 @@ namespace services
         infra::SharedPtr<MethodDeserializer> methodDeserializer;
         infra::BoundedDeque<uint8_t>::WithMaxSize<32> receiveBuffer;
         infra::Optional<infra::BufferingStreamReader> bufferedReader;
+        infra::AccessedBySharedPtr readerAccess;
     };
 
     template<class Message, class Service, class... Args>
@@ -197,7 +200,7 @@ namespace services
     public:
         MethodDeserializerImpl(Service& service, void (Service::*method)(Args...));
 
-        void MethodContents(infra::StreamReaderWithRewinding& reader) override;
+        void MethodContents(const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader) override;
         void ExecuteMethod() override;
         bool Failed() const override;
 
@@ -217,7 +220,7 @@ namespace services
     public:
         MethodDeserializerDummy(Echo& echo);
 
-        void MethodContents(infra::StreamReaderWithRewinding& reader) override;
+        void MethodContents(const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader) override;
         void ExecuteMethod() override;
         bool Failed() const override;
 
@@ -292,9 +295,9 @@ namespace services
     {}
 
     template<class Message, class Service, class... Args>
-    void MethodDeserializerImpl<Message, Service, Args...>::MethodContents(infra::StreamReaderWithRewinding& reader)
+    void MethodDeserializerImpl<Message, Service, Args...>::MethodContents(const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader)
     {
-        receiver.Feed(reader);
+        receiver.Feed(*reader);
     }
 
     template<class Message, class Service, class... Args>

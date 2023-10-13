@@ -10,10 +10,8 @@ namespace services
         : public services::Echo
     {
     public:
-        MOCK_METHOD1(RequestSend, void(ServiceProxy& serviceProxy));
-        MOCK_METHOD0(SendStreamWriter, infra::StreamWriter&());
-        MOCK_METHOD0(Send, void());
-        MOCK_METHOD0(ServiceDone, void());
+        MOCK_METHOD(void, RequestSend, (ServiceProxy& serviceProxy), (override));
+        MOCK_METHOD(void, ServiceDone, (), (override));
     };
 
     class EchoErrorPolicyMock

@@ -877,6 +877,7 @@ namespace application
         auto startMethod = std::make_shared<Function>("StartMethod", StartMethodBody(), "infra::SharedPtr<services::MethodDeserializer>", Function::fOverride);
         startMethod->Parameter("uint32_t serviceId");
         startMethod->Parameter("uint32_t methodId");
+        startMethod->Parameter("uint32_t size");
         startMethod->Parameter("services::EchoErrorPolicy& errorPolicy");
         functions->Add(startMethod);
 

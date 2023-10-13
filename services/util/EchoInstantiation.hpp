@@ -56,7 +56,7 @@ namespace main_
         services::Echo& from;
         services::Echo& to;
 
-        typename infra::BoundedVector<services::ServiceForwarder::WithMaxMessageSize<MessageSize>>::template WithMaxSize<MaxServices> forwarders;
+        typename infra::BoundedVector<services::ServiceForwarder>::template WithMaxSize<MaxServices> forwarders;
     };
 
     template<std::size_t MessageSize, std::size_t MaxServices>
