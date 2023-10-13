@@ -912,12 +912,12 @@ namespace application
     {
         auto fields = std::make_shared<Access>("public");
 
-        fields->Add(std::make_shared<DataMember>("serviceId", "static const uint32_t", google::protobuf::SimpleItoa(service->serviceId)));
+        fields->Add(std::make_shared<DataMember>("serviceId", "static constexpr uint32_t", google::protobuf::SimpleItoa(service->serviceId)));
 
         for (auto& method : service->methods)
-            fields->Add(std::make_shared<DataMember>("id" + method.name, "static const uint32_t", google::protobuf::SimpleItoa(method.methodId)));
+            fields->Add(std::make_shared<DataMember>("id" + method.name, "static constexpr uint32_t", google::protobuf::SimpleItoa(method.methodId)));
 
-        fields->Add(std::make_shared<DataMember>("maxMessageSize", "static const uint32_t", google::protobuf::SimpleItoa(MaxMessageSize())));
+        fields->Add(std::make_shared<DataMember>("maxMessageSize", "static constexpr uint32_t", google::protobuf::SimpleItoa(MaxMessageSize())));
 
         serviceFormatter->Add(fields);
         serviceProxyFormatter->Add(fields);
