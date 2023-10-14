@@ -35,7 +35,7 @@ TEST_F(ServiceForwarderAllTest, forward_message)
                 {
                     EXPECT_CALL(echoFrom, ServiceDone());
                     auto serializer = serviceProxy.GrantSend();
-                    EXPECT_FALSE(serializer->SendStreamAvailable(infra::UnOwnedSharedPtr(writer)));
+                    EXPECT_FALSE(serializer->Serialize(infra::UnOwnedSharedPtr(writer)));
                 }));
             auto deserializer = service.StartMethod(1, 5, 5, errorPolicy);
             deserializer->MethodContents(infra::UnOwnedSharedPtr(inputStream.Reader()));

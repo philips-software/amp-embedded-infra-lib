@@ -24,7 +24,7 @@ namespace services
         bool Failed() const override;
 
         // Implementation of MethodSerializer
-        bool SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        bool Serialize(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
     private:
         void Transfer();

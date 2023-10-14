@@ -71,7 +71,10 @@ namespace services
         MethodSerializer& operator=(const MethodSerializer& other) = delete;
         virtual ~MethodSerializer() = default;
 
-        virtual bool SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) = 0;
+        virtual bool Serialize(infra::SharedPtr<infra::StreamWriter>&& writer) = 0;
+
+        virtual void SerializationDone()
+        {}
     };
 
     class Service
@@ -98,7 +101,7 @@ namespace services
         Echo& Rpc();
         virtual void RequestSend(infra::Function<void()> onGranted);
         virtual void RequestSend(infra::Function<void()> onGranted, uint32_t requestedSize);
-        infra::SharedPtr<MethodSerializer> GrantSend();
+        virtual infra::SharedPtr<MethodSerializer> GrantSend();
         uint32_t MaxMessageSize() const;
         uint32_t CurrentRequestedSize() const;
         void SetSerializer(const infra::SharedPtr<MethodSerializer>& serializer);
@@ -156,17 +159,19 @@ namespace services
     {
     public:
         explicit EchoOnStreams(EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
-        ~EchoOnStreams();
+        ~EchoOnStreams() override;
 
         // Implementation of Echo
         void RequestSend(ServiceProxy& serviceProxy) override;
         void ServiceDone() override;
 
     protected:
+        virtual infra::SharedPtr<MethodSerializer> GrantSend(ServiceProxy& proxy);
+        virtual infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const infra::SharedPtr<MethodDeserializer>& deserializer);
         virtual void RequestSendStream(std::size_t size) = 0;
         virtual void AckReceived() = 0;
-        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer);
 
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer);
         void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
 
     private:
@@ -235,7 +240,7 @@ namespace services
     public:
         MethodSerializerImpl(uint32_t serviceId, uint32_t methodId, Args... args);
 
-        bool SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        bool Serialize(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
     private:
         uint32_t serviceId;
@@ -327,7 +332,7 @@ namespace services
     {}
 
     template<class Message, class... Args>
-    bool MethodSerializerImpl<Message, Args...>::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+    bool MethodSerializerImpl<Message, Args...>::Serialize(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         infra::DataOutputStream::WithErrorPolicy stream(*writer, infra::softFail);
 

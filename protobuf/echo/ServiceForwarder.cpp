@@ -40,7 +40,7 @@ namespace services
         return false;
     }
 
-    bool ServiceForwarderBase::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+    bool ServiceForwarderBase::Serialize(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         this->writer = writer;
         auto result = processedSize + writer->Available() < forwardingSize;

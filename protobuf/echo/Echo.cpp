@@ -122,18 +122,29 @@ namespace services
         }
     }
 
+    infra::SharedPtr<MethodSerializer> EchoOnStreams::GrantSend(ServiceProxy& proxy)
+    {
+        return proxy.GrantSend();
+    }
+
+    infra::SharedPtr<MethodDeserializer> EchoOnStreams::StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const infra::SharedPtr<MethodDeserializer>& deserializer)
+    {
+        return deserializer;
+    }
+
     void EchoOnStreams::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         if (methodSerializer == nullptr)
-            methodSerializer = sendingProxy->GrantSend();
+            methodSerializer = GrantSend(*sendingProxy);
 
-        auto more = methodSerializer->SendStreamAvailable(std::move(writer));
+        auto more = methodSerializer->Serialize(std::move(writer));
 
         if (more)
             RequestSendStream(sendingProxy->CurrentRequestedSize());
         else
         {
             sendingProxy = nullptr;
+            methodSerializer->SerializationDone();
             methodSerializer = nullptr;
             TryGrantSend();
         }
@@ -197,7 +208,7 @@ namespace services
                 {
                     if (service.AcceptsService(serviceId))
                     {
-                        methodDeserializer = service.StartMethod(serviceId, methodId, size, errorPolicy);
+                        methodDeserializer = StartingMethod(serviceId, methodId, size, service.StartMethod(serviceId, methodId, size, errorPolicy));
                         return true;
                     }
 
