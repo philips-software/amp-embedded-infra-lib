@@ -28,7 +28,7 @@ namespace services
         virtual void SerializationDone() override;
 
         // Implementation of MethodDeserializer
-        virtual void MethodContents(const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader) override;
+        virtual void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
         virtual void ExecuteMethod() override;
         virtual bool Failed() const override;
 

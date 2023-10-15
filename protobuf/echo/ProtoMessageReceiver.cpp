@@ -21,14 +21,11 @@ namespace services
             auto& current = stack.back();
             current.second(stream);
 
-            if (stream.Failed())
+            if (stream.Failed() || reader.Empty())
             {
-                failed = true;
+                failed = stream.Failed();
                 break;
             }
-
-            if (reader.Empty())
-                break;
 
             if (&current != &stack.front())
             {

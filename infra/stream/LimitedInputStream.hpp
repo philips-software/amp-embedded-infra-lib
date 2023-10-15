@@ -45,7 +45,7 @@ namespace infra
 
         void ResetLength(uint32_t newLength);
         bool LimitReached() const;
-        void SwitchInput(StreamReaderWithRewinding& input);
+        void SwitchInput(StreamReaderWithRewinding& newInput);
 
     public:
         void Extract(ByteRange range, StreamErrorPolicy& errorPolicy) override;

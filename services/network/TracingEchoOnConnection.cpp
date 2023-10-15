@@ -68,7 +68,7 @@ namespace services
         }
     }
 
-    void TracingEchoOnConnection::MethodContents(const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader)
+    void TracingEchoOnConnection::MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
         auto start = reader->ConstructSaveMarker();
         while (!reader->Empty() && !readerBuffer.full())
@@ -78,7 +78,7 @@ namespace services
         }
         reader->Rewind(start);
 
-        deserializer->MethodContents(reader);
+        deserializer->MethodContents(std::move(reader));
     }
 
     void TracingEchoOnConnection::ExecuteMethod()

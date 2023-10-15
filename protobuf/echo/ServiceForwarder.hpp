@@ -19,7 +19,7 @@ namespace services
 
     private:
         // Implementation of MethodDeserializer
-        void MethodContents(const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader) override;
+        void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
         void ExecuteMethod() override;
         bool Failed() const override;
 
@@ -36,8 +36,8 @@ namespace services
         uint32_t processedSize;
         bool sentHeader;
 
-        infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
-        infra::SharedPtr<infra::StreamWriter> writer;
+        infra::SharedPtr<infra::StreamReaderWithRewinding> contentsReader;
+        infra::SharedPtr<infra::StreamWriter> contentsWriter;
     };
 
     class ServiceForwarderAll

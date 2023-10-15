@@ -58,7 +58,7 @@ namespace services
         MethodDeserializer& operator=(const MethodDeserializer& other) = delete;
         virtual ~MethodDeserializer() = default;
 
-        virtual void MethodContents(const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader) = 0;
+        virtual void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) = 0;
         virtual void ExecuteMethod() = 0;
         virtual bool Failed() const = 0;
     };
@@ -178,6 +178,8 @@ namespace services
         void TryGrantSend();
 
         void DataReceived();
+        void StartReceiveMessage();
+        void ContinueReceiveMessage();
         void StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size);
         void ReaderDone();
 
@@ -187,8 +189,6 @@ namespace services
         infra::IntrusiveList<ServiceProxy> sendRequesters;
         ServiceProxy* sendingProxy = nullptr;
         infra::SharedPtr<MethodSerializer> methodSerializer;
-        uint32_t sendingServiceId;
-        uint32_t sendingMethodId;
 
         infra::SharedPtr<infra::StreamReaderWithRewinding> readerPtr;
         infra::Optional<infra::LimitedStreamReaderWithRewinding> limitedReader;
@@ -205,7 +205,7 @@ namespace services
     public:
         MethodDeserializerImpl(Service& service, void (Service::*method)(Args...));
 
-        void MethodContents(const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader) override;
+        void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
         void ExecuteMethod() override;
         bool Failed() const override;
 
@@ -223,9 +223,9 @@ namespace services
         : public MethodDeserializer
     {
     public:
-        MethodDeserializerDummy(Echo& echo);
+        explicit MethodDeserializerDummy(Echo& echo);
 
-        void MethodContents(const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader) override;
+        void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
         void ExecuteMethod() override;
         bool Failed() const override;
 
@@ -300,7 +300,7 @@ namespace services
     {}
 
     template<class Message, class Service, class... Args>
-    void MethodDeserializerImpl<Message, Service, Args...>::MethodContents(const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader)
+    void MethodDeserializerImpl<Message, Service, Args...>::MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
         receiver.Feed(*reader);
     }
@@ -350,6 +350,7 @@ namespace services
         }
 
         sender.Fill(stream);
+        writer = nullptr;
         return stream.Failed();
     }
 }

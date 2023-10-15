@@ -77,9 +77,9 @@ namespace infra
         return length == 0;
     }
 
-    void LimitedStreamReaderWithRewinding::SwitchInput(StreamReaderWithRewinding& input)
+    void LimitedStreamReaderWithRewinding::SwitchInput(StreamReaderWithRewinding& newInput)
     {
-        this->input = &input;
+        this->input = &newInput;
     }
 
     void LimitedStreamReaderWithRewinding::Extract(ByteRange range, StreamErrorPolicy& errorPolicy)
@@ -119,7 +119,7 @@ namespace infra
 
     std::size_t LimitedStreamReaderWithRewinding::Available() const
     {
-        return std::min<uint32_t>(length, input->Available());
+        return std::min<std::size_t>(length, input->Available());
     }
 
     std::size_t LimitedStreamReaderWithRewinding::ConstructSaveMarker() const

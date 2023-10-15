@@ -1023,7 +1023,7 @@ namespace application
 
             printer.Print(">>(serviceId, $methodId$", "methodId", google::protobuf::SimpleItoa(method.methodId));
 
-            for (auto& field : method.parameter->fields)
+            for (const auto& field : method.parameter->fields)
                 printer.Print(", $field$", "field", field->name);
 
             printer.Print(R"();

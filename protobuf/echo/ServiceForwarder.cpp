@@ -24,9 +24,9 @@ namespace services
         return infra::UnOwnedSharedPtr(static_cast<MethodDeserializer&>(*this));
     }
 
-    void ServiceForwarderBase::MethodContents(const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader)
+    void ServiceForwarderBase::MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
-        this->reader = reader;
+        contentsReader = std::move(reader);
         Transfer();
     }
 
@@ -42,8 +42,8 @@ namespace services
 
     bool ServiceForwarderBase::Serialize(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        this->writer = writer;
-        auto result = processedSize + writer->Available() < forwardingSize;
+        contentsWriter = std::move(writer);
+        auto result = processedSize + contentsWriter->Available() < forwardingSize;
         Transfer();
 
         return result;
@@ -53,10 +53,10 @@ namespace services
     {
         if (!sentHeader)
         {
-            if (writer == nullptr)
+            if (contentsWriter == nullptr)
                 return;
 
-            infra::DataOutputStream::WithErrorPolicy stream(*writer);
+            infra::DataOutputStream::WithErrorPolicy stream(*contentsWriter);
 
             infra::ProtoFormatter formatter(stream);
             formatter.PutVarInt(forwardingServiceId);
@@ -67,17 +67,17 @@ namespace services
 
         infra::StreamErrorPolicy errorPolicy;
 
-        while (processedSize != forwardingSize && writer != nullptr && reader != nullptr)
+        while (processedSize != forwardingSize && contentsWriter != nullptr && contentsReader != nullptr)
         {
-            auto range = reader->ExtractContiguousRange(forwardingSize - processedSize);
-            writer->Insert(range, errorPolicy);
+            auto range = contentsReader->ExtractContiguousRange(forwardingSize - processedSize);
+            contentsWriter->Insert(range, errorPolicy);
             processedSize += range.size();
         }
 
-        if (processedSize == forwardingSize || (reader != nullptr && reader->Empty()))
-            reader = nullptr;
-        if (processedSize == forwardingSize || (writer != nullptr && writer->Empty()))
-            writer = nullptr;
+        if (processedSize == forwardingSize || (contentsReader != nullptr && contentsReader->Empty()))
+            contentsReader = nullptr;
+        if (processedSize == forwardingSize || (contentsWriter != nullptr && contentsWriter->Empty()))
+            contentsWriter = nullptr;
     }
 
     bool ServiceForwarderAll::AcceptsService(uint32_t id) const
