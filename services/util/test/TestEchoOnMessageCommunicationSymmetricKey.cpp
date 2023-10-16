@@ -6,6 +6,7 @@
 #include "protobuf/echo/test_doubles/ServiceStub.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/util/EchoOnMessageCommunicationSymmetricKey.hpp"
+#include "services/util/test_doubles/MessageCommunicationMock.hpp"
 
 class EchoOnMessageCommunicationSymmetricKeyTest
     : public testing::Test

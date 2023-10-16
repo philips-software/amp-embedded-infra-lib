@@ -1,11 +1,7 @@
 #include "protobuf/echo/Echo.hpp"
-#include "infra/event/EventDispatcherWithWeakPtr.hpp"
 
 namespace services
 {
-    EchoErrorPolicyAbortOnMessageFormatError echoErrorPolicyAbortOnMessageFormatError;
-    EchoErrorPolicyAbort echoErrorPolicyAbort;
-
     void Service::MethodDone()
     {
         Rpc().ServiceDone();
@@ -57,49 +53,6 @@ namespace services
     void ServiceProxy::SetSerializer(const infra::SharedPtr<MethodSerializer>& serializer)
     {
         methodSerializer = serializer;
-    }
-
-    void EchoErrorPolicyAbortOnMessageFormatError::MessageFormatError()
-    {
-        std::abort();
-    }
-
-    void EchoErrorPolicyAbortOnMessageFormatError::ServiceNotFound(uint32_t serviceId)
-    {}
-
-    void EchoErrorPolicyAbortOnMessageFormatError::MethodNotFound(uint32_t serviceId, uint32_t methodId)
-    {}
-
-    void EchoErrorPolicyAbort::ServiceNotFound(uint32_t serviceId)
-    {
-        std::abort();
-    }
-
-    void EchoErrorPolicyAbort::MethodNotFound(uint32_t serviceId, uint32_t methodId)
-    {
-        std::abort();
-    }
-
-    MethodDeserializerDummy::MethodDeserializerDummy(Echo& echo)
-        : echo(echo)
-    {}
-
-    void MethodDeserializerDummy::MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
-    {
-        while (!reader->Empty())
-            reader->ExtractContiguousRange(std::numeric_limits<uint32_t>::max());
-
-        reader = nullptr;
-    }
-
-    void MethodDeserializerDummy::ExecuteMethod()
-    {
-        echo.ServiceDone();
-    }
-
-    bool MethodDeserializerDummy::Failed() const
-    {
-        return false;
     }
 
     EchoOnStreams::EchoOnStreams(EchoErrorPolicy& errorPolicy)
