@@ -8,6 +8,8 @@
 #include "infra/util/Compatibility.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/Optional.hpp"
+#include "infra/util/ReallyAssert.hpp"
+#include "infra/util/SharedOptional.hpp"
 #include "protobuf/echo/Proto.hpp"
 #include "protobuf/echo/ProtoMessageReceiver.hpp"
 #include "protobuf/echo/ProtoMessageSender.hpp"
@@ -153,6 +155,20 @@ namespace services
         bool responseInProgress{ false };
     };
 
+    class MethodDeserializerDummy
+        : public MethodDeserializer
+    {
+    public:
+        explicit MethodDeserializerDummy(Echo& echo);
+
+        void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
+        void ExecuteMethod() override;
+        bool Failed() const override;
+
+    private:
+        Echo& echo;
+    };
+
     class EchoOnStreams
         : public Echo
         , public infra::EnableSharedFromThis<EchoOnStreams>
@@ -196,14 +212,16 @@ namespace services
         infra::BoundedDeque<uint8_t>::WithMaxSize<32> receiveBuffer;
         infra::Optional<infra::BufferingStreamReader> bufferedReader;
         infra::AccessedBySharedPtr readerAccess;
+
+        infra::SharedOptional<MethodDeserializerDummy> deserializerDummy;
     };
 
-    template<class Message, class Service, class... Args>
+    template<class Message, class... Args>
     class MethodDeserializerImpl
         : public MethodDeserializer
     {
     public:
-        MethodDeserializerImpl(Service& service, void (Service::*method)(Args...));
+        MethodDeserializerImpl(const infra::Function<void(Args...)>& method);
 
         void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
         void ExecuteMethod() override;
@@ -215,22 +233,47 @@ namespace services
 
     private:
         ProtoMessageReceiver<Message> receiver;
-        Service& service;
-        void (Service::*method)(Args...);
+        infra::Function<void(Args...)> method;
     };
 
-    class MethodDeserializerDummy
-        : public MethodDeserializer
+    class MethodDeserializerFactory
     {
     public:
-        explicit MethodDeserializerDummy(Echo& echo);
+        template<class Message>
+        class ForMessage;
 
-        void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
-        void ExecuteMethod() override;
-        bool Failed() const override;
+        MethodDeserializerFactory() = default;
+        MethodDeserializerFactory(const MethodDeserializerFactory& other) = delete;
+        MethodDeserializerFactory& operator=(const MethodDeserializerFactory& other) = delete;
+        virtual ~MethodDeserializerFactory() = default;
+
+        virtual infra::SharedPtr<infra::ByteRange> DeserializerMemory(uint32_t size) = 0;
+
+        template<class Message, class... Args>
+        infra::SharedPtr<MethodDeserializer> MakeDeserializer(const infra::Function<void(Args...)>& method)
+        {
+            using Deserializer = MethodDeserializerImpl<Message, Args...>;
+
+            auto memory = DeserializerMemory(sizeof(Deserializer));
+            auto deserializer = new (memory->begin()) Deserializer(method);
+            return infra::MakeContainedSharedObject(*deserializer, memory);
+        }
+    };
+
+    template<class Message>
+    class MethodDeserializerFactory::ForMessage
+        : public MethodDeserializerFactory
+    {
+    public:
+        infra::SharedPtr<infra::ByteRange> DeserializerMemory(uint32_t size) override
+        {
+            really_assert(size <= sizeof(MethodDeserializerImpl<Message>));
+            return access.MakeShared(infra::Head(infra::MakeRange(storage), size));
+        }
 
     private:
-        Echo& echo;
+        alignas(MethodDeserializerImpl<Message>) std::array<uint8_t, sizeof(MethodDeserializerImpl<Message>)> storage;
+        infra::AccessedBySharedPtr access{ infra::emptyFunction };
     };
 
     template<class Message, class... Args>
@@ -293,35 +336,34 @@ namespace services
         }
     }
 
-    template<class Message, class Service, class... Args>
-    MethodDeserializerImpl<Message, Service, Args...>::MethodDeserializerImpl(Service& service, void (Service::*method)(Args...))
-        : service(service)
-        , method(method)
+    template<class Message, class... Args>
+    MethodDeserializerImpl<Message, Args...>::MethodDeserializerImpl(const infra::Function<void(Args...)>& method)
+        : method(method)
     {}
 
-    template<class Message, class Service, class... Args>
-    void MethodDeserializerImpl<Message, Service, Args...>::MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+    template<class Message, class... Args>
+    void MethodDeserializerImpl<Message, Args...>::MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
         receiver.Feed(*reader);
     }
 
-    template<class Message, class Service, class... Args>
-    void MethodDeserializerImpl<Message, Service, Args...>::ExecuteMethod()
+    template<class Message, class... Args>
+    void MethodDeserializerImpl<Message, Args...>::ExecuteMethod()
     {
         Execute(std::make_index_sequence<sizeof...(Args)>{});
     }
 
-    template<class Message, class Service, class... Args>
-    bool MethodDeserializerImpl<Message, Service, Args...>::Failed() const
+    template<class Message, class... Args>
+    bool MethodDeserializerImpl<Message, Args...>::Failed() const
     {
         return receiver.Failed();
     }
 
-    template<class Message, class Service, class... Args>
+    template<class Message, class... Args>
     template<std::size_t... I>
-    void MethodDeserializerImpl<Message, Service, Args...>::Execute(std::index_sequence<I...>)
+    void MethodDeserializerImpl<Message, Args...>::Execute(std::index_sequence<I...>)
     {
-        (service.*method)(receiver.message.Get(std::integral_constant<uint32_t, I>{})...);
+        method(receiver.message.Get(std::integral_constant<uint32_t, I>{})...);
     }
 
     template<class Message, class... Args>

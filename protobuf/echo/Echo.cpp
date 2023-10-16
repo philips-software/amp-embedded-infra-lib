@@ -80,6 +80,28 @@ namespace services
         std::abort();
     }
 
+    MethodDeserializerDummy::MethodDeserializerDummy(Echo& echo)
+        : echo(echo)
+    {}
+
+    void MethodDeserializerDummy::MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+    {
+        while (!reader->Empty())
+            reader->ExtractContiguousRange(std::numeric_limits<uint32_t>::max());
+
+        reader = nullptr;
+    }
+
+    void MethodDeserializerDummy::ExecuteMethod()
+    {
+        echo.ServiceDone();
+    }
+
+    bool MethodDeserializerDummy::Failed() const
+    {
+        return false;
+    }
+
     EchoOnStreams::EchoOnStreams(EchoErrorPolicy& errorPolicy)
         : errorPolicy(errorPolicy)
     {}
@@ -222,7 +244,7 @@ namespace services
                 }))
         {
             errorPolicy.ServiceNotFound(serviceId);
-            methodDeserializer = infra::MakeSharedOnHeap<MethodDeserializerDummy>(*this);
+            methodDeserializer = deserializerDummy.Emplace(*this);
         }
     }
 
@@ -241,27 +263,5 @@ namespace services
             else
                 methodDeserializer->ExecuteMethod();
         }
-    }
-
-    MethodDeserializerDummy::MethodDeserializerDummy(Echo& echo)
-        : echo(echo)
-    {}
-
-    void MethodDeserializerDummy::MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
-    {
-        while (!reader->Empty())
-            reader->ExtractContiguousRange(std::numeric_limits<uint32_t>::max());
-
-        reader = nullptr;
-    }
-
-    void MethodDeserializerDummy::ExecuteMethod()
-    {
-        echo.ServiceDone();
-    }
-
-    bool MethodDeserializerDummy::Failed() const
-    {
-        return false;
     }
 }

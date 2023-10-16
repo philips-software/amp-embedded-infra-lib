@@ -62,8 +62,9 @@ public:
     services::MessageCommunicationSecured::WithBuffers<64> secured{ lower, key, iv, key, iv };
     services::EchoOnMessageCommunicationSymmetricKey echo{ secured, randomDataGenerator, errorPolicy };
 
+    services::MethodDeserializerFactory::ForMessage<services::Message> deserializerFactory;
     services::ServiceStubProxy serviceProxy{ echo };
-    testing::StrictMock<services::ServiceStub> service{ echo };
+    testing::StrictMock<services::ServiceStub> service{ echo, deserializerFactory };
 };
 
 TEST_F(EchoOnMessageCommunicationSymmetricKeyTest, send_and_receive)

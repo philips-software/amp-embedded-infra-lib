@@ -969,8 +969,8 @@ namespace application
                 if (method.parameter)
                 {
                     printer.Print(R"(    case id$name$:
-        return infra::MakeSharedOnHeap<services::MethodDeserializerImpl<$argument$, $serviceName$)",
-                        "serviceName", service->name, "name", method.name, "argument", method.parameter->qualifiedName);
+        return infra::MakeSharedOnHeap<services::MethodDeserializerImpl<$argument$)",
+                        "name", method.name, "argument", method.parameter->qualifiedName);
 
                     for (auto& field : method.parameter->fields)
                     {
@@ -981,9 +981,35 @@ namespace application
                         printer.Print(", $type$", "type", typeName);
                     }
 
-                    printer.Print(R"(>>(*this, &$serviceName$::$name$);
-)",
-                        "serviceName", service->name, "name", method.name);
+                    printer.Print(">>([this](");
+
+                    for (auto& field : method.parameter->fields)
+                    {
+                        auto index = std::distance(&method.parameter->fields.front(), &field);
+                        if (index != 0)
+                            printer.Print(", ");
+
+                        std::string typeName;
+                        ParameterTypeVisitor visitor(typeName);
+                        field->Accept(visitor);
+
+                        printer.Print("$type$ v$index$", "type", typeName, "index", google::protobuf::SimpleItoa(index));
+                    }
+
+                    printer.Print(R"() { $name$()",
+                        "name", method.name);
+
+                    for (auto& field : method.parameter->fields)
+                    {
+                        auto index = std::distance(&method.parameter->fields.front(), &field);
+                        if (index != 0)
+                            printer.Print(", ");
+
+                        printer.Print("v$index$", "index", google::protobuf::SimpleItoa(index));
+                    }
+
+                    printer.Print(R"(); });
+)");
                 }
                 else
                     printer.Print(R"(    case id$name$:

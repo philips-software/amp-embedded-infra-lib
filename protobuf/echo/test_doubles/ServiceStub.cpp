@@ -2,50 +2,44 @@
 
 namespace services
 {
-    struct Message
+    Message::Message(uint32_t value)
+        : value(value)
+    {}
+
+    void Message::Serialize(infra::ProtoFormatter& formatter) const
     {
-    public:
-        static const uint32_t numberOfFields = 1;
-        template<std::size_t fieldIndex>
-        using ProtoType = ProtoUInt32;
-        template<std::size_t fieldIndex>
-        using Type = uint32_t;
-        template<std::size_t fieldIndex>
-        static const uint32_t fieldNumber = 1;
+        SerializeField(services::ProtoInt32(), formatter, value, 1);
+    }
 
-    public:
-        uint32_t& Get(std::integral_constant<uint32_t, 0>)
-        {
-            return value;
-        }
+    uint32_t& Message::Get(std::integral_constant<uint32_t, 0>)
+    {
+        return value;
+    }
 
-        const uint32_t& Get(std::integral_constant<uint32_t, 0>) const
-        {
-            return value;
-        }
+    const uint32_t& Message::Get(std::integral_constant<uint32_t, 0>) const
+    {
+        return value;
+    }
 
-    public:
-        Message() = default;
+    ServiceStub::ServiceStub(Echo& echo, MethodDeserializerFactory& deserializerfactory)
+        : Service(echo)
+        , deserializerfactory(deserializerfactory)
+    {}
 
-        Message(uint32_t value)
-            : value(value)
-        {}
-
-        void Serialize(infra::ProtoFormatter& formatter) const
-        {
-            SerializeField(services::ProtoInt32(), formatter, value, 1);
-        }
-
-    public:
-        uint32_t value = 0;
-    };
+    bool ServiceStub::AcceptsService(uint32_t id) const
+    {
+        return id == serviceId;
+    }
 
     infra::SharedPtr<MethodDeserializer> ServiceStub::StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, services::EchoErrorPolicy& errorPolicy)
     {
         switch (methodId)
         {
             case idMethod:
-                return infra::MakeSharedOnHeap<services::MethodDeserializerImpl<Message, ServiceStub, uint32_t>>(*this, &ServiceStub::Method);
+                return deserializerfactory.MakeDeserializer<Message, uint32_t>([this](uint32_t v)
+                    {
+                        Method(v);
+                    });
             default:
                 errorPolicy.MethodNotFound(serviceId, methodId);
                 return infra::MakeSharedOnHeap<services::MethodDeserializerDummy>(Rpc());
