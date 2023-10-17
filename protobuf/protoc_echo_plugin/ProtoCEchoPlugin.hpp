@@ -157,6 +157,7 @@ namespace application
         void GenerateServiceFunctions();
         void GenerateServiceProxyFunctions();
         void GenerateFieldConstants();
+        void GenerateMethodTypeList();
 
         uint32_t MaxMessageSize() const;
         std::string AcceptsServiceBody() const;

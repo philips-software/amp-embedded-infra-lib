@@ -48,6 +48,9 @@ namespace services
         static const uint32_t idMethod = 1;
         static const uint32_t maxMessageSize = 18;
 
+    public:
+        using MethodTypeList = infra::List<Message>;
+
     private:
         MethodDeserializerFactory& deserializerfactory;
     };

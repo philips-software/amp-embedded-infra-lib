@@ -55,15 +55,15 @@ public:
         ASSERT_TRUE(reader.Allocatable());
     }
 
+    services::MethodDeserializerFactory::ForServices<services::ServiceStub, message_communication_security::SymmetricKeyEstablishment> deserializerFactory;
     testing::StrictMock<services::EchoErrorPolicyMock> errorPolicy;
     testing::StrictMock<hal::SynchronousRandomDataGeneratorMock> randomDataGenerator;
     testing::StrictMock<services::MessageCommunicationMock> lower;
     std::array<uint8_t, services::MessageCommunicationSecured::keySize> key{ 1, 2 };
     std::array<uint8_t, services::MessageCommunicationSecured::blockSize> iv{ 1, 3 };
     services::MessageCommunicationSecured::WithBuffers<64> secured{ lower, key, iv, key, iv };
-    services::EchoOnMessageCommunicationSymmetricKey echo{ secured, randomDataGenerator, errorPolicy };
+    services::EchoOnMessageCommunicationSymmetricKey echo{ secured, deserializerFactory, randomDataGenerator, errorPolicy };
 
-    services::MethodDeserializerFactory::ForMessage<services::Message> deserializerFactory;
     services::ServiceStubProxy serviceProxy{ echo };
     testing::StrictMock<services::ServiceStub> service{ echo, deserializerFactory };
 };

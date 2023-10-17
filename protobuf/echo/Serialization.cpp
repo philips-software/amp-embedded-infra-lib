@@ -24,4 +24,16 @@ namespace services
     {
         return false;
     }
+
+    infra::SharedPtr<infra::ByteRange> MethodDeserializerFactory::OnHeap::DeserializerMemory(uint32_t size)
+    {
+        memory = reinterpret_cast<uint8_t*>(malloc(size));
+        return access.MakeShared(infra::ByteRange{ memory, memory + size });
+    }
+
+    void MethodDeserializerFactory::OnHeap::DeAllocate()
+    {
+        free(memory);
+        memory = nullptr;
+    }
 }

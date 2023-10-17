@@ -20,7 +20,7 @@ public:
 
     testing::StrictMock<services::EchoErrorPolicyMock> errorPolicy;
     testing::StrictMock<services::ConnectionMock> connection;
-    services::MethodDeserializerFactory::ForMessage<services::Message> deserializerFactory;
+    services::MethodDeserializerFactory::ForServices<services::ServiceStub> deserializerFactory;
     services::EchoOnConnection echo{ errorPolicy };
     testing::StrictMock<services::ServiceStub> service{ echo, deserializerFactory };
 };

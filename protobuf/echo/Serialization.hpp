@@ -74,8 +74,10 @@ namespace services
     class MethodDeserializerFactory
     {
     public:
-        template<class Message>
-        class ForMessage;
+        template<class... Services>
+        class ForServices;
+
+        class OnHeap;
 
         MethodDeserializerFactory() = default;
         MethodDeserializerFactory(const MethodDeserializerFactory& other) = delete;
@@ -85,30 +87,70 @@ namespace services
         virtual infra::SharedPtr<infra::ByteRange> DeserializerMemory(uint32_t size) = 0;
 
         template<class Message, class... Args>
-        infra::SharedPtr<MethodDeserializer> MakeDeserializer(const infra::Function<void(Args...)>& method)
-        {
-            using Deserializer = MethodDeserializerImpl<Message, Args...>;
-
-            auto memory = DeserializerMemory(sizeof(Deserializer));
-            auto deserializer = new (memory->begin()) Deserializer(method);
-            return infra::MakeContainedSharedObject(*deserializer, memory);
-        }
+        infra::SharedPtr<MethodDeserializer> MakeDeserializer(const infra::Function<void(Args...)>& method);
     };
 
-    template<class Message>
-    class MethodDeserializerFactory::ForMessage
+    template<class... Services>
+    class MethodDeserializerFactory::ForServices
         : public MethodDeserializerFactory
     {
     public:
-        infra::SharedPtr<infra::ByteRange> DeserializerMemory(uint32_t size) override
-        {
-            really_assert(size <= sizeof(MethodDeserializerImpl<Message>));
-            return access.MakeShared(infra::Head(infra::MakeRange(storage), size));
-        }
+        infra::SharedPtr<infra::ByteRange> DeserializerMemory(uint32_t size) override;
 
     private:
-        alignas(MethodDeserializerImpl<Message>) std::array<uint8_t, sizeof(MethodDeserializerImpl<Message>)> storage;
+        template<class MessageList>
+        struct MaxDeserializerSize;
+
+        template<>
+        struct MaxDeserializerSize<infra::List<>>
+        {
+            static constexpr std::size_t maxSize = 0;
+        };
+
+        template<class Front, class... Messages>
+        struct MaxDeserializerSize<infra::List<Front, Messages...>>
+        {
+            static constexpr std::size_t maxSize = std::max(sizeof(MethodDeserializerImpl<Front>), MaxDeserializerSize<infra::List<Messages...>>::maxSize);
+        };
+
+        template<class... Services>
+        struct MaxServiceSize;
+
+        template<>
+        struct MaxServiceSize<>
+        {
+            static constexpr std::size_t maxSize = 0;
+        };
+
+        template<class Front, class... Tail>
+        struct MaxServiceSize<Front, Tail...>
+        {
+            static constexpr std::size_t maxSize = std::max(MaxDeserializerSize<typename Front::MethodTypeList>::maxSize, MaxServiceSize<Tail...>::maxSize);
+        };
+
+        alignas(std::max_align_t) std::array<uint8_t, MaxServiceSize<Services...>::maxSize> storage;
         infra::AccessedBySharedPtr access{ infra::emptyFunction };
+    };
+
+    class MethodDeserializerFactory::OnHeap
+        : public MethodDeserializerFactory
+    {
+    public:
+        infra::SharedPtr<infra::ByteRange> DeserializerMemory(uint32_t size) override;
+
+    private:
+        void DeAllocate();
+
+    private:
+        infra::AccessedBySharedPtr access
+        {
+            [this]()
+            {
+                DeAllocate();
+            }
+        };
+
+        uint8_t* memory = nullptr;
     };
 
     template<class Message, class... Args>
@@ -188,6 +230,22 @@ namespace services
         sender.Fill(stream);
         writer = nullptr;
         return stream.Failed();
+    }
+
+    template<class Message, class... Args>
+    infra::SharedPtr<MethodDeserializer> MethodDeserializerFactory::MakeDeserializer(const infra::Function<void(Args...)>& method)
+    {
+        using Deserializer = MethodDeserializerImpl<Message, Args...>;
+
+        auto memory = DeserializerMemory(sizeof(Deserializer));
+        auto deserializer = new (memory->begin()) Deserializer(method);
+        return infra::MakeContainedSharedObject(*deserializer, memory);
+    }
+
+    template<class... Services>
+    infra::SharedPtr<infra::ByteRange> MethodDeserializerFactory::ForServices<Services...>::DeserializerMemory(uint32_t size)
+    {
+        return access.MakeShared(infra::Head(infra::MakeRange(storage), size));
     }
 }
 
