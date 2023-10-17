@@ -90,6 +90,36 @@ namespace services
         infra::SharedPtr<MethodDeserializer> MakeDeserializer(const infra::Function<void(Args...)>& method);
     };
 
+    template<class MessageList>
+    struct MaxDeserializerSize;
+
+    template<>
+    struct MaxDeserializerSize<infra::List<>>
+    {
+        static constexpr std::size_t maxSize = 0;
+    };
+
+    template<class Front, class... Messages>
+    struct MaxDeserializerSize<infra::List<Front, Messages...>>
+    {
+        static constexpr std::size_t maxSize = std::max(sizeof(MethodDeserializerImpl<Front>), MaxDeserializerSize<infra::List<Messages...>>::maxSize);
+    };
+
+    template<class... Services>
+    struct MaxServiceSize;
+
+    template<>
+    struct MaxServiceSize<>
+    {
+        static constexpr std::size_t maxSize = 0;
+    };
+
+    template<class Front, class... Tail>
+    struct MaxServiceSize<Front, Tail...>
+    {
+        static constexpr std::size_t maxSize = std::max(MaxDeserializerSize<typename Front::MethodTypeList>::maxSize, MaxServiceSize<Tail...>::maxSize);
+    };
+
     template<class... Services>
     class MethodDeserializerFactory::ForServices
         : public MethodDeserializerFactory
@@ -98,36 +128,6 @@ namespace services
         infra::SharedPtr<infra::ByteRange> DeserializerMemory(uint32_t size) override;
 
     private:
-        template<class MessageList>
-        struct MaxDeserializerSize;
-
-        template<>
-        struct MaxDeserializerSize<infra::List<>>
-        {
-            static constexpr std::size_t maxSize = 0;
-        };
-
-        template<class Front, class... Messages>
-        struct MaxDeserializerSize<infra::List<Front, Messages...>>
-        {
-            static constexpr std::size_t maxSize = std::max(sizeof(MethodDeserializerImpl<Front>), MaxDeserializerSize<infra::List<Messages...>>::maxSize);
-        };
-
-        template<class... Services>
-        struct MaxServiceSize;
-
-        template<>
-        struct MaxServiceSize<>
-        {
-            static constexpr std::size_t maxSize = 0;
-        };
-
-        template<class Front, class... Tail>
-        struct MaxServiceSize<Front, Tail...>
-        {
-            static constexpr std::size_t maxSize = std::max(MaxDeserializerSize<typename Front::MethodTypeList>::maxSize, MaxServiceSize<Tail...>::maxSize);
-        };
-
         alignas(std::max_align_t) std::array<uint8_t, MaxServiceSize<Services...>::maxSize> storage;
         infra::AccessedBySharedPtr access{ infra::emptyFunction };
     };
