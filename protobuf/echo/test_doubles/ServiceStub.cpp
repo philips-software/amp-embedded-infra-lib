@@ -36,10 +36,10 @@ namespace services
         switch (methodId)
         {
             case idMethod:
-                return deserializerfactory.MakeDeserializer<Message, uint32_t>([this](uint32_t v)
+                return deserializerfactory.MakeDeserializer<Message, uint32_t>(infra::Function<void(uint32_t)>([this](uint32_t v)
                     {
                         Method(v);
-                    });
+                    }));
             default:
                 errorPolicy.MethodNotFound(serviceId, methodId);
                 return infra::MakeSharedOnHeap<services::MethodDeserializerDummy>(Rpc());
