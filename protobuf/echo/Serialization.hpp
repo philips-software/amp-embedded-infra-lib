@@ -129,6 +129,7 @@ namespace services
 
     private:
         alignas(std::max_align_t) std::array<uint8_t, MaxServiceSize<Services...>::maxSize> storage;
+        infra::ByteRange memory;
         infra::AccessedBySharedPtr access{ infra::emptyFunction };
     };
 
@@ -245,7 +246,8 @@ namespace services
     template<class... Services>
     infra::SharedPtr<infra::ByteRange> MethodDeserializerFactory::ForServices<Services...>::DeserializerMemory(uint32_t size)
     {
-        return access.MakeShared(infra::Head(infra::MakeRange(storage), size));
+        memory = infra::Head(infra::MakeRange(storage), size);
+        return access.MakeShared(memory);
     }
 }
 
