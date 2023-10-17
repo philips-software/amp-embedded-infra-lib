@@ -150,7 +150,7 @@ namespace services
             }
         };
 
-        uint8_t* memory = nullptr;
+        infra::ByteRange memory;
     };
 
     template<class Message, class... Args>
