@@ -1008,7 +1008,21 @@ namespace application
                         printer.Print(", $type$", "type", typeName);
                     }
 
-                    printer.Print(">([this](");
+                    printer.Print(">(infra::Function<void(");
+
+                    for (auto& field : method.parameter->fields)
+                    {
+                        if (&field != &method.parameter->fields.front())
+                            printer.Print(", ");
+
+                        std::string typeName;
+                        ParameterTypeVisitor visitor(typeName);
+                        field->Accept(visitor);
+
+                        printer.Print("$type$", "type", typeName);
+                    }
+
+                    printer.Print(")>([this](");
 
                     for (auto& field : method.parameter->fields)
                     {
@@ -1035,7 +1049,7 @@ namespace application
                         printer.Print("v$index$", "index", google::protobuf::SimpleItoa(index));
                     }
 
-                    printer.Print(R"(); });
+                    printer.Print(R"(); }));
 )");
                 }
                 else
