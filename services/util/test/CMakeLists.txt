@@ -39,6 +39,7 @@ target_sources(services.util_test PRIVATE
     TestMessageCommunicationSecured.cpp
     TestMessageCommunicationWindowed.cpp
     TestRepeatingButton.cpp
+    TestSerialCommunicationLoopback.cpp
     TestSignalLed.cpp
     TestSpiMasterWithChipSelect.cpp
     TestSpiMultipleAccess.cpp
