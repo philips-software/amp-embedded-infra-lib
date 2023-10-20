@@ -1,3 +1,4 @@
+#include "hal/interfaces/SerialCommunication.hpp"
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/Function.hpp"
@@ -12,8 +13,8 @@ class SerialCommunicationLoopbackTest
 {
 public:
     services::SerialCommunicationLoopback SerialCommunicationLoopback;
-    services::SerialCommunicationLoopbackPeer& server{ SerialCommunicationLoopback.Server() };
-    services::SerialCommunicationLoopbackPeer& client{ SerialCommunicationLoopback.Client() };
+    hal::SerialCommunication& server{ SerialCommunicationLoopback.Server() };
+    hal::SerialCommunication& client{ SerialCommunicationLoopback.Client() };
 };
 
 TEST_F(SerialCommunicationLoopbackTest, SendFromServerReceiveByClient)
