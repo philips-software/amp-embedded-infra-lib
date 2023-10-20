@@ -1,4 +1,4 @@
-#include "infra/timer/test_helper/ClockFixture.hpp"
+#include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
@@ -8,7 +8,7 @@
 
 class SerialCommunicationLoopbackTest
     : public testing::Test
-    , public infra::ClockFixture
+    , public infra::EventDispatcherFixture
 {
 public:
     services::SerialCommunicationLoopback SerialCommunicationLoopback;

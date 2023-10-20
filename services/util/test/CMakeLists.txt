@@ -14,6 +14,7 @@ target_link_libraries(services.util_test PUBLIC
     hal.interfaces_test_doubles
     infra.timer_test_helper
     infra.util_test_helper
+    infra.event_test_helper
 )
 
 target_sources(services.util_test PRIVATE
