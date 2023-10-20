@@ -18,26 +18,29 @@ public:
 
 TEST_F(SerialCommunicationLoopbackTest, SendFromServerReceiveByClient)
 {
-    infra::VerifyingFunctionMock<void(infra::ConstByteRange)> clientReceiveCallback{ infra::MakeStringByteRange("hello") };
+    infra::ConstByteRange data = infra::MakeStringByteRange("hello");
+    infra::VerifyingFunctionMock<void(infra::ConstByteRange)> clientReceiveCallback{ data };
 
     client.ReceiveData(clientReceiveCallback);
-    server.SendData(infra::MakeStringByteRange("hello"), infra::emptyFunction);
+    server.SendData(data, infra::emptyFunction);
 
     ExecuteAllActions();
 }
 
 TEST_F(SerialCommunicationLoopbackTest, SendFromClientReceiveByServer)
 {
-    infra::VerifyingFunctionMock<void(infra::ConstByteRange)> serverReceiveCallback{ infra::MakeStringByteRange("world") };
+    infra::ConstByteRange data = infra::MakeStringByteRange("world");
+    infra::VerifyingFunctionMock<void(infra::ConstByteRange)> serverReceiveCallback{ data };
 
     server.ReceiveData(serverReceiveCallback);
-    client.SendData(infra::MakeStringByteRange("world"), infra::emptyFunction);
+    client.SendData(data, infra::emptyFunction);
 
     ExecuteAllActions();
 }
 
 TEST_F(SerialCommunicationLoopbackTest, ActionOnCompletionAfterDataReceivedByOtherPeer)
 {
+    infra::ConstByteRange data = infra::MakeStringByteRange("Hello World!");
     infra::MockCallback<void(infra::ConstByteRange)> dataReceivedMockCallback;
     infra::MockCallback<void()> actionOnCompletionMockCallback;
 
@@ -46,13 +49,13 @@ TEST_F(SerialCommunicationLoopbackTest, ActionOnCompletionAfterDataReceivedByOth
             dataReceivedMockCallback.callback(data);
         });
 
-    client.SendData(infra::MakeStringByteRange("Hello World!"), [&actionOnCompletionMockCallback]
+    client.SendData(data, [&actionOnCompletionMockCallback]
         {
             actionOnCompletionMockCallback.callback();
         });
 
     testing::InSequence sequence;
-    EXPECT_CALL(dataReceivedMockCallback, callback(infra::MakeStringByteRange("Hello World!")));
+    EXPECT_CALL(dataReceivedMockCallback, callback(data));
     EXPECT_CALL(actionOnCompletionMockCallback, callback());
 
     ExecuteAllActions();
