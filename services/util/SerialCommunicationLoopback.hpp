@@ -9,7 +9,7 @@ namespace services
         : public hal::SerialCommunication
     {
     public:
-        explicit SerialCommunicationLoopbackPeer(SerialCommunicationLoopbackPeer& other);
+        explicit SerialCommunicationLoopbackPeer(SerialCommunicationLoopbackPeer* other);
 
         void SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion) override;
         void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) override;
@@ -25,12 +25,14 @@ namespace services
     class SerialCommunicationLoopback
     {
     public:
+        SerialCommunicationLoopback();
+
         SerialCommunicationLoopbackPeer& Server();
         SerialCommunicationLoopbackPeer& Client();
 
     private:
-        SerialCommunicationLoopbackPeer server{ client };
-        SerialCommunicationLoopbackPeer client{ server };
+        SerialCommunicationLoopbackPeer server;
+        SerialCommunicationLoopbackPeer client;
     };
 }
 

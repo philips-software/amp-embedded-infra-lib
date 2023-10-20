@@ -3,8 +3,8 @@
 
 namespace services
 {
-    SerialCommunicationLoopbackPeer::SerialCommunicationLoopbackPeer(SerialCommunicationLoopbackPeer& other)
-        : other{ other }
+    SerialCommunicationLoopbackPeer::SerialCommunicationLoopbackPeer(SerialCommunicationLoopbackPeer* other)
+        : other{ *other }
     {}
 
     void SerialCommunicationLoopbackPeer::SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion)
@@ -23,6 +23,11 @@ namespace services
     {
         this->dataReceived = dataReceived;
     }
+
+    SerialCommunicationLoopback::SerialCommunicationLoopback()
+        : server(&client)
+        , client(&server)
+    {}
 
     SerialCommunicationLoopbackPeer& SerialCommunicationLoopback::Server()
     {
