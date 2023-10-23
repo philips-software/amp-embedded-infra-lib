@@ -12,11 +12,11 @@ set(ENABLE_PROGRAMS Off CACHE INTERNAL "")
 set(GEN_FILES Off CACHE INTERNAL "")
 
 # mbedtls uses CMAKE_C_COMPILER_ID to determine the type of compiler used.
-# When compiling with xwin, and thus clang-cl, mbedtls thinks that the clang
-# compiler is used, and sets flags according to what gcc/clang expects as arguments.
-# However, clang-cl expects MSVC like arguments. Thus we have to trick mbedtls
+# When compiling with clang-cl, mbedtls thinks the clang compiler
+# is used, and sets flags according to what clang expects as arguments.
+# However, clang-cl expects MSVC like arguments. Therefore we have to trick mbedtls
 # in to thinking MSVC is being used as a compiler.
-# AFter making mbedtls available the original COMPILER_ID will be restored
+# After making mbedtls available the original COMPILER_ID will be restored
 set(ORIGINAL_C_COMPILER_ID ${CMAKE_C_COMPILER_ID})
 set(ORIGINAL_CXX_COMPILER_ID ${CMAKE_CXX_COMPILER_ID})
 
