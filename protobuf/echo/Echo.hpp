@@ -62,37 +62,6 @@ namespace services
         virtual void ServiceDone() = 0;
     };
 
-    template<class ServiceProxyType>
-    class ServiceProxyResponseQueue
-        : public ServiceProxyType
-    {
-    public:
-        struct Request
-        {
-            infra::Function<void()> onRequestGranted;
-            uint32_t requestedSize;
-        };
-
-        using Container = infra::BoundedDeque<Request>;
-
-        template<std::size_t Max>
-        using WithStorage = infra::WithStorage<ServiceProxyResponseQueue, typename Container::template WithMaxSize<Max>>;
-
-        template<class... Args>
-        explicit ServiceProxyResponseQueue(Container& container, Args&&... args);
-
-        void RequestSend(infra::Function<void()> onRequestGranted) override;
-        void RequestSend(infra::Function<void()> onRequestGranted, uint32_t requestedSize) override;
-
-    private:
-        void ProcessSendQueue();
-
-    private:
-        Container& container;
-
-        bool responseInProgress{ false };
-    };
-
     class EchoOnStreams
         : public Echo
         , public infra::EnableSharedFromThis<EchoOnStreams>
@@ -139,49 +108,6 @@ namespace services
 
         infra::SharedOptional<MethodDeserializerDummy> deserializerDummy;
     };
-
-    ////    Implementation    ////
-
-    template<class ServiceProxyType>
-    template<class... Args>
-    ServiceProxyResponseQueue<ServiceProxyType>::ServiceProxyResponseQueue(Container& container, Args&&... args)
-        : ServiceProxyType{ std::forward<Args>(args)... }
-        , container{ container }
-    {}
-
-    template<class ServiceProxyType>
-    void ServiceProxyResponseQueue<ServiceProxyType>::RequestSend(infra::Function<void()> onRequestGranted)
-    {
-        RequestSend(onRequestGranted, ServiceProxyType::MaxMessageSize());
-    }
-
-    template<class ServiceProxyType>
-    void ServiceProxyResponseQueue<ServiceProxyType>::RequestSend(infra::Function<void()> onRequestGranted, uint32_t requestedSize)
-    {
-        if (container.full())
-            return;
-
-        container.push_back({ onRequestGranted, requestedSize });
-        ProcessSendQueue();
-    }
-
-    template<class ServiceProxyType>
-    void ServiceProxyResponseQueue<ServiceProxyType>::ProcessSendQueue()
-    {
-        if (!responseInProgress && !container.empty())
-        {
-            responseInProgress = true;
-            ServiceProxyType::RequestSend([this]
-                {
-                    container.front().onRequestGranted();
-                    container.pop_front();
-
-                    responseInProgress = false;
-                    ProcessSendQueue();
-                },
-                container.front().requestedSize);
-        }
-    }
 }
 
 #endif
