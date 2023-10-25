@@ -20,14 +20,14 @@ public:
 
     testing::StrictMock<services::EchoErrorPolicyMock> errorPolicy;
     testing::StrictMock<services::ConnectionMock> connection;
-    services::MethodDeserializerFactory::ForServices<services::ServiceStub> deserializerFactory;
+    services::MethodSerializerFactory::ForServices<services::ServiceStub>::AndProxies<services::ServiceStubProxy> serializerFactory;
     services::EchoOnConnection echo{ errorPolicy };
-    testing::StrictMock<services::ServiceStub> service{ echo, deserializerFactory };
+    testing::StrictMock<services::ServiceStub> service{ echo, serializerFactory };
 };
 
 TEST_F(EchoOnConnectionTest, invoke_service_proxy_method)
 {
-    services::ServiceStubProxy serviceProxy{ echo };
+    services::ServiceStubProxy serviceProxy{ echo, serializerFactory };
 
     EXPECT_CALL(connection, MaxSendStreamSize()).WillOnce(testing::Return(1000));
     EXPECT_CALL(connection, RequestSendStream(18));

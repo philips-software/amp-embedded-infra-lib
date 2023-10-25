@@ -55,17 +55,17 @@ public:
         ASSERT_TRUE(reader.Allocatable());
     }
 
-    services::MethodDeserializerFactory::ForServices<services::ServiceStub, message_communication_security::SymmetricKeyEstablishment> deserializerFactory;
+    services::MethodSerializerFactory::ForServices<services::ServiceStub, message_communication_security::SymmetricKeyEstablishment>::AndProxies<services::ServiceStubProxy, message_communication_security::SymmetricKeyEstablishmentProxy> serializerFactory;
     testing::StrictMock<services::EchoErrorPolicyMock> errorPolicy;
     testing::StrictMock<hal::SynchronousRandomDataGeneratorMock> randomDataGenerator;
     testing::StrictMock<services::MessageCommunicationMock> lower;
     std::array<uint8_t, services::MessageCommunicationSecured::keySize> key{ 1, 2 };
     std::array<uint8_t, services::MessageCommunicationSecured::blockSize> iv{ 1, 3 };
     services::MessageCommunicationSecured::WithBuffers<64> secured{ lower, key, iv, key, iv };
-    services::EchoOnMessageCommunicationSymmetricKey echo{ secured, deserializerFactory, randomDataGenerator, errorPolicy };
+    services::EchoOnMessageCommunicationSymmetricKey echo{ secured, serializerFactory, randomDataGenerator, errorPolicy };
 
-    services::ServiceStubProxy serviceProxy{ echo };
-    testing::StrictMock<services::ServiceStub> service{ echo, deserializerFactory };
+    services::ServiceStubProxy serviceProxy{ echo, serializerFactory };
+    testing::StrictMock<services::ServiceStub> service{ echo, serializerFactory };
 };
 
 TEST_F(EchoOnMessageCommunicationSymmetricKeyTest, send_and_receive)

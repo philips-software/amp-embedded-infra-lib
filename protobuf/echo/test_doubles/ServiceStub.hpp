@@ -34,7 +34,7 @@ namespace services
         : public services::Service
     {
     public:
-        ServiceStub(Echo& echo, MethodDeserializerFactory& deserializerfactory);
+        ServiceStub(Echo& echo, MethodSerializerFactory& serializerFactory);
 
         bool AcceptsService(uint32_t id) const override;
 
@@ -52,14 +52,14 @@ namespace services
         using MethodTypeList = infra::List<Message>;
 
     private:
-        MethodDeserializerFactory& deserializerfactory;
+        MethodSerializerFactory& serializerFactory;
     };
 
     class ServiceStubProxy
         : public services::ServiceProxy
     {
     public:
-        ServiceStubProxy(services::Echo& echo);
+        ServiceStubProxy(services::Echo& echo, MethodSerializerFactory& serializerFactory);
 
     public:
         void Method(uint32_t value);
@@ -68,6 +68,12 @@ namespace services
         static constexpr uint32_t serviceId = 1;
         static constexpr uint32_t idMethod = 1;
         static constexpr uint32_t maxMessageSize = 18;
+
+    public:
+        using MethodTypeList = infra::List<Message>;
+
+    private:
+        MethodSerializerFactory& serializerFactory;
     };
 }
 

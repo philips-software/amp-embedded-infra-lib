@@ -8,8 +8,8 @@ class Console
     : public examples::Console
 {
 public:
-    Console(services::Echo& echo, services::MethodDeserializerFactory& deserializerFactory)
-        : examples::Console(echo, deserializerFactory)
+    Console(services::Echo& echo, services::MethodSerializerFactory& serializerFactory)
+        : examples::Console(echo, serializerFactory)
     {}
 
     void Write(infra::BoundedConstString message) override
@@ -23,8 +23,8 @@ class EchoConnection
     : public services::EchoOnConnection
 {
 public:
-    EchoConnection(services::MethodDeserializerFactory& deserializerFactory)
-        : console(*this, deserializerFactory)
+    EchoConnection(services::MethodSerializerFactory& serializerFactory)
+        : console(*this, serializerFactory)
     {}
 
 private:
@@ -45,13 +45,13 @@ public:
             connection->::services::ConnectionObserver::Subject().AbortAndDestroy();
 
         if (connection.Allocatable())
-            createdObserver(connection.Emplace(deserializerFactory));
+            createdObserver(connection.Emplace(serializerFactory));
     }
 
 private:
     infra::SharedPtr<void> listener;
     infra::SharedOptional<EchoConnection> connection;
-    services::MethodDeserializerFactory::OnHeap deserializerFactory;
+    services::MethodSerializerFactory::OnHeap serializerFactory;
 };
 
 int main(int argc, const char* argv[], const char* env[])

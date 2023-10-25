@@ -25,7 +25,7 @@ namespace services
         return false;
     }
 
-    infra::SharedPtr<MethodDeserializer> MethodDeserializerFactory::MakeDummyDeserializer(Echo& echo)
+    infra::SharedPtr<MethodDeserializer> MethodSerializerFactory::MakeDummyDeserializer(Echo& echo)
     {
         using Deserializer = MethodDeserializerDummy;
 
@@ -34,17 +34,31 @@ namespace services
         return infra::MakeContainedSharedObject(*deserializer, memory);
     }
 
-    infra::SharedPtr<infra::ByteRange> MethodDeserializerFactory::OnHeap::DeserializerMemory(uint32_t size)
+    infra::SharedPtr<infra::ByteRange> MethodSerializerFactory::OnHeap::SerializerMemory(uint32_t size)
     {
         auto m = reinterpret_cast<uint8_t*>(malloc(size));
-        memory = { m,
+        serializerMemory = { m,
             m + size };
-        return access.MakeShared(memory);
+        return serializerAccess.MakeShared(serializerMemory);
     }
 
-    void MethodDeserializerFactory::OnHeap::DeAllocate()
+    infra::SharedPtr<infra::ByteRange> MethodSerializerFactory::OnHeap::DeserializerMemory(uint32_t size)
     {
-        free(memory.begin());
-        memory = {};
+        auto m = reinterpret_cast<uint8_t*>(malloc(size));
+        deserializerMemory = { m,
+            m + size };
+        return deserializerAccess.MakeShared(deserializerMemory);
+    }
+
+    void MethodSerializerFactory::OnHeap::DeAllocateSerializer()
+    {
+        free(serializerMemory.begin());
+        serializerMemory = {};
+    }
+
+    void MethodSerializerFactory::OnHeap::DeAllocateDeserializer()
+    {
+        free(deserializerMemory.begin());
+        deserializerMemory = {};
     }
 }

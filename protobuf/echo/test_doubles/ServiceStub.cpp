@@ -21,9 +21,9 @@ namespace services
         return value;
     }
 
-    ServiceStub::ServiceStub(Echo& echo, MethodDeserializerFactory& deserializerfactory)
+    ServiceStub::ServiceStub(Echo& echo, MethodSerializerFactory& serializerFactory)
         : Service(echo)
-        , deserializerfactory(deserializerfactory)
+        , serializerFactory(serializerFactory)
     {}
 
     bool ServiceStub::AcceptsService(uint32_t id) const
@@ -36,23 +36,24 @@ namespace services
         switch (methodId)
         {
             case idMethod:
-                return deserializerfactory.MakeDeserializer<Message, uint32_t>(infra::Function<void(uint32_t)>([this](uint32_t v)
+                return serializerFactory.MakeDeserializer<Message, uint32_t>(infra::Function<void(uint32_t)>([this](uint32_t v)
                     {
                         Method(v);
                     }));
             default:
                 errorPolicy.MethodNotFound(serviceId, methodId);
-                return deserializerfactory.MakeDummyDeserializer(Rpc());
+                return serializerFactory.MakeDummyDeserializer(Rpc());
         }
     }
 
-    ServiceStubProxy::ServiceStubProxy(services::Echo& echo)
+    ServiceStubProxy::ServiceStubProxy(services::Echo& echo, MethodSerializerFactory& serializerFactory)
         : services::ServiceProxy(echo, maxMessageSize)
+        , serializerFactory(serializerFactory)
     {}
 
     void ServiceStubProxy::Method(uint32_t value)
     {
-        auto serializer = infra::MakeSharedOnHeap<MethodSerializerImpl<Message, uint32_t>>(serviceId, idMethod, value);
+        auto serializer = serializerFactory.MakeSerializer<Message, uint32_t>(serviceId, idMethod, value);
         SetSerializer(serializer);
     }
 }

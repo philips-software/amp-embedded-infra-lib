@@ -35,9 +35,9 @@ public:
     testing::StrictMock<services::MessageCommunicationMock> messageCommunication;
     services::EchoOnMessageCommunication echo{ messageCommunication, errorPolicy };
 
-    services::MethodDeserializerFactory::ForServices<services::ServiceStub> deserializerFactory;
-    services::ServiceStubProxy serviceProxy{ echo };
-    testing::StrictMock<services::ServiceStub> service{ echo, deserializerFactory };
+    services::MethodSerializerFactory::ForServices<services::ServiceStub>::AndProxies<services::ServiceStubProxy> serializerFactory;
+    services::ServiceStubProxy serviceProxy{ echo, serializerFactory };
+    testing::StrictMock<services::ServiceStub> service{ echo, serializerFactory };
 
     infra::SharedOptional<testing::StrictMock<services::MethodSerializerMock>> serializer;
 };
