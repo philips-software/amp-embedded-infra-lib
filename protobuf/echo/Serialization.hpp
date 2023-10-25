@@ -71,6 +71,23 @@ namespace services
         infra::Function<void(Args...)> method;
     };
 
+    template<class Message, class... Args>
+    class MethodSerializerImpl
+        : public MethodSerializer
+    {
+    public:
+        MethodSerializerImpl(uint32_t serviceId, uint32_t methodId, Args... args);
+
+        bool Serialize(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+
+    private:
+        uint32_t serviceId;
+        uint32_t methodId;
+        bool headerSent = false;
+        Message message;
+        ProtoMessageSender<Message> sender{ message };
+    };
+
     class MethodSerializerFactory
     {
     public:
@@ -211,23 +228,6 @@ namespace services
 
         infra::ByteRange serializerMemory;
         infra::ByteRange deserializerMemory;
-    };
-
-    template<class Message, class... Args>
-    class MethodSerializerImpl
-        : public MethodSerializer
-    {
-    public:
-        MethodSerializerImpl(uint32_t serviceId, uint32_t methodId, Args... args);
-
-        bool Serialize(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-
-    private:
-        uint32_t serviceId;
-        uint32_t methodId;
-        bool headerSent = false;
-        Message message;
-        ProtoMessageSender<Message> sender{ message };
     };
 
     ////    Implementation    ////
