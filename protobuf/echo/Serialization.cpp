@@ -25,6 +25,15 @@ namespace services
         return false;
     }
 
+    infra::SharedPtr<MethodDeserializer> MethodDeserializerFactory::MakeDummyDeserializer(Echo& echo)
+    {
+        using Deserializer = MethodDeserializerDummy;
+
+        auto memory = DeserializerMemory(sizeof(Deserializer));
+        auto deserializer = new (memory->begin()) Deserializer(echo);
+        return infra::MakeContainedSharedObject(*deserializer, memory);
+    }
+
     infra::SharedPtr<infra::ByteRange> MethodDeserializerFactory::OnHeap::DeserializerMemory(uint32_t size)
     {
         auto m = reinterpret_cast<uint8_t*>(malloc(size));

@@ -1062,7 +1062,7 @@ namespace application
 
             printer.Print(R"(    default:
         errorPolicy.MethodNotFound(serviceId, methodId);
-        return infra::MakeSharedOnHeap<services::MethodDeserializerDummy>(Rpc());
+        return deserializerfactory.MakeDummyDeserializer(Rpc());
 )");
 
             printer.Print("}\n");

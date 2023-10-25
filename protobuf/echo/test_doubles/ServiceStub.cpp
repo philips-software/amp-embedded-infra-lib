@@ -42,7 +42,7 @@ namespace services
                     }));
             default:
                 errorPolicy.MethodNotFound(serviceId, methodId);
-                return infra::MakeSharedOnHeap<services::MethodDeserializerDummy>(Rpc());
+                return deserializerfactory.MakeDummyDeserializer(Rpc());
         }
     }
 

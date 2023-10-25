@@ -88,6 +88,8 @@ namespace services
 
         template<class Message, class... Args>
         infra::SharedPtr<MethodDeserializer> MakeDeserializer(const infra::Function<void(Args...)>& method);
+
+        infra::SharedPtr<MethodDeserializer> MakeDummyDeserializer(Echo& echo);
     };
 
     template<class MessageList>
@@ -111,7 +113,7 @@ namespace services
     template<>
     struct MaxServiceSize<>
     {
-        static constexpr std::size_t maxSize = 0;
+        static constexpr std::size_t maxSize = sizeof(MethodDeserializerDummy);
     };
 
     template<class Front, class... Tail>
