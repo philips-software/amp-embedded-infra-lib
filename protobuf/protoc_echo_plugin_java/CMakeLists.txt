@@ -1,6 +1,6 @@
 if (EMIL_HOST_BUILD AND NOT CMAKE_CROSSCOMPILING)
     add_executable(protobuf.protoc_echo_plugin_java)
-    emil_build_for(protobuf.protoc_echo_plugin_java EMIL_BUILD_ECHO_COMPILERS)
+    emil_build_for(protobuf.protoc_echo_plugin_java BOOL EMIL_BUILD_ECHO_COMPILERS)
     emil_install(protobuf.protoc_echo_plugin_java DESTINATION bin)
 
     target_link_libraries(protobuf.protoc_echo_plugin_java PUBLIC
