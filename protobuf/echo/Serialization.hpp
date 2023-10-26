@@ -211,8 +211,7 @@ namespace services
         void DeAllocateDeserializer();
 
     private:
-        infra::AccessedBySharedPtr serializerAccess
-        {
+        infra::AccessedBySharedPtr serializerAccess{
             [this]()
             {
                 DeAllocateSerializer();
