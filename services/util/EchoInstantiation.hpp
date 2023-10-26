@@ -12,8 +12,9 @@ namespace main_
     template<std::size_t MessageSize>
     struct EchoOnSerialCommunication
     {
-        explicit EchoOnSerialCommunication(hal::SerialCommunication& serialCommunication)
+        explicit EchoOnSerialCommunication(hal::SerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory)
             : cobs(serialCommunication)
+            , echo(windowed, serializerFactory)
         {}
 
         operator services::Echo&()
@@ -23,7 +24,7 @@ namespace main_
 
         services::MessageCommunicationCobs::WithMaxMessageSize<MessageSize> cobs;
         services::MessageCommunicationWindowed::WithReceiveBuffer<MessageSize> windowed{ cobs };
-        services::EchoOnMessageCommunication echo{ windowed };
+        services::EchoOnMessageCommunication echo;
     };
 
     template<std::size_t MessageSize, std::size_t MaxServices>
@@ -62,8 +63,8 @@ namespace main_
     template<std::size_t MessageSize, std::size_t MaxServices>
     struct EchoForwarderToSerial
     {
-        EchoForwarderToSerial(services::Echo& from, hal::SerialCommunication& toSerial)
-            : to(toSerial)
+        EchoForwarderToSerial(services::Echo& from, hal::SerialCommunication& toSerial, services::MethodSerializerFactory& serializerFactory)
+            : to(toSerial, serializerFactory)
             , echoForwarder(from, to)
         {}
 
