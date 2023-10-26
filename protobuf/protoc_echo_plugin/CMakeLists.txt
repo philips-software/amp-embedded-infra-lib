@@ -27,7 +27,7 @@ if (EMIL_HOST_BUILD)
     if (NOT CMAKE_CROSSCOMPILING)
         add_executable(protobuf.protoc_echo_plugin)
         emil_build_for(protobuf.protoc_echo_plugin BOOL EMIL_BUILD_ECHO_COMPILERS)
-        emil_install(protobuf.protoc_echo_plugin DESTINATION bin)
+        emil_install(protobuf.protoc_echo_plugin EXPORT emilProtobufTargets DESTINATION bin)
 
         target_link_libraries(protobuf.protoc_echo_plugin PUBLIC
             protobuf.protoc_echo_plugin_lib
