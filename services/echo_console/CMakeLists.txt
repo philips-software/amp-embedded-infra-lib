@@ -1,6 +1,6 @@
 if (EMIL_HOST_BUILD)
     add_executable(services.echo_console ${EMIL_EXCLUDE_FROM_ALL})
-    emil_install(services.echo_console EXPORT emilProtobufTargets DESTINATION bin)
+    emil_install(services.echo_console DESTINATION bin)
 
     target_link_libraries(services.echo_console PUBLIC
         args
