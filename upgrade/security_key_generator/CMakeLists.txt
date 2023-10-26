@@ -1,6 +1,6 @@
 add_executable(upgrade.security_key_generator)
 emil_build_for(upgrade.security_key_generator HOST All PREREQUISITE_BOOL EMIL_STANDALONE)
-install(TARGETS upgrade.security_key_generator EXPORT emilUpgradeTargets DESTINATION bin)
+emil_install(upgrade.security_key_generator EXPORT emilUpgradeTargets DESTINATION bin)
 
 target_link_libraries(upgrade.security_key_generator PUBLIC
     args
