@@ -188,7 +188,10 @@ namespace services
     };
 
     template<uint32_t... V>
-    struct Max;
+    struct Max
+    {
+        static constexpr uint32_t value = 0;
+    };
 
     template<uint32_t V>
     struct Max<V>

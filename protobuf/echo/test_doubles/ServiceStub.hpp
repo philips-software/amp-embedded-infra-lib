@@ -38,7 +38,8 @@ namespace services
 
         bool AcceptsService(uint32_t id) const override;
 
-        MOCK_METHOD1(Method, void(uint32_t value));
+        MOCK_METHOD(void, Method, (uint32_t value));
+        MOCK_METHOD(void, MethodNoParameter, ());
 
     protected:
         infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const services::EchoErrorPolicy& errorPolicy) override;
@@ -46,10 +47,11 @@ namespace services
     public:
         static const uint32_t serviceId = 1;
         static const uint32_t idMethod = 1;
+        static const uint32_t idMethodNoParameter = 3;
         static const uint32_t maxMessageSize = 18;
 
     public:
-        using MethodTypeList = infra::List<Message>;
+        using MethodTypeList = infra::List<Message, EmptyMessage>;
 
     private:
         MethodSerializerFactory& serializerFactory;
@@ -63,14 +65,16 @@ namespace services
 
     public:
         void Method(uint32_t value);
+        void MethodNoParameter();
 
     public:
         static constexpr uint32_t serviceId = 1;
         static constexpr uint32_t idMethod = 1;
+        static const uint32_t idMethodNoParameter = 3;
         static constexpr uint32_t maxMessageSize = 18;
 
     public:
-        using MethodTypeList = infra::List<Message>;
+        using MethodTypeList = infra::List<Message, EmptyMessage>;
 
     private:
         MethodSerializerFactory& serializerFactory;

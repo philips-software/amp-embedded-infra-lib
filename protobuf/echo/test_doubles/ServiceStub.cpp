@@ -40,6 +40,11 @@ namespace services
                     {
                         Method(v);
                     }));
+            case idMethodNoParameter:
+                return serializerFactory.MakeDeserializer<EmptyMessage>(infra::Function<void()>([this]()
+                    {
+                        MethodNoParameter();
+                    }));
             default:
                 errorPolicy.MethodNotFound(serviceId, methodId);
                 return serializerFactory.MakeDummyDeserializer(Rpc());
@@ -54,6 +59,12 @@ namespace services
     void ServiceStubProxy::Method(uint32_t value)
     {
         auto serializer = serializerFactory.MakeSerializer<Message, uint32_t>(serviceId, idMethod, value);
+        SetSerializer(serializer);
+    }
+
+    void ServiceStubProxy::MethodNoParameter()
+    {
+        auto serializer = serializerFactory.MakeSerializer<EmptyMessage>(serviceId, idMethodNoParameter);
         SetSerializer(serializer);
     }
 }

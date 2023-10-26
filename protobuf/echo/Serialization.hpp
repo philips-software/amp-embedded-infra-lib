@@ -230,6 +230,22 @@ namespace services
         infra::ByteRange deserializerMemory;
     };
 
+    class EmptyMessage
+    {
+    public:
+        static const uint32_t numberOfFields = 0;
+        template<std::size_t fieldIndex>
+        using ProtoType = void;
+        template<std::size_t fieldIndex>
+        using Type = void;
+        template<std::size_t fieldIndex>
+        static const uint32_t fieldNumber = 0;
+
+    public:
+        void Serialize(infra::ProtoFormatter& formatter) const
+        {}
+    };
+
     ////    Implementation    ////
 
     template<class Message, class... Args>

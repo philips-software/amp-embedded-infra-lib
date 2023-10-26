@@ -54,7 +54,22 @@ TEST_F(EchoOnMessageCommunicationTest, invoke_service_proxy_method)
     infra::ByteOutputStreamWriter::WithStorage<128> writer;
     messageCommunication.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer));
 
-    EXPECT_EQ((std::vector<uint8_t>{ 1, 10, 2, 8, 5 }), (std::vector<uint8_t>(writer.Storage().begin(), writer.Storage().begin() + 5)));
+    EXPECT_EQ((std::vector<uint8_t>{ 1, (1 << 3) | 2, 2, 8, 5 }), (std::vector<uint8_t>(writer.Storage().begin(), writer.Storage().begin() + 5)));
+}
+
+TEST_F(EchoOnMessageCommunicationTest, invoke_service_proxy_method_without_parameters)
+{
+    EXPECT_CALL(messageCommunication, MaxSendMessageSize()).WillOnce(testing::Return(1000));
+    EXPECT_CALL(messageCommunication, RequestSendMessage(18));
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.MethodNoParameter();
+        });
+
+    infra::ByteOutputStreamWriter::WithStorage<128> writer;
+    messageCommunication.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer));
+
+    EXPECT_EQ((std::vector<uint8_t>{ 1, (3 << 3) | 2, 0 }), (std::vector<uint8_t>(writer.Storage().begin(), writer.Storage().begin() + 3)));
 }
 
 TEST_F(EchoOnMessageCommunicationTest, service_method_is_invoked)
@@ -64,6 +79,15 @@ TEST_F(EchoOnMessageCommunicationTest, service_method_is_invoked)
             service.MethodDone();
         }));
     ReceiveMessage(infra::ConstructBin()({ 1, 10, 2, 8, 5 }).Range());
+}
+
+TEST_F(EchoOnMessageCommunicationTest, service_method_without_parameter_is_invoked)
+{
+    EXPECT_CALL(service, MethodNoParameter()).WillOnce(testing::Invoke([this]()
+        {
+            service.MethodDone();
+        }));
+    ReceiveMessage(infra::ConstructBin()({ 1, (3 << 3) | 2, 0 }).Range());
 }
 
 TEST_F(EchoOnMessageCommunicationTest, MessageFormatError_is_reported_when_message_is_not_a_LengthDelimited)

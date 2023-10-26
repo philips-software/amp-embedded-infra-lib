@@ -1001,8 +1001,7 @@ namespace application
                     PrintMethodCaseWithParameter(method, printer);
                 else
                     printer.Print(R"(    case id$name$:
-        $name$();
-        break;
+        return serializerFactory.MakeDeserializer<services::EmptyMessage>(infra::Function<void()>([this]() { $name$(); }));
 )",
                         "name", method.name);
             }
@@ -1085,20 +1084,26 @@ namespace application
             google::protobuf::io::OstreamOutputStream stream(&result);
             google::protobuf::io::Printer printer(&stream, '$', nullptr);
 
-            printer.Print(R"(auto serializer = serializerFactory.MakeSerializer<$type$)", "type", method.parameter->qualifiedName);
-
-            for (auto& field : method.parameter->fields)
+            if (method.parameter != nullptr)
             {
-                std::string typeName;
-                ParameterTypeVisitor visitor(typeName);
-                field->Accept(visitor);
-                printer.Print(", $type$", "type", typeName);
+                printer.Print(R"(auto serializer = serializerFactory.MakeSerializer<$type$)", "type", method.parameter->qualifiedName);
+
+                for (auto& field : method.parameter->fields)
+                {
+                    std::string typeName;
+                    ParameterTypeVisitor visitor(typeName);
+                    field->Accept(visitor);
+                    printer.Print(", $type$", "type", typeName);
+                }
             }
+            else
+                printer.Print(R"(auto serializer = serializerFactory.MakeSerializer<services::EmptyMessage)");
 
             printer.Print(">(serviceId, $methodId$", "methodId", google::protobuf::SimpleItoa(method.methodId));
 
-            for (const auto& field : method.parameter->fields)
-                printer.Print(", $field$", "field", field->name);
+            if (method.parameter != nullptr)
+                for (const auto& field : method.parameter->fields)
+                    printer.Print(", $field$", "field", field->name);
 
             printer.Print(R"();
 SetSerializer(serializer);
