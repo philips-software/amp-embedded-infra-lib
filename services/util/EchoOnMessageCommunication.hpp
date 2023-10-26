@@ -11,7 +11,7 @@ namespace services
         , public MessageCommunicationObserver
     {
     public:
-        EchoOnMessageCommunication(MessageCommunication& subject, EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
+        EchoOnMessageCommunication(MessageCommunication& subject, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
 
         // Implementation of MessageCommunicationObserver
         void Initialized() override;

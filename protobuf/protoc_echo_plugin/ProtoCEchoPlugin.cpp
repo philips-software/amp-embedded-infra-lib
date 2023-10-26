@@ -883,7 +883,7 @@ namespace application
         startMethod->Parameter("uint32_t serviceId");
         startMethod->Parameter("uint32_t methodId");
         startMethod->Parameter("uint32_t size");
-        startMethod->Parameter("services::EchoErrorPolicy& errorPolicy");
+        startMethod->Parameter("const services::EchoErrorPolicy& errorPolicy");
         functions->Add(startMethod);
 
         serviceFormatter->Add(functions);
@@ -998,64 +998,7 @@ namespace application
             for (auto& method : service->methods)
             {
                 if (method.parameter)
-                {
-                    printer.Print(R"(    case id$name$:
-        return serializerFactory.MakeDeserializer<$argument$)",
-                        "name", method.name, "argument", method.parameter->qualifiedName);
-
-                    for (auto& field : method.parameter->fields)
-                    {
-                        std::string typeName;
-                        ParameterTypeVisitor visitor(typeName);
-                        field->Accept(visitor);
-
-                        printer.Print(", $type$", "type", typeName);
-                    }
-
-                    printer.Print(">(infra::Function<void(");
-
-                    for (auto& field : method.parameter->fields)
-                    {
-                        if (&field != &method.parameter->fields.front())
-                            printer.Print(", ");
-
-                        std::string typeName;
-                        ParameterTypeVisitor visitor(typeName);
-                        field->Accept(visitor);
-
-                        printer.Print("$type$", "type", typeName);
-                    }
-
-                    printer.Print(")>([this](");
-
-                    for (auto& field : method.parameter->fields)
-                    {
-                        auto index = std::distance(&method.parameter->fields.front(), &field);
-                        if (index != 0)
-                            printer.Print(", ");
-
-                        std::string typeName;
-                        ParameterTypeVisitor visitor(typeName);
-                        field->Accept(visitor);
-
-                        printer.Print("$type$ v$index$", "type", typeName, "index", google::protobuf::SimpleItoa(index));
-                    }
-
-                    printer.Print(R"() { $name$()",
-                        "name", method.name);
-
-                    for (auto& field : method.parameter->fields)
-                    {
-                        auto index = std::distance(&method.parameter->fields.front(), &field);
-                        if (index != 0)
-                            printer.Print(", ");
-
-                        printer.Print("v$index$", "index", google::protobuf::SimpleItoa(index));
-                    }
-
-                    printer.Print(R"(); }));
-)");
-                }
+                    PrintMethodCaseWithParameter(method, printer);
                 else
                     printer.Print(R"(    case id$name$:
         $name$();
@@ -1073,6 +1016,66 @@ namespace application
         }
 
         return result.str();
+    }
+
+    void ServiceGenerator::PrintMethodCaseWithParameter(const EchoMethod& method, google::protobuf::io::Printer& printer) const
+    {
+        printer.Print(R"(    case id$name$:
+        return serializerFactory.MakeDeserializer<$argument$)",
+            "name", method.name, "argument", method.parameter->qualifiedName);
+
+        for (auto& field : method.parameter->fields)
+        {
+            std::string typeName;
+            ParameterTypeVisitor visitor(typeName);
+            field->Accept(visitor);
+
+            printer.Print(", $type$", "type", typeName);
+        }
+
+        printer.Print(">(infra::Function<void(");
+
+        for (auto& field : method.parameter->fields)
+        {
+            if (&field != &method.parameter->fields.front())
+                printer.Print(", ");
+
+            std::string typeName;
+            ParameterTypeVisitor visitor(typeName);
+            field->Accept(visitor);
+
+            printer.Print("$type$", "type", typeName);
+        }
+
+        printer.Print(")>([this](");
+
+        for (auto& field : method.parameter->fields)
+        {
+            auto index = std::distance(&method.parameter->fields.front(), &field);
+            if (index != 0)
+                printer.Print(", ");
+
+            std::string typeName;
+            ParameterTypeVisitor visitor(typeName);
+            field->Accept(visitor);
+
+            printer.Print("$type$ v$index$", "type", typeName, "index", google::protobuf::SimpleItoa(index));
+        }
+
+        printer.Print(R"() { $name$()",
+            "name", method.name);
+
+        for (auto& field : method.parameter->fields)
+        {
+            auto index = std::distance(&method.parameter->fields.front(), &field);
+            if (index != 0)
+                printer.Print(", ");
+
+            printer.Print("v$index$", "index", google::protobuf::SimpleItoa(index));
+        }
+
+        printer.Print(R"(); }));
+)");
     }
 
     std::string ServiceGenerator::ProxyMethodBody(const EchoMethod& method) const

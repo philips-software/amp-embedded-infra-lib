@@ -2,26 +2,26 @@
 
 namespace services
 {
-    EchoErrorPolicyAbortOnMessageFormatError echoErrorPolicyAbortOnMessageFormatError;
-    EchoErrorPolicyAbort echoErrorPolicyAbort;
+    const EchoErrorPolicyAbortOnMessageFormatError echoErrorPolicyAbortOnMessageFormatError;
+    const EchoErrorPolicyAbort echoErrorPolicyAbort;
 
-    void EchoErrorPolicyAbortOnMessageFormatError::MessageFormatError()
+    void EchoErrorPolicyAbortOnMessageFormatError::MessageFormatError() const
     {
         std::abort();
     }
 
-    void EchoErrorPolicyAbortOnMessageFormatError::ServiceNotFound(uint32_t serviceId)
+    void EchoErrorPolicyAbortOnMessageFormatError::ServiceNotFound(uint32_t serviceId) const
     {}
 
-    void EchoErrorPolicyAbortOnMessageFormatError::MethodNotFound(uint32_t serviceId, uint32_t methodId)
+    void EchoErrorPolicyAbortOnMessageFormatError::MethodNotFound(uint32_t serviceId, uint32_t methodId) const
     {}
 
-    void EchoErrorPolicyAbort::ServiceNotFound(uint32_t serviceId)
+    void EchoErrorPolicyAbort::ServiceNotFound(uint32_t serviceId) const
     {
         std::abort();
     }
 
-    void EchoErrorPolicyAbort::MethodNotFound(uint32_t serviceId, uint32_t methodId)
+    void EchoErrorPolicyAbort::MethodNotFound(uint32_t serviceId, uint32_t methodId) const
     {
         std::abort();
     }

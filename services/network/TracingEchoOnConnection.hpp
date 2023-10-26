@@ -12,7 +12,7 @@ namespace services
         , private MethodDeserializer
     {
     public:
-        TracingEchoOnConnection(services::Tracer& tracer, EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
+        TracingEchoOnConnection(services::Tracer& tracer, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
 
         void AddServiceTracer(ServiceTracer& service);
         void RemoveServiceTracer(ServiceTracer& service);

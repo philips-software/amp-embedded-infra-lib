@@ -15,7 +15,7 @@ namespace services
         ServiceForwarderBase(Echo& echo, Echo& forwardTo);
 
         // Implementation of Service
-        infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, EchoErrorPolicy& errorPolicy) override;
+        infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy) override;
 
     private:
         // Implementation of MethodDeserializer

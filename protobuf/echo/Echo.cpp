@@ -55,7 +55,7 @@ namespace services
         methodSerializer = serializer;
     }
 
-    EchoOnStreams::EchoOnStreams(EchoErrorPolicy& errorPolicy)
+    EchoOnStreams::EchoOnStreams(const EchoErrorPolicy& errorPolicy)
         : errorPolicy(errorPolicy)
     {}
 

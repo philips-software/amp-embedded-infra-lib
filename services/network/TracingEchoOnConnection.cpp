@@ -3,7 +3,7 @@
 
 namespace services
 {
-    TracingEchoOnConnection::TracingEchoOnConnection(services::Tracer& tracer, EchoErrorPolicy& errorPolicy)
+    TracingEchoOnConnection::TracingEchoOnConnection(services::Tracer& tracer, const EchoErrorPolicy& errorPolicy)
         : EchoOnConnection(errorPolicy)
         , tracer(tracer)
     {}

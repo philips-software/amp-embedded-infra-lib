@@ -26,7 +26,7 @@ namespace services
         virtual bool AcceptsService(uint32_t id) const = 0;
 
         void MethodDone();
-        virtual infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, EchoErrorPolicy& errorPolicy) = 0;
+        virtual infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy) = 0;
 
     protected:
         Echo& Rpc();
@@ -67,7 +67,7 @@ namespace services
         , public infra::EnableSharedFromThis<EchoOnStreams>
     {
     public:
-        explicit EchoOnStreams(EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
+        explicit EchoOnStreams(const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
         ~EchoOnStreams() override;
 
         // Implementation of Echo
@@ -93,7 +93,7 @@ namespace services
         void ReaderDone();
 
     private:
-        EchoErrorPolicy& errorPolicy;
+        const EchoErrorPolicy& errorPolicy;
 
         infra::IntrusiveList<ServiceProxy> sendRequesters;
         ServiceProxy* sendingProxy = nullptr;

@@ -36,7 +36,7 @@ namespace services
 
     infra::SharedPtr<infra::ByteRange> MethodSerializerFactory::OnHeap::SerializerMemory(uint32_t size)
     {
-        auto m = reinterpret_cast<uint8_t*>(malloc(size));
+        auto m = new uint8_t[size];
         serializerMemory = { m,
             m + size };
         return serializerAccess.MakeShared(serializerMemory);
@@ -44,7 +44,7 @@ namespace services
 
     infra::SharedPtr<infra::ByteRange> MethodSerializerFactory::OnHeap::DeserializerMemory(uint32_t size)
     {
-        auto m = reinterpret_cast<uint8_t*>(malloc(size));
+        auto m = new uint8_t[size];
         deserializerMemory = { m,
             m + size };
         return deserializerAccess.MakeShared(deserializerMemory);
@@ -52,13 +52,13 @@ namespace services
 
     void MethodSerializerFactory::OnHeap::DeAllocateSerializer()
     {
-        free(serializerMemory.begin());
+        delete[] serializerMemory.begin();
         serializerMemory = {};
     }
 
     void MethodSerializerFactory::OnHeap::DeAllocateDeserializer()
     {
-        free(deserializerMemory.begin());
+        delete[] deserializerMemory.begin();
         deserializerMemory = {};
     }
 }

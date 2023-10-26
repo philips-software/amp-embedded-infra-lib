@@ -56,7 +56,7 @@ namespace services
         : public MethodDeserializer
     {
     public:
-        MethodDeserializerImpl(const infra::Function<void(Args...)>& method);
+        explicit MethodDeserializerImpl(const infra::Function<void(Args...)>& method);
 
         void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
         void ExecuteMethod() override;

@@ -2,7 +2,7 @@
 
 namespace services
 {
-    EchoOnMessageCommunication::EchoOnMessageCommunication(MessageCommunication& subject, EchoErrorPolicy& errorPolicy)
+    EchoOnMessageCommunication::EchoOnMessageCommunication(MessageCommunication& subject, const EchoErrorPolicy& errorPolicy)
         : EchoOnStreams(errorPolicy)
         , MessageCommunicationObserver(subject)
     {}
