@@ -3,8 +3,8 @@
 
 namespace services
 {
-    TracingEchoOnConnection::TracingEchoOnConnection(services::Tracer& tracer, const EchoErrorPolicy& errorPolicy)
-        : EchoOnConnection(errorPolicy)
+    TracingEchoOnConnection::TracingEchoOnConnection(services::Tracer& tracer, services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy)
+        : EchoOnConnection(serializerFactory, errorPolicy)
         , tracer(tracer)
     {}
 

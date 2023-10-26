@@ -21,13 +21,13 @@ public:
     testing::StrictMock<services::EchoErrorPolicyMock> errorPolicy;
     testing::StrictMock<services::ConnectionMock> connection;
     services::MethodSerializerFactory::ForServices<services::ServiceStub>::AndProxies<services::ServiceStubProxy> serializerFactory;
-    services::EchoOnConnection echo{ errorPolicy };
-    testing::StrictMock<services::ServiceStub> service{ echo, serializerFactory };
+    services::EchoOnConnection echo{ serializerFactory, errorPolicy };
+    testing::StrictMock<services::ServiceStub> service{ echo };
 };
 
 TEST_F(EchoOnConnectionTest, invoke_service_proxy_method)
 {
-    services::ServiceStubProxy serviceProxy{ echo, serializerFactory };
+    services::ServiceStubProxy serviceProxy{ echo };
 
     EXPECT_CALL(connection, MaxSendStreamSize()).WillOnce(testing::Return(1000));
     EXPECT_CALL(connection, RequestSendStream(18));

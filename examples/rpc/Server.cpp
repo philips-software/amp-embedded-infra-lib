@@ -8,8 +8,8 @@ class Console
     : public examples::Console
 {
 public:
-    Console(services::Echo& echo, services::MethodSerializerFactory& serializerFactory)
-        : examples::Console(echo, serializerFactory)
+    Console(services::Echo& echo)
+        : examples::Console(echo)
     {}
 
     void Write(infra::BoundedConstString message) override
@@ -24,7 +24,8 @@ class EchoConnection
 {
 public:
     EchoConnection(services::MethodSerializerFactory& serializerFactory)
-        : console(*this, serializerFactory)
+        : services::EchoOnConnection(serializerFactory)
+        , console(*this)
     {}
 
 private:

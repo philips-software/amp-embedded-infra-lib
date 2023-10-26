@@ -31,13 +31,13 @@ public:
         messageCommunication.GetObserver().ReceivedMessage(infra::UnOwnedSharedPtr(reader));
     }
 
+    services::MethodSerializerFactory::ForServices<services::ServiceStub>::AndProxies<services::ServiceStubProxy> serializerFactory;
     testing::StrictMock<services::EchoErrorPolicyMock> errorPolicy;
     testing::StrictMock<services::MessageCommunicationMock> messageCommunication;
-    services::EchoOnMessageCommunication echo{ messageCommunication, errorPolicy };
+    services::EchoOnMessageCommunication echo{ messageCommunication, serializerFactory, errorPolicy };
 
-    services::MethodSerializerFactory::ForServices<services::ServiceStub>::AndProxies<services::ServiceStubProxy> serializerFactory;
-    services::ServiceStubProxy serviceProxy{ echo, serializerFactory };
-    testing::StrictMock<services::ServiceStub> service{ echo, serializerFactory };
+    services::ServiceStubProxy serviceProxy{ echo };
+    testing::StrictMock<services::ServiceStub> service{ echo };
 
     infra::SharedOptional<testing::StrictMock<services::MethodSerializerMock>> serializer;
 };

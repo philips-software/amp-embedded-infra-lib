@@ -21,9 +21,9 @@ namespace services
     }
 
     EchoOnMessageCommunicationSymmetricKey::EchoOnMessageCommunicationSymmetricKey(MessageCommunicationSecured& secured, MethodSerializerFactory& serializerFactory, hal::SynchronousRandomDataGenerator& randomDataGenerator, const EchoErrorPolicy& errorPolicy)
-        : EchoOnMessageCommunication(secured, errorPolicy)
-        , SymmetricKeyEstablishment(static_cast<services::Echo&>(*this), serializerFactory)
-        , SymmetricKeyEstablishmentProxy(static_cast<services::Echo&>(*this), serializerFactory)
+        : EchoOnMessageCommunication(secured, serializerFactory, errorPolicy)
+        , SymmetricKeyEstablishment(static_cast<services::Echo&>(*this))
+        , SymmetricKeyEstablishmentProxy(static_cast<services::Echo&>(*this))
         , secured(secured)
         , randomDataGenerator(randomDataGenerator)
     {}

@@ -60,6 +60,7 @@ namespace services
     public:
         virtual void RequestSend(ServiceProxy& serviceProxy) = 0;
         virtual void ServiceDone() = 0;
+        virtual services::MethodSerializerFactory& SerializerFactory() = 0;
     };
 
     class EchoOnStreams
@@ -67,12 +68,13 @@ namespace services
         , public infra::EnableSharedFromThis<EchoOnStreams>
     {
     public:
-        explicit EchoOnStreams(const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
+        explicit EchoOnStreams(services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
         ~EchoOnStreams() override;
 
         // Implementation of Echo
         void RequestSend(ServiceProxy& serviceProxy) override;
         void ServiceDone() override;
+        services::MethodSerializerFactory& SerializerFactory() override;
 
     protected:
         virtual infra::SharedPtr<MethodSerializer> GrantSend(ServiceProxy& proxy);
@@ -93,6 +95,7 @@ namespace services
         void ReaderDone();
 
     private:
+        services::MethodSerializerFactory& serializerFactory;
         const EchoErrorPolicy& errorPolicy;
 
         infra::IntrusiveList<ServiceProxy> sendRequesters;

@@ -2,8 +2,8 @@
 
 namespace services
 {
-    EchoOnMessageCommunication::EchoOnMessageCommunication(MessageCommunication& subject, const EchoErrorPolicy& errorPolicy)
-        : EchoOnStreams(errorPolicy)
+    EchoOnMessageCommunication::EchoOnMessageCommunication(MessageCommunication& subject, services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy)
+        : EchoOnStreams(serializerFactory, errorPolicy)
         , MessageCommunicationObserver(subject)
     {}
 

@@ -834,9 +834,7 @@ namespace application
         auto constructors = std::make_shared<Access>("public");
         auto constructor = std::make_shared<Constructor>(service->name, "", 0);
         constructor->Parameter("services::Echo& echo");
-        constructor->Parameter("services::MethodSerializerFactory& serializerFactory");
         constructor->Initializer("services::Service(echo)");
-        constructor->Initializer("serializerFactory(serializerFactory)");
 
         constructors->Add(constructor);
         serviceFormatter->Add(constructors);
@@ -847,9 +845,7 @@ namespace application
         auto constructors = std::make_shared<Access>("public");
         auto constructor = std::make_shared<Constructor>(service->name + "Proxy", "", 0);
         constructor->Parameter("services::Echo& echo");
-        constructor->Parameter("services::MethodSerializerFactory& serializerFactory");
         constructor->Initializer("services::ServiceProxy(echo, maxMessageSize)");
-        constructor->Initializer("serializerFactory(serializerFactory)");
 
         constructors->Add(constructor);
         serviceProxyFormatter->Add(constructors);
@@ -926,12 +922,6 @@ namespace application
 
         serviceFormatter->Add(fields);
         serviceProxyFormatter->Add(fields);
-
-        auto variables = std::make_shared<Access>("private");
-        variables->Add(std::make_shared<DataMember>("serializerFactory", "services::MethodSerializerFactory&"));
-
-        serviceFormatter->Add(variables);
-        serviceProxyFormatter->Add(variables);
     }
 
     void ServiceGenerator::GenerateMethodTypeList()
@@ -1001,14 +991,14 @@ namespace application
                     PrintMethodCaseWithParameter(method, printer);
                 else
                     printer.Print(R"(    case id$name$:
-        return serializerFactory.MakeDeserializer<services::EmptyMessage>(infra::Function<void()>([this]() { $name$(); }));
+        return Rpc().SerializerFactory().MakeDeserializer<services::EmptyMessage>(infra::Function<void()>([this]() { $name$(); }));
 )",
                         "name", method.name);
             }
 
             printer.Print(R"(    default:
         errorPolicy.MethodNotFound(serviceId, methodId);
-        return serializerFactory.MakeDummyDeserializer(Rpc());
+        return Rpc().SerializerFactory().MakeDummyDeserializer(Rpc());
 )");
 
             printer.Print("}\n");
@@ -1020,7 +1010,7 @@ namespace application
     void ServiceGenerator::PrintMethodCaseWithParameter(const EchoMethod& method, google::protobuf::io::Printer& printer) const
     {
         printer.Print(R"(    case id$name$:
-        return serializerFactory.MakeDeserializer<$argument$)",
+        return Rpc().SerializerFactory().MakeDeserializer<$argument$)",
             "name", method.name, "argument", method.parameter->qualifiedName);
 
         for (auto& field : method.parameter->fields)
@@ -1086,7 +1076,7 @@ namespace application
 
             if (method.parameter != nullptr)
             {
-                printer.Print(R"(auto serializer = serializerFactory.MakeSerializer<$type$)", "type", method.parameter->qualifiedName);
+                printer.Print(R"(auto serializer = Rpc().SerializerFactory().MakeSerializer<$type$)", "type", method.parameter->qualifiedName);
 
                 for (auto& field : method.parameter->fields)
                 {
@@ -1097,7 +1087,7 @@ namespace application
                 }
             }
             else
-                printer.Print(R"(auto serializer = serializerFactory.MakeSerializer<services::EmptyMessage)");
+                printer.Print(R"(auto serializer = Rpc().SerializerFactory().MakeSerializer<services::EmptyMessage)");
 
             printer.Print(">(serviceId, $methodId$", "methodId", google::protobuf::SimpleItoa(method.methodId));
 
@@ -1131,7 +1121,6 @@ SetSerializer(serializer);
     {
         auto constructors = std::make_shared<Access>("public");
         auto constructor = std::make_shared<Constructor>(service->name + "Tracer", "tracingEcho.AddServiceTracer(*this);\n", 0);
-        constructor->Parameter("services::MethodSerializerFactory& serializerFactory");
         constructor->Parameter("services::TracingEchoOnConnection& tracingEcho");
         constructor->Initializer("services::ServiceTracer(serviceId)");
         constructor->Initializer("tracingEcho(tracingEcho)");

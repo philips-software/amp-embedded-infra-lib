@@ -21,9 +21,8 @@ namespace services
         return value;
     }
 
-    ServiceStub::ServiceStub(Echo& echo, MethodSerializerFactory& serializerFactory)
+    ServiceStub::ServiceStub(Echo& echo)
         : Service(echo)
-        , serializerFactory(serializerFactory)
     {}
 
     bool ServiceStub::AcceptsService(uint32_t id) const
@@ -36,35 +35,34 @@ namespace services
         switch (methodId)
         {
             case idMethod:
-                return serializerFactory.MakeDeserializer<Message, uint32_t>(infra::Function<void(uint32_t)>([this](uint32_t v)
+                return Rpc().SerializerFactory().MakeDeserializer<Message, uint32_t>(infra::Function<void(uint32_t)>([this](uint32_t v)
                     {
                         Method(v);
                     }));
             case idMethodNoParameter:
-                return serializerFactory.MakeDeserializer<EmptyMessage>(infra::Function<void()>([this]()
+                return Rpc().SerializerFactory().MakeDeserializer<EmptyMessage>(infra::Function<void()>([this]()
                     {
                         MethodNoParameter();
                     }));
             default:
                 errorPolicy.MethodNotFound(serviceId, methodId);
-                return serializerFactory.MakeDummyDeserializer(Rpc());
+                return Rpc().SerializerFactory().MakeDummyDeserializer(Rpc());
         }
     }
 
-    ServiceStubProxy::ServiceStubProxy(services::Echo& echo, MethodSerializerFactory& serializerFactory)
+    ServiceStubProxy::ServiceStubProxy(services::Echo& echo)
         : services::ServiceProxy(echo, maxMessageSize)
-        , serializerFactory(serializerFactory)
     {}
 
     void ServiceStubProxy::Method(uint32_t value)
     {
-        auto serializer = serializerFactory.MakeSerializer<Message, uint32_t>(serviceId, idMethod, value);
+        auto serializer = Rpc().SerializerFactory().MakeSerializer<Message, uint32_t>(serviceId, idMethod, value);
         SetSerializer(serializer);
     }
 
     void ServiceStubProxy::MethodNoParameter()
     {
-        auto serializer = serializerFactory.MakeSerializer<EmptyMessage>(serviceId, idMethodNoParameter);
+        auto serializer = Rpc().SerializerFactory().MakeSerializer<EmptyMessage>(serviceId, idMethodNoParameter);
         SetSerializer(serializer);
     }
 }

@@ -55,8 +55,9 @@ namespace services
         methodSerializer = serializer;
     }
 
-    EchoOnStreams::EchoOnStreams(const EchoErrorPolicy& errorPolicy)
-        : errorPolicy(errorPolicy)
+    EchoOnStreams::EchoOnStreams(services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy)
+        : serializerFactory(serializerFactory)
+        , errorPolicy(errorPolicy)
     {}
 
     EchoOnStreams::~EchoOnStreams()
@@ -77,6 +78,11 @@ namespace services
 
         if (readerPtr != nullptr)
             DataReceived();
+    }
+
+    services::MethodSerializerFactory& EchoOnStreams::SerializerFactory()
+    {
+        return serializerFactory;
     }
 
     void EchoOnStreams::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
