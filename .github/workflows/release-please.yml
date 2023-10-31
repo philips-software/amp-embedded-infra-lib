@@ -26,7 +26,7 @@ jobs:
           app_id: ${{ secrets.FOREST_RELEASER_APP_ID }}
           app_base64_private_key: ${{ secrets.FOREST_RELEASER_APP_PRIVATE_KEY_BASE64 }}
           auth_type: installation
-      - uses: google-github-actions/release-please-action@8016a6649226f2ec88ed05441c11bb5410a22d29 # v3.7.10
+      - uses: google-github-actions/release-please-action@4c5670f886fe259db4d11222f7dff41c1382304d # v3.7.12
         id: release
         with:
           command: manifest
@@ -43,17 +43,17 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
     steps:
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           persist-credentials: false
-      - uses: hendrikmuhs/ccache-action@ca3acd2731eef11f1572ccb126356c2f9298d35e # v1.2.9
+      - uses: hendrikmuhs/ccache-action@6d1841ec156c39a52b1b23a810da917ab98da1f4 # v1.2.10
         with:
           key: ${{ github.job }}-${{ matrix.os }}
           variant: sccache
       - uses: lukka/run-cmake@c2b72aff009141774c5a5fabe74ea46c8c04d9c4 # v10.6
         with:
-          configurePreset: "Package"
-          buildPreset: "Package"
+          configurePreset: "host-single-MinSizeRel"
+          buildPreset: "release-package"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
       - run: gh release upload ${{ needs.release_please.outputs.tag_name }} build/**/emil-*.zip --clobber
         shell: bash

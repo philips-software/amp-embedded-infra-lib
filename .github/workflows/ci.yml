@@ -22,30 +22,31 @@ jobs:
     name: Host Build & Test (ubuntu-latest)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           persist-credentials: false
-      - uses: hendrikmuhs/ccache-action@ca3acd2731eef11f1572ccb126356c2f9298d35e # v1.2.9
+      - uses: hendrikmuhs/ccache-action@6d1841ec156c39a52b1b23a810da917ab98da1f4 # v1.2.10
         with:
           key: ${{ github.job }}-ubuntu-latest
           variant: sccache
+      - uses: seanmiddleditch/gha-setup-ninja@8b297075da4cd2a5f1fd21fe011b499edf06e9d2 # v4
       - uses: lukka/run-cmake@c2b72aff009141774c5a5fabe74ea46c8c04d9c4 # v10.6
         with:
-          configurePreset: "ContinuousIntegration"
-          buildPreset: "ContinuousIntegrationWithPackage"
-          testPreset: "ContinuousIntegration"
+          configurePreset: "host"
+          buildPreset: "host-Debug-WithPackage"
+          testPreset: "host"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
-      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+      - uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
         with:
           name: emil
-          path: build/ContinuousIntegration/emil-*-Linux.tar.gz
+          path: build/host/emil-*-Linux.tar.gz
           if-no-files-found: error
       - name: Upload test logs
         if: ${{ failure() }}
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
         with:
           name: test-logs
-          path: build/ContinuousIntegration/Testing/Temporary/
+          path: build/host/Testing/Temporary/
   host_build_test:
     name: Host Build & Test
     runs-on: ${{ matrix.os }}
@@ -53,25 +54,25 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest, windows-2019]
     steps:
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           persist-credentials: false
-      - uses: hendrikmuhs/ccache-action@ca3acd2731eef11f1572ccb126356c2f9298d35e # v1.2.9
+      - uses: hendrikmuhs/ccache-action@6d1841ec156c39a52b1b23a810da917ab98da1f4 # v1.2.10
         with:
           key: ${{ github.job }}-${{ matrix.os }}
           variant: sccache
       - uses: lukka/run-cmake@c2b72aff009141774c5a5fabe74ea46c8c04d9c4 # v10.6
         with:
-          configurePreset: "ContinuousIntegration"
-          buildPreset: "ContinuousIntegration"
-          testPreset: "ContinuousIntegration"
+          configurePreset: "host-single-Debug"
+          buildPreset: "host-single-Debug"
+          testPreset: "host-single-Debug"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
       - name: Upload test logs
         if: ${{ failure() }}
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
         with:
           name: test-logs
-          path: build/ContinuousIntegration/Testing/Temporary/
+          path: build/host/Testing/Temporary/
   embedded_build:
     name: Embedded Build
     runs-on: ubuntu-latest
@@ -81,15 +82,15 @@ jobs:
         gcc: ["7-2018-q2", "8-2019-q3", "9-2020-q2", "10.3-2021.10"]
         configuration: ["RelWithDebInfo"]
     steps:
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           persist-credentials: false
       - name: Install GNU Arm Embedded Toolchain ${{ matrix.gcc }}
-        uses: carlosperate/arm-none-eabi-gcc-action@19a291ad70e2fd526f0d84022e747464559f6de8 # v1.6.3
+        uses: carlosperate/arm-none-eabi-gcc-action@e9cd61b92edb079b14b2d0449b21f8a517121fe8 # v1.8.0
         with:
           release: ${{ matrix.gcc }}
       - run: sudo apt-get update && sudo apt-get install ninja-build
-      - uses: hendrikmuhs/ccache-action@ca3acd2731eef11f1572ccb126356c2f9298d35e # v1.2.9
+      - uses: hendrikmuhs/ccache-action@6d1841ec156c39a52b1b23a810da917ab98da1f4 # v1.2.10
         with:
           key: ${{ github.job }}-${{ matrix.gcc }}-${{ matrix.configuration }}
       - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
@@ -99,8 +100,8 @@ jobs:
       - run: mkdir install && mv emil-*/* install/
       - uses: lukka/run-cmake@c2b72aff009141774c5a5fabe74ea46c8c04d9c4 # v10.6
         with:
-          configurePreset: "Embedded"
-          buildPreset: "Embedded-${{ matrix.configuration }}"
+          configurePreset: "embedded"
+          buildPreset: "embedded-${{ matrix.configuration }}"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"
   rtos:
     name: Embedded Build - RTOS
@@ -110,15 +111,15 @@ jobs:
       matrix:
         rtos: ["FreeRTOS", "ThreadX"]
     steps:
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           persist-credentials: false
       - name: Install GNU Arm Embedded Toolchain "10.3-2021.10"
-        uses: carlosperate/arm-none-eabi-gcc-action@19a291ad70e2fd526f0d84022e747464559f6de8 # v1.6.3
+        uses: carlosperate/arm-none-eabi-gcc-action@e9cd61b92edb079b14b2d0449b21f8a517121fe8 # v1.8.0
         with:
           release: "10.3-2021.10"
       - run: sudo apt-get update && sudo apt-get install ninja-build
-      - uses: hendrikmuhs/ccache-action@ca3acd2731eef11f1572ccb126356c2f9298d35e # v1.2.9
+      - uses: hendrikmuhs/ccache-action@6d1841ec156c39a52b1b23a810da917ab98da1f4 # v1.2.10
         with:
           key: ${{ github.job }}
       - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
@@ -128,6 +129,6 @@ jobs:
       - run: mkdir install && mv emil-*/* install/
       - uses: lukka/run-cmake@c2b72aff009141774c5a5fabe74ea46c8c04d9c4 # v10.6
         with:
-          configurePreset: "Embedded-${{ matrix.rtos }}"
-          buildPreset: "Embedded-${{ matrix.rtos }}-RelWithDebInfo"
+          configurePreset: "embedded-${{ matrix.rtos }}"
+          buildPreset: "embedded-${{ matrix.rtos }}-RelWithDebInfo"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"

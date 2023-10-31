@@ -1,3 +1,5 @@
+# cmake-dependency-scan pkg:github/kokke/tiny-aes-c@7e42e693288bdf22d8e677da94248115168211b9
+
 add_library(crypto.tiny_aes128 ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
 target_include_directories(crypto.tiny_aes128 PUBLIC
