@@ -70,28 +70,32 @@ namespace main_
         return infra::none;
     }
 
-    bool UpgradePackBuilderFacade::CheckIfTargetIsInOrder(const std::string& target, const application::SupportedTargets& supportedTargets)
+    bool UpgradePackBuilderFacade::IsTargetInOrder(const std::string& target, const std::map<uint8_t, std::vector<std::string>>& orderedTargets) const
     {
-        static uint8_t currentOrderOfTarget = 0;
-        static const auto& orderedTargets = supportedTargets.OrderOfTargets();
         const auto orderToAdd = GetOrder(target, orderedTargets);
-        if (orderToAdd)
-        {
-            if (currentOrderOfTarget > *orderToAdd)
+
+        if ((orderToAdd != infra::none) && (currentOrderOfTarget > *orderToAdd))
                 return false;
-            else
-                currentOrderOfTarget = *orderToAdd;
-        }
         return true;
+    }
+
+    void UpgradePackBuilderFacade::UpdateCurrentOrderOfTarget(const std::string& target, const std::map<uint8_t, std::vector<std::string>>& orderedTargets)
+    {
+        const auto orderToAdd = GetOrder(target, orderedTargets);
+
+        if (orderToAdd)
+            currentOrderOfTarget = std::max(currentOrderOfTarget, *orderToAdd);
     }
 
     std::vector<std::unique_ptr<application::Input>> UpgradePackBuilderFacade::CreateInputs(const application::SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, application::InputFactory& factory)
     {
         std::vector<std::unique_ptr<application::Input>> inputs;
+        const auto& orderedTargets = supportedTargets.OrderOfTargets();
 
         for (const auto& [target, file, address] : requestedTargets)
         {
-            if (!CheckIfTargetIsInOrder(target, supportedTargets))
+            UpdateCurrentOrderOfTarget(target, orderedTargets);
+            if (!IsTargetInOrder(target, orderedTargets))
                 throw IncorrectOrderOfTargetException(target);
             inputs.push_back(factory.CreateInput(target, file, address));
         }

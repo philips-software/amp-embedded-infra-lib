@@ -37,8 +37,12 @@ namespace main_
 
     private:
         infra::Optional<uint8_t> GetOrder(const std::string& targetName, const std::map<uint8_t, std::vector<std::string>>& orderedTargets) const;
-        bool CheckIfTargetIsInOrder(const std::string& target, const application::SupportedTargets& supportedTargets);
+        bool IsTargetInOrder(const std::string& target, const std::map<uint8_t, std::vector<std::string>>& orderedTargets) const;
+        void UpdateCurrentOrderOfTarget(const std::string& target, const std::map<uint8_t, std::vector<std::string>>& orderedTargets);
         std::vector<std::unique_ptr<application::Input>> CreateInputs(const application::SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, application::InputFactory& factory);
+
+    private:
+        uint8_t currentOrderOfTarget = 0;
 
     protected:
         application::UpgradePackBuilder::HeaderInfo headerInfo;
