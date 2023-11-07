@@ -106,7 +106,7 @@ function(protocol_buffer_csharp target input)
 endfunction()
 
 function(protocol_buffer_java target input)
-    protocol_buffer_generator(TARGET ${target} INPUT ${input} GENERATOR java PATH_INFIX "/com/philips/emil/ProtobufEcho/" GENERATED_POSTFIXES Proto.java)
+    protocol_buffer_generator(TARGET ${target} INPUT ${input} GENERATOR java PATH_INFIX "/com/philips/emil/protobufEcho/" GENERATED_POSTFIXES Proto.java)
 endfunction()
 
 function(protocol_buffer_all target input)
