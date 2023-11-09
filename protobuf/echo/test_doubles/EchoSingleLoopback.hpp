@@ -1,6 +1,7 @@
 #ifndef PROTOBUF_TEST_HELPER_ECHO_SINGLE_LOOPBACK_HPP
 #define PROTOBUF_TEST_HELPER_ECHO_SINGLE_LOOPBACK_HPP
 
+#include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "protobuf/echo/Echo.hpp"
@@ -16,7 +17,6 @@ namespace application
     protected:
         // Implementation of services::EchoOnStreams
         void RequestSendStream(std::size_t size) override;
-        void BusyServiceDone() override;
 
     private:
         void SendStreamFilled();
@@ -27,6 +27,8 @@ namespace application
             {
                 SendStreamFilled();
             } };
+
+        infra::SharedOptional<infra::ByteInputStreamReader> reader;
     };
 }
 

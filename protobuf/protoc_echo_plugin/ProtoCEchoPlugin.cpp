@@ -826,6 +826,7 @@ namespace application
         GenerateServiceFunctions();
         GenerateServiceProxyFunctions();
         GenerateFieldConstants();
+        GenerateMethodTypeList();
     }
 
     void ServiceGenerator::GenerateServiceConstructors()
@@ -870,16 +871,16 @@ namespace application
             functions->Add(serviceMethod);
         }
 
-        auto acceptsService = std::make_shared<Function>("AcceptsService", AcceptsServiceBody(), "bool", Function::fConst | Function::fVirtual | Function::fOverride);
+        auto acceptsService = std::make_shared<Function>("AcceptsService", AcceptsServiceBody(), "bool", Function::fConst | Function::fOverride);
         acceptsService->Parameter("uint32_t id");
         functions->Add(acceptsService);
 
-        auto handle = std::make_shared<Function>("Handle", HandleBody(), "void", Function::fVirtual | Function::fOverride);
-        handle->Parameter("uint32_t serviceId");
-        handle->Parameter("uint32_t methodId");
-        handle->Parameter("infra::ProtoLengthDelimited& contents");
-        handle->Parameter("services::EchoErrorPolicy& errorPolicy");
-        functions->Add(handle);
+        auto startMethod = std::make_shared<Function>("StartMethod", StartMethodBody(), "infra::SharedPtr<services::MethodDeserializer>", Function::fOverride);
+        startMethod->Parameter("uint32_t serviceId");
+        startMethod->Parameter("uint32_t methodId");
+        startMethod->Parameter("uint32_t size");
+        startMethod->Parameter("const services::EchoErrorPolicy& errorPolicy");
+        functions->Add(startMethod);
 
         serviceFormatter->Add(functions);
     }
@@ -912,15 +913,35 @@ namespace application
     {
         auto fields = std::make_shared<Access>("public");
 
-        fields->Add(std::make_shared<DataMember>("serviceId", "static const uint32_t", google::protobuf::SimpleItoa(service->serviceId)));
+        fields->Add(std::make_shared<DataMember>("serviceId", "static constexpr uint32_t", google::protobuf::SimpleItoa(service->serviceId)));
 
         for (auto& method : service->methods)
-            fields->Add(std::make_shared<DataMember>("id" + method.name, "static const uint32_t", google::protobuf::SimpleItoa(method.methodId)));
+            fields->Add(std::make_shared<DataMember>("id" + method.name, "static constexpr uint32_t", google::protobuf::SimpleItoa(method.methodId)));
 
-        fields->Add(std::make_shared<DataMember>("maxMessageSize", "static const uint32_t", google::protobuf::SimpleItoa(MaxMessageSize())));
+        fields->Add(std::make_shared<DataMember>("maxMessageSize", "static constexpr uint32_t", google::protobuf::SimpleItoa(MaxMessageSize())));
 
         serviceFormatter->Add(fields);
         serviceProxyFormatter->Add(fields);
+    }
+
+    void ServiceGenerator::GenerateMethodTypeList()
+    {
+        auto methodTypeListAccess = std::make_shared<Access>("public");
+
+        std::string definition;
+
+        for (auto& method : service->methods)
+            if (method.parameter != nullptr)
+            {
+                if (!definition.empty())
+                    definition += ", ";
+                definition += method.parameter->name;
+            }
+
+        methodTypeListAccess->Add(std::make_shared<Using>("MethodTypeList", "infra::List<" + definition + ">"));
+
+        serviceFormatter->Add(methodTypeListAccess);
+        serviceProxyFormatter->Add(methodTypeListAccess);
     }
 
     uint32_t ServiceGenerator::MaxMessageSize() const
@@ -953,59 +974,97 @@ namespace application
         return result.str();
     }
 
-    std::string ServiceGenerator::HandleBody() const
+    std::string ServiceGenerator::StartMethodBody() const
     {
         std::ostringstream result;
         {
             google::protobuf::io::OstreamOutputStream stream(&result);
             google::protobuf::io::Printer printer(&stream, '$', nullptr);
 
-            printer.Print(R"(infra::ProtoParser parser(contents.Parser());
-
-switch (methodId)
+            printer.Print(R"(switch (methodId)
 {
 )");
 
             for (auto& method : service->methods)
             {
                 if (method.parameter)
-                {
-                    printer.Print(R"(    case id$name$:
-    {
-        $argument$ argument(parser);
-        if (!parser.FormatFailed())
-            $name$()",
-                        "name", method.name, "argument", method.parameter->qualifiedName);
-
-                    for (auto& field : method.parameter->fields)
-                    {
-                        printer.Print("argument.$field$", "field", field->name);
-                        if (&field != &method.parameter->fields.back())
-                            printer.Print(", ");
-                    }
-
-                    printer.Print(R"();
-        break;
-    }
-)");
-                }
+                    PrintMethodCaseWithParameter(method, printer);
                 else
                     printer.Print(R"(    case id$name$:
-        $name$();
-        break;
+        return Rpc().SerializerFactory().MakeDeserializer<services::EmptyMessage>(infra::Function<void()>([this]() { $name$(); }));
 )",
                         "name", method.name);
             }
 
             printer.Print(R"(    default:
         errorPolicy.MethodNotFound(serviceId, methodId);
-        contents.SkipEverything();
+        return Rpc().SerializerFactory().MakeDummyDeserializer(Rpc());
 )");
 
             printer.Print("}\n");
         }
 
         return result.str();
+    }
+
+    void ServiceGenerator::PrintMethodCaseWithParameter(const EchoMethod& method, google::protobuf::io::Printer& printer) const
+    {
+        printer.Print(R"(    case id$name$:
+        return Rpc().SerializerFactory().MakeDeserializer<$argument$)",
+            "name", method.name, "argument", method.parameter->qualifiedName);
+
+        for (auto& field : method.parameter->fields)
+        {
+            std::string typeName;
+            ParameterTypeVisitor visitor(typeName);
+            field->Accept(visitor);
+
+            printer.Print(", $type$", "type", typeName);
+        }
+
+        printer.Print(">(infra::Function<void(");
+
+        for (auto& field : method.parameter->fields)
+        {
+            if (&field != &method.parameter->fields.front())
+                printer.Print(", ");
+
+            std::string typeName;
+            ParameterTypeVisitor visitor(typeName);
+            field->Accept(visitor);
+
+            printer.Print("$type$", "type", typeName);
+        }
+
+        printer.Print(")>([this](");
+
+        for (auto& field : method.parameter->fields)
+        {
+            auto index = std::distance(&method.parameter->fields.front(), &field);
+            if (index != 0)
+                printer.Print(", ");
+
+            std::string typeName;
+            ParameterTypeVisitor visitor(typeName);
+            field->Accept(visitor);
+
+            printer.Print("$type$ v$index$", "type", typeName, "index", google::protobuf::SimpleItoa(index));
+        }
+
+        printer.Print(R"() { $name$()",
+            "name", method.name);
+
+        for (auto& field : method.parameter->fields)
+        {
+            auto index = std::distance(&method.parameter->fields.front(), &field);
+            if (index != 0)
+                printer.Print(", ");
+
+            printer.Print("v$index$", "index", google::protobuf::SimpleItoa(index));
+        }
+
+        printer.Print(R"(); }));
+)");
     }
 
     std::string ServiceGenerator::ProxyMethodBody(const EchoMethod& method) const
@@ -1015,34 +1074,29 @@ switch (methodId)
             google::protobuf::io::OstreamOutputStream stream(&result);
             google::protobuf::io::Printer printer(&stream, '$', nullptr);
 
-            printer.Print(R"(infra::DataOutputStream::WithErrorPolicy stream(Rpc().SendStreamWriter());
-infra::ProtoFormatter formatter(stream);
-formatter.PutVarInt(serviceId);
-{
-    infra::ProtoLengthDelimitedFormatter argumentFormatter = formatter.LengthDelimitedFormatter(id$name$);
-)",
-                "name", method.name);
-
-            if (method.parameter)
+            if (method.parameter != nullptr)
             {
-                printer.Print("    $type$(", "type", method.parameter->qualifiedName);
+                printer.Print(R"(auto serializer = Rpc().SerializerFactory().MakeSerializer<$type$)", "type", method.parameter->qualifiedName);
 
                 for (auto& field : method.parameter->fields)
                 {
                     std::string typeName;
                     ParameterTypeVisitor visitor(typeName);
                     field->Accept(visitor);
-                    printer.Print("$field$", "field", field->name);
-                    if (&field != &method.parameter->fields.back())
-                        printer.Print(", ");
+                    printer.Print(", $type$", "type", typeName);
                 }
-
-                printer.Print(R"().Serialize(formatter);
-)");
             }
+            else
+                printer.Print(R"(auto serializer = Rpc().SerializerFactory().MakeSerializer<services::EmptyMessage)");
 
-            printer.Print(R"(}
-Rpc().Send();
+            printer.Print(">(serviceId, $methodId$", "methodId", google::protobuf::SimpleItoa(method.methodId));
+
+            if (method.parameter != nullptr)
+                for (const auto& field : method.parameter->fields)
+                    printer.Print(", $field$", "field", field->name);
+
+            printer.Print(R"();
+SetSerializer(serializer);
 )");
         }
 
@@ -1081,7 +1135,7 @@ Rpc().Send();
     {
         auto functions = std::make_shared<Access>("public");
 
-        auto handle = std::make_shared<Function>("TraceMethod", TraceMethodBody(), "void", Function::fVirtual | Function::fOverride | Function::fConst);
+        auto handle = std::make_shared<Function>("TraceMethod", TraceMethodBody(), "void", Function::fOverride | Function::fConst);
         handle->Parameter("uint32_t methodId");
         handle->Parameter("infra::ProtoLengthDelimited& contents");
         handle->Parameter("services::Tracer& tracer");
@@ -1182,6 +1236,7 @@ switch (methodId)
         auto includesByHeader = std::make_shared<IncludesByHeader>();
         includesByHeader->Path("infra/util/BoundedString.hpp");
         includesByHeader->Path("infra/util/BoundedVector.hpp");
+        includesByHeader->Path("infra/util/VariadicTemplates.hpp");
         includesByHeader->Path("protobuf/echo/Echo.hpp");
         includesByHeader->Path("infra/syntax/ProtoFormatter.hpp");
         includesByHeader->Path("infra/syntax/ProtoParser.hpp");

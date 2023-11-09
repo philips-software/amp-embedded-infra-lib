@@ -27,10 +27,12 @@ namespace services
         mbedtls_gcm_free(&sendContext);
     }
 
-    void MessageCommunicationSecured::SetSendKey(const KeyType& sendKey, const IvType& sendIv)
+    void MessageCommunicationSecured::SetNextSendKey(const KeyType& sendKey, const IvType& sendIv)
     {
-        mbedtls_gcm_setkey(&sendContext, MBEDTLS_CIPHER_ID_AES, reinterpret_cast<const unsigned char*>(sendKey.data()), sendKey.size() * 8); //NOSONAR
-        this->sendIv = sendIv;
+        nextKeys = { sendKey, sendIv };
+
+        if (sendWriter == nullptr)
+            ActivateSendKey();
     }
 
     void MessageCommunicationSecured::SetReceiveKey(const KeyType& receiveKey, const IvType& receiveIv)
@@ -56,6 +58,18 @@ namespace services
     std::size_t MessageCommunicationSecured::MaxSendMessageSize() const
     {
         return std::min(MessageCommunicationObserver::Subject().MaxSendMessageSize(), sendBuffer.max_size()) - blockSize;
+    }
+
+    void MessageCommunicationSecured::SetSendKey(const KeyType& sendKey, const IvType& sendIv)
+    {
+        mbedtls_gcm_setkey(&sendContext, MBEDTLS_CIPHER_ID_AES, reinterpret_cast<const unsigned char*>(sendKey.data()), sendKey.size() * 8); //NOSONAR
+        this->sendIv = sendIv;
+    }
+
+    void MessageCommunicationSecured::ActivateSendKey()
+    {
+        SetSendKey(nextKeys->first, nextKeys->second);
+        nextKeys = infra::none;
     }
 
     void MessageCommunicationSecured::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -143,6 +157,9 @@ namespace services
         sendBuffer.clear();
         IncreaseIv(sendIv);
         sendWriter = nullptr;
+
+        if (nextKeys)
+            ActivateSendKey();
     }
 
     void MessageCommunicationSecured::IncreaseIv(infra::ByteRange iv) const

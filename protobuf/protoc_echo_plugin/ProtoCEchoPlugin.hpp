@@ -157,10 +157,13 @@ namespace application
         void GenerateServiceFunctions();
         void GenerateServiceProxyFunctions();
         void GenerateFieldConstants();
+        void GenerateMethodTypeList();
 
         uint32_t MaxMessageSize() const;
         std::string AcceptsServiceBody() const;
-        std::string HandleBody() const;
+        std::string StartMethodBody() const;
+        void PrintMethodCaseWithParameter(const EchoMethod& method, google::protobuf::io::Printer& printer) const;
+
         std::string ProxyMethodBody(const EchoMethod& method) const;
 
     private:

@@ -14,6 +14,7 @@ namespace services
         explicit ProtoMessageReceiverBase(infra::BoundedVector<std::pair<uint32_t, infra::Function<void(const infra::DataInputStream& stream)>>>& stack);
 
         void Feed(infra::StreamReaderWithRewinding& data);
+        bool Failed() const;
 
     protected:
         template<class Message>
@@ -54,6 +55,7 @@ namespace services
     private:
         infra::BoundedDeque<uint8_t>::WithMaxSize<32> buffer;
         infra::BoundedVector<std::pair<uint32_t, infra::Function<void(const infra::DataInputStream& stream)>>>& stack;
+        bool failed = false;
     };
 
     template<class Message>

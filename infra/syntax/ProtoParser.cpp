@@ -90,6 +90,7 @@ namespace infra
         uint64_t result = 0;
         uint8_t byte = 0;
         uint8_t shift = 0;
+        uint8_t index = 0;
 
         do
         {
@@ -97,7 +98,11 @@ namespace infra
 
             result += static_cast<uint64_t>(byte & 0x7f) << shift;
             shift += 7;
-        } while (!input.Failed() && (byte & 0x80) != 0);
+            ++index;
+        } while (!input.Failed() && (byte & 0x80) != 0 && index != 10);
+
+        if (!input.Failed() && (byte & 0x80) != 0 && index == 10)
+            formatErrorPolicy.Failed();
 
         return result;
     }
