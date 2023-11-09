@@ -30,7 +30,7 @@ jobs:
           key: ${{ github.job }}-ubuntu-latest
           variant: sccache
       - uses: seanmiddleditch/gha-setup-ninja@8b297075da4cd2a5f1fd21fe011b499edf06e9d2 # v4
-      - uses: lukka/run-cmake@c2b72aff009141774c5a5fabe74ea46c8c04d9c4 # v10.6
+      - uses: lukka/run-cmake@2ce8982be71b8e9a3c4d5e432135035afd1e76a7 # v10.7
         with:
           configurePreset: "host"
           buildPreset: "host-Debug-WithPackage"
@@ -61,7 +61,7 @@ jobs:
         with:
           key: ${{ github.job }}-${{ matrix.os }}
           variant: sccache
-      - uses: lukka/run-cmake@c2b72aff009141774c5a5fabe74ea46c8c04d9c4 # v10.6
+      - uses: lukka/run-cmake@2ce8982be71b8e9a3c4d5e432135035afd1e76a7 # v10.7
         with:
           configurePreset: "host-single-Debug"
           buildPreset: "host-single-Debug"
@@ -86,7 +86,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Install GNU Arm Embedded Toolchain ${{ matrix.gcc }}
-        uses: carlosperate/arm-none-eabi-gcc-action@6a221d7c85f5b36647d6e9b25e874abf187409d3 # v1.7.1
+        uses: carlosperate/arm-none-eabi-gcc-action@e9cd61b92edb079b14b2d0449b21f8a517121fe8 # v1.8.0
         with:
           release: ${{ matrix.gcc }}
       - run: sudo apt-get update && sudo apt-get install ninja-build
@@ -98,7 +98,7 @@ jobs:
           name: emil
       - run: tar -zxvf emil-*.tar.gz
       - run: mkdir install && mv emil-*/* install/
-      - uses: lukka/run-cmake@c2b72aff009141774c5a5fabe74ea46c8c04d9c4 # v10.6
+      - uses: lukka/run-cmake@2ce8982be71b8e9a3c4d5e432135035afd1e76a7 # v10.7
         with:
           configurePreset: "embedded"
           buildPreset: "embedded-${{ matrix.configuration }}"
@@ -115,7 +115,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Install GNU Arm Embedded Toolchain "10.3-2021.10"
-        uses: carlosperate/arm-none-eabi-gcc-action@6a221d7c85f5b36647d6e9b25e874abf187409d3 # v1.7.1
+        uses: carlosperate/arm-none-eabi-gcc-action@e9cd61b92edb079b14b2d0449b21f8a517121fe8 # v1.8.0
         with:
           release: "10.3-2021.10"
       - run: sudo apt-get update && sudo apt-get install ninja-build
@@ -127,7 +127,7 @@ jobs:
           name: emil
       - run: tar -zxvf emil-*.tar.gz
       - run: mkdir install && mv emil-*/* install/
-      - uses: lukka/run-cmake@c2b72aff009141774c5a5fabe74ea46c8c04d9c4 # v10.6
+      - uses: lukka/run-cmake@2ce8982be71b8e9a3c4d5e432135035afd1e76a7 # v10.7
         with:
           configurePreset: "embedded-${{ matrix.rtos }}"
           buildPreset: "embedded-${{ matrix.rtos }}-RelWithDebInfo"
