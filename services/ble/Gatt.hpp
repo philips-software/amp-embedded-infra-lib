@@ -37,6 +37,20 @@ namespace services
         };
     };
 
+    namespace uuid
+    {
+        constexpr static AttAttribute::Uuid16 deviceInformationService{ 0x180A };
+        constexpr static AttAttribute::Uuid16 systemId{ 0x2A23 };
+        constexpr static AttAttribute::Uuid16 modelNumber{ 0x2A24 };
+        constexpr static AttAttribute::Uuid16 serialNumber{ 0x2A25 };
+        constexpr static AttAttribute::Uuid16 firmwareRevision{ 0x2A26 };
+        constexpr static AttAttribute::Uuid16 hardwareRevision{ 0x2A27 };
+        constexpr static AttAttribute::Uuid16 softwareRevision{ 0x2A28 };
+        constexpr static AttAttribute::Uuid16 manufacturerName{ 0x2A29 };
+        constexpr static AttAttribute::Uuid16 ieeeCertification{ 0x2A2A };
+        constexpr static AttAttribute::Uuid16 pnpId{ 0x2A50 };
+    }
+
     class GattCharacteristic
     {
     public:
