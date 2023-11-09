@@ -15,7 +15,7 @@ namespace services
     class EchoErrorPolicy
     {
     protected:
-        ~EchoErrorPolicy() = default;
+        virtual ~EchoErrorPolicy() = default;
 
     public:
         virtual void MessageFormatError() const = 0;
