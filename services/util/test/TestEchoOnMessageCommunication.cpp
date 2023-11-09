@@ -45,7 +45,7 @@ public:
 TEST_F(EchoOnMessageCommunicationTest, invoke_service_proxy_method)
 {
     EXPECT_CALL(messageCommunication, MaxSendMessageSize()).WillOnce(testing::Return(1000));
-    EXPECT_CALL(messageCommunication, RequestSendMessage(18));
+    EXPECT_CALL(messageCommunication, RequestSendMessage(38));
     serviceProxy.RequestSend([this]()
         {
             serviceProxy.Method(5);
@@ -60,7 +60,7 @@ TEST_F(EchoOnMessageCommunicationTest, invoke_service_proxy_method)
 TEST_F(EchoOnMessageCommunicationTest, invoke_service_proxy_method_without_parameters)
 {
     EXPECT_CALL(messageCommunication, MaxSendMessageSize()).WillOnce(testing::Return(1000));
-    EXPECT_CALL(messageCommunication, RequestSendMessage(18));
+    EXPECT_CALL(messageCommunication, RequestSendMessage(38));
     serviceProxy.RequestSend([this]()
         {
             serviceProxy.MethodNoParameter();

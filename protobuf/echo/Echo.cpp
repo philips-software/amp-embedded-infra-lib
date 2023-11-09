@@ -99,7 +99,7 @@ namespace services
         {
             sendingProxy = &sendRequesters.front();
             sendRequesters.pop_front();
-            RequestSendStream(sendingProxy->CurrentRequestedSize());
+            RequestSendStream(sendingProxy->CurrentRequestedSize() + 2 * infra::MaxVarIntSize(std::numeric_limits<uint64_t>::max()));
         }
     }
 

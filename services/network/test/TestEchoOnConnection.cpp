@@ -30,7 +30,7 @@ TEST_F(EchoOnConnectionTest, invoke_service_proxy_method)
     services::ServiceStubProxy serviceProxy{ echo };
 
     EXPECT_CALL(connection, MaxSendStreamSize()).WillOnce(testing::Return(1000));
-    EXPECT_CALL(connection, RequestSendStream(18));
+    EXPECT_CALL(connection, RequestSendStream(38));
     serviceProxy.RequestSend([&serviceProxy]()
         {
             serviceProxy.Method(5);
