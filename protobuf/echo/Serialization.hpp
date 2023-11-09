@@ -241,7 +241,7 @@ namespace services
         static const uint32_t fieldNumber = 0;
 
     public:
-        void Serialize(infra::ProtoFormatter& formatter) const
+        void Serialize([[maybe_unused]] infra::ProtoFormatter& formatter) const
         {}
     };
 

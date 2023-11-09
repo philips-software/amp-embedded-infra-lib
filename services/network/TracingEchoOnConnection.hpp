@@ -53,7 +53,6 @@ namespace services
             infra::ByteRange Overwrite(std::size_t marker) override;
 
         private:
-            TracingEchoOnConnection& echo;
             infra::SharedPtr<infra::StreamWriter> delegate;
             infra::BoundedVectorStreamWriter writer;
             infra::ByteRange savedRange;

@@ -84,7 +84,7 @@ namespace services
     void TracingEchoOnConnection::ExecuteMethod()
     {
         infra::BoundedVectorInputStream stream(readerBuffer, infra::noFail);
-        infra::ProtoLengthDelimited contentsCopy(stream, stream.ErrorPolicy(), stream.Available());
+        infra::ProtoLengthDelimited contentsCopy(stream, stream.ErrorPolicy(), static_cast<uint32_t>(stream.Available()));
 
         tracer.Trace() << "< ";
         receivingService->TraceMethod(receivingMethodId, contentsCopy, tracer);
@@ -120,8 +120,7 @@ namespace services
     }
 
     TracingEchoOnConnection::TracingWriter::TracingWriter(infra::SharedPtr<infra::StreamWriter>&& delegate, TracingEchoOnConnection& echo)
-        : echo(echo)
-        , delegate(std::move(delegate))
+        : delegate(std::move(delegate))
         , writer(echo.writerBuffer)
     {}
 
