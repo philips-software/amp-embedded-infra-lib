@@ -104,13 +104,13 @@ jobs:
           buildPreset: "embedded-${{ matrix.configuration }}"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"
   embedded_build_without_host_install:
-    name: Embedded Build
+    name: Embedded Build Without Host Install
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           persist-credentials: false
-      - name: Install GNU Arm Embedded Toolchain "10.3-2021.10"
+      - name: Install GNU Arm Embedded Toolchain 10.3-2021.10
         uses: carlosperate/arm-none-eabi-gcc-action@e9cd61b92edb079b14b2d0449b21f8a517121fe8 # v1.8.0
         with:
           release: "10.3-2021.10"
@@ -134,7 +134,7 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           persist-credentials: false
-      - name: Install GNU Arm Embedded Toolchain "10.3-2021.10"
+      - name: Install GNU Arm Embedded Toolchain 10.3-2021.10
         uses: carlosperate/arm-none-eabi-gcc-action@e9cd61b92edb079b14b2d0449b21f8a517121fe8 # v1.8.0
         with:
           release: "10.3-2021.10"
