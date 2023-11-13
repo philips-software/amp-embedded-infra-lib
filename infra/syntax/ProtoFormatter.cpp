@@ -130,6 +130,12 @@ namespace infra
         PutBytes(bytes);
     }
 
+    void ProtoFormatter::PutLengthDelimitedSize(std::size_t size, uint32_t fieldNumber)
+    {
+        PutVarInt((fieldNumber << 3) | 2);
+        PutVarInt(size);
+    }
+
     ProtoLengthDelimitedFormatter ProtoFormatter::LengthDelimitedFormatter(uint32_t fieldNumber)
     {
         return ProtoLengthDelimitedFormatter(*this, fieldNumber);

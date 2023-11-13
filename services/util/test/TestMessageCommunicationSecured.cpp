@@ -110,7 +110,7 @@ TEST_F(MessageCommunicationSecuredTest, key_change_to_default_key_results_in_sam
     auto first = sentData;
     Receive("abcd");
 
-    secured.SetSendKey(key, iv);
+    secured.SetNextSendKey(key, iv);
     secured.SetReceiveKey(key, iv);
 
     Send("abcd");
@@ -128,7 +128,7 @@ TEST_F(MessageCommunicationSecuredTest, key_change_to_different_key_results_in_d
 
     std::array<uint8_t, services::MessageCommunicationSecured::keySize> key2{ 1, 2, 1 };
     std::array<uint8_t, services::MessageCommunicationSecured::blockSize> iv2{ 1, 3, 1 };
-    secured.SetSendKey(key2, iv2);
+    secured.SetNextSendKey(key2, iv2);
 
     Send("abcd");
     auto second = sentData;
@@ -144,7 +144,7 @@ TEST_F(MessageCommunicationSecuredTest, initialization_results_in_default_keys)
 
     std::array<uint8_t, services::MessageCommunicationSecured::keySize> key2{ 1, 2, 1 };
     std::array<uint8_t, services::MessageCommunicationSecured::blockSize> iv2{ 1, 3, 1 };
-    secured.SetSendKey(key2, iv2);
+    secured.SetNextSendKey(key2, iv2);
 
     EXPECT_CALL(upper, Initialized());
     lower.GetObserver().Initialized();

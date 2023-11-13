@@ -1,5 +1,5 @@
 name: embedded_infrastructure_library
 title: Embedded Infrastructure Library documentation
-version: 4.0.0 # x-release-please-version
+version: 5.0.0 # x-release-please-version
 nav:
   - modules/ROOT/nav.adoc
