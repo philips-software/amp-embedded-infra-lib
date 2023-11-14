@@ -113,13 +113,29 @@ namespace services
         infra::SharedPtr<MethodDeserializer> MakeDummyDeserializer(Echo& echo);
     };
 
+    class EmptyMessage
+    {
+    public:
+        static const uint32_t numberOfFields = 0;
+        template<std::size_t fieldIndex>
+        using ProtoType = void;
+        template<std::size_t fieldIndex>
+        using Type = void;
+        template<std::size_t fieldIndex>
+        static const uint32_t fieldNumber = 0;
+
+    public:
+        void Serialize([[maybe_unused]] infra::ProtoFormatter& formatter) const
+        {}
+    };
+
     template<class MessageList>
     struct MaxSerializerSize;
 
     template<>
     struct MaxSerializerSize<infra::List<>>
     {
-        static constexpr std::size_t maxSize = 0;
+        static constexpr std::size_t maxSize = sizeof(MethodSerializerImpl<services::EmptyMessage>);
     };
 
     template<class Front, class... Messages>
@@ -134,7 +150,7 @@ namespace services
     template<>
     struct MaxDeserializerSize<infra::List<>>
     {
-        static constexpr std::size_t maxSize = 0;
+        static constexpr std::size_t maxSize = sizeof(MethodDeserializerImpl<services::EmptyMessage>);
     };
 
     template<class Front, class... Messages>
@@ -164,7 +180,7 @@ namespace services
     template<>
     struct MaxServiceProxySize<>
     {
-        static constexpr std::size_t maxSize = 0;
+        static constexpr std::size_t maxSize = sizeof(MethodSerializerImpl<services::EmptyMessage>);
     };
 
     template<class Front, class... Tail>
@@ -229,22 +245,6 @@ namespace services
         infra::ByteRange deserializerMemory;
     };
 
-    class EmptyMessage
-    {
-    public:
-        static const uint32_t numberOfFields = 0;
-        template<std::size_t fieldIndex>
-        using ProtoType = void;
-        template<std::size_t fieldIndex>
-        using Type = void;
-        template<std::size_t fieldIndex>
-        static const uint32_t fieldNumber = 0;
-
-    public:
-        void Serialize([[maybe_unused]] infra::ProtoFormatter& formatter) const
-        {}
-    };
-
     ////    Implementation    ////
 
     template<class Message, class... Args>
@@ -291,7 +291,8 @@ namespace services
 
         if (!headerSent)
         {
-            infra::DataOutputStream::WithWriter<infra::CountingStreamWriter> countingStream;
+            std::array<uint8_t, 16> saveStateStorage;   // For writing length fields
+            infra::DataOutputStream::WithWriter<infra::CountingStreamWriter> countingStream(saveStateStorage);
             infra::ProtoFormatter countingFormatter{ countingStream };
             message.Serialize(countingFormatter);
 
@@ -331,6 +332,7 @@ namespace services
     template<class... ServiceProxies>
     infra::SharedPtr<infra::ByteRange> MethodSerializerFactory::ForServices<Services...>::AndProxies<ServiceProxies...>::SerializerMemory(uint32_t size)
     {
+        really_assert(size <= serializerStorage.size());
         serializerMemory = infra::Head(infra::MakeRange(serializerStorage), size);
         return serializerAccess.MakeShared(serializerMemory);
     }
@@ -339,6 +341,7 @@ namespace services
     template<class... ServiceProxies>
     infra::SharedPtr<infra::ByteRange> MethodSerializerFactory::ForServices<Services...>::AndProxies<ServiceProxies...>::DeserializerMemory(uint32_t size)
     {
+        really_assert(size <= deserializerStorage.size());
         deserializerMemory = infra::Head(infra::MakeRange(deserializerStorage), size);
         return deserializerAccess.MakeShared(deserializerMemory);
     }
