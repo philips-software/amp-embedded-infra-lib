@@ -29,9 +29,15 @@ namespace services
 
             if (&current != &stack.front())
             {
-                current.first -= available - limitedReader.Available();
+                for (auto& i : stack)
+                {
+                    i.first -= available - limitedReader.Available();
 
-                if (current.first == 0)
+                    if (&i == &current)
+                        break;
+                }
+
+                while (stack.size() > 1 && stack.back().first == 0)
                     stack.pop_back();
             }
         }
