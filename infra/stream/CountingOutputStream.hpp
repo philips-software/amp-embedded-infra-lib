@@ -9,6 +9,8 @@ namespace infra
         : public StreamWriter
     {
     public:
+        CountingStreamWriter(infra::ByteRange saveStateStorage = {});
+
         std::size_t Processed() const;
 
         void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy) override;
@@ -20,6 +22,7 @@ namespace infra
         infra::ByteRange Overwrite(std::size_t marker) override;
 
     private:
+        infra::ByteRange saveStateStorage;
         std::size_t processed = 0;
     };
 }
