@@ -84,6 +84,7 @@ namespace services
 
         void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer);
         void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
+        void ReleaseReader();
 
     private:
         void TryGrantSend();
