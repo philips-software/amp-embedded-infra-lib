@@ -935,7 +935,7 @@ namespace application
             {
                 if (!definition.empty())
                     definition += ", ";
-                definition += method.parameter->name;
+                definition += method.parameter->qualifiedName;
             }
 
         methodTypeListAccess->Add(std::make_shared<Using>("MethodTypeList", "infra::List<" + definition + ">"));
