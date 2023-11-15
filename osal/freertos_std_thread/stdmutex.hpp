@@ -56,7 +56,7 @@ namespace std
             return xSemaphoreTake(handle, (chrono::duration_cast<chrono::milliseconds>(duration).count() + adjustForInaccuracies) / portTICK_RATE_MS) == pdTRUE;
         }
 
-        template <class Clock, class Duration>
+        template<class Clock, class Duration>
         bool try_lock_until(const chrono::time_point<Clock, Duration>& timePoint)
         {
             return try_lock_for(timePoint - Clock::now());
@@ -112,7 +112,7 @@ namespace std
             return xSemaphoreTakeRecursive(handle, chrono::duration_cast<clock_type::duration>(duration) + adjustForInaccuracies) == pdTRUE;
         }
 
-        template <class Clock, class Duration>
+        template<class Clock, class Duration>
         bool try_lock_until(const chrono::time_point<Clock, Duration>& timePoint)
         {
             return try_lock_for(timePoint - Clock::now());
@@ -134,8 +134,8 @@ namespace std
         mutex& operator=(const mutex& other) = delete;
         ~mutex() = default;
 
-        using timed_mutex::native_handle_type;
         using timed_mutex::lock;
+        using timed_mutex::native_handle_type;
         using timed_mutex::try_lock;
         using timed_mutex::unlock;
     };
@@ -149,8 +149,8 @@ namespace std
         recursive_mutex& operator=(const recursive_mutex&) = delete;
         ~recursive_mutex() = default;
 
-        using recursive_timed_mutex::native_handle_type;
         using recursive_timed_mutex::lock;
+        using recursive_timed_mutex::native_handle_type;
         using recursive_timed_mutex::try_lock;
         using recursive_timed_mutex::unlock;
     };
