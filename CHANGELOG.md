@@ -7,6 +7,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [5.0.1](https://github.com/philips-software/amp-embedded-infra-lib/compare/v5.0.0...v5.0.1) (2023-11-15)
+
+
+### Bug Fixes
+
+* Corrected incorrect destructor syntax ([#460](https://github.com/philips-software/amp-embedded-infra-lib/issues/460)) ([e01dd98](https://github.com/philips-software/amp-embedded-infra-lib/commit/e01dd985d0d4699dc859d3e8fc375c72dccf8a89))
+* Various fixes for echo  ([#462](https://github.com/philips-software/amp-embedded-infra-lib/issues/462)) ([0062598](https://github.com/philips-software/amp-embedded-infra-lib/commit/006259893b8bd57b7c0796977cd96fc4bfbcc626))
+
 ## [5.0.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v4.0.0...v5.0.0) (2023-11-09)
 
 

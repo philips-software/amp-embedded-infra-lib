@@ -6,11 +6,37 @@ namespace application
     {
         storage.clear();
         storage.resize(size);
-        SendStreamAvailable(sendStream.Emplace(infra::MakeRange(storage)));
+        infra::ReConstruct(sendStream, infra::MakeRange(storage));
+        SendStreamAvailable(sendStreamAccess.MakeShared(sendStream));
     }
+
+    EchoSingleLoopback::~EchoSingleLoopback()
+    {
+        ReleaseReader();
+    }
+
+    void EchoSingleLoopback::AckReceived()
+    {}
 
     void EchoSingleLoopback::SendStreamFilled()
     {
-        DataReceived(reader.Emplace(infra::MakeRange(storage)));
+        sending.push_back({ sendStream.Processed().begin(), sendStream.Processed().end() });
+
+        TryForward();
+    }
+
+    void EchoSingleLoopback::TryForward()
+    {
+        if (reader.Allocatable() && !sending.empty())
+        {
+            auto data = sending.front();
+            sending.pop_front();
+            DataReceived(reader.Emplace(infra::MakeRange(data)));
+        }
+    }
+
+    void EchoSingleLoopback::ReaderDone()
+    {
+        TryForward();
     }
 }

@@ -93,6 +93,13 @@ namespace services
         DataReceived();
     }
 
+    void EchoOnStreams::ReleaseReader()
+    {
+        readerAccess.SetAction(nullptr);
+        bufferedReader = infra::none;
+        readerPtr = nullptr;
+    }
+
     void EchoOnStreams::TryGrantSend()
     {
         if (sendingProxy == nullptr && !sendRequesters.empty())

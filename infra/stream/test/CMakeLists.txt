@@ -17,6 +17,7 @@ target_sources(infra.stream_test PRIVATE
     TestByteInputStream.cpp
     TestByteOutputStream.cpp
     TestCountingInputStream.cpp
+    TestCountingOutputStream.cpp
     TestFormatter.cpp
     TestLimitedInputStream.cpp
     TestLimitedOutputStream.cpp
