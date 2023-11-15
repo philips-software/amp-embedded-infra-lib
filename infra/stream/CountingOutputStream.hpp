@@ -9,7 +9,7 @@ namespace infra
         : public StreamWriter
     {
     public:
-        CountingStreamWriter(infra::ByteRange saveStateStorage = {});
+        explicit CountingStreamWriter(infra::ByteRange saveStateStorage = {});
 
         std::size_t Processed() const;
 
