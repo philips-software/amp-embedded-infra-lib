@@ -11,7 +11,7 @@ namespace services
         : public GattServer
     {
     public:
-        MOCK_METHOD(void, AddService, (GattServerService& service));
+        MOCK_METHOD(void, AddService, (GattServerService & service));
     };
 
     class GattServerCharacteristicOperationsMock
