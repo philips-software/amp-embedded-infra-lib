@@ -10,3 +10,7 @@ updates:
     directory: .clusterfuzzlite
     schedule:
       interval: monthly
+  - package-ecosystem: docker
+    directory: .devcontainer
+    schedule:
+      interval: daily
