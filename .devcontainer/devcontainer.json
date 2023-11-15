@@ -25,9 +25,7 @@
       "settings": {
         "C_Cpp.autoAddFileAssociations": false,
         "C_Cpp.intelliSenseEngine": "disabled",
-        "clangd.arguments": [
-          "--query-driver=/**/arm-none-eabi-*"
-        ],
+        "clangd.arguments": ["--query-driver=/**/arm-none-eabi-*"],
         "cmake.copyCompileCommands": "${workspaceFolder}/build/compile_commands.json",
         "cmake.statusbar.visibility": "default",
         "cmake.useProjectStatusView": false,
