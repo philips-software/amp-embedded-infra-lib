@@ -492,12 +492,7 @@ namespace infra
     {
         really_assert(size() + n <= max_size());
         move_up(position, n);
-
-        for (size_type i = 0; i != n; ++i)
-        {
-            *position = value;
-            ++position;
-        }
+        std::fill_n(position, n, value);
     }
 
     template<class T>
@@ -508,13 +503,7 @@ namespace infra
         really_assert(size() + n <= max_size());
 
         move_up(position, n);
-
-        while (first != last)
-        {
-            *position = *first;
-            ++position;
-            ++first;
-        }
+        std::copy(first, last, position);
     }
 
     template<class T>

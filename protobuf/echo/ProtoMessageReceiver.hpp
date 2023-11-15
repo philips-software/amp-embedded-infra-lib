@@ -21,6 +21,8 @@ namespace services
         void FeedForMessage(const infra::DataInputStream& stream, Message& message);
 
     private:
+        void ConsumeStack(const std::pair<uint32_t, infra::Function<void(const infra::DataInputStream& stream)>>& current, std::size_t amount);
+
         template<class Message, std::size_t... I>
         bool DeserializeFields(infra::ProtoParser::PartialField& field, infra::ProtoParser& parser, Message& message, std::index_sequence<I...>);
 
