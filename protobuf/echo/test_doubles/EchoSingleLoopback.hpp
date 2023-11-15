@@ -30,12 +30,15 @@ namespace application
         std::vector<uint8_t> storage;
         infra::ByteOutputStreamWriter sendStream{ infra::ByteRange() };
         infra::AccessedBySharedPtr sendStreamAccess{
-            [this]() {
+            [this]()
+            {
                 SendStreamFilled();
-            } };
+            }
+        };
 
         infra::NotifyingSharedOptional<infra::ByteInputStreamReader> reader{
-            [this]() {
+            [this]()
+            {
                 ReaderDone();
             }
         };

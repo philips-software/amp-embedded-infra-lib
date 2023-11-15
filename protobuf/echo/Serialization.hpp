@@ -291,7 +291,7 @@ namespace services
 
         if (!headerSent)
         {
-            std::array<uint8_t, 16> saveStateStorage;   // For writing length fields
+            std::array<uint8_t, 16> saveStateStorage; // For writing length fields
             infra::DataOutputStream::WithWriter<infra::CountingStreamWriter> countingStream(saveStateStorage);
             infra::ProtoFormatter countingFormatter{ countingStream };
             message.Serialize(countingFormatter);
