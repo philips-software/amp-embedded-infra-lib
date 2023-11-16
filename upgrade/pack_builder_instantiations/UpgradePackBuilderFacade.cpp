@@ -75,7 +75,7 @@ namespace main_
         const auto orderToAdd = GetOrder(target, orderedTargets);
 
         if ((orderToAdd != infra::none) && (currentOrderOfTarget > *orderToAdd))
-                return false;
+            return false;
         return true;
     }
 
