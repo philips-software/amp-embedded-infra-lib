@@ -83,7 +83,7 @@ namespace main_
     {
         const auto orderToAdd = GetOrder(target, orderedTargets);
 
-        if (orderToAdd)
+        if (orderToAdd != infra::none)
             currentOrderOfTarget = std::max(currentOrderOfTarget, *orderToAdd);
     }
 
