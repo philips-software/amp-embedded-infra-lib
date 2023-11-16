@@ -51,6 +51,7 @@ target_sources(infra.util PRIVATE
     IntrusiveSet.hpp
     IntrusiveUnorderedSet.hpp
     MemoryRange.hpp
+    MultiFunction.hpp
     Observer.hpp
     Optional.cpp
     Optional.hpp
