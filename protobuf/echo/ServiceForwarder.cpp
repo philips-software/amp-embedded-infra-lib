@@ -74,10 +74,10 @@ namespace services
             processedSize += range.size();
         }
 
-        if (processedSize == forwardingSize || (contentsReader != nullptr && contentsReader->Empty()))
-            contentsReader = nullptr;
         if (processedSize == forwardingSize || (contentsWriter != nullptr && contentsWriter->Empty()))
             contentsWriter = nullptr;
+        if (processedSize == forwardingSize || (contentsReader != nullptr && contentsReader->Empty()))
+            contentsReader = nullptr;
     }
 
     bool ServiceForwarderAll::AcceptsService(uint32_t id) const
