@@ -6,18 +6,38 @@
 namespace services
 {
     class ServiceForwarderBase
-        : public services::Service
-        , private services::ServiceProxy
+        : public Service
+        , private ServiceProxy
+        , private MethodDeserializer
+        , private MethodSerializer
     {
     public:
-        ServiceForwarderBase(infra::ByteRange messageBuffer, Echo& echo, Echo& forwardTo);
+        ServiceForwarderBase(Echo& echo, Echo& forwardTo);
 
-        void Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy) override;
+        // Implementation of Service
+        infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy) override;
 
     private:
-        const infra::ByteRange messageBuffer;
-        infra::Optional<infra::ByteRange> bytes;
+        // Implementation of MethodDeserializer
+        void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
+        void ExecuteMethod() override;
+        bool Failed() const override;
+
+        // Implementation of MethodSerializer
+        bool Serialize(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+
+    private:
+        void Transfer();
+
+    private:
         uint32_t forwardingServiceId;
+        uint32_t forwardingMethodId;
+        uint32_t forwardingSize;
+        uint32_t processedSize;
+        bool sentHeader;
+
+        infra::SharedPtr<infra::StreamReaderWithRewinding> contentsReader;
+        infra::SharedPtr<infra::StreamWriter> contentsWriter;
     };
 
     class ServiceForwarderAll
@@ -26,9 +46,6 @@ namespace services
     public:
         using ServiceForwarderBase::ServiceForwarderBase;
 
-        template<std::size_t MaxMessageSize>
-        using WithMaxMessageSize = infra::WithStorage<ServiceForwarderAll, std::array<uint8_t, MaxMessageSize>>;
-
         bool AcceptsService(uint32_t id) const override;
     };
 
@@ -36,10 +53,7 @@ namespace services
         : public ServiceForwarderBase
     {
     public:
-        ServiceForwarder(infra::ByteRange messageBuffer, Echo& echo, uint32_t id, Echo& forwardTo);
-
-        template<std::size_t MaxMessageSize>
-        using WithMaxMessageSize = infra::WithStorage<ServiceForwarder, std::array<uint8_t, MaxMessageSize>>;
+        ServiceForwarder(Echo& echo, uint32_t id, Echo& forwardTo);
 
         bool AcceptsService(uint32_t id) const override;
 

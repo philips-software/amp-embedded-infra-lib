@@ -44,6 +44,8 @@ namespace infra
         ~LimitedStreamReaderWithRewinding() = default;
 
         void ResetLength(uint32_t newLength);
+        bool LimitReached() const;
+        void SwitchInput(StreamReaderWithRewinding& newInput);
 
     public:
         void Extract(ByteRange range, StreamErrorPolicy& errorPolicy) override;
@@ -56,7 +58,7 @@ namespace infra
         void Rewind(std::size_t marker) override;
 
     private:
-        StreamReaderWithRewinding& input;
+        StreamReaderWithRewinding* input;
         uint32_t length;
     };
 
