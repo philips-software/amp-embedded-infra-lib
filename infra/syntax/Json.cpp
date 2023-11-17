@@ -374,6 +374,16 @@ namespace infra
             return false;
         }
 
+        bool Null::operator==(const Null& other) const
+        {
+            return true;
+        }
+
+        bool Null::operator!=(const Null& other) const
+        {
+            return false;
+        }
+
         LeftBrace::LeftBrace(std::size_t index)
             : index(index)
         {}
@@ -614,6 +624,8 @@ namespace infra
             return JsonToken::Boolean(true);
         else if (identifier == "false")
             return JsonToken::Boolean(false);
+        else if (identifier == "null")
+            return JsonToken::Null();
         else
             return JsonToken::Error();
     }
@@ -639,7 +651,7 @@ namespace infra
 
     bool JsonObject::HasKey(infra::BoundedConstString key)
     {
-        for (auto& keyValue : *this)
+        for (const auto& keyValue : *this)
         {
             if (keyValue.key == key)
                 return true;
@@ -839,6 +851,8 @@ namespace infra
             return ReadObjectValue(token);
         else if (token.Is<JsonToken::LeftBracket>())
             return ReadArrayValue(token);
+        else if (token.Is<JsonToken::Null>())
+            return infra::MakeOptional(JsonValue(JsonObject()));
         else
             return infra::none;
     }
@@ -1252,6 +1266,11 @@ namespace infra
                 stream << '.';
             }
 
+            void operator()(infra::JsonToken::Null)
+            {
+                stream << "null";
+            }
+
             void operator()(infra::JsonToken::LeftBrace)
             {
                 stream << '{';
@@ -1317,7 +1336,7 @@ namespace infra
     bool ValidJsonObject(infra::BoundedConstString contents)
     {
         JsonObject object(contents);
-        for (auto i : object)
+        for (const auto& i : object)
         {}
 
         return !object.Error();

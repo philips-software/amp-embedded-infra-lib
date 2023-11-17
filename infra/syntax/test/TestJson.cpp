@@ -634,6 +634,13 @@ TEST(JsonObjectTest, iterator_equality)
     EXPECT_NE(object.GetString("key1"), object.GetString("key3"));
 }
 
+TEST(JsonObjectTest, null_value)
+{
+    infra::JsonObject object(R"({"key1":null})");
+
+    EXPECT_TRUE(object.HasKey("key1"));
+}
+
 TEST(JsonArrayIteratorTest, empty_array_iterator_compares_equal_to_end)
 {
     infra::JsonArray jsonArray(R"([ ])");

@@ -146,6 +146,13 @@ namespace infra
             bool operator!=(const Dot& other) const;
         };
 
+        class Null
+        {
+        public:
+            bool operator==(const Null& other) const;
+            bool operator!=(const Null& other) const;
+        };
+
         class LeftBrace
         {
         public:
@@ -231,7 +238,7 @@ namespace infra
             bool value;
         };
 
-        using Token = infra::Variant<End, Error, Colon, Comma, Dot, LeftBrace, RightBrace, LeftBracket, RightBracket, String, JsonBiggerInt, Boolean>;
+        using Token = infra::Variant<End, Error, Colon, Comma, Dot, Null, LeftBrace, RightBrace, LeftBracket, RightBracket, String, JsonBiggerInt, Boolean>;
     }
 
     class JsonTokenizer
