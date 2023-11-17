@@ -1,5 +1,6 @@
 #include "infra/syntax/Json.hpp"
 #include "infra/stream/StringOutputStream.hpp"
+#include <algorithm>
 #include <cctype>
 
 namespace
@@ -324,62 +325,62 @@ namespace infra
 
     namespace JsonToken
     {
-        bool End::operator==(const End& other) const
+        bool End::operator==(const End&) const
         {
             return true;
         }
 
-        bool End::operator!=(const End& other) const
+        bool End::operator!=(const End&) const
         {
             return false;
         }
 
-        bool Error::operator==(const Error& other) const
+        bool Error::operator==(const Error&) const
         {
             return true;
         }
 
-        bool Error::operator!=(const Error& other) const
+        bool Error::operator!=(const Error&) const
         {
             return false;
         }
 
-        bool Colon::operator==(const Colon& other) const
+        bool Colon::operator==(const Colon&) const
         {
             return true;
         }
 
-        bool Colon::operator!=(const Colon& other) const
+        bool Colon::operator!=(const Colon&) const
         {
             return false;
         }
 
-        bool Comma::operator==(const Comma& other) const
+        bool Comma::operator==(const Comma&) const
         {
             return true;
         }
 
-        bool Comma::operator!=(const Comma& other) const
+        bool Comma::operator!=(const Comma&) const
         {
             return false;
         }
 
-        bool Dot::operator==(const Dot& other) const
+        bool Dot::operator==(const Dot&) const
         {
             return true;
         }
 
-        bool Dot::operator!=(const Dot& other) const
+        bool Dot::operator!=(const Dot&) const
         {
             return false;
         }
 
-        bool Null::operator==(const Null& other) const
+        bool Null::operator==(const Null&) const
         {
             return true;
         }
 
-        bool Null::operator!=(const Null& other) const
+        bool Null::operator!=(const Null&) const
         {
             return false;
         }
@@ -651,13 +652,10 @@ namespace infra
 
     bool JsonObject::HasKey(infra::BoundedConstString key)
     {
-        for (const auto& keyValue : *this)
-        {
-            if (keyValue.key == key)
-                return true;
-        }
-
-        return false;
+        return std::any_of(begin(), end(), [key](const auto& keyValue)
+            {
+                return keyValue.key == key;
+            });
     }
 
     JsonString JsonObject::GetString(infra::BoundedConstString key)
@@ -1336,7 +1334,7 @@ namespace infra
     bool ValidJsonObject(infra::BoundedConstString contents)
     {
         JsonObject object(contents);
-        for (const auto& i : object)
+        for ([[maybe_unused]] const auto& i : object)
         {}
 
         return !object.Error();

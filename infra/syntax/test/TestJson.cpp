@@ -117,6 +117,13 @@ TEST(JsonTokenizerTest, get_comma_token)
     EXPECT_EQ(infra::JsonToken::Token(infra::JsonToken::Comma()), tokenizer.Token());
 }
 
+TEST(JsonTokenizerTest, get_dot_token)
+{
+    infra::JsonTokenizer tokenizer(R"(.)");
+
+    EXPECT_EQ(infra::JsonToken::Token(infra::JsonToken::Dot()), tokenizer.Token());
+}
+
 TEST(JsonTokenizerTest, get_left_brace_token)
 {
     infra::JsonTokenizer tokenizer(R"({)");
@@ -143,6 +150,12 @@ TEST(JsonTokenizerTest, get_right_bracket_token)
     infra::JsonTokenizer tokenizer(R"(])");
 
     EXPECT_EQ(infra::JsonToken::Token(infra::JsonToken::RightBracket(0)), tokenizer.Token());
+}
+
+TEST(JsonTokenizerTest, get_null_token)
+{
+    infra::JsonTokenizer tokenizer(R"(null)");
+    EXPECT_EQ(infra::JsonToken::Token(infra::JsonToken::Null()), tokenizer.Token());
 }
 
 TEST(JsonTokenizerTest, unknown_character_results_in_error_token)
