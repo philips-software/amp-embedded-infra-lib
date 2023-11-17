@@ -69,12 +69,9 @@ namespace services
         assert(size <= to.Available());
         to << size;
 
-        services::GlobalTracer().Trace() << "MessageCommunicationWindowed::ReceivedMessage ";
-
         while (size != 0)
         {
             auto range = from.ContiguousRange(size);
-            services::GlobalTracer().Continue() << infra::AsHex(range);
             to << range;
             size -= static_cast<uint16_t>(range.size());
         }
@@ -95,6 +92,18 @@ namespace services
                     infra::EventDispatcher::Instance().Schedule([this]()
                         {
                             infra::DataInputStream::WithReader<detail::AtomicDequeReader> stream(receivedData, infra::softFail);
+
+                            services::GlobalTracer().Trace() << "MessageCommunicationWindowed::ReceivedMessage ";
+                            while (true)
+                            {
+                                auto range = stream.Reader().ExtractContiguousRange(1000);
+                                if (range.empty())
+                                    break;
+                                services::GlobalTracer().Continue() << infra::AsHex(range);
+                            }
+
+                            stream.Reader().Rewind(0);
+
                             auto size = stream.Extract<uint16_t>();
                             if (!stream.Failed() && stream.Available() >= size)
                             {
