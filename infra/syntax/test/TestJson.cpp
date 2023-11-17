@@ -197,6 +197,22 @@ TEST(JsonTokenizerTest, ValidJsonObject)
     EXPECT_FALSE(infra::ValidJsonObject(R"({ "key" })"));
 }
 
+TEST(JsonTokenizerTest, not_equal_operators)
+{
+    EXPECT_FALSE(infra::JsonToken::End() != infra::JsonToken::End());
+    EXPECT_FALSE(infra::JsonToken::Error() != infra::JsonToken::Error());
+    EXPECT_FALSE(infra::JsonToken::Colon() != infra::JsonToken::Colon());
+    EXPECT_FALSE(infra::JsonToken::Comma() != infra::JsonToken::Comma());
+    EXPECT_FALSE(infra::JsonToken::Dot() != infra::JsonToken::Dot());
+    EXPECT_FALSE(infra::JsonToken::Null() != infra::JsonToken::Null());
+    EXPECT_TRUE(infra::JsonToken::LeftBrace(0) != infra::JsonToken::LeftBrace(1));
+    EXPECT_TRUE(infra::JsonToken::RightBrace(0) != infra::JsonToken::RightBrace(1));
+    EXPECT_TRUE(infra::JsonToken::LeftBracket(0) != infra::JsonToken::LeftBracket(1));
+    EXPECT_TRUE(infra::JsonToken::RightBracket(0) != infra::JsonToken::RightBracket(1));
+    EXPECT_TRUE(infra::JsonToken::String("no") != infra::JsonToken::String("yes"));
+    EXPECT_TRUE(infra::JsonToken::Boolean(true) != infra::JsonToken::Boolean(false));
+}
+
 TEST(JsonObjectIteratorTest, empty_object_iterator_compares_equal_to_end)
 {
     infra::JsonObject object(R"({ })");
