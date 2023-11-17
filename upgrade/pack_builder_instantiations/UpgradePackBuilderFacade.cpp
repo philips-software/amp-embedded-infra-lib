@@ -74,9 +74,7 @@ namespace main_
     {
         const auto orderToAdd = GetOrder(target, orderedTargets);
 
-        if ((orderToAdd != infra::none) && (currentOrderOfTarget > *orderToAdd))
-            return false;
-        return true;
+        return orderToAdd == infra::none || currentOrderOfTarget <= *orderToAdd;
     }
 
     void UpgradePackBuilderFacade::UpdateCurrentOrderOfTarget(const std::string& target, const std::map<uint8_t, std::vector<std::string>>& orderedTargets)
