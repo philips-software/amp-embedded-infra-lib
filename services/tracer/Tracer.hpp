@@ -15,75 +15,34 @@ namespace services
         Tracer& operator=(const Tracer& other) = delete;
         virtual ~Tracer() = default;
 
-        virtual infra::TextOutputStream Trace();
         virtual infra::TextOutputStream Continue();
 
-    public:
+#ifdef EMIL_ENABLE_GLOBAL_TRACING
+        virtual infra::TextOutputStream Trace();
+#else
+        class EmptyTracing
+        {
+        public:
+            template<class T>
+            EmptyTracing operator<<(T x)
+            {
+                return *this;
+            }
+        };
+
+        EmptyTracing Trace();
+
+    private:
+        infra::StreamWriterDummy dummy;
+        infra::TextOutputStream::WithErrorPolicy dummyStream{ dummy };
+#endif
+
     protected:
         virtual void InsertHeader();
+        virtual void StartTrace();
 
     private:
         infra::TextOutputStream& stream;
     };
-
-#define EMIL_ENABLE_GLOBAL_TRACING
-
-#ifdef EMIL_ENABLE_GLOBAL_TRACING
-    static constexpr auto GlobalTracingEnabled = true;
-#else
-    static constexpr auto GlobalTracingEnabled = false;
-#endif
-
-    enum class TracingLevel : uint8_t
-    {
-        DEBUG,
-        INFO,
-        WARN,
-        ERROR,
-        FATAL
-    };
-
-    static auto GlobalTracingLevel = TracingLevel::DEBUG;
-
-    template<class T, TracingLevel L>
-    void TraceWithLevel(const T& trace)
-    {
-        // In order for compiler to optimize out code enclosed in callable trace,
-        // this function needs to be a template and hence instantiated in using compilation units.
-        if constexpr (GlobalTracingEnabled)
-            if (L >= GlobalTracingLevel)
-                trace();
-    }
-
-    template<class T>
-    void TraceDebug(const T& trace)
-    {
-        TraceWithLevel<T, TracingLevel::DEBUG>(trace);
-    };
-
-    template<class T>
-    void TraceInfo(const T& trace)
-    {
-        TraceWithLevel<T, TracingLevel::INFO>(trace);
-    };
-
-    template<class T>
-    void TraceWarn(const T& trace)
-    {
-        TraceWithLevel<T, TracingLevel::WARN>(trace);
-    };
-
-    template<class T>
-    void TraceError(const T& trace)
-    {
-        TraceWithLevel<T, TracingLevel::ERROR>(trace);
-    };
-
-    template<class T>
-    void TraceFatal(const T& trace)
-    {
-        TraceWithLevel<T, TracingLevel::FATAL>(trace);
-    };
 }
-
 #endif
