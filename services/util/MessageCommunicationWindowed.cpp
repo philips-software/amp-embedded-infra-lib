@@ -2,6 +2,7 @@
 #include "infra/event/EventDispatcher.hpp"
 #include "infra/stream/BoundedDequeOutputStream.hpp"
 #include "infra/util/PostAssign.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -68,9 +69,12 @@ namespace services
         assert(size <= to.Available());
         to << size;
 
+        services::GlobalTracer().Trace() << "MessageCommunicationWindowed::ReceivedMessage ";
+
         while (size != 0)
         {
             auto range = from.ContiguousRange(size);
+            services::GlobalTracer().Continue() << infra::AsHex(range);
             to << range;
             size -= static_cast<uint16_t>(range.size());
         }
@@ -252,6 +256,8 @@ namespace services
 
     void MessageCommunicationWindowed::StateSendingMessage::OnSent(uint16_t sent)
     {
+        services::GlobalTracer().Trace() << "MessageCommunicationWindowed::StateSendingMessage::OnSent" << sent;
+
         communication.otherAvailableWindow -= communication.WindowSize(sent - 1);
         communication.sending = false;
         communication.SetNextState();
