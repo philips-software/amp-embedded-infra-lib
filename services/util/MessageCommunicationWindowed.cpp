@@ -260,12 +260,13 @@ namespace services
 
     void MessageCommunicationWindowed::StateSendingMessage::RequestSendMessage(uint16_t size)
     {
+        services::GlobalTracer().Trace() << "MessageCommunicationWindowed::StateSendingMessage::RequestSendMessage " << size;
         communication.requestedSendMessageSize = size;
     }
 
     void MessageCommunicationWindowed::StateSendingMessage::OnSent(uint16_t sent)
     {
-        services::GlobalTracer().Trace() << "MessageCommunicationWindowed::StateSendingMessage::OnSent" << sent;
+        services::GlobalTracer().Trace() << "MessageCommunicationWindowed::StateSendingMessage::OnSent " << sent;
 
         communication.otherAvailableWindow -= communication.WindowSize(sent - 1);
         communication.sending = false;
