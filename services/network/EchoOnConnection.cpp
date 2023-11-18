@@ -9,7 +9,9 @@ namespace services
 
     void EchoOnConnection::DataReceived()
     {
-        EchoOnStreams::DataReceived(ConnectionObserver::Subject().ReceiveStream());
+        auto readerPtr = ConnectionObserver::Subject().ReceiveStream();
+        limitedReader.Emplace(*readerPtr, readerPtr->Available());
+        EchoOnStreams::DataReceived(infra::MakeContainedSharedObject(*limitedReader, readerPtr));
     }
 
     void EchoOnConnection::RequestSendStream(std::size_t size)
