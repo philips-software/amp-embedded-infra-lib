@@ -1,4 +1,5 @@
 #include "protobuf/echo/Echo.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -95,6 +96,7 @@ namespace services
 
     void EchoOnStreams::ReleaseReader()
     {
+        services::GlobalTracer().Trace() << "ReleaseReader, available = " << readerPtr->Available();
         readerAccess.SetAction(nullptr);
         bufferedReader = infra::none;
         readerPtr = nullptr;
@@ -161,6 +163,8 @@ namespace services
 
         if (stream.Failed())
         {
+            services::GlobalTracer().Trace() << "StartReceiveMessage stream failed, available = " << readerPtr->Available();
+
             bufferedReader->Rewind(start);
             bufferedReader = infra::none;
             readerPtr = nullptr;

@@ -1,4 +1,5 @@
 #include "infra/stream/BufferingStreamReader.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace infra
 {
@@ -103,6 +104,8 @@ namespace infra
         while (!input.Empty())
         {
             auto range = input.ExtractContiguousRange(std::numeric_limits<std::size_t>::max());
+            if (buffer.max_size() - buffer.size() < range.size())
+                services::GlobalTracer().Trace() << "StoreRemainder buffer size = " << buffer.size() << " max is " << buffer.max_size() << " adding " << range.size();
             buffer.insert(buffer.end(), range.begin(), range.end());
         }
     }
