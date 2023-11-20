@@ -27,6 +27,11 @@ namespace infra
         virtual void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy) = 0;
         virtual std::size_t Available() const = 0;
 
+        bool Empty() const
+        {
+            return Available() == 0;
+        }
+
         virtual std::size_t ConstructSaveMarker() const;
         virtual std::size_t GetProcessedBytesSince(std::size_t marker) const;
         virtual infra::ByteRange SaveState(std::size_t marker);

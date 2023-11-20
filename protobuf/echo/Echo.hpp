@@ -1,49 +1,21 @@
 #ifndef PROTOBUF_ECHO_HPP
 #define PROTOBUF_ECHO_HPP
 
+#include "infra/stream/BufferingStreamReader.hpp"
 #include "infra/util/BoundedDeque.hpp"
 #include "infra/util/Compatibility.hpp"
 #include "infra/util/Function.hpp"
+#include "infra/util/Observer.hpp"
 #include "infra/util/Optional.hpp"
+#include "protobuf/echo/EchoErrorPolicy.hpp"
 #include "protobuf/echo/Proto.hpp"
-#include "services/util/MessageCommunication.hpp"
+#include "protobuf/echo/Serialization.hpp"
 
 namespace services
 {
     class Echo;
     class Service;
     class ServiceProxy;
-
-    class EchoErrorPolicy
-    {
-    protected:
-        ~EchoErrorPolicy() = default;
-
-    public:
-        virtual void MessageFormatError() = 0;
-        virtual void ServiceNotFound(uint32_t serviceId) = 0;
-        virtual void MethodNotFound(uint32_t serviceId, uint32_t methodId) = 0;
-    };
-
-    class EchoErrorPolicyAbortOnMessageFormatError
-        : public EchoErrorPolicy
-    {
-    public:
-        void MessageFormatError() override;
-        void ServiceNotFound(uint32_t serviceId) override;
-        void MethodNotFound(uint32_t serviceId, uint32_t methodId) override;
-    };
-
-    class EchoErrorPolicyAbort
-        : public EchoErrorPolicyAbortOnMessageFormatError
-    {
-    public:
-        void ServiceNotFound(uint32_t serviceId) override;
-        void MethodNotFound(uint32_t serviceId, uint32_t methodId) override;
-    };
-
-    extern EchoErrorPolicyAbortOnMessageFormatError echoErrorPolicyAbortOnMessageFormatError;
-    extern EchoErrorPolicyAbort echoErrorPolicyAbort;
 
     class Service
         : public infra::Observer<Service, Echo>
@@ -54,25 +26,10 @@ namespace services
         virtual bool AcceptsService(uint32_t id) const = 0;
 
         void MethodDone();
-        bool InProgress() const;
-        void HandleMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy);
+        virtual infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy) = 0;
 
     protected:
         Echo& Rpc();
-        virtual void Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy) = 0;
-
-    private:
-        bool inProgress = false;
-    };
-
-    class Echo
-        : public infra::Subject<Service>
-    {
-    public:
-        virtual void RequestSend(ServiceProxy& serviceProxy) = 0;
-        virtual infra::StreamWriter& SendStreamWriter() = 0;
-        virtual void Send() = 0;
-        virtual void ServiceDone(Service& service) = 0;
     };
 
     class ServiceProxy
@@ -84,46 +41,26 @@ namespace services
         Echo& Rpc();
         virtual void RequestSend(infra::Function<void()> onGranted);
         virtual void RequestSend(infra::Function<void()> onGranted, uint32_t requestedSize);
-        void GrantSend();
+        virtual infra::SharedPtr<MethodSerializer> GrantSend();
         uint32_t MaxMessageSize() const;
         uint32_t CurrentRequestedSize() const;
+        void SetSerializer(const infra::SharedPtr<MethodSerializer>& serializer);
 
     private:
         Echo& echo;
         uint32_t maxMessageSize;
         infra::Function<void()> onGranted;
         uint32_t currentRequestedSize = 0;
+        infra::SharedPtr<MethodSerializer> methodSerializer;
     };
 
-    template<class ServiceProxyType>
-    class ServiceProxyResponseQueue
-        : public ServiceProxyType
+    class Echo
+        : public infra::Subject<Service>
     {
     public:
-        struct Request
-        {
-            infra::Function<void()> onRequestGranted;
-            uint32_t requestedSize;
-        };
-
-        using Container = infra::BoundedDeque<Request>;
-
-        template<std::size_t Max>
-        using WithStorage = infra::WithStorage<ServiceProxyResponseQueue, typename Container::template WithMaxSize<Max>>;
-
-        template<class... Args>
-        explicit ServiceProxyResponseQueue(Container& container, Args&&... args);
-
-        void RequestSend(infra::Function<void()> onRequestGranted) override;
-        void RequestSend(infra::Function<void()> onRequestGranted, uint32_t requestedSize) override;
-
-    private:
-        void ProcessSendQueue();
-
-    private:
-        Container& container;
-
-        bool responseInProgress{ false };
+        virtual void RequestSend(ServiceProxy& serviceProxy) = 0;
+        virtual void ServiceDone() = 0;
+        virtual services::MethodSerializerFactory& SerializerFactory() = 0;
     };
 
     class EchoOnStreams
@@ -131,74 +68,50 @@ namespace services
         , public infra::EnableSharedFromThis<EchoOnStreams>
     {
     public:
-        explicit EchoOnStreams(EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
+        explicit EchoOnStreams(services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
+        ~EchoOnStreams() override;
 
         // Implementation of Echo
         void RequestSend(ServiceProxy& serviceProxy) override;
-        infra::StreamWriter& SendStreamWriter() override;
-        void Send() override;
-        void ServiceDone(Service& service) override;
+        void ServiceDone() override;
+        services::MethodSerializerFactory& SerializerFactory() override;
 
     protected:
+        virtual infra::SharedPtr<MethodSerializer> GrantSend(ServiceProxy& proxy);
+        virtual infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const infra::SharedPtr<MethodDeserializer>& deserializer);
         virtual void RequestSendStream(std::size_t size) = 0;
-        virtual void BusyServiceDone() = 0;
+        virtual void AckReceived() = 0;
 
-        virtual void ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, infra::StreamReaderWithRewinding& reader);
-        virtual void SetStreamWriter(infra::SharedPtr<infra::StreamWriter>&& writer);
-        bool ServiceBusy() const;
-        bool ProcessMessage(infra::StreamReaderWithRewinding& reader);
-
-    protected:
-        EchoErrorPolicy& errorPolicy;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer);
+        void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
+        void ReleaseReader();
 
     private:
-        infra::SharedPtr<infra::StreamWriter> streamWriter;
+        void TryGrantSend();
+
+        void DataReceived();
+        void StartReceiveMessage();
+        void ContinueReceiveMessage();
+        void StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size);
+        void ReaderDone();
+
+    private:
+        services::MethodSerializerFactory& serializerFactory;
+        const EchoErrorPolicy& errorPolicy;
+
         infra::IntrusiveList<ServiceProxy> sendRequesters;
-        infra::Optional<uint32_t> serviceBusy;
+        ServiceProxy* sendingProxy = nullptr;
+        infra::SharedPtr<MethodSerializer> methodSerializer;
+
+        infra::SharedPtr<infra::StreamReaderWithRewinding> readerPtr;
+        infra::Optional<infra::LimitedStreamReaderWithRewinding> limitedReader;
+        infra::SharedPtr<MethodDeserializer> methodDeserializer;
+        infra::BoundedDeque<uint8_t>::WithMaxSize<32> receiveBuffer;
+        infra::Optional<infra::BufferingStreamReader> bufferedReader;
+        infra::AccessedBySharedPtr readerAccess;
+
+        infra::SharedOptional<MethodDeserializerDummy> deserializerDummy;
     };
-
-    ////    Implementation    ////
-
-    template<class ServiceProxyType>
-    template<class... Args>
-    ServiceProxyResponseQueue<ServiceProxyType>::ServiceProxyResponseQueue(Container& container, Args&&... args)
-        : ServiceProxyType{ std::forward<Args>(args)... }
-        , container{ container }
-    {}
-
-    template<class ServiceProxyType>
-    void ServiceProxyResponseQueue<ServiceProxyType>::RequestSend(infra::Function<void()> onRequestGranted)
-    {
-        RequestSend(onRequestGranted, ServiceProxyType::MaxMessageSize());
-    }
-
-    template<class ServiceProxyType>
-    void ServiceProxyResponseQueue<ServiceProxyType>::RequestSend(infra::Function<void()> onRequestGranted, uint32_t requestedSize)
-    {
-        if (container.full())
-            return;
-
-        container.push_back({ onRequestGranted, requestedSize });
-        ProcessSendQueue();
-    }
-
-    template<class ServiceProxyType>
-    void ServiceProxyResponseQueue<ServiceProxyType>::ProcessSendQueue()
-    {
-        if (!responseInProgress && !container.empty())
-        {
-            responseInProgress = true;
-            ServiceProxyType::RequestSend([this]
-                {
-                    container.front().onRequestGranted();
-                    container.pop_front();
-
-                    responseInProgress = false;
-                    ProcessSendQueue();
-                },
-                container.front().requestedSize);
-        }
-    }
 }
 
 #endif

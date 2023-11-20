@@ -11,7 +11,27 @@ set(ENABLE_TESTING Off CACHE INTERNAL "")
 set(ENABLE_PROGRAMS Off CACHE INTERNAL "")
 set(GEN_FILES Off CACHE INTERNAL "")
 
+# mbedtls uses CMAKE_C_COMPILER_ID to determine the type of compiler used.
+# When compiling with clang-cl, mbedtls thinks the clang compiler
+# is used, and sets flags according to what clang expects as arguments.
+# However, clang-cl expects MSVC like arguments. Therefore we have to trick mbedtls
+# in to thinking MSVC is being used as a compiler.
+# After making mbedtls available the original COMPILER_ID will be restored
+set(ORIGINAL_C_COMPILER_ID ${CMAKE_C_COMPILER_ID})
+set(ORIGINAL_CXX_COMPILER_ID ${CMAKE_CXX_COMPILER_ID})
+
+if (CMAKE_C_SIMULATE_ID)
+    set(CMAKE_C_COMPILER_ID ${CMAKE_C_SIMULATE_ID})
+endif()
+
+if (CMAKE_CXX_SIMULATE_ID)
+    set(CMAKE_CXX_COMPILER_ID ${CMAKE_CXX_SIMULATE_ID})
+endif()
+
 FetchContent_MakeAvailable(mbedtls)
+
+set(CMAKE_C_COMPILER_ID ${ORIGINAL_C_COMPILER_ID})
+set(CMAKE_CXX_COMPILER_ID ${ORIGINAL_CXX_COMPILER_ID})
 
 function(add_mbedtls_target_properties)
     foreach(target ${ARGN})
