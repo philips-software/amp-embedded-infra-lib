@@ -292,3 +292,32 @@ TEST_F(HttpClientBasicTest, ContentError_calls_stop_only_once)
     controller->GenerateContentError();
     controller->GenerateContentError();
 }
+
+TEST_F(HttpClientBasicTest, done_called_when_connection_is_reestablished)
+{
+    EXPECT_CALL(*controller, Established());
+    httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client)
+        {
+            httpClient.Attach(client);
+        });
+
+    infra::StreamWriterMock writer;
+    httpClient.Observer().SendStreamAvailable(infra::UnOwnedSharedPtr(writer));
+
+    EXPECT_CALL(*controller, Error(true));
+    httpClient.Detach();
+
+    EXPECT_CALL(*controller, Established());
+    httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client)
+        {
+            httpClient.Attach(client);
+        });
+
+    httpClient.Observer().SendStreamAvailable(infra::UnOwnedSharedPtr(writer));
+
+    EXPECT_CALL(*controller, Done());
+    EXPECT_CALL(httpClient, CloseConnection());
+    httpClient.Observer().BodyComplete();
+
+    ForwardTime(std::chrono::minutes(1));
+}
