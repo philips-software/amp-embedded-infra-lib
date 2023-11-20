@@ -127,9 +127,9 @@ namespace services
         StartTimeout();
         Established();
         sharedAccess.SetAction([this]()
-        {
-            Expire();
-        });
+            {
+                Expire();
+            });
         createdClientObserver(sharedAccess.MakeShared(static_cast<services::HttpClientObserver&>(*this)));
     }
 
