@@ -14,6 +14,7 @@ namespace infra
     {
     public:
         ProtoLengthDelimitedFormatter(ProtoFormatter& formatter, uint32_t fieldNumber);
+        ProtoLengthDelimitedFormatter(ProtoFormatter& formatter, uint32_t fieldNumber, std::size_t size);
         ProtoLengthDelimitedFormatter(const ProtoLengthDelimitedFormatter& other) = delete;
         ProtoLengthDelimitedFormatter(ProtoLengthDelimitedFormatter&& other) noexcept;
         ProtoLengthDelimitedFormatter& operator=(const ProtoLengthDelimitedFormatter& other) = delete;
@@ -43,6 +44,7 @@ namespace infra
         void PutLengthDelimitedField(infra::ConstByteRange range, uint32_t fieldNumber);
         void PutStringField(infra::BoundedConstString string, uint32_t fieldNumber);
         void PutBytesField(infra::ConstByteRange bytes, uint32_t fieldNumber);
+        void PutLengthDelimitedSize(std::size_t size, uint32_t fieldNumber);
         ProtoLengthDelimitedFormatter LengthDelimitedFormatter(uint32_t fieldNumber);
 
     private:

@@ -88,7 +88,7 @@ option(EMIL_BUILD_TESTS "Enable building the tests" ${EMIL_DEFAULTOPT})
 option(EMIL_BUILD_EXAMPLES "Enable building the examples" ${EMIL_DEFAULTOPT})
 option(EMIL_ENABLE_FUZZING "Enable building the fuzzing targets" Off)
 option(EMIL_ENABLE_DOCKER_TOOLS "Enable shift-left tools (e.g. linters, formatters) that are run using Docker" On)
-option(EMIL_GENERATE_PACKAGE_CONFIG "Enable generation of package configuration and install files" ${EMIL_HOST_BUILD})
+option(EMIL_BUILD_ECHO_COMPILERS "Build and install the Protobuf ECHO compilers" ${EMIL_DEFAULTOPT})
 
 # Enable or disable optional features.
 option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of EmIL" On)
@@ -148,17 +148,11 @@ if (EMIL_STANDALONE)
     emil_folderize_all_targets()
 endif()
 
-if (EMIL_GENERATE_PACKAGE_CONFIG)
+if (EMIL_BUILD_ECHO_COMPILERS)
     function(generate_export_targets name)
-        # Generate and install export file
         install(EXPORT emil${name}Targets
             FILE emil${name}Targets.cmake
             DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/emil
-        )
-
-        # Generate the export targets for the build tree
-        export(EXPORT emil${name}Targets
-            FILE "${CMAKE_CURRENT_BINARY_DIR}/cmake/emil${name}Targets.cmake"
         )
     endfunction()
 
@@ -184,20 +178,20 @@ if (EMIL_GENERATE_PACKAGE_CONFIG)
         "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}ConfigVersion.cmake"
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
     )
-
-    set(CPACK_GENERATOR "ZIP;TGZ")
-    set(CPACK_SOURCE_IGNORE_FILES ".vs/;.git/;build/")
-    set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
-    set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
-    set(CPACK_PACKAGE_VENDOR "Koninklijke Philips N.V")
-    set(CPACK_PACKAGE_DESCRIPTION "${PROJECT_DESCRIPTION}")
-    set(CPACK_DEBIAN_PACKAGE_NAME "${CPACK_PACKAGE_NAME}")
-    set(CPACK_RPM_PACKAGE_NAME "${CPACK_PACKAGE_NAME}")
-    set(CPACK_PACKAGE_HOMEPAGE_URL "${PROJECT_HOMEPAGE_URL}")
-    set(CPACK_PACKAGE_MAINTAINER "${CPACK_PACKAGE_VENDOR}")
-    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${CPACK_PACKAGE_VENDOR}")
-    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md")
-    set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
-
-    include(CPack)
 endif()
+
+set(CPACK_GENERATOR "ZIP;TGZ")
+set(CPACK_SOURCE_IGNORE_FILES ".vs/;.git/;build/")
+set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_PACKAGE_VENDOR "Koninklijke Philips N.V")
+set(CPACK_PACKAGE_DESCRIPTION "${PROJECT_DESCRIPTION}")
+set(CPACK_DEBIAN_PACKAGE_NAME "${CPACK_PACKAGE_NAME}")
+set(CPACK_RPM_PACKAGE_NAME "${CPACK_PACKAGE_NAME}")
+set(CPACK_PACKAGE_HOMEPAGE_URL "${PROJECT_HOMEPAGE_URL}")
+set(CPACK_PACKAGE_MAINTAINER "${CPACK_PACKAGE_VENDOR}")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${CPACK_PACKAGE_VENDOR}")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+
+include(CPack)
