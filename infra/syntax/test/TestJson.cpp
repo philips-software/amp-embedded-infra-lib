@@ -117,6 +117,13 @@ TEST(JsonTokenizerTest, get_comma_token)
     EXPECT_EQ(infra::JsonToken::Token(infra::JsonToken::Comma()), tokenizer.Token());
 }
 
+TEST(JsonTokenizerTest, get_dot_token)
+{
+    infra::JsonTokenizer tokenizer(R"(.)");
+
+    EXPECT_EQ(infra::JsonToken::Token(infra::JsonToken::Dot()), tokenizer.Token());
+}
+
 TEST(JsonTokenizerTest, get_left_brace_token)
 {
     infra::JsonTokenizer tokenizer(R"({)");
@@ -143,6 +150,12 @@ TEST(JsonTokenizerTest, get_right_bracket_token)
     infra::JsonTokenizer tokenizer(R"(])");
 
     EXPECT_EQ(infra::JsonToken::Token(infra::JsonToken::RightBracket(0)), tokenizer.Token());
+}
+
+TEST(JsonTokenizerTest, get_null_token)
+{
+    infra::JsonTokenizer tokenizer(R"(null)");
+    EXPECT_EQ(infra::JsonToken::Token(infra::JsonToken::Null()), tokenizer.Token());
 }
 
 TEST(JsonTokenizerTest, unknown_character_results_in_error_token)
@@ -182,6 +195,22 @@ TEST(JsonTokenizerTest, ValidJsonObject)
 {
     EXPECT_TRUE(infra::ValidJsonObject(R"({ "key" : "value", "key2" : 1234, "key3" : true })"));
     EXPECT_FALSE(infra::ValidJsonObject(R"({ "key" })"));
+}
+
+TEST(JsonTokenizerTest, not_equal_operators)
+{
+    EXPECT_FALSE(infra::JsonToken::End() != infra::JsonToken::End());
+    EXPECT_FALSE(infra::JsonToken::Error() != infra::JsonToken::Error());
+    EXPECT_FALSE(infra::JsonToken::Colon() != infra::JsonToken::Colon());
+    EXPECT_FALSE(infra::JsonToken::Comma() != infra::JsonToken::Comma());
+    EXPECT_FALSE(infra::JsonToken::Dot() != infra::JsonToken::Dot());
+    EXPECT_FALSE(infra::JsonToken::Null() != infra::JsonToken::Null());
+    EXPECT_TRUE(infra::JsonToken::LeftBrace(0) != infra::JsonToken::LeftBrace(1));
+    EXPECT_TRUE(infra::JsonToken::RightBrace(0) != infra::JsonToken::RightBrace(1));
+    EXPECT_TRUE(infra::JsonToken::LeftBracket(0) != infra::JsonToken::LeftBracket(1));
+    EXPECT_TRUE(infra::JsonToken::RightBracket(0) != infra::JsonToken::RightBracket(1));
+    EXPECT_TRUE(infra::JsonToken::String("no") != infra::JsonToken::String("yes"));
+    EXPECT_TRUE(infra::JsonToken::Boolean(true) != infra::JsonToken::Boolean(false));
 }
 
 TEST(JsonObjectIteratorTest, empty_object_iterator_compares_equal_to_end)
@@ -632,6 +661,15 @@ TEST(JsonObjectTest, iterator_equality)
 
     EXPECT_EQ(object.GetString("key1"), object.GetString("key2"));
     EXPECT_NE(object.GetString("key1"), object.GetString("key3"));
+}
+
+TEST(JsonObjectTest, null_value)
+{
+    infra::JsonObject object(R"({"key1":null})");
+
+    EXPECT_TRUE(object.HasKey("key1"));
+    EXPECT_FALSE(object.GetOptionalString("key1"));
+    EXPECT_FALSE(object.Error());
 }
 
 TEST(JsonArrayIteratorTest, empty_array_iterator_compares_equal_to_end)

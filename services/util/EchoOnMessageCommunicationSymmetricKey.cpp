@@ -20,8 +20,8 @@ namespace services
         }
     }
 
-    EchoOnMessageCommunicationSymmetricKey::EchoOnMessageCommunicationSymmetricKey(MessageCommunicationSecured& secured, hal::SynchronousRandomDataGenerator& randomDataGenerator, EchoErrorPolicy& errorPolicy)
-        : EchoOnMessageCommunication(secured, errorPolicy)
+    EchoOnMessageCommunicationSymmetricKey::EchoOnMessageCommunicationSymmetricKey(MessageCommunicationSecured& secured, MethodSerializerFactory& serializerFactory, hal::SynchronousRandomDataGenerator& randomDataGenerator, const EchoErrorPolicy& errorPolicy)
+        : EchoOnMessageCommunication(secured, serializerFactory, errorPolicy)
         , SymmetricKeyEstablishment(static_cast<services::Echo&>(*this))
         , SymmetricKeyEstablishmentProxy(static_cast<services::Echo&>(*this))
         , secured(secured)
@@ -46,7 +46,7 @@ namespace services
                 auto key = randomDataGenerator.GenerateRandomData<MessageCommunicationSecured::KeyType>();
                 auto iv = randomDataGenerator.GenerateRandomData<MessageCommunicationSecured::IvType>();
                 SymmetricKeyEstablishmentProxy::ActivateNewKeyMaterial(Convert(key), Convert(iv));
-                secured.SetSendKey(key, iv);
+                secured.SetNextSendKey(key, iv);
 
                 initializingSending = false;
                 ReQueueWaitingProxies();

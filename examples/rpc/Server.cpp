@@ -23,8 +23,9 @@ class EchoConnection
     : public services::EchoOnConnection
 {
 public:
-    EchoConnection()
-        : console(*this)
+    EchoConnection(services::MethodSerializerFactory& serializerFactory)
+        : services::EchoOnConnection(serializerFactory)
+        , console(*this)
     {}
 
 private:
@@ -45,12 +46,13 @@ public:
             connection->::services::ConnectionObserver::Subject().AbortAndDestroy();
 
         if (connection.Allocatable())
-            createdObserver(connection.Emplace());
+            createdObserver(connection.Emplace(serializerFactory));
     }
 
 private:
     infra::SharedPtr<void> listener;
     infra::SharedOptional<EchoConnection> connection;
+    services::MethodSerializerFactory::OnHeap serializerFactory;
 };
 
 int main(int argc, const char* argv[], const char* env[])

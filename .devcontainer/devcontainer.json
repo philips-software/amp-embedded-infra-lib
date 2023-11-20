@@ -1,18 +1,36 @@
 {
   // This devcontainer has been set-up to run docker-from-docker scenarios as per
   // https://github.com/microsoft/vscode-dev-containers/tree/main/containers/docker-from-docker
-  "name": "amp-devcontainer",
-  "image": "ghcr.io/philips-software/amp-devcontainer:2.2.0",
+  "build": {
+    "context": "..",
+    "dockerfile": "Dockerfile"
+  },
   "runArgs": ["--add-host=host.docker.internal:host-gateway"],
   "remoteEnv": { "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}" },
   "mounts": [
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
-  "extensions": [
-    "llvm-vs-code-extensions.vscode-clangd",
-    "marus25.cortex-debug",
-    "matepek.vscode-catch2-test-adapter",
-    "ms-vscode.cmake-tools",
-    "SonarSource.sonarlint-vscode"
-  ]
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "llvm-vs-code-extensions.vscode-clangd",
+        "marus25.cortex-debug",
+        "matepek.vscode-catch2-test-adapter",
+        "mhutchie.git-graph",
+        "ms-vscode.cmake-tools",
+        "ms-vscode.cpptools",
+        "ms-vsliveshare.vsliveshare",
+        "SonarSource.sonarlint-vscode"
+      ],
+      "settings": {
+        "C_Cpp.autoAddFileAssociations": false,
+        "C_Cpp.intelliSenseEngine": "disabled",
+        "clangd.arguments": ["--query-driver=/**/arm-none-eabi-*"],
+        "cmake.copyCompileCommands": "${workspaceFolder}/build/compile_commands.json",
+        "cmake.statusbar.visibility": "default",
+        "cmake.useProjectStatusView": false,
+        "sonarlint.pathToCompileCommands": "${workspaceFolder}/build/compile_commands.json"
+      }
+    }
+  }
 }

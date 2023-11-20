@@ -2,6 +2,10 @@
 
 namespace infra
 {
+    CountingStreamWriter::CountingStreamWriter(infra::ByteRange saveStateStorage)
+        : saveStateStorage(saveStateStorage)
+    {}
+
     std::size_t CountingStreamWriter::Processed() const
     {
         return processed;
@@ -24,16 +28,18 @@ namespace infra
 
     std::size_t CountingStreamWriter::GetProcessedBytesSince(std::size_t marker) const
     {
-        return marker - processed;
+        return processed - marker;
     }
 
     infra::ByteRange CountingStreamWriter::SaveState(std::size_t marker)
     {
-        return infra::ByteRange();
+        return saveStateStorage;
     }
 
     void CountingStreamWriter::RestoreState(infra::ByteRange range)
-    {}
+    {
+        processed += saveStateStorage.size() - range.size();
+    }
 
     infra::ByteRange CountingStreamWriter::Overwrite(std::size_t marker)
     {

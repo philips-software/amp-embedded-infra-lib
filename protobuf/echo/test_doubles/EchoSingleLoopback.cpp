@@ -1,5 +1,4 @@
 #include "protobuf/echo/test_doubles/EchoSingleLoopback.hpp"
-#include "infra/stream/ByteInputStream.hpp"
 
 namespace application
 {
@@ -7,20 +6,37 @@ namespace application
     {
         storage.clear();
         storage.resize(size);
-        auto writer = sendStream.Emplace(infra::MakeRange(storage));
-        SetStreamWriter(std::move(writer));
+        infra::ReConstruct(sendStream, infra::MakeRange(storage));
+        SendStreamAvailable(sendStreamAccess.MakeShared(sendStream));
     }
 
-    void EchoSingleLoopback::BusyServiceDone()
+    EchoSingleLoopback::~EchoSingleLoopback()
     {
-        // In this class, services are never busy, so BusyServiceDone() is never invoked
-        std::abort();
+        ReleaseReader();
     }
+
+    void EchoSingleLoopback::AckReceived()
+    {}
 
     void EchoSingleLoopback::SendStreamFilled()
     {
-        infra::ByteInputStreamReader reader(infra::MakeRange(storage));
-        if (!ProcessMessage(reader))
-            errorPolicy.MessageFormatError();
+        sending.push_back({ sendStream.Processed().begin(), sendStream.Processed().end() });
+
+        TryForward();
+    }
+
+    void EchoSingleLoopback::TryForward()
+    {
+        if (reader.Allocatable() && !sending.empty())
+        {
+            auto data = sending.front();
+            sending.pop_front();
+            DataReceived(reader.Emplace(infra::MakeRange(data)));
+        }
+    }
+
+    void EchoSingleLoopback::ReaderDone()
+    {
+        TryForward();
     }
 }

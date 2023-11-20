@@ -594,7 +594,7 @@ TEST_F(HttpClientTest, data_in_excess_of_ContentLength_is_ignored)
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("extradata")));
 }
 
-TEST_F(HttpClientTest, Close_while_DataAvailable_is_handled)
+TEST_F(HttpClientTest, Close_while_StatusAvailable_is_handled)
 {
     Connect();
 
@@ -609,6 +609,26 @@ TEST_F(HttpClientTest, Close_while_DataAvailable_is_handled)
         }));
 
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\n")));
+}
+
+TEST_F(HttpClientTest, Close_while_HeaderAvailable_is_handled)
+{
+    Connect();
+
+    client.Subject().Get("/");
+    ExecuteAllActions();
+
+    EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
+    EXPECT_CALL(client, HeaderAvailable(testing::_)).WillOnce(testing::Invoke([this](services::HttpHeader header)
+        {
+            ASSERT_EQ("header", header.Field());
+            ASSERT_EQ("a", header.Value());
+            EXPECT_CALL(connection, CloseAndDestroyMock());
+            EXPECT_CALL(client, Detaching());
+            client.Subject().CloseConnection();
+        }));
+
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\nheader: a\r\nheader: b\r\n")));
 }
 
 TEST_F(HttpClientTest, Close_while_BodyAvailable_is_handled)
