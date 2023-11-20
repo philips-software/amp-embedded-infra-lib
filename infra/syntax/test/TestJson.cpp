@@ -668,6 +668,8 @@ TEST(JsonObjectTest, null_value)
     infra::JsonObject object(R"({"key1":null})");
 
     EXPECT_TRUE(object.HasKey("key1"));
+    EXPECT_FALSE(object.GetOptionalString("key1"));
+    EXPECT_FALSE(object.Error());
 }
 
 TEST(JsonArrayIteratorTest, empty_array_iterator_compares_equal_to_end)
