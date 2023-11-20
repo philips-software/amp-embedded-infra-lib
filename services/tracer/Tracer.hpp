@@ -18,7 +18,7 @@ namespace services
         virtual infra::TextOutputStream Continue();
 
 #ifdef EMIL_ENABLE_GLOBAL_TRACING
-        virtual infra::TextOutputStream Trace();
+        infra::TextOutputStream Trace();
 #else
         class EmptyTracing
         {
