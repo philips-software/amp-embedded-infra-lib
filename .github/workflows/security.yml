@@ -21,7 +21,7 @@ jobs:
       actions: read
       contents: read
     steps:
-      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
         with:
           persist-credentials: false
       - name: Analysis
@@ -31,6 +31,6 @@ jobs:
           results_format: sarif
           repo_token: ${{ secrets.SCORECARD_READ_TOKEN }}
           publish_results: true
-      - uses: github/codeql-action/upload-sarif@701f152f28d4350ad289a5e31435e9ab6169a7ca # v2.21.6
+      - uses: github/codeql-action/upload-sarif@ddccb873888234080b77e9bc2d4764d5ccaaccf9 # v2.21.9
         with:
           sarif_file: scorecards.sarif
