@@ -34,18 +34,10 @@ namespace infra
         infra::StreamErrorPolicy& formatErrorPolicy;
     };
 
-    struct PartialProtoLengthDelimited
-    {
-        uint32_t length;
-    };
-
     class ProtoParser
     {
     public:
-        using FieldVariant = infra::Variant<uint32_t, uint64_t, ProtoLengthDelimited>;
-        using Field = std::pair<FieldVariant, uint32_t>;
-        using PartialFieldVariant = infra::Variant<uint32_t, uint64_t, PartialProtoLengthDelimited>;
-        using PartialField = std::pair<PartialFieldVariant, uint32_t>;
+        using Field = std::pair<infra::Variant<uint32_t, uint64_t, ProtoLengthDelimited>, uint32_t>;
 
         explicit ProtoParser(infra::DataInputStream inputStream);
         ProtoParser(infra::DataInputStream inputStream, infra::StreamErrorPolicy& formatErrorPolicy);
@@ -56,7 +48,6 @@ namespace infra
         uint64_t GetFixed64();
 
         Field GetField();
-        PartialField GetPartialField();
 
         void ReportFormatResult(bool ok);
         bool FormatFailed() const;

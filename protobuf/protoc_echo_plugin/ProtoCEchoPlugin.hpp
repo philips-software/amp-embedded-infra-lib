@@ -55,12 +55,10 @@ namespace application
         MessageTypeMapGenerator& operator=(const MessageTypeMapGenerator& other) = delete;
         ~MessageTypeMapGenerator() = default;
 
-        void Run(Entities& formatter) const;
+        void Run(Entities& formatter);
 
     protected:
-        virtual void AddTypeMapProtoType(const EchoField& field, Entities& entities) const;
-        virtual void AddTypeMapType(const EchoField& field, Entities& entities) const;
-        void AddTypeMapFieldNumber(const EchoField& field, Entities& entities) const;
+        virtual void AddTypeMapType(EchoField& field, Entities& entities);
         std::string MessageName() const;
         virtual std::string MessageSuffix() const;
 
@@ -75,9 +73,10 @@ namespace application
     public:
         using MessageTypeMapGenerator::MessageTypeMapGenerator;
 
+        void Run(Entities& formatter);
+
     protected:
-        void AddTypeMapProtoType(const EchoField& field, Entities& entities) const override;
-        void AddTypeMapType(const EchoField& field, Entities& entities) const override;
+        void AddTypeMapType(EchoField& field, Entities& entities) override;
         std::string MessageSuffix() const override;
     };
 

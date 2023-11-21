@@ -12,8 +12,6 @@ target_sources(infra.stream_test PRIVATE
     StreamMock.hpp
     TestBoundedDequeInputStream.cpp
     TestBoundedVectorOutputStream.cpp
-    TestBufferingStreamReader.cpp
-    TestBufferingStreamWriter.cpp
     TestByteInputStream.cpp
     TestByteOutputStream.cpp
     TestCountingInputStream.cpp

@@ -13,10 +13,6 @@ target_sources(infra.stream PRIVATE
     BoundedVectorInputStream.hpp
     BoundedVectorOutputStream.cpp
     BoundedVectorOutputStream.hpp
-    BufferingStreamReader.cpp
-    BufferingStreamReader.hpp
-    BufferingStreamWriter.cpp
-    BufferingStreamWriter.hpp
     ByteInputStream.cpp
     ByteInputStream.hpp
     ByteOutputStream.cpp

@@ -159,28 +159,6 @@ TEST(ProtoCEchoPluginTest, deserialize_bool)
     EXPECT_EQ(true, message.value);
 }
 
-TEST(ProtoCEchoPluginTest, serialize_enum)
-{
-    test_messages::TestEnum message;
-    message.e = test_messages::Enumeration::val1;
-
-    infra::ByteOutputStream::WithStorage<100> stream;
-    infra::ProtoFormatter formatter(stream);
-    message.Serialize(formatter);
-
-    EXPECT_EQ((std::array<uint8_t, 2>{ 8, 1 }), stream.Writer().Processed());
-}
-
-TEST(ProtoCEchoPluginTest, deserialize_enum)
-{
-    std::array<uint8_t, 2> data{ 8, 1 };
-    infra::ByteInputStream stream(data);
-    infra::ProtoParser parser(stream);
-
-    test_messages::TestEnum message(parser);
-    EXPECT_EQ(test_messages::Enumeration::val1, message.e);
-}
-
 TEST(ProtoCEchoPluginTest, serialize_string)
 {
     test_messages::TestString message;
@@ -287,32 +265,6 @@ TEST(ProtoCEchoPluginTest, deserialize_bytes)
     EXPECT_EQ(value, message.value);
 }
 
-TEST(ProtoCEchoPluginTest, serialize_unbounded_bytes)
-{
-    test_messages::TestUnboundedBytes message;
-    message.value.push_back(5);
-    message.value.push_back(6);
-
-    infra::ByteOutputStream::WithStorage<100> stream;
-    infra::ProtoFormatter formatter(stream);
-    message.Serialize(formatter);
-
-    EXPECT_EQ((std::array<uint8_t, 4>{ 10, 2, 5, 6 }), stream.Writer().Processed());
-}
-
-TEST(ProtoCEchoPluginTest, deserialize_unbounded_bytes)
-{
-    std::array<uint8_t, 4> data{ 10, 2, 5, 6 };
-    infra::ByteInputStream stream(data);
-    infra::ProtoParser parser(stream);
-
-    test_messages::TestUnboundedBytes message(parser);
-    std::vector<uint8_t> value;
-    value.push_back(5);
-    value.push_back(6);
-    EXPECT_EQ(value, message.value);
-}
-
 TEST(ProtoCEchoPluginTest, serialize_uint32)
 {
     test_messages::TestUInt32 message;
@@ -377,31 +329,6 @@ TEST(ProtoCEchoPluginTest, deserialize_repeated_uint32)
     infra::ProtoParser parser(stream);
 
     test_messages::TestRepeatedUInt32 message(parser);
-    EXPECT_EQ(2, message.value.size());
-    EXPECT_EQ(5, message.value[0]);
-    EXPECT_EQ(6, message.value[1]);
-}
-
-TEST(ProtoCEchoPluginTest, serialize_unbounded_repeated_uint32)
-{
-    test_messages::TestUnboundedRepeatedUInt32 message;
-    message.value.push_back(5);
-    message.value.push_back(6);
-
-    infra::ByteOutputStream::WithStorage<100> stream;
-    infra::ProtoFormatter formatter(stream);
-    message.Serialize(formatter);
-
-    EXPECT_EQ((std::array<uint8_t, 4>{ 1 << 3, 5, 1 << 3, 6 }), stream.Writer().Processed());
-}
-
-TEST(ProtoCEchoPluginTest, deserialize_unbounded_repeated_uint32)
-{
-    std::array<uint8_t, 4> data{ 1 << 3, 5, 1 << 3, 6 };
-    infra::ByteInputStream stream(data);
-    infra::ProtoParser parser(stream);
-
-    test_messages::TestUnboundedRepeatedUInt32 message(parser);
     EXPECT_EQ(2, message.value.size());
     EXPECT_EQ(5, message.value[0]);
     EXPECT_EQ(6, message.value[1]);

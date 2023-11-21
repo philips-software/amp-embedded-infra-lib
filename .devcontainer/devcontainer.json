@@ -2,7 +2,7 @@
   // This devcontainer has been set-up to run docker-from-docker scenarios as per
   // https://github.com/microsoft/vscode-dev-containers/tree/main/containers/docker-from-docker
   "name": "amp-devcontainer",
-  "image": "ghcr.io/philips-software/amp-devcontainer:2.5.0",
+  "image": "ghcr.io/philips-software/amp-devcontainer:2.2.0",
   "runArgs": ["--add-host=host.docker.internal:host-gateway"],
   "remoteEnv": { "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}" },
   "mounts": [

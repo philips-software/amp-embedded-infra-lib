@@ -32,13 +32,6 @@ namespace infra
         return *this;
     }
 
-    ConstructBin& ConstructBin::Repeat(std::size_t amount, std::initializer_list<uint8_t> v)
-    {
-        for (size_t i = 0; i != amount; ++i)
-            contents.insert(contents.end(), v.begin(), v.end());
-        return *this;
-    }
-
     ConstructBin& ConstructBin::RepeatString(std::size_t amount, const std::string& v)
     {
         for (size_t i = 0; i != amount; ++i)

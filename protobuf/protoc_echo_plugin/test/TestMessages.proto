@@ -64,7 +64,7 @@ message TestRepeatedString {
 }
 
 message TestBytes {
-  bytes value = 1 [(bytes_size) = 50];
+  bytes value = 1 [(bytes_size) = 10];
 }
 
 message TestUnboundedBytes {
@@ -72,11 +72,7 @@ message TestUnboundedBytes {
 }
 
 message TestRepeatedUInt32 {
-  repeated uint32 value = 1 [(array_size) = 50];
-}
-
-message TestUnboundedRepeatedUInt32 {
-  repeated uint32 value = 1;
+  repeated uint32 value = 1 [(array_size) = 10];
 }
 
 message TestMessageWithMessageField {
@@ -171,9 +167,4 @@ service TestService2
   option (service_id) = 2;
 
   rpc Search (TestString) returns (Nothing) { option (method_id) = 1; }
-}
-
-message TestBoolWithBytes {
-  bytes b = 1 [(bytes_size) = 30];
-  bool value = 2;
 }

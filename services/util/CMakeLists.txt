@@ -58,8 +58,6 @@ target_sources(services.util PRIVATE
     MessageCommunicationWindowed.hpp
     RepeatingButton.cpp
     RepeatingButton.hpp
-    SerialCommunicationLoopback.cpp
-    SerialCommunicationLoopback.hpp
     Sha256.hpp
     SignalLed.cpp
     SignalLed.hpp

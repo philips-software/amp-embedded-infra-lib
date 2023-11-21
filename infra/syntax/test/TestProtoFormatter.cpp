@@ -76,17 +76,6 @@ TEST(ProtoFormatterTest, PutBytesField)
     EXPECT_EQ((std::array<uint8_t, 3>{ 4 << 3 | 2, 1, 5 }), stream.Writer().Processed());
 }
 
-TEST(ProtoFormatterTest, PutSubObjectOfKnownSize)
-{
-    infra::ByteOutputStream::WithStorage<20> stream;
-    infra::ProtoFormatter formatter(stream);
-
-    formatter.PutLengthDelimitedSize(2, 4);
-    formatter.PutVarIntField(2, 4);
-
-    EXPECT_EQ((std::array<uint8_t, 4>{ 4 << 3 | 2, 2, 4 << 3, 2 }), stream.Writer().Processed());
-}
-
 TEST(ProtoFormatterTest, PutSubObject)
 {
     infra::ByteOutputStream::WithStorage<20> stream;

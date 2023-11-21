@@ -1,5 +1,4 @@
 #include "services/util/MessageCommunicationSecured.hpp"
-#include "mbedtls/version.h"
 #include <algorithm>
 
 namespace services
@@ -72,12 +71,7 @@ namespace services
             return;
 
         receiveBuffer.clear();
-
-#if MBEDTLS_VERSION_MAJOR < 3
-        really_assert(mbedtls_gcm_starts(&receiveContext, MBEDTLS_GCM_DECRYPT, reinterpret_cast<const unsigned char*>(receiveIv.data()), receiveIv.size(), nullptr, 0) == 0);
-#else
         really_assert(mbedtls_gcm_starts(&receiveContext, MBEDTLS_GCM_DECRYPT, reinterpret_cast<const unsigned char*>(receiveIv.data()), receiveIv.size()) == 0);
-#endif
 
         while (stream.Available() != blockSize)
         {
@@ -86,22 +80,14 @@ namespace services
             stream >> infra::MakeRange(encrypted);
 
             receiveBuffer.resize(receiveBuffer.size() + encrypted.size());
-#if MBEDTLS_VERSION_MAJOR < 3
-            really_assert(mbedtls_gcm_update(&receiveContext, encrypted.size(), encrypted.data(), receiveBuffer.data() + receiveBuffer.size() - encrypted.size()) == 0);
-#else
             std::size_t processedSize = 0;
             really_assert(mbedtls_gcm_update(&receiveContext, encrypted.data(), encrypted.size(), receiveBuffer.data() + receiveBuffer.size() - encrypted.size(), receiveBuffer.size(), &processedSize) == 0);
             receiveBuffer.resize(receiveBuffer.size() - encrypted.size() + processedSize);
-#endif
         }
 
         std::array<uint8_t, blockSize> computedMac;
-#if MBEDTLS_VERSION_MAJOR < 3
-        really_assert(mbedtls_gcm_finish(&receiveContext, reinterpret_cast<unsigned char*>(computedMac.data()), computedMac.size()) == 0);
-#else
         std::size_t processedSize = 0;
         really_assert(mbedtls_gcm_finish(&receiveContext, nullptr, 0, &processedSize, reinterpret_cast<unsigned char*>(computedMac.data()), computedMac.size()) == 0);
-#endif
 
         std::array<uint8_t, blockSize> receivedMac;
         stream >> infra::MakeRange(receivedMac);
@@ -115,28 +101,15 @@ namespace services
 
     void MessageCommunicationSecured::SendMessageStreamReleased()
     {
-#if MBEDTLS_VERSION_MAJOR < 3
-        really_assert(mbedtls_gcm_starts(&sendContext, MBEDTLS_GCM_ENCRYPT, reinterpret_cast<const unsigned char*>(sendIv.data()), sendIv.size(), nullptr, 0) == 0);
-#else
         really_assert(mbedtls_gcm_starts(&sendContext, MBEDTLS_GCM_ENCRYPT, reinterpret_cast<const unsigned char*>(sendIv.data()), sendIv.size()) == 0);
-#endif
 
-#if MBEDTLS_VERSION_MAJOR < 3
-        really_assert(mbedtls_gcm_update(&sendContext, sendBuffer.size(), sendBuffer.data(), sendBuffer.data()) == 0);
-#else
         std::size_t processedSize = 0;
         really_assert(mbedtls_gcm_update(&sendContext, sendBuffer.data(), sendBuffer.size(), sendBuffer.data(), sendBuffer.size(), &processedSize) == 0);
-#endif
-
         sendBuffer.resize(sendBuffer.size() + blockSize);
 
-#if MBEDTLS_VERSION_MAJOR < 3
-        really_assert(mbedtls_gcm_finish(&sendContext, sendBuffer.data() + sendBuffer.size() - blockSize, blockSize) == 0);
-#else
         std::size_t moreProcessedSize = 0;
         really_assert(mbedtls_gcm_finish(&sendContext, sendBuffer.data() + processedSize, sendBuffer.size() - processedSize - blockSize, &moreProcessedSize, sendBuffer.data() + sendBuffer.size() - blockSize, blockSize) == 0);
         really_assert(processedSize + moreProcessedSize + blockSize == sendBuffer.size());
-#endif
 
         infra::DataOutputStream::WithErrorPolicy stream(*sendWriter);
         stream << infra::MakeRange(sendBuffer);
