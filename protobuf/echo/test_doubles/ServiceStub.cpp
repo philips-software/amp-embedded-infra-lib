@@ -19,7 +19,7 @@ namespace services
                     switch (field.second)
                     {
                         case 1:
-                            DeserializeField(services::ProtoUInt32(), parser, field, value);
+                            DeserializeField(services::ProtoUInt32(), parser, field.first, value);
                             break;
                         default:
                             if (field.first.Is<infra::ProtoLengthDelimited>())

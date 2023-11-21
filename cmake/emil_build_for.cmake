@@ -88,3 +88,10 @@ function(emil_build_for target)
     endif()
 
 endfunction()
+
+function(emil_install target)
+    get_target_property(exclude ${target} EXCLUDE_FROM_ALL)
+    if (NOT ${exclude})
+        install(TARGETS ${target} ${ARGN})
+    endif()
+endfunction()
