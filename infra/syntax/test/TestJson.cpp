@@ -186,9 +186,9 @@ TEST(JsonTokenizerTest, get_multiple_tokens)
 
 TEST(JsonTokenizerTest, clean_json)
 {
-    infra::BoundedString::WithStorage<512> data(R"({ "key" : "value", "key2" : 1234, "key3" : true })");
+    infra::BoundedString::WithStorage<512> data(R"({ "key" : "value", "key2" : 1234, "key3" : true, "key4" : -42.1 })");
     infra::CleanJsonContents(data);
-    EXPECT_EQ(R"({"key":"value","key2":1234,"key3":true})", data);
+    EXPECT_EQ(R"({"key":"value","key2":1234,"key3":true,"key4":-42.1})", data);
 }
 
 TEST(JsonTokenizerTest, ValidJsonObject)

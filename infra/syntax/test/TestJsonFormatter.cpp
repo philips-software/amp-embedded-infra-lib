@@ -117,6 +117,18 @@ TEST(JsonObjectFormatter, add_milli_float)
 
     {
         infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        formatter.AddMilliFloat(infra::JsonString("tag"), 4, 002);
+    }
+
+    EXPECT_EQ(R"({ "tag":4.002 })", string);
+}
+
+TEST(JsonObjectFormatter, add_milli_float_jsonstring_key)
+{
+    infra::BoundedString::WithStorage<64> string;
+
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
         formatter.AddMilliFloat("tag", 12, 34);
     }
 
@@ -296,6 +308,17 @@ TEST(JsonObjectFormatter, add_key_jsonstring_negative_value_JsonFloat)
         formatter.Add(infra::JsonString{ "tag" }, infra::JsonValue(infra::InPlaceType<infra::JsonFloat>(), infra::JsonFloat{ 55, 300000000, true }));
     }
     EXPECT_EQ(R"({ "tag":-55.300 })", string);
+}
+
+TEST(JsonObjectFormatter, add_key_jsonstring_nano_value_JsonFloat)
+{
+    infra::BoundedString::WithStorage<64> string;
+
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        formatter.Add(infra::JsonString{ "tag" }, infra::JsonValue(infra::InPlaceType<infra::JsonFloat>(), infra::JsonFloat{ 0, 5, false }));
+    }
+    EXPECT_EQ(R"({ "tag":0.000000005 })", string);
 }
 
 TEST(JsonObjectFormatter, add_key_jsonstring_value_JsonString)

@@ -669,7 +669,7 @@ namespace infra
             for (std::size_t count = fractional.size(); count < nanoValueWidth; ++count)
                 fractionalValue = fractionalValue * 10;
 
-        return JsonFloat(integer, fractionalValue, sign);
+        return JsonFloat(static_cast<uint32_t>(integer), fractionalValue, sign);
     }
 
     JsonObject::JsonObject(infra::BoundedConstString objectString)
@@ -1336,7 +1336,15 @@ namespace infra
                 if (token.Negative())
                     stream << '-';
 
-                stream << token.IntValue() << "." << infra::Width(9, '0') << token.NanoFractionalValue();
+                auto fractional = token.NanoFractionalValue();
+                auto width = nanoValueWidth;
+                while (width > 1 && (fractional % 10 == 0))
+                {
+                    fractional = fractional / 10;
+                    --width;
+                }
+
+                stream << token.IntValue() << "." << infra::Width(width, '0') << fractional;
             }
 
             void operator()(infra::JsonToken::Boolean token)

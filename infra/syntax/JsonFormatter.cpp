@@ -360,7 +360,7 @@ namespace infra
         if (tag.NanoFractionalValue() % 1000000 == 0)
             AddFractionalFloat(tagName.Raw(), tag.IntValue(), tag.NanoFractionalValue() / 1000000, tag.Negative(), milliValueWidth);
         else
-            AddFractionalFloat(tagName.Raw(), tag.IntValue(), tag.NanoFractionalValue(), tag.Negative(), nanoValueWidth);        
+            AddFractionalFloat(tagName.Raw(), tag.IntValue(), tag.NanoFractionalValue(), tag.Negative(), nanoValueWidth);
     }
 
     void JsonObjectFormatter::Add(const infra::JsonKeyValue& keyValue)
@@ -465,7 +465,7 @@ namespace infra
 
         if (negative)
             *stream << '-';
-    
+
         *stream << intValue << '.' << infra::Width(fractionalWidth, '0') << fractionalValue;
     }
 
