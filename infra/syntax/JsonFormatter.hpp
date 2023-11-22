@@ -55,6 +55,7 @@ namespace infra
         void Add(JsonString tagName, const JsonObject& tag);
         void Add(JsonString tagName, const JsonArray& tag);
         void Add(JsonString tagName, const JsonValue& tag);
+        void Add(JsonString tagName, const JsonFloat& tag);
         void Add(const infra::JsonKeyValue& keyValue);
 
         template<class T>
@@ -91,6 +92,7 @@ namespace infra
         bool Failed() const;
 
     private:
+        void AddFractionalFloat(infra::BoundedConstString tagName, uint32_t intValue, uint32_t fractionalValue, std::size_t fractionalWidth);
         void InsertSeparation();
 
     private:

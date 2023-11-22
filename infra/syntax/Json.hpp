@@ -238,7 +238,7 @@ namespace infra
             bool value;
         };
 
-        using Token = infra::Variant<End, Error, Colon, Comma, Dot, Null, LeftBrace, RightBrace, LeftBracket, RightBracket, String, JsonBiggerInt, Boolean>;
+        using Token = infra::Variant<End, Error, Colon, Comma, Dot, Null, LeftBrace, RightBrace, LeftBracket, RightBracket, String, JsonBiggerInt, JsonFloat, Boolean>;
     }
 
     class JsonTokenizer
@@ -254,8 +254,9 @@ namespace infra
     private:
         void SkipWhitespace();
         JsonToken::Token TryCreateStringToken();
-        JsonToken::Token TryCreateIntegerToken();
+        JsonToken::Token TryCreateIntegerOrFloatToken();
         JsonToken::Token TryCreateIdentifierToken();
+        JsonToken::Token TryCreateFloatToken(uint64_t integer, bool sign);
 
     private:
         infra::BoundedConstString objectString;
@@ -355,9 +356,9 @@ namespace infra
         infra::Optional<JsonValue> ConvertValue(JsonToken::Token token);
 
     private:
-        infra::Optional<JsonValue> ReadIntegerOrFloat(JsonToken::Token token);
-        infra::Optional<JsonValue> ReadObjectValue(JsonToken::Token token);
-        infra::Optional<JsonValue> ReadArrayValue(JsonToken::Token token);
+        infra::Optional<JsonValue> ReadInteger(const JsonToken::Token& token);
+        infra::Optional<JsonValue> ReadObjectValue(const JsonToken::Token& token);
+        infra::Optional<JsonValue> ReadArrayValue(const JsonToken::Token& token);
         infra::Optional<JsonToken::RightBrace> SearchObjectEnd();
         infra::Optional<JsonToken::RightBracket> SearchArrayEnd();
 
