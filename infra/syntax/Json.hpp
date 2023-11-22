@@ -79,17 +79,19 @@ namespace infra
     {
     public:
         JsonFloat() = default;
-        JsonFloat(int32_t intValue, uint32_t nanoFractionalValue);
+        JsonFloat(uint32_t intValue, uint32_t nanoFractionalValue, bool negative);
 
         bool operator==(const JsonFloat& other) const;
         bool operator!=(const JsonFloat& other) const;
 
         int32_t IntValue() const;
         uint32_t NanoFractionalValue() const;
+        bool Negative() const;
 
     private:
-        int32_t intValue = 0;
+        uint32_t intValue = 0;
         uint32_t nanoFractionalValue = 0;
+        bool negative = false;
     };
 
     class JsonBiggerInt

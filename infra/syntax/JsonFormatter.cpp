@@ -358,9 +358,9 @@ namespace infra
     void JsonObjectFormatter::Add(JsonString tagName, const JsonFloat& tag)
     {
         if (tag.NanoFractionalValue() % 1000000 == 0)
-            AddFractionalFloat(tagName.Raw(), tag.IntValue(), tag.NanoFractionalValue() / 1000000, milliValueWidth);
+            AddFractionalFloat(tagName.Raw(), tag.IntValue(), tag.NanoFractionalValue() / 1000000, tag.Negative(), milliValueWidth);
         else
-            AddFractionalFloat(tagName.Raw(), tag.IntValue(), tag.NanoFractionalValue(), nanoValueWidth);        
+            AddFractionalFloat(tagName.Raw(), tag.IntValue(), tag.NanoFractionalValue(), tag.Negative(), nanoValueWidth);        
     }
 
     void JsonObjectFormatter::Add(const infra::JsonKeyValue& keyValue)
@@ -397,14 +397,14 @@ namespace infra
             std::abort();
     }
 
-    void JsonObjectFormatter::AddMilliFloat(const char* tagName, uint32_t intValue, uint32_t milliFractionalValue)
+    void JsonObjectFormatter::AddMilliFloat(const char* tagName, uint32_t intValue, uint32_t milliFractionalValue, bool negative)
     {
-        AddFractionalFloat(tagName, intValue, milliFractionalValue, milliValueWidth);
+        AddFractionalFloat(tagName, intValue, milliFractionalValue, negative, milliValueWidth);
     }
 
-    void JsonObjectFormatter::AddMilliFloat(infra::JsonString tagName, uint32_t intValue, uint32_t milliFractionalValue)
+    void JsonObjectFormatter::AddMilliFloat(infra::JsonString tagName, uint32_t intValue, uint32_t milliFractionalValue, bool negative)
     {
-        AddFractionalFloat(tagName.Raw(), intValue, milliFractionalValue, milliValueWidth);
+        AddFractionalFloat(tagName.Raw(), intValue, milliFractionalValue, negative, milliValueWidth);
     }
 
     void JsonObjectFormatter::AddSubObject(const char* tagName, infra::BoundedConstString json)
@@ -458,10 +458,15 @@ namespace infra
         return stream->Failed();
     }
 
-    void JsonObjectFormatter::AddFractionalFloat(infra::BoundedConstString tagName, uint32_t intValue, uint32_t fractionalValue, std::size_t fractionalWidth)
+    void JsonObjectFormatter::AddFractionalFloat(infra::BoundedConstString tagName, uint32_t intValue, uint32_t fractionalValue, bool negative, std::size_t fractionalWidth)
     {
         InsertSeparation();
-        *stream << '"' << tagName << R"(":)" << intValue << '.' << infra::Width(fractionalWidth, '0') << fractionalValue;
+        *stream << '"' << tagName << R"(":)";
+
+        if (negative)
+            *stream << '-';
+    
+        *stream << intValue << '.' << infra::Width(fractionalWidth, '0') << fractionalValue;
     }
 
     void JsonObjectFormatter::InsertSeparation()
