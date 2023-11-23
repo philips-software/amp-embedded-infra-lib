@@ -80,8 +80,8 @@ namespace infra
             return Add(tagName, static_cast<type>(v));
         }
 
-        void AddMilliFloat(const char* tagName, uint32_t intValue, uint32_t milliFractionalValue, bool negative = false);
-        void AddMilliFloat(infra::JsonString tagName, uint32_t intValue, uint32_t milliFractionalValue, bool negative = false);
+        void AddMilliFloat(const char* tagName, uint64_t intValue, uint32_t milliFractionalValue, bool negative = false);
+        void AddMilliFloat(infra::JsonString tagName, uint64_t intValue, uint32_t milliFractionalValue, bool negative = false);
         void AddSubObject(const char* tagName, infra::BoundedConstString json);
         JsonObjectFormatter SubObject(const char* tagName);
         JsonObjectFormatter SubObject(JsonString tagName);
@@ -92,7 +92,7 @@ namespace infra
         bool Failed() const;
 
     private:
-        void AddFractionalFloat(infra::BoundedConstString tagName, uint32_t intValue, uint32_t fractionalValue, bool negative, std::size_t fractionalWidth);
+        void AddFractionalFloat(infra::BoundedConstString tagName, uint64_t intValue, uint32_t fractionalValue, bool negative, std::size_t fractionalWidth);
         void InsertSeparation();
 
     private:

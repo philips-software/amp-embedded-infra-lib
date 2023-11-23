@@ -397,12 +397,12 @@ namespace infra
             std::abort();
     }
 
-    void JsonObjectFormatter::AddMilliFloat(const char* tagName, uint32_t intValue, uint32_t milliFractionalValue, bool negative)
+    void JsonObjectFormatter::AddMilliFloat(const char* tagName, uint64_t intValue, uint32_t milliFractionalValue, bool negative)
     {
         AddFractionalFloat(tagName, intValue, milliFractionalValue, negative, milliValueWidth);
     }
 
-    void JsonObjectFormatter::AddMilliFloat(infra::JsonString tagName, uint32_t intValue, uint32_t milliFractionalValue, bool negative)
+    void JsonObjectFormatter::AddMilliFloat(infra::JsonString tagName, uint64_t intValue, uint32_t milliFractionalValue, bool negative)
     {
         AddFractionalFloat(tagName.Raw(), intValue, milliFractionalValue, negative, milliValueWidth);
     }
@@ -458,7 +458,7 @@ namespace infra
         return stream->Failed();
     }
 
-    void JsonObjectFormatter::AddFractionalFloat(infra::BoundedConstString tagName, uint32_t intValue, uint32_t fractionalValue, bool negative, std::size_t fractionalWidth)
+    void JsonObjectFormatter::AddFractionalFloat(infra::BoundedConstString tagName, uint64_t intValue, uint32_t fractionalValue, bool negative, std::size_t fractionalWidth)
     {
         InsertSeparation();
         *stream << '"' << tagName << R"(":)";
