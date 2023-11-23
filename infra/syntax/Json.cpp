@@ -24,8 +24,8 @@ namespace
     IntType ToInt(infra::BoundedConstString string, bool sign)
     {
         IntType value{};
-        for (std::size_t index = sign ? 1 : 0; index < string.size(); ++index)
-            value = value * 10 + string[index] - '0';
+        for (auto c : string.substr(sign ? 1 : 0))
+            value = value * 10 + c - '0';
 
         return value;
     }
@@ -624,10 +624,10 @@ namespace infra
 
         auto value = ToInt<uint64_t>(objectString.substr(tokenStart, parseIndex - tokenStart), sign);
 
-        if (parseIndex != objectString.size() && objectString[parseIndex] == '.')
-            ++parseIndex;
-        else
+        if (parseIndex == objectString.size() || objectString[parseIndex] != '.')
             return JsonBiggerInt(value, sign);
+
+        ++parseIndex;
 
         return TryCreateFloatToken(value, sign);
     }
@@ -666,7 +666,7 @@ namespace infra
         auto fractionalValue = ToInt<uint32_t>(fractional, false);
 
         if (fractional.size() < 9)
-            for (std::size_t count = fractional.size(); count < nanoValueWidth; ++count)
+            for (std::size_t count = fractional.size(); count != nanoValueWidth; ++count)
                 fractionalValue = fractionalValue * 10;
 
         return JsonFloat(static_cast<uint32_t>(integer), fractionalValue, sign);
@@ -1338,7 +1338,7 @@ namespace infra
 
                 auto fractional = token.NanoFractionalValue();
                 auto width = nanoValueWidth;
-                while (width > 1 && (fractional % 10 == 0))
+                while (width != 1 && (fractional % 10 == 0))
                 {
                     fractional = fractional / 10;
                     --width;
