@@ -79,17 +79,17 @@ namespace infra
     {
     public:
         JsonFloat() = default;
-        JsonFloat(uint32_t intValue, uint32_t nanoFractionalValue, bool negative);
+        JsonFloat(uint64_t intValue, uint32_t nanoFractionalValue, bool negative);
 
         bool operator==(const JsonFloat& other) const;
         bool operator!=(const JsonFloat& other) const;
 
-        int32_t IntValue() const;
+        uint64_t IntValue() const;
         uint32_t NanoFractionalValue() const;
         bool Negative() const;
 
     private:
-        uint32_t intValue = 0;
+        uint64_t intValue = 0;
         uint32_t nanoFractionalValue = 0;
         bool negative = false;
     };

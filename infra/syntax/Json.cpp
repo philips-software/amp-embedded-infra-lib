@@ -277,7 +277,7 @@ namespace infra
     }
 #endif
 
-    JsonFloat::JsonFloat(uint32_t intValue, uint32_t nanoFractionalValue, bool negative)
+    JsonFloat::JsonFloat(uint64_t intValue, uint32_t nanoFractionalValue, bool negative)
         : intValue(intValue)
         , nanoFractionalValue(nanoFractionalValue)
         , negative(negative)
@@ -293,7 +293,7 @@ namespace infra
         return !(*this == other);
     }
 
-    int32_t JsonFloat::IntValue() const
+    uint64_t JsonFloat::IntValue() const
     {
         return intValue;
     }
@@ -669,7 +669,7 @@ namespace infra
             for (std::size_t count = fractional.size(); count != nanoValueWidth; ++count)
                 fractionalValue = fractionalValue * 10;
 
-        return JsonFloat(static_cast<uint32_t>(integer), fractionalValue, sign);
+        return JsonFloat(integer, fractionalValue, sign);
     }
 
     JsonObject::JsonObject(infra::BoundedConstString objectString)
