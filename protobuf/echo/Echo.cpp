@@ -87,7 +87,8 @@ namespace services
 
     void EchoOnStreams::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
-        assert(readerPtr == nullptr);
+        really_assert(readerPtr == nullptr);
+
         readerPtr = std::move(reader);
         bufferedReader.Emplace(receiveBuffer, *readerPtr);
         DataReceived();
