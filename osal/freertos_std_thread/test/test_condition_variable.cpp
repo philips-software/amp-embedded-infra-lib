@@ -101,8 +101,9 @@ TEST_F(SemaphoreWaitFixture, WhenWaitingNotifyOneReleasesSemaphore)
     EXPECT_CALL(mock, SemaphoreTake(p1, 3000))
         .WillOnce(testing::Invoke([this](xSemaphoreHandle, portTickType)
             {
-        condition_variable.notify_one();
-        return true; }));
+                condition_variable.notify_one();
+                return true;
+            }));
 
     EXPECT_CALL(mock, SemaphoreGive(p1));
 
@@ -116,8 +117,9 @@ TEST_F(SemaphoreWaitFixture, WhenWaitingNotifyAllReleasesSemaphore)
     EXPECT_CALL(mock, SemaphoreTake(p1, 3000))
         .WillOnce(testing::Invoke([this](xSemaphoreHandle, portTickType)
             {
-        condition_variable.notify_all();
-        return true; }));
+                condition_variable.notify_all();
+                return true;
+            }));
 
     EXPECT_CALL(mock, SemaphoreGive(p1));
 
@@ -138,9 +140,10 @@ TEST_F(SemaphoreFixture, WhenWaitingTwiceNotifyAllReleasesTwoSemaphores)
     EXPECT_CALL(mock, SemaphoreTake(p1, 3000))
         .WillOnce(testing::Invoke([this](xSemaphoreHandle, portTickType)
             {
-        std::unique_lock<std::mutex> lock(mutex);
-        condition_variable.wait_for(lock, std::chrono::seconds(2));
-        return true; }));
+                std::unique_lock<std::mutex> lock(mutex);
+                condition_variable.wait_for(lock, std::chrono::seconds(2));
+                return true;
+            }));
 
     EXPECT_CALL(mock, SemaphoreCreateBinary())
         .WillOnce(testing::Return(p2));
@@ -150,8 +153,9 @@ TEST_F(SemaphoreFixture, WhenWaitingTwiceNotifyAllReleasesTwoSemaphores)
     EXPECT_CALL(mock, SemaphoreTake(p2, 2000))
         .WillOnce(testing::Invoke([this](xSemaphoreHandle, portTickType)
             {
-        condition_variable.notify_all();
-        return true; }));
+                condition_variable.notify_all();
+                return true;
+            }));
 
     EXPECT_CALL(mock, SemaphoreGive(p1));
     EXPECT_CALL(mock, SemaphoreGive(p2));
@@ -175,9 +179,10 @@ TEST_F(SemaphoreFixture, WhenWaitingTwiceNotifyOneReleasesFirstSemaphore)
     EXPECT_CALL(mock, SemaphoreTake(p1, 3000))
         .WillOnce(testing::Invoke([this](xSemaphoreHandle, portTickType)
             {
-        std::unique_lock<std::mutex> lock(mutex);
-        condition_variable.wait_for(lock, std::chrono::seconds(2));
-        return true; }));
+                std::unique_lock<std::mutex> lock(mutex);
+                condition_variable.wait_for(lock, std::chrono::seconds(2));
+                return true;
+            }));
 
     EXPECT_CALL(mock, SemaphoreCreateBinary())
         .WillOnce(testing::Return(p2));
@@ -187,8 +192,9 @@ TEST_F(SemaphoreFixture, WhenWaitingTwiceNotifyOneReleasesFirstSemaphore)
     EXPECT_CALL(mock, SemaphoreTake(p2, 2000))
         .WillOnce(testing::Invoke([this](xSemaphoreHandle, portTickType)
             {
-        condition_variable.notify_one();
-        return false; })); // Second semaphore times out
+                condition_variable.notify_one();
+                return false;
+            })); // Second semaphore times out
 
     EXPECT_CALL(mock, SemaphoreGive(p1));
 

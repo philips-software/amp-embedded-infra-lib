@@ -117,6 +117,13 @@ TEST(JsonTokenizerTest, get_comma_token)
     EXPECT_EQ(infra::JsonToken::Token(infra::JsonToken::Comma()), tokenizer.Token());
 }
 
+TEST(JsonTokenizerTest, get_dot_token)
+{
+    infra::JsonTokenizer tokenizer(R"(.)");
+
+    EXPECT_EQ(infra::JsonToken::Token(infra::JsonToken::Dot()), tokenizer.Token());
+}
+
 TEST(JsonTokenizerTest, get_left_brace_token)
 {
     infra::JsonTokenizer tokenizer(R"({)");
@@ -143,6 +150,12 @@ TEST(JsonTokenizerTest, get_right_bracket_token)
     infra::JsonTokenizer tokenizer(R"(])");
 
     EXPECT_EQ(infra::JsonToken::Token(infra::JsonToken::RightBracket(0)), tokenizer.Token());
+}
+
+TEST(JsonTokenizerTest, get_null_token)
+{
+    infra::JsonTokenizer tokenizer(R"(null)");
+    EXPECT_EQ(infra::JsonToken::Token(infra::JsonToken::Null()), tokenizer.Token());
 }
 
 TEST(JsonTokenizerTest, unknown_character_results_in_error_token)
@@ -173,15 +186,31 @@ TEST(JsonTokenizerTest, get_multiple_tokens)
 
 TEST(JsonTokenizerTest, clean_json)
 {
-    infra::BoundedString::WithStorage<512> data(R"({ "key" : "value", "key2" : 1234, "key3" : true })");
+    infra::BoundedString::WithStorage<512> data(R"({ "key" : "value", "key2" : 1234, "key3" : true, "key4" : -42.1 })");
     infra::CleanJsonContents(data);
-    EXPECT_EQ(R"({"key":"value","key2":1234,"key3":true})", data);
+    EXPECT_EQ(R"({"key":"value","key2":1234,"key3":true,"key4":-42.1})", data);
 }
 
 TEST(JsonTokenizerTest, ValidJsonObject)
 {
     EXPECT_TRUE(infra::ValidJsonObject(R"({ "key" : "value", "key2" : 1234, "key3" : true })"));
     EXPECT_FALSE(infra::ValidJsonObject(R"({ "key" })"));
+}
+
+TEST(JsonTokenizerTest, not_equal_operators)
+{
+    EXPECT_FALSE(infra::JsonToken::End() != infra::JsonToken::End());
+    EXPECT_FALSE(infra::JsonToken::Error() != infra::JsonToken::Error());
+    EXPECT_FALSE(infra::JsonToken::Colon() != infra::JsonToken::Colon());
+    EXPECT_FALSE(infra::JsonToken::Comma() != infra::JsonToken::Comma());
+    EXPECT_FALSE(infra::JsonToken::Dot() != infra::JsonToken::Dot());
+    EXPECT_FALSE(infra::JsonToken::Null() != infra::JsonToken::Null());
+    EXPECT_TRUE(infra::JsonToken::LeftBrace(0) != infra::JsonToken::LeftBrace(1));
+    EXPECT_TRUE(infra::JsonToken::RightBrace(0) != infra::JsonToken::RightBrace(1));
+    EXPECT_TRUE(infra::JsonToken::LeftBracket(0) != infra::JsonToken::LeftBracket(1));
+    EXPECT_TRUE(infra::JsonToken::RightBracket(0) != infra::JsonToken::RightBracket(1));
+    EXPECT_TRUE(infra::JsonToken::String("no") != infra::JsonToken::String("yes"));
+    EXPECT_TRUE(infra::JsonToken::Boolean(true) != infra::JsonToken::Boolean(false));
 }
 
 TEST(JsonObjectIteratorTest, empty_object_iterator_compares_equal_to_end)
@@ -305,7 +334,7 @@ TEST(JsonObjectIteratorTest, get_float_value_from_iterator)
     infra::JsonObject object(R"({ "key" : 42.1 })");
     infra::JsonObjectIterator iterator(object.begin());
 
-    EXPECT_EQ(infra::JsonFloat(42, 1), iterator->value.Get<infra::JsonFloat>());
+    EXPECT_EQ(infra::JsonFloat(42, 100000000, false), iterator->value.Get<infra::JsonFloat>());
 }
 
 TEST(JsonObjectIteratorTest, get_two_float_values_from_iterator)
@@ -313,9 +342,9 @@ TEST(JsonObjectIteratorTest, get_two_float_values_from_iterator)
     infra::JsonObject object(R"({ "key" : 42.1, "key2" : 18.7 })");
     infra::JsonObjectIterator iterator(object.begin());
 
-    EXPECT_EQ(infra::JsonFloat(42, 1), iterator->value.Get<infra::JsonFloat>());
+    EXPECT_EQ(infra::JsonFloat(42, 100000000, false), iterator->value.Get<infra::JsonFloat>());
     ++iterator;
-    EXPECT_EQ(infra::JsonFloat(18, 7), iterator->value.Get<infra::JsonFloat>());
+    EXPECT_EQ(infra::JsonFloat(18, 700000000, false), iterator->value.Get<infra::JsonFloat>());
 }
 
 TEST(JsonObjectIteratorTest, get_negative_float_value_from_iterator)
@@ -323,7 +352,47 @@ TEST(JsonObjectIteratorTest, get_negative_float_value_from_iterator)
     infra::JsonObject object(R"({ "key" : -42.1 })");
     infra::JsonObjectIterator iterator(object.begin());
 
-    EXPECT_EQ(infra::JsonFloat(-42, 1), iterator->value.Get<infra::JsonFloat>());
+    EXPECT_EQ(infra::JsonFloat(42, 100000000, true), iterator->value.Get<infra::JsonFloat>());
+}
+
+TEST(JsonObjectIteratorTest, get_nano_float_value_from_iterator)
+{
+    infra::JsonObject object(R"({ "key" : 0.000000001 })");
+    infra::JsonObjectIterator iterator(object.begin());
+
+    EXPECT_EQ(infra::JsonFloat(0, 1, false), iterator->value.Get<infra::JsonFloat>());
+}
+
+TEST(JsonObjectIteratorTest, get_micro_float_value_from_iterator)
+{
+    infra::JsonObject object(R"({ "key" : 0.000001 })");
+    infra::JsonObjectIterator iterator(object.begin());
+
+    EXPECT_EQ(infra::JsonFloat(0, 1000, false), iterator->value.Get<infra::JsonFloat>());
+}
+
+TEST(JsonObjectIteratorTest, get_milli_float_value_from_iterator)
+{
+    infra::JsonObject object(R"({ "key" : 0.001 })");
+    infra::JsonObjectIterator iterator(object.begin());
+
+    EXPECT_EQ(infra::JsonFloat(0, 1000000, false), iterator->value.Get<infra::JsonFloat>());
+}
+
+TEST(JsonObjectIteratorTest, get_float_value_with_more_than_nine_digits_in_fraction_from_iterator)
+{
+    infra::JsonObject object(R"({ "key" : 0.1234567890123 })");
+    infra::JsonObjectIterator iterator(object.begin());
+
+    EXPECT_EQ(infra::JsonFloat(0, 123456789, false), iterator->value.Get<infra::JsonFloat>());
+}
+
+TEST(JsonObjectIteratorTest, get_small_negative_float_value_from_iterator)
+{
+    infra::JsonObject object(R"({ "key" : -0.001 })");
+    infra::JsonObjectIterator iterator(object.begin());
+
+    EXPECT_EQ(infra::JsonFloat(0, 1000000, true), iterator->value.Get<infra::JsonFloat>());
 }
 
 TEST(JsonObjectIteratorTest, dont_get_negative_float_value_from_iterator)
@@ -632,6 +701,15 @@ TEST(JsonObjectTest, iterator_equality)
 
     EXPECT_EQ(object.GetString("key1"), object.GetString("key2"));
     EXPECT_NE(object.GetString("key1"), object.GetString("key3"));
+}
+
+TEST(JsonObjectTest, null_value)
+{
+    infra::JsonObject object(R"({"key1":null})");
+
+    EXPECT_TRUE(object.HasKey("key1"));
+    EXPECT_FALSE(object.GetOptionalString("key1"));
+    EXPECT_FALSE(object.Error());
 }
 
 TEST(JsonArrayIteratorTest, empty_array_iterator_compares_equal_to_end)

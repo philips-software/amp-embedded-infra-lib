@@ -55,10 +55,12 @@ namespace application
         MessageTypeMapGenerator& operator=(const MessageTypeMapGenerator& other) = delete;
         ~MessageTypeMapGenerator() = default;
 
-        void Run(Entities& formatter);
+        void Run(Entities& formatter) const;
 
     protected:
-        virtual void AddTypeMapType(EchoField& field, Entities& entities);
+        virtual void AddTypeMapProtoType(const EchoField& field, Entities& entities) const;
+        virtual void AddTypeMapType(const EchoField& field, Entities& entities) const;
+        void AddTypeMapFieldNumber(const EchoField& field, Entities& entities) const;
         std::string MessageName() const;
         virtual std::string MessageSuffix() const;
 
@@ -73,10 +75,9 @@ namespace application
     public:
         using MessageTypeMapGenerator::MessageTypeMapGenerator;
 
-        void Run(Entities& formatter);
-
     protected:
-        void AddTypeMapType(EchoField& field, Entities& entities) override;
+        void AddTypeMapProtoType(const EchoField& field, Entities& entities) const override;
+        void AddTypeMapType(const EchoField& field, Entities& entities) const override;
         std::string MessageSuffix() const override;
     };
 
@@ -156,10 +157,13 @@ namespace application
         void GenerateServiceFunctions();
         void GenerateServiceProxyFunctions();
         void GenerateFieldConstants();
+        void GenerateMethodTypeList();
 
         uint32_t MaxMessageSize() const;
         std::string AcceptsServiceBody() const;
-        std::string HandleBody() const;
+        std::string StartMethodBody() const;
+        void PrintMethodCaseWithParameter(const EchoMethod& method, google::protobuf::io::Printer& printer) const;
+
         std::string ProxyMethodBody(const EchoMethod& method) const;
 
     private:

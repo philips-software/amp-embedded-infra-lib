@@ -126,6 +126,10 @@ namespace services
         state = State::connected;
         StartTimeout();
         Established();
+        sharedAccess.SetAction([this]()
+            {
+                Expire();
+            });
         createdClientObserver(sharedAccess.MakeShared(static_cast<services::HttpClientObserver&>(*this)));
     }
 
