@@ -10,6 +10,7 @@ target_link_libraries(services.cucumber PUBLIC
 target_sources(services.cucumber PRIVATE
     CucumberContext.cpp
     CucumberContext.hpp
+    CucumberRequestHandlers.cpp
     CucumberRequestHandlers.hpp
     CucumberStep.cpp
     CucumberStep.hpp
