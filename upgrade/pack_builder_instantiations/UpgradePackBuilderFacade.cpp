@@ -20,6 +20,14 @@ namespace main_
         {}
     };
 
+    struct IncorrectOrderOfTargetException
+        : std::runtime_error
+    {
+        explicit IncorrectOrderOfTargetException(const std::string& target)
+            : std::runtime_error("Incorrect order of target: " + target)
+        {}
+    };
+
     UpgradePackBuilderFacade::UpgradePackBuilderFacade(const application::UpgradePackBuilder::HeaderInfo& headerInfo)
         : headerInfo(headerInfo)
     {}
@@ -51,12 +59,44 @@ namespace main_
         builder.WriteUpgradePack(outputFilename, fileSystem);
     }
 
+    infra::Optional<uint8_t> UpgradePackBuilderFacade::GetOrder(const std::string& targetName, const std::map<uint8_t, std::vector<std::string>>& orderedTargets) const
+    {
+        for (const auto& targets : orderedTargets)
+        {
+            const auto targetPos = std::find(targets.second.begin(), targets.second.end(), targetName);
+            if (targetPos != targets.second.end())
+                return infra::MakeOptional(targets.first);
+        }
+        return infra::none;
+    }
+
+    bool UpgradePackBuilderFacade::IsTargetInOrder(const std::string& target, const std::map<uint8_t, std::vector<std::string>>& orderedTargets) const
+    {
+        const auto orderToAdd = GetOrder(target, orderedTargets);
+
+        return orderToAdd == infra::none || currentOrderOfTarget <= *orderToAdd;
+    }
+
+    void UpgradePackBuilderFacade::UpdateCurrentOrderOfTarget(const std::string& target, const std::map<uint8_t, std::vector<std::string>>& orderedTargets)
+    {
+        const auto orderToAdd = GetOrder(target, orderedTargets);
+
+        if (orderToAdd != infra::none)
+            currentOrderOfTarget = std::max(currentOrderOfTarget, *orderToAdd);
+    }
+
     std::vector<std::unique_ptr<application::Input>> UpgradePackBuilderFacade::CreateInputs(const application::SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, application::InputFactory& factory)
     {
         std::vector<std::unique_ptr<application::Input>> inputs;
+        const auto& orderedTargets = supportedTargets.OrderOfTargets();
 
         for (const auto& [target, file, address] : requestedTargets)
+        {
+            UpdateCurrentOrderOfTarget(target, orderedTargets);
+            if (!IsTargetInOrder(target, orderedTargets))
+                throw IncorrectOrderOfTargetException(target);
             inputs.push_back(factory.CreateInput(target, file, address));
+        }
 
         for (const auto& mandatoryTarget : supportedTargets.MandatoryTargets())
         {

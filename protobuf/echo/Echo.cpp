@@ -141,6 +141,9 @@ namespace services
 
     void EchoOnStreams::DataReceived()
     {
+        if (limitedReader != infra::none)
+            ContinueReceiveMessage();
+
         while (readerPtr != nullptr && methodDeserializer == nullptr && !readerAccess.Referenced())
         {
             if (limitedReader == infra::none)
@@ -148,6 +151,12 @@ namespace services
 
             if (limitedReader != infra::none)
                 ContinueReceiveMessage();
+        }
+
+        if (!readerAccess.Referenced() && limitedReader != infra::none)
+        {
+            bufferedReader = infra::none;
+            readerPtr = nullptr;
         }
     }
 
@@ -190,8 +199,10 @@ namespace services
         if (readerAccess.Referenced())
             readerAccess.SetAction([this]()
                 {
+                    auto& self = *this;
                     ReaderDone();
-                    DataReceived();
+                    // ReaderDone() may result in readerAccess' completion callback being reset, which invalidates the saved this pointer
+                    self.DataReceived();
                 });
         else
             ReaderDone();

@@ -6,11 +6,11 @@ namespace services
         : stream(stream)
     {}
 
+#ifdef EMIL_ENABLE_GLOBAL_TRACING
     infra::TextOutputStream Tracer::Trace()
     {
-        stream << "\r\n";
+        StartTrace();
         InsertHeader();
-
         return Continue();
     }
 
@@ -18,7 +18,23 @@ namespace services
     {
         return stream;
     }
+#else
+    Tracer::EmptyTracing Tracer::Trace()
+    {
+        return EmptyTracing{};
+    }
+
+    infra::TextOutputStream Tracer::Continue()
+    {
+        return dummyStream;
+    }
+#endif
 
     void Tracer::InsertHeader()
     {}
+
+    void Tracer::StartTrace()
+    {
+        Continue() << "\r\n";
+    }
 }

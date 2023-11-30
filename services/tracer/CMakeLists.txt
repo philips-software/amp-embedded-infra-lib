@@ -1,5 +1,9 @@
 add_library(services.tracer ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
+if (EMIL_ENABLE_GLOBAL_TRACING)
+    target_compile_definitions(services.tracer PUBLIC EMIL_ENABLE_GLOBAL_TRACING)
+endif()
+
 target_link_libraries(services.tracer PUBLIC
     hal.interfaces
     hal.synchronous_interfaces
