@@ -27,7 +27,7 @@ namespace services
     private:
         struct LimitedReader
         {
-            LimitedReader(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
+            explicit LimitedReader(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
 
             infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
             infra::LimitedStreamReaderWithRewinding limitedReader;
