@@ -14,7 +14,7 @@ namespace
         : public services::CucumberScenarioRequestHandler
     {
     public:
-        MOCK_METHOD(void, BeginScenario, (infra::JsonArray& tags, const infra::Function<void()>& onDone), (override));
+        MOCK_METHOD(void, BeginScenario, (infra::JsonArray & tags, const infra::Function<void()>& onDone), (override));
         MOCK_METHOD(void, EndScenario, (const infra::Function<void()>& onDone), (override));
     };
 
