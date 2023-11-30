@@ -199,8 +199,10 @@ namespace services
         if (readerAccess.Referenced())
             readerAccess.SetAction([this]()
                 {
+                    auto& self = *this;
                     ReaderDone();
-                    DataReceived();
+                    // ReaderDone() may result in readerAccess' completion callback being reset, which invalidates the saved this pointer
+                    self.DataReceived();
                 });
         else
             ReaderDone();
