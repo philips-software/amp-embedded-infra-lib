@@ -53,7 +53,7 @@ namespace services
             "-----END CERTIFICATE-----\r\n";
 
         const char testServerKeyData[] =
-            "-----BEGIN RSA PRIVATE KEY-----\r\n"
+            "-----BEGIN RSA PRIVATE KEY-----\r\n" //NOSONAR
             "MIIEogIBAAKCAQEArcYgmszNxJu5pfLpploIw12iIfAyZWK6PZ1/6zlifaR1v0KL\r\n"
             "x08aLSQAOAvnb8jmfVzkBwpt3hYVm69gWdTJcFpRXMuZ1nIur7HEDQXtzrgvmV6v\r\n"
             "d8Eu7ngoGfHijP9eiuwxoYNiMmbyvTM2hYnRn5WllOnbK5OBldnh0Vawh/XErMO/\r\n"
@@ -105,7 +105,7 @@ namespace services
             "-----END CERTIFICATE-----\r\n";
 
         const char testClientKeyData[] =
-            "-----BEGIN RSA PRIVATE KEY-----\r\n"
+            "-----BEGIN RSA PRIVATE KEY-----\r\n" //NOSONAR
             "MIIEowIBAAKCAQEAqNdp/w5eM4io5Ki/amQC8FAuhhdk1H3ELm11MmkYTLXJBsSc\r\n"
             "RCLIdiyM3Ten/I3bZtI0Ak7yvubQnozeBZig3usBBapfOvx5adCSsZfwGjgsqLF+\r\n"
             "zQ2maEd15pHSRPPXBAJ++4ZpxdVkfr0r/ZRIxWJwvyxtK3N0BJfUcop1J2fa3cZx\r\n"

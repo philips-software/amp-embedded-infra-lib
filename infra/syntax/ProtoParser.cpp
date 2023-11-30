@@ -90,6 +90,7 @@ namespace infra
         uint64_t result = 0;
         uint8_t byte = 0;
         uint8_t shift = 0;
+        uint8_t index = 0;
 
         do
         {
@@ -97,7 +98,11 @@ namespace infra
 
             result += static_cast<uint64_t>(byte & 0x7f) << shift;
             shift += 7;
-        } while (!input.Failed() && (byte & 0x80) != 0);
+            ++index;
+        } while (!input.Failed() && (byte & 0x80) != 0 && index != 10);
+
+        if (!input.Failed() && (byte & 0x80) != 0 && index == 10)
+            formatErrorPolicy.Failed();
 
         return result;
     }
@@ -116,7 +121,40 @@ namespace infra
         return result;
     }
 
+    struct MakeFullField
+        : infra::StaticVisitor<ProtoParser::Field>
+    {
+        MakeFullField(infra::DataInputStream inputStream, infra::StreamErrorPolicy& formatErrorPolicy, uint32_t fieldNumber)
+            : inputStream(inputStream)
+            , formatErrorPolicy(formatErrorPolicy)
+            , fieldNumber(fieldNumber)
+        {}
+
+        template<class T>
+        ProtoParser::Field operator()(T value) const
+        {
+            return { value, fieldNumber };
+        }
+
+        ProtoParser::Field operator()(PartialProtoLengthDelimited value) const
+        {
+            return { ProtoLengthDelimited(inputStream, formatErrorPolicy, value.length), fieldNumber };
+        }
+
+    private:
+        infra::DataInputStream inputStream;
+        infra::StreamErrorPolicy& formatErrorPolicy;
+        uint32_t fieldNumber;
+    };
+
     ProtoParser::Field ProtoParser::GetField()
+    {
+        auto [value, fieldNumber] = GetPartialField();
+        MakeFullField visitor(input, formatErrorPolicy, fieldNumber);
+        return infra::ApplyVisitor(visitor, value);
+    }
+
+    ProtoParser::PartialField ProtoParser::GetPartialField()
     {
         uint32_t x = static_cast<uint32_t>(GetVarInt());
         uint8_t type = x & 7;
@@ -129,7 +167,7 @@ namespace infra
             case 1:
                 return std::make_pair(GetFixed64(), fieldNumber);
             case 2:
-                return std::make_pair(ProtoLengthDelimited(input, formatErrorPolicy, static_cast<uint32_t>(GetVarInt())), fieldNumber);
+                return std::make_pair(PartialProtoLengthDelimited{ static_cast<uint32_t>(GetVarInt()) }, fieldNumber);
             case 5:
                 return std::make_pair(GetFixed32(), fieldNumber);
             default:
