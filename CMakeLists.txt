@@ -88,6 +88,8 @@ option(EMIL_BUILD_TESTS "Enable building the tests" ${EMIL_DEFAULTOPT})
 option(EMIL_BUILD_EXAMPLES "Enable building the examples" ${EMIL_DEFAULTOPT})
 option(EMIL_ENABLE_FUZZING "Enable building the fuzzing targets" Off)
 option(EMIL_ENABLE_DOCKER_TOOLS "Enable shift-left tools (e.g. linters, formatters) that are run using Docker" On)
+option(EMIL_GENERATE_PACKAGE_CONFIG "Enable generation of package configuration and install files" ${EMIL_HOST_BUILD})
+option(EMIL_ENABLE_GLOBAL_TRACING "Enable Global Tracing" On)
 option(EMIL_BUILD_ECHO_COMPILERS "Build and install the Protobuf ECHO compilers" ${EMIL_DEFAULTOPT})
 
 # Enable or disable optional features.
