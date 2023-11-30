@@ -1,8 +1,8 @@
 #ifndef TEST_FREERTOS_STD_THREAD_SEMPHR_H
 #define TEST_FREERTOS_STD_THREAD_SEMPHR_H
 
-#include <chrono>
 #include "gmock/gmock.h"
+#include <chrono>
 
 typedef void* xSemaphoreHandle;
 typedef std::chrono::system_clock::duration::rep portTickType;

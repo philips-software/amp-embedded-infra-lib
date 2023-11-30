@@ -9,7 +9,7 @@ class ServiceForwarderAllTest
 public:
     testing::StrictMock<services::EchoMock> echoFrom;
     testing::StrictMock<services::EchoMock> echoTo;
-    services::ServiceForwarderAll::WithMaxMessageSize<100> forwarder{ echoFrom, echoTo };
+    services::ServiceForwarderAll forwarder{ echoFrom, echoTo };
     testing::StrictMock<services::EchoErrorPolicyMock> errorPolicy;
 };
 
@@ -25,24 +25,24 @@ TEST_F(ServiceForwarderAllTest, accept_any_service)
 
 TEST_F(ServiceForwarderAllTest, forward_message)
 {
-    echoFrom.NotifyObservers([this](auto& service)
+    infra::StdVectorOutputStreamWriter::WithStorage writer;
+
+    echoFrom.NotifyObservers([this, &writer](auto& service)
         {
-            infra::StreamErrorPolicy streamErrorPolicy;
             infra::StdVectorInputStream::WithStorage inputStream{ infra::inPlace, std::vector<uint8_t>{ 1, 2, 3, 4, 5 } };
-            infra::ProtoLengthDelimited contents{ inputStream, streamErrorPolicy, static_cast<uint32_t>(inputStream.Available()) };
 
-            EXPECT_CALL(echoTo, RequestSend(testing::_)).WillOnce(testing::Invoke([this, &service](services::ServiceProxy& serviceProxy)
+            EXPECT_CALL(echoTo, RequestSend(testing::_)).WillOnce(testing::Invoke([this, &service, &writer](services::ServiceProxy& serviceProxy)
                 {
-                    infra::StdVectorOutputStreamWriter::WithStorage writer;
-                    EXPECT_CALL(echoTo, SendStreamWriter()).WillOnce(testing::ReturnRef(writer));
-                    EXPECT_CALL(echoTo, Send());
-                    EXPECT_CALL(echoFrom, ServiceDone(testing::Ref(service)));
-                    serviceProxy.GrantSend();
-
-                    EXPECT_EQ((std::vector<uint8_t>{ 1, 42, 5, 1, 2, 3, 4, 5 }), writer.Storage());
+                    EXPECT_CALL(echoFrom, ServiceDone());
+                    auto serializer = serviceProxy.GrantSend();
+                    EXPECT_FALSE(serializer->Serialize(infra::UnOwnedSharedPtr(writer)));
                 }));
-            service.HandleMethod(1, 5, contents, errorPolicy);
+            auto deserializer = service.StartMethod(1, 5, 5, errorPolicy);
+            deserializer->MethodContents(infra::UnOwnedSharedPtr(inputStream.Reader()));
+            deserializer->ExecuteMethod();
         });
+
+    EXPECT_EQ((std::vector<uint8_t>{ 1, 42, 5, 1, 2, 3, 4, 5 }), writer.Storage());
 }
 
 class ServiceForwarderTest
@@ -51,7 +51,7 @@ class ServiceForwarderTest
 public:
     testing::StrictMock<services::EchoMock> echoFrom;
     testing::StrictMock<services::EchoMock> echoTo;
-    services::ServiceForwarder::WithMaxMessageSize<100> forwarder{ echoFrom, 1, echoTo };
+    services::ServiceForwarder forwarder{ echoFrom, 1, echoTo };
     testing::StrictMock<services::EchoErrorPolicyMock> errorPolicy;
 };
 
