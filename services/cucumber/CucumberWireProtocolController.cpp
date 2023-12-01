@@ -79,7 +79,7 @@ namespace services
 
     void CucumberWireProtocolController::HandleBeginScenarioRequest(CucumberWireProtocolParser& parser)
     {
-        auto tags = parser.scenarioTags ? parser.scenarioTags->GetOptionalArray("tags").ValueOr(infra::JsonArray()) : infra::JsonArray();
+        auto tags = parser.scenarioTags ? parser.scenarioTags->GetOptionalArray("tags").ValueOrDefault() : infra::JsonArray();
 
         scenarioRequestHandler.BeginScenario(tags, [this]()
             {

@@ -29,8 +29,8 @@ namespace
     public:
         services::CucumberContext context;
         testing::StrictMock<services::ConnectionObserverMock> connectionObserver;
-        testing::StrictMock<CucumberScenarioRequestHandlerMock> scenarionRequestHandler;
-        services::CucumberWireProtocolController controller{ connectionObserver, scenarionRequestHandler };
+        testing::StrictMock<CucumberScenarioRequestHandlerMock> scenarioRequestHandler;
+        services::CucumberWireProtocolController controller{ connectionObserver, scenarioRequestHandler };
         services::CucumberWireProtocolParser parser;
     };
 
@@ -48,25 +48,20 @@ namespace
     }
 };
 
-MATCHER_P(Equals, value, "")
-{
-    return value == arg;
-}
-
 TEST_F(CucumberWireProtocolControllerTest, begin_scenario_with_uninitialized_tags_calls_with_empty_json_array)
 {
-    EXPECT_CALL(scenarionRequestHandler, BeginScenario(Equals(infra::JsonArray()), testing::_));
+    EXPECT_CALL(scenarioRequestHandler, BeginScenario(testing::Eq(infra::JsonArray()), testing::_));
     Request(R"(["begin_scenario"])");
 }
 
 TEST_F(CucumberWireProtocolControllerTest, begin_scenario_without_tags_calls_with_empty_json_array)
 {
-    EXPECT_CALL(scenarionRequestHandler, BeginScenario(Equals(infra::JsonArray()), testing::_));
+    EXPECT_CALL(scenarioRequestHandler, BeginScenario(testing::Eq(infra::JsonArray()), testing::_));
     RequestWithoutScenarioTags(R"(["begin_scenario"])");
 }
 
 TEST_F(CucumberWireProtocolControllerTest, begin_scenario_with_tags_forward_tags_as_json_array)
 {
-    EXPECT_CALL(scenarionRequestHandler, BeginScenario(Equals(infra::JsonArray(R"(["tag1","tag2"])")), testing::_));
+    EXPECT_CALL(scenarioRequestHandler, BeginScenario(testing::Eq(infra::JsonArray(R"(["tag1","tag2"])")), testing::_));
     Request(R"(["begin_scenario",{"tags":["tag1","tag2"]}])");
 }
