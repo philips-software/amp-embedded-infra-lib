@@ -127,6 +127,11 @@ namespace services
     {
         return static_cast<GattServerCharacteristic::PermissionFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
     }
+
+    inline GattServerCharacteristic::PermissionFlags operator&(GattServerCharacteristic::PermissionFlags lhs, GattServerCharacteristic::PermissionFlags rhs)
+    {
+        return static_cast<GattServerCharacteristic::PermissionFlags>(infra::enum_cast(lhs) & infra::enum_cast(rhs));
+    }
 }
 
 #endif
