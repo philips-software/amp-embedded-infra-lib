@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+import "EchoAttributes.proto";
+
+package gatt;
+option java_package = "com.philips.emil.ProtobufEcho";
+option java_outer_classname = "GattProto";
+
+message DisServiceData
+{
+    bytes manufacturerName = 1 [(bytes_size) =  32];
+    bytes modelNumber = 2 [(bytes_size) =  32];
+    bytes serialNumber = 3 [(bytes_size) =  32];
+    bytes hardwareRevision = 4 [(bytes_size) =  32];
+    bytes firmwareRevision = 5 [(bytes_size) =  32];
+    bytes softwareRevision = 6 [(bytes_size) =  32];
+    bytes systemId = 7 [(bytes_size) =  8];
+    bytes ieeeRegulatoryCertificationDataList = 8 [(bytes_size) =  32];
+    bytes pnpId = 9 [(bytes_size) =  7];
+}
