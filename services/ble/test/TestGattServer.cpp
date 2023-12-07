@@ -69,6 +69,14 @@ TEST(GattServerTest, characteristic_implementation_is_added_to_service)
     EXPECT_EQ(0x42, s.Characteristics().front().Type().Get<services::AttAttribute::Uuid16>());
 }
 
+TEST(GattServerTest, bitwise_and_permissions_supported)
+{
+    auto permissions = GattPermissionFlags::authorizedRead | GattPermissionFlags::encryptedWrite;
+
+    EXPECT_TRUE((permissions & GattPermissionFlags::authorizedRead) == GattPermissionFlags::authorizedRead);
+    EXPECT_FALSE((permissions & GattPermissionFlags::encryptedRead) == GattPermissionFlags::encryptedRead);
+}
+
 class GattServerCharacteristicTest
     : public testing::Test
     , public infra::EventDispatcherFixture
