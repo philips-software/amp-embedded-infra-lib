@@ -337,7 +337,7 @@ namespace infra
         bool Error() const;
 
     private:
-        infra::BoundedConstString objectString;
+        infra::BoundedConstString objectString{ "[]" };
         bool error = false;
     };
 
