@@ -61,11 +61,6 @@ jobs:
           name: linter
           path: |
             megalinter-reports
-      - uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32
-        if: ${{ success() || failure() }}
-        with:
-          name: gitleaks
-          path: gitleaks_report.json
       - uses: reviewdog/action-suggester@94877e550e6b522dc1d21231974b645ff2f084ce # v1.8.0
         with:
           tool_name: MegaLinter
