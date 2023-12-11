@@ -128,3 +128,36 @@ TEST_F(EchoOnConnectionTest, MethodNotFound_is_reported)
     EXPECT_CALL(connection, AckReceived());
     connection.Observer().DataReceived();
 }
+
+TEST_F(EchoOnConnectionTest, DataReceived_while_service_method_is_executing)
+{
+    infra::StdVectorInputStream::WithStorage stream(infra::inPlace, std::vector<uint8_t>{ 1, 10, 2, 8, 5 });
+    auto readerPtr = infra::UnOwnedSharedPtr(stream.Reader());
+    EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
+    EXPECT_CALL(service, Method(5));
+    EXPECT_CALL(connection, AckReceived());
+    connection.Observer().DataReceived();
+
+    EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
+    connection.Observer().DataReceived();
+
+    service.MethodDone();
+}
+
+TEST_F(EchoOnConnectionTest, DataReceived_to_complete_service_method)
+{
+    infra::StdVectorInputStream::WithStorage stream(infra::inPlace, std::vector<uint8_t>{ 1, 10, 2, 8 });
+    auto readerPtr = infra::UnOwnedSharedPtr(stream.Reader());
+    EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
+    EXPECT_CALL(connection, AckReceived());
+    connection.Observer().DataReceived();
+
+    infra::StdVectorInputStream::WithStorage stream2(infra::inPlace, std::vector<uint8_t>{ 5 });
+    readerPtr = infra::UnOwnedSharedPtr(stream2.Reader());
+    EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
+    EXPECT_CALL(connection, AckReceived());
+    EXPECT_CALL(service, Method(5));
+    connection.Observer().DataReceived();
+
+    service.MethodDone();
+}

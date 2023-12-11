@@ -26,13 +26,14 @@ namespace infra
         void Rewind(std::size_t marker) override;
 
     private:
-        void Read(infra::ConstByteRange range, infra::ByteRange& to);
+        std::size_t Read(infra::ConstByteRange range, infra::ByteRange& to);
         void StoreRemainder();
 
     private:
         infra::BoundedDeque<uint8_t>& buffer;
         infra::StreamReaderWithRewinding& input;
         std::size_t index = 0;
+        std::size_t bufferIndex = 0;
     };
 }
 
