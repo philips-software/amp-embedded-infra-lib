@@ -13,6 +13,11 @@ concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
   cancel-in-progress: true
 
+env:
+  APPLY_FIXES: all
+  APPLY_FIXES_EVENT: pull_request
+  APPLY_FIXES_MODE: commit
+
 jobs:
   linter:
     name: Linting
@@ -28,7 +33,6 @@ jobs:
           persist-credentials: false
       - uses: oxsecurity/megalinter/flavors/c_cpp@7e042c726c68415475b05a65a686c612120a1232 # v7.7.0
         env:
-          APPLY_FIXES: all
           VALIDATE_ALL_CODEBASE: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: github/codeql-action/upload-sarif@c0d1daa7f7e14667747d73a7dbbe8c074bc8bfe2 # v2.22.9
