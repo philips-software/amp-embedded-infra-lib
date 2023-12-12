@@ -20,7 +20,8 @@
         "ms-vscode.cmake-tools",
         "ms-vscode.cpptools",
         "ms-vsliveshare.vsliveshare",
-        "SonarSource.sonarlint-vscode"
+        "SonarSource.sonarlint-vscode",
+        "xaver.clang-format"
       ],
       "settings": {
         "C_Cpp.autoAddFileAssociations": false,

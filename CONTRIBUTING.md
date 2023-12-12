@@ -38,7 +38,7 @@ Make sure you have all development dependencies installed. E.g. [CMake](https://
 #### Preparing your Fork
 
 1. Click ‘Fork’ on Github, creating e.g. yourname/amp-embedded-infra-lib.
-2. Clone your project: git clone git@github.com:yourname/amp-embedded-infra-lib.
+2. Clone your project: ```git clone https://github.com/yourname/amp-embedded-infra-lib```.
 3. ```cd amp-embedded-infra-lib```.
 4. Create the build directory ```cmake -E make_directory Build```.
 5. Configure the project with CMake ```cmake ..```.
