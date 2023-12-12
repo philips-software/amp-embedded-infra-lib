@@ -13,11 +13,6 @@ concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
   cancel-in-progress: true
 
-env:
-  APPLY_FIXES: all
-  APPLY_FIXES_EVENT: pull_request
-  APPLY_FIXES_MODE: commit
-
 jobs:
   linter:
     name: Linting
@@ -33,6 +28,7 @@ jobs:
           persist-credentials: false
       - uses: oxsecurity/megalinter/flavors/c_cpp@7e042c726c68415475b05a65a686c612120a1232 # v7.7.0
         env:
+          APPLY_FIXES: all
           VALIDATE_ALL_CODEBASE: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: git diff
@@ -49,4 +45,3 @@ jobs:
       - uses: reviewdog/action-suggester@94877e550e6b522dc1d21231974b645ff2f084ce # v1.8.0
         with:
           tool_name: MegaLinter
-          filter_mode: diff_context
