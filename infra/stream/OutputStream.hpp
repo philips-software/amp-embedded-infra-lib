@@ -21,7 +21,7 @@ namespace infra
         StreamWriter() = default;
         StreamWriter(const StreamWriter&) = delete;
         StreamWriter& operator=(const StreamWriter&) = delete;
-        virtual ~StreamWriter() = default;
+        ~StreamWriter() = default;
 
     public:
         virtual void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy) = 0;

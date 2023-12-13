@@ -19,7 +19,7 @@ namespace infra
         StreamReader() = default;
         StreamReader(const StreamReader& other) = delete;
         StreamReader& operator=(const StreamReader& other) = delete;
-        virtual ~StreamReader() = default;
+        ~StreamReader() = default;
 
     public:
         virtual void Extract(ByteRange range, StreamErrorPolicy& errorPolicy) = 0;
