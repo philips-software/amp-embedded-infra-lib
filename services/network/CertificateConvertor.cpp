@@ -42,8 +42,11 @@ namespace services
         std::vector<std::vector<uint8_t>> derCertificates;
         std::string pemContents;
 
-        for (auto& line : pemCertificates)
+        for (auto line : pemCertificates)
         {
+            if (!line.empty() && line.back() == '\r')
+                line.pop_back();
+
             if (line.find("-----BEGIN CERTIFICATE-----") != std::string::npos)
                 continue;
 
