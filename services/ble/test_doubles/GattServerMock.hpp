@@ -11,31 +11,30 @@ namespace services
         : public GattServer
     {
     public:
-        MOCK_METHOD1(AddService, void(GattServerService& service));
+        MOCK_METHOD(void, AddService, (GattServerService & service));
     };
 
     class GattServerCharacteristicOperationsMock
         : public services::GattServerCharacteristicOperations
     {
     public:
-        MOCK_CONST_METHOD2(Update, UpdateStatus(const services::GattServerCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data));
+        MOCK_METHOD(UpdateStatus, Update, (const services::GattServerCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data), (const));
     };
 
     class GattServerCharacteristicUpdateMock
         : public GattServerCharacteristicUpdate
     {
     public:
-        MOCK_METHOD2(Update, void(infra::ConstByteRange data, infra::Function<void()> onDone));
+        MOCK_METHOD(void, Update, (infra::ConstByteRange data, infra::Function<void()> onDone));
     };
 
     class GattServerCharacteristicMock
         : public GattServerCharacteristic
     {
     public:
-        MOCK_CONST_METHOD0(ServiceHandle, AttAttribute::Handle());
-        MOCK_CONST_METHOD0(CharacteristicHandle, AttAttribute::Handle());
-
-        MOCK_METHOD2(Update, void(infra::ConstByteRange data, infra::Function<void()> onDone));
+        MOCK_METHOD(AttAttribute::Handle, ServiceHandle, (), (const));
+        MOCK_METHOD(AttAttribute::Handle, CharacteristicHandle, (), (const));
+        MOCK_METHOD(void, Update, (infra::ConstByteRange data, infra::Function<void()> onDone));
     };
 }
 

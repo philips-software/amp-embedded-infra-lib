@@ -488,7 +488,7 @@ namespace infra
     {}
 
     template<std::size_t ExtraSize>
-    ExecuteOnDestruction::WithExtraSize<ExtraSize>::~WithExtraSize<ExtraSize>()
+    ExecuteOnDestruction::WithExtraSize<ExtraSize>::~WithExtraSize()
     {
         f();
     }

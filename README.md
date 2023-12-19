@@ -1,5 +1,6 @@
 # amp-embedded-infra-lib (EmIL)
 
+<!-- markdownlint-disable -->
 <div align="center">
 
 [![Continuous Integration](https://github.com/philips-software/amp-embedded-infra-lib/workflows/Continuous%20Integration/badge.svg)](https://github.com/philips-software/amp-embedded-infra-lib/actions) [![Linting & Formatting](https://github.com/philips-software/amp-embedded-infra-lib/actions/workflows/linting-formatting.yml/badge.svg)](https://github.com/philips-software/amp-embedded-infra-lib/actions/workflows/linting-formatting.yml) [![Static Analysis](https://github.com/philips-software/amp-embedded-infra-lib/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/philips-software/amp-embedded-infra-lib/actions/workflows/static-analysis.yml)
@@ -10,6 +11,7 @@
  [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6667/badge)](https://bestpractices.coreinfrastructure.org/projects/6667)
 
 </div>
+<!-- markdownlint enable -->
 
 **Description**: amp-embedded-infra-lib is a set of C++ libraries and headers that provide heap-less, STL like, infrastructure for embedded software development.
 
@@ -28,7 +30,7 @@ EmIL is know to build under the following configurations:
 
 EmIL can be built by-itself, for example to execute the included micro-tests, or it can be built as part of a larger project. This paragraph describes how to build EmIL by-itself.
 
-```
+```shell
 cmake -B Build
 cmake --build Build
 ```
@@ -37,7 +39,7 @@ cmake --build Build
 
 After EmIL has been built. The included automated tests can be run with CTest like so:
 
-```
+```shell
 ctest -D Experimental -C Debug
 ```
 
@@ -59,4 +61,4 @@ Please refer to our [Contributing](CONTRIBUTING.md) guide when you want to contr
 
 ## License
 
-amp-embedded-infra-lib is licensed under the [MIT](https://choosealicense.com/licenses/mit/) license. See [LICENSE file](LICENSE.md).
+amp-embedded-infra-lib is licensed under the [MIT](https://choosealicense.com/licenses/mit/) license. See [LICENSE file](LICENSE).

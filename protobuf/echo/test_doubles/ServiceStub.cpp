@@ -2,39 +2,51 @@
 
 namespace services
 {
-    void ServiceStub::Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, services::EchoErrorPolicy& errorPolicy)
-    {
-        infra::ProtoParser parser(contents.Parser());
+    Message::Message(uint32_t value)
+        : value(value)
+    {}
 
+    void Message::Serialize(infra::ProtoFormatter& formatter) const
+    {
+        SerializeField(services::ProtoInt32(), formatter, value, 1);
+    }
+
+    uint32_t& Message::Get(std::integral_constant<uint32_t, 0>)
+    {
+        return value;
+    }
+
+    const uint32_t& Message::Get(std::integral_constant<uint32_t, 0>) const
+    {
+        return value;
+    }
+
+    ServiceStub::ServiceStub(Echo& echo)
+        : Service(echo)
+    {}
+
+    bool ServiceStub::AcceptsService(uint32_t id) const
+    {
+        return id == serviceId;
+    }
+
+    infra::SharedPtr<MethodDeserializer> ServiceStub::StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const services::EchoErrorPolicy& errorPolicy)
+    {
         switch (methodId)
         {
-            uint32_t value;
-
             case idMethod:
-            {
-                while (!parser.Empty())
-                {
-                    infra::ProtoParser::Field field = parser.GetField();
-
-                    switch (field.second)
+                return Rpc().SerializerFactory().MakeDeserializer<Message, uint32_t>(infra::Function<void(uint32_t)>([this](uint32_t v)
                     {
-                        case 1:
-                            DeserializeField(services::ProtoUInt32(), parser, field.first, value);
-                            break;
-                        default:
-                            if (field.first.Is<infra::ProtoLengthDelimited>())
-                                field.first.Get<infra::ProtoLengthDelimited>().SkipEverything();
-                            break;
-                    }
-                }
-
-                if (!parser.FormatFailed())
-                    Method(value);
-                break;
-            }
+                        Method(v);
+                    }));
+            case idMethodNoParameter:
+                return Rpc().SerializerFactory().MakeDeserializer<EmptyMessage>(infra::Function<void()>([this]()
+                    {
+                        MethodNoParameter();
+                    }));
             default:
                 errorPolicy.MethodNotFound(serviceId, methodId);
-                contents.SkipEverything();
+                return Rpc().SerializerFactory().MakeDummyDeserializer(Rpc());
         }
     }
 
@@ -44,13 +56,13 @@ namespace services
 
     void ServiceStubProxy::Method(uint32_t value)
     {
-        infra::DataOutputStream::WithErrorPolicy stream(Rpc().SendStreamWriter());
-        infra::ProtoFormatter formatter(stream);
-        formatter.PutVarInt(serviceId);
-        {
-            infra::ProtoLengthDelimitedFormatter argumentFormatter = formatter.LengthDelimitedFormatter(idMethod);
-            SerializeField(services::ProtoUInt32(), formatter, value, 1);
-        }
-        Rpc().Send();
+        auto serializer = Rpc().SerializerFactory().MakeSerializer<Message, uint32_t>(serviceId, idMethod, value);
+        SetSerializer(serializer);
+    }
+
+    void ServiceStubProxy::MethodNoParameter()
+    {
+        auto serializer = Rpc().SerializerFactory().MakeSerializer<EmptyMessage>(serviceId, idMethodNoParameter);
+        SetSerializer(serializer);
     }
 }

@@ -13,7 +13,7 @@ namespace services
 
         while (!stack.empty())
         {
-            infra::DataOutputStream::WithErrorPolicy stream{ writer };
+            infra::DataOutputStream stream{ writer, output.ErrorPolicy() };
 
             auto& [index, callback] = stack.back();
             bool retry = false;

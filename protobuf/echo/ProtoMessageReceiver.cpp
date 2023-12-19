@@ -18,19 +18,38 @@ namespace services
 
             auto available = limitedReader.Available();
 
-            auto& current = stack.back();
+            const auto& current = stack.back();
             current.second(stream);
 
             if (stream.Failed() || reader.Empty())
-                break;
-
-            if (&current != &stack.front())
             {
-                current.first -= available - limitedReader.Available();
-
-                if (current.first == 0)
-                    stack.pop_back();
+                failed = stream.Failed();
+                break;
             }
+
+            ConsumeStack(current, available - limitedReader.Available());
+        }
+    }
+
+    bool ProtoMessageReceiverBase::Failed() const
+    {
+        return failed;
+    }
+
+    void ProtoMessageReceiverBase::ConsumeStack(const std::pair<uint32_t, infra::Function<void(const infra::DataInputStream& stream)>>& current, std::size_t amount)
+    {
+        if (&current != &stack.front())
+        {
+            for (auto& i : stack)
+            {
+                i.first -= amount;
+
+                if (&i == &current)
+                    break;
+            }
+
+            while (stack.size() > 1 && stack.back().first == 0)
+                stack.pop_back();
         }
     }
 

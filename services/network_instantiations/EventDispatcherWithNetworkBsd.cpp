@@ -246,9 +246,13 @@ namespace services
         }
 
         connections.remove_if([](const infra::WeakPtr<ConnectionBsd>& connection)
-            { return connection.lock() == nullptr; });
+            {
+                return connection.lock() == nullptr;
+            });
         datagrams.remove_if([](const infra::WeakPtr<DatagramBsd>& datagram)
-            { return datagram.lock() == nullptr; });
+            {
+                return datagram.lock() == nullptr;
+            });
     }
 
     void EventDispatcherWithNetwork::AddFileDescriptorToSet(int fileDescriptor, fd_set& set)

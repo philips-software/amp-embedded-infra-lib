@@ -170,7 +170,14 @@ service TestService2
 {
   option (service_id) = 2;
 
-  rpc Search (TestString) returns (Nothing) { option (method_id) = 1; }
+  rpc Search(TestString) returns (Nothing) { option (method_id) = 1; }
+}
+
+service TestServiceNoParameter
+{
+  option (service_id) = 3;
+
+  rpc Method(Nothing) returns (Nothing) { option (method_id) = 1; }
 }
 
 message TestBoolWithBytes {

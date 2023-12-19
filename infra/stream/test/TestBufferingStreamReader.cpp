@@ -117,6 +117,10 @@ TEST_F(BufferingStreamReaderTest, Available)
 
     EXPECT_CALL(input, Available()).WillOnce(testing::Return(1));
     EXPECT_FALSE(reader.Empty());
+
+    reader.ExtractContiguousRange(1);
+    EXPECT_CALL(input, Available()).WillOnce(testing::Return(1));
+    EXPECT_EQ(2, reader.Available());
 }
 
 TEST_F(BufferingStreamReaderTest, ConstructSaveMarker)
