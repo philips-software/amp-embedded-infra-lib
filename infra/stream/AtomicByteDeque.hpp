@@ -5,6 +5,7 @@
 #include "infra/stream/OutputStream.hpp"
 #include "infra/util/WithStorage.hpp"
 #include <array>
+#include <atomic>
 
 namespace infra
 {

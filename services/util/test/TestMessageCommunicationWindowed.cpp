@@ -180,14 +180,14 @@ TEST_F(MessageCommunicationWindowedTest, request_sending_new_message_while_previ
     communication.RequestSendMessage(4);
 
     EXPECT_CALL(observer, SendMessageStreamAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamWriter>&& writer)
-    {
-        infra::DataOutputStream::WithErrorPolicy stream(*writer);
-        const std::vector<uint8_t>& data = { 1, 2, 3, 4 };
-        stream << infra::MakeRange(data);
+        {
+            infra::DataOutputStream::WithErrorPolicy stream(*writer);
+            const std::vector<uint8_t>& data = { 1, 2, 3, 4 };
+            stream << infra::MakeRange(data);
 
-        writer = nullptr;
-        communication.RequestSendMessage(2);
-    }));
+            writer = nullptr;
+            communication.RequestSendMessage(2);
+        }));
 
     EXPECT_CALL(base, RequestSendMessage(3));
     EmplaceWriterAndMakeAvailable();
