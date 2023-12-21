@@ -1,6 +1,5 @@
 #include "services/util/MessageCommunicationWindowed.hpp"
 #include "infra/stream/BoundedDequeOutputStream.hpp"
-#include "infra/util/PostAssign.hpp"
 
 namespace services
 {

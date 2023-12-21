@@ -6,13 +6,6 @@
 
 namespace services
 {
-    class MessageCommunicationReceiveOnInterruptMock
-        : public MessageCommunicationReceiveOnInterrupt
-    {
-    public:
-        MOCK_METHOD(infra::SharedPtr<infra::StreamWriter>, SendMessageStream, (uint16_t size, const infra::Function<void(uint16_t size)>& onSent), (override));
-        MOCK_METHOD(std::size_t, MaxSendMessageSize, (), (const, override));
-    };
 
     class MessageCommunicationMock
         : public MessageCommunication

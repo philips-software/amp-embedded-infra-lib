@@ -29,25 +29,6 @@ namespace services
         virtual void RequestSendMessage(uint16_t size) = 0;
         virtual std::size_t MaxSendMessageSize() const = 0;
     };
-
-    class MessageCommunicationReceiveOnInterrupt;
-
-    class MessageCommunicationReceiveOnInterruptObserver
-        : public infra::SingleObserver<MessageCommunicationReceiveOnInterruptObserver, MessageCommunicationReceiveOnInterrupt>
-    {
-    public:
-        using infra::SingleObserver<MessageCommunicationReceiveOnInterruptObserver, MessageCommunicationReceiveOnInterrupt>::SingleObserver;
-
-        virtual void ReceivedMessageOnInterrupt(infra::StreamReader& reader) = 0;
-    };
-
-    class MessageCommunicationReceiveOnInterrupt
-        : public infra::Subject<MessageCommunicationReceiveOnInterruptObserver>
-    {
-    public:
-        virtual infra::SharedPtr<infra::StreamWriter> SendMessageStream(uint16_t size, const infra::Function<void(uint16_t size)>& onSent) = 0;
-        virtual std::size_t MaxSendMessageSize() const = 0;
-    };
 }
 
 #endif
