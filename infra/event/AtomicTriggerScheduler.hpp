@@ -14,7 +14,7 @@ namespace infra
 
     private:
         std::atomic_bool scheduled{ false };
-        infra::AutoResetFunction<void()> action;
+        infra::AutoResetFunction<void()> scheduledAction;
     };
 }
 

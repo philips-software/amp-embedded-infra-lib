@@ -221,3 +221,14 @@ TEST_F(MessageCommunicationCobsTest, receive_two_messages)
     EXPECT_CALL(serial, AckReceived());
     reader = nullptr;
 }
+
+TEST_F(MessageCommunicationCobsTest, malformed_empty_message_is_discarded)
+{
+    ReceiveData(infra::ConstructBin()({ 0, 5, 0 }).Vector());
+}
+
+TEST_F(MessageCommunicationCobsTest, malformed_message_is_forwarded)
+{
+    ExpectReceivedMessage({ 1 });
+    ReceiveData(infra::ConstructBin()({ 0, 5, 1, 0 }).Vector());
+}

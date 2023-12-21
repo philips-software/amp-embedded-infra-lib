@@ -91,6 +91,23 @@ TEST_F(AtomicByteDequeTest, Extract)
     reader.Commit();
 }
 
+TEST_F(AtomicByteDequeTest, PeekContiguousRange)
+{
+    std::vector<uint8_t> data1{ 1, 2, 3, 4 };
+    std::vector<uint8_t> data2{ 5, 6 };
+
+    writer.Insert(infra::MakeRange(data1), errorPolicy);
+
+    EXPECT_TRUE(infra::ContentsEqual(infra::ConstructBin()({ 1, 2, 3, 4 }).Range(), reader.PeekContiguousRange(0)));
+    reader.ExtractContiguousRange(2);
+    reader.Commit();
+    writer.Insert(infra::MakeRange(data2), errorPolicy);
+    EXPECT_EQ(4, reader.Available());
+
+    EXPECT_TRUE(infra::ContentsEqual(infra::ConstructBin()({ 3, 4, 5 }).Range(), reader.PeekContiguousRange(0)));
+    EXPECT_TRUE(infra::ContentsEqual(infra::ConstructBin()({ 6 }).Range(), reader.PeekContiguousRange(3)));
+}
+
 TEST_F(AtomicByteDequeTest, Extract_overflows)
 {
     std::vector<uint8_t> data1{ 1, 2 };

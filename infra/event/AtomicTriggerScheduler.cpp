@@ -7,12 +7,12 @@ namespace infra
     {
         if (!scheduled.exchange(true))
         {
-            this->action = action;
+            scheduledAction = action;
 
             infra::EventDispatcher::Instance().Schedule([this]()
                 {
                     scheduled = false;
-                    this->action();
+                    scheduledAction();
                 });
         }
     }

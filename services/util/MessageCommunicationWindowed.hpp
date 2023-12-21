@@ -73,11 +73,15 @@ namespace services
         class State
         {
         public:
+            explicit State(MessageCommunicationWindowed& communication);
             virtual ~State() = default;
 
             virtual void Request();
-            virtual void RequestSendMessage(uint16_t size) = 0;
+            virtual void RequestSendMessage(uint16_t size);
             virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer);
+
+        protected:
+            MessageCommunicationWindowed& communication;
         };
 
         class StateSendingInit
@@ -87,11 +91,7 @@ namespace services
             explicit StateSendingInit(MessageCommunicationWindowed& communication);
 
             void Request() override;
-            void RequestSendMessage(uint16_t size) override;
             void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-
-        private:
-            MessageCommunicationWindowed& communication;
         };
 
         class StateSendingInitResponse
@@ -101,14 +101,10 @@ namespace services
             explicit StateSendingInitResponse(MessageCommunicationWindowed& communication);
 
             void Request() override;
-            void RequestSendMessage(uint16_t size) override;
             void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
         private:
             void OnSent();
-
-        private:
-            MessageCommunicationWindowed& communication;
         };
 
         class StateOperational
@@ -118,9 +114,6 @@ namespace services
             explicit StateOperational(MessageCommunicationWindowed& communication);
 
             void RequestSendMessage(uint16_t size) override;
-
-        private:
-            MessageCommunicationWindowed& communication;
         };
 
         class StateSendingMessage
@@ -130,16 +123,14 @@ namespace services
             explicit StateSendingMessage(MessageCommunicationWindowed& communication);
 
             void Request() override;
-            void RequestSendMessage(uint16_t size) override;
             void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
         private:
             void OnSent();
 
         private:
-            MessageCommunicationWindowed& communication;
             uint16_t requestedSize;
-            infra::SharedPtr<infra::StreamWriter> writer;
+            infra::SharedPtr<infra::StreamWriter> messageWriter;
             infra::AccessedBySharedPtr writerAccess{ [this]()
                 {
                     OnSent();
@@ -153,20 +144,16 @@ namespace services
             explicit StateSendingReleaseWindow(MessageCommunicationWindowed& communication);
 
             void Request() override;
-            void RequestSendMessage(uint16_t size) override;
             void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
         private:
             void OnSent();
-
-        private:
-            MessageCommunicationWindowed& communication;
         };
 
     private:
         uint16_t ownWindowSize;
         bool initialized = false;
-        infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
+        infra::SharedPtr<infra::StreamReaderWithRewinding> receivedMessageReader;
         infra::AccessedBySharedPtr readerAccess;
         uint16_t otherAvailableWindow{ 0 };
         uint16_t releasedWindow{ 0 };

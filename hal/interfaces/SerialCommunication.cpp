@@ -19,7 +19,7 @@ namespace hal
 
     BufferedSerialCommunicationOnUnbuffered::~BufferedSerialCommunicationOnUnbuffered()
     {
-        delegate.ReceiveData([](infra::ConstByteRange data) {});
+        delegate.ReceiveData([](infra::ConstByteRange) {});
     }
 
     void BufferedSerialCommunicationOnUnbuffered::SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion)
