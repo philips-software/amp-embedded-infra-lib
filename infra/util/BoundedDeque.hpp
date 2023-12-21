@@ -582,7 +582,7 @@ namespace infra
 
         size_type element_index = position - begin();
 
-        if (element_index == 0)
+        if (element_index == 0 && numAllocated != 0)
         {
             start = index(max_size() - n);
             numAllocated += n;
@@ -610,7 +610,7 @@ namespace infra
 
         size_type element_index = position - begin();
 
-        if (element_index == 0)
+        if (element_index == 0 && numAllocated != 0)
         {
             start = index(max_size() - n);
             numAllocated += n;
