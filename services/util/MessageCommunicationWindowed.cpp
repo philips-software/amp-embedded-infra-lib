@@ -40,22 +40,28 @@ namespace services
                 sendInitResponse = true;
                 otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
                 initialized = true;
+                ReceivedInit(otherAvailableWindow);
                 GetObserver().Initialized();
                 break;
             case Operation::initResponse:
                 otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
                 initialized = true;
+                ReceivedInitResponse(otherAvailableWindow);
                 GetObserver().Initialized();
                 break;
             case Operation::releaseWindow:
                 if (initialized)
+                {
+                    auto oldOtherAvailableWindow = otherAvailableWindow;
                     otherAvailableWindow += stream.Extract<infra::LittleEndian<uint16_t>>();
+                    ReceivedReleaseWindow(oldOtherAvailableWindow, otherAvailableWindow);
+                }
                 break;
             case Operation::message:
                 if (initialized)
                 {
                     receivedMessageReader = std::move(reader);
-                    EvaluateReceiveMessage();
+                    ForwardReceivedMessage();
                 }
                 break;
         }
@@ -63,7 +69,7 @@ namespace services
         SetNextState();
     }
 
-    void MessageCommunicationWindowed::EvaluateReceiveMessage()
+    void MessageCommunicationWindowed::ForwardReceivedMessage()
     {
         releasedWindow += receivedMessageReader->Available() + 2;
         readerAccess.SetAction([this]()
@@ -72,6 +78,7 @@ namespace services
                 SetNextState();
             });
 
+        ForwardingReceivedMessage(*receivedMessageReader);
         GetObserver().ReceivedMessage(readerAccess.MakeShared(*receivedMessageReader));
     }
 

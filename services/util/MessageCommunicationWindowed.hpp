@@ -26,6 +26,19 @@ namespace services
         void RequestSendMessage(uint16_t size) override;
         std::size_t MaxSendMessageSize() const override;
 
+    protected:
+        virtual void ReceivedInit(uint16_t otherAvailableWindow)
+        {}
+
+        virtual void ReceivedInitResponse(uint16_t otherAvailableWindow)
+        {}
+
+        virtual void ReceivedReleaseWindow(uint16_t oldOtherAvailableWindow, uint16_t otherAvailableWindow)
+        {}
+
+        virtual void ForwardingReceivedMessage(infra::StreamReaderWithRewinding& reader)
+        {}
+
     private:
         // Implementation of MessageCommunicationReceiveObserver
         void Initialized() override;
@@ -33,7 +46,7 @@ namespace services
         void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
 
     private:
-        void EvaluateReceiveMessage();
+        void ForwardReceivedMessage();
         void SetNextState();
         uint16_t WindowSize(uint16_t messageSize) const;
 

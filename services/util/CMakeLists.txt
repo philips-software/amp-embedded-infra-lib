@@ -72,6 +72,8 @@ target_sources(services.util PRIVATE
     Terminal.hpp
     TimeWithLocalization.cpp
     TimeWithLocalization.hpp
+    TracingMessageCommunicationWindowed.cpp
+    TracingMessageCommunicationWindowed.hpp
     WritableConfiguration.hpp
 )
 
