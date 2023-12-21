@@ -12,16 +12,16 @@ namespace services
     public:
         explicit GpioPinInverted(hal::GpioPin& pin);
 
-        virtual bool Get() const override;
-        virtual void Set(bool value) override;
-        virtual bool GetOutputLatch() const override;
-        virtual void SetAsInput() override;
-        virtual bool IsInput() const override;
-        virtual void Config(hal::PinConfigType config) override;
-        virtual void Config(hal::PinConfigType config, bool startOutputState) override;
-        virtual void ResetConfig() override;
-        virtual void EnableInterrupt(const infra::Function<void()>& action, hal::InterruptTrigger trigger) override;
-        virtual void DisableInterrupt() override;
+        bool Get() const override;
+        void Set(bool value) override;
+        bool GetOutputLatch() const override;
+        void SetAsInput() override;
+        bool IsInput() const override;
+        void Config(hal::PinConfigType config) override;
+        void Config(hal::PinConfigType config, bool startOutputState) override;
+        void ResetConfig() override;
+        void EnableInterrupt(const infra::Function<void()>& action, hal::InterruptTrigger trigger) override;
+        void DisableInterrupt() override;
 
     private:
         hal::GpioPin& pin;

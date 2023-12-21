@@ -15,17 +15,17 @@ target_link_libraries(services.network_test PUBLIC
     hal.generic
     hal.interfaces_test_doubles
     hal.synchronous_interfaces_test_doubles
+    protobuf.test_doubles
     services.util
 )
 
 target_sources(services.network_test PRIVATE
     TestAddress.cpp
     TestBonjourServer.cpp
-    TestCertificateConvertor.cpp
-    TestCertificatesMbedTls.cpp
     TestConnectionMbedTls.cpp
     TestDnsResolver.cpp
     TestDnsServer.cpp
+    TestEchoOnConnection.cpp
     TestExclusiveConnection.cpp
     TestExclusiveStartingConnection.cpp
     TestHttpClient.cpp
@@ -47,4 +47,24 @@ target_sources(services.network_test PRIVATE
     TestWebSocketIntegration.cpp
     TestWebSocketServerConnectionObserver.cpp
     TestWiFiNetwork.cpp
+)
+
+add_executable(services.network_test_certificates)
+emil_build_for(services.network_test_certificates BOOL EMIL_BUILD_TESTS)
+emil_add_test(services.network_test_certificates)
+
+if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang|AppleClang")
+    target_compile_options(services.network_test_certificates PRIVATE -Wno-braced-scalar-init)
+endif()
+
+target_link_libraries(services.network_test_certificates PUBLIC
+    gmock_main
+    services.network
+    services.network_test_doubles
+    hal.generic
+)
+
+target_sources(services.network_test_certificates PRIVATE
+    TestCertificateConvertor.cpp
+    TestCertificatesMbedTls.cpp
 )

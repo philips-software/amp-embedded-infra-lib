@@ -33,8 +33,8 @@ namespace infra
         bool operator!() const;
 
     protected:
-        virtual void Destruct(const void* object) override;
-        virtual void Deallocate(void* control) override;
+        void Destruct(const void* object) override;
+        void Deallocate(void* control) override;
 
     private:
         infra::Optional<T> object;
@@ -56,7 +56,7 @@ namespace infra
         void OnAllocatable(const infra::Function<void(), AllocatableSize>& newOnAllocatable);
 
     protected:
-        virtual void Deallocate(void* control) override;
+        void Deallocate(void* control) override;
 
     private:
         infra::Function<void(), AllocatableSize> onAllocatable;

@@ -12,9 +12,9 @@ namespace infra
         DerivedTimerService(uint32_t id, TimerService& baseTimerService);
 
         // Implementation of TimerService
-        virtual void NextTriggerChanged() override;
-        virtual TimePoint Now() const override;
-        virtual Duration Resolution() const override;
+        void NextTriggerChanged() override;
+        TimePoint Now() const override;
+        Duration Resolution() const override;
 
         void Shift(Duration shift);
         Duration GetCurrentShift() const;

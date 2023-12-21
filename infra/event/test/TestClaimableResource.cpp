@@ -38,7 +38,9 @@ public:
 TEST_F(TestClaimableResource, ClaimIsGranted)
 {
     claimerA.Claim([this]()
-        { claimerA.GrantedClaim(); });
+        {
+            claimerA.GrantedClaim();
+        });
     EXPECT_TRUE(resource.ClaimsPending());
     ExecuteAllActions();
     EXPECT_FALSE(resource.ClaimsPending());
@@ -48,11 +50,15 @@ TEST_F(TestClaimableResource, ClaimIsGranted)
 TEST_F(TestClaimableResource, ClaimWhileAlreadyClaimedIsGrantedAfterRelease)
 {
     claimerA.Claim([this]()
-        { claimerA.GrantedClaim(); });
+        {
+            claimerA.GrantedClaim();
+        });
     ExecuteAllActions();
     EXPECT_EQ(1, claimerA.claimsGranted);
     claimerA.Claim([this]()
-        { claimerA.GrantedClaim(); });
+        {
+            claimerA.GrantedClaim();
+        });
     EXPECT_TRUE(resource.ClaimsPending());
     ExecuteAllActions();
     EXPECT_EQ(1, claimerA.claimsGranted);
@@ -65,11 +71,15 @@ TEST_F(TestClaimableResource, ClaimWhileAlreadyClaimedIsGrantedAfterRelease)
 TEST_F(TestClaimableResource, IfNoReleaseIsDoneSecondClaimIsNotGranted)
 {
     claimerA.Claim([this]()
-        { claimerA.GrantedClaim(); });
+        {
+            claimerA.GrantedClaim();
+        });
     ExecuteAllActions();
     ASSERT_EQ(1, claimerA.claimsGranted);
     claimerA.Claim([this]()
-        { claimerA.GrantedClaim(); });
+        {
+            claimerA.GrantedClaim();
+        });
     ExecuteAllActions();
     ASSERT_EQ(1, claimerA.claimsGranted);
 }
@@ -77,9 +87,13 @@ TEST_F(TestClaimableResource, IfNoReleaseIsDoneSecondClaimIsNotGranted)
 TEST_F(TestClaimableResource, ReleaseBeforeClaimGranted)
 {
     claimerB.Claim([this]()
-        { claimerB.GrantedClaim(); });
+        {
+            claimerB.GrantedClaim();
+        });
     claimerA.Claim([this]()
-        { claimerA.GrantedClaim(); });
+        {
+            claimerA.GrantedClaim();
+        });
     ExecuteAllActions();
     EXPECT_EQ(0, claimerA.claimsGranted);
     EXPECT_EQ(1, claimerB.claimsGranted);
@@ -95,9 +109,13 @@ TEST_F(TestClaimableResource, AtDestructorTheClaimIsReleased)
     {
         TestClaimer localClaimer(resource);
         localClaimer.Claim([&localClaimer]()
-            { localClaimer.GrantedClaim(); });
+            {
+                localClaimer.GrantedClaim();
+            });
         claimerA.Claim([this]()
-            { claimerA.GrantedClaim(); });
+            {
+                claimerA.GrantedClaim();
+            });
         ExecuteAllActions();
         EXPECT_EQ(0, claimerA.claimsGranted);
     }
@@ -108,13 +126,19 @@ TEST_F(TestClaimableResource, AtDestructorTheClaimIsReleased)
 TEST_F(TestClaimableResource, ClaimIsGrantedWhileProcessingReleaseEvent)
 {
     claimerA.Claim([this]()
-        { claimerA.GrantedClaim(); });
+        {
+            claimerA.GrantedClaim();
+        });
     ExecuteAllActions();
     claimerB.Claim([this]()
-        { claimerB.GrantedClaim(); });
+        {
+            claimerB.GrantedClaim();
+        });
     claimerA.Release();
     claimerC.Claim([this]()
-        { claimerC.GrantedClaim(); });
+        {
+            claimerC.GrantedClaim();
+        });
     EXPECT_EQ(0, claimerB.claimsGranted);
     ExecuteAllActions();
     EXPECT_EQ(1, claimerB.claimsGranted);
@@ -123,9 +147,13 @@ TEST_F(TestClaimableResource, ClaimIsGrantedWhileProcessingReleaseEvent)
 TEST_F(TestClaimableResource, ClaimUrgentTakesPrecedence)
 {
     claimerB.Claim([this]()
-        { claimerB.GrantedClaim(); });
+        {
+            claimerB.GrantedClaim();
+        });
     claimerA.ClaimUrgent([this]()
-        { claimerA.GrantedClaim(); });
+        {
+            claimerA.GrantedClaim();
+        });
     ExecuteAllActions();
     EXPECT_EQ(1, claimerA.claimsGranted);
     EXPECT_EQ(0, claimerB.claimsGranted);
@@ -138,11 +166,17 @@ TEST_F(TestClaimableResource, ClaimUrgentTakesPrecedence)
 TEST_F(TestClaimableResource, TwoConsecutiveReleasesBeforeReleaseOfClaimIsProcessedResultsInNoAdditionalClaimsGranted)
 {
     claimerA.Claim([this]()
-        { claimerA.GrantedClaim(); });
+        {
+            claimerA.GrantedClaim();
+        });
     claimerB.Claim([this]()
-        { claimerB.GrantedClaim(); });
+        {
+            claimerB.GrantedClaim();
+        });
     claimerC.Claim([this]()
-        { claimerC.GrantedClaim(); });
+        {
+            claimerC.GrantedClaim();
+        });
     ExecuteAllActions();
     ASSERT_EQ(1, claimerA.claimsGranted);
 
@@ -160,7 +194,9 @@ TEST_F(TestClaimableResource, MoveClaimerBeforeGranted)
     infra::Optional<TestClaimer> oldClaimer(infra::inPlace, resource);
     infra::MockCallback<void()> granted;
     oldClaimer->Claim([this, &granted]()
-        { granted.callback(); });
+        {
+            granted.callback();
+        });
     TestClaimer newClaimer(std::move(*oldClaimer));
     oldClaimer = infra::none;
 
@@ -199,7 +235,9 @@ TEST_F(TestClaimableResource, CopyMoveClaimerBeforeGranted)
     infra::Optional<TestClaimer> oldClaimer(infra::inPlace, resource);
     infra::MockCallback<void()> granted;
     oldClaimer->Claim([this, &granted]()
-        { granted.callback(); });
+        {
+            granted.callback();
+        });
     TestClaimer newClaimer(resource);
     newClaimer = std::move(*oldClaimer);
     oldClaimer = infra::none;

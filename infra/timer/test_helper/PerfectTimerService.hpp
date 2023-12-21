@@ -11,9 +11,9 @@ namespace infra
     public:
         explicit PerfectTimerService(uint32_t id);
 
-        virtual void NextTriggerChanged() override;
-        virtual TimePoint Now() const override;
-        virtual Duration Resolution() const override;
+        void NextTriggerChanged() override;
+        TimePoint Now() const override;
+        Duration Resolution() const override;
 
         void SetResolution(Duration resolution);
         void TimeProgressed(Duration amount);

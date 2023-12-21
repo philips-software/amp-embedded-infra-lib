@@ -17,7 +17,10 @@ public:
 TEST_F(QueueForOneReaderOneIrqWriterTest, add_element)
 {
     queue.Emplace(buffer, [this]()
-        { queue->Get(); callback.callback(); });
+        {
+            queue->Get();
+            callback.callback();
+        });
 
     queue->AddFromInterrupt(0);
     EXPECT_CALL(callback, callback());
@@ -31,7 +34,11 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, add_element)
 TEST_F(QueueForOneReaderOneIrqWriterTest, add_range)
 {
     queue.Emplace(buffer, [this]()
-        { while (!queue->Empty()) queue->Get(); callback.callback(); });
+        {
+            while (!queue->Empty())
+                queue->Get();
+            callback.callback();
+        });
 
     std::array<uint8_t, 2> data = { { 0, 1 } };
     queue->AddFromInterrupt(data);

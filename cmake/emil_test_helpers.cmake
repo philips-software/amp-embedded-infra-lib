@@ -2,12 +2,10 @@ option(EMIL_ENABLE_COVERAGE "Enable compiler flags for code coverage measurement
 option(EMIL_ENABLE_MUTATION_TESTING "Enable compiler flags for mutation testing" Off)
 set(EMIL_MUTATION_TESTING_RUNNER_ARGUMENTS "" CACHE STRING "Additional arguments for the mutation testing runner")
 
-function(emil_enable_testing)
-    include(GoogleTest)
-
+function(emil_fetch_googletest)
     FetchContent_Declare(
         googletest
-        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_REPOSITORY https://github.com/google/googletest
         GIT_TAG        release-1.12.1
     )
 
@@ -18,6 +16,12 @@ function(emil_enable_testing)
 
     set_target_properties(gtest gtest_main gmock gmock_main PROPERTIES FOLDER External/GoogleTest)
     mark_as_advanced(BUILD_GMOCK BUILD_GTEST BUILD_SHARED_LIBS gmock_build_tests gtest_build_samples test_build_tests gtest_disable_pthreads gtest_force_shared_crt gtest_hide_internal_symbols)
+endfunction()
+
+function(emil_enable_testing)
+    include(GoogleTest)
+
+    emil_fetch_googletest()
 
     if (EMIL_ENABLE_COVERAGE)
         add_compile_options(
@@ -34,19 +38,9 @@ function(emil_enable_testing)
 
     if (EMIL_ENABLE_MUTATION_TESTING)
         if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-            execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE CLANG_VERSION)
-
-            if(CLANG_VERSION VERSION_GREATER 15.0 OR CLANG_VERSION VERSION_EQUAL 15.0)
-                add_compile_options(
-                    -g -O0 -grecord-command-line -fprofile-instr-generate -fcoverage-mapping
-                    -fexperimental-new-pass-manager -fpass-plugin=/usr/lib/mull-ir-frontend
-                )
-            else()
-                add_compile_options(
-                    -g -O0 -grecord-command-line -fprofile-instr-generate -fcoverage-mapping
-                    -fexperimental-new-pass-manager -fpass-plugin=/usr/lib/mull-ir-frontend-12
-                )
-            endif()
+            add_compile_options(
+                -g -O0 -grecord-command-line -fprofile-instr-generate -fcoverage-mapping -fpass-plugin=/usr/lib/mull-ir-frontend
+            )
 
             add_link_options(-fprofile-instr-generate)
         else()
@@ -65,16 +59,13 @@ function(emil_enable_fuzzing)
 endfunction()
 
 function(emil_add_test target)
-    if (EMIL_ENABLE_MUTATION_TESTING)
-        execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE CLANG_VERSION)
-
-        if(CLANG_VERSION VERSION_GREATER 15.0 OR CLANG_VERSION VERSION_EQUAL 15.0)
+    get_target_property(exclude ${target} EXCLUDE_FROM_ALL)
+    if (NOT ${exclude})
+        if (EMIL_ENABLE_MUTATION_TESTING)
             add_test(NAME ${target} COMMAND mull-runner ${EMIL_MUTATION_TESTING_RUNNER_ARGUMENTS} $<TARGET_FILE:${target}>)
         else()
-            add_test(NAME ${target} COMMAND mull-runner-12 ${EMIL_MUTATION_TESTING_RUNNER_ARGUMENTS} $<TARGET_FILE:${target}>)
+            add_test(NAME ${target} COMMAND ${target})
         endif()
-    else()
-        add_test(NAME ${target} COMMAND ${target})
     endif()
 endfunction()
 

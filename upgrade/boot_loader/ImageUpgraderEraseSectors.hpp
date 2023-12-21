@@ -12,7 +12,7 @@ namespace application
     public:
         ImageUpgraderEraseSectors(const char* targetName, Decryptor& decryptor, hal::SynchronousFlash& internalFlash, uint32_t sectorStart, uint32_t sectorEnd);
 
-        virtual uint32_t Upgrade(hal::SynchronousFlash& upgradePackFlash, uint32_t imageAddress, uint32_t imageSize, uint32_t destinationAddress) override;
+        uint32_t Upgrade(hal::SynchronousFlash& upgradePackFlash, uint32_t imageAddress, uint32_t imageSize, uint32_t destinationAddress) override;
 
     private:
         hal::SynchronousFlash* internalFlash;

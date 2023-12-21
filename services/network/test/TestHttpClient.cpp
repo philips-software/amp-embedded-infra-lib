@@ -109,7 +109,7 @@ public:
         connector.Connect(factory);
     }
 
-    ~HttpClientTest()
+    ~HttpClientTest() override
     {
         EXPECT_CALL(client, Detaching()).Times(testing::AnyNumber());
     }
@@ -118,11 +118,14 @@ public:
     {
         EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::HttpClientObserver> client)>&& createdClient)
             {
-            EXPECT_CALL(client, Attached());
-            createdClient(clientPtr); }));
+                EXPECT_CALL(client, Attached());
+                createdClient(clientPtr);
+            }));
 
         connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-            { connection.Attach(connectionObserver); });
+            {
+                connection.Attach(connectionObserver);
+            });
     }
 
     testing::StrictMock<services::HttpClientObserverMock> client;
@@ -215,11 +218,14 @@ TEST_F(HttpClientTest, after_ConnectionEstablished_HttpClient_is_connected)
 {
     EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::HttpClientObserver> client)>&& createdClient)
         {
-        EXPECT_CALL(client, Attached());
-        createdClient(clientPtr); }));
+            EXPECT_CALL(client, Attached());
+            createdClient(clientPtr);
+        }));
 
     connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-        { connection.Attach(connectionObserver); });
+        {
+            connection.Attach(connectionObserver);
+        });
 }
 
 TEST_F(HttpClientTest, Get_request_is_executed)
@@ -286,6 +292,17 @@ TEST_F(HttpClientTest, Put_request_is_executed)
 
     ExecuteAllActions();
     EXPECT_EQ("PUT /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:13\r\n\r\nbody contents", connection.SentDataAsString());
+}
+
+TEST_F(HttpClientTest, large_Put_request_is_executed)
+{
+    connection.maxSendStreamSize = 100;
+
+    Connect();
+    client.Subject().Put("/api/thing", "01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789");
+
+    ExecuteAllActions();
+    EXPECT_EQ("PUT /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:200\r\n\r\n01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", connection.SentDataAsString());
 }
 
 TEST_F(HttpClientTest, Patch_request_is_executed)
@@ -458,8 +475,9 @@ TEST_F(HttpClientTest, ResponseAvailable_forwards_response_body_to_client)
     EXPECT_CALL(client, HeaderAvailable(services::HttpHeader("Expires", "-1")));
     EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader)
         {
-        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
-        EXPECT_EQ("body\r\ndata", infra::ByteRangeAsString(stream.ContiguousRange())); }));
+            infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+            EXPECT_EQ("body\r\ndata", infra::ByteRangeAsString(stream.ContiguousRange()));
+        }));
     EXPECT_CALL(client, BodyComplete());
 
     client.Subject().Get("/");
@@ -475,8 +493,9 @@ TEST_F(HttpClientTest, ResponseAvailable_with_lower_case_headers_forwards_respon
     EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
     EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader)
         {
-        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
-        EXPECT_EQ("body\r\ndata", infra::ByteRangeAsString(stream.ContiguousRange())); }));
+            infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+            EXPECT_EQ("body\r\ndata", infra::ByteRangeAsString(stream.ContiguousRange()));
+        }));
     EXPECT_CALL(client, BodyComplete());
 
     client.Subject().Get("/");
@@ -515,14 +534,16 @@ TEST_F(HttpClientTest, response_in_parts_is_handled)
     EXPECT_CALL(client, HeaderAvailable(services::HttpHeader("Expires", "-1")));
     EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader)
         {
-        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
-        EXPECT_EQ("body\r\ndat", infra::ByteRangeAsString(stream.ContiguousRange())); }));
+            infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+            EXPECT_EQ("body\r\ndat", infra::ByteRangeAsString(stream.ContiguousRange()));
+        }));
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("Expires:-1\r\nContent-Length:10\r\n\r\nbody\r\ndat")));
 
     EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader)
         {
-        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
-        EXPECT_EQ("a", infra::ByteRangeAsString(stream.ContiguousRange())); }));
+            infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+            EXPECT_EQ("a", infra::ByteRangeAsString(stream.ContiguousRange()));
+        }));
     EXPECT_CALL(client, BodyComplete());
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("a")));
 }
@@ -540,8 +561,9 @@ TEST_F(HttpClientTest, data_up_to_ContentLength_is_handled)
     EXPECT_CALL(client, HeaderAvailable(services::HttpHeader("Expires", "-1")));
     EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader)
         {
-        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
-        EXPECT_EQ("body\r\nda", infra::ByteRangeAsString(stream.ContiguousRange())); }));
+            infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+            EXPECT_EQ("body\r\nda", infra::ByteRangeAsString(stream.ContiguousRange()));
+        }));
     EXPECT_CALL(client, BodyComplete());
 
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\n")));
@@ -558,8 +580,9 @@ TEST_F(HttpClientTest, data_in_excess_of_ContentLength_is_ignored)
     EXPECT_CALL(client, HeaderAvailable(services::HttpHeader("Expires", "-1")));
     EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader)
         {
-        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
-        EXPECT_EQ("body\r\ndata", infra::ByteRangeAsString(stream.ContiguousRange())); }));
+            infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+            EXPECT_EQ("body\r\ndata", infra::ByteRangeAsString(stream.ContiguousRange()));
+        }));
     EXPECT_CALL(client, BodyComplete());
 
     client.Subject().Get("/");
@@ -571,7 +594,7 @@ TEST_F(HttpClientTest, data_in_excess_of_ContentLength_is_ignored)
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("extradata")));
 }
 
-TEST_F(HttpClientTest, Close_while_DataAvailable_is_handled)
+TEST_F(HttpClientTest, Close_while_StatusAvailable_is_handled)
 {
     Connect();
 
@@ -580,11 +603,32 @@ TEST_F(HttpClientTest, Close_while_DataAvailable_is_handled)
 
     EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK)).WillOnce(testing::Invoke([this](services::HttpStatusCode result)
         {
-        EXPECT_CALL(connection, CloseAndDestroyMock());
-        EXPECT_CALL(client, Detaching());
-        client.Subject().CloseConnection(); }));
+            EXPECT_CALL(connection, CloseAndDestroyMock());
+            EXPECT_CALL(client, Detaching());
+            client.Subject().CloseConnection();
+        }));
 
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\n")));
+}
+
+TEST_F(HttpClientTest, Close_while_HeaderAvailable_is_handled)
+{
+    Connect();
+
+    client.Subject().Get("/");
+    ExecuteAllActions();
+
+    EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
+    EXPECT_CALL(client, HeaderAvailable(testing::_)).WillOnce(testing::Invoke([this](services::HttpHeader header)
+        {
+            ASSERT_EQ("header", header.Field());
+            ASSERT_EQ("a", header.Value());
+            EXPECT_CALL(connection, CloseAndDestroyMock());
+            EXPECT_CALL(client, Detaching());
+            client.Subject().CloseConnection();
+        }));
+
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\nheader: a\r\nheader: b\r\n")));
 }
 
 TEST_F(HttpClientTest, Close_while_BodyAvailable_is_handled)
@@ -598,10 +642,11 @@ TEST_F(HttpClientTest, Close_while_BodyAvailable_is_handled)
     EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
     EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader)
         {
-        reader = nullptr;
-        EXPECT_CALL(connection, CloseAndDestroyMock());
-        EXPECT_CALL(client, Detaching());
-        client.Subject().CloseConnection(); }));
+            reader = nullptr;
+            EXPECT_CALL(connection, CloseAndDestroyMock());
+            EXPECT_CALL(client, Detaching());
+            client.Subject().CloseConnection();
+        }));
 
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\n")));
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("Content-Length:8\r\n\r\nbody\r\ndata")));
@@ -625,15 +670,17 @@ TEST_F(HttpClientTest, when_reader_is_stored_body_available_sends_same_pointer)
     EXPECT_CALL(client, HeaderAvailable(services::HttpHeader("Expires", "-1")));
     EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(testing::Invoke([this, &readerPtr](infra::SharedPtr<infra::StreamReader>&& reader)
         {
-        readerPtr = reader;
-        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
-        EXPECT_EQ("body\r\ndat", infra::ByteRangeAsString(stream.ContiguousRange())); }));
+            readerPtr = reader;
+            infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+            EXPECT_EQ("body\r\ndat", infra::ByteRangeAsString(stream.ContiguousRange()));
+        }));
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("Expires:-1\r\nContent-Length:10\r\n\r\nbody\r\ndat")));
 
     EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader)
         {
-        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
-        EXPECT_EQ("a", infra::ByteRangeAsString(stream.ContiguousRange())); }));
+            infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+            EXPECT_EQ("a", infra::ByteRangeAsString(stream.ContiguousRange()));
+        }));
     EXPECT_CALL(client, BodyComplete());
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("a")));
 }
@@ -651,10 +698,11 @@ TEST_F(HttpClientTest, closed_before_reader_is_reset)
     EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
     EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader)
         {
-        EXPECT_CALL(connection, CloseAndDestroyMock());
-        EXPECT_CALL(client, Detaching());
-        client.Subject().CloseConnection();
-        reader = nullptr; }));
+            EXPECT_CALL(connection, CloseAndDestroyMock());
+            EXPECT_CALL(client, Detaching());
+            client.Subject().CloseConnection();
+            reader = nullptr;
+        }));
 
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\n")));
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("Content-Length:8\r\n\r\nbody\r\ndata")));
@@ -667,10 +715,11 @@ TEST_F(HttpClientTest, Put_request_with_large_body_is_executed)
 
     EXPECT_CALL(client, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamWriter>&& writer)
         {
-        infra::TextOutputStream::WithErrorPolicy stream(*writer);
-        stream << "data";
+            infra::TextOutputStream::WithErrorPolicy stream(*writer);
+            stream << "data";
 
-        EXPECT_CALL(client, SendStreamAvailable(testing::_)); }));
+            EXPECT_CALL(client, SendStreamAvailable(testing::_));
+        }));
     ExecuteAllActions();
 
     EXPECT_EQ("PUT /api/thing HTTP/1.1\r\nHost:localhost\r\nTransfer-Encoding:chunked\r\n\r\n4\r\ndata\r\n0\r\n\r\n", connection.SentDataAsString());
@@ -690,10 +739,11 @@ TEST_F(HttpClientTest, Post_request_with_large_body_is_executed)
 
     EXPECT_CALL(client, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamWriter>&& writer)
         {
-        infra::TextOutputStream::WithErrorPolicy stream(*writer);
-        stream << "data";
+            infra::TextOutputStream::WithErrorPolicy stream(*writer);
+            stream << "data";
 
-        EXPECT_CALL(client, SendStreamAvailable(testing::_)); }));
+            EXPECT_CALL(client, SendStreamAvailable(testing::_));
+        }));
     ExecuteAllActions();
 
     EXPECT_EQ("POST /api/thing HTTP/1.1\r\nHost:localhost\r\nTransfer-Encoding:chunked\r\n\r\n4\r\ndata\r\n0\r\n\r\n", connection.SentDataAsString());
@@ -717,16 +767,19 @@ TEST_F(HttpClientTest, chunked_transfer_is_delivered_in_parts)
     EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
     EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader)
                                                                 {
-        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
-        EXPECT_EQ("Wiki", infra::ByteRangeAsString(stream.ContiguousRange())); }))
+                                                                    infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+                                                                    EXPECT_EQ("Wiki", infra::ByteRangeAsString(stream.ContiguousRange()));
+                                                                }))
         .WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader)
             {
-        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
-        EXPECT_EQ("pedia ", infra::ByteRangeAsString(stream.ContiguousRange())); }))
+                infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+                EXPECT_EQ("pedia ", infra::ByteRangeAsString(stream.ContiguousRange()));
+            }))
         .WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader)
             {
-        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
-        EXPECT_EQ("in \r\n\r\nchunks.", infra::ByteRangeAsString(stream.ContiguousRange())); }));
+                infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+                EXPECT_EQ("in \r\n\r\nchunks.", infra::ByteRangeAsString(stream.ContiguousRange()));
+            }));
     EXPECT_CALL(client, BodyComplete());
 
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\n")));
@@ -744,16 +797,19 @@ TEST_F(HttpClientTest, trailers_after_chunks_are_ignored)
     EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
     EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader)
                                                                 {
-        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
-        EXPECT_EQ("Wiki", infra::ByteRangeAsString(stream.ContiguousRange())); }))
+                                                                    infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+                                                                    EXPECT_EQ("Wiki", infra::ByteRangeAsString(stream.ContiguousRange()));
+                                                                }))
         .WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader)
             {
-        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
-        EXPECT_EQ("pedia ", infra::ByteRangeAsString(stream.ContiguousRange())); }))
+                infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+                EXPECT_EQ("pedia ", infra::ByteRangeAsString(stream.ContiguousRange()));
+            }))
         .WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader)
             {
-        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
-        EXPECT_EQ("in \r\n\r\nchunks.", infra::ByteRangeAsString(stream.ContiguousRange())); }));
+                infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+                EXPECT_EQ("in \r\n\r\nchunks.", infra::ByteRangeAsString(stream.ContiguousRange()));
+            }));
     EXPECT_CALL(client, BodyComplete());
 
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\n")));
@@ -771,16 +827,19 @@ TEST_F(HttpClientTest, chunk_extensions_are_ignored)
     EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
     EXPECT_CALL(client, BodyAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader)
                                                                 {
-        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
-        EXPECT_EQ("Wiki", infra::ByteRangeAsString(stream.ContiguousRange())); }))
+                                                                    infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+                                                                    EXPECT_EQ("Wiki", infra::ByteRangeAsString(stream.ContiguousRange()));
+                                                                }))
         .WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader)
             {
-        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
-        EXPECT_EQ("pedia ", infra::ByteRangeAsString(stream.ContiguousRange())); }))
+                infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+                EXPECT_EQ("pedia ", infra::ByteRangeAsString(stream.ContiguousRange()));
+            }))
         .WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamReader>&& reader)
             {
-        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
-        EXPECT_EQ("in \r\n\r\nchunks.", infra::ByteRangeAsString(stream.ContiguousRange())); }));
+                infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+                EXPECT_EQ("in \r\n\r\nchunks.", infra::ByteRangeAsString(stream.ContiguousRange()));
+            }));
     EXPECT_CALL(client, BodyComplete());
 
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 200 Success\r\n")));
@@ -813,7 +872,9 @@ TEST_F(HttpClientTest, Stop_while_closed)
 
     infra::VerifyingFunctionMock<void()> onDone;
     connector.Stop([&]()
-        { onDone.callback(); });
+        {
+            onDone.callback();
+        });
 }
 
 TEST_F(HttpClientTest, Stop_while_connection_open)
@@ -824,7 +885,9 @@ TEST_F(HttpClientTest, Stop_while_connection_open)
     EXPECT_CALL(connection, CloseAndDestroyMock());
     EXPECT_CALL(client, Detaching());
     connector.Stop([&]()
-        { onDone.callback(); });
+        {
+            onDone.callback();
+        });
 }
 
 class HttpClientImplWithRedirectionTest
@@ -840,7 +903,7 @@ public:
         connector.Connect(factory);
     }
 
-    ~HttpClientImplWithRedirectionTest()
+    ~HttpClientImplWithRedirectionTest() override
     {
         EXPECT_CALL(client, Detaching()).Times(testing::AnyNumber());
     }
@@ -850,10 +913,13 @@ public:
         EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::HttpClientObserver> client)>&& createdClient)
             {
                 EXPECT_CALL(client, Attached());
-                createdClient(clientPtr); }));
+                createdClient(clientPtr);
+            }));
 
         connector.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-            { connection.Attach(connectionObserver); });
+            {
+                connection.Attach(connectionObserver);
+            });
     }
 
     void GetAndRedirect(infra::BoundedConstString redirection, infra::BoundedConstString hostname, uint16_t port)
@@ -938,7 +1004,8 @@ public:
             {
                 EXPECT_EQ(hostname, factory.Hostname());
                 EXPECT_EQ(port, factory.Port());
-                clientConnectionObserverFactory = &factory; }));
+                clientConnectionObserverFactory = &factory;
+            }));
 
         connection.SimulateDataReceived(infra::StringAsByteRange(redirection));
         ExecuteAllActions();
@@ -949,13 +1016,15 @@ public:
         EXPECT_CALL(client, SendStreamAvailable(testing::_))
             .WillOnce(testing::Invoke([](infra::SharedPtr<infra::StreamWriter>&& writer)
                 {
-                infra::TextOutputStream::WithErrorPolicy stream(*writer);
-                stream << "content"; }))
+                    infra::TextOutputStream::WithErrorPolicy stream(*writer);
+                    stream << "content";
+                }))
             .WillOnce(testing::Invoke([](infra::SharedPtr<infra::StreamWriter>&& writer) {}))
             .WillOnce(testing::Invoke([](infra::SharedPtr<infra::StreamWriter>&& writer)
                 {
-                infra::TextOutputStream::WithErrorPolicy stream(*writer);
-                stream << "content"; }))
+                    infra::TextOutputStream::WithErrorPolicy stream(*writer);
+                    stream << "content";
+                }))
             .WillOnce(testing::Invoke([](infra::SharedPtr<infra::StreamWriter>&& writer) {}));
     }
 
@@ -970,7 +1039,9 @@ public:
     void CheckRedirection(infra::BoundedConstString request, infra::BoundedConstString response)
     {
         clientConnectionObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-            { connection.Attach(connectionObserver); });
+            {
+                connection.Attach(connectionObserver);
+            });
 
         connection.Reset();
 
@@ -1044,7 +1115,9 @@ TEST_F(HttpClientImplWithRedirectionTest, redirect_fails_after_status_error)
     GetAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress/newpath\r\n\r\n", "newaddress", 80);
 
     clientConnectionObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-        { connection.Attach(connectionObserver); });
+        {
+            connection.Attach(connectionObserver);
+        });
 
     connection.Reset();
 
@@ -1064,7 +1137,9 @@ TEST_F(HttpClientImplWithRedirectionTest, redirect_fails_after_incorrect_version
     GetAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress/newpath\r\n\r\n", "newaddress", 80);
 
     clientConnectionObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-        { connection.Attach(connectionObserver); });
+        {
+            connection.Attach(connectionObserver);
+        });
 
     connection.Reset();
 

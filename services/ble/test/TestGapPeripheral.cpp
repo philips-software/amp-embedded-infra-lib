@@ -27,8 +27,9 @@ namespace services
 
         gap.NotifyObservers([](GapPeripheralObserver& obs)
             {
-            obs.StateChanged(GapState::connected);
-            obs.StateChanged(GapState::advertising); });
+                obs.StateChanged(GapState::connected);
+                obs.StateChanged(GapState::advertising);
+            });
     }
 
     TEST_F(GapPeripheralDecoratorTest, forward_all_calls_to_subject)
@@ -45,8 +46,14 @@ namespace services
         EXPECT_CALL(gap, SetAdvertisementData(infra::ContentsEqual(data)));
         decorator.SetAdvertisementData(data);
 
+        EXPECT_CALL(gap, GetAdvertisementData());
+        decorator.GetAdvertisementData();
+
         EXPECT_CALL(gap, SetScanResponseData(infra::ContentsEqual(data)));
         decorator.SetScanResponseData(data);
+
+        EXPECT_CALL(gap, GetScanResponseData());
+        decorator.GetScanResponseData();
 
         EXPECT_CALL(gap, Advertise(services::GapAdvertisementType::advNonconnInd, 32));
         decorator.Advertise(services::GapAdvertisementType::advNonconnInd, 32);

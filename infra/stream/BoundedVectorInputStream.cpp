@@ -2,7 +2,7 @@
 
 namespace infra
 {
-    BoundedVectorInputStreamReader::BoundedVectorInputStreamReader(infra::BoundedVector<uint8_t>& container)
+    BoundedVectorInputStreamReader::BoundedVectorInputStreamReader(const infra::BoundedVector<uint8_t>& container)
         : container(container)
     {}
 

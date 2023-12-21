@@ -1,0 +1,43 @@
+---
+rules:
+  - id: amp.suppressions.sonar
+    pattern: ///\s*NOSONAR/
+    glob: "**/*.[c|h]pp"
+    severity: info
+    message: |
+      Try to minimize the use of static-analysis suppressions
+
+  - id: amp.suppressions.compiler-warning
+    pattern:
+      - /#pragma.*diagnostic ignored.*/
+      - /#pragma warning(\s*disable.*)/
+    glob: "**/*.[c|h]pp"
+    severity: info
+    message: |
+      Try to minimize the use of warning suppressions
+
+  - id: amp.no-pragma-once
+    pattern: /#pragma\s*once/
+    glob: "**/*.hpp"
+    severity: error
+    message: |
+      Do not use #pragma once
+    fail: |
+      #pragma once
+    pass: |
+      #ifndef NAMESPACE_COMPONENT_HPP
+      #define NAMESPACE_COMPONENT_HPP
+
+  - id: amp.no-global-tracer
+    pattern: /services::GlobalTracer().Trace().*/
+    glob: "**/*.[c|h]pp"
+    severity: error
+    message: |
+      Do not use services::GlobalTracer() in production code
+      Write a tracing decorator class instead
+
+exclude:
+  - build
+  - install
+
+exclude_binary: true

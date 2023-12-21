@@ -9,8 +9,6 @@
 
 namespace application
 {
-    uint32_t MaxVarIntSize(uint64_t value);
-
     class EchoFieldVisitor;
     class EchoRoot;
 
@@ -77,7 +75,7 @@ namespace application
     public:
         explicit EchoFieldInt32(const google::protobuf::FieldDescriptor& descriptor);
 
-        virtual void Accept(EchoFieldVisitor& visitor) const override;
+        void Accept(EchoFieldVisitor& visitor) const override;
     };
 
     class EchoFieldInt64
@@ -86,7 +84,7 @@ namespace application
     public:
         explicit EchoFieldInt64(const google::protobuf::FieldDescriptor& descriptor);
 
-        virtual void Accept(EchoFieldVisitor& visitor) const override;
+        void Accept(EchoFieldVisitor& visitor) const override;
     };
 
     class EchoFieldFixed32
@@ -95,7 +93,7 @@ namespace application
     public:
         explicit EchoFieldFixed32(const google::protobuf::FieldDescriptor& descriptor);
 
-        virtual void Accept(EchoFieldVisitor& visitor) const override;
+        void Accept(EchoFieldVisitor& visitor) const override;
     };
 
     class EchoFieldFixed64
@@ -104,7 +102,7 @@ namespace application
     public:
         explicit EchoFieldFixed64(const google::protobuf::FieldDescriptor& descriptor);
 
-        virtual void Accept(EchoFieldVisitor& visitor) const override;
+        void Accept(EchoFieldVisitor& visitor) const override;
     };
 
     class EchoFieldSFixed32
@@ -113,7 +111,7 @@ namespace application
     public:
         explicit EchoFieldSFixed32(const google::protobuf::FieldDescriptor& descriptor);
 
-        virtual void Accept(EchoFieldVisitor& visitor) const override;
+        void Accept(EchoFieldVisitor& visitor) const override;
     };
 
     class EchoFieldSFixed64
@@ -122,7 +120,7 @@ namespace application
     public:
         explicit EchoFieldSFixed64(const google::protobuf::FieldDescriptor& descriptor);
 
-        virtual void Accept(EchoFieldVisitor& visitor) const override;
+        void Accept(EchoFieldVisitor& visitor) const override;
     };
 
     class EchoFieldBool
@@ -131,7 +129,7 @@ namespace application
     public:
         explicit EchoFieldBool(const google::protobuf::FieldDescriptor& descriptor);
 
-        virtual void Accept(EchoFieldVisitor& visitor) const override;
+        void Accept(EchoFieldVisitor& visitor) const override;
     };
 
     class EchoFieldString
@@ -140,7 +138,7 @@ namespace application
     public:
         explicit EchoFieldString(const google::protobuf::FieldDescriptor& descriptor);
 
-        virtual void Accept(EchoFieldVisitor& visitor) const override;
+        void Accept(EchoFieldVisitor& visitor) const override;
 
         uint32_t maxStringSize;
     };
@@ -151,7 +149,7 @@ namespace application
     public:
         explicit EchoFieldUnboundedString(const google::protobuf::FieldDescriptor& descriptor);
 
-        virtual void Accept(EchoFieldVisitor& visitor) const override;
+        void Accept(EchoFieldVisitor& visitor) const override;
     };
 
     class EchoFieldMessage
@@ -160,7 +158,7 @@ namespace application
     public:
         EchoFieldMessage(const google::protobuf::FieldDescriptor& descriptor, EchoRoot& root);
 
-        virtual void Accept(EchoFieldVisitor& visitor) const override;
+        void Accept(EchoFieldVisitor& visitor) const override;
 
         std::shared_ptr<EchoMessage> message;
         const google::protobuf::FieldDescriptor& descriptor;
@@ -172,7 +170,7 @@ namespace application
     public:
         explicit EchoFieldBytes(const google::protobuf::FieldDescriptor& descriptor);
 
-        virtual void Accept(EchoFieldVisitor& visitor) const override;
+        void Accept(EchoFieldVisitor& visitor) const override;
 
         uint32_t maxBytesSize;
     };
@@ -183,7 +181,7 @@ namespace application
     public:
         explicit EchoFieldUnboundedBytes(const google::protobuf::FieldDescriptor& descriptor);
 
-        virtual void Accept(EchoFieldVisitor& visitor) const override;
+        void Accept(EchoFieldVisitor& visitor) const override;
     };
 
     class EchoFieldUint32
@@ -192,7 +190,7 @@ namespace application
     public:
         explicit EchoFieldUint32(const google::protobuf::FieldDescriptor& descriptor);
 
-        virtual void Accept(EchoFieldVisitor& visitor) const override;
+        void Accept(EchoFieldVisitor& visitor) const override;
     };
 
     class EchoFieldUint64
@@ -201,7 +199,7 @@ namespace application
     public:
         explicit EchoFieldUint64(const google::protobuf::FieldDescriptor& descriptor);
 
-        virtual void Accept(EchoFieldVisitor& visitor) const override;
+        void Accept(EchoFieldVisitor& visitor) const override;
     };
 
     class EchoFieldEnum
@@ -210,7 +208,7 @@ namespace application
     public:
         EchoFieldEnum(const google::protobuf::FieldDescriptor& descriptor, EchoRoot& root);
 
-        virtual void Accept(EchoFieldVisitor& visitor) const override;
+        void Accept(EchoFieldVisitor& visitor) const override;
 
         std::shared_ptr<EchoEnum> type;
     };
@@ -221,7 +219,7 @@ namespace application
     public:
         EchoFieldRepeated(const google::protobuf::FieldDescriptor& descriptor, const std::shared_ptr<EchoField>& type);
 
-        virtual void Accept(EchoFieldVisitor& visitor) const override;
+        void Accept(EchoFieldVisitor& visitor) const override;
 
         uint32_t maxArraySize;
         std::shared_ptr<EchoField> type;
@@ -233,7 +231,7 @@ namespace application
     public:
         EchoFieldUnboundedRepeated(const google::protobuf::FieldDescriptor& descriptor, const std::shared_ptr<EchoField>& type);
 
-        virtual void Accept(EchoFieldVisitor& visitor) const override;
+        void Accept(EchoFieldVisitor& visitor) const override;
 
         std::shared_ptr<EchoField> type;
     };

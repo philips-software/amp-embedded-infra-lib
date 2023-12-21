@@ -93,7 +93,9 @@ namespace services
         else
         {
             webSocketConnectionObserver.OnAllocatable([this, &connection]()
-                { OnAllocatable(connection); });
+                {
+                    OnAllocatable(connection);
+                });
             if (webSocketConnectionObserver)
                 (*webSocketConnectionObserver)->Close();
         }

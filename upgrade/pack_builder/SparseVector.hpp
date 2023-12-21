@@ -12,12 +12,12 @@
 namespace application
 {
     class OverwriteException
-        : std::exception
+        : public std::exception
     {
     public:
         explicit OverwriteException(std::size_t position);
 
-        virtual char const* what() const noexcept override;
+        char const* what() const noexcept override;
 
     private:
         std::string message;

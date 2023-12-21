@@ -1,6 +1,6 @@
 #include "generated/echo/Console.pb.hpp"
 #include "hal/generic/TimerServiceGeneric.hpp"
-#include "protobuf/echo/Echo.hpp"
+#include "services/network/EchoOnConnection.hpp"
 #include "services/network_instantiations/NetworkAdapter.hpp"
 #include <iostream>
 
@@ -23,8 +23,9 @@ class EchoConnection
     : public services::EchoOnConnection
 {
 public:
-    EchoConnection()
-        : console(*this)
+    EchoConnection(services::MethodSerializerFactory& serializerFactory)
+        : services::EchoOnConnection(serializerFactory)
+        , console(*this)
     {}
 
 private:
@@ -45,12 +46,13 @@ public:
             connection->::services::ConnectionObserver::Subject().AbortAndDestroy();
 
         if (connection.Allocatable())
-            createdObserver(connection.Emplace());
+            createdObserver(connection.Emplace(serializerFactory));
     }
 
 private:
     infra::SharedPtr<void> listener;
     infra::SharedOptional<EchoConnection> connection;
+    services::MethodSerializerFactory::OnHeap serializerFactory;
 };
 
 int main(int argc, const char* argv[], const char* env[])

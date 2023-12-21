@@ -7,7 +7,9 @@ namespace services
         : network(network)
         , socket(socket)
         , streamReader([this]()
-              { keepAliveForReader = nullptr; })
+              {
+                  keepAliveForReader = nullptr;
+              })
     {
         UpdateEventFlags();
     }
@@ -98,8 +100,9 @@ namespace services
 
                 infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionWin>& object)
                     {
-                    if (object->IsAttached())
-                        object->Observer().DataReceived(); },
+                        if (object->IsAttached())
+                            object->Observer().DataReceived();
+                    },
                     SharedFromThis());
             }
             else
@@ -170,11 +173,12 @@ namespace services
             auto size = requestedSendSize;
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([size](const infra::SharedPtr<ConnectionWin>& object)
                 {
-                if (object->IsAttached())
-                {
-                    infra::SharedPtr<infra::StreamWriter> writer = object->streamWriter.Emplace(*object, size);
-                    object->Observer().SendStreamAvailable(std::move(writer));
-                } },
+                    if (object->IsAttached())
+                    {
+                        infra::SharedPtr<infra::StreamWriter> writer = object->streamWriter.Emplace(*object, size);
+                        object->Observer().SendStreamAvailable(std::move(writer));
+                    }
+                },
                 SharedFromThis());
 
             requestedSendSize = 0;
@@ -245,8 +249,9 @@ namespace services
         infra::SharedPtr<ConnectionWin> connection = infra::MakeSharedOnHeap<ConnectionWin>(network, acceptedSocket);
         factory.ConnectionAccepted([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
             {
-            if (connectionObserver)
-                connection->SetObserver(connectionObserver); },
+                if (connectionObserver)
+                    connection->SetObserver(connectionObserver);
+            },
             connection->Ipv4Address());
     }
 
@@ -287,8 +292,9 @@ namespace services
         infra::SharedPtr<ConnectionWin> connection = infra::MakeSharedOnHeap<ConnectionWin>(network, connectSocket);
         factory.ConnectionEstablished([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
             {
-            if (connectionObserver)
-                connection->SetObserver(connectionObserver); });
+                if (connectionObserver)
+                    connection->SetObserver(connectionObserver);
+            });
 
         network.DeregisterConnector(*this);
     }

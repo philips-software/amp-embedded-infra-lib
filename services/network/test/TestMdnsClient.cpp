@@ -20,7 +20,7 @@ class MdnsClientTest
     : public testing::Test
 {
 public:
-    ~MdnsClientTest()
+    ~MdnsClientTest() override
     {
         ExpectLeaveMulticastIpv4();
         ExpectLeaveMulticastIpv6();
@@ -30,10 +30,11 @@ public:
     {
         EXPECT_CALL(factory, Listen(testing::_, mdnsPort, services::IPVersions::both)).WillOnce(testing::Invoke([this](services::DatagramExchangeObserver& observer, uint16_t port, services::IPVersions versions)
             {
-            auto ptr = datagramExchange.Emplace();
-            observer.Attach(*ptr);
+                auto ptr = datagramExchange.Emplace();
+                observer.Attach(*ptr);
 
-            return ptr; }));
+                return ptr;
+            }));
     }
 
     void ExpectJoinMulticastIpv4()
@@ -63,7 +64,8 @@ public:
                 if (ipVersion == services::IPVersions::ipv6)
                     ASSERT_TRUE(remote.Is<services::Udpv6Socket>());
                 else
-                    ASSERT_TRUE(remote.Is<services::Udpv4Socket>()); });
+                    ASSERT_TRUE(remote.Is<services::Udpv4Socket>());
+            });
     }
 
     void DataReceived(const std::vector<uint8_t>& data, services::IPv4Address address = services::IPv4Address{ 1, 2, 3, 4 }, uint16_t port = mdnsPort)

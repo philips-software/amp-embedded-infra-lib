@@ -1,26 +1,10 @@
 #include "protobuf/echo/Echo.hpp"
-#include "infra/event/EventDispatcherWithWeakPtr.hpp"
 
 namespace services
 {
-    EchoErrorPolicyAbortOnMessageFormatError echoErrorPolicyAbortOnMessageFormatError;
-    EchoErrorPolicyAbort echoErrorPolicyAbort;
-
     void Service::MethodDone()
     {
-        inProgress = false;
-        Rpc().ServiceDone(*this);
-    }
-
-    bool Service::InProgress() const
-    {
-        return inProgress;
-    }
-
-    void Service::HandleMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy)
-    {
-        inProgress = true;
-        Handle(serviceId, methodId, contents, errorPolicy);
+        Rpc().ServiceDone();
     }
 
     Echo& Service::Rpc()
@@ -40,13 +24,20 @@ namespace services
 
     void ServiceProxy::RequestSend(infra::Function<void()> onGranted)
     {
+        RequestSend(onGranted, MaxMessageSize());
+    }
+
+    void ServiceProxy::RequestSend(infra::Function<void()> onGranted, uint32_t requestedSize)
+    {
         this->onGranted = onGranted;
+        currentRequestedSize = requestedSize;
         echo.RequestSend(*this);
     }
 
-    void ServiceProxy::GrantSend()
+    infra::SharedPtr<MethodSerializer> ServiceProxy::GrantSend()
     {
         onGranted();
+        return methodSerializer;
     }
 
     uint32_t ServiceProxy::MaxMessageSize() const
@@ -54,189 +45,201 @@ namespace services
         return maxMessageSize;
     }
 
-    void EchoErrorPolicyAbortOnMessageFormatError::MessageFormatError()
+    uint32_t ServiceProxy::CurrentRequestedSize() const
     {
-        std::abort();
+        return currentRequestedSize;
     }
 
-    void EchoErrorPolicyAbortOnMessageFormatError::ServiceNotFound(uint32_t serviceId)
-    {}
-
-    void EchoErrorPolicyAbortOnMessageFormatError::MethodNotFound(uint32_t serviceId, uint32_t methodId)
-    {}
-
-    void EchoErrorPolicyAbort::ServiceNotFound(uint32_t serviceId)
+    void ServiceProxy::SetSerializer(const infra::SharedPtr<MethodSerializer>& serializer)
     {
-        std::abort();
+        methodSerializer = serializer;
     }
 
-    void EchoErrorPolicyAbort::MethodNotFound(uint32_t serviceId, uint32_t methodId)
-    {
-        std::abort();
-    }
-
-    EchoOnStreams::EchoOnStreams(EchoErrorPolicy& errorPolicy)
-        : errorPolicy(errorPolicy)
+    EchoOnStreams::EchoOnStreams(services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy)
+        : serializerFactory(serializerFactory)
+        , errorPolicy(errorPolicy)
     {}
+
+    EchoOnStreams::~EchoOnStreams()
+    {
+        readerAccess.SetAction(nullptr);
+    }
 
     void EchoOnStreams::RequestSend(ServiceProxy& serviceProxy)
     {
-        if (sendRequesters.empty() && streamWriter == nullptr)
-        {
-            sendRequesters.push_back(serviceProxy);
-            RequestSendStream(serviceProxy.MaxMessageSize());
-        }
-        else
-            sendRequesters.push_back(serviceProxy);
+        sendRequesters.push_back(serviceProxy);
+
+        TryGrantSend();
     }
 
-    infra::StreamWriter& EchoOnStreams::SendStreamWriter()
+    void EchoOnStreams::ServiceDone()
     {
-        return *streamWriter;
+        methodDeserializer = nullptr;
+
+        if (readerPtr != nullptr)
+            DataReceived();
     }
 
-    void EchoOnStreams::Send()
+    services::MethodSerializerFactory& EchoOnStreams::SerializerFactory()
     {
-        streamWriter = nullptr;
-
-        if (!sendRequesters.empty())
-            RequestSendStream(sendRequesters.front().MaxMessageSize());
+        return serializerFactory;
     }
 
-    void EchoOnStreams::ServiceDone(Service& service)
+    void EchoOnStreams::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
-        if (serviceBusy && service.AcceptsService(*serviceBusy))
-        {
-            serviceBusy = infra::none;
-            infra::EventDispatcherWithWeakPtr::Instance().Schedule([](infra::SharedPtr<EchoOnStreams> echo)
-                { echo->BusyServiceDone(); },
-                SharedFromThis());
-        }
-    }
+        really_assert(readerPtr == nullptr);
 
-    void EchoOnStreams::ExecuteMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, infra::StreamReaderWithRewinding& reader)
-    {
-        if (!NotifyObservers([this, serviceId, methodId, &contents](auto& service)
-                {
-                if (service.AcceptsService(serviceId))
-                {
-                    if (service.InProgress())
-                        serviceBusy = serviceId;
-                    else
-                        service.HandleMethod(serviceId, methodId, contents, errorPolicy);
-
-                    return true;
-                }
-
-                return false; }))
-        {
-            errorPolicy.ServiceNotFound(serviceId);
-            contents.SkipEverything();
-        }
-    }
-
-    void EchoOnStreams::SetStreamWriter(infra::SharedPtr<infra::StreamWriter>&& writer)
-    {
-        streamWriter = std::move(writer);
-
-        ServiceProxy& proxy = sendRequesters.front();
-        sendRequesters.pop_front();
-        proxy.GrantSend();
-    }
-
-    bool EchoOnStreams::ServiceBusy() const
-    {
-        return serviceBusy != infra::none;
-    }
-
-    bool EchoOnStreams::ProcessMessage(infra::StreamReaderWithRewinding& reader)
-    {
-        infra::DataInputStream::WithErrorPolicy stream(reader, infra::softFail);
-        infra::StreamErrorPolicy formatErrorPolicy(infra::softFail);
-        infra::ProtoParser parser(stream, formatErrorPolicy);
-        uint32_t serviceId = static_cast<uint32_t>(parser.GetVarInt());
-        infra::ProtoParser::Field message = parser.GetField();
-        if (stream.Failed())
-            return false;
-
-        if (formatErrorPolicy.Failed() || !message.first.Is<infra::ProtoLengthDelimited>())
-            errorPolicy.MessageFormatError();
-        else
-        {
-            ExecuteMethod(serviceId, message.second, message.first.Get<infra::ProtoLengthDelimited>(), reader);
-
-            if (stream.Failed() || formatErrorPolicy.Failed())
-                errorPolicy.MessageFormatError();
-        }
-
-        return true;
-    }
-
-    void EchoOnConnection::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
-    {
-        SetStreamWriter(std::move(writer));
-    }
-
-    void EchoOnConnection::DataReceived()
-    {
-        while (!ServiceBusy())
-        {
-            infra::SharedPtr<infra::StreamReaderWithRewinding> reader = ConnectionObserver::Subject().ReceiveStream();
-
-            if (!ProcessMessage(*reader))
-                break;
-
-            if (!ServiceBusy()) // The message was not executed when ServiceBusy() is true, so don't ack the received data
-                ConnectionObserver::Subject().AckReceived();
-        }
-    }
-
-    void EchoOnConnection::RequestSendStream(std::size_t size)
-    {
-        ConnectionObserver::Subject().RequestSendStream(size);
-    }
-
-    void EchoOnConnection::BusyServiceDone()
-    {
+        readerPtr = std::move(reader);
+        bufferedReader.Emplace(receiveBuffer, *readerPtr);
         DataReceived();
     }
 
-    EchoOnMessageCommunication::EchoOnMessageCommunication(MessageCommunication& subject, EchoErrorPolicy& errorPolicy)
-        : EchoOnStreams(errorPolicy)
-        , MessageCommunicationObserver(subject)
-    {}
-
-    void EchoOnMessageCommunication::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+    void EchoOnStreams::ReleaseReader()
     {
-        SetStreamWriter(std::move(writer));
+        readerAccess.SetAction(nullptr);
+        bufferedReader = infra::none;
+        readerPtr = nullptr;
     }
 
-    void EchoOnMessageCommunication::ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+    void EchoOnStreams::TryGrantSend()
     {
-        this->reader = std::move(reader);
-        ProcessMessage();
+        if (sendingProxy == nullptr && !sendRequesters.empty())
+        {
+            sendingProxy = &sendRequesters.front();
+            sendRequesters.pop_front();
+            RequestSendStream(sendingProxy->CurrentRequestedSize() + 2 * infra::MaxVarIntSize(std::numeric_limits<uint64_t>::max()));
+        }
     }
 
-    void EchoOnMessageCommunication::ServiceDone(Service& service)
+    infra::SharedPtr<MethodSerializer> EchoOnStreams::GrantSend(ServiceProxy& proxy)
     {
-        reader = nullptr;
-        EchoOnStreams::ServiceDone(service);
+        return proxy.GrantSend();
     }
 
-    void EchoOnMessageCommunication::RequestSendStream(std::size_t size)
+    infra::SharedPtr<MethodDeserializer> EchoOnStreams::StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const infra::SharedPtr<MethodDeserializer>& deserializer)
     {
-        MessageCommunicationObserver::Subject().RequestSendMessage(static_cast<uint16_t>(size));
+        return deserializer;
     }
 
-    void EchoOnMessageCommunication::BusyServiceDone()
+    void EchoOnStreams::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        // In this class, services are never busy, so BusyServiceDone() is never invoked
-        std::abort();
+        if (methodSerializer == nullptr)
+            methodSerializer = GrantSend(*sendingProxy);
+
+        auto more = methodSerializer->Serialize(std::move(writer));
+
+        if (more)
+            RequestSendStream(sendingProxy->CurrentRequestedSize());
+        else
+        {
+            sendingProxy = nullptr;
+            methodSerializer->SerializationDone();
+            methodSerializer = nullptr;
+            TryGrantSend();
+        }
     }
 
-    void EchoOnMessageCommunication::ProcessMessage()
+    void EchoOnStreams::DataReceived()
     {
-        if (!EchoOnStreams::ProcessMessage(*reader))
+        if (limitedReader != infra::none)
+            ContinueReceiveMessage();
+
+        while (readerPtr != nullptr && methodDeserializer == nullptr && !readerAccess.Referenced())
+        {
+            if (limitedReader == infra::none)
+                StartReceiveMessage();
+
+            if (limitedReader != infra::none)
+                ContinueReceiveMessage();
+        }
+
+        if (!readerAccess.Referenced() && limitedReader != infra::none)
+        {
+            bufferedReader = infra::none;
+            readerPtr = nullptr;
+        }
+    }
+
+    void EchoOnStreams::StartReceiveMessage()
+    {
+        auto start = bufferedReader->ConstructSaveMarker();
+        infra::DataInputStream::WithErrorPolicy stream(*bufferedReader, infra::softFail);
+        infra::StreamErrorPolicy formatErrorPolicy(infra::softFail);
+        infra::ProtoParser parser(stream, formatErrorPolicy);
+        uint32_t serviceId = static_cast<uint32_t>(parser.GetVarInt());
+        auto [contents, methodId] = parser.GetPartialField();
+
+        if (stream.Failed())
+        {
+            bufferedReader->Rewind(start);
+            bufferedReader = infra::none;
+            readerPtr = nullptr;
+        }
+        else if (formatErrorPolicy.Failed() || !contents.Is<infra::PartialProtoLengthDelimited>())
+        {
             errorPolicy.MessageFormatError();
+            AckReceived();
+        }
+        else
+        {
+            limitedReader.Emplace(*bufferedReader, contents.Get<infra::PartialProtoLengthDelimited>().length);
+            StartMethod(serviceId, methodId, contents.Get<infra::PartialProtoLengthDelimited>().length);
+
+            if (formatErrorPolicy.Failed())
+                errorPolicy.MessageFormatError();
+        }
+    }
+
+    void EchoOnStreams::ContinueReceiveMessage()
+    {
+        limitedReader->SwitchInput(*bufferedReader);
+        readerAccess.SetAction(infra::emptyFunction);
+        methodDeserializer->MethodContents(readerAccess.MakeShared(*limitedReader));
+
+        if (readerAccess.Referenced())
+            readerAccess.SetAction([this]()
+                {
+                    auto& self = *this;
+                    ReaderDone();
+                    // ReaderDone() may result in readerAccess' completion callback being reset, which invalidates the saved this pointer
+                    self.DataReceived();
+                });
+        else
+            ReaderDone();
+    }
+
+    void EchoOnStreams::StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size)
+    {
+        if (!NotifyObservers([this, serviceId, methodId, size](auto& service)
+                {
+                    if (service.AcceptsService(serviceId))
+                    {
+                        methodDeserializer = StartingMethod(serviceId, methodId, size, service.StartMethod(serviceId, methodId, size, errorPolicy));
+                        return true;
+                    }
+
+                    return false;
+                }))
+        {
+            errorPolicy.ServiceNotFound(serviceId);
+            methodDeserializer = deserializerDummy.Emplace(*this);
+        }
+    }
+
+    void EchoOnStreams::ReaderDone()
+    {
+        AckReceived();
+
+        if (limitedReader->LimitReached())
+        {
+            limitedReader = infra::none;
+            if (methodDeserializer->Failed())
+            {
+                errorPolicy.MessageFormatError();
+                methodDeserializer = nullptr;
+            }
+            else
+                methodDeserializer->ExecuteMethod();
+        }
     }
 }

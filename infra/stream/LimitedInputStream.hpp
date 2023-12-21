@@ -20,12 +20,12 @@ namespace infra
         void ResetLength(uint32_t newLength);
 
     public:
-        virtual void Extract(ByteRange range, StreamErrorPolicy& errorPolicy) override;
-        virtual uint8_t Peek(StreamErrorPolicy& errorPolicy) override;
-        virtual ConstByteRange ExtractContiguousRange(std::size_t max) override;
-        virtual ConstByteRange PeekContiguousRange(std::size_t start) override;
-        virtual bool Empty() const override;
-        virtual std::size_t Available() const override;
+        void Extract(ByteRange range, StreamErrorPolicy& errorPolicy) override;
+        uint8_t Peek(StreamErrorPolicy& errorPolicy) override;
+        ConstByteRange ExtractContiguousRange(std::size_t max) override;
+        ConstByteRange PeekContiguousRange(std::size_t start) override;
+        bool Empty() const override;
+        std::size_t Available() const override;
 
     private:
         StreamReader& input;
@@ -44,19 +44,21 @@ namespace infra
         ~LimitedStreamReaderWithRewinding() = default;
 
         void ResetLength(uint32_t newLength);
+        bool LimitReached() const;
+        void SwitchInput(StreamReaderWithRewinding& newInput);
 
     public:
-        virtual void Extract(ByteRange range, StreamErrorPolicy& errorPolicy) override;
-        virtual uint8_t Peek(StreamErrorPolicy& errorPolicy) override;
-        virtual ConstByteRange ExtractContiguousRange(std::size_t max) override;
-        virtual ConstByteRange PeekContiguousRange(std::size_t start) override;
-        virtual bool Empty() const override;
-        virtual std::size_t Available() const override;
-        virtual std::size_t ConstructSaveMarker() const override;
-        virtual void Rewind(std::size_t marker) override;
+        void Extract(ByteRange range, StreamErrorPolicy& errorPolicy) override;
+        uint8_t Peek(StreamErrorPolicy& errorPolicy) override;
+        ConstByteRange ExtractContiguousRange(std::size_t max) override;
+        ConstByteRange PeekContiguousRange(std::size_t start) override;
+        bool Empty() const override;
+        std::size_t Available() const override;
+        std::size_t ConstructSaveMarker() const override;
+        void Rewind(std::size_t marker) override;
 
     private:
-        StreamReaderWithRewinding& input;
+        StreamReaderWithRewinding* input;
         uint32_t length;
     };
 

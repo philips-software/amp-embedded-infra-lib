@@ -29,8 +29,8 @@ namespace services
         DatagramBsd(const UdpSocket& local, const UdpSocket& remote, DatagramExchangeObserver& observer);
         ~DatagramBsd();
 
-        virtual void RequestSendStream(std::size_t sendSize) override;
-        virtual void RequestSendStream(std::size_t sendSize, UdpSocket to) override;
+        void RequestSendStream(std::size_t sendSize) override;
+        void RequestSendStream(std::size_t sendSize, UdpSocket to) override;
 
         void Receive();
         void Send();

@@ -18,7 +18,9 @@ public:
     DnsResolverTest()
     {
         EXPECT_CALL(randomDataGenerator, GenerateRandomData(testing::_)).WillRepeatedly(testing::Invoke([](infra::ByteRange result)
-            { std::fill(result.begin(), result.end(), 9); }));
+            {
+                std::fill(result.begin(), result.end(), 9);
+            }));
     }
 
     auto&& ExpectRequestSendStream(services::NameResolverResultMock& result, infra::BoundedConstString hostname, services::IPAddress dnsServer)
@@ -31,18 +33,19 @@ public:
     {
         ExpectRequestSendStream(result, hostname, dnsServer).WillOnce(testing::Invoke([this, &result, hostname](std::size_t sendSize, services::UdpSocket remote)
             {
-            EXPECT_CALL(writer, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 9, 9, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0 } }), testing::_));
+                EXPECT_CALL(writer, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 9, 9, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0 } }), testing::_));
 
-            infra::Tokenizer tokenizer(hostname, '.');
-            for (uint32_t i = 0; i != tokenizer.Size(); ++i)
-            {
-                EXPECT_CALL(writer, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { static_cast<uint8_t>(tokenizer.Token(i).size()) } }), testing::_));
-                EXPECT_CALL(writer, Insert(infra::CheckByteRangeContents(tokenizer.Token(i)), testing::_));
-            }
+                infra::Tokenizer tokenizer(hostname, '.');
+                for (uint32_t i = 0; i != tokenizer.Size(); ++i)
+                {
+                    EXPECT_CALL(writer, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ static_cast<uint8_t>(tokenizer.Token(i).size()) }), testing::_));
+                    EXPECT_CALL(writer, Insert(infra::CheckByteRangeContents(tokenizer.Token(i)), testing::_));
+                }
 
-            EXPECT_CALL(writer, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 0 } }), testing::_));
-            EXPECT_CALL(writer, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 0, 1, 0, 1 } }), testing::_));
-            datagramExchangeObserver->SendStreamAvailable(infra::UnOwnedSharedPtr(writer)); }));
+                EXPECT_CALL(writer, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ 0 }), testing::_));
+                EXPECT_CALL(writer, Insert(infra::CheckByteRangeContents(std::vector<uint8_t>{ { 0, 1, 0, 1 } }), testing::_));
+                datagramExchangeObserver->SendStreamAvailable(infra::UnOwnedSharedPtr(writer));
+            }));
     }
 
     void Lookup(services::NameResolverResultMock& result)
@@ -55,8 +58,9 @@ public:
         currentHostname = hostname;
         EXPECT_CALL(datagramFactory, Listen(testing::_, services::IPVersions::both)).WillOnce(testing::Invoke([this](services::DatagramExchangeObserver& observer, services::IPVersions versions)
             {
-            datagramExchangeObserver = &observer;
-            return infra::UnOwnedSharedPtr(datagram); }));
+                datagramExchangeObserver = &observer;
+                return infra::UnOwnedSharedPtr(datagram);
+            }));
         ExpectAndRespondToRequestSendStream(result, hostname, dnsServer);
     }
 
@@ -88,7 +92,7 @@ public:
 
         infra::Tokenizer tokenizer(hostname, '.');
         for (uint32_t i = 0; i != tokenizer.Size(); ++i)
-            result = Concatenate({ result, std::vector<uint8_t>{ { static_cast<uint8_t>(tokenizer.Token(i).size()) } }, std::vector<uint8_t>(tokenizer.Token(i).begin(), tokenizer.Token(i).end()) });
+            result = Concatenate({ result, std::vector<uint8_t>{ static_cast<uint8_t>(tokenizer.Token(i).size()) }, std::vector<uint8_t>(tokenizer.Token(i).begin(), tokenizer.Token(i).end()) });
         result.push_back(0);
 
         return result;

@@ -15,7 +15,7 @@ namespace application
         : public google::protobuf::compiler::CodeGenerator
     {
     public:
-        virtual bool Generate(const google::protobuf::FileDescriptor* file, const std::string& parameter,
+        bool Generate(const google::protobuf::FileDescriptor* file, const std::string& parameter,
             google::protobuf::compiler::GeneratorContext* generatorContext, std::string* error) const override;
     };
 
@@ -55,10 +55,12 @@ namespace application
         MessageTypeMapGenerator& operator=(const MessageTypeMapGenerator& other) = delete;
         ~MessageTypeMapGenerator() = default;
 
-        void Run(Entities& formatter);
+        void Run(Entities& formatter) const;
 
     protected:
-        virtual void AddTypeMapType(EchoField& field, Entities& entities);
+        virtual void AddTypeMapProtoType(const EchoField& field, Entities& entities) const;
+        virtual void AddTypeMapType(const EchoField& field, Entities& entities) const;
+        void AddTypeMapFieldNumber(const EchoField& field, Entities& entities) const;
         std::string MessageName() const;
         virtual std::string MessageSuffix() const;
 
@@ -73,11 +75,10 @@ namespace application
     public:
         using MessageTypeMapGenerator::MessageTypeMapGenerator;
 
-        void Run(Entities& formatter);
-
     protected:
-        virtual void AddTypeMapType(EchoField& field, Entities& entities) override;
-        virtual std::string MessageSuffix() const override;
+        void AddTypeMapProtoType(const EchoField& field, Entities& entities) const override;
+        void AddTypeMapType(const EchoField& field, Entities& entities) const override;
+        std::string MessageSuffix() const override;
     };
 
     class MessageGenerator
@@ -129,17 +130,17 @@ namespace application
         using MessageGenerator::MessageGenerator;
 
     protected:
-        virtual void GenerateTypeMap(Entities& formatter) override;
-        virtual void GenerateConstructors() override;
-        virtual void GenerateGetters() override;
-        virtual void GenerateNestedMessages(Entities& formatter) override;
-        virtual void GenerateFieldDeclarations() override;
-        virtual void GenerateMaxMessageSize() override;
-        virtual std::string SerializerBody() override;
+        void GenerateTypeMap(Entities& formatter) override;
+        void GenerateConstructors() override;
+        void GenerateGetters() override;
+        void GenerateNestedMessages(Entities& formatter) override;
+        void GenerateFieldDeclarations() override;
+        void GenerateMaxMessageSize() override;
+        std::string SerializerBody() override;
 
-        virtual std::string ClassName() const override;
-        virtual std::string ReferencedName() const override;
-        virtual std::string MessageSuffix() const override;
+        std::string ClassName() const override;
+        std::string ReferencedName() const override;
+        std::string MessageSuffix() const override;
     };
 
     class ServiceGenerator
@@ -156,10 +157,13 @@ namespace application
         void GenerateServiceFunctions();
         void GenerateServiceProxyFunctions();
         void GenerateFieldConstants();
+        void GenerateMethodTypeList();
 
         uint32_t MaxMessageSize() const;
         std::string AcceptsServiceBody() const;
-        std::string HandleBody() const;
+        std::string StartMethodBody() const;
+        void PrintMethodCaseWithParameter(const EchoMethod& method, google::protobuf::io::Printer& printer) const;
+
         std::string ProxyMethodBody(const EchoMethod& method) const;
 
     private:

@@ -85,8 +85,8 @@ namespace services
 
         explicit WebSocketObserverFactoryImpl(const Creators& creators);
 
-        virtual void CreateWebSocketObserver(services::Connection& connection) override;
-        virtual void CancelCreation() override;
+        void CreateWebSocketObserver(services::Connection& connection) override;
+        void CancelCreation() override;
         void Stop(const infra::Function<void()>& onDone);
 
     private:

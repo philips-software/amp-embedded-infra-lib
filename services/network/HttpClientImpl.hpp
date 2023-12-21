@@ -24,33 +24,33 @@ namespace services
         void Retarget(infra::BoundedConstString hostname);
 
         // Implementation of HttpClient
-        virtual void Get(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Head(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Connect(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Options(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
-        virtual void Post(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
-        virtual void Put(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
-        virtual void Patch(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
-        virtual void AckReceived() override;
-        virtual void CloseConnection() override;
-        virtual Connection& GetConnection() override;
+        void Get(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Head(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Connect(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Options(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        void Post(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        void Put(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        void Patch(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        void AckReceived() override;
+        void CloseConnection() override;
+        Connection& GetConnection() override;
 
         // Implementation of ConnectionObserver
-        virtual void Attached() override;
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        virtual void DataReceived() override;
-        virtual void Close() override;
-        virtual void Detaching() override;
+        void Attached() override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void DataReceived() override;
+        void Close() override;
+        void Detaching() override;
 
     protected:
         // Implementation of HttpHeaderParserObserver
-        virtual void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine) override;
-        virtual void HeaderAvailable(HttpHeader header) override;
-        virtual void HeaderParsingDone(bool error) override;
+        void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine) override;
+        void HeaderAvailable(HttpHeader header) override;
+        void HeaderParsingDone(bool error) override;
 
         void BodyComplete();
 
@@ -99,8 +99,8 @@ namespace services
         public:
             explicit SendingStateRequest(HttpClientImpl& client);
 
-            virtual void Activate() override;
-            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+            void Activate() override;
+            void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         };
 
         class SendingStateForwardSendStream
@@ -110,10 +110,10 @@ namespace services
             SendingStateForwardSendStream(HttpClientImpl& client);
             SendingStateForwardSendStream(const SendingStateForwardSendStream& other);
             SendingStateForwardSendStream& operator=(const SendingStateForwardSendStream& other) = delete;
-            ~SendingStateForwardSendStream() = default;
+            ~SendingStateForwardSendStream() override = default;
 
-            virtual void Activate() override;
-            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+            void Activate() override;
+            void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
         private:
             class ChunkWriter
@@ -165,21 +165,21 @@ namespace services
         void Stop(const infra::Function<void()>& onDone);
 
         // Implementation of ClientConnectionObserverFactory
-        virtual services::IPAddress Address() const override;
-        virtual uint16_t Port() const override;
-        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
-        virtual void ConnectionFailed(ConnectFailReason reason) override;
+        services::IPAddress Address() const override;
+        uint16_t Port() const override;
+        void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
+        void ConnectionFailed(ConnectFailReason reason) override;
 
         // Implementation of HttpClientConnector
-        virtual void Connect(services::HttpClientObserverFactory& factory) override;
-        virtual void CancelConnect(services::HttpClientObserverFactory& factory) override;
+        void Connect(services::HttpClientObserverFactory& factory) override;
+        void CancelConnect(services::HttpClientObserverFactory& factory) override;
 
     private:
         void TryConnectWaiting();
 
     private:
         template<std::size_t... I>
-        infra::SharedPtr<HttpClient> InvokeEmplace(infra::IndexSequence<I...>);
+        infra::SharedPtr<HttpClient> InvokeEmplace(std::index_sequence<I...>);
 
     private:
         services::IPAddress address;
@@ -203,21 +203,21 @@ namespace services
         void Stop(const infra::Function<void()>& onDone);
 
         // Implementation of ClientConnectionObserverFactoryWithNameResolver
-        virtual infra::BoundedConstString Hostname() const override;
-        virtual uint16_t Port() const override;
-        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver) override;
-        virtual void ConnectionFailed(ConnectFailReason reason) override;
+        infra::BoundedConstString Hostname() const override;
+        uint16_t Port() const override;
+        void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver) override;
+        void ConnectionFailed(ConnectFailReason reason) override;
 
         // Implementation of HttpClientConnector
-        virtual void Connect(HttpClientObserverFactory& factory) override;
-        virtual void CancelConnect(HttpClientObserverFactory& factory) override;
+        void Connect(HttpClientObserverFactory& factory) override;
+        void CancelConnect(HttpClientObserverFactory& factory) override;
 
     private:
         void TryConnectWaiting();
 
     private:
         template<std::size_t... I>
-        infra::SharedPtr<HttpClient> InvokeEmplace(infra::IndexSequence<I...>);
+        infra::SharedPtr<HttpClient> InvokeEmplace(std::index_sequence<I...>);
 
     private:
         ConnectionFactoryWithNameResolver& connectionFactory;
@@ -240,21 +240,21 @@ namespace services
         ~HttpClientImplWithRedirection();
 
         // Implementation of ConnectionObserver
-        virtual void Attached() override;
-        virtual void Detaching() override;
+        void Attached() override;
+        void Detaching() override;
 
         // Implementation of HttpClient
-        virtual void Get(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Head(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Connect(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Options(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
-        virtual void Post(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
-        virtual void Put(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
-        virtual void Patch(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
-        virtual void Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        void Get(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Head(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Connect(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Options(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        void Post(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        void Put(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        void Patch(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
 
     protected:
         virtual void Redirecting(infra::BoundedConstString url)
@@ -262,16 +262,16 @@ namespace services
 
     private:
         // Implementation of HttpClientObserverFactory
-        virtual infra::BoundedConstString Hostname() const override;
-        virtual uint16_t Port() const override;
-        virtual void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> client)>&& createdObserver) override;
-        virtual void ConnectionFailed(ConnectFailReason reason) override;
+        infra::BoundedConstString Hostname() const override;
+        uint16_t Port() const override;
+        void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> client)>&& createdObserver) override;
+        void ConnectionFailed(ConnectFailReason reason) override;
 
     protected:
         // Implementation of HttpHeaderParserObserver
-        virtual void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine) override;
-        virtual void HeaderAvailable(HttpHeader header) override;
-        virtual void HeaderParsingDone(bool error) override;
+        void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine) override;
+        void HeaderAvailable(HttpHeader header) override;
+        void HeaderParsingDone(bool error) override;
 
     private:
         void Redirect();
@@ -296,7 +296,7 @@ namespace services
         public:
             explicit QueryGet(HttpHeaders headers);
 
-            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+            void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
         private:
             HttpHeaders headers;
@@ -308,7 +308,7 @@ namespace services
         public:
             explicit QueryHead(HttpHeaders headers);
 
-            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+            void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
         private:
             HttpHeaders headers;
@@ -320,7 +320,7 @@ namespace services
         public:
             explicit QueryConnect(HttpHeaders headers);
 
-            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+            void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
         private:
             HttpHeaders headers;
@@ -332,7 +332,7 @@ namespace services
         public:
             explicit QueryOptions(HttpHeaders headers);
 
-            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+            void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
         private:
             HttpHeaders headers;
@@ -344,7 +344,7 @@ namespace services
         public:
             QueryPost(infra::BoundedConstString content, HttpHeaders headers);
 
-            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+            void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
         private:
             infra::BoundedConstString content;
@@ -357,7 +357,7 @@ namespace services
         public:
             explicit QueryPostChunked(HttpHeaders headers);
 
-            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+            void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
         private:
             HttpHeaders headers;
@@ -369,7 +369,7 @@ namespace services
         public:
             QueryPut(infra::BoundedConstString content, HttpHeaders headers);
 
-            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+            void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
         private:
             infra::BoundedConstString content;
@@ -382,7 +382,7 @@ namespace services
         public:
             explicit QueryPutChunked(HttpHeaders headers);
 
-            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+            void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
         private:
             HttpHeaders headers;
@@ -394,7 +394,7 @@ namespace services
         public:
             QueryPatch(infra::BoundedConstString content, HttpHeaders headers);
 
-            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+            void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
         private:
             HttpHeaders headers;
@@ -407,7 +407,7 @@ namespace services
         public:
             explicit QueryPatchChunked(HttpHeaders headers);
 
-            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+            void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
         private:
             HttpHeaders headers;
@@ -419,7 +419,7 @@ namespace services
         public:
             QueryDelete(infra::BoundedConstString content, HttpHeaders headers);
 
-            virtual void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+            void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
 
         private:
             HttpHeaders headers;
@@ -447,7 +447,9 @@ namespace services
     HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::HttpClientConnectorWithNameResolverImpl(services::ConnectionFactoryWithNameResolver& connectionFactory, Args&&... args)
         : connectionFactory(connectionFactory)
         , client([this]()
-              { TryConnectWaiting(); })
+              {
+                  TryConnectWaiting();
+              })
         , args(std::forward<Args>(args)...)
     {}
 
@@ -478,7 +480,7 @@ namespace services
 
     template<class HttpClient, class... Args>
     template<std::size_t... I>
-    infra::SharedPtr<HttpClient> HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::InvokeEmplace(infra::IndexSequence<I...>)
+    infra::SharedPtr<HttpClient> HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::InvokeEmplace(std::index_sequence<I...>)
     {
         return client.Emplace(Hostname(), std::get<I>(args)...);
     }
@@ -487,7 +489,7 @@ namespace services
     void HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
     {
         assert(clientObserverFactory != nullptr);
-        auto httpClientPtr = InvokeEmplace(infra::MakeIndexSequence<sizeof...(Args)>{});
+        auto httpClientPtr = InvokeEmplace(std::make_index_sequence<sizeof...(Args)>{});
 
         clientObserverFactory->ConnectionEstablished([&httpClientPtr, &createdObserver](infra::SharedPtr<HttpClientObserver> observer)
             {
@@ -495,7 +497,8 @@ namespace services
                 {
                     createdObserver(httpClientPtr);
                     httpClientPtr->Attach(observer);
-                } });
+                }
+            });
 
         clientObserverFactory = nullptr;
     }
@@ -561,7 +564,9 @@ namespace services
         : address(address)
         , connectionFactory(connectionFactory)
         , client([this]()
-              { TryConnectWaiting(); })
+              {
+                  TryConnectWaiting();
+              })
         , args(std::forward<Args>(args)...)
     {}
 
@@ -594,15 +599,16 @@ namespace services
     void HttpClientConnectorImpl<HttpClient, Args...>::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
     {
         assert(clientObserverFactory != nullptr);
-        auto httpClientPtr = InvokeEmplace(infra::MakeIndexSequence<sizeof...(Args)>{});
+        auto httpClientPtr = InvokeEmplace(std::make_index_sequence<sizeof...(Args)>{});
 
         clientObserverFactory->ConnectionEstablished([&httpClientPtr, &createdObserver](infra::SharedPtr<services::HttpClientObserver> observer)
             {
-            if (observer)
-            {
-                createdObserver(httpClientPtr);
-                httpClientPtr->Attach(observer);
-            } });
+                if (observer)
+                {
+                    createdObserver(httpClientPtr);
+                    httpClientPtr->Attach(observer);
+                }
+            });
 
         clientObserverFactory = nullptr;
     }
@@ -651,7 +657,7 @@ namespace services
 
     template<class HttpClient, class... Args>
     template<std::size_t... I>
-    infra::SharedPtr<HttpClient> HttpClientConnectorImpl<HttpClient, Args...>::InvokeEmplace(infra::IndexSequence<I...>)
+    infra::SharedPtr<HttpClient> HttpClientConnectorImpl<HttpClient, Args...>::InvokeEmplace(std::index_sequence<I...>)
     {
         ipAddress.Storage().clear();
         if (address.Is<services::IPv4Address>())

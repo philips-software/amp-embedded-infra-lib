@@ -23,9 +23,13 @@ TEST_F(TimerAlternatingTest, AlternatingTimer_TriggersCallbackInSuccession)
 
     infra::TimerAlternating timer(
         delta1, [&callback1]()
-        { callback1.callback(); },
+        {
+            callback1.callback();
+        },
         delta2, [&callback2]()
-        { callback2.callback(); });
+        {
+            callback2.callback();
+        });
 
     ForwardTime(std::chrono::seconds(6));
 };
@@ -41,9 +45,13 @@ TEST_F(TimerAlternatingTest, ResolutionIsTakenIntoAccount)
 
     infra::TimerAlternating timer(
         std::chrono::seconds(1), [&callback1]()
-        { callback1.callback(); },
+        {
+            callback1.callback();
+        },
         std::chrono::seconds(1), [&callback2]()
-        { callback2.callback(); });
+        {
+            callback2.callback();
+        });
 
     ForwardTime(std::chrono::seconds(3));
 }

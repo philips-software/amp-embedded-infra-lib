@@ -15,6 +15,7 @@ target_link_libraries(services.cucumber_test PUBLIC
 )
 
 target_sources(services.cucumber_test PRIVATE
+    TestCucumberWireProtocolController.cpp
     TestCucumberWireProtocolParser.cpp
     TestCucumberWireProtocolServer.cpp
 )

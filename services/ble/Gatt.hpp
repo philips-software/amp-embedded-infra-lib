@@ -1,6 +1,7 @@
 #ifndef SERVICES_GATT_HPP
 #define SERVICES_GATT_HPP
 
+#include "infra/stream/OutputStream.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/Endian.hpp"
 #include "infra/util/EnumCast.hpp"
@@ -24,7 +25,8 @@ namespace services
     {
         struct ClientCharacteristicConfiguration
         {
-            const uint16_t attributeType = 0x2902;
+            static constexpr uint8_t valueHandleOffset = 1;
+            static constexpr uint16_t attributeType = 0x2902;
 
             enum class CharacteristicValue : uint16_t
             {
@@ -34,6 +36,20 @@ namespace services
             };
         };
     };
+
+    namespace uuid
+    {
+        constexpr inline AttAttribute::Uuid16 deviceInformationService{ 0x180A };
+        constexpr inline AttAttribute::Uuid16 systemId{ 0x2A23 };
+        constexpr inline AttAttribute::Uuid16 modelNumber{ 0x2A24 };
+        constexpr inline AttAttribute::Uuid16 serialNumber{ 0x2A25 };
+        constexpr inline AttAttribute::Uuid16 firmwareRevision{ 0x2A26 };
+        constexpr inline AttAttribute::Uuid16 hardwareRevision{ 0x2A27 };
+        constexpr inline AttAttribute::Uuid16 softwareRevision{ 0x2A28 };
+        constexpr inline AttAttribute::Uuid16 manufacturerName{ 0x2A29 };
+        constexpr inline AttAttribute::Uuid16 ieeeCertification{ 0x2A2A };
+        constexpr inline AttAttribute::Uuid16 pnpId{ 0x2A50 };
+    }
 
     class GattCharacteristic
     {
@@ -127,6 +143,12 @@ namespace services
     {
         return static_cast<GattCharacteristic::PropertyFlags>(infra::enum_cast(lhs) & infra::enum_cast(rhs));
     }
+}
+
+namespace infra
+{
+    TextOutputStream& operator<<(TextOutputStream& stream, const services::AttAttribute::Uuid& uuid);
+    TextOutputStream& operator<<(TextOutputStream& stream, const services::GattCharacteristic::PropertyFlags& properties);
 }
 
 #endif

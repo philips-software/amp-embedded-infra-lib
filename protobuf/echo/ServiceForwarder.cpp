@@ -2,42 +2,82 @@
 
 namespace services
 {
-    ServiceForwarderBase::ServiceForwarderBase(infra::ByteRange messageBuffer, Echo& echo, Echo& forwardTo)
+    ServiceForwarderBase::ServiceForwarderBase(Echo& echo, Echo& forwardTo)
         : Service(echo)
-        , ServiceProxy(forwardTo, messageBuffer.size())
-        , messageBuffer(messageBuffer)
+        , ServiceProxy(forwardTo, 0)
     {}
 
-    void ServiceForwarderBase::Handle(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents, EchoErrorPolicy& errorPolicy)
+    infra::SharedPtr<MethodDeserializer> ServiceForwarderBase::StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy)
     {
-        this->forwardingServiceId = serviceId;
-        bytes.Emplace(messageBuffer);
-        uint32_t processedSize = 0;
+        forwardingServiceId = serviceId;
+        forwardingMethodId = methodId;
+        forwardingSize = size;
+        processedSize = 0;
+        sentHeader = false;
 
-        while (true)
+        RequestSend([this]()
+            {
+                SetSerializer(infra::UnOwnedSharedPtr(static_cast<MethodSerializer&>(*this)));
+            },
+            size);
+
+        return infra::UnOwnedSharedPtr(static_cast<MethodDeserializer&>(*this));
+    }
+
+    void ServiceForwarderBase::MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+    {
+        contentsReader = std::move(reader);
+        Transfer();
+    }
+
+    void ServiceForwarderBase::ExecuteMethod()
+    {
+        MethodDone();
+    }
+
+    bool ServiceForwarderBase::Failed() const
+    {
+        return false;
+    }
+
+    bool ServiceForwarderBase::Serialize(infra::SharedPtr<infra::StreamWriter>&& writer)
+    {
+        contentsWriter = std::move(writer);
+        auto result = processedSize + contentsWriter->Available() < forwardingSize;
+        Transfer();
+
+        return result;
+    }
+
+    void ServiceForwarderBase::Transfer()
+    {
+        if (!sentHeader)
         {
-            infra::ConstByteRange contiguousBytes;
-            contents.GetBytesReference(contiguousBytes);
+            if (contentsWriter == nullptr)
+                return;
 
-            if (contiguousBytes.size() == 0)
-                break;
+            infra::DataOutputStream::WithErrorPolicy stream(*contentsWriter);
 
-            std::copy(contiguousBytes.begin(), contiguousBytes.end(), bytes->begin() + processedSize);
-            processedSize += contiguousBytes.size();
+            infra::ProtoFormatter formatter(stream);
+            formatter.PutVarInt(forwardingServiceId);
+            formatter.PutLengthDelimitedSize(forwardingSize, forwardingMethodId);
+
+            sentHeader = true;
         }
 
-        bytes->shrink_from_back_to(processedSize);
+        infra::StreamErrorPolicy errorPolicy;
 
-        RequestSend([this, methodId]()
-            {
-            infra::DataOutputStream::WithErrorPolicy stream(services::ServiceProxy::Rpc().SendStreamWriter());
-            infra::ProtoFormatter formatter(stream);
-            formatter.PutVarInt(this->forwardingServiceId);
-            formatter.PutBytesField(*bytes, methodId);
-            bytes = infra::none;
+        while (processedSize != forwardingSize && contentsWriter != nullptr && contentsReader != nullptr)
+        {
+            auto range = contentsReader->ExtractContiguousRange(forwardingSize - processedSize);
+            contentsWriter->Insert(range, errorPolicy);
+            processedSize += range.size();
+        }
 
-            services::ServiceProxy::Rpc().Send();
-            MethodDone(); });
+        if (processedSize == forwardingSize || (contentsWriter != nullptr && contentsWriter->Empty()))
+            contentsWriter = nullptr;
+        if (processedSize == forwardingSize || (contentsReader != nullptr && contentsReader->Empty()))
+            contentsReader = nullptr;
     }
 
     bool ServiceForwarderAll::AcceptsService(uint32_t id) const
@@ -45,8 +85,8 @@ namespace services
         return true;
     }
 
-    ServiceForwarder::ServiceForwarder(infra::ByteRange messageBuffer, Echo& echo, uint32_t id, Echo& forwardTo)
-        : ServiceForwarderBase(messageBuffer, echo, forwardTo)
+    ServiceForwarder::ServiceForwarder(Echo& echo, uint32_t id, Echo& forwardTo)
+        : ServiceForwarderBase(echo, forwardTo)
         , serviceId(id)
     {}
 

@@ -52,14 +52,14 @@ namespace services
         void SetIpVersion(services::IPVersions ipVersion);
 
         // Implementation of MdnsQuery
-        virtual infra::BoundedConstString DnsHostname() const override;
-        virtual services::DnsType DnsType() const override;
-        virtual bool IsWaiting() const override;
-        virtual services::IPVersions IpVersion() const override;
-        virtual void SetWaiting(bool waiting) override;
-        virtual void CheckAnswer(services::IPVersions ipVersion, infra::BoundedString& hostname, DnsRecordPayload& payload, infra::ConstByteRange data) override;
-        virtual void CheckAdditionalRecord(infra::BoundedString& hostname, DnsRecordPayload& payload, infra::ConstByteRange data) override;
-        virtual void EndOfAnswerNotification() override;
+        infra::BoundedConstString DnsHostname() const override;
+        services::DnsType DnsType() const override;
+        bool IsWaiting() const override;
+        services::IPVersions IpVersion() const override;
+        void SetWaiting(bool waiting) override;
+        void CheckAnswer(services::IPVersions ipVersion, infra::BoundedString& hostname, DnsRecordPayload& payload, infra::ConstByteRange data) override;
+        void CheckAdditionalRecord(infra::BoundedString& hostname, DnsRecordPayload& payload, infra::ConstByteRange data) override;
+        void EndOfAnswerNotification() override;
 
         void Ask(services::IPVersions ipVersion = services::IPVersions::ipv4);
 
@@ -87,8 +87,8 @@ namespace services
 
     private:
         // Implementation of DatagramExchangeObserver
-        virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
-        virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
         infra::detail::IntrusiveListIterator<MdnsQuery> FindNextWaitingQuery();
         void TrySendNextQuery();

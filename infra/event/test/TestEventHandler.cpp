@@ -18,7 +18,9 @@ TEST_F(EventDispatcherTest, TestSchedule)
     EXPECT_CALL(callback, callback());
 
     infra::EventDispatcher::Instance().Schedule([&callback, this]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
     ExecuteAllActions();
 }
 
@@ -28,9 +30,13 @@ TEST_F(EventDispatcherTest, TestScheduleTwice)
     EXPECT_CALL(callback, callback()).Times(2);
 
     infra::EventDispatcher::Instance().Schedule([&callback, this]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
     infra::EventDispatcher::Instance().Schedule([&callback, this]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
     ExecuteAllActions();
 }
 
@@ -42,9 +48,13 @@ TEST_F(EventDispatcherTest, TestExecuteOneEvent)
     ExecuteFirstAction();
 
     infra::EventDispatcher::Instance().Schedule([&callback, this]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
     infra::EventDispatcher::Instance().Schedule([&callback, this]()
-        { callback.callback(); });
+        {
+            callback.callback();
+        });
 
     EXPECT_CALL(callback, callback()).Times(1);
     ExecuteFirstAction();
@@ -74,9 +84,13 @@ TEST_F(EventDispatcherTest, TestPerformance)
         for (int i = 0; i != 20; ++i)
         {
             infra::EventDispatcher::Instance().Schedule([]()
-                { helper1(); });
+                {
+                    helper1();
+                });
             infra::EventDispatcher::Instance().Schedule([]()
-                { helper2(); });
+                {
+                    helper2();
+                });
         }
 
         ExecuteAllActions();

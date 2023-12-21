@@ -16,8 +16,8 @@ namespace infra
         IoOutputStreamWriter() = default;
         explicit IoOutputStreamWriter(std::ostream& stream);
 
-        virtual void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy) override;
-        virtual std::size_t Available() const override;
+        void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy) override;
+        std::size_t Available() const override;
 
     private:
         std::ostream& stream{ std::cout };

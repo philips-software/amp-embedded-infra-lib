@@ -7,8 +7,8 @@ function(emil_fetch_echo_plugins)
     #
     # (See: https://cmake.org/cmake/help/latest/module/FetchContent.html#commands)
 
-    if (EMIL_HOST_BUILD)
-        # In a host build we use the built echo plug-ins
+    if (EMIL_HOST_BUILD AND NOT CMAKE_CROSSCOMPILING)
+        # In a host build where we are not cross-compiling we use the built echo plug-ins
         return()
     endif()
 
@@ -17,7 +17,7 @@ function(emil_fetch_echo_plugins)
         return()
     endif()
 
-    set(emil_version "3.2.0") # x-release-please-version
+    set(emil_version "5.0.1") # x-release-please-version
 
     if (CMAKE_HOST_WIN32)
         set(os_postfix "win64")

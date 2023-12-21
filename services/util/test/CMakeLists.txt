@@ -8,11 +8,13 @@ endif()
 
 target_link_libraries(services.util_test PUBLIC
     gmock_main
+    protobuf.test_doubles
     services.tracer
     services.util
     hal.interfaces_test_doubles
     infra.timer_test_helper
     infra.util_test_helper
+    infra.event_test_helper
 )
 
 target_sources(services.util_test PRIVATE
@@ -21,6 +23,8 @@ target_sources(services.util_test PRIVATE
     TestCyclicStore.cpp
     TestDebouncedButton.cpp
     TestDebugLed.cpp
+    TestEchoOnMessageCommunication.cpp
+    TestEchoOnMessageCommunicationSymmetricKey.cpp
     TestFlashAlign.cpp
     TestFlashMultipleAccess.cpp
     TestFlashQuadSpiCypressFll.cpp
@@ -32,9 +36,11 @@ target_sources(services.util_test PRIVATE
     TestInverseLogicPin.cpp
     TestLowPowerSerialCommunication.cpp
     TestLowPowerSpiMaster.cpp
-    TestMessageCommunicationWindowed.cpp
     TestMessageCommunicationCobs.cpp
+    TestMessageCommunicationSecured.cpp
+    TestMessageCommunicationWindowed.cpp
     TestRepeatingButton.cpp
+    TestSerialCommunicationLoopback.cpp
     TestSignalLed.cpp
     TestSpiMasterWithChipSelect.cpp
     TestSpiMultipleAccess.cpp

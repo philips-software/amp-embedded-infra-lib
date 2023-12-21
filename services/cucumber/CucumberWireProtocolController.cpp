@@ -1,4 +1,5 @@
 #include "services/cucumber/CucumberWireProtocolController.hpp"
+#include "infra/syntax/Json.hpp"
 
 namespace services
 {
@@ -78,14 +79,20 @@ namespace services
 
     void CucumberWireProtocolController::HandleBeginScenarioRequest(CucumberWireProtocolParser& parser)
     {
-        scenarioRequestHandler.BeginScenario([this]()
-            { connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize()); });
+        auto tags = parser.scenarioTags ? parser.scenarioTags->GetOptionalArray("tags").ValueOrDefault() : infra::JsonArray();
+
+        scenarioRequestHandler.BeginScenario(tags, [this]()
+            {
+                connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize());
+            });
     }
 
     void CucumberWireProtocolController::HandleEndScenarioRequest()
     {
         scenarioRequestHandler.EndScenario([this]()
-            { connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize()); });
+            {
+                connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize());
+            });
     }
 
     void CucumberWireProtocolController::HandleSnippetTextRequest()

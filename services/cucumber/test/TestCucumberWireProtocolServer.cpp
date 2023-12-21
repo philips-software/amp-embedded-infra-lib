@@ -87,7 +87,9 @@ GIVEN("nothing happens for %d seconds")
         uint32_t seconds;
         secondsStream >> seconds;
         Context().TimeoutTimer().Start(std::chrono::seconds(seconds), [=]()
-            { Success(); });
+            {
+                Success();
+            });
     }
 }
 
@@ -101,7 +103,7 @@ public:
 
     MOCK_METHOD1(Invoke, void(infra::JsonArray& arguments));
 
-    virtual void Execute() override
+    void Execute() override
     {}
 };
 
@@ -112,11 +114,13 @@ class CucumberWireProtocolServerTest
 public:
     CucumberWireProtocolServerTest()
         : execute([this]()
-              { EXPECT_CALL(connectionFactoryMock, Listen(1234, testing::_, services::IPVersions::both)).WillOnce(testing::DoAll(infra::SaveRef<1>(&serverConnectionObserverFactory), testing::Return(nullptr))); })
+              {
+                  EXPECT_CALL(connectionFactoryMock, Listen(1234, testing::_, services::IPVersions::both)).WillOnce(testing::DoAll(infra::SaveRef<1>(&serverConnectionObserverFactory), testing::Return(nullptr)));
+              })
         , cucumberServer(connectionFactoryMock, 1234, scenarioHandler)
     {}
 
-    ~CucumberWireProtocolServerTest()
+    ~CucumberWireProtocolServerTest() override
     {
         cucumberServer.Stop(infra::emptyFunction);
     }

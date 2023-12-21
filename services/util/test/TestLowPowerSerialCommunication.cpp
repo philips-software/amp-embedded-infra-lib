@@ -27,7 +27,9 @@ TEST_F(LowPowerSerialCommunicationTest, SendData_should_acquire_mainClock_and_re
 
     EXPECT_CALL(serialComm, SendDataMock(std::vector<uint8_t>{ 0xfe, 0xff }));
     lowPowerSerialCommunication.SendData(std::vector<uint8_t>{ 0xfe, 0xff }, [&mockActionOnCompletion]()
-        { mockActionOnCompletion.callback(); });
+        {
+            mockActionOnCompletion.callback();
+        });
     EXPECT_TRUE(mainClock.IsReferenced());
 
     EXPECT_CALL(mockActionOnCompletion, callback());
@@ -39,7 +41,9 @@ TEST_F(LowPowerSerialCommunicationTest, ReceiveData_should_forward_callback_regi
 {
     infra::ConstByteRange savedData;
     lowPowerSerialCommunication.ReceiveData([&savedData](infra::ConstByteRange data)
-        { savedData = data; });
+        {
+            savedData = data;
+        });
 
     std::vector<uint8_t> data = { 0xfe, 0xff, 0xee };
     serialComm.dataReceived(data);

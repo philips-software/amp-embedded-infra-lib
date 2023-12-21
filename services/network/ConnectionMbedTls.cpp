@@ -12,7 +12,9 @@ namespace services
         , clientSession(parameters.parameters.Is<ClientParameters>() ? &parameters.parameters.Get<ClientParameters>().clientSession : nullptr)
         , clientSessionObtained(parameters.parameters.Is<ClientParameters>() ? &parameters.parameters.Get<ClientParameters>().clientSessionObtained : nullptr)
         , receiveReader([this]()
-              { keepAliveForReader = nullptr; })
+              {
+                  keepAliveForReader = nullptr;
+              })
     {
         mbedtls_ssl_init(&sslContext);
         mbedtls_ssl_config_init(&sslConfig);
@@ -156,9 +158,10 @@ namespace services
             dataReceivedScheduled = true;
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object)
                 {
-                object->dataReceivedScheduled = false;
-                if (object->Connection::IsAttached())
-                    object->Observer().DataReceived(); },
+                    object->dataReceivedScheduled = false;
+                    if (object->Connection::IsAttached())
+                        object->Observer().DataReceived();
+                },
                 SharedFromThis());
         }
     }
@@ -263,9 +266,10 @@ namespace services
 
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([requestedSize](const infra::SharedPtr<ConnectionMbedTls>& object)
                 {
-                infra::SharedPtr<StreamWriterMbedTls> stream = object->streamWriter.Emplace(*object, requestedSize);
-                if (object->Connection::IsAttached())
-                    object->Observer().SendStreamAvailable(std::move(stream)); },
+                    infra::SharedPtr<StreamWriterMbedTls> stream = object->streamWriter.Emplace(*object, requestedSize);
+                    if (object->Connection::IsAttached())
+                        object->Observer().SendStreamAvailable(std::move(stream));
+                },
                 SharedFromThis());
 
             requestedSendSize = 0;
@@ -302,9 +306,10 @@ namespace services
                 flushScheduled = true;
                 infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object)
                     {
-                    object->flushScheduled = false;
-                    object->encryptedSendWriter = nullptr;
-                    object->TryAllocateEncryptedSendStream(); },
+                        object->flushScheduled = false;
+                        object->encryptedSendWriter = nullptr;
+                        object->TryAllocateEncryptedSendStream();
+                    },
                     SharedFromThis());
             }
 
@@ -325,7 +330,9 @@ namespace services
         if (!streamBuffer.empty())
         {
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object)
-                { object->TrySend(); },
+                {
+                    object->TrySend();
+                },
                 SharedFromThis());
             return streamBuffer.size();
         }
@@ -356,7 +363,9 @@ namespace services
                 // we may not directly abort the connection here, since that would result in the stream writer not being able to be deallocted.
                 // Instead, schedule the abort.
                 infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object)
-                    { object->ConnectionObserver::Subject().AbortAndDestroy(); },
+                    {
+                        object->ConnectionObserver::Subject().AbortAndDestroy();
+                    },
                     SharedFromThis());
                 return;
             }
@@ -441,7 +450,9 @@ namespace services
         if (connection)
         {
             factory.ConnectionAccepted([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-                { connection->CreatedObserver(connectionObserver); },
+                {
+                    connection->CreatedObserver(connectionObserver);
+                },
                 address);
         }
         else
@@ -478,7 +489,9 @@ namespace services
         if (connection)
         {
             clientFactory.ConnectionEstablished([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-                { connection->CreatedObserver(connectionObserver); });
+                {
+                    connection->CreatedObserver(connectionObserver);
+                });
 
             factory.Remove(*this);
         }
@@ -642,9 +655,10 @@ namespace services
         assert(clientConnectionFactory != nullptr);
         clientConnectionFactory->ConnectionEstablished([this, &createdObserver](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
             {
-            createdObserver(connectionObserver);
-            if (connectionObserver->IsAttached())
-                static_cast<ConnectionWithHostname&>(connectionObserver->Subject()).SetHostname(Hostname()); });
+                createdObserver(connectionObserver);
+                if (connectionObserver->IsAttached())
+                    static_cast<ConnectionWithHostname&>(connectionObserver->Subject()).SetHostname(Hostname());
+            });
         clientConnectionFactory = nullptr;
         TryConnect();
     }

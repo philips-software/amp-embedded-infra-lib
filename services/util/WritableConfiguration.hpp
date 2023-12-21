@@ -34,11 +34,11 @@ namespace services
         , public WritableConfigurationReader<TRef>
     {
     public:
-        virtual bool Valid() const = 0;
-        virtual const TRef& Get() const = 0;
-        virtual void Read(const infra::Function<void()>& onDone) = 0;
-        virtual void Write(const T& newValue, const infra::Function<void()>& onDone) = 0;
-        virtual void Clear(const infra::Function<void()>& onDone) = 0;
+        bool Valid() const override = 0;
+        const TRef& Get() const override = 0;
+        void Read(const infra::Function<void()>& onDone) override = 0;
+        void Write(const T& newValue, const infra::Function<void()>& onDone) override = 0;
+        void Clear(const infra::Function<void()>& onDone) override = 0;
     };
 
     template<class T, class TRef>
@@ -48,10 +48,10 @@ namespace services
     public:
         WritableConfiguration(hal::Flash& flash, services::Sha256& sha256);
 
-        virtual bool Valid() const override;
-        virtual const TRef& Get() const override;
+        bool Valid() const override;
+        const TRef& Get() const override;
 
-        virtual void Clear(const infra::Function<void()>& onDone) override;
+        void Clear(const infra::Function<void()>& onDone) override;
 
     protected:
         void LoadConfiguration(infra::ConstByteRange memory);
@@ -80,10 +80,10 @@ namespace services
     public:
         MemoryMappedWritableConfiguration(hal::Flash& flash, services::Sha256& sha256, infra::ConstByteRange memory);
 
-        virtual void Read(const infra::Function<void()>& onDone) override;
+        void Read(const infra::Function<void()>& onDone) override;
 
         // Warning: Allocates memory on the heap!
-        virtual void Write(const T& newValue, const infra::Function<void()>& onDone) override;
+        void Write(const T& newValue, const infra::Function<void()>& onDone) override;
 
         infra::ConstByteRange GetMemory();
 
@@ -102,8 +102,8 @@ namespace services
     public:
         FlashReadingWritableConfiguration(hal::Flash& flash, services::Sha256& sha256);
 
-        virtual void Read(const infra::Function<void()>& onDone) override;
-        virtual void Write(const T& newValue, const infra::Function<void()>& onDone) override;
+        void Read(const infra::Function<void()>& onDone) override;
+        void Write(const T& newValue, const infra::Function<void()>& onDone) override;
 
     private:
         infra::ByteOutputStreamWriter::WithStorage<T::maxMessageSize + sizeof(typename WritableConfiguration<T, TRef>::Header)> streamWriter;
@@ -132,7 +132,7 @@ namespace services
     template<class T, class TRef>
     void WritableConfiguration<T, TRef>::LoadConfiguration(infra::ConstByteRange memory)
     {
-        infra::ByteInputStream::WithReader stream(memory, infra::noFail);
+        infra::DataInputStream::WithReader<infra::ByteInputStreamReader> stream(memory, infra::noFail);
         auto header = stream.Extract<Header>();
 
         valid = false;
@@ -178,8 +178,12 @@ namespace services
         headerProxy = header;
 
         flash.EraseAll([this, &streamWriter]()
-            { flash.WriteBuffer(streamWriter.Processed(), 0, [this]()
-                  { this->Read(this->onDone); }); });
+            {
+                flash.WriteBuffer(streamWriter.Processed(), 0, [this]()
+                    {
+                        this->Read(this->onDone);
+                    });
+            });
     }
 
     template<class T, class TRef>
@@ -202,8 +206,9 @@ namespace services
         this->onDone = onDone;
         infra::EventDispatcher::Instance().Schedule([this]()
             {
-            this->LoadConfiguration(memory);
-            this->onDone(); });
+                this->LoadConfiguration(memory);
+                this->onDone();
+            });
     }
 
     template<class T, class TRef>
@@ -212,7 +217,10 @@ namespace services
         this->onWriteDone = onDone;
         streamWriter = std::make_shared<infra::ByteOutputStreamWriter::WithStorage<T::maxMessageSize + sizeof(typename WritableConfiguration<T, TRef>::Header)>>();
         this->WriteConfiguration(newValue, *streamWriter, [this]()
-            { this->streamWriter = nullptr; this->onWriteDone(); });
+            {
+                this->streamWriter = nullptr;
+                this->onWriteDone();
+            });
     }
 
     template<class T, class TRef>
@@ -232,8 +240,9 @@ namespace services
         this->onDone = onDone;
         this->flash.ReadBuffer(streamWriter.Storage(), 0, [this]()
             {
-            this->LoadConfiguration(streamWriter.Storage());
-            this->onDone(); });
+                this->LoadConfiguration(streamWriter.Storage());
+                this->onDone();
+            });
     }
 
     template<class T, class TRef>

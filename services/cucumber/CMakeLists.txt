@@ -4,12 +4,13 @@ target_link_libraries(services.cucumber PUBLIC
     infra.syntax
     infra.timer
     hal.synchronous_interfaces
-    services.tracer
+    services.network
 )
 
 target_sources(services.cucumber PRIVATE
     CucumberContext.cpp
     CucumberContext.hpp
+    CucumberRequestHandlers.cpp
     CucumberRequestHandlers.hpp
     CucumberStep.cpp
     CucumberStep.hpp

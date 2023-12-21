@@ -11,8 +11,8 @@ namespace hal
     {
     public:
         // SerialCommunication Interface
-        virtual void SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion) override;
-        virtual void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) override;
+        void SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion) override;
+        void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) override;
 
         std::deque<uint8_t> dataReceivedByStub;
 

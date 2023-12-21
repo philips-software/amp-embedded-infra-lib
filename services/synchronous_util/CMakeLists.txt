@@ -1,6 +1,7 @@
 add_library(services.synchronous_util ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
 target_link_libraries(services.synchronous_util PUBLIC
+    hal.interfaces
     hal.synchronous_interfaces
 )
 

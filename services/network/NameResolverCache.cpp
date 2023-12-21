@@ -60,21 +60,13 @@ namespace services
 
     std::array<uint8_t, 16> NameResolverCache::Hash(infra::BoundedConstString name) const
     {
-        union
-        {
-            struct
-            {
-                std::array<uint8_t, 16> first;
-                std::array<uint8_t, 16> second;
-            } hash_parts;
-
-            std::array<uint8_t, 32> hash;
-        } result;
-
         Sha256MbedTls sha256;
-        result.hash = sha256.Calculate(infra::StringAsByteRange(name));
+        const auto hash = sha256.Calculate(infra::StringAsByteRange(name));
 
-        return result.hash_parts.first;
+        std::array<uint8_t, 16> result;
+        infra::Copy(infra::Head(infra::MakeRange(hash), result.size()), infra::MakeRange(result));
+
+        return result;
     }
 
     void NameResolverCache::TryResolveNext()
@@ -91,13 +83,17 @@ namespace services
         validUntil = std::max(infra::Now() + minimumTtl, validUntil);
         TryAddToCache(result.Hostname(), address, validUntil);
         NameLookupDone([&result, &address, &validUntil]()
-            { result.NameLookupDone(address, validUntil); });
+            {
+                result.NameLookupDone(address, validUntil);
+            });
     }
 
     void NameResolverCache::NameLookupFailed(NameResolverResult& result)
     {
         NameLookupDone([&result]()
-            { result.NameLookupFailed(); });
+            {
+                result.NameLookupFailed();
+            });
     }
 
     void NameResolverCache::NameLookupCancelled()
@@ -143,7 +139,9 @@ namespace services
         }
 
         cleanupTimer.Start(cleanupTime, [this]()
-            { Cleanup(); });
+            {
+                Cleanup();
+            });
     }
 
     NameResolverCache::ActiveLookup::ActiveLookup(NameResolverCache& nameResolverCache, NameResolverResult& resolving)

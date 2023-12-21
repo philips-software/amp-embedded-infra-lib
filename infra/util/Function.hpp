@@ -22,7 +22,6 @@
 //  Function<void(), 8> g = [this, &x]() { DoSomething(x); }; // Ok.
 
 #include "infra/util/ByteRange.hpp"
-#include "infra/util/IntegerSequence.hpp"
 #include "infra/util/ReallyAssert.hpp"
 #include "infra/util/StaticStorage.hpp"
 #include "infra/util/VariadicTemplates.hpp"
@@ -32,6 +31,7 @@
 #include <ostream>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 
 #ifndef INFRA_DEFAULT_FUNCTION_EXTRA_SIZE
 #define INFRA_DEFAULT_FUNCTION_EXTRA_SIZE (2 * sizeof(void*))
@@ -82,9 +82,7 @@ namespace infra
             template<class F>
             static void StaticCopyConstruct(const InvokerFunctionsType& from, InvokerFunctionsType& to);
             template<class F>
-            static const VirtualMethodTable* StaticVirtualMethodTable(typename std::enable_if<std::is_trivially_copy_constructible<F>::value && std::is_trivially_destructible<F>::value>::type* = nullptr);
-            template<class F>
-            static const VirtualMethodTable* StaticVirtualMethodTable(typename std::enable_if<!std::is_trivially_copy_constructible<F>::value || !std::is_trivially_destructible<F>::value>::type* = nullptr);
+            static const VirtualMethodTable* StaticVirtualMethodTable();
             template<class F>
             static void Construct(InvokerFunctionsType& invokerFunctions, F&& f);
 
@@ -273,19 +271,18 @@ namespace infra
         template<std::size_t ExtraSize, class Result, class... Args>
         template<class F>
         const typename InvokerFunctions<Result(Args...), ExtraSize>::VirtualMethodTable*
-        InvokerFunctions<Result(Args...), ExtraSize>::StaticVirtualMethodTable(typename std::enable_if<std::is_trivially_copy_constructible<F>::value && std::is_trivially_destructible<F>::value>::type*)
+        InvokerFunctions<Result(Args...), ExtraSize>::StaticVirtualMethodTable()
         {
-            static const VirtualMethodTable table = { &StaticInvoke<F>, nullptr, nullptr };
-            return &table;
-        }
-
-        template<std::size_t ExtraSize, class Result, class... Args>
-        template<class F>
-        const typename InvokerFunctions<Result(Args...), ExtraSize>::VirtualMethodTable*
-        InvokerFunctions<Result(Args...), ExtraSize>::StaticVirtualMethodTable(typename std::enable_if<!std::is_trivially_copy_constructible<F>::value || !std::is_trivially_destructible<F>::value>::type*)
-        {
-            static const VirtualMethodTable table = { &StaticInvoke<F>, &StaticDestruct<F>, &StaticCopyConstruct<F> };
-            return &table;
+            if constexpr (std::is_trivially_copy_constructible_v<F> && std::is_trivially_destructible_v<F>)
+            {
+                static const VirtualMethodTable table = { &StaticInvoke<F>, nullptr, nullptr };
+                return &table;
+            }
+            else
+            {
+                static const VirtualMethodTable table = { &StaticInvoke<F>, &StaticDestruct<F>, &StaticCopyConstruct<F> };
+                return &table;
+            }
         }
 
         template<std::size_t ExtraSize, class Result, class... Args>
@@ -414,7 +411,7 @@ namespace infra
         struct TupleInvokeHelper
         {
             template<class InvokerFunctions, class FunctionPointer, std::size_t... I>
-            static ResultType Invoke(const InvokerFunctions& invokerFunctions, FunctionPointer invoke, const std::tuple<Args...>& args, IndexSequence<I...>)
+            static ResultType Invoke(const InvokerFunctions& invokerFunctions, FunctionPointer invoke, const std::tuple<Args...>& args, std::index_sequence<I...>)
             {
                 return invoke(invokerFunctions, std::get<I>(args)...);
             }
@@ -424,7 +421,7 @@ namespace infra
     template<std::size_t ExtraSize, class Result, class... Args>
     typename Function<Result(Args...), ExtraSize>::ResultType Function<Result(Args...), ExtraSize>::Invoke(const std::tuple<Args...>& args) const
     {
-        return detail::TupleInvokeHelper<ResultType, Args...>::Invoke(invokerFunctions, invokerFunctions.virtualMethodTable->invoke, args, MakeIndexSequence<sizeof...(Args)>{});
+        return detail::TupleInvokeHelper<ResultType, Args...>::Invoke(invokerFunctions, invokerFunctions.virtualMethodTable->invoke, args, std::make_index_sequence<sizeof...(Args)>{});
     }
 
     template<std::size_t ExtraSize, class Result, class... Args>
@@ -491,7 +488,7 @@ namespace infra
     {}
 
     template<std::size_t ExtraSize>
-    ExecuteOnDestruction::WithExtraSize<ExtraSize>::~WithExtraSize<ExtraSize>()
+    ExecuteOnDestruction::WithExtraSize<ExtraSize>::~WithExtraSize()
     {
         f();
     }

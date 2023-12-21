@@ -19,8 +19,8 @@ namespace infra
     public:
         ~AllocatorFixedSpace();
 
-        virtual UniquePtr<T> Allocate(ConstructionArgs... args) override;
-        virtual void Deallocate(void* object) override;
+        UniquePtr<T> Allocate(ConstructionArgs... args) override;
+        void Deallocate(void* object) override;
 
     private:
         struct Node

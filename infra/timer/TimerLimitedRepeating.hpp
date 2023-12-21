@@ -15,7 +15,7 @@ namespace infra
         void Start(int aHowMany, Duration duration, const infra::Function<void()>& action);
 
     protected:
-        virtual void ComputeNextTriggerTime() override;
+        void ComputeNextTriggerTime() override;
 
     private:
         TimePoint triggerStart;
