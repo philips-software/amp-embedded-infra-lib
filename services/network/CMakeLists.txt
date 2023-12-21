@@ -1,10 +1,12 @@
 add_library(services.network ${EMIL_EXCLUDE_FROM_ALL} STATIC)
+add_library(services.network.echo ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
-protocol_buffer_echo_cpp(services.network Network.proto)
-protocol_buffer_csharp(services.network Network.proto)
-protocol_buffer_java(services.network Network.proto)
+protocol_buffer_echo_cpp(services.network.echo Network.proto)
+protocol_buffer_csharp(services.network.echo Network.proto)
+protocol_buffer_java(services.network.echo Network.proto)
 
 target_link_libraries(services.network PUBLIC
+    services.network.echo
     infra.syntax
     infra.timer
     hal.synchronous_interfaces

@@ -1,14 +1,16 @@
 add_library(services.ble ${EMIL_EXCLUDE_FROM_ALL} STATIC)
+add_library(services.ble.echo ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
-protocol_buffer_echo_cpp(services.ble Gap.proto)
-protocol_buffer_csharp(services.ble Gap.proto)
-protocol_buffer_java(services.ble Gap.proto)
+protocol_buffer_echo_cpp(services.ble.echo Gap.proto)
+protocol_buffer_csharp(services.ble.echo Gap.proto)
+protocol_buffer_java(services.ble.echo Gap.proto)
 
-protocol_buffer_echo_cpp(services.ble Gatt.proto)
-protocol_buffer_csharp(services.ble Gatt.proto)
-protocol_buffer_java(services.ble Gatt.proto)
+protocol_buffer_echo_cpp(services.ble.echo Gatt.proto)
+protocol_buffer_csharp(services.ble.echo Gatt.proto)
+protocol_buffer_java(services.ble.echo Gatt.proto)
 
 target_link_libraries(services.ble PUBLIC
+    services.ble.echo
     hal.interfaces
     infra.util
 )
