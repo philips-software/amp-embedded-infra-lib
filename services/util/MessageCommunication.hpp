@@ -3,7 +3,6 @@
 
 #include "infra/stream/InputStream.hpp"
 #include "infra/stream/OutputStream.hpp"
-#include "infra/util/Function.hpp"
 #include "infra/util/Observer.hpp"
 #include "infra/util/SharedPtr.hpp"
 

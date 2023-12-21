@@ -7,7 +7,7 @@ namespace services
         const uint8_t messageDelimiter = 0;
     }
 
-    MessageCommunicationCobs::MessageCommunicationCobs(infra::BoundedVector<uint8_t>& sendStorage, infra::BoundedVector<uint8_t>& receivedMessage, hal::BufferedSerialCommunication& serial)
+    MessageCommunicationCobs::MessageCommunicationCobs(infra::BoundedVector<uint8_t>& sendStorage, infra::BoundedDeque<uint8_t>& receivedMessage, hal::BufferedSerialCommunication& serial)
         : hal::BufferedSerialCommunicationObserver(serial)
         , receivedMessage(receivedMessage)
         , sendStorage(sendStorage)
@@ -64,7 +64,7 @@ namespace services
         nextOverhead = data.front();
 
         if (nextOverhead == 0)
-            StartNewMessage(data);
+            MessageBoundary(data);
         else
         {
             data.pop_front();
@@ -84,7 +84,7 @@ namespace services
             ForwardData(preDelimiter, data);
 
         if (!postDelimiter.empty())
-            StartNewMessage(data);
+            MessageBoundary(data);
     }
 
     void MessageCommunicationCobs::ForwardData(infra::ConstByteRange contents, infra::ConstByteRange& data)
@@ -94,9 +94,9 @@ namespace services
         nextOverhead -= static_cast<uint8_t>(contents.size());
     }
 
-    void MessageCommunicationCobs::StartNewMessage(infra::ConstByteRange& data)
+    void MessageCommunicationCobs::MessageBoundary(infra::ConstByteRange& data)
     {
-        MessageBoundary();
+        FinishMessage();
         data.pop_front();
         nextOverhead = 1;
         overheadPositionIsPseudo = true;
@@ -108,7 +108,7 @@ namespace services
         currentMessageSize += data.size();
     }
 
-    void MessageCommunicationCobs::MessageBoundary()
+    void MessageCommunicationCobs::FinishMessage()
     {
         auto messageSize = currentMessageSize;
         currentMessageSize = 0;
@@ -138,20 +138,13 @@ namespace services
     {
         sendingUserData = true;
         dataToSend = infra::MakeRange(sendStorage);
-        hal::BufferedSerialCommunicationObserver::Subject().SendData(infra::MakeByteRange(messageDelimiter), [this]()
-            {
-                SendOrDone();
-            });
+        SendFirstDelimiter();
     }
 
     void MessageCommunicationCobs::SendOrDone()
     {
         if (dataToSend.empty())
-            hal::BufferedSerialCommunicationObserver::Subject().SendData(infra::MakeByteRange(messageDelimiter), [this]()
-                {
-                    sendingUserData = false;
-                    CheckReadyToSendUserData();
-                });
+            SendLastDelimiter();
         else
             SendFrame();
     }
@@ -164,10 +157,7 @@ namespace services
             {
                 --frameSize;
                 if (frameSize != 0)
-                    hal::BufferedSerialCommunicationObserver::Subject().SendData(infra::Head(dataToSend, frameSize), [this]()
-                        {
-                            SendFrameDone();
-                        });
+                    SendData(infra::Head(dataToSend, frameSize));
                 else
                     SendFrameDone();
             });
@@ -187,6 +177,31 @@ namespace services
             dataToSend.pop_front();
             SendFrame();
         }
+    }
+
+    void MessageCommunicationCobs::SendFirstDelimiter()
+    {
+        hal::BufferedSerialCommunicationObserver::Subject().SendData(infra::MakeByteRange(messageDelimiter), [this]()
+            {
+                SendOrDone();
+            });
+    }
+
+    void MessageCommunicationCobs::SendLastDelimiter()
+    {
+        hal::BufferedSerialCommunicationObserver::Subject().SendData(infra::MakeByteRange(messageDelimiter), [this]()
+            {
+                sendingUserData = false;
+                CheckReadyToSendUserData();
+            });
+    }
+
+    void MessageCommunicationCobs::SendData(infra::ConstByteRange data)
+    {
+        hal::BufferedSerialCommunicationObserver::Subject().SendData(data, [this]()
+            {
+                SendFrameDone();
+            });
     }
 
     uint8_t MessageCommunicationCobs::FindDelimiter() const
