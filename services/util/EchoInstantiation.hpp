@@ -12,7 +12,7 @@ namespace main_
     template<std::size_t MessageSize>
     struct EchoOnSerialCommunication
     {
-        explicit EchoOnSerialCommunication(hal::SerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory)
+        explicit EchoOnSerialCommunication(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory)
             : cobs(serialCommunication)
             , echo(windowed, serializerFactory)
         {}
@@ -23,7 +23,7 @@ namespace main_
         }
 
         services::MessageCommunicationCobs::WithMaxMessageSize<MessageSize> cobs;
-        services::MessageCommunicationWindowed::WithReceiveBuffer<MessageSize> windowed{ cobs };
+        services::MessageCommunicationWindowed windowed{ cobs, MessageSize };
         services::EchoOnMessageCommunication echo;
     };
 

@@ -14,73 +14,66 @@ class MessageCommunicationWindowedTest
     , public infra::EventDispatcherFixture
 {
 public:
-    infra::SharedPtr<infra::StreamWriter> EmplaceWriter(const infra::Function<void()>& onAllocatable = []() {})
+    void EmplaceWriterAndMakeAvailable(const infra::Function<void()>& onAllocatable = []() {})
     {
         sentData.emplace_back();
         writer.OnAllocatable(onAllocatable);
-        return writer.Emplace(sentData.back());
+        base.GetObserver().SendMessageStreamAvailable(writer.Emplace(sentData.back()));
     }
 
     void ReceivedMessage(const std::vector<uint8_t>& data)
     {
-        infra::StdVectorInputStreamReader::WithStorage reader(infra::inPlace, data);
-        base.GetObserver().ReceivedMessageOnInterrupt(reader);
+        infra::SharedOptional<infra::StdVectorInputStreamReader::WithStorage> reader;
+        base.GetObserver().ReceivedMessage(reader.Emplace(infra::inPlace, data));
     }
 
     void SendInitRequest(uint16_t availableWindow)
     {
         EXPECT_CALL(observer, Initialized());
         ReceivedMessage(infra::ConstructBin().Value<uint8_t>(1).Value<infra::LittleEndian<uint16_t>>(availableWindow).Vector());
-        ExecuteAllActions();
     }
 
     void SendInitResponse(uint16_t availableWindow)
     {
         EXPECT_CALL(observer, Initialized());
         ReceivedMessage(infra::ConstructBin().Value<uint8_t>(2).Value<infra::LittleEndian<uint16_t>>(availableWindow).Vector());
-        ExecuteAllActions();
     }
 
     void SendReleaseWindow(uint16_t availableWindow)
     {
         ReceivedMessage(infra::ConstructBin().Value<uint8_t>(3).Value<infra::LittleEndian<uint16_t>>(availableWindow).Vector());
-        ExecuteAllActions();
     }
 
     void FinishInitialization(uint16_t availableWindow)
     {
-        OnSentData(infra::ConstructBin().Value<uint8_t>(1).Value<infra::LittleEndian<uint16_t>>(16).Vector());
+        ExpectSentData(infra::ConstructBin().Value<uint8_t>(1).Value<infra::LittleEndian<uint16_t>>(16).Vector());
         SendInitResponse(availableWindow);
     }
 
     void ExpectSendInitResponse(uint16_t availableWindow)
     {
-        EXPECT_CALL(base, SendMessageStream(3, testing::_)).WillOnce(testing::Invoke([this, availableWindow](uint16_t size, const infra::Function<void(uint16_t size)>& onSent)
+        EXPECT_CALL(base, RequestSendMessage(3)).WillOnce(testing::Invoke([this, availableWindow](uint16_t size)
             {
-                this->onSent = onSent;
-                return EmplaceWriter();
+                EmplaceWriterAndMakeAvailable();
             }));
     }
 
-    void ExpectSendMessageStream(uint16_t size)
+    void ExpectRequestSendMessage(uint16_t size)
     {
-        EXPECT_CALL(base, SendMessageStream(size, testing::_)).WillOnce(testing::Invoke([this](uint16_t size, const infra::Function<void(uint16_t size)>& onSent)
+        EXPECT_CALL(base, RequestSendMessage(size)).WillOnce(testing::Invoke([this](uint16_t size)
             {
-                this->onSent = onSent;
-                return EmplaceWriter();
+                EmplaceWriterAndMakeAvailable();
             }));
     }
 
-    void OnSentData(const std::vector<uint8_t>& expected)
+    void ExpectSentData(const std::vector<uint8_t>& expected)
     {
-        this->onSent(static_cast<uint16_t>(expected.size() - 1));
         EXPECT_EQ(expected, sentData.front());
         sentData.pop_front();
     }
 
-    void OnSentInitResponse(uint16_t availableWindow)
+    void ExpectReceivedInitResponse(uint16_t availableWindow)
     {
-        this->onSent(3);
         EXPECT_EQ(infra::ConstructBin().Value<uint8_t>(2).Value<infra::LittleEndian<uint16_t>>(availableWindow).Vector(), sentData.front());
         sentData.pop_front();
     }
@@ -92,6 +85,11 @@ public:
                 infra::DataOutputStream::WithErrorPolicy stream(*writer);
                 stream << infra::MakeRange(data);
             }));
+    }
+
+    void ExpectSendMessageStreamAvailableAndSaveWriter()
+    {
+        EXPECT_CALL(observer, SendMessageStreamAvailable(testing::_)).WillOnce(testing::SaveArg<0>(&savedWriter));
     }
 
     void ExpectReceivedMessage(const std::vector<uint8_t>& expected)
@@ -108,28 +106,26 @@ public:
 
     void ExpectSendReleaseWindow(uint16_t releasedSize)
     {
-        EXPECT_CALL(base, SendMessageStream(3, testing::_)).WillOnce(testing::Invoke([this, releasedSize](uint16_t size, const infra::Function<void(uint16_t size)>& onSent)
+        EXPECT_CALL(base, RequestSendMessage(3)).WillOnce(testing::Invoke([this, releasedSize](uint16_t size)
             {
-                this->onSent = onSent;
-                return EmplaceWriter([this, releasedSize]()
+                EmplaceWriterAndMakeAvailable([this, releasedSize]()
                     {
-                        this->onSent(3);
                         EXPECT_EQ(infra::ConstructBin().Value<uint8_t>(3).Value<infra::LittleEndian<uint16_t>>(releasedSize).Vector(), sentData.front());
                         sentData.pop_front();
                     });
             }));
     }
 
-    testing::StrictMock<services::MessageCommunicationReceiveOnInterruptMock> base;
+    testing::StrictMock<services::MessageCommunicationMock> base;
     std::deque<std::vector<uint8_t>> sentData;
     infra::NotifyingSharedOptional<infra::StdVectorOutputStreamWriter> writer;
-    infra::AutoResetFunction<void(uint16_t size)> onSent;
     infra::Execute execute{ [this]()
         {
-            ExpectSendMessageStream(3);
+            ExpectRequestSendMessage(3);
         } };
-    services::MessageCommunicationWindowed::WithReceiveBuffer<12> communication{ base };
+    services::MessageCommunicationWindowed communication{ base, 16 };
     testing::StrictMock<services::MessageCommunicationObserverMock> observer{ communication };
+    infra::SharedPtr<infra::StreamWriter> savedWriter;
 };
 
 TEST_F(MessageCommunicationWindowedTest, construction)
@@ -143,11 +139,11 @@ TEST_F(MessageCommunicationWindowedTest, send_message_after_initialized)
 {
     FinishInitialization(6);
 
-    ExpectSendMessageStream(5);
+    ExpectRequestSendMessage(5);
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
 
     communication.RequestSendMessage(4);
-    OnSentData(infra::ConstructBin().Value<uint8_t>(4)({ 1, 2, 3, 4 }).Vector());
+    ExpectSentData(infra::ConstructBin().Value<uint8_t>(4)({ 1, 2, 3, 4 }).Vector());
 }
 
 TEST_F(MessageCommunicationWindowedTest, message_waits_until_window_is_freed)
@@ -156,53 +152,60 @@ TEST_F(MessageCommunicationWindowedTest, message_waits_until_window_is_freed)
 
     communication.RequestSendMessage(4);
 
-    ExpectSendMessageStream(5);
+    ExpectRequestSendMessage(5);
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
-    SendReleaseWindow(4);
 
-    OnSentData(infra::ConstructBin().Value<uint8_t>(4)({ 1, 2, 3, 4 }).Vector());
+    SendReleaseWindow(4);
+    ExpectSentData(infra::ConstructBin().Value<uint8_t>(4)({ 1, 2, 3, 4 }).Vector());
 }
 
 TEST_F(MessageCommunicationWindowedTest, send_message_while_initializing_waits_for_initialized)
 {
     communication.RequestSendMessage(4);
 
-    ExpectSendMessageStream(5);
+    ExpectRequestSendMessage(5);
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
 
     FinishInitialization(6);
 
-    OnSentData(infra::ConstructBin().Value<uint8_t>(4)({ 1, 2, 3, 4 }).Vector());
+    ExpectSentData(infra::ConstructBin().Value<uint8_t>(4)({ 1, 2, 3, 4 }).Vector());
 }
 
 TEST_F(MessageCommunicationWindowedTest, request_sending_new_message_while_previous_is_still_processing)
 {
     FinishInitialization(12);
 
-    ExpectSendMessageStream(5);
-    ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
+    EXPECT_CALL(base, RequestSendMessage(5));
 
     communication.RequestSendMessage(4);
 
-    communication.RequestSendMessage(2);
+    EXPECT_CALL(observer, SendMessageStreamAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamWriter>&& writer)
+    {
+        infra::DataOutputStream::WithErrorPolicy stream(*writer);
+        const std::vector<uint8_t>& data = { 1, 2, 3, 4 };
+        stream << infra::MakeRange(data);
 
-    ExpectSendMessageStream(3);
+        writer = nullptr;
+        communication.RequestSendMessage(2);
+    }));
+
+    EXPECT_CALL(base, RequestSendMessage(3));
+    EmplaceWriterAndMakeAvailable();
+
     ExpectSendMessageStreamAvailable({ 5, 6 });
+    EmplaceWriterAndMakeAvailable();
 
-    OnSentData(infra::ConstructBin().Value<uint8_t>(4)({ 1, 2, 3, 4 }).Vector());
-
-    OnSentData(infra::ConstructBin().Value<uint8_t>(4)({ 5, 6 }).Vector());
+    ExpectSentData(infra::ConstructBin().Value<uint8_t>(4)({ 1, 2, 3, 4 }).Vector());
+    ExpectSentData(infra::ConstructBin().Value<uint8_t>(4)({ 5, 6 }).Vector());
 }
 
 TEST_F(MessageCommunicationWindowedTest, receive_message_after_initialized)
 {
     FinishInitialization(6);
 
-    ReceivedMessage(infra::ConstructBin().Value<uint8_t>(4)("abcd").Vector());
-
     ExpectReceivedMessage(infra::ConstructBin()("abcd").Vector());
     ExpectSendReleaseWindow(6);
-    ExecuteAllActions();
+    ReceivedMessage(infra::ConstructBin().Value<uint8_t>(4)("abcd").Vector());
 }
 
 TEST_F(MessageCommunicationWindowedTest, received_message_before_initialized_is_discarded)
@@ -210,8 +213,6 @@ TEST_F(MessageCommunicationWindowedTest, received_message_before_initialized_is_
     ReceivedMessage(infra::ConstructBin().Value<uint8_t>(4)("abcd").Vector());
 
     FinishInitialization(6);
-
-    ExecuteAllActions();
 }
 
 TEST_F(MessageCommunicationWindowedTest, received_release_window_before_initialized_is_discarded)
@@ -219,9 +220,9 @@ TEST_F(MessageCommunicationWindowedTest, received_release_window_before_initiali
     communication.RequestSendMessage(4);
     SendReleaseWindow(6);
 
-    OnSentData(infra::ConstructBin().Value<uint8_t>(1).Value<infra::LittleEndian<uint16_t>>(16).Vector());
+    ExpectSentData(infra::ConstructBin().Value<uint8_t>(1).Value<infra::LittleEndian<uint16_t>>(16).Vector());
 
-    ExpectSendMessageStream(5);
+    ExpectRequestSendMessage(5);
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
     SendInitResponse(6);
 }
@@ -232,7 +233,7 @@ TEST_F(MessageCommunicationWindowedTest, handle_init_request_after_initializatio
 
     ExpectSendInitResponse(16);
     SendInitRequest(4);
-    OnSentInitResponse(16);
+    ExpectReceivedInitResponse(16);
 }
 
 TEST_F(MessageCommunicationWindowedTest, received_init_request_while_sending_message_finishes_message_then_sends_init_response)
@@ -240,8 +241,8 @@ TEST_F(MessageCommunicationWindowedTest, received_init_request_while_sending_mes
     // build
     FinishInitialization(12);
 
-    ExpectSendMessageStream(5);
-    ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
+    ExpectRequestSendMessage(5);
+    ExpectSendMessageStreamAvailableAndSaveWriter();
 
     communication.RequestSendMessage(4);
 
@@ -249,8 +250,16 @@ TEST_F(MessageCommunicationWindowedTest, received_init_request_while_sending_mes
     SendInitRequest(4);
 
     ExpectSendInitResponse(16);
-    OnSentData(infra::ConstructBin().Value<uint8_t>(4)({ 1, 2, 3, 4 }).Vector());
-    OnSentInitResponse(16);
+
+    {
+        std::vector<uint8_t> data{ 1, 2, 3, 4 };
+        infra::DataOutputStream::WithErrorPolicy stream(*savedWriter);
+        stream << infra::MakeRange(data);
+        savedWriter = nullptr;
+    };
+
+    ExpectSentData(infra::ConstructBin().Value<uint8_t>(4)({ 1, 2, 3, 4 }).Vector());
+    ExpectReceivedInitResponse(16);
 }
 
 TEST_F(MessageCommunicationWindowedTest, increase_window_while_sending)
@@ -258,7 +267,7 @@ TEST_F(MessageCommunicationWindowedTest, increase_window_while_sending)
     // build
     FinishInitialization(6);
 
-    ExpectSendMessageStream(5);
+    ExpectRequestSendMessage(5);
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
 
     communication.RequestSendMessage(4);
@@ -266,13 +275,13 @@ TEST_F(MessageCommunicationWindowedTest, increase_window_while_sending)
     // operate
     SendReleaseWindow(4);
 
-    OnSentData(infra::ConstructBin().Value<uint8_t>(4)({ 1, 2, 3, 4 }).Vector());
+    ExpectSentData(infra::ConstructBin().Value<uint8_t>(4)({ 1, 2, 3, 4 }).Vector());
 
     // Send a new message that uses the newly announced window
-    ExpectSendMessageStream(3);
+    ExpectRequestSendMessage(3);
     ExpectSendMessageStreamAvailable({ 5, 6 });
     communication.RequestSendMessage(2);
-    OnSentData(infra::ConstructBin().Value<uint8_t>(4)({ 5, 6 }).Vector());
+    ExpectSentData(infra::ConstructBin().Value<uint8_t>(4)({ 5, 6 }).Vector());
 }
 
 TEST_F(MessageCommunicationWindowedTest, init_response_while_sending)
@@ -280,7 +289,7 @@ TEST_F(MessageCommunicationWindowedTest, init_response_while_sending)
     // build
     FinishInitialization(6);
 
-    ExpectSendMessageStream(5);
+    ExpectRequestSendMessage(5);
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
 
     communication.RequestSendMessage(4);
@@ -288,23 +297,23 @@ TEST_F(MessageCommunicationWindowedTest, init_response_while_sending)
     // operate
     SendInitResponse(4);
 
-    OnSentData(infra::ConstructBin().Value<uint8_t>(4)({ 1, 2, 3, 4 }).Vector());
+    ExpectSentData(infra::ConstructBin().Value<uint8_t>(4)({ 1, 2, 3, 4 }).Vector());
 
     // Send a new message that uses the newly announced window
-    ExpectSendMessageStream(3);
+    ExpectRequestSendMessage(3);
     ExpectSendMessageStreamAvailable({ 5, 6 });
     communication.RequestSendMessage(2);
-    OnSentData(infra::ConstructBin().Value<uint8_t>(4)({ 5, 6 }).Vector());
+    ExpectSentData(infra::ConstructBin().Value<uint8_t>(4)({ 5, 6 }).Vector());
 }
 
 TEST_F(MessageCommunicationWindowedTest, received_init_request_while_sending_init)
 {
+    ExpectSendInitResponse(16);
     SendInitRequest(4);
 
-    ExpectSendInitResponse(16);
     FinishInitialization(12);
 
-    OnSentInitResponse(16);
+    ExpectReceivedInitResponse(16);
 }
 
 TEST_F(MessageCommunicationWindowedTest, init_response_while_sending_init_is_ignored)
@@ -324,49 +333,47 @@ TEST_F(MessageCommunicationWindowedTest, release_window_while_sending_init_is_ig
 TEST_F(MessageCommunicationWindowedTest, requesting_message_while_sending_init_response)
 {
     // build
+    ExpectSendInitResponse(16);
     SendInitRequest(4);
 
-    ExpectSendInitResponse(16);
     FinishInitialization(12);
 
     // operate
+    ExpectRequestSendMessage(5);
+    ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
     communication.RequestSendMessage(4);
 
-    ExpectSendMessageStream(5);
-    ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
-
-    OnSentInitResponse(16);
-
-    OnSentData(infra::ConstructBin().Value<uint8_t>(4)({ 1, 2, 3, 4 }).Vector());
+    ExpectReceivedInitResponse(16);
+    ExpectSentData(infra::ConstructBin().Value<uint8_t>(4)({ 1, 2, 3, 4 }).Vector());
 }
 
 TEST_F(MessageCommunicationWindowedTest, init_request_while_sending_init_response_results_in_new_init_response)
 {
     // build
+    ExpectSendInitResponse(16);
     SendInitRequest(4);
 
-    ExpectSendInitResponse(16);
     FinishInitialization(12);
 
     // operate
+    ExpectSendInitResponse(16);
     SendInitRequest(4);
 
-    ExpectSendInitResponse(16);
-    OnSentInitResponse(16);
+    ExpectReceivedInitResponse(16);
 
-    OnSentInitResponse(16);
+    ExpectReceivedInitResponse(16);
 }
 
 TEST_F(MessageCommunicationWindowedTest, release_window_while_sending_init_response_is_ignored)
 {
     // build
+    ExpectSendInitResponse(16);
     SendInitRequest(4);
 
-    ExpectSendInitResponse(16);
     FinishInitialization(12);
 
     // operate
     SendReleaseWindow(4);
 
-    OnSentInitResponse(16);
+    ExpectReceivedInitResponse(16);
 }

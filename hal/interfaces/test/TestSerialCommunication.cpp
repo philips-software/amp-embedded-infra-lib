@@ -4,18 +4,6 @@
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "gtest/gtest.h"
 
-namespace
-{
-    class BufferedSerialCommunicationObserverMock
-        : public hal::BufferedSerialCommunicationObserver
-    {
-    public:
-        using hal::BufferedSerialCommunicationObserver::BufferedSerialCommunicationObserver;
-
-        MOCK_METHOD(void, DataReceived, (), (override));
-    };
-}
-
 class BufferedSerialCommunicationOnUnbufferedTest
     : public testing::Test
     , public infra::EventDispatcherFixture
@@ -30,7 +18,7 @@ public:
         }
     };
     hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<4> buffered{ serial };
-    testing::StrictMock<BufferedSerialCommunicationObserverMock> observer{ buffered };
+    testing::StrictMock<hal::BufferedSerialCommunicationObserverMock> observer{ buffered };
     infra::ExecuteOnDestruction executeOnDestruction{
         [this]()
         {
