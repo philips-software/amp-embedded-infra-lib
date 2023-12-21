@@ -114,7 +114,7 @@ endfunction()
 function(emil_transform_file_to_range input name namespace output)
 
     add_custom_command(
-        OUTPUT "generated/${namespace}/${output}.cpp" "generated/${namespace}/${output}.hpp"
+        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/generated/${namespace}/${output}.cpp" "${CMAKE_CURRENT_BINARY_DIR}/generated/${namespace}/${output}.hpp"
         COMMAND ${CMAKE_COMMAND} -D script_dir="${CMAKE_CURRENT_FUNCTION_LIST_DIR}" -D list_dir="${CMAKE_CURRENT_LIST_DIR}" -D input="${input}" -D name=${name} -D namespace=${namespace} -D output="${output}" -P "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/transform_file_to_range.cmake"
         DEPENDS ${input} ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/transform_file_to_range.cmake
     )
