@@ -1,0 +1,187 @@
+= SESAME (SErial Secure Adaptable Message Exchange)
+:source-highlighter: highlight.js
+:highlightjs-languages: protobuf
+
+== Introduction
+
+Microcontrollers often communicate with each other using a UART connection.
+Before such a serial connection can be used by the xref:Echo.adoc[ECHO] protocol,
+a mechanism is needed to initialize communication and prevent overflowing buffers
+on the peer. Furthermore, a means to secure the communication is required.
+For these purposes the SESAME protocol stack is developed.
+
+SESAME consists of several layers, first using link:https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing[COBS] 
+to divide the stream of bytes into delimited packets,
+second a window protocol to prevent overflowing buffers,
+and third (optional) a layer that provides security.
+
+[plantuml]
+----
+@startuml
+node node [
+ECHO
+====
+Secured
+....
+Windowed
+....
+COBS
+====
+Serial Communication
+]
+@enduml
+----
+
+== SESAME layer COBS
+
+The first layer divides the stream of bytes of the serial communication
+into a number of packets. As specified by the link:https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing[COBS]
+protocol, packets are separated by 0 bytes, and any 0 bytes in the payload
+are exchanged for non-0 bytes on the serial communication layer. Please see
+the link:https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing[COBS] specification
+for details.
+
+== SESAME layer Windowed
+
+Using the Windowed layer, both sides of the communication notify and update their peer of
+available window size. A peer can only send packets up to the available window. Four
+packet types are defined:
+
+1. Init
+2. InitResponse
+3. ReleaseWindow
+4. Message
+
+=== Init
+
+Sending an Init packet initializes the protocol. An Init packet has one 16-bit unsigned parameter `size`
+which specifies the available window size, encoded in big endian order. An Init packet must be responded to with an InitResponse
+packet. Before receiving an InitResponse, a peer must assume that no window is available, so
+further packets may not be sent.
+
+.Init packet
+[bytefield]
+----
+(def boxes-per-row 3)
+(draw-column-headers)
+(draw-box 1)
+(draw-box "size" {:span 2})
+----
+
+An Init packet consumes no window, and may always be sent. This results in an edge case that an
+Init packet sent at an inconvenient moment may overflow the peer's buffer. In that case, that
+overflow must result in the peer sending an Init packet of its own. Since a sender
+has an empty buffer before sending an Init packet, that will not result in a repeated exchange of
+Init packets.
+
+=== InitResponse
+
+When an Init packet has been received, a host will clear its buffer, and advertise available buffer
+space using the InitResponse packet. Similar to the Init packet, the InitResponse packet
+has one 16-bit unsigned parameter `size` which advertises available buffer size.
+
+.InitResponse packet
+[bytefield]
+----
+(def boxes-per-row 3)
+(draw-column-headers)
+(draw-box 2)
+(draw-box "size" {:span 2})
+----
+
+An InitResponse packet consumes 5 window bytes: 3 for the packet contents, 2 for the 
+COBS layer (1 for the COBS overhead byte, one for the terminating 0).
+
+=== ReleaseWindow
+
+When a host has processed incoming packets, and therefore frees up buffer space,
+it advertises the freed up space using the ReleaseWindow packet. The ReleaseWindow packet
+has one 16-bit unsigned parameter `size` which specifies the amount of bytes in the buffer
+freed up in addition to already known free space.
+
+.ReleaseWindow packet
+[bytefield]
+----
+(def boxes-per-row 3)
+(draw-column-headers)
+(draw-box 3)
+(draw-box "size" {:span 2})
+----
+
+In order to avoid continuous exchanges of ReleaseWindow packets, hosts should only release
+window sizes bigger than 4. When determining the buffer size needed to exchange packets, the
+size of the biggest packet should be increased by 4 to accommodate for a ReleaseWindow packet.
+
+=== Message
+
+Data sent by higher protocol layers are sent by Message packets. Each Message packet consumes a window
+amount equal to the size of that packet plus the COBS overhead of that specific packet, plus
+its terminating 0.
+
+.Message packet
+[bytefield]
+----
+(def boxes-per-row 4)
+(def column-labels ["0" "1" "..." "n"])
+(draw-column-headers)
+(draw-box 4)
+(draw-box "message" {:span 3})
+----
+
+== SESAME layer Secured
+
+This protocol layer provides confidentiality and integrity by encrypting packets and appending
+a MAC (Message Authentication Code). Since SESAME is geared towards embedded systems, and is
+not intended to be as flexible as a protocol like TLS, for simplicity some very specific choices
+are made regarding cryptographic schemes.
+
+Encryption and authentication is done with AES-128 in
+link:https://en.wikipedia.org/wiki/Galois/Counter_Mode[GCM] mode. AES-128-GCM requires a 128 bit
+key and an 128 bit IV. Both directions of communication require their own unique key.
+
+Each message is encrypted with AES-128-GCM with the key and IV as parameters. This results in
+a cyphertext of size equal to the size of the message, plus a 16 byte MAC. Since in GCM IVs may
+not be reused, the IV is incremented in a specific way to avoid using the same IV twice: After
+each message, treat the IV as a 128-bit unsigned number, and add 2^64^ to it, discarding any overflow.
+This way, the protocol can securely handle 2^64^ messages each of size at most 2^64^ before a
+re-negotiation of keys is necessary.
+
+Key establishment is not a responsiblity of the Secured layer; but care must be taken that
+the same key/IV pair should not be reused for different sessions, since encrypting two messages
+using the same key/IV pair will result in the XOR of the bit pattern of those two plaintext
+messages to be equal to the XOR of the bit pattern of the two cyphertexts of those messages.
+
+There is one exception to that rule: If the first message sent consists of at least 128 bit of
+random data, then security is not compromised. The only information leaked is the XOR of two
+times 128 bits of random data, from which an attacker still learns nothing. One possible scheme
+of key establishment is therefore to hardcode the four Key and IV values for sending and receiving 
+on both hosts, and to choose random new Key/IV values right after initialization.
+
+After each initialization of the lower protocol layers (after receiving the Init packet in the
+Windowed layer), keys are reset to their default value, and key negotiation must start over
+before other messages are sent.
+
+=== ECHO on SESAME
+
+ECHO is used over SESAME by serializing ECHO messages, dividing those messages into a series
+of chunks suitable to send over SESAME (so the maximum buffer size advertised by the peer must
+be taken into account), and sending those chunks. On the receiving end, those chunks are reassembled,
+and parsed as ECHO messages. Since ECHO is able to handle a continuous stream of data, multiple
+ECHO messages being concatenated do not pose any difficulties.
+
+=== Symmetric key establishment over ECHO
+
+Specifying the exact key negotiation scheme is outside of the scope of this specification,
+since there are many different situations which require different negotiation schemes. However,
+if a key negotiation scheme is used that results in a host communicating to its peer that
+a specific Key/IV pair is to be used, then the SymmetricKeyEstablishment ECHO service can be used.
+This service has one method ActivateNewKeyMaterial with parameters Key and IV. After receiving this
+message, a sender of that message will use those Key/IV for subsequent messages towards the receiver.
+A full key negotiation will therefore result in ActivateNewKeyMaterial invocations in both directions.
+
+== Appendix: MessageCommunicationSecurity.proto
+
+[source,protobuf]
+----
+include::example$MessageCommunicationSecurity.proto[]
+----
