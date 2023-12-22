@@ -121,11 +121,11 @@ its terminating 0.
 .Message packet
 [bytefield]
 ----
-(def boxes-per-row 4)
-(def column-labels ["0" "1" "..." "n"])
+(def boxes-per-row 8)
 (draw-column-headers)
 (draw-box 4)
-(draw-box "message" {:span 3})
+(draw-gap "message")
+(draw-bottom)
 ----
 
 == SESAME layer Secured
