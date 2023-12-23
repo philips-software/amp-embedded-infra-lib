@@ -131,7 +131,7 @@ TEST_F(MessageCommunicationWindowedTest, construction)
 
 TEST_F(MessageCommunicationWindowedTest, send_message_after_initialized)
 {
-    ReceiveInitResponse(10);
+    ReceiveInitResponse(12);
 
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
@@ -146,7 +146,7 @@ TEST_F(MessageCommunicationWindowedTest, message_waits_until_window_is_freed)
 
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
-    ReceiveReleaseWindow(4);
+    ReceiveReleaseWindow(6);
 }
 
 TEST_F(MessageCommunicationWindowedTest, send_message_while_initializing_waits_for_initialized)
@@ -155,12 +155,12 @@ TEST_F(MessageCommunicationWindowedTest, send_message_while_initializing_waits_f
 
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
-    ReceiveInitResponse(10);
+    ReceiveInitResponse(12);
 }
 
 TEST_F(MessageCommunicationWindowedTest, request_sending_new_message_while_previous_is_still_processing)
 {
-    ReceiveInitResponse(16);
+    ReceiveInitResponse(20);
 
     EXPECT_CALL(base, RequestSendMessage(5));
     communication.RequestSendMessage(4);
@@ -184,7 +184,7 @@ TEST_F(MessageCommunicationWindowedTest, request_sending_new_message_while_previ
 
 TEST_F(MessageCommunicationWindowedTest, receive_message_after_initialized)
 {
-    ReceiveInitResponse(10);
+    ReceiveInitResponse(12);
 
     ExpectReceivedMessage(infra::ConstructBin()("abcd").Vector());
     ExpectRequestSendMessageForReleaseWindow(6);
@@ -199,14 +199,14 @@ TEST_F(MessageCommunicationWindowedTest, release_window_packet_waits_for_window_
     ReceiveMessage(infra::ConstructBin().Value<uint8_t>(4)("abcd").Vector());
 
     ExpectRequestSendMessageForReleaseWindow(6);
-    ReceiveReleaseWindow(4);
+    ReceiveReleaseWindow(5);
 }
 
 TEST_F(MessageCommunicationWindowedTest, received_message_before_initialized_is_discarded)
 {
     ReceiveMessage(infra::ConstructBin().Value<uint8_t>(4)("abcd").Vector());
 
-    ReceiveInitResponse(10);
+    ReceiveInitResponse(12);
 }
 
 TEST_F(MessageCommunicationWindowedTest, received_release_window_before_initialized_is_discarded)
@@ -216,7 +216,7 @@ TEST_F(MessageCommunicationWindowedTest, received_release_window_before_initiali
 
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
-    ReceiveInitResponse(10);
+    ReceiveInitResponse(12);
 }
 
 TEST_F(MessageCommunicationWindowedTest, handle_init_request_after_initialization)
@@ -225,6 +225,39 @@ TEST_F(MessageCommunicationWindowedTest, handle_init_request_after_initializatio
 
     ExpectRequestSendMessageForInitResponse(16);
     ReceiveInitRequest(8);
+}
+
+TEST_F(MessageCommunicationWindowedTest, init_response_consumes_window)
+{
+    ReceiveInitResponse(16);
+
+    ExpectRequestSendMessageForInitResponse(16);
+    ReceiveInitRequest(5 + 7 + 7);  // window for two messages and saving for releaseWindow
+
+    ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
+    ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
+    communication.RequestSendMessage(4);
+
+    communication.RequestSendMessage(4);
+
+    ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
+    ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
+    ReceiveReleaseWindow(5);    // release window consumed by initResponse
+}
+
+TEST_F(MessageCommunicationWindowedTest, release_window_consumes_window)
+{
+    ReceiveInitResponse(5); // window for one release window
+
+    ExpectReceivedMessage(infra::ConstructBin()("abcd").Vector());
+    ExpectRequestSendMessageForReleaseWindow(6);
+    ReceiveMessage(infra::ConstructBin().Value<uint8_t>(4)("abcd").Vector());
+
+    ExpectReceivedMessage(infra::ConstructBin()("abcd").Vector());
+    ReceiveMessage(infra::ConstructBin().Value<uint8_t>(4)("abcd").Vector());
+
+    ExpectRequestSendMessageForReleaseWindow(6);
+    ReceiveReleaseWindow(5); // release window consumed by release window
 }
 
 TEST_F(MessageCommunicationWindowedTest, received_init_request_while_sending_message_finishes_message_then_sends_init_response)
@@ -238,7 +271,7 @@ TEST_F(MessageCommunicationWindowedTest, received_init_request_while_sending_mes
     communication.RequestSendMessage(4);
 
     // operate
-    ReceiveInitRequest(8);
+    ReceiveInitRequest(12);
 
     ExpectRequestSendMessageForInitResponse(16);
 
@@ -253,7 +286,7 @@ TEST_F(MessageCommunicationWindowedTest, received_init_request_while_sending_mes
 TEST_F(MessageCommunicationWindowedTest, increase_window_while_sending)
 {
     // build
-    ReceiveInitResponse(10);
+    ReceiveInitResponse(12);
 
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
@@ -261,7 +294,7 @@ TEST_F(MessageCommunicationWindowedTest, increase_window_while_sending)
     communication.RequestSendMessage(4);
 
     // operate
-    ReceiveReleaseWindow(4);
+    ReceiveReleaseWindow(6);
 
     // Send a new message that uses the newly announced window
     ExpectRequestSendMessageForMessage(3, { 5, 6 });
@@ -272,7 +305,7 @@ TEST_F(MessageCommunicationWindowedTest, increase_window_while_sending)
 TEST_F(MessageCommunicationWindowedTest, init_response_while_sending)
 {
     // build
-    ReceiveInitResponse(10);
+    ReceiveInitResponse(12);
 
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
@@ -280,7 +313,7 @@ TEST_F(MessageCommunicationWindowedTest, init_response_while_sending)
     communication.RequestSendMessage(4);
 
     // operate
-    ReceiveInitResponse(8);
+    ReceiveInitResponse(10);
 
     // Send a new message that uses the newly announced window
     ExpectRequestSendMessageForMessage(3, { 5, 6 });

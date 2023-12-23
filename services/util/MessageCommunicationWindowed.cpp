@@ -91,9 +91,9 @@ namespace services
                 if (receivedMessageReader == nullptr)
                     state.Emplace<StateSendingInitResponse>(*this).Request();
             }
-            else if (requestedSendMessageSize && WindowSize(*requestedSendMessageSize) <= otherAvailableWindow - releaseWindowWindowSize)
+            else if (requestedSendMessageSize && WindowSize(*requestedSendMessageSize) <= otherAvailableWindow - releaseWindowSize)
                 state.Emplace<StateSendingMessage>(*this).Request();
-            else if (releasedWindow != 0 && releaseWindowWindowSize <= otherAvailableWindow)
+            else if (releasedWindow != 0 && releaseWindowSize <= otherAvailableWindow)
                 state.Emplace<StateSendingReleaseWindow>(*this).Request();
             else
                 state.Emplace<StateOperational>(*this);
@@ -102,7 +102,7 @@ namespace services
 
     uint16_t MessageCommunicationWindowed::WindowSize(uint16_t messageSize) const
     {
-        return messageSize + sizeof(uint16_t);
+        return messageSize + 3;
     }
 
     MessageCommunicationWindowed::PacketInit::PacketInit(uint16_t window)
@@ -175,6 +175,7 @@ namespace services
 
         communication.releasedWindow = 0;
         communication.sendInitResponse = false;
+        communication.otherAvailableWindow -= initResponseSize;
         writer = nullptr;
 
         communication.sending = false;
@@ -237,6 +238,7 @@ namespace services
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
         stream << PacketReleaseWindow(communication.releasedWindow);
         communication.releasedWindow = 0;
+        communication.otherAvailableWindow -= releaseWindowSize;
         writer = nullptr;
 
         communication.sending = false;

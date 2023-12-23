@@ -164,7 +164,8 @@ namespace services
         };
 
     private:
-        static const uint16_t releaseWindowWindowSize = 4;
+        static const uint16_t initResponseSize = 5;
+        static const uint16_t releaseWindowSize = 5;
 
         uint16_t ownWindowSize;
         bool initialized = false;
