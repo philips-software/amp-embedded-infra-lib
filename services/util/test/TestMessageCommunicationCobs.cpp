@@ -52,10 +52,12 @@ public:
             }));
     }
 
-    void RequestSendMessage(uint16_t size)
+    void RequestSendMessage(uint16_t size, uint16_t encodedSize)
     {
         EXPECT_CALL(observer, SendMessageStreamAvailable).WillOnce(testing::SaveArg<0>(&writer));
         communication.RequestSendMessage(size);
+
+        EXPECT_CALL(observer, MessageSent(encodedSize));
     }
 
     void ReceiveData(const std::vector<uint8_t>& data)
@@ -76,7 +78,7 @@ public:
 
     testing::StrictMock<hal::BufferedSerialCommunicationMock> serial;
     services::MessageCommunicationCobs::WithMaxMessageSize<280> communication{ serial };
-    testing::StrictMock<services::MessageCommunicationObserverMock> observer{ communication };
+    testing::StrictMock<services::MessageCommunicationEncodedObserverMock> observer{ communication };
     infra::Function<void()> onSent;
     infra::StdVectorInputStreamReader::WithStorage receivedDataReader;
     infra::StdVectorInputStreamReader::WithStorage emptyReader;
@@ -91,7 +93,7 @@ TEST_F(MessageCommunicationCobsTest, construction)
 
 TEST_F(MessageCommunicationCobsTest, send_data)
 {
-    RequestSendMessage(4);
+    RequestSendMessage(4, 7);
     infra::DataOutputStream::WithErrorPolicy stream(*writer);
     stream << infra::ConstructBin()({ 1, 2, 3, 4 }).Range();
 
@@ -112,7 +114,7 @@ TEST_F(MessageCommunicationCobsTest, send_data)
 
 TEST_F(MessageCommunicationCobsTest, send_data_with_0)
 {
-    RequestSendMessage(4);
+    RequestSendMessage(4, 7);
     infra::DataOutputStream::WithErrorPolicy stream(*writer);
     stream << infra::ConstructBin()({ 1, 0, 3, 4 }).Range();
 
@@ -139,7 +141,7 @@ TEST_F(MessageCommunicationCobsTest, send_data_with_0)
 
 TEST_F(MessageCommunicationCobsTest, send_data_ending_with_0)
 {
-    RequestSendMessage(3);
+    RequestSendMessage(3, 6);
     infra::DataOutputStream::WithErrorPolicy stream(*writer);
     stream << infra::ConstructBin()({ 5, 6, 0 }).Range();
 
@@ -163,7 +165,7 @@ TEST_F(MessageCommunicationCobsTest, send_data_ending_with_0)
 
 TEST_F(MessageCommunicationCobsTest, send_large_data)
 {
-    RequestSendMessage(280);
+    RequestSendMessage(280, 284);
     infra::DataOutputStream::WithErrorPolicy stream(*writer);
     stream << infra::ConstructBin()(std::vector<uint8_t>(280, 3)).Range();
 
@@ -190,7 +192,7 @@ TEST_F(MessageCommunicationCobsTest, send_large_data)
 
 TEST_F(MessageCommunicationCobsTest, send_two_packets)
 {
-    RequestSendMessage(4);
+    RequestSendMessage(4, 7);
     infra::DataOutputStream::WithErrorPolicy stream(*writer);
     stream << infra::ConstructBin()({ 1, 2, 3, 4 }).Range();
 
@@ -200,7 +202,7 @@ TEST_F(MessageCommunicationCobsTest, send_two_packets)
     ExpectSendDataAndHandle({ 0 });
     writer = nullptr;
 
-    RequestSendMessage(2);
+    RequestSendMessage(2, 4);
     infra::DataOutputStream::WithErrorPolicy stream2(*writer);
     stream2 << infra::ConstructBin()({ 5, 6 }).Range();
 

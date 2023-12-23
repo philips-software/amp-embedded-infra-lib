@@ -2,7 +2,7 @@
 
 namespace services
 {
-    TracingMessageCommunicationWindowed::TracingMessageCommunicationWindowed(MessageCommunication& delegate, uint16_t ownWindowSize, Tracer& tracer)
+    TracingMessageCommunicationWindowed::TracingMessageCommunicationWindowed(MessageCommunicationEncoded& delegate, uint16_t ownWindowSize, Tracer& tracer)
         : MessageCommunicationWindowed(delegate, ownWindowSize)
         , tracer(tracer)
     {}

@@ -12,7 +12,7 @@
 namespace services
 {
     class MessageCommunicationCobs
-        : public MessageCommunication
+        : public MessageCommunicationEncoded
         , private hal::BufferedSerialCommunicationObserver
     {
     public:
@@ -54,6 +54,7 @@ namespace services
         infra::Optional<uint16_t> sendReqestedSize;
         bool sendingFirstPacket = true;
         bool sendingUserData = false;
+        uint16_t sendSizeEncoded = 0;
         uint8_t nextOverhead = 1;
         bool overheadPositionIsPseudo = true;
         infra::BoundedDeque<uint8_t>& receivedMessage;

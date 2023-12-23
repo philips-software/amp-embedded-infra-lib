@@ -6,7 +6,6 @@
 
 namespace services
 {
-
     class MessageCommunicationMock
         : public MessageCommunication
     {
@@ -23,6 +22,26 @@ namespace services
 
         MOCK_METHOD(void, Initialized, (), (override));
         MOCK_METHOD(void, SendMessageStreamAvailable, (infra::SharedPtr<infra::StreamWriter> && writer), (override));
+        MOCK_METHOD(void, ReceivedMessage, (infra::SharedPtr<infra::StreamReaderWithRewinding> && reader), (override));
+    };
+
+    class MessageCommunicationEncodedMock
+        : public MessageCommunicationEncoded
+    {
+    public:
+        MOCK_METHOD(void, RequestSendMessage, (uint16_t size), (override));
+        MOCK_METHOD(std::size_t, MaxSendMessageSize, (), (const, override));
+    };
+
+    class MessageCommunicationEncodedObserverMock
+        : public MessageCommunicationEncodedObserver
+    {
+    public:
+        using MessageCommunicationEncodedObserver::MessageCommunicationEncodedObserver;
+
+        MOCK_METHOD(void, Initialized, (), (override));
+        MOCK_METHOD(void, SendMessageStreamAvailable, (infra::SharedPtr<infra::StreamWriter> && writer), (override));
+        MOCK_METHOD(void, MessageSent, (uint16_t encodedSize), (override));
         MOCK_METHOD(void, ReceivedMessage, (infra::SharedPtr<infra::StreamReaderWithRewinding> && reader), (override));
     };
 }

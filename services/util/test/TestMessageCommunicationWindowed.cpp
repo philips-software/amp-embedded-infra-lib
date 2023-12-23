@@ -21,6 +21,7 @@ public:
         expectedMessage = expected;
         writer.OnAllocatable([this]()
             {
+                base.GetObserver().MessageSent(sentData.front().size() + sentData.front().size() / 254 + 2);
                 EXPECT_EQ(expectedMessage, sentData.front());
                 expectedMessage.clear();
                 sentData.pop_front();
@@ -109,7 +110,7 @@ public:
             }));
     }
 
-    testing::StrictMock<services::MessageCommunicationMock> base;
+    testing::StrictMock<services::MessageCommunicationEncodedMock> base;
     std::vector<uint8_t> expectedMessage;
     std::deque<std::vector<uint8_t>> sentData;
     infra::NotifyingSharedOptional<infra::StdVectorOutputStreamWriter> writer;
@@ -147,6 +148,37 @@ TEST_F(MessageCommunicationWindowedTest, message_waits_until_window_is_freed)
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
     ReceiveReleaseWindow(6);
+}
+
+TEST_F(MessageCommunicationWindowedTest, long_message_waits_until_window_is_freed_taking_into_account_cobs_overhead)
+{
+    ReceiveInitResponse(261);
+
+    // A message of size 253 plus one byte for the operation may consist of 254 zeros, and therefore need one extra COBS overhead byte.
+    // Total window available needs therefore to be 254 + 1 (one extra COBS byte) + 2 (normal COBS byte and closing 0) + 5 (safeguard for another window release)
+    communication.RequestSendMessage(253);
+
+    ExpectRequestSendMessageForMessage(254, { 1, 2, 3, 4 });
+    ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
+    ReceiveReleaseWindow(1);
+}
+
+TEST_F(MessageCommunicationWindowedTest, exact_used_window_size_is_consumed_by_message)
+{
+    auto longMessage = infra::ConstructBin().Repeat(253 * 7, 0).Vector();
+
+    // Exactly enough for any message of size longMessage plus safeguard for a window release
+    ReceiveInitResponse(254 * 7 + 1 + 7 + 2 + 5);
+
+    // Sending longMessage, for which no extra COBS overhead bytes were necessary, results in 7 + 5 window still available
+    ExpectRequestSendMessageForMessage(longMessage.size() + 1, longMessage);
+    ExpectSendMessageStreamAvailable(longMessage);
+    communication.RequestSendMessage(longMessage.size());
+
+    // Now prove that enough window is still available by sending another message
+    ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
+    ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
+    communication.RequestSendMessage(4);
 }
 
 TEST_F(MessageCommunicationWindowedTest, send_message_while_initializing_waits_for_initialized)

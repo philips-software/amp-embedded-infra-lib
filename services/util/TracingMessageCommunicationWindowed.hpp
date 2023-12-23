@@ -10,7 +10,7 @@ namespace services
         : public MessageCommunicationWindowed
     {
     public:
-        TracingMessageCommunicationWindowed(MessageCommunication& delegate, uint16_t ownWindowSize, Tracer& tracer);
+        TracingMessageCommunicationWindowed(MessageCommunicationEncoded& delegate, uint16_t ownWindowSize, Tracer& tracer);
 
     protected:
         void ReceivedInit(uint16_t otherAvailableWindow) override;

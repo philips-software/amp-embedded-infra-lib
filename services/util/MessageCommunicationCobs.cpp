@@ -129,7 +129,7 @@ namespace services
         if (!sendingUserData && sendReqestedSize != infra::none)
         {
             sendStorage.clear();
-            MessageCommunication::GetObserver().SendMessageStreamAvailable(sendStream.Emplace(infra::inPlace, sendStorage, *sendReqestedSize));
+            MessageCommunicationEncoded::GetObserver().SendMessageStreamAvailable(sendStream.Emplace(infra::inPlace, sendStorage, *sendReqestedSize));
             sendReqestedSize = infra::none;
         }
     }
@@ -156,6 +156,7 @@ namespace services
     void MessageCommunicationCobs::SendFrame()
     {
         frameSize = FindDelimiter() + 1;
+        sendSizeEncoded += 1;
 
         hal::BufferedSerialCommunicationObserver::Subject().SendData(infra::MakeByteRange(frameSize), [this]()
             {
@@ -186,6 +187,7 @@ namespace services
     void MessageCommunicationCobs::SendFirstDelimiter()
     {
         sendingFirstPacket = false;
+        sendSizeEncoded += 1;
         hal::BufferedSerialCommunicationObserver::Subject().SendData(infra::MakeByteRange(messageDelimiter), [this]()
             {
                 SendOrDone();
@@ -194,8 +196,12 @@ namespace services
 
     void MessageCommunicationCobs::SendLastDelimiter()
     {
+        sendSizeEncoded += 1;
         hal::BufferedSerialCommunicationObserver::Subject().SendData(infra::MakeByteRange(messageDelimiter), [this]()
             {
+                MessageCommunicationEncoded::GetObserver().MessageSent(sendSizeEncoded);
+                sendSizeEncoded = 0;
+
                 sendingUserData = false;
                 CheckReadyToSendUserData();
             });
@@ -203,6 +209,7 @@ namespace services
 
     void MessageCommunicationCobs::SendData(infra::ConstByteRange data)
     {
+        sendSizeEncoded += data.size();
         hal::BufferedSerialCommunicationObserver::Subject().SendData(data, [this]()
             {
                 SendFrameDone();

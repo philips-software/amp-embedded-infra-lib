@@ -12,7 +12,7 @@ namespace services
 {
     class MessageCommunicationWindowed
         : public MessageCommunication
-        , private MessageCommunicationObserver
+        , private MessageCommunicationEncodedObserver
     {
     public:
         static constexpr uint32_t RawMessageSize(uint32_t messageSize)
@@ -20,7 +20,7 @@ namespace services
             return messageSize + sizeof(uint32_t);
         };
 
-        MessageCommunicationWindowed(MessageCommunication& delegate, uint16_t ownWindowSize);
+        MessageCommunicationWindowed(MessageCommunicationEncoded& delegate, uint16_t ownWindowSize);
 
         // Implementation of MessageCommunication
         void RequestSendMessage(uint16_t size) override;
@@ -40,15 +40,16 @@ namespace services
         {}
 
     private:
-        // Implementation of MessageCommunicationReceiveObserver
+        // Implementation of MessageCommunicationEncodedObserver
         void Initialized() override;
         void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void MessageSent(uint16_t encodedSize) override;
         void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
 
     private:
         void ForwardReceivedMessage();
         void SetNextState();
-        uint16_t WindowSize(uint16_t messageSize) const;
+        uint16_t MaxWindowSize(uint16_t messageSize) const;
 
     private:
         enum class Operation : uint8_t
@@ -92,6 +93,7 @@ namespace services
             virtual void Request();
             virtual void RequestSendMessage(uint16_t size);
             virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer);
+            virtual void MessageSent(uint16_t encodedSize);
 
         protected:
             MessageCommunicationWindowed& communication;
@@ -137,12 +139,14 @@ namespace services
 
             void Request() override;
             void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+            void MessageSent(uint16_t encodedSize) override;
 
         private:
             void OnSent();
 
         private:
             uint16_t requestedSize;
+            uint16_t actualEncodedSize;
             infra::SharedPtr<infra::StreamWriter> messageWriter;
             infra::AccessedBySharedPtr writerAccess{ [this]()
                 {

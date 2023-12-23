@@ -3,8 +3,8 @@
 
 namespace services
 {
-    MessageCommunicationWindowed::MessageCommunicationWindowed(MessageCommunication& delegate, uint16_t ownWindowSize)
-        : MessageCommunicationObserver(delegate)
+    MessageCommunicationWindowed::MessageCommunicationWindowed(MessageCommunicationEncoded& delegate, uint16_t ownWindowSize)
+        : MessageCommunicationEncodedObserver(delegate)
         , ownWindowSize(ownWindowSize)
         , state(infra::InPlaceType<StateSendingInit>(), *this)
     {
@@ -18,7 +18,7 @@ namespace services
 
     std::size_t MessageCommunicationWindowed::MaxSendMessageSize() const
     {
-        return MessageCommunicationObserver::Subject().MaxSendMessageSize() - sizeof(Operation);
+        return MessageCommunicationEncodedObserver::Subject().MaxSendMessageSize() - sizeof(Operation);
     }
 
     void MessageCommunicationWindowed::Initialized()
@@ -29,6 +29,11 @@ namespace services
     void MessageCommunicationWindowed::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         state->SendMessageStreamAvailable(std::move(writer));
+    }
+
+    void MessageCommunicationWindowed::MessageSent(uint16_t encodedSize)
+    {
+        state->MessageSent(encodedSize);
     }
 
     void MessageCommunicationWindowed::ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
@@ -91,7 +96,7 @@ namespace services
                 if (receivedMessageReader == nullptr)
                     state.Emplace<StateSendingInitResponse>(*this).Request();
             }
-            else if (requestedSendMessageSize && WindowSize(*requestedSendMessageSize) <= otherAvailableWindow - releaseWindowSize)
+            else if (requestedSendMessageSize && MaxWindowSize(*requestedSendMessageSize) <= otherAvailableWindow - releaseWindowSize)
                 state.Emplace<StateSendingMessage>(*this).Request();
             else if (releasedWindow != 0 && releaseWindowSize <= otherAvailableWindow)
                 state.Emplace<StateSendingReleaseWindow>(*this).Request();
@@ -100,9 +105,9 @@ namespace services
         }
     }
 
-    uint16_t MessageCommunicationWindowed::WindowSize(uint16_t messageSize) const
+    uint16_t MessageCommunicationWindowed::MaxWindowSize(uint16_t messageSize) const
     {
-        return messageSize + 3;
+        return messageSize + 1 + (messageSize + 1) / 254 + 2;
     }
 
     MessageCommunicationWindowed::PacketInit::PacketInit(uint16_t window)
@@ -136,6 +141,9 @@ namespace services
         std::abort();
     }
 
+    void MessageCommunicationWindowed::State::MessageSent(uint16_t encodedSize)
+    {}
+
     MessageCommunicationWindowed::StateSendingInit::StateSendingInit(MessageCommunicationWindowed& communication)
         : State(communication)
     {
@@ -144,7 +152,7 @@ namespace services
 
     void MessageCommunicationWindowed::StateSendingInit::Request()
     {
-        communication.MessageCommunicationObserver::Subject().RequestSendMessage(3);
+        communication.MessageCommunicationEncodedObserver::Subject().RequestSendMessage(3);
     }
 
     void MessageCommunicationWindowed::StateSendingInit::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -165,7 +173,7 @@ namespace services
 
     void MessageCommunicationWindowed::StateSendingInitResponse::Request()
     {
-        communication.MessageCommunicationObserver::Subject().RequestSendMessage(3);
+        communication.MessageCommunicationEncodedObserver::Subject().RequestSendMessage(3);
     }
 
     void MessageCommunicationWindowed::StateSendingInitResponse::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -201,7 +209,7 @@ namespace services
 
     void MessageCommunicationWindowed::StateSendingMessage::Request()
     {
-        communication.MessageCommunicationObserver::Subject().RequestSendMessage(requestedSize);
+        communication.MessageCommunicationEncodedObserver::Subject().RequestSendMessage(requestedSize);
     }
 
     void MessageCommunicationWindowed::StateSendingMessage::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -214,10 +222,15 @@ namespace services
         communication.GetObserver().SendMessageStreamAvailable(writerAccess.MakeShared(*messageWriter));
     }
 
+    void MessageCommunicationWindowed::StateSendingMessage::MessageSent(uint16_t encodedSize)
+    {
+        actualEncodedSize = encodedSize;
+    }
+
     void MessageCommunicationWindowed::StateSendingMessage::OnSent()
     {
         messageWriter = nullptr;
-        communication.otherAvailableWindow -= communication.WindowSize(requestedSize - 1);
+        communication.otherAvailableWindow -= actualEncodedSize;
         communication.sending = false;
         communication.SetNextState();
     }
@@ -230,7 +243,7 @@ namespace services
 
     void MessageCommunicationWindowed::StateSendingReleaseWindow::Request()
     {
-        communication.MessageCommunicationObserver::Subject().RequestSendMessage(3);
+        communication.MessageCommunicationEncodedObserver::Subject().RequestSendMessage(3);
     }
 
     void MessageCommunicationWindowed::StateSendingReleaseWindow::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
