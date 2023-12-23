@@ -138,7 +138,11 @@ namespace services
     {
         sendingUserData = true;
         dataToSend = infra::MakeRange(sendStorage);
-        SendFirstDelimiter();
+
+        if (sendingFirstPacket)
+            SendFirstDelimiter();
+        else
+            SendOrDone();
     }
 
     void MessageCommunicationCobs::SendOrDone()
@@ -181,6 +185,7 @@ namespace services
 
     void MessageCommunicationCobs::SendFirstDelimiter()
     {
+        sendingFirstPacket = false;
         hal::BufferedSerialCommunicationObserver::Subject().SendData(infra::MakeByteRange(messageDelimiter), [this]()
             {
                 SendOrDone();

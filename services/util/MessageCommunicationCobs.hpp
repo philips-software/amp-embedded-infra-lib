@@ -52,6 +52,7 @@ namespace services
 
     private:
         infra::Optional<uint16_t> sendReqestedSize;
+        bool sendingFirstPacket = true;
         bool sendingUserData = false;
         uint8_t nextOverhead = 1;
         bool overheadPositionIsPseudo = true;

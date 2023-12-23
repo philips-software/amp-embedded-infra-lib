@@ -17,11 +17,12 @@ class MessageCommunicationCobsTest
 public:
     void ExpectSendData(const std::vector<uint8_t>& v)
     {
-        EXPECT_CALL(serial, SendData(testing::_, testing::_)).WillOnce(testing::Invoke([this, v](infra::ConstByteRange data, infra::Function<void()> onDone)
-            {
-                EXPECT_EQ(v, data);
-                onSent = onDone;
-            }));
+        EXPECT_CALL(serial, SendData(infra::ContentsEqual(v), testing::_)).WillOnce(testing::SaveArg<1>(&onSent));
+    }
+
+    void ExpectSendDataAndHandle(const std::vector<uint8_t>& v)
+    {
+        EXPECT_CALL(serial, SendData(infra::ContentsEqual(v), testing::_)).WillOnce(testing::InvokeArgument<1>()).RetiresOnSaturation();
     }
 
     void ExpectReceivedMessage(const std::vector<uint8_t>& expected)
@@ -185,6 +186,28 @@ TEST_F(MessageCommunicationCobsTest, send_large_data)
     onSent();
 
     onSent();
+}
+
+TEST_F(MessageCommunicationCobsTest, send_two_packets)
+{
+    RequestSendMessage(4);
+    infra::DataOutputStream::WithErrorPolicy stream(*writer);
+    stream << infra::ConstructBin()({ 1, 2, 3, 4 }).Range();
+
+    ExpectSendDataAndHandle({ 0 });
+    ExpectSendDataAndHandle({ 5 });
+    ExpectSendDataAndHandle({ 1, 2, 3, 4 });
+    ExpectSendDataAndHandle({ 0 });
+    writer = nullptr;
+
+    RequestSendMessage(2);
+    infra::DataOutputStream::WithErrorPolicy stream2(*writer);
+    stream2 << infra::ConstructBin()({ 5, 6 }).Range();
+
+    ExpectSendDataAndHandle({ 3 });
+    ExpectSendDataAndHandle({ 5, 6 });
+    ExpectSendDataAndHandle({ 0 });
+    writer = nullptr;
 }
 
 TEST_F(MessageCommunicationCobsTest, receive_data)
