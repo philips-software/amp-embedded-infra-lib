@@ -20,11 +20,11 @@ public:
         assert(expectedMessage.empty());
         expectedMessage = expected;
         writer.OnAllocatable([this]()
-        {
-            EXPECT_EQ(expectedMessage, sentData.front());
-            expectedMessage.clear();
-            sentData.pop_front();
-        });
+            {
+                EXPECT_EQ(expectedMessage, sentData.front());
+                expectedMessage.clear();
+                sentData.pop_front();
+            });
         base.GetObserver().SendMessageStreamAvailable(writer.Emplace(sentData.back()));
     }
 
