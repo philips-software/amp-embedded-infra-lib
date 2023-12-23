@@ -164,6 +164,8 @@ namespace services
         };
 
     private:
+        static const uint16_t releaseWindowWindowSize = 4;
+
         uint16_t ownWindowSize;
         bool initialized = false;
         infra::SharedPtr<infra::StreamReaderWithRewinding> receivedMessageReader;

@@ -91,9 +91,9 @@ namespace services
                 if (receivedMessageReader == nullptr)
                     state.Emplace<StateSendingInitResponse>(*this).Request();
             }
-            else if (requestedSendMessageSize && WindowSize(*requestedSendMessageSize) <= otherAvailableWindow)
+            else if (requestedSendMessageSize && WindowSize(*requestedSendMessageSize) <= otherAvailableWindow - releaseWindowWindowSize)
                 state.Emplace<StateSendingMessage>(*this).Request();
-            else if (releasedWindow != 0)
+            else if (releasedWindow != 0 && releaseWindowWindowSize <= otherAvailableWindow)
                 state.Emplace<StateSendingReleaseWindow>(*this).Request();
             else
                 state.Emplace<StateOperational>(*this);
