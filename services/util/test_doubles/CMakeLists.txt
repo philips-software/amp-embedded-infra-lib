@@ -8,7 +8,7 @@ target_link_libraries(services.util_test_doubles INTERFACE
 
 target_sources(services.util_test_doubles PRIVATE
     ConfigurationStoreMock.hpp
-    MessageCommunicationMock.hpp
+    SesameMock.hpp
     StoppableMock.hpp
     WritableConfigurationMock.hpp
 )

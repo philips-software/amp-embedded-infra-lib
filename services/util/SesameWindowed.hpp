@@ -6,13 +6,13 @@
 #include "infra/util/Endian.hpp"
 #include "infra/util/PolymorphicVariant.hpp"
 #include "infra/util/SharedOptional.hpp"
-#include "services/util/MessageCommunication.hpp"
+#include "services/util/Sesame.hpp"
 
 namespace services
 {
-    class MessageCommunicationWindowed
-        : public MessageCommunication
-        , private MessageCommunicationEncodedObserver
+    class SesameWindowed
+        : public Sesame
+        , private SesameEncodedObserver
     {
     public:
         static constexpr uint32_t RawMessageSize(uint32_t messageSize)
@@ -20,9 +20,9 @@ namespace services
             return messageSize + sizeof(uint32_t);
         };
 
-        MessageCommunicationWindowed(MessageCommunicationEncoded& delegate, uint16_t ownWindowSize);
+        SesameWindowed(SesameEncoded& delegate, uint16_t ownWindowSize);
 
-        // Implementation of MessageCommunication
+        // Implementation of Sesame
         void RequestSendMessage(std::size_t size) override;
         std::size_t MaxSendMessageSize() const override;
 
@@ -40,7 +40,7 @@ namespace services
         {}
 
     private:
-        // Implementation of MessageCommunicationEncodedObserver
+        // Implementation of SesameEncodedObserver
         void Initialized() override;
         void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         void MessageSent(std::size_t encodedSize) override;
@@ -86,7 +86,7 @@ namespace services
         class State
         {
         public:
-            explicit State(MessageCommunicationWindowed& communication);
+            explicit State(SesameWindowed& communication);
             virtual ~State() = default;
 
             virtual void Request();
@@ -95,14 +95,14 @@ namespace services
             virtual void MessageSent(std::size_t encodedSize);
 
         protected:
-            MessageCommunicationWindowed& communication;
+            SesameWindowed& communication;
         };
 
         class StateSendingInit
             : public State
         {
         public:
-            explicit StateSendingInit(MessageCommunicationWindowed& communication);
+            explicit StateSendingInit(SesameWindowed& communication);
 
             void Request() override;
             void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
@@ -113,7 +113,7 @@ namespace services
             : public State
         {
         public:
-            explicit StateSendingInitResponse(MessageCommunicationWindowed& communication);
+            explicit StateSendingInitResponse(SesameWindowed& communication);
 
             void Request() override;
             void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
@@ -126,7 +126,7 @@ namespace services
             : public State
         {
         public:
-            explicit StateOperational(MessageCommunicationWindowed& communication);
+            explicit StateOperational(SesameWindowed& communication);
 
             void RequestSendMessage(std::size_t size) override;
         };
@@ -135,7 +135,7 @@ namespace services
             : public State
         {
         public:
-            explicit StateSendingMessage(MessageCommunicationWindowed& communication);
+            explicit StateSendingMessage(SesameWindowed& communication);
 
             void Request() override;
             void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
@@ -156,7 +156,7 @@ namespace services
             : public State
         {
         public:
-            explicit StateSendingReleaseWindow(MessageCommunicationWindowed& communication);
+            explicit StateSendingReleaseWindow(SesameWindowed& communication);
 
             void Request() override;
             void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;

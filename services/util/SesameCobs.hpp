@@ -7,23 +7,23 @@
 #include "infra/stream/LimitedInputStream.hpp"
 #include "infra/stream/LimitedOutputStream.hpp"
 #include "infra/util/SharedOptional.hpp"
-#include "services/util/MessageCommunication.hpp"
+#include "services/util/Sesame.hpp"
 
 namespace services
 {
-    class MessageCommunicationCobs
-        : public MessageCommunicationEncoded
+    class SesameCobs
+        : public SesameEncoded
         , private hal::BufferedSerialCommunicationObserver
     {
     public:
         template<std::size_t MaxMessageSize>
-        using WithMaxMessageSize = infra::WithStorage<infra::WithStorage<MessageCommunicationCobs,
+        using WithMaxMessageSize = infra::WithStorage<infra::WithStorage<SesameCobs,
                                                           infra::BoundedVector<uint8_t>::WithMaxSize<MaxMessageSize>>,
             infra::BoundedDeque<uint8_t>::WithMaxSize<MaxMessageSize + MaxMessageSize / 254 + 2>>;
 
-        MessageCommunicationCobs(infra::BoundedVector<uint8_t>& sendStorage, infra::BoundedDeque<uint8_t>& receivedMessage, hal::BufferedSerialCommunication& serial);
+        SesameCobs(infra::BoundedVector<uint8_t>& sendStorage, infra::BoundedDeque<uint8_t>& receivedMessage, hal::BufferedSerialCommunication& serial);
 
-        // Implementation of MessageCommunication
+        // Implementation of Sesame
         void RequestSendMessage(std::size_t size) override;
         std::size_t MaxSendMessageSize() const override;
         virtual std::size_t MessageSize(std::size_t size) const override;

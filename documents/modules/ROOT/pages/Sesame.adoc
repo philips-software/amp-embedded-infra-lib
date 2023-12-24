@@ -179,9 +179,9 @@ This service has one method ActivateNewKeyMaterial with parameters Key and IV. A
 message, a sender of that message will use those Key/IV for subsequent messages towards the receiver.
 A full key negotiation will therefore result in ActivateNewKeyMaterial invocations in both directions.
 
-== Appendix: MessageCommunicationSecurity.proto
+== Appendix: SesameSecurity.proto
 
 [source,protobuf]
 ----
-include::example$MessageCommunicationSecurity.proto[]
+include::SesameSecurity.proto[]
 ----

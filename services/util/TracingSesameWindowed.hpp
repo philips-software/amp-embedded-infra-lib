@@ -2,15 +2,15 @@
 #define SERVICES_TRACING_MESSAGE_COMMUNICATION_WINDOWED_HPP
 
 #include "services/tracer/Tracer.hpp"
-#include "services/util/MessageCommunicationWindowed.hpp"
+#include "services/util/SesameWindowed.hpp"
 
 namespace services
 {
-    class TracingMessageCommunicationWindowed
-        : public MessageCommunicationWindowed
+    class TracingSesameWindowed
+        : public SesameWindowed
     {
     public:
-        TracingMessageCommunicationWindowed(MessageCommunicationEncoded& delegate, uint16_t ownWindowSize, Tracer& tracer);
+        TracingSesameWindowed(SesameEncoded& delegate, uint16_t ownWindowSize, Tracer& tracer);
 
     protected:
         void ReceivedInit(uint16_t otherAvailableWindow) override;

@@ -23,8 +23,8 @@ target_sources(services.util_test PRIVATE
     TestCyclicStore.cpp
     TestDebouncedButton.cpp
     TestDebugLed.cpp
-    TestEchoOnMessageCommunication.cpp
-    TestEchoOnMessageCommunicationSymmetricKey.cpp
+    TestEchoOnSesame.cpp
+    TestEchoOnSesameSymmetricKey.cpp
     TestFlashAlign.cpp
     TestFlashMultipleAccess.cpp
     TestFlashQuadSpiCypressFll.cpp
@@ -36,11 +36,11 @@ target_sources(services.util_test PRIVATE
     TestInverseLogicPin.cpp
     TestLowPowerSerialCommunication.cpp
     TestLowPowerSpiMaster.cpp
-    TestMessageCommunicationCobs.cpp
-    TestMessageCommunicationSecured.cpp
-    TestMessageCommunicationWindowed.cpp
     TestRepeatingButton.cpp
     TestSerialCommunicationLoopback.cpp
+    TestSesameCobs.cpp
+    TestSesameSecured.cpp
+    TestSesameWindowed.cpp
     TestSignalLed.cpp
     TestSpiMasterWithChipSelect.cpp
     TestSpiMultipleAccess.cpp

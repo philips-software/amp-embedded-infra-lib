@@ -1,4 +1,4 @@
-#include "services/util/MessageCommunicationCobs.hpp"
+#include "services/util/SesameCobs.hpp"
 
 namespace services
 {
@@ -7,7 +7,7 @@ namespace services
         const uint8_t messageDelimiter = 0;
     }
 
-    MessageCommunicationCobs::MessageCommunicationCobs(infra::BoundedVector<uint8_t>& sendStorage, infra::BoundedDeque<uint8_t>& receivedMessage, hal::BufferedSerialCommunication& serial)
+    SesameCobs::SesameCobs(infra::BoundedVector<uint8_t>& sendStorage, infra::BoundedDeque<uint8_t>& receivedMessage, hal::BufferedSerialCommunication& serial)
         : hal::BufferedSerialCommunicationObserver(serial)
         , receivedMessage(receivedMessage)
         , sendStorage(sendStorage)
@@ -17,7 +17,7 @@ namespace services
               })
     {}
 
-    void MessageCommunicationCobs::RequestSendMessage(std::size_t size)
+    void SesameCobs::RequestSendMessage(std::size_t size)
     {
         assert(sendReqestedSize == infra::none);
         sendReqestedSize = size;
@@ -25,17 +25,17 @@ namespace services
         CheckReadyToSendUserData();
     }
 
-    std::size_t MessageCommunicationCobs::MaxSendMessageSize() const
+    std::size_t SesameCobs::MaxSendMessageSize() const
     {
         return sendStorage.max_size() - 2 - (sendStorage.max_size() - 2) / 255;
     }
 
-    std::size_t MessageCommunicationCobs::MessageSize(std::size_t size) const
+    std::size_t SesameCobs::MessageSize(std::size_t size) const
     {
         return size + size / 254 + 2;
     }
 
-    void MessageCommunicationCobs::DataReceived()
+    void SesameCobs::DataReceived()
     {
         while (receivedDataReader.Allocatable())
         {
@@ -49,7 +49,7 @@ namespace services
         }
     }
 
-    void MessageCommunicationCobs::ReceivedData(infra::ConstByteRange& data)
+    void SesameCobs::ReceivedData(infra::ConstByteRange& data)
     {
         while (!data.empty())
         {
@@ -64,7 +64,7 @@ namespace services
         }
     }
 
-    void MessageCommunicationCobs::ExtractOverhead(infra::ConstByteRange& data)
+    void SesameCobs::ExtractOverhead(infra::ConstByteRange& data)
     {
         nextOverhead = data.front();
 
@@ -79,7 +79,7 @@ namespace services
         }
     }
 
-    void MessageCommunicationCobs::ExtractData(infra::ConstByteRange& data)
+    void SesameCobs::ExtractData(infra::ConstByteRange& data)
     {
         infra::ConstByteRange preDelimiter;
         infra::ConstByteRange postDelimiter;
@@ -92,14 +92,14 @@ namespace services
             MessageBoundary(data);
     }
 
-    void MessageCommunicationCobs::ForwardData(infra::ConstByteRange contents, infra::ConstByteRange& data)
+    void SesameCobs::ForwardData(infra::ConstByteRange contents, infra::ConstByteRange& data)
     {
         ReceivedPayload(contents);
         data.pop_front(contents.size());
         nextOverhead -= static_cast<uint8_t>(contents.size());
     }
 
-    void MessageCommunicationCobs::MessageBoundary(infra::ConstByteRange& data)
+    void SesameCobs::MessageBoundary(infra::ConstByteRange& data)
     {
         FinishMessage();
         data.pop_front();
@@ -107,13 +107,13 @@ namespace services
         overheadPositionIsPseudo = true;
     }
 
-    void MessageCommunicationCobs::ReceivedPayload(infra::ConstByteRange data)
+    void SesameCobs::ReceivedPayload(infra::ConstByteRange data)
     {
         receivedMessage.insert(receivedMessage.end(), data.begin(), data.end());
         currentMessageSize += data.size();
     }
 
-    void MessageCommunicationCobs::FinishMessage()
+    void SesameCobs::FinishMessage()
     {
         auto messageSize = currentMessageSize;
         currentMessageSize = 0;
@@ -129,17 +129,17 @@ namespace services
         }
     }
 
-    void MessageCommunicationCobs::CheckReadyToSendUserData()
+    void SesameCobs::CheckReadyToSendUserData()
     {
         if (!sendingUserData && sendReqestedSize != infra::none)
         {
             sendStorage.clear();
-            MessageCommunicationEncoded::GetObserver().SendMessageStreamAvailable(sendStream.Emplace(infra::inPlace, sendStorage, *sendReqestedSize));
+            SesameEncoded::GetObserver().SendMessageStreamAvailable(sendStream.Emplace(infra::inPlace, sendStorage, *sendReqestedSize));
             sendReqestedSize = infra::none;
         }
     }
 
-    void MessageCommunicationCobs::SendStreamFilled()
+    void SesameCobs::SendStreamFilled()
     {
         sendingUserData = true;
         dataToSend = infra::MakeRange(sendStorage);
@@ -150,7 +150,7 @@ namespace services
             SendOrDone();
     }
 
-    void MessageCommunicationCobs::SendOrDone()
+    void SesameCobs::SendOrDone()
     {
         if (dataToSend.empty())
             SendLastDelimiter();
@@ -158,7 +158,7 @@ namespace services
             SendFrame();
     }
 
-    void MessageCommunicationCobs::SendFrame()
+    void SesameCobs::SendFrame()
     {
         frameSize = FindDelimiter() + 1;
         sendSizeEncoded += 1;
@@ -173,7 +173,7 @@ namespace services
             });
     }
 
-    void MessageCommunicationCobs::SendFrameDone()
+    void SesameCobs::SendFrameDone()
     {
         if (frameSize == 254)
             dataToSend = infra::DiscardHead(dataToSend, 254);
@@ -189,7 +189,7 @@ namespace services
         }
     }
 
-    void MessageCommunicationCobs::SendFirstDelimiter()
+    void SesameCobs::SendFirstDelimiter()
     {
         sendingFirstPacket = false;
         sendSizeEncoded += 1;
@@ -199,12 +199,12 @@ namespace services
             });
     }
 
-    void MessageCommunicationCobs::SendLastDelimiter()
+    void SesameCobs::SendLastDelimiter()
     {
         sendSizeEncoded += 1;
         hal::BufferedSerialCommunicationObserver::Subject().SendData(infra::MakeByteRange(messageDelimiter), [this]()
             {
-                MessageCommunicationEncoded::GetObserver().MessageSent(sendSizeEncoded);
+                SesameEncoded::GetObserver().MessageSent(sendSizeEncoded);
                 sendSizeEncoded = 0;
 
                 sendingUserData = false;
@@ -212,7 +212,7 @@ namespace services
             });
     }
 
-    void MessageCommunicationCobs::SendData(infra::ConstByteRange data)
+    void SesameCobs::SendData(infra::ConstByteRange data)
     {
         sendSizeEncoded += data.size();
         hal::BufferedSerialCommunicationObserver::Subject().SendData(data, [this]()
@@ -221,7 +221,7 @@ namespace services
             });
     }
 
-    uint8_t MessageCommunicationCobs::FindDelimiter() const
+    uint8_t SesameCobs::FindDelimiter() const
     {
         auto data = infra::Head(dataToSend, 254);
         return static_cast<uint8_t>(std::find(data.begin(), data.end(), messageDelimiter) - data.begin());

@@ -1,6 +1,6 @@
 add_library(services.util ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
-protocol_buffer_echo_cpp(services.util MessageCommunicationSecurity.proto)
+protocol_buffer_echo_cpp(services.util SesameSecurity.proto)
 
 target_link_libraries(services.util PUBLIC
     hal.interfaces
@@ -21,10 +21,10 @@ target_sources(services.util PRIVATE
     DebugLed.hpp
     EchoInstantiation.cpp
     EchoInstantiation.hpp
-    EchoOnMessageCommunication.cpp
-    EchoOnMessageCommunication.hpp
-    EchoOnMessageCommunicationSymmetricKey.cpp
-    EchoOnMessageCommunicationSymmetricKey.hpp
+    EchoOnSesame.cpp
+    EchoOnSesame.hpp
+    EchoOnSesameSymmetricKey.cpp
+    EchoOnSesameSymmetricKey.hpp
     FlashAlign.cpp
     FlashAlign.hpp
     FlashMultipleAccess.cpp
@@ -49,17 +49,17 @@ target_sources(services.util PRIVATE
     LowPowerSerialCommunication.hpp
     LowPowerSpiMaster.cpp
     LowPowerSpiMaster.hpp
-    MessageCommunication.hpp
-    MessageCommunicationCobs.cpp
-    MessageCommunicationCobs.hpp
-    MessageCommunicationSecured.cpp
-    MessageCommunicationSecured.hpp
-    MessageCommunicationWindowed.cpp
-    MessageCommunicationWindowed.hpp
     RepeatingButton.cpp
     RepeatingButton.hpp
     SerialCommunicationLoopback.cpp
     SerialCommunicationLoopback.hpp
+    Sesame.hpp
+    SesameCobs.cpp
+    SesameCobs.hpp
+    SesameSecured.cpp
+    SesameSecured.hpp
+    SesameWindowed.cpp
+    SesameWindowed.hpp
     Sha256.hpp
     SignalLed.cpp
     SignalLed.hpp
@@ -72,8 +72,8 @@ target_sources(services.util PRIVATE
     Terminal.hpp
     TimeWithLocalization.cpp
     TimeWithLocalization.hpp
-    TracingMessageCommunicationWindowed.cpp
-    TracingMessageCommunicationWindowed.hpp
+    TracingSesameWindowed.cpp
+    TracingSesameWindowed.hpp
     WritableConfiguration.hpp
 )
 

@@ -4,17 +4,17 @@
 #include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/ConstructBin.hpp"
 #include "infra/util/Endian.hpp"
-#include "services/util/MessageCommunicationWindowed.hpp"
-#include "services/util/test_doubles/MessageCommunicationMock.hpp"
+#include "services/util/SesameWindowed.hpp"
+#include "services/util/test_doubles/SesameMock.hpp"
 #include "gmock/gmock.h"
 #include <deque>
 
-class MessageCommunicationWindowedTest
+class SesameWindowedTest
     : public testing::Test
     , public infra::EventDispatcherFixture
 {
 public:
-    MessageCommunicationWindowedTest()
+    SesameWindowedTest()
     {
         EXPECT_CALL(base, MessageSize(testing::_)).WillRepeatedly(testing::Invoke([](std::size_t size)
             {
@@ -119,7 +119,7 @@ public:
             }));
     }
 
-    testing::StrictMock<services::MessageCommunicationEncodedMock> base;
+    testing::StrictMock<services::SesameEncodedMock> base;
     std::vector<uint8_t> expectedMessage;
     std::vector<uint8_t> sentData;
     infra::NotifyingSharedOptional<infra::StdVectorOutputStreamWriter> writer;
@@ -128,19 +128,19 @@ public:
             EXPECT_CALL(base, MessageSize(3)).WillOnce(testing::Return(5));
             ExpectRequestSendMessageForInit(16);
         } };
-    services::MessageCommunicationWindowed communication{ base, 16 };
-    testing::StrictMock<services::MessageCommunicationObserverMock> observer{ communication };
+    services::SesameWindowed communication{ base, 16 };
+    testing::StrictMock<services::SesameObserverMock> observer{ communication };
     infra::SharedPtr<infra::StreamWriter> savedWriter;
 };
 
-TEST_F(MessageCommunicationWindowedTest, MaxSendMessageSize)
+TEST_F(SesameWindowedTest, MaxSendMessageSize)
 {
     ReceiveInitResponse(8);
     EXPECT_CALL(base, MaxSendMessageSize()).WillOnce(testing::Return(16));
     EXPECT_EQ(10, communication.MaxSendMessageSize());
 }
 
-TEST_F(MessageCommunicationWindowedTest, send_message_after_initialized)
+TEST_F(SesameWindowedTest, send_message_after_initialized)
 {
     ReceiveInitResponse(12);
 
@@ -149,7 +149,7 @@ TEST_F(MessageCommunicationWindowedTest, send_message_after_initialized)
     communication.RequestSendMessage(4);
 }
 
-TEST_F(MessageCommunicationWindowedTest, message_waits_until_window_is_freed)
+TEST_F(SesameWindowedTest, message_waits_until_window_is_freed)
 {
     ReceiveInitResponse(6);
 
@@ -160,7 +160,7 @@ TEST_F(MessageCommunicationWindowedTest, message_waits_until_window_is_freed)
     ReceiveReleaseWindow(6);
 }
 
-TEST_F(MessageCommunicationWindowedTest, long_message_waits_until_window_is_freed_taking_into_account_cobs_overhead)
+TEST_F(SesameWindowedTest, long_message_waits_until_window_is_freed_taking_into_account_cobs_overhead)
 {
     ReceiveInitResponse(261);
 
@@ -173,7 +173,7 @@ TEST_F(MessageCommunicationWindowedTest, long_message_waits_until_window_is_free
     ReceiveReleaseWindow(1);
 }
 
-TEST_F(MessageCommunicationWindowedTest, exact_used_window_size_is_consumed_by_message)
+TEST_F(SesameWindowedTest, exact_used_window_size_is_consumed_by_message)
 {
     auto longMessage = infra::ConstructBin().Repeat(253 * 7, 0).Vector();
 
@@ -191,7 +191,7 @@ TEST_F(MessageCommunicationWindowedTest, exact_used_window_size_is_consumed_by_m
     communication.RequestSendMessage(4);
 }
 
-TEST_F(MessageCommunicationWindowedTest, send_message_while_initializing_waits_for_initialized)
+TEST_F(SesameWindowedTest, send_message_while_initializing_waits_for_initialized)
 {
     communication.RequestSendMessage(4);
 
@@ -200,7 +200,7 @@ TEST_F(MessageCommunicationWindowedTest, send_message_while_initializing_waits_f
     ReceiveInitResponse(12);
 }
 
-TEST_F(MessageCommunicationWindowedTest, request_sending_new_message_while_previous_is_still_processing)
+TEST_F(SesameWindowedTest, request_sending_new_message_while_previous_is_still_processing)
 {
     ReceiveInitResponse(20);
 
@@ -224,7 +224,7 @@ TEST_F(MessageCommunicationWindowedTest, request_sending_new_message_while_previ
     SendMessageStreamAvailableWithWriter(infra::ConstructBin().Value<uint8_t>(4)({ 5, 6 }).Vector());
 }
 
-TEST_F(MessageCommunicationWindowedTest, receive_message_after_initialized)
+TEST_F(SesameWindowedTest, receive_message_after_initialized)
 {
     ReceiveInitResponse(12);
 
@@ -233,7 +233,7 @@ TEST_F(MessageCommunicationWindowedTest, receive_message_after_initialized)
     ReceiveMessage(infra::ConstructBin().Value<uint8_t>(4)("abcd").Vector());
 }
 
-TEST_F(MessageCommunicationWindowedTest, release_window_packet_waits_for_window_available)
+TEST_F(SesameWindowedTest, release_window_packet_waits_for_window_available)
 {
     ReceiveInitResponse(0);
 
@@ -244,14 +244,14 @@ TEST_F(MessageCommunicationWindowedTest, release_window_packet_waits_for_window_
     ReceiveReleaseWindow(5);
 }
 
-TEST_F(MessageCommunicationWindowedTest, received_message_before_initialized_is_discarded)
+TEST_F(SesameWindowedTest, received_message_before_initialized_is_discarded)
 {
     ReceiveMessage(infra::ConstructBin().Value<uint8_t>(4)("abcd").Vector());
 
     ReceiveInitResponse(12);
 }
 
-TEST_F(MessageCommunicationWindowedTest, received_release_window_before_initialized_is_discarded)
+TEST_F(SesameWindowedTest, received_release_window_before_initialized_is_discarded)
 {
     communication.RequestSendMessage(4);
     ReceiveReleaseWindow(6);
@@ -261,7 +261,7 @@ TEST_F(MessageCommunicationWindowedTest, received_release_window_before_initiali
     ReceiveInitResponse(12);
 }
 
-TEST_F(MessageCommunicationWindowedTest, handle_init_request_after_initialization)
+TEST_F(SesameWindowedTest, handle_init_request_after_initialization)
 {
     ReceiveInitResponse(8);
 
@@ -269,7 +269,7 @@ TEST_F(MessageCommunicationWindowedTest, handle_init_request_after_initializatio
     ReceiveInitRequest(8);
 }
 
-TEST_F(MessageCommunicationWindowedTest, init_response_consumes_window)
+TEST_F(SesameWindowedTest, init_response_consumes_window)
 {
     ReceiveInitResponse(16);
 
@@ -287,7 +287,7 @@ TEST_F(MessageCommunicationWindowedTest, init_response_consumes_window)
     ReceiveReleaseWindow(5); // release window consumed by initResponse
 }
 
-TEST_F(MessageCommunicationWindowedTest, release_window_consumes_window)
+TEST_F(SesameWindowedTest, release_window_consumes_window)
 {
     ReceiveInitResponse(5); // window for one release window
 
@@ -302,7 +302,7 @@ TEST_F(MessageCommunicationWindowedTest, release_window_consumes_window)
     ReceiveReleaseWindow(5); // release window consumed by release window
 }
 
-TEST_F(MessageCommunicationWindowedTest, received_init_request_while_sending_message_finishes_message_then_sends_init_response)
+TEST_F(SesameWindowedTest, received_init_request_while_sending_message_finishes_message_then_sends_init_response)
 {
     // build
     ReceiveInitResponse(16);
@@ -325,7 +325,7 @@ TEST_F(MessageCommunicationWindowedTest, received_init_request_while_sending_mes
     };
 }
 
-TEST_F(MessageCommunicationWindowedTest, increase_window_while_sending)
+TEST_F(SesameWindowedTest, increase_window_while_sending)
 {
     // build
     ReceiveInitResponse(12);
@@ -344,7 +344,7 @@ TEST_F(MessageCommunicationWindowedTest, increase_window_while_sending)
     communication.RequestSendMessage(2);
 }
 
-TEST_F(MessageCommunicationWindowedTest, init_response_while_sending)
+TEST_F(SesameWindowedTest, init_response_while_sending)
 {
     // build
     ReceiveInitResponse(12);
@@ -363,7 +363,7 @@ TEST_F(MessageCommunicationWindowedTest, init_response_while_sending)
     communication.RequestSendMessage(2);
 }
 
-TEST_F(MessageCommunicationWindowedTest, received_init_request_while_sending_init)
+TEST_F(SesameWindowedTest, received_init_request_while_sending_init)
 {
     ExpectRequestSendMessageForInitResponse(16);
     ReceiveInitRequest(8);
@@ -371,21 +371,21 @@ TEST_F(MessageCommunicationWindowedTest, received_init_request_while_sending_ini
     ReceiveInitResponse(16);
 }
 
-TEST_F(MessageCommunicationWindowedTest, init_response_while_sending_init_is_ignored)
+TEST_F(SesameWindowedTest, init_response_while_sending_init_is_ignored)
 {
     ReceiveInitResponse(8);
 
     ReceiveInitResponse(16);
 }
 
-TEST_F(MessageCommunicationWindowedTest, release_window_while_sending_init_is_ignored)
+TEST_F(SesameWindowedTest, release_window_while_sending_init_is_ignored)
 {
     ReceiveReleaseWindow(4);
 
     ReceiveInitResponse(16);
 }
 
-TEST_F(MessageCommunicationWindowedTest, requesting_message_while_sending_init_response)
+TEST_F(SesameWindowedTest, requesting_message_while_sending_init_response)
 {
     // build
     ExpectRequestSendMessageForInitResponse(16);
@@ -399,7 +399,7 @@ TEST_F(MessageCommunicationWindowedTest, requesting_message_while_sending_init_r
     communication.RequestSendMessage(4);
 }
 
-TEST_F(MessageCommunicationWindowedTest, init_request_while_sending_init_response_results_in_new_init_response)
+TEST_F(SesameWindowedTest, init_request_while_sending_init_response_results_in_new_init_response)
 {
     // build
     ExpectRequestSendMessageForInitResponse(16);
@@ -412,7 +412,7 @@ TEST_F(MessageCommunicationWindowedTest, init_request_while_sending_init_respons
     ReceiveInitRequest(8);
 }
 
-TEST_F(MessageCommunicationWindowedTest, release_window_while_sending_init_response_is_ignored)
+TEST_F(SesameWindowedTest, release_window_while_sending_init_response_is_ignored)
 {
     // build
     ExpectRequestSendMessageForInitResponse(16);

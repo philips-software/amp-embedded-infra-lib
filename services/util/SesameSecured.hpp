@@ -8,13 +8,13 @@
 #include "infra/util/SharedOptional.hpp"
 #include "infra/util/WithStorage.hpp"
 #include "mbedtls/gcm.h"
-#include "services/util/MessageCommunication.hpp"
+#include "services/util/Sesame.hpp"
 
 namespace services
 {
-    class MessageCommunicationSecured
-        : public MessageCommunication
-        , private MessageCommunicationObserver
+    class SesameSecured
+        : public Sesame
+        , private SesameObserver
     {
     public:
         static constexpr std::size_t keySize = 16;
@@ -23,21 +23,21 @@ namespace services
         using IvType = std::array<uint8_t, blockSize>;
 
         template<std::size_t Size>
-        using WithBuffers = infra::WithStorage<infra::WithStorage<MessageCommunicationSecured, infra::BoundedVector<uint8_t>::WithMaxSize<Size + blockSize>>, infra::BoundedVector<uint8_t>::WithMaxSize<Size + blockSize>>;
+        using WithBuffers = infra::WithStorage<infra::WithStorage<SesameSecured, infra::BoundedVector<uint8_t>::WithMaxSize<Size + blockSize>>, infra::BoundedVector<uint8_t>::WithMaxSize<Size + blockSize>>;
 
-        MessageCommunicationSecured(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, MessageCommunication& delegate, const KeyType& sendKey, const IvType& sendIv, const KeyType& receiveKey, const IvType& receiveIv);
-        ~MessageCommunicationSecured();
+        SesameSecured(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const KeyType& sendKey, const IvType& sendIv, const KeyType& receiveKey, const IvType& receiveIv);
+        ~SesameSecured();
 
         void SetNextSendKey(const KeyType& sendKey, const IvType& sendIv);
         void SetReceiveKey(const KeyType& receiveKey, const IvType& receiveIv);
 
-        // Implementation of MessageCommunication
+        // Implementation of Sesame
         void Initialized() override;
         void RequestSendMessage(std::size_t size) override;
         std::size_t MaxSendMessageSize() const override;
 
     private:
-        // Implementation of MessageCommunicationObserver
+        // Implementation of SesameObserver
         void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
 

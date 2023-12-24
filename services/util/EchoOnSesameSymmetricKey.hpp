@@ -1,25 +1,25 @@
 #ifndef SERVICES_ECHO_ON_MESSAGE_COMMUNICATION_SYMMETRIC_KEY_HPP
 #define SERVICES_ECHO_ON_MESSAGE_COMMUNICATION_SYMMETRIC_KEY_HPP
 
-#include "generated/echo/MessageCommunicationSecurity.pb.hpp"
+#include "generated/echo/SesameSecurity.pb.hpp"
 #include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
-#include "services/util/EchoOnMessageCommunication.hpp"
-#include "services/util/MessageCommunicationSecured.hpp"
+#include "services/util/EchoOnSesame.hpp"
+#include "services/util/SesameSecured.hpp"
 
 namespace services
 {
-    class EchoOnMessageCommunicationSymmetricKey
-        : public EchoOnMessageCommunication
-        , private message_communication_security::SymmetricKeyEstablishment
-        , private message_communication_security::SymmetricKeyEstablishmentProxy
+    class EchoOnSesameSymmetricKey
+        : public EchoOnSesame
+        , private sesame_security::SymmetricKeyEstablishment
+        , private sesame_security::SymmetricKeyEstablishmentProxy
     {
     public:
-        EchoOnMessageCommunicationSymmetricKey(MessageCommunicationSecured& secured, MethodSerializerFactory& serializerFactory, hal::SynchronousRandomDataGenerator& randomDataGenerator, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
+        EchoOnSesameSymmetricKey(SesameSecured& secured, MethodSerializerFactory& serializerFactory, hal::SynchronousRandomDataGenerator& randomDataGenerator, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
 
         // Implementation of Echo
         void RequestSend(ServiceProxy& serviceProxy) override;
 
-        // Implementation of MessageCommunicationObserver
+        // Implementation of SesameObserver
         void Initialized() override;
 
     private:
@@ -29,7 +29,7 @@ namespace services
         void ReQueueWaitingProxies();
 
     private:
-        MessageCommunicationSecured& secured;
+        SesameSecured& secured;
         hal::SynchronousRandomDataGenerator& randomDataGenerator;
 
         bool initializingSending = true;

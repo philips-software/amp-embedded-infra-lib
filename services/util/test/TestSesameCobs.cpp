@@ -6,12 +6,12 @@
 #include "infra/util/Endian.hpp"
 #include "infra/util/test_helper/MemoryRangeMatcher.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
-#include "services/util/MessageCommunicationCobs.hpp"
-#include "services/util/test_doubles/MessageCommunicationMock.hpp"
+#include "services/util/SesameCobs.hpp"
+#include "services/util/test_doubles/SesameMock.hpp"
 #include "gmock/gmock.h"
 #include <deque>
 
-class MessageCommunicationCobsTest
+class SesameCobsTest
     : public testing::Test
 {
 public:
@@ -77,8 +77,8 @@ public:
     }
 
     testing::StrictMock<hal::BufferedSerialCommunicationMock> serial;
-    services::MessageCommunicationCobs::WithMaxMessageSize<280> communication{ serial };
-    testing::StrictMock<services::MessageCommunicationEncodedObserverMock> observer{ communication };
+    services::SesameCobs::WithMaxMessageSize<280> communication{ serial };
+    testing::StrictMock<services::SesameEncodedObserverMock> observer{ communication };
     infra::Function<void()> onSent;
     infra::StdVectorInputStreamReader::WithStorage receivedDataReader;
     infra::StdVectorInputStreamReader::WithStorage emptyReader;
@@ -86,19 +86,19 @@ public:
     infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
 };
 
-TEST_F(MessageCommunicationCobsTest, MaxSendMessageSize)
+TEST_F(SesameCobsTest, MaxSendMessageSize)
 {
     EXPECT_EQ(277, communication.MaxSendMessageSize());
 }
 
-TEST_F(MessageCommunicationCobsTest, MessageSize)
+TEST_F(SesameCobsTest, MessageSize)
 {
     EXPECT_EQ(2, communication.MessageSize(0));
     EXPECT_EQ(255, communication.MessageSize(253));
     EXPECT_EQ(257, communication.MessageSize(254));
 }
 
-TEST_F(MessageCommunicationCobsTest, send_data)
+TEST_F(SesameCobsTest, send_data)
 {
     RequestSendMessage(4, 7);
     infra::DataOutputStream::WithErrorPolicy stream(*writer);
@@ -119,7 +119,7 @@ TEST_F(MessageCommunicationCobsTest, send_data)
     onSent();
 }
 
-TEST_F(MessageCommunicationCobsTest, send_data_with_0)
+TEST_F(SesameCobsTest, send_data_with_0)
 {
     RequestSendMessage(4, 7);
     infra::DataOutputStream::WithErrorPolicy stream(*writer);
@@ -146,7 +146,7 @@ TEST_F(MessageCommunicationCobsTest, send_data_with_0)
     onSent();
 }
 
-TEST_F(MessageCommunicationCobsTest, send_data_ending_with_0)
+TEST_F(SesameCobsTest, send_data_ending_with_0)
 {
     RequestSendMessage(3, 6);
     infra::DataOutputStream::WithErrorPolicy stream(*writer);
@@ -170,7 +170,7 @@ TEST_F(MessageCommunicationCobsTest, send_data_ending_with_0)
     onSent();
 }
 
-TEST_F(MessageCommunicationCobsTest, send_large_data)
+TEST_F(SesameCobsTest, send_large_data)
 {
     RequestSendMessage(280, 284);
     infra::DataOutputStream::WithErrorPolicy stream(*writer);
@@ -197,7 +197,7 @@ TEST_F(MessageCommunicationCobsTest, send_large_data)
     onSent();
 }
 
-TEST_F(MessageCommunicationCobsTest, send_two_packets)
+TEST_F(SesameCobsTest, send_two_packets)
 {
     RequestSendMessage(4, 7);
     infra::DataOutputStream::WithErrorPolicy stream(*writer);
@@ -219,31 +219,31 @@ TEST_F(MessageCommunicationCobsTest, send_two_packets)
     writer = nullptr;
 }
 
-TEST_F(MessageCommunicationCobsTest, receive_data)
+TEST_F(SesameCobsTest, receive_data)
 {
     ExpectReceivedMessage({ 1, 2, 3, 4 });
     ReceiveData(infra::ConstructBin()({ 0, 5, 1, 2, 3, 4, 0 }).Vector());
 }
 
-TEST_F(MessageCommunicationCobsTest, receive_data_with_0)
+TEST_F(SesameCobsTest, receive_data_with_0)
 {
     ExpectReceivedMessage({ 1, 0, 3, 4 });
     ReceiveData(infra::ConstructBin()({ 0, 2, 1, 3, 3, 4, 0 }).Vector());
 }
 
-TEST_F(MessageCommunicationCobsTest, receive_large_data)
+TEST_F(SesameCobsTest, receive_large_data)
 {
     ExpectReceivedMessage(std::vector<uint8_t>(280, 3));
     ReceiveData(infra::ConstructBin()({ 0, 255 })(std::vector<uint8_t>(254, 3))({ 27 })(std::vector<uint8_t>(26, 3))({ 0 }).Vector());
 }
 
-TEST_F(MessageCommunicationCobsTest, receive_interrupted_data)
+TEST_F(SesameCobsTest, receive_interrupted_data)
 {
     ExpectReceivedMessage({ 1, 2 });
     ReceiveData(infra::ConstructBin()({ 0, 5, 1, 2, 0 }).Vector());
 }
 
-TEST_F(MessageCommunicationCobsTest, receive_two_messages)
+TEST_F(SesameCobsTest, receive_two_messages)
 {
     ExpectReceivedMessageKeepReader({ 1, 2, 3, 4 });
     ReceiveDataKeepReader(infra::ConstructBin()({ 0, 5, 1, 2, 3, 4, 0, 3, 5, 6, 0 }).Vector());
@@ -254,12 +254,12 @@ TEST_F(MessageCommunicationCobsTest, receive_two_messages)
     reader = nullptr;
 }
 
-TEST_F(MessageCommunicationCobsTest, malformed_empty_message_is_discarded)
+TEST_F(SesameCobsTest, malformed_empty_message_is_discarded)
 {
     ReceiveData(infra::ConstructBin()({ 0, 5, 0 }).Vector());
 }
 
-TEST_F(MessageCommunicationCobsTest, malformed_message_is_forwarded)
+TEST_F(SesameCobsTest, malformed_message_is_forwarded)
 {
     ExpectReceivedMessage({ 1 });
     ReceiveData(infra::ConstructBin()({ 0, 5, 1, 0 }).Vector());

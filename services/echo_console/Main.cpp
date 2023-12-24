@@ -13,15 +13,15 @@
 #include "services/network/HttpClientImpl.hpp"
 #include "services/network/WebSocketClientConnectionObserver.hpp"
 #include "services/tracer/GlobalTracer.hpp"
-#include "services/util/MessageCommunicationCobs.hpp"
-#include "services/util/MessageCommunicationWindowed.hpp"
+#include "services/util/SesameCobs.hpp"
+#include "services/util/SesameWindowed.hpp"
 #include <deque>
 #include <fstream>
 #include <iostream>
 
 class ConsoleClientUart
     : public application::ConsoleObserver
-    , private services::MessageCommunicationObserver
+    , private services::SesameObserver
 {
 public:
     ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial);
@@ -30,7 +30,7 @@ public:
     void Send(const std::string& message) override;
 
 private:
-    // Implementation of MessageCommunicationObserver
+    // Implementation of SesameObserver
     void Initialized() override;
     void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
     void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
@@ -40,10 +40,10 @@ private:
 
 private:
     std::deque<std::string> messagesToBeSent;
-    services::MessageCommunicationCobs::WithMaxMessageSize<2048> cobs;
-    services::MessageCommunicationWindowed windowed{ cobs, 2048 };
+    services::SesameCobs::WithMaxMessageSize<2048> cobs;
+    services::SesameWindowed windowed{ cobs, 2048 };
     bool sending = false;
-    services::MessageCommunicationObserver::DelayedAttachDetach delayed{ *this, windowed };
+    services::SesameObserver::DelayedAttachDetach delayed{ *this, windowed };
 };
 
 ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial)

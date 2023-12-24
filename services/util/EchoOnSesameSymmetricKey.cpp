@@ -1,4 +1,4 @@
-#include "services/util/EchoOnMessageCommunicationSymmetricKey.hpp"
+#include "services/util/EchoOnSesameSymmetricKey.hpp"
 
 namespace services
 {
@@ -20,31 +20,31 @@ namespace services
         }
     }
 
-    EchoOnMessageCommunicationSymmetricKey::EchoOnMessageCommunicationSymmetricKey(MessageCommunicationSecured& secured, MethodSerializerFactory& serializerFactory, hal::SynchronousRandomDataGenerator& randomDataGenerator, const EchoErrorPolicy& errorPolicy)
-        : EchoOnMessageCommunication(secured, serializerFactory, errorPolicy)
+    EchoOnSesameSymmetricKey::EchoOnSesameSymmetricKey(SesameSecured& secured, MethodSerializerFactory& serializerFactory, hal::SynchronousRandomDataGenerator& randomDataGenerator, const EchoErrorPolicy& errorPolicy)
+        : EchoOnSesame(secured, serializerFactory, errorPolicy)
         , SymmetricKeyEstablishment(static_cast<services::Echo&>(*this))
         , SymmetricKeyEstablishmentProxy(static_cast<services::Echo&>(*this))
         , secured(secured)
         , randomDataGenerator(randomDataGenerator)
     {}
 
-    void EchoOnMessageCommunicationSymmetricKey::RequestSend(ServiceProxy& serviceProxy)
+    void EchoOnSesameSymmetricKey::RequestSend(ServiceProxy& serviceProxy)
     {
         if (initializingSending && &serviceProxy != this)
             waitingProxies.push_back(serviceProxy);
         else
-            EchoOnMessageCommunication::RequestSend(serviceProxy);
+            EchoOnSesame::RequestSend(serviceProxy);
     }
 
-    void EchoOnMessageCommunicationSymmetricKey::Initialized()
+    void EchoOnSesameSymmetricKey::Initialized()
     {
         initializingSending = true;
-        EchoOnMessageCommunication::Initialized();
+        EchoOnSesame::Initialized();
 
         SymmetricKeyEstablishmentProxy::RequestSend([this]()
             {
-                auto key = randomDataGenerator.GenerateRandomData<MessageCommunicationSecured::KeyType>();
-                auto iv = randomDataGenerator.GenerateRandomData<MessageCommunicationSecured::IvType>();
+                auto key = randomDataGenerator.GenerateRandomData<SesameSecured::KeyType>();
+                auto iv = randomDataGenerator.GenerateRandomData<SesameSecured::IvType>();
                 SymmetricKeyEstablishmentProxy::ActivateNewKeyMaterial(Convert(key), Convert(iv));
                 secured.SetNextSendKey(key, iv);
 
@@ -53,13 +53,13 @@ namespace services
             });
     }
 
-    void EchoOnMessageCommunicationSymmetricKey::ActivateNewKeyMaterial(const infra::BoundedVector<uint8_t>& key, const infra::BoundedVector<uint8_t>& iv)
+    void EchoOnSesameSymmetricKey::ActivateNewKeyMaterial(const infra::BoundedVector<uint8_t>& key, const infra::BoundedVector<uint8_t>& iv)
     {
         secured.SetReceiveKey(Convert<16>(key), Convert<16>(iv));
         MethodDone();
     }
 
-    void EchoOnMessageCommunicationSymmetricKey::ReQueueWaitingProxies()
+    void EchoOnSesameSymmetricKey::ReQueueWaitingProxies()
     {
         while (!waitingProxies.empty())
         {

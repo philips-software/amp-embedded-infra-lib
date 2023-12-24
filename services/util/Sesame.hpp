@@ -8,33 +8,33 @@
 
 namespace services
 {
-    class MessageCommunication;
-    class MessageCommunicationEncoded;
+    class Sesame;
+    class SesameEncoded;
 
-    class MessageCommunicationObserver
-        : public infra::SingleObserver<MessageCommunicationObserver, MessageCommunication>
+    class SesameObserver
+        : public infra::SingleObserver<SesameObserver, Sesame>
     {
     public:
-        using infra::SingleObserver<MessageCommunicationObserver, MessageCommunication>::SingleObserver;
+        using infra::SingleObserver<SesameObserver, Sesame>::SingleObserver;
 
         virtual void Initialized() = 0;
         virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) = 0;
         virtual void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) = 0;
     };
 
-    class MessageCommunication
-        : public infra::Subject<MessageCommunicationObserver>
+    class Sesame
+        : public infra::Subject<SesameObserver>
     {
     public:
         virtual void RequestSendMessage(std::size_t size) = 0;
         virtual std::size_t MaxSendMessageSize() const = 0;
     };
 
-    class MessageCommunicationEncodedObserver
-        : public infra::SingleObserver<MessageCommunicationEncodedObserver, MessageCommunicationEncoded>
+    class SesameEncodedObserver
+        : public infra::SingleObserver<SesameEncodedObserver, SesameEncoded>
     {
     public:
-        using infra::SingleObserver<MessageCommunicationEncodedObserver, MessageCommunicationEncoded>::SingleObserver;
+        using infra::SingleObserver<SesameEncodedObserver, SesameEncoded>::SingleObserver;
 
         virtual void Initialized() = 0;
         virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) = 0;
@@ -42,8 +42,8 @@ namespace services
         virtual void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) = 0;
     };
 
-    class MessageCommunicationEncoded
-        : public infra::Subject<MessageCommunicationEncodedObserver>
+    class SesameEncoded
+        : public infra::Subject<SesameEncodedObserver>
     {
     public:
         virtual void RequestSendMessage(std::size_t size) = 0;
