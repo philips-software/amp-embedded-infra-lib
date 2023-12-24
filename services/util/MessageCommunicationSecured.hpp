@@ -33,7 +33,7 @@ namespace services
 
         // Implementation of MessageCommunication
         void Initialized() override;
-        void RequestSendMessage(uint16_t size) override;
+        void RequestSendMessage(std::size_t size) override;
         std::size_t MaxSendMessageSize() const override;
 
     private:

@@ -86,9 +86,16 @@ public:
     infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
 };
 
-TEST_F(MessageCommunicationCobsTest, construction)
+TEST_F(MessageCommunicationCobsTest, MaxSendMessageSize)
 {
-    EXPECT_EQ(280, communication.MaxSendMessageSize());
+    EXPECT_EQ(277, communication.MaxSendMessageSize());
+}
+
+TEST_F(MessageCommunicationCobsTest, MessageSize)
+{
+    EXPECT_EQ(2, communication.MessageSize(0));
+    EXPECT_EQ(255, communication.MessageSize(253));
+    EXPECT_EQ(257, communication.MessageSize(254));
 }
 
 TEST_F(MessageCommunicationCobsTest, send_data)

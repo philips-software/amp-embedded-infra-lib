@@ -6,19 +6,20 @@ namespace services
     MessageCommunicationWindowed::MessageCommunicationWindowed(MessageCommunicationEncoded& delegate, uint16_t ownWindowSize)
         : MessageCommunicationEncodedObserver(delegate)
         , ownWindowSize(ownWindowSize)
+        , releaseWindowSize(MessageCommunicationEncodedObserver::Subject().MessageSize(sizeof(PacketReleaseWindow)))
         , state(infra::InPlaceType<StateSendingInit>(), *this)
     {
         state->Request();
     }
 
-    void MessageCommunicationWindowed::RequestSendMessage(uint16_t size)
+    void MessageCommunicationWindowed::RequestSendMessage(std::size_t size)
     {
         state->RequestSendMessage(size);
     }
 
     std::size_t MessageCommunicationWindowed::MaxSendMessageSize() const
     {
-        return MessageCommunicationEncodedObserver::Subject().MaxSendMessageSize() - sizeof(Operation);
+        return MessageCommunicationEncodedObserver::Subject().MaxSendMessageSize() - sizeof(Operation) - releaseWindowSize;
     }
 
     void MessageCommunicationWindowed::Initialized()
@@ -31,7 +32,7 @@ namespace services
         state->SendMessageStreamAvailable(std::move(writer));
     }
 
-    void MessageCommunicationWindowed::MessageSent(uint16_t encodedSize)
+    void MessageCommunicationWindowed::MessageSent(std::size_t encodedSize)
     {
         state->MessageSent(encodedSize);
     }
@@ -89,25 +90,20 @@ namespace services
 
     void MessageCommunicationWindowed::SetNextState()
     {
-        if (!sending)
+        if (!sending && initialized)
         {
             if (sendInitResponse)
             {
                 if (receivedMessageReader == nullptr)
                     state.Emplace<StateSendingInitResponse>(*this).Request();
             }
-            else if (requestedSendMessageSize && MaxWindowSize(*requestedSendMessageSize) <= otherAvailableWindow - releaseWindowSize)
+            else if (requestedSendMessageSize && MessageCommunicationEncodedObserver::Subject().MessageSize(*requestedSendMessageSize + 1) <= otherAvailableWindow - releaseWindowSize)
                 state.Emplace<StateSendingMessage>(*this).Request();
             else if (releasedWindow != 0 && releaseWindowSize <= otherAvailableWindow)
                 state.Emplace<StateSendingReleaseWindow>(*this).Request();
             else
                 state.Emplace<StateOperational>(*this);
         }
-    }
-
-    uint16_t MessageCommunicationWindowed::MaxWindowSize(uint16_t messageSize) const
-    {
-        return messageSize + 1 + (messageSize + 1) / 254 + 2;
     }
 
     MessageCommunicationWindowed::PacketInit::PacketInit(uint16_t window)
@@ -131,7 +127,7 @@ namespace services
         std::abort();
     }
 
-    void MessageCommunicationWindowed::State::RequestSendMessage(uint16_t size)
+    void MessageCommunicationWindowed::State::RequestSendMessage(std::size_t size)
     {
         communication.requestedSendMessageSize = size;
     }
@@ -141,8 +137,12 @@ namespace services
         std::abort();
     }
 
-    void MessageCommunicationWindowed::State::MessageSent(uint16_t encodedSize)
-    {}
+    void MessageCommunicationWindowed::State::MessageSent(std::size_t encodedSize)
+    {
+        communication.otherAvailableWindow -= encodedSize;
+        communication.sending = false;
+        communication.SetNextState();
+    }
 
     MessageCommunicationWindowed::StateSendingInit::StateSendingInit(MessageCommunicationWindowed& communication)
         : State(communication)
@@ -159,8 +159,11 @@ namespace services
     {
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
         stream << PacketInit(communication.ownWindowSize);
-        writer = nullptr;
+    }
 
+    void MessageCommunicationWindowed::StateSendingInit::MessageSent(std::size_t encodedSize)
+    {
+        // Init messages do not count against window size
         communication.sending = false;
         communication.SetNextState();
     }
@@ -183,18 +186,13 @@ namespace services
 
         communication.releasedWindow = 0;
         communication.sendInitResponse = false;
-        communication.otherAvailableWindow -= initResponseSize;
-        writer = nullptr;
-
-        communication.sending = false;
-        communication.SetNextState();
     }
 
     MessageCommunicationWindowed::StateOperational::StateOperational(MessageCommunicationWindowed& communication)
         : State(communication)
     {}
 
-    void MessageCommunicationWindowed::StateOperational::RequestSendMessage(uint16_t size)
+    void MessageCommunicationWindowed::StateOperational::RequestSendMessage(std::size_t size)
     {
         communication.requestedSendMessageSize = size;
         communication.SetNextState();
@@ -222,15 +220,14 @@ namespace services
         communication.GetObserver().SendMessageStreamAvailable(writerAccess.MakeShared(*messageWriter));
     }
 
-    void MessageCommunicationWindowed::StateSendingMessage::MessageSent(uint16_t encodedSize)
+    void MessageCommunicationWindowed::StateSendingMessage::MessageSent(std::size_t encodedSize)
     {
-        actualEncodedSize = encodedSize;
+        communication.otherAvailableWindow -= encodedSize;
     }
 
     void MessageCommunicationWindowed::StateSendingMessage::OnSent()
     {
         messageWriter = nullptr;
-        communication.otherAvailableWindow -= actualEncodedSize;
         communication.sending = false;
         communication.SetNextState();
     }
@@ -251,10 +248,5 @@ namespace services
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
         stream << PacketReleaseWindow(communication.releasedWindow);
         communication.releasedWindow = 0;
-        communication.otherAvailableWindow -= releaseWindowSize;
-        writer = nullptr;
-
-        communication.sending = false;
-        communication.SetNextState();
     }
 }

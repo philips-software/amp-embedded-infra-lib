@@ -17,7 +17,7 @@ namespace services
               })
     {}
 
-    void MessageCommunicationCobs::RequestSendMessage(uint16_t size)
+    void MessageCommunicationCobs::RequestSendMessage(std::size_t size)
     {
         assert(sendReqestedSize == infra::none);
         sendReqestedSize = size;
@@ -27,7 +27,12 @@ namespace services
 
     std::size_t MessageCommunicationCobs::MaxSendMessageSize() const
     {
-        return sendStorage.max_size();
+        return sendStorage.max_size() - 2 - (sendStorage.max_size() - 2) / 255;
+    }
+
+    std::size_t MessageCommunicationCobs::MessageSize(std::size_t size) const
+    {
+        return size + size / 254 + 2;
     }
 
     void MessageCommunicationCobs::DataReceived()

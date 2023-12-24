@@ -19,13 +19,14 @@ namespace services
         template<std::size_t MaxMessageSize>
         using WithMaxMessageSize = infra::WithStorage<infra::WithStorage<MessageCommunicationCobs,
                                                           infra::BoundedVector<uint8_t>::WithMaxSize<MaxMessageSize>>,
-            infra::BoundedDeque<uint8_t>::WithMaxSize<MaxMessageSize + MaxMessageSize / 254 + 3>>;
+            infra::BoundedDeque<uint8_t>::WithMaxSize<MaxMessageSize + MaxMessageSize / 254 + 2>>;
 
         MessageCommunicationCobs(infra::BoundedVector<uint8_t>& sendStorage, infra::BoundedDeque<uint8_t>& receivedMessage, hal::BufferedSerialCommunication& serial);
 
         // Implementation of MessageCommunication
-        void RequestSendMessage(uint16_t size) override;
+        void RequestSendMessage(std::size_t size) override;
         std::size_t MaxSendMessageSize() const override;
+        virtual std::size_t MessageSize(std::size_t size) const override;
 
     private:
         // Implementation of BufferedSerialCommunicationObserver
@@ -51,10 +52,10 @@ namespace services
         uint8_t FindDelimiter() const;
 
     private:
-        infra::Optional<uint16_t> sendReqestedSize;
+        infra::Optional<std::size_t> sendReqestedSize;
         bool sendingFirstPacket = true;
         bool sendingUserData = false;
-        uint16_t sendSizeEncoded = 0;
+        std::size_t sendSizeEncoded = 0;
         uint8_t nextOverhead = 1;
         bool overheadPositionIsPseudo = true;
         infra::BoundedDeque<uint8_t>& receivedMessage;

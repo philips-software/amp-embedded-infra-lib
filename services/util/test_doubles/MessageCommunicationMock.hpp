@@ -10,7 +10,7 @@ namespace services
         : public MessageCommunication
     {
     public:
-        MOCK_METHOD(void, RequestSendMessage, (uint16_t size), (override));
+        MOCK_METHOD(void, RequestSendMessage, (std::size_t size), (override));
         MOCK_METHOD(std::size_t, MaxSendMessageSize, (), (const, override));
     };
 
@@ -29,8 +29,9 @@ namespace services
         : public MessageCommunicationEncoded
     {
     public:
-        MOCK_METHOD(void, RequestSendMessage, (uint16_t size), (override));
+        MOCK_METHOD(void, RequestSendMessage, (std::size_t size), (override));
         MOCK_METHOD(std::size_t, MaxSendMessageSize, (), (const, override));
+        MOCK_METHOD(std::size_t, MessageSize, (std::size_t), (const, override));
     };
 
     class MessageCommunicationEncodedObserverMock
@@ -41,7 +42,7 @@ namespace services
 
         MOCK_METHOD(void, Initialized, (), (override));
         MOCK_METHOD(void, SendMessageStreamAvailable, (infra::SharedPtr<infra::StreamWriter> && writer), (override));
-        MOCK_METHOD(void, MessageSent, (uint16_t encodedSize), (override));
+        MOCK_METHOD(void, MessageSent, (std::size_t encodedSize), (override));
         MOCK_METHOD(void, ReceivedMessage, (infra::SharedPtr<infra::StreamReaderWithRewinding> && reader), (override));
     };
 }

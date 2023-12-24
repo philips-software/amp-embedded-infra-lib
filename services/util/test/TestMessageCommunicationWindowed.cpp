@@ -14,19 +14,28 @@ class MessageCommunicationWindowedTest
     , public infra::EventDispatcherFixture
 {
 public:
+    MessageCommunicationWindowedTest()
+    {
+        EXPECT_CALL(base, MessageSize(testing::_)).WillRepeatedly(testing::Invoke([](std::size_t size)
+            {
+                return size + size / 254 + 2;
+            }));
+    }
+
     void SendMessageStreamAvailableWithWriter(const std::vector<uint8_t>& expected)
     {
-        sentData.emplace_back();
+        assert(sentData.empty());
         assert(expectedMessage.empty());
         expectedMessage = expected;
         writer.OnAllocatable([this]()
             {
-                base.GetObserver().MessageSent(sentData.front().size() + sentData.front().size() / 254 + 2);
-                EXPECT_EQ(expectedMessage, sentData.front());
+                auto expectedMessageCopy = expectedMessage;
                 expectedMessage.clear();
-                sentData.pop_front();
+                base.GetObserver().MessageSent(sentData.size() + sentData.size() / 254 + 2);
+                EXPECT_EQ(expectedMessageCopy, sentData);
+                sentData.clear();
             });
-        base.GetObserver().SendMessageStreamAvailable(writer.Emplace(sentData.back()));
+        base.GetObserver().SendMessageStreamAvailable(writer.Emplace(sentData));
     }
 
     void ReceiveMessage(const std::vector<uint8_t>& data)
@@ -112,10 +121,11 @@ public:
 
     testing::StrictMock<services::MessageCommunicationEncodedMock> base;
     std::vector<uint8_t> expectedMessage;
-    std::deque<std::vector<uint8_t>> sentData;
+    std::vector<uint8_t> sentData;
     infra::NotifyingSharedOptional<infra::StdVectorOutputStreamWriter> writer;
     infra::Execute execute{ [this]()
         {
+            EXPECT_CALL(base, MessageSize(3)).WillOnce(testing::Return(5));
             ExpectRequestSendMessageForInit(16);
         } };
     services::MessageCommunicationWindowed communication{ base, 16 };
@@ -123,11 +133,11 @@ public:
     infra::SharedPtr<infra::StreamWriter> savedWriter;
 };
 
-TEST_F(MessageCommunicationWindowedTest, construction)
+TEST_F(MessageCommunicationWindowedTest, MaxSendMessageSize)
 {
     ReceiveInitResponse(8);
     EXPECT_CALL(base, MaxSendMessageSize()).WillOnce(testing::Return(16));
-    EXPECT_EQ(15, communication.MaxSendMessageSize());
+    EXPECT_EQ(10, communication.MaxSendMessageSize());
 }
 
 TEST_F(MessageCommunicationWindowedTest, send_message_after_initialized)
@@ -264,7 +274,7 @@ TEST_F(MessageCommunicationWindowedTest, init_response_consumes_window)
     ReceiveInitResponse(16);
 
     ExpectRequestSendMessageForInitResponse(16);
-    ReceiveInitRequest(5 + 7 + 7);  // window for two messages and saving for releaseWindow
+    ReceiveInitRequest(5 + 7 + 7); // window for two messages and saving for releaseWindow
 
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
@@ -274,7 +284,7 @@ TEST_F(MessageCommunicationWindowedTest, init_response_consumes_window)
 
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
-    ReceiveReleaseWindow(5);    // release window consumed by initResponse
+    ReceiveReleaseWindow(5); // release window consumed by initResponse
 }
 
 TEST_F(MessageCommunicationWindowedTest, release_window_consumes_window)

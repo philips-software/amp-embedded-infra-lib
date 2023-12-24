@@ -48,7 +48,7 @@ namespace services
         GetObserver().Initialized();
     }
 
-    void MessageCommunicationSecured::RequestSendMessage(uint16_t size)
+    void MessageCommunicationSecured::RequestSendMessage(std::size_t size)
     {
         really_assert(size <= MaxSendMessageSize());
         requestedSendSize = size;
