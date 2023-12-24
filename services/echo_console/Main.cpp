@@ -41,7 +41,7 @@ private:
 private:
     std::deque<std::string> messagesToBeSent;
     services::SesameCobs::WithMaxMessageSize<2048> cobs;
-    services::SesameWindowed windowed{ cobs, 2048 };
+    services::SesameWindowed windowed{ cobs };
     bool sending = false;
     services::SesameObserver::DelayedAttachDetach delayed{ *this, windowed };
 };
