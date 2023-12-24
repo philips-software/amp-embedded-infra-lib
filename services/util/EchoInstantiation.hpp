@@ -23,7 +23,7 @@ namespace main_
         }
 
         services::SesameCobs::WithMaxMessageSize<MessageSize> cobs;
-        services::SesameWindowed windowed{ cobs, MessageSize };
+        services::SesameWindowed windowed{ cobs };
         services::EchoOnSesame echo;
     };
 

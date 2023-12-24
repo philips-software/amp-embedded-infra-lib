@@ -125,10 +125,11 @@ public:
     infra::NotifyingSharedOptional<infra::StdVectorOutputStreamWriter> writer;
     infra::Execute execute{ [this]()
         {
+            EXPECT_CALL(base, MaxSendMessageSize()).WillOnce(testing::Return(16));
             EXPECT_CALL(base, MessageSize(3)).WillOnce(testing::Return(5));
             ExpectRequestSendMessageForInit(16);
         } };
-    services::SesameWindowed communication{ base, 16 };
+    services::SesameWindowed communication{ base };
     testing::StrictMock<services::SesameObserverMock> observer{ communication };
     infra::SharedPtr<infra::StreamWriter> savedWriter;
 };
@@ -136,8 +137,11 @@ public:
 TEST_F(SesameWindowedTest, MaxSendMessageSize)
 {
     ReceiveInitResponse(8);
+    // When the cobs layer is able to send a 16 byte message, then 18 bytes (cobs start plus delimiter) are available
     EXPECT_CALL(base, MaxSendMessageSize()).WillOnce(testing::Return(16));
-    EXPECT_EQ(10, communication.MaxSendMessageSize());
+    // 4 bytes in a message expands to 1 (cobs) + 1 (operation) + 3 (message) + 1 (delimiter) = 6
+    // Two of these messages plus one release window amount to 6 + 6 + 5 = 17, which is under the limit of the 18 bytes buffer of cobs
+    EXPECT_EQ(3, communication.MaxSendMessageSize());
 }
 
 TEST_F(SesameWindowedTest, send_message_after_initialized)

@@ -15,12 +15,7 @@ namespace services
         , private SesameEncodedObserver
     {
     public:
-        static constexpr uint32_t RawMessageSize(uint32_t messageSize)
-        {
-            return messageSize + sizeof(uint32_t);
-        };
-
-        SesameWindowed(SesameEncoded& delegate, uint16_t ownWindowSize);
+        SesameWindowed(SesameEncoded& delegate);
 
         // Implementation of Sesame
         void RequestSendMessage(std::size_t size) override;

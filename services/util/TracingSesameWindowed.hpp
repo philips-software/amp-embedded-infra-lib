@@ -10,7 +10,7 @@ namespace services
         : public SesameWindowed
     {
     public:
-        TracingSesameWindowed(SesameEncoded& delegate, uint16_t ownWindowSize, Tracer& tracer);
+        TracingSesameWindowed(SesameEncoded& delegate, Tracer& tracer);
 
     protected:
         void ReceivedInit(uint16_t otherAvailableWindow) override;

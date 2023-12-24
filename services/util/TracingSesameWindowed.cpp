@@ -2,8 +2,8 @@
 
 namespace services
 {
-    TracingSesameWindowed::TracingSesameWindowed(SesameEncoded& delegate, uint16_t ownWindowSize, Tracer& tracer)
-        : SesameWindowed(delegate, ownWindowSize)
+    TracingSesameWindowed::TracingSesameWindowed(SesameEncoded& delegate, Tracer& tracer)
+        : SesameWindowed(delegate)
         , tracer(tracer)
     {}
 

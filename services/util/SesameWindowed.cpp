@@ -3,9 +3,9 @@
 
 namespace services
 {
-    SesameWindowed::SesameWindowed(SesameEncoded& delegate, uint16_t ownWindowSize)
+    SesameWindowed::SesameWindowed(SesameEncoded& delegate)
         : SesameEncodedObserver(delegate)
-        , ownWindowSize(ownWindowSize)
+        , ownWindowSize(SesameEncodedObserver::Subject().MaxSendMessageSize())
         , releaseWindowSize(SesameEncodedObserver::Subject().MessageSize(sizeof(PacketReleaseWindow)))
         , state(infra::InPlaceType<StateSendingInit>(), *this)
     {
@@ -19,7 +19,7 @@ namespace services
 
     std::size_t SesameWindowed::MaxSendMessageSize() const
     {
-        return SesameEncodedObserver::Subject().MaxSendMessageSize() - sizeof(Operation) - releaseWindowSize;
+        return (SesameEncodedObserver::Subject().MaxSendMessageSize() - sizeof(Operation) - releaseWindowSize - SesameEncodedObserver::Subject().MessageSize(sizeof(Operation))) / 2;
     }
 
     void SesameWindowed::Initialized()
