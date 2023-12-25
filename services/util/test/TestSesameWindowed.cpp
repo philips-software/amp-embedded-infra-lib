@@ -117,7 +117,7 @@ public:
             {
                 infra::DataInputStream::WithErrorPolicy stream(*reader);
                 std::string text(stream.Available(), 0);
-                stream >> infra::StdStringAsByteRange(text);
+                stream >> infra::ByteRange(reinterpret_cast<uint8_t*>(text.data()), reinterpret_cast<uint8_t*>(text.data() + text.size()));
 
                 EXPECT_EQ(expected, text);
             }));
