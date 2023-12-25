@@ -12,11 +12,6 @@ namespace infra
         return BoundedConstString(reinterpret_cast<const char*>(range.begin()), range.size());
     }
 
-    MemoryRange<uint8_t> StdStringAsByteRange(std::string& string)
-    {
-        return StringAsMemoryRange<uint8_t>(infra::BoundedString(string));
-    }
-
     MemoryRange<const uint8_t> StdStringAsByteRange(const std::string& string)
     {
         return StringAsMemoryRange<uint8_t>(infra::BoundedConstString(string));

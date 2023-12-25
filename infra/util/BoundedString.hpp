@@ -348,7 +348,6 @@ namespace infra
 
     template<class T>
     std::string AsStdString(const infra::BoundedStringBase<T>& s);
-    MemoryRange<uint8_t> StdStringAsByteRange(std::string& string);
     MemoryRange<const uint8_t> StdStringAsByteRange(const std::string& string);
 
 #ifdef EMIL_HOST_BUILD
