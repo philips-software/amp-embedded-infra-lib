@@ -72,6 +72,7 @@ namespace services
             MessageBoundary(data);
         else
         {
+            ++receiveSizeEncoded;
             data.pop_front();
             if (!overheadPositionIsPseudo)
                 ReceivedPayload(infra::MakeByteRange(messageDelimiter));
@@ -96,11 +97,13 @@ namespace services
     {
         ReceivedPayload(contents);
         data.pop_front(contents.size());
+        receiveSizeEncoded += contents.size();
         nextOverhead -= static_cast<uint8_t>(contents.size());
     }
 
     void SesameCobs::MessageBoundary(infra::ConstByteRange& data)
     {
+        ++receiveSizeEncoded;
         FinishMessage();
         data.pop_front();
         nextOverhead = 1;
@@ -125,7 +128,7 @@ namespace services
                     receivedMessage.erase(receivedMessage.begin(), receivedMessage.begin() + messageSize);
                     DataReceived();
                 });
-            GetObserver().ReceivedMessage(receivedDataReader.Emplace(infra::inPlace, receivedMessage, messageSize));
+            GetObserver().ReceivedMessage(receivedDataReader.Emplace(infra::inPlace, receivedMessage, messageSize), std::exchange(receiveSizeEncoded, 0));
         }
     }
 

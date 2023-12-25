@@ -37,7 +37,7 @@ namespace services
         state->MessageSent(encodedSize);
     }
 
-    void SesameWindowed::ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+    void SesameWindowed::ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, std::size_t encodedSize)
     {
         infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
         switch (stream.Extract<Operation>())
@@ -50,6 +50,7 @@ namespace services
                 GetObserver().Initialized();
                 break;
             case Operation::initResponse:
+                releasedWindow = encodedSize;
                 otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
                 initialized = true;
                 ReceivedInitResponse(otherAvailableWindow);
@@ -58,6 +59,7 @@ namespace services
             case Operation::releaseWindow:
                 if (initialized)
                 {
+                    releasedWindow += encodedSize;
                     auto oldOtherAvailableWindow = otherAvailableWindow;
                     otherAvailableWindow += stream.Extract<infra::LittleEndian<uint16_t>>();
                     ReceivedReleaseWindow(oldOtherAvailableWindow, otherAvailableWindow);
@@ -67,7 +69,7 @@ namespace services
                 if (initialized)
                 {
                     receivedMessageReader = std::move(reader);
-                    ForwardReceivedMessage();
+                    ForwardReceivedMessage(encodedSize);
                 }
                 break;
         }
@@ -75,11 +77,11 @@ namespace services
         SetNextState();
     }
 
-    void SesameWindowed::ForwardReceivedMessage()
+    void SesameWindowed::ForwardReceivedMessage(uint16_t encodedSize)
     {
-        releasedWindow += receivedMessageReader->Available() + 2;
-        readerAccess.SetAction([this]()
+        readerAccess.SetAction([this, encodedSize]()
             {
+                releasedWindow += encodedSize;
                 receivedMessageReader = nullptr;
                 SetNextState();
             });
@@ -99,7 +101,7 @@ namespace services
             }
             else if (requestedSendMessageSize && SesameEncodedObserver::Subject().MessageSize(*requestedSendMessageSize + 1) <= otherAvailableWindow - releaseWindowSize)
                 state.Emplace<StateSendingMessage>(*this).Request();
-            else if (releasedWindow != 0 && releaseWindowSize <= otherAvailableWindow)
+            else if (releasedWindow > releaseWindowSize && releaseWindowSize <= otherAvailableWindow)
                 state.Emplace<StateSendingReleaseWindow>(*this).Request();
             else
                 state.Emplace<StateOperational>(*this);
