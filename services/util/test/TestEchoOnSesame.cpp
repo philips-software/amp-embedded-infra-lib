@@ -44,6 +44,8 @@ public:
 
 TEST_F(EchoOnSesameTest, invoke_service_proxy_method)
 {
+    sesame.GetObserver().Initialized();
+
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
     EXPECT_CALL(sesame, RequestSendMessage(38));
     serviceProxy.RequestSend([this]()
@@ -59,6 +61,8 @@ TEST_F(EchoOnSesameTest, invoke_service_proxy_method)
 
 TEST_F(EchoOnSesameTest, invoke_service_proxy_method_without_parameters)
 {
+    sesame.GetObserver().Initialized();
+
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
     EXPECT_CALL(sesame, RequestSendMessage(38));
     serviceProxy.RequestSend([this]()
@@ -70,6 +74,18 @@ TEST_F(EchoOnSesameTest, invoke_service_proxy_method_without_parameters)
     sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer));
 
     EXPECT_EQ((std::vector<uint8_t>{ 1, (3 << 3) | 2, 0 }), (std::vector<uint8_t>(writer.Storage().begin(), writer.Storage().begin() + 3)));
+}
+
+TEST_F(EchoOnSesameTest, RequestSendMessage_is_delayed_until_Initialized)
+{
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.MethodNoParameter();
+        });
+
+    EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
+    EXPECT_CALL(sesame, RequestSendMessage(38));
+    sesame.GetObserver().Initialized();
 }
 
 TEST_F(EchoOnSesameTest, service_method_is_invoked)

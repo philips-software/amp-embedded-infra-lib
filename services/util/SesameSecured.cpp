@@ -27,18 +27,18 @@ namespace services
         mbedtls_gcm_free(&sendContext);
     }
 
-    void SesameSecured::SetNextSendKey(const KeyType& sendKey, const IvType& sendIv)
+    void SesameSecured::SetNextSendKey(const KeyType& nextSendKey, const IvType& nextSendIv)
     {
-        nextKeys = { sendKey, sendIv };
+        nextKeys = { nextSendKey, nextSendIv };
 
         if (sendWriter == nullptr)
             ActivateSendKey();
     }
 
-    void SesameSecured::SetReceiveKey(const KeyType& receiveKey, const IvType& receiveIv)
+    void SesameSecured::SetReceiveKey(const KeyType& newReceiveKey, const IvType& newReceiveIv)
     {
-        mbedtls_gcm_setkey(&receiveContext, MBEDTLS_CIPHER_ID_AES, reinterpret_cast<const unsigned char*>(receiveKey.data()), receiveKey.size() * 8); //NOSONAR
-        this->receiveIv = receiveIv;
+        mbedtls_gcm_setkey(&receiveContext, MBEDTLS_CIPHER_ID_AES, reinterpret_cast<const unsigned char*>(newReceiveKey.data()), newReceiveKey.size() * 8); //NOSONAR
+        receiveIv = newReceiveIv;
     }
 
     void SesameSecured::Initialized()

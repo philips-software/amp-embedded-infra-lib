@@ -7,19 +7,19 @@ namespace services
         , tracer(tracer)
     {}
 
-    void TracingSesameWindowed::ReceivedInit(uint16_t otherAvailableWindow)
+    void TracingSesameWindowed::ReceivedInit(uint16_t newWindow)
     {
-        tracer.Trace() << "SesameWindowed::ReceivedInit otherAvailableWindow: " << otherAvailableWindow;
+        tracer.Trace() << "SesameWindowed::ReceivedInit newWindow: " << newWindow;
     }
 
-    void TracingSesameWindowed::ReceivedInitResponse(uint16_t otherAvailableWindow)
+    void TracingSesameWindowed::ReceivedInitResponse(uint16_t newWindow)
     {
-        tracer.Trace() << "SesameWindowed::ReceivedInitResponse otherAvailableWindow: " << otherAvailableWindow;
+        tracer.Trace() << "SesameWindowed::ReceivedInitResponse newWindow: " << newWindow;
     }
 
-    void TracingSesameWindowed::ReceivedReleaseWindow(uint16_t oldOtherAvailableWindow, uint16_t otherAvailableWindow)
+    void TracingSesameWindowed::ReceivedReleaseWindow(uint16_t oldWindow, uint16_t newWindow)
     {
-        tracer.Trace() << "SesameWindowed::ReceivedReleaseWindow from " << oldOtherAvailableWindow << " to " << otherAvailableWindow;
+        tracer.Trace() << "SesameWindowed::ReceivedReleaseWindow from " << oldWindow << " to " << newWindow;
     }
 
     void TracingSesameWindowed::ForwardingReceivedMessage(infra::StreamReaderWithRewinding& reader)

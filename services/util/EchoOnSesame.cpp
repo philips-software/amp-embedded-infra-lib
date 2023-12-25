@@ -8,7 +8,12 @@ namespace services
     {}
 
     void EchoOnSesame::Initialized()
-    {}
+    {
+        initialized = true;
+
+        if (requestedSize != infra::none)
+            RequestSendStream(*std::exchange(requestedSize, infra::none));
+    }
 
     void EchoOnSesame::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
@@ -22,7 +27,11 @@ namespace services
 
     void EchoOnSesame::RequestSendStream(std::size_t size)
     {
-        SesameObserver::Subject().RequestSendMessage(static_cast<uint16_t>(std::min(size, SesameObserver::Subject().MaxSendMessageSize())));
+        if (initialized)
+            SesameObserver::Subject().RequestSendMessage(std::min(size, SesameObserver::Subject().MaxSendMessageSize()));
+        else
+            // Before initialization, the maximum window advertised is not yet known, so postpone the RequestSendMessage until initialized
+            requestedSize = size;
     }
 
     void EchoOnSesame::AckReceived()

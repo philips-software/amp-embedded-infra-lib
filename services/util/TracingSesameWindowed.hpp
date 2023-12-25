@@ -13,9 +13,9 @@ namespace services
         TracingSesameWindowed(SesameEncoded& delegate, Tracer& tracer);
 
     protected:
-        void ReceivedInit(uint16_t otherAvailableWindow) override;
-        void ReceivedInitResponse(uint16_t otherAvailableWindow) override;
-        void ReceivedReleaseWindow(uint16_t oldOtherAvailableWindow, uint16_t otherAvailableWindow) override;
+        void ReceivedInit(uint16_t newWindow) override;
+        void ReceivedInitResponse(uint16_t newWindow) override;
+        void ReceivedReleaseWindow(uint16_t oldWindow, uint16_t newWindow) override;
         void ForwardingReceivedMessage(infra::StreamReaderWithRewinding& reader) override;
 
     private:

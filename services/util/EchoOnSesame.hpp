@@ -25,6 +25,10 @@ namespace services
 
     private:
         void ProcessMessage();
+
+    private:
+        infra::Optional<std::size_t> requestedSize;
+        bool initialized = false;
     };
 }
 

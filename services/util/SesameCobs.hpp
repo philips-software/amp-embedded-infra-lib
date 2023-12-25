@@ -26,7 +26,7 @@ namespace services
         // Implementation of Sesame
         void RequestSendMessage(std::size_t size) override;
         std::size_t MaxSendMessageSize() const override;
-        virtual std::size_t MessageSize(std::size_t size) const override;
+        std::size_t MessageSize(std::size_t size) const override;
 
     private:
         // Implementation of BufferedSerialCommunicationObserver

@@ -15,20 +15,20 @@ namespace services
         , private SesameEncodedObserver
     {
     public:
-        SesameWindowed(SesameEncoded& delegate);
+        explicit SesameWindowed(SesameEncoded& delegate);
 
         // Implementation of Sesame
         void RequestSendMessage(std::size_t size) override;
         std::size_t MaxSendMessageSize() const override;
 
     protected:
-        virtual void ReceivedInit(uint16_t otherAvailableWindow)
+        virtual void ReceivedInit(uint16_t newWindow)
         {}
 
-        virtual void ReceivedInitResponse(uint16_t otherAvailableWindow)
+        virtual void ReceivedInitResponse(uint16_t newWindow)
         {}
 
-        virtual void ReceivedReleaseWindow(uint16_t oldOtherAvailableWindow, uint16_t otherAvailableWindow)
+        virtual void ReceivedReleaseWindow(uint16_t oldWindow, uint16_t newWindow)
         {}
 
         virtual void ForwardingReceivedMessage(infra::StreamReaderWithRewinding& reader)
@@ -161,12 +161,13 @@ namespace services
         };
 
     private:
+        uint16_t ownBufferSize;
         uint16_t releaseWindowSize;
-        uint16_t ownWindowSize;
         bool initialized = false;
         infra::SharedPtr<infra::StreamReaderWithRewinding> receivedMessageReader;
         infra::AccessedBySharedPtr readerAccess;
         uint16_t otherAvailableWindow{ 0 };
+        uint16_t maxUsableBufferSize = 0;
         uint16_t releasedWindow{ 0 };
         bool sendInitResponse{ false };
         bool sending = false;

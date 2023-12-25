@@ -5,8 +5,8 @@ namespace services
 {
     SesameWindowed::SesameWindowed(SesameEncoded& delegate)
         : SesameEncodedObserver(delegate)
-        , ownWindowSize(SesameEncodedObserver::Subject().MaxSendMessageSize())
-        , releaseWindowSize(SesameEncodedObserver::Subject().MessageSize(sizeof(PacketReleaseWindow)))
+        , ownBufferSize(static_cast<uint16_t>(SesameEncodedObserver::Subject().MaxSendMessageSize()))
+        , releaseWindowSize(static_cast<uint16_t>(SesameEncodedObserver::Subject().MessageSize(sizeof(PacketReleaseWindow))))
         , state(infra::InPlaceType<StateSendingInit>(), *this)
     {
         state->Request();
@@ -19,7 +19,7 @@ namespace services
 
     std::size_t SesameWindowed::MaxSendMessageSize() const
     {
-        return (SesameEncodedObserver::Subject().MaxSendMessageSize() - sizeof(Operation) - releaseWindowSize - SesameEncodedObserver::Subject().MessageSize(sizeof(Operation))) / 2;
+        return (std::min(ownBufferSize, maxUsableBufferSize) - sizeof(Operation) - releaseWindowSize - SesameEncodedObserver::Subject().MessageSize(sizeof(Operation))) / 2;
     }
 
     void SesameWindowed::Initialized()
@@ -45,6 +45,7 @@ namespace services
             case Operation::init:
                 sendInitResponse = true;
                 otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
+                maxUsableBufferSize = otherAvailableWindow;
                 initialized = true;
                 ReceivedInit(otherAvailableWindow);
                 GetObserver().Initialized();
@@ -52,6 +53,7 @@ namespace services
             case Operation::initResponse:
                 releasedWindow = encodedSize;
                 otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
+                maxUsableBufferSize = otherAvailableWindow;
                 initialized = true;
                 ReceivedInitResponse(otherAvailableWindow);
                 GetObserver().Initialized();
@@ -160,7 +162,7 @@ namespace services
     void SesameWindowed::StateSendingInit::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
-        stream << PacketInit(communication.ownWindowSize);
+        stream << PacketInit(communication.ownBufferSize);
     }
 
     void SesameWindowed::StateSendingInit::MessageSent(std::size_t encodedSize)
@@ -184,7 +186,7 @@ namespace services
     void SesameWindowed::StateSendingInitResponse::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
-        stream << PacketInitResponse(communication.ownWindowSize);
+        stream << PacketInitResponse(communication.ownBufferSize);
 
         communication.releasedWindow = 0;
         communication.sendInitResponse = false;
