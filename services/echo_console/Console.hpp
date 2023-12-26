@@ -239,6 +239,7 @@ namespace application
         std::mutex mutex;
         std::condition_variable condition;
         bool processDone = false;
+        std::string receivedData;
     };
 
     namespace ConsoleExceptions
