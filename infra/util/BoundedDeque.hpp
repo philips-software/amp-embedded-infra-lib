@@ -655,7 +655,7 @@ namespace infra
 
         if (first_index == 0)
         {
-            for (; last_index != 0; --numAllocated, ++start, --last_index)
+            for (; last_index != 0; --numAllocated, start = index(start + 1), --last_index)
                 storage[index(0)].Destruct();
         }
         else
