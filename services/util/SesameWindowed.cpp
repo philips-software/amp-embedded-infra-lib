@@ -222,19 +222,14 @@ namespace services
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
         stream << Operation::message;
 
-        messageWriter = std::move(writer);
         communication.requestedSendMessageSize = infra::none;
-        communication.GetObserver().SendMessageStreamAvailable(writerAccess.MakeShared(*messageWriter));
+        communication.GetObserver().SendMessageStreamAvailable(std::move(writer));
     }
 
     void SesameWindowed::StateSendingMessage::MessageSent(std::size_t encodedSize)
     {
         communication.otherAvailableWindow -= encodedSize;
-    }
 
-    void SesameWindowed::StateSendingMessage::OnSent()
-    {
-        messageWriter = nullptr;
         communication.sending = false;
         communication.SetNextState();
     }

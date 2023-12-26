@@ -31,9 +31,10 @@ public:
             {
                 auto expectedMessageCopy = expectedMessage;
                 expectedMessage.clear();
-                base.GetObserver().MessageSent(sentData.size() + sentData.size() / 254 + 2);
-                EXPECT_EQ(expectedMessageCopy, sentData);
+                auto sentDataCopy = sentData;
                 sentData.clear();
+                base.GetObserver().MessageSent(sentDataCopy.size() + sentDataCopy.size() / 254 + 2);
+                EXPECT_EQ(expectedMessageCopy, sentDataCopy);
             });
         base.GetObserver().SendMessageStreamAvailable(writer.Emplace(sentData));
     }

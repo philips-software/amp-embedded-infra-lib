@@ -124,9 +124,6 @@ namespace services
 
             void Request() override;
             void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-
-        private:
-            void OnSent();
         };
 
         class StateOperational
@@ -148,15 +145,8 @@ namespace services
             void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
             void MessageSent(std::size_t encodedSize) override;
 
-            void OnSent();
-
         private:
             std::size_t requestedSize;
-            infra::SharedPtr<infra::StreamWriter> messageWriter;
-            infra::AccessedBySharedPtr writerAccess{ [this]()
-                {
-                    OnSent();
-                } };
         };
 
         class StateSendingReleaseWindow
@@ -167,9 +157,6 @@ namespace services
 
             void Request() override;
             void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-
-        private:
-            void OnSent();
         };
 
     private:
