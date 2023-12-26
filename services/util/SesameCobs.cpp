@@ -137,8 +137,7 @@ namespace services
         if (!sendingUserData && sendReqestedSize != infra::none)
         {
             sendStorage.clear();
-            SesameEncoded::GetObserver().SendMessageStreamAvailable(sendStream.Emplace(infra::inPlace, sendStorage, *sendReqestedSize));
-            sendReqestedSize = infra::none;
+            SesameEncoded::GetObserver().SendMessageStreamAvailable(sendStream.Emplace(infra::inPlace, sendStorage, *std::exchange(sendReqestedSize, infra::none)));
         }
     }
 
