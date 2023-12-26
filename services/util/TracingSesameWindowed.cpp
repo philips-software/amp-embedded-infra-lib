@@ -35,4 +35,24 @@ namespace services
             index += range.size();
         }
     }
+
+    void TracingSesameWindowed::SendingInit(uint16_t newWindow)
+    {
+        tracer.Trace() << "SesameWindowed::SendingInit newWindow: " << newWindow;
+    }
+
+    void TracingSesameWindowed::SendingInitResponse(uint16_t newWindow)
+    {
+        tracer.Trace() << "SesameWindowed::SendingInitResponse newWindow: " << newWindow;
+    }
+
+    void TracingSesameWindowed::SendingReleaseWindow(uint16_t deltaWindow)
+    {
+        tracer.Trace() << "SesameWindowed::SendingReleaseWindow deltaWindow: " << deltaWindow;
+    }
+
+    void TracingSesameWindowed::SendingMessage(infra::StreamWriter& writer)
+    {
+        tracer.Trace() << "SesameWindowed::SendingMessage";
+    }
 }

@@ -18,6 +18,11 @@ namespace services
         void ReceivedReleaseWindow(uint16_t oldWindow, uint16_t newWindow) override;
         void ForwardingReceivedMessage(infra::StreamReaderWithRewinding& reader) override;
 
+        void SendingInit(uint16_t newWindow) override;
+        void SendingInitResponse(uint16_t newWindow) override;
+        void SendingReleaseWindow(uint16_t deltaWindow) override;
+        void SendingMessage(infra::StreamWriter& writer) override;
+
     private:
         Tracer& tracer;
     };

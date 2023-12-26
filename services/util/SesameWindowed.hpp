@@ -34,6 +34,18 @@ namespace services
         virtual void ForwardingReceivedMessage(infra::StreamReaderWithRewinding& reader)
         {}
 
+        virtual void SendingInit(uint16_t newWindow)
+        {}
+
+        virtual void SendingInitResponse(uint16_t newWindow)
+        {}
+
+        virtual void SendingReleaseWindow(uint16_t deltaWindow)
+        {}
+
+        virtual void SendingMessage(infra::StreamWriter& writer)
+        {}
+
     private:
         // Implementation of SesameEncodedObserver
         void Initialized() override;

@@ -161,6 +161,7 @@ namespace services
 
     void SesameWindowed::StateSendingInit::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
+        communication.SendingInit(communication.ownBufferSize);
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
         stream << PacketInit(communication.ownBufferSize);
     }
@@ -185,6 +186,7 @@ namespace services
 
     void SesameWindowed::StateSendingInitResponse::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
+        communication.SendingInitResponse(communication.ownBufferSize);
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
         stream << PacketInitResponse(communication.ownBufferSize);
 
@@ -216,6 +218,7 @@ namespace services
 
     void SesameWindowed::StateSendingMessage::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
+        communication.SendingMessage(*writer);
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
         stream << Operation::message;
 
@@ -249,6 +252,7 @@ namespace services
 
     void SesameWindowed::StateSendingReleaseWindow::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
+        communication.SendingReleaseWindow(communication.releasedWindow);
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
         stream << PacketReleaseWindow(communication.releasedWindow);
         communication.releasedWindow = 0;
