@@ -11,8 +11,9 @@ namespace infra
 
             infra::EventDispatcher::Instance().Schedule([this]()
                 {
+                    auto actionCopy = std::move(scheduledAction);
                     scheduled = false;
-                    scheduledAction();
+                    actionCopy();
                 });
         }
     }
