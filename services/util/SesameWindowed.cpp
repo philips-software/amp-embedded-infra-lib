@@ -102,7 +102,7 @@ namespace services
                 if (receivedMessageReader == nullptr)
                     state.Emplace<StateSendingInitResponse>(*this).Request();
             }
-            else if (requestedSendMessageSize && SesameEncodedObserver::Subject().MessageSize(*requestedSendMessageSize + 1) <= otherAvailableWindow - releaseWindowSize)
+            else if (requestedSendMessageSize != infra::none && SesameEncodedObserver::Subject().MessageSize(*requestedSendMessageSize + 1) + releaseWindowSize <= otherAvailableWindow)
                 state.Emplace<StateSendingMessage>(*this).Request();
             else if (releasedWindow > releaseWindowSize && releaseWindowSize <= otherAvailableWindow)
                 state.Emplace<StateSendingReleaseWindow>(*this).Request();
