@@ -63,14 +63,6 @@ public:
     void ReceiveData(const std::vector<uint8_t>& data)
     {
         receivedDataReader.Storage() = data;
-        EXPECT_CALL(serial, Reader()).WillOnce(testing::ReturnRef(receivedDataReader)).WillOnce(testing::ReturnRef(emptyReader)).RetiresOnSaturation();
-        EXPECT_CALL(serial, AckReceived());
-        serial.GetObserver().DataReceived();
-    }
-
-    void ReceiveDataKeepReader(const std::vector<uint8_t>& data)
-    {
-        receivedDataReader.Storage() = data;
         EXPECT_CALL(serial, Reader()).WillOnce(testing::ReturnRef(receivedDataReader)).RetiresOnSaturation();
         EXPECT_CALL(serial, AckReceived());
         serial.GetObserver().DataReceived();
@@ -246,16 +238,17 @@ TEST_F(SesameCobsTest, receive_interrupted_data)
 TEST_F(SesameCobsTest, receive_two_messages)
 {
     ExpectReceivedMessageKeepReader({ 1, 2, 3, 4 }, 7);
-    ReceiveDataKeepReader(infra::ConstructBin()({ 0, 5, 1, 2, 3, 4, 0, 3, 5, 6, 0 }).Vector());
+    ReceiveData(infra::ConstructBin()({ 0, 5, 1, 2, 3, 4, 0, 3, 5, 6, 0 }).Vector());
 
     ExpectReceivedMessage({ 5, 6 }, 4);
-    EXPECT_CALL(serial, Reader()).WillOnce(testing::ReturnRef(receivedDataReader)).WillOnce(testing::ReturnRef(emptyReader)).RetiresOnSaturation();
+    EXPECT_CALL(serial, Reader()).WillOnce(testing::ReturnRef(receivedDataReader)).RetiresOnSaturation();
     EXPECT_CALL(serial, AckReceived());
     reader = nullptr;
 }
 
 TEST_F(SesameCobsTest, malformed_empty_message_is_discarded)
 {
+    EXPECT_CALL(serial, Reader()).WillOnce(testing::ReturnRef(emptyReader)).RetiresOnSaturation();
     ReceiveData(infra::ConstructBin()({ 0, 5, 0 }).Vector());
 }
 

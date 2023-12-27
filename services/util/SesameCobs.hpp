@@ -58,6 +58,7 @@ namespace services
         std::size_t sendSizeEncoded = 0;
         uint8_t nextOverhead = 1;
         bool overheadPositionIsPseudo = true;
+        bool receiving = false;
         infra::BoundedDeque<uint8_t>& receivedMessage;
         std::size_t receiveSizeEncoded = 0;
         std::size_t currentMessageSize = 0;

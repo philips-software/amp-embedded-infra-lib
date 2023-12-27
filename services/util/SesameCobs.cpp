@@ -37,6 +37,8 @@ namespace services
 
     void SesameCobs::DataReceived()
     {
+        receiving = true;
+
         while (receivedDataReader.Allocatable())
         {
             auto& reader = hal::BufferedSerialCommunicationObserver::Subject().Reader();
@@ -47,6 +49,8 @@ namespace services
             reader.Rewind(reader.ConstructSaveMarker() - data.size());
             hal::BufferedSerialCommunicationObserver::Subject().AckReceived();
         }
+
+        receiving = false;
     }
 
     void SesameCobs::ReceivedData(infra::ConstByteRange& data)
@@ -126,7 +130,8 @@ namespace services
             receivedDataReader.OnAllocatable([this, messageSize]()
                 {
                     receivedMessage.erase(receivedMessage.begin(), receivedMessage.begin() + messageSize);
-                    DataReceived();
+                    if (!receiving)
+                        DataReceived();
                 });
             GetObserver().ReceivedMessage(receivedDataReader.Emplace(infra::inPlace, receivedMessage, messageSize), std::exchange(receiveSizeEncoded, 0));
         }
