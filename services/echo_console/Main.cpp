@@ -53,7 +53,6 @@ ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::Buffere
 
 void ConsoleClientUart::Send(const std::string& message)
 {
-    messagesToBeSent.push_back(message);
     auto size = windowed.MaxSendMessageSize();
     for (std::size_t index = 0; index < message.size(); index += size)
         messagesToBeSent.push_back(message.substr(index, size));
