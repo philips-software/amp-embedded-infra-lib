@@ -55,7 +55,7 @@ packet types are defined:
 === Init
 
 Sending an Init packet initializes the protocol. An Init packet has one 16-bit unsigned parameter `size`
-which specifies the available window size, encoded in big endian order. An Init packet must be responded to with an InitResponse
+which specifies the available window size, encoded in little endian order. An Init packet must be responded to with an InitResponse
 packet. Before receiving an InitResponse, a peer must assume that no window is available, so
 further packets may not be sent.
 
@@ -78,7 +78,7 @@ Init packets.
 
 When an Init packet has been received, a host will clear its buffer, and advertise available buffer
 space using the InitResponse packet. Similar to the Init packet, the InitResponse packet
-has one 16-bit unsigned parameter `size` which advertises available buffer size.
+has one 16-bit unsigned parameter `size` encoded in little endian which advertises available buffer size.
 
 .InitResponse packet
 [bytefield]
@@ -96,7 +96,7 @@ COBS layer (1 for the COBS overhead byte, one for the terminating 0).
 
 When a host has processed incoming packets, and therefore frees up buffer space,
 it advertises the freed up space using the ReleaseWindow packet. The ReleaseWindow packet
-has one 16-bit unsigned parameter `size` which specifies the amount of bytes in the buffer
+has one 16-bit unsigned parameter `size` encoded in little endian which specifies the amount of bytes in the buffer
 freed up in addition to already known free space.
 
 .ReleaseWindow packet
@@ -109,8 +109,8 @@ freed up in addition to already known free space.
 ----
 
 In order to avoid continuous exchanges of ReleaseWindow packets, hosts should only release
-window sizes bigger than 4. When determining the buffer size needed to exchange packets, the
-size of the biggest packet should be increased by 4 to accommodate for a ReleaseWindow packet.
+window sizes bigger than 5. When determining the buffer size needed to exchange packets, the
+size of the biggest packet should be increased by 5 to accommodate for a ReleaseWindow packet.
 
 === Message
 
