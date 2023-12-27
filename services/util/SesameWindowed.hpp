@@ -46,6 +46,9 @@ namespace services
         virtual void SendingMessage(infra::StreamWriter& writer)
         {}
 
+        virtual void SettingOperational(infra::Optional<std::size_t> requestedSize, uint16_t releasedWindow, uint16_t otherWindow)
+        {}
+
     private:
         // Implementation of SesameEncodedObserver
         void Initialized() override;

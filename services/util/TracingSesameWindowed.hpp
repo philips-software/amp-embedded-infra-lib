@@ -22,6 +22,7 @@ namespace services
         void SendingInitResponse(uint16_t newWindow) override;
         void SendingReleaseWindow(uint16_t deltaWindow) override;
         void SendingMessage(infra::StreamWriter& writer) override;
+        void SettingOperational(infra::Optional<std::size_t> requestedSize, uint16_t releasedWindow, uint16_t otherWindow) override;
 
     private:
         Tracer& tracer;

@@ -55,4 +55,14 @@ namespace services
     {
         tracer.Trace() << "SesameWindowed::SendingMessage";
     }
+
+    void TracingSesameWindowed::SettingOperational(infra::Optional<std::size_t> requestedSize, uint16_t releasedWindow, uint16_t otherWindow)
+    {
+        tracer.Trace() << "SesameWindowed::SettingOperational requestedSize: ";
+        if (requestedSize)
+            tracer.Continue() << *requestedSize;
+        else
+            tracer.Continue() << "none";
+        tracer.Continue() << " releasedWindow: " << releasedWindow << " otherWindow " << otherWindow;
+    }
 }

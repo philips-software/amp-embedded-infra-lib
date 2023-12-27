@@ -19,6 +19,7 @@ namespace services
 
     std::size_t SesameWindowed::MaxSendMessageSize() const
     {
+        assert(initialized);
         return (std::min(ownBufferSize, maxUsableBufferSize) - sizeof(Operation) - releaseWindowSize - SesameEncodedObserver::Subject().MessageSize(sizeof(Operation))) / 2;
     }
 
@@ -196,7 +197,9 @@ namespace services
 
     SesameWindowed::StateOperational::StateOperational(SesameWindowed& communication)
         : State(communication)
-    {}
+    {
+        communication.SettingOperational(communication.requestedSendMessageSize, communication.releasedWindow, communication.otherAvailableWindow);
+    }
 
     void SesameWindowed::StateOperational::RequestSendMessage(std::size_t size)
     {
