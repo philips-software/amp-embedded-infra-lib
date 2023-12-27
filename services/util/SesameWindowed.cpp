@@ -44,20 +44,14 @@ namespace services
         switch (stream.Extract<Operation>())
         {
             case Operation::init:
-                sendInitResponse = true;
-                otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
-                maxUsableBufferSize = otherAvailableWindow;
-                initialized = true;
                 ReceivedInit(otherAvailableWindow);
-                GetObserver().Initialized();
+                sendInitResponse = true;
+                ReceivedInitialize(stream.Extract<infra::LittleEndian<uint16_t>>());
                 break;
             case Operation::initResponse:
-                releasedWindow = encodedSize;
-                otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
-                maxUsableBufferSize = otherAvailableWindow;
-                initialized = true;
                 ReceivedInitResponse(otherAvailableWindow);
-                GetObserver().Initialized();
+                releasedWindow = encodedSize;
+                ReceivedInitialize(stream.Extract<infra::LittleEndian<uint16_t>>());
                 break;
             case Operation::releaseWindow:
                 if (initialized)
@@ -78,6 +72,14 @@ namespace services
         }
 
         SetNextState();
+    }
+
+    void SesameWindowed::ReceivedInitialize(uint16_t window)
+    {
+        otherAvailableWindow = window;
+        maxUsableBufferSize = otherAvailableWindow;
+        initialized = true;
+        GetObserver().Initialized();
     }
 
     void SesameWindowed::ForwardReceivedMessage(uint16_t encodedSize)

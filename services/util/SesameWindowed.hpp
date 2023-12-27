@@ -57,6 +57,7 @@ namespace services
         void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, std::size_t encodedSize) override;
 
     private:
+        void ReceivedInitialize(uint16_t window);
         void ForwardReceivedMessage(uint16_t encodedSize);
         void SetNextState();
 
