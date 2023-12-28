@@ -14,7 +14,7 @@ namespace application
     {
     public:
         using services::EchoOnStreams::EchoOnStreams;
-        ~EchoSingleLoopback() override;
+        ~EchoSingleLoopback();
 
     protected:
         // Implementation of services::EchoOnStreams
