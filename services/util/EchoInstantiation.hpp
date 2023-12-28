@@ -63,7 +63,7 @@ namespace main_
     template<std::size_t MessageSize, std::size_t MaxServices>
     struct EchoForwarderToSerial
     {
-        EchoForwarderToSerial(services::Echo& from, hal::SerialCommunication& toSerial, services::MethodSerializerFactory& serializerFactory)
+        EchoForwarderToSerial(services::Echo& from, hal::BufferedSerialCommunication& toSerial, services::MethodSerializerFactory& serializerFactory)
             : to(toSerial, serializerFactory)
             , echoForwarder(from, to)
         {}
