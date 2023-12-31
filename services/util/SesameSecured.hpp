@@ -26,7 +26,7 @@ namespace services
         using WithBuffers = infra::WithStorage<infra::WithStorage<SesameSecured, infra::BoundedVector<uint8_t>::WithMaxSize<Size + blockSize>>, infra::BoundedVector<uint8_t>::WithMaxSize<Size + blockSize>>;
 
         SesameSecured(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const KeyType& sendKey, const IvType& sendIv, const KeyType& receiveKey, const IvType& receiveIv);
-        ~SesameSecured() override;
+        ~SesameSecured();
 
         void SetNextSendKey(const KeyType& nextSendKey, const IvType& nextSendIv);
         void SetReceiveKey(const KeyType& newReceiveKey, const IvType& newReceiveIv);
