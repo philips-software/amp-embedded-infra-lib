@@ -49,7 +49,7 @@ namespace hal
         using WithStorage = infra::WithStorage<BufferedSerialCommunicationOnUnbuffered, infra::AtomicByteDeque::WithStorage<Size + 1>>;
 
         BufferedSerialCommunicationOnUnbuffered(infra::AtomicByteDeque& buffer, SerialCommunication& delegate);
-        ~BufferedSerialCommunicationOnUnbuffered() override;
+        ~BufferedSerialCommunicationOnUnbuffered();
 
         // Implementation of BufferedSerialCommunication
         void SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion) override;

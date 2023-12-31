@@ -12,7 +12,7 @@ namespace main_
     template<std::size_t MessageSize>
     struct EchoOnSesame
     {
-        explicit EchoOnSesame(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory)
+        EchoOnSesame(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory)
             : cobs(serialCommunication)
             , echo(windowed, serializerFactory)
         {}
