@@ -394,15 +394,17 @@ namespace application
                         {
                             MethodReceived(*service, method, value.Get<infra::ProtoLengthDelimited>().Parser());
 
+                            receivedData.erase(receivedData.begin(), receivedData.begin() + data.Reader().ConstructSaveMarker());
                             data.Failed();
                             return;
                         }
 
                     MethodNotFound(*service, methodId);
+                    receivedData.erase(receivedData.begin(), receivedData.begin() + data.Reader().ConstructSaveMarker());
+                    return;
                 }
 
             ServiceNotFound(serviceId, methodId);
-
             receivedData.erase(receivedData.begin(), receivedData.begin() + data.Reader().ConstructSaveMarker());
         }
     }
