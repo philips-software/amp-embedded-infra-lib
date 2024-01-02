@@ -12,6 +12,11 @@ namespace services
         state->Request();
     }
 
+    void SesameWindowed::Stop()
+    {
+        readerAccess.SetAction([]() {});
+    }
+
     void SesameWindowed::RequestSendMessage(std::size_t size)
     {
         state->RequestSendMessage(size);

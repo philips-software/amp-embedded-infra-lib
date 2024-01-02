@@ -139,10 +139,10 @@ public:
             EXPECT_CALL(base, MessageSize(3)).WillOnce(testing::Return(5));
             ExpectRequestSendMessageForInit(16);
         } };
+    infra::SharedOptional<infra::StdVectorInputStreamReader::WithStorage> reader;
     services::SesameWindowed communication{ base };
     testing::StrictMock<services::SesameObserverMock> observer{ communication };
     infra::SharedPtr<infra::StreamWriter> savedWriter;
-    infra::SharedOptional<infra::StdVectorInputStreamReader::WithStorage> reader;
     infra::SharedPtr<infra::StreamReaderWithRewinding> savedReader;
 };
 
@@ -491,5 +491,17 @@ TEST_F(SesameWindowedTest, window_is_released_after_message_has_been_processed)
     ReceiveMessage("abcd");
 
     ExpectRequestSendMessageForReleaseWindow(12);
+    savedReader = nullptr;
+}
+
+TEST_F(SesameWindowedTest, no_new_message_after_stop)
+{
+    ReceiveInitResponse(12);
+
+    ExpectReceivedMessageAndSaveReader("abcd");
+    ReceiveMessage("abcd");
+
+    // ExpectRequestSendMessageForReleaseWindow(12);
+    communication.Stop();
     savedReader = nullptr;
 }

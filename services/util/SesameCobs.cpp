@@ -17,6 +17,12 @@ namespace services
               })
     {}
 
+    void SesameCobs::Stop()
+    {
+        receivedDataReader.OnAllocatable([]() {});
+        sendStream.OnAllocatable([]() {});
+    }
+
     void SesameCobs::RequestSendMessage(std::size_t size)
     {
         assert(sendReqestedSize == infra::none);

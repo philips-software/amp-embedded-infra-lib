@@ -257,3 +257,28 @@ TEST_F(SesameCobsTest, malformed_message_is_forwarded)
     ExpectReceivedMessage({ 1 }, 4);
     ReceiveData(infra::ConstructBin()({ 0, 5, 1, 0 }).Vector());
 }
+
+TEST_F(SesameCobsTest, no_new_received_message_after_stop)
+{
+    ExpectReceivedMessageKeepReader({ 1, 2, 3, 4 }, 7);
+    ReceiveData(infra::ConstructBin()({ 0, 5, 1, 2, 3, 4, 0, 3, 5, 6, 0 }).Vector());
+
+    // ExpectReceivedMessage({ 5, 6 }, 4);
+    // EXPECT_CALL(serial, Reader()).WillOnce(testing::ReturnRef(receivedDataReader)).RetiresOnSaturation();
+    // EXPECT_CALL(serial, AckReceived());
+    communication.Stop();
+    reader = nullptr;
+}
+
+TEST_F(SesameCobsTest, no_new_send_message_after_stop)
+{
+    EXPECT_CALL(observer, SendMessageStreamAvailable).WillOnce(testing::SaveArg<0>(&writer));
+    communication.RequestSendMessage(4);
+
+    infra::DataOutputStream::WithErrorPolicy stream(*writer);
+    stream << infra::ConstructBin()({ 1, 2, 3, 4 }).Range();
+
+    // ExpectSendData({ 0 });
+    communication.Stop();
+    writer = nullptr;
+}

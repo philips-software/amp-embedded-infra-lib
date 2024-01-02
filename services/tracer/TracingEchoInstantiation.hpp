@@ -16,6 +16,12 @@ namespace main_
             , echo(windowed, serializerFactory)
         {}
 
+        ~TracingEchoOnSesame()
+        {
+            cobs.Stop();
+            windowed.Stop();
+        }
+
         operator services::Echo&()
         {
             return echo;

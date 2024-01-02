@@ -17,6 +17,8 @@ namespace services
     public:
         explicit SesameWindowed(SesameEncoded& delegate);
 
+        void Stop();
+
         // Implementation of Sesame
         void RequestSendMessage(std::size_t size) override;
         std::size_t MaxSendMessageSize() const override;
