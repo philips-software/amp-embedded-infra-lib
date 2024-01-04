@@ -158,8 +158,8 @@ namespace services
         TracingEchoOnStreamsDescendant(services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy, services::Tracer& tracer, Args&&... args);
 
         // Implementation of TracingEchoOnStreams
-        void AddServiceTracer(ServiceTracer& service);
-        void RemoveServiceTracer(ServiceTracer& service);
+        void AddServiceTracer(ServiceTracer& service) override;
+        void RemoveServiceTracer(ServiceTracer& service) override;
 
     protected:
         // Implementation of EchoOnStreams
