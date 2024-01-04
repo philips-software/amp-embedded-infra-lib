@@ -290,7 +290,7 @@ void ConsoleClientWebSocket::ConnectionFailed(ConnectFailReason reason)
 int main(int argc, char* argv[], const char* env[])
 {
     infra::IoOutputStream ioOutputStream;
-    services::Tracer tracer(ioOutputStream);
+    services::TracerToStream tracer(ioOutputStream);
     services::SetGlobalTracerInstance(tracer);
     hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
 

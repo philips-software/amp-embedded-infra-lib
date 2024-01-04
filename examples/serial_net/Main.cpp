@@ -41,7 +41,7 @@ int main(int argc, const char* argv[], const char* env[])
     static main_::NetworkAdapter network;
     static hal::TimerServiceGeneric timerService;
     static infra::IoOutputStream ioOutputStream;
-    static services::Tracer tracer(ioOutputStream);
+    static services::TracerToStream tracer(ioOutputStream);
 
     static infra::BoundedVector<SerialBridge>::WithMaxSize<8> serialBridges;
 
