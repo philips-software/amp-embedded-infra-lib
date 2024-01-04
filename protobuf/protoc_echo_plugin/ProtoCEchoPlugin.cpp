@@ -1121,7 +1121,7 @@ SetSerializer(serializer);
     {
         auto constructors = std::make_shared<Access>("public");
         auto constructor = std::make_shared<Constructor>(service->name + "Tracer", "tracingEcho.AddServiceTracer(*this);\n", 0);
-        constructor->Parameter("services::TracingEchoOnConnection& tracingEcho");
+        constructor->Parameter("services::TracingEchoOnStreams& tracingEcho");
         constructor->Initializer("services::ServiceTracer(serviceId)");
         constructor->Initializer("tracingEcho(tracingEcho)");
         constructors->Add(constructor);
@@ -1160,7 +1160,7 @@ SetSerializer(serializer);
     {
         auto dataMembers = std::make_shared<Access>("public");
 
-        dataMembers->Add(std::make_shared<DataMember>("tracingEcho", "services::TracingEchoOnConnection&"));
+        dataMembers->Add(std::make_shared<DataMember>("tracingEcho", "services::TracingEchoOnStreams&"));
 
         serviceFormatter->Add(dataMembers);
     }
@@ -1327,7 +1327,7 @@ switch (methodId)
 
         auto includesByHeader = std::make_shared<IncludesByHeader>();
         includesByHeader->Path("generated/echo/" + root.GetFile(*file)->name + ".pb.hpp");
-        includesByHeader->Path("services/network/TracingEchoOnConnection.hpp");
+        includesByHeader->Path("protobuf/echo/TracingEcho.hpp");
         formatter.Add(includesByHeader);
 
         auto includesBySource = std::make_shared<IncludesBySource>();

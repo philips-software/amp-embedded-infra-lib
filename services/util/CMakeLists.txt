@@ -72,6 +72,7 @@ target_sources(services.util PRIVATE
     Terminal.hpp
     TimeWithLocalization.cpp
     TimeWithLocalization.hpp
+    TracingEchoOnSesame.hpp
     WritableConfiguration.hpp
 )
 

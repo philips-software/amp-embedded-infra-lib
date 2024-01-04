@@ -2,8 +2,8 @@
 #define SERVICES_TRACING_ECHO_INSTANTIATIONS
 
 #include "services/tracer/Tracer.hpp"
-#include "services/tracer/TracingSesameWindowed.hpp"
 #include "services/util/EchoInstantiation.hpp"
+#include "services/util/TracingEchoOnSesame.hpp"
 
 namespace main_
 {
@@ -12,8 +12,7 @@ namespace main_
     {
         TracingEchoOnSesame(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, services::Tracer& tracer)
             : cobs(serialCommunication)
-            , windowed(cobs, tracer)
-            , echo(windowed, serializerFactory)
+            , echo(serializerFactory, services::echoErrorPolicyAbortOnMessageFormatError, tracer, windowed)
         {}
 
         ~TracingEchoOnSesame()
@@ -28,8 +27,8 @@ namespace main_
         }
 
         services::SesameCobs::WithMaxMessageSize<MessageSize> cobs;
-        services::TracingSesameWindowed windowed;
-        services::EchoOnSesame echo;
+        services::SesameWindowed windowed{ cobs };
+        services::TracingEchoOnSesame echo;
     };
 }
 
