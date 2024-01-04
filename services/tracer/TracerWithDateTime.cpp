@@ -4,7 +4,7 @@
 namespace services
 {
     TracerWithDateTime::TracerWithDateTime(infra::TextOutputStream& stream)
-        : Tracer(stream)
+        : TracerToStream(stream)
     {}
 
     void TracerWithDateTime::InsertHeader()
