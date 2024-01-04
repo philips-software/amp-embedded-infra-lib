@@ -88,7 +88,7 @@ namespace services
             }
             else
             {
-                tracer.Trace() << "< Unknown service " << serviceId << " method " << methodId;
+                tracer.Trace() << "> Unknown service " << serviceId << " method " << methodId;
                 return deserializer;
             }
         }
@@ -106,9 +106,9 @@ namespace services
             auto serviceId = static_cast<uint32_t>(parser.GetVarInt());
             auto message = parser.GetField();
             if (stream.Failed())
-                tracer.Trace() << "> message too big";
+                tracer.Trace() << "< message too big";
             else if (formatErrorPolicy.Failed() || !message.first.Is<infra::ProtoLengthDelimited>())
-                tracer.Trace() << "> Malformed message";
+                tracer.Trace() << "< Malformed message";
             else
             {
                 SendingMethod(serviceId, message.second, message.first.Get<infra::ProtoLengthDelimited>());
@@ -135,7 +135,7 @@ namespace services
             infra::BoundedVectorInputStream stream(readerBuffer, infra::noFail);
             infra::ProtoLengthDelimited contentsCopy(stream, stream.ErrorPolicy(), static_cast<uint32_t>(stream.Available()));
 
-            tracer.Trace() << "< ";
+            tracer.Trace() << "> ";
             receivingService->TraceMethod(receivingMethodId, contentsCopy, tracer);
 
             deserializer->ExecuteMethod();
@@ -152,11 +152,11 @@ namespace services
 
             if (service != nullptr)
             {
-                tracer.Trace() << "> ";
+                tracer.Trace() << "< ";
                 service->TraceMethod(methodId, contents, tracer);
             }
             else
-                tracer.Trace() << "> Unknown service " << serviceId << " method " << methodId;
+                tracer.Trace() << "< Unknown service " << serviceId << " method " << methodId;
         }
 
         const ServiceTracer* TracingEchoOnStreamsDescendantHelper::FindService(uint32_t serviceId) const
