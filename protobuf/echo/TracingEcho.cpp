@@ -70,6 +70,7 @@ namespace services
         infra::SharedPtr<MethodSerializer> TracingEchoOnStreamsDescendantHelper::GrantSend(const infra::SharedPtr<MethodSerializer>& serializer)
         {
             writerBuffer.clear();
+            this->serializer = serializer;
             return infra::MakeContainedSharedObject(static_cast<MethodSerializer&>(*this), serializer);
         }
 
