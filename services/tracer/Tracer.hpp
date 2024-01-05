@@ -81,6 +81,7 @@ namespace services
             , colour(colour)
         {}
 
+        static inline const uint8_t resetColour = 0;
         static inline const uint8_t black = 30;
         static inline const uint8_t red = 31;
         static inline const uint8_t green = 32;
