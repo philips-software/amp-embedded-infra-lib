@@ -117,6 +117,7 @@ namespace services
             private:
                 infra::SharedPtr<infra::StreamWriter> delegate;
                 infra::BoundedVectorStreamWriter writer;
+                uint32_t& skipping;
                 infra::ByteRange savedRange;
                 infra::ByteRange savedDelegateRange;
             };
@@ -128,6 +129,7 @@ namespace services
             infra::SharedOptional<TracingWriter> tracingWriter;
             infra::SharedPtr<MethodSerializer> serializer;
             infra::BoundedVector<uint8_t>::WithMaxSize<1024> writerBuffer;
+            uint32_t skipping = 0;
 
             infra::SharedPtr<MethodDeserializer> deserializer;
             infra::BoundedVector<uint8_t>::WithMaxSize<1024> readerBuffer;

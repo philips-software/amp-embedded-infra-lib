@@ -69,7 +69,6 @@ namespace services
 
         infra::SharedPtr<MethodSerializer> TracingEchoOnStreamsDescendantHelper::GrantSend(const infra::SharedPtr<MethodSerializer>& serializer)
         {
-            writerBuffer.clear();
             this->serializer = serializer;
             return infra::MakeContainedSharedObject(static_cast<MethodSerializer&>(*this), serializer);
         }
@@ -104,16 +103,36 @@ namespace services
             infra::StreamErrorPolicy formatErrorPolicy(infra::softFail);
             infra::ProtoParser parser(stream, formatErrorPolicy);
             auto serviceId = static_cast<uint32_t>(parser.GetVarInt());
-            auto message = parser.GetField();
-            if (stream.Failed())
-                tracer.Trace() << "< message too big";
-            else if (formatErrorPolicy.Failed() || !message.first.Is<infra::ProtoLengthDelimited>())
-                tracer.Trace() << "< Malformed message";
+            auto save = stream.Reader().ConstructSaveMarker();
+            auto [contents, methodId] = parser.GetPartialField();
+
+            if (stream.Failed() || contents.Get<infra::PartialProtoLengthDelimited>().length > stream.Available())
+            {
+                if (writerBuffer.max_size() - writerBuffer.size() < contents.Get<infra::PartialProtoLengthDelimited>().length)
+                {
+                    tracer.Trace() << "< message too big";
+                    skipping = contents.Get<infra::PartialProtoLengthDelimited>().length - (writerBuffer.size() - stream.Reader().Processed());
+                    writerBuffer.clear();
+                }
+            }
             else
             {
-                SendingMethod(serviceId, message.second, message.first.Get<infra::ProtoLengthDelimited>());
-                if (stream.Failed() || formatErrorPolicy.Failed())
-                    tracer.Continue() << "... Malformed message";
+                stream.Reader().Rewind(save);
+                infra::ProtoParser newParser(stream, formatErrorPolicy);
+                auto message = newParser.GetField();
+
+                if (formatErrorPolicy.Failed() || !message.first.Is<infra::ProtoLengthDelimited>())
+                {
+                    tracer.Trace() << "< Malformed message";
+                    writerBuffer.clear();
+                }
+                else
+                {
+                    SendingMethod(serviceId, methodId, message.first.Get<infra::ProtoLengthDelimited>());
+                    if (stream.Failed() || formatErrorPolicy.Failed())
+                        tracer.Continue() << "... Malformed message";
+                    writerBuffer.clear();
+                }
             }
         }
 
@@ -171,12 +190,14 @@ namespace services
         TracingEchoOnStreamsDescendantHelper::TracingWriter::TracingWriter(infra::SharedPtr<infra::StreamWriter>&& delegate, TracingEchoOnStreamsDescendantHelper& echo)
             : delegate(std::move(delegate))
             , writer(echo.writerBuffer)
+            , skipping(echo.skipping)
         {}
 
         void TracingEchoOnStreamsDescendantHelper::TracingWriter::Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy)
         {
             infra::StreamErrorPolicy tracingErrorPolicy(infra::noFail);
-            writer.Insert(range, tracingErrorPolicy);
+            writer.Insert(infra::DiscardHead(range, skipping), tracingErrorPolicy);
+            skipping -= infra::Head(range, skipping).size();
             delegate->Insert(range, errorPolicy);
         }
 
