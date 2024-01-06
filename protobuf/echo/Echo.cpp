@@ -133,7 +133,6 @@ namespace services
         else
         {
             sendingProxy = nullptr;
-            methodSerializer->SerializationDone();
             methodSerializer = nullptr;
             TryGrantSend();
         }

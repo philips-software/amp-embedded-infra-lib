@@ -32,9 +32,6 @@ namespace services
         virtual ~MethodSerializer() = default;
 
         virtual bool Serialize(infra::SharedPtr<infra::StreamWriter>&& writer) = 0;
-
-        virtual void SerializationDone()
-        {}
     };
 
     class MethodDeserializerDummy

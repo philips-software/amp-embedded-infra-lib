@@ -87,7 +87,6 @@ namespace services
         private:
             // Implementation of MethodSerializer
             virtual bool Serialize(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-            virtual void SerializationDone() override;
 
             // Implementation of MethodDeserializer
             virtual void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
@@ -97,6 +96,7 @@ namespace services
         private:
             void SendingMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents) const;
             const ServiceTracer* FindService(uint32_t serviceId) const;
+            void SerializationDone();
 
         private:
             class TracingWriter
@@ -126,12 +126,14 @@ namespace services
             services::Tracer& tracer;
             infra::IntrusiveForwardList<ServiceTracer> services;
 
-            infra::SharedOptional<TracingWriter> tracingWriter;
+            infra::NotifyingSharedOptional<TracingWriter> tracingWriter{ [this]() { SerializationDone(); }};;
             infra::SharedPtr<MethodSerializer> serializer;
+            infra::AccessedBySharedPtr serializerAccess{ [this]() { serializer = nullptr; }};
             infra::BoundedVector<uint8_t>::WithMaxSize<1024> writerBuffer;
             uint32_t skipping = 0;
 
             infra::SharedPtr<MethodDeserializer> deserializer;
+            infra::AccessedBySharedPtr deserializerAccess{ [this]() { deserializer = nullptr; }};
             infra::BoundedVector<uint8_t>::WithMaxSize<1024> readerBuffer;
             const ServiceTracer* receivingService;
             uint32_t receivingMethodId;
