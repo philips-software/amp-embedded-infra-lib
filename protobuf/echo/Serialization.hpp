@@ -302,7 +302,7 @@ namespace services
 
         sender.Fill(stream);
         writer = nullptr;
-        return stream.Failed();
+        return stream.Failed() || !sender.BufferEmpty();
     }
 
     template<class Message, class... Args>

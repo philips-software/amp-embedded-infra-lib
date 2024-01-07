@@ -11,6 +11,8 @@ namespace services
     {
         initialized = true;
 
+        EchoOnStreams::Initialized();
+
         if (requestedSize != infra::none)
             RequestSendStream(*std::exchange(requestedSize, infra::none));
     }
