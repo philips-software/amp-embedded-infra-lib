@@ -126,14 +126,24 @@ namespace services
             services::Tracer& tracer;
             infra::IntrusiveForwardList<ServiceTracer> services;
 
-            infra::NotifyingSharedOptional<TracingWriter> tracingWriter{ [this]() { SerializationDone(); }};;
+            infra::NotifyingSharedOptional<TracingWriter> tracingWriter{ [this]()
+                {
+                    SerializationDone();
+                } };
+            ;
             infra::SharedPtr<MethodSerializer> serializer;
-            infra::AccessedBySharedPtr serializerAccess{ [this]() { serializer = nullptr; }};
+            infra::AccessedBySharedPtr serializerAccess{ [this]()
+                {
+                    serializer = nullptr;
+                } };
             infra::BoundedVector<uint8_t>::WithMaxSize<1024> writerBuffer;
             uint32_t skipping = 0;
 
             infra::SharedPtr<MethodDeserializer> deserializer;
-            infra::AccessedBySharedPtr deserializerAccess{ [this]() { deserializer = nullptr; }};
+            infra::AccessedBySharedPtr deserializerAccess{ [this]()
+                {
+                    deserializer = nullptr;
+                } };
             infra::BoundedVector<uint8_t>::WithMaxSize<1024> readerBuffer;
             const ServiceTracer* receivingService;
             uint32_t receivingMethodId;
