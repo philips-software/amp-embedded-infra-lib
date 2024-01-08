@@ -28,6 +28,7 @@ namespace services
     public:
         virtual void RequestSendMessage(std::size_t size) = 0;
         virtual std::size_t MaxSendMessageSize() const = 0;
+        virtual void Reset() = 0;
     };
 
     class SesameEncodedObserver
@@ -49,6 +50,7 @@ namespace services
         virtual void RequestSendMessage(std::size_t size) = 0;
         virtual std::size_t MaxSendMessageSize() const = 0;
         virtual std::size_t MessageSize(std::size_t size) const = 0;
+        virtual void Reset() = 0;
     };
 }
 

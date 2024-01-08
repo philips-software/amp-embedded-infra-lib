@@ -60,6 +60,11 @@ namespace services
         return std::min(SesameObserver::Subject().MaxSendMessageSize(), sendBuffer.max_size()) - blockSize;
     }
 
+    void SesameSecured::Reset()
+    {
+        SesameObserver::Subject().Reset();
+    }
+
     void SesameSecured::SetSendKey(const KeyType& sendKey, const IvType& sendIv)
     {
         mbedtls_gcm_setkey(&sendContext, MBEDTLS_CIPHER_ID_AES, reinterpret_cast<const unsigned char*>(sendKey.data()), sendKey.size() * 8); //NOSONAR

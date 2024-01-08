@@ -505,3 +505,19 @@ TEST_F(SesameWindowedTest, no_new_message_after_stop)
     communication.Stop();
     savedReader = nullptr;
 }
+
+TEST_F(SesameWindowedTest, Reset_forwards_to_cobs_and_requests_initialize)
+{
+    ReceiveInitResponse(12);
+
+    ExpectRequestSendMessageForInit(16);
+
+    EXPECT_CALL(base, Reset());
+    communication.Reset();
+
+    ReceiveInitResponse(12);
+
+    ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
+    ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
+    communication.RequestSendMessage(4);
+}

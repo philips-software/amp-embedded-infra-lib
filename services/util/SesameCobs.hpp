@@ -29,6 +29,7 @@ namespace services
         void RequestSendMessage(std::size_t size) override;
         std::size_t MaxSendMessageSize() const override;
         std::size_t MessageSize(std::size_t size) const override;
+        void Reset() override;
 
     private:
         // Implementation of BufferedSerialCommunicationObserver
@@ -51,12 +52,14 @@ namespace services
         void SendFirstDelimiter();
         void SendLastDelimiter();
         void SendData(infra::ConstByteRange data);
+        void FinishReset();
         uint8_t FindDelimiter() const;
 
     private:
         infra::Optional<std::size_t> sendReqestedSize;
         bool sendingFirstPacket = true;
         bool sendingUserData = false;
+        bool resetting = false;
         std::size_t sendSizeEncoded = 0;
         uint8_t nextOverhead = 1;
         bool overheadPositionIsPseudo = true;
@@ -67,7 +70,10 @@ namespace services
         infra::NotifyingSharedOptional<infra::LimitedStreamReaderWithRewinding::WithInput<infra::BoundedDequeInputStreamReader>> receivedDataReader;
 
         infra::BoundedVector<uint8_t>& sendStorage;
-        infra::NotifyingSharedOptional<infra::LimitedStreamWriter::WithOutput<infra::BoundedVectorStreamWriter>> sendStream;
+        infra::NotifyingSharedOptional<infra::LimitedStreamWriter::WithOutput<infra::BoundedVectorStreamWriter>> sendStream{ [this]()
+            {
+                SendStreamFilled();
+            } };
         infra::ConstByteRange dataToSend;
         uint8_t frameSize;
     };

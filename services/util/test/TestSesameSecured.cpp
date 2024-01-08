@@ -187,3 +187,9 @@ TEST_F(SesameSecuredTest, different_sizes)
         Receive(message);
     }
 }
+
+TEST_F(SesameSecuredTest, Reset_is_forwarded)
+{
+    EXPECT_CALL(lower, Reset());
+    upper.Subject().Reset();
+}

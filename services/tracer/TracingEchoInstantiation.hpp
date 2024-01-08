@@ -26,6 +26,11 @@ namespace main_
             return echo;
         }
 
+        void Reset()
+        {
+            windowed.Reset();
+        }
+
         services::SesameCobs::WithMaxMessageSize<MessageSize> cobs;
         services::SesameWindowed windowed{ cobs };
         services::TracingEchoOnSesame echo;

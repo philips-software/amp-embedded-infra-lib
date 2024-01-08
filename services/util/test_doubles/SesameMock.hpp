@@ -12,6 +12,7 @@ namespace services
     public:
         MOCK_METHOD(void, RequestSendMessage, (std::size_t size), (override));
         MOCK_METHOD(std::size_t, MaxSendMessageSize, (), (const, override));
+        MOCK_METHOD(void, Reset, (), (override));
     };
 
     class SesameObserverMock
@@ -32,6 +33,7 @@ namespace services
         MOCK_METHOD(void, RequestSendMessage, (std::size_t size), (override));
         MOCK_METHOD(std::size_t, MaxSendMessageSize, (), (const, override));
         MOCK_METHOD(std::size_t, MessageSize, (std::size_t), (const, override));
+        MOCK_METHOD(void, Reset, (), (override));
     };
 
     class SesameEncodedObserverMock

@@ -22,34 +22,21 @@ namespace services
         // Implementation of Sesame
         void RequestSendMessage(std::size_t size) override;
         std::size_t MaxSendMessageSize() const override;
+        void Reset() override;
 
     protected:
-        virtual void ReceivedInit(uint16_t newWindow)
-        {}
+        // clang-format off
+        virtual void ReceivedInit(uint16_t newWindow) {}
+        virtual void ReceivedInitResponse(uint16_t newWindow) {}
+        virtual void ReceivedReleaseWindow(uint16_t oldWindow, uint16_t newWindow) {}
+        virtual void ForwardingReceivedMessage(infra::StreamReaderWithRewinding& reader) {}
+        virtual void SendingInit(uint16_t newWindow) {}
+        virtual void SendingInitResponse(uint16_t newWindow) {}
+        virtual void SendingReleaseWindow(uint16_t deltaWindow) {}
+        virtual void SendingMessage(infra::StreamWriter& writer) {}
+        virtual void SettingOperational(infra::Optional<std::size_t> requestedSize, uint16_t releasedWindow, uint16_t otherWindow) {}
 
-        virtual void ReceivedInitResponse(uint16_t newWindow)
-        {}
-
-        virtual void ReceivedReleaseWindow(uint16_t oldWindow, uint16_t newWindow)
-        {}
-
-        virtual void ForwardingReceivedMessage(infra::StreamReaderWithRewinding& reader)
-        {}
-
-        virtual void SendingInit(uint16_t newWindow)
-        {}
-
-        virtual void SendingInitResponse(uint16_t newWindow)
-        {}
-
-        virtual void SendingReleaseWindow(uint16_t deltaWindow)
-        {}
-
-        virtual void SendingMessage(infra::StreamWriter& writer)
-        {}
-
-        virtual void SettingOperational(infra::Optional<std::size_t> requestedSize, uint16_t releasedWindow, uint16_t otherWindow)
-        {}
+        // clang-format on
 
     private:
         // Implementation of SesameEncodedObserver
@@ -166,8 +153,8 @@ namespace services
         };
 
     private:
-        uint16_t ownBufferSize;
-        uint16_t releaseWindowSize;
+        const uint16_t ownBufferSize;
+        const uint16_t releaseWindowSize;
         bool initialized = false;
         infra::SharedPtr<infra::StreamReaderWithRewinding> receivedMessageReader;
         infra::AccessedBySharedPtr readerAccess;

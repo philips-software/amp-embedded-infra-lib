@@ -28,6 +28,22 @@ namespace services
         return (std::min(ownBufferSize, maxUsableBufferSize) - sizeof(Operation) - releaseWindowSize - SesameEncodedObserver::Subject().MessageSize(sizeof(Operation))) / 2;
     }
 
+    void SesameWindowed::Reset()
+    {
+        SesameEncodedObserver::Subject().Reset();
+        assert(receivedMessageReader == nullptr);
+        assert(!readerAccess.Referenced());
+        initialized = false;
+        otherAvailableWindow = 0;
+        maxUsableBufferSize = 0;
+        releasedWindow = 0;
+        sendInitResponse = false;
+        sending = false;
+        requestedSendMessageSize = infra::none;
+        state.Emplace<StateSendingInit>(*this);
+        state->Request();
+    }
+
     void SesameWindowed::Initialized()
     {
         std::abort();

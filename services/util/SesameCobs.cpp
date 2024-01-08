@@ -11,10 +11,6 @@ namespace services
         : hal::BufferedSerialCommunicationObserver(serial)
         , receivedMessage(receivedMessage)
         , sendStorage(sendStorage)
-        , sendStream([this]()
-              {
-                  SendStreamFilled();
-              })
     {}
 
     void SesameCobs::Stop()
@@ -39,6 +35,35 @@ namespace services
     std::size_t SesameCobs::MessageSize(std::size_t size) const
     {
         return size + size / 254 + 2;
+    }
+
+    void SesameCobs::Reset()
+    {
+        if (!sendStream.Allocatable())
+            sendStream.OnAllocatable([this]()
+                {
+                    sendStorage.clear();
+                    sendStream.OnAllocatable([this]()
+                        {
+                            SendStreamFilled();
+                        });
+                });
+        else
+            sendStorage.clear();
+
+        sendingFirstPacket = true;
+        nextOverhead = 1;
+        overheadPositionIsPseudo = true;
+        receivedMessage.clear();
+        receiveSizeEncoded = 0;
+        currentMessageSize = 0;
+        receivedDataReader.OnAllocatable([]() {});
+        sendReqestedSize = infra::none;
+
+        if (sendingUserData)
+            resetting = true;
+        else
+            FinishReset();
     }
 
     void SesameCobs::DataReceived()
@@ -146,10 +171,7 @@ namespace services
     void SesameCobs::CheckReadyToSendUserData()
     {
         if (!sendingUserData && sendReqestedSize != infra::none)
-        {
-            sendStorage.clear();
             SesameEncoded::GetObserver().SendMessageStreamAvailable(sendStream.Emplace(infra::inPlace, sendStorage, *std::exchange(sendReqestedSize, infra::none)));
-        }
     }
 
     void SesameCobs::SendStreamFilled()
@@ -165,7 +187,9 @@ namespace services
 
     void SesameCobs::SendOrDone()
     {
-        if (dataToSend.empty())
+        if (resetting)
+            FinishReset();
+        else if (dataToSend.empty())
             SendLastDelimiter();
         else
             SendFrame();
@@ -179,7 +203,9 @@ namespace services
         hal::BufferedSerialCommunicationObserver::Subject().SendData(infra::MakeByteRange(frameSize), [this]()
             {
                 --frameSize;
-                if (frameSize != 0)
+                if (resetting)
+                    FinishReset();
+                else if (frameSize != 0)
                     SendData(infra::Head(dataToSend, frameSize));
                 else
                     SendFrameDone();
@@ -217,11 +243,18 @@ namespace services
         sendSizeEncoded += 1;
         hal::BufferedSerialCommunicationObserver::Subject().SendData(infra::MakeByteRange(messageDelimiter), [this]()
             {
-                SesameEncoded::GetObserver().MessageSent(sendSizeEncoded);
-                sendSizeEncoded = 0;
+                if (resetting)
+                    FinishReset();
+                else
+                {
+                    sendStorage.clear();
+                    dataToSend.clear();
+                    SesameEncoded::GetObserver().MessageSent(sendSizeEncoded);
+                    sendSizeEncoded = 0;
 
-                sendingUserData = false;
-                CheckReadyToSendUserData();
+                    sendingUserData = false;
+                    CheckReadyToSendUserData();
+                }
             });
     }
 
@@ -232,6 +265,15 @@ namespace services
             {
                 SendFrameDone();
             });
+    }
+
+    void SesameCobs::FinishReset()
+    {
+        resetting = false;
+        sendingUserData = false;
+        sendSizeEncoded = 0;
+
+        CheckReadyToSendUserData();
     }
 
     uint8_t SesameCobs::FindDelimiter() const
