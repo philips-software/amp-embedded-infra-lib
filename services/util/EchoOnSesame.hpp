@@ -13,6 +13,8 @@ namespace services
     public:
         EchoOnSesame(Sesame& subject, services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
 
+        void Reset();
+
         // Implementation of SesameObserver
         void Initialized() override;
         void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;

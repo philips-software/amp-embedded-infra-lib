@@ -28,8 +28,7 @@ class EchoOnSesameTest
 public:
     void ReceiveMessage(infra::ConstByteRange data)
     {
-        infra::ByteInputStreamReader reader{ data };
-        sesame.GetObserver().ReceivedMessage(infra::UnOwnedSharedPtr(reader));
+        sesame.GetObserver().ReceivedMessage(reader.Emplace(data));
     }
 
     services::MethodSerializerFactory::ForServices<services::ServiceStub>::AndProxies<services::ServiceStubProxy> serializerFactory;
@@ -41,6 +40,7 @@ public:
     testing::StrictMock<services::ServiceStub> service{ echo };
 
     infra::SharedOptional<testing::StrictMock<services::MethodSerializerMock>> serializer;
+    infra::SharedOptional<infra::ByteInputStreamReader> reader;
 };
 
 TEST_F(EchoOnSesameTest, invoke_service_proxy_method)
@@ -56,7 +56,6 @@ TEST_F(EchoOnSesameTest, invoke_service_proxy_method)
 
     infra::ByteOutputStreamWriter::WithStorage<128> writer;
     sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer));
-
     EXPECT_EQ((std::vector<uint8_t>{ 1, (1 << 3) | 2, 2, 8, 5 }), (std::vector<uint8_t>(writer.Processed().begin(), writer.Processed().end())));
 }
 
@@ -76,7 +75,6 @@ TEST_F(EchoOnSesameTest, invoke_service_proxy_method_is_split_over_two_packets)
     infra::LimitedStreamWriter limitedWriter(writer, 4);
     sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(limitedWriter));
     sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer));
-
     EXPECT_EQ((std::vector<uint8_t>{ 1, (1 << 3) | 2, 2, 8, 5 }), (std::vector<uint8_t>(writer.Processed().begin(), writer.Processed().end())));
 }
 
@@ -93,7 +91,6 @@ TEST_F(EchoOnSesameTest, invoke_service_proxy_method_without_parameters)
 
     infra::ByteOutputStreamWriter::WithStorage<128> writer;
     sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer));
-
     EXPECT_EQ((std::vector<uint8_t>{ 1, (3 << 3) | 2, 0 }), (std::vector<uint8_t>(writer.Processed().begin(), writer.Processed().end())));
 }
 
@@ -128,7 +125,6 @@ TEST_F(EchoOnSesameTest, partial_message_is_discarded_after_Initialize)
     sesame.GetObserver().Initialized();
 
     sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer));
-
     EXPECT_EQ((std::vector<uint8_t>{ 1, (1 << 3) | 2, 2, 8 }), (std::vector<uint8_t>(writer.Processed().begin(), writer.Processed().end())));
 }
 
@@ -178,4 +174,49 @@ TEST_F(EchoOnSesameTest, MethodNotFound_is_reported)
 {
     EXPECT_CALL(errorPolicy, MethodNotFound(1, 2));
     ReceiveMessage(infra::ConstructBin()({ 1, 18, 2, 8, 5 }).Range());
+}
+
+TEST_F(EchoOnSesameTest, Reset_is_forwarded)
+{
+    EXPECT_CALL(sesame, Reset());
+    echo.Reset();
+}
+
+TEST_F(EchoOnSesameTest, Reset_releases_reader)
+{
+    EXPECT_CALL(service, Method(5));
+
+    ReceiveMessage(infra::ConstructBin()({ 1, 10, 2, 8, 5 }).Range());
+
+    ASSERT_FALSE(reader.Allocatable());
+
+    EXPECT_CALL(sesame, Reset());
+    echo.Reset();
+
+    EXPECT_TRUE(reader.Allocatable());
+}
+
+TEST_F(EchoOnSesameTest, Reset_forgets_send_requests)
+{
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.MethodNoParameter();
+        });
+
+    EXPECT_CALL(sesame, Reset());
+    echo.Reset();
+    // EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
+    // EXPECT_CALL(sesame, RequestSendMessage(38));
+    sesame.GetObserver().Initialized();
+
+    EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
+    EXPECT_CALL(sesame, RequestSendMessage(38));
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.Method(5);
+        });
+
+    infra::ByteOutputStreamWriter::WithStorage<128> writer;
+    sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer));
+    EXPECT_EQ((std::vector<uint8_t>{ 1, (1 << 3) | 2, 2, 8, 5 }), (std::vector<uint8_t>(writer.Processed().begin(), writer.Processed().end())));
 }

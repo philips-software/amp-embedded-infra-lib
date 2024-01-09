@@ -30,7 +30,7 @@ namespace main_
 
         void Reset()
         {
-            windowed.Reset();
+            echo.Reset();
         }
 
         services::SesameCobs::WithMaxMessageSize<MessageSize> cobs;

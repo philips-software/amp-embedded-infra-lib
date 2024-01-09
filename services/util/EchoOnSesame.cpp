@@ -7,6 +7,13 @@ namespace services
         , SesameObserver(subject)
     {}
 
+    void EchoOnSesame::Reset()
+    {
+        requestedSize = infra::none;
+        ReleaseReader();
+        SesameObserver::Subject().Reset();
+    }
+
     void EchoOnSesame::Initialized()
     {
         initialized = true;
