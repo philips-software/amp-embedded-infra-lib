@@ -2,6 +2,7 @@
 #define HAL_ANALOG_TO_DIGITAL_PIN_HPP
 
 #include "infra/util/AutoResetFunction.hpp"
+#include "infra/util/MemoryRange.hpp"
 #include "infra/util/Unit.hpp"
 
 namespace hal
@@ -16,7 +17,9 @@ namespace hal
         ~AnalogToDigitalPin() = default;
 
     public:
-        virtual void Measure(const infra::Function<void(infra::Quantity<Unit, Storage> value)>& onDone) = 0;
+        using SamplesRange = infra::MemoryRange<infra::Quantity<Unit, Storage>>;
+
+        virtual void Measure(SamplesRange samples, const infra::Function<void()>& onDone) = 0;
     };
 
     class AnalogToDigitalPinImplBase
@@ -25,7 +28,7 @@ namespace hal
         ~AnalogToDigitalPinImplBase() = default;
 
     public:
-        virtual void Measure(const infra::Function<void(int32_t value)>& onDone) = 0;
+        virtual void Measure(infra::MemoryRange<int32_t> samples, const infra::Function<void()>& onDone) = 0;
     };
 
     template<class Conversion, class Unit, class Storage, class Impl>
@@ -35,12 +38,13 @@ namespace hal
     {
     public:
         template<class... Args>
-        AnalogToDigitalPinConverter(Args&&... args);
+        explicit AnalogToDigitalPinConverter(Args&&... args);
 
-        void Measure(const infra::Function<void(infra::Quantity<Unit, Storage> value)>& onDone);
+        void Measure(typename AnalogToDigitalPin<Unit, Storage>::SamplesRange samples, const infra::Function<void()>& onDone);
 
     private:
-        infra::AutoResetFunction<void(infra::Quantity<Unit, Storage> value)> onDone;
+        typename AnalogToDigitalPin<Unit, Storage>::SamplesRange samples;
+        infra::AutoResetFunction<void()> onDone;
     };
 
     ////    Implementation    ////
@@ -52,12 +56,16 @@ namespace hal
     {}
 
     template<class Conversion, class Unit, class Storage, class Impl>
-    void AnalogToDigitalPinConverter<Conversion, Unit, Storage, Impl>::Measure(const infra::Function<void(infra::Quantity<Unit, Storage> value)>& onDone)
+    void AnalogToDigitalPinConverter<Conversion, Unit, Storage, Impl>::Measure(typename AnalogToDigitalPin<Unit, Storage>::SamplesRange samples, const infra::Function<void()>& onDone)
     {
+        this->samples = samples;
         this->onDone = onDone;
-        Impl::Measure([this](int32_t value)
+        Impl::Measure(samples, [this]()
             {
-                this->onDone(infra::Quantity<Conversion, Storage>(value));
+                for (auto& sample : this->samples)
+                    sample = infra::Quantity<Conversion, Storage>(sample);
+
+                this->onDone();
             });
     }
 }
