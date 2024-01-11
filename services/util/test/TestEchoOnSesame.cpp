@@ -220,3 +220,33 @@ TEST_F(EchoOnSesameTest, Reset_forgets_send_requests)
     sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer));
     EXPECT_EQ((std::vector<uint8_t>{ 1, (1 << 3) | 2, 2, 8, 5 }), (std::vector<uint8_t>(writer.Processed().begin(), writer.Processed().end())));
 }
+
+TEST_F(EchoOnSesameTest, after_Reset_RequestSendMessage_is_delayed_until_Initialized)
+{
+    // build
+    sesame.GetObserver().Initialized();
+
+    EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
+    EXPECT_CALL(sesame, RequestSendMessage(38));
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.Method(5);
+        });
+
+    infra::ByteOutputStreamWriter::WithStorage<128> writer;
+    sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer));
+
+    // operate
+    EXPECT_CALL(sesame, Reset());
+    echo.Reset();
+
+    // check
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.MethodNoParameter();
+        });
+
+    EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
+    EXPECT_CALL(sesame, RequestSendMessage(38));
+    sesame.GetObserver().Initialized();
+}

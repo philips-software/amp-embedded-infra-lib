@@ -9,6 +9,7 @@ namespace services
 
     void EchoOnSesame::Reset()
     {
+        initialized = false;
         requestedSize = infra::none;
         ReleaseReader();
         SesameObserver::Subject().Reset();
