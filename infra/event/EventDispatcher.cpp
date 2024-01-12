@@ -50,10 +50,25 @@ namespace infra
     {
         if (scheduledActions[scheduledActionsPopIndex].second)
         {
-            scheduledActions[scheduledActionsPopIndex].first();
-            scheduledActions[scheduledActionsPopIndex].first = nullptr;
-            scheduledActions[scheduledActionsPopIndex].second = false;
-            scheduledActionsPopIndex = (scheduledActionsPopIndex + 1) % scheduledActions.size();
+            struct ExceptionSafePop
+            {
+                ExceptionSafePop(const ExceptionSafePop&) = delete;
+                ExceptionSafePop& operator=(const ExceptionSafePop&) = delete;
+
+                ~ExceptionSafePop()
+                {
+                    worker.scheduledActions[worker.scheduledActionsPopIndex].first = nullptr;
+                    worker.scheduledActions[worker.scheduledActionsPopIndex].second = false;
+                    worker.scheduledActionsPopIndex = (worker.scheduledActionsPopIndex + 1) % worker.scheduledActions.size();
+                }
+
+                EventDispatcherWorkerImpl& worker;
+            };
+
+            ExceptionSafePop popAction{ *this };
+
+            scheduledActions[scheduledActionsPopIndex]
+                .first();
         }
     }
 
