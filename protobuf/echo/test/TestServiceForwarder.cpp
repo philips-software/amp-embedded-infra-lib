@@ -4,7 +4,6 @@
 #include "protobuf/echo/ServiceForwarder.hpp"
 #include "protobuf/echo/test_doubles/EchoMock.hpp"
 
-
 class ServiceForwarderAllTest
     : public testing::Test
 {
