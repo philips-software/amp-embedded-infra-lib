@@ -36,7 +36,6 @@ namespace hal
         AnalogToDigitalBulkSamples(const AnalogToDigitalBulkSamples& other) = delete;
         AnalogToDigitalBulkSamples& operator=(const AnalogToDigitalBulkSamples& other) = delete;
         ~AnalogToDigitalBulkSamples() = default;
-        
         virtual void Measure(infra::MemoryRange<Storage> buffer, const infra::Function<void()>& onDone) = 0;
     };
 
