@@ -2,6 +2,7 @@
 #include "infra/stream/StdVectorOutputStream.hpp"
 #include "protobuf/echo/ServiceForwarder.hpp"
 #include "protobuf/echo/test_doubles/EchoMock.hpp"
+#include "infra/stream/LimitedInputStream.hpp"
 
 class ServiceForwarderAllTest
     : public testing::Test
@@ -43,6 +44,29 @@ TEST_F(ServiceForwarderAllTest, forward_message)
         });
 
     EXPECT_EQ((std::vector<uint8_t>{ 1, 42, 5, 1, 2, 3, 4, 5 }), writer.Storage());
+}
+
+TEST_F(ServiceForwarderAllTest, forward_message_with_limited_readbuffer)
+{
+    infra::StdVectorOutputStreamWriter::WithStorage writer;
+
+    echoFrom.NotifyObservers([this, &writer](auto& service)
+        {
+            infra::StdVectorInputStream::WithStorage inputStream{ infra::inPlace, std::vector<uint8_t>{ 1, 2, 3, 4, 5 } };
+            infra::LimitedStreamReaderWithRewinding limitedReader(inputStream.Reader(), inputStream.Reader().Available() - 1);
+
+            EXPECT_CALL(echoTo, RequestSend(testing::_)).WillOnce(testing::Invoke([this, &service, &writer](services::ServiceProxy& serviceProxy)
+                {
+                    EXPECT_CALL(echoFrom, ServiceDone());
+                    auto serializer = serviceProxy.GrantSend();
+                    EXPECT_FALSE(serializer->Serialize(infra::UnOwnedSharedPtr(writer)));
+                }));
+            auto deserializer = service.StartMethod(1, 5, 5, errorPolicy);
+            deserializer->MethodContents(infra::UnOwnedSharedPtr(limitedReader));
+            deserializer->ExecuteMethod();
+        });
+
+    EXPECT_EQ((std::vector<uint8_t>{ 1, 42, 5, 1, 2, 3, 4 }), writer.Storage());
 }
 
 class ServiceForwarderTest
