@@ -13,7 +13,7 @@ namespace infra
     {
     public:
         BufferingStreamReader(infra::BoundedDeque<uint8_t>& buffer, infra::StreamReaderWithRewinding& input);
-        ~BufferingStreamReader() override;
+        ~BufferingStreamReader();
 
         // Implementation of StreamReaderWithRewinding
         void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
