@@ -28,11 +28,20 @@ namespace hal
         virtual void Measure(const infra::Function<void(int32_t value)>& onDone) = 0;
     };
 
+    template<class Storage>
+    class AnalogToDigitalBulkSamples
+    {
+    public:
+        ~AnalogToDigitalBulkSamples() = default;
+        virtual void Measure(infra::MemoryRange<Storage> buffer, const infra::Function<void()>& onDone) = 0;
+    };
+
     template<class Conversion, class Unit, class Storage, class Impl>
     class AnalogToDigitalPinConverter
         : public AnalogToDigitalPin<Unit, Storage>
         , public Impl
     {
+        static_assert(std::is_base_of<AnalogToDigitalPinImplBase, Impl>::value, "Impl must be a derived class of AnalogToDigitalPinImplBase.");
     public:
         template<class... Args>
         AnalogToDigitalPinConverter(Args&&... args);
