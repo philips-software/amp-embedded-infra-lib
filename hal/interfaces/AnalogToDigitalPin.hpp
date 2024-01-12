@@ -42,6 +42,7 @@ namespace hal
         , public Impl
     {
         static_assert(std::is_base_of<AnalogToDigitalPinImplBase, Impl>::value, "Impl must be a derived class of AnalogToDigitalPinImplBase.");
+
     public:
         template<class... Args>
         AnalogToDigitalPinConverter(Args&&... args);
