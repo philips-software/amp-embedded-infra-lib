@@ -6,7 +6,7 @@ namespace services
         : stream(stream)
     {}
 
-#ifdef EMIL_ENABLE_GLOBAL_TRACING
+#if defined(EMIL_ENABLE_TRACING)
     infra::TextOutputStream Tracer::Trace()
     {
         StartTrace();
@@ -18,7 +18,7 @@ namespace services
     {
         return stream;
     }
-#else
+#elif defined(EMIL_DISABLE_TRACING)
     Tracer::EmptyTracing Tracer::Trace()
     {
         return EmptyTracing{};
