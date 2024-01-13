@@ -7,6 +7,7 @@ target_link_libraries(services.util PUBLIC
     infra.syntax
     infra.timer
     protobuf.echo
+    services.tracer
 )
 
 target_sources(services.util PRIVATE

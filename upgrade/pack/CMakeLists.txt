@@ -17,3 +17,7 @@ target_sources(upgrade.pack PRIVATE
 add_library(upgrade.pack_keys ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
 protocol_buffer_echo_cpp(upgrade.pack_keys UpgradeKeys.proto)
+
+target_link_libraries(upgrade.pack_keys PUBLIC
+    services.tracer
+)

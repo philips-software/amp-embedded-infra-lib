@@ -46,6 +46,19 @@ namespace infra
         {}
     }
 
+    void EventDispatcherWorkerImpl::ExecuteUntil(const infra::Function<bool()>& predicate)
+    {
+        while (!predicate())
+        {
+            ExecuteAllActions();
+
+            if (predicate())
+                break;
+
+            Idle();
+        }
+    }
+
     void EventDispatcherWorkerImpl::ExecuteFirstAction()
     {
         if (scheduledActions[scheduledActionsPopIndex].second)

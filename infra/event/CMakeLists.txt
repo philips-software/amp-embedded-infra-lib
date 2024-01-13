@@ -21,5 +21,12 @@ target_sources(infra.event PRIVATE
     SystemStateManager.hpp
 )
 
+if (EMIL_HOST_BUILD)
+    target_sources(infra.event PRIVATE
+        EventDispatcherThreadAware.cpp
+        EventDispatcherThreadAware.hpp
+    )
+endif()
+
 add_subdirectory(test)
 add_subdirectory(test_helper)

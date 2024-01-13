@@ -9,10 +9,7 @@ class EventDispatcherTest
     , public infra::EventDispatcherFixture
 {};
 
-TEST_F(EventDispatcherTest, TestConstruction)
-{}
-
-TEST_F(EventDispatcherTest, TestSchedule)
+TEST_F(EventDispatcherTest, scheduled_action_is_executed)
 {
     infra::MockCallback<void()> callback;
     EXPECT_CALL(callback, callback());
@@ -24,7 +21,7 @@ TEST_F(EventDispatcherTest, TestSchedule)
     ExecuteAllActions();
 }
 
-TEST_F(EventDispatcherTest, TestScheduleTwice)
+TEST_F(EventDispatcherTest, two_actions_are_executed)
 {
     infra::MockCallback<void()> callback;
     EXPECT_CALL(callback, callback()).Times(2);
@@ -40,7 +37,7 @@ TEST_F(EventDispatcherTest, TestScheduleTwice)
     ExecuteAllActions();
 }
 
-TEST_F(EventDispatcherTest, TestExecuteOneEvent)
+TEST_F(EventDispatcherTest, ExecuteFirstAction_executes_first_action)
 {
     infra::MockCallback<void()> callback;
 
@@ -63,6 +60,75 @@ TEST_F(EventDispatcherTest, TestExecuteOneEvent)
     ExecuteFirstAction();
 }
 
+class EventDispatcherMock
+    : public infra::EventDispatcher::WithSize<50>
+{
+public:
+    MOCK_METHOD(void, RequestExecution, (), (override));
+    MOCK_METHOD(void, Idle, (), (override));
+};
+
+class EventDispatcherDetailedTest
+    : public testing::Test
+    , public EventDispatcherMock
+{};
+
+TEST_F(EventDispatcherDetailedTest, ExecuteUntil_executes_until_first_action_sets_predicate_true)
+{
+    bool done = false;
+
+    EXPECT_CALL(*this, RequestExecution());
+    infra::EventDispatcher::Instance().Schedule([&]()
+        {
+            done = true;
+        });
+
+    ExecuteUntil([&]()
+        {
+            return done;
+        });
+}
+
+TEST_F(EventDispatcherDetailedTest, ExecuteUntil_executes_until_idle_sets_predicate_true)
+{
+    bool done = false;
+
+    EXPECT_CALL(*this, RequestExecution());
+    infra::EventDispatcher::Instance().Schedule([&]() {});
+
+    EXPECT_CALL(*this, Idle()).WillOnce(testing::Invoke([&]()
+        {
+            done = true;
+        }));
+
+    ExecuteUntil([&]()
+        {
+            return done;
+        });
+}
+
+TEST_F(EventDispatcherDetailedTest, ExecuteUntil_executes_until_second_action_sets_predicate_true)
+{
+    bool done = false;
+
+    EXPECT_CALL(*this, RequestExecution());
+    infra::EventDispatcher::Instance().Schedule([&]() {});
+
+    EXPECT_CALL(*this, Idle()).WillOnce(testing::Invoke([&]()
+        {
+            EXPECT_CALL(*this, RequestExecution());
+            infra::EventDispatcher::Instance().Schedule([&]()
+                {
+                    done = true;
+                });
+        }));
+
+    ExecuteUntil([&]()
+        {
+            return done;
+        });
+}
+
 bool helper1turn = true;
 
 void helper1()
@@ -77,7 +143,7 @@ void helper2()
     helper1turn = true;
 }
 
-TEST_F(EventDispatcherTest, TestPerformance)
+TEST_F(EventDispatcherTest, execute_a_lot)
 {
     for (int j = 0; j != 10; ++j)
     {

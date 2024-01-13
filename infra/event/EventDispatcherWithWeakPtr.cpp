@@ -46,6 +46,19 @@ namespace infra
         {}
     }
 
+    void EventDispatcherWithWeakPtrWorker::ExecuteUntil(const infra::Function<bool()>& predicate)
+    {
+        while (!predicate())
+        {
+            ExecuteAllActions();
+
+            if (predicate())
+                break;
+
+            Idle();
+        }
+    }
+
     bool EventDispatcherWithWeakPtrWorker::IsIdle() const
     {
         return !scheduledActions[scheduledActionsPopIndex].second;
