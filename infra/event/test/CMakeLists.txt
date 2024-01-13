@@ -12,6 +12,7 @@ target_sources(infra.event_test PRIVATE
     TestClaimableResource.cpp
     TestEventDispatcher.cpp
     TestEventDispatcherWithWeakPtr.cpp
+    TestEventDispatcherThreadAware.cpp
     TestQueueForOneReaderOneIrqWriter.cpp
     TestSystemStateManager.cpp
 )
