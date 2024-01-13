@@ -116,7 +116,7 @@ TEST_F(EventDispatcherWithWeakPtrDetailedTest, ExecuteUntil_executes_until_first
 
     ExecuteUntil([&]()
         {
-            return done == true;
+            return done;
         });
 }
 
@@ -134,7 +134,7 @@ TEST_F(EventDispatcherWithWeakPtrDetailedTest, ExecuteUntil_executes_until_idle_
 
     ExecuteUntil([&]()
         {
-            return done == true;
+            return done;
         });
 }
 
@@ -156,6 +156,6 @@ TEST_F(EventDispatcherWithWeakPtrDetailedTest, ExecuteUntil_executes_until_secon
 
     ExecuteUntil([&]()
         {
-            return done == true;
+            return done;
         });
 }

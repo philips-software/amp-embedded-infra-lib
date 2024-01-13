@@ -38,7 +38,7 @@ TEST_F(EventDispatcherThreadAwareTest, scheduled_action_is_executed)
 
     ExecuteUntil([&]()
         {
-            return done == true;
+            return done;
         });
 
     EXPECT_EQ(1, idleCount);

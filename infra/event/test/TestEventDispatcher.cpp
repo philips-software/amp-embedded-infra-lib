@@ -85,7 +85,7 @@ TEST_F(EventDispatcherDetailedTest, ExecuteUntil_executes_until_first_action_set
 
     ExecuteUntil([&]()
         {
-            return done == true;
+            return done;
         });
 }
 
@@ -103,7 +103,7 @@ TEST_F(EventDispatcherDetailedTest, ExecuteUntil_executes_until_idle_sets_predic
 
     ExecuteUntil([&]()
         {
-            return done == true;
+            return done;
         });
 }
 
@@ -125,7 +125,7 @@ TEST_F(EventDispatcherDetailedTest, ExecuteUntil_executes_until_second_action_se
 
     ExecuteUntil([&]()
         {
-            return done == true;
+            return done;
         });
 }
 
