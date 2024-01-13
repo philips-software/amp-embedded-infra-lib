@@ -10,8 +10,9 @@ target_link_libraries(infra.event_test PUBLIC
 
 target_sources(infra.event_test PRIVATE
     TestClaimableResource.cpp
-    TestEventHandler.cpp
-    TestEventHandlerWithWeakPtr.cpp
+    TestEventDispatcher.cpp
+    TestEventDispatcherWithWeakPtr.cpp
+    TestEventDispatcherThreadAware.cpp
     TestQueueForOneReaderOneIrqWriter.cpp
     TestSystemStateManager.cpp
 )
