@@ -41,7 +41,7 @@ TEST_F(EventDispatcherThreadAwareTest, scheduled_action_is_executed)
             return done;
         });
 
-    EXPECT_EQ(1, idleCount);
+    EXPECT_THAT(idleCount, testing::Eq(1));
 
     t.join();
 }
