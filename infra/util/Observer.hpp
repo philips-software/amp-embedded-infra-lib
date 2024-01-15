@@ -26,7 +26,7 @@ namespace infra
     protected:
         Observer(const Observer& other) = delete;
         Observer& operator=(const Observer& other) = delete;
-        virtual ~Observer();
+        ~Observer();
 
     public:
         SubjectType& Subject() const;
@@ -67,7 +67,7 @@ namespace infra
     protected:
         SingleObserver(const SingleObserver& other) = delete;
         SingleObserver& operator=(const SingleObserver& other) = delete;
-        virtual ~SingleObserver();
+        ~SingleObserver();
 
     public:
         SubjectType& Subject() const;
@@ -104,7 +104,7 @@ namespace infra
         Subject() = default;
         Subject(const Subject&) = delete;
         Subject& operator=(const Subject&) = delete;
-        virtual ~Subject();
+        ~Subject();
 
         using SubjectType = typename ObserverType::SubjectType;
         friend class Observer<ObserverType_, SubjectType>;
@@ -136,7 +136,7 @@ namespace infra
         Subject() = default;
         Subject(const Subject&) = delete;
         Subject& operator=(const Subject&) = delete;
-        virtual ~Subject();
+        ~Subject();
 
         friend class SingleObserver<ObserverType_, ObserverSubjectType>;
         virtual void RegisterObserver(SingleObserver<ObserverType_, ObserverSubjectType>* observer);

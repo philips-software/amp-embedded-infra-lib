@@ -72,6 +72,9 @@ namespace services
             auto range = contentsReader->ExtractContiguousRange(forwardingSize - processedSize);
             contentsWriter->Insert(range, errorPolicy);
             processedSize += range.size();
+
+            if (contentsReader->Empty())
+                contentsReader = nullptr;
         }
 
         if (processedSize == forwardingSize || (contentsWriter != nullptr && contentsWriter->Empty()))
