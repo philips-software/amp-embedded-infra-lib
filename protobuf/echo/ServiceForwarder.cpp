@@ -74,7 +74,7 @@ namespace services
             processedSize += range.size();
 
             if (contentsReader->Empty())
-                contentsReader = nullptr;
+                break;
         }
 
         if (processedSize == forwardingSize || (contentsWriter != nullptr && contentsWriter->Empty()))
