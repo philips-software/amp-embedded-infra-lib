@@ -22,21 +22,20 @@ namespace hal
         virtual void Measure(SamplesRange samples, const infra::Function<void()>& onDone) = 0;
     };
 
+    template<class Storage>
     class AnalogToDigitalPinImplBase
     {
     protected:
         ~AnalogToDigitalPinImplBase() = default;
 
     public:
-        virtual void Measure(infra::MemoryRange<int32_t> samples, const infra::Function<void()>& onDone) = 0;
-    };
+        explicit AnalogToDigitalPinImplBase(infra::MemoryRange<Storage> samplesBuffer)
+            : samplesBuffer(samplesBuffer)
+        {}
+        virtual void Measure(const infra::Function<void()>& onDone) = 0;
 
-    template<class Storage>
-    class AnalogToDigitalBulkSamples
-    {
-    public:
-        ~AnalogToDigitalBulkSamples() = default;
-        virtual void Measure(infra::MemoryRange<Storage> buffer, const infra::Function<void()>& onDone) = 0;
+    protected:
+        infra::MemoryRange<Storage> samplesBuffer;
     };
 
     template<class Conversion, class Unit, class Storage, class Impl>
@@ -44,7 +43,6 @@ namespace hal
         : public AnalogToDigitalPin<Unit, Storage>
         , public Impl
     {
-        static_assert(std::is_base_of<AnalogToDigitalPinImplBase, Impl>::value, "Impl must be a derived class of AnalogToDigitalPinImplBase.");
     public:
         template<class... Args>
         explicit AnalogToDigitalPinConverter(Args&&... args);
@@ -69,10 +67,10 @@ namespace hal
     {
         this->samples = samples;
         this->onDone = onDone;
-        Impl::Measure(samples, [this]()
+        Impl::Measure([this]()
             {
-                for (auto& sample : this->samples)
-                    sample = infra::Quantity<Conversion, Storage>(sample);
+                for (std::size_t index = 0; index < this->samples.size(); index++)
+                    this->samples[index] = infra::Quantity<Conversion, Storage>(Impl::samplesBuffer[index]);
 
                 this->onDone();
             });
