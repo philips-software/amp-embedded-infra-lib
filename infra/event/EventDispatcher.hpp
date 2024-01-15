@@ -39,6 +39,7 @@ namespace infra
 
         void Run();
         void ExecuteAllActions();
+        void ExecuteUntil(const infra::Function<bool()>& predicate);
 
     protected:
         virtual void RequestExecution();
