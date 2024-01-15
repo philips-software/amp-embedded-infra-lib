@@ -17,9 +17,9 @@ namespace services
 
         virtual infra::TextOutputStream Continue();
 
-#ifdef EMIL_ENABLE_GLOBAL_TRACING
+#if defined(EMIL_ENABLE_TRACING)
         infra::TextOutputStream Trace();
-#else
+#elif defined(EMIL_DISABLE_TRACING)
         class EmptyTracing
         {
         public:
@@ -35,6 +35,8 @@ namespace services
     private:
         infra::StreamWriterDummy dummy;
         infra::TextOutputStream::WithErrorPolicy dummyStream{ dummy };
+#else
+#error no tracing option defined
 #endif
 
     protected:

@@ -11,6 +11,7 @@ protocol_buffer_java(services.ble Gatt.proto)
 target_link_libraries(services.ble PUBLIC
     hal.interfaces
     infra.util
+    services.tracer
 )
 
 target_sources(services.ble PRIVATE
