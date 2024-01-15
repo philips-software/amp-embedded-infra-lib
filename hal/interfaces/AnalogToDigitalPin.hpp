@@ -32,6 +32,7 @@ namespace hal
         explicit AnalogToDigitalPinImplBase(infra::MemoryRange<Storage> samplesBuffer)
             : samplesBuffer(samplesBuffer)
         {}
+
         virtual void Measure(const infra::Function<void()>& onDone) = 0;
 
     protected:
