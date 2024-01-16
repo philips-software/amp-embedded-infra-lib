@@ -13,7 +13,7 @@ namespace hal
     {
     protected:
         SerialCommunication() = default;
-        virtual ~SerialCommunication() = default;
+        ~SerialCommunication() = default;
 
     public:
         virtual void SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion) = 0;
