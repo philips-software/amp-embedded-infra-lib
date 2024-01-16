@@ -26,17 +26,13 @@ namespace hal
     class AnalogToDigitalPinImplBase
     {
     protected:
+        AnalogToDigitalPinImplBase() = default;
+        AnalogToDigitalPinImplBase(const AnalogToDigitalPinImplBase&) = delete;
+        AnalogToDigitalPinImplBase& operator=(const AnalogToDigitalPinImplBase&) = delete;
         ~AnalogToDigitalPinImplBase() = default;
 
     public:
-        explicit AnalogToDigitalPinImplBase(infra::MemoryRange<Storage> samplesBuffer)
-            : samplesBuffer(samplesBuffer)
-        {}
-
-        virtual void Measure(const infra::Function<void()>& onDone) = 0;
-
-    protected:
-        infra::MemoryRange<Storage> samplesBuffer;
+        virtual void Measure(uint32_t numberOfSamples, const infra::Function<void(infra::MemoryRange<Storage> samplesBuffer)>& onDone) = 0;
     };
 
     template<class Conversion, class Unit, class Storage, class Impl>
@@ -68,10 +64,10 @@ namespace hal
     {
         this->samples = samples;
         this->onDone = onDone;
-        Impl::Measure([this]()
+        Impl::Measure([this](auto samplesBuffer)
             {
                 for (std::size_t index = 0; index < this->samples.size(); index++)
-                    this->samples[index] = infra::Quantity<Conversion, Storage>(Impl::samplesBuffer[index]);
+                    this->samples[index] = infra::Quantity<Conversion, Storage>(samplesBuffer[index]);
 
                 this->onDone();
             });
