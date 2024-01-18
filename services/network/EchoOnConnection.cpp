@@ -25,7 +25,8 @@ namespace services
 
     void EchoOnConnection::AckReceived()
     {
-        ConnectionObserver::Subject().AckReceived();
+        if (IsAttached())
+            ConnectionObserver::Subject().AckReceived();
     }
 
     EchoOnConnection::LimitedReader::LimitedReader(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
