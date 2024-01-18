@@ -161,7 +161,7 @@ namespace services
 
                 if (stream.Failed() || (contents.Is<infra::PartialProtoLengthDelimited>() && contents.Get<infra::PartialProtoLengthDelimited>().length > stream.Available()))
                 {
-                    if (writerBuffer.max_size() - writerBuffer.size() < contents.Get<infra::PartialProtoLengthDelimited>().length)
+                    if (contents.Is<infra::PartialProtoLengthDelimited>() && writerBuffer.max_size() - writerBuffer.size() < contents.Get<infra::PartialProtoLengthDelimited>().length)
                     {
                         tracer.Trace() << "< message too big";
                         skipping = contents.Get<infra::PartialProtoLengthDelimited>().length - (writerBuffer.size() - stream.Reader().Processed());
