@@ -46,6 +46,19 @@ namespace infra
         {}
     }
 
+    void EventDispatcherWithWeakPtrWorker::ExecuteUntil(const infra::Function<bool()>& predicate)
+    {
+        while (!predicate())
+        {
+            ExecuteAllActions();
+
+            if (predicate())
+                break;
+
+            Idle();
+        }
+    }
+
     bool EventDispatcherWithWeakPtrWorker::IsIdle() const
     {
         return !scheduledActions[scheduledActionsPopIndex].second;
@@ -66,10 +79,23 @@ namespace infra
     {
         if (scheduledActions[scheduledActionsPopIndex].second)
         {
+            struct ExceptionSafePop
+            {
+                ExceptionSafePop(const ExceptionSafePop&) = delete;
+                ExceptionSafePop& operator=(const ExceptionSafePop&) = delete;
+
+                ~ExceptionSafePop()
+                {
+                    worker.scheduledActions[worker.scheduledActionsPopIndex].first.Destruct();
+                    worker.scheduledActions[worker.scheduledActionsPopIndex].second = false;
+                    worker.scheduledActionsPopIndex = (worker.scheduledActionsPopIndex + 1) % worker.scheduledActions.size();
+                }
+
+                EventDispatcherWithWeakPtrWorker& worker;
+            };
+
+            ExceptionSafePop popAction{ *this };
             scheduledActions[scheduledActionsPopIndex].first->Execute();
-            scheduledActions[scheduledActionsPopIndex].first.Destruct();
-            scheduledActions[scheduledActionsPopIndex].second = false;
-            scheduledActionsPopIndex = (scheduledActionsPopIndex + 1) % scheduledActions.size();
         }
     }
 

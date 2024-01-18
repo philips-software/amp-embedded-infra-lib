@@ -69,7 +69,7 @@ namespace services
     {
     public:
         explicit EchoOnStreams(services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
-        ~EchoOnStreams() override;
+        ~EchoOnStreams();
 
         // Implementation of Echo
         void RequestSend(ServiceProxy& serviceProxy) override;
