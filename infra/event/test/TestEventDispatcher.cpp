@@ -3,6 +3,7 @@
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include <stdexcept>
 
 class EventDispatcherTest
     : public testing::Test
@@ -161,4 +162,29 @@ TEST_F(EventDispatcherTest, execute_a_lot)
 
         ExecuteAllActions();
     }
+}
+
+TEST_F(EventDispatcherTest, scheduled_action_can_throw)
+{
+
+    infra::EventDispatcher::Instance().Schedule([]
+        {
+            throw std::exception{};
+        });
+    infra::EventDispatcher::Instance().Schedule([]
+        {
+            throw std::runtime_error{ "message" };
+        });
+
+    infra::MockCallback<void()> callback;
+    EXPECT_CALL(callback, callback());
+
+    infra::EventDispatcher::Instance().Schedule([&callback, this]()
+        {
+            callback.callback();
+        });
+
+    EXPECT_THROW(ExecuteAllActions(), std::exception);
+    EXPECT_THROW(ExecuteAllActions(), std::runtime_error);
+    EXPECT_NO_THROW(ExecuteAllActions());
 }
