@@ -1,6 +1,7 @@
 #include "services/network/ConnectionMbedTls.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "services/network/CertificatesMbedTls.hpp"
+#include "services/network/ConnectionFactoryWithNameResolver.hpp"
 
 namespace services
 {
@@ -513,6 +514,55 @@ namespace services
         networkFactory.CancelConnect(*this);
     }
 
+    ConnectionMbedTlsConnectorWithNameResolver::ConnectionMbedTlsConnectorWithNameResolver(ConnectionFactoryWithNameResolverMbedTls& factory, ConnectionFactoryWithNameResolver& networkFactory, ClientConnectionObserverFactoryWithNameResolver& clientFactory)
+        : factory(factory)
+        , networkFactory(networkFactory)
+        , clientFactory(clientFactory)
+    {
+        networkFactory.Connect(*this);
+    }
+
+    infra::BoundedConstString ConnectionMbedTlsConnectorWithNameResolver::Hostname() const
+    {
+        return clientFactory.Hostname();
+    }
+
+    uint16_t ConnectionMbedTlsConnectorWithNameResolver::Port() const
+    {
+        return clientFactory.Port();
+    }
+
+    void ConnectionMbedTlsConnectorWithNameResolver::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
+    {
+        infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> creationFailed = createdObserver.Clone();
+        infra::SharedPtr<ConnectionMbedTls> connection = factory.Allocate(std::move(createdObserver), clientFactory.Hostname());
+        if (connection)
+        {
+            clientFactory.ConnectionEstablished([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
+                {
+                    connection->CreatedObserver(connectionObserver);
+                });
+
+            factory.Remove(*this);
+        }
+        else
+        {
+            ConnectionFailed(ConnectFailReason::connectionAllocationFailed);
+            creationFailed(nullptr);
+        }
+    }
+
+    void ConnectionMbedTlsConnectorWithNameResolver::ConnectionFailed(ConnectFailReason reason)
+    {
+        clientFactory.ConnectionFailed(reason);
+        factory.Remove(*this);
+    }
+
+    void ConnectionMbedTlsConnectorWithNameResolver::CancelConnect()
+    {
+        networkFactory.CancelConnect(*this);
+    }
+
     ConnectionFactoryMbedTls::ConnectionFactoryMbedTls(AllocatorConnectionMbedTls& connectionAllocator,
         AllocatorConnectionMbedTlsListener& listenerAllocator, infra::BoundedList<ConnectionMbedTlsConnector>& connectors,
         ConnectionFactory& factory, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, ConnectionMbedTls::CertificateValidation certificateValidation)
@@ -606,6 +656,89 @@ namespace services
     }
 
     void ConnectionFactoryMbedTls::TryConnect()
+    {
+        if (!waitingConnects.empty() && !connectors.full())
+        {
+            auto& connectionObserverFactory = waitingConnects.front();
+            waitingConnects.pop_front();
+
+            connectors.emplace_back(*this, factory, connectionObserverFactory);
+        }
+    }
+
+    ConnectionFactoryWithNameResolverMbedTls::ConnectionFactoryWithNameResolverMbedTls(AllocatorConnectionMbedTls& connectionAllocator, infra::BoundedList<ConnectionMbedTlsConnectorWithNameResolver>& connectors,
+        ConnectionFactoryWithNameResolver& factory, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, ConnectionMbedTls::CertificateValidation certificateValidation)
+        : connectionAllocator(connectionAllocator)
+        , connectors(connectors)
+        , factory(factory)
+        , certificates(certificates)
+        , randomDataGenerator(randomDataGenerator)
+        , certificateValidation(certificateValidation)
+    {
+        mbedtls_ssl_cache_init(&serverCache);
+        mbedtls_ssl_session_init(&clientSession);
+    }
+
+    ConnectionFactoryWithNameResolverMbedTls::~ConnectionFactoryWithNameResolverMbedTls()
+    {
+        mbedtls_ssl_cache_free(&serverCache);
+        if (clientSessionObtained)
+        {
+            mbedtls_ssl_session_free(&clientSession);
+            clientSessionObtained = false;
+        }
+    }
+
+    void ConnectionFactoryWithNameResolverMbedTls::Connect(ClientConnectionObserverFactoryWithNameResolver& connectionObserverFactory)
+    {
+        waitingConnects.push_back(connectionObserverFactory);
+
+        TryConnect();
+    }
+
+    void ConnectionFactoryWithNameResolverMbedTls::CancelConnect(ClientConnectionObserverFactoryWithNameResolver& connectionObserverFactory)
+    {
+        if (waitingConnects.has_element(connectionObserverFactory))
+            waitingConnects.erase(connectionObserverFactory);
+        else
+        {
+            for (auto& connector : connectors)
+                if (&connector.clientFactory == &connectionObserverFactory)
+                {
+                    connector.CancelConnect();
+                    connectors.remove(connector);
+                    return;
+                }
+
+            std::abort();
+        }
+    }
+
+    infra::SharedPtr<ConnectionMbedTls> ConnectionFactoryWithNameResolverMbedTls::Allocate(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, infra::BoundedConstString hostname)
+    {
+        if (hostname != previousHostname)
+        {
+            if (clientSessionObtained)
+            {
+                mbedtls_ssl_session_free(&clientSession);
+                clientSessionObtained = false;
+            }
+            clientSession = mbedtls_ssl_session();
+        }
+
+        previousHostname = hostname;
+
+        return connectionAllocator.Allocate(std::move(createdObserver), certificates, randomDataGenerator, { ConnectionMbedTls::ClientParameters{ clientSession, clientSessionObtained, certificateValidation } });
+    }
+
+    void ConnectionFactoryWithNameResolverMbedTls::Remove(ConnectionMbedTlsConnectorWithNameResolver& connector)
+    {
+        connectors.remove(connector);
+
+        TryConnect();
+    }
+
+    void ConnectionFactoryWithNameResolverMbedTls::TryConnect()
     {
         if (!waitingConnects.empty() && !connectors.full())
         {
