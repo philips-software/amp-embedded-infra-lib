@@ -96,11 +96,8 @@ namespace hal
         if (tcsetattr(fileDescriptor, TCSANOW, &settings) != 0)
             throw std::runtime_error("Could not set port configuration");
 
-        if (darwinSetSpeed)
-        {
-            if (ioctl(fileDescriptor, IOSSIOSPEED, &bitrate) == -1)
-                throw std::runtime_error("Could not set custom baudrate");
-        }
+        if (ioctl(fileDescriptor, IOSSIOSPEED, &bitrate) == -1)
+            throw std::runtime_error("Could not set custom baudrate");
 #else
         if (ioctl(fileDescriptor, TCSETS2, &settings) == -1)
             throw std::runtime_error("Could not set port configuration");
