@@ -13,12 +13,12 @@ namespace hal
         : std::runtime_error("Unable to initialize port " + portName + " Errorcode: " + std::to_string(errorCode))
     {}
 
-    UartWindows::UartWindows(const std::string& portName, UartWindowsConfig config)
+    UartWindows::UartWindows(const std::string& portName, Config config)
     {
         Open(R"(\\.\)" + portName, config);
     }
 
-    UartWindows::UartWindows(const std::string& name, DeviceName, UartWindowsConfig config)
+    UartWindows::UartWindows(const std::string& name, DeviceName, Config config)
     {
         Open(R"(\\.\GLOBALROOT)" + name, config);
     }
@@ -67,7 +67,7 @@ namespace hal
         infra::EventDispatcher::Instance().Schedule(actionOnCompletion);
     }
 
-    void UartWindows::Open(const std::string& name, UartWindowsConfig config)
+    void UartWindows::Open(const std::string& name, Config config)
     {
         handle = CreateFile(name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr);
 
@@ -82,7 +82,7 @@ namespace hal
         dcb.Parity = static_cast<BYTE>(config.parity);
         dcb.StopBits = ONESTOPBIT;
         dcb.fRtsControl = (uint32_t)config.flowControl;
-        dcb.fOutxCtsFlow = config.flowControl == UartWindowsConfig::RtsFlowControl::RtsHandshake;
+        dcb.fOutxCtsFlow = config.flowControl == Config::RtsFlowControl::RtsHandshake;
         if (!SetCommState(handle, &dcb))
         {
             DWORD dw = GetLastError();

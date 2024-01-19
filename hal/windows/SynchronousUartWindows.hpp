@@ -11,42 +11,37 @@
 
 namespace hal
 {
-    struct SynchronousUartWindowsConfig
+    namespace details
     {
-        enum class RtsFlowControl
+        struct SynchronousUartWindowsConfig
         {
-            RtsControlDisable = RTS_CONTROL_DISABLE,
-            RtsControlEnable = RTS_CONTROL_ENABLE,
-            RtsHandshake = RTS_CONTROL_HANDSHAKE,
-            RtsControlToggle = RTS_CONTROL_TOGGLE
+            enum class RtsFlowControl
+            {
+                RtsControlDisable = RTS_CONTROL_DISABLE,
+                RtsControlEnable = RTS_CONTROL_ENABLE,
+                RtsHandshake = RTS_CONTROL_HANDSHAKE,
+                RtsControlToggle = RTS_CONTROL_TOGGLE
+            };
+
+            uint32_t baudRate{ CBR_115200 };
+            RtsFlowControl flowControlRts{ RtsFlowControl::RtsControlDisable };
         };
-
-        SynchronousUartWindowsConfig()
-            : baudRate(CBR_115200)
-            , flowControlRts(RtsFlowControl::RtsControlDisable)
-        {}
-
-        SynchronousUartWindowsConfig(uint32_t newbaudRate, RtsFlowControl newFlowControlRts)
-            : baudRate(newbaudRate)
-            , flowControlRts(newFlowControlRts)
-        {}
-
-        uint32_t baudRate;
-        RtsFlowControl flowControlRts;
-    };
+    }
 
     class SynchronousUartWindows
         : public SynchronousSerialCommunication
     {
     public:
-        SynchronousUartWindows(const std::string& name, SynchronousUartWindowsConfig config = SynchronousUartWindowsConfig());
+        using Config = details::SynchronousUartWindowsConfig;
+
+        SynchronousUartWindows(const std::string& name, Config config = {});
         ~SynchronousUartWindows();
 
         void SendData(infra::ConstByteRange data) override;
         bool ReceiveData(infra::ByteRange data) override;
 
     private:
-        void Open(const std::string& name, SynchronousUartWindowsConfig config);
+        void Open(const std::string& name, Config config);
 
     private:
         void* handle = nullptr;

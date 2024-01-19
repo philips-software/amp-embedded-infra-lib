@@ -1,4 +1,4 @@
-#include "hal/unix/UartUnix.hpp"
+#include "hal/unix/SynchronousUartUnix.hpp"
 #include "infra/event/EventDispatcher.hpp"
 #ifdef EMIL_OS_DARWIN
 #include <IOKit/serial/ioss.h>
@@ -11,30 +11,17 @@
 
 namespace hal
 {
-    PortNotOpened::PortNotOpened(const std::string& portName)
-        : std::runtime_error("Unable to open port " + portName)
-    {}
-
-    UartUnix::UartUnix(const std::string& portName, const Config& config)
+    SynchronousUartUnix::SynchronousUartUnix(const std::string& portName, const Config& config)
     {
         Open(portName, config.baudrate, config.flowControl);
     }
 
-    UartUnix::~UartUnix()
+    SynchronousUartUnix::~SynchronousUartUnix()
     {
-        {
-            std::unique_lock lock(mutex);
-            running = false;
-            receivedDataSet.notify_all();
-        }
-
-        if (readThread.joinable())
-            readThread.join();
-
         close(fileDescriptor);
     }
 
-    void UartUnix::SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion)
+    void SynchronousUartUnix::SendData(infra::ConstByteRange data)
     {
         if (fileDescriptor < 0)
             throw std::runtime_error("Port not open");
@@ -43,24 +30,21 @@ namespace hal
 
         if (result == -1)
             throw std::system_error(EFAULT, std::system_category());
-
-        infra::EventDispatcher::Instance().Schedule(actionOnCompletion);
     }
 
-    void UartUnix::ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived)
+    bool SynchronousUartUnix::ReceiveData(infra::ByteRange data)
     {
-        std::unique_lock lock(mutex);
-        receivedData = dataReceived;
-        receivedDataSet.notify_all();
+        auto size = read(fileDescriptor, data.begin(), data.size());
+        return data.size() == size;
     }
 
-    void UartUnix::Open(const std::string& portName, uint32_t baudrate, bool flowControl)
+    void SynchronousUartUnix::Open(const std::string& portName, uint32_t baudrate, bool flowControl)
     {
         speed_t bitrate = baudrate;
         fileDescriptor = open(portName.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK);
 
         if (fileDescriptor == -1)
-            throw PortNotOpened(portName);
+            throw std::runtime_error(std::string("Could not open port (" + portName + "): ") + strerror(errno));
 
         if (ioctl(fileDescriptor, TIOCEXCL) == -1)
             throw std::runtime_error("Failed to get exclusive access to port (" + portName + ")");
@@ -123,31 +107,5 @@ namespace hal
         if (ioctl(fileDescriptor, TCSETS2, &settings) == -1)
             throw std::runtime_error("Could not set port configuration");
 #endif
-
-        readThread = std::thread([this]()
-            {
-                Read();
-            });
-    }
-
-    void UartUnix::Read()
-    {
-        {
-            std::unique_lock lock(mutex);
-            if (!receivedData)
-                receivedDataSet.wait(lock);
-        }
-
-        while (running)
-        {
-            auto range = infra::MakeByteRange(buffer);
-            auto size = read(fileDescriptor, range.begin(), range.size());
-
-            if (size < 0)
-                throw std::system_error(EFAULT, std::system_category());
-
-            std::unique_lock lock(mutex);
-            receivedData(infra::ConstByteRange(range.begin(), range.begin() + size));
-        }
     }
 }

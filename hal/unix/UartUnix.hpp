@@ -10,11 +10,29 @@
 
 namespace hal
 {
+    class PortNotOpened
+        : public std::runtime_error
+    {
+    public:
+        explicit PortNotOpened(const std::string& portName);
+    };
+
+    namespace detail
+    {
+        struct UartUnixConfig
+        {
+            uint32_t baudrate{ 115200 };
+            bool flowControl{ false };
+        };
+    }
+
     class UartUnix
         : public hal::SerialCommunication
     {
     public:
-        explicit UartUnix(const std::string& portName);
+        using Config = detail::UartUnixConfig;
+
+        explicit UartUnix(const std::string& portName, const Config& config = {});
         virtual ~UartUnix();
 
         // Implementation of hal::SerialCommunication
@@ -22,7 +40,7 @@ namespace hal
         void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) override;
 
     private:
-        void Open(const std::string& portName);
+        void Open(const std::string& portName, uint32_t baudrate, bool flowControl);
         void Read();
 
     private:
