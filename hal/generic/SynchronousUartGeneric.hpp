@@ -30,7 +30,8 @@ namespace hal
         };
     }
 
-    class SynchronousUartGeneric : public hal::SynchronousSerialCommunication
+    class SynchronousUartGeneric
+        : public hal::SynchronousSerialCommunication
     {
     public:
         using Config = detail::SynchronousUartGenericConfig;

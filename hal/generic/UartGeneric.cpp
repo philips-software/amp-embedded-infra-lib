@@ -1,4 +1,3 @@
-
 #include "hal/generic/UartGeneric.hpp"
 #include <cstdint>
 #include <string>

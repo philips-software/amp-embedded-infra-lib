@@ -74,9 +74,7 @@ namespace hal
 
         settings.c_cflag |= CREAD | CLOCAL;
 
-#ifdef EMIL_OS_DARWIN
-        bool darwinSetSpeed = true;
-#else
+#ifndef EMIL_OS_DARWIN
         settings.c_cflag &= ~CBAUD;
         settings.c_cflag |= CBAUDEX;
 
