@@ -2,6 +2,7 @@
 #define HAL_UART_UNIX_HPP
 
 #include "hal/interfaces/SerialCommunication.hpp"
+#include "hal/unix/UartUnixBase.hpp"
 #include <atomic>
 #include <condition_variable>
 #include <mutex>
@@ -10,41 +11,24 @@
 
 namespace hal
 {
-    class PortNotOpened
-        : public std::runtime_error
-    {
-    public:
-        explicit PortNotOpened(const std::string& portName);
-    };
-
-    namespace detail
-    {
-        struct UartUnixConfig
-        {
-            uint32_t baudrate{ 115200 };
-            bool flowControl{ false };
-        };
-    }
-
     class UartUnix
-        : public hal::SerialCommunication
+        : public UartUnixBase
+        , public hal::SerialCommunication
     {
     public:
-        using Config = detail::UartUnixConfig;
+        using Config = UartUnixBase::Config;
 
         explicit UartUnix(const std::string& portName, const Config& config = {});
-        virtual ~UartUnix();
+        ~UartUnix() override;
 
         // Implementation of hal::SerialCommunication
         void SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion) override;
         void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) override;
 
     private:
-        void Open(const std::string& portName, uint32_t baudrate, bool flowControl);
         void Read();
 
     private:
-        int fileDescriptor{ -1 };
         uint8_t buffer;
         std::atomic<bool> running{ true };
         std::mutex mutex;
