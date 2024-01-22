@@ -155,6 +155,11 @@ namespace application
         public:
             using ReferenceStorageTypeVisitor::ReferenceStorageTypeVisitor;
 
+            void VisitMessage(const EchoFieldMessage& field) override
+            {
+                result = field.message->qualifiedDetailReferenceName;
+            }
+
             void VisitEnum(const EchoFieldEnum& field) override
             {
                 result = field.type->qualifiedDetailName;
@@ -207,10 +212,27 @@ namespace application
 
             void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
             {
-                std::string r;
-                StorageTypeVisitor visitor(r);
-                field.type->Accept(visitor);
-                result = "infra::MemoryRange<const " + r + ">";
+                if (field.type->protoType == "services::ProtoBool")
+                    result = "const std::vector<bool>&";
+                else
+                {
+                    std::string r;
+                    StorageTypeVisitor visitor(r);
+                    field.type->Accept(visitor);
+                    result = "infra::MemoryRange<const " + r + ">";
+                }
+            }
+        };
+
+        class ParameterDetailTypeVisitor
+            : public ParameterTypeVisitor
+        {
+        public:
+            using ParameterTypeVisitor::ParameterTypeVisitor;
+
+            void VisitMessage(const EchoFieldMessage& field) override
+            {
+                result = "const " + field.message->qualifiedDetailName + "&";
             }
         };
 
@@ -329,7 +351,10 @@ namespace application
 
             void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
             {
-                result = "infra::MakeRange(" + field.name + ")";
+                if (field.type->protoType == "services::ProtoBool")
+                    result = field.name;
+                else
+                    result = "infra::MakeRange(" + field.name + ")";
             }
 
         protected:
@@ -351,6 +376,103 @@ namespace application
             {
                 result = "infra::MakeRange(" + field.name + ")";
             }
+        };
+
+        class InitializerVisitor
+            : public EchoFieldVisitor
+        {
+        public:
+            explicit InitializerVisitor(std::string& result)
+                : result(result)
+            {}
+
+            void VisitInt64(const EchoFieldInt64& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitUint64(const EchoFieldUint64& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitInt32(const EchoFieldInt32& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitFixed64(const EchoFieldFixed64& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitFixed32(const EchoFieldFixed32& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitBool(const EchoFieldBool& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitString(const EchoFieldString& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitUnboundedString(const EchoFieldUnboundedString& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitEnum(const EchoFieldEnum& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitMessage(const EchoFieldMessage& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitBytes(const EchoFieldBytes& field) override
+            {
+                result = field.name + ".begin(), " + field.name + ".end()";
+            }
+
+            void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
+            {
+                result = field.name + ".begin(), " + field.name + ".end()";
+            }
+
+            void VisitUint32(const EchoFieldUint32& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitRepeated(const EchoFieldRepeated& field) override
+            {
+                result = field.name + ".begin(), " + field.name + ".end()";
+            }
+
+            void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
+            {
+                result = field.name + ".begin(), " + field.name + ".end()";
+            }
+
+        protected:
+            std::string& result;
         };
     }
 
@@ -483,7 +605,7 @@ namespace application
     void MessageTypeMapGenerator::AddTypeMapDecayedType(const EchoField& field, Entities& entities) const
     {
         std::string result;
-        ParameterTypeVisitor visitor(result);
+        ParameterDetailTypeVisitor visitor(result);
         field.Accept(visitor);
         entities.Add(std::make_shared<Using>("DecayedType", result));
     }
@@ -573,11 +695,14 @@ namespace application
             auto constructByMembers = std::make_shared<Constructor>(ClassName(), "", 0);
             std::string typeNameResult;
             ParameterTypeVisitor visitor(typeNameResult);
+            std::string initializer;
+            InitializerVisitor initializerVisitor(initializer);
             for (auto& field : message->fields)
             {
                 field->Accept(visitor);
                 constructByMembers->Parameter(typeNameResult + " " + field->name);
-                constructByMembers->Initializer(field->name + "(" + field->name + ")");
+                field->Accept(initializerVisitor);
+                constructByMembers->Initializer(field->name + "(" + initializer + ")");
             }
             constructors->Add(constructByMembers);
         }
@@ -873,11 +998,14 @@ namespace application
             auto constructByMembers = std::make_shared<Constructor>(ClassName(), "", 0);
             std::string result;
             ParameterReferenceTypeVisitor visitor(result);
+            std::string initializer;
+            InitializerVisitor initializerVisitor(initializer);
             for (auto& field : message->fields)
             {
                 field->Accept(visitor);
+                field->Accept(initializerVisitor);
                 constructByMembers->Parameter(result + " " + field->name);
-                constructByMembers->Initializer(field->name + "(" + field->name + ")");
+                constructByMembers->Initializer(field->name + "(" + initializer + ")");
             }
             constructors->Add(constructByMembers);
         }
