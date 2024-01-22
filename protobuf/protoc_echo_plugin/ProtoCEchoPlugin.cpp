@@ -261,11 +261,11 @@ namespace application
             }
         };
 
-        class DecayedReferenceVisitor
+        class FieldNameVisitor
             : public EchoFieldVisitor
         {
         public:
-            explicit DecayedReferenceVisitor(std::string& result)
+            explicit FieldNameVisitor(std::string& result)
                 : result(result)
             {}
 
@@ -346,6 +346,26 @@ namespace application
 
             void VisitRepeated(const EchoFieldRepeated& field) override
             {
+                result = field.name;
+            }
+
+            void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
+            {
+                result = field.name;
+            }
+
+        protected:
+            std::string& result;
+        };
+
+        class DecayedReferenceVisitor
+            : public FieldNameVisitor
+        {
+        public:
+            using FieldNameVisitor::FieldNameVisitor;
+
+            void VisitRepeated(const EchoFieldRepeated& field) override
+            {
                 result = "infra::MakeRange(" + field.name + ")";
             }
 
@@ -356,9 +376,6 @@ namespace application
                 else
                     result = "infra::MakeRange(" + field.name + ")";
             }
-
-        protected:
-            std::string& result;
         };
 
         class DecayedVisitor
@@ -379,72 +396,10 @@ namespace application
         };
 
         class InitializerVisitor
-            : public EchoFieldVisitor
+            : public FieldNameVisitor
         {
         public:
-            explicit InitializerVisitor(std::string& result)
-                : result(result)
-            {}
-
-            void VisitInt64(const EchoFieldInt64& field) override
-            {
-                result = field.name;
-            }
-
-            void VisitUint64(const EchoFieldUint64& field) override
-            {
-                result = field.name;
-            }
-
-            void VisitInt32(const EchoFieldInt32& field) override
-            {
-                result = field.name;
-            }
-
-            void VisitFixed64(const EchoFieldFixed64& field) override
-            {
-                result = field.name;
-            }
-
-            void VisitFixed32(const EchoFieldFixed32& field) override
-            {
-                result = field.name;
-            }
-
-            void VisitBool(const EchoFieldBool& field) override
-            {
-                result = field.name;
-            }
-
-            void VisitString(const EchoFieldString& field) override
-            {
-                result = field.name;
-            }
-
-            void VisitUnboundedString(const EchoFieldUnboundedString& field) override
-            {
-                result = field.name;
-            }
-
-            void VisitEnum(const EchoFieldEnum& field) override
-            {
-                result = field.name;
-            }
-
-            void VisitSFixed64(const EchoFieldSFixed64& field) override
-            {
-                result = field.name;
-            }
-
-            void VisitSFixed32(const EchoFieldSFixed32& field) override
-            {
-                result = field.name;
-            }
-
-            void VisitMessage(const EchoFieldMessage& field) override
-            {
-                result = field.name;
-            }
+            using FieldNameVisitor::FieldNameVisitor;
 
             void VisitBytes(const EchoFieldBytes& field) override
             {
@@ -456,11 +411,6 @@ namespace application
                 result = field.name + ".begin(), " + field.name + ".end()";
             }
 
-            void VisitUint32(const EchoFieldUint32& field) override
-            {
-                result = field.name;
-            }
-
             void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 result = field.name + ".begin(), " + field.name + ".end()";
@@ -470,9 +420,6 @@ namespace application
             {
                 result = field.name + ".begin(), " + field.name + ".end()";
             }
-
-        protected:
-            std::string& result;
         };
     }
 
