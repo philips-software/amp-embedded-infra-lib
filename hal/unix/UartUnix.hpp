@@ -2,6 +2,7 @@
 #define HAL_UART_UNIX_HPP
 
 #include "hal/interfaces/SerialCommunication.hpp"
+#include "hal/unix/UartUnixBase.hpp"
 #include <atomic>
 #include <condition_variable>
 #include <mutex>
@@ -11,22 +12,23 @@
 namespace hal
 {
     class UartUnix
-        : public hal::SerialCommunication
+        : public UartUnixBase
+        , public hal::SerialCommunication
     {
     public:
-        explicit UartUnix(const std::string& portName);
-        virtual ~UartUnix();
+        using Config = UartUnixBase::Config;
+
+        explicit UartUnix(const std::string& portName, const Config& config = {});
+        ~UartUnix() override;
 
         // Implementation of hal::SerialCommunication
         void SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion) override;
         void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) override;
 
     private:
-        void Open(const std::string& portName);
         void Read();
 
     private:
-        int fileDescriptor{ -1 };
         uint8_t buffer;
         std::atomic<bool> running{ true };
         std::mutex mutex;

@@ -16,6 +16,10 @@ if (EMIL_BUILD_DARWIN)
 endif()
 
 target_sources(hal.unix PRIVATE
+    SynchronousUartUnix.cpp
+    SynchronousUartUnix.hpp
     UartUnix.cpp
     UartUnix.hpp
+    UartUnixBase.cpp
+    UartUnixBase.hpp
 )
