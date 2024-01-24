@@ -12,7 +12,7 @@ namespace hal
     public:
         virtual ~AnalogToDigitalPinImplMock() = default;
 
-        MOCK_METHOD2(Measure, void(std::size_t numberOfSamples, const infra::Function<void(infra::MemoryRange<int32_t> samples)>& onDone));
+        MOCK_METHOD2(Measure, void(std::size_t numberOfSamples, const infra::Function<void(infra::MemoryRange<uint32_t> samples)>& onDone));
     };
 }
 
