@@ -239,7 +239,7 @@ namespace services
 
     void ConnectionMbedTls::SetHostname(infra::BoundedConstString hostname)
     {
-        infra::BoundedString::WithStorage<MBEDTLS_SSL_MAX_HOST_NAME_LEN + 1> terminatedHostname(hostname);
+        terminatedHostname = hostname;
         terminatedHostname.push_back(0);
 
         int result = mbedtls_ssl_set_hostname(&sslContext, terminatedHostname.data());
@@ -538,6 +538,7 @@ namespace services
         infra::SharedPtr<ConnectionMbedTls> connection = factory.Allocate(std::move(createdObserver), clientFactory.Hostname());
         if (connection)
         {
+            connection->SetHostname(clientFactory.Hostname());
             clientFactory.ConnectionEstablished([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
                 {
                     connection->CreatedObserver(connectionObserver);
