@@ -24,7 +24,7 @@ namespace services
 
     private:
         // Implementation of SymmetricKeyEstablishment
-        void ActivateNewKeyMaterial(const infra::BoundedVector<uint8_t>& key, const infra::BoundedVector<uint8_t>& iv) override;
+        void ActivateNewKeyMaterial(infra::ConstByteRange key, infra::ConstByteRange iv) override;
 
         void ReQueueWaitingProxies();
 
