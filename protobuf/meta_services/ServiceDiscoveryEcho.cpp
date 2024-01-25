@@ -6,7 +6,7 @@ namespace application
     {
         infra::Optional<uint32_t> service;
 
-        for(auto id = startServiceId; id <= endServiceId; ++id)
+        for (auto id = startServiceId; id <= endServiceId; ++id)
         {
             if (IsServiceSupported(id))
             {
