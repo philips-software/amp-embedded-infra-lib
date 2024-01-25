@@ -30,10 +30,10 @@ namespace application
     {
         auto serviceFound = false;
         service_discovery::ServiceDiscovery::Rpc().NotifyObservers([serviceId, &serviceFound](auto& observer)
-        {
-            if (observer.AcceptsService(serviceId))
-                serviceFound = true;
-        });
+            {
+                if (observer.AcceptsService(serviceId))
+                    serviceFound = true;
+            });
 
         return serviceFound;
     }
