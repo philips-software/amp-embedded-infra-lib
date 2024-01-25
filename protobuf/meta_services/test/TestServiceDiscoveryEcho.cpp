@@ -41,6 +41,7 @@ namespace
             : services::ServiceStub(echo)
             , serviceId(serviceId)
         {}
+
         virtual ~ServiceStubWithServiceIdMocked() = default;
 
         bool AcceptsService(uint32_t serviceId) const override
