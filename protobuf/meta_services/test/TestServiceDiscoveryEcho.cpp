@@ -61,9 +61,9 @@ public:
     services::MethodSerializerFactory::ForServices<service_discovery::ServiceDiscovery, service_discovery::ServiceDiscoveryResponse>::AndProxies<service_discovery::ServiceDiscoveryProxy> serializerFactory;
     application::EchoSingleLoopback echo{ serializerFactory };
     application::ServiceDiscoveryEcho serviceDiscoveryEcho{ echo };
-    service_discovery::ServiceDiscoveryProxy proxy { echo };
-    testing::StrictMock<ServiceDiscoveryResponseMock> serviceDiscoveryResponse { echo };
-    ServiceStubWithServiceIdMocked serviceMock { echo, 5 };
+    service_discovery::ServiceDiscoveryProxy proxy{ echo };
+    testing::StrictMock<ServiceDiscoveryResponseMock> serviceDiscoveryResponse{ echo };
+    ServiceStubWithServiceIdMocked serviceMock{ echo, 5 };
 };
 
 TEST_F(ServiceDiscoveryTest, return_no_service)
