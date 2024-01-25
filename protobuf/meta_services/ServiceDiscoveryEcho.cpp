@@ -1,6 +1,7 @@
 #include "protobuf/meta_services/ServiceDiscoveryEcho.hpp"
 
-namespace application {
+namespace application
+{
     void ServiceDiscoveryEcho::FindFirstServiceInRange(uint32_t startServiceId, uint32_t endServiceId)
     {
         infra::Optional<uint32_t> service;
