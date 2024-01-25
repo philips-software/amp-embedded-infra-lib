@@ -5,18 +5,12 @@ namespace services
     namespace
     {
         template<std::size_t Size>
-        std::array<uint8_t, Size> Convert(const infra::BoundedVector<uint8_t>& value)
+        std::array<uint8_t, Size> Convert(infra::ConstByteRange value)
         {
             really_assert(Size == value.size());
             std::array<uint8_t, Size> result;
-            infra::Copy(infra::MakeRange(value), infra::MakeRange(result));
+            infra::Copy(value, infra::MakeRange(result));
             return result;
-        }
-
-        template<std::size_t Size>
-        infra::BoundedVector<uint8_t>::WithMaxSize<Size> Convert(const std::array<uint8_t, Size>& value)
-        {
-            return infra::BoundedVector<uint8_t>::WithMaxSize<Size>(value.begin(), value.end());
         }
     }
 
@@ -45,7 +39,7 @@ namespace services
             {
                 auto key = randomDataGenerator.GenerateRandomData<SesameSecured::KeyType>();
                 auto iv = randomDataGenerator.GenerateRandomData<SesameSecured::IvType>();
-                SymmetricKeyEstablishmentProxy::ActivateNewKeyMaterial(Convert(key), Convert(iv));
+                SymmetricKeyEstablishmentProxy::ActivateNewKeyMaterial(infra::MakeRange(key), infra::MakeRange(iv));
                 secured.SetNextSendKey(key, iv);
 
                 initializingSending = false;
@@ -53,7 +47,7 @@ namespace services
             });
     }
 
-    void EchoOnSesameSymmetricKey::ActivateNewKeyMaterial(const infra::BoundedVector<uint8_t>& key, const infra::BoundedVector<uint8_t>& iv)
+    void EchoOnSesameSymmetricKey::ActivateNewKeyMaterial(infra::ConstByteRange key, infra::ConstByteRange iv)
     {
         secured.SetReceiveKey(Convert<16>(key), Convert<16>(iv));
         MethodDone();

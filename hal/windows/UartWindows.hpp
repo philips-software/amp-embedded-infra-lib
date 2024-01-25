@@ -29,36 +29,32 @@ namespace hal
         PortNotInitialized(const std::string& portName, DWORD errorCode);
     };
 
-    struct UartWindowsConfig
+    namespace details
     {
-        enum class RtsFlowControl
+        struct UartWindowsConfig
         {
-            RtsControlDisable = RTS_CONTROL_DISABLE,
-            RtsControlEnable = RTS_CONTROL_ENABLE,
-            RtsHandshake = RTS_CONTROL_HANDSHAKE,
-            RtsControlToggle = RTS_CONTROL_TOGGLE
+            enum class RtsFlowControl
+            {
+                RtsControlDisable = RTS_CONTROL_DISABLE,
+                RtsControlEnable = RTS_CONTROL_ENABLE,
+                RtsHandshake = RTS_CONTROL_HANDSHAKE,
+                RtsControlToggle = RTS_CONTROL_TOGGLE
+            };
+
+            enum class Parity
+            {
+                none = NOPARITY,
+                even = EVENPARITY,
+                odd = ODDPARITY,
+                mark = MARKPARITY,
+                space = SPACEPARITY
+            };
+
+            uint32_t baudRate{ CBR_115200 };
+            RtsFlowControl flowControl{ RtsFlowControl::RtsControlDisable };
+            Parity parity{ Parity::none };
         };
-
-        enum class Parity
-        {
-            none = NOPARITY,
-            even = EVENPARITY,
-            odd = ODDPARITY,
-            mark = MARKPARITY,
-            space = SPACEPARITY
-        };
-
-        UartWindowsConfig() = default;
-
-        UartWindowsConfig(uint32_t baudRate, RtsFlowControl flowControl)
-            : baudRate(baudRate)
-            , flowControl(flowControl)
-        {}
-
-        uint32_t baudRate = CBR_115200;
-        RtsFlowControl flowControl = RtsFlowControl::RtsControlDisable;
-        Parity parity = Parity::none;
-    };
+    }
 
     class UartWindows
         : public SerialCommunication
@@ -69,15 +65,17 @@ namespace hal
 
         static const DeviceName deviceName;
 
-        UartWindows(const std::string& portName, UartWindowsConfig config = UartWindowsConfig());
-        UartWindows(const std::string& name, DeviceName, UartWindowsConfig config = UartWindowsConfig());
+        using Config = details::UartWindowsConfig;
+
+        UartWindows(const std::string& portName, Config config = {});
+        UartWindows(const std::string& name, DeviceName, Config config = {});
         virtual ~UartWindows();
 
         void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) override;
         void SendData(infra::MemoryRange<const uint8_t> data, infra::Function<void()> actionOnCompletion = infra::emptyFunction) override;
 
     private:
-        void Open(const std::string& name, UartWindowsConfig config = UartWindowsConfig());
+        void Open(const std::string& name, Config config);
         void ReadThread();
         void ReadNonBlocking(infra::ByteRange range);
         void ReadBlocking(infra::ByteRange range);
