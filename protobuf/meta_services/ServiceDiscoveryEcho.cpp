@@ -8,11 +8,11 @@ namespace application
 
         for(auto id = startServiceId; id <= endServiceId; ++id)
         {
-            if(IsServiceSupported(id))
-                {
-                    service = id;
-                    break;
-                }
+            if (IsServiceSupported(id))
+            {
+                service = id;
+                break;
+            }
         }
 
         RequestSend([this, service]
