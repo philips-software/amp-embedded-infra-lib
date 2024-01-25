@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+import "EchoAttributes.proto";
+
+package service_discovery;
+option java_package = "com.philips.emil.protobufEcho";
+option java_outer_classname = "ServiceDiscoveryProto";
+
+message Uint32Value {
+    uint32 value = 1;
+}
+
+message ServiceRange
+{
+    uint32 start_service_id = 1;
+    uint32 end_service_id = 2;
+}
+
+service ServiceDiscovery
+{
+    option (service_id) = 1000;
+
+    rpc FindFirstServiceInRange(ServiceRange) returns (Nothing) { option (method_id) = 1; }
+}
+
+service ServiceDiscoveryResponse
+{
+    option (service_id) = 1001;
+
+    rpc FirstServiceSupported(Uint32Value) returns (Nothing) { option (method_id) = 1; }
+    rpc NoServiceSupported(Nothing) returns (Nothing) { option (method_id) = 2; }
+}
