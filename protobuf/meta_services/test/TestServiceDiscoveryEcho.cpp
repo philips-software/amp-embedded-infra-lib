@@ -88,7 +88,7 @@ TEST_F(ServiceDiscoveryTest, return_service)
 
 TEST_F(ServiceDiscoveryTest, return_service_with_lowest_id)
 {
-    ServiceStubWithServiceIdMocked serviceMock2 { echo, 6 };
+    ServiceStubWithServiceIdMocked serviceMock2{ echo, 6 };
 
     EXPECT_CALL(serviceDiscoveryResponse, FirstServiceSupportedMock(5));
 
