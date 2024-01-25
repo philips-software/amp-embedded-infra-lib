@@ -1,12 +1,12 @@
+#include "infra/util/Optional.hpp"
+#include "protobuf/echo/Echo.hpp"
+#include "protobuf/echo/test_doubles/EchoSingleLoopback.hpp"
+#include "protobuf/echo/test_doubles/ServiceStub.hpp"
+#include "protobuf/meta_services/ServiceDiscoveryEcho.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include <cstdint>
 #include <sys/types.h>
-#include "infra/util/Optional.hpp"
-#include "protobuf/echo/Echo.hpp"
-#include "protobuf/echo/test_doubles/EchoSingleLoopback.hpp"
-#include "protobuf/meta_services/ServiceDiscoveryEcho.hpp"
-#include "protobuf/echo/test_doubles/ServiceStub.hpp"
 
 namespace
 {
@@ -97,4 +97,3 @@ TEST_F(ServiceDiscoveryTest, return_service_with_lowest_id)
             proxy.FindFirstServiceInRange(0, 15);
         });
 }
-

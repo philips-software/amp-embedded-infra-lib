@@ -4,7 +4,8 @@
 #include "generated/echo/ServiceDiscovery.pb.hpp"
 #include <cstdint>
 
-namespace application {
+namespace application
+{
     class ServiceDiscoveryEcho
         : public service_discovery::ServiceDiscovery
         , public service_discovery::ServiceDiscoveryResponseProxy
