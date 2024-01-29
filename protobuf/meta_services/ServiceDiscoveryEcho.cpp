@@ -1,4 +1,5 @@
 #include "protobuf/meta_services/ServiceDiscoveryEcho.hpp"
+#include "echo/ServiceDiscovery.pb.hpp"
 
 namespace application
 {
@@ -8,14 +9,14 @@ namespace application
 
         for (auto id = startServiceId; id <= endServiceId; ++id)
         {
-            if (IsServiceSupported(id))
+            if (AcceptsService(id))
             {
                 service = id;
                 break;
             }
         }
 
-        RequestSend([this, service]
+        service_discovery::ServiceDiscoveryResponseProxy::RequestSend([this, service]
             {
                 if (service)
                     FirstServiceSupported(*service);
@@ -26,10 +27,16 @@ namespace application
         MethodDone();
     }
 
-    bool ServiceDiscoveryEcho::IsServiceSupported(uint32_t serviceId)
+    bool ServiceDiscoveryEcho::AcceptsService(uint32_t serviceId) const
+    {
+        return service_discovery::ServiceDiscovery::AcceptsService(serviceId) 
+                || IsProxyServiceSupported(serviceId);
+    }
+
+    bool ServiceDiscoveryEcho::IsProxyServiceSupported(uint32_t& serviceId) const
     {
         auto serviceFound = false;
-        service_discovery::ServiceDiscovery::Rpc().NotifyObservers([serviceId, &serviceFound](auto& observer)
+        services::Echo::NotifyObservers([serviceId, &serviceFound](auto& observer)
             {
                 if (observer.AcceptsService(serviceId))
                     serviceFound = true;

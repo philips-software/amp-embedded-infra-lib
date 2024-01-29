@@ -10,10 +10,15 @@ message Uint32Value {
     uint32 value = 1;
 }
 
+message BoolValue
+{
+    bool value = 1;
+}
+
 message ServiceRange
 {
-    uint32 start_service_id = 1;
-    uint32 end_service_id = 2;
+    uint32 startServiceId = 1;
+    uint32 endServiceId = 2;
 }
 
 service ServiceDiscovery
@@ -21,6 +26,7 @@ service ServiceDiscovery
     option (service_id) = 1000;
 
     rpc FindFirstServiceInRange(ServiceRange) returns (Nothing) { option (method_id) = 1; }
+    rpc NotifyServiceChanges(BoolValue) returns (Nothing)  { option (method_id) = 2; } 
 }
 
 service ServiceDiscoveryResponse
@@ -29,4 +35,6 @@ service ServiceDiscoveryResponse
 
     rpc FirstServiceSupported(Uint32Value) returns (Nothing) { option (method_id) = 1; }
     rpc NoServiceSupported(Nothing) returns (Nothing) { option (method_id) = 2; }
+    rpc ServicesChanged(Nothing) returns (Nothing) { option (method_id) = 3; }
 }
+
