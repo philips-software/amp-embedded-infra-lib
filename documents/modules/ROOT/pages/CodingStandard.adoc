@@ -465,7 +465,7 @@ int32_t Max(int32_t a, int32_t b)
 
 *Rule 51.* `NULL` and `0` shall not be used as null pointers. Use `nullptr` instead.
 
-*Rule 52.* When overriding `virtual` functions in a derived class, the keywords `virtual` and `override` shall be used to explicitly declare the function to `override` a base function.
+*Rule 52.* When overriding `virtual` functions in a derived class, the keywords `override` or `final` shall be used to explicitly declare the function to `override` a base function. The `virtual` keyword shall not be repeated.
 
 *Rule 53.* The `++` and `--` operators shall be written in front of the variable, unless post increment/post decrement is really the intended operation.
 

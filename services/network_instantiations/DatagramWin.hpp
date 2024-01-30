@@ -34,8 +34,8 @@ namespace services
         DatagramWin(const UdpSocket& local, const UdpSocket& remote, DatagramExchangeObserver& observer);
         ~DatagramWin();
 
-        virtual void RequestSendStream(std::size_t sendSize) override;
-        virtual void RequestSendStream(std::size_t sendSize, UdpSocket to) override;
+        void RequestSendStream(std::size_t sendSize) override;
+        void RequestSendStream(std::size_t sendSize, UdpSocket to) override;
 
         void Receive();
         void Send();
@@ -110,8 +110,8 @@ namespace services
         void LeaveMulticastGroup(IPv4Address multicastAddress);
 
         // Implementation of DatagramExchange
-        virtual void RequestSendStream(std::size_t sendSize) override;
-        virtual void RequestSendStream(std::size_t sendSize, UdpSocket to) override;
+        void RequestSendStream(std::size_t sendSize) override;
+        void RequestSendStream(std::size_t sendSize, UdpSocket to) override;
 
     private:
         class Observer
@@ -124,8 +124,8 @@ namespace services
             Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, UdpSocket local, UdpSocket remote);
 
             // Implementation of DatagramExchangeObserver
-            virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
-            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+            void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
+            void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
         private:
             friend class DatagramExchangeMultiple;
@@ -140,13 +140,13 @@ namespace services
         public:
             MultipleWriter(std::vector<infra::SharedPtr<infra::StreamWriter>>& writers);
 
-            virtual void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
-            virtual std::size_t Available() const override;
-            virtual std::size_t ConstructSaveMarker() const override;
-            virtual std::size_t GetProcessedBytesSince(std::size_t marker) const override;
-            virtual infra::ByteRange SaveState(std::size_t marker) override;
-            virtual void RestoreState(infra::ByteRange range) override;
-            virtual infra::ByteRange Overwrite(std::size_t marker) override;
+            void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
+            std::size_t Available() const override;
+            std::size_t ConstructSaveMarker() const override;
+            std::size_t GetProcessedBytesSince(std::size_t marker) const override;
+            infra::ByteRange SaveState(std::size_t marker) override;
+            void RestoreState(infra::ByteRange range) override;
+            infra::ByteRange Overwrite(std::size_t marker) override;
 
         private:
             std::vector<infra::SharedPtr<infra::StreamWriter>> writers;
@@ -166,10 +166,10 @@ namespace services
     public:
         UdpOnAllInterfaces(EventDispatcherWithNetwork& eventDispatcher);
 
-        virtual infra::SharedPtr<DatagramExchange> Listen(DatagramExchangeObserver& observer, uint16_t port, IPVersions versions = IPVersions::both) override;
-        virtual infra::SharedPtr<DatagramExchange> Listen(DatagramExchangeObserver& observer, IPVersions versions = IPVersions::both) override;
-        virtual infra::SharedPtr<DatagramExchange> Connect(DatagramExchangeObserver& observer, UdpSocket remote) override;
-        virtual infra::SharedPtr<DatagramExchange> Connect(DatagramExchangeObserver& observer, uint16_t localPort, UdpSocket remote) override;
+        infra::SharedPtr<DatagramExchange> Listen(DatagramExchangeObserver& observer, uint16_t port, IPVersions versions = IPVersions::both) override;
+        infra::SharedPtr<DatagramExchange> Listen(DatagramExchangeObserver& observer, IPVersions versions = IPVersions::both) override;
+        infra::SharedPtr<DatagramExchange> Connect(DatagramExchangeObserver& observer, UdpSocket remote) override;
+        infra::SharedPtr<DatagramExchange> Connect(DatagramExchangeObserver& observer, uint16_t localPort, UdpSocket remote) override;
 
     private:
         std::vector<IPv4Address> GetIpAddresses();
