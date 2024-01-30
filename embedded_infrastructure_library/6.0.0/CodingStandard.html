@@ -834,7 +834,7 @@ When an <code>? :</code> expression is broken down over multiple lines, both <co
 <p><strong>Rule 51.</strong> <code>NULL</code> and <code>0</code> shall not be used as null pointers. Use <code>nullptr</code> instead.</p>
 </div>
 <div class="paragraph">
-<p><strong>Rule 52.</strong> When overriding <code>virtual</code> functions in a derived class, the keywords <code>virtual</code> and <code>override</code> shall be used to explicitly declare the function to <code>override</code> a base function.</p>
+<p><strong>Rule 52.</strong> When overriding <code>virtual</code> functions in a derived class, the keywords <code>override</code> or <code>final</code> shall be used to explicitly declare the function to <code>override</code> a base function. The <code>virtual</code> keyword shall not be repeated.</p>
 </div>
 <div class="paragraph">
 <p><strong>Rule 53.</strong> The <code>++</code> and <code>--</code> operators shall be written in front of the variable, unless post increment/post decrement is really the intended operation.</p>
