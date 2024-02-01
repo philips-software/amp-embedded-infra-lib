@@ -36,4 +36,14 @@ namespace main_
     {
         network.Run();
     }
+
+    void NetworkAdapter::ExecuteUntil(const infra::Function<bool()>& predicate)
+    {
+        network.ExecuteUntil(predicate);
+    }
+
+    bool NetworkAdapter::NetworkActivity() const
+    {
+        return network.OpenConnections() || nameResolver.Active();
+    }
 }

@@ -26,6 +26,8 @@ namespace main_
         services::EventDispatcherWithNetwork& EventDispatcher();
 
         void Run();
+        void ExecuteUntil(const infra::Function<bool()>& predicate);
+        bool NetworkActivity() const;
 
     private:
         services::EventDispatcherWithNetwork network;
