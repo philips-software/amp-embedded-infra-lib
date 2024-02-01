@@ -61,6 +61,11 @@ namespace services
         datagrams.push_back(datagram);
     }
 
+    bool EventDispatcherWithNetwork::OpenConnections() const
+    {
+        return !connectors.empty() || !connections.empty();
+    }
+
     infra::SharedPtr<void> EventDispatcherWithNetwork::Listen(uint16_t port, services::ServerConnectionObserverFactory& factory, IPVersions versions)
     {
         assert(versions != IPVersions::ipv6);
