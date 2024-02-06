@@ -30,7 +30,7 @@ if (EMIL_BUILD_WIN)
     )
 endif()
 
-if (EMIL_BUILD_UNIX)
+if (EMIL_BUILD_UNIX OR EMIL_BUILD_DARWIN)
     target_link_libraries(hal.generic PUBLIC
         hal.unix
     )

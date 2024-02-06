@@ -1,4 +1,3 @@
-
 #include "hal/generic/SynchronousUartGeneric.hpp"
 #include <cstdint>
 #include <string>
