@@ -88,7 +88,7 @@ namespace services
     }
 
     TracingConnectionFactoryWithNameResolverMbedTls::TracingConnectionFactoryWithNameResolverMbedTls(AllocatorTracingConnectionMbedTls& connectionAllocator, infra::BoundedList<ConnectionMbedTlsConnectorWithNameResolver>& connectors,
-        ConnectionFactoryWithNameResolver& factory, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, Tracer& tracer, DebugLevel level, ConnectionMbedTls::CertificateValidation certificateValidation)
+        ConnectionFactoryWithNameResolver& factory, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, Tracer& tracer, [[maybe_unused]] DebugLevel level, ConnectionMbedTls::CertificateValidation certificateValidation)
         : ConnectionFactoryWithNameResolverMbedTls(allocatorAdapter, connectors, factory, certificates, randomDataGenerator, certificateValidation)
         , allocatorAdapter(connectionAllocator, tracer)
     {
