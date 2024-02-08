@@ -105,6 +105,27 @@ namespace services
         MOCK_METHOD2(ConnectionAcceptedMock, void(infra::Function<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver, services::IPAddress address));
     };
 
+    class ClientConnectionObserverFactoryWithNameResolverMock
+        : public services::ClientConnectionObserverFactoryWithNameResolver
+    {
+    public:
+        void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override
+        {
+            ConnectionEstablishedMock(createdObserver.Clone());
+        }
+
+        MOCK_CONST_METHOD0(Hostname, infra::BoundedConstString());
+        MOCK_CONST_METHOD0(Port, uint16_t());
+        MOCK_METHOD1(ConnectionEstablishedMock, void(infra::Function<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver));
+        MOCK_METHOD1(ConnectionFailed, void(ConnectFailReason reason));
+        MOCK_METHOD0(Destructor, void());
+
+        virtual ~ClientConnectionObserverFactoryWithNameResolverMock()
+        {
+            Destructor();
+        }
+    };
+
     class ClientConnectionObserverFactoryMock
         : public services::ClientConnectionObserverFactory
     {
