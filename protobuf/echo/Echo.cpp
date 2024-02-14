@@ -37,7 +37,7 @@ namespace services
     infra::SharedPtr<MethodSerializer> ServiceProxy::GrantSend()
     {
         onGranted();
-        return methodSerializer;
+        return std::move(methodSerializer);
     }
 
     uint32_t ServiceProxy::MaxMessageSize() const
