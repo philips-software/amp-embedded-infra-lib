@@ -74,7 +74,7 @@ namespace services
 
     void EchoOnStreams::ServiceDone()
     {
-        methodDeserializer = nullptr;
+        ReleaseDeserializer();
 
         if (readerPtr != nullptr)
             DataReceived();
@@ -116,9 +116,9 @@ namespace services
         return proxy.GrantSend();
     }
 
-    infra::SharedPtr<MethodDeserializer> EchoOnStreams::StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const infra::SharedPtr<MethodDeserializer>& deserializer)
+    infra::SharedPtr<MethodDeserializer> EchoOnStreams::StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, infra::SharedPtr<MethodDeserializer>&& deserializer)
     {
-        return deserializer;
+        return std::move(deserializer);
     }
 
     void EchoOnStreams::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -236,10 +236,16 @@ namespace services
             if (methodDeserializer->Failed())
             {
                 errorPolicy.MessageFormatError();
-                methodDeserializer = nullptr;
+                ReleaseDeserializer();
             }
             else
                 methodDeserializer->ExecuteMethod();
         }
     }
+
+    void EchoOnStreams::ReleaseDeserializer()
+    {
+        methodDeserializer = nullptr;
+    }
+
 }

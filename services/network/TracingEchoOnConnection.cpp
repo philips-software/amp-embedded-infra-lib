@@ -1,5 +1,7 @@
 #include "services/network/TracingEchoOnConnection.hpp"
 #include "infra/stream/BoundedVectorInputStream.hpp"
+#include "protobuf/echo/Echo.hpp"
+#include <cstddef>
 
 namespace services
 {
@@ -25,7 +27,7 @@ namespace services
         return infra::MakeContainedSharedObject(static_cast<MethodSerializer&>(*this), serializer);
     }
 
-    infra::SharedPtr<MethodDeserializer> TracingEchoOnConnection::StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const infra::SharedPtr<MethodDeserializer>& deserializer)
+    infra::SharedPtr<MethodDeserializer> TracingEchoOnConnection::StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, infra::SharedPtr<MethodDeserializer>&& deserializer)
     {
         receivingService = FindService(serviceId);
 
@@ -34,7 +36,7 @@ namespace services
             receivingMethodId = methodId;
 
             readerBuffer.clear();
-            this->deserializer = std::move(deserializer);
+            this->deserializer = deserializer;
             return infra::MakeContainedSharedObject(static_cast<MethodDeserializer&>(*this), this->deserializer);
         }
         else
@@ -42,6 +44,12 @@ namespace services
             tracer.Trace() << "< Unknown service " << serviceId << " method " << methodId;
             return deserializer;
         }
+    }
+
+    void TracingEchoOnConnection::ReleaseDeserializer()
+    {
+        EchoOnStreams::ReleaseDeserializer();
+        deserializer = nullptr;
     }
 
     bool TracingEchoOnConnection::Serialize(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -66,6 +74,7 @@ namespace services
             if (stream.Failed() || formatErrorPolicy.Failed())
                 tracer.Continue() << "... Malformed message";
         }
+        serializer = nullptr;
     }
 
     void TracingEchoOnConnection::MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)

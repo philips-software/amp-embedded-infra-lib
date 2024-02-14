@@ -20,7 +20,8 @@ namespace services
     protected:
         // Implementation of EchoOnConnection
         infra::SharedPtr<MethodSerializer> GrantSend(ServiceProxy& proxy) override;
-        infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const infra::SharedPtr<MethodDeserializer>& deserializer) override;
+        infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, infra::SharedPtr<MethodDeserializer>&& deserializer) override;
+        void ReleaseDeserializer() override;
 
     private:
         // Implementation of MethodSerializer
