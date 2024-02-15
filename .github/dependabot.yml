@@ -6,6 +6,11 @@ updates:
     directory: /
     schedule:
       interval: daily
+    groups:
+      minor-and-patch-action-updates:
+        update-types:
+          - minor
+          - patch
   - package-ecosystem: docker
     directory: .clusterfuzzlite
     schedule:
