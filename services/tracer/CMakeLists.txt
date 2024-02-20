@@ -1,9 +1,9 @@
 add_library(services.tracer ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
 if (EMIL_ENABLE_TRACING)
-    target_compile_definitions(services.tracer PUBLIC EMIL_ENABLE_TRACING)
+    target_compile_definitions(services.tracer PUBLIC EMIL_ENABLE_TRACING=1)
 else()
-    target_compile_definitions(services.tracer PUBLIC EMIL_DISABLE_TRACING)
+    target_compile_definitions(services.tracer PUBLIC EMIL_DISABLE_TRACING=1)
 endif()
 
 target_link_libraries(services.tracer PUBLIC

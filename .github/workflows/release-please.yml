@@ -20,7 +20,7 @@ jobs:
       releases_created: ${{ steps.release.outputs.releases_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
-      - uses: philips-software/app-token-action@a37926571e4cec6f219e06727136efdd073d8657 # v1.1.2
+      - uses: philips-software/app-token-action@9f5d57062c9f2beaffafaa9a34f66f824ead63a9 # v2.0.0
         id: token
         with:
           app_id: ${{ secrets.FOREST_RELEASER_APP_ID }}
