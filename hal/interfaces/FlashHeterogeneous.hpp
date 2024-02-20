@@ -16,7 +16,7 @@ namespace hal
         : public FlashBase<T>
     {
     public:
-        FlashHeterogeneousBase(infra::MemoryRange<T> sectors);
+        explicit FlashHeterogeneousBase(infra::MemoryRange<T> sectors);
 
     protected:
         ~FlashHeterogeneousBase() = default;
