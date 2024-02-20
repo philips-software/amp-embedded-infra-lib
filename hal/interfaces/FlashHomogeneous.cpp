@@ -17,18 +17,22 @@ namespace hal
     template<class T>
     uint32_t FlashHomogeneousBase<T>::SizeOfSector(T sectorIndex) const
     {
+        assert(sectorIndex < numberOfSectors);
         return sizeOfEachSector;
     }
 
     template<class T>
     T FlashHomogeneousBase<T>::SectorOfAddress(T address) const
     {
-        return address / sizeOfEachSector;
+        auto sectorIndex = address / sizeOfEachSector;
+        assert(sectorIndex < numberOfSectors);
+        return sectorIndex;
     }
 
     template<class T>
     T FlashHomogeneousBase<T>::AddressOfSector(T sectorIndex) const
     {
+        assert(sectorIndex < numberOfSectors);
         return sectorIndex * sizeOfEachSector;
     }
 
