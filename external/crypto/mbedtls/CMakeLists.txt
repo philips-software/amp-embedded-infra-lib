@@ -35,8 +35,11 @@ set(CMAKE_CXX_COMPILER_ID ${ORIGINAL_CXX_COMPILER_ID})
 
 function(add_mbedtls_target_properties)
     foreach(target ${ARGN})
+        target_compile_definitions(${target} PUBLIC
+            MBEDTLS_CONFIG_FILE="mbedtls/mbedtls_emil_config.h"
+        )
+
         target_compile_options(${target} PUBLIC
-            -DMBEDTLS_CONFIG_FILE="mbedtls/mbedtls_emil_config.h"
             # see https://github.com/Mbed-TLS/mbedtls/pull/6966
             # mbedtls sets the -Wdocumentation flag, which is throwing warnings
             # since clang-15

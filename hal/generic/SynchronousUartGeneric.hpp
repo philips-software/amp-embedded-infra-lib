@@ -1,5 +1,5 @@
-#ifndef HAL_UART_HOST_HPP
-#define HAL_UART_HOST_HPP
+#ifndef HAL_SYNCHRONOUS_UART_HOST_HPP
+#define HAL_SYNCHRONOUS_UART_HOST_HPP
 
 #include "hal/synchronous_interfaces/SynchronousSerialCommunication.hpp"
 #include <cstdint>
