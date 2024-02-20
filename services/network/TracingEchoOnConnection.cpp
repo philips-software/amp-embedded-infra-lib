@@ -36,7 +36,7 @@ namespace services
             receivingMethodId = methodId;
 
             readerBuffer.clear();
-            this->deserializer = deserializer;
+            this->deserializer = std::move(deserializer);
             return infra::MakeContainedSharedObject(static_cast<MethodDeserializer&>(*this), this->deserializer);
         }
         else
