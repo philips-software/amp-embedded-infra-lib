@@ -31,13 +31,15 @@ namespace hal
                 return sector;
         }
 
-        really_assert(address == totalSize);
-        return sectors.size();
+        assert(address == totalSize);
+        return static_cast<T>(sectors.size() - 1);
     }
 
     template<class T>
     T FlashHeterogeneousBase<T>::AddressOfSector(T sectorIndex) const
     {
+        assert(sectorIndex < sectors.size());
+
         T address = 0;
 
         for (T index = 0; index != sectorIndex; ++index)

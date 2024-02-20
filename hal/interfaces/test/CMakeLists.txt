@@ -12,6 +12,7 @@ target_link_libraries(hal.interfaces_test PUBLIC
 target_sources(hal.interfaces_test PRIVATE
     TestCan.cpp
     TestFlash.cpp
+    TestFlashHeterogeneous.cpp
     TestFlashHomogeneous.cpp
     TestI2cRegisterAccess.cpp
     TestMacAddress.cpp

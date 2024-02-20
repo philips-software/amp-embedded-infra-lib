@@ -42,7 +42,7 @@ TEST_F(FlashHomogeneousTest, sector_of_address)
     ASSERT_EQ(flash.SectorOfAddress(1), 0);
 
     ASSERT_EQ(flash.SectorOfAddress(8), 1);
-    ASSERT_EQ(flash.SectorOfAddress(9), 1);
+    ASSERT_EQ(flash.SectorOfAddress(15), 1);
 
     ASSERT_EQ(flash.SectorOfAddress(16), 2);
 }
