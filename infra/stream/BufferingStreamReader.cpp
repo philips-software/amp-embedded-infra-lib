@@ -14,7 +14,7 @@ namespace infra
 
     void BufferingStreamReader::Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy)
     {
-        if (index != buffer.size())
+        if (index < buffer.size())
         {
             bufferIndex += Read(infra::Head(buffer.contiguous_range(buffer.begin() + index), range.size()), range);
             // Perhaps the deque just wrapped around, try once more
