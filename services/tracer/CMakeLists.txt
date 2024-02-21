@@ -41,4 +41,17 @@ target_sources(services.tracer PRIVATE
     TracingReset.hpp
 )
 
+if (EMIL_INCLUDE_SEGGER_RTT)
+    target_link_libraries(services.tracer PUBLIC
+        segger_rtt.rtt
+    )
+
+    target_sources(services.tracer PRIVATE
+        StreamWriterOnSeggerRtt.cpp
+        StreamWriterOnSeggerRtt.hpp
+        TracerOnSeggerRttInfrastructure.cpp
+        TracerOnSeggerRttInfrastructure.hpp
+    )
+endif()
+
 add_subdirectory(test)
