@@ -6,7 +6,7 @@ function(emil_fetch_googletest)
     FetchContent_Declare(
         googletest
         GIT_REPOSITORY https://github.com/google/googletest
-        GIT_TAG        release-1.12.1
+        GIT_TAG        v1.14.0
     )
 
     set(gtest_force_shared_crt On CACHE BOOL "" FORCE) # For Windows: Prevent overriding the parent project's compiler/linker settings
