@@ -1,7 +1,3 @@
 # See: https://avd.aquasec.com/misconfig/dockerfile/general/avd-ds-0002/
 # We allow root access in our container that we use for development purposes
 DS002
-
-# See: https://avd.aquasec.com/misconfig/dockerfile/general/avd-ds-0026/
-# We don't require a HEALTHCHECK for our devcontainer
-DS026
