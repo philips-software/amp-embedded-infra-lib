@@ -161,3 +161,23 @@ TEST_F(EchoOnConnectionTest, DataReceived_to_complete_service_method)
 
     service.MethodDone();
 }
+
+TEST_F(EchoOnConnectionTest, DataReceived_in_multiple_segments)
+{
+    std::vector<uint8_t> data = { 1, 10, 2, 8, 5, 1, 10 };
+    infra::StdVectorInputStream::WithStorage stream(infra::inPlace, data);
+    auto readerPtr = infra::UnOwnedSharedPtr(stream.Reader());
+    EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
+    EXPECT_CALL(connection, AckReceived()).Times(2).WillOnce(testing::Invoke([this, &readerPtr]()
+                                                                 {
+                                                                     EXPECT_EQ(5, readerPtr->ConstructSaveMarker());
+                                                                 }))
+        .WillOnce(testing::Invoke([this, &readerPtr]()
+            {
+                EXPECT_EQ(7, readerPtr->ConstructSaveMarker());
+            }));
+    EXPECT_CALL(service, Method(5));
+    connection.Observer().DataReceived();
+
+    service.MethodDone();
+}
