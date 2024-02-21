@@ -1,1 +1,1 @@
-FROM ghcr.io/philips-software/amp-devcontainer:v4.4.0@sha256:e0c087f51f1b5fb524e358eb16800032c3723045b0d9e9f65980e360b339b598
+FROM ghcr.io/philips-software/amp-devcontainer:v4.5.0@sha256:a3a5fa2b701c747fee5b8c33a3eaaa4cc2a700f6470f18f86dd434107c6691ca
