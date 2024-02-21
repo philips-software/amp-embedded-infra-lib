@@ -163,6 +163,7 @@ namespace services
     void EchoOnStreams::StartReceiveMessage()
     {
         auto start = bufferedReader->ConstructSaveMarker();
+        auto readerStart = readerPtr->ConstructSaveMarker();
         infra::DataInputStream::WithErrorPolicy stream(*bufferedReader, infra::softFail);
         infra::StreamErrorPolicy formatErrorPolicy(infra::softFail);
         infra::ProtoParser parser(stream, formatErrorPolicy);
@@ -173,6 +174,8 @@ namespace services
         {
             bufferedReader->Rewind(start);
             bufferedReader = infra::none;
+            readerPtr->Rewind(readerStart + receiveBuffer.size());
+            AckReceived();
             readerPtr = nullptr;
         }
         else if (formatErrorPolicy.Failed() || !contents.Is<infra::PartialProtoLengthDelimited>())
