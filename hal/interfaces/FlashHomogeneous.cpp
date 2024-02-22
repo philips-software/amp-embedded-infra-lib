@@ -1,4 +1,5 @@
 #include "hal/interfaces/FlashHomogeneous.hpp"
+#include <algorithm>
 
 namespace hal
 {
@@ -25,8 +26,8 @@ namespace hal
     T FlashHomogeneousBase<T>::SectorOfAddress(T address) const
     {
         auto sectorIndex = address / sizeOfEachSector;
-        assert(sectorIndex < numberOfSectors);
-        return sectorIndex;
+        assert(sectorIndex <= numberOfSectors);
+        return std::clamp<T>(sectorIndex, 0, numberOfSectors);
     }
 
     template<class T>

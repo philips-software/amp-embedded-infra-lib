@@ -32,7 +32,7 @@ namespace hal
         }
 
         assert(address == totalSize);
-        return static_cast<T>(sectors.size() - 1);
+        return static_cast<T>(sectors.size());
     }
 
     template<class T>

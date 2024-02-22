@@ -27,31 +27,31 @@ public:
 
 TEST_F(FlashHeterogeneousTest, number_of_sectors)
 {
-    ASSERT_EQ(flash.NumberOfSectors(), 3);
+    ASSERT_EQ(3, flash.NumberOfSectors());
 }
 
 TEST_F(FlashHeterogeneousTest, size_of_sector)
 {
-    ASSERT_EQ(flash.SizeOfSector(0), 3);
-    ASSERT_EQ(flash.SizeOfSector(1), 4);
-    ASSERT_EQ(flash.SizeOfSector(2), 8);
+    ASSERT_EQ(3, flash.SizeOfSector(0));
+    ASSERT_EQ(4, flash.SizeOfSector(1));
+    ASSERT_EQ(8, flash.SizeOfSector(2));
 }
 
 TEST_F(FlashHeterogeneousTest, sector_of_address)
 {
-    ASSERT_EQ(flash.SectorOfAddress(0), 0);
-    ASSERT_EQ(flash.SectorOfAddress(1), 0);
+    ASSERT_EQ(0, flash.SectorOfAddress(0));
+    ASSERT_EQ(0, flash.SectorOfAddress(1));
 
-    ASSERT_EQ(flash.SectorOfAddress(3), 1);
-    ASSERT_EQ(flash.SectorOfAddress(6), 1);
+    ASSERT_EQ(1, flash.SectorOfAddress(3));
+    ASSERT_EQ(1, flash.SectorOfAddress(6));
 
-    ASSERT_EQ(flash.SectorOfAddress(7), 2);
-    ASSERT_EQ(flash.SectorOfAddress(15), 2);
+    ASSERT_EQ(2, flash.SectorOfAddress(7));
+    ASSERT_EQ(3, flash.SectorOfAddress(15));
 }
 
 TEST_F(FlashHeterogeneousTest, address_of_sector)
 {
-    ASSERT_EQ(flash.AddressOfSector(0), 0);
-    ASSERT_EQ(flash.AddressOfSector(1), 3);
-    ASSERT_EQ(flash.AddressOfSector(2), 7);
+    ASSERT_EQ(0, flash.AddressOfSector(0));
+    ASSERT_EQ(3, flash.AddressOfSector(1));
+    ASSERT_EQ(7, flash.AddressOfSector(2));
 }
