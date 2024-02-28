@@ -65,6 +65,30 @@ TEST_F(BufferingStreamReaderTest, Extract_from_wrapped_buffer)
     EXPECT_EQ((std::array<uint8_t, 4>{ 3, 4, 5, 6 }), data);
 }
 
+TEST_F(BufferingStreamReaderTest, Double_extract_from_wrapped_buffer)
+{
+    buffer.push_back(3);
+    buffer.push_back(4);
+    buffer.pop_front();
+    buffer.pop_front();
+    buffer.push_back(5);
+    buffer.push_back(6);
+
+    std::array<uint8_t, 4> data;
+    std::array<uint8_t, 3> data2;
+    reader.Extract(data, errorPolicy);
+    EXPECT_EQ((std::array<uint8_t, 4>{ 3, 4, 5, 6 }), data);
+
+    EXPECT_CALL(input, ExtractContiguousRange(3)).WillOnce(testing::Return(infra::Head(infra::ConstByteRange(data), 3)));
+    reader.Extract(data2, errorPolicy);
+    EXPECT_EQ((std::array<uint8_t, 3>{ 3, 4, 5 }), data2);
+
+    data.fill(0);
+    EXPECT_CALL(input, ExtractContiguousRange(4)).WillOnce(testing::Return(infra::ConstByteRange(data)));
+    reader.Extract(data, errorPolicy);
+    EXPECT_EQ((std::array<uint8_t, 4>{ 0, 0, 0, 0 }), data);
+}
+
 TEST_F(BufferingStreamReaderTest, Extract_from_buffer_and_input)
 {
     std::array<uint8_t, 4> data;

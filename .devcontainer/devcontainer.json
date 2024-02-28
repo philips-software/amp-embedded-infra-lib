@@ -1,32 +1,20 @@
 {
-  // This devcontainer has been set-up to run docker-from-docker scenarios as per
-  // https://github.com/microsoft/vscode-dev-containers/tree/main/containers/docker-from-docker
   "build": {
     "context": "..",
     "dockerfile": "Dockerfile"
   },
-  "runArgs": ["--add-host=host.docker.internal:host-gateway"],
-  "remoteEnv": { "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}" },
   "mounts": [
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
   "customizations": {
     "vscode": {
-      "extensions": [
-        "llvm-vs-code-extensions.vscode-clangd",
-        "marus25.cortex-debug",
-        "matepek.vscode-catch2-test-adapter",
-        "mhutchie.git-graph",
-        "ms-vscode.cmake-tools",
-        "ms-vscode.cpptools",
-        "ms-vsliveshare.vsliveshare",
-        "SonarSource.sonarlint-vscode",
-        "xaver.clang-format"
-      ],
       "settings": {
         "C_Cpp.autoAddFileAssociations": false,
         "C_Cpp.intelliSenseEngine": "disabled",
-        "clangd.arguments": ["--query-driver=/**/arm-none-eabi-*"],
+        "clangd.arguments": [
+          "--query-driver=/opt/**/arm-none-eabi-*",
+          "--compile-commands-dir=${workspaceFolder}/build"
+        ],
         "cmake.copyCompileCommands": "${workspaceFolder}/build/compile_commands.json",
         "cmake.statusbar.visibility": "default",
         "cmake.useProjectStatusView": false,
