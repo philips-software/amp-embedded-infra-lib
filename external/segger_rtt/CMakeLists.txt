@@ -8,16 +8,16 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(segger_rtt)
 
-add_library(segger_rtt.rtt ${EMIL_EXCLUDE_FROM_ALL} STATIC)
+add_library(segger.rtt ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
-target_include_directories(segger_rtt.rtt PUBLIC
+target_include_directories(segger.rtt PUBLIC
     "$<BUILD_INTERFACE:${segger_rtt_SOURCE_DIR}>"
 )
 
-target_sources(segger_rtt.rtt PRIVATE
+target_sources(segger.rtt PRIVATE
     ${segger_rtt_SOURCE_DIR}/Config/SEGGER_RTT_Conf.h
     ${segger_rtt_SOURCE_DIR}/RTT/SEGGER_RTT.c
     ${segger_rtt_SOURCE_DIR}/RTT/SEGGER_RTT.h
 )
 
-emil_exclude_from_clang_format(segger_rtt.rtt)
+emil_exclude_from_clang_format(segger.rtt)

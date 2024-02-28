@@ -43,7 +43,7 @@ target_sources(services.tracer PRIVATE
 
 if (EMIL_INCLUDE_SEGGER_RTT)
     target_link_libraries(services.tracer PUBLIC
-        segger_rtt.rtt
+        segger.rtt
     )
 
     target_sources(services.tracer PRIVATE
