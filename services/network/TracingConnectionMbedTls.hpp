@@ -1,6 +1,7 @@
 #ifndef SERVICES_TRACING_CONNECTION_MBED_TLS_HPP
 #define SERVICES_TRACING_CONNECTION_MBED_TLS_HPP
 
+#include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/network/ConnectionMbedTls.hpp"
 #include "services/tracer/Tracer.hpp"
 
@@ -62,6 +63,30 @@ namespace services
 
         TracingConnectionFactoryMbedTls(AllocatorTracingConnectionMbedTls& connectionAllocator, AllocatorConnectionMbedTlsListener& listenerAllocator, infra::BoundedList<ConnectionMbedTlsConnector>& connectors,
             ConnectionFactory& factory, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, Tracer& tracer, DebugLevel level, ConnectionMbedTls::CertificateValidation certificateValidation = ConnectionMbedTls::CertificateValidation::Default);
+
+    private:
+        AllocatorTracingConnectionMbedTlsAdapter allocatorAdapter;
+    };
+
+    class TracingConnectionFactoryWithNameResolverMbedTls
+        : public ConnectionFactoryWithNameResolverMbedTls
+    {
+    public:
+        enum DebugLevel
+        {
+            NoDebug,
+            Error,
+            StateChange,
+            Informational,
+            Verbose
+        };
+
+    public:
+        template<std::size_t MaxConnections, std::size_t MaxConnectors>
+        using WithMaxConnectionsAndConnectors = infra::WithStorage<infra::WithStorage<TracingConnectionFactoryWithNameResolverMbedTls, AllocatorTracingConnectionMbedTls::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxConnections>>, infra::BoundedList<ConnectionMbedTlsConnectorWithNameResolver>::WithMaxSize<MaxConnectors>>;
+
+        TracingConnectionFactoryWithNameResolverMbedTls(AllocatorTracingConnectionMbedTls& connectionAllocator, infra::BoundedList<ConnectionMbedTlsConnectorWithNameResolver>& connectors,
+            ConnectionFactoryWithNameResolver& factory, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, Tracer& tracer, DebugLevel level, ConnectionMbedTls::CertificateValidation certificateValidation = ConnectionMbedTls::CertificateValidation::Default);
 
     private:
         AllocatorTracingConnectionMbedTlsAdapter allocatorAdapter;
