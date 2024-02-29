@@ -189,6 +189,7 @@ namespace services
         else
         {
             state = State::idle;
+            timeoutTimer.Cancel();
             Done();
         }
     }
