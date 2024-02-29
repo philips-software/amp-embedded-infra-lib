@@ -398,7 +398,14 @@ namespace services
 
     HttpClientWebSocketInitiation::HttpClientWebSocketInitiation(WebSocketClientObserverFactory& clientObserverFactory, HttpClientConnector& clientConnector,
         HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-        : HttpClientBasic(clientObserverFactory.Url(), clientObserverFactory.Port(), clientConnector)
+        : HttpClientWebSocketInitiation(clientObserverFactory, clientConnector, result, randomDataGenerator, noAutoConnect)
+    {
+        Connect();
+    }
+
+    HttpClientWebSocketInitiation::HttpClientWebSocketInitiation(WebSocketClientObserverFactory& clientObserverFactory, HttpClientConnector& clientConnector,
+        HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator, NoAutoConnect)
+        : HttpClientBasic(clientObserverFactory.Url(), clientObserverFactory.Port(), clientConnector, noAutoConnect)
         , result(result)
     {
         std::array<uint8_t, 16> randomData;
@@ -420,6 +427,7 @@ namespace services
 
     void HttpClientWebSocketInitiation::Attached()
     {
+        HttpClientBasic::Attached();
         Subject().Get(Path(), Headers());
     }
 
@@ -430,6 +438,8 @@ namespace services
 
     void HttpClientWebSocketInitiation::StatusAvailable(HttpStatusCode statusCode)
     {
+        HttpClientBasic::StatusAvailable(statusCode);
+
         if (statusCode != HttpStatusCode::SwitchingProtocols)
             ContentError();
     }
