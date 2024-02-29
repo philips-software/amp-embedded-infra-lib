@@ -12,7 +12,7 @@ namespace services
     extern const NoAutoConnect noAutoConnect;
 
     class HttpClientBasic
-        : protected services::HttpClientObserver
+        : public services::HttpClientObserver
         , protected services::HttpClientObserverFactory
     {
     public:
@@ -22,6 +22,9 @@ namespace services
         HttpClientBasic(infra::BoundedString url, uint16_t port, services::HttpClientConnector& httpClientConnector, infra::Duration timeoutDuration, NoAutoConnect);
 
         void Cancel(const infra::Function<void()>& onDone);
+
+        // Implementation of HttpClientObserver
+        void StatusAvailable(HttpStatusCode statusCode) override = 0;
 
     protected:
         void Connect();
@@ -35,9 +38,11 @@ namespace services
         virtual void Established();
         virtual void Done() = 0;
         virtual void Error(bool intermittentFailure) = 0;
+        virtual void CloseConnection();
 
     protected:
         // Implementation of HttpClientObserver
+        void Attached() override;
         void Detaching() override;
         void BodyComplete() override;
         void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
@@ -76,6 +81,7 @@ namespace services
         infra::Duration timeoutDuration;
         infra::TimerSingleShot timeoutTimer;
         State state = State::idle;
+        bool receivedStatus = false;
         bool contentError = false;
     };
 }

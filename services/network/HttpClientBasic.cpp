@@ -47,6 +47,11 @@ namespace services
             onDone();
     }
 
+    void HttpClientBasic::StatusAvailable(HttpStatusCode statusCode)
+    {
+        receivedStatus = true;
+    }
+
     void HttpClientBasic::Connect()
     {
         assert(state == State::idle);
@@ -86,6 +91,22 @@ namespace services
     void HttpClientBasic::Established()
     {}
 
+    void HttpClientBasic::CloseConnection()
+    {
+        HttpClientObserver::Subject().CloseConnection();
+    }
+
+    void HttpClientBasic::Attached()
+    {
+        state = State::connected;
+        StartTimeout();
+        Established();
+        sharedAccess.SetAction([this]()
+            {
+                Expire();
+            });
+    }
+
     void HttpClientBasic::Detaching()
     {
         if (state == State::connected)
@@ -123,13 +144,6 @@ namespace services
 
     void HttpClientBasic::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::HttpClientObserver> client)>&& createdClientObserver)
     {
-        state = State::connected;
-        StartTimeout();
-        Established();
-        sharedAccess.SetAction([this]()
-            {
-                Expire();
-            });
         createdClientObserver(sharedAccess.MakeShared(static_cast<services::HttpClientObserver&>(*this)));
     }
 
@@ -155,7 +169,7 @@ namespace services
         {
             state = State::closing;
             timeoutTimer.Cancel();
-            HttpClientObserver::Subject().CloseConnection();
+            CloseConnection();
         }
     }
 
@@ -170,7 +184,7 @@ namespace services
 
     void HttpClientBasic::Expire()
     {
-        if (contentError)
+        if (contentError || !receivedStatus)
             ReportError(false);
         else
         {
