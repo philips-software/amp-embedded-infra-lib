@@ -73,7 +73,7 @@ namespace services
             return serializerAccess.MakeShared(static_cast<MethodSerializer&>(*this));
         }
 
-        infra::SharedPtr<MethodDeserializer> TracingEchoOnStreamsDescendantHelper::StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const infra::SharedPtr<MethodDeserializer>& deserializer)
+        infra::SharedPtr<MethodDeserializer> TracingEchoOnStreamsDescendantHelper::StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, infra::SharedPtr<MethodDeserializer>&& deserializer)
         {
             receivingService = FindService(serviceId);
 
@@ -82,7 +82,7 @@ namespace services
                 receivingMethodId = methodId;
 
                 readerBuffer.clear();
-                this->deserializer = deserializer;
+                this->deserializer = std::move(deserializer);
                 return deserializerAccess.MakeShared(static_cast<MethodDeserializer&>(*this));
             }
             else
@@ -90,6 +90,11 @@ namespace services
                 tracer.Trace() << "> Unknown service " << serviceId << " method " << methodId;
                 return deserializer;
             }
+        }
+
+        void TracingEchoOnStreamsDescendantHelper::ReleaseDeserializer()
+        {
+            deserializer = nullptr;
         }
 
         bool TracingEchoOnStreamsDescendantHelper::Serialize(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -188,6 +193,8 @@ namespace services
                             tracer.Continue() << "... Malformed message";
                         writerBuffer.erase(writerBuffer.begin(), writerBuffer.begin() + stream.Reader().Processed());
                     }
+
+                    serializer = nullptr;
                 }
             }
         }

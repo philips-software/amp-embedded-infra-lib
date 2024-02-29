@@ -18,8 +18,8 @@ namespace hal
         LowPowerStrategyFreeRtos();
         virtual ~LowPowerStrategyFreeRtos();
 
-        virtual void RequestExecution() override;
-        virtual void Idle(const infra::EventDispatcherWorker& eventDispatcher) override;
+        void RequestExecution() override;
+        void Idle(const infra::EventDispatcherWorker& eventDispatcher) override;
 
     private:
         SemaphoreHandle_t semaphore = nullptr;

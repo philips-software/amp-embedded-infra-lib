@@ -92,6 +92,7 @@
       "toolchainFile": "${sourceDir}/cmake/toolchain-arm-gcc-m4-fpv4-sp-d16.cmake",
       "cacheVariables": {
         "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo;MinSizeRel",
+        "EMIL_INCLUDE_SEGGER_RTT": "On",
         "TARGET_CORTEX": "m4"
       },
       "generator": "Ninja Multi-Config"

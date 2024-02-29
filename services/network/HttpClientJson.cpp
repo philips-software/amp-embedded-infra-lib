@@ -35,6 +35,7 @@ namespace services
 
     void HttpClientJson::Attached()
     {
+        HttpClientBasic::Attached();
         HttpClientObserver::Subject().Get(Path(), Headers());
     }
 
@@ -47,6 +48,8 @@ namespace services
 
     void HttpClientJson::StatusAvailable(services::HttpStatusCode statusCode)
     {
+        HttpClientBasic::StatusAvailable(statusCode);
+
         if (statusCode != services::HttpStatusCode::OK)
             ContentError();
     }

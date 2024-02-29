@@ -82,7 +82,7 @@ namespace detail
             }                                                                                  \
                                                                                                \
         private:                                                                               \
-            virtual void Execute() override;                                                   \
+            void Execute() override;                                                           \
         };                                                                                     \
                                                                                                \
         static CLASSNAME VARNAME;                                                              \

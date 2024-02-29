@@ -78,7 +78,7 @@ namespace services
 
     protected:
         virtual infra::SharedPtr<MethodSerializer> GrantSend(ServiceProxy& proxy);
-        virtual infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const infra::SharedPtr<MethodDeserializer>& deserializer);
+        virtual infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, infra::SharedPtr<MethodDeserializer>&& deserializer);
         virtual void RequestSendStream(std::size_t size) = 0;
         virtual void AckReceived() = 0;
 
@@ -86,6 +86,7 @@ namespace services
         void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
         void ReleaseReader();
         void Initialized();
+        virtual void ReleaseDeserializer();
 
     private:
         void TryGrantSend();

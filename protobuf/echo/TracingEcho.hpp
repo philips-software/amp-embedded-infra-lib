@@ -82,7 +82,8 @@ namespace services
             void RemoveServiceTracer(ServiceTracer& service);
 
             infra::SharedPtr<MethodSerializer> GrantSend(const infra::SharedPtr<MethodSerializer>& serializer);
-            infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const infra::SharedPtr<MethodDeserializer>& deserializer);
+            infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, infra::SharedPtr<MethodDeserializer>&& deserializer);
+            void ReleaseDeserializer();
 
         private:
             // Implementation of MethodSerializer
@@ -178,7 +179,8 @@ namespace services
     protected:
         // Implementation of EchoOnStreams
         infra::SharedPtr<MethodSerializer> GrantSend(ServiceProxy& proxy) override;
-        infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const infra::SharedPtr<MethodDeserializer>& deserializer) override;
+        infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, infra::SharedPtr<MethodDeserializer>&& deserializer) override;
+        void ReleaseDeserializer() override;
 
     private:
         detail::TracingEchoOnStreamsDescendantHelper helper;
@@ -212,9 +214,16 @@ namespace services
     }
 
     template<class Descendant>
-    infra::SharedPtr<MethodDeserializer> TracingEchoOnStreamsDescendant<Descendant>::StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const infra::SharedPtr<MethodDeserializer>& deserializer)
+    infra::SharedPtr<MethodDeserializer> TracingEchoOnStreamsDescendant<Descendant>::StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, infra::SharedPtr<MethodDeserializer>&& deserializer)
     {
-        return helper.StartingMethod(serviceId, methodId, size, deserializer);
+        return helper.StartingMethod(serviceId, methodId, size, std::move(deserializer));
+    }
+
+    template<class Descendant>
+    void TracingEchoOnStreamsDescendant<Descendant>::ReleaseDeserializer()
+    {
+        EchoOnStreams::ReleaseDeserializer();
+        helper.ReleaseDeserializer();
     }
 }
 

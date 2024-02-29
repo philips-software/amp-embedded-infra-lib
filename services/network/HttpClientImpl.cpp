@@ -153,7 +153,7 @@ namespace services
             contentLength = 0;
             chunkedEncoding = true;
         }
-        else
+        else if (HttpClient::IsAttached())
             Observer().HeaderAvailable(header);
     }
 
@@ -223,7 +223,8 @@ namespace services
             {
                 bodyReader.Emplace(ConnectionObserver::Subject().ReceiveStream(), *contentLength);
 
-                Observer().BodyAvailable(infra::MakeContainedSharedObject(bodyReader->countingReader, bodyReaderAccess.MakeShared(bodyReader)));
+                if (HttpClient::IsAttached())
+                    Observer().BodyAvailable(infra::MakeContainedSharedObject(bodyReader->countingReader, bodyReaderAccess.MakeShared(bodyReader)));
                 repeat = chunkedEncoding && contentLength == 0;
             }
         }
