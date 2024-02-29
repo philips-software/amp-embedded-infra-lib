@@ -470,8 +470,10 @@ namespace services
 
     void HttpClientWebSocketInitiation::BodyComplete()
     {
-        // Switching http client off will result in Detaching(), resulting Error() being called
         done = true;
+        HttpClientBasic::BodyComplete();
+
+        // Switching http client off will result in Detaching(), resulting Error() being called
         result.WebSocketInitiationDone(Subject().GetConnection());
     }
 
@@ -484,6 +486,14 @@ namespace services
     {
         if (!done)
             result.WebSocketInitiationError(initiationError);
+    }
+
+    void HttpClientWebSocketInitiation::CloseConnection()
+    {
+        // Default behaviour is to close the connection after the request is done. But successful
+        // opening of the websockt should result in the connection being kept open.
+        if (!done)
+            HttpClientBasic::CloseConnection();
     }
 
     void HttpClientWebSocketInitiation::ConnectionFailed(HttpClientObserverFactory::ConnectFailReason reason)
