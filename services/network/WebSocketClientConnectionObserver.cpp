@@ -470,10 +470,9 @@ namespace services
 
     void HttpClientWebSocketInitiation::BodyComplete()
     {
+        // Switching http client off will result in Detaching(), resulting in CloseConnection() being called
         done = true;
         HttpClientBasic::BodyComplete();
-
-        // Switching http client off will result in Detaching(), resulting Error() being called
         result.WebSocketInitiationDone(Subject().GetConnection());
     }
 
@@ -484,8 +483,7 @@ namespace services
 
     void HttpClientWebSocketInitiation::Error(bool intermittentFailure)
     {
-        if (!done)
-            result.WebSocketInitiationError(initiationError);
+        result.WebSocketInitiationError(initiationError);
     }
 
     void HttpClientWebSocketInitiation::CloseConnection()
