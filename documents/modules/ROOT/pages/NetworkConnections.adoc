@@ -70,4 +70,4 @@ for threads and/or blocking waits is completely avoided, and one
 application can easily handle multiple connections, in parallel with SPI
 transfers, UART communication, etc. without the need for locks or
 wasting MCU time on busy waits. When DataReceived() is called on the 
-ConnectionObserver by the Connection, data to be received is non-zero.
+ConnectionObserver by the Connection, data to be received is of non-zero length.
