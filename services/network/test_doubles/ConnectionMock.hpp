@@ -87,7 +87,7 @@ namespace services
         : public services::ServerConnectionObserverFactory
     {
     public:
-        MOCK_METHOD2(ConnectionAccepted, void(infra::Function<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, services::IPAddress address));
+        MOCK_METHOD2(ConnectionAccepted, void(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, services::IPAddress address));
     };
 
     class ClientConnectionObserverFactoryWithNameResolverMock
@@ -107,7 +107,7 @@ namespace services
     public:
         MOCK_CONST_METHOD0(Address, services::IPAddress());
         MOCK_CONST_METHOD0(Port, uint16_t());
-        MOCK_METHOD1(ConnectionEstablished, void(infra::Function<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver));
+        MOCK_METHOD1(ConnectionEstablished, void(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver));
         MOCK_METHOD1(ConnectionFailed, void(ConnectFailReason reason));
     };
 
