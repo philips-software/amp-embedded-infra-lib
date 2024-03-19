@@ -45,7 +45,7 @@ TEST_F(WebSocketIntegrationTest, create_connection)
     services::ConnectionLoopBackFactory network;
     services::ConnectionLoopBackListener listener(5, network, serverObserverFactory);
 
-    EXPECT_CALL(serverObserverFactory, ConnectionAcceptedMock(testing::_, testing::_))
+    EXPECT_CALL(serverObserverFactory, ConnectionAccepted(testing::_, testing::_))
         .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver, services::IPAddress address)
             {
                 createdObserver(httpServerConnectionPtr);
@@ -133,7 +133,7 @@ TEST_F(WebSocketIntegrationTest, create_connection_failed)
     services::ConnectionLoopBackFactory network;
     services::ConnectionLoopBackListener listener(5, network, serverObserverFactory);
 
-    EXPECT_CALL(serverObserverFactory, ConnectionAcceptedMock(testing::_, testing::_))
+    EXPECT_CALL(serverObserverFactory, ConnectionAccepted(testing::_, testing::_))
         .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver, services::IPAddress address)
             {
                 createdObserver(httpServerConnectionPtr);
