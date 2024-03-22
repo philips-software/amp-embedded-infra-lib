@@ -1,4 +1,5 @@
 #include "services/network_instantiations/EventDispatcherWithNetworkBsd.hpp"
+#include "infra/event/EventDispatcher.hpp"
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -49,7 +50,11 @@ namespace services
         for (auto c = connectors.begin(); c != connectors.end(); ++c)
             if (&*c == &connector)
             {
-                connectors.erase(c);
+                infra::EventDispatcher::Instance().Schedule([this, c]()
+                    {
+                        connectors.erase(c);
+                    });
+
                 return;
             }
 
@@ -78,7 +83,10 @@ namespace services
         for (auto c = connectors.begin(); c != connectors.end(); ++c)
             if (&c->factory == &factory)
             {
-                connectors.erase(c);
+                infra::EventDispatcher::Instance().Schedule([this, c]()
+                    {
+                        connectors.erase(c);
+                    });
                 return;
             }
 
