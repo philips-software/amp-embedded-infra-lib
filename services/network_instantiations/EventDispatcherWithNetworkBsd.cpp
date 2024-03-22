@@ -1,5 +1,4 @@
 #include "services/network_instantiations/EventDispatcherWithNetworkBsd.hpp"
-#include "infra/event/EventDispatcher.hpp"
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -50,11 +49,7 @@ namespace services
         for (auto c = connectors.begin(); c != connectors.end(); ++c)
             if (&*c == &connector)
             {
-                infra::EventDispatcher::Instance().Schedule([this, c]()
-                    {
-                        connectors.erase(c);
-                    });
-
+                connectors.erase(c);
                 return;
             }
 
@@ -83,10 +78,7 @@ namespace services
         for (auto c = connectors.begin(); c != connectors.end(); ++c)
             if (&c->factory == &factory)
             {
-                infra::EventDispatcher::Instance().Schedule([this, c]()
-                    {
-                        connectors.erase(c);
-                    });
+                connectors.erase(c);
                 return;
             }
 
@@ -223,8 +215,11 @@ namespace services
             if (FD_ISSET(listener.listenSocket, &readFileDescriptors))
                 listener.Accept();
 
-        for (auto& connector : connectors)
+        for (auto index = connectors.begin(); index != connectors.end();)
         {
+            auto& connector = *index;
+            ++index;
+
             if (FD_ISSET(connector.connectSocket, &writeFileDescriptors))
                 connector.Connected();
             else if (FD_ISSET(connector.connectSocket, &exceptFileDescriptors))
