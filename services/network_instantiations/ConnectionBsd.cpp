@@ -103,7 +103,9 @@ namespace services
                 receiveBuffer.insert(receiveBuffer.end(), buffer.data(), buffer.data() + received);
 
                 infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionBsd>& object)
-                    { object->Observer().DataReceived(); },
+                    {
+                        object->Observer().DataReceived();
+                    },
                     SharedFromThis());
             }
             else
@@ -164,8 +166,9 @@ namespace services
             auto size = requestedSendSize;
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([size](const infra::SharedPtr<ConnectionBsd>& object)
                 {
-                infra::SharedPtr<infra::StreamWriter> writer = object->streamWriter.Emplace(*object, size);
-                object->Observer().SendStreamAvailable(std::move(writer)); },
+                    infra::SharedPtr<infra::StreamWriter> writer = object->streamWriter.Emplace(*object, size);
+                    object->Observer().SendStreamAvailable(std::move(writer));
+                },
                 SharedFromThis());
 
             requestedSendSize = 0;
@@ -229,8 +232,9 @@ namespace services
         infra::SharedPtr<ConnectionBsd> connection = infra::MakeSharedOnHeap<ConnectionBsd>(network, acceptedSocket);
         factory.ConnectionAccepted([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
             {
-            if (connectionObserver)
-                connection->SetObserver(connectionObserver); },
+                if (connectionObserver)
+                    connection->SetObserver(connectionObserver);
+            },
             connection->Ipv4Address());
     }
 
@@ -267,8 +271,9 @@ namespace services
         connectSocket = -1;
         factory.ConnectionEstablished([connection](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
             {
-            if (connectionObserver)
-                connection->SetObserver(connectionObserver); });
+                if (connectionObserver)
+                    connection->SetObserver(connectionObserver);
+            });
 
         network.DeregisterConnector(*this);
     }

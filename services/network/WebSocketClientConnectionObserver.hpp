@@ -20,7 +20,7 @@ namespace services
         WebSocketClientObserverFactory() = default;
         WebSocketClientObserverFactory(const WebSocketClientObserverFactory& other) = delete;
         WebSocketClientObserverFactory& operator=(const WebSocketClientObserverFactory& other) = delete;
-        virtual ~WebSocketClientObserverFactory() = default;
+        ~WebSocketClientObserverFactory() = default;
 
     public:
         enum ConnectFailReason
@@ -44,7 +44,7 @@ namespace services
         WebSocketClientConnector() = default;
         WebSocketClientConnector(const WebSocketClientConnector& other) = delete;
         WebSocketClientConnector& operator=(const WebSocketClientConnector& other) = delete;
-        virtual ~WebSocketClientConnector() = default;
+        ~WebSocketClientConnector() = default;
 
     public:
         virtual void Connect(WebSocketClientObserverFactory& factory) = 0;
@@ -147,7 +147,7 @@ namespace services
         HttpClientWebSocketInitiationResult() = default;
         HttpClientWebSocketInitiationResult(const HttpClientWebSocketInitiationResult& other) = delete;
         HttpClientWebSocketInitiationResult& operator=(const HttpClientWebSocketInitiationResult& other) = delete;
-        virtual ~HttpClientWebSocketInitiationResult() = default;
+        ~HttpClientWebSocketInitiationResult() = default;
 
     public:
         virtual void WebSocketInitiationDone(Connection& connection) = 0;
@@ -161,6 +161,8 @@ namespace services
     public:
         HttpClientWebSocketInitiation(WebSocketClientObserverFactory& clientObserverFactory, HttpClientConnector& clientConnector,
             HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        HttpClientWebSocketInitiation(WebSocketClientObserverFactory& clientObserverFactory, HttpClientConnector& clientConnector,
+            HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator, NoAutoConnect);
 
         using HttpClientBasic::Detach;
 
@@ -176,6 +178,7 @@ namespace services
         void BodyComplete() override;
         void Done() override;
         void Error(bool intermittentFailure) override;
+        void CloseConnection() override;
         void ConnectionFailed(HttpClientObserverFactory::ConnectFailReason reason) override;
 
     private:
@@ -195,7 +198,7 @@ namespace services
         WebSocketClientInitiationResult() = default;
         WebSocketClientInitiationResult(const WebSocketClientInitiationResult& other) = delete;
         WebSocketClientInitiationResult& operator=(const WebSocketClientInitiationResult& other) = delete;
-        virtual ~WebSocketClientInitiationResult() = default;
+        ~WebSocketClientInitiationResult() = default;
 
     public:
         virtual void InitiationDone(services::Connection& connection) = 0;

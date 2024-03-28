@@ -6,11 +6,11 @@ namespace services
         : stream(stream)
     {}
 
+#if defined(EMIL_ENABLE_TRACING)
     infra::TextOutputStream Tracer::Trace()
     {
-        stream << "\r\n";
+        StartTrace();
         InsertHeader();
-
         return Continue();
     }
 
@@ -18,7 +18,23 @@ namespace services
     {
         return stream;
     }
+#elif defined(EMIL_DISABLE_TRACING)
+    Tracer::EmptyTracing Tracer::Trace()
+    {
+        return EmptyTracing{};
+    }
+
+    infra::TextOutputStream Tracer::Continue()
+    {
+        return dummyStream;
+    }
+#endif
 
     void Tracer::InsertHeader()
     {}
+
+    void Tracer::StartTrace()
+    {
+        Continue() << "\r\n";
+    }
 }

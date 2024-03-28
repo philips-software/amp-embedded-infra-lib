@@ -40,7 +40,7 @@ namespace infra
     void Timer::Jumped(TimePoint from, TimePoint to)
     {
         // Default behaviour: Just pretend that during the jump no actual time passed
-        nextTriggerTime = Convert(Convert(nextTriggerTime) + (to - from));
+        SetNextTriggerTime(Convert(nextTriggerTime) + (to - from), Action());
     }
 
     TimePoint Timer::NextTrigger() const

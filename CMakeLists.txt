@@ -7,7 +7,7 @@ if (APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
 endif()
 
-project(emil LANGUAGES C CXX VERSION 5.0.1) # x-release-please-version
+project(emil LANGUAGES C CXX VERSION 6.0.0) # x-release-please-version
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
@@ -88,12 +88,15 @@ option(EMIL_BUILD_TESTS "Enable building the tests" ${EMIL_DEFAULTOPT})
 option(EMIL_BUILD_EXAMPLES "Enable building the examples" ${EMIL_DEFAULTOPT})
 option(EMIL_ENABLE_FUZZING "Enable building the fuzzing targets" Off)
 option(EMIL_ENABLE_DOCKER_TOOLS "Enable shift-left tools (e.g. linters, formatters) that are run using Docker" On)
+option(EMIL_GENERATE_PACKAGE_CONFIG "Enable generation of package configuration and install files" ${EMIL_HOST_BUILD})
+option(EMIL_ENABLE_TRACING "Enable Tracing" On)
 option(EMIL_BUILD_ECHO_COMPILERS "Build and install the Protobuf ECHO compilers" ${EMIL_DEFAULTOPT})
 
 # Enable or disable optional features.
 option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of EmIL" On)
 option(EMIL_INCLUDE_FREERTOS "Include FreeRTOS as part of EmIL" Off)
 option(EMIL_INCLUDE_THREADX "Include ThreadX as part of EmIL (Incomplete, experimental)" Off)
+option(EMIL_INCLUDE_SEGGER_RTT "Include support for Segger RTT" Off)
 set(EMIL_EXTERNAL_LWIP_TARGET "" CACHE STRING "Specify an external LWIP target")
 
 if (EMIL_ENABLE_DOCKER_TOOLS)
@@ -178,6 +181,7 @@ if (EMIL_BUILD_ECHO_COMPILERS)
         "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}ConfigVersion.cmake"
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
     )
+
 endif()
 
 set(CPACK_GENERATOR "ZIP;TGZ")
@@ -191,7 +195,7 @@ set(CPACK_RPM_PACKAGE_NAME "${CPACK_PACKAGE_NAME}")
 set(CPACK_PACKAGE_HOMEPAGE_URL "${PROJECT_HOMEPAGE_URL}")
 set(CPACK_PACKAGE_MAINTAINER "${CPACK_PACKAGE_VENDOR}")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${CPACK_PACKAGE_VENDOR}")
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 
 include(CPack)

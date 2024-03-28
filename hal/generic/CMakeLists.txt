@@ -18,4 +18,20 @@ target_sources(hal.generic PRIVATE
     TimeKeeperGeneric.hpp
     TimerServiceGeneric.cpp
     TimerServiceGeneric.hpp
+    SynchronousUartGeneric.cpp
+    SynchronousUartGeneric.hpp
+    UartGeneric.cpp
+    UartGeneric.hpp
 )
+
+if (EMIL_BUILD_WIN)
+    target_link_libraries(hal.generic PUBLIC
+        hal.windows
+    )
+endif()
+
+if (EMIL_BUILD_UNIX OR EMIL_BUILD_DARWIN)
+    target_link_libraries(hal.generic PUBLIC
+        hal.unix
+    )
+endif()

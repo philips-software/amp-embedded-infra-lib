@@ -186,9 +186,9 @@ TEST(JsonTokenizerTest, get_multiple_tokens)
 
 TEST(JsonTokenizerTest, clean_json)
 {
-    infra::BoundedString::WithStorage<512> data(R"({ "key" : "value", "key2" : 1234, "key3" : true })");
+    infra::BoundedString::WithStorage<512> data(R"({ "key" : "value", "key2" : 1234, "key3" : true, "key4" : -42.1 })");
     infra::CleanJsonContents(data);
-    EXPECT_EQ(R"({"key":"value","key2":1234,"key3":true})", data);
+    EXPECT_EQ(R"({"key":"value","key2":1234,"key3":true,"key4":-42.1})", data);
 }
 
 TEST(JsonTokenizerTest, ValidJsonObject)
@@ -334,7 +334,7 @@ TEST(JsonObjectIteratorTest, get_float_value_from_iterator)
     infra::JsonObject object(R"({ "key" : 42.1 })");
     infra::JsonObjectIterator iterator(object.begin());
 
-    EXPECT_EQ(infra::JsonFloat(42, 1), iterator->value.Get<infra::JsonFloat>());
+    EXPECT_EQ(infra::JsonFloat(42, 100000000, false), iterator->value.Get<infra::JsonFloat>());
 }
 
 TEST(JsonObjectIteratorTest, get_two_float_values_from_iterator)
@@ -342,9 +342,9 @@ TEST(JsonObjectIteratorTest, get_two_float_values_from_iterator)
     infra::JsonObject object(R"({ "key" : 42.1, "key2" : 18.7 })");
     infra::JsonObjectIterator iterator(object.begin());
 
-    EXPECT_EQ(infra::JsonFloat(42, 1), iterator->value.Get<infra::JsonFloat>());
+    EXPECT_EQ(infra::JsonFloat(42, 100000000, false), iterator->value.Get<infra::JsonFloat>());
     ++iterator;
-    EXPECT_EQ(infra::JsonFloat(18, 7), iterator->value.Get<infra::JsonFloat>());
+    EXPECT_EQ(infra::JsonFloat(18, 700000000, false), iterator->value.Get<infra::JsonFloat>());
 }
 
 TEST(JsonObjectIteratorTest, get_negative_float_value_from_iterator)
@@ -352,7 +352,47 @@ TEST(JsonObjectIteratorTest, get_negative_float_value_from_iterator)
     infra::JsonObject object(R"({ "key" : -42.1 })");
     infra::JsonObjectIterator iterator(object.begin());
 
-    EXPECT_EQ(infra::JsonFloat(-42, 1), iterator->value.Get<infra::JsonFloat>());
+    EXPECT_EQ(infra::JsonFloat(42, 100000000, true), iterator->value.Get<infra::JsonFloat>());
+}
+
+TEST(JsonObjectIteratorTest, get_nano_float_value_from_iterator)
+{
+    infra::JsonObject object(R"({ "key" : 0.000000001 })");
+    infra::JsonObjectIterator iterator(object.begin());
+
+    EXPECT_EQ(infra::JsonFloat(0, 1, false), iterator->value.Get<infra::JsonFloat>());
+}
+
+TEST(JsonObjectIteratorTest, get_micro_float_value_from_iterator)
+{
+    infra::JsonObject object(R"({ "key" : 0.000001 })");
+    infra::JsonObjectIterator iterator(object.begin());
+
+    EXPECT_EQ(infra::JsonFloat(0, 1000, false), iterator->value.Get<infra::JsonFloat>());
+}
+
+TEST(JsonObjectIteratorTest, get_milli_float_value_from_iterator)
+{
+    infra::JsonObject object(R"({ "key" : 0.001 })");
+    infra::JsonObjectIterator iterator(object.begin());
+
+    EXPECT_EQ(infra::JsonFloat(0, 1000000, false), iterator->value.Get<infra::JsonFloat>());
+}
+
+TEST(JsonObjectIteratorTest, get_float_value_with_more_than_nine_digits_in_fraction_from_iterator)
+{
+    infra::JsonObject object(R"({ "key" : 0.1234567890123 })");
+    infra::JsonObjectIterator iterator(object.begin());
+
+    EXPECT_EQ(infra::JsonFloat(0, 123456789, false), iterator->value.Get<infra::JsonFloat>());
+}
+
+TEST(JsonObjectIteratorTest, get_small_negative_float_value_from_iterator)
+{
+    infra::JsonObject object(R"({ "key" : -0.001 })");
+    infra::JsonObjectIterator iterator(object.begin());
+
+    EXPECT_EQ(infra::JsonFloat(0, 1000000, true), iterator->value.Get<infra::JsonFloat>());
 }
 
 TEST(JsonObjectIteratorTest, dont_get_negative_float_value_from_iterator)

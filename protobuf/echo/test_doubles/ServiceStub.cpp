@@ -21,6 +21,11 @@ namespace services
         return value;
     }
 
+    const uint32_t& Message::GetDecayed(std::integral_constant<uint32_t, 0>) const
+    {
+        return value;
+    }
+
     ServiceStub::ServiceStub(Echo& echo)
         : Service(echo)
     {}

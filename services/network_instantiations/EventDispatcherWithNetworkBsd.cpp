@@ -215,8 +215,11 @@ namespace services
             if (FD_ISSET(listener.listenSocket, &readFileDescriptors))
                 listener.Accept();
 
-        for (auto& connector : connectors)
+        for (auto index = connectors.begin(); index != connectors.end();)
         {
+            auto& connector = *index;
+            ++index;
+
             if (FD_ISSET(connector.connectSocket, &writeFileDescriptors))
                 connector.Connected();
             else if (FD_ISSET(connector.connectSocket, &exceptFileDescriptors))
@@ -246,9 +249,13 @@ namespace services
         }
 
         connections.remove_if([](const infra::WeakPtr<ConnectionBsd>& connection)
-            { return connection.lock() == nullptr; });
+            {
+                return connection.lock() == nullptr;
+            });
         datagrams.remove_if([](const infra::WeakPtr<DatagramBsd>& datagram)
-            { return datagram.lock() == nullptr; });
+            {
+                return datagram.lock() == nullptr;
+            });
     }
 
     void EventDispatcherWithNetwork::AddFileDescriptorToSet(int fileDescriptor, fd_set& set)

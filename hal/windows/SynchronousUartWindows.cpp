@@ -2,7 +2,7 @@
 
 namespace hal
 {
-    SynchronousUartWindows::SynchronousUartWindows(const std::string& name, SynchronousUartWindowsConfig config)
+    SynchronousUartWindows::SynchronousUartWindows(const std::string& name, Config config)
     {
         Open(R"(\\.\)" + name, config);
     }
@@ -25,7 +25,7 @@ namespace hal
         return data.size() == bytesRead;
     }
 
-    void SynchronousUartWindows::Open(const std::string& name, SynchronousUartWindowsConfig config)
+    void SynchronousUartWindows::Open(const std::string& name, Config config)
     {
         handle = CreateFile(name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
 
@@ -40,7 +40,7 @@ namespace hal
         dcb.Parity = NOPARITY;
         dcb.StopBits = ONESTOPBIT;
         dcb.fRtsControl = (uint32_t)config.flowControlRts;
-        dcb.fOutxCtsFlow = config.flowControlRts == SynchronousUartWindowsConfig::RtsFlowControl::RtsHandshake;
+        dcb.fOutxCtsFlow = config.flowControlRts == Config::RtsFlowControl::RtsHandshake;
         if (!SetCommState(handle, &dcb))
             throw std::runtime_error("Unable to initialize port " + name + " Errorcode: " + std::to_string(GetLastError()));
 

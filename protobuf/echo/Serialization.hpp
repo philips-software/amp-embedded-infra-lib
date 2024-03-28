@@ -274,7 +274,7 @@ namespace services
     template<std::size_t... I>
     void MethodDeserializerImpl<Message, Args...>::Execute(std::index_sequence<I...>)
     {
-        method(receiver.message.Get(std::integral_constant<uint32_t, I>{})...);
+        method(receiver.message.GetDecayed(std::integral_constant<uint32_t, I>{})...);
     }
 
     template<class Message, class... Args>

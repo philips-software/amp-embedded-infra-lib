@@ -149,6 +149,23 @@ namespace application
             }
         };
 
+        class ReferenceDetailStorageTypeVisitor
+            : public ReferenceStorageTypeVisitor
+        {
+        public:
+            using ReferenceStorageTypeVisitor::ReferenceStorageTypeVisitor;
+
+            void VisitMessage(const EchoFieldMessage& field) override
+            {
+                result = field.message->qualifiedDetailReferenceName;
+            }
+
+            void VisitEnum(const EchoFieldEnum& field) override
+            {
+                result = field.type->qualifiedDetailName;
+            }
+        };
+
         class ParameterTypeVisitor
             : public StorageTypeVisitor
         {
@@ -172,12 +189,12 @@ namespace application
 
             void VisitBytes(const EchoFieldBytes& field) override
             {
-                result = "const infra::BoundedVector<uint8_t>&";
+                result = "infra::ConstByteRange";
             }
 
             void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
             {
-                result = "const std::vector<uint8_t>&";
+                result = "infra::ConstByteRange";
             }
 
             void VisitEnum(const EchoFieldEnum& field) override
@@ -190,15 +207,32 @@ namespace application
                 std::string r;
                 StorageTypeVisitor visitor(r);
                 field.type->Accept(visitor);
-                result = "const infra::BoundedVector<" + r + ">&";
+                result = "infra::MemoryRange<const " + r + ">";
             }
 
             void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
             {
-                std::string r;
-                StorageTypeVisitor visitor(r);
-                field.type->Accept(visitor);
-                result = "const std::vector<" + r + ">&";
+                if (field.type->protoType == "services::ProtoBool")
+                    result = "const std::vector<bool>&";
+                else
+                {
+                    std::string r;
+                    StorageTypeVisitor visitor(r);
+                    field.type->Accept(visitor);
+                    result = "infra::MemoryRange<const " + r + ">";
+                }
+            }
+        };
+
+        class ParameterDetailTypeVisitor
+            : public ParameterTypeVisitor
+        {
+        public:
+            using ParameterTypeVisitor::ParameterTypeVisitor;
+
+            void VisitMessage(const EchoFieldMessage& field) override
+            {
+                result = "const " + field.message->qualifiedDetailName + "&";
             }
         };
 
@@ -223,7 +257,168 @@ namespace application
                 std::string r;
                 ReferenceStorageTypeVisitor visitor(r);
                 field.type->Accept(visitor);
-                result = "const infra::BoundedVector<" + r + ">&";
+                result = "infra::MemoryRange<const " + r + ">";
+            }
+        };
+
+        class FieldNameVisitor
+            : public EchoFieldVisitor
+        {
+        public:
+            explicit FieldNameVisitor(std::string& result)
+                : result(result)
+            {}
+
+            void VisitInt64(const EchoFieldInt64& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitUint64(const EchoFieldUint64& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitInt32(const EchoFieldInt32& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitFixed64(const EchoFieldFixed64& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitFixed32(const EchoFieldFixed32& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitBool(const EchoFieldBool& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitString(const EchoFieldString& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitUnboundedString(const EchoFieldUnboundedString& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitEnum(const EchoFieldEnum& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitMessage(const EchoFieldMessage& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitBytes(const EchoFieldBytes& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitUint32(const EchoFieldUint32& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitRepeated(const EchoFieldRepeated& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
+            {
+                result = field.name;
+            }
+
+        protected:
+            std::string& result;
+        };
+
+        class DecayedReferenceVisitor
+            : public FieldNameVisitor
+        {
+        public:
+            using FieldNameVisitor::FieldNameVisitor;
+
+            void VisitRepeated(const EchoFieldRepeated& field) override
+            {
+                result = "infra::MakeRange(" + field.name + ")";
+            }
+
+            void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
+            {
+                if (field.type->protoType == "services::ProtoBool")
+                    result = field.name;
+                else
+                    result = "infra::MakeRange(" + field.name + ")";
+            }
+        };
+
+        class DecayedVisitor
+            : public DecayedReferenceVisitor
+        {
+        public:
+            using DecayedReferenceVisitor::DecayedReferenceVisitor;
+
+            void VisitBytes(const EchoFieldBytes& field) override
+            {
+                result = "infra::MakeRange(" + field.name + ")";
+            }
+
+            void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
+            {
+                result = "infra::MakeRange(" + field.name + ")";
+            }
+        };
+
+        class InitializerVisitor
+            : public FieldNameVisitor
+        {
+        public:
+            using FieldNameVisitor::FieldNameVisitor;
+
+            void VisitBytes(const EchoFieldBytes& field) override
+            {
+                result = field.name + ".begin(), " + field.name + ".end()";
+            }
+
+            void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
+            {
+                result = field.name + ".begin(), " + field.name + ".end()";
+            }
+
+            void VisitRepeated(const EchoFieldRepeated& field) override
+            {
+                result = field.name + ".begin(), " + field.name + ".end()";
+            }
+
+            void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
+            {
+                result = field.name + ".begin(), " + field.name + ".end()";
             }
         };
     }
@@ -333,6 +528,7 @@ namespace application
             typeMapSpecialization->TemplateSpecialization(google::protobuf::SimpleItoa(std::distance(message->fields.data(), &field)));
             AddTypeMapProtoType(*field, *typeMapSpecialization);
             AddTypeMapType(*field, *typeMapSpecialization);
+            AddTypeMapDecayedType(*field, *typeMapSpecialization);
             AddTypeMapFieldNumber(*field, *typeMapSpecialization);
             typeMapNamespace->Add(typeMapSpecialization);
         }
@@ -351,6 +547,14 @@ namespace application
         StorageTypeVisitor visitor(result);
         field.Accept(visitor);
         entities.Add(std::make_shared<Using>("Type", result));
+    }
+
+    void MessageTypeMapGenerator::AddTypeMapDecayedType(const EchoField& field, Entities& entities) const
+    {
+        std::string result;
+        ParameterDetailTypeVisitor visitor(result);
+        field.Accept(visitor);
+        entities.Add(std::make_shared<Using>("DecayedType", result));
     }
 
     void MessageTypeMapGenerator::AddTypeMapFieldNumber(const EchoField& field, Entities& entities) const
@@ -376,9 +580,17 @@ namespace application
     void MessageReferenceTypeMapGenerator::AddTypeMapType(const EchoField& field, Entities& entities) const
     {
         std::string result;
-        ParameterReferenceTypeVisitor visitor(result);
+        ReferenceDetailStorageTypeVisitor visitor(result);
         field.Accept(visitor);
         entities.Add(std::make_shared<Using>("Type", result));
+    }
+
+    void MessageReferenceTypeMapGenerator::AddTypeMapDecayedType(const EchoField& field, Entities& entities) const
+    {
+        std::string result;
+        ParameterReferenceTypeVisitor visitor(result);
+        field.Accept(visitor);
+        entities.Add(std::make_shared<Using>("DecayedType", result));
     }
 
     std::string MessageReferenceTypeMapGenerator::MessageSuffix() const
@@ -430,11 +642,14 @@ namespace application
             auto constructByMembers = std::make_shared<Constructor>(ClassName(), "", 0);
             std::string typeNameResult;
             ParameterTypeVisitor visitor(typeNameResult);
+            std::string initializer;
+            InitializerVisitor initializerVisitor(initializer);
             for (auto& field : message->fields)
             {
                 field->Accept(visitor);
                 constructByMembers->Parameter(typeNameResult + " " + field->name);
-                constructByMembers->Initializer(field->name + "(" + field->name + ")");
+                field->Accept(initializerVisitor);
+                constructByMembers->Initializer(field->name + "(" + initializer + ")");
             }
             constructors->Add(constructByMembers);
         }
@@ -480,6 +695,9 @@ namespace application
         auto typeUsing = std::make_shared<UsingTemplate>("Type", "typename " + TypeMapName() + "<fieldIndex>::Type");
         typeUsing->TemplateParameter("std::size_t fieldIndex");
         typeMap->Add(typeUsing);
+        auto decayedTypeUsing = std::make_shared<UsingTemplate>("DecayedType", "typename " + TypeMapName() + "<fieldIndex>::DecayedType");
+        decayedTypeUsing->TemplateParameter("std::size_t fieldIndex");
+        typeMap->Add(decayedTypeUsing);
         auto fieldNumber = std::make_shared<DataMember>("fieldNumber", "template<std::size_t fieldIndex> static const uint32_t", TypeMapName() + "<fieldIndex>::fieldNumber");
         typeMap->Add(fieldNumber);
 
@@ -499,6 +717,12 @@ namespace application
             auto functionConstGet = std::make_shared<Function>("Get", "return " + field->name + ";\n", "const " + ClassName() + "::Type<" + google::protobuf::SimpleItoa(index) + ">&", Function::fConst);
             functionConstGet->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
             getters->Add(functionConstGet);
+            std::string result;
+            DecayedVisitor visitor(result);
+            field->Accept(visitor);
+            auto functionConstGetDecayed = std::make_shared<Function>("GetDecayed", "return " + result + ";\n", ClassName() + "::DecayedType<" + google::protobuf::SimpleItoa(index) + ">", Function::fConst);
+            functionConstGetDecayed->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
+            getters->Add(functionConstGetDecayed);
         }
 
         classFormatter->Add(getters);
@@ -721,11 +945,14 @@ namespace application
             auto constructByMembers = std::make_shared<Constructor>(ClassName(), "", 0);
             std::string result;
             ParameterReferenceTypeVisitor visitor(result);
+            std::string initializer;
+            InitializerVisitor initializerVisitor(initializer);
             for (auto& field : message->fields)
             {
                 field->Accept(visitor);
+                field->Accept(initializerVisitor);
                 constructByMembers->Parameter(result + " " + field->name);
-                constructByMembers->Initializer(field->name + "(" + field->name + ")");
+                constructByMembers->Initializer(field->name + "(" + initializer + ")");
             }
             constructors->Add(constructByMembers);
         }
@@ -749,6 +976,12 @@ namespace application
             auto functionConstGet = std::make_shared<Function>("Get", "return " + field->name + ";\n", ClassName() + "::Type<" + google::protobuf::SimpleItoa(index) + ">", Function::fConst);
             functionConstGet->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
             getters->Add(functionConstGet);
+            std::string result;
+            DecayedReferenceVisitor visitor(result);
+            field->Accept(visitor);
+            auto functionConstGetDecayed = std::make_shared<Function>("GetDecayed", "return " + result + ";\n", ClassName() + "::DecayedType<" + google::protobuf::SimpleItoa(index) + ">", Function::fConst);
+            functionConstGetDecayed->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
+            getters->Add(functionConstGetDecayed);
         }
 
         classFormatter->Add(getters);

@@ -129,6 +129,7 @@ namespace services
 
         infra::BoundedDeque<uint8_t>::WithMaxSize<1024> receiveBuffer;
         infra::BoundedVector<uint8_t>::WithMaxSize<1024> sendBuffer;
+        infra::BoundedString::WithStorage<MBEDTLS_SSL_MAX_HOST_NAME_LEN + 1> terminatedHostname;
         bool sending = false;
 
         infra::SharedOptional<StreamWriterMbedTls> streamWriter;
@@ -199,6 +200,30 @@ namespace services
         ClientConnectionObserverFactory& clientFactory;
     };
 
+    class ConnectionFactoryWithNameResolverMbedTls;
+
+    class ConnectionMbedTlsConnectorWithNameResolver
+        : public ClientConnectionObserverFactoryWithNameResolver
+    {
+    public:
+        ConnectionMbedTlsConnectorWithNameResolver(ConnectionFactoryWithNameResolverMbedTls& factory, ConnectionFactoryWithNameResolver& networkFactory, ClientConnectionObserverFactoryWithNameResolver& clientFactory);
+
+        infra::BoundedConstString Hostname() const override;
+        uint16_t Port() const override;
+        void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override;
+        void ConnectionFailed(ConnectFailReason reason) override;
+
+    private:
+        void CancelConnect();
+
+    private:
+        friend class ConnectionFactoryWithNameResolverMbedTls;
+
+        ConnectionFactoryWithNameResolverMbedTls& factory;
+        ConnectionFactoryWithNameResolver& networkFactory;
+        ClientConnectionObserverFactoryWithNameResolver& clientFactory;
+    };
+
 #ifdef _MSC_VER
 #pragma warning(disable : 4503)
 #endif
@@ -236,6 +261,46 @@ namespace services
         mbedtls_ssl_session clientSession = {};
         bool clientSessionObtained = false;
         IPAddress previousAddress;
+        ConnectionMbedTls::CertificateValidation certificateValidation;
+    };
+
+    class ConnectionFactoryWithNameResolverMbedTls
+        : public ConnectionFactoryWithNameResolver
+    {
+    public:
+        template<std::size_t MaxConnections, std::size_t MaxConnectors>
+        using WithMaxConnectionsListenersAndConnectors =
+
+            infra::WithStorage<
+                infra::WithStorage<
+                    ConnectionFactoryWithNameResolverMbedTls,
+                    AllocatorConnectionMbedTls::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxConnections>>,
+                infra::BoundedList<ConnectionMbedTlsConnectorWithNameResolver>::WithMaxSize<MaxConnectors>>;
+
+        ConnectionFactoryWithNameResolverMbedTls(AllocatorConnectionMbedTls& connectionAllocator, infra::BoundedList<ConnectionMbedTlsConnectorWithNameResolver>& connectors,
+            ConnectionFactoryWithNameResolver& factory, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, ConnectionMbedTls::CertificateValidation certificateValidation = ConnectionMbedTls::CertificateValidation::Default);
+        ~ConnectionFactoryWithNameResolverMbedTls();
+
+        void Connect(ClientConnectionObserverFactoryWithNameResolver& factory) override;
+        void CancelConnect(ClientConnectionObserverFactoryWithNameResolver& factory) override;
+
+        infra::SharedPtr<ConnectionMbedTls> Allocate(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, infra::BoundedConstString hostName);
+        void Remove(ConnectionMbedTlsConnectorWithNameResolver& connector);
+
+    private:
+        void TryConnect();
+
+    private:
+        AllocatorConnectionMbedTls& connectionAllocator;
+        infra::IntrusiveList<ClientConnectionObserverFactoryWithNameResolver> waitingConnects;
+        infra::BoundedList<ConnectionMbedTlsConnectorWithNameResolver>& connectors;
+        ConnectionFactoryWithNameResolver& factory;
+        CertificatesMbedTls& certificates;
+        hal::SynchronousRandomDataGenerator& randomDataGenerator;
+        mbedtls_ssl_cache_context serverCache;
+        mbedtls_ssl_session clientSession = {};
+        bool clientSessionObtained = false;
+        infra::BoundedConstString previousHostname;
         ConnectionMbedTls::CertificateValidation certificateValidation;
     };
 

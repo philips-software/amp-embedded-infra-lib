@@ -72,12 +72,15 @@ namespace services
             auto range = contentsReader->ExtractContiguousRange(forwardingSize - processedSize);
             contentsWriter->Insert(range, errorPolicy);
             processedSize += range.size();
+
+            if (contentsReader->Empty())
+                break;
         }
 
-        if (processedSize == forwardingSize || (contentsReader != nullptr && contentsReader->Empty()))
-            contentsReader = nullptr;
         if (processedSize == forwardingSize || (contentsWriter != nullptr && contentsWriter->Empty()))
             contentsWriter = nullptr;
+        if (processedSize == forwardingSize || (contentsReader != nullptr && contentsReader->Empty()))
+            contentsReader = nullptr;
     }
 
     bool ServiceForwarderAll::AcceptsService(uint32_t id) const

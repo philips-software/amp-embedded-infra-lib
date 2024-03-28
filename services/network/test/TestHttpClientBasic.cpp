@@ -28,7 +28,11 @@ public:
     MOCK_METHOD0(Done, void());
     MOCK_METHOD1(Error, void(bool intermittentFailure));
 
-    MOCK_METHOD1(StatusAvailable, void(services::HttpStatusCode));
+    void StatusAvailable(services::HttpStatusCode code)
+    {
+        services::HttpClientBasic::StatusAvailable(code);
+    }
+
     MOCK_METHOD1(HeaderAvailable, void(services::HttpHeader));
     MOCK_METHOD1(BodyAvailable, void(infra::SharedPtr<infra::StreamReader>&& reader));
 };
@@ -181,6 +185,7 @@ TEST_F(HttpClientBasicTest, Stop_while_almost_done)
         });
 
     EXPECT_CALL(httpClient, CloseConnection());
+    httpClient.Observer().StatusAvailable(services::HttpStatusCode::OK);
     httpClient.Observer().BodyComplete();
 
     controller->Cancel([this]()
@@ -203,6 +208,7 @@ TEST_F(HttpClientBasicTest, Stop_while_done)
 
     EXPECT_CALL(*controller, Done());
     EXPECT_CALL(httpClient, CloseConnection());
+    httpClient.Observer().StatusAvailable(services::HttpStatusCode::OK);
     httpClient.Observer().BodyComplete();
     httpClient.Detach();
 
@@ -237,6 +243,7 @@ TEST_F(HttpClientBasicTest, timer_resets_after_BodyComplete)
 
     EXPECT_CALL(*controller, Done());
     EXPECT_CALL(httpClient, CloseConnection());
+    httpClient.Observer().StatusAvailable(services::HttpStatusCode::OK);
     httpClient.Observer().BodyComplete();
 
     ForwardTime(std::chrono::minutes(1));
@@ -291,4 +298,34 @@ TEST_F(HttpClientBasicTest, ContentError_calls_stop_only_once)
     EXPECT_CALL(httpClient, CloseConnection());
     controller->GenerateContentError();
     controller->GenerateContentError();
+}
+
+TEST_F(HttpClientBasicTest, done_called_when_connection_is_reestablished)
+{
+    EXPECT_CALL(*controller, Established());
+    httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client)
+        {
+            httpClient.Attach(client);
+        });
+
+    infra::StreamWriterMock writer;
+    httpClient.Observer().SendStreamAvailable(infra::UnOwnedSharedPtr(writer));
+
+    EXPECT_CALL(*controller, Error(true));
+    httpClient.Detach();
+
+    EXPECT_CALL(*controller, Established());
+    httpClientObserverFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client)
+        {
+            httpClient.Attach(client);
+        });
+
+    httpClient.Observer().SendStreamAvailable(infra::UnOwnedSharedPtr(writer));
+
+    EXPECT_CALL(*controller, Done());
+    EXPECT_CALL(httpClient, CloseConnection());
+    httpClient.Observer().StatusAvailable(services::HttpStatusCode::OK);
+    httpClient.Observer().BodyComplete();
+
+    ForwardTime(std::chrono::minutes(1));
 }

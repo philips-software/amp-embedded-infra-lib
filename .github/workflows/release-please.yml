@@ -20,13 +20,13 @@ jobs:
       releases_created: ${{ steps.release.outputs.releases_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
-      - uses: philips-software/app-token-action@a37926571e4cec6f219e06727136efdd073d8657 # v1.1.2
+      - uses: philips-software/app-token-action@9f5d57062c9f2beaffafaa9a34f66f824ead63a9 # v2.0.0
         id: token
         with:
           app_id: ${{ secrets.FOREST_RELEASER_APP_ID }}
           app_base64_private_key: ${{ secrets.FOREST_RELEASER_APP_PRIVATE_KEY_BASE64 }}
           auth_type: installation
-      - uses: google-github-actions/release-please-action@db8f2c60ee802b3748b512940dde88eabd7b7e01 # v3.7.13
+      - uses: google-github-actions/release-please-action@a37ac6e4f6449ce8b3f7607e4d97d0146028dc0b # v4.1.0
         id: release
         with:
           command: manifest
@@ -35,7 +35,7 @@ jobs:
   build_upload_packages:
     name: Build & Upload Packages
     needs: release_please
-    if: ${{ needs.release_please.outputs.releases_created }}
+    if: ${{ needs.release_please.outputs.releases_created == 'true' }}
     permissions:
       contents: write
     runs-on: ${{ matrix.os }}
@@ -43,10 +43,10 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
         with:
           persist-credentials: false
-      - uses: hendrikmuhs/ccache-action@6d1841ec156c39a52b1b23a810da917ab98da1f4 # v1.2.10
+      - uses: hendrikmuhs/ccache-action@faf867a11c028c0b483fb2ae72b6fc8f7d842714 # v1.2.12
         with:
           key: ${{ github.job }}-${{ matrix.os }}
           variant: sccache

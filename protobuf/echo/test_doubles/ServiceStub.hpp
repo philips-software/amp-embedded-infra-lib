@@ -15,6 +15,8 @@ namespace services
         template<std::size_t fieldIndex>
         using Type = uint32_t;
         template<std::size_t fieldIndex>
+        using DecayedType = uint32_t;
+        template<std::size_t fieldIndex>
         static const uint32_t fieldNumber = 1;
 
     public:
@@ -25,6 +27,7 @@ namespace services
 
         uint32_t& Get(std::integral_constant<uint32_t, 0>);
         const uint32_t& Get(std::integral_constant<uint32_t, 0>) const;
+        const uint32_t& GetDecayed(std::integral_constant<uint32_t, 0>) const;
 
     public:
         uint32_t value = 0;

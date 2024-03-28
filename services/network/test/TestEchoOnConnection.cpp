@@ -52,7 +52,7 @@ TEST_F(EchoOnConnectionTest, service_method_is_invoked)
         {
             service.MethodDone();
         }));
-    EXPECT_CALL(connection, AckReceived());
+    EXPECT_CALL(connection, AckReceived()).Times(2);
     connection.Observer().DataReceived();
 }
 
@@ -70,7 +70,7 @@ TEST_F(EchoOnConnectionTest, service_method_is_invoked_twice)
         {
             service.MethodDone();
         }));
-    EXPECT_CALL(connection, AckReceived());
+    EXPECT_CALL(connection, AckReceived()).Times(2);
     service.MethodDone();
 }
 
@@ -81,7 +81,7 @@ TEST_F(EchoOnConnectionTest, MessageFormatError_is_reported_when_message_is_not_
 
     EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
     EXPECT_CALL(errorPolicy, MessageFormatError());
-    EXPECT_CALL(connection, AckReceived());
+    EXPECT_CALL(connection, AckReceived()).Times(2);
     connection.Observer().DataReceived();
 }
 
@@ -92,7 +92,7 @@ TEST_F(EchoOnConnectionTest, MessageFormatError_is_reported_when_message_is_of_u
 
     EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
     EXPECT_CALL(errorPolicy, MessageFormatError());
-    EXPECT_CALL(connection, AckReceived());
+    EXPECT_CALL(connection, AckReceived()).Times(2);
     connection.Observer().DataReceived();
 }
 
@@ -103,7 +103,7 @@ TEST_F(EchoOnConnectionTest, MessageFormatError_is_reported_when_parameter_in_me
 
     EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
     EXPECT_CALL(errorPolicy, MessageFormatError());
-    EXPECT_CALL(connection, AckReceived());
+    EXPECT_CALL(connection, AckReceived()).Times(2);
     connection.Observer().DataReceived();
 }
 
@@ -114,7 +114,7 @@ TEST_F(EchoOnConnectionTest, ServiceNotFound_is_reported)
 
     EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
     EXPECT_CALL(errorPolicy, ServiceNotFound(2));
-    EXPECT_CALL(connection, AckReceived());
+    EXPECT_CALL(connection, AckReceived()).Times(2);
     connection.Observer().DataReceived();
 }
 
@@ -125,6 +125,59 @@ TEST_F(EchoOnConnectionTest, MethodNotFound_is_reported)
 
     EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
     EXPECT_CALL(errorPolicy, MethodNotFound(1, 2));
+    EXPECT_CALL(connection, AckReceived()).Times(2);
+    connection.Observer().DataReceived();
+}
+
+TEST_F(EchoOnConnectionTest, DataReceived_while_service_method_is_executing)
+{
+    infra::StdVectorInputStream::WithStorage stream(infra::inPlace, std::vector<uint8_t>{ 1, 10, 2, 8, 5 });
+    auto readerPtr = infra::UnOwnedSharedPtr(stream.Reader());
+    EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
+    EXPECT_CALL(service, Method(5));
+    EXPECT_CALL(connection, AckReceived()).Times(3);
+    connection.Observer().DataReceived();
+
+    EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
+    connection.Observer().DataReceived();
+
+    service.MethodDone();
+}
+
+TEST_F(EchoOnConnectionTest, DataReceived_to_complete_service_method)
+{
+    infra::StdVectorInputStream::WithStorage stream(infra::inPlace, std::vector<uint8_t>{ 1, 10, 2, 8 });
+    auto readerPtr = infra::UnOwnedSharedPtr(stream.Reader());
+    EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
     EXPECT_CALL(connection, AckReceived());
     connection.Observer().DataReceived();
+
+    infra::StdVectorInputStream::WithStorage stream2(infra::inPlace, std::vector<uint8_t>{ 5 });
+    readerPtr = infra::UnOwnedSharedPtr(stream2.Reader());
+    EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
+    EXPECT_CALL(connection, AckReceived()).Times(2);
+    EXPECT_CALL(service, Method(5));
+    connection.Observer().DataReceived();
+
+    service.MethodDone();
+}
+
+TEST_F(EchoOnConnectionTest, DataReceived_in_multiple_segments)
+{
+    std::vector<uint8_t> data = { 1, 10, 2, 8, 5, 1, 10 };
+    infra::StdVectorInputStream::WithStorage stream(infra::inPlace, data);
+    auto readerPtr = infra::UnOwnedSharedPtr(stream.Reader());
+    EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
+    EXPECT_CALL(connection, AckReceived()).Times(2).WillOnce(testing::Invoke([this, &readerPtr]()
+                                                                 {
+                                                                     EXPECT_EQ(5, readerPtr->ConstructSaveMarker());
+                                                                 }))
+        .WillOnce(testing::Invoke([this, &readerPtr]()
+            {
+                EXPECT_EQ(7, readerPtr->ConstructSaveMarker());
+            }));
+    EXPECT_CALL(service, Method(5));
+    connection.Observer().DataReceived();
+
+    service.MethodDone();
 }

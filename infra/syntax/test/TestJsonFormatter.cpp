@@ -117,6 +117,18 @@ TEST(JsonObjectFormatter, add_milli_float)
 
     {
         infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        formatter.AddMilliFloat(infra::JsonString("tag"), 4, 002);
+    }
+
+    EXPECT_EQ(R"({ "tag":4.002 })", string);
+}
+
+TEST(JsonObjectFormatter, add_milli_float_jsonstring_key)
+{
+    infra::BoundedString::WithStorage<64> string;
+
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
         formatter.AddMilliFloat("tag", 12, 34);
     }
 
@@ -282,9 +294,31 @@ TEST(JsonObjectFormatter, add_key_jsonstring_value_JsonFloat)
 
     {
         infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
-        formatter.Add(infra::JsonString{ "tag" }, infra::JsonValue(infra::InPlaceType<infra::JsonFloat>(), infra::JsonFloat{ 55, 300 }));
+        formatter.Add(infra::JsonString{ "tag" }, infra::JsonValue(infra::InPlaceType<infra::JsonFloat>(), infra::JsonFloat{ 55, 300000000, false }));
     }
     EXPECT_EQ(R"({ "tag":55.300 })", string);
+}
+
+TEST(JsonObjectFormatter, add_key_jsonstring_negative_value_JsonFloat)
+{
+    infra::BoundedString::WithStorage<64> string;
+
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        formatter.Add(infra::JsonString{ "tag" }, infra::JsonValue(infra::InPlaceType<infra::JsonFloat>(), infra::JsonFloat{ 55, 300000000, true }));
+    }
+    EXPECT_EQ(R"({ "tag":-55.300 })", string);
+}
+
+TEST(JsonObjectFormatter, add_key_jsonstring_nano_value_JsonFloat)
+{
+    infra::BoundedString::WithStorage<64> string;
+
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        formatter.Add(infra::JsonString{ "tag" }, infra::JsonValue(infra::InPlaceType<infra::JsonFloat>(), infra::JsonFloat{ 0, 5, false }));
+    }
+    EXPECT_EQ(R"({ "tag":0.000000005 })", string);
 }
 
 TEST(JsonObjectFormatter, add_key_jsonstring_value_JsonString)
@@ -548,7 +582,7 @@ TEST(JsonObjectFormatter, jsonObject_replaces_int_at_a_missing_path)
 
 TEST(JsonObjectFormatter, replace_int_while_other_keyvalue_pairs_remain_the_same)
 {
-    EXPECT_EQ(R"({ "a":[true, false], "b":"value2", "c":-2, "d":56.002 })", Merged(R"({ "a":[true, false], "b":"value2", "c":5, "d":56.2 })", "c", JsonInt(-2)));
+    EXPECT_EQ(R"({ "a":[true, false], "b":"value2", "c":-2, "d":56.002 })", Merged(R"({ "a":[true, false], "b":"value2", "c":5, "d":56.002 })", "c", JsonInt(-2)));
 }
 
 TEST(JsonObjectFormatter, replace_empty_jsonObject_with_new_jsonObject)

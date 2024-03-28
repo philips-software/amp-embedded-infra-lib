@@ -54,12 +54,7 @@ namespace services
         : public services::ConnectionObserver
     {
     public:
-        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override
-        {
-            SendStreamAvailable(writer);
-        }
-
-        MOCK_METHOD1(SendStreamAvailable, void(infra::SharedPtr<infra::StreamWriter> writer));
+        MOCK_METHOD1(SendStreamAvailable, void(infra::SharedPtr<infra::StreamWriter>&& writer));
         MOCK_METHOD0(DataReceived, void());
     };
 
@@ -69,12 +64,7 @@ namespace services
     public:
         using ConnectionObserver::ConnectionObserver;
 
-        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override
-        {
-            SendStreamAvailable(writer);
-        }
-
-        MOCK_METHOD1(SendStreamAvailable, void(infra::SharedPtr<infra::StreamWriter> writer));
+        MOCK_METHOD1(SendStreamAvailable, void(infra::SharedPtr<infra::StreamWriter>&& writer));
         MOCK_METHOD0(DataReceived, void());
         MOCK_METHOD0(Attached, void());
         MOCK_METHOD0(Detaching, void());
@@ -97,33 +87,28 @@ namespace services
         : public services::ServerConnectionObserverFactory
     {
     public:
-        void ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, services::IPAddress address) override
-        {
-            ConnectionAcceptedMock(createdObserver.Clone(), address);
-        }
+        MOCK_METHOD2(ConnectionAccepted, void(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, services::IPAddress address));
+    };
 
-        MOCK_METHOD2(ConnectionAcceptedMock, void(infra::Function<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver, services::IPAddress address));
+    class ClientConnectionObserverFactoryWithNameResolverMock
+        : public ClientConnectionObserverFactoryWithNameResolver
+    {
+    public:
+        MOCK_CONST_METHOD0(Hostname, infra::BoundedConstString());
+        MOCK_CONST_METHOD0(Port, uint16_t());
+        MOCK_METHOD1(ConnectionEstablished, void(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver));
+        MOCK_METHOD1(ConnectionFailed, void(ConnectFailReason reason));
+        MOCK_METHOD1(ToString, const char*(ConnectFailReason reason));
     };
 
     class ClientConnectionObserverFactoryMock
         : public services::ClientConnectionObserverFactory
     {
     public:
-        void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver) override
-        {
-            ConnectionEstablishedMock(createdObserver.Clone());
-        }
-
         MOCK_CONST_METHOD0(Address, services::IPAddress());
         MOCK_CONST_METHOD0(Port, uint16_t());
-        MOCK_METHOD1(ConnectionEstablishedMock, void(infra::Function<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver));
+        MOCK_METHOD1(ConnectionEstablished, void(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver));
         MOCK_METHOD1(ConnectionFailed, void(ConnectFailReason reason));
-        MOCK_METHOD0(Destructor, void());
-
-        virtual ~ClientConnectionObserverFactoryMock()
-        {
-            Destructor();
-        }
     };
 
     class ConnectionFactoryWithNameResolverMock
