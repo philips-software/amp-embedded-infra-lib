@@ -7,6 +7,28 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [6.1.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v6.0.0...v6.1.0) (2024-03-28)
+
+
+### Features
+
+* Add connection factory with name resolver mbed tls ([#536](https://github.com/philips-software/amp-embedded-infra-lib/issues/536)) ([af200d2](https://github.com/philips-software/amp-embedded-infra-lib/commit/af200d2262340ed065ed36dade63ea9639210231))
+* Add Segger RTT tracing output option ([#572](https://github.com/philips-software/amp-embedded-infra-lib/issues/572)) ([16529d7](https://github.com/philips-software/amp-embedded-infra-lib/commit/16529d773417547c2c08163eedf6fb8ff7035227))
+* Changed compile definitions to be compatible with the gnu assembler ([#554](https://github.com/philips-software/amp-embedded-infra-lib/issues/554)) ([5a5e5dc](https://github.com/philips-software/amp-embedded-infra-lib/commit/5a5e5dca2cc522875b13f8a8ceebc73037dc0c94))
+* Services/network/HttpClientBasic is now able to process more than 1 request ([#576](https://github.com/philips-software/amp-embedded-infra-lib/issues/576)) ([0df2625](https://github.com/philips-software/amp-embedded-infra-lib/commit/0df26250e0e0894e7a3bb9af2d0306aa4d6cc312))
+
+
+### Bug Fixes
+
+* BufferingStreamReader OOB access and Echo segments calculated correctly ([#569](https://github.com/philips-software/amp-embedded-infra-lib/issues/569)) ([b1c1d12](https://github.com/philips-software/amp-embedded-infra-lib/commit/b1c1d12d8bb3414cfd52b6b295388c472c1f7f12))
+* ConnectionMbedTls no longer calls DataReceived() with 0 bytes ([#585](https://github.com/philips-software/amp-embedded-infra-lib/issues/585)) ([cd74d66](https://github.com/philips-software/amp-embedded-infra-lib/commit/cd74d664717066664cbb99cc7619a7919dffbcac))
+* Duplicate header guard HAL_UART_HOST_HPP ([#558](https://github.com/philips-software/amp-embedded-infra-lib/issues/558)) ([a8b1e63](https://github.com/philips-software/amp-embedded-infra-lib/commit/a8b1e639d42718fab274590a38f548ffe02270c0))
+* Heap memory leak on SerializerFactory::OnHeap ([#561](https://github.com/philips-software/amp-embedded-infra-lib/issues/561)) ([0ed606b](https://github.com/philips-software/amp-embedded-infra-lib/commit/0ed606bb6fdb925e1511314d4f3b25ab19632a18))
+* Networking on linux ([#594](https://github.com/philips-software/amp-embedded-infra-lib/issues/594)) ([972ff81](https://github.com/philips-software/amp-embedded-infra-lib/commit/972ff816320440f3ee837d14c50b8c8aa6a516d6))
+* Services/network/WebSocketClientConnectionObserver: Don't close websocket connection after 1 minute ([#578](https://github.com/philips-software/amp-embedded-infra-lib/issues/578)) ([d2e0c05](https://github.com/philips-software/amp-embedded-infra-lib/commit/d2e0c05d916aeeb88551e42306161ce372bf1aa1))
+* Timer jumped shall trigger next trigger time update ([9bbfb53](https://github.com/philips-software/amp-embedded-infra-lib/commit/9bbfb535061a56e76cf9e1aa037269030efff144))
+* Timer jumped will trigger next trigger time update ([#590](https://github.com/philips-software/amp-embedded-infra-lib/issues/590)) ([9bbfb53](https://github.com/philips-software/amp-embedded-infra-lib/commit/9bbfb535061a56e76cf9e1aa037269030efff144))
+
 ## [6.0.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v5.0.1...v6.0.0) (2024-01-24)
 
 
