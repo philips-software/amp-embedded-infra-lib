@@ -178,6 +178,7 @@ namespace services
         void BodyComplete() override;
         void Done() override;
         void Error(bool intermittentFailure) override;
+        void CloseConnection() override;
         void ConnectionFailed(HttpClientObserverFactory::ConnectFailReason reason) override;
 
     private:

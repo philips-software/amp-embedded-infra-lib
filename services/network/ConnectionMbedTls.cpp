@@ -157,10 +157,10 @@ namespace services
         if (receiveBuffer.size() != startSize && !dataReceivedScheduled)
         {
             dataReceivedScheduled = true;
-            infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object)
+            infra::EventDispatcherWithWeakPtr::Instance().Schedule([this](const infra::SharedPtr<ConnectionMbedTls>& object)
                 {
                     object->dataReceivedScheduled = false;
-                    if (object->Connection::IsAttached())
+                    if (!receiveBuffer.empty() && object->Connection::IsAttached())
                         object->Observer().DataReceived();
                 },
                 SharedFromThis());

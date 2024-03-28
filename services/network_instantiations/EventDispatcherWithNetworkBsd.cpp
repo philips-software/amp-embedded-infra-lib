@@ -220,8 +220,11 @@ namespace services
             if (FD_ISSET(listener.listenSocket, &readFileDescriptors))
                 listener.Accept();
 
-        for (auto& connector : connectors)
+        for (auto index = connectors.begin(); index != connectors.end();)
         {
+            auto& connector = *index;
+            ++index;
+
             if (FD_ISSET(connector.connectSocket, &writeFileDescriptors))
                 connector.Connected();
             else if (FD_ISSET(connector.connectSocket, &exceptFileDescriptors))
