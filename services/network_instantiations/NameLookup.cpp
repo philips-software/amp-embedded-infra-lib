@@ -47,6 +47,12 @@ namespace services
         nameLookup.erase(result);
     }
 
+    bool NameLookup::Active() const
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        return !nameLookup.empty();
+    }
+
     void NameLookup::Run()
     {
         std::unique_lock<std::mutex> lock(mutex);

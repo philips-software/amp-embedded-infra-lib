@@ -101,6 +101,21 @@ namespace services
         readerPtr = nullptr;
     }
 
+    void EchoOnStreams::Initialized()
+    {
+        if (partlySent)
+        {
+            sendingProxy = nullptr;
+            methodSerializer = nullptr;
+            skipNextStream = true;
+        }
+    }
+
+    void EchoOnStreams::ReleaseDeserializer()
+    {
+        methodDeserializer = nullptr;
+    }
+
     void EchoOnStreams::TryGrantSend()
     {
         if (sendingProxy == nullptr && !sendRequesters.empty())
@@ -123,19 +138,26 @@ namespace services
 
     void EchoOnStreams::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        if (methodSerializer == nullptr)
-            methodSerializer = GrantSend(*sendingProxy);
-
-        auto more = methodSerializer->Serialize(std::move(writer));
-
-        if (more)
-            RequestSendStream(sendingProxy->CurrentRequestedSize());
+        if (skipNextStream)
+        {
+            skipNextStream = false;
+            TryGrantSend();
+        }
         else
         {
-            sendingProxy = nullptr;
-            methodSerializer->SerializationDone();
-            methodSerializer = nullptr;
-            TryGrantSend();
+            if (methodSerializer == nullptr)
+                methodSerializer = GrantSend(*sendingProxy);
+
+            partlySent = methodSerializer->Serialize(std::move(writer));
+
+            if (partlySent)
+                RequestSendStream(sendingProxy->CurrentRequestedSize());
+            else
+            {
+                sendingProxy = nullptr;
+                methodSerializer = nullptr;
+                TryGrantSend();
+            }
         }
     }
 
@@ -244,10 +266,5 @@ namespace services
             else
                 methodDeserializer->ExecuteMethod();
         }
-    }
-
-    void EchoOnStreams::ReleaseDeserializer()
-    {
-        methodDeserializer = nullptr;
     }
 }

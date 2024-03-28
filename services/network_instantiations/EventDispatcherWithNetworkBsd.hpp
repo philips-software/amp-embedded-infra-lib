@@ -24,6 +24,8 @@ namespace services
         void DeregisterConnector(ConnectorBsd& connector);
         void RegisterDatagram(const infra::SharedPtr<DatagramBsd>& datagram);
 
+        bool OpenConnections() const;
+
     public:
         // Implementation of ConnectionFactory
         infra::SharedPtr<void> Listen(uint16_t port, services::ServerConnectionObserverFactory& factory, IPVersions versions) override;

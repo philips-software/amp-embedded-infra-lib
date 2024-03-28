@@ -3,28 +3,39 @@
 
 #include "infra/util/BoundedVector.hpp"
 #include "protobuf/echo/ServiceForwarder.hpp"
-#include "services/util/EchoOnMessageCommunication.hpp"
-#include "services/util/MessageCommunicationCobs.hpp"
-#include "services/util/MessageCommunicationWindowed.hpp"
+#include "services/util/EchoOnSesame.hpp"
+#include "services/util/SesameCobs.hpp"
+#include "services/util/SesameWindowed.hpp"
 
 namespace main_
 {
     template<std::size_t MessageSize>
-    struct EchoOnSerialCommunication
+    struct EchoOnSesame
     {
-        explicit EchoOnSerialCommunication(hal::SerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory)
+        EchoOnSesame(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory)
             : cobs(serialCommunication)
             , echo(windowed, serializerFactory)
         {}
+
+        ~EchoOnSesame()
+        {
+            cobs.Stop();
+            windowed.Stop();
+        }
 
         operator services::Echo&()
         {
             return echo;
         }
 
-        services::MessageCommunicationCobs::WithMaxMessageSize<MessageSize> cobs;
-        services::MessageCommunicationWindowed::WithReceiveBuffer<MessageSize> windowed{ cobs };
-        services::EchoOnMessageCommunication echo;
+        void Reset()
+        {
+            echo.Reset();
+        }
+
+        services::SesameCobs::WithMaxMessageSize<MessageSize> cobs;
+        services::SesameWindowed windowed{ cobs };
+        services::EchoOnSesame echo;
     };
 
     template<std::size_t MessageSize, std::size_t MaxServices>
@@ -63,12 +74,12 @@ namespace main_
     template<std::size_t MessageSize, std::size_t MaxServices>
     struct EchoForwarderToSerial
     {
-        EchoForwarderToSerial(services::Echo& from, hal::SerialCommunication& toSerial, services::MethodSerializerFactory& serializerFactory)
+        EchoForwarderToSerial(services::Echo& from, hal::BufferedSerialCommunication& toSerial, services::MethodSerializerFactory& serializerFactory)
             : to(toSerial, serializerFactory)
             , echoForwarder(from, to)
         {}
 
-        EchoOnSerialCommunication<MessageSize> to;
+        EchoOnSesame<MessageSize> to;
         EchoForwarder<MessageSize, MaxServices> echoForwarder;
     };
 }

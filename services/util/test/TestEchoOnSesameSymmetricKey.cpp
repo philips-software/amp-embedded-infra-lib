@@ -5,14 +5,14 @@
 #include "protobuf/echo/test_doubles/EchoMock.hpp"
 #include "protobuf/echo/test_doubles/ServiceStub.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
-#include "services/util/EchoOnMessageCommunicationSymmetricKey.hpp"
-#include "services/util/test_doubles/MessageCommunicationMock.hpp"
+#include "services/util/EchoOnSesameSymmetricKey.hpp"
+#include "services/util/test_doubles/SesameMock.hpp"
 
-class EchoOnMessageCommunicationSymmetricKeyTest
+class EchoOnSesameSymmetricKeyTest
     : public testing::Test
 {
 public:
-    EchoOnMessageCommunicationSymmetricKeyTest()
+    EchoOnSesameSymmetricKeyTest()
     {
         EXPECT_CALL(lower, MaxSendMessageSize()).WillRepeatedly(testing::Return(100));
 
@@ -29,7 +29,7 @@ public:
         lower.GetObserver().Initialized();
     }
 
-    void ExpectGenerationOfKeyMaterial(const services::MessageCommunicationSecured::KeyType& key, const services::MessageCommunicationSecured::IvType& iv)
+    void ExpectGenerationOfKeyMaterial(const services::SesameSecured::KeyType& key, const services::SesameSecured::IvType& iv)
     {
         // clang-format off
         EXPECT_CALL(randomDataGenerator, GenerateRandomData(testing::_)).WillOnce(testing::Invoke([this, key](infra::ByteRange range)
@@ -55,20 +55,20 @@ public:
         ASSERT_TRUE(reader.Allocatable());
     }
 
-    services::MethodSerializerFactory::ForServices<services::ServiceStub, message_communication_security::SymmetricKeyEstablishment>::AndProxies<services::ServiceStubProxy, message_communication_security::SymmetricKeyEstablishmentProxy> serializerFactory;
+    services::MethodSerializerFactory::ForServices<services::ServiceStub, sesame_security::SymmetricKeyEstablishment>::AndProxies<services::ServiceStubProxy, sesame_security::SymmetricKeyEstablishmentProxy> serializerFactory;
     testing::StrictMock<services::EchoErrorPolicyMock> errorPolicy;
     testing::StrictMock<hal::SynchronousRandomDataGeneratorMock> randomDataGenerator;
-    testing::StrictMock<services::MessageCommunicationMock> lower;
-    std::array<uint8_t, services::MessageCommunicationSecured::keySize> key{ 1, 2 };
-    std::array<uint8_t, services::MessageCommunicationSecured::blockSize> iv{ 1, 3 };
-    services::MessageCommunicationSecured::WithBuffers<64> secured{ lower, key, iv, key, iv };
-    services::EchoOnMessageCommunicationSymmetricKey echo{ secured, serializerFactory, randomDataGenerator, errorPolicy };
+    testing::StrictMock<services::SesameMock> lower;
+    std::array<uint8_t, services::SesameSecured::keySize> key{ 1, 2 };
+    std::array<uint8_t, services::SesameSecured::blockSize> iv{ 1, 3 };
+    services::SesameSecured::WithBuffers<64> secured{ lower, key, iv, key, iv };
+    services::EchoOnSesameSymmetricKey echo{ secured, serializerFactory, randomDataGenerator, errorPolicy };
 
     services::ServiceStubProxy serviceProxy{ echo };
     testing::StrictMock<services::ServiceStub> service{ echo };
 };
 
-TEST_F(EchoOnMessageCommunicationSymmetricKeyTest, send_and_receive)
+TEST_F(EchoOnSesameSymmetricKeyTest, send_and_receive)
 {
     EXPECT_CALL(lower, RequestSendMessage(testing::_)).WillOnce(testing::Invoke([this]()
         {
@@ -85,7 +85,7 @@ TEST_F(EchoOnMessageCommunicationSymmetricKeyTest, send_and_receive)
         });
 }
 
-TEST_F(EchoOnMessageCommunicationSymmetricKeyTest, send_while_initializing)
+TEST_F(EchoOnSesameSymmetricKeyTest, send_while_initializing)
 {
     EXPECT_CALL(lower, RequestSendMessage(testing::_));
     lower.GetObserver().Initialized();

@@ -32,9 +32,6 @@ namespace services
         virtual ~MethodSerializer() = default;
 
         virtual bool Serialize(infra::SharedPtr<infra::StreamWriter>&& writer) = 0;
-
-        virtual void SerializationDone()
-        {}
     };
 
     class MethodDeserializerDummy
@@ -305,7 +302,7 @@ namespace services
 
         sender.Fill(stream);
         writer = nullptr;
-        return stream.Failed();
+        return stream.Failed() || !sender.BufferEmpty();
     }
 
     template<class Message, class... Args>

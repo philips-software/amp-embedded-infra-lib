@@ -13,24 +13,24 @@
 #include "services/network/HttpClientImpl.hpp"
 #include "services/network/WebSocketClientConnectionObserver.hpp"
 #include "services/tracer/GlobalTracer.hpp"
-#include "services/util/MessageCommunicationCobs.hpp"
-#include "services/util/MessageCommunicationWindowed.hpp"
+#include "services/util/SesameCobs.hpp"
+#include "services/util/SesameWindowed.hpp"
 #include <deque>
 #include <fstream>
 #include <iostream>
 
 class ConsoleClientUart
     : public application::ConsoleObserver
-    , private services::MessageCommunicationObserver
+    , private services::SesameObserver
 {
 public:
-    ConsoleClientUart(application::Console& console, hal::SerialCommunication& serial);
+    ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial);
 
     // Implementation of ConsoleObserver
     void Send(const std::string& message) override;
 
 private:
-    // Implementation of MessageCommunicationObserver
+    // Implementation of SesameObserver
     void Initialized() override;
     void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
     void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
@@ -40,20 +40,22 @@ private:
 
 private:
     std::deque<std::string> messagesToBeSent;
-    services::MessageCommunicationCobs::WithMaxMessageSize<2048> cobs;
-    services::MessageCommunicationWindowed::WithReceiveBuffer<2048> windowed{ cobs };
+    services::SesameCobs::WithMaxMessageSize<2048> cobs;
+    services::SesameWindowed windowed{ cobs };
     bool sending = false;
-    services::MessageCommunicationObserver::DelayedAttachDetach delayed{ *this, windowed };
+    services::SesameObserver::DelayedAttachDetach delayed{ *this, windowed };
 };
 
-ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::SerialCommunication& serial)
+ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial)
     : application::ConsoleObserver(console)
     , cobs(serial)
 {}
 
 void ConsoleClientUart::Send(const std::string& message)
 {
-    messagesToBeSent.push_back(message);
+    auto size = windowed.MaxSendMessageSize();
+    for (std::size_t index = 0; index < message.size(); index += size)
+        messagesToBeSent.push_back(message.substr(index, size));
     CheckDataToBeSent();
 }
 
@@ -288,7 +290,7 @@ void ConsoleClientWebSocket::ConnectionFailed(ConnectFailReason reason)
 int main(int argc, char* argv[], const char* env[])
 {
     infra::IoOutputStream ioOutputStream;
-    services::Tracer tracer(ioOutputStream);
+    services::TracerToStream tracer(ioOutputStream);
     services::SetGlobalTracerInstance(tracer);
     hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
 
@@ -336,6 +338,7 @@ int main(int argc, char* argv[], const char* env[])
 #else
         infra::Optional<hal::UartUnix> uart;
 #endif
+        infra::Optional<hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<2048>> bufferedUart;
         infra::Optional<ConsoleClientUart> consoleClientUart;
 
         auto construct = [&]()
@@ -343,7 +346,8 @@ int main(int argc, char* argv[], const char* env[])
             if (get(target).substr(0, 3) == "COM" || get(target).substr(0, 4) == "/dev")
             {
                 uart.Emplace(get(target));
-                consoleClientUart.Emplace(console, *uart);
+                bufferedUart.Emplace(*uart);
+                consoleClientUart.Emplace(console, *bufferedUart);
             }
             else if (services::SchemeFromUrl(get(target)) == "ws")
                 consoleClientWebSocket.Emplace(connectionFactory, console, get(target), randomDataGenerator, tracer);

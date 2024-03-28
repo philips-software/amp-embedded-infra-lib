@@ -5,6 +5,10 @@ target_link_libraries(protobuf.echo PUBLIC
     services.network
 )
 
+if (EMIL_ENABLE_GLOBAL_TRACING)
+    target_compile_definitions(protobuf.echo PUBLIC EMIL_ENABLE_GLOBAL_TRACING)
+endif()
+
 target_sources(protobuf.echo PRIVATE
     Echo.cpp
     Echo.hpp

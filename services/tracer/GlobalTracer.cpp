@@ -11,7 +11,7 @@ namespace services
 
 #ifdef EMIL_HOST_BUILD
         infra::IoOutputStream ioOutputStream;
-        Tracer tracerDummy(ioOutputStream);
+        TracerToStream tracerDummy(ioOutputStream);
 #endif
     }
 

@@ -92,7 +92,6 @@ target_sources(services.network PRIVATE
     TracingConnectionFactoryWithNameResolver.hpp
     TracingConnectionMbedTls.cpp
     TracingConnectionMbedTls.hpp
-    TracingEchoOnConnection.cpp
     TracingEchoOnConnection.hpp
     TracingHttpClientCachedConnection.cpp
     TracingHttpClientCachedConnection.hpp

@@ -7,7 +7,7 @@ TEST(TracingResetTest, reset_traces_reason)
 {
     hal::ResetMock reset;
     infra::StringOutputStream::WithStorage<64> stream;
-    services::Tracer tracer(stream);
+    services::TracerToStream tracer(stream);
     services::TracingReset tracingReset(reset, tracer);
 
     EXPECT_CALL(reset, ResetModule(testing::_));
