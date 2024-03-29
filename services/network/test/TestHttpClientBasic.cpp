@@ -281,7 +281,7 @@ TEST_F(HttpClientBasicTest, done_called_when_connection_is_reestablished)
     ForwardTime(std::chrono::minutes(1));
 }
 
-TEST_F(HttpClientBasicTest, ContentError_Cleared_After_ReportingError)
+TEST_F(HttpClientBasicTest, ContentError_cleared_after_reporting_Error)
 {
     EstablishConnection();
 
