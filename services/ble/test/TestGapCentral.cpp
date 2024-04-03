@@ -86,7 +86,7 @@ namespace services
         EXPECT_EQ(infra::ConstByteRange(), gapAdvertisingDataParser.ManufacturerSpecificData());
     }
 
-	TEST(GapAdvertisingDataParserTest, payload_does_not_contain_valid_length)
+    TEST(GapAdvertisingDataParserTest, payload_does_not_contain_valid_length)
     {
         std::array<uint8_t, 14> data{ { 0x05, 0xff, 0xaa, 0xbb, 0xcc, 0xdd, 0xaa, 0x09, 0x73, 0x74, 0x72, 0x69, 0x6E, 0x67 } };
         std::array<uint8_t, 4> payloadParser{ { 0xaa, 0xbb, 0xcc, 0xdd } };
