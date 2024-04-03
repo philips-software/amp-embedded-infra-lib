@@ -79,11 +79,21 @@ namespace services
 
     TEST(GapAdvertisingDataParserTest, payload_does_not_contain_valid_info)
     {
-        std::array<uint8_t, 1> data{ { 0x00 } };
+        std::array<uint8_t, 2> data{ { 0x03, 0x02 } };
         services::GapAdvertisingDataParser gapAdvertisingDataParser(infra::MakeConstByteRange(data));
 
         EXPECT_EQ(infra::ConstByteRange(), gapAdvertisingDataParser.LocalName());
         EXPECT_EQ(infra::ConstByteRange(), gapAdvertisingDataParser.ManufacturerSpecificData());
+    }
+
+	TEST(GapAdvertisingDataParserTest, payload_does_not_contain_valid_length)
+    {
+        std::array<uint8_t, 14> data{ { 0x05, 0xff, 0xaa, 0xbb, 0xcc, 0xdd, 0xaa, 0x09, 0x73, 0x74, 0x72, 0x69, 0x6E, 0x67 } };
+        std::array<uint8_t, 4> payloadParser{ { 0xaa, 0xbb, 0xcc, 0xdd } };
+        services::GapAdvertisingDataParser gapAdvertisingDataParser(infra::MakeConstByteRange(data));
+
+        EXPECT_EQ(infra::ConstByteRange(), gapAdvertisingDataParser.LocalName());
+        EXPECT_TRUE(infra::ContentsEqual(infra::MakeConstByteRange(payloadParser), gapAdvertisingDataParser.ManufacturerSpecificData()));
     }
 
     TEST(GapAdvertisingDataParserTest, get_local_name_using_type_shortenedLocalName)
