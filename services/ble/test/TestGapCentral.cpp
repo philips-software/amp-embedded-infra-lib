@@ -79,7 +79,7 @@ namespace services
 
     TEST(GapAdvertisingDataParserTest, payload_too_small)
     {
-        std::array<uint8_t, 2> data{ { 0x00 } };
+        std::array<uint8_t, 1> data{ { 0x00 } };
         services::GapAdvertisingDataParser gapAdvertisingDataParser(infra::MakeConstByteRange(data));
 
         EXPECT_EQ(infra::ConstByteRange(), gapAdvertisingDataParser.LocalName());
