@@ -210,7 +210,7 @@ namespace services
                 return infra::ConstByteRange();
 
             if (element[advertisingTypeOffset] == static_cast<uint8_t>(type))
-                return infra::ConstByteRange(element.begin() + headerSize, element.begin() + element.size());
+                return infra::DiscardHead(element, headerSize);
 
             advData = infra::DiscardHead(advData, element.size());
         }

@@ -77,6 +77,15 @@ namespace services
         decorator.StopDeviceDiscovery();
     }
 
+    TEST(GapAdvertisingDataParserTest, payload_too_small)
+    {
+        std::array<uint8_t, 2> data{ { 0x00 } };
+        services::GapAdvertisingDataParser gapAdvertisingDataParser(infra::MakeConstByteRange(data));
+
+        EXPECT_EQ(infra::ConstByteRange(), gapAdvertisingDataParser.LocalName());
+        EXPECT_EQ(infra::ConstByteRange(), gapAdvertisingDataParser.ManufacturerSpecificData());
+    }
+
     TEST(GapAdvertisingDataParserTest, payload_does_not_contain_valid_info)
     {
         std::array<uint8_t, 2> data{ { 0x03, 0x02 } };
