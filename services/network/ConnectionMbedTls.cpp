@@ -1,17 +1,297 @@
 #include "services/network/ConnectionMbedTls.hpp"
+#include "echo/Network.pb.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
+#include "infra/util/BoundedDeque.hpp"
+#include "infra/util/BoundedList.hpp"
+#include "infra/util/BoundedString.hpp"
+#include "infra/util/ReallyAssert.hpp"
+#include "mbedtls/ssl.h"
+#include "services/network/Address.hpp"
 #include "services/network/CertificatesMbedTls.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
+#include "services/tracer/GlobalTracer.hpp"
+#include <algorithm>
+#include <cstddef>
 
 namespace services
 {
+    MbedTlsSession::MbedTlsSession(uint32_t identifier)
+        : session({})
+        , identifier(identifier)
+    {
+        mbedtls_ssl_session_init(&session);
+    }
+
+    MbedTlsSession::MbedTlsSession(uint32_t identifier, infra::BoundedConstString hostname)
+        : hostname(hostname)
+        , session({})
+        , identifier(identifier)
+    {
+        mbedtls_ssl_session_init(&session);
+    }
+
+    MbedTlsSession::MbedTlsSession(uint32_t identifier, IPAddress address)
+        : address(address)
+        , session({})
+        , identifier(identifier)
+    {
+        mbedtls_ssl_session_init(&session);
+    }
+
+    MbedTlsSession::MbedTlsSession(network::MbedTlsPersistedSession& reference)
+        : address(services::ConvertFromUint32(reference.address))
+        , hostname(reference.hostname)
+        , clientSessionObtained(reference.clientSessionObtained)
+        , session({})
+        , identifier(reference.identifier)
+    {
+        mbedtls_ssl_session_init(&session);
+        mbedtls_ssl_session_load(&session, reference.serializedSession.begin(), reference.serializedSession.size());
+    }
+
+    MbedTlsSession::~MbedTlsSession()
+    {
+        if (clientSessionObtained)
+            mbedtls_ssl_session_free(&session);
+    }
+
+    void MbedTlsSession::Reinitialize()
+    {
+        mbedtls_ssl_session_init(&session);
+    }
+
+    void MbedTlsSession::Obtained()
+    {
+        clientSessionObtained = true;
+    }
+
+    bool MbedTlsSession::IsObtained()
+    {
+        return clientSessionObtained;
+    }
+
+    int MbedTlsSession::SetSession(mbedtls_ssl_context* context)
+    {
+        return mbedtls_ssl_set_session(context, &session);
+    }
+
+    int MbedTlsSession::GetSession(mbedtls_ssl_context* context)
+    {
+        return mbedtls_ssl_get_session(context, &session);
+    }
+
+    IPAddress& MbedTlsSession::Address()
+    {
+        return address;
+    }
+
+    infra::BoundedConstString MbedTlsSession::Hostname()
+    {
+        return hostname;
+    }
+
+    MbedTlsSessionWithCallback::MbedTlsSessionWithCallback(uint32_t identifier, const infra::Function<void(MbedTlsSession*)>& onObtained)
+        : MbedTlsSession(identifier)
+        , onObtained(onObtained)
+    {}
+
+    MbedTlsSessionWithCallback::MbedTlsSessionWithCallback(uint32_t identifier, infra::BoundedConstString hostname, const infra::Function<void(MbedTlsSession*)>& onObtained)
+        : MbedTlsSession(identifier, hostname)
+        , onObtained(onObtained)
+    {}
+
+    MbedTlsSessionWithCallback::MbedTlsSessionWithCallback(uint32_t identifier, IPAddress address, const infra::Function<void(MbedTlsSession*)>& onObtained)
+        : MbedTlsSession(identifier, address)
+        , onObtained(onObtained)
+    {}
+
+    MbedTlsSessionWithCallback::MbedTlsSessionWithCallback(network::MbedTlsPersistedSession& reference, const infra::Function<void(MbedTlsSession*)>& onObtained)
+        : MbedTlsSession(reference)
+        , onObtained(onObtained)
+    {}
+
+    void MbedTlsSessionWithCallback::Obtained()
+    {
+        MbedTlsSession::Obtained();
+        onObtained(this);
+    }
+
+    MbedTlsSession* MbedTlsSessionStorageRam::NewSession(infra::BoundedConstString hostname)
+    {
+        storage.emplace_back(0, hostname);
+        return &storage.back();
+    }
+
+    MbedTlsSession* MbedTlsSessionStorageRam::NewSession(IPAddress address)
+    {
+        storage.emplace_back(0, address);
+        return &storage.back();
+    }
+
+    void MbedTlsSessionStorageRam::Invalidate(MbedTlsSession* sessionToInvalidate)
+    {
+        for (auto& session : storage)
+        {
+            if (sessionToInvalidate == &session)
+                storage.remove(session);
+        }
+    }
+
+    MbedTlsSession* MbedTlsSessionStorageRam::GetSession(infra::BoundedConstString hostname)
+    {
+        for (auto& session : storage)
+        {
+            if (session.Hostname() == hostname)
+                return &session;
+        }
+        return nullptr;
+    }
+
+    MbedTlsSession* MbedTlsSessionStorageRam::GetSession(IPAddress address)
+    {
+        for (auto& session : storage)
+        {
+            if (session.Address() == address)
+                return &session;
+        }
+        return nullptr;
+    }
+
+    bool MbedTlsSessionStorageRam::Full() const
+    {
+        return storage.full();
+    }
+
+    void MbedTlsSessionStorageRam::Clear()
+    {
+        storage.clear();
+    }
+
+    MbedTlsSessionStoragePersistent::MbedTlsSessionStoragePersistent(services::ConfigurationStoreAccess<infra::BoundedVector<network::MbedTlsPersistedSession>> nvm)
+        : nvm(nvm)
+    {
+        LoadSessions();
+    }
+
+    MbedTlsSession* MbedTlsSessionStoragePersistent::NewSession(infra::BoundedConstString hostname)
+    {
+        storage.emplace_back(NextIdentifier(), hostname, [this](MbedTlsSession* session)
+            {
+                SessionUpdated(session);
+            });
+        return &storage.back();
+    }
+
+    MbedTlsSession* MbedTlsSessionStoragePersistent::NewSession(IPAddress address)
+    {
+        storage.emplace_back(NextIdentifier(), address, [this](MbedTlsSession* session)
+            {
+                SessionUpdated(session);
+            });
+        return &storage.back();
+    }
+
+    void MbedTlsSessionStoragePersistent::Invalidate(MbedTlsSession* sessionToInvalidate)
+    {
+        for (auto& session : storage)
+        {
+            if (sessionToInvalidate == &session)
+                storage.remove(session);
+        }
+        // nvm.Write();
+    }
+
+    MbedTlsSession* MbedTlsSessionStoragePersistent::GetSession(infra::BoundedConstString hostname)
+    {
+        for (auto& session : storage)
+        {
+            if (session.Hostname() == hostname)
+                return &session;
+        }
+        return nullptr;
+    }
+
+    MbedTlsSession* MbedTlsSessionStoragePersistent::GetSession(IPAddress address)
+    {
+        for (auto& session : storage)
+        {
+            if (session.Address() == address)
+                return &session;
+        }
+        return nullptr;
+    }
+
+    bool MbedTlsSessionStoragePersistent::Full() const
+    {
+        return nvm->full();
+    }
+
+    void MbedTlsSessionStoragePersistent::Clear()
+    {
+        storage.clear();
+        nvm->clear();
+        nvm.Write();
+    }
+
+    uint32_t MbedTlsSessionStoragePersistent::NextIdentifier()
+    {
+        return nvm->size();
+    }
+
+    void MbedTlsSessionStoragePersistent::SessionUpdated(MbedTlsSession* session)
+    {
+        size_t outputLen;
+        network::MbedTlsPersistedSession* persistedSession = nullptr;
+        for (auto& nvmSession : *nvm)
+        {
+            if (nvmSession.identifier == session->identifier)
+                persistedSession = &nvmSession;
+        }
+        if (persistedSession == nullptr)
+        {
+            if (nvm->full())
+                nvm->erase(nvm->begin());
+            nvm->emplace_back();
+            persistedSession = &nvm->back();
+        }
+        persistedSession->address = services::ConvertToUint32(session->address.Get<IPv4Address>());
+        persistedSession->hostname = session->hostname;
+        persistedSession->clientSessionObtained = session->clientSessionObtained;
+        persistedSession->identifier = session->identifier;
+        auto result = mbedtls_ssl_session_save(&session->session, persistedSession->serializedSession.begin(), persistedSession->serializedSession.max_size(), &outputLen);
+
+        // really_assert(result == 0);
+        if (result != 0)
+            services::GlobalTracer().Trace() << "<<<<<< SSL Session Save Resulted in Failure >>>>>>" << outputLen;
+        // really_assert(outputLen < persistedSession->serializedSession.max_size());
+        if (outputLen > persistedSession->serializedSession.max_size())
+            services::GlobalTracer().Trace() << "<<<<<< SSL Session Save Does not fit into buffer >>>>>>" << outputLen;
+        nvm.Write();
+
+        // remove
+        services::GlobalTracer().Trace() << "Updating Persistent Session with size: " << outputLen;
+    }
+
+    void MbedTlsSessionStoragePersistent::LoadSessions()
+    {
+        for (auto sector : *nvm)
+        {
+            if (!sector.serializedSession.empty())
+            {
+                storage.emplace_back(sector, [this](MbedTlsSession* session)
+                    {
+                        SessionUpdated(session);
+                    });
+            }
+        }
+    }
+
     ConnectionMbedTls::ConnectionMbedTls(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, CertificatesMbedTls& certificates,
         hal::SynchronousRandomDataGenerator& randomDataGenerator, const ParametersWorkaround& parameters)
         : createdObserver(std::move(createdObserver))
         , randomDataGenerator(randomDataGenerator)
         , server(parameters.parameters.Is<ServerParameters>())
-        , clientSession(parameters.parameters.Is<ClientParameters>() ? &parameters.parameters.Get<ClientParameters>().clientSession : nullptr)
-        , clientSessionObtained(parameters.parameters.Is<ClientParameters>() ? &parameters.parameters.Get<ClientParameters>().clientSessionObtained : nullptr)
+        , clientSession(parameters.parameters.Is<ClientParameters>() ? &parameters.parameters.Get<ClientParameters>().session : nullptr)
         , receiveReader([this]()
               {
                   keepAliveForReader = nullptr;
@@ -31,6 +311,8 @@ namespace services
         assert(result == 0);
         mbedtls_ssl_conf_rng(&sslConfig, mbedtls_ctr_drbg_random, &ctr_drbg);
         mbedtls_ssl_conf_authmode(&sslConfig, GetAuthMode(parameters));
+        mbedtls_ssl_conf_session_tickets(&sslConfig, MBEDTLS_SSL_SESSION_TICKETS_ENABLED);
+        // mbedtls_ssl_conf_renegotiation(&sslConfig, MBEDTLS_SSL_RENEGOTIATION_ENABLED);
 
         certificates.Config(sslConfig);
 
@@ -55,9 +337,9 @@ namespace services
         }
         else
         {
-            if (!server && *clientSessionObtained)
+            if (!server && clientSession->IsObtained())
             {
-                result = mbedtls_ssl_set_session(&sslContext, clientSession);
+                result = clientSession->SetSession(&sslContext);
                 assert(result == 0);
             }
 
@@ -376,11 +658,11 @@ namespace services
 
                 if (!server)
                 {
-                    if (!*clientSessionObtained)
-                        mbedtls_ssl_session_init(clientSession);
+                    if (!clientSession->IsObtained())
+                        clientSession->Reinitialize();
 
-                    result = mbedtls_ssl_get_session(&sslContext, clientSession);
-                    *clientSessionObtained = true;
+                    result = clientSession->GetSession(&sslContext);
+                    clientSession->Obtained();
                     assert(result == 0);
                 }
             }
@@ -565,28 +847,23 @@ namespace services
     }
 
     ConnectionFactoryMbedTls::ConnectionFactoryMbedTls(AllocatorConnectionMbedTls& connectionAllocator,
-        AllocatorConnectionMbedTlsListener& listenerAllocator, infra::BoundedList<ConnectionMbedTlsConnector>& connectors,
+        AllocatorConnectionMbedTlsListener& listenerAllocator, infra::BoundedList<ConnectionMbedTlsConnector>& connectors, MbedTlsSessionStorage& sessionStorage,
         ConnectionFactory& factory, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, ConnectionMbedTls::CertificateValidation certificateValidation)
         : connectionAllocator(connectionAllocator)
         , listenerAllocator(listenerAllocator)
         , connectors(connectors)
+        , sessionStorage(sessionStorage)
         , factory(factory)
         , certificates(certificates)
         , randomDataGenerator(randomDataGenerator)
         , certificateValidation(certificateValidation)
     {
         mbedtls_ssl_cache_init(&serverCache);
-        mbedtls_ssl_session_init(&clientSession);
     }
 
     ConnectionFactoryMbedTls::~ConnectionFactoryMbedTls()
     {
         mbedtls_ssl_cache_free(&serverCache);
-        if (clientSessionObtained)
-        {
-            mbedtls_ssl_session_free(&clientSession);
-            clientSessionObtained = false;
-        }
     }
 
     infra::SharedPtr<void> ConnectionFactoryMbedTls::Listen(uint16_t port, ServerConnectionObserverFactory& connectionObserverFactory, IPVersions versions)
@@ -634,19 +911,17 @@ namespace services
 
     infra::SharedPtr<ConnectionMbedTls> ConnectionFactoryMbedTls::Allocate(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address)
     {
-        if (address != previousAddress)
+        auto savedSession = sessionStorage.GetSession(address);
+        if (savedSession == nullptr)
         {
-            if (clientSessionObtained)
-            {
-                mbedtls_ssl_session_free(&clientSession);
-                clientSessionObtained = false;
-            }
-            clientSession = mbedtls_ssl_session();
+            if (sessionStorage.Full())
+                sessionStorage.Invalidate(session);
+            savedSession = sessionStorage.NewSession(address);
         }
-
+        session = savedSession;
         previousAddress = address;
 
-        return connectionAllocator.Allocate(std::move(createdObserver), certificates, randomDataGenerator, { ConnectionMbedTls::ClientParameters{ clientSession, clientSessionObtained, certificateValidation } });
+        return connectionAllocator.Allocate(std::move(createdObserver), certificates, randomDataGenerator, { ConnectionMbedTls::ClientParameters{ *session, certificateValidation } });
     }
 
     void ConnectionFactoryMbedTls::Remove(ConnectionMbedTlsConnector& connector)
@@ -667,27 +942,22 @@ namespace services
         }
     }
 
-    ConnectionFactoryWithNameResolverMbedTls::ConnectionFactoryWithNameResolverMbedTls(AllocatorConnectionMbedTls& connectionAllocator, infra::BoundedList<ConnectionMbedTlsConnectorWithNameResolver>& connectors,
+    ConnectionFactoryWithNameResolverMbedTls::ConnectionFactoryWithNameResolverMbedTls(AllocatorConnectionMbedTls& connectionAllocator, infra::BoundedList<ConnectionMbedTlsConnectorWithNameResolver>& connectors, MbedTlsSessionStorage& sessionStorage,
         ConnectionFactoryWithNameResolver& factory, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, ConnectionMbedTls::CertificateValidation certificateValidation)
         : connectionAllocator(connectionAllocator)
         , connectors(connectors)
+        , sessionStorage(sessionStorage)
         , factory(factory)
         , certificates(certificates)
         , randomDataGenerator(randomDataGenerator)
         , certificateValidation(certificateValidation)
     {
         mbedtls_ssl_cache_init(&serverCache);
-        mbedtls_ssl_session_init(&clientSession);
     }
 
     ConnectionFactoryWithNameResolverMbedTls::~ConnectionFactoryWithNameResolverMbedTls()
     {
         mbedtls_ssl_cache_free(&serverCache);
-        if (clientSessionObtained)
-        {
-            mbedtls_ssl_session_free(&clientSession);
-            clientSessionObtained = false;
-        }
     }
 
     void ConnectionFactoryWithNameResolverMbedTls::Connect(ClientConnectionObserverFactoryWithNameResolver& connectionObserverFactory)
@@ -717,19 +987,18 @@ namespace services
 
     infra::SharedPtr<ConnectionMbedTls> ConnectionFactoryWithNameResolverMbedTls::Allocate(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, infra::BoundedConstString hostname)
     {
-        if (hostname != previousHostname)
+        auto savedSession = sessionStorage.GetSession(hostname);
+        if (savedSession == nullptr)
         {
-            if (clientSessionObtained)
-            {
-                mbedtls_ssl_session_free(&clientSession);
-                clientSessionObtained = false;
-            }
-            clientSession = mbedtls_ssl_session();
+            if (sessionStorage.Full())
+                sessionStorage.Invalidate(session);
+            savedSession = sessionStorage.NewSession(hostname);
         }
 
+        session = savedSession;
         previousHostname = hostname;
 
-        return connectionAllocator.Allocate(std::move(createdObserver), certificates, randomDataGenerator, { ConnectionMbedTls::ClientParameters{ clientSession, clientSessionObtained, certificateValidation } });
+        return connectionAllocator.Allocate(std::move(createdObserver), certificates, randomDataGenerator, { ConnectionMbedTls::ClientParameters{ *session, certificateValidation } });
     }
 
     void ConnectionFactoryWithNameResolverMbedTls::Remove(ConnectionMbedTlsConnectorWithNameResolver& connector)

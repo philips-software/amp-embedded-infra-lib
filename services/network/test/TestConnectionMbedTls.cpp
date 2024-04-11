@@ -1,5 +1,6 @@
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
+#include "infra/util/ByteRange.hpp"
 #include "infra/util/SharedPtr.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/network/ConnectionMbedTls.hpp"
@@ -7,6 +8,8 @@
 #include "services/network/test_doubles/ConnectionLoopBack.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/network/test_doubles/ConnectionStub.hpp"
+#include "services/util/ConfigurationStore.hpp"
+#include "services/util/test_doubles/ConfigurationStoreMock.hpp"
 #include "gmock/gmock.h"
 
 class ConnectionMbedTlsTest
@@ -171,6 +174,65 @@ TEST_F(ConnectionMbedTlsTest, reopen_connection)
     }
 }
 
+TEST_F(ConnectionMbedTlsTest, persistent_session_reopen_connection)
+{
+    infra::BoundedVector<network::MbedTlsPersistedSession>::WithMaxSize<1> stores;
+    testing::StrictMock<services::ConfigurationStoreInterfaceMock> configInterface;
+    services::ConfigurationStoreAccess<infra::BoundedVector<network::MbedTlsPersistedSession>> configStore{ configInterface, stores };
+    services::MbedTlsSessionStoragePersistent persistentStorage{ configStore };
+
+    services::ConnectionFactoryMbedTls::WithMaxConnectionsListenersAndConnectors<2, 1, 0> tlsNetworkServer(loopBackNetwork, serverCertificates, randomDataGenerator);
+    services::ConnectionFactoryMbedTls::CustomSessionStorageWithMaxConnectionsListenersAndConnectors<2, 0, 1> tlsNetworkClient(persistentStorage, loopBackNetwork, clientCertificates, randomDataGenerator);
+    infra::SharedPtr<void> listener = tlsNetworkServer.Listen(1234, serverObserverFactory);
+
+    {
+        EXPECT_CALL(clientObserverFactory, Port()).WillOnce(testing::Return(1234));
+        tlsNetworkClient.Connect(clientObserverFactory);
+
+        infra::SharedOptional<services::ConnectionObserverStub> observer1;
+        infra::SharedOptional<services::ConnectionObserverStub> observer2;
+
+        EXPECT_CALL(serverObserverFactory, ConnectionAccepted(testing::_, testing::_))
+            .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver, services::IPAddress address)
+                {
+                    createdObserver(observer1.Emplace());
+                }));
+        EXPECT_CALL(clientObserverFactory, Address());
+        EXPECT_CALL(configInterface, Write());
+        EXPECT_CALL(clientObserverFactory, ConnectionEstablished(testing::_))
+            .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver)
+                {
+                    createdObserver(observer2.Emplace());
+                }));
+        ExecuteAllActions();
+
+        observer1->Subject().AbortAndDestroy();
+    }
+
+    {
+        EXPECT_CALL(clientObserverFactory, Port()).WillOnce(testing::Return(1234));
+        tlsNetworkClient.Connect(clientObserverFactory);
+
+        infra::SharedOptional<services::ConnectionObserverStub> observer1;
+        infra::SharedOptional<services::ConnectionObserverStub> observer2;
+        EXPECT_CALL(serverObserverFactory, ConnectionAccepted(testing::_, testing::_))
+            .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver, services::IPAddress address)
+                {
+                    createdObserver(observer1.Emplace());
+                }));
+        EXPECT_CALL(configInterface, Write());
+        EXPECT_CALL(clientObserverFactory, Address());
+        EXPECT_CALL(clientObserverFactory, ConnectionEstablished(testing::_))
+            .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver)
+                {
+                    createdObserver(observer2.Emplace());
+                }));
+        ExecuteAllActions();
+
+        observer1->Subject().AbortAndDestroy();
+    }
+}
+
 class ConnectionWithNameResolverMbedTlsTest
     : public testing::Test
     , public infra::ClockFixture
@@ -228,6 +290,137 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, create_connection)
     tlsNetworkClient.Connect(clientObserverFactory);
 
     ExecuteAllActions();
+    EXPECT_CALL(*connection, AbortAndDestroy).WillOnce(testing::Invoke([this]()
+        {
+            connection = infra::none;
+        }));
+    observer1->Subject().AbortAndDestroy();
+}
+
+TEST_F(ConnectionWithNameResolverMbedTlsTest, reopen_connection)
+{
+    services::ConnectionFactoryWithNameResolverMbedTls::WithMaxConnectionsListenersAndConnectors<2, 1> tlsNetworkClient(network, clientCertificates, randomDataGenerator);
+    EXPECT_CALL(clientObserverFactory, Port()).WillRepeatedly(testing::Return(1234));
+    EXPECT_CALL(clientObserverFactory, Hostname()).WillRepeatedly(testing::Return("something"));
+    infra::SharedOptional<services::ConnectionObserverStub> observer1;
+
+    EXPECT_CALL(network, Connect(testing::_)).WillOnce(testing::Invoke([this](services::ClientConnectionObserverFactoryWithNameResolver& clientObserverFactory)
+        {
+            EXPECT_EQ("something", clientObserverFactory.Hostname());
+            EXPECT_EQ(1234, clientObserverFactory.Port());
+            connection.Emplace();
+            EXPECT_CALL(*connection, RequestSendStream(0));
+            EXPECT_CALL(*connection, MaxSendStreamSize).WillOnce(testing::Return(0));
+            clientObserverFactory.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> observer)
+                {
+                    connection->Attach(observer);
+                });
+        }));
+
+    EXPECT_CALL(clientObserverFactory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this, &observer1](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> client)>&& createdClient)
+        {
+            createdClient(observer1.Emplace());
+        }));
+
+    tlsNetworkClient.Connect(clientObserverFactory);
+
+    ExecuteAllActions();
+    EXPECT_CALL(*connection, AbortAndDestroy).WillOnce(testing::Invoke([this]()
+        {
+            connection = infra::none;
+        }));
+    observer1->Subject().AbortAndDestroy();
+
+    EXPECT_CALL(network, Connect(testing::_)).WillOnce(testing::Invoke([this](services::ClientConnectionObserverFactoryWithNameResolver& clientObserverFactory)
+        {
+            EXPECT_EQ("something", clientObserverFactory.Hostname());
+            EXPECT_EQ(1234, clientObserverFactory.Port());
+            connection.Emplace();
+            EXPECT_CALL(*connection, RequestSendStream(0));
+            EXPECT_CALL(*connection, MaxSendStreamSize).WillOnce(testing::Return(0));
+            clientObserverFactory.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> observer)
+                {
+                    connection->Attach(observer);
+                });
+        }));
+
+    EXPECT_CALL(clientObserverFactory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this, &observer1](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> client)>&& createdClient)
+        {
+            createdClient(observer1.Emplace());
+        }));
+
+    tlsNetworkClient.Connect(clientObserverFactory);
+
+    ExecuteAllActions();
+
+    EXPECT_CALL(*connection, AbortAndDestroy).WillOnce(testing::Invoke([this]()
+        {
+            connection = infra::none;
+        }));
+    observer1->Subject().AbortAndDestroy();
+}
+
+TEST_F(ConnectionWithNameResolverMbedTlsTest, persistent_session_reopen_connection)
+{
+    infra::BoundedVector<network::MbedTlsPersistedSession>::WithMaxSize<1> stores;
+    testing::StrictMock<services::ConfigurationStoreInterfaceMock> configInterface;
+    services::ConfigurationStoreAccess<infra::BoundedVector<network::MbedTlsPersistedSession>> configStore{ configInterface, stores };
+    services::MbedTlsSessionStoragePersistent persistentStorage{ configStore };
+
+    services::ConnectionFactoryWithNameResolverMbedTls::CustomSessionStorageWithMaxConnectionsListenersAndConnectors<2, 1> tlsNetworkClient(persistentStorage, network, clientCertificates, randomDataGenerator);
+    EXPECT_CALL(clientObserverFactory, Port()).WillRepeatedly(testing::Return(1234));
+    EXPECT_CALL(clientObserverFactory, Hostname()).WillRepeatedly(testing::Return("something"));
+    infra::SharedOptional<services::ConnectionObserverStub> observer1;
+
+    EXPECT_CALL(network, Connect(testing::_)).WillOnce(testing::Invoke([this](services::ClientConnectionObserverFactoryWithNameResolver& clientObserverFactory)
+        {
+            EXPECT_EQ("something", clientObserverFactory.Hostname());
+            EXPECT_EQ(1234, clientObserverFactory.Port());
+            connection.Emplace();
+            EXPECT_CALL(*connection, RequestSendStream(0));
+            EXPECT_CALL(*connection, MaxSendStreamSize).WillOnce(testing::Return(0));
+            clientObserverFactory.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> observer)
+                {
+                    connection->Attach(observer);
+                });
+        }));
+
+    EXPECT_CALL(clientObserverFactory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this, &observer1](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> client)>&& createdClient)
+        {
+            createdClient(observer1.Emplace());
+        }));
+
+    tlsNetworkClient.Connect(clientObserverFactory);
+
+    ExecuteAllActions();
+    EXPECT_CALL(*connection, AbortAndDestroy).WillOnce(testing::Invoke([this]()
+        {
+            connection = infra::none;
+        }));
+    observer1->Subject().AbortAndDestroy();
+
+    EXPECT_CALL(network, Connect(testing::_)).WillOnce(testing::Invoke([this](services::ClientConnectionObserverFactoryWithNameResolver& clientObserverFactory)
+        {
+            EXPECT_EQ("something", clientObserverFactory.Hostname());
+            EXPECT_EQ(1234, clientObserverFactory.Port());
+            connection.Emplace();
+            EXPECT_CALL(*connection, RequestSendStream(0));
+            EXPECT_CALL(*connection, MaxSendStreamSize).WillOnce(testing::Return(0));
+            clientObserverFactory.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> observer)
+                {
+                    connection->Attach(observer);
+                });
+        }));
+
+    EXPECT_CALL(clientObserverFactory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this, &observer1](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> client)>&& createdClient)
+        {
+            createdClient(observer1.Emplace());
+        }));
+
+    tlsNetworkClient.Connect(clientObserverFactory);
+
+    ExecuteAllActions();
+
     EXPECT_CALL(*connection, AbortAndDestroy).WillOnce(testing::Invoke([this]()
         {
             connection = infra::none;
