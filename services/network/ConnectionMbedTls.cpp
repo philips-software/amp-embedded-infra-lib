@@ -258,8 +258,9 @@ namespace services
         persistedSession->hostname = session->hostname;
         persistedSession->clientSessionObtained = session->clientSessionObtained;
         persistedSession->identifier = session->identifier;
+        persistedSession->serializedSession.resize(persistedSession->serializedSession.max_size());
         auto result = mbedtls_ssl_session_save(&session->session, persistedSession->serializedSession.begin(), persistedSession->serializedSession.max_size(), &outputLen);
-
+        persistedSession->serializedSession.resize(outputLen);
         // really_assert(result == 0);
         if (result != 0)
             services::GlobalTracer().Trace() << "<<<<<< SSL Session Save Resulted in Failure >>>>>>" << outputLen;
