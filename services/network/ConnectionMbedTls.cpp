@@ -275,7 +275,7 @@ namespace services
 
     void MbedTlsSessionStoragePersistent::LoadSessions()
     {
-        for (auto sector : *nvm)
+        for (auto& sector : *nvm)
         {
             if (!sector.serializedSession.empty())
             {
