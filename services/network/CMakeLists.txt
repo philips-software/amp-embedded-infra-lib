@@ -66,6 +66,8 @@ target_sources(services.network PRIVATE
     HttpServer.hpp
     LlmnrResponder.cpp
     LlmnrResponder.hpp
+    MbedTlsSession.cpp
+    MbedTlsSession.hpp
     MdnsClient.cpp
     MdnsClient.hpp
     Mqtt.hpp

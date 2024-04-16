@@ -17,115 +17,12 @@
 #include "services/network/CertificatesMbedTls.hpp"
 #include "services/network/Connection.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
+#include "services/network/MbedTlsSession.hpp"
 #include "services/util/ConfigurationStore.hpp"
 #include <memory>
 
 namespace services
 {
-    class MbedTlsSessionStorageRam;
-    class MbedTlsSessionStoragePersistent;
-    class MbedTlsSessionStorageRam;
-
-    class MbedTlsSession
-    {
-    public:
-        MbedTlsSession(uint32_t identifier);
-        MbedTlsSession(uint32_t identifier, infra::BoundedConstString hostname);
-        MbedTlsSession(uint32_t identifier, IPAddress address);
-        MbedTlsSession(network::MbedTlsPersistedSession&);
-        ~MbedTlsSession();
-
-        void Reinitialize();
-        virtual void Obtained();
-        bool IsObtained();
-        int SetSession(mbedtls_ssl_context* context);
-        int GetSession(mbedtls_ssl_context* context);
-        IPAddress& Address();
-        infra::BoundedConstString Hostname();
-
-    private:
-        friend class MbedTlsSessionStorageRam;
-        friend class MbedTlsSessionStoragePersistent;
-
-        IPAddress address;
-        infra::BoundedConstString hostname;
-        mbedtls_ssl_session session;
-        bool clientSessionObtained = false;
-        uint32_t identifier;
-    };
-
-    class MbedTlsSessionWithCallback
-        : public MbedTlsSession
-    {
-    public:
-        MbedTlsSessionWithCallback(uint32_t identifier, const infra::Function<void(MbedTlsSession*)>& onObtained);
-        MbedTlsSessionWithCallback(uint32_t identifier, infra::BoundedConstString hostname, const infra::Function<void(MbedTlsSession*)>& onObtained);
-        MbedTlsSessionWithCallback(uint32_t identifier, IPAddress address, const infra::Function<void(MbedTlsSession*)>& onObtained);
-        MbedTlsSessionWithCallback(network::MbedTlsPersistedSession&, const infra::Function<void(MbedTlsSession*)>& onObtained);
-        void Obtained() override;
-
-    private:
-        friend class MbedTlsSessionStoragePersistent;
-
-        infra::Function<void(MbedTlsSession*)> onObtained;
-    };
-
-    class MbedTlsSessionStorage
-    {
-    public:
-        MbedTlsSessionStorage() = default;
-        MbedTlsSessionStorage(const MbedTlsSessionStorage& other) = delete;
-        MbedTlsSessionStorage& operator=(const MbedTlsSessionStorage& other) = delete;
-        virtual ~MbedTlsSessionStorage() = default;
-
-        virtual MbedTlsSession* NewSession(infra::BoundedConstString hostname) = 0;
-        virtual MbedTlsSession* NewSession(IPAddress address) = 0;
-        virtual MbedTlsSession* GetSession(infra::BoundedConstString hostname) = 0;
-        virtual MbedTlsSession* GetSession(IPAddress address) = 0;
-        virtual bool Full() const = 0;
-        virtual void Clear() = 0;
-        virtual void Invalidate(MbedTlsSession* session) = 0;
-    };
-
-    class MbedTlsSessionStorageRam
-        : public MbedTlsSessionStorage
-    {
-    public:
-        MbedTlsSession* NewSession(infra::BoundedConstString hostname) override;
-        MbedTlsSession* NewSession(IPAddress address) override;
-        void Invalidate(MbedTlsSession* sessionToInvalidate) override;
-        MbedTlsSession* GetSession(infra::BoundedConstString hostname) override;
-        MbedTlsSession* GetSession(IPAddress address) override;
-        bool Full() const override;
-        void Clear() override;
-
-    private:
-        infra::BoundedList<MbedTlsSession>::WithMaxSize<1> storage;
-    };
-
-    class MbedTlsSessionStoragePersistent
-        : public MbedTlsSessionStorage
-    {
-    public:
-        MbedTlsSessionStoragePersistent(services::ConfigurationStoreAccess<infra::BoundedVector<network::MbedTlsPersistedSession>> nvm);
-
-        MbedTlsSession* NewSession(infra::BoundedConstString hostname) override;
-        MbedTlsSession* NewSession(IPAddress address) override;
-        void Invalidate(MbedTlsSession* sessionToInvalidate) override;
-        MbedTlsSession* GetSession(infra::BoundedConstString hostname) override;
-        MbedTlsSession* GetSession(IPAddress address) override;
-        bool Full() const override;
-        void Clear() override;
-
-    private:
-        uint32_t NextIdentifier();
-        void SessionUpdated(MbedTlsSession* session);
-        void LoadSessions();
-
-        services::ConfigurationStoreAccess<infra::BoundedVector<network::MbedTlsPersistedSession>> nvm;
-        infra::BoundedList<MbedTlsSessionWithCallback>::WithMaxSize<2> storage;
-    };
-
     class ConnectionMbedTls
         : public ConnectionWithHostname
         , public ConnectionObserver
@@ -386,7 +283,7 @@ namespace services
                         ConnectionFactoryWithNameResolverMbedTls,
                         AllocatorConnectionMbedTls::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxConnections>>,
                     infra::BoundedList<ConnectionMbedTlsConnectorWithNameResolver>::WithMaxSize<MaxConnectors>>,
-                MbedTlsSessionStorageRam>;
+                MbedTlsSessionStorageRam::WithMaxSize<1>>;
 
         template<std::size_t MaxConnections, std::size_t MaxConnectors>
         using CustomSessionStorageWithMaxConnectionsListenersAndConnectors =

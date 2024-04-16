@@ -179,7 +179,7 @@ TEST_F(ConnectionMbedTlsTest, persistent_session_reopen_connection)
     infra::BoundedVector<network::MbedTlsPersistedSession>::WithMaxSize<1> stores;
     testing::StrictMock<services::ConfigurationStoreInterfaceMock> configInterface;
     services::ConfigurationStoreAccess<infra::BoundedVector<network::MbedTlsPersistedSession>> configStore{ configInterface, stores };
-    services::MbedTlsSessionStoragePersistent persistentStorage{ configStore };
+    services::MbedTlsSessionStoragePersistent::WithMaxSize<1> persistentStorage{ configStore };
 
     services::ConnectionFactoryMbedTls::WithMaxConnectionsListenersAndConnectors<2, 1, 0> tlsNetworkServer(loopBackNetwork, serverCertificates, randomDataGenerator);
     services::ConnectionFactoryMbedTls::CustomSessionStorageWithMaxConnectionsListenersAndConnectors<2, 0, 1> tlsNetworkClient(persistentStorage, loopBackNetwork, clientCertificates, randomDataGenerator);
@@ -365,7 +365,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, persistent_session_reopen_connecti
     infra::BoundedVector<network::MbedTlsPersistedSession>::WithMaxSize<1> stores;
     testing::StrictMock<services::ConfigurationStoreInterfaceMock> configInterface;
     services::ConfigurationStoreAccess<infra::BoundedVector<network::MbedTlsPersistedSession>> configStore{ configInterface, stores };
-    services::MbedTlsSessionStoragePersistent persistentStorage{ configStore };
+    services::MbedTlsSessionStoragePersistent::WithMaxSize<2> persistentStorage{ configStore };
 
     services::ConnectionFactoryWithNameResolverMbedTls::CustomSessionStorageWithMaxConnectionsListenersAndConnectors<2, 1> tlsNetworkClient(persistentStorage, network, clientCertificates, randomDataGenerator);
     EXPECT_CALL(clientObserverFactory, Port()).WillRepeatedly(testing::Return(1234));
