@@ -237,7 +237,7 @@ namespace services
     {
     public:
         template<std::size_t MaxConnections, std::size_t MaxListeners, std::size_t MaxConnectors>
-        using WithMaxConnectionsListenersAndConnectors = infra::WithStorage<infra::WithStorage<infra::WithStorage<infra::WithStorage<ConnectionFactoryMbedTls, AllocatorConnectionMbedTls::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxConnections>>, AllocatorConnectionMbedTlsListener::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxListeners>>, infra::BoundedList<ConnectionMbedTlsConnector>::WithMaxSize<MaxConnectors>>, MbedTlsSessionStorageRam>;
+        using WithMaxConnectionsListenersAndConnectors = infra::WithStorage<infra::WithStorage<infra::WithStorage<infra::WithStorage<ConnectionFactoryMbedTls, AllocatorConnectionMbedTls::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxConnections>>, AllocatorConnectionMbedTlsListener::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxListeners>>, infra::BoundedList<ConnectionMbedTlsConnector>::WithMaxSize<MaxConnectors>>, MbedTlsSessionStorageRam::WithMaxSize<1>>;
 
         template<std::size_t MaxConnections, std::size_t MaxListeners, std::size_t MaxConnectors>
         using CustomSessionStorageWithMaxConnectionsListenersAndConnectors = infra::WithStorage<infra::WithStorage<infra::WithStorage<ConnectionFactoryMbedTls, AllocatorConnectionMbedTls::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxConnections>>, AllocatorConnectionMbedTlsListener::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxListeners>>, infra::BoundedList<ConnectionMbedTlsConnector>::WithMaxSize<MaxConnectors>>;
