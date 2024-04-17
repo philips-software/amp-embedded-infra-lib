@@ -4,11 +4,13 @@
 #include "infra/util/SharedPtr.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/network/ConnectionMbedTls.hpp"
+#include "services/network/MbedTlsSession.hpp"
 #include "services/network/test_doubles/Certificates.hpp"
 #include "services/network/test_doubles/ConnectionLoopBack.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/network/test_doubles/ConnectionStub.hpp"
 #include "services/util/ConfigurationStore.hpp"
+#include "services/util/Sha256MbedTls.hpp"
 #include "services/util/test_doubles/ConfigurationStoreMock.hpp"
 #include "gmock/gmock.h"
 
@@ -179,7 +181,9 @@ TEST_F(ConnectionMbedTlsTest, persistent_session_reopen_connection)
     infra::BoundedVector<network::MbedTlsPersistedSession>::WithMaxSize<1> stores;
     testing::StrictMock<services::ConfigurationStoreInterfaceMock> configInterface;
     services::ConfigurationStoreAccess<infra::BoundedVector<network::MbedTlsPersistedSession>> configStore{ configInterface, stores };
-    services::MbedTlsSessionStoragePersistent::WithMaxSize<1> persistentStorage{ configStore };
+    services::Sha256MbedTls sha256;
+    services::MbedTlsSessionHasher mbedTlsHasher{ sha256 };
+    services::MbedTlsSessionStoragePersistent::WithMaxSize<1> persistentStorage{ configStore, mbedTlsHasher };
 
     services::ConnectionFactoryMbedTls::WithMaxConnectionsListenersAndConnectors<2, 1, 0> tlsNetworkServer(loopBackNetwork, serverCertificates, randomDataGenerator);
     services::ConnectionFactoryMbedTls::CustomSessionStorageWithMaxConnectionsListenersAndConnectors<2, 0, 1> tlsNetworkClient(persistentStorage, loopBackNetwork, clientCertificates, randomDataGenerator);
@@ -365,7 +369,9 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, persistent_session_reopen_connecti
     infra::BoundedVector<network::MbedTlsPersistedSession>::WithMaxSize<1> stores;
     testing::StrictMock<services::ConfigurationStoreInterfaceMock> configInterface;
     services::ConfigurationStoreAccess<infra::BoundedVector<network::MbedTlsPersistedSession>> configStore{ configInterface, stores };
-    services::MbedTlsSessionStoragePersistent::WithMaxSize<1> persistentStorage{ configStore };
+    services::Sha256MbedTls sha256;
+    services::MbedTlsSessionHasher mbedTlsHasher{ sha256 };
+    services::MbedTlsSessionStoragePersistent::WithMaxSize<1> persistentStorage{ configStore, mbedTlsHasher };
 
     services::ConnectionFactoryWithNameResolverMbedTls::CustomSessionStorageWithMaxConnectionsListenersAndConnectors<2, 1> tlsNetworkClient(persistentStorage, network, clientCertificates, randomDataGenerator);
     EXPECT_CALL(clientObserverFactory, Port()).WillRepeatedly(testing::Return(1234));
