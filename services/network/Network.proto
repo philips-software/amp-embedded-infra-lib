@@ -65,6 +65,6 @@ message MbedTlsPersistedSession
     fixed32 address = 1;
     string hostname = 2 [(string_size) = 256];
     bool clientSessionObtained = 3;
-    bytes serializedSession = 4 [(bytes_size) = 1024];
-    fixed32 identifier = 5;
+    bytes serializedSession = 4 [(bytes_size) = 512];
+    bytes identifier = 5 [(bytes_size) = 32];
 }

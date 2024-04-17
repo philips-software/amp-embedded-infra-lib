@@ -3,10 +3,13 @@
 
 #include "generated/echo/Network.pb.hpp"
 #include "infra/util/BoundedList.hpp"
+#include "infra/util/BoundedString.hpp"
 #include "infra/util/Function.hpp"
+#include "infra/util/WithStorage.hpp"
 #include "mbedtls/ssl.h"
 #include "services/network/Address.hpp"
 #include "services/util/ConfigurationStore.hpp"
+#include "services/util/Sha256.hpp"
 #include <memory>
 
 namespace services
@@ -18,9 +21,7 @@ namespace services
     class MbedTlsSession
     {
     public:
-        explicit MbedTlsSession(uint32_t identifier);
-        MbedTlsSession(uint32_t identifier, infra::BoundedConstString hostname);
-        MbedTlsSession(uint32_t identifier, IPAddress address);
+        explicit MbedTlsSession(Sha256::Digest identifier);
         explicit MbedTlsSession(network::MbedTlsPersistedSession&);
         virtual ~MbedTlsSession();
 
@@ -32,28 +33,56 @@ namespace services
         virtual bool IsObtained();
         virtual int SetSession(mbedtls_ssl_context* context);
         virtual int GetSession(mbedtls_ssl_context* context);
-        virtual IPAddress& Address();
-        virtual infra::BoundedConstString Hostname() const;
-        virtual uint32_t Identifier() const;
+        virtual const infra::BoundedVector<uint8_t>& Identifier() const;
 
     private:
         friend class MbedTlsSessionStorageRam;
         friend class MbedTlsSessionStoragePersistent;
 
-        IPAddress address;
-        infra::BoundedConstString hostname;
         mbedtls_ssl_session session;
         bool clientSessionObtained = false;
-        uint32_t identifier;
+        infra::BoundedVector<uint8_t>::WithMaxSize<32> identifier;
+    };
+
+    class TlsSessionHasher
+    {
+    public:
+        TlsSessionHasher() = default;
+        TlsSessionHasher(const TlsSessionHasher& other) = delete;
+        TlsSessionHasher& operator=(const TlsSessionHasher& other) = delete;
+        virtual ~TlsSessionHasher() = default;
+
+        virtual Sha256::Digest HashHostname(infra::BoundedConstString hostname) = 0;
+        virtual Sha256::Digest HashIP(IPAddress address) = 0;
+    };
+
+    class SingleTlsSessionHasher
+        : public TlsSessionHasher
+    {
+    public:
+        Sha256::Digest HashHostname(infra::BoundedConstString hostname) override;
+        Sha256::Digest HashIP(IPAddress address) override;
+    };
+
+    class MbedTlsSessionHasher
+        : public TlsSessionHasher
+    {
+    public:
+        explicit MbedTlsSessionHasher(Sha256& hasher);
+
+        Sha256::Digest HashHostname(infra::BoundedConstString hostname) override;
+        Sha256::Digest HashIP(IPAddress address) override;
+
+    private:
+        Sha256& hasher;
     };
 
     class MbedTlsSessionWithCallback
         : public MbedTlsSession
+
     {
     public:
-        MbedTlsSessionWithCallback(uint32_t identifier, const infra::Function<void(MbedTlsSession*)>& onObtained);
-        MbedTlsSessionWithCallback(uint32_t identifier, infra::BoundedConstString hostname, const infra::Function<void(MbedTlsSession*)>& onObtained);
-        MbedTlsSessionWithCallback(uint32_t identifier, IPAddress address, const infra::Function<void(MbedTlsSession*)>& onObtained);
+        MbedTlsSessionWithCallback(Sha256::Digest identifier, const infra::Function<void(MbedTlsSession*)>& onObtained);
         MbedTlsSessionWithCallback(network::MbedTlsPersistedSession&, const infra::Function<void(MbedTlsSession*)>& onObtained);
 
         // Implementation of MbedTlsSession
@@ -88,8 +117,9 @@ namespace services
     public:
         template<std::size_t Max>
         using WithMaxSize = infra::WithStorage<MbedTlsSessionStorageRam, infra::BoundedList<MbedTlsSession>::WithMaxSize<Max>>;
+        using SingleSession = infra::WithStorage<infra::WithStorage<MbedTlsSessionStorageRam, infra::BoundedList<MbedTlsSession>::WithMaxSize<1>>, SingleTlsSessionHasher>;
 
-        explicit MbedTlsSessionStorageRam(infra::BoundedList<MbedTlsSession>& storage);
+        explicit MbedTlsSessionStorageRam(infra::BoundedList<MbedTlsSession>& storage, TlsSessionHasher& hasher);
 
         MbedTlsSession* NewSession(infra::BoundedConstString hostname) override;
         MbedTlsSession* NewSession(IPAddress address) override;
@@ -101,6 +131,7 @@ namespace services
 
     private:
         infra::BoundedList<MbedTlsSession>& storage;
+        TlsSessionHasher& hasher;
     };
 
     class MbedTlsSessionStoragePersistent
@@ -110,7 +141,7 @@ namespace services
         template<std::size_t MaxRamSession>
         using WithMaxSize = infra::WithStorage<MbedTlsSessionStoragePersistent, infra::BoundedList<MbedTlsSessionWithCallback>::WithMaxSize<MaxRamSession>>;
 
-        MbedTlsSessionStoragePersistent(infra::BoundedList<MbedTlsSessionWithCallback>& storage, services::ConfigurationStoreAccess<infra::BoundedVector<network::MbedTlsPersistedSession>>& nvm);
+        MbedTlsSessionStoragePersistent(infra::BoundedList<MbedTlsSessionWithCallback>& storage, services::ConfigurationStoreAccess<infra::BoundedVector<network::MbedTlsPersistedSession>>& nvm, TlsSessionHasher& hasher);
 
         MbedTlsSession* NewSession(infra::BoundedConstString hostname) override;
         MbedTlsSession* NewSession(IPAddress address) override;
@@ -121,14 +152,14 @@ namespace services
         void Clear() override;
 
     private:
-        uint32_t NextIdentifier();
         void SessionUpdated(MbedTlsSession* session);
         void LoadSessions();
-        network::MbedTlsPersistedSession* FindPersistedSession(uint32_t identifier);
+        network::MbedTlsPersistedSession* FindPersistedSession(const infra::BoundedVector<uint8_t>& identifier);
         network::MbedTlsPersistedSession& NewPersistedSession();
 
         services::ConfigurationStoreAccess<infra::BoundedVector<network::MbedTlsPersistedSession>>& nvm;
         infra::BoundedList<MbedTlsSessionWithCallback>& storage;
+        TlsSessionHasher& hasher;
     };
 
 }

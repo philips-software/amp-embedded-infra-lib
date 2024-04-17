@@ -1,25 +1,24 @@
 #include "services/network/MbedTlsSession.hpp"
+#include "infra/stream/StringOutputStream.hpp"
+#include "infra/util/BoundedString.hpp"
+#include "infra/util/BoundedVector.hpp"
+#include "infra/util/ByteRange.hpp"
+#include "infra/util/ReallyAssert.hpp"
+#include "services/network/Address.hpp"
 #include "services/tracer/GlobalTracer.hpp"
+#include "services/util/Sha256.hpp"
 
 namespace services
 {
     void MbedTlsSession::Serialize(MbedTlsSession& in, network::MbedTlsPersistedSession& out)
     {
         size_t outputLen;
-        out.address = services::ConvertToUint32(in.address.Get<IPv4Address>());
-        out.hostname = in.hostname;
         out.clientSessionObtained = in.clientSessionObtained;
         out.identifier = in.identifier;
         out.serializedSession.resize(out.serializedSession.max_size());
         auto result = mbedtls_ssl_session_save(&in.session, out.serializedSession.begin(), out.serializedSession.max_size(), &outputLen);
         out.serializedSession.resize(outputLen);
         really_assert(result == 0);
-
-        // if (result != 0)
-        //     services::GlobalTracer().Trace() << "<<<<<< SSL Session Save Resulted in Failure >>>>>>" << outputLen;
-        // // really_assert(outputLen < persistedSession->serializedSession.max_size());
-        // if (outputLen > persistedSession->serializedSession.max_size())
-        //     services::GlobalTracer().Trace() << "<<<<<< SSL Session Save Does not fit into buffer >>>>>>" << outputLen;
     }
 
     void MbedTlsSession::Deserialize(network::MbedTlsPersistedSession& in, MbedTlsSession& out)
@@ -27,38 +26,20 @@ namespace services
         out = *new (&out) MbedTlsSession(in);
     }
 
-    MbedTlsSession::MbedTlsSession(uint32_t identifier)
+    MbedTlsSession::MbedTlsSession(Sha256::Digest identifier)
         : session({})
-        , identifier(identifier)
-    {
-        mbedtls_ssl_session_init(&session);
-    }
-
-    MbedTlsSession::MbedTlsSession(uint32_t identifier, infra::BoundedConstString hostname)
-        : hostname(hostname)
-        , session({})
-        , identifier(identifier)
-    {
-        mbedtls_ssl_session_init(&session);
-    }
-
-    MbedTlsSession::MbedTlsSession(uint32_t identifier, IPAddress address)
-        : address(address)
-        , session({})
-        , identifier(identifier)
+        , identifier(identifier.begin(), identifier.end())
     {
         mbedtls_ssl_session_init(&session);
     }
 
     MbedTlsSession::MbedTlsSession(network::MbedTlsPersistedSession& reference)
-        : address(services::ConvertFromUint32(reference.address))
-        , hostname(reference.hostname)
-        , session({})
+        : session({})
         , clientSessionObtained(reference.clientSessionObtained)
         , identifier(reference.identifier)
     {
         mbedtls_ssl_session_init(&session);
-        mbedtls_ssl_session_load(&session, reference.serializedSession.begin(), reference.serializedSession.size());
+        really_assert(mbedtls_ssl_session_load(&session, reference.serializedSession.begin(), reference.serializedSession.size()) == 0);
     }
 
     MbedTlsSession::~MbedTlsSession()
@@ -92,33 +73,39 @@ namespace services
         return mbedtls_ssl_get_session(context, &session);
     }
 
-    IPAddress& MbedTlsSession::Address()
-    {
-        return address;
-    }
-
-    infra::BoundedConstString MbedTlsSession::Hostname() const
-    {
-        return hostname;
-    }
-
-    uint32_t MbedTlsSession::Identifier() const
+    const infra::BoundedVector<uint8_t>& MbedTlsSession::Identifier() const
     {
         return identifier;
     }
 
-    MbedTlsSessionWithCallback::MbedTlsSessionWithCallback(uint32_t identifier, const infra::Function<void(MbedTlsSession*)>& onObtained)
+    Sha256::Digest SingleTlsSessionHasher::HashHostname(infra::BoundedConstString hostname)
+    {
+        return {};
+    }
+
+    Sha256::Digest SingleTlsSessionHasher::HashIP(IPAddress address)
+    {
+        return {};
+    }
+
+    MbedTlsSessionHasher::MbedTlsSessionHasher(Sha256& hasher)
+        : hasher(hasher)
+    {}
+
+    Sha256::Digest MbedTlsSessionHasher::HashHostname(infra::BoundedConstString hostname)
+    {
+        return hasher.Calculate(infra::StringAsByteRange(hostname));
+    }
+
+    Sha256::Digest MbedTlsSessionHasher::HashIP(IPAddress address)
+    {
+        infra::StringOutputStream::WithStorage<48> ipStringStream;
+        ipStringStream << address;
+        return hasher.Calculate(infra::StringAsByteRange(ipStringStream.Storage()));
+    }
+
+    MbedTlsSessionWithCallback::MbedTlsSessionWithCallback(Sha256::Digest identifier, const infra::Function<void(MbedTlsSession*)>& onObtained)
         : MbedTlsSession(identifier)
-        , onObtained(onObtained)
-    {}
-
-    MbedTlsSessionWithCallback::MbedTlsSessionWithCallback(uint32_t identifier, infra::BoundedConstString hostname, const infra::Function<void(MbedTlsSession*)>& onObtained)
-        : MbedTlsSession(identifier, hostname)
-        , onObtained(onObtained)
-    {}
-
-    MbedTlsSessionWithCallback::MbedTlsSessionWithCallback(uint32_t identifier, IPAddress address, const infra::Function<void(MbedTlsSession*)>& onObtained)
-        : MbedTlsSession(identifier, address)
         , onObtained(onObtained)
     {}
 
@@ -133,27 +120,29 @@ namespace services
         onObtained(this);
     }
 
-    MbedTlsSessionStorageRam::MbedTlsSessionStorageRam(infra::BoundedList<MbedTlsSession>& storage)
+    MbedTlsSessionStorageRam::MbedTlsSessionStorageRam(infra::BoundedList<MbedTlsSession>& storage, TlsSessionHasher& hasher)
         : storage(storage)
+        , hasher(hasher)
     {}
 
     MbedTlsSession* MbedTlsSessionStorageRam::NewSession(infra::BoundedConstString hostname)
     {
-        storage.emplace_back(0, hostname);
+        storage.emplace_back(hasher.HashHostname(hostname));
         return &storage.back();
     }
 
     MbedTlsSession* MbedTlsSessionStorageRam::NewSession(IPAddress address)
     {
-        storage.emplace_back(0, address);
+        storage.emplace_back(hasher.HashIP(address));
         return &storage.back();
     }
 
     MbedTlsSession* MbedTlsSessionStorageRam::GetSession(infra::BoundedConstString hostname)
     {
+        auto identifier = hasher.HashHostname(hostname);
         for (auto& session : storage)
         {
-            if (session.Hostname() == hostname)
+            if (session.Identifier().range() == identifier)
                 return &session;
         }
         return nullptr;
@@ -161,9 +150,10 @@ namespace services
 
     MbedTlsSession* MbedTlsSessionStorageRam::GetSession(IPAddress address)
     {
+        auto identifier = hasher.HashIP(address);
         for (auto& session : storage)
         {
-            if (session.Address() == address)
+            if (session.Identifier().range() == identifier)
                 return &session;
         }
         return nullptr;
@@ -188,16 +178,17 @@ namespace services
         storage.clear();
     }
 
-    MbedTlsSessionStoragePersistent::MbedTlsSessionStoragePersistent(infra::BoundedList<MbedTlsSessionWithCallback>& storage, services::ConfigurationStoreAccess<infra::BoundedVector<network::MbedTlsPersistedSession>>& nvm)
+    MbedTlsSessionStoragePersistent::MbedTlsSessionStoragePersistent(infra::BoundedList<MbedTlsSessionWithCallback>& storage, services::ConfigurationStoreAccess<infra::BoundedVector<network::MbedTlsPersistedSession>>& nvm, TlsSessionHasher& hasher)
         : nvm(nvm)
         , storage(storage)
+        , hasher(hasher)
     {
         LoadSessions();
     }
 
     MbedTlsSession* MbedTlsSessionStoragePersistent::NewSession(infra::BoundedConstString hostname)
     {
-        storage.emplace_back(NextIdentifier(), hostname, [this](MbedTlsSession* session)
+        storage.emplace_back(hasher.HashHostname(hostname), [this](MbedTlsSession* session)
             {
                 SessionUpdated(session);
             });
@@ -206,7 +197,7 @@ namespace services
 
     MbedTlsSession* MbedTlsSessionStoragePersistent::NewSession(IPAddress address)
     {
-        storage.emplace_back(NextIdentifier(), address, [this](MbedTlsSession* session)
+        storage.emplace_back(hasher.HashIP(address), [this](MbedTlsSession* session)
             {
                 SessionUpdated(session);
             });
@@ -215,11 +206,10 @@ namespace services
 
     MbedTlsSession* MbedTlsSessionStoragePersistent::GetSession(infra::BoundedConstString hostname)
     {
+        auto digest = hasher.HashHostname(hostname);
         for (auto& session : storage)
         {
-            // remove
-            services::GlobalTracer().Trace() << "Searching: " << hostname << " == " << session.Hostname();
-            if (session.Hostname() == hostname)
+            if (session.Identifier().range() == digest)
                 return &session;
         }
         return nullptr;
@@ -227,9 +217,10 @@ namespace services
 
     MbedTlsSession* MbedTlsSessionStoragePersistent::GetSession(IPAddress address)
     {
+        auto digest = hasher.HashIP(address);
         for (auto& session : storage)
         {
-            if (session.Address() == address)
+            if (session.Identifier().range() == digest)
                 return &session;
         }
         return nullptr;
@@ -246,7 +237,7 @@ namespace services
 
     bool MbedTlsSessionStoragePersistent::Full() const
     {
-        return nvm->full();
+        return storage.full();
     }
 
     void MbedTlsSessionStoragePersistent::Clear()
@@ -254,11 +245,6 @@ namespace services
         storage.clear();
         nvm->clear();
         nvm.Write();
-    }
-
-    uint32_t MbedTlsSessionStoragePersistent::NextIdentifier()
-    {
-        return nvm->size();
     }
 
     void MbedTlsSessionStoragePersistent::SessionUpdated(MbedTlsSession* session)
@@ -284,7 +270,7 @@ namespace services
         }
     }
 
-    network::MbedTlsPersistedSession* MbedTlsSessionStoragePersistent::FindPersistedSession(uint32_t identifier)
+    network::MbedTlsPersistedSession* MbedTlsSessionStoragePersistent::FindPersistedSession(const infra::BoundedVector<uint8_t>& identifier)
     {
         for (auto& nvmSession : *nvm)
         {
