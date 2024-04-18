@@ -75,7 +75,7 @@ jobs:
       - uses: hendrikmuhs/ccache-action@faf867a11c028c0b483fb2ae72b6fc8f7d842714 # v1.2.12
         with:
           key: ${{ github.job }}
-      - uses: github/codeql-action/init@df5a14dc28094dc936e103b37d749c6628682b60 # v3.25.0
+      - uses: github/codeql-action/init@c7f9125735019aa87cfc361530512d50ea439c71 # v3.25.1
         with:
           languages: cpp
       - uses: lukka/run-cmake@2ce8982be71b8e9a3c4d5e432135035afd1e76a7 # v10.7
@@ -83,4 +83,4 @@ jobs:
           configurePreset: "host"
           buildPreset: "host-Debug"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"
-      - uses: github/codeql-action/analyze@df5a14dc28094dc936e103b37d749c6628682b60 # v3.25.0
+      - uses: github/codeql-action/analyze@c7f9125735019aa87cfc361530512d50ea439c71 # v3.25.1
