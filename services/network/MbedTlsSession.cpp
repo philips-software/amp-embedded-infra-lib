@@ -21,11 +21,6 @@ namespace services
         really_assert(result == 0);
     }
 
-    void MbedTlsSession::Deserialize(network::MbedTlsPersistedSession& in, MbedTlsSession& out)
-    {
-        out = *new (&out) MbedTlsSession(in);
-    }
-
     MbedTlsSession::MbedTlsSession(Sha256::Digest identifier)
         : session({})
         , identifier(identifier.begin(), identifier.end())
