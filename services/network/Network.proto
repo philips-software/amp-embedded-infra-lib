@@ -62,9 +62,7 @@ message WiFiAccessPointWithPassword
 
 message MbedTlsPersistedSession
 {
-    fixed32 address = 1;
-    string hostname = 2 [(string_size) = 256];
-    bool clientSessionObtained = 3;
-    bytes serializedSession = 4 [(bytes_size) = 512];
-    bytes identifier = 5 [(bytes_size) = 32];
+    bool clientSessionObtained = 1;
+    bytes serializedSession = 2 [(bytes_size) = 512];
+    bytes identifier = 3 [(bytes_size) = 32];
 }
