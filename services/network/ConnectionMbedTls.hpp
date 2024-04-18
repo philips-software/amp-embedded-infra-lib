@@ -1,14 +1,12 @@
 #ifndef SERVICES_CONNECTION_MBED_TLS_HPP
 #define SERVICES_CONNECTION_MBED_TLS_HPP
 
-#include "generated/echo/Network.pb.hpp"
 #include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
 #include "infra/stream/BoundedDequeInputStream.hpp"
 #include "infra/stream/BoundedVectorOutputStream.hpp"
 #include "infra/stream/LimitedOutputStream.hpp"
 #include "infra/util/BoundedList.hpp"
 #include "infra/util/ByteRange.hpp"
-#include "infra/util/Function.hpp"
 #include "infra/util/SharedObjectAllocatorFixedSize.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "mbedtls/ctr_drbg.h"
@@ -18,8 +16,6 @@
 #include "services/network/Connection.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/network/MbedTlsSession.hpp"
-#include "services/util/ConfigurationStore.hpp"
-#include <memory>
 
 namespace services
 {

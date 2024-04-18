@@ -1,17 +1,5 @@
 #include "services/network/ConnectionMbedTls.hpp"
-#include "echo/Network.pb.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
-#include "infra/util/BoundedDeque.hpp"
-#include "infra/util/BoundedList.hpp"
-#include "infra/util/BoundedString.hpp"
-#include "infra/util/ReallyAssert.hpp"
-#include "mbedtls/ssl.h"
-#include "services/network/Address.hpp"
-#include "services/network/CertificatesMbedTls.hpp"
-#include "services/network/ConnectionFactoryWithNameResolver.hpp"
-#include "services/tracer/GlobalTracer.hpp"
-#include <algorithm>
-#include <cstddef>
 
 namespace services
 {
@@ -716,8 +704,7 @@ namespace services
     infra::SharedPtr<ConnectionMbedTls> ConnectionFactoryWithNameResolverMbedTls::Allocate(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, infra::BoundedConstString hostname)
     {
         auto savedSession = sessionStorage.GetSession(hostname);
-        // remove
-        services::GlobalTracer().Trace() << "Session: " << hostname << " exists: " << (savedSession == nullptr ? "0" : "1");
+
         if (savedSession == nullptr)
         {
             if (sessionStorage.Full())

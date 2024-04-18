@@ -5,7 +5,6 @@
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/ReallyAssert.hpp"
 #include "services/network/Address.hpp"
-#include "services/tracer/GlobalTracer.hpp"
 #include "services/util/Sha256.hpp"
 
 namespace services
