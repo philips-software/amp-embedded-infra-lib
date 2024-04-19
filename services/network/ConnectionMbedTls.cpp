@@ -787,11 +787,12 @@ namespace services
     void ConnectionFactoryWithNameResolverForTls::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
     {
         assert(clientConnectionFactory != nullptr);
+        hostname = Hostname();  // After ConnectionEstablished Hostname may not be invoked
         clientConnectionFactory->ConnectionEstablished([this, &createdObserver](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
             {
                 createdObserver(connectionObserver);
                 if (connectionObserver->IsAttached())
-                    static_cast<ConnectionWithHostname&>(connectionObserver->Subject()).SetHostname(Hostname());
+                    static_cast<ConnectionWithHostname&>(connectionObserver->Subject()).SetHostname(hostname);
             });
         clientConnectionFactory = nullptr;
         TryConnect();
