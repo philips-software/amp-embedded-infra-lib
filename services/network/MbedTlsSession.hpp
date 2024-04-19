@@ -10,13 +10,13 @@
 #include "services/network/Address.hpp"
 #include "services/util/ConfigurationStore.hpp"
 #include "services/util/Sha256.hpp"
+#include "services/util/Sha256MbedTls.hpp"
 #include <memory>
 
 namespace services
 {
     class MbedTlsSessionStorageRam;
     class MbedTlsSessionStoragePersistent;
-    class MbedTlsSessionStorageRam;
 
     class MbedTlsSession
     {
@@ -50,24 +50,18 @@ namespace services
         TlsSessionHasher() = default;
         TlsSessionHasher(const TlsSessionHasher& other) = delete;
         TlsSessionHasher& operator=(const TlsSessionHasher& other) = delete;
-        virtual ~TlsSessionHasher() = default;
+        ~TlsSessionHasher() = default;
 
         virtual Sha256::Digest HashHostname(infra::BoundedConstString hostname) = 0;
         virtual Sha256::Digest HashIP(IPAddress address) = 0;
-    };
-
-    class SingleTlsSessionHasher
-        : public TlsSessionHasher
-    {
-    public:
-        Sha256::Digest HashHostname(infra::BoundedConstString hostname) override;
-        Sha256::Digest HashIP(IPAddress address) override;
     };
 
     class MbedTlsSessionHasher
         : public TlsSessionHasher
     {
     public:
+        using WithMbedTlsHasher = infra::WithStorage<MbedTlsSessionHasher, Sha256MbedTls>;
+
         explicit MbedTlsSessionHasher(Sha256& hasher);
 
         Sha256::Digest HashHostname(infra::BoundedConstString hostname) override;
@@ -117,7 +111,7 @@ namespace services
     public:
         template<std::size_t Max>
         using WithMaxSize = infra::WithStorage<MbedTlsSessionStorageRam, infra::BoundedList<MbedTlsSession>::WithMaxSize<Max>>;
-        using SingleSession = infra::WithStorage<infra::WithStorage<MbedTlsSessionStorageRam, infra::BoundedList<MbedTlsSession>::WithMaxSize<1>>, SingleTlsSessionHasher>;
+        using SingleSession = infra::WithStorage<infra::WithStorage<MbedTlsSessionStorageRam, infra::BoundedList<MbedTlsSession>::WithMaxSize<1>>, MbedTlsSessionHasher::WithMbedTlsHasher>;
 
         explicit MbedTlsSessionStorageRam(infra::BoundedList<MbedTlsSession>& storage, TlsSessionHasher& hasher);
 

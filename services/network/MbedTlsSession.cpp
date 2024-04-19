@@ -72,16 +72,6 @@ namespace services
         return identifier;
     }
 
-    Sha256::Digest SingleTlsSessionHasher::HashHostname(infra::BoundedConstString hostname)
-    {
-        return {};
-    }
-
-    Sha256::Digest SingleTlsSessionHasher::HashIP(IPAddress address)
-    {
-        return {};
-    }
-
     MbedTlsSessionHasher::MbedTlsSessionHasher(Sha256& hasher)
         : hasher(hasher)
     {}
