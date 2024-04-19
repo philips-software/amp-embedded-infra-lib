@@ -39,6 +39,6 @@ namespace main_
 
     bool NetworkAdapter::NetworkActivity() const
     {
-        return network.OpenConnections() || nameResolver.Active();
+        return network.ConnectionsOpen() || nameResolver.Active();
     }
 }
