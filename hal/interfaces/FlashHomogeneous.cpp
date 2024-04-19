@@ -27,7 +27,7 @@ namespace hal
     {
         auto sectorIndex = address / sizeOfEachSector;
         assert(sectorIndex <= numberOfSectors);
-        return std::clamp<T>(sectorIndex, 0, numberOfSectors);
+        return sectorIndex;
     }
 
     template<class T>
