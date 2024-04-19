@@ -787,7 +787,7 @@ namespace services
     void ConnectionFactoryWithNameResolverForTls::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
     {
         assert(clientConnectionFactory != nullptr);
-        hostname = Hostname();  // After ConnectionEstablished Hostname may not be invoked
+        hostname = Hostname(); // After ConnectionEstablished Hostname may not be invoked
         clientConnectionFactory->ConnectionEstablished([this, &createdObserver](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
             {
                 createdObserver(connectionObserver);
