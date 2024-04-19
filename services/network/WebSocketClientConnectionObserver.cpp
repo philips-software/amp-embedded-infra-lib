@@ -398,7 +398,14 @@ namespace services
 
     HttpClientWebSocketInitiation::HttpClientWebSocketInitiation(WebSocketClientObserverFactory& clientObserverFactory, HttpClientConnector& clientConnector,
         HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-        : HttpClientBasic(clientObserverFactory.Url(), clientObserverFactory.Port(), clientConnector)
+        : HttpClientWebSocketInitiation(clientObserverFactory, clientConnector, result, randomDataGenerator, noAutoConnect)
+    {
+        Connect();
+    }
+
+    HttpClientWebSocketInitiation::HttpClientWebSocketInitiation(WebSocketClientObserverFactory& clientObserverFactory, HttpClientConnector& clientConnector,
+        HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator, NoAutoConnect)
+        : HttpClientBasic(clientObserverFactory.Url(), clientObserverFactory.Port(), clientConnector, noAutoConnect)
         , result(result)
     {
         std::array<uint8_t, 16> randomData;
@@ -420,6 +427,7 @@ namespace services
 
     void HttpClientWebSocketInitiation::Attached()
     {
+        HttpClientBasic::Attached();
         Subject().Get(Path(), Headers());
     }
 
@@ -430,6 +438,8 @@ namespace services
 
     void HttpClientWebSocketInitiation::StatusAvailable(HttpStatusCode statusCode)
     {
+        HttpClientBasic::StatusAvailable(statusCode);
+
         if (statusCode != HttpStatusCode::SwitchingProtocols)
             ContentError();
     }
@@ -460,8 +470,9 @@ namespace services
 
     void HttpClientWebSocketInitiation::BodyComplete()
     {
-        // Switching http client off will result in Detaching(), resulting Error() being called
+        // Switching http client off will result in Detaching(), resulting in CloseConnection() being called
         done = true;
+        HttpClientBasic::BodyComplete();
         result.WebSocketInitiationDone(Subject().GetConnection());
     }
 
@@ -472,8 +483,15 @@ namespace services
 
     void HttpClientWebSocketInitiation::Error(bool intermittentFailure)
     {
+        result.WebSocketInitiationError(initiationError);
+    }
+
+    void HttpClientWebSocketInitiation::CloseConnection()
+    {
+        // Default behaviour is to close the connection after the request is done. But successful
+        // opening of the websockt should result in the connection being kept open.
         if (!done)
-            result.WebSocketInitiationError(initiationError);
+            HttpClientBasic::CloseConnection();
     }
 
     void HttpClientWebSocketInitiation::ConnectionFailed(HttpClientObserverFactory::ConnectFailReason reason)

@@ -31,7 +31,7 @@ class WebSocketIntegrationTest
     , public infra::ClockFixture
 {};
 
-TEST_F(WebSocketIntegrationTest, integration)
+TEST_F(WebSocketIntegrationTest, create_connection)
 {
     services::HttpPageServer httpServer;
     infra::Creator<services::ConnectionObserver, services::WebSocketServerConnectionObserver::WithBufferSizes<512, 512>, void()> webSocketServerConnectionCreator;
@@ -45,7 +45,7 @@ TEST_F(WebSocketIntegrationTest, integration)
     services::ConnectionLoopBackFactory network;
     services::ConnectionLoopBackListener listener(5, network, serverObserverFactory);
 
-    EXPECT_CALL(serverObserverFactory, ConnectionAcceptedMock(testing::_, testing::_))
+    EXPECT_CALL(serverObserverFactory, ConnectionAccepted(testing::_, testing::_))
         .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver, services::IPAddress address)
             {
                 createdObserver(httpServerConnectionPtr);
@@ -120,5 +120,42 @@ TEST_F(WebSocketIntegrationTest, integration)
     EXPECT_CALL(*clientConnection, Detaching());
     EXPECT_CALL(*serverConnection, Detaching());
     clientConnection->Subject().AbortAndDestroy();
+    ExecuteAllActions();
+}
+
+TEST_F(WebSocketIntegrationTest, create_connection_failed)
+{
+    services::HttpPageServer httpServer;
+    services::HttpServerConnectionObserver::WithBuffer<2048> httpServerConnection(httpServer);
+    auto httpServerConnectionPtr = infra::UnOwnedSharedPtr(httpServerConnection);
+
+    services::ServerConnectionObserverFactoryMock serverObserverFactory;
+    services::ConnectionLoopBackFactory network;
+    services::ConnectionLoopBackListener listener(5, network, serverObserverFactory);
+
+    EXPECT_CALL(serverObserverFactory, ConnectionAccepted(testing::_, testing::_))
+        .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver, services::IPAddress address)
+            {
+                createdObserver(httpServerConnectionPtr);
+            }));
+
+    services::ConnectionFactoryWithNameResolverStub connectionFactoryWithNameResolver(network, services::IPv4AddressLocalHost());
+    hal::SynchronousFixedRandomDataGenerator randomDataGenerator({ 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4 });
+    services::HttpClientConnectorWithNameResolverImpl<> clientConnector(connectionFactoryWithNameResolver);
+    infra::Creator<services::Stoppable, services::HttpClientWebSocketInitiation, void(services::WebSocketClientObserverFactory & clientObserverFactory, services::HttpClientWebSocketInitiationResult & result, hal::SynchronousRandomDataGenerator & randomDataGenerator)> httpClientInitiationCreator(
+        [&clientConnector](infra::Optional<services::HttpClientWebSocketInitiation>& value, services::WebSocketClientObserverFactory& clientObserverFactory,
+            services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+        {
+            value.Emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
+        });
+    services::WebSocketClientFactorySingleConnection webSocketClientFactory(randomDataGenerator, { httpClientInitiationCreator });
+
+    WebSocketClientObserverFactoryMock clientObserverFactory;
+    infra::BoundedString::WithStorage<16> url("hostname/path");
+    EXPECT_CALL(clientObserverFactory, Url()).WillRepeatedly(testing::Return(url));
+    EXPECT_CALL(clientObserverFactory, Port()).WillRepeatedly(testing::Return(5));
+    infra::SharedOptional<testing::StrictMock<services::ConnectionObserverFullMock>> clientConnection;
+    EXPECT_CALL(clientObserverFactory, ConnectionFailed(services::WebSocketClientObserverFactory::ConnectFailReason::upgradeFailed));
+    webSocketClientFactory.Connect(clientObserverFactory);
     ExecuteAllActions();
 }

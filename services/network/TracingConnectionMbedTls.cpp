@@ -86,4 +86,15 @@ namespace services
         mbedtls_debug_set_threshold(level);
 #endif
     }
+
+    TracingConnectionFactoryWithNameResolverMbedTls::TracingConnectionFactoryWithNameResolverMbedTls(AllocatorTracingConnectionMbedTls& connectionAllocator, infra::BoundedList<ConnectionMbedTlsConnectorWithNameResolver>& connectors,
+        ConnectionFactoryWithNameResolver& factory, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, Tracer& tracer, [[maybe_unused]] DebugLevel level, ConnectionMbedTls::CertificateValidation certificateValidation)
+        : ConnectionFactoryWithNameResolverMbedTls(allocatorAdapter, connectors, factory, certificates, randomDataGenerator, certificateValidation)
+        , allocatorAdapter(connectionAllocator, tracer)
+    {
+        tracer.Trace() << "ConnectionFactoryWithNameResolver::ConnectionFactoryWithNameResolver()";
+#if defined(MBEDTLS_DEBUG_C)
+        mbedtls_debug_set_threshold(level);
+#endif
+    }
 }
