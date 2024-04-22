@@ -28,7 +28,6 @@ namespace services
         assert(result == 0);
         mbedtls_ssl_conf_rng(&sslConfig, mbedtls_ctr_drbg_random, &ctr_drbg);
         mbedtls_ssl_conf_authmode(&sslConfig, GetAuthMode(parameters));
-        mbedtls_ssl_conf_session_tickets(&sslConfig, MBEDTLS_SSL_SESSION_TICKETS_ENABLED);
 
         certificates.Config(sslConfig);
 
@@ -40,6 +39,8 @@ namespace services
             // mbedTLS can only talk with itself if the client enables ALPN. ALPN requires at least one protocol.
             static const char* protos[] = { "http/1.1", nullptr };
             mbedtls_ssl_conf_alpn_protocols(&sslConfig, protos);
+            // client configuration only
+            mbedtls_ssl_conf_session_tickets(&sslConfig, MBEDTLS_SSL_SESSION_TICKETS_ENABLED);
         }
     }
 
