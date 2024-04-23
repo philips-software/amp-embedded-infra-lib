@@ -27,6 +27,9 @@ namespace application
         MethodDone();
     }
 
+    void ServiceDiscoveryEcho::NotifyServiceChanges(bool value)
+    {}
+
     bool ServiceDiscoveryEcho::AcceptsService(uint32_t serviceId) const
     {
         return service_discovery::ServiceDiscovery::AcceptsService(serviceId) 
@@ -43,5 +46,20 @@ namespace application
             });
 
         return serviceFound;
+    }
+
+    void ServiceDiscoveryEcho::RequestSend(ServiceProxy& serviceProxy)
+    {
+        service_discovery::ServiceDiscovery::Rpc().RequestSend(serviceProxy);
+    }
+
+    void ServiceDiscoveryEcho::ServiceDone()
+    {
+        service_discovery::ServiceDiscovery::Rpc().ServiceDone();
+    }
+
+    services::MethodSerializerFactory& ServiceDiscoveryEcho::SerializerFactory()
+    {
+        return service_discovery::ServiceDiscovery::Rpc().SerializerFactory();
     }
 }
