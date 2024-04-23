@@ -110,6 +110,7 @@ TEST_F(HttpClientJsonTest, feed_json_data)
     EXPECT_CALL(reader, ExtractContiguousRange(testing::_)).WillOnce(testing::Return(infra::MakeStringByteRange(R"({ "entry": "value" })")));
     EXPECT_CALL(jsonObjectVisitor, VisitString("entry", "value"));
     EXPECT_CALL(jsonObjectVisitor, Close());
+    httpClient.Observer().StatusAvailable(services::HttpStatusCode::OK);
     httpClient.Observer().BodyAvailable(infra::UnOwnedSharedPtr(reader));
     EXPECT_CALL(controller, Done());
     EXPECT_CALL(httpClient, CloseConnection());
@@ -140,6 +141,7 @@ TEST_F(HttpClientJsonTest, ParseError_reports_Error)
             EXPECT_TRUE(readerPtr == nullptr);
         }));
     EXPECT_CALL(controller, Error(false));
+    httpClient.Observer().StatusAvailable(services::HttpStatusCode::OK);
     httpClient.Observer().BodyAvailable(std::move(readerPtr));
 }
 
@@ -162,6 +164,7 @@ TEST_F(HttpClientJsonTest, ContentError_during_parsing_closes_connection)
         }));
     EXPECT_CALL(controller, Error(false));
     EXPECT_CALL(httpClient, CloseConnection());
+    httpClient.Observer().StatusAvailable(services::HttpStatusCode::OK);
     httpClient.Observer().BodyAvailable(infra::UnOwnedSharedPtr(reader));
 }
 
@@ -184,6 +187,7 @@ TEST_F(HttpClientJsonTest, close_while_BodyAvailable)
             httpClient.Detach();
             infra::ReConstruct(controller, url, services::HttpClientJson::ConnectionInfo{ jsonParserCreator, 443, httpClientConnector }, services::noAutoConnect);
         }));
+    httpClient.Observer().StatusAvailable(services::HttpStatusCode::OK);
     httpClient.Observer().BodyAvailable(infra::UnOwnedSharedPtr(reader));
 }
 
@@ -207,5 +211,6 @@ TEST_F(HttpClientJsonTest, close_upon_destructing_reader_in_BodyAvailable)
             httpClient.Detach();
             infra::ReConstruct(controller, url, services::HttpClientJson::ConnectionInfo{ jsonParserCreator, 443, httpClientConnector }, services::noAutoConnect);
         });
+    httpClient.Observer().StatusAvailable(services::HttpStatusCode::OK);
     httpClient.Observer().BodyAvailable(access.MakeShared(reader));
 }

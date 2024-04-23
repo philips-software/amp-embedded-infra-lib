@@ -40,7 +40,7 @@ namespace infra
     void Timer::Jumped(TimePoint from, TimePoint to)
     {
         // Default behaviour: Just pretend that during the jump no actual time passed
-        nextTriggerTime = Convert(Convert(nextTriggerTime) + (to - from));
+        SetNextTriggerTime(Convert(nextTriggerTime) + (to - from), Action());
     }
 
     TimePoint Timer::NextTrigger() const
@@ -133,7 +133,8 @@ namespace infra
 
     void TimerSingleShot::Start(Duration duration, const infra::Function<void()>& action)
     {
-        SetNextTriggerTime(Now() + duration + Resolution(), action);
+        if (Now() + Resolution() < infra::TimePoint::max() - duration)
+            SetNextTriggerTime(Now() + duration + Resolution(), action);
     }
 
     void TimerSingleShot::ComputeNextTriggerTime()

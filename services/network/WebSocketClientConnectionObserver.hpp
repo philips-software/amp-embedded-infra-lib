@@ -161,6 +161,8 @@ namespace services
     public:
         HttpClientWebSocketInitiation(WebSocketClientObserverFactory& clientObserverFactory, HttpClientConnector& clientConnector,
             HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        HttpClientWebSocketInitiation(WebSocketClientObserverFactory& clientObserverFactory, HttpClientConnector& clientConnector,
+            HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator, NoAutoConnect);
 
         using HttpClientBasic::Detach;
 
@@ -176,6 +178,7 @@ namespace services
         void BodyComplete() override;
         void Done() override;
         void Error(bool intermittentFailure) override;
+        void CloseConnection() override;
         void ConnectionFailed(HttpClientObserverFactory::ConnectFailReason reason) override;
 
     private:

@@ -23,12 +23,12 @@ namespace services
         ConnectionWin(EventDispatcherWithNetwork& network, SOCKET socket);
         ~ConnectionWin();
 
-        virtual void RequestSendStream(std::size_t sendSize) override;
-        virtual std::size_t MaxSendStreamSize() const override;
-        virtual infra::SharedPtr<infra::StreamReaderWithRewinding> ReceiveStream() override;
-        virtual void AckReceived() override;
-        virtual void CloseAndDestroy() override;
-        virtual void AbortAndDestroy() override;
+        void RequestSendStream(std::size_t sendSize) override;
+        std::size_t MaxSendStreamSize() const override;
+        infra::SharedPtr<infra::StreamReaderWithRewinding> ReceiveStream() override;
+        void AckReceived() override;
+        void CloseAndDestroy() override;
+        void AbortAndDestroy() override;
 
         IPv4Address Ipv4Address() const;
         void SetObserver(infra::SharedPtr<services::ConnectionObserver> connectionObserver);

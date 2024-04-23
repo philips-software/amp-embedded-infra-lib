@@ -21,7 +21,7 @@ public:
 
     void ExpectConnectionEstablished(services::ClientConnectionObserverFactoryMock& factory)
     {
-        EXPECT_CALL(factory, ConnectionEstablishedMock(testing::_)).WillOnce(testing::Invoke([this](infra::Function<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver)
+        EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
             {
                 auto observer = connectionObserver.Emplace();
                 EXPECT_CALL(*observer, Attached());
@@ -31,7 +31,7 @@ public:
 
     void ExpectConnectionEstablishedThatIsImmediatelyClosed(services::ClientConnectionObserverFactoryMock& factory)
     {
-        EXPECT_CALL(factory, ConnectionEstablishedMock(testing::_)).WillOnce(testing::Invoke([this](infra::Function<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver)
+        EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
             {
                 auto observer = connectionObserver.Emplace();
                 EXPECT_CALL(*observer, Attached());
@@ -70,8 +70,8 @@ public:
 
     void CreateServerConnection()
     {
-        EXPECT_CALL(serverFactory, ConnectionAcceptedMock(testing::_, services::IPAddress(services::IPv4AddressLocalHost())))
-            .WillOnce(testing::Invoke([this](infra::Function<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver, services::IPAddress address)
+        EXPECT_CALL(serverFactory, ConnectionAccepted(testing::_, services::IPAddress(services::IPv4AddressLocalHost())))
+            .WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, services::IPAddress address)
                 {
                     auto observer = connectionObserver.Emplace();
                     EXPECT_CALL(*observer, Attached());
@@ -131,7 +131,6 @@ TEST_F(ExclusiveConnectionTest, construct_one_connection_via_Connect)
 
     EXPECT_CALL(*connectionObserver, Detaching());
     connection->ResetOwnership();
-    EXPECT_CALL(clientFactory, Destructor);
 }
 
 TEST_F(ExclusiveConnectionTest, construct_one_connection_but_fails)
@@ -142,7 +141,6 @@ TEST_F(ExclusiveConnectionTest, construct_one_connection_but_fails)
 
     EXPECT_CALL(clientFactory, ConnectionFailed(services::ClientConnectionObserverFactory::ConnectFailReason::refused));
     clientResult->ConnectionFailed(services::ClientConnectionObserverFactory::ConnectFailReason::refused);
-    EXPECT_CALL(clientFactory, Destructor);
 }
 
 TEST_F(ExclusiveConnectionTest, construct_one_connection_and_cancel)
@@ -153,7 +151,6 @@ TEST_F(ExclusiveConnectionTest, construct_one_connection_and_cancel)
 
     EXPECT_CALL(connectionFactory, CancelConnect(testing::Ref(*clientResult)));
     exclusive.CancelConnect(clientFactory);
-    EXPECT_CALL(clientFactory, Destructor);
 }
 
 TEST_F(ExclusiveConnectionTest, cancelation_of_unclaimed_connection_results_its_destruction)
@@ -168,14 +165,11 @@ TEST_F(ExclusiveConnectionTest, cancelation_of_unclaimed_connection_results_its_
     ExecuteAllActions();
 
     // Operate/check
-    EXPECT_CALL(clientFactory2, Destructor);
     exclusive.CancelConnect(clientFactory2);
 
     // Tear down
     EXPECT_CALL(*connectionObserver, Detaching());
     connection->ResetOwnership();
-
-    EXPECT_CALL(clientFactory, Destructor);
 }
 
 TEST_F(ExclusiveConnectionTest, construct_one_connection_via_Listen)
@@ -185,7 +179,6 @@ TEST_F(ExclusiveConnectionTest, construct_one_connection_via_Listen)
 
     EXPECT_CALL(*connectionObserver, Detaching());
     connection->ResetOwnership();
-    EXPECT_CALL(clientFactory, Destructor);
 }
 
 TEST_F(ExclusiveConnectionTest, constructing_second_connection_results_in_close_on_first_connection)
@@ -209,8 +202,6 @@ TEST_F(ExclusiveConnectionTest, constructing_second_connection_results_in_close_
 
     EXPECT_CALL(*connectionObserver, Detaching());
     connection->ResetOwnership();
-    EXPECT_CALL(clientFactory2, Destructor);
-    EXPECT_CALL(clientFactory, Destructor);
 }
 
 TEST_F(ExclusiveConnectionTest, constructing_second_connection_does_not_result_in_close_on_first_connection)
@@ -234,8 +225,6 @@ TEST_F(ExclusiveConnectionTest, constructing_second_connection_does_not_result_i
 
     EXPECT_CALL(*connectionObserver, Detaching());
     connection->ResetOwnership();
-    EXPECT_CALL(clientFactory2, Destructor);
-    EXPECT_CALL(clientFactory, Destructor);
 }
 
 TEST_F(ExclusiveConnectionTest, second_connection_is_immediately_requested_to_close_if_third_is_waiting)
@@ -275,7 +264,4 @@ TEST_F(ExclusiveConnectionTest, second_connection_is_immediately_requested_to_cl
 
     EXPECT_CALL(*connectionObserver, Detaching());
     connection->ResetOwnership();
-    EXPECT_CALL(clientFactory3, Destructor);
-    EXPECT_CALL(clientFactory2, Destructor);
-    EXPECT_CALL(clientFactory, Destructor);
 }

@@ -37,7 +37,7 @@ namespace services
     infra::SharedPtr<MethodSerializer> ServiceProxy::GrantSend()
     {
         onGranted();
-        return methodSerializer;
+        return std::move(methodSerializer);
     }
 
     uint32_t ServiceProxy::MaxMessageSize() const
@@ -74,7 +74,7 @@ namespace services
 
     void EchoOnStreams::ServiceDone()
     {
-        methodDeserializer = nullptr;
+        ReleaseDeserializer();
 
         if (readerPtr != nullptr)
             DataReceived();
@@ -116,9 +116,9 @@ namespace services
         return proxy.GrantSend();
     }
 
-    infra::SharedPtr<MethodDeserializer> EchoOnStreams::StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const infra::SharedPtr<MethodDeserializer>& deserializer)
+    infra::SharedPtr<MethodDeserializer> EchoOnStreams::StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, infra::SharedPtr<MethodDeserializer>&& deserializer)
     {
-        return deserializer;
+        return std::move(deserializer);
     }
 
     void EchoOnStreams::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -163,6 +163,7 @@ namespace services
     void EchoOnStreams::StartReceiveMessage()
     {
         auto start = bufferedReader->ConstructSaveMarker();
+        auto readerStart = readerPtr->ConstructSaveMarker();
         infra::DataInputStream::WithErrorPolicy stream(*bufferedReader, infra::softFail);
         infra::StreamErrorPolicy formatErrorPolicy(infra::softFail);
         infra::ProtoParser parser(stream, formatErrorPolicy);
@@ -173,6 +174,8 @@ namespace services
         {
             bufferedReader->Rewind(start);
             bufferedReader = infra::none;
+            readerPtr->Rewind(readerStart + receiveBuffer.size());
+            AckReceived();
             readerPtr = nullptr;
         }
         else if (formatErrorPolicy.Failed() || !contents.Is<infra::PartialProtoLengthDelimited>())
@@ -236,10 +239,15 @@ namespace services
             if (methodDeserializer->Failed())
             {
                 errorPolicy.MessageFormatError();
-                methodDeserializer = nullptr;
+                ReleaseDeserializer();
             }
             else
                 methodDeserializer->ExecuteMethod();
         }
+    }
+
+    void EchoOnStreams::ReleaseDeserializer()
+    {
+        methodDeserializer = nullptr;
     }
 }

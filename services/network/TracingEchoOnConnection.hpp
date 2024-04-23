@@ -20,17 +20,18 @@ namespace services
     protected:
         // Implementation of EchoOnConnection
         infra::SharedPtr<MethodSerializer> GrantSend(ServiceProxy& proxy) override;
-        infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const infra::SharedPtr<MethodDeserializer>& deserializer) override;
+        infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, infra::SharedPtr<MethodDeserializer>&& deserializer) override;
+        void ReleaseDeserializer() override;
 
     private:
         // Implementation of MethodSerializer
-        virtual bool Serialize(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        virtual void SerializationDone() override;
+        bool Serialize(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        void SerializationDone() override;
 
         // Implementation of MethodDeserializer
-        virtual void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
-        virtual void ExecuteMethod() override;
-        virtual bool Failed() const override;
+        void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
+        void ExecuteMethod() override;
+        bool Failed() const override;
 
     private:
         void SendingMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents) const;

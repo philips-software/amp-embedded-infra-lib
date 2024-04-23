@@ -61,6 +61,11 @@ namespace services
         datagrams.push_back(datagram);
     }
 
+    bool EventDispatcherWithNetwork::ConnectionsOpen() const
+    {
+        return !connectors.empty() || !connections.empty();
+    }
+
     infra::SharedPtr<void> EventDispatcherWithNetwork::Listen(uint16_t port, services::ServerConnectionObserverFactory& factory, IPVersions versions)
     {
         assert(versions != IPVersions::ipv6);
@@ -215,8 +220,11 @@ namespace services
             if (FD_ISSET(listener.listenSocket, &readFileDescriptors))
                 listener.Accept();
 
-        for (auto& connector : connectors)
+        for (auto index = connectors.begin(); index != connectors.end();)
         {
+            auto& connector = *index;
+            ++index;
+
             if (FD_ISSET(connector.connectSocket, &writeFileDescriptors))
                 connector.Connected();
             else if (FD_ISSET(connector.connectSocket, &exceptFileDescriptors))
