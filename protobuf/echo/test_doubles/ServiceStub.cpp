@@ -1,4 +1,5 @@
 #include "protobuf/echo/test_doubles/ServiceStub.hpp"
+#include <cstdint>
 
 namespace services
 {
@@ -26,8 +27,9 @@ namespace services
         return value;
     }
 
-    ServiceStub::ServiceStub(Echo& echo)
+    ServiceStub::ServiceStub(Echo& echo, uint32_t serviceId)
         : Service(echo)
+        , serviceId(serviceId)
     {}
 
     bool ServiceStub::AcceptsService(uint32_t id) const
@@ -55,8 +57,9 @@ namespace services
         }
     }
 
-    ServiceStubProxy::ServiceStubProxy(services::Echo& echo)
+    ServiceStubProxy::ServiceStubProxy(services::Echo& echo, uint32_t serviceId)
         : services::ServiceProxy(echo, maxMessageSize)
+        , serviceId(serviceId)
     {}
 
     void ServiceStubProxy::Method(uint32_t value)

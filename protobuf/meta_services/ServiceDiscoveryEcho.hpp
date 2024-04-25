@@ -26,15 +26,25 @@ namespace application
 
         //Implementation of services::Service
         bool AcceptsService(uint32_t id) const override;
-        // infra::SharedPtr<services::MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const services::EchoErrorPolicy& errorPolicy) override;
+        infra::SharedPtr<services::MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const services::EchoErrorPolicy& errorPolicy) override;
 
         //Implementation of services::Echo
         void RequestSend(ServiceProxy& serviceProxy) override;
         void ServiceDone() override;
         services::MethodSerializerFactory& SerializerFactory() override;
 
-    protected:
-        bool IsProxyServiceSupported(uint32_t& serviceId) const;
+        void RegisterObserver(infra::Observer<Service, Echo>* observer) override;
+        void UnregisterObserver(infra::Observer<Service, Echo>* observer) override;
+
+    private:
+        infra::Optional<uint32_t> FirstSupportedServiceId(uint32_t startServiceId, uint32_t endServiceId);
+        bool IsProxyServiceSupported(uint32_t serviceId) const;
+        infra::SharedPtr<services::MethodDeserializer> StartProxyServiceMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const services::EchoErrorPolicy& errorPolicy);
+        services::Echo& UpstreamRpc();
+        void ServicesChangeNotification();
+
+    private:
+        bool notifyServiceChanges = false;
     };
 }
 

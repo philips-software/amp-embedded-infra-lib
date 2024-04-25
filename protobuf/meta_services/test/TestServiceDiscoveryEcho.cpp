@@ -40,26 +40,6 @@ namespace
         MOCK_METHOD(void, NoServiceSupportedMock, ());
         MOCK_METHOD(void, ServicesChangedMock, ());
     };
-
-    class ServiceStubWithCustomServiceId
-        : public services::ServiceStub
-    {
-    public:
-        ServiceStubWithCustomServiceId(services::Echo& echo, uint32_t serviceId)
-            : services::ServiceStub(echo)
-            , serviceId(serviceId)
-        {}
-
-        virtual ~ServiceStubWithCustomServiceId() = default;
-
-        bool AcceptsService(uint32_t serviceId) const override
-        {
-            return this->serviceId == serviceId;
-        }
-
-    private:
-        const uint32_t serviceId;
-    };
 };
 
 class ServiceDiscoveryTest
@@ -74,9 +54,9 @@ public:
     application::ServiceDiscoveryEcho serviceDiscoveryEcho{ echo };
 };
 
-TEST_F(ServiceDiscoveryTest, return_no_service)
+ TEST_F(ServiceDiscoveryTest, return_no_service)
 {
-    ServiceStubWithCustomServiceId serviceMock{ serviceDiscoveryEcho, 5 };
+    services::ServiceStub service5{ serviceDiscoveryEcho, 5 };
 
     EXPECT_CALL(serviceDiscoveryResponse, NoServiceSupportedMock);
 
@@ -88,7 +68,7 @@ TEST_F(ServiceDiscoveryTest, return_no_service)
 
 TEST_F(ServiceDiscoveryTest, return_service)
 {
-    ServiceStubWithCustomServiceId serviceMock{ serviceDiscoveryEcho, 5 };
+    services::ServiceStub service5{ serviceDiscoveryEcho, 5 };
 
     EXPECT_CALL(serviceDiscoveryResponse, FirstServiceSupportedMock(5));
 
@@ -100,8 +80,8 @@ TEST_F(ServiceDiscoveryTest, return_service)
 
 TEST_F(ServiceDiscoveryTest, return_service_with_lowest_id)
 {
-    ServiceStubWithCustomServiceId serviceMock{ serviceDiscoveryEcho, 5 };
-    ServiceStubWithCustomServiceId serviceMock2{ serviceDiscoveryEcho, 6 };
+    services::ServiceStub service5{ serviceDiscoveryEcho, 5 };
+    services::ServiceStub service6{ serviceDiscoveryEcho, 6 };
 
     EXPECT_CALL(serviceDiscoveryResponse, FirstServiceSupportedMock(5));
 
@@ -111,16 +91,27 @@ TEST_F(ServiceDiscoveryTest, return_service_with_lowest_id)
         });
 }
 
-TEST_F(ServiceDiscoveryTest, DISABLED_notify_service_change)
+TEST_F(ServiceDiscoveryTest, notify_service_change)
 {
     proxy.RequestSend([this]
         {
             proxy.NotifyServiceChanges(true);
         });
+    
+    infra::Optional<services::ServiceStub> service5;
 
     EXPECT_CALL(serviceDiscoveryResponse, ServicesChangedMock());
+    service5.Emplace(serviceDiscoveryEcho, 5);
 
-    ServiceStubWithCustomServiceId serviceMock{ serviceDiscoveryEcho, 5 };
+    EXPECT_CALL(serviceDiscoveryResponse, ServicesChangedMock());
+    service5 = infra::none;
+
+    proxy.RequestSend([this]
+    {
+        proxy.NotifyServiceChanges(false);
+    });
+
+    service5.Emplace(serviceDiscoveryEcho, 5);
 }
 
 TEST_F(ServiceDiscoveryTest, find_own_service_id)
@@ -130,5 +121,48 @@ TEST_F(ServiceDiscoveryTest, find_own_service_id)
     proxy.RequestSend([this]
         {
             proxy.FindFirstServiceInRange(service_discovery::ServiceDiscovery::serviceId, service_discovery::ServiceDiscovery::serviceId);
+        });
+}
+
+TEST_F(ServiceDiscoveryTest, start_proxy_service_method)
+{
+    services::ServiceStub service1{ serviceDiscoveryEcho, 1 };
+    services::ServiceStubProxy service1Proxy{ echo, 1 };
+
+    services::ServiceStub service2{ serviceDiscoveryEcho, 2 };
+    services::ServiceStubProxy service2Proxy{ echo, 2 };
+
+    EXPECT_CALL(service1, Method(11)).WillOnce(testing::InvokeWithoutArgs([&service1]
+        {
+            service1.MethodDone();
+        }));
+
+    service1Proxy.RequestSend([&service1Proxy]
+        {
+            service1Proxy.Method(11);
+        });
+
+    EXPECT_CALL(service2, Method(22));
+    service2Proxy.RequestSend([&service2Proxy]
+        {
+            service2Proxy.Method(22);
+        });
+}
+
+TEST_F(ServiceDiscoveryTest, forward_methods_only_to_first_matching_proxy_service)
+{
+    services::ServiceStub service1{ serviceDiscoveryEcho, 1 };
+    services::ServiceStub service1_{ serviceDiscoveryEcho, 1 };
+    services::ServiceStubProxy service1Proxy{ echo, 1 };
+
+
+    EXPECT_CALL(service1, Method(11)).WillOnce(testing::InvokeWithoutArgs([&service1]
+        {
+            service1.MethodDone();
+        }));
+
+    service1Proxy.RequestSend([&service1Proxy]
+        {
+            service1Proxy.Method(11);
         });
 }
