@@ -9,15 +9,16 @@
 
 namespace services
 {
-    void MbedTlsSession::Serialize(MbedTlsSession& in, network::MbedTlsPersistedSession& out)
+    int MbedTlsSession::Serialize(MbedTlsSession& in, network::MbedTlsPersistedSession& out)
     {
         size_t outputLen;
         out.clientSessionObtained = in.clientSessionObtained;
         out.identifier = in.identifier;
         out.serializedSession.resize(out.serializedSession.max_size());
         auto result = mbedtls_ssl_session_save(&in.session, out.serializedSession.begin(), out.serializedSession.max_size(), &outputLen);
-        out.serializedSession.resize(outputLen);
-        really_assert(result == 0);
+        if (result == 0)
+            out.serializedSession.resize(outputLen);
+        return result;
     }
 
     MbedTlsSession::MbedTlsSession(Sha256::Digest identifier)
@@ -174,7 +175,7 @@ namespace services
     {
         storage.emplace_back(hasher.HashHostname(hostname), [this](MbedTlsSession* session)
             {
-                SessionUpdated(session);
+                SerializeSessionToFlash(session);
             });
         return &storage.back();
     }
@@ -183,7 +184,7 @@ namespace services
     {
         storage.emplace_back(hasher.HashIP(address), [this](MbedTlsSession* session)
             {
-                SessionUpdated(session);
+                SerializeSessionToFlash(session);
             });
         return &storage.back();
     }
@@ -231,25 +232,28 @@ namespace services
         nvm.Write();
     }
 
-    void MbedTlsSessionStoragePersistent::SessionUpdated(MbedTlsSession* session)
+    void MbedTlsSessionStoragePersistent::SerializeSessionToFlash(MbedTlsSession* session)
     {
         network::MbedTlsPersistedSession* persistedSession = FindPersistedSession(session->Identifier());
 
         if (persistedSession == nullptr)
             persistedSession = &NewPersistedSession();
 
-        MbedTlsSession::Serialize(*session, *persistedSession);
+        auto result = MbedTlsSession::Serialize(*session, *persistedSession);
 
-        nvm.Write();
+        if (result != 0)
+            nvm->erase(persistedSession);
+        else
+            nvm.Write();
     }
 
     void MbedTlsSessionStoragePersistent::LoadSessions()
     {
-        for (auto& sector : *nvm)
+        for (auto& persistedSession : *nvm)
         {
-            storage.emplace_back(sector, [this](MbedTlsSession* session)
+            storage.emplace_back(persistedSession, [this](MbedTlsSession* session)
                 {
-                    SessionUpdated(session);
+                    SerializeSessionToFlash(session);
                 });
         }
     }

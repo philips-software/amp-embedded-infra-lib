@@ -15,9 +15,6 @@
 
 namespace services
 {
-    class MbedTlsSessionStorageRam;
-    class MbedTlsSessionStoragePersistent;
-
     class MbedTlsSession
     {
     public:
@@ -25,8 +22,7 @@ namespace services
         explicit MbedTlsSession(network::MbedTlsPersistedSession&);
         virtual ~MbedTlsSession();
 
-        static void Serialize(MbedTlsSession& in, network::MbedTlsPersistedSession& out);
-        static void Deserialize(network::MbedTlsPersistedSession& in, MbedTlsSession& out);
+        static int Serialize(MbedTlsSession& in, network::MbedTlsPersistedSession& out);
 
         virtual void Reinitialize();
         virtual void Obtained();
@@ -36,9 +32,6 @@ namespace services
         virtual const infra::BoundedVector<uint8_t>& Identifier() const;
 
     private:
-        friend class MbedTlsSessionStorageRam;
-        friend class MbedTlsSessionStoragePersistent;
-
         mbedtls_ssl_session session;
         bool clientSessionObtained = false;
         infra::BoundedVector<uint8_t>::WithMaxSize<32> identifier;
@@ -83,8 +76,6 @@ namespace services
         void Obtained() override;
 
     private:
-        friend class MbedTlsSessionStoragePersistent;
-
         infra::Function<void(MbedTlsSession*)> onObtained;
     };
 
@@ -146,7 +137,7 @@ namespace services
         void Clear() override;
 
     private:
-        void SessionUpdated(MbedTlsSession* session);
+        void SerializeSessionToFlash(MbedTlsSession* session);
         void LoadSessions();
         network::MbedTlsPersistedSession* FindPersistedSession(const infra::BoundedVector<uint8_t>& identifier);
         network::MbedTlsPersistedSession& NewPersistedSession();
