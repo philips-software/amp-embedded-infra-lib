@@ -8,6 +8,7 @@
 #include "gtest/gtest.h"
 #include <cstdint>
 #include <sys/types.h>
+#include <tuple>
 
 namespace
 {
@@ -55,22 +56,23 @@ public:
 
     void FindFirstServiceInRange(uint32_t startServiceId, uint32_t endServiceId)
     {
-        proxy.RequestSend([this, startServiceId, endServiceId]
-        {
-            proxy.FindFirstServiceInRange(startServiceId, endServiceId);
-        });
+        auto serviceRange = std::tie(startServiceId, endServiceId);
+        proxy.RequestSend([this, &serviceRange]
+            {
+                proxy.FindFirstServiceInRange(std::get<0>(serviceRange), std::get<1>(serviceRange));
+            });
     }
 
     void NotifyServiceChanges(bool allow)
     {
         proxy.RequestSend([this, allow]
-        {
-            proxy.NotifyServiceChanges(allow);
-        });
+            {
+                proxy.NotifyServiceChanges(allow);
+            });
     }
 };
 
- TEST_F(ServiceDiscoveryTest, return_no_service)
+TEST_F(ServiceDiscoveryTest, return_no_service)
 {
     services::ServiceStub service5{ serviceDiscoveryEcho, 5 };
 
@@ -101,7 +103,7 @@ TEST_F(ServiceDiscoveryTest, return_service_with_lowest_id)
 TEST_F(ServiceDiscoveryTest, notify_service_change)
 {
     NotifyServiceChanges(true);
-    
+
     infra::Optional<services::ServiceStub> service5;
 
     EXPECT_CALL(serviceDiscoveryResponse, ServicesChangedMock());
@@ -152,7 +154,6 @@ TEST_F(ServiceDiscoveryTest, forward_methods_only_to_first_matching_proxy_servic
     services::ServiceStub service1{ serviceDiscoveryEcho, 1 };
     services::ServiceStub service1_{ serviceDiscoveryEcho, 1 };
     services::ServiceStubProxy service1Proxy{ echo, 1 };
-
 
     EXPECT_CALL(service1, Method(11)).WillOnce(testing::InvokeWithoutArgs([&service1]
         {
