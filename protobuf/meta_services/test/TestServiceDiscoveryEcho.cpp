@@ -52,6 +52,22 @@ public:
     testing::StrictMock<ServiceDiscoveryResponseMock> serviceDiscoveryResponse{ echo };
 
     application::ServiceDiscoveryEcho serviceDiscoveryEcho{ echo };
+
+    void FindFirstServiceInRange(uint32_t startServiceId, uint32_t endServiceId)
+    {
+        proxy.RequestSend([this, startServiceId, endServiceId]
+        {
+            proxy.FindFirstServiceInRange(startServiceId, endServiceId);
+        });
+    }
+
+    void NotifyServiceChanges(bool allow)
+    {
+        proxy.RequestSend([this, allow]
+        {
+            proxy.NotifyServiceChanges(allow);
+        });
+    }
 };
 
  TEST_F(ServiceDiscoveryTest, return_no_service)
@@ -60,10 +76,7 @@ public:
 
     EXPECT_CALL(serviceDiscoveryResponse, NoServiceSupportedMock);
 
-    proxy.RequestSend([this]
-        {
-            proxy.FindFirstServiceInRange(0, 4);
-        });
+    FindFirstServiceInRange(0, 4);
 }
 
 TEST_F(ServiceDiscoveryTest, return_service)
@@ -72,10 +85,7 @@ TEST_F(ServiceDiscoveryTest, return_service)
 
     EXPECT_CALL(serviceDiscoveryResponse, FirstServiceSupportedMock(5));
 
-    proxy.RequestSend([this]
-        {
-            proxy.FindFirstServiceInRange(0, 15);
-        });
+    FindFirstServiceInRange(0, 15);
 }
 
 TEST_F(ServiceDiscoveryTest, return_service_with_lowest_id)
@@ -85,18 +95,12 @@ TEST_F(ServiceDiscoveryTest, return_service_with_lowest_id)
 
     EXPECT_CALL(serviceDiscoveryResponse, FirstServiceSupportedMock(5));
 
-    proxy.RequestSend([this]
-        {
-            proxy.FindFirstServiceInRange(0, 15);
-        });
+    FindFirstServiceInRange(0, 15);
 }
 
 TEST_F(ServiceDiscoveryTest, notify_service_change)
 {
-    proxy.RequestSend([this]
-        {
-            proxy.NotifyServiceChanges(true);
-        });
+    NotifyServiceChanges(true);
     
     infra::Optional<services::ServiceStub> service5;
 
@@ -106,10 +110,7 @@ TEST_F(ServiceDiscoveryTest, notify_service_change)
     EXPECT_CALL(serviceDiscoveryResponse, ServicesChangedMock());
     service5 = infra::none;
 
-    proxy.RequestSend([this]
-    {
-        proxy.NotifyServiceChanges(false);
-    });
+    NotifyServiceChanges(false);
 
     service5.Emplace(serviceDiscoveryEcho, 5);
 }
@@ -118,10 +119,7 @@ TEST_F(ServiceDiscoveryTest, find_own_service_id)
 {
     EXPECT_CALL(serviceDiscoveryResponse, FirstServiceSupportedMock(service_discovery::ServiceDiscovery::serviceId));
 
-    proxy.RequestSend([this]
-        {
-            proxy.FindFirstServiceInRange(service_discovery::ServiceDiscovery::serviceId, service_discovery::ServiceDiscovery::serviceId);
-        });
+    FindFirstServiceInRange(service_discovery::ServiceDiscovery::serviceId, service_discovery::ServiceDiscovery::serviceId)
 }
 
 TEST_F(ServiceDiscoveryTest, start_proxy_service_method)

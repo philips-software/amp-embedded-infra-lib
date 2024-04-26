@@ -33,10 +33,10 @@ namespace application
         void ServiceDone() override;
         services::MethodSerializerFactory& SerializerFactory() override;
 
+    private:
         void RegisterObserver(infra::Observer<Service, Echo>* observer) override;
         void UnregisterObserver(infra::Observer<Service, Echo>* observer) override;
 
-    private:
         infra::Optional<uint32_t> FirstSupportedServiceId(uint32_t startServiceId, uint32_t endServiceId);
         bool IsProxyServiceSupported(uint32_t serviceId) const;
         infra::SharedPtr<services::MethodDeserializer> StartProxyServiceMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const services::EchoErrorPolicy& errorPolicy);
