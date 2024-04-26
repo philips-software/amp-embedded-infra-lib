@@ -133,7 +133,8 @@ namespace infra
 
     void TimerSingleShot::Start(Duration duration, const infra::Function<void()>& action)
     {
-        SetNextTriggerTime(Now() + duration + Resolution(), action);
+        if (Now() + Resolution() < infra::TimePoint::max() - duration)
+            SetNextTriggerTime(Now() + duration + Resolution(), action);
     }
 
     void TimerSingleShot::ComputeNextTriggerTime()

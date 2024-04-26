@@ -340,6 +340,7 @@ namespace services
         ConnectionFactoryWithNameResolver& connectionFactoryWithNameResolver;
         ClientConnectionObserverFactoryWithNameResolver* clientConnectionFactory = nullptr;
         infra::IntrusiveList<ClientConnectionObserverFactoryWithNameResolver> waitingConnects;
+        infra::BoundedConstString hostname;
     };
 }
 

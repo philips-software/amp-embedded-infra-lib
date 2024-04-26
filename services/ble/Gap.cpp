@@ -196,18 +196,23 @@ namespace services
     {
         const uint8_t lengthOffset = 0;
         const uint8_t advertisingTypeOffset = 1;
-        const uint8_t payloadStartOffset = 2;
-        infra::ConstByteRange searchRange = data;
+        const uint8_t headerSize = 2;
 
-        while (!searchRange.empty() && searchRange[lengthOffset] != 0)
+        infra::ConstByteRange advData = data;
+
+        while (!advData.empty())
         {
-            auto advertisingType = searchRange[advertisingTypeOffset];
-            auto payloadSize = searchRange[lengthOffset] + 1;
-            infra::ConstByteRange payload(searchRange.begin() + payloadStartOffset, searchRange.begin() + payloadSize);
-            searchRange.shrink_from_front_to(searchRange.size() - payloadSize);
+            size_t elementSize = std::min<size_t>(advData[lengthOffset] + 1, advData.size());
 
-            if (payload.size() > 1 && advertisingType == static_cast<uint8_t>(type))
-                return payload;
+            auto element = infra::Head(advData, elementSize);
+
+            if (element.size() == 1 || (element.size() != element[lengthOffset] + 1))
+                return infra::ConstByteRange();
+
+            if (element[advertisingTypeOffset] == static_cast<uint8_t>(type))
+                return infra::DiscardHead(element, headerSize);
+
+            advData = infra::DiscardHead(advData, element.size());
         }
 
         return infra::ConstByteRange();
