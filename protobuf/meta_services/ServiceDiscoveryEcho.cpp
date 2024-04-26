@@ -9,15 +9,19 @@ namespace application
 {
     void ServiceDiscoveryEcho::FindFirstServiceInRange(uint32_t startServiceId, uint32_t endServiceId)
     {
-        auto service = FirstSupportedServiceId(startServiceId, endServiceId);
-
-        service_discovery::ServiceDiscoveryResponseProxy::RequestSend([this, service]
-            {
-                if (service)
-                    FirstServiceSupported(*service);
-                else
+        if (auto service = FirstSupportedServiceId(startServiceId, endServiceId); service)
+        {
+            auto serviceId = *service;
+            service_discovery::ServiceDiscoveryResponseProxy::RequestSend([this, serviceId]
+                {
+                    FirstServiceSupported(serviceId);
+                });
+        }
+        else
+            service_discovery::ServiceDiscoveryResponseProxy::RequestSend([this]
+                {
                     NoServiceSupported();
-            });
+                });
 
         MethodDone();
     }

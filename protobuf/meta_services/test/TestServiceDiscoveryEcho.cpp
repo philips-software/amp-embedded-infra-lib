@@ -119,7 +119,7 @@ TEST_F(ServiceDiscoveryTest, find_own_service_id)
 {
     EXPECT_CALL(serviceDiscoveryResponse, FirstServiceSupportedMock(service_discovery::ServiceDiscovery::serviceId));
 
-    FindFirstServiceInRange(service_discovery::ServiceDiscovery::serviceId, service_discovery::ServiceDiscovery::serviceId)
+    FindFirstServiceInRange(service_discovery::ServiceDiscovery::serviceId, service_discovery::ServiceDiscovery::serviceId);
 }
 
 TEST_F(ServiceDiscoveryTest, start_proxy_service_method)
