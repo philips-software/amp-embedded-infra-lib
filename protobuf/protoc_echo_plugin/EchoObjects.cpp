@@ -359,7 +359,7 @@ namespace application
                 uint32_t max = 0;
                 GenerateMaxMessageSizeVisitor visitor(max);
                 field.type->Accept(visitor);
-                maxMessageSize = field.maxArraySize * max;
+                maxMessageSize += field.maxArraySize * max;
             }
 
             void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
