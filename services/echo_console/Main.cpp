@@ -1,5 +1,7 @@
 #include "args.hxx"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
+#include <ostream>
+#include <vector>
 #ifdef EMIL_HAL_WINDOWS
 #include "hal/windows/UartWindows.hpp"
 #else
@@ -16,6 +18,7 @@
 #include "services/util/MessageCommunicationCobs.hpp"
 #include "services/util/MessageCommunicationWindowed.hpp"
 #include <deque>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 
@@ -307,7 +310,25 @@ int main(int argc, char* argv[], const char* env[])
 
         application::EchoRoot root;
 
-        for (const auto& path : paths)
+        namespace fs = std::filesystem;
+
+        std::vector<fs::path> pbFiles;
+
+        for (const fs::path path : paths)
+        {
+            if (fs::is_directory(path))
+                for (const fs::directory_entry& entry : fs::recursive_directory_iterator(path))
+                {
+                    auto path = entry.path();
+
+                    if (path.extension() == ".pb" && path.parent_path().string().rfind("\\echo") != std::string::npos)
+                        pbFiles.push_back(path);
+                }
+            else if (path.extension() == ".pb")
+                pbFiles.push_back(path);
+        }
+
+        for (const auto& path : pbFiles)
         {
             std::ifstream stream(path, std::ios::binary);
             if (!stream)
