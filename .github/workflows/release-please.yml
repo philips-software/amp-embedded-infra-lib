@@ -43,10 +43,10 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
     steps:
-      - uses: actions/checkout@1d96c772d19495a3b5c517cd2bc0cb401ea0529f # v4.1.3
+      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
         with:
           persist-credentials: false
-      - uses: hendrikmuhs/ccache-action@faf867a11c028c0b483fb2ae72b6fc8f7d842714 # v1.2.12
+      - uses: hendrikmuhs/ccache-action@c92f40bee50034e84c763e33b317c77adaa81c92 # v1.2.13
         with:
           key: ${{ github.job }}-${{ matrix.os }}
           variant: sccache
