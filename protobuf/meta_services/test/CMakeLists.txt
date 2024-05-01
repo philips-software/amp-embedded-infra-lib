@@ -3,6 +3,7 @@ emil_build_for(protobuf.meta_services_test BOOL EMIL_BUILD_TESTS)
 emil_add_test(protobuf.meta_services_test)
 
 target_sources(protobuf.meta_services_test PRIVATE
+    TestPeerServiceDiscovererEcho.cpp
     TestServiceDiscoveryEcho.cpp
 )
 

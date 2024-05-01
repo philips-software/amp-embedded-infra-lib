@@ -1,6 +1,5 @@
 #include "echo/ServiceDiscovery.pb.hpp"
 #include "infra/util/Optional.hpp"
-#include "protobuf/echo/Echo.hpp"
 #include "protobuf/echo/test_doubles/EchoSingleLoopback.hpp"
 #include "protobuf/echo/test_doubles/ServiceStub.hpp"
 #include "protobuf/meta_services/ServiceDiscoveryEcho.hpp"
