@@ -2,7 +2,7 @@
 #define INFRA_OPTIONAL_HPP
 
 //  Optional<T> is a class that either holds an object of type T, or it does not. With
-//  this class, you can delay construction of an object, or hasten destruction. The storage
+//  this class, you can delay construction of an object, or hasten destruction. The *this
 //  needed is allocated inside of the optional. Basically, sizeof(Optional<T>) == sizeof(T) + 1.
 //  It uses pointer-like operations for access. Examples:
 //
@@ -18,6 +18,7 @@
 #include "infra/util/StaticStorage.hpp"
 #include <cassert>
 #include <memory>
+#include <optional>
 #include <type_traits>
 
 namespace infra
@@ -30,7 +31,7 @@ namespace infra
     // clang-format on
 
     template<class T>
-    class Optional
+    class Optional : public std::optional<T>
     {
     public:
         constexpr Optional() = default;
@@ -43,27 +44,17 @@ namespace infra
         template<class... Args>
         explicit Optional(InPlace, Args&&... args);
 
-        ~Optional();
-
         Optional& operator=(const Optional& other);
         Optional& operator=(Optional&& other) noexcept;
         Optional& operator=(const None&);
-        Optional& operator=(const T& value);
-        Optional& operator=(T&& value);
+
+        using std::optional<T>::operator=;
 
         template<class... Args>
         void Emplace(Args&&... args);
         template<class U, class... Args>
         void Emplace(std::initializer_list<U> list, Args&&... args);
 
-        const T& operator*() const;
-        T& operator*();
-        const T* operator->() const;
-        T* operator->();
-
-        explicit operator bool() const;
-
-        bool operator!() const;
         bool operator==(const Optional& other) const;
         bool operator!=(const Optional& other) const;
 
@@ -87,36 +78,12 @@ namespace infra
             return y != x;
         }
 
-        friend bool operator==(const Optional& x, const T& y)
-        {
-            return x && *x == y;
-        }
-
-        friend bool operator!=(const Optional& x, const T& y)
-        {
-            return !(x == y);
-        }
-
-        friend bool operator==(const T& x, const Optional& y)
-        {
-            return y == x;
-        }
-
-        friend bool operator!=(const T& x, const Optional& y)
-        {
-            return y != x;
-        }
-
         T ValueOr(T&& value) const;
         const T& ValueOr(const T& value) const;
         T ValueOrDefault() const;
 
     private:
         void Reset();
-
-    private:
-        bool initialized = false;
-        StaticStorage<T> data;
     };
 
     template<class T>
@@ -249,12 +216,6 @@ namespace infra
     }
 
     template<class T>
-    Optional<T>::~Optional()
-    {
-        Reset();
-    }
-
-    template<class T>
     Optional<T>& Optional<T>::operator=(const Optional& other)
     {
         if (this != &other)
@@ -288,68 +249,12 @@ namespace infra
     }
 
     template<class T>
-    Optional<T>& Optional<T>::operator=(const T& value)
-    {
-        Reset();
-        Emplace(value);
-        return *this;
-    }
-
-    template<class T>
-    Optional<T>& Optional<T>::operator=(T&& value)
-    {
-        Reset();
-        Emplace(std::forward<T>(value));
-        return *this;
-    }
-
-    template<class T>
-    const T& Optional<T>::operator*() const
-    {
-        assert(initialized);
-        return *data;
-    }
-
-    template<class T>
-    T& Optional<T>::operator*()
-    {
-        assert(initialized);
-        return *data;
-    }
-
-    template<class T>
-    const T* Optional<T>::operator->() const
-    {
-        assert(initialized);
-        return &*data;
-    }
-
-    template<class T>
-    T* Optional<T>::operator->()
-    {
-        assert(initialized);
-        return &*data;
-    }
-
-    template<class T>
-    Optional<T>::operator bool() const
-    {
-        return initialized;
-    }
-
-    template<class T>
-    bool Optional<T>::operator!() const
-    {
-        return !initialized;
-    }
-
-    template<class T>
     bool Optional<T>::operator==(const Optional& other) const
     {
-        if (initialized && other.initialized)
+        if (static_cast<bool>(*this) && static_cast<bool>(other))
             return **this == *other;
         else
-            return initialized == other.initialized;
+            return static_cast<bool>(*this) == static_cast<bool>(other);
     }
 
     template<class T>
@@ -361,7 +266,7 @@ namespace infra
     template<class T>
     T Optional<T>::ValueOr(T&& value) const
     {
-        if (initialized)
+        if (static_cast<bool>(*this))
             return **this;
         else
             return std::move(value);
@@ -370,7 +275,7 @@ namespace infra
     template<class T>
     const T& Optional<T>::ValueOr(const T& value) const
     {
-        if (initialized)
+        if (static_cast<bool>(*this))
             return **this;
         else
             return value;
@@ -379,7 +284,7 @@ namespace infra
     template<class T>
     T Optional<T>::ValueOrDefault() const
     {
-        if (initialized)
+        if (static_cast<bool>(*this))
             return **this;
         else
             return T();
@@ -389,28 +294,20 @@ namespace infra
     template<class... Args>
     void Optional<T>::Emplace(Args&&... args)
     {
-        Reset();
-        data.Construct(std::forward<Args>(args)...);
-        initialized = true;
+        std::optional<T>::emplace(std::forward<Args>(args)...);
     }
 
     template<class T>
     template<class U, class... Args>
     void Optional<T>::Emplace(std::initializer_list<U> list, Args&&... args)
     {
-        Reset();
-        data.Construct(list, std::forward<Args>(args)...);
-        initialized = true;
+        std::optional<T>::emplace(list, std::forward<Args>(args)...);
     }
 
     template<class T>
     void Optional<T>::Reset()
     {
-        if (initialized)
-        {
-            data.Destruct();
-            initialized = false;
-        }
+        static_cast<std::optional<T>&>(*this) = std::nullopt;
     }
 
     template<class T>
