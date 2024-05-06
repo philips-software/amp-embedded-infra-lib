@@ -75,6 +75,7 @@ namespace application
                 {
                     observer.ServiceDiscoveryComplete(services.range());
                 });
+            MethodDone();
         }
 
         void FirstServiceSupported(uint32_t id) override
@@ -88,7 +89,10 @@ namespace application
         }
 
         void ServicesChanged() override
-        {}
+        {
+            Initialize();
+            
+        }
 
     private:
         void Initialize()
@@ -218,3 +222,20 @@ TEST_F(PeerServiceDiscovererTest, NoServiceSupported_ends_discovery_with_two_ser
 
     ServiceDiscoveryComplete(services);
 }
+
+TEST_F(PeerServiceDiscovererTest, ServicesChanged_triggers_rediscovery)
+{
+    StartInitialServiceDiscovery();
+
+    std::array<uint32_t, 2> services{ 5, 10 };
+    QueryServices(services);
+
+    ServiceDiscoveryComplete(services);
+
+    EXPECT_CALL(observer, ServiceDiscoveryStarted());
+    serviceDiscoveryResponse.RequestSend([this]
+    {
+        serviceDiscoveryResponse.ServicesChanged();
+    });
+}
+
