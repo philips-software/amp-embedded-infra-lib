@@ -18,20 +18,20 @@ class CppFormatterTest
 {
 public:
     CppFormatterTest()
-        : stream(infra::inPlace, &stringstream)
-        , printer(infra::inPlace, &*stream, '$', nullptr)
+        : stream(std::in_place, &stringstream)
+        , printer(std::in_place, &*stream, '$', nullptr)
     {}
 
     void ExpectPrinted(const std::string& text)
     {
-        printer = infra::none;
-        stream = infra::none;
+        printer = std::nullopt;
+        stream = std::nullopt;
         EXPECT_EQ(text, stringstream.str());
     }
 
     std::ostringstream stringstream;
-    infra::Optional<google::protobuf::io::OstreamOutputStream> stream;
-    infra::Optional<google::protobuf::io::Printer> printer;
+    std::optional<google::protobuf::io::OstreamOutputStream> stream;
+    std::optional<google::protobuf::io::Printer> printer;
 };
 
 TEST_F(CppFormatterTest, empty_Entities_prints_nothing)

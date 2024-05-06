@@ -40,7 +40,7 @@ namespace infra
 
     void RetryPolicyExponentialBackoff::Reset()
     {
-        retryDelay = infra::none;
+        retryDelay = std::nullopt;
     }
 
     infra::Duration RetryPolicyExponentialBackoff::InitialDelay(bool intermittentFailure) const

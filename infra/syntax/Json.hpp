@@ -293,12 +293,12 @@ namespace infra
         JsonArray GetArray(infra::BoundedConstString key);
         JsonValue GetValue(infra::BoundedConstString key);
 
-        infra::Optional<JsonString> GetOptionalString(infra::BoundedConstString key);
-        infra::Optional<JsonFloat> GetOptionalFloat(infra::BoundedConstString key);
-        infra::Optional<bool> GetOptionalBoolean(infra::BoundedConstString key);
-        infra::Optional<int32_t> GetOptionalInteger(infra::BoundedConstString key);
-        infra::Optional<JsonObject> GetOptionalObject(infra::BoundedConstString key);
-        infra::Optional<JsonArray> GetOptionalArray(infra::BoundedConstString key);
+        std::optional<JsonString> GetOptionalString(infra::BoundedConstString key);
+        std::optional<JsonFloat> GetOptionalFloat(infra::BoundedConstString key);
+        std::optional<bool> GetOptionalBoolean(infra::BoundedConstString key);
+        std::optional<int32_t> GetOptionalInteger(infra::BoundedConstString key);
+        std::optional<JsonObject> GetOptionalObject(infra::BoundedConstString key);
+        std::optional<JsonArray> GetOptionalArray(infra::BoundedConstString key);
 
         bool operator==(const JsonObject& other) const;
         bool operator!=(const JsonObject& other) const;
@@ -311,7 +311,7 @@ namespace infra
         template<class T>
         T GetValue(infra::BoundedConstString key);
         template<class T>
-        infra::Optional<T> GetOptionalValue(infra::BoundedConstString key);
+        std::optional<T> GetOptionalValue(infra::BoundedConstString key);
 
     private:
         infra::BoundedConstString objectString;
@@ -355,14 +355,14 @@ namespace infra
     protected:
         explicit JsonIterator(infra::BoundedConstString objectString);
 
-        infra::Optional<JsonValue> ConvertValue(JsonToken::Token token);
+        std::optional<JsonValue> ConvertValue(JsonToken::Token token);
 
     private:
-        infra::Optional<JsonValue> ReadInteger(const JsonToken::Token& token);
-        infra::Optional<JsonValue> ReadObjectValue(const JsonToken::Token& token);
-        infra::Optional<JsonValue> ReadArrayValue(const JsonToken::Token& token);
-        infra::Optional<JsonToken::RightBrace> SearchObjectEnd();
-        infra::Optional<JsonToken::RightBracket> SearchArrayEnd();
+        std::optional<JsonValue> ReadInteger(const JsonToken::Token& token);
+        std::optional<JsonValue> ReadObjectValue(const JsonToken::Token& token);
+        std::optional<JsonValue> ReadArrayValue(const JsonToken::Token& token);
+        std::optional<JsonToken::RightBrace> SearchObjectEnd();
+        std::optional<JsonToken::RightBracket> SearchArrayEnd();
 
     protected:
         infra::BoundedConstString objectString;

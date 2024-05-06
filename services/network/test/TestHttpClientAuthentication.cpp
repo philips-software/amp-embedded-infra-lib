@@ -30,7 +30,7 @@ class HttpClientAuthenticationTest
 public:
     HttpClientAuthenticationTest()
     {
-        httpClient.Attach(infra::MakeContainedSharedObject(clientAuthentication, httpClientObserver.Emplace()));
+        httpClient.Attach(infra::MakeContainedSharedObject(clientAuthentication, httpClientObserver.emplace()));
         EXPECT_CALL(*httpClientObserver, Attached());
         clientAuthentication.Attach(httpClientObserver.MakePtr());
     }

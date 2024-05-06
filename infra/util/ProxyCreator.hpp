@@ -3,6 +3,7 @@
 
 #include "infra/util/Function.hpp"
 #include "infra/util/Optional.hpp"
+#include <optional>
 #include <tuple>
 
 namespace infra
@@ -70,7 +71,7 @@ namespace infra
         DelayedProxyCreator& operator=(const DelayedProxyCreator& other) = delete;
         ~DelayedProxyCreator();
 
-        void Emplace(ConstructionArgs... args);
+        void emplace(ConstructionArgs... args);
         void Destroy();
 
         T& operator*();
@@ -100,7 +101,7 @@ namespace infra
         virtual T& Get() = 0;
         virtual const T& Get() const = 0;
 
-        virtual void Emplace(ConstructionArgs... args) = 0;
+        virtual void emplace(ConstructionArgs... args) = 0;
         virtual void Destroy() = 0;
 
     private:
@@ -119,7 +120,7 @@ namespace infra
         ~CreatorBase() = default;
 
     protected:
-        virtual void Emplace(ConstructionArgs... args) = 0;
+        virtual void emplace(ConstructionArgs... args) = 0;
         virtual void Destroy() = 0;
 
     private:
@@ -136,9 +137,9 @@ namespace infra
     {
     public:
         Creator();
-        explicit Creator(infra::Function<void(infra::Optional<U>&, ConstructionArgs...)> emplaceFunction);
+        explicit Creator(infra::Function<void(std::optional<U>&, ConstructionArgs...)> emplaceFunction);
 
-        void Emplace(ConstructionArgs... args) override;
+        void emplace(ConstructionArgs... args) override;
         void Destroy() override;
 
         U& operator*();
@@ -153,8 +154,8 @@ namespace infra
         const U& GetObject() const;
 
     private:
-        infra::Optional<U> object;
-        infra::Function<void(infra::Optional<U>& object, ConstructionArgs... args)> emplaceFunction;
+        std::optional<U> object;
+        infra::Function<void(std::optional<U>& object, ConstructionArgs... args)> emplaceFunction;
     };
 
     template<class U, class... ConstructionArgs>
@@ -163,9 +164,9 @@ namespace infra
     {
     public:
         Creator();
-        explicit Creator(infra::Function<void(infra::Optional<U>&, ConstructionArgs...)> emplaceFunction);
+        explicit Creator(infra::Function<void(std::optional<U>&, ConstructionArgs...)> emplaceFunction);
 
-        void Emplace(ConstructionArgs... args) override;
+        void emplace(ConstructionArgs... args) override;
         void Destroy() override;
 
         U& operator*();
@@ -178,8 +179,8 @@ namespace infra
         const U& GetObject() const;
 
     private:
-        infra::Optional<U> object;
-        infra::Function<void(infra::Optional<U>& object, ConstructionArgs... args)> emplaceFunction;
+        std::optional<U> object;
+        infra::Function<void(std::optional<U>& object, ConstructionArgs... args)> emplaceFunction;
     };
 
     template<class T, class... ConstructionArgs>
@@ -189,7 +190,7 @@ namespace infra
     public:
         explicit CreatorExternal(const infra::Function<T&(ConstructionArgs...)>& emplaceFunction, const infra::Function<void()>& destroyFunction);
 
-        void Emplace(ConstructionArgs... args) override;
+        void emplace(ConstructionArgs... args) override;
         void Destroy() override;
 
     protected:
@@ -209,7 +210,7 @@ namespace infra
     public:
         explicit CreatorExternal(const infra::Function<std::tuple<T...>(ConstructionArgs...)>& emplaceFunction, const infra::Function<void()>& destroyFunction);
 
-        void Emplace(ConstructionArgs... args) override;
+        void emplace(ConstructionArgs... args) override;
         void Destroy() override;
 
     protected:
@@ -219,7 +220,7 @@ namespace infra
     private:
         infra::Function<std::tuple<T...>(ConstructionArgs... args)> emplaceFunction;
         infra::Function<void()> destroyFunction;
-        infra::Optional<std::tuple<T...>> object;
+        std::optional<std::tuple<T...>> object;
     };
 
     template<class... ConstructionArgs>
@@ -229,7 +230,7 @@ namespace infra
     public:
         explicit CreatorExternal(const infra::Function<void(ConstructionArgs...)>& emplaceFunction, const infra::Function<void()>& destroyFunction);
 
-        void Emplace(ConstructionArgs... args) override;
+        void emplace(ConstructionArgs... args) override;
         void Destroy() override;
 
     private:
@@ -243,7 +244,7 @@ namespace infra
     ProxyCreator<T, void(ConstructionArgs...)>::ProxyCreator(CreatorBase<T, void(ConstructionArgs...)>& creator, ConstructionArgs... args)
         : creator(creator)
     {
-        creator.Emplace(args...);
+        creator.emplace(args...);
     }
 
     template<class T, class... ConstructionArgs>
@@ -280,7 +281,7 @@ namespace infra
     ProxyCreator<void, void(ConstructionArgs...)>::ProxyCreator(CreatorBase<void, void(ConstructionArgs...)>& creator, ConstructionArgs... args)
         : creator(creator)
     {
-        creator.Emplace(args...);
+        creator.emplace(args...);
     }
 
     template<class... ConstructionArgs>
@@ -301,9 +302,9 @@ namespace infra
     }
 
     template<class T, class... ConstructionArgs>
-    void DelayedProxyCreator<T, void(ConstructionArgs...)>::Emplace(ConstructionArgs... args)
+    void DelayedProxyCreator<T, void(ConstructionArgs...)>::emplace(ConstructionArgs... args)
     {
-        creator.Emplace(args...);
+        creator.emplace(args...);
     }
 
     template<class T, class... ConstructionArgs>
@@ -339,19 +340,19 @@ namespace infra
     template<class T, class U, class... ConstructionArgs>
     Creator<T, U, void(ConstructionArgs...)>::Creator()
     {
-        emplaceFunction = [](infra::Optional<U>& object, ConstructionArgs... args)
+        emplaceFunction = [](std::optional<U>& object, ConstructionArgs... args)
         {
-            object.Emplace(args...);
+            object.emplace(args...);
         };
     }
 
     template<class T, class U, class... ConstructionArgs>
-    Creator<T, U, void(ConstructionArgs...)>::Creator(infra::Function<void(infra::Optional<U>&, ConstructionArgs...)> emplaceFunction)
+    Creator<T, U, void(ConstructionArgs...)>::Creator(infra::Function<void(std::optional<U>&, ConstructionArgs...)> emplaceFunction)
         : emplaceFunction(emplaceFunction)
     {}
 
     template<class T, class U, class... ConstructionArgs>
-    void Creator<T, U, void(ConstructionArgs...)>::Emplace(ConstructionArgs... args)
+    void Creator<T, U, void(ConstructionArgs...)>::emplace(ConstructionArgs... args)
     {
         assert(!object);
         emplaceFunction(object, args...);
@@ -360,7 +361,7 @@ namespace infra
     template<class T, class U, class... ConstructionArgs>
     void Creator<T, U, void(ConstructionArgs...)>::Destroy()
     {
-        object = none;
+        object = std::nullopt;
     }
 
     template<class T, class U, class... ConstructionArgs>
@@ -414,19 +415,19 @@ namespace infra
     template<class U, class... ConstructionArgs>
     Creator<void, U, void(ConstructionArgs...)>::Creator()
     {
-        emplaceFunction = [](infra::Optional<U>& object, ConstructionArgs... args)
+        emplaceFunction = [](std::optional<U>& object, ConstructionArgs... args)
         {
-            object.Emplace(args...);
+            object.emplace(args...);
         };
     }
 
     template<class U, class... ConstructionArgs>
-    Creator<void, U, void(ConstructionArgs...)>::Creator(infra::Function<void(infra::Optional<U>&, ConstructionArgs...)> emplaceFunction)
+    Creator<void, U, void(ConstructionArgs...)>::Creator(infra::Function<void(std::optional<U>&, ConstructionArgs...)> emplaceFunction)
         : emplaceFunction(emplaceFunction)
     {}
 
     template<class U, class... ConstructionArgs>
-    void Creator<void, U, void(ConstructionArgs...)>::Emplace(ConstructionArgs... args)
+    void Creator<void, U, void(ConstructionArgs...)>::emplace(ConstructionArgs... args)
     {
         assert(!object);
         emplaceFunction(object, args...);
@@ -435,7 +436,7 @@ namespace infra
     template<class U, class... ConstructionArgs>
     void Creator<void, U, void(ConstructionArgs...)>::Destroy()
     {
-        object = none;
+        object = std::nullopt;
     }
 
     template<class U, class... ConstructionArgs>
@@ -481,7 +482,7 @@ namespace infra
     {}
 
     template<class T, class... ConstructionArgs>
-    void CreatorExternal<T, void(ConstructionArgs...)>::Emplace(ConstructionArgs... args)
+    void CreatorExternal<T, void(ConstructionArgs...)>::emplace(ConstructionArgs... args)
     {
         assert(object == nullptr);
         object = &emplaceFunction(args...);
@@ -514,17 +515,17 @@ namespace infra
     {}
 
     template<class... T, class... ConstructionArgs>
-    void CreatorExternal<std::tuple<T...>, void(ConstructionArgs...)>::Emplace(ConstructionArgs... args)
+    void CreatorExternal<std::tuple<T...>, void(ConstructionArgs...)>::emplace(ConstructionArgs... args)
     {
-        assert(object == infra::none);
-        object.Emplace(emplaceFunction(args...));
+        assert(object == std::nullopt);
+        object.emplace(emplaceFunction(args...));
     }
 
     template<class... T, class... ConstructionArgs>
     void CreatorExternal<std::tuple<T...>, void(ConstructionArgs...)>::Destroy()
     {
-        assert(object != infra::none);
-        object = infra::none;
+        assert(object != std::nullopt);
+        object = std::nullopt;
         destroyFunction();
     }
 
@@ -547,7 +548,7 @@ namespace infra
     {}
 
     template<class... ConstructionArgs>
-    void CreatorExternal<void, void(ConstructionArgs...)>::Emplace(ConstructionArgs... args)
+    void CreatorExternal<void, void(ConstructionArgs...)>::emplace(ConstructionArgs... args)
     {
         emplaceFunction(args...);
     }

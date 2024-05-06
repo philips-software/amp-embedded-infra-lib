@@ -121,7 +121,7 @@ namespace services
 
     void WebSocketObserverFactoryImpl::OnAllocatable(services::Connection& connection)
     {
-        auto observer = webSocketConnectionObserver.Emplace(connectionCreator);
+        auto observer = webSocketConnectionObserver.emplace(connectionCreator);
         connection.Detach();
         connection.Attach(infra::MakeContainedSharedObject(**observer, observer));
         webSocketConnectionObserver.OnAllocatable(nullptr);

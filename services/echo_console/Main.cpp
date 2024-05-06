@@ -212,7 +212,7 @@ void ConsoleClientTcp::ConnectionEstablished(infra::AutoResetFunction<void(infra
 {
     tracer.Trace() << "Connection established";
     tracer.Trace();
-    createdObserver(consoleClientConnection.Emplace(console));
+    createdObserver(consoleClientConnection.emplace(console));
 }
 
 void ConsoleClientTcp::ConnectionFailed(services::ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason reason)
@@ -250,10 +250,10 @@ ConsoleClientWebSocket::ConsoleClientWebSocket(services::ConnectionFactoryWithNa
     : url(url)
     , clientConnector(connectionFactory)
     , httpClientInitiationCreator(
-          [this](infra::Optional<services::HttpClientWebSocketInitiation>& value, services::WebSocketClientObserverFactory& clientObserverFactory,
+          [this](std::optional<services::HttpClientWebSocketInitiation>& value, services::WebSocketClientObserverFactory& clientObserverFactory,
               services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)
           {
-              value.Emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
+              value.emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
           })
     , webSocketFactory(randomDataGenerator, { httpClientInitiationCreator })
     , tracer(tracer)
@@ -276,7 +276,7 @@ void ConsoleClientWebSocket::ConnectionEstablished(infra::AutoResetFunction<void
 {
     tracer.Trace() << "Connection established";
     tracer.Trace();
-    createdClientObserver(consoleClientConnection.Emplace(console));
+    createdClientObserver(consoleClientConnection.emplace(console));
 }
 
 void ConsoleClientWebSocket::ConnectionFailed(ConnectFailReason reason)
@@ -329,26 +329,26 @@ int main(int argc, char* argv[], const char* env[])
 
         application::Console console(root);
         services::ConnectionFactoryWithNameResolverImpl::WithStorage<4> connectionFactory(console.ConnectionFactory(), console.NameResolver());
-        infra::Optional<ConsoleClientTcp> consoleClientTcp;
-        infra::Optional<ConsoleClientWebSocket> consoleClientWebSocket;
+        std::optional<ConsoleClientTcp> consoleClientTcp;
+        std::optional<ConsoleClientWebSocket> consoleClientWebSocket;
 #ifdef EMIL_HAL_WINDOWS
-        infra::Optional<hal::UartWindows> uart;
+        std::optional<hal::UartWindows> uart;
 #else
-        infra::Optional<hal::UartUnix> uart;
+        std::optional<hal::UartUnix> uart;
 #endif
-        infra::Optional<ConsoleClientUart> consoleClientUart;
+        std::optional<ConsoleClientUart> consoleClientUart;
 
         auto construct = [&]()
         {
             if (get(target).substr(0, 3) == "COM" || get(target).substr(0, 4) == "/dev")
             {
-                uart.Emplace(get(target));
-                consoleClientUart.Emplace(console, *uart);
+                uart.emplace(get(target));
+                consoleClientUart.emplace(console, *uart);
             }
             else if (services::SchemeFromUrl(get(target)) == "ws")
-                consoleClientWebSocket.Emplace(connectionFactory, console, get(target), randomDataGenerator, tracer);
+                consoleClientWebSocket.emplace(connectionFactory, console, get(target), randomDataGenerator, tracer);
             else
-                consoleClientTcp.Emplace(connectionFactory, console, get(target), tracer);
+                consoleClientTcp.emplace(connectionFactory, console, get(target), tracer);
         };
 
         infra::EventDispatcher::Instance().Schedule([&construct]()

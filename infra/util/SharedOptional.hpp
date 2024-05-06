@@ -18,7 +18,7 @@ namespace infra
         ~SharedOptional();
 
         template<class... Args>
-        SharedPtr<T> Emplace(Args&&... args);
+        SharedPtr<T> emplace(Args&&... args);
 
         SharedPtr<T> MakePtr();
 
@@ -80,11 +80,11 @@ namespace infra
 
     template<class T>
     template<class... Args>
-    SharedPtr<T> SharedOptional<T>::Emplace(Args&&... args)
+    SharedPtr<T> SharedOptional<T>::emplace(Args&&... args)
     {
         assert(allocatable);
         allocatable = false;
-        object.Emplace(std::forward<Args>(args)...);
+        object.emplace(std::forward<Args>(args)...);
         return SharedPtr<T>(&control, &*object);
     }
 

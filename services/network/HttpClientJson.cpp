@@ -42,7 +42,7 @@ namespace services
     void HttpClientJson::Detaching()
     {
         readerPtr = nullptr;
-        jsonParser = infra::none;
+        jsonParser = std::nullopt;
         services::HttpClientBasic::Detaching();
     }
 
@@ -70,7 +70,7 @@ namespace services
 
         infra::DataInputStream::WithErrorPolicy stream(*readerPtr, infra::noFail);
 
-        while (!destructed && jsonParser != infra::none && !stream.Empty())
+        while (!destructed && jsonParser != std::nullopt && !stream.Empty())
             (*jsonParser)->Feed(infra::ByteRangeAsString(stream.ContiguousRange()));
 
         // If this object is already destructed, readerPtr cannot be touched anymore
@@ -86,6 +86,6 @@ namespace services
 
     void HttpClientJson::Established()
     {
-        jsonParser.Emplace(jsonParserCreator, TopJsonObjectVisitor());
+        jsonParser.emplace(jsonParserCreator, TopJsonObjectVisitor());
     }
 }

@@ -105,22 +105,22 @@ namespace infra
         JsonArrayNavigator operator/(JsonArrayNavigatorToken token) const;
         JsonOptionalArrayNavigator operator/(JsonOptionalArrayNavigatorToken token) const;
         std::string operator/(JsonStringNavigatorToken token) const;
-        infra::Optional<std::string> operator/(JsonOptionalStringNavigatorToken token) const;
+        std::optional<std::string> operator/(JsonOptionalStringNavigatorToken token) const;
         int32_t operator/(JsonIntegerNavigatorToken token) const;
         bool operator/(JsonBoolNavigatorToken token) const;
 
         template<class Result>
         Result operator/(JsonTransformObjectNavigatorToken<Result> token) const;
         template<class Result>
-        infra::Optional<Result> operator/(JsonTransformOptionalObjectNavigatorToken<Result> token) const;
+        std::optional<Result> operator/(JsonTransformOptionalObjectNavigatorToken<Result> token) const;
         template<class Result>
         Result operator/(JsonTransformArrayNavigatorToken<Result> token) const;
         template<class Result>
-        infra::Optional<Result> operator/(JsonTransformOptionalArrayNavigatorToken<Result> token) const;
+        std::optional<Result> operator/(JsonTransformOptionalArrayNavigatorToken<Result> token) const;
         template<class Result>
         Result operator/(JsonTransformStringNavigatorToken<Result> token) const;
         template<class Result>
-        infra::Optional<Result> operator/(JsonTransformOptionalStringNavigatorToken<Result> token) const;
+        std::optional<Result> operator/(JsonTransformOptionalStringNavigatorToken<Result> token) const;
 
     protected:
         mutable infra::JsonObject object;
@@ -137,26 +137,26 @@ namespace infra
         JsonOptionalObjectNavigator operator/(JsonOptionalObjectNavigatorToken token) const;
         JsonOptionalArrayNavigator operator/(JsonArrayNavigatorToken token) const;
         JsonOptionalArrayNavigator operator/(JsonOptionalArrayNavigatorToken token) const;
-        infra::Optional<std::string> operator/(JsonStringNavigatorToken token) const;
-        infra::Optional<std::string> operator/(JsonOptionalStringNavigatorToken token) const;
-        infra::Optional<int32_t> operator/(JsonIntegerNavigatorToken token) const;
-        infra::Optional<bool> operator/(JsonBoolNavigatorToken token) const;
+        std::optional<std::string> operator/(JsonStringNavigatorToken token) const;
+        std::optional<std::string> operator/(JsonOptionalStringNavigatorToken token) const;
+        std::optional<int32_t> operator/(JsonIntegerNavigatorToken token) const;
+        std::optional<bool> operator/(JsonBoolNavigatorToken token) const;
 
         template<class Result>
-        infra::Optional<Result> operator/(JsonTransformObjectNavigatorToken<Result> token) const;
+        std::optional<Result> operator/(JsonTransformObjectNavigatorToken<Result> token) const;
         template<class Result>
-        infra::Optional<Result> operator/(JsonTransformOptionalObjectNavigatorToken<Result> token) const;
+        std::optional<Result> operator/(JsonTransformOptionalObjectNavigatorToken<Result> token) const;
         template<class Result>
-        infra::Optional<Result> operator/(JsonTransformArrayNavigatorToken<Result> token) const;
+        std::optional<Result> operator/(JsonTransformArrayNavigatorToken<Result> token) const;
         template<class Result>
-        infra::Optional<Result> operator/(JsonTransformOptionalArrayNavigatorToken<Result> token) const;
+        std::optional<Result> operator/(JsonTransformOptionalArrayNavigatorToken<Result> token) const;
         template<class Result>
-        infra::Optional<Result> operator/(JsonTransformStringNavigatorToken<Result> token) const;
+        std::optional<Result> operator/(JsonTransformStringNavigatorToken<Result> token) const;
         template<class Result>
-        infra::Optional<Result> operator/(JsonTransformOptionalStringNavigatorToken<Result> token) const;
+        std::optional<Result> operator/(JsonTransformOptionalStringNavigatorToken<Result> token) const;
 
     protected:
-        infra::Optional<JsonObjectNavigator> navigator;
+        std::optional<JsonObjectNavigator> navigator;
     };
 
     class JsonArrayNavigator
@@ -176,7 +176,7 @@ namespace infra
         JsonOptionalArrayNavigator(const JsonArrayNavigator& navigator);
 
     protected:
-        infra::Optional<JsonArrayNavigator> navigator;
+        std::optional<JsonArrayNavigator> navigator;
     };
 
     //// Implementation    ////
@@ -185,112 +185,112 @@ namespace infra
     Result JsonObjectNavigator::operator/(JsonTransformObjectNavigatorToken<Result> token) const
     {
         auto subObject = object.GetOptionalObject(token.name);
-        if (subObject == infra::none)
+        if (subObject == std::nullopt)
             throw std::runtime_error(("Object " + token.name + " not found").c_str());
 
         return token.transformation(*subObject);
     }
 
     template<class Result>
-    infra::Optional<Result> JsonObjectNavigator::operator/(JsonTransformOptionalObjectNavigatorToken<Result> token) const
+    std::optional<Result> JsonObjectNavigator::operator/(JsonTransformOptionalObjectNavigatorToken<Result> token) const
     {
         auto subObject = object.GetOptionalObject(token.name);
-        if (subObject == infra::none)
+        if (subObject == std::nullopt)
             return {};
 
-        return infra::MakeOptional(token.transformation(*subObject));
+        return std::make_optional(token.transformation(*subObject));
     }
 
     template<class Result>
     Result JsonObjectNavigator::operator/(JsonTransformArrayNavigatorToken<Result> token) const
     {
         auto subArray = object.GetOptionalArray(token.name);
-        if (subArray == infra::none)
+        if (subArray == std::nullopt)
             throw std::runtime_error(("Array " + token.name + " not found").c_str());
 
         return token.transformation(*subArray);
     }
 
     template<class Result>
-    infra::Optional<Result> JsonObjectNavigator::operator/(JsonTransformOptionalArrayNavigatorToken<Result> token) const
+    std::optional<Result> JsonObjectNavigator::operator/(JsonTransformOptionalArrayNavigatorToken<Result> token) const
     {
         auto subArray = object.GetOptionalArray(token.name);
-        if (subArray == infra::none)
+        if (subArray == std::nullopt)
             return {};
 
-        return infra::MakeOptional(token.transformation(*subArray));
+        return std::make_optional(token.transformation(*subArray));
     }
 
     template<class Result>
     Result JsonObjectNavigator::operator/(JsonTransformStringNavigatorToken<Result> token) const
     {
         auto member = object.GetOptionalString(token.name);
-        if (member == infra::none)
+        if (member == std::nullopt)
             throw std::runtime_error(("String " + token.name + " not found").c_str());
 
         return token.transformation(member->ToStdString());
     }
 
     template<class Result>
-    infra::Optional<Result> JsonObjectNavigator::operator/(JsonTransformOptionalStringNavigatorToken<Result> token) const
+    std::optional<Result> JsonObjectNavigator::operator/(JsonTransformOptionalStringNavigatorToken<Result> token) const
     {
         auto member = object.GetOptionalString(token.name);
-        if (member == infra::none)
+        if (member == std::nullopt)
             return {};
 
-        return infra::MakeOptional(token.transformation(member->ToStdString()));
+        return std::make_optional(token.transformation(member->ToStdString()));
     }
 
     template<class Result>
-    infra::Optional<Result> JsonOptionalObjectNavigator::operator/(JsonTransformObjectNavigatorToken<Result> token) const
+    std::optional<Result> JsonOptionalObjectNavigator::operator/(JsonTransformObjectNavigatorToken<Result> token) const
     {
-        if (navigator != infra::none)
-            return infra::MakeOptional(*navigator / token);
+        if (navigator != std::nullopt)
+            return std::make_optional(*navigator / token);
         else
             return {};
     }
 
     template<class Result>
-    infra::Optional<Result> JsonOptionalObjectNavigator::operator/(JsonTransformOptionalObjectNavigatorToken<Result> token) const
+    std::optional<Result> JsonOptionalObjectNavigator::operator/(JsonTransformOptionalObjectNavigatorToken<Result> token) const
     {
-        if (navigator != infra::none)
+        if (navigator != std::nullopt)
             return *navigator / token;
         else
             return {};
     }
 
     template<class Result>
-    infra::Optional<Result> JsonOptionalObjectNavigator::operator/(JsonTransformArrayNavigatorToken<Result> token) const
+    std::optional<Result> JsonOptionalObjectNavigator::operator/(JsonTransformArrayNavigatorToken<Result> token) const
     {
-        if (navigator != infra::none)
-            return infra::MakeOptional(*navigator / token);
+        if (navigator != std::nullopt)
+            return std::make_optional(*navigator / token);
         else
             return {};
     }
 
     template<class Result>
-    infra::Optional<Result> JsonOptionalObjectNavigator::operator/(JsonTransformOptionalArrayNavigatorToken<Result> token) const
+    std::optional<Result> JsonOptionalObjectNavigator::operator/(JsonTransformOptionalArrayNavigatorToken<Result> token) const
     {
-        if (navigator != infra::none)
-            return infra::MakeOptional(*navigator / token);
+        if (navigator != std::nullopt)
+            return std::make_optional(*navigator / token);
         else
             return {};
     }
 
     template<class Result>
-    infra::Optional<Result> JsonOptionalObjectNavigator::operator/(JsonTransformStringNavigatorToken<Result> token) const
+    std::optional<Result> JsonOptionalObjectNavigator::operator/(JsonTransformStringNavigatorToken<Result> token) const
     {
-        if (navigator != infra::none)
-            return infra::MakeOptional(*navigator / token);
+        if (navigator != std::nullopt)
+            return std::make_optional(*navigator / token);
         else
             return {};
     }
 
     template<class Result>
-    infra::Optional<Result> JsonOptionalObjectNavigator::operator/(JsonTransformOptionalStringNavigatorToken<Result> token) const
+    std::optional<Result> JsonOptionalObjectNavigator::operator/(JsonTransformOptionalStringNavigatorToken<Result> token) const
     {
-        if (navigator != infra::none)
-            return infra::MakeOptional(*navigator / token);
+        if (navigator != std::nullopt)
+            return std::make_optional(*navigator / token);
         else
             return {};
     }

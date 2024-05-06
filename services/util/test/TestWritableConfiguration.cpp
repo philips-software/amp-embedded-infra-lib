@@ -49,12 +49,12 @@ class FlashReadingWritableConfigurationTest
 public:
     void ConstructConfiguration()
     {
-        configuration.Emplace(flash, sha256);
+        configuration.emplace(flash, sha256);
     }
 
     hal::FlashStub flash{ 1, 16 };
     services::Sha256MbedTls sha256;
-    infra::Optional<services::FlashReadingWritableConfiguration<DataProxy, DataProxy>> configuration;
+    std::optional<services::FlashReadingWritableConfiguration<DataProxy, DataProxy>> configuration;
 
     testing::StrictMock<Data> data;
 };
@@ -119,12 +119,12 @@ public:
 
     void ConstructConfiguration(infra::ConstByteRange flashRegion)
     {
-        configuration.Emplace(flash, sha256, flashRegion);
+        configuration.emplace(flash, sha256, flashRegion);
     }
 
     hal::FlashStub flash{ 1, 16 };
     services::Sha256MbedTls sha256;
-    infra::Optional<services::MemoryMappedWritableConfiguration<DataProxy, DataProxy>> configuration;
+    std::optional<services::MemoryMappedWritableConfiguration<DataProxy, DataProxy>> configuration;
 
     testing::StrictMock<Data> data;
 };

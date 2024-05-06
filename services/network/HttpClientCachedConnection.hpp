@@ -106,7 +106,7 @@ namespace services
         HttpClientObserverFactory* clientObserverFactory = nullptr;
         infra::IntrusiveList<HttpClientObserverFactory> waitingClientObserverFactories;
 
-        infra::Optional<HttpClientCachedConnection> client;
+        std::optional<HttpClientCachedConnection> client;
         infra::AccessedBySharedPtr clientPtr{ [this]()
             {
                 ClientPtrExpired();

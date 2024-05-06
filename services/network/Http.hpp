@@ -123,7 +123,7 @@ namespace services
         infra::BoundedConstString requestTarget;
         infra::BoundedConstString content;
         infra::BoundedString::WithStorage<8> contentLength;
-        infra::Optional<HttpHeader> contentLengthHeader;
+        std::optional<HttpHeader> contentLengthHeader;
         HttpHeader hostHeader;
         const HttpHeaders headers;
         bool chunked{ false };
@@ -169,13 +169,13 @@ namespace services
     infra::BoundedConstString SchemeFromUrl(infra::BoundedConstString url);
     infra::BoundedConstString HostAndPortFromUrl(infra::BoundedConstString url);
     infra::BoundedConstString HostFromUrl(infra::BoundedConstString url);
-    infra::Optional<uint16_t> PortFromUrl(infra::BoundedConstString url);
+    std::optional<uint16_t> PortFromUrl(infra::BoundedConstString url);
     infra::BoundedConstString PathFromUrl(infra::BoundedConstString url);
 
     infra::BoundedConstString HttpVerbToString(HttpVerb verb);
-    infra::Optional<HttpVerb> HttpVerbFromString(infra::BoundedConstString verb);
+    std::optional<HttpVerb> HttpVerbFromString(infra::BoundedConstString verb);
 
-    infra::Optional<HttpStatusCode> HttpStatusCodeFromString(infra::BoundedConstString statusCode);
+    std::optional<HttpStatusCode> HttpStatusCodeFromString(infra::BoundedConstString statusCode);
     infra::BoundedConstString HttpStatusCodeToString(services::HttpStatusCode statusCode);
 }
 

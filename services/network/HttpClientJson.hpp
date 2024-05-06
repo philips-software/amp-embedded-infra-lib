@@ -47,7 +47,7 @@ namespace services
 
     private:
         JsonParserCreatorBase& jsonParserCreator;
-        infra::Optional<infra::ProxyCreator<JsonParserCreatorBase&>> jsonParser;
+        std::optional<infra::ProxyCreator<JsonParserCreatorBase&>> jsonParser;
 
         infra::SharedPtr<infra::StreamReader> readerPtr;
         bool* destructedIndication = nullptr;

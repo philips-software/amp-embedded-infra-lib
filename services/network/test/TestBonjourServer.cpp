@@ -27,12 +27,12 @@ public:
 
     void DataReceived(const std::vector<uint8_t>& data, services::IPv4Address address = services::IPv4Address{ 1, 2, 3, 4 }, uint16_t port = 5353)
     {
-        datagramExchange->GetObserver().DataReceived(infra::MakeSharedOnHeap<infra::StdVectorInputStreamReader::WithStorage>(infra::inPlace, data), services::Udpv4Socket{ address, port });
+        datagramExchange->GetObserver().DataReceived(infra::MakeSharedOnHeap<infra::StdVectorInputStreamReader::WithStorage>(std::in_place, data), services::Udpv4Socket{ address, port });
     }
 
     void DataReceived(const std::vector<uint8_t>& data, services::IPv6Address address, uint16_t port = 5353)
     {
-        datagramExchange->GetObserver().DataReceived(infra::MakeSharedOnHeap<infra::StdVectorInputStreamReader::WithStorage>(infra::inPlace, data), services::Udpv6Socket{ address, port });
+        datagramExchange->GetObserver().DataReceived(infra::MakeSharedOnHeap<infra::StdVectorInputStreamReader::WithStorage>(std::in_place, data), services::Udpv6Socket{ address, port });
     }
 
     void DataReceived(const std::vector<uint8_t>& data, services::IPAddress address, uint16_t port = 5353)
@@ -306,7 +306,7 @@ public:
     {
         EXPECT_CALL(factory, Listen(testing::Ref(server), 5353, services::IPVersions::ipv4)).WillOnce(testing::Invoke([this](services::DatagramExchangeObserver& observer, uint16_t port, services::IPVersions versions)
             {
-                auto ptr = datagramExchange.Emplace();
+                auto ptr = datagramExchange.emplace();
                 observer.Attach(*ptr);
 
                 ExpectResponse(infra::ConstructBin()
@@ -321,7 +321,7 @@ public:
     {
         EXPECT_CALL(factory, Listen(testing::Ref(server), 5353, services::IPVersions::ipv6)).WillOnce(testing::Invoke([this](services::DatagramExchangeObserver& observer, uint16_t port, services::IPVersions versions)
             {
-                auto ptr = datagramExchange.Emplace();
+                auto ptr = datagramExchange.emplace();
                 observer.Attach(*ptr);
 
                 ExpectResponse(infra::ConstructBin()
@@ -357,7 +357,7 @@ public:
         ExpectLeaveMulticastIpv4();
         ExpectListenIpv6();
         ExpectJoinMulticastIpv6();
-        infra::ReConstruct(server, factory, multicast, "instance", "service", "type", infra::none, infra::MakeOptional(services::IPv6Address{ 1, 2, 3, 4, 5, 6, 7, 8 }), 1234, text);
+        infra::ReConstruct(server, factory, multicast, "instance", "service", "type", std::nullopt, std::make_optional(services::IPv6Address{ 1, 2, 3, 4, 5, 6, 7, 8 }), 1234, text);
         ExecuteAllActions();
         expectLeave = [this]()
         {
@@ -374,7 +374,7 @@ public:
             ExpectJoinMulticastIpv4();
         } };
     services::DnsHostnameInPartsHelper<2> text{ services::DnsHostnameInParts("aa=text")("bb=othertext") };
-    services::BonjourServer server{ factory, multicast, "instance", "service", "type", infra::MakeOptional(services::IPv4Address{ 1, 2, 3, 4 }), infra::none, 1234, text };
+    services::BonjourServer server{ factory, multicast, "instance", "service", "type", std::make_optional(services::IPv4Address{ 1, 2, 3, 4 }), std::nullopt, 1234, text };
 
     infra::Execute execute2{ [this]
         {

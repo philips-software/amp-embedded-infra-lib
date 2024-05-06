@@ -8,7 +8,7 @@ namespace services
     MessageCommunicationWindowed::MessageCommunicationWindowed(detail::AtomicDeque& receivedData, MessageCommunicationReceiveOnInterrupt& messageCommunication)
         : MessageCommunicationReceiveOnInterruptObserver(messageCommunication)
         , receivedData(receivedData)
-        , state(infra::InPlaceType<StateSendingInit>(), *this)
+        , state(std::in_place_type_t<StateSendingInit>(), *this)
     {}
 
     void MessageCommunicationWindowed::RequestSendMessage(uint16_t size)
@@ -107,7 +107,7 @@ namespace services
                                     });
                                 receivedData.Pop(2);
 
-                                GetObserver().ReceivedMessage(reader.Emplace(infra::inPlace, receivedData, size));
+                                GetObserver().ReceivedMessage(reader.emplace(std::in_place, receivedData, size));
                             }
 
                             notificationScheduled = false;
@@ -131,14 +131,14 @@ namespace services
                 if (sendInitResponse)
                 {
                     if (receivedData.Empty())
-                        state.Emplace<StateSendingInitResponse>(*this);
+                        state.emplace<StateSendingInitResponse>(*this);
                 }
                 else if (requestedSendMessageSize && WindowSize(*requestedSendMessageSize) <= otherAvailableWindow)
-                    state.Emplace<StateSendingMessage>(*this);
+                    state.emplace<StateSendingMessage>(*this);
                 else if (releasedWindow != 0)
-                    state.Emplace<StateSendingReleaseWindow>(*this);
+                    state.emplace<StateSendingReleaseWindow>(*this);
                 else
-                    state.Emplace<StateOperational>(*this);
+                    state.emplace<StateOperational>(*this);
             }
 
             switchingState = false;
@@ -241,7 +241,7 @@ namespace services
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
         stream << Operation::message;
 
-        communication.requestedSendMessageSize = infra::none;
+        communication.requestedSendMessageSize = std::nullopt;
         communication.GetObserver().SendMessageStreamAvailable(std::move(writer));
     }
 

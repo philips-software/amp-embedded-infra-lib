@@ -424,7 +424,7 @@ namespace infra
                     state = State::skipNestedObject;
                 else
                 {
-                    subObjects.emplace_back(infra::InPlaceType<JsonSubObjectParser>(), tagBuffer, valueBuffer, subObjects);
+                    subObjects.emplace_back(std::in_place_type_t<JsonSubObjectParser>(), tagBuffer, valueBuffer, subObjects);
                     auto nestedVisitor = visitor->VisitObject(tagBuffer, static_cast<JsonSubObjectParser&>(*subObjects.back()));
                     if (destructed)
                         return;
@@ -450,7 +450,7 @@ namespace infra
                     state = State::skipNestedArray;
                 else
                 {
-                    subObjects.emplace_back(infra::InPlaceType<JsonSubArrayParser>(), tagBuffer, valueBuffer, subObjects);
+                    subObjects.emplace_back(std::in_place_type_t<JsonSubArrayParser>(), tagBuffer, valueBuffer, subObjects);
                     auto nestedVisitor = visitor->VisitArray(tagBuffer, static_cast<JsonSubArrayParser&>(*subObjects.back()));
                     if (destructed)
                         return;
@@ -635,7 +635,7 @@ namespace infra
                     state = State::skipNestedObject;
                 else
                 {
-                    subObjects.emplace_back(infra::InPlaceType<JsonSubObjectParser>(), tagBuffer, valueBuffer, subObjects);
+                    subObjects.emplace_back(std::in_place_type_t<JsonSubObjectParser>(), tagBuffer, valueBuffer, subObjects);
                     auto nestedVisitor = visitor->VisitObject(static_cast<JsonSubObjectParser&>(*subObjects.back()));
                     if (destructed)
                         return;
@@ -660,7 +660,7 @@ namespace infra
                     state = State::skipNestedArray;
                 else
                 {
-                    subObjects.emplace_back(infra::InPlaceType<JsonSubArrayParser>(), tagBuffer, valueBuffer, subObjects);
+                    subObjects.emplace_back(std::in_place_type_t<JsonSubArrayParser>(), tagBuffer, valueBuffer, subObjects);
                     auto nestedVisitor = visitor->VisitArray(static_cast<JsonSubArrayParser&>(*subObjects.back()));
                     if (destructed)
                         return;
@@ -748,7 +748,7 @@ namespace infra
         infra::BoundedVector<infra::PolymorphicVariant<JsonSubParser, JsonSubObjectParser, JsonSubArrayParser>>& subObjects, JsonObjectVisitor& visitor)
         : subObjects(subObjects)
     {
-        this->subObjects.emplace_back(infra::InPlaceType<JsonSubObjectParser>(), tagBuffer, valueBuffer, subObjects, visitor);
+        this->subObjects.emplace_back(std::in_place_type_t<JsonSubObjectParser>(), tagBuffer, valueBuffer, subObjects, visitor);
     }
 
     void JsonStreamingObjectParser::Feed(infra::BoundedConstString data)
@@ -763,7 +763,7 @@ namespace infra
         infra::BoundedVector<infra::PolymorphicVariant<JsonSubParser, JsonSubObjectParser, JsonSubArrayParser>>& subObjects, JsonArrayVisitor& visitor)
         : subObjects(subObjects)
     {
-        this->subObjects.emplace_back(infra::InPlaceType<JsonSubArrayParser>(), tagBuffer, valueBuffer, subObjects, visitor);
+        this->subObjects.emplace_back(std::in_place_type_t<JsonSubArrayParser>(), tagBuffer, valueBuffer, subObjects, visitor);
     }
 
     void JsonStreamingArrayParser::Feed(infra::BoundedConstString data)

@@ -13,7 +13,7 @@ class WebSocketServerConnectionObserverTest
 public:
     WebSocketServerConnectionObserverTest()
     {
-        connection.Attach(webSocket.Emplace());
+        connection.Attach(webSocket.emplace());
         EXPECT_CALL(connectionObserver, Attached());
         webSocket->Attach(infra::UnOwnedSharedPtr(connectionObserver));
     }

@@ -129,7 +129,7 @@ namespace application
     {
         tracer.Trace() << "Connection established";
         tracer.Trace();
-        createdClientObserver(consoleClientConnection.Emplace());
+        createdClientObserver(consoleClientConnection.emplace());
     }
 
     void ConsoleFactory::ConnectionFailed(ConnectFailReason reason)
@@ -160,10 +160,10 @@ int main(int argc, const char* argv[], const char* env[])
 
         static services::ConnectionFactoryWithNameResolverImpl::WithStorage<1> connectionFactory(network.ConnectionFactory(), network.NameResolver());
         static services::HttpClientConnectorWithNameResolverImpl<> clientConnector{ connectionFactory };
-        static infra::Creator<services::Stoppable, services::HttpClientWebSocketInitiation, void(services::WebSocketClientObserverFactory & clientObserverFactory, services::HttpClientWebSocketInitiationResult & result, hal::SynchronousRandomDataGenerator & randomDataGenerator)> httpClientInitiationCreator{ [](infra::Optional<services::HttpClientWebSocketInitiation>& value, services::WebSocketClientObserverFactory& clientObserverFactory,
+        static infra::Creator<services::Stoppable, services::HttpClientWebSocketInitiation, void(services::WebSocketClientObserverFactory & clientObserverFactory, services::HttpClientWebSocketInitiationResult & result, hal::SynchronousRandomDataGenerator & randomDataGenerator)> httpClientInitiationCreator{ [](std::optional<services::HttpClientWebSocketInitiation>& value, services::WebSocketClientObserverFactory& clientObserverFactory,
                                                                                                                                                                                                                                                                                                                         services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)
             {
-                value.Emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
+                value.emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
             } };
         static services::WebSocketClientFactorySingleConnection webSocketFactory{ randomDataGenerator, { httpClientInitiationCreator } };
 

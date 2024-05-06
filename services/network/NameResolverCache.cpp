@@ -12,7 +12,7 @@ namespace services
     void NameResolverCache::Lookup(NameResolverResult& result)
     {
         auto cacheEntry = SearchCache(result);
-        if (cacheEntry != infra::none)
+        if (cacheEntry != std::nullopt)
             result.NameLookupDone(cacheEntry->address, cacheEntry->validUntil);
         else
         {
@@ -47,15 +47,15 @@ namespace services
             }
     }
 
-    infra::Optional<NameResolverCache::CacheEntry> NameResolverCache::SearchCache(NameResolverResult& result) const
+    std::optional<NameResolverCache::CacheEntry> NameResolverCache::SearchCache(NameResolverResult& result) const
     {
         auto nameHash = Hash(result.Hostname());
 
         for (auto& entry : cache)
             if (entry.nameHash == nameHash)
-                return infra::MakeOptional(entry);
+                return std::make_optional(entry);
 
-        return infra::none;
+        return std::nullopt;
     }
 
     std::array<uint8_t, 16> NameResolverCache::Hash(infra::BoundedConstString name) const
@@ -71,9 +71,9 @@ namespace services
 
     void NameResolverCache::TryResolveNext()
     {
-        if (activeLookup == infra::none && !waiting.empty())
+        if (activeLookup == std::nullopt && !waiting.empty())
         {
-            activeLookup.Emplace(*this, waiting.front());
+            activeLookup.emplace(*this, waiting.front());
             waiting.pop_front();
         }
     }
@@ -103,7 +103,7 @@ namespace services
 
     void NameResolverCache::NameLookupDone(const infra::Function<void(), 3 * sizeof(void*)>& observerCallback)
     {
-        activeLookup = infra::none;
+        activeLookup = std::nullopt;
         observerCallback();
         TryResolveNext();
     }

@@ -101,7 +101,7 @@ namespace services
     infra::SharedPtr<infra::StreamReaderWithRewinding> ConnectionLwIp::ReceiveStream()
     {
         keepAliveForReader = SharedFromThis();
-        return streamReader.Emplace(*this);
+        return streamReader.emplace(*this);
     }
 
     void ConnectionLwIp::AckReceived()
@@ -207,7 +207,7 @@ namespace services
             sendBufferForStream = infra::Head(infra::ByteRange(sendMemoryPool.back()), requestedSendSize);
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionLwIp>& self)
                 {
-                    infra::SharedPtr<infra::StreamWriter> stream = self->streamWriter.Emplace(*self, self->sendBufferForStream);
+                    infra::SharedPtr<infra::StreamWriter> stream = self->streamWriter.emplace(*self, self->sendBufferForStream);
                     self->sendBufferForStream = infra::ByteRange();
                     if (self->IsAttached())
                         self->Observer().SendStreamAvailable(std::move(stream));

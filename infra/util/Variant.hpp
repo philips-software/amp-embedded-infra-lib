@@ -4,6 +4,7 @@
 #include "infra/util/Optional.hpp"
 #include "infra/util/VariantDetail.hpp"
 #include <type_traits>
+#include <variant>
 
 namespace infra
 {
@@ -25,7 +26,7 @@ namespace infra
         template<class U>
         Variant(const U& v, typename std::enable_if<ExistsInTypeList<U, T...>::value>::type* = 0);
         template<class U, class... Args>
-        explicit Variant(InPlaceType<U>, Args&&... args);
+        explicit Variant(std::in_place_type_t<U>, Args&&... args);
         template<class... Args>
         Variant(AtIndex, std::size_t index, Args&&... args);
 
@@ -38,7 +39,7 @@ namespace infra
         ~Variant();
 
         template<class U, class... Args>
-        U& Emplace(Args&&... args);
+        U& emplace(Args&&... args);
 
         template<class U>
         const U& Get() const;
@@ -133,7 +134,7 @@ namespace infra
 
     template<class... T>
     template<class U, class... Args>
-    Variant<T...>::Variant(InPlaceType<U>, Args&&... args)
+    Variant<T...>::Variant(std::in_place_type_t<U>, Args&&... args)
     {
         ConstructInEmptyVariant<U>(std::forward<Args>(args)...);
     }
@@ -179,7 +180,7 @@ namespace infra
 
     template<class... T>
     template<class U, class... Args>
-    U& Variant<T...>::Emplace(Args&&... args)
+    U& Variant<T...>::emplace(Args&&... args)
     {
         Destruct();
         return ConstructInEmptyVariant<U>(std::forward<Args>(args)...);

@@ -56,9 +56,9 @@ TEST(ProxyCreatorTest, CreatePeripheralWithParameterGivenByProxy)
 
 TEST(ProxyCreatorTest, CreatePeripheralWithParameterGivenByCreator)
 {
-    infra::Creator<PeripheralInterface, PeripheralWithTwoParameters, void()> creator([](infra::Optional<PeripheralWithTwoParameters>& object)
+    infra::Creator<PeripheralInterface, PeripheralWithTwoParameters, void()> creator([](std::optional<PeripheralWithTwoParameters>& object)
         {
-            object.Emplace(5, 6);
+            object.emplace(5, 6);
         });
 
     infra::ProxyCreator<PeripheralInterface, void()> creatorProxy(creator);
@@ -67,9 +67,9 @@ TEST(ProxyCreatorTest, CreatePeripheralWithParameterGivenByCreator)
 
 TEST(ProxyCreatorTest, CreatePeripheralWithParameterGivenByProxyAndCreator)
 {
-    infra::Creator<PeripheralInterface, PeripheralWithTwoParameters, void(int)> creator([](infra::Optional<PeripheralWithTwoParameters>& object, int x)
+    infra::Creator<PeripheralInterface, PeripheralWithTwoParameters, void(int)> creator([](std::optional<PeripheralWithTwoParameters>& object, int x)
         {
-            object.Emplace(x, 6);
+            object.emplace(x, 6);
         });
 
     infra::ProxyCreator<PeripheralInterface, void(int)> creatorProxy(creator, 5);
@@ -79,9 +79,9 @@ TEST(ProxyCreatorTest, CreatePeripheralWithParameterGivenByProxyAndCreator)
 
 TEST(ProxyCreatorTest, CreatePeripheralWithParameterGivenByCreatorAndProxy)
 {
-    infra::Creator<PeripheralInterface, PeripheralWithTwoParameters, void(int)> creator([](infra::Optional<PeripheralWithTwoParameters>& object, int y)
+    infra::Creator<PeripheralInterface, PeripheralWithTwoParameters, void(int)> creator([](std::optional<PeripheralWithTwoParameters>& object, int y)
         {
-            object.Emplace(5, y);
+            object.emplace(5, y);
         });
 
     infra::ProxyCreator<PeripheralInterface, void(int)> creatorProxy(creator, 6);
@@ -192,7 +192,7 @@ TEST(DelayedProxyCreatorTest, CreatePeripheral)
     infra::Creator<PeripheralInterface, Peripheral, void()> creator;
 
     infra::DelayedProxyCreator<PeripheralInterface, void()> creatorProxy(creator);
-    creatorProxy.Emplace();
+    creatorProxy.emplace();
     creatorProxy.Destroy();
 }
 
@@ -201,44 +201,44 @@ TEST(DelayedProxyCreatorTest, CreatePeripheralWithParameterGivenByProxy)
     infra::Creator<PeripheralInterface, PeripheralWithTwoParameters, void(int, int)> creator;
 
     infra::DelayedProxyCreator<PeripheralInterface, void(int, int)> creatorProxy(creator);
-    creatorProxy.Emplace(5, 6);
+    creatorProxy.emplace(5, 6);
     EXPECT_EQ(5, creator->x);
 }
 
 TEST(DelayedProxyCreatorTest, CreatePeripheralWithParameterGivenByCreator)
 {
-    infra::Creator<PeripheralInterface, PeripheralWithTwoParameters, void()> creator([](infra::Optional<PeripheralWithTwoParameters>& object)
+    infra::Creator<PeripheralInterface, PeripheralWithTwoParameters, void()> creator([](std::optional<PeripheralWithTwoParameters>& object)
         {
-            object.Emplace(5, 6);
+            object.emplace(5, 6);
         });
 
     infra::DelayedProxyCreator<PeripheralInterface, void()> creatorProxy(creator);
-    creatorProxy.Emplace();
+    creatorProxy.emplace();
     EXPECT_EQ(5, creator->x);
 }
 
 TEST(DelayedProxyCreatorTest, CreatePeripheralWithParameterGivenByProxyAndCreator)
 {
-    infra::Creator<PeripheralInterface, PeripheralWithTwoParameters, void(int)> creator([](infra::Optional<PeripheralWithTwoParameters>& object, int x)
+    infra::Creator<PeripheralInterface, PeripheralWithTwoParameters, void(int)> creator([](std::optional<PeripheralWithTwoParameters>& object, int x)
         {
-            object.Emplace(x, 6);
+            object.emplace(x, 6);
         });
 
     infra::DelayedProxyCreator<PeripheralInterface, void(int)> creatorProxy(creator);
-    creatorProxy.Emplace(5);
+    creatorProxy.emplace(5);
     EXPECT_EQ(5, creator->x);
     EXPECT_EQ(6, creator->y);
 }
 
 TEST(DelayedProxyCreatorTest, CreatePeripheralWithParameterGivenByCreatorAndProxy)
 {
-    infra::Creator<PeripheralInterface, PeripheralWithTwoParameters, void(int)> creator([](infra::Optional<PeripheralWithTwoParameters>& object, int y)
+    infra::Creator<PeripheralInterface, PeripheralWithTwoParameters, void(int)> creator([](std::optional<PeripheralWithTwoParameters>& object, int y)
         {
-            object.Emplace(5, y);
+            object.emplace(5, y);
         });
 
     infra::DelayedProxyCreator<PeripheralInterface, void(int)> creatorProxy(creator);
-    creatorProxy.Emplace(6);
+    creatorProxy.emplace(6);
     EXPECT_EQ(5, creator->x);
     EXPECT_EQ(6, creator->y);
 }
@@ -248,7 +248,7 @@ TEST(DelayedProxyCreatorTest, AccessPeripheral)
     infra::Creator<PeripheralInterface, Peripheral, void()> creator;
 
     infra::DelayedProxyCreator<PeripheralInterface, void()> creatorProxy(creator);
-    creatorProxy.Emplace();
+    creatorProxy.emplace();
 
     EXPECT_CALL(*creator, SendMock());
     creatorProxy->Send();

@@ -14,7 +14,7 @@ namespace services
     {
     public:
         BonjourServer(DatagramFactory& factory, Multicast& multicast, infra::BoundedConstString instance, infra::BoundedConstString serviceName, infra::BoundedConstString type,
-            infra::Optional<IPv4Address> ipv4Address, infra::Optional<IPv6Address> ipv6Address, uint16_t port, const DnsHostnameParts& text);
+            std::optional<IPv4Address> ipv4Address, std::optional<IPv6Address> ipv6Address, uint16_t port, const DnsHostnameParts& text);
         ~BonjourServer();
 
         void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
@@ -92,7 +92,7 @@ namespace services
             DnsQuestionFooter footer{};
             bool valid = true;
 
-            infra::Optional<Answer> answer;
+            std::optional<Answer> answer;
             uint16_t answersCount = 0;
             uint16_t additionalRecordsCount = 0;
         };
@@ -160,11 +160,11 @@ namespace services
         infra::BoundedConstString instance;
         infra::BoundedConstString serviceName;
         infra::BoundedConstString type;
-        infra::Optional<IPv4Address> ipv4Address;
-        infra::Optional<IPv6Address> ipv6Address;
+        std::optional<IPv4Address> ipv4Address;
+        std::optional<IPv6Address> ipv6Address;
         uint16_t port;
         const DnsHostnameParts& text;
-        infra::PolymorphicVariant<State, StateIdle, StateAnnounceIPv4, StateAnnounceIPv6> state{ infra::InPlaceType<StateIdle>(), *this };
+        infra::PolymorphicVariant<State, StateIdle, StateAnnounceIPv4, StateAnnounceIPv6> state{ std::in_place_type_t<StateIdle>(), *this };
     };
 }
 

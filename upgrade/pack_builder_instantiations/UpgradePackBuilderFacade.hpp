@@ -10,7 +10,7 @@
 
 namespace main_
 {
-    using TargetAndFiles = std::vector<std::tuple<std::string, std::string, infra::Optional<uint32_t>>>;
+    using TargetAndFiles = std::vector<std::tuple<std::string, std::string, std::optional<uint32_t>>>;
     using BuildOptions = std::vector<std::pair<std::string, std::string>>;
 
     struct DefaultKeyMaterial
@@ -36,7 +36,7 @@ namespace main_
         virtual void PostBuilder(application::UpgradePackBuilder& builder, application::ImageSigner& signer, const BuildOptions& buildOptions);
 
     private:
-        infra::Optional<uint8_t> GetOrder(const std::string& targetName, const std::map<uint8_t, std::vector<std::string>>& orderedTargets) const;
+        std::optional<uint8_t> GetOrder(const std::string& targetName, const std::map<uint8_t, std::vector<std::string>>& orderedTargets) const;
         bool IsTargetInOrder(const std::string& target, const std::map<uint8_t, std::vector<std::string>>& orderedTargets) const;
         void UpdateCurrentOrderOfTarget(const std::string& target, const std::map<uint8_t, std::vector<std::string>>& orderedTargets);
         std::vector<std::unique_ptr<application::Input>> CreateInputs(const application::SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, application::InputFactory& factory);

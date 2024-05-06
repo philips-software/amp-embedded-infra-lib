@@ -7,7 +7,7 @@ namespace services
     {
         assert(streamWriter.Allocatable());
         assert(sendSize <= MaxSendStreamSize());
-        streamWriterPtr = streamWriter.Emplace(infra::inPlace, sentData, sendSize);
+        streamWriterPtr = streamWriter.emplace(std::in_place, sentData, sendSize);
         infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionStub>& object)
             {
                 infra::SharedPtr<infra::StreamWriter> stream = std::move(object->streamWriterPtr);
@@ -24,7 +24,7 @@ namespace services
     infra::SharedPtr<infra::StreamReaderWithRewinding> ConnectionStub::ReceiveStream()
     {
         assert(streamReader.Allocatable());
-        return streamReader.Emplace(*this);
+        return streamReader.emplace(*this);
     }
 
     void ConnectionStub::AckReceived()

@@ -183,7 +183,7 @@ namespace services
         infra::Duration operationTimeout, infra::Duration pingInterval)
         : operationTimeout(operationTimeout)
         , pingInterval(pingInterval)
-        , state(infra::InPlaceType<StateConnecting>(), *this, factory, clientId, username, password)
+        , state(std::in_place_type_t<StateConnecting>(), *this, factory, clientId, username, password)
     {}
 
     void MqttClientImpl::Publish()
@@ -332,7 +332,7 @@ namespace services
                     if (observer)
                     {
                         auto& clientConnectionCopy = clientConnection;
-                        auto& newState = clientConnection.state.Emplace<StateConnected>(clientConnection);
+                        auto& newState = clientConnection.state.emplace<StateConnected>(clientConnection);
                         clientConnectionCopy.Attach(observer);
                         newState.HandleDataReceived();
                     }
@@ -744,7 +744,7 @@ namespace services
     void MqttClientConnectorImpl::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
     {
         connecting = false;
-        createdObserver(client.Emplace(*clientObserverFactory, clientId, username, password));
+        createdObserver(client.emplace(*clientObserverFactory, clientId, username, password));
     }
 
     void MqttClientConnectorImpl::ConnectionFailed(ConnectFailReason reason)

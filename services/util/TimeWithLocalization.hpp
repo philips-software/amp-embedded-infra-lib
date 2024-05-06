@@ -31,9 +31,9 @@ namespace services
         infra::DerivedTimerService& LocalWithoutDaylightSaving();
         infra::DerivedTimerService& Local();
 
-        static infra::Optional<infra::TimePoint> TimePointFromString(infra::BoundedConstString timePointString);
-        static infra::Optional<infra::Duration> DurationFromString(infra::BoundedConstString durationString);
-        static infra::Optional<infra::BoundedConstString> OffsetFromTimeString(infra::BoundedConstString timePointString);
+        static std::optional<infra::TimePoint> TimePointFromString(infra::BoundedConstString timePointString);
+        static std::optional<infra::Duration> DurationFromString(infra::BoundedConstString durationString);
+        static std::optional<infra::BoundedConstString> OffsetFromTimeString(infra::BoundedConstString timePointString);
 
         infra::Duration GetOffsetFromLocalToUtc() const;
         infra::Duration GetOffsetTimezone() const;

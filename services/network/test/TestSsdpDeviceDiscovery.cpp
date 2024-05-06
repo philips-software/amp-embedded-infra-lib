@@ -27,7 +27,7 @@ public:
     {
         EXPECT_CALL(factory, Listen(testing::_, ssdpPort, services::IPVersions::both)).WillOnce(testing::Invoke([this](services::DatagramExchangeObserver& observer, uint16_t port, services::IPVersions versions)
             {
-                auto ptr = datagramExchange.Emplace();
+                auto ptr = datagramExchange.emplace();
                 observer.Attach(*ptr);
 
                 return ptr;
@@ -35,7 +35,7 @@ public:
 
         EXPECT_CALL(factory, Listen(testing::_, services::IPVersions::both)).WillOnce(testing::Invoke([this](services::DatagramExchangeObserver& observer, services::IPVersions versions)
             {
-                auto ptr = datagramExchangeActiveDiscovery.Emplace();
+                auto ptr = datagramExchangeActiveDiscovery.emplace();
                 observer.Attach(*ptr);
 
                 return ptr;

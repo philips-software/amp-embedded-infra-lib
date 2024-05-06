@@ -171,7 +171,7 @@ namespace services
         {
             if (pageServer != nullptr)
                 DataReceivedForPage(std::move(reader));
-            else if (parser != infra::none) // Received data after contents for the page, but before closing the page request
+            else if (parser != std::nullopt) // Received data after contents for the page, but before closing the page request
                 Abort();
             else
                 ReceivedRequest(std::move(reader));
@@ -185,7 +185,7 @@ namespace services
     {
         if (pageServer != nullptr)
         {
-            if (contentLength == infra::none)
+            if (contentLength == std::nullopt)
                 parser->SetContentLength(lengthRead);
 
             pageServer->Close();
@@ -295,14 +295,14 @@ namespace services
         stream >> justReceived;
 
         // First eat up any leftover of previous requests
-        auto reducedContentLength = std::min<uint32_t>(contentLength.ValueOr(0), buffer.size());
+        auto reducedContentLength = std::min<uint32_t>(contentLength.value_or(0), buffer.size());
         buffer.erase(buffer.begin(), buffer.begin() + reducedContentLength);
-        if (contentLength != infra::none)
+        if (contentLength != std::nullopt)
             *contentLength -= reducedContentLength;
 
         if (!buffer.empty())
         {
-            parser.Emplace(buffer);
+            parser.emplace(buffer);
             if (parser->HeadersComplete())
             {
                 reader->Rewind(start + buffer.size());
@@ -354,27 +354,27 @@ namespace services
 
     void HttpServerConnectionObserver::DataReceivedForPage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
-        if (contentLength != infra::none && reader->Available() > *contentLength)
+        if (contentLength != std::nullopt && reader->Available() > *contentLength)
             Abort();
         else
         {
             keepSelfAlive = Subject().ObserverPtr();
             pageReader = std::move(reader);
-            pageCountingReader.Emplace(*pageReader);
-            pageServer->DataReceived(pageLimitedReader.Emplace(*pageCountingReader, contentLength.ValueOr(std::numeric_limits<uint32_t>::max())));
+            pageCountingReader.emplace(*pageReader);
+            pageServer->DataReceived(pageLimitedReader.emplace(*pageCountingReader, contentLength.value_or(std::numeric_limits<uint32_t>::max())));
         }
     }
 
     void HttpServerConnectionObserver::PageReaderClosed()
     {
-        if (contentLength != infra::none)
+        if (contentLength != std::nullopt)
             *contentLength -= pageCountingReader->TotalRead();
         lengthRead += pageCountingReader->TotalRead();
         Subject().AckReceived();
-        pageCountingReader = infra::none;
+        pageCountingReader = std::nullopt;
         pageReader = nullptr;
 
-        if (contentLength != infra::none && contentLength == 0 && pageServer != nullptr)
+        if (contentLength != std::nullopt && contentLength == 0 && pageServer != nullptr)
         {
             pageServer->Close();
             pageServer = nullptr;
@@ -399,7 +399,7 @@ namespace services
         if (!sendingResponse)
         {
             pageServer = nullptr;
-            parser = infra::none;
+            parser = std::nullopt;
             lengthRead = 0;
             send100Response = false;
             buffer.clear();
@@ -439,7 +439,7 @@ namespace services
         infra::TextInputStream::WithErrorPolicy stream(*reader);
         auto& buffer = parser->BodyBuffer();
         auto available = stream.Available();
-        if (available > buffer.max_size() - buffer.size() || buffer.size() + available > parser->ContentLength().ValueOr(std::numeric_limits<uint32_t>::max()))
+        if (available > buffer.max_size() - buffer.size() || buffer.size() + available > parser->ContentLength().value_or(std::numeric_limits<uint32_t>::max()))
         {
             while (!stream.Empty())
                 stream.ContiguousRange();
@@ -489,9 +489,9 @@ namespace services
     DefaultHttpServer::DefaultHttpServer(infra::BoundedString& buffer, ConnectionFactory& connectionFactory, uint16_t port)
         : SingleConnectionListener(connectionFactory, port, { connectionCreator })
         , buffer(buffer)
-        , connectionCreator([this](infra::Optional<HttpServerConnectionObserver>& value, IPAddress address)
+        , connectionCreator([this](std::optional<HttpServerConnectionObserver>& value, IPAddress address)
               {
-                  value.Emplace(this->buffer, *this);
+                  value.emplace(this->buffer, *this);
               })
     {}
 }

@@ -123,7 +123,7 @@ namespace services
             {
                 listeners.remove(index);
             });
-        return listeners.back().Emplace(*this, port, factory, versions);
+        return listeners.back().emplace(*this, port, factory, versions);
     }
 
     void ExclusiveStartingConnectionFactory::Connect(ClientConnectionObserverFactory& factory)
@@ -260,7 +260,7 @@ namespace services
             {
                 listeners.remove(index);
             });
-        return listeners.back().Emplace(*this, port, factory, versions);
+        return listeners.back().emplace(*this, port, factory, versions);
     }
 
     void ExclusiveStartingConnectionReleaseFactory::Connect(ClientConnectionObserverFactory& factory)
@@ -305,7 +305,7 @@ namespace services
                     {
                         connectionFactory.connections.remove(index);
                     });
-                auto connection = connectionFactory.connections.back().Emplace(connectionFactory.mutex);
+                auto connection = connectionFactory.connections.back().emplace(connectionFactory.mutex);
                 self->createdObserver(connection);
                 connection->Attach(connectionObserver);
             },
@@ -375,7 +375,7 @@ namespace services
                     {
                         connectionFactory.connections.remove(index);
                     });
-                auto connection = connectionFactory.connections.back().Emplace(connectionFactory.mutex);
+                auto connection = connectionFactory.connections.back().emplace(connectionFactory.mutex);
                 self->createdObserver(connection);
                 connection->Attach(connectionObserver);
 

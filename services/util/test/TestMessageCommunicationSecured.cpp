@@ -16,12 +16,12 @@ public:
 
     void ReceivedMessage(const std::vector<uint8_t>& message)
     {
-        lower.GetObserver().ReceivedMessage(reader.Emplace(message));
+        lower.GetObserver().ReceivedMessage(reader.emplace(message));
     }
 
     void SendMessageStreamAvailable(std::vector<uint8_t>& message)
     {
-        lower.GetObserver().SendMessageStreamAvailable(writer.Emplace(message));
+        lower.GetObserver().SendMessageStreamAvailable(writer.emplace(message));
     }
 
     void ExpectReceivedMessage(infra::BoundedConstString expected)

@@ -11,7 +11,7 @@ namespace services
     {
         if (reader.Allocatable())
         {
-            auto readerPtr = reader.Emplace(ConnectionObserver::Subject().ReceiveStream());
+            auto readerPtr = reader.emplace(ConnectionObserver::Subject().ReceiveStream());
             EchoOnStreams::DataReceived(infra::MakeContainedSharedObject(readerPtr->limitedReader, readerPtr));
         }
         else

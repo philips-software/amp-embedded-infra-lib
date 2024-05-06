@@ -51,7 +51,7 @@ namespace services
         services::IPv4Address ipv4Address;
 
         infra::CreatorBase<services::Stoppable, void(LightweightIp& lightweightIp)>& connectedCreator;
-        infra::Optional<infra::ProxyCreator<services::Stoppable, void(LightweightIp& lightweightIp)>> connected;
+        std::optional<infra::ProxyCreator<services::Stoppable, void(LightweightIp& lightweightIp)>> connected;
         bool stopping = false;
         bool starting = false;
 

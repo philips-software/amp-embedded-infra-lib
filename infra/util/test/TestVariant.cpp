@@ -60,7 +60,7 @@ TEST(VariantTest, TestInPlaceConstruction)
         int y;
     };
 
-    infra::Variant<MyStruct> v(infra::InPlaceType<MyStruct>(), 2, 3);
+    infra::Variant<MyStruct> v(std::in_place_type_t<MyStruct>(), 2, 3);
     EXPECT_EQ(0, v.Which());
     EXPECT_EQ(2, v.Get<MyStruct>().x);
     EXPECT_EQ(3, v.Get<MyStruct>().y);
@@ -84,7 +84,7 @@ TEST(VariantTest, TestEmplace)
     };
 
     infra::Variant<bool, MyStruct> v(true);
-    EXPECT_EQ(MyStruct(2, 3), v.Emplace<MyStruct>(2, 3));
+    EXPECT_EQ(MyStruct(2, 3), v.emplace<MyStruct>(2, 3));
     EXPECT_EQ(1, v.Which());
     EXPECT_EQ(2, v.Get<MyStruct>().x);
     EXPECT_EQ(3, v.Get<MyStruct>().y);
@@ -235,8 +235,8 @@ struct DoubleVisitor
 
 TEST(VariantTest, TestDoubleVisitor)
 {
-    infra::Variant<uint32_t, int> variant1(infra::InPlaceType<int>(), 5);
-    infra::Variant<uint32_t, int> variant2(infra::InPlaceType<uint32_t>(), 1u);
+    infra::Variant<uint32_t, int> variant1(std::in_place_type_t<int>(), 5);
+    infra::Variant<uint32_t, int> variant2(std::in_place_type_t<uint32_t>(), 1u);
     DoubleVisitor visitor;
     EXPECT_EQ(2, infra::ApplyVisitor(visitor, variant2, variant2));
     EXPECT_EQ(6, infra::ApplyVisitor(visitor, variant1, variant2));

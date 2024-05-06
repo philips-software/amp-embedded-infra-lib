@@ -40,7 +40,7 @@ namespace infra
             return createdObject;
         }
 
-        void Emplace() override
+        void emplace() override
         {
             Constructed();
         }
@@ -77,7 +77,7 @@ namespace infra
             return createdObject;
         }
 
-        void Emplace(ConstructionArg0 arg0) override
+        void emplace(ConstructionArg0 arg0) override
         {
             Constructed(arg0);
         }
@@ -114,7 +114,7 @@ namespace infra
             return createdObject;
         }
 
-        void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1) override
+        void emplace(ConstructionArg0 arg0, ConstructionArg1 arg1) override
         {
             Constructed(arg0, arg1);
         }
@@ -151,7 +151,7 @@ namespace infra
             return createdObject;
         }
 
-        void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2) override
+        void emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2) override
         {
             Constructed(arg0, arg1, arg2);
         }
@@ -188,7 +188,7 @@ namespace infra
             return createdObject;
         }
 
-        void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3) override
+        void emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3) override
         {
             Constructed(arg0, arg1, arg2, arg3);
         }
@@ -225,7 +225,7 @@ namespace infra
             return createdObject;
         }
 
-        void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3, ConstructionArg4 arg4) override
+        void emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3, ConstructionArg4 arg4) override
         {
             Constructed(arg0, arg1, arg2, arg3, arg4);
         }
@@ -262,7 +262,7 @@ namespace infra
             return createdObject;
         }
 
-        void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3, ConstructionArg4 arg4, ConstructionArg5 arg5) override
+        void emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3, ConstructionArg4 arg4, ConstructionArg5 arg5) override
         {
             Constructed(arg0, arg1, arg2, arg3, arg4, arg5);
         }
@@ -285,7 +285,7 @@ namespace infra
         MOCK_METHOD0(Destructed, void());
 
     protected:
-        void Emplace() override
+        void emplace() override
         {
             Constructed();
         }
@@ -305,7 +305,7 @@ namespace infra
         MOCK_METHOD0(Destructed, void());
 
     protected:
-        void Emplace(ConstructionArg0 arg0) override
+        void emplace(ConstructionArg0 arg0) override
         {
             Constructed(arg0);
         }
@@ -325,7 +325,7 @@ namespace infra
         MOCK_METHOD0(Destructed, void());
 
     protected:
-        void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1) override
+        void emplace(ConstructionArg0 arg0, ConstructionArg1 arg1) override
         {
             Constructed(arg0, arg1);
         }
@@ -345,7 +345,7 @@ namespace infra
         MOCK_METHOD0(Destructed, void());
 
     protected:
-        void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2) override
+        void emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2) override
         {
             Constructed(arg0, arg1, arg2);
         }
@@ -365,7 +365,7 @@ namespace infra
         MOCK_METHOD0(Destructed, void());
 
     protected:
-        void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3) override
+        void emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3) override
         {
             Constructed(arg0, arg1, arg2, arg3);
         }
@@ -385,7 +385,7 @@ namespace infra
         MOCK_METHOD0(Destructed, void());
 
     protected:
-        void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3, ConstructionArg4 arg4) override
+        void emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3, ConstructionArg4 arg4) override
         {
             Constructed(arg0, arg1, arg2, arg3, arg4);
         }
@@ -405,7 +405,7 @@ namespace infra
         MOCK_METHOD0(Destructed, void());
 
     protected:
-        void Emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3, ConstructionArg4 arg4, ConstructionArg5 arg5) override
+        void emplace(ConstructionArg0 arg0, ConstructionArg1 arg1, ConstructionArg2 arg2, ConstructionArg3 arg3, ConstructionArg4 arg4, ConstructionArg5 arg5) override
         {
             Constructed(arg0, arg1, arg2, arg3, arg4, arg5);
         }

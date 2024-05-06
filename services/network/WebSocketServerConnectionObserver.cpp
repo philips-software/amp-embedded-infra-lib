@@ -1,6 +1,7 @@
 #include "services/network/WebSocketServerConnectionObserver.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "infra/stream/StringOutputStream.hpp"
+#include "infra/util/Optional.hpp"
 #include "mbedtls/sha1.h"
 #include "services/network/HttpServer.hpp"
 #include <cassert>
@@ -8,8 +9,8 @@
 namespace services
 {
     WebSocketServerConnectionObserver::WebSocketServerConnectionObserver(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedDeque<uint8_t>& receiveBuffer)
-        : receivingState(infra::InPlaceType<ReceivingStateReceiveHeader>(), *this)
-        , sendingState(infra::InPlaceType<SendingStateIdle>(), *this)
+        : receivingState(std::in_place_type_t<ReceivingStateReceiveHeader>(), *this)
+        , sendingState(std::in_place_type_t<SendingStateIdle>(), *this)
         , receiveBuffer(receiveBuffer)
         , sendBuffer(sendBuffer)
         , streamReader([this]()
@@ -66,7 +67,7 @@ namespace services
     infra::SharedPtr<infra::StreamReaderWithRewinding> WebSocketServerConnectionObserver::ReceiveStream()
     {
         assert(!streamReader);
-        return streamReader.Emplace(infra::inPlace, receiveBuffer, receiveBuffer.size());
+        return streamReader.emplace(std::in_place, receiveBuffer, receiveBuffer.size());
     }
 
     void WebSocketServerConnectionObserver::AckReceived()
@@ -99,29 +100,29 @@ namespace services
 
     void WebSocketServerConnectionObserver::SetReceivingStateReceiveHeader()
     {
-        receivingState.Emplace<ReceivingStateReceiveHeader>(*this);
+        receivingState.emplace<ReceivingStateReceiveHeader>(*this);
         receivingState->DataReceived();
     }
 
     void WebSocketServerConnectionObserver::SetStateReceiveData(services::WebSocketFrameHeader header)
     {
-        receivingState.Emplace<ReceivingStateReceiveData>(*this, header);
+        receivingState.emplace<ReceivingStateReceiveData>(*this, header);
         receivingState->DataReceived();
     }
 
     void WebSocketServerConnectionObserver::SetReceivingStateClose()
     {
-        receivingState.Emplace<ReceivingStateClose>(*this);
+        receivingState.emplace<ReceivingStateClose>(*this);
     }
 
     void WebSocketServerConnectionObserver::SetReceivingStatePong()
     {
-        receivingState.Emplace<ReceivingStatePong>(*this);
+        receivingState.emplace<ReceivingStatePong>(*this);
     }
 
     void WebSocketServerConnectionObserver::SetStateSendingIdle()
     {
-        sendingState.Emplace<SendingStateIdle>(*this);
+        sendingState.emplace<SendingStateIdle>(*this);
         sendingState->CheckForSomethingToDo();
     }
 
@@ -142,7 +143,7 @@ namespace services
     void WebSocketServerConnectionObserver::TryAllocateSendStream()
     {
         if (streamWriter.Allocatable() && sendBuffer.empty() && requestedSendSize != 0)
-            services::Connection::Observer().SendStreamAvailable(streamWriter.Emplace(infra::inPlace, sendBuffer, std::exchange(requestedSendSize, 0)));
+            services::Connection::Observer().SendStreamAvailable(streamWriter.emplace(std::in_place, sendBuffer, std::exchange(requestedSendSize, 0)));
     }
 
     void WebSocketServerConnectionObserver::ReceivingState::DataReceived()
@@ -313,9 +314,9 @@ namespace services
     void WebSocketServerConnectionObserver::SendingStateIdle::CheckForSomethingToDo()
     {
         if (connection.receivingStateThatWantsToSendData != nullptr)
-            connection.sendingState.Emplace<SendingStateInternalData>(connection);
+            connection.sendingState.emplace<SendingStateInternalData>(connection);
         else if (connection.sendBufferReadyForSending)
-            connection.sendingState.Emplace<SendingStateExternalData>(connection);
+            connection.sendingState.emplace<SendingStateExternalData>(connection);
         else
             connection.TryAllocateSendStream();
     }

@@ -207,12 +207,12 @@ namespace services
 
     void LightweightIpOverEthernetFactory::Create(hal::EthernetMac& ethernet)
     {
-        ethernetStack.Emplace(ethernet, netInterface);
+        ethernetStack.emplace(ethernet, netInterface);
     }
 
     void LightweightIpOverEthernetFactory::Destroy()
     {
-        ethernetStack = infra::none;
+        ethernetStack = std::nullopt;
     }
 
     hal::MacAddress LightweightIpOverEthernetFactory::MacAddress() const

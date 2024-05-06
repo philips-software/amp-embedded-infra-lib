@@ -90,14 +90,14 @@ namespace services
         really_assert(readerPtr == nullptr);
 
         readerPtr = std::move(reader);
-        bufferedReader.Emplace(receiveBuffer, *readerPtr);
+        bufferedReader.emplace(receiveBuffer, *readerPtr);
         DataReceived();
     }
 
     void EchoOnStreams::ReleaseReader()
     {
         readerAccess.SetAction(nullptr);
-        bufferedReader = infra::none;
+        bufferedReader = std::nullopt;
         readerPtr = nullptr;
     }
 
@@ -141,21 +141,21 @@ namespace services
 
     void EchoOnStreams::DataReceived()
     {
-        if (limitedReader != infra::none)
+        if (limitedReader != std::nullopt)
             ContinueReceiveMessage();
 
         while (readerPtr != nullptr && methodDeserializer == nullptr && !readerAccess.Referenced())
         {
-            if (limitedReader == infra::none)
+            if (limitedReader == std::nullopt)
                 StartReceiveMessage();
 
-            if (limitedReader != infra::none)
+            if (limitedReader != std::nullopt)
                 ContinueReceiveMessage();
         }
 
-        if (!readerAccess.Referenced() && limitedReader != infra::none)
+        if (!readerAccess.Referenced() && limitedReader != std::nullopt)
         {
-            bufferedReader = infra::none;
+            bufferedReader = std::nullopt;
             readerPtr = nullptr;
         }
     }
@@ -173,7 +173,7 @@ namespace services
         if (stream.Failed())
         {
             bufferedReader->Rewind(start);
-            bufferedReader = infra::none;
+            bufferedReader = std::nullopt;
             readerPtr->Rewind(readerStart + receiveBuffer.size());
             AckReceived();
             readerPtr = nullptr;
@@ -185,7 +185,7 @@ namespace services
         }
         else
         {
-            limitedReader.Emplace(*bufferedReader, contents.Get<infra::PartialProtoLengthDelimited>().length);
+            limitedReader.emplace(*bufferedReader, contents.Get<infra::PartialProtoLengthDelimited>().length);
             StartMethod(serviceId, methodId, contents.Get<infra::PartialProtoLengthDelimited>().length);
 
             if (formatErrorPolicy.Failed())
@@ -225,7 +225,7 @@ namespace services
                 }))
         {
             errorPolicy.ServiceNotFound(serviceId);
-            methodDeserializer = deserializerDummy.Emplace(*this);
+            methodDeserializer = deserializerDummy.emplace(*this);
         }
     }
 
@@ -235,7 +235,7 @@ namespace services
 
         if (limitedReader->LimitReached())
         {
-            limitedReader = infra::none;
+            limitedReader = std::nullopt;
             if (methodDeserializer->Failed())
             {
                 errorPolicy.MessageFormatError();

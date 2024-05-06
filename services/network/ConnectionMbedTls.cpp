@@ -1,5 +1,6 @@
 #include "services/network/ConnectionMbedTls.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
+#include "infra/util/Optional.hpp"
 #include "services/network/CertificatesMbedTls.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 
@@ -216,7 +217,7 @@ namespace services
     infra::SharedPtr<infra::StreamReaderWithRewinding> ConnectionMbedTls::ReceiveStream()
     {
         keepAliveForReader = SharedFromThis();
-        return receiveReader.Emplace(*this);
+        return receiveReader.emplace(*this);
     }
 
     void ConnectionMbedTls::AckReceived()
@@ -267,7 +268,7 @@ namespace services
 
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([requestedSize](const infra::SharedPtr<ConnectionMbedTls>& object)
                 {
-                    infra::SharedPtr<StreamWriterMbedTls> stream = object->streamWriter.Emplace(*object, requestedSize);
+                    infra::SharedPtr<StreamWriterMbedTls> stream = object->streamWriter.emplace(*object, requestedSize);
                     if (object->Connection::IsAttached())
                         object->Observer().SendStreamAvailable(std::move(stream));
                 },
@@ -414,7 +415,7 @@ namespace services
     }
 
     ConnectionMbedTls::StreamWriterMbedTls::StreamWriterMbedTls(ConnectionMbedTls& connection, uint32_t size)
-        : infra::LimitedStreamWriter::WithOutput<infra::BoundedVectorStreamWriter>(infra::inPlace, connection.sendBuffer, size)
+        : infra::LimitedStreamWriter::WithOutput<infra::BoundedVectorStreamWriter>(std::in_place, connection.sendBuffer, size)
         , connection(connection)
     {}
 

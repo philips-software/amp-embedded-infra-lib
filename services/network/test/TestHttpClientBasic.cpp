@@ -55,7 +55,7 @@ public:
             EXPECT_CALL(httpClientConnector, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&httpClientObserverFactory));
         } };
     infra::BoundedString::WithStorage<64> url{ "https://hostname/path" };
-    infra::Optional<testing::StrictMock<HttpClientBasicMock>> controller{ infra::inPlace, url, 443, httpClientConnector };
+    std::optional<testing::StrictMock<HttpClientBasicMock>> controller{ std::in_place, url, 443, httpClientConnector };
     testing::StrictMock<infra::MockCallback<void()>> onStopped;
     testing::StrictMock<services::HttpClientMock> httpClient;
 };
@@ -123,7 +123,7 @@ TEST_F(HttpClientBasicTest, Stop_while_connected_does_not_invoke_Done)
         {
             EXPECT_CALL(onStopped, callback());
             httpClient.Detach();
-            controller = infra::none;
+            controller = std::nullopt;
         }));
     controller->Cancel([this]()
         {

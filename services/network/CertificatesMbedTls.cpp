@@ -258,7 +258,7 @@ namespace services
     {
         auto algorithmSequence = root.StartSequence();
         algorithmSequence.AddObjectId(MakeConstByteRange(oid));
-        algorithmSequence.AddOptional<uint8_t>(infra::none);
+        algorithmSequence.AddOptional<uint8_t>(std::nullopt);
     }
 
     void CertificatesMbedTls::X509AddName(infra::Asn1Formatter& root, const mbedtls_x509_name& name) const

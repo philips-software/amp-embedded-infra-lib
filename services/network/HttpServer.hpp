@@ -210,14 +210,14 @@ namespace services
         bool send100Response = false;
         bool closeWhenIdle = false;
         bool idle = false;
-        infra::Optional<uint32_t> contentLength;
+        std::optional<uint32_t> contentLength;
         uint32_t lengthRead = 0;
         HttpPage* pageServer = nullptr;
         infra::SharedPtr<infra::StreamReaderWithRewinding> pageReader;
-        infra::Optional<infra::CountingStreamReaderWithRewinding> pageCountingReader;
+        std::optional<infra::CountingStreamReaderWithRewinding> pageCountingReader;
         infra::NotifyingSharedOptional<infra::LimitedStreamReaderWithRewinding> pageLimitedReader;
         infra::SharedPtr<void> keepSelfAlive;
-        infra::Optional<HttpRequestParserImpl> parser;
+        std::optional<HttpRequestParserImpl> parser;
         infra::TimerSingleShot initialIdle;
         bool sendingResponse = false;
 

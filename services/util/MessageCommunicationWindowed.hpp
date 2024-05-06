@@ -229,7 +229,7 @@ namespace services
         std::atomic<uint16_t> releasedWindow{ 0 };
         std::atomic<bool> sendInitResponse{ false };
         bool sending = false;
-        infra::Optional<uint16_t> requestedSendMessageSize;
+        std::optional<uint16_t> requestedSendMessageSize;
         infra::PolymorphicVariant<State, StateSendingInit, StateSendingInitResponse, StateOperational, StateSendingMessage, StateSendingReleaseWindow> state;
     };
 }

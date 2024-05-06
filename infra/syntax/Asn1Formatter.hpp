@@ -29,7 +29,7 @@ namespace infra
         void AddTime(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t min, uint8_t sec);
 
         template<typename T>
-        void AddOptional(infra::Optional<T> value);
+        void AddOptional(std::optional<T> value);
 
         Asn1ContainerFormatter StartSequence();
         Asn1ContainerFormatter StartSet();
@@ -64,7 +64,7 @@ namespace infra
     };
 
     template<typename T>
-    void Asn1Formatter::AddOptional(infra::Optional<T> value)
+    void Asn1Formatter::AddOptional(std::optional<T> value)
     {
         if (value)
             Add(*value);

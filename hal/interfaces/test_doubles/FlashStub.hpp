@@ -31,7 +31,7 @@ namespace hal
 
     public:
         std::vector<std::vector<uint8_t>> sectors;
-        infra::Optional<uint8_t> stopAfterWriteSteps;
+        std::optional<uint8_t> stopAfterWriteSteps;
 
         infra::Function<void()> onEraseDone;
         bool delaySignalEraseDone = false;

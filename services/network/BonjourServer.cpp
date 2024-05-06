@@ -51,9 +51,9 @@ namespace services
     }
 
     BonjourServer::BonjourServer(DatagramFactory& factory, Multicast& multicast, infra::BoundedConstString instance, infra::BoundedConstString serviceName, infra::BoundedConstString type,
-        infra::Optional<IPv4Address> ipv4Address, infra::Optional<IPv6Address> ipv6Address, uint16_t port, const DnsHostnameParts& text)
-        : datagramExchangeIpv4(ipv4Address != infra::none ? factory.Listen(*this, mdnsPort, IPVersions::ipv4) : nullptr)
-        , datagramExchangeIpv6(ipv6Address != infra::none ? factory.Listen(*this, mdnsPort, IPVersions::ipv6) : nullptr)
+        std::optional<IPv4Address> ipv4Address, std::optional<IPv6Address> ipv6Address, uint16_t port, const DnsHostnameParts& text)
+        : datagramExchangeIpv4(ipv4Address != std::nullopt ? factory.Listen(*this, mdnsPort, IPVersions::ipv4) : nullptr)
+        , datagramExchangeIpv6(ipv6Address != std::nullopt ? factory.Listen(*this, mdnsPort, IPVersions::ipv6) : nullptr)
         , multicast(multicast)
         , instance(instance)
         , serviceName(serviceName)
@@ -63,22 +63,22 @@ namespace services
         , port(port)
         , text(text)
     {
-        if (ipv4Address != infra::none)
+        if (ipv4Address != std::nullopt)
             multicast.JoinMulticastGroup(datagramExchangeIpv4, mdnsMulticastAddressIpv4);
-        if (ipv6Address != infra::none)
+        if (ipv6Address != std::nullopt)
             multicast.JoinMulticastGroup(datagramExchangeIpv6, mdnsMulticastAddressIpv6);
 
         if (datagramExchangeIpv4 != nullptr)
-            state.Emplace<StateAnnounceIPv4>(*this);
+            state.emplace<StateAnnounceIPv4>(*this);
         else
-            state.Emplace<StateAnnounceIPv6>(*this);
+            state.emplace<StateAnnounceIPv6>(*this);
     }
 
     BonjourServer::~BonjourServer()
     {
-        if (ipv4Address != infra::none)
+        if (ipv4Address != std::nullopt)
             multicast.LeaveMulticastGroup(datagramExchangeIpv4, mdnsMulticastAddressIpv4);
-        if (ipv6Address != infra::none)
+        if (ipv6Address != std::nullopt)
             multicast.LeaveMulticastGroup(datagramExchangeIpv6, mdnsMulticastAddressIpv6);
     }
 
@@ -115,7 +115,7 @@ namespace services
     void BonjourServer::Answer::AddAAnswer()
     {
         ++answersCount;
-        if (server.ipv4Address != infra::none)
+        if (server.ipv4Address != std::nullopt)
             AddA(DnsHostnameInParts(server.instance)("local"));
         else
             AddNoA(DnsHostnameInParts(server.instance)("local"));
@@ -124,7 +124,7 @@ namespace services
     void BonjourServer::Answer::AddAaaaAnswer()
     {
         ++answersCount;
-        if (server.ipv6Address != infra::none)
+        if (server.ipv6Address != std::nullopt)
             AddAaaa(DnsHostnameInParts(server.instance)("local"));
         else
             AddNoAaaa(DnsHostnameInParts(server.instance)("local"));
@@ -151,7 +151,7 @@ namespace services
     void BonjourServer::Answer::AddAAdditional()
     {
         ++additionalRecordsCount;
-        if (server.ipv4Address != infra::none)
+        if (server.ipv4Address != std::nullopt)
             AddA(DnsHostnameInParts(server.instance)("local"));
         else
             AddNoA(DnsHostnameInParts(server.instance)("local"));
@@ -160,7 +160,7 @@ namespace services
     void BonjourServer::Answer::AddAaaaAdditional()
     {
         ++additionalRecordsCount;
-        if (server.ipv6Address != infra::none)
+        if (server.ipv6Address != std::nullopt)
             AddAaaa(DnsHostnameInParts(server.instance)("local"));
         else
             AddNoAaaa(DnsHostnameInParts(server.instance)("local"));
@@ -269,7 +269,7 @@ namespace services
 
     bool BonjourServer::QuestionParser::HasAnswer() const
     {
-        return answer != infra::none && answer->Answers() != 0;
+        return answer != std::nullopt && answer->Answers() != 0;
     }
 
     void BonjourServer::QuestionParser::RequestSendStream(DatagramExchange& datagramExchange, UdpSocket from, UdpSocket to)
@@ -284,7 +284,7 @@ namespace services
         if (!IsValidQuestion())
             return;
 
-        answer.Emplace(server, header.id, writer, answersCount, additionalRecordsCount);
+        answer.emplace(server, header.id, writer, answersCount, additionalRecordsCount);
 
         auto startOfQuestions = reader.ConstructSaveMarker();
 
@@ -300,7 +300,7 @@ namespace services
         additionalRecordsCount = answer->AdditionalRecords();
 
         if (!valid)
-            answer = infra::none;
+            answer = std::nullopt;
     }
 
     bool BonjourServer::QuestionParser::IsValidQuestion() const
@@ -533,9 +533,9 @@ namespace services
         writer = nullptr;
 
         if (server.datagramExchangeIpv6 != nullptr)
-            server.state.Emplace<StateAnnounceIPv6>(server);
+            server.state.emplace<StateAnnounceIPv6>(server);
         else
-            server.state.Emplace<StateIdle>(server);
+            server.state.emplace<StateIdle>(server);
     }
 
     BonjourServer::StateAnnounceIPv6::StateAnnounceIPv6(BonjourServer& server)
@@ -552,6 +552,6 @@ namespace services
         WriteAnnounceQuery(*writer);
         writer = nullptr;
 
-        server.state.Emplace<StateIdle>(server);
+        server.state.emplace<StateIdle>(server);
     }
 }

@@ -29,7 +29,7 @@ namespace services
     }
 
     DatagramExchangeLwIP::DatagramExchangeLwIP(DatagramExchangeObserver& observer)
-        : state(infra::InPlaceType<StateIdle>(), *this)
+        : state(std::in_place_type_t<StateIdle>(), *this)
     {
         observer.Attach(*this);
     }
@@ -173,9 +173,9 @@ namespace services
         if (HasObserver() && reader.Allocatable())
         {
             if (IP_GET_TYPE(address) == IPADDR_TYPE_V4)
-                GetObserver().DataReceived(reader.Emplace(buffer), Udpv4Socket{ IPv4Address{ ip4_addr1(ip_2_ip4(address)), ip4_addr2(ip_2_ip4(address)), ip4_addr3(ip_2_ip4(address)), ip4_addr4(ip_2_ip4(address)) }, port });
+                GetObserver().DataReceived(reader.emplace(buffer), Udpv4Socket{ IPv4Address{ ip4_addr1(ip_2_ip4(address)), ip4_addr2(ip_2_ip4(address)), ip4_addr3(ip_2_ip4(address)), ip4_addr4(ip_2_ip4(address)) }, port });
             else
-                GetObserver().DataReceived(reader.Emplace(buffer), Udpv6Socket{ IPv6Address{ IP6_ADDR_BLOCK1(ip_2_ip6(address)), IP6_ADDR_BLOCK2(ip_2_ip6(address)), IP6_ADDR_BLOCK3(ip_2_ip6(address)), IP6_ADDR_BLOCK4(ip_2_ip6(address)),
+                GetObserver().DataReceived(reader.emplace(buffer), Udpv6Socket{ IPv6Address{ IP6_ADDR_BLOCK1(ip_2_ip6(address)), IP6_ADDR_BLOCK2(ip_2_ip6(address)), IP6_ADDR_BLOCK3(ip_2_ip6(address)), IP6_ADDR_BLOCK4(ip_2_ip6(address)),
                                                                                     IP6_ADDR_BLOCK5(ip_2_ip6(address)), IP6_ADDR_BLOCK6(ip_2_ip6(address)), IP6_ADDR_BLOCK7(ip_2_ip6(address)), IP6_ADDR_BLOCK8(ip_2_ip6(address)) },
                                                                        port });
         }
@@ -255,7 +255,7 @@ namespace services
         bufferOffset = static_cast<uint16_t>(marker);
     }
 
-    DatagramExchangeLwIP::UdpWriter::UdpWriter(udp_pcb* control, pbuf* buffer, infra::Optional<UdpSocket> remote)
+    DatagramExchangeLwIP::UdpWriter::UdpWriter(udp_pcb* control, pbuf* buffer, std::optional<UdpSocket> remote)
         : control(control)
         , buffer(buffer)
         , remote(remote)
@@ -311,17 +311,17 @@ namespace services
 
     void DatagramExchangeLwIP::StateIdle::RequestSendStream(std::size_t sendSize)
     {
-        StateWaitingForBuffer& state = datagramExchange.state.Emplace<StateWaitingForBuffer>(datagramExchange, sendSize, infra::none);
+        StateWaitingForBuffer& state = datagramExchange.state.emplace<StateWaitingForBuffer>(datagramExchange, sendSize, std::nullopt);
         state.TryAllocateBuffer();
     }
 
     void DatagramExchangeLwIP::StateIdle::RequestSendStream(std::size_t sendSize, UdpSocket remote)
     {
-        StateWaitingForBuffer& state = datagramExchange.state.Emplace<StateWaitingForBuffer>(datagramExchange, sendSize, infra::MakeOptional(remote));
+        StateWaitingForBuffer& state = datagramExchange.state.emplace<StateWaitingForBuffer>(datagramExchange, sendSize, std::make_optional(remote));
         state.TryAllocateBuffer();
     }
 
-    DatagramExchangeLwIP::StateWaitingForBuffer::StateWaitingForBuffer(DatagramExchangeLwIP& datagramExchange, std::size_t sendSize, infra::Optional<UdpSocket> remote)
+    DatagramExchangeLwIP::StateWaitingForBuffer::StateWaitingForBuffer(DatagramExchangeLwIP& datagramExchange, std::size_t sendSize, std::optional<UdpSocket> remote)
         : datagramExchange(datagramExchange)
         , sendSize(sendSize)
         , remote(remote)
@@ -335,16 +335,16 @@ namespace services
     {
         pbuf* buffer = pbuf_alloc(PBUF_TRANSPORT, static_cast<uint16_t>(sendSize), PBUF_POOL);
         if (buffer != nullptr)
-            datagramExchange.state.Emplace<StateBufferAllocated>(datagramExchange, buffer, infra::Optional<UdpSocket>(remote));
+            datagramExchange.state.emplace<StateBufferAllocated>(datagramExchange, buffer, std::optional<UdpSocket>(remote));
     }
 
-    DatagramExchangeLwIP::StateBufferAllocated::StateBufferAllocated(DatagramExchangeLwIP& datagramExchange, pbuf* buffer, infra::Optional<UdpSocket> remote)
+    DatagramExchangeLwIP::StateBufferAllocated::StateBufferAllocated(DatagramExchangeLwIP& datagramExchange, pbuf* buffer, std::optional<UdpSocket> remote)
         : datagramExchange(datagramExchange)
         , stream([this]()
               {
-                  this->datagramExchange.state.Emplace<StateIdle>(this->datagramExchange);
+                  this->datagramExchange.state.emplace<StateIdle>(this->datagramExchange);
               })
-        , streamPtr(stream.Emplace(datagramExchange.control, buffer, remote))
+        , streamPtr(stream.emplace(datagramExchange.control, buffer, remote))
     {
         infra::EventDispatcherWithWeakPtr::Instance().Schedule([this](const infra::SharedPtr<DatagramExchange>& datagramExchange)
             {

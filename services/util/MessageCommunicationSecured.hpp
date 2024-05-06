@@ -69,7 +69,7 @@ namespace services
                 SendMessageStreamReleased();
             } };
         uint16_t requestedSendSize = 0;
-        infra::Optional<std::pair<KeyType, IvType>> nextKeys;
+        std::optional<std::pair<KeyType, IvType>> nextKeys;
 
         mbedtls_gcm_context receiveContext;
         infra::BoundedVector<uint8_t>& receiveBuffer;

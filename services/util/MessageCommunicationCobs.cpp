@@ -33,7 +33,7 @@ namespace services
     {
         sendStorage.clear();
         this->onSent = onSent;
-        return sendStream.Emplace(infra::inPlace, sendStorage, size);
+        return sendStream.emplace(std::in_place, sendStorage, size);
     }
 
     std::size_t MessageCommunicationCobs::MaxSendMessageSize() const
@@ -108,7 +108,7 @@ namespace services
 
         if (messageSize != 0)
         {
-            infra::LimitedStreamReader::WithInput<infra::BoundedVectorInputStreamReader> reader(infra::inPlace, receivedMessage, messageSize);
+            infra::LimitedStreamReader::WithInput<infra::BoundedVectorInputStreamReader> reader(std::in_place, receivedMessage, messageSize);
             GetObserver().ReceivedMessageOnInterrupt(reader);
             receivedMessage.erase(receivedMessage.begin(), receivedMessage.begin() + messageSize);
         }

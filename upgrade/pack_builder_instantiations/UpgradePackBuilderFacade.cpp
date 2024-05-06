@@ -59,29 +59,29 @@ namespace main_
         builder.WriteUpgradePack(outputFilename, fileSystem);
     }
 
-    infra::Optional<uint8_t> UpgradePackBuilderFacade::GetOrder(const std::string& targetName, const std::map<uint8_t, std::vector<std::string>>& orderedTargets) const
+    std::optional<uint8_t> UpgradePackBuilderFacade::GetOrder(const std::string& targetName, const std::map<uint8_t, std::vector<std::string>>& orderedTargets) const
     {
         for (const auto& targets : orderedTargets)
         {
             const auto targetPos = std::find(targets.second.begin(), targets.second.end(), targetName);
             if (targetPos != targets.second.end())
-                return infra::MakeOptional(targets.first);
+                return std::make_optional(targets.first);
         }
-        return infra::none;
+        return std::nullopt;
     }
 
     bool UpgradePackBuilderFacade::IsTargetInOrder(const std::string& target, const std::map<uint8_t, std::vector<std::string>>& orderedTargets) const
     {
         const auto orderToAdd = GetOrder(target, orderedTargets);
 
-        return orderToAdd == infra::none || currentOrderOfTarget <= *orderToAdd;
+        return orderToAdd == std::nullopt || currentOrderOfTarget <= *orderToAdd;
     }
 
     void UpgradePackBuilderFacade::UpdateCurrentOrderOfTarget(const std::string& target, const std::map<uint8_t, std::vector<std::string>>& orderedTargets)
     {
         const auto orderToAdd = GetOrder(target, orderedTargets);
 
-        if (orderToAdd != infra::none)
+        if (orderToAdd != std::nullopt)
             currentOrderOfTarget = std::max(currentOrderOfTarget, *orderToAdd);
     }
 

@@ -30,7 +30,7 @@ public:
     }
 
     infra::SharedOptional<testing::StrictMock<services::ConnectionStub>> connection;
-    infra::SharedPtr<services::Connection> connectionPtr{ connection.Emplace() };
+    infra::SharedPtr<services::Connection> connectionPtr{ connection.emplace() };
     testing::StrictMock<services::ConnectionFactoryMock> connectionFactoryMock;
     testing::StrictMock<hal::SerialCommunicationMock> serialCommunicationMock;
     services::ServerConnectionObserverFactory* serverConnectionObserverFactory;

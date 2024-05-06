@@ -36,7 +36,7 @@ namespace services
 
     void DnsResolver::TryResolveNext()
     {
-        if (activeLookup == infra::none && !waiting.empty())
+        if (activeLookup == std::nullopt && !waiting.empty())
         {
             Resolve(waiting.front());
             waiting.pop_front();
@@ -45,7 +45,7 @@ namespace services
 
     void DnsResolver::Resolve(NameResolverResult& nameLookup)
     {
-        activeLookup.Emplace(*this, nameLookup);
+        activeLookup.emplace(*this, nameLookup);
         ++currentNameServer;
         if (currentNameServer == nameServers.size())
             currentNameServer = 0;
@@ -74,7 +74,7 @@ namespace services
 
     void DnsResolver::NameLookupDone(const infra::Function<void(), 3 * sizeof(void*)>& observerCallback)
     {
-        activeLookup = infra::none;
+        activeLookup = std::nullopt;
         observerCallback();
         TryResolveNext();
     }
@@ -119,19 +119,19 @@ namespace services
         return recurse;
     }
 
-    infra::Optional<std::pair<IPAddress, infra::TimePoint>> DnsResolver::ReplyParser::ReadAnswerRecords()
+    std::optional<std::pair<IPAddress, infra::TimePoint>> DnsResolver::ReplyParser::ReadAnswerRecords()
     {
         for (uint16_t answerIndex = 0; answerIndex != header.answersCount; ++answerIndex)
         {
             auto answer = ReadAnswer();
 
             if (answer.Is<Answer>())
-                return infra::MakeOptional(std::make_pair(answer.Get<Answer>().address, answer.Get<Answer>().validUntil));
+                return std::make_optional(std::make_pair(answer.Get<Answer>().address, answer.Get<Answer>().validUntil));
             else if (answer.Is<CName>())
                 recurse = true;
         }
 
-        return infra::none;
+        return std::nullopt;
     }
 
     void DnsResolver::ReplyParser::ReadNameServers(infra::BoundedVector<IPAddress>& recursiveDnsServers)
@@ -153,7 +153,7 @@ namespace services
         for (uint16_t additionalIndex = 0; additionalIndex != header.additionalRecordsCount; ++additionalIndex)
         {
             auto answer = ReadNameServer(nameServerPosition, header.nameServersCount);
-            if (answer != infra::none && !recursiveDnsServers.full())
+            if (answer != std::nullopt && !recursiveDnsServers.full())
             {
                 recursiveDnsServers.push_back(*answer);
                 recurse = true;
@@ -199,7 +199,7 @@ namespace services
         stream.Consume(payload.resourceDataLength);
     }
 
-    infra::Optional<IPAddress> DnsResolver::ReplyParser::ReadNameServer(std::size_t nameServerPosition, std::size_t numNameServers)
+    std::optional<IPAddress> DnsResolver::ReplyParser::ReadNameServer(std::size_t nameServerPosition, std::size_t numNameServers)
     {
         bool nameServerMatches = ReadAndMatchNameServer(nameServerPosition, numNameServers);
         auto payload = stream.Extract<DnsRecordPayload>();
@@ -209,13 +209,13 @@ namespace services
             auto address = stream.Extract<IPv4Address>();
 
             if (!stream.Failed())
-                return infra::MakeOptional(IPAddress(address));
+                return std::make_optional(IPAddress(address));
             else
-                return infra::none;
+                return std::nullopt;
         }
 
         stream.Consume(payload.resourceDataLength);
-        return infra::none;
+        return std::nullopt;
     }
 
     bool DnsResolver::ReplyParser::ReadAndMatchHostname()
@@ -466,7 +466,7 @@ namespace services
     void DnsResolver::ActiveLookup::TryFindAnswer(ReplyParser& replyParser)
     {
         auto answer = replyParser.ReadAnswerRecords();
-        if (answer != infra::none)
+        if (answer != std::nullopt)
             resolver.NameLookupSuccess(resolving, answer->first, answer->second);
         else
             TryFindRecursiveNameServer(replyParser);

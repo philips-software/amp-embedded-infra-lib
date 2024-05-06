@@ -23,7 +23,7 @@ namespace application
     public:
         UpgradePackInputFactory(hal::FileSystem& fileSystem, const SupportedTargets& targets, const ImageSecurity& imageSecurity);
 
-        std::unique_ptr<Input> CreateInput(const std::string& targetName, const std::string& fileName, infra::Optional<uint32_t> address) override;
+        std::unique_ptr<Input> CreateInput(const std::string& targetName, const std::string& fileName, std::optional<uint32_t> address) override;
 
     private:
         hal::FileSystem& fileSystem;

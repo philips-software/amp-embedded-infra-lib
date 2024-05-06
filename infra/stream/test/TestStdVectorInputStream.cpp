@@ -62,7 +62,7 @@ TEST_F(StdVectorInputStreamReaderTest, Rewind)
 
 TEST(StdVectorInputStreamTest, Extract)
 {
-    infra::StdVectorInputStream::WithStorage stream(infra::inPlace, std::vector<uint8_t>{ { 5, 6 } });
+    infra::StdVectorInputStream::WithStorage stream(std::in_place, std::vector<uint8_t>{ { 5, 6 } });
 
     uint8_t value;
     stream >> value;

@@ -49,7 +49,7 @@ TEST(XmlNavigator, access_string_attribute)
     infra::XmlNodeNavigator navigator{ document };
     EXPECT_EQ("text", navigator / node / str);
     EXPECT_EQ("text", *(navigator / node / optionalStr));
-    EXPECT_EQ(infra::none, navigator / node / optionalStr2);
+    EXPECT_EQ(std::nullopt, navigator / node / optionalStr2);
 }
 
 TEST(XmlNavigator, accessing_missing_string_throws)
@@ -65,7 +65,7 @@ TEST(XmlNavigator, access_integer_attribute)
     infra::XmlNodeNavigator navigator{ document };
     EXPECT_EQ(5, navigator / node / integer);
     EXPECT_EQ(5, *(navigator / node / optionalInt));
-    EXPECT_EQ(infra::none, navigator / node / optionalInt2);
+    EXPECT_EQ(std::nullopt, navigator / node / optionalInt2);
 }
 
 TEST(XmlNavigator, accessing_missing_integer_throws)

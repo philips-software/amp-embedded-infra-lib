@@ -129,20 +129,20 @@ TEST(PolymorphicVariantTest, after_default_construction_State1_is_created)
 
 TEST(PolymorphicVariantTest, create_State1)
 {
-    infra::PolymorphicVariant<State, State1, State2> v((infra::InPlaceType<State1>()));
+    infra::PolymorphicVariant<State, State1, State2> v((std::in_place_type_t<State1>()));
     EXPECT_EQ(1, v->Identifier());
 }
 
 TEST(PolymorphicVariantTest, create_State2)
 {
-    infra::PolymorphicVariant<State, State1, State2> v((infra::InPlaceType<State2>()));
+    infra::PolymorphicVariant<State, State1, State2> v((std::in_place_type_t<State2>()));
     EXPECT_EQ(2, v->Identifier());
 }
 
 TEST(PolymorphicVariantTest, assign_State2_after_construction)
 {
     infra::PolymorphicVariant<State, State1, State2> v;
-    v.Emplace<State2>();
+    v.emplace<State2>();
     EXPECT_EQ(2, v->Identifier());
 }
 
@@ -150,7 +150,7 @@ TEST(PolymorphicVariantTest, Emplace_returns_reference_to_constructed_object)
 {
     infra::PolymorphicVariant<State, State1, State2> v;
 
-    State1& state1 = v.Emplace<State1>();
+    State1& state1 = v.emplace<State1>();
     EXPECT_EQ(1, state1.Identifier());
 }
 
@@ -198,8 +198,8 @@ TEST(PolymorphicVariantTest, copy_assign_from_narrower_variant)
 
 TEST(PolymorphicVariantTest, compare_same_states)
 {
-    infra::PolymorphicVariant<State, ComparableState1, ComparableState2> v1((infra::InPlaceType<ComparableState1>()));
-    infra::PolymorphicVariant<State, ComparableState1, ComparableState2> v2((infra::InPlaceType<ComparableState1>()));
+    infra::PolymorphicVariant<State, ComparableState1, ComparableState2> v1((std::in_place_type_t<ComparableState1>()));
+    infra::PolymorphicVariant<State, ComparableState1, ComparableState2> v2((std::in_place_type_t<ComparableState1>()));
     EXPECT_TRUE(v1 == v2);
     EXPECT_FALSE(v1 != v2);
     EXPECT_FALSE(v1 < v2);
@@ -210,8 +210,8 @@ TEST(PolymorphicVariantTest, compare_same_states)
 
 TEST(PolymorphicVariantTest, compare_different_states)
 {
-    infra::PolymorphicVariant<State, ComparableState1, ComparableState2> v1((infra::InPlaceType<ComparableState1>()));
-    infra::PolymorphicVariant<State, ComparableState1, ComparableState2> v2((infra::InPlaceType<ComparableState2>()));
+    infra::PolymorphicVariant<State, ComparableState1, ComparableState2> v1((std::in_place_type_t<ComparableState1>()));
+    infra::PolymorphicVariant<State, ComparableState1, ComparableState2> v2((std::in_place_type_t<ComparableState2>()));
     EXPECT_FALSE(v1 == v2);
     EXPECT_TRUE(v1 != v2);
     EXPECT_TRUE(v1 < v2);
@@ -222,7 +222,7 @@ TEST(PolymorphicVariantTest, compare_different_states)
 
 TEST(PolymorphicVariantTest, compare_same_states_by_value)
 {
-    infra::PolymorphicVariant<State, ComparableState1, ComparableState2> v((infra::InPlaceType<ComparableState1>()));
+    infra::PolymorphicVariant<State, ComparableState1, ComparableState2> v((std::in_place_type_t<ComparableState1>()));
     ComparableState1 c;
     EXPECT_TRUE(v == c);
     EXPECT_FALSE(v != c);
@@ -234,7 +234,7 @@ TEST(PolymorphicVariantTest, compare_same_states_by_value)
 
 TEST(PolymorphicVariantTest, compare_different_states_by_value)
 {
-    infra::PolymorphicVariant<State, ComparableState1, ComparableState2> v((infra::InPlaceType<ComparableState1>()));
+    infra::PolymorphicVariant<State, ComparableState1, ComparableState2> v((std::in_place_type_t<ComparableState1>()));
     ComparableState2 c;
     EXPECT_FALSE(v == c);
     EXPECT_TRUE(v != c);
