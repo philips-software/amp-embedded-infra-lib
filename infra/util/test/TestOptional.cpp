@@ -8,26 +8,26 @@ namespace infra
 
 TEST(OptionalTest, OptionalCoverageDummy)
 {
-    std::optionalCoverageDummy();
+    infra::OptionalCoverageDummy();
 }
 
 TEST(OptionalTest, TestConstructedEmpty)
 {
-    std::optional<bool> o;
+    infra::Optional<bool> o;
     EXPECT_FALSE(o);
     EXPECT_TRUE(!o);
 }
 
 TEST(OptionalTest, TestConstructedEmptyWithNone)
 {
-    std::optional<bool> o(std::nullopt);
+    infra::Optional<bool> o(infra::none);
     EXPECT_FALSE(o);
 }
 
 TEST(OptionalTest, TestConstructedWithValue)
 {
     bool value(true);
-    std::optional<bool> o(std::in_place, value);
+    infra::Optional<bool> o(infra::inPlace, value);
     EXPECT_TRUE(static_cast<bool>(o));
     EXPECT_TRUE(*o);
     EXPECT_TRUE(*(o.operator->()));
@@ -36,25 +36,25 @@ TEST(OptionalTest, TestConstructedWithValue)
 TEST(OptionalTest, TestConstructedWithMovedValue)
 {
     bool value(true);
-    std::optional<bool> o(std::in_place, std::move(value));
+    infra::Optional<bool> o(infra::inPlace, std::move(value));
     EXPECT_TRUE(static_cast<bool>(o));
     EXPECT_TRUE(*o);
 }
 
 TEST(OptionalTest, TestConstructedWithConvertibleValue)
 {
-    std::optional<short int> x(std::in_place, 1);
-    std::optional<int> y(x);
+    infra::Optional<short int> x(infra::inPlace, 1);
+    infra::Optional<int> y(x);
     EXPECT_TRUE(static_cast<bool>(y));
     EXPECT_EQ(1, *y);
 
-    EXPECT_FALSE(std::optional<int>(std::optional<short int>()));
+    EXPECT_FALSE(infra::Optional<int>(infra::Optional<short int>()));
 }
 
 TEST(OptionalTest, TestCopyConstruction)
 {
-    std::optional<bool> o1(std::in_place, true);
-    std::optional<bool> o2(o1);
+    infra::Optional<bool> o1(infra::inPlace, true);
+    infra::Optional<bool> o2(o1);
     EXPECT_TRUE(static_cast<bool>(o1));
     EXPECT_TRUE(static_cast<bool>(o2));
     EXPECT_TRUE(*o2);
@@ -62,8 +62,8 @@ TEST(OptionalTest, TestCopyConstruction)
 
 TEST(OptionalTest, TestMoveConstruction)
 {
-    std::optional<bool> o1(std::in_place, true);
-    std::optional<bool> o2(std::move(o1));
+    infra::Optional<bool> o1(infra::inPlace, true);
+    infra::Optional<bool> o2(std::move(o1));
     EXPECT_FALSE(o1);
     EXPECT_TRUE(static_cast<bool>(o2));
     EXPECT_TRUE(*o2);
@@ -71,15 +71,15 @@ TEST(OptionalTest, TestMoveConstruction)
 
 TEST(OptionalTest, TestMoveConstructedWithEmptyOptional)
 {
-    std::optional<bool> e;
-    std::optional<bool> o(std::move(e));
+    infra::Optional<bool> e;
+    infra::Optional<bool> o(std::move(e));
     EXPECT_FALSE(static_cast<bool>(o));
 }
 
 TEST(OptionalTest, TestCopyAssign)
 {
-    std::optional<bool> o1(std::in_place, true);
-    std::optional<bool> o2;
+    infra::Optional<bool> o1(infra::inPlace, true);
+    infra::Optional<bool> o2;
     o2 = o1;
     EXPECT_TRUE(static_cast<bool>(o1));
     EXPECT_TRUE(static_cast<bool>(o2));
@@ -88,7 +88,7 @@ TEST(OptionalTest, TestCopyAssign)
 
 TEST(OptionalTest, TestCopyAssignWithSelf)
 {
-    std::optional<bool> o1(std::in_place, true);
+    infra::Optional<bool> o1(infra::inPlace, true);
     o1 = o1;
     EXPECT_TRUE(static_cast<bool>(o1));
     EXPECT_TRUE(*o1);
@@ -96,16 +96,16 @@ TEST(OptionalTest, TestCopyAssignWithSelf)
 
 TEST(OptionalTest, TestCopyAssignWithEmptyOptional)
 {
-    std::optional<bool> o1;
-    std::optional<bool> o2;
+    infra::Optional<bool> o1;
+    infra::Optional<bool> o2;
     o2 = o1;
     EXPECT_FALSE(static_cast<bool>(o2));
 }
 
 TEST(OptionalTest, TestMoveAssign)
 {
-    std::optional<bool> o1(std::in_place, true);
-    std::optional<bool> o2;
+    infra::Optional<bool> o1(infra::inPlace, true);
+    infra::Optional<bool> o2;
     o2 = std::move(o1);
     EXPECT_FALSE(static_cast<bool>(o1));
     EXPECT_TRUE(static_cast<bool>(o2));
@@ -114,8 +114,8 @@ TEST(OptionalTest, TestMoveAssign)
 
 TEST(OptionalTest, TestMoveAssignWithEmpty)
 {
-    std::optional<bool> o1;
-    std::optional<bool> o2;
+    infra::Optional<bool> o1;
+    infra::Optional<bool> o2;
     o2 = std::move(o1);
     EXPECT_FALSE(static_cast<bool>(o1));
     EXPECT_FALSE(static_cast<bool>(o2));
@@ -123,7 +123,7 @@ TEST(OptionalTest, TestMoveAssignWithEmpty)
 
 TEST(OptionalTest, TestAssignValue)
 {
-    std::optional<bool> o;
+    infra::Optional<bool> o;
     o = true;
     EXPECT_TRUE(static_cast<bool>(o));
     EXPECT_TRUE(*o);
@@ -131,25 +131,25 @@ TEST(OptionalTest, TestAssignValue)
 
 TEST(OptionalTest, TestAssignNone)
 {
-    std::optional<bool> o(std::in_place, true);
-    o = std::nullopt;
+    infra::Optional<bool> o(infra::inPlace, true);
+    o = infra::none;
     EXPECT_FALSE(o);
 }
 
 TEST(OptionalTest, TestCompareToNone)
 {
-    std::optional<bool> o;
-    EXPECT_TRUE(o == std::nullopt);
-    EXPECT_FALSE(o != std::nullopt);
-    EXPECT_TRUE(std::nullopt == o);
-    EXPECT_FALSE(std::nullopt != o);
+    infra::Optional<bool> o;
+    EXPECT_TRUE(o == infra::none);
+    EXPECT_FALSE(o != infra::none);
+    EXPECT_TRUE(infra::none == o);
+    EXPECT_FALSE(infra::none != o);
 }
 
 TEST(OptionalTest, TestCompare)
 {
-    std::optional<bool> t(std::in_place, true);
-    std::optional<bool> f(std::in_place, false);
-    std::optional<bool> u;
+    infra::Optional<bool> t(infra::inPlace, true);
+    infra::Optional<bool> f(infra::inPlace, false);
+    infra::Optional<bool> u;
 
     EXPECT_TRUE(t == t);
     EXPECT_TRUE(f == f);
@@ -165,8 +165,8 @@ TEST(OptionalTest, TestCompare)
 
 TEST(OptionalTest, TestCompareToValue)
 {
-    std::optional<bool> t(std::in_place, true);
-    std::optional<bool> u;
+    infra::Optional<bool> t(infra::inPlace, true);
+    infra::Optional<bool> u;
 
     EXPECT_TRUE(t == true);
     EXPECT_TRUE(true == t);
@@ -181,7 +181,7 @@ TEST(OptionalTest, TestCompareToValue)
 TEST(OptionalTest, TestConstruct)
 {
     bool b(true);
-    std::optional<bool> o;
+    infra::Optional<bool> o;
     o.emplace(std::move(b));
     EXPECT_TRUE(static_cast<bool>(o));
     EXPECT_TRUE(*o);
@@ -195,7 +195,7 @@ TEST(OptionalTest, TestConstructWithInitializerList)
         {}
     };
 
-    std::optional<X> o;
+    infra::Optional<X> o;
     o.emplace({ true });
     EXPECT_TRUE(static_cast<bool>(o));
 }
@@ -211,67 +211,67 @@ TEST(OptionalTest, TestIndirect)
         bool x;
     };
 
-    std::optional<X> o(std::in_place, X());
+    infra::Optional<X> o(infra::inPlace, X());
     EXPECT_TRUE(o->x);
-    EXPECT_TRUE(const_cast<std::optional<X>&>(o)->x);
+    EXPECT_TRUE(const_cast<infra::Optional<X>&>(o)->x);
 }
 
 TEST(OptionalTest, TestMakeOptional)
 {
-    std::optional<bool> o = std::make_optional(true);
+    infra::Optional<bool> o = infra::MakeOptional(true);
     EXPECT_TRUE(static_cast<bool>(o));
     EXPECT_TRUE(*o);
 }
 
 TEST(OptionalTest, TestTransformOptional)
 {
-    std::optional<bool> o = std::make_optional(true);
-    std::optional<bool> empty;
-    EXPECT_EQ(std::make_optional(5), infra::TransformOptional(std::make_optional(true), [](bool value)
-                                         {
-                                             return 5;
-                                         }));
-    EXPECT_EQ(std::nullopt, infra::TransformOptional(empty, [](bool value)
-                                {
-                                    return 5;
-                                }));
+    infra::Optional<bool> o = infra::MakeOptional(true);
+    infra::Optional<bool> empty;
+    EXPECT_EQ(infra::MakeOptional(5), infra::TransformOptional(infra::MakeOptional(true), [](bool value)
+                                          {
+                                              return 5;
+                                          }));
+    EXPECT_EQ(infra::none, infra::TransformOptional(empty, [](bool value)
+                               {
+                                   return 5;
+                               }));
 }
 
 TEST(OptionalTest, ValueOrGivesStoredWhenAvailable)
 {
-    std::optional<int> i(std::in_place, 5);
-    EXPECT_EQ(5, i.value_or(2));
+    infra::Optional<int> i(infra::inPlace, 5);
+    EXPECT_EQ(5, i.ValueOr(2));
 }
 
 TEST(OptionalTest, ValueOrGivesParameterWhenNothingIsStored)
 {
-    std::optional<int> i;
-    EXPECT_EQ(2, i.value_or(2));
+    infra::Optional<int> i;
+    EXPECT_EQ(2, i.ValueOr(2));
 }
 
 TEST(OptionalTest, ValueOrConstRefGivesStoredWhenAvailable)
 {
-    std::optional<int> i(std::in_place, 5);
+    infra::Optional<int> i(infra::inPlace, 5);
     const int x = 2;
-    EXPECT_EQ(5, i.value_or(x));
+    EXPECT_EQ(5, i.ValueOr(x));
 }
 
 TEST(OptionalTest, ValueOrConstRefGivesParameterWhenNothingIsStored)
 {
-    std::optional<int> i;
+    infra::Optional<int> i;
     const int x = 2;
-    EXPECT_EQ(2, i.value_or(x));
+    EXPECT_EQ(2, i.ValueOr(x));
 }
 
 TEST(OptionalTest, ValueOrDefaultGivesStoredWhenAvailable)
 {
-    std::optional<int> i(std::in_place, 5);
+    infra::Optional<int> i(infra::inPlace, 5);
     EXPECT_EQ(5, i.ValueOrDefault());
 }
 
 TEST(OptionalTest, ValueOrDefaultGivesDefaultWhenNothingIsStored)
 {
-    std::optional<int> i;
+    infra::Optional<int> i;
     EXPECT_EQ(0, i.ValueOrDefault());
 }
 
@@ -301,21 +301,21 @@ struct PolymorphicBoolDescendant
 
 TEST(OptionalForPolymorphicObjectsTest, TestConstructedEmpty)
 {
-    std::optionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o;
+    infra::OptionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o;
     EXPECT_FALSE(o);
     EXPECT_TRUE(!o);
 }
 
 TEST(OptionalForPolymorphicObjectsTest, TestConstructedEmptyWithNone)
 {
-    std::optionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o(std::nullopt);
+    infra::OptionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o(infra::none);
     EXPECT_FALSE(static_cast<bool>(o));
 }
 
 TEST(OptionalForPolymorphicObjectsTest, TestConstructedWithValue)
 {
     bool value(true);
-    std::optionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o(std::in_place_type_t<PolymorphicBool>(), value);
+    infra::OptionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o(infra::InPlaceType<PolymorphicBool>(), value);
     EXPECT_TRUE(static_cast<bool>(o));
     EXPECT_TRUE(*o);
 }
@@ -323,26 +323,26 @@ TEST(OptionalForPolymorphicObjectsTest, TestConstructedWithValue)
 TEST(OptionalForPolymorphicObjectsTest, TestConstructedWithMovedValue)
 {
     bool value(true);
-    std::optionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o(std::in_place_type_t<PolymorphicBool>(), std::move(value));
+    infra::OptionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o(infra::InPlaceType<PolymorphicBool>(), std::move(value));
     EXPECT_TRUE(static_cast<bool>(o));
     EXPECT_TRUE(*o);
 }
 
 TEST(OptionalForPolymorphicObjectsTest, TestConstructedWithDescendant)
 {
-    std::optionalForPolymorphicObjects<PolymorphicBoolDescendant, 0> descendant(std::in_place_type_t<PolymorphicBoolDescendant>(), true);
-    std::optionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o(descendant);
+    infra::OptionalForPolymorphicObjects<PolymorphicBoolDescendant, 0> descendant(infra::InPlaceType<PolymorphicBoolDescendant>(), true);
+    infra::OptionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o(descendant);
     EXPECT_TRUE(static_cast<bool>(o));
     EXPECT_TRUE(*o);
 
-    std::optionalForPolymorphicObjects<PolymorphicBoolDescendant, 0> emptyDescendant;
-    std::optionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> x(emptyDescendant);
+    infra::OptionalForPolymorphicObjects<PolymorphicBoolDescendant, 0> emptyDescendant;
+    infra::OptionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> x(emptyDescendant);
     EXPECT_FALSE(static_cast<bool>(x));
 }
 
 TEST(OptionalForPolymorphicObjectsTest, TestAssignLValue)
 {
-    std::optionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o;
+    infra::OptionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o;
     bool b = true;
     o = b;
     EXPECT_TRUE(static_cast<bool>(o));
@@ -351,7 +351,7 @@ TEST(OptionalForPolymorphicObjectsTest, TestAssignLValue)
 
 TEST(OptionalForPolymorphicObjectsTest, TestAssignRValue)
 {
-    std::optionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o;
+    infra::OptionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o;
     o = true;
     EXPECT_TRUE(static_cast<bool>(o));
     EXPECT_TRUE(*o);
@@ -359,39 +359,39 @@ TEST(OptionalForPolymorphicObjectsTest, TestAssignRValue)
 
 TEST(OptionalForPolymorphicObjectsTest, TestAssignNone)
 {
-    std::optionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o(std::in_place_type_t<PolymorphicBool>(), true);
-    o = std::nullopt;
+    infra::OptionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o(infra::InPlaceType<PolymorphicBool>(), true);
+    o = infra::none;
     EXPECT_FALSE(static_cast<bool>(o));
 }
 
 TEST(OptionalForPolymorphicObjectsTest, TestAssignDescendant)
 {
-    std::optionalForPolymorphicObjects<PolymorphicBoolDescendant, 0> descendant(std::in_place_type_t<PolymorphicBoolDescendant>(), true);
-    std::optionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o;
+    infra::OptionalForPolymorphicObjects<PolymorphicBoolDescendant, 0> descendant(infra::InPlaceType<PolymorphicBoolDescendant>(), true);
+    infra::OptionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o;
     o = descendant;
     EXPECT_TRUE(static_cast<bool>(o));
     EXPECT_TRUE(*o);
 
-    std::optionalForPolymorphicObjects<PolymorphicBoolDescendant, 0> emptyDescendant;
-    std::optionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> x;
+    infra::OptionalForPolymorphicObjects<PolymorphicBoolDescendant, 0> emptyDescendant;
+    infra::OptionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> x;
     x = emptyDescendant;
     EXPECT_FALSE(static_cast<bool>(x));
 }
 
 TEST(OptionalForPolymorphicObjectsTest, TestCompareToNone)
 {
-    std::optionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o;
-    EXPECT_TRUE(o == std::nullopt);
-    EXPECT_FALSE(o != std::nullopt);
-    EXPECT_TRUE(std::nullopt == o);
-    EXPECT_FALSE(std::nullopt != o);
+    infra::OptionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o;
+    EXPECT_TRUE(o == infra::none);
+    EXPECT_FALSE(o != infra::none);
+    EXPECT_TRUE(infra::none == o);
+    EXPECT_FALSE(infra::none != o);
 }
 
 TEST(OptionalForPolymorphicObjectsTest, TestCompare)
 {
-    std::optionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> t(std::in_place_type_t<PolymorphicBool>(), true);
-    std::optionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> f(std::in_place_type_t<PolymorphicBool>(), false);
-    std::optionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> u;
+    infra::OptionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> t(infra::InPlaceType<PolymorphicBool>(), true);
+    infra::OptionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> f(infra::InPlaceType<PolymorphicBool>(), false);
+    infra::OptionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> u;
 
     EXPECT_TRUE(t == t);
     EXPECT_TRUE(f == f);
@@ -406,8 +406,8 @@ TEST(OptionalForPolymorphicObjectsTest, TestCompare)
 
 TEST(OptionalForPolymorphicObjectsTest, TestCompareToValue)
 {
-    std::optionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> t(std::in_place_type_t<PolymorphicBool>(), true);
-    std::optionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> u;
+    infra::OptionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> t(infra::InPlaceType<PolymorphicBool>(), true);
+    infra::OptionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> u;
 
     EXPECT_TRUE(t == true);
     EXPECT_TRUE(true == t);
@@ -422,7 +422,7 @@ TEST(OptionalForPolymorphicObjectsTest, TestCompareToValue)
 TEST(OptionalForPolymorphicObjectsTest, TestConstruct)
 {
     PolymorphicBool b(true);
-    std::optionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o;
+    infra::OptionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o;
     o.emplace<PolymorphicBool>(std::move(b));
     EXPECT_TRUE(static_cast<bool>(o));
     EXPECT_TRUE(*o);
@@ -441,9 +441,9 @@ TEST(OptionalForPolymorphicObjectsTest, TestIndirect)
         bool x;
     };
 
-    std::optionalForPolymorphicObjects<X, sizeof(void*)> o{ std::in_place_type_t<X>(), X() };
+    infra::OptionalForPolymorphicObjects<X, sizeof(void*)> o{ infra::InPlaceType<X>(), X() };
     EXPECT_TRUE(o->x);
-    EXPECT_TRUE((const_cast<const std::optionalForPolymorphicObjects<X, sizeof(void*)>&>(o)->x));
+    EXPECT_TRUE((const_cast<const infra::OptionalForPolymorphicObjects<X, sizeof(void*)>&>(o)->x));
 }
 
 TEST(OptionalForPolymorphicObjectsTest, ConstructDescendant)
@@ -459,6 +459,6 @@ TEST(OptionalForPolymorphicObjectsTest, ConstructDescendant)
         int ExtraStorage;
     };
 
-    std::optionalForPolymorphicObjects<Base, sizeof(void*)> optionalBase((std::in_place_type_t<Derived>()));
+    infra::OptionalForPolymorphicObjects<Base, sizeof(void*)> optionalBase((infra::InPlaceType<Derived>()));
     optionalBase.emplace<Derived>();
 }
