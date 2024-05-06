@@ -18,7 +18,10 @@ set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL On)
 FetchContent_MakeAvailable(threadx)
 set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL Off)
 
-target_compile_definitions(threadx PRIVATE "TX_INITIALIZE_KERNEL_ENTER_EXTENSION=return\;")
+target_compile_definitions(threadx PUBLIC
+    "TX_INITIALIZE_KERNEL_ENTER_EXTENSION=return\\$<SEMICOLON> "
+    "TX_SINGLE_MODE_NON_SECURE=1"
+)
 
 add_library(osal.threadx_osal ${EMIL_EXCLUDE_FROM_ALL} STATIC Osal.cpp)
 target_link_libraries(osal.threadx_osal PUBLIC infra.util threadx)
