@@ -95,6 +95,11 @@ namespace services
     public:
         explicit GattClientService(const AttAttribute::Uuid& type, const AttAttribute::Handle& handle, const AttAttribute::Handle& endHandle);
 
+        GattClientService(const GattClientService&) = delete;
+        GattClientService& operator=(const GattClientService&) = delete;
+        GattClientService(GattClientService&&) = delete;
+        GattClientService& operator=(GattClientService&&) = delete;
+
         void AddCharacteristic(GattClientCharacteristic& characteristic);
         const infra::IntrusiveForwardList<GattClientCharacteristic>& Characteristics() const;
 
