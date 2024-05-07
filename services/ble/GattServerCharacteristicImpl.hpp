@@ -13,6 +13,12 @@ namespace services
         GattServerCharacteristicImpl(GattServerService& service, const AttAttribute::Uuid& type, uint16_t valueLength);
         GattServerCharacteristicImpl(GattServerService& service, const AttAttribute::Uuid& type, uint16_t valueLength, PropertyFlags properties);
         GattServerCharacteristicImpl(GattServerService& service, const AttAttribute::Uuid& type, uint16_t valueLength, PropertyFlags properties, PermissionFlags permissions);
+
+        GattServerCharacteristicImpl(const GattServerCharacteristicImpl&) = delete;
+        GattServerCharacteristicImpl& operator=(const GattServerCharacteristicImpl&) = delete;
+        GattServerCharacteristicImpl(GattServerCharacteristicImpl&&) = delete;
+        GattServerCharacteristicImpl& operator=(GattServerCharacteristicImpl&&) = delete;
+
         ~GattServerCharacteristicImpl() override;
 
         // Implementation of GattServerCharacteristic
