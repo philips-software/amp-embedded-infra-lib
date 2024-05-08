@@ -45,7 +45,7 @@ namespace services
     infra::SharedPtr<infra::StreamReaderWithRewinding> ConnectionWin::ReceiveStream()
     {
         keepAliveForReader = SharedFromThis();
-        return streamReader.emplace(*this);
+        return streamReader.Emplace(*this);
     }
 
     void ConnectionWin::AckReceived()
@@ -175,7 +175,7 @@ namespace services
                 {
                     if (object->IsAttached())
                     {
-                        infra::SharedPtr<infra::StreamWriter> writer = object->streamWriter.emplace(*object, size);
+                        infra::SharedPtr<infra::StreamWriter> writer = object->streamWriter.Emplace(*object, size);
                         object->Observer().SendStreamAvailable(std::move(writer));
                     }
                 },

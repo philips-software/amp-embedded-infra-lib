@@ -230,7 +230,7 @@ namespace services
             requestedSendSize = 0;
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<DatagramWin>& object)
                 {
-                    infra::SharedPtr<infra::StreamWriter> writer = object->streamWriter.emplace(*object);
+                    infra::SharedPtr<infra::StreamWriter> writer = object->streamWriter.Emplace(*object);
                     object->GetObserver().SendStreamAvailable(std::move(writer));
                 },
                 SharedFromThis());
@@ -343,7 +343,7 @@ namespace services
 
         if (parent.writers.size() == parent.observers.size())
         {
-            parent.GetObserver().SendStreamAvailable(parent.multipleWriter.emplace(parent.writers));
+            parent.GetObserver().SendStreamAvailable(parent.multipleWriter.Emplace(parent.writers));
         }
     }
 
