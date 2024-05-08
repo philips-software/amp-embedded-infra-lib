@@ -75,7 +75,7 @@ namespace services
     void MessageCommunicationSecured::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         sendWriter = std::move(writer);
-        GetObserver().SendMessageStreamAvailable(sendBufferWriter.emplace(std::in_place, sendBuffer, requestedSendSize));
+        GetObserver().SendMessageStreamAvailable(sendBufferWriter.Emplace(std::in_place, sendBuffer, requestedSendSize));
     }
 
     void MessageCommunicationSecured::ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
@@ -124,7 +124,7 @@ namespace services
             return;
 
         IncreaseIv(receiveIv);
-        MessageCommunication::GetObserver().ReceivedMessage(receiveBufferReader.emplace(receiveBuffer, reader));
+        MessageCommunication::GetObserver().ReceivedMessage(receiveBufferReader.Emplace(receiveBuffer, reader));
     }
 
     void MessageCommunicationSecured::SendMessageStreamReleased()

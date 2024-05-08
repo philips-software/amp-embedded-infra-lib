@@ -107,7 +107,7 @@ namespace services
                                     });
                                 receivedData.Pop(2);
 
-                                GetObserver().ReceivedMessage(reader.emplace(std::in_place, receivedData, size));
+                                GetObserver().ReceivedMessage(reader.Emplace(std::in_place, receivedData, size));
                             }
 
                             notificationScheduled = false;
@@ -131,14 +131,14 @@ namespace services
                 if (sendInitResponse)
                 {
                     if (receivedData.Empty())
-                        state.emplace<StateSendingInitResponse>(*this);
+                        state.Emplace<StateSendingInitResponse>(*this);
                 }
                 else if (requestedSendMessageSize && WindowSize(*requestedSendMessageSize) <= otherAvailableWindow)
-                    state.emplace<StateSendingMessage>(*this);
+                    state.Emplace<StateSendingMessage>(*this);
                 else if (releasedWindow != 0)
-                    state.emplace<StateSendingReleaseWindow>(*this);
+                    state.Emplace<StateSendingReleaseWindow>(*this);
                 else
-                    state.emplace<StateOperational>(*this);
+                    state.Emplace<StateOperational>(*this);
             }
 
             switchingState = false;

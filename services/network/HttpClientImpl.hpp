@@ -482,7 +482,7 @@ namespace services
     template<std::size_t... I>
     infra::SharedPtr<HttpClient> HttpClientConnectorWithNameResolverImpl<HttpClient, Args...>::InvokeEmplace(std::index_sequence<I...>)
     {
-        return client.emplace(Hostname(), std::get<I>(args)...);
+        return client.Emplace(Hostname(), std::get<I>(args)...);
     }
 
     template<class HttpClient, class... Args>
@@ -671,7 +671,7 @@ namespace services
             ipAddress << addr[0] << '.' << addr[1] << '.' << addr[2] << '.' << addr[3] << '.' << addr[4] << '.' << addr[5] << '.' << addr[6] << '.' << addr[7];
         }
 
-        return client.emplace(ipAddress.Storage(), std::get<I>(args)...);
+        return client.Emplace(ipAddress.Storage(), std::get<I>(args)...);
     }
 
     template<class HttpClient, class... Args>

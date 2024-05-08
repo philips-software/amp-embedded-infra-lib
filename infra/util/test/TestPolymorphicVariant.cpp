@@ -142,7 +142,7 @@ TEST(PolymorphicVariantTest, create_State2)
 TEST(PolymorphicVariantTest, assign_State2_after_construction)
 {
     infra::PolymorphicVariant<State, State1, State2> v;
-    v.emplace<State2>();
+    v.Emplace<State2>();
     EXPECT_EQ(2, v->Identifier());
 }
 
@@ -150,7 +150,7 @@ TEST(PolymorphicVariantTest, Emplace_returns_reference_to_constructed_object)
 {
     infra::PolymorphicVariant<State, State1, State2> v;
 
-    State1& state1 = v.emplace<State1>();
+    State1& state1 = v.Emplace<State1>();
     EXPECT_EQ(1, state1.Identifier());
 }
 

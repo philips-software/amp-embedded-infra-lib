@@ -23,7 +23,7 @@ namespace services
 
     infra::SharedPtr<infra::StreamReaderWithRewinding> ConnectionLoopBackPeer::ReceiveStream()
     {
-        return streamReader.emplace(peer);
+        return streamReader.Emplace(peer);
     }
 
     void ConnectionLoopBackPeer::AckReceived()
@@ -67,7 +67,7 @@ namespace services
                 {
                     if (IsAttached())
                     {
-                        infra::SharedPtr<infra::StreamWriter> writer = streamWriter.emplace(*this, size);
+                        infra::SharedPtr<infra::StreamWriter> writer = streamWriter.Emplace(*this, size);
                         Observer().SendStreamAvailable(std::move(writer));
                     }
                 },

@@ -54,7 +54,7 @@ namespace services
 
     bool TracingEchoOnConnection::Serialize(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        return serializer->Serialize(tracingWriter.emplace(std::move(writer), *this));
+        return serializer->Serialize(tracingWriter.Emplace(std::move(writer), *this));
     }
 
     void TracingEchoOnConnection::SerializationDone()

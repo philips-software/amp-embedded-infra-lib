@@ -48,7 +48,7 @@ namespace services
     void SingleConnectionListener::CreateObserver()
     {
         connection.OnAllocatable(infra::emptyFunction);
-        auto proxyPtr = connection.emplace(connectionCreator, address);
+        auto proxyPtr = connection.Emplace(connectionCreator, address);
         this->createdObserver(infra::MakeContainedSharedObject(**proxyPtr, proxyPtr));
     }
 }

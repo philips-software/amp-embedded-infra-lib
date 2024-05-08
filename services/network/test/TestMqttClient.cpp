@@ -149,7 +149,7 @@ public:
                     });
 
                 notificationPayload.clear();
-                auto stream = notificationPayloadStream.emplace(notificationPayload);
+                auto stream = notificationPayloadStream.Emplace(notificationPayload);
                 return infra::MakeContainedSharedObject(stream->Writer(), stream);
             }));
     }

@@ -28,7 +28,7 @@ namespace services
             assert(observerStreamRequested);
             assert(requestedSendSize != std::nullopt);
             assert(!streamWriter);
-            Connection::Observer().SendStreamAvailable(streamWriter.emplace(std::move(writer), *infra::PostAssign(requestedSendSize, std::nullopt)));
+            Connection::Observer().SendStreamAvailable(streamWriter.Emplace(std::move(writer), *infra::PostAssign(requestedSendSize, std::nullopt)));
         }
     }
 
@@ -60,7 +60,7 @@ namespace services
 
     infra::SharedPtr<infra::StreamReaderWithRewinding> WebSocketClientConnectionObserver::ReceiveStream()
     {
-        return streamReader.emplace(*this);
+        return streamReader.Emplace(*this);
     }
 
     void WebSocketClientConnectionObserver::AckReceived()
@@ -545,7 +545,7 @@ namespace services
     void WebSocketClientFactorySingleConnection::InitiationDone(services::Connection& connection)
     {
         auto& factory = initiation->Factory();
-        auto webSocketConnection = webSocket.emplace(PathFromUrl(factory.Url()));
+        auto webSocketConnection = webSocket.Emplace(PathFromUrl(factory.Url()));
 
         connection.Detach();
         connection.Attach(webSocketConnection);

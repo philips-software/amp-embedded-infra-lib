@@ -327,7 +327,7 @@ namespace services
     void HttpClientImpl::ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, const HttpHeaders headers)
     {
         request.emplace(verb, hostname, requestTarget, headers, chunked);
-        nextState.emplace<SendingStateForwardSendStream>(*this);
+        nextState.Emplace<SendingStateForwardSendStream>(*this);
         ConnectionObserver::Subject().RequestSendStream(request->Size());
     }
 
@@ -350,7 +350,7 @@ namespace services
         auto& client = this->client;
 
         client.sendingState = client.nextState;
-        client.nextState.emplace<SendingStateRequest>(client);
+        client.nextState.Emplace<SendingStateRequest>(client);
         client.sendingState->Activate();
     }
 
@@ -410,7 +410,7 @@ namespace services
                 Activate();
             });
 
-        client.Observer().SendStreamAvailable(chunkWriter.emplace(*this, std::move(writer)));
+        client.Observer().SendStreamAvailable(chunkWriter.Emplace(*this, std::move(writer)));
     }
 
     HttpClientImpl::SendingStateForwardSendStream::ChunkWriter::ChunkWriter(SendingStateForwardSendStream& state, infra::SharedPtr<infra::StreamWriter>&& writer)

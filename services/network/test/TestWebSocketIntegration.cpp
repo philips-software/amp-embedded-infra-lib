@@ -69,7 +69,7 @@ TEST_F(WebSocketIntegrationTest, create_connection)
     infra::SharedOptional<testing::StrictMock<services::ConnectionObserverFullMock>> clientConnection;
     EXPECT_CALL(clientObserverFactory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this, &clientConnection](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> client)>&& createdClient)
         {
-            auto clientConnectionPtr = clientConnection.emplace();
+            auto clientConnectionPtr = clientConnection.Emplace();
             EXPECT_CALL(*clientConnection, Attached());
             createdClient(clientConnectionPtr);
         }));
@@ -77,7 +77,7 @@ TEST_F(WebSocketIntegrationTest, create_connection)
     ExecuteAllActions();
 
     infra::SharedOptional<testing::StrictMock<services::ConnectionObserverFullMock>> serverConnection;
-    auto serverConnectionPtr = serverConnection.emplace();
+    auto serverConnectionPtr = serverConnection.Emplace();
     EXPECT_CALL(*serverConnection, Attached());
     webSocketServerConnectionCreator->Attach(serverConnectionPtr);
 

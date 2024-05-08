@@ -13,7 +13,7 @@ namespace services
         really_assert(exclusiveConnection.Allocatable());
         currentClaimer = std::move(claimer);
 
-        auto result = exclusiveConnection.emplace(*this);
+        auto result = exclusiveConnection.Emplace(*this);
 
         if (resource.ClaimsPending())
             RequestCloseConnection();
@@ -131,7 +131,7 @@ namespace services
             {
                 listeners.remove(index);
             });
-        return listeners.back().emplace(*this, port, factory, versions);
+        return listeners.back().Emplace(*this, port, factory, versions);
     }
 
     void ExclusiveConnectionFactory::Connect(ClientConnectionObserverFactory& factory)

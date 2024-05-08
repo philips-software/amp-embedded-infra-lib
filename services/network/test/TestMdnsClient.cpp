@@ -30,7 +30,7 @@ public:
     {
         EXPECT_CALL(factory, Listen(testing::_, mdnsPort, services::IPVersions::both)).WillOnce(testing::Invoke([this](services::DatagramExchangeObserver& observer, uint16_t port, services::IPVersions versions)
             {
-                auto ptr = datagramExchange.emplace();
+                auto ptr = datagramExchange.Emplace();
                 observer.Attach(*ptr);
 
                 return ptr;

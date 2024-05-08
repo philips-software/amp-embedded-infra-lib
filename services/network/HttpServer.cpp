@@ -361,7 +361,7 @@ namespace services
             keepSelfAlive = Subject().ObserverPtr();
             pageReader = std::move(reader);
             pageCountingReader.emplace(*pageReader);
-            pageServer->DataReceived(pageLimitedReader.emplace(*pageCountingReader, contentLength.value_or(std::numeric_limits<uint32_t>::max())));
+            pageServer->DataReceived(pageLimitedReader.Emplace(*pageCountingReader, contentLength.value_or(std::numeric_limits<uint32_t>::max())));
         }
     }
 

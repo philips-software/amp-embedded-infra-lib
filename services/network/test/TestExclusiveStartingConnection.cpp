@@ -13,7 +13,7 @@ public:
     {
         factory.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> observer)
             {
-                auto connectionPtr = connection.emplace();
+                auto connectionPtr = connection.Emplace();
                 connection->SetOwnership(connectionPtr, observer);
                 connection->Attach(observer);
             });
@@ -23,7 +23,7 @@ public:
     {
         EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
             {
-                auto observer = connectionObserver.emplace();
+                auto observer = connectionObserver.Emplace();
                 EXPECT_CALL(*observer, Attached());
                 createdObserver(observer);
             }));
@@ -33,7 +33,7 @@ public:
     {
         EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
             {
-                auto observer = connectionObserver.emplace();
+                auto observer = connectionObserver.Emplace();
                 EXPECT_CALL(*observer, Attached());
                 EXPECT_CALL(*observer, Close());
                 createdObserver(observer);
@@ -63,7 +63,7 @@ public:
             {
                 EXPECT_EQ(14, port);
                 serverResult = &factory;
-                return listenerStorage.emplace();
+                return listenerStorage.Emplace();
             }));
         return factory.Listen(14, serverFactory);
     }
@@ -73,13 +73,13 @@ public:
         EXPECT_CALL(serverFactory, ConnectionAccepted(testing::_, services::IPAddress(services::IPv4AddressLocalHost())))
             .WillOnce(testing::Invoke([this](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, services::IPAddress address)
                 {
-                    auto observer = connectionObserver.emplace();
+                    auto observer = connectionObserver.Emplace();
                     EXPECT_CALL(*observer, Attached());
                     createdObserver(observer);
                 }));
         serverResult->ConnectionAccepted([this](infra::SharedPtr<services::ConnectionObserver> observer)
             {
-                auto connectionPtr = connection.emplace();
+                auto connectionPtr = connection.Emplace();
                 connection->SetOwnership(connectionPtr, observer);
                 connection->Attach(observer);
             },
@@ -184,7 +184,7 @@ TEST_F(ExclusiveStartingConnectionTest, constructing_second_connection_waits_for
     // After receiving data on the first connection, the second connection is allowed to start
     EXPECT_CALL(clientFactory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
         {
-            auto observer = connectionObserver2.emplace();
+            auto observer = connectionObserver2.Emplace();
             EXPECT_CALL(*observer, Attached());
             createdObserver(observer);
         }));
@@ -196,7 +196,7 @@ TEST_F(ExclusiveStartingConnectionTest, constructing_second_connection_waits_for
 
     clientResult2->ConnectionEstablished([&](infra::SharedPtr<services::ConnectionObserver> observer)
         {
-            auto connectionPtr = connection2.emplace();
+            auto connectionPtr = connection2.Emplace();
             connection2->SetOwnership(connectionPtr, observer);
             connection2->Attach(observer);
         });
@@ -229,7 +229,7 @@ TEST_F(ExclusiveStartingConnectionTest, constructing_second_connection_waits_for
     // After the first connection is closed, the second connection is allowed to start
     EXPECT_CALL(clientFactory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
         {
-            auto observer = connectionObserver2.emplace();
+            auto observer = connectionObserver2.Emplace();
             EXPECT_CALL(*observer, Attached());
             createdObserver(observer);
         }));
@@ -242,7 +242,7 @@ TEST_F(ExclusiveStartingConnectionTest, constructing_second_connection_waits_for
 
     clientResult2->ConnectionEstablished([&](infra::SharedPtr<services::ConnectionObserver> observer)
         {
-            auto connectionPtr = connection2.emplace();
+            auto connectionPtr = connection2.Emplace();
             connection2->SetOwnership(connectionPtr, observer);
             connection2->Attach(observer);
         });

@@ -31,7 +31,7 @@ namespace application
         {
             auto data = sending.front();
             sending.pop_front();
-            DataReceived(reader.emplace(infra::MakeRange(data)));
+            DataReceived(reader.Emplace(infra::MakeRange(data)));
         }
     }
 

@@ -69,9 +69,9 @@ namespace services
             multicast.JoinMulticastGroup(datagramExchangeIpv6, mdnsMulticastAddressIpv6);
 
         if (datagramExchangeIpv4 != nullptr)
-            state.emplace<StateAnnounceIPv4>(*this);
+            state.Emplace<StateAnnounceIPv4>(*this);
         else
-            state.emplace<StateAnnounceIPv6>(*this);
+            state.Emplace<StateAnnounceIPv6>(*this);
     }
 
     BonjourServer::~BonjourServer()
@@ -533,9 +533,9 @@ namespace services
         writer = nullptr;
 
         if (server.datagramExchangeIpv6 != nullptr)
-            server.state.emplace<StateAnnounceIPv6>(server);
+            server.state.Emplace<StateAnnounceIPv6>(server);
         else
-            server.state.emplace<StateIdle>(server);
+            server.state.Emplace<StateIdle>(server);
     }
 
     BonjourServer::StateAnnounceIPv6::StateAnnounceIPv6(BonjourServer& server)
@@ -552,6 +552,6 @@ namespace services
         WriteAnnounceQuery(*writer);
         writer = nullptr;
 
-        server.state.emplace<StateIdle>(server);
+        server.state.Emplace<StateIdle>(server);
     }
 }

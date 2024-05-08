@@ -332,7 +332,7 @@ namespace services
                     if (observer)
                     {
                         auto& clientConnectionCopy = clientConnection;
-                        auto& newState = clientConnection.state.emplace<StateConnected>(clientConnection);
+                        auto& newState = clientConnection.state.Emplace<StateConnected>(clientConnection);
                         clientConnectionCopy.Attach(observer);
                         newState.HandleDataReceived();
                     }
@@ -744,7 +744,7 @@ namespace services
     void MqttClientConnectorImpl::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
     {
         connecting = false;
-        createdObserver(client.emplace(*clientObserverFactory, clientId, username, password));
+        createdObserver(client.Emplace(*clientObserverFactory, clientId, username, password));
     }
 
     void MqttClientConnectorImpl::ConnectionFailed(ConnectFailReason reason)

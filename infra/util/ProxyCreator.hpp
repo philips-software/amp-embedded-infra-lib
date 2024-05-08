@@ -71,7 +71,7 @@ namespace infra
         DelayedProxyCreator& operator=(const DelayedProxyCreator& other) = delete;
         ~DelayedProxyCreator();
 
-        void emplace(ConstructionArgs... args);
+        void Emplace(ConstructionArgs... args);
         void Destroy();
 
         T& operator*();
@@ -302,7 +302,7 @@ namespace infra
     }
 
     template<class T, class... ConstructionArgs>
-    void DelayedProxyCreator<T, void(ConstructionArgs...)>::emplace(ConstructionArgs... args)
+    void DelayedProxyCreator<T, void(ConstructionArgs...)>::Emplace(ConstructionArgs... args)
     {
         creator.emplace(args...);
     }

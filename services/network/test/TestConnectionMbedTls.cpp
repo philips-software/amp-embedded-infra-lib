@@ -73,13 +73,13 @@ TEST_F(ConnectionMbedTlsTest, create_connection)
     EXPECT_CALL(serverObserverFactory, ConnectionAccepted(testing::_, testing::_))
         .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver, services::IPAddress address)
             {
-                createdObserver(observer1.emplace());
+                createdObserver(observer1.Emplace());
             }));
     EXPECT_CALL(clientObserverFactory, Address());
     EXPECT_CALL(clientObserverFactory, ConnectionEstablished(testing::_))
         .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver)
             {
-                createdObserver(observer2.emplace());
+                createdObserver(observer2.Emplace());
             }));
     ExecuteAllActions();
     observer1->Subject().AbortAndDestroy();
@@ -99,13 +99,13 @@ TEST_F(ConnectionMbedTlsTest, send_and_receive_data)
     EXPECT_CALL(serverObserverFactory, ConnectionAccepted(testing::_, testing::_))
         .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver, services::IPAddress address)
             {
-                createdObserver(observer1.emplace());
+                createdObserver(observer1.Emplace());
             }));
     EXPECT_CALL(clientObserverFactory, Address());
     EXPECT_CALL(clientObserverFactory, ConnectionEstablished(testing::_))
         .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver)
             {
-                createdObserver(observer2.emplace());
+                createdObserver(observer2.Emplace());
             }));
     ExecuteAllActions();
 
@@ -135,13 +135,13 @@ TEST_F(ConnectionMbedTlsTest, reopen_connection)
         EXPECT_CALL(serverObserverFactory, ConnectionAccepted(testing::_, testing::_))
             .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver, services::IPAddress address)
                 {
-                    createdObserver(observer1.emplace());
+                    createdObserver(observer1.Emplace());
                 }));
         EXPECT_CALL(clientObserverFactory, Address());
         EXPECT_CALL(clientObserverFactory, ConnectionEstablished(testing::_))
             .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver)
                 {
-                    createdObserver(observer2.emplace());
+                    createdObserver(observer2.Emplace());
                 }));
         ExecuteAllActions();
 
@@ -157,13 +157,13 @@ TEST_F(ConnectionMbedTlsTest, reopen_connection)
         EXPECT_CALL(serverObserverFactory, ConnectionAccepted(testing::_, testing::_))
             .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver, services::IPAddress address)
                 {
-                    createdObserver(observer1.emplace());
+                    createdObserver(observer1.Emplace());
                 }));
         EXPECT_CALL(clientObserverFactory, Address());
         EXPECT_CALL(clientObserverFactory, ConnectionEstablished(testing::_))
             .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver)
                 {
-                    createdObserver(observer2.emplace());
+                    createdObserver(observer2.Emplace());
                 }));
         ExecuteAllActions();
 
@@ -222,7 +222,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, create_connection)
 
     EXPECT_CALL(clientObserverFactory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this, &observer1](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> client)>&& createdClient)
         {
-            createdClient(observer1.emplace());
+            createdClient(observer1.Emplace());
         }));
 
     tlsNetworkClient.Connect(clientObserverFactory);

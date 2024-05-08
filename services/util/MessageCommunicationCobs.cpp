@@ -33,7 +33,7 @@ namespace services
     {
         sendStorage.clear();
         this->onSent = onSent;
-        return sendStream.emplace(std::in_place, sendStorage, size);
+        return sendStream.Emplace(std::in_place, sendStorage, size);
     }
 
     std::size_t MessageCommunicationCobs::MaxSendMessageSize() const

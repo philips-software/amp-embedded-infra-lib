@@ -18,7 +18,7 @@ public:
     {
         sentData.emplace_back();
         writer.OnAllocatable(onAllocatable);
-        return writer.emplace(sentData.back());
+        return writer.Emplace(sentData.back());
     }
 
     void ReceivedMessage(const std::vector<uint8_t>& data)

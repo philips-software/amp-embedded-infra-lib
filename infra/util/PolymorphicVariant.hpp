@@ -30,7 +30,7 @@ namespace infra
         ~PolymorphicVariant();
 
         template<class U, class... Args>
-        U& emplace(Args&&... args);
+        U& Emplace(Args&&... args);
 
         const Base& Get() const;
         Base& Get();
@@ -163,7 +163,7 @@ namespace infra
 
     template<class Base, class... T>
     template<class U, class... Args>
-    U& PolymorphicVariant<Base, T...>::emplace(Args&&... args)
+    U& PolymorphicVariant<Base, T...>::Emplace(Args&&... args)
     {
         Destruct();
         return ConstructInEmptyVariant<U>(std::forward<Args>(args)...);

@@ -49,7 +49,7 @@ namespace services
 
     infra::SharedPtr<infra::StreamReaderWithRewinding> ConnectionBsd::ReceiveStream()
     {
-        return streamReader.emplace(*this);
+        return streamReader.Emplace(*this);
     }
 
     void ConnectionBsd::AckReceived()
@@ -166,7 +166,7 @@ namespace services
             auto size = requestedSendSize;
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([size](const infra::SharedPtr<ConnectionBsd>& object)
                 {
-                    infra::SharedPtr<infra::StreamWriter> writer = object->streamWriter.emplace(*object, size);
+                    infra::SharedPtr<infra::StreamWriter> writer = object->streamWriter.Emplace(*object, size);
                     object->Observer().SendStreamAvailable(std::move(writer));
                 },
                 SharedFromThis());

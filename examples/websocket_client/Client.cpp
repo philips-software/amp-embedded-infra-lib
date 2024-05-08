@@ -129,7 +129,7 @@ namespace application
     {
         tracer.Trace() << "Connection established";
         tracer.Trace();
-        createdClientObserver(consoleClientConnection.emplace());
+        createdClientObserver(consoleClientConnection.Emplace());
     }
 
     void ConsoleFactory::ConnectionFailed(ConnectFailReason reason)

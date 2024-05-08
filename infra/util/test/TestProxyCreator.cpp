@@ -192,7 +192,7 @@ TEST(DelayedProxyCreatorTest, CreatePeripheral)
     infra::Creator<PeripheralInterface, Peripheral, void()> creator;
 
     infra::DelayedProxyCreator<PeripheralInterface, void()> creatorProxy(creator);
-    creatorProxy.emplace();
+    creatorProxy.Emplace();
     creatorProxy.Destroy();
 }
 
@@ -201,7 +201,7 @@ TEST(DelayedProxyCreatorTest, CreatePeripheralWithParameterGivenByProxy)
     infra::Creator<PeripheralInterface, PeripheralWithTwoParameters, void(int, int)> creator;
 
     infra::DelayedProxyCreator<PeripheralInterface, void(int, int)> creatorProxy(creator);
-    creatorProxy.emplace(5, 6);
+    creatorProxy.Emplace(5, 6);
     EXPECT_EQ(5, creator->x);
 }
 
@@ -213,7 +213,7 @@ TEST(DelayedProxyCreatorTest, CreatePeripheralWithParameterGivenByCreator)
         });
 
     infra::DelayedProxyCreator<PeripheralInterface, void()> creatorProxy(creator);
-    creatorProxy.emplace();
+    creatorProxy.Emplace();
     EXPECT_EQ(5, creator->x);
 }
 
@@ -225,7 +225,7 @@ TEST(DelayedProxyCreatorTest, CreatePeripheralWithParameterGivenByProxyAndCreato
         });
 
     infra::DelayedProxyCreator<PeripheralInterface, void(int)> creatorProxy(creator);
-    creatorProxy.emplace(5);
+    creatorProxy.Emplace(5);
     EXPECT_EQ(5, creator->x);
     EXPECT_EQ(6, creator->y);
 }
@@ -238,7 +238,7 @@ TEST(DelayedProxyCreatorTest, CreatePeripheralWithParameterGivenByCreatorAndProx
         });
 
     infra::DelayedProxyCreator<PeripheralInterface, void(int)> creatorProxy(creator);
-    creatorProxy.emplace(6);
+    creatorProxy.Emplace(6);
     EXPECT_EQ(5, creator->x);
     EXPECT_EQ(6, creator->y);
 }
@@ -248,7 +248,7 @@ TEST(DelayedProxyCreatorTest, AccessPeripheral)
     infra::Creator<PeripheralInterface, Peripheral, void()> creator;
 
     infra::DelayedProxyCreator<PeripheralInterface, void()> creatorProxy(creator);
-    creatorProxy.emplace();
+    creatorProxy.Emplace();
 
     EXPECT_CALL(*creator, SendMock());
     creatorProxy->Send();

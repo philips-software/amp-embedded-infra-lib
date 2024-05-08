@@ -215,7 +215,7 @@ namespace services
             requestedSendSize = 0;
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<DatagramBsd>& object)
                 {
-                    infra::SharedPtr<infra::StreamWriter> writer = object->streamWriter.emplace(*object);
+                    infra::SharedPtr<infra::StreamWriter> writer = object->streamWriter.Emplace(*object);
                     object->GetObserver().SendStreamAvailable(std::move(writer));
                 },
                 SharedFromThis());

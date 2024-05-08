@@ -42,7 +42,7 @@ public:
 
         EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](auto&& createdClientObserver)
             {
-                auto observer = clientObserver.emplace();
+                auto observer = clientObserver.Emplace();
                 EXPECT_CALL(*observer, Attached());
                 createdClientObserver(observer);
             }));
@@ -215,7 +215,7 @@ TEST_F(HttpClientCachedConnectionTest, all_responses)
 
     infra::SharedOptional<infra::StreamReaderMock> reader;
     EXPECT_CALL(*clientObserver, BodyAvailable(testing::_));
-    clientSubject.Observer().BodyAvailable(reader.emplace());
+    clientSubject.Observer().BodyAvailable(reader.Emplace());
 
     infra::StreamWriterMock writer;
     infra::AccessedBySharedPtr writerAccess(infra::emptyFunction);
@@ -273,7 +273,7 @@ TEST_F(HttpClientCachedConnectionTest, second_request_on_same_connection)
 
     EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](auto&& createdClientObserver)
         {
-            auto observer = clientObserver.emplace();
+            auto observer = clientObserver.Emplace();
             EXPECT_CALL(*observer, Attached());
             createdClientObserver(observer);
         }));
@@ -290,7 +290,7 @@ TEST_F(HttpClientCachedConnectionTest, CloseConnection_on_second_request)
 
     EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](auto&& createdClientObserver)
         {
-            auto observer = clientObserver.emplace();
+            auto observer = clientObserver.Emplace();
             EXPECT_CALL(*observer, Attached());
             createdClientObserver(observer);
         }));
@@ -364,7 +364,7 @@ TEST_F(HttpClientCachedConnectionTest, connection_is_closed_during_StatusAvailab
     clientSubject.Observer().HeaderAvailable(services::HttpHeader("field", "value"));
 
     infra::SharedOptional<infra::StreamReaderMock> reader;
-    clientSubject.Observer().BodyAvailable(reader.emplace());
+    clientSubject.Observer().BodyAvailable(reader.Emplace());
 
     clientSubject.Observer().BodyComplete();
 

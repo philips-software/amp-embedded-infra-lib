@@ -217,7 +217,7 @@ namespace services
     infra::SharedPtr<infra::StreamReaderWithRewinding> ConnectionMbedTls::ReceiveStream()
     {
         keepAliveForReader = SharedFromThis();
-        return receiveReader.emplace(*this);
+        return receiveReader.Emplace(*this);
     }
 
     void ConnectionMbedTls::AckReceived()
@@ -268,7 +268,7 @@ namespace services
 
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([requestedSize](const infra::SharedPtr<ConnectionMbedTls>& object)
                 {
-                    infra::SharedPtr<StreamWriterMbedTls> stream = object->streamWriter.emplace(*object, requestedSize);
+                    infra::SharedPtr<StreamWriterMbedTls> stream = object->streamWriter.Emplace(*object, requestedSize);
                     if (object->Connection::IsAttached())
                         object->Observer().SendStreamAvailable(std::move(stream));
                 },

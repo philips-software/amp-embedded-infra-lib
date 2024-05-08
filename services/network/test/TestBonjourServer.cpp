@@ -306,7 +306,7 @@ public:
     {
         EXPECT_CALL(factory, Listen(testing::Ref(server), 5353, services::IPVersions::ipv4)).WillOnce(testing::Invoke([this](services::DatagramExchangeObserver& observer, uint16_t port, services::IPVersions versions)
             {
-                auto ptr = datagramExchange.emplace();
+                auto ptr = datagramExchange.Emplace();
                 observer.Attach(*ptr);
 
                 ExpectResponse(infra::ConstructBin()
@@ -321,7 +321,7 @@ public:
     {
         EXPECT_CALL(factory, Listen(testing::Ref(server), 5353, services::IPVersions::ipv6)).WillOnce(testing::Invoke([this](services::DatagramExchangeObserver& observer, uint16_t port, services::IPVersions versions)
             {
-                auto ptr = datagramExchange.emplace();
+                auto ptr = datagramExchange.Emplace();
                 observer.Attach(*ptr);
 
                 ExpectResponse(infra::ConstructBin()

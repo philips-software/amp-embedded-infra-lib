@@ -9,7 +9,7 @@ namespace services
 
     void TracingCucumberWireProtocolConnectionObserver::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        auto tracingWriterPtr = tracingWriter.emplace(std::move(writer), tracer);
+        auto tracingWriterPtr = tracingWriter.Emplace(std::move(writer), tracer);
         CucumberWireProtocolConnectionObserver::SendStreamAvailable(infra::MakeContainedSharedObject(tracingWriterPtr->Writer(), std::move(tracingWriterPtr)));
     }
 

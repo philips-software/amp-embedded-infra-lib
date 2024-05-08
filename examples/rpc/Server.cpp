@@ -46,7 +46,7 @@ public:
             connection->::services::ConnectionObserver::Subject().AbortAndDestroy();
 
         if (connection.Allocatable())
-            createdObserver(connection.emplace(serializerFactory));
+            createdObserver(connection.Emplace(serializerFactory));
     }
 
 private:

@@ -47,11 +47,11 @@ public:
         std::vector<uint8_t> sentData;
 
         infra::SharedOptional<infra::StdVectorOutputStreamWriter> writer;
-        lower.GetObserver().SendMessageStreamAvailable(writer.emplace(sentData));
+        lower.GetObserver().SendMessageStreamAvailable(writer.Emplace(sentData));
         ASSERT_TRUE(writer.Allocatable());
 
         infra::SharedOptional<infra::StdVectorInputStreamReader> reader;
-        lower.GetObserver().ReceivedMessage(reader.emplace(sentData));
+        lower.GetObserver().ReceivedMessage(reader.Emplace(sentData));
         ASSERT_TRUE(reader.Allocatable());
     }
 

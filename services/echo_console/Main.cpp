@@ -212,7 +212,7 @@ void ConsoleClientTcp::ConnectionEstablished(infra::AutoResetFunction<void(infra
 {
     tracer.Trace() << "Connection established";
     tracer.Trace();
-    createdObserver(consoleClientConnection.emplace(console));
+    createdObserver(consoleClientConnection.Emplace(console));
 }
 
 void ConsoleClientTcp::ConnectionFailed(services::ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason reason)
@@ -276,7 +276,7 @@ void ConsoleClientWebSocket::ConnectionEstablished(infra::AutoResetFunction<void
 {
     tracer.Trace() << "Connection established";
     tracer.Trace();
-    createdClientObserver(consoleClientConnection.emplace(console));
+    createdClientObserver(consoleClientConnection.Emplace(console));
 }
 
 void ConsoleClientWebSocket::ConnectionFailed(ConnectFailReason reason)
