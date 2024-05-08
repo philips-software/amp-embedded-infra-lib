@@ -24,8 +24,6 @@ target_sources(services.util PRIVATE
     EchoInstantiation.hpp
     EchoOnMessageCommunication.cpp
     EchoOnMessageCommunication.hpp
-    EchoOnMessageCommunicationSymmetricKey.cpp
-    EchoOnMessageCommunicationSymmetricKey.hpp
     FlashAlign.cpp
     FlashAlign.hpp
     FlashMultipleAccess.cpp
@@ -53,8 +51,6 @@ target_sources(services.util PRIVATE
     MessageCommunication.hpp
     MessageCommunicationCobs.cpp
     MessageCommunicationCobs.hpp
-    MessageCommunicationSecured.cpp
-    MessageCommunicationSecured.hpp
     MessageCommunicationWindowed.cpp
     MessageCommunicationWindowed.hpp
     RepeatingButton.cpp
@@ -84,6 +80,10 @@ if (EMIL_INCLUDE_MBEDTLS)
     target_sources(services.util PRIVATE
         AesMbedTls.cpp
         AesMbedTls.hpp
+        EchoOnMessageCommunicationSymmetricKey.cpp
+        EchoOnMessageCommunicationSymmetricKey.hpp
+        MessageCommunicationSecured.cpp
+        MessageCommunicationSecured.hpp
         Sha256MbedTls.cpp
         Sha256MbedTls.hpp
     )

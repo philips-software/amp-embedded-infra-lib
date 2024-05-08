@@ -1,7 +1,6 @@
 add_library(upgrade.boot_loader ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
 target_link_libraries(upgrade.boot_loader PUBLIC
-    mbedcrypto
     crypto.micro_ecc
     crypto.tiny_aes128
     hal.synchronous_interfaces
@@ -12,8 +11,6 @@ target_link_libraries(upgrade.boot_loader PUBLIC
 
 target_sources(upgrade.boot_loader PRIVATE
     Decryptor.hpp
-    DecryptorAesMbedTls.cpp
-    DecryptorAesMbedTls.hpp
     DecryptorAesTiny.cpp
     DecryptorAesTiny.hpp
     DecryptorNone.cpp
@@ -33,11 +30,22 @@ target_sources(upgrade.boot_loader PRIVATE
     UpgradePackLoader.cpp
     UpgradePackLoader.hpp
     Verifier.hpp
-    VerifierEcDsa.cpp
-    VerifierEcDsa.hpp
-    VerifierHashOnly.cpp
-    VerifierHashOnly.hpp
 )
+
+if (${EMIL_INCLUDE_MBEDTLS})
+    target_link_libraries(upgrade.boot_loader PUBLIC
+        mbedcrypto
+    )
+
+    target_sources(upgrade.boot_loader PRIVATE
+        DecryptorAesMbedTls.cpp
+        DecryptorAesMbedTls.hpp
+        VerifierEcDsa.cpp
+        VerifierEcDsa.hpp
+        VerifierHashOnly.cpp
+        VerifierHashOnly.hpp
+    )
+endif()
 
 add_subdirectory(test)
 add_subdirectory(test_doubles)
