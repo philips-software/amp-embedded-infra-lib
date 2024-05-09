@@ -22,7 +22,7 @@ jobs:
       pull-requests: write
       security-events: write
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+      - uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b # v4.1.5
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -32,7 +32,7 @@ jobs:
           VALIDATE_ALL_CODEBASE: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: git diff
-      - uses: github/codeql-action/upload-sarif@d39d31e687223d841ef683f52467bd88e9b21c14 # v3.25.3
+      - uses: github/codeql-action/upload-sarif@ccf74c947955fd1cf117aef6a0e4e66191ef6f61 # v3.25.4
         if: ${{ success() || failure() }}
         with:
           sarif_file: megalinter-reports/megalinter-report.sarif
