@@ -10,12 +10,12 @@ target_link_libraries(upgrade.boot_loader_test PUBLIC
 )
 
 target_sources(upgrade.boot_loader_test PRIVATE
-    TestDecryptorAes.cpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestDecryptorAes.cpp>
     TestImageUpgraderEraseSectors.cpp
     TestImageUpgraderFlash.cpp
     TestImageUpgraderSkip.cpp
     TestPackUpgrader.cpp
     TestSecondStageToRamLoader.cpp
-    TestVerifierEcDsa.cpp
-    TestVerifierHashOnly.cpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestVerifierEcDsa.cpp>
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestVerifierHashOnly.cpp>
 )
