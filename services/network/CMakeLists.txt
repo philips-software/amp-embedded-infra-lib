@@ -1,9 +1,9 @@
 add_library(services.network ${EMIL_EXCLUDE_FROM_ALL} STATIC)
-
+ 
 protocol_buffer_echo_cpp(services.network Network.proto)
 protocol_buffer_csharp(services.network Network.proto)
 protocol_buffer_java(services.network Network.proto)
-
+ 
 target_link_libraries(services.network PUBLIC
     infra.syntax
     infra.timer
@@ -12,7 +12,7 @@ target_link_libraries(services.network PUBLIC
     services.tracer
     services.util
 )
-
+ 
 target_sources(services.network PRIVATE
     Address.cpp
     Address.hpp
@@ -98,36 +98,36 @@ target_sources(services.network PRIVATE
     WiFiNetwork.cpp
     WiFiNetwork.hpp
 )
-
+ 
 if (EMIL_HOST_BUILD)
     target_sources(services.network PRIVATE
         CertificateConvertor.cpp
         CertificateConvertor.hpp
     )
 endif()
-
+ 
 if (${EMIL_INCLUDE_MBEDTLS})
     target_link_libraries(services.network PUBLIC
         mbedtls
     )
-
-    target_sources(services.network PRIVATE
-        CertificatesMbedTls.cpp
-        CertificatesMbedTls.hpp
-        ConnectionMbedTls.cpp
-        ConnectionMbedTls.hpp
-        HttpPageWebSocket.cpp
-        HttpPageWebSocket.hpp
-        NameResolverCache.cpp
-        NameResolverCache.hpp
-        TracingConnectionMbedTls.cpp
-        TracingConnectionMbedTls.hpp
-        WebSocketClientConnectionObserver.cpp
-        WebSocketClientConnectionObserver.hpp
-        WebSocketServerConnectionObserver.cpp
-        WebSocketServerConnectionObserver.hpp
-    )
 endif()
-
+ 
+target_sources(services.network PRIVATE
+    CertificatesMbedTls.cpp
+    CertificatesMbedTls.hpp
+    ConnectionMbedTls.cpp
+    ConnectionMbedTls.hpp
+    HttpPageWebSocket.cpp
+    HttpPageWebSocket.hpp
+    NameResolverCache.cpp
+    NameResolverCache.hpp
+    TracingConnectionMbedTls.cpp
+    TracingConnectionMbedTls.hpp
+    WebSocketClientConnectionObserver.cpp
+    WebSocketClientConnectionObserver.hpp
+    WebSocketServerConnectionObserver.cpp
+    WebSocketServerConnectionObserver.hpp
+)
+ 
 add_subdirectory(test)
 add_subdirectory(test_doubles)
