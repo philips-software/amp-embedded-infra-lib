@@ -1,7 +1,7 @@
 FetchContent_Declare(
     threadx
-    GIT_REPOSITORY https://github.com/azure-rtos/threadx
-    GIT_TAG e11c166a4045d80ea74fe917e5608474754f5067 # v6.1.11_rel
+    GIT_REPOSITORY https://github.com/eclipse-threadx/threadx
+    GIT_TAG 07eac307405dbf09d409844e31c37b0649d6c074 # v6.4.1_rel
 )
 
 set(CMAKE_COMPILE_WARNING_AS_ERROR Off)
@@ -18,10 +18,10 @@ set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL On)
 FetchContent_MakeAvailable(threadx)
 set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL Off)
 
-target_compile_definitions(threadx PRIVATE "TX_INITIALIZE_KERNEL_ENTER_EXTENSION=return\;")
-get_target_property(COMPILE_DEFINITIONS threadx definitions)
-string(REPLACE TX_INCLUDE_USER_DEFINE_FILE TX_INCLUDE_USER_DEFINE_FILE=1 defitions "${definitions}")
-set_target_properties(threadx PROPERTIES COMPILE_DEFINITIONS "${definitions}")
+target_compile_definitions(threadx PUBLIC
+    "TX_INITIALIZE_KERNEL_ENTER_EXTENSION=return\\$<SEMICOLON> "
+    "TX_SINGLE_MODE_NON_SECURE=1"
+)
 
 add_library(osal.threadx_osal ${EMIL_EXCLUDE_FROM_ALL} STATIC Osal.cpp)
 target_link_libraries(osal.threadx_osal PUBLIC infra.util threadx)

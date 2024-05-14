@@ -2,7 +2,6 @@ add_library(upgrade.pack_builder STATIC)
 emil_build_for(upgrade.pack_builder HOST All PREREQUISITE_BOOL EMIL_STANDALONE)
 
 target_link_libraries(upgrade.pack_builder PUBLIC
-    mbedcrypto
     crypto.micro_ecc
     crypto.tiny_aes128
     hal.interfaces
@@ -14,18 +13,10 @@ target_sources(upgrade.pack_builder PRIVATE
     BinaryObject.cpp
     BinaryObject.hpp
     Elf.hpp
-    ImageAuthenticatorHmac.cpp
-    ImageAuthenticatorHmac.hpp
-    ImageEncryptorAes.cpp
-    ImageEncryptorAes.hpp
     ImageEncryptorNone.cpp
     ImageEncryptorNone.hpp
     ImageSecurity.hpp
     ImageSigner.hpp
-    ImageSignerEcDsa.cpp
-    ImageSignerEcDsa.hpp
-    ImageSignerHashOnly.cpp
-    ImageSignerHashOnly.hpp
     Input.cpp
     Input.hpp
     InputBinary.cpp
@@ -47,6 +38,23 @@ target_sources(upgrade.pack_builder PRIVATE
     UpgradePackInputFactory.cpp
     UpgradePackInputFactory.hpp
 )
+
+if (${EMIL_INCLUDE_MBEDTLS})
+    target_link_libraries(upgrade.pack_builder PUBLIC
+        mbedcrypto
+    )
+
+    target_sources(upgrade.pack_builder PRIVATE
+        ImageAuthenticatorHmac.cpp
+        ImageAuthenticatorHmac.hpp
+        ImageEncryptorAes.cpp
+        ImageEncryptorAes.hpp
+        ImageSignerEcDsa.cpp
+        ImageSignerEcDsa.hpp
+        ImageSignerHashOnly.cpp
+        ImageSignerHashOnly.hpp
+    )
+endif()
 
 add_subdirectory(test)
 add_subdirectory(test_helper)
