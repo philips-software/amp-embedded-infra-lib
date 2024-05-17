@@ -72,10 +72,16 @@ target_sources(services.util PRIVATE
     WritableConfiguration.hpp
 )
 
-if (EMIL_INCLUDE_MBEDTLS)
-    target_link_libraries(services.util PUBLIC
-        mbedcrypto
-    )
+if (EMIL_INCLUDE_MBEDTLS OR EMIL_EXTERNAL_MBEDTLS_TARGET)
+    if (EMIL_EXTERNAL_MBEDTLS_TARGET)
+        target_link_libraries(services.util PUBLIC
+            ${EMIL_EXTERNAL_MBEDTLS_TARGET}
+        )
+    else()
+        target_link_libraries(services.util PUBLIC
+            mbedcrypto
+        )
+    endif()
 
     target_sources(services.util PRIVATE
         AesMbedTls.cpp
