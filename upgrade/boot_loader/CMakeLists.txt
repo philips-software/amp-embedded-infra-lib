@@ -32,8 +32,8 @@ target_sources(upgrade.boot_loader PRIVATE
     Verifier.hpp
 )
 
-if (EMIL_INCLUDE_MBEDTLS OR EMIL_EXTERNAL_MBEDTLS_TARGET)
-    if (EMIL_EXTERNAL_MBEDTLS_TARGET)
+if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
+    if (NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
         target_link_libraries(upgrade.boot_loader PUBLIC
             ${EMIL_EXTERNAL_MBEDTLS_TARGET}
         )

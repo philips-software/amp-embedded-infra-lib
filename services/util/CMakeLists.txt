@@ -72,8 +72,8 @@ target_sources(services.util PRIVATE
     WritableConfiguration.hpp
 )
 
-if (EMIL_INCLUDE_MBEDTLS OR EMIL_EXTERNAL_MBEDTLS_TARGET)
-    if (EMIL_EXTERNAL_MBEDTLS_TARGET)
+if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
+    if (NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
         target_link_libraries(services.util PUBLIC
             ${EMIL_EXTERNAL_MBEDTLS_TARGET}
         )

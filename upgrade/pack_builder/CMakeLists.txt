@@ -39,8 +39,8 @@ target_sources(upgrade.pack_builder PRIVATE
     UpgradePackInputFactory.hpp
 )
 
-if (EMIL_INCLUDE_MBEDTLS OR EMIL_EXTERNAL_MBEDTLS_TARGET)
-    if (EMIL_EXTERNAL_MBEDTLS_TARGET)
+if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
+    if (NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
         target_link_libraries(upgrade.pack_builder PUBLIC
             ${EMIL_EXTERNAL_MBEDTLS_TARGET}
         )
