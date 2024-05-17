@@ -104,10 +104,16 @@ if (EMIL_HOST_BUILD)
     )
 endif()
 
-if (${EMIL_INCLUDE_MBEDTLS})
-    target_link_libraries(services.network PUBLIC
-        mbedtls
-    )
+if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
+    if (NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
+        target_link_libraries(services.network PUBLIC
+            ${EMIL_EXTERNAL_MBEDTLS_TARGET}
+        )
+    else()
+        target_link_libraries(services.network PUBLIC
+            mbedtls
+        )
+    endif()
 
     target_sources(services.network PRIVATE
         CertificatesMbedTls.cpp
