@@ -34,7 +34,7 @@ target_sources(infra.util PRIVATE
     Compatibility.hpp
     ConstructBin.cpp
     ConstructBin.hpp
-    CrcCcittCalculator.cpp
+    Crc.hpp
     CrcCcittCalculator.hpp
     CyclicBuffer.hpp
     Endian.hpp
