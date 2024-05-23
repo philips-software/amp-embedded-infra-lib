@@ -56,6 +56,13 @@ TEST(TestCrc, Crc16CcittFalse)
     EXPECT_EQ(0x29B1, crc.Result());
 }
 
+TEST(TestCrc, Crc32)
+{
+    infra::Crc32 crc;
+    crc.Update(checkInput);
+    EXPECT_EQ(0xCBF43926, crc.Result());
+}
+
 TEST(TestCrc, Reset)
 {
     infra::Crc16Modbus crc;

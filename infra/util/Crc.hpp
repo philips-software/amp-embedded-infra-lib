@@ -17,9 +17,6 @@ namespace infra
         static_assert(ReflectInput == ReflectOutput, "Currently, non-matching ReflectInput and ReflectOutput is not supported");
 
     public:
-        Crc() = default;
-        ~Crc() = default;
-
         void Update(uint8_t input);
         void Update(ConstByteRange bytes);
         CRC_TYPE Result() const;
@@ -52,6 +49,7 @@ namespace infra
     using Crc16Modbus = Crc<uint16_t, 0x8005, 0xffff, 0, true, true>;
     using Crc16Xmodem = Crc<uint16_t, 0x1021, 0x0>;
     using Crc16CcittFalse = Crc<uint16_t, 0x1021, 0xffff>;
+    using Crc32 = Crc<uint32_t, 0x04C11DB7, 0xffffffff, 0xffffffff, true, true>;
     using Crc64Ecma = Crc<uint64_t, 0x42F0E1EBA9EA3693, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, true, true>;
 
     template<typename CRC_TYPE>
@@ -73,11 +71,11 @@ namespace infra
     template<typename CRC_TYPE, CRC_TYPE Polynomial, CRC_TYPE InitValue, CRC_TYPE FinalXor, bool ReflectInput, bool ReflectOutput>
     void Crc<CRC_TYPE, Polynomial, InitValue, FinalXor, ReflectInput, ReflectOutput>::Update(uint8_t input)
     {
-        if (ReflectInput)
+        if constexpr (ReflectInput)
         {
             crc ^= input;
             uint8_t pos = crc & 0xFF;
-            if (bitWidthEquals8)
+            if constexpr (bitWidthEquals8)
                 crc = 0;
             else
                 crc >>= 8;
@@ -87,7 +85,7 @@ namespace infra
         {
             crc ^= (CRC_TYPE(input) << shift);
             uint8_t pos = static_cast<uint8_t>(crc >> shift);
-            if (bitWidthEquals8)
+            if constexpr (bitWidthEquals8)
                 crc = 0;
             else
                 crc <<= 8;
@@ -134,7 +132,7 @@ namespace infra
         for (unsigned int i = 0; i < 256; ++i)
         {
             auto input = static_cast<uint8_t>(i);
-            if (ReflectInput)
+            if constexpr (ReflectInput)
                 input = Reflect(input);
 
             CRC_TYPE crcEntry = static_cast<CRC_TYPE>(input) << shift;
@@ -153,7 +151,7 @@ namespace infra
                 }
             }
 
-            if (ReflectOutput)
+            if constexpr (ReflectOutput)
                 table[i] = Reflect(crcEntry);
             else
                 table[i] = crcEntry;
