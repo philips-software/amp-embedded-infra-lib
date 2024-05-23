@@ -1,10 +1,10 @@
-#ifndef HAL_ST_EVENT_DISPATCHER_THREADX_HPP
-#define HAL_ST_EVENT_DISPATCHER_THREADX_HPP
+#ifndef OSAL_EVENT_DISPATCHER_THREADX_HPP
+#define OSAL_EVENT_DISPATCHER_THREADX_HPP
 
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "tx_api.h"
 
-namespace main_
+namespace hal
 {
     class EventDispatcherThreadXWorker
         : public infra::EventDispatcherWithWeakPtrWorker
@@ -22,7 +22,6 @@ namespace main_
     };
 
     using EventDispatcherThreadX = infra::EventDispatcherWithWeakPtrConnector<EventDispatcherThreadXWorker>;
-
 }
 
 #endif

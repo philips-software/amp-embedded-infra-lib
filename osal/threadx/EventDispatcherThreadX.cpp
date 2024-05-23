@@ -1,6 +1,6 @@
 #include "osal/threadx/EventDispatcherThreadX.hpp"
 
-namespace main_
+namespace hal
 {
     constexpr static ULONG Execute{ 0x01 };
 
