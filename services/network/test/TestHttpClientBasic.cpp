@@ -11,8 +11,6 @@ class HttpClientBasicMock
     : public services::HttpClientBasic
 {
 public:
-    virtual ~HttpClientBasicMock() = default;
-
     using services::HttpClientBasic::HttpClientBasic;
 
     using services::HttpClientBasic::ContentError;
