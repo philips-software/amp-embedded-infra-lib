@@ -197,6 +197,7 @@ namespace services
     void HttpClientBasic::ReportError(bool intermittentFailure)
     {
         state = State::idle;
+        contentError = false;
         timeoutTimer.Cancel();
         Error(intermittentFailure);
     }
