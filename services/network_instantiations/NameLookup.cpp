@@ -24,7 +24,7 @@ namespace services
     NameLookup::~NameLookup()
     {
         {
-            std::lock_guard<std::mutex> lock(mutex);
+            std::scoped_lock lock(mutex);
 
             run = false;
             condition.notify_one();
@@ -36,15 +36,21 @@ namespace services
     void NameLookup::Lookup(NameResolverResult& result)
     {
         assert(result.Versions() != IPVersions::ipv6);
-        std::lock_guard<std::mutex> lock(mutex);
+        std::scoped_lock lock(mutex);
         nameLookup.push_back(result);
         condition.notify_one();
     }
 
     void NameLookup::CancelLookup(NameResolverResult& result)
     {
-        std::lock_guard<std::mutex> lock(mutex);
+        std::scoped_lock lock(mutex);
         nameLookup.erase(result);
+    }
+
+    bool NameLookup::Active() const
+    {
+        std::scoped_lock lock(mutex);
+        return !nameLookup.empty();
     }
 
     void NameLookup::Run()
@@ -82,7 +88,7 @@ namespace services
                     const auto ipv4Address = services::ConvertFromUint32(ntohl(address->sin_addr.s_addr));
                     infra::EventDispatcher::Instance().Schedule([this, ipv4Address]()
                         {
-                            std::lock_guard<std::mutex> lock(mutex);
+                            std::scoped_lock lock(mutex);
                             if (&nameLookup.front() == currentLookup)
                             {
                                 nameLookup.pop_front();

@@ -11,7 +11,6 @@ target_link_libraries(services.network PUBLIC
     protobuf.echo
     services.tracer
     services.util
-    mbedtls
 )
 
 target_sources(services.network PRIVATE
@@ -21,14 +20,10 @@ target_sources(services.network PRIVATE
     BonjourServer.hpp
     $<$<BOOL:${EMIL_HOST_BUILD}>:CertificateConvertor.cpp>
     $<$<BOOL:${EMIL_HOST_BUILD}>:CertificateConvertor.hpp>
-    CertificatesMbedTls.cpp
-    CertificatesMbedTls.hpp
     Connection.cpp
     Connection.hpp
     ConnectionFactoryWithNameResolver.cpp
     ConnectionFactoryWithNameResolver.hpp
-    ConnectionMbedTls.cpp
-    ConnectionMbedTls.hpp
     ConnectionStatus.hpp
     Datagram.hpp
     Dns.cpp
@@ -58,8 +53,6 @@ target_sources(services.network PRIVATE
     HttpClientJson.hpp
     HttpErrors.cpp
     HttpErrors.hpp
-    HttpPageWebSocket.cpp
-    HttpPageWebSocket.hpp
     HttpRequestParser.cpp
     HttpRequestParser.hpp
     HttpServer.cpp
@@ -75,8 +68,6 @@ target_sources(services.network PRIVATE
     MqttMultipleAccess.hpp
     Multicast.hpp
     NameResolver.hpp
-    NameResolverCache.cpp
-    NameResolverCache.hpp
     Network.hpp
     SerialServer.cpp
     SerialServer.hpp
@@ -90,8 +81,6 @@ target_sources(services.network PRIVATE
     StreamEcho.hpp
     TracingConnectionFactoryWithNameResolver.cpp
     TracingConnectionFactoryWithNameResolver.hpp
-    TracingConnectionMbedTls.cpp
-    TracingConnectionMbedTls.hpp
     TracingEchoOnConnection.cpp
     TracingEchoOnConnection.hpp
     TracingHttpClientCachedConnection.cpp
@@ -104,10 +93,6 @@ target_sources(services.network PRIVATE
     TracingStatusHttpClientImpl.hpp
     WebSocket.cpp
     WebSocket.hpp
-    WebSocketClientConnectionObserver.cpp
-    WebSocketClientConnectionObserver.hpp
-    WebSocketServerConnectionObserver.cpp
-    WebSocketServerConnectionObserver.hpp
     WiFiNetwork.cpp
     WiFiNetwork.hpp
 )
@@ -116,6 +101,35 @@ if (EMIL_HOST_BUILD)
     target_sources(services.network PRIVATE
         CertificateConvertor.cpp
         CertificateConvertor.hpp
+    )
+endif()
+
+if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
+    if (NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
+        target_link_libraries(services.network PUBLIC
+            ${EMIL_EXTERNAL_MBEDTLS_TARGET}
+        )
+    else()
+        target_link_libraries(services.network PUBLIC
+            mbedtls
+        )
+    endif()
+
+    target_sources(services.network PRIVATE
+        CertificatesMbedTls.cpp
+        CertificatesMbedTls.hpp
+        ConnectionMbedTls.cpp
+        ConnectionMbedTls.hpp
+        HttpPageWebSocket.cpp
+        HttpPageWebSocket.hpp
+        NameResolverCache.cpp
+        NameResolverCache.hpp
+        TracingConnectionMbedTls.cpp
+        TracingConnectionMbedTls.hpp
+        WebSocketClientConnectionObserver.cpp
+        WebSocketClientConnectionObserver.hpp
+        WebSocketServerConnectionObserver.cpp
+        WebSocketServerConnectionObserver.hpp
     )
 endif()
 

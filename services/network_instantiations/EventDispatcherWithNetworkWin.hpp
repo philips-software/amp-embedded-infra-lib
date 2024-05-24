@@ -24,6 +24,8 @@ namespace services
         void RegisterDatagram(const infra::SharedPtr<DatagramWin>& datagram);
         void RegisterDatagramMultiple(const infra::SharedPtr<DatagramExchangeMultiple>& datagram);
 
+        bool ConnectionsOpen() const;
+
     public:
         // Implementation of ConnectionFactory
         infra::SharedPtr<void> Listen(uint16_t port, services::ServerConnectionObserverFactory& factory, IPVersions versions) override;
