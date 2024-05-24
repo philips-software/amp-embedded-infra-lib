@@ -1,6 +1,7 @@
 #ifndef SERVICES_NETWORK_CERTIFICATE_CONVERTOR_HPP
 #define SERVICES_NETWORK_CERTIFICATE_CONVERTOR_HPP
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
