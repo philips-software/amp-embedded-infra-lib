@@ -27,7 +27,7 @@ public:
 
     using infra::SystemStateParticipant::ReachedState;
 
-    infra::Optional<infra::SystemStateBase> requestedState;
+    std::optional<infra::SystemStateBase> requestedState;
 };
 
 TEST_F(SystemStateTest, Construction)

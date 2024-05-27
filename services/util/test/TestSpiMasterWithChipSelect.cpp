@@ -13,12 +13,12 @@ public:
     SpiMasterWithChipSelectTest()
     {
         EXPECT_CALL(spiMock, SetChipSelectConfiguratorMock(testing::_));
-        spi.Emplace(spiMock, chipSelect);
+        spi.emplace(spiMock, chipSelect);
     }
 
     testing::StrictMock<hal::SpiAsynchronousMock> spiMock;
     hal::GpioPinStub chipSelect;
-    infra::Optional<services::SpiMasterWithChipSelect> spi;
+    std::optional<services::SpiMasterWithChipSelect> spi;
 };
 
 TEST_F(SpiMasterWithChipSelectTest, ChipSelectStartsHigh)

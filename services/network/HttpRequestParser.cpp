@@ -90,7 +90,7 @@ namespace services
         return bodyBuffer;
     }
 
-    infra::Optional<uint32_t> HttpRequestParserImpl::ContentLength() const
+    std::optional<uint32_t> HttpRequestParserImpl::ContentLength() const
     {
         return contentLength;
     }
@@ -130,7 +130,7 @@ namespace services
         if (!contentsLengthString.empty())
         {
             infra::StringInputStream stream(contentsLengthString, infra::noFail);
-            contentLength.Emplace(0);
+            contentLength.emplace(0);
             stream >> *contentLength;
         }
         else if (verb == HttpVerb::get || verb == HttpVerb::head || verb == HttpVerb::delete_ || verb == HttpVerb::connect)

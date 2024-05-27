@@ -57,7 +57,7 @@ namespace hal
 
     void GpioPinStub::DisableInterrupt()
     {
-        triggerOnChange = infra::none;
+        triggerOnChange = std::nullopt;
     }
 
     void GpioPinStub::SetStubState(bool value)

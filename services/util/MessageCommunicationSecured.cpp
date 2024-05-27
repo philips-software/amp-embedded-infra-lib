@@ -69,13 +69,13 @@ namespace services
     void MessageCommunicationSecured::ActivateSendKey()
     {
         SetSendKey(nextKeys->first, nextKeys->second);
-        nextKeys = infra::none;
+        nextKeys = std::nullopt;
     }
 
     void MessageCommunicationSecured::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         sendWriter = std::move(writer);
-        GetObserver().SendMessageStreamAvailable(sendBufferWriter.Emplace(infra::inPlace, sendBuffer, requestedSendSize));
+        GetObserver().SendMessageStreamAvailable(sendBufferWriter.Emplace(std::in_place, sendBuffer, requestedSendSize));
     }
 
     void MessageCommunicationSecured::ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)

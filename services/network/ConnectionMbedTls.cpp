@@ -1,5 +1,6 @@
 #include "services/network/ConnectionMbedTls.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
+#include "infra/util/Optional.hpp"
 #include "services/network/CertificatesMbedTls.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 
@@ -414,7 +415,7 @@ namespace services
     }
 
     ConnectionMbedTls::StreamWriterMbedTls::StreamWriterMbedTls(ConnectionMbedTls& connection, uint32_t size)
-        : infra::LimitedStreamWriter::WithOutput<infra::BoundedVectorStreamWriter>(infra::inPlace, connection.sendBuffer, size)
+        : infra::LimitedStreamWriter::WithOutput<infra::BoundedVectorStreamWriter>(std::in_place, connection.sendBuffer, size)
         , connection(connection)
     {}
 

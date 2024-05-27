@@ -69,9 +69,9 @@ namespace services
         SOCKET socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
         WSAEVENT event = WSACreateEvent();
         IPv4Address localAddress{};
-        infra::Optional<UdpSocket> connectedTo;
+        std::optional<UdpSocket> connectedTo;
 
-        infra::Optional<infra::BoundedVector<uint8_t>::WithMaxSize<508>> sendBuffer;
+        std::optional<infra::BoundedVector<uint8_t>::WithMaxSize<508>> sendBuffer;
 
         infra::SharedOptional<StreamWriterWin> streamWriter;
         std::size_t requestedSendSize = 0;

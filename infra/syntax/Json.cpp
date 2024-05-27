@@ -741,32 +741,32 @@ namespace infra
         return JsonValue();
     }
 
-    infra::Optional<JsonString> JsonObject::GetOptionalString(infra::BoundedConstString key)
+    std::optional<JsonString> JsonObject::GetOptionalString(infra::BoundedConstString key)
     {
         return GetOptionalValue<JsonString>(key);
     }
 
-    infra::Optional<JsonFloat> JsonObject::GetOptionalFloat(infra::BoundedConstString key)
+    std::optional<JsonFloat> JsonObject::GetOptionalFloat(infra::BoundedConstString key)
     {
         return GetOptionalValue<JsonFloat>(key);
     }
 
-    infra::Optional<bool> JsonObject::GetOptionalBoolean(infra::BoundedConstString key)
+    std::optional<bool> JsonObject::GetOptionalBoolean(infra::BoundedConstString key)
     {
         return GetOptionalValue<bool>(key);
     }
 
-    infra::Optional<int32_t> JsonObject::GetOptionalInteger(infra::BoundedConstString key)
+    std::optional<int32_t> JsonObject::GetOptionalInteger(infra::BoundedConstString key)
     {
         return GetOptionalValue<int32_t>(key);
     }
 
-    infra::Optional<JsonObject> JsonObject::GetOptionalObject(infra::BoundedConstString key)
+    std::optional<JsonObject> JsonObject::GetOptionalObject(infra::BoundedConstString key)
     {
         return GetOptionalValue<JsonObject>(key);
     }
 
-    infra::Optional<JsonArray> JsonObject::GetOptionalArray(infra::BoundedConstString key)
+    std::optional<JsonArray> JsonObject::GetOptionalArray(infra::BoundedConstString key)
     {
         return GetOptionalValue<JsonArray>(key);
     }
@@ -809,15 +809,15 @@ namespace infra
     }
 
     template<class T>
-    infra::Optional<T> JsonObject::GetOptionalValue(infra::BoundedConstString key)
+    std::optional<T> JsonObject::GetOptionalValue(infra::BoundedConstString key)
     {
         for (auto& keyValue : *this)
         {
             if (keyValue.key == key && keyValue.value.Is<T>())
-                return infra::MakeOptional(keyValue.value.Get<T>());
+                return std::make_optional(keyValue.value.Get<T>());
         }
 
-        return infra::none;
+        return std::nullopt;
     }
 
     JsonArray::JsonArray(infra::BoundedConstString objectString)
@@ -878,55 +878,55 @@ namespace infra
         , tokenizer(objectString)
     {}
 
-    infra::Optional<JsonValue> JsonIterator::ConvertValue(JsonToken::Token token)
+    std::optional<JsonValue> JsonIterator::ConvertValue(JsonToken::Token token)
     {
         if (token.Is<JsonToken::String>())
-            return infra::MakeOptional(JsonValue(token.Get<JsonToken::String>().Value()));
+            return std::make_optional(JsonValue(token.Get<JsonToken::String>().Value()));
         else if (token.Is<JsonBiggerInt>())
             return ReadInteger(token);
         else if (token.Is<JsonFloat>())
-            return infra::MakeOptional(JsonValue(token.Get<JsonFloat>()));
+            return std::make_optional(JsonValue(token.Get<JsonFloat>()));
         else if (token.Is<JsonToken::Boolean>())
-            return infra::MakeOptional(JsonValue(token.Get<JsonToken::Boolean>().Value()));
+            return std::make_optional(JsonValue(token.Get<JsonToken::Boolean>().Value()));
         else if (token.Is<JsonToken::LeftBrace>())
             return ReadObjectValue(token);
         else if (token.Is<JsonToken::LeftBracket>())
             return ReadArrayValue(token);
         else if (token.Is<JsonToken::Null>())
-            return infra::MakeOptional(JsonValue(JsonObject()));
+            return std::make_optional(JsonValue(JsonObject()));
         else
-            return infra::none;
+            return std::nullopt;
     }
 
-    infra::Optional<JsonValue> JsonIterator::ReadInteger(const JsonToken::Token& token)
+    std::optional<JsonValue> JsonIterator::ReadInteger(const JsonToken::Token& token)
     {
         if ((!token.Get<JsonBiggerInt>().Negative() && token.Get<JsonBiggerInt>().Value() <= std::numeric_limits<int32_t>::max()) || (token.Get<JsonBiggerInt>().Negative() && token.Get<JsonBiggerInt>().Value() <= static_cast<uint64_t>(-static_cast<int64_t>(std::numeric_limits<int32_t>::min()))))
-            return infra::MakeOptional(JsonValue(static_cast<int32_t>(token.Get<JsonBiggerInt>().Value() * (token.Get<JsonBiggerInt>().Negative() ? -1 : 1))));
+            return std::make_optional(JsonValue(static_cast<int32_t>(token.Get<JsonBiggerInt>().Value() * (token.Get<JsonBiggerInt>().Negative() ? -1 : 1))));
         else
-            return infra::MakeOptional(JsonValue(token.Get<JsonBiggerInt>()));
+            return std::make_optional(JsonValue(token.Get<JsonBiggerInt>()));
     }
 
-    infra::Optional<JsonValue> JsonIterator::ReadObjectValue(const JsonToken::Token& token)
+    std::optional<JsonValue> JsonIterator::ReadObjectValue(const JsonToken::Token& token)
     {
-        infra::Optional<JsonToken::RightBrace> objectEnd = SearchObjectEnd();
+        std::optional<JsonToken::RightBrace> objectEnd = SearchObjectEnd();
 
         if (objectEnd)
-            return infra::MakeOptional(JsonValue(JsonObject(objectString.substr(token.Get<JsonToken::LeftBrace>().Index(), objectEnd->Index() + 1 - token.Get<JsonToken::LeftBrace>().Index()))));
+            return std::make_optional(JsonValue(JsonObject(objectString.substr(token.Get<JsonToken::LeftBrace>().Index(), objectEnd->Index() + 1 - token.Get<JsonToken::LeftBrace>().Index()))));
         else
-            return infra::none;
+            return std::nullopt;
     }
 
-    infra::Optional<JsonValue> JsonIterator::ReadArrayValue(const JsonToken::Token& token)
+    std::optional<JsonValue> JsonIterator::ReadArrayValue(const JsonToken::Token& token)
     {
-        infra::Optional<JsonToken::RightBracket> arrayEnd = SearchArrayEnd();
+        std::optional<JsonToken::RightBracket> arrayEnd = SearchArrayEnd();
 
         if (arrayEnd)
-            return infra::MakeOptional(JsonValue(JsonArray(objectString.substr(token.Get<JsonToken::LeftBracket>().Index(), arrayEnd->Index() + 1 - token.Get<JsonToken::LeftBracket>().Index()))));
+            return std::make_optional(JsonValue(JsonArray(objectString.substr(token.Get<JsonToken::LeftBracket>().Index(), arrayEnd->Index() + 1 - token.Get<JsonToken::LeftBracket>().Index()))));
         else
-            return infra::none;
+            return std::nullopt;
     }
 
-    infra::Optional<JsonToken::RightBrace> JsonIterator::SearchObjectEnd()
+    std::optional<JsonToken::RightBrace> JsonIterator::SearchObjectEnd()
     {
         std::size_t nested = 0;
         JsonToken::Token token = tokenizer.Token();
@@ -941,11 +941,11 @@ namespace infra
         }
 
         if (token.Is<JsonToken::RightBrace>())
-            return infra::MakeOptional(token.Get<JsonToken::RightBrace>());
-        return infra::none;
+            return std::make_optional(token.Get<JsonToken::RightBrace>());
+        return std::nullopt;
     }
 
-    infra::Optional<JsonToken::RightBracket> JsonIterator::SearchArrayEnd()
+    std::optional<JsonToken::RightBracket> JsonIterator::SearchArrayEnd()
     {
         std::size_t nested = 0;
         JsonToken::Token token = tokenizer.Token();
@@ -960,9 +960,9 @@ namespace infra
         }
 
         if (token.Is<JsonToken::RightBracket>())
-            return infra::MakeOptional(token.Get<JsonToken::RightBracket>());
+            return std::make_optional(token.Get<JsonToken::RightBracket>());
         else
-            return infra::none;
+            return std::nullopt;
     }
 
     JsonObjectIterator::JsonObjectIterator()
@@ -1086,7 +1086,7 @@ namespace infra
     void JsonObjectIterator::ReadValue(JsonToken::Token token)
     {
         state = readCommaOrObjectEnd;
-        infra::Optional<JsonValue> readValue = ConvertValue(token);
+        std::optional<JsonValue> readValue = ConvertValue(token);
         if (readValue)
             keyValue.value = *readValue;
         else
@@ -1210,7 +1210,7 @@ namespace infra
 
     void JsonArrayIterator::ReadValue(JsonToken::Token token)
     {
-        infra::Optional<JsonValue> readValue = ConvertValue(token);
+        std::optional<JsonValue> readValue = ConvertValue(token);
         if (readValue)
             value = *readValue;
         else

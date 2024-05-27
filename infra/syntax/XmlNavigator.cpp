@@ -33,13 +33,13 @@ namespace infra
         throw XmlNavigationError(("Attribute " + token.name + " not found").c_str());
     }
 
-    infra::Optional<std::string> XmlNodeNavigator::operator/(const XmlOptionalStringAttributeNavigatorToken& token) const
+    std::optional<std::string> XmlNodeNavigator::operator/(const XmlOptionalStringAttributeNavigatorToken& token) const
     {
         for (auto attribute = node.attributes_begin(); attribute != node.attributes_end(); attribute = ++attribute)
             if (attribute->name() == token.name)
-                return infra::MakeOptional(std::string(attribute->value()));
+                return std::make_optional(std::string(attribute->value()));
 
-        return infra::none;
+        return std::nullopt;
     }
 
     int32_t XmlNodeNavigator::operator/(const XmlIntegerAttributeNavigatorToken& token) const
@@ -51,12 +51,12 @@ namespace infra
         throw XmlNavigationError(("Attribute " + token.name + " not found").c_str());
     }
 
-    infra::Optional<int32_t> XmlNodeNavigator::operator/(const XmlOptionalIntegerAttributeNavigatorToken& token) const
+    std::optional<int32_t> XmlNodeNavigator::operator/(const XmlOptionalIntegerAttributeNavigatorToken& token) const
     {
         for (auto attribute : node.attributes())
             if (attribute.name() == token.name)
-                return infra::MakeOptional(attribute.as_int());
+                return std::make_optional(attribute.as_int());
 
-        return infra::none;
+        return std::nullopt;
     }
 }

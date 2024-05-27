@@ -84,7 +84,7 @@ namespace infra
     {
         assert(allocatable);
         allocatable = false;
-        object.Emplace(std::forward<Args>(args)...);
+        object.emplace(std::forward<Args>(args)...);
         return SharedPtr<T>(&control, &*object);
     }
 

@@ -312,7 +312,7 @@ public:
 
     void DataReceived(const std::vector<uint8_t>& response, services::UdpSocket from)
     {
-        infra::StdVectorInputStream::WithStorage stream(infra::inPlace, response);
+        infra::StdVectorInputStream::WithStorage stream(std::in_place, response);
         datagramExchangeObserver->DataReceived(infra::UnOwnedSharedPtr(stream.Reader()), from);
     }
 

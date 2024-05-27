@@ -70,7 +70,7 @@ namespace services
             infra::StringOutputStream::WithStorage<6> idStream;
             idStream << id;
             subObject.Add("id", idStream.Storage());
-            subObject.Add(infra::JsonKeyValue{ "args", infra::JsonValue(infra::InPlaceType<infra::JsonArray>(), arguments) });
+            subObject.Add(infra::JsonKeyValue{ "args", infra::JsonValue(std::in_place_type_t<infra::JsonArray>(), arguments) });
             subObject.Add("source", sourceLocation);
         }
 
@@ -168,7 +168,7 @@ namespace services
     {
         stepMatchArgumentsBuffer.clear();
         {
-            infra::JsonArrayFormatter::WithStringStream arguments(infra::inPlace, stepMatchArgumentsBuffer);
+            infra::JsonArrayFormatter::WithStringStream arguments(std::in_place, stepMatchArgumentsBuffer);
             auto strArgPos = controller.storageMatch.step->StepName().find(R"('%s')", 0);
             auto intArgPos = controller.storageMatch.step->StepName().find("%d", 0);
             auto boolArgPos = controller.storageMatch.step->StepName().find("%b", 0);

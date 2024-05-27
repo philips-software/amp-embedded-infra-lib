@@ -230,19 +230,19 @@ namespace services
 
     void MdnsClient::SendQuery(MdnsQuery& query)
     {
-        assert(activeMdnsQuery == infra::none);
-        activeMdnsQuery.Emplace(*this, datagramFactory, multicast, query);
+        assert(activeMdnsQuery == std::nullopt);
+        activeMdnsQuery.emplace(*this, datagramFactory, multicast, query);
     }
 
     void MdnsClient::ActiveQueryDone()
     {
-        activeMdnsQuery = infra::none;
+        activeMdnsQuery = std::nullopt;
         TrySendNextQuery();
     }
 
     bool MdnsClient::IsActivelyQuerying()
     {
-        return activeMdnsQuery != infra::none;
+        return activeMdnsQuery != std::nullopt;
     }
 
     void MdnsClient::CancelActiveQueryIfEqual(MdnsQuery& query)
@@ -252,7 +252,7 @@ namespace services
 
         if (activeMdnsQuery->IsCurrentQuery(query))
         {
-            activeMdnsQuery = infra::none;
+            activeMdnsQuery = std::nullopt;
             query.SetWaiting(false);
             TrySendNextQuery();
         }

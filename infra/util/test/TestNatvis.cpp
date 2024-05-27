@@ -58,9 +58,9 @@ TEST(NatvisTest, visualize_Function)
 
 TEST(NatvisTest, visualize_Optional)
 {
-    infra::Optional<int> emptyOptional;
-    infra::Optional<int> optional{ infra::inPlace, 1 };
-    infra::Optional<Content> optionalWithOwnType{ infra::inPlace, Content() };
+    std::optional<int> emptyOptional;
+    std::optional<int> optional{ std::in_place, 1 };
+    std::optional<Content> optionalWithOwnType{ std::in_place, Content() };
 }
 
 TEST(NatvisTest, visualize_Variant)
@@ -84,5 +84,5 @@ TEST(NatvisTest, visualize_PolymorphicVariant)
 */
 TEST(NatvisTest, visualize_types_from_anonymous_namespace)
 {
-    infra::Optional<AnonymousContent> anonymousOptional{ infra::inPlace, AnonymousContent() };
+    std::optional<AnonymousContent> anonymousOptional{ std::in_place, AnonymousContent() };
 }

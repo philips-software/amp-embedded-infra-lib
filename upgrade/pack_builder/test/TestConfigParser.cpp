@@ -38,12 +38,12 @@ class TestConfigParser
     : public testing::Test
 {
 public:
-    infra::Optional<infra::JsonObject> configJson;
+    std::optional<infra::JsonObject> configJson;
 };
 
 TEST_F(TestConfigParser, parse_config_file_with_missing_required_key_throws_exception)
 {
-    configJson.Emplace(R"({ "key": "value" })");
+    configJson.emplace(R"({ "key": "value" })");
 
     try
     {
@@ -58,8 +58,8 @@ TEST_F(TestConfigParser, parse_config_file_with_missing_required_key_throws_exce
 
 TEST_F(TestConfigParser, GetComponents_returns_empty_component_list_when_components_object_is_empty)
 {
-    configJson.Emplace(R"({ "components": {} })");
-    std::vector<std::tuple<std::string, std::string, infra::Optional<uint32_t>>> emptyComponentsList;
+    configJson.emplace(R"({ "components": {} })");
+    std::vector<std::tuple<std::string, std::string, std::optional<uint32_t>>> emptyComponentsList;
 
     application::UpgradePackConfigParser parser(*configJson);
     EXPECT_EQ(emptyComponentsList, parser.GetComponents());
@@ -67,7 +67,7 @@ TEST_F(TestConfigParser, GetComponents_returns_empty_component_list_when_compone
 
 TEST_F(TestConfigParser, GetComponents_throws_exception_when_components_is_not_an_object)
 {
-    configJson.Emplace(R"({ "components": "value" })");
+    configJson.emplace(R"({ "components": "value" })");
     application::UpgradePackConfigParser parser(*configJson);
 
     try
@@ -83,7 +83,7 @@ TEST_F(TestConfigParser, GetComponents_throws_exception_when_components_is_not_a
 
 TEST_F(TestConfigParser, GetComponents_throws_exception_when_components_object_does_not_contain_path_and_address_key)
 {
-    configJson.Emplace(R"({ "components": { "empty component":{} } })");
+    configJson.emplace(R"({ "components": { "empty component":{} } })");
     application::UpgradePackConfigParser parser(*configJson);
 
     try
@@ -99,7 +99,7 @@ TEST_F(TestConfigParser, GetComponents_throws_exception_when_components_object_d
 
 TEST_F(TestConfigParser, GetComponents_throws_exception_when_components_object_does_not_contain_path_key)
 {
-    configJson.Emplace(R"({ "components": { "component":{"addresss": "0123abcd"} } })");
+    configJson.emplace(R"({ "components": { "component":{"addresss": "0123abcd"} } })");
     application::UpgradePackConfigParser parser(*configJson);
 
     try
@@ -115,7 +115,7 @@ TEST_F(TestConfigParser, GetComponents_throws_exception_when_components_object_d
 
 TEST_F(TestConfigParser, GetComponents_throws_exception_when_components_object_does_not_contain_address_key)
 {
-    configJson.Emplace(R"({ "components": { "component":{"path": "path.bin"} } })");
+    configJson.emplace(R"({ "components": { "component":{"path": "path.bin"} } })");
     application::UpgradePackConfigParser parser(*configJson);
 
     try
@@ -131,46 +131,46 @@ TEST_F(TestConfigParser, GetComponents_throws_exception_when_components_object_d
 
 TEST_F(TestConfigParser, GetComponents_returns_component_list_when_components_object_contains_string_components)
 {
-    configJson.Emplace(R"({ "components": { "component": "path" } })");
+    configJson.emplace(R"({ "components": { "component": "path" } })");
     application::UpgradePackConfigParser parser(*configJson);
 
-    std::vector<std::tuple<std::string, std::string, infra::Optional<uint32_t>>> componentsList;
-    componentsList.push_back(std::make_tuple("component", "path", infra::none));
+    std::vector<std::tuple<std::string, std::string, std::optional<uint32_t>>> componentsList;
+    componentsList.push_back(std::make_tuple("component", "path", std::nullopt));
 
     EXPECT_EQ(componentsList, parser.GetComponents());
 }
 
 TEST_F(TestConfigParser, GetComponents_returns_component_list_when_components_object_contains_valid_object_components)
 {
-    configJson.Emplace(R"({ "components": { "component": { "path": "path.bin", "address": "0123abcd" } } })");
+    configJson.emplace(R"({ "components": { "component": { "path": "path.bin", "address": "0123abcd" } } })");
     application::UpgradePackConfigParser parser(*configJson);
 
-    std::vector<std::tuple<std::string, std::string, infra::Optional<uint32_t>>> componentsList;
+    std::vector<std::tuple<std::string, std::string, std::optional<uint32_t>>> componentsList;
     uint32_t address = 0x0123abcd;
-    componentsList.push_back(std::make_tuple("component", "path.bin", infra::MakeOptional(address)));
+    componentsList.push_back(std::make_tuple("component", "path.bin", std::make_optional(address)));
 
     EXPECT_EQ(componentsList, parser.GetComponents());
 }
 
 TEST_F(TestConfigParser, GetComponents_returns_component_list_when_components_object_contains_string_and_valid_object_components)
 {
-    configJson.Emplace(infra::BoundedConstString(completeConfig.c_str()));
+    configJson.emplace(infra::BoundedConstString(completeConfig.c_str()));
     application::UpgradePackConfigParser parser(*configJson);
 
-    std::vector<std::tuple<std::string, std::string, infra::Optional<uint32_t>>> componentsList;
-    componentsList.push_back(std::make_tuple("boot1st", "first_stage_bootloader.bin", infra::none));
-    componentsList.push_back(std::make_tuple("lut", "look_up_table.bin", infra::none));
+    std::vector<std::tuple<std::string, std::string, std::optional<uint32_t>>> componentsList;
+    componentsList.push_back(std::make_tuple("boot1st", "first_stage_bootloader.bin", std::nullopt));
+    componentsList.push_back(std::make_tuple("lut", "look_up_table.bin", std::nullopt));
     uint32_t blobAddress = 0x01234abc;
-    componentsList.push_back(std::make_tuple("blob", "blob.bin", infra::MakeOptional(blobAddress)));
+    componentsList.push_back(std::make_tuple("blob", "blob.bin", std::make_optional(blobAddress)));
     uint32_t filesysAddress = 0x56789def;
-    componentsList.push_back(std::make_tuple("filesys", "filesystem.bin", infra::MakeOptional(filesysAddress)));
+    componentsList.push_back(std::make_tuple("filesys", "filesystem.bin", std::make_optional(filesysAddress)));
 
     EXPECT_EQ(componentsList, parser.GetComponents());
 }
 
 TEST_F(TestConfigParser, GetComponents_throws_exception_when_components_object_contains_too_large_address)
 {
-    configJson.Emplace(R"({ "components": { "component": { "path": "path.bin", "address": "0123abcde" } } })");
+    configJson.emplace(R"({ "components": { "component": { "path": "path.bin", "address": "0123abcde" } } })");
     application::UpgradePackConfigParser parser(*configJson);
 
     try
@@ -186,7 +186,7 @@ TEST_F(TestConfigParser, GetComponents_throws_exception_when_components_object_c
 
 TEST_F(TestConfigParser, GetComponents_throws_exception_when_components_object_contains_invalid_address)
 {
-    configJson.Emplace(R"({ "components": { "component": { "path": "path.bin", "address": "0x123456" } } })");
+    configJson.emplace(R"({ "components": { "component": { "path": "path.bin", "address": "0x123456" } } })");
     application::UpgradePackConfigParser parser(*configJson);
 
     try
@@ -202,7 +202,7 @@ TEST_F(TestConfigParser, GetComponents_throws_exception_when_components_object_c
 
 TEST_F(TestConfigParser, GetOptions_returns_empty_options_list_when_options_are_not_included)
 {
-    configJson.Emplace(R"({ "components": {} })");
+    configJson.emplace(R"({ "components": {} })");
     std::vector<std::pair<std::string, std::string>> emptyOptionsList;
 
     application::UpgradePackConfigParser parser(*configJson);
@@ -211,7 +211,7 @@ TEST_F(TestConfigParser, GetOptions_returns_empty_options_list_when_options_are_
 
 TEST_F(TestConfigParser, GetOptions_returns_empty_options_list_when_options_object_is_empty)
 {
-    configJson.Emplace(R"({ "components": {}, "options": {} })");
+    configJson.emplace(R"({ "components": {}, "options": {} })");
     std::vector<std::pair<std::string, std::string>> emptyOptionsList;
 
     application::UpgradePackConfigParser parser(*configJson);
@@ -220,7 +220,7 @@ TEST_F(TestConfigParser, GetOptions_returns_empty_options_list_when_options_obje
 
 TEST_F(TestConfigParser, GetOptions_throws_exception_when_options_is_not_an_object)
 {
-    configJson.Emplace(R"({ "components": {}, "options": "value" })");
+    configJson.emplace(R"({ "components": {}, "options": "value" })");
     application::UpgradePackConfigParser parser(*configJson);
 
     try
@@ -236,7 +236,7 @@ TEST_F(TestConfigParser, GetOptions_throws_exception_when_options_is_not_an_obje
 
 TEST_F(TestConfigParser, GetOptions_throws_exception_when_all_the_option_values_are_not_strings)
 {
-    configJson.Emplace(R"({ "components": {}, "options": { "invalid option": {} } })");
+    configJson.emplace(R"({ "components": {}, "options": { "invalid option": {} } })");
     application::UpgradePackConfigParser parser(*configJson);
 
     try
@@ -252,7 +252,7 @@ TEST_F(TestConfigParser, GetOptions_throws_exception_when_all_the_option_values_
 
 TEST_F(TestConfigParser, GetOptions_returns_options_list_with_all_options)
 {
-    configJson.Emplace(infra::BoundedConstString(completeConfig.c_str()));
+    configJson.emplace(infra::BoundedConstString(completeConfig.c_str()));
     std::vector<std::pair<std::string, std::string>> optionsList;
     optionsList.push_back(std::pair<std::string, std::string>("integer_option", "10"));
     optionsList.push_back(std::pair<std::string, std::string>("string_option", "value"));
@@ -263,7 +263,7 @@ TEST_F(TestConfigParser, GetOptions_returns_options_list_with_all_options)
 
 TEST_F(TestConfigParser, GetOutputFilename_returns_empty_string_when_output_filename_is_missing)
 {
-    configJson.Emplace(R"( { "components":{} } )");
+    configJson.emplace(R"( { "components":{} } )");
 
     application::UpgradePackConfigParser parser(*configJson);
     ASSERT_EQ("", parser.GetOutputFilename());
@@ -271,7 +271,7 @@ TEST_F(TestConfigParser, GetOutputFilename_returns_empty_string_when_output_file
 
 TEST_F(TestConfigParser, GetOutputFilename_throws_exception_when_output_filename_is_not_string)
 {
-    configJson.Emplace(R"({ "components": {}, "output_filename": {} })");
+    configJson.emplace(R"({ "components": {}, "output_filename": {} })");
     application::UpgradePackConfigParser parser(*configJson);
 
     try
@@ -287,7 +287,7 @@ TEST_F(TestConfigParser, GetOutputFilename_throws_exception_when_output_filename
 
 TEST_F(TestConfigParser, GetOutputFilename_returns_output_filename_as_string)
 {
-    configJson.Emplace(R"( { "components":{}, "output_filename":"output filename" } )");
+    configJson.emplace(R"( { "components":{}, "output_filename":"output filename" } )");
 
     application::UpgradePackConfigParser parser(*configJson);
     ASSERT_EQ("output filename", parser.GetOutputFilename());
@@ -295,7 +295,7 @@ TEST_F(TestConfigParser, GetOutputFilename_returns_output_filename_as_string)
 
 TEST_F(TestConfigParser, GetUpgradeKeys_returns_empty_string_when_upgrade_keys_is_missing)
 {
-    configJson.Emplace(R"( { "components":{} } )");
+    configJson.emplace(R"( { "components":{} } )");
 
     application::UpgradePackConfigParser parser(*configJson);
     ASSERT_EQ("", parser.GetUpgradeKeys());
@@ -303,7 +303,7 @@ TEST_F(TestConfigParser, GetUpgradeKeys_returns_empty_string_when_upgrade_keys_i
 
 TEST_F(TestConfigParser, GetUpgradeKeys_throws_exception_when_upgrade_keys_is_not_string)
 {
-    configJson.Emplace(R"({ "components": {}, "upgrade_keys": {} })");
+    configJson.emplace(R"({ "components": {}, "upgrade_keys": {} })");
     application::UpgradePackConfigParser parser(*configJson);
 
     try
@@ -319,7 +319,7 @@ TEST_F(TestConfigParser, GetUpgradeKeys_throws_exception_when_upgrade_keys_is_no
 
 TEST_F(TestConfigParser, GetUpgradeKeys_returns_upgrade_keys_as_string)
 {
-    configJson.Emplace(R"( { "components":{}, "upgrade_keys":"upgrade_keys.bin" } )");
+    configJson.emplace(R"( { "components":{}, "upgrade_keys":"upgrade_keys.bin" } )");
 
     application::UpgradePackConfigParser parser(*configJson);
     ASSERT_EQ("upgrade_keys.bin", parser.GetUpgradeKeys());
@@ -327,7 +327,7 @@ TEST_F(TestConfigParser, GetUpgradeKeys_returns_upgrade_keys_as_string)
 
 TEST_F(TestConfigParser, GetUpgradeConfiguration_throws_exception_when_upgrade_configuration_is_missing)
 {
-    configJson.Emplace(R"( { "components":{} } )");
+    configJson.emplace(R"( { "components":{} } )");
     application::UpgradePackConfigParser parser(*configJson);
 
     try
@@ -343,7 +343,7 @@ TEST_F(TestConfigParser, GetUpgradeConfiguration_throws_exception_when_upgrade_c
 
 TEST_F(TestConfigParser, GetUpgradeConfiguration_throws_exception_when_upgrade_configuration_is_not_object)
 {
-    configJson.Emplace(R"({ "components": {}, "upgrade_configuration": "not an object" })");
+    configJson.emplace(R"({ "components": {}, "upgrade_configuration": "not an object" })");
     application::UpgradePackConfigParser parser(*configJson);
 
     try
@@ -359,7 +359,7 @@ TEST_F(TestConfigParser, GetUpgradeConfiguration_throws_exception_when_upgrade_c
 
 TEST_F(TestConfigParser, GetUpgradeConfiguration_returns_upgrade_configuration_as_object)
 {
-    configJson.Emplace(R"( { "components":{}, "upgrade_configuration": { "key":"value" } } )");
+    configJson.emplace(R"( { "components":{}, "upgrade_configuration": { "key":"value" } } )");
 
     infra::JsonObject upgradeConfigurationJson(R"( { "key":"value" } )");
 
@@ -369,7 +369,7 @@ TEST_F(TestConfigParser, GetUpgradeConfiguration_returns_upgrade_configuration_a
 
 TEST_F(TestConfigParser, GetProductName_throws_exception_when_upgrade_configuration_product_name_is_missing)
 {
-    configJson.Emplace(R"( { "components":{} } )");
+    configJson.emplace(R"( { "components":{} } )");
     application::UpgradePackConfigParser parser(*configJson);
 
     try
@@ -385,7 +385,7 @@ TEST_F(TestConfigParser, GetProductName_throws_exception_when_upgrade_configurat
 
 TEST_F(TestConfigParser, GetProductName_returns_empty_string_when_product_name_is_missing)
 {
-    configJson.Emplace(R"( { "components":{}, "upgrade_configuration":{} } )");
+    configJson.emplace(R"( { "components":{}, "upgrade_configuration":{} } )");
 
     application::UpgradePackConfigParser parser(*configJson);
     ASSERT_EQ("", parser.GetProductName());
@@ -393,7 +393,7 @@ TEST_F(TestConfigParser, GetProductName_returns_empty_string_when_product_name_i
 
 TEST_F(TestConfigParser, GetProductName_throws_exception_when_product_name_is_not_string)
 {
-    configJson.Emplace(R"({ "components": {}, "upgrade_configuration":{ "product_name": {} } })");
+    configJson.emplace(R"({ "components": {}, "upgrade_configuration":{ "product_name": {} } })");
     application::UpgradePackConfigParser parser(*configJson);
 
     try
@@ -409,7 +409,7 @@ TEST_F(TestConfigParser, GetProductName_throws_exception_when_product_name_is_no
 
 TEST_F(TestConfigParser, GetProductName_returns_product_name_as_string)
 {
-    configJson.Emplace(R"( { "components":{}, "upgrade_configuration":{ "product_name": "product_name.bin" } } )");
+    configJson.emplace(R"( { "components":{}, "upgrade_configuration":{ "product_name": "product_name.bin" } } )");
 
     application::UpgradePackConfigParser parser(*configJson);
     ASSERT_EQ("product_name.bin", parser.GetProductName());
@@ -417,7 +417,7 @@ TEST_F(TestConfigParser, GetProductName_returns_product_name_as_string)
 
 TEST_F(TestConfigParser, GetProductVersion_throws_exception_when_upgrade_configuration_product_version_is_missing)
 {
-    configJson.Emplace(R"( { "components":{} } )");
+    configJson.emplace(R"( { "components":{} } )");
     application::UpgradePackConfigParser parser(*configJson);
 
     try
@@ -433,7 +433,7 @@ TEST_F(TestConfigParser, GetProductVersion_throws_exception_when_upgrade_configu
 
 TEST_F(TestConfigParser, GetProductVersion_returns_empty_string_when_product_version_is_missing)
 {
-    configJson.Emplace(R"( { "components":{}, "upgrade_configuration":{} } )");
+    configJson.emplace(R"( { "components":{}, "upgrade_configuration":{} } )");
 
     application::UpgradePackConfigParser parser(*configJson);
     ASSERT_EQ("", parser.GetProductVersion());
@@ -441,7 +441,7 @@ TEST_F(TestConfigParser, GetProductVersion_returns_empty_string_when_product_ver
 
 TEST_F(TestConfigParser, GetProductVersion_throws_exception_when_product_version_is_not_string)
 {
-    configJson.Emplace(R"({ "components": {}, "upgrade_configuration":{ "product_version": {} } })");
+    configJson.emplace(R"({ "components": {}, "upgrade_configuration":{ "product_version": {} } })");
     application::UpgradePackConfigParser parser(*configJson);
 
     try
@@ -457,7 +457,7 @@ TEST_F(TestConfigParser, GetProductVersion_throws_exception_when_product_version
 
 TEST_F(TestConfigParser, GetProductVersion_returns_product_version_as_string)
 {
-    configJson.Emplace(R"( { "components":{}, "upgrade_configuration":{ "product_version": "product_version.bin" } } )");
+    configJson.emplace(R"( { "components":{}, "upgrade_configuration":{ "product_version": "product_version.bin" } } )");
 
     application::UpgradePackConfigParser parser(*configJson);
     ASSERT_EQ("product_version.bin", parser.GetProductVersion());
@@ -465,7 +465,7 @@ TEST_F(TestConfigParser, GetProductVersion_returns_product_version_as_string)
 
 TEST_F(TestConfigParser, GetComponentName_throws_exception_when_upgrade_configuration_component_name_is_missing)
 {
-    configJson.Emplace(R"( { "components":{} } )");
+    configJson.emplace(R"( { "components":{} } )");
     application::UpgradePackConfigParser parser(*configJson);
 
     try
@@ -481,7 +481,7 @@ TEST_F(TestConfigParser, GetComponentName_throws_exception_when_upgrade_configur
 
 TEST_F(TestConfigParser, GetComponentName_returns_empty_string_when_component_name_is_missing)
 {
-    configJson.Emplace(R"( { "components":{}, "upgrade_configuration":{} } )");
+    configJson.emplace(R"( { "components":{}, "upgrade_configuration":{} } )");
 
     application::UpgradePackConfigParser parser(*configJson);
     ASSERT_EQ("", parser.GetComponentName());
@@ -489,7 +489,7 @@ TEST_F(TestConfigParser, GetComponentName_returns_empty_string_when_component_na
 
 TEST_F(TestConfigParser, GetComponentName_throws_exception_when_component_name_is_not_string)
 {
-    configJson.Emplace(R"({ "components": {}, "upgrade_configuration":{ "component_name": {} } })");
+    configJson.emplace(R"({ "components": {}, "upgrade_configuration":{ "component_name": {} } })");
     application::UpgradePackConfigParser parser(*configJson);
 
     try
@@ -505,7 +505,7 @@ TEST_F(TestConfigParser, GetComponentName_throws_exception_when_component_name_i
 
 TEST_F(TestConfigParser, GetComponentName_returns_component_name_as_string)
 {
-    configJson.Emplace(R"( { "components":{}, "upgrade_configuration":{ "component_name": "component_name.bin" } } )");
+    configJson.emplace(R"( { "components":{}, "upgrade_configuration":{ "component_name": "component_name.bin" } } )");
 
     application::UpgradePackConfigParser parser(*configJson);
     ASSERT_EQ("component_name.bin", parser.GetComponentName());
@@ -513,7 +513,7 @@ TEST_F(TestConfigParser, GetComponentName_returns_component_name_as_string)
 
 TEST_F(TestConfigParser, GetComponentVersion_throws_exception_when_upgrade_configuration_component_version_is_missing)
 {
-    configJson.Emplace(R"( { "components":{} } )");
+    configJson.emplace(R"( { "components":{} } )");
     application::UpgradePackConfigParser parser(*configJson);
 
     try
@@ -529,7 +529,7 @@ TEST_F(TestConfigParser, GetComponentVersion_throws_exception_when_upgrade_confi
 
 TEST_F(TestConfigParser, GetComponentVersion_returns_negative_1_when_component_version_is_missing)
 {
-    configJson.Emplace(R"( { "components":{}, "upgrade_configuration":{} } )");
+    configJson.emplace(R"( { "components":{}, "upgrade_configuration":{} } )");
 
     application::UpgradePackConfigParser parser(*configJson);
     uint32_t negativeOne = std::numeric_limits<uint32_t>::max();
@@ -538,7 +538,7 @@ TEST_F(TestConfigParser, GetComponentVersion_returns_negative_1_when_component_v
 
 TEST_F(TestConfigParser, GetComponentVersion_throws_exception_when_component_version_is_not_integer)
 {
-    configJson.Emplace(R"({ "components": {}, "upgrade_configuration":{ "component_version": {} } })");
+    configJson.emplace(R"({ "components": {}, "upgrade_configuration":{ "component_version": {} } })");
     application::UpgradePackConfigParser parser(*configJson);
 
     try
@@ -554,7 +554,7 @@ TEST_F(TestConfigParser, GetComponentVersion_throws_exception_when_component_ver
 
 TEST_F(TestConfigParser, GetComponentVersion_returns_component_version_as_integer)
 {
-    configJson.Emplace(R"( { "components":{}, "upgrade_configuration":{ "component_version": 1 } } )");
+    configJson.emplace(R"( { "components":{}, "upgrade_configuration":{ "component_version": 1 } } )");
 
     application::UpgradePackConfigParser parser(*configJson);
     ASSERT_EQ(1, parser.GetComponentVersion());

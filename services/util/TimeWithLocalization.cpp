@@ -27,7 +27,7 @@ namespace services
         return localTimeTimerService;
     }
 
-    infra::Optional<infra::TimePoint> TimeWithLocalization::TimePointFromString(infra::BoundedConstString timePointString)
+    std::optional<infra::TimePoint> TimeWithLocalization::TimePointFromString(infra::BoundedConstString timePointString)
     {
         uint16_t year = 0;
         uint8_t month = 0;
@@ -41,12 +41,12 @@ namespace services
         stream >> year >> separator >> month >> separator >> day >> separator >> hour >> separator >> minute >> separator >> second;
 
         if (stream.Failed())
-            return infra::none;
+            return std::nullopt;
 
-        return infra::MakeOptional(infra::PartitionedTime(year, month, day, hour, minute, second).ToTimePoint());
+        return std::make_optional(infra::PartitionedTime(year, month, day, hour, minute, second).ToTimePoint());
     }
 
-    infra::Optional<infra::Duration> TimeWithLocalization::DurationFromString(infra::BoundedConstString durationString)
+    std::optional<infra::Duration> TimeWithLocalization::DurationFromString(infra::BoundedConstString durationString)
     {
         char sign = {};
         char colon = {};
@@ -59,7 +59,7 @@ namespace services
         if (stream.Failed() ||
             colon != ':' ||
             (sign != '-' && sign != '+'))
-            return infra::none;
+            return std::nullopt;
 
         if (sign == '-')
         {
@@ -67,24 +67,24 @@ namespace services
             minute = -minute;
         }
 
-        return infra::Optional<infra::Duration>(infra::inPlace, std::chrono::hours(hour) + std::chrono::minutes(minute));
+        return std::optional<infra::Duration>(std::in_place, std::chrono::hours(hour) + std::chrono::minutes(minute));
     }
 
-    infra::Optional<infra::BoundedConstString> TimeWithLocalization::OffsetFromTimeString(infra::BoundedConstString timePointString)
+    std::optional<infra::BoundedConstString> TimeWithLocalization::OffsetFromTimeString(infra::BoundedConstString timePointString)
     {
         if (timePointString.size() <= DateTimeSize)
-            return infra::none;
+            return std::nullopt;
 
         infra::BoundedConstString left = timePointString.substr(DateTimeSize);
 
         if (left.find_first_of('Z') != infra::BoundedString::npos && left.find_first_of('Z') == left.size() - 1)
-            return infra::Optional<infra::BoundedConstString>(infra::inPlace, "+00:00");
+            return std::optional<infra::BoundedConstString>(std::in_place, "+00:00");
         else if (left.find('+') != infra::BoundedString::npos)
-            return infra::Optional<infra::BoundedConstString>(infra::inPlace, left.substr(left.find_first_of('+')));
+            return std::optional<infra::BoundedConstString>(std::in_place, left.substr(left.find_first_of('+')));
         else if (left.find('-') != infra::BoundedString::npos)
-            return infra::Optional<infra::BoundedConstString>(infra::inPlace, left.substr(left.find_first_of('-')));
+            return std::optional<infra::BoundedConstString>(std::in_place, left.substr(left.find_first_of('-')));
 
-        return infra::none;
+        return std::nullopt;
     }
 
     infra::Duration TimeWithLocalization::GetOffsetFromLocalToUtc() const

@@ -43,7 +43,7 @@ namespace
     void CucumberWireProtocolControllerTest::RequestWithoutScenarioTags(infra::BoundedConstString request)
     {
         parser.ParseRequest(request);
-        parser.scenarioTags = infra::none;
+        parser.scenarioTags = std::nullopt;
         controller.HandleRequest(parser);
     }
 };

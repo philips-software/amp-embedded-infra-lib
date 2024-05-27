@@ -23,7 +23,7 @@ public:
 
     void ReceivedMessage(const std::vector<uint8_t>& data)
     {
-        infra::StdVectorInputStreamReader::WithStorage reader(infra::inPlace, data);
+        infra::StdVectorInputStreamReader::WithStorage reader(std::in_place, data);
         base.GetObserver().ReceivedMessageOnInterrupt(reader);
     }
 

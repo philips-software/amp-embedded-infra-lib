@@ -72,7 +72,7 @@ namespace infra
         template<class F2>
         MultiFunctionHelper(F2 f)
         {
-            functions.template Emplace<typename infra::TypeAtIndex<IndexOfFunctionObject<F2>::Value, F...>::Type>(f);
+            functions.template emplace<typename infra::TypeAtIndex<IndexOfFunctionObject<F2>::Value, F...>::Type>(f);
         }
 
         template<class... Args>
@@ -119,7 +119,7 @@ namespace infra
         }
 
     private:
-        infra::Variant<infra::None, F...> functions;
+        infra::Variant<std::monostate, F...> functions;
     };
 
     template<class F>

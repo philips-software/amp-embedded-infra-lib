@@ -16,7 +16,7 @@ namespace application
 
     SupportedTargetsBuilder& SupportedTargetsBuilder::Order(uint8_t order)
     {
-        this->order.Emplace(order);
+        this->order.emplace(order);
         return *this;
     }
 
@@ -66,7 +66,7 @@ namespace application
         if (order)
         {
             targets.order[*order].emplace_back(target);
-            order = infra::none;
+            order = std::nullopt;
         }
     }
 

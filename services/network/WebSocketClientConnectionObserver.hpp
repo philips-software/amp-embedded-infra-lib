@@ -128,7 +128,7 @@ namespace services
         };
 
     private:
-        infra::Optional<std::size_t> requestedSendSize;
+        std::optional<std::size_t> requestedSendSize;
         infra::NotifyingSharedOptional<FrameWriter> streamWriter;
         infra::SharedOptional<FrameReader> streamReader;
         std::size_t unackedReadAvailable = 0;
@@ -257,7 +257,7 @@ namespace services
         };
 
     private:
-        infra::Optional<WebSocketClientInitiation> initiation;
+        std::optional<WebSocketClientInitiation> initiation;
         infra::NotifyingSharedOptional<WebSocketClientConnectionObserver> webSocket;
         hal::SynchronousRandomDataGenerator& randomDataGenerator;
         Creators creators;

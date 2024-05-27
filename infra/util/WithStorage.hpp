@@ -1,7 +1,7 @@
 #ifndef INFRA_WITH_STORAGE_HPP
 #define INFRA_WITH_STORAGE_HPP
 
-#include "infra/util/Optional.hpp" // For InPlace
+#include "infra/util/Optional.hpp" // For std::in_place_t
 #include <utility>
 
 namespace infra
@@ -25,9 +25,9 @@ namespace infra
     public:
         WithStorage();
         template<class StorageArg, class... Args>
-        WithStorage(InPlace, StorageArg&& storageArg, Args&&... args);
+        WithStorage(std::in_place_t, StorageArg&& storageArg, Args&&... args);
         template<class T>
-        WithStorage(InPlace, std::initializer_list<T> initializerList);
+        WithStorage(std::in_place_t, std::initializer_list<T> initializerList);
         template<class Arg>
         WithStorage(Arg&& arg, std::enable_if_t<!std::is_same_v<WithStorage, std::remove_cv_t<std::remove_reference_t<Arg>>>, std::nullptr_t> = nullptr);
         template<class Arg0, class Arg1, class... Args>
@@ -86,14 +86,14 @@ namespace infra
 
     template<class Base, class StorageType>
     template<class StorageArg, class... Args>
-    WithStorage<Base, StorageType>::WithStorage(InPlace, StorageArg&& storageArg, Args&&... args)
+    WithStorage<Base, StorageType>::WithStorage(std::in_place_t, StorageArg&& storageArg, Args&&... args)
         : detail::StorageHolder<StorageType, Base>(std::forward<StorageArg>(storageArg))
         , Base(detail::StorageHolder<StorageType, Base>::storage, std::forward<Args>(args)...)
     {}
 
     template<class Base, class StorageType>
     template<class T>
-    WithStorage<Base, StorageType>::WithStorage(InPlace, std::initializer_list<T> initializerList)
+    WithStorage<Base, StorageType>::WithStorage(std::in_place_t, std::initializer_list<T> initializerList)
         : detail::StorageHolder<StorageType, Base>(initializerList)
         , Base(detail::StorageHolder<StorageType, Base>::storage)
     {}

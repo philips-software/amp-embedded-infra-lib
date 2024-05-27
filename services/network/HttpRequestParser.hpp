@@ -24,7 +24,7 @@ namespace services
         virtual infra::BoundedConstString Header(infra::BoundedConstString name) const = 0;
         virtual void EnumerateHeaders(const infra::Function<void(infra::BoundedConstString name, infra::BoundedConstString value)>& enumerator) const = 0;
         virtual infra::BoundedString& BodyBuffer() = 0;
-        virtual infra::Optional<uint32_t> ContentLength() const = 0;
+        virtual std::optional<uint32_t> ContentLength() const = 0;
     };
 
     class HttpRequestParserImpl
@@ -40,7 +40,7 @@ namespace services
         infra::BoundedConstString Header(infra::BoundedConstString name) const override;
         void EnumerateHeaders(const infra::Function<void(infra::BoundedConstString name, infra::BoundedConstString value)>& enumerator) const override;
         infra::BoundedString& BodyBuffer() override;
-        infra::Optional<uint32_t> ContentLength() const override;
+        std::optional<uint32_t> ContentLength() const override;
 
         void SetContentLength(uint32_t length);
 
@@ -58,7 +58,7 @@ namespace services
         infra::Tokenizer pathTokens;
         bool headersComplete = true;
         bool valid = true;
-        infra::Optional<uint32_t> contentLength;
+        std::optional<uint32_t> contentLength;
     };
 }
 

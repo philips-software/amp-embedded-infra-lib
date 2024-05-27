@@ -12,12 +12,13 @@
 //      opt->MyFunc();              // Use * and -> to access the value
 //  opt = nullptr;                  // Reset the optional by assigning nullptr
 //  if (!opt)
-//      opt.Emplace(2, 3, 4);       // Late construction by explicitly calling Emplace
+//      opt.emplace(2, 3, 4);       // Late construction by explicitly calling emplace
 //  opt = MyClass(2, 3, 4);         // Use the copy constructor for construction
 
 #include "infra/util/StaticStorage.hpp"
 #include <cassert>
 #include <memory>
+#include <optional>
 #include <type_traits>
 
 namespace infra
@@ -41,7 +42,7 @@ namespace infra
         template<class U>
         explicit Optional(const Optional<U>& other);
         template<class... Args>
-        explicit Optional(InPlace, Args&&... args);
+        explicit Optional(std::in_place_t, Args&&... args);
 
         ~Optional();
 
@@ -52,9 +53,9 @@ namespace infra
         Optional& operator=(T&& value);
 
         template<class... Args>
-        void Emplace(Args&&... args);
+        void emplace(Args&&... args);
         template<class U, class... Args>
-        void Emplace(std::initializer_list<U> list, Args&&... args);
+        void emplace(std::initializer_list<U> list, Args&&... args);
 
         const T& operator*() const;
         T& operator*();
@@ -123,7 +124,7 @@ namespace infra
     Optional<typename std::decay<T>::type> MakeOptional(T&& value);
 
     template<class T, class F>
-    auto TransformOptional(const infra::Optional<T>& value, F transformation) -> infra::Optional<decltype(transformation(*value))>;
+    auto TransformOptional(const std::optional<T>& value, F transformation) -> std::optional<decltype(transformation(*value))>;
 
     template<class T, std::size_t ExtraSize>
     class OptionalForPolymorphicObjects
@@ -136,7 +137,7 @@ namespace infra
         OptionalForPolymorphicObjects(const OptionalForPolymorphicObjects<Derived, OtherExtraSize>& other, typename std::enable_if<std::is_base_of<T, Derived>::value>::type* = 0);
         OptionalForPolymorphicObjects(None);
         template<class Derived, class... Args>
-        OptionalForPolymorphicObjects(InPlaceType<Derived>, Args&&... args);
+        OptionalForPolymorphicObjects(std::in_place_type_t<Derived>, Args&&... args);
 
         ~OptionalForPolymorphicObjects();
 
@@ -149,7 +150,7 @@ namespace infra
         OptionalForPolymorphicObjects& operator=(T&& value);
 
         template<class Derived, class... Args>
-        void Emplace(Args&&... args);
+        void emplace(Args&&... args);
 
         const T& operator*() const;
         T& operator*();
@@ -216,7 +217,7 @@ namespace infra
     Optional<T>::Optional(const Optional& other)
     {
         if (other)
-            Emplace(*other);
+            emplace(*other);
     }
 
     template<class T>
@@ -224,7 +225,7 @@ namespace infra
     {
         if (other)
         {
-            Emplace(std::move(*other));
+            emplace(std::move(*other));
             other.Reset();
         }
     }
@@ -238,14 +239,14 @@ namespace infra
     Optional<T>::Optional(const Optional<U>& other)
     {
         if (other)
-            Emplace(*other);
+            emplace(*other);
     }
 
     template<class T>
     template<class... Args>
-    Optional<T>::Optional(InPlace, Args&&... args)
+    Optional<T>::Optional(std::in_place_t, Args&&... args)
     {
-        Emplace(std::forward<Args>(args)...);
+        emplace(std::forward<Args>(args)...);
     }
 
     template<class T>
@@ -261,7 +262,7 @@ namespace infra
         {
             Reset();
             if (other)
-                Emplace(*other);
+                emplace(*other);
         }
 
         return *this;
@@ -273,7 +274,7 @@ namespace infra
         Reset();
         if (other)
         {
-            Emplace(std::move(*other));
+            emplace(std::move(*other));
             other.Reset();
         }
 
@@ -291,7 +292,7 @@ namespace infra
     Optional<T>& Optional<T>::operator=(const T& value)
     {
         Reset();
-        Emplace(value);
+        emplace(value);
         return *this;
     }
 
@@ -299,7 +300,7 @@ namespace infra
     Optional<T>& Optional<T>::operator=(T&& value)
     {
         Reset();
-        Emplace(std::forward<T>(value));
+        emplace(std::forward<T>(value));
         return *this;
     }
 
@@ -387,7 +388,7 @@ namespace infra
 
     template<class T>
     template<class... Args>
-    void Optional<T>::Emplace(Args&&... args)
+    void Optional<T>::emplace(Args&&... args)
     {
         Reset();
         data.Construct(std::forward<Args>(args)...);
@@ -396,7 +397,7 @@ namespace infra
 
     template<class T>
     template<class U, class... Args>
-    void Optional<T>::Emplace(std::initializer_list<U> list, Args&&... args)
+    void Optional<T>::emplace(std::initializer_list<U> list, Args&&... args)
     {
         Reset();
         data.Construct(list, std::forward<Args>(args)...);
@@ -416,16 +417,16 @@ namespace infra
     template<class T>
     Optional<typename std::decay<T>::type> MakeOptional(T&& value)
     {
-        return Optional<typename std::decay<T>::type>(inPlace, std::forward<T>(value));
+        return Optional<typename std::decay<T>::type>(std::in_place, std::forward<T>(value));
     }
 
     template<class T, class F>
-    auto TransformOptional(const infra::Optional<T>& value, F transformation) -> infra::Optional<decltype(transformation(*value))>
+    auto TransformOptional(const std::optional<T>& value, F transformation) -> std::optional<decltype(transformation(*value))>
     {
-        if (value != infra::none)
-            return infra::MakeOptional(transformation(*value));
+        if (value)
+            return std::make_optional(transformation(*value));
         else
-            return infra::none;
+            return std::nullopt;
     }
 
     template<class T, std::size_t ExtraSize>
@@ -433,7 +434,7 @@ namespace infra
     OptionalForPolymorphicObjects<T, ExtraSize>::OptionalForPolymorphicObjects(const OptionalForPolymorphicObjects<Derived, OtherExtraSize>& other, typename std::enable_if<std::is_base_of<T, Derived>::value>::type*)
     {
         if (other)
-            Emplace<Derived>(*other);
+            emplace<Derived>(*other);
     }
 
     template<class T, std::size_t ExtraSize>
@@ -442,9 +443,9 @@ namespace infra
 
     template<class T, std::size_t ExtraSize>
     template<class Derived, class... Args>
-    OptionalForPolymorphicObjects<T, ExtraSize>::OptionalForPolymorphicObjects(InPlaceType<Derived>, Args&&... args)
+    OptionalForPolymorphicObjects<T, ExtraSize>::OptionalForPolymorphicObjects(std::in_place_type_t<Derived>, Args&&... args)
     {
-        Emplace<T>(std::forward<Args>(args)...);
+        emplace<T>(std::forward<Args>(args)...);
     }
 
     template<class T, std::size_t ExtraSize>
@@ -460,7 +461,7 @@ namespace infra
     {
         Reset();
         if (other)
-            Emplace<Derived>(*other);
+            emplace<Derived>(*other);
         return *this;
     }
 
@@ -475,7 +476,7 @@ namespace infra
     OptionalForPolymorphicObjects<T, ExtraSize>& OptionalForPolymorphicObjects<T, ExtraSize>::operator=(const T& value)
     {
         Reset();
-        Emplace<T>(value);
+        emplace<T>(value);
         return *this;
     }
 
@@ -483,7 +484,7 @@ namespace infra
     OptionalForPolymorphicObjects<T, ExtraSize>& OptionalForPolymorphicObjects<T, ExtraSize>::operator=(T&& value)
     {
         Reset();
-        Emplace<T>(std::forward<T>(value));
+        emplace<T>(std::forward<T>(value));
         return *this;
     }
 
@@ -540,7 +541,7 @@ namespace infra
 
     template<class T, std::size_t ExtraSize>
     template<class Derived, class... Args>
-    void OptionalForPolymorphicObjects<T, ExtraSize>::Emplace(Args&&... args)
+    void OptionalForPolymorphicObjects<T, ExtraSize>::emplace(Args&&... args)
     {
         Reset();
         initialized = true;

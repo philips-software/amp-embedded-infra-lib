@@ -4,7 +4,7 @@
 TEST(XmlFormatter, usage_example)
 {
     infra::BoundedString::WithStorage<256> string;
-    infra::XmlFormatter::WithStringStream document(infra::inPlace, string);
+    infra::XmlFormatter::WithStringStream document(std::in_place, string);
     {
         auto note = document.Tag("note");
         {
@@ -37,7 +37,7 @@ TEST(XmlFormatter, usage_example)
 TEST(XmlFormatter, writes_xml_declaration_on_instantiation)
 {
     infra::BoundedString::WithStorage<128> string;
-    infra::XmlFormatter::WithStringStream formatter(infra::inPlace, string);
+    infra::XmlFormatter::WithStringStream formatter(std::in_place, string);
 
     EXPECT_EQ(R"(<?xml version="1.0" encoding="ISO-8859-1" ?>)", string);
 }
@@ -45,7 +45,7 @@ TEST(XmlFormatter, writes_xml_declaration_on_instantiation)
 TEST(XmlFormatter, writes_empty_element_tag_when_tag_has_no_content)
 {
     infra::BoundedString::WithStorage<128> string;
-    infra::XmlFormatter::WithStringStream formatter(infra::inPlace, string);
+    infra::XmlFormatter::WithStringStream formatter(std::in_place, string);
     formatter.Tag("tag-name");
 
     EXPECT_EQ(R"(<?xml version="1.0" encoding="ISO-8859-1" ?><tag-name />)", string);
@@ -54,7 +54,7 @@ TEST(XmlFormatter, writes_empty_element_tag_when_tag_has_no_content)
 TEST(XmlFormatter, writes_begin_and_end_tag_when_tag_has_content)
 {
     infra::BoundedString::WithStorage<128> string;
-    infra::XmlFormatter::WithStringStream formatter(infra::inPlace, string);
+    infra::XmlFormatter::WithStringStream formatter(std::in_place, string);
     {
         auto tag = formatter.Tag("tag-name");
         tag.Content("Tag content!");
@@ -66,7 +66,7 @@ TEST(XmlFormatter, writes_begin_and_end_tag_when_tag_has_content)
 TEST(XmlFormatter, tags_can_be_nested)
 {
     infra::BoundedString::WithStorage<128> string;
-    infra::XmlFormatter::WithStringStream formatter(infra::inPlace, string);
+    infra::XmlFormatter::WithStringStream formatter(std::in_place, string);
     {
         auto tag = formatter.Tag("tag-name");
         auto nested = tag.Tag("nested");
@@ -78,7 +78,7 @@ TEST(XmlFormatter, tags_can_be_nested)
 TEST(XmlFormatter, nested_tags_with_content)
 {
     infra::BoundedString::WithStorage<128> string;
-    infra::XmlFormatter::WithStringStream formatter(infra::inPlace, string);
+    infra::XmlFormatter::WithStringStream formatter(std::in_place, string);
     {
         auto tag = formatter.Tag("tag");
         {
@@ -105,7 +105,7 @@ TEST(XmlFormatter, nested_tags_with_content)
 TEST(XmlFormatter, add_element_with_content)
 {
     infra::BoundedString::WithStorage<128> string;
-    infra::XmlFormatter::WithStringStream formatter(infra::inPlace, string);
+    infra::XmlFormatter::WithStringStream formatter(std::in_place, string);
     {
         auto root = formatter.Tag("root");
         root.Element("element", "content");
@@ -117,7 +117,7 @@ TEST(XmlFormatter, add_element_with_content)
 TEST(XmlFormatter, adds_attibute_to_tag)
 {
     infra::BoundedString::WithStorage<128> string;
-    infra::XmlFormatter::WithStringStream formatter(infra::inPlace, string);
+    infra::XmlFormatter::WithStringStream formatter(std::in_place, string);
     {
         auto tag = formatter.Tag("tag-name");
         tag.Attribute("name", "value");
@@ -129,7 +129,7 @@ TEST(XmlFormatter, adds_attibute_to_tag)
 TEST(XmlFormatter, inserts_escaped_contents)
 {
     infra::BoundedString::WithStorage<128> string;
-    infra::XmlFormatter::WithStringStream formatter(infra::inPlace, string);
+    infra::XmlFormatter::WithStringStream formatter(std::in_place, string);
     {
         formatter.Tag("root").Content("<>&'\"");
     }

@@ -23,7 +23,7 @@ namespace infra
         XmlTagFormatter Tag(const char* tagName);
 
     private:
-        infra::Optional<infra::TextOutputStream::WithErrorPolicy> stream;
+        std::optional<infra::TextOutputStream::WithErrorPolicy> stream;
     };
 
     class XmlTagFormatter
@@ -45,7 +45,7 @@ namespace infra
         void CloseBeginTag();
 
     private:
-        infra::Optional<infra::TextOutputStream::WithErrorPolicy> stream;
+        std::optional<infra::TextOutputStream::WithErrorPolicy> stream;
         const char* tagName = nullptr;
         bool empty = true;
     };

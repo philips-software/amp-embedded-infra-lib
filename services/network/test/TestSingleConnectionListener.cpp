@@ -47,9 +47,9 @@ public:
         ConnectionObserverMock& base;
     };
 
-    infra::Creator<services::ConnectionObserver, ConnectionObserverStorage, void(services::IPAddress address)> connectionObserverCreator{ [this](infra::Optional<ConnectionObserverStorage>& connectionObserver, services::IPAddress address)
+    infra::Creator<services::ConnectionObserver, ConnectionObserverStorage, void(services::IPAddress address)> connectionObserverCreator{ [this](std::optional<ConnectionObserverStorage>& connectionObserver, services::IPAddress address)
         {
-            connectionObserver.Emplace(connectionObserverMock, address);
+            connectionObserver.emplace(connectionObserverMock, address);
         } };
 
     testing::StrictMock<services::ConnectionFactoryMock> connectionFactory;

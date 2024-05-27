@@ -141,7 +141,7 @@ namespace services
     {
         infra::StringOutputStream contentLengthStream(contentLength);
         contentLengthStream << size;
-        contentLengthHeader.Emplace("Content-Length", contentLength);
+        contentLengthHeader.emplace("Content-Length", contentLength);
     }
 
     std::size_t HttpRequestFormatter::HeadersSize() const
@@ -307,12 +307,12 @@ namespace services
             return hostAndUserinfo;
     }
 
-    infra::Optional<uint16_t> PortFromUrl(infra::BoundedConstString url)
+    std::optional<uint16_t> PortFromUrl(infra::BoundedConstString url)
     {
         auto hostAndPort = HostAndPortFromUrl(url);
         auto colonPosition = hostAndPort.find(':');
         if (colonPosition == infra::BoundedConstString::npos)
-            return infra::none;
+            return std::nullopt;
 
         auto portString = hostAndPort.substr(colonPosition + 1);
         infra::StringInputStream stream(portString, infra::softFail);
@@ -320,9 +320,9 @@ namespace services
         stream >> port;
 
         if (stream.Failed())
-            return infra::none;
+            return std::nullopt;
 
-        return infra::MakeOptional(port);
+        return std::make_optional(port);
     }
 
     infra::BoundedConstString PathFromUrl(infra::BoundedConstString url)
@@ -359,29 +359,29 @@ namespace services
         std::abort();
     }
 
-    infra::Optional<HttpVerb> HttpVerbFromString(infra::BoundedConstString verb)
+    std::optional<HttpVerb> HttpVerbFromString(infra::BoundedConstString verb)
     {
         if (verb == "GET")
-            return infra::MakeOptional(HttpVerb::get);
+            return std::make_optional(HttpVerb::get);
         else if (verb == "HEAD")
-            return infra::MakeOptional(HttpVerb::head);
+            return std::make_optional(HttpVerb::head);
         else if (verb == "CONNECT")
-            return infra::MakeOptional(HttpVerb::connect);
+            return std::make_optional(HttpVerb::connect);
         else if (verb == "OPTIONS")
-            return infra::MakeOptional(HttpVerb::options);
+            return std::make_optional(HttpVerb::options);
         else if (verb == "PATCH")
-            return infra::MakeOptional(HttpVerb::patch);
+            return std::make_optional(HttpVerb::patch);
         else if (verb == "PUT")
-            return infra::MakeOptional(HttpVerb::put);
+            return std::make_optional(HttpVerb::put);
         else if (verb == "POST")
-            return infra::MakeOptional(HttpVerb::post);
+            return std::make_optional(HttpVerb::post);
         else if (verb == "DELETE")
-            return infra::MakeOptional(HttpVerb::delete_);
+            return std::make_optional(HttpVerb::delete_);
 
-        return infra::none;
+        return std::nullopt;
     }
 
-    infra::Optional<HttpStatusCode> HttpStatusCodeFromString(infra::BoundedConstString statusCode)
+    std::optional<HttpStatusCode> HttpStatusCodeFromString(infra::BoundedConstString statusCode)
     {
         std::underlying_type<services::HttpStatusCode>::type value = 0;
 
@@ -391,90 +391,90 @@ namespace services
         switch (value)
         {
             case 100:
-                return infra::MakeOptional(HttpStatusCode::Continue);
+                return std::make_optional(HttpStatusCode::Continue);
             case 101:
-                return infra::MakeOptional(HttpStatusCode::SwitchingProtocols);
+                return std::make_optional(HttpStatusCode::SwitchingProtocols);
             case 200:
-                return infra::MakeOptional(HttpStatusCode::OK);
+                return std::make_optional(HttpStatusCode::OK);
             case 201:
-                return infra::MakeOptional(HttpStatusCode::Created);
+                return std::make_optional(HttpStatusCode::Created);
             case 202:
-                return infra::MakeOptional(HttpStatusCode::Accepted);
+                return std::make_optional(HttpStatusCode::Accepted);
             case 203:
-                return infra::MakeOptional(HttpStatusCode::NonAuthorativeInformation);
+                return std::make_optional(HttpStatusCode::NonAuthorativeInformation);
             case 204:
-                return infra::MakeOptional(HttpStatusCode::NoContent);
+                return std::make_optional(HttpStatusCode::NoContent);
             case 205:
-                return infra::MakeOptional(HttpStatusCode::ResetContent);
+                return std::make_optional(HttpStatusCode::ResetContent);
             case 206:
-                return infra::MakeOptional(HttpStatusCode::PartialContent);
+                return std::make_optional(HttpStatusCode::PartialContent);
             case 300:
-                return infra::MakeOptional(HttpStatusCode::MultipleChoices);
+                return std::make_optional(HttpStatusCode::MultipleChoices);
             case 301:
-                return infra::MakeOptional(HttpStatusCode::MovedPermanently);
+                return std::make_optional(HttpStatusCode::MovedPermanently);
             case 302:
-                return infra::MakeOptional(HttpStatusCode::Found);
+                return std::make_optional(HttpStatusCode::Found);
             case 303:
-                return infra::MakeOptional(HttpStatusCode::SeeOther);
+                return std::make_optional(HttpStatusCode::SeeOther);
             case 304:
-                return infra::MakeOptional(HttpStatusCode::NotModified);
+                return std::make_optional(HttpStatusCode::NotModified);
             case 305:
-                return infra::MakeOptional(HttpStatusCode::UseProxy);
+                return std::make_optional(HttpStatusCode::UseProxy);
             case 307:
-                return infra::MakeOptional(HttpStatusCode::TemporaryRedirect);
+                return std::make_optional(HttpStatusCode::TemporaryRedirect);
             case 308:
-                return infra::MakeOptional(HttpStatusCode::PermanentRedirect);
+                return std::make_optional(HttpStatusCode::PermanentRedirect);
             case 400:
-                return infra::MakeOptional(HttpStatusCode::BadRequest);
+                return std::make_optional(HttpStatusCode::BadRequest);
             case 401:
-                return infra::MakeOptional(HttpStatusCode::Unauthorized);
+                return std::make_optional(HttpStatusCode::Unauthorized);
             case 402:
-                return infra::MakeOptional(HttpStatusCode::PaymentRequired);
+                return std::make_optional(HttpStatusCode::PaymentRequired);
             case 403:
-                return infra::MakeOptional(HttpStatusCode::Forbidden);
+                return std::make_optional(HttpStatusCode::Forbidden);
             case 404:
-                return infra::MakeOptional(HttpStatusCode::NotFound);
+                return std::make_optional(HttpStatusCode::NotFound);
             case 405:
-                return infra::MakeOptional(HttpStatusCode::MethodNotAllowed);
+                return std::make_optional(HttpStatusCode::MethodNotAllowed);
             case 406:
-                return infra::MakeOptional(HttpStatusCode::NotAcceptable);
+                return std::make_optional(HttpStatusCode::NotAcceptable);
             case 407:
-                return infra::MakeOptional(HttpStatusCode::ProxyAuthenticationRequired);
+                return std::make_optional(HttpStatusCode::ProxyAuthenticationRequired);
             case 408:
-                return infra::MakeOptional(HttpStatusCode::RequestTimeOut);
+                return std::make_optional(HttpStatusCode::RequestTimeOut);
             case 409:
-                return infra::MakeOptional(HttpStatusCode::Conflict);
+                return std::make_optional(HttpStatusCode::Conflict);
             case 410:
-                return infra::MakeOptional(HttpStatusCode::Gone);
+                return std::make_optional(HttpStatusCode::Gone);
             case 411:
-                return infra::MakeOptional(HttpStatusCode::LengthRequired);
+                return std::make_optional(HttpStatusCode::LengthRequired);
             case 412:
-                return infra::MakeOptional(HttpStatusCode::PreconditionFailed);
+                return std::make_optional(HttpStatusCode::PreconditionFailed);
             case 413:
-                return infra::MakeOptional(HttpStatusCode::RequestEntityTooLarge);
+                return std::make_optional(HttpStatusCode::RequestEntityTooLarge);
             case 414:
-                return infra::MakeOptional(HttpStatusCode::RequestUriTooLarge);
+                return std::make_optional(HttpStatusCode::RequestUriTooLarge);
             case 415:
-                return infra::MakeOptional(HttpStatusCode::UnsupportedMediaType);
+                return std::make_optional(HttpStatusCode::UnsupportedMediaType);
             case 416:
-                return infra::MakeOptional(HttpStatusCode::RequestRangeNotSatisfiable);
+                return std::make_optional(HttpStatusCode::RequestRangeNotSatisfiable);
             case 417:
-                return infra::MakeOptional(HttpStatusCode::ExpectationFailed);
+                return std::make_optional(HttpStatusCode::ExpectationFailed);
             case 500:
-                return infra::MakeOptional(HttpStatusCode::InternalServerError);
+                return std::make_optional(HttpStatusCode::InternalServerError);
             case 501:
-                return infra::MakeOptional(HttpStatusCode::NotImplemented);
+                return std::make_optional(HttpStatusCode::NotImplemented);
             case 502:
-                return infra::MakeOptional(HttpStatusCode::BadGateway);
+                return std::make_optional(HttpStatusCode::BadGateway);
             case 503:
-                return infra::MakeOptional(HttpStatusCode::ServiceUnavailable);
+                return std::make_optional(HttpStatusCode::ServiceUnavailable);
             case 504:
-                return infra::MakeOptional(HttpStatusCode::GatewayTimeOut);
+                return std::make_optional(HttpStatusCode::GatewayTimeOut);
             case 505:
-                return infra::MakeOptional(HttpStatusCode::HttpVersionNotSupported);
+                return std::make_optional(HttpStatusCode::HttpVersionNotSupported);
         }
 
-        return infra::none;
+        return std::nullopt;
     }
 
     infra::BoundedConstString HttpStatusCodeToString(services::HttpStatusCode statusCode)

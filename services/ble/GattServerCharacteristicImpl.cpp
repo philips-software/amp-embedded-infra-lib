@@ -28,7 +28,7 @@ namespace services
     {
         really_assert(GattServerCharacteristicOperationsObserver::Attached());
 
-        updateContext.Emplace(UpdateContext{ onDone, data });
+        updateContext.emplace(UpdateContext{ onDone, data });
         UpdateValue();
     }
 
@@ -47,13 +47,13 @@ namespace services
         auto status = GattServerCharacteristicOperationsObserver::Subject().Update(*this, updateContext->data);
 
         if (status == GattServerCharacteristicOperations::UpdateStatus::success)
-            infra::PostAssign(updateContext, infra::none)->onDone();
+            infra::PostAssign(updateContext, std::nullopt)->onDone();
         else if (status == GattServerCharacteristicOperations::UpdateStatus::retry)
             infra::EventDispatcher::Instance().Schedule([this]()
                 {
                     UpdateValue();
                 });
         else
-            updateContext = infra::none;
+            updateContext = std::nullopt;
     }
 }

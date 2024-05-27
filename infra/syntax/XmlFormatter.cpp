@@ -34,7 +34,7 @@ namespace infra
     }
 
     XmlFormatter::XmlFormatter(infra::TextOutputStream& stream)
-        : stream(infra::inPlace, stream.Writer(), infra::noFail)
+        : stream(std::in_place, stream.Writer(), infra::noFail)
     {
         *this->stream << R"(<?xml version="1.0" encoding="ISO-8859-1" ?>)";
     }
@@ -45,7 +45,7 @@ namespace infra
     }
 
     XmlTagFormatter::XmlTagFormatter(infra::TextOutputStream& stream, const char* tagName)
-        : stream(infra::inPlace, stream.Writer(), infra::noFail)
+        : stream(std::in_place, stream.Writer(), infra::noFail)
         , tagName(tagName)
     {
         *this->stream << "<" << tagName;
@@ -53,7 +53,7 @@ namespace infra
 
     XmlTagFormatter::~XmlTagFormatter()
     {
-        if (stream == infra::none)
+        if (stream == std::nullopt)
             return;
 
         if (empty)
@@ -65,13 +65,13 @@ namespace infra
     XmlTagFormatter::XmlTagFormatter(XmlTagFormatter&& other) noexcept
         : stream(other.stream)
     {
-        other.stream = infra::none;
+        other.stream = std::nullopt;
     }
 
     XmlTagFormatter& XmlTagFormatter::operator=(XmlTagFormatter&& other) noexcept
     {
-        stream = other.stream;
-        other.stream = infra::none;
+        stream.emplace(std::move(other.stream.value()));
+        other.stream = std::nullopt;
 
         return *this;
     }

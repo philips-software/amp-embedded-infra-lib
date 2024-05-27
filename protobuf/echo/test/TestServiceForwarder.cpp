@@ -30,7 +30,7 @@ TEST_F(ServiceForwarderAllTest, forward_message)
 
     echoFrom.NotifyObservers([this, &writer](auto& service)
         {
-            infra::StdVectorInputStream::WithStorage inputStream{ infra::inPlace, std::vector<uint8_t>{ 1, 2, 3, 4, 5 } };
+            infra::StdVectorInputStream::WithStorage inputStream{ std::in_place, std::vector<uint8_t>{ 1, 2, 3, 4, 5 } };
 
             EXPECT_CALL(echoTo, RequestSend(testing::_)).WillOnce(testing::Invoke([this, &service, &writer](services::ServiceProxy& serviceProxy)
                 {
@@ -52,7 +52,7 @@ TEST_F(ServiceForwarderAllTest, forward_message_with_limited_readbuffer)
 
     echoFrom.NotifyObservers([this, &writer](auto& service)
         {
-            infra::StdVectorInputStream::WithStorage inputStream{ infra::inPlace, std::vector<uint8_t>{ 1, 2, 3, 4, 5 } };
+            infra::StdVectorInputStream::WithStorage inputStream{ std::in_place, std::vector<uint8_t>{ 1, 2, 3, 4, 5 } };
             infra::LimitedStreamReaderWithRewinding limitedReader(inputStream.Reader(), inputStream.Reader().Available() - 1);
 
             EXPECT_CALL(echoTo, RequestSend(testing::_)).WillOnce(testing::Invoke([this, &service, &writer](services::ServiceProxy& serviceProxy)
