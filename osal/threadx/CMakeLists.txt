@@ -23,7 +23,14 @@ target_compile_definitions(threadx PUBLIC
     "TX_SINGLE_MODE_NON_SECURE=1"
 )
 
-add_library(osal.threadx_osal ${EMIL_EXCLUDE_FROM_ALL} STATIC Osal.cpp)
+add_library(osal.threadx_osal ${EMIL_EXCLUDE_FROM_ALL} STATIC)
+
+target_sources(osal.threadx_osal PRIVATE
+    Osal.cpp
+    EventDispatcherThreadX.cpp
+    EventDispatcherThreadX.hpp
+)
+
 target_link_libraries(osal.threadx_osal PUBLIC infra.util threadx)
 
 if (TARGET_BUILD_UNIX OR TARGET_BUILD_OSX)

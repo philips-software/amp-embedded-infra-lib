@@ -32,10 +32,16 @@ target_sources(upgrade.boot_loader PRIVATE
     Verifier.hpp
 )
 
-if (${EMIL_INCLUDE_MBEDTLS})
-    target_link_libraries(upgrade.boot_loader PUBLIC
-        mbedcrypto
-    )
+if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
+    if (NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
+        target_link_libraries(upgrade.boot_loader PUBLIC
+            ${EMIL_EXTERNAL_MBEDTLS_TARGET}
+        )
+    else()
+        target_link_libraries(upgrade.boot_loader PUBLIC
+            mbedcrypto
+        )
+    endif()
 
     target_sources(upgrade.boot_loader PRIVATE
         DecryptorAesMbedTls.cpp

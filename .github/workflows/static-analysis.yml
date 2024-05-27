@@ -18,12 +18,12 @@ jobs:
   sonar:
     name: SonarCloud
     runs-on: ubuntu-latest
-    container: ghcr.io/philips-software/amp-devcontainer:v4.0.2@sha256:2d052e0bcb3840ea45aaa21ea6904f6d84b0e310c97e5690a6d48da522ec384e
+    container: ghcr.io/philips-software/amp-devcontainer-cpp:5.1.0@sha256:a57da1a07a1f29f6a6cb0715d5de37b2ee0ae9c815d1522488373ebef8c7f4e2 #5.1.0
     env:
       SONAR_SCANNER_VERSION: 5.0.1.3006
       SONAR_SERVER_URL: "https://sonarcloud.io"
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
         with:
           fetch-depth: 0 # Disable shallow clone to enable blame information
           persist-credentials: false
@@ -69,13 +69,13 @@ jobs:
     permissions:
       security-events: write
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
         with:
           persist-credentials: false
       - uses: hendrikmuhs/ccache-action@c92f40bee50034e84c763e33b317c77adaa81c92 # v1.2.13
         with:
           key: ${{ github.job }}
-      - uses: github/codeql-action/init@d39d31e687223d841ef683f52467bd88e9b21c14 # v3.25.3
+      - uses: github/codeql-action/init@9fdb3e49720b44c48891d036bb502feb25684276 # v3.25.6
         with:
           languages: cpp
       - uses: lukka/run-cmake@2ce8982be71b8e9a3c4d5e432135035afd1e76a7 # v10.7
@@ -83,4 +83,4 @@ jobs:
           configurePreset: "host"
           buildPreset: "host-Debug"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"
-      - uses: github/codeql-action/analyze@d39d31e687223d841ef683f52467bd88e9b21c14 # v3.25.3
+      - uses: github/codeql-action/analyze@9fdb3e49720b44c48891d036bb502feb25684276 # v3.25.6

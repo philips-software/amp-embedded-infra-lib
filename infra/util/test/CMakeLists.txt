@@ -21,6 +21,8 @@ target_sources(infra.util_test PRIVATE
     TestBoundedString.cpp
     TestBoundedVector.cpp
     TestCompareMembers.cpp
+    TestCrc.cpp
+    TestCrcCcittCalculator.cpp
     TestCyclicBuffer.cpp
     TestEndian.cpp
     TestFixedPoint.cpp
