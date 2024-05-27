@@ -59,9 +59,11 @@ namespace services
 
     public:
         template<std::size_t MaxConnections, std::size_t MaxListeners, std::size_t MaxConnectors>
-        using WithMaxConnectionsListenersAndConnectors = infra::WithStorage<infra::WithStorage<infra::WithStorage<TracingConnectionFactoryMbedTls, AllocatorTracingConnectionMbedTls::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxConnections>>, AllocatorConnectionMbedTlsListener::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxListeners>>, infra::BoundedList<ConnectionMbedTlsConnector>::WithMaxSize<MaxConnectors>>;
+        using WithMaxConnectionsListenersAndConnectors = infra::WithStorage<infra::WithStorage<infra::WithStorage<infra::WithStorage<TracingConnectionFactoryMbedTls, AllocatorTracingConnectionMbedTls::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxConnections>>, AllocatorConnectionMbedTlsListener::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxListeners>>, infra::BoundedList<ConnectionMbedTlsConnector>::WithMaxSize<MaxConnectors>>, MbedTlsSessionStorageRam::SingleSession>;
+        template<std::size_t MaxConnections, std::size_t MaxListeners, std::size_t MaxConnectors>
+        using CustomSessionStorageWithMaxConnectionsListenersAndConnectors = infra::WithStorage<infra::WithStorage<infra::WithStorage<TracingConnectionFactoryMbedTls, AllocatorTracingConnectionMbedTls::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxConnections>>, AllocatorConnectionMbedTlsListener::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxListeners>>, infra::BoundedList<ConnectionMbedTlsConnector>::WithMaxSize<MaxConnectors>>;
 
-        TracingConnectionFactoryMbedTls(AllocatorTracingConnectionMbedTls& connectionAllocator, AllocatorConnectionMbedTlsListener& listenerAllocator, infra::BoundedList<ConnectionMbedTlsConnector>& connectors,
+        TracingConnectionFactoryMbedTls(AllocatorTracingConnectionMbedTls& connectionAllocator, AllocatorConnectionMbedTlsListener& listenerAllocator, infra::BoundedList<ConnectionMbedTlsConnector>& connectors, MbedTlsSessionStorage& sessionStorage,
             ConnectionFactory& factory, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, Tracer& tracer, DebugLevel level, ConnectionMbedTls::CertificateValidation certificateValidation = ConnectionMbedTls::CertificateValidation::Default);
 
     private:
@@ -83,9 +85,11 @@ namespace services
 
     public:
         template<std::size_t MaxConnections, std::size_t MaxConnectors>
-        using WithMaxConnectionsAndConnectors = infra::WithStorage<infra::WithStorage<TracingConnectionFactoryWithNameResolverMbedTls, AllocatorTracingConnectionMbedTls::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxConnections>>, infra::BoundedList<ConnectionMbedTlsConnectorWithNameResolver>::WithMaxSize<MaxConnectors>>;
+        using WithMaxConnectionsAndConnectors = infra::WithStorage<infra::WithStorage<infra::WithStorage<TracingConnectionFactoryWithNameResolverMbedTls, AllocatorTracingConnectionMbedTls::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxConnections>>, infra::BoundedList<ConnectionMbedTlsConnectorWithNameResolver>::WithMaxSize<MaxConnectors>>, MbedTlsSessionStorageRam::SingleSession>;
+        template<std::size_t MaxConnections, std::size_t MaxConnectors>
+        using CustomSessionStorageWithMaxConnectionsAndConnectors = infra::WithStorage<infra::WithStorage<TracingConnectionFactoryWithNameResolverMbedTls, AllocatorTracingConnectionMbedTls::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxConnections>>, infra::BoundedList<ConnectionMbedTlsConnectorWithNameResolver>::WithMaxSize<MaxConnectors>>;
 
-        TracingConnectionFactoryWithNameResolverMbedTls(AllocatorTracingConnectionMbedTls& connectionAllocator, infra::BoundedList<ConnectionMbedTlsConnectorWithNameResolver>& connectors,
+        TracingConnectionFactoryWithNameResolverMbedTls(AllocatorTracingConnectionMbedTls& connectionAllocator, infra::BoundedList<ConnectionMbedTlsConnectorWithNameResolver>& connectors, MbedTlsSessionStorage& sessionStorage,
             ConnectionFactoryWithNameResolver& factory, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, Tracer& tracer, DebugLevel level, ConnectionMbedTls::CertificateValidation certificateValidation = ConnectionMbedTls::CertificateValidation::Default);
 
     private:
