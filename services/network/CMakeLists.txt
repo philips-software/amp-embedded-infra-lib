@@ -59,8 +59,6 @@ target_sources(services.network PRIVATE
     HttpServer.hpp
     LlmnrResponder.cpp
     LlmnrResponder.hpp
-    MbedTlsSession.cpp
-    MbedTlsSession.hpp
     MdnsClient.cpp
     MdnsClient.hpp
     Mqtt.hpp
@@ -124,6 +122,8 @@ if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
         ConnectionMbedTls.hpp
         HttpPageWebSocket.cpp
         HttpPageWebSocket.hpp
+        MbedTlsSession.cpp
+        MbedTlsSession.hpp
         NameResolverCache.cpp
         NameResolverCache.hpp
         TracingConnectionMbedTls.cpp
