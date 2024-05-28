@@ -24,8 +24,6 @@ target_sources(services.util PRIVATE
     EchoInstantiation.hpp
     EchoOnMessageCommunication.cpp
     EchoOnMessageCommunication.hpp
-    EchoOnMessageCommunicationSymmetricKey.cpp
-    EchoOnMessageCommunicationSymmetricKey.hpp
     FlashAlign.cpp
     FlashAlign.hpp
     FlashMultipleAccess.cpp
@@ -53,8 +51,6 @@ target_sources(services.util PRIVATE
     MessageCommunication.hpp
     MessageCommunicationCobs.cpp
     MessageCommunicationCobs.hpp
-    MessageCommunicationSecured.cpp
-    MessageCommunicationSecured.hpp
     MessageCommunicationWindowed.cpp
     MessageCommunicationWindowed.hpp
     RepeatingButton.cpp
@@ -76,14 +72,24 @@ target_sources(services.util PRIVATE
     WritableConfiguration.hpp
 )
 
-if (EMIL_INCLUDE_MBEDTLS)
-    target_link_libraries(services.util PUBLIC
-        mbedcrypto
-    )
+if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
+    if (NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
+        target_link_libraries(services.util PUBLIC
+            ${EMIL_EXTERNAL_MBEDTLS_TARGET}
+        )
+    else()
+        target_link_libraries(services.util PUBLIC
+            mbedcrypto
+        )
+    endif()
 
     target_sources(services.util PRIVATE
         AesMbedTls.cpp
         AesMbedTls.hpp
+        EchoOnMessageCommunicationSymmetricKey.cpp
+        EchoOnMessageCommunicationSymmetricKey.hpp
+        MessageCommunicationSecured.cpp
+        MessageCommunicationSecured.hpp
         Sha256MbedTls.cpp
         Sha256MbedTls.hpp
     )

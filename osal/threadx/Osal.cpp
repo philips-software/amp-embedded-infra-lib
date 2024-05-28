@@ -6,7 +6,7 @@ extern "C"
 #include "tx_initialize.h"
 #include "tx_thread.h"
 
-    VOID tx_application_define(VOID* first_unused_memory)
+    [[gnu::weak]] VOID tx_application_define(VOID* first_unused_memory)
     {}
 }
 

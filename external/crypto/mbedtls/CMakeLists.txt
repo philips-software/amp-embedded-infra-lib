@@ -44,6 +44,7 @@ function(add_mbedtls_target_properties)
             # mbedtls sets the -Wdocumentation flag, which is throwing warnings
             # since clang-15
             $<$<CXX_COMPILER_ID:Clang>:-Wno-documentation>
+            $<$<CXX_COMPILER_ID:AppleClang>:-Wno-documentation>
         )
 
         target_include_directories(${target} PUBLIC

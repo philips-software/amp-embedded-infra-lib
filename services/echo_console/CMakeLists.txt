@@ -1,4 +1,4 @@
-if (EMIL_HOST_BUILD)
+if (EMIL_HOST_BUILD AND EMIL_INCLUDE_MBEDTLS)
     add_executable(services.echo_console ${EMIL_EXCLUDE_FROM_ALL})
     emil_install(services.echo_console DESTINATION bin)
 

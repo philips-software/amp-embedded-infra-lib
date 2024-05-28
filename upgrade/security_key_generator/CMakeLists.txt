@@ -4,7 +4,6 @@ emil_install(upgrade.security_key_generator EXPORT emilUpgradeTargets DESTINATIO
 
 target_link_libraries(upgrade.security_key_generator PUBLIC
     args
-    mbedcrypto
     hal.generic
     upgrade.pack_keys
     upgrade.pack_builder
