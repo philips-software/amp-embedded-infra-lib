@@ -21,7 +21,7 @@ find_program(CMAKE_CXX_COMPILER
     REQUIRED)
 
 find_program(CMAKE_ASM_COMPILER
-    NAMES arm-none-eabi-as
+    NAMES arm-none-eabi-gcc
     HINTS ${hints_paths})
 
 find_program(CMAKE_AR

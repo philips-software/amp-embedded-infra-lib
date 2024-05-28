@@ -24,7 +24,7 @@ namespace services
         void DeregisterConnector(ConnectorBsd& connector);
         void RegisterDatagram(const infra::SharedPtr<DatagramBsd>& datagram);
 
-        bool OpenConnections() const;
+        bool ConnectionsOpen() const;
 
     public:
         // Implementation of ConnectionFactory

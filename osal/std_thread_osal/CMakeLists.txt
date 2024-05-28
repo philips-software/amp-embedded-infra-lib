@@ -5,6 +5,6 @@ target_include_directories(osal.std_thread_osal PUBLIC
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
-if (TARGET_BUILD_UNIX OR TARGET_BUILD_OSX)
+if (EMIL_BUILD_UNIX OR EMIL_BUILD_DARWIN)
     target_link_libraries(osal.std_thread_osal PUBLIC pthread)
 endif()

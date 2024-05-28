@@ -61,7 +61,7 @@ namespace services
         datagrams.push_back(datagram);
     }
 
-    bool EventDispatcherWithNetwork::OpenConnections() const
+    bool EventDispatcherWithNetwork::ConnectionsOpen() const
     {
         return !connectors.empty() || !connections.empty();
     }

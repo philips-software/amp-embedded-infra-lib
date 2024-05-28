@@ -39,6 +39,14 @@
       }
     },
     {
+      "name": "host-no-mbedtls",
+      "displayName": "Configuration without MbedTLS",
+      "inherits": "host",
+      "cacheVariables": {
+        "EMIL_INCLUDE_MBEDTLS": "Off"
+      }
+    },
+    {
       "name": "coverage",
       "displayName": "Configuration for Code Coverage",
       "inherits": "host",
@@ -146,6 +154,11 @@
       "name": "host-single-Debug",
       "configuration": "Debug",
       "configurePreset": "host-single-Debug"
+    },
+    {
+      "name": "host-no-mbedtls-Debug",
+      "configuration": "Debug",
+      "configurePreset": "host-no-mbedtls"
     },
     {
       "name": "release-package",

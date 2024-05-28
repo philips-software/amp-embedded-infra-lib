@@ -76,9 +76,9 @@ namespace services
         allocator.OnAllocatable(std::move(callback));
     }
 
-    TracingConnectionFactoryMbedTls::TracingConnectionFactoryMbedTls(AllocatorTracingConnectionMbedTls& connectionAllocator, AllocatorConnectionMbedTlsListener& listenerAllocator, infra::BoundedList<ConnectionMbedTlsConnector>& connectors,
+    TracingConnectionFactoryMbedTls::TracingConnectionFactoryMbedTls(AllocatorTracingConnectionMbedTls& connectionAllocator, AllocatorConnectionMbedTlsListener& listenerAllocator, infra::BoundedList<ConnectionMbedTlsConnector>& connectors, MbedTlsSessionStorage& sessionStorage,
         ConnectionFactory& factory, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, Tracer& tracer, DebugLevel level, ConnectionMbedTls::CertificateValidation certificateValidation)
-        : ConnectionFactoryMbedTls(allocatorAdapter, listenerAllocator, connectors, factory, certificates, randomDataGenerator, certificateValidation)
+        : ConnectionFactoryMbedTls(allocatorAdapter, listenerAllocator, connectors, sessionStorage, factory, certificates, randomDataGenerator, certificateValidation)
         , allocatorAdapter(connectionAllocator, tracer)
     {
         tracer.Trace() << "ConnectionFactoryMbedTls::ConnectionFactoryMbedTls()";
@@ -87,9 +87,9 @@ namespace services
 #endif
     }
 
-    TracingConnectionFactoryWithNameResolverMbedTls::TracingConnectionFactoryWithNameResolverMbedTls(AllocatorTracingConnectionMbedTls& connectionAllocator, infra::BoundedList<ConnectionMbedTlsConnectorWithNameResolver>& connectors,
+    TracingConnectionFactoryWithNameResolverMbedTls::TracingConnectionFactoryWithNameResolverMbedTls(AllocatorTracingConnectionMbedTls& connectionAllocator, infra::BoundedList<ConnectionMbedTlsConnectorWithNameResolver>& connectors, MbedTlsSessionStorage& sessionStorage,
         ConnectionFactoryWithNameResolver& factory, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, Tracer& tracer, [[maybe_unused]] DebugLevel level, ConnectionMbedTls::CertificateValidation certificateValidation)
-        : ConnectionFactoryWithNameResolverMbedTls(allocatorAdapter, connectors, factory, certificates, randomDataGenerator, certificateValidation)
+        : ConnectionFactoryWithNameResolverMbedTls(allocatorAdapter, connectors, sessionStorage, factory, certificates, randomDataGenerator, certificateValidation)
         , allocatorAdapter(connectionAllocator, tracer)
     {
         tracer.Trace() << "ConnectionFactoryWithNameResolver::ConnectionFactoryWithNameResolver()";

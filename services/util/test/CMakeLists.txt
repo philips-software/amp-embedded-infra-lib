@@ -18,11 +18,13 @@ target_link_libraries(services.util_test PUBLIC
 )
 
 target_sources(services.util_test PRIVATE
-    TestAesMbedTls.cpp
-    TestConfigurationStore.cpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestAesMbedTls.cpp>
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestConfigurationStore.cpp>
     TestCyclicStore.cpp
     TestDebouncedButton.cpp
     TestDebugLed.cpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestEchoOnMessageCommunication.cpp>
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestEchoOnMessageCommunicationSymmetricKey.cpp>
     TestEchoOnSesame.cpp
     TestEchoOnSesameSymmetricKey.cpp
     TestFlashAlign.cpp
@@ -36,6 +38,7 @@ target_sources(services.util_test PRIVATE
     TestInverseLogicPin.cpp
     TestLowPowerSerialCommunication.cpp
     TestLowPowerSpiMaster.cpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestMessageCommunicationSecured.cpp>
     TestRepeatingButton.cpp
     TestSerialCommunicationLoopback.cpp
     TestSesameCobs.cpp
@@ -46,5 +49,5 @@ target_sources(services.util_test PRIVATE
     TestSpiMultipleAccess.cpp
     TestTerminal.cpp
     TestTimeWithLocalization.cpp
-    TestWritableConfiguration.cpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestWritableConfiguration.cpp>
 )

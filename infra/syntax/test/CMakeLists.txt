@@ -11,6 +11,7 @@ target_link_libraries(infra.syntax_test PUBLIC
 target_sources(infra.syntax_test PRIVATE
     TestAsn1.cpp
     TestAsn1Formatter.cpp
+    TestCppFormatter.cpp
     TestJson.cpp
     TestJsonFileReader.cpp
     TestJsonFormatter.cpp
@@ -20,4 +21,5 @@ target_sources(infra.syntax_test PRIVATE
     TestProtoFormatter.cpp
     TestProtoParser.cpp
     TestXmlFormatter.cpp
+    TestXmlNavigator.cpp
 )

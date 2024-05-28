@@ -7,7 +7,7 @@ if (APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
 endif()
 
-project(emil LANGUAGES C CXX VERSION 6.0.0) # x-release-please-version
+project(emil LANGUAGES C CXX VERSION 6.1.0) # x-release-please-version
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
@@ -94,6 +94,7 @@ option(EMIL_BUILD_ECHO_COMPILERS "Build and install the Protobuf ECHO compilers"
 
 # Enable or disable optional features.
 option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of EmIL" On)
+set(EMIL_EXTERNAL_MBEDTLS_TARGET "" CACHE STRING "Specify an external MbedTLS target")
 option(EMIL_INCLUDE_FREERTOS "Include FreeRTOS as part of EmIL" Off)
 option(EMIL_INCLUDE_THREADX "Include ThreadX as part of EmIL (Incomplete, experimental)" Off)
 option(EMIL_INCLUDE_SEGGER_RTT "Include support for Segger RTT" Off)
