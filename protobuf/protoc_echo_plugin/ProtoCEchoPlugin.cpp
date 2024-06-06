@@ -831,7 +831,7 @@ namespace application
             void VisitString(const EchoFieldString& field) override
             {
                 added = true;
-                entities.Add(std::make_shared<DataMember>(field.name + "Size", "static const uint32_t", google::protobuf::SimpleItoa(field.maxStringSize)));
+                entities.Add(std::make_shared<DataMember>(field.name + "Size", "static constexpr uint32_t", google::protobuf::SimpleItoa(field.maxStringSize)));
             }
 
             void VisitUnboundedString(const EchoFieldUnboundedString& field) override
@@ -852,7 +852,7 @@ namespace application
             void VisitBytes(const EchoFieldBytes& field) override
             {
                 added = true;
-                entities.Add(std::make_shared<DataMember>(field.name + "Size", "static const uint32_t", google::protobuf::SimpleItoa(field.maxBytesSize)));
+                entities.Add(std::make_shared<DataMember>(field.name + "Size", "static constexpr uint32_t", google::protobuf::SimpleItoa(field.maxBytesSize)));
             }
 
             void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
@@ -864,7 +864,7 @@ namespace application
             void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 added = true;
-                entities.Add(std::make_shared<DataMember>(field.name + "Size", "static const uint32_t", google::protobuf::SimpleItoa(field.maxArraySize)));
+                entities.Add(std::make_shared<DataMember>(field.name + "Size", "static constexpr uint32_t", google::protobuf::SimpleItoa(field.maxArraySize)));
             }
 
             void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
