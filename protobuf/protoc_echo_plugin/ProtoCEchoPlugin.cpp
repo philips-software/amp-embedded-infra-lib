@@ -616,6 +616,7 @@ namespace application
         GenerateGetters();
         GenerateFieldDeclarations();
         GenerateFieldConstants();
+        GenerateFieldSizes();
         GenerateMaxMessageSize();
     }
 
@@ -796,6 +797,95 @@ namespace application
 
             classFormatter->Add(fields);
         }
+    }
+
+    void MessageGenerator::GenerateFieldSizes()
+    {
+        class FieldSizeVisitor
+            : public EchoFieldVisitor
+        {
+        public:
+            explicit FieldSizeVisitor(bool& added, Entities& entities)
+                : added(added)
+                , entities(entities)
+            {}
+
+            void VisitInt64(const EchoFieldInt64& field) override
+            {}
+
+            void VisitUint64(const EchoFieldUint64& field) override
+            {}
+
+            void VisitInt32(const EchoFieldInt32& field) override
+            {}
+
+            void VisitFixed64(const EchoFieldFixed64& field) override
+            {}
+
+            void VisitFixed32(const EchoFieldFixed32& field) override
+            {}
+
+            void VisitBool(const EchoFieldBool& field) override
+            {}
+
+            void VisitString(const EchoFieldString& field) override
+            {
+                added = true;
+                entities.Add(std::make_shared<DataMember>(field.name + "Size", "static const uint32_t", google::protobuf::SimpleItoa(field.maxStringSize)));
+            }
+
+            void VisitUnboundedString(const EchoFieldUnboundedString& field) override
+            {}
+
+            void VisitEnum(const EchoFieldEnum& field) override
+            {}
+
+            void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {}
+
+            void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {}
+
+            void VisitMessage(const EchoFieldMessage& field) override
+            {}
+
+            void VisitBytes(const EchoFieldBytes& field) override
+            {
+                added = true;
+                entities.Add(std::make_shared<DataMember>(field.name + "Size", "static const uint32_t", google::protobuf::SimpleItoa(field.maxBytesSize)));
+            }
+
+            void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
+            {}
+
+            void VisitUint32(const EchoFieldUint32& field) override
+            {}
+
+            void VisitRepeated(const EchoFieldRepeated& field) override
+            {
+                added = true;
+                entities.Add(std::make_shared<DataMember>(field.name + "Size", "static const uint32_t", google::protobuf::SimpleItoa(field.maxArraySize)));
+            }
+
+            void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
+            {}
+
+        private:
+            bool& added;
+            Entities& entities;
+        };
+
+        auto fields = std::make_shared<Access>("public");
+        bool added = false;
+
+        for (auto& field : message->fields)
+        {
+            FieldSizeVisitor visitor(added, *fields);
+            field->Accept(visitor);
+        }
+
+        if (added)
+            classFormatter->Add(fields);
     }
 
     void MessageGenerator::GenerateMaxMessageSize()
