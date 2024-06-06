@@ -24,8 +24,6 @@ target_sources(services.util PRIVATE
     EchoInstantiation.hpp
     EchoOnSesame.cpp
     EchoOnSesame.hpp
-    EchoOnSesameSymmetricKey.cpp
-    EchoOnSesameSymmetricKey.hpp
     FlashAlign.cpp
     FlashAlign.hpp
     FlashMultipleAccess.cpp
@@ -57,8 +55,6 @@ target_sources(services.util PRIVATE
     Sesame.hpp
     SesameCobs.cpp
     SesameCobs.hpp
-    SesameSecured.cpp
-    SesameSecured.hpp
     SesameWindowed.cpp
     SesameWindowed.hpp
     Sha256.hpp
@@ -77,14 +73,24 @@ target_sources(services.util PRIVATE
     WritableConfiguration.hpp
 )
 
-if (EMIL_INCLUDE_MBEDTLS)
-    target_link_libraries(services.util PUBLIC
-        mbedcrypto
-    )
+if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
+    if (NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
+        target_link_libraries(services.util PUBLIC
+            ${EMIL_EXTERNAL_MBEDTLS_TARGET}
+        )
+    else()
+        target_link_libraries(services.util PUBLIC
+            mbedcrypto
+        )
+    endif()
 
     target_sources(services.util PRIVATE
         AesMbedTls.cpp
         AesMbedTls.hpp
+        EchoOnSesameSymmetricKey.cpp
+        EchoOnSesameSymmetricKey.hpp
+        SesameSecured.cpp
+        SesameSecured.hpp
         Sha256MbedTls.cpp
         Sha256MbedTls.hpp
     )

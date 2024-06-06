@@ -15,10 +15,10 @@ target_link_libraries(upgrade.pack_builder_test PUBLIC
 target_sources(upgrade.pack_builder_test PRIVATE
     TestBinaryObject.cpp
     TestConfigParser.cpp
-    TestImageAuthenticatorHmac.cpp
-    TestImageEncryptorAes.cpp
-    TestImageSignerEcDsa.cpp
-    TestImageSignerHashOnly.cpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestImageAuthenticatorHmac.cpp>
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestImageEncryptorAes.cpp>
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestImageSignerEcDsa.cpp>
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestImageSignerHashOnly.cpp>
     TestInputBinary.cpp
     TestInputCommand.cpp
     TestInputHex.cpp

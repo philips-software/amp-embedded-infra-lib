@@ -34,6 +34,20 @@ TEST_F(TimerTest, SingleShotTimerTriggersOnceAfterTime)
     ForwardTime(std::chrono::seconds(5));
 };
 
+TEST_F(TimerTest, SingleShotTimerDoesNotTriggerAfterInfinity)
+{
+    ForwardTime(std::chrono::seconds(1));
+
+    testing::StrictMock<infra::MockCallback<void()>> callback;
+
+    infra::TimerSingleShot timer(infra::Duration::max(), [&callback]()
+        {
+            callback.callback();
+        });
+
+    ForwardTime(std::chrono::seconds(5));
+};
+
 TEST_F(TimerTest, SingleShotTimerIsCancellable)
 {
     infra::MockCallback<void(infra::TimePoint)> callback;
