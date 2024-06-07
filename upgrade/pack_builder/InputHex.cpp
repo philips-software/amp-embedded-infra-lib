@@ -29,7 +29,7 @@ namespace application
         {
             uint32_t address = i.first;
             if (result.size() < address + 1 - startAddress)
-                result.resize(address + 1 - startAddress);
+                result.resize(address + 1 - startAddress, 0xff);
 
             result[address - startAddress] = i.second;
         }
