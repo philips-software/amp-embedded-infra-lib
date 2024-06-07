@@ -25,16 +25,24 @@ service ServiceDiscovery
 {
     option (service_id) = 1000;
 
-    rpc FindFirstServiceInRange(ServiceRange) returns (Nothing) { option (method_id) = 1; }
-    rpc NotifyServiceChanges(BoolValue) returns (Nothing)  { option (method_id) = 2; } 
+    rpc FindFirstServiceInRange(ServiceRange) returns (Nothing) 
+        { option (method_id) = 1; }
+    
+    rpc NotifyServiceChanges(BoolValue) returns (Nothing)  
+        { option (method_id) = 2; } 
 }
 
 service ServiceDiscoveryResponse
 {
     option (service_id) = 1001;
 
-    rpc FirstServiceSupported(Uint32Value) returns (Nothing) { option (method_id) = 1; }
-    rpc NoServiceSupported(Nothing) returns (Nothing) { option (method_id) = 2; }
+    rpc FirstServiceSupported(Uint32Value) returns (Nothing) 
+        { option (method_id) = 1; }
+    
+    rpc NoServiceSupported(Nothing) returns (Nothing) 
+        { option (method_id) = 2; }
+
+    // Add a range of the services changed to make the rediscovery easier
     rpc ServicesChanged(Nothing) returns (Nothing) { option (method_id) = 3; }
 }
 

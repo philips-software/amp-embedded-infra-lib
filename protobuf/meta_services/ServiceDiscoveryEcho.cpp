@@ -48,7 +48,8 @@ namespace application
                 || IsProxyServiceSupported(serviceId);
     }
 
-    infra::SharedPtr<services::MethodDeserializer> ServiceDiscoveryEcho::StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const services::EchoErrorPolicy& errorPolicy)
+    infra::SharedPtr<services::MethodDeserializer> ServiceDiscoveryEcho::
+        StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const services::EchoErrorPolicy& errorPolicy)
     {
         if (service_discovery::ServiceDiscovery::AcceptsService(serviceId))
             return service_discovery::ServiceDiscovery::StartMethod(serviceId, methodId, size, errorPolicy);
@@ -56,7 +57,8 @@ namespace application
             return StartProxyServiceMethod(serviceId, methodId, size, errorPolicy);
     }
 
-    infra::SharedPtr<services::MethodDeserializer> ServiceDiscoveryEcho::StartProxyServiceMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const services::EchoErrorPolicy& errorPolicy)
+    infra::SharedPtr<services::MethodDeserializer> ServiceDiscoveryEcho::
+        StartProxyServiceMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const services::EchoErrorPolicy& errorPolicy)
     {
         infra::SharedPtr<services::MethodDeserializer> methodSerializer;
 
@@ -65,7 +67,8 @@ namespace application
             {
                 if(obs.AcceptsService(std::get<0>(startMethodArgs)))
                 {
-                    methodSerializer = obs.StartMethod(std::get<0>(startMethodArgs), std::get<1>(startMethodArgs), std::get<2>(startMethodArgs), std::get<3>(startMethodArgs));
+                    methodSerializer = obs.StartMethod(std::get<0>(startMethodArgs), std::get<1>(startMethodArgs), 
+                        std::get<2>(startMethodArgs), std::get<3>(startMethodArgs));
                     return true;
                 }
 
@@ -79,10 +82,7 @@ namespace application
     {
         return services::Echo::NotifyObservers([serviceId](auto& observer)
             {
-                if (observer.AcceptsService(serviceId))
-                    return true;
-                else
-                    return false;
+                return observer.AcceptsService(serviceId);
             });
     }
 

@@ -5,6 +5,8 @@ protocol_buffer_java(protobuf.meta_services ServiceDiscovery.proto)
 protocol_buffer_echo_all(protobuf.meta_services ServiceDiscovery.proto)
 
 target_sources(protobuf.meta_services PRIVATE
+    PeerServiceDiscoverer.cpp
+    PeerServiceDiscoverer.hpp
     ServiceDiscoveryEcho.cpp
     ServiceDiscoveryEcho.hpp
 )
