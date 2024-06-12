@@ -3,23 +3,31 @@
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "upgrade/security_key_generator/MaterialGenerator.hpp"
 #include <iostream>
+#include <string>
 
 void GenerateUpgradeKeys(args::Subparser& p)
 {
     args::Group options(p, "Options:");
     args::ValueFlag<std::string> outputFile(options, "OutputFile", "Output file name.", { 'o', "output" });
     args::ValueFlag<std::string> format(options, "Format", "Output format: {proto, cpp}", { 'f', "format" }, "proto");
+    args::ValueFlag<uint32_t> ecDsaKeySize(options, "KeySize", "EcDsa key size: {224, 256}", { 's', "size" }, args::Options::Required);
 
     p.Parse();
+
+    auto keySize = ecDsaKeySize.Get();
+    if (keySize != 224 || keySize != 256)
+        throw std::runtime_error("Invalid EcDsa key size.");
+
+    std::string defaultKeyname = std::string("Keys") + std::to_string(keySize);
 
     hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
     application::MaterialGenerator generator(randomDataGenerator);
     generator.GenerateKeys();
 
     if (format.Get() == "proto")
-        generator.WriteKeysProto(outputFile.Get().empty() ? "Keys.bin" : outputFile.Get());
+        generator.WriteKeysProto(outputFile.Get().empty() ? defaultKeyname + ".bin" : outputFile.Get());
     else if (format.Get() == "cpp")
-        generator.WriteKeys(outputFile.Get().empty() ? "Keys.cpp" : outputFile.Get());
+        generator.WriteKeys(outputFile.Get().empty() ? defaultKeyname + ".cpp" : outputFile.Get());
     else
         throw std::runtime_error("Invalid output format.");
 }

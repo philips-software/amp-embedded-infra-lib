@@ -84,7 +84,7 @@ namespace application
         if (!keysAvailable)
             throw std::runtime_error("Keys are not generated or imported.");
 
-        upgrade_keys::keys keysProto;
+        upgrade_keys::keys224 keysProto;
 
         infra::MemoryRange<uint8_t> aesKeyRange(aesKey);
         keysProto.aesKey.symmetricKey.assign(aesKeyRange);

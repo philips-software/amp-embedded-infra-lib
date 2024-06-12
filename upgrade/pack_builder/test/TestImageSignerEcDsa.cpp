@@ -12,7 +12,7 @@ public:
     {}
 
     hal::SynchronousFixedRandomDataGenerator randomDataGenerator;
-    application::ImageSignerEcDsa signer;
+    application::ImageSignerEcDsa224 signer;
 
     const std::array<uint8_t, 56> ecDsa224PublicKey{ { 0x86, 0x9b, 0xa2, 0x7d, 0x39, 0x56, 0x43, 0x16,
         0x1c, 0xfd, 0x34, 0x7f, 0x9e, 0x21, 0x44, 0x88,
