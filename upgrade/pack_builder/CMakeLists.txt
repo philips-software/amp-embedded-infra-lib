@@ -55,6 +55,7 @@ if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
         ImageAuthenticatorHmac.hpp
         ImageEncryptorAes.cpp
         ImageEncryptorAes.hpp
+        ImageSignerEcDsa.cpp
         ImageSignerEcDsa.hpp
         ImageSignerHashOnly.cpp
         ImageSignerHashOnly.hpp
