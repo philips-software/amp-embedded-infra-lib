@@ -21,19 +21,36 @@ namespace application
         materialGenerator = this;
     }
 
-    void MaterialGenerator::GenerateKeys()
+    void MaterialGenerator::GenerateKeys(EcDsaKey keyType)
     {
         aesKey.resize(aesKeyLength / 8, 0);
         randomDataGenerator.GenerateRandomData(infra::MakeRange(aesKey));
 
-        ecDsa224PublicKey.resize(ecDsa224KeyLength / 8 * 2);
-        ecDsa224PrivateKey.resize(ecDsa224KeyLength / 8 * 2);
         uECC_set_rng(UccRandom);
-        auto ret = uECC_make_key(ecDsa224PublicKey.data(), ecDsa224PrivateKey.data(), uECC_secp224r1());
-        if (ret != 1)
+        size_t keyLength = 0;
+        uECC_Curve curve;
+
+        if (keyType == EcDsaKey::ecDsa224)
+        {
+            keyLength = ecDsa224KeyLength;
+            curve = uECC_secp224r1();
+        }
+        else if (keyType == EcDsaKey::ecDsa256)
+        {
+            keyLength = ecDsa256KeyLength;
+            curve = uECC_secp256r1();
+        }
+        else
+        {
+            throw std::runtime_error("not supported key length");
+        }
+
+        ecDsaPublicKey.resize(keyLength / 8 * 2);
+        ecDsaPrivateKey.resize(keyLength / 8 * 2);
+        if (uECC_make_key(ecDsaPublicKey.data(), ecDsaPrivateKey.data(), curve) != 1)
             throw std::runtime_error("uECC_make_key returned an error");
 
-        keysAvailable = true;
+        availableKeyType = keyType;
     }
 
     void MaterialGenerator::ImportKeys(const std::string& fileName)
@@ -44,13 +61,16 @@ namespace application
         auto rawAesKey = GetRawKey(fileContents, "aesKey");
         aesKey = ExtractKey(rawAesKey);
 
-        auto rawEcDsaPrivateKey = GetRawKey(fileContents, "ecDsa224PrivateKey");
-        ecDsa224PrivateKey = ExtractKey(rawEcDsaPrivateKey);
+        auto rawEcDsaPrivateKey = GetRawKey(fileContents, "ecDsaPrivateKey");
+        ecDsaPrivateKey = ExtractKey(rawEcDsaPrivateKey);
 
-        auto rawEcDsaPublicKey = GetRawKey(fileContents, "ecDsa224PublicKey");
-        ecDsa224PublicKey = ExtractKey(rawEcDsaPublicKey);
+        auto rawEcDsaPublicKey = GetRawKey(fileContents, "ecDsaPublicKey");
+        ecDsaPublicKey = ExtractKey(rawEcDsaPublicKey);
 
-        keysAvailable = true;
+        if (ecDsaPrivateKey.size() == ecDsa224KeyLength / 8 * 2)
+            availableKeyType = EcDsaKey::ecDsa224;
+        else if (ecDsaPrivateKey.size() == ecDsa256KeyLength / 8 * 2)
+            availableKeyType = EcDsaKey::ecDsa256;
     }
 
     void MaterialGenerator::WriteKeys(const std::string& fileName)
@@ -65,7 +85,7 @@ namespace application
 )";
 
         PrintVector(file, "aesKey", aesKey);
-        PrintVector(file, "ecDsa224PublicKey", ecDsa224PublicKey);
+        PrintVector(file, "ecDsaPublicKey", ecDsaPublicKey);
 
         file << R"(#ifdef EMIL_HOST_BUILD
 // Private keys are only available in the upgrade builder, which is compiled only on the host.
@@ -73,7 +93,7 @@ namespace application
 
 )";
 
-        PrintVector(file, "ecDsa224PrivateKey", ecDsa224PrivateKey);
+        PrintVector(file, "ecDsaPrivateKey", ecDsaPrivateKey);
 
         file << R"(#endif
 )";
@@ -81,24 +101,31 @@ namespace application
 
     void MaterialGenerator::WriteKeysProto(const std::string& fileName)
     {
-        if (!keysAvailable)
+        if (!availableKeyType.has_value())
             throw std::runtime_error("Keys are not generated or imported.");
-
-        upgrade_keys::keys224 keysProto;
-
-        infra::MemoryRange<uint8_t> aesKeyRange(aesKey);
-        keysProto.aesKey.symmetricKey.assign(aesKeyRange);
-
-        infra::MemoryRange<uint8_t> ecDsa224PrivateKeyRange(ecDsa224PrivateKey);
-        keysProto.ecDsaKey.privateKey.assign(ecDsa224PrivateKeyRange);
-
-        infra::MemoryRange<uint8_t> ecDsa224PublicKeyRange(ecDsa224PublicKey);
-        keysProto.ecDsaKey.publicKey.assign(ecDsa224PublicKeyRange);
 
         std::vector<uint8_t> keysPack;
         infra::StdVectorOutputStream keysPackStream(keysPack);
         infra::ProtoFormatter protoFormatter(keysPackStream);
-        keysProto.Serialize(protoFormatter);
+        infra::MemoryRange<uint8_t> aesKeyRange(aesKey);
+        infra::MemoryRange<uint8_t> ecDsaPrivateKeyRange(ecDsaPrivateKey);
+        infra::MemoryRange<uint8_t> ecDsaPublicKeyRange(ecDsaPublicKey);
+        if (availableKeyType.value() == EcDsaKey::ecDsa224)
+        {
+            upgrade_keys::keys224 keysProto;
+            keysProto.aesKey.symmetricKey.assign(aesKeyRange);
+            keysProto.ecDsaKey.privateKey.assign(ecDsaPrivateKeyRange);
+            keysProto.ecDsaKey.publicKey.assign(ecDsaPublicKeyRange);
+            keysProto.Serialize(protoFormatter);
+        }
+        else if (availableKeyType.value() == EcDsaKey::ecDsa256)
+        {
+            upgrade_keys::keys256 keysProto;
+            keysProto.aesKey.symmetricKey.assign(aesKeyRange);
+            keysProto.ecDsaKey.privateKey.assign(ecDsaPrivateKeyRange);
+            keysProto.ecDsaKey.publicKey.assign(ecDsaPublicKeyRange);
+            keysProto.Serialize(protoFormatter);
+        }
 
         hal::FileSystemGeneric fileSystem;
         fileSystem.WriteBinaryFile(fileName, keysPack);

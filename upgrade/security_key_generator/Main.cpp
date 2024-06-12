@@ -15,14 +15,15 @@ void GenerateUpgradeKeys(args::Subparser& p)
     p.Parse();
 
     auto keySize = ecDsaKeySize.Get();
-    if (keySize != 224 || keySize != 256)
+    if (keySize != 224 && keySize != 256)
         throw std::runtime_error("Invalid EcDsa key size.");
 
     std::string defaultKeyname = std::string("Keys") + std::to_string(keySize);
 
     hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
     application::MaterialGenerator generator(randomDataGenerator);
-    generator.GenerateKeys();
+    auto ecDsaKeyType = keySize == 224 ? application::MaterialGenerator::EcDsaKey::ecDsa224 : application::MaterialGenerator::EcDsaKey::ecDsa256;
+    generator.GenerateKeys(ecDsaKeyType);
 
     if (format.Get() == "proto")
         generator.WriteKeysProto(outputFile.Get().empty() ? defaultKeyname + ".bin" : outputFile.Get());
