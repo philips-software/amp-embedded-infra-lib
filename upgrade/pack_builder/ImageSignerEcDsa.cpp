@@ -17,9 +17,17 @@ namespace application
     std::vector<uint8_t> ImageSignerEcDsa::ImageSignature(const std::vector<uint8_t>& image)
     {
         CalculateSha256(image);
-        CalculateSignature(image);
+        CalculateSignature();
+        return signature;
+    }
 
-        return GetSignature();
+    bool ImageSignerEcDsa::CheckSignature(const std::vector<uint8_t>& signature, const std::vector<uint8_t>& image)
+    {
+        if (publicKey.size() != signature.size())
+            return false;
+
+        CalculateSha256(image);
+        return uECC_verify(publicKey.begin(), hash.data(), hash.size(), signature.data(), GetCurve()) == 1;
     }
 
     void ImageSignerEcDsa::CalculateSha256(const std::vector<uint8_t>& image)
@@ -30,6 +38,25 @@ namespace application
         mbedtls_sha256_update(&ctx, image.data(), image.size());
         mbedtls_sha256_finish(&ctx, hash.data());
         mbedtls_sha256_free(&ctx);
+    }
+
+    void ImageSignerEcDsa::CalculateSignature()
+    {
+        signature.resize(SignatureLength());
+        if (privateKey.size() != signature.size())
+            throw std::runtime_error("Key length wrong");
+
+        std::vector<uint8_t> publicKeyForVerification(SignatureLength());
+        int result = uECC_compute_public_key(privateKey.begin(), publicKeyForVerification.data(), GetCurve());
+        if (result != 1)
+            throw std::runtime_error("Failed to compute public key");
+
+        if (!std::equal(publicKey.begin(), publicKey.end(), publicKeyForVerification.data()))
+            throw std::runtime_error("Inconsistent private key pair");
+
+        int ret = uECC_sign(privateKey.begin(), hash.data(), hash.size(), signature.data(), GetCurve());
+        if (ret != 1)
+            throw std::runtime_error("Failed to calculate signature");
     }
 
     int ImageSignerEcDsa::RandomNumberGenerator(uint8_t* dest, unsigned size)
@@ -51,41 +78,12 @@ namespace application
 
     uint16_t ImageSignerEcDsa224::SignatureLength() const
     {
-        return static_cast<uint16_t>(signature.size());
+        return static_cast<uint16_t>(keyLength / 8 * 2);
     }
 
-    bool ImageSignerEcDsa224::CheckSignature(const std::vector<uint8_t>& signature, const std::vector<uint8_t>& image)
+    uECC_Curve ImageSignerEcDsa224::GetCurve() const
     {
-        std::copy(signature.begin(), signature.end(), this->signature.begin());
-        CalculateSha256(image);
-
-        if (publicKey.size() != signature.size())
-            return false;
-
-        return uECC_verify(publicKey.begin(), hash.data(), hash.size(), signature.data(), uECC_secp224r1()) == 1;
-    }
-
-    void ImageSignerEcDsa224::CalculateSignature(const std::vector<uint8_t>& image)
-    {
-        if (privateKey.size() != signature.size())
-            throw std::runtime_error("Key length wrong");
-
-        std::array<uint8_t, keyLength / 8 * 2> publicKeyForVerification;
-        int result = uECC_compute_public_key(privateKey.begin(), publicKeyForVerification.data(), uECC_secp224r1());
-        if (result != 1)
-            throw std::runtime_error("Failed to compute public key");
-
-        if (!std::equal(publicKey.begin(), publicKey.end(), publicKeyForVerification.begin()))
-            throw std::runtime_error("Inconsistent private key pair");
-
-        int ret = uECC_sign(privateKey.begin(), hash.data(), hash.size(), signature.data(), uECC_secp224r1());
-        if (ret != 1)
-            throw std::runtime_error("Failed to calculate signature");
-    }
-
-    std::vector<uint8_t> ImageSignerEcDsa224::GetSignature()
-    {
-        return std::vector<uint8_t>(signature.begin(), signature.end());
+        return uECC_secp224r1();
     }
 
     ImageSignerEcDsa256::ImageSignerEcDsa256(hal::SynchronousRandomDataGenerator& randomDataGenerator, infra::ConstByteRange publicKey, infra::ConstByteRange privateKey)
@@ -99,40 +97,11 @@ namespace application
 
     uint16_t ImageSignerEcDsa256::SignatureLength() const
     {
-        return static_cast<uint16_t>(signature.size());
+        return static_cast<uint16_t>(keyLength / 8 * 2);
     }
 
-    bool ImageSignerEcDsa256::CheckSignature(const std::vector<uint8_t>& signature, const std::vector<uint8_t>& image)
+    uECC_Curve ImageSignerEcDsa256::GetCurve() const
     {
-        std::copy(signature.begin(), signature.end(), this->signature.begin());
-        CalculateSha256(image);
-
-        if (publicKey.size() != signature.size())
-            return false;
-
-        return uECC_verify(publicKey.begin(), hash.data(), hash.size(), signature.data(), uECC_secp256r1()) == 1;
-    }
-
-    void ImageSignerEcDsa256::CalculateSignature(const std::vector<uint8_t>& image)
-    {
-        if (privateKey.size() != signature.size())
-            throw std::runtime_error("Key length wrong");
-
-        std::array<uint8_t, keyLength / 8 * 2> publicKeyForVerification;
-        int result = uECC_compute_public_key(privateKey.begin(), publicKeyForVerification.data(), uECC_secp256r1());
-        if (result != 1)
-            throw std::runtime_error("Failed to compute public key");
-
-        if (!std::equal(publicKey.begin(), publicKey.end(), publicKeyForVerification.begin()))
-            throw std::runtime_error("Inconsistent private key pair");
-
-        int ret = uECC_sign(privateKey.begin(), hash.data(), hash.size(), signature.data(), uECC_secp256r1());
-        if (ret != 1)
-            throw std::runtime_error("Failed to calculate signature");
-    }
-
-    std::vector<uint8_t> ImageSignerEcDsa256::GetSignature()
-    {
-        return std::vector<uint8_t>(signature.begin(), signature.end());
+        return uECC_secp256r1();
     }
 }
