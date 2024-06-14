@@ -182,9 +182,6 @@ namespace application
         services::NameResolver& NameResolver();
         void DataReceived(infra::StreamReader& reader);
 
-        struct IncompletePacket
-        {};
-
     private:
         struct MessageTokens
         {

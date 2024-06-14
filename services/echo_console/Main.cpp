@@ -125,17 +125,9 @@ void ConsoleClientConnection::SendStreamAvailable(infra::SharedPtr<infra::Stream
 
 void ConsoleClientConnection::DataReceived()
 {
-    try
-    {
-        while (true)
-        {
-            auto stream = services::ConnectionObserver::Subject().ReceiveStream();
-            ConsoleObserver::Subject().DataReceived(*stream);
-            services::ConnectionObserver::Subject().AckReceived();
-        }
-    }
-    catch (application::Console::IncompletePacket&)
-    {}
+    auto stream = services::ConnectionObserver::Subject().ReceiveStream();
+    ConsoleObserver::Subject().DataReceived(*stream);
+    services::ConnectionObserver::Subject().AckReceived();
 }
 
 void ConsoleClientConnection::Attached()
