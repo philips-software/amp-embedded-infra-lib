@@ -31,9 +31,9 @@ namespace application
 
     private:
         static int UccRandom(uint8_t* dest, unsigned size);
-        std::string GetRawKey(const std::vector<std::string> contents, const std::string keyName);
-        std::vector<uint8_t> ExtractKey(std::string rawKey);
-        void PrintVector(std::vector<std::string>& fileContent, const char* name, const std::vector<uint8_t>& vector);
+        std::string GetRawKey(const std::vector<std::string>& contents, const std::string& keyName) const;
+        std::vector<uint8_t> ExtractKey(std::string rawKey) const;
+        void PrintVector(std::vector<std::string>& fileContent, const char* name, const std::vector<uint8_t>& vector) const;
 
     private:
         hal::SynchronousRandomDataGenerator& randomDataGenerator;

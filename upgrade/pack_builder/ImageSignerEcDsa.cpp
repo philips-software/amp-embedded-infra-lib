@@ -27,7 +27,7 @@ namespace application
             return false;
 
         CalculateSha256(image);
-        return uECC_verify(publicKey.begin(), hash.data(), hash.size(), signature.data(), GetCurve()) == 1;
+        return uECC_verify(publicKey.begin(), hash.data(), static_cast<uint32_t>(hash.size()), signature.data(), GetCurve()) == 1;
     }
 
     void ImageSignerEcDsa::CalculateSha256(const std::vector<uint8_t>& image)
@@ -54,7 +54,7 @@ namespace application
         if (!std::equal(publicKey.begin(), publicKey.end(), publicKeyForVerification.data()))
             throw std::runtime_error("Inconsistent private key pair");
 
-        int ret = uECC_sign(privateKey.begin(), hash.data(), hash.size(), signature.data(), GetCurve());
+        int ret = uECC_sign(privateKey.begin(), hash.data(), static_cast<uint32_t>(hash.size()), signature.data(), GetCurve());
         if (ret != 1)
             throw std::runtime_error("Failed to calculate signature");
     }

@@ -79,20 +79,20 @@ namespace application
     {
         std::vector<std::string> fileContent;
 
-        fileContent.push_back(R"(#include "upgrade_keys/Keys.hpp"
+        fileContent.emplace_back(R"(#include "upgrade_keys/Keys.hpp"
 )");
 
         PrintVector(fileContent, "aesKey", aesKey);
         PrintVector(fileContent, "ecDsaPublicKey", ecDsaPublicKey);
 
-        fileContent.push_back(R"(#ifdef EMIL_HOST_BUILD
+        fileContent.emplace_back(R"(#ifdef EMIL_HOST_BUILD
 // Private keys are only available in the upgrade builder, which is compiled only on the host.
 // So when compiling for any embedded platform, these keys are not included
 )");
 
         PrintVector(fileContent, "ecDsaPrivateKey", ecDsaPrivateKey);
 
-        fileContent.push_back(R"(#endif)");
+        fileContent.emplace_back(R"(#endif)");
         fileSystem.WriteFile(fileName, fileContent);
     }
 
@@ -132,12 +132,12 @@ namespace application
         return 1;
     }
 
-    std::string MaterialGenerator::GetRawKey(const std::vector<std::string> contents, const std::string keyName)
+    std::string MaterialGenerator::GetRawKey(const std::vector<std::string>& contents, const std::string& keyName) const
     {
         auto foundKey = false;
         std::string rawKey;
 
-        for (auto line : contents)
+        for (const auto& line : contents)
         {
             if (foundKey)
                 rawKey += line;
@@ -157,7 +157,7 @@ namespace application
         return rawKey;
     }
 
-    std::vector<uint8_t> MaterialGenerator::ExtractKey(std::string rawKey)
+    std::vector<uint8_t> MaterialGenerator::ExtractKey(std::string rawKey) const
     {
         auto innerOpen = rawKey.find_last_of('{');
         auto innerClose = rawKey.find_first_of('}');
@@ -167,16 +167,16 @@ namespace application
 
         while (rawKey.find(',') != std::string::npos)
         {
-            extractedValues.push_back(std::stoi(rawKey, nullptr, 16));
+            extractedValues.emplace_back(std::stoi(rawKey, nullptr, 16));
             rawKey = rawKey.substr(rawKey.find(',') + 1);
         }
 
-        extractedValues.push_back(std::stoi(rawKey, nullptr, 16));
+        extractedValues.emplace_back(std::stoi(rawKey, nullptr, 16));
 
         return extractedValues;
     }
 
-    void MaterialGenerator::PrintVector(std::vector<std::string>& fileContent, const char* name, const std::vector<uint8_t>& vector)
+    void MaterialGenerator::PrintVector(std::vector<std::string>& fileContent, const char* name, const std::vector<uint8_t>& vector) const
     {
         std::stringstream ss;
         ss << "const std::array<uint8_t, " << vector.size() << "> " << name << " = { {";
@@ -193,6 +193,6 @@ namespace application
 
         ss << "\n} };\n";
 
-        fileContent.push_back(ss.str());
+        fileContent.emplace_back(ss.str());
     }
 }

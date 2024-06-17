@@ -10,5 +10,5 @@ target_link_libraries(upgrade.material_generator_test PUBLIC
 )
 
 target_sources(upgrade.material_generator_test PRIVATE
-    TestMaterialGenerator.cpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestMaterialGenerator.cpp>
 )
