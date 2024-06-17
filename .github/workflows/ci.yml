@@ -29,7 +29,7 @@ jobs:
         with:
           key: ${{ github.job }}-ubuntu-latest
           variant: sccache
-      - uses: seanmiddleditch/gha-setup-ninja@8b297075da4cd2a5f1fd21fe011b499edf06e9d2 # v4
+      - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # v5
       - uses: lukka/run-cmake@2ce8982be71b8e9a3c4d5e432135035afd1e76a7 # v10.7
         with:
           configurePreset: "host"
@@ -84,7 +84,7 @@ jobs:
         with:
           key: ${{ github.job }}-ubuntu-latest
           variant: sccache
-      - uses: seanmiddleditch/gha-setup-ninja@8b297075da4cd2a5f1fd21fe011b499edf06e9d2 # v4
+      - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # v5
       - uses: lukka/run-cmake@2ce8982be71b8e9a3c4d5e432135035afd1e76a7 # v10.7
         with:
           configurePreset: "host-no-mbedtls"
