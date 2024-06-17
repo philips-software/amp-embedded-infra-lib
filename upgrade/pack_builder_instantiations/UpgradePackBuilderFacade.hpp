@@ -13,18 +13,11 @@ namespace main_
     using TargetAndFiles = std::vector<std::tuple<std::string, std::string, infra::Optional<uint32_t>>>;
     using BuildOptions = std::vector<std::pair<std::string, std::string>>;
 
-    struct DefaultKey224Material
+    struct DefaultKeyMaterial
     {
         infra::ConstByteRange aesKey;
         infra::ConstByteRange ecDsa224PublicKey;
         infra::ConstByteRange ecDsa224PrivateKey;
-    };
-
-    struct DefaultKey256Material
-    {
-        infra::ConstByteRange aesKey;
-        infra::ConstByteRange ecDsa256PublicKey;
-        infra::ConstByteRange ecDsa256PrivateKey;
     };
 
     class UpgradePackBuilderFacade
@@ -34,10 +27,7 @@ namespace main_
         virtual ~UpgradePackBuilderFacade() = default;
 
         void Build(const application::SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, const std::string& outputFilename,
-            const BuildOptions& buildOptions, infra::JsonObject& configuration, const DefaultKey224Material& keys);
-
-        void Build(const application::SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, const std::string& outputFilename,
-            const BuildOptions& buildOptions, infra::JsonObject& configuration, const DefaultKey256Material& keys);
+            const BuildOptions& buildOptions, infra::JsonObject& configuration, const DefaultKeyMaterial& keys);
 
         void Build(const application::SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, const std::string& outputFilename);
 

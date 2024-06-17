@@ -1,17 +1,19 @@
 #ifndef SECURITY_KEY_GENERATOR_MATERIAL_GENERATOR_HPP
 #define SECURITY_KEY_GENERATOR_MATERIAL_GENERATOR_HPP
 
+#include "hal/interfaces/FileSystem.hpp"
 #include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace application
 {
     class MaterialGenerator
     {
     public:
-        explicit MaterialGenerator(hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        explicit MaterialGenerator(hal::SynchronousRandomDataGenerator& randomDataGenerator, hal::FileSystem& fileSystem);
 
         static const std::size_t aesKeyLength = 128;
         static const std::size_t ecDsa224KeyLength = 224;
@@ -31,9 +33,11 @@ namespace application
         static int UccRandom(uint8_t* dest, unsigned size);
         std::string GetRawKey(const std::vector<std::string> contents, const std::string keyName);
         std::vector<uint8_t> ExtractKey(std::string rawKey);
-        void PrintVector(std::ostream& output, const char* name, const std::vector<uint8_t>& vector);
+        void PrintVector(std::vector<std::string>& fileContent, const char* name, const std::vector<uint8_t>& vector);
 
+    private:
         hal::SynchronousRandomDataGenerator& randomDataGenerator;
+        hal::FileSystem& fileSystem;
         std::vector<uint8_t> aesKey;
         std::vector<uint8_t> ecDsaPublicKey;
         std::vector<uint8_t> ecDsaPrivateKey;

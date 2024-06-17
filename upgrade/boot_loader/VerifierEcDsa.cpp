@@ -13,11 +13,12 @@ namespace application
     bool VerifierEcDsa::IsValid(hal::SynchronousFlash& flash, const hal::SynchronousFlash::Range& signature, const hal::SynchronousFlash::Range& data) const
     {
         std::array<uint8_t, 32> messageHash = Hash(flash, data);
-        auto storedSignature = GetSignatureStorage(flash, signature);
+        auto storedSignature = GetSignatureStorage(signature);
 
-        if (storedSignature.size() == 0)
+        if (storedSignature.empty())
             return false;
 
+        flash.ReadBuffer(infra::ConstCastByteRange(storedSignature), signature.first);
         return uECC_verify(key.begin(),
                    messageHash.data(),
                    messageHash.size(),
@@ -31,13 +32,12 @@ namespace application
         assert(key.size() == signSize);
     }
 
-    infra::ConstByteRange VerifierEcDsa224::GetSignatureStorage(hal::SynchronousFlash& flash, const hal::SynchronousFlash::Range& signature) const
+    infra::ConstByteRange VerifierEcDsa224::GetSignatureStorage(const hal::SynchronousFlash::Range& signature) const
     {
         if (signature.second - signature.first != signatureStorage.size())
             return infra::ConstByteRange();
-
-        flash.ReadBuffer(infra::ConstCastByteRange(signatureStorage), signature.first);
-        return signatureStorage;
+        else
+            return signatureStorage;
     }
 
     uECC_Curve VerifierEcDsa224::GetCurve() const
@@ -51,13 +51,12 @@ namespace application
         assert(key.size() == signSize);
     }
 
-    infra::ConstByteRange VerifierEcDsa256::GetSignatureStorage(hal::SynchronousFlash& flash, const hal::SynchronousFlash::Range& signature) const
+    infra::ConstByteRange VerifierEcDsa256::GetSignatureStorage(const hal::SynchronousFlash::Range& signature) const
     {
         if (signature.second - signature.first != signatureStorage.size())
             return infra::ConstByteRange();
-
-        flash.ReadBuffer(infra::ConstCastByteRange(signatureStorage), signature.first);
-        return signatureStorage;
+        else
+            return signatureStorage;
     }
 
     uECC_Curve VerifierEcDsa256::GetCurve() const

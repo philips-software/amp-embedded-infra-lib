@@ -1,7 +1,7 @@
 #include "args.hxx"
 #include "hal/generic/FileSystemGeneric.hpp"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
-#include "upgrade/security_key_generator/MaterialGenerator.hpp"
+#include "upgrade/security_key_generator/material_generator/MaterialGenerator.hpp"
 #include <iostream>
 #include <string>
 
@@ -21,7 +21,8 @@ void GenerateUpgradeKeys(args::Subparser& p)
     std::string defaultKeyname = std::string("Keys") + std::to_string(keySize);
 
     hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
-    application::MaterialGenerator generator(randomDataGenerator);
+    hal::FileSystemGeneric fileSystem;
+    application::MaterialGenerator generator(randomDataGenerator, fileSystem);
     auto ecDsaKeyType = keySize == 224 ? application::MaterialGenerator::EcDsaKey::ecDsa224 : application::MaterialGenerator::EcDsaKey::ecDsa256;
     generator.GenerateKeys(ecDsaKeyType);
 
@@ -45,7 +46,8 @@ void ConvertUpgradeKeys(args::Subparser& p)
         throw std::runtime_error("No input file for importing keys is provided.");
 
     hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
-    application::MaterialGenerator generator(randomDataGenerator);
+    hal::FileSystemGeneric fileSystem;
+    application::MaterialGenerator generator(randomDataGenerator, fileSystem);
     generator.ImportKeys(inputFile.Get());
     generator.WriteKeysProto(outputFile.Get());
 }

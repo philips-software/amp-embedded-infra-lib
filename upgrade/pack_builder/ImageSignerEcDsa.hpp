@@ -16,7 +16,6 @@ namespace application
     {
     public:
         ImageSignerEcDsa(hal::SynchronousRandomDataGenerator& randomDataGenerator, infra::ConstByteRange publicKey, infra::ConstByteRange privateKey);
-        virtual ~ImageSignerEcDsa() = default;
 
         std::vector<uint8_t> ImageSignature(const std::vector<uint8_t>& image) override;
         bool CheckSignature(const std::vector<uint8_t>& signature, const std::vector<uint8_t>& image) override;
@@ -27,10 +26,11 @@ namespace application
         void CalculateSha256(const std::vector<uint8_t>& image);
         void CalculateSignature();
         static int RandomNumberGenerator(uint8_t* dest, unsigned size);
-        static hal::SynchronousRandomDataGenerator* randomDataGenerator;
 
+    private:
         infra::ConstByteRange publicKey;
         infra::ConstByteRange privateKey;
+        static hal::SynchronousRandomDataGenerator* randomDataGenerator;
         std::array<uint8_t, 32> hash;
         std::vector<uint8_t> signature;
     };
@@ -47,6 +47,7 @@ namespace application
     private:
         uECC_Curve GetCurve() const override;
 
+    private:
         static const uint16_t signatureMethod = 1;
         static const size_t keyLength = 224;
     };
@@ -63,6 +64,7 @@ namespace application
     private:
         uECC_Curve GetCurve() const override;
 
+    private:
         static const uint16_t signatureMethod = 2;
         static const size_t keyLength = 256;
     };
