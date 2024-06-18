@@ -18,7 +18,7 @@ namespace application
         if (storedSignature.empty())
             return false;
 
-        flash.ReadBuffer(infra::ConstCastByteRange(storedSignature), signature.first);
+        flash.ReadBuffer(storedSignature, signature.first);
         return uECC_verify(key.begin(),
                    messageHash.data(),
                    messageHash.size(),
@@ -32,12 +32,12 @@ namespace application
         assert(key.size() == signSize);
     }
 
-    infra::ConstByteRange VerifierEcDsa224::GetSignatureStorage(const hal::SynchronousFlash::Range& signature) const
+    infra::ByteRange VerifierEcDsa224::GetSignatureStorage(const hal::SynchronousFlash::Range& signature) const
     {
         if (signature.second - signature.first != signatureStorage.size())
-            return infra::ConstByteRange();
+            return infra::ByteRange();
         else
-            return signatureStorage;
+            return infra::MakeRange(signatureStorage);
     }
 
     uECC_Curve VerifierEcDsa224::GetCurve() const
@@ -51,12 +51,12 @@ namespace application
         assert(key.size() == signSize);
     }
 
-    infra::ConstByteRange VerifierEcDsa256::GetSignatureStorage(const hal::SynchronousFlash::Range& signature) const
+    infra::ByteRange VerifierEcDsa256::GetSignatureStorage(const hal::SynchronousFlash::Range& signature) const
     {
         if (signature.second - signature.first != signatureStorage.size())
-            return infra::ConstByteRange();
+            return infra::ByteRange();
         else
-            return signatureStorage;
+            return infra::MakeRange(signatureStorage);
     }
 
     uECC_Curve VerifierEcDsa256::GetCurve() const

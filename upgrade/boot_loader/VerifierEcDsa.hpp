@@ -16,7 +16,7 @@ namespace application
         bool IsValid(hal::SynchronousFlash& flash, const hal::SynchronousFlash::Range& signature, const hal::SynchronousFlash::Range& data) const override;
 
     protected:
-        virtual infra::ConstByteRange GetSignatureStorage(const hal::SynchronousFlash::Range& signature) const = 0;
+        virtual infra::ByteRange GetSignatureStorage(const hal::SynchronousFlash::Range& signature) const = 0;
         virtual uECC_Curve GetCurve() const = 0;
 
     private:
@@ -30,12 +30,12 @@ namespace application
         explicit VerifierEcDsa224(infra::ConstByteRange key);
 
     protected:
-        infra::ConstByteRange GetSignatureStorage(const hal::SynchronousFlash::Range& signature) const override;
+        infra::ByteRange GetSignatureStorage(const hal::SynchronousFlash::Range& signature) const override;
         uECC_Curve GetCurve() const override;
 
     private:
         static constexpr size_t signSize = 224 / 8 * 2;
-        std::array<uint8_t, signSize> signatureStorage;
+        mutable std::array<uint8_t, signSize> signatureStorage;
     };
 
     class VerifierEcDsa256
@@ -45,12 +45,12 @@ namespace application
         explicit VerifierEcDsa256(infra::ConstByteRange key);
 
     protected:
-        infra::ConstByteRange GetSignatureStorage(const hal::SynchronousFlash::Range& signature) const override;
+        infra::ByteRange GetSignatureStorage(const hal::SynchronousFlash::Range& signature) const override;
         uECC_Curve GetCurve() const override;
 
     private:
         static constexpr size_t signSize = 256 / 8 * 2;
-        std::array<uint8_t, signSize> signatureStorage;
+        mutable std::array<uint8_t, signSize> signatureStorage;
     };
 }
 
