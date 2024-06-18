@@ -15,8 +15,20 @@ message ecDsa224key
     bytes privateKey = 2 [(bytes_size) = 56];
 }
 
-message keys
+message ecDsa256key
+{
+    bytes publicKey = 1 [(bytes_size) = 64];
+    bytes privateKey = 2 [(bytes_size) = 64];
+}
+
+message keys224
 {
     aes128key aesKey = 1;
     ecDsa224key ecDsaKey = 2;
+}
+
+message keys256
+{
+    aes128key aesKey = 1;
+    ecDsa256key ecDsaKey = 2;
 }

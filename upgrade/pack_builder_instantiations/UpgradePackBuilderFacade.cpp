@@ -39,7 +39,7 @@ namespace main_
         hal::FileSystemGeneric fileSystem;
         application::ImageEncryptorAes encryptor(randomDataGenerator, keys.aesKey);
         application::UpgradePackInputFactory inputFactory(fileSystem, supportedTargets, encryptor);
-        application::ImageSignerEcDsa signer(randomDataGenerator, keys.ecDsa224PublicKey, keys.ecDsa224PrivateKey);
+        application::ImageSignerEcDsa224 signer(randomDataGenerator, keys.ecDsa224PublicKey, keys.ecDsa224PrivateKey);
 
         PreBuilder(requestedTargets, buildOptions, configuration);
         application::UpgradePackBuilder builder(headerInfo, std::move(CreateInputs(supportedTargets, requestedTargets, inputFactory)), signer);
