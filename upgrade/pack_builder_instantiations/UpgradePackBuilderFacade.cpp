@@ -47,7 +47,7 @@ namespace main_
     {
         hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
         application::ImageEncryptorAes encryptor(randomDataGenerator, keys.aesKey);
-        application::ImageSignerEcDsa224 signer(randomDataGenerator, keys.ecDsa256PublicKey, keys.ecDsa256PrivateKey);
+        application::ImageSignerEcDsa256 signer(randomDataGenerator, keys.ecDsa256PublicKey, keys.ecDsa256PrivateKey);
 
         Build(supportedTargets, requestedTargets, outputFilename, buildOptions, configuration, encryptor, signer);
     }
