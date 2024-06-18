@@ -247,6 +247,12 @@
       "inherits": "defaults"
     },
     {
+      "name": "host-RelWithDebInfo",
+      "configurePreset": "host",
+      "configuration": "RelWithDebInfo",
+      "inherits": "defaults"
+    },
+    {
       "name": "coverage",
       "configurePreset": "coverage",
       "configuration": "Debug",

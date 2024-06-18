@@ -63,7 +63,7 @@ jobs:
         with:
           configurePreset: "host"
           buildPreset: "host-RelWithDebInfo"
-          testPreset: "host"
+          testPreset: "host-RelWithDebInfo"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"
       - name: Upload test logs
         if: ${{ failure() }}
