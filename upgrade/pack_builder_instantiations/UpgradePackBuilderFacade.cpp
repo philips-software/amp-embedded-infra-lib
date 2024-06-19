@@ -33,19 +33,23 @@ namespace main_
     {}
 
     void UpgradePackBuilderFacade::Build(const application::SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, const std::string& outputFilename,
-        const BuildOptions& buildOptions, infra::JsonObject& configuration, const DefaultKeyMaterial& keys)
+        const BuildOptions& buildOptions, infra::JsonObject& configuration, const DefaultKey224Material& keys)
     {
         hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
-        hal::FileSystemGeneric fileSystem;
         application::ImageEncryptorAes encryptor(randomDataGenerator, keys.aesKey);
-        application::UpgradePackInputFactory inputFactory(fileSystem, supportedTargets, encryptor);
         application::ImageSignerEcDsa224 signer(randomDataGenerator, keys.ecDsa224PublicKey, keys.ecDsa224PrivateKey);
 
-        PreBuilder(requestedTargets, buildOptions, configuration);
-        application::UpgradePackBuilder builder(headerInfo, std::move(CreateInputs(supportedTargets, requestedTargets, inputFactory)), signer);
-        PostBuilder(builder, signer, buildOptions);
+        Build(supportedTargets, requestedTargets, outputFilename, buildOptions, configuration, encryptor, signer);
+    }
 
-        builder.WriteUpgradePack(outputFilename, fileSystem);
+    void UpgradePackBuilderFacade::Build(const application::SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, const std::string& outputFilename,
+        const BuildOptions& buildOptions, infra::JsonObject& configuration, const DefaultKey256Material& keys)
+    {
+        hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
+        application::ImageEncryptorAes encryptor(randomDataGenerator, keys.aesKey);
+        application::ImageSignerEcDsa256 signer(randomDataGenerator, keys.ecDsa256PublicKey, keys.ecDsa256PrivateKey);
+
+        Build(supportedTargets, requestedTargets, outputFilename, buildOptions, configuration, encryptor, signer);
     }
 
     void UpgradePackBuilderFacade::Build(const application::SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, const std::string& outputFilename)
@@ -55,6 +59,19 @@ namespace main_
         application::UpgradePackInputFactory inputFactory(fileSystem, supportedTargets, encryptor);
         application::ImageSignerHashOnly signer;
         application::UpgradePackBuilder builder(headerInfo, std::move(CreateInputs(supportedTargets, requestedTargets, inputFactory)), signer);
+
+        builder.WriteUpgradePack(outputFilename, fileSystem);
+    }
+
+    void UpgradePackBuilderFacade::Build(const application::SupportedTargets& supportedTargets, const TargetAndFiles& requestedTargets, const std::string& outputFilename,
+        const BuildOptions& buildOptions, infra::JsonObject& configuration, const application::ImageSecurity& encryptor, application::ImageSigner& signer)
+    {
+        hal::FileSystemGeneric fileSystem;
+        application::UpgradePackInputFactory inputFactory(fileSystem, supportedTargets, encryptor);
+
+        PreBuilder(requestedTargets, buildOptions, configuration);
+        application::UpgradePackBuilder builder(headerInfo, std::move(CreateInputs(supportedTargets, requestedTargets, inputFactory)), signer);
+        PostBuilder(builder, signer, buildOptions);
 
         builder.WriteUpgradePack(outputFilename, fileSystem);
     }
