@@ -6,7 +6,7 @@
 namespace services
 {
     class TracerWithDateTime
-        : public Tracer
+        : public TracerToStream
     {
     public:
         explicit TracerWithDateTime(infra::TextOutputStream& stream);

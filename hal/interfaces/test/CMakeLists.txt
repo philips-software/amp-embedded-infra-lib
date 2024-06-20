@@ -17,4 +17,5 @@ target_sources(hal.interfaces_test PRIVATE
     TestI2cRegisterAccess.cpp
     TestMacAddress.cpp
     TestQuadSpi.cpp
+    TestSerialCommunication.cpp
 )

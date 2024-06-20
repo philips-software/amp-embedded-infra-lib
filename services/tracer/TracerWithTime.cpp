@@ -6,7 +6,7 @@
 namespace services
 {
     TracerWithTime::TracerWithTime(infra::TextOutputStream& stream)
-        : Tracer(stream)
+        : TracerToStream(stream)
     {}
 
     void TracerWithTime::InsertHeader()

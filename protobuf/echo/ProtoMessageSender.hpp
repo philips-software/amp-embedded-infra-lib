@@ -15,6 +15,7 @@ namespace services
         explicit ProtoMessageSenderBase(infra::BoundedVector<std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter), 3 * sizeof(uint8_t*)>>>& stack);
 
         void Fill(infra::DataOutputStream output);
+        bool BufferEmpty() const;
 
     protected:
         template<class Message>

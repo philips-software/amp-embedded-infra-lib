@@ -2,18 +2,20 @@
 #define SERVICES_ECHO_ON_MESSAGE_COMMUNICATION_HPP
 
 #include "protobuf/echo/Echo.hpp"
-#include "services/util/MessageCommunication.hpp"
+#include "services/util/Sesame.hpp"
 
 namespace services
 {
-    class EchoOnMessageCommunication
+    class EchoOnSesame
         : public EchoOnStreams
-        , public MessageCommunicationObserver
+        , public SesameObserver
     {
     public:
-        EchoOnMessageCommunication(MessageCommunication& subject, services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
+        EchoOnSesame(Sesame& subject, services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
 
-        // Implementation of MessageCommunicationObserver
+        void Reset();
+
+        // Implementation of SesameObserver
         void Initialized() override;
         void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
@@ -25,6 +27,10 @@ namespace services
 
     private:
         void ProcessMessage();
+
+    private:
+        infra::Optional<std::size_t> requestedSize;
+        bool initialized = false;
     };
 }
 

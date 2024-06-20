@@ -9,6 +9,7 @@ target_link_libraries(infra.event_test PUBLIC
 )
 
 target_sources(infra.event_test PRIVATE
+    TestAtomicTriggerScheduler.cpp
     TestClaimableResource.cpp
     TestEventDispatcher.cpp
     TestEventDispatcherWithWeakPtr.cpp

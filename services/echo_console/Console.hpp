@@ -182,9 +182,6 @@ namespace application
         services::NameResolver& NameResolver();
         void DataReceived(infra::StreamReader& reader);
 
-        struct IncompletePacket
-        {};
-
     private:
         struct MessageTokens
         {
@@ -239,6 +236,7 @@ namespace application
         std::mutex mutex;
         std::condition_variable condition;
         bool processDone = false;
+        std::string receivedData;
     };
 
     namespace ConsoleExceptions

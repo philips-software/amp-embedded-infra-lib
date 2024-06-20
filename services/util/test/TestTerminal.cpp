@@ -30,7 +30,7 @@ class TerminalTestBase
 protected:
     StreamWriterMock streamWriterMock;
     infra::TextOutputStream::WithErrorPolicy stream{ streamWriterMock };
-    services::Tracer tracer{ stream };
+    services::TracerToStream tracer{ stream };
     testing::StrictMock<hal::SerialCommunicationMock> communication;
     infra::Execute execute{ [this]()
         {

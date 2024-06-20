@@ -1,12 +1,12 @@
-#include "services/util/MessageCommunicationSecured.hpp"
+#include "services/util/SesameSecured.hpp"
 #include "mbedtls/version.h"
 #include <algorithm>
 
 namespace services
 {
-    MessageCommunicationSecured::MessageCommunicationSecured(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, MessageCommunication& delegate,
+    SesameSecured::SesameSecured(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate,
         const KeyType& sendKey, const IvType& sendIv, const KeyType& receiveKey, const IvType& receiveIv)
-        : MessageCommunicationObserver(delegate)
+        : SesameObserver(delegate)
         , sendBuffer(sendBuffer)
         , initialSendKey(sendKey)
         , initialSendIv(sendIv)
@@ -21,64 +21,69 @@ namespace services
         SetReceiveKey(initialReceiveKey, initialReceiveIv);
     }
 
-    MessageCommunicationSecured::~MessageCommunicationSecured()
+    SesameSecured::~SesameSecured()
     {
         mbedtls_gcm_free(&receiveContext);
         mbedtls_gcm_free(&sendContext);
     }
 
-    void MessageCommunicationSecured::SetNextSendKey(const KeyType& sendKey, const IvType& sendIv)
+    void SesameSecured::SetNextSendKey(const KeyType& nextSendKey, const IvType& nextSendIv)
     {
-        nextKeys = { sendKey, sendIv };
+        nextKeys = { nextSendKey, nextSendIv };
 
         if (sendWriter == nullptr)
             ActivateSendKey();
     }
 
-    void MessageCommunicationSecured::SetReceiveKey(const KeyType& receiveKey, const IvType& receiveIv)
+    void SesameSecured::SetReceiveKey(const KeyType& newReceiveKey, const IvType& newReceiveIv)
     {
-        mbedtls_gcm_setkey(&receiveContext, MBEDTLS_CIPHER_ID_AES, reinterpret_cast<const unsigned char*>(receiveKey.data()), receiveKey.size() * 8); //NOSONAR
-        this->receiveIv = receiveIv;
+        mbedtls_gcm_setkey(&receiveContext, MBEDTLS_CIPHER_ID_AES, reinterpret_cast<const unsigned char*>(newReceiveKey.data()), newReceiveKey.size() * 8); //NOSONAR
+        receiveIv = newReceiveIv;
     }
 
-    void MessageCommunicationSecured::Initialized()
+    void SesameSecured::Initialized()
     {
         SetSendKey(initialSendKey, initialSendIv);
         SetReceiveKey(initialReceiveKey, initialReceiveIv);
         GetObserver().Initialized();
     }
 
-    void MessageCommunicationSecured::RequestSendMessage(uint16_t size)
+    void SesameSecured::RequestSendMessage(std::size_t size)
     {
         really_assert(size <= MaxSendMessageSize());
         requestedSendSize = size;
-        MessageCommunicationObserver::Subject().RequestSendMessage(size + blockSize);
+        SesameObserver::Subject().RequestSendMessage(size + blockSize);
     }
 
-    std::size_t MessageCommunicationSecured::MaxSendMessageSize() const
+    std::size_t SesameSecured::MaxSendMessageSize() const
     {
-        return std::min(MessageCommunicationObserver::Subject().MaxSendMessageSize(), sendBuffer.max_size()) - blockSize;
+        return std::min(SesameObserver::Subject().MaxSendMessageSize(), sendBuffer.max_size()) - blockSize;
     }
 
-    void MessageCommunicationSecured::SetSendKey(const KeyType& sendKey, const IvType& sendIv)
+    void SesameSecured::Reset()
+    {
+        SesameObserver::Subject().Reset();
+    }
+
+    void SesameSecured::SetSendKey(const KeyType& sendKey, const IvType& sendIv)
     {
         mbedtls_gcm_setkey(&sendContext, MBEDTLS_CIPHER_ID_AES, reinterpret_cast<const unsigned char*>(sendKey.data()), sendKey.size() * 8); //NOSONAR
         this->sendIv = sendIv;
     }
 
-    void MessageCommunicationSecured::ActivateSendKey()
+    void SesameSecured::ActivateSendKey()
     {
         SetSendKey(nextKeys->first, nextKeys->second);
         nextKeys = infra::none;
     }
 
-    void MessageCommunicationSecured::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+    void SesameSecured::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         sendWriter = std::move(writer);
         GetObserver().SendMessageStreamAvailable(sendBufferWriter.Emplace(infra::inPlace, sendBuffer, requestedSendSize));
     }
 
-    void MessageCommunicationSecured::ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+    void SesameSecured::ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
         infra::DataInputStream::WithErrorPolicy stream(*reader);
 
@@ -124,10 +129,10 @@ namespace services
             return;
 
         IncreaseIv(receiveIv);
-        MessageCommunication::GetObserver().ReceivedMessage(receiveBufferReader.Emplace(receiveBuffer, reader));
+        Sesame::GetObserver().ReceivedMessage(receiveBufferReader.Emplace(receiveBuffer, reader));
     }
 
-    void MessageCommunicationSecured::SendMessageStreamReleased()
+    void SesameSecured::SendMessageStreamReleased()
     {
 #if MBEDTLS_VERSION_MAJOR < 3
         really_assert(mbedtls_gcm_starts(&sendContext, MBEDTLS_GCM_ENCRYPT, reinterpret_cast<const unsigned char*>(sendIv.data()), sendIv.size(), nullptr, 0) == 0);
@@ -162,14 +167,14 @@ namespace services
             ActivateSendKey();
     }
 
-    void MessageCommunicationSecured::IncreaseIv(infra::ByteRange iv) const
+    void SesameSecured::IncreaseIv(infra::ByteRange iv) const
     {
         for (auto i = iv.begin() + iv.size() / 2; i != iv.begin(); --i)
             if (++*std::prev(i) != 0)
                 break;
     }
 
-    MessageCommunicationSecured::ReceiveBufferReader::ReceiveBufferReader(const infra::BoundedVector<uint8_t>& buffer, const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader)
+    SesameSecured::ReceiveBufferReader::ReceiveBufferReader(const infra::BoundedVector<uint8_t>& buffer, const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader)
         : infra::BoundedVectorInputStreamReader(buffer)
         , reader(reader)
     {}

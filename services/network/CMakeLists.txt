@@ -81,7 +81,6 @@ target_sources(services.network PRIVATE
     StreamEcho.hpp
     TracingConnectionFactoryWithNameResolver.cpp
     TracingConnectionFactoryWithNameResolver.hpp
-    TracingEchoOnConnection.cpp
     TracingEchoOnConnection.hpp
     TracingHttpClientCachedConnection.cpp
     TracingHttpClientCachedConnection.hpp

@@ -85,6 +85,7 @@ namespace services
         void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer);
         void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
         void ReleaseReader();
+        void Initialized();
         virtual void ReleaseDeserializer();
 
     private:
@@ -103,6 +104,8 @@ namespace services
         infra::IntrusiveList<ServiceProxy> sendRequesters;
         ServiceProxy* sendingProxy = nullptr;
         infra::SharedPtr<MethodSerializer> methodSerializer;
+        bool partlySent = false;
+        bool skipNextStream = false;
 
         infra::SharedPtr<infra::StreamReaderWithRewinding> readerPtr;
         infra::Optional<infra::LimitedStreamReaderWithRewinding> limitedReader;

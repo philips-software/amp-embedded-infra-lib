@@ -579,12 +579,24 @@ namespace infra
     typename BoundedDeque<T>::iterator BoundedDeque<T>::insert(const const_iterator& position, size_type n, const value_type& value)
     {
         really_assert(size() + n <= max_size());
-        size_type element_index = position - begin();
-        move_up(element_index, n);
 
-        iterator pos(this, position - cbegin());
-        for (size_type i = 0, e = element_index; i != n; ++i, ++e)
-            *storage[index(e)] = value;
+        size_type element_index = position - begin();
+
+        if (element_index == 0 && numAllocated != 0)
+        {
+            start = index(max_size() - n);
+            numAllocated += n;
+
+            for (size_type i = 0, e = element_index; i != n; ++i, ++e)
+                storage[index(e)].Construct(value);
+        }
+        else
+        {
+            move_up(element_index, n);
+
+            for (size_type i = 0, e = element_index; i != n; ++i, ++e)
+                *storage[index(e)] = value;
+        }
 
         return iterator(this, element_index);
     }
@@ -595,11 +607,24 @@ namespace infra
     {
         size_type n = last - first;
         really_assert(size() + n <= max_size());
-        size_type element_index = position - begin();
-        move_up(element_index, n);
 
-        for (; first != last; ++element_index, ++first)
-            *storage[index(element_index)] = *first;
+        size_type element_index = position - begin();
+
+        if (element_index == 0 && numAllocated != 0)
+        {
+            start = index(max_size() - n);
+            numAllocated += n;
+
+            for (; first != last; ++element_index, ++first)
+                storage[index(element_index)].Construct(*first);
+        }
+        else
+        {
+            move_up(element_index, n);
+
+            for (; first != last; ++element_index, ++first)
+                *storage[index(element_index)] = *first;
+        }
 
         return iterator(this, position - begin());
     }
@@ -628,11 +653,19 @@ namespace infra
         size_type first_index = first - begin();
         size_type last_index = last - begin();
 
-        for (; last_index != numAllocated; ++first_index, ++last_index)
-            *storage[index(first_index)] = std::move(*storage[index(last_index)]);
+        if (first_index == 0)
+        {
+            for (; last_index != 0; --numAllocated, start = index(1), --last_index)
+                storage[index(0)].Destruct();
+        }
+        else
+        {
+            for (; last_index != numAllocated; ++first_index, ++last_index)
+                *storage[index(first_index)] = std::move(*storage[index(last_index)]);
 
-        for (; first_index != last_index; ++first_index, --numAllocated)
-            storage[index(first_index)].Destruct();
+            for (; first_index != last_index; ++first_index, --numAllocated)
+                storage[index(first_index)].Destruct();
+        }
 
         return iterator(this, first - begin());
     }
