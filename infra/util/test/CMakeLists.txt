@@ -51,6 +51,11 @@ target_sources(infra.util_test PRIVATE
     TestVariant.cpp
 )
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # Workaround for false positive on stringop overflow
+    set_source_files_properties(TestBoundedVector.cpp PROPERTIES COMPILE_FLAGS -Wno-stringop-overflow)
+endif()
+
 if (EMIL_BUILD_WIN)
     target_sources(infra.util_test PRIVATE
         TestNatvis.cpp
