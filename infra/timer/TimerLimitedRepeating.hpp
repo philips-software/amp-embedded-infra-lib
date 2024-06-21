@@ -18,10 +18,8 @@ namespace infra
         void ComputeNextTriggerTime() override;
 
     private:
-        TimePoint triggerStart;
         Duration triggerPeriod;
         int howMany{ 0 };
-        infra::Function<void()> action;
     };
 }
 

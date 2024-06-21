@@ -12,32 +12,33 @@ namespace infra
         Start(aHowMany, duration, aAction);
     }
 
-    void TimerLimitedRepeating::Start(int aHowMany, Duration duration, const infra::Function<void()>& aAction)
+    void TimerLimitedRepeating::Start(int aHowMany, Duration duration, const infra::Function<void()>& action)
     {
-        action = aAction;
-
-        triggerStart = Now() + Resolution();
-        triggerPeriod = duration;
-        howMany = aHowMany;
-
-        ComputeNextTriggerTime();
+        if (aHowMany > 0)
+        {
+            howMany = aHowMany;
+            triggerPeriod = duration;
+            SetNextTriggerTime(Now() + triggerPeriod + Resolution(), action);
+        }
+        else
+        {
+            Cancel();
+        }
     }
 
     void TimerLimitedRepeating::ComputeNextTriggerTime()
     {
+        --howMany;
         if (howMany != 0)
         {
-            --howMany;
+            TimePoint now = std::max(Now(), NextTrigger());
+            Duration diff = (now - NextTrigger()) % triggerPeriod;
 
-            TimePoint now = Now();
-
-            Duration diff = now - triggerStart;
-            if (diff < Duration())
-                now += triggerPeriod;
-            diff %= triggerPeriod;
-            SetNextTriggerTime(now - diff + triggerPeriod, action);
+            SetNextTriggerTime(now - diff + triggerPeriod, Action());
         }
         else
+        {
             Cancel();
+        }
     }
 }
