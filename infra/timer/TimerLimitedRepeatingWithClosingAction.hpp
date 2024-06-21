@@ -3,29 +3,26 @@
 
 #include "infra/timer/Timer.hpp"
 
-// Trigers a number of times, then triggers another action
+// Triggers a number of times, then triggers another action
 // Useful in a protocol where after a number of retries failure has to be indicated
 
 namespace infra
 {
     class TimerLimitedRepeatingWithClosingAction
-        : public Timer
+        : public details::TimerRepeating
     {
     public:
         explicit TimerLimitedRepeatingWithClosingAction(uint32_t timerServiceId = systemTimerServiceId);
         TimerLimitedRepeatingWithClosingAction(int aHowMany, Duration duration, const infra::Function<void()>& action, const infra::Function<void()>& aClosingAction, uint32_t timerServiceId = systemTimerServiceId);
 
         void Start(int aHowMany, Duration duration, const infra::Function<void()>& action, const infra::Function<void()>& aClosingAction);
+        virtual const infra::Function<void()>& Action() const override;
 
     protected:
-        const infra::Function<void()>& Action() const override;
         void ComputeNextTriggerTime() override;
 
     private:
-        TimePoint triggerStart;
-        Duration triggerPeriod;
         int howMany{ 0 };
-        infra::Function<void()> action;
         infra::Function<void()> closingAction;
     };
 }
