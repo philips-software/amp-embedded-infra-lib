@@ -129,4 +129,21 @@ namespace services
         retry = true;
         return true;
     }
+
+    bool ProtoMessageSenderBase::SerializeField(ProtoUnboundedBytes, infra::ProtoFormatter& formatter, const std::vector<uint8_t>& value, uint32_t fieldNumber, bool& retry) const
+    {
+        formatter.PutVarInt((fieldNumber << 3) | 2);
+        formatter.PutVarInt(value.size());
+
+        stack.emplace_back(0, [&value](infra::DataOutputStream& stream, uint32_t& index, const bool&, const infra::StreamWriter&)
+            {
+                auto range = infra::Head(infra::DiscardHead(infra::MakeRange(value), index), stream.Available());
+                stream << range;
+                index += range.size();
+                return index == value.size();
+            });
+
+        retry = true;
+        return true;
+    }
 }

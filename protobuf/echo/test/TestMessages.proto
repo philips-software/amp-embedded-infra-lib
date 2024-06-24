@@ -120,7 +120,21 @@ message TestUnboundedRepeatedEverything {
 }
 
 message TestOptionalEverything {
-  optional int32 v2 = 2;
+  optional Enumeration v0 = 1;
+  optional int32 v1 = 2;
+  optional int64 v2 = 3;
+  optional uint32 v3 = 4;
+  optional uint64 v4 = 5;
+  optional fixed32 v5 = 6;
+  optional sfixed64 v6 = 7;
+  optional fixed64 v7 = 8;
+  optional sfixed32 v8 = 9;
+  optional bool v9 = 10;
+  optional string v10 = 11 [(string_size) = 20];
+  optional string v11 = 12;
+  optional TestUInt32 v12 = 13;
+  optional bytes v13 = 14 [(bytes_size) = 10];
+  optional bytes v14 = 15;
 }
 
 message TestNestedMessage

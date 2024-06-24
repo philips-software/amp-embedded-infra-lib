@@ -220,3 +220,59 @@ TEST(ProtoMessageReceiverTest, parse_more_nested_message)
 
     EXPECT_EQ((test_messages::TestMoreNestedMessage({ 5 }, { 10 })), receiver.message);
 }
+
+TEST(ProtoMessageReceiverTest, parse_optionals_all_none)
+{
+    services::ProtoMessageReceiver<test_messages::TestOptionalEverything> receiver;
+
+    infra::StdVectorInputStreamReader::WithStorage data(infra::inPlace, std::initializer_list<uint8_t>{});
+    receiver.Feed(data);
+
+    EXPECT_EQ(infra::none, receiver.message.v0);
+    EXPECT_EQ(infra::none, receiver.message.v1);
+    EXPECT_EQ(infra::none, receiver.message.v2);
+    EXPECT_EQ(infra::none, receiver.message.v3);
+    EXPECT_EQ(infra::none, receiver.message.v4);
+    EXPECT_EQ(infra::none, receiver.message.v5);
+    EXPECT_EQ(infra::none, receiver.message.v6);
+    EXPECT_EQ(infra::none, receiver.message.v7);
+    EXPECT_EQ(infra::none, receiver.message.v8);
+    EXPECT_EQ(infra::none, receiver.message.v9);
+    EXPECT_EQ(infra::none, receiver.message.v10);
+    EXPECT_EQ(infra::none, receiver.message.v11);
+    EXPECT_EQ(infra::none, receiver.message.v12);
+    EXPECT_EQ(infra::none, receiver.message.v13);
+    EXPECT_EQ(infra::none, receiver.message.v14);
+}
+
+TEST(ProtoMessageReceiverTest, parse_optionals_all_filled)
+{
+    services::ProtoMessageReceiver<test_messages::TestOptionalEverything> receiver;
+
+    infra::StdVectorInputStreamReader::WithStorage data(infra::inPlace, std::initializer_list<uint8_t>{
+                                                                            0x08, 0x01, 0x10, 0x02, 0x18, 0x03, 0x20, 0x04,
+                                                                            0x28, 0x05, 0x35, 0x06, 0x00, 0x00, 0x00, 0x39,
+                                                                            0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                                                            0x41, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                                                            0x00, 0x4d, 0x09, 0x00, 0x00, 0x00, 0x50, 0x01,
+                                                                            0x5a, 0x01, 0x61, 0x62, 0x01, 0x62, 0x6a, 0x02,
+                                                                            0x08, 0x0a, 0x72, 0x02, 0x0b, 0x0b, 0x7a, 0x02,
+                                                                            0x0c, 0x0c });
+    receiver.Feed(data);
+
+    EXPECT_EQ(test_messages::Enumeration::val1, *receiver.message.v0);
+    EXPECT_EQ(2, *receiver.message.v1);
+    EXPECT_EQ(3, *receiver.message.v2);
+    EXPECT_EQ(4, *receiver.message.v3);
+    EXPECT_EQ(5, *receiver.message.v4);
+    EXPECT_EQ(6, *receiver.message.v5);
+    EXPECT_EQ(7, *receiver.message.v6);
+    EXPECT_EQ(8, *receiver.message.v7);
+    EXPECT_EQ(9, *receiver.message.v8);
+    EXPECT_EQ(true, *receiver.message.v9);
+    EXPECT_EQ("a", *receiver.message.v10);
+    EXPECT_EQ("b", *receiver.message.v11);
+    EXPECT_EQ(test_messages::TestUInt32(10), *receiver.message.v12);
+    EXPECT_EQ((infra::BoundedVector<uint8_t>::WithMaxSize<2>(static_cast<std::size_t>(2), 11)), *receiver.message.v13);
+    EXPECT_EQ((std::vector<uint8_t>(2, 12)), *receiver.message.v14);
+}

@@ -268,6 +268,14 @@ namespace application
                 result = "infra::ConstByteRange";
             }
 
+            void VisitOptional(const EchoFieldOptional& field) override
+            {
+                std::string r;
+                ReferenceStorageTypeVisitor visitor(r);
+                field.type->Accept(visitor);
+                result = "infra::Optional<" + r + ">";
+            }
+
             void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 std::string r;

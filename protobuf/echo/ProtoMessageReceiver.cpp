@@ -146,6 +146,24 @@ namespace services
         }
     }
 
+    void ProtoMessageReceiverBase::DeserializeField(ProtoUnboundedBytes, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, std::vector<uint8_t>& value)
+    {
+        parser.ReportFormatResult(field.Is<infra::PartialProtoLengthDelimited>());
+        if (field.Is<infra::PartialProtoLengthDelimited>())
+        {
+            auto bytesSize = field.Get<infra::PartialProtoLengthDelimited>().length;
+            stack.emplace_back(bytesSize, [&value](const infra::DataInputStream& stream)
+                {
+                    while (!stream.Empty())
+                    {
+                        auto range = stream.ContiguousRange();
+                        value.insert(value.end(), range.begin(), range.end());
+                    }
+                });
+            value.clear();
+        }
+    }
+
     void ProtoMessageReceiverBase::ConsumeUnknownField(infra::ProtoParser::PartialField& field)
     {
         if (field.first.Is<infra::PartialProtoLengthDelimited>())
