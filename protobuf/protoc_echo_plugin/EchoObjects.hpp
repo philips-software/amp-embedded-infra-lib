@@ -213,6 +213,17 @@ namespace application
         std::shared_ptr<EchoEnum> type;
     };
 
+    class EchoFieldOptional
+        : public EchoField
+    {
+    public:
+        EchoFieldOptional(const google::protobuf::FieldDescriptor& descriptor, const std::shared_ptr<EchoField>& type);
+
+        void Accept(EchoFieldVisitor& visitor) const override;
+
+        std::shared_ptr<EchoField> type;
+    };
+
     class EchoFieldRepeated
         : public EchoField
     {
@@ -316,6 +327,7 @@ namespace application
         virtual void VisitEnum(const EchoFieldEnum& field) = 0;
         virtual void VisitSFixed64(const EchoFieldSFixed64& field) = 0;
         virtual void VisitSFixed32(const EchoFieldSFixed32& field) = 0;
+        virtual void VisitOptional(const EchoFieldOptional& field) = 0;
         virtual void VisitRepeated(const EchoFieldRepeated& field) = 0;
         virtual void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) = 0;
     };

@@ -103,6 +103,11 @@ namespace application
         }
     }
 
+    uint64_t CSharpEchoCodeGenerator::GetSupportedFeatures() const
+    {
+        return FEATURE_PROTO3_OPTIONAL;
+    }
+
     CSharpGenerator::CSharpGenerator(const google::protobuf::ServiceDescriptor& service, google::protobuf::io::Printer& printer)
         : service(service)
         , printer(printer)

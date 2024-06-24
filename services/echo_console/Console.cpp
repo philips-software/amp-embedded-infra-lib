@@ -525,6 +525,12 @@ namespace application
                 std::cout << static_cast<int32_t>(fieldData.Get<uint32_t>());
             }
 
+            void VisitOptional(const EchoFieldOptional& field) override
+            {
+                PrintFieldVisitor visitor(fieldData, parser, console);
+                field.type->Accept(visitor);
+            }
+
             void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 PrintFieldVisitor visitor(fieldData, parser, console);
@@ -669,6 +675,12 @@ namespace application
             void VisitSFixed32(const EchoFieldSFixed32& field) override
             {
                 services::GlobalTracer().Continue() << "sfixed32";
+            }
+
+            void VisitOptional(const EchoFieldOptional& field) override
+            {
+                ListFieldVisitor visitor(console);
+                field.type->Accept(visitor);
             }
 
             void VisitRepeated(const EchoFieldRepeated& field) override
@@ -1096,6 +1108,13 @@ namespace application
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
 
                 formatter.PutVarIntField(value.Get<int64_t>(), field.number);
+            }
+
+            void VisitOptional(const EchoFieldOptional& field) override
+            {
+                // Todo: How to specify the absense of an optional value?
+                EncodeFieldVisitor visitor(value, valueIndex, formatter, methodInvocation);
+                field.type->Accept(visitor);
             }
 
             void VisitRepeated(const EchoFieldRepeated& field) override

@@ -119,6 +119,10 @@ message TestUnboundedRepeatedEverything {
   repeated bytes v15 = 15;
 }
 
+message TestOptionalEverything {
+  optional int32 v2 = 2;
+}
+
 message TestNestedMessage
 {
     message NestedMessage
