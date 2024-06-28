@@ -94,6 +94,14 @@ namespace application
                 result = "uint32_t";
             }
 
+            void VisitOptional(const EchoFieldOptional& field) override
+            {
+                std::string r;
+                StorageTypeVisitor visitor(r);
+                field.type->Accept(visitor);
+                result = "infra::Optional<" + r + ">";
+            }
+
             void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 std::string r;
@@ -138,6 +146,14 @@ namespace application
             void VisitEnum(const EchoFieldEnum& field) override
             {
                 result = field.type->name;
+            }
+
+            void VisitOptional(const EchoFieldOptional& field) override
+            {
+                std::string r;
+                ReferenceStorageTypeVisitor visitor(r);
+                field.type->Accept(visitor);
+                result = "infra::Optional<" + r + ">";
             }
 
             void VisitRepeated(const EchoFieldRepeated& field) override
@@ -252,6 +268,14 @@ namespace application
                 result = "infra::ConstByteRange";
             }
 
+            void VisitOptional(const EchoFieldOptional& field) override
+            {
+                std::string r;
+                ReferenceStorageTypeVisitor visitor(r);
+                field.type->Accept(visitor);
+                result = "infra::Optional<" + r + ">";
+            }
+
             void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 std::string r;
@@ -340,6 +364,11 @@ namespace application
             }
 
             void VisitUint32(const EchoFieldUint32& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitOptional(const EchoFieldOptional& field) override
             {
                 result = field.name;
             }
@@ -481,6 +510,11 @@ namespace application
             *error = "Enum " + exception.name + " was used before having been fully defined";
             return false;
         }
+    }
+
+    uint64_t CppInfraCodeGenerator::GetSupportedFeatures() const
+    {
+        return FEATURE_PROTO3_OPTIONAL;
     }
 
     EnumGenerator::EnumGenerator(const std::shared_ptr<const EchoEnum>& enum_)

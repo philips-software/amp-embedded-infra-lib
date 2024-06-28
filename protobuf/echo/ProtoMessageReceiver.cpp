@@ -98,52 +98,46 @@ namespace services
         services::DeserializeField(ProtoSFixed64(), parser, field, value);
     }
 
+    namespace
+    {
+        template<class C>
+        void DeserializeContainer(infra::BoundedVector<std::pair<uint32_t, infra::Function<void(const infra::DataInputStream& stream)>>>& stack, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, C& value)
+        {
+            parser.ReportFormatResult(field.Is<infra::PartialProtoLengthDelimited>());
+            if (field.Is<infra::PartialProtoLengthDelimited>())
+            {
+                auto bytesSize = field.Get<infra::PartialProtoLengthDelimited>().length;
+                stack.emplace_back(bytesSize, [&value](const infra::DataInputStream& stream)
+                    {
+                        while (!stream.Empty())
+                        {
+                            auto range = infra::ReinterpretCastMemoryRange<const typename C::value_type>(stream.ContiguousRange());
+                            value.insert(value.end(), range.begin(), range.end());
+                        }
+                    });
+                value.clear();
+            }
+        }
+    }
+
     void ProtoMessageReceiverBase::DeserializeField(ProtoStringBase, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, infra::BoundedString& value)
     {
-        parser.ReportFormatResult(field.Is<infra::PartialProtoLengthDelimited>());
-        if (field.Is<infra::PartialProtoLengthDelimited>())
-        {
-            auto stringSize = field.Get<infra::PartialProtoLengthDelimited>().length;
-            stack.emplace_back(stringSize, [&value](const infra::DataInputStream& stream)
-                {
-                    while (!stream.Empty())
-                        value.append(infra::ByteRangeAsString(stream.ContiguousRange()));
-                });
-            value.clear();
-        }
+        DeserializeContainer(stack, parser, field, value);
     }
 
     void ProtoMessageReceiverBase::DeserializeField(ProtoUnboundedString, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, std::string& value)
     {
-        parser.ReportFormatResult(field.Is<infra::PartialProtoLengthDelimited>());
-        if (field.Is<infra::PartialProtoLengthDelimited>())
-        {
-            auto stringSize = field.Get<infra::PartialProtoLengthDelimited>().length;
-            stack.emplace_back(stringSize, [&value](const infra::DataInputStream& stream)
-                {
-                    while (!stream.Empty())
-                        value.append(infra::ByteRangeAsStdString(stream.ContiguousRange()));
-                });
-            value.clear();
-        }
+        DeserializeContainer(stack, parser, field, value);
     }
 
     void ProtoMessageReceiverBase::DeserializeField(ProtoBytesBase, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, infra::BoundedVector<uint8_t>& value)
     {
-        parser.ReportFormatResult(field.Is<infra::PartialProtoLengthDelimited>());
-        if (field.Is<infra::PartialProtoLengthDelimited>())
-        {
-            auto bytesSize = field.Get<infra::PartialProtoLengthDelimited>().length;
-            stack.emplace_back(bytesSize, [&value](const infra::DataInputStream& stream)
-                {
-                    while (!stream.Empty())
-                    {
-                        auto range = stream.ContiguousRange();
-                        value.insert(value.end(), range.begin(), range.end());
-                    }
-                });
-            value.clear();
-        }
+        DeserializeContainer(stack, parser, field, value);
+    }
+
+    void ProtoMessageReceiverBase::DeserializeField(ProtoUnboundedBytes, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, std::vector<uint8_t>& value)
+    {
+        DeserializeContainer(stack, parser, field, value);
     }
 
     void ProtoMessageReceiverBase::ConsumeUnknownField(infra::ProtoParser::PartialField& field)

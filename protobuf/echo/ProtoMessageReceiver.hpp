@@ -42,11 +42,14 @@ namespace services
         void DeserializeField(ProtoStringBase, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, infra::BoundedString& value);
         void DeserializeField(ProtoUnboundedString, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, std::string& value);
         void DeserializeField(ProtoBytesBase, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, infra::BoundedVector<uint8_t>& value);
+        void DeserializeField(ProtoUnboundedBytes, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, std::vector<uint8_t>& value);
 
         template<class Enum>
         void DeserializeField(ProtoEnum<Enum>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Enum& value) const;
         template<class Message>
         void DeserializeField(ProtoMessage<Message>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Message& value);
+        template<class ProtoType, class Type>
+        void DeserializeField(ProtoOptional<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, infra::Optional<Type>& value);
         template<class ProtoType, class Type>
         void DeserializeField(ProtoRepeatedBase<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value) const;
         template<class ProtoType, class Type>
@@ -148,6 +151,13 @@ namespace services
                 });
             infra::ReConstruct(value);
         }
+    }
+
+    template<class ProtoType, class Type>
+    void ProtoMessageReceiverBase::DeserializeField(ProtoOptional<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, infra::Optional<Type>& value)
+    {
+        value.Emplace();
+        DeserializeField(ProtoType(), parser, field, *value);
     }
 
     template<class ProtoType, class Type>
