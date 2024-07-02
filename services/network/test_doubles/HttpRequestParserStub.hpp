@@ -28,27 +28,27 @@ namespace services
             , contentLength(body.size())
         {}
 
-        virtual bool HeadersComplete() const override
+        bool HeadersComplete() const override
         {
             return true;
         }
 
-        virtual bool Valid() const override
+        bool Valid() const override
         {
             return true;
         }
 
-        virtual HttpVerb Verb() const override
+        HttpVerb Verb() const override
         {
             return verb;
         }
 
-        virtual const infra::Tokenizer& PathTokens() const override
+        const infra::Tokenizer& PathTokens() const override
         {
             return pathTokens;
         }
 
-        virtual infra::BoundedConstString Header(infra::BoundedConstString name) const override
+        infra::BoundedConstString Header(infra::BoundedConstString name) const override
         {
             for (auto& header : headers)
                 if (header.first == name)
@@ -57,18 +57,18 @@ namespace services
             return infra::BoundedConstString();
         }
 
-        virtual void EnumerateHeaders(const infra::Function<void(infra::BoundedConstString name, infra::BoundedConstString value)>& enumerator) const override
+        void EnumerateHeaders(const infra::Function<void(infra::BoundedConstString name, infra::BoundedConstString value)>& enumerator) const override
         {
             for (auto& header : headers)
                 enumerator(header.first, header.second);
         }
 
-        virtual infra::BoundedString& BodyBuffer() override
+        infra::BoundedString& BodyBuffer() override
         {
             return body;
         }
 
-        virtual infra::Optional<uint32_t> ContentLength() const
+        infra::Optional<uint32_t> ContentLength() const override
         {
             return infra::MakeOptional(contentLength);
         }

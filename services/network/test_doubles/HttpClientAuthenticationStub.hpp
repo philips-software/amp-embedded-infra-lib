@@ -15,20 +15,20 @@ public:
 
 protected:
     // Implementation of HttpClientAuthentication
-    virtual void Authenticate(infra::BoundedConstString scheme, infra::BoundedConstString value) override
+    void Authenticate(infra::BoundedConstString scheme, infra::BoundedConstString value) override
     {}
 
-    virtual infra::BoundedConstString AuthenticationHeader() const override
+    infra::BoundedConstString AuthenticationHeader() const override
     {
         return "header";
     }
 
-    virtual bool Retry() const override
+    bool Retry() const override
     {
         return false;
     }
 
-    virtual void Reset() override
+    void Reset() override
     {}
 };
 

@@ -3,6 +3,7 @@
 
 #include "infra/util/Function.hpp"
 #include "gmock/gmock.h"
+#include <memory>
 
 namespace infra
 {
@@ -13,35 +14,35 @@ namespace infra
     class MockCallback<T()>
     {
     public:
-        MOCK_CONST_METHOD0_T(callback, T());
+        MOCK_METHOD(T, callback, (), (const));
     };
 
     template<class T, class P1>
     class MockCallback<T(P1)>
     {
     public:
-        MOCK_CONST_METHOD1_T(callback, T(P1));
+        MOCK_METHOD(T, callback, (P1), (const));
     };
 
     template<class T, class P1, class P2>
     class MockCallback<T(P1, P2)>
     {
     public:
-        MOCK_CONST_METHOD2_T(callback, T(P1, P2));
+        MOCK_METHOD(T, callback, (P1, P2), (const));
     };
 
     template<class T, class P1, class P2, class P3>
     class MockCallback<T(P1, P2, P3)>
     {
     public:
-        MOCK_CONST_METHOD3_T(callback, T(P1, P2, P3));
+        MOCK_METHOD(T, callback, (P1, P2, P3), (const));
     };
 
     template<class T, class P1, class P2, class P3, class P4>
     class MockCallback<T(P1, P2, P3, P4)>
     {
     public:
-        MOCK_CONST_METHOD4_T(callback, T(P1, P2, P3, P4));
+        MOCK_METHOD(T, callback, (P1, P2, P3, P4), (const));
     };
 
     template<class T, std::size_t ExtraSize = INFRA_DEFAULT_FUNCTION_EXTRA_SIZE>
@@ -49,6 +50,7 @@ namespace infra
 
     template<class T, std::size_t ExtraSize>
     class VerifyingFunctionMock<T(), ExtraSize>
+        : public MockCallback<T()>
     {
     public:
         VerifyingFunctionMock()
@@ -56,19 +58,18 @@ namespace infra
             EXPECT_CALL(*this, callback());
         }
 
-        MOCK_CONST_METHOD0_T(callback, T());
-
         operator infra::Function<T(), ExtraSize>()
         {
             return [this]()
             {
-                return callback();
+                return MockCallback<T()>::callback();
             };
         }
     };
 
     template<class T, class P1, std::size_t ExtraSize>
     class VerifyingFunctionMock<T(P1), ExtraSize>
+        : public MockCallback<T(P1)>
     {
     public:
         VerifyingFunctionMock(P1 p1)
@@ -76,19 +77,18 @@ namespace infra
             EXPECT_CALL(*this, callback(p1));
         }
 
-        MOCK_CONST_METHOD1_T(callback, T(P1));
-
         operator infra::Function<T(P1), ExtraSize>()
         {
             return [this](P1 p1)
             {
-                return callback(p1);
+                return MockCallback<T(P1)>::callback(p1);
             };
         }
     };
 
     template<class T, class P1, class P2, std::size_t ExtraSize>
     class VerifyingFunctionMock<T(P1, P2), ExtraSize>
+        : public MockCallback<T(P1, P2)>
     {
     public:
         VerifyingFunctionMock(P1 p1, P2 p2)
@@ -96,19 +96,18 @@ namespace infra
             EXPECT_CALL(*this, callback(p1, p2));
         }
 
-        MOCK_CONST_METHOD2_T(callback, T(P1, P2));
-
         operator infra::Function<T(P1, P2), ExtraSize>()
         {
             return [this](P1 p1, P2 p2)
             {
-                return callback(p1, p2);
+                return MockCallback<T(P1, P2)>::callback(p1, p2);
             };
         }
     };
 
     template<class T, class P1, class P2, class P3, std::size_t ExtraSize>
     class VerifyingFunctionMock<T(P1, P2, P3), ExtraSize>
+        : public MockCallback<T(P1, P2, P3)>
     {
     public:
         VerifyingFunctionMock(P1 p1, P2 p2, P3 p3)
@@ -116,15 +115,32 @@ namespace infra
             EXPECT_CALL(*this, callback(p1, p2, p3));
         }
 
-        MOCK_CONST_METHOD3_T(callback, T(P1, P2, P3));
-
         operator infra::Function<T(P1, P2, P3), ExtraSize>()
         {
             return [this](P1 p1, P2 p2, P3 p3)
             {
-                return callback(p1, p2, p3);
+                return MockCallback<T(P1, P2, P3)>::callback(p1, p2, p3);
             };
         }
+    };
+
+    template<class R, std::size_t ExtraSize = INFRA_DEFAULT_FUNCTION_EXTRA_SIZE>
+    auto MockFunction = []
+    {
+        std::abort();
+    };
+
+    template<std::size_t ExtraSize, class Result, class... Args>
+    constexpr auto MockFunction<Result(Args...), ExtraSize> = [](auto&&... matchers) -> Function<Result(Args...), ExtraSize>
+    {
+        auto ptr = std::make_shared<testing::MockFunction<Result(Args...)>>();
+
+        EXPECT_CALL(*ptr, Call(std::forward<decltype(matchers)>(matchers)...));
+
+        return [ptr](Args&&... args) -> Result
+        {
+            return ptr->Call(std::forward<Args>(args)...);
+        };
     };
 }
 
