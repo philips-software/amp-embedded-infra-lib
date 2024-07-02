@@ -7,6 +7,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [6.2.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v6.1.0...v6.2.0) (2024-07-02)
+
+
+### Features
+
+* Add 256bit ecdsa key support for upgrade pack builder ([#657](https://github.com/philips-software/amp-embedded-infra-lib/issues/657)) ([a72b4d4](https://github.com/philips-software/amp-embedded-infra-lib/commit/a72b4d4a85df0a207675c64a09c630d59a26b20c))
+* Add osal/threadx/EventDispatcherThreadX ([#637](https://github.com/philips-software/amp-embedded-infra-lib/issues/637)) ([8c66ddd](https://github.com/philips-software/amp-embedded-infra-lib/commit/8c66dddb6d6efa5d25d097f5c7ffbc74b8362dc9))
+* Added EcDsa256 bit support for sign and verify ([#651](https://github.com/philips-software/amp-embedded-infra-lib/issues/651)) ([bc39360](https://github.com/philips-software/amp-embedded-infra-lib/commit/bc39360c56bf232e5ac8a951323e2bacd9f34189))
+* Added infra::MockFunction helper function for testing callbacks via infra::Function ([#658](https://github.com/philips-software/amp-embedded-infra-lib/issues/658)) ([49810ee](https://github.com/philips-software/amp-embedded-infra-lib/commit/49810eef4d70e477dc8d96b947263d621fe47bda))
+* Crc with automatic table generation ([#636](https://github.com/philips-software/amp-embedded-infra-lib/issues/636)) ([23ac162](https://github.com/philips-software/amp-embedded-infra-lib/commit/23ac162fbd3be451bd0b6a3d4488e6c8b9d38b1b))
+* HttpClientBasic will now reset the contentError flag before a new connection is attempted ([#598](https://github.com/philips-software/amp-embedded-infra-lib/issues/598)) ([c0e6755](https://github.com/philips-software/amp-embedded-infra-lib/commit/c0e67552bc328b1947f44ed0370cea6820c0512d))
+* Implement persisted mbed tls session ([#602](https://github.com/philips-software/amp-embedded-infra-lib/issues/602)) ([53d45ce](https://github.com/philips-software/amp-embedded-infra-lib/commit/53d45ce8006c6a6e504ee90266feaa8b3ad235bc))
+* Protobuf: add support for optional keyword ([#661](https://github.com/philips-software/amp-embedded-infra-lib/issues/661)) ([82032aa](https://github.com/philips-software/amp-embedded-infra-lib/commit/82032aaeceed20d8b5fd588456e9b600da7a8263))
+
+
+### Bug Fixes
+
+* Pad 0xff when add hex and elf to upgrade pack ([#646](https://github.com/philips-software/amp-embedded-infra-lib/issues/646)) ([5c5d318](https://github.com/philips-software/amp-embedded-infra-lib/commit/5c5d3186c45e3463d57535a1d07cf011da91f6dc))
+
 ## [6.1.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v6.0.0...v6.1.0) (2024-05-01)
 
 
