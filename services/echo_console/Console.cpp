@@ -72,6 +72,20 @@ namespace application
             return false;
         }
 
+        Underscore::Underscore(std::size_t index)
+            : index(index)
+        {}
+
+        bool Underscore::operator==(const Underscore&) const
+        {
+            return true;
+        }
+
+        bool Underscore::operator!=(const Underscore&) const
+        {
+            return false;
+        }
+
         LeftBrace::LeftBrace(std::size_t index)
             : index(index)
         {}
@@ -211,6 +225,8 @@ namespace application
                 return ConsoleToken::Comma(parseIndex++);
             else if (line[parseIndex] == '.')
                 return ConsoleToken::Dot(parseIndex++);
+            else if (line[parseIndex] == '_')
+                return ConsoleToken::Underscore(parseIndex++);
             else if (line[parseIndex] == '{')
                 return ConsoleToken::LeftBrace(parseIndex++);
             else if (line[parseIndex] == '}')
@@ -851,6 +867,11 @@ namespace application
                 throw ConsoleExceptions::SyntaxError{ value.index };
             }
 
+            MessageTokens::MessageTokenValue operator()(ConsoleToken::Underscore value) const
+            {
+                return Empty{};
+            }
+
             MessageTokens::MessageTokenValue operator()(ConsoleToken::LeftBrace) const
             {
                 invocation.currentToken = invocation.tokenizer.Token();
@@ -1112,9 +1133,11 @@ namespace application
 
             void VisitOptional(const EchoFieldOptional& field) override
             {
-                // Todo: How to specify the absense of an optional value?
-                EncodeFieldVisitor visitor(value, valueIndex, formatter, methodInvocation);
-                field.type->Accept(visitor);
+                if (!value.Is<Empty>())
+                {
+                    EncodeFieldVisitor visitor(value, valueIndex, formatter, methodInvocation);
+                    field.type->Accept(visitor);
+                }
             }
 
             void VisitRepeated(const EchoFieldRepeated& field) override
