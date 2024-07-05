@@ -74,6 +74,13 @@ TEST(SharedOptionalTest, NotifyingSharedPtr_notifies_immediately_when_already_al
     s.OnAllocatable(infra::MockFunction<void()>(), infra::alsoWhenAlreadyAllocatable);
 }
 
+TEST(SharedOptionalTest, NotifyingSharedPtr_does_not_notify_empty_function)
+{
+    infra::NotifyingSharedOptional<int> s;
+
+    s.OnAllocatable(nullptr, infra::alsoWhenAlreadyAllocatable);
+}
+
 TEST(SharedOptionalTest, change_callback_on_NotifyingSharedPtr)
 {
     infra::MockCallback<void()> callback;
