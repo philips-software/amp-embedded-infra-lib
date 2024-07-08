@@ -1423,7 +1423,7 @@ namespace infra
         for (; additional != 0; --additional)
             range[index++] = *first++;
 
-        return &range[index];
+        return range.begin() + index;
     }
 
     template<class T>
