@@ -1,0 +1,11 @@
+ls:
+  .dir: snake_case
+  .hpp: PascalCase
+  .cpp: PascalCase
+
+ignore:
+  - .devcontainer
+  - .git
+  - .github
+  - .vscode
+  - megalinter-reports
