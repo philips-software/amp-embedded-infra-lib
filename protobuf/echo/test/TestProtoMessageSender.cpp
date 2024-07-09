@@ -220,3 +220,47 @@ TEST_F(ProtoMessageSenderTest, format_many_bytes)
     sender.Fill(stream);
     EXPECT_EQ((std::vector<uint8_t>{ 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 }), stream.Storage());
 }
+
+TEST_F(ProtoMessageSenderTest, format_optionals_all_none)
+{
+    test_messages::TestOptionalEverything message;
+    services::ProtoMessageSender sender{ message };
+
+    infra::StdVectorOutputStream::WithStorage stream;
+    sender.Fill(stream);
+    EXPECT_TRUE(stream.Storage().empty());
+}
+
+TEST_F(ProtoMessageSenderTest, format_optionals_all_filled)
+{
+    test_messages::TestOptionalEverything message;
+    message.v0 = test_messages::Enumeration::val1;
+    message.v1 = 2;
+    message.v2 = 3;
+    message.v3 = 4;
+    message.v4 = 5;
+    message.v5 = 6;
+    message.v6 = 7;
+    message.v7 = 8;
+    message.v8 = 9;
+    message.v9 = true;
+    message.v10 = "a";
+    message.v11 = "b";
+    message.v12 = test_messages::TestUInt32(10);
+    message.v13.Emplace(static_cast<std::size_t>(2), 11);
+    message.v14.Emplace(2, 12);
+    services::ProtoMessageSender sender{ message };
+
+    infra::StdVectorOutputStream::WithStorage stream;
+    sender.Fill(stream);
+    EXPECT_EQ((std::vector<uint8_t>{
+                  0x08, 0x01, 0x10, 0x02, 0x18, 0x03, 0x20, 0x04,
+                  0x28, 0x05, 0x35, 0x06, 0x00, 0x00, 0x00, 0x39,
+                  0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                  0x41, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                  0x00, 0x4d, 0x09, 0x00, 0x00, 0x00, 0x50, 0x01,
+                  0x5a, 0x01, 0x61, 0x62, 0x01, 0x62, 0x6a, 0x02,
+                  0x08, 0x0a, 0x72, 0x02, 0x0b, 0x0b, 0x7a, 0x02,
+                  0x0c, 0x0c }),
+        stream.Storage());
+}
