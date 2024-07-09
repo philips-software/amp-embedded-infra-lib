@@ -301,8 +301,9 @@ namespace services
         }
 
         sender.Fill(stream);
+        auto partlySent = stream.Failed() || !sender.BufferEmpty();
         writer = nullptr;
-        return stream.Failed() || !sender.BufferEmpty();
+        return partlySent;
     }
 
     template<class Message, class... Args>

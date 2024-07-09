@@ -17,6 +17,12 @@ namespace services
         , maxMessageSize(maxMessageSize)
     {}
 
+    ServiceProxy::~ServiceProxy()
+    {
+        if (onGranted != nullptr)
+            echo.CancelRequestSend(*this);
+    }
+
     Echo& ServiceProxy::Rpc()
     {
         return echo;
@@ -67,6 +73,7 @@ namespace services
 
     void EchoOnStreams::RequestSend(ServiceProxy& serviceProxy)
     {
+        assert(!sendRequesters.has_element(serviceProxy));
         sendRequesters.push_back(serviceProxy);
 
         TryGrantSend();
@@ -78,6 +85,18 @@ namespace services
 
         if (readerPtr != nullptr)
             DataReceived();
+    }
+
+    void EchoOnStreams::CancelRequestSend(ServiceProxy& serviceProxy)
+    {
+        if (sendRequesters.has_element(serviceProxy))
+            sendRequesters.erase(serviceProxy);
+        else
+        {
+            assert(&serviceProxy == sendingProxy);
+            sendingProxy = nullptr;
+            skipNextStream = true;
+        }
     }
 
     services::MethodSerializerFactory& EchoOnStreams::SerializerFactory()

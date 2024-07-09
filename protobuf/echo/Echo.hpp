@@ -37,6 +37,7 @@ namespace services
     {
     public:
         ServiceProxy(Echo& echo, uint32_t maxMessageSize);
+        ~ServiceProxy();
 
         Echo& Rpc();
         virtual void RequestSend(infra::Function<void()> onGranted);
@@ -49,7 +50,7 @@ namespace services
     private:
         Echo& echo;
         uint32_t maxMessageSize;
-        infra::Function<void()> onGranted;
+        infra::AutoResetFunction<void()> onGranted;
         uint32_t currentRequestedSize = 0;
         infra::SharedPtr<MethodSerializer> methodSerializer;
     };
@@ -60,6 +61,7 @@ namespace services
     public:
         virtual void RequestSend(ServiceProxy& serviceProxy) = 0;
         virtual void ServiceDone() = 0;
+        virtual void CancelRequestSend(ServiceProxy& serviceProxy) = 0;
         virtual services::MethodSerializerFactory& SerializerFactory() = 0;
     };
 
@@ -74,6 +76,7 @@ namespace services
         // Implementation of Echo
         void RequestSend(ServiceProxy& serviceProxy) override;
         void ServiceDone() override;
+        void CancelRequestSend(ServiceProxy& serviceProxy) override;
         services::MethodSerializerFactory& SerializerFactory() override;
 
     protected:

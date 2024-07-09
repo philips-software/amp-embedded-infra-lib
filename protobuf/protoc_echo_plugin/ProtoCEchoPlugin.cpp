@@ -895,6 +895,12 @@ namespace application
             void VisitUint32(const EchoFieldUint32& field) override
             {}
 
+            void VisitOptional(const EchoFieldOptional& field) override
+            {
+                FieldSizeVisitor visitor(added, entities);
+                field.type->Accept(visitor);
+            }
+
             void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 added = true;
