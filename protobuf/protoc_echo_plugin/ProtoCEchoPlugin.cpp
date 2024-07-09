@@ -1488,7 +1488,7 @@ switch (methodId)
                 printer.Print("}\n");
             }
             else
-                printer.Print(R"(tracer.Continue() << "$servicename$ method " << methodId << " not found";\n)", "name", service->name);
+                printer.Print(R"(tracer.Continue() << "$servicename$ method " << methodId << " not found";\n)", "servicename", service->name);
         }
 
         return result.str();
