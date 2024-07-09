@@ -3,6 +3,7 @@
 
 #include "protobuf/echo/Echo.hpp"
 #include "gmock/gmock.h"
+#include <cstdint>
 
 namespace services
 {
@@ -37,7 +38,7 @@ namespace services
         : public services::Service
     {
     public:
-        ServiceStub(Echo& echo);
+        ServiceStub(Echo& echo, uint32_t serviceId = defaultServiceId);
 
         bool AcceptsService(uint32_t id) const override;
 
@@ -48,33 +49,39 @@ namespace services
         infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const services::EchoErrorPolicy& errorPolicy) override;
 
     public:
-        static const uint32_t serviceId = 1;
+        static constexpr uint32_t defaultServiceId = 1;
         static const uint32_t idMethod = 1;
         static const uint32_t idMethodNoParameter = 3;
         static const uint32_t maxMessageSize = 18;
 
     public:
         using MethodTypeList = infra::List<Message, EmptyMessage>;
+
+    private:
+        const uint32_t serviceId;
     };
 
     class ServiceStubProxy
         : public services::ServiceProxy
     {
     public:
-        ServiceStubProxy(services::Echo& echo);
+        ServiceStubProxy(services::Echo& echo, uint32_t serviceId = defaultServiceId);
 
     public:
         void Method(uint32_t value);
         void MethodNoParameter();
 
     public:
-        static constexpr uint32_t serviceId = 1;
+        static constexpr uint32_t defaultServiceId = 1;
         static constexpr uint32_t idMethod = 1;
         static const uint32_t idMethodNoParameter = 3;
         static constexpr uint32_t maxMessageSize = 18;
 
     public:
         using MethodTypeList = infra::List<Message, EmptyMessage>;
+
+    private:
+        const uint32_t serviceId;
     };
 }
 
