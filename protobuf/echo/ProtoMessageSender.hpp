@@ -117,7 +117,8 @@ namespace services
     template<class Message>
     bool ProtoMessageSenderBase::SerializeField(ProtoMessage<Message>, infra::ProtoFormatter& formatter, const Message& value, uint32_t fieldNumber, bool& retry) const
     {
-        infra::DataOutputStream::WithWriter<infra::CountingStreamWriter> countingStream;
+        std::array<uint8_t, 16> saveStateStorage; // For writing length fields
+        infra::DataOutputStream::WithWriter<infra::CountingStreamWriter> countingStream{ saveStateStorage };
         infra::ProtoFormatter countingFormatter{ countingStream };
         value.Serialize(countingFormatter);
         formatter.PutLengthDelimitedSize(countingStream.Writer().Processed(), fieldNumber);
