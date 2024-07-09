@@ -12,6 +12,7 @@ namespace services
     public:
         MOCK_METHOD(void, RequestSend, (ServiceProxy & serviceProxy), (override));
         MOCK_METHOD(void, ServiceDone, (), (override));
+        MOCK_METHOD(void, CancelRequestSend, (ServiceProxy& serviceProxy), (override));
         MOCK_METHOD(services::MethodSerializerFactory&, SerializerFactory, (), (override));
     };
 
