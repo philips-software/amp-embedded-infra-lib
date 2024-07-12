@@ -144,12 +144,12 @@ namespace services
         : public ConfigurationStoreInterface
     {
     public:
-        virtual uint32_t Write() override
+        uint32_t Write() override
         {
             return 0;
         }
 
-        virtual void Unlocked() override
+        void Unlocked() override
         {}
     };
 
