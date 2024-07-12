@@ -140,6 +140,19 @@ namespace services
         uint32_t lockCount = 0;
     };
 
+    class ConfigurationStoreStub
+        : public ConfigurationStoreInterface
+    {
+    public:
+        uint32_t Write() override
+        {
+            return 0;
+        }
+
+        void Unlocked() override
+        {}
+    };
+
     template<class T>
     class ConfigurationStoreAccess
     {
