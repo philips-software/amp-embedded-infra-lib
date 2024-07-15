@@ -35,6 +35,19 @@ namespace main_
         services::SesameWindowed windowed{ cobs };
         services::TracingEchoOnSesame echo;
     };
+
+    template<std::size_t MessageSize>
+    struct TracingEchoOnUart
+        : EchoOnUartBase<MessageSize>
+    {
+        TracingEchoOnUart(services::Tracer& tracer)
+            : echoOnSesame{ this->bufferedSerial, this->serializerFactory, tracer };
+        {}
+
+        main_::TracingEchoOnSesame<MessageSize> echoOnSesame;
+
+        services::Echo& echo{ echoOnSesame.echo };
+    };
 }
 
 #endif

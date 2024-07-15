@@ -6,6 +6,11 @@
 #include "services/util/EchoOnSesame.hpp"
 #include "services/util/SesameCobs.hpp"
 #include "services/util/SesameWindowed.hpp"
+#ifdef EMIL_HAL_WINDOWS
+#include "hal/windows/UartWindows.hpp"
+#else
+#include "hal/unix/UartUnix.hpp"
+#endif
 
 namespace main_
 {
@@ -36,6 +41,31 @@ namespace main_
         services::SesameCobs::WithMaxMessageSize<MessageSize> cobs;
         services::SesameWindowed windowed{ cobs };
         services::EchoOnSesame echo;
+    };
+
+    template<std::size_t MessageSize>
+    struct EchoOnUartBase
+    {
+        EchoOnUartBase(const std::string& portName)
+            : uart(portName)
+        {}
+
+#ifdef EMIL_HAL_WINDOWS
+        hal::UartWindows uart;
+#else
+        hal::UartUnix uart;
+#endif
+        services::MethodSerializerFactory::OnHeap serializerFactory;
+        hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<MessageSize> bufferedSerial{ uart };
+    };
+
+    template<std::size_t MessageSize>
+    struct EchoOnUart
+        : EchoOnUartBase<MessageSize>
+    {
+        main_::EchoOnSesame<MessageSize> echoOnSesame{ this->bufferedSerial, this->serializerFactory };
+
+        services::Echo& echo{ echoOnSesame.echo };
     };
 
     template<std::size_t MessageSize, std::size_t MaxServices>
