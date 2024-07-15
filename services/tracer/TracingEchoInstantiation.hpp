@@ -41,7 +41,7 @@ namespace main_
         : EchoOnUartBase<MessageSize>
     {
         TracingEchoOnUart(services::Tracer& tracer)
-            : echoOnSesame{ this->bufferedSerial, this->serializerFactory, tracer };
+            : echoOnSesame{ this->bufferedSerial, this->serializerFactory, tracer }
         {}
 
         main_::TracingEchoOnSesame<MessageSize> echoOnSesame;
