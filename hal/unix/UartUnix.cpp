@@ -73,7 +73,7 @@ namespace hal
                 throw std::system_error(EFAULT, std::system_category());
 
             std::unique_lock lock(mutex);
-            if (receivedData)
+            if (receivedData != nullptr)
                 receivedData(infra::ConstByteRange(range.begin(), range.begin() + size));
         }
     }
