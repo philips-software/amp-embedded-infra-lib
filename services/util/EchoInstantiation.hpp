@@ -1,5 +1,5 @@
-#ifndef SERVICES_ECHO_INSTANTIATIONS
-#define SERVICES_ECHO_INSTANTIATIONS
+#ifndef SERVICES_UTIL_ECHO_INSTANTIATIONS
+#define SERVICES_UTIL_ECHO_INSTANTIATIONS
 
 #include "infra/util/BoundedVector.hpp"
 #include "protobuf/echo/ServiceForwarder.hpp"
@@ -46,8 +46,8 @@ namespace main_
     template<std::size_t MessageSize>
     struct EchoOnUartBase
     {
-        EchoOnUartBase(const std::string& portName)
-            : uart(portName)
+        EchoOnUartBase(infra::BoundedConstString portName)
+            : uart(infra::AsStdString(portName))
         {}
 
 #ifdef EMIL_HAL_WINDOWS
@@ -63,6 +63,8 @@ namespace main_
     struct EchoOnUart
         : EchoOnUartBase<MessageSize>
     {
+        using EchoOnUartBase<MessageSize>::EchoOnUartBase;
+
         main_::EchoOnSesame<MessageSize> echoOnSesame{ this->bufferedSerial, this->serializerFactory };
 
         services::Echo& echo{ echoOnSesame.echo };

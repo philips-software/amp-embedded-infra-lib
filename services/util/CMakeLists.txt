@@ -73,6 +73,18 @@ target_sources(services.util PRIVATE
     WritableConfiguration.hpp
 )
 
+if (EMIL_BUILD_WIN)
+    target_link_libraries(services.util PUBLIC
+        hal.windows
+    )
+endif()
+
+if (EMIL_BUILD_UNIX OR EMIL_BUILD_DARWIN)
+    target_link_libraries(services.util PUBLIC
+        hal.unix
+    )
+endif()
+
 if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
     if (NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
         target_link_libraries(services.util PUBLIC

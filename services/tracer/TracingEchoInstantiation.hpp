@@ -44,7 +44,7 @@ namespace main_
             : echoOnSesame{ this->bufferedSerial, this->serializerFactory, tracer }
         {}
 
-        main_::TracingEchoOnSesame<MessageSize> echoOnSesame;
+        TracingEchoOnSesame<MessageSize> echoOnSesame;
 
         services::Echo& echo{ echoOnSesame.echo };
     };
