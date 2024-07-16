@@ -1,5 +1,5 @@
-#ifndef SERVICES_MESSAGE_COMMUNICATION_WINDOWED_HPP
-#define SERVICES_MESSAGE_COMMUNICATION_WINDOWED_HPP
+#ifndef SERVICES_SESAME_WINDOWED_HPP
+#define SERVICES_SESAME_WINDOWED_HPP
 
 #include "infra/stream/LimitedInputStream.hpp"
 #include "infra/util/Aligned.hpp"

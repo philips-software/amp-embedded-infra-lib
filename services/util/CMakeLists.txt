@@ -22,6 +22,8 @@ target_sources(services.util PRIVATE
     DebugLed.hpp
     EchoInstantiation.cpp
     EchoInstantiation.hpp
+    EchoOnMessageCommunication.cpp
+    EchoOnMessageCommunication.hpp
     EchoOnSesame.cpp
     EchoOnSesame.hpp
     FlashAlign.cpp
@@ -48,6 +50,11 @@ target_sources(services.util PRIVATE
     LowPowerSerialCommunication.hpp
     LowPowerSpiMaster.cpp
     LowPowerSpiMaster.hpp
+    MessageCommunication.hpp
+    MessageCommunicationCobs.cpp
+    MessageCommunicationCobs.hpp
+    MessageCommunicationWindowed.cpp
+    MessageCommunicationWindowed.hpp
     RepeatingButton.cpp
     RepeatingButton.hpp
     SerialCommunicationLoopback.cpp

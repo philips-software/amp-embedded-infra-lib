@@ -1,5 +1,5 @@
-#ifndef SERVICES_MESSAGE_COMMUNICATION_HPP
-#define SERVICES_MESSAGE_COMMUNICATION_HPP
+#ifndef SERVICES_SESAME_HPP
+#define SERVICES_SESAME_HPP
 
 #include "infra/stream/InputStream.hpp"
 #include "infra/stream/OutputStream.hpp"

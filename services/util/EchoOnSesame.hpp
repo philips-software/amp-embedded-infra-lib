@@ -1,5 +1,5 @@
-#ifndef SERVICES_ECHO_ON_MESSAGE_COMMUNICATION_HPP
-#define SERVICES_ECHO_ON_MESSAGE_COMMUNICATION_HPP
+#ifndef SERVICES_ECHO_ON_SESAME_HPP
+#define SERVICES_ECHO_ON_SESAME_HPP
 
 #include "protobuf/echo/Echo.hpp"
 #include "services/util/Sesame.hpp"

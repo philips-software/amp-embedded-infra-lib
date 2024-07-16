@@ -36,6 +36,8 @@ target_sources(services.util_test PRIVATE
     TestInverseLogicPin.cpp
     TestLowPowerSerialCommunication.cpp
     TestLowPowerSpiMaster.cpp
+    TestMessageCommunicationCobs.cpp
+    TestMessageCommunicationWindowed.cpp
     TestRepeatingButton.cpp
     TestSerialCommunicationLoopback.cpp
     TestSesameCobs.cpp

@@ -3,12 +3,33 @@
 
 #include "infra/util/BoundedVector.hpp"
 #include "protobuf/echo/ServiceForwarder.hpp"
+#include "services/util/EchoOnMessageCommunication.hpp"
 #include "services/util/EchoOnSesame.hpp"
+#include "services/util/MessageCommunicationCobs.hpp"
+#include "services/util/MessageCommunicationWindowed.hpp"
 #include "services/util/SesameCobs.hpp"
 #include "services/util/SesameWindowed.hpp"
 
 namespace main_
 {
+    template<std::size_t MessageSize>
+    struct EchoOnSerialCommunication
+    {
+        explicit EchoOnSerialCommunication(hal::SerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory)
+            : cobs(serialCommunication)
+            , echo(windowed, serializerFactory)
+        {}
+
+        operator services::Echo&()
+        {
+            return echo;
+        }
+
+        services::MessageCommunicationCobs::WithMaxMessageSize<MessageSize> cobs;
+        services::MessageCommunicationWindowed::WithReceiveBuffer<MessageSize> windowed{ cobs };
+        services::EchoOnMessageCommunication echo;
+    };
+
     template<std::size_t MessageSize>
     struct EchoOnSesame
     {
@@ -72,14 +93,14 @@ namespace main_
     };
 
     template<std::size_t MessageSize, std::size_t MaxServices>
-    struct EchoForwarderToSerial
+    struct EchoForwarderToSerialCommunication
     {
-        EchoForwarderToSerial(services::Echo& from, hal::BufferedSerialCommunication& toSerial, services::MethodSerializerFactory& serializerFactory)
+        EchoForwarderToSerialCommunication(services::Echo& from, hal::BufferedSerialCommunication& toSerial, services::MethodSerializerFactory& serializerFactory)
             : to(toSerial, serializerFactory)
             , echoForwarder(from, to)
         {}
 
-        EchoOnSesame<MessageSize> to;
+        EchoOnSerialCommunication<MessageSize> to;
         EchoForwarder<MessageSize, MaxServices> echoForwarder;
     };
 }
