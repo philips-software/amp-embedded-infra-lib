@@ -62,7 +62,7 @@ namespace services
         : public Tracer
     {
     public:
-        TracerToDelegate(Tracer& delegate);
+        explicit TracerToDelegate(Tracer& delegate);
 
         infra::TextOutputStream Continue() override;
 
