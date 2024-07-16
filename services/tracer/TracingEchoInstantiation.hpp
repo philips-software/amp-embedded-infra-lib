@@ -36,6 +36,7 @@ namespace main_
         services::TracingEchoOnSesame echo;
     };
 
+#if defined(EMIL_HAL_WINDOWS) || defined(EMIL_HAL_UNIX)
     template<std::size_t MessageSize>
     struct TracingEchoOnUart
         : EchoOnUartBase<MessageSize>
@@ -48,6 +49,7 @@ namespace main_
 
         services::Echo& echo{ echoOnSesame.echo };
     };
+#endif
 }
 
 #endif

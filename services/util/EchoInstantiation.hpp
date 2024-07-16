@@ -6,9 +6,9 @@
 #include "services/util/EchoOnSesame.hpp"
 #include "services/util/SesameCobs.hpp"
 #include "services/util/SesameWindowed.hpp"
-#ifdef EMIL_HAL_WINDOWS
+#if defined(EMIL_HAL_WINDOWS)
 #include "hal/windows/UartWindows.hpp"
-#else
+#elif defined(EMIL_HAL_UNIX)
 #include "hal/unix/UartUnix.hpp"
 #endif
 
@@ -43,6 +43,7 @@ namespace main_
         services::EchoOnSesame echo;
     };
 
+#if defined(EMIL_HAL_WINDOWS) || defined(EMIL_HAL_UNIX)
     template<std::size_t MessageSize>
     struct EchoOnUartBase
     {
@@ -50,9 +51,9 @@ namespace main_
             : uart(infra::AsStdString(portName))
         {}
 
-#ifdef EMIL_HAL_WINDOWS
+#if defined(EMIL_HAL_WINDOWS)
         hal::UartWindows uart;
-#else
+#elif defined(EMIL_HAL_UNIX)
         hal::UartUnix uart;
 #endif
         services::MethodSerializerFactory::OnHeap serializerFactory;
@@ -69,6 +70,7 @@ namespace main_
 
         services::Echo& echo{ echoOnSesame.echo };
     };
+#endif
 
     template<std::size_t MessageSize, std::size_t MaxServices>
     class EchoForwarder
