@@ -20,18 +20,15 @@ jobs:
       releases_created: ${{ steps.release.outputs.releases_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
-      - uses: philips-software/app-token-action@9f5d57062c9f2beaffafaa9a34f66f824ead63a9 # v2.0.0
+      - uses: actions/create-github-app-token@31c86eb3b33c9b601a1f60f98dcbfd1d70f379b4 # v1.10.3
         id: token
         with:
-          app_id: ${{ secrets.FOREST_RELEASER_APP_ID }}
-          app_base64_private_key: ${{ secrets.FOREST_RELEASER_APP_PRIVATE_KEY_BASE64 }}
-          auth_type: installation
+          app-id: ${{ vars.FOREST_RELEASER_APP_ID }}
+          private-key: ${{ secrets.FOREST_RELEASER_APP_PRIVATE_KEY }}
       - uses: googleapis/release-please-action@7987652d64b4581673a76e33ad5e98e3dd56832f # v4.1.3
         id: release
         with:
-          command: manifest
-          #token: ${{ steps.token.outputs.token }}
-          token: ${{ secrets.AUTOMATIC_RELEASE_TOKEN }}
+          token: ${{ steps.token.outputs.token }}
   build_upload_packages:
     name: Build & Upload Packages
     needs: release_please
