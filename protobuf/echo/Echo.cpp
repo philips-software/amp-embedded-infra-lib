@@ -266,7 +266,7 @@ namespace services
                 }))
         {
             errorPolicy.ServiceNotFound(serviceId);
-            methodDeserializer = deserializerDummy.Emplace(*this);
+            methodDeserializer = StartingMethod(serviceId, methodId, size, deserializerDummy.Emplace(*this));
         }
     }
 
