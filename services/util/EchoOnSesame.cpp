@@ -43,7 +43,4 @@ namespace services
             // Before initialization, the maximum window advertised is not yet known, so postpone the RequestSendMessage until initialized
             requestedSize = size;
     }
-
-    void EchoOnSesame::AckReceived()
-    {}
 }

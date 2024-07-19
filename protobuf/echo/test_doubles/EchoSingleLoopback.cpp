@@ -15,9 +15,6 @@ namespace application
         ReleaseReader();
     }
 
-    void EchoSingleLoopback::AckReceived()
-    {}
-
     void EchoSingleLoopback::SendStreamFilled()
     {
         sending.push_back({ sendStream.Processed().begin(), sendStream.Processed().end() });

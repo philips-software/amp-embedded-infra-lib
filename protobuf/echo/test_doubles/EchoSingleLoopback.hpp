@@ -19,7 +19,6 @@ namespace application
     protected:
         // Implementation of services::EchoOnStreams
         void RequestSendStream(std::size_t size) override;
-        void AckReceived() override;
 
     private:
         void SendStreamFilled();
