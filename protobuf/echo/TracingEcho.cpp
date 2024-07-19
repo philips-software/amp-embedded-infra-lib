@@ -172,8 +172,9 @@ namespace services
                     {
                         tracer.Trace() << "< message too big";
                         skipping = contents.Get<infra::PartialProtoLengthDelimited>().length;
+                        writerBuffer.erase(writerBuffer.begin(), writerBuffer.begin() + stream.Reader().Processed());
                         auto skippingNow = std::min<std::size_t>(skipping, writerBuffer.size());
-                        writerBuffer.erase(writerBuffer.begin(), writerBuffer.begin() + stream.Reader().Processed() + skippingNow);
+                        writerBuffer.erase(writerBuffer.begin(), writerBuffer.begin() + skippingNow);
                         skipping -= skippingNow;
                     }
                     else
