@@ -43,6 +43,7 @@ namespace application
         };
 
         std::deque<std::vector<uint8_t>> sending;
+        std::vector<uint8_t> sendingNow;
     };
 }
 
