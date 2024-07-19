@@ -163,6 +163,11 @@ message TestMoreNestedMessage
     NestedMessage2 message2 = 2;
 }
 
+message TestDeepNestedMessage
+{
+    TestNestedMessage message = 1;
+}
+
 message TestNestedRepeatedMessage
 {
     message NestedMessage

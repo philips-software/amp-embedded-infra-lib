@@ -176,6 +176,14 @@ TEST_F(ProtoMessageSenderTest, format_more_nested_message)
     ExpectFill({ (1 << 3) | 2, 2, 1 << 3, 5, (2 << 3) | 2, 2, 2 << 3, 10 }, sender);
 }
 
+TEST_F(ProtoMessageSenderTest, format_deep_nested_message)
+{
+    test_messages::TestDeepNestedMessage message{ { 5 } };
+    services::ProtoMessageSender sender{ message };
+
+    ExpectFill({ 1 << 3 | 2, 4, 1 << 3 | 2, 2, 1 << 3, 5 }, sender);
+}
+
 TEST_F(ProtoMessageSenderTest, dont_format_on_buffer_full)
 {
     test_messages::TestBoolWithBytes message;

@@ -80,7 +80,7 @@ function(protocol_buffer_echo_generator target input)
         endif()
     endforeach()
 
-    # Apply all required variables to PARENT_SCOPE  in one place from here onwards
+    # Apply all required variables to PARENT_SCOPE in one place from here onwards
     set(absolute_input ${absolute_input} PARENT_SCOPE)
     set(source_base ${source_base} PARENT_SCOPE)
 
@@ -101,17 +101,36 @@ function(protocol_buffer_echo_cpp target input)
 
     cmake_path(SET generated_dir_echo "generated/echo")
     cmake_path(ABSOLUTE_PATH generated_dir_echo BASE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} NORMALIZE OUTPUT_VARIABLE generated_dir_echo)
+    cmake_path(GET absolute_input FILENAME input_name)
 
-    set(generated_files "${generated_dir_echo}/${source_base}.pb.cpp" "${generated_dir_echo}/${source_base}.pb.hpp" "${generated_dir_echo}/Tracing${source_base}.pb.cpp" "${generated_dir_echo}/Tracing${source_base}.pb.hpp" "${generated_dir_echo}/${source_base}.pb")
+    set(generated_files "${generated_dir_echo}/${source_base}.pb.cpp" "${generated_dir_echo}/${source_base}.pb.hpp" "${generated_dir_echo}/Tracing${source_base}.pb.cpp" "${generated_dir_echo}/Tracing${source_base}.pb.hpp")
+    set(dependency_file "${CMAKE_CURRENT_BINARY_DIR}/${input_name}.dep")
 
-    add_custom_command(
-        OUTPUT ${generated_files}
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${generated_dir_echo}
-        COMMAND ${EMIL_PROTOC_COMPILER_BINARY} ${protopath} --error_format=${error_format} --plugin=protoc-gen-cpp-infra=$<TARGET_FILE:protobuf.protoc_echo_plugin> --cpp-infra_out="${generated_dir_echo}" ${absolute_input}
-        COMMAND ${EMIL_PROTOC_COMPILER_BINARY} ${protopath} --error_format=${error_format} --descriptor_set_out="${generated_dir_echo}/${source_base}.pb" --include_imports ${absolute_input}
-        MAIN_DEPENDENCY "${absolute_input}"
-        DEPENDS protobuf.protoc_echo_plugin
-    )
+    # The generated dependency files lists these files in this order. Apparently, it is important that the OUTPUT lists these file in the exact same order.
+    list(SORT generated_files)
+    list(APPEND generated_files "${generated_dir_echo}/${source_base}.pb")
+
+    if (CMAKE_GENERATOR STREQUAL Ninja)
+        # Not all generators support the DEPFILE argument
+        add_custom_command(
+            OUTPUT ${generated_files}
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${generated_dir_echo}
+            COMMAND ${EMIL_PROTOC_COMPILER_BINARY} ${protopath} --error_format=${error_format} --plugin=protoc-gen-cpp-infra=$<TARGET_FILE:protobuf.protoc_echo_plugin> --dependency_out=${dependency_file} --cpp-infra_out="${generated_dir_echo}" ${absolute_input}
+            COMMAND ${EMIL_PROTOC_COMPILER_BINARY} ${protopath} --error_format=${error_format} --descriptor_set_out="${generated_dir_echo}/${source_base}.pb" --include_imports ${absolute_input}
+            MAIN_DEPENDENCY "${absolute_input}"
+            DEPENDS protobuf.protoc_echo_plugin
+            DEPFILE "${dependency_file}"
+        )
+    else()
+        add_custom_command(
+            OUTPUT ${generated_files}
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${generated_dir_echo}
+            COMMAND ${EMIL_PROTOC_COMPILER_BINARY} ${protopath} --error_format=${error_format} --plugin=protoc-gen-cpp-infra=$<TARGET_FILE:protobuf.protoc_echo_plugin> --dependency_out=${dependency_file} --cpp-infra_out="${generated_dir_echo}" ${absolute_input}
+            COMMAND ${EMIL_PROTOC_COMPILER_BINARY} ${protopath} --error_format=${error_format} --descriptor_set_out="${generated_dir_echo}/${source_base}.pb" --include_imports ${absolute_input}
+            MAIN_DEPENDENCY "${absolute_input}"
+            DEPENDS protobuf.protoc_echo_plugin
+        )
+    endif()
 
     target_sources(${target} PRIVATE
         ${generated_files}

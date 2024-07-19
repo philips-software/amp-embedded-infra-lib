@@ -1,5 +1,5 @@
-#ifndef SERVICES_MESSAGE_COMMUNICATION_COBS_HPP
-#define SERVICES_MESSAGE_COMMUNICATION_COBS_HPP
+#ifndef SERVICES_SESAME_COBS_HPP
+#define SERVICES_SESAME_COBS_HPP
 
 #include "hal/interfaces/SerialCommunication.hpp"
 #include "infra/stream/BoundedDequeInputStream.hpp"

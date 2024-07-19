@@ -1,5 +1,5 @@
-#ifndef SERVICES_MESSAGE_COMMUNICATION_SECURED_HPP
-#define SERVICES_MESSAGE_COMMUNICATION_SECURED_HPP
+#ifndef SERVICES_SESAME_SECURED_HPP
+#define SERVICES_SESAME_SECURED_HPP
 
 #include "infra/stream/BoundedVectorInputStream.hpp"
 #include "infra/stream/BoundedVectorOutputStream.hpp"
