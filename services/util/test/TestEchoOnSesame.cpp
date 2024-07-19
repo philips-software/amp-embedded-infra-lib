@@ -186,7 +186,7 @@ TEST_F(EchoOnSesameTest, Reset_releases_reader)
 {
     EXPECT_CALL(service, Method(5));
 
-    ReceiveMessage(infra::ConstructBin()({ 1, 10, 2, 8, 5 }).Range());
+    ReceiveMessage(infra::ConstructBin()({ 1, 10, 2, 8, 5, 1, 10 }).Range());
 
     ASSERT_FALSE(reader.Allocatable());
 
