@@ -68,7 +68,7 @@ namespace services
 
     EchoOnStreams::~EchoOnStreams()
     {
-        readerAccess.SetAction(nullptr);
+        limitedReaderAccess.SetAction(nullptr);
     }
 
     void EchoOnStreams::RequestSend(ServiceProxy& serviceProxy)
@@ -115,7 +115,7 @@ namespace services
 
     void EchoOnStreams::ReleaseReader()
     {
-        readerAccess.SetAction(nullptr);
+        limitedReaderAccess.SetAction(nullptr);
         bufferedReader = infra::none;
         readerPtr = nullptr;
     }
@@ -128,6 +128,12 @@ namespace services
             methodSerializer = nullptr;
             skipNextStream = true;
         }
+
+        limitedReaderAccess.SetAction(infra::emptyFunction);
+        bufferedReader = infra::none;
+        readerPtr = nullptr;
+        limitedReader = infra::none;
+        ReleaseDeserializer();
     }
 
     void EchoOnStreams::ReleaseDeserializer()
@@ -185,16 +191,16 @@ namespace services
         if (limitedReader != infra::none)
             ContinueReceiveMessage();
 
-        while (readerPtr != nullptr && methodDeserializer == nullptr && !readerAccess.Referenced())
+        while (readerPtr != nullptr && methodDeserializer == nullptr && !limitedReaderAccess.Referenced())
         {
             if (limitedReader == infra::none)
                 StartReceiveMessage();
 
-            if (limitedReader != infra::none)
+            if (limitedReader != infra::none && readerPtr != nullptr)
                 ContinueReceiveMessage();
         }
 
-        if (!readerAccess.Referenced() && limitedReader != infra::none)
+        if (readerPtr != nullptr && readerPtr->Empty())
         {
             bufferedReader = infra::none;
             readerPtr = nullptr;
@@ -213,17 +219,14 @@ namespace services
 
         if (stream.Failed())
         {
+            // bufferedReader is rewound to the start, so that the remainder of the reader is buffered. When readerPtr is set to nullptr,
+            // any data present in reader is not repeated the next time
             bufferedReader->Rewind(start);
             bufferedReader = infra::none;
-            readerPtr->Rewind(readerStart + receiveBuffer.size());
-            AckReceived();
             readerPtr = nullptr;
         }
         else if (formatErrorPolicy.Failed() || !contents.Is<infra::PartialProtoLengthDelimited>())
-        {
             errorPolicy.MessageFormatError();
-            AckReceived();
-        }
         else
         {
             limitedReader.Emplace(*bufferedReader, contents.Get<infra::PartialProtoLengthDelimited>().length);
@@ -237,19 +240,19 @@ namespace services
     void EchoOnStreams::ContinueReceiveMessage()
     {
         limitedReader->SwitchInput(*bufferedReader);
-        readerAccess.SetAction(infra::emptyFunction);
-        methodDeserializer->MethodContents(readerAccess.MakeShared(*limitedReader));
+        limitedReaderAccess.SetAction(infra::emptyFunction);
+        methodDeserializer->MethodContents(limitedReaderAccess.MakeShared(*limitedReader));
 
-        if (readerAccess.Referenced())
-            readerAccess.SetAction([this]()
+        if (limitedReaderAccess.Referenced())
+            limitedReaderAccess.SetAction([this]()
                 {
                     auto& self = *this;
-                    ReaderDone();
-                    // ReaderDone() may result in readerAccess' completion callback being reset, which invalidates the saved this pointer
+                    LimitedReaderDone();
+                    // LimitedReaderDone() may result in limitedReaderAccess' completion callback being reset, which invalidates the saved this pointer
                     self.DataReceived();
                 });
         else
-            ReaderDone();
+            LimitedReaderDone();
     }
 
     void EchoOnStreams::StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size)
@@ -266,14 +269,12 @@ namespace services
                 }))
         {
             errorPolicy.ServiceNotFound(serviceId);
-            methodDeserializer = deserializerDummy.Emplace(*this);
+            methodDeserializer = StartingMethod(serviceId, methodId, size, deserializerDummy.Emplace(*this));
         }
     }
 
-    void EchoOnStreams::ReaderDone()
+    void EchoOnStreams::LimitedReaderDone()
     {
-        AckReceived();
-
         if (limitedReader->LimitReached())
         {
             limitedReader = infra::none;

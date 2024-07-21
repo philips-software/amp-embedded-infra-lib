@@ -83,7 +83,6 @@ namespace services
         virtual infra::SharedPtr<MethodSerializer> GrantSend(ServiceProxy& proxy);
         virtual infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, infra::SharedPtr<MethodDeserializer>&& deserializer);
         virtual void RequestSendStream(std::size_t size) = 0;
-        virtual void AckReceived() = 0;
 
         void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer);
         void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
@@ -98,7 +97,7 @@ namespace services
         void StartReceiveMessage();
         void ContinueReceiveMessage();
         void StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size);
-        void ReaderDone();
+        void LimitedReaderDone();
 
     private:
         services::MethodSerializerFactory& serializerFactory;
@@ -115,7 +114,7 @@ namespace services
         infra::SharedPtr<MethodDeserializer> methodDeserializer;
         infra::BoundedDeque<uint8_t>::WithMaxSize<32> receiveBuffer;
         infra::Optional<infra::BufferingStreamReader> bufferedReader;
-        infra::AccessedBySharedPtr readerAccess;
+        infra::AccessedBySharedPtr limitedReaderAccess;
 
         infra::SharedOptional<MethodDeserializerDummy> deserializerDummy;
     };

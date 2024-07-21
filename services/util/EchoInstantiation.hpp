@@ -1,5 +1,5 @@
-#ifndef SERVICES_ECHO_INSTANTIATIONS
-#define SERVICES_ECHO_INSTANTIATIONS
+#ifndef SERVICES_UTIL_ECHO_INSTANTIATIONS
+#define SERVICES_UTIL_ECHO_INSTANTIATIONS
 
 #include "infra/util/BoundedVector.hpp"
 #include "protobuf/echo/ServiceForwarder.hpp"
@@ -9,6 +9,11 @@
 #include "services/util/MessageCommunicationWindowed.hpp"
 #include "services/util/SesameCobs.hpp"
 #include "services/util/SesameWindowed.hpp"
+#if defined(EMIL_HAL_WINDOWS)
+#include "hal/windows/UartWindows.hpp"
+#elif defined(EMIL_HAL_UNIX)
+#include "hal/unix/UartUnix.hpp"
+#endif
 
 namespace main_
 {
@@ -58,6 +63,35 @@ namespace main_
         services::SesameWindowed windowed{ cobs };
         services::EchoOnSesame echo;
     };
+
+#if defined(EMIL_HAL_WINDOWS) || defined(EMIL_HAL_UNIX)
+    template<std::size_t MessageSize>
+    struct EchoOnUartBase
+    {
+        EchoOnUartBase(infra::BoundedConstString portName)
+            : uart(infra::AsStdString(portName))
+        {}
+
+#if defined(EMIL_HAL_WINDOWS)
+        hal::UartWindows uart;
+#elif defined(EMIL_HAL_UNIX)
+        hal::UartUnix uart;
+#endif
+        services::MethodSerializerFactory::OnHeap serializerFactory;
+        hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<MessageSize> bufferedSerial{ uart };
+    };
+
+    template<std::size_t MessageSize>
+    struct EchoOnUart
+        : EchoOnUartBase<MessageSize>
+    {
+        using EchoOnUartBase<MessageSize>::EchoOnUartBase;
+
+        main_::EchoOnSesame<MessageSize> echoOnSesame{ this->bufferedSerial, this->serializerFactory };
+
+        services::Echo& echo{ echoOnSesame.echo };
+    };
+#endif
 
     template<std::size_t MessageSize, std::size_t MaxServices>
     class EchoForwarder
