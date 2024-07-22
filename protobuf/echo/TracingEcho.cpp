@@ -141,7 +141,10 @@ namespace services
                 service->TraceMethod(methodId, contents, tracer);
             }
             else
+            {
                 tracer.Trace() << "< Unknown service " << serviceId << " method " << methodId;
+                contents.SkipEverything();
+            }
         }
 
         const ServiceTracer* TracingEchoOnStreamsDescendantHelper::FindService(uint32_t serviceId) const
