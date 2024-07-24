@@ -1,5 +1,5 @@
-#ifndef INFRA_STREAMS_ATOMIC_BYTE_DEQUEUE_HPP
-#define INFRA_STREAMS_ATOMIC_BYTE_DEQUEUE_HPP
+#ifndef INFRA_STREAMS_ATOMIC_BYTE_QUEUE_HPP
+#define INFRA_STREAMS_ATOMIC_BYTE_QUEUE_HPP
 
 #include "infra/stream/InputStream.hpp"
 #include "infra/stream/OutputStream.hpp"
@@ -9,13 +9,13 @@
 
 namespace infra
 {
-    class AtomicByteDeque
+    class AtomicByteQueue
     {
     public:
         template<std::size_t Size>
-        using WithStorage = infra::WithStorage<AtomicByteDeque, std::array<uint8_t, Size + 1>>;
+        using WithStorage = infra::WithStorage<AtomicByteQueue, std::array<uint8_t, Size + 1>>;
 
-        explicit AtomicByteDeque(infra::ByteRange storage);
+        explicit AtomicByteQueue(infra::ByteRange storage);
 
         void Push(infra::ConstByteRange range);
         void Pop(std::size_t size);
@@ -32,11 +32,11 @@ namespace infra
         std::atomic<uint8_t*> e{ storage.begin() };
     };
 
-    class AtomicByteDequeReader
+    class AtomicByteQueueReader
         : public infra::StreamReaderWithRewinding
     {
     public:
-        explicit AtomicByteDequeReader(AtomicByteDeque& deque);
+        explicit AtomicByteQueueReader(AtomicByteQueue& deque);
 
         void Commit();
 
@@ -50,15 +50,15 @@ namespace infra
         void Rewind(std::size_t marker) override;
 
     private:
-        AtomicByteDeque& deque;
+        AtomicByteQueue& deque;
         std::size_t offset = 0;
     };
 
-    class AtomicByteDequeWriter
+    class AtomicByteQueueWriter
         : public infra::StreamWriter
     {
     public:
-        explicit AtomicByteDequeWriter(AtomicByteDeque& deque);
+        explicit AtomicByteQueueWriter(AtomicByteQueue& deque);
 
         void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
         std::size_t Available() const override;
@@ -69,7 +69,7 @@ namespace infra
         infra::ByteRange Overwrite(std::size_t marker) override;
 
     private:
-        AtomicByteDeque& deque;
+        AtomicByteQueue& deque;
     };
 }
 

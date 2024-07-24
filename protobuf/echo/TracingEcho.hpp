@@ -76,13 +76,13 @@ namespace services
             , private MethodDeserializer
         {
         public:
-            TracingEchoOnStreamsDescendantHelper(services::Tracer& tracer);
+            explicit TracingEchoOnStreamsDescendantHelper(services::Tracer& tracer);
 
             void AddServiceTracer(ServiceTracer& service);
-            void RemoveServiceTracer(ServiceTracer& service);
+            void RemoveServiceTracer(const ServiceTracer& service);
 
             infra::SharedPtr<MethodSerializer> GrantSend(const infra::SharedPtr<MethodSerializer>& serializer);
-            infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, infra::SharedPtr<MethodDeserializer>&& deserializer);
+            infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, infra::SharedPtr<MethodDeserializer>&& deserializer);
             void ReleaseDeserializer();
 
         private:
@@ -160,7 +160,7 @@ namespace services
         ~TracingEchoOnStreams() = default;
 
         virtual void AddServiceTracer(ServiceTracer& service) = 0;
-        virtual void RemoveServiceTracer(ServiceTracer& service) = 0;
+        virtual void RemoveServiceTracer(const ServiceTracer& service) = 0;
     };
 
     template<class Descendant>
@@ -174,12 +174,12 @@ namespace services
 
         // Implementation of TracingEchoOnStreams
         void AddServiceTracer(ServiceTracer& service) override;
-        void RemoveServiceTracer(ServiceTracer& service) override;
+        void RemoveServiceTracer(const ServiceTracer& service) override;
 
     protected:
         // Implementation of EchoOnStreams
         infra::SharedPtr<MethodSerializer> GrantSend(ServiceProxy& proxy) override;
-        infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, infra::SharedPtr<MethodDeserializer>&& deserializer) override;
+        infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, infra::SharedPtr<MethodDeserializer>&& deserializer) override;
         void ReleaseDeserializer() override;
 
     private:
@@ -202,7 +202,7 @@ namespace services
     }
 
     template<class Descendant>
-    void TracingEchoOnStreamsDescendant<Descendant>::RemoveServiceTracer(ServiceTracer& service)
+    void TracingEchoOnStreamsDescendant<Descendant>::RemoveServiceTracer(const ServiceTracer& service)
     {
         helper.RemoveServiceTracer(service);
     }
@@ -214,9 +214,9 @@ namespace services
     }
 
     template<class Descendant>
-    infra::SharedPtr<MethodDeserializer> TracingEchoOnStreamsDescendant<Descendant>::StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, infra::SharedPtr<MethodDeserializer>&& deserializer)
+    infra::SharedPtr<MethodDeserializer> TracingEchoOnStreamsDescendant<Descendant>::StartingMethod(uint32_t serviceId, uint32_t methodId, infra::SharedPtr<MethodDeserializer>&& deserializer)
     {
-        return helper.StartingMethod(serviceId, methodId, size, std::move(deserializer));
+        return helper.StartingMethod(serviceId, methodId, std::move(deserializer));
     }
 
     template<class Descendant>

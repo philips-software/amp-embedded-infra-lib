@@ -1,19 +1,19 @@
-#include "infra/stream/AtomicByteDeque.hpp"
+#include "infra/stream/AtomicByteQueue.hpp"
 #include "infra/util/ConstructBin.hpp"
 #include "gtest/gtest.h"
 
-class AtomicByteDequeTest
+class AtomicByteQueueTest
     : public testing::Test
 {
 public:
-    infra::AtomicByteDeque::WithStorage<4> deque;
-    infra::AtomicByteDequeReader reader{ deque };
-    infra::AtomicByteDequeWriter writer{ deque };
+    infra::AtomicByteQueue::WithStorage<4> deque;
+    infra::AtomicByteQueueReader reader{ deque };
+    infra::AtomicByteQueueWriter writer{ deque };
     infra::StreamErrorPolicy errorPolicy;
     infra::StreamErrorPolicy softErrorPolicy{ infra::softFail };
 };
 
-TEST_F(AtomicByteDequeTest, construction)
+TEST_F(AtomicByteQueueTest, construction)
 {
     EXPECT_EQ(0, deque.Size());
     EXPECT_EQ(4, deque.MaxSize());
@@ -26,7 +26,7 @@ TEST_F(AtomicByteDequeTest, construction)
     EXPECT_EQ(4, writer.Available());
 }
 
-TEST_F(AtomicByteDequeTest, Insert_and_Extract)
+TEST_F(AtomicByteQueueTest, Insert_and_Extract)
 {
     std::vector<uint8_t> data{ 1, 2, 3, 4 };
     writer.Insert(infra::MakeRange(data), errorPolicy);
@@ -37,7 +37,7 @@ TEST_F(AtomicByteDequeTest, Insert_and_Extract)
     EXPECT_TRUE(infra::ContentsEqual(infra::MakeRange(data), reader.ExtractContiguousRange(10)));
 }
 
-TEST_F(AtomicByteDequeTest, Insert_overflows)
+TEST_F(AtomicByteQueueTest, Insert_overflows)
 {
     std::vector<uint8_t> data{ 1, 2, 3, 4, 5 };
     writer.Insert(infra::MakeRange(data), softErrorPolicy);
@@ -45,7 +45,7 @@ TEST_F(AtomicByteDequeTest, Insert_overflows)
     EXPECT_TRUE(infra::ContentsEqual(infra::Head(infra::MakeRange(data), 4), reader.ExtractContiguousRange(10)));
 }
 
-TEST_F(AtomicByteDequeTest, Rewind)
+TEST_F(AtomicByteQueueTest, Rewind)
 {
     std::vector<uint8_t> data{ 1, 2, 3, 4 };
     writer.Insert(infra::MakeRange(data), errorPolicy);
@@ -57,7 +57,7 @@ TEST_F(AtomicByteDequeTest, Rewind)
     EXPECT_EQ(3, reader.ExtractContiguousRange(10).front());
 }
 
-TEST_F(AtomicByteDequeTest, Peek)
+TEST_F(AtomicByteQueueTest, Peek)
 {
     EXPECT_EQ(0, reader.Peek(softErrorPolicy));
     EXPECT_TRUE(softErrorPolicy.Failed());
@@ -69,7 +69,7 @@ TEST_F(AtomicByteDequeTest, Peek)
     EXPECT_FALSE(errorPolicy.Failed());
 }
 
-TEST_F(AtomicByteDequeTest, Extract)
+TEST_F(AtomicByteQueueTest, Extract)
 {
     std::vector<uint8_t> data1{ 1, 2 };
     std::vector<uint8_t> data2{ 3, 4 };
@@ -91,7 +91,7 @@ TEST_F(AtomicByteDequeTest, Extract)
     reader.Commit();
 }
 
-TEST_F(AtomicByteDequeTest, PeekContiguousRange)
+TEST_F(AtomicByteQueueTest, PeekContiguousRange)
 {
     std::vector<uint8_t> data1{ 1, 2, 3, 4 };
     std::vector<uint8_t> data2{ 5, 6 };
@@ -108,7 +108,7 @@ TEST_F(AtomicByteDequeTest, PeekContiguousRange)
     EXPECT_TRUE(infra::ContentsEqual(infra::ConstructBin()({ 6 }).Range(), reader.PeekContiguousRange(3)));
 }
 
-TEST_F(AtomicByteDequeTest, Extract_overflows)
+TEST_F(AtomicByteQueueTest, Extract_overflows)
 {
     std::vector<uint8_t> data1{ 1, 2 };
 

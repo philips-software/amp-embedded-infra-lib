@@ -81,7 +81,7 @@ namespace services
 
     protected:
         virtual infra::SharedPtr<MethodSerializer> GrantSend(ServiceProxy& proxy);
-        virtual infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, infra::SharedPtr<MethodDeserializer>&& deserializer);
+        virtual infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, infra::SharedPtr<MethodDeserializer>&& deserializer);
         virtual void RequestSendStream(std::size_t size) = 0;
 
         void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer);

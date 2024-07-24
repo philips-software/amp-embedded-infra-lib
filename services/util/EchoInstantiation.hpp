@@ -68,7 +68,7 @@ namespace main_
     template<std::size_t MessageSize>
     struct EchoOnUartBase
     {
-        EchoOnUartBase(infra::BoundedConstString portName)
+        explicit EchoOnUartBase(infra::BoundedConstString portName)
             : uart(infra::AsStdString(portName))
         {}
 

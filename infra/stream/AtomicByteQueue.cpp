@@ -1,12 +1,12 @@
-#include "infra/stream/AtomicByteDeque.hpp"
+#include "infra/stream/AtomicByteQueue.hpp"
 
 namespace infra
 {
-    AtomicByteDeque::AtomicByteDeque(infra::ByteRange storage)
+    AtomicByteQueue::AtomicByteQueue(infra::ByteRange storage)
         : storage(storage)
     {}
 
-    void AtomicByteDeque::Push(infra::ConstByteRange range)
+    void AtomicByteQueue::Push(infra::ConstByteRange range)
     {
         assert(range.size() <= MaxSize() - Size());
 
@@ -24,7 +24,7 @@ namespace infra
         assert(storage.begin() <= b && b <= storage.end());
     }
 
-    void AtomicByteDeque::Pop(std::size_t size)
+    void AtomicByteQueue::Pop(std::size_t size)
     {
         auto takenFromEnd = std::min<std::size_t>(size, storage.end() - b);
         b += takenFromEnd;
@@ -39,7 +39,7 @@ namespace infra
         assert(storage.begin() <= e && e <= storage.end());
     }
 
-    std::size_t AtomicByteDeque::Size() const
+    std::size_t AtomicByteQueue::Size() const
     {
         const uint8_t* begin = b;
         const uint8_t* end = e;
@@ -50,19 +50,19 @@ namespace infra
             return storage.size() + (end - begin);
     }
 
-    std::size_t AtomicByteDeque::MaxSize() const
+    std::size_t AtomicByteQueue::MaxSize() const
     {
         return storage.size() - 1;
     }
 
-    bool AtomicByteDeque::Empty() const
+    bool AtomicByteQueue::Empty() const
     {
         auto end = e.load();
         auto begin = b.load();
         return begin == end;
     }
 
-    infra::ConstByteRange AtomicByteDeque::PeekContiguousRange(std::size_t start) const
+    infra::ConstByteRange AtomicByteQueue::PeekContiguousRange(std::size_t start) const
     {
         auto end = e.load();
         auto begin = b.load();
@@ -79,17 +79,17 @@ namespace infra
             return infra::ConstByteRange(begin, storage.end());
     }
 
-    AtomicByteDequeReader::AtomicByteDequeReader(AtomicByteDeque& deque)
+    AtomicByteQueueReader::AtomicByteQueueReader(AtomicByteQueue& deque)
         : deque(deque)
     {}
 
-    void AtomicByteDequeReader::Commit()
+    void AtomicByteQueueReader::Commit()
     {
         deque.Pop(offset);
         offset = 0;
     }
 
-    void AtomicByteDequeReader::Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy)
+    void AtomicByteQueueReader::Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy)
     {
         while (!range.empty())
         {
@@ -103,7 +103,7 @@ namespace infra
         }
     }
 
-    uint8_t AtomicByteDequeReader::Peek(infra::StreamErrorPolicy& errorPolicy)
+    uint8_t AtomicByteQueueReader::Peek(infra::StreamErrorPolicy& errorPolicy)
     {
         auto range = PeekContiguousRange(0);
         errorPolicy.ReportResult(!range.empty());
@@ -113,75 +113,75 @@ namespace infra
             return 0;
     }
 
-    infra::ConstByteRange AtomicByteDequeReader::ExtractContiguousRange(std::size_t max)
+    infra::ConstByteRange AtomicByteQueueReader::ExtractContiguousRange(std::size_t max)
     {
         auto range = infra::Head(PeekContiguousRange(0), max);
         offset += range.size();
         return range;
     }
 
-    infra::ConstByteRange AtomicByteDequeReader::PeekContiguousRange(std::size_t start)
+    infra::ConstByteRange AtomicByteQueueReader::PeekContiguousRange(std::size_t start)
     {
         return deque.PeekContiguousRange(start + offset);
     }
 
-    bool AtomicByteDequeReader::Empty() const
+    bool AtomicByteQueueReader::Empty() const
     {
         return deque.Size() == offset;
     }
 
-    std::size_t AtomicByteDequeReader::Available() const
+    std::size_t AtomicByteQueueReader::Available() const
     {
         return deque.Size() - offset;
     }
 
-    std::size_t AtomicByteDequeReader::ConstructSaveMarker() const
+    std::size_t AtomicByteQueueReader::ConstructSaveMarker() const
     {
         return offset;
     }
 
-    void AtomicByteDequeReader::Rewind(std::size_t marker)
+    void AtomicByteQueueReader::Rewind(std::size_t marker)
     {
         offset = marker;
     }
 
-    AtomicByteDequeWriter::AtomicByteDequeWriter(AtomicByteDeque& deque)
+    AtomicByteQueueWriter::AtomicByteQueueWriter(AtomicByteQueue& deque)
         : deque(deque)
     {}
 
-    void AtomicByteDequeWriter::Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy)
+    void AtomicByteQueueWriter::Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy)
     {
         auto available = Available();
         errorPolicy.ReportResult(range.size() <= available);
         deque.Push(infra::Head(range, available));
     }
 
-    std::size_t AtomicByteDequeWriter::Available() const
+    std::size_t AtomicByteQueueWriter::Available() const
     {
         return deque.MaxSize() - deque.Size();
     }
 
-    std::size_t AtomicByteDequeWriter::ConstructSaveMarker() const
+    std::size_t AtomicByteQueueWriter::ConstructSaveMarker() const
     {
         std::abort();
     }
 
-    std::size_t AtomicByteDequeWriter::GetProcessedBytesSince(std::size_t marker) const
+    std::size_t AtomicByteQueueWriter::GetProcessedBytesSince(std::size_t marker) const
     {
         std::abort();
     }
 
-    infra::ByteRange AtomicByteDequeWriter::SaveState(std::size_t marker)
+    infra::ByteRange AtomicByteQueueWriter::SaveState(std::size_t marker)
     {
         std::abort();
     }
 
-    void AtomicByteDequeWriter::RestoreState(infra::ByteRange range)
+    void AtomicByteQueueWriter::RestoreState(infra::ByteRange range)
     {
         std::abort();
     }
 
-    infra::ByteRange AtomicByteDequeWriter::Overwrite(std::size_t marker)
+    infra::ByteRange AtomicByteQueueWriter::Overwrite(std::size_t marker)
     {
         std::abort();
     }

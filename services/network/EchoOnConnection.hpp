@@ -27,6 +27,8 @@ namespace services
         struct LimitedReader
         {
             explicit LimitedReader(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, EchoOnConnection& connection);
+            LimitedReader(const LimitedReader& other) = delete;
+            LimitedReader& operator=(const LimitedReader& other) = delete;
             ~LimitedReader();
 
             infra::SharedPtr<infra::StreamReaderWithRewinding> reader;

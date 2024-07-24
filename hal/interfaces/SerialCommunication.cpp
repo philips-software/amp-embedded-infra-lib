@@ -2,7 +2,7 @@
 
 namespace hal
 {
-    BufferedSerialCommunicationOnUnbuffered::BufferedSerialCommunicationOnUnbuffered(infra::AtomicByteDeque& buffer, SerialCommunication& delegate)
+    BufferedSerialCommunicationOnUnbuffered::BufferedSerialCommunicationOnUnbuffered(infra::AtomicByteQueue& buffer, SerialCommunication& delegate)
         : buffer(buffer)
         , delegate(delegate)
     {

@@ -2,7 +2,7 @@
 #define HAL_SERIAL_COMMUNICATION_HPP
 
 #include "infra/event/AtomicTriggerScheduler.hpp"
-#include "infra/stream/AtomicByteDeque.hpp"
+#include "infra/stream/AtomicByteQueue.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/Observer.hpp"
@@ -46,9 +46,9 @@ namespace hal
     {
     public:
         template<std::size_t Size>
-        using WithStorage = infra::WithStorage<BufferedSerialCommunicationOnUnbuffered, infra::AtomicByteDeque::WithStorage<Size + 1>>;
+        using WithStorage = infra::WithStorage<BufferedSerialCommunicationOnUnbuffered, infra::AtomicByteQueue::WithStorage<Size + 1>>;
 
-        BufferedSerialCommunicationOnUnbuffered(infra::AtomicByteDeque& buffer, SerialCommunication& delegate);
+        BufferedSerialCommunicationOnUnbuffered(infra::AtomicByteQueue& buffer, SerialCommunication& delegate);
         ~BufferedSerialCommunicationOnUnbuffered();
 
         // Implementation of BufferedSerialCommunication
@@ -57,10 +57,10 @@ namespace hal
         void AckReceived() override;
 
     private:
-        infra::AtomicByteDeque& buffer;
+        infra::AtomicByteQueue& buffer;
         SerialCommunication& delegate;
 
-        infra::AtomicByteDequeReader reader{ buffer };
+        infra::AtomicByteQueueReader reader{ buffer };
         infra::AtomicTriggerScheduler scheduler;
     };
 }

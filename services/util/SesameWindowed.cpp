@@ -73,7 +73,7 @@ namespace services
             case Operation::initResponse:
                 otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
                 ReceivedInitResponse(otherAvailableWindow);
-                releasedWindow = encodedSize;
+                releasedWindow = static_cast<uint16_t>(encodedSize);
                 ReceivedInitialize();
                 break;
             case Operation::releaseWindow:
@@ -89,7 +89,7 @@ namespace services
                 if (initialized)
                 {
                     receivedMessageReader = std::move(reader);
-                    ForwardReceivedMessage(encodedSize);
+                    ForwardReceivedMessage(static_cast<uint16_t>(encodedSize));
                 }
                 break;
         }

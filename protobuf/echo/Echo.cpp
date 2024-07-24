@@ -156,7 +156,7 @@ namespace services
         return proxy.GrantSend();
     }
 
-    infra::SharedPtr<MethodDeserializer> EchoOnStreams::StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, infra::SharedPtr<MethodDeserializer>&& deserializer)
+    infra::SharedPtr<MethodDeserializer> EchoOnStreams::StartingMethod(uint32_t serviceId, uint32_t methodId, infra::SharedPtr<MethodDeserializer>&& deserializer)
     {
         return std::move(deserializer);
     }
@@ -210,7 +210,6 @@ namespace services
     void EchoOnStreams::StartReceiveMessage()
     {
         auto start = bufferedReader->ConstructSaveMarker();
-        auto readerStart = readerPtr->ConstructSaveMarker();
         infra::DataInputStream::WithErrorPolicy stream(*bufferedReader, infra::softFail);
         infra::StreamErrorPolicy formatErrorPolicy(infra::softFail);
         infra::ProtoParser parser(stream, formatErrorPolicy);
@@ -261,7 +260,7 @@ namespace services
                 {
                     if (service.AcceptsService(serviceId))
                     {
-                        methodDeserializer = StartingMethod(serviceId, methodId, size, service.StartMethod(serviceId, methodId, size, errorPolicy));
+                        methodDeserializer = StartingMethod(serviceId, methodId, service.StartMethod(serviceId, methodId, size, errorPolicy));
                         return true;
                     }
 
@@ -269,7 +268,7 @@ namespace services
                 }))
         {
             errorPolicy.ServiceNotFound(serviceId);
-            methodDeserializer = StartingMethod(serviceId, methodId, size, deserializerDummy.Emplace(*this));
+            methodDeserializer = StartingMethod(serviceId, methodId, deserializerDummy.Emplace(*this));
         }
     }
 

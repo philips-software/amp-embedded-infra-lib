@@ -62,18 +62,18 @@ namespace services
             services.push_front(service);
         }
 
-        void TracingEchoOnStreamsDescendantHelper::RemoveServiceTracer(ServiceTracer& service)
+        void TracingEchoOnStreamsDescendantHelper::RemoveServiceTracer(const ServiceTracer& service)
         {
             services.erase_slow(service);
         }
 
-        infra::SharedPtr<MethodSerializer> TracingEchoOnStreamsDescendantHelper::GrantSend(const infra::SharedPtr<MethodSerializer>& serializer)
+        infra::SharedPtr<MethodSerializer> TracingEchoOnStreamsDescendantHelper::GrantSend(const infra::SharedPtr<MethodSerializer>& newSerializer)
         {
-            this->serializer = serializer;
+            serializer = newSerializer;
             return serializerAccess.MakeShared(static_cast<MethodSerializer&>(*this));
         }
 
-        infra::SharedPtr<MethodDeserializer> TracingEchoOnStreamsDescendantHelper::StartingMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, infra::SharedPtr<MethodDeserializer>&& deserializer)
+        infra::SharedPtr<MethodDeserializer> TracingEchoOnStreamsDescendantHelper::StartingMethod(uint32_t serviceId, uint32_t methodId, infra::SharedPtr<MethodDeserializer>&& newDeserializer)
         {
             receivingService = FindService(serviceId);
 
@@ -82,12 +82,13 @@ namespace services
                 receivingMethodId = methodId;
 
                 readerBuffer.clear();
-                this->deserializer = std::move(deserializer);
+                deserializer = std::move(newDeserializer);
                 return deserializerAccess.MakeShared(static_cast<MethodDeserializer&>(*this));
             }
             else
             {
                 tracer.Trace() << "> Unknown service " << serviceId << " method " << methodId;
+                deserializer = std::move(newDeserializer);
                 return deserializer;
             }
         }
@@ -167,21 +168,17 @@ namespace services
                 auto save = stream.Reader().ConstructSaveMarker();
                 auto [contents, methodId] = parser.GetPartialField();
 
-                if (stream.Failed() || (contents.Is<infra::PartialProtoLengthDelimited>() && contents.Get<infra::PartialProtoLengthDelimited>().length > stream.Available()))
+                if (stream.Failed() || (contents.Is<infra::PartialProtoLengthDelimited>() && contents.Get<infra::PartialProtoLengthDelimited>().length <= writerBuffer.max_size() - writerBuffer.size()))
+                    break;
+
+                if (contents.Is<infra::PartialProtoLengthDelimited>() && contents.Get<infra::PartialProtoLengthDelimited>().length > stream.Available())
                 {
-                    if (stream.Failed())
-                        break;
-                    else if (contents.Is<infra::PartialProtoLengthDelimited>() && writerBuffer.max_size() - writerBuffer.size() < contents.Get<infra::PartialProtoLengthDelimited>().length)
-                    {
-                        tracer.Trace() << "< message too big";
-                        skipping = contents.Get<infra::PartialProtoLengthDelimited>().length;
-                        writerBuffer.erase(writerBuffer.begin(), writerBuffer.begin() + stream.Reader().Processed());
-                        auto skippingNow = std::min<std::size_t>(skipping, writerBuffer.size());
-                        writerBuffer.erase(writerBuffer.begin(), writerBuffer.begin() + skippingNow);
-                        skipping -= skippingNow;
-                    }
-                    else
-                        break;
+                    tracer.Trace() << "< message too big";
+                    skipping = contents.Get<infra::PartialProtoLengthDelimited>().length;
+                    writerBuffer.erase(writerBuffer.begin(), writerBuffer.begin() + stream.Reader().Processed());
+                    auto skippingNow = std::min<std::size_t>(skipping, writerBuffer.size());
+                    writerBuffer.erase(writerBuffer.begin(), writerBuffer.begin() + skippingNow);
+                    skipping -= skippingNow;
                 }
                 else
                 {

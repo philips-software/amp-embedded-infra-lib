@@ -10,7 +10,7 @@ target_link_libraries(infra.stream_test PUBLIC
 
 target_sources(infra.stream_test PRIVATE
     StreamMock.hpp
-    TestAtomicByteDeque.cpp
+    TestAtomicByteQueue.cpp
     TestBoundedDequeInputStream.cpp
     TestBoundedVectorOutputStream.cpp
     TestBufferingStreamReader.cpp
