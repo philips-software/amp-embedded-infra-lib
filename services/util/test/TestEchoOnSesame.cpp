@@ -205,8 +205,6 @@ TEST_F(EchoOnSesameTest, Reset_forgets_send_requests)
 
     EXPECT_CALL(sesame, Reset());
     echo.Reset();
-    // EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
-    // EXPECT_CALL(sesame, RequestSendMessage(38));
     sesame.GetObserver().Initialized();
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
