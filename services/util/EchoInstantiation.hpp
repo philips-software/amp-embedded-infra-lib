@@ -1,6 +1,7 @@
 #ifndef SERVICES_UTIL_ECHO_INSTANTIATIONS
 #define SERVICES_UTIL_ECHO_INSTANTIATIONS
 
+#include "hal/generic/UartGeneric.hpp"
 #include "infra/util/BoundedVector.hpp"
 #include "protobuf/echo/ServiceForwarder.hpp"
 #include "services/util/EchoOnMessageCommunication.hpp"
@@ -9,11 +10,6 @@
 #include "services/util/MessageCommunicationWindowed.hpp"
 #include "services/util/SesameCobs.hpp"
 #include "services/util/SesameWindowed.hpp"
-#if defined(EMIL_HAL_WINDOWS)
-#include "hal/windows/UartWindows.hpp"
-#elif defined(EMIL_HAL_UNIX)
-#include "hal/unix/UartUnix.hpp"
-#endif
 
 namespace main_
 {
@@ -72,11 +68,7 @@ namespace main_
             : uart(infra::AsStdString(portName))
         {}
 
-#if defined(EMIL_HAL_WINDOWS)
-        hal::UartWindows uart;
-#elif defined(EMIL_HAL_UNIX)
-        hal::UartUnix uart;
-#endif
+        hal::UartGeneric uart;
         services::MethodSerializerFactory::OnHeap serializerFactory;
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<MessageSize> bufferedSerial{ uart };
     };

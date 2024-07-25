@@ -1,10 +1,6 @@
 #include "args.hxx"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
-#ifdef EMIL_HAL_WINDOWS
-#include "hal/windows/UartWindows.hpp"
-#else
-#include "hal/unix/UartUnix.hpp"
-#endif
+#include "hal/generic/UartGeneric.hpp"
 #include "infra/stream/IoOutputStream.hpp"
 #include "infra/syntax/Json.hpp"
 #include "infra/util/Tokenizer.hpp"
@@ -325,11 +321,7 @@ int main(int argc, char* argv[], const char* env[])
         services::ConnectionFactoryWithNameResolverImpl::WithStorage<4> connectionFactory(console.ConnectionFactory(), console.NameResolver());
         infra::Optional<ConsoleClientTcp> consoleClientTcp;
         infra::Optional<ConsoleClientWebSocket> consoleClientWebSocket;
-#ifdef EMIL_HAL_WINDOWS
-        infra::Optional<hal::UartWindows> uart;
-#else
-        infra::Optional<hal::UartUnix> uart;
-#endif
+        infra::Optional<hal::UartGeneric> uart;
         infra::Optional<hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<2048>> bufferedUart;
         infra::Optional<ConsoleClientUart> consoleClientUart;
 

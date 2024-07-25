@@ -80,15 +80,9 @@ target_sources(services.util PRIVATE
     WritableConfiguration.hpp
 )
 
-if (EMIL_BUILD_WIN)
+if (EMIL_HOST_BUILD)
     target_link_libraries(services.util PUBLIC
-        hal.windows
-    )
-endif()
-
-if (EMIL_BUILD_UNIX OR EMIL_BUILD_DARWIN)
-    target_link_libraries(services.util PUBLIC
-        hal.unix
+        hal.generic
     )
 endif()
 
