@@ -107,6 +107,7 @@ namespace application
         virtual void GenerateNestedMessages(Entities& formatter);
         virtual void GenerateFieldDeclarations();
         void GenerateFieldConstants();
+        void GenerateFieldSizes();
         virtual void GenerateMaxMessageSize();
         virtual std::string SerializerBody();
         virtual std::string DeserializerBody();

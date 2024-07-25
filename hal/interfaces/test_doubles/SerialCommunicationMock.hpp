@@ -15,7 +15,7 @@ namespace hal
         void SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion) override;
         void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) override;
 
-        MOCK_METHOD1(SendDataMock, void(std::vector<uint8_t>));
+        MOCK_METHOD(void, SendDataMock, (std::vector<uint8_t>));
 
         infra::AutoResetFunction<void()> actionOnCompletion;
         infra::Function<void(infra::ConstByteRange data)> dataReceived;
@@ -34,8 +34,26 @@ namespace hal
     {
     public:
         // SerialCommunication Interface
-        MOCK_METHOD2(SendData, void(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion));
-        MOCK_METHOD1(ReceiveData, void(infra::Function<void(infra::ConstByteRange data)> dataReceived));
+        MOCK_METHOD(void, SendData, (infra::ConstByteRange data, infra::Function<void()> actionOnCompletion), (override));
+        MOCK_METHOD(void, ReceiveData, (infra::Function<void(infra::ConstByteRange data)> dataReceived), (override));
+    };
+
+    class BufferedSerialCommunicationMock
+        : public BufferedSerialCommunication
+    {
+    public:
+        MOCK_METHOD(void, SendData, (infra::ConstByteRange data, infra::Function<void()> actionOnCompletion), (override));
+        MOCK_METHOD(infra::StreamReaderWithRewinding&, Reader, (), (override));
+        MOCK_METHOD(void, AckReceived, (), (override));
+    };
+
+    class BufferedSerialCommunicationObserverMock
+        : public hal::BufferedSerialCommunicationObserver
+    {
+    public:
+        using hal::BufferedSerialCommunicationObserver::BufferedSerialCommunicationObserver;
+
+        MOCK_METHOD(void, DataReceived, (), (override));
     };
 }
 

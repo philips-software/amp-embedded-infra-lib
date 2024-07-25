@@ -1,6 +1,6 @@
 add_library(services.util ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
-protocol_buffer_echo_cpp(services.util MessageCommunicationSecurity.proto)
+protocol_buffer_echo_cpp(services.util SesameSecurity.proto)
 
 target_link_libraries(services.util PUBLIC
     hal.interfaces
@@ -24,6 +24,8 @@ target_sources(services.util PRIVATE
     EchoInstantiation.hpp
     EchoOnMessageCommunication.cpp
     EchoOnMessageCommunication.hpp
+    EchoOnSesame.cpp
+    EchoOnSesame.hpp
     FlashAlign.cpp
     FlashAlign.hpp
     FlashMultipleAccess.cpp
@@ -57,6 +59,11 @@ target_sources(services.util PRIVATE
     RepeatingButton.hpp
     SerialCommunicationLoopback.cpp
     SerialCommunicationLoopback.hpp
+    Sesame.hpp
+    SesameCobs.cpp
+    SesameCobs.hpp
+    SesameWindowed.cpp
+    SesameWindowed.hpp
     Sha256.hpp
     SignalLed.cpp
     SignalLed.hpp
@@ -69,8 +76,15 @@ target_sources(services.util PRIVATE
     Terminal.hpp
     TimeWithLocalization.cpp
     TimeWithLocalization.hpp
+    TracingEchoOnSesame.hpp
     WritableConfiguration.hpp
 )
+
+if (EMIL_HOST_BUILD)
+    target_link_libraries(services.util PUBLIC
+        hal.generic
+    )
+endif()
 
 if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
     if (NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
@@ -86,10 +100,10 @@ if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
     target_sources(services.util PRIVATE
         AesMbedTls.cpp
         AesMbedTls.hpp
-        EchoOnMessageCommunicationSymmetricKey.cpp
-        EchoOnMessageCommunicationSymmetricKey.hpp
-        MessageCommunicationSecured.cpp
-        MessageCommunicationSecured.hpp
+        EchoOnSesameSymmetricKey.cpp
+        EchoOnSesameSymmetricKey.hpp
+        SesameSecured.cpp
+        SesameSecured.hpp
         Sha256MbedTls.cpp
         Sha256MbedTls.hpp
     )

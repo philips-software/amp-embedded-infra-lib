@@ -74,6 +74,7 @@ namespace services
         assert(streamReader);
         receiveBuffer.erase(receiveBuffer.begin(), receiveBuffer.begin() + streamReader->Storage().Processed());
         streamReader->ResetLength(receiveBuffer.size());
+        streamReader->Storage().Rewind(0);
     }
 
     void WebSocketServerConnectionObserver::CloseAndDestroy()

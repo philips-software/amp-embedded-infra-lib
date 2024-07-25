@@ -63,12 +63,12 @@ namespace infra
         void Schedule(const typename std::decay<infra::Function<void(const infra::SharedPtr<T>& object)>>::type& action, const infra::WeakPtr<T>& object);
 
         void ExecuteFirstAction() override;
+        void ExecuteUntil(const infra::Function<bool()>& predicate) override;
         std::size_t MinCapacity() const override;
         bool IsIdle() const override;
 
         void Run();
         void ExecuteAllActions();
-        void ExecuteUntil(const infra::Function<bool()>& predicate);
 
     protected:
         virtual void RequestExecution();
