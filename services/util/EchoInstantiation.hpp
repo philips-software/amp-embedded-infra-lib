@@ -1,7 +1,9 @@
 #ifndef SERVICES_UTIL_ECHO_INSTANTIATIONS
 #define SERVICES_UTIL_ECHO_INSTANTIATIONS
 
+#ifdef EMIL_HAL_GENERIC
 #include "hal/generic/UartGeneric.hpp"
+#endif
 #include "infra/util/BoundedVector.hpp"
 #include "protobuf/echo/ServiceForwarder.hpp"
 #include "services/util/EchoOnMessageCommunication.hpp"
@@ -60,7 +62,7 @@ namespace main_
         services::EchoOnSesame echo;
     };
 
-#if defined(EMIL_HAL_WINDOWS) || defined(EMIL_HAL_UNIX)
+#ifdef EMIL_HAL_GENERIC
     template<std::size_t MessageSize>
     struct EchoOnUartBase
     {
