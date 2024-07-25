@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>SESAME (SErial Secure Adaptable Message Exchange) :: Embedded Infrastructure Library</title>
+    <link rel="canonical" href="https://philips-software.github.io/amp-embedded-infra-lib/embedded_infrastructure_library/6.1.0/Sesame.html">
+    <meta name="generator" content="Antora 2.3.4">
+    <link rel="stylesheet" href="../../_/css/centralesans.css">
+    <link rel="stylesheet" href="../../_/css/site.css">
+    <link rel="stylesheet" href="../../_/css/site-extra.css">
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+
+    <link rel="stylesheet" href="../../_/css/site-extra.css">
+    <link rel="stylesheet" href="../../_/css/centralesans.css">
+
+      </head>
+  <body class="article">
+<header class="header" role="banner">
+    <div class="header-top-row">
+        <div class="container">
+            <nav class="navbar">
+                <div class="navbar-brand">
+                    <a class="navbar-brand">
+                        <img class="scale-down"  src="../../philips-logo.png" alt="Philips"/>
+                    </a>
+                    <a class="navbar-item" href="https://philips-software.github.io/amp-embedded-infra-lib">Embedded Infrastructure Library</a>
+                    <button class="navbar-burger" data-target="topbar-nav">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
+                <div id="topbar-nav" class="navbar-menu">
+                    <div class="navbar-end">
+                        <a class="navbar-item" href="https://github.com/philips-software/amp-embedded-infra-lib">
+                            <span class="icon">
+                                <svg aria-labelledby="simpleicons-github-icon" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <title id="simpleicons-github-icon">GitHub</title>
+                                <path fill="#f5f5f5" d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </div>
+</header>
+<div class="body">
+<main class="article">
+<div class="toolbar toolbar-wrap">
+  <div class="toolbar" role="navigation">
+  <button class="nav-toggle"></button>
+    <a href="index.html" class="home-link"></a>
+  <nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Embedded Infrastructure Library documentation</a></li>
+    <li><a href="Sesame.html">Sesame</a></li>
+  </ul>
+</nav>
+      <div class="edit-this-page"><a href="https://github.com/philips-software/amp-embedded-infra-lib/edit/main/documents/modules/ROOT/pages/Sesame.adoc">Edit this page</a></div>
+      </div>
+</div>
+  <div class="content">
+<div class="nav-container" data-component="embedded_infrastructure_library" data-version="6.1.0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="index.html">Embedded Infrastructure Library documentation</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="ExecutionModel.html">Execution Model</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="MemoryRange.html">MemoryRange</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="Containers.html">Containers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="Echo.html">Echo</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="Sesame.html">Sesame</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="NetworkConnections.html">NetworkConnections</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="CodingStandard.html">Coding Standard</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div></div>
+    </div>
+  </aside>
+</div>
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">SESAME (SErial Secure Adaptable Message Exchange)</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Microcontrollers often communicate with each other using a UART connection.
+Before such a serial connection can be used by the <a href="Echo.html" class="page">ECHO</a> protocol,
+a mechanism is needed to initialize communication and prevent overflowing buffers
+on the peer. Furthermore, a means to secure the communication is required.
+For these purposes the SESAME protocol stack is developed.</p>
+</div>
+<div class="paragraph">
+<p>SESAME consists of several layers, first using <a href="https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing">COBS</a>
+to divide the stream of bytes into delimited packets,
+second a window protocol to prevent overflowing buffers,
+and third (optional) a layer that provides security.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="_images/diag-ae642e19bd4f05f10c73b52619f523635545c7f5.svg" alt="Diagram">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_sesame_layer_cobs"><a class="anchor" href="#_sesame_layer_cobs"></a>SESAME layer COBS</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The first layer divides the stream of bytes of the serial communication
+into a number of packets. As specified by the <a href="https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing">COBS</a>
+protocol, packets are separated by 0 bytes, and any 0 bytes in the payload
+are exchanged for non-0 bytes on the serial communication layer. Please see
+the <a href="https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing">COBS</a> specification
+for details.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_sesame_layer_windowed"><a class="anchor" href="#_sesame_layer_windowed"></a>SESAME layer Windowed</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Using the Windowed layer, both sides of the communication notify and update their peer of
+available window size. A peer can only send packets up to the available window. Four
+packet types are defined:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Init</p>
+</li>
+<li>
+<p>InitResponse</p>
+</li>
+<li>
+<p>ReleaseWindow</p>
+</li>
+<li>
+<p>Message</p>
+</li>
+</ol>
+</div>
+<div class="sect2">
+<h3 id="_init"><a class="anchor" href="#_init"></a>Init</h3>
+<div class="paragraph">
+<p>Sending an Init packet initializes the protocol. An Init packet has one 16-bit unsigned parameter <code>size</code>
+which specifies the available window size, encoded in little endian order. An Init packet must be responded to with an InitResponse
+packet. Before receiving an InitResponse, a peer must assume that no window is available, so
+further packets may not be sent.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="_images/diag-af6b8f6d3d484374fcb8f52f4518e36cbd856da4.svg" alt="Init packet">
+</div>
+<div class="title">Figure 1. Init packet</div>
+</div>
+<div class="paragraph">
+<p>An Init packet consumes no window, and may always be sent. This results in an edge case that an
+Init packet sent at an inconvenient moment may overflow the peer&#8217;s buffer. In that case, that
+overflow must result in the peer sending an Init packet of its own. Since a sender
+has an empty buffer before sending an Init packet, that will not result in a repeated exchange of
+Init packets.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_initresponse"><a class="anchor" href="#_initresponse"></a>InitResponse</h3>
+<div class="paragraph">
+<p>When an Init packet has been received, a host will clear its buffer, and advertise available buffer
+space using the InitResponse packet. Similar to the Init packet, the InitResponse packet
+has one 16-bit unsigned parameter <code>size</code> encoded in little endian which advertises available buffer size.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="_images/diag-4a7611f0d08d0dbc679a6b536923367f5320c5bc.svg" alt="InitResponse packet">
+</div>
+<div class="title">Figure 2. InitResponse packet</div>
+</div>
+<div class="paragraph">
+<p>An InitResponse packet consumes 5 window bytes: 3 for the packet contents, 2 for the
+COBS layer (1 for the COBS overhead byte, one for the terminating 0).</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_releasewindow"><a class="anchor" href="#_releasewindow"></a>ReleaseWindow</h3>
+<div class="paragraph">
+<p>When a host has processed incoming packets, and therefore frees up buffer space,
+it advertises the freed up space using the ReleaseWindow packet. The ReleaseWindow packet
+has one 16-bit unsigned parameter <code>size</code> encoded in little endian which specifies the amount of bytes in the buffer
+freed up in addition to already known free space.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="_images/diag-c284003e0e9883d57f06dc12da3de88d15d8519e.svg" alt="ReleaseWindow packet">
+</div>
+<div class="title">Figure 3. ReleaseWindow packet</div>
+</div>
+<div class="paragraph">
+<p>In order to avoid continuous exchanges of ReleaseWindow packets, hosts should only release
+window sizes bigger than 5. When determining the buffer size needed to exchange packets, the
+size of the biggest packet should be increased by 5 to accommodate for a ReleaseWindow packet.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_message"><a class="anchor" href="#_message"></a>Message</h3>
+<div class="paragraph">
+<p>Data sent by higher protocol layers are sent by Message packets. Each Message packet consumes a window
+amount equal to the size of that packet plus the COBS overhead of that specific packet, plus
+its terminating 0.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="_images/diag-44a7e6fea768804d3b097dc66093dfeaa0e0b109.svg" alt="Message packet">
+</div>
+<div class="title">Figure 4. Message packet</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_sesame_layer_secured"><a class="anchor" href="#_sesame_layer_secured"></a>SESAME layer Secured</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This protocol layer provides confidentiality and integrity by encrypting packets and appending
+a MAC (Message Authentication Code). Since SESAME is geared towards embedded systems, and is
+not intended to be as flexible as a protocol like TLS, for simplicity some very specific choices
+are made regarding cryptographic schemes.</p>
+</div>
+<div class="paragraph">
+<p>Encryption and authentication is done with AES-128 in
+<a href="https://en.wikipedia.org/wiki/Galois/Counter_Mode">GCM</a> mode. AES-128-GCM requires a 128 bit
+key and an 128 bit IV. Both directions of communication require their own unique key.</p>
+</div>
+<div class="paragraph">
+<p>Each message is encrypted with AES-128-GCM with the key and IV as parameters. This results in
+a cyphertext of size equal to the size of the message, plus a 16 byte MAC. Since in GCM IVs may
+not be reused, the IV is incremented in a specific way to avoid using the same IV twice: After
+each message, treat the IV as a 128-bit unsigned number, and add 2<sup>64</sup> to it, discarding any overflow.
+This way, the protocol can securely handle 2<sup>64</sup> messages each of size at most 2<sup>64</sup> before a
+re-negotiation of keys is necessary.</p>
+</div>
+<div class="paragraph">
+<p>Key establishment is not a responsiblity of the Secured layer; but care must be taken that
+the same key/IV pair should not be reused for different sessions, since encrypting two messages
+using the same key/IV pair will result in the XOR of the bit pattern of those two plaintext
+messages to be equal to the XOR of the bit pattern of the two cyphertexts of those messages.</p>
+</div>
+<div class="paragraph">
+<p>There is one exception to that rule: If the first message sent consists of at least 128 bit of
+random data, then security is not compromised. The only information leaked is the XOR of two
+times 128 bits of random data, from which an attacker still learns nothing. One possible scheme
+of key establishment is therefore to hardcode the four Key and IV values for sending and receiving
+on both hosts, and to choose random new Key/IV values right after initialization.</p>
+</div>
+<div class="paragraph">
+<p>After each initialization of the lower protocol layers (after receiving the Init packet in the
+Windowed layer), keys are reset to their default value, and key negotiation must start over
+before other messages are sent.</p>
+</div>
+<div class="sect2">
+<h3 id="_echo_on_sesame"><a class="anchor" href="#_echo_on_sesame"></a>ECHO on SESAME</h3>
+<div class="paragraph">
+<p>ECHO is used over SESAME by serializing ECHO messages, dividing those messages into a series
+of chunks suitable to send over SESAME (so the maximum buffer size advertised by the peer must
+be taken into account), and sending those chunks. On the receiving end, those chunks are reassembled,
+and parsed as ECHO messages. Since ECHO is able to handle a continuous stream of data, multiple
+ECHO messages being concatenated do not pose any difficulties.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_symmetric_key_establishment_over_echo"><a class="anchor" href="#_symmetric_key_establishment_over_echo"></a>Symmetric key establishment over ECHO</h3>
+<div class="paragraph">
+<p>Specifying the exact key negotiation scheme is outside of the scope of this specification,
+since there are many different situations which require different negotiation schemes. However,
+if a key negotiation scheme is used that results in a host communicating to its peer that
+a specific Key/IV pair is to be used, then the SymmetricKeyEstablishment ECHO service can be used.
+This service has one method ActivateNewKeyMaterial with parameters Key and IV. After receiving this
+message, a sender of that message will use those Key/IV for subsequent messages towards the receiver.
+A full key negotiation will therefore result in ActivateNewKeyMaterial invocations in both directions.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_appendix_typical_sequence"><a class="anchor" href="#_appendix_typical_sequence"></a>Appendix: Typical sequence</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This sequence diagram shows a typical sequence of the SESAME protocol being initialized and a message
+being sent.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="_images/diag-f5af5a4b5404143a9c1b8dfb93a66295bd65b6d3.svg" alt="Typical sequence">
+</div>
+<div class="title">Figure 5. Typical sequence</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_appendix_sesamesecurity_proto"><a class="anchor" href="#_appendix_sesamesecurity_proto"></a>Appendix: SesameSecurity.proto</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-protobuf hljs" data-lang="protobuf">Unresolved include directive in modules/ROOT/pages/Sesame.adoc - include::SesameSecurity.proto[]</code></pre>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>© Koninklijke Philips N.V., 2022. All rights reserved.</p>
+</footer>
+
+<script type="text/javascript" src="../../_/js/medium-zoom.min.js"></script>
+<script type="text/javascript">
+mediumZoom('.data-zoomable img', {
+  margin: 50,
+  background: '#FFFFFFA1',
+})
+</script>
+<script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+  </body>
+</html>
