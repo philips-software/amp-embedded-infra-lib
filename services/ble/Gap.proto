@@ -1,8 +1,31 @@
 syntax = "proto3";
 
+import "EchoAttributes.proto";
+<<<<<<< Updated upstream
+import "Gatt.proto";
+=======
+>>>>>>> Stashed changes
+
 package gap;
 option java_package = "com.philips.emil.protobufEcho";
 option java_outer_classname = "GapProto";
+
+message Address
+{
+    bytes address = 1 [(bytes_size) = 6];
+}
+
+message State
+{
+    enum Event
+    {
+        standby = 0;
+        scanning = 1;
+        connected = 2;
+        advertising = 3;
+    }
+    Event value = 1;
+}
 
 message IoCapabilities
 {
@@ -18,17 +41,29 @@ message IoCapabilities
     IoCapabilitiesEnum ioCaps = 1;
 }
 
+enum SecurityLevelEnum
+{
+    None = 0;
+    UnauthenticatedPairing = 1;
+    AuthenticatedPairing = 2;
+    AuthenticatedPairingWithLE = 3;
+}
+
+enum SecurityModeEnum
+{
+    Mode1 = 0;
+    Mode2 = 1;
+}
+
 message SecurityLevel
 {
-    enum SecurityLevelEnum
-    {
-        None = 0;
-        UnauthenticatedPairing = 1;
-        AuthenticatedPairing = 2;
-        AuthenticatedPairingWithLE = 3;
-    }
-
     SecurityLevelEnum level = 1;
+}
+
+message SecurityModeAndLevel
+{
+    SecurityModeEnum mode = 1;
+    SecurityLevelEnum level = 2;
 }
 
 message AdvertisementType
@@ -40,4 +75,143 @@ message AdvertisementType
     }
 
     AdvertisementTypeEnum type = 1;
+}
+
+message AddressType
+{
+    enum AddressTypeEnum
+    {
+        Public = 0;
+        Random = 1;
+    }
+
+    AddressTypeEnum type = 1;
+}
+
+message AdvertisementMode
+{
+    AdvertisementType type = 1;
+    uint32 advInterval = 2;
+}
+
+message AdvertisementData
+{
+    bytes data = 1 [(bytes_size) = 31];
+}
+
+message ConnectionParameters
+{
+    Address address = 1;
+    AddressType addressType = 2;
+}
+
+message Passkey
+{
+    int32 passkey = 1;
+    bool numericComparison = 2;
+}
+
+message PairingStatus
+{
+    enum Error
+    {
+        passkeyEntryFailed = 0;
+        authenticationRequirementsNotMet = 1;
+        pairingNotSupported = 2;
+        insufficientEncryptionKeySize = 3;
+        numericComparisonFailed = 4;
+        timeout = 5;
+        encryptionFailed = 6;
+        unknown = 7;
+    }
+
+    Error error = 1;
+};
+
+message DiscoveredDevice
+{
+    Address address = 1;
+    bytes data = 3 [(bytes_size) = 32];
+    bool isScanResponse = 5;
+}
+
+message DeviceDiscoveryFilter
+{
+    enum Filter
+    {
+        address = 0;
+        advertisingData = 1;
+    }
+
+    Filter filter = 1;
+    bytes data = 2 [(bytes_size) = 32];
+};
+
+message BoolValue
+{
+    bool value = 1;
+}
+
+message UInt32Value
+{
+    uint32 value = 1;
+}
+
+service GapPeripheral
+{
+    option (service_id) = 32;
+
+    rpc Advertise(AdvertisementMode) returns (Nothing) { option (method_id) = 1; }
+    rpc Standby(Nothing) returns (Nothing) { option (method_id) = 2; }
+    rpc SetAdvertisementData(AdvertisementData) returns (Nothing) { option (method_id) = 3; }
+    rpc SetScanResponseData(AdvertisementData) returns (Nothing) { option (method_id) = 4; }
+    rpc SetAllowPairing(BoolValue) returns (Nothing) { option (method_id) = 5; }
+    rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 6; }
+    rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 7; }
+    rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 8; }
+    rpc GetResolvableAddress(Nothing) returns (Nothing) { option (method_id) = 9; }
+    rpc SetDisServiceData(gatt.DisServiceData) returns(Nothing) { option (method_id) = 10; }
+}
+
+service GapCentral
+{
+    option (service_id) = 33;
+
+    rpc StartDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 1; }
+    rpc StopDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 2; }
+    rpc Connect(ConnectionParameters) returns (Nothing) { option (method_id) = 3; }
+    rpc Disconnect(Nothing) returns (Nothing) { option (method_id) = 4; }
+    rpc Pair(Nothing) returns (Nothing) { option (method_id) = 5; }
+    rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 6; }
+    rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 7; }
+    rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 8; }
+    rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 9; }
+    rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 10; }
+    rpc ServiceDiscovery(Nothing) returns (Nothing) { option (method_id) = 11; }
+    rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 12; }
+}
+
+service GapPeripheralResponse
+{
+    option (service_id) = 34;
+
+    rpc Done(Nothing) returns (Nothing) { option (method_id) = 1; }
+    rpc DeviceStarted(Nothing) returns (Nothing) { option (method_id) = 2; }
+    rpc StateChanged(State) returns (Nothing) { option (method_id) = 3; }
+    rpc ResolvableAddress(Address) returns (Nothing) { option (method_id) = 4; }
+    rpc DisplayPasskey(Passkey) returns (Nothing) { option (method_id) = 5; }
+}
+
+service GapCentralResponse
+{
+    option (service_id) = 35;
+
+    rpc Done(Nothing) returns (Nothing) { option (method_id) = 1; }
+    rpc DeviceDiscovered(DiscoveredDevice) returns (Nothing) { option (method_id) = 2; }
+    rpc StateChanged(State) returns (Nothing) { option (method_id) = 3; }
+    rpc PairingSuccessfullyCompleted(Nothing) returns (Nothing) { option (method_id) =  4; }
+    rpc PairingFailed(PairingStatus) returns (Nothing) { option (method_id) = 5; }
+    rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
+    rpc DeviceStarted(Nothing) returns (Nothing) { option (method_id) = 7; }
+    rpc ServiceDiscovered(Nothing) returns (Nothing) { option (method_id) = 8; }
 }
