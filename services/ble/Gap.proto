@@ -1,10 +1,7 @@
 syntax = "proto3";
 
 import "EchoAttributes.proto";
-<<<<<<< Updated upstream
 import "Gatt.proto";
-=======
->>>>>>> Stashed changes
 
 package gap;
 option java_package = "com.philips.emil.protobufEcho";
