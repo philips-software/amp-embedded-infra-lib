@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 import "EchoAttributes.proto";
-import "Gatt.proto";
 
 package gap;
 option java_package = "com.philips.emil.protobufEcho";
@@ -167,7 +166,6 @@ service GapPeripheral
     rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 7; }
     rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 8; }
     rpc GetResolvableAddress(Nothing) returns (Nothing) { option (method_id) = 9; }
-    rpc SetDisServiceData(gatt.DisServiceData) returns(Nothing) { option (method_id) = 10; }
 }
 
 service GapCentral
@@ -184,8 +182,7 @@ service GapCentral
     rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 8; }
     rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 9; }
     rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 10; }
-    rpc ServiceDiscovery(Nothing) returns (Nothing) { option (method_id) = 11; }
-    rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 12; }
+    rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 11; }
 }
 
 service GapPeripheralResponse
@@ -210,5 +207,4 @@ service GapCentralResponse
     rpc PairingFailed(PairingStatus) returns (Nothing) { option (method_id) = 5; }
     rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
     rpc DeviceStarted(Nothing) returns (Nothing) { option (method_id) = 7; }
-    rpc ServiceDiscovered(Nothing) returns (Nothing) { option (method_id) = 8; }
 }
