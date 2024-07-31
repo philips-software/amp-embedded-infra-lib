@@ -19,6 +19,13 @@ message DisServiceData
     bytes pnpId = 9 [(bytes_size) =  7];
 }
 
+service GattServerDisService
+{
+    option (service_id) = 132;
+
+    rpc SetDisServiceData(DisServiceData) returns(Nothing) { option (method_id) = 1; }
+}
+
 message MtuSize
 {
     uint32 value = 1;
