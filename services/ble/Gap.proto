@@ -37,27 +37,35 @@ message IoCapabilities
     IoCapabilitiesEnum ioCaps = 1;
 }
 
-enum SecurityLevelEnum
-{
-    None = 0;
-    UnauthenticatedPairing = 1;
-    AuthenticatedPairing = 2;
-    AuthenticatedPairingWithLE = 3;
-}
-
-enum SecurityModeEnum
-{
-    Mode1 = 0;
-    Mode2 = 1;
-}
-
 message SecurityLevel
 {
+    enum SecurityLevelEnum
+    {
+        None = 0;
+        UnauthenticatedPairing = 1;
+        AuthenticatedPairing = 2;
+        AuthenticatedPairingWithLE = 3;
+    }
+
     SecurityLevelEnum level = 1;
 }
 
 message SecurityModeAndLevel
 {
+    enum SecurityLevelEnum
+    {
+        None = 0;
+        UnauthenticatedPairing = 1;
+        AuthenticatedPairing = 2;
+        AuthenticatedPairingWithLE = 3;
+    }
+
+    enum SecurityModeEnum
+    {
+        Mode1 = 0;
+        Mode2 = 1;
+    }
+
     SecurityModeEnum mode = 1;
     SecurityLevelEnum level = 2;
 }
