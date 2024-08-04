@@ -42,6 +42,11 @@ namespace main_
             AddForwarder(to, responseId, from);
         }
 
+        void AddRequest(uint32_t serviceId)
+        {
+            AddForwarder(from, serviceId, to);
+        }
+
         void AddResponse(uint32_t responseId)
         {
             AddForwarder(to, responseId, from);
