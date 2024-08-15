@@ -188,7 +188,7 @@ namespace services
 
     void EchoOnStreams::DataReceived()
     {
-        if (limitedReader != infra::none)
+        if (limitedReader != infra::none && readerPtr != nullptr)
             ContinueReceiveMessage();
 
         while (readerPtr != nullptr && methodDeserializer == nullptr && !limitedReaderAccess.Referenced())

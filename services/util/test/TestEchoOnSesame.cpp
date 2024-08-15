@@ -134,7 +134,30 @@ TEST_F(EchoOnSesameTest, service_method_is_invoked)
         {
             service.MethodDone();
         }));
-    ReceiveMessage(infra::ConstructBin()({ 1, 10, 2, 8, 5 }).Range());
+    ReceiveMessage(infra::ConstructBin()({ 1, (1 << 3) | 2, 2, 8, 5 }).Range());
+}
+
+TEST_F(EchoOnSesameTest, service_method_bytes_is_invoked)
+{
+    EXPECT_CALL(service, MethodBytes(testing::_)).WillOnce(testing::Invoke([this](const infra::BoundedVector<uint8_t>& v)
+        {
+            const infra::BoundedVector<uint8_t>::WithMaxSize<4> bytes{ { 1, 2, 3, 4 } };
+            EXPECT_EQ(bytes, v);
+            service.MethodDone();
+        }));
+    ReceiveMessage(infra::ConstructBin()({ 1, (4 << 3) | 2, 6, 10, 4, 1, 2, 3, 4 }).Range());
+}
+
+TEST_F(EchoOnSesameTest, split_service_method_bytes_is_invoked)
+{
+    EXPECT_CALL(service, MethodBytes(testing::_)).WillOnce(testing::Invoke([this](const infra::BoundedVector<uint8_t>& v)
+        {
+            const infra::BoundedVector<uint8_t>::WithMaxSize<4> bytes{ { 1, 2, 3, 4 } };
+            EXPECT_EQ(bytes, v);
+            service.MethodDone();
+        }));
+    ReceiveMessage(infra::ConstructBin()({ 1, (4 << 3) | 2, 6, 10, 4, 1, 2 }).Range());
+    ReceiveMessage(infra::ConstructBin()({ 3, 4 }).Range());
 }
 
 TEST_F(EchoOnSesameTest, service_method_without_parameter_is_invoked)
