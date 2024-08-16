@@ -62,7 +62,8 @@ message Characteristic
     uint32 properties = 4;
 }
 
-message Descriptr
+message Descriptr 
+//'Descriptor' keyword is not allowed by Echo code generator 
 {
     bytes uuid = 1 [(bytes_size) = 16];
     Handle handle = 2;
@@ -101,8 +102,9 @@ service GattClient
     rpc StartDescriptorDiscovery(HandleRange) returns (Nothing) { option (method_id) = 6; }
     rpc StopDescriptorDiscovery(Nothing) returns (Nothing) { option (method_id) = 7; }
 
-    rpc Write(CharacteristicData) returns (Nothing) { option (method_id) = 8; }
-    rpc WriteWithoutResponse(CharacteristicData) returns (Nothing) { option (method_id) = 9; }
+    rpc Read(Handle) returns (Nothing) { option (method_id) = 8; }
+    rpc Write(CharacteristicData) returns (Nothing) { option (method_id) = 9; }
+    rpc WriteWithoutResponse(CharacteristicData) returns (Nothing) { option (method_id) = 10; }
 }
 
 service GattClientResponse

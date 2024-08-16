@@ -50,26 +50,6 @@ message SecurityLevel
     SecurityLevelEnum level = 1;
 }
 
-message SecurityModeAndLevel
-{
-    enum SecurityLevelEnum
-    {
-        None = 0;
-        UnauthenticatedPairing = 1;
-        AuthenticatedPairing = 2;
-        AuthenticatedPairingWithLE = 3;
-    }
-
-    enum SecurityModeEnum
-    {
-        Mode1 = 0;
-        Mode2 = 1;
-    }
-
-    SecurityModeEnum mode = 1;
-    SecurityLevelEnum level = 2;
-}
-
 message AdvertisementType
 {
     enum AdvertisementTypeEnum
@@ -81,12 +61,32 @@ message AdvertisementType
     AdvertisementTypeEnum type = 1;
 }
 
+message SecurityModeAndLevel
+{
+    enum SecurityLevelEnum
+    {
+        none = 0;
+        unauthenticatedPairing = 1;
+        authenticatedPairing = 2;
+        authenticatedPairingWithLE = 3;
+    }
+
+    enum SecurityModeEnum
+    {
+        mode1 = 0;
+        mode2 = 1;
+    }
+
+    SecurityModeEnum mode = 1;
+    SecurityLevelEnum level = 2;
+}
+
 message AddressType
 {
     enum AddressTypeEnum
     {
-        Public = 0;
-        Random = 1;
+        publicAddress = 0;
+        randomAddress = 1;
     }
 
     AddressTypeEnum type = 1;
