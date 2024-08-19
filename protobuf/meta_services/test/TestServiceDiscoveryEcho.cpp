@@ -1,4 +1,5 @@
 #include "echo/ServiceDiscovery.pb.hpp"
+#include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/util/Optional.hpp"
 #include "protobuf/echo/test_doubles/EchoSingleLoopback.hpp"
 #include "protobuf/echo/test_doubles/ServiceStub.hpp"
@@ -18,32 +19,47 @@ namespace
         using service_discovery::ServiceDiscoveryResponse::ServiceDiscoveryResponse;
         virtual ~ServiceDiscoveryResponseMock() = default;
 
+        void AutoMethodDone(bool flag)
+        {
+            autoMethodDone = flag;
+        }
+
+        void CheckMethodDone()
+        {
+            if (autoMethodDone)
+                MethodDone();
+        }
+
         void FirstServiceSupported(uint32_t value) override
         {
             FirstServiceSupportedMock(value);
-            MethodDone();
+            CheckMethodDone();
         }
 
         void NoServiceSupported() override
         {
             NoServiceSupportedMock();
-            MethodDone();
+            CheckMethodDone();
         }
 
-        void ServicesChanged() override
+        void ServicesChanged(uint32_t startServiceId, uint32_t endServiceId) override
         {
-            ServicesChangedMock();
-            MethodDone();
+            ServicesChangedMock(startServiceId, endServiceId);
+            CheckMethodDone();
         }
 
-        MOCK_METHOD(void, FirstServiceSupportedMock, (uint32_t));
+        MOCK_METHOD(void, FirstServiceSupportedMock, (uint32_t serviceId));
         MOCK_METHOD(void, NoServiceSupportedMock, ());
-        MOCK_METHOD(void, ServicesChangedMock, ());
+        MOCK_METHOD(void, ServicesChangedMock, (uint32_t startServiceId, uint32_t endServiceId));
+
+    private:
+        bool autoMethodDone = true;
     };
 };
 
 class ServiceDiscoveryTest
     : public testing::Test
+    , public infra::EventDispatcherFixture
 {
 public:
     services::MethodSerializerFactory::ForServices<service_discovery::ServiceDiscovery, service_discovery::ServiceDiscoveryResponse>::AndProxies<service_discovery::ServiceDiscoveryProxy> serializerFactory;
@@ -103,15 +119,15 @@ TEST_F(ServiceDiscoveryTest, notify_service_change)
 {
     NotifyServiceChanges(true);
 
-    infra::Optional<services::ServiceStub> service5;
+    EXPECT_CALL(serviceDiscoveryResponse, ServicesChangedMock(0, 0));
+    infra::Optional<services::ServiceStub> service5(infra::inPlace, serviceDiscoveryEcho, 5);
+    ExecuteAllActions();
 
-    EXPECT_CALL(serviceDiscoveryResponse, ServicesChangedMock());
-    service5.Emplace(serviceDiscoveryEcho, 5);
-
-    EXPECT_CALL(serviceDiscoveryResponse, ServicesChangedMock());
+    EXPECT_CALL(serviceDiscoveryResponse, ServicesChangedMock(0, 0));
     service5 = infra::none;
 
     NotifyServiceChanges(false);
+
 
     service5.Emplace(serviceDiscoveryEcho, 5);
 }

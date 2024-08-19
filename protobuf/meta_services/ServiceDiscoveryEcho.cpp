@@ -1,5 +1,6 @@
 #include "protobuf/meta_services/ServiceDiscoveryEcho.hpp"
 #include "echo/ServiceDiscovery.pb.hpp"
+#include "infra/event/EventDispatcher.hpp"
 #include "infra/util/Optional.hpp"
 #include "protobuf/echo/Echo.hpp"
 #include <cstdint>
@@ -38,14 +39,13 @@ namespace application
     void ServiceDiscoveryEcho::NotifyServiceChanges(bool value)
     {
         notifyServiceChanges = value;
-        
+
         MethodDone();
     }
 
     bool ServiceDiscoveryEcho::AcceptsService(uint32_t serviceId) const
     {
-        return service_discovery::ServiceDiscovery::AcceptsService(serviceId) 
-                || IsProxyServiceSupported(serviceId);
+        return service_discovery::ServiceDiscovery::AcceptsService(serviceId) || IsProxyServiceSupported(serviceId);
     }
 
     infra::SharedPtr<services::MethodDeserializer> ServiceDiscoveryEcho::
@@ -65,9 +65,9 @@ namespace application
         auto startMethodArgs = std::tie(serviceId, methodId, size, errorPolicy);
         NotifyObservers([&methodSerializer, &startMethodArgs](auto& obs)
             {
-                if(obs.AcceptsService(std::get<0>(startMethodArgs)))
+                if (obs.AcceptsService(std::get<0>(startMethodArgs)))
                 {
-                    methodSerializer = obs.StartMethod(std::get<0>(startMethodArgs), std::get<1>(startMethodArgs), 
+                    methodSerializer = obs.StartMethod(std::get<0>(startMethodArgs), std::get<1>(startMethodArgs),
                         std::get<2>(startMethodArgs), std::get<3>(startMethodArgs));
                     return true;
                 }
@@ -108,15 +108,20 @@ namespace application
 
     void ServiceDiscoveryEcho::RegisterObserver(infra::Observer<Service, Echo>* observer)
     {
+        infra::EventDispatcher::Instance().Schedule([this, observer]
+            {
+                auto id5 = static_cast<Service*>(observer)->AcceptsService(5);
+                auto temp = id5;
+                ServicesChangeNotification();
+            });
+
         services::Echo::RegisterObserver(observer);
-        
-        ServicesChangeNotification();
     }
 
     void ServiceDiscoveryEcho::UnregisterObserver(infra::Observer<Service, Echo>* observer)
     {
         services::Echo::UnregisterObserver(observer);
-        
+
         ServicesChangeNotification();
     }
 
@@ -125,7 +130,7 @@ namespace application
         if (notifyServiceChanges)
             service_discovery::ServiceDiscoveryResponseProxy::RequestSend([this]
                 {
-                    ServicesChanged();
+                    ServicesChanged(0, 0);
                 });
     }
 }

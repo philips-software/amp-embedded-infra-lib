@@ -6,7 +6,6 @@
 #include "infra/util/MemoryRange.hpp"
 #include "infra/util/Observer.hpp"
 #include "protobuf/echo/Echo.hpp"
-
 #include <cstdint>
 
 namespace application
@@ -33,11 +32,12 @@ namespace application
 
         void NoServiceSupported() override;
         void FirstServiceSupported(uint32_t id) override;
-        void ServicesChanged() override;
+        void ServicesChanged(uint32_t startServiceId, uint32_t endServiceId) override;
 
     private:
         void Initialize();
         void StartDiscovery();
+
     private:
         infra::BoundedVector<uint32_t>::WithMaxSize<2> services;
     };

@@ -146,7 +146,7 @@ TEST_F(PeerServiceDiscovererTest, ServicesChanged_triggers_rediscovery)
 
     serviceDiscoveryResponse.RequestSend([this]
     {
-        serviceDiscoveryResponse.ServicesChanged();
+        serviceDiscoveryResponse.ServicesChanged(0, 0);
     });
 
     std::array<uint32_t, 2> servicesUpdated{ 5, 20 };

@@ -2,6 +2,7 @@
 #include "infra/util/Function.hpp"
 #include "protobuf/meta_services/PeerServiceDiscoverer.hpp"
 
+#include <cstdint>
 #include <limits>
 
 namespace application
@@ -37,7 +38,7 @@ namespace application
         MethodDone();
     }
 
-    void PeerServiceDiscovererEcho::ServicesChanged()
+    void PeerServiceDiscovererEcho::ServicesChanged(uint32_t startServiceId, uint32_t endServiceId)
     {
         Initialize();
         
