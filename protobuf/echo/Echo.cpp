@@ -200,7 +200,7 @@ namespace services
                 ContinueReceiveMessage();
         }
 
-        if (readerPtr != nullptr && readerPtr->Empty())
+        if (readerPtr != nullptr && readerPtr->Empty() && !limitedReaderAccess.Referenced())
         {
             bufferedReader = infra::none;
             readerPtr = nullptr;
