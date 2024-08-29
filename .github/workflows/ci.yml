@@ -78,6 +78,13 @@ jobs:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           persist-credentials: false
+      - uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        id: cache-winsdk
+        with:
+          path: /winsdk
+          key: cache-winsdk
+      - if: ${{ steps.cache-winsdk.outputs.cache-hit != 'true' }}
+        run: xwin --accept-license splat --preserve-ms-arch-notation --include-debug-libs && mv .xwin-cache/splat/ /winsdk
       - uses: hendrikmuhs/ccache-action@ed74d11c0b343532753ecead8a951bb09bb34bc9 # v1.2.14
         with:
           key: ${{ github.job }}-clang-msvc
