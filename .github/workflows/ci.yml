@@ -94,7 +94,7 @@ jobs:
         with:
           configurePreset: "host-ClangMsvc"
           buildPreset: "host-ClangMsvc-Debug"
-          configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=sccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=sccache']"
+          configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"
   host_build_test:
     name: Host Build & Test
     runs-on: ${{ matrix.os }}
