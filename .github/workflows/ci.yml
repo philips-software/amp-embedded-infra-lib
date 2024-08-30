@@ -50,7 +50,7 @@ jobs:
   host_build_test_container:
     name: Host Build & Test (amp-devcontainer-cpp)
     runs-on: ubuntu-latest
-    container: ghcr.io/philips-software/amp-devcontainer-cpp:5.1.1@sha256:457da136e67ec84fde1ab742999fa2bf2f5174353bbaf3283a7e3de2b0abdaa4 # 5.1.1
+    container: ghcr.io/philips-software/amp-devcontainer-cpp:5.1.4@sha256:46239906460dedb3baf3c33d9275f3de4f17d7a237fc136c2013b021589a6dbd # 5.1.4
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
@@ -71,6 +71,30 @@ jobs:
         with:
           name: test-logs
           path: build/host/Testing/Temporary/
+  host_build_test_clang_msvc:
+    name: Host Build & Test (clang-msvc)
+    runs-on: ubuntu-latest
+    container: ghcr.io/philips-software/amp-devcontainer-cpp:5.1.4@sha256:46239906460dedb3baf3c33d9275f3de4f17d7a237fc136c2013b021589a6dbd # 5.1.4
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          persist-credentials: false
+      - uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        id: cache-winsdk
+        with:
+          path: /winsdk
+          key: cache-winsdk
+      - if: ${{ steps.cache-winsdk.outputs.cache-hit != 'true' }}
+        run: xwin --accept-license splat --preserve-ms-arch-notation --include-debug-libs && mv .xwin-cache/splat/ /winsdk
+      - uses: hendrikmuhs/ccache-action@ed74d11c0b343532753ecead8a951bb09bb34bc9 # v1.2.14
+        with:
+          key: ${{ github.job }}-clang-msvc
+      - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # v5
+      - uses: lukka/run-cmake@2ce8982be71b8e9a3c4d5e432135035afd1e76a7 # v10.7
+        with:
+          configurePreset: "host-ClangMsvc"
+          buildPreset: "host-ClangMsvc-Debug"
+          configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"
   host_build_test:
     name: Host Build & Test
     runs-on: ${{ matrix.os }}
