@@ -157,6 +157,32 @@ methods and their parameters. If an unsupported language is targeted,
 then the compiler plug-in also has to generate code for encoding and
 decoding the individual message.
 
+== Style Guide
+
+=== File Structure
+
+All files should be ordered in the following manner:
+
+1.  Syntax
+1.  Imports (sorted)
+1.  Package
+1.  Everything else
+
+=== Naming
+
+All namings should be consistent and easy to read. The following table shows the naming conventions:
+
+|===
+| Identifier | Letter Case 
+| *File name* | MixedCase
+| *Message name* | MixedCase
+| *Field name* | camelCase
+| *Enum type name* | MixedCase
+| *Enum value name* | camelCase
+| *Service name* | MixedCase
+| *Method name* | MixedCase
+|===
+
 == Appendix: EchoAttributes.proto
 
 [source,protobuf]

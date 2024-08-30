@@ -18,3 +18,114 @@ message DisServiceData
     bytes ieeeRegulatoryCertificationDataList = 8 [(bytes_size) =  32];
     bytes pnpId = 9 [(bytes_size) =  7];
 }
+
+service GattServerDisService
+{
+    option (service_id) = 132;
+
+    rpc SetDisServiceData(DisServiceData) returns(Nothing) { option (method_id) = 1; }
+}
+
+message MtuSize
+{
+    uint32 value = 1;
+}
+
+message Handle
+{
+    uint32 value = 1;
+}
+
+message CharacteristicData
+{
+    Handle handle = 1;
+    bytes data = 2 [(bytes_size) = 512];
+}
+
+message HandleRange
+{
+    Handle startHandle = 1;
+    Handle endHandle = 2;
+}
+
+message Service
+{
+    bytes uuid = 1 [(bytes_size) = 16];
+    HandleRange handles = 2;
+}
+
+message Characteristic
+{
+    bytes uuid = 1 [(bytes_size) = 16];
+    Handle handle = 2;
+    Handle valueHandle = 3;
+    uint32 properties = 4;
+}
+
+message Descriptr 
+//'Descriptor' keyword is not allowed by Echo code generator 
+{
+    bytes uuid = 1 [(bytes_size) = 16];
+    Handle handle = 2;
+}
+
+message GattResult
+{
+    enum ResultEnum
+    {
+        Success = 0;
+        InsufficientAuthentication = 1;
+        UnknownError = 2;
+    }
+
+    ResultEnum result = 1;
+}
+
+message ReadResult
+{
+    GattResult result = 1;
+    CharacteristicData data = 2;
+}
+
+service GattClient
+{
+    option (service_id) = 134;
+
+    rpc MtuSizeExchangeRequest(Nothing) returns (Nothing) { option (method_id) = 1; }
+
+    rpc StartServiceDiscovery(Nothing) returns (Nothing) { option (method_id) = 2; }
+    rpc StopServiceDiscovery(Nothing) returns (Nothing) { option (method_id) = 3; }
+    
+    rpc StartCharacteristicDiscovery(HandleRange) returns (Nothing) { option (method_id) = 4; }
+    rpc StopCharacteristicDiscovery(Nothing) returns (Nothing) { option (method_id) = 5; }
+    
+    rpc StartDescriptorDiscovery(HandleRange) returns (Nothing) { option (method_id) = 6; }
+    rpc StopDescriptorDiscovery(Nothing) returns (Nothing) { option (method_id) = 7; }
+
+    rpc Read(Handle) returns (Nothing) { option (method_id) = 8; }
+    rpc Write(CharacteristicData) returns (Nothing) { option (method_id) = 9; }
+    rpc WriteWithoutResponse(CharacteristicData) returns (Nothing) { option (method_id) = 10; }
+}
+
+service GattClientResponse
+{
+    option (service_id) = 135;
+
+    rpc MtuSizeExchangeComplete(MtuSize) returns (Nothing) { option (method_id) = 1; }
+
+    rpc ServiceDiscovered(Service) returns (Nothing) { option (method_id) = 2; }
+    rpc ServiceDiscoveryComplete(Nothing) returns (Nothing) { option (method_id) = 3; }
+    
+    rpc CharacteristicDiscovered(Characteristic) returns (Nothing) { option (method_id) = 4; }
+    rpc CharacteristicDiscoveryComplete(Nothing) returns (Nothing) { option (method_id) = 5; }
+
+    rpc DescriptorDiscovered(Descriptr) returns (Nothing) { option (method_id) = 6; }
+    rpc DescriptorDiscoveryComplete(Nothing) returns (Nothing) { option (method_id) = 7; }
+
+    rpc ReadComplete(ReadResult) returns (Nothing) { option (method_id) = 8; }
+    rpc WriteComplete(GattResult) returns (Nothing) { option (method_id) = 9; }
+
+    rpc IndicationReceived(CharacteristicData) returns (Nothing) { option (method_id) = 10; }
+    rpc NotificationReceived(CharacteristicData) returns (Nothing) { option (method_id) = 11; }
+}
+
