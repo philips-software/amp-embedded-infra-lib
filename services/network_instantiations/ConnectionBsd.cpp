@@ -118,7 +118,7 @@ namespace services
 
     void ConnectionBsd::Send()
     {
-        int sent = 0;
+        long sent = 0;
 
         do
         {
