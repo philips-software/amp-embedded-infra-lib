@@ -22,15 +22,18 @@ namespace services
     protected:
         // Implementation of EchoOnStreams
         void RequestSendStream(std::size_t size) override;
-        void AckReceived() override;
 
     private:
         struct LimitedReader
         {
-            explicit LimitedReader(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
+            explicit LimitedReader(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, EchoOnConnection& connection);
+            LimitedReader(const LimitedReader& other) = delete;
+            LimitedReader& operator=(const LimitedReader& other) = delete;
+            ~LimitedReader();
 
             infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
             infra::LimitedStreamReaderWithRewinding limitedReader;
+            EchoOnConnection& connection;
         };
 
         bool delayReceived = false;

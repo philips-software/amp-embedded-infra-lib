@@ -27,7 +27,7 @@ public:
     }
 
     infra::StringOutputStream::WithStorage<32> stream;
-    services::Tracer tracer;
+    services::TracerToStream tracer;
     services::TracerAdapterPrintf adapter;
 };
 

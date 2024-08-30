@@ -1,5 +1,6 @@
 #include "services/echo_console/Console.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
+#include "infra/stream/StringInputStream.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 #include <cctype>
 #include <iomanip>
@@ -387,30 +388,41 @@ namespace application
 
     void Console::DataReceived(infra::StreamReader& reader)
     {
-        infra::DataInputStream::WithErrorPolicy data(reader, infra::softFail);
-        infra::ProtoParser parser(data);
-        auto serviceId = static_cast<uint32_t>(parser.GetVarInt());
-        auto [value, methodId] = parser.GetField();
+        while (!reader.Empty())
+            receivedData += infra::ByteRangeAsStdString(reader.ExtractContiguousRange(std::numeric_limits<std::size_t>::max()));
 
-        if (data.Failed())
-            throw IncompletePacket();
+        while (!receivedData.empty())
+        {
+            infra::StringInputStream data(receivedData, infra::softFail);
+            infra::ProtoParser parser(data >> infra::data);
 
-        for (const auto& service : root.services)
-            if (service->serviceId == serviceId)
-            {
-                for (const auto& method : service->methods)
-                    if (method.methodId == methodId)
-                    {
-                        MethodReceived(*service, method, value.Get<infra::ProtoLengthDelimited>().Parser());
+            auto serviceId = static_cast<uint32_t>(parser.GetVarInt());
+            auto [value, methodId] = parser.GetField();
 
-                        data.Failed();
-                        return;
-                    }
+            if (data.Failed())
+                break;
 
-                MethodNotFound(*service, methodId);
-            }
+            for (const auto& service : root.services)
+                if (service->serviceId == serviceId)
+                {
+                    for (const auto& method : service->methods)
+                        if (method.methodId == methodId)
+                        {
+                            MethodReceived(*service, method, value.Get<infra::ProtoLengthDelimited>().Parser());
 
-        ServiceNotFound(serviceId, methodId);
+                            receivedData.erase(receivedData.begin(), receivedData.begin() + data.Reader().ConstructSaveMarker());
+                            data.Failed();
+                            return;
+                        }
+
+                    MethodNotFound(*service, methodId);
+                    receivedData.erase(receivedData.begin(), receivedData.begin() + data.Reader().ConstructSaveMarker());
+                    return;
+                }
+
+            ServiceNotFound(serviceId, methodId);
+            receivedData.erase(receivedData.begin(), receivedData.begin() + data.Reader().ConstructSaveMarker());
+        }
     }
 
     void Console::MethodReceived(const EchoService& service, const EchoMethod& method, infra::ProtoParser&& parser)

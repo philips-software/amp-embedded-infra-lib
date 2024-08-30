@@ -23,8 +23,8 @@ target_sources(services.util_test PRIVATE
     TestCyclicStore.cpp
     TestDebouncedButton.cpp
     TestDebugLed.cpp
-    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestEchoOnMessageCommunication.cpp>
-    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestEchoOnMessageCommunicationSymmetricKey.cpp>
+    TestEchoOnSesame.cpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestEchoOnSesameSymmetricKey.cpp>
     TestFlashAlign.cpp
     TestFlashMultipleAccess.cpp
     TestFlashQuadSpiCypressFll.cpp
@@ -37,10 +37,12 @@ target_sources(services.util_test PRIVATE
     TestLowPowerSerialCommunication.cpp
     TestLowPowerSpiMaster.cpp
     TestMessageCommunicationCobs.cpp
-    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestMessageCommunicationSecured.cpp>
     TestMessageCommunicationWindowed.cpp
     TestRepeatingButton.cpp
     TestSerialCommunicationLoopback.cpp
+    TestSesameCobs.cpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestSesameSecured.cpp>
+    TestSesameWindowed.cpp
     TestSignalLed.cpp
     TestSpiMasterWithChipSelect.cpp
     TestSpiMultipleAccess.cpp

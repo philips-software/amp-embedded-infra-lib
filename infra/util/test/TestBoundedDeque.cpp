@@ -517,7 +517,7 @@ TEST(BoundedDequeTest, TestInsertManyAtTheFront)
     EXPECT_EQ(expectedDeque, deque);
 }
 
-TEST(BoundedDequeTest, TestInsertRange)
+TEST(BoundedDequeTest, TestInsertRangeInTheMiddle)
 {
     int range[3] = { 0, 1, 2 };
     infra::BoundedDeque<int>::WithMaxSize<5> deque(range, range + 3);
@@ -526,6 +526,19 @@ TEST(BoundedDequeTest, TestInsertRange)
     EXPECT_EQ(5, *deque.insert(deque.begin() + 2, insertRange, insertRange + 2));
 
     int expectedRange[5] = { 0, 1, 5, 6, 2 };
+    infra::BoundedDeque<int>::WithMaxSize<5> expectedDeque(expectedRange, expectedRange + 5);
+    EXPECT_EQ(expectedDeque, deque);
+}
+
+TEST(BoundedDequeTest, TestInsertRangeAtTheFront)
+{
+    int range[3] = { 0, 1, 2 };
+    infra::BoundedDeque<int>::WithMaxSize<5> deque(range, range + 3);
+
+    int insertRange[2] = { 5, 6 };
+    EXPECT_EQ(5, *deque.insert(deque.begin(), insertRange, insertRange + 2));
+
+    int expectedRange[5] = { 5, 6, 0, 1, 2 };
     infra::BoundedDeque<int>::WithMaxSize<5> expectedDeque(expectedRange, expectedRange + 5);
     EXPECT_EQ(expectedDeque, deque);
 }
@@ -559,7 +572,7 @@ TEST(BoundedDequeTest, TestInsertMove)
     EXPECT_EQ(expectedDeque, deque);
 }
 
-TEST(BoundedDequeTest, TestEraseOne)
+TEST(BoundedDequeTest, TestEraseOneInTheMiddle)
 {
     int range[3] = { 0, 1, 2 };
     infra::BoundedDeque<int>::WithMaxSize<5> deque(range, range + 3);
@@ -567,6 +580,18 @@ TEST(BoundedDequeTest, TestEraseOne)
     deque.erase(deque.begin() + 1);
 
     int expectedRange[5] = { 0, 2 };
+    infra::BoundedDeque<int>::WithMaxSize<5> expectedDeque(expectedRange, expectedRange + 2);
+    EXPECT_EQ(expectedDeque, deque);
+}
+
+TEST(BoundedDequeTest, TestEraseOneAtTheFront)
+{
+    int range[3] = { 0, 1, 2 };
+    infra::BoundedDeque<int>::WithMaxSize<5> deque(range, range + 3);
+
+    deque.erase(deque.begin());
+
+    int expectedRange[5] = { 1, 2 };
     infra::BoundedDeque<int>::WithMaxSize<5> expectedDeque(expectedRange, expectedRange + 2);
     EXPECT_EQ(expectedDeque, deque);
 }

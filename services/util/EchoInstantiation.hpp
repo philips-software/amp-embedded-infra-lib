@@ -1,11 +1,17 @@
-#ifndef SERVICES_ECHO_INSTANTIATIONS
-#define SERVICES_ECHO_INSTANTIATIONS
+#ifndef SERVICES_UTIL_ECHO_INSTANTIATIONS
+#define SERVICES_UTIL_ECHO_INSTANTIATIONS
 
+#ifdef EMIL_HAL_GENERIC
+#include "hal/generic/UartGeneric.hpp"
+#endif
 #include "infra/util/BoundedVector.hpp"
 #include "protobuf/echo/ServiceForwarder.hpp"
 #include "services/util/EchoOnMessageCommunication.hpp"
+#include "services/util/EchoOnSesame.hpp"
 #include "services/util/MessageCommunicationCobs.hpp"
 #include "services/util/MessageCommunicationWindowed.hpp"
+#include "services/util/SesameCobs.hpp"
+#include "services/util/SesameWindowed.hpp"
 
 namespace main_
 {
@@ -26,6 +32,60 @@ namespace main_
         services::MessageCommunicationWindowed::WithReceiveBuffer<MessageSize> windowed{ cobs };
         services::EchoOnMessageCommunication echo;
     };
+
+    template<std::size_t MessageSize>
+    struct EchoOnSesame
+    {
+        EchoOnSesame(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory)
+            : cobs(serialCommunication)
+            , echo(windowed, serializerFactory)
+        {}
+
+        ~EchoOnSesame()
+        {
+            cobs.Stop();
+            windowed.Stop();
+        }
+
+        operator services::Echo&()
+        {
+            return echo;
+        }
+
+        void Reset()
+        {
+            echo.Reset();
+        }
+
+        services::SesameCobs::WithMaxMessageSize<MessageSize> cobs;
+        services::SesameWindowed windowed{ cobs };
+        services::EchoOnSesame echo;
+    };
+
+#ifdef EMIL_HAL_GENERIC
+    template<std::size_t MessageSize>
+    struct EchoOnUartBase
+    {
+        explicit EchoOnUartBase(infra::BoundedConstString portName)
+            : uart(infra::AsStdString(portName))
+        {}
+
+        hal::UartGeneric uart;
+        services::MethodSerializerFactory::OnHeap serializerFactory;
+        hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<MessageSize> bufferedSerial{ uart };
+    };
+
+    template<std::size_t MessageSize>
+    struct EchoOnUart
+        : EchoOnUartBase<MessageSize>
+    {
+        using EchoOnUartBase<MessageSize>::EchoOnUartBase;
+
+        main_::EchoOnSesame<MessageSize> echoOnSesame{ this->bufferedSerial, this->serializerFactory };
+
+        services::Echo& echo{ echoOnSesame.echo };
+    };
+#endif
 
     template<std::size_t MessageSize, std::size_t MaxServices>
     class EchoForwarder
@@ -66,9 +126,9 @@ namespace main_
     };
 
     template<std::size_t MessageSize, std::size_t MaxServices>
-    struct EchoForwarderToSerial
+    struct EchoForwarderToSerialCommunication
     {
-        EchoForwarderToSerial(services::Echo& from, hal::SerialCommunication& toSerial, services::MethodSerializerFactory& serializerFactory)
+        EchoForwarderToSerialCommunication(services::Echo& from, hal::SerialCommunication& toSerial, services::MethodSerializerFactory& serializerFactory)
             : to(toSerial, serializerFactory)
             , echoForwarder(from, to)
         {}

@@ -11,7 +11,7 @@ namespace services
     {
         if (reader.Allocatable())
         {
-            auto readerPtr = reader.Emplace(ConnectionObserver::Subject().ReceiveStream());
+            auto readerPtr = reader.Emplace(ConnectionObserver::Subject().ReceiveStream(), *this);
             EchoOnStreams::DataReceived(infra::MakeContainedSharedObject(readerPtr->limitedReader, readerPtr));
         }
         else
@@ -23,13 +23,15 @@ namespace services
         ConnectionObserver::Subject().RequestSendStream(std::min(size, ConnectionObserver::Subject().MaxSendStreamSize()));
     }
 
-    void EchoOnConnection::AckReceived()
-    {
-        ConnectionObserver::Subject().AckReceived();
-    }
-
-    EchoOnConnection::LimitedReader::LimitedReader(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+    EchoOnConnection::LimitedReader::LimitedReader(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, EchoOnConnection& connection)
         : reader(std::move(reader))
         , limitedReader(*this->reader, this->reader->Available())
+        , connection(connection)
     {}
+
+    EchoOnConnection::LimitedReader::~LimitedReader()
+    {
+        if (connection.IsAttached())
+            connection.ConnectionObserver::Subject().AckReceived();
+    }
 }

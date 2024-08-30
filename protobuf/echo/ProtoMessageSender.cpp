@@ -25,6 +25,11 @@ namespace services
         }
     }
 
+    bool ProtoMessageSenderBase::BufferEmpty() const
+    {
+        return buffer.empty();
+    }
+
     bool ProtoMessageSenderBase::SerializeField(ProtoBool, infra::ProtoFormatter& formatter, bool value, uint32_t fieldNumber, [[maybe_unused]] const bool& retry) const
     {
         services::SerializeField(ProtoBool(), formatter, value, fieldNumber);
