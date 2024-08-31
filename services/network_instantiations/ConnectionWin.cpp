@@ -120,7 +120,8 @@ namespace services
         do
         {
             UpdateEventFlags(); // If there is something to send, update the flags before calling send, because FD_SEND is an edge-triggered event.
-            sent = send(socket, reinterpret_cast<char*>(sendBuffer.contiguous_range(sendBuffer.begin()).begin()), sendBuffer.contiguous_range(sendBuffer.begin()).size(), 0);
+            std::vector<char> tmpBuffer(sendBuffer.begin(), sendBuffer.end());
+            sent = send(socket, tmpBuffer.data(), tmpBuffer.size(), 0);
 
             if (sent == SOCKET_ERROR)
             {

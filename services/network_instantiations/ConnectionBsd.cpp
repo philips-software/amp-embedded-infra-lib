@@ -118,11 +118,12 @@ namespace services
 
     void ConnectionBsd::Send()
     {
-        int sent = 0;
+        long sent = 0;
 
         do
         {
-            sent = send(socket, reinterpret_cast<char*>(sendBuffer.contiguous_range(sendBuffer.begin()).begin()), sendBuffer.contiguous_range(sendBuffer.begin()).size(), 0);
+            std::vector<char> tmpBuffer(sendBuffer.begin(), sendBuffer.end());
+            sent = send(socket, tmpBuffer.data(), tmpBuffer.size(), 0);
 
             if (sent == -1)
             {
