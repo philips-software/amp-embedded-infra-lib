@@ -26,6 +26,30 @@ namespace services
         return value;
     }
 
+    MessageBytes::MessageBytes(const infra::BoundedVector<uint8_t>& value)
+        : value(value)
+    {}
+
+    void MessageBytes::Serialize(infra::ProtoFormatter& formatter) const
+    {
+        SerializeField(services::ProtoBytes<4>(), formatter, value, 1);
+    }
+
+    infra::BoundedVector<uint8_t>& MessageBytes::Get(std::integral_constant<uint32_t, 0>)
+    {
+        return value;
+    }
+
+    const infra::BoundedVector<uint8_t>& MessageBytes::Get(std::integral_constant<uint32_t, 0>) const
+    {
+        return value;
+    }
+
+    const infra::BoundedVector<uint8_t>& MessageBytes::GetDecayed(std::integral_constant<uint32_t, 0>) const
+    {
+        return value;
+    }
+
     ServiceStub::ServiceStub(Echo& echo)
         : Service(echo)
     {}
@@ -48,6 +72,11 @@ namespace services
                 return Rpc().SerializerFactory().MakeDeserializer<EmptyMessage>(infra::Function<void()>([this]()
                     {
                         MethodNoParameter();
+                    }));
+            case idMethodBytes:
+                return Rpc().SerializerFactory().MakeDeserializer<MessageBytes, const infra::BoundedVector<uint8_t>&>(infra::Function<void(const infra::BoundedVector<uint8_t>&)>([this](const infra::BoundedVector<uint8_t>& v)
+                    {
+                        MethodBytes(v);
                     }));
             default:
                 errorPolicy.MethodNotFound(serviceId, methodId);
