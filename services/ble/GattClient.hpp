@@ -124,8 +124,18 @@ namespace services
     {
     public:
         virtual void StartServiceDiscovery() = 0;
-        virtual void StartCharacteristicDiscovery(const GattService& service) = 0;
-        virtual void StartDescriptorDiscovery(const GattService& service) = 0;
+        virtual void StartCharacteristicDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) = 0;
+        virtual void StartDescriptorDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) = 0;
+
+        void StartCharacteristicDiscovery(const GattService& service)
+        {
+            StartCharacteristicDiscovery(service.Handle(), service.EndHandle());
+        }
+
+        void StartDescriptorDiscovery(const GattService& service)
+        {
+            StartDescriptorDiscovery(service.Handle(), service.EndHandle());
+        }
     };
 
     class GattClientDiscoveryDecorator
@@ -146,8 +156,8 @@ namespace services
 
         // Implementation of GattClientDiscovery
         void StartServiceDiscovery() override;
-        void StartCharacteristicDiscovery(const GattService& service) override;
-        void StartDescriptorDiscovery(const GattService& service) override;
+        void StartCharacteristicDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) override;
+        void StartDescriptorDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) override;
     };
 }
 

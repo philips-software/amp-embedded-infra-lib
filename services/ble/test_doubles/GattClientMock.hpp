@@ -48,8 +48,8 @@ namespace services
     {
     public:
         MOCK_METHOD(void, StartServiceDiscovery, (), (override));
-        MOCK_METHOD(void, StartCharacteristicDiscovery, (const GattService& service), (override));
-        MOCK_METHOD(void, StartDescriptorDiscovery, (const GattService& service), (override));
+        MOCK_METHOD(void, StartCharacteristicDiscovery, (AttAttribute::Handle handle, AttAttribute::Handle endHandle), (override));
+        MOCK_METHOD(void, StartDescriptorDiscovery, (AttAttribute::Handle handle, AttAttribute::Handle endHandle), (override));
     };
 }
 
