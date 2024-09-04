@@ -59,3 +59,36 @@ TEST_F(TimerLimitedRepeatingTest, ResolutionIsTakenIntoAccount)
 
     ForwardTime(std::chrono::seconds(5));
 }
+
+TEST_F(TimerLimitedRepeatingTest, CancelAfterFirstCallback)
+{
+    infra::MockCallback<void()> callback;
+    EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(1)));
+
+    infra::TimerLimitedRepeating timer;
+    timer.Start(2, std::chrono::seconds(1), [&callback, &timer]()
+        {
+            callback.callback();
+            timer.Cancel();
+        });
+
+    ForwardTime(std::chrono::seconds(5));
+}
+
+TEST_F(TimerLimitedRepeatingTest, Restart0AfterFirstCallback)
+{
+    infra::MockCallback<void()> callback;
+    EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(1)));
+
+    infra::TimerLimitedRepeating timer;
+    timer.Start(2, std::chrono::seconds(1), [&callback, &timer]()
+        {
+            callback.callback();
+            timer.Start(0, std::chrono::seconds(1), [&callback]()
+                {
+                    callback.callback();
+                });
+        });
+
+    ForwardTime(std::chrono::seconds(5));
+}

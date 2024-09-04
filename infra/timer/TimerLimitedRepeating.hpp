@@ -6,10 +6,10 @@
 namespace infra
 {
     class TimerLimitedRepeating
-        : public Timer
+        : public detail::TimerRepeating
     {
     public:
-        explicit TimerLimitedRepeating(uint32_t timerServiceId = systemTimerServiceId);
+        using detail::TimerRepeating::TimerRepeating;
         TimerLimitedRepeating(int aHowMany, Duration duration, const infra::Function<void()>& action, uint32_t timerServiceId = systemTimerServiceId);
 
         void Start(int aHowMany, Duration duration, const infra::Function<void()>& action);
@@ -18,10 +18,7 @@ namespace infra
         void ComputeNextTriggerTime() override;
 
     private:
-        TimePoint triggerStart;
-        Duration triggerPeriod;
         int howMany{ 0 };
-        infra::Function<void()> action;
     };
 }
 
