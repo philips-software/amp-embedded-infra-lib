@@ -9,14 +9,14 @@
 namespace infra
 {
     class TimerLimitedRepeatingWithClosingAction
-        : public details::TimerRepeating
+        : public detail::TimerRepeating
     {
     public:
-        explicit TimerLimitedRepeatingWithClosingAction(uint32_t timerServiceId = systemTimerServiceId);
+        using detail::TimerRepeating::TimerRepeating;
         TimerLimitedRepeatingWithClosingAction(int aHowMany, Duration duration, const infra::Function<void()>& action, const infra::Function<void()>& aClosingAction, uint32_t timerServiceId = systemTimerServiceId);
 
         void Start(int aHowMany, Duration duration, const infra::Function<void()>& action, const infra::Function<void()>& aClosingAction);
-        virtual const infra::Function<void()>& Action() const override;
+        const infra::Function<void()>& Action() const override;
 
     protected:
         void ComputeNextTriggerTime() override;

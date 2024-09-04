@@ -3,7 +3,7 @@
 namespace infra
 {
     TimerLimitedRepeatingWithClosingAction::TimerLimitedRepeatingWithClosingAction(int aHowMany, Duration duration, const infra::Function<void()>& aAction, const infra::Function<void()>& aClosingAction, uint32_t timerServiceId)
-        : details::TimerRepeating(timerServiceId)
+        : detail::TimerRepeating(timerServiceId)
     {
         Start(aHowMany, duration, aAction, aClosingAction);
     }
@@ -32,7 +32,7 @@ namespace infra
     {
         --howMany;
         if (howMany >= 0)
-            details::TimerRepeating::ComputeNextTriggerTime();
+            detail::TimerRepeating::ComputeNextTriggerTime();
         else
             Cancel();
     }

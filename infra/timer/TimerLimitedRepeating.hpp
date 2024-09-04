@@ -6,10 +6,10 @@
 namespace infra
 {
     class TimerLimitedRepeating
-        : public details::TimerRepeating
+        : public detail::TimerRepeating
     {
     public:
-        using details::TimerRepeating::TimerRepeating;
+        using detail::TimerRepeating::TimerRepeating;
         TimerLimitedRepeating(int aHowMany, Duration duration, const infra::Function<void()>& action, uint32_t timerServiceId = systemTimerServiceId);
 
         void Start(int aHowMany, Duration duration, const infra::Function<void()>& action);

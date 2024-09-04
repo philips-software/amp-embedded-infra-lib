@@ -142,22 +142,22 @@ namespace infra
         Cancel();
     }
 
-    details::TimerRepeating::TimerRepeating(uint32_t timerServiceId)
+    detail::TimerRepeating::TimerRepeating(uint32_t timerServiceId)
         : Timer(timerServiceId)
     {}
 
-    Duration details::TimerRepeating::TriggerPeriod() const
+    Duration detail::TimerRepeating::TriggerPeriod() const
     {
         return triggerPeriod;
     }
 
-    void details::TimerRepeating::StartTimer(Duration duration, const infra::Function<void()>& action)
+    void detail::TimerRepeating::StartTimer(Duration duration, const infra::Function<void()>& action)
     {
         triggerPeriod = duration;
         SetNextTriggerTime(Now() + TriggerPeriod() + Resolution(), action);
     }
 
-    void details::TimerRepeating::ComputeNextTriggerTime()
+    void detail::TimerRepeating::ComputeNextTriggerTime()
     {
         TimePoint now = std::max(Now(), NextTrigger());
         Duration diff = (now - NextTrigger()) % triggerPeriod;
@@ -166,13 +166,13 @@ namespace infra
     }
 
     TimerRepeating::TimerRepeating(Duration duration, const infra::Function<void()>& aAction, uint32_t timerServiceId)
-        : details::TimerRepeating(timerServiceId)
+        : detail::TimerRepeating(timerServiceId)
     {
         Start(duration, aAction);
     }
 
     TimerRepeating::TimerRepeating(Duration duration, const infra::Function<void()>& aAction, TriggerImmediately, uint32_t timerServiceId)
-        : details::TimerRepeating(timerServiceId)
+        : detail::TimerRepeating(timerServiceId)
     {
         Start(duration, aAction, triggerImmediately);
     }

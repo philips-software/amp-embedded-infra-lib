@@ -85,7 +85,7 @@ namespace infra
         void ComputeNextTriggerTime() override;
     };
 
-    namespace details
+    namespace detail
     {
         class TimerRepeating
             : public Timer
@@ -104,10 +104,10 @@ namespace infra
     }
 
     class TimerRepeating
-        : public details::TimerRepeating
+        : public detail::TimerRepeating
     {
     public:
-        using details::TimerRepeating::TimerRepeating;
+        using detail::TimerRepeating::TimerRepeating;
         TimerRepeating(Duration duration, const infra::Function<void()>& action, uint32_t timerServiceId = systemTimerServiceId);
         TimerRepeating(Duration duration, const infra::Function<void()>& action, TriggerImmediately, uint32_t timerServiceId = systemTimerServiceId);
 
