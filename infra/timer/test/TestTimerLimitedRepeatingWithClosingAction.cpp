@@ -75,7 +75,8 @@ TEST_F(TimerLimitedRepeatingWithClosingActionTest, CancelAfterFirstCallback)
     infra::MockCallback<void()> extra;
     EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(1)));
 
-    infra::TimerLimitedRepeatingWithClosingAction timer(
+    infra::TimerLimitedRepeatingWithClosingAction timer;
+    timer.Start(
         2, std::chrono::seconds(1), [&callback, &timer]()
         {
             callback.callback();
@@ -95,7 +96,8 @@ TEST_F(TimerLimitedRepeatingWithClosingActionTest, Restart0AfterFirstCallback)
     infra::MockCallback<void()> extra;
     EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(1)));
 
-    infra::TimerLimitedRepeatingWithClosingAction timer(
+    infra::TimerLimitedRepeatingWithClosingAction timer;
+    timer.Start(
         2, std::chrono::seconds(1), [&callback, &timer]()
         {
             callback.callback();
