@@ -1,14 +1,14 @@
 #include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
-#include "services/util/MessageCommunicationSecured.hpp"
-#include "services/util/test_doubles/MessageCommunicationMock.hpp"
+#include "services/util/SesameSecured.hpp"
+#include "services/util/test_doubles/SesameMock.hpp"
 #include "gmock/gmock.h"
 
-class MessageCommunicationSecuredTest
+class SesameSecuredTest
     : public testing::Test
 {
 public:
-    MessageCommunicationSecuredTest()
+    SesameSecuredTest()
     {
         EXPECT_CALL(upper, Initialized());
         lower.GetObserver().Initialized();
@@ -65,25 +65,25 @@ public:
         sentData.clear();
     }
 
-    std::array<uint8_t, services::MessageCommunicationSecured::keySize> key{ 1, 2 };
-    std::array<uint8_t, services::MessageCommunicationSecured::blockSize> iv{ 1, 3 };
+    std::array<uint8_t, services::SesameSecured::keySize> key{ 1, 2 };
+    std::array<uint8_t, services::SesameSecured::blockSize> iv{ 1, 3 };
 
-    testing::StrictMock<services::MessageCommunicationMock> lower;
-    services::MessageCommunicationSecured::WithBuffers<64> secured{ lower, key, iv, key, iv };
-    testing::StrictMock<services::MessageCommunicationObserverMock> upper{ secured };
+    testing::StrictMock<services::SesameMock> lower;
+    services::SesameSecured::WithBuffers<64> secured{ lower, key, iv, key, iv };
+    testing::StrictMock<services::SesameObserverMock> upper{ secured };
 
     infra::SharedOptional<infra::StdVectorInputStreamReader> reader;
     std::vector<uint8_t> sentData;
     infra::SharedOptional<infra::StdVectorOutputStreamWriter> writer;
 };
 
-TEST_F(MessageCommunicationSecuredTest, send_receive_message)
+TEST_F(SesameSecuredTest, send_receive_message)
 {
     Send("abcd");
     Receive("abcd");
 }
 
-TEST_F(MessageCommunicationSecuredTest, send_receive_two_messages)
+TEST_F(SesameSecuredTest, send_receive_two_messages)
 {
     Send("abcd");
     Receive("abcd");
@@ -92,7 +92,7 @@ TEST_F(MessageCommunicationSecuredTest, send_receive_two_messages)
     Receive("efghi");
 }
 
-TEST_F(MessageCommunicationSecuredTest, same_consecutive_messages_are_encrypted_differently)
+TEST_F(SesameSecuredTest, same_consecutive_messages_are_encrypted_differently)
 {
     Send("abcd");
     auto first = sentData;
@@ -104,7 +104,7 @@ TEST_F(MessageCommunicationSecuredTest, same_consecutive_messages_are_encrypted_
     EXPECT_NE(first, second);
 }
 
-TEST_F(MessageCommunicationSecuredTest, key_change_to_default_key_results_in_same_encryption)
+TEST_F(SesameSecuredTest, key_change_to_default_key_results_in_same_encryption)
 {
     Send("abcd");
     auto first = sentData;
@@ -120,14 +120,14 @@ TEST_F(MessageCommunicationSecuredTest, key_change_to_default_key_results_in_sam
     EXPECT_EQ(first, second);
 }
 
-TEST_F(MessageCommunicationSecuredTest, key_change_to_different_key_results_in_different_encryption)
+TEST_F(SesameSecuredTest, key_change_to_different_key_results_in_different_encryption)
 {
     Send("abcd");
     auto first = sentData;
     Receive("abcd");
 
-    std::array<uint8_t, services::MessageCommunicationSecured::keySize> key2{ 1, 2, 1 };
-    std::array<uint8_t, services::MessageCommunicationSecured::blockSize> iv2{ 1, 3, 1 };
+    std::array<uint8_t, services::SesameSecured::keySize> key2{ 1, 2, 1 };
+    std::array<uint8_t, services::SesameSecured::blockSize> iv2{ 1, 3, 1 };
     secured.SetNextSendKey(key2, iv2);
 
     Send("abcd");
@@ -136,14 +136,14 @@ TEST_F(MessageCommunicationSecuredTest, key_change_to_different_key_results_in_d
     EXPECT_NE(first, second);
 }
 
-TEST_F(MessageCommunicationSecuredTest, initialization_results_in_default_keys)
+TEST_F(SesameSecuredTest, initialization_results_in_default_keys)
 {
     Send("abcd");
     auto first = sentData;
     Receive("abcd");
 
-    std::array<uint8_t, services::MessageCommunicationSecured::keySize> key2{ 1, 2, 1 };
-    std::array<uint8_t, services::MessageCommunicationSecured::blockSize> iv2{ 1, 3, 1 };
+    std::array<uint8_t, services::SesameSecured::keySize> key2{ 1, 2, 1 };
+    std::array<uint8_t, services::SesameSecured::blockSize> iv2{ 1, 3, 1 };
     secured.SetNextSendKey(key2, iv2);
 
     EXPECT_CALL(upper, Initialized());
@@ -156,7 +156,7 @@ TEST_F(MessageCommunicationSecuredTest, initialization_results_in_default_keys)
     EXPECT_EQ(first, second);
 }
 
-TEST_F(MessageCommunicationSecuredTest, damaged_message_does_not_propagate)
+TEST_F(SesameSecuredTest, damaged_message_does_not_propagate)
 {
     Send("abcd");
 
@@ -166,7 +166,7 @@ TEST_F(MessageCommunicationSecuredTest, damaged_message_does_not_propagate)
     ReceivedMessage(sentData);
 }
 
-TEST_F(MessageCommunicationSecuredTest, short_message_does_not_propagate)
+TEST_F(SesameSecuredTest, short_message_does_not_propagate)
 {
     Send("abcd");
 
@@ -176,7 +176,7 @@ TEST_F(MessageCommunicationSecuredTest, short_message_does_not_propagate)
     ReceivedMessage(sentData);
 }
 
-TEST_F(MessageCommunicationSecuredTest, different_sizes)
+TEST_F(SesameSecuredTest, different_sizes)
 {
     for (auto i = 0; i != 34; ++i)
     {
@@ -186,4 +186,10 @@ TEST_F(MessageCommunicationSecuredTest, different_sizes)
         Send(message);
         Receive(message);
     }
+}
+
+TEST_F(SesameSecuredTest, Reset_is_forwarded)
+{
+    EXPECT_CALL(lower, Reset());
+    upper.Subject().Reset();
 }

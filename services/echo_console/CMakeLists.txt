@@ -11,14 +11,6 @@ if (EMIL_HOST_BUILD AND EMIL_INCLUDE_MBEDTLS)
         services.util
     )
 
-    if (EMIL_BUILD_WIN)
-        target_link_libraries(services.echo_console PRIVATE hal.windows)
-    endif()
-
-    if (EMIL_BUILD_UNIX OR EMIL_BUILD_DARWIN)
-        target_link_libraries(services.echo_console PRIVATE hal.unix)
-    endif()
-
     target_sources(services.echo_console PRIVATE
         Console.cpp
         Console.hpp

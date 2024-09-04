@@ -289,13 +289,40 @@ namespace services
             return url.substr(0, schemeEnd);
     }
 
+    infra::BoundedString SchemeFromUrl(infra::BoundedString url)
+    {
+        auto schemeEnd = url.find("://");
+        if (schemeEnd == infra::BoundedString::npos)
+            return infra::BoundedString();
+        else
+            return url.substr(0, schemeEnd);
+    }
+
     infra::BoundedConstString HostAndPortFromUrl(infra::BoundedConstString url)
     {
         auto schemeEnd = SchemeEndPositionFromUrl(url);
         return url.substr(schemeEnd, url.find_first_of("/?", schemeEnd) - schemeEnd);
     }
 
+    infra::BoundedString HostAndPortFromUrl(infra::BoundedString url)
+    {
+        auto schemeEnd = SchemeEndPositionFromUrl(url);
+        return url.substr(schemeEnd, url.find_first_of("/?", schemeEnd) - schemeEnd);
+    }
+
     infra::BoundedConstString HostFromUrl(infra::BoundedConstString url)
+    {
+        auto hostAndPort = HostAndPortFromUrl(url);
+        auto hostAndUserinfo = hostAndPort.substr(0, hostAndPort.find(':'));
+
+        auto atPosition = hostAndUserinfo.find('@');
+        if (atPosition != infra::BoundedConstString::npos)
+            return hostAndUserinfo.substr(atPosition + 1);
+        else
+            return hostAndUserinfo;
+    }
+
+    infra::BoundedString HostFromUrl(infra::BoundedString url)
     {
         auto hostAndPort = HostAndPortFromUrl(url);
         auto hostAndUserinfo = hostAndPort.substr(0, hostAndPort.find(':'));

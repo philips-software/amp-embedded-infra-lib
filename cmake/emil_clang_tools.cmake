@@ -15,8 +15,9 @@ function(emil_exclude_directory_from_clang_format directory)
 endfunction()
 
 function(emil_clangformat_directories postfix directories)
+    set(singleArgs CLANG_FORMAT_FILE)
     set(multiValueArgs DIRECTORIES)
-    cmake_parse_arguments(PARSE_ARGV 1 MY "" "" "${multiValueArgs}")
+    cmake_parse_arguments(PARSE_ARGV 1 MY "" "${singleArgs}" "${multiValueArgs}")
 
     emil_get_subdirectories(subdirectories DIRECTORIES ${MY_DIRECTORIES})
     emil_get_targets_from_directories(targets DIRECTORIES ${subdirectories})
@@ -53,6 +54,10 @@ function(emil_clangformat_directories postfix directories)
     if (CLANGFORMAT)
         add_custom_target(clangformat_${postfix})
 
+        if (NOT DEFINED MY_CLANG_FORMAT_FILE)
+            set(MY_CLANG_FORMAT_FILE ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../.clang-format)
+        endif()
+
         set(run_cmd)
         if (CMAKE_HOST_WIN32)
             # Executing clang-format under windows runs a batch script that terminates the shell after running the first command
@@ -67,7 +72,7 @@ function(emil_clangformat_directories postfix directories)
             if (${size} GREATER 7000)
                 add_custom_command(
                     TARGET clangformat_${postfix} POST_BUILD
-                    COMMAND ${run_cmd} ${CLANGFORMAT} -style=file:${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../.clang-format -i ${clangformat_sources}
+                    COMMAND ${run_cmd} ${CLANGFORMAT} -style=file:${MY_CLANG_FORMAT_FILE} -i ${clangformat_sources}
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                     COMMENT "Formatting ${postfix} with ${CLANGFORMAT} ..."
                 )
@@ -78,7 +83,7 @@ function(emil_clangformat_directories postfix directories)
         if (clangformat_sources)
             add_custom_command(
                 TARGET clangformat_${postfix} POST_BUILD
-                COMMAND ${run_cmd} ${CLANGFORMAT} -style=file:${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../.clang-format -i ${clangformat_sources}
+                COMMAND ${run_cmd} ${CLANGFORMAT} -style=file:${MY_CLANG_FORMAT_FILE} -i ${clangformat_sources}
                 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                 COMMENT "Formatting ${postfix} with ${CLANGFORMAT} ..."
             )

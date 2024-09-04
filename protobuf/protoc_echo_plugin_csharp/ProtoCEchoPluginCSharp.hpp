@@ -25,6 +25,8 @@ namespace application
     public:
         bool Generate(const google::protobuf::FileDescriptor* file, const std::string& parameter,
             google::protobuf::compiler::GeneratorContext* generatorContext, std::string* error) const override;
+
+        uint64_t GetSupportedFeatures() const override;
     };
 
     class CSharpGenerator

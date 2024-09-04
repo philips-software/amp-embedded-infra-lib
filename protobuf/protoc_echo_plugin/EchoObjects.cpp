@@ -107,7 +107,45 @@ namespace application
 
     std::shared_ptr<EchoField> EchoField::GenerateField(const google::protobuf::FieldDescriptor& fieldDescriptor, EchoRoot& root)
     {
-        if (fieldDescriptor.label() != google::protobuf::FieldDescriptor::LABEL_REPEATED)
+        if (fieldDescriptor.has_optional_keyword())
+            switch (fieldDescriptor.type())
+            {
+                case google::protobuf::FieldDescriptor::TYPE_INT64:
+                    return std::make_shared<EchoFieldOptional>(fieldDescriptor, std::make_shared<EchoFieldInt64>(fieldDescriptor));
+                case google::protobuf::FieldDescriptor::TYPE_UINT64:
+                    return std::make_shared<EchoFieldOptional>(fieldDescriptor, std::make_shared<EchoFieldUint64>(fieldDescriptor));
+                case google::protobuf::FieldDescriptor::TYPE_INT32:
+                    return std::make_shared<EchoFieldOptional>(fieldDescriptor, std::make_shared<EchoFieldInt32>(fieldDescriptor));
+                case google::protobuf::FieldDescriptor::TYPE_FIXED64:
+                    return std::make_shared<EchoFieldOptional>(fieldDescriptor, std::make_shared<EchoFieldFixed64>(fieldDescriptor));
+                case google::protobuf::FieldDescriptor::TYPE_FIXED32:
+                    return std::make_shared<EchoFieldOptional>(fieldDescriptor, std::make_shared<EchoFieldFixed32>(fieldDescriptor));
+                case google::protobuf::FieldDescriptor::TYPE_BOOL:
+                    return std::make_shared<EchoFieldOptional>(fieldDescriptor, std::make_shared<EchoFieldBool>(fieldDescriptor));
+                case google::protobuf::FieldDescriptor::TYPE_STRING:
+                    if (fieldDescriptor.options().GetExtension(string_size) != 0)
+                        return std::make_shared<EchoFieldOptional>(fieldDescriptor, std::make_shared<EchoFieldString>(fieldDescriptor));
+                    else
+                        return std::make_shared<EchoFieldOptional>(fieldDescriptor, std::make_shared<EchoFieldUnboundedString>(fieldDescriptor));
+                case google::protobuf::FieldDescriptor::TYPE_MESSAGE:
+                    return std::make_shared<EchoFieldOptional>(fieldDescriptor, std::make_shared<EchoFieldMessage>(fieldDescriptor, root));
+                case google::protobuf::FieldDescriptor::TYPE_BYTES:
+                    if (fieldDescriptor.options().GetExtension(bytes_size) != 0)
+                        return std::make_shared<EchoFieldOptional>(fieldDescriptor, std::make_shared<EchoFieldBytes>(fieldDescriptor));
+                    else
+                        return std::make_shared<EchoFieldOptional>(fieldDescriptor, std::make_shared<EchoFieldUnboundedBytes>(fieldDescriptor));
+                case google::protobuf::FieldDescriptor::TYPE_UINT32:
+                    return std::make_shared<EchoFieldOptional>(fieldDescriptor, std::make_shared<EchoFieldUint32>(fieldDescriptor));
+                case google::protobuf::FieldDescriptor::TYPE_ENUM:
+                    return std::make_shared<EchoFieldOptional>(fieldDescriptor, std::make_shared<EchoFieldEnum>(fieldDescriptor, root));
+                case google::protobuf::FieldDescriptor::TYPE_SFIXED64:
+                    return std::make_shared<EchoFieldOptional>(fieldDescriptor, std::make_shared<EchoFieldSFixed64>(fieldDescriptor));
+                case google::protobuf::FieldDescriptor::TYPE_SFIXED32:
+                    return std::make_shared<EchoFieldOptional>(fieldDescriptor, std::make_shared<EchoFieldSFixed32>(fieldDescriptor));
+                default:
+                    throw UnsupportedFieldType{ fieldDescriptor.name(), fieldDescriptor.type() };
+            }
+        else if (!fieldDescriptor.is_repeated())
             switch (fieldDescriptor.type())
             {
                 case google::protobuf::FieldDescriptor::TYPE_INT64:
@@ -354,6 +392,14 @@ namespace application
                 maxMessageSize += 4 + infra::MaxVarIntSize((field.number << 3) | 2);
             }
 
+            void VisitOptional(const EchoFieldOptional& field) override
+            {
+                uint32_t max = 0;
+                GenerateMaxMessageSizeVisitor visitor(max);
+                field.type->Accept(visitor);
+                maxMessageSize += max;
+            }
+
             void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 uint32_t max = 0;
@@ -537,6 +583,19 @@ namespace application
     void EchoFieldSFixed64::Accept(EchoFieldVisitor& visitor) const
     {
         visitor.VisitSFixed64(*this);
+    }
+
+    EchoFieldOptional::EchoFieldOptional(const google::protobuf::FieldDescriptor& descriptor, const std::shared_ptr<EchoField>& type)
+        : EchoField(descriptor)
+        , type(type)
+    {
+        protoType = "services::ProtoOptional<" + type->protoType + ">";
+        protoReferenceType = "services::ProtoOptional<" + type->protoReferenceType + ">";
+    }
+
+    void EchoFieldOptional::Accept(EchoFieldVisitor& visitor) const
+    {
+        visitor.VisitOptional(*this);
     }
 
     EchoFieldRepeated::EchoFieldRepeated(const google::protobuf::FieldDescriptor& descriptor, const std::shared_ptr<EchoField>& type)

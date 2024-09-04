@@ -152,7 +152,7 @@ if (EMIL_STANDALONE)
     emil_folderize_all_targets()
 endif()
 
-if (EMIL_BUILD_ECHO_COMPILERS)
+if (EMIL_BUILD_ECHO_COMPILERS AND NOT CMAKE_CROSSCOMPILING)
     function(generate_export_targets name)
         install(EXPORT emil${name}Targets
             FILE emil${name}Targets.cmake

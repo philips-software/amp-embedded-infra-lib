@@ -5,6 +5,8 @@ target_link_libraries(infra.stream PUBLIC
 )
 
 target_sources(infra.stream PRIVATE
+    AtomicByteQueue.cpp
+    AtomicByteQueue.hpp
     BoundedDequeInputStream.cpp
     BoundedDequeInputStream.hpp
     BoundedDequeOutputStream.cpp

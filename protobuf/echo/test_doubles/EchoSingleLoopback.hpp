@@ -19,7 +19,6 @@ namespace application
     protected:
         // Implementation of services::EchoOnStreams
         void RequestSendStream(std::size_t size) override;
-        void AckReceived() override;
 
     private:
         void SendStreamFilled();
@@ -44,6 +43,7 @@ namespace application
         };
 
         std::deque<std::vector<uint8_t>> sending;
+        std::vector<uint8_t> sendingNow;
     };
 }
 

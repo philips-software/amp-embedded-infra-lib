@@ -66,6 +66,7 @@ target_sources(infra.util PRIVATE
     SharedObjectAllocator.hpp
     SharedObjectAllocatorFixedSize.hpp
     SharedObjectAllocatorHeap.hpp
+    SharedOptional.cpp
     SharedOptional.hpp
     SharedOwnedObserver.hpp
     SharedPtr.cpp

@@ -12,12 +12,12 @@
 
 TEST(HttpTest, parse_components_from_url)
 {
-    EXPECT_EQ("http", services::SchemeFromUrl("http://host/path"));
-    EXPECT_EQ("host", services::HostFromUrl("http://host/path"));
-    EXPECT_EQ("host", services::HostFromUrl("http://host?query"));
-    EXPECT_EQ("/path", services::PathFromUrl("http://host/path"));
-    EXPECT_EQ("?query", services::PathFromUrl("http://host?query"));
-    EXPECT_EQ("/path/more", services::PathFromUrl("http://host/path/more"));
+    EXPECT_EQ("http", services::SchemeFromUrl(infra::BoundedConstString("http://host/path")));
+    EXPECT_EQ("host", services::HostFromUrl(infra::BoundedConstString("http://host/path")));
+    EXPECT_EQ("host", services::HostFromUrl(infra::BoundedConstString("http://host?query")));
+    EXPECT_EQ("/path", services::PathFromUrl(infra::BoundedConstString("http://host/path")));
+    EXPECT_EQ("?query", services::PathFromUrl(infra::BoundedConstString("http://host?query")));
+    EXPECT_EQ("/path/more", services::PathFromUrl(infra::BoundedConstString("http://host/path/more")));
 }
 
 TEST(HttpTest, write_formatted_HttpHeader_to_stream)

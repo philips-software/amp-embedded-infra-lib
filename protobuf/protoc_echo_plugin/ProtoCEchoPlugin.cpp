@@ -94,6 +94,14 @@ namespace application
                 result = "uint32_t";
             }
 
+            void VisitOptional(const EchoFieldOptional& field) override
+            {
+                std::string r;
+                StorageTypeVisitor visitor(r);
+                field.type->Accept(visitor);
+                result = "infra::Optional<" + r + ">";
+            }
+
             void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 std::string r;
@@ -138,6 +146,14 @@ namespace application
             void VisitEnum(const EchoFieldEnum& field) override
             {
                 result = field.type->name;
+            }
+
+            void VisitOptional(const EchoFieldOptional& field) override
+            {
+                std::string r;
+                ReferenceStorageTypeVisitor visitor(r);
+                field.type->Accept(visitor);
+                result = "infra::Optional<" + r + ">";
             }
 
             void VisitRepeated(const EchoFieldRepeated& field) override
@@ -252,6 +268,14 @@ namespace application
                 result = "infra::ConstByteRange";
             }
 
+            void VisitOptional(const EchoFieldOptional& field) override
+            {
+                std::string r;
+                ReferenceStorageTypeVisitor visitor(r);
+                field.type->Accept(visitor);
+                result = "infra::Optional<" + r + ">";
+            }
+
             void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 std::string r;
@@ -340,6 +364,11 @@ namespace application
             }
 
             void VisitUint32(const EchoFieldUint32& field) override
+            {
+                result = field.name;
+            }
+
+            void VisitOptional(const EchoFieldOptional& field) override
             {
                 result = field.name;
             }
@@ -483,6 +512,11 @@ namespace application
         }
     }
 
+    uint64_t CppInfraCodeGenerator::GetSupportedFeatures() const
+    {
+        return FEATURE_PROTO3_OPTIONAL;
+    }
+
     EnumGenerator::EnumGenerator(const std::shared_ptr<const EchoEnum>& enum_)
         : enum_(enum_)
     {}
@@ -616,6 +650,7 @@ namespace application
         GenerateGetters();
         GenerateFieldDeclarations();
         GenerateFieldConstants();
+        GenerateFieldSizes();
         GenerateMaxMessageSize();
     }
 
@@ -796,6 +831,101 @@ namespace application
 
             classFormatter->Add(fields);
         }
+    }
+
+    void MessageGenerator::GenerateFieldSizes()
+    {
+        class FieldSizeVisitor
+            : public EchoFieldVisitor
+        {
+        public:
+            explicit FieldSizeVisitor(bool& added, Entities& entities)
+                : added(added)
+                , entities(entities)
+            {}
+
+            void VisitInt64(const EchoFieldInt64& field) override
+            {}
+
+            void VisitUint64(const EchoFieldUint64& field) override
+            {}
+
+            void VisitInt32(const EchoFieldInt32& field) override
+            {}
+
+            void VisitFixed64(const EchoFieldFixed64& field) override
+            {}
+
+            void VisitFixed32(const EchoFieldFixed32& field) override
+            {}
+
+            void VisitBool(const EchoFieldBool& field) override
+            {}
+
+            void VisitString(const EchoFieldString& field) override
+            {
+                added = true;
+                entities.Add(std::make_shared<DataMember>(field.name + "Size", "static constexpr uint32_t", google::protobuf::SimpleItoa(field.maxStringSize)));
+            }
+
+            void VisitUnboundedString(const EchoFieldUnboundedString& field) override
+            {}
+
+            void VisitEnum(const EchoFieldEnum& field) override
+            {}
+
+            void VisitSFixed64(const EchoFieldSFixed64& field) override
+            {}
+
+            void VisitSFixed32(const EchoFieldSFixed32& field) override
+            {}
+
+            void VisitMessage(const EchoFieldMessage& field) override
+            {}
+
+            void VisitBytes(const EchoFieldBytes& field) override
+            {
+                added = true;
+                entities.Add(std::make_shared<DataMember>(field.name + "Size", "static constexpr uint32_t", google::protobuf::SimpleItoa(field.maxBytesSize)));
+            }
+
+            void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
+            {}
+
+            void VisitUint32(const EchoFieldUint32& field) override
+            {}
+
+            void VisitOptional(const EchoFieldOptional& field) override
+            {
+                FieldSizeVisitor visitor(added, entities);
+                field.type->Accept(visitor);
+            }
+
+            void VisitRepeated(const EchoFieldRepeated& field) override
+            {
+                added = true;
+                entities.Add(std::make_shared<DataMember>(field.name + "Size", "static constexpr uint32_t", google::protobuf::SimpleItoa(field.maxArraySize)));
+            }
+
+            void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
+            {}
+
+        private:
+            bool& added;
+            Entities& entities;
+        };
+
+        auto fields = std::make_shared<Access>("public");
+        bool added = false;
+
+        for (auto& field : message->fields)
+        {
+            FieldSizeVisitor visitor(added, *fields);
+            field->Accept(visitor);
+        }
+
+        if (added)
+            classFormatter->Add(fields);
     }
 
     void MessageGenerator::GenerateMaxMessageSize()
@@ -1354,7 +1484,7 @@ SetSerializer(serializer);
     {
         auto constructors = std::make_shared<Access>("public");
         auto constructor = std::make_shared<Constructor>(service->name + "Tracer", "tracingEcho.AddServiceTracer(*this);\n", 0);
-        constructor->Parameter("services::TracingEchoOnConnection& tracingEcho");
+        constructor->Parameter("services::TracingEchoOnStreams& tracingEcho");
         constructor->Initializer("services::ServiceTracer(serviceId)");
         constructor->Initializer("tracingEcho(tracingEcho)");
         constructors->Add(constructor);
@@ -1393,7 +1523,7 @@ SetSerializer(serializer);
     {
         auto dataMembers = std::make_shared<Access>("public");
 
-        dataMembers->Add(std::make_shared<DataMember>("tracingEcho", "services::TracingEchoOnConnection&"));
+        dataMembers->Add(std::make_shared<DataMember>("tracingEcho", "services::TracingEchoOnStreams&"));
 
         serviceFormatter->Add(dataMembers);
     }
@@ -1454,7 +1584,7 @@ switch (methodId)
                 printer.Print("}\n");
             }
             else
-                printer.Print(R"(tracer.Continue() << "$servicename$ method " << methodId << " not found";\n)", "name", service->name);
+                printer.Print(R"(tracer.Continue() << "$servicename$ method " << methodId << " not found";\n)", "servicename", service->name);
         }
 
         return result.str();
@@ -1560,7 +1690,7 @@ switch (methodId)
 
         auto includesByHeader = std::make_shared<IncludesByHeader>();
         includesByHeader->Path("generated/echo/" + root.GetFile(*file)->name + ".pb.hpp");
-        includesByHeader->Path("services/network/TracingEchoOnConnection.hpp");
+        includesByHeader->Path("protobuf/echo/TracingEcho.hpp");
         formatter.Add(includesByHeader);
 
         auto includesBySource = std::make_shared<IncludesBySource>();

@@ -56,6 +56,17 @@ namespace application
             std::size_t index;
         };
 
+        class Underscore
+        {
+        public:
+            explicit Underscore(std::size_t index);
+
+            bool operator==(const Underscore& other) const;
+            bool operator!=(const Underscore& other) const;
+
+            std::size_t index;
+        };
+
         class LeftBrace
         {
         public:
@@ -136,7 +147,7 @@ namespace application
             bool value;
         };
 
-        using Token = infra::Variant<End, Error, Comma, Dot, LeftBrace, RightBrace, LeftBracket, RightBracket, String, Integer, Boolean>;
+        using Token = infra::Variant<End, Error, Comma, Dot, Underscore, LeftBrace, RightBrace, LeftBracket, RightBracket, String, Integer, Boolean>;
     }
 
     class ConsoleTokenizer
@@ -182,13 +193,13 @@ namespace application
         services::NameResolver& NameResolver();
         void DataReceived(infra::StreamReader& reader);
 
-        struct IncompletePacket
+    private:
+        struct Empty
         {};
 
-    private:
         struct MessageTokens
         {
-            using MessageTokenValue = infra::Variant<std::string, int64_t, bool, MessageTokens, std::vector<MessageTokens>>;
+            using MessageTokenValue = infra::Variant<Empty, std::string, int64_t, bool, MessageTokens, std::vector<MessageTokens>>;
 
             std::vector<std::pair<MessageTokenValue, std::size_t>> tokens;
         };
@@ -239,6 +250,7 @@ namespace application
         std::mutex mutex;
         std::condition_variable condition;
         bool processDone = false;
+        std::string receivedData;
     };
 
     namespace ConsoleExceptions

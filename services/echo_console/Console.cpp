@@ -1,5 +1,6 @@
 #include "services/echo_console/Console.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
+#include "infra/stream/StringInputStream.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 #include <cctype>
 #include <iomanip>
@@ -68,6 +69,20 @@ namespace application
         }
 
         bool Dot::operator!=(const Dot&) const
+        {
+            return false;
+        }
+
+        Underscore::Underscore(std::size_t index)
+            : index(index)
+        {}
+
+        bool Underscore::operator==(const Underscore&) const
+        {
+            return true;
+        }
+
+        bool Underscore::operator!=(const Underscore&) const
         {
             return false;
         }
@@ -211,6 +226,8 @@ namespace application
                 return ConsoleToken::Comma(parseIndex++);
             else if (line[parseIndex] == '.')
                 return ConsoleToken::Dot(parseIndex++);
+            else if (line[parseIndex] == '_')
+                return ConsoleToken::Underscore(parseIndex++);
             else if (line[parseIndex] == '{')
                 return ConsoleToken::LeftBrace(parseIndex++);
             else if (line[parseIndex] == '}')
@@ -371,30 +388,41 @@ namespace application
 
     void Console::DataReceived(infra::StreamReader& reader)
     {
-        infra::DataInputStream::WithErrorPolicy data(reader, infra::softFail);
-        infra::ProtoParser parser(data);
-        auto serviceId = static_cast<uint32_t>(parser.GetVarInt());
-        auto [value, methodId] = parser.GetField();
+        while (!reader.Empty())
+            receivedData += infra::ByteRangeAsStdString(reader.ExtractContiguousRange(std::numeric_limits<std::size_t>::max()));
 
-        if (data.Failed())
-            throw IncompletePacket();
+        while (!receivedData.empty())
+        {
+            infra::StringInputStream data(receivedData, infra::softFail);
+            infra::ProtoParser parser(data >> infra::data);
 
-        for (const auto& service : root.services)
-            if (service->serviceId == serviceId)
-            {
-                for (const auto& method : service->methods)
-                    if (method.methodId == methodId)
-                    {
-                        MethodReceived(*service, method, value.Get<infra::ProtoLengthDelimited>().Parser());
+            auto serviceId = static_cast<uint32_t>(parser.GetVarInt());
+            auto [value, methodId] = parser.GetField();
 
-                        data.Failed();
-                        return;
-                    }
+            if (data.Failed())
+                break;
 
-                MethodNotFound(*service, methodId);
-            }
+            for (const auto& service : root.services)
+                if (service->serviceId == serviceId)
+                {
+                    for (const auto& method : service->methods)
+                        if (method.methodId == methodId)
+                        {
+                            MethodReceived(*service, method, value.Get<infra::ProtoLengthDelimited>().Parser());
 
-        ServiceNotFound(serviceId, methodId);
+                            receivedData.erase(receivedData.begin(), receivedData.begin() + data.Reader().ConstructSaveMarker());
+                            data.Failed();
+                            return;
+                        }
+
+                    MethodNotFound(*service, methodId);
+                    receivedData.erase(receivedData.begin(), receivedData.begin() + data.Reader().ConstructSaveMarker());
+                    return;
+                }
+
+            ServiceNotFound(serviceId, methodId);
+            receivedData.erase(receivedData.begin(), receivedData.begin() + data.Reader().ConstructSaveMarker());
+        }
     }
 
     void Console::MethodReceived(const EchoService& service, const EchoMethod& method, infra::ProtoParser&& parser)
@@ -523,6 +551,12 @@ namespace application
             void VisitSFixed32(const EchoFieldSFixed32& field) override
             {
                 std::cout << static_cast<int32_t>(fieldData.Get<uint32_t>());
+            }
+
+            void VisitOptional(const EchoFieldOptional& field) override
+            {
+                PrintFieldVisitor visitor(fieldData, parser, console);
+                field.type->Accept(visitor);
             }
 
             void VisitRepeated(const EchoFieldRepeated& field) override
@@ -669,6 +703,12 @@ namespace application
             void VisitSFixed32(const EchoFieldSFixed32& field) override
             {
                 services::GlobalTracer().Continue() << "sfixed32";
+            }
+
+            void VisitOptional(const EchoFieldOptional& field) override
+            {
+                ListFieldVisitor visitor(console);
+                field.type->Accept(visitor);
             }
 
             void VisitRepeated(const EchoFieldRepeated& field) override
@@ -837,6 +877,11 @@ namespace application
             MessageTokens::MessageTokenValue operator()(ConsoleToken::Dot value) const
             {
                 throw ConsoleExceptions::SyntaxError{ value.index };
+            }
+
+            MessageTokens::MessageTokenValue operator()(ConsoleToken::Underscore value) const
+            {
+                return Empty{};
             }
 
             MessageTokens::MessageTokenValue operator()(ConsoleToken::LeftBrace) const
@@ -1096,6 +1141,15 @@ namespace application
                     throw ConsoleExceptions::IncorrectType{ valueIndex };
 
                 formatter.PutVarIntField(value.Get<int64_t>(), field.number);
+            }
+
+            void VisitOptional(const EchoFieldOptional& field) override
+            {
+                if (!value.Is<Empty>())
+                {
+                    EncodeFieldVisitor visitor(value, valueIndex, formatter, methodInvocation);
+                    field.type->Accept(visitor);
+                }
             }
 
             void VisitRepeated(const EchoFieldRepeated& field) override

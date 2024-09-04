@@ -7,6 +7,11 @@ namespace main_
         return network;
     }
 
+    services::ConnectionFactoryWithNameResolver& NetworkAdapter::ConnectionFactoryWithNameResolver()
+    {
+        return connectionFactoryWithNameResolver;
+    }
+
     services::DatagramFactory& NetworkAdapter::DatagramFactory()
     {
         return network;
