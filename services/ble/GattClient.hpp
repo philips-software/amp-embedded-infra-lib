@@ -50,14 +50,14 @@ namespace services
         , public infra::Subject<GattClientStackUpdateObserver>
     {
     public:
-        virtual void Read(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead) const = 0;
-        virtual void Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void()>& onDone) const = 0;
-        virtual void WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data) const = 0;
+        virtual void Read(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead) = 0;
+        virtual void Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void()>& onDone) = 0;
+        virtual void WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data) = 0;
 
-        virtual void EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void()>& onDone) const = 0;
-        virtual void DisableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void()>& onDone) const = 0;
-        virtual void EnableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void()>& onDone) const = 0;
-        virtual void DisableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void()>& onDone) const = 0;
+        virtual void EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void()>& onDone) = 0;
+        virtual void DisableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void()>& onDone) = 0;
+        virtual void EnableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void()>& onDone) = 0;
+        virtual void DisableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void()>& onDone) = 0;
     };
 
     class GattClientCharacteristic
