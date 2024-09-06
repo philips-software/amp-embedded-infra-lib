@@ -3,7 +3,7 @@
 namespace services
 {
     ServiceForwarderBase::ServiceForwarderBase(Echo& echo, Echo& forwardTo)
-        : Service(echo)
+        : Service(echo, 0)
         , ServiceProxy(forwardTo, 0)
     {}
 

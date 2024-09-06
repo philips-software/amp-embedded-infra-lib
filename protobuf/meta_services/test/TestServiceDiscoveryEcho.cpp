@@ -1,6 +1,7 @@
 #include "echo/ServiceDiscovery.pb.hpp"
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/util/Optional.hpp"
+#include "protobuf/echo/Echo.hpp"
 #include "protobuf/echo/test_doubles/EchoSingleLoopback.hpp"
 #include "protobuf/echo/test_doubles/ServiceStub.hpp"
 #include "protobuf/meta_services/ServiceDiscoveryEcho.hpp"
@@ -12,6 +13,54 @@
 
 namespace
 {
+    class RequestBlockingEchoDecorator
+        : public services::Echo
+    {
+    public:
+        RequestBlockingEchoDecorator(services::Echo& echo)
+            : echo(echo)
+        {}
+
+        void RegisterObserver(infra::Observer<services::Service, services::Echo>* observer) override
+        {
+            observer->Attach(echo);
+        }
+
+        void BlockRequest(bool block)
+        {
+            blocked = block;
+
+            if (!blocked && serviceProxy)
+            {
+                echo.RequestSend(**serviceProxy);
+                serviceProxy = infra::none;
+            }
+        }
+
+        void RequestSend(services::ServiceProxy& serviceProxy) override
+        {
+            if (blocked)
+                this->serviceProxy = &serviceProxy;
+            else
+                echo.RequestSend(serviceProxy);
+        }
+
+        void ServiceDone() override
+        {
+            echo.ServiceDone();
+        }
+
+        services::MethodSerializerFactory& SerializerFactory() override
+        {
+            return echo.SerializerFactory();
+        }
+
+    private:
+        services::Echo& echo;
+        infra::Optional<services::ServiceProxy*> serviceProxy;
+        bool blocked = false;
+    };
+
     class ServiceDiscoveryResponseMock
         : public service_discovery::ServiceDiscoveryResponse
     {
@@ -19,41 +68,27 @@ namespace
         using service_discovery::ServiceDiscoveryResponse::ServiceDiscoveryResponse;
         virtual ~ServiceDiscoveryResponseMock() = default;
 
-        void AutoMethodDone(bool flag)
-        {
-            autoMethodDone = flag;
-        }
-
-        void CheckMethodDone()
-        {
-            if (autoMethodDone)
-                MethodDone();
-        }
-
         void FirstServiceSupported(uint32_t value) override
         {
             FirstServiceSupportedMock(value);
-            CheckMethodDone();
+            MethodDone();
         }
 
         void NoServiceSupported() override
         {
             NoServiceSupportedMock();
-            CheckMethodDone();
+            MethodDone();
         }
 
         void ServicesChanged(uint32_t startServiceId, uint32_t endServiceId) override
         {
             ServicesChangedMock(startServiceId, endServiceId);
-            CheckMethodDone();
+            MethodDone();
         }
 
         MOCK_METHOD(void, FirstServiceSupportedMock, (uint32_t serviceId));
         MOCK_METHOD(void, NoServiceSupportedMock, ());
         MOCK_METHOD(void, ServicesChangedMock, (uint32_t startServiceId, uint32_t endServiceId));
-
-    private:
-        bool autoMethodDone = true;
     };
 };
 
@@ -67,7 +102,8 @@ public:
     service_discovery::ServiceDiscoveryProxy proxy{ echo };
     testing::StrictMock<ServiceDiscoveryResponseMock> serviceDiscoveryResponse{ echo };
 
-    application::ServiceDiscoveryEcho serviceDiscoveryEcho{ echo };
+    RequestBlockingEchoDecorator echoBlocking{ echo };
+    application::ServiceDiscoveryEcho serviceDiscoveryEcho{ echoBlocking };
 
     void FindFirstServiceInRange(uint32_t startServiceId, uint32_t endServiceId)
     {
@@ -119,17 +155,36 @@ TEST_F(ServiceDiscoveryTest, notify_service_change)
 {
     NotifyServiceChanges(true);
 
-    EXPECT_CALL(serviceDiscoveryResponse, ServicesChangedMock(0, 0));
+    EXPECT_CALL(serviceDiscoveryResponse, ServicesChangedMock(5, 5));
     infra::Optional<services::ServiceStub> service5(infra::inPlace, serviceDiscoveryEcho, 5);
-    ExecuteAllActions();
 
-    EXPECT_CALL(serviceDiscoveryResponse, ServicesChangedMock(0, 0));
+    EXPECT_CALL(serviceDiscoveryResponse, ServicesChangedMock(5, 5));
     service5 = infra::none;
 
     NotifyServiceChanges(false);
 
-
     service5.Emplace(serviceDiscoveryEcho, 5);
+}
+
+TEST_F(ServiceDiscoveryTest, notify_simultaneous_service_changes)
+{
+    NotifyServiceChanges(true);
+
+    echoBlocking.BlockRequest(true);
+    services::ServiceStub service5(serviceDiscoveryEcho, 5);
+    services::ServiceStub service15(serviceDiscoveryEcho, 15);
+
+    EXPECT_CALL(serviceDiscoveryResponse, ServicesChangedMock(5, 15));
+    echoBlocking.BlockRequest(false);
+
+    echoBlocking.BlockRequest(true);
+    services::ServiceStub service7(serviceDiscoveryEcho, 7);
+    services::ServiceStub service12(serviceDiscoveryEcho, 12);
+
+    EXPECT_CALL(serviceDiscoveryResponse, ServicesChangedMock(7, 12));
+    echoBlocking.BlockRequest(false);
+
+    NotifyServiceChanges(false);
 }
 
 TEST_F(ServiceDiscoveryTest, find_own_service_id)

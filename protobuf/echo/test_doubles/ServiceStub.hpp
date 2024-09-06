@@ -40,8 +40,6 @@ namespace services
     public:
         ServiceStub(Echo& echo, uint32_t serviceId = defaultServiceId);
 
-        bool AcceptsService(uint32_t id) const override;
-
         MOCK_METHOD(void, Method, (uint32_t value));
         MOCK_METHOD(void, MethodNoParameter, ());
 
@@ -56,9 +54,6 @@ namespace services
 
     public:
         using MethodTypeList = infra::List<Message, EmptyMessage>;
-
-    private:
-        const uint32_t serviceId;
     };
 
     class ServiceStubProxy

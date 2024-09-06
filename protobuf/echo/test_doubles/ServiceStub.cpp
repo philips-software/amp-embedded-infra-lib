@@ -28,14 +28,8 @@ namespace services
     }
 
     ServiceStub::ServiceStub(Echo& echo, uint32_t serviceId)
-        : Service(echo)
-        , serviceId(serviceId)
+        : Service(echo, serviceId)
     {}
-
-    bool ServiceStub::AcceptsService(uint32_t id) const
-    {
-        return id == serviceId;
-    }
 
     infra::SharedPtr<MethodDeserializer> ServiceStub::StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const services::EchoErrorPolicy& errorPolicy)
     {

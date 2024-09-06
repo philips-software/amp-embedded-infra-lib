@@ -2,8 +2,10 @@
 #define PROTOBUF_ECHO_SERVICE_DISCOVERY_HPP
 
 #include "generated/echo/ServiceDiscovery.pb.hpp"
+#include "infra/util/Optional.hpp"
 #include "protobuf/echo/Echo.hpp"
 #include <cstdint>
+#include <utility>
 
 namespace application
 {
@@ -20,15 +22,15 @@ namespace application
 
         virtual ~ServiceDiscoveryEcho() = default;
 
-        //Implementation of services::ServiceDiscovery
+        // Implementation of services::ServiceDiscovery
         void FindFirstServiceInRange(uint32_t startServiceId, uint32_t endServiceId) override;
         void NotifyServiceChanges(bool value) override;
 
-        //Implementation of services::Service
+        // Implementation of services::Service
         bool AcceptsService(uint32_t id) const override;
         infra::SharedPtr<services::MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const services::EchoErrorPolicy& errorPolicy) override;
 
-        //Implementation of services::Echo
+        // Implementation of services::Echo
         void RequestSend(ServiceProxy& serviceProxy) override;
         void ServiceDone() override;
         services::MethodSerializerFactory& SerializerFactory() override;
@@ -41,9 +43,10 @@ namespace application
         bool IsProxyServiceSupported(uint32_t serviceId) const;
         infra::SharedPtr<services::MethodDeserializer> StartProxyServiceMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const services::EchoErrorPolicy& errorPolicy);
         services::Echo& UpstreamRpc();
-        void ServicesChangeNotification();
+        void ServicesChangeNotification(uint32_t serviceId);
 
     private:
+        infra::Optional<std::pair<uint32_t, uint32_t>> changedServices;
         bool notifyServiceChanges = false;
     };
 }

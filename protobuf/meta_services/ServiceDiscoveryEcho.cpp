@@ -5,6 +5,7 @@
 #include "protobuf/echo/Echo.hpp"
 #include <cstdint>
 #include <tuple>
+#include <utility>
 
 namespace application
 {
@@ -108,29 +109,34 @@ namespace application
 
     void ServiceDiscoveryEcho::RegisterObserver(infra::Observer<Service, Echo>* observer)
     {
-        infra::EventDispatcher::Instance().Schedule([this, observer]
-            {
-                auto id5 = static_cast<Service*>(observer)->AcceptsService(5);
-                auto temp = id5;
-                ServicesChangeNotification();
-            });
+        auto id = services::ServiceIdAccess::GetId(*static_cast<services::ServiceId*>(static_cast<Service*>(observer)));
+        ServicesChangeNotification(id);
 
         services::Echo::RegisterObserver(observer);
     }
 
     void ServiceDiscoveryEcho::UnregisterObserver(infra::Observer<Service, Echo>* observer)
     {
-        services::Echo::UnregisterObserver(observer);
+        auto id = services::ServiceIdAccess::GetId(*static_cast<services::ServiceId*>(static_cast<Service*>(observer)));
+        ServicesChangeNotification(id);
 
-        ServicesChangeNotification();
+        services::Echo::UnregisterObserver(observer);
     }
 
-    void ServiceDiscoveryEcho::ServicesChangeNotification()
+    void ServiceDiscoveryEcho::ServicesChangeNotification(uint32_t serviceId)
     {
+        if (!changedServices)
+            changedServices = std::make_pair(serviceId, serviceId);
+        else
+            changedServices = std::make_pair(std::min(changedServices->first, serviceId), std::max(changedServices->second, serviceId));
+
         if (notifyServiceChanges)
+        {
             service_discovery::ServiceDiscoveryResponseProxy::RequestSend([this]
                 {
-                    ServicesChanged(0, 0);
+                    ServicesChanged(changedServices->first, changedServices->second);
+                    changedServices = infra::none;
                 });
+        }
     }
 }
