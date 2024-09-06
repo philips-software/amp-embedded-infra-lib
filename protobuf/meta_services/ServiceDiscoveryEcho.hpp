@@ -43,6 +43,7 @@ namespace application
         bool IsProxyServiceSupported(uint32_t serviceId) const;
         infra::SharedPtr<services::MethodDeserializer> StartProxyServiceMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const services::EchoErrorPolicy& errorPolicy);
         services::Echo& UpstreamRpc();
+        void UpdateChangedServices(uint32_t& serviceId);
         void ServicesChangeNotification(uint32_t serviceId);
 
     private:

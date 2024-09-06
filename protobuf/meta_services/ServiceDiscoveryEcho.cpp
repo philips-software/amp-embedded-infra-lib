@@ -41,6 +41,9 @@ namespace application
     {
         notifyServiceChanges = value;
 
+        if (!notifyServiceChanges)
+            changedServices = infra::none;
+
         MethodDone();
     }
 
@@ -123,15 +126,20 @@ namespace application
         services::Echo::UnregisterObserver(observer);
     }
 
-    void ServiceDiscoveryEcho::ServicesChangeNotification(uint32_t serviceId)
+    void ServiceDiscoveryEcho::UpdateChangedServices(uint32_t& serviceId)
     {
         if (!changedServices)
             changedServices = std::make_pair(serviceId, serviceId);
         else
             changedServices = std::make_pair(std::min(changedServices->first, serviceId), std::max(changedServices->second, serviceId));
+    }
 
+    void ServiceDiscoveryEcho::ServicesChangeNotification(uint32_t serviceId)
+    {
         if (notifyServiceChanges)
         {
+            UpdateChangedServices(serviceId);
+
             service_discovery::ServiceDiscoveryResponseProxy::RequestSend([this]
                 {
                     ServicesChanged(changedServices->first, changedServices->second);

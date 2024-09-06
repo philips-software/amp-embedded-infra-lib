@@ -187,6 +187,25 @@ TEST_F(ServiceDiscoveryTest, notify_simultaneous_service_changes)
     NotifyServiceChanges(false);
 }
 
+TEST_F(ServiceDiscoveryTest, notify_service_changes_only_after_NotifyServiceChanges)
+{
+    echoBlocking.BlockRequest(true);
+
+    NotifyServiceChanges(true);
+    services::ServiceStub service5(serviceDiscoveryEcho, 5);
+
+    NotifyServiceChanges(false);
+    services::ServiceStub service15(serviceDiscoveryEcho, 15);
+
+    NotifyServiceChanges(true);
+    services::ServiceStub service25(serviceDiscoveryEcho, 25);
+
+    EXPECT_CALL(serviceDiscoveryResponse, ServicesChangedMock(25, 25));
+    echoBlocking.BlockRequest(false);
+
+    NotifyServiceChanges(false);
+}
+
 TEST_F(ServiceDiscoveryTest, find_own_service_id)
 {
     EXPECT_CALL(serviceDiscoveryResponse, FirstServiceSupportedMock(service_discovery::ServiceDiscovery::serviceId));
