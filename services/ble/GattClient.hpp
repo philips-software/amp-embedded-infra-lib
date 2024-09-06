@@ -111,11 +111,10 @@ namespace services
         using infra::Observer<GattClientDiscoveryObserver, GattClientDiscovery>::Observer;
 
         virtual void ServiceDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle endHandle) = 0;
-        virtual void CharacteristicDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties) = 0;
-        virtual void DescriptorDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle) = 0;
-
         virtual void ServiceDiscoveryComplete() = 0;
+        virtual void CharacteristicDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties) = 0;
         virtual void CharacteristicDiscoveryComplete() = 0;
+        virtual void DescriptorDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle) = 0;
         virtual void DescriptorDiscoveryComplete() = 0;
     };
 
