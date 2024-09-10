@@ -142,45 +142,50 @@ namespace infra
         Cancel();
     }
 
-    TimerRepeating::TimerRepeating(uint32_t timerServiceId)
+    detail::TimerRepeating::TimerRepeating(uint32_t timerServiceId)
         : Timer(timerServiceId)
     {}
 
+    Duration detail::TimerRepeating::TriggerPeriod() const
+    {
+        return triggerPeriod;
+    }
+
+    void detail::TimerRepeating::StartTimer(Duration duration, const infra::Function<void()>& action)
+    {
+        triggerPeriod = duration;
+        SetNextTriggerTime(Now() + TriggerPeriod() + Resolution(), action);
+    }
+
+    void detail::TimerRepeating::ComputeNextTriggerTime()
+    {
+        TimePoint now = std::max(Now(), NextTrigger());
+        Duration diff = (now - NextTrigger()) % triggerPeriod;
+
+        SetNextTriggerTime(now - diff + triggerPeriod, Action());
+    }
+
     TimerRepeating::TimerRepeating(Duration duration, const infra::Function<void()>& aAction, uint32_t timerServiceId)
-        : Timer(timerServiceId)
+        : detail::TimerRepeating(timerServiceId)
     {
         Start(duration, aAction);
     }
 
     TimerRepeating::TimerRepeating(Duration duration, const infra::Function<void()>& aAction, TriggerImmediately, uint32_t timerServiceId)
-        : Timer(timerServiceId)
+        : detail::TimerRepeating(timerServiceId)
     {
         Start(duration, aAction, triggerImmediately);
     }
 
     void TimerRepeating::Start(Duration duration, const infra::Function<void()>& action)
     {
-        triggerPeriod = duration;
-        SetNextTriggerTime(Now() + TriggerPeriod() + Resolution(), action);
+        StartTimer(duration, action);
     }
 
     void TimerRepeating::Start(Duration duration, const infra::Function<void()>& action, TriggerImmediately)
     {
-        Start(duration, action);
+        StartTimer(duration, action);
         action();
-    }
-
-    Duration TimerRepeating::TriggerPeriod() const
-    {
-        return triggerPeriod;
-    }
-
-    void TimerRepeating::ComputeNextTriggerTime()
-    {
-        TimePoint now = std::max(Now(), NextTrigger());
-        Duration diff = (now - NextTrigger()) % triggerPeriod;
-
-        SetNextTriggerTime(now - diff + triggerPeriod, Action());
     }
 }
 
