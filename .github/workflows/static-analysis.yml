@@ -42,7 +42,7 @@ jobs:
           cmake --build --preset coverage
           GTEST_OUTPUT="xml:${PWD}/testresults/" ctest --preset coverage
           gcovr --sonarqube=coverage.xml --exclude-lines-by-pattern '.*assert\(.*\);|.*really_assert\(.*\);|.*std::abort();' --exclude-unreachable-branches --exclude-throw-branches -j "$(nproc)" --exclude=.*/generated/.* --exclude=.*/examples/.* --exclude=.*/external/.* --exclude=.*/lwip/.* --exclude=.*/tracing/.* --exclude=.*/test/.*
-      - uses: lukka/run-cmake@2ce8982be71b8e9a3c4d5e432135035afd1e76a7 # v10.7
+      - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
         with:
           configurePreset: "mutation-testing"
           buildPreset: "mutation-testing"
@@ -78,7 +78,7 @@ jobs:
       - uses: github/codeql-action/init@4dd16135b69a43b6c8efb853346f8437d92d3c93 # v3.26.6
         with:
           languages: cpp
-      - uses: lukka/run-cmake@2ce8982be71b8e9a3c4d5e432135035afd1e76a7 # v10.7
+      - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
         with:
           configurePreset: "host"
           buildPreset: "host-Debug"
