@@ -124,6 +124,34 @@ namespace infra
         }
     };
 
+    template<class Result>
+    class NotifyingVerifyingFunctionMock;
+
+    template<class Result, class... Args>
+    class NotifyingVerifyingFunctionMock<Result(Args...)>
+    {
+    public:
+        explicit NotifyingVerifyingFunctionMock(infra::Function<Result(Args...)> onCalled)
+            : onCalled(onCalled)
+        {
+            EXPECT_CALL(*this, callback());
+        }
+
+        MOCK_CONST_METHOD0_T(callback, Result());
+
+        operator infra::Function<Result(Args...)>()
+        {
+            return [this](Args&&... args)
+            {
+                onCalled(args...);
+                return callback();
+            };
+        }
+
+    private:
+        infra::Function<Result(Args...)> onCalled;
+    };
+
     template<class R, std::size_t ExtraSize = INFRA_DEFAULT_FUNCTION_EXTRA_SIZE>
     auto MockFunction = []
     {
