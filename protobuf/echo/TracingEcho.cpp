@@ -168,7 +168,7 @@ namespace services
                 auto save = stream.Reader().ConstructSaveMarker();
                 auto [contents, methodId] = parser.GetPartialField();
 
-                if (stream.Failed() || (contents.Is<infra::PartialProtoLengthDelimited>() && contents.Get<infra::PartialProtoLengthDelimited>().length <= writerBuffer.max_size() - writerBuffer.size()))
+                if (stream.Failed() || !contents.Is<infra::PartialProtoLengthDelimited>() || contents.Get<infra::PartialProtoLengthDelimited>().length > writerBuffer.max_size() - writerBuffer.size())
                     break;
 
                 if (contents.Is<infra::PartialProtoLengthDelimited>() && contents.Get<infra::PartialProtoLengthDelimited>().length > stream.Available())
