@@ -37,22 +37,17 @@ namespace services
         PrintField(static_cast<uint32_t>(value), tracer);
     }
 
-    template<std::size_t I, class T, class Enable>
-    void PrintSubFields(const T& value, services::Tracer& tracer, typename T::template Type<I>* = 0)
+    template<class T, std::size_t... I>
+    void PrintSubFields(const T& value, services::Tracer& tracer, std::index_sequence<I...>)
     {
-        PrintField(value.Get(std::integral_constant<uint32_t, I>()), tracer);
-        PrintSubFields<I + 1>(value, tracer);
+        ((PrintField(value.Get(std::integral_constant<uint32_t, I>()), tracer), true) && ...);
     }
-
-    template<std::size_t I, class T>
-    void PrintSubFields(const T& value, services::Tracer& tracer, ...)
-    {}
 
     template<class T>
     void PrintField(const T& value, services::Tracer& tracer, typename T::template Type<0>* = 0)
     {
         tracer.Continue() << "{";
-        PrintSubFields<0>(value, tracer);
+        PrintSubFields(value, tracer, std::make_index_sequence<T::numberOfFields>{});
         tracer.Continue() << "}";
     }
 
