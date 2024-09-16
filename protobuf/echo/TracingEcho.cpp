@@ -47,7 +47,7 @@ namespace services
     {
         tracer.Continue() << "[";
         for (auto v : value)
-            tracer.Continue() << infra::hex << infra::Width(2, 0) << v;
+            tracer.Continue() << infra::hex << infra::Width(2, '0') << v;
         tracer.Continue() << "]";
     }
 
