@@ -40,7 +40,7 @@ namespace services
     template<class T, std::size_t... I>
     void PrintSubFields(const T& value, services::Tracer& tracer, std::index_sequence<I...>)
     {
-        ((PrintField(value.Get(std::integral_constant<uint32_t, I>()), tracer), true) && ...);
+        (void)((PrintField(value.Get(std::integral_constant<uint32_t, I>()), tracer), true) && ...);
     }
 
     template<class T>
