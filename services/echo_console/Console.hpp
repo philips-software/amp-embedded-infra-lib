@@ -186,7 +186,7 @@ namespace application
         : public infra::Subject<ConsoleObserver>
     {
     public:
-        explicit Console(EchoRoot& root);
+        explicit Console(EchoRoot& root, bool stopOnNetworkClose);
 
         void Run();
         services::ConnectionFactory& ConnectionFactory();
@@ -235,7 +235,7 @@ namespace application
         void PrintField(infra::Variant<uint32_t, uint64_t, infra::ProtoLengthDelimited>& fieldData, const EchoField& field, infra::ProtoParser& parser);
         void MethodNotFound(const EchoService& service, uint32_t methodId) const;
         void ServiceNotFound(uint32_t serviceId, uint32_t methodId) const;
-        void RunEventDispatcher();
+        void RunEventDispatcher(bool stopOnNetworkClose);
         void ListInterfaces();
         void ListFields(const EchoMessage& message);
         void Process(const std::string& line) const;
@@ -246,7 +246,9 @@ namespace application
         main_::NetworkAdapter network;
         hal::TimerServiceGeneric timerService{ infra::systemTimerServiceId };
         std::thread eventDispatcherThread;
+        bool started = false;
         bool quit = false;
+        bool stoppedEventDispatcher = false;
         std::mutex mutex;
         std::condition_variable condition;
         bool processDone = false;
@@ -273,11 +275,13 @@ namespace application
         struct MissingParameter
         {
             std::size_t index;
+            std::string missingType;
         };
 
         struct IncorrectType
         {
             std::size_t index;
+            std::string correctType;
         };
     }
 }
