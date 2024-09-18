@@ -299,14 +299,34 @@ namespace application
             ++parseIndex;
         }
 
-        while (parseIndex != line.size() && std::isdigit(line[parseIndex]))
-            ++parseIndex;
-
-        std::string integer = line.substr(tokenStart, parseIndex - tokenStart);
-
         int32_t value = 0;
-        for (std::size_t index = sign ? 1 : 0; index < integer.size(); ++index)
-            value = value * 10 + integer[index] - '0';
+        if (parseIndex != line.size() && line.substr(parseIndex, 2) == "0x")
+        {
+            tokenStart += 2;
+            parseIndex += 2;
+            while (parseIndex != line.size() && std::isxdigit(line[parseIndex]))
+                ++parseIndex;
+
+            std::string integer = line.substr(tokenStart, parseIndex - tokenStart);
+
+            for (std::size_t index = sign ? 1 : 0; index < integer.size(); ++index)
+            {
+                if (std::isdigit(integer[index]))
+                    value = value * 16 + integer[index] - '0';
+                else
+                    value = value * 16 + std::tolower(integer[index]) - 'a' + 10;
+            }
+        }
+        else
+        {
+            while (parseIndex != line.size() && std::isdigit(line[parseIndex]))
+                ++parseIndex;
+
+            std::string integer = line.substr(tokenStart, parseIndex - tokenStart);
+
+            for (std::size_t index = sign ? 1 : 0; index < integer.size(); ++index)
+                value = value * 10 + integer[index] - '0';
+        }
 
         if (sign)
             value *= -1;
@@ -957,20 +977,18 @@ namespace application
         return result;
     }
 
-    std::vector<Console::MessageTokens> Console::MethodInvocation::ProcessArray()
+    Console::MessageTokens Console::MethodInvocation::ProcessArray()
     {
-        std::vector<Console::MessageTokens> result;
+        Console::MessageTokens result;
 
         while (true)
         {
-            Console::MessageTokens message;
             while (!currentToken.Is<ConsoleToken::End>() && !currentToken.Is<ConsoleToken::RightBracket>() && !currentToken.Is<ConsoleToken::Comma>())
             {
-                message.tokens.push_back(CreateMessageTokenValue());
+                result.tokens.push_back(CreateMessageTokenValue());
                 currentToken = tokenizer.Token();
             }
 
-            result.push_back(message);
             if (!currentToken.Is<ConsoleToken::Comma>())
                 break;
 
@@ -1102,26 +1120,22 @@ namespace application
                     throw ConsoleExceptions::IncorrectType{ valueIndex, field.protoType };
 
                 infra::StdVectorOutputStream::WithStorage stream;
-                infra::ProtoFormatter formatter(stream);
-                methodInvocation.EncodeMessage(*field.message, value.Get<MessageTokens>(), valueIndex, formatter);
+                infra::ProtoFormatter messageFormatter(stream);
+                methodInvocation.EncodeMessage(*field.message, value.Get<MessageTokens>(), valueIndex, messageFormatter);
                 formatter.PutLengthDelimitedField(infra::MakeRange(stream.Storage()), field.number);
             }
 
             void VisitBytes(const EchoFieldBytes& field) override
             {
-                if (!value.Is<std::vector<MessageTokens>>())
+                if (!value.Is<MessageTokens>())
                     throw ConsoleExceptions::IncorrectType{ valueIndex, "vector of integers" };
                 std::vector<uint8_t> bytes;
-                for (auto& messageTokens : value.Get<std::vector<MessageTokens>>())
+                for (auto& messageToken : value.Get<MessageTokens>().tokens)
                 {
-                    if (messageTokens.tokens.size() < 1)
-                        throw ConsoleExceptions::MissingParameter{ valueIndex, "integer" };
-                    if (messageTokens.tokens.size() > 1)
-                        throw ConsoleExceptions::TooManyParameters{ messageTokens.tokens[1].second };
-                    if (!messageTokens.tokens.front().first.Is<int64_t>())
-                        throw ConsoleExceptions::IncorrectType{ messageTokens.tokens[0].second, "integer" };
+                    if (!messageToken.first.Is<int64_t>())
+                        throw ConsoleExceptions::IncorrectType{ messageToken.second, "integer" };
 
-                    bytes.push_back(static_cast<uint8_t>(messageTokens.tokens.front().first.Get<int64_t>()));
+                    bytes.push_back(static_cast<uint8_t>(messageToken.first.Get<int64_t>()));
                 }
 
                 formatter.PutBytesField(infra::MakeRange(bytes), field.number);
@@ -1132,16 +1146,12 @@ namespace application
                 if (!value.Is<std::vector<MessageTokens>>())
                     throw ConsoleExceptions::IncorrectType{ valueIndex, "vector of integers" };
                 std::vector<uint8_t> bytes;
-                for (auto& messageTokens : value.Get<std::vector<MessageTokens>>())
+                for (auto& messageToken : value.Get<MessageTokens>().tokens)
                 {
-                    if (messageTokens.tokens.size() < 1)
-                        throw ConsoleExceptions::MissingParameter{ valueIndex, "integer" };
-                    if (messageTokens.tokens.size() > 1)
-                        throw ConsoleExceptions::TooManyParameters{ messageTokens.tokens[1].second };
-                    if (!messageTokens.tokens.front().first.Is<int64_t>())
-                        throw ConsoleExceptions::IncorrectType{ messageTokens.tokens[0].second, "vector of integers" };
+                    if (!messageToken.first.Is<int64_t>())
+                        throw ConsoleExceptions::IncorrectType{ messageToken.second, "integer" };
 
-                    bytes.push_back(static_cast<uint8_t>(messageTokens.tokens.front().first.Get<int64_t>()));
+                    bytes.push_back(static_cast<uint8_t>(messageToken.first.Get<int64_t>()));
                 }
 
                 formatter.PutBytesField(infra::MakeRange(bytes), field.number);
@@ -1171,11 +1181,6 @@ namespace application
 
                 for (auto& messageTokens : value.Get<std::vector<MessageTokens>>())
                 {
-                    if (messageTokens.tokens.size() < 1)
-                        throw ConsoleExceptions::MissingParameter{ valueIndex, field.type->protoType };
-                    if (messageTokens.tokens.size() > 1)
-                        throw ConsoleExceptions::TooManyParameters{ messageTokens.tokens[1].second };
-
                     EncodeFieldVisitor visitor(messageTokens, valueIndex, formatter, methodInvocation);
                     field.type->Accept(visitor);
                 }
@@ -1188,11 +1193,6 @@ namespace application
 
                 for (auto& messageTokens : value.Get<std::vector<MessageTokens>>())
                 {
-                    if (messageTokens.tokens.size() < 1)
-                        throw ConsoleExceptions::MissingParameter{ valueIndex, field.type->protoType };
-                    if (messageTokens.tokens.size() > 1)
-                        throw ConsoleExceptions::TooManyParameters{ messageTokens.tokens[1].second };
-
                     EncodeFieldVisitor visitor(messageTokens, valueIndex, formatter, methodInvocation);
                     field.type->Accept(visitor);
                 }

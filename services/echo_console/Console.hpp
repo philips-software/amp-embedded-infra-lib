@@ -219,7 +219,7 @@ namespace application
             void ProcessParameterTokens();
             std::pair<MessageTokens::MessageTokenValue, std::size_t> CreateMessageTokenValue();
             MessageTokens::MessageTokenValue ProcessMessage();
-            std::vector<MessageTokens> ProcessArray();
+            Console::MessageTokens ProcessArray();
 
             void EncodeMessage(const EchoMessage& message, const MessageTokens& messageTokens, std::size_t valueIndex, infra::ProtoFormatter& formatter);
             void EncodeField(const EchoField& field, const MessageTokens::MessageTokenValue& value, std::size_t valueIndex, infra::ProtoFormatter& formatter);
