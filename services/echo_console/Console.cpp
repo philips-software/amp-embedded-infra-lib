@@ -1127,34 +1127,12 @@ namespace application
 
             void VisitBytes(const EchoFieldBytes& field) override
             {
-                if (!value.Is<MessageTokens>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex, "vector of integers" };
-                std::vector<uint8_t> bytes;
-                for (auto& messageToken : value.Get<MessageTokens>().tokens)
-                {
-                    if (!messageToken.first.Is<int64_t>())
-                        throw ConsoleExceptions::IncorrectType{ messageToken.second, "integer" };
-
-                    bytes.push_back(static_cast<uint8_t>(messageToken.first.Get<int64_t>()));
-                }
-
-                formatter.PutBytesField(infra::MakeRange(bytes), field.number);
+                PutVector(field.number);
             }
 
             void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
             {
-                if (!value.Is<std::vector<MessageTokens>>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex, "vector of integers" };
-                std::vector<uint8_t> bytes;
-                for (auto& messageToken : value.Get<MessageTokens>().tokens)
-                {
-                    if (!messageToken.first.Is<int64_t>())
-                        throw ConsoleExceptions::IncorrectType{ messageToken.second, "integer" };
-
-                    bytes.push_back(static_cast<uint8_t>(messageToken.first.Get<int64_t>()));
-                }
-
-                formatter.PutBytesField(infra::MakeRange(bytes), field.number);
+                PutVector(field.number);
             }
 
             void VisitUint32(const EchoFieldUint32& field) override
@@ -1176,25 +1154,40 @@ namespace application
 
             void VisitRepeated(const EchoFieldRepeated& field) override
             {
-                if (!value.Is<std::vector<MessageTokens>>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex, field.protoType };
-
-                for (auto& messageTokens : value.Get<std::vector<MessageTokens>>())
-                {
-                    EncodeFieldVisitor visitor(messageTokens, valueIndex, formatter, methodInvocation);
-                    field.type->Accept(visitor);
-                }
+                PutRepeated(field.protoType, field.type);
             }
 
             void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
             {
+                PutRepeated(field.protoType, field.type);
+            }
+
+        private:
+            void PutVector(int fieldNumber)
+            {
+                if (!value.Is<MessageTokens>())
+                    throw ConsoleExceptions::IncorrectType{ valueIndex, "vector of integers" };
+                std::vector<uint8_t> bytes;
+                for (auto& messageToken : value.Get<MessageTokens>().tokens)
+                {
+                    if (!messageToken.first.Is<int64_t>())
+                        throw ConsoleExceptions::IncorrectType{ messageToken.second, "integer" };
+
+                    bytes.push_back(static_cast<uint8_t>(messageToken.first.Get<int64_t>()));
+                }
+
+                formatter.PutBytesField(infra::MakeRange(bytes), fieldNumber);
+            }
+
+            void PutRepeated(const std::string& fieldProtoType, std::shared_ptr<EchoField> fieldType)
+            {
                 if (!value.Is<std::vector<MessageTokens>>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex, field.protoType };
+                    throw ConsoleExceptions::IncorrectType{ valueIndex, fieldProtoType };
 
                 for (auto& messageTokens : value.Get<std::vector<MessageTokens>>())
                 {
                     EncodeFieldVisitor visitor(messageTokens, valueIndex, formatter, methodInvocation);
-                    field.type->Accept(visitor);
+                    fieldType->Accept(visitor);
                 }
             }
 
