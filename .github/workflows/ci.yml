@@ -30,7 +30,7 @@ jobs:
           key: ${{ github.job }}-ubuntu-latest
           variant: sccache
       - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # v5
-      - uses: lukka/run-cmake@2ce8982be71b8e9a3c4d5e432135035afd1e76a7 # v10.7
+      - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
         with:
           configurePreset: "host"
           buildPreset: "host-Debug-WithPackage"
@@ -59,7 +59,7 @@ jobs:
         with:
           key: ${{ github.job }}-ubuntu-latest
       - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # v5
-      - uses: lukka/run-cmake@2ce8982be71b8e9a3c4d5e432135035afd1e76a7 # v10.7
+      - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
         with:
           configurePreset: "host"
           buildPreset: "host-RelWithDebInfo"
@@ -90,7 +90,7 @@ jobs:
         with:
           key: ${{ github.job }}-clang-msvc
       - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # v5
-      - uses: lukka/run-cmake@2ce8982be71b8e9a3c4d5e432135035afd1e76a7 # v10.7
+      - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
         with:
           configurePreset: "host-ClangMsvc"
           buildPreset: "host-ClangMsvc-Debug"
@@ -109,7 +109,7 @@ jobs:
         with:
           key: ${{ github.job }}-${{ matrix.os }}
           variant: sccache
-      - uses: lukka/run-cmake@2ce8982be71b8e9a3c4d5e432135035afd1e76a7 # v10.7
+      - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
         with:
           configurePreset: "host-single-Debug"
           buildPreset: "host-single-Debug"
@@ -133,7 +133,7 @@ jobs:
           key: ${{ github.job }}-ubuntu-latest
           variant: sccache
       - uses: seanmiddleditch/gha-setup-ninja@96bed6edff20d1dd61ecff9b75cc519d516e6401 # v5
-      - uses: lukka/run-cmake@2ce8982be71b8e9a3c4d5e432135035afd1e76a7 # v10.7
+      - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
         with:
           configurePreset: "host-no-mbedtls"
           buildPreset: "host-no-mbedtls-Debug"
@@ -163,7 +163,7 @@ jobs:
           name: emil
       - run: tar -zxvf emil-*.tar.gz
       - run: mkdir install && mv emil-*/* install/
-      - uses: lukka/run-cmake@2ce8982be71b8e9a3c4d5e432135035afd1e76a7 # v10.7
+      - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
         with:
           configurePreset: "embedded"
           buildPreset: "embedded-${{ matrix.configuration }}"
@@ -183,7 +183,7 @@ jobs:
       - uses: hendrikmuhs/ccache-action@ed74d11c0b343532753ecead8a951bb09bb34bc9 # v1.2.14
         with:
           key: ${{ github.job }}
-      - uses: lukka/run-cmake@2ce8982be71b8e9a3c4d5e432135035afd1e76a7 # v10.7
+      - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
         with:
           configurePreset: "embedded"
           buildPreset: "embedded-RelWithDebInfo"
@@ -212,7 +212,7 @@ jobs:
           name: emil
       - run: tar -zxvf emil-*.tar.gz
       - run: mkdir install && mv emil-*/* install/
-      - uses: lukka/run-cmake@2ce8982be71b8e9a3c4d5e432135035afd1e76a7 # v10.7
+      - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
         with:
           configurePreset: "embedded-${{ matrix.rtos }}"
           buildPreset: "embedded-${{ matrix.rtos }}-RelWithDebInfo"
