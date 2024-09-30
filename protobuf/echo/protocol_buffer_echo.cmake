@@ -7,7 +7,7 @@ function(emil_fetch_echo_plugins)
     #
     # (See: https://cmake.org/cmake/help/latest/module/FetchContent.html#commands)
 
-    if (EMIL_HOST_BUILD AND NOT CMAKE_CROSSCOMPILING)
+    if (EMIL_HOST_BUILD AND NOT CMAKE_CROSSCOMPILING AND NOT EMIL_FETCH_ECHO_COMPILERS)
         # In a host build where we are not cross-compiling we use the built echo plug-ins
         return()
     endif()
