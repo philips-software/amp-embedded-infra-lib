@@ -2,12 +2,10 @@
 #define HAL_GPIO_STUB_HPP
 
 #include "hal/interfaces/Gpio.hpp"
-#include "infra/timer/TimerService.hpp"
+#include "infra/timer/Timer.hpp"
+#include "infra/util/Function.hpp"
 #include "infra/util/Optional.hpp"
-#include "infra/util/VariantDetail.hpp"
-#include <array>
-#include <functional>
-#include <map>
+#include <utility>
 #include <vector>
 
 namespace hal
@@ -26,7 +24,7 @@ namespace hal
         void Config(PinConfigType config) override;
         void Config(PinConfigType config, bool startOutputState) override;
         void ResetConfig() override;
-        void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger) override;
+        void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type) override;
         void DisableInterrupt() override;
 
         void SetStubState(bool value);
