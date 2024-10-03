@@ -44,8 +44,7 @@ namespace services
         AttAttribute::Handle Handle() const;
         AttAttribute::Handle& Handle();
 
-        bool operator==(const GattDescriptor& other) const;
-        bool operator!=(const GattDescriptor& other) const;
+        auto operator<=>(const GattDescriptor& other) const = default;
 
     private:
         AttAttribute::Uuid type;
@@ -96,6 +95,8 @@ namespace services
         AttAttribute::Handle ValueHandle() const;
         AttAttribute::Handle& ValueHandle();
 
+        auto operator<=>(const GattCharacteristic& other) const = default;
+
     protected:
         AttAttribute::Uuid type;
         AttAttribute::Handle handle;
@@ -115,6 +116,8 @@ namespace services
         AttAttribute::Handle EndHandle() const;
         AttAttribute::Handle& EndHandle();
         uint8_t GetAttributeCount() const;
+
+        auto operator<=>(const GattService& other) const = default;
 
     protected:
         AttAttribute::Uuid type;

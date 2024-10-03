@@ -22,16 +22,6 @@ namespace services
         return handle;
     }
 
-    bool GattDescriptor::operator==(const GattDescriptor& other) const
-    {
-        return type == other.type && handle == other.handle;
-    }
-
-    bool GattDescriptor::operator!=(const GattDescriptor& other) const
-    {
-        return !(*this == other);
-    }
-
     GattCharacteristic::GattCharacteristic(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties)
         : type(type)
         , handle(handle)
