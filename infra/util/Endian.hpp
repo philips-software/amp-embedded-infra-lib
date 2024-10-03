@@ -163,24 +163,24 @@ namespace infra
 
         friend bool operator==(T x, BigEndian y)
         {
-            return y == x;
+            return y.operator==(x);
         }
 
         friend bool operator!=(T x, BigEndian y)
         {
-            return y != x;
+            return y.operator!=(x);
         }
 
         template<class U>
         friend bool operator==(U x, BigEndian y)
         {
-            return y == x;
+            return y.operator==(x);
         }
 
         template<class U>
         friend bool operator!=(U x, BigEndian y)
         {
-            return y != x;
+            return y.operator!=(x);
         }
 
     private:
