@@ -185,7 +185,8 @@ ConsoleClientTcp::ConsoleClientTcp(services::ConnectionFactoryWithNameResolver& 
 
 ConsoleClientTcp::~ConsoleClientTcp()
 {
-    consoleClientConnection->services::ConnectionObserver::Subject().AbortAndDestroy();
+    if (!!consoleClientConnection)
+        consoleClientConnection->services::ConnectionObserver::Subject().AbortAndDestroy();
 }
 
 infra::BoundedConstString ConsoleClientTcp::Hostname() const
@@ -317,7 +318,8 @@ int main(int argc, char* argv[], const char* env[])
             std::cout << "Loaded " << path << std::endl;
         }
 
-        application::Console console(root);
+        bool serialConnectionRequested = get(target).substr(0, 3) == "COM" || get(target).substr(0, 4) == "/dev";
+        application::Console console(root, !serialConnectionRequested);
         services::ConnectionFactoryWithNameResolverImpl::WithStorage<4> connectionFactory(console.ConnectionFactory(), console.NameResolver());
         infra::Optional<ConsoleClientTcp> consoleClientTcp;
         infra::Optional<ConsoleClientWebSocket> consoleClientWebSocket;
@@ -325,24 +327,17 @@ int main(int argc, char* argv[], const char* env[])
         infra::Optional<hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<2048>> bufferedUart;
         infra::Optional<ConsoleClientUart> consoleClientUart;
 
-        auto construct = [&]()
+        if (serialConnectionRequested)
         {
-            if (get(target).substr(0, 3) == "COM" || get(target).substr(0, 4) == "/dev")
-            {
-                uart.Emplace(get(target));
-                bufferedUart.Emplace(*uart);
-                consoleClientUart.Emplace(console, *bufferedUart);
-            }
-            else if (services::SchemeFromUrl(infra::BoundedConstString(get(target))) == "ws")
-                consoleClientWebSocket.Emplace(connectionFactory, console, get(target), randomDataGenerator, tracer);
-            else
-                consoleClientTcp.Emplace(connectionFactory, console, get(target), tracer);
-        };
+            uart.Emplace(get(target));
+            bufferedUart.Emplace(*uart);
+            consoleClientUart.Emplace(console, *bufferedUart);
+        }
+        else if (services::SchemeFromUrl(infra::BoundedConstString(get(target))) == "ws")
+            consoleClientWebSocket.Emplace(connectionFactory, console, get(target), randomDataGenerator, tracer);
+        else
+            consoleClientTcp.Emplace(connectionFactory, console, get(target), tracer);
 
-        infra::EventDispatcher::Instance().Schedule([&construct]()
-            {
-                construct();
-            });
         console.Run();
     }
     catch (const args::Help&)
