@@ -44,6 +44,9 @@ namespace services
         AttAttribute::Handle Handle() const;
         AttAttribute::Handle& Handle();
 
+        bool operator==(const GattDescriptor& other) const;
+        bool operator!=(const GattDescriptor& other) const;
+
     private:
         AttAttribute::Uuid type;
         AttAttribute::Handle handle;
