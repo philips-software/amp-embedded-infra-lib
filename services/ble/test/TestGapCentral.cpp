@@ -180,9 +180,10 @@ namespace services
         services::GapState stateScanning = services::GapState::scanning;
         services::GapState stateAdvertising = services::GapState::advertising;
         services::GapState stateConnected = services::GapState::connected;
+        services::GapState stateInitiating = services::GapState::initiating;
 
-        stream << stateStandby << " " << stateScanning << " " << stateAdvertising << " " << stateConnected;
+        stream << stateStandby << " " << stateScanning << " " << stateAdvertising << " " << stateConnected << " " << stateInitiating;
 
-        EXPECT_EQ("Standby Scanning Advertising Connected", stream.Storage());
+        EXPECT_EQ("Standby Scanning Advertising Connected Initiating", stream.Storage());
     }
 }

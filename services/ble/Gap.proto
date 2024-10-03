@@ -19,6 +19,7 @@ message State
         scanning = 1;
         connected = 2;
         advertising = 3;
+        initiating = 4;
     }
     Event value = 1;
 }
