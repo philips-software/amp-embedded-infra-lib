@@ -114,14 +114,11 @@ namespace infra
         void Start(Duration duration, const infra::Function<void()>& action);
         void Start(Duration duration, const infra::Function<void()>& action, TriggerImmediately);
     };
-}
 
 #ifdef EMIL_HOST_BUILD
-namespace std
-{
     // gtest uses PrintTo to display the contents of TimePoint
     void PrintTo(infra::TimePoint p, std::ostream* os);
-}
 #endif
+}
 
 #endif

@@ -187,11 +187,8 @@ namespace infra
         StartTimer(duration, action);
         action();
     }
-}
 
 #ifdef EMIL_HOST_BUILD
-namespace std
-{
     void PrintTo(infra::TimePoint p, std::ostream* os)
     {
         infra::PartitionedTime partitioned(p);
@@ -207,5 +204,5 @@ namespace std
 
         os->fill(previousFill);
     }
-}
 #endif
+}
