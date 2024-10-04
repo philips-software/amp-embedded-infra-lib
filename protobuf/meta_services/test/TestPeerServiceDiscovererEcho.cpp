@@ -42,8 +42,7 @@ namespace
     public:
         using application::PeerServiceDiscoveryObserver::PeerServiceDiscoveryObserver;
 
-        MOCK_METHOD(void, ServiceDiscoveryStarted, ());
-        MOCK_METHOD(void, ServiceDiscoveryComplete, (infra::MemoryRange<uint32_t>));
+        MOCK_METHOD(void, ServiceDiscoveryComplete, (infra::MemoryRange<uint32_t>), (override));
     };
 }
 
@@ -89,7 +88,6 @@ public:
     void StartInitialServiceDiscovery()
     {
         EXPECT_CALL(serviceDiscovery, NotifyServiceChangesMock(true));
-        EXPECT_CALL(observer, ServiceDiscoveryStarted());
         EXPECT_CALL(serviceDiscovery, FindFirstServiceInRangeMock(0, std::numeric_limits<uint32_t>::max()));
 
         ExecuteAllActions();

@@ -58,11 +58,6 @@ namespace application
 
     void PeerServiceDiscovererEcho::StartDiscovery()
     {
-        NotifyObservers([this](auto& observer)
-            {
-                observer.ServiceDiscoveryStarted();
-            });
-
         RequestSend([this]
             {
                 FindFirstServiceInRange(0, std::numeric_limits<uint32_t>::max());

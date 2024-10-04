@@ -18,7 +18,6 @@ namespace application
     public:
         using infra::SingleObserver<PeerServiceDiscoveryObserver, PeerServiceDiscovererEcho>::SingleObserver;
 
-        virtual void ServiceDiscoveryStarted() = 0;
         virtual void ServiceDiscoveryComplete(infra::MemoryRange<uint32_t> services) = 0;
     };
 
