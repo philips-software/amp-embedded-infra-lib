@@ -12,12 +12,6 @@ target_compile_options(infra.util PUBLIC
     >
 )
 
-if (MSVC AND "${MSVC_VERSION}" LESS 1930)
-    target_compile_options(infra.util PUBLIC
-        $<$<CXX_COMPILER_ID:MSVC>:/permissive>
-    )
-endif()
-
 target_sources(infra.util PRIVATE
     Aligned.hpp
     Allocator.hpp

@@ -9,7 +9,7 @@ endif()
 
 project(emil LANGUAGES C CXX VERSION 6.1.0) # x-release-please-version
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
 
 set_directory_properties(PROPERTY USE_FOLDERS On)
